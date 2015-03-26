@@ -13,6 +13,11 @@ use craft\app\enums\AttributeType;
 /**
  * Element record class.
  *
+ * @var integer $id ID
+ * @var string $type Type
+ * @var boolean $enabled Enabled
+ * @var boolean $archived Archived
+
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */
@@ -23,42 +28,22 @@ class Element extends ActiveRecord
 
 	/**
 	 * @inheritdoc
+	 */
+	public function rules()
+	{
+		return [
+			[['type'], 'required'],
+			[['type'], 'string', 'max' => 150],
+		];
+	}
+
+	/**
+	 * @inheritdoc
 	 *
 	 * @return string
 	 */
 	public static function tableName()
 	{
 		return '{{%elements}}';
-	}
-
-	/**
-	 * @inheritDoc ActiveRecord::defineIndexes()
-	 *
-	 * @return array
-	 */
-	public function defineIndexes()
-	{
-		return [
-			['columns' => ['type']],
-			['columns' => ['enabled']],
-			['columns' => ['archived, dateCreated']],
-		];
-	}
-
-	// Protected Methods
-	// =========================================================================
-
-	/**
-	 * @inheritDoc ActiveRecord::defineAttributes()
-	 *
-	 * @return array
-	 */
-	protected function defineAttributes()
-	{
-		return [
-			'type'     => [AttributeType::ClassName, 'required' => true],
-			'enabled'  => [AttributeType::Bool, 'default' => true],
-			'archived' => [AttributeType::Bool, 'default' => false],
-		];
 	}
 }

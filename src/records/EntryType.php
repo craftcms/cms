@@ -7,12 +7,25 @@
 
 namespace craft\app\records;
 
+use yii\db\ActiveQueryInterface;
 use craft\app\db\ActiveRecord;
 use craft\app\enums\AttributeType;
 
 /**
  * Class EntryType record.
  *
+ * @var integer $id ID
+ * @var integer $sectionId Section ID
+ * @var integer $fieldLayoutId Field layout ID
+ * @var string $name Name
+ * @var string $handle Handle
+ * @var boolean $hasTitleField Has title field
+ * @var string $titleLabel Title label
+ * @var string $titleFormat Title format
+ * @var string $sortOrder Sort order
+ * @var ActiveQueryInterface $section Section
+ * @var ActiveQueryInterface $fieldLayout Field layout
+
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */
@@ -20,6 +33,20 @@ class EntryType extends ActiveRecord
 {
 	// Public Methods
 	// =========================================================================
+
+	/**
+	 * @inheritdoc
+	 */
+	public function rules()
+	{
+		return [
+			[['handle'], 'craft\\app\\validators\\Handle', 'reservedWords' => ['id', 'dateCreated', 'dateUpdated', 'uid', 'title']],
+			[['name'], 'unique', 'targetAttribute' => ['name', 'sectionId']],
+			[['handle'], 'unique', 'targetAttribute' => ['handle', 'sectionId']],
+			[['name', 'handle'], 'required'],
+			[['name', 'handle'], 'string', 'max' => 255],
+		];
+	}
 
 	/**
 	 * @inheritdoc
@@ -49,55 +76,5 @@ class EntryType extends ActiveRecord
 	public function getFieldLayout()
 	{
 		return $this->hasOne(FieldLayout::className(), ['id' => 'fieldLayoutId']);
-	}
-
-	/**
-	 * @inheritDoc ActiveRecord::defineIndexes()
-	 *
-	 * @return array
-	 */
-	public function defineIndexes()
-	{
-		return [
-			['columns' => ['name', 'sectionId'], 'unique' => true],
-			['columns' => ['handle', 'sectionId'], 'unique' => true],
-		];
-	}
-
-	/**
-	 * @inheritDoc ActiveRecord::rules()
-	 *
-	 * @return array
-	 */
-	public function rules()
-	{
-		$rules = parent::rules();
-
-		if (!$this->hasTitleField)
-		{
-			$rules[] = ['titleFormat', 'required'];
-		}
-
-		return $rules;
-	}
-
-	// Protected Methods
-	// =========================================================================
-
-	/**
-	 * @inheritDoc ActiveRecord::defineAttributes()
-	 *
-	 * @return array
-	 */
-	protected function defineAttributes()
-	{
-		return [
-			'name'          => [AttributeType::Name, 'required' => true],
-			'handle'        => [AttributeType::Handle, 'required' => true],
-			'hasTitleField' => [AttributeType::Bool, 'required' => true, 'default' => true],
-			'titleLabel'    => [AttributeType::String, 'default' => 'Title'],
-			'titleFormat'   => AttributeType::String,
-			'sortOrder'     => AttributeType::SortOrder,
-		];
 	}
 }

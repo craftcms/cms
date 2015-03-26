@@ -7,11 +7,17 @@
 
 namespace craft\app\records;
 
+use yii\db\ActiveQueryInterface;
 use craft\app\db\ActiveRecord;
 
 /**
  * Category record.
  *
+ * @var integer $id ID
+ * @var integer $groupId Group ID
+ * @var ActiveQueryInterface $element Element
+ * @var ActiveQueryInterface $group Group
+
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */

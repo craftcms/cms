@@ -13,6 +13,10 @@ use craft\app\enums\AttributeType;
 /**
  * Class SystemSettings record.
  *
+ * @var integer $id ID
+ * @var string $category Category
+ * @var array $settings Settings
+
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */
@@ -23,39 +27,23 @@ class SystemSettings extends ActiveRecord
 
 	/**
 	 * @inheritdoc
+	 */
+	public function rules()
+	{
+		return [
+			[['category'], 'unique'],
+			[['category'], 'required'],
+			[['category'], 'string', 'max' => 15],
+		];
+	}
+
+	/**
+	 * @inheritdoc
 	 *
 	 * @return string
 	 */
 	public static function tableName()
 	{
 		return '{{%systemsettings}}';
-	}
-
-	/**
-	 * @inheritDoc ActiveRecord::defineIndexes()
-	 *
-	 * @return array
-	 */
-	public function defineIndexes()
-	{
-		return [
-			['columns' => 'category', 'unique' => true],
-		];
-	}
-
-	// Protected Methods
-	// =========================================================================
-
-	/**
-	 * @inheritDoc ActiveRecord::defineAttributes()
-	 *
-	 * @return array
-	 */
-	protected function defineAttributes()
-	{
-		return [
-			'category' => [AttributeType::String, 'maxLength' => 15, 'required' => true],
-			'settings' => AttributeType::Mixed,
-		];
 	}
 }

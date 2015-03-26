@@ -7,12 +7,24 @@
 
 namespace craft\app\records;
 
+use yii\db\ActiveQueryInterface;
 use craft\app\db\ActiveRecord;
 use craft\app\enums\AttributeType;
 
 /**
  * Class MatrixBlock record.
  *
+ * @var integer $id ID
+ * @var integer $ownerId Owner ID
+ * @var ActiveQueryInterface $ownerLocale Owner locale
+ * @var integer $fieldId Field ID
+ * @var integer $typeId Type ID
+ * @var string $sortOrder Sort order
+ * @var ActiveQueryInterface $element Element
+ * @var ActiveQueryInterface $owner Owner
+ * @var ActiveQueryInterface $field Field
+ * @var ActiveQueryInterface $type Type
+
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */
@@ -20,6 +32,16 @@ class MatrixBlock extends ActiveRecord
 {
 	// Public Methods
 	// =========================================================================
+
+	/**
+	 * @inheritdoc
+	 */
+	public function rules()
+	{
+		return [
+			[['ownerLocale'], 'craft\\app\\validators\\Locale'],
+		];
+	}
 
 	/**
 	 * @inheritdoc
@@ -79,36 +101,5 @@ class MatrixBlock extends ActiveRecord
 	public function getType()
 	{
 		return $this->hasOne(MatrixBlockType::className(), ['id' => 'typeId']);
-	}
-
-	/**
-	 * @inheritDoc ActiveRecord::defineIndexes()
-	 *
-	 * @return array
-	 */
-	public function defineIndexes()
-	{
-		return [
-			['columns' => ['ownerId']],
-			['columns' => ['fieldId']],
-			['columns' => ['typeId']],
-			['columns' => ['sortOrder']],
-		];
-	}
-
-	// Protected Methods
-	// =========================================================================
-
-	/**
-	 * @inheritDoc ActiveRecord::defineAttributes()
-	 *
-	 * @return array
-	 */
-	protected function defineAttributes()
-	{
-		return [
-			'sortOrder' => AttributeType::SortOrder,
-			'ownerLocale' => AttributeType::Locale,
-		];
 	}
 }

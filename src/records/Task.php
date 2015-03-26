@@ -18,6 +18,18 @@ use creocoder\nestedsets\NestedSetsBehavior;
 /**
  * Class Task record.
  *
+ * @var integer $id ID
+ * @var integer $root Root
+ * @var integer $lft Lft
+ * @var integer $rgt Rgt
+ * @var integer $level Level
+ * @var integer $currentStep Current step
+ * @var integer $totalSteps Total steps
+ * @var string $status Status
+ * @var string $type Type
+ * @var string $description Description
+ * @var array $settings Settings
+
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */
@@ -25,6 +37,24 @@ class Task extends ActiveRecord
 {
 	// Public Methods
 	// =========================================================================
+
+	/**
+	 * @inheritdoc
+	 */
+	public function rules()
+	{
+		return [
+			[['root'], 'number', 'min' => 0, 'max' => 4294967295, 'integerOnly' => true],
+			[['lft'], 'number', 'min' => 0, 'max' => 4294967295, 'integerOnly' => true],
+			[['rgt'], 'number', 'min' => 0, 'max' => 4294967295, 'integerOnly' => true],
+			[['level'], 'number', 'min' => 0, 'max' => 65535, 'integerOnly' => true],
+			[['currentStep'], 'number', 'min' => 0, 'max' => 4294967295, 'integerOnly' => true],
+			[['totalSteps'], 'number', 'min' => 0, 'max' => 4294967295, 'integerOnly' => true],
+			[['status'], 'in', 'range' => ['pending', 'error', 'running']],
+			[['type'], 'required'],
+			[['type'], 'string', 'max' => 150],
+		];
+	}
 
 	/**
 	 * @inheritdoc
@@ -44,20 +74,6 @@ class Task extends ActiveRecord
 		return Craft::createObject(TaskQuery::className(), [get_called_class()]);
 	}
 
-	/**
-	 * @inheritDoc ActiveRecord::defineIndexes()
-	 *
-	 * @return array
-	 */
-	public function defineIndexes()
-	{
-		return [
-			['columns' => ['root']],
-			['columns' => ['lft']],
-			['columns' => ['rgt']],
-			['columns' => ['level']],
-		];
-	}
 
 	/**
 	 * @inheritDoc
@@ -82,30 +98,6 @@ class Task extends ActiveRecord
 	{
 		return [
 			static::SCENARIO_DEFAULT => static::OP_ALL,
-		];
-	}
-
-	// Protected Methods
-	// =========================================================================
-
-	/**
-	 * @inheritDoc ActiveRecord::defineAttributes()
-	 *
-	 * @return array
-	 */
-	protected function defineAttributes()
-	{
-		return [
-			'root'          => [AttributeType::Number,    'column' => ColumnType::Int,      'unsigned' => true],
-			'lft'           => [AttributeType::Number,    'column' => ColumnType::Int,      'unsigned' => true, 'null' => false],
-			'rgt'           => [AttributeType::Number,    'column' => ColumnType::Int,      'unsigned' => true, 'null' => false],
-			'level'         => [AttributeType::Number,    'column' => ColumnType::SmallInt, 'unsigned' => true, 'null' => false],
-			'currentStep'   => [AttributeType::Number,    'column' => ColumnType::Int,      'unsigned' => true],
-			'totalSteps'    => [AttributeType::Number,    'column' => ColumnType::Int,      'unsigned' => true],
-			'status'        => [AttributeType::Enum,      'values' => [TaskStatus::Pending, TaskStatus::Error, TaskStatus::Running]],
-			'type'          => [AttributeType::ClassName, 'required' => true],
-			'description'   => AttributeType::String,
-			'settings'      => AttributeType::Mixed,
 		];
 	}
 }

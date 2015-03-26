@@ -7,6 +7,7 @@
 
 namespace craft\app\records;
 
+use yii\db\ActiveQueryInterface;
 use Craft;
 use craft\app\db\ActiveRecord;
 
@@ -15,6 +16,12 @@ Craft::$app->requireEdition(Craft::Pro);
 /**
  * Class UserPermission_User record.
  *
+ * @var integer $id ID
+ * @var integer $permissionId Permission ID
+ * @var integer $userId User ID
+ * @var ActiveQueryInterface $permission Permission
+ * @var ActiveQueryInterface $user User
+
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */
@@ -22,6 +29,16 @@ class UserPermission_User extends ActiveRecord
 {
 	// Public Methods
 	// =========================================================================
+
+	/**
+	 * @inheritdoc
+	 */
+	public function rules()
+	{
+		return [
+			[['permissionId'], 'unique', 'targetAttribute' => ['permissionId', 'userId']],
+		];
+	}
 
 	/**
 	 * @inheritdoc
@@ -53,15 +70,4 @@ class UserPermission_User extends ActiveRecord
 		return $this->hasOne(User::className(), ['id' => 'userId']);
 	}
 
-	/**
-	 * @inheritDoc ActiveRecord::defineIndexes()
-	 *
-	 * @return array
-	 */
-	public function defineIndexes()
-	{
-		return [
-			['columns' => ['permissionId', 'userId'], 'unique' => true],
-		];
-	}
 }

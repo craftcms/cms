@@ -16,6 +16,10 @@ Craft::$app->requireEdition(Craft::Pro);
 /**
  * Class UserGroup record.
  *
+ * @var integer $id ID
+ * @var string $name Name
+ * @var string $handle Handle
+
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */
@@ -23,6 +27,18 @@ class UserGroup extends ActiveRecord
 {
 	// Public Methods
 	// =========================================================================
+
+	/**
+	 * @inheritdoc
+	 */
+	public function rules()
+	{
+		return [
+			[['handle'], 'craft\\app\\validators\\Handle', 'reservedWords' => ['id', 'dateCreated', 'dateUpdated', 'uid', 'title']],
+			[['name', 'handle'], 'required'],
+			[['name', 'handle'], 'string', 'max' => 255],
+		];
+	}
 
 	/**
 	 * @inheritdoc
@@ -43,21 +59,5 @@ class UserGroup extends ActiveRecord
 	{
 		return $this->hasMany(User::className(), ['id' => 'userId'])
 			->viaTable('{{%usergroups_users}}', ['groupId' => 'id']);
-	}
-
-	// Protected Methods
-	// =========================================================================
-
-	/**
-	 * @inheritDoc ActiveRecord::defineAttributes()
-	 *
-	 * @return array
-	 */
-	protected function defineAttributes()
-	{
-		return [
-			'name'   => [AttributeType::Name, 'required' => true],
-			'handle' => [AttributeType::Handle, 'required' => true],
-		];
 	}
 }

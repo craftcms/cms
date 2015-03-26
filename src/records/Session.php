@@ -7,6 +7,7 @@
 
 namespace craft\app\records;
 
+use yii\db\ActiveQueryInterface;
 use craft\app\db\ActiveRecord;
 use craft\app\enums\AttributeType;
 use craft\app\enums\ColumnType;
@@ -14,6 +15,11 @@ use craft\app\enums\ColumnType;
 /**
  * Class Session record.
  *
+ * @var integer $id ID
+ * @var integer $userId User ID
+ * @var string $token Token
+ * @var ActiveQueryInterface $user User
+
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */
@@ -21,6 +27,17 @@ class Session extends ActiveRecord
 {
 	// Public Methods
 	// =========================================================================
+
+	/**
+	 * @inheritdoc
+	 */
+	public function rules()
+	{
+		return [
+			[['token'], 'required'],
+			[['token'], 'string', 'max' => 100],
+		];
+	}
 
 	/**
 	 * @inheritdoc
@@ -40,34 +57,5 @@ class Session extends ActiveRecord
 	public function getUser()
 	{
 		return $this->hasOne(User::className(), ['id' => 'userId']);
-	}
-
-	/**
-	 * @inheritDoc ActiveRecord::defineIndexes()
-	 *
-	 * @return array
-	 */
-	public function defineIndexes()
-	{
-		return [
-			['columns' => ['uid']],
-			['columns' => ['token']],
-			['columns' => ['dateUpdated']],
-		];
-	}
-
-	// Protected Methods
-	// =========================================================================
-
-	/**
-	 * @inheritDoc ActiveRecord::defineAttributes()
-	 *
-	 * @return array
-	 */
-	protected function defineAttributes()
-	{
-		return [
-			'token' => [AttributeType::String, 'maxLength' => 100, 'column' => ColumnType::Char, 'required' => true],
-		];
 	}
 }

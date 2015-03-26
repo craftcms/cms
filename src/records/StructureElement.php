@@ -7,6 +7,7 @@
 
 namespace craft\app\records;
 
+use yii\db\ActiveQueryInterface;
 use Craft;
 use craft\app\db\ActiveRecord;
 use craft\app\db\StructuredElementQuery;
@@ -17,6 +18,16 @@ use creocoder\nestedsets\NestedSetsBehavior;
 /**
  * Class StructureElement record.
  *
+ * @var integer $id ID
+ * @var integer $structureId Structure ID
+ * @var integer $elementId Element ID
+ * @var integer $root Root
+ * @var integer $lft Lft
+ * @var integer $rgt Rgt
+ * @var integer $level Level
+ * @var ActiveQueryInterface $structure Structure
+ * @var ActiveQueryInterface $element Element
+
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */
@@ -24,6 +35,20 @@ class StructureElement extends ActiveRecord
 {
 	// Public Methods
 	// =========================================================================
+
+	/**
+	 * @inheritdoc
+	 */
+	public function rules()
+	{
+		return [
+			[['root'], 'number', 'min' => 0, 'max' => 4294967295, 'integerOnly' => true],
+			[['lft'], 'number', 'min' => 0, 'max' => 4294967295, 'integerOnly' => true],
+			[['rgt'], 'number', 'min' => 0, 'max' => 4294967295, 'integerOnly' => true],
+			[['level'], 'number', 'min' => 0, 'max' => 65535, 'integerOnly' => true],
+			[['structureId'], 'unique', 'targetAttribute' => ['structureId', 'elementId']],
+		];
+	}
 
 	/**
 	 * @inheritdoc
@@ -63,21 +88,6 @@ class StructureElement extends ActiveRecord
 		return $this->hasOne(Element::className(), ['id' => 'elementId']);
 	}
 
-	/**
-	 * @inheritDoc ActiveRecord::defineIndexes()
-	 *
-	 * @return array
-	 */
-	public function defineIndexes()
-	{
-		return [
-			['columns' => ['structureId', 'elementId'], 'unique' => true],
-			['columns' => ['root']],
-			['columns' => ['lft']],
-			['columns' => ['rgt']],
-			['columns' => ['level']],
-		];
-	}
 
 	/**
 	 * @inheritDoc
@@ -102,24 +112,6 @@ class StructureElement extends ActiveRecord
 	{
 		return [
 			static::SCENARIO_DEFAULT => static::OP_ALL,
-		];
-	}
-
-	// Protected Methods
-	// =========================================================================
-
-	/**
-	 * @inheritDoc ActiveRecord::defineAttributes()
-	 *
-	 * @return array
-	 */
-	protected function defineAttributes()
-	{
-		return [
-			'root'  => [AttributeType::Number, 'column' => ColumnType::Int,      'unsigned' => true],
-			'lft'   => [AttributeType::Number, 'column' => ColumnType::Int,      'unsigned' => true, 'null' => false],
-			'rgt'   => [AttributeType::Number, 'column' => ColumnType::Int,      'unsigned' => true, 'null' => false],
-			'level' => [AttributeType::Number, 'column' => ColumnType::SmallInt, 'unsigned' => true, 'null' => false],
 		];
 	}
 }

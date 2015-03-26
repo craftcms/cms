@@ -7,6 +7,7 @@
 
 namespace craft\app\records;
 
+use yii\db\ActiveQueryInterface;
 use craft\app\db\ActiveRecord;
 use craft\app\enums\AttributeType;
 use craft\app\enums\ColumnType;
@@ -14,6 +15,14 @@ use craft\app\enums\ColumnType;
 /**
  * Class Plugin record.
  *
+ * @var integer $id ID
+ * @var string $class Class
+ * @var string $version Version
+ * @var boolean $enabled Enabled
+ * @var array $settings Settings
+ * @var \DateTime $installDate Install date
+ * @var ActiveQueryInterface $migrations Migrations
+
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */
@@ -21,6 +30,19 @@ class Plugin extends ActiveRecord
 {
 	// Public Methods
 	// =========================================================================
+
+	/**
+	 * @inheritdoc
+	 */
+	public function rules()
+	{
+		return [
+			[['installDate'], 'craft\\app\\validators\\DateTime'],
+			[['class', 'version', 'installDate'], 'required'],
+			[['class'], 'string', 'max' => 150],
+			[['version'], 'string', 'max' => 15],
+		];
+	}
 
 	/**
 	 * @inheritdoc
@@ -40,24 +62,5 @@ class Plugin extends ActiveRecord
 	public function getMigrations()
 	{
 		return $this->hasMany(Migration::className(), ['pluginId' => 'id']);
-	}
-
-	// Protected Methods
-	// =========================================================================
-
-	/**
-	 * @inheritDoc ActiveRecord::defineAttributes()
-	 *
-	 * @return array
-	 */
-	protected function defineAttributes()
-	{
-		return [
-			'class'       => [AttributeType::ClassName, 'required' => true],
-			'version'     => ['maxLength' => 15, 'column' => ColumnType::Char, 'required' => true],
-			'enabled'     => AttributeType::Bool,
-			'settings'    => AttributeType::Mixed,
-			'installDate' => [AttributeType::DateTime, 'required' => true],
-		];
 	}
 }

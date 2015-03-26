@@ -7,12 +7,20 @@
 
 namespace craft\app\records;
 
+use yii\db\ActiveQueryInterface;
 use craft\app\db\ActiveRecord;
 use craft\app\enums\AttributeType;
 
 /**
  * Class Route record.
  *
+ * @var integer $id ID
+ * @var ActiveQueryInterface $locale Locale
+ * @var string $urlParts URL parts
+ * @var string $urlPattern URL pattern
+ * @var string $template Template
+ * @var string $sortOrder Sort order
+
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */
@@ -20,6 +28,18 @@ class Route extends ActiveRecord
 {
 	// Public Methods
 	// =========================================================================
+
+	/**
+	 * @inheritdoc
+	 */
+	public function rules()
+	{
+		return [
+			[['locale'], 'craft\\app\\validators\\Locale'],
+			[['urlPattern'], 'unique'],
+			[['urlParts', 'urlPattern', 'template'], 'required'],
+		];
+	}
 
 	/**
 	 * @inheritdoc
@@ -39,37 +59,5 @@ class Route extends ActiveRecord
 	public function getLocale()
 	{
 		return $this->hasOne(Locale::className(), ['id' => 'locale']);
-	}
-
-	/**
-	 * @inheritDoc ActiveRecord::defineIndexes()
-	 *
-	 * @return array
-	 */
-	public function defineIndexes()
-	{
-		return [
-			['columns' => ['locale']],
-			['columns' => ['urlPattern'], 'unique' => true],
-		];
-	}
-
-	// Protected Methods
-	// =========================================================================
-
-	/**
-	 * @inheritDoc ActiveRecord::defineAttributes()
-	 *
-	 * @return array
-	 */
-	protected function defineAttributes()
-	{
-		return [
-			'locale'     => AttributeType::Locale,
-			'urlParts'   => [AttributeType::String, 'required' => true],
-			'urlPattern' => [AttributeType::String, 'required' => true],
-			'template'   => [AttributeType::String, 'required' => true],
-			'sortOrder'  => AttributeType::SortOrder,
-		];
 	}
 }

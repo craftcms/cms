@@ -7,12 +7,22 @@
 
 namespace craft\app\records;
 
+use yii\db\ActiveQueryInterface;
 use craft\app\db\ActiveRecord;
 use craft\app\enums\AttributeType;
 
 /**
  * Class MatrixBlockType record.
  *
+ * @var integer $id ID
+ * @var integer $fieldId Field ID
+ * @var integer $fieldLayoutId Field layout ID
+ * @var string $name Name
+ * @var string $handle Handle
+ * @var string $sortOrder Sort order
+ * @var ActiveQueryInterface $field Field
+ * @var ActiveQueryInterface $fieldLayout Field layout
+
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */
@@ -30,6 +40,20 @@ class MatrixBlockType extends ActiveRecord
 
 	// Public Methods
 	// =========================================================================
+
+	/**
+	 * @inheritdoc
+	 */
+	public function rules()
+	{
+		return [
+			[['handle'], 'craft\\app\\validators\\Handle', 'reservedWords' => ['id', 'dateCreated', 'dateUpdated', 'uid', 'title']],
+			[['name'], 'unique', 'targetAttribute' => ['name', 'fieldId']],
+			[['handle'], 'unique', 'targetAttribute' => ['handle', 'fieldId']],
+			[['name', 'handle'], 'required'],
+			[['name', 'handle'], 'string', 'max' => 255],
+		];
+	}
 
 	/**
 	 * @inheritdoc
@@ -59,58 +83,5 @@ class MatrixBlockType extends ActiveRecord
 	public function getFieldLayout()
 	{
 		return $this->hasOne(FieldLayout::className(), ['id' => 'fieldLayoutId']);
-	}
-
-	/**
-	 * @inheritDoc ActiveRecord::defineIndexes()
-	 *
-	 * @return array
-	 */
-	public function defineIndexes()
-	{
-		return [
-			['columns' => ['name', 'fieldId'], 'unique' => true],
-			['columns' => ['handle', 'fieldId'], 'unique' => true],
-		];
-	}
-
-	/**
-	 * @inheritDoc ActiveRecord::rules()
-	 *
-	 * @return array
-	 */
-	public function rules()
-	{
-		$rules = parent::rules();
-
-		if (!$this->validateUniques)
-		{
-			foreach ($rules as $i => $rule)
-			{
-				if ($rule[1] == 'unique' && isset($rule['targetAttribute']) && is_array($rule['targetAttribute']) && count($rule['targetAttribute']) > 1)
-				{
-					unset($rules[$i]);
-				}
-			}
-		}
-
-		return $rules;
-	}
-
-	// Protected Methods
-	// =========================================================================
-
-	/**
-	 * @inheritDoc ActiveRecord::defineAttributes()
-	 *
-	 * @return array
-	 */
-	protected function defineAttributes()
-	{
-		return [
-			'name'       => [AttributeType::Name, 'required' => true],
-			'handle'     => [AttributeType::Handle, 'required' => true],
-			'sortOrder'  => AttributeType::SortOrder,
-		];
 	}
 }

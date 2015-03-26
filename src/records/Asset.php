@@ -7,6 +7,7 @@
 
 namespace craft\app\records;
 
+use yii\db\ActiveQueryInterface;
 use craft\app\enums\AttributeType;
 use craft\app\enums\ColumnType;
 use craft\app\db\ActiveRecord;
@@ -16,6 +17,19 @@ use craft\app\db\ActiveRecord;
  *
  * @todo Create save function which calls parent::save and then updates the meta data table (keywords, author, etc)
  *
+ * @var integer $id ID
+ * @var integer $sourceId Source ID
+ * @var integer $folderId Folder ID
+ * @var string $filename Filename
+ * @var string $kind Kind
+ * @var integer $width Width
+ * @var integer $height Height
+ * @var integer $size Size
+ * @var \DateTime $dateModified Date modified
+ * @var ActiveQueryInterface $element Element
+ * @var ActiveQueryInterface $source Source
+ * @var ActiveQueryInterface $folder Folder
+
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */
@@ -23,6 +37,22 @@ class Asset extends ActiveRecord
 {
 	// Public Methods
 	// =========================================================================
+
+	/**
+	 * @inheritdoc
+	 */
+	public function rules()
+	{
+		return [
+			[['width'], 'number', 'min' => 0, 'max' => 65535, 'integerOnly' => true],
+			[['height'], 'number', 'min' => 0, 'max' => 65535, 'integerOnly' => true],
+			[['size'], 'number', 'min' => 0, 'max' => 4294967295, 'integerOnly' => true],
+			[['dateModified'], 'craft\\app\\validators\\DateTime'],
+			[['filename'], 'unique', 'targetAttribute' => ['filename', 'folderId']],
+			[['filename', 'kind'], 'required'],
+			[['kind'], 'string', 'max' => 50],
+		];
+	}
 
 	/**
 	 * @inheritdoc
@@ -62,37 +92,5 @@ class Asset extends ActiveRecord
 	public function getFolder()
 	{
 		return $this->hasOne(AssetFolder::className(), ['id' => 'folderId']);
-	}
-
-	/**
-	 * @inheritDoc ActiveRecord::defineIndexes()
-	 *
-	 * @return array
-	 */
-	public function defineIndexes()
-	{
-		return [
-			['columns' => ['filename', 'folderId'], 'unique' => true],
-		];
-	}
-
-	// Protected Methods
-	// =========================================================================
-
-	/**
-	 * @inheritDoc ActiveRecord::defineAttributes()
-	 *
-	 * @return array
-	 */
-	protected function defineAttributes()
-	{
-		return [
-			'filename'		=> [AttributeType::String, 'required' => true],
-			'kind'			=> ['column' => ColumnType::Varchar, 'maxLength' => 50, 'required' => true, 'default' => 'unknown'],
-			'width'			=> [AttributeType::Number, 'min' => 0, 'column' => ColumnType::SmallInt],
-			'height'		=> [AttributeType::Number, 'min' => 0, 'column' => ColumnType::SmallInt],
-			'size'			=> [AttributeType::Number, 'min' => 0, 'column' => ColumnType::Int],
-			'dateModified'	=> AttributeType::DateTime
-		];
 	}
 }

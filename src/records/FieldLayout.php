@@ -7,12 +7,18 @@
 
 namespace craft\app\records;
 
+use yii\db\ActiveQueryInterface;
 use craft\app\db\ActiveRecord;
 use craft\app\enums\AttributeType;
 
 /**
  * Field layout record class.
  *
+ * @var integer $id ID
+ * @var string $type Type
+ * @var ActiveQueryInterface $tabs Tabs
+ * @var ActiveQueryInterface $fields Fields
+
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */
@@ -20,6 +26,17 @@ class FieldLayout extends ActiveRecord
 {
 	// Public Methods
 	// =========================================================================
+
+	/**
+	 * @inheritdoc
+	 */
+	public function rules()
+	{
+		return [
+			[['type'], 'required'],
+			[['type'], 'string', 'max' => 150],
+		];
+	}
 
 	/**
 	 * @inheritdoc
@@ -49,32 +66,5 @@ class FieldLayout extends ActiveRecord
 	public function getFields()
 	{
 		return $this->hasMany(FieldLayoutField::className(), ['layoutId' => 'id']);
-	}
-
-	/**
-	 * @inheritDoc ActiveRecord::defineIndexes()
-	 *
-	 * @return array
-	 */
-	public function defineIndexes()
-	{
-		return [
-			['columns' => ['type']],
-		];
-	}
-
-	// Protected Methods
-	// =========================================================================
-
-	/**
-	 * @inheritDoc ActiveRecord::defineAttributes()
-	 *
-	 * @return array
-	 */
-	protected function defineAttributes()
-	{
-		return [
-			'type' => [AttributeType::ClassName, 'required' => true],
-		];
 	}
 }

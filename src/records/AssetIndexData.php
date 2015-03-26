@@ -7,6 +7,7 @@
 
 namespace craft\app\records;
 
+use yii\db\ActiveQueryInterface;
 use craft\app\db\ActiveRecord;
 use craft\app\enums\AttributeType;
 use craft\app\enums\ColumnType;
@@ -14,6 +15,16 @@ use craft\app\enums\ColumnType;
 /**
  * Class AssetIndexData record.
  *
+ * @var integer $id ID
+ * @var integer $sourceId Source ID
+ * @var string $sessionId Session ID
+ * @var integer $offset Offset
+ * @var string $uri URI
+ * @var integer $size Size
+ * @var \DateTime $timestamp Timestamp
+ * @var integer $recordId Record ID
+ * @var ActiveQueryInterface $source Source
+
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */
@@ -21,6 +32,24 @@ class AssetIndexData extends ActiveRecord
 {
 	// Public Methods
 	// =========================================================================
+
+	/**
+	 * @inheritdoc
+	 */
+	public function rules()
+	{
+		return [
+			[['sourceId'], 'number', 'min' => -2147483648, 'max' => 2147483647, 'integerOnly' => true],
+			[['offset'], 'number', 'min' => -2147483648, 'max' => 2147483647, 'integerOnly' => true],
+			[['size'], 'number', 'min' => -2147483648, 'max' => 2147483647, 'integerOnly' => true],
+			[['timestamp'], 'craft\\app\\validators\\DateTime'],
+			[['recordId'], 'number', 'min' => -2147483648, 'max' => 2147483647, 'integerOnly' => true],
+			[['sessionId'], 'unique', 'targetAttribute' => ['sessionId', 'sourceId', 'offset']],
+			[['sessionId', 'sourceId', 'offset'], 'required'],
+			[['sessionId'], 'string', 'length' => 36],
+			[['uri'], 'string', 'max' => 255],
+		];
+	}
 
 	/**
 	 * @inheritdoc
@@ -40,38 +69,5 @@ class AssetIndexData extends ActiveRecord
 	public function getSource()
 	{
 		return $this->hasOne(AssetSource::className(), ['id' => 'sourceId']);
-	}
-
-	/**
-	 * @inheritDoc ActiveRecord::defineIndexes()
-	 *
-	 * @return array
-	 */
-	public function defineIndexes()
-	{
-		return [
-			['columns' => ['sessionId', 'sourceId', 'offset'], 'unique' => true],
-		];
-	}
-
-	// Protected Methods
-	// =========================================================================
-
-	/**
-	 * @inheritDoc ActiveRecord::defineAttributes()
-	 *
-	 * @return array
-	 */
-	protected function defineAttributes()
-	{
-		return [
-			'sessionId' => [ColumnType::Char, 'length' => 36, 'required' => true, 'default' => ''],
-			'sourceId' 	=> [AttributeType::Number, 'required' => true],
-			'offset'    => [AttributeType::Number, 'required' => true],
-			'uri'       => [ColumnType::Varchar, 'maxLength' => 255],
-			'size'      => [AttributeType::Number],
-			'timestamp' => [AttributeType::DateTime],
-			'recordId'	=> [AttributeType::Number],
-		];
 	}
 }
