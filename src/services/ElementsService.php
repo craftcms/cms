@@ -1444,6 +1444,7 @@ class ElementsService extends BaseApplicationComponent
 		$criteria->descendantDist = 1;
 		$criteria->status = null;
 		$criteria->localeEnabled = null;
+		$criteria->locale = $element->locale;
 		$children = $criteria->find();
 
 		foreach ($children as $child)
