@@ -1,49 +1,63 @@
 <?php
-namespace craft\app\filesourcetypes;
+/**
+ * The base class for all asset source types.  Any asset source type must extend this class.
+ *
+ * @author     Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ * @copyright  Copyright (c) 2014, Pixel & Tonic, Inc.
+ * @license    http://buildwithcraft.com/license Craft License Agreement
+ * @see        http://buildwithcraft.com
+ * @package    craft.app.base
+ * @since      1.0
+ */
+
+namespace craft\app\base;
 
 use Craft;
-use craft\app\errors\AssetSourceFileExistsException;
-use craft\app\errors\AssetSourceFolderExistsException;
-use \League\Flysystem\AdapterInterface;
-use \League\Flysystem\Filesystem;
-use \League\Flysystem\FileExistsException;
-use \League\Flysystem\FileNotFoundException;
+use craft\app\errors\AssetVolumeFileExistsException;
+use craft\app\errors\AssetVolumeFolderExistsException;
+use League\Flysystem\AdapterInterface;
+use League\Flysystem\FileExistsException;
+use League\Flysystem\FileNotFoundException;
+use League\Flysystem\Filesystem;
+use League\Flysystem\RootViolationException;
 
-/**
- * Flysystem adapter-based file source type base class.
- *
- * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
- * @license   http://buildwithcraft.com/license Craft License Agreement
- * @see       http://buildwithcraft.com
- * @package   craft.app.filesourcetypes
- * @since     3.0
- */
-abstract class BaseFlysystemFileSourceType extends BaseFileSourceType
+abstract class Volume extends SavableComponent implements VolumeInterface
 {
-	// Properties
+	// Traits
+	// =========================================================================
+
+	use VolumeTrait;
+	use FieldLayoutTrait;
+
+	// Public Methods
 	// =========================================================================
 
 	/**
-	 * The Flysystem adapter, created by {@link createAdapter()}.
+	 * Returns whether this source stores files locally on the server.
 	 *
-	 * @var AdapterInterface
+	 * @return bool Whether files are stored locally.
 	 */
-	private $_adapter;
+	public static function isLocal()
+	{
+		return false;
+	}
+
+	// Public Methods
+	// =========================================================================
 
 	/**
-	 * The Flysystem filesystem.
-	 *
-	 * @var Filesystem
+	 * @inheritdoc
 	 */
-	private $_filesystem;
-
-	/**
-	 * Set to true if the Adapter expects folder names to have trailing slashes
-	 *
-	 * @var bool
-	 */
-	 protected $foldersHaveTrailingSlashes = true;
+	public function rules()
+	{
+		$rules = parent::rules();
+		$rules[] = [['id'], 'number', 'min' => -2147483648, 'max' => 2147483647, 'integerOnly' => true];
+		$rules[] = [['handle'], 'craft\\app\\validators\\Handle', 'reservedWords' => ['id', 'dateCreated', 'dateUpdated', 'uid', 'title']];
+		$rules[] = [['fieldLayoutId'], 'number', 'min' => -2147483648, 'max' => 2147483647, 'integerOnly' => true];
+		$rules[] = [['handle'], 'string', 'max' => 255];
+		$rules[] = [['id', 'type', 'settings', 'name', 'handle', 'sortOrder', 'fieldLayoutId'], 'safe', 'on' => 'search'];
+		return $rules;
+	}
 
 	// Public Methods
 	// =========================================================================
@@ -68,7 +82,7 @@ abstract class BaseFlysystemFileSourceType extends BaseFileSourceType
 		}
 		catch (FileExistsException $exception)
 		{
-			throw new AssetSourceFileExistsException($exception->getMessage());
+			throw new AssetVolumeFileExistsException($exception->getMessage());
 		}
 	}
 
@@ -177,7 +191,7 @@ abstract class BaseFlysystemFileSourceType extends BaseFileSourceType
 	{
 		if ($this->getAdapter()->has(rtrim($path, '/') . ($this->foldersHaveTrailingSlashes ? '/' : '')))
 		{
-			throw new AssetSourceFolderExistsException(Craft::t("Folder “{folder}” already exists on the source!", array('folder' => $path)));
+			throw new AssetVolumeFolderExistsException(Craft::t("Folder “{folder}” already exists on the source!", array('folder' => $path)));
 		}
 
 		return $this->getFilesystem()->createDir($path);
@@ -192,10 +206,32 @@ abstract class BaseFlysystemFileSourceType extends BaseFileSourceType
 		{
 			return $this->getFilesystem()->deleteDir($path);
 		}
-		catch (\League\Flysystem\RootViolationException $exception)
+		catch (RootViolationException $exception)
 		{
 			return false;
 		}
+	}
+
+	/**
+	 * Save a file from the source's uriPath to a local target path.
+	 *
+	 * @param $uriPath
+	 * @param $targetPath
+	 *
+	 * @return int $bytes amount of bytes copied
+	 */
+	public function saveFileLocally($uriPath, $targetPath)
+	{
+		$stream = $this->getFilesystem()->readStream($uriPath);
+		$outputStream = fopen($targetPath, 'wb');
+
+		rewind($stream);
+		$bytes = stream_copy_to_stream($stream, $outputStream);
+
+		fclose($stream);
+		fclose($outputStream);
+
+		return $bytes;
 	}
 
 	// Protected Methods
@@ -232,7 +268,7 @@ abstract class BaseFlysystemFileSourceType extends BaseFileSourceType
 	{
 		if (!isset($this->_filesystem))
 		{
-			$this->_filesystem = new \League\Flysystem\Filesystem($this->getAdapter());
+			$this->_filesystem = new Filesystem($this->getAdapter());
 		}
 
 		return $this->_filesystem;

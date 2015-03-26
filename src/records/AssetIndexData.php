@@ -39,7 +39,7 @@ class AssetIndexData extends ActiveRecord
 	 */
 	public function getSource()
 	{
-		return $this->hasOne(AssetSource::className(), ['id' => 'sourceId']);
+		return $this->hasOne(Volume::className(), ['id' => 'volumeId']);
 	}
 
 	/**
@@ -50,7 +50,7 @@ class AssetIndexData extends ActiveRecord
 	public function defineIndexes()
 	{
 		return [
-			['columns' => ['sessionId', 'sourceId', 'offset'], 'unique' => true],
+			['columns' => ['sessionId', 'volumeId', 'offset'], 'unique' => true],
 		];
 	}
 
@@ -66,7 +66,7 @@ class AssetIndexData extends ActiveRecord
 	{
 		return [
 			'sessionId' => [ColumnType::Char, 'length' => 36, 'required' => true, 'default' => ''],
-			'sourceId' 	=> [AttributeType::Number, 'required' => true],
+			'volumeId' 	=> [AttributeType::Number, 'required' => true],
 			'offset'    => [AttributeType::Number, 'required' => true],
 			'uri'       => [ColumnType::Varchar, 'maxLength' => 255],
 			'size'      => [AttributeType::Number],

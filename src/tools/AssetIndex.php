@@ -43,7 +43,7 @@ class AssetIndex extends Tool
 	 */
 	public static function optionsHtml()
 	{
-		$sources = Craft::$app->assetSources->getAllSources();
+		$sources = Craft::$app->volumes->getAllVolumes();
 		$sourceOptions = [];
 
 		foreach ($sources as $source)
@@ -81,7 +81,7 @@ class AssetIndex extends Tool
 			}
 			else
 			{
-				$sourceIds = Craft::$app->assetSources->getViewableSourceIds();
+				$sourceIds = Craft::$app->volumes->getViewableSourceIds();
 			}
 
 			$missingFolders = [];
@@ -92,7 +92,7 @@ class AssetIndex extends Tool
 			foreach ($sourceIds as $sourceId)
 			{
 				// Get the indexing list
-				$indexList = Craft::$app->assetIndexing->getIndexListForSource($sessionId, $sourceId);
+				$indexList = Craft::$app->assetIndexing->prepareIndexList($sessionId, $sourceId);
 
 				if (!empty($indexList['error']))
 				{
@@ -141,7 +141,7 @@ class AssetIndex extends Tool
 		else if (!empty($params['process']))
 		{
 			// Index the file
-			Craft::$app->assetIndexing->processIndexForSource($params['sessionId'], $params['offset'], $params['sourceId']);
+			Craft::$app->assetIndexing->processIndexForVolume($params['sessionId'], $params['offset'], $params['sourceId']);
 
 			// More files to index.
 			if (++$params['offset'] < $params['total'])

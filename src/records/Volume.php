@@ -11,12 +11,12 @@ use craft\app\db\ActiveRecord;
 use craft\app\enums\AttributeType;
 
 /**
- * Class AssetSource record.
+ * Class Volume record.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */
-class AssetSource extends ActiveRecord
+class Volume extends ActiveRecord
 {
 	// Public Methods
 	// =========================================================================
@@ -28,7 +28,7 @@ class AssetSource extends ActiveRecord
 	 */
 	public static function tableName()
 	{
-		return '{{%assetsources}}';
+		return '{{%volumes}}';
 	}
 
 	/**

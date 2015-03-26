@@ -46,9 +46,9 @@ class AssetFolder extends ActiveRecord
 	 *
 	 * @return \yii\db\ActiveQueryInterface The relational query object.
 	 */
-	public function getSource()
+	public function getVolume()
 	{
-		return $this->hasOne(AssetSource::className(), ['id' => 'sourceId']);
+		return $this->hasOne(Volume::className(), ['id' => 'volumeId']);
 	}
 
 	/**
@@ -59,7 +59,7 @@ class AssetFolder extends ActiveRecord
 	public function defineIndexes()
 	{
 		return [
-			['columns' => ['name', 'parentId', 'sourceId'], 'unique' => true],
+			['columns' => ['name', 'parentId', 'volumeId'], 'unique' => true],
 		];
 	}
 

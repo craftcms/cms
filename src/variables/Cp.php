@@ -48,7 +48,7 @@ class Cp
 			$nav['categories'] = ['name' => \Craft::t('app', 'Categories')];
 		}
 
-		if (\Craft::$app->assetSources->getTotalViewableSources())
+		if (\Craft::$app->volumes->getTotalViewablevolumes())
 		{
 			$nav['assets'] = ['name' => \Craft::t('app', 'Assets')];
 		}

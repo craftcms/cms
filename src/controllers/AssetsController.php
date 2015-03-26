@@ -19,7 +19,7 @@ use craft\app\errors\UploadFailedException;
 use craft\app\fields\Assets as AssetsField;
 use craft\app\helpers\AssetsHelper;
 use craft\app\helpers\IOHelper;
-use craft\app\models\Asset;
+use craft\app\elements\Asset;
 use craft\app\models\AssetFolder;
 use craft\app\web\Controller;
 use craft\app\web\UploadedFile;
@@ -100,7 +100,7 @@ class AssetsController extends Controller
 
 				if (empty($folderId))
 				{
-					$field = Craft::$app->fields->populateFieldType(Craft::$app->fields->getFieldById($fieldId));
+					$field = Craft::$app->fields->getFieldById($fieldId);
 
 					if (!($field instanceof AssetsField))
 					{
@@ -108,7 +108,7 @@ class AssetsController extends Controller
 					}
 
 					$element = $elementId ? Craft::$app->elements->getElementById($elementId) : null;
-					$folderId = $field->resolveSourcePath($element);
+					$folderId = $field->resolveDynamicPath($element);
 				}
 
 				if (empty($folderId))
@@ -139,7 +139,7 @@ class AssetsController extends Controller
 					$asset->newFilePath = $pathOnServer;
 					$asset->filename    = $file->name;
 					$asset->folderId    = $folder->id;
-					$asset->sourceId    = $folder->sourceId;
+					$asset->volumeId    = $folder->volumeId;
 
 					Craft::$app->assets->saveAsset($asset);
 
@@ -202,7 +202,7 @@ class AssetsController extends Controller
 			$folderModel = new AssetFolder();
 			$folderModel->name     = $folderName;
 			$folderModel->parentId = $parentId;
-			$folderModel->sourceId = $parentFolder->sourceId;
+			$folderModel->volumeId = $parentFolder->volumeId;
 			$folderModel->path     = $parentFolder->path . $folderName .'/';
 
 			Craft::$app->assets->createFolder($folderModel);
@@ -261,8 +261,8 @@ class AssetsController extends Controller
 
 		try
 		{
-			Craft::$app->assets->checkPermissionByFolderIds($folderId, 'removeFromAssetSource');
-			Craft::$app->assets->checkPermissionByFolderIds($folderId, 'createSubfoldersInAssetSource');
+			Craft::$app->assets->checkPermissionByFolderIds($folderId, 'removeFromAssetVolume');
+			Craft::$app->assets->checkPermissionByFolderIds($folderId, 'createSubfoldersInAssetVolume');
 		}
 		catch (Exception $e)
 		{
@@ -334,9 +334,9 @@ class AssetsController extends Controller
 
 		try
 		{
-			Craft::$app->assets->checkPermissionByFolderIds($folderId, 'removeFromAssetSource');
-			Craft::$app->assets->checkPermissionByFolderIds($parentId, 'uploadToAssetSource');
-			Craft::$app->assets->checkPermissionByFolderIds($parentId, 'createSubfoldersInAssetSource');
+			Craft::$app->assets->checkPermissionByFolderIds($folderId, 'removeFromAssetVolume');
+			Craft::$app->assets->checkPermissionByFolderIds($parentId, 'uploadToAssetVolume');
+			Craft::$app->assets->checkPermissionByFolderIds($parentId, 'createSubfoldersInAssetVolume');
 		}
 		catch (Exception $e)
 		{
@@ -422,10 +422,10 @@ class AssetsController extends Controller
 	{
 		$folder = Craft::$app->assets->getFolderById($folderId);
 
-		// if folder exists and the source ID is null, it's a temp source and we always allow uploads there.
-		if (!(is_object($folder) && is_null($folder->sourceId)))
+		// if folder exists and the volume ID is null, it's a temp volume and we always allow uploads there.
+		if (!(is_object($folder) && is_null($folder->volumeId)))
 		{
-			Craft::$app->assets->checkPermissionByFolderIds($folderId, 'uploadToAssetSource');
+			Craft::$app->assets->checkPermissionByFolderIds($folderId, 'uploadToAssetVolume');
 		}
 	}
 }

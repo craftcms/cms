@@ -1,18 +1,18 @@
 {% extends "settings/assets/_layout" %}
-{% set selectedTab = 'sources' %}
+{% set selectedTab = 'volumes' %}
 
 {% set docsUrl = 'http://buildwithcraft.com/docs/assets' %}
 
 
 {% set content %}
-	<p id="nosources"{% if sources|length %} class="hidden"{% endif %}>
-		{{ "No sources exist yet."|t }}
+	<p id="novolumes"{% if volumes|length %} class="hidden"{% endif %}>
+		{{ "No volumes exist yet."|t }}
 	</p>
 
-	{% if sources|length %}
-		{% set sortable  = (sources|length > 1) %}
+	{% if volumes|length %}
+		{% set sortable  = (volumes|length > 1) %}
 
-		<table id="sources" class="data fullwidth collapsible">
+		<table id="volumes" class="data fullwidth collapsible">
 			<thead>
 				<th scope="col">{{ "Name"|t }}</th>
 				{% if CraftEdition == CraftPro %}<th scope="col">{{ "Type"|t }}</th>{% endif %}
@@ -20,10 +20,10 @@
 				<td class="thin"></td>
 			</thead>
 			<tbody>
-				{% for source in sources %}
-					<tr data-id="{{ source.id }}" data-name="{{ source.name|t }}">
-						<th scope="row" data-title="{{ 'Name'|t }}"><a href="{{ url('settings/assets/sources/' ~ source.id) }}">{{ source.name|t }}</a></th>
-						{% if CraftEdition == CraftPro %}<td data-title="{{ 'Type'|t }}">{{ source.getSourceType().getName() }}</td>{% endif %}
+				{% for volume in volumes %}
+					<tr data-id="{{ volume.id }}" data-name="{{ volume.name|t }}">
+						<th scope="row" data-title="{{ 'Name'|t }}"><a href="{{ url('settings/assets/volumes/' ~ volume.id) }}">{{ volume.name|t }}</a></th>
+						{% if CraftEdition == CraftPro %}<td data-title="{{ 'Type'|t }}">{{ volume.getVolumeType().getName() }}</td>{% endif %}
 						{% if sortable %}<td class="thin"><a class="move icon" title="{{ 'Reorder'|t }}" role="button"></a></td>{% endif %}
 						<td class="thin"><a class="delete icon" title="{{ 'Delete'|t }}" role="button"></a></td>
 					</tr>
@@ -33,18 +33,18 @@
 	{% endif %}
 
 	<div class="buttons">
-		<a class="btn submit add icon" href="{{ url('settings/assets/sources/new') }}">{{ "New Source"|t }}</a>
+		<a class="btn submit add icon" href="{{ url('settings/assets/volumes/new') }}">{{ "New Volume"|t }}</a>
 	</div>
 {% endset %}
 
 
 {% set js %}
 	var adminTable = new Craft.AdminTable({
-		tableSelector: '#sources',
-		noItemsSelector: '#nosources',
+		tableSelector: '#volumes',
+		noItemsSelector: '#novolumes',
 		sortable: true,
-		reorderAction: 'assetSources/reorderSources',
-		deleteAction: 'assetSources/deleteSource',
+		reorderAction: 'assetVolumes/reorderVolumes',
+		deleteAction: 'assetVolumes/deleteVolume',
 		onDeleteItem: function()
 		{
 			// Hide the Assets tab if that was the last one

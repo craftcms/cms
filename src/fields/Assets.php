@@ -133,7 +133,7 @@ class Assets extends BaseRelationField
 			}
 		}
 
-		foreach (Craft::$app->assetSources->getAllSources() as $source)
+		foreach (Craft::$app->volumes->getAllVolumes() as $source)
 		{
 			$sourceOptions[] = ['label' => $source->name, 'value' => $source->id];
 		}
@@ -279,7 +279,7 @@ class Assets extends BaseRelationField
 	 * @param ElementInterface|Element|null $element
 	 * @return mixed
 	 */
-	public function resolveSourcePath($element)
+	public function resolveDynamicPath($element)
 	{
 		return $this->_determineUploadFolderId($element);
 	}

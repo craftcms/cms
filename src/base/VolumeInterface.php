@@ -1,25 +1,45 @@
 <?php
-namespace craft\app\filesourcetypes;
+namespace craft\app\base;
 
-use Craft;
-use craft\app\components\SavableComponentTypeInterface;
-use craft\app\errors\AssetSourceFileExistsException;
-use craft\app\errors\AssetSourceFolderExistsException;
 
 /**
- * Interface IFileSourceType
+ * Interface IAssetSourceType
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement
  * @see       http://buildwithcraft.com
- * @package   craft.app.filesourcetypes
+ * @package   craft.app.base
  * @since     3.0
  */
-interface IFileSourceType extends SavableComponentTypeInterface
+interface VolumeInterface
 {
-	// Public Methods
+	// Static
 	// =========================================================================
+
+	/**
+	 * Returns whether this source stores files locally on the server.
+	 *
+	 * @return bool Whether files are stored locally.
+	 */
+	public static function isLocal();
+
+	// Public Methods
+    // =========================================================================
+
+    /**
+     * Returns the URL to the source, if it’s accessible via HTTP traffic.
+     *
+     * @return string|null The root URL, or `false` if there isn’t one.
+     */
+    public function getRootUrl();
+
+	/**
+	 * Returns the root path for the source.
+	 *
+	 * @return string|null The root URL, or `false` if there isn’t one.
+	 */
+	public function getRootPath();
 
 	/**
 	 * List files.

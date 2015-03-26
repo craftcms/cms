@@ -18,8 +18,8 @@ use craft\app\models\AssetTransformIndex;
 use craft\app\models\AssetTransform as AssetTransformModel;
 use craft\app\records\AssetTransform as AssetTransformRecord;
 use craft\app\errors\AssetTransformException;
-use craft\app\errors\AssetSourceFileNotFoundException;
-use craft\app\errors\AssetSourceException;
+use craft\app\errors\AssetVolumeFileNotFoundException;
+use craft\app\errors\AssetVolumeException;
 use craft\app\errors\AssetLogicException;
 use craft\app\errors\ModelValidationException;
 use Exception;
@@ -238,8 +238,8 @@ class AssetTransforms extends Component
 		$query = (new Query())
 			->select('ti.*')
 			->from('{{%assettransformindex}} ti')
-			->where('ti.sourceId = :sourceId AND ti.fileId = :fileId AND ti.location = :location',
-				[':sourceId' => $file->sourceId,':fileId' => $file->id, ':location' => $transformLocation]);
+			->where('ti.volumeId = :volumeId AND ti.fileId = :fileId AND ti.location = :location',
+				[':volumeId' => $file->volumeId,':fileId' => $file->id, ':location' => $transformLocation]);
 
 		if (is_null($transform->format))
 		{
@@ -280,7 +280,7 @@ class AssetTransforms extends Component
 		$data = [
 			'fileId' => $file->id,
 			'format' => $transform->format,
-			'sourceId' => $file->sourceId,
+			'volumeId' => $file->volumeId,
 			'dateIndexed' => $time->format(DateTime::MYSQL_DATETIME, DateTime::UTC),
 			'location' => $transformLocation,
 			'fileExists' => 0,
@@ -382,7 +382,7 @@ class AssetTransforms extends Component
 		$index->transform = $transform;
 
 		$file = Craft::$app->assets->getFileById($index->fileId);
-		$source = Craft::$app->assetSources->populateSourceType($file->getSource());
+		$volume = $file->getVolume();
 		$index->detectedFormat = !empty($index->format) ? $index->format : $this->detectAutoTransformFormat($file);
 
 		$transformFilename = IOHelper::getFilename($file->filename, false).'.'.$index->detectedFormat;
@@ -417,7 +417,7 @@ class AssetTransforms extends Component
 				// and needs to go.
 				if ($transform->isNamedTransform() && $result['dateIndexed'] < $transform->dimensionChangeTime)
 				{
-					$source->deleteTransform($file, new AssetTransformIndex($result));
+					$volume->deleteTransform($file, new AssetTransformIndex($result));
 					$this->deleteTransform($result['id']);
 				}
 				// Any other should do.
@@ -432,7 +432,7 @@ class AssetTransforms extends Component
 		if ($matchFound)
 		{
 			/** @var array $matchFound */
-			$source->copyTransform($file, $file->getFolder(), new AssetTransformIndex($matchFound), $index);
+			$volume->copyTransform($file, $file->getFolder(), new AssetTransformIndex($matchFound), $index);
 		}
 		else
 		{
@@ -595,9 +595,9 @@ class AssetTransforms extends Component
 	public function getUrlForTransformByTransformIndex(AssetTransformIndex $transformIndexModel)
 	{
 		$file = Craft::$app->assets->getFileById($transformIndexModel->fileId);
-		$sourceType = Craft::$app->assetSources->getSourceTypeById($file->sourceId);
-		$baseUrl = $sourceType->getBaseUrl();
-		$appendix = AssetsHelper::getUrlAppendix($sourceType, $file);
+		$volume = $file->getVolume();
+		$baseUrl = $volume->getRootUrl();
+		$appendix = AssetsHelper::getUrlAppendix($volume, $file);
 
 		return $baseUrl . $file->getFolder()->path . $this->getTransformSubpath($file, $transformIndexModel) . $appendix;
 	}
@@ -650,7 +650,7 @@ class AssetTransforms extends Component
 				->scaleAndCrop($size, $size)
 				->saveAs($thumbPath);
 
-			if (Craft::$app->assetSources->populateSourceType($fileModel->getSource())->isRemote())
+			if (!$fileModel->getVolume()->isLocal())
 			{
 				$this->queueSourceForDeletingIfNecessary($imageSource);
 			}
@@ -664,22 +664,22 @@ class AssetTransforms extends Component
 	 *
 	 * @param Asset $file
 	 *
-	 * @throws AssetSourceException
+	 * @throws AssetVolumeException
 	 * @return mixed
 	 */
 	public function getLocalImageSource(Asset $file)
 	{
-		$sourceType = Craft::$app->assetSources->getSourceTypeById($file->sourceId);
+		$volume = $file->getVolume();
 
 		$imageSourcePath = $file->getImageTransformSourcePath();
 
-		if (!$sourceType->isLocal())
+		if (!$volume->isLocal())
 		{
 			if (!IOHelper::fileExists($imageSourcePath) || IOHelper::getFileSize($imageSourcePath) == 0)
 			{
-				if ($sourceType->isLocal())
+				if ($volume->isLocal())
 				{
-					throw new AssetSourceFileNotFoundException(Craft::t('Image “{file}” cannot be found.', array('file' => $file->filename)));
+					throw new AssetVolumeFileNotFoundException(Craft::t('Image “{file}” cannot be found.', array('file' => $file->filename)));
 				}
 
 				// Delete it just in case it's a 0-byter
@@ -687,12 +687,12 @@ class AssetTransforms extends Component
 
 				$localCopy = IOHelper::getTempFilePath($file->getExtension());
 
-				$sourceType->saveFile($file->getUri(), $localCopy);
+				$volume->saveFileLocally($file->getUri(), $localCopy);
 
 				if (!IOHelper::fileExists($localCopy) || IOHelper::getFileSize($localCopy) == 0)
 				{
 					IOHelper::deleteFile($localCopy, true);
-					throw new AssetSourceException(Craft::t('Tried to download the source file for image “{file}”, but it was 0 bytes long.', array('file' => $file->filename)));
+					throw new AssetVolumeException(Craft::t('Tried to download the source file for image “{file}”, but it was 0 bytes long.', array('file' => $file->filename)));
 				}
 
 				$this->storeLocalSource($localCopy, $imageSourcePath);
@@ -788,8 +788,10 @@ class AssetTransforms extends Component
 				return 'jpg';
 			}
 
-			$source = Craft::$app->assetSources->populateSourceType($file->getSource());
-			$localCopy = $source->getLocalCopy($file);
+			$volume = $file->getVolume();
+
+			$path = IOHelper::getTempFilePath($file->getExtension());
+			$localCopy = $volume->saveFileLocally($file->getUri(), $path);
 
 			$image = Craft::$app->images->loadImage($localCopy);
 
@@ -802,7 +804,7 @@ class AssetTransforms extends Component
 				$format = 'jpg';
 			}
 
-			if (!$source->isLocal())
+			if (!$volume->isLocal())
 			{
 				// Store for potential later use and queue for deletion if needed.
 				$file->setTransformSource($localCopy);
@@ -918,11 +920,11 @@ class AssetTransforms extends Component
 	{
 		$indexModels = $this->getAllCreatedTransformsForFile($file);
 
-		$source = Craft::$app->assetSources->populateSourceType($file->getSource());
+		$volume = $file->getVolume();
 
 		foreach ($indexModels as $index)
 		{
-			$source->deleteTransform($file, $index);
+			$volume->deleteTransform($file, $index);
 		}
 	}
 
@@ -1046,7 +1048,7 @@ class AssetTransforms extends Component
 			$index->detectedFormat = !empty($index->format) ? $index->format : $this->detectAutoTransformFormat($file);
 		}
 
-		$sourceType = Craft::$app->assetSources->populateSourceType($file->getSource());
+		$volume = $file->getVolume();
 		$imageSource = $file->getTransformSource();
 		$quality = $transform->quality ? $transform->quality : Craft::$app->config->get('defaultImageQuality');
 
@@ -1078,10 +1080,10 @@ class AssetTransforms extends Component
 		$image->saveAs($createdTransform);
 
 		clearstatcache(true, $createdTransform);
-		$sourceType->putImageTransform($file, $index, $createdTransform);
+		$volume->putImageTransform($file, $index, $createdTransform);
 		IOHelper::deleteFile($createdTransform);
 
-		if (!Craft::$app->assetSources->populateSourceType($file->getSource())->isLocal())
+		if ($file->getVolume()->isRemote())
 		{
 			$this->queueSourceForDeletingIfNecessary($imageSource);
 		}

@@ -1,6 +1,6 @@
 (function($) {
 
-	$urlField = $('.source-url');
+	$urlField = $('.volume-url');
 
 	var $s3AccessKeyIdInput = $('.s3-key-id'),
 		$s3SecretAccessKeyInput = $('.s3-secret-key');
@@ -25,11 +25,11 @@
 				keyId:  $s3AccessKeyIdInput.val(),
 				secret: $s3SecretAccessKeyInput.val()
 			},
-			sourceType: 'AwsS3',
+			volumeType: 'AwsS3',
 			dataType:   'bucketList'
 		};
 
-		Craft.postActionRequest('assetSources/loadSourceTypeData', data, function(response, textStatus)
+		Craft.postActionRequest('assetVolumes/loadVolumeTypeData', data, function(response, textStatus)
 		{
 			$s3RefreshBucketsBtn.removeClass('disabled');
 			$s3RefreshBucketsSpinner.addClass('hidden');
@@ -114,12 +114,12 @@
 				apiKey:   $rackspaceApiKeyInput.val(),
 				region: $rackspaceRegionSelect.val()
 			},
-			sourceType: 'Rackspace',
+			volumeType: 'Rackspace',
 			dataType:   'containerList'
 
 		};
 
-		Craft.postActionRequest('assetSources/loadSourceTypeData', data, function(response, textStatus)
+		Craft.postActionRequest('assetVolumes/loadVolumeTypeData', data, function(response, textStatus)
 		{
 			$rackspaceRefreshContainersBtn.removeClass('disabled');
 			$rackspaceRefreshContainersSpinner.addClass('hidden');
@@ -201,11 +201,11 @@
 				keyId:  $googleAccessKeyIdInput.val(),
 				secret: $googleSecretAccessKeyInput.val()
 			},
-			sourceType: 'GoogleCloud',
+			volumeType: 'GoogleCloud',
 			dataType:   'bucketList'
 		};
 
-		Craft.postActionRequest('assetSources/loadSourceTypeData', data, function(response, textStatus)
+		Craft.postActionRequest('assetVolumes/loadVolumeTypeData', data, function(response, textStatus)
 		{
 			$googleRefreshBucketsBtn.removeClass('disabled');
 			$googleRefreshBucketsSpinner.addClass('hidden');

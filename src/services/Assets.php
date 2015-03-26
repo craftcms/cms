@@ -16,9 +16,9 @@ use craft\app\errors\ActionCancelledException;
 use craft\app\errors\AssetConflictException;
 use craft\app\errors\AssetLogicException;
 use craft\app\errors\AssetMissingException;
-use craft\app\errors\AssetSourceException;
-use craft\app\errors\AssetSourceFileExistsException;
-use craft\app\errors\AssetSourceFolderExistsException;
+use craft\app\errors\AssetVolumeException;
+use craft\app\errors\AssetVolumeFileExistsException;
+use craft\app\errors\AssetVolumeFolderExistsException;
 use craft\app\errors\ElementSaveException;
 use craft\app\errors\Exception;
 use craft\app\errors\FileException;
@@ -30,6 +30,7 @@ use craft\app\helpers\ImageHelper;
 use craft\app\helpers\IOHelper;
 use craft\app\helpers\UrlHelper;
 use craft\app\models\AssetFolder as AssetFolderModel;
+use craft\app\models\AssetFolder;
 use craft\app\models\FolderCriteria;
 use craft\app\records\Asset as AssetRecord;
 use craft\app\records\AssetFolder as AssetFolderRecord;
@@ -91,17 +92,17 @@ class Assets extends Component
 	// =========================================================================
 
 	/**
-	 * Returns all top-level files in a source.
+	 * Returns all top-level files in a volume.
 	 *
-	 * @param int         $sourceId
+	 * @param int         $volumeId
 	 * @param string|null $indexBy
 	 *
 	 * @return array
 	 */
-	public function getFilesBySourceId($sourceId, $indexBy = null)
+	public function getFilesByVolumeId($volumeId, $indexBy = null)
 	{
 		return Asset::find()
-			->sourceId($sourceId)
+			->volumeId($volumeId)
 			->indexBy($indexBy)
 			->all();
 	}
@@ -178,7 +179,7 @@ class Assets extends Component
 	 * @throws FileException                  If there was a problem with the actual file.
 	 * @throws AssetConflictException         If a file with such name already exists.
 	 * @throws AssetLogicException            If something violates Asset's logic (e.g. Asset outside of a folder).
-	 * @throws AssetSourceFileExistsException If the file actually exists on the Source, but on in the index.
+	 * @throws AssetVolumeFileExistsException If the file actually exists on the volume, but on in the index.
 	 *
 	 * @return void
 	 */
@@ -205,11 +206,11 @@ class Assets extends Component
 			throw new AssetConflictException(Craft::t('app', 'A file with the name “{filename}” already exists in the folder.', array('filename' => $asset->filename)));
 		}
 
-		$sourceType = Craft::$app->assetSources->populateSourceType($asset->getSource());
+		$volume = $asset->getVolume();
 
-		if (!$sourceType)
+		if (!$volume)
 		{
-			throw new AssetLogicException(Craft::t('app', 'Source does not exist with the id of {id}.', array('id' => $asset->sourceId)));
+			throw new AssetLogicException(Craft::t('app', 'Volume does not exist with the id of {id}.', array('id' => $asset->volumeId)));
 		}
 
 		if (!empty($asset->newFilePath))
@@ -227,12 +228,12 @@ class Assets extends Component
 
 			$this->trigger(static::EVENT_BEFORE_UPLOAD_ASSET, $event);
 
-			// Explicitly re-throw AssetSourceFileExistsException
+			// Explicitly re-throw AssetVolumeFileExistsException
 			try
 			{
-				$sourceType->createFile($uriPath, $stream);
+				$volume->createFile($uriPath, $stream);
 			}
-			catch (AssetSourceFileExistsException $exception)
+			catch (AssetVolumeFileExistsException $exception)
 			{
 				throw $exception;
 			}
@@ -256,7 +257,7 @@ class Assets extends Component
 		$this->_storeAssetRecord($asset);
 
 		// Now that we have an ID, store the source
-		if (!$sourceType->isLocal() && $asset->kind == 'image' && !empty($asset->newFilePath))
+		if (!$volume->isLocal() && $asset->kind == 'image' && !empty($asset->newFilePath))
 		{
 			// Store the local source for now and set it up for deleting, if needed
 			Craft::$app->assetTransforms->storeLocalSource($asset->newFilePath, $asset->getImageTransformSourcePath());
@@ -285,8 +286,7 @@ class Assets extends Component
 
 			if ($file)
 			{
-				$source = Craft::$app->assetSources->getSourceTypeById($file->sourceId);
-
+				$volume = $file->getVolume();
 
 				// Fire an 'onBeforeDeleteAsset' event
 				$event = new AssetEvent($this, array(
@@ -296,7 +296,7 @@ class Assets extends Component
 
 				if ($deleteFile)
 				{
-					$source->deleteFile($file->getUri());
+					$volume->deleteFile($file->getUri());
 				}
 
 				Craft::$app->elements->deleteElementById($fileId);
@@ -328,14 +328,14 @@ class Assets extends Component
 			throw new AssetConflictException(Craft::t('app', 'A file with the name “{filename}” already exists in the folder.', array('filename' => $newFilename)));
 		}
 
-		$sourceType = Craft::$app->assetSources->populateSourceType($asset->getSource());
+		$volume = $asset->getVolume();
 
-		if (!$sourceType)
+		if (!$volume)
 		{
-			throw new AssetLogicException(Craft::t('app', 'Source does not exist with the id of {id}.', array('id' => $asset->sourceId)));
+			throw new AssetLogicException(Craft::t('app', 'Volume does not exist with the id of {id}.', array('id' => $asset->volumeId)));
 		}
 
-		if ($sourceType->renameFile($asset->getUri(), $asset->getUri($newFilename)))
+		if ($volume->renameFile($asset->getUri(), $asset->getUri($newFilename)))
 		{
 			$asset->filename = $newFilename;
 			$this->_storeAssetRecord($asset);
@@ -349,7 +349,7 @@ class Assets extends Component
 	 *
 	 * @throws AssetConflictException           If a folder already exists with such a name.
 	 * @throws AssetLogicException              If something violates Asset's logic (e.g. Asset outside of a folder).
-	 * @throws AssetSourceFolderExistsException If the file actually exists on the Source, but on in the index.
+	 * @throws AssetVolumeFolderExistsException If the file actually exists on the volume, but on in the index.
 	 * @return void
 	 */
 	public function createFolder(AssetFolderModel $folder)
@@ -368,14 +368,14 @@ class Assets extends Component
 			throw new AssetConflictException(Craft::t('app', 'A folder with the name “{folderName}” already exists in the folder.', array('folderName' => $folder->name)));
 		}
 
-		$source = Craft::$app->assetSources->populateSourceType($parent->getSource());
+		$volume = $parent->getVolume();
 
-		// Explicitly re-throw AssetSourceFolderExistsException
+		// Explicitly re-throw AssetVolumeFolderExistsException
 		try
 		{
-			$source->createDir(rtrim($folder->path, '/'));
+			$volume->createDir(rtrim($folder->path, '/'));
 		}
-		catch (AssetSourceFolderExistsException $exception)
+		catch (AssetVolumeFolderExistsException $exception)
 		{
 			throw $exception;
 		}
@@ -388,7 +388,7 @@ class Assets extends Component
 	 * @param array|int $folderIds
  	 * @param bool      $deleteFolder Should the file be deleted along the record. Defaults to true.
 	 *
-	 * @throws AssetSourceException If deleting a single folder and it cannot be deleted.
+	 * @throws AssetVolumeException If deleting a single folder and it cannot be deleted.
 	 * @return null
 	 */
 	public function deleteFoldersByIds($folderIds, $deleteFolder = true)
@@ -406,12 +406,12 @@ class Assets extends Component
 			{
 				if ($deleteFolder)
 				{
-					$source = Craft::$app->assetSources->getSourceTypeById($folder->sourceId);
+					$volume = $folder->getVolume();
 
 					// If this is a batch operation, don't stop the show
-					if (!$source->deleteDir($folder->path) && count($folderIds) == 1)
+					if (!$volume->deleteDir($folder->path) && count($folderIds) == 1)
 					{
-						throw new AssetSourceException(Craft::t('app', 'Folder “{folder}” cannot be deleted!', array('folder' => $folder->path)));
+						throw new AssetVolumeException(Craft::t('app', 'Folder “{folder}” cannot be deleted!', array('folder' => $folder->path)));
 					}
 				}
 
@@ -421,22 +421,25 @@ class Assets extends Component
 	}
 
 	/**
-	 * Get the folder tree for Assets by source ids
+	 * Get the folder tree for Assets by volume ids
 	 *
-	 * @param $allowedSourceIds
+	 * @param $allowedVolumeIds
 	 *
 	 * @return array
 	 */
-	public function getFolderTreeBySourceIds($allowedSourceIds)
+	public function getFolderTreeByVolumeIds($allowedVolumeIds)
 	{
-		$folders = $this->findFolders(array('sourceId' => $allowedSourceIds, 'order' => 'path'));
+		$folders = $this->findFolders(array('volumeId' => $allowedVolumeIds, 'order' => 'path'));
 		$tree = $this->_getFolderTreeByFolders($folders);
 
 		$sort = array();
 
 		foreach ($tree as $topFolder)
 		{
-			$sort[] = Craft::$app->assetSources->getSourceById($topFolder->sourceId)->sortOrder;
+			/**
+			 * @var AssetFolder $topFolder;
+			 */
+			$sort[] = $topFolder->getVolume()->sortOrder;
 		}
 
 		array_multisort($sort, $tree);
@@ -554,7 +557,7 @@ class Assets extends Component
 			->select('f.*')
 			->from('{{%assetfolders}} AS f')
 			->where(['like', 'path', $parentFolder->path.'%', false])
-			->andWhere('sourceId = :sourceId', array(':sourceId' => $parentFolder->sourceId));
+			->andWhere('volumeId = :volumeId', array(':volumeId' => $parentFolder->volumeId));
 
 		$results = $query->all();
 		$descendantFolders = array();
@@ -634,9 +637,9 @@ class Assets extends Component
 		//TODO
 		if (!$transform || !ImageHelper::isImageManipulatable(IOHelper::getExtension($file->filename)))
 		{
-			$sourceType = Craft::$app->assetSources->getSourceTypeById($file->sourceId);
+			$volume = $file->getVolume();
 
-			return AssetsHelper::generateUrl($sourceType, $file);
+			return AssetsHelper::generateUrl($volume, $file);
 		}
 
 		// Get the transform index model
@@ -701,7 +704,7 @@ class Assets extends Component
 	}
 
 	/**
-	 * Check for a permission on a source by a folder id or an array of folder ids.
+	 * Check for a permission on a volumeId by a folder id or an array of folder ids.
 	 *
 	 * @param $folderIds
 	 * @param $permission
@@ -722,10 +725,10 @@ class Assets extends Component
 
 			if (!$folderModel)
 			{
-				throw new Exception(Craft::t('app', 'That folder does not seem to exist anymore. Re-index the Assets source and try again.'));
+				throw new Exception(Craft::t('app', 'That folder does not seem to exist anymore. Re-index the Assets volume and try again.'));
 			}
 
-			if (!Craft::$app->user->checkPermission($permission.':'.$folderModel->sourceId))
+			if (!Craft::$app->user->checkPermission($permission.':'.$folderModel->volumeId))
 			{
 				throw new Exception(Craft::t('app', 'You don’t have the required permissions for this operation.'));
 			}
@@ -733,7 +736,7 @@ class Assets extends Component
 	}
 
 	/**
-	 * Check for a permission on a source by a file id or an array of file ids.
+	 * Check for a permission on a volume by a file id or an array of file ids.
 	 *
 	 * @param $fileIds
 	 * @param $permission
@@ -754,10 +757,10 @@ class Assets extends Component
 
 			if (!$file)
 			{
-				throw new Exception(Craft::t('app', 'That file does not seem to exist anymore. Re-index the Assets source and try again.'));
+				throw new Exception(Craft::t('app', 'That file does not seem to exist anymore. Re-index the Assets volume and try again.'));
 			}
 
-			if (!Craft::$app->user->checkPermission($permission.':'.$file->sourceId))
+			if (!Craft::$app->user->checkPermission($permission.':'.$file->volumeId))
 			{
 				throw new Exception(Craft::t('app', 'You don’t have the required permissions for this operation.'));
 			}
@@ -771,11 +774,11 @@ class Assets extends Component
 	 *
 	 * @return int
 	 */
-	public function ensureFolderByFullPathAndSourceId($fullPath, $sourceId)
+	public function ensureFolderByFullPathAndVolumeId($fullPath, $volumeId)
 	{
 		$parameters = new FolderCriteria(array(
 			'path' => $fullPath,
-			'sourceId' => $sourceId
+			'volumeId' => $volumeId
 		));
 
 		$folderModel = $this->findFolder($parameters);
@@ -810,7 +813,7 @@ class Assets extends Component
 			}
 
 			$folderModel = new AssetFolderModel();
-			$folderModel->sourceId = $sourceId;
+			$folderModel->volumeId = $volumeId;
 			$folderModel->parentId = $parentId;
 			$folderModel->name = $folderName;
 			$folderModel->path = $fullPath;
@@ -840,7 +843,7 @@ class Assets extends Component
 		}
 
 		$record->parentId = $folder->parentId;
-		$record->sourceId = $folder->sourceId;
+		$record->volumeId = $folder->volumeId;
 		$record->name = $folder->name;
 		$record->path = $folder->path;
 		$record->save();
@@ -859,7 +862,7 @@ class Assets extends Component
 	private function _createFolderQuery()
 	{
 		return (new Query())
-			->select('id, parentId, sourceId, name, path')
+			->select('id, parentId, volumeId, name, path')
 			->from('{{%assetfolders}}');
 	}
 
@@ -877,6 +880,9 @@ class Assets extends Component
 
 		foreach ($folders as $folder)
 		{
+			/**
+			 * @var AssetFolder $folder
+			 */
 			if ($folder->parentId && isset($referenceStore[$folder->parentId]))
 			{
 				$referenceStore[$folder->parentId]->addChild($folder);
@@ -893,7 +899,10 @@ class Assets extends Component
 
 		foreach ($tree as $topFolder)
 		{
-			$sort[] = Craft::$app->assetSources->getSourceById($topFolder->sourceId)->sortOrder;
+			/**
+			 * @var AssetFolder $topFolder
+			 */
+			$sort[] = $topFolder->getVolume()->sortOrder;
 		}
 
 		array_multisort($sort, $tree);
@@ -919,9 +928,9 @@ class Assets extends Component
 			$whereConditions[] = DbHelper::parseParam('f.id', $criteria->id, $whereParams);
 		}
 
-		if ($criteria->sourceId)
+		if ($criteria->volumeId)
 		{
-			$whereConditions[] = DbHelper::parseParam('f.sourceId', $criteria->sourceId, $whereParams);
+			$whereConditions[] = DbHelper::parseParam('f.volumeId', $criteria->volumeId, $whereParams);
 		}
 
 		if ($criteria->parentId)
@@ -979,29 +988,29 @@ class Assets extends Component
 
 		if (!$isNewAsset)
 		{
-			$fileRecord = AssetRecord::findOne(['id' => $asset->id]);
+			$assetRecord = AssetRecord::findOne(['id' => $asset->id]);
 
-			if (!$fileRecord)
+			if (!$assetRecord)
 			{
 				throw new AssetMissingException(Craft::t('app', 'No asset exists with the ID “{id}”.', array('id' => $asset->id)));
 			}
 		}
 		else
 		{
-			$fileRecord = new AssetRecord();
+			$assetRecord = new AssetRecord();
 		}
 
-		$fileRecord->sourceId     = $asset->sourceId;
-		$fileRecord->folderId     = $asset->folderId;
-		$fileRecord->filename     = $asset->filename;
-		$fileRecord->kind         = $asset->kind;
-		$fileRecord->size         = $asset->size;
-		$fileRecord->width        = $asset->width;
-		$fileRecord->height       = $asset->height;
-		$fileRecord->dateModified = $asset->dateModified;
+		$assetRecord->volumeId     = $asset->volumeId;
+		$assetRecord->folderId     = $asset->folderId;
+		$assetRecord->filename     = $asset->filename;
+		$assetRecord->kind         = $asset->kind;
+		$assetRecord->size         = $asset->size;
+		$assetRecord->width        = $asset->width;
+		$assetRecord->height       = $asset->height;
+		$assetRecord->dateModified = $asset->dateModified;
 
-		$fileRecord->validate();
-		$asset->addErrors($fileRecord->getErrors());
+		$assetRecord->validate();
+		$asset->addErrors($assetRecord->getErrors());
 
 		if ($asset->hasErrors())
 		{
@@ -1052,11 +1061,11 @@ class Assets extends Component
 				// Now that we have an element ID, save it on the other stuff
 				if ($isNewAsset)
 				{
-					$fileRecord->id = $asset->id;
+					$assetRecord->id = $asset->id;
 				}
 
 				// Save the file row
-				$fileRecord->save(false);
+				$assetRecord->save(false);
 
 				$this->trigger(static::EVENT_AFTER_SAVE_ASSET, $event);
 			}

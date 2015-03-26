@@ -22,7 +22,7 @@ use yii\web\NotFoundHttpException;
  *
  * @property \craft\app\services\Assets           $assets           The assets service.
  * @property \craft\app\services\AssetIndexing    $assetIndexing    The asset indexing service.
- * @property \craft\app\services\AssetSources     $assetSources     The asset sources service.
+ * @property \craft\app\services\Volumes          $volumes          The asset sources service.
  * @property \craft\app\services\AssetTransforms  $assetTransforms  The asset transforms service.
  * @property \craft\app\services\Categories       $categories       The categories service.
  * @property \craft\app\services\Components       $components       The components service.

@@ -7,22 +7,33 @@
  * @copyright  Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license    http://buildwithcraft.com/license Craft License Agreement
  * @see        http://buildwithcraft.com
- * @package    craft.app.assetsourcetypes
+ * @package    craft.app.volumes
  * @since      1.0
  */
 
-namespace craft\app\assetsourcetypes;
+namespace craft\app\volumes;
 
 use Craft;
-use craft\app\enums\AttributeType;
+use craft\app\base\Volume;
 use craft\app\io\flysystemadapters\AwsS3 as AwsS3Adapter;
 use \Aws\S3\S3Client as S3Client;
 
 Craft::$app->requireEdition(Craft::Pro);
 
 
-class GoogleCloud extends BaseAssetSourceType
+class GoogleCloud extends Volume
 {
+	// Static
+	// =========================================================================
+
+	/**
+	 * @inheritdoc
+	 */
+	public static function displayName()
+	{
+		return Craft::t('app', 'Google Cloud Storage');
+	}
+
 	// Properties
 	// =========================================================================
 
@@ -33,19 +44,36 @@ class GoogleCloud extends BaseAssetSourceType
 	 */
 	protected $isSourceLocal = false;
 
+	/**
+	 * Path to the root of this sources local folder.
+	 *
+	 * @var string
+	 */
+	public $subfolder = "";
+
+	/**
+	 * Google Cloud interoperable key ID
+	 *
+	 * @var string
+	 */
+	public $keyId = "";
+
+	/**
+	 * Google Cloud interoperable key secret
+	 *
+	 * @var string
+	 */
+	public $secret = "";
+
+	/**
+	 * Bucket to use
+	 *
+	 * @var string
+	 */
+	public $bucket = "";
 
 	// Public Methods
 	// =========================================================================
-
-	/**
-	 * @inheritDoc IComponentType::getName()
-	 *
-	 * @return string
-	 */
-	public function getName()
-	{
-		return Craft::t('app', 'Google Cloud Storage');
-	}
 
 	/**
 	 * @inheritDoc ISavableComponentType::getSettingsHtml()
@@ -56,12 +84,8 @@ class GoogleCloud extends BaseAssetSourceType
 	{
 		$settings = $this->getSettings();
 
-		//@TODO add expires settings
-		$settings->expires = array('amount' => '', 'period' => '');
-
-		return Craft::$app->templates->render('_components/assetsourcetypes/GoogleCloud/settings', array(
+		return Craft::$app->templates->render('_components/volumes/GoogleCloud/settings', array(
 			'settings' => $settings,
-			'periods' => array_merge(array('' => ''))
 		));
 	}
 
@@ -102,24 +126,24 @@ class GoogleCloud extends BaseAssetSourceType
 		return $bucketList;
 	}
 
-	// Protected Methods
-	// =========================================================================
+	/**
+	 * @inheritdoc
+	 */
+	public function getRootPath()
+	{
+		return null;
+	}
 
 	/**
-	 * @inheritDoc BaseSavableComponentType::defineSettings()
-	 *
-	 * @return array
+	 * @inheritdoc
 	 */
-	protected function defineSettings()
+	public function getRootUrl()
 	{
-		return array(
-			'keyId'      => array(AttributeType::String, 'required' => true),
-			'secret'     => array(AttributeType::String, 'required' => true),
-			'bucket'     => array(AttributeType::String, 'required' => true),
-			'subfolder'  => array(AttributeType::String, 'default' => ''),
-			'expires'    => array(AttributeType::String, 'default' => ''),
-		);
+		return rtrim($this->url, '/').'/'.rtrim($this->subfolder, '/').'/';
 	}
+
+	// Protected Methods
+	// =========================================================================
 
 	/**
 	 * @inheritDoc BaseFlysystemFileSourceType::createAdapter()
@@ -128,9 +152,9 @@ class GoogleCloud extends BaseAssetSourceType
 	 */
 	protected function createAdapter()
 	{
-		$client = static::getClient($this->getSettings()->keyId, $this->getSettings()->secret, array('base_url' => 'https://storage.googleapis.com'));
+		$client = static::getClient($this->keyId, $this->secret, array('base_url' => 'https://storage.googleapis.com'));
 
-		return new AwsS3Adapter($client, $this->getSettings()->bucket, $this->getSettings()->subfolder);
+		return new AwsS3Adapter($client, $this->bucket, $this->subfolder);
 	}
 
 	/**

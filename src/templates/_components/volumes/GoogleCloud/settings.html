@@ -3,23 +3,23 @@
 {% import "_includes/forms" as forms %}
 
 {{ forms.textField({
-label: "Access Key ID"|t,
-id: 'keyId',
-name: 'keyId',
-value: settings.keyId,
-errors: settings.getErrors('keyId'),
-class: 'google-key-id',
-required: true
+    label: "Access Key ID"|t,
+    id: 'keyId',
+    name: 'keyId',
+    value: settings.keyId,
+    errors: settings.getErrors('keyId'),
+    class: 'google-key-id',
+    required: true
 }) }}
 
 {{ forms.textField({
-label: "Secret Access Key"|t,
-id: 'secret',
-name: 'secret',
-value: settings.secret,
-errors: settings.getErrors('secret'),
-class: 'google-secret-key',
-required: true
+    label: "Secret Access Key"|t,
+    id: 'secret',
+    name: 'secret',
+    value: settings.secret,
+    errors: settings.getErrors('secret'),
+    class: 'google-secret-key',
+    required: true
 }) }}
 
 {% set bucketInput %}
@@ -52,7 +52,7 @@ required: true
 
 {{ forms.textField({
     label: "Subfolder"|t,
-    instructions: "If you want to use a bucket’s subfolder as a Source, specify the path to use here."|t,
+    instructions: "If you want to use a bucket’s subfolder as a Volume, specify the path to use here."|t,
     id: 'subfolder',
     class: 'ltr',
     name: 'subfolder',

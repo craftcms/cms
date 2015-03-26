@@ -44,7 +44,8 @@ interface ComponentInterface
 	 * @param array $config The config settings to populate the component with
 	 * @return static The new component object
 	 */
-	public static function create($config);
+	public static function
+	create($config);
 
 	// Public Methods
 	// =========================================================================

@@ -51,7 +51,7 @@ class Asset extends ActiveRecord
 	 */
 	public function getSource()
 	{
-		return $this->hasOne(AssetSource::className(), ['id' => 'sourceId']);
+		return $this->hasOne(Volume::className(), ['id' => 'volumeId']);
 	}
 
 	/**

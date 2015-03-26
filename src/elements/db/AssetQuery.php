@@ -36,7 +36,7 @@ class AssetQuery extends ElementQuery
 	/**
 	 * @var integer|integer[] The asset source ID(s) that the resulting assets must be in.
 	 */
-	public $sourceId;
+	public $volumeId;
 
 	/**
 	 * @var integer|integer[] The asset folder ID(s) that the resulting assets must be in.
@@ -104,12 +104,12 @@ class AssetQuery extends ElementQuery
 	{
 		if ($value instanceof AssetSource)
 		{
-			$this->sourceId = $value->id;
+			$this->volumeId = $value->id;
 		}
 		else
 		{
 			$query = new Query();
-			$this->sourceId = $query
+			$this->volumeId = $query
 				->select('id')
 				->from('{{%assetsources}}')
 				->where(DbHelper::parseParam('handle', $value, $query->params))
@@ -120,13 +120,13 @@ class AssetQuery extends ElementQuery
 	}
 
 	/**
-	 * Sets the [[sourceId]] property.
+	 * Sets the [[volumeId]] property.
 	 * @param integer|integer[] $value The property value
 	 * @return static The query object itself
 	 */
-	public function sourceId($value)
+	public function volumeId($value)
 	{
-		$this->sourceId = $value;
+		$this->volumeId = $value;
 		return $this;
 	}
 
@@ -216,7 +216,7 @@ class AssetQuery extends ElementQuery
 	protected function beforePrepare()
 	{
 		// See if 'source' was set to an invalid handle
-		if ($this->sourceId === [])
+		if ($this->volumeId === [])
 		{
 			return false;
 		}
@@ -234,9 +234,9 @@ class AssetQuery extends ElementQuery
 			'assets.dateModified',
 		]);
 
-		if ($this->sourceId)
+		if ($this->volumeId)
 		{
-			$this->subQuery->andWhere(DbHelper::parseParam('assets.sourceId', $this->sourceId, $this->subQuery->params));
+			$this->subQuery->andWhere(DbHelper::parseParam('assets.sourceId', $this->volumeId, $this->subQuery->params));
 		}
 
 		if ($this->folderId)

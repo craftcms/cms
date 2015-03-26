@@ -7,6 +7,7 @@
 
 namespace craft\app\models;
 
+use craft\app\dates\DateTime;
 use craft\app\enums\AttributeType;
 
 /**
@@ -26,9 +27,9 @@ class AssetIndexData extends BaseComponentModel
 	public $id;
 
 	/**
-	 * @var integer Source ID
+	 * @var integer Volume ID
 	 */
-	public $sourceId;
+	public $volumeId;
 
 	/**
 	 * @var string Session ID
@@ -80,16 +81,16 @@ class AssetIndexData extends BaseComponentModel
 	{
 		return [
 			[['id'], 'number', 'min' => -2147483648, 'max' => 2147483647, 'integerOnly' => true],
-			[['sourceId'], 'number', 'min' => -2147483648, 'max' => 2147483647, 'integerOnly' => true],
+			[['volumeId'], 'number', 'min' => -2147483648, 'max' => 2147483647, 'integerOnly' => true],
 			[['offset'], 'number', 'min' => -2147483648, 'max' => 2147483647, 'integerOnly' => true],
 			[['size'], 'number', 'min' => -2147483648, 'max' => 2147483647, 'integerOnly' => true],
 			[['recordId'], 'number', 'min' => -2147483648, 'max' => 2147483647, 'integerOnly' => true],
-			[['id', 'sourceId', 'sessionId', 'offset', 'uri', 'size', 'recordId'], 'safe', 'on' => 'search'],
+			[['id', 'volumeId', 'sessionId', 'offset', 'uri', 'size', 'recordId'], 'safe', 'on' => 'search'],
 		];
 	}
 
 	/**
-	 * Use the translated source name as the string representation.
+	 * Use the translated volume name as the string representation.
 	 *
 	 * @return string
 	 */

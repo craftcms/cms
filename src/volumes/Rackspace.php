@@ -1,8 +1,8 @@
 <?php
-namespace craft\app\assetsourcetypes;
+namespace craft\app\volumes;
 
 use Craft;
-use craft\app\enums\AttributeType;
+use craft\app\base\Volume;
 use craft\app\io\flysystemadapters\Rackspace as RackspaceAdapter;
 use \OpenCloud\OpenStack;
 use \OpenCloud\Rackspace as RackspaceClient;
@@ -16,11 +16,22 @@ use \OpenCloud\Rackspace as RackspaceClient;
  * @copyright  Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license    http://buildwithcraft.com/license Craft License Agreement
  * @see        http://buildwithcraft.com
- * @package    craft.app.assetsourcetypes
+ * @package    craft.app.volumes
  * @since      1.0
  */
-class Rackspace extends BaseAssetSourceType
+class Rackspace extends Volume
 {
+	// Static
+	// =========================================================================
+
+	/**
+	 * @inheritdoc
+	 */
+	public static function displayName()
+	{
+		return Craft::t('app', 'Rackspace Cloud Files');
+	}
+
 	// Properties
 	// =========================================================================
 
@@ -38,18 +49,42 @@ class Rackspace extends BaseAssetSourceType
 	 */
 	protected $foldersHaveTrailingSlashes = false;
 
-	// Public Methods
-	// =========================================================================
+	/**
+	 * Path to the root of this sources local folder.
+	 *
+	 * @var string
+	 */
+	public $subfolder = "";
+	/**
+	 * Rackspace username
+	 *
+	 * @var string
+	 */
+	public $username = "";
 
 	/**
-	 * @inheritDoc IComponentType::getName()
+	 * Rackspace API key
 	 *
-	 * @return string
+	 * @var string
 	 */
-	public function getName()
-	{
-		return Craft::t('app', 'Rackspace Cloud Files');
-	}
+	public $apiKey = "";
+
+	/**
+	 * Container to use
+	 *
+	 * @var string
+	 */
+	public $container = "";
+
+	/**
+	 * Region to use
+	 *
+	 * @var string
+	 */
+	public $region = "";
+
+	// Public Methods
+	// =========================================================================
 
 	/**
 	 * @inheritDoc ISavableComponentType::getSettingsHtml()
@@ -60,7 +95,7 @@ class Rackspace extends BaseAssetSourceType
 	{
 		$settings = $this->getSettings();
 
-		return Craft::$app->templates->render('_components/assetsourcetypes/Rackspace/settings', array(
+		return Craft::$app->templates->render('_components/volumes/Rackspace/settings', array(
 			'settings' => $settings
 		));
 	}
@@ -98,24 +133,24 @@ class Rackspace extends BaseAssetSourceType
 		return $returnData;
 	}
 
-	// Protected Methods
-	// =========================================================================
+	/**
+	 * @inheritdoc
+	 */
+	public function getRootPath()
+	{
+		return null;
+	}
 
 	/**
-	 * @inheritDoc BaseSavableComponentType::defineSettings()
-	 *
-	 * @return array
+	 * @inheritdoc
 	 */
-	protected function defineSettings()
+	public function getRootUrl()
 	{
-		return array(
-			'username'   => array(AttributeType::String, 'required' => true),
-			'apiKey'     => array(AttributeType::String, 'required' => true),
-			'region'     => array(AttributeType::String, 'required' => true),
-			'container'	 => array(AttributeType::String, 'required' => true),
-			'subfolder'  => array(AttributeType::String, 'default' => ''),
-		);
+		return rtrim($this->url, '/').'/'.rtrim($this->subfolder, '/').'/';
 	}
+
+	// Protected Methods
+	// =========================================================================
 
 	/**
 	 * @inheritDoc BaseFlysystemFileSourceType::createAdapter()
@@ -124,10 +159,10 @@ class Rackspace extends BaseAssetSourceType
 	 */
 	protected function createAdapter()
 	{
-		$client = static::getClient($this->getSettings()->username, $this->getSettings()->apiKey);
+		$client = static::getClient($this->username, $this->apiKey);
 
-		$store = $client->objectStoreService('cloudFiles', $this->getSettings()->region);
-		$container = $store->getContainer($this->getSettings()->container);
+		$store = $client->objectStoreService('cloudFiles', $this->region);
+		$container = $store->getContainer($this->container);
 
 		return new RackspaceAdapter($container);
 	}

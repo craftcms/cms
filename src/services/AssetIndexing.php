@@ -2,13 +2,12 @@
 namespace craft\app\services;
 
 use Craft;
-use craft\app\assetsourcetypes\BaseAssetSourceType;
+use craft\app\base\Volume;
 use craft\app\dates\DateTime;
 use craft\app\helpers\StringHelper;
 use craft\app\helpers\AssetsHelper;
 use craft\app\helpers\IOHelper;
-use craft\app\models\AssetSource;
-use craft\app\models\Asset;
+use craft\app\elements\Asset;
 use craft\app\models\AssetIndexData as AssetIndexDataModel;
 use craft\app\records\AssetFolder;
 use craft\app\records\AssetIndexData as AssetIndexDataRecord;
@@ -42,21 +41,21 @@ class AssetIndexing extends Component
 	}
 
 	/**
-	 * Gets the index list for a source.
+	 * Gets the index list for a volume.
 	 *
 	 * @param $sessionId
-	 * @param $sourceId
+	 * @param $volumeId
 	 * @param $directory
 	 *
 	 * @return array
 	 */
-	public function getIndexListForSource($sessionId, $sourceId, $directory = '')
+	public function prepareIndexList($sessionId, $volumeId, $directory = '')
 	{
 		try
 		{
-			$sourceType =  Craft::$app->assetSources->getSourceTypeById($sourceId);
+			$volume = Craft::$app->volumes->getVolumeById($volumeId);
 
-			$fileList = $sourceType->getFileList($directory);
+			$fileList = $volume->getFileList($directory);
 
 			$fileList = array_filter($fileList, function($value)
 			{
@@ -101,7 +100,7 @@ class AssetIndexing extends Component
 					else
 					{
 						$indexEntry = array(
-							'sourceId' => $sourceId,
+							'volumeId' => $volumeId,
 							'sessionId' => $sessionId,
 							'offset' => $offset++,
 							'uri' => $file['path'],
@@ -109,41 +108,41 @@ class AssetIndexing extends Component
 							'timestamp' => $file['timestamp']
 						);
 
-						Craft::$app->assetIndexing->storeIndexEntry($indexEntry);
+						$this->storeIndexEntry($indexEntry);
 						$total++;
 					}
 				}
 				else
 				{
-					$skippedFiles[] = $sourceType->model->name.'/'.$file['path'];
+					$skippedFiles[] = $volume->model->name.'/'.$file['path'];
 				}
 			}
 
 			$indexedFolderIds = array();
-			$indexedFolderIds[$this->ensureTopFolder($sourceType->model)] = true;
+			$indexedFolderIds[$this->ensureTopFolder($volume->model)] = true;
 
 			// Ensure folders are in the DB
 			foreach ($bucketFolders as $fullPath => $nothing)
 			{
-				$folderId = Craft::$app->assets->ensureFolderByFullPathAndSourceId(rtrim($fullPath, '/').'/', $sourceId);
+				$folderId = Craft::$app->assets->ensureFolderByFullPathAndVolumeId(rtrim($fullPath, '/').'/', $volumeId);
 				$indexedFolderIds[$folderId] = true;
 			}
 
 			$missingFolders = array();
 
 			$allFolders = Craft::$app->assets->findFolders(array(
-				'sourceId' => $sourceId
+				'volumeId' => $volumeId
 			));
 
 			foreach ($allFolders as $folderModel)
 			{
 				if (!isset($indexedFolderIds[$folderModel->id]))
 				{
-					$missingFolders[$folderModel->id] = $sourceType->model->name.'/'.$folderModel->path;
+					$missingFolders[$folderModel->id] = $volume->model->name.'/'.$folderModel->path;
 				}
 			}
 
-			return ['sourceId' => $sourceId, 'total' => $total, 'missingFolders' => $missingFolders, 'skippedFiles' => $skippedFiles];
+			return ['volumeId' => $volumeId, 'total' => $total, 'missingFolders' => $missingFolders, 'skippedFiles' => $skippedFiles];
 		}
 		catch (\Exception $exception)
 		{
@@ -152,19 +151,19 @@ class AssetIndexing extends Component
 	}
 
 	/**
-	 * Process index for a source.
+	 * Process index for a volume.
 	 *
 	 * @param $sessionId
 	 * @param $offset
-	 * @param $sourceId
+	 * @param $volumeId
 	 *
 	 * @return mixed
 	 */
-	public function processIndexForSource($sessionId, $offset, $sourceId)
+	public function processIndexForVolume($sessionId, $offset, $volumeId)
 	{
-		$sourceType = Craft::$app->assetSources->getSourceTypeById($sourceId);
+		$volume = Craft::$app->volumes->getVolumeById($volumeId);
 
-		$indexEntryModel = $this->getIndexEntry($sourceId, $sessionId, $offset);
+		$indexEntryModel = $this->getIndexEntry($volumeId, $sessionId, $offset);
 
 		if (empty($indexEntryModel))
 		{
@@ -172,24 +171,24 @@ class AssetIndexing extends Component
 		}
 
 		$uriPath = $indexEntryModel->uri;
-		$assetModel = $this->_indexFile($sourceType, $uriPath);
+		$asset = $this->_indexFile($volume, $uriPath);
 
-		if ($assetModel)
+		if ($asset)
 		{
-			$this->updateIndexEntryRecordId($indexEntryModel->id, $assetModel->id);
+			$this->updateIndexEntryRecordId($indexEntryModel->id, $asset->id);
 
-			$assetModel->size = $indexEntryModel->size;
+			$asset->size = $indexEntryModel->size;
 			$timeModified = new DateTime($indexEntryModel->timestamp);
 
-			if ($assetModel->kind == 'image')
+			if ($asset->kind == 'image')
 			{
-				$targetPath = $assetModel->getImageTransformSourcePath();
+				$targetPath = $asset->getImageTransformSourcePath();
 
-				if ($assetModel->dateModified != $timeModified || !IOHelper::fileExists($targetPath))
+				if ($asset->dateModified != $timeModified || !IOHelper::fileExists($targetPath))
 				{
-					if (!$sourceType->isLocal())
+					if (!$volume->isLocal())
 					{
-						$sourceType->saveFile($uriPath, $targetPath);
+						$volume->saveFileLocally($uriPath, $targetPath);
 
 						// Store the local source for now and set it up for deleting, if needed
 						Craft::$app->assetTransforms->storeLocalSource($targetPath);
@@ -197,15 +196,15 @@ class AssetIndexing extends Component
 					}
 
 					clearstatcache();
-					list ($assetModel->width, $assetModel->height) = getimagesize($targetPath);
+					list ($asset->width, $asset->height) = getimagesize($targetPath);
 				}
 			}
 
-			$assetModel->dateModified = $timeModified;
+			$asset->dateModified = $timeModified;
 
-			Craft::$app->assets->saveAsset($assetModel);
+			Craft::$app->assets->saveAsset($asset);
 
-			return ['result' => $assetModel->id];
+			return ['result' => $asset->id];
 		}
 
 		return ['result' => false];
@@ -214,18 +213,18 @@ class AssetIndexing extends Component
 	/**
 	 * Ensures a top level folder exists that matches the model.
 	 *
-	 * @param AssetSource $model
+	 * @param Volume $model
 	 *
 	 * @return int
 	 */
-	public function ensureTopFolder(AssetSource $model)
+	public function ensureTopFolder(Volume $model)
 	{
-		$folder = AssetFolder::findOne(['name' => $model->name,'sourceId' => $model->id]);
+		$folder = AssetFolder::findOne(['name' => $model->name,'volumeId' => $model->id]);
 
 		if (empty($folder))
 		{
 			$folder = new AssetFolder();
-			$folder->sourceId = $model->id;
+			$folder->volumeId = $model->id;
 			$folder->parentId = null;
 			$folder->name = $model->name;
 			$folder->path = '';
@@ -255,16 +254,16 @@ class AssetIndexing extends Component
 	/**
 	 * Return an index model.
 	 *
-	 * @param $sourceId
+	 * @param $volumeId
 	 * @param $sessionId
 	 * @param $offset
 	 *
 	 * @return AssetIndexDataModel|bool
 	 */
-	public function getIndexEntry($sourceId, $sessionId, $offset)
+	public function getIndexEntry($volumeId, $sessionId, $offset)
 	{
 		$record = AssetIndexDataRecord::findOne([
-				'sourceId' => $sourceId,
+				'volumeId' => $volumeId,
 				'sessionId' => $sessionId,
 				'offset' => $offset
 			]
@@ -293,12 +292,12 @@ class AssetIndexing extends Component
 	/**
 	 * Return a list of missing files for an indexing session.
 	 *
-	 * @param $sources
+	 * @param $volumeIds
 	 * @param $sessionId
 	 *
 	 * @return array
 	 */
-	public function getMissingFiles($sources, $sessionId)
+	public function getMissingFiles($volumeIds, $sessionId)
 	{
 		$output = array();
 
@@ -313,18 +312,18 @@ class AssetIndexing extends Component
 		$processedFiles = array_flip($processedFiles);
 
 		$fileEntries = (new Query())
-			->select('fi.sourceId, fi.id AS fileId, fi.filename, fo.path, s.name AS sourceName')
+			->select('fi.volumeId, fi.id AS fileId, fi.filename, fo.path, s.name AS volumeName')
 			->from('{{%assets}} AS fi')
 			->innerJoin('{{%assetfolders}} AS fo', 'fi.folderId = fo.id')
-			->innerJoin('{{%assetsources}} AS s', 's.id = fi.sourceId')
-			->where(array('in', 'fi.sourceId', $sources))
+			->innerJoin('{{%assetvolumes}} AS s', 's.id = fi.volumeId')
+			->where(array('in', 'fi.volumeId', $volumeIds))
 			->all();
 
 		foreach ($fileEntries as $fileEntry)
 		{
 			if (!isset($processedFiles[$fileEntry['fileId']]))
 			{
-				$output[$fileEntry['fileId']] = $fileEntry['sourceName'].'/'.$fileEntry['path'].$fileEntry['filename'];
+				$output[$fileEntry['fileId']] = $fileEntry['volumeName'].'/'.$fileEntry['path'].$fileEntry['filename'];
 			}
 		}
 
@@ -337,12 +336,12 @@ class AssetIndexing extends Component
 	/**
 	 * Indexes a file.
 	 *
-	 * @param BaseAssetSourceType $sourceType The SourceType.
-	 * @param string              $uriPath    The URI path fo the file to index.
+	 * @param Volume $volume  The volume.
+	 * @param string $uriPath The URI path fo the file to index.
 	 *
 	 * @return Asset|bool
 	 */
-	private function _indexFile($sourceType, $uriPath)
+	private function _indexFile($volume, $uriPath)
 	{
 		$extension = IOHelper::getExtension($uriPath);
 
@@ -363,7 +362,7 @@ class AssetIndexing extends Component
 			}
 
 			$parentFolder = Craft::$app->assets->findFolder(array(
-				'sourceId' => $sourceType->model->id,
+				'volumeId' => $volume->id,
 				'path' => $searchFullPath,
 				'parentId' => $parentId
 			));
@@ -383,7 +382,7 @@ class AssetIndexing extends Component
 			if (is_null($assetModel))
 			{
 				$assetModel = new Asset();
-				$assetModel->sourceId = $sourceType->model->id;
+				$assetModel->volumeId = $volume->id;
 				$assetModel->folderId = $folderId;
 				$assetModel->filename = $filename;
 				$assetModel->kind = IOHelper::getFileKind($extension);

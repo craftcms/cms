@@ -9,7 +9,7 @@ namespace craft\app\models;
 
 use Craft;
 use craft\app\base\Model;
-use craft\app\enums\AttributeType;
+use craft\app\base\Volume;
 
 /**
  * The AssetFolder model class.
@@ -33,9 +33,9 @@ class AssetFolder extends Model
 	public $parentId;
 
 	/**
-	 * @var integer Source ID
+	 * @var integer Volume ID
 	 */
-	public $sourceId;
+	public $volumeId;
 
 	/**
 	 * @var string Name
@@ -64,8 +64,8 @@ class AssetFolder extends Model
 		return [
 			[['id'], 'number', 'min' => -2147483648, 'max' => 2147483647, 'integerOnly' => true],
 			[['parentId'], 'number', 'min' => -2147483648, 'max' => 2147483647, 'integerOnly' => true],
-			[['sourceId'], 'number', 'min' => -2147483648, 'max' => 2147483647, 'integerOnly' => true],
-			[['id', 'parentId', 'sourceId', 'name', 'path'], 'safe', 'on' => 'search'],
+			[['volumeId'], 'number', 'min' => -2147483648, 'max' => 2147483647, 'integerOnly' => true],
+			[['id', 'parentId', 'volumeId', 'name', 'path'], 'safe', 'on' => 'search'],
 		];
 	}
 
@@ -80,11 +80,11 @@ class AssetFolder extends Model
 	}
 
 	/**
-	 * @return AssetSource|null
+	 * @return Volume|null
 	 */
-	public function getSource()
+	public function getVolume()
 	{
-		return Craft::$app->assetSources->getSourceById($this->sourceId);
+		return Craft::$app->volumes->getVolumeById($this->volumeId);
 	}
 
 	/**
@@ -130,42 +130,5 @@ class AssetFolder extends Model
 		}
 
 		$this->_children[] = $folder;
-	}
-
-	/**
-	 * @inheritDoc Model::setAttribute()
-	 *
-	 * @param string $name
-	 * @param mixed  $value
-	 *
-	 * @return bool
-	 */
-	public function setAttribute($name, $value)
-	{
-		if ($name == 'path' && !empty($value))
-		{
-			$value = rtrim($value, '/').'/';
-		}
-		return parent::setAttribute($name, $value);
-	}
-
-	/**
-	 * @inheritDoc Model::getAttribute()
-	 *
-	 * @param string $name
-	 * @param bool   $flattenValue
-	 *
-	 * @return mixed
-	 */
-	public function getAttribute($name, $flattenValue = false)
-	{
-		$value = parent::getAttribute($name, $flattenValue);
-
-		if ($name == 'path' && !empty($value))
-		{
-			$value = rtrim($value, '/').'/';
-		}
-
-		return $value;
 	}
 }

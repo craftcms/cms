@@ -1,7 +1,8 @@
 <?php
-namespace craft\app\assetsourcetypes;
+namespace craft\app\volumes;
 
 use Craft;
+use craft\app\base\Volume;
 use craft\app\enums\AttributeType;
 use craft\app\io\flysystemadapters\Local as LocalAdapter;
 
@@ -13,34 +14,55 @@ use craft\app\io\flysystemadapters\Local as LocalAdapter;
  * @copyright  Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license    http://buildwithcraft.com/license Craft License Agreement
  * @see        http://buildwithcraft.com
- * @package    craft.app.assetsourcetypes
+ * @package    craft.app.volumes
  * @since      1.0
  */
-class Local extends BaseAssetSourceType
+class Local extends Volume
 {
+	// Static
+	// =========================================================================
+
+	/**
+	 * @inheritdoc
+	 */
+	public static function displayName()
+	{
+		return Craft::t('app', 'Local Folder');
+	}
+
+	/**
+	 * @inheritdoc
+	 */
+	public static function isLocal()
+	{
+		return true;
+	}
+
+	/**
+	 * @inheritdoc
+	 */
+	public static function populateModel($model, $config)
+	{
+		if (isset($config['path']))
+		{
+			$config['path'] = rtrim($config['path'], '/');
+		}
+
+		parent::populateModel($model, $config);
+	}
+
 	// Properties
 	// =========================================================================
 
 	/**
-	 * Whether this is a local source or not. Defaults to false.
+	 * Path to the root of this sources local folder.
 	 *
-	 * @var bool
+	 * @var string
 	 */
-	protected $isSourceLocal = true;
-
+	public $path = "";
 
 	// Public Methods
 	// =========================================================================
-
-	/**
-	 * @inheritDoc IComponentType::getName()
-	 *
-	 * @return string
-	 */
-	public function getName()
-	{
-		return Craft::t('app', 'Local Folder');
-	}
 
 	/**
 	 * @inheritDoc ISavableComponentType::getSettingsHtml()
@@ -49,7 +71,7 @@ class Local extends BaseAssetSourceType
 	 */
 	public function getSettingsHtml()
 	{
-		return Craft::$app->templates->render('_components/assetsourcetypes/Local/settings', array(
+		return Craft::$app->templates->render('_components/volumes/Local/settings', array(
 			'settings' => $this->getSettings(),
 		));
 	}
@@ -63,31 +85,28 @@ class Local extends BaseAssetSourceType
 	 */
 	public function prepSettings($settings)
 	{
-		// Add a trailing slash to the Path and URL settings
+		// Remove the trailing slash to the Path and URL settings
 		$settings['path'] = !empty($settings['path']) ? rtrim($settings['path'], '/') : '';
 
 		return $settings;
 	}
 
 	/**
-	 * @inheritDoc IAssetSourceType::isLocal()
-	 *
-	 * @return bool
+	 * @inheritdoc
 	 */
-	public function isLocal()
+	public function getRootPath()
 	{
-		return true;
+		return $this->path;
 	}
 
 	/**
-	 * Return a path where the image sources are being stored for this source.
-	 *
-	 * @return string
+	 * @inheritdoc
 	 */
-	public function getImageTransformSourceLocation()
+	public function getRootUrl()
 	{
-		return $this->getSettings()->path;
+		return rtrim($this->url, '/').'/';
 	}
+
 
 	// Protected Methods
 	// =========================================================================

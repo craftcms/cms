@@ -10,6 +10,7 @@ namespace craft\app\elements;
 use Craft;
 use craft\app\base\Element;
 use craft\app\base\ElementInterface;
+use craft\app\base\Volume;
 use craft\app\elements\actions\CopyReferenceTag;
 use craft\app\elements\actions\DeleteAssets;
 use craft\app\elements\actions\Edit;
@@ -90,14 +91,14 @@ class Asset extends Element
 	{
 		if ($context == 'index')
 		{
-			$sourceIds = Craft::$app->assetSources->getViewableSourceIds();
+			$sourceIds = Craft::$app->volumes->getViewableSourceIds();
 		}
 		else
 		{
-			$sourceIds = Craft::$app->assetSources->getAllSourceIds();
+			$sourceIds = Craft::$app->volumes->getAllVolumeIds();
 		}
 
-		$tree = Craft::$app->assets->getFolderTreeBySourceIds($sourceIds);
+		$tree = Craft::$app->assets->getFolderTreeByVolumeIds($sourceIds);
 
 		return static::_assembleSourceList($tree);
 	}
@@ -387,7 +388,7 @@ class Asset extends Element
 			'label'     => ($folder->parentId ? $folder->name : Craft::t('app', $folder->name)),
 			'hasThumbs' => true,
 			'criteria'  => ['folderId' => $folder->id],
-			'data'      => ['upload' => is_null($folder->sourceId) ? true : Craft::$app->assets->canUserPerformAction($folder->id, 'uploadToAssetSource')]
+			'data'      => ['upload' => is_null($folder->volumeId) ? true : Craft::$app->assets->canUserPerformAction($folder->id, 'uploadToAssetSource')]
 		];
 
 		if ($includeNestedFolders)
@@ -404,7 +405,7 @@ class Asset extends Element
 	/**
 	 * @var integer Source ID
 	 */
-	public $sourceId;
+	public $volumeId;
 
 	/**
 	 * @var integer Folder ID
@@ -578,7 +579,7 @@ class Asset extends Element
 	{
 		$rules = parent::rules();
 
-		$rules[] = [['sourceId'], 'number', 'min' => -2147483648, 'max' => 2147483647, 'integerOnly' => true];
+		$rules[] = [['volumeId'], 'number', 'min' => -2147483648, 'max' => 2147483647, 'integerOnly' => true];
 		$rules[] = [['folderId'], 'number', 'min' => -2147483648, 'max' => 2147483647, 'integerOnly' => true];
 		$rules[] = [['width'], 'number', 'min' => -2147483648, 'max' => 2147483647, 'integerOnly' => true];
 		$rules[] = [['height'], 'number', 'min' => -2147483648, 'max' => 2147483647, 'integerOnly' => true];
@@ -593,7 +594,7 @@ class Asset extends Element
 	 */
 	public function getFieldLayout()
 	{
-		$source = $this->getSource();
+		$source = $this->getVolume();
 
 		if ($source->id)
 		{
@@ -618,7 +619,7 @@ class Asset extends Element
 					$sourceId = $settings['defaultUploadLocationSource'];
 				}
 
-				$source = Craft::$app->assetSources->getSourceById($sourceId);
+				$source = Craft::$app->volumes->getVolumeById($sourceId);
 
 				if ($source)
 				{
@@ -635,7 +636,7 @@ class Asset extends Element
 	 */
 	public function isEditable()
 	{
-		return Craft::$app->getUser()->checkPermission('uploadToAssetSource:'.$this->sourceId);
+		return Craft::$app->getUser()->checkPermission('uploadToAssetSource:'.$this->volumeId);
 	}
 
 	/**
@@ -661,11 +662,11 @@ class Asset extends Element
 	}
 
 	/**
-	 * @return AssetSource|null
+	 * @return Volume|null
 	 */
-	public function getSource()
+	public function getVolume()
 	{
-		return Craft::$app->assetSources->getSourceById($this->sourceId);
+		return Craft::$app->volumes->getVolumeById($this->volumeId);
 	}
 
 	/**
@@ -836,16 +837,15 @@ class Asset extends Element
 	 */
 	public function getImageTransformSourcePath()
 	{
-		$sourceType = Craft::$app->assetSources->getSourceTypeById($this->sourceId);
-		$base = rtrim($sourceType->getImageTransformSourceLocation(), '/');
+		$sourceType = Craft::$app->volumes->getSourceTypeById($this->volumeId);
 
 		if ($sourceType->isLocal())
 		{
-			return $base.'/'.$this->getUri();
+			return $sourceType->getRootPath().'/'.$this->getUri();
 		}
 		else
 		{
-			return $base.'/'.$this->id.'.'.$this->getExtension();
+			return Craft::$app->path->getAssetsImageSourcePath().'/'.$this->id.'.'.$this->getExtension();
 		}
 	}
 

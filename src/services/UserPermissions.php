@@ -167,7 +167,7 @@ class UserPermissions extends Component
 		// Asset sources
 		// ---------------------------------------------------------------------
 
-		$assetSources = Craft::$app->assetSources->getAllSources();
+		$assetSources = Craft::$app->volumes->getAllVolumes();
 
 		foreach ($assetSources as $source)
 		{

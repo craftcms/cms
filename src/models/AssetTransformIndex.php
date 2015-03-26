@@ -47,9 +47,9 @@ class AssetTransformIndex extends Model
 	public $location;
 
 	/**
-	 * @var integer Source ID
+	 * @var integer Volume ID
 	 */
-	public $sourceId;
+	public $volumeId;
 
 	/**
 	 * @var boolean File exists
@@ -99,12 +99,12 @@ class AssetTransformIndex extends Model
 			[['fileId'], 'number', 'min' => -2147483648, 'max' => 2147483647, 'integerOnly' => true],
 			[['filename'], 'number', 'min' => -2147483648, 'max' => 2147483647, 'integerOnly' => true],
 			[['format'], 'number', 'min' => -2147483648, 'max' => 2147483647, 'integerOnly' => true],
-			[['sourceId'], 'number', 'min' => -2147483648, 'max' => 2147483647, 'integerOnly' => true],
+			[['volumeId'], 'number', 'min' => -2147483648, 'max' => 2147483647, 'integerOnly' => true],
 			[['dateIndexed'], 'craft\\app\\validators\\DateTime'],
 			[['dateUpdated'], 'craft\\app\\validators\\DateTime'],
 			[['dateCreated'], 'craft\\app\\validators\\DateTime'],
 			[['detectedFormat'], 'number', 'min' => -2147483648, 'max' => 2147483647, 'integerOnly' => true],
-			[['id', 'fileId', 'filename', 'format', 'location', 'sourceId', 'fileExists', 'inProgress', 'dateIndexed', 'dateUpdated', 'dateCreated', 'detectedFormat', 'transform'], 'safe', 'on' => 'search'],
+			[['id', 'fileId', 'filename', 'format', 'location', 'volumeId', 'fileExists', 'inProgress', 'dateIndexed', 'dateUpdated', 'dateCreated', 'detectedFormat', 'transform'], 'safe', 'on' => 'search'],
 		];
 	}
 

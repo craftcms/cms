@@ -1,9 +1,9 @@
 <?php
-namespace craft\app\assetsourcetypes;
+namespace craft\app\volumes;
 
 use Aws\S3\Exception\AccessDeniedException;
 use Craft;
-use craft\app\enums\AttributeType;
+use craft\app\base\Volume;
 use craft\app\io\flysystemadapters\AwsS3 as AwsS3Adapter;
 use \Aws\S3\S3Client as S3Client;
 
@@ -15,11 +15,22 @@ use \Aws\S3\S3Client as S3Client;
  * @copyright  Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license    http://buildwithcraft.com/license Craft License Agreement
  * @see        http://buildwithcraft.com
- * @package    craft.app.assetsourcetypes
+ * @package    craft.app.volumes
  * @since      1.0
  */
-class AwsS3 extends BaseAssetSourceType
+class AwsS3 extends Volume
 {
+	// Static
+	// =========================================================================
+
+	/**
+	 * @inheritdoc
+	 */
+	public static function displayName()
+	{
+		return Craft::t('app', 'Amazon S3');
+	}
+
 	// Properties
 	// =========================================================================
 
@@ -28,21 +39,45 @@ class AwsS3 extends BaseAssetSourceType
 	 *
 	 * @var bool
 	 */
-	protected $isSourceLocal = false;
+	protected $isVolumeLocal = false;
 
+	/**
+	 * Subfolder to use
+	 *
+	 * @var string
+	 */
+	public $subfolder = "";
+
+	/**
+	 * AWS key ID
+	 *
+	 * @var string
+	 */
+	public $keyId = "";
+
+	/**
+	 * AWS key secret
+	 *
+	 * @var string
+	 */
+	public $secret = "";
+
+	/**
+	 * Bucket to use
+	 *
+	 * @var string
+	 */
+	public $bucket = "";
+
+	/**
+	 * Region to use
+	 *
+	 * @var string
+	 */
+	public $region = "";
 
 	// Public Methods
 	// =========================================================================
-
-	/**
-	 * @inheritDoc IComponentType::getName()
-	 *
-	 * @return string
-	 */
-	public function getName()
-	{
-		return Craft::t('app', 'Amazon S3');
-	}
 
 	/**
 	 * @inheritDoc ISavableComponentType::getSettingsHtml()
@@ -53,12 +88,8 @@ class AwsS3 extends BaseAssetSourceType
 	{
 		$settings = $this->getSettings();
 
-		//@TODO add expires settings
-		$settings->expires = array('amount' => '', 'period' => '');
-
-		return Craft::$app->templates->render('_components/assetsourcetypes/S3/settings', array(
-			'settings' => $settings,
-			'periods' => array_merge(array('' => ''))
+		return Craft::$app->templates->render('_components/volumes/AwsS3/settings', array(
+			'settings' => $settings
 		));
 	}
 
@@ -118,25 +149,24 @@ class AwsS3 extends BaseAssetSourceType
 		return $bucketList;
 	}
 
-	// Protected Methods
-	// =========================================================================
+	/**
+	 * @inheritdoc
+	 */
+	public function getRootPath()
+	{
+		return null;
+	}
 
 	/**
-	 * @inheritDoc BaseSavableComponentType::defineSettings()
-	 *
-	 * @return array
+	 * @inheritdoc
 	 */
-	protected function defineSettings()
+	public function getRootUrl()
 	{
-		return array(
-			'keyId'      => array(AttributeType::String),
-			'secret'     => array(AttributeType::String),
-			'bucket'     => array(AttributeType::String, 'required' => true),
-			'region'     => array(AttributeType::String),
-			'subfolder'  => array(AttributeType::String, 'default' => ''),
-			'expires'    => array(AttributeType::String, 'default' => ''),
-		);
+		return rtrim($this->url, '/').'/'.rtrim($this->subfolder, '/').'/';
 	}
+
+	// Protected Methods
+	// =========================================================================
 
 	/**
 	 * @inheritDoc BaseFlysystemFileSourceType::createAdapter()
@@ -145,8 +175,8 @@ class AwsS3 extends BaseAssetSourceType
 	 */
 	protected function createAdapter()
 	{
-		$keyId = $this->getSettings()->keyId;
-		$secret = $this->getSettings()->secret;
+		$keyId = $this->keyId;
+		$secret = $this->secret;
 
 		if (empty($keyId) || empty($secret))
 		{
@@ -160,11 +190,11 @@ class AwsS3 extends BaseAssetSourceType
 			);
 		}
 
-		$config['region'] = $this->getSettings()->region;
+		$config['region'] = $this->region;
 
 		$client = static::getClient($config);
 
-		return new AwsS3Adapter($client, $this->getSettings()->bucket, $this->getSettings()->subfolder);
+		return new AwsS3Adapter($client, $this->bucket, $this->subfolder);
 	}
 
 	/**
@@ -176,6 +206,5 @@ class AwsS3 extends BaseAssetSourceType
 	 */
 	protected static function getClient($config = array())
 	{
-		return S3Client::factory($config);
-	}
+		return S3Client::factory($config);	}
 }

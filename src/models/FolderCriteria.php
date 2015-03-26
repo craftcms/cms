@@ -34,7 +34,7 @@ class FolderCriteria extends Model
 	/**
 	 * @var integer Source ID
 	 */
-	public $sourceId;
+	public $volumeId;
 
 	/**
 	 * @var string Name
