@@ -481,8 +481,6 @@ class ModelHelper
 			}
 		}
 
-		$rules[] = [array_keys($attributes), 'safe', 'on' => 'search'];
-
 		return $rules;
 	}
 
