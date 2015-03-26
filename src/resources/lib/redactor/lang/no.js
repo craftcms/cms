@@ -1,5 +1,5 @@
 (function ($) {
-	$.Redactor.opts.langs['nb'] = {
+	$.Redactor.opts.langs['no'] = {
 		html: 'HTML',
 		video: 'Sett inn video...',
 		image: 'Sett inn bilde...',

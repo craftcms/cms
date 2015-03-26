@@ -361,7 +361,15 @@ class RichTextFieldType extends BaseFieldType
 			{
 				// Otherwise try to load the language (without the territory half)
 				$languageId = craft()->locale->getLanguageID(craft()->language);
-				$this->_includeRedactorLangFile($languageId);
+
+				if (!$this->_includeRedactorLangFile($languageId))
+				{
+					// If it's Norwegian Bokmål/Nynorsk, add plain ol' Norwegian as a fallback
+					if ($languageId === 'nb' || $languageId === 'nn')
+					{
+						$this->_includeRedactorLangFile('no');
+					}
+				}
 			}
 		}
 	}
