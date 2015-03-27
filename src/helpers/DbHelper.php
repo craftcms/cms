@@ -7,9 +7,7 @@
 
 namespace craft\app\helpers;
 
-use Craft;
 use craft\app\enums\ColumnType;
-use craft\app\enums\ConfigCategory;
 use DateTime;
 use yii\db\Schema;
 
@@ -40,20 +38,6 @@ class DbHelper
 		ColumnType::Decimal      => ['maxLength' => 10, 'decimals' => 2],
 		ColumnType::Enum         => ['values' => []],
 	];
-
-	/**
-	 * Numeric column types.
-	 *
-	 * @var array
-	 */
-	private static $_numericColumnTypes = [ColumnType::TinyInt, ColumnType::SmallInt, ColumnType::MediumInt, ColumnType::Int, ColumnType::BigInt, ColumnType::Decimal];
-
-	/**
-	 * Textual column types.
-	 *
-	 * @var array
-	 */
-	private static $_textualColumnTypes = [ColumnType::Char, ColumnType::Varchar, ColumnType::TinyText, ColumnType::Text, ColumnType::MediumText, ColumnType::LongText];
 
 	/**
 	 * @var array
@@ -102,200 +86,6 @@ class DbHelper
 		{
 			return $value;
 		}
-	}
-
-	/**
-	 * Normalizes a column's config.
-	 *
-	 * Columns can be defined in 3 ways:
-	 *
-	 * 1. ColumnType::TypeName
-	 * 2. [ColumnType::TypeName [, 'other' => 'settings' ... ] ]
-	 * 3. ['column' => ColumnType::TypeName [, 'other' => 'settings' ... ] ]
-	 *
-	 * This function normalizes on the 3rd, merges in the default config settings for the column type, and renames 'maxLength' to 'length'.
-	 *
-	 * @param string|array $config
-	 *
-	 * @return array
-	 */
-	public static function normalizeAttributeConfig($config)
-	{
-		if (is_string($config))
-		{
-			$config = ['column' => $config];
-		}
-		else if (!isset($config['column']))
-		{
-			if (isset($config[0]))
-			{
-				$config['column'] = $config[0];
-				unset($config[0]);
-			}
-			else
-			{
-				$config['column'] = ColumnType::Varchar;
-			}
-		}
-
-		// Merge in the default config
-		if ($config['column'] == ColumnType::Locale)
-		{
-			$config['column'] = ColumnType::Char;
-			$config['maxLength'] = 12;
-			$config['charset'] = Craft::$app->config->get('charset', ConfigCategory::Db);
-			$config['collation'] = Craft::$app->config->get('collation', ConfigCategory::Db);
-		}
-		else if (isset(static::$columnTypeDefaults[$config['column']]))
-		{
-			$config = array_merge(static::$columnTypeDefaults[$config['column']], $config);
-		}
-
-		// Rename 'maxLength' to 'length'
-		if (isset($config['maxLength']))
-		{
-			if (!isset($config['length']) && is_numeric($config['maxLength']) && $config['maxLength'] > 0)
-			{
-				$config['length'] = $config['maxLength'];
-			}
-
-			unset($config['maxLength']);
-		}
-
-		return $config;
-	}
-
-	/**
-	 * Generates the column definition SQL for a column.
-	 *
-	 * @param array $config
-	 *
-	 * @return string
-	 */
-	public static function generateColumnDefinition($config)
-	{
-		// Don't do anything to PKs.
-		if ($config === ColumnType::PK)
-		{
-			return $config;
-		}
-
-		$config = static::normalizeAttributeConfig($config);
-
-		// Start the column definition
-		switch ($config['column'])
-		{
-			case ColumnType::Char:
-			{
-				$def = 'CHAR('.$config['length'].')';
-				break;
-			}
-			case ColumnType::Varchar:
-			{
-				$def = 'VARCHAR('.$config['length'].')';
-				break;
-			}
-			case ColumnType::TinyInt:
-			{
-				$def = 'TINYINT('.$config['length'].')';
-				break;
-			}
-			case ColumnType::SmallInt:
-			{
-				$def = 'SMALLINT('.$config['length'].')';
-				break;
-			}
-			case ColumnType::MediumInt:
-			{
-				$def = 'MEDIUMINT('.$config['length'].')';
-				break;
-			}
-			case ColumnType::Int:
-			{
-				$def = 'INT('.$config['length'].')';
-				break;
-			}
-			case ColumnType::BigInt:
-			{
-				$def = 'BIGINT('.$config['length'].')';
-				break;
-			}
-			case ColumnType::Decimal:
-			{
-				$def = 'DECIMAL('.$config['length'].','.$config['decimals'].')';
-				break;
-			}
-			case ColumnType::Enum:
-			{
-				$def = 'ENUM(';
-				$values = ArrayHelper::toArray($config['values']);
-
-				foreach ($values as $i => $value)
-				{
-					if ($i > 0) $def .= ',';
-					$def .= '\''.addslashes($value).'\'';
-				}
-				$def .= ')';
-				break;
-			}
-			default:
-			{
-				$def = $config['column'];
-			}
-		}
-
-		if (in_array($config['column'], static::$_numericColumnTypes))
-		{
-			if (!empty($config['unsigned']))
-			{
-				$def .= ' UNSIGNED';
-			}
-
-			if (!empty($config['zerofill']))
-			{
-				$def .= ' ZEROFILL';
-			}
-		}
-		else if (in_array($config['column'], static::$_textualColumnTypes))
-		{
-			if (!empty($config['charset']))
-			{
-				$def .= ' CHARACTER SET '.$config['charset'];
-			}
-
-			if (!empty($config['collation']))
-			{
-				$def .= ' COLLATE '.$config['collation'];
-			}
-		}
-
-		if (!empty($config['required']) || (isset($config['null']) && $config['null'] === false))
-		{
-			$def .= ' NOT NULL';
-		}
-		else
-		{
-			$def .= ' NULL';
-		}
-
-		if (isset($config['default']) && (is_string($config['default']) || is_bool($config['default']) || is_numeric($config['default'])))
-		{
-			if (is_string($config['default']) && !is_numeric($config['default']))
-			{
-				$def .= ' DEFAULT "'.$config['default'].'"';
-			}
-			else
-			{
-				$def .= ' DEFAULT '.(int)$config['default'];
-			}
-		}
-
-		if (!empty($config['primaryKey']))
-		{
-			$def .= ' PRIMARY KEY';
-		}
-
-		return $def;
 	}
 
 	/**
@@ -377,9 +167,9 @@ class DbHelper
 	public static function getAuditColumnConfig()
 	{
 		return [
-			'dateCreated' => ['column' => ColumnType::DateTime, 'required' => true],
-			'dateUpdated' => ['column' => ColumnType::DateTime, 'required' => true],
-			'uid'         => ['column' => ColumnType::Char, 'length' => 36, 'required' => true, 'default' => 0]
+			'dateCreated' => 'datetime not null',
+			'dateUpdated' => 'datetime not null',
+			'uid'         => 'char(36) not null default \'0\'',
 		];
 	}
 

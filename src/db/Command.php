@@ -7,7 +7,6 @@
 
 namespace craft\app\db;
 
-use craft\app\enums\ColumnType;
 use craft\app\helpers\DateTimeHelper;
 use craft\app\helpers\DbHelper;
 use craft\app\helpers\StringHelper;
@@ -103,7 +102,6 @@ class Command extends \yii\db\Command
 
 		$params = [];
 		$sql = $this->db->getQueryBuilder()->insertOrUpdate($table, $keyColumns, $updateColumns, $params);
-
 		return $this->setSql($sql)->bindValues($params);
 	}
 
@@ -141,7 +139,6 @@ class Command extends \yii\db\Command
 	{
 		$params = [];
 		$sql = $this->db->getQueryBuilder()->replace($table, $column, $find, $replace, $params);
-
 		return $this->setSql($sql)->bindValues($params);
 	}
 
@@ -158,15 +155,10 @@ class Command extends \yii\db\Command
 	public function createTable($table, $columns, $options = null, $addIdColumn = true, $addAuditColumns = true)
 	{
 		$columns = array_merge(
-			($addIdColumn ? ['id' => ColumnType::PK] : []),
+			($addIdColumn ? ['id' => 'pk'] : []),
 			$columns,
 			($addAuditColumns ? DbHelper::getAuditColumnConfig() : [])
 		);
-
-		foreach ($columns as $col => $settings)
-		{
-			$columns[$col] = DbHelper::generateColumnDefinition($settings);
-		}
 
 		return parent::createTable($table, $columns, $options);
 	}
@@ -180,25 +172,7 @@ class Command extends \yii\db\Command
 	public function dropTableIfExists($table)
 	{
 		$sql = $this->db->getQueryBuilder()->dropTableIfExists($table);
-
 		return $this->setSql($sql);
-	}
-
-	/**
-	 * Creates a SQL command for adding a new DB column.
-	 *
-	 * @param string $table  The table that the new column will be added to. The table name will be properly quoted by the method.
-	 * @param string $column The name of the new column. The name will be properly quoted by the method.
-	 * @param string $type   The column type. [[\yii\db\QueryBuilder::getColumnType()]] will be called
-	 *                       to convert the give column type to the physical one. For example, `string` will be converted
-	 *                       as `varchar(255)`, and `string not null` becomes `varchar(255) not null`.
-	 * @return Command the command object itself
-	 */
-	public function addColumn($table, $column, $type)
-	{
-		$type = DbHelper::generateColumnDefinition($type);
-
-		return parent::addColumn($table, $column, $type);
 	}
 
 	/**
@@ -213,9 +187,7 @@ class Command extends \yii\db\Command
 	 */
 	public function addColumnFirst($table, $column, $type)
 	{
-		$type = DbHelper::generateColumnDefinition($type);
 		$sql = $this->db->getQueryBuilder()->addColumnFirst($table, $column, $type);
-
 		return $this->setSql($sql);
 	}
 
@@ -232,9 +204,7 @@ class Command extends \yii\db\Command
 	 */
 	public function addColumnBefore($table, $column, $type, $before)
 	{
-		$type = DbHelper::generateColumnDefinition($type);
 		$sql = $this->db->getQueryBuilder()->addColumnBefore($table, $column, $type, $before);
-
 		return $this->setSql($sql);
 	}
 
@@ -251,9 +221,7 @@ class Command extends \yii\db\Command
 	 */
 	public function addColumnAfter($table, $column, $type, $after)
 	{
-		$type = DbHelper::generateColumnDefinition($type);
 		$sql = $this->db->getQueryBuilder()->addColumnAfter($table, $column, $type, $after);
-
 		return $this->setSql($sql);
 	}
 
@@ -272,9 +240,7 @@ class Command extends \yii\db\Command
 	 */
 	public function alterColumn($table, $column, $type, $newName = null, $after = null)
 	{
-		$type = DbHelper::generateColumnDefinition($type);
 		$sql = $this->db->getQueryBuilder()->alterColumn($table, $column, $type, $newName, $after);
-
 		return $this->setSql($sql);
 	}
 }

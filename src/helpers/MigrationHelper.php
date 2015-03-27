@@ -9,7 +9,6 @@ namespace craft\app\helpers;
 
 use Craft;
 use craft\app\db\Query;
-use craft\app\enums\ColumnType;
 
 /**
  * Migration utility methods.
@@ -30,7 +29,7 @@ class MigrationHelper
 	/**
 	 * @var array
 	 */
-	private static $_idColumnType = ['column' => ColumnType::Int, 'required' => true];
+	private static $_idColumnType = 'integer not null';
 
 	/**
 	 * @var string
@@ -413,8 +412,13 @@ class MigrationHelper
 						$fkColumnName = $fk->columns[$fkColumnIndex];
 
 						// Get its column type
+						$fkColumnType = static::$_idColumnType;
 						$fkColumnRequired = StringHelper::contains($otherTable->columns[$fkColumnName]->type, 'NOT NULL');
-						$fkColumnType = array_merge(static::$_idColumnType, ['required' => $fkColumnRequired]);
+
+						if (!$fkColumnRequired)
+						{
+							$fkColumnType = str_replace(' NOT NULL', '', $fkColumnType);
+						}
 
 						$fks[] = (object) [
 							'fk'         => $fk,

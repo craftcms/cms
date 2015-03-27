@@ -295,11 +295,11 @@ class Install extends Component
 		$table = '{{%searchindex}}';
 
 		$columns = [
-			'elementId' => DbHelper::generateColumnDefinition(['column' => ColumnType::Int, 'null' => false]),
-			'attribute' => DbHelper::generateColumnDefinition(['column' => ColumnType::Varchar, 'maxLength' => 25, 'null' => false]),
-			'fieldId'   => DbHelper::generateColumnDefinition(['column' => ColumnType::Int, 'null' => false]),
-			'locale'    => DbHelper::generateColumnDefinition(['column' => ColumnType::Locale, 'null' => false]),
-			'keywords'  => DbHelper::generateColumnDefinition(['column' => ColumnType::Text, 'null' => false]),
+			'elementId' => 'integer not null',
+			'attribute' => 'string(25) not null',
+			'fieldId'   => 'integer not null',
+			'locale'    => 'char(12) not null',
+			'keywords'  => 'text not null',
 		];
 
 		// TODO: MySQL specific
