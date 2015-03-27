@@ -25,7 +25,6 @@ use yii\web\NotFoundHttpException;
  * @property \craft\app\services\Volumes          $volumes          The asset sources service.
  * @property \craft\app\services\AssetTransforms  $assetTransforms  The asset transforms service.
  * @property \craft\app\services\Categories       $categories       The categories service.
- * @property \craft\app\services\Components       $components       The components service.
  * @property \craft\app\services\Config           $config           The config service.
  * @property \craft\app\services\Content          $content          The content service.
  * @property \craft\app\services\Dashboard        $dashboard        The dashboard service.

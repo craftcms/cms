@@ -44,17 +44,6 @@ return [
 
 
 	// Configured components
-	'components' => [
-		'class' => 'craft\app\services\Components',
-		'types' => [
-			'volume     '   => ['subfolder' => 'volume',         'namespace' => '\craft\app\volumes',        'instanceof' => '\craft\app\base\VolumeInterface'                ,  'enableForPlugins' => false],
-			'elementAction' => ['subfolder' => 'elementactions', 'namespace' => '\craft\app\elementactions', 'instanceof' => '\craft\app\elementactions\ElementActionInterface', 'enableForPlugins' => true],
-			'field'         => ['subfolder' => 'fieldtypes',     'namespace' => '\craft\app\fieldtypes',     'instanceof' => '\craft\app\fieldtypes\FieldTypeInterface',         'enableForPlugins' => true],
-			'tool'          => ['subfolder' => 'tools',          'namespace' => '\craft\app\tools',          'instanceof' => '\craft\app\tools\ToolInterface',                   'enableForPlugins' => false],
-			'task'          => ['subfolder' => 'tasks',          'namespace' => '\craft\app\tasks',          'instanceof' => '\craft\app\tasks\TaskInterface',                   'enableForPlugins' => true],
-			'widget'        => ['subfolder' => 'widgets',        'namespace' => '\craft\app\widgets',        'instanceof' => '\craft\app\widgets\WidgetInterface',               'enableForPlugins' => true],
-		]
-	],
 	'resources' => [
 		'class'     => 'craft\app\services\Resources',
 		'dateParam' => 'd',

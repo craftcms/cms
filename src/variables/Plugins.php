@@ -28,12 +28,7 @@ class Plugins
 	 */
 	public function getPlugin($class, $enabledOnly = true)
 	{
-		$plugin = \Craft::$app->plugins->getPlugin($class, $enabledOnly);
-
-		if ($plugin)
-		{
-			return new Plugin($plugin);
-		}
+		return \Craft::$app->plugins->getPlugin($class, $enabledOnly);
 	}
 
 	/**
@@ -45,7 +40,6 @@ class Plugins
 	 */
 	public function getPlugins($enabledOnly = true)
 	{
-		$plugins = \Craft::$app->plugins->getPlugins($enabledOnly);
-		return Plugin::populateVariables($plugins);
+		return \Craft::$app->plugins->getPlugins($enabledOnly);=
 	}
 }

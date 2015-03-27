@@ -19,7 +19,6 @@ use craft\app\elements\GlobalSet;
 use craft\app\elements\MatrixBlock;
 use craft\app\elements\Tag;
 use craft\app\elements\User;
-use craft\app\enums\ComponentType;
 use craft\app\errors\Exception;
 use craft\app\events\DeleteElementsEvent;
 use craft\app\events\ElementEvent;
