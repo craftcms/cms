@@ -60,6 +60,9 @@ class Application extends \yii\console\Application
 		// Set the edition components
 		$this->_setEditionComponents();
 
+		// Set the timezone
+		$this->_setTimeZone();
+
 		// Call parent::init() before the plugin console command logic so the command runner gets initialized
 		parent::init();
 
@@ -120,19 +123,6 @@ class Application extends \yii\console\Application
 		}
 
 		return parent::get($id, $throwException);
-	}
-
-	/**
-	 * Returns the system time zone.
-	 *
-	 * Note that this method cannot be in [[\craft\app\base\ApplicationTrait]], because Yii will check
-	 * [[\yii\base\Application::getTimeZone()]] instead.
-	 *
-	 * @return string
-	 */
-	public function getTimeZone()
-	{
-		return $this->_getTimeZone();
 	}
 
 	// Protected Methods

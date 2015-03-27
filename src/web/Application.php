@@ -145,6 +145,9 @@ class Application extends \yii\web\Application
 			$this->setId($appId);
 		}
 
+		// Set the timezone
+		$this->_setTimeZone();
+
 		parent::init();
 	}
 
@@ -407,19 +410,6 @@ class Application extends \yii\web\Application
 
 		return parent::get($id, $throwException);
 	}
-
-	/**
-	 * Returns the system time zone.
-	 *
-	 * Note that this method cannot be in [[\craft\app\base\ApplicationTrait]], because Yii will check
-	 * [[\yii\base\Application::getTimeZone()]] instead.
-	 *
-	 * @return string
-	 */
-	//public function getTimeZone()
-	//{
-	//	return $this->_getTimeZone();
-	//}
 
 	/**
 	 * Tries to find a match between the browser's preferred locales and the locales Craft has been translated into.

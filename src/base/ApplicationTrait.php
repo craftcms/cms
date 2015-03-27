@@ -994,21 +994,22 @@ trait ApplicationTrait
 	}
 
 	/**
-	 * Returns the system timezone.
-	 *
-	 * @return string
+	 * Sets the system timezone.
 	 */
-	private function _getTimeZone()
+	private function _setTimeZone()
 	{
 		/* @var $this \craft\app\web\Application|\craft\app\console\Application */
 		$timezone = $this->config->get('timezone');
 
-		if ($timezone)
+		if (!$timezone)
 		{
-			return $timezone;
+			$timezone = $this->getInfo('timezone');
 		}
 
-		return $this->getInfo('timezone');
+		if ($timezone)
+		{
+			$this->setTimeZone($timezone);
+		}
 	}
 
 	/**
