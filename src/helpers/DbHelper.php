@@ -23,23 +23,6 @@ class DbHelper
 	// =========================================================================
 
 	/**
-	 * The default column configs.
-	 *
-	 * @var array
-	 */
-	public static $columnTypeDefaults = [
-		ColumnType::Char         => ['maxLength' => 255],
-		ColumnType::Varchar      => ['maxLength' => 255],
-		ColumnType::TinyInt      => ['maxLength' => 4],
-		ColumnType::SmallInt     => ['maxLength' => 6],
-		ColumnType::MediumInt    => ['maxLength' => 9],
-		ColumnType::Int          => ['maxLength' => 11],
-		ColumnType::BigInt       => ['maxLength' => 20],
-		ColumnType::Decimal      => ['maxLength' => 10, 'decimals' => 2],
-		ColumnType::Enum         => ['values' => []],
-	];
-
-	/**
 	 * @var array
 	 */
 	private static $_operators = ['not ', '!=', '<=', '>=', '<', '>', '='];
