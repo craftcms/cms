@@ -874,7 +874,7 @@ class Templates extends Component
 			if ($pluginHandle && ($plugin = Craft::$app->plugins->getPlugin($pluginHandle)) !== null)
 			{
 				// Get the template path for the plugin.
-				$basePath = Craft::$app->path->getPluginsPath().'/'.StringHelper::toLowerCase($plugin->getClassHandle()).'/templates';
+				$basePath = Craft::$app->path->getPluginsPath().'/'.StringHelper::toLowerCase($plugin::classHandle()).'/templates';
 
 				// Get the new template name to look for within the plugin's templates folder
 				$tempName = implode('/', $parts);

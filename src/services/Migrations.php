@@ -71,7 +71,7 @@ class Migrations extends Component
 		{
 			if ($plugin)
 			{
-				Craft::info('No new migration(s) found for the plugin '.$plugin->getClassHandle().'. Your system is up-to-date.', __METHOD__);
+				Craft::info('No new migration(s) found for the plugin '.$plugin::className().'. Your system is up-to-date.', __METHOD__);
 			}
 			else
 			{
@@ -85,7 +85,7 @@ class Migrations extends Component
 
 		if ($plugin)
 		{
-			Craft::info('Total '.$total.' new '.($total === 1 ? 'migration' : 'migrations').' to be applied for plugin '.$plugin->getClassHandle().':', __METHOD__);
+			Craft::info('Total '.$total.' new '.($total === 1 ? 'migration' : 'migrations').' to be applied for plugin '.$plugin::className().':', __METHOD__);
 		}
 		else
 		{
@@ -106,7 +106,7 @@ class Migrations extends Component
 			{
 				if ($plugin)
 				{
-					Craft::error('Migration failed for plugin '.$plugin->getClassHandle().'. All later '.$plugin->getClassHandle().' migrations are canceled.', __METHOD__);
+					Craft::error('Migration failed for plugin '.$plugin::className().'. All later '.$plugin::className().' migrations are canceled.', __METHOD__);
 				}
 				else
 				{
@@ -122,7 +122,7 @@ class Migrations extends Component
 
 		if ($plugin)
 		{
-			Craft::info($plugin->getClassHandle().' migrated up successfully.', __METHOD__);
+			Craft::info($plugin::className().' migrated up successfully.', __METHOD__);
 		}
 		else
 		{
@@ -150,7 +150,7 @@ class Migrations extends Component
 
 		if ($plugin)
 		{
-			Craft::info('Applying migration: '.$class.' for plugin: '.$plugin->getClassHandle(), __METHOD__);
+			Craft::info('Applying migration: '.$class.' for plugin: '.$plugin::className(), __METHOD__);
 		}
 		else
 		{
@@ -332,7 +332,7 @@ class Migrations extends Component
 	{
 		if ($plugin)
 		{
-			$path = Craft::$app->path->getMigrationsPath($plugin->getClassHandle());
+			$path = Craft::$app->path->getMigrationsPath($plugin::className());
 		}
 		else
 		{

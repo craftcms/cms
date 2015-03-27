@@ -65,9 +65,9 @@ class Cp
 		{
 			if ($plugin->hasCpSection())
 			{
-				if (\Craft::$app->getUser()->checkPermission('accessPlugin-'.$plugin->getClassHandle()))
+				if (\Craft::$app->getUser()->checkPermission('accessPlugin-'.\Craft::$app->templates->formatInputId($plugin::className())))
 				{
-					$lcHandle = StringHelper::toLowerCase($plugin->getClassHandle());
+					$lcHandle = StringHelper::toLowerCase($plugin::classHandle());
 					$nav[$lcHandle] = ['name' => $plugin->getName()];
 				}
 			}

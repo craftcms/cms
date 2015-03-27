@@ -229,7 +229,10 @@ class CategoriesController extends Controller
 
 		$this->_prepEditCategoryVariables($variables);
 
-		$this->_enforceEditCategoryPermissions($variables['category']);
+		/** @var Category $category */
+		$category = $variables['category'];
+
+		$this->_enforceEditCategoryPermissions($category);
 
 		// Parent Category selector variables
 		// ---------------------------------------------------------------------
@@ -251,25 +254,25 @@ class CategoriesController extends Controller
 				$variables['parentOptionCriteria']['level'] = '< '.$variables['group']->maxLevels;
 			}
 
-			if ($variables['category']->id)
+			if ($category->id)
 			{
 				// Prevent the current category, or any of its descendants, from being options
 				$excludeIds = Category::find()
-					->descendantOf($variables['category'])
+					->descendantOf($category)
 					->status(null)
 					->localeEnabled(false)
 					->ids();
 
-				$excludeIds[] = $variables['category']->id;
+				$excludeIds[] = $category->id;
 				$variables['parentOptionCriteria']['where'] = ['not in', 'elements.id', $excludeIds];
 			}
 
 			// Get the initially selected parent
 			$parentId = Craft::$app->getRequest()->getParam('parentId');
 
-			if ($parentId === null && $variables['category']->id)
+			if ($parentId === null && $category->id)
 			{
-				$parentIds = $variables['category']->getAncestors(1)->status(null)->localeEnabled(null)->ids();
+				$parentIds = $category->getAncestors(1)->status(null)->localeEnabled(false)->ids();
 
 				if ($parentIds)
 				{
@@ -287,14 +290,14 @@ class CategoriesController extends Controller
 		// ---------------------------------------------------------------------
 
 		// Page title
-		if (!$variables['category']->id)
+		if (!$category->id)
 		{
 			$variables['title'] = Craft::t('app', 'Create a new category');
 		}
 		else
 		{
-			$variables['docTitle'] = Craft::t('app', $variables['category']->title);
-			$variables['title'] = Craft::t('app', $variables['category']->title);
+			$variables['docTitle'] = Craft::t('app', $category->title);
+			$variables['title'] = Craft::t('app', $category->title);
 		}
 
 		// Breadcrumbs
@@ -303,7 +306,8 @@ class CategoriesController extends Controller
 			['label' => Craft::t('app', $variables['group']->name), 'url' => UrlHelper::getUrl('categories/'.$variables['group']->handle)]
 		];
 
-		foreach ($variables['category']->getAncestors() as $ancestor)
+		/** @var Category $ancestor */
+		foreach ($category->getAncestors() as $ancestor)
 		{
 			$variables['crumbs'][] = ['label' => $ancestor->title, 'url' => $ancestor->getCpEditUrl()];
 		}
@@ -314,30 +318,30 @@ class CategoriesController extends Controller
 			Craft::$app->templates->includeJs('Craft.LivePreview.init('.JsonHelper::encode([
 				'fields'        => '#title-field, #fields > div > div > .field',
 				'extraFields'   => '#settings',
-				'previewUrl'    => $variables['category']->getUrl(),
+				'previewUrl'    => $category->getUrl(),
 				'previewAction' => 'categories/previewCategory',
 				'previewParams' => [
 				                       'groupId'    => $variables['group']->id,
-				                       'categoryId' => $variables['category']->id,
-				                       'locale'     => $variables['category']->locale,
+				                       'categoryId' => $category->id,
+				                       'locale'     => $category->locale,
 				]
 				]).');');
 
 			$variables['showPreviewBtn'] = true;
 
 			// Should we show the Share button too?
-			if ($variables['category']->id)
+			if ($category->id)
 			{
 				// If the category is enabled, use its main URL as its share URL.
-				if ($variables['category']->getStatus() == Element::ENABLED)
+				if ($category->getStatus() == Element::ENABLED)
 				{
-					$variables['shareUrl'] = $variables['category']->getUrl();
+					$variables['shareUrl'] = $category->getUrl();
 				}
 				else
 				{
 					$variables['shareUrl'] = UrlHelper::getActionUrl('categories/shareCategory', [
-						'categoryId' => $variables['category']->id,
-						'locale'     => $variables['category']->locale
+						'categoryId' => $category->id,
+						'locale'     => $category->locale
 					]);
 				}
 			}

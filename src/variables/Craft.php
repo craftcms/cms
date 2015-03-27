@@ -46,7 +46,7 @@ class Craft extends Object
 	 */
 	public function __get($name)
 	{
-		$plugin = \Craft::$app->plugins->getPlugin($name);
+		/*$plugin = \Craft::$app->plugins->getPlugin($name);
 
 		if ($plugin && $plugin->isEnabled)
 		{
@@ -60,7 +60,7 @@ class Craft extends Object
 			}
 
 			return new $className;
-		}
+		}*/
 	}
 
 	/**

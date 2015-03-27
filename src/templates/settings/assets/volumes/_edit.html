@@ -64,7 +64,7 @@
 					</div>
 				{% endfor %}
 			{% else %}
-				{% namespace 'types['~volumeType.getClassHandle()~']' %}
+				{% namespace 'types['~volumeType.className()~']' %}
 					{{ volumeType.getSettingsHtml()|raw }}
 				{% endnamespace %}
 			{% endif %}

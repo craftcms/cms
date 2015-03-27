@@ -324,11 +324,11 @@ class Elements extends Component
 						// Just set *something* on it
 						if ($isNewElement)
 						{
-							$content->title = 'New '.$element->getClassHandle();
+							$content->title = 'New '.$element::classHandle();
 						}
 						else
 						{
-							$content->title = $element->getClassHandle().' '.$element->id;
+							$content->title = $element::classHandle().' '.$element->id;
 						}
 					}
 				}

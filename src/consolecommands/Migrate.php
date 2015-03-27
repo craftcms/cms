@@ -249,12 +249,12 @@ class Migrate extends \MigrateCommand
 			$plugin = $this->_validatePlugin($args[0]);
 			if (Craft::$app->migrations->runToTop($plugin))
 			{
-				echo "Migrated ".$plugin->getClassHandle()." to top successfully.\n";
+				echo "Migrated ".$plugin::className()." to top successfully.\n";
 				return 0;
 			}
 			else
 			{
-				echo "There was a problem migrating ".$plugin->getClassHandle()." to top.  Check the logs.\n";
+				echo "There was a problem migrating ".$plugin::className()." to top.  Check the logs.\n";
 			}
 
 			return 1;
@@ -312,7 +312,7 @@ class Migrate extends \MigrateCommand
 			}
 			else if ($plugin)
 			{
-				echo "No migration has been ran for ".$plugin->getClassHandle()."\n";
+				echo "No migration has been ran for ".$plugin::className()."\n";
 			}
 			else
 			{
@@ -330,7 +330,7 @@ class Migrate extends \MigrateCommand
 			}
 			else if ($plugin)
 			{
-				echo "A total of $n ".($n === 1 ? 'migration has' : 'migrations have')." been applied before for ".$plugin->getClassHandle().":\n";
+				echo "A total of $n ".($n === 1 ? 'migration has' : 'migrations have')." been applied before for ".$plugin::className().":\n";
 			}
 			else
 			{
@@ -383,7 +383,7 @@ class Migrate extends \MigrateCommand
 		{
 			if ($plugin)
 			{
-				echo "No new migrations found for ".$plugin->getClassHandle().". The plugin is up-to-date.\n";
+				echo "No new migrations found for ".$plugin::className().". The plugin is up-to-date.\n";
 			}
 			else
 			{
@@ -397,7 +397,7 @@ class Migrate extends \MigrateCommand
 
 			if ($plugin)
 			{
-				echo "Found $n new ".($n === 1 ? 'migration' : 'migrations')." for ".$plugin->getClassHandle().":\n";
+				echo "Found $n new ".($n === 1 ? 'migration' : 'migrations')." for ".$plugin::className().":\n";
 			}
 			else
 			{

@@ -239,7 +239,7 @@ class Updates extends Component
 		$affectedRows = Craft::$app->getDb()->createCommand()->update('{{%plugins}}', [
 			'version' => $plugin->getVersion()
 		], [
-			'class' => $plugin->getClassHandle()
+			'class' => $plugin::className()
 		])->execute();
 
 		return (bool) $affectedRows;
@@ -264,10 +264,10 @@ class Updates extends Component
 		foreach ($plugins as $plugin)
 		{
 			$pluginUpdateModel = new PluginUpdateModel();
-			$pluginUpdateModel->class = $plugin->getClassHandle();
+			$pluginUpdateModel->class = $plugin::className();
 			$pluginUpdateModel->localVersion = $plugin->version;
 
-			$pluginUpdateModels[$plugin->getClassHandle()] = $pluginUpdateModel;
+			$pluginUpdateModels[$plugin::className()] = $pluginUpdateModel;
 		}
 
 		$updateModel->plugins = $pluginUpdateModels;

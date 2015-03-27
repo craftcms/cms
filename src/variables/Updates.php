@@ -99,7 +99,7 @@ class Updates
 			}
 			else
 			{
-				return $plugins[0]->getClassHandle();
+				//return $plugins[0]->getClassHandle();
 			}
 		}
 

@@ -259,7 +259,7 @@ class Application extends \yii\web\Application
 
 				if ($plugin)
 				{
-					if (!$user->checkPermission('accessPlugin-'.$plugin->getClassHandle()))
+					if (!$user->checkPermission('accessPlugin-'.$this->templates->formatInputId($plugin::className())))
 					{
 						throw new ForbiddenHttpException();
 					}

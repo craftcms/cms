@@ -429,9 +429,9 @@ class I18N extends \yii\i18n\I18N
 
 			foreach (Craft::$app->elements->getAllElementTypes() as $elementType)
 			{
-				if (!$elementType->isLocalized())
+				if (!$elementType::isLocalized())
 				{
-					$nonLocalizedElementTypes[] = $elementType->getClassHandle();
+					$nonLocalizedElementTypes[] = $elementType::className();
 				}
 			}
 

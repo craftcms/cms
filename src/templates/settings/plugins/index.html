@@ -25,7 +25,7 @@
 			<tbody>
 				{% for plugin in plugins %}
 					{% set name = plugin.getName() -%}
-					{% set classHandle = plugin.getClassHandle() -%}
+					{% set className = plugin.className() -%}
 					{% set isInstalled = plugin.isInstalled() -%}
 					{% set isEnabled = plugin.isEnabled() -%}
 					{% set settingsUrl = isEnabled ? plugin.getSettingsUrl() -%}
@@ -44,7 +44,7 @@
 						<td data-title="{{ 'Status'|t }}">
 							{% if isInstalled %}
 								<form method="post" accept-charset="UTF-8">
-									<input type="hidden" name="pluginClass" value="{{ classHandle }}">
+									<input type="hidden" name="pluginClass" value="{{ className }}">
 									{{ getCsrfInput() }}
 
 									{% if isEnabled %}
@@ -61,7 +61,7 @@
 						</td>
 						<td class="thin rightalign nowrap">
 							<form method="post" accept-charset="UTF-8">
-								<input type="hidden" name="pluginClass" value="{{ classHandle }}">
+								<input type="hidden" name="pluginClass" value="{{ className }}">
 								{{ getCsrfInput() }}
 
 								{% if isInstalled %}

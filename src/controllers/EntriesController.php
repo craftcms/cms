@@ -17,6 +17,9 @@ use craft\app\helpers\DateTimeHelper;
 use craft\app\helpers\JsonHelper;
 use craft\app\helpers\UrlHelper;
 use craft\app\elements\Entry;
+use craft\app\models\EntryDraft;
+use craft\app\models\EntryVersion;
+use craft\app\models\Section;
 
 /**
  * The EntriesController class is a controller that handles various entry related tasks such as retrieving, saving,
@@ -67,14 +70,19 @@ class EntriesController extends BaseEntriesController
 
 		$this->_prepEditEntryVariables($variables);
 
+		/** @var Entry $entry */
+		$entry = $variables['entry'];
+		/** @var Section $section */
+		$section = $variables['section'];
+
 		// Make sure they have permission to edit this entry
-		$this->enforceEditEntryPermissions($variables['entry']);
+		$this->enforceEditEntryPermissions($entry);
 
 		$currentUser = Craft::$app->getUser()->getIdentity();
 
-		$variables['permissionSuffix'] = ':'.$variables['entry']->sectionId;
+		$variables['permissionSuffix'] = ':'.$entry->sectionId;
 
-		if (Craft::$app->getEdition() == Craft::Pro && $variables['section']->type != SectionType::Single)
+		if (Craft::$app->getEdition() == Craft::Pro && $section->type != SectionType::Single)
 		{
 			// Author selector variables
 			// ---------------------------------------------------------------------
@@ -87,7 +95,7 @@ class EntriesController extends BaseEntriesController
 				'can' => $authorPermission,
 			];
 
-			$variables['author'] = $variables['entry']->getAuthor();
+			$variables['author'] = $entry->getAuthor();
 
 			if (!$variables['author'])
 			{
@@ -101,43 +109,43 @@ class EntriesController extends BaseEntriesController
 
 		if (
 			Craft::$app->getEdition() >= Craft::Client &&
-			$variables['section']->type == SectionType::Structure &&
-			$variables['section']->maxLevels != 1
+			$section->type == SectionType::Structure &&
+			$section->maxLevels != 1
 		)
 		{
 			$variables['elementType'] = Entry::className();
 
 			$variables['parentOptionCriteria'] = [
 				'locale'        => $variables['localeId'],
-				'sectionId'     => $variables['section']->id,
+				'sectionId'     => $section->id,
 				'status'        => null,
 				'localeEnabled' => null,
 			];
 
-			if ($variables['section']->maxLevels)
+			if ($section->maxLevels)
 			{
-				$variables['parentOptionCriteria']['level'] = '< '.$variables['section']->maxLevels;
+				$variables['parentOptionCriteria']['level'] = '< '.$section->maxLevels;
 			}
 
-			if ($variables['entry']->id)
+			if ($entry->id)
 			{
 				// Prevent the current entry, or any of its descendants, from being options
 				$excludeIds = Entry::find()
-					->descendantOf($variables['entry'])
+					->descendantOf($entry)
 					->status(null)
 					->localeEnabled(false)
 					->ids();
 
-				$excludeIds[] = $variables['entry']->id;
+				$excludeIds[] = $entry->id;
 				$variables['parentOptionCriteria']['where'] = ['not in', 'elements.id', $excludeIds];
 			}
 
 			// Get the initially selected parent
 			$parentId = Craft::$app->getRequest()->getParam('parentId');
 
-			if ($parentId === null && $variables['entry']->id)
+			if ($parentId === null && $entry->id)
 			{
-				$parentIds = $variables['entry']->getAncestors(1)->status(null)->localeEnabled(null)->ids();
+				$parentIds = $entry->getAncestors(1)->status(null)->localeEnabled(false)->ids();
 
 				if ($parentIds)
 				{
@@ -156,15 +164,15 @@ class EntriesController extends BaseEntriesController
 
 		if (Craft::$app->isLocalized())
 		{
-			if ($variables['entry']->id)
+			if ($entry->id)
 			{
-				$variables['enabledLocales'] = Craft::$app->elements->getEnabledLocalesForElement($variables['entry']->id);
+				$variables['enabledLocales'] = Craft::$app->elements->getEnabledLocalesForElement($entry->id);
 			}
 			else
 			{
 				$variables['enabledLocales'] = [];
 
-				foreach ($variables['section']->getLocales() as $locale)
+				foreach ($section->getLocales() as $locale)
 				{
 					if ($locale->enabledByDefault)
 					{
@@ -180,17 +188,19 @@ class EntriesController extends BaseEntriesController
 		// Page title w/ revision label
 		if (Craft::$app->getEdition() >= Craft::Client)
 		{
-			switch ($variables['entry']->getClassHandle())
+			switch ($entry::className())
 			{
-				case 'EntryDraft':
+				case EntryDraft::className():
 				{
-					$variables['revisionLabel'] = $variables['entry']->name;
+					/** @var EntryDraft $entry */
+					$variables['revisionLabel'] = $entry->name;
 					break;
 				}
 
-				case 'EntryVersion':
+				case EntryVersion::className():
 				{
-					$variables['revisionLabel'] = Craft::t('app', 'Version {num}', ['num' => $variables['entry']->num]);
+					/** @var EntryVersion $entry */
+					$variables['revisionLabel'] = Craft::t('app', 'Version {num}', ['num' => $entry->num]);
 					break;
 				}
 
@@ -201,16 +211,16 @@ class EntriesController extends BaseEntriesController
 			}
 		}
 
-		if (!$variables['entry']->id)
+		if (!$entry->id)
 		{
 			$variables['title'] = Craft::t('app', 'Create a new entry');
 		}
 		else
 		{
-			$variables['docTitle'] = Craft::t('app', $variables['entry']->title);
-			$variables['title'] = Craft::t('app', $variables['entry']->title);
+			$variables['docTitle'] = Craft::t('app', $entry->title);
+			$variables['title'] = Craft::t('app', $entry->title);
 
-			if (Craft::$app->getEdition() >= Craft::Client && $variables['entry']->getClassHandle() != 'Entry')
+			if (Craft::$app->getEdition() >= Craft::Client && $entry::className() != Entry::className())
 			{
 				$variables['docTitle'] .= ' ('.$variables['revisionLabel'].')';
 			}
@@ -221,17 +231,18 @@ class EntriesController extends BaseEntriesController
 			['label' => Craft::t('app', 'Entries'), 'url' => UrlHelper::getUrl('entries')]
 		];
 
-		if ($variables['section']->type == SectionType::Single)
+		if ($section->type == SectionType::Single)
 		{
 			$variables['crumbs'][] = ['label' => Craft::t('app', 'Singles'), 'url' => UrlHelper::getUrl('entries/singles')];
 		}
 		else
 		{
-			$variables['crumbs'][] = ['label' => Craft::t('app', $variables['section']->name), 'url' => UrlHelper::getUrl('entries/'.$variables['section']->handle)];
+			$variables['crumbs'][] = ['label' => Craft::t('app', $section->name), 'url' => UrlHelper::getUrl('entries/'.$section->handle)];
 
-			if ($variables['section']->type == SectionType::Structure)
+			if ($section->type == SectionType::Structure)
 			{
-				foreach ($variables['entry']->getAncestors() as $ancestor)
+				/** @var Entry $ancestor */
+				foreach ($entry->getAncestors() as $ancestor)
 				{
 					$variables['crumbs'][] = ['label' => $ancestor->title, 'url' => $ancestor->getCpEditUrl()];
 				}
@@ -239,7 +250,7 @@ class EntriesController extends BaseEntriesController
 		}
 
 		// Multiple entry types?
-		$entryTypes = $variables['section']->getEntryTypes();
+		$entryTypes = $section->getEntryTypes();
 
 		if (count($entryTypes) > 1)
 		{
@@ -259,51 +270,53 @@ class EntriesController extends BaseEntriesController
 		}
 
 		// Enable Live Preview?
-		if (!Craft::$app->getRequest()->getIsMobileBrowser(true) && Craft::$app->sections->isSectionTemplateValid($variables['section']))
+		if (!Craft::$app->getRequest()->getIsMobileBrowser(true) && Craft::$app->sections->isSectionTemplateValid($section))
 		{
 			Craft::$app->templates->includeJs('Craft.LivePreview.init('.JsonHelper::encode([
 				'fields'        => '#title-field, #fields > div > div > .field',
 				'extraFields'   => '#settings',
-				'previewUrl'    => $variables['entry']->getUrl(),
+				'previewUrl'    => $entry->getUrl(),
 				'previewAction' => 'entries/previewEntry',
 				'previewParams' => [
-				                       'sectionId' => $variables['section']->id,
-				                       'entryId'   => $variables['entry']->id,
-				                       'locale'    => $variables['entry']->locale,
-				                       'versionId' => ($variables['entry']->getClassHandle() == 'EntryVersion' ? $variables['entry']->versionId : null),
+				                       'sectionId' => $section->id,
+				                       'entryId'   => $entry->id,
+				                       'locale'    => $entry->locale,
+				                       'versionId' => ($entry::className() == EntryVersion::className() ? $entry->versionId : null),
 				]
 				]).');');
 
 			$variables['showPreviewBtn'] = true;
 
 			// Should we show the Share button too?
-			if ($variables['entry']->id)
+			if ($entry->id)
 			{
-				$classHandle = $variables['entry']->getClassHandle();
+				$className = $entry::className();
 
 				// If we're looking at the live version of an entry, just use
 				// the entry's main URL as its share URL
-				if ($classHandle == 'Entry' && $variables['entry']->getStatus() == Entry::LIVE)
+				if ($className == Entry::className() && $entry->getStatus() == Entry::LIVE)
 				{
-					$variables['shareUrl'] = $variables['entry']->getUrl();
+					$variables['shareUrl'] = $entry->getUrl();
 				}
 				else
 				{
-					switch ($classHandle)
+					switch ($className)
 					{
-						case 'EntryDraft':
+						case EntryDraft::className():
 						{
-							$shareParams = ['draftId' => $variables['entry']->draftId];
+							/** @var EntryDraft $entry */
+							$shareParams = ['draftId' => $entry->draftId];
 							break;
 						}
-						case 'EntryVersion':
+						case EntryVersion::className():
 						{
-							$shareParams = ['versionId' => $variables['entry']->versionId];
+							/** @var EntryVersion $entry */
+							$shareParams = ['versionId' => $entry->versionId];
 							break;
 						}
 						default:
 						{
-							$shareParams = ['entryId' => $variables['entry']->id, 'locale' => $variables['entry']->locale];
+							$shareParams = ['entryId' => $entry->id, 'locale' => $entry->locale];
 							break;
 						}
 					}
@@ -320,7 +333,7 @@ class EntriesController extends BaseEntriesController
 		// Set the base CP edit URL
 
 		// Can't just use the entry's getCpEditUrl() because that might include the locale ID when we don't want it
-		$variables['baseCpEditUrl'] = 'entries/'.$variables['section']->handle.'/{id}-{slug}';
+		$variables['baseCpEditUrl'] = 'entries/'.$section->handle.'/{id}-{slug}';
 
 		// Set the "Continue Editing" URL
 		$variables['continueEditingUrl'] = $variables['baseCpEditUrl'] .
@@ -328,9 +341,9 @@ class EntriesController extends BaseEntriesController
 			(Craft::$app->isLocalized() && Craft::$app->getLanguage() != $variables['localeId'] ? '/'.$variables['localeId'] : '');
 
 		// Can the user delete the entry?
-		$variables['canDeleteEntry'] = $variables['entry']->id && (
-			($variables['entry']->authorId == $currentUser->id && $currentUser->can('deleteEntries'.$variables['permissionSuffix'])) ||
-			($variables['entry']->authorId != $currentUser->id && $currentUser->can('deletePeerEntries'.$variables['permissionSuffix']))
+		$variables['canDeleteEntry'] = $entry->id && (
+			($entry->authorId == $currentUser->id && $currentUser->can('deleteEntries'.$variables['permissionSuffix'])) ||
+			($entry->authorId != $currentUser->id && $currentUser->can('deletePeerEntries'.$variables['permissionSuffix']))
 		);
 
 		// Include translations
@@ -401,7 +414,7 @@ class EntriesController extends BaseEntriesController
 			$this->enforceEditEntryPermissions($entry);
 
 			// Set the language to the user's preferred locale so DateFormatter returns the right format
-			Craft::$app->setLanguage(craft()->getTargetLanguage(true));
+			Craft::$app->setLanguage(Craft::$app->getTargetLanguage(true));
 
 			$this->_populateEntryModel($entry);
 		}
@@ -660,7 +673,7 @@ class EntriesController extends BaseEntriesController
 			$entry = Craft::$app->entryRevisions->getVersionById($versionId);
 		}
 
-		if (!$entry)
+		if (empty($entry))
 		{
 			throw new HttpException(404);
 		}
