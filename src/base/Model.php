@@ -119,32 +119,6 @@ abstract class Model extends \yii\base\Model
 	}
 
 	/**
-	 * Get the class name, sans namespace and suffix.
-	 *
-	 * @return string
-	 */
-	public function getClassHandle()
-	{
-		if (!isset($this->_classHandle))
-		{
-			// Chop off the namespace
-			$classHandle = mb_substr(get_class($this), StringHelper::length(__NAMESPACE__) + 1);
-
-			// Chop off the class suffix
-			$suffixLength = StringHelper::length($this->classSuffix);
-
-			if (mb_substr($classHandle, -$suffixLength) == $this->classSuffix)
-			{
-				$classHandle = mb_substr($classHandle, 0, -$suffixLength);
-			}
-
-			$this->_classHandle = $classHandle;
-		}
-
-		return $this->_classHandle;
-	}
-
-	/**
 	 * Returns the names of any attributes that should be converted to DateTime objects from [[populate()]].
 	 *
 	 * @return string[]

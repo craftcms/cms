@@ -10,6 +10,7 @@ namespace craft\app\controllers;
 use Craft;
 use craft\app\enums\SectionType;
 use craft\app\elements\Entry;
+use craft\app\models\EntryDraft;
 use craft\app\web\Controller;
 
 /**
@@ -55,9 +56,9 @@ abstract class BaseEntriesController extends Controller
 		}
 		else
 		{
-			switch ($entry->getClassHandle())
+			switch ($entry::className())
 			{
-				case 'Entry':
+				case Entry::className():
 				{
 					// If it's another user's entry (and it's not a Single), make sure they have permission to edit those
 					if (
@@ -71,13 +72,11 @@ abstract class BaseEntriesController extends Controller
 					break;
 				}
 
-				case 'EntryDraft':
+				case EntryDraft::className():
 				{
 					// If it's another user's draft, make sure they have permission to edit those
-					if (
-						$entry->getClassHandle() == 'EntryDraft' &&
-						$entry->creatorId != $userSessionService->getIdentity()->id
-					)
+					/** @var EntryDraft $entry */
+					if ($entry->creatorId != $userSessionService->getIdentity()->id)
 					{
 						$this->requirePermission('editPeerEntryDrafts'.$permissionSuffix);
 					}
