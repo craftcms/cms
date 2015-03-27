@@ -262,7 +262,7 @@ class Volumes extends Component
 			$volume->id = $volumeId;
 			$volume->name = TempAssetvolumeType::volumeName;
 			$volume->type = TempAssetvolumeType::volumeType;
-			$volume->settings = array('path' => Craft::$app->path->getAssetsTempvolumePath(), 'url' => UrlHelper::getRevolumeUrl('tempassets').'/');*/
+			$volume->settings = array('path' => Craft::$app->path->getAssetsTempvolumePath(), 'url' => UrlHelper::getResourceUrl('tempassets').'/');*/
 			return;// $volume;
 		}
 		else
@@ -326,7 +326,7 @@ class Volumes extends Component
 
 				$volumeRecord->name          = $volume->name;
 				$volumeRecord->handle        = $volume->handle;
-				$volumeRecord->type          = $volume->type;
+				$volumeRecord->type          = $volume->getType();
 				$volumeRecord->url           = $volume->url;
 				$volumeRecord->settings      = $volume->settings;
 				$volumeRecord->fieldLayoutId = $volume->fieldLayoutId;

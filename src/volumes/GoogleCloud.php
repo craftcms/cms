@@ -82,10 +82,8 @@ class GoogleCloud extends Volume
 	 */
 	public function getSettingsHtml()
 	{
-		$settings = $this->getSettings();
-
 		return Craft::$app->templates->render('_components/volumes/GoogleCloud/settings', array(
-			'settings' => $settings,
+			'volume' => $this,
 		));
 	}
 

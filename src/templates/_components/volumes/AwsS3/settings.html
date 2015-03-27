@@ -6,8 +6,8 @@
     label: "Access Key ID"|t,
     id: 'keyId',
     name: 'keyId',
-    value: settings.keyId,
-    errors: settings.getErrors('keyId'),
+    value: volume.keyId,
+    errors: volume.getErrors('keyId'),
     class: 's3-key-id',
     instructions: 'You can leave this field empty if you are using an EC2 instance with an applicable IAM role assigne.'|t
 }) }}
@@ -16,8 +16,8 @@
     label: "Secret Access Key"|t,
     id: 'secret',
     name: 'secret',
-    value: settings.secret,
-    errors: settings.getErrors('secret'),
+    value: volume.secret,
+    errors: volume.getErrors('secret'),
     class: 's3-secret-key',
     instructions: 'You can leave this field empty if you are using an EC2 instance with an applicable IAM role assigne.'|t
 }) }}
@@ -27,12 +27,12 @@
         <tr>
             <td>
                 {{ forms.select({
-                id: 'bucket',
-                name: 'bucket',
-                options: { (settings.bucket): settings.bucket },
-                value: settings.bucket,
-                readonly: true,
-                class: 's3-bucket-select'
+                    id: 'bucket',
+                    name: 'bucket',
+                    options: { (volume.bucket): volume.bucket },
+                    value: volume.bucket,
+                    readonly: true,
+                    class: 's3-bucket-select'
                 }) }}
             </td>
             <td>
@@ -56,43 +56,10 @@
     id: 'subfolder',
     class: 'ltr',
     name: 'subfolder',
-    value: settings.subfolder,
-    errors: settings.getErrors('subfolder'),
+    value: volume.subfolder,
+    errors: volume.getErrors('subfolder'),
     required: false,
     placeholder: "path/to/subfolder"|t
 }) }}
 
-{% set cacheInput %}
-<table class="inputs">
-    <tr>
-        <td>
-            {{ forms.textField({
-                id: 'expiresAmount',
-                value: settings.expires.amount,
-                size: 2,
-                class: 'expires-amount'
-            }) }}
-        </td>
-        <td>
-            {{ forms.select({
-                id: 'expiresPeriod',
-                options: periods,
-                value: settings.expires.period,
-                class: 'expires-period'
-            }) }}
-        </td>
-    </tr>
-</table>
-{{ forms.hidden({
-    name: "expires",
-    value: settings.expires.amount ~ settings.expires.period,
-    class: "expires-combined"
-}) }}
-{% endset %}
-
-{{ forms.field({
-label: "Cache Duration "|t,
-id: 'cacheDuration',
-}, cacheInput) }}
-
-<input type="hidden" name="region" class="s3-region" value="{{ settings.region }}">
+<input type="hidden" name="region" class="s3-region" value="{{ volume.region }}">

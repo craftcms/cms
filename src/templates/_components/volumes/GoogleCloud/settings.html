@@ -6,8 +6,8 @@
     label: "Access Key ID"|t,
     id: 'keyId',
     name: 'keyId',
-    value: settings.keyId,
-    errors: settings.getErrors('keyId'),
+    value: volume.keyId,
+    errors: volume.getErrors('keyId'),
     class: 'google-key-id',
     required: true
 }) }}
@@ -16,8 +16,8 @@
     label: "Secret Access Key"|t,
     id: 'secret',
     name: 'secret',
-    value: settings.secret,
-    errors: settings.getErrors('secret'),
+    value: volume.secret,
+    errors: volume.getErrors('secret'),
     class: 'google-secret-key',
     required: true
 }) }}
@@ -29,8 +29,8 @@
             {{ forms.select({
             id: 'bucket',
             name: 'bucket',
-            options: { (settings.bucket): settings.bucket },
-            value: settings.bucket,
+            options: { (volume.bucket): volume.bucket },
+            value: volume.bucket,
             readonly: true,
             class: 'google-bucket-select'
             }) }}
@@ -56,41 +56,8 @@
     id: 'subfolder',
     class: 'ltr',
     name: 'subfolder',
-    value: settings.subfolder,
-    errors: settings.getErrors('subfolder'),
+    value: volume.subfolder,
+    errors: volume.getErrors('subfolder'),
     required: false,
     placeholder: "path/to/subfolder"|t
 }) }}
-
-{% set cacheInput %}
-<table class="inputs">
-    <tr>
-        <td>
-            {{ forms.textField({
-                id: 'expiresAmount',
-                value: settings.expires.amount,
-                size: 2,
-                class: 'expires-amount'
-            }) }}
-        </td>
-        <td>
-            {{ forms.select({
-                id: 'expiresPeriod',
-                options: periods,
-                value: settings.expires.period,
-                class: 'expires-period'
-            }) }}
-        </td>
-    </tr>
-</table>
-{{ forms.hidden({
-    name: "expires",
-    value: settings.expires.amount ~ settings.expires.period,
-    class: "expires-combined"
-}) }}
-{% endset %}
-
-{{ forms.field({
-    label: "Cache Duration "|t,
-    id: 'cacheDuration',
-}, cacheInput) }}

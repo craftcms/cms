@@ -86,12 +86,15 @@ class VolumeController extends Controller
 		if (Craft::$app->getEdition() == Craft::Pro)
 		{
 			$allVolumeTypes = Craft::$app->volumes->getAllVolumeTypes();
+			$volumeInstances = [];
 			$volumeTypeOptions = [];
 
 			foreach ($allVolumeTypes as $class)
 			{
-				if ($class === $volume->getType() || $volume::isSelectable())
+				if ($class === $volume->getType() || $class::isSelectable())
 				{
+					$volumeInstances[$class] = Craft::$app->volumes->createVolume($class);
+
 					$volumeTypeOptions[] = [
 						'value' => $class,
 						'label' => $class::displayName()
@@ -102,6 +105,7 @@ class VolumeController extends Controller
 		else
 		{
 			$volumeTypeOptions = [];
+			$volumeInstances = [];
 			$allVolumeTypes = null;
 		}
 
@@ -133,6 +137,7 @@ class VolumeController extends Controller
 			'isNewVolume' => $isNewVolume,
 			'volumeTypes' => $allVolumeTypes,
 			'volumeTypeOptions' => $volumeTypeOptions,
+			'volumeInstances' => $volumeInstances,
 			'title' => $title,
 			'crumbs' => $crumbs,
 			'tabs' => $tabs

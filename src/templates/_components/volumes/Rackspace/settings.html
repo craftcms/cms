@@ -6,8 +6,8 @@
     label: "Username"|t,
     id: 'username',
     name: 'username',
-    value: settings.username,
-    errors: settings.getErrors('username'),
+    value: volume.username,
+    errors: volume.getErrors('username'),
     class: 'rackspace-username',
     required: true
 }) }}
@@ -16,8 +16,8 @@
     label: "API Key"|t,
     id: 'apiKey',
     name: 'apiKey',
-    value: settings.apiKey,
-    errors: settings.getErrors('apiKey'),
+    value: volume.apiKey,
+    errors: volume.getErrors('apiKey'),
     class: 'racskspace-api-key',
     required: true
 }) }}
@@ -33,7 +33,7 @@
         'HKG': 'Hong Kong (HKG)',
         'SYD': 'Sydney (SYD)',
     },
-    value: settings.region,
+    value: volume.region,
     class: 'rackspace-region-select'
 }) }}
 
@@ -44,8 +44,8 @@
             {{ forms.select({
                 id: 'container',
                 name: 'container',
-                options: { (settings.container): settings.container },
-                value: settings.container,
+                options: { (volume.container): volume.container },
+                value: volume.container,
                 readonly: true,
                 class: 'rackspace-container-select'
             }) }}
@@ -71,8 +71,8 @@
     id: 'subfolder',
     class: 'ltr',
     name: 'subfolder',
-    value: settings.subfolder,
-    errors: settings.getErrors('subfolder'),
+    value: volume.subfolder,
+    errors: volume.getErrors('subfolder'),
     required: false,
     placeholder: "path/to/subfolder"|t
 }) }}

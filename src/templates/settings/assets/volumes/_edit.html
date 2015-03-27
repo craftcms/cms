@@ -1,5 +1,5 @@
 {% extends "_layouts/cp" %}
-ŗ
+
 {% set docsUrl = 'http://buildwithcraft.com/docs/assets' %}
 
 {% import "_includes/forms" as forms %}
@@ -38,7 +38,7 @@
             {% if CraftEdition == CraftPro %}
 				<hr>
 
-				{% includeJsRevolume "js/asseteditvolumesettings.js" %}
+				{% includeJsResource "js/asseteditvolumesettings.js" %}
 
 				{{ forms.selectField({
 					label: "Type"|t,
@@ -46,19 +46,19 @@
 					id: 'type',
 					name: 'type',
 					options: volumeTypes,
-					value: volumeType.getClassHandle(),
+					value: volume.getType(),
 					toggle: true
 				}) }}
 
 				{% for _volumeType in volumeTypes %}
-					{% set isCurrent = (_volumeType.getClassHandle() == volumeType.getClassHandle()) %}
+					{% set isCurrent = (_volumeType == volume.getType()) %}
 
-					<div id="{{ _volumeType.getClassHandle() }}"{% if not isCurrent %} class="hidden"{% endif %}>
-						{% namespace 'types['~_volumeType.getClassHandle()~']' %}
+					<div id="{{ _volumeType|id }}"{% if not isCurrent %} class="hidden"{% endif %}>
+						{% namespace 'types['~_volumeType~']' %}
 							{% if isCurrent %}
-								{{ volumeType.getSettingsHtml()|raw }}
+								{{ volume.getSettingsHtml()|raw }}
 							{% else %}
-								{{ _volumeType.getSettingsHtml()|raw }}
+								{{ volumeInstances[_volumeType].getSettingsHtml()|raw }}
 							{% endif %}
 						{% endnamespace %}
 					</div>
@@ -70,15 +70,15 @@
 			{% endif %}
 
             {{ forms.textField({
-            label: "URL"|t,
-            instructions: "The URL to your files."|t,
-            id: 'url',
-            class: 'ltr volume-url',
-            name: 'url',
-            value: (volume is defined ? volume.url : null),
-            errors: (volume is defined ? volume.getErrors('url') : null),
-            required: true,
-            placeholder: "http://example.com/path/to/folder/"|t
+                label: "URL"|t,
+                instructions: "The URL to your files."|t,
+                id: 'url',
+                class: 'ltr volume-url',
+                name: 'url',
+                value: (volume is defined ? volume.url : null),
+                errors: (volume is defined ? volume.getErrors('url') : null),
+                required: true,
+                placeholder: "http://example.com/path/to/folder/"|t
             }) }}
 
 		</div>

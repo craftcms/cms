@@ -93,10 +93,8 @@ class Rackspace extends Volume
 	 */
 	public function getSettingsHtml()
 	{
-		$settings = $this->getSettings();
-
 		return Craft::$app->templates->render('_components/volumes/Rackspace/settings', array(
-			'settings' => $settings
+			'volume' => $this
 		));
 	}
 

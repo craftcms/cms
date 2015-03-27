@@ -21,11 +21,6 @@ trait VolumeTrait
 	// =========================================================================
 
 	/**
-	 * @var string Type
-	 */
-	public $type;
-
-	/**
 	 * @var array Settings
 	 */
 	public $settings;
@@ -75,5 +70,10 @@ trait VolumeTrait
 	 * @var Filesystem
 	 */
 	private $_filesystem;
+
+	/**
+	 * @var string The element type that global sets' field layouts should be associated with.
+	 */
+	private $_fieldLayoutElementType = 'craft\app\elements\Asset';
 
 }
