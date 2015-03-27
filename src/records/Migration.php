@@ -15,12 +15,12 @@ use craft\app\enums\ColumnType;
 /**
  * Class Migration record.
  *
- * @var integer $id ID
- * @var integer $pluginId Plugin ID
- * @var string $version Version
- * @var \DateTime $applyTime Apply time
- * @var ActiveQueryInterface $plugin Plugin
-
+ * @property integer $id ID
+ * @property integer $pluginId Plugin ID
+ * @property string $version Version
+ * @property \DateTime $applyTime Apply time
+ * @property ActiveQueryInterface $plugin Plugin
+ *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */

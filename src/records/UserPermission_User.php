@@ -16,12 +16,12 @@ Craft::$app->requireEdition(Craft::Pro);
 /**
  * Class UserPermission_User record.
  *
- * @var integer $id ID
- * @var integer $permissionId Permission ID
- * @var integer $userId User ID
- * @var ActiveQueryInterface $permission Permission
- * @var ActiveQueryInterface $user User
-
+ * @property integer $id ID
+ * @property integer $permissionId Permission ID
+ * @property integer $userId User ID
+ * @property ActiveQueryInterface $permission Permission
+ * @property ActiveQueryInterface $user User
+ *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */

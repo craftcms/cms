@@ -18,12 +18,12 @@ Craft::$app->requireEdition(Craft::Client);
 /**
  * Class EmailMessage record.
  *
- * @var integer $id ID
- * @var ActiveQueryInterface $locale Locale
- * @var string $key Key
- * @var string $subject Subject
- * @var string $body Body
-
+ * @property integer $id ID
+ * @property ActiveQueryInterface $locale Locale
+ * @property string $key Key
+ * @property string $subject Subject
+ * @property string $body Body
+ *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */

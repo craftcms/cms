@@ -16,9 +16,9 @@ Craft::$app->requireEdition(Craft::Pro);
 /**
  * Class UserPermission record.
  *
- * @var integer $id ID
- * @var string $name Name
-
+ * @property integer $id ID
+ * @property string $name Name
+ *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */

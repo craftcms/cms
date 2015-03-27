@@ -18,18 +18,18 @@ Craft::$app->requireEdition(Craft::Client);
 /**
  * Stores entry drafts.
  *
- * @var integer $id ID
- * @var integer $entryId Entry ID
- * @var integer $sectionId Section ID
- * @var integer $creatorId Creator ID
- * @var ActiveQueryInterface $locale Locale
- * @var string $name Name
- * @var string $notes Notes
- * @var array $data Data
- * @var ActiveQueryInterface $entry Entry
- * @var ActiveQueryInterface $section Section
- * @var ActiveQueryInterface $creator Creator
-
+ * @property integer $id ID
+ * @property integer $entryId Entry ID
+ * @property integer $sectionId Section ID
+ * @property integer $creatorId Creator ID
+ * @property ActiveQueryInterface $locale Locale
+ * @property string $name Name
+ * @property string $notes Notes
+ * @property array $data Data
+ * @property ActiveQueryInterface $entry Entry
+ * @property ActiveQueryInterface $section Section
+ * @property ActiveQueryInterface $creator Creator
+ *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */

@@ -15,14 +15,14 @@ use craft\app\enums\ColumnType;
 /**
  * Class Plugin record.
  *
- * @var integer $id ID
- * @var string $class Class
- * @var string $version Version
- * @var boolean $enabled Enabled
- * @var array $settings Settings
- * @var \DateTime $installDate Install date
- * @var ActiveQueryInterface $migrations Migrations
-
+ * @property integer $id ID
+ * @property string $class Class
+ * @property string $version Version
+ * @property boolean $enabled Enabled
+ * @property array $settings Settings
+ * @property \DateTime $installDate Install date
+ * @property ActiveQueryInterface $migrations Migrations
+ *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */

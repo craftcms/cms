@@ -14,10 +14,10 @@ use craft\app\enums\AttributeType;
 /**
  * Class FieldGroup record.
  *
- * @var integer $id ID
- * @var string $name Name
- * @var ActiveQueryInterface $fields Fields
-
+ * @property integer $id ID
+ * @property string $name Name
+ * @property ActiveQueryInterface $fields Fields
+ *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */

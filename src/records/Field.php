@@ -16,17 +16,17 @@ use craft\app\enums\ColumnType;
 /**
  * Class Field record.
  *
- * @var integer $id ID
- * @var integer $groupId Group ID
- * @var string $name Name
- * @var string $handle Handle
- * @var string $context Context
- * @var string $instructions Instructions
- * @var boolean $translatable Translatable
- * @var string $type Type
- * @var array $settings Settings
- * @var ActiveQueryInterface $group Group
-
+ * @property integer $id ID
+ * @property integer $groupId Group ID
+ * @property string $name Name
+ * @property string $handle Handle
+ * @property string $context Context
+ * @property string $instructions Instructions
+ * @property boolean $translatable Translatable
+ * @property string $type Type
+ * @property array $settings Settings
+ * @property ActiveQueryInterface $group Group
+ *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */

@@ -14,14 +14,14 @@ use craft\app\enums\AttributeType;
 /**
  * Class Widget record.
  *
- * @var integer $id ID
- * @var integer $userId User ID
- * @var string $type Type
- * @var string $sortOrder Sort order
- * @var array $settings Settings
- * @var boolean $enabled Enabled
- * @var ActiveQueryInterface $user User
-
+ * @property integer $id ID
+ * @property integer $userId User ID
+ * @property string $type Type
+ * @property string $sortOrder Sort order
+ * @property array $settings Settings
+ * @property boolean $enabled Enabled
+ * @property ActiveQueryInterface $user User
+ *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */

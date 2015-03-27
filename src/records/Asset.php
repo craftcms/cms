@@ -17,19 +17,19 @@ use craft\app\db\ActiveRecord;
  *
  * @todo Create save function which calls parent::save and then updates the meta data table (keywords, author, etc)
  *
- * @var integer $id ID
- * @var integer $sourceId Source ID
- * @var integer $folderId Folder ID
- * @var string $filename Filename
- * @var string $kind Kind
- * @var integer $width Width
- * @var integer $height Height
- * @var integer $size Size
- * @var \DateTime $dateModified Date modified
- * @var ActiveQueryInterface $element Element
- * @var ActiveQueryInterface $source Source
- * @var ActiveQueryInterface $folder Folder
-
+ * @property integer $id ID
+ * @property integer $sourceId Source ID
+ * @property integer $folderId Folder ID
+ * @property string $filename Filename
+ * @property string $kind Kind
+ * @property integer $width Width
+ * @property integer $height Height
+ * @property integer $size Size
+ * @property \DateTime $dateModified Date modified
+ * @property ActiveQueryInterface $element Element
+ * @property ActiveQueryInterface $source Source
+ * @property ActiveQueryInterface $folder Folder
+ *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */

@@ -14,13 +14,13 @@ use craft\app\enums\AttributeType;
 /**
  * Class TagGroup record.
  *
- * @var integer $id ID
- * @var integer $fieldLayoutId Field layout ID
- * @var string $name Name
- * @var string $handle Handle
- * @var ActiveQueryInterface $fieldLayout Field layout
- * @var ActiveQueryInterface $tags Tags
-
+ * @property integer $id ID
+ * @property integer $fieldLayoutId Field layout ID
+ * @property string $name Name
+ * @property string $handle Handle
+ * @property ActiveQueryInterface $fieldLayout Field layout
+ * @property ActiveQueryInterface $tags Tags
+ *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */

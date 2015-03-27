@@ -16,10 +16,10 @@ Craft::$app->requireEdition(Craft::Pro);
 /**
  * Class UserGroup record.
  *
- * @var integer $id ID
- * @var string $name Name
- * @var string $handle Handle
-
+ * @property integer $id ID
+ * @property string $name Name
+ * @property string $handle Handle
+ *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */

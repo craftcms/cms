@@ -13,11 +13,11 @@ use craft\app\db\ActiveRecord;
 /**
  * Class Tag record.
  *
- * @var integer $id ID
- * @var integer $groupId Group ID
- * @var ActiveQueryInterface $element Element
- * @var ActiveQueryInterface $group Group
-
+ * @property integer $id ID
+ * @property integer $groupId Group ID
+ * @property ActiveQueryInterface $element Element
+ * @property ActiveQueryInterface $group Group
+ *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */

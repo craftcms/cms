@@ -13,11 +13,11 @@ use craft\app\enums\AttributeType;
 /**
  * Element record class.
  *
- * @var integer $id ID
- * @var string $type Type
- * @var boolean $enabled Enabled
- * @var boolean $archived Archived
-
+ * @property integer $id ID
+ * @property string $type Type
+ * @property boolean $enabled Enabled
+ * @property boolean $archived Archived
+ *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */

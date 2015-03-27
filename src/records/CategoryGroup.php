@@ -14,18 +14,18 @@ use craft\app\enums\AttributeType;
 /**
  * Class CategoryGroup record.
  *
- * @var integer $id ID
- * @var integer $structureId Structure ID
- * @var integer $fieldLayoutId Field layout ID
- * @var string $name Name
- * @var string $handle Handle
- * @var boolean $hasUrls Has URLs
- * @var string $template Template
- * @var ActiveQueryInterface $structure Structure
- * @var ActiveQueryInterface $fieldLayout Field layout
- * @var ActiveQueryInterface $locales Locales
- * @var ActiveQueryInterface $categories Categories
-
+ * @property integer $id ID
+ * @property integer $structureId Structure ID
+ * @property integer $fieldLayoutId Field layout ID
+ * @property string $name Name
+ * @property string $handle Handle
+ * @property boolean $hasUrls Has URLs
+ * @property string $template Template
+ * @property ActiveQueryInterface $structure Structure
+ * @property ActiveQueryInterface $fieldLayout Field layout
+ * @property ActiveQueryInterface $locales Locales
+ * @property ActiveQueryInterface $categories Categories
+ *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */

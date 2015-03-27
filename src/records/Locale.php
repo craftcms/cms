@@ -13,9 +13,9 @@ use craft\app\enums\AttributeType;
 /**
  * Stores the locales.
  *
- * @var string $locale Locale
- * @var string $sortOrder Sort order
-
+ * @property string $locale Locale
+ * @property string $sortOrder Sort order
+ *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */

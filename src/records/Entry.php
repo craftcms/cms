@@ -15,18 +15,18 @@ use craft\app\enums\AttributeType;
 /**
  * Class Entry record.
  *
- * @var integer $id ID
- * @var integer $sectionId Section ID
- * @var integer $typeId Type ID
- * @var integer $authorId Author ID
- * @var \DateTime $postDate Post date
- * @var \DateTime $expiryDate Expiry date
- * @var ActiveQueryInterface $element Element
- * @var ActiveQueryInterface $section Section
- * @var ActiveQueryInterface $type Type
- * @var ActiveQueryInterface $author Author
- * @var ActiveQueryInterface $versions Versions
-
+ * @property integer $id ID
+ * @property integer $sectionId Section ID
+ * @property integer $typeId Type ID
+ * @property integer $authorId Author ID
+ * @property \DateTime $postDate Post date
+ * @property \DateTime $expiryDate Expiry date
+ * @property ActiveQueryInterface $element Element
+ * @property ActiveQueryInterface $section Section
+ * @property ActiveQueryInterface $type Type
+ * @property ActiveQueryInterface $author Author
+ * @property ActiveQueryInterface $versions Versions
+ *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */
