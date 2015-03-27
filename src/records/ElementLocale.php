@@ -14,14 +14,14 @@ use craft\app\enums\AttributeType;
 /**
  * Element locale data record class.
  *
- * @var integer $id ID
- * @var integer $elementId Element ID
- * @var ActiveQueryInterface $locale Locale
- * @var string $slug Slug
- * @var string $uri URI
- * @var boolean $enabled Enabled
- * @var ActiveQueryInterface $element Element
-
+ * @property integer $id ID
+ * @property integer $elementId Element ID
+ * @property ActiveQueryInterface $locale Locale
+ * @property string $slug Slug
+ * @property string $uri URI
+ * @property boolean $enabled Enabled
+ * @property ActiveQueryInterface $element Element
+ *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */

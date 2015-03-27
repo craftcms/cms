@@ -14,13 +14,13 @@ use craft\app\enums\AttributeType;
 /**
  * Class CategoryGroupLocale record.
  *
- * @var integer $id ID
- * @var integer $groupId Group ID
- * @var ActiveQueryInterface $locale Locale
- * @var string $urlFormat URL format
- * @var string $nestedUrlFormat Nested URL format
- * @var ActiveQueryInterface $group Group
-
+ * @property integer $id ID
+ * @property integer $groupId Group ID
+ * @property ActiveQueryInterface $locale Locale
+ * @property string $urlFormat URL format
+ * @property string $nestedUrlFormat Nested URL format
+ * @property ActiveQueryInterface $group Group
+ *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */

@@ -14,13 +14,13 @@ use craft\app\enums\AttributeType;
 /**
  * Field record class.
  *
- * @var integer $id ID
- * @var integer $layoutId Layout ID
- * @var string $name Name
- * @var string $sortOrder Sort order
- * @var ActiveQueryInterface $layout Layout
- * @var ActiveQueryInterface $fields Fields
-
+ * @property integer $id ID
+ * @property integer $layoutId Layout ID
+ * @property string $name Name
+ * @property string $sortOrder Sort order
+ * @property ActiveQueryInterface $layout Layout
+ * @property ActiveQueryInterface $fields Fields
+ *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */

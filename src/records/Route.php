@@ -14,13 +14,13 @@ use craft\app\enums\AttributeType;
 /**
  * Class Route record.
  *
- * @var integer $id ID
- * @var ActiveQueryInterface $locale Locale
- * @var string $urlParts URL parts
- * @var string $urlPattern URL pattern
- * @var string $template Template
- * @var string $sortOrder Sort order
-
+ * @property integer $id ID
+ * @property ActiveQueryInterface $locale Locale
+ * @property string $urlParts URL parts
+ * @property string $urlPattern URL pattern
+ * @property string $template Template
+ * @property string $sortOrder Sort order
+ *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */

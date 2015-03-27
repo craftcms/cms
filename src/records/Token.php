@@ -14,13 +14,13 @@ use craft\app\enums\ColumnType;
 /**
  * Token record.
  *
- * @var integer $id ID
- * @var string $token Token
- * @var array $route Route
- * @var integer $usageLimit Usage limit
- * @var integer $usageCount Usage count
- * @var \DateTime $expiryDate Expiry date
-
+ * @property integer $id ID
+ * @property string $token Token
+ * @property array $route Route
+ * @property integer $usageLimit Usage limit
+ * @property integer $usageCount Usage count
+ * @property \DateTime $expiryDate Expiry date
+ *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */

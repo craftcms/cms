@@ -14,16 +14,16 @@ use craft\app\enums\AttributeType;
 /**
  * Class FieldLayoutField record.
  *
- * @var integer $id ID
- * @var integer $layoutId Layout ID
- * @var integer $tabId Tab ID
- * @var integer $fieldId Field ID
- * @var boolean $required Required
- * @var string $sortOrder Sort order
- * @var ActiveQueryInterface $layout Layout
- * @var ActiveQueryInterface $tab Tab
- * @var ActiveQueryInterface $field Field
-
+ * @property integer $id ID
+ * @property integer $layoutId Layout ID
+ * @property integer $tabId Tab ID
+ * @property integer $fieldId Field ID
+ * @property boolean $required Required
+ * @property string $sortOrder Sort order
+ * @property ActiveQueryInterface $layout Layout
+ * @property ActiveQueryInterface $tab Tab
+ * @property ActiveQueryInterface $field Field
+ *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */

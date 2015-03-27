@@ -13,17 +13,17 @@ use craft\app\enums\AttributeType;
 /**
  * Class AssetTransform record.
  *
- * @var integer $id ID
- * @var string $name Name
- * @var string $handle Handle
- * @var string $mode Mode
- * @var string $position Position
- * @var integer $height Height
- * @var integer $width Width
- * @var string $format Format
- * @var integer $quality Quality
- * @var \DateTime $dimensionChangeTime Dimension change time
-
+ * @property integer $id ID
+ * @property string $name Name
+ * @property string $handle Handle
+ * @property string $mode Mode
+ * @property string $position Position
+ * @property integer $height Height
+ * @property integer $width Width
+ * @property string $format Format
+ * @property integer $quality Quality
+ * @property \DateTime $dimensionChangeTime Dimension change time
+ *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */

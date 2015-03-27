@@ -15,16 +15,16 @@ use craft\app\enums\ColumnType;
 /**
  * Class AssetIndexData record.
  *
- * @var integer $id ID
- * @var integer $volumeId Volume ID
- * @var string $sessionId Session ID
- * @var integer $offset Offset
- * @var string $uri URI
- * @var integer $size Size
- * @var \DateTime $timestamp Timestamp
- * @var integer $recordId Record ID
- * @var ActiveQueryInterface $source Source
-
+ * @property integer $id ID
+ * @property integer $volumeId Volume ID
+ * @property string $sessionId Session ID
+ * @property integer $offset Offset
+ * @property string $uri URI
+ * @property integer $size Size
+ * @property \DateTime $timestamp Timestamp
+ * @property integer $recordId Record ID
+ * @property ActiveQueryInterface $source Source
+ *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */

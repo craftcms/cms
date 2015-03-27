@@ -14,18 +14,18 @@ use craft\app\enums\AttributeType;
 /**
  * Class EntryType record.
  *
- * @var integer $id ID
- * @var integer $sectionId Section ID
- * @var integer $fieldLayoutId Field layout ID
- * @var string $name Name
- * @var string $handle Handle
- * @var boolean $hasTitleField Has title field
- * @var string $titleLabel Title label
- * @var string $titleFormat Title format
- * @var string $sortOrder Sort order
- * @var ActiveQueryInterface $section Section
- * @var ActiveQueryInterface $fieldLayout Field layout
-
+ * @property integer $id ID
+ * @property integer $sectionId Section ID
+ * @property integer $fieldLayoutId Field layout ID
+ * @property string $name Name
+ * @property string $handle Handle
+ * @property boolean $hasTitleField Has title field
+ * @property string $titleLabel Title label
+ * @property string $titleFormat Title format
+ * @property string $sortOrder Sort order
+ * @property ActiveQueryInterface $section Section
+ * @property ActiveQueryInterface $fieldLayout Field layout
+ *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */

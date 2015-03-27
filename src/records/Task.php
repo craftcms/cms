@@ -18,18 +18,18 @@ use creocoder\nestedsets\NestedSetsBehavior;
 /**
  * Class Task record.
  *
- * @var integer $id ID
- * @var integer $root Root
- * @var integer $lft Lft
- * @var integer $rgt Rgt
- * @var integer $level Level
- * @var integer $currentStep Current step
- * @var integer $totalSteps Total steps
- * @var string $status Status
- * @var string $type Type
- * @var string $description Description
- * @var array $settings Settings
-
+ * @property integer $id ID
+ * @property integer $root Root
+ * @property integer $lft Lft
+ * @property integer $rgt Rgt
+ * @property integer $level Level
+ * @property integer $currentStep Current step
+ * @property integer $totalSteps Total steps
+ * @property string $status Status
+ * @property string $type Type
+ * @property string $description Description
+ * @property array $settings Settings
+ *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */

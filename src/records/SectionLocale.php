@@ -14,14 +14,14 @@ use craft\app\enums\AttributeType;
 /**
  * Class SectionLocale record.
  *
- * @var integer $id ID
- * @var integer $sectionId Section ID
- * @var ActiveQueryInterface $locale Locale
- * @var boolean $enabledByDefault Enabled by default
- * @var string $urlFormat URL format
- * @var string $nestedUrlFormat Nested URL format
- * @var ActiveQueryInterface $section Section
-
+ * @property integer $id ID
+ * @property integer $sectionId Section ID
+ * @property ActiveQueryInterface $locale Locale
+ * @property boolean $enabledByDefault Enabled by default
+ * @property string $urlFormat URL format
+ * @property string $nestedUrlFormat Nested URL format
+ * @property ActiveQueryInterface $section Section
+ *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */

@@ -14,15 +14,15 @@ use craft\app\enums\AttributeType;
 /**
  * Class MatrixBlockType record.
  *
- * @var integer $id ID
- * @var integer $fieldId Field ID
- * @var integer $fieldLayoutId Field layout ID
- * @var string $name Name
- * @var string $handle Handle
- * @var string $sortOrder Sort order
- * @var ActiveQueryInterface $field Field
- * @var ActiveQueryInterface $fieldLayout Field layout
-
+ * @property integer $id ID
+ * @property integer $fieldId Field ID
+ * @property integer $fieldLayoutId Field layout ID
+ * @property string $name Name
+ * @property string $handle Handle
+ * @property string $sortOrder Sort order
+ * @property ActiveQueryInterface $field Field
+ * @property ActiveQueryInterface $fieldLayout Field layout
+ *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */

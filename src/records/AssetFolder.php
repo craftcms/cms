@@ -14,14 +14,14 @@ use craft\app\enums\AttributeType;
 /**
  * Class AssetFolder record.
  *
- * @var integer $id ID
- * @var integer $parentId Parent ID
- * @var integer $volumeId Volume ID
- * @var string $name Name
- * @var string $path Path
- * @var ActiveQueryInterface $parent Parent
- * @var ActiveQueryInterface $volume Volume
-
+ * @property integer $id ID
+ * @property integer $parentId Parent ID
+ * @property integer $volumeId Volume ID
+ * @property string $name Name
+ * @property string $path Path
+ * @property ActiveQueryInterface $parent Parent
+ * @property ActiveQueryInterface $volume Volume
+ *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */

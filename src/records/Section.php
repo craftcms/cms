@@ -15,17 +15,17 @@ use craft\app\enums\SectionType;
 /**
  * Class Section record.
  *
- * @var integer $id ID
- * @var integer $structureId Structure ID
- * @var string $name Name
- * @var string $handle Handle
- * @var string $type Type
- * @var boolean $hasUrls Has URLs
- * @var string $template Template
- * @var boolean $enableVersioning Enable versioning
- * @var ActiveQueryInterface $locales Locales
- * @var ActiveQueryInterface $structure Structure
-
+ * @property integer $id ID
+ * @property integer $structureId Structure ID
+ * @property string $name Name
+ * @property string $handle Handle
+ * @property string $type Type
+ * @property boolean $hasUrls Has URLs
+ * @property string $template Template
+ * @property boolean $enableVersioning Enable versioning
+ * @property ActiveQueryInterface $locales Locales
+ * @property ActiveQueryInterface $structure Structure
+ *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */

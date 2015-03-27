@@ -13,10 +13,10 @@ use craft\app\enums\AttributeType;
 /**
  * Class SystemSettings record.
  *
- * @var integer $id ID
- * @var string $category Category
- * @var array $settings Settings
-
+ * @property integer $id ID
+ * @property string $category Category
+ * @property array $settings Settings
+ *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */

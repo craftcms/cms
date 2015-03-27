@@ -15,11 +15,11 @@ use craft\app\enums\ColumnType;
 /**
  * Class Session record.
  *
- * @var integer $id ID
- * @var integer $userId User ID
- * @var string $token Token
- * @var ActiveQueryInterface $user User
-
+ * @property integer $id ID
+ * @property integer $userId User ID
+ * @property string $token Token
+ * @property ActiveQueryInterface $user User
+ *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */

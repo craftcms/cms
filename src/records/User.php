@@ -16,35 +16,35 @@ use craft\app\enums\ColumnType;
 /**
  * Class User record.
  *
- * @var integer $id ID
- * @var ActiveQueryInterface $preferredLocale Preferred locale
- * @var string $username Username
- * @var string $photo Photo
- * @var string $firstName First name
- * @var string $lastName Last name
- * @var string $email Email
- * @var string $password Password
- * @var integer $weekStartDay Week start day
- * @var boolean $admin Admin
- * @var boolean $client Client
- * @var boolean $locked Locked
- * @var boolean $suspended Suspended
- * @var boolean $pending Pending
- * @var boolean $archived Archived
- * @var \DateTime $lastLoginDate Last login date
- * @var string $lastLoginAttemptIPAddress Last login attempt ipaddress
- * @var \DateTime $invalidLoginWindowStart Invalid login window start
- * @var integer $invalidLoginCount Invalid login count
- * @var \DateTime $lastInvalidLoginDate Last invalid login date
- * @var \DateTime $lockoutDate Lockout date
- * @var string $verificationCode Verification code
- * @var \DateTime $verificationCodeIssuedDate Verification code issued date
- * @var string $unverifiedEmail Unverified email
- * @var boolean $passwordResetRequired Password reset required
- * @var \DateTime $lastPasswordChangeDate Last password change date
- * @var ActiveQueryInterface $element Element
- * @var ActiveQueryInterface $sessions Sessions
-
+ * @property integer $id ID
+ * @property ActiveQueryInterface $preferredLocale Preferred locale
+ * @property string $username Username
+ * @property string $photo Photo
+ * @property string $firstName First name
+ * @property string $lastName Last name
+ * @property string $email Email
+ * @property string $password Password
+ * @property integer $weekStartDay Week start day
+ * @property boolean $admin Admin
+ * @property boolean $client Client
+ * @property boolean $locked Locked
+ * @property boolean $suspended Suspended
+ * @property boolean $pending Pending
+ * @property boolean $archived Archived
+ * @property \DateTime $lastLoginDate Last login date
+ * @property string $lastLoginAttemptIPAddress Last login attempt ipaddress
+ * @property \DateTime $invalidLoginWindowStart Invalid login window start
+ * @property integer $invalidLoginCount Invalid login count
+ * @property \DateTime $lastInvalidLoginDate Last invalid login date
+ * @property \DateTime $lockoutDate Lockout date
+ * @property string $verificationCode Verification code
+ * @property \DateTime $verificationCodeIssuedDate Verification code issued date
+ * @property string $unverifiedEmail Unverified email
+ * @property boolean $passwordResetRequired Password reset required
+ * @property \DateTime $lastPasswordChangeDate Last password change date
+ * @property ActiveQueryInterface $element Element
+ * @property ActiveQueryInterface $sessions Sessions
+ *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */

@@ -16,12 +16,12 @@ Craft::$app->requireEdition(Craft::Pro);
 /**
  * Class UserGroup_User record.
  *
- * @var integer $id ID
- * @var integer $groupId Group ID
- * @var integer $userId User ID
- * @var ActiveQueryInterface $group Group
- * @var ActiveQueryInterface $user User
-
+ * @property integer $id ID
+ * @property integer $groupId Group ID
+ * @property integer $userId User ID
+ * @property ActiveQueryInterface $group Group
+ * @property ActiveQueryInterface $user User
+ *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */

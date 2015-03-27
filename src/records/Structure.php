@@ -15,10 +15,10 @@ use craft\app\enums\ColumnType;
 /**
  * Class Structure record.
  *
- * @var integer $id ID
- * @var integer $maxLevels Max levels
- * @var ActiveQueryInterface $elements Elements
-
+ * @property integer $id ID
+ * @property integer $maxLevels Max levels
+ * @property ActiveQueryInterface $elements Elements
+ *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */

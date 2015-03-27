@@ -18,16 +18,16 @@ use creocoder\nestedsets\NestedSetsBehavior;
 /**
  * Class StructureElement record.
  *
- * @var integer $id ID
- * @var integer $structureId Structure ID
- * @var integer $elementId Element ID
- * @var integer $root Root
- * @var integer $lft Lft
- * @var integer $rgt Rgt
- * @var integer $level Level
- * @var ActiveQueryInterface $structure Structure
- * @var ActiveQueryInterface $element Element
-
+ * @property integer $id ID
+ * @property integer $structureId Structure ID
+ * @property integer $elementId Element ID
+ * @property integer $root Root
+ * @property integer $lft Lft
+ * @property integer $rgt Rgt
+ * @property integer $level Level
+ * @property ActiveQueryInterface $structure Structure
+ * @property ActiveQueryInterface $element Element
+ *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */
