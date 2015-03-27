@@ -73,7 +73,7 @@ class Updater
 	 */
 	public function checkRequirements()
 	{
-		Craft::$app->runController('templates/requirementscheck');
+		Craft::$app->runAction('templates/requirements-check');
 	}
 
 	/**

@@ -57,7 +57,7 @@ class InstallController extends Controller
 	 */
 	public function actionIndex()
 	{
-		Craft::$app->runController('templates/requirementscheck');
+		Craft::$app->runAction('templates/requirements-check');
 
 		// Guess the site name based on the server name
 		$server = Craft::$app->getRequest()->getServerName();
