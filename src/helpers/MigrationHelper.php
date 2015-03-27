@@ -110,6 +110,9 @@ class MigrationHelper
 	 */
 	public static function renameTable($oldName, $newName)
 	{
+		$oldName = Craft::$app->db->getSchema()->getRawTableName($oldName);
+		$newName = Craft::$app->db->getSchema()->getRawTableName($newName);
+
 		// Drop any foreign keys pointing to this table
 		$fks = static::findForeignKeysTo($oldName);
 
@@ -452,7 +455,7 @@ class MigrationHelper
 	public static function dropForeignKey($fk)
 	{
 		$db = Craft::$app->getDb();
-		$db->createCommand()->dropForeignKey($fk->name, '{{'.$fk->table->name.'}}')->execute();
+		$db->createCommand()->dropForeignKey($fk->name, $fk->table->name)->execute();
 	}
 
 	/**
@@ -498,7 +501,7 @@ class MigrationHelper
 	public static function dropIndex($index)
 	{
 		$db = Craft::$app->getDb();
-		$db->createCommand()->dropIndex($index->name, '{{'.$index->table->name.'}}')->execute();
+		$db->createCommand()->dropIndex($index->name, $index->table->name)->execute();
 	}
 
 	/**
