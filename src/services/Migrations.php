@@ -54,8 +54,7 @@ class Migrations extends Component
 	 */
 	public function init()
 	{
-		$migration = new MigrationRecord('install');
-		$this->_migrationTable = $migration->tableName();
+		$this->_migrationTable = MigrationRecord::tableName();
 	}
 
 	/**
