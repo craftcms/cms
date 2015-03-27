@@ -11,7 +11,6 @@ use Craft;
 use craft\app\errors\HttpException;
 use craft\app\helpers\HeaderHelper;
 use craft\app\helpers\IOHelper;
-use craft\app\helpers\JsonHelper;
 use craft\app\helpers\UrlHelper;
 
 /**
@@ -310,12 +309,9 @@ abstract class Controller extends \yii\web\Controller
 	 */
 	public function returnJson($var = [])
 	{
-		JsonHelper::sendJsonHeaders();
-
-		// Output it into a buffer, in case the Tasks service wants to close the connection prematurely
-		ob_start();
-		echo JsonHelper::encode($var);
-
+		$response = Craft::$app->getResponse();
+		$response->data = $var;
+		$response->format = Response::FORMAT_JSON;
 		Craft::$app->end();
 	}
 
