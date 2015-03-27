@@ -1042,6 +1042,82 @@ class UserSessionService extends \CWebUser
 		}
 	}
 
+	/**
+	 * Overriding Yii's implementation to make sure that session has been started before calling.
+	 *
+	 * @param string $key
+	 * @param null   $defaultValue
+	 *
+	 * @return mixed|void
+	 */
+	public function getState($key, $defaultValue = null)
+	{
+		// Ensure session is open first.
+		craft()->session->open();
+
+		return parent::getState($key, $defaultValue);
+	}
+
+	/**
+	 * Overriding Yii's implementation to make sure that session has been started before calling.
+	 *
+	 * @param string $key
+	 * @param mixed  $value
+	 * @param null   $defaultValue
+	 *
+	 * @return null
+	 */
+	public function setState($key, $value, $defaultValue = null)
+	{
+		// Ensure session is open first.
+		craft()->session->open();
+
+		parent::setState($key, $value, $defaultValue);
+	}
+
+	/**
+	 * Overriding Yii's implementation to make sure that session has been started before calling.
+	 *
+	 * @param string $key
+	 *
+	 * @return bool|void
+	 */
+	public function hasState($key)
+	{
+		// Ensure session is open first.
+		craft()->session->open();
+
+		return parent::hasState($key);
+	}
+
+	/**
+	 * Overriding Yii's implementation to make sure that session has been started before calling.
+	 *
+	 * @return null
+	 */
+	public function clearStates()
+	{
+		// Ensure session is open first.
+		craft()->session->open();
+
+		parent::clearStates();
+	}
+
+	/**
+	 * Overriding Yii's implementation to make sure that session has been started before calling.
+	 *
+	 * @param bool $delete
+	 *
+	 * @return array|void
+	 */
+	public function getFlashes($delete = true)
+	{
+		// Ensure session is open first.
+		craft()->session->open();
+
+		return parent::getFlashes($delete);
+	}
+
 	// Events
 	// -------------------------------------------------------------------------
 

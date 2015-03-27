@@ -1191,11 +1191,8 @@ class HttpRequestService extends \CHttpRequest
 		ob_end_flush();
 		flush();
 
-		// Borrowed from CHttpSession->close() because session_write_close can cause PHP notices in some situations.
-		if (session_id() !== '')
-		{
-			@session_write_close();
-		}
+		// Close the session.
+		craft()->session->close();
 	}
 
 	/**

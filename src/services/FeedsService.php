@@ -82,6 +82,9 @@ class FeedsService extends BaseApplicationComponent
 			$cacheDuration = DateTimeHelper::timeFormatToSeconds($cacheDuration);
 		}
 
+		// Potentially long-running request, so close session to prevent session blocking on subsequent requests.
+		craft()->session->close();
+
 		$feed = new \SimplePie();
 		$feed->set_feed_url($url);
 		$feed->set_cache_location(craft()->path->getCachePath());

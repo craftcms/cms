@@ -186,8 +186,11 @@ class Et
 				);
 
 				$request = $client->post($this->_endpoint, $options);
-
 				$request->setBody($data, 'application/json');
+
+				// Potentially long-running request, so close session to prevent session blocking on subsequent requests.
+				craft()->session->close();
+
 				$response = $request->send();
 
 				if ($response->isSuccessful())
