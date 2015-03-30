@@ -5,6 +5,7 @@ use Craft;
 use craft\app\base\Volume;
 use craft\app\base\VolumeInterface;
 use craft\app\db\Query;
+use craft\app\errors\ModelValidationException;
 use craft\app\errors\VolumeException;
 use craft\app\errors\InvalidComponentException;
 use craft\app\helpers\ComponentHelper;

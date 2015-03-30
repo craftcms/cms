@@ -55,7 +55,8 @@ abstract class Volume extends SavableComponent implements VolumeInterface
 		$rules[] = [['handle'], 'craft\\app\\validators\\Handle', 'reservedWords' => ['id', 'dateCreated', 'dateUpdated', 'uid', 'title']];
 		$rules[] = [['fieldLayoutId'], 'number', 'min' => -2147483648, 'max' => 2147483647, 'integerOnly' => true];
 		$rules[] = [['handle'], 'string', 'max' => 255];
-		$rules[] = [['id', 'type', 'settings', 'name', 'handle', 'sortOrder', 'fieldLayoutId'], 'safe', 'on' => 'search'];
+		$rules[] = [['id', 'type', 'settings', 'name', 'handle', 'sortOrder', 'fieldLayoutId', 'url'], 'safe', 'on' => 'search'];
+		$rules[] = [['url'], 'required'];
 		return $rules;
 	}
 

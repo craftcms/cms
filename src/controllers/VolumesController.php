@@ -194,13 +194,12 @@ class VolumesController extends Controller
 		$fieldLayout->type = Asset::className();
 		$volume->setFieldLayout($fieldLayout);
 
-		try
+		if (Craft::$app->volumes->saveVolume($volume))
 		{
-			Craft::$app->volumes->saveVolume($volume);
 			Craft::$app->getSession()->setNotice(Craft::t('app', 'Volume saved.'));
 			$this->redirectToPostedUrl();
 		}
-		catch (ModelException $exception)
+		else
 		{
 			Craft::$app->getSession()->setError(Craft::t('app', 'Couldn’t save volume.'));
 		}

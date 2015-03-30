@@ -80,9 +80,17 @@ class AwsS3 extends Volume
 	// =========================================================================
 
 	/**
-	 * @inheritDoc ISavableComponentType::getSettingsHtml()
-	 *
-	 * @return string|null
+	 * @inheritdoc
+	 */
+	public function rules()
+	{
+		$rules = parent::rules();
+		$rules[] = [['bucket', 'region'], 'required'];
+		return $rules;
+	}
+
+	/**
+	 * @inheritdoc
 	 */
 	public function getSettingsHtml()
 	{
