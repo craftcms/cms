@@ -40,6 +40,6 @@ class Plugins
 	 */
 	public function getPlugins($enabledOnly = true)
 	{
-		return \Craft::$app->plugins->getPlugins($enabledOnly);=
+		return \Craft::$app->plugins->getPlugins($enabledOnly);
 	}
 }
