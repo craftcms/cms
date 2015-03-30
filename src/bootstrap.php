@@ -145,16 +145,21 @@ ini_set('error_log', $storagePath.'/logs/phperrors.log');
 // Determine if Craft is running in Dev Mode
 // -----------------------------------------------------------------------------
 
-// Set the environment
-defined('CRAFT_ENVIRONMENT') || define('CRAFT_ENVIRONMENT', $_SERVER['SERVER_NAME']);
+
 
 // We need to special case devMode in the config because YII_DEBUG has to be set as early as possible.
 if ($appType === 'console')
 {
+	// Set the environment
+	defined('CRAFT_ENVIRONMENT') || define('CRAFT_ENVIRONMENT', '');
+
 	$devMode = true;
 }
 else
 {
+	// Set the environment
+	defined('CRAFT_ENVIRONMENT') || define('CRAFT_ENVIRONMENT', $_SERVER['SERVER_NAME']);
+
 	$devMode = false;
 	$generalConfigPath = $configPath.'/general.php';
 
