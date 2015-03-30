@@ -33,7 +33,6 @@ abstract class Model extends \yii\base\Model
 	 */
 	public static function create($config)
 	{
-
 		$model = new static();
 		static::populateModel($model, ArrayHelper::toArray($config, [], false));
 		return $model;

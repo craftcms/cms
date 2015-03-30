@@ -169,10 +169,12 @@ class Migrate extends \MigrateCommand
 	public function actionCreate($args)
 	{
 		$pluginHandle = false;
+
 		if (isset($args[1]))
 		{
 			// See if this is a plugin
 			$plugin = Craft::$app->plugins->getPlugin($args[1]);
+
 			if ($plugin)
 			{
 				$name = $args[0];
