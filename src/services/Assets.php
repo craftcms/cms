@@ -180,7 +180,6 @@ class Assets extends Component
 	 * @throws AssetConflictException         If a file with such name already exists.
 	 * @throws AssetLogicException            If something violates Asset's logic (e.g. Asset outside of a folder).
 	 * @throws VolumeFileExistsException If the file actually exists on the volume, but on in the index.
-	 *
 	 * @return void
 	 */
 	public function saveAsset(Asset $asset)
