@@ -91,7 +91,7 @@ class Asset extends Element
 	{
 		if ($context == 'index')
 		{
-			$sourceIds = Craft::$app->volumes->getViewableSourceIds();
+			$sourceIds = Craft::$app->volumes->getViewableVolumeIds();
 		}
 		else
 		{

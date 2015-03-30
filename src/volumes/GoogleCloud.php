@@ -75,10 +75,19 @@ class GoogleCloud extends Volume
 	// Public Methods
 	// =========================================================================
 
+
 	/**
-	 * @inheritDoc ISavableComponentType::getSettingsHtml()
-	 *
-	 * @return string|null
+	 * @inheritdoc
+	 */
+	public function rules()
+	{
+		$rules = parent::rules();
+		$rules[] = [['keyId', 'secret', 'bucket'], 'required'];
+		return $rules;
+	}
+
+	/**
+	 * @inheritdoc
 	 */
 	public function getSettingsHtml()
 	{

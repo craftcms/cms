@@ -18,9 +18,9 @@ return [
 	'updates/go/<handle:[^/]*>'                                             => ['template' => 'updates/_go'],
 
 	'settings'                                                              => 'system-settings/settings-index',
-	'settings/assets'                                                       => 'volume/volume-index',
-	'settings/assets/volumes/new'                                           => 'volume/edit-volume',
-	'settings/assets/volumes/<volumeId:\d+>'                                => 'volume/edit-volume',
+	'settings/assets'                                                       => 'volumes/volume-index',
+	'settings/assets/volumes/new'                                           => 'volumes/edit-volume',
+	'settings/assets/volumes/<volumeId:\d+>'                                => 'volumes/edit-volume',
 	'settings/assets/transforms'                                            => 'asset-transforms/transform-index',
 	'settings/assets/transforms/new'                                        => 'asset-transforms/edit-transform',
 	'settings/assets/transforms/<transformHandle:{handle}>'                 => 'asset-transforms/edit-transform',

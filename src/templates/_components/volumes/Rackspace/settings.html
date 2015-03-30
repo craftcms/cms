@@ -47,7 +47,8 @@
                 options: { (volume.container): volume.container },
                 value: volume.container,
                 readonly: true,
-                class: 'rackspace-container-select'
+                class: 'rackspace-container-select',
+                errors: volume.getErrors('container')
             }) }}
         </td>
         <td>

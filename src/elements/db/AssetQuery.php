@@ -8,6 +8,7 @@
 namespace craft\app\elements\db;
 
 use Craft;
+use craft\app\base\Volume;
 use craft\app\db\Query;
 use craft\app\elements\Asset;
 use craft\app\helpers\DbHelper;
@@ -16,7 +17,7 @@ use craft\app\models\AssetSource;
 /**
  * AssetQuery represents a SELECT SQL statement for assets in a way that is independent of DBMS.
  *
- * @property string|string[]|AssetSource $source The handle(s) of the asset source(s) that resulting assets must belong to.
+ * @property string|string[]|Volume $volume The handle(s) of the volume(s) that resulting assets must belong to.
  *
  * @method Asset[]|array all($db=null)
  * @method Asset|array|null one($db=null)
@@ -34,7 +35,7 @@ class AssetQuery extends ElementQuery
 	// -------------------------------------------------------------------------
 
 	/**
-	 * @var integer|integer[] The asset source ID(s) that the resulting assets must be in.
+	 * @var integer|integer[] The volume ID(s) that the resulting assets must be in.
 	 */
 	public $volumeId;
 
@@ -83,9 +84,9 @@ class AssetQuery extends ElementQuery
 	{
 		switch ($name)
 		{
-			case 'source':
+			case 'volume':
 			{
-				$this->source($value);
+				$this->volume($value);
 				break;
 			}
 			default:
@@ -96,13 +97,15 @@ class AssetQuery extends ElementQuery
 	}
 
 	/**
-	 * Sets the [[sourceId]] property based on a given asset source(s)’s handle(s).
-	 * @param string|string[]|AssetSource $value The property value
+	 * Sets the [[sourceId]] property based on a given volume(s)’s handle(s).
+	 *
+	 * @param string|string[]|Volume $value The property value
+	 *
 	 * @return static The query object itself
 	 */
-	public function source($value)
+	public function volume($value)
 	{
-		if ($value instanceof AssetSource)
+		if ($value instanceof Volume)
 		{
 			$this->volumeId = $value->id;
 		}
@@ -111,7 +114,7 @@ class AssetQuery extends ElementQuery
 			$query = new Query();
 			$this->volumeId = $query
 				->select('id')
-				->from('{{%assetsources}}')
+				->from('{{%volumes}}')
 				->where(DbHelper::parseParam('handle', $value, $query->params))
 				->column();
 		}
@@ -224,7 +227,7 @@ class AssetQuery extends ElementQuery
 		$this->joinElementTable('assets');
 
 		$this->query->select([
-			'assets.sourceId',
+			'assets.volumeId',
 			'assets.folderId',
 			'assets.filename',
 			'assets.kind',
@@ -236,7 +239,7 @@ class AssetQuery extends ElementQuery
 
 		if ($this->volumeId)
 		{
-			$this->subQuery->andWhere(DbHelper::parseParam('assets.sourceId', $this->volumeId, $this->subQuery->params));
+			$this->subQuery->andWhere(DbHelper::parseParam('assets.volumeId', $this->volumeId, $this->subQuery->params));
 		}
 
 		if ($this->folderId)

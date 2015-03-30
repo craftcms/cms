@@ -5,6 +5,7 @@ use Craft;
 use craft\app\base\Volume;
 use craft\app\base\VolumeInterface;
 use craft\app\db\Query;
+use craft\app\errors\ModelValidationException;
 use craft\app\errors\VolumeException;
 use craft\app\errors\InvalidComponentException;
 use craft\app\helpers\ComponentHelper;
@@ -319,11 +320,6 @@ class Volumes extends Component
 
 				$isNewVolume = $volumeRecord->getIsNewRecord();
 
-				if (!$isNewVolume)
-				{
-					$oldVolume = Volume::create($volumeRecord);
-				}
-
 				$volumeRecord->name          = $volume->name;
 				$volumeRecord->handle        = $volume->handle;
 				$volumeRecord->type          = $volume->getType();
@@ -331,7 +327,11 @@ class Volumes extends Component
 				$volumeRecord->settings      = $volume->settings;
 				$volumeRecord->fieldLayoutId = $volume->fieldLayoutId;
 
-				if ($isNewVolume)
+				if (!$isNewVolume)
+				{
+					Craft::$app->fields->deleteLayoutById($volumeRecord->fieldLayoutId);
+				}
+				else
 				{
 					// Set the sort order
 					$maxSortOrder = (new Query())
@@ -340,12 +340,6 @@ class Volumes extends Component
 						->scalar();
 
 					$volumeRecord->sortOrder = $maxSortOrder + 1;
-				}
-
-				if (!$isNewVolume && $oldVolume->fieldLayoutId)
-				{
-					// Drop the old field layout
-					Craft::$app->fields->deleteLayoutById($oldVolume->fieldLayoutId);
 				}
 
 				// Save the new one

@@ -87,7 +87,17 @@ class Rackspace extends Volume
 	// =========================================================================
 
 	/**
-	 * @inheritDoc ISavableComponentType::getSettingsHtml()
+	 * @inheritdoc
+	 */
+	public function rules()
+	{
+		$rules = parent::rules();
+		$rules[] = [['username', 'apiKey', 'region', 'container'], 'required'];
+		return $rules;
+	}
+
+	/**
+	 * @inheritdoc
 	 *
 	 * @return string|null
 	 */

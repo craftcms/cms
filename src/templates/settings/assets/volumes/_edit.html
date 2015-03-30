@@ -7,7 +7,7 @@
 
 {% set content %}
 	<form method="post" accept-charset="UTF-8" data-saveshortcut>
-		<input type="hidden" name="action" value="assetVolumes/saveVolume">
+		<input type="hidden" name="action" value="volumes/saveVolume">
 		<input type="hidden" name="redirect" value="settings/assets">
 		{% if not isNewVolume %}<input type="hidden" name="volumeId" value="{{ volume.id }}">{% endif %}
 		{{ getCsrfInput() }}
@@ -45,7 +45,7 @@
 					instructions: "What type of volume is this?"|t,
 					id: 'type',
 					name: 'type',
-					options: volumeTypes,
+					options: volumeTypeOptions,
 					value: volume.getType(),
 					toggle: true
 				}) }}
@@ -64,7 +64,7 @@
 					</div>
 				{% endfor %}
 			{% else %}
-				{% namespace 'types['~volumeType.className()~']' %}
+				{% namespace 'types['~volumeType.getClassHandle()~']' %}
 					{{ volumeType.getSettingsHtml()|raw }}
 				{% endnamespace %}
 			{% endif %}

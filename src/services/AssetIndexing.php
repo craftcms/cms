@@ -4,6 +4,7 @@ namespace craft\app\services;
 use Craft;
 use craft\app\base\Volume;
 use craft\app\dates\DateTime;
+use craft\app\errors\VolumeFileNotFoundException;
 use craft\app\helpers\StringHelper;
 use craft\app\helpers\AssetsHelper;
 use craft\app\helpers\IOHelper;
@@ -328,6 +329,26 @@ class AssetIndexing extends Component
 		}
 
 		return $output;
+	}
+
+	/**
+	 * Index a single file by Volume and path.
+	 *
+	 * @param Volume $volume
+	 * @param $path
+	 * @param bool $checkIfExists
+	 *
+	 * @throws \craft\app\errors\VolumeFileNotFoundException
+	 * @return bool|Asset
+	 */
+	public function indexFile(Volume $volume, $path, $checkIfExists = true)
+	{
+		if ($checkIfExists && !$volume->fileExists($path))
+		{
+			throw new VolumeFileNotFoundException(Craft::t('app', 'File was not found while attempting to index {path}!', array('path' => $path)));
+		}
+
+		return $this->_indexFile($volume, $path);
 	}
 
 	// Private Methods

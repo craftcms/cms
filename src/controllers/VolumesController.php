@@ -25,7 +25,7 @@ use craft\app\web\Controller;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */
-class VolumeController extends Controller
+class VolumesController extends Controller
 {
 	// Public Methods
 	// =========================================================================
@@ -161,19 +161,24 @@ class VolumeController extends Controller
 		}
 		else
 		{
-			$volume = new AssetVolume();
+			if (Craft::$app->getEdition() == Craft::Pro)
+			{
+				$volumeType = Craft::$app->getRequest()->getBodyParam('type');
+			}
+			else
+			{
+				$volumeType = 'craft\app\volumes\Local';
+			}
+
+			$volume = Craft::$app->volumes->createVolume($volumeType);
 		}
 
 		$volume->name   = Craft::$app->getRequest()->getBodyParam('name');
 		$volume->handle = Craft::$app->getRequest()->getBodyParam('handle');
 		$volume->url    = Craft::$app->getRequest()->getBodyParam('url');
 
-		if (Craft::$app->getEdition() == Craft::Pro)
-		{
-			$volume->type = Craft::$app->getRequest()->getBodyParam('type');
-		}
-
 		$typeSettings = Craft::$app->getRequest()->getBodyParam('types');
+
 		if (isset($typeSettings[$volume->type]))
 		{
 			if (!$volume->settings)
@@ -189,13 +194,12 @@ class VolumeController extends Controller
 		$fieldLayout->type = Asset::className();
 		$volume->setFieldLayout($fieldLayout);
 
-		try
+		if (Craft::$app->volumes->saveVolume($volume))
 		{
-			Craft::$app->volumes->saveVolume($volume);
 			Craft::$app->getSession()->setNotice(Craft::t('app', 'Volume saved.'));
 			$this->redirectToPostedUrl();
 		}
-		catch (ModelException $exception)
+		else
 		{
 			Craft::$app->getSession()->setError(Craft::t('app', 'Couldn’t save volume.'));
 		}

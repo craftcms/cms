@@ -9,6 +9,8 @@ namespace craft\app\helpers;
 
 use Craft;
 use craft\app\assetsourcetypes\BaseAssetSourceType;
+use craft\app\base\Volume;
+use craft\app\base\VolumeInterface;
 use craft\app\elements\Asset;
 
 /**
@@ -45,17 +47,17 @@ class AssetsHelper
 	/**
 	 * Generate a URL for a given Assets file in a Source Type.
 	 *
-	 * @param BaseAssetSourceType $sourceType
-	 * @param Asset               $file
+	 * @param Volume $volume
+	 * @param Asset  $file
 	 *
 	 * @return string
 	 */
-	public static function generateUrl(BaseAssetSourceType $sourceType, Asset $file)
+	public static function generateUrl(Volume $volume, Asset $file)
 	{
-		$baseUrl = $sourceType->getRootUrl();
+		$baseUrl = $volume->getRootUrl();
 		$folderPath = $file->getFolder()->path;
 		$filename = $file->filename;
-		$appendix = static::getUrlAppendix($sourceType, $file);
+		$appendix = static::getUrlAppendix($volume, $file);
 
 		return $baseUrl.$folderPath.$filename.$appendix;
 	}
@@ -63,19 +65,20 @@ class AssetsHelper
 	/**
 	 * Get appendix for an URL based on it's Source caching settings.
 	 *
-	 * @param BaseAssetSourceType $source
-	 * @param Asset               $file
+	 * @param Volume $source
+	 * @param Asset  $file
 	 *
 	 * @return string
 	 */
-	public static function getUrlAppendix(BaseAssetSourceType $source, Asset $file)
+	public static function getUrlAppendix(Volume $source, Asset $file)
 	{
 		$appendix = '';
 
-		if (!empty($source->getSettings()->expires) && DateTimeHelper::isValidIntervalString($source->getSettings()->expires))
+		//@TODO add cache apendix here
+		/*if (!empty($source->getSettings()->expires) && DateTimeHelper::isValidIntervalString($source->getSettings()->expires))
 		{
 			$appendix = '?mtime='.$file->dateModified->format("YmdHis");
-		}
+		}*/
 
 		return $appendix;
 	}
