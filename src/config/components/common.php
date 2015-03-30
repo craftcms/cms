@@ -17,7 +17,6 @@ return [
 	'et'                   => 'craft\app\services\Et',
 	'feeds'                => 'craft\app\services\Feeds',
 	'fields'               => 'craft\app\services\Fields',
-	'fileCache'            => 'craft\app\cache\FileCache',
 	'globals'              => 'craft\app\services\Globals',
 	'i18n'                 => 'craft\app\i18n\I18N',
 	'install'              => 'craft\app\services\Install',
