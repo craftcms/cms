@@ -9,7 +9,6 @@ namespace craft\app\console;
 
 use Craft;
 use craft\app\base\ApplicationTrait;
-use craft\app\etc\console\ConsoleCommandRunner;
 use craft\app\helpers\IOHelper;
 use craft\app\helpers\StringHelper;
 
@@ -71,16 +70,6 @@ class Application extends \yii\console\Application
 
 		// Validate some basics on the database configuration file.
 		$this->validateDbConfigFile();
-
-		foreach ($this->plugins->getPlugins() as $plugin)
-		{
-			$commandsPath = $this->path->getPluginsPath().'/'.StringHelper::toLowerCase($plugin->getClassHandle()).'/consolecommands';
-
-			if (IOHelper::folderExists($commandsPath))
-			{
-				$this->commandRunner->addCommands($commandsPath);
-			}
-		}
 	}
 
 	/**
@@ -125,14 +114,17 @@ class Application extends \yii\console\Application
 		return parent::get($id, $throwException);
 	}
 
-	// Protected Methods
-	// =========================================================================
-
 	/**
-	 * @return ConsoleCommandRunner
+	 * Returns the configuration of the built-in commands.
+	 *
+	 * @return array The configuration of the built-in commands.
 	 */
-	protected function createCommandRunner()
+	public function coreCommands()
 	{
-		return new ConsoleCommandRunner();
+		return [
+			'help' => 'yii\console\controllers\HelpController',
+			'migrate' => 'yii\console\controllers\MigrateController',
+			'cache' => 'yii\console\controllers\CacheController',
+		];
 	}
 }
