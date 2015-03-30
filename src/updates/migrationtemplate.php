@@ -7,15 +7,30 @@
 
 namespace craft\app\migrations;
 
-use craft\app\db\Migration;
+/**
+ * This view is used by app/console/controllers/MigrateController.php.
+ *
+ * The following variables are available in this view:
+ */
+/* @var $className         string The new migration class name. */
+/* @var $migrationNameDesc string The format of the migration class name. */
+/* @var $namespace         string The namespace of the generated migration. */
+
+echo "<?php\n";
+?>
+
+namespace <?= $namespace ?>
+
+use yii\db\Schema;
+use yii\db\Migration;
 
 /**
- * The class name is the UTC timestamp in the format of {MigrationNameDesc}
+ * The class name is the UTC timestamp in the format of <?= $migrationNameDesc ?>.
  */
-class {ClassName} extends BaseMigration
+class <?= $className ?> extends Migration
 {
 	/**
-	 * Any migration code in here is wrapped inside of a transaction.
+	 * The migration code in this method is wrapped inside of a database transaction.
 	 *
 	 * @return bool
 	 */

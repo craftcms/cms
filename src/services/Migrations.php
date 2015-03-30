@@ -162,23 +162,7 @@ class Migrations extends Component
 
 		if ($migration->up() !== false)
 		{
-			if ($plugin)
-			{
-				$pluginInfo = Craft::$app->plugins->getStoredPluginInfo($plugin);
-
-				Craft::$app->getDb()->createCommand()->insert($this->_migrationTable, [
-					'version' => $class,
-					'applyTime' => DateTimeHelper::currentTimeForDb(),
-					'pluginId' => $pluginInfo['id']
-				])->execute();
-			}
-			else
-			{
-				Craft::$app->getDb()->createCommand()->insert($this->_migrationTable, [
-					'version' => $class,
-					'applyTime' => DateTimeHelper::currentTimeForDb()
-				])->execute();
-			}
+			$this->addMigrationHistory($class, $plugin);
 
 			$time = microtime(true) - $start;
 			Craft::info('Applied migration: '.$class.' (time: '.sprintf("%.3f", $time).'s)', __METHOD__);
@@ -189,6 +173,35 @@ class Migrations extends Component
 			$time = microtime(true) - $start;
 			Craft::error('Failed to apply migration: '.$class.' (time: '.sprintf("%.3f", $time).'s)', __METHOD__);
 			return false;
+		}
+	}
+
+	/**
+	 * Adds a row to the `craft_migrations` table for either Craft or a plugin.
+	 *
+	 * @param string      $migrationClassName The name of the migration class to add.
+	 * @param string|null $plugin             The plugin handle of the migration, if any.
+	 *
+	 * @throws \yii\db\Exception
+	 */
+	public function addMigrationHistory($migrationClassName, $plugin = null)
+	{
+		if ($plugin)
+		{
+			$pluginInfo = Craft::$app->plugins->getStoredPluginInfo($plugin);
+
+			Craft::$app->getDb()->createCommand()->insert($this->_migrationTable, [
+				'version' => $migrationClassName,
+				'applyTime' => DateTimeHelper::currentTimeForDb(),
+				'pluginId' => $pluginInfo['id']
+			])->execute();
+		}
+		else
+		{
+			Craft::$app->getDb()->createCommand()->insert($this->_migrationTable, [
+				'version' => $migrationClassName,
+				'applyTime' => DateTimeHelper::currentTimeForDb()
+			])->execute();
 		}
 	}
 
@@ -211,9 +224,18 @@ class Migrations extends Component
 
 		require_once($file);
 
-		$class = __NAMESPACE__.'\\'.$class;
+		if ($plugin)
+		{
+			$class = "craft\\plugins\\".$plugin::className()."\\migrations\\".$class;
+		}
+		else
+		{
+			$class = "craft\\app\\migrations\\{$class}";
+		}
+
+		/* @var $migration craft\app\db\Migration */
 		$migration = new $class;
-		$migration->setDbConnection(Craft::$app->getDb());
+		$migration->db = Craft::$app->getDb();
 
 		return $migration;
 	}
@@ -290,7 +312,7 @@ class Migrations extends Component
 					continue;
 				}
 
-				$path = IOHelper::normalizePathSeparators($migrationPath.$file);
+				$path = IOHelper::normalizePathSeparators($migrationPath.'/'.$file);
 				$class = IOHelper::getFilename($path, false);
 
 				// Have we already run this migration?
@@ -347,7 +369,7 @@ class Migrations extends Component
 	 */
 	public function getTemplate()
 	{
-		return file_get_contents(Craft::getAlias('app.etc.updates.migrationtemplate').'.php');
+		return Craft::getAlias('@app/updates/migrationtemplate').'.php';
 	}
 
 	// Private Methods
