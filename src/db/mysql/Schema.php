@@ -7,8 +7,6 @@
 
 namespace craft\app\db\mysql;
 
-use Craft;
-
 /**
  * @inheritDoc \yii\db\mysql\Schema
  *
@@ -17,6 +15,13 @@ use Craft;
  */
 class Schema extends \yii\db\mysql\Schema
 {
+	// Constants
+	// =========================================================================
+
+	const TYPE_CHAR = 'char';
+	const TYPE_MEDIUMTEXT = 'mediumtext';
+	const TYPE_ENUM = 'enum';
+
 	// Properties
 	// =========================================================================
 
@@ -35,7 +40,9 @@ class Schema extends \yii\db\mysql\Schema
 	{
 		parent::init();
 
-		$this->typeMap['mediumtext'] = 'mediumtext';
+		$this->typeMap['char'] = self::TYPE_CHAR;
+		$this->typeMap['mediumtext'] = self::TYPE_MEDIUMTEXT;
+		$this->typeMap['enum'] = self::TYPE_ENUM;
 	}
 
 	/**
