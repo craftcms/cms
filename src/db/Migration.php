@@ -7,11 +7,10 @@
 
 namespace craft\app\db;
 
-use Craft;
 use yii\base\NotSupportedException;
 
 /**
- * @inheritDoc \yii\db\Migration
+ * @inheritdoc
  *
  * @property Connection $db Connection the DB connection that this command is associated with.
  *
@@ -23,143 +22,20 @@ abstract class Migration extends \yii\db\Migration
 	// Public Methods
 	// =========================================================================
 
-	// Migration Actions
-	// -------------------------------------------------------------------------
-
 	/**
-	 * This method contains the logic to be executed when applying this migration. Child classes may implement this
-	 * method to provide actual migration logic.
-	 *
-	 * @return bool
-	 */
-	public function up()
-	{
-		$transaction = $this->db->getTransaction() === null ? $this->db->beginTransaction() : null;
-
-		try
-		{
-			$result = $this->safeUp();
-
-			if ($result === false)
-			{
-				if ($transaction !== null)
-				{
-					$transaction->rollback();
-				}
-
-				return false;
-			}
-
-			if ($transaction !== null)
-			{
-				$transaction->commit();
-			}
-
-			return true;
-		}
-		catch(\Exception $e)
-		{
-			Craft::error($e->getMessage().' ('.$e->getFile().':'.$e->getLine().')', __METHOD__);
-			Craft::error($e->getTraceAsString(), __METHOD__);
-
-			if ($transaction !== null)
-			{
-				$transaction->rollback();
-			}
-
-			return false;
-		}
-	}
-
-	/**
-	 * @throws NotSupportedException
-	 */
-	public function down()
-	{
-		throw new NotSupportedException('"down" is not implemented.');
-	}
-
-	/**
+	 * @inheritdoc
 	 * @throws NotSupportedException
 	 */
 	public function safeDown()
 	{
-		throw new NotSupportedException('"safeDown" is not implemented.');
+		throw new NotSupportedException('"down" is not implemented.');
 	}
 
 	// Database Commands
 	// -------------------------------------------------------------------------
 
 	/**
-	 * @param $table
-	 */
-	public function dropTableIfExists($table)
-	{
-		echo "    > dropping $table if it exists ...";
-		$time = microtime(true);
-		$this->db->createCommand()->dropTableIfExists($table)->execute();
-		echo " done (time: " . sprintf('%.3f', microtime(true) - $time) . "s)\n";
-	}
-
-	/**
-	 * @param $table
-	 * @param $column
-	 * @param $type
-	 */
-	public function addColumnFirst($table, $column, $type)
-	{
-		echo "    > add column $column $type to first position in table $table ...";
-		$time = microtime(true);
-		$this->db->createCommand()->addColumnFirst($table, $column, $type)->execute();
-		echo " done (time: " . sprintf('%.3f', microtime(true) - $time) . "s)\n";
-	}
-
-	/**
-	 * @param $table
-	 * @param $column
-	 * @param $type
-	 * @param $before
-	 */
-	public function addColumnBefore($table, $column, $type, $before)
-	{
-		echo "    > add column $column $type before $before in table $table ...";
-		$time = microtime(true);
-		$this->db->createCommand()->addColumnBefore($table, $column, $type, $before)->execute();
-		echo " done (time: " . sprintf('%.3f', microtime(true) - $time) . "s)\n";
-	}
-
-	/**
-	 * @param $table
-	 * @param $column
-	 * @param $type
-	 * @param $after
-	 */
-	public function addColumnAfter($table, $column, $type, $after)
-	{
-		echo "    > add column $column $type after $after in $table ...";
-		$time = microtime(true);
-		$this->db->createCommand()->addColumnAfter($table, $column, $type, $after)->execute();
-		echo " done (time: " . sprintf('%.3f', microtime(true) - $time) . "s)\n";
-	}
-
-	/**
-	 * @param      $table
-	 * @param      $column
-	 * @param      $type
-	 * @param null $newName
-	 * @param null $after
-	 */
-	public function alterColumn($table, $column, $type, $newName = null, $after = null)
-	{
-		echo "    > alter column $column $type in table $table ...";
-		$time = microtime(true);
-		$this->db->createCommand()->alterColumn($table, $column, $type, $newName, $after)->execute();
-		echo " done (time: " . sprintf('%.3f', microtime(true) - $time) . "s)\n";
-	}
-
-	/**
-	 * Creates and executes an INSERT SQL statement. The method will properly escape the column names, and bind the
-	 * values to be inserted.
+	 * @inheritdoc
 	 *
 	 * @param string $table               The table that new rows will be inserted into.
 	 * @param array  $columns             The column data (name=>value) to be inserted into the table.
@@ -175,15 +51,49 @@ abstract class Migration extends \yii\db\Migration
 	}
 
 	/**
-	 * Creates and executes an UPDATE SQL statement. The method will properly escape the column names and bind the
-	 * values to be updated.
+	 * @inheritdoc
 	 *
-	 * @param string $table               The table to be updated.
-	 * @param array  $columns             The column data (name=>value) to be updated.
-	 * @param mixed  $conditions          The conditions that will be put in the WHERE part. Please refer to
-	 *                                    [[\CDbCommand::where]] on how to specify conditions.
-	 * @param array  $params              The parameters to be bound to the query.
-	 * @param bool   $includeAuditColumns Whether to include the data for the audit columns (dateCreated, dateUpdated, uid).
+	 * @param string  $table               The table that new rows will be inserted into.
+	 * @param array   $columns             The column names.
+	 * @param array   $rows                The rows to be batch inserted into the table.
+	 * @param boolean $includeAuditColumns Whether `dateCreated`, `dateUpdated`, and `uid` values should be added to $columns.
+	 */
+	public function batchInsert($table, $columns, $rows, $includeAuditColumns = true)
+	{
+		echo "    > batch insert into $table ...";
+		$time = microtime(true);
+		$this->db->createCommand()->batchInsert($table, $columns, $rows, $includeAuditColumns)->execute();
+		echo " done (time: " . sprintf('%.3f', microtime(true) - $time) . "s)\n";
+	}
+
+	/**
+	 * Creates and executes a command that will insert some given data into a table, or update an existing row
+	 * in the event of a key constraint violation.
+	 *
+	 * @param string $table               The table that the row will be inserted into, or updated.
+	 * @param array $keyColumns           The key-constrained column data (name => value) to be inserted into the table
+	 *                                    in the event that a new row is getting created
+	 * @param array $updateColumns        The non-key-constrained column data (name => value) to be inserted into the table
+	 *                                    or updated in the existing row.
+	 * @param bool   $includeAuditColumns Whether `dateCreated`, `dateUpdated`, and `uid` values should be added to $columns.
+	 */
+	public function insertOrUpdate($table, $keyColumns, $updateColumns, $includeAuditColumns = true)
+	{
+		echo "    > insert or update into $table ...";
+		$time = microtime(true);
+		$this->db->createCommand()->insertOrUpdate($table, $keyColumns, $updateColumns, $includeAuditColumns)->execute();
+		echo " done (time: " . sprintf('%.3f', microtime(true) - $time) . "s)\n";
+	}
+
+	/**
+	 * @inheritdoc
+	 *
+	 * @param string       $table               The table to be updated.
+	 * @param array        $columns             The column data (name => value) to be updated.
+	 * @param string|array $conditions          The condition that will be put in the WHERE part. Please
+	 *                                          refer to [[Query::where()]] on how to specify condition.
+	 * @param array        $params              The parameters to be bound to the command.
+	 * @param bool         $includeAuditColumns Whether the `dateUpdated` value should be added to $columns.
 	 */
 	public function update($table, $columns, $conditions = '', $params = [], $includeAuditColumns = true)
 	{
@@ -194,114 +104,121 @@ abstract class Migration extends \yii\db\Migration
 	}
 
 	/**
-	 * @param string $table
-	 * @param array  $keyColumns
-	 * @param array  $updateColumns
-	 * @param bool   $includeAuditColumns
+	 * Creates and executes a SQL statement for replacing some text with other text in a given table column.
+	 *
+	 * @param string $table   The table to be updated.
+	 * @param string $column  The column to be searched.
+	 * @param string $find    The text to be searched for.
+	 * @param string $replace The replacement text.
 	 */
-	public function insertOrUpdate($table, $keyColumns, $updateColumns, $includeAuditColumns = true)
+	public function replace($table, $column, $find, $replace)
 	{
-		echo "    > insert or update in $table ...";
+		echo "    > replace \"$find\" with \"$replace\" in $table.$column ...";
 		$time = microtime(true);
-		$this->db->createCommand()->insertOrUpdate($table, $keyColumns, $updateColumns, $includeAuditColumns)->execute();
+		$this->db->createCommand()->replace($table, $column, $find, $replace)->execute();
 		echo " done (time: " . sprintf('%.3f', microtime(true) - $time) . "s)\n";
 	}
 
 	/**
-	 * Creates and executes a DELETE SQL statement.
+	 * @inheritdoc
 	 *
-	 * @param string $table      The table where the data will be deleted from.
-	 * @param mixed  $conditions The conditions that will be put in the WHERE part. Please refer to
-	 *                           [[\CDbCommand::where]] on how to specify conditions.
-	 * @param array  $params     The parameters to be bound to the query.
+	 * @param string $table           The name of the table to be created. The name will be properly quoted by the method.
+	 * @param array  $columns         The columns (name => definition) in the new table.
+	 * @param null   $options         Additional SQL fragment that will be appended to the generated SQL.
+	 * @param bool   $addIdColumn     Whether an `id` column should be added.
+	 * @param bool   $addAuditColumns Whether `dateCreated` and `dateUpdated` columns should be added.
 	 */
-	public function delete($table, $conditions = '', $params = [])
+	public function createTable($table, $columns, $options = null, $addIdColumn = true, $addAuditColumns = true)
 	{
-		echo "    > delete from $table ...";
+		echo "    > create table $table ...";
 		$time = microtime(true);
-		$this->db->createCommand()->delete($table, $conditions, $params)->execute();
+		$this->db->createCommand()->createTable($table, $columns, $options, $addIdColumn, $addAuditColumns)->execute();
 		echo " done (time: " . sprintf('%.3f', microtime(true) - $time) . "s)\n";
 	}
 
 	/**
-	 * Builds and executes a SQL statement for renaming a DB table.
+	 * Creates and executes a SQL statement for dropping a DB table, if it exists.
 	 *
-	 * @param string $table   The table to be renamed. The name will be properly quoted by the method.
-	 * @param string $newName The new table name. The name will be properly quoted by the method.
+	 * @param $table The table to be dropped. The name will be properly quoted by the method.
 	 */
-	public function renameTable($table, $newName)
+	public function dropTableIfExists($table)
 	{
-		echo "    > rename table $table to $newName ...";
+		echo "    > dropping $table if it exists ...";
 		$time = microtime(true);
-		$this->db->createCommand()->renameTable($table, $newName)->execute();
+		$this->db->createCommand()->dropTableIfExists($table)->execute();
 		echo " done (time: " . sprintf('%.3f', microtime(true) - $time) . "s)\n";
 	}
 
 	/**
-	 * Builds and executes a SQL statement for dropping a DB table.
+	 * Creates a SQL statement for adding a new DB column at the beginning of a table.
 	 *
-	 * @param string $table The table to be dropped. The name will be properly quoted by the method.
+	 * @param string $table  The table that the new column will be added to. The table name will be properly quoted by the method.
+	 * @param string $column The name of the new column. The name will be properly quoted by the method.
+	 * @param string $type   The column type. [[\yii\db\QueryBuilder::getColumnType()]] will be called
+	 *                       to convert the give column type to the physical one. For example, `string` will be converted
+	 *                       as `varchar(255)`, and `string not null` becomes `varchar(255) not null`.
 	 */
-	public function dropTable($table)
+	public function addColumnFirst($table, $column, $type)
 	{
-		echo "    > drop table $table ...";
+		echo "    > add column $column $type to first position in table $table ...";
 		$time = microtime(true);
-		$this->db->createCommand()->dropTable($table)->execute();
+		$this->db->createCommand()->addColumnFirst($table, $column, $type)->execute();
 		echo " done (time: " . sprintf('%.3f', microtime(true) - $time) . "s)\n";
 	}
 
 	/**
-	 * Builds and executes a SQL statement for truncating a DB table.
+	 * Creates and executes a SQL statement for adding a new DB column before another column in a table.
 	 *
-	 * @param string $table The table to be truncated. The name will be properly quoted by the method.
+	 * @param string $table  The table that the new column will be added to. The table name will be properly quoted by the method.
+	 * @param string $column The name of the new column. The name will be properly quoted by the method.
+	 * @param string $type   The column type. [[\yii\db\QueryBuilder::getColumnType()]] will be called
+	 *                       to convert the give column type to the physical one. For example, `string` will be converted
+	 *                       as `varchar(255)`, and `string not null` becomes `varchar(255) not null`.
+	 * @param string $before The name of the column that the new column should be placed before.
 	 */
-	public function truncateTable($table)
+	public function addColumnBefore($table, $column, $type, $before)
 	{
-		echo "    > truncate table $table ...";
+		echo "    > add column $column $type before $before in table $table ...";
 		$time = microtime(true);
-		$this->db->createCommand()->truncateTable($table)->execute();
+		$this->db->createCommand()->addColumnBefore($table, $column, $type, $before)->execute();
 		echo " done (time: " . sprintf('%.3f', microtime(true) - $time) . "s)\n";
 	}
 
 	/**
-	 * Builds and executes a SQL statement for dropping a DB column.
+	 * Creates and executes a SQL statement for adding a new DB column after another column in a table.
 	 *
-	 * @param string $table  The table whose column is to be dropped. The name will be properly quoted by the method.
-	 * @param string $column The name of the column to be dropped. The name will be properly quoted by the method.
+	 * @param string $table  The table that the new column will be added to. The table name will be properly quoted by the method.
+	 * @param string $column The name of the new column. The name will be properly quoted by the method.
+	 * @param string $type   The column type. [[\yii\db\QueryBuilder::getColumnType()]] will be called
+	 *                       to convert the give column type to the physical one. For example, `string` will be converted
+	 *                       as `varchar(255)`, and `string not null` becomes `varchar(255) not null`.
+	 * @param string $after  The name of the column that the new column should be placed after.
 	 */
-	public function dropColumn($table, $column)
+	public function addColumnAfter($table, $column, $type, $after)
 	{
-		echo "    > drop column $column from table $table ...";
+		echo "    > add column $column $type after $after in $table ...";
 		$time = microtime(true);
-		$this->db->createCommand()->dropColumn($table, $column)->execute();
+		$this->db->createCommand()->addColumnAfter($table, $column, $type, $after)->execute();
 		echo " done (time: " . sprintf('%.3f', microtime(true) - $time) . "s)\n";
 	}
 
 	/**
-	 * Builds and executes a SQL statement for renaming a column.
+	 * @inheritdoc
 	 *
-	 * @param string $table   The table whose column is to be renamed. The name will be properly quoted by the method.
-	 * @param string $name    The old name of the column. The name will be properly quoted by the method.
-	 * @param string $newName The new name of the column. The name will be properly quoted by the method.
+	 * @param string      $table   The table whose column is to be changed. The table name will be properly quoted by the method.
+	 * @param string      $column  The name of the column to be changed. The name will be properly quoted by the method.
+	 * @param string      $type    The new column type. The [[getColumnType()]] method will be invoked to convert abstract
+	 *                             column type (if any) into the physical one. Anything that is not recognized as abstract type will be kept
+	 *                             in the generated SQL. For example, 'string' will be turned into 'varchar(255)', while 'string not null'
+	 *                             will become 'varchar(255) not null'.
+	 * @param string|null $newName The new column name, if any.
+	 * @param string|null $after   The column that this column should be placed after, if it should be moved.
 	 */
-	public function renameColumn($table, $name, $newName)
+	public function alterColumn($table, $column, $type, $newName = null, $after = null)
 	{
-		echo "    > rename column $name in table $table to $newName ...";
+		echo "    > alter column $column $type in table $table ...";
 		$time = microtime(true);
-		$this->db->createCommand()->renameColumn($table, $name, $newName)->execute();
-		echo " done (time: " . sprintf('%.3f', microtime(true) - $time) . "s)\n";
-	}
-
-	/**
-	 * Refreshed schema cache for a table
-	 *
-	 * @param string $table The name of the table to refresh
-	 */
-	public function refreshTableSchema($table)
-	{
-		echo "    > refresh table $table schema cache ...";
-		$time = microtime(true);
-		$this->db->getSchema()->getTableSchema($table, true);
+		$this->db->createCommand()->alterColumn($table, $column, $type, $newName, $after)->execute();
 		echo " done (time: " . sprintf('%.3f', microtime(true) - $time) . "s)\n";
 	}
 }

@@ -12,7 +12,7 @@ use craft\app\helpers\DbHelper;
 use craft\app\helpers\StringHelper;
 
 /**
- * @inheritDoc \yii\db\Command
+ * @inheritdoc
  *
  * @property Connection $db Connection the DB connection that this command is associated with.
  *
@@ -25,7 +25,7 @@ class Command extends \yii\db\Command
 	// =========================================================================
 
 	/**
-	 * @inheritDoc \yii\db\Command::insert()
+	 * @inheritdoc
 	 *
 	 * @param string  $table               The table that new rows will be inserted into.
 	 * @param array   $columns             The column data (name => value) to be inserted into the table.
@@ -45,7 +45,7 @@ class Command extends \yii\db\Command
 	}
 
 	/**
-	 * @inheritDoc \yii\db\batchInsert()
+	 * @inheritdoc
 	 *
 	 * @param string  $table               The table that new rows will be inserted into.
 	 * @param array   $columns             The column names.
@@ -106,7 +106,7 @@ class Command extends \yii\db\Command
 	}
 
 	/**
-	 * @inheritDoc \yii\db\Command::update()
+	 * @inheritdoc
 	 *
 	 * @param string       $table               The table to be updated.
 	 * @param array        $columns             The column data (name => value) to be updated.
@@ -127,7 +127,7 @@ class Command extends \yii\db\Command
 	}
 
 	/**
-	 * Creates a DB command for replacing some text with other text in a given table column.
+	 * Creates a SQL statement for replacing some text with other text in a given table column.
 	 *
 	 * @param string $table   The table to be updated.
 	 * @param string $column  The column to be searched.
@@ -143,7 +143,7 @@ class Command extends \yii\db\Command
 	}
 
 	/**
-	 * @inheritDoc \yii\db\Command::createTable()
+	 * @inheritdoc
 	 *
 	 * @param string $table           The name of the table to be created. The name will be properly quoted by the method.
 	 * @param array  $columns         The columns (name => definition) in the new table.
@@ -164,7 +164,7 @@ class Command extends \yii\db\Command
 	}
 
 	/**
-	 * Creates a SQL command for dropping a DB table, if it exists.
+	 * Creates a SQL statement for dropping a DB table, if it exists.
 	 *
 	 * @param string $table The table to be dropped. The name will be properly quoted by the method.
 	 * @return Command the command object itself
@@ -176,7 +176,7 @@ class Command extends \yii\db\Command
 	}
 
 	/**
-	 * Creates a SQL command for adding a new DB column at the beginning of a table.
+	 * Creates a SQL statement for adding a new DB column at the beginning of a table.
 	 *
 	 * @param string $table  The table that the new column will be added to. The table name will be properly quoted by the method.
 	 * @param string $column The name of the new column. The name will be properly quoted by the method.
@@ -192,7 +192,7 @@ class Command extends \yii\db\Command
 	}
 
 	/**
-	 * Creates a SQL command for adding a new DB column before another column in a table.
+	 * Creates a SQL statement for adding a new DB column before another column in a table.
 	 *
 	 * @param string $table  The table that the new column will be added to. The table name will be properly quoted by the method.
 	 * @param string $column The name of the new column. The name will be properly quoted by the method.
@@ -209,7 +209,7 @@ class Command extends \yii\db\Command
 	}
 
 	/**
-	 * Creates a SQL command for adding a new DB column after another column in a table.
+	 * Creates a SQL statement for adding a new DB column after another column in a table.
 	 *
 	 * @param string $table  The table that the new column will be added to. The table name will be properly quoted by the method.
 	 * @param string $column The name of the new column. The name will be properly quoted by the method.
@@ -226,7 +226,7 @@ class Command extends \yii\db\Command
 	}
 
 	/**
-	 * Creates a SQL command for changing the definition of a column.
+	 * Creates a SQL statement for changing the definition of a column.
 	 *
 	 * @param string      $table   The table whose column is to be changed. The table name will be properly quoted by the method.
 	 * @param string      $column  The name of the column to be changed. The name will be properly quoted by the method.
