@@ -624,6 +624,7 @@ class MigrationHelper
 		static::$_tables[$table] = (object) [
 			'name'    => $table,
 			'columns' => [],
+			'pks'     => [],
 			'fks'     => [],
 			'indexes' => [],
 		];
@@ -646,6 +647,15 @@ class MigrationHelper
 						'name' => $name,
 						'type' => $match[2]
 					];
+				}
+			}
+
+			// Find the primary keys
+			if (preg_match('/PRIMARY KEY \(([^\)]+)\)/', $createTableSql, $matches))
+			{
+				if (preg_match_all('/`(\w+)`/', $matches[0], $pkMatches))
+				{
+					static::$_tables[$table]->pks = $pkMatches[1];
 				}
 			}
 
