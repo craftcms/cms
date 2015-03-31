@@ -128,4 +128,12 @@ abstract class Widget extends SavableComponent implements WidgetInterface
 				'<img style="display: block; width: 100%;" src="'.UrlHelper::getResourceUrl('images/prg.jpg').'">' .
 			'</div>';
 	}
+
+	/**
+	 * @inheritdoc
+	 */
+	public function getUser()
+	{
+		return Craft::$app->users->getUserById($this->userId);
+	}
 }

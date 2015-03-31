@@ -30,17 +30,4 @@ trait WidgetTrait
 	 * @var integer The widget’s sort order
 	 */
 	public $sortOrder;
-
-	// Public Methods
-	// =========================================================================
-
-	/**
-	 * Returns user that owns the widget
-	 *
-	 * @return User the user that owns the widget
-	 */
-	public function getUser()
-	{
-		return Craft::$app->users->getUserById($this->userId);
-	}
 }
