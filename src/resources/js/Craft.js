@@ -1,4 +1,4 @@
-/*! Craft 3.0.0 - 2015-03-27 */
+/*! Craft 3.0.0 - 2015-04-01 */
 (function($){
 
 if (typeof window.Craft == 'undefined')
@@ -6045,7 +6045,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 });
 
 // Register it!
-Craft.registerElementIndexClass('Asset', Craft.AssetIndex);
+Craft.registerElementIndexClass('craft\\app\\elements\\Asset', Craft.AssetIndex);
 
 /**
  * Asset Select input
