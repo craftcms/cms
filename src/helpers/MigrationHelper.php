@@ -533,6 +533,29 @@ class MigrationHelper
 	}
 
 	/**
+	 * Drops a table, its own foreign keys, and any foreign keys referencing it.
+	 *
+	 * @param string $tableName
+	 * @param Migration $migration
+	 */
+	public static function dropTable($tableName, Migration $migration = null)
+	{
+		$table = static::getTable($tableName);
+
+		static::dropAllForeignKeysOnTable($table, $migration);
+		static::dropAllForeignKeysToTable($table, $migration);
+
+		if ($migration !== null)
+		{
+			$migration->dropTable($tableName);
+		}
+		else
+		{
+			Craft::$app->getDb()->createCommand()->dropTable($tableName)->execute();
+		}
+	}
+
+	/**
 	 * Drops all the foreign keys on a table.
 	 *
 	 * @param object $table
@@ -545,6 +568,27 @@ class MigrationHelper
 		foreach ($table->fks as $fk)
 		{
 			static::dropForeignKey($fk, $migration);
+		}
+	}
+
+	/**
+	 * Drops all the foreign keys that reference a table.
+	 *
+	 * @param object $table
+	 * @param Migration $migration
+	 *
+	 * @return null
+	 */
+	public static function dropAllForeignKeysToTable($table, Migration $migration = null)
+	{
+		foreach (array_keys($table->columns) as $column)
+		{
+			$fks = static::findForeignKeysTo($table->name, $column);
+
+			foreach ($fks as $fk)
+			{
+				static::dropForeignKey($fk, $migration);
+			}
 		}
 	}
 
