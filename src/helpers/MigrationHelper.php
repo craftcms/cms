@@ -121,6 +121,12 @@ class MigrationHelper
 
 		foreach ($fks as $fk)
 		{
+			// Ignore if the FK is coming from this very table, since dropAllForeignKeysOnTable() will take care of that
+			if ($fk->table->name === $oldName)
+			{
+				continue;
+			}
+
 			static::dropForeignKey($fk->fk, $migration);
 		}
 
@@ -144,14 +150,21 @@ class MigrationHelper
 		static::$_tables[$newName]->name = $newName;
 		unset(static::$_tables[$oldName]);
 
-		static::restoreAllIndexesOnTable($table, $migration);
-		static::restoreAllForeignKeysOnTable($table, $migration);
-
 		foreach ($fks as $fk)
 		{
 			$fk->fk->refTable = $newName;
+
+			// Ignore if the FK is coming from this very table, since restoreAllForeignKeysOnTable() already took care of that
+			if ($fk->table->name === $newName)
+			{
+				continue;
+			}
+
 			static::restoreForeignKey($fk->fk, $migration);
 		}
+
+		static::restoreAllIndexesOnTable($table, $migration);
+		static::restoreAllForeignKeysOnTable($table, $migration);
 	}
 
 	/**
