@@ -10,7 +10,6 @@ namespace craft\app\services;
 use Craft;
 use craft\app\base\BasePlugin;
 use craft\app\dates\DateTime;
-use craft\app\db\Command;
 use craft\app\db\Query;
 use craft\app\errors\Exception;
 use craft\app\helpers\DateTimeHelper;
@@ -143,7 +142,7 @@ class Migrations extends Component
 	 */
 	public function migrateUp($class, $plugin = null)
 	{
-		if($class === $this->getBaseMigration())
+		if ($class === $this->getBaseMigration())
 		{
 			return null;
 		}
@@ -158,7 +157,7 @@ class Migrations extends Component
 		}
 
 		$start = microtime(true);
-		$migration = $this->instantiateMigration($class, $plugin);
+		$migration = $this->createMigration($class, $plugin);
 
 		if ($migration->up() !== false)
 		{
@@ -206,13 +205,16 @@ class Migrations extends Component
 	}
 
 	/**
-	 * @param       $class
-	 * @param  null $plugin
+	 * Creates a new migration instance.
+	 *
+	 * @param string      $class  The migration class name.
+	 * @param string|null $plugin The optional plugin handle for the migration. If it is omitted, a Craft migration
+	 *                            is assumed.
 	 *
 	 * @throws Exception
-	 * @return mixed
+	 * @return \yii\db\MigrationInterface The migration instance.
 	 */
-	public function instantiateMigration($class, $plugin = null)
+	public function createMigration($class, $plugin = null)
 	{
 		$file = IOHelper::normalizePathSeparators($this->getMigrationPath($plugin).'/'.$class.'.php');
 
@@ -233,7 +235,7 @@ class Migrations extends Component
 			$class = "craft\\app\\migrations\\{$class}";
 		}
 
-		/* @var $migration craft\app\db\Migration */
+		/* @var $migration \craft\app\db\Migration */
 		$migration = new $class;
 		$migration->db = Craft::$app->getDb();
 

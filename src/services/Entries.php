@@ -30,26 +30,26 @@ class Entries extends Component
 	// =========================================================================
 
 	/**
-     * @event EntryEvent The event that is triggered before an entry is saved.
-     *
-     * You may set [[EntryEvent::performAction]] to `false` to prevent the entry from getting saved.
-     */
-    const EVENT_BEFORE_SAVE_ENTRY = 'beforeSaveEntry';
+	 * @event EntryEvent The event that is triggered before an entry is saved.
+	 *
+	 * You may set [[EntryEvent::performAction]] to `false` to prevent the entry from getting saved.
+	 */
+	const EVENT_BEFORE_SAVE_ENTRY = 'beforeSaveEntry';
 
 	/**
-     * @event EntryEvent The event that is triggered after an entry is saved.
-     */
-    const EVENT_AFTER_SAVE_ENTRY = 'afterSaveEntry';
+	 * @event EntryEvent The event that is triggered after an entry is saved.
+	 */
+	const EVENT_AFTER_SAVE_ENTRY = 'afterSaveEntry';
 
 	/**
-     * @event EntryEvent The event that is triggered before an entry is deleted.
-     */
-    const EVENT_BEFORE_DELETE_ENTRY = 'beforeDeleteEntry';
+	 * @event EntryEvent The event that is triggered before an entry is deleted.
+	 */
+	const EVENT_BEFORE_DELETE_ENTRY = 'beforeDeleteEntry';
 
 	/**
-     * @event EntryEvent The event that is triggered after an entry is deleted.
-     */
-    const EVENT_AFTER_DELETE_ENTRY = 'afterDeleteEntry';
+	 * @event EntryEvent The event that is triggered after an entry is deleted.
+	 */
+	const EVENT_AFTER_DELETE_ENTRY = 'afterDeleteEntry';
 
 	// Public Methods
 	// =========================================================================
