@@ -29,11 +29,10 @@ use craft\app\helpers\DbHelper;
 use craft\app\helpers\ImageHelper;
 use craft\app\helpers\IOHelper;
 use craft\app\helpers\UrlHelper;
-use craft\app\models\AssetFolder as AssetFolderModel;
-use craft\app\models\AssetFolder;
+use craft\app\models\VolumeFolder as VolumeFolderModel;
 use craft\app\models\FolderCriteria;
 use craft\app\records\Asset as AssetRecord;
-use craft\app\records\AssetFolder as AssetFolderRecord;
+use craft\app\records\VolumeFolder as VolumeFolderRecord;
 use yii\base\Component;
 /**
  * Class Assets service.
@@ -344,14 +343,14 @@ class Assets extends Component
 	/**
 	 * Save an Asset folder.
 	 *
-	 * @param AssetFolderModel $folder
+	 * @param VolumeFolderModel $folder
 	 *
 	 * @throws AssetConflictException           If a folder already exists with such a name.
 	 * @throws AssetLogicException              If something violates Asset's logic (e.g. Asset outside of a folder).
-	 * @throws VolumeFolderExistsException If the file actually exists on the volume, but on in the index.
+	 * @throws VolumeFolderExistsException      If the file actually exists on the volume, but on in the index.
 	 * @return void
 	 */
-	public function createFolder(AssetFolderModel $folder)
+	public function createFolder(VolumeFolderModel $folder)
 	{
 		$parent = $folder->getParent();
 
@@ -414,7 +413,7 @@ class Assets extends Component
 					}
 				}
 
-				AssetFolderRecord::deleteAll(['id' => $folderId]);
+				VolumeFolderRecord::deleteAll(['id' => $folderId]);
 			}
 		}
 	}
@@ -436,7 +435,7 @@ class Assets extends Component
 		foreach ($tree as $topFolder)
 		{
 			/**
-			 * @var AssetFolder $topFolder;
+			 * @var VolumeFolder $topFolder;
 			 */
 			$sort[] = $topFolder->getVolume()->sortOrder;
 		}
@@ -470,7 +469,7 @@ class Assets extends Component
 	 *
 	 * @param int $folderId
 	 *
-	 * @return AssetFolderModel|null
+	 * @return VolumeFolderModel|null
 	 */
 	public function getFolderById($folderId)
 	{
@@ -482,7 +481,7 @@ class Assets extends Component
 
 			if ($result)
 			{
-				$folder = new AssetFolderModel($result);
+				$folder = new VolumeFolderModel($result);
 			}
 			else
 			{
@@ -511,7 +510,7 @@ class Assets extends Component
 
 		$query = (new Query())
 			->select('f.*')
-			->from('{{%assetfolders}} AS f');
+			->from('{{%volumefolders}} AS f');
 
 		$this->_applyFolderConditions($query, $criteria);
 
@@ -535,7 +534,7 @@ class Assets extends Component
 
 		foreach ($results as $result)
 		{
-			$folder = AssetFolderModel::create($result);
+			$folder = VolumeFolderModel::create($result);
 			$this->_foldersById[$folder->id] = $folder;
 			$folders[] = $folder;
 		}
@@ -546,15 +545,15 @@ class Assets extends Component
 	/**
 	 * Returns all of the folders that are descendants of a given folder.
 	 *
-	 * @param AssetFolderModel $parentFolder
+	 * @param VolumeFolderModel $parentFolder
 	 *
 	 * @return array
 	 */
-	public function getAllDescendantFolders(AssetFolderModel $parentFolder)
+	public function getAllDescendantFolders(VolumeFolderModel $parentFolder)
 	{
 		$query = (new Query())
 			->select('f.*')
-			->from('{{%assetfolders}} AS f')
+			->from('{{%volumefolders}} AS f')
 			->where(['like', 'path', $parentFolder->path.'%', false])
 			->andWhere('volumeId = :volumeId', array(':volumeId' => $parentFolder->volumeId));
 
@@ -563,7 +562,7 @@ class Assets extends Component
 
 		foreach ($results as $result)
 		{
-			$folder = AssetFolderModel::create($result);
+			$folder = VolumeFolderModel::create($result);
 			$this->_foldersById[$folder->id] = $folder;
 			$descendantFolders[$folder->id] = $folder;
 		}
@@ -576,7 +575,7 @@ class Assets extends Component
 	 *
 	 * @param mixed $criteria
 	 *
-	 * @return AssetFolderModel|null
+	 * @return VolumeFolderModel|null
 	 */
 	public function findFolder($criteria = null)
 	{
@@ -612,7 +611,7 @@ class Assets extends Component
 
 		$query = (new Query())
 			->select('count(id)')
-			->from('{{%assetfolders}} AS f');
+			->from('{{%volumefolders}} AS f');
 
 		$this->_applyFolderConditions($query, $criteria);
 
@@ -811,7 +810,7 @@ class Assets extends Component
 				$parentId = $parentFolder->id;
 			}
 
-			$folderModel = new AssetFolderModel();
+			$folderModel = new VolumeFolderModel();
 			$folderModel->volumeId = $volumeId;
 			$folderModel->parentId = $parentId;
 			$folderModel->name = $folderName;
@@ -826,19 +825,19 @@ class Assets extends Component
 	/**
 	 * Store a folder by model
 	 *
-	 * @param AssetFolderModel $folder
+	 * @param VolumeFolderModel $folder
 	 *
 	 * @return bool
 	 */
-	public function storeFolderRecord(AssetFolderModel $folder)
+	public function storeFolderRecord(VolumeFolderModel $folder)
 	{
 		if (empty($folder->id))
 		{
-			$record = new AssetFolderRecord();
+			$record = new VolumeFolderRecord();
 		}
 		else
 		{
-			$record = AssetFolderRecord::findOne(['id' => $folder->id]);
+			$record = VolumeFolderRecord::findOne(['id' => $folder->id]);
 		}
 
 		$record->parentId = $folder->parentId;
@@ -862,7 +861,7 @@ class Assets extends Component
 	{
 		return (new Query())
 			->select('id, parentId, volumeId, name, path')
-			->from('{{%assetfolders}}');
+			->from('{{%volumefolders}}');
 	}
 
 	/**
@@ -880,7 +879,7 @@ class Assets extends Component
 		foreach ($folders as $folder)
 		{
 			/**
-			 * @var AssetFolder $folder
+			 * @var VolumeFolder $folder
 			 */
 			if ($folder->parentId && isset($referenceStore[$folder->parentId]))
 			{
@@ -899,7 +898,7 @@ class Assets extends Component
 		foreach ($tree as $topFolder)
 		{
 			/**
-			 * @var AssetFolder $topFolder
+			 * @var VolumeFolder $topFolder
 			 */
 			$sort[] = $topFolder->getVolume()->sortOrder;
 		}

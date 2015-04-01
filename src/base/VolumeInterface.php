@@ -1,9 +1,11 @@
 <?php
 namespace craft\app\base;
+use craft\app\errors\VolumeFileExistsException;
+use craft\app\errors\VolumeFolderExistsException;
 
 
 /**
- * Interface IAssetSourceType
+ * Interface VolumeInterface
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
@@ -56,7 +58,7 @@ interface VolumeInterface
 	 * @param string $path     The path of the file, relative to the source’s root.
 	 * @param string $stream   The stream to file
 	 *
-	 * @throws AssetSourceFileExistsException
+	 * @throws VolumeFileExistsException
 	 * @return bool Whether the operation was successful.
 	 */
 	public function createFile($path, $stream);
@@ -184,7 +186,7 @@ interface VolumeInterface
 	 *
 	 * @param string $path The path of the directory, relative to the source’s root.
 	 *
-	 * @throws AssetSourceFolderExistsException
+	 * @throws VolumeFolderExistsException
 	 * @return bool Whether the operation was successful.
 	 */
 	public function createDir($path);

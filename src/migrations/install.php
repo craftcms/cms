@@ -39,7 +39,7 @@ class Install extends Migration
 	private function _createTables()
 	{
 		$this->createTable(
-			'{{%assetfolders}}',
+			'{{%volumefolders}}',
 			[
 				'id' => 'pk',
 				'parentId' => 'integer(11) DEFAULT NULL',
@@ -1022,22 +1022,22 @@ class Install extends Migration
 	private function _createIndexes()
 	{
 		$this->createIndex(
-			$this->db->getIndexName('{{%assetfolders}}', ['name','parentId','sourceId'], true),
-			'{{%assetfolders}}',
+			$this->db->getIndexName('{{%volumefolders}}', ['name','parentId','sourceId'], true),
+			'{{%volumefolders}}',
 			['name','parentId','sourceId'],
 			true
 		);
 
 		$this->createIndex(
-			$this->db->getIndexName('{{%assetfolders}}', ['sourceId'], false),
-			'{{%assetfolders}}',
+			$this->db->getIndexName('{{%volumefolders}}', ['sourceId'], false),
+			'{{%volumefolders}}',
 			['sourceId'],
 			false
 		);
 
 		$this->createIndex(
-			$this->db->getIndexName('{{%assetfolders}}', ['parentId'], false),
-			'{{%assetfolders}}',
+			$this->db->getIndexName('{{%volumefolders}}', ['parentId'], false),
+			'{{%volumefolders}}',
 			['parentId'],
 			false
 		);
@@ -1945,8 +1945,8 @@ class Install extends Migration
 	private function _addForeignKeys()
 	{
 		$this->addForeignKey(
-			$this->db->getForeignKeyName('{{%assetfolders}}', ['sourceId']),
-			'{{%assetfolders}}',
+			$this->db->getForeignKeyName('{{%volumefolders}}', ['sourceId']),
+			'{{%volumefolders}}',
 			['sourceId'],
 			'{{%volumes}}',
 			['id'],
@@ -1955,10 +1955,10 @@ class Install extends Migration
 		);
 
 		$this->addForeignKey(
-			$this->db->getForeignKeyName('{{%assetfolders}}', ['parentId']),
-			'{{%assetfolders}}',
+			$this->db->getForeignKeyName('{{%volumefolders}}', ['parentId']),
+			'{{%volumefolders}}',
 			['parentId'],
-			'{{%assetfolders}}',
+			'{{%volumefolders}}',
 			['id'],
 			'CASCADE',
 			null
@@ -1988,7 +1988,7 @@ class Install extends Migration
 			$this->db->getForeignKeyName('{{%assets}}', ['folderId']),
 			'{{%assets}}',
 			['folderId'],
-			'{{%assetfolders}}',
+			'{{%volumefolders}}',
 			['id'],
 			'CASCADE',
 			null

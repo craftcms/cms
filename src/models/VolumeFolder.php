@@ -12,12 +12,12 @@ use craft\app\base\Model;
 use craft\app\base\Volume;
 
 /**
- * The AssetFolder model class.
+ * The VolumeFolder model class.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */
-class AssetFolder extends Model
+class VolumeFolder extends Model
 {
 	// Properties
 	// =========================================================================
@@ -103,7 +103,7 @@ class AssetFolder extends Model
 	}
 
 	/**
-	 * @return AssetFolder|null
+	 * @return VolumeFolder|null
 	 */
 	public function getParent()
 	{
@@ -118,11 +118,11 @@ class AssetFolder extends Model
 	/**
 	 * Add a child folder manually.
 	 *
-	 * @param AssetFolder $folder
+	 * @param VolumeFolder $folder
 	 *
 	 * @return null
 	 */
-	public function addChild(AssetFolder $folder)
+	public function addChild(VolumeFolder $folder)
 	{
 		if (is_null($this->_children))
 		{

@@ -12,7 +12,7 @@ use craft\app\db\ActiveRecord;
 use craft\app\enums\AttributeType;
 
 /**
- * Class AssetFolder record.
+ * Class VolumeFolder record.
  *
  * @property integer $id ID
  * @property integer $parentId Parent ID
@@ -25,7 +25,7 @@ use craft\app\enums\AttributeType;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */
-class AssetFolder extends ActiveRecord
+class VolumeFolder extends ActiveRecord
 {
 	// Public Methods
 	// =========================================================================
@@ -48,7 +48,7 @@ class AssetFolder extends ActiveRecord
 	 */
 	public static function tableName()
 	{
-		return '{{%assetfolders}}';
+		return '{{%volumefolders}}';
 	}
 
 	/**
@@ -58,7 +58,7 @@ class AssetFolder extends ActiveRecord
 	 */
 	public function getParent()
 	{
-		return $this->hasOne(AssetFolder::className(), ['id' => 'parentId']);
+		return $this->hasOne(VolumeFolder::className(), ['id' => 'parentId']);
 	}
 
 	/**

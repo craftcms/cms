@@ -16,7 +16,7 @@ use craft\app\errors\Exception;
 use craft\app\helpers\AssetsHelper;
 use craft\app\helpers\IOHelper;
 use craft\app\helpers\StringHelper;
-use craft\app\models\AssetFolder;
+use craft\app\models\VolumeFolder;
 use craft\app\web\UploadedFile;
 
 /**
@@ -362,7 +362,7 @@ class Assets extends BaseRelationField
 		if ($this->useSingleFolder)
 		{
 			$folderId = $this->_determineUploadFolderId($element);
-			Craft::$app->getSession()->authorize('uploadToAssetSource:'.$folderId);
+			Craft::$app->getSession()->authorize('uploadToVolume:'.$folderId);
 			$folderPath = 'folder:'.$folderId.':single';
 
 			return [$folderPath];
@@ -509,7 +509,7 @@ class Assets extends BaseRelationField
 		if ($response->isError() || $response->isConflict())
 		{
 			// If folder doesn't exist in DB, but we can't create it, it probably exists on the server.
-			$newFolder = new AssetFolder(
+			$newFolder = new VolumeFolder(
 				[
 					'parentId' => $currentFolder->id,
 					'name' => $folderName,

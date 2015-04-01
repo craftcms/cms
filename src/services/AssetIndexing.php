@@ -10,7 +10,7 @@ use craft\app\helpers\AssetsHelper;
 use craft\app\helpers\IOHelper;
 use craft\app\elements\Asset;
 use craft\app\models\AssetIndexData as AssetIndexDataModel;
-use craft\app\records\AssetFolder;
+use craft\app\records\VolumeFolder;
 use craft\app\records\AssetIndexData as AssetIndexDataRecord;
 use craft\app\db\Query;
 use \yii\base\Component;
@@ -220,11 +220,11 @@ class AssetIndexing extends Component
 	 */
 	public function ensureTopFolder(Volume $model)
 	{
-		$folder = AssetFolder::findOne(['name' => $model->name,'volumeId' => $model->id]);
+		$folder = VolumeFolder::findOne(['name' => $model->name,'volumeId' => $model->id]);
 
 		if (empty($folder))
 		{
-			$folder = new AssetFolder();
+			$folder = new VolumeFolder();
 			$folder->volumeId = $model->id;
 			$folder->parentId = null;
 			$folder->name = $model->name;
@@ -315,7 +315,7 @@ class AssetIndexing extends Component
 		$fileEntries = (new Query())
 			->select('fi.volumeId, fi.id AS fileId, fi.filename, fo.path, s.name AS volumeName')
 			->from('{{%assets}} AS fi')
-			->innerJoin('{{%assetfolders}} AS fo', 'fi.folderId = fo.id')
+			->innerJoin('{{%volumefolders}} AS fo', 'fi.folderId = fo.id')
 			->innerJoin('{{%assetvolumes}} AS s', 's.id = fi.volumeId')
 			->where(array('in', 'fi.volumeId', $volumeIds))
 			->all();
