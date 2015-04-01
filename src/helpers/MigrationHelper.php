@@ -9,6 +9,7 @@ namespace craft\app\helpers;
 
 use Craft;
 use craft\app\db\Query;
+use yii\db\Migration;
 
 /**
  * Migration utility methods.
@@ -54,11 +55,12 @@ class MigrationHelper
 	 * Drops a foreign key if it exists.
 	 *
 	 * @param string $tableName
-	 * @param array  $columns
+	 * @param array $columns
+	 * @param Migration $migration
 	 *
 	 * @return null
 	 */
-	public static function dropForeignKeyIfExists($tableName, $columns)
+	public static function dropForeignKeyIfExists($tableName, $columns, Migration $migration = null)
 	{
 		$tableName = Craft::$app->db->getSchema()->getRawTableName($tableName);
 		$table = static::getTable($tableName);
@@ -67,7 +69,7 @@ class MigrationHelper
 		{
 			if ($columns == $fk->columns)
 			{
-				static::dropForeignKey($fk);
+				static::dropForeignKey($fk, $migration);
 				unset($table->fks[$i]);
 				break;
 			}
@@ -78,12 +80,13 @@ class MigrationHelper
 	 * Drops an index if it exists.
 	 *
 	 * @param string $tableName
-	 * @param array  $columns
-	 * @param bool   $unique
+	 * @param array $columns
+	 * @param bool $unique
+	 * @param Migration $migration
 	 *
 	 * @return false
 	 */
-	public static function dropIndexIfExists($tableName, $columns, $unique = false)
+	public static function dropIndexIfExists($tableName, $columns, $unique = false, Migration $migration = null)
 	{
 		$tableName = Craft::$app->db->getSchema()->getRawTableName($tableName);
 		$table = static::getTable($tableName);
@@ -92,7 +95,7 @@ class MigrationHelper
 		{
 			if ($columns == $index->columns && $unique == $index->unique)
 			{
-				static::dropIndex($index);
+				static::dropIndex($index, $migration);
 				unset($table->indexes[$i]);
 				break;
 			}
@@ -104,10 +107,11 @@ class MigrationHelper
 	 *
 	 * @param string $oldName
 	 * @param string $newName
+	 * @param Migration $migration
 	 *
 	 * @return false
 	 */
-	public static function renameTable($oldName, $newName)
+	public static function renameTable($oldName, $newName, Migration $migration = null)
 	{
 		$oldName = Craft::$app->db->getSchema()->getRawTableName($oldName);
 		$newName = Craft::$app->db->getSchema()->getRawTableName($newName);
@@ -117,29 +121,36 @@ class MigrationHelper
 
 		foreach ($fks as $fk)
 		{
-			static::dropForeignKey($fk->fk);
+			static::dropForeignKey($fk->fk, $migration);
 		}
 
 		// Drop all the FKs and indexes on the table
 		$table = static::getTable($oldName);
-		static::dropAllForeignKeysOnTable($table);
-		static::dropAllIndexesOnTable($table);
+		static::dropAllForeignKeysOnTable($table, $migration);
+		static::dropAllIndexesOnTable($table, $migration);
 
 		// Rename the table
-		Craft::$app->getDb()->createCommand()->renameTable($oldName, $newName)->execute();
+		if ($migration !== null)
+		{
+			$migration->renameTable($oldName, $newName);
+		}
+		else
+		{
+			Craft::$app->getDb()->createCommand()->renameTable($oldName, $newName)->execute();
+		}
 
 		// Update our internal records
 		static::$_tables[$newName] = $table;
 		static::$_tables[$newName]->name = $newName;
 		unset(static::$_tables[$oldName]);
 
-		static::restoreAllIndexesOnTable($table);
-		static::restoreAllForeignKeysOnTable($table);
+		static::restoreAllIndexesOnTable($table, $migration);
+		static::restoreAllForeignKeysOnTable($table, $migration);
 
 		foreach ($fks as $fk)
 		{
 			$fk->fk->refTable = $newName;
-			static::restoreForeignKey($fk->fk);
+			static::restoreForeignKey($fk->fk, $migration);
 		}
 	}
 
@@ -149,10 +160,11 @@ class MigrationHelper
 	 * @param string $tableName
 	 * @param string $oldName
 	 * @param string $newName
+	 * @param Migration $migration
 	 *
 	 * @return null
 	 */
-	public static function renameColumn($tableName, $oldName, $newName)
+	public static function renameColumn($tableName, $oldName, $newName, Migration $migration = null)
 	{
 		$tableName = Craft::$app->db->getSchema()->getRawTableName($tableName);
 		$table = static::getTable($tableName);
@@ -168,7 +180,7 @@ class MigrationHelper
 		{
 			$key = array_search($oldName, $fk->columns);
 			$columnFks[] = [$fk, $key];
-			static::dropForeignKey($fk);
+			static::dropForeignKey($fk, $migration);
 		}
 
 		foreach ($table->indexes as $index)
@@ -177,7 +189,7 @@ class MigrationHelper
 			if ($key !== false)
 			{
 				$columnIndexes[] = [$index, $key];
-				static::dropIndex($index);
+				static::dropIndex($index, $migration);
 			}
 		}
 
@@ -187,12 +199,19 @@ class MigrationHelper
 			if ($key !== false)
 			{
 				$otherTableFks[] = [$fkData->fk, $key];
-				static::dropForeignKey($fkData->fk);
+				static::dropForeignKey($fkData->fk, $migration);
 			}
 		}
 
 		// Rename the column
-		Craft::$app->getDb()->createCommand()->renameColumn($tableName, $oldName, $newName)->execute();
+		if ($migration !== null)
+		{
+			$migration->renameColumn($tableName, $oldName, $newName);
+		}
+		else
+		{
+			Craft::$app->getDb()->createCommand()->renameColumn($tableName, $oldName, $newName)->execute();
+		}
 
 		// Update the table records
 		$table->columns[$newName] = $table->columns[$oldName];
@@ -204,14 +223,14 @@ class MigrationHelper
 		{
 			list($fk, $key) = $fkData;
 			$fk->refColumns[$key] = $newName;
-			static::restoreForeignKey($fk);
+			static::restoreForeignKey($fk, $migration);
 		}
 
 		foreach ($columnIndexes as $indexData)
 		{
 			list($index, $key) = $indexData;
 			$index->columns[$key] = $newName;
-			static::restoreIndex($index);
+			static::restoreIndex($index, $migration);
 		}
 
 		foreach ($columnFks as $fkData)
@@ -223,7 +242,7 @@ class MigrationHelper
 				$fk->columns[$key] = $newName;
 			}
 
-			static::restoreForeignKey($fk);
+			static::restoreForeignKey($fk, $migration);
 		}
 	}
 
@@ -237,10 +256,11 @@ class MigrationHelper
 	 * @param bool       $isLocalized Whether this element type stores data in multiple locales.
 	 * @param array|null $locales     Which locales the elements should store content in. Defaults to the primary site
 	 *                                locale if the element type is not localized, otherwise all locales.
+	 * @param Migration  $migration   The migration instance that should handle the actual query executions.
 	 *
 	 * @return null
 	 */
-	public static function makeElemental($tableName, $elementType, $hasContent = false, $isLocalized = false, $locales = null)
+	public static function makeElemental($tableName, $elementType, $hasContent = false, $isLocalized = false, $locales = null, Migration $migration = null)
 	{
 		$tableName = Craft::$app->db->getSchema()->getRawTableName($tableName);
 		$db = Craft::$app->getDb();
@@ -249,17 +269,33 @@ class MigrationHelper
 		foreach ($fks as $fk)
 		{
 			// Drop all FKs and indexes on this table
-			static::dropAllForeignKeysOnTable($fk->table);
-			static::dropAllUniqueIndexesOnTable($fk->table);
+			static::dropAllForeignKeysOnTable($fk->table, $migration);
+			static::dropAllUniqueIndexesOnTable($fk->table, $migration);
 
 			// Rename the old id column and add the new one
-			$db->createCommand()->renameColumn($fk->table->name, $fk->column, $fk->column.'_old')->execute();
-			$db->createCommand()->addColumnAfter($fk->table->name, $fk->column, $fk->columnType, $fk->column.'_old')->execute();
+			if ($migration !== null)
+			{
+				$migration->renameColumn($fk->table->name, $fk->column, $fk->column.'_old');
+				$migration->addColumnAfter($fk->table->name, $fk->column, $fk->columnType, $fk->column.'_old');
+			}
+			else
+			{
+				$db->createCommand()->renameColumn($fk->table->name, $fk->column, $fk->column.'_old')->execute();
+				$db->createCommand()->addColumnAfter($fk->table->name, $fk->column, $fk->columnType, $fk->column.'_old')->execute();
+			}
 		}
 
 		// Rename the old id column and add the new one
-		$db->createCommand()->renameColumn($tableName, 'id', 'id_old')->execute();
-		$db->createCommand()->addColumnAfter($tableName, 'id', static::$_idColumnType, 'id_old')->execute();
+		if ($migration !== null)
+		{
+			$migration->renameColumn($tableName, 'id', 'id_old');
+			$migration->addColumnAfter($tableName, 'id', static::$_idColumnType, 'id_old');
+		}
+		else
+		{
+			$db->createCommand()->renameColumn($tableName, 'id', 'id_old')->execute();
+			$db->createCommand()->addColumnAfter($tableName, 'id', static::$_idColumnType, 'id_old')->execute();
+		}
 
 		// Get all of the rows
 		$oldRows = (new Query())
@@ -286,22 +322,51 @@ class MigrationHelper
 		foreach ($oldRows as $row)
 		{
 			// Create a new row in elements
-			$db->createCommand()->insert('{{%elements}}', [
+			$columns = [
 				'type'     => $elementType,
 				'enabled'  => 1,
 				'archived' => 0
-			])->execute();
+			];
+
+			if ($migration !== null)
+			{
+				$migration->insert('{{%elements}}', $columns);
+			}
+			else
+			{
+				$db->createCommand()->insert('{{%elements}}', $columns)->execute();
+			}
 
 			// Get the new element ID
 			$elementId = $db->getLastInsertID();
 
 			// Update this table with the new element ID
-			$db->createCommand()->update($tableName, ['id' => $elementId], ['id_old' => $row['id_old']])->execute();
+			$columns = ['id' => $elementId];
+			$conditions = ['id_old' => $row['id_old']];
+
+			if ($migration !== null)
+			{
+				$migration->update($tableName, $columns, $conditions);
+			}
+			else
+			{
+				$db->createCommand()->update($tableName, $columns, $conditions)->execute();
+			}
 
 			// Update the other tables' new FK columns
 			foreach ($fks as $fk)
 			{
-				$db->createCommand()->update($fk->table->name, [$fk->column => $elementId], [$fk->column.'_old' => $row['id_old']])->execute();
+				$columns = [$fk->column => $elementId];
+				$conditions = [$fk->column.'_old' => $row['id_old']];
+
+				if ($migration !== null)
+				{
+					$migration->update($fk->table->name, $columns, $conditions);
+				}
+				else
+				{
+					$db->createCommand()->update($fk->table->name, $columns, $conditions)->execute();
+				}
 			}
 
 			// Queue up the elements_i18n and content values
@@ -320,31 +385,64 @@ class MigrationHelper
 		}
 
 		// Save the new elements_i18n and content rows
-		$db->createCommand()->batchInsert('{{%elements_i18n}}', ['elementId', 'locale', 'enabled'], $i18nValues)->execute();
+		$columns = ['elementId', 'locale', 'enabled'];
+
+		if ($migration !== null)
+		{
+			$migration->batchInsert('{{%elements_i18n}}', $columns, $i18nValues);
+		}
+		else
+		{
+			$db->createCommand()->batchInsert('{{%elements_i18n}}', $columns, $i18nValues)->execute();
+		}
 
 		if ($hasContent)
 		{
-			$db->createCommand()->batchInsert('{{%content}}', ['elementId', 'locale'], $contentValues)->execute();
+			$columns = ['elementId', 'locale'];
+
+			if ($migration !== null)
+			{
+				$migration->batchInsert('{{%content}}', $columns, $contentValues);
+			}
+			else
+			{
+				$db->createCommand()->batchInsert('{{%content}}', $columns, $contentValues)->execute();
+			}
 		}
 
-		// Drop the old id column
-		$db->createCommand()->dropColumn($tableName, 'id_old')->execute();
+		// Drop the old id column, set the new PK, and make 'id' a FK to elements
+		$pkName = $db->getPrimaryKeyName($tableName, 'id');
+		$fkName = $db->getForeignKeyName($tableName, 'id');
 
-		// Set the new PK
-		$db->createCommand()->addPrimaryKey($db->getPrimaryKeyName($tableName, 'id'), $tableName, 'id')->execute();
-
-		// Make 'id' a FK to elements
-		$db->createCommand()->addForeignKey($db->getForeignKeyName($tableName, 'id'), $tableName, 'id', 'elements', 'id', 'CASCADE')->execute();
+		if ($migration !== null)
+		{
+			$migration->dropColumn($tableName, 'id_old');
+			$migration->addPrimaryKey($pkName, $tableName, 'id');
+			$migration->addForeignKey($fkName, $tableName, 'id', 'elements', 'id', 'CASCADE');
+		}
+		else
+		{
+			$db->createCommand()->dropColumn($tableName, 'id_old')->execute();
+			$db->createCommand()->addPrimaryKey($pkName, $tableName, 'id')->execute();
+			$db->createCommand()->addForeignKey($fkName, $tableName, 'id', 'elements', 'id', 'CASCADE')->execute();
+		}
 
 		// Now deal with the rest of the tables
 		foreach ($fks as $fk)
 		{
 			// Drop the old FK column
-			$db->createCommand()->dropColumn($fk->table->name, $fk->column.'_old')->execute();
+			if ($migration !== null)
+			{
+				$migration->dropColumn($fk->table->name, $fk->column.'_old');
+			}
+			else
+			{
+				$db->createCommand()->dropColumn($fk->table->name, $fk->column.'_old')->execute();
+			}
 
 			// Restore its unique indexes and FKs
-			static::restoreAllUniqueIndexesOnTable($fk->table);
-			static::restoreAllForeignKeysOnTable($fk->table);
+			static::restoreAllUniqueIndexesOnTable($fk->table, $migration);
+			static::restoreAllForeignKeysOnTable($fk->table, $migration);
 		}
 	}
 
@@ -438,14 +536,15 @@ class MigrationHelper
 	 * Drops all the foreign keys on a table.
 	 *
 	 * @param object $table
+	 * @param Migration $migration
 	 *
 	 * @return null
 	 */
-	public static function dropAllForeignKeysOnTable($table)
+	public static function dropAllForeignKeysOnTable($table, Migration $migration = null)
 	{
 		foreach ($table->fks as $fk)
 		{
-			static::dropForeignKey($fk);
+			static::dropForeignKey($fk, $migration);
 		}
 	}
 
@@ -453,27 +552,35 @@ class MigrationHelper
 	 * Drops a foreign key.
 	 *
 	 * @param object $fk
+	 * @param Migration $migration
 	 *
 	 * @return null
 	 */
-	public static function dropForeignKey($fk)
+	public static function dropForeignKey($fk, Migration $migration = null)
 	{
-		$db = Craft::$app->getDb();
-		$db->createCommand()->dropForeignKey($fk->name, $fk->table->name)->execute();
+		if ($migration !== null)
+		{
+			$migration->dropForeignKey($fk->name, $fk->table->name);
+		}
+		else
+		{
+			Craft::$app->getDb()->createCommand()->dropForeignKey($fk->name, $fk->table->name)->execute();
+		}
 	}
 
 	/**
 	 * Drops all the indexes on a table.
 	 *
 	 * @param object $table
+	 * @param Migration $migration
 	 *
 	 * @return null
 	 */
-	public static function dropAllIndexesOnTable($table)
+	public static function dropAllIndexesOnTable($table, Migration $migration = null)
 	{
 		foreach ($table->indexes as $index)
 		{
-			static::dropIndex($index);
+			static::dropIndex($index, $migration);
 		}
 	}
 
@@ -481,16 +588,17 @@ class MigrationHelper
 	 * Drops all the unique indexes on a table.
 	 *
 	 * @param object $table
+	 * @param Migration $migration
 	 *
 	 * @return null
 	 */
-	public static function dropAllUniqueIndexesOnTable($table)
+	public static function dropAllUniqueIndexesOnTable($table, Migration $migration = null)
 	{
 		foreach ($table->indexes as $index)
 		{
 			if ($index->unique)
 			{
-				static::dropIndex($index);
+				static::dropIndex($index, $migration);
 			}
 		}
 	}
@@ -499,27 +607,35 @@ class MigrationHelper
 	 * Drops an index.
 	 *
 	 * @param object $index
+	 * @param Migration $migration
 	 *
 	 * @return null
 	 */
-	public static function dropIndex($index)
+	public static function dropIndex($index, Migration $migration = null)
 	{
-		$db = Craft::$app->getDb();
-		$db->createCommand()->dropIndex($index->name, $index->table->name)->execute();
+		if ($migration !== null)
+		{
+			$migration->dropIndex($index->name, $index->table->name);
+		}
+		else
+		{
+			Craft::$app->getDb()->createCommand()->dropIndex($index->name, $index->table->name)->execute();
+		}
 	}
 
 	/**
 	 * Restores all the indexes on a table.
 	 *
 	 * @param object $table
+	 * @param Migration $migration
 	 *
 	 * @return null
 	 */
-	public static function restoreAllIndexesOnTable($table)
+	public static function restoreAllIndexesOnTable($table, Migration $migration = null)
 	{
 		foreach ($table->indexes as $index)
 		{
-			static::restoreIndex($index);
+			static::restoreIndex($index, $migration);
 		}
 	}
 
@@ -527,16 +643,17 @@ class MigrationHelper
 	 * Restores all the unique indexes on a table.
 	 *
 	 * @param object $table
+	 * @param Migration $migration
 	 *
 	 * @return null
 	 */
-	public static function restoreAllUniqueIndexesOnTable($table)
+	public static function restoreAllUniqueIndexesOnTable($table, Migration $migration = null)
 	{
 		foreach ($table->indexes as $index)
 		{
 			if ($index->unique)
 			{
-				static::restoreIndex($index);
+				static::restoreIndex($index, $migration);
 			}
 		}
 	}
@@ -545,32 +662,43 @@ class MigrationHelper
 	 * Restores an index.
 	 *
 	 * @param object $index
+	 * @param Migration $migration
 	 *
 	 * @return null
 	 */
-	public static function restoreIndex($index)
+	public static function restoreIndex($index, Migration $migration = null)
 	{
 		$db = Craft::$app->getDb();
 		$table = $index->table->name;
 		$columns = implode(',', $index->columns);
-		$db->createCommand()->createIndex($db->getIndexName($table, $columns), $table, $columns, $index->unique)->execute();
+		$indexName = $db->getIndexName($table, $columns, $index->unique);
+
+		if ($migration !== null)
+		{
+			$migration->createIndex($indexName, $table, $columns, $index->unique);
+		}
+		else
+		{
+			$db->createCommand()->createIndex($indexName, $table, $columns, $index->unique)->execute();
+		}
 
 		// Update our record of its name
-		$index->name = $db->getIndexName($index->table->name, $index->columns, $index->unique);
+		$index->name = $indexName;
 	}
 
 	/**
 	 * Restores all the foreign keys on a table.
 	 *
 	 * @param object $table
+	 * @param Migration $migration
 	 *
 	 * @return null
 	 */
-	public static function restoreAllForeignKeysOnTable($table)
+	public static function restoreAllForeignKeysOnTable($table, Migration $migration = null)
 	{
 		foreach ($table->fks as $fk)
 		{
-			static::restoreForeignKey($fk);
+			static::restoreForeignKey($fk, $migration);
 		}
 	}
 
@@ -578,18 +706,28 @@ class MigrationHelper
 	 * Restores a foreign key.
 	 *
 	 * @param object $fk
+	 * @param Migration $migration
 	 *
 	 * @return null
 	 */
-	public static function restoreForeignKey($fk)
+	public static function restoreForeignKey($fk, Migration $migration = null)
 	{
 		$db = Craft::$app->getDb();
 		$table = $fk->table->name;
 		$columns = implode(',', $fk->columns);
-		$db->createCommand()->addForeignKey($db->getForeignKeyName($table, $columns), $table, $columns, $fk->refTable, implode(',', $fk->refColumns), $fk->onDelete, $fk->onUpdate)->execute();
+		$fkName = $db->getForeignKeyName($table, $columns);
+
+		if ($migration !== null)
+		{
+			$migration->addForeignKey($fkName, $table, $columns, $fk->refTable, $fk->refColumns, $fk->onDelete, $fk->onUpdate);
+		}
+		else
+		{
+			$db->createCommand()->addForeignKey($fkName, $table, $columns, $fk->refTable, $fk->refColumns, $fk->onDelete, $fk->onUpdate)->execute();
+		}
 
 		// Update our record of its name
-		$fk->name = $db->getForeignKeyName($fk->table->name, $fk->columns);
+		$fk->name = $fkName;
 	}
 
 	// Private Methods
