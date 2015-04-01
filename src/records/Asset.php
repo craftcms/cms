@@ -91,6 +91,6 @@ class Asset extends ActiveRecord
 	 */
 	public function getFolder()
 	{
-		return $this->hasOne(AssetFolder::className(), ['id' => 'folderId']);
+		return $this->hasOne(VolumeFolder::className(), ['id' => 'folderId']);
 	}
 }

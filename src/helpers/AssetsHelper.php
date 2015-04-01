@@ -8,9 +8,7 @@
 namespace craft\app\helpers;
 
 use Craft;
-use craft\app\assetsourcetypes\BaseAssetSourceType;
 use craft\app\base\Volume;
-use craft\app\base\VolumeInterface;
 use craft\app\elements\Asset;
 
 /**

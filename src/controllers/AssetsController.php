@@ -20,7 +20,7 @@ use craft\app\fields\Assets as AssetsField;
 use craft\app\helpers\AssetsHelper;
 use craft\app\helpers\IOHelper;
 use craft\app\elements\Asset;
-use craft\app\models\AssetFolder;
+use craft\app\models\VolumeFolder;
 use craft\app\web\Controller;
 use craft\app\web\UploadedFile;
 
@@ -189,7 +189,7 @@ class AssetsController extends Controller
 				throw new HttpException(400, Craft::t('app', 'The parent folder cannot be found.'));
 			}
 
-			$folderModel = new AssetFolder();
+			$folderModel = new VolumeFolder();
 			$folderModel->name     = $folderName;
 			$folderModel->parentId = $parentId;
 			$folderModel->volumeId = $parentFolder->volumeId;

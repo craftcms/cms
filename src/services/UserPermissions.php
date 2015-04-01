@@ -167,12 +167,12 @@ class UserPermissions extends Component
 		// Asset sources
 		// ---------------------------------------------------------------------
 
-		$assetSources = Craft::$app->volumes->getAllVolumes();
+		$volumes = Craft::$app->volumes->getAllVolumes();
 
-		foreach ($assetSources as $source)
+		foreach ($volumes as $volume)
 		{
-			$label = Craft::t('app', 'Asset Source - {source}', ['source' => Craft::t('app', $source->name)]);
-			$permissions[$label] = $this->_getAssetSourcePermissions($source->id);
+			$label = Craft::t('app', 'Volume - {volume}', ['volume' => Craft::t('app', $volume->name)]);
+			$permissions[$label] = $this->_getVolumePermissions($volume->id);
 		}
 
 		// Plugins
@@ -498,7 +498,7 @@ class UserPermissions extends Component
 	 *
 	 * @return array
 	 */
-	private function _getAssetSourcePermissions($sourceId)
+	private function _getVolumePermissions($sourceId)
 	{
 		$suffix = ':'.$sourceId;
 

@@ -23,9 +23,7 @@ use craft\app\helpers\ImageHelper;
 use craft\app\helpers\IOHelper;
 use craft\app\helpers\TemplateHelper;
 use craft\app\helpers\UrlHelper;
-use craft\app\models\AssetFolder as AssetFolderModel;
-use craft\app\models\AssetFolder;
-use craft\app\models\AssetSource;
+use craft\app\models\VolumeFolder;
 use Exception;
 use yii\base\ErrorHandler;
 use yii\base\InvalidCallException;
@@ -149,15 +147,15 @@ class Asset extends Element
 
 		// Rename File
 		if (
-			Craft::$app->assets->canUserPerformAction($folderId, 'removeFromAssetSource') &&
-			Craft::$app->assets->canUserPerformAction($folderId, 'uploadToAssetSource')
+			Craft::$app->assets->canUserPerformAction($folderId, 'removeFromVolume') &&
+			Craft::$app->assets->canUserPerformAction($folderId, 'uploadToVolume')
 		)
 		{
 			$actions[] = RenameFile::className();
 		}
 
 		// Replace File
-		if (Craft::$app->assets->canUserPerformAction($folderId, 'uploadToAssetSource'))
+		if (Craft::$app->assets->canUserPerformAction($folderId, 'uploadToVolume'))
 		{
 			$actions[] = ReplaceFile::className();
 		}
@@ -169,7 +167,7 @@ class Asset extends Element
 		]);
 
 		// Delete
-		if (Craft::$app->assets->canUserPerformAction($folderId, 'removeFromAssetSource'))
+		if (Craft::$app->assets->canUserPerformAction($folderId, 'removeFromVolume'))
 		{
 			$actions[] = DeleteAssets::className();
 		}
@@ -375,20 +373,20 @@ class Asset extends Element
 	}
 
 	/**
-	 * Transforms an AssetFolderModel into a source info array.
+	 * Transforms an VolumeFolderModel into a source info array.
 	 *
-	 * @param AssetFolderModel $folder
-	 * @param bool             $includeNestedFolders
+	 * @param VolumeFolder $folder
+	 * @param bool         $includeNestedFolders
 	 *
 	 * @return array
 	 */
-	private static function _assembleSourceInfoForFolder(AssetFolderModel $folder, $includeNestedFolders = true)
+	private static function _assembleSourceInfoForFolder(VolumeFolder $folder, $includeNestedFolders = true)
 	{
 		$source = [
 			'label'     => ($folder->parentId ? $folder->name : Craft::t('app', $folder->name)),
 			'hasThumbs' => true,
 			'criteria'  => ['folderId' => $folder->id],
-			'data'      => ['upload' => is_null($folder->volumeId) ? true : Craft::$app->assets->canUserPerformAction($folder->id, 'uploadToAssetSource')]
+			'data'      => ['upload' => is_null($folder->volumeId) ? true : Craft::$app->assets->canUserPerformAction($folder->id, 'uploadToVolume')]
 		];
 
 		if ($includeNestedFolders)
@@ -636,7 +634,7 @@ class Asset extends Element
 	 */
 	public function isEditable()
 	{
-		return Craft::$app->getUser()->checkPermission('uploadToAssetSource:'.$this->volumeId);
+		return Craft::$app->getUser()->checkPermission('uploadToVolume:'.$this->volumeId);
 	}
 
 	/**
@@ -654,7 +652,7 @@ class Asset extends Element
 	}
 
 	/**
-	 * @return AssetFolder|null
+	 * @return VolumeFolder|null
 	 */
 	public function getFolder()
 	{

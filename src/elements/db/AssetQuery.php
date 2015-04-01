@@ -7,12 +7,10 @@
 
 namespace craft\app\elements\db;
 
-use Craft;
 use craft\app\base\Volume;
 use craft\app\db\Query;
 use craft\app\elements\Asset;
 use craft\app\helpers\DbHelper;
-use craft\app\models\AssetSource;
 
 /**
  * AssetQuery represents a SELECT SQL statement for assets in a way that is independent of DBMS.
