@@ -551,6 +551,8 @@ class User extends Element implements IdentityInterface
 	 */
 	public function init()
 	{
+		parent::init();
+
 		// Is the user in cooldown mode, and are they past their window?
 		if ($this->locked)
 		{

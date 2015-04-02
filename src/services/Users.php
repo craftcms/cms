@@ -391,7 +391,7 @@ class Users extends Component
 		$userRecord->weekStartDay          = $user->weekStartDay;
 		$userRecord->unverifiedEmail       = $user->unverifiedEmail;
 
-		$this->_processSaveUserStatus($userRecord, $user->status);
+		$this->_processSaveUserStatus($userRecord, $user->getStatus());
 
 		$userRecord->validate();
 		$user->addErrors($userRecord->getErrors());
@@ -420,12 +420,6 @@ class Users extends Component
 
 		try
 		{
-			// Set a default status of pending, if one wasn't supplied.
-			if (!$user->status)
-			{
-				$user->pending = true;
-			}
-
 			// Fire a 'beforeSaveUser' event
 			$event = new UserEvent([
 				'user' => $user
@@ -504,7 +498,7 @@ class Users extends Component
 		if ($success)
 		{
 			// Fire an 'afterSaveUser' event
-			$this->trigger(static::EVENT_AFTER_SAVE_USER, new AssetEvent([
+			$this->trigger(static::EVENT_AFTER_SAVE_USER, new UserEvent([
 				'user' => $user
 			]));
 		}
@@ -647,7 +641,7 @@ class Users extends Component
 		IOHelper::ensureFolderExists($userPhotoFolder);
 		IOHelper::ensureFolderExists($targetFolder);
 
-		$targetPath = $targetFolder.'/'.AssetsHelper::cleanAssetName($filename);
+		$targetPath = $targetFolder.'/'.AssetsHelper::prepareAssetName($filename, false);
 
 		$result = $image->saveAs($targetPath);
 
@@ -939,7 +933,7 @@ class Users extends Component
 		if ($success)
 		{
 			// Fire an 'afterUnlockUser' event
-			$this->trigger(event::EVENT_AFTER_UNLOCK_USER, new UserEvent([
+			$this->trigger(self::EVENT_AFTER_UNLOCK_USER, new UserEvent([
 				'user' => $user
 			]));
 		}

@@ -600,7 +600,7 @@ abstract class Element extends Component implements ElementInterface
 	 */
 	public function getFieldLayout()
 	{
-		return Craft::$app->fields->getLayoutByType($this->elementType);
+		return Craft::$app->fields->getLayoutByType($this->getType());
 	}
 
 	/**

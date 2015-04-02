@@ -50,7 +50,7 @@ class Content extends Model
 	/**
 	 * @var string Locale
 	 */
-	public $locale = 'en-US';
+	public $locale;
 
 	/**
 	 * @var string Title
@@ -69,6 +69,19 @@ class Content extends Model
 
 	// Public Methods
 	// =========================================================================
+
+	/**
+	 * @inheritdoc
+	 */
+	public function init()
+	{
+		parent::init();
+
+		if ($this->locale === null)
+		{
+			$this->locale = Craft::$app->getI18n()->getPrimarySiteLocaleId();
+		}
+	}
 
 	/**
 	 * @inheritdoc
