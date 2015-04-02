@@ -4,6 +4,7 @@ namespace craft\app\volumes;
 use Aws\S3\Exception\AccessDeniedException;
 use Craft;
 use craft\app\base\Volume;
+use craft\app\cache\adapters\GuzzleCacheAdapter;
 use craft\app\io\flysystemadapters\AwsS3 as AwsS3Adapter;
 use \Aws\S3\S3Client as S3Client;
 
@@ -75,6 +76,13 @@ class AwsS3 extends Volume
 	 * @var string
 	 */
 	public $region = "";
+
+	/**
+	 * Cache adapter
+	 *
+	 * @var GuzzleCacheAdapter
+	 */
+	private static $_cacheAdapter = null;
 
 	// Public Methods
 	// =========================================================================
@@ -212,6 +220,23 @@ class AwsS3 extends Volume
 	 */
 	protected static function getClient($config = array())
 	{
+		$config['credentials.cache'] = static::_getCredentialsCacheAdapter();
+
 		return S3Client::factory($config);
+	}
+
+	/**
+	 * Get the credentials cache adapter.
+	 *
+	 * @return GuzzleCacheAdapter
+	 */
+	private static function _getCredentialsCacheAdapter()
+	{
+		if (empty(static::$_cacheAdapter))
+		{
+			static::$_cacheAdapter = new GuzzleCacheAdapter();
+		}
+
+		return static::$_cacheAdapter;
 	}
 }

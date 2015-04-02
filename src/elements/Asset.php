@@ -835,11 +835,11 @@ class Asset extends Element
 	 */
 	public function getImageTransformSourcePath()
 	{
-		$sourceType = Craft::$app->volumes->getSourceTypeById($this->volumeId);
+		$volume = Craft::$app->volumes->getVolumeById($this->volumeId);
 
-		if ($sourceType->isLocal())
+		if ($volume->isLocal())
 		{
-			return $sourceType->getRootPath().'/'.$this->getUri();
+			return $volume->getRootPath().'/'.$this->getUri();
 		}
 		else
 		{

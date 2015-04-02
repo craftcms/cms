@@ -115,12 +115,12 @@ class AssetIndexing extends Component
 				}
 				else
 				{
-					$skippedFiles[] = $volume->model->name.'/'.$file['path'];
+					$skippedFiles[] = $volume->name.'/'.$file['path'];
 				}
 			}
 
 			$indexedFolderIds = array();
-			$indexedFolderIds[$this->ensureTopFolder($volume->model)] = true;
+			$indexedFolderIds[$this->ensureTopFolder($volume)] = true;
 
 			// Ensure folders are in the DB
 			foreach ($bucketFolders as $fullPath => $nothing)
@@ -139,7 +139,7 @@ class AssetIndexing extends Component
 			{
 				if (!isset($indexedFolderIds[$folderModel->id]))
 				{
-					$missingFolders[$folderModel->id] = $volume->model->name.'/'.$folderModel->path;
+					$missingFolders[$folderModel->id] = $volume->name.'/'.$folderModel->path;
 				}
 			}
 
@@ -214,20 +214,20 @@ class AssetIndexing extends Component
 	/**
 	 * Ensures a top level folder exists that matches the model.
 	 *
-	 * @param Volume $model
+	 * @param Volume $volume
 	 *
 	 * @return int
 	 */
-	public function ensureTopFolder(Volume $model)
+	public function ensureTopFolder(Volume $volume)
 	{
-		$folder = VolumeFolder::findOne(['name' => $model->name,'volumeId' => $model->id]);
+		$folder = VolumeFolder::findOne(['name' => $volume->name,'volumeId' => $volume->id]);
 
 		if (empty($folder))
 		{
 			$folder = new VolumeFolder();
-			$folder->volumeId = $model->id;
+			$folder->volumeId = $volume->id;
 			$folder->parentId = null;
-			$folder->name = $model->name;
+			$folder->name = $volume->name;
 			$folder->path = '';
 			$folder->save();
 		}

@@ -81,7 +81,7 @@ class AssetIndex extends Tool
 			}
 			else
 			{
-				$sourceIds = Craft::$app->volumes->getViewableSourceIds();
+				$sourceIds = Craft::$app->volumes->getViewableVolumeIds();
 			}
 
 			$missingFolders = [];
