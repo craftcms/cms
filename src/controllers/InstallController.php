@@ -9,6 +9,7 @@ namespace craft\app\controllers;
 
 use Craft;
 use craft\app\errors\HttpException;
+use craft\app\migrations\Install;
 use craft\app\models\AccountSettings as AccountSettingsModel;
 use craft\app\models\SiteSettings as SiteSettingsModel;
 use craft\app\web\Controller;
@@ -138,24 +139,27 @@ class InstallController extends Controller
 		$this->requirePostRequest();
 		$this->requireAjaxRequest();
 
-		// Run the installer
-		$username = Craft::$app->getRequest()->getBodyParam('username');
+		// Run the install migration
+		$request = Craft::$app->getRequest();
 
-		if (!$username)
+		$migration = new Install([
+			'siteName' => $request->getBodyParam('siteName'),
+			'siteUrl'  => $request->getBodyParam('siteUrl'),
+			'locale'   => $request->getBodyParam('locale'),
+			'username' => $request->getBodyParam('username'),
+			'password' => $request->getBodyParam('password'),
+			'email'    => $request->getBodyParam('email'),
+		]);
+
+		if (Craft::$app->migrations->migrateUp($migration) === false)
 		{
-			$username = Craft::$app->getRequest()->getBodyParam('email');
+			$success = false;
+		}
+		else
+		{
+			$success = true;
 		}
 
-		$inputs['username']   = $username;
-		$inputs['email']      = Craft::$app->getRequest()->getBodyParam('email');
-		$inputs['password']   = Craft::$app->getRequest()->getBodyParam('password');
-		$inputs['siteName']   = Craft::$app->getRequest()->getBodyParam('siteName');
-		$inputs['siteUrl']    = Craft::$app->getRequest()->getBodyParam('siteUrl');
-		$inputs['locale'  ]   = Craft::$app->getRequest()->getBodyParam('locale');
-
-		Craft::$app->install->run($inputs);
-
-		$return = ['success' => true];
-		$this->returnJson($return);
+		$this->returnJson(['success' => $success]);
 	}
 }

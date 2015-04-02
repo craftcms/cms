@@ -172,22 +172,41 @@ class Migrations extends Component
 			Craft::info('Applying migration: '.$class, __METHOD__);
 		}
 
-		$start = microtime(true);
+		$isConsoleRequest = Craft::$app->getRequest()->getIsConsoleRequest();
 
-		if ($migration->up() !== false)
+		if (!$isConsoleRequest)
 		{
-			$this->addMigrationHistory($class, $plugin);
+			ob_start();
+		}
 
-			$time = microtime(true) - $start;
-			Craft::info('Applied migration: '.$class.' (time: '.sprintf("%.3f", $time).'s)', __METHOD__);
-			return true;
+		$start = microtime(true);
+		$success = ($migration->up() !== false);
+		$time = microtime(true) - $start;
+
+		if ($success)
+		{
+			echo "Applied migration: $class (time: ".sprintf('%.3f', $time)."s)\n";
 		}
 		else
 		{
-			$time = microtime(true) - $start;
-			Craft::error('Failed to apply migration: '.$class.' (time: '.sprintf("%.3f", $time).'s)', __METHOD__);
-			return false;
+			echo "Failed to apply migration: $class (time: ".sprintf('%.3f', $time)."s)\n";
 		}
+
+		if (!$isConsoleRequest)
+		{
+			$output = ob_get_clean();
+
+			if ($success)
+			{
+				Craft::info($output);
+			}
+			else
+			{
+				Craft::error($output);
+			}
+		}
+
+		return $success;
 	}
 
 	/**

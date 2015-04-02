@@ -44,7 +44,6 @@ use yii\web\NotFoundHttpException;
  * @property \craft\app\services\Globals          $globals          The globals service.
  * @property \craft\app\i18n\I18N                 $i18n             The internationalization (i18n) component.
  * @property \craft\app\services\Images           $images           The images service.
- * @property \craft\app\services\Install          $install          The install service.
  * @property \craft\app\i18n\Locale               $locale           The locale component.
  * @property \craft\app\services\Matrix           $matrix           The matrix service.
  * @property \craft\app\services\Migrations       $migrations       The migrations service.

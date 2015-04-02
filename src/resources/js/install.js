@@ -159,7 +159,7 @@ Craft.Installer = Garnish.Base.extend(
 		var $submitBtn = this['$'+what+'SubmitBtn'];
 		$submitBtn.addClass('sel loading');
 
-		var action = 'install/validate'+Craft.uppercaseFirst(what);
+		var action = 'install/validate-'+what;
 
 		var data = {};
 		for (var i = 0; i < inputs.length; i++)

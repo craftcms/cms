@@ -7,7 +7,11 @@
 
 namespace craft\app\migrations;
 
+use Craft;
+use craft\app\elements\User;
+use craft\app\enums\EmailerType;
 use craft\app\db\InstallMigration;
+use craft\app\models\Info;
 
 /**
  * Installation Migration
@@ -17,6 +21,39 @@ use craft\app\db\InstallMigration;
  */
 class Install extends InstallMigration
 {
+	// Properties
+	// =========================================================================
+
+	/**
+	 * @var string The site name
+	 */
+	public $siteName;
+
+	/**
+	 * @var string The site URL
+	 */
+	public $siteUrl;
+
+	/**
+	 * @var string The site locale
+	 */
+	public $locale;
+
+	/**
+	 * @var string The admin user’s username
+	 */
+	public $username;
+
+	/**
+	 * @var string The admin user’s password
+	 */
+	public $password;
+
+	/**
+	 * @var string The admin user’s email
+	 */
+	public $email;
+
 	// Public Methods
 	// =========================================================================
 
@@ -35,6 +72,64 @@ class Install extends InstallMigration
 			$this->db->quoteTableName('{{%searchindex}}').' ' .
 			'('.$this->db->quoteColumnName('keywords').')'
 		)->execute();
+
+		// Add the site locale
+		$this->insert(
+			'{{%locales}}',
+			[
+				'locale'    => $this->locale,
+				'sortOrder' => 1
+			]
+		);
+
+		// Populate the info table
+		echo "    > populate the info table ...";
+		Craft::$app->saveInfo(new Info([
+			'version'       => Craft::$app->version,
+			'build'         => Craft::$app->build,
+			'schemaVersion' => Craft::$app->schemaVersion,
+			'releaseDate'   => Craft::$app->releaseDate,
+			'edition'       => '0',
+			'siteName'      => $this->siteName,
+			'siteUrl'       => $this->siteUrl,
+			'on'            => '1',
+			'maintenance'   => '0',
+			'track'         => Craft::$app->track,
+			'fieldVersion'  => '1',
+		]));
+		echo " done\n";
+
+		// Set the language to the desired locale
+		Craft::$app->setLanguage($this->locale);
+
+		// Craft, you are installed now.
+		Craft::$app->setIsInstalled();
+
+		// Save the first user
+		echo "    > save the first user ...";
+		$user = new User([
+			'username'    => $this->username,
+			'newPassword' => $this->password,
+			'email'       => $this->email,
+			'admin'       => true
+		]);
+		Craft::$app->users->saveUser($user);
+		echo " done\n";
+
+		// Log them in
+		if (!Craft::$app->getRequest()->getIsConsoleRequest())
+		{
+			Craft::$app->getUser()->login($user);
+		}
+
+		// Save the default email settings
+		echo "    > save the email settings ...";
+		Craft::$app->systemSettings->saveSettings('email', [
+			'protocol'     => EmailerType::Php,
+			'emailAddress' => $this->email,
+			'senderName'   => $this->siteName
+		]);
+		echo " done\n";
 	}
 
 	// Protected Methods
