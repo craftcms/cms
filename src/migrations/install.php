@@ -429,6 +429,8 @@ class Install extends InstallMigration
 					'locale' => 'char(12) COLLATE utf8_unicode_ci NOT NULL',
 					'sortOrder' => 'smallint(4) DEFAULT NULL',
 				],
+				'addIdColumn' => false,
+				'primaryKey' => 'locale',
 				'indexes' => [
 					['sortOrder', false],
 				],
@@ -554,6 +556,9 @@ class Install extends InstallMigration
 					'locale' => 'char(12) COLLATE utf8_unicode_ci NOT NULL',
 					'keywords' => 'text COLLATE utf8_unicode_ci NOT NULL',
 				],
+				'addIdColumn' => false,
+				'addAuditColumns' => false,
+				'primaryKey' => 'elementId,attribute,fieldId,locale',
 				'indexes' => [
 					['keywords', false],
 				],
@@ -707,6 +712,7 @@ class Install extends InstallMigration
 					'type' => 'string(255) COLLATE utf8_unicode_ci NOT NULL',
 					'criteria' => 'text COLLATE utf8_unicode_ci NOT NULL',
 				],
+				'addAuditColumns' => false,
 				'indexes' => [
 					['cacheId', false],
 					['type', false],
@@ -720,6 +726,8 @@ class Install extends InstallMigration
 					'cacheId' => 'integer(11) NOT NULL',
 					'elementId' => 'integer(11) NOT NULL',
 				],
+				'addIdColumn' => false,
+				'addAuditColumns' => false,
 				'indexes' => [
 					['cacheId', false],
 					['elementId', false],
@@ -737,6 +745,7 @@ class Install extends InstallMigration
 					'expiryDate' => 'datetime NOT NULL',
 					'body' => 'mediumtext COLLATE utf8_unicode_ci NOT NULL',
 				],
+				'addAuditColumns' => false,
 				'indexes' => [
 					['expiryDate,cacheKey,locale,path', false],
 					['locale', false],

@@ -52,6 +52,16 @@ abstract class InstallMigration extends Migration
 				}
 			}
 
+			// Check if there's an explicit primary key after we've added the indexes to avoid creating an unnecessary PK index
+			if (isset($table['primaryKey']))
+			{
+				$this->addPrimaryKey(
+					$this->db->getPrimaryKeyName($tableName, $table['primaryKey']),
+					$tableName,
+					$table['primaryKey']
+				);
+			}
+
 			if (isset($table['foreignKeys']))
 			{
 				foreach ($table['foreignKeys'] as $foreignKey)
