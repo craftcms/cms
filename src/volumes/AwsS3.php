@@ -212,5 +212,6 @@ class AwsS3 extends Volume
 	 */
 	protected static function getClient($config = array())
 	{
-		return S3Client::factory($config);	}
+		return S3Client::factory($config);
+	}
 }
