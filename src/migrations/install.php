@@ -17,13 +17,33 @@ use craft\app\db\InstallMigration;
  */
 class Install extends InstallMigration
 {
-	// Public Methods
+	// Properties
 	// =========================================================================
 
 	/**
 	 * @inheritdoc
 	 */
-	public function defineSchema()
+	public function safeUp()
+	{
+		parent::safeUp();
+
+		// Add the FULLTEXT index on searchindex.keywords
+		// TODO: MySQL specific
+		$this->db->createCommand(
+			'CREATE FULLTEXT INDEX ' .
+			$this->db->quoteTableName($this->db->getIndexName('{{%searchindex}}', 'keywords')).' ON ' .
+			$this->db->quoteTableName('{{%searchindex}}').' ' .
+			'('.$this->db->quoteColumnName('keywords').')'
+		)->execute();
+	}
+
+	// Protected Methods
+	// =========================================================================
+
+	/**
+	 * @inheritdoc
+	 */
+	protected function defineSchema()
 	{
 		return [
 			'{{%assetindexdata}}' => [
@@ -559,9 +579,7 @@ class Install extends InstallMigration
 				'addIdColumn' => false,
 				'addAuditColumns' => false,
 				'primaryKey' => 'elementId,attribute,fieldId,locale',
-				'indexes' => [
-					['keywords', false],
-				],
+				'options' => 'ENGINE=MyISAM',
 			],
 			'{{%sections}}' => [
 				'columns' => [
