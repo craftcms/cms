@@ -9,7 +9,7 @@ use \League\Flysystem\AwsS3v2\AwsS3Adapter;
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement
  * @see       http://buildwithcraft.com
- * @package   craft.app.flysystemadapters
+ * @package   craft.app.io.flysystemadapters
  * @since     3.0
  */
 class AwsS3 extends AwsS3Adapter implements IFlysystemAdapter

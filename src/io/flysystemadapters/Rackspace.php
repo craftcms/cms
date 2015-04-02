@@ -10,7 +10,7 @@ use \League\Flysystem\Rackspace\RackspaceAdapter;
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement
  * @see       http://buildwithcraft.com
- * @package   craft.app.flysystemadapters
+ * @package   craft.app.io.flysystemadapters
  * @since     3.0
  */
 class Rackspace extends RackspaceAdapter implements IFlysystemAdapter
