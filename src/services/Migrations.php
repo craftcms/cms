@@ -16,6 +16,8 @@ use craft\app\helpers\DateTimeHelper;
 use craft\app\helpers\IOHelper;
 use craft\app\records\Migration as MigrationRecord;
 use yii\base\Component;
+use yii\db\Migration;
+use yii\di\Instance;
 
 /**
  * Class Migrations service.
@@ -135,17 +137,31 @@ class Migrations extends Component
 	}
 
 	/**
-	 * @param      $class
+	 * @param string|Migration $migration
 	 * @param null $plugin
 	 *
 	 * @return bool|null
 	 */
-	public function migrateUp($class, $plugin = null)
+	public function migrateUp($migration, $plugin = null)
 	{
+		if (is_string($migration))
+		{
+			$class = $migration;
+			$migration = $this->createMigration($migration, $plugin);
+		}
+		else
+		{
+			$classParts = explode('\\', $migration::className());
+			$class = array_pop($classParts);
+		}
+
 		if ($class === $this->getBaseMigration())
 		{
 			return null;
 		}
+
+		/** @var Migration $migration */
+		$migration = Instance::ensure($migration, Migration::className());
 
 		if ($plugin)
 		{
@@ -157,7 +173,6 @@ class Migrations extends Component
 		}
 
 		$start = microtime(true);
-		$migration = $this->createMigration($class, $plugin);
 
 		if ($migration->up() !== false)
 		{
