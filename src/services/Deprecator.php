@@ -56,6 +56,12 @@ class Deprecator extends Component
 	 */
 	public function log($key, $message)
 	{
+		if (!Craft::$app->isInstalled())
+		{
+			Craft::warning($message, 'deprecationlog');
+			return false;
+		}
+
 		$request = Craft::$app->getRequest();
 
 		$log = new DeprecationErrorModel();
