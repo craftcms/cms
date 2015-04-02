@@ -614,6 +614,9 @@ class Install extends InstallMigration
 					'settings' => 'text COLLATE utf8_unicode_ci',
 					'installDate' => 'datetime NOT NULL',
 				],
+				'indexes' => [
+					['handle', true],
+				],
 			],
 			'{{%rackspaceaccess}}' => [
 				'columns' => [
