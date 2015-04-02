@@ -8,7 +8,7 @@
 namespace craft\app\console\controllers;
 
 use Craft;
-use craft\app\base\BasePlugin;
+use craft\app\base\PluginInterface;
 use craft\app\helpers\IOHelper;
 use craft\app\helpers\StringHelper;
 use yii\base\NotSupportedException;
@@ -48,9 +48,7 @@ class MigrateController extends BaseMigrateController
 	// =========================================================================
 
 	/**
-	 * The handle of the plugin to use during migration operations.
-	 *
-	 * @var
+	 * @var string The handle of the plugin to use during migration operations
 	 */
 	public $plugin;
 
@@ -433,7 +431,7 @@ class MigrateController extends BaseMigrateController
 	 *
 	 * @param string $pluginHandle The handle of the plugin to search for.
 	 *
-	 * @return BasePlugin|int
+	 * @return PluginInterface|Plugin
 	 * @throws Exception
 	 */
 	private function _validatePlugin($pluginHandle)

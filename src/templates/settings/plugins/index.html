@@ -10,11 +10,11 @@
 {% set docsUrl = 'http://buildwithcraft.com/docs/plugins/introduction' %}
 
 
-{% set plugins = craft.plugins.getPlugins(false) %}
+{% set info = craft.plugins.getPluginInfo() %}
 
 
-{% set content %}
-	{% if plugins|length %}
+{% block content %}
+	{% if info|length %}
 		<table id="plugins" class="data fullwidth collapsible">
 			<thead>
 				<th scope="col">{{ "Plugin"|t }}</th>
@@ -23,36 +23,29 @@
 				<td class="thin"></td>
 			</thead>
 			<tbody>
-				{% for plugin in plugins %}
-					{% set name = plugin.getName() -%}
-					{% set className = plugin.className() -%}
-					{% set isInstalled = plugin.isInstalled() -%}
-					{% set isEnabled = plugin.isEnabled() -%}
-					{% set settingsUrl = isEnabled ? plugin.getSettingsUrl() -%}
-					{% set developerUrl = plugin.getDeveloperUrl() -%}
-
-					<tr data-name="{{ name }}">
+				{% for handle, config in info %}
+					<tr data-name="{{ config.name }}">
 						<th data-title="{{ 'Name'|t }}">
-							{% if settingsUrl %}
-								<a href="{{ settingsUrl }}">{{ name }}</a>
+							{% if config.hasSettings %}
+								<a href="{{ url('settings/plugins/'~handle) }}">{{ config.name }}</a>
 							{% else %}
-								{{ name }}
+								{{ config.name }}
 							{% endif %}
-							<span class="light">{{ plugin.getVersion() }}</span>
+							<span class="light">{{ config.version }}</span>
 						</th>
-						<td data-title="{{ 'Developer'|t }}"><a{% if developerUrl %} href="{{ developerUrl }}" target="_blank"{% endif %}>{{ plugin.getDeveloper() }}</a></td>
+						<td data-title="{{ 'Developer'|t }}"><a{% if config.developerUrl %} href="{{ config.developerUrl }}" target="_blank"{% endif %}>{{ config.developer }}</a></td>
 						<td data-title="{{ 'Status'|t }}">
-							{% if isInstalled %}
+							{% if config.isInstalled %}
 								<form method="post" accept-charset="UTF-8">
-									<input type="hidden" name="pluginClass" value="{{ className }}">
+									<input type="hidden" name="pluginHandle" value="{{ handle }}">
 									{{ getCsrfInput() }}
 
-									{% if isEnabled %}
+									{% if config.isEnabled %}
 										<span class="status on"></span> {{ "Enabled"|t }} 
-										<input type="button" value="{{ 'Disable'|t }}" class="btn small formsubmit" data-action="plugins/disablePlugin">
+										<input type="button" value="{{ 'Disable'|t }}" class="btn small formsubmit" data-action="plugins/disable-plugin">
 									{% else %}
 										<span class="status off"></span> {{ "Disabled"|t }} 
-										<input type="button" value="{{ 'Enable'|t }}" class="btn small formsubmit" data-action="plugins/enablePlugin">
+										<input type="button" value="{{ 'Enable'|t }}" class="btn small formsubmit" data-action="plugins/enable-plugin">
 									{% endif %}
 								</form>
 							{% else %}
@@ -61,13 +54,13 @@
 						</td>
 						<td class="thin rightalign nowrap">
 							<form method="post" accept-charset="UTF-8">
-								<input type="hidden" name="pluginClass" value="{{ className }}">
+								<input type="hidden" name="pluginHandle" value="{{ handle }}">
 								{{ getCsrfInput() }}
 
-								{% if isInstalled %}
-									<div class="btn small fullwidth formsubmit" data-action="plugins/uninstallPlugin" data-confirm="{{ 'Are you sure you want to uninstall {plugin}? You will lose all of its associated data.'|t({ plugin: name }) }}">{{ 'Uninstall'|t }}</div>
+								{% if config.isInstalled %}
+									<div class="btn small fullwidth formsubmit" data-action="plugins/uninstall-plugin" data-confirm="{{ 'Are you sure you want to uninstall {plugin}? You will lose all of its associated data.'|t({ plugin: config.name }) }}">{{ 'Uninstall'|t }}</div>
 								{% else %}
-									<div class="btn small fullwidth formsubmit" data-action="plugins/installPlugin">{{ 'Install'|t }}</div>
+									<div class="btn small fullwidth formsubmit" data-action="plugins/install-plugin">{{ 'Install'|t }}</div>
 								{% endif %}
 							</form>
 						</td>
@@ -78,4 +71,4 @@
 	{% else %}
 		<p>{{ "There are no available plugins."|t }}
 	{% endif %}
-{% endset %}
+{% endblock %}

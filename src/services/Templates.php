@@ -22,6 +22,7 @@ use craft\app\templating\StringTemplate;
 use craft\app\templating\twigextensions\CraftTwigExtension;
 use craft\app\templating\twigextensions\TemplateLoader;
 use yii\base\Component;
+use yii\twig\Template;
 
 /**
  * The Templates service provides APIs for rendering templates, as well as interacting with other areas of Craft’s
@@ -172,8 +173,10 @@ class Templates extends Component
 			}
 
 			// Set our timezone
+			/** @var \Twig_Extension_Core $core */
+			$core = $twig->getExtension('core');
 			$timezone = Craft::$app->getTimeZone();
-			$twig->getExtension('core')->setTimezone($timezone);
+			$core->setTimezone($timezone);
 
 			// Give plugins a chance to add their own Twig extensions
 			$this->_addPluginTwigExtensions($twig);
@@ -325,7 +328,9 @@ class Templates extends Component
 		// Render it!
 		$lastRenderingTemplate = $this->_renderingTemplate;
 		$this->_renderingTemplate = 'string:'.$template;
-		$result = $this->_objectTemplates[$template]->render([
+		/** @var Template $template */
+		$template = $this->_objectTemplates[$template];
+		$result = $template->render([
 			'object' => $object
 		]);
 
@@ -874,7 +879,7 @@ class Templates extends Component
 			if ($pluginHandle && ($plugin = Craft::$app->plugins->getPlugin($pluginHandle)) !== null)
 			{
 				// Get the template path for the plugin.
-				$basePath = Craft::$app->path->getPluginsPath().'/'.StringHelper::toLowerCase($plugin::classHandle()).'/templates';
+				$basePath = Craft::$app->path->getPluginsPath().'/'.StringHelper::toLowerCase($plugin->getHandle()).'/templates';
 
 				// Get the new template name to look for within the plugin's templates folder
 				$tempName = implode('/', $parts);
@@ -1267,11 +1272,7 @@ class Templates extends Component
 	{
 		// Check if the Plugins service has been loaded yet
 		$pluginsService = Craft::$app->plugins;
-
-		if (!$pluginsService->arePluginsLoaded())
-		{
-			$pluginsService->loadPlugins();
-		}
+		$pluginsService->loadPlugins();
 
 		// Could be that this is getting called in the middle of plugin loading, so check again
 		if ($pluginsService->arePluginsLoaded())

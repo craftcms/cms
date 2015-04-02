@@ -33,7 +33,7 @@ return [
 	'settings/general'                                                      => 'system-settings/general-settings',
 	'settings/globals/new'                                                  => 'system-settings/edit-global-set',
 	'settings/globals/<globalSetId:\d+>'                                    => 'system-settings/edit-global-set',
-	'settings/plugins/<pluginClass:{handle}>'                               => ['template' => 'settings/plugins/_settings'],
+	'settings/plugins/<pluginHandle:{handle}>'                              => 'plugins/edit-plugin-settings',
 	'settings/sections'                                                     => 'sections/index',
 	'settings/sections/new'                                                 => 'sections/edit-section',
 	'settings/sections/<sectionId:\d+>'                                     => 'sections/edit-section',

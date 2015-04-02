@@ -245,7 +245,7 @@ class DashboardController extends Controller
 				"------------------------------\n\n" .
 				'Craft '.Craft::$app->getEditionName().' '.Craft::$app->version.'.'.Craft::$app->build;
 
-			$plugins = Craft::$app->plugins->getPlugins();
+			$plugins = Craft::$app->plugins->getAllPlugins();
 
 			if ($plugins)
 			{

@@ -194,7 +194,7 @@ class EmailMessages extends Component
 			// Give plugins a chance to add additional messages
 			foreach (Craft::$app->plugins->call('registerEmailMessages') as $pluginHandle => $pluginKeys)
 			{
-				$pluginSourceLocale = Craft::$app->plugins->getPlugin($pluginHandle)->getSourceLanguage();
+				$pluginSourceLocale = Craft::$app->plugins->getPlugin($pluginHandle)->sourceLanguage;
 
 				foreach ($pluginKeys as $key)
 				{

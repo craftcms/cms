@@ -8,7 +8,8 @@
 namespace craft\app\services;
 
 use Craft;
-use craft\app\base\BasePlugin;
+use craft\app\base\Plugin;
+use craft\app\base\PluginInterface;
 use craft\app\dates\DateTime;
 use craft\app\db\Query;
 use craft\app\errors\Exception;
@@ -59,11 +60,11 @@ class Migrations extends Component
 	}
 
 	/**
-	 * @param BasePlugin|null $plugin
+	 * @param PluginInterface|Plugin|null $plugin
 	 *
 	 * @return mixed
 	 */
-	public function runToTop($plugin = null)
+	public function runToTop(PluginInterface $plugin = null)
 	{
 		// This might take a while
 		Craft::$app->config->maxPowerCaptain();
@@ -72,7 +73,7 @@ class Migrations extends Component
 		{
 			if ($plugin)
 			{
-				Craft::info('No new migration(s) found for the plugin '.$plugin::className().'. Your system is up-to-date.', __METHOD__);
+				Craft::info('No new migration(s) found for the plugin '.$plugin->getHandle().'. Your system is up-to-date.', __METHOD__);
 			}
 			else
 			{
@@ -86,7 +87,7 @@ class Migrations extends Component
 
 		if ($plugin)
 		{
-			Craft::info('Total '.$total.' new '.($total === 1 ? 'migration' : 'migrations').' to be applied for plugin '.$plugin::className().':', __METHOD__);
+			Craft::info('Total '.$total.' new '.($total === 1 ? 'migration' : 'migrations').' to be applied for plugin '.$plugin->getHandle().':', __METHOD__);
 		}
 		else
 		{
@@ -107,7 +108,7 @@ class Migrations extends Component
 			{
 				if ($plugin)
 				{
-					Craft::error('Migration failed for plugin '.$plugin::className().'. All later '.$plugin::className().' migrations are canceled.', __METHOD__);
+					Craft::error('Migration failed for plugin '.$plugin->getHandle().'. All later '.$plugin->getHandle().' migrations are canceled.', __METHOD__);
 				}
 				else
 				{
@@ -123,7 +124,7 @@ class Migrations extends Component
 
 		if ($plugin)
 		{
-			Craft::info($plugin::className().' migrated up successfully.', __METHOD__);
+			Craft::info($plugin->getHandle().' migrated up successfully.', __METHOD__);
 		}
 		else
 		{
@@ -138,11 +139,11 @@ class Migrations extends Component
 
 	/**
 	 * @param string|Migration $migration
-	 * @param null $plugin
+	 * @param PluginInterface|Plugin|null $plugin
 	 *
 	 * @return bool|null
 	 */
-	public function migrateUp($migration, $plugin = null)
+	public function migrateUp($migration, PluginInterface $plugin = null)
 	{
 		if (is_string($migration))
 		{
@@ -165,7 +166,7 @@ class Migrations extends Component
 
 		if ($plugin)
 		{
-			Craft::info('Applying migration: '.$class.' for plugin: '.$plugin::className(), __METHOD__);
+			Craft::info('Applying migration: '.$class.' for plugin: '.$plugin->getHandle(), __METHOD__);
 		}
 		else
 		{
@@ -212,16 +213,16 @@ class Migrations extends Component
 	/**
 	 * Adds a row to the `craft_migrations` table for either Craft or a plugin.
 	 *
-	 * @param string      $migrationClassName The name of the migration class to add.
-	 * @param string|null $plugin             The plugin handle of the migration, if any.
+	 * @param string $migrationClassName The name of the migration class to add.
+	 * @param string|null $pluginHandle The plugin handle of the migration, if any.
 	 *
 	 * @throws \yii\db\Exception
 	 */
-	public function addMigrationHistory($migrationClassName, $plugin = null)
+	public function addMigrationHistory($migrationClassName, $pluginHandle = null)
 	{
-		if ($plugin)
+		if ($pluginHandle)
 		{
-			$pluginInfo = Craft::$app->plugins->getStoredPluginInfo($plugin);
+			$pluginInfo = Craft::$app->plugins->getStoredPluginInfo($pluginHandle);
 
 			Craft::$app->getDb()->createCommand()->insert($this->_migrationTable, [
 				'version' => $migrationClassName,
@@ -241,20 +242,19 @@ class Migrations extends Component
 	/**
 	 * Creates a new migration instance.
 	 *
-	 * @param string      $class  The migration class name.
-	 * @param string|null $plugin The optional plugin handle for the migration. If it is omitted, a Craft migration
-	 *                            is assumed.
+	 * @param string $version The migration version.
+	 * @param PluginInterface|Plugin|null $plugin  The plugin the migration belongs to, if any
 	 *
 	 * @throws Exception
 	 * @return \yii\db\MigrationInterface The migration instance.
 	 */
-	public function createMigration($class, $plugin = null)
+	public function createMigration($version, PluginInterface $plugin = null)
 	{
-		$file = IOHelper::normalizePathSeparators($this->getMigrationPath($plugin).'/'.$class.'.php');
+		$file = IOHelper::normalizePathSeparators($this->getMigrationPath($plugin).'/'.$version.'.php');
 
 		if (!IOHelper::fileExists($file) || !IOHelper::isReadable($file))
 		{
-			Craft::error('Tried to find migration file '.$file.' for class '.$class.', but could not.', __METHOD__);
+			Craft::error('Tried to find migration file '.$file.' for class '.$version.', but could not.', __METHOD__);
 			throw new Exception(Craft::t('app', 'Could not find the requested migration file.'));
 		}
 
@@ -262,11 +262,11 @@ class Migrations extends Component
 
 		if ($plugin)
 		{
-			$class = "craft\\plugins\\".$plugin::className()."\\migrations\\".$class;
+			$class = "craft\\plugins\\".$plugin->getHandle()."\\migrations\\".$version;
 		}
 		else
 		{
-			$class = "craft\\app\\migrations\\{$class}";
+			$class = "craft\\app\\migrations\\{$version}";
 		}
 
 		/* @var $migration \craft\app\db\Migration */
@@ -277,7 +277,9 @@ class Migrations extends Component
 	}
 
 	/**
-	 * @param null $plugin
+	 * Returns the migration history.
+	 *
+	 * @param string|null $plugin
 	 * @param null $limit
 	 *
 	 * @return mixed
@@ -321,7 +323,7 @@ class Migrations extends Component
 	/**
 	 * Gets migrations that have no been applied yet AND have a later timestamp than the current Craft release.
 	 *
-	 * @param $plugin
+	 * @param PluginInterface|Plugin|null $plugin
 	 *
 	 * @return array
 	 */
@@ -381,16 +383,17 @@ class Migrations extends Component
 	}
 
 	/**
-	 * @param null $plugin
+	 * Returns the migrations folder path.
 	 *
+	 * @param PluginInterface|Plugin|null $plugin The plugin, if requesting the migrations folder path of a plugin
+	 * @return string The migrations folder path
 	 * @throws Exception
-	 * @return string
 	 */
-	public function getMigrationPath($plugin = null)
+	public function getMigrationPath(PluginInterface $plugin = null)
 	{
 		if ($plugin)
 		{
-			$path = Craft::$app->path->getMigrationsPath($plugin::className());
+			$path = Craft::$app->path->getMigrationsPath($plugin->getHandle());
 		}
 		else
 		{

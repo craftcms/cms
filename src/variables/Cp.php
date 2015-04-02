@@ -59,16 +59,16 @@ class Cp
 		}
 
 		// Add any Plugin nav items
-		$plugins = \Craft::$app->plugins->getPlugins();
+		$plugins = \Craft::$app->plugins->getAllPlugins();
 
 		foreach ($plugins as $plugin)
 		{
-			if ($plugin->hasCpSection())
+			if ($plugin::hasCpSection())
 			{
-				if (\Craft::$app->getUser()->checkPermission('accessPlugin-'.\Craft::$app->templates->formatInputId($plugin::className())))
+				$handle = $plugin->getHandle();
+				if (\Craft::$app->getUser()->checkPermission('accessPlugin-'.$handle))
 				{
-					$lcHandle = StringHelper::toLowerCase($plugin::classHandle());
-					$nav[$lcHandle] = ['name' => $plugin->getName()];
+					$nav[$handle] = ['name' => $plugin->name];
 				}
 			}
 		}
