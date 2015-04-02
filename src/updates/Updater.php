@@ -9,7 +9,8 @@ namespace craft\app\updates;
 
 use Craft;
 use craft\app\base\BasePlugin;
-use craft\app\enums\InstallStatus;
+use craft\app\base\Plugin;
+use craft\app\base\PluginInterface;
 use craft\app\enums\PatchManifestFileAction;
 use craft\app\errors\Exception;
 use craft\app\helpers\IOHelper;
@@ -194,12 +195,12 @@ class Updater
 	}
 
 	/**
-	 * @param BasePlugin|null $plugin
+	 * @param PluginInterface|Plugin|null $plugin
 	 *
 	 * @throws Exception
 	 * @return null
 	 */
-	public function updateDatabase($plugin = null)
+	public function updateDatabase(PluginInterface $plugin = null)
 	{
 		Craft::info('Running migrations...', __METHOD__);
 		if (!Craft::$app->migrations->runToTop($plugin))

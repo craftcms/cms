@@ -8,7 +8,8 @@
 namespace craft\app\services;
 
 use Craft;
-use craft\app\base\BasePlugin;
+use craft\app\base\Plugin;
+use craft\app\base\PluginInterface;
 use craft\app\enums\PluginVersionUpdateStatus;
 use craft\app\enums\VersionUpdateStatus;
 use craft\app\errors\Exception;
@@ -230,16 +231,16 @@ class Updates extends Component
 	}
 
 	/**
-	 * @param BasePlugin $plugin
+	 * @param PluginInterface|Plugin $plugin
 	 *
 	 * @return bool
 	 */
-	public function setNewPluginInfo(BasePlugin $plugin)
+	public function setNewPluginInfo(PluginInterface $plugin)
 	{
 		$affectedRows = Craft::$app->getDb()->createCommand()->update('{{%plugins}}', [
-			'version' => $plugin->getVersion()
+			'version' => $plugin->version
 		], [
-			'class' => $plugin::className()
+			'handle' => $plugin::getHandle()
 		])->execute();
 
 		return (bool) $affectedRows;
@@ -257,7 +258,7 @@ class Updates extends Component
 		$updateModel->app->localVersion = Craft::$app->version;
 		$updateModel->app->localBuild   = Craft::$app->build;
 
-		$plugins = Craft::$app->plugins->getPlugins();
+		$plugins = Craft::$app->plugins->getAllPlugins();
 
 		$pluginUpdateModels = [];
 
@@ -569,7 +570,7 @@ class Updates extends Component
 	 */
 	public function isPluginDbUpdateNeeded()
 	{
-		$plugins = Craft::$app->plugins->getPlugins();
+		$plugins = Craft::$app->plugins->getAllPlugins();
 
 		foreach ($plugins as $plugin)
 		{
@@ -653,7 +654,7 @@ class Updates extends Component
 	{
 		$pluginsThatNeedDbUpdate = [];
 
-		$plugins = Craft::$app->plugins->getPlugins();
+		$plugins = Craft::$app->plugins->getAllPlugins();
 
 		foreach ($plugins as $plugin)
 		{

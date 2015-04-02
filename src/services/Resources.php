@@ -300,8 +300,6 @@ class Resources extends Component
 		}
 
 		// Maybe a plugin wants to do something custom with this URL
-		Craft::$app->plugins->loadPlugins();
-
 		$pluginPath = Craft::$app->plugins->callFirst('getResourcePath', [$path], true);
 
 		if ($pluginPath && IOHelper::fileExists($pluginPath))

@@ -298,10 +298,12 @@ class Path extends Component
 	{
 		if ($pluginHandle)
 		{
-			return $this->getPluginsPath().'/'.StringHelper::toLowerCase($pluginHandle).'/migrations';
+			return $this->getPluginsPath()."/$pluginHandle/migrations";
 		}
-
-		return $this->getAppPath().'/migrations';
+		else
+		{
+			return $this->getAppPath().'/migrations';
+		}
 	}
 
 	/**
