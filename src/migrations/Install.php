@@ -99,11 +99,11 @@ class Install extends InstallMigration
 		]));
 		echo " done\n";
 
-		// Set the language to the desired locale
-		Craft::$app->setLanguage($this->locale);
-
 		// Craft, you are installed now.
 		Craft::$app->setIsInstalled();
+
+		// Set the language to the desired locale
+		Craft::$app->setLanguage($this->locale);
 
 		// Save the first user
 		echo "    > save the first user ...";
@@ -175,9 +175,9 @@ class Install extends InstallMigration
 					['sourceId', false],
 				],
 				'foreignKeys' => [
+					['sourceId', '{{%volumes}}', 'id', 'CASCADE', null],
 					['folderId', '{{%volumefolders}}', 'id', 'CASCADE', null],
 					['id', '{{%elements}}', 'id', 'CASCADE', null],
-					['sourceId', '{{%volumes}}', 'id', 'CASCADE', null],
 				],
 			],
 			'{{%assettransformindex}}' => [
@@ -220,8 +220,8 @@ class Install extends InstallMigration
 					['groupId', false],
 				],
 				'foreignKeys' => [
-					['groupId', '{{%categorygroups}}', 'id', 'CASCADE', null],
 					['id', '{{%elements}}', 'id', 'CASCADE', null],
+					['groupId', '{{%categorygroups}}', 'id', 'CASCADE', null],
 				],
 			],
 			'{{%categorygroups}}' => [
@@ -240,8 +240,8 @@ class Install extends InstallMigration
 					['fieldLayoutId', false],
 				],
 				'foreignKeys' => [
-					['fieldLayoutId', '{{%fieldlayouts}}', 'id', 'SET NULL', null],
 					['structureId', '{{%structures}}', 'id', 'CASCADE', null],
+					['fieldLayoutId', '{{%fieldlayouts}}', 'id', 'SET NULL', null],
 				],
 			],
 			'{{%categorygroups_i18n}}' => [
@@ -256,8 +256,8 @@ class Install extends InstallMigration
 					['locale', false],
 				],
 				'foreignKeys' => [
-					['locale', '{{%locales}}', 'locale', 'CASCADE', 'CASCADE'],
 					['groupId', '{{%categorygroups}}', 'id', 'CASCADE', null],
+					['locale', '{{%locales}}', 'locale', 'CASCADE', 'CASCADE'],
 				],
 			],
 			'{{%content}}' => [
@@ -278,8 +278,8 @@ class Install extends InstallMigration
 					['title', false],
 				],
 				'foreignKeys' => [
-					['elementId', '{{%elements}}', 'id', 'CASCADE', null],
 					['locale', '{{%locales}}', 'locale', 'CASCADE', 'CASCADE'],
+					['elementId', '{{%elements}}', 'id', 'CASCADE', null],
 				],
 			],
 			'{{%deprecationerrors}}' => [
@@ -328,8 +328,8 @@ class Install extends InstallMigration
 					['enabled', false],
 				],
 				'foreignKeys' => [
-					['elementId', '{{%elements}}', 'id', 'CASCADE', null],
 					['locale', '{{%locales}}', 'locale', 'CASCADE', 'CASCADE'],
+					['elementId', '{{%elements}}', 'id', 'CASCADE', null],
 				],
 			],
 			'{{%emailmessages}}' => [
@@ -363,10 +363,10 @@ class Install extends InstallMigration
 					['typeId', false],
 				],
 				'foreignKeys' => [
+					['typeId', '{{%entrytypes}}', 'id', 'CASCADE', null],
 					['authorId', '{{%users}}', 'id', 'CASCADE', null],
 					['id', '{{%elements}}', 'id', 'CASCADE', null],
 					['sectionId', '{{%sections}}', 'id', 'CASCADE', null],
-					['typeId', '{{%entrytypes}}', 'id', 'CASCADE', null],
 				],
 			],
 			'{{%entrydrafts}}' => [
@@ -386,10 +386,10 @@ class Install extends InstallMigration
 					['creatorId', false],
 				],
 				'foreignKeys' => [
+					['sectionId', '{{%sections}}', 'id', 'CASCADE', null],
 					['creatorId', '{{%users}}', 'id', 'CASCADE', null],
 					['entryId', '{{%entries}}', 'id', 'CASCADE', null],
 					['locale', '{{%locales}}', 'locale', 'CASCADE', 'CASCADE'],
-					['sectionId', '{{%sections}}', 'id', 'CASCADE', null],
 				],
 			],
 			'{{%entrytypes}}' => [
@@ -410,8 +410,8 @@ class Install extends InstallMigration
 					['fieldLayoutId', false],
 				],
 				'foreignKeys' => [
-					['fieldLayoutId', '{{%fieldlayouts}}', 'id', 'SET NULL', null],
 					['sectionId', '{{%sections}}', 'id', 'CASCADE', null],
+					['fieldLayoutId', '{{%fieldlayouts}}', 'id', 'SET NULL', null],
 				],
 			],
 			'{{%entryversions}}' => [
@@ -431,10 +431,10 @@ class Install extends InstallMigration
 					['creatorId', false],
 				],
 				'foreignKeys' => [
+					['sectionId', '{{%sections}}', 'id', 'CASCADE', null],
 					['creatorId', '{{%users}}', 'id', 'SET NULL', null],
 					['entryId', '{{%entries}}', 'id', 'CASCADE', null],
 					['locale', '{{%locales}}', 'locale', 'CASCADE', 'CASCADE'],
-					['sectionId', '{{%sections}}', 'id', 'CASCADE', null],
 				],
 			],
 			'{{%fieldgroups}}' => [
@@ -460,9 +460,9 @@ class Install extends InstallMigration
 					['fieldId', false],
 				],
 				'foreignKeys' => [
-					['tabId', '{{%fieldlayouttabs}}', 'id', 'CASCADE', null],
-					['fieldId', '{{%fields}}', 'id', 'CASCADE', null],
 					['layoutId', '{{%fieldlayouts}}', 'id', 'CASCADE', null],
+					['fieldId', '{{%fields}}', 'id', 'CASCADE', null],
+					['tabId', '{{%fieldlayouttabs}}', 'id', 'CASCADE', null],
 				],
 			],
 			'{{%fieldlayouts}}' => [
@@ -519,8 +519,8 @@ class Install extends InstallMigration
 					['fieldLayoutId', false],
 				],
 				'foreignKeys' => [
-					['fieldLayoutId', '{{%fieldlayouts}}', 'id', 'SET NULL', null],
 					['id', '{{%elements}}', 'id', 'CASCADE', null],
+					['fieldLayoutId', '{{%fieldlayouts}}', 'id', 'SET NULL', null],
 				],
 			],
 			'{{%info}}' => [
@@ -566,11 +566,11 @@ class Install extends InstallMigration
 					['ownerLocale', false],
 				],
 				'foreignKeys' => [
-					['ownerLocale', '{{%locales}}', 'locale', 'CASCADE', 'CASCADE'],
+					['typeId', '{{%matrixblocktypes}}', 'id', 'CASCADE', null],
 					['fieldId', '{{%fields}}', 'id', 'CASCADE', null],
 					['id', '{{%elements}}', 'id', 'CASCADE', null],
 					['ownerId', '{{%elements}}', 'id', 'CASCADE', null],
-					['typeId', '{{%matrixblocktypes}}', 'id', 'CASCADE', null],
+					['ownerLocale', '{{%locales}}', 'locale', 'CASCADE', 'CASCADE'],
 				],
 			],
 			'{{%matrixblocktypes}}' => [
@@ -588,8 +588,8 @@ class Install extends InstallMigration
 					['fieldLayoutId', false],
 				],
 				'foreignKeys' => [
-					['fieldLayoutId', '{{%fieldlayouts}}', 'id', 'SET NULL', null],
 					['fieldId', '{{%fields}}', 'id', 'CASCADE', null],
+					['fieldLayoutId', '{{%fieldlayouts}}', 'id', 'SET NULL', null],
 				],
 			],
 			'{{%migrations}}' => [
@@ -641,10 +641,10 @@ class Install extends InstallMigration
 					['sourceLocale', false],
 				],
 				'foreignKeys' => [
+					['targetId', '{{%elements}}', 'id', 'CASCADE', null],
 					['fieldId', '{{%fields}}', 'id', 'CASCADE', null],
 					['sourceId', '{{%elements}}', 'id', 'CASCADE', null],
 					['sourceLocale', '{{%locales}}', 'locale', 'CASCADE', 'CASCADE'],
-					['targetId', '{{%elements}}', 'id', 'CASCADE', null],
 				],
 			],
 			'{{%routes}}' => [
@@ -708,8 +708,8 @@ class Install extends InstallMigration
 					['locale', false],
 				],
 				'foreignKeys' => [
-					['locale', '{{%locales}}', 'locale', 'CASCADE', 'CASCADE'],
 					['sectionId', '{{%sections}}', 'id', 'CASCADE', null],
+					['locale', '{{%locales}}', 'locale', 'CASCADE', 'CASCADE'],
 				],
 			],
 			'{{%sessions}}' => [
@@ -758,8 +758,8 @@ class Install extends InstallMigration
 					['elementId', false],
 				],
 				'foreignKeys' => [
-					['elementId', '{{%elements}}', 'id', 'CASCADE', null],
 					['structureId', '{{%structures}}', 'id', 'CASCADE', null],
+					['elementId', '{{%elements}}', 'id', 'CASCADE', null],
 				],
 			],
 			'{{%structures}}' => [
@@ -795,8 +795,8 @@ class Install extends InstallMigration
 					['groupId', false],
 				],
 				'foreignKeys' => [
-					['groupId', '{{%taggroups}}', 'id', 'CASCADE', null],
 					['id', '{{%elements}}', 'id', 'CASCADE', null],
+					['groupId', '{{%taggroups}}', 'id', 'CASCADE', null],
 				],
 			],
 			'{{%tasks}}' => [
@@ -846,8 +846,8 @@ class Install extends InstallMigration
 					['elementId', false],
 				],
 				'foreignKeys' => [
-					['elementId', '{{%elements}}', 'id', 'CASCADE', null],
 					['cacheId', '{{%templatecaches}}', 'id', 'CASCADE', null],
+					['elementId', '{{%elements}}', 'id', 'CASCADE', null],
 				],
 			],
 			'{{%templatecaches}}' => [
@@ -896,8 +896,8 @@ class Install extends InstallMigration
 					['userId', false],
 				],
 				'foreignKeys' => [
-					['groupId', '{{%usergroups}}', 'id', 'CASCADE', null],
 					['userId', '{{%users}}', 'id', 'CASCADE', null],
+					['groupId', '{{%usergroups}}', 'id', 'CASCADE', null],
 				],
 			],
 			'{{%userpermissions}}' => [
@@ -918,8 +918,8 @@ class Install extends InstallMigration
 					['groupId', false],
 				],
 				'foreignKeys' => [
-					['groupId', '{{%usergroups}}', 'id', 'CASCADE', null],
 					['permissionId', '{{%userpermissions}}', 'id', 'CASCADE', null],
+					['groupId', '{{%usergroups}}', 'id', 'CASCADE', null],
 				],
 			],
 			'{{%userpermissions_users}}' => [
@@ -932,8 +932,8 @@ class Install extends InstallMigration
 					['userId', false],
 				],
 				'foreignKeys' => [
-					['permissionId', '{{%userpermissions}}', 'id', 'CASCADE', null],
 					['userId', '{{%users}}', 'id', 'CASCADE', null],
+					['permissionId', '{{%userpermissions}}', 'id', 'CASCADE', null],
 				],
 			],
 			'{{%users}}' => [
@@ -972,8 +972,8 @@ class Install extends InstallMigration
 					['preferredLocale', false],
 				],
 				'foreignKeys' => [
-					['id', '{{%elements}}', 'id', 'CASCADE', null],
 					['preferredLocale', '{{%locales}}', 'locale', 'SET NULL', 'CASCADE'],
+					['id', '{{%elements}}', 'id', 'CASCADE', null],
 				],
 			],
 			'{{%volumefolders}}' => [
@@ -989,8 +989,8 @@ class Install extends InstallMigration
 					['parentId', false],
 				],
 				'foreignKeys' => [
-					['sourceId', '{{%volumes}}', 'id', 'CASCADE', null],
 					['parentId', '{{%volumefolders}}', 'id', 'CASCADE', null],
+					['sourceId', '{{%volumes}}', 'id', 'CASCADE', null],
 				],
 			],
 			'{{%volumes}}' => [
