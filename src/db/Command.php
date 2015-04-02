@@ -147,7 +147,7 @@ class Command extends \yii\db\Command
 	 *
 	 * @param string $table           The name of the table to be created. The name will be properly quoted by the method.
 	 * @param array  $columns         The columns (name => definition) in the new table.
-	 * @param null   $options         Additional SQL fragment that will be appended to the generated SQL.
+	 * @param string $options         Additional SQL fragment that will be appended to the generated SQL.
 	 * @param bool   $addIdColumn     Whether an `id` column should be added.
 	 * @param bool   $addAuditColumns Whether `dateCreated` and `dateUpdated` columns should be added.
 	 * @return Command the command object itself
