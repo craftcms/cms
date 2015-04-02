@@ -822,6 +822,7 @@ class MigrationHelper
 			'pks'     => [],
 			'fks'     => [],
 			'indexes' => [],
+			'options' => '',
 		];
 
 		// Get the CREATE TABLE sql
@@ -885,6 +886,11 @@ class MigrationHelper
 						'table'   => static::$_tables[$table],
 					];
 				}
+			}
+
+			if (preg_match('/\)\s*(.*)$/', $createTableSql, $matches))
+			{
+				static::$_tables[$table]->options = $matches[1];
 			}
 		}
 	}
