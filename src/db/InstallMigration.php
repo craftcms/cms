@@ -86,7 +86,7 @@ abstract class InstallMigration extends Migration
 
 		foreach ($foreignKeys as $foreignKey)
 		{
-			$this->createIndex($foreignKey[0], $foreignKey[1], $foreignKey[2], $foreignKey[3], $foreignKey[4], $foreignKey[5], $foreignKey[6]);
+			$this->addForeignKey($foreignKey[0], $foreignKey[1], $foreignKey[2], $foreignKey[3], $foreignKey[4], $foreignKey[5], $foreignKey[6]);
 		}
 	}
 
