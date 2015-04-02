@@ -608,7 +608,7 @@ class Install extends InstallMigration
 			],
 			'{{%plugins}}' => [
 				'columns' => [
-					'class' => 'string(150) COLLATE utf8_unicode_ci NOT NULL',
+					'handle' => 'string(150) COLLATE utf8_unicode_ci NOT NULL',
 					'version' => 'char(15) COLLATE utf8_unicode_ci NOT NULL',
 					'enabled' => 'smallint(1) unsigned NOT NULL DEFAULT \'0\'',
 					'settings' => 'text COLLATE utf8_unicode_ci',
