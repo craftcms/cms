@@ -141,6 +141,7 @@ class InstallController extends Controller
 
 		// Run the install migration
 		$request = Craft::$app->getRequest();
+		$migrator = Craft::$app->getMigrator();
 
 		$migration = new Install([
 			'siteName' => $request->getBodyParam('siteName'),
@@ -151,9 +152,15 @@ class InstallController extends Controller
 			'email'    => $request->getBodyParam('email'),
 		]);
 
-		if (Craft::$app->getMigrator()->migrateUp($migration) !== false)
+		if ($migrator->migrateUp($migration) !== false)
 		{
 			$success = true;
+
+			// Mark all existing migrations as applied
+			foreach ($migrator->getNewMigrations() as $name)
+			{
+				$migrator->addMigrationHistory($name);
+			}
 		}
 		else
 		{
