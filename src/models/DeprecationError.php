@@ -9,6 +9,7 @@ namespace craft\app\models;
 
 use craft\app\base\Model;
 use craft\app\enums\AttributeType;
+use craft\app\helpers\JsonHelper;
 
 /**
  * DeprecationError model.
@@ -18,6 +19,22 @@ use craft\app\enums\AttributeType;
  */
 class DeprecationError extends Model
 {
+	// Static
+	// =========================================================================
+
+	/**
+	 * @inheritdoc
+	 */
+	public static function populateModel($model, $config)
+	{
+		if (isset($config['traces']) && is_string($config['traces']))
+		{
+			$config['traces'] = JsonHelper::decode($config['traces']);
+		}
+
+		parent::populateModel($model, $config);
+	}
+
 	// Properties
 	// =========================================================================
 
@@ -83,6 +100,16 @@ class DeprecationError extends Model
 
 	// Public Methods
 	// =========================================================================
+
+	/**
+	 * @inheritdoc
+	 */
+	public function datetimeAttributes()
+	{
+		$names = parent::datetimeAttributes();
+		$names[] = 'lastOccurrence';
+		return $names;
+	}
 
 	/**
 	 * @inheritdoc

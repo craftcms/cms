@@ -154,7 +154,7 @@ class Deprecator extends Component
 
 		if ($log)
 		{
-			return new DeprecationErrorModel($log);
+			return DeprecationErrorModel::create($log);
 		}
 	}
 
