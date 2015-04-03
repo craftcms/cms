@@ -7,6 +7,9 @@
 
 namespace craft\app\db;
 
+use craft\app\errors\Exception;
+use craft\app\helpers\ArrayHelper;
+
 /**
  * Class Query
  *
@@ -96,8 +99,42 @@ class Query extends \yii\db\Query
 		return parent::orWhere($conditions, $params);
 	}
 
-	// Add support for prepare() to throw a QueryAbortedException
+	// Execution functions
 	// -------------------------------------------------------------------------
+
+	/**
+	 * Executes the query and returns the first two columns in the results as key/value pairs.
+	 *
+	 * @param \yii\db\Connection $db the database connection used to execute the query.
+	 * If this parameter is not given, the `db` application component will be used.
+	 * @return array the query results. If the query results in nothing, an empty array will be returned.
+	 * @throws Exception if less than two columns were selected
+	 */
+	public function pairs($db = null)
+	{
+		try
+		{
+			$rows = $this->createCommand($db)->queryAll();
+
+			if (!empty($rows))
+			{
+				$columns = array_keys($rows[0]);
+
+				if (count($columns) < 2)
+				{
+					throw new Exception('Less than two columns were selected.');
+				}
+
+				$rows = ArrayHelper::map($rows, $columns[0], $columns[1]);
+			}
+
+			return $rows;
+		}
+		catch (QueryAbortedException $e)
+		{
+			return [];
+		}
+	}
 
 	/**
 	 * @inheritdoc
