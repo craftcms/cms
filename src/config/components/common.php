@@ -79,15 +79,4 @@ return [
 			]
 		]
 	],
-	'urlManager' => [
-		'class' => 'craft\app\web\UrlManager',
-		'enablePrettyUrl' => true,
-		'ruleConfig' => ['class' => 'craft\app\web\UrlRule'],
-	],
-	'user' => [
-		'class'                    => 'craft\app\web\User',
-		'identityClass'            => 'craft\app\elements\User',
-		'enableAutoLogin'          => true,
-		'autoRenewCookie'          => true,
-	],
 ];
