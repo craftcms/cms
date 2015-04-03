@@ -12,7 +12,6 @@ use craft\app\helpers\DateTimeHelper;
 use craft\app\helpers\IOHelper;
 use yii\base\Component;
 use yii\base\InvalidConfigException;
-use yii\db\Migration;
 use yii\db\MigrationInterface;
 use yii\di\Instance;
 
@@ -82,7 +81,7 @@ class MigrationManager extends Component
 	 * Creates a new migration instance.
 	 *
 	 * @param string $name The migration name
-	 * @return MigrationInterface|Migration The migration instance
+	 * @return MigrationInterface|\yii\db\Migration The migration instance
 	 */
 	public function createMigration($name)
 	{
@@ -207,7 +206,7 @@ class MigrationManager extends Component
 	/**
 	 * Upgrades with the specified migration.
 	 *
-	 * @param string|MigrationInterface|Migration $migration The name of the migration to apply, or the migration itself
+	 * @param string|MigrationInterface|\yii\db\Migration $migration The name of the migration to apply, or the migration itself
 	 * @return boolean Whether the migration was applied successfully
 	 */
 	public function migrateUp($migration)
@@ -219,7 +218,7 @@ class MigrationManager extends Component
 			return true;
 		}
 
-		/** @var MigrationInterface|Migration $migration */
+		/** @var MigrationInterface|\yii\db\Migration $migration */
 		$migration = Instance::ensure($migration, 'yii\db\MigrationInterface');
 
 		Craft::info("Applying $migrationName");
@@ -264,7 +263,7 @@ class MigrationManager extends Component
 	/**
 	 * Downgrades with the specified migration.
 	 *
-	 * @param string|MigrationInterface|Migration $migration The name of the migration to revert, or the migration itself
+	 * @param string|MigrationInterface|\yii\db\Migration $migration The name of the migration to revert, or the migration itself
 	 * @return boolean Whether the migration was reverted successfully
 	 */
 	public function migrateDown($migration)
@@ -276,7 +275,7 @@ class MigrationManager extends Component
 			return true;
 		}
 
-		/** @var MigrationInterface|Migration $migration */
+		/** @var MigrationInterface|\yii\db\Migration $migration */
 		$migration = Instance::ensure($migration, 'yii\db\MigrationInterface');
 
 		Craft::info("Reverting $migrationName");
@@ -414,7 +413,7 @@ class MigrationManager extends Component
 	/**
 	 * Normalizes the $migration argument passed to [[migrateUp()]] and [[migrateDown()]].
 	 *
-	 * @param string|MigrationInterface|Migration $migration The name of the migration to apply, or the migration itself
+	 * @param string|MigrationInterface|\yii\db\Migration $migration The name of the migration to apply, or the migration itself
 	 * @return array
 	 */
 	private function _normalizeMigration($migration)
