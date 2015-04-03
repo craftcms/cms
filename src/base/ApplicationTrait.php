@@ -111,6 +111,12 @@ trait ApplicationTrait
 	 */
 	public $track;
 
+	/**
+	 * @var string The stored version
+	 * @todo Remove this after the next breakpoint
+	 */
+	private $_storedVersion;
+
 	// Public Methods
 	// =========================================================================
 
@@ -578,6 +584,9 @@ trait ApplicationTrait
 					throw new Exception(Craft::t('app', 'Craft appears to be installed but the info table is empty.'));
 				}
 
+				// TODO: Remove this after the next breakpoint
+				$this->_storedVersion = $row['version'];
+
 				$this->_info = Info::create($row);
 			}
 			else
@@ -612,6 +621,12 @@ trait ApplicationTrait
 
 			if ($this->isInstalled())
 			{
+				// TODO: Remove this after the next breakpoint
+				if (version_compare($this->_storedVersion, '3.0', '<'))
+				{
+					unset($attributes['fieldVersion']);
+				}
+
 				$this->getDb()->createCommand()->update('{{%info}}', $attributes)->execute();
 			}
 			else

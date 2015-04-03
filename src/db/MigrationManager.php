@@ -445,16 +445,26 @@ class MigrationManager extends Component
 		if (version_compare(Craft::$app->getInfo('version'), '3.0', '<'))
 		{
 			$nameColumn = 'version as name';
+
+			if ($this->fixedColumnValues === ['type' => 'app'])
+			{
+				$condition = ['pluginId' => null];
+			}
+			else
+			{
+				$condition = ['pluginId' => $this->fixedColumnValues['pluginId']];
+			}
 		}
 		else
 		{
 			$nameColumn = 'name';
+			$condition = $this->fixedColumnValues;
 		}
 
 		return (new Query())
 			->select("$nameColumn, applyTime")
 			->from($this->migrationTable)
 			->orderBy('name desc')
-			->where($this->fixedColumnValues);
+			->where($condition);
 	}
 }
