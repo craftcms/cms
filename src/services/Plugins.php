@@ -270,6 +270,8 @@ class Plugins extends Component
 			$info['installDate'] = DateTimeHelper::toDateTime($info['installDate']);
 			$info['id'] = Craft::$app->getDb()->getLastInsertID();
 
+			$this->_setPluginMigrator($plugin, $handle, $info['id']);
+
 			if ($plugin->install() !== false)
 			{
 				// Save a record of all the existing plugin migrations
@@ -544,6 +546,11 @@ class Plugins extends Component
 			$plugin->getSettings()->setAttributes($row['settings'], false);
 		}
 
+		if (isset($row['id']))
+		{
+			$this->_setPluginMigrator($plugin, $handle, $row['id']);
+		}
+
 		return $plugin;
 	}
 
@@ -679,6 +686,25 @@ class Plugins extends Component
 	private function _noPluginExists($handle)
 	{
 		throw new Exception("No plugin exists with the handle '$handle'.");
+	}
+
+	/**
+	 * Sets the 'migrator' component on a plugin.
+	 *
+	 * @param PluginInterface|Plugin $plugin The plugin
+	 * @param string $handle The plugin’s handle
+	 * @param integer $id The plugin’s ID
+	 */
+	private function _setPluginMigrator(PluginInterface $plugin, $handle, $id)
+	{
+		$plugin->setComponents([
+			'migrator' => [
+				'class' => 'craft\app\db\MigrationManager',
+				'migrationNamespace' => "craft\\plugins\\$handle\\migrations",
+				'migrationPath' => "@plugins/$handle/migrations",
+				'fixedColumnValues' => ['type' => 'plugin', 'pluginId' => $id],
+			]
+		]);
 	}
 
 	/**

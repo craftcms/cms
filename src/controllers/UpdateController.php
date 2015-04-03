@@ -307,10 +307,13 @@ class UpdateController extends Controller
 
 		if (Craft::$app->config->get('backupDbOnUpdate'))
 		{
-			$plugin = Craft::$app->plugins->getPlugin($handle);
+			if ($handle !== 'craft')
+			{
+				$plugin = Craft::$app->plugins->getPlugin($handle);
+			}
 
 			// If this a plugin, make sure it actually has new migrations before backing up the database.
-			if ($handle == 'craft' || ($plugin && Craft::$app->migrations->getNewMigrations($plugin)))
+			if ($handle === 'craft' || (!empty($plugin) && $plugin->getMigrator()->getNewMigrations()))
 			{
 				$return = Craft::$app->updates->backupDatabase();
 

@@ -46,6 +46,15 @@ interface PluginInterface
 	public function install();
 
 	/**
+	 * Updates the plugin.
+	 *
+	 * @param string $fromVersion The previously installed version of the plugin.
+	 * @return boolean|null Return `false` to indicate the update failed.
+	 * All other return values mean the update was successful.
+	 */
+	public function update($fromVersion);
+
+	/**
 	 * Uninstalls the plugin.
 	 *
 	 * @return boolean|null Return `false` to indicate the uninstallation failed.
@@ -63,7 +72,7 @@ interface PluginInterface
 	/**
 	 * Returns the settings page response.
 	 *
-	 * @return mixed The result that should be returned from [[PluginsController::actionEditPluginSettings]].
+	 * @return mixed The result that should be returned from [[PluginsController::actionRThe rendered settings page HTML
 	 */
 	public function getSettingsResponse();
 }

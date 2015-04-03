@@ -8,11 +8,14 @@
 namespace craft\app\base;
 
 use Craft;
+use craft\app\db\MigrationManager;
 use craft\app\events\Event;
 use yii\base\Module;
 
 /**
  * Plugin is the base class for classes representing plugins in terms of objects.
+ *
+ * @property MigrationManager $migrator The plugin’s migration manager
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
@@ -38,6 +41,18 @@ abstract class Plugin extends Module implements PluginInterface
 	 * @event Event The event that is triggered after the plugin is installed
 	 */
 	const EVENT_AFTER_INSTALL = 'afterInstall';
+
+	/**
+	 * @event Event The event that is triggered before the plugin is updated
+	 *
+	 * You may set [[Event::performAction]] to `false` to prevent the plugin from getting updated.
+	 */
+	const EVENT_BEFORE_UPDATE = 'beforeUpdate';
+
+	/**
+	 * @event Event The event that is triggered after the plugin is updated
+	 */
+	const EVENT_AFTER_UPDATE = 'afterUpdate';
 
 	/**
 	 * @event Event The event that is triggered before the plugin is uninstalled
@@ -96,13 +111,31 @@ abstract class Plugin extends Module implements PluginInterface
 
 		if ($migration !== null)
 		{
-			if (Craft::$app->migrations->migrateUp($migration) === false)
+			if ($this->getMigrator()->migrateUp($migration) === false)
 			{
 				return false;
 			}
 		}
 
 		$this->afterInstall();
+	}
+
+	/**
+	 * @inheritdoc
+	 */
+	public function update($fromVersion)
+	{
+		if ($this->beforeUpdate() === false)
+		{
+			return false;
+		}
+
+		if ($this->getMigrator()->up() === false)
+		{
+			return false;
+		}
+
+		$this->afterUpdate();
 	}
 
 	/**
@@ -119,7 +152,7 @@ abstract class Plugin extends Module implements PluginInterface
 
 		if ($migration !== null)
 		{
-			if (Craft::$app->migrations->migrateDown($migration) === false)
+			if ($this->getMigrator()->migrateDown($migration) === false)
 			{
 				return false;
 			}
@@ -159,6 +192,16 @@ abstract class Plugin extends Module implements PluginInterface
 		]);
 	}
 
+	/**
+	 * Returns the plugin’s migration manager
+	 *
+	 * @return MigrationManager The plugin’s migration manager
+	 */
+	public function getMigrator()
+	{
+		return $this->get('migrator');
+	}
+
 	// Protected Methods
 	// =========================================================================
 
@@ -190,6 +233,26 @@ abstract class Plugin extends Module implements PluginInterface
 	protected function afterInstall()
 	{
 		$this->trigger(static::EVENT_AFTER_INSTALL, new Event());
+	}
+
+	/**
+	 * Performs any actions before the plugin is updated.
+	 *
+	 * @return boolean Whether the plugin should be updated
+	 */
+	protected function beforeUpdate()
+	{
+		$event = new Event();
+		$this->trigger(static::EVENT_BEFORE_UPDATE, $event);
+		return $event->performAction;
+	}
+
+	/**
+	 * Performs any actions after the plugin is updated.
+	 */
+	protected function afterUpdate()
+	{
+		$this->trigger(static::EVENT_AFTER_UPDATE, new Event());
 	}
 
 	/**
