@@ -469,9 +469,9 @@ class Updates extends Component
 				$plugin = Craft::$app->plugins->getPlugin($handle);
 				if ($plugin)
 				{
-					Craft::info('The plugin, '.$plugin->getName().' wants to update the database.', __METHOD__);
+					Craft::info('The plugin, '.$plugin->name.' wants to update the database.', __METHOD__);
 					$updater->updateDatabase($plugin);
-					Craft::info('The plugin, '.$plugin->getName().' is done updating the database.', __METHOD__);
+					Craft::info('The plugin, '.$plugin->name.' is done updating the database.', __METHOD__);
 				}
 				else
 				{
@@ -648,7 +648,7 @@ class Updates extends Component
 	/**
 	 * Returns a list of plugins that are in need of a database update.
 	 *
-	 * @return array|null
+	 * @return PluginInterface[]|Plugin[]|null
 	 */
 	public function getPluginsThatNeedDbUpdate()
 	{

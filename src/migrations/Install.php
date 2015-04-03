@@ -595,12 +595,13 @@ class Install extends InstallMigration
 			'{{%migrations}}' => [
 				'columns' => [
 					'pluginId' => 'integer(11) DEFAULT NULL',
-					'version' => 'string(255) COLLATE utf8_unicode_ci NOT NULL',
+					'type' => 'enum(\'app\',\'plugin\',\'site\') COLLATE utf8_unicode_ci DEFAULT NULL',
+					'name' => 'string(255) COLLATE utf8_unicode_ci NOT NULL',
 					'applyTime' => 'datetime NOT NULL',
 				],
 				'indexes' => [
-					['version', true],
 					['pluginId', false],
+					['type,pluginId', false],
 				],
 				'foreignKeys' => [
 					['pluginId', '{{%plugins}}', 'id', 'CASCADE', null],

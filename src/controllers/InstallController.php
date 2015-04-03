@@ -151,7 +151,7 @@ class InstallController extends Controller
 			'email'    => $request->getBodyParam('email'),
 		]);
 
-		if (Craft::$app->migrations->migrateUp($migration) === false)
+		if (Craft::$app->getMigrator()->migrateUp($migration) === false)
 		{
 			$success = false;
 		}

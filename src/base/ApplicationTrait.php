@@ -9,6 +9,7 @@ namespace craft\app\base;
 
 use Craft;
 use craft\app\db\Connection;
+use craft\app\db\MigrationManager;
 use craft\app\db\Query;
 use craft\app\enums\CacheMethod;
 use craft\app\enums\ConfigCategory;
@@ -754,6 +755,16 @@ trait ApplicationTrait
 		}
 
 		$this->set('log', $dispatcher);
+	}
+
+	/**
+	 * Returns the application’s migration manager.
+	 *
+	 * @return MigrationManager The application’s migration manager
+	 */
+	public function getMigrator()
+	{
+		return $this->get('migrator');
 	}
 
 	// Private Methods

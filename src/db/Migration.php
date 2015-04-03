@@ -7,8 +7,6 @@
 
 namespace craft\app\db;
 
-use yii\base\NotSupportedException;
-
 /**
  * @inheritdoc
  *
@@ -21,18 +19,6 @@ abstract class Migration extends \yii\db\Migration
 {
 	// Public Methods
 	// =========================================================================
-
-	/**
-	 * @inheritdoc
-	 * @throws NotSupportedException
-	 */
-	public function safeDown()
-	{
-		throw new NotSupportedException('"down" is not implemented.');
-	}
-
-	// Database Commands
-	// -------------------------------------------------------------------------
 
 	/**
 	 * @inheritdoc

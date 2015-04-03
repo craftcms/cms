@@ -95,7 +95,7 @@ class Updates
 		{
 			if ($type == 'name')
 			{
-				return $plugins[0]->getName();
+				return $plugins[0]->name;
 			}
 			else
 			{
