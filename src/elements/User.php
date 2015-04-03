@@ -358,7 +358,7 @@ class User extends Element implements IdentityInterface
 	{
 		$user = Craft::$app->users->getUserById($id);
 
-		if ($user->status == UserStatus::Active)
+		if ($user !== null && $user->status == UserStatus::Active)
 		{
 			return $user;
 		}
