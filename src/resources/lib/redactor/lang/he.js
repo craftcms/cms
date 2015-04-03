@@ -69,6 +69,7 @@ $.Redactor.opts.langs['he'] = {
 	alignment: 'יישור',
 	filename: 'Name (optional)',
 	edit: 'Edit',
-	center: 'Center'
+	center: 'Center',
+	upload_label: 'Drop file here or '
 };
 })( jQuery );

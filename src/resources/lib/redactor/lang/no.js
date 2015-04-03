@@ -69,6 +69,7 @@
 		alignment: 'Justering',
 		filename: 'Filnavn (valgfritt)',
 		edit: 'Endre',
-		center: 'Midten'
+		center: 'Midten',
+		upload_label: 'Drop file here or '
 	};
 })(jQuery);
