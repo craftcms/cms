@@ -15,7 +15,6 @@ use craft\app\errors\Exception;
 use craft\app\helpers\DateTimeHelper;
 use craft\app\helpers\IOHelper;
 use craft\app\helpers\JsonHelper;
-use craft\app\records\Migration as MigrationRecord;
 use yii\base\Component;
 use yii\base\InvalidParamException;
 
@@ -274,9 +273,6 @@ class Plugins extends Component
 
 			if ($plugin->install() !== false)
 			{
-				// Save a record of all the existing plugin migrations
-				$this->_savePluginMigrations($info['id'], $handle);
-
 				if ($transaction !== null)
 				{
 					$transaction->commit();
@@ -705,67 +701,5 @@ class Plugins extends Component
 				'fixedColumnValues' => ['type' => 'plugin', 'pluginId' => $id],
 			]
 		]);
-	}
-
-	/**
-	 * If the plugin already had a migrations folder with migrations in it, let's save them in the db.
-	 *
-	 * @param int    $pluginId
-	 * @param string $handle
-	 *
-	 * @throws Exception
-	 */
-	private function _savePluginMigrations($pluginId, $handle)
-	{
-		$migrationsFolder = Craft::$app->path->getPluginsPath()."/$handle/migrations";
-
-		if (IOHelper::folderExists($migrationsFolder))
-		{
-			$migrations = [];
-			$migrationFiles = IOHelper::getFolderContents($migrationsFolder, false, '(m(\d{6}_\d{6})_.*?)\.php');
-
-			if ($migrationFiles)
-			{
-				foreach ($migrationFiles as $file)
-				{
-					if (IOHelper::fileExists($file))
-					{
-						$migration = new MigrationRecord();
-						$migration->version = IOHelper::getFilename($file, false);
-						$migration->applyTime = DateTimeHelper::currentUTCDateTime();
-						$migration->pluginId = $pluginId;
-
-						$migrations[] = $migration;
-					}
-				}
-
-				foreach ($migrations as $migration)
-				{
-					if (!$migration->save())
-					{
-						throw new Exception(Craft::t('app', 'There was a problem saving to the migrations table: ').$this->_getFlattenedErrors($migration->getErrors()));
-					}
-				}
-			}
-		}
-	}
-
-	/**
-	 * Get a flattened list of model errors
-	 *
-	 * @param array $errors
-	 *
-	 * @return string
-	 */
-	private function _getFlattenedErrors($errors)
-	{
-		$return = '';
-
-		foreach ($errors as $attribute => $attributeErrors)
-		{
-			$return .= "\n - ".implode("\n - ", $attributeErrors);
-		}
-
-		return $return;
 	}
 }
