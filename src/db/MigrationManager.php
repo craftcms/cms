@@ -123,16 +123,16 @@ class MigrationManager extends Component
 
 		if ($n === $total)
 		{
-			$logMessage = "Total $n new " . ($n === 1 ? 'migration' : 'migrations') . " to be applied:\n";
+			$logMessage = "Total $n new " . ($n === 1 ? 'migration' : 'migrations') . " to be applied:";
 		}
 		else
 		{
-			$logMessage = "Total $n out of $total new " . ($total === 1 ? 'migration' : 'migrations') . " to be applied:\n";
+			$logMessage = "Total $n out of $total new " . ($total === 1 ? 'migration' : 'migrations') . " to be applied:";
 		}
 
 		foreach ($migrationNames as $migrationName)
 		{
-			$logMessage .= "\t$migrationName\n";
+			$logMessage .= "\n\t$migrationName";
 		}
 
 		Craft::info($logMessage);
@@ -181,11 +181,11 @@ class MigrationManager extends Component
 		}
 
 		$n = count($migrationNames);
-		$logMessage = "Total $n ".($n === 1 ? 'migration' : 'migrations')." to be reverted:\n";
+		$logMessage = "Total $n ".($n === 1 ? 'migration' : 'migrations')." to be reverted:";
 
 		foreach ($migrationNames as $migrationName)
 		{
-			$logMessage .= "\t$migrationName\n";
+			$logMessage .= "\n\t$migrationName";
 		}
 
 		Craft::info($logMessage);
@@ -236,11 +236,12 @@ class MigrationManager extends Component
 
 		if ($success)
 		{
-			Craft::info("Applied $migrationName (time: ".sprintf("%.3f", $time)."s)\n\n");
+			Craft::info("Applied $migrationName (time: ".sprintf("%.3f", $time)."s)");
+			$this->addMigrationHistory($migrationName);
 		}
 		else
 		{
-			Craft::error("Failed to apply $migrationName (time: ".sprintf("%.3f", $time)."s)\n\n");
+			Craft::error("Failed to apply $migrationName (time: ".sprintf("%.3f", $time)."s)");
 		}
 
 		if (!$isConsoleRequest)
@@ -293,11 +294,12 @@ class MigrationManager extends Component
 
 		if ($success)
 		{
-			Craft::info("Reverted $migrationName (time: ".sprintf("%.3f", $time)."s)\n\n");
+			Craft::info("Reverted $migrationName (time: ".sprintf("%.3f", $time)."s)");
+			$this->removeMigrationHistory($migrationName);
 		}
 		else
 		{
-			Craft::error("Failed to revert $migrationName (time: ".sprintf("%.3f", $time)."s)\n\n");
+			Craft::error("Failed to revert $migrationName (time: ".sprintf("%.3f", $time)."s)");
 		}
 
 		if (!$isConsoleRequest)
