@@ -771,21 +771,26 @@ class AssetsService extends BaseApplicationComponent
 				$source = craft()->assetSources->getSourceTypeById($file->sourceId);
 
 				// Fire an 'onBeforeDeleteAsset' event
-				$this->onBeforeDeleteAsset(new Event($this, array(
+				$event = new Event($this, array(
 					'asset' => $file
-				)));
+				));
 
-				if ($deleteFile)
+				$this->onBeforeDeleteAsset($event);
+
+				if ($event->performAction)
 				{
-					$source->deleteFile($file);
+					if ($deleteFile)
+					{
+						$source->deleteFile($file);
+					}
+
+					craft()->elements->deleteElementById($fileId);
+
+					// Fire an 'onDeleteAsset' event
+					$this->onDeleteAsset(new Event($this, array(
+						'asset' => $file
+					)));
 				}
-
-				craft()->elements->deleteElementById($fileId);
-
-				// Fire an 'onDeleteAsset' event
-				$this->onDeleteAsset(new Event($this, array(
-					'asset' => $file
-				)));
 			}
 
 			$response->setSuccess();

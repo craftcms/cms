@@ -73,7 +73,8 @@ $.Redactor.opts.langs['nl'] = {
 	alignment: 'Uitlijning',
 	filename: 'Naam (optioneel)',
 	edit: 'Bewerk',
-	center: 'Center'
+	center: 'Center',
+	upload_label: 'Drop file here or '
 };
 })( jQuery );
 

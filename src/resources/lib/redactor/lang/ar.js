@@ -70,6 +70,7 @@ $.Redactor.opts.langs['ar'] = {
 	alignment: 'محاذاة',
 	filename: 'الاسم (اختياري)',
 	edit: 'تحرير',
-	center: 'توسيط'
+	center: 'توسيط',
+	upload_label: 'Drop file here or '
 };
 })( jQuery );

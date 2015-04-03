@@ -111,6 +111,12 @@ class PhpMessageSource extends \CPhpMessageSource
 				$translationFiles[] = implode('_', array_slice($parts, 0, $i));
 			}
 
+			// If it's Norwegian Bokmål/Nynorsk, add plain ol' Norwegian as a fallback
+			if ($parts[0] === 'nb' || $parts[0] === 'nn')
+			{
+				$translationFiles[] = 'no';
+			}
+
 			// Now loop through all of the paths and translation files and import the ones that exist
 			foreach ($paths as $folderPath)
 			{

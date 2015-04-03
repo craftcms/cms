@@ -69,6 +69,7 @@ $.Redactor.opts.langs['es'] = {
 	alignment: 'Alineación',
 	filename: 'Nombre (opcional)',
 	edit: 'Editar',
-	center: 'Center'
+	center: 'Center',
+	upload_label: 'Drop file here or '
 };
 })( jQuery );

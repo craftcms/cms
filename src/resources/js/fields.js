@@ -144,7 +144,7 @@ var FieldsAdmin = Garnish.Base.extend(
 
 		for (var attribute in responseErrors)
 		{
-			errors = errors.concat(response.errors[attribute]);
+			errors = errors.concat(responseErrors[attribute]);
 		}
 
 		return errors;

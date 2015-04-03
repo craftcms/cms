@@ -1255,4 +1255,7 @@ return array(
 	'“{plugin}” is already installed.' => '「{plugin}」はすでにインストールしました。',
 	'“{plugin}” is already uninstalled.' => '「{plugin}」はすでにアンインストールしました。',
 	'…Or use one of your field groups as a starting point:' => 'または、まず特定のフィールドグループを利用する：',
+	'Localizing relations' => 'Localizing relations',
+	'The CSRF token could not be verified.' => 'The CSRF token could not be verified.',
+	'What do you want to do with the their content?' => 'What do you want to do with the their content?',
 );

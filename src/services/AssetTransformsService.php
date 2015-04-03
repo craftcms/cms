@@ -383,6 +383,7 @@ class AssetTransformsService extends BaseApplicationComponent
 				->where('fileId = :fileId', array(':fileId' => $file->id))
 				->andWhere(array('in', 'location', $possibleLocations))
 				->andWhere('id <> :indexId', array(':indexId' => $index->id))
+				->andWhere('fileExists = 1')
 				->queryAll();
 
 			foreach ($results as $result)

@@ -1252,4 +1252,7 @@ Si vous n\'attendiez aucun email de ce type, ignorez-le, tout simplement.',
 	'“{plugin}” is already installed.' => 'le “{plugin}” est déjà installé.',
 	'“{plugin}” is already uninstalled.' => 'le “{plugin}” est déjà désinstallé.',
 	'…Or use one of your field groups as a starting point:' => '...Ou utilisez l\'un de vos groupes de champs comme point de départ :',
+	'Localizing relations' => 'Localizing relations',
+	'The CSRF token could not be verified.' => 'The CSRF token could not be verified.',
+	'What do you want to do with the their content?' => 'What do you want to do with the their content?',
 );

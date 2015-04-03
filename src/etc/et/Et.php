@@ -78,7 +78,8 @@ class Et
 			'serverInfo'        => array(
 				'extensions'    => get_loaded_extensions(),
 				'phpVersion'    => PHP_VERSION,
-				'mySqlVersion'  => craft()->db->getServerVersion()
+				'mySqlVersion'  => craft()->db->getServerVersion(),
+				'proc'          => function_exists('proc_open') ? 1 : 0,
 			),
 		));
 
@@ -186,8 +187,11 @@ class Et
 				);
 
 				$request = $client->post($this->_endpoint, $options);
-
 				$request->setBody($data, 'application/json');
+
+				// Potentially long-running request, so close session to prevent session blocking on subsequent requests.
+				craft()->session->close();
+
 				$response = $request->send();
 
 				if ($response->isSuccessful())
