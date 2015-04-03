@@ -78,7 +78,8 @@ class Et
 			'serverInfo'        => array(
 				'extensions'    => get_loaded_extensions(),
 				'phpVersion'    => PHP_VERSION,
-				'mySqlVersion'  => craft()->db->getServerVersion()
+				'mySqlVersion'  => craft()->db->getServerVersion(),
+				'proc'          => function_exists('proc_open') ? 1 : 0,
 			),
 		));
 
