@@ -181,7 +181,7 @@ class UserPermissions extends Component
 		foreach (Craft::$app->plugins->call('registerUserPermissions') as $pluginHandle => $pluginPermissions)
 		{
 			$plugin = Craft::$app->plugins->getPlugin($pluginHandle);
-			$permissions[$plugin->getName()] = $pluginPermissions;
+			$permissions[$plugin->name] = $pluginPermissions;
 		}
 
 		return $permissions;

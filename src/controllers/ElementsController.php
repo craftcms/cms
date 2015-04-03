@@ -223,7 +223,7 @@ class ElementsController extends BaseElementsController
 
 					$response['locales'][] = [
 						'id'   => $localeId,
-						'name' => $locale->getName()
+						'name' => $locale->getDisplayName()
 					];
 				}
 			}
