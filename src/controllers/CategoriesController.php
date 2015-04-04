@@ -319,7 +319,7 @@ class CategoriesController extends Controller
 				'fields'        => '#title-field, #fields > div > div > .field',
 				'extraFields'   => '#settings',
 				'previewUrl'    => $category->getUrl(),
-				'previewAction' => 'categories/previewCategory',
+				'previewAction' => 'categories/preview-category',
 				'previewParams' => [
 				                       'groupId'    => $variables['group']->id,
 				                       'categoryId' => $category->id,
@@ -339,7 +339,7 @@ class CategoriesController extends Controller
 				}
 				else
 				{
-					$variables['shareUrl'] = UrlHelper::getActionUrl('categories/shareCategory', [
+					$variables['shareUrl'] = UrlHelper::getActionUrl('categories/share-category', [
 						'categoryId' => $category->id,
 						'locale'     => $category->locale
 					]);
@@ -523,7 +523,7 @@ class CategoriesController extends Controller
 
 		// Create the token and redirect to the category URL with the token in place
 		$token = Craft::$app->tokens->createToken([
-			'action' => 'categories/viewSharedCategory',
+			'action' => 'categories/view-shared-category',
 			'params' => ['categoryId' => $categoryId, 'locale' => $category->locale]
 		]);
 

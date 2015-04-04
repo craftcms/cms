@@ -276,7 +276,7 @@ class EntriesController extends BaseEntriesController
 				'fields'        => '#title-field, #fields > div > div > .field',
 				'extraFields'   => '#settings',
 				'previewUrl'    => $entry->getUrl(),
-				'previewAction' => 'entries/previewEntry',
+				'previewAction' => 'entries/preview-entry',
 				'previewParams' => [
 				                       'sectionId' => $section->id,
 				                       'entryId'   => $entry->id,
@@ -321,7 +321,7 @@ class EntriesController extends BaseEntriesController
 						}
 					}
 
-					$variables['shareUrl'] = UrlHelper::getActionUrl('entries/shareEntry', $shareParams);
+					$variables['shareUrl'] = UrlHelper::getActionUrl('entries/share-entry', $shareParams);
 				}
 			}
 		}
@@ -640,7 +640,7 @@ class EntriesController extends BaseEntriesController
 		}
 
 		// Create the token and redirect to the entry URL with the token in place
-		$token = Craft::$app->tokens->createToken(['action' => 'entries/viewSharedEntry', 'params' => $params]);
+		$token = Craft::$app->tokens->createToken(['action' => 'entries/view-shared-entry', 'params' => $params]);
 		$url = UrlHelper::getUrlWithToken($entry->getUrl(), $token);
 		Craft::$app->getResponse()->redirect($url);
 	}

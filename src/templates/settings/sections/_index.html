@@ -70,7 +70,7 @@
 		tableSelector: '#sections',
 		noItemsSelector: '#nosections',
 		newItemBtnSelector: '#newsectioncontainer',
-		deleteAction: 'sections/deleteSection',
+		deleteAction: 'sections/delete-section',
 		confirmDeleteMessage: '{{ "Are you sure you want to delete “{name}” and all its entries?"|t }}',
 		{% if CraftEdition == CraftPersonal %}maxItems: {{ maxSections }},{% endif %}
 		onDeleteItem: function()

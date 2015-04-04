@@ -21,7 +21,7 @@ Craft.UpdateInfo = Garnish.Base.extend(
 		var $graphic = $('#graphic'),
 			$status = $('#status');
 
-		Craft.postActionRequest('update/getAvailableUpdates', $.proxy(function(response, textStatus)
+		Craft.postActionRequest('update/get-available-updates', $.proxy(function(response, textStatus)
 		{
 			if (textStatus != 'success' || response.error || response.errors)
 			{

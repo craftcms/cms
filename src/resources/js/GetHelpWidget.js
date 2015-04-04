@@ -60,7 +60,7 @@
 			this.$spinner.removeClass('hidden');
 
 			this.$form.attr('target', iframeName);
-			this.$form.attr('action', Craft.getActionUrl('dashboard/sendSupportRequest'));
+			this.$form.attr('action', Craft.getActionUrl('dashboard/send-support-request'));
 
 			this.$form.submit();
 		},

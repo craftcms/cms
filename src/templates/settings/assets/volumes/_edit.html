@@ -7,7 +7,7 @@
 
 {% set content %}
 	<form method="post" accept-charset="UTF-8" data-saveshortcut>
-		<input type="hidden" name="action" value="volumes/saveVolume">
+		<input type="hidden" name="action" value="volumes/save-volume">
 		<input type="hidden" name="redirect" value="settings/assets">
 		{% if not isNewVolume %}<input type="hidden" name="volumeId" value="{{ volume.id }}">{% endif %}
 		{{ getCsrfInput() }}

@@ -240,7 +240,7 @@ Craft.Locales = Garnish.Base.extend(
 
 		var id = $activeLocale.attr('data-id');
 
-		Craft.postActionRequest('localization/addLocale', { id: id }, $.proxy(function(response, textStatus)
+		Craft.postActionRequest('localization/add-locale', { id: id }, $.proxy(function(response, textStatus)
 		{
 			this.$addLocaleSpinner.addClass('hidden');
 
@@ -299,8 +299,8 @@ var LocalesTable = Craft.AdminTable.extend(
 			tableSelector: '#locales',
 			sortable: true,
 			minItems: 1,
-			reorderAction: 'localization/reorderLocales',
-			deleteAction: 'localization/deleteLocale',
+			reorderAction: 'localization/reorder-locales',
+			deleteAction: 'localization/delete-locale',
 		});
 	},
 
@@ -405,7 +405,7 @@ var LocalesTable = Craft.AdminTable.extend(
 		var $form = $(
 				'<form id="confirmdeletemodal" class="modal fitted" method="post" accept-charset="UTF-8">' +
 					Craft.getCsrfInput() +
-					'<input type="hidden" name="action" value="localization/deleteLocale"/>' +
+					'<input type="hidden" name="action" value="localization/delete-locale"/>' +
 					'<input type="hidden" name="id" value="'+id+'"/>' +
 				'</form>'
 			).appendTo(Garnish.$bod),

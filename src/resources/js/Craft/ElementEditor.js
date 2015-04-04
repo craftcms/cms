@@ -31,7 +31,7 @@ Craft.ElementEditor = Garnish.Base.extend(
 			includeLocales: true
 		};
 
-		Craft.postActionRequest('elements/getEditorHtml', data, $.proxy(this, 'showHud'));
+		Craft.postActionRequest('elements/get-editor-html', data, $.proxy(this, 'showHud'));
 	},
 
 	showHud: function(response, textStatus)
@@ -108,7 +108,7 @@ Craft.ElementEditor = Garnish.Base.extend(
 			locale:    newLocale
 		};
 
-		Craft.postActionRequest('elements/getEditorHtml', data, $.proxy(function(response, textStatus)
+		Craft.postActionRequest('elements/get-editor-html', data, $.proxy(function(response, textStatus)
 		{
 			this.$localeSpinner.addClass('hidden');
 
@@ -145,7 +145,7 @@ Craft.ElementEditor = Garnish.Base.extend(
 
 		var data = this.$form.serialize();
 
-		Craft.postActionRequest('elements/saveElement', data, $.proxy(function(response, textStatus)
+		Craft.postActionRequest('elements/save-element', data, $.proxy(function(response, textStatus)
 		{
 			this.$spinner.addClass('hidden');
 

@@ -6,12 +6,12 @@
 		postParameters: {userId: $('.user-photo').attr('data-user')},
 
 		modalClass: "profile-image-modal",
-		uploadAction: 'users/uploadUserPhoto',
+		uploadAction: 'users/upload-user-photo',
 
 		deleteMessage: Craft.t('Are you sure you want to delete this photo?'),
-		deleteAction: 'users/deleteUserPhoto',
+		deleteAction: 'users/delete-user-photo',
 
-		cropAction: 'users/cropUserPhoto',
+		cropAction: 'users/crop-user-photo',
 
 		areaToolOptions:
 		{

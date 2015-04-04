@@ -7170,7 +7170,7 @@ Craft.DeleteUserModal = Garnish.Modal.extend(
 		var $form = $(
 				'<form class="modal fitted deleteusermodal" method="post" accept-charset="UTF-8">' +
 					Craft.getCsrfInput() +
-					'<input type="hidden" name="action" value="users/deleteUser"/>' +
+					'<input type="hidden" name="action" value="users/delete-user"/>' +
 					(!Garnish.isArray(this.userId) ? '<input type="hidden" name="userId" value="'+this.userId+'"/>' : '') +
 					'<input type="hidden" name="redirect" value="'+(Craft.edition == Craft.Pro ? 'users' : 'dashboard')+'"/>' +
 				'</form>'

@@ -133,7 +133,7 @@ var LoginForm = Garnish.Base.extend(
 			loginName: this.$loginNameInput.val()
 		};
 
-		Craft.postActionRequest('users/sendPasswordResetEmail', data, $.proxy(function(response, textStatus)
+		Craft.postActionRequest('users/send-password-reset-email', data, $.proxy(function(response, textStatus)
 		{
 			if (textStatus == 'success')
 			{

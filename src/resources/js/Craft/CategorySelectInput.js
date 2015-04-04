@@ -45,7 +45,7 @@ Craft.CategorySelectInput = Craft.BaseElementSelectInput.extend(
 			limit:       this.settings.limit,
 		};
 
-		Craft.postActionRequest('elements/getCategoriesInputHtml', data, $.proxy(function(response, textStatus)
+		Craft.postActionRequest('elements/get-categories-input-html', data, $.proxy(function(response, textStatus)
 		{
 			this.modal.enable();
 			this.modal.enableCancelBtn();

@@ -521,12 +521,12 @@ class UsersController extends Controller
 				{
 					$statusLabel = Craft::t('app', 'Unverified');
 
-					$statusActions[] = ['action' => 'users/sendActivationEmail', 'label' => Craft::t('app', 'Send activation email')];
+					$statusActions[] = ['action' => 'users/send-activation-email', 'label' => Craft::t('app', 'Send activation email')];
 
 					if (Craft::$app->getUser()->getIsAdmin())
 					{
 						$statusActions[] = ['id' => 'copy-passwordreset-url', 'label' => Craft::t('app', 'Copy activation URL')];
-						$statusActions[] = ['action' => 'users/activateUser', 'label' => Craft::t('app', 'Activate account')];
+						$statusActions[] = ['action' => 'users/activate-user', 'label' => Craft::t('app', 'Activate account')];
 					}
 
 					break;
@@ -537,7 +537,7 @@ class UsersController extends Controller
 
 					if (Craft::$app->getUser()->checkPermission('administrateUsers'))
 					{
-						$statusActions[] = ['action' => 'users/unlockUser', 'label' => Craft::t('app', 'Unlock')];
+						$statusActions[] = ['action' => 'users/unlock-user', 'label' => Craft::t('app', 'Unlock')];
 					}
 
 					break;
@@ -548,7 +548,7 @@ class UsersController extends Controller
 
 					if (Craft::$app->getUser()->checkPermission('administrateUsers'))
 					{
-						$statusActions[] = ['action' => 'users/unsuspendUser', 'label' => Craft::t('app', 'Unsuspend')];
+						$statusActions[] = ['action' => 'users/unsuspend-user', 'label' => Craft::t('app', 'Unsuspend')];
 					}
 
 					break;
@@ -559,7 +559,7 @@ class UsersController extends Controller
 
 					if (!$user->isCurrent())
 					{
-						$statusActions[] = ['action' => 'users/sendPasswordResetEmail', 'label' => Craft::t('app', 'Send password reset email')];
+						$statusActions[] = ['action' => 'users/send-password-reset-email', 'label' => Craft::t('app', 'Send password reset email')];
 
 						if (Craft::$app->getUser()->getIsAdmin())
 						{
@@ -575,7 +575,7 @@ class UsersController extends Controller
 			{
 				if (Craft::$app->getUser()->checkPermission('administrateUsers') && $user->getStatus() != UserStatus::Suspended)
 				{
-					$sketchyActions[] = ['action' => 'users/suspendUser', 'label' => Craft::t('app', 'Suspend')];
+					$sketchyActions[] = ['action' => 'users/suspend-user', 'label' => Craft::t('app', 'Suspend')];
 				}
 
 				if (Craft::$app->getUser()->checkPermission('deleteUsers'))

@@ -192,12 +192,12 @@ class UpdateController extends Controller
 
 		if ($manual)
 		{
-			$this->returnJson(['alive' => true, 'nextStatus' => Craft::t('app', 'Backing-up database…'), 'nextAction' => 'update/backupDatabase', 'data' => $data]);
+			$this->returnJson(['alive' => true, 'nextStatus' => Craft::t('app', 'Backing-up database…'), 'nextAction' => 'update/backup-database', 'data' => $data]);
 		}
 		else
 		{
 			$data['md5'] = $return['md5'];
-			$this->returnJson(['alive' => true, 'nextStatus' => Craft::t('app', 'Downloading update…'), 'nextAction' => 'update/processDownload', 'data' => $data]);
+			$this->returnJson(['alive' => true, 'nextStatus' => Craft::t('app', 'Downloading update…'), 'nextAction' => 'update/process-download', 'data' => $data]);
 		}
 
 	}
@@ -230,7 +230,7 @@ class UpdateController extends Controller
 
 		unset($return['success']);
 
-		$this->returnJson(['alive' => true, 'nextStatus' => Craft::t('app', 'Backing-up files…'), 'nextAction' => 'update/backupFiles', 'data' => $return]);
+		$this->returnJson(['alive' => true, 'nextStatus' => Craft::t('app', 'Backing-up files…'), 'nextAction' => 'update/backup-files', 'data' => $return]);
 	}
 
 	/**
@@ -259,7 +259,7 @@ class UpdateController extends Controller
 			$this->returnJson(['alive' => true, 'errorDetails' => $return['message'], 'finished' => true]);
 		}
 
-		$this->returnJson(['alive' => true, 'nextStatus' => Craft::t('app', 'Updating files…'), 'nextAction' => 'update/updateFiles', 'data' => $data]);
+		$this->returnJson(['alive' => true, 'nextStatus' => Craft::t('app', 'Updating files…'), 'nextAction' => 'update/update-files', 'data' => $data]);
 	}
 
 	/**
@@ -288,7 +288,7 @@ class UpdateController extends Controller
 			$this->returnJson(['alive' => true, 'errorDetails' => $return['message'], 'nextStatus' => Craft::t('app', 'An error was encountered. Rolling back…'), 'nextAction' => 'update/rollback']);
 		}
 
-		$this->returnJson(['alive' => true, 'nextStatus' => Craft::t('app', 'Backing-up database…'), 'nextAction' => 'update/backupDatabase', 'data' => $data]);
+		$this->returnJson(['alive' => true, 'nextStatus' => Craft::t('app', 'Backing-up database…'), 'nextAction' => 'update/backup-database', 'data' => $data]);
 	}
 
 	/**
@@ -329,7 +329,7 @@ class UpdateController extends Controller
 			}
 		}
 
-		$this->returnJson(['alive' => true, 'nextStatus' => Craft::t('app', 'Updating database…'), 'nextAction' => 'update/updateDatabase', 'data' => $data]);
+		$this->returnJson(['alive' => true, 'nextStatus' => Craft::t('app', 'Updating database…'), 'nextAction' => 'update/update-database', 'data' => $data]);
 	}
 
 	/**
@@ -360,7 +360,7 @@ class UpdateController extends Controller
 			$this->returnJson(['alive' => true, 'errorDetails' => $return['message'], 'nextStatus' => Craft::t('app', 'An error was encountered. Rolling back…'), 'nextAction' => 'update/rollback']);
 		}
 
-		$this->returnJson(['alive' => true, 'nextStatus' => Craft::t('app', 'Cleaning up…'), 'nextAction' => 'update/cleanUp', 'data' => $data]);
+		$this->returnJson(['alive' => true, 'nextStatus' => Craft::t('app', 'Cleaning up…'), 'nextAction' => 'update/clean-up', 'data' => $data]);
 	}
 
 	/**
