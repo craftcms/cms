@@ -1231,11 +1231,11 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
 				// Is this a supported status?
 				if (in_array($status, array_keys($class::getStatuses())))
 				{
-					if ($status == Element::ENABLED)
+					if ($status == Element::STATUS_ENABLED)
 					{
 						$statusConditions[] = 'elements.enabled = 1';
 					}
-					else if ($status == Element::DISABLED)
+					else if ($status == Element::STATUS_DISABLED)
 					{
 						$statusConditions[] = 'elements.enabled = 0';
 					}

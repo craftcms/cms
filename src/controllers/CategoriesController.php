@@ -333,7 +333,7 @@ class CategoriesController extends Controller
 			if ($category->id)
 			{
 				// If the category is enabled, use its main URL as its share URL.
-				if ($category->getStatus() == Element::ENABLED)
+				if ($category->getStatus() == Element::STATUS_ENABLED)
 				{
 					$variables['shareUrl'] = $category->getUrl();
 				}

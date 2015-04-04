@@ -95,7 +95,7 @@ class Entry extends Element
 			static::LIVE => Craft::t('app', 'Live'),
 			static::PENDING => Craft::t('app', 'Pending'),
 			static::EXPIRED => Craft::t('app', 'Expired'),
-			static::DISABLED => Craft::t('app', 'Disabled')
+			static::STATUS_DISABLED => Craft::t('app', 'Disabled')
 		];
 	}
 
@@ -259,7 +259,7 @@ class Entry extends Element
 			$setStatusAction = Craft::$app->elements->createAction(SetStatus::className());
 			$setStatusAction->on(SetStatus::EVENT_AFTER_SET_STATUS, function(SetStatusEvent $event)
 			{
-				if ($event->status == static::ENABLED)
+				if ($event->status == static::STATUS_ENABLED)
 				{
 					// Set a Post Date as well
 					Craft::$app->getDb()->createCommand()->update(
@@ -724,7 +724,7 @@ class Entry extends Element
 	{
 		$status = parent::getStatus();
 
-		if ($status == self::ENABLED && $this->postDate)
+		if ($status == self::STATUS_ENABLED && $this->postDate)
 		{
 			$currentTime = DateTimeHelper::currentTimeStamp();
 			$postDate    = $this->postDate->getTimestamp();

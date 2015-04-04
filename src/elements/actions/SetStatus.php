@@ -58,7 +58,7 @@ class SetStatus extends ElementAction
 	{
 		$rules = parent::rules();
 		$rules[] = [['status'], 'required'];
-		$rules[] = [['status'], 'in', 'range' => [Element::ENABLED, Element::DISABLED]];
+		$rules[] = [['status'], 'in', 'range' => [Element::STATUS_ENABLED, Element::STATUS_DISABLED]];
 		return $rules;
 	}
 
@@ -77,7 +77,7 @@ class SetStatus extends ElementAction
 	{
 		/** @var ElementQueryInterface|ElementQuery $query */
 		// Figure out which element IDs we need to update
-		if ($this->status == Element::ENABLED)
+		if ($this->status == Element::STATUS_ENABLED)
 		{
 			$sqlNewStatus = '1';
 		}
@@ -95,7 +95,7 @@ class SetStatus extends ElementAction
 			['in', 'id', $elementIds]
 		)->execute();
 
-		if ($this->status == Element::ENABLED)
+		if ($this->status == Element::STATUS_ENABLED)
 		{
 			// Enable their locale as well
 			Craft::$app->getDb()->createCommand()->update(
