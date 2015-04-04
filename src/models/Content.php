@@ -145,21 +145,6 @@ class Content extends Model
 	}
 
 	/**
-	 * @inheritDoc Model::getAttributeConfigs()
-	 *
-	 * @return array
-	 */
-	public function getAttributeConfigs()
-	{
-		if (!isset($this->_attributeConfigs))
-		{
-			$this->_attributeConfigs = parent::getAttributeConfigs();
-		}
-
-		return $this->_attributeConfigs;
-	}
-
-	/**
 	 * Sets the required fields.
 	 *
 	 * @param array $requiredFields

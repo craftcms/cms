@@ -68,12 +68,15 @@ class Field extends ActiveRecord
 	 */
 	public function rules()
 	{
+		// TODO: MySQL specific
+		$maxHandleLength = 64 - strlen(Craft::$app->content->fieldColumnPrefix);
+
 		return [
 			[['handle'], 'craft\\app\\validators\\Handle', 'reservedWords' => ['archived', 'children', 'dateCreated', 'dateUpdated', 'enabled', 'id', 'link', 'locale', 'parents', 'siblings', 'uid', 'uri', 'url', 'ref', 'status', 'title']],
 			[['handle'], 'unique', 'targetAttribute' => ['handle', 'context']],
 			[['name', 'handle', 'context', 'type'], 'required'],
 			[['name'], 'string', 'max' => 255],
-			[['handle'], 'string', 'max' => 58],
+			[['handle'], 'string', 'max' => $maxHandleLength],
 			[['type'], 'string', 'max' => 150],
 		];
 	}
@@ -129,23 +132,5 @@ class Field extends ActiveRecord
 	public function getGroup()
 	{
 		return $this->hasOne(FieldGroup::className(), ['id' => 'groupId']);
-	}
-
-
-	/**
-	 * Set the max field handle length based on the current field column prefix length.
-	 *
-	 * @return array
-	 */
-	public function getAttributeConfigs()
-	{
-		$attributeConfigs = parent::getAttributeConfigs();
-
-		// TODO: MySQL specific.
-		// Field handles must be <= 58 chars so that with "field_" prepended, they're <= 64 chars (MySQL's column
-		// name limit).
-		$attributeConfigs['handle']['maxLength'] = 64 - strlen(Craft::$app->content->fieldColumnPrefix);
-
-		return $attributeConfigs;
 	}
 }
