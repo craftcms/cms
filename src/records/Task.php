@@ -10,9 +10,6 @@ namespace craft\app\records;
 use Craft;
 use craft\app\db\ActiveRecord;
 use craft\app\db\TaskQuery;
-use craft\app\enums\AttributeType;
-use craft\app\enums\ColumnType;
-use craft\app\enums\TaskStatus;
 use creocoder\nestedsets\NestedSetsBehavior;
 
 /**

@@ -22,6 +22,13 @@ abstract class Task extends SavableComponent implements TaskInterface
 
 	use TaskTrait;
 
+	// Constants
+	// =========================================================================
+
+	const STATUS_PENDING = 'pending';
+	const STATUS_RUNNING = 'running';
+	const STATUS_ERROR   = 'error';
+
 	// Public Methods
 	// =========================================================================
 
