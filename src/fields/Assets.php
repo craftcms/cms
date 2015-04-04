@@ -11,7 +11,6 @@ use Craft;
 use craft\app\base\Element;
 use craft\app\base\ElementInterface;
 use craft\app\elements\Asset;
-use craft\app\enums\AssetConflictResolution;
 use craft\app\errors\Exception;
 use craft\app\helpers\AssetsHelper;
 use craft\app\helpers\IOHelper;
