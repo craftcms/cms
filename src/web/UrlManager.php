@@ -1,7 +1,7 @@
 <?php
 /**
  * @link http://buildwithcraft.com/
- * @copyright Copyright (c) 2013 Pixel & Tonic, Inc.
+ * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
  * @license http://buildwithcraft.com/license
  */
 
@@ -13,7 +13,7 @@ use craft\app\helpers\ArrayHelper;
 use yii\web\UrlRuleInterface;
 
 /**
- * @inheritDoc \yii\web\UrlManager
+ * @inheritdoc
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
@@ -65,10 +65,7 @@ class UrlManager extends \yii\web\UrlManager
 	}
 
 	/**
-	 * @inheritDoc \yii\web\UrlManager::parseRequest()
-	 *
-	 * @param Request $request
-	 * @return array|boolean
+	 * @inheritdoc
 	 */
 	public function parseRequest($request)
 	{
@@ -138,10 +135,7 @@ class UrlManager extends \yii\web\UrlManager
 	// =========================================================================
 
 	/**
-	 * @inheritDoc \yii\web\UrlManager::buildRules()
-	 *
-	 * @param array $rules
-	 * @return UrlRuleInterface[]
+	 * @inheritdoc
 	 */
 	protected function buildRules($rules)
 	{

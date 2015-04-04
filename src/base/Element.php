@@ -1,7 +1,7 @@
 <?php
 /**
  * @link http://buildwithcraft.com/
- * @copyright Copyright (c) 2013 Pixel & Tonic, Inc.
+ * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
  * @license http://buildwithcraft.com/license
  */
 
@@ -43,9 +43,9 @@ abstract class Element extends Component implements ElementInterface
 	// Constants
 	// =========================================================================
 
-	const ENABLED  = 'enabled';
-	const DISABLED = 'disabled';
-	const ARCHIVED = 'archived';
+	const STATUS_ENABLED  = 'enabled';
+	const STATUS_DISABLED = 'disabled';
+	const STATUS_ARCHIVED = 'archived';
 
 	/**
 	 * @event Event The event that is triggered before the element is saved
@@ -100,8 +100,8 @@ abstract class Element extends Component implements ElementInterface
 	public static function getStatuses()
 	{
 		return [
-			static::ENABLED => Craft::t('app', 'Enabled'),
-			static::DISABLED => Craft::t('app', 'Disabled')
+			static::STATUS_ENABLED => Craft::t('app', 'Enabled'),
+			static::STATUS_DISABLED => Craft::t('app', 'Disabled')
 		];
 	}
 
@@ -717,15 +717,15 @@ abstract class Element extends Component implements ElementInterface
 	{
 		if ($this->archived)
 		{
-			return static::ARCHIVED;
+			return static::STATUS_ARCHIVED;
 		}
 		else if (!$this->enabled || !$this->localeEnabled)
 		{
-			return static::DISABLED;
+			return static::STATUS_DISABLED;
 		}
 		else
 		{
-			return static::ENABLED;
+			return static::STATUS_ENABLED;
 		}
 	}
 

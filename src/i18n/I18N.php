@@ -1,7 +1,7 @@
 <?php
 /**
  * @link http://buildwithcraft.com/
- * @copyright Copyright (c) 2013 Pixel & Tonic, Inc.
+ * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
  * @license http://buildwithcraft.com/license
  */
 
@@ -15,7 +15,7 @@ use craft\app\tasks\ResaveAllElements;
 use ResourceBundle;
 
 /**
- * @inheritDoc \yii\i18n\I18N
+ * @inheritdoc
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0

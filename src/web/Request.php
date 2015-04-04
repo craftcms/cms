@@ -1,7 +1,7 @@
 <?php
 /**
  * @link http://buildwithcraft.com/
- * @copyright Copyright (c) 2013 Pixel & Tonic, Inc.
+ * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
  * @license http://buildwithcraft.com/license
  */
 
@@ -15,7 +15,7 @@ use craft\app\helpers\StringHelper;
 use yii\base\InvalidConfigException;
 
 /**
- * @inheritDoc \yii\web\Request
+ * @inheritdoc
  *
  * @property string $fullPath The full requested path, including the CP trigger and pagination info.
  * @property string $path The requested path, sans CP trigger and pagination info.
@@ -31,6 +31,7 @@ use yii\base\InvalidConfigException;
  * @property boolean $isMobileBrowser Whether the request is coming from a mobile browser.
  * @property string $hostName The host name from the current request URL.
  * @property string $queryStringWithoutPath The request’s query string, without the path parameter.
+ *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */
@@ -118,9 +119,7 @@ class Request extends \yii\web\Request
 	// =========================================================================
 
 	/**
-	 * @inheritDoc \yii\base\object::__construct()
-	 *
-	 * @param array $config
+	 * @inheritdoc
 	 */
 	public function __construct($config = [])
 	{
@@ -140,7 +139,7 @@ class Request extends \yii\web\Request
 	}
 
 	/**
-	 * @inheritDoc \yii\base\Object::init()
+	 * @inheritdoc
 	 */
 	public function init()
 	{
@@ -232,10 +231,7 @@ class Request extends \yii\web\Request
 	}
 
 	/**
-	 * @inheritDoc \yii\web\Request::resolve()
-	 *
-	 * @return array
-	 * @throws NotFoundHttpException
+	 * @inheritdoc
 	 */
 	public function resolve()
 	{
@@ -465,13 +461,7 @@ class Request extends \yii\web\Request
 	}
 
 	/**
-	 * @inheritDoc \yii\web\Request::getBodyParam()
-	 *
-	 * @return array the request parameters given in the request body.
-	 * @throws InvalidConfigException
-	 * @see getMethod()
-	 * @see getBodyParam()
-	 * @see setBodyParams()
+	 * @inheritdoc
 	 */
 	public function getBodyParams()
 	{
@@ -530,11 +520,7 @@ class Request extends \yii\web\Request
 	}
 
 	/**
-	 * @inheritDoc \yii\web\Request::setBodyParams()
-	 *
-	 * @param array $values the request body parameters (name-value pairs)
-	 * @see getBodyParam()
-	 * @see getBodyParams()
+	 * @inheritdoc
 	 */
 	public function setBodyParams($values)
 	{
@@ -542,10 +528,7 @@ class Request extends \yii\web\Request
 	}
 
 	/**
-	 * @inheritDoc \yii\web\Request::getQueryParams()
-	 *
-	 * @return array
-	 * @see setQueryParams()
+	 * @inheritdoc
 	 */
 	public function getQueryParams()
 	{
@@ -603,11 +586,7 @@ class Request extends \yii\web\Request
 	}
 
 	/**
-	 * @inheritDoc \yii\web\Request::setQueryParams()
-	 *
-	 * @param array $values the request query parameters (name-value pairs)
-	 * @see getQueryParam()
-	 * @see getQueryParams()
+	 * @inheritdoc
 	 */
 	public function setQueryParams($values)
 	{

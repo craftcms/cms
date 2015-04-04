@@ -1,7 +1,7 @@
 <?php
 /**
  * @link http://buildwithcraft.com/
- * @copyright Copyright (c) 2013 Pixel & Tonic, Inc.
+ * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
  * @license http://buildwithcraft.com/license
  */
 
@@ -11,8 +11,6 @@ use yii\db\ActiveQueryInterface;
 use Craft;
 use craft\app\db\ActiveRecord;
 use craft\app\db\StructuredElementQuery;
-use craft\app\enums\AttributeType;
-use craft\app\enums\ColumnType;
 use creocoder\nestedsets\NestedSetsBehavior;
 
 /**
@@ -61,7 +59,7 @@ class StructureElement extends ActiveRecord
 	}
 
 	/**
-	 * @inheritDoc
+	 * @inheritdoc
 	 */
 	public static function find()
 	{
@@ -90,7 +88,7 @@ class StructureElement extends ActiveRecord
 
 
 	/**
-	 * @inheritDoc
+	 * @inheritdoc
 	 */
 	public function behaviors()
 	{
@@ -106,7 +104,7 @@ class StructureElement extends ActiveRecord
 	}
 
 	/**
-	 * @inheritDoc
+	 * @inheritdoc
 	 */
 	public function transactions()
 	{

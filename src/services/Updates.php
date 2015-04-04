@@ -1,7 +1,7 @@
 <?php
 /**
  * @link http://buildwithcraft.com/
- * @copyright Copyright (c) 2013 Pixel & Tonic, Inc.
+ * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
  * @license http://buildwithcraft.com/license
  */
 
@@ -58,6 +58,11 @@ class Updates extends Component
 	 * @var UpdateModel
 	 */
 	private $_updateModel;
+
+	/**
+	 * @var boolean
+	 */
+	private $_isCraftDbMigrationNeeded;
 
 	// Public Methods
 	// =========================================================================
@@ -624,8 +629,13 @@ class Updates extends Component
 	 */
 	public function isCraftDbMigrationNeeded()
 	{
-		$storedSchemaVersion = Craft::$app->getInfo('schemaVersion');
-		return version_compare(Craft::$app->schemaVersion, $storedSchemaVersion, '>');
+		if ($this->_isCraftDbMigrationNeeded === null)
+		{
+			$storedSchemaVersion = Craft::$app->getInfo('schemaVersion');
+			$this->_isCraftDbMigrationNeeded = version_compare(Craft::$app->schemaVersion, $storedSchemaVersion, '>');
+		}
+
+		return $this->_isCraftDbMigrationNeeded;
 	}
 
 	/**

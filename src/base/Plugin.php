@@ -1,7 +1,7 @@
 <?php
 /**
  * @link http://buildwithcraft.com/
- * @copyright Copyright (c) 2013 Pixel & Tonic, Inc.
+ * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
  * @license http://buildwithcraft.com/license
  */
 
@@ -10,6 +10,7 @@ namespace craft\app\base;
 use Craft;
 use craft\app\db\MigrationManager;
 use craft\app\events\Event;
+use craft\app\helpers\IOHelper;
 use yii\base\Module;
 
 /**
@@ -107,14 +108,23 @@ abstract class Plugin extends Module implements PluginInterface
 			return false;
 		}
 
+		$migrator = $this->getMigrator();
+
+		// Run the install migration, if there is one
 		$migration = $this->createInstallMigration();
 
 		if ($migration !== null)
 		{
-			if ($this->getMigrator()->migrateUp($migration) === false)
+			if ($migrator->migrateUp($migration) === false)
 			{
 				return false;
 			}
+		}
+
+		// Mark all existing migrations as applied
+		foreach ($migrator->getNewMigrations() as $name)
+		{
+			$migrator->addMigrationHistory($name);
 		}
 
 		$this->afterInstall();
@@ -212,7 +222,21 @@ abstract class Plugin extends Module implements PluginInterface
 	 */
 	protected function createInstallMigration()
 	{
-		return null;
+		// See if there's an Install migration in the plugin’s migrations folder
+		$migrator = $this->getMigrator();
+		$path = $migrator->migrationPath.'/Install.php';
+
+		if (IOHelper::fileExists($path))
+		{
+			require_once($path);
+
+			$class = $migrator->migrationNamespace.'\\Install';
+			return new $class;
+		}
+		else
+		{
+			return null;
+		}
 	}
 
 	/**

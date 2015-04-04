@@ -53,7 +53,7 @@ Craft.BaseElementSelectorModal = Garnish.Modal.extend(
 				sources:     this.settings.sources
 			};
 
-			Craft.postActionRequest('elements/getModalBody', data, $.proxy(function(response, textStatus)
+			Craft.postActionRequest('elements/get-modal-body', data, $.proxy(function(response, textStatus)
 			{
 				if (textStatus == 'success')
 				{

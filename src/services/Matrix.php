@@ -1,7 +1,7 @@
 <?php
 /**
  * @link http://buildwithcraft.com/
- * @copyright Copyright (c) 2013 Pixel & Tonic, Inc.
+ * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
  * @license http://buildwithcraft.com/license
  */
 
@@ -1066,8 +1066,8 @@ class Matrix extends Component
 	{
 		$db = Craft::$app->getDb();
 		$db->createCommand()->createTable($name, [
-			'elementId' => ['column' => ColumnType::Int, 'null' => false],
-			'locale'    => ['column' => ColumnType::Locale, 'null' => false]
+			'elementId' => 'int NOT NULL',
+			'locale'    => 'char(12) COLLATE utf8_unicode_ci NOT NULL'
 		])->execute();
 
 		$db->createCommand()->createIndex($db->getIndexName($name, 'elementId,locale'), $name, 'elementId,locale', true)->execute();

@@ -1,14 +1,13 @@
 <?php
 /**
  * @link http://buildwithcraft.com/
- * @copyright Copyright (c) 2013 Pixel & Tonic, Inc.
+ * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
  * @license http://buildwithcraft.com/license
  */
 
 namespace craft\app\models;
 
 use Craft;
-use craft\app\enums\AttributeType;
 use craft\app\helpers\ElementHelper;
 use craft\app\elements\Entry;
 use craft\app\elements\User;
@@ -23,6 +22,14 @@ Craft::$app->requireEdition(Craft::Client);
  */
 class BaseEntryRevisionModel extends Entry
 {
+	// Public Methods
+	// =========================================================================
+
+	/**
+	 * @var integer The revision creator’s user ID
+	 */
+	public $creatorId;
+
 	// Public Methods
 	// =========================================================================
 
@@ -75,22 +82,5 @@ class BaseEntryRevisionModel extends Entry
 		}
 
 		return parent::getUrl();
-	}
-
-	// Protected Methods
-	// =========================================================================
-
-	/**
-	 * @inheritDoc Model::defineAttributes()
-	 *
-	 * @return array
-	 */
-	protected function defineAttributes()
-	{
-		return array_merge(parent::defineAttributes(), [
-			'creatorId'   => AttributeType::Number,
-			'dateUpdated' => AttributeType::DateTime,
-			'dateCreated' => AttributeType::DateTime,
-		]);
 	}
 }

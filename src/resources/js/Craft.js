@@ -1,4 +1,4 @@
-/*! Craft 3.0.0 - 2015-04-01 */
+/*! Craft 3.0.0 - 2015-04-04 */
 (function($){
 
 if (typeof window.Craft == 'undefined')
@@ -4099,7 +4099,7 @@ Craft.BaseElementSelectorModal = Garnish.Modal.extend(
 				sources:     this.settings.sources
 			};
 
-			Craft.postActionRequest('elements/getModalBody', data, $.proxy(function(response, textStatus)
+			Craft.postActionRequest('elements/get-modal-body', data, $.proxy(function(response, textStatus)
 			{
 				if (textStatus == 'success')
 				{
@@ -5198,7 +5198,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 						responseArray = [];
 					}
 
-					Craft.postActionRequest('assets/moveFolder', parameterArray[parameterIndex], $.proxy(function(data, textStatus)
+					Craft.postActionRequest('assets/move-folder', parameterArray[parameterIndex], $.proxy(function(data, textStatus)
 					{
 						parameterIndex++;
 						this.progressBar.incrementProcessedItemCount(1);
@@ -5299,7 +5299,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 			// Delete the old folders
 			for (var i = 0; i < folderDeleteList.length; i++)
 			{
-				Craft.postActionRequest('assets/deleteFolder', {folderId: folderDeleteList[i]});
+				Craft.postActionRequest('assets/delete-folder', {folderId: folderDeleteList[i]});
 			}
 
 			this.setIndexAvailable();
@@ -5352,7 +5352,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 			this.responseArray = [];
 		}
 
-		Craft.postActionRequest('assets/moveFile', parameterArray[parameterIndex], $.proxy(function(data, textStatus)
+		Craft.postActionRequest('assets/move-file', parameterArray[parameterIndex], $.proxy(function(data, textStatus)
 		{
 			this.progressBar.incrementProcessedItemCount(1);
 			this.progressBar.updateProgressBar();
@@ -5424,7 +5424,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 		this.progressBar = new Craft.ProgressBar(this.$main, true);
 
 		var options = {
-			url: Craft.getActionUrl('assets/saveAsset'),
+			url: Craft.getActionUrl('assets/save-asset'),
 			fileInput: this.$uploadInput,
 			dropZone: this.$main
 		};
@@ -5588,7 +5588,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 				userResponse: parameterArray[parameterIndex].choice
 			};
 
-			Craft.postActionRequest('assets/saveAsset', postData, $.proxy(function(data, textStatus)
+			Craft.postActionRequest('assets/save-asset', postData, $.proxy(function(data, textStatus)
 			{
 				if (textStatus == 'success' && data.fileId)
 				{
@@ -5847,7 +5847,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 
 			this.setIndexBusy();
 
-			Craft.postActionRequest('assets/createFolder', params, $.proxy(function(data, textStatus)
+			Craft.postActionRequest('assets/create-folder', params, $.proxy(function(data, textStatus)
 			{
 				this.setIndexAvailable();
 
@@ -5889,7 +5889,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 
 			this.setIndexBusy();
 
-			Craft.postActionRequest('assets/deleteFolder', params, $.proxy(function(data, textStatus)
+			Craft.postActionRequest('assets/delete-folder', params, $.proxy(function(data, textStatus)
 			{
 				this.setIndexAvailable();
 
@@ -5931,7 +5931,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 
 			this.setIndexBusy();
 
-			Craft.postActionRequest('assets/renameFolder', params, $.proxy(function(data, textStatus)
+			Craft.postActionRequest('assets/rename-folder', params, $.proxy(function(data, textStatus)
 			{
 				this.setIndexAvailable();
 
@@ -6071,7 +6071,7 @@ Craft.AssetSelectInput = Craft.BaseElementSelectInput.extend(
 		this.progressBar = new Craft.ProgressBar($('<div class="progress-shade"></div>').appendTo(this.$container));
 
 		var options = {
-			url: Craft.getActionUrl('assets/expressUpload'),
+			url: Craft.getActionUrl('assets/express-upload'),
 			dropZone: this.$container,
 			formData: {
 				fieldId: this.settings.fieldId,
@@ -6231,7 +6231,7 @@ Craft.AssetSelectorModal = Craft.BaseElementSelectorModal.extend(
 
 	fetchTransformInfo: function(callback)
 	{
-		Craft.postActionRequest('assets/getTransformInfo', $.proxy(function(response, textStatus)
+		Craft.postActionRequest('assets/get-transform-info', $.proxy(function(response, textStatus)
 		{
 			if (textStatus == 'success' && response instanceof Array)
 			{
@@ -6386,7 +6386,7 @@ Craft.AssetSelectorModal = Craft.BaseElementSelectorModal.extend(
 			returnUrl: true
 		};
 
-		Craft.postActionRequest('assets/generateTransform', data, $.proxy(function(response, textStatus)
+		Craft.postActionRequest('assets/generate-transform', data, $.proxy(function(response, textStatus)
 		{
 			Craft.AssetSelectorModal.transformUrls[transform][elementId] = false;
 
@@ -6501,7 +6501,7 @@ Craft.AuthManager = Garnish.Base.extend(
 	checkRemainingSessionTime: function(extendSession)
 	{
 		$.ajax({
-			url: Craft.getActionUrl('users/getRemainingSessionTime', (extendSession ? null : 'dontExtendSession=1')),
+			url: Craft.getActionUrl('users/get-remaining-session-time', (extendSession ? null : 'dontExtendSession=1')),
 			type: 'GET',
 			complete: $.proxy(function(jqXHR, textStatus)
 			{
@@ -7006,7 +7006,7 @@ Craft.CategorySelectInput = Craft.BaseElementSelectInput.extend(
 			limit:       this.settings.limit,
 		};
 
-		Craft.postActionRequest('elements/getCategoriesInputHtml', data, $.proxy(function(response, textStatus)
+		Craft.postActionRequest('elements/get-categories-input-html', data, $.proxy(function(response, textStatus)
 		{
 			this.modal.enable();
 			this.modal.enableCancelBtn();
@@ -7170,7 +7170,7 @@ Craft.DeleteUserModal = Garnish.Modal.extend(
 		var $form = $(
 				'<form class="modal fitted deleteusermodal" method="post" accept-charset="UTF-8">' +
 					Craft.getCsrfInput() +
-					'<input type="hidden" name="action" value="users/deleteUser"/>' +
+					'<input type="hidden" name="action" value="users/delete-user"/>' +
 					(!Garnish.isArray(this.userId) ? '<input type="hidden" name="userId" value="'+this.userId+'"/>' : '') +
 					'<input type="hidden" name="redirect" value="'+(Craft.edition == Craft.Pro ? 'users' : 'dashboard')+'"/>' +
 				'</form>'
@@ -7785,7 +7785,7 @@ Craft.ElementEditor = Garnish.Base.extend(
 			includeLocales: true
 		};
 
-		Craft.postActionRequest('elements/getEditorHtml', data, $.proxy(this, 'showHud'));
+		Craft.postActionRequest('elements/get-editor-html', data, $.proxy(this, 'showHud'));
 	},
 
 	showHud: function(response, textStatus)
@@ -7862,7 +7862,7 @@ Craft.ElementEditor = Garnish.Base.extend(
 			locale:    newLocale
 		};
 
-		Craft.postActionRequest('elements/getEditorHtml', data, $.proxy(function(response, textStatus)
+		Craft.postActionRequest('elements/get-editor-html', data, $.proxy(function(response, textStatus)
 		{
 			this.$localeSpinner.addClass('hidden');
 
@@ -7899,7 +7899,7 @@ Craft.ElementEditor = Garnish.Base.extend(
 
 		var data = this.$form.serialize();
 
-		Craft.postActionRequest('elements/saveElement', data, $.proxy(function(response, textStatus)
+		Craft.postActionRequest('elements/save-element', data, $.proxy(function(response, textStatus)
 		{
 			this.$spinner.addClass('hidden');
 
@@ -12109,7 +12109,7 @@ Craft.StructureDrag = Garnish.Drag.extend(
 					parentId:    this.$draggee.parent('ul').parent('li').children('.row').children('.element').data('id')
 				};
 
-				Craft.postActionRequest('structures/moveElement', data, function(response, textStatus)
+				Craft.postActionRequest('structures/move-element', data, function(response, textStatus)
 				{
 					if (textStatus == 'success')
 					{
@@ -12268,7 +12268,7 @@ Craft.StructureTableSorter = Garnish.DragSort.extend({
 
 			var data = this._getAjaxBaseData(this.$targetItem);
 
-			Craft.postActionRequest('structures/getElementLevelDelta', data, $.proxy(function(response, textStatus)
+			Craft.postActionRequest('structures/get-element-level-delta', data, $.proxy(function(response, textStatus)
 			{
 				if (textStatus == 'success')
 				{
@@ -12483,7 +12483,7 @@ Craft.StructureTableSorter = Garnish.DragSort.extend({
 				$prevRow = $prevRow.prev();
 			}
 
-			Craft.postActionRequest('structures/moveElement', data, $.proxy(function(response, textStatus)
+			Craft.postActionRequest('structures/move-element', data, $.proxy(function(response, textStatus)
 			{
 				if (textStatus == 'success')
 				{
@@ -12952,7 +12952,7 @@ Craft.TagSelectInput = Craft.BaseElementSelectInput.extend(
 				excludeIds: excludeIds
 			};
 
-			Craft.postActionRequest('tags/searchForTags', data, $.proxy(function(response, textStatus)
+			Craft.postActionRequest('tags/search-for-tags', data, $.proxy(function(response, textStatus)
 			{
 				this.$spinner.addClass('hidden');
 
@@ -13033,7 +13033,7 @@ Craft.TagSelectInput = Craft.BaseElementSelectInput.extend(
 				title: title
 			};
 
-			Craft.postActionRequest('tags/createTag', data, $.proxy(function(response, textStatus)
+			Craft.postActionRequest('tags/create-tag', data, $.proxy(function(response, textStatus)
 			{
 				if (textStatus == 'success' && response.success)
 				{
@@ -13106,7 +13106,7 @@ Craft.UpgradeModal = Garnish.Modal.extend(
 			resizable: true
 		}, settings));
 
-		Craft.postActionRequest('app/getUpgradeModal', $.proxy(function(response, textStatus)
+		Craft.postActionRequest('app/get-upgrade-modal', $.proxy(function(response, textStatus)
 		{
 			this.$container.removeClass('loading');
 
@@ -13223,7 +13223,7 @@ Craft.UpgradeModal = Garnish.Modal.extend(
 			edition: $(ev.currentTarget).data('edition')
 		};
 
-		Craft.postActionRequest('app/testUpgrade', data, $.proxy(function(response, textStatus)
+		Craft.postActionRequest('app/test-upgrade', data, $.proxy(function(response, textStatus)
 		{
 			if (textStatus == 'success')
 			{
@@ -13322,7 +13322,7 @@ Craft.UpgradeModal = Garnish.Modal.extend(
 						expectedPrice: (this.editions[this.edition].salePrice ? this.editions[this.edition].salePrice : this.editions[this.edition].price)
 					};
 
-					Craft.postActionRequest('app/purchaseUpgrade', data, $.proxy(this, 'onPurchaseUpgrade'));
+					Craft.postActionRequest('app/purchase-upgrade', data, $.proxy(this, 'onPurchaseUpgrade'));
 				}
 				else
 				{
@@ -13730,7 +13730,7 @@ Craft.WrongEditionModal = Garnish.Modal.extend(
 		this.removeAllListeners(this.$switchBtn);
 		this.removeAllListeners(this.$upgradeBtn);
 
-		Craft.postActionRequest('app/switchToLicensedEdition', $.proxy(function(response, textStatus)
+		Craft.postActionRequest('app/switch-to-licensed-edition', $.proxy(function(response, textStatus)
 		{
 			location.reload();
 		}, this));

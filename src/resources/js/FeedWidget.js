@@ -12,7 +12,7 @@ Craft.FeedWidget = Garnish.Base.extend(
 			limit: limit
 		};
 
-		Craft.postActionRequest('dashboard/getFeedItems', data, $.proxy(function(response, textStatus)
+		Craft.postActionRequest('dashboard/get-feed-items', data, $.proxy(function(response, textStatus)
 		{
 			this.$widget.removeClass('loading');
 

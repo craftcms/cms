@@ -48,7 +48,7 @@ var Routes = Garnish.Base.extend(
 			data['routeIds['+i+']'] = $($routes[i]).attr('data-id');
 		}
 
-		Craft.postActionRequest('routes/updateRouteOrder', data, $.proxy(function(response, textStatus)
+		Craft.postActionRequest('routes/update-route-order', data, $.proxy(function(response, textStatus)
 		{
 			if (textStatus == 'success')
 			{
@@ -420,7 +420,7 @@ var RouteSettingsModal = Garnish.Modal.extend(
 		this.$saveBtn.addClass('active');
 		this.$spinner.show();
 
-		Craft.postActionRequest('routes/saveRoute', data, $.proxy(function(response, textStatus)
+		Craft.postActionRequest('routes/save-route', data, $.proxy(function(response, textStatus)
 		{
 			this.$saveBtn.removeClass('active');
 			this.$spinner.hide();
@@ -493,7 +493,7 @@ var RouteSettingsModal = Garnish.Modal.extend(
 	{
 		if (confirm(Craft.t(('Are you sure you want to delete this route?'))))
 		{
-			Craft.postActionRequest('routes/deleteRoute', { routeId: this.route.id }, function(response, textStatus)
+			Craft.postActionRequest('routes/delete-route', { routeId: this.route.id }, function(response, textStatus)
 			{
 				if (textStatus == 'success')
 				{

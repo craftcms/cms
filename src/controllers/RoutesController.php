@@ -1,7 +1,7 @@
 <?php
 /**
  * @link http://buildwithcraft.com/
- * @copyright Copyright (c) 2013 Pixel & Tonic, Inc.
+ * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
  * @license http://buildwithcraft.com/license
  */
 
@@ -26,10 +26,8 @@ class RoutesController extends Controller
 	// =========================================================================
 
 	/**
-	 * @inheritDoc Controller::init()
-	 *
-	 * @throws HttpException
-	 * @return null
+	 * @inheritdoc
+	 * @throws HttpException if the user isn’t an admin
 	 */
 	public function init()
 	{

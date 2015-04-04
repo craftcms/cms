@@ -50,7 +50,7 @@ Craft.AuthManager = Garnish.Base.extend(
 	checkRemainingSessionTime: function(extendSession)
 	{
 		$.ajax({
-			url: Craft.getActionUrl('users/getRemainingSessionTime', (extendSession ? null : 'dontExtendSession=1')),
+			url: Craft.getActionUrl('users/get-remaining-session-time', (extendSession ? null : 'dontExtendSession=1')),
 			type: 'GET',
 			complete: $.proxy(function(jqXHR, textStatus)
 			{

@@ -22,7 +22,7 @@ Craft.AssetSelectInput = Craft.BaseElementSelectInput.extend(
 		this.progressBar = new Craft.ProgressBar($('<div class="progress-shade"></div>').appendTo(this.$container));
 
 		var options = {
-			url: Craft.getActionUrl('assets/expressUpload'),
+			url: Craft.getActionUrl('assets/express-upload'),
 			dropZone: this.$container,
 			formData: {
 				fieldId: this.settings.fieldId,

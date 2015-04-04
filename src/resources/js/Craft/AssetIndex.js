@@ -556,7 +556,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 						responseArray = [];
 					}
 
-					Craft.postActionRequest('assets/moveFolder', parameterArray[parameterIndex], $.proxy(function(data, textStatus)
+					Craft.postActionRequest('assets/move-folder', parameterArray[parameterIndex], $.proxy(function(data, textStatus)
 					{
 						parameterIndex++;
 						this.progressBar.incrementProcessedItemCount(1);
@@ -657,7 +657,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 			// Delete the old folders
 			for (var i = 0; i < folderDeleteList.length; i++)
 			{
-				Craft.postActionRequest('assets/deleteFolder', {folderId: folderDeleteList[i]});
+				Craft.postActionRequest('assets/delete-folder', {folderId: folderDeleteList[i]});
 			}
 
 			this.setIndexAvailable();
@@ -710,7 +710,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 			this.responseArray = [];
 		}
 
-		Craft.postActionRequest('assets/moveFile', parameterArray[parameterIndex], $.proxy(function(data, textStatus)
+		Craft.postActionRequest('assets/move-file', parameterArray[parameterIndex], $.proxy(function(data, textStatus)
 		{
 			this.progressBar.incrementProcessedItemCount(1);
 			this.progressBar.updateProgressBar();
@@ -782,7 +782,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 		this.progressBar = new Craft.ProgressBar(this.$main, true);
 
 		var options = {
-			url: Craft.getActionUrl('assets/saveAsset'),
+			url: Craft.getActionUrl('assets/save-asset'),
 			fileInput: this.$uploadInput,
 			dropZone: this.$main
 		};
@@ -946,7 +946,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 				userResponse: parameterArray[parameterIndex].choice
 			};
 
-			Craft.postActionRequest('assets/saveAsset', postData, $.proxy(function(data, textStatus)
+			Craft.postActionRequest('assets/save-asset', postData, $.proxy(function(data, textStatus)
 			{
 				if (textStatus == 'success' && data.fileId)
 				{
@@ -1205,7 +1205,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 
 			this.setIndexBusy();
 
-			Craft.postActionRequest('assets/createFolder', params, $.proxy(function(data, textStatus)
+			Craft.postActionRequest('assets/create-folder', params, $.proxy(function(data, textStatus)
 			{
 				this.setIndexAvailable();
 
@@ -1247,7 +1247,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 
 			this.setIndexBusy();
 
-			Craft.postActionRequest('assets/deleteFolder', params, $.proxy(function(data, textStatus)
+			Craft.postActionRequest('assets/delete-folder', params, $.proxy(function(data, textStatus)
 			{
 				this.setIndexAvailable();
 
@@ -1289,7 +1289,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 
 			this.setIndexBusy();
 
-			Craft.postActionRequest('assets/renameFolder', params, $.proxy(function(data, textStatus)
+			Craft.postActionRequest('assets/rename-folder', params, $.proxy(function(data, textStatus)
 			{
 				this.setIndexAvailable();
 

@@ -1,7 +1,7 @@
 <?php
 /**
  * @link http://buildwithcraft.com/
- * @copyright Copyright (c) 2013 Pixel & Tonic, Inc.
+ * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
  * @license http://buildwithcraft.com/license
  */
 
@@ -12,7 +12,6 @@ use craft\app\helpers\DateTimeHelper;
 use craft\app\helpers\IOHelper;
 use yii\base\Component;
 use yii\base\InvalidConfigException;
-use yii\db\Migration;
 use yii\db\MigrationInterface;
 use yii\di\Instance;
 
@@ -82,7 +81,7 @@ class MigrationManager extends Component
 	 * Creates a new migration instance.
 	 *
 	 * @param string $name The migration name
-	 * @return MigrationInterface|Migration The migration instance
+	 * @return MigrationInterface|\yii\db\Migration The migration instance
 	 */
 	public function createMigration($name)
 	{
@@ -124,16 +123,16 @@ class MigrationManager extends Component
 
 		if ($n === $total)
 		{
-			$logMessage = "Total $n new " . ($n === 1 ? 'migration' : 'migrations') . " to be applied:\n";
+			$logMessage = "Total $n new " . ($n === 1 ? 'migration' : 'migrations') . " to be applied:";
 		}
 		else
 		{
-			$logMessage = "Total $n out of $total new " . ($total === 1 ? 'migration' : 'migrations') . " to be applied:\n";
+			$logMessage = "Total $n out of $total new " . ($total === 1 ? 'migration' : 'migrations') . " to be applied:";
 		}
 
 		foreach ($migrationNames as $migrationName)
 		{
-			$logMessage .= "\t$migrationName\n";
+			$logMessage .= "\n\t$migrationName";
 		}
 
 		Craft::info($logMessage);
@@ -182,11 +181,11 @@ class MigrationManager extends Component
 		}
 
 		$n = count($migrationNames);
-		$logMessage = "Total $n ".($n === 1 ? 'migration' : 'migrations')." to be reverted:\n";
+		$logMessage = "Total $n ".($n === 1 ? 'migration' : 'migrations')." to be reverted:";
 
 		foreach ($migrationNames as $migrationName)
 		{
-			$logMessage .= "\t$migrationName\n";
+			$logMessage .= "\n\t$migrationName";
 		}
 
 		Craft::info($logMessage);
@@ -207,7 +206,7 @@ class MigrationManager extends Component
 	/**
 	 * Upgrades with the specified migration.
 	 *
-	 * @param string|MigrationInterface|Migration $migration The name of the migration to apply, or the migration itself
+	 * @param string|MigrationInterface|\yii\db\Migration $migration The name of the migration to apply, or the migration itself
 	 * @return boolean Whether the migration was applied successfully
 	 */
 	public function migrateUp($migration)
@@ -219,7 +218,7 @@ class MigrationManager extends Component
 			return true;
 		}
 
-		/** @var MigrationInterface|Migration $migration */
+		/** @var MigrationInterface|\yii\db\Migration $migration */
 		$migration = Instance::ensure($migration, 'yii\db\MigrationInterface');
 
 		Craft::info("Applying $migrationName");
@@ -237,11 +236,12 @@ class MigrationManager extends Component
 
 		if ($success)
 		{
-			Craft::info("Applied $migrationName (time: ".sprintf("%.3f", $time)."s)\n\n");
+			Craft::info("Applied $migrationName (time: ".sprintf("%.3f", $time)."s)");
+			$this->addMigrationHistory($migrationName);
 		}
 		else
 		{
-			Craft::error("Failed to apply $migrationName (time: ".sprintf("%.3f", $time)."s)\n\n");
+			Craft::error("Failed to apply $migrationName (time: ".sprintf("%.3f", $time)."s)");
 		}
 
 		if (!$isConsoleRequest)
@@ -264,7 +264,7 @@ class MigrationManager extends Component
 	/**
 	 * Downgrades with the specified migration.
 	 *
-	 * @param string|MigrationInterface|Migration $migration The name of the migration to revert, or the migration itself
+	 * @param string|MigrationInterface|\yii\db\Migration $migration The name of the migration to revert, or the migration itself
 	 * @return boolean Whether the migration was reverted successfully
 	 */
 	public function migrateDown($migration)
@@ -276,7 +276,7 @@ class MigrationManager extends Component
 			return true;
 		}
 
-		/** @var MigrationInterface|Migration $migration */
+		/** @var MigrationInterface|\yii\db\Migration $migration */
 		$migration = Instance::ensure($migration, 'yii\db\MigrationInterface');
 
 		Craft::info("Reverting $migrationName");
@@ -294,11 +294,12 @@ class MigrationManager extends Component
 
 		if ($success)
 		{
-			Craft::info("Reverted $migrationName (time: ".sprintf("%.3f", $time)."s)\n\n");
+			Craft::info("Reverted $migrationName (time: ".sprintf("%.3f", $time)."s)");
+			$this->removeMigrationHistory($migrationName);
 		}
 		else
 		{
-			Craft::error("Failed to revert $migrationName (time: ".sprintf("%.3f", $time)."s)\n\n");
+			Craft::error("Failed to revert $migrationName (time: ".sprintf("%.3f", $time)."s)");
 		}
 
 		if (!$isConsoleRequest)
@@ -414,7 +415,7 @@ class MigrationManager extends Component
 	/**
 	 * Normalizes the $migration argument passed to [[migrateUp()]] and [[migrateDown()]].
 	 *
-	 * @param string|MigrationInterface|Migration $migration The name of the migration to apply, or the migration itself
+	 * @param string|MigrationInterface|\yii\db\Migration $migration The name of the migration to apply, or the migration itself
 	 * @return array
 	 */
 	private function _normalizeMigration($migration)
@@ -444,16 +445,26 @@ class MigrationManager extends Component
 		if (version_compare(Craft::$app->getInfo('version'), '3.0', '<'))
 		{
 			$nameColumn = 'version as name';
+
+			if ($this->fixedColumnValues === ['type' => 'app'])
+			{
+				$condition = ['pluginId' => null];
+			}
+			else
+			{
+				$condition = ['pluginId' => $this->fixedColumnValues['pluginId']];
+			}
 		}
 		else
 		{
 			$nameColumn = 'name';
+			$condition = $this->fixedColumnValues;
 		}
 
 		return (new Query())
 			->select("$nameColumn, applyTime")
 			->from($this->migrationTable)
 			->orderBy('name desc')
-			->where($this->fixedColumnValues);
+			->where($condition);
 	}
 }

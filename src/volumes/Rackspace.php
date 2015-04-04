@@ -161,8 +161,7 @@ class Rackspace extends Volume
 	// =========================================================================
 
 	/**
-	 * @inheritDoc BaseFlysystemFileSourceType::createAdapter()
-	 *
+	 * @inheritdoc
 	 * @return RackspaceAdapter
 	 */
 	protected function createAdapter()

@@ -1,18 +1,18 @@
 <?php
 /**
  * @link http://buildwithcraft.com/
- * @copyright Copyright (c) 2013 Pixel & Tonic, Inc.
+ * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
  * @license http://buildwithcraft.com/license
  */
 
 namespace craft\app\services;
 
 use Craft;
-use craft\app\enums\SectionType;
 use craft\app\errors\Exception;
 use craft\app\events\EntryEvent;
 use craft\app\helpers\DateTimeHelper;
 use craft\app\elements\Entry;
+use craft\app\models\Section;
 use craft\app\records\Entry as EntryRecord;
 use yii\base\Component;
 
@@ -163,7 +163,7 @@ class Entries extends Component
 
 		$entryRecord->sectionId  = $entry->sectionId;
 
-		if ($section->type == SectionType::Single)
+		if ($section->type == Section::TYPE_SINGLE)
 		{
 			$entryRecord->authorId   = $entry->authorId = null;
 			$entryRecord->expiryDate = $entry->expiryDate = null;
@@ -251,7 +251,7 @@ class Entries extends Component
 				// Save the actual entry row
 				$entryRecord->save(false);
 
-				if ($section->type == SectionType::Structure)
+				if ($section->type == Section::TYPE_STRUCTURE)
 				{
 					// Has the parent changed?
 					if ($hasNewParent)
@@ -344,7 +344,7 @@ class Entries extends Component
 
 				$section = $entry->getSection();
 
-				if ($section->type == SectionType::Structure)
+				if ($section->type == Section::TYPE_STRUCTURE)
 				{
 					// First let's move the entry's children up a level, so this doesn't mess up the structure
 					$children = $entry->getChildren()->status(null)->localeEnabled(false)->limit(null)->find();
@@ -438,7 +438,7 @@ class Entries extends Component
 	private function _checkForNewParent(Entry $entry)
 	{
 		// Make sure this is a Structure section
-		if ($entry->getSection()->type != SectionType::Structure)
+		if ($entry->getSection()->type != Section::TYPE_STRUCTURE)
 		{
 			return false;
 		}

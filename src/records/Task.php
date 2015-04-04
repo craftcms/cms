@@ -1,7 +1,7 @@
 <?php
 /**
  * @link http://buildwithcraft.com/
- * @copyright Copyright (c) 2013 Pixel & Tonic, Inc.
+ * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
  * @license http://buildwithcraft.com/license
  */
 
@@ -10,9 +10,6 @@ namespace craft\app\records;
 use Craft;
 use craft\app\db\ActiveRecord;
 use craft\app\db\TaskQuery;
-use craft\app\enums\AttributeType;
-use craft\app\enums\ColumnType;
-use craft\app\enums\TaskStatus;
 use creocoder\nestedsets\NestedSetsBehavior;
 
 /**
@@ -67,7 +64,7 @@ class Task extends ActiveRecord
 	}
 
 	/**
-	 * @inheritDoc
+	 * @inheritdoc
 	 */
 	public static function find()
 	{
@@ -76,7 +73,7 @@ class Task extends ActiveRecord
 
 
 	/**
-	 * @inheritDoc
+	 * @inheritdoc
 	 */
 	public function behaviors()
 	{
@@ -92,7 +89,7 @@ class Task extends ActiveRecord
 	}
 
 	/**
-	 * @inheritDoc
+	 * @inheritdoc
 	 */
 	public function transactions()
 	{

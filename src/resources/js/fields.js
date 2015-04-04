@@ -49,7 +49,7 @@ var FieldsAdmin = Garnish.Base.extend(
 				name: name
 			};
 
-			Craft.postActionRequest('fields/saveGroup', data, $.proxy(function(response, textStatus)
+			Craft.postActionRequest('fields/save-group', data, $.proxy(function(response, textStatus)
 			{
 				if (textStatus == 'success')
 				{
@@ -84,7 +84,7 @@ var FieldsAdmin = Garnish.Base.extend(
 				name: newName
 			};
 
-			Craft.postActionRequest('fields/saveGroup', data, $.proxy(function(response, textStatus)
+			Craft.postActionRequest('fields/save-group', data, $.proxy(function(response, textStatus)
 			{
 				if (textStatus == 'success')
 				{
@@ -121,7 +121,7 @@ var FieldsAdmin = Garnish.Base.extend(
 				id: this.$selectedGroup.data('id')
 			};
 
-			Craft.postActionRequest('fields/deleteGroup', data, $.proxy(function(response, textStatus)
+			Craft.postActionRequest('fields/delete-group', data, $.proxy(function(response, textStatus)
 			{
 				if (textStatus == 'success')
 				{

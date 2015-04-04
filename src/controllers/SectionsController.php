@@ -1,7 +1,7 @@
 <?php
 /**
  * @link http://buildwithcraft.com/
- * @copyright Copyright (c) 2013 Pixel & Tonic, Inc.
+ * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
  * @license http://buildwithcraft.com/license
  */
 
@@ -9,7 +9,6 @@ namespace craft\app\controllers;
 
 use Craft;
 use craft\app\elements\Entry;
-use craft\app\enums\SectionType;
 use craft\app\errors\Exception;
 use craft\app\errors\HttpException;
 use craft\app\helpers\JsonHelper;
@@ -34,10 +33,8 @@ class SectionsController extends Controller
 	// =========================================================================
 
 	/**
-	 * @inheritDoc Controller::init()
-	 *
-	 * @throws HttpException
-	 * @return null
+	 * @inheritdoc
+	 * @throws HttpException if the user isn’t an admin
 	 */
 	public function init()
 	{
@@ -111,7 +108,7 @@ class SectionsController extends Controller
 			$variables['title'] = Craft::t('app', 'Create a new section');
 		}
 
-		$types = [SectionType::Single, SectionType::Channel, SectionType::Structure];
+		$types = [Section::TYPE_SINGLE, Section::TYPE_CHANNEL, Section::TYPE_STRUCTURE];
 		$typeOptions = [];
 
 		// Get these strings to be caught by our translation util:
@@ -137,11 +134,11 @@ class SectionsController extends Controller
 		{
 			if ($variables['canBeChannel'])
 			{
-				$section->type = SectionType::Channel;
+				$section->type = Section::TYPE_CHANNEL;
 			}
 			else
 			{
-				$section->type = SectionType::Single;
+				$section->type = Section::TYPE_SINGLE;
 			}
 		}
 
@@ -197,7 +194,7 @@ class SectionsController extends Controller
 			$localeIds = [$primaryLocaleId];
 		}
 
-		$isHomepage = ($section->type == SectionType::Single && Craft::$app->getRequest()->getBodyParam('types.'.$section->type.'.homepage'));
+		$isHomepage = ($section->type == Section::TYPE_SINGLE && Craft::$app->getRequest()->getBodyParam('types.'.$section->type.'.homepage'));
 
 		foreach ($localeIds as $localeId)
 		{

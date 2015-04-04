@@ -153,8 +153,7 @@ class GoogleCloud extends Volume
 	// =========================================================================
 
 	/**
-	 * @inheritDoc BaseFlysystemFileSourceType::createAdapter()
-	 *
+	 * @inheritdoc
 	 * @return AwsS3Adapter
 	 */
 	protected function createAdapter()

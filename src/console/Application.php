@@ -1,7 +1,7 @@
 <?php
 /**
  * @link http://buildwithcraft.com/
- * @copyright Copyright (c) 2013 Pixel & Tonic, Inc.
+ * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
  * @license http://buildwithcraft.com/license
  */
 
@@ -95,11 +95,7 @@ class Application extends \yii\console\Application
 	}
 
 	/**
-	 * @inheritDoc \yii\di\ServiceLocator::get()
-	 *
-	 * @param string $id
-	 * @param boolean $throwException
-	 * @return object|null
+	 * @inheritdoc
 	 */
 	public function get($id, $throwException = true)
 	{

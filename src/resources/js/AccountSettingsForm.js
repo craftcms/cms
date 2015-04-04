@@ -94,7 +94,7 @@ Craft.AccountSettingsForm = Garnish.Base.extend(
 				password: password
 			};
 
-			Craft.postActionRequest('users/verifyPassword', data, $.proxy(function(response, textStatus)
+			Craft.postActionRequest('users/verify-password', data, $.proxy(function(response, textStatus)
 			{
 				this.$currentPasswordSpinner.addClass('hidden');
 
@@ -144,7 +144,7 @@ Craft.AccountSettingsForm = Garnish.Base.extend(
 			userId: this.userId
 		};
 
-		Craft.postActionRequest('users/getPasswordResetUrl', data, $.proxy(function(response, textStatus)
+		Craft.postActionRequest('users/get-password-reset-url', data, $.proxy(function(response, textStatus)
 		{
 			this.$actionSpinner.addClass('hidden');
 

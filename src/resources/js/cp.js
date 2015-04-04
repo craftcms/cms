@@ -413,7 +413,7 @@ var CP = Garnish.Base.extend(
 			path: Craft.path
 		};
 
-		Craft.queueActionRequest('app/getCpAlerts', data, $.proxy(this, 'displayAlerts'));
+		Craft.queueActionRequest('app/get-cp-alerts', data, $.proxy(this, 'displayAlerts'));
 	},
 
 	displayAlerts: function(alerts)
@@ -451,7 +451,7 @@ var CP = Garnish.Base.extend(
 
 				if (confirm(Craft.t('Are you sure you want to transfer your license to this domain?')))
 				{
-					Craft.queueActionRequest('app/transferLicenseToCurrentDomain', $.proxy(function(response, textStatus)
+					Craft.queueActionRequest('app/transfer-license-to-current-domain', $.proxy(function(response, textStatus)
 					{
 						if (textStatus == 'success')
 						{
@@ -486,7 +486,7 @@ var CP = Garnish.Base.extend(
 					message: $link.prop('className').substr(5)
 				};
 
-				Craft.queueActionRequest('app/shunCpAlert', data, $.proxy(function(response, textStatus)
+				Craft.queueActionRequest('app/shun-cp-alert', data, $.proxy(function(response, textStatus)
 				{
 					if (textStatus == 'success')
 					{
@@ -508,7 +508,7 @@ var CP = Garnish.Base.extend(
 
 	checkForUpdates: function()
 	{
-		Craft.queueActionRequest('app/checkForUpdates', $.proxy(function(info)
+		Craft.queueActionRequest('app/check-for-updates', $.proxy(function(info)
 		{
 			this.displayUpdateInfo(info);
 
@@ -550,7 +550,7 @@ var CP = Garnish.Base.extend(
 
 	runPendingTasks: function()
 	{
-		Craft.queueActionRequest('tasks/runPendingTasks', $.proxy(function(taskInfo, textStatus)
+		Craft.queueActionRequest('tasks/run-pending-tasks', $.proxy(function(taskInfo, textStatus)
 		{
 			if (taskInfo)
 			{
@@ -572,7 +572,7 @@ var CP = Garnish.Base.extend(
 		{
 			this.trackTaskProgressTimeout = null;
 
-			Craft.queueActionRequest('tasks/getRunningTaskInfo', $.proxy(function(taskInfo, textStatus)
+			Craft.queueActionRequest('tasks/get-running-task-info', $.proxy(function(taskInfo, textStatus)
 			{
 				if (textStatus == 'success')
 				{
@@ -958,7 +958,7 @@ var TaskProgressHUD = Garnish.HUD.extend(
 	{
 		this.completed = false;
 
-		Craft.postActionRequest('tasks/getTaskInfo', $.proxy(function(taskInfo, textStatus)
+		Craft.postActionRequest('tasks/get-task-info', $.proxy(function(taskInfo, textStatus)
 		{
 			if (textStatus == 'success')
 			{
@@ -1173,7 +1173,7 @@ TaskProgressHUD.Task = Garnish.Base.extend(
 		{
 			case 'rerun':
 			{
-				Craft.postActionRequest('tasks/rerunTask', { taskId: this.id }, $.proxy(function(taskInfo, textStatus)
+				Craft.postActionRequest('tasks/rerun-task', { taskId: this.id }, $.proxy(function(taskInfo, textStatus)
 				{
 					if (textStatus == 'success')
 					{
@@ -1189,7 +1189,7 @@ TaskProgressHUD.Task = Garnish.Base.extend(
 			}
 			case 'cancel':
 			{
-				Craft.postActionRequest('tasks/deleteTask', { taskId: this.id }, $.proxy(function(taskInfo, textStatus)
+				Craft.postActionRequest('tasks/delete-task', { taskId: this.id }, $.proxy(function(taskInfo, textStatus)
 				{
 					if (textStatus == 'success')
 					{

@@ -3,7 +3,7 @@
  * Craft bootstrap file.
  *
  * @link http://buildwithcraft.com/
- * @copyright Copyright (c) 2013 Pixel & Tonic, Inc.
+ * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
  * @license http://buildwithcraft.com/license
  */
 
@@ -243,8 +243,8 @@ $config['releaseDate'] = new DateTime('@'.$config['releaseDate']);
 
 if ($devMode)
 {
-	//$config['bootstrap'][] = 'debug';
-	//$config['modules']['debug'] = 'yii\debug\Module';
+	$config['bootstrap'][] = 'debug';
+	$config['modules']['debug'] = 'yii\debug\Module';
 }
 
 // Initialize the application

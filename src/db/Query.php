@@ -1,7 +1,7 @@
 <?php
 /**
  * @link http://buildwithcraft.com/
- * @copyright Copyright (c) 2013 Pixel & Tonic, Inc.
+ * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
  * @license http://buildwithcraft.com/license
  */
 
@@ -43,13 +43,7 @@ class Query extends \yii\db\Query
 	}
 
 	/**
-	 * @inheritDoc \yii\db\Query::where()
-	 *
-	 * @param string|array $condition
-	 * @param array $params
-	 * @return static
-	 * @see andWhere()
-	 * @see orWhere()
+	 * @inheritdoc
 	 */
 	public function where($conditions, $params = [])
 	{
@@ -62,13 +56,7 @@ class Query extends \yii\db\Query
 	}
 
 	/**
-	 * @inheritDoc \yii\db\Query::andWhere()
-	 *
-	 * @param string|array $condition
-	 * @param array $params
-	 * @return static
-	 * @see where()
-	 * @see orWhere()
+	 * @inheritdoc
 	 */
 	public function andWhere($conditions, $params = [])
 	{
@@ -81,13 +69,7 @@ class Query extends \yii\db\Query
 	}
 
 	/**
-	 * @inheritDoc \yii\db\Query::orWhere()
-	 *
-	 * @param string|array $condition
-	 * @param array $params
-	 * @return static
-	 * @see where()
-	 * @see andWhere()
+	 * @inheritdoc
 	 */
 	public function orWhere($conditions, $params = [])
 	{

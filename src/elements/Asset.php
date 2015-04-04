@@ -1,7 +1,7 @@
 <?php
 /**
  * @link http://buildwithcraft.com/
- * @copyright Copyright (c) 2013 Pixel & Tonic, Inc.
+ * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
  * @license http://buildwithcraft.com/license
  */
 
@@ -835,7 +835,7 @@ class Asset extends Element
 	 */
 	public function getImageTransformSourcePath()
 	{
-		$sourceType = Craft::$app->volumes->getSourceTypeById($this->volumeId);
+		$sourceType = Craft::$app->volumes->getVolumeById($this->volumeId);
 
 		if ($sourceType->isLocal())
 		{

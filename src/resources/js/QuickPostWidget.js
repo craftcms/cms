@@ -64,7 +64,7 @@ Craft.QuickPostWidget = Garnish.Base.extend(
 		var formData = Garnish.getPostData(this.$form),
 			data = $.extend({ enabled: 1 }, formData, this.params);
 
-		Craft.postActionRequest('entries/saveEntry', data, $.proxy(function(response, textStatus)
+		Craft.postActionRequest('entries/save-entry', data, $.proxy(function(response, textStatus)
 		{
 			this.loading = false;
 			this.$spinner.addClass('hidden');

@@ -1,7 +1,7 @@
 <?php
 /**
  * @link http://buildwithcraft.com/
- * @copyright Copyright (c) 2013 Pixel & Tonic, Inc.
+ * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
  * @license http://buildwithcraft.com/license
  */
 
@@ -9,8 +9,6 @@ namespace craft\app\models;
 
 use Craft;
 use craft\app\base\Model;
-use craft\app\enums\AttributeType;
-use craft\app\enums\SectionType;
 
 /**
  * Section model class.
@@ -20,6 +18,13 @@ use craft\app\enums\SectionType;
  */
 class Section extends Model
 {
+	// Constants
+	// =========================================================================
+
+	const TYPE_SINGLE    = 'single';
+	const TYPE_CHANNEL   = 'channel';
+	const TYPE_STRUCTURE = 'structure';
+
 	// Properties
 	// =========================================================================
 
@@ -113,7 +118,7 @@ class Section extends Model
 	 */
 	public function isHomepage()
 	{
-		return ($this->type == SectionType::Single && $this->urlFormat == '__home__');
+		return ($this->type == self::TYPE_SINGLE && $this->urlFormat == '__home__');
 	}
 
 	/**
