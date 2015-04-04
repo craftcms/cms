@@ -10,8 +10,8 @@ namespace craft\app\widgets;
 use Craft;
 use craft\app\base\Widget;
 use craft\app\elements\Entry;
-use craft\app\enums\SectionType;
 use craft\app\helpers\JsonHelper;
+use craft\app\models\Section;
 
 /**
  * RecentEntries represents a Recent Entries dashboard widget.
@@ -203,7 +203,7 @@ class RecentEntries extends Widget
 
 		foreach (Craft::$app->sections->getEditableSections() as $section)
 		{
-			if ($section->type != SectionType::Single)
+			if ($section->type != Section::TYPE_SINGLE)
 			{
 				$sectionIds[] = $section->id;
 			}

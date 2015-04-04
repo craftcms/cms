@@ -8,9 +8,9 @@
 namespace craft\app\controllers;
 
 use Craft;
-use craft\app\enums\SectionType;
 use craft\app\elements\Entry;
 use craft\app\models\EntryDraft;
+use craft\app\models\Section;
 use craft\app\web\Controller;
 
 /**
@@ -63,7 +63,7 @@ abstract class BaseEntriesController extends Controller
 					// If it's another user's entry (and it's not a Single), make sure they have permission to edit those
 					if (
 						$entry->authorId != $userSessionService->getIdentity()->id &&
-						$entry->getSection()->type != SectionType::Single
+						$entry->getSection()->type != Section::TYPE_SINGLE
 					)
 					{
 						$this->requirePermission('editPeerEntries'.$permissionSuffix);

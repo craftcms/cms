@@ -10,7 +10,6 @@ namespace craft\app\elements;
 use Craft;
 use craft\app\base\Element;
 use craft\app\base\ElementInterface;
-use craft\app\db\Query;
 use craft\app\elements\actions\Delete;
 use craft\app\elements\actions\Edit;
 use craft\app\elements\actions\NewChild;
@@ -18,15 +17,12 @@ use craft\app\elements\actions\SetStatus;
 use craft\app\elements\actions\View;
 use craft\app\elements\db\ElementQueryInterface;
 use craft\app\elements\db\EntryQuery;
-use craft\app\enums\SectionType;
 use craft\app\events\SetStatusEvent;
 use craft\app\helpers\ArrayHelper;
 use craft\app\helpers\DateTimeHelper;
-use craft\app\base\Model;
 use craft\app\helpers\UrlHelper;
-use craft\app\models\EntryType as EntryTypeModel;
-use craft\app\models\FieldLayout;
-use craft\app\models\Section as SectionModel;
+use craft\app\models\EntryType;
+use craft\app\models\Section;
 
 /**
  * Entry represents an entry element.
@@ -133,7 +129,7 @@ class Entry extends Element
 		{
 			$sectionIds[] = $section->id;
 
-			if ($section->type == SectionType::Single)
+			if ($section->type == Section::TYPE_SINGLE)
 			{
 				$singleSectionIds[] = $section->id;
 			}
@@ -159,8 +155,8 @@ class Entry extends Element
 		}
 
 		$sectionTypes = [
-			SectionType::Channel => Craft::t('app', 'Channels'),
-			SectionType::Structure => Craft::t('app', 'Structures')
+			Section::TYPE_CHANNEL => Craft::t('app', 'Channels'),
+			Section::TYPE_STRUCTURE => Craft::t('app', 'Structures')
 		];
 
 		foreach ($sectionTypes as $type => $heading)
@@ -179,7 +175,7 @@ class Entry extends Element
 						'criteria' => ['sectionId' => $section->id, 'editable' => $editable]
 					];
 
-					if ($type == SectionType::Structure)
+					if ($type == Section::TYPE_STRUCTURE)
 					{
 						$sources[$key]['structureId'] = $section->structureId;
 						$sources[$key]['structureEditable'] = Craft::$app->getUser()->checkPermission('publishEntries:'.$section->id);
@@ -206,7 +202,7 @@ class Entry extends Element
 			}
 			case 'singles':
 			{
-				$sections = Craft::$app->sections->getSectionsByType(SectionType::Single);
+				$sections = Craft::$app->sections->getSectionsByType(Section::TYPE_SINGLE);
 				break;
 			}
 			default:
@@ -238,7 +234,7 @@ class Entry extends Element
 			// Only show the Set Status action if we're sure they can make changes in all the sections
 			if (!(
 				$canPublishEntries &&
-				($section->type == SectionType::Single || $userSessionService->checkPermission('publishPeerEntries:'.$section->id))
+				($section->type == Section::TYPE_SINGLE || $userSessionService->checkPermission('publishPeerEntries:'.$section->id))
 			))
 			{
 				$canSetStatus = false;
@@ -297,7 +293,7 @@ class Entry extends Element
 
 			// New child?
 			if (
-				$section->type == SectionType::Structure &&
+				$section->type == Section::TYPE_STRUCTURE &&
 				$userSessionService->checkPermission('createEntries:'.$section->id)
 			)
 			{
@@ -525,7 +521,7 @@ class Entry extends Element
 		// Was the entry moved within its section's structure?
 		$section = $element->getSection();
 
-		if ($section->type == SectionType::Structure && $section->structureId == $structureId)
+		if ($section->type == Section::TYPE_STRUCTURE && $section->structureId == $structureId)
 		{
 			Craft::$app->elements->updateElementSlugAndUri($element);
 		}
@@ -666,7 +662,7 @@ class Entry extends Element
 	/**
 	 * Returns the entry's section.
 	 *
-	 * @return SectionModel|null
+	 * @return Section|null
 	 */
 	public function getSection()
 	{
@@ -679,7 +675,7 @@ class Entry extends Element
 	/**
 	 * Returns the type of entry.
 	 *
-	 * @return EntryTypeModel|null
+	 * @return EntryType|null
 	 */
 	public function getType()
 	{
@@ -756,7 +752,7 @@ class Entry extends Element
 			Craft::$app->getUser()->checkPermission('publishEntries:'.$this->sectionId) && (
 				$this->authorId == Craft::$app->getUser()->getIdentity()->id ||
 				Craft::$app->getUser()->checkPermission('publishPeerEntries:'.$this->sectionId) ||
-				$this->getSection()->type == SectionType::Single
+				$this->getSection()->type == Section::TYPE_SINGLE
 			)
 		);
 	}

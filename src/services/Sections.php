@@ -10,16 +10,15 @@ namespace craft\app\services;
 use Craft;
 use craft\app\db\Query;
 use craft\app\elements\Entry;
-use craft\app\enums\SectionType;
 use craft\app\errors\Exception;
 use craft\app\events\EntryTypeEvent;
 use craft\app\events\SectionEvent;
 use craft\app\helpers\ArrayHelper;
 use craft\app\helpers\DateTimeHelper;
-use craft\app\models\EntryType as EntryTypeModel;
-use craft\app\models\Section as SectionModel;
-use craft\app\models\SectionLocale as SectionLocaleModel;
-use craft\app\models\Structure as StructureModel;
+use craft\app\models\EntryType;
+use craft\app\models\Section;
+use craft\app\models\SectionLocale;
+use craft\app\models\Structure;
 use craft\app\records\EntryType as EntryTypeRecord;
 use craft\app\records\Section as SectionRecord;
 use craft\app\records\SectionLocale as SectionLocaleRecord;
@@ -150,7 +149,7 @@ class Sections extends Component
 	 *
 	 * @param string|null $indexBy
 	 *
-	 * @return SectionModel[] All the sections.
+	 * @return Section[] All the sections.
 	 */
 	public function getAllSections($indexBy = null)
 	{
@@ -162,9 +161,9 @@ class Sections extends Component
 			$this->_sectionsById = [];
 
 			$typeCounts = [
-				SectionType::Single => 0,
-				SectionType::Channel => 0,
-				SectionType::Structure => 0
+				Section::TYPE_SINGLE => 0,
+				Section::TYPE_CHANNEL => 0,
+				Section::TYPE_STRUCTURE => 0
 			];
 
 			foreach ($results as $result)
@@ -173,7 +172,7 @@ class Sections extends Component
 
 				if (Craft::$app->getEdition() >= Craft::Client || $typeCounts[$type] < $this->typeLimits[$type])
 				{
-					$section = new SectionModel($result);
+					$section = new Section($result);
 					$this->_sectionsById[$section->id] = $section;
 					$typeCounts[$type]++;
 				}
@@ -208,7 +207,7 @@ class Sections extends Component
 	 *
 	 * @param string|null $indexBy
 	 *
-	 * @return SectionModel[] All the editable sections.
+	 * @return Section[] All the editable sections.
 	 */
 	public function getEditableSections($indexBy = null)
 	{
@@ -239,7 +238,7 @@ class Sections extends Component
 	 *
 	 * @param string $type
 	 *
-	 * @return SectionModel[] All the sections of the given type.
+	 * @return Section[] All the sections of the given type.
 	 */
 	public function getSectionsByType($type)
 	{
@@ -281,7 +280,7 @@ class Sections extends Component
 	 *
 	 * @param int $sectionId
 	 *
-	 * @return SectionModel|null
+	 * @return Section|null
 	 */
 	public function getSectionById($sectionId)
 	{
@@ -296,7 +295,7 @@ class Sections extends Component
 
 			if ($result)
 			{
-				$section = new SectionModel($result);
+				$section = new Section($result);
 			}
 			else
 			{
@@ -317,7 +316,7 @@ class Sections extends Component
 	 *
 	 * @param string $sectionHandle
 	 *
-	 * @return SectionModel|null
+	 * @return Section|null
 	 */
 	public function getSectionByHandle($sectionHandle)
 	{
@@ -327,7 +326,7 @@ class Sections extends Component
 
 		if ($result)
 		{
-			$section = new SectionModel($result);
+			$section = new Section($result);
 			$this->_sectionsById[$section->id] = $section;
 
 			return $section;
@@ -340,7 +339,7 @@ class Sections extends Component
 	 * @param int         $sectionId
 	 * @param string|null $indexBy
 	 *
-	 * @return SectionLocaleModel[] The section’s locales.
+	 * @return SectionLocale[] The section’s locales.
 	 */
 	public function getSectionLocales($sectionId, $indexBy = null)
 	{
@@ -355,7 +354,7 @@ class Sections extends Component
 
 		foreach ($sectionLocales as $key => $value)
 		{
-			$sectionLocales[$key] = SectionLocaleModel::create($value);
+			$sectionLocales[$key] = SectionLocale::create($value);
 		}
 
 		return $sectionLocales;
@@ -364,13 +363,13 @@ class Sections extends Component
 	/**
 	 * Saves a section.
 	 *
-	 * @param SectionModel $section
+	 * @param Section $section
 	 *
 	 * @return bool
 	 * @throws Exception
 	 * @throws \Exception
 	 */
-	public function saveSection(SectionModel $section)
+	public function saveSection(Section $section)
 	{
 		if ($section->id)
 		{
@@ -384,7 +383,7 @@ class Sections extends Component
 				throw new Exception(Craft::t('app', 'No section exists with the ID “{id}”.', ['id' => $section->id]));
 			}
 
-			$oldSection = SectionModel::create($sectionRecord);
+			$oldSection = Section::create($sectionRecord);
 			$isNewSection = false;
 		}
 		else
@@ -405,7 +404,7 @@ class Sections extends Component
 		}
 
 		// Type-specific attributes
-		if ($section->type == SectionType::Single)
+		if ($section->type == Section::TYPE_SINGLE)
 		{
 			$sectionRecord->hasUrls = $section->hasUrls = true;
 		}
@@ -436,7 +435,7 @@ class Sections extends Component
 
 		foreach ($sectionLocales as $localeId => $sectionLocale)
 		{
-			if ($section->type == SectionType::Single)
+			if ($section->type == Section::TYPE_SINGLE)
 			{
 				$errorKey = 'urlFormat-'.$localeId;
 
@@ -473,7 +472,7 @@ class Sections extends Component
 				$urlFormatAttributes = ['urlFormat'];
 				$sectionLocale->urlFormatIsRequired = true;
 
-				if ($section->type == SectionType::Structure && $section->maxLevels != 1)
+				if ($section->type == Section::TYPE_STRUCTURE && $section->maxLevels != 1)
 				{
 					$urlFormatAttributes[] = 'nestedUrlFormat';
 					$sectionLocale->nestedUrlFormatIsRequired = true;
@@ -515,9 +514,9 @@ class Sections extends Component
 				if ($event->performAction)
 				{
 					// Do we need to create a structure?
-					if ($section->type == SectionType::Structure)
+					if ($section->type == Section::TYPE_STRUCTURE)
 					{
-						if (!$isNewSection && $oldSection->type == SectionType::Structure)
+						if (!$isNewSection && $oldSection->type == Section::TYPE_STRUCTURE)
 						{
 							$structure = Craft::$app->structures->getStructureById($oldSection->structureId);
 							$isNewStructure = false;
@@ -525,7 +524,7 @@ class Sections extends Component
 
 						if (empty($structure))
 						{
-							$structure = new StructureModel();
+							$structure = new Structure();
 							$isNewStructure = true;
 						}
 
@@ -570,7 +569,7 @@ class Sections extends Component
 
 						foreach ($oldSectionLocales as $key => $value)
 						{
-							$oldSectionLocales[$key] = SectionLocaleModel::create($value);
+							$oldSectionLocales[$key] = SectionLocale::create($value);
 						}
 					}
 
@@ -641,13 +640,13 @@ class Sections extends Component
 
 					if (!$entryTypeId)
 					{
-						$entryType = new EntryTypeModel();
+						$entryType = new EntryType();
 
 						$entryType->sectionId = $section->id;
 						$entryType->name = $section->name;
 						$entryType->handle = $section->handle;
 
-						if ($section->type == SectionType::Single)
+						if ($section->type == Section::TYPE_SINGLE)
 						{
 							$entryType->hasTitleField = false;
 							$entryType->titleLabel = null;
@@ -670,7 +669,7 @@ class Sections extends Component
 
 					switch ($section->type)
 					{
-						case SectionType::Single:
+						case Section::TYPE_SINGLE:
 						{
 							// In a nut, we want to make sure that there is one and only one Entry Type and Entry for this
 							// section. We also want to make sure the entry has rows in the i18n tables
@@ -763,7 +762,7 @@ class Sections extends Component
 							break;
 						}
 
-						case SectionType::Structure:
+						case Section::TYPE_STRUCTURE:
 						{
 							if (!$isNewSection && $isNewStructure)
 							{
@@ -907,11 +906,11 @@ class Sections extends Component
 	/**
 	 * Returns whether a section’s entries have URLs, and if the section’s template path is valid.
 	 *
-	 * @param SectionModel $section
+	 * @param Section $section
 	 *
 	 * @return bool
 	 */
-	public function isSectionTemplateValid(SectionModel $section)
+	public function isSectionTemplateValid(Section $section)
 	{
 		if ($section->hasUrls)
 		{
@@ -955,7 +954,7 @@ class Sections extends Component
 
 		foreach ($entryTypes as $key => $value)
 		{
-			$entryTypes[$key] = EntryTypeModel::create($value);
+			$entryTypes[$key] = EntryType::create($value);
 		}
 
 		return $entryTypes;
@@ -966,7 +965,7 @@ class Sections extends Component
 	 *
 	 * @param int $entryTypeId
 	 *
-	 * @return EntryTypeModel|null
+	 * @return EntryType|null
 	 */
 	public function getEntryTypeById($entryTypeId)
 	{
@@ -976,7 +975,7 @@ class Sections extends Component
 
 			if ($entryTypeRecord)
 			{
-				$this->_entryTypesById[$entryTypeId] = EntryTypeModel::create($entryTypeRecord);
+				$this->_entryTypesById[$entryTypeId] = EntryType::create($entryTypeRecord);
 			}
 			else
 			{
@@ -1002,7 +1001,7 @@ class Sections extends Component
 
 		foreach ($entryTypes as $key => $value)
 		{
-			$entryTypes[$key] = EntryTypeModel::create($value);
+			$entryTypes[$key] = EntryType::create($value);
 		}
 
 		$entryTypes;
@@ -1011,12 +1010,12 @@ class Sections extends Component
 	/**
 	 * Saves an entry type.
 	 *
-	 * @param EntryTypeModel $entryType
+	 * @param EntryType $entryType
 	 *
 	 * @throws \Exception
 	 * @return bool
 	 */
-	public function saveEntryType(EntryTypeModel $entryType)
+	public function saveEntryType(EntryType $entryType)
 	{
 		if ($entryType->id)
 		{
@@ -1028,7 +1027,7 @@ class Sections extends Component
 			}
 
 			$isNewEntryType = false;
-			$oldEntryType = EntryTypeModel::create($entryTypeRecord);
+			$oldEntryType = EntryType::create($entryTypeRecord);
 		}
 		else
 		{
@@ -1261,7 +1260,7 @@ class Sections extends Component
 	public function doesHomepageExist()
 	{
 		$conditions = ['and', 'sections.type = :type', 'sections_i18n.urlFormat = :homeUri'];
-		$params     = [':type' => SectionType::Single, ':homeUri' => '__home__'];
+		$params     = [':type' => Section::TYPE_SINGLE, ':homeUri' => '__home__'];
 
 		return (new Query())
 			->from('{{%sections}} sections')

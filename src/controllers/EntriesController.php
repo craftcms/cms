@@ -10,7 +10,6 @@ namespace craft\app\controllers;
 use Craft;
 use craft\app\dates\DateTime;
 use craft\app\elements\User;
-use craft\app\enums\SectionType;
 use craft\app\errors\Exception;
 use craft\app\errors\HttpException;
 use craft\app\helpers\DateTimeHelper;
@@ -82,7 +81,7 @@ class EntriesController extends BaseEntriesController
 
 		$variables['permissionSuffix'] = ':'.$entry->sectionId;
 
-		if (Craft::$app->getEdition() == Craft::Pro && $section->type != SectionType::Single)
+		if (Craft::$app->getEdition() == Craft::Pro && $section->type != Section::TYPE_SINGLE)
 		{
 			// Author selector variables
 			// ---------------------------------------------------------------------
@@ -109,7 +108,7 @@ class EntriesController extends BaseEntriesController
 
 		if (
 			Craft::$app->getEdition() >= Craft::Client &&
-			$section->type == SectionType::Structure &&
+			$section->type == Section::TYPE_STRUCTURE &&
 			$section->maxLevels != 1
 		)
 		{
@@ -231,7 +230,7 @@ class EntriesController extends BaseEntriesController
 			['label' => Craft::t('app', 'Entries'), 'url' => UrlHelper::getUrl('entries')]
 		];
 
-		if ($section->type == SectionType::Single)
+		if ($section->type == Section::TYPE_SINGLE)
 		{
 			$variables['crumbs'][] = ['label' => Craft::t('app', 'Singles'), 'url' => UrlHelper::getUrl('entries/singles')];
 		}
@@ -239,7 +238,7 @@ class EntriesController extends BaseEntriesController
 		{
 			$variables['crumbs'][] = ['label' => Craft::t('app', $section->name), 'url' => UrlHelper::getUrl('entries/'.$section->handle)];
 
-			if ($section->type == SectionType::Structure)
+			if ($section->type == Section::TYPE_STRUCTURE)
 			{
 				/** @var Entry $ancestor */
 				foreach ($entry->getAncestors() as $ancestor)
@@ -442,7 +441,7 @@ class EntriesController extends BaseEntriesController
 			// Is this another user's entry (and it's not a Single)?
 			if (
 				$entry->authorId != $currentUser->id &&
-				$entry->getSection()->type != SectionType::Single
+				$entry->getSection()->type != Section::TYPE_SINGLE
 			)
 			{
 				if ($entry->enabled)

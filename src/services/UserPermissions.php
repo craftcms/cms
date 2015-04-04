@@ -9,8 +9,7 @@ namespace craft\app\services;
 
 use Craft;
 use craft\app\db\Query;
-use craft\app\enums\SectionType;
-use craft\app\models\Section as SectionModel;
+use craft\app\models\Section;
 use craft\app\records\UserPermission as UserPermissionRecord;
 use yii\base\Component;
 
@@ -134,7 +133,7 @@ class UserPermissions extends Component
 		{
 			$label = Craft::t('app', 'Section - {section}', ['section' => Craft::t('app', 'app', $section->name)]);
 
-			if ($section->type == SectionType::Single)
+			if ($section->type == Section::TYPE_SINGLE)
 			{
 				$permissions[$label] = $this->_getSingleEntryPermissions($section);
 			}
@@ -367,7 +366,7 @@ class UserPermissions extends Component
 	/**
 	 * Returns the entry permissions for a given Single section.
 	 *
-	 * @param SectionModel $section
+	 * @param Section $section
 	 *
 	 * @return array
 	 */
@@ -401,7 +400,7 @@ class UserPermissions extends Component
 	/**
 	 * Returns the entry permissions for a given Channel or Structure section.
 	 *
-	 * @param SectionModel $section
+	 * @param Section $section
 	 *
 	 * @return array
 	 */

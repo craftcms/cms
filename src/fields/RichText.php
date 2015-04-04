@@ -9,13 +9,13 @@ namespace craft\app\fields;
 
 use Craft;
 use craft\app\base\Field;
-use craft\app\enums\SectionType;
 use craft\app\fields\data\RichTextData;
 use craft\app\helpers\DbHelper;
 use craft\app\helpers\HtmlPurifier;
 use craft\app\helpers\IOHelper;
 use craft\app\helpers\JsonHelper;
 use craft\app\helpers\StringHelper;
+use craft\app\models\Section;
 use craft\app\validators\Handle;
 use yii\db\Schema;
 
@@ -266,7 +266,7 @@ class RichText extends Field
 
 		foreach ($sections as $section)
 		{
-			if ($section->type == SectionType::Single)
+			if ($section->type == Section::TYPE_SINGLE)
 			{
 				$showSingles = true;
 			}
