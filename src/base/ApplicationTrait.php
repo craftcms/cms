@@ -11,7 +11,6 @@ use Craft;
 use craft\app\db\Connection;
 use craft\app\db\MigrationManager;
 use craft\app\db\Query;
-use craft\app\enums\CacheMethod;
 use craft\app\enums\ConfigCategory;
 use craft\app\errors\DbConnectException;
 use craft\app\errors\Exception;
@@ -821,12 +820,12 @@ trait ApplicationTrait
 
 		switch ($cacheMethod)
 		{
-			case CacheMethod::APC:
+			case 'apc':
 			{
 				return 'craft\app\cache\ApcCache';
 			}
 
-			case CacheMethod::Db:
+			case 'db':
 			{
 				return [
 					'class' => 'craft\app\cache\DbCache',
@@ -836,7 +835,7 @@ trait ApplicationTrait
 				];
 			}
 
-			case CacheMethod::File:
+			case 'file':
 			{
 				return [
 					'class' => 'craft\app\cache\FileCache',
@@ -845,7 +844,7 @@ trait ApplicationTrait
 				];
 			}
 
-			case CacheMethod::MemCache:
+			case 'memcache':
 			{
 				return [
 					'class' => 'craft\app\cache\MemCache',
@@ -854,17 +853,17 @@ trait ApplicationTrait
 				];
 			}
 
-			case CacheMethod::WinCache:
+			case 'wincache':
 			{
 				return 'craft\app\cache\WinCache';
 			}
 
-			case CacheMethod::XCache:
+			case 'xcache':
 			{
 				return 'craft\app\cache\XCache';
 			}
 
-			case CacheMethod::ZendData:
+			case 'zenddata':
 			{
 				return 'craft\app\cache\ZendDataCache';
 			}
