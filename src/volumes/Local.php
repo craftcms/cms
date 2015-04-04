@@ -76,21 +76,6 @@ class Local extends Volume
 	}
 
 	/**
-	 * @inheritDoc ISavableComponentType::prepSettings()
-	 *
-	 * @param array $settings
-	 *
-	 * @return array
-	 */
-	public function prepSettings($settings)
-	{
-		// Remove the trailing slash to the Path and URL settings
-		$settings['path'] = !empty($settings['path']) ? rtrim($settings['path'], '/') : '';
-
-		return $settings;
-	}
-
-	/**
 	 * @inheritdoc
 	 */
 	public function getRootPath()
