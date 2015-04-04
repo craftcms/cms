@@ -835,7 +835,7 @@ class Asset extends Element
 	 */
 	public function getImageTransformSourcePath()
 	{
-		$sourceType = Craft::$app->volumes->getSourceTypeById($this->volumeId);
+		$sourceType = Craft::$app->volumes->getVolumeById($this->volumeId);
 
 		if ($sourceType->isLocal())
 		{
