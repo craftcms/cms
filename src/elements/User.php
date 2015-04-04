@@ -19,7 +19,6 @@ use craft\app\elements\actions\SuspendUsers;
 use craft\app\elements\actions\UnsuspendUsers;
 use craft\app\elements\db\ElementQueryInterface;
 use craft\app\elements\db\UserQuery;
-use craft\app\enums\AuthError;
 use craft\app\helpers\DateTimeHelper;
 use craft\app\helpers\UrlHelper;
 use craft\app\models\UserGroup;
@@ -45,6 +44,16 @@ class User extends Element implements IdentityInterface
 	const STATUS_SUSPENDED = 'suspended';
 	const STATUS_PENDING   = 'pending';
 	const STATUS_ARCHIVED  = 'archived';
+
+	const AUTH_INVALID_CREDENTIALS     = 'invalid_credentials';
+	const AUTH_PENDING_VERIFICATION    = 'pending_verification';
+	const AUTH_ACCOUNT_LOCKED          = 'account_locked';
+	const AUTH_ACCOUNT_COOLDOWN        = 'account_cooldown';
+	const AUTH_PASSWORD_RESET_REQUIRED = 'password_reset_required';
+	const AUTH_ACCOUNT_SUSPENDED       = 'account_suspended';
+	const AUTH_NO_CP_ACCESS            = 'no_cp_access';
+	const AUTH_NO_CP_OFFLINE_ACCESS    = 'no_cp_offline_access';
+	const AUTH_USERNAME_INVALID        = 'username_invalid';
 
 	// Static
 	// =========================================================================
@@ -649,19 +658,19 @@ class User extends Element implements IdentityInterface
 		{
 			case self::STATUS_ARCHIVED:
 			{
-				$this->authError = AuthError::InvalidCredentials;
+				$this->authError = self::AUTH_INVALID_CREDENTIALS;
 				return false;
 			}
 
 			case self::STATUS_PENDING:
 			{
-				$this->authError = AuthError::PendingVerification;
+				$this->authError = self::AUTH_PENDING_VERIFICATION;
 				return false;
 			}
 
 			case self::STATUS_SUSPENDED:
 			{
-				$this->authError = AuthError::AccountSuspended;
+				$this->authError = self::AUTH_ACCOUNT_SUSPENDED;
 				return false;
 			}
 
@@ -669,11 +678,11 @@ class User extends Element implements IdentityInterface
 			{
 				if (Craft::$app->config->get('cooldownDuration'))
 				{
-					$this->authError = AuthError::AccountCooldown;
+					$this->authError = self::AUTH_ACCOUNT_COOLDOWN;
 				}
 				else
 				{
-					$this->authError = AuthError::AccountLocked;
+					$this->authError = self::AUTH_ACCOUNT_LOCKED;
 				}
 				return false;
 			}
@@ -693,7 +702,7 @@ class User extends Element implements IdentityInterface
 					}
 					else
 					{
-						$this->authError = AuthError::InvalidCredentials;
+						$this->authError = self::AUTH_INVALID_CREDENTIALS;
 						return false;
 					}
 				}
@@ -701,7 +710,7 @@ class User extends Element implements IdentityInterface
 				// Is a password reset required?
 				if ($this->passwordResetRequired)
 				{
-					$this->authError = AuthError::PasswordResetRequired;
+					$this->authError = self::AUTH_PASSWORD_RESET_REQUIRED;
 					return false;
 				}
 
@@ -711,13 +720,13 @@ class User extends Element implements IdentityInterface
 				{
 					if (!$this->can('accessCp'))
 					{
-						$this->authError = AuthError::NoCpAccess;
+						$this->authError = self::AUTH_NO_CP_ACCESS;
 						return false;
 					}
 
 					if (!Craft::$app->isSystemOn() && !$this->can('accessCpWhenSystemIsOff'))
 					{
-						$this->authError = AuthError::NoCpOfflineAccess;
+						$this->authError = self::AUTH_NO_CP_OFFLINE_ACCESS;
 						return false;
 					}
 				}

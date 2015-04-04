@@ -8,7 +8,6 @@
 namespace craft\app\controllers;
 
 use Craft;
-use craft\app\enums\AuthError;
 use craft\app\errors\Exception;
 use craft\app\errors\HttpException;
 use craft\app\events\UserEvent;
@@ -76,7 +75,7 @@ class UsersController extends Controller
 
 		if (!$user)
 		{
-			$this->_handleInvalidLogin(AuthError::UsernameInvalid);
+			$this->_handleInvalidLogin(User::AUTH_USERNAME_INVALID);
 			return;
 		}
 
@@ -1396,22 +1395,22 @@ class UsersController extends Controller
 	{
 		switch ($authError)
 		{
-			case AuthError::InvalidCredentials:
+			case User::AUTH_INVALID_CREDENTIALS:
 			{
 				$message = Craft::t('app', 'Invalid username or password.');
 				break;
 			}
-			case AuthError::PendingVerification:
+			case User::AUTH_PENDING_VERIFICATION:
 			{
 				$message = Craft::t('app', 'Account has not been activated.');
 				break;
 			}
-			case AuthError::AccountLocked:
+			case User::AUTH_ACCOUNT_LOCKED:
 			{
 				$message = Craft::t('app', 'Account locked.');
 				break;
 			}
-			case AuthError::AccountCooldown:
+			case User::AUTH_ACCOUNT_COOLDOWN:
 			{
 				$timeRemaining = $user->getRemainingCooldownTime();
 
@@ -1426,23 +1425,23 @@ class UsersController extends Controller
 
 				break;
 			}
-			case AuthError::PasswordResetRequired:
+			case User::AUTH_PASSWORD_RESET_REQUIRED:
 			{
 				$message = Craft::t('app', 'You need to reset your password. Check your email for instructions.');
 				Craft::$app->users->sendPasswordResetEmail($user);
 				break;
 			}
-			case AuthError::AccountSuspended:
+			case User::AUTH_ACCOUNT_SUSPENDED:
 			{
 				$message = Craft::t('app', 'Account suspended.');
 				break;
 			}
-			case AuthError::NoCpAccess:
+			case User::AUTH_NO_CP_ACCESS:
 			{
 				$message = Craft::t('app', 'You cannot access the CP with that account.');
 				break;
 			}
-			case AuthError::NoCpOfflineAccess:
+			case User::AUTH_NO_CP_OFFLINE_ACCESS:
 			{
 				$message = Craft::t('app', 'You cannot access the CP while the system is offline with that account.');
 				break;
