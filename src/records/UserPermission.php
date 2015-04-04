@@ -9,7 +9,6 @@ namespace craft\app\records;
 
 use Craft;
 use craft\app\db\ActiveRecord;
-use craft\app\enums\AttributeType;
 
 Craft::$app->requireEdition(Craft::Pro);
 

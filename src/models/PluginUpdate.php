@@ -8,7 +8,6 @@
 namespace craft\app\models;
 
 use craft\app\base\Model;
-use craft\app\enums\AttributeType;
 use craft\app\models\PluginUpdate as PluginUpdateModel;
 
 /**

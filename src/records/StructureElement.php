@@ -11,8 +11,6 @@ use yii\db\ActiveQueryInterface;
 use Craft;
 use craft\app\db\ActiveRecord;
 use craft\app\db\StructuredElementQuery;
-use craft\app\enums\AttributeType;
-use craft\app\enums\ColumnType;
 use creocoder\nestedsets\NestedSetsBehavior;
 
 /**

@@ -9,7 +9,6 @@ namespace craft\app\records;
 
 use yii\db\ActiveQueryInterface;
 use craft\app\db\ActiveRecord;
-use craft\app\enums\AttributeType;
 
 /**
  * Field group record class.

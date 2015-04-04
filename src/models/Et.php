@@ -9,8 +9,6 @@ namespace craft\app\models;
 
 use Craft;
 use craft\app\base\Model;
-use craft\app\enums\AttributeType;
-use craft\app\helpers\DateTimeHelper;
 use craft\app\helpers\JsonHelper;
 
 /**

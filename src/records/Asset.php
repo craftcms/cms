@@ -8,8 +8,6 @@
 namespace craft\app\records;
 
 use yii\db\ActiveQueryInterface;
-use craft\app\enums\AttributeType;
-use craft\app\enums\ColumnType;
 use craft\app\db\ActiveRecord;
 
 /**

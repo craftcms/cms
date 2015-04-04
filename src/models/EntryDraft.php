@@ -8,8 +8,6 @@
 namespace craft\app\models;
 
 use Craft;
-use craft\app\enums\AttributeType;
-use craft\app\models\EntryDraft as EntryDraftModel;
 
 Craft::$app->requireEdition(Craft::Client);
 
@@ -59,111 +57,6 @@ class EntryDraft extends BaseEntryRevisionModel
 	// =========================================================================
 
 	/**
-	 * @var integer ID
-	 */
-	public $id;
-
-	/**
-	 * @var boolean Enabled
-	 */
-	public $enabled = true;
-
-	/**
-	 * @var boolean Archived
-	 */
-	public $archived = false;
-
-	/**
-	 * @var string Locale
-	 */
-	public $locale = 'en-US';
-
-	/**
-	 * @var boolean Locale enabled
-	 */
-	public $localeEnabled = true;
-
-	/**
-	 * @var string Slug
-	 */
-	public $slug;
-
-	/**
-	 * @var string URI
-	 */
-	public $uri;
-
-	/**
-	 * @var \DateTime Date created
-	 */
-	public $dateCreated;
-
-	/**
-	 * @var \DateTime Date updated
-	 */
-	public $dateUpdated;
-
-	/**
-	 * @var integer Root
-	 */
-	public $root;
-
-	/**
-	 * @var integer Lft
-	 */
-	public $lft;
-
-	/**
-	 * @var integer Rgt
-	 */
-	public $rgt;
-
-	/**
-	 * @var integer Level
-	 */
-	public $level;
-
-	/**
-	 * @var integer Section ID
-	 */
-	public $sectionId;
-
-	/**
-	 * @var integer Type ID
-	 */
-	public $typeId;
-
-	/**
-	 * @var integer Author ID
-	 */
-	public $authorId;
-
-	/**
-	 * @var \DateTime Post date
-	 */
-	public $postDate;
-
-	/**
-	 * @var \DateTime Expiry date
-	 */
-	public $expiryDate;
-
-	/**
-	 * @var integer New parent ID
-	 */
-	public $newParentId;
-
-	/**
-	 * @var string Revision notes
-	 */
-	public $revisionNotes;
-
-	/**
-	 * @var integer Creator ID
-	 */
-	public $creatorId;
-
-	/**
 	 * @var integer Draft ID
 	 */
 	public $draftId;
@@ -175,17 +68,6 @@ class EntryDraft extends BaseEntryRevisionModel
 
 	// Public Methods
 	// =========================================================================
-
-	/**
-	 * @inheritdoc
-	 */
-	public function attributeLabels()
-	{
-		return [
-			'slug' => Craft::t('app', 'Slug'),
-			'uri' => Craft::t('app', 'URI'),
-		];
-	}
 
 	/**
 	 * @inheritdoc

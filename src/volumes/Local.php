@@ -3,7 +3,6 @@ namespace craft\app\volumes;
 
 use Craft;
 use craft\app\base\Volume;
-use craft\app\enums\AttributeType;
 use craft\app\io\flysystemadapters\Local as LocalAdapter;
 
 /**
@@ -110,18 +109,6 @@ class Local extends Volume
 
 	// Protected Methods
 	// =========================================================================
-
-	/**
-	 * @inheritDoc BaseSavableComponentType::defineSettings()
-	 *
-	 * @return array
-	 */
-	protected function defineSettings()
-	{
-		return array(
-			'path' => array(AttributeType::String, 'required' => true),
-		);
-	}
 
 	/**
 	 * @inheritDoc BaseFlysystemFileSourceType::createAdapter()

@@ -8,8 +8,6 @@
 namespace craft\app\records;
 
 use craft\app\db\ActiveRecord;
-use craft\app\enums\AttributeType;
-use craft\app\enums\ColumnType;
 
 /**
  * Token record.

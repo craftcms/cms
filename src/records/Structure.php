@@ -9,8 +9,6 @@ namespace craft\app\records;
 
 use yii\db\ActiveQueryInterface;
 use craft\app\db\ActiveRecord;
-use craft\app\enums\AttributeType;
-use craft\app\enums\ColumnType;
 
 /**
  * Class Structure record.
