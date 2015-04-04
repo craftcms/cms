@@ -39,9 +39,9 @@ class Entry extends Element
 	// Constants
 	// =========================================================================
 
-	const LIVE     = 'live';
-	const PENDING  = 'pending';
-	const EXPIRED  = 'expired';
+	const STATUS_LIVE     = 'live';
+	const STATUS_PENDING  = 'pending';
+	const STATUS_EXPIRED  = 'expired';
 
 	// Static
 	// =========================================================================
@@ -92,9 +92,9 @@ class Entry extends Element
 	public static function getStatuses()
 	{
 		return [
-			static::LIVE => Craft::t('app', 'Live'),
-			static::PENDING => Craft::t('app', 'Pending'),
-			static::EXPIRED => Craft::t('app', 'Expired'),
+			static::STATUS_LIVE => Craft::t('app', 'Live'),
+			static::STATUS_PENDING => Craft::t('app', 'Pending'),
+			static::STATUS_EXPIRED => Craft::t('app', 'Expired'),
 			static::STATUS_DISABLED => Craft::t('app', 'Disabled')
 		];
 	}
@@ -421,7 +421,7 @@ class Entry extends Element
 
 		switch ($status)
 		{
-			case Entry::LIVE:
+			case Entry::STATUS_LIVE:
 			{
 				return ['and',
 					'elements.enabled = 1',
@@ -431,7 +431,7 @@ class Entry extends Element
 				];
 			}
 
-			case Entry::PENDING:
+			case Entry::STATUS_PENDING:
 			{
 				return ['and',
 					'elements.enabled = 1',
@@ -440,7 +440,7 @@ class Entry extends Element
 				];
 			}
 
-			case Entry::EXPIRED:
+			case Entry::STATUS_EXPIRED:
 			{
 				return ['and',
 					'elements.enabled = 1',
@@ -497,7 +497,7 @@ class Entry extends Element
 	{
 		/** @var Entry $element */
 		// Make sure that the entry is actually live
-		if ($element->getStatus() == Entry::LIVE)
+		if ($element->getStatus() == Entry::STATUS_LIVE)
 		{
 			$section = $element->getSection();
 
@@ -732,15 +732,15 @@ class Entry extends Element
 
 			if ($postDate <= $currentTime && (!$expiryDate || $expiryDate > $currentTime))
 			{
-				return self::LIVE;
+				return self::STATUS_LIVE;
 			}
 			else if ($postDate > $currentTime)
 			{
-				return self::PENDING;
+				return self::STATUS_PENDING;
 			}
 			else
 			{
-				return self::EXPIRED;
+				return self::STATUS_EXPIRED;
 			}
 		}
 

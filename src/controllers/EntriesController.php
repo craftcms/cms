@@ -294,7 +294,7 @@ class EntriesController extends BaseEntriesController
 
 				// If we're looking at the live version of an entry, just use
 				// the entry's main URL as its share URL
-				if ($className == Entry::className() && $entry->getStatus() == Entry::LIVE)
+				if ($className == Entry::className() && $entry->getStatus() == Entry::STATUS_LIVE)
 				{
 					$variables['shareUrl'] = $entry->getUrl();
 				}
