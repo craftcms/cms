@@ -43,13 +43,7 @@ class Query extends \yii\db\Query
 	}
 
 	/**
-	 * @inheritDoc \yii\db\Query::where()
-	 *
-	 * @param string|array $condition
-	 * @param array $params
-	 * @return static
-	 * @see andWhere()
-	 * @see orWhere()
+	 * @inheritdoc
 	 */
 	public function where($conditions, $params = [])
 	{
@@ -62,13 +56,7 @@ class Query extends \yii\db\Query
 	}
 
 	/**
-	 * @inheritDoc \yii\db\Query::andWhere()
-	 *
-	 * @param string|array $condition
-	 * @param array $params
-	 * @return static
-	 * @see where()
-	 * @see orWhere()
+	 * @inheritdoc
 	 */
 	public function andWhere($conditions, $params = [])
 	{
@@ -81,13 +69,7 @@ class Query extends \yii\db\Query
 	}
 
 	/**
-	 * @inheritDoc \yii\db\Query::orWhere()
-	 *
-	 * @param string|array $condition
-	 * @param array $params
-	 * @return static
-	 * @see where()
-	 * @see andWhere()
+	 * @inheritdoc
 	 */
 	public function orWhere($conditions, $params = [])
 	{

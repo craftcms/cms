@@ -41,9 +41,7 @@ class User extends \yii\web\User
 	// =========================================================================
 
 	/**
-	 * @inheritDoc \yii\base\object::__construct()
-	 *
-	 * @param array $config
+	 * @inheritdoc
 	 */
 	public function __construct($config = [])
 	{
@@ -104,11 +102,7 @@ class User extends \yii\web\User
 	}
 
 	/**
-	 * @inheritDoc \yii\web\User::getReturnUrl()
-	 *
-	 * @param string|array $defaultUrl
-	 * @return string
-	 * @see loginRequired()
+	 * @inheritdoc
 	 */
 	public function getReturnUrl($defaultUrl = null)
 	{
@@ -202,12 +196,7 @@ class User extends \yii\web\User
 	// =========================================================================
 
 	/**
-	 * @inheritDoc \yii\web\User::beforeLogin()
-	 *
-	 * @param IdentityInterface $identity
-	 * @param boolean $cookieBased
-	 * @param integer $duration
-	 * @return boolean
+	 * @inheritdoc
 	 */
 	protected function beforeLogin($identity, $cookieBased, $duration)
 	{
@@ -221,11 +210,7 @@ class User extends \yii\web\User
 	}
 
 	/**
-	 * @inheritDoc \yii\web\User::afterLogin()
-	 *
-	 * @param IdentityInterface $identity
-	 * @param boolean $cookieBased
-	 * @param integer $duration
+	 * @inheritdoc
 	 */
 	protected function afterLogin($identity, $cookieBased, $duration)
 	{
@@ -239,7 +224,7 @@ class User extends \yii\web\User
 	}
 
 	/**
-	 * @inheritDoc \yii\web\User::renewAuthStatus()
+	 * @inheritdoc
 	 */
 	protected function renewAuthStatus()
 	{
@@ -251,7 +236,7 @@ class User extends \yii\web\User
 	}
 
 	/**
-     * @inheritDoc \yii\web\User::renewIdentityCookie()
+     * @inheritdoc
      */
     protected function renewIdentityCookie()
     {
@@ -262,9 +247,7 @@ class User extends \yii\web\User
     }
 
 	/**
-	 * @inheritDoc \yii\web\User::afterLogout()
-	 *
-	 * @param IdentityInterface $identity
+	 * @inheritdoc
 	 */
 	protected function afterLogout($identity)
 	{

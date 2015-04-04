@@ -102,7 +102,7 @@ class EntryType extends Model
 	}
 
 	/**
-	 * @inheritDoc ElementInterface::getCpEditUrl()
+	 * Returns the entry’s CP edit URL.
 	 *
 	 * @return string
 	 */

@@ -130,12 +130,7 @@ class User extends ActiveRecord
 
 
 	/**
-	 * @inheritDoc ActiveRecord::validate()
-	 *
-	 * @param null $attributes
-	 * @param bool $clearErrors
-	 *
-	 * @return bool|null
+	 * @inheritdoc
 	 */
 	public function validate($attributes = null, $clearErrors = true)
 	{

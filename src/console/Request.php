@@ -10,7 +10,7 @@ namespace craft\app\console;
 use craft\app\base\RequestTrait;
 
 /**
- * @inheritDoc \yii\console\Request
+ * @inheritdoc
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0

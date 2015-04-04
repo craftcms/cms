@@ -35,9 +35,7 @@ class Session extends \yii\web\Session
 	// =========================================================================
 
 	/**
-	 * @inheritDoc \yii\base\object::__construct()
-	 *
-	 * @param array $config
+	 * @inheritdoc
 	 */
 	public function __construct($config = [])
 	{

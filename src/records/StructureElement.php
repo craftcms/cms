@@ -59,7 +59,7 @@ class StructureElement extends ActiveRecord
 	}
 
 	/**
-	 * @inheritDoc
+	 * @inheritdoc
 	 */
 	public static function find()
 	{
@@ -88,7 +88,7 @@ class StructureElement extends ActiveRecord
 
 
 	/**
-	 * @inheritDoc
+	 * @inheritdoc
 	 */
 	public function behaviors()
 	{
@@ -104,7 +104,7 @@ class StructureElement extends ActiveRecord
 	}
 
 	/**
-	 * @inheritDoc
+	 * @inheritdoc
 	 */
 	public function transactions()
 	{

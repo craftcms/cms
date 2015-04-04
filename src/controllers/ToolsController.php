@@ -28,10 +28,8 @@ class ToolsController extends Controller
 	// =========================================================================
 
 	/**
-	 * @inheritDoc Controller::init()
-	 *
-	 * @throws HttpException
-	 * @return null
+	 * @inheritdoc
+	 * @throws HttpException if the user isn’t an admin
 	 */
 	public function init()
 	{

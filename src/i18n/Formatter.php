@@ -16,7 +16,7 @@ use yii\base\InvalidParamException;
 use yii\helpers\FormatConverter;
 
 /**
- * @inheritDoc \yii\i18n\Formatter
+ * @inheritdoc
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0

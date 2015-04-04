@@ -12,7 +12,7 @@ use craft\app\helpers\IOHelper;
 use yii\web\HttpException;
 
 /**
- * @inheritDoc \yii\web\Response
+ * @inheritdoc
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0

@@ -22,12 +22,7 @@ class ZipArchive implements ZipInterface
 	// =========================================================================
 
 	/**
-	 * @inheritDoc ZipInterface::zip()
-	 *
-	 * @param $sourceFolder
-	 * @param $destZip
-	 *
-	 * @return bool
+	 * @inheritdoc
 	 */
 	public function zip($sourceFolder, $destZip)
 	{
@@ -45,12 +40,7 @@ class ZipArchive implements ZipInterface
 	}
 
 	/**
-	 * @inheritDoc ZipInterface::unzip()
-	 *
-	 * @param $srcZip
-	 * @param $destFolder
-	 *
-	 * @return bool
+	 * @inheritdoc
 	 */
 	public function unzip($srcZip, $destFolder)
 	{
@@ -109,14 +99,7 @@ class ZipArchive implements ZipInterface
 	}
 
 	/**
-	 * @inheritDoc ZipInterface::add()
-	 *
-	 * @param string $sourceZip
-	 * @param string $pathToAdd
-	 * @param string $basePath
-	 * @param null   $pathPrefix
-	 *
-	 * @return bool
+	 * @inheritdoc
 	 */
 	public function add($sourceZip, $pathToAdd, $basePath, $pathPrefix = null)
 	{

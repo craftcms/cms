@@ -64,9 +64,7 @@ class Local extends Volume
 	// =========================================================================
 
 	/**
-	 * @inheritDoc ISavableComponentType::getSettingsHtml()
-	 *
-	 * @return string|null
+	 * @inheritdoc
 	 */
 	public function getSettingsHtml()
 	{
@@ -96,8 +94,7 @@ class Local extends Volume
 	// =========================================================================
 
 	/**
-	 * @inheritDoc BaseFlysystemFileSourceType::createAdapter()
-	 *
+	 * @inheritdoc
 	 * @return LocalAdapter
 	 */
 	protected function createAdapter()

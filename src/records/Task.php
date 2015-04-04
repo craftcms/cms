@@ -64,7 +64,7 @@ class Task extends ActiveRecord
 	}
 
 	/**
-	 * @inheritDoc
+	 * @inheritdoc
 	 */
 	public static function find()
 	{
@@ -73,7 +73,7 @@ class Task extends ActiveRecord
 
 
 	/**
-	 * @inheritDoc
+	 * @inheritdoc
 	 */
 	public function behaviors()
 	{
@@ -89,7 +89,7 @@ class Task extends ActiveRecord
 	}
 
 	/**
-	 * @inheritDoc
+	 * @inheritdoc
 	 */
 	public function transactions()
 	{

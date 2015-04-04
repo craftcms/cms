@@ -37,10 +37,8 @@ class InstallController extends Controller
 	// =========================================================================
 
 	/**
-	 * @inheritDoc Controller::init()
-	 *
-	 * @throws HttpException
-	 * @return null
+	 * @inheritdoc
+	 * @throws HttpException if Craft is already installed
 	 */
 	public function init()
 	{

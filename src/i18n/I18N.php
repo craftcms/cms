@@ -15,7 +15,7 @@ use craft\app\tasks\ResaveAllElements;
 use ResourceBundle;
 
 /**
- * @inheritDoc \yii\i18n\I18N
+ * @inheritdoc
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0

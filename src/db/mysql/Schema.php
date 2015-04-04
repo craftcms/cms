@@ -8,7 +8,7 @@
 namespace craft\app\db\mysql;
 
 /**
- * @inheritDoc \yii\db\mysql\Schema
+ * @inheritdoc
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
@@ -34,7 +34,7 @@ class Schema extends \yii\db\mysql\Schema
 	// =========================================================================
 
 	/**
-	 * @inheritDoc \yii\base\Object::init()
+	 * @inheritdoc
 	 */
 	public function init()
 	{

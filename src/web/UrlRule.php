@@ -11,7 +11,7 @@ use Craft;
 use craft\app\helpers\ArrayHelper;
 
 /**
- * @inheritDoc \yii\web\UrlManager
+ * @inheritdoc
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
@@ -81,11 +81,7 @@ class UrlRule extends \yii\web\UrlRule
 	}
 
 	/**
-	 * @inheritDoc \yii\web\UrlRule::parseRequest()
-	 *
-	 * @param UrlManager $manager the URL manager
-	 * @param Request $request
-	 * @return array|boolean
+	 * @inheritdoc
 	 */
 	public function parseRequest($manager, $request)
 	{

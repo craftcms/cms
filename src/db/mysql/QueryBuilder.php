@@ -14,7 +14,7 @@ use yii\base\Exception;
 use yii\db\Expression;
 
 /**
- * @inheritDoc yii\db\mysql\QueryBuilder
+ * @inheritdoc
  *
  * @property Connection $db Connection the DB connection that this command is associated with.
  *
@@ -24,7 +24,7 @@ use yii\db\Expression;
 class QueryBuilder extends \yii\db\mysql\QueryBuilder
 {
 	/**
-	 * @inheritDoc \yii\db\QueryBuilder::createTable()
+	 * @inheritdoc
 	 *
 	 * @param string $table the name of the table to be created. The name will be properly quoted by the method.
 	 * @param array $columns the columns (name => definition) in the new table.

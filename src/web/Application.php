@@ -391,11 +391,7 @@ class Application extends \yii\web\Application
 	}
 
 	/**
-	 * @inheritDoc \yii\di\ServiceLocator::get()
-	 *
-	 * @param string $id
-	 * @param boolean $throwException
-	 * @return object|null
+	 * @inheritdoc
 	 */
 	public function get($id, $throwException = true)
 	{
