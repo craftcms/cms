@@ -9,11 +9,10 @@ namespace craft\app\elements\db;
 
 use Craft;
 use craft\app\db\Query;
+use craft\app\db\QueryAbortedException;
 use craft\app\elements\User;
-use craft\app\enums\UserStatus;
 use craft\app\helpers\DbHelper;
 use craft\app\models\UserGroup;
-use craft\app\models\UserType;
 
 /**
  * UserQuery represents a SELECT SQL statement for users in a way that is independent of DBMS.
@@ -43,7 +42,7 @@ class UserQuery extends ElementQuery
 	/**
 	 * @inheritdoc
 	 */
-	public $status = UserStatus::Active;
+	public $status = User::STATUS_ACTIVE;
 
 	/**
 	 * @var boolean Whether to only return users that are admins.

@@ -20,7 +20,6 @@ use craft\app\elements\actions\UnsuspendUsers;
 use craft\app\elements\db\ElementQueryInterface;
 use craft\app\elements\db\UserQuery;
 use craft\app\enums\AuthError;
-use craft\app\enums\UserStatus;
 use craft\app\helpers\DateTimeHelper;
 use craft\app\helpers\UrlHelper;
 use craft\app\models\UserGroup;
@@ -38,6 +37,15 @@ use yii\web\IdentityInterface;
  */
 class User extends Element implements IdentityInterface
 {
+	// Constants
+	// =========================================================================
+
+	const STATUS_ACTIVE    = 'active';
+	const STATUS_LOCKED    = 'locked';
+	const STATUS_SUSPENDED = 'suspended';
+	const STATUS_PENDING   = 'pending';
+	const STATUS_ARCHIVED  = 'archived';
+
 	// Static
 	// =========================================================================
 
@@ -75,11 +83,11 @@ class User extends Element implements IdentityInterface
 	public static function getStatuses()
 	{
 		return [
-			UserStatus::Active    => Craft::t('app', 'Active'),
-			UserStatus::Pending   => Craft::t('app', 'Pending'),
-			UserStatus::Locked    => Craft::t('app', 'Locked'),
-			UserStatus::Suspended => Craft::t('app', 'Suspended'),
-			UserStatus::Archived  => Craft::t('app', 'Archived')
+			self::STATUS_ACTIVE    => Craft::t('app', 'Active'),
+			self::STATUS_PENDING   => Craft::t('app', 'Pending'),
+			self::STATUS_LOCKED    => Craft::t('app', 'Locked'),
+			self::STATUS_SUSPENDED => Craft::t('app', 'Suspended'),
+			self::STATUS_ARCHIVED  => Craft::t('app', 'Archived')
 		];
 	}
 
@@ -279,27 +287,27 @@ class User extends Element implements IdentityInterface
 	{
 		switch ($status)
 		{
-			case UserStatus::Active:
+			case self::STATUS_ACTIVE:
 			{
 				return 'users.archived = 0 AND users.suspended = 0 AND users.locked = 0 and users.pending = 0';
 			}
 
-			case UserStatus::Pending:
+			case self::STATUS_PENDING:
 			{
 				return 'users.pending = 1';
 			}
 
-			case UserStatus::Locked:
+			case self::STATUS_LOCKED:
 			{
 				return 'users.locked = 1';
 			}
 
-			case UserStatus::Suspended:
+			case self::STATUS_SUSPENDED:
 			{
 				return 'users.suspended = 1';
 			}
 
-			case UserStatus::Archived:
+			case self::STATUS_ARCHIVED:
 			{
 				return 'users.archived = 1';
 			}
@@ -358,7 +366,7 @@ class User extends Element implements IdentityInterface
 	{
 		$user = Craft::$app->users->getUserById($id);
 
-		if ($user !== null && $user->status == UserStatus::Active)
+		if ($user !== null && $user->getStatus() == self::STATUS_ACTIVE)
 		{
 			return $user;
 		}
@@ -637,27 +645,27 @@ class User extends Element implements IdentityInterface
 	 */
 	public function authenticate($password)
 	{
-		switch ($this->status)
+		switch ($this->getStatus())
 		{
-			case UserStatus::Archived:
+			case self::STATUS_ARCHIVED:
 			{
 				$this->authError = AuthError::InvalidCredentials;
 				return false;
 			}
 
-			case UserStatus::Pending:
+			case self::STATUS_PENDING:
 			{
 				$this->authError = AuthError::PendingVerification;
 				return false;
 			}
 
-			case UserStatus::Suspended:
+			case self::STATUS_SUSPENDED:
 			{
-				$this->errorCode = AuthError::AccountSuspended;
+				$this->authError = AuthError::AccountSuspended;
 				return false;
 			}
 
-			case UserStatus::Locked:
+			case self::STATUS_LOCKED:
 			{
 				if (Craft::$app->config->get('cooldownDuration'))
 				{
@@ -670,7 +678,7 @@ class User extends Element implements IdentityInterface
 				return false;
 			}
 
-			case UserStatus::Active:
+			case self::STATUS_ACTIVE:
 			{
 				// Validate the password
 				if (!Craft::$app->getSecurity()->validatePassword($password, $this->password))
@@ -678,7 +686,7 @@ class User extends Element implements IdentityInterface
 					Craft::$app->users->handleInvalidLogin($this);
 
 					// Was that one bad password too many?
-					if ($this->status == UserStatus::Locked)
+					if ($this->getStatus() == self::STATUS_LOCKED)
 					{
 						// Will set the authError to either AccountCooldown or AccountLocked
 						return $this->authenticate($password);
@@ -859,25 +867,25 @@ class User extends Element implements IdentityInterface
 	{
 		if ($this->locked)
 		{
-			return UserStatus::Locked;
+			return self::STATUS_LOCKED;
 		}
 
 		if ($this->suspended)
 		{
-			return UserStatus::Suspended;
+			return self::STATUS_SUSPENDED;
 		}
 
 		if ($this->archived)
 		{
-			return UserStatus::Archived;
+			return self::STATUS_ARCHIVED;
 		}
 
 		if ($this->pending)
 		{
-			return UserStatus::Pending;
+			return self::STATUS_PENDING;
 		}
 
-		return UserStatus::Active;
+		return self::STATUS_ACTIVE;
 	}
 
 	/**
@@ -1006,7 +1014,7 @@ class User extends Element implements IdentityInterface
 	 */
 	public function getCooldownEndTime()
 	{
-		if ($this->status == UserStatus::Locked)
+		if ($this->getStatus() == self::STATUS_LOCKED)
 		{
 			$cooldownEnd = clone $this->lockoutDate;
 			$cooldownEnd->add(new DateInterval(Craft::$app->config->get('cooldownDuration')));
@@ -1022,7 +1030,7 @@ class User extends Element implements IdentityInterface
 	 */
 	public function getRemainingCooldownTime()
 	{
-		if ($this->status == UserStatus::Locked)
+		if ($this->getStatus() == self::STATUS_LOCKED)
 		{
 			$currentTime = DateTimeHelper::currentUTCDateTime();
 			$cooldownEnd = $this->getCooldownEndTime();

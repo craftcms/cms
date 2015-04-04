@@ -11,7 +11,6 @@ use Craft;
 use craft\app\dates\DateInterval;
 use craft\app\dates\DateTime;
 use craft\app\db\Query;
-use craft\app\enums\UserStatus;
 use craft\app\errors\Exception;
 use craft\app\events\DeleteUserEvent;
 use craft\app\events\UserEvent;
@@ -1485,7 +1484,7 @@ class Users extends Component
 	{
 		switch ($status)
 		{
-			case UserStatus::Active:
+			case User::STATUS_ACTIVE:
 			{
 				$userRecord->archived = false;
 				$userRecord->locked = false;
@@ -1495,25 +1494,25 @@ class Users extends Component
 				break;
 			}
 
-			case UserStatus::Pending:
+			case User::STATUS_PENDING:
 			{
 				$userRecord->pending = true;
 				break;
 			}
 
-			case UserStatus::Locked:
+			case User::STATUS_LOCKED:
 			{
 				$userRecord->locked = true;
 				break;
 			}
 
-			case UserStatus::Suspended:
+			case User::STATUS_SUSPENDED:
 			{
 				$userRecord->suspended = true;
 				break;
 			}
 
-			case UserStatus::Archived:
+			case User::STATUS_ARCHIVED:
 			{
 				$userRecord->archived = true;
 				break;

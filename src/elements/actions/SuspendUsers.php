@@ -12,7 +12,6 @@ use craft\app\base\ElementAction;
 use craft\app\elements\db\ElementQuery;
 use craft\app\elements\db\ElementQueryInterface;
 use craft\app\elements\User;
-use craft\app\enums\UserStatus;
 use craft\app\helpers\JsonHelper;
 
 /**
@@ -75,9 +74,9 @@ EOT;
 		/** @var ElementQueryInterface|ElementQuery $query */
 		// Get the users that aren't already suspended
 		$query->status = [
-			UserStatus::Active,
-			UserStatus::Locked,
-			UserStatus::Pending,
+			User::STATUS_ACTIVE,
+			User::STATUS_LOCKED,
+			User::STATUS_PENDING,
 		];
 
 		/** @var User[] $users */

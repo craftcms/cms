@@ -9,7 +9,6 @@ namespace craft\app\controllers;
 
 use Craft;
 use craft\app\enums\AuthError;
-use craft\app\enums\UserStatus;
 use craft\app\errors\Exception;
 use craft\app\errors\HttpException;
 use craft\app\events\UserEvent;
@@ -327,7 +326,7 @@ class UsersController extends Controller
 
 			if (Craft::$app->users->changePassword($userToProcess, $forceDifferentPassword))
 			{
-				if ($userToProcess->status == UserStatus::Pending)
+				if ($userToProcess->status == User::STATUS_PENDING)
 				{
 					// Activate them
 					Craft::$app->users->activateUser($userToProcess);
@@ -378,7 +377,7 @@ class UsersController extends Controller
 		if ($info = $this->_processTokenRequest())
 		{
 			$userToProcess = $info['userToProcess'];
-			$userIsPending = $userToProcess->status == UserStatus::Pending;
+			$userIsPending = $userToProcess->status == User::STATUS_PENDING;
 
 			Craft::$app->users->verifyEmailForUser($userToProcess);
 
@@ -517,7 +516,7 @@ class UsersController extends Controller
 		{
 			switch ($user->getStatus())
 			{
-				case UserStatus::Pending:
+				case User::STATUS_PENDING:
 				{
 					$statusLabel = Craft::t('app', 'Unverified');
 
@@ -531,7 +530,7 @@ class UsersController extends Controller
 
 					break;
 				}
-				case UserStatus::Locked:
+				case User::STATUS_LOCKED:
 				{
 					$statusLabel = Craft::t('app', 'Locked');
 
@@ -542,7 +541,7 @@ class UsersController extends Controller
 
 					break;
 				}
-				case UserStatus::Suspended:
+				case User::STATUS_SUSPENDED:
 				{
 					$statusLabel = Craft::t('app', 'Suspended');
 
@@ -553,7 +552,7 @@ class UsersController extends Controller
 
 					break;
 				}
-				case UserStatus::Active:
+				case User::STATUS_ACTIVE:
 				{
 					$statusLabel = Craft::t('app', 'Active');
 
@@ -573,7 +572,7 @@ class UsersController extends Controller
 
 			if (!$user->isCurrent())
 			{
-				if (Craft::$app->getUser()->checkPermission('administrateUsers') && $user->getStatus() != UserStatus::Suspended)
+				if (Craft::$app->getUser()->checkPermission('administrateUsers') && $user->getStatus() != User::STATUS_SUSPENDED)
 				{
 					$sketchyActions[] = ['action' => 'users/suspend-user', 'label' => Craft::t('app', 'Suspend')];
 				}
@@ -952,7 +951,7 @@ class UsersController extends Controller
 			Craft::$app->getSession()->setNotice(Craft::t('app', 'User saved.'));
 
 			// Is this public registration, and is the user going to be activated automatically?
-			if ($thisIsPublicRegistration && $user->status == UserStatus::Active)
+			if ($thisIsPublicRegistration && $user->status == User::STATUS_ACTIVE)
 			{
 				// Do we need to auto-login?
 				if (Craft::$app->config->get('autoLoginAfterAccountActivation') === true)
