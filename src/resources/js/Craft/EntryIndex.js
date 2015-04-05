@@ -111,4 +111,4 @@ Craft.EntryIndex = Craft.BaseElementIndex.extend(
 });
 
 // Register it!
-Craft.registerElementIndexClass('Entry', Craft.EntryIndex);
+Craft.registerElementIndexClass('craft\\app\\elements\\Entry', Craft.EntryIndex);

@@ -6957,7 +6957,7 @@ Craft.CategoryIndex = Craft.BaseElementIndex.extend(
 });
 
 // Register it!
-Craft.registerElementIndexClass('Category', Craft.CategoryIndex);
+Craft.registerElementIndexClass('craft\\app\\elements\\Category', Craft.CategoryIndex);
 
 /**
  * Category Select input
@@ -8061,7 +8061,7 @@ Craft.EntryIndex = Craft.BaseElementIndex.extend(
 });
 
 // Register it!
-Craft.registerElementIndexClass('Entry', Craft.EntryIndex);
+Craft.registerElementIndexClass('craft\\app\\elements\\Entry', Craft.EntryIndex);
 
 /**
  * Handle Generator
