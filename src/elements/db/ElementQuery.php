@@ -1564,7 +1564,7 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
 			$this->query->offset = null;
 
 			$elementIds = $this->query->column('elements.id');
-			$scoredSearchResults = ($this->orderBy == 'score');
+			$scoredSearchResults = ($this->orderBy === ['score' => SORT_ASC]);
 			$filteredElementIds = Craft::$app->search->filterElementIdsByQuery($elementIds, $this->search, $scoredSearchResults);
 
 			$this->query->limit = $limit;
@@ -1611,7 +1611,7 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
 
 			$orderBy = [new FixedOrderExpression('elements.id', $ids, $db)];
 		}
-		else if ($this->orderBy && $this->orderBy != 'score' && !$this->query->orderBy)
+		else if (!empty($this->orderBy) && $this->orderBy !== ['score' => SORT_ASC] && empty($this->query->orderBy))
 		{
 			$orderBy = $this->orderBy;
 
