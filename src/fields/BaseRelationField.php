@@ -11,7 +11,6 @@ use Craft;
 use craft\app\base\ElementInterface;
 use craft\app\base\Field;
 use craft\app\base\Element;
-use craft\app\elements\db\AssetQuery;
 use craft\app\elements\db\ElementQuery;
 use craft\app\elements\db\ElementQueryInterface;
 use craft\app\helpers\StringHelper;
@@ -260,7 +259,7 @@ abstract class BaseRelationField extends Field
 	{
 		$value = $this->getElementValue($element);
 
-		if ($value instanceof AssetQuery)
+		if ($value instanceof ElementQueryInterface)
 		{
 			$value = $value->id;
 		}
