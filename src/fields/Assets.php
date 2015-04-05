@@ -196,7 +196,7 @@ class Assets extends BaseRelationField
 				// Find the files with temp sources and just move those.
 				$criteria = [
 					'id' => array_merge(['in'], $fileIds),
-					'sourceId' => ':empty:'
+					'volumeId' => ':empty:'
 				];
 
 				$filesInTempSource = Asset::find()->configure($criteria)->all();
@@ -409,17 +409,17 @@ class Assets extends BaseRelationField
 	/**
 	 * Resolve a source path to it's folder ID by the source path and the matched source beginning.
 	 *
-	 * @param int                      $sourceId
+	 * @param int                      $volumeId
 	 * @param string                   $subpath
 	 * @param ElementInterface|Element $element
 	 *
 	 * @throws Exception
 	 * @return mixed
 	 */
-	private function _resolveSourcePathToFolderId($sourceId, $subpath, $element)
+	private function _resolveSourcePathToFolderId($volumeId, $subpath, $element)
 	{
 		$folder = Craft::$app->assets->findFolder([
-			'sourceId' => $sourceId,
+			'volumeId' => $volumeId,
 			'parentId' => ':empty:'
 		]);
 
@@ -453,7 +453,7 @@ class Assets extends BaseRelationField
 		}
 		else
 		{
-			$folderCriteria = ['sourceId' => $sourceId, 'path' => $folder->path.$subpath];
+			$folderCriteria = ['volumeId' => $volumeId, 'path' => $folder->path.$subpath];
 			$existingFolder = Craft::$app->assets->findFolder($folderCriteria);
 		}
 
@@ -496,8 +496,8 @@ class Assets extends BaseRelationField
 	/**
 	 * Create a subfolder in a folder by it's name.
 	 *
-	 * @param $currentFolder
-	 * @param $folderName
+	 * @param VolumeFolder $currentFolder
+	 * @param string $folderName
 	 *
 	 * @return mixed|null
 	 */
@@ -512,7 +512,7 @@ class Assets extends BaseRelationField
 				[
 					'parentId' => $currentFolder->id,
 					'name' => $folderName,
-					'sourceId' => $currentFolder->sourceId,
+					'volumeId' => $currentFolder->volumeId,
 					'path' => trim($currentFolder->path.'/'.$folderName, '/').'/'
 				]
 			);
