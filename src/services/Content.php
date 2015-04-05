@@ -89,7 +89,7 @@ class Content extends Component
 		if ($row)
 		{
 			$row = $this->_removeColumnPrefixesFromRow($row);
-			$content = new ContentModel($row);
+			$content = ContentModel::create($row);
 			$content->element = $element;
 		}
 		else
