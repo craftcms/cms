@@ -95,10 +95,9 @@ class AssetQuery extends ElementQuery
 	}
 
 	/**
-	 * Sets the [[sourceId]] property based on a given volume(s)’s handle(s).
+	 * Sets the [[volumeId]] property based on a given volume(s)’s handle(s).
 	 *
 	 * @param string|string[]|Volume $value The property value
-	 *
 	 * @return static The query object itself
 	 */
 	public function volume($value)
@@ -121,6 +120,19 @@ class AssetQuery extends ElementQuery
 	}
 
 	/**
+	 * Sets the [[volumeId]] property based on a given volume(s)’s handle(s).
+	 *
+	 * @param string|string[]|Volume $value The property value
+	 * @return static The query object itself
+	 * @deprecated since Craft 3.0. Use [[volume()]] instead.
+	 */
+	public function source($value)
+	{
+		Craft::$app->deprecator->log('AssetQuery::source()', 'The “source” asset parameter has been deprecated. Use “volume” instead.');
+		return $this->volume($value);
+	}
+
+	/**
 	 * Sets the [[volumeId]] property.
 	 * @param integer|integer[] $value The property value
 	 * @return static The query object itself
@@ -129,6 +141,18 @@ class AssetQuery extends ElementQuery
 	{
 		$this->volumeId = $value;
 		return $this;
+	}
+
+	/**
+	 * Sets the [[volumeId]] property.
+	 * @param integer|integer[] $value The property value
+	 * @return static The query object itself
+	 * @deprecated since Craft 3.0. Use [[volumeId()]] instead.
+	 */
+	public function sourceId($value)
+	{
+		Craft::$app->deprecator->log('AssetQuery::sourceId()', 'The “sourceId” asset parameter has been deprecated. Use “volumeId” instead.');
+		return $this->volumeId($value);
 	}
 
 	/**
