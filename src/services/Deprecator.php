@@ -239,7 +239,7 @@ class Deprecator extends Component
 			];
 
 			// Is this a template?
-			if (isset($trace['object']) && $trace['object'] instanceof \Twig_Template && 'Twig_Template' !== get_class($trace['object']) && StringHelper::contains($trace['file'], 'compiled_templates'))
+			if (isset($trace['object']) && $trace['object'] instanceof \Twig_Template && 'Twig_Template' !== get_class($trace['object']) && isset($trace['file']) && StringHelper::contains($trace['file'], 'compiled_templates'))
 			{
 				$template = $trace['object'];
 
