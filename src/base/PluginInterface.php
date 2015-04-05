@@ -75,4 +75,12 @@ interface PluginInterface
 	 * @return mixed The result that should be returned from [[PluginsController::actionRThe rendered settings page HTML
 	 */
 	public function getSettingsResponse();
+
+	/**
+	 * Returns the component definition that should be registered on the [[\craft\app\variables\Craft]] instance for this plugin’s handle.
+	 *
+	 * @return mixed|null The component definition to be registered.
+	 * It can be any of the formats supported by [[\yii\di\ServiceLocator::set()]].
+	 */
+	public function getVariableDefinition();
 }

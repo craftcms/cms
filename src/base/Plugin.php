@@ -212,6 +212,14 @@ abstract class Plugin extends Module implements PluginInterface
 		return $this->get('migrator');
 	}
 
+	/**
+	 * @inheritdoc
+	 */
+	public function getVariableDefinition()
+	{
+		return null;
+	}
+
 	// Protected Methods
 	// =========================================================================
 
