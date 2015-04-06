@@ -79,7 +79,9 @@ Craft.UpdateInfo = Garnish.Base.extend(
 			$buttonContainer = $('<div class="buttons"/>').appendTo($headerPane);
 
 		// Is a manual update required?
-		if (!this.allowAutoUpdates || this.appUpdateInfo.manualUpdateRequired)
+		var manualUpdateRequired = (!this.allowAutoUpdates || this.appUpdateInfo.manualUpdateRequired);
+
+		if (manualUpdateRequired)
 		{
 			this.$downloadBtn = $('<div class="btn submit">'+Craft.t('Download')+'</div>').appendTo($buttonContainer);
 		}
@@ -97,26 +99,23 @@ Craft.UpdateInfo = Garnish.Base.extend(
 			new Garnish.MenuBtn($menuBtn);
 		}
 
-		if (this.allowAutoUpdates)
+		// Has the license been updated?
+		if (this.appUpdateInfo.licenseUpdated)
 		{
-			// Has the license been updated?
-			if (this.appUpdateInfo.licenseUpdated)
-			{
-				this.addListener(this.$downloadBtn, 'click', 'showLicenseForm');
+			this.addListener(this.$downloadBtn, 'click', 'showLicenseForm');
 
-				if (!this.appUpdateInfo.manualUpdateRequired)
-				{
-					this.addListener($updateBtn, 'click', 'showLicenseForm');
-				}
+			if (!manualUpdateRequired)
+			{
+				this.addListener($updateBtn, 'click', 'showLicenseForm');
 			}
-			else
-			{
-				this.addListener(this.$downloadBtn, 'click', 'downloadThat');
+		}
+		else
+		{
+			this.addListener(this.$downloadBtn, 'click', 'downloadThat');
 
-				if (!this.appUpdateInfo.manualUpdateRequired)
-				{
-					this.addListener($updateBtn, 'click', 'autoUpdateThat');
-				}
+			if (!manualUpdateRequired)
+			{
+				this.addListener($updateBtn, 'click', 'autoUpdateThat');
 			}
 		}
 
