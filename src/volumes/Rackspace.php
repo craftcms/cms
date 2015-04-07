@@ -21,6 +21,12 @@ use \OpenCloud\Rackspace as RackspaceClient;
  */
 class Rackspace extends Volume
 {
+
+	/**
+	 * Cache key to use for caching purposes
+	 */
+	const CACHE_KEY_PREFIX = 'rackspace.';
+
 	// Static
 	// =========================================================================
 
@@ -187,6 +193,25 @@ class Rackspace extends Volume
 	{
 		$config = array('username' => $username, 'apiKey' => $apiKey);
 
-		return new RackspaceClient(RackspaceClient::US_IDENTITY_ENDPOINT, $config);
+		$client = new RackspaceClient(RackspaceClient::US_IDENTITY_ENDPOINT, $config);
+
+		// Check if we have a cached token
+		$tokenKey = static::CACHE_KEY_PREFIX.md5($username.$apiKey);
+		if (Craft::$app->cache->exists($tokenKey))
+		{
+			$client->importCredentials(unserialize(Craft::$app->cache->get($tokenKey)));
+		}
+
+		$token = $client->getTokenObject();
+
+		// If it's not a valid token, re-authenticate and store the token
+		if (!$token || ($token && $token->hasExpired()))
+		{
+			$client->authenticate();
+			$tokenData = $client->exportCredentials();
+			Craft::$app->cache->set($tokenKey, serialize($tokenData));
+		}
+
+		return $client;
 	}
 }

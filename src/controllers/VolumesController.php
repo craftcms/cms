@@ -259,7 +259,7 @@ class VolumesController extends Controller
 		$dataType   = Craft::$app->getRequest()->getRequiredBodyParam('dataType');
 		$params     = Craft::$app->getRequest()->getBodyParam('params');
 
-		$volumeType = 'craft\app\assetvolumetypes\\'.$volumeType;
+		$volumeType = 'craft\app\volumes\\'.$volumeType;
 
 		if (!class_exists($volumeType))
 		{
