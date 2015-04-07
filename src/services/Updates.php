@@ -1,14 +1,15 @@
 <?php
 /**
  * @link http://buildwithcraft.com/
- * @copyright Copyright (c) 2013 Pixel & Tonic, Inc.
+ * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
  * @license http://buildwithcraft.com/license
  */
 
 namespace craft\app\services;
 
 use Craft;
-use craft\app\base\BasePlugin;
+use craft\app\base\Plugin;
+use craft\app\base\PluginInterface;
 use craft\app\enums\PluginVersionUpdateStatus;
 use craft\app\enums\VersionUpdateStatus;
 use craft\app\errors\Exception;
@@ -57,6 +58,11 @@ class Updates extends Component
 	 * @var UpdateModel
 	 */
 	private $_updateModel;
+
+	/**
+	 * @var boolean
+	 */
+	private $_isCraftDbMigrationNeeded;
 
 	// Public Methods
 	// =========================================================================
@@ -230,16 +236,16 @@ class Updates extends Component
 	}
 
 	/**
-	 * @param BasePlugin $plugin
+	 * @param PluginInterface|Plugin $plugin
 	 *
 	 * @return bool
 	 */
-	public function setNewPluginInfo(BasePlugin $plugin)
+	public function setNewPluginInfo(PluginInterface $plugin)
 	{
 		$affectedRows = Craft::$app->getDb()->createCommand()->update('{{%plugins}}', [
-			'version' => $plugin->getVersion()
+			'version' => $plugin->version
 		], [
-			'class' => $plugin::className()
+			'handle' => $plugin::getHandle()
 		])->execute();
 
 		return (bool) $affectedRows;
@@ -257,7 +263,7 @@ class Updates extends Component
 		$updateModel->app->localVersion = Craft::$app->version;
 		$updateModel->app->localBuild   = Craft::$app->build;
 
-		$plugins = Craft::$app->plugins->getPlugins();
+		$plugins = Craft::$app->plugins->getAllPlugins();
 
 		$pluginUpdateModels = [];
 
@@ -468,9 +474,9 @@ class Updates extends Component
 				$plugin = Craft::$app->plugins->getPlugin($handle);
 				if ($plugin)
 				{
-					Craft::info('The plugin, '.$plugin->getName().' wants to update the database.', __METHOD__);
+					Craft::info('The plugin, '.$plugin->name.' wants to update the database.', __METHOD__);
 					$updater->updateDatabase($plugin);
-					Craft::info('The plugin, '.$plugin->getName().' is done updating the database.', __METHOD__);
+					Craft::info('The plugin, '.$plugin->name.' is done updating the database.', __METHOD__);
 				}
 				else
 				{
@@ -569,7 +575,7 @@ class Updates extends Component
 	 */
 	public function isPluginDbUpdateNeeded()
 	{
-		$plugins = Craft::$app->plugins->getPlugins();
+		$plugins = Craft::$app->plugins->getAllPlugins();
 
 		foreach ($plugins as $plugin)
 		{
@@ -623,8 +629,13 @@ class Updates extends Component
 	 */
 	public function isCraftDbMigrationNeeded()
 	{
-		$storedSchemaVersion = Craft::$app->getInfo('schemaVersion');
-		return version_compare(Craft::$app->schemaVersion, $storedSchemaVersion, '>');
+		if ($this->_isCraftDbMigrationNeeded === null)
+		{
+			$storedSchemaVersion = Craft::$app->getInfo('schemaVersion');
+			$this->_isCraftDbMigrationNeeded = version_compare(Craft::$app->schemaVersion, $storedSchemaVersion, '>');
+		}
+
+		return $this->_isCraftDbMigrationNeeded;
 	}
 
 	/**
@@ -647,13 +658,13 @@ class Updates extends Component
 	/**
 	 * Returns a list of plugins that are in need of a database update.
 	 *
-	 * @return array|null
+	 * @return PluginInterface[]|Plugin[]|null
 	 */
 	public function getPluginsThatNeedDbUpdate()
 	{
 		$pluginsThatNeedDbUpdate = [];
 
-		$plugins = Craft::$app->plugins->getPlugins();
+		$plugins = Craft::$app->plugins->getAllPlugins();
 
 		foreach ($plugins as $plugin)
 		{

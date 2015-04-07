@@ -1,7 +1,7 @@
 <?php
 /**
  * @link http://buildwithcraft.com/
- * @copyright Copyright (c) 2013 Pixel & Tonic, Inc.
+ * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
  * @license http://buildwithcraft.com/license
  */
 
@@ -46,7 +46,7 @@ use yii\web\NotFoundHttpException;
  * @property \craft\app\services\Images           $images           The images service.
  * @property \craft\app\i18n\Locale               $locale           The locale component.
  * @property \craft\app\services\Matrix           $matrix           The matrix service.
- * @property \craft\app\services\Migrations       $migrations       The migrations service.
+ * @property \craft\app\db\MigrationManager       $migrator         The application’s migration manager.
  * @property \craft\app\services\Path             $path             The path service.
  * @property \craft\app\services\Plugins          $plugins          The plugins service.
  * @property \craft\app\services\Relations        $relations        The relations service.
@@ -261,7 +261,7 @@ class Application extends \yii\web\Application
 
 				if ($plugin)
 				{
-					if (!$user->checkPermission('accessPlugin-'.$this->templates->formatInputId($plugin::className())))
+					if (!$user->checkPermission('accessPlugin-'.$plugin->getHandle()))
 					{
 						throw new ForbiddenHttpException();
 					}
@@ -391,11 +391,7 @@ class Application extends \yii\web\Application
 	}
 
 	/**
-	 * @inheritDoc \yii\di\ServiceLocator::get()
-	 *
-	 * @param string $id
-	 * @param boolean $throwException
-	 * @return object|null
+	 * @inheritdoc
 	 */
 	public function get($id, $throwException = true)
 	{

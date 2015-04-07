@@ -39,10 +39,10 @@
 	{% set js %}
 		new Craft.AdminTable({
 			tableSelector: '#entrytypes',
-			deleteAction: 'sections/deleteEntryType',
+			deleteAction: 'sections/delete-entry-type',
 			minItems: 1,
 			sortable: true,
-			reorderAction: 'sections/reorderEntryTypes',
+			reorderAction: 'sections/reorder-entry-types',
 			confirmDeleteMessage: '{{ "Are you sure you want to delete “{name}” and all entries that use it?"|t }}',
 		});
 	{% endset %}

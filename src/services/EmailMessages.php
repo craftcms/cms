@@ -1,7 +1,7 @@
 <?php
 /**
  * @link http://buildwithcraft.com/
- * @copyright Copyright (c) 2013 Pixel & Tonic, Inc.
+ * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
  * @license http://buildwithcraft.com/license
  */
 
@@ -194,7 +194,7 @@ class EmailMessages extends Component
 			// Give plugins a chance to add additional messages
 			foreach (Craft::$app->plugins->call('registerEmailMessages') as $pluginHandle => $pluginKeys)
 			{
-				$pluginSourceLocale = Craft::$app->plugins->getPlugin($pluginHandle)->getSourceLanguage();
+				$pluginSourceLocale = Craft::$app->plugins->getPlugin($pluginHandle)->sourceLanguage;
 
 				foreach ($pluginKeys as $key)
 				{

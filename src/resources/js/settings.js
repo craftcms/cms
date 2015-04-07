@@ -154,7 +154,7 @@ Craft.Tool = Garnish.Base.extend(
 			params: params
 		};
 
-		Craft.postActionRequest('tools/performAction', data, $.proxy(this, 'onActionResponse'), {
+		Craft.postActionRequest('tools/perform-action', data, $.proxy(this, 'onActionResponse'), {
 			complete: $.noop
 		});
 	},
@@ -203,7 +203,7 @@ Craft.Tool = Garnish.Base.extend(
 			{
 				if (response && response.backupFile)
 				{
-					var $iframe = $('<iframe/>', {'src' : Craft.getActionUrl('tools/downloadBackupFile', {'filename':response.backupFile}) }).hide();
+					var $iframe = $('<iframe/>', {'src' : Craft.getActionUrl('tools/download-backup-file', {'filename':response.backupFile}) }).hide();
 					this.$form.append($iframe);
 				}
 

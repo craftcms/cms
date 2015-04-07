@@ -113,7 +113,7 @@ Craft.StructureTableSorter = Garnish.DragSort.extend({
 
 			var data = this._getAjaxBaseData(this.$targetItem);
 
-			Craft.postActionRequest('structures/getElementLevelDelta', data, $.proxy(function(response, textStatus)
+			Craft.postActionRequest('structures/get-element-level-delta', data, $.proxy(function(response, textStatus)
 			{
 				if (textStatus == 'success')
 				{
@@ -328,7 +328,7 @@ Craft.StructureTableSorter = Garnish.DragSort.extend({
 				$prevRow = $prevRow.prev();
 			}
 
-			Craft.postActionRequest('structures/moveElement', data, $.proxy(function(response, textStatus)
+			Craft.postActionRequest('structures/move-element', data, $.proxy(function(response, textStatus)
 			{
 				if (textStatus == 'success')
 				{

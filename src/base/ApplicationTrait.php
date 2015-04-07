@@ -1,7 +1,7 @@
 <?php
 /**
  * @link http://buildwithcraft.com/
- * @copyright Copyright (c) 2013 Pixel & Tonic, Inc.
+ * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
  * @license http://buildwithcraft.com/license
  */
 
@@ -9,8 +9,8 @@ namespace craft\app\base;
 
 use Craft;
 use craft\app\db\Connection;
+use craft\app\db\MigrationManager;
 use craft\app\db\Query;
-use craft\app\enums\CacheMethod;
 use craft\app\enums\ConfigCategory;
 use craft\app\errors\DbConnectException;
 use craft\app\errors\Exception;
@@ -109,6 +109,12 @@ trait ApplicationTrait
 	 * @var string The release track Craft is running on.
 	 */
 	public $track;
+
+	/**
+	 * @var string The stored version
+	 * @todo Remove this after the next breakpoint
+	 */
+	private $_storedVersion;
 
 	// Public Methods
 	// =========================================================================
@@ -230,7 +236,7 @@ trait ApplicationTrait
 				return false;
 			}
 
-			$this->_isInstalled = ($this->getRequest()->getIsConsoleRequest() || $this->getDb()->tableExists('{{%info}}', false));
+			$this->_isInstalled = (bool) ($this->getRequest()->getIsConsoleRequest() || $this->getDb()->tableExists('{{%info}}', false));
 		}
 
 		return $this->_isInstalled;
@@ -577,6 +583,9 @@ trait ApplicationTrait
 					throw new Exception(Craft::t('app', 'Craft appears to be installed but the info table is empty.'));
 				}
 
+				// TODO: Remove this after the next breakpoint
+				$this->_storedVersion = $row['version'];
+
 				$this->_info = Info::create($row);
 			}
 			else
@@ -611,6 +620,12 @@ trait ApplicationTrait
 
 			if ($this->isInstalled())
 			{
+				// TODO: Remove this after the next breakpoint
+				if (version_compare($this->_storedVersion, '3.0', '<'))
+				{
+					unset($attributes['fieldVersion']);
+				}
+
 				$this->getDb()->createCommand()->update('{{%info}}', $attributes)->execute();
 			}
 			else
@@ -756,6 +771,16 @@ trait ApplicationTrait
 		$this->set('log', $dispatcher);
 	}
 
+	/**
+	 * Returns the application’s migration manager.
+	 *
+	 * @return MigrationManager The application’s migration manager
+	 */
+	public function getMigrator()
+	{
+		return $this->get('migrator');
+	}
+
 	// Private Methods
 	// =========================================================================
 
@@ -795,12 +820,12 @@ trait ApplicationTrait
 
 		switch ($cacheMethod)
 		{
-			case CacheMethod::APC:
+			case 'apc':
 			{
 				return 'craft\app\cache\ApcCache';
 			}
 
-			case CacheMethod::Db:
+			case 'db':
 			{
 				return [
 					'class' => 'craft\app\cache\DbCache',
@@ -810,7 +835,7 @@ trait ApplicationTrait
 				];
 			}
 
-			case CacheMethod::File:
+			case 'file':
 			{
 				return [
 					'class' => 'craft\app\cache\FileCache',
@@ -819,7 +844,7 @@ trait ApplicationTrait
 				];
 			}
 
-			case CacheMethod::MemCache:
+			case 'memcache':
 			{
 				return [
 					'class' => 'craft\app\cache\MemCache',
@@ -828,17 +853,17 @@ trait ApplicationTrait
 				];
 			}
 
-			case CacheMethod::WinCache:
+			case 'wincache':
 			{
 				return 'craft\app\cache\WinCache';
 			}
 
-			case CacheMethod::XCache:
+			case 'xcache':
 			{
 				return 'craft\app\cache\XCache';
 			}
 
-			case CacheMethod::ZendData:
+			case 'zenddata':
 			{
 				return 'craft\app\cache\ZendDataCache';
 			}

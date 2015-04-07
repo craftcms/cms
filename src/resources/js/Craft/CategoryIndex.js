@@ -62,4 +62,4 @@ Craft.CategoryIndex = Craft.BaseElementIndex.extend(
 });
 
 // Register it!
-Craft.registerElementIndexClass('Category', Craft.CategoryIndex);
+Craft.registerElementIndexClass('craft\\app\\elements\\Category', Craft.CategoryIndex);

@@ -30,7 +30,7 @@ Craft.WrongEditionModal = Garnish.Modal.extend(
 		this.removeAllListeners(this.$switchBtn);
 		this.removeAllListeners(this.$upgradeBtn);
 
-		Craft.postActionRequest('app/switchToLicensedEdition', $.proxy(function(response, textStatus)
+		Craft.postActionRequest('app/switch-to-licensed-edition', $.proxy(function(response, textStatus)
 		{
 			location.reload();
 		}, this));

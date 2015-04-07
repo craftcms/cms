@@ -1,7 +1,7 @@
 <?php
 /**
  * @link http://buildwithcraft.com/
- * @copyright Copyright (c) 2013 Pixel & Tonic, Inc.
+ * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
  * @license http://buildwithcraft.com/license
  */
 
@@ -293,7 +293,7 @@ class ElementIndexController extends BaseElementsController
 				->id($collapsedElementIds)
 				->offset(0)
 				->limit(null)
-				->order('lft asc')
+				->orderBy('lft asc')
 				->positionedAfter(null)
 				->positionedBefore(null)
 				->all();
@@ -306,7 +306,7 @@ class ElementIndexController extends BaseElementsController
 				$descendantQuery
 					->offset(0)
 					->limit(null)
-					->order(null)
+					->orderBy(null)
 					->positionedAfter(null)
 					->positionedBefore(null);
 

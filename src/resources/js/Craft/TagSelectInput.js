@@ -134,7 +134,7 @@ Craft.TagSelectInput = Craft.BaseElementSelectInput.extend(
 				excludeIds: excludeIds
 			};
 
-			Craft.postActionRequest('tags/searchForTags', data, $.proxy(function(response, textStatus)
+			Craft.postActionRequest('tags/search-for-tags', data, $.proxy(function(response, textStatus)
 			{
 				this.$spinner.addClass('hidden');
 
@@ -215,7 +215,7 @@ Craft.TagSelectInput = Craft.BaseElementSelectInput.extend(
 				title: title
 			};
 
-			Craft.postActionRequest('tags/createTag', data, $.proxy(function(response, textStatus)
+			Craft.postActionRequest('tags/create-tag', data, $.proxy(function(response, textStatus)
 			{
 				if (textStatus == 'success' && response.success)
 				{

@@ -1,11 +1,14 @@
 <?php
 /**
  * @link http://buildwithcraft.com/
- * @copyright Copyright (c) 2013 Pixel & Tonic, Inc.
+ * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
  * @license http://buildwithcraft.com/license
  */
 
 namespace craft\app\variables;
+
+use craft\app\base\Plugin;
+use craft\app\base\PluginInterface;
 
 /**
  * Plugin functions.
@@ -19,27 +22,12 @@ class Plugins
 	// =========================================================================
 
 	/**
-	 * Returns a plugin by its class handle.
+	 * Returns info about all of the plugins saved in craft/plugins, whether they’re installed or not.
 	 *
-	 * @param string $class
-	 * @param bool   $enabledOnly
-	 *
-	 * @return Plugin|null
+	 * @return array Info about all of the plugins saved in craft/plugins
 	 */
-	public function getPlugin($class, $enabledOnly = true)
+	public function getPluginInfo()
 	{
-		return \Craft::$app->plugins->getPlugin($class, $enabledOnly);
-	}
-
-	/**
-	 * Returns all plugins.
-	 *
-	 * @param bool $enabledOnly
-	 *
-	 * @return array
-	 */
-	public function getPlugins($enabledOnly = true)
-	{
-		return \Craft::$app->plugins->getPlugins($enabledOnly);
+		return \Craft::$app->plugins->getPluginInfo();
 	}
 }

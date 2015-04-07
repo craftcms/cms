@@ -1,7 +1,7 @@
 <?php
 /**
  * @link http://buildwithcraft.com/
- * @copyright Copyright (c) 2013 Pixel & Tonic, Inc.
+ * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
  * @license http://buildwithcraft.com/license
  */
 
@@ -258,6 +258,11 @@ abstract class BaseRelationField extends Field
 	public function afterElementSave(ElementInterface $element)
 	{
 		$value = $this->getElementValue($element);
+
+		if ($value instanceof ElementQueryInterface)
+		{
+			$value = $value->id;
+		}
 
 		if ($value !== null)
 		{

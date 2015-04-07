@@ -1,7 +1,7 @@
 <?php
 /**
  * @link http://buildwithcraft.com/
- * @copyright Copyright (c) 2013 Pixel & Tonic, Inc.
+ * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
  * @license http://buildwithcraft.com/license
  */
 
@@ -223,7 +223,7 @@ class ElementsController extends BaseElementsController
 
 					$response['locales'][] = [
 						'id'   => $localeId,
-						'name' => $locale->getName()
+						'name' => $locale->getDisplayName()
 					];
 				}
 			}

@@ -1,7 +1,7 @@
 <?php
 /**
  * @link http://buildwithcraft.com/
- * @copyright Copyright (c) 2013 Pixel & Tonic, Inc.
+ * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
  * @license http://buildwithcraft.com/license
  */
 
@@ -11,7 +11,7 @@ use Craft;
 use craft\app\helpers\ArrayHelper;
 
 /**
- * @inheritDoc \yii\web\UrlManager
+ * @inheritdoc
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
@@ -81,11 +81,7 @@ class UrlRule extends \yii\web\UrlRule
 	}
 
 	/**
-	 * @inheritDoc \yii\web\UrlRule::parseRequest()
-	 *
-	 * @param UrlManager $manager the URL manager
-	 * @param Request $request
-	 * @return array|boolean
+	 * @inheritdoc
 	 */
 	public function parseRequest($manager, $request)
 	{

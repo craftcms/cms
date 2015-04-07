@@ -1,7 +1,7 @@
 <?php
 /**
  * @link http://buildwithcraft.com/
- * @copyright Copyright (c) 2013 Pixel & Tonic, Inc.
+ * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
  * @license http://buildwithcraft.com/license
  */
 
@@ -13,10 +13,9 @@ use craft\app\helpers\ArrayHelper;
 use craft\app\helpers\StringHelper;
 
 /**
- * @inheritDoc \yii\db\Connection
+ * @inheritdoc
  *
  * @property QueryBuilder $queryBuilder The query builder for the current DB connection.
- *
  * @method QueryBuilder getQueryBuilder() Returns the query builder for the current DB connection.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>

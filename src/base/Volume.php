@@ -69,7 +69,7 @@ abstract class Volume extends SavableComponent implements VolumeInterface
 	}
 
 	/**
-	 * @inheritDoc IFileSourceType::createFile()
+	 * @inheritdoc
 	 */
 	public function createFile($path, $stream)
 	{
@@ -88,7 +88,7 @@ abstract class Volume extends SavableComponent implements VolumeInterface
 	}
 
 	/**
-	 * @inheritDoc IFileSourceType::updateFile()
+	 * @inheritdoc
 	 */
 	public function updateFile($path, $contents)
 	{
@@ -96,7 +96,7 @@ abstract class Volume extends SavableComponent implements VolumeInterface
 	}
 
 	/**
-	 * @inheritDoc IFileSourceType::createOrUpdateFile()
+	 * @inheritdoc
 	 */
 	public function createOrUpdateFile($path, $contents)
 	{
@@ -104,7 +104,7 @@ abstract class Volume extends SavableComponent implements VolumeInterface
 	}
 
 	/**
-	 * @inheritDoc IFileSourceType::getFileContents()
+	 * @inheritdoc
 	 */
 	public function getFileContents($path)
 	{
@@ -112,7 +112,7 @@ abstract class Volume extends SavableComponent implements VolumeInterface
 	}
 
 	/**
-	 * @inheritDoc IFileSourceType::fileExists()
+	 * @inheritdoc
 	 */
 	public function fileExists($path)
 	{
@@ -120,7 +120,7 @@ abstract class Volume extends SavableComponent implements VolumeInterface
 	}
 
 	/**
-	 * @inheritDoc IFileSourceType::deleteFile()
+	 * @inheritdoc
 	 */
 	public function deleteFile($path)
 	{
@@ -138,7 +138,7 @@ abstract class Volume extends SavableComponent implements VolumeInterface
 	}
 
 	/**
-	 * @inheritDoc IFileSourceType::getContentsAndDeleteFile()
+	 * @inheritdoc
 	 */
 	public function getContentsAndDeleteFile($path)
 	{
@@ -146,7 +146,7 @@ abstract class Volume extends SavableComponent implements VolumeInterface
 	}
 
 	/**
-	 * @inheritDoc IFileSourceType::renameFile()
+	 * @inheritdoc
 	 */
 	public function renameFile($path, $newPath)
 	{
@@ -154,7 +154,7 @@ abstract class Volume extends SavableComponent implements VolumeInterface
 	}
 
 	/**
-	 * @inheritDoc IFileSourceType::copyFile()
+	 * @inheritdoc
 	 */
 	public function copyFile($path, $newPath)
 	{
@@ -162,7 +162,7 @@ abstract class Volume extends SavableComponent implements VolumeInterface
 	}
 
 	/**
-	 * @inheritDoc IFileSourceType::getMimeType()
+	 * @inheritdoc
 	 */
 	public function getMimeType($path)
 	{
@@ -170,7 +170,7 @@ abstract class Volume extends SavableComponent implements VolumeInterface
 	}
 
 	/**
-	 * @inheritDoc IFileSourceType::getTimestamp()
+	 * @inheritdoc
 	 */
 	public function getTimestamp($path)
 	{
@@ -178,7 +178,7 @@ abstract class Volume extends SavableComponent implements VolumeInterface
 	}
 
 	/**
-	 * @inheritDoc IFileSourceType::getSize()
+	 * @inheritdoc
 	 */
 	public function getSize($path)
 	{
@@ -186,7 +186,7 @@ abstract class Volume extends SavableComponent implements VolumeInterface
 	}
 
 	/**
-	 * @inheritDoc IFileSourceType::createDir()
+	 * @inheritdoc
 	 */
 	public function createDir($path)
 	{
@@ -199,7 +199,7 @@ abstract class Volume extends SavableComponent implements VolumeInterface
 	}
 
 	/**
-	 * @inheritDoc IFileSourceType::deleteDir()
+	 * @inheritdoc
 	 */
 	public function deleteDir($path)
 	{

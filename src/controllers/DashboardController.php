@@ -1,7 +1,7 @@
 <?php
 /**
  * @link http://buildwithcraft.com/
- * @copyright Copyright (c) 2013 Pixel & Tonic, Inc.
+ * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
  * @license http://buildwithcraft.com/license
  */
 
@@ -245,7 +245,7 @@ class DashboardController extends Controller
 				"------------------------------\n\n" .
 				'Craft '.Craft::$app->getEditionName().' '.Craft::$app->version.'.'.Craft::$app->build;
 
-			$plugins = Craft::$app->plugins->getPlugins();
+			$plugins = Craft::$app->plugins->getAllPlugins();
 
 			if ($plugins)
 			{
@@ -253,7 +253,7 @@ class DashboardController extends Controller
 
 				foreach ($plugins as $plugin)
 				{
-					$pluginNames[] = $plugin->getName().' '.$plugin->getVersion().' ('.$plugin->getDeveloper().')';
+					$pluginNames[] = $plugin->name.' '.$plugin->version.' ('.$plugin->developer.')';
 				}
 
 				$message .= "\nPlugins: ".implode(', ', $pluginNames);

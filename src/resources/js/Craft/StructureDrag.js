@@ -386,7 +386,7 @@ Craft.StructureDrag = Garnish.Drag.extend(
 					parentId:    this.$draggee.parent('ul').parent('li').children('.row').children('.element').data('id')
 				};
 
-				Craft.postActionRequest('structures/moveElement', data, function(response, textStatus)
+				Craft.postActionRequest('structures/move-element', data, function(response, textStatus)
 				{
 					if (textStatus == 'success')
 					{

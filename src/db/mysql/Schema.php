@@ -1,14 +1,14 @@
 <?php
 /**
  * @link http://buildwithcraft.com/
- * @copyright Copyright (c) 2013 Pixel & Tonic, Inc.
+ * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
  * @license http://buildwithcraft.com/license
  */
 
 namespace craft\app\db\mysql;
 
 /**
- * @inheritDoc \yii\db\mysql\Schema
+ * @inheritdoc
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
@@ -34,7 +34,7 @@ class Schema extends \yii\db\mysql\Schema
 	// =========================================================================
 
 	/**
-	 * @inheritDoc \yii\base\Object::init()
+	 * @inheritdoc
 	 */
 	public function init()
 	{

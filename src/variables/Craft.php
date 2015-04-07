@@ -1,7 +1,7 @@
 <?php
 /**
  * @link http://buildwithcraft.com/
- * @copyright Copyright (c) 2013 Pixel & Tonic, Inc.
+ * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
  * @license http://buildwithcraft.com/license
  */
 
@@ -17,70 +17,126 @@ use craft\app\elements\db\UserQuery;
 use craft\app\elements\Entry;
 use craft\app\elements\Tag;
 use craft\app\elements\User;
-use craft\app\helpers\StringHelper;
-use yii\base\Object;
+use yii\di\ServiceLocator;
 
 /**
- * Contains all global variables.
+ * Craft defines the `craft` global template variable.
+ *
+ * @property App $app
+ * @property Config $config
+ * @property Elements $elements
+ * @property Cp $cp
+ * @property Dashboard $dashboard
+ * @property Deprecator $deprecator
+ * @property Fields $fields
+ * @property Feeds $feeds
+ * @property Globals $globals
+ * @property Plugins $plugins
+ * @property HttpRequest $request
+ * @property Routes $routes
+ * @property Sections $sections
+ * @property SystemSettings $systemSettings
+ * @property Tasks $tasks
+ * @property Updates $updates
+ * @property UserSession $session
+ * @property I18n $i18n
+ * @property UserGroups $userGroups
+ * @property UserPermissions $userPermissions
+ * @property EmailMessages $emailMessages
+ * @property EntryRevisions $entryRevisions
+ * @property Rebrand $rebrand
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */
-class Craft extends Object
+class Craft extends ServiceLocator
 {
-	// Properties
-	// =========================================================================
-
-	/**
-	 * @var
-	 */
-	private $_rebrandVariable;
-
 	// Public Methods
 	// =========================================================================
 
 	/**
-	 * @param string $name
-	 *
-	 * @return mixed
+	 * @inheritdoc
 	 */
-	public function __get($name)
+	public function __construct($config = [])
 	{
-		/*$plugin = \Craft::$app->plugins->getPlugin($name);
+		// Set the core components
+		$config['components'] = [
+			'app' => 'craft\app\variables\App',
+			'config' => 'craft\app\variables\Config',
+			'elements' => 'craft\app\variables\Elements',
+			'cp' => 'craft\app\variables\Cp',
+			'dashboard' => 'craft\app\variables\Dashboard',
+			'deprecator' => 'craft\app\variables\Deprecator',
+			'fields' => 'craft\app\variables\Fields',
+			'feeds' => 'craft\app\variables\Feeds',
+			'globals' => 'craft\app\variables\Globals',
+			'plugins' => 'craft\app\variables\Plugins',
+			'request' => 'craft\app\variables\HttpRequest',
+			'routes' => 'craft\app\variables\Routes',
+			'sections' => 'craft\app\variables\Sections',
+			'systemSettings' => 'craft\app\variables\SystemSettings',
+			'tasks' => 'craft\app\variables\Tasks',
+			'updates' => 'craft\app\variables\Updates',
+			'session' => 'craft\app\variables\UserSession',
+			'i18n' => 'craft\app\variables\I18n',
+		];
 
-		if ($plugin && $plugin->isEnabled)
+		switch (\Craft::$app->getEdition())
 		{
-			$pluginName = $plugin->getClassHandle();
-			$className = __NAMESPACE__.'\\'.$pluginName.'Variable';
-
-			// Variables should already be imported by the plugin service, but let's double check.
-			if (!class_exists($className))
+			case \Craft::Pro:
 			{
-				\Craft::import('plugins.'.StringHelper::toLowerCase($pluginName).'.variables.'.$pluginName.'Variable');
+				$config['components'] = array_merge($config['components'], [
+					'userGroups' => 'craft\app\variables\UserGroups',
+					'userPermissions' => 'craft\app\variables\UserPermissions',
+				]);
+				// Keep going...
 			}
+			case \Craft::Client:
+			{
+				$config['components'] = array_merge($config['components'], [
+					'emailMessages' => 'craft\app\variables\EmailMessages',
+					'entryRevisions' => 'craft\app\variables\EntryRevisions',
+					'rebrand' => 'craft\app\variables\Rebrand',
+				]);
+			}
+		}
 
-			return new $className;
-		}*/
+		// Add plugin components
+		foreach (\Craft::$app->plugins->getAllPlugins() as $handle => $plugin)
+		{
+			if (!isset($config['components'][$handle]))
+			{
+				$component = $plugin->getVariableDefinition();
+
+				if ($component !== null)
+				{
+					$config['components'][$handle] = $component;
+				}
+			}
+		}
+
+		parent::__construct($config);
 	}
 
 	/**
-	 * @param string $name
-	 *
-	 * @return bool
+	 * @inheritdoc
 	 */
-	public function __isset($name)
+	public function __call($name, $params)
 	{
-		$plugin = \Craft::$app->plugins->getPlugin($name);
-
-		if ($plugin && $plugin->isEnabled)
+		// Are they calling one of the components as if it's still a function?
+		if ($params === [] && $this->has($name))
 		{
-			return true;
+			\Craft::$app->deprecator->log('CraftVariable::__call()', "craft.{$name}() is no longer a function. Use “craft.{$name}” instead (without the parentheses).");
+			return $this->get($name);
 		}
 		else
 		{
-			return false;
+			return parent::__call($name, $params);
 		}
 	}
+
+	// General info
+	// -------------------------------------------------------------------------
 
 	/**
 	 * Gets the current language in use.
@@ -102,22 +158,13 @@ class Craft extends Object
 		return \Craft::$app->isLocalized();
 	}
 
-	// Template variable classes
+	// Element queries
 	// -------------------------------------------------------------------------
-
-	/**
-	 * @return App
-	 */
-	public function getApp()
-	{
-		return new App();
-	}
 
 	/**
 	 * Returns a new AssetQuery instance.
 	 *
-	 * @param array|null $criteria
-	 *
+	 * @param mixed $criteria
 	 * @return AssetQuery
 	 */
 	public function assets($criteria = null)
@@ -128,8 +175,7 @@ class Craft extends Object
 	/**
 	 * Returns a new CategoryQuery instance.
 	 *
-	 * @param array|null $criteria
-	 *
+	 * @param mixed $criteria
 	 * @return CategoryQuery
 	 */
 	public function categories($criteria = null)
@@ -138,61 +184,9 @@ class Craft extends Object
 	}
 
 	/**
-	 * @return Config
-	 */
-	public function config()
-	{
-		return new Config();
-	}
-
-	/**
-	 * @return Elements
-	 */
-	public function elements()
-	{
-		return new Elements();
-	}
-
-	/**
-	 * @return Cp
-	 */
-	public function cp()
-	{
-		return new Cp();
-	}
-
-	/**
-	 * @return Dashboard
-	 */
-	public function dashboard()
-	{
-		return new Dashboard();
-	}
-
-	/**
-	 * @return Deprecator
-	 */
-	public function deprecator()
-	{
-		return new Deprecator();
-	}
-
-	/**
-	 * @return EmailMessages
-	 */
-	public function emailMessages()
-	{
-		if (\Craft::$app->getEdition() >= \Craft::Client)
-		{
-			return new EmailMessages();
-		}
-	}
-
-	/**
 	 * Returns a new EntryQuery instance.
 	 *
-	 * @param array|null $criteria
-	 *
+	 * @param mixed $criteria
 	 * @return EntryQuery
 	 */
 	public function entries($criteria = null)
@@ -201,101 +195,9 @@ class Craft extends Object
 	}
 
 	/**
-	 * @return Fields
-	 */
-	public function fields()
-	{
-		return new Fields();
-	}
-
-	/**
-	 * @return EntryRevisions
-	 */
-	public function entryRevisions()
-	{
-		if (\Craft::$app->getEdition() >= \Craft::Client)
-		{
-			return new EntryRevisions();
-		}
-	}
-
-	/**
-	 * @return Feeds
-	 */
-	public function feeds()
-	{
-		return new Feeds();
-	}
-
-	/**
-	 * @return Globals
-	 */
-	public function globals()
-	{
-		return new Globals();
-	}
-
-	/**
-	 * @return Plugins
-	 */
-	public function plugins()
-	{
-		return new Plugins();
-	}
-
-	/**
-	 * @return Rebrand
-	 */
-	public function rebrand()
-	{
-		if (\Craft::$app->getEdition() >= \Craft::Client)
-		{
-			if (!isset($this->_rebrandVariable))
-			{
-				$this->_rebrandVariable = new Rebrand();
-			}
-
-			return $this->_rebrandVariable;
-		}
-	}
-
-	/**
-	 * @return HttpRequest
-	 */
-	public function request()
-	{
-		return new HttpRequest();
-	}
-
- 	/**
-	 * @return Routes
-	 */
-	public function routes()
-	{
-		return new Routes();
-	}
-
-	/**
-	 * @return Sections
-	 */
-	public function sections()
-	{
-		return new Sections();
-	}
-
-	/**
-	 * @return SystemSettings
-	 */
-	public function systemSettings()
-	{
-		return new SystemSettings();
-	}
-
-	/**
 	 * Returns a new TagQuery instance.
 	 *
-	 * @param array|null $criteria
-	 *
+	 * @param mixed $criteria
 	 * @return TagQuery
 	 */
 	public function tags($criteria = null)
@@ -304,68 +206,13 @@ class Craft extends Object
 	}
 
 	/**
-	 * @return Tasks
-	 */
-	public function tasks()
-	{
-		return new Tasks();
-	}
-
-	/**
-	 * @return Updates
-	 */
-	public function updates()
-	{
-		return new Updates();
-	}
-
-	/**
 	 * Returns a new UserQuery instance
 	 *
-	 * @param array|null $criteria
-	 *
+	 * @param mixed $criteria
 	 * @return UserQuery
 	 */
 	public function users($criteria = null)
 	{
 		return User::find()->configure($criteria);
-	}
-
-	/**
-	 * @return UserGroups|null
-	 */
-	public function userGroups()
-	{
-		if (\Craft::$app->getEdition() == \Craft::Pro)
-		{
-			return new UserGroups();
-		}
-	}
-
-	/**
-	 * @return UserPermissions|null
-	 */
-	public function userPermissions()
-	{
-		if (\Craft::$app->getEdition() == \Craft::Pro)
-		{
-			return new UserPermissions();
-		}
-	}
-
-	/**
-	 * @return UserSession
-	 */
-	public function session()
-	{
-		return new UserSession();
-	}
-
-	/**
-	 * @return I18N
-	 */
-	public function i18n()
-	{
-		return new I18N();
 	}
 }

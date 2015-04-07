@@ -1,7 +1,7 @@
 <?php
 /**
  * @link http://buildwithcraft.com/
- * @copyright Copyright (c) 2013 Pixel & Tonic, Inc.
+ * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
  * @license http://buildwithcraft.com/license
  */
 
@@ -300,8 +300,6 @@ class Resources extends Component
 		}
 
 		// Maybe a plugin wants to do something custom with this URL
-		Craft::$app->plugins->loadPlugins();
-
 		$pluginPath = Craft::$app->plugins->callFirst('getResourcePath', [$path], true);
 
 		if ($pluginPath && IOHelper::fileExists($pluginPath))

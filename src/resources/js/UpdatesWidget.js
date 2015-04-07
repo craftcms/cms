@@ -55,7 +55,7 @@ Craft.UpdatesWidget = Garnish.Base.extend(
 			forceRefresh: true
 		};
 
-		Craft.postActionRequest('app/checkForUpdates', data, $.proxy(this, 'showUpdateInfo'));
+		Craft.postActionRequest('app/check-for-updates', data, $.proxy(this, 'showUpdateInfo'));
 	},
 
 	showUpdateInfo: function(info)

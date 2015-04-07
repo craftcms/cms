@@ -1,7 +1,7 @@
 <?php
 /**
  * @link http://buildwithcraft.com/
- * @copyright Copyright (c) 2013 Pixel & Tonic, Inc.
+ * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
  * @license http://buildwithcraft.com/license
  */
 
@@ -9,7 +9,6 @@ namespace craft\app\services;
 
 use Craft;
 use craft\app\db\Query;
-use craft\app\enums\SectionType;
 use craft\app\errors\Exception;
 use craft\app\events\DraftEvent;
 use craft\app\events\EntryEvent;
@@ -17,6 +16,7 @@ use craft\app\helpers\JsonHelper;
 use craft\app\elements\Entry;
 use craft\app\models\EntryDraft as EntryDraftModel;
 use craft\app\models\EntryVersion as EntryVersionModel;
+use craft\app\models\Section;
 use craft\app\records\EntryDraft as EntryDraftRecord;
 use craft\app\records\EntryVersion as EntryVersionRecord;
 use yii\base\Component;
@@ -217,7 +217,7 @@ class EntryRevisions extends Component
 	public function publishDraft(EntryDraftModel $draft)
 	{
 		// If this is a single, we'll have to set the title manually
-		if ($draft->getSection()->type == SectionType::Single)
+		if ($draft->getSection()->type == Section::TYPE_SINGLE)
 		{
 			$draft->getContent()->title = $draft->getSection()->name;
 		}
@@ -399,7 +399,7 @@ class EntryRevisions extends Component
 	public function revertEntryToVersion(EntryVersionModel $version)
 	{
 		// If this is a single, we'll have to set the title manually
-		if ($version->getSection()->type == SectionType::Single)
+		if ($version->getSection()->type == Section::TYPE_SINGLE)
 		{
 			$version->getContent()->title = $version->getSection()->name;
 		}

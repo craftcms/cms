@@ -1,7 +1,7 @@
 <?php
 /**
  * @link http://buildwithcraft.com/
- * @copyright Copyright (c) 2013 Pixel & Tonic, Inc.
+ * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
  * @license http://buildwithcraft.com/license
  */
 
@@ -51,7 +51,7 @@ class ReplaceFile extends ElementAction
 				\$fileInput = $('<input type="file" name="replaceFile" class="replaceFile" style="display: none;"/>').appendTo(Garnish.\$bod),
 				options = Craft.elementIndex._currentUploaderSettings;
 
-			options.url = Craft.getActionUrl('assets/replaceFile');
+			options.url = Craft.getActionUrl('assets/replace-file');
 			options.dropZone = null;
 			options.fileInput = \$fileInput;
 

@@ -1,7 +1,7 @@
 <?php
 /**
  * @link http://buildwithcraft.com/
- * @copyright Copyright (c) 2013 Pixel & Tonic, Inc.
+ * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
  * @license http://buildwithcraft.com/license
  */
 
@@ -11,7 +11,6 @@ use Craft;
 use craft\app\base\Task;
 use craft\app\base\TaskInterface;
 use craft\app\db\Query;
-use craft\app\enums\TaskStatus;
 use craft\app\errors\InvalidComponentException;
 use craft\app\helpers\ComponentHelper;
 use craft\app\records\Task as TaskRecord;
@@ -223,7 +222,7 @@ class Tasks extends Component
 		{
 			$task->currentStep = null;
 			$task->totalSteps = null;
-			$task->status = TaskStatus::Pending;
+			$task->status = Task::STATUS_PENDING;
 			$this->saveTask($task);
 
 			// Delete any of its subtasks
@@ -284,7 +283,7 @@ class Tasks extends Component
 			{
 				// Figure out how many total steps there are.
 				$task->totalSteps = $task->getTotalSteps();
-				$task->status = TaskStatus::Running;
+				$task->status = Task::STATUS_RUNNING;
 
 				Craft::info('Starting task '.$taskRecord->type.' that has a total of '.$task->totalSteps.' steps.');
 
@@ -351,7 +350,7 @@ class Tasks extends Component
 	 */
 	public function fail(TaskInterface $task, $error = null)
 	{
-		$task->status = TaskStatus::Error;
+		$task->status = Task::STATUS_ERROR;
 		$this->saveTask($task);
 
 		// Log it
@@ -438,7 +437,7 @@ class Tasks extends Component
 				->from('{{%tasks}}')
 				->where(
 					['and', 'lft = 1', 'status = :status'/*, 'dateUpdated >= :aMinuteAgo'*/],
-					[':status' => TaskStatus::Running/*, ':aMinuteAgo' => DateTimeHelper::formatTimeForDb('-1 minute')*/]
+					[':status' => Task::STATUS_RUNNING/*, ':aMinuteAgo' => DateTimeHelper::formatTimeForDb('-1 minute')*/]
 				)
 				->one();
 
@@ -474,7 +473,7 @@ class Tasks extends Component
 			->from('{{%tasks}}')
 			->where(
 				['and','status = :status'/*, 'dateUpdated >= :aMinuteAgo'*/],
-				[':status' => TaskStatus::Running/*, ':aMinuteAgo' => DateTimeHelper::formatTimeForDb('-1 minute')*/]
+				[':status' => Task::STATUS_RUNNING/*, ':aMinuteAgo' => DateTimeHelper::formatTimeForDb('-1 minute')*/]
 			)
 			->exists();
 	}
@@ -488,7 +487,7 @@ class Tasks extends Component
 	public function areTasksPending($type = null)
 	{
 		$conditions = ['and', 'lft = 1', 'status = :status'];
-		$params     = [':status' => TaskStatus::Pending];
+		$params     = [':status' => Task::STATUS_PENDING];
 
 		if ($type)
 		{
@@ -512,7 +511,7 @@ class Tasks extends Component
 	public function getPendingTasks($type = null, $limit = null)
 	{
 		$conditions = ['and', 'lft = 1', 'status = :status'];
-		$params     = [':status' => TaskStatus::Pending];
+		$params     = [':status' => Task::STATUS_PENDING];
 
 		if ($type)
 		{
@@ -548,7 +547,7 @@ class Tasks extends Component
 	{
 		return (new Query())
 			->from('{{%tasks}}')
-			->where(['and', 'level = 0', 'status = :status'], [':status' => TaskStatus::Error])
+			->where(['and', 'level = 0', 'status = :status'], [':status' => Task::STATUS_ERROR])
 			->exists();
 	}
 
@@ -563,7 +562,7 @@ class Tasks extends Component
 			->from('{{%tasks}}')
 			->where(
 				['and', 'lft = 1', 'status != :status'],
-				[':status' => TaskStatus::Error]
+				[':status' => Task::STATUS_ERROR]
 			)
 			->count('id');
 	}
@@ -591,7 +590,7 @@ class Tasks extends Component
 			if ($this->_nextPendingTask === null)
 			{
 				$taskRecord = TaskRecord::find()
-					->where(['status' => TaskStatus::Pending])
+					->where(['status' => Task::STATUS_PENDING])
 					->orderBy('dateCreated')
 					->roots()
 					->one();

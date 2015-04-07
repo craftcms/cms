@@ -1,13 +1,11 @@
 <?php
 /**
  * @link http://buildwithcraft.com/
- * @copyright Copyright (c) 2013 Pixel & Tonic, Inc.
+ * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
  * @license http://buildwithcraft.com/license
  */
 
 namespace craft\app\db;
-
-use yii\base\NotSupportedException;
 
 /**
  * @inheritdoc
@@ -21,18 +19,6 @@ abstract class Migration extends \yii\db\Migration
 {
 	// Public Methods
 	// =========================================================================
-
-	/**
-	 * @inheritdoc
-	 * @throws NotSupportedException
-	 */
-	public function safeDown()
-	{
-		throw new NotSupportedException('"down" is not implemented.');
-	}
-
-	// Database Commands
-	// -------------------------------------------------------------------------
 
 	/**
 	 * @inheritdoc

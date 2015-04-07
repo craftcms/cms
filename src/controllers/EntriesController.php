@@ -1,7 +1,7 @@
 <?php
 /**
  * @link http://buildwithcraft.com/
- * @copyright Copyright (c) 2013 Pixel & Tonic, Inc.
+ * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
  * @license http://buildwithcraft.com/license
  */
 
@@ -10,7 +10,6 @@ namespace craft\app\controllers;
 use Craft;
 use craft\app\dates\DateTime;
 use craft\app\elements\User;
-use craft\app\enums\SectionType;
 use craft\app\errors\Exception;
 use craft\app\errors\HttpException;
 use craft\app\helpers\DateTimeHelper;
@@ -82,7 +81,7 @@ class EntriesController extends BaseEntriesController
 
 		$variables['permissionSuffix'] = ':'.$entry->sectionId;
 
-		if (Craft::$app->getEdition() == Craft::Pro && $section->type != SectionType::Single)
+		if (Craft::$app->getEdition() == Craft::Pro && $section->type != Section::TYPE_SINGLE)
 		{
 			// Author selector variables
 			// ---------------------------------------------------------------------
@@ -109,7 +108,7 @@ class EntriesController extends BaseEntriesController
 
 		if (
 			Craft::$app->getEdition() >= Craft::Client &&
-			$section->type == SectionType::Structure &&
+			$section->type == Section::TYPE_STRUCTURE &&
 			$section->maxLevels != 1
 		)
 		{
@@ -231,7 +230,7 @@ class EntriesController extends BaseEntriesController
 			['label' => Craft::t('app', 'Entries'), 'url' => UrlHelper::getUrl('entries')]
 		];
 
-		if ($section->type == SectionType::Single)
+		if ($section->type == Section::TYPE_SINGLE)
 		{
 			$variables['crumbs'][] = ['label' => Craft::t('app', 'Singles'), 'url' => UrlHelper::getUrl('entries/singles')];
 		}
@@ -239,7 +238,7 @@ class EntriesController extends BaseEntriesController
 		{
 			$variables['crumbs'][] = ['label' => Craft::t('app', $section->name), 'url' => UrlHelper::getUrl('entries/'.$section->handle)];
 
-			if ($section->type == SectionType::Structure)
+			if ($section->type == Section::TYPE_STRUCTURE)
 			{
 				/** @var Entry $ancestor */
 				foreach ($entry->getAncestors() as $ancestor)
@@ -276,7 +275,7 @@ class EntriesController extends BaseEntriesController
 				'fields'        => '#title-field, #fields > div > div > .field',
 				'extraFields'   => '#settings',
 				'previewUrl'    => $entry->getUrl(),
-				'previewAction' => 'entries/previewEntry',
+				'previewAction' => 'entries/preview-entry',
 				'previewParams' => [
 				                       'sectionId' => $section->id,
 				                       'entryId'   => $entry->id,
@@ -294,7 +293,7 @@ class EntriesController extends BaseEntriesController
 
 				// If we're looking at the live version of an entry, just use
 				// the entry's main URL as its share URL
-				if ($className == Entry::className() && $entry->getStatus() == Entry::LIVE)
+				if ($className == Entry::className() && $entry->getStatus() == Entry::STATUS_LIVE)
 				{
 					$variables['shareUrl'] = $entry->getUrl();
 				}
@@ -321,7 +320,7 @@ class EntriesController extends BaseEntriesController
 						}
 					}
 
-					$variables['shareUrl'] = UrlHelper::getActionUrl('entries/shareEntry', $shareParams);
+					$variables['shareUrl'] = UrlHelper::getActionUrl('entries/share-entry', $shareParams);
 				}
 			}
 		}
@@ -442,7 +441,7 @@ class EntriesController extends BaseEntriesController
 			// Is this another user's entry (and it's not a Single)?
 			if (
 				$entry->authorId != $currentUser->id &&
-				$entry->getSection()->type != SectionType::Single
+				$entry->getSection()->type != Section::TYPE_SINGLE
 			)
 			{
 				if ($entry->enabled)
@@ -640,7 +639,7 @@ class EntriesController extends BaseEntriesController
 		}
 
 		// Create the token and redirect to the entry URL with the token in place
-		$token = Craft::$app->tokens->createToken(['action' => 'entries/viewSharedEntry', 'params' => $params]);
+		$token = Craft::$app->tokens->createToken(['action' => 'entries/view-shared-entry', 'params' => $params]);
 		$url = UrlHelper::getUrlWithToken($entry->getUrl(), $token);
 		Craft::$app->getResponse()->redirect($url);
 	}

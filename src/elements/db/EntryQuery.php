@@ -11,7 +11,6 @@ use Craft;
 use craft\app\db\Query;
 use craft\app\db\QueryAbortedException;
 use craft\app\elements\Entry;
-use craft\app\enums\SectionType;
 use craft\app\helpers\ArrayHelper;
 use craft\app\helpers\DbHelper;
 use craft\app\models\EntryType;
@@ -404,7 +403,7 @@ class EntryQuery extends ElementQuery
 			foreach (Craft::$app->sections->getEditableSections() as $section)
 			{
 				if (
-					$section->type != SectionType::Single &&
+					$section->type != Section::TYPE_SINGLE &&
 					!$user->can('editPeerEntries:'.$section->id)
 				)
 				{

@@ -1,14 +1,13 @@
 <?php
 /**
  * @link http://buildwithcraft.com/
- * @copyright Copyright (c) 2013 Pixel & Tonic, Inc.
+ * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
  * @license http://buildwithcraft.com/license
  */
 
 namespace craft\app\models;
 
 use craft\app\base\Model;
-use craft\app\enums\AttributeType;
 use craft\app\enums\EmailerType;
 
 /**
@@ -105,23 +104,23 @@ class EmailSettings extends Model
 			{
 				if ($this->smtpAuth)
 				{
-					$rules[] = ['username, password', 'required'];
+					$rules[] = [['username', 'password'], 'required'];
 				}
 
-				$rules[] = ['port, host, timeout', 'required'];
+				$rules[] = [['port', 'host', 'timeout'], 'required'];
 				break;
 			}
 
 			case EmailerType::Gmail:
 			{
-				$rules[] = ['username, password, timeout', 'required'];
+				$rules[] = [['username', 'password', 'timeout'], 'required'];
 				$rules[] = ['username', 'email'];
 				break;
 			}
 
 			case EmailerType::Pop:
 			{
-				$rules[] = ['port, host, username, password, timeout', 'required'];
+				$rules[] = [['port', 'host', 'username', 'password', 'timeout'], 'required'];
 				break;
 			}
 

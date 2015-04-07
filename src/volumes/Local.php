@@ -3,7 +3,6 @@ namespace craft\app\volumes;
 
 use Craft;
 use craft\app\base\Volume;
-use craft\app\enums\AttributeType;
 use craft\app\io\flysystemadapters\Local as LocalAdapter;
 
 /**
@@ -65,30 +64,13 @@ class Local extends Volume
 	// =========================================================================
 
 	/**
-	 * @inheritDoc ISavableComponentType::getSettingsHtml()
-	 *
-	 * @return string|null
+	 * @inheritdoc
 	 */
 	public function getSettingsHtml()
 	{
 		return Craft::$app->templates->render('_components/volumes/Local/settings', array(
 			'volume' => $this,
 		));
-	}
-
-	/**
-	 * @inheritDoc ISavableComponentType::prepSettings()
-	 *
-	 * @param array $settings
-	 *
-	 * @return array
-	 */
-	public function prepSettings($settings)
-	{
-		// Remove the trailing slash to the Path and URL settings
-		$settings['path'] = !empty($settings['path']) ? rtrim($settings['path'], '/') : '';
-
-		return $settings;
 	}
 
 	/**
@@ -112,20 +94,7 @@ class Local extends Volume
 	// =========================================================================
 
 	/**
-	 * @inheritDoc BaseSavableComponentType::defineSettings()
-	 *
-	 * @return array
-	 */
-	protected function defineSettings()
-	{
-		return array(
-			'path' => array(AttributeType::String, 'required' => true),
-		);
-	}
-
-	/**
-	 * @inheritDoc BaseFlysystemFileSourceType::createAdapter()
-	 *
+	 * @inheritdoc
 	 * @return LocalAdapter
 	 */
 	protected function createAdapter()

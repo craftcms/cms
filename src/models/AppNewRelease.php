@@ -1,14 +1,13 @@
 <?php
 /**
  * @link http://buildwithcraft.com/
- * @copyright Copyright (c) 2013 Pixel & Tonic, Inc.
+ * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
  * @license http://buildwithcraft.com/license
  */
 
 namespace craft\app\models;
 
 use craft\app\base\Model;
-use craft\app\enums\AttributeType;
 
 /**
  * Stores the info for a Craft release.

@@ -23,7 +23,6 @@ return [
 	'images'               => 'craft\app\services\Images',
 	'matrix'               => 'craft\app\services\Matrix',
 	'messages'             => 'Craft\PhpMessageSource',
-	'migrations'           => 'craft\app\services\Migrations',
 	'path'                 => 'craft\app\services\Path',
 	'plugins'              => 'craft\app\services\Plugins',
 	'relations'            => 'craft\app\services\Relations',
@@ -43,6 +42,12 @@ return [
 
 
 	// Configured components
+	'migrator' => [
+		'class' => 'craft\app\db\MigrationManager',
+		'migrationNamespace' => 'craft\app\migrations',
+		'migrationPath' => '@app/migrations',
+		'fixedColumnValues' => ['type' => 'app'],
+	],
 	'resources' => [
 		'class'     => 'craft\app\services\Resources',
 		'dateParam' => 'd',
@@ -78,16 +83,5 @@ return [
 				'smtpSecureTransportType' => 'none',
 			]
 		]
-	],
-	'urlManager' => [
-		'class' => 'craft\app\web\UrlManager',
-		'enablePrettyUrl' => true,
-		'ruleConfig' => ['class' => 'craft\app\web\UrlRule'],
-	],
-	'user' => [
-		'class'                    => 'craft\app\web\User',
-		'identityClass'            => 'craft\app\elements\User',
-		'enableAutoLogin'          => true,
-		'autoRenewCookie'          => true,
 	],
 ];

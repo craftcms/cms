@@ -183,8 +183,7 @@ class AwsS3 extends Volume
 	// =========================================================================
 
 	/**
-	 * @inheritDoc BaseFlysystemFileSourceType::createAdapter()
-	 *
+	 * @inheritdoc
 	 * @return AwsS3Adapter
 	 */
 	protected function createAdapter()

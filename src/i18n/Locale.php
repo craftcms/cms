@@ -1,6 +1,6 @@
 <?php
 /**
- * @copyright Copyright (c) 2013 Pixel & Tonic, Inc.* _
+ * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.* _
 @license http://buildwithcraft.com/license*/
 
 namespace craft\app\i18n;

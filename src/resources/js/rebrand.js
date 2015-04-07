@@ -5,12 +5,12 @@
 	var settings = {
 		modalClass: "logo-modal",
 
-		uploadAction: 'rebrand/uploadLogo',
+		uploadAction: 'rebrand/upload-logo',
 
 		deleteMessage: Craft.t('Are you sure you want to delete the logo?'),
-		deleteAction: 'rebrand/deleteLogo',
+		deleteAction: 'rebrand/delete-logo',
 
-		cropAction: 'rebrand/cropLogo',
+		cropAction: 'rebrand/crop-logo',
 
 		areaToolOptions:
 		{

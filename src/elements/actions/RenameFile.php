@@ -1,7 +1,7 @@
 <?php
 /**
  * @link http://buildwithcraft.com/
- * @copyright Copyright (c) 2013 Pixel & Tonic, Inc.
+ * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
  * @license http://buildwithcraft.com/license
  */
 
@@ -87,7 +87,7 @@ class RenameFile extends ElementAction
 							if (choice != 'cancel')
 							{
 								data.action = choice;
-								Craft.postActionRequest('assets/moveFile', data, handleRename);
+								Craft.postActionRequest('assets/move-file', data, handleRename);
 							}
 						});
 					}
@@ -107,7 +107,7 @@ class RenameFile extends ElementAction
 				}
 			};
 
-			Craft.postActionRequest('assets/moveFile', data, handleRename);
+			Craft.postActionRequest('assets/move-file', data, handleRename);
 		}
 	});
 })();

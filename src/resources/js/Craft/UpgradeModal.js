@@ -35,7 +35,7 @@ Craft.UpgradeModal = Garnish.Modal.extend(
 			resizable: true
 		}, settings));
 
-		Craft.postActionRequest('app/getUpgradeModal', $.proxy(function(response, textStatus)
+		Craft.postActionRequest('app/get-upgrade-modal', $.proxy(function(response, textStatus)
 		{
 			this.$container.removeClass('loading');
 
@@ -152,7 +152,7 @@ Craft.UpgradeModal = Garnish.Modal.extend(
 			edition: $(ev.currentTarget).data('edition')
 		};
 
-		Craft.postActionRequest('app/testUpgrade', data, $.proxy(function(response, textStatus)
+		Craft.postActionRequest('app/test-upgrade', data, $.proxy(function(response, textStatus)
 		{
 			if (textStatus == 'success')
 			{
@@ -251,7 +251,7 @@ Craft.UpgradeModal = Garnish.Modal.extend(
 						expectedPrice: (this.editions[this.edition].salePrice ? this.editions[this.edition].salePrice : this.editions[this.edition].price)
 					};
 
-					Craft.postActionRequest('app/purchaseUpgrade', data, $.proxy(this, 'onPurchaseUpgrade'));
+					Craft.postActionRequest('app/purchase-upgrade', data, $.proxy(this, 'onPurchaseUpgrade'));
 				}
 				else
 				{

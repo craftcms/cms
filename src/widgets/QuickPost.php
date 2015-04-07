@@ -1,7 +1,7 @@
 <?php
 /**
  * @link http://buildwithcraft.com/
- * @copyright Copyright (c) 2013 Pixel & Tonic, Inc.
+ * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
  * @license http://buildwithcraft.com/license
  */
 
@@ -9,7 +9,6 @@ namespace craft\app\widgets;
 
 use Craft;
 use craft\app\base\Widget;
-use craft\app\enums\SectionType;
 use craft\app\helpers\ArrayHelper;
 use craft\app\helpers\JsonHelper;
 use craft\app\models\Section;
@@ -102,7 +101,7 @@ class QuickPost extends Widget
 
 		foreach (Craft::$app->sections->getAllSections() as $section)
 		{
-			if ($section->type !== SectionType::Single)
+			if ($section->type !== Section::TYPE_SINGLE)
 			{
 				if (Craft::$app->getUser()->checkPermission('createEntries:'.$section->id))
 				{

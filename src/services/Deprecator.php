@@ -1,7 +1,7 @@
 <?php
 /**
  * @link http://buildwithcraft.com/
- * @copyright Copyright (c) 2013 Pixel & Tonic, Inc.
+ * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
  * @license http://buildwithcraft.com/license
  */
 
@@ -154,7 +154,7 @@ class Deprecator extends Component
 
 		if ($log)
 		{
-			return new DeprecationErrorModel($log);
+			return DeprecationErrorModel::create($log);
 		}
 	}
 
@@ -239,7 +239,7 @@ class Deprecator extends Component
 			];
 
 			// Is this a template?
-			if (isset($trace['object']) && $trace['object'] instanceof \Twig_Template && 'Twig_Template' !== get_class($trace['object']) && StringHelper::contains($trace['file'], 'compiled_templates'))
+			if (isset($trace['object']) && $trace['object'] instanceof \Twig_Template && 'Twig_Template' !== get_class($trace['object']) && isset($trace['file']) && StringHelper::contains($trace['file'], 'compiled_templates'))
 			{
 				$template = $trace['object'];
 

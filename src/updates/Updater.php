@@ -1,7 +1,7 @@
 <?php
 /**
  * @link http://buildwithcraft.com/
- * @copyright Copyright (c) 2013 Pixel & Tonic, Inc.
+ * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
  * @license http://buildwithcraft.com/license
  */
 
@@ -9,7 +9,8 @@ namespace craft\app\updates;
 
 use Craft;
 use craft\app\base\BasePlugin;
-use craft\app\enums\InstallStatus;
+use craft\app\base\Plugin;
+use craft\app\base\PluginInterface;
 use craft\app\enums\PatchManifestFileAction;
 use craft\app\errors\Exception;
 use craft\app\helpers\IOHelper;
@@ -194,15 +195,26 @@ class Updater
 	}
 
 	/**
-	 * @param BasePlugin|null $plugin
+	 * @param PluginInterface|Plugin $plugin
 	 *
 	 * @throws Exception
 	 * @return null
 	 */
-	public function updateDatabase($plugin = null)
+	public function updateDatabase(PluginInterface $plugin = null)
 	{
 		Craft::info('Running migrations...', __METHOD__);
-		if (!Craft::$app->migrations->runToTop($plugin))
+
+		if ($plugin === null)
+		{
+			$result = Craft::$app->getMigrator()->up();
+		}
+		else
+		{
+			$pluginInfo = Craft::$app->plugins->getStoredPluginInfo($plugin->getHandle());
+			$result = $plugin->update($pluginInfo['version']);
+		}
+
+		if ($result === false)
 		{
 			throw new Exception(Craft::t('app', 'There was a problem updating your database.'));
 		}
@@ -212,6 +224,7 @@ class Updater
 		{
 			// Setting new Craft info.
 			Craft::info('Settings new Craft release info in craft_info table.', __METHOD__);
+
 			if (!Craft::$app->updates->updateCraftVersionInfo())
 			{
 				throw new Exception(Craft::t('app', 'The update was performed successfully, but there was a problem setting the new info in the database info table.'));

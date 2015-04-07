@@ -1,16 +1,16 @@
 <?php
 /**
  * @link http://buildwithcraft.com/
- * @copyright Copyright (c) 2013 Pixel & Tonic, Inc.
+ * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
  * @license http://buildwithcraft.com/license
  */
 
 namespace craft\app\controllers;
 
 use Craft;
-use craft\app\enums\SectionType;
 use craft\app\errors\Exception;
 use craft\app\models\EntryDraft as EntryDraftModel;
+use craft\app\models\Section;
 
 Craft::$app->requireEdition(Craft::Client);
 
@@ -207,7 +207,7 @@ class EntryRevisionsController extends BaseEntriesController
 		// Is this another user's entry (and it's not a Single)?
 		if (
 			$entry->authorId != $userSessionService->getIdentity()->id &&
-			$entry->getSection()->type != SectionType::Single
+			$entry->getSection()->type != Section::TYPE_SINGLE
 		)
 		{
 			if ($entry->enabled)
@@ -285,7 +285,7 @@ class EntryRevisionsController extends BaseEntriesController
 		// Is this another user's entry (and it's not a Single)?
 		if (
 			$entry->authorId != $userSessionService->getIdentity()->id &&
-			$entry->getSection()->type != SectionType::Single
+			$entry->getSection()->type != Section::TYPE_SINGLE
 		)
 		{
 			if ($entry->enabled)

@@ -39,7 +39,7 @@ Craft.AssetSelectorModal = Craft.BaseElementSelectorModal.extend(
 
 	fetchTransformInfo: function(callback)
 	{
-		Craft.postActionRequest('assets/getTransformInfo', $.proxy(function(response, textStatus)
+		Craft.postActionRequest('assets/get-transform-info', $.proxy(function(response, textStatus)
 		{
 			if (textStatus == 'success' && response instanceof Array)
 			{
@@ -194,7 +194,7 @@ Craft.AssetSelectorModal = Craft.BaseElementSelectorModal.extend(
 			returnUrl: true
 		};
 
-		Craft.postActionRequest('assets/generateTransform', data, $.proxy(function(response, textStatus)
+		Craft.postActionRequest('assets/generate-transform', data, $.proxy(function(response, textStatus)
 		{
 			Craft.AssetSelectorModal.transformUrls[transform][elementId] = false;
 

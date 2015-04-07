@@ -1,116 +1,86 @@
 <?php
 /**
  * @link http://buildwithcraft.com/
- * @copyright Copyright (c) 2013 Pixel & Tonic, Inc.
+ * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
  * @license http://buildwithcraft.com/license
  */
 
 namespace craft\app\base;
 
-use craft\app\components\SavableComponentTypeInterface;
-
 /**
- * Interface PluginInterface
+ * PluginInterface defines the common interface to be implemented by plugin classes.
+ *
+ * A class implementing this interface should also use [[PluginTrait]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */
-interface PluginInterface extends SavableComponentTypeInterface
+interface PluginInterface
 {
+	// Static
+	// =========================================================================
+
+	/**
+	 * Returns whether the plugin has its own section in the CP.
+	 *
+	 * @return bool Whether the plugin has its own section in the CP.
+	 */
+	public static function hasCpSection();
+
 	// Public Methods
 	// =========================================================================
 
 	/**
-	 * Returns the plugin’s version number.
+	 * Returns the plugin’s handle.
 	 *
-	 * @return string The plugin’s version number.
+	 * @return string The plugin’s handle
 	 */
-	public function getVersion();
+	public function getHandle();
 
 	/**
-	 * Returns the plugin developer’s name.
+	 * Installs the plugin.
 	 *
-	 * @return string The plugin developer’s name.
+	 * @return boolean|null Return `false` to indicate the installation failed.
+	 * All other return values mean the installation was successful.
 	 */
-	public function getDeveloper();
+	public function install();
 
 	/**
-	 * Returns the plugin developer’s URL.
+	 * Updates the plugin.
 	 *
-	 * @return string The plugin developer’s URL.
+	 * @param string $fromVersion The previously installed version of the plugin.
+	 * @return boolean|null Return `false` to indicate the update failed.
+	 * All other return values mean the update was successful.
 	 */
-	public function getDeveloperUrl();
+	public function update($fromVersion);
 
 	/**
-	 * Returns the locale ID that identifies what language the plugin was written in.
+	 * Uninstalls the plugin.
 	 *
-	 * @return string The plugin’s source language.
+	 * @return boolean|null Return `false` to indicate the uninstallation failed.
+	 * All other return values mean the uninstallation was successful.
 	 */
-	public function getSourceLanguage();
+	public function uninstall();
 
 	/**
-	 * Returns the URL to the plugin’s settings page in the CP.
+	 * Returns the model that the plugin’s settings should be stored on, if the plugin has settings.
 	 *
-	 * If your plugin requires a custom settings page, you can use this method to point to it.
-	 *
-	 * If this method returns anything, it will be run through [[UrlHelper::getCpUrl()]] before getting output,
-	 * so a full URL is not necessary.
-	 *
-	 * If this method doesn’t return anything, a simple settings page will be provided for your plugin,
-	 * filled with whatever [[getSettingsHtml()]] returns.
-	 *
-	 * @return string|null The URL to the plugin’s settings page, if it has a custom one.
+	 * @return Model|null The model that the plugin’s settings should be stored on, if the plugin has settings
 	 */
-	public function getSettingsUrl();
+	public function getSettings();
 
 	/**
-	 * Returns whether this plugin has its own section in the CP.
+	 * Returns the settings page response.
 	 *
-	 * @return bool Whether this plugin has its own section in the CP.
+	 * @return mixed The result that should be returned from [[PluginsController::actionRThe rendered settings page HTML
 	 */
-	public function hasCpSection();
+	public function getSettingsResponse();
 
 	/**
-	 * Creates any tables defined by the plugin’s records.
+	 * Returns the component definition that should be registered on the [[\craft\app\variables\Craft]] instance for this plugin’s handle.
 	 *
-	 * @return null
+	 * @return mixed|null The component definition to be registered.
+	 * It can be any of the formats supported by [[\yii\di\ServiceLocator::set()]].
 	 */
-	public function createTables();
-
-	/**
-	 * Drops any tables defined by the plugin's records.
-	 *
-	 * @return null
-	 */
-	public function dropTables();
-
-	/**
-	 * Returns the record classes provided by this plugin.
-	 *
-	 * @param string|null $scenario The scenario to initialize the records with.
-	 *
-	 * @return array
-	 */
-	public function getRecords($scenario = null);
-
-	/**
-	 * Performs any actions that should occur before the plugin is installed.
-	 *
-	 * @return null
-	 */
-	public function onBeforeInstall();
-
-	/**
-	 * Performs any actions that should occur after the plugin is installed.
-	 *
-	 * @return null
-	 */
-	public function onAfterInstall();
-
-	/**
-	 * Performs any actions that should occur before the plugin is uninstalled.
-	 *
-	 * @return null
-	 */
-	public function onBeforeUninstall();
+	public function getVariableDefinition();
 }

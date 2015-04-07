@@ -1,7 +1,7 @@
 <?php
 /**
  * @link http://buildwithcraft.com/
- * @copyright Copyright (c) 2013 Pixel & Tonic, Inc.
+ * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
  * @license http://buildwithcraft.com/license
  */
 
@@ -9,8 +9,7 @@ namespace craft\app\services;
 
 use Craft;
 use craft\app\db\Query;
-use craft\app\enums\SectionType;
-use craft\app\models\Section as SectionModel;
+use craft\app\models\Section;
 use craft\app\records\UserPermission as UserPermissionRecord;
 use yii\base\Component;
 
@@ -69,12 +68,12 @@ class UserPermissions extends Component
 			],
 		];
 
-		foreach (Craft::$app->plugins->getPlugins() as $plugin)
+		foreach (Craft::$app->plugins->getAllPlugins() as $plugin)
 		{
-			if ($plugin->hasCpSection())
+			if ($plugin::hasCpSection())
 			{
-				$general['accessCp']['nested']['accessPlugin-'.Craft::$app->templates->formatInputId($plugin::className())] = [
-					'label' => Craft::t('app', 'Access {plugin}', ['plugin' => $plugin->getName()])
+				$general['accessCp']['nested']['accessPlugin-'.$plugin->getHandle()] = [
+					'label' => Craft::t('app', 'Access {plugin}', ['plugin' => $plugin->name])
 				];
 			}
 		}
@@ -134,7 +133,7 @@ class UserPermissions extends Component
 		{
 			$label = Craft::t('app', 'Section - {section}', ['section' => Craft::t('app', 'app', $section->name)]);
 
-			if ($section->type == SectionType::Single)
+			if ($section->type == Section::TYPE_SINGLE)
 			{
 				$permissions[$label] = $this->_getSingleEntryPermissions($section);
 			}
@@ -181,7 +180,7 @@ class UserPermissions extends Component
 		foreach (Craft::$app->plugins->call('registerUserPermissions') as $pluginHandle => $pluginPermissions)
 		{
 			$plugin = Craft::$app->plugins->getPlugin($pluginHandle);
-			$permissions[$plugin->getName()] = $pluginPermissions;
+			$permissions[$plugin->name] = $pluginPermissions;
 		}
 
 		return $permissions;
@@ -367,7 +366,7 @@ class UserPermissions extends Component
 	/**
 	 * Returns the entry permissions for a given Single section.
 	 *
-	 * @param SectionModel $section
+	 * @param Section $section
 	 *
 	 * @return array
 	 */
@@ -401,7 +400,7 @@ class UserPermissions extends Component
 	/**
 	 * Returns the entry permissions for a given Channel or Structure section.
 	 *
-	 * @param SectionModel $section
+	 * @param Section $section
 	 *
 	 * @return array
 	 */

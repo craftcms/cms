@@ -1,7 +1,7 @@
 <?php
 /**
  * @link http://buildwithcraft.com/
- * @copyright Copyright (c) 2013 Pixel & Tonic, Inc.
+ * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
  * @license http://buildwithcraft.com/license
  */
 
@@ -142,21 +142,6 @@ class Content extends Model
 			[['title'], 'string', 'max' => 255],
 			[['id', 'elementId', 'locale', 'title', 'body', 'description', 'heading', 'ingredients', 'linkColor', 'metaDescription', 'photos', 'siteIntro', 'tags'], 'safe', 'on' => 'search'],
 		];
-	}
-
-	/**
-	 * @inheritDoc Model::getAttributeConfigs()
-	 *
-	 * @return array
-	 */
-	public function getAttributeConfigs()
-	{
-		if (!isset($this->_attributeConfigs))
-		{
-			$this->_attributeConfigs = parent::getAttributeConfigs();
-		}
-
-		return $this->_attributeConfigs;
 	}
 
 	/**
