@@ -280,6 +280,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 
 					this.setIndexAvailable();
 					this.progressBar.hideProgressBar();
+					var reloadIndex = false;
 
 					var performAfterMoveActions = function ()
 					{
@@ -295,7 +296,13 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 							$('[data-id=' + originalFileIds[i] + ']').remove();
 						}
 
+						this.elementSelect.deselectAll();
 						this._collapseExtraExpandedFolders(targetFolderId);
+
+						if (reloadIndex)
+						{
+							this.updateElements();
+						}
 					};
 
 					if (this.promptHandler.getPromptCount())
@@ -310,6 +317,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 							{
 								if (returnData[i].choice == 'cancel')
 								{
+									reloadIndex = true;
 									continue;
 								}
 
