@@ -294,7 +294,7 @@ class Deprecator extends Component
 
 				if (strncmp($pluginsPath, $logTrace['file'], $pluginsPathLength) === 0)
 				{
-					$remainingFilePath = substr($filePath, $pluginsPathLength);
+					$remainingFilePath = StringHelper::substr($filePath, $pluginsPathLength);
 					$firstSeg = array_shift(explode('/', $remainingFilePath));
 
 					if (Craft::$app->plugins->getPlugin($firstSeg))
@@ -351,7 +351,7 @@ class Deprecator extends Component
 			{
 				if (strlen($value) > 64)
 				{
-					$strValue = '"'.substr($value, 0, 64).'..."';
+					$strValue = '"'.StringHelper::substr($value, 0, 64).'..."';
 				}
 				else
 				{
