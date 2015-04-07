@@ -92,7 +92,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 		this.settings.selectable = true;
 		this.settings.multiSelect = true;
 
-		var onDragStartProxy = $.proxy(this, '_onDragStart')
+		var onDragStartProxy = $.proxy(this, '_onDragStart'),
 			onDropTargetChangeProxy = $.proxy(this, '_onDropTargetChange');
 
 		// File dragging
@@ -295,6 +295,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 							$('[data-id=' + originalFileIds[i] + ']').remove();
 						}
 
+						this.elementSelect.deselectAll();
 						this._collapseExtraExpandedFolders(targetFolderId);
 					};
 
