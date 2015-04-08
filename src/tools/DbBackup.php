@@ -44,7 +44,7 @@ class DbBackup extends Tool
 	 */
 	public static function optionsHtml()
 	{
-		return Craft::$app->templates->render('_includes/forms/checkbox', [
+		return Craft::$app->getView()->renderTemplate('_includes/forms/checkbox', [
 			'name'    => 'downloadBackup',
 			'label'   => Craft::t('app','Download backup?'),
 			'checked' => true,

@@ -1,7 +1,7 @@
 {% extends "_layouts/basecp" %}
 {% set title = "Craft Update"|t %}
-{% includeCssResource "css/update.css" %}
-{% includeJsResource "js/update.js" %}
+{% registerCssResource "css/update.css" %}
+{% registerJsResource "js/update.js" %}
 
 {% includeTranslations
 	"Unable to determine what to update.",
@@ -22,4 +22,4 @@
 {% set js %}
 	new Craft.Updater('{{ handle }}', {{ craft.request.getSegment(1) == 'manualupdate' ? 1 : 0 }});
 {% endset %}
-{% includeJs js %}
+{% registerJs js %}

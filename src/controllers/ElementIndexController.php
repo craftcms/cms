@@ -114,8 +114,8 @@ class ElementIndexController extends BaseElementsController
 		if ($this->_context == 'index')
 		{
 			$responseData['actions']  = $this->_getActionData();
-			$responseData['actionsHeadHtml'] = Craft::$app->templates->getHeadHtml();
-			$responseData['actionsFootHtml'] = Craft::$app->templates->getFootHtml();
+			$responseData['actionsHeadHtml'] = Craft::$app->getView()->getHeadHtml();
+			$responseData['actionsFootHtml'] = Craft::$app->getView()->getBodyEndHtml(true);
 		}
 
 		$responseData['html'] = $this->_getElementHtml(true);
@@ -449,8 +449,8 @@ class ElementIndexController extends BaseElementsController
 			}
 		}
 
-		$responseData['headHtml'] = Craft::$app->templates->getHeadHtml();
-		$responseData['footHtml'] = Craft::$app->templates->getFootHtml();
+		$responseData['headHtml'] = Craft::$app->getView()->getHeadHtml();
+		$responseData['footHtml'] = Craft::$app->getView()->getBodyEndHtml(true);
 
 		$this->returnJson($responseData);
 	}

@@ -1,8 +1,8 @@
 {% extends "_layouts/basecp" %}
 {% import "_includes/forms" as forms %}
 {% set title = "Login"|t %}
-{% includeCssResource "css/login.css" %}
-{% includeJsResource "js/login.js" %}
+{% registerCssResource "css/login.css" %}
+{% registerJsResource "js/login.js" %}
 {% includeTranslations
 	"Reset Password",
 	"Check your email for instructions to reset your password."

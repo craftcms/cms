@@ -137,7 +137,7 @@ abstract class BaseOptionsField extends Field
 			$this->options = [['label' => '', 'value' => '']];
 		}
 
-		return Craft::$app->templates->renderMacro('_includes/forms', 'editableTableField', [
+		return Craft::$app->getView()->renderTemplateMacro('_includes/forms', 'editableTableField', [
 			[
 				'label'        => $this->getOptionsSettingsLabel(),
 				'instructions' => Craft::t('app', 'Define the available options.'),

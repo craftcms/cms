@@ -329,7 +329,7 @@ class User extends Element implements IdentityInterface
 	public static function getEditorHtml(ElementInterface $element)
 	{
 		/** @var User $element */
-		$html = Craft::$app->templates->render('users/_accountfields', [
+		$html = Craft::$app->getView()->renderTemplate('users/_accountfields', [
 			'account'      => $element,
 			'isNewAccount' => false,
 		]);

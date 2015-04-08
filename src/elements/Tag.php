@@ -103,7 +103,7 @@ class Tag extends Element
 	public static function getEditorHtml(ElementInterface $element)
 	{
 		/** @var Tag $element */
-		$html = Craft::$app->templates->renderMacro('_includes/forms', 'textField', [
+		$html = Craft::$app->getView()->renderTemplateMacro('_includes/forms', 'textField', [
 			[
 				'label'     => Craft::t('app', 'Title'),
 				'locale'    => $element->locale,

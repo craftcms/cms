@@ -1,8 +1,8 @@
 {% extends "_layouts/cp" %}
 {% set title = "Settings"|t %}
 
-{% includeCssResource 'css/settings.css' %}
-{% includeJsResource 'js/settings.js' %}
+{% registerCssResource 'css/settings.css' %}
+{% registerJsResource 'js/settings.js' %}
 
 {% set content %}
 
@@ -24,7 +24,7 @@
 		{% for tool in tools %}
 			{% set triggerId = 'tool-'~tool.getClassName()|id %}
 			<li><a id="{{ triggerId }}" data-icon="{{ tool.getIconValue() }}">{{ tool.getDisplayName() }}</a></li>
-			{% includeJs 'new Craft.Tool("'~triggerId|e('js')~'", "'~tool.getClassName()|e('js')~'", '~tool.getOptionsHtml()|json_encode~', "'~tool.getButtonLabel()|e('js')~'");' %}
+			{% registerJs 'new Craft.Tool("'~triggerId|e('js')~'", "'~tool.getClassName()|e('js')~'", '~tool.getOptionsHtml()|json_encode~', "'~tool.getButtonLabel()|e('js')~'");' %}
 		{% endfor %}
 	</ul>
 {% endset %}

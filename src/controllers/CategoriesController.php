@@ -38,7 +38,7 @@ class CategoriesController extends Controller
 	/**
 	 * Category groups index.
 	 *
-	 * @return null
+	 * @return string The rendering result
 	 */
 	public function actionGroupIndex()
 	{
@@ -46,7 +46,7 @@ class CategoriesController extends Controller
 
 		$groups = Craft::$app->categories->getAllGroups();
 
-		$this->renderTemplate('settings/categories/index', [
+		return $this->renderTemplate('settings/categories/index', [
 			'categoryGroups' => $groups
 		]);
 	}
@@ -56,9 +56,8 @@ class CategoriesController extends Controller
 	 *
 	 * @param int           $groupId       The category group’s ID, if editing an existing group.
 	 * @param CategoryGroup $categoryGroup The category group being edited, if there were any validation errors.
-	 *
+	 * @return string The rendering result
 	 * @throws HttpException
-	 * @return null
 	 */
 	public function actionEditCategoryGroup($groupId = null, CategoryGroup $categoryGroup = null)
 	{
@@ -105,7 +104,7 @@ class CategoriesController extends Controller
 		$variables['groupId'] = $groupId;
 		$variables['categoryGroup'] = $categoryGroup;
 
-		$this->renderTemplate('settings/categories/_edit', $variables);
+		return $this->renderTemplate('settings/categories/_edit', $variables);
 	}
 
 	/**
@@ -188,9 +187,8 @@ class CategoriesController extends Controller
 	 * Displays the category index page.
 	 *
 	 * @param string $groupHandle The category group’s handle.
-	 *
+	 * @return string The rendering result
 	 * @throws HttpException
-	 * @return null
 	 */
 	public function actionCategoryIndex($groupHandle = null)
 	{
@@ -201,7 +199,7 @@ class CategoriesController extends Controller
 			throw new HttpException(404);
 		}
 
-		$this->renderTemplate('categories/_index', [
+		return $this->renderTemplate('categories/_index', [
 			'groupHandle' => $groupHandle,
 			'groups' => $groups
 		]);
@@ -214,9 +212,8 @@ class CategoriesController extends Controller
 	 * @param int      $categoryId  The category’s ID, if editing an existing category.
 	 * @param int      $localeId    The locale ID, if specified.
 	 * @param Category $category    The category being edited, if there were any validation errors.
-	 *
+	 * @return string The rendering result
 	 * @throws HttpException
-	 * @return null
 	 */
 	public function actionEditCategory($groupHandle, $categoryId = null, $localeId = null, Category $category = null)
 	{
@@ -315,7 +312,7 @@ class CategoriesController extends Controller
 		// Enable Live Preview?
 		if (!Craft::$app->getRequest()->getIsMobileBrowser(true) && Craft::$app->categories->isGroupTemplateValid($variables['group']))
 		{
-			Craft::$app->templates->includeJs('Craft.LivePreview.init('.JsonHelper::encode([
+			Craft::$app->getView()->registerJs('Craft.LivePreview.init('.JsonHelper::encode([
 				'fields'        => '#title-field, #fields > div > div > .field',
 				'extraFields'   => '#settings',
 				'previewUrl'    => $category->getUrl(),
@@ -359,8 +356,8 @@ class CategoriesController extends Controller
 			(Craft::$app->isLocalized() && Craft::$app->getLanguage() != $variables['localeId'] ? '/'.$variables['localeId'] : '');
 
 		// Render the template!
-		Craft::$app->templates->includeCssResource('css/category.css');
-		$this->renderTemplate('categories/_edit', $variables);
+		Craft::$app->getView()->registerCssResource('css/category.css');
+		return $this->renderTemplate('categories/_edit', $variables);
 	}
 
 	/**
@@ -755,9 +752,8 @@ class CategoriesController extends Controller
 	 * Displays a category.
 	 *
 	 * @param Category $category
-	 *
+	 * @return string The rendering result
 	 * @throws HttpException
-	 * @return null
 	 */
 	private function _showCategory(Category $category)
 	{
@@ -774,9 +770,9 @@ class CategoriesController extends Controller
 		// Have this category override any freshly queried categories with the same ID/locale
 		Craft::$app->elements->setPlaceholderElement($category);
 
-		Craft::$app->templates->getTwig()->disableStrictVariables();
+		Craft::$app->getView()->getTwig()->disableStrictVariables();
 
-		$this->renderTemplate($group->template, [
+		return $this->renderTemplate($group->template, [
 			'category' => $category
 		]);
 	}

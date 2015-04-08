@@ -144,10 +144,10 @@ class Assets extends BaseRelationField
 			$fileKindOptions[] = ['value' => $value, 'label' => $kind['label']];
 		}
 
-		$namespace = Craft::$app->templates->getNamespace();
+		$namespace = Craft::$app->getView()->getNamespace();
 		$isMatrix = (strncmp($namespace, 'types[Matrix][blockTypes][', 26) === 0);
 
-		return Craft::$app->templates->render('_components/fieldtypes/Assets/settings', [
+		return Craft::$app->getView()->renderTemplate('_components/fieldtypes/Assets/settings', [
 			'folderOptions'     => $folderOptions,
 			'sourceOptions'     => $sourceOptions,
 			'targetLocaleField' => $this->getTargetLocaleFieldHtml(),
@@ -431,7 +431,7 @@ class Assets extends BaseRelationField
 
 		// Prepare the path by parsing tokens and normalizing slashes.
 		$subpath = trim($subpath, '/');
-		$subpath = Craft::$app->templates->renderObjectTemplate($subpath, $element);
+		$subpath = Craft::$app->getView()->renderObjectTemplate($subpath, $element);
 		$pathParts = explode('/', $subpath);
 
 		foreach ($pathParts as &$part)

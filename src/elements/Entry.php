@@ -456,7 +456,7 @@ class Entry extends Element
 		/** @var Entry $element */
 		if ($element->getType()->hasTitleField)
 		{
-			$html = Craft::$app->templates->render('entries/_titlefield', [
+			$html = Craft::$app->getView()->renderTemplate('entries/_titlefield', [
 				'entry' => $element
 			]);
 		}

@@ -44,7 +44,7 @@ class Dropdown extends BaseOptionsField
 			$value = $this->getDefaultValue();
 		}
 
-		return Craft::$app->templates->render('_includes/forms/select', [
+		return Craft::$app->getView()->renderTemplate('_includes/forms/select', [
 			'name'    => $this->handle,
 			'value'   => $value,
 			'options' => $options

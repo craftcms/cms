@@ -131,7 +131,7 @@ abstract class BaseRelationField extends Field
 			}
 		}
 
-		return Craft::$app->templates->render('_components/fieldtypes/elementfieldsettings', [
+		return Craft::$app->getView()->renderTemplate('_components/fieldtypes/elementfieldsettings', [
 			'allowMultipleSources' => $this->allowMultipleSources,
 			'allowLimit'           => $this->allowLimit,
 			'sources'              => $sources,
@@ -234,7 +234,7 @@ abstract class BaseRelationField extends Field
 	public function getInputHtml($value, $element)
 	{
 		$variables = $this->getInputTemplateVariables($value, $element);
-		return Craft::$app->templates->render($this->inputTemplate, $variables);
+		return Craft::$app->getView()->renderTemplate($this->inputTemplate, $variables);
 	}
 
 	/**
@@ -281,7 +281,7 @@ abstract class BaseRelationField extends Field
 
 			foreach ($value as $relatedElement)
 			{
-				$html .= Craft::$app->templates->render('_elements/element', [
+				$html .= Craft::$app->getView()->renderTemplate('_elements/element', [
 					'element' => $relatedElement
 				]);
 			}
@@ -328,7 +328,7 @@ abstract class BaseRelationField extends Field
 		return [
 			'jsClass'            => $this->inputJsClass,
 			'elementType'        => static::elementType(),
-			'id'                 => Craft::$app->templates->formatInputId($this->handle),
+			'id'                 => Craft::$app->getView()->formatInputId($this->handle),
 			'fieldId'            => $this->id,
 			'storageKey'         => 'field.'.$this->id,
 			'name'               => $this->handle,
@@ -414,7 +414,7 @@ abstract class BaseRelationField extends Field
 				$localeOptions[] = ['label' => $locale->getDisplayName(), 'value' => $locale->id];
 			}
 
-			return Craft::$app->templates->renderMacro('_includes/forms', 'selectField', [
+			return Craft::$app->getView()->renderTemplateMacro('_includes/forms', 'selectField', [
 				[
 					'label' => Craft::t('app', 'Target Locale'),
 					'instructions' => Craft::t('app', 'Which locale do you want to select {type} in?', ['type' => StringHelper::toLowerCase(static::displayName())]),

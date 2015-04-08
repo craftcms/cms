@@ -34,7 +34,6 @@ return [
 	'tags'                 => 'craft\app\services\Tags',
 	'tasks'                => 'craft\app\services\Tasks',
 	'templateCache'        => 'craft\app\services\TemplateCache',
-	'templates'            => 'craft\app\services\Templates',
 	'tokens'               => 'craft\app\services\Tokens',
 	'updates'              => 'craft\app\services\Updates',
 	'users'                => 'craft\app\services\Users',
@@ -84,4 +83,10 @@ return [
 			]
 		]
 	],
+	'view' => [
+		'class' => 'craft\app\web\View',
+		'assetBundles' => [
+			'yii\web\JqueryAsset' => 0,
+		]
+	]
 ];

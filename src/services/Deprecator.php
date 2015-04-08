@@ -69,7 +69,7 @@ class Deprecator extends Component
 		$log->key            = $key;
 		$log->message        = $message;
 		$log->lastOccurrence = DateTimeHelper::currentTimeForDb();
-		$log->template       = (!$request->getIsConsoleRequest() && $request->getIsSiteRequest() ? Craft::$app->templates->getRenderingTemplate() : null);
+		$log->template       = (!$request->getIsConsoleRequest() && $request->getIsSiteRequest() ? Craft::$app->getView()->getRenderingTemplate() : null);
 
 		// Everything else requires the stack trace
 		$this->_populateLogWithStackTraceData($log);
@@ -211,7 +211,7 @@ class Deprecator extends Component
 		/* end HIDE */
 
 		$request = Craft::$app->getRequest();
-		$isTemplateRendering = (!$request->getIsConsoleRequest() && $request->getIsSiteRequest() && Craft::$app->templates->isRendering());
+		$isTemplateRendering = (!$request->getIsConsoleRequest() && $request->getIsSiteRequest() && Craft::$app->getView()->getIsRenderingTemplate());
 
 		if ($isTemplateRendering)
 		{

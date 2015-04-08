@@ -64,10 +64,10 @@ class Updates extends Widget
 
 		if (!$cached || !Craft::$app->updates->getTotalAvailableUpdates())
 		{
-			Craft::$app->templates->includeJsResource('js/UpdatesWidget.js');
-			Craft::$app->templates->includeJs('new Craft.UpdatesWidget('.$this->id.', '.($cached ? 'true' : 'false').');');
+			Craft::$app->getView()->registerJsResource('js/UpdatesWidget.js');
+			Craft::$app->getView()->registerJs('new Craft.UpdatesWidget('.$this->id.', '.($cached ? 'true' : 'false').');');
 
-			Craft::$app->templates->includeTranslations(
+			Craft::$app->getView()->includeTranslations(
 				'One update available!',
 				'{total} updates available!',
 				'Go to Updates',
@@ -78,7 +78,7 @@ class Updates extends Widget
 
 		if ($cached)
 		{
-			return Craft::$app->templates->render('_components/widgets/Updates/body', [
+			return Craft::$app->getView()->renderTemplate('_components/widgets/Updates/body', [
 				'total' => Craft::$app->updates->getTotalAvailableUpdates()
 			]);
 		}

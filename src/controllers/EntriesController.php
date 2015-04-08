@@ -52,9 +52,8 @@ class EntriesController extends BaseEntriesController
 	 * @param int    $versionId     The entry version’s ID, if editing an existing version.
 	 * @param int    $localeId      The locale ID, if specified.
 	 * @param Entry  $entry         The entry being edited, if there were any validation errors.
-	 *
+	 * @return string The rendering result
 	 * @throws HttpException
-	 * @return null
 	 */
 	public function actionEditEntry($sectionHandle, $entryId = null, $draftId = null, $versionId = null, $localeId = null, Entry $entry = null)
 	{
@@ -260,8 +259,8 @@ class EntriesController extends BaseEntriesController
 				$variables['entryTypeOptions'][] = ['label' => Craft::t('app', $entryType->name), 'value' => $entryType->id];
 			}
 
-			Craft::$app->templates->includeJsResource('js/EntryTypeSwitcher.js');
-			Craft::$app->templates->includeJs('new Craft.EntryTypeSwitcher();');
+			Craft::$app->getView()->registerJsResource('js/EntryTypeSwitcher.js');
+			Craft::$app->getView()->registerJs('new Craft.EntryTypeSwitcher();');
 		}
 		else
 		{
@@ -271,7 +270,7 @@ class EntriesController extends BaseEntriesController
 		// Enable Live Preview?
 		if (!Craft::$app->getRequest()->getIsMobileBrowser(true) && Craft::$app->sections->isSectionTemplateValid($section))
 		{
-			Craft::$app->templates->includeJs('Craft.LivePreview.init('.JsonHelper::encode([
+			Craft::$app->getView()->registerJs('Craft.LivePreview.init('.JsonHelper::encode([
 				'fields'        => '#title-field, #fields > div > div > .field',
 				'extraFields'   => '#settings',
 				'previewUrl'    => $entry->getUrl(),
@@ -346,11 +345,11 @@ class EntriesController extends BaseEntriesController
 		);
 
 		// Include translations
-		Craft::$app->templates->includeTranslations('Live Preview');
+		Craft::$app->getView()->includeTranslations('Live Preview');
 
 		// Render the template!
-		Craft::$app->templates->includeCssResource('css/entry.css');
-		$this->renderTemplate('entries/_edit', $variables);
+		Craft::$app->getView()->registerCssResource('css/entry.css');
+		return $this->renderTemplate('entries/_edit', $variables);
 	}
 
 	/**
@@ -373,13 +372,13 @@ class EntriesController extends BaseEntriesController
 
 		$this->_prepEditEntryVariables($variables);
 
-		$paneHtml = Craft::$app->templates->render('_includes/tabs', $variables) .
-			Craft::$app->templates->render('entries/_fields', $variables);
+		$paneHtml = Craft::$app->getView()->renderTemplate('_includes/tabs', $variables) .
+			Craft::$app->getView()->renderTemplate('entries/_fields', $variables);
 
 		$this->returnJson([
 			'paneHtml' => $paneHtml,
-			'headHtml' => Craft::$app->templates->getHeadHtml(),
-			'footHtml' => Craft::$app->templates->getFootHtml(),
+			'headHtml' => Craft::$app->getView()->getHeadHtml(),
+			'footHtml' => Craft::$app->getView()->getBodyEndHtml(true),
 		]);
 	}
 
@@ -919,9 +918,8 @@ class EntriesController extends BaseEntriesController
 	 * Displays an entry.
 	 *
 	 * @param Entry $entry
-	 *
+	 * @return string The rendering result
 	 * @throws HttpException
-	 * @return null
 	 */
 	private function _showEntry(Entry $entry)
 	{
@@ -944,9 +942,9 @@ class EntriesController extends BaseEntriesController
 		// Have this entry override any freshly queried entries with the same ID/locale
 		Craft::$app->elements->setPlaceholderElement($entry);
 
-		Craft::$app->templates->getTwig()->disableStrictVariables();
+		Craft::$app->getView()->getTwig()->disableStrictVariables();
 
-		$this->renderTemplate($section->template, [
+		return $this->renderTemplate($section->template, [
 			'entry' => $entry
 		]);
 	}

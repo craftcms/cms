@@ -13,12 +13,12 @@
 		"Are you sure you want to delete this photo?"
 	%}
 
-	{% includeJsResource "lib/fileupload/jquery.ui.widget.js" %}
-	{% includeJsResource "lib/fileupload/jquery.fileupload.js" %}
-	{% includeJsResource "lib/imgareaselect/jquery.imgareaselect.pack.js" %}
-	{% includeJsResource "js/profile.js" %}
-	{% includeCssResource "lib/imgareaselect/imgareaselect-animated.css" %}
-	{% includeCssResource "css/profile.css" %}
+	{% registerJsResource "lib/fileupload/jquery.ui.widget.js" %}
+	{% registerJsResource "lib/fileupload/jquery.fileupload.js" %}
+	{% registerJsResource "lib/imgareaselect/jquery.imgareaselect.pack.js" %}
+	{% registerJsResource "js/profile.js" %}
+	{% registerCssResource "lib/imgareaselect/imgareaselect-animated.css" %}
+	{% registerCssResource "css/profile.css" %}
 
 
 {% set photoInput %}

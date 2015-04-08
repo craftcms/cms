@@ -1,6 +1,6 @@
 {% extends "_layouts/basecp" %}
 
-{% includeCssResource "css/cp.css" first %}
+{% registerCssResource "css/cp.css" %}
 {%- includeTranslations
 	"week",
 	"weeks",
@@ -98,7 +98,7 @@
 			</ul>
 		{% endif %}
 	{% else %}
-		{% includeJs 'Craft.cp.fetchAlerts();' %}
+		{% registerJs 'Craft.cp.fetchAlerts();' %}
 	{% endif %}
 
 	<header id="header">
@@ -106,12 +106,12 @@
 			<ul id="header-actions">
 				{% set task = craft.tasks.getRunningTask() %}
 				{% if task %}
-					{% includeJs 'Craft.cp.setRunningTaskInfo('~task.getInfo()|json_encode|raw~');' %}
-					{% includeJs 'Craft.cp.trackTaskProgress();' %}
+					{% registerJs 'Craft.cp.setRunningTaskInfo('~task.getInfo()|json_encode|raw~');' %}
+					{% registerJs 'Craft.cp.trackTaskProgress();' %}
 				{% elseif craft.tasks.areTasksPending() %}
-					{% includeJs 'Craft.cp.runPendingTasks();' %}
+					{% registerJs 'Craft.cp.runPendingTasks();' %}
 				{% elseif craft.tasks.haveTasksFailed() %}
-					{% includeJs 'Craft.cp.setRunningTaskInfo({ status: "error" });' %}
+					{% registerJs 'Craft.cp.setRunningTaskInfo({ status: "error" });' %}
 				{% endif %}
 
 				{% if currentUser.can('performUpdates') %}
@@ -130,7 +130,7 @@
 							</li>
 						{% endif %}
 					{% else %}
-						{% includeJs 'Craft.cp.checkForUpdates();' %}
+						{% registerJs 'Craft.cp.checkForUpdates();' %}
 					{% endif %}
 				{% endif %}
 

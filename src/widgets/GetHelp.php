@@ -69,11 +69,11 @@ class GetHelp extends Widget
 		}
 
 		$js = "new Craft.GetHelpWidget({$this->id});";
-		Craft::$app->templates->includeJs($js);
+		Craft::$app->getView()->registerJs($js);
 
-		Craft::$app->templates->includeJsResource('js/GetHelpWidget.js');
-		Craft::$app->templates->includeTranslations('Message sent successfully.', 'Couldn’t send support request.');
+		Craft::$app->getView()->registerJsResource('js/GetHelpWidget.js');
+		Craft::$app->getView()->includeTranslations('Message sent successfully.', 'Couldn’t send support request.');
 
-		return Craft::$app->templates->render('_components/widgets/GetHelp/body');
+		return Craft::$app->getView()->renderTemplate('_components/widgets/GetHelp/body');
 	}
 }

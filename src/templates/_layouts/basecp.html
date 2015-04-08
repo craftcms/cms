@@ -36,8 +36,10 @@
 	'js/cp.js',
 ]) %}
 
-{% for jsResource in jsResources|reverse %}
-	{% includeJsResource jsResource first %}
+{% for jsResource in jsResources %}
+	{% registerJsResource jsResource {
+		position: POS_BEGIN
+	} %}
 {% endfor %}
 
 {%- includeTranslations "Show", "Hide" %}
@@ -53,7 +55,7 @@
 		</div>
 	</noscript>
 
-	<script type="text/javascript">
+	{% set js %}
 		window.Craft = {
 			siteUid:               "{{ craft.app.getSiteUid()|e('js') }}",
 			baseUrl:               "{{ url()|e('js') }}",
@@ -95,5 +97,6 @@
 				window.Craft.fileKinds.{{ kind }}.push("{{ extension }}");
 			{% endfor %}
 		{% endfor %}
-	</script>
+	{% endset %}
+	{% registerJs js 1 %}
 {% endblock %}

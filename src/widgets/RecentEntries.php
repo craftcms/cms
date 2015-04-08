@@ -71,7 +71,7 @@ class RecentEntries extends Widget
 	 */
 	public function getSettingsHtml()
 	{
-		return Craft::$app->templates->render('_components/widgets/RecentEntries/settings', [
+		return Craft::$app->getView()->renderTemplate('_components/widgets/RecentEntries/settings', [
 			'widget' => $this
 		]);
 	}
@@ -138,13 +138,13 @@ class RecentEntries extends Widget
 
 		$js = 'new Craft.RecentEntriesWidget('.$this->id.', '.JsonHelper::encode($params).');';
 
-		Craft::$app->templates->includeJsResource('js/RecentEntriesWidget.js');
-		Craft::$app->templates->includeJs($js);
-		Craft::$app->templates->includeTranslations('by {author}');
+		Craft::$app->getView()->registerJsResource('js/RecentEntriesWidget.js');
+		Craft::$app->getView()->registerJs($js);
+		Craft::$app->getView()->includeTranslations('by {author}');
 
 		$entries = $this->_getEntries();
 
-		return Craft::$app->templates->render('_components/widgets/RecentEntries/body', [
+		return Craft::$app->getView()->renderTemplate('_components/widgets/RecentEntries/body', [
 			'entries' => $entries
 		]);
 	}

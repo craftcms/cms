@@ -38,5 +38,5 @@
 
 
 {% if sectionHandle is defined %}
-	{% includeJs 'window.defaultSectionHandle = "'~sectionHandle~'";' %}
+	{% registerJs 'window.defaultSectionHandle = "'~sectionHandle~'";' %}
 {% endif %}

@@ -32,7 +32,7 @@ class ElementsController extends BaseElementsController
 	/**
 	 * Renders and returns the body of an ElementSelectorModal.
 	 *
-	 * @return null
+	 * @return string The rendering result
 	 */
 	public function actionGetModalBody()
 	{
@@ -69,7 +69,7 @@ class ElementsController extends BaseElementsController
 			$showSidebar = !empty($sources);
 		}
 
-		$this->renderTemplate('_elements/modalbody', [
+		return $this->renderTemplate('_elements/modalbody', [
 			'context'      => $context,
 			'elementType'  => $elementType,
 			'sources'      => $sources,
@@ -179,7 +179,7 @@ class ElementsController extends BaseElementsController
 			$categories = [];
 		}
 
-		$html = Craft::$app->templates->render('_components/fieldtypes/Categories/input', [
+		$html = Craft::$app->getView()->renderTemplate('_components/fieldtypes/Categories/input', [
 			'elements' => $categories,
 			'id'       => Craft::$app->getRequest()->getParam('id'),
 			'name'     => Craft::$app->getRequest()->getParam('name'),
@@ -236,17 +236,17 @@ class ElementsController extends BaseElementsController
 		$response['locale'] = $element->locale;
 
 		$namespace = 'editor_'.StringHelper::randomString(10);
-		Craft::$app->templates->setNamespace($namespace);
+		Craft::$app->getView()->setNamespace($namespace);
 
 		$response['html'] = '<input type="hidden" name="namespace" value="'.$namespace.'">' .
 			'<input type="hidden" name="elementId" value="'.$element->id.'">' .
 			'<input type="hidden" name="locale" value="'.$element->locale.'">' .
 			'<div>' .
-			Craft::$app->templates->namespaceInputs($element::getEditorHtml($element)) .
+			Craft::$app->getView()->namespaceInputs($element::getEditorHtml($element)) .
 			'</div>';
 
-		$response['headHtml'] = Craft::$app->templates->getHeadHtml();
-		$response['footHtml'] = Craft::$app->templates->getFootHtml();
+		$response['headHtml'] = Craft::$app->getView()->getHeadHtml();
+		$response['footHtml'] = Craft::$app->getView()->getBodyEndHtml(true);
 
 		$this->returnJson($response);
 	}

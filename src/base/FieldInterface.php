@@ -56,18 +56,18 @@ interface FieldInterface extends SavableComponentInterface
 	 * ```
 	 *
 	 * For more complex inputs, you might prefer to create a template, and render it via
-	 * [[\craft\app\services\Templates::render()]]. For example, the following code would render a template located at
+	 * [[\craft\app\web\View::renderTemplate()]]. For example, the following code would render a template located at
 	 * craft/plugins/myplugin/templates/_fieldinput.html, passing the $name and $value variables to it:
 	 *
 	 * ```php
-	 * return Craft::$app->templates->render('myplugin/_fieldinput', [
+	 * return Craft::$app->getView()->renderTemplate('myplugin/_fieldinput', [
 	 *     'name'  => $name,
 	 *     'value' => $value
 	 * ]);
 	 * ```
 	 *
 	 * If you need to tie any JavaScript code to your input, it’s important to know that any `name=` and `id=`
-	 * attributes within the returned HTML will probably get [[\craft\app\services\Templates::namespaceInputs() namespaced]],
+	 * attributes within the returned HTML will probably get [[\craft\app\web\View::namespaceInputs() namespaced]],
 	 * however your JavaScript code will be left untouched.
 	 *
 	 * For example, if getInputHtml() returns the following HTML:
@@ -97,11 +97,11 @@ interface FieldInterface extends SavableComponentInterface
 	 * namespace is going to change depending on the context. Often they are randomly generated. So it’s not quite
 	 * that simple.
 	 *
-	 * Thankfully, [[\craft\app\services\Templates]] provides a couple handy methods that can help you deal with this:
+	 * Thankfully, [[\craft\app\web\View]] provides a couple handy methods that can help you deal with this:
 	 *
-	 * - [[\craft\app\services\Templates::namespaceInputId()]] will give you the namespaced version of a given ID.
-	 * - [[\craft\app\services\Templates::namespaceInputName()]] will give you the namespaced version of a given input name.
-	 * - [[\craft\app\services\Templates::formatInputId()]] will format an input name to look more like an ID attribute value.
+	 * - [[\craft\app\web\View::namespaceInputId()]] will give you the namespaced version of a given ID.
+	 * - [[\craft\app\web\View::namespaceInputName()]] will give you the namespaced version of a given input name.
+	 * - [[\craft\app\web\View::formatInputId()]] will format an input name to look more like an ID attribute value.
 	 *
 	 * So here’s what a getInputHtml() method that includes field-targeting JavaScript code might look like:
 	 *
@@ -109,13 +109,13 @@ interface FieldInterface extends SavableComponentInterface
 	 * public function getInputHtml($value, $element)
 	 * {
 	 *     // Come up with an ID value based on $name
-	 *     $id = Craft::$app->templates->formatInputId($name);
+	 *     $id = Craft::$app->getView()->formatInputId($name);
 	 *
 	 *     // Figure out what that ID is going to be namespaced into
-	 *     $namespacedId = Craft::$app->templates->namespaceInputId($id);
+	 *     $namespacedId = Craft::$app->getView()->namespaceInputId($id);
 	 *
 	 *     // Render and return the input template
-	 *     return Craft::$app->templates->render('myplugin/_fieldinput', [
+	 *     return Craft::$app->getView()->renderTemplate('myplugin/_fieldinput', [
 	 *         'name'         => $name,
 	 *         'id'           => $id,
 	 *         'namespacedId' => $namespacedId,
@@ -135,7 +135,7 @@ interface FieldInterface extends SavableComponentInterface
 	 * ```
 	 *
 	 * The same principles also apply if you’re including your JavaScript code with
-	 * [[\craft\app\services\Templates::includeJs()]].
+	 * [[\craft\app\web\View::registerJs()]].
 	 *
 	 * @param mixed                         $value   The field’s value. This will either be the [[prepareValue() prepared value]],
 	 *                                               raw POST data (i.e. if there was a validation error), or null

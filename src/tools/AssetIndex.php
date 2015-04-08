@@ -54,7 +54,7 @@ class AssetIndex extends Tool
 			];
 		}
 
-		return Craft::$app->templates->render('_includes/forms/checkboxSelect', [
+		return Craft::$app->getView()->renderTemplate('_includes/forms/checkboxSelect', [
 			'name'    => 'sources',
 			'options' => $sourceOptions
 		]);
@@ -167,7 +167,7 @@ class AssetIndex extends Tool
 
 					if (!empty($missingFiles) || !empty($missingFolders) || !empty($skippedFiles))
 					{
-						$responseArray['confirm'] = Craft::$app->templates->render('assets/_missing_items', ['missingFiles' => $missingFiles, 'missingFolders' => $missingFolders, 'skippedFiles' => $skippedFiles]);
+						$responseArray['confirm'] = Craft::$app->getView()->renderTemplate('assets/_missing_items', ['missingFiles' => $missingFiles, 'missingFolders' => $missingFolders, 'skippedFiles' => $skippedFiles]);
 						$responseArray['params'] = ['finish' => 1];
 					}
 					// Clean up stale indexing data (all sessions that have all recordIds set)

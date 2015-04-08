@@ -273,7 +273,7 @@ class Asset extends Element
 	public static function getEditorHtml(ElementInterface $element)
 	{
 		/** @var Asset $element */
-		$html = Craft::$app->templates->renderMacro('_includes/forms', 'textField', [
+		$html = Craft::$app->getView()->renderTemplateMacro('_includes/forms', 'textField', [
 			[
 				'label'     => Craft::t('app', 'Filename'),
 				'id'        => 'filename',
@@ -285,7 +285,7 @@ class Asset extends Element
 			]
 		]);
 
-		$html .= Craft::$app->templates->renderMacro('_includes/forms', 'textField', [
+		$html .= Craft::$app->getView()->renderTemplateMacro('_includes/forms', 'textField', [
 			[
 				'label'     => Craft::t('app', 'Title'),
 				'locale'    => $element->locale,

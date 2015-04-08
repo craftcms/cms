@@ -91,7 +91,7 @@ class DeleteUsers extends ElementAction
 })();
 EOT;
 
-		Craft::$app->templates->includeJs($js);
+		Craft::$app->getView()->registerJs($js);
 	}
 
 	/**

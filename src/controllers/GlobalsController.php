@@ -89,9 +89,8 @@ class GlobalsController extends Controller
 	 * @param string    $globalSetHandle The global set’s handle.
 	 * @param string    $localeId        The locale ID, if specified.
 	 * @param GlobalSet $globalSet       The global set being edited, if there were any validation errors.
-	 *
+	 * @return string The rendering result
 	 * @throws HttpException
-	 * @return null
 	 */
 	public function actionEditContent($globalSetHandle, $localeId = null, GlobalSet $globalSet = null)
 	{
@@ -147,7 +146,7 @@ class GlobalsController extends Controller
 		}
 
 		// Render the template!
-		$this->renderTemplate('globals/_edit', [
+		return $this->renderTemplate('globals/_edit', [
 			'globalSetHandle' => $globalSetHandle,
 			'localeId' => $localeId,
 			'globalSets' => $globalSets,

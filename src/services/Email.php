@@ -418,21 +418,21 @@ class Email extends Component
 
 			$variables['user'] = $user;
 
-			$email->Subject = Craft::$app->templates->renderString($emailModel->subject, $variables);
+			$email->Subject = Craft::$app->getView()->renderString($emailModel->subject, $variables);
 
 			// If they populated an htmlBody, use it.
 			if ($emailModel->htmlBody)
 			{
-				$renderedHtmlBody = Craft::$app->templates->renderString($emailModel->htmlBody, $variables);
+				$renderedHtmlBody = Craft::$app->getView()->renderString($emailModel->htmlBody, $variables);
 				$email->msgHTML($renderedHtmlBody);
-				$email->AltBody = Craft::$app->templates->renderString($emailModel->body, $variables);
+				$email->AltBody = Craft::$app->getView()->renderString($emailModel->body, $variables);
 			}
 			else
 			{
 				// They didn't provide an htmlBody, so markdown the body.
-				$renderedHtmlBody = Craft::$app->templates->renderString(Markdown::process($emailModel->body), $variables);
+				$renderedHtmlBody = Craft::$app->getView()->renderString(Markdown::process($emailModel->body), $variables);
 				$email->msgHTML($renderedHtmlBody);
-				$email->AltBody = Craft::$app->templates->renderString($emailModel->body, $variables);
+				$email->AltBody = Craft::$app->getView()->renderString($emailModel->body, $variables);
 			}
 
 			if (!$email->Send())

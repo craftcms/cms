@@ -33,7 +33,7 @@ class TagsController extends Controller
 	/**
 	 * Called before displaying the tag settings index page.
 	 *
-	 * @return null
+	 * @return string The rendering result
 	 */
 	public function actionIndex()
 	{
@@ -41,7 +41,7 @@ class TagsController extends Controller
 
 		$tagGroups = Craft::$app->tags->getAllTagGroups();
 
-		$this->renderTemplate('settings/tags/index', [
+		return $this->renderTemplate('settings/tags/index', [
 			'tagGroups' => $tagGroups
 		]);
 	}
@@ -51,9 +51,8 @@ class TagsController extends Controller
 	 *
 	 * @param int      $tagGroupId The tag group’s ID, if any.
 	 * @param TagGroup $tagGroup   The tag group being edited, if there were any validation errors.
-	 *
+	 * @return string The rendering result
 	 * @throws HttpException
-	 * @return null
 	 */
 	public function actionEditTagGroup($tagGroupId = null, TagGroup $tagGroup = null)
 	{
@@ -95,7 +94,7 @@ class TagsController extends Controller
 			'fieldLayout' => ['label' => Craft::t('app', 'Field Layout'), 'url' => '#taggroup-fieldlayout']
 		];
 
-		$this->renderTemplate('settings/tags/_edit', [
+		return $this->renderTemplate('settings/tags/_edit', [
 			'tagGroupId' => $tagGroupId,
 			'tagGroup' => $tagGroup,
 			'title' => $title,

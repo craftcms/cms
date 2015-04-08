@@ -102,7 +102,7 @@ class AwsS3 extends Volume
 	 */
 	public function getSettingsHtml()
 	{
-		return Craft::$app->templates->render('_components/volumes/AwsS3/settings', array(
+		return Craft::$app->getView()->renderTemplate('_components/volumes/AwsS3/settings', array(
 			'volume' => $this
 		));
 	}

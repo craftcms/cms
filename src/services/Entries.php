@@ -192,7 +192,7 @@ class Entries extends Component
 
 		if (!$entryType->hasTitleField)
 		{
-			$entry->getContent()->title = Craft::$app->templates->renderObjectTemplate($entryType->titleFormat, $entry);
+			$entry->getContent()->title = Craft::$app->getView()->renderObjectTemplate($entryType->titleFormat, $entry);
 		}
 
 		$transaction = Craft::$app->getDb()->getTransaction() === null ? Craft::$app->getDb()->beginTransaction() : null;

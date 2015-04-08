@@ -52,8 +52,8 @@ class Color extends Field
 			$value = '#000000';
 		}
 
-		return Craft::$app->templates->render('_includes/forms/color', [
-			'id'    => Craft::$app->templates->formatInputId($this->handle),
+		return Craft::$app->getView()->renderTemplate('_includes/forms/color', [
+			'id'    => Craft::$app->getView()->formatInputId($this->handle),
 			'name'  => $this->handle,
 			'value' => $value,
 		]);

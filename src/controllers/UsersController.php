@@ -266,8 +266,8 @@ class UsersController extends Controller
 	/**
 	 * Sets a user's password once they've verified they have access to their email.
 	 *
+	 * @return string The rendering result
 	 * @throws HttpException|Exception
-	 * @return null
 	 */
 	public function actionSetPassword()
 	{
@@ -287,7 +287,7 @@ class UsersController extends Controller
 
 				$this->_processSetPasswordPath($userToProcess);
 
-				$this->renderTemplate($url, [
+				return $this->renderTemplate($url, [
 					'code'    => $code,
 					'id'      => $id,
 					'newUser' => ($userToProcess->password ? false : true),
@@ -357,7 +357,7 @@ class UsersController extends Controller
 			$errors = [];
 			$errors = array_merge($errors, $userToProcess->getErrors('newPassword'));
 
-			$this->renderTemplate($url, [
+			return $this->renderTemplate($url, [
 				'errors' => $errors,
 				'code' => $code,
 				'id' => $id,
@@ -427,9 +427,8 @@ class UsersController extends Controller
 	 *
 	 * @param int|string $userId The user’s ID, if any, or a string that indicates the user to be edited ('current' or 'client').
 	 * @param User       $user   The user being edited, if there were any validation errors.
-	 *
+	 * @return string The rendering result
 	 * @throws HttpException
-	 * @return null
 	 */
 	public function actionEditUser($userId = null, User $user = null)
 	{
@@ -687,16 +686,16 @@ class UsersController extends Controller
 		// Load the resources and render the page
 		// ---------------------------------------------------------------------
 
-		Craft::$app->templates->includeCssResource('css/account.css');
-		Craft::$app->templates->includeJsResource('js/AccountSettingsForm.js');
-		Craft::$app->templates->includeJs('new Craft.AccountSettingsForm('.JsonHelper::encode($user->id).', '.($user->isCurrent() ? 'true' : 'false').');');
+		Craft::$app->getView()->registerCssResource('css/account.css');
+		Craft::$app->getView()->registerJsResource('js/AccountSettingsForm.js');
+		Craft::$app->getView()->registerJs('new Craft.AccountSettingsForm('.JsonHelper::encode($user->id).', '.($user->isCurrent() ? 'true' : 'false').');');
 
-		Craft::$app->templates->includeTranslations(
+		Craft::$app->getView()->includeTranslations(
 			'Please enter your current password.',
 			'Please enter your password.'
 		);
 
-		$this->renderTemplate('users/_edit', [
+		return $this->renderTemplate('users/_edit', [
 			'account' => $user,
 			'isNewAccount' => $isNewAccount,
 			'statusLabel' => (isset($statusLabel) ? $statusLabel : null),
@@ -1026,7 +1025,7 @@ class UsersController extends Controller
 					// Never scale up the images, so make the scaling factor always <= 1
 					$factor = min($constraint / $width, $constraint / $height, 1);
 
-					$html = Craft::$app->templates->render('_components/tools/cropper_modal',
+					$html = Craft::$app->getView()->renderTemplate('_components/tools/cropper_modal',
 						[
 							'imageUrl' => UrlHelper::getResourceUrl('userphotos/temp/'.$userName.'/'.$filename),
 							'width' => round($width * $factor),
@@ -1096,7 +1095,7 @@ class UsersController extends Controller
 				{
 					IOHelper::clearFolder(Craft::$app->path->getTempUploadsPath().'/userphotos/'.$userName);
 
-					$html = Craft::$app->templates->render('users/_userphoto',
+					$html = Craft::$app->getView()->renderTemplate('users/_userphoto',
 						[
 							'account' => $user
 						]
@@ -1138,7 +1137,7 @@ class UsersController extends Controller
 		$user->photo = null;
 		Craft::$app->users->saveUser($user);
 
-		$html = Craft::$app->templates->render('users/_userphoto',
+		$html = Craft::$app->getView()->renderTemplate('users/_userphoto',
 			[
 				'account' => $user
 			]
@@ -1538,7 +1537,7 @@ class UsersController extends Controller
 			Craft::$app->path->setTemplatesPath(Craft::$app->path->getSiteTemplatesPath());
 
 			// If they haven't defined a front-end set password template
-			if (!Craft::$app->templates->doesTemplateExist(Craft::$app->config->getLocalized('setPasswordPath')))
+			if (!Craft::$app->getView()->doesTemplateExist(Craft::$app->config->getLocalized('setPasswordPath')))
 			{
 				// Set the Path service to use the CP templates path instead
 				Craft::$app->path->setTemplatesPath(Craft::$app->path->getCpTemplatesPath());

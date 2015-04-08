@@ -68,7 +68,7 @@ class Feed extends Widget
 	 */
 	public function getSettingsHtml()
 	{
-		return Craft::$app->templates->render('_components/widgets/Feed/settings', [
+		return Craft::$app->getView()->renderTemplate('_components/widgets/Feed/settings', [
 			'widget' => $this
 		]);
 	}
@@ -86,14 +86,14 @@ class Feed extends Widget
 	 */
 	public function getBodyHtml()
 	{
-		Craft::$app->templates->includeJsResource('js/FeedWidget.js');
-		Craft::$app->templates->includeJs(
+		Craft::$app->getView()->registerJsResource('js/FeedWidget.js');
+		Craft::$app->getView()->registerJs(
 			"new Craft.FeedWidget({$this->id}, " .
 			JsonHelper::encode($this->url).', ' .
 			JsonHelper::encode($this->limit).');'
 		);
 
-		return Craft::$app->templates->render('_components/widgets/Feed/body', [
+		return Craft::$app->getView()->renderTemplate('_components/widgets/Feed/body', [
 			'limit' => $this->limit
 		]);
 	}

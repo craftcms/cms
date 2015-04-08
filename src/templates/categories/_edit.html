@@ -152,5 +152,5 @@
 
 
 {% if not category.slug %}
-	{% includeJs "window.slugGenerator = new Craft.SlugGenerator('#title', '#slug');" %}
+	{% registerJs "window.slugGenerator = new Craft.SlugGenerator('#title', '#slug');" %}
 {% endif %}

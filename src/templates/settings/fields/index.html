@@ -5,7 +5,7 @@
 
 {% set docsUrl = 'http://buildwithcraft.com/docs/fields' %}
 
-{% includeJsResource "js/fields.js" %}
+{% registerJsResource "js/fields.js" %}
 
 {% includeTranslations
 	"What do you want to name your group?",
@@ -116,5 +116,5 @@
 		deleteAction: 'fields/delete-field'
 	});
 {% endset %}
-{% includeJs js %}
+{% registerJs js %}
 

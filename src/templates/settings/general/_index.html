@@ -76,12 +76,12 @@
 			"Are you sure you want to delete the logo?"
 		%}
 
-		{% includeJsResource "lib/fileupload/jquery.ui.widget.js" %}
-		{% includeJsResource "lib/fileupload/jquery.fileupload.js" %}
-		{% includeJsResource "lib/imgareaselect/jquery.imgareaselect.pack.js" %}
-		{% includeJsResource "js/rebrand.js" %}
-		{% includeCssResource "lib/imgareaselect/imgareaselect-animated.css" %}
-		{% includeCssResource "css/rebrand.css" %}
+		{% registerJsResource "lib/fileupload/jquery.ui.widget.js" %}
+		{% registerJsResource "lib/fileupload/jquery.fileupload.js" %}
+		{% registerJsResource "lib/imgareaselect/jquery.imgareaselect.pack.js" %}
+		{% registerJsResource "js/rebrand.js" %}
+		{% registerCssResource "lib/imgareaselect/imgareaselect-animated.css" %}
+		{% registerCssResource "css/rebrand.css" %}
 
 		{% set logoInput %}
 			{% include 'settings/general/_logo' %}

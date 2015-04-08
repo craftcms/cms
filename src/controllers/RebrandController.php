@@ -75,7 +75,7 @@ class RebrandController extends Controller
 					// Never scale up the images, so make the scaling factor always <= 1
 					$factor = min($constraint / $width, $constraint / $height, 1);
 
-					$html = Craft::$app->templates->render('_components/tools/cropper_modal',
+					$html = Craft::$app->getView()->renderTemplate('_components/tools/cropper_modal',
 						[
 							'imageUrl' => UrlHelper::getResourceUrl('tempuploads/'.$filename),
 							'width' => round($width * $factor),
@@ -146,7 +146,7 @@ class RebrandController extends Controller
 
 				IOHelper::deleteFile($imagePath);
 
-				$html = Craft::$app->templates->render('settings/general/_logo');
+				$html = Craft::$app->getView()->renderTemplate('settings/general/_logo');
 				$this->returnJson(['html' => $html]);
 			}
 			IOHelper::deleteFile($imagePath);
@@ -169,7 +169,7 @@ class RebrandController extends Controller
 		$this->requireAdmin();
 		IOHelper::clearFolder(Craft::$app->path->getStoragePath().'/logo');
 
-		$html = Craft::$app->templates->render('settings/general/_logo');
+		$html = Craft::$app->getView()->renderTemplate('settings/general/_logo');
 		$this->returnJson(['html' => $html]);
 
 	}

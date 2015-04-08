@@ -68,7 +68,7 @@ class Local extends Volume
 	 */
 	public function getSettingsHtml()
 	{
-		return Craft::$app->templates->render('_components/volumes/Local/settings', array(
+		return Craft::$app->getView()->renderTemplate('_components/volumes/Local/settings', array(
 			'volume' => $this,
 		));
 	}

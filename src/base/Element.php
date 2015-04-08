@@ -251,7 +251,7 @@ abstract class Element extends Component implements ElementInterface
 		$variables['elements'] = $elementQuery->all();
 
 		$template = '_elements/'.$viewState['mode'].'view/'.($includeContainer ? 'container' : 'elements');
-		return Craft::$app->templates->render($template, $variables);
+		return Craft::$app->getView()->renderTemplate($template, $variables);
 	}
 
 	/**
@@ -367,22 +367,22 @@ abstract class Element extends Component implements ElementInterface
 
 		if ($fieldLayout)
 		{
-			$originalNamespace = Craft::$app->templates->getNamespace();
-			$namespace = Craft::$app->templates->namespaceInputName('fields', $originalNamespace);
-			Craft::$app->templates->setNamespace($namespace);
+			$originalNamespace = Craft::$app->getView()->getNamespace();
+			$namespace = Craft::$app->getView()->namespaceInputName('fields', $originalNamespace);
+			Craft::$app->getView()->setNamespace($namespace);
 
 			foreach ($fieldLayout->getFields() as $field)
 			{
-				$fieldHtml = Craft::$app->templates->render('_includes/field', [
+				$fieldHtml = Craft::$app->getView()->renderTemplate('_includes/field', [
 					'element'  => $element,
 					'field'    => $field,
 					'required' => $field->required
 				]);
 
-				$html .= Craft::$app->templates->namespaceInputs($fieldHtml, 'fields');
+				$html .= Craft::$app->getView()->namespaceInputs($fieldHtml, 'fields');
 			}
 
-			Craft::$app->templates->setNamespace($originalNamespace);
+			Craft::$app->getView()->setNamespace($originalNamespace);
 		}
 
 		return $html;

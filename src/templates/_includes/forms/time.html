@@ -8,7 +8,7 @@
 	{% set name = name ~ '[time]' -%}
 {% endif -%}
 
-{% includeJsResource 'lib/jquery.timepicker/jquery.timepicker'~(craft.config.useCompressedJs ? '.min' : '')~'.js' -%}
+{% registerJsResource 'lib/jquery.timepicker/jquery.timepicker'~(craft.config.useCompressedJs ? '.min' : '')~'.js' -%}
 
 {% if value is not defined -%}
 	{% set value = null -%}
@@ -37,4 +37,4 @@
 	});
 
 {%- endset %}
-{%- includeJs js %}
+{%- registerJs js %}

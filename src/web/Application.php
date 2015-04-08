@@ -63,7 +63,6 @@ use yii\web\NotFoundHttpException;
  * @property \craft\app\services\Tags             $tags             The tags service.
  * @property \craft\app\services\Tasks            $tasks            The tasks service.
  * @property \craft\app\services\TemplateCache    $templateCache    The template cache service.
- * @property \craft\app\services\Templates        $templates        The template service.
  * @property \craft\app\services\Tokens           $tokens           The tokens service.
  * @property \craft\app\services\Updates          $updates          The updates service.
  * @property UrlManager                           $urlManager       The URL manager for this application.
@@ -71,6 +70,7 @@ use yii\web\NotFoundHttpException;
  * @property \craft\app\services\UserPermissions  $userPermissions  The user permission service.
  * @property \craft\app\services\Users            $users            The users service.
  * @property User                                 $user             The user component.
+ * @property View                                 $view             The view component.
  * @method \craft\app\db\Connection               getDb()           Returns the database connection component.
  * @method \craft\app\errors\ErrorHandler         getErrorHandler() Returns the error handler component.
  * @method \craft\app\i18n\Formatter              getFormatter()    Returns the formatter component.
@@ -81,6 +81,7 @@ use yii\web\NotFoundHttpException;
  * @method Session                                getSession()      Returns the session component.
  * @method UrlManager                             getUrlManager()   Returns the URL manager for this application.
  * @method User                                   getUser()         Returns the user component.
+ * @method View                                   getView()         Returns the view component.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0

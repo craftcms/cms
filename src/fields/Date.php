@@ -145,7 +145,7 @@ class Date extends Field
 		$options = [15, 30, 60];
 		$options = array_combine($options, $options);
 
-		return Craft::$app->templates->render('_components/fieldtypes/Date/settings', [
+		return Craft::$app->getView()->renderTemplate('_components/fieldtypes/Date/settings', [
 			'options' => [
 				[
 					'label' => Craft::t('app', 'Show date'),
@@ -172,7 +172,7 @@ class Date extends Field
 	public function getInputHtml($value, $element)
 	{
 		$variables = [
-			'id'              => Craft::$app->templates->formatInputId($this->handle),
+			'id'              => Craft::$app->getView()->formatInputId($this->handle),
 			'name'            => $this->handle,
 			'value'           => $value,
 			'minuteIncrement' => $this->minuteIncrement
@@ -182,12 +182,12 @@ class Date extends Field
 
 		if ($this->showDate)
 		{
-			$input .= Craft::$app->templates->render('_includes/forms/date', $variables);
+			$input .= Craft::$app->getView()->renderTemplate('_includes/forms/date', $variables);
 		}
 
 		if ($this->showTime)
 		{
-			$input .= ' '.Craft::$app->templates->render('_includes/forms/time', $variables);
+			$input .= ' '.Craft::$app->getView()->renderTemplate('_includes/forms/time', $variables);
 		}
 
 		return $input;

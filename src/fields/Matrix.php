@@ -168,15 +168,15 @@ class Matrix extends Field
 		// Get the available field types data
 		$fieldTypeInfo = $this->_getFieldOptionsForConfigurator();
 
-		Craft::$app->templates->includeJsResource('js/MatrixConfigurator.js');
-		Craft::$app->templates->includeJs(
+		Craft::$app->getView()->registerJsResource('js/MatrixConfigurator.js');
+		Craft::$app->getView()->registerJs(
 			'new Craft.MatrixConfigurator(' .
 			JsonHelper::encode($fieldTypeInfo, JSON_UNESCAPED_UNICODE).', ' .
-			JsonHelper::encode(Craft::$app->templates->getNamespace(), JSON_UNESCAPED_UNICODE) .
+			JsonHelper::encode(Craft::$app->getView()->getNamespace(), JSON_UNESCAPED_UNICODE) .
 			');'
 		);
 
-		Craft::$app->templates->includeTranslations(
+		Craft::$app->getView()->includeTranslations(
 			'What this block type will be called in the CP.',
 			'How you’ll refer to this block type in the templates.',
 			'Are you sure you want to delete this block type?',
@@ -197,7 +197,7 @@ class Matrix extends Field
 			}
 		}
 
-		return Craft::$app->templates->render('_components/fieldtypes/Matrix/settings', [
+		return Craft::$app->getView()->renderTemplate('_components/fieldtypes/Matrix/settings', [
 			'matrixField' => $this,
 			'fieldTypes'  => $fieldTypeOptions
 		]);
@@ -285,21 +285,21 @@ class Matrix extends Field
 	 */
 	public function getInputHtml($value, $element)
 	{
-		$id = Craft::$app->templates->formatInputId($this->handle);
+		$id = Craft::$app->getView()->formatInputId($this->handle);
 
 		// Get the block types data
 		$blockTypeInfo = $this->_getBlockTypeInfoForInput($element);
 
-		Craft::$app->templates->includeJsResource('js/MatrixInput.js');
+		Craft::$app->getView()->registerJsResource('js/MatrixInput.js');
 
-		Craft::$app->templates->includeJs('new Craft.MatrixInput(' .
-			'"'.Craft::$app->templates->namespaceInputId($id).'", ' .
+		Craft::$app->getView()->registerJs('new Craft.MatrixInput(' .
+			'"'.Craft::$app->getView()->namespaceInputId($id).'", ' .
 			JsonHelper::encode($blockTypeInfo, JSON_UNESCAPED_UNICODE).', ' .
-			'"'.Craft::$app->templates->namespaceInputName($this->handle).'", ' .
+			'"'.Craft::$app->getView()->namespaceInputName($this->handle).'", ' .
 			($this->maxBlocks ? $this->maxBlocks : 'null') .
 		');');
 
-		Craft::$app->templates->includeTranslations('Disabled', 'Actions', 'Collapse', 'Expand', 'Disable', 'Enable', 'Add {type} above', 'Add a block');
+		Craft::$app->getView()->includeTranslations('Disabled', 'Actions', 'Collapse', 'Expand', 'Disable', 'Enable', 'Add {type} above', 'Add a block');
 
 		if ($value instanceof MatrixBlockQuery)
 		{
@@ -309,7 +309,7 @@ class Matrix extends Field
 				->localeEnabled(false);
 		}
 
-		return Craft::$app->templates->render('_components/fieldtypes/Matrix/input', [
+		return Craft::$app->getView()->renderTemplate('_components/fieldtypes/Matrix/input', [
 			'id' => $id,
 			'name' => $this->handle,
 			'blockTypes' => $this->getBlockTypes(),
@@ -413,7 +413,7 @@ class Matrix extends Field
 		{
 			$id = StringHelper::randomString();
 
-			return Craft::$app->templates->render('_components/fieldtypes/Matrix/input', [
+			return Craft::$app->getView()->renderTemplate('_components/fieldtypes/Matrix/input', [
 				'id' => $id,
 				'name' => $id,
 				'blockTypes' => $this->getBlockTypes(),
@@ -546,9 +546,9 @@ class Matrix extends Field
 		$fieldTypes = [];
 
 		// Set a temporary namespace for these
-		$originalNamespace = Craft::$app->templates->getNamespace();
-		$namespace = Craft::$app->templates->namespaceInputName('blockTypes[__BLOCK_TYPE__][fields][__FIELD__][typesettings]', $originalNamespace);
-		Craft::$app->templates->setNamespace($namespace);
+		$originalNamespace = Craft::$app->getView()->getNamespace();
+		$namespace = Craft::$app->getView()->namespaceInputName('blockTypes[__BLOCK_TYPE__][fields][__FIELD__][typesettings]', $originalNamespace);
+		Craft::$app->getView()->setNamespace($namespace);
 
 		foreach (Craft::$app->fields->getAllFieldTypes() as $class)
 		{
@@ -558,11 +558,11 @@ class Matrix extends Field
 				continue;
 			}
 
-			Craft::$app->templates->startJsBuffer();
+			Craft::$app->getView()->startJsBuffer();
 			/** @var FieldInterface $field */
 			$field = new $class();
-			$settingsBodyHtml = Craft::$app->templates->namespaceInputs($field->getSettingsHtml());
-			$settingsFootHtml = Craft::$app->templates->clearJsBuffer();
+			$settingsBodyHtml = Craft::$app->getView()->namespaceInputs($field->getSettingsHtml());
+			$settingsFootHtml = Craft::$app->getView()->clearJsBuffer();
 
 			$fieldTypes[] = [
 				'type'             => $class,
@@ -572,7 +572,7 @@ class Matrix extends Field
 			];
 		}
 
-		Craft::$app->templates->setNamespace($originalNamespace);
+		Craft::$app->getView()->setNamespace($originalNamespace);
 
 		return $fieldTypes;
 	}
@@ -589,9 +589,9 @@ class Matrix extends Field
 		$blockTypes = [];
 
 		// Set a temporary namespace for these
-		$originalNamespace = Craft::$app->templates->getNamespace();
-		$namespace = Craft::$app->templates->namespaceInputName($this->handle.'[__BLOCK__][fields]', $originalNamespace);
-		Craft::$app->templates->setNamespace($namespace);
+		$originalNamespace = Craft::$app->getView()->getNamespace();
+		$namespace = Craft::$app->getView()->namespaceInputName($this->handle.'[__BLOCK__][fields]', $originalNamespace);
+		Craft::$app->getView()->setNamespace($namespace);
 
 		foreach ($this->getBlockTypes() as $blockType)
 		{
@@ -612,9 +612,9 @@ class Matrix extends Field
 				$field->setIsFresh(true);
 			}
 
-			Craft::$app->templates->startJsBuffer();
+			Craft::$app->getView()->startJsBuffer();
 
-			$bodyHtml = Craft::$app->templates->namespaceInputs(Craft::$app->templates->render('_includes/fields', [
+			$bodyHtml = Craft::$app->getView()->namespaceInputs(Craft::$app->getView()->renderTemplate('_includes/fields', [
 				'namespace' => null,
 				'fields'    => $fieldLayoutFields
 			]));
@@ -625,7 +625,7 @@ class Matrix extends Field
 				$field->setIsFresh(null);
 			}
 
-			$footHtml = Craft::$app->templates->clearJsBuffer();
+			$footHtml = Craft::$app->getView()->clearJsBuffer();
 
 			$blockTypes[] = [
 				'handle'   => $blockType->handle,
@@ -635,7 +635,7 @@ class Matrix extends Field
 			];
 		}
 
-		Craft::$app->templates->setNamespace($originalNamespace);
+		Craft::$app->getView()->setNamespace($originalNamespace);
 
 		return $blockTypes;
 	}

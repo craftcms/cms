@@ -41,7 +41,7 @@ class UtilsController extends Controller
 	/**
 	 * Server info
 	 *
-	 * @return null
+	 * @return string The rendering result
 	 */
 	public function actionServerInfo()
 	{
@@ -51,7 +51,7 @@ class UtilsController extends Controller
 		$reqCheck = new \RequirementsChecker();
 		$reqCheck->checkCraft();
 
-		$this->renderTemplate('utils/serverinfo', [
+		return $this->renderTemplate('utils/serverinfo', [
 			'requirements' => $reqCheck->getResult()['requirements'],
 		]);
 	}
@@ -59,7 +59,7 @@ class UtilsController extends Controller
 	/**
 	 * PHP info
 	 *
-	 * @return null
+	 * @return string The rendering result
 	 */
 	public function actionPhpInfo()
 	{
@@ -145,7 +145,7 @@ class UtilsController extends Controller
 			}
 		}
 
-		$this->renderTemplate('utils/phpinfo', [
+		return $this->renderTemplate('utils/phpinfo', [
 			'phpInfo' => $phpInfo
 		]);
 	}
@@ -154,8 +154,7 @@ class UtilsController extends Controller
 	 * Logs
 	 *
 	 * @param array $variables
-	 *
-	 * @return null
+	 * @return string The rendering result
 	 */
 	public function actionLogs(array $variables = [])
 	{
@@ -354,7 +353,7 @@ class UtilsController extends Controller
 				}
 			}
 
-			$this->renderTemplate('utils/logs', [
+			return $this->renderTemplate('utils/logs', [
 				'logEntriesByRequest' => $logEntriesByRequest,
 				'logFilenames'        => $logFilenames,
 				'currentLogFilename'  => $currentLogFilename
@@ -365,14 +364,14 @@ class UtilsController extends Controller
 	/**
 	 * Deprecation Errors
 	 *
-	 * @return null
+	 * @return string The rendering result
 	 */
 	public function actionDeprecationErrors()
 	{
-		Craft::$app->templates->includeCssResource('css/deprecator.css');
-		Craft::$app->templates->includeJsResource('js/deprecator.js');
+		Craft::$app->getView()->registerCssResource('css/deprecator.css');
+		Craft::$app->getView()->registerJsResource('js/deprecator.js');
 
-		$this->renderTemplate('utils/deprecationerrors', [
+		return $this->renderTemplate('utils/deprecationerrors', [
 			'logs' => Craft::$app->deprecator->getLogs()
 		]);
 	}
@@ -380,7 +379,7 @@ class UtilsController extends Controller
 	/**
 	 * View stack trace for a deprecator log entry.
 	 *
-	 * @return null
+	 * @return string The rendering result
 	 */
 	public function actionGetDeprecationErrorTracesModal()
 	{
@@ -389,9 +388,9 @@ class UtilsController extends Controller
 		$logId = Craft::$app->getRequest()->getRequiredParam('logId');
 		$log = Craft::$app->deprecator->getLogById($logId);
 
-		return $this->renderTemplate('utils/deprecationerrors/_tracesmodal',
-			['log' => $log]
-		);
+		return $this->renderTemplate('utils/deprecationerrors/_tracesmodal', [
+			'log' => $log
+		]);
 	}
 
 	/**

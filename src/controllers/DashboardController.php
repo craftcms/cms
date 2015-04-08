@@ -18,7 +18,7 @@ use craft\app\helpers\StringHelper;
 use craft\app\helpers\UrlHelper;
 use craft\app\io\Zip;
 use craft\app\models\GetHelp as GetHelpModel;
-use craft\app\variables\ComponentInfo;
+use craft\app\web\twig\variables\ComponentInfo;
 use craft\app\web\Controller;
 use craft\app\web\UploadedFile;
 
@@ -41,6 +41,7 @@ class DashboardController extends Controller
 	 *
 	 * @param integer                $widgetId The widget’s ID, if editing an existing widget
 	 * @param WidgetInterface|Widget $widget   The widget being edited, if there were any validation errors
+	 * @return string The rendering result
 	 * @throws HttpException if the requested widget doesn’t exist
 	 */
 	public function actionEditWidget($widgetId = null, WidgetInterface $widget = null)
@@ -99,7 +100,7 @@ class DashboardController extends Controller
 			$title = Craft::t('app', 'Create a new widget');
 		}
 
-		$this->renderTemplate('dashboard/settings/_widgetsettings', [
+		return $this->renderTemplate('dashboard/settings/_widgetsettings', [
 			'widgetId' => $widgetId,
 			'widget' => $widget,
 			'widgetTypeInfo' => $widgetTypeInfo,
@@ -417,13 +418,11 @@ class DashboardController extends Controller
 			$errors = $getHelpModel->getErrors();
 		}
 
-		$this->renderTemplate('_components/widgets/GetHelp/response',
-			[
-				'success' => $success,
-				'errors' => JsonHelper::encode($errors),
-				'widgetId' => $widgetId
-			]
-		);
+		return $this->renderTemplate('_components/widgets/GetHelp/response', [
+			'success' => $success,
+			'errors' => JsonHelper::encode($errors),
+			'widgetId' => $widgetId
+		]);
 	}
 
 	// Private Methods

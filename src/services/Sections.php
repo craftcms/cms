@@ -919,7 +919,7 @@ class Sections extends Component
 			Craft::$app->path->setTemplatesPath(Craft::$app->path->getSiteTemplatesPath());
 
 			// Does the template exist?
-			$templateExists = Craft::$app->templates->doesTemplateExist($section->template);
+			$templateExists = Craft::$app->getView()->doesTemplateExist($section->template);
 
 			// Restore the original template path
 			Craft::$app->path->setTemplatesPath($oldTemplatesPath);

@@ -169,7 +169,7 @@ class AppController extends Controller
 
 		$canTestEditions = Craft::$app->canTestEditions();
 
-		$modalHtml = Craft::$app->templates->render('_upgrademodal', [
+		$modalHtml = Craft::$app->getView()->renderTemplate('_upgrademodal', [
 			'editions'        => $editions,
 			'licensedEdition' => $etResponse->licensedEdition,
 			'canTestEditions' => $canTestEditions

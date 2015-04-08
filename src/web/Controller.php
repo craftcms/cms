@@ -18,6 +18,8 @@ use craft\app\helpers\UrlHelper;
  *
  * It extends Yii’s [[\yii\web\Controller]], overwriting specific methods as required.
  *
+ * @method View getView() Returns the view object that can be used to render views or view files
+ *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */
@@ -45,97 +47,36 @@ abstract class Controller extends \yii\web\Controller
 	// =========================================================================
 
 	/**
-	 * Renders a template, and either outputs or returns it.
+	 * Renders a template.
 	 *
 	 * @param mixed $template      The name of the template to load in a format supported by
-	 *                             [[\craft\app\services\Templates::findTemplate()]], or a [[StringTemplate]] object.
+	 *                             [[\craft\app\web\View::resolveTemplate()]], or a [[\craft\app\web\twig\StringTemplate]] object.
 	 * @param array $variables     The variables that should be available to the template.
-	 * @param bool  $return        Whether to return the results, rather than output them. (Default is `false`.)
-	 * @param bool  $processOutput Whether the output should be processed by [[processOutput()]].
-	 *
-	 * @throws HttpException
-	 * @return mixed The rendered template if $return is set to `true`.
+	 * @return string The rendering result
+	 * @throws InvalidParamException if the view file does not exist.
 	 */
-	public function renderTemplate($template, $variables = [], $return = false, $processOutput = false)
+	public function renderTemplate($template, $variables = [])
 	{
-		if (($output = Craft::$app->templates->render($template, $variables)) !== false)
+		// Set the MIME type for the request based on the matched template's file extension (unless the
+		// Content-Type header was already set, perhaps by the template via the {% header %} tag)
+		if (!HeaderHelper::isHeaderSet('Content-Type'))
 		{
-			if ($processOutput)
+			$templateFile = Craft::$app->getView()->resolveTemplate($template);
+			$extension = IOHelper::getExtension($templateFile, 'html');
+
+			if ($extension == 'twig')
 			{
-				$output = $this->processOutput($output);
+				$extension = 'html';
 			}
 
-			if ($return)
-			{
-				return $output;
-			}
-			else
-			{
-				// Set the MIME type for the request based on the matched template's file extension (unless the
-				// Content-Type header was already set, perhaps by the template via the {% header %} tag)
-				if (!HeaderHelper::isHeaderSet('Content-Type'))
-				{
-					// Safe to assume that findTemplate() will return an actual template path here, and not `false`.
-					// If the template didn't exist, a TemplateLoaderException would have been thrown when calling
-					// Craft::$app->templates->render().
-					$templateFile = Craft::$app->templates->findTemplate($template);
-					$extension = IOHelper::getExtension($templateFile, 'html');
-
-					if ($extension == 'twig')
-					{
-						$extension = 'html';
-					}
-
-					HeaderHelper::setContentTypeByExtension($extension);
-				}
-
-				// Set the charset header
-				HeaderHelper::setHeader(['charset' => 'utf-8']);
-
-				// Are we serving HTML or XHTML?
-				if (in_array(HeaderHelper::getMimeType(), ['text/html', 'application/xhtml+xml']))
-				{
-					// Are there any head/foot nodes left in the queue?
-					$headHtml = Craft::$app->templates->getHeadHtml();
-					$footHtml = Craft::$app->templates->getFootHtml();
-
-					if ($headHtml)
-					{
-						if (($endHeadPos = mb_stripos($output, '</head>')) !== false)
-						{
-							$output = mb_substr($output, 0, $endHeadPos).$headHtml.mb_substr($output, $endHeadPos);
-						}
-						else
-						{
-							$output .= $headHtml;
-						}
-					}
-
-					if ($footHtml)
-					{
-						if (($endBodyPos = mb_stripos($output, '</body>')) !== false)
-						{
-							$output = mb_substr($output, 0, $endBodyPos).$footHtml.mb_substr($output, $endBodyPos);
-						}
-						else
-						{
-							$output .= $footHtml;
-						}
-					}
-				}
-
-				// Output it into a buffer, in case the Tasks service wants to close the connection prematurely
-				ob_start();
-				echo $output;
-
-				// End the request
-				Craft::$app->end();
-			}
+			HeaderHelper::setContentTypeByExtension($extension);
 		}
-		else
-		{
-			throw new HttpException(404);
-		}
+
+		// Set the charset header
+		HeaderHelper::setHeader(['charset' => 'utf-8']);
+
+		// Render and return the template
+		return $this->getView()->renderPageTemplate($template, $variables);
 	}
 
 	/**
@@ -294,7 +235,7 @@ abstract class Controller extends \yii\web\Controller
 
 		if ($object)
 		{
-			$url = Craft::$app->templates->renderObjectTemplate($url, $object);
+			$url = Craft::$app->getView()->renderObjectTemplate($url, $object);
 		}
 
 		$this->redirect($url);

@@ -114,7 +114,7 @@ class Session extends \yii\web\Session
 	 * Stores a JS file from resources/ in the user’s flash data.
 	 *
 	 * The file will be stored on the session, and can be retrieved by calling [[getJsResourceFlashes()]] or
-	 * [[\craft\app\services\Templates::getFootHtml()]].
+	 * [[\craft\app\web\View::getBodyEndHtml()]].
 	 *
 	 * @param string $resource The resource path to the JS file.
 	 *
@@ -147,7 +147,7 @@ class Session extends \yii\web\Session
 	 * Stores JS in the user’s flash data.
 	 *
 	 * The Javascript code will be stored on the session, and can be retrieved by calling
-	 * [[getJsFlashes()]] or [[\craft\app\services\Templates::getFootHtml()]].
+	 * [[getJsFlashes()]] or [[\craft\app\web\View::getBodyEndHtml()]].
 	 *
 	 * @param string $js The Javascript code.
 	 *

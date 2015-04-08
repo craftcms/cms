@@ -12,6 +12,7 @@ use craft\app\base\Widget;
 use craft\app\helpers\ArrayHelper;
 use craft\app\helpers\JsonHelper;
 use craft\app\models\Section;
+use craft\app\web\View;
 
 /**
  * QuickPost represents a Quick Post dashboard widget.
@@ -110,7 +111,7 @@ class QuickPost extends Widget
 			}
 		}
 
-		return Craft::$app->templates->render('_components/widgets/QuickPost/settings', [
+		return Craft::$app->getView()->renderTemplate('_components/widgets/QuickPost/settings', [
 			'sections' => $sections,
 			'widget' => $this
 		]);
@@ -139,8 +140,8 @@ class QuickPost extends Widget
 	 */
 	public function getBodyHtml()
 	{
-		Craft::$app->templates->includeTranslations('Entry saved.', 'Couldn’t save entry.');
-		Craft::$app->templates->includeJsResource('js/QuickPostWidget.js');
+		Craft::$app->getView()->includeTranslations('Entry saved.', 'Couldn’t save entry.');
+		Craft::$app->getView()->registerJsResource('js/QuickPostWidget.js');
 
 		$section = $this->_getSection();
 
@@ -172,17 +173,28 @@ class QuickPost extends Widget
 			'typeId' => $entryTypeId,
 		];
 
-		Craft::$app->templates->startJsBuffer();
+		Craft::$app->getView()->startJsBuffer();
 
-		$html = Craft::$app->templates->render('_components/widgets/QuickPost/body', [
+		$html = Craft::$app->getView()->renderTemplate('_components/widgets/QuickPost/body', [
 			'section'   => $section,
 			'entryType' => $entryType,
 			'widget'  => $this
 		]);
 
-		$fieldJs = Craft::$app->templates->clearJsBuffer(false);
+		$lines = [];
+		$fieldJs = Craft::$app->getView()->clearJsBuffer(false);
 
-		Craft::$app->templates->includeJs('new Craft.QuickPostWidget(' .
+		foreach ([View::POS_HEAD, View::POS_BEGIN, View::POS_END, View::POS_LOAD, View::POS_READY] as $pos)
+		{
+			if (!empty($fieldJs[$pos]))
+			{
+				$lines[] = implode("\n", $fieldJs[$pos]);
+			}
+		}
+
+		$fieldJs = empty($lines) ? '' : implode("\n", $lines);
+
+		Craft::$app->getView()->registerJs('new Craft.QuickPostWidget(' .
 			$this->id.', ' .
 			JsonHelper::encode($params).', ' .
 			"function() {\n".$fieldJs .

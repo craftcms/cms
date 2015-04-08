@@ -96,7 +96,7 @@ class PositionSelect extends Field
 	 */
 	public function getSettingsHtml()
 	{
-		return Craft::$app->templates->render('_components/fieldtypes/PositionSelect/settings', [
+		return Craft::$app->getView()->renderTemplate('_components/fieldtypes/PositionSelect/settings', [
 			'field'      => $this,
 			'allOptions' => array_keys(static::_getOptions()),
 		]);
@@ -112,17 +112,17 @@ class PositionSelect extends Field
 			return '<p><em>'.Craft::t('app', 'No options selected.').'</em></p>';
 		}
 
-		Craft::$app->templates->includeJsResource('js/PositionSelectInput.js');
+		Craft::$app->getView()->registerJsResource('js/PositionSelectInput.js');
 
-		$id = Craft::$app->templates->formatInputId($this->handle);
-		Craft::$app->templates->includeJs('new PositionSelectInput("'.Craft::$app->templates->namespaceInputId($id).'");');
+		$id = Craft::$app->getView()->formatInputId($this->handle);
+		Craft::$app->getView()->registerJs('new PositionSelectInput("'.Craft::$app->getView()->namespaceInputId($id).'");');
 
 		if (!$value && $this->options)
 		{
 			$value = $this->options[0];
 		}
 
-		return Craft::$app->templates->render('_components/fieldtypes/PositionSelect/input', [
+		return Craft::$app->getView()->renderTemplate('_components/fieldtypes/PositionSelect/input', [
 			'id'         => $id,
 			'name'       => $this->handle,
 			'value'      => $value,

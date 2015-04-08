@@ -101,7 +101,7 @@ class ElementHelper
 		// No slug, or a URL format with no {slug}, just parse the URL format and get on with our lives
 		if (!$element->slug || !static::doesUrlFormatHaveSlugTag($urlFormat))
 		{
-			$element->uri = Craft::$app->templates->renderObjectTemplate($urlFormat, $element);
+			$element->uri = Craft::$app->getView()->renderObjectTemplate($urlFormat, $element);
 			return;
 		}
 
@@ -135,7 +135,7 @@ class ElementHelper
 			$originalSlug = $element->slug;
 			$element->slug = $testSlug;
 
-			$testUri = Craft::$app->templates->renderObjectTemplate($urlFormat, $element);
+			$testUri = Craft::$app->getView()->renderObjectTemplate($urlFormat, $element);
 
 			// Make sure we're not over our max length.
 			if (strlen($testUri) > 255)
@@ -197,7 +197,7 @@ class ElementHelper
 	public static function doesUrlFormatHaveSlugTag($urlFormat)
 	{
 		$element = (object) ['slug' => StringHelper::randomString()];
-		$uri = Craft::$app->templates->renderObjectTemplate($urlFormat, $element);
+		$uri = Craft::$app->getView()->renderObjectTemplate($urlFormat, $element);
 
 		return StringHelper::contains($uri, $element->slug);
 	}

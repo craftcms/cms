@@ -36,18 +36,18 @@ class RichTextData extends \Twig_Markup
 	 * Constructor
 	 *
 	 * @param string $content
-	 * @param string $charset
 	 *
 	 * @return RichTextData
 	 */
-	public function __construct($content, $charset)
+	public function __construct($content)
 	{
 		// Save the raw content in case we need it later
 		$this->_rawContent = $content;
 
 		// Parse the ref tags
 		$content = Craft::$app->elements->parseRefs($content);
-		parent::__construct($content, $charset);
+
+		parent::__construct($content, Craft::$app->charset);
 	}
 
 	/**

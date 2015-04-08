@@ -1,6 +1,6 @@
 {% extends "_layouts/cp" %}
 {% set title = "What’s new in Craft 2.3" %}
-{% includeCssResource "css/whats-new.css" %}
+{% registerCssResource "css/whats-new.css" %}
 
 {% block pageHeader %}{% endblock %}
 
@@ -38,5 +38,5 @@
 	<p>Check out the <a href="{{ url }}">release notes</a> for a complete list of all that’s changed!</p>
 {% endset %}
 
-{% includeJsResource 'lib/jquery.fitvids.js' %}
-{% includeJs '$("#content").fitVids();' %}
+{% registerJsResource 'lib/jquery.fitvids.js' %}
+{% registerJs '$("#content").fitVids();' %}

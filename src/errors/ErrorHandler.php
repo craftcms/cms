@@ -185,7 +185,7 @@ class ErrorHandler extends \CErrorHandler
 	protected function handleTwigError(\Twig_Error $exception)
 	{
 		$templateFile = $exception->getTemplateFile();
-		$file = Craft::$app->templates->findTemplate($templateFile);
+		$file = Craft::$app->getView()->resolveTemplate($templateFile);
 
 		if (!$file)
 		{

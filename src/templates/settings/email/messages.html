@@ -4,8 +4,8 @@
 {% extends "settings/email/_layout" %}
 {% set selectedTab = 'messages' %}
 
-{% includeCssResource "css/email_messages.css" %}
-{% includeJsResource "js/email_messages.js" %}
+{% registerCssResource "css/email_messages.css" %}
+{% registerJsResource "js/email_messages.js" %}
 
 {% set crumbs = [
 	{ label: "Settings"|t, url: url('settings') }

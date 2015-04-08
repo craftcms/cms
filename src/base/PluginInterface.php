@@ -77,7 +77,7 @@ interface PluginInterface
 	public function getSettingsResponse();
 
 	/**
-	 * Returns the component definition that should be registered on the [[\craft\app\variables\Craft]] instance for this plugin’s handle.
+	 * Returns the component definition that should be registered on the [[\craft\app\web\twig\variables\Craft]] instance for this plugin’s handle.
 	 *
 	 * @return mixed|null The component definition to be registered.
 	 * It can be any of the formats supported by [[\yii\di\ServiceLocator::set()]].

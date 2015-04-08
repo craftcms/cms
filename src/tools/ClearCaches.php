@@ -48,7 +48,7 @@ class ClearCaches extends Tool
 		$caches['assetIndexingData'] = Craft::t('app', 'Asset indexing data');
 		$caches['templateCaches'] = Craft::t('app', 'Template caches');
 
-		return Craft::$app->templates->render('_includes/forms/checkboxSelect', [
+		return Craft::$app->getView()->renderTemplate('_includes/forms/checkboxSelect', [
 			'name'    => 'caches',
 			'options' => $caches
 		]);

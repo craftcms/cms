@@ -20,7 +20,7 @@ use craft\app\tools\ClearCaches;
 use craft\app\tools\DbBackup;
 use craft\app\tools\FindAndReplace;
 use craft\app\tools\SearchIndex;
-use craft\app\variables\ToolInfo;
+use craft\app\web\twig\variables\ToolInfo;
 use craft\app\web\Controller;
 
 /**
@@ -50,7 +50,7 @@ class SystemSettingsController extends Controller
 	/**
 	 * Shows the settings index.
 	 *
-	 * @return null
+	 * @return string The rendering result
 	 */
 	public function actionSettingsIndex()
 	{
@@ -67,7 +67,7 @@ class SystemSettingsController extends Controller
 		$tools[] = new ToolInfo(FindAndReplace::className());
 		$tools[] = new ToolInfo(SearchIndex::className());
 
-		$this->renderTemplate('settings/_index', [
+		return $this->renderTemplate('settings/_index', [
 			'tools' => $tools
 		]);
 	}
@@ -76,8 +76,7 @@ class SystemSettingsController extends Controller
 	 * Shows the general settings form.
 	 *
 	 * @param Info $info The info being edited, if there were any validation errors.
-	 *
-	 * @return null
+	 * @return string The rendering result
 	 */
 	public function actionGeneralSettings(Info $info = null)
 	{
@@ -127,7 +126,7 @@ class SystemSettingsController extends Controller
 
 		array_multisort($offsets, $timezoneIds, $timezoneOptions);
 
-		$this->renderTemplate('settings/general/_index', [
+		return $this->renderTemplate('settings/general/_index', [
 			'info' => $info,
 			'timezoneOptions' => $timezoneOptions
 		]);
@@ -230,9 +229,8 @@ class SystemSettingsController extends Controller
 	 *
 	 * @param int       $globalSetId The global set’s ID, if any.
 	 * @param GlobalSet $globalSet   The global set being edited, if there were any validation errors.
-	 *
+	 * @return string The rendering result
 	 * @throws HttpException
-	 * @return null
 	 */
 	public function actionEditGlobalSet($globalSetId = null, GlobalSet $globalSet = null)
 	{
@@ -275,7 +273,7 @@ class SystemSettingsController extends Controller
 		];
 
 		// Render the template!
-		$this->renderTemplate('settings/globals/_edit', [
+		return $this->renderTemplate('settings/globals/_edit', [
 			'globalSetId' => $globalSetId,
 			'globalSet' => $globalSet,
 			'title' => $title,

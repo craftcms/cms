@@ -39,13 +39,15 @@ class AssetTransformsController extends Controller
 
 	/**
 	 * Shows the asset transform list.
+	 *
+	 * @return string The rendering result
 	 */
 	public function actionTransformIndex()
 	{
 		$variables['transforms'] = Craft::$app->assetTransforms->getAllTransforms();
 		$variables['transformModes'] = AssetTransform::getTransformModes();
 
-		$this->renderTemplate('settings/assets/transforms/_index', $variables);
+		return $this->renderTemplate('settings/assets/transforms/_index', $variables);
 	}
 
 	/**
@@ -53,7 +55,7 @@ class AssetTransformsController extends Controller
 	 *
 	 * @param string         $transformHandle The transform’s handle, if any.
 	 * @param AssetTransform $transform       The transform being edited, if there were any validation errors.
-	 *
+	 * @return string The rendering result
 	 * @throws HttpException
 	 */
 	public function actionEditTransform($transformHandle = null, AssetTransform $transform)
@@ -75,7 +77,7 @@ class AssetTransformsController extends Controller
 			}
 		}
 
-		$this->renderTemplate('settings/assets/transforms/_settings', [
+		return $this->renderTemplate('settings/assets/transforms/_settings', [
 			'handle' => $transformHandle,
 			'transform' => $transform
 		]);

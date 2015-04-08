@@ -196,7 +196,7 @@ abstract class Plugin extends Module implements PluginInterface
 	 */
 	public function getSettingsResponse()
 	{
-		Craft::$app->controller->renderTemplate('settings/plugins/_settings', [
+		return Craft::$app->controller->renderTemplate('settings/plugins/_settings', [
 			'plugin'       => $this,
 			'settingsHtml' => $this->getSettingsHtml()
 		]);

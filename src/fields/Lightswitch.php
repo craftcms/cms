@@ -54,7 +54,7 @@ class Lightswitch extends Field
 	 */
 	public function getSettingsHtml()
 	{
-		return Craft::$app->templates->renderMacro('_includes/forms', 'lightswitchField', [
+		return Craft::$app->getView()->renderTemplateMacro('_includes/forms', 'lightswitchField', [
 			[
 				'label' => Craft::t('app', 'Default Value'),
 				'id'    => 'default',
@@ -75,7 +75,7 @@ class Lightswitch extends Field
 			$value = $this->default;
 		}
 
-		return Craft::$app->templates->render('_includes/forms/lightswitch', [
+		return Craft::$app->getView()->renderTemplate('_includes/forms/lightswitch', [
 			'name'  => $this->handle,
 			'on'    => (bool) $value,
 		]);

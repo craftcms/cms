@@ -46,8 +46,7 @@ class SectionsController extends Controller
 	 * Sections index.
 	 *
 	 * @param array $variables
-	 *
-	 * @return null
+	 * @return string The rendering result
 	 */
 	public function actionIndex(array $variables = [])
 	{
@@ -64,7 +63,7 @@ class SectionsController extends Controller
 			}
 		}
 
-		$this->renderTemplate('settings/sections/_index', $variables);
+		return $this->renderTemplate('settings/sections/_index', $variables);
 	}
 
 	/**
@@ -72,9 +71,8 @@ class SectionsController extends Controller
 	 *
 	 * @param int     $sectionId The section’s id, if any.
 	 * @param Section $section   The section being edited, if there were any validation errors.
-	 *
+	 * @return string The rendering result
 	 * @throws HttpException|Exception
-	 * @return null
 	 */
 	public function actionEditSection($sectionId = null, Section $section = null)
 	{
@@ -155,7 +153,7 @@ class SectionsController extends Controller
 			['label' => Craft::t('app', 'Sections'), 'url' => UrlHelper::getUrl('settings/sections')],
 		];
 
-		$this->renderTemplate('settings/sections/_edit', $variables);
+		return $this->renderTemplate('settings/sections/_edit', $variables);
 	}
 
 	/**
@@ -260,9 +258,8 @@ class SectionsController extends Controller
 	 * Entry types index
 	 *
 	 * @param int $sectionId The ID of the section whose entry types we’re listing
-	 *
+	 * @return string The rendering result
 	 * @throws HttpException
-	 * @return null
 	 */
 	public function actionEntryTypesIndex($sectionId)
 	{
@@ -281,7 +278,7 @@ class SectionsController extends Controller
 
 		$title = Craft::t('app', '{section} Entry Types', ['section' => $section->name]);
 
-		$this->renderTemplate('settings/sections/_entrytypes/index', [
+		return $this->renderTemplate('settings/sections/_entrytypes/index', [
 			'sectionId' => $sectionId,
 			'section' => $section,
 			'crumbs' => $crumbs,
@@ -295,9 +292,8 @@ class SectionsController extends Controller
 	 * @param int       $sectionId   The section’s ID.
 	 * @param int       $entryTypeId The entry type’s ID, if any.
 	 * @param EntryType $entryType   The entry type being edited, if there were any validation errors.
-	 *
+	 * @return string The rendering result
 	 * @throws HttpException
-	 * @return null
 	 */
 	public function actionEditEntryType($sectionId, $entryTypeId = null, EntryType $entryType = null)
 	{
@@ -340,7 +336,7 @@ class SectionsController extends Controller
 			['label' => Craft::t('app', 'Entry Types'), 'url' => UrlHelper::getUrl('settings/sections/'.$sectionId.'/entrytypes')],
 		];
 
-		$this->renderTemplate('settings/sections/_entrytypes/edit', [
+		return $this->renderTemplate('settings/sections/_entrytypes/edit', [
 			'sectionId' => $sectionId,
 			'section' => $section,
 			'entryTypeId' => $entryTypeId,

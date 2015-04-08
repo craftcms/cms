@@ -42,16 +42,15 @@ class TemplatesController extends Controller
 	 *
 	 * @param       $template
 	 * @param array $variables
-	 *
+	 * @return string The rendering result
 	 * @throws HttpException
-	 * @return null
 	 */
 	public function actionRender($template, array $variables = [])
 	{
 		// Does that template exist?
-		if (Craft::$app->templates->doesTemplateExist($template))
+		if (Craft::$app->getView()->doesTemplateExist($template))
 		{
-			$this->renderTemplate($template, $variables);
+			return $this->renderTemplate($template, $variables);
 		}
 		else
 		{
@@ -62,46 +61,46 @@ class TemplatesController extends Controller
 	/**
 	 * Shows the 'offline' template.
 	 *
-	 * @return null
+	 * @return string The rendering result
 	 */
 	public function actionOffline()
 	{
 		// If this is a site request, make sure the offline template exists
-		if (Craft::$app->getRequest()->getIsSiteRequest() && !Craft::$app->templates->doesTemplateExist('offline'))
+		if (Craft::$app->getRequest()->getIsSiteRequest() && !Craft::$app->getView()->doesTemplateExist('offline'))
 		{
 			// Set the Path service to use the CP templates path instead
 			Craft::$app->path->setTemplatesPath(Craft::$app->path->getCpTemplatesPath());
 		}
 
 		// Output the offline template
-		$this->renderTemplate('offline');
+		return $this->renderTemplate('offline');
 	}
 
 	/**
 	 * Renders the Manual Update notification template.
 	 *
-	 * @return null
+	 * @return string The rendering result
 	 */
 	public function actionManualUpdateNotification()
 	{
-		$this->renderTemplate('_special/dbupdate');
+		return $this->renderTemplate('_special/dbupdate');
 	}
 
 	/**
 	 * Renders the Manual Update template.
 	 *
-	 * @return null
+	 * @return string The rendering result
 	 */
 	public function actionManualUpdate()
 	{
-		$this->renderTemplate('updates/_go', [
+		return $this->renderTemplate('updates/_go', [
 			'handle' => Craft::$app->getRequest()->getSegment(2)
 		]);
 	}
 
 	/**
+	 * @return string The rendering result
 	 * @throws Exception
-	 * @return null
 	 */
 	public function actionRequirementsCheck()
 	{
@@ -130,7 +129,7 @@ class TemplatesController extends Controller
 			}
 			else
 			{
-				$this->renderTemplate('_special/cantrun', ['reqCheck' => $reqCheck]);
+				return $this->renderTemplate('_special/cantrun', ['reqCheck' => $reqCheck]);
 				Craft::$app->end();
 			}
 		}
@@ -166,15 +165,15 @@ class TemplatesController extends Controller
 		{
 			$prefix = Craft::$app->config->get('errorTemplatePrefix');
 
-			if (Craft::$app->templates->doesTemplateExist($prefix.$statusCode))
+			if (Craft::$app->getView()->doesTemplateExist($prefix.$statusCode))
 			{
 				$template = $prefix.$statusCode;
 			}
-			else if ($statusCode == 503 && Craft::$app->templates->doesTemplateExist($prefix.'offline'))
+			else if ($statusCode == 503 && Craft::$app->getView()->doesTemplateExist($prefix.'offline'))
 			{
 				$template = $prefix.'offline';
 			}
-			else if (Craft::$app->templates->doesTemplateExist($prefix.'error'))
+			else if (Craft::$app->getView()->doesTemplateExist($prefix.'error'))
 			{
 				$template = $prefix.'error';
 			}
@@ -184,7 +183,7 @@ class TemplatesController extends Controller
 		{
 			Craft::$app->path->setTemplatesPath(Craft::$app->path->getCpTemplatesPath());
 
-			if (Craft::$app->templates->doesTemplateExist($statusCode))
+			if (Craft::$app->getView()->doesTemplateExist($statusCode))
 			{
 				$template = $statusCode;
 			}
@@ -208,6 +207,6 @@ class TemplatesController extends Controller
 			$variables['message'] = TemplateHelper::getRaw($variables['message']);
 		}
 
-		return Craft::$app->templates->render($template, $variables);
+		return Craft::$app->getView()->renderTemplate($template, $variables);
 	}
 }

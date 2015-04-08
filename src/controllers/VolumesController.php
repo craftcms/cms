@@ -43,12 +43,12 @@ class VolumesController extends Controller
 	/**
 	 * Shows the asset volume list.
 	 *
-	 * @return null
+	 * @return string The rendering result
 	 */
 	public function actionVolumeIndex()
 	{
 		$variables['volumes'] = Craft::$app->volumes->getAllVolumes();
-		$this->renderTemplate('settings/assets/volumes/_index', $variables);
+		return $this->renderTemplate('settings/assets/volumes/_index', $variables);
 	}
 
 	/**
@@ -56,9 +56,8 @@ class VolumesController extends Controller
 	 *
 	 * @param int         $volumeId       The volume’s ID, if editing an existing volume.
 	 * @param Volume $volume         The volume being edited, if there were any validation errors.
-	 *
+	 * @return string The rendering result
 	 * @throws HttpException
-	 * @return null
 	 */
 	public function actionEditVolume($volumeId = null, Volume $volume = null)
 	{
@@ -129,7 +128,7 @@ class VolumesController extends Controller
 			'fieldlayout' => ['label' => Craft::t('app', 'Field Layout'), 'url' => '#assetvolume-fieldlayout'],
 		];
 
-		$this->renderTemplate('settings/assets/volumes/_edit', [
+		return $this->renderTemplate('settings/assets/volumes/_edit', [
 			'volumeId' => $volumeId,
 			'volume' => $volume,
 			'isNewVolume' => $isNewVolume,

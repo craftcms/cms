@@ -14,5 +14,5 @@
 
 
 {% if groupHandle is defined %}
-	{% includeJs 'window.defaultGroupHandle = "'~groupHandle~'";' %}
+	{% registerJs 'window.defaultGroupHandle = "'~groupHandle~'";' %}
 {% endif %}

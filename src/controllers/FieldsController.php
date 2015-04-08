@@ -12,7 +12,7 @@ use craft\app\base\Field;
 use craft\app\base\FieldInterface;
 use craft\app\helpers\UrlHelper;
 use craft\app\models\FieldGroup as FieldGroupModel;
-use craft\app\variables\ComponentInfo;
+use craft\app\web\twig\variables\ComponentInfo;
 use craft\app\web\Controller;
 use yii\base\Exception;
 use yii\web\HttpException;
@@ -109,6 +109,7 @@ class FieldsController extends Controller
 	 * @param integer                $fieldId The field’s ID, if editing an existing field
 	 * @param FieldInterface|Field   $field   The field being edited, if there were any validation errors
 	 * @param integer                $groupId The default group ID that the field should be saved in
+	 * @return string The rendering result
 	 * @throws HttpException if there are no field groups, or the requested field doesn’t exist
 	 * @throws Exception if the field’s group doesn’t exist
 	 */
@@ -203,7 +204,7 @@ class FieldsController extends Controller
 			$title = Craft::t('app', 'Create a new field');
 		}
 
-		$this->renderTemplate('settings/fields/_edit', [
+		return $this->renderTemplate('settings/fields/_edit', [
 			'fieldId' => $fieldId,
 			'field' => $field,
 			'fieldTypeInfo' => $fieldTypeInfo,

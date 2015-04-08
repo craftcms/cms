@@ -52,7 +52,7 @@ class InstallController extends Controller
 	/**
 	 * Index action.
 	 *
-	 * @return null
+	 * @return string The rendering result
 	 */
 	public function actionIndex()
 	{
@@ -65,7 +65,7 @@ class InstallController extends Controller
 		$vars['defaultSiteName'] = implode(' ', array_map('ucfirst', $words));
 		$vars['defaultSiteUrl'] = 'http://'.$server;
 
-		$this->renderTemplate('_special/install', $vars);
+		return $this->renderTemplate('_special/install', $vars);
 	}
 
 	/**

@@ -180,10 +180,10 @@ abstract class Field extends SavableComponent implements FieldInterface
 	public function getStaticHtml($value, $element)
 	{
 		// Just return the input HTML with disabled inputs by default
-		Craft::$app->templates->startJsBuffer();
+		Craft::$app->getView()->startJsBuffer();
 		$inputHtml = $this->getInputHtml($value, $element);
 		$inputHtml = preg_replace('/<(?:input|textarea|select)\s[^>]*/i', '$0 disabled', $inputHtml);
-		Craft::$app->templates->clearJsBuffer();
+		Craft::$app->getView()->clearJsBuffer();
 		return $inputHtml;
 	}
 

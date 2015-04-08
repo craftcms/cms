@@ -639,7 +639,7 @@ class Categories extends Component
 			Craft::$app->path->setTemplatesPath(Craft::$app->path->getSiteTemplatesPath());
 
 			// Does the template exist?
-			$templateExists = Craft::$app->templates->doesTemplateExist($group->template);
+			$templateExists = Craft::$app->getView()->doesTemplateExist($group->template);
 
 			// Restore the original template path
 			Craft::$app->path->setTemplatesPath($oldTemplatesPath);

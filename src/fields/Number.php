@@ -70,7 +70,7 @@ class Number extends Field
 	 */
 	public function getSettingsHtml()
 	{
-		return Craft::$app->templates->render('_components/fieldtypes/Number/settings', [
+		return Craft::$app->getView()->renderTemplate('_components/fieldtypes/Number/settings', [
 			'field' => $this
 		]);
 	}
@@ -97,7 +97,7 @@ class Number extends Field
 		$decimalSeparator = Craft::$app->getLocale()->getNumberSymbol(Locale::SYMBOL_DECIMAL_SEPARATOR);
 		$value = number_format($value, $decimals, $decimalSeparator, '');
 
-		return Craft::$app->templates->render('_includes/forms/text', [
+		return Craft::$app->getView()->renderTemplate('_includes/forms/text', [
 			'name'  => $this->handle,
 			'value' => $value,
 			'size'  => 5

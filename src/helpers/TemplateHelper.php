@@ -9,7 +9,7 @@ namespace craft\app\helpers;
 
 use Craft;
 use craft\app\elements\db\ElementQueryInterface;
-use craft\app\variables\Paginate;
+use craft\app\web\twig\variables\Paginate;
 
 /**
  * Class TemplateHelper
@@ -86,7 +86,6 @@ class TemplateHelper
 	 */
 	public static function getRaw($value)
 	{
-		$charset = Craft::$app->templates->getTwig()->getCharset();
-		return new \Twig_Markup($value, $charset);
+		return new \Twig_Markup($value, Craft::$app->charset);
 	}
 }
