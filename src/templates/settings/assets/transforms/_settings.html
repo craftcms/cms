@@ -2,7 +2,6 @@
 
 {% set docsUrl = 'http://buildwithcraft.com/docs/image-transforms' %}
 
-{% registerCssResource 'css/transforms.css' %}
 {% import "_includes/forms" as forms %}
 
 {% set crumbs = [
@@ -21,7 +20,9 @@
 {% endif %}
 
 
-{% set content %}
+{% block content %}
+	{% registerCssResource 'css/transforms.css' %}
+
 	<form method="post" accept-charset="UTF-8" data-saveshortcut>
 		<input type="hidden" name="action" value="assetTransforms/saveTransform">
 		<input type="hidden" name="redirect" value="settings/assets/transforms">
@@ -147,7 +148,7 @@
 			<input type="submit" class="btn submit" value="{{ 'Save'|t }}">
 		</div>
 	</form>
-{% endset %}
+{% endblock %}
 
 
 {% set js %}

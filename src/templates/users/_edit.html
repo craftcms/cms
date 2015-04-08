@@ -13,21 +13,12 @@
 		"Are you sure you want to delete this photo?"
 	%}
 
-	{% registerJsResource "lib/fileupload/jquery.ui.widget.js" %}
-	{% registerJsResource "lib/fileupload/jquery.fileupload.js" %}
-	{% registerJsResource "lib/imgareaselect/jquery.imgareaselect.pack.js" %}
-	{% registerJsResource "js/profile.js" %}
-	{% registerCssResource "lib/imgareaselect/imgareaselect-animated.css" %}
-	{% registerCssResource "css/profile.css" %}
-
-
-{% set photoInput %}
+	{% set photoInput %}
 		{% include 'users/_userphoto' with {account: account} only %}
 	{% endset %}
 {% endif %}
 
 {% set saveUserButtons %}
-
 	<div class="buttons">
 		{% if not currentUser.can('registerUsers') or CraftEdition != CraftPro %}
 			<input type="submit" class="btn submit" value="{{ 'Save'|t }}">
@@ -44,7 +35,6 @@
 			</div>
 		{% endif %}
 	</div>
-
 {% endset %}
 
 {% set requireEmailVerification = craft.systemSettings.users.requireEmailVerification %}
@@ -58,6 +48,15 @@
 
 
 {% block main %}
+	{% if CraftEdition == CraftPro %}
+		{% registerJsResource "lib/fileupload/jquery.ui.widget.js" %}
+		{% registerJsResource "lib/fileupload/jquery.fileupload.js" %}
+		{% registerJsResource "lib/imgareaselect/jquery.imgareaselect.pack.js" %}
+		{% registerJsResource "js/profile.js" %}
+		{% registerCssResource "lib/imgareaselect/imgareaselect-animated.css" %}
+		{% registerCssResource "css/profile.css" %}
+	{% endif %}
+
 	<div class="grid">
 		<div class="item" data-position="left">
 			<form id="userform" class="pane" method="post" accept-charset="UTF-8" data-saveshortcut data-saveshortcut-redirect="{{ account.isCurrent() ? 'myaccount' : 'users/{id}' }}">

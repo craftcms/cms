@@ -1,6 +1,5 @@
 {% extends "_layouts/cp" %}
 {% set title = "Dashboard"|t %}
-{% registerCssResource "css/dashboard.css" %}
 
 
 {% set extraPageHeaderHtml %}
@@ -9,6 +8,8 @@
 
 
 {% block main %}
+	{% registerCssResource "css/dashboard.css" %}
+
 	<div class="grid">
 		{% if currentUser.admin and craft.deprecator.getTotalLogs() %}
 			<div class="item" data-colspan="4">

@@ -1,10 +1,11 @@
 {% extends "_layouts/basecp" %}
 {% set title = "Tests" %}
-{% registerCssResource "lib/qunit/qunit-1.15.0.css" %}
-{% registerJsResource "lib/qunit/qunit-1.15.0.js" %}
-{% registerJsResource "js/tests.js" %}
 
 {% block body %}
+	{% registerCssResource "lib/qunit/qunit-1.15.0.css" %}
+	{% registerJsResource "lib/qunit/qunit-1.15.0.js" %}
+	{% registerJsResource "js/tests.js" %}
+
 	<div id="body">
 		<div id="qunit"></div>
 		<div id="qunit-fixture"></div>

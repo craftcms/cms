@@ -2,9 +2,7 @@
 
 {% extends "_layouts/cp" %}
 {% set title = "Updates"|t %}
-{% registerCssResource "css/updates.css" %}
-{% registerJsResource "js/updates.js" %}
-{% registerJs 'new Craft.UpdateInfo(' ~ craft.config.allowAutoUpdates ~');' %}
+
 {% includeTranslations
 	"You’ve got updates!",
 	"You’re all up-to-date!",
@@ -26,6 +24,10 @@
 
 
 {% block main %}
+	{% registerCssResource "css/updates.css" %}
+	{% registerJsResource "js/updates.js" %}
+	{% registerJs 'new Craft.UpdateInfo(' ~ craft.config.allowAutoUpdates ~');' %}
+
 	<div id="graphic" class="spinner big"></div>
 	<div id="status">{{ "Checking for updates…"|t }}</div>
 {% endblock %}

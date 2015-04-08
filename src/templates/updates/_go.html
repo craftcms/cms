@@ -1,7 +1,5 @@
 {% extends "_layouts/basecp" %}
 {% set title = "Craft Update"|t %}
-{% registerCssResource "css/update.css" %}
-{% registerJsResource "js/update.js" %}
 
 {% includeTranslations
 	"Unable to determine what to update.",
@@ -14,6 +12,9 @@
 %}
 
 {% block body %}
+	{% registerCssResource "css/update.css" %}
+	{% registerJsResource "js/update.js" %}
+
 	<div id="graphic" class="spinner big"></div>
 	<div id="status">{{ "Preparing to update…"|t }}</div>
 {% endblock %}

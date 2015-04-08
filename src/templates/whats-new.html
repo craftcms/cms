@@ -1,12 +1,15 @@
 {% extends "_layouts/cp" %}
 {% set title = "What’s new in Craft 2.3" %}
-{% registerCssResource "css/whats-new.css" %}
 
 {% block pageHeader %}{% endblock %}
 
 {% set url = 'http://buildwithcraft.com/updates/2.3' %}
 
-{% set content %}
+{% block content %}
+	{% registerCssResource "css/whats-new.css" %}
+	{% registerJsResource 'lib/jquery.fitvids.js' %}
+	{% registerJs '$("#content").fitVids();' %}
+
 	<header>
 		<h1>{{ title }}</h1>
 		<p>Craft 2.3 packs <a href="{{ url }}">over <strong>230</strong> new features and improvements</a>, aimed to make working with content an even better experience than ever before.</p>
@@ -36,7 +39,4 @@
 
 	<h1>The List Goes On</h1>
 	<p>Check out the <a href="{{ url }}">release notes</a> for a complete list of all that’s changed!</p>
-{% endset %}
-
-{% registerJsResource 'lib/jquery.fitvids.js' %}
-{% registerJs '$("#content").fitVids();' %}
+{% endblock %}

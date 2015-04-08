@@ -1,8 +1,7 @@
 {% extends "_layouts/basecp" %}
 {% import "_includes/forms" as forms %}
 {% set title = "Login"|t %}
-{% registerCssResource "css/login.css" %}
-{% registerJsResource "js/login.js" %}
+
 {% includeTranslations
 	"Reset Password",
 	"Check your email for instructions to reset your password."
@@ -11,6 +10,9 @@
 {% set username = (craft.config.rememberUsernameDuration ? craft.session.rememberedUsername : '') %}
 
 {% block body %}
+	{% registerCssResource "css/login.css" %}
+	{% registerJsResource "js/login.js" %}
+
     <script type="text/javascript">
 		var cookieTest = 'CraftCookieTest='+Math.floor(Math.random() * 1000000);
 		document.cookie = cookieTest;

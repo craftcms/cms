@@ -1,6 +1,5 @@
 {% extends "_layouts/basecp" %}
 
-{% registerCssResource "css/cp.css" %}
 {%- includeTranslations
 	"week",
 	"weeks",
@@ -84,6 +83,8 @@
 
 
 {% block body %}
+	{% registerCssResource "css/cp.css" %}
+
 	{% if currentUser.admin and craft.config.devMode %}
 		<div id="devmode" title="{{ 'Craft is running in Dev Mode.'|t }}"></div>
 	{% endif %}

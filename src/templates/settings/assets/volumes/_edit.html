@@ -5,7 +5,7 @@
 {% import "_includes/forms" as forms %}
 
 
-{% set content %}
+{% block content %}
 	<form method="post" accept-charset="UTF-8" data-saveshortcut>
 		<input type="hidden" name="action" value="volumes/save-volume">
 		<input type="hidden" name="redirect" value="settings/assets">
@@ -97,7 +97,7 @@
 			<input type="submit" class="btn submit" value="{{ 'Save'|t }}">
 		</div>
 	</form>
-{% endset %}
+{% endblock %}
 
 
 {% if volume is not defined or not volume.handle %}

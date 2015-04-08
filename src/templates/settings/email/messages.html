@@ -4,9 +4,6 @@
 {% extends "settings/email/_layout" %}
 {% set selectedTab = 'messages' %}
 
-{% registerCssResource "css/email_messages.css" %}
-{% registerJsResource "js/email_messages.js" %}
-
 {% set crumbs = [
 	{ label: "Settings"|t, url: url('settings') }
 ] %}
@@ -16,7 +13,10 @@
 	"Message saved."
 %}
 
-{% set content %}
+{% block content %}
+	{% registerCssResource "css/email_messages.css" %}
+	{% registerJsResource "js/email_messages.js" %}
+
 	<div id="messages">
 		{% for message in craft.emailMessages.getAllMessages %}
 			<h2>{{ (message.key~'_heading')|t }}</h2>
@@ -26,4 +26,4 @@
 			</div>
 		{% endfor %}
 	</div>
-{% endset %}
+{% endblock %}

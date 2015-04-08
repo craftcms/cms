@@ -5,8 +5,6 @@
 
 {% set docsUrl = 'http://buildwithcraft.com/docs/fields' %}
 
-{% registerJsResource "js/fields.js" %}
-
 {% includeTranslations
 	"What do you want to name your group?",
 	"Could not create the group:",
@@ -34,8 +32,7 @@
 {% endif %}
 
 
-{% set sidebar %}
-
+{% block sidebar %}
 	<nav>
 		<ul id="groups">
 			<li><a href="{{ url('settings/fields') }}"{% if groupId is not defined %} class="sel"{% endif %}>{{ "All Fields"|t }}</a></li>
@@ -58,10 +55,11 @@
 			</div>
 		{% endif %}
 	</div>
-{% endset %}
+{% endblock %}
 
 
-{% set content %}
+{% block content %}
+	{% registerJsResource "js/fields.js" %}
 
 	<p id="nofields"{% if fields %} class="hidden"{% endif %}>
 		{% if groupId is defined %}
@@ -105,8 +103,7 @@
 			<a href="{{ newFieldUrl }}" class="submit btn add icon">{{ "New Field"|t }}</a>
 		</div>
 	{% endif %}
-
-{% endset %}
+{% endblock %}
 
 
 {% set js %}

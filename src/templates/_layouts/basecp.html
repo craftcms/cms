@@ -37,9 +37,7 @@
 ]) %}
 
 {% for jsResource in jsResources %}
-	{% registerJsResource jsResource {
-		position: POS_BEGIN
-	} %}
+	{% registerJsResource jsResource %}
 {% endfor %}
 
 {%- includeTranslations "Show", "Hide" %}

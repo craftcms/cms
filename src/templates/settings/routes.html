@@ -2,8 +2,6 @@
 
 {% extends "_layouts/cp" %}
 {% set title = "Routes"|t %}
-{% registerCssResource "css/routes.css" %}
-{% registerJsResource "js/routes.js" %}
 
 {% set crumbs = [
 	{ label: "Settings"|t, url: url('settings') }
@@ -30,7 +28,10 @@
 {% set routes = craft.routes.getDbRoutes() %}
 
 
-{% set content %}
+{% block content %}
+	{% registerCssResource "css/routes.css" %}
+	{% registerJsResource "js/routes.js" %}
+
 	<p id="noroutes"{% if routes %} class="hidden"{% endif %}>
 		{{ "No routes exist yet."|t }}
 	</p>
@@ -54,7 +55,7 @@
 	<div class="buttons">
 		<div id="add-route-btn" class="btn submit add icon">{{ "New Route"|t }}</div>
 	</div>
-{% endset %}
+{% endblock %}
 
 
 {% set js %}

@@ -6,9 +6,6 @@
 
 {% import "_includes/forms" as forms %}
 
-{% registerJsResource "js/locales.js" %}
-{% registerCssResource "css/locales.css" %}
-
 {% includeTranslations
 	"Are you sure you want to delete “{name}” and all its associated content?",
 	"Name",
@@ -28,7 +25,10 @@
 ] %}
 
 
-{% set content %}
+{% block content %}
+	{% registerJsResource "js/locales.js" %}
+	{% registerCssResource "css/locales.css" %}
+
 	<form method="post" accept-charset="UTF-8">
 		<input type="hidden" name="action" value="languageSettings/save">
 		<input type="hidden" name="redirect" value="settings">
@@ -62,7 +62,7 @@
 			</div>
 		</div>
 	</form>
-{% endset %}
+{% endblock %}
 
 {% set js %}
 	new Craft.Locales(
@@ -81,5 +81,4 @@
 
 	]);
 {% endset %}
-
 {% registerJs js %}

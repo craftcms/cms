@@ -16,7 +16,7 @@
 {% from _self import configWarning %}
 
 
-{% set content %}
+{% block content %}
 	<form method="post" accept-charset="UTF-8" data-saveshortcut>
 		<input type="hidden" name="action" value="systemSettings/saveGeneralSettings">
 		<input type="hidden" name="redirect" value="settings">
@@ -93,5 +93,4 @@
 
 		<div class="clear"></div>
 	{% endif %}
-
-{% endset %}
+{% endblock %}

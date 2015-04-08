@@ -1,10 +1,10 @@
 {% extends "_layouts/cp" %}
 {% set title = "Settings"|t %}
 
-{% registerCssResource 'css/settings.css' %}
-{% registerJsResource 'js/settings.js' %}
 
-{% set content %}
+{% block content %}
+	{% registerCssResource 'css/settings.css' %}
+	{% registerJsResource 'js/settings.js' %}
 
 	{% for category, items in craft.cp.settings() %}
 		<h2>{{ category }}</h2>
@@ -27,4 +27,4 @@
 			{% registerJs 'new Craft.Tool("'~triggerId|e('js')~'", "'~tool.getClassName()|e('js')~'", '~tool.getOptionsHtml()|json_encode~', "'~tool.getButtonLabel()|e('js')~'");' %}
 		{% endfor %}
 	</ul>
-{% endset %}
+{% endblock %}
