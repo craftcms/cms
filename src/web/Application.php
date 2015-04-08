@@ -607,20 +607,16 @@ class Application extends \yii\web\Application
 	{
 		$segments = $request->getActionSegments();
 
-		if (
-			$segments == ['users', 'login'] ||
-			$segments == ['users', 'logout'] ||
-			$segments == ['users', 'setpassword'] ||
-			$segments == ['users', 'forgotpassword'] ||
-			$segments == ['users', 'sendPasswordResetEmail'] ||
-			$segments == ['users', 'saveUser'] ||
-			$segments == ['users', 'getRemainingSessionTime']
-		)
-		{
-			return true;
-		}
-
-		return false;
+		return (
+			$segments === ['users', 'login'] ||
+			$segments === ['users', 'logout'] ||
+			$segments === ['users', 'set-password'] ||
+			$segments === ['users', 'forgot-password'] ||
+			$segments === ['users', 'send-password-reset-email'] ||
+			$segments === ['users', 'save-user'] ||
+			$segments === ['users', 'get-remaining-session-time'] ||
+			$segments[0] === 'update'
+		);
 	}
 
 	/**
@@ -784,8 +780,8 @@ class Application extends \yii\web\Application
 		if ($request->getIsCpRequest() ||
 
 			// Special case because we hide the cpTrigger in emails.
-			$request->getPath() === $actionTrigger.'/users/setpassword' ||
-			$request->getPath() === $actionTrigger.'/users/verifyemail'
+			$request->getPath() === $actionTrigger.'/users/set-password' ||
+			$request->getPath() === $actionTrigger.'/users/verify-email'
 		)
 		{
 			if ($this->getUser()->checkPermission('accessCpWhenSystemIsOff'))
@@ -801,13 +797,13 @@ class Application extends \yii\web\Application
 			$actionSegs = $request->getActionSegments();
 
 			if ($actionSegs && (
-				$actionSegs == ['users', 'login'] ||
-				$actionSegs == ['users', 'logout'] ||
-				$actionSegs == ['users', 'forgotpassword'] ||
-				$actionSegs == ['users', 'sendPasswordResetEmail'] ||
-				$actionSegs == ['users', 'setpassword'] ||
-				$actionSegs == ['users', 'verifyemail'] ||
-				$actionSegs[0] == 'update'
+				$actionSegs === ['users', 'login'] ||
+				$actionSegs === ['users', 'logout'] ||
+				$actionSegs === ['users', 'forgot-password'] ||
+				$actionSegs === ['users', 'send-password-reset-email'] ||
+				$actionSegs === ['users', 'set-password'] ||
+				$actionSegs === ['users', 'verify-email'] ||
+				$actionSegs[0] === 'update'
 			))
 			{
 				return true;
