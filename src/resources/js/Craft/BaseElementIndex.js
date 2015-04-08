@@ -523,7 +523,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 	},
 
 	/**
-	 * Returns the data that should be passed to the elementIndex/getElements controller action
+	 * Returns the data that should be passed to the element-index/get-elements controller action
 	 * when loading the first batch of elements.
 	 */
 	getControllerData: function()
@@ -578,7 +578,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
 		var data = this.getControllerData();
 
-		Craft.postActionRequest('elementIndex/getElements', data, $.proxy(function(response, textStatus)
+		Craft.postActionRequest('element-index/get-elements', data, $.proxy(function(response, textStatus)
 		{
 			this.setIndexAvailable();
 
