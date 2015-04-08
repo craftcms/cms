@@ -376,7 +376,7 @@ class AssetsController extends Controller
 			$this->returnJson(['url' => $url]);
 		}
 
-		$this->redirect($url, true, 302);
+		$this->redirect($url);
 		Craft::$app->end();
 	}
 

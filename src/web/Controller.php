@@ -195,7 +195,7 @@ abstract class Controller extends \yii\web\Controller
 	 *
 	 * @return null
 	 */
-	public function redirect($url, $terminate = true, $statusCode = 302)
+	public function redirect($url, $statusCode = 302)
 	{
 		if (is_string($url))
 		{
@@ -204,7 +204,7 @@ abstract class Controller extends \yii\web\Controller
 
 		if ($url !== null)
 		{
-			parent::redirect($url, $terminate, $statusCode);
+			parent::redirect($url, $statusCode);
 		}
 	}
 
