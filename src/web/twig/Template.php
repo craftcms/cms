@@ -9,6 +9,7 @@ namespace craft\app\web\twig;
 
 use Craft;
 use craft\app\base\ElementInterface;
+use yii\base\Object;
 
 /**
  * Base Twig template class.
@@ -38,9 +39,17 @@ abstract class Template extends \yii\twig\Template
 	 */
 	protected function getAttribute($object, $item, array $arguments = [], $type = \Twig_Template::ANY_CALL, $isDefinedTest = false, $ignoreStrictCheck = false)
 	{
-		if (is_object($object) && $object instanceof ElementInterface)
+		if ($object instanceof ElementInterface)
 		{
 			$this->_includeElementInTemplateCaches($object);
+		}
+
+		if ($type !== \Twig_Template::METHOD_CALL && $object instanceof Object)
+		{
+			if ($object->canGetProperty($item))
+			{
+				return $isDefinedTest ? true : $object->$item;
+			}
 		}
 
 		return parent::getAttribute($object, $item, $arguments, $type, $isDefinedTest, $ignoreStrictCheck);

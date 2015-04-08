@@ -139,11 +139,25 @@ class Craft extends ServiceLocator
 	// -------------------------------------------------------------------------
 
 	/**
+	 * @inheritdoc
+	 */
+	public function canGetProperty($name, $checkVars = true, $checkBehaviors = true)
+	{
+		// Check the services
+		if ($this->has($name))
+		{
+			return true;
+		}
+
+		return parent::canGetProperty($name, $checkVars, $checkBehaviors);
+	}
+
+	/**
 	 * Gets the current language in use.
 	 *
 	 * @return string
 	 */
-	public function locale()
+	public function getLocale()
 	{
 		return \Craft::$app->language;
 	}
@@ -153,7 +167,7 @@ class Craft extends ServiceLocator
 	 *
 	 * @return bool
 	 */
-	public function isLocalized()
+	public function getIsLocalized()
 	{
 		return \Craft::$app->isLocalized();
 	}
@@ -167,7 +181,7 @@ class Craft extends ServiceLocator
 	 * @param mixed $criteria
 	 * @return AssetQuery
 	 */
-	public function assets($criteria = null)
+	public function getAssets($criteria = null)
 	{
 		return Asset::find()->configure($criteria);
 	}
@@ -178,7 +192,7 @@ class Craft extends ServiceLocator
 	 * @param mixed $criteria
 	 * @return CategoryQuery
 	 */
-	public function categories($criteria = null)
+	public function getCategories($criteria = null)
 	{
 		return Category::find()->configure($criteria);
 	}
@@ -189,7 +203,7 @@ class Craft extends ServiceLocator
 	 * @param mixed $criteria
 	 * @return EntryQuery
 	 */
-	public function entries($criteria = null)
+	public function getEntries($criteria = null)
 	{
 		return Entry::find()->configure($criteria);
 	}
@@ -200,7 +214,7 @@ class Craft extends ServiceLocator
 	 * @param mixed $criteria
 	 * @return TagQuery
 	 */
-	public function tags($criteria = null)
+	public function getTags($criteria = null)
 	{
 		return Tag::find()->configure($criteria);
 	}
@@ -211,7 +225,7 @@ class Craft extends ServiceLocator
 	 * @param mixed $criteria
 	 * @return UserQuery
 	 */
-	public function users($criteria = null)
+	public function getUsers($criteria = null)
 	{
 		return User::find()->configure($criteria);
 	}
