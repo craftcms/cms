@@ -100,7 +100,7 @@ class TemplatesController extends Controller
 
 	/**
 	 * @return string The rendering result
-	 * @throws Exception
+	 * @throws Exception if it's an Ajax request and the server doesn’t meet Craft’s requirements
 	 */
 	public function actionRequirementsCheck()
 	{

@@ -327,8 +327,8 @@ class Updates extends Component
 
 			$updater = new Updater();
 
-			// Make sure we still meet the existing requirements.
-			$updater->checkRequirements();
+			// Make sure we still meet the existing requirements. This will throw an exception if the server doesn't meet Craft's current requirements.
+			Craft::$app->runAction('templates/requirements-check');
 
 			// No need to get the latest update info if this is a manual update.
 			if (!$manual)
@@ -336,7 +336,6 @@ class Updates extends Component
 				$updateModel = $this->getUpdates();
 				Craft::info('Updating from '.$updateModel->app->localVersion.'.'.$updateModel->app->localBuild.' to '.$updateModel->app->latestVersion.'.'.$updateModel->app->latestBuild.'.', __METHOD__);
 				$result = $updater->getUpdateFileInfo();
-
 			}
 
 			$result['success'] = true;

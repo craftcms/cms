@@ -14,7 +14,6 @@ use craft\app\helpers\HeaderHelper;
 use craft\app\helpers\JsonHelper;
 use craft\app\helpers\StringHelper;
 use craft\app\helpers\UrlHelper;
-use yii\base\Response;
 use yii\web\ForbiddenHttpException;
 use yii\web\NotFoundHttpException;
 
@@ -157,7 +156,7 @@ class Application extends \yii\web\Application
 	 *
 	 * @param Request $request the request to be handled
 	 *
-	 * @return Response the resulting response
+	 * @return \yii\web\Response the resulting response
 	 * @throws HttpException
 	 * @throws ServiceUnavailableHttpException
 	 * @throws \craft\app\errors\DbConnectException
@@ -180,20 +179,30 @@ class Application extends \yii\web\Application
 		$this->validateDbConfigFile();
 
 		// Process install requests
-		$this->_processInstallRequest($request);
+		if (($response = $this->_processInstallRequest($request)) !== null)
+		{
+			return $response;
+		}
 
 		// If the system in is maintenance mode and it's a site request, throw a 503.
 		if ($this->isInMaintenanceMode() && $request->getIsSiteRequest())
 		{
+			$this->_unregisterDebugModule();
 			throw new ServiceUnavailableHttpException();
 		}
 
 		// Check if the app path has changed.  If so, run the requirements check again.
-		$this->_processRequirementsCheck($request);
+		if (($response = $this->_processRequirementsCheck($request)) !== null)
+		{
+			$this->_unregisterDebugModule();
+			return $response;
+		}
 
 		// Makes sure that the uploaded files are compatible with the current DB schema
 		if (!$this->updates->isSchemaVersionCompatible())
 		{
+			$this->_unregisterDebugModule();
+
 			if ($request->getIsCpRequest())
 			{
 				$version = $this->getInfo('version');
@@ -217,7 +226,7 @@ class Application extends \yii\web\Application
 		// If we're in maintenance mode and it's not a site request, show the manual update template.
 		if ($this->_isCraftUpdating())
 		{
-			$this->_processUpdateLogic($request);
+			return $this->_processUpdateLogic($request) ?: $this->getResponse();
 		}
 
 		// If there's a new version, but the schema hasn't changed, just update the info table
@@ -235,7 +244,7 @@ class Application extends \yii\web\Application
 		// Check if a plugin needs to update the database.
 		if ($this->updates->isPluginDbUpdateNeeded())
 		{
-			$this->_processUpdateLogic($request);
+			return $this->_processUpdateLogic($request) ?: $this->getResponse();
 		}
 
 		// If this is a non-login, non-validate, non-setPassword CP request, make sure the user has access to the CP
@@ -272,17 +281,13 @@ class Application extends \yii\web\Application
 		}
 
 		// If this is an action request, call the controller
-		$response = $this->_processActionRequest($request);
-
-		if ($response !== null)
+		if (($response = $this->_processActionRequest($request)) !== null)
 		{
 			return $response;
 		}
-		else
-		{
-			// If we're still here, finally let Yii do it's thing.
-			return parent::handleRequest($request);
-		}
+
+		// If we're still here, finally let Yii do it's thing.
+		return parent::handleRequest($request);
 	}
 
 	/**
@@ -461,8 +466,46 @@ class Application extends \yii\web\Application
 		return parent::createController($route);
 	}
 
+	/**
+	 * @inheritdoc
+	 * @return \yii\web\Response|null The result of the action, normalized into a Response object
+	 */
+	public function runAction($route, $params = [])
+	{
+		$result = parent::runAction($route, $params);
+
+		if ($result !== null)
+		{
+			if ($result instanceof \yii\web\Response)
+			{
+				return $result;
+			}
+			else
+			{
+				$response = $this->getResponse();
+				$response->data = $result;
+				return $response;
+			}
+		}
+
+		return null;
+	}
+
 	// Private Methods
 	// =========================================================================
+
+	/**
+	 * Unregisters the Debug module's end body event.
+	 */
+	private function _unregisterDebugModule()
+	{
+		$debug = $this->getModule('debug', false);
+
+		if ($debug !== null)
+		{
+			$this->getView()->off(View::EVENT_END_BODY, [$debug, 'renderToolbar']);
+		}
+	}
 
 	/**
 	 * Processes resource requests.
@@ -489,32 +532,37 @@ class Application extends \yii\web\Application
 	 *
 	 * @param Request $request
 	 *
-	 * @return null
+	 * @return \yii\web\Response|null
 	 * @throws NotFoundHttpException
 	 * @throws \yii\base\ExitException
 	 */
 	private function _processInstallRequest($request)
 	{
 		$isCpRequest = $request->getIsCpRequest();
+		$isInstalled = $this->isInstalled();
+
+		if (!$isInstalled)
+		{
+			$this->_unregisterDebugModule();
+		}
 
 		// Are they requesting an installer template/action specifically?
-		if ($isCpRequest && $request->getSegment(1) === 'install' && !$this->isInstalled())
+		if ($isCpRequest && $request->getSegment(1) === 'install' && !$isInstalled)
 		{
 			$action = $request->getSegment(2, 'index');
-			$this->runAction('install/'.$action);
-			$this->end();
+			return $this->runAction('install/'.$action);
 		}
 		else if ($isCpRequest && $request->getIsActionRequest() && ($request->getSegment(1) !== 'login'))
 		{
 			$actionSegs = $request->getActionSegments();
 			if (isset($actionSegs[0]) && $actionSegs[0] == 'install')
 			{
-				$this->_processActionRequest($request);
+				return $this->_processActionRequest($request);
 			}
 		}
 
 		// Should they be?
-		else if (!$this->isInstalled())
+		else if (!$isInstalled)
 		{
 			// Give it to them if accessing the CP
 			if ($isCpRequest)
@@ -528,6 +576,8 @@ class Application extends \yii\web\Application
 				throw new NotFoundHttpException();
 			}
 		}
+
+		return null;
 	}
 
 	/**
@@ -535,7 +585,7 @@ class Application extends \yii\web\Application
 	 *
 	 * @param Request $request
 	 * @throws HttpException
-	 * @return Response|null
+	 * @return \yii\web\Response|null
 	 */
 	private function _processActionRequest($request)
 	{
@@ -543,22 +593,7 @@ class Application extends \yii\web\Application
 		{
 			$actionSegs = $request->getActionSegments();
 			$route = implode('/', $actionSegs);
-			$result = $this->runAction($route);
-
-			// Did the action give a response?
-			if ($result !== null)
-			{
-				if ($result instanceof Response)
-				{
-					return $result;
-				}
-				else
-				{
-					$response = $this->getResponse();
-					$response->data = $result;
-					return $response;
-				}
-			}
+			return $this->runAction($route);
 		}
 
 		return null;
@@ -593,7 +628,7 @@ class Application extends \yii\web\Application
 	 * requirement checker again. This should catch the case where an install is deployed to another server that doesn’t
 	 * meet Craft’s minimum requirements.
 	 *
-	 * @param Request $request
+	 * @param Request|null $request
 	 * @return null
 	 */
 	private function _processRequirementsCheck($request)
@@ -622,20 +657,24 @@ class Application extends \yii\web\Application
 				// Flush the data cache, so we're not getting cached CP resource paths.
 				$this->getCache()->flush();
 
-				$this->runAction('templates/requirements-check');
+				return $this->runAction('templates/requirements-check');
 			}
 		}
+
+		return null;
 	}
 
 	/**
 	 * @param Request $request
-	 * @return null
+	 * @return \yii\web\Response|null
 	 * @throws HttpException
 	 * @throws ServiceUnavailableHttpException
 	 * @throws \yii\base\ExitException
 	 */
 	private function _processUpdateLogic($request)
 	{
+		$this->_unregisterDebugModule();
+
 		// Let all non-action CP requests through.
 		if (
 			$request->getIsCpRequest() &&
@@ -645,8 +684,7 @@ class Application extends \yii\web\Application
 			// If this is a request to actually manually update Craft, do it
 			if ($request->getSegment(1) == 'manualupdate')
 			{
-				$this->runAction('templates/manual-update');
-				$this->end();
+				return $this->runAction('templates/manual-update');
 			}
 			else
 			{
@@ -669,7 +707,7 @@ class Application extends \yii\web\Application
 					}
 
 					// Show the manual update notification template
-					$this->runAction('templates/manual-update-notification');
+					return $this->runAction('templates/manual-update-notification');
 				}
 			}
 		}
@@ -678,7 +716,7 @@ class Application extends \yii\web\Application
 		{
 			$controller = $actionSegs[0];
 			$action = isset($actionSegs[1]) ? $actionSegs[1] : 'index';
-			$this->runAction($controller.'/'.$action);
+			return $this->runAction($controller.'/'.$action);
 		}
 		else
 		{
@@ -686,9 +724,6 @@ class Application extends \yii\web\Application
 			// TemplatesController->actionRenderError() take care of it.
 			throw new ServiceUnavailableHttpException();
 		}
-
-		// <Gandalf> YOU SHALL NOT PASS!
-		$this->end();
 	}
 
 	/**
@@ -726,6 +761,7 @@ class Application extends \yii\web\Application
 				}
 			}
 
+			$this->_unregisterDebugModule();
 			throw new ServiceUnavailableHttpException($error);
 		}
 	}

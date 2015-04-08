@@ -13,6 +13,7 @@ use craft\app\migrations\Install;
 use craft\app\models\AccountSettings as AccountSettingsModel;
 use craft\app\models\SiteSettings as SiteSettingsModel;
 use craft\app\web\Controller;
+use yii\base\Response;
 
 /**
  * The InstallController class is a controller that directs all installation related tasks such as creating the database
@@ -52,11 +53,15 @@ class InstallController extends Controller
 	/**
 	 * Index action.
 	 *
-	 * @return string The rendering result
+	 * @return Response|string The requirements check response if the server doesn’t meet Craft’s requirements, or the rendering result
+	 * @throws Exception if it's an Ajax request and the server doesn’t meet Craft’s requirements
 	 */
 	public function actionIndex()
 	{
-		Craft::$app->runAction('templates/requirements-check');
+		if (($response = Craft::$app->runAction('templates/requirements-check')) !== null)
+		{
+			return $response;
+		}
 
 		// Guess the site name based on the server name
 		$server = Craft::$app->getRequest()->getServerName();

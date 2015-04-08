@@ -67,17 +67,6 @@ class Updater
 	}
 
 	/**
-	 * Performs environmental requirement checks before running an update.
-	 *
-	 * @throws Exception
-	 * @return null
-	 */
-	public function checkRequirements()
-	{
-		Craft::$app->runAction('templates/requirements-check');
-	}
-
-	/**
 	 * @param string $md5
 	 *
 	 * @throws Exception
