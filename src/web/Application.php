@@ -14,6 +14,7 @@ use craft\app\helpers\HeaderHelper;
 use craft\app\helpers\JsonHelper;
 use craft\app\helpers\StringHelper;
 use craft\app\helpers\UrlHelper;
+use yii\base\Response;
 use yii\web\ForbiddenHttpException;
 use yii\web\NotFoundHttpException;
 
@@ -271,10 +272,17 @@ class Application extends \yii\web\Application
 		}
 
 		// If this is an action request, call the controller
-		$this->_processActionRequest($request);
+		$response = $this->_processActionRequest($request);
 
-		// If we're still here, finally let Yii do it's thing.
-		return parent::handleRequest($request);
+		if ($response !== null)
+		{
+			return $response;
+		}
+		else
+		{
+			// If we're still here, finally let Yii do it's thing.
+			return parent::handleRequest($request);
+		}
 	}
 
 	/**
@@ -527,7 +535,7 @@ class Application extends \yii\web\Application
 	 *
 	 * @param Request $request
 	 * @throws HttpException
-	 * @return null
+	 * @return Response|null
 	 */
 	private function _processActionRequest($request)
 	{
@@ -535,8 +543,25 @@ class Application extends \yii\web\Application
 		{
 			$actionSegs = $request->getActionSegments();
 			$route = implode('/', $actionSegs);
-			$this->runAction($route);
+			$result = $this->runAction($route);
+
+			// Did the action give a response?
+			if ($result !== null)
+			{
+				if ($result instanceof Response)
+				{
+					return $result;
+				}
+				else
+				{
+					$response = $this->getResponse();
+					$response->data = $result;
+					return $response;
+				}
+			}
 		}
+
+		return null;
 	}
 
 	/**
