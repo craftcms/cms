@@ -1,6 +1,3 @@
-(function($) {
-
-
 /**
  * CP class
  */
@@ -1222,6 +1219,3 @@ TaskProgressHUD.Task = Garnish.Base.extend(
 		this.base();
 	}
 });
-
-
-})(jQuery);

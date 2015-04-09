@@ -71,7 +71,6 @@ class AppAsset extends AssetBundle
 			'lib/fileupload/jquery.fileupload.js',
 			'lib/garnish-0.1'.($useCompressedJs ? '.min' : '').'.js',
 			'js/'.($useCompressedJs ? 'compressed/' : '').'Craft.js',
-			'js/'.($useCompressedJs ? 'compressed/' : '').'cp.js',
 		]);
 	}
 }
