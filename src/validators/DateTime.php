@@ -32,16 +32,10 @@ class DateTime extends Validator
 	{
 		$value = $object->$attribute;
 
-		if ($value)
+		if ($value && !$value instanceof \DateTime)
 		{
-			if (!($value instanceof \DateTime))
-			{
-				if (!DateTimeHelper::isValidTimeStamp((string)$value))
-				{
-					$message = Craft::t('app', '“{object}->{attribute}” must be a DateTime object or a valid Unix timestamp.', ['object' => get_class($object), 'attribute' => $attribute]);
-					$this->addError($object, $attribute, $message);
-				}
-			}
+			// Just automatically convert it rather than complaining about it
+			$object->$attribute = DateTimeHelper::toDateTime($value);
 		}
 	}
 }
