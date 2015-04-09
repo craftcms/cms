@@ -80,8 +80,8 @@ class ElementsController extends BaseElementsController
 	/**
 	 * Returns the HTML for an element editor HUD.
 	 *
+	 * @return Response
 	 * @throws HttpException
-	 * @return null
 	 */
 	public function actionGetEditorHtml()
 	{
@@ -97,14 +97,14 @@ class ElementsController extends BaseElementsController
 
 		$includeLocales = (bool) Craft::$app->getRequest()->getBodyParam('includeLocales', false);
 
-		return $this->_returnEditorHtml($element, $includeLocales);
+		return $this->_getEditorHtmlResponse($element, $includeLocales);
 	}
 
 	/**
 	 * Saves an element.
 	 *
+	 * @return Response
 	 * @throws HttpException
-	 * @return null
 	 */
 	public function actionSaveElement()
 	{
@@ -148,7 +148,7 @@ class ElementsController extends BaseElementsController
 		}
 		else
 		{
-			$this->_returnEditorHtml($element, false);
+			return $this->_getEditorHtmlResponse($element, false);
 		}
 	}
 
@@ -194,15 +194,14 @@ class ElementsController extends BaseElementsController
 	// =========================================================================
 
 	/**
-	 * Returns the editor HTML for a given element.
+	 * Returns the editor HTML response for a given element.
 	 *
 	 * @param ElementInterface $element
 	 * @param bool             $includeLocales
-	 *
+	 * @return Response
 	 * @throws HttpException
-	 * @return null
 	 */
-	private function _returnEditorHtml(ElementInterface $element, $includeLocales)
+	private function _getEditorHtmlResponse(ElementInterface $element, $includeLocales)
 	{
 		$localeIds = ElementHelper::getEditableLocaleIdsForElement($element);
 
