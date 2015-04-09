@@ -124,7 +124,14 @@ class View extends \yii\web\View
 	public function init()
 	{
 		parent::init();
+
 		$this->hook('cp.elements.element', [$this, '_getCpElementHtml']);
+
+		if (Craft::$app->getRequest()->getIsCpRequest())
+		{
+			// Register the CP assets
+			$this->registerAssetBundle(AppAsset::className());
+		}
 	}
 
 	/**

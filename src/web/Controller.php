@@ -63,12 +63,6 @@ abstract class Controller extends \yii\web\Controller
 				$this->requireLogin();
 			}
 
-			if (Craft::$app->getRequest()->getIsCpRequest())
-			{
-				// Register the CP assets
-				AppAsset::register($this->getView());
-			}
-
 			return true;
 		}
 		else
