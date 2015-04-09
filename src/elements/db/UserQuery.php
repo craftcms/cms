@@ -278,7 +278,20 @@ class UserQuery extends ElementQuery
 		$this->joinElementTable('users');
 
 		$this->query->select([
-			'users.groupId',
+			'users.username',
+			'users.photo',
+			'users.firstName',
+			'users.lastName',
+			'users.email',
+			'users.admin',
+			'users.client',
+			'users.locked',
+			'users.pending',
+			'users.suspended',
+			'users.archived',
+			'users.lastLoginDate',
+			'users.lockoutDate',
+			'users.preferredLocale',
 		]);
 
 		if ($this->admin)
@@ -296,7 +309,21 @@ class UserQuery extends ElementQuery
 
 		if ($this->groupId)
 		{
-			$this->subQuery->andWhere(DbHelper::parseParam('users.groupId', $this->groupId, $this->subQuery->params));
+			$query = new Query();
+			$userIds = $query
+				->select('userId')
+				->from('{{%usergroups_users}}')
+				->where(DbHelper::parseParam('groupId', $this->groupId, $query->params))
+				->column();
+
+			if (!empty($userIds))
+			{
+				$this->subQuery->andWhere(['in', 'elements.id', $userIds]);
+			}
+			else
+			{
+				return false;
+			}
 		}
 
 		if ($this->email)
