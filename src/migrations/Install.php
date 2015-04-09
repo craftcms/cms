@@ -984,17 +984,17 @@ class Install extends InstallMigration
 			'{{%volumefolders}}' => [
 				'columns' => [
 					'parentId' => 'integer(11) DEFAULT NULL',
-					'sourceId' => 'integer(11) DEFAULT NULL',
+					'volumeId' => 'integer(11) DEFAULT NULL',
 					'name' => 'string(255) COLLATE utf8_unicode_ci NOT NULL',
 					'path' => 'string(255) COLLATE utf8_unicode_ci DEFAULT NULL',
 				],
 				'indexes' => [
-					['name,parentId,sourceId', true],
-					['sourceId', false],
+					['name,parentId,volumeId', true],
 					['parentId', false],
+					['volumeId', false],
 				],
 				'foreignKeys' => [
-					['sourceId', '{{%volumes}}', 'id', 'CASCADE', null],
+					['volumeId', '{{%volumes}}', 'id', 'CASCADE', null],
 					['parentId', '{{%volumefolders}}', 'id', 'CASCADE', null],
 				],
 			],
