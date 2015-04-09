@@ -37,6 +37,7 @@ return [
 	'tokens'               => 'craft\app\services\Tokens',
 	'updates'              => 'craft\app\services\Updates',
 	'users'                => 'craft\app\services\Users',
+	'view'                 => 'craft\app\web\View',
 	'volumes'              => 'craft\app\services\Volumes',
 
 
@@ -83,10 +84,4 @@ return [
 			]
 		]
 	],
-	'view' => [
-		'class' => 'craft\app\web\View',
-		'assetBundles' => [
-			'yii\web\JqueryAsset' => 0,
-		]
-	]
 ];

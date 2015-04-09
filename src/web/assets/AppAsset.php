@@ -23,6 +23,13 @@ class AppAsset extends AssetBundle
 	/**
 	 * @inheritdoc
 	 */
+	public $depends = [
+		'yii\web\JqueryAsset',
+	];
+
+	/**
+	 * @inheritdoc
+	 */
 	public $css = [
 		'css/craft.css',
 	];
@@ -55,7 +62,6 @@ class AppAsset extends AssetBundle
 
 		$this->js = [
 			'lib/xregexp-all'.($useCompressedJs ? '-min' : '').'.js',
-			'lib/jquery-2.1.1'.($useCompressedJs ? '.min' : '').'.js',
 			'lib/jquery-ui'.($useCompressedJs ? '.min' : '').'.js',
 		];
 
