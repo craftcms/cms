@@ -18,6 +18,7 @@ use craft\app\helpers\UrlHelper;
 use craft\app\elements\User;
 use craft\app\services\Users;
 use craft\app\web\Controller;
+use craft\app\web\Response;
 use craft\app\web\UploadedFile;
 
 /**
@@ -48,14 +49,14 @@ class UsersController extends Controller
 	/**
 	 * Displays the login template, and handles login post requests.
 	 *
-	 * @return null
+	 * @return Response|null
 	 */
 	public function actionLogin()
 	{
 		if (!Craft::$app->getUser()->getIsGuest())
 		{
 			// Too easy.
-			$this->_handleSuccessfulLogin(false);
+			return $this->_handleSuccessfulLogin(false);
 		}
 
 		if (!Craft::$app->getRequest()->getIsPost())
@@ -75,15 +76,13 @@ class UsersController extends Controller
 
 		if (!$user)
 		{
-			$this->_handleInvalidLogin(User::AUTH_USERNAME_INVALID);
-			return;
+			return $this->_handleInvalidLogin(User::AUTH_USERNAME_INVALID);
 		}
 
 		// Did they submit a valid password, and is the user capable of being logged-in?
 		if (!$user->authenticate($password))
 		{
-			$this->_handleInvalidLogin($user->authError, $user);
-			return;
+			return $this->_handleInvalidLogin($user->authError, $user);
 		}
 
 		// Log them in
@@ -91,20 +90,19 @@ class UsersController extends Controller
 
 		if (Craft::$app->getUser()->login($user, $duration))
 		{
-			$this->_handleSuccessfulLogin(true);
+			return $this->_handleSuccessfulLogin(true);
 		}
 		else
 		{
 			// Unknown error
-			$this->_handleInvalidLogin(null, $user);
-			return;
+			return $this->_handleInvalidLogin(null, $user);
 		}
 	}
 
 	/**
 	 * Logs a user in for impersonation.  Requires you to be an administrator.
 	 *
-	 * @return null
+	 * @return Response|null
 	 */
 	public function actionImpersonate()
 	{
@@ -118,7 +116,7 @@ class UsersController extends Controller
 		{
 			Craft::$app->getSession()->setNotice(Craft::t('app', 'Logged in.'));
 
-			$this->_handleSuccessfulLogin(true);
+			return $this->_handleSuccessfulLogin(true);
 		}
 		else
 		{
@@ -1388,7 +1386,7 @@ class UsersController extends Controller
 	 * @param string|null $authError
 	 * @param User|null   $user
 	 *
-	 * @return null
+	 * @return Response|null
 	 */
 	private function _handleInvalidLogin($authError = null, User $user = null)
 	{
@@ -1477,7 +1475,7 @@ class UsersController extends Controller
 	 *
 	 * @param bool $setNotice Whether a flash notice should be set, if this isn't an Ajax request.
 	 *
-	 * @return null
+	 * @return Response
 	 */
 	private function _handleSuccessfulLogin($setNotice)
 	{
