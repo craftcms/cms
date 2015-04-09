@@ -128,7 +128,7 @@ class View extends \yii\web\View
 
 		$this->hook('cp.elements.element', [$this, '_getCpElementHtml']);
 
-		$this->_isCpRequest = Craft::$app->getRequest()->getIsCpRequest();
+		$this->_isCpRequest = (Craft::$app->getRequest()->getIsConsoleRequest() === false && Craft::$app->getRequest()->getIsCpRequest() === true);
 
 		if ($this->_isCpRequest === true)
 		{
