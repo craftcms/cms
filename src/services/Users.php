@@ -135,14 +135,6 @@ class Users extends Component
      */
     const EVENT_AFTER_SET_PASSWORD = 'afterSetPassword';
 
-	// Properties
-	// =========================================================================
-
-	/**
-	 * @var
-	 */
-	private $_usersById;
-
 	// Public Methods
 	// =========================================================================
 
@@ -159,21 +151,7 @@ class Users extends Component
 	 */
 	public function getUserById($userId)
 	{
-		if (!isset($this->_usersById) || !array_key_exists($userId, $this->_usersById))
-		{
-			$userRecord = UserRecord::findOne($userId);
-
-			if ($userRecord)
-			{
-				$this->_usersById[$userId] = User::create($userRecord);
-			}
-			else
-			{
-				$this->_usersById[$userId] = null;
-			}
-		}
-
-		return $this->_usersById[$userId];
+		return Craft::$app->elements->getElementById($userId, User::className());
 	}
 
 	/**
