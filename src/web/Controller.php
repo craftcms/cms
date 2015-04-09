@@ -116,6 +116,7 @@ abstract class Controller extends \yii\web\Controller
 		if ($user->getIsGuest())
 		{
 			$user->loginRequired();
+			Craft::$app->end();
 		}
 	}
 
@@ -208,27 +209,6 @@ abstract class Controller extends \yii\web\Controller
 		if (!Craft::$app->getRequest()->getQueryParam(Craft::$app->config->get('tokenParam')))
 		{
 			throw new HttpException(400);
-		}
-	}
-
-	/**
-	 * Redirects the browser to a given URL.
-	 *
-	 * @param string $url        The URL to redirect the browser to.
-	 * @param int    $statusCode The status code to accompany the redirect. (Default is 302.)
-	 *
-	 * @return null
-	 */
-	public function redirect($url, $statusCode = 302)
-	{
-		if (is_string($url))
-		{
-			$url = UrlHelper::getUrl($url);
-		}
-
-		if ($url !== null)
-		{
-			return parent::redirect($url, $statusCode);
 		}
 	}
 
@@ -339,5 +319,25 @@ abstract class Controller extends \yii\web\Controller
 	public function asErrorJson($error)
 	{
 		return $this->asJson(['error' => $error]);
+	}
+
+	/**
+	 * @inheritdoc
+	 */
+	public function redirect($url, $statusCode = 302)
+	{
+		if (is_string($url))
+		{
+			$url = UrlHelper::getUrl($url);
+		}
+
+		if ($url !== null)
+		{
+			return Craft::$app->getResponse()->redirect($url, $statusCode);
+		}
+		else
+		{
+			return $this->goHome();
+		}
 	}
 }

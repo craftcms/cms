@@ -14,6 +14,7 @@ use craft\app\helpers\HeaderHelper;
 use craft\app\helpers\JsonHelper;
 use craft\app\helpers\StringHelper;
 use craft\app\helpers\UrlHelper;
+use yii\base\InvalidRouteException;
 use yii\web\ForbiddenHttpException;
 use yii\web\NotFoundHttpException;
 
@@ -255,7 +256,7 @@ class Application extends \yii\web\Application
 			// Make sure the user has access to the CP
 			if ($user->getIsGuest())
 			{
-				$user->loginRequired();
+				return $user->loginRequired();
 			}
 
 			if (!$user->checkPermission('accessCp'))
@@ -585,16 +586,25 @@ class Application extends \yii\web\Application
 	 * Processes action requests.
 	 *
 	 * @param Request $request
-	 * @throws HttpException
 	 * @return \yii\web\Response|null
+	 * @throws NotFoundHttpException if the requested action route is invalid
 	 */
 	private function _processActionRequest($request)
 	{
 		if ($request->getIsActionRequest())
 		{
-			$actionSegs = $request->getActionSegments();
-			$route = implode('/', $actionSegs);
-			return $this->runAction($route);
+			$route = implode('/', $request->getActionSegments());
+
+			try
+			{
+				Craft::trace("Route requested: '$route'", __METHOD__);
+				$this->requestedRoute = $route;
+				return $this->runAction($route, $_GET);
+			}
+			catch (InvalidRouteException $e)
+			{
+				throw new NotFoundHttpException(Craft::t('yii', 'Page not found.'), $e->getCode(), $e);
+			}
 		}
 
 		return null;
@@ -754,7 +764,8 @@ class Application extends \yii\web\Application
 				// If this is a CP request, redirect to the Login page
 				if ($this->getRequest()->getIsCpRequest())
 				{
-					$this->getUser()->requireLogin();
+					$this->getUser()->loginRequired();
+					$this->end();
 				}
 			}
 
