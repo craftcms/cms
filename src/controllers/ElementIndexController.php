@@ -120,7 +120,7 @@ class ElementIndexController extends BaseElementsController
 
 		$responseData['html'] = $this->_getElementHtml(true);
 
-		$this->_respond($responseData, true);
+		return $this->_respond($responseData, true);
 	}
 
 	/**
