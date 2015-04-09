@@ -1,45 +1,5 @@
 {% extends "_layouts/base" %}
 
-{# Figure out which Datepicker i18n script to load #}
-{%- switch craft.locale %}
-	{%- case 'en_gb' %}
-		{%- set datepickerLocale = 'en-GB' %}
-	{%- case 'fr_ca' %}
-		{%- set datepickerLocale = 'fr-CA' %}
-	{%- default %}
-		{%- set language = craft.i18n.getLocaleData().getLanguageID(craft.locale) %}
-		{%- if language in ['ar', 'de', 'fr', 'it', 'ja', 'nb', 'nl'] %}
-			{%- set datepickerLocale = language %}
-		{%- endif %}
-{%- endswitch %}
-
-{% set useCompressedJs = craft.config.useCompressedJs %}
-{% set jsResources = [
-	'lib/xregexp-all'~(useCompressedJs ? '-min')~'.js',
-	'lib/jquery-2.1.1'~(useCompressedJs ? '.min')~'.js',
-	'lib/jquery-ui'~(useCompressedJs ? '.min')~'.js',
-	'lib/velocity'~(useCompressedJs ? '.min')~'.js',
-	'lib/jquery.placeholder'~(useCompressedJs ? '.min')~'.js',
-	'lib/fileupload/jquery.ui.widget.js',
-	'lib/fileupload/jquery.fileupload.js',
-	'lib/garnish-0.1'~(useCompressedJs ? '.min')~'.js',
-	'js/Craft.js'
-] %}
-
-{% if datepickerLocale is defined %}
-	{% set jsResources = jsResources|merge([
-		'lib/datepicker-i18n/datepicker-'~datepickerLocale~'.js'
-	]) %}
-{% endif %}
-
-{% set jsResources = jsResources|merge([
-	'js/cp.js',
-]) %}
-
-{% for jsResource in jsResources %}
-	{% registerJsResource jsResource %}
-{% endfor %}
-
 {%- includeTranslations "Show", "Hide" %}
 
 {% set orientation = craft.i18n.getLocaleData().getOrientation() %}
