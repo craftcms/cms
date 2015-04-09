@@ -20,6 +20,7 @@ use craft\app\helpers\PathHelper;
 use craft\app\helpers\StringHelper;
 use craft\app\services\Plugins;
 use craft\app\web\assets\AppAsset;
+use craft\app\web\twig\Environment;
 use craft\app\web\twig\Extension;
 use craft\app\web\twig\StringTemplate;
 use craft\app\web\twig\Template;
@@ -142,7 +143,7 @@ class View extends \yii\web\View
 	 * @param string $loaderClass The name of the class that should be initialized as the Twig instance’s template
 	 *                            loader. If no class is passed in, [[TemplateLoader]] will be used.
 	 *
-	 * @return \Twig_Environment The Twig Environment instance.
+	 * @return Environment The Twig Environment instance.
 	 */
 	public function getTwig($loaderClass = null)
 	{
@@ -165,7 +166,7 @@ class View extends \yii\web\View
 
 			$options = $this->_getTwigOptions();
 
-			$twig = new \Twig_Environment($loader, $options);
+			$twig = new Environment($loader, $options);
 
 			$twig->addExtension(new \Twig_Extension_StringLoader());
 			$twig->addExtension(new Extension($this));
@@ -247,6 +248,8 @@ class View extends \yii\web\View
 		// Render and return
 		$renderingTemplate = $this->_renderingTemplate;
 		$this->_renderingTemplate = $template;
+		Craft::beginProfile($template, __METHOD__);
+
 		try
 		{
 			$output = $this->getTwig()->render($template, $variables);
@@ -256,6 +259,7 @@ class View extends \yii\web\View
 			throw new InvalidParamException("The template does not exist, or isn’t readable: $template");
 		}
 
+		Craft::endProfile($template, __METHOD__);
 		$this->_renderingTemplate = $renderingTemplate;
 
 		return $output;
