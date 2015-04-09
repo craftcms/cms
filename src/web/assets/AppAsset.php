@@ -23,6 +23,13 @@ class AppAsset extends AssetBundle
 	/**
 	 * @inheritdoc
 	 */
+	public $css = [
+		'css/craft.css',
+	];
+
+	/**
+	 * @inheritdoc
+	 */
 	public function init()
 	{
 		parent::init();
