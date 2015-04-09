@@ -206,6 +206,6 @@ class TemplatesController extends Controller
 			$variables['message'] = TemplateHelper::getRaw($variables['message']);
 		}
 
-		return Craft::$app->getView()->renderTemplate($template, $variables);
+		return $this->renderTemplate($template, $variables);
 	}
 }
