@@ -53,7 +53,7 @@ class GlobalsController extends Controller
 		if (Craft::$app->globals->saveSet($globalSet))
 		{
 			Craft::$app->getSession()->setNotice(Craft::t('app', 'Global set saved.'));
-			$this->redirectToPostedUrl($globalSet);
+			return $this->redirectToPostedUrl($globalSet);
 		}
 		else
 		{
@@ -80,7 +80,7 @@ class GlobalsController extends Controller
 		$globalSetId = Craft::$app->getRequest()->getRequiredBodyParam('id');
 
 		Craft::$app->globals->deleteSetById($globalSetId);
-		$this->returnJson(['success' => true]);
+		return $this->asJson(['success' => true]);
 	}
 
 	/**
@@ -187,7 +187,7 @@ class GlobalsController extends Controller
 		if (Craft::$app->globals->saveContent($globalSet))
 		{
 			Craft::$app->getSession()->setNotice(Craft::t('app', 'Globals saved.'));
-			$this->redirectToPostedUrl();
+			return $this->redirectToPostedUrl();
 		}
 		else
 		{

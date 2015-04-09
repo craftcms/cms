@@ -150,7 +150,7 @@ class CategoriesController extends Controller
 		if (Craft::$app->categories->saveGroup($group))
 		{
 			Craft::$app->getSession()->setNotice(Craft::t('app', 'Category group saved.'));
-			$this->redirectToPostedUrl($group);
+			return $this->redirectToPostedUrl($group);
 		}
 		else
 		{
@@ -177,7 +177,7 @@ class CategoriesController extends Controller
 		$groupId = Craft::$app->getRequest()->getRequiredBodyParam('id');
 
 		Craft::$app->categories->deleteGroupById($groupId);
-		$this->returnJson(['success' => true]);
+		return $this->asJson(['success' => true]);
 	}
 
 	// Categories
@@ -403,7 +403,7 @@ class CategoriesController extends Controller
 				$return['title']     = $category->title;
 				$return['cpEditUrl'] = $category->getCpEditUrl();
 
-				$this->returnJson([
+				return $this->asJson([
 					'success'   => true,
 					'id'        => $category->id,
 					'title'     => $category->title,
@@ -415,14 +415,14 @@ class CategoriesController extends Controller
 			else
 			{
 				Craft::$app->getSession()->setNotice(Craft::t('app', 'Category saved.'));
-				$this->redirectToPostedUrl($category);
+				return $this->redirectToPostedUrl($category);
 			}
 		}
 		else
 		{
 			if (Craft::$app->getRequest()->getIsAjax())
 			{
-				$this->returnJson([
+				return $this->asJson([
 					'success' => false,
 					'errors'  => $category->getErrors(),
 				]);
@@ -465,19 +465,19 @@ class CategoriesController extends Controller
 		{
 			if (Craft::$app->getRequest()->getIsAjax())
 			{
-				$this->returnJson(['success' => true]);
+				return $this->asJson(['success' => true]);
 			}
 			else
 			{
 				Craft::$app->getSession()->setNotice(Craft::t('app', 'Category deleted.'));
-				$this->redirectToPostedUrl($category);
+				return $this->redirectToPostedUrl($category);
 			}
 		}
 		else
 		{
 			if (Craft::$app->getRequest()->getIsAjax())
 			{
-				$this->returnJson(['success' => false]);
+				return $this->asJson(['success' => false]);
 			}
 			else
 			{
@@ -525,7 +525,7 @@ class CategoriesController extends Controller
 		]);
 
 		$url = UrlHelper::getUrlWithToken($category->getUrl(), $token);
-		Craft::$app->getResponse()->redirect($url);
+		return Craft::$app->getResponse()->redirect($url);
 	}
 
 	/**

@@ -136,7 +136,7 @@ class DashboardController extends Controller
 		if (Craft::$app->dashboard->saveWidget($widget))
 		{
 			Craft::$app->getSession()->setNotice(Craft::t('app', 'Widget saved.'));
-			$this->redirectToPostedUrl();
+			return $this->redirectToPostedUrl();
 		}
 		else
 		{
@@ -162,7 +162,7 @@ class DashboardController extends Controller
 		$widgetId = JsonHelper::decode(Craft::$app->getRequest()->getRequiredBodyParam('id'));
 		Craft::$app->dashboard->deleteWidgetById($widgetId);
 
-		$this->returnJson(['success' => true]);
+		return $this->asJson(['success' => true]);
 	}
 
 	/**
@@ -178,7 +178,7 @@ class DashboardController extends Controller
 		$widgetIds = JsonHelper::decode(Craft::$app->getRequest()->getRequiredBodyParam('ids'));
 		Craft::$app->dashboard->reorderWidgets($widgetIds);
 
-		$this->returnJson(['success' => true]);
+		return $this->asJson(['success' => true]);
 	}
 
 	/**
@@ -209,7 +209,7 @@ class DashboardController extends Controller
 			}
 		}
 
-		$this->returnJson(['items' => $items]);
+		return $this->asJson(['items' => $items]);
 	}
 
 	/**

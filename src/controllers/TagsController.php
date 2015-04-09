@@ -129,7 +129,7 @@ class TagsController extends Controller
 		if (Craft::$app->tags->saveTagGroup($tagGroup))
 		{
 			Craft::$app->getSession()->setNotice(Craft::t('app', 'Tag group saved.'));
-			$this->redirectToPostedUrl($tagGroup);
+			return $this->redirectToPostedUrl($tagGroup);
 		}
 		else
 		{
@@ -156,7 +156,7 @@ class TagsController extends Controller
 		$sectionId = Craft::$app->getRequest()->getRequiredBodyParam('id');
 
 		Craft::$app->tags->deleteTagGroupById($sectionId);
-		$this->returnJson(['success' => true]);
+		return $this->asJson(['success' => true]);
 	}
 
 	/**
@@ -210,7 +210,7 @@ class TagsController extends Controller
 
 		array_multisort($exactMatches, SORT_DESC, $tagTitleLengths, $return);
 
-		$this->returnJson([
+		return $this->asJson([
 			'tags'       => $return,
 			'exactMatch' => $exactMatch
 		]);
@@ -232,14 +232,14 @@ class TagsController extends Controller
 
 		if (Craft::$app->tags->saveTag($tag))
 		{
-			$this->returnJson([
+			return $this->asJson([
 				'success' => true,
 				'id'      => $tag->id
 			]);
 		}
 		else
 		{
-			$this->returnJson([
+			return $this->asJson([
 				'success' => false
 			]);
 		}

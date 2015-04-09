@@ -103,7 +103,7 @@ class InstallController extends Controller
 			$return['errors'] = $accountSettings->getErrors();
 		}
 
-		$this->returnJson($return);
+		return $this->asJson($return);
 	}
 
 	/**
@@ -129,7 +129,7 @@ class InstallController extends Controller
 			$return['errors'] = $siteSettings->getErrors();
 		}
 
-		$this->returnJson($return);
+		return $this->asJson($return);
 	}
 
 	/**
@@ -170,6 +170,6 @@ class InstallController extends Controller
 			$success = false;
 		}
 
-		$this->returnJson(['success' => $success]);
+		return $this->asJson(['success' => $success]);
 	}
 }

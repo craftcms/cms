@@ -59,11 +59,11 @@ class RoutesController extends Controller
 
 		if ($routeRecord->hasErrors())
 		{
-			$this->returnJson(['errors' => $routeRecord->getErrors()]);
+			return $this->asJson(['errors' => $routeRecord->getErrors()]);
 		}
 		else
 		{
-			$this->returnJson([
+			return $this->asJson([
 				'success' => true,
 				'routeId' => $routeRecord->id,
 				'locale'  => $routeRecord->locale
@@ -83,7 +83,7 @@ class RoutesController extends Controller
 		$routeId = Craft::$app->getRequest()->getRequiredBodyParam('routeId');
 		Craft::$app->routes->deleteRouteById($routeId);
 
-		$this->returnJson(['success' => true]);
+		return $this->asJson(['success' => true]);
 	}
 
 	/**
@@ -99,7 +99,7 @@ class RoutesController extends Controller
 		$routeIds = Craft::$app->getRequest()->getRequiredBodyParam('routeIds');
 		Craft::$app->routes->updateRouteOrder($routeIds);
 
-		$this->returnJson(['success' => true]);
+		return $this->asJson(['success' => true]);
 	}
 
 }

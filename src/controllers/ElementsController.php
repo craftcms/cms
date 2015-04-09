@@ -140,7 +140,7 @@ class ElementsController extends BaseElementsController
 		// Now save it
 		if ($element::saveElement($element, $params))
 		{
-			$this->returnJson([
+			return $this->asJson([
 				'success'   => true,
 				'newTitle'  => (string) $element,
 				'cpEditUrl' => $element->getCpEditUrl(),
@@ -185,7 +185,7 @@ class ElementsController extends BaseElementsController
 			'name'     => Craft::$app->getRequest()->getParam('name'),
 		]);
 
-		$this->returnJson([
+		return $this->asJson([
 			'html' => $html,
 		]);
 	}
@@ -248,6 +248,6 @@ class ElementsController extends BaseElementsController
 		$response['headHtml'] = Craft::$app->getView()->getHeadHtml();
 		$response['footHtml'] = Craft::$app->getView()->getBodyEndHtml(true);
 
-		$this->returnJson($response);
+		return $this->asJson($response);
 	}
 }

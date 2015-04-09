@@ -88,7 +88,7 @@ class StructuresController extends Controller
 	{
 		$delta = Craft::$app->structures->getElementLevelDelta($this->_structure->id, $this->_element);
 
-		$this->returnJson([
+		return $this->asJson([
 			'delta' => $delta
 		]);
 	}
@@ -118,7 +118,7 @@ class StructuresController extends Controller
 			$success = Craft::$app->structures->prependToRoot($this->_structure->id, $this->_element, 'auto', true);
 		}
 
-		$this->returnJson([
+		return $this->asJson([
 			'success' => $success
 		]);
 	}

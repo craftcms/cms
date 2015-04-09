@@ -147,13 +147,13 @@ class UsersController extends Controller
 
 		if (Craft::$app->getRequest()->getIsAjax())
 		{
-			$this->returnJson([
+			return $this->asJson([
 				'success' => true
 			]);
 		}
 		else
 		{
-			$this->redirect('');
+			return $this->redirect('');
 		}
 	}
 
@@ -210,12 +210,12 @@ class UsersController extends Controller
 			{
 				if (Craft::$app->getRequest()->getIsAjax())
 				{
-					$this->returnJson(['success' => true]);
+					return $this->asJson(['success' => true]);
 				}
 				else
 				{
 					Craft::$app->getSession()->setNotice(Craft::t('app', 'Password reset email sent.'));
-					$this->redirectToPostedUrl();
+					return $this->redirectToPostedUrl();
 				}
 			}
 
@@ -224,7 +224,7 @@ class UsersController extends Controller
 
 		if (Craft::$app->getRequest()->getIsAjax())
 		{
-			$this->returnErrorJson($errors);
+			return $this->asErrorJson($errors);
 		}
 		else
 		{
@@ -347,7 +347,7 @@ class UsersController extends Controller
 					$url = UrlHelper::getSiteUrl($setPasswordSuccessPath);
 				}
 
-				$this->redirect($url);
+				return $this->redirect($url);
 			}
 
 			Craft::$app->getSession()->setNotice(Craft::t('app', 'Couldn’t update password.'));
@@ -388,7 +388,7 @@ class UsersController extends Controller
 
 			// Redirect to the site/CP root
 			$url = UrlHelper::getUrl('');
-			$this->redirect($url);
+			return $this->redirect($url);
 		}
 	}
 
@@ -419,7 +419,7 @@ class UsersController extends Controller
 			Craft::$app->getSession()->setError(Craft::t('app', 'There was a problem activating the user.'));
 		}
 
-		$this->redirectToPostedUrl();
+		return $this->redirectToPostedUrl();
 	}
 
 	/**
@@ -958,7 +958,7 @@ class UsersController extends Controller
 				}
 			}
 
-			$this->redirectToPostedUrl($user);
+			return $this->redirectToPostedUrl($user);
 		}
 		else
 		{
@@ -1011,7 +1011,7 @@ class UsersController extends Controller
 				if (!Craft::$app->images->checkMemoryForImage($folderPath.'/'.$filename))
 				{
 					IOHelper::deleteFile($folderPath.'/'.$filename);
-					$this->returnErrorJson(Craft::t('app', 'The uploaded image is too large'));
+					return $this->asErrorJson(Craft::t('app', 'The uploaded image is too large'));
 				}
 
 				Craft::$app->images->cleanImage($folderPath.'/'.$filename);
@@ -1035,7 +1035,7 @@ class UsersController extends Controller
 						]
 					);
 
-					$this->returnJson(['html' => $html]);
+					return $this->asJson(['html' => $html]);
 				}
 			}
 		}
@@ -1044,7 +1044,7 @@ class UsersController extends Controller
 			Craft::error('There was an error uploading the photo: '.$exception->getMessage(), __METHOD__);
 		}
 
-		$this->returnErrorJson(Craft::t('app', 'There was an error uploading your photo.'));
+		return $this->asErrorJson(Craft::t('app', 'There was an error uploading your photo.'));
 	}
 
 	/**
@@ -1101,7 +1101,7 @@ class UsersController extends Controller
 						]
 					);
 
-					$this->returnJson(['html' => $html]);
+					return $this->asJson(['html' => $html]);
 				}
 			}
 
@@ -1109,10 +1109,10 @@ class UsersController extends Controller
 		}
 		catch (Exception $exception)
 		{
-			$this->returnErrorJson($exception->getMessage());
+			return $this->asErrorJson($exception->getMessage());
 		}
 
-		$this->returnErrorJson(Craft::t('app', 'Something went wrong when processing the photo.'));
+		return $this->asErrorJson(Craft::t('app', 'Something went wrong when processing the photo.'));
 	}
 
 	/**
@@ -1143,7 +1143,7 @@ class UsersController extends Controller
 			]
 		);
 
-		$this->returnJson(['html' => $html]);
+		return $this->asJson(['html' => $html]);
 	}
 
 	/**
@@ -1172,7 +1172,7 @@ class UsersController extends Controller
 		else
 		{
 			Craft::$app->getSession()->setNotice(Craft::t('app', 'Activation email sent.'));
-			$this->redirectToPostedUrl();
+			return $this->redirectToPostedUrl();
 		}
 	}
 
@@ -1207,7 +1207,7 @@ class UsersController extends Controller
 		Craft::$app->users->unlockUser($user);
 
 		Craft::$app->getSession()->setNotice(Craft::t('app', 'User activated.'));
-		$this->redirectToPostedUrl();
+		return $this->redirectToPostedUrl();
 	}
 
 	/**
@@ -1241,7 +1241,7 @@ class UsersController extends Controller
 		Craft::$app->users->suspendUser($user);
 
 		Craft::$app->getSession()->setNotice(Craft::t('app', 'User suspended.'));
-		$this->redirectToPostedUrl();
+		return $this->redirectToPostedUrl();
 	}
 
 	/**
@@ -1294,7 +1294,7 @@ class UsersController extends Controller
 		if (Craft::$app->users->deleteUser($user, $transferContentTo))
 		{
 			Craft::$app->getSession()->setNotice(Craft::t('app', 'User deleted.'));
-			$this->redirectToPostedUrl();
+			return $this->redirectToPostedUrl();
 		}
 		else
 		{
@@ -1333,7 +1333,7 @@ class UsersController extends Controller
 		Craft::$app->users->unsuspendUser($user);
 
 		Craft::$app->getSession()->setNotice(Craft::t('app', 'User unsuspended.'));
-		$this->redirectToPostedUrl();
+		return $this->redirectToPostedUrl();
 	}
 
 	/**
@@ -1354,7 +1354,7 @@ class UsersController extends Controller
 		if (Craft::$app->fields->saveLayout($fieldLayout))
 		{
 			Craft::$app->getSession()->setNotice(Craft::t('app', 'User fields saved.'));
-			$this->redirectToPostedUrl();
+			return $this->redirectToPostedUrl();
 		}
 		else
 		{
@@ -1373,10 +1373,10 @@ class UsersController extends Controller
 
 		if ($this->_verifyExistingPassword())
 		{
-			$this->returnJson(['success' => true]);
+			return $this->asJson(['success' => true]);
 		}
 
-		$this->returnErrorJson(Craft::t('app', 'Invalid password.'));
+		return $this->asErrorJson(Craft::t('app', 'Invalid password.'));
 	}
 
 	// Private Methods
@@ -1453,7 +1453,7 @@ class UsersController extends Controller
 
 		if (Craft::$app->getRequest()->getIsAjax())
 		{
-			$this->returnJson([
+			return $this->asJson([
 				'errorCode' => $authError,
 				'error' => $message
 			]);
@@ -1507,7 +1507,7 @@ class UsersController extends Controller
 		// If this was an Ajax request, just return success:true
 		if (Craft::$app->getRequest()->getIsAjax())
 		{
-			$this->returnJson([
+			return $this->asJson([
 				'success' => true,
 				'returnUrl' => $returnUrl
 			]);
@@ -1519,7 +1519,7 @@ class UsersController extends Controller
 				Craft::$app->getSession()->setNotice(Craft::t('app', 'Logged in.'));
 			}
 
-			$this->redirectToPostedUrl($currentUser, $returnUrl);
+			return $this->redirectToPostedUrl($currentUser, $returnUrl);
 		}
 	}
 
@@ -1712,7 +1712,7 @@ class UsersController extends Controller
 
 		if ($url != '')
 		{
-			$this->redirect(UrlHelper::getSiteUrl($url));
+			return $this->redirect(UrlHelper::getSiteUrl($url));
 		}
 		else
 		{
@@ -1756,6 +1756,6 @@ class UsersController extends Controller
 			$url = UrlHelper::getSiteUrl($activateAccountSuccessPath);
 		}
 
-		$this->redirect($url);
+		return $this->redirect($url);
 	}
 }

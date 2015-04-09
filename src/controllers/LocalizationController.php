@@ -50,7 +50,7 @@ class LocalizationController extends Controller
 
 		$localeId = Craft::$app->getRequest()->getRequiredBodyParam('id');
 		$success = Craft::$app->getI18n()->addSiteLocale($localeId);
-		$this->returnJson(['success' => $success]);
+		return $this->asJson(['success' => $success]);
 	}
 
 	/**
@@ -65,7 +65,7 @@ class LocalizationController extends Controller
 
 		$localeIds = JsonHelper::decode(Craft::$app->getRequest()->getRequiredBodyParam('ids'));
 		$success = Craft::$app->getI18n()->reorderSiteLocales($localeIds);
-		$this->returnJson(['success' => $success]);
+		return $this->asJson(['success' => $success]);
 	}
 
 	/**
@@ -82,6 +82,6 @@ class LocalizationController extends Controller
 		$transferContentTo = Craft::$app->getRequest()->getBodyParam('transferContentTo');
 
 		$success = Craft::$app->getI18n()->deleteSiteLocale($localeId, $transferContentTo);
-		$this->returnJson(['success' => $success]);
+		return $this->asJson(['success' => $success]);
 	}
 }

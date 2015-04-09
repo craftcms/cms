@@ -60,7 +60,7 @@ class UserSettingsController extends Controller
 			Craft::$app->userPermissions->saveGroupPermissions($group->id, $permissions);
 
 			Craft::$app->getSession()->setNotice(Craft::t('app', 'Group saved.'));
-			$this->redirectToPostedUrl();
+			return $this->redirectToPostedUrl();
 		}
 		else
 		{
@@ -87,7 +87,7 @@ class UserSettingsController extends Controller
 
 		Craft::$app->userGroups->deleteGroupById($groupId);
 
-		$this->returnJson(['success' => true]);
+		return $this->asJson(['success' => true]);
 	}
 
 	/**
@@ -106,7 +106,7 @@ class UserSettingsController extends Controller
 		if (Craft::$app->systemSettings->saveSettings('users', $settings))
 		{
 			Craft::$app->getSession()->setNotice(Craft::t('app', 'User settings saved.'));
-			$this->redirectToPostedUrl();
+			return $this->redirectToPostedUrl();
 		}
 		else
 		{

@@ -223,7 +223,7 @@ class SectionsController extends Controller
 		if (Craft::$app->sections->saveSection($section))
 		{
 			Craft::$app->getSession()->setNotice(Craft::t('app', 'Section saved.'));
-			$this->redirectToPostedUrl($section);
+			return $this->redirectToPostedUrl($section);
 		}
 		else
 		{
@@ -249,7 +249,7 @@ class SectionsController extends Controller
 		$sectionId = Craft::$app->getRequest()->getRequiredBodyParam('id');
 
 		Craft::$app->sections->deleteSectionById($sectionId);
-		$this->returnJson(['success' => true]);
+		return $this->asJson(['success' => true]);
 	}
 
 	// Entry Types
@@ -391,7 +391,7 @@ class SectionsController extends Controller
 		if (Craft::$app->sections->saveEntryType($entryType))
 		{
 			Craft::$app->getSession()->setNotice(Craft::t('app', 'Entry type saved.'));
-			$this->redirectToPostedUrl($entryType);
+			return $this->redirectToPostedUrl($entryType);
 		}
 		else
 		{
@@ -417,7 +417,7 @@ class SectionsController extends Controller
 		$entryTypeIds = JsonHelper::decode(Craft::$app->getRequest()->getRequiredBodyParam('ids'));
 		Craft::$app->sections->reorderEntryTypes($entryTypeIds);
 
-		$this->returnJson(['success' => true]);
+		return $this->asJson(['success' => true]);
 	}
 
 	/**
@@ -433,6 +433,6 @@ class SectionsController extends Controller
 		$entryTypeId = Craft::$app->getRequest()->getRequiredBodyParam('id');
 
 		Craft::$app->sections->deleteEntryTypeById($entryTypeId);
-		$this->returnJson(['success' => true]);
+		return $this->asJson(['success' => true]);
 	}
 }

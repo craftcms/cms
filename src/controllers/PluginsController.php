@@ -56,7 +56,7 @@ class PluginsController extends Controller
 			Craft::$app->getSession()->setError(Craft::t('app', 'Couldn’t install plugin.'));
 		}
 
-		$this->redirectToPostedUrl();
+		return $this->redirectToPostedUrl();
 	}
 
 	/**
@@ -78,7 +78,7 @@ class PluginsController extends Controller
 			Craft::$app->getSession()->setError(Craft::t('app', 'Couldn’t uninstall plugin.'));
 		}
 
-		$this->redirectToPostedUrl();
+		return $this->redirectToPostedUrl();
 	}
 
 	/**
@@ -100,7 +100,7 @@ class PluginsController extends Controller
 			Craft::$app->getSession()->setError(Craft::t('app', 'Couldn’t enable plugin.'));
 		}
 
-		$this->redirectToPostedUrl();
+		return $this->redirectToPostedUrl();
 	}
 
 	/**
@@ -122,7 +122,7 @@ class PluginsController extends Controller
 			Craft::$app->getSession()->setError(Craft::t('app', 'Couldn’t disable plugin.'));
 		}
 
-		$this->redirectToPostedUrl();
+		return $this->redirectToPostedUrl();
 	}
 
 	/**
@@ -169,7 +169,7 @@ class PluginsController extends Controller
 		{
 			Craft::$app->getSession()->setNotice(Craft::t('app', 'Plugin settings saved.'));
 
-			$this->redirectToPostedUrl();
+			return $this->redirectToPostedUrl();
 		}
 
 		Craft::$app->getSession()->setError(Craft::t('app', 'Couldn’t save plugin settings.'));

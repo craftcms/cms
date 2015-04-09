@@ -27,8 +27,9 @@ class RedirectNode extends \Twig_Node
 		    ->addDebugInfo($this)
 		    ->write('\Craft::$app->getResponse()->redirect(\craft\app\helpers\UrlHelper::getUrl(')
 		    ->subcompile($this->getNode('path'))
-		    ->raw("), true, ")
+		    ->raw("), ")
 		    ->subcompile($this->getNode('httpStatusCode'))
-		    ->raw(");\n");
+		    ->raw(");\n")
+		    ->write('\Craft::$app->end();');
 	}
 }

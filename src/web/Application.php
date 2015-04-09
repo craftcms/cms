@@ -569,6 +569,7 @@ class Application extends \yii\web\Application
 			{
 				$url = UrlHelper::getUrl('install');
 				$this->getResponse()->redirect($url);
+				$this->end();
 			}
 			// Otherwise return a 404
 			else

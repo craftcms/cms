@@ -55,7 +55,7 @@ class ToolsController extends Controller
 		/** @var ToolInterface $tool */
 		$tool = ComponentHelper::createComponent($class, 'craft\app\base\ToolInterface');
 		$response = $tool->performAction($params);
-		$this->returnJson($response);
+		return $this->asJson($response);
 	}
 
 	/**

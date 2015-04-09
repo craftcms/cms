@@ -67,14 +67,14 @@ class FieldsController extends Controller
 				Craft::$app->getSession()->setNotice(Craft::t('app', 'Group added.'));
 			}
 
-			$this->returnJson([
+			return $this->asJson([
 				'success' => true,
 				'group'   => $group->getAttributes(),
 			]);
 		}
 		else
 		{
-			$this->returnJson([
+			return $this->asJson([
 				'errors' => $group->getErrors(),
 			]);
 		}
@@ -95,7 +95,7 @@ class FieldsController extends Controller
 
 		Craft::$app->getSession()->setNotice(Craft::t('app', 'Group deleted.'));
 
-		$this->returnJson([
+		return $this->asJson([
 			'success' => $success,
 		]);
 	}
@@ -246,7 +246,7 @@ class FieldsController extends Controller
 		if ($fieldsService->saveField($field))
 		{
 			Craft::$app->getSession()->setNotice(Craft::t('app', 'Field saved.'));
-			$this->redirectToPostedUrl($field);
+			return $this->redirectToPostedUrl($field);
 		}
 		else
 		{
@@ -271,6 +271,6 @@ class FieldsController extends Controller
 
 		$fieldId = Craft::$app->getRequest()->getRequiredBodyParam('id');
 		$success = Craft::$app->fields->deleteFieldById($fieldId);
-		$this->returnJson(['success' => $success]);
+		return $this->asJson(['success' => $success]);
 	}
 }

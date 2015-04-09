@@ -452,6 +452,6 @@ class ElementIndexController extends BaseElementsController
 		$responseData['headHtml'] = Craft::$app->getView()->getHeadHtml();
 		$responseData['footHtml'] = Craft::$app->getView()->getBodyEndHtml(true);
 
-		$this->returnJson($responseData);
+		return $this->asJson($responseData);
 	}
 }

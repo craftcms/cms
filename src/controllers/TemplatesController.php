@@ -130,7 +130,6 @@ class TemplatesController extends Controller
 			else
 			{
 				return $this->renderTemplate('_special/cantrun', ['reqCheck' => $reqCheck]);
-				Craft::$app->end();
 			}
 		}
 		else

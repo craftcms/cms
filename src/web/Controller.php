@@ -189,8 +189,7 @@ abstract class Controller extends \yii\web\Controller
 	/**
 	 * Redirects the browser to a given URL.
 	 *
-	 * @param string $url The URL to redirect the browser to.
-	 * @param bool   $terminate Whether the request should be terminated.
+	 * @param string $url        The URL to redirect the browser to.
 	 * @param int    $statusCode The status code to accompany the redirect. (Default is 302.)
 	 *
 	 * @return null
@@ -204,7 +203,7 @@ abstract class Controller extends \yii\web\Controller
 
 		if ($url !== null)
 		{
-			parent::redirect($url, $statusCode);
+			return parent::redirect($url, $statusCode);
 		}
 	}
 
@@ -238,22 +237,71 @@ abstract class Controller extends \yii\web\Controller
 			$url = Craft::$app->getView()->renderObjectTemplate($url, $object);
 		}
 
-		$this->redirect($url);
+		return $this->redirect($url);
 	}
 
 	/**
-	 * Responds to the request with JSON.
+	 * Sets the response format of the given data as JSON.
 	 *
-	 * @param array|null $var The array that should be JSON-encoded and returned to the browser.
+	 * @param array|null $var The array that should be JSON-encoded.
 	 *
-	 * @return null
+	 * @return Response The response object.
 	 */
-	public function returnJson($var = [])
+	public function asJson($var = [])
 	{
 		$response = Craft::$app->getResponse();
 		$response->data = $var;
 		$response->format = Response::FORMAT_JSON;
-		Craft::$app->end();
+
+		return $response;
+	}
+
+	/**
+	 * Sets the response format of the given data as JSONP.
+	 *
+	 * @param array|null $var The array that should be JSON-encoded.
+	 *
+	 * @return Response The response object.
+	 */
+	public function asJsonP($var = [])
+	{
+		$response = Craft::$app->getResponse();
+		$response->data = $var;
+		$response->format = Response::FORMAT_JSONP;
+
+		return $response;
+	}
+
+	/**
+	 * Sets the response format of the given data as RAW.
+	 *
+	 * @param array|null $var The RAW array data.
+	 *
+	 * @return Response The response object.
+	 */
+	public function asRaw($var = [])
+	{
+		$response = Craft::$app->getResponse();
+		$response->data = $var;
+		$response->format = Response::FORMAT_RAW;
+
+		return $response;
+	}
+
+	/**
+	 * Sets the response format of the given data as XML.
+	 *
+	 * @param array|null $var The array that should be XML-encoded.
+	 *
+	 * @return Response The response object.
+	 */
+	public function asXml($var = [])
+	{
+		$response = Craft::$app->getResponse();
+		$response->data = $var;
+		$response->format = Response::FORMAT_XML;
+
+		return $response;
 	}
 
 	/**
@@ -263,9 +311,9 @@ abstract class Controller extends \yii\web\Controller
 	 *
 	 * @return null
 	 */
-	public function returnErrorJson($error)
+	public function asErrorJson($error)
 	{
-		$this->returnJson(['error' => $error]);
+		return $this->asJson(['error' => $error]);
 	}
 
 	/**

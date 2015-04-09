@@ -375,7 +375,7 @@ class EntriesController extends BaseEntriesController
 		$paneHtml = Craft::$app->getView()->renderTemplate('_includes/tabs', $variables) .
 			Craft::$app->getView()->renderTemplate('entries/_fields', $variables);
 
-		$this->returnJson([
+		return $this->asJson([
 			'paneHtml' => $paneHtml,
 			'headHtml' => Craft::$app->getView()->getHeadHtml(),
 			'footHtml' => Craft::$app->getView()->getBodyEndHtml(true),
@@ -487,19 +487,19 @@ class EntriesController extends BaseEntriesController
 				$return['author']    = $author;
 				$return['postDate']  = ($entry->postDate ? $entry->postDate->localeDate() : null);
 
-				$this->returnJson($return);
+				return $this->asJson($return);
 			}
 			else
 			{
 				Craft::$app->getSession()->setNotice(Craft::t('app', 'Entry saved.'));
-				$this->redirectToPostedUrl($entry);
+				return $this->redirectToPostedUrl($entry);
 			}
 		}
 		else
 		{
 			if (Craft::$app->getRequest()->getIsAjax())
 			{
-				$this->returnJson([
+				return $this->asJson([
 					'errors' => $entry->getErrors(),
 				]);
 			}
@@ -551,19 +551,19 @@ class EntriesController extends BaseEntriesController
 		{
 			if (Craft::$app->getRequest()->getIsAjax())
 			{
-				$this->returnJson(['success' => true]);
+				return $this->asJson(['success' => true]);
 			}
 			else
 			{
 				Craft::$app->getSession()->setNotice(Craft::t('app', 'Entry deleted.'));
-				$this->redirectToPostedUrl($entry);
+				return $this->redirectToPostedUrl($entry);
 			}
 		}
 		else
 		{
 			if (Craft::$app->getRequest()->getIsAjax())
 			{
-				$this->returnJson(['success' => false]);
+				return $this->asJson(['success' => false]);
 			}
 			else
 			{
@@ -640,7 +640,7 @@ class EntriesController extends BaseEntriesController
 		// Create the token and redirect to the entry URL with the token in place
 		$token = Craft::$app->tokens->createToken(['action' => 'entries/view-shared-entry', 'params' => $params]);
 		$url = UrlHelper::getUrlWithToken($entry->getUrl(), $token);
-		Craft::$app->getResponse()->redirect($url);
+		return Craft::$app->getResponse()->redirect($url);
 	}
 
 	/**

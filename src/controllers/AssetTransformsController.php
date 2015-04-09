@@ -132,7 +132,7 @@ class AssetTransformsController extends Controller
 			if (Craft::$app->assetTransforms->saveTransform($transform))
 			{
 				Craft::$app->getSession()->setNotice(Craft::t('app', 'Transform saved.'));
-				$this->redirectToPostedUrl($transform);
+				return $this->redirectToPostedUrl($transform);
 			}
 			else
 			{
@@ -158,6 +158,6 @@ class AssetTransformsController extends Controller
 
 		Craft::$app->assetTransforms->deleteTransform($transformId);
 
-		$this->returnJson(['success' => true]);
+		return $this->asJson(['success' => true]);
 	}
 }

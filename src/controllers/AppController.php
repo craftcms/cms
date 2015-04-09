@@ -43,7 +43,7 @@ class AppController extends Controller
 		$forceRefresh = (bool) Craft::$app->getRequest()->getBodyParam('forceRefresh');
 		Craft::$app->updates->getUpdates($forceRefresh);
 
-		$this->returnJson([
+		return $this->asJson([
 			'total'    => Craft::$app->updates->getTotalAvailableUpdates(),
 			'critical' => Craft::$app->updates->isCriticalUpdateAvailable()
 		]);
@@ -63,7 +63,7 @@ class AppController extends Controller
 
 		// Fetch 'em and send 'em
 		$alerts = CpHelper::getAlerts($path, true);
-		$this->returnJson($alerts);
+		return $this->asJson($alerts);
 	}
 
 	/**
@@ -84,13 +84,13 @@ class AppController extends Controller
 
 		if (Craft::$app->users->shunMessageForUser($user->id, $message, $tomorrow))
 		{
-			$this->returnJson([
+			return $this->asJson([
 				'success' => true
 			]);
 		}
 		else
 		{
-			$this->returnErrorJson(Craft::t('app', 'An unknown error occurred.'));
+			return $this->asErrorJson(Craft::t('app', 'An unknown error occurred.'));
 		}
 	}
 
@@ -109,13 +109,13 @@ class AppController extends Controller
 
 		if ($response === true)
 		{
-			$this->returnJson([
+			return $this->asJson([
 				'success' => true
 			]);
 		}
 		else
 		{
-			$this->returnErrorJson($response);
+			return $this->asErrorJson($response);
 		}
 	}
 
@@ -133,19 +133,19 @@ class AppController extends Controller
 
 		if (!$etResponse)
 		{
-			$this->returnErrorJson(Craft::t('app', 'Craft is unable to fetch edition info at this time.'));
+			return $this->asErrorJson(Craft::t('app', 'Craft is unable to fetch edition info at this time.'));
 		}
 
 		// Make sure we've got a valid license key (mismatched domain is OK for these purposes)
 		if ($etResponse->licenseKeyStatus == LicenseKeyStatus::Invalid)
 		{
-			$this->returnErrorJson(Craft::t('app', 'Your license key is invalid.'));
+			return $this->asErrorJson(Craft::t('app', 'Your license key is invalid.'));
 		}
 
 		// Make sure they've got a valid licensed edition, just to be safe
 		if (!AppHelper::isValidEdition($etResponse->licensedEdition))
 		{
-			$this->returnErrorJson(Craft::t('app', 'Your license has an invalid Craft edition associated with it.'));
+			return $this->asErrorJson(Craft::t('app', 'Your license has an invalid Craft edition associated with it.'));
 		}
 
 		$editions = [];
@@ -175,7 +175,7 @@ class AppController extends Controller
 			'canTestEditions' => $canTestEditions
 		]);
 
-		$this->returnJson([
+		return $this->asJson([
 			'success'         => true,
 			'editions'        => $editions,
 			'licensedEdition' => $etResponse->licensedEdition,
@@ -203,14 +203,14 @@ class AppController extends Controller
 
 		if (Craft::$app->et->purchaseUpgrade($model))
 		{
-			$this->returnJson([
+			return $this->asJson([
 				'success' => true,
 				'edition' => $model->edition
 			]);
 		}
 		else
 		{
-			$this->returnJson([
+			return $this->asJson([
 				'errors' => $model->getErrors()
 			]);
 		}
@@ -236,7 +236,7 @@ class AppController extends Controller
 		$edition = Craft::$app->getRequest()->getRequiredBodyParam('edition');
 		Craft::$app->setEdition($edition);
 
-		$this->returnJson([
+		return $this->asJson([
 			'success' => true
 		]);
 	}
@@ -262,6 +262,6 @@ class AppController extends Controller
 			$success = true;
 		}
 
-		$this->returnJson(['success' => $success]);
+		return $this->asJson(['success' => $success]);
 	}
 }

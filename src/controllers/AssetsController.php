@@ -142,7 +142,7 @@ class AssetsController extends Controller
 					throw $exception;
 				}
 
-				$this->returnJson(['success' => true, 'filename' => $asset->filename]);
+				return $this->asJson(['success' => true, 'filename' => $asset->filename]);
 			}
 			else
 			{
@@ -151,15 +151,15 @@ class AssetsController extends Controller
 		}
 		catch (FileException $exception)
 		{
-			$this->returnErrorJson($exception->getMessage());
+			return $this->asErrorJson($exception->getMessage());
 		}
 		catch (ElementException $exception)
 		{
-			$this->returnErrorJson($exception->getMessage());
+			return $this->asErrorJson($exception->getMessage());
 		}
 		catch (ModelException $exception)
 		{
-			$this->returnErrorJson($exception->getMessage());
+			return $this->asErrorJson($exception->getMessage());
 		}
 	}
 
@@ -197,7 +197,7 @@ class AssetsController extends Controller
 
 			Craft::$app->assets->createFolder($folderModel);
 
-			$this->returnJson([
+			return $this->asJson([
 				'success' => true,
 				'folderName' => $folderModel->name,
 				'folderId' => $folderModel->id
@@ -205,7 +205,7 @@ class AssetsController extends Controller
 		}
 		catch (AssetException $exception)
 		{
-			$this->returnErrorJson($exception->getMessage());
+			return $this->asErrorJson($exception->getMessage());
 		}
 
 
@@ -229,10 +229,10 @@ class AssetsController extends Controller
 		}
 		catch (AssetException $exception)
 		{
-			$this->returnErrorJson($exception->getMessage());
+			return $this->asErrorJson($exception->getMessage());
 		}
 
-		$this->returnJson(['success' => true]);
+		return $this->asJson(['success' => true]);
 
 	}
 
@@ -256,12 +256,12 @@ class AssetsController extends Controller
 		}
 		catch (Exception $e)
 		{
-			$this->returnErrorJson($e->getMessage());
+			return $this->asErrorJson($e->getMessage());
 		}
 
 		$response = Craft::$app->assets->renameFolder($folderId, $newName);
 
-		$this->returnJson($response->getResponseData());
+		return $this->asJson($response->getResponseData());
 	}
 
 
@@ -294,7 +294,7 @@ class AssetsController extends Controller
 
 				Craft::$app->assets->renameFile($file, $filename);
 
-				$this->returnJson(['success' => true]);
+				return $this->asJson(['success' => true]);
 			}
 			else
 			{
@@ -303,10 +303,10 @@ class AssetsController extends Controller
 		}
 		catch (AssetException $exception)
 		{
-			$this->returnErrorJson($exception->getMessage());
+			return $this->asErrorJson($exception->getMessage());
 		}
 
-		$this->returnJson(['success' => true]);
+		return $this->asJson(['success' => true]);
 	}
 
 	/**
@@ -330,12 +330,12 @@ class AssetsController extends Controller
 		}
 		catch (Exception $e)
 		{
-			$this->returnErrorJson($e->getMessage());
+			return $this->asErrorJson($e->getMessage());
 		}
 
 		$response = Craft::$app->assets->moveFolder($folderId, $parentId, $action);
 
-		$this->returnJson($response->getResponseData());
+		return $this->asJson($response->getResponseData());
 	}
 
 	/**
@@ -373,11 +373,10 @@ class AssetsController extends Controller
 
 		if ($returnUrl)
 		{
-			$this->returnJson(['url' => $url]);
+			return $this->asJson(['url' => $url]);
 		}
 
-		$this->redirect($url);
-		Craft::$app->end();
+		return $this->redirect($url);
 	}
 
 	/**
@@ -395,7 +394,7 @@ class AssetsController extends Controller
 			$output[] = (object) ['id' => $transform->id, 'handle' => $transform->handle, 'name' => $transform->name];
 		}
 
-		$this->returnJson($output);
+		return $this->asJson($output);
 	}
 
 	// Private Methods

@@ -71,7 +71,7 @@ class TasksController extends Controller
 		// No running tasks left? Check for a failed one
 		if (Craft::$app->tasks->haveTasksFailed())
 		{
-			$this->returnJson(['status' => 'error']);
+			return $this->asJson(['status' => 'error']);
 		}
 
 		Craft::$app->end();
@@ -102,7 +102,7 @@ class TasksController extends Controller
 		}
 		else
 		{
-			$this->returnJson($task);
+			return $this->asJson($task);
 		}
 
 		Craft::$app->end();
@@ -134,7 +134,7 @@ class TasksController extends Controller
 	{
 		$this->requireAjaxRequest();
 		$this->requirePermission('accessCp');
-		$this->returnJson(Craft::$app->tasks->getAllTasks());
+		return $this->asJson(Craft::$app->tasks->getAllTasks());
 	}
 
 	// Private Methods
@@ -149,7 +149,7 @@ class TasksController extends Controller
 	{
 		if ($task = Craft::$app->tasks->getRunningTask())
 		{
-			$this->returnJson($task);
+			return $this->asJson($task);
 		}
 	}
 }

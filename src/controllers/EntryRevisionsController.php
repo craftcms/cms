@@ -93,7 +93,7 @@ class EntryRevisionsController extends BaseEntriesController
 		if ($draft->id && Craft::$app->entryRevisions->saveDraft($draft))
 		{
 			Craft::$app->getSession()->setNotice(Craft::t('app', 'Draft saved.'));
-			$this->redirectToPostedUrl($draft);
+			return $this->redirectToPostedUrl($draft);
 		}
 		else
 		{
@@ -138,11 +138,11 @@ class EntryRevisionsController extends BaseEntriesController
 
 		if (Craft::$app->entryRevisions->saveDraft($draft, false))
 		{
-			$this->returnJson(['success' => true]);
+			return $this->asJson(['success' => true]);
 		}
 		else
 		{
-			$this->returnErrorJson($draft->getFirstError('name'));
+			return $this->asErrorJson($draft->getFirstError('name'));
 		}
 	}
 
@@ -171,7 +171,7 @@ class EntryRevisionsController extends BaseEntriesController
 
 		Craft::$app->entryRevisions->deleteDraft($draft);
 
-		$this->redirectToPostedUrl();
+		return $this->redirectToPostedUrl();
 	}
 
 	/**
@@ -240,7 +240,7 @@ class EntryRevisionsController extends BaseEntriesController
 		if (Craft::$app->entryRevisions->publishDraft($draft))
 		{
 			Craft::$app->getSession()->setNotice(Craft::t('app', 'Draft published.'));
-			$this->redirectToPostedUrl($draft);
+			return $this->redirectToPostedUrl($draft);
 		}
 		else
 		{
@@ -304,7 +304,7 @@ class EntryRevisionsController extends BaseEntriesController
 		if (Craft::$app->entryRevisions->revertEntryToVersion($version))
 		{
 			Craft::$app->getSession()->setNotice(Craft::t('app', 'Entry reverted to past version.'));
-			$this->redirectToPostedUrl($version);
+			return $this->redirectToPostedUrl($version);
 		}
 		else
 		{

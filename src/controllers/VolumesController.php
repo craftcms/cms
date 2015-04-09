@@ -194,7 +194,7 @@ class VolumesController extends Controller
 		if (Craft::$app->volumes->saveVolume($volume))
 		{
 			Craft::$app->getSession()->setNotice(Craft::t('app', 'Volume saved.'));
-			$this->redirectToPostedUrl();
+			return $this->redirectToPostedUrl();
 		}
 		else
 		{
@@ -220,7 +220,7 @@ class VolumesController extends Controller
 		$volumeIds = JsonHelper::decode(Craft::$app->getRequest()->getRequiredBodyParam('ids'));
 		Craft::$app->volumes->reorderVolumes($volumeIds);
 
-		$this->returnJson(['success' => true]);
+		return $this->asJson(['success' => true]);
 	}
 
 	/**
@@ -237,7 +237,7 @@ class VolumesController extends Controller
 
 		Craft::$app->volumes->deleteVolumeById($volumeId);
 
-		$this->returnJson(['success' => true]);
+		return $this->asJson(['success' => true]);
 	}
 
 	/**
@@ -260,17 +260,17 @@ class VolumesController extends Controller
 
 		if (!class_exists($volumeType))
 		{
-			$this->returnErrorJson(Craft::t('app', 'The volume type specified does not exist!'));
+			return $this->asErrorJson(Craft::t('app', 'The volume type specified does not exist!'));
 		}
 
 		try
 		{
 			$result = call_user_func_array(array($volumeType, 'load'.ucfirst($dataType)), $params);
-			$this->returnJson($result);
+			return $this->asJson($result);
 		}
 		catch (\Exception $exception)
 		{
-			$this->returnErrorJson($exception->getMessage());
+			return $this->asErrorJson($exception->getMessage());
 		}
 	}
 }

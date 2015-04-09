@@ -61,7 +61,7 @@ class RebrandController extends Controller
 				if (!Craft::$app->images->checkMemoryForImage($folderPath.'/'.$filename))
 				{
 					IOHelper::deleteFile($folderPath.'/'.$filename);
-					$this->returnErrorJson(Craft::t('app', 'The uploaded image is too large'));
+					return $this->asErrorJson(Craft::t('app', 'The uploaded image is too large'));
 				}
 
 				Craft::$app->images->cleanImage($folderPath.'/'.$filename);
@@ -85,16 +85,16 @@ class RebrandController extends Controller
 						]
 					);
 
-					$this->returnJson(['html' => $html]);
+					return $this->asJson(['html' => $html]);
 				}
 			}
 		}
 		catch (Exception $exception)
 		{
-			$this->returnErrorJson($exception->getMessage());
+			return $this->asErrorJson($exception->getMessage());
 		}
 
-		$this->returnErrorJson(Craft::t('app', 'There was an error uploading your photo'));
+		return $this->asErrorJson(Craft::t('app', 'There was an error uploading your photo'));
 	}
 
 	/**
@@ -147,16 +147,16 @@ class RebrandController extends Controller
 				IOHelper::deleteFile($imagePath);
 
 				$html = Craft::$app->getView()->renderTemplate('settings/general/_logo');
-				$this->returnJson(['html' => $html]);
+				return $this->asJson(['html' => $html]);
 			}
 			IOHelper::deleteFile($imagePath);
 		}
 		catch (Exception $exception)
 		{
-			$this->returnErrorJson($exception->getMessage());
+			return $this->asErrorJson($exception->getMessage());
 		}
 
-		$this->returnErrorJson(Craft::t('app', 'Something went wrong when processing the logo.'));
+		return $this->asErrorJson(Craft::t('app', 'Something went wrong when processing the logo.'));
 	}
 
 	/**
@@ -170,7 +170,7 @@ class RebrandController extends Controller
 		IOHelper::clearFolder(Craft::$app->path->getStoragePath().'/logo');
 
 		$html = Craft::$app->getView()->renderTemplate('settings/general/_logo');
-		$this->returnJson(['html' => $html]);
+		return $this->asJson(['html' => $html]);
 
 	}
 }
