@@ -662,7 +662,7 @@ class UsersController extends Controller
 		}
 
 		// Ugly.  But Users don't have a real fieldlayout/tabs.
-		$accountFields = ['username', 'firstName', 'lastName', 'email', 'password', 'newPassword', 'currentPassword', 'passwordResetRequired', 'preferredLocale'];
+		$accountFields = ['username', 'firstName', 'lastName', 'email', 'password', 'newPassword', 'currentPassword', 'passwordResetRequired'];
 
 		if (Craft::$app->getEdition() == Craft::Pro && $user->hasErrors())
 		{
@@ -864,8 +864,6 @@ class UsersController extends Controller
 
 		$user->firstName       = Craft::$app->getRequest()->getBodyParam('firstName', $user->firstName);
 		$user->lastName        = Craft::$app->getRequest()->getBodyParam('lastName', $user->lastName);
-		$user->preferredLocale = Craft::$app->getRequest()->getBodyParam('preferredLocale', $user->preferredLocale);
-		$user->weekStartDay    = Craft::$app->getRequest()->getBodyParam('weekStartDay', $user->weekStartDay);
 
 		// If email verification is required, then new users will be saved in a pending state,
 		// even if an admin is doing this and opted to not send the verification email
@@ -892,6 +890,12 @@ class UsersController extends Controller
 
 		if (Craft::$app->users->saveUser($user))
 		{
+			// Save their preferences too
+			Craft::$app->users->saveUserPreferences($user, [
+				'locale'       => Craft::$app->getRequest()->getBodyParam('preferredLocale', $user->getPreference('locale')),
+				'weekStartDay' => Craft::$app->getRequest()->getBodyParam('weekStartDay', $user->getPreference('weekStartDay')),
+			]);
+
 			// Is this the current user, and did their username just change?
 			if ($user->isCurrent() && $user->username !== $oldUsername)
 			{

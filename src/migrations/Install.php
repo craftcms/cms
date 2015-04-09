@@ -941,6 +941,18 @@ class Install extends InstallMigration
 					['userId', '{{%users}}', 'id', 'CASCADE', null],
 				],
 			],
+			'{{%userpreferences}}' => [
+				'columns' => [
+					'userId' => 'integer(11) NOT NULL AUTO_INCREMENT',
+					'preferences' => 'text COLLATE utf8_unicode_ci',
+				],
+				'addIdColumn' => false,
+				'addAuditColumns' => false,
+				'primaryKey' => 'userId',
+				'foreignKeys' => [
+					['userId', '{{%users}}', 'id', 'CASCADE', null],
+				],
+			],
 			'{{%users}}' => [
 				'columns' => [
 					'username' => 'string(100) COLLATE utf8_unicode_ci NOT NULL',
@@ -949,8 +961,6 @@ class Install extends InstallMigration
 					'lastName' => 'string(100) COLLATE utf8_unicode_ci DEFAULT NULL',
 					'email' => 'string(255) COLLATE utf8_unicode_ci NOT NULL',
 					'password' => 'char(255) COLLATE utf8_unicode_ci DEFAULT NULL',
-					'preferredLocale' => 'char(12) COLLATE utf8_unicode_ci DEFAULT NULL',
-					'weekStartDay' => 'smallint(4) NOT NULL DEFAULT \'0\'',
 					'admin' => 'smallint(1) unsigned NOT NULL DEFAULT \'0\'',
 					'client' => 'smallint(1) NOT NULL',
 					'locked' => 'smallint(1) NOT NULL',
@@ -974,11 +984,9 @@ class Install extends InstallMigration
 					['email', true],
 					['uid', false],
 					['verificationCode', false],
-					['preferredLocale', false],
 				],
 				'foreignKeys' => [
 					['id', '{{%elements}}', 'id', 'CASCADE', null],
-					['preferredLocale', '{{%locales}}', 'locale', 'SET NULL', 'CASCADE'],
 				],
 			],
 			'{{%volumefolders}}' => [

@@ -166,9 +166,9 @@ trait ApplicationTrait
 						// If the user is logged in *and* has a primary language set, use that
 						$user = $this->getUser()->getIdentity();
 
-						if ($user && $user->preferredLocale)
+						if ($user && ($preferredLocale = $user->getPreferredLocale()) !== null)
 						{
-							return $user->preferredLocale;
+							return $preferredLocale;
 						}
 					}
 					catch (\Exception $e)

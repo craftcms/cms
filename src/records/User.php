@@ -15,14 +15,12 @@ use craft\app\db\ActiveRecord;
  * Class User record.
  *
  * @property integer $id ID
- * @property ActiveQueryInterface $preferredLocale Preferred locale
  * @property string $username Username
  * @property string $photo Photo
  * @property string $firstName First name
  * @property string $lastName Last name
  * @property string $email Email
  * @property string $password Password
- * @property integer $weekStartDay Week start day
  * @property boolean $admin Admin
  * @property boolean $client Client
  * @property boolean $locked Locked
@@ -57,8 +55,6 @@ class User extends ActiveRecord
 	public function rules()
 	{
 		return [
-			[['preferredLocale'], 'craft\\app\\validators\\Locale'],
-			[['weekStartDay'], 'number', 'min' => 0, 'max' => 6, 'integerOnly' => true],
 			[['lastLoginDate'], 'craft\\app\\validators\\DateTime'],
 			[['invalidLoginWindowStart'], 'craft\\app\\validators\\DateTime'],
 			[['invalidLoginCount'], 'number', 'min' => 0, 'max' => 255, 'integerOnly' => true],
@@ -67,7 +63,7 @@ class User extends ActiveRecord
 			[['verificationCodeIssuedDate'], 'craft\\app\\validators\\DateTime'],
 			[['lastPasswordChangeDate'], 'craft\\app\\validators\\DateTime'],
 			[['username', 'email'], 'unique'],
-			[['username', 'email', 'weekStartDay'], 'required'],
+			[['username', 'email'], 'required'],
 			[['email', 'unverifiedEmail'], 'email'],
 			[['email', 'unverifiedEmail'], 'string', 'min' => 5],
 			[['username', 'firstName', 'lastName', 'verificationCode'], 'string', 'max' => 100],
@@ -95,16 +91,6 @@ class User extends ActiveRecord
 	public function getElement()
 	{
 		return $this->hasOne(Element::className(), ['id' => 'id']);
-	}
-
-	/**
-	 * Returns the user’s preferredLocale.
-	 *
-	 * @return \yii\db\ActiveQueryInterface The relational query object.
-	 */
-	public function getPreferredLocale()
-	{
-		return $this->hasOne(Locale::className(), ['id' => 'preferredLocale']);
 	}
 
 	/**

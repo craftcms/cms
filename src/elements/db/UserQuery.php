@@ -85,11 +85,6 @@ class UserQuery extends ElementQuery
 	public $lastName;
 
 	/**
-	 * @var string|string[] The last name that the resulting users must have.
-	 */
-	public $preferredLocale;
-
-	/**
 	 * @var mixed The date that the resulting entries must have last logged in.
 	 */
 	public $lastLoginDate;
@@ -239,18 +234,6 @@ class UserQuery extends ElementQuery
 	}
 
 	/**
-	 * Sets the [[preferredLocale]] property.
-	 *
-	 * @param string|string[] $value The property value
-	 * @return static The query object itself
-	 */
-	public function preferredLocale($value)
-	{
-		$this->preferredLocale = $value;
-		return $this;
-	}
-
-	/**
 	 * Sets the [[lastLoginDate]] property.
 	 * @param mixed $value The property value
 	 * @return static The query object itself
@@ -291,7 +274,6 @@ class UserQuery extends ElementQuery
 			'users.archived',
 			'users.lastLoginDate',
 			'users.lockoutDate',
-			'users.preferredLocale',
 		]);
 
 		if ($this->admin)
@@ -344,11 +326,6 @@ class UserQuery extends ElementQuery
 		if ($this->lastName)
 		{
 			$this->subQuery->andWhere(DbHelper::parseParam('users.lastName', $this->lastName, $this->subQuery->params));
-		}
-
-		if ($this->preferredLocale)
-		{
-			$this->subQuery->andWhere(DbHelper::parseParam('users.preferredLocale', $this->preferredLocale, $this->subQuery->params));
 		}
 
 		if ($this->lastLoginDate)
