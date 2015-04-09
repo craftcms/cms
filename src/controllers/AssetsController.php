@@ -8,6 +8,7 @@
 namespace craft\app\controllers;
 
 use Craft;
+use craft\app\errors\AssetConflictException;
 use craft\app\errors\Exception;
 use craft\app\errors\HttpException;
 use craft\app\errors\FileException;
@@ -122,20 +123,29 @@ class AssetsController extends Controller
 					throw new UploadFailedException(UPLOAD_ERR_CANT_WRITE);
 				}
 
+				$asset = new Asset();
+				$asset->newFilePath = $pathOnServer;
+				$asset->filename    = $file->name;
+				$asset->folderId    = $folder->id;
+				$asset->volumeId    = $folder->volumeId;
+
 				try
 				{
-					$asset = new Asset();
-
-					$asset->newFilePath = $pathOnServer;
-					$asset->filename    = $file->name;
-					$asset->folderId    = $folder->id;
-					$asset->volumeId    = $folder->volumeId;
-
 					Craft::$app->assets->saveAsset($asset);
-
 					IOHelper::deleteFile($pathOnServer, true);
 				}
-					// No matter what happened, delete the file on server.
+				catch (AssetConflictException $exception)
+				{
+					// Okay, get a replacement name and re-save Asset.
+					$replacementName = Craft::$app->assets->getNameReplacementInFolder($asset->filename, $folder);
+					$asset->filename = $replacementName;
+
+					Craft::$app->assets->saveAsset($asset);
+					IOHelper::deleteFile($pathOnServer, true);
+
+					return $this->asJson(['prompt' => true, 'fileId' => $asset->id, 'filename' => $file->name]);
+				}
+				// No matter what happened, delete the file on server.
 				catch (\Exception $exception)
 				{
 					IOHelper::deleteFile($pathOnServer, true);
@@ -149,7 +159,7 @@ class AssetsController extends Controller
 				throw new HttpException(400);
 			}
 		}
-		catch (FileException $exception)
+		catch (\Exception $exception)
 		{
 			return $this->asErrorJson($exception->getMessage());
 		}

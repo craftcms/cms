@@ -17,7 +17,7 @@ namespace craft\app\errors;
  * @package   craft.app.exceptions
  * @since     3.0
  */
-abstract class AssetException extends ElementException
+abstract class AssetException extends Exception
 {
 
 }

@@ -28,12 +28,14 @@ use craft\app\helpers\AssetsHelper;
 use craft\app\helpers\DbHelper;
 use craft\app\helpers\ImageHelper;
 use craft\app\helpers\IOHelper;
+use craft\app\helpers\StringHelper;
 use craft\app\helpers\UrlHelper;
 use craft\app\models\VolumeFolder as VolumeFolderModel;
 use craft\app\models\FolderCriteria;
 use craft\app\records\Asset as AssetRecord;
 use craft\app\records\VolumeFolder as VolumeFolderRecord;
 use yii\base\Component;
+
 /**
  * Class Assets service.
  *
@@ -435,7 +437,7 @@ class Assets extends Component
 		foreach ($tree as $topFolder)
 		{
 			/**
-			 * @var VolumeFolder $topFolder;
+			 * @var VolumeFolderModel $topFolder;
 			 */
 			$sort[] = $topFolder->getVolume()->sortOrder;
 		}
@@ -678,6 +680,52 @@ class Assets extends Component
 				return UrlHelper::getResourceUrl('transforms/'.$index->id);
 			}
 		}
+	}
+
+	/**
+	 * Find a replacement for a filename
+	 *
+	 * @param string       $filename
+	 * @param VolumeFolder $folder
+	 * @throws \craft\app\errors\AssetLogicException
+	 * @return string
+	 */
+	public function getNameReplacementInFolder($filename, VolumeFolderModel $folder)
+	{
+		$volume = $folder->getVolume();
+		$fileList = $volume->getFileList($folder->path);
+
+		// Flip the array for faster lookup
+		$existingFiles = [];
+
+		foreach ($fileList as $file)
+		{
+			if (StringHelper::toLowerCase(rtrim($folder->path, '/')) == StringHelper::toLowerCase($file['dirname']))
+			{
+				$existingFiles[StringHelper::toLowerCase($file['basename'])] = true;
+			}
+		}
+
+		// See if we can use the original filename
+		if (!isset($existingFiles[StringHelper::toLowerCase($filename)]))
+		{
+			return $filename;
+		}
+
+
+		$filenameParts = explode(".", StringHelper::toLowerCase($filename));
+		$extension = array_pop($filenameParts);
+
+		for ($i = 1; $i <= 50; $i++)
+		{
+			$proposedFilename = join(".", $filenameParts).'_'.$i.'.'.$extension;
+			if (!isset($existingFiles[StringHelper::toLowerCase($proposedFilename)]))
+			{
+				return $proposedFilename;
+			}
+		}
+
+		throw new AssetsException(Craft::t('app', 'Could not find a suitable replacement filename for “{filename}”.', array('filename' => $filename)));
 	}
 
 	/**
