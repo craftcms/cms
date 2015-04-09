@@ -13,6 +13,7 @@ use craft\app\base\ElementActionInterface;
 use craft\app\elements\db\ElementQueryInterface;
 use craft\app\base\ElementInterface;
 use craft\app\errors\HttpException;
+use craft\app\web\Response;
 
 /**
  * The ElementIndexController class is a controller that handles various element index related actions.
@@ -106,7 +107,7 @@ class ElementIndexController extends BaseElementsController
 	/**
 	 * Renders and returns an element index container, plus its first batch of elements.
 	 *
-	 * @return null
+	 * @return Response
 	 */
 	public function actionGetElements()
 	{
@@ -120,17 +121,17 @@ class ElementIndexController extends BaseElementsController
 
 		$responseData['html'] = $this->_getElementHtml(true);
 
-		return $this->_respond($responseData, true);
+		return $this->_getResponse($responseData, true);
 	}
 
 	/**
 	 * Renders and returns a subsequent batch of elements for an element index.
 	 *
-	 * @return null
+	 * @return Response
 	 */
 	public function actionGetMoreElements()
 	{
-		$this->_respond([
+		return $this->_getResponse([
 			'html' => $this->_getElementHtml(false),
 		], true);
 	}
@@ -138,8 +139,8 @@ class ElementIndexController extends BaseElementsController
 	/**
 	 * Performs an action on one or more selected elements.
 	 *
+	 * @return Response
 	 * @throws HttpException
-	 * @return null
 	 */
 	public function actionPerformAction()
 	{
@@ -215,7 +216,7 @@ class ElementIndexController extends BaseElementsController
 			$includeLoadMoreInfo = false;
 		}
 
-		$this->_respond($response, $includeLoadMoreInfo);
+		return $this->_getResponse($response, $includeLoadMoreInfo);
 	}
 
 	// Private Methods
@@ -423,14 +424,14 @@ class ElementIndexController extends BaseElementsController
 	}
 
 	/**
-	 * Responds to the request.
+	 * Returns the request response.
 	 *
 	 * @param array $responseData
 	 * @param bool  $includeLoadMoreInfo
 	 *
-	 * @return null
+	 * @return Response
 	 */
-	private function _respond($responseData, $includeLoadMoreInfo)
+	private function _getResponse($responseData, $includeLoadMoreInfo)
 	{
 		if ($includeLoadMoreInfo)
 		{
