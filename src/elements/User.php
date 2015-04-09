@@ -588,6 +588,20 @@ class User extends Element implements IdentityInterface
 	/**
 	 * @inheritdoc
 	 */
+	public function datetimeAttributes()
+	{
+		$names = parent::datetimeAttributes();
+		$names[] = 'lastLoginDate';
+		$names[] = 'lastInvalidLoginDate';
+		$names[] = 'lockoutDate';
+		$names[] = 'lastPasswordChangeDate';
+		$names[] = 'verificationCodeIssuedDate';
+		return $names;
+	}
+
+	/**
+	 * @inheritdoc
+	 */
 	public function rules()
 	{
 		$rules = parent::rules();
