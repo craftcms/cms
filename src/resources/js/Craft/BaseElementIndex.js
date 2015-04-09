@@ -780,7 +780,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 		// Do it
 		this.setIndexBusy();
 
-		Craft.postActionRequest('elementIndex/performAction', data, $.proxy(function(response, textStatus)
+		Craft.postActionRequest('element-index/perform-action', data, $.proxy(function(response, textStatus)
 		{
 			this.setIndexAvailable();
 
@@ -929,7 +929,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
 		var data = this.getLoadMoreData();
 
-		Craft.postActionRequest('elementIndex/getMoreElements', data, $.proxy(function(response, textStatus)
+		Craft.postActionRequest('element-index/get-more-elements', data, $.proxy(function(response, textStatus)
 		{
 			this.loadingMore = false;
 			this.$loadingMoreSpinner.addClass('hidden');
@@ -1781,7 +1781,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 				var data = this.getControllerData();
 				data.criteria.descendantOf = id;
 
-				Craft.postActionRequest('elementIndex/getMoreElements', data, $.proxy(function(response, textStatus)
+				Craft.postActionRequest('element-index/get-more-elements', data, $.proxy(function(response, textStatus)
 				{
 					// Do we even care about this anymore?
 					if (!$spinnerRow.parent().length)

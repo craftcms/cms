@@ -186,7 +186,7 @@
 
 					<hr>
 
-					<input type="hidden" name="action" value="entryRevisions/saveDraft">
+					<input type="hidden" name="action" value="entry-revisions/save-draft">
 					<input type="hidden" name="redirect" value="{{ baseCpEditUrl }}/drafts/{{ entry.draftId }}">
 					<input type="hidden" name="draftId" value="{{ entry.draftId }}">
 
@@ -199,12 +199,12 @@
 							(isSingle or entry.authorId == currentUser.id or currentUser.can('publishPeerEntries'~permissionSuffix)) and
 							(entry.creatorId == currentUser.id or currentUser.can('publishPeerEntryDrafts'~permissionSuffix))
 						%}
-							<input type="button" class="btn formsubmit" value="{{ 'Publish draft'|t }}" data-action="entryRevisions/publishDraft" data-redirect="{{ entry.getCpEditUrl() }}">
+							<input type="button" class="btn formsubmit" value="{{ 'Publish draft'|t }}" data-action="entry-revisions/publish-draft" data-redirect="{{ entry.getCpEditUrl() }}">
 						{% endif %}
 
 						{# Are they allowed to delete this draft? #}
 						{% if entry.creatorId == currentUser.id or currentUser.can('deletePeerEntryDrafts'~permissionSuffix) %}
-							<input type="button" class="btn formsubmit" value="{{ 'Delete draft'|t }}" data-action="entryRevisions/deleteDraft"
+							<input type="button" class="btn formsubmit" value="{{ 'Delete draft'|t }}" data-action="entry-revisions/delete-draft"
 							   data-confirm="{{ 'Are you sure you want to delete this draft?'|t }}"
 							   data-redirect="{{ entry.getCpEditUrl() }}"/>
 						{% endif %}
@@ -220,7 +220,7 @@
 
 						<hr>
 
-						<input type="hidden" name="action" value="entryRevisions/revertEntryToVersion">
+						<input type="hidden" name="action" value="entry-revisions/revert-entry-to-version">
 						<input type="hidden" name="redirect" value="{{ entry.getCpEditUrl() }}">
 						<input type="hidden" name="versionId" value="{{ entry.versionId }}">
 
@@ -266,7 +266,7 @@
 												{% endif %}
 
 												{% if CraftEdition >= CraftClient %}
-													<li><a class="formsubmit" data-action="entryRevisions/saveDraft" data-redirect="{{ baseCpEditUrl }}/drafts/{draftId}">{{ 'Save as a draft'|t }}</a></li>
+													<li><a class="formsubmit" data-action="entry-revisions/save-draft" data-redirect="{{ baseCpEditUrl }}/drafts/{draftId}">{{ 'Save as a draft'|t }}</a></li>
 												{% endif %}
 
 												{% if not isSingle and entry.id %}
@@ -288,7 +288,7 @@
 
 							<hr>
 
-							<input type="hidden" name="action" value="entryRevisions/saveDraft">
+							<input type="hidden" name="action" value="entry-revisions/save-draft">
 							<input type="hidden" name="redirect" value="{{ baseCpEditUrl }}/drafts/{draftId}">
 
 							<div class="buttons first">

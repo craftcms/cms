@@ -144,7 +144,7 @@ Craft.EntryDraftEditor = Garnish.Base.extend(
 			notes:   this.$notesInput.val()
 		};
 
-		Craft.postActionRequest('entryRevisions/updateDraftMeta', data, $.proxy(function(response, textStatus)
+		Craft.postActionRequest('entry-revisions/update-draft-meta', data, $.proxy(function(response, textStatus)
 		{
 			this.loading = false;
 			this.$saveBtn.removeClass('active');

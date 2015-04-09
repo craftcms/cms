@@ -177,7 +177,7 @@ var MessageSettingsModal = Garnish.Modal.extend(
 		this.$saveBtn.addClass('active');
 		this.$spinner.show();
 
-		Craft.postActionRequest('emailMessages/saveMessage', data, $.proxy(function(response, textStatus)
+		Craft.postActionRequest('email-messages/save-message', data, $.proxy(function(response, textStatus)
 		{
 			this.$saveBtn.removeClass('active');
 			this.$spinner.hide();

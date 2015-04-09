@@ -69,7 +69,7 @@ var EmailSettingsForm = Garnish.Base.extend(
 		var data = Garnish.getPostData(this.$form);
 		delete data.action;
 
-		Craft.postActionRequest('systemSettings/testEmailSettings', data, $.proxy(function(response, textStatus)
+		Craft.postActionRequest('system-settings/test-email-settings', data, $.proxy(function(response, textStatus)
 		{
 			this.$testBtn.removeClass('sel');
 			this.$testSpinner.addClass('hidden');
