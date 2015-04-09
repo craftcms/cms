@@ -19,6 +19,7 @@ use craft\app\helpers\PathHelper;
 use craft\app\helpers\StringHelper;
 use craft\app\helpers\UrlHelper;
 use craft\app\services\Plugins;
+use craft\app\web\assets\AppAsset;
 use craft\app\web\twig\Extension;
 use craft\app\web\twig\StringTemplate;
 use craft\app\web\twig\Template;
@@ -107,6 +108,12 @@ class View extends \yii\web\View
 	 * @var
 	 */
 	private $_isRenderingPageTemplate = false;
+
+	/**
+	 * @var boolean Whether [[endBody()]] has been called
+	 */
+	private $_endBody;
+
 
 	// Public Methods
 	// =========================================================================
@@ -603,6 +610,33 @@ class View extends \yii\web\View
 		// Trim any whitespace and ensure it ends with a semicolon.
 		$js = StringHelper::ensureRight(trim($js, " \t\n\r\0\x0B;"), ';');
 		parent::registerJs($js, $position, $key);
+	}
+
+	/**
+	 * @inheritdoc
+	 */
+	public function registerJsFile($url, $options = [], $key = null)
+	{
+		if ($this->_endBody !== true && Craft::$app->getRequest()->getIsCpRequest())
+		{
+			// All JS must come after AppAsset
+			$options['depends'] = array_merge(
+				(!empty($options['depends']) ? (array) $options['depends'] : []),
+				[AppAsset::className()]
+			);
+		}
+
+		parent::registerJsFile($url, $options, $key);
+	}
+
+	/**
+	 * @inheritdoc
+	 */
+	public function endBody()
+	{
+		// Prevent registerJsFile() from adding the AppAsset dependency now that we're passed the point where it would do anything
+		$this->_endBody = true;
+		parent::endBody();
 	}
 
 	/**

@@ -835,12 +835,32 @@ class Request extends \yii\web\Request
 						}
 						else if ($this->_path == $verifyEmailPath)
 						{
-							$this->_actionSegments = ['users', 'verifyemail'];
+							$this->_actionSegments = ['users', 'verify-email'];
 						}
 						else
 						{
-							$this->_actionSegments = ['users', 'setpassword'];
+							$this->_actionSegments = ['users', 'set-password'];
 						}
+					}
+
+					// TODO: Remove this in Craft 4
+					// Make sure it's a Yii 2-styled route
+					$invalid = false;
+					$requestedRoute = implode('/', $this->_actionSegments);
+
+					foreach ($this->_actionSegments as $k => $v)
+					{
+						if (StringHelper::hasUpperCase($v))
+						{
+							$parts = preg_split('/(?=[\p{Lu}])+/u', $v);
+							$this->_actionSegments[$k] = StringHelper::toLowerCase(implode('-', $parts));
+							$invalid = true;
+						}
+					}
+
+					if ($invalid === true)
+					{
+						Craft::$app->deprecator->log('yii1-route', 'A Yii 1-styled route was requested: "'.$requestedRoute.'". It should be changed to: "'.implode('/', $this->_actionSegments).'".');
 					}
 				}
 			}

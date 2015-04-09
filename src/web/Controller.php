@@ -12,6 +12,7 @@ use craft\app\errors\HttpException;
 use craft\app\helpers\HeaderHelper;
 use craft\app\helpers\IOHelper;
 use craft\app\helpers\UrlHelper;
+use craft\app\web\assets\AppAsset;
 
 /**
  * Controller is a base class that all controllers in Craft extend.
@@ -45,6 +46,36 @@ abstract class Controller extends \yii\web\Controller
 
 	// Public Methods
 	// =========================================================================
+
+	/**
+	 * @inheritdoc
+	 */
+	public function beforeAction($action)
+	{
+		if (parent::beforeAction($action))
+		{
+			// Enforce $allowAnonymous
+			if (
+				(is_array($this->allowAnonymous) && (!preg_grep("/{$action->id}/i", $this->allowAnonymous))) ||
+				$this->allowAnonymous === false
+			)
+			{
+				$this->requireLogin();
+			}
+
+			if (Craft::$app->getRequest()->getIsCpRequest())
+			{
+				// Register the CP assets
+				AppAsset::register($this->getView());
+			}
+
+			return true;
+		}
+		else
+		{
+			return false;
+		}
+	}
 
 	/**
 	 * Renders a template.
@@ -314,26 +345,5 @@ abstract class Controller extends \yii\web\Controller
 	public function asErrorJson($error)
 	{
 		return $this->asJson(['error' => $error]);
-	}
-
-	/**
-	 * Checks if a controller has overridden allowAnonymous either as an array with actions to allow anonymous access
-	 * to or as a bool that applies to all actions.
-	 *
-	 * @param \yii\base\Action $action The action to be executed.
-	 *
-	 * @return bool Whether the action should continue to run.
-	 */
-	public function beforeAction($action)
-	{
-		if (
-			(is_array($this->allowAnonymous) && (!preg_grep("/{$action->id}/i", $this->allowAnonymous))) ||
-			$this->allowAnonymous === false
-		)
-		{
-			$this->requireLogin();
-		}
-
-		return true;
 	}
 }
