@@ -11,13 +11,13 @@ use Craft;
 use craft\app\base\Element;
 use craft\app\base\ElementInterface;
 use craft\app\events\Event;
+use craft\app\helpers\ArrayHelper;
 use craft\app\helpers\ElementHelper;
 use craft\app\helpers\HtmlHelper;
 use craft\app\helpers\IOHelper;
 use craft\app\helpers\JsonHelper;
 use craft\app\helpers\PathHelper;
 use craft\app\helpers\StringHelper;
-use craft\app\helpers\UrlHelper;
 use craft\app\services\Plugins;
 use craft\app\web\assets\AppAsset;
 use craft\app\web\twig\Extension;
@@ -26,6 +26,7 @@ use craft\app\web\twig\Template;
 use craft\app\web\twig\TemplateLoader;
 use yii\base\InvalidParamException;
 use yii\helpers\Html;
+use yii\web\AssetBundle;
 
 /**
  * @inheritdoc
@@ -110,10 +111,9 @@ class View extends \yii\web\View
 	private $_isRenderingPageTemplate = false;
 
 	/**
-	 * @var boolean Whether [[endBody()]] has been called
+	 * @var boolean Whether this is a CP request
 	 */
-	private $_endBody;
-
+	private $_isCpRequest;
 
 	// Public Methods
 	// =========================================================================
@@ -127,7 +127,9 @@ class View extends \yii\web\View
 
 		$this->hook('cp.elements.element', [$this, '_getCpElementHtml']);
 
-		if (Craft::$app->getRequest()->getIsCpRequest())
+		$this->_isCpRequest = Craft::$app->getRequest()->getIsCpRequest();
+
+		if ($this->_isCpRequest === true)
 		{
 			// Register the CP assets
 			$this->registerAssetBundle(AppAsset::className());
@@ -565,8 +567,7 @@ class View extends \yii\web\View
 	 */
 	public function registerCssResource($path, $options = [], $key = null)
 	{
-		$url = UrlHelper::getResourceUrl($path);
-		$this->registerCssFile($url, $options, $key);
+		$this->_registerResource($path, $options, $key, 'css');
 	}
 
 	/**
@@ -590,8 +591,7 @@ class View extends \yii\web\View
 	 */
 	public function registerJsResource($path, $options = [], $key = null)
 	{
-		$url = UrlHelper::getResourceUrl($path);
-		$this->registerJsFile($url, $options, $key);
+		$this->_registerResource($path, $options, $key, 'js');
 	}
 
 	/**
@@ -617,33 +617,6 @@ class View extends \yii\web\View
 		// Trim any whitespace and ensure it ends with a semicolon.
 		$js = StringHelper::ensureRight(trim($js, " \t\n\r\0\x0B;"), ';');
 		parent::registerJs($js, $position, $key);
-	}
-
-	/**
-	 * @inheritdoc
-	 */
-	public function registerJsFile($url, $options = [], $key = null)
-	{
-		if ($this->_endBody !== true && Craft::$app->getRequest()->getIsCpRequest())
-		{
-			// All JS must come after AppAsset
-			$options['depends'] = array_merge(
-				(!empty($options['depends']) ? (array) $options['depends'] : []),
-				[AppAsset::className()]
-			);
-		}
-
-		parent::registerJsFile($url, $options, $key);
-	}
-
-	/**
-	 * @inheritdoc
-	 */
-	public function endBody()
-	{
-		// Prevent registerJsFile() from adding the AppAsset dependency now that we're passed the point where it would do anything
-		$this->_endBody = true;
-		parent::endBody();
 	}
 
 	/**
@@ -1282,6 +1255,38 @@ class View extends \yii\web\View
 			// Wait around for plugins to actually be loaded, then do it for all Twig environments that have been created.
 			Event::on(Plugins::className(), Plugins::EVENT_AFTER_LOAD_PLUGINS, [$this, 'onPluginsLoaded']);
 		}
+	}
+
+	/**
+	 * Registers an asset bundle for a file in the resources/ folder.
+	 *
+	 * @param string $path
+	 * @param array $options
+	 * @param string $key
+	 * @param string $kind
+	 */
+	private function _registerResource($path, $options, $key, $kind)
+	{
+		$key = $key ?: 'resource:'.$path;
+		$depends = (array) ArrayHelper::remove($options, 'depends', []);
+
+		if ($this->_isCpRequest === true)
+		{
+			$depends[] = AppAsset::className();
+		}
+
+		$bundle = new AssetBundle([
+			'sourcePath' => '@app/resources',
+			"{$kind}" => [$path],
+			"{$kind}Options" => $options,
+			'depends' => $depends,
+		]);
+
+		$am = $this->getAssetManager();
+		$am->bundles[$key] = $bundle;
+		$bundle->publish($am);
+
+		$this->registerAssetBundle($key);
 	}
 
 	/**
