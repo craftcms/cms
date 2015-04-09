@@ -193,6 +193,40 @@ class User extends \yii\web\User
 		return ($user && $user->can($permissionName));
 	}
 
+	// Misc
+	// -------------------------------------------------------------------------
+
+	/**
+	 * Saves the logged-in user’s Debug toolbar preferences to the session.
+	 */
+	public function saveDebugPreferencesToSession()
+	{
+		$identity = $this->getIdentity();
+		$session = Craft::$app->getSession();
+
+		$this->destroyDebugPreferencesInSession();
+
+		if ($identity->admin && $identity->getPreference('enableDebugToolbarForSite'))
+		{
+			$session->set('enableDebugToolbarForSite', true);
+		}
+
+		if ($identity->admin && $identity->getPreference('enableDebugToolbarForCp'))
+		{
+			$session->set('enableDebugToolbarForCp', true);
+		}
+	}
+
+	/**
+	 * Removes the debug preferences from the session.
+	 */
+	public function destroyDebugPreferencesInSession()
+	{
+		$session = Craft::$app->getSession();
+		$session->remove('enableDebugToolbarForSite');
+		$session->remove('enableDebugToolbarForCp');
+	}
+
 	// Protected Methods
 	// =========================================================================
 
@@ -215,11 +249,15 @@ class User extends \yii\web\User
 	 */
 	protected function afterLogin($identity, $cookieBased, $duration)
 	{
+		/** @var \craft\app\elements\User $identity */
 		// Save the username cookie
 		$this->sendUsernameCookie($identity);
 
 		// Delete any stale session rows
 		$this->_deleteStaleSessions();
+
+		// Save the Debug preferences to the session
+		$this->saveDebugPreferencesToSession();
 
 		parent::afterLogin($identity, $cookieBased, $duration);
 	}
@@ -269,6 +307,8 @@ class User extends \yii\web\User
 				])->execute();
 			}
 		}
+
+		$this->destroyDebugPreferencesInSession();
 
 		parent::afterLogout($identity);
 	}

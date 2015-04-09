@@ -184,6 +184,22 @@
 						}) }}
 					{% endif %}
 
+					{% if account.admin %}
+						{{ forms.checkboxField({
+							label: "Show the debug toolbar on the front end"|t,
+							name: 'enableDebugToolbarForSite',
+							id: 'enableDebugToolbarForSite',
+							checked: account.getPreference('enableDebugToolbarForSite')
+						}) }}
+
+						{{ forms.checkboxField({
+							label: "Show the debug toolbar on the Control Panel"|t,
+							name: 'enableDebugToolbarForCp',
+							id: 'enableDebugToolbarForCp',
+							checked: account.getPreference('enableDebugToolbarForCp')
+						}) }}
+					{% endif %}
+
 					{{ saveUserButtons }}
 				</div>
 

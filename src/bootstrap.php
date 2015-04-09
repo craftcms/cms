@@ -241,15 +241,27 @@ $config = ArrayHelper::merge(
 
 $config['releaseDate'] = new DateTime('@'.$config['releaseDate']);
 
-if ($devMode && $appType === 'web')
-{
-	$config['bootstrap'][] = 'debug';
-	$config['modules']['debug'] = 'yii\debug\Module';
-}
-
 // Initialize the application
 $class = 'craft\\app\\'.$appType.'\\Application';
 /* @var $app craft\app\web\Application|craft\app\console\Application */
 $app = new $class($config);
+
+if ($devMode && $appType === 'web')
+{
+	// See if we should enable the Debug module
+	$session = $app->getSession();
+
+	if ($session->getHasSessionId() || $session->getIsActive())
+	{
+		$isCpRequest = $app->getRequest()->getIsCpRequest();
+
+		if (($isCpRequest && $session->get('enableDebugToolbarForCp')) || (!$isCpRequest && $session->get('enableDebugToolbarForSite')))
+		{
+			/** @var yii\debug\Module $module */
+			$module = $app->getModule('debug');
+			$module->bootstrap($app);
+		}
+	}
+}
 
 return $app;

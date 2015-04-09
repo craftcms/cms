@@ -724,7 +724,8 @@ class UsersController extends Controller
 	{
 		$this->requirePostRequest();
 
-		$currentUser = Craft::$app->getUser()->getIdentity();
+		$userComponent = Craft::$app->getUser();
+		$currentUser = $userComponent->getIdentity();
 		$requireEmailVerification = Craft::$app->systemSettings->getSetting('users', 'requireEmailVerification');
 
 		// Get the user being edited
@@ -891,10 +892,32 @@ class UsersController extends Controller
 		if (Craft::$app->users->saveUser($user))
 		{
 			// Save their preferences too
-			Craft::$app->users->saveUserPreferences($user, [
+			$preferences = [
 				'locale'       => Craft::$app->getRequest()->getBodyParam('preferredLocale', $user->getPreference('locale')),
 				'weekStartDay' => Craft::$app->getRequest()->getBodyParam('weekStartDay', $user->getPreference('weekStartDay')),
-			]);
+			];
+
+			if ($user->admin)
+			{
+				$preferences = array_merge($preferences, [
+					'enableDebugToolbarForSite' => (bool) Craft::$app->getRequest()->getBodyParam('enableDebugToolbarForSite', $user->getPreference('enableDebugToolbarForSite')),
+					'enableDebugToolbarForCp'   => (bool) Craft::$app->getRequest()->getBodyParam('enableDebugToolbarForCp', $user->getPreference('enableDebugToolbarForCp')),
+				]);
+			}
+
+			Craft::$app->users->saveUserPreferences($user, $preferences);
+
+			// Is this the current user?
+			if ($user->isCurrent())
+			{
+				// Make sure these preferences make it to the main identity user
+				if ($user !== $currentUser)
+				{
+					$currentUser->mergePreferences($preferences);
+				}
+
+				$userComponent->saveDebugPreferencesToSession();
+			}
 
 			// Is this the current user, and did their username just change?
 			if ($user->isCurrent() && $user->username !== $oldUsername)
