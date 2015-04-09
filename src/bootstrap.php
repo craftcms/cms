@@ -241,7 +241,7 @@ $config = ArrayHelper::merge(
 
 $config['releaseDate'] = new DateTime('@'.$config['releaseDate']);
 
-if ($devMode)
+if ($devMode && $appType === 'web')
 {
 	$config['bootstrap'][] = 'debug';
 	$config['modules']['debug'] = 'yii\debug\Module';
