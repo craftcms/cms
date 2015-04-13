@@ -35,7 +35,7 @@ class TagGroupRecord extends BaseRecord
 	{
 		return array(
 			'fieldLayout' => array(static::BELONGS_TO, 'FieldLayoutRecord', 'onDelete' => static::SET_NULL),
-			'tags'        => array(static::HAS_MANY, 'TagRecord', 'tagId'),
+			'tags'        => array(static::HAS_MANY, 'TagRecord', 'groupId'),
 		);
 	}
 
