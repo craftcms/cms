@@ -10,6 +10,7 @@ namespace craft\app\web;
 use Craft;
 use craft\app\base\ElementInterface;
 use craft\app\helpers\ArrayHelper;
+use craft\app\helpers\UrlHelper;
 use yii\web\UrlRuleInterface;
 
 /**
@@ -94,6 +95,28 @@ class UrlManager extends \yii\web\UrlManager
 		}
 
 		return false;
+	}
+
+	/**
+	 * @inheritdoc
+	 */
+	public function createUrl($params)
+	{
+		return $this->createAbsoluteUrl($params);
+	}
+
+	/**
+	 * @inheritdoc
+	 */
+	public function createAbsoluteUrl($params, $scheme = null)
+	{
+		$params = (array) $params;
+		unset($params[$this->routeParam]);
+
+		$route = trim($params[0], '/');
+		unset($params[0]);
+
+		return UrlHelper::getActionUrl($route, $params, $scheme);
 	}
 
 	/**

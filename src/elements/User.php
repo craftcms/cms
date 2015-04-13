@@ -31,6 +31,8 @@ use yii\web\IdentityInterface;
 /**
  * User represents a user element.
  *
+ * @property string|null $preferredLocale The user’s preferred locale
+ *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */
@@ -440,16 +442,6 @@ class User extends Element implements IdentityInterface
 	public $password;
 
 	/**
-	 * @var string Preferred locale
-	 */
-	public $preferredLocale;
-
-	/**
-	 * @var integer Week start day
-	 */
-	public $weekStartDay = 0;
-
-	/**
 	 * @var boolean Admin
 	 */
 	public $admin = false;
@@ -530,11 +522,14 @@ class User extends Element implements IdentityInterface
 	public $authError;
 
 	/**
-	 * The cached list of groups the user belongs to. Set by [[getGroups()]].
-	 *
-	 * @var array
+	 * @var array The cached list of groups the user belongs to. Set by [[getGroups()]].
 	 */
 	private $_groups;
+
+	/**
+	 * @var array The user’s preferences
+	 */
+	private $_preferences;
 
 	// Public Methods
 	// =========================================================================
@@ -588,12 +583,24 @@ class User extends Element implements IdentityInterface
 	/**
 	 * @inheritdoc
 	 */
+	public function datetimeAttributes()
+	{
+		$names = parent::datetimeAttributes();
+		$names[] = 'lastLoginDate';
+		$names[] = 'lastInvalidLoginDate';
+		$names[] = 'lockoutDate';
+		$names[] = 'lastPasswordChangeDate';
+		$names[] = 'verificationCodeIssuedDate';
+		return $names;
+	}
+
+	/**
+	 * @inheritdoc
+	 */
 	public function rules()
 	{
 		$rules = parent::rules();
 
-		$rules[] = [['preferredLocale'], 'craft\\app\\validators\\Locale'];
-		$rules[] = [['weekStartDay'], 'number', 'min' => -2147483648, 'max' => 2147483647, 'integerOnly' => true];
 		$rules[] = [['lastLoginDate'], 'craft\\app\\validators\\DateTime'];
 		$rules[] = [['invalidLoginCount'], 'number', 'min' => -2147483648, 'max' => 2147483647, 'integerOnly' => true];
 		$rules[] = [['lastInvalidLoginDate'], 'craft\\app\\validators\\DateTime'];
@@ -1094,6 +1101,66 @@ class User extends Element implements IdentityInterface
 		}
 
 		return parent::validate($attributes, false);
+	}
+
+	/**
+	 * Returns the user’s preferences.
+	 *
+	 * @return array The user’s preferences.
+	 */
+	public function getPreferences()
+	{
+		if ($this->_preferences === null)
+		{
+			$this->_preferences = Craft::$app->users->getUserPreferences($this->id);
+		}
+
+		return $this->_preferences;
+	}
+
+	/**
+	 * Returns one of the user’s preferences by its key.
+	 *
+	 * @param string $key The preference’s key
+	 * @param mixed $default The default value, if the preference hasn’t been set
+	 * @return array The user’s preferences.
+	 */
+	public function getPreference($key, $default = null)
+	{
+		$preferences = $this->getPreferences();
+		return isset($preferences[$key]) ? $preferences[$key] : $default;
+	}
+
+	/**
+	 * Returns the user’s preferred locale, if they have one.
+	 *
+	 * @return string|null The preferred locale
+	 */
+	public function getPreferredLocale()
+	{
+		$locale = $this->getPreference('locale');
+
+		// Make sure it's valid
+		if ($locale !== null && in_array($locale, Craft::$app->i18n->getSiteLocaleIds()))
+		{
+			return $locale;
+		}
+		else
+		{
+			return null;
+		}
+	}
+
+	/**
+	 * Merges new user preferences with the existing ones, and returns the result.
+	 *
+	 * @param array $preferences The new preferences
+	 * @return array The user’s new preferences.
+	 */
+	public function mergePreferences($preferences)
+	{
+		$this->_preferences = array_merge($this->getPreferences(), $preferences);
+		return $this->_preferences;
 	}
 
 	// Private Methods

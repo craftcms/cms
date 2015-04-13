@@ -21,5 +21,8 @@ return [
 		'errorHandler' => [
 			'errorAction' => 'templates/render-error'
 		]
-	]
+	],
+	'modules' => [
+		'debug' => 'yii\debug\Module',
+	],
 ];

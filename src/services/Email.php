@@ -132,7 +132,7 @@ class Email extends Component
 
 		if (Craft::$app->getEdition() >= Craft::Client)
 		{
-			$message = Craft::$app->emailMessages->getMessage($key, $user->preferredLocale);
+			$message = Craft::$app->emailMessages->getMessage($key, $user->getPreferredLocale());
 
 			$emailModel->subject  = $message->subject;
 			$emailModel->body     = $message->body;

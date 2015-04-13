@@ -28,7 +28,7 @@
 				<div class="btn submit menubtn"></div>
 				<div class="menu">
 					<ul>
-						<li><a class="formsubmit" data-redirect="users/{id}">{{ "Save and continue editing"|t }}</a></li>
+						<li><a class="formsubmit" data-redirect="{{ isNewAccount ? 'users/{id}' : account.getCpEditUrl() }}">{{ "Save and continue editing"|t }}</a></li>
 						<li><a class="formsubmit" data-redirect="users/new">{{ "Save and add another"|t }}</a></li>
 					</ul>
 				</div>
@@ -159,7 +159,7 @@
 							<div class="select">
 								<select id="preferredLocale" name="preferredLocale">
 									{% set allSiteLocales = craft.i18n.getSiteLocales %}
-									{% set userLocale = account.preferredLocale ? account.preferredLocale : (account.isCurrent() ? craft.locale : allSiteLocales[0]) %}
+									{% set userLocale = account.getPreferredLocale() ?: (account.isCurrent() ? craft.locale : allSiteLocales[0]) %}
 
 									{% for locale in allSiteLocales %}
 										<option value="{{ locale.id }}" {% if locale.id == userLocale %}selected{% endif %}>{{ locale.getName() }}</option>
@@ -180,7 +180,23 @@
 							id: 'weekStartDay',
 							name: 'weekStartDay',
 							options: craft.i18n.getLocaleData().getWeekDayNames(),
-							value: account.weekStartDay
+							value: account.getPreference('weekStartDay', 0)
+						}) }}
+					{% endif %}
+
+					{% if account.admin %}
+						{{ forms.checkboxField({
+							label: "Show the debug toolbar on the front end"|t,
+							name: 'enableDebugToolbarForSite',
+							id: 'enableDebugToolbarForSite',
+							checked: account.getPreference('enableDebugToolbarForSite')
+						}) }}
+
+						{{ forms.checkboxField({
+							label: "Show the debug toolbar on the Control Panel"|t,
+							name: 'enableDebugToolbarForCp',
+							id: 'enableDebugToolbarForCp',
+							checked: account.getPreference('enableDebugToolbarForCp')
 						}) }}
 					{% endif %}
 

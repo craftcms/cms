@@ -19,6 +19,21 @@ use yii\base\Object;
  */
 abstract class Template extends \yii\twig\Template
 {
+	// Public Methods
+	// =========================================================================
+
+	/**
+	 * @inheritdoc
+	 */
+	public function display(array $context, array $blocks = array())
+	{
+		$name = $this->getTemplateName();
+		Craft::beginProfile($name, __METHOD__);
+		$result = parent::display($context, $blocks);
+		Craft::endProfile($name, __METHOD__);
+		return $result;
+	}
+
 	// Protected Methods
 	// =========================================================================
 

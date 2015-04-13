@@ -17,6 +17,7 @@ use craft\app\events\UserEvent;
 use craft\app\helpers\AssetsHelper;
 use craft\app\helpers\DateTimeHelper;
 use craft\app\helpers\IOHelper;
+use craft\app\helpers\JsonHelper;
 use craft\app\helpers\StringHelper;
 use craft\app\helpers\TemplateHelper;
 use craft\app\helpers\UrlHelper;
@@ -135,14 +136,6 @@ class Users extends Component
      */
     const EVENT_AFTER_SET_PASSWORD = 'afterSetPassword';
 
-	// Properties
-	// =========================================================================
-
-	/**
-	 * @var
-	 */
-	private $_usersById;
-
 	// Public Methods
 	// =========================================================================
 
@@ -159,21 +152,7 @@ class Users extends Component
 	 */
 	public function getUserById($userId)
 	{
-		if (!isset($this->_usersById) || !array_key_exists($userId, $this->_usersById))
-		{
-			$userRecord = UserRecord::findOne($userId);
-
-			if ($userRecord)
-			{
-				$this->_usersById[$userId] = User::create($userRecord);
-			}
-			else
-			{
-				$this->_usersById[$userId] = null;
-			}
-		}
-
-		return $this->_usersById[$userId];
+		return Craft::$app->elements->getElementById($userId, User::className());
 	}
 
 	/**
@@ -386,8 +365,6 @@ class Users extends Component
 		$userRecord->admin                 = $user->admin;
 		$userRecord->client                = $user->client;
 		$userRecord->passwordResetRequired = $user->passwordResetRequired;
-		$userRecord->preferredLocale       = $user->preferredLocale;
-		$userRecord->weekStartDay          = $user->weekStartDay;
 		$userRecord->unverifiedEmail       = $user->unverifiedEmail;
 
 		$this->_processSaveUserStatus($userRecord, $user->getStatus());
@@ -503,6 +480,41 @@ class Users extends Component
 		}
 
 		return $success;
+	}
+
+	/**
+	 * Returns a user’s preferences.
+	 *
+	 * @param integer $userId The user’s ID
+	 * @return array The user’s preferences
+	 */
+	public function getUserPreferences($userId)
+	{
+		$preferences = (new Query())
+			->select('preferences')
+			->from('{{%userpreferences}}')
+			->where(['userId' => $userId])
+			->scalar();
+
+		return $preferences ? JsonHelper::decode($preferences) : [];
+	}
+
+	/**
+	 * Saves a user’s preferences.
+	 *
+	 * @param User $user The user
+	 * @param array $preferences The user’s new preferences
+	 */
+	public function saveUserPreferences(User $user, $preferences)
+	{
+		$preferences = $user->mergePreferences($preferences);
+
+		Craft::$app->db->createCommand()->insertOrUpdate(
+			'{{%userpreferences}}',
+			['userId' => $user->id],
+			['preferences' => JsonHelper::encode($preferences)],
+			false
+		)->execute();
 	}
 
 	/**

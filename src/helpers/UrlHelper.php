@@ -433,30 +433,21 @@ class UrlHelper
 	{
 		if (is_array($params))
 		{
-			foreach ($params as $name => $value)
+			$anchor = isset($params['#']) ? '#' . $params['#'] : '';
+			unset($params['#']);
+
+			if (!empty($params))
 			{
-				if (!is_numeric($name))
-				{
-					if ($name == '#')
-					{
-						$anchor = '#'.$value;
-					}
-					else if ($value !== null && $value !== '')
-					{
-						$params[] = $name.'='.$value;
-					}
-
-					unset($params[$name]);
-				}
+				return http_build_query($params);
 			}
-
-			$params = implode('&', array_filter($params));
+			else
+			{
+				return '';
+			}
 		}
 		else
 		{
-			$params = trim($params, '&?');
+			return trim($params, '&?');
 		}
-
-		return $params;
 	}
 }

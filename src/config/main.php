@@ -19,7 +19,7 @@ $config = [
 // Default version/build values for running Craft directly from the source
 $config['version'] = '3.0';
 $config['build'] = '1';
-$config['schemaVersion'] = '3.0a1';
+$config['schemaVersion'] = '3.0a2';
 $config['releaseDate'] = '1429092000';
 $config['minBuildRequired'] = '0';
 $config['minBuildUrl'] = 'http://buildwithcraft.com/';
