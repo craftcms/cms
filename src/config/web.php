@@ -23,6 +23,19 @@ return [
 		]
 	],
 	'modules' => [
-		'debug' => 'yii\debug\Module',
+		'debug' => [
+			'class' => 'yii\debug\Module',
+			'panels' => [
+				'config' => false,
+				'info' => ['class' => 'craft\app\debug\InfoPanel'],
+				'request' => ['class' => 'yii\debug\panels\RequestPanel'],
+				'log' => ['class' => 'yii\debug\panels\LogPanel'],
+				'deprecated' => ['class' => 'craft\app\debug\DeprecatedPanel'],
+				'profiling' => ['class' => 'yii\debug\panels\ProfilingPanel'],
+				'db' => ['class' => 'yii\debug\panels\DbPanel'],
+				'assets' => ['class' => 'yii\debug\panels\AssetPanel'],
+				'mail' => ['class' => 'yii\debug\panels\MailPanel'],
+			]
+		]
 	],
 ];
