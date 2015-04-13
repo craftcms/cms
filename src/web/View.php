@@ -111,11 +111,6 @@ class View extends \yii\web\View
 	 */
 	private $_isRenderingPageTemplate = false;
 
-	/**
-	 * @var boolean Whether this is a CP request
-	 */
-	private $_isCpRequest;
-
 	// Public Methods
 	// =========================================================================
 
@@ -125,16 +120,7 @@ class View extends \yii\web\View
 	public function init()
 	{
 		parent::init();
-
 		$this->hook('cp.elements.element', [$this, '_getCpElementHtml']);
-
-		$this->_isCpRequest = (Craft::$app->getRequest()->getIsConsoleRequest() === false && Craft::$app->getRequest()->getIsCpRequest() === true);
-
-		if ($this->_isCpRequest === true)
-		{
-			// Register the CP assets
-			$this->registerAssetBundle(AppAsset::className());
-		}
 	}
 
 	/**
@@ -1272,12 +1258,11 @@ class View extends \yii\web\View
 	private function _registerResource($path, $options, $key, $kind)
 	{
 		$key = $key ?: 'resource:'.$path;
-		$depends = (array) ArrayHelper::remove($options, 'depends', []);
 
-		if ($this->_isCpRequest === true)
-		{
-			$depends[] = AppAsset::className();
-		}
+		// Make AppAsset the default dependency
+		$depends = (array) ArrayHelper::remove($options, 'depends', [
+			AppAsset::className()
+		]);
 
 		$bundle = new AssetBundle([
 			'sourcePath' => '@app/resources',

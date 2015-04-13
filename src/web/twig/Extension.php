@@ -83,6 +83,7 @@ class Extension extends \Twig_Extension
 			new ExitTokenParser(),
 			new HeaderTokenParser(),
 			new HookTokenParser(),
+			new RegisterResourceTokenParser('registerAssetBundle'),
 			new RegisterResourceTokenParser('registerCss'),
 			new RegisterResourceTokenParser('registerCssFile'),
 			new RegisterResourceTokenParser('registerCssResource'),
