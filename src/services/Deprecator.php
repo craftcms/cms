@@ -12,7 +12,7 @@ use craft\app\db\Query;
 use craft\app\helpers\DateTimeHelper;
 use craft\app\helpers\JsonHelper;
 use craft\app\helpers\StringHelper;
-use craft\app\models\DeprecationError as DeprecationErrorModel;
+use craft\app\models\DeprecationError;
 use yii\base\Component;
 
 /**
@@ -34,12 +34,12 @@ class Deprecator extends Component
 	private static $_tableName = '{{%deprecationerrors}}';
 
 	/**
-	 * @var array
+	 * @var DeprecationError[] The deprecation errors that were logged in the current request
 	 */
-	private $_fingerprints = [];
+	private $_requestLogs = [];
 
 	/**
-	 * @var
+	 * @var DeprecationError[] All the unique deprecation errors that have been logged
 	 */
 	private $_allLogs;
 
@@ -64,7 +64,7 @@ class Deprecator extends Component
 
 		$request = Craft::$app->getRequest();
 
-		$log = new DeprecationErrorModel();
+		$log = new DeprecationError();
 
 		$log->key            = $key;
 		$log->message        = $message;
@@ -74,13 +74,14 @@ class Deprecator extends Component
 		// Everything else requires the stack trace
 		$this->_populateLogWithStackTraceData($log);
 
+		$index = $log->key.'-'.$log->fingerprint;
+
 		// Don't log the same key/fingerprint twice in the same request
-		if (!isset($this->_fingerprints[$log->key]) || !in_array($log->fingerprint, $this->_fingerprints[$log->key]))
+		if (!isset($this->_requestLogs[$index]))
 		{
-			Craft::$app->getDb()->createCommand()->insertOrUpdate(static::$_tableName, [
-				'key'            => $log->key,
-				'fingerprint'    => $log->fingerprint
-			], [
+			$db = Craft::$app->getDb();
+
+			$values = [
 				'lastOccurrence' => DateTimeHelper::formatTimeForDb($log->lastOccurrence),
 				'file'           => $log->file,
 				'line'           => $log->line,
@@ -90,12 +91,43 @@ class Deprecator extends Component
 				'templateLine'   => $log->templateLine,
 				'message'        => $log->message,
 				'traces'         => JsonHelper::encode($log->traces),
-			])->execute();
+			];
 
-			$this->_fingerprints[$key][] = $log->fingerprint;
+			// Do we already have this one logged?
+			$existingId = (new Query())
+				->select('id')
+				->from(static::$_tableName)
+				->where(['key' => $log->key, 'fingerprint' => $log->fingerprint])
+				->scalar();
+
+			if ($existingId === false)
+			{
+				$db->createCommand()->insert(static::$_tableName, array_merge($values, [
+					'key' => $log->key,
+					'fingerprint' => $log->fingerprint
+				]))->execute();
+				$log->id = $db->getLastInsertID();
+			}
+			else
+			{
+				$db->createCommand()->update(static::$_tableName, $values, ['id' => $existingId])->execute();
+				$log->id = $existingId;
+			}
+
+			$this->_requestLogs[$key] = $log;
 		}
 
 		return true;
+	}
+
+	/**
+	 * Returns the deprecation errors that were logged in the current request.
+	 *
+	 * @return DeprecationError[]
+	 */
+	public function getRequestLogs()
+	{
+		return $this->_requestLogs;
 	}
 
 	/**
@@ -115,7 +147,7 @@ class Deprecator extends Component
 	 *
 	 * @param int $limit
 	 *
-	 * @return array
+	 * @return DeprecationError[]
 	 */
 	public function getLogs($limit = 100)
 	{
@@ -130,7 +162,7 @@ class Deprecator extends Component
 
 			foreach ($this->_allLogs as $key => $value)
 			{
-				$this->_allLogs[$key] = DeprecationErrorModel::create($value);
+				$this->_allLogs[$key] = DeprecationError::create($value);
 			}
 		}
 
@@ -142,7 +174,7 @@ class Deprecator extends Component
 	 *
 	 * @param $logId
 	 *
-	 * @return DeprecationErrorModel|null
+	 * @return DeprecationError|null
 	 */
 	public function getLogById($logId)
 	{
@@ -152,9 +184,13 @@ class Deprecator extends Component
 			->where('id = :logId', [':logId' => $logId])
 			->one();
 
-		if ($log)
+		if ($log !== false)
 		{
-			return DeprecationErrorModel::create($log);
+			return DeprecationError::create($log);
+		}
+		else
+		{
+			return null;
 		}
 	}
 
@@ -186,13 +222,13 @@ class Deprecator extends Component
 	// =========================================================================
 
 	/**
-	 * Populates a DeprecationErrorModel with data pulled from the PHP stack trace.
+	 * Populates a DeprecationError with data pulled from the PHP stack trace.
 	 *
-	 * @param DeprecationErrorModel $log
+	 * @param DeprecationError $log
 	 *
 	 * @return null
 	 */
-	private function _populateLogWithStackTraceData(DeprecationErrorModel $log)
+	private function _populateLogWithStackTraceData(DeprecationError $log)
 	{
 		// Get the stack trace, but skip the first one, since it's just the call to this private function
 		$traces = debug_backtrace();
