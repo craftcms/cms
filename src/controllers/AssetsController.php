@@ -11,14 +11,12 @@ use Craft;
 use craft\app\errors\AssetConflictException;
 use craft\app\errors\Exception;
 use craft\app\errors\HttpException;
-use craft\app\errors\FileException;
 use craft\app\errors\AssetException;
 use craft\app\errors\AssetMissingException;
-use craft\app\errors\ModelException;
-use craft\app\errors\ElementException;
 use craft\app\errors\UploadFailedException;
 use craft\app\fields\Assets as AssetsField;
 use craft\app\helpers\AssetsHelper;
+use craft\app\helpers\ImageHelper;
 use craft\app\helpers\IOHelper;
 use craft\app\elements\Asset;
 use craft\app\models\VolumeFolder;
@@ -59,14 +57,14 @@ class AssetsController extends Controller
 	{
 		$this->requireAjaxRequest();
 
-		$file               = UploadedFile::getInstanceByName('assets-upload');
-		$fileId             = Craft::$app->getRequest()->getBodyParam('fileId');;
+		$fileToReplaceWith  = UploadedFile::getInstanceByName('assets-upload');
+		$fileId             = Craft::$app->getRequest()->getBodyParam('fileId');
 		$folderId           = Craft::$app->getRequest()->getBodyParam('folderId');
 		$fieldId            = Craft::$app->getRequest()->getBodyParam('fieldId');
 		$elementId          = Craft::$app->getRequest()->getBodyParam('elementId');
-		$conflictResolution = Craft::$app->getRequest()->getBodyParam('conflictResolution');
+		$conflictResolution = Craft::$app->getRequest()->getBodyParam('userResponse');
 
-		$newFile = (bool) $file && empty($fileId);
+		$newFile = (bool) $fileToReplaceWith && empty($fileId);
 		$resolveConflict = !empty($conflictResolution) && !empty($fileId);
 
 		// TODO Permission check
@@ -75,13 +73,54 @@ class AssetsController extends Controller
 			// Resolving a conflict?
 			if ($resolveConflict)
 			{
-				// Determine type and resolve
+				// When resolving a conflict, $fileId is the id of the file that was created
+				// and is conflicting with an existing file.
+				if ($conflictResolution == 'replace')
+				{
+					$fileToReplaceWith = Craft::$app->assets->getFileById($fileId);
+					$volume = $fileToReplaceWith->getVolume();
+
+					$filename = AssetsHelper::prepareAssetName(Craft::$app->getRequest()->getRequiredBodyParam('filename'));
+					$fileToReplace = Craft::$app->assets->findFile(array('filename' => $filename, 'folderId' => $fileToReplaceWith->folderId));
+
+					// Clear all thumb and transform data
+					if (ImageHelper::isImageManipulatable($fileToReplace->getExtension()))
+					{
+						Craft::$app->assetTransforms->deleteAllTransformData($fileToReplace);
+					}
+					if (ImageHelper::isImageManipulatable($fileToReplaceWith->getExtension()))
+					{
+						Craft::$app->assetTransforms->deleteAllTransformData($fileToReplaceWith);
+					}
+
+					// Replace the file
+					$volume->deleteFile($fileToReplace->getUri());
+					$volume->renameFile($fileToReplaceWith->getUri(), $fileToReplace->getUri());
+
+					// Update the attributes and save the Asset
+					$fileToReplace->dateModified = $fileToReplaceWith->dateModified;
+					$fileToReplace->size         = $fileToReplaceWith->size;
+					$fileToReplace->kind         = $fileToReplaceWith->kind;
+					$fileToReplace->width        = $fileToReplaceWith->width;
+					$fileToReplace->height       = $fileToReplaceWith->height;
+
+					Craft::$app->assets->saveAsset($fileToReplace);
+
+					// And delete the conflicting record
+					Craft::$app->assets->deleteFilesByIds($fileToReplaceWith->id, false);
+				}
+				else if ($conflictResolution == 'cancel')
+				{
+					Craft::$app->assets->deleteFilesByIds($fileId);
+				}
+
+				return $this->asJson(['success' => true]);
 			}
 			else if ($newFile)
 			{
-				if ($file->hasError)
+				if ($fileToReplaceWith->hasError)
 				{
-					throw new UploadFailedException($file->error);
+					throw new UploadFailedException($fileToReplaceWith->error);
 				}
 
 				if (empty($folderId) && (empty($fieldId) || empty($elementId)))
@@ -114,8 +153,8 @@ class AssetsController extends Controller
 					throw new HttpException(400, Craft::t('app', 'The target folder provided for uploading is not valid.'));
 				}
 
-				$pathOnServer = IOHelper::getTempFilePath($file->name);
-				$result = $file->saveAs($pathOnServer);
+				$pathOnServer = IOHelper::getTempFilePath($fileToReplaceWith->name);
+				$result = $fileToReplaceWith->saveAs($pathOnServer);
 
 				if (!$result)
 				{
@@ -125,7 +164,7 @@ class AssetsController extends Controller
 
 				$asset = new Asset();
 				$asset->newFilePath = $pathOnServer;
-				$asset->filename    = $file->name;
+				$asset->filename    = $fileToReplaceWith->name;
 				$asset->folderId    = $folder->id;
 				$asset->volumeId    = $folder->volumeId;
 
@@ -143,7 +182,7 @@ class AssetsController extends Controller
 					Craft::$app->assets->saveAsset($asset);
 					IOHelper::deleteFile($pathOnServer, true);
 
-					return $this->asJson(['prompt' => true, 'fileId' => $asset->id, 'filename' => $file->name]);
+					return $this->asJson(['prompt' => true, 'fileId' => $asset->id, 'filename' => $fileToReplaceWith->name]);
 				}
 				// No matter what happened, delete the file on server.
 				catch (\Exception $exception)
@@ -160,14 +199,6 @@ class AssetsController extends Controller
 			}
 		}
 		catch (\Exception $exception)
-		{
-			return $this->asErrorJson($exception->getMessage());
-		}
-		catch (ElementException $exception)
-		{
-			return $this->asErrorJson($exception->getMessage());
-		}
-		catch (ModelException $exception)
 		{
 			return $this->asErrorJson($exception->getMessage());
 		}

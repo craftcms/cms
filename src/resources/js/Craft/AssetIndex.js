@@ -970,7 +970,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 		var doFollowup = $.proxy(function(parameterArray, parameterIndex, callback)
 		{
 			var postData = {
-				newFileId:    parameterArray[parameterIndex].fileId,
+				fileId:       parameterArray[parameterIndex].fileId,
 				filename:     parameterArray[parameterIndex].filename,
 				userResponse: parameterArray[parameterIndex].choice
 			};

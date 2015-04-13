@@ -1,4 +1,4 @@
-/*! Craft 3.0.0 - 2015-04-09 */
+/*! Craft 3.0.0 - 2015-04-13 */
 (function($){
 
 if (typeof window.Craft == 'undefined')
@@ -5612,7 +5612,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 		var doFollowup = $.proxy(function(parameterArray, parameterIndex, callback)
 		{
 			var postData = {
-				newFileId:    parameterArray[parameterIndex].fileId,
+				fileId:       parameterArray[parameterIndex].fileId,
 				filename:     parameterArray[parameterIndex].filename,
 				userResponse: parameterArray[parameterIndex].choice
 			};
