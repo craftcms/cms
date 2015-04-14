@@ -17,7 +17,7 @@ use yii\base\Object;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */
-abstract class Template extends \yii\twig\Template
+abstract class Template extends \Twig_Template
 {
 	// Public Methods
 	// =========================================================================
