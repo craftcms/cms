@@ -924,7 +924,7 @@ class AssetTransforms extends Component
 
 		foreach ($indexModels as $index)
 		{
-			// TODO: Transform handling!
+			// TODO Transform handling!
 			//$volume->deleteTransform($file, $index);
 		}
 	}

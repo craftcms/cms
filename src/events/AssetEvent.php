@@ -7,6 +7,8 @@
 
 namespace craft\app\events;
 
+use craft\app\elements\Asset;
+
 /**
  * Asset event class.
  *
@@ -19,7 +21,7 @@ class AssetEvent extends Event
 	// =========================================================================
 
 	/**
-	 * @var \craft\app\models\Asset The asset model associated with the event.
+	 * @var Asset The asset model associated with the event.
 	 */
 	public $asset;
 }
