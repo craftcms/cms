@@ -58,7 +58,7 @@ class AssetTransformsController extends Controller
 	 * @return string The rendering result
 	 * @throws HttpException
 	 */
-	public function actionEditTransform($transformHandle = null, AssetTransform $transform)
+	public function actionEditTransform($transformHandle = null, AssetTransform $transform = null)
 	{
 		if ($transform === null)
 		{

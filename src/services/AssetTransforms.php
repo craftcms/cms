@@ -74,7 +74,7 @@ class AssetTransforms extends Component
 
 			foreach ($results as $result)
 			{
-				$transform = new AssetTransformModel($result);
+				$transform = AssetTransformModel::create($result);
 				$this->_transformsByHandle[$transform->handle] = $transform;
 			}
 
@@ -123,7 +123,7 @@ class AssetTransforms extends Component
 
 			if ($result)
 			{
-				$transform = new AssetTransformModel($result);
+				$transform = AssetTransformModel::create($result);
 			}
 			else
 			{
@@ -264,7 +264,7 @@ class AssetTransforms extends Component
 
 			if ($indexedAfterFileModified && $indexedAfterTransformParameterChange)
 			{
-				return new AssetTransformIndex($entry);
+				return AssetTransformIndex::create($entry);
 			}
 			else
 			{
@@ -287,7 +287,7 @@ class AssetTransforms extends Component
 			'inProgress' => 0
 		];
 
-		return $this->storeTransformIndexData(new AssetTransformIndex($data));
+		return $this->storeTransformIndexData(AssetTransformIndex::create($data));
 	}
 
 	/**
@@ -417,7 +417,8 @@ class AssetTransforms extends Component
 				// and needs to go.
 				if ($transform->isNamedTransform() && $result['dateIndexed'] < $transform->dimensionChangeTime)
 				{
-					$volume->deleteTransform($file, new AssetTransformIndex($result));
+					$transformUri = $file->getFolder()->path.$this->getTransformSubpath($file, AssetTransformIndex::create($result));
+					$volume->deleteFile($transformUri);
 					$this->deleteTransform($result['id']);
 				}
 				// Any other should do.
@@ -432,7 +433,9 @@ class AssetTransforms extends Component
 		if ($matchFound)
 		{
 			/** @var array $matchFound */
-			$volume->copyTransform($file, $file->getFolder(), new AssetTransformIndex($matchFound), $index);
+			$from = $file->getFolder()->path.$this->getTransformSubpath($file, AssetTransformIndex::create($matchFound));
+			$to = $file->getFolder()->path.$this->getTransformSubpath($file, $index);
+			$volume->copyFile($from, $to);
 		}
 		else
 		{
@@ -471,7 +474,7 @@ class AssetTransforms extends Component
 		}
 		else if (is_object($transform) || is_array($transform))
 		{
-			return new AssetTransformModel($transform);
+			return AssetTransformModel::create($transform);
 		}
 		else
 		{
@@ -497,11 +500,11 @@ class AssetTransforms extends Component
 		if (!empty($index->id))
 		{
 			$id = $index->id;
-			Craft::$app->getDb()->createCommand()->update('{{%assettransformindex}}', $values, 'id = :id', [':id' => $id]);
+			Craft::$app->getDb()->createCommand()->update('{{%assettransformindex}}', $values, 'id = :id', [':id' => $id])->execute();
 		}
 		else
 		{
-			Craft::$app->getDb()->createCommand()->insert('{{%assettransformindex}}', $values);
+			Craft::$app->getDb()->createCommand()->insert('{{%assettransformindex}}', $values)->execute();
 			$index->id = Craft::$app->getDb()->getLastInsertID();
 		}
 
@@ -565,7 +568,7 @@ class AssetTransforms extends Component
 
 		if ($entry)
 		{
-			return new AssetTransformIndex($entry);
+			return AssetTransformIndex::create($entry);
 		}
 
 		return null;
@@ -1081,10 +1084,13 @@ class AssetTransforms extends Component
 		$image->saveAs($createdTransform);
 
 		clearstatcache(true, $createdTransform);
-		$volume->putImageTransform($file, $index, $createdTransform);
+		$transformPath = $file->getFolder()->path . $this->getTransformSubpath($file, $index);
+
+		$stream = fopen($createdTransform, "r");
+		$volume->createFileByStream($transformPath, $stream);
 		IOHelper::deleteFile($createdTransform);
 
-		if ($file->getVolume()->isRemote())
+		if (!$file->getVolume()->isLocal())
 		{
 			$this->queueSourceForDeletingIfNecessary($imageSource);
 		}
