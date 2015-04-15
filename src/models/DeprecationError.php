@@ -8,6 +8,7 @@
 namespace craft\app\models;
 
 use craft\app\base\Model;
+use craft\app\dates\DateTime;
 use craft\app\helpers\JsonHelper;
 
 /**
@@ -53,7 +54,7 @@ class DeprecationError extends Model
 	public $fingerprint;
 
 	/**
-	 * @var \DateTime Last occurrence
+	 * @var DateTime Last occurrence
 	 */
 	public $lastOccurrence;
 

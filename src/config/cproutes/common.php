@@ -44,11 +44,6 @@ return [
 	'settings/tags/new'                                                     => 'tags/edit-tag-group',
 	'settings/tags/<tagGroupId:\d+>'                                        => 'tags/edit-tag-group',
 
-	'utils/serverinfo'                                                      => 'utils/server-info',
-	'utils/phpinfo'                                                         => 'utils/php-info',
-	'utils/logs(/<currentLogFilename:[A-Za-z0-9\.]+>?'                      => 'utils/logs',
-	'utils/deprecationerrors'                                               => 'utils/deprecation-errors',
-
 	'myaccount'                                                             => ['route' => 'users/edit-user', 'defaults' => ['userId' => 'current']],
 
 	'settings/routes' => [

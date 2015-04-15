@@ -8,6 +8,7 @@
 namespace craft\app\base;
 
 use Craft;
+use craft\app\dates\DateTime;
 use craft\app\db\Connection;
 use craft\app\db\MigrationManager;
 use craft\app\db\Query;
@@ -90,7 +91,7 @@ trait ApplicationTrait
 	public $schemaVersion;
 
 	/**
-	 * @var string Craft’s release date.
+	 * @var DateTime Craft’s release date.
 	 */
 	public $releaseDate;
 

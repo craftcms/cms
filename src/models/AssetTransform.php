@@ -108,7 +108,7 @@ class AssetTransform extends Model
 	 */
 	public function isNamedTransform()
 	{
-		return (bool) $this->getAttribute('name');
+		return !empty($this->name);
 	}
 
 	/**
