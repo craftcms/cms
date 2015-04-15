@@ -943,7 +943,7 @@ class Install extends InstallMigration
 			],
 			'{{%userpreferences}}' => [
 				'columns' => [
-					'userId' => 'integer(11) NOT NULL AUTO_INCREMENT',
+					'userId' => 'integer(11) NOT NULL DEFAULT \'0\'',
 					'preferences' => 'text COLLATE utf8_unicode_ci',
 				],
 				'addIdColumn' => false,

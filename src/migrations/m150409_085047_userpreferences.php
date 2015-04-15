@@ -28,7 +28,7 @@ class m150409_085047_userpreferences extends Migration
 		$this->createTable(
 			$prefsTable,
 			[
-				'userId' => 'pk',
+				'userId' => 'integer(11) NOT NULL DEFAULT \'0\'',
 				'preferences' => 'text COLLATE utf8_unicode_ci',
 			],
 			null,
