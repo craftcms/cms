@@ -216,24 +216,6 @@ class Resources extends Component
 					return Craft::$app->path->getAssetsTempSourcePath().'/'.implode('/', $segs);
 				}
 
-				case 'assetthumbs':
-				{
-					if (empty($segs[1]) || empty($segs[2]) || !is_numeric($segs[1]) || !is_numeric($segs[2]))
-					{
-						return false;
-					}
-
-					$fileModel = Craft::$app->assets->getFileById($segs[1]);
-					if (empty($fileModel))
-					{
-						return false;
-					}
-
-					$size = $segs[2];
-
-					return Craft::$app->assetTransforms->getThumbServerPath($fileModel, $size);
-				}
-
 				case 'icons':
 				{
 					if (empty($segs[1]) || empty($segs[2]) || !is_numeric($segs[2]) || !preg_match('/^(?P<extension>[a-z_0-9]+)/i', $segs[1]))
