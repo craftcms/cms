@@ -12,6 +12,7 @@ use craft\app\db\Query;
 use craft\app\dates\DateTime;
 use craft\app\elements\Asset;
 use craft\app\helpers\AssetsHelper;
+use craft\app\helpers\DateTimeHelper;
 use craft\app\helpers\ImageHelper;
 use craft\app\helpers\IOHelper;
 use craft\app\models\AssetTransformIndex;
@@ -496,6 +497,11 @@ class AssetTransforms extends Component
 		// These do not really belong here.
 		unset($values['detectedFormat']);
 		unset($values['transform']);
+
+		// TODO HELP ME PLEASE
+		$values['dateIndexed'] = DateTimeHelper::formatTimeForDb($values['dateIndexed']['date']);
+		$values['dateCreated'] = DateTimeHelper::formatTimeForDb($values['dateCreated']['date']);
+		$values['dateUpdated'] = DateTimeHelper::formatTimeForDb($values['dateUpdated']['date']);
 
 		if (!empty($index->id))
 		{
