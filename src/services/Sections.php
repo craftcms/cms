@@ -743,7 +743,7 @@ class Sections extends Component
 							// Now make sure we've got all of the i18n rows in place.
 							foreach ($sectionLocales as $localeId => $sectionLocale)
 							{
-								Craft::$app->getDb()->createCommand()->insertOrUpdate('elements_i18n', [
+								Craft::$app->getDb()->createCommand()->insertOrUpdate('{{%elements_i18n}}', [
 									'elementId' => $singleEntryId,
 									'locale'    => $localeId,
 								], [
@@ -751,7 +751,7 @@ class Sections extends Component
 									'uri'  => $sectionLocale->urlFormat
 								])->execute();
 
-								Craft::$app->getDb()->createCommand()->insertOrUpdate('content', [
+								Craft::$app->getDb()->createCommand()->insertOrUpdate('{{%content}}', [
 									'elementId' => $singleEntryId,
 									'locale'    => $localeId
 								], [

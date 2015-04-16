@@ -1216,7 +1216,7 @@ class Users extends Component
 			$expiryDate = null;
 		}
 
-		$affectedRows = Craft::$app->getDb()->createCommand()->insertOrUpdate('shunnedmessages', [
+		$affectedRows = Craft::$app->getDb()->createCommand()->insertOrUpdate('{{%shunnedmessages}}', [
 			'userId'  => $userId,
 			'message' => $message
 		], [
