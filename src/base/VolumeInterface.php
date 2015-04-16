@@ -61,19 +61,17 @@ interface VolumeInterface
 	 * @throws VolumeFileExistsException
 	 * @return bool Whether the operation was successful.
 	 */
-	public function createFile($path, $stream);
+	public function createFileByStream($path, $stream);
 
 	/**
 	 * Updates a file.
 	 *
 	 * @param string $path     The path of the file, relative to the source’s root.
-	 * @param string $contents The new contents of the file.
-	 *
-	 * @throws FileNotFoundException
+	 * @param string $stream   The new contents of the file as a stream.
 	 *
 	 * @return bool Whether the operation was successful.
 	 */
-	public function updateFile($path, $contents);
+	public function updateFileByStream($path, $stream);
 
 	/**
 	 * Creates a file, or updates it if it already exists.

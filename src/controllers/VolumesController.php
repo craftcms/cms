@@ -184,6 +184,15 @@ class VolumesController extends Controller
 			}
 
 			$volume->settings = array_merge($volume->settings, $typeSettings[$volume->type]);
+
+			// For validating
+			foreach ($typeSettings[$volume->type] as $property => $value)
+			{
+				if (property_exists($volume, $property))
+				{
+					$volume->{$property} = $value;
+				}
+			}
 		}
 
 		// Set the field layout

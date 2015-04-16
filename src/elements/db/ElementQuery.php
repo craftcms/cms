@@ -1342,7 +1342,7 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
 				->innerJoin('{{%structureelements}} structureelements', 'structureelements.elementId = subquery.elementsId');
 
 			$this->subQuery
-				->innerJoin('{{%structureelementss}} structureelements', 'structureelements.elementId = elements.id')
+				->innerJoin('{{%structureelements}} structureelements', 'structureelements.elementId = elements.id')
 				->andWhere(['structureelements.structureId' => $this->structureId]);
 
 			if ($this->ancestorOf !== null)

@@ -71,7 +71,7 @@ abstract class Volume extends SavableComponent implements VolumeInterface
 	/**
 	 * @inheritdoc
 	 */
-	public function createFile($path, $stream)
+	public function createFileByStream($path, $stream)
 	{
 		try
 		{
@@ -90,9 +90,9 @@ abstract class Volume extends SavableComponent implements VolumeInterface
 	/**
 	 * @inheritdoc
 	 */
-	public function updateFile($path, $contents)
+	public function updateFileByStream($path, $stream)
 	{
-		return $this->getFilesystem()->update($path, $contents);
+		return $this->getFilesystem()->updateStream($path, $stream);
 	}
 
 	/**

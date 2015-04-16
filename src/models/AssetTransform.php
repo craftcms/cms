@@ -124,4 +124,14 @@ class AssetTransform extends Model
 			'stretch' => Craft::t('app', 'Stretch to fit')
 		];
 	}
+
+	/**
+	 * @inheritdoc
+	 */
+	public function datetimeAttributes()
+	{
+		$names = parent::datetimeAttributes();
+		$names[] = 'dimensionChangeTime';
+		return $names;
+	}
 }

@@ -8,18 +8,20 @@
 namespace craft\app\controllers;
 
 use Craft;
+use craft\app\errors\AssetConflictException;
+use craft\app\errors\AssetLogicException;
 use craft\app\errors\Exception;
-use craft\app\errors\HttpException;
 use craft\app\errors\FileException;
+use craft\app\errors\HttpException;
 use craft\app\errors\AssetException;
 use craft\app\errors\AssetMissingException;
-use craft\app\errors\ModelException;
-use craft\app\errors\ElementException;
 use craft\app\errors\UploadFailedException;
 use craft\app\fields\Assets as AssetsField;
 use craft\app\helpers\AssetsHelper;
+use craft\app\helpers\ImageHelper;
 use craft\app\helpers\IOHelper;
 use craft\app\elements\Asset;
+use craft\app\helpers\StringHelper;
 use craft\app\models\VolumeFolder;
 use craft\app\web\Controller;
 use craft\app\web\UploadedFile;
@@ -58,14 +60,14 @@ class AssetsController extends Controller
 	{
 		$this->requireAjaxRequest();
 
-		$file               = UploadedFile::getInstanceByName('assets-upload');
-		$fileId             = Craft::$app->getRequest()->getBodyParam('fileId');;
+		$uploadedFile       = UploadedFile::getInstanceByName('assets-upload');
+		$fileId             = Craft::$app->getRequest()->getBodyParam('fileId');
 		$folderId           = Craft::$app->getRequest()->getBodyParam('folderId');
 		$fieldId            = Craft::$app->getRequest()->getBodyParam('fieldId');
 		$elementId          = Craft::$app->getRequest()->getBodyParam('elementId');
-		$conflictResolution = Craft::$app->getRequest()->getBodyParam('conflictResolution');
+		$conflictResolution = Craft::$app->getRequest()->getBodyParam('userResponse');
 
-		$newFile = (bool) $file && empty($fileId);
+		$newFile = (bool) $uploadedFile && empty($fileId);
 		$resolveConflict = !empty($conflictResolution) && !empty($fileId);
 
 		// TODO Permission check
@@ -74,13 +76,55 @@ class AssetsController extends Controller
 			// Resolving a conflict?
 			if ($resolveConflict)
 			{
-				// Determine type and resolve
+				// When resolving a conflict, $fileId is the id of the file that was created
+				// and is conflicting with an existing file.
+				if ($conflictResolution == 'replace')
+				{
+					$fileToReplaceWith = Craft::$app->assets->getFileById($fileId);
+					$volume = $fileToReplaceWith->getVolume();
+
+					$filename = AssetsHelper::prepareAssetName(Craft::$app->getRequest()->getRequiredBodyParam('filename'));
+					$fileToReplace = Craft::$app->assets->findFile(array('filename' => $filename, 'folderId' => $fileToReplaceWith->folderId));
+
+					// Clear all thumb and transform data
+					if (ImageHelper::isImageManipulatable($fileToReplace->getExtension()))
+					{
+						Craft::$app->assetTransforms->deleteAllTransformData($fileToReplace);
+					}
+
+					if (ImageHelper::isImageManipulatable($fileToReplaceWith->getExtension()))
+					{
+						Craft::$app->assetTransforms->deleteAllTransformData($fileToReplaceWith);
+					}
+
+					// Replace the file
+					$volume->deleteFile($fileToReplace->getUri());
+					$volume->renameFile($fileToReplaceWith->getUri(), $fileToReplace->getUri());
+
+					// Update the attributes and save the Asset
+					$fileToReplace->dateModified = $fileToReplaceWith->dateModified;
+					$fileToReplace->size         = $fileToReplaceWith->size;
+					$fileToReplace->kind         = $fileToReplaceWith->kind;
+					$fileToReplace->width        = $fileToReplaceWith->width;
+					$fileToReplace->height       = $fileToReplaceWith->height;
+
+					Craft::$app->assets->saveAsset($fileToReplace);
+
+					// And delete the conflicting record
+					Craft::$app->assets->deleteFilesByIds($fileToReplaceWith->id, false);
+				}
+				else if ($conflictResolution == 'cancel')
+				{
+					Craft::$app->assets->deleteFilesByIds($fileId);
+				}
+
+				return $this->asJson(['success' => true]);
 			}
 			else if ($newFile)
 			{
-				if ($file->hasError)
+				if ($uploadedFile->hasError)
 				{
-					throw new UploadFailedException($file->error);
+					throw new UploadFailedException($uploadedFile->error);
 				}
 
 				if (empty($folderId) && (empty($fieldId) || empty($elementId)))
@@ -113,8 +157,8 @@ class AssetsController extends Controller
 					throw new HttpException(400, Craft::t('app', 'The target folder provided for uploading is not valid.'));
 				}
 
-				$pathOnServer = IOHelper::getTempFilePath($file->name);
-				$result = $file->saveAs($pathOnServer);
+				$pathOnServer = IOHelper::getTempFilePath($uploadedFile->name);
+				$result = $uploadedFile->saveAs($pathOnServer);
 
 				if (!$result)
 				{
@@ -122,20 +166,29 @@ class AssetsController extends Controller
 					throw new UploadFailedException(UPLOAD_ERR_CANT_WRITE);
 				}
 
+				$asset = new Asset();
+				$asset->newFilePath = $pathOnServer;
+				$asset->filename    = $uploadedFile->name;
+				$asset->folderId    = $folder->id;
+				$asset->volumeId    = $folder->volumeId;
+
 				try
 				{
-					$asset = new Asset();
-
-					$asset->newFilePath = $pathOnServer;
-					$asset->filename    = $file->name;
-					$asset->folderId    = $folder->id;
-					$asset->volumeId    = $folder->volumeId;
-
 					Craft::$app->assets->saveAsset($asset);
-
 					IOHelper::deleteFile($pathOnServer, true);
 				}
-					// No matter what happened, delete the file on server.
+				catch (AssetConflictException $exception)
+				{
+					// Okay, get a replacement name and re-save Asset.
+					$replacementName = Craft::$app->assets->getNameReplacementInFolder($asset->filename, $folder);
+					$asset->filename = $replacementName;
+
+					Craft::$app->assets->saveAsset($asset);
+					IOHelper::deleteFile($pathOnServer, true);
+
+					return $this->asJson(['prompt' => true, 'fileId' => $asset->id, 'filename' => $uploadedFile->name]);
+				}
+				// No matter what happened, delete the file on server.
 				catch (\Exception $exception)
 				{
 					IOHelper::deleteFile($pathOnServer, true);
@@ -149,18 +202,52 @@ class AssetsController extends Controller
 				throw new HttpException(400);
 			}
 		}
-		catch (FileException $exception)
+		catch (\Exception $exception)
 		{
 			return $this->asErrorJson($exception->getMessage());
 		}
-		catch (ElementException $exception)
+	}
+
+	/**
+	 * Replace a file
+	 *
+	 * @throws Exception
+	 * @return null
+	 */
+	public function actionReplaceFile()
+	{
+		$this->requireAjaxRequest();
+		$fileId = Craft::$app->getRequest()->getBodyParam('fileId');
+		$uploadedFile  = UploadedFile::getInstanceByName('replaceFile');
+
+		try
+		{
+			// TODO check permissions
+			if ($uploadedFile->hasError)
+			{
+				throw new UploadFailedException($uploadedFile->error);
+			}
+
+			$fileName = AssetsHelper::prepareAssetName($uploadedFile->name);
+			$pathOnServer = IOHelper::getTempFilePath($uploadedFile->name);
+			$result = $uploadedFile->saveAs($pathOnServer);
+
+			if (!$result)
+			{
+				IOHelper::deleteFile($pathOnServer, true);
+				throw new UploadFailedException(UPLOAD_ERR_CANT_WRITE);
+			}
+
+			Craft::$app->assets->replaceFile($fileId, $pathOnServer, $fileName);
+		}
+		catch (Exception $exception)
 		{
 			return $this->asErrorJson($exception->getMessage());
 		}
-		catch (ModelException $exception)
-		{
-			return $this->asErrorJson($exception->getMessage());
-		}
+
+		// AFTER REPLACE
+		return $this->asJson(['success' => true, 'fileId' => $fileId]);
+
 	}
 
 	/**

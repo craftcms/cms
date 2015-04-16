@@ -1,4 +1,4 @@
-/*! Craft 3.0.0 - 2015-04-09 */
+/*! Craft 3.0.0 - 2015-04-13 */
 (function($){
 
 if (typeof window.Craft == 'undefined')
@@ -4664,6 +4664,23 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 	_expandDropTargetFolderTimeout: null,
 	_tempExpandedFolders: [],
 
+	_fileConflictTemplate: {
+		message: "File “{file}” already exists at target location.",
+		choices: [
+			{value: 'keepBoth', title: Craft.t('Keep both')},
+			{value: 'replace', title: Craft.t('Replace it')},
+			{value: 'cancel', title: Craft.t('Cancel')}
+		]
+	},
+	_folderConflictTemplate: {
+		message: "Folder “{folder}” already exists at target location",
+		choices: [
+			{value: 'replace', title: Craft.t('Replace the existing folder')},
+			{value: 'cancel', title: Craft.t('Cancel the folder move')}
+		]
+	},
+
+
 	init: function(elementType, $container, settings)
 	{
 		this.base(elementType, $container, settings);
@@ -5529,6 +5546,10 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 			// If there is a prompt, add it to the queue
 			if (response.prompt)
 			{
+				promptData = this._fileConflictTemplate;
+				promptData.message = Craft.t(promptData.message, {file: response.filename});
+				response.prompt = promptData;
+
 				this.promptHandler.addPrompt(response);
 			}
 		}
@@ -5591,7 +5612,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 		var doFollowup = $.proxy(function(parameterArray, parameterIndex, callback)
 		{
 			var postData = {
-				newFileId:    parameterArray[parameterIndex].fileId,
+				fileId:       parameterArray[parameterIndex].fileId,
 				filename:     parameterArray[parameterIndex].filename,
 				userResponse: parameterArray[parameterIndex].choice
 			};

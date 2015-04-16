@@ -1650,7 +1650,7 @@ class IOHelper
 		$extension = strpos($extension, '.') !== false ? pathinfo($extension, PATHINFO_EXTENSION) : $extension;
 		$fileName = uniqid('craft', true).'.'.$extension;
 
-		return static::createFile(Craft::$app->path->getTempPath().$fileName)->getRealPath();
+		return static::createFile(Craft::$app->path->getTempPath().'/'.$fileName)->getRealPath();
 	}
 
 	// Private Methods

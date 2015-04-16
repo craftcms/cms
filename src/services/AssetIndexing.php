@@ -316,7 +316,7 @@ class AssetIndexing extends Component
 			->select('fi.volumeId, fi.id AS fileId, fi.filename, fo.path, s.name AS volumeName')
 			->from('{{%assets}} AS fi')
 			->innerJoin('{{%volumefolders}} AS fo', 'fi.folderId = fo.id')
-			->innerJoin('{{%assetvolumes}} AS s', 's.id = fi.volumeId')
+			->innerJoin('{{%volumes}} AS s', 's.id = fi.volumeId')
 			->where(array('in', 'fi.volumeId', $volumeIds))
 			->all();
 
