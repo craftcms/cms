@@ -548,7 +548,7 @@ class AssetTransforms extends Component
 
 		if ($entry)
 		{
-			return new AssetTransformIndex($entry);
+			return AssetTransformIndex::create($entry);
 		}
 
 		return null;
