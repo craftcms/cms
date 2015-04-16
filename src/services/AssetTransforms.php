@@ -492,21 +492,20 @@ class AssetTransforms extends Component
 	 */
 	public function storeTransformIndexData(AssetTransformIndex $index)
 	{
-		$values = $index->toArray();
-
-		// These do not really belong here.
-		unset($values['detectedFormat']);
-		unset($values['transform']);
-
-		// TODO HELP ME PLEASE
-		$values['dateIndexed'] = DateTimeHelper::formatTimeForDb($values['dateIndexed']['date']);
-		$values['dateCreated'] = DateTimeHelper::formatTimeForDb($values['dateCreated']['date']);
-		$values['dateUpdated'] = DateTimeHelper::formatTimeForDb($values['dateUpdated']['date']);
+		$values = $index->toArray([
+			'fileId',
+			'filename',
+			'format',
+			'location',
+			'volumeId',
+			'fileExists',
+			'inProgress',
+			'dateIndexed',
+		], [], false);
 
 		if (!empty($index->id))
 		{
-			$id = $index->id;
-			Craft::$app->getDb()->createCommand()->update('{{%assettransformindex}}', $values, 'id = :id', [':id' => $id])->execute();
+			Craft::$app->getDb()->createCommand()->update('{{%assettransformindex}}', $values, 'id = :id', [':id' => $index->id])->execute();
 		}
 		else
 		{
