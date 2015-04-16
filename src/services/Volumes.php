@@ -42,6 +42,11 @@ class Volumes extends Component
 	// =========================================================================
 
 	/**
+	 * @var array
+	 */
+	private $_additionalVolumeTypes = [];
+
+	/**
 	 * @var
 	 */
 	private $_allVolumeIds;
@@ -88,11 +93,20 @@ class Volumes extends Component
 			$volumeTypes[] = Rackspace::className();
 		}
 
-		return $volumeTypes;
+		return array_merge($volumeTypes, $this->_additionalVolumeTypes);
 	}
 
-	// Volumes
-	// -------------------------------------------------------------------------
+	/**
+	 * Register a volume type
+	 *
+	 * @param array $types
+	 * @return bool
+	 */
+	public function registerVolumeType($types = array())
+	{
+		$this->_additionalVolumeTypes = array_merge($this->_additionalVolumeTypes, $types);
+		return true;
+	}
 
 	/**
 	 * Returns all of the volume IDs.
