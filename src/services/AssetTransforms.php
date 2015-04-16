@@ -201,7 +201,7 @@ class AssetTransforms extends Component
 		else
 		{
 			$transform->addErrors($transformRecord->getErrors());
-			$exception = new ModelValidationException(Craft::t('app', 'There were errors while svaing the Asset Transform.'));
+			$exception = new ModelValidationException(Craft::t('app', 'There were errors while saving the Asset Transform.'));
 			$exception->setModel($transform);
 
 			throw $exception;
