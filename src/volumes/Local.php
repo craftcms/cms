@@ -99,6 +99,6 @@ class Local extends Volume
 	 */
 	protected function createAdapter()
 	{
-		return new LocalAdapter($this->path);
+		return new LocalAdapter($this->getRootPath());
 	}
 }
