@@ -91,6 +91,16 @@ class AssetTransformIndex extends Model
 	/**
 	 * @inheritdoc
 	 */
+	public function datetimeAttributes()
+	{
+		$names = parent::datetimeAttributes();
+		$names[] = 'dateIndexed';
+		return $names;
+	}
+
+	/**
+	 * @inheritdoc
+	 */
 	public function rules()
 	{
 		return [
@@ -115,15 +125,5 @@ class AssetTransformIndex extends Model
 	public function __toString()
 	{
 		return $this->id;
-	}
-
-	/**
-	 * @inheritdoc
-	 */
-	public function datetimeAttributes()
-	{
-		$names = parent::datetimeAttributes();
-		$names[] = 'dateIndexed';
-		return $names;
 	}
 }
