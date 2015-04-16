@@ -17,6 +17,7 @@ use craft\app\errors\DbConnectException;
 use craft\app\errors\Exception;
 use craft\app\helpers\AppHelper;
 use craft\app\helpers\DbHelper;
+use craft\app\helpers\IOHelper;
 use craft\app\helpers\StringHelper;
 use craft\app\helpers\UrlHelper;
 use craft\app\i18n\Locale;
@@ -796,6 +797,8 @@ trait ApplicationTrait
 		/* @var $this \craft\app\web\Application|\craft\app\console\Application */
 		switch ($id)
 		{
+			case 'assetManager':
+				return $this->_getAssetManagerDefinition();
 			case 'cache':
 				return $this->_getCacheDefinition();
 			case 'db':
@@ -805,6 +808,28 @@ trait ApplicationTrait
 			case 'locale':
 				return $this->_getLocaleDefinition();
 		}
+	}
+
+	/**
+	 * Returns the definition for the [[\yii\web\AssetManager]] object that will be available from Craft::$app->assetManager.
+	 *
+	 * @return array
+	 */
+	private function _getAssetManagerDefinition()
+	{
+		/* @var $this \craft\app\web\Application|\craft\app\console\Application */
+		$configService = Craft::$app->config;
+		$basePath = Craft::getAlias($configService->get('resourceBasePath'));
+		$baseUrl = $configService->get('resourceBaseUrl');
+
+		// Make sure the base path actually exists
+		IOHelper::ensureFolderExists($basePath);
+
+		return [
+			'class' => 'yii\web\AssetManager',
+			'basePath' => $basePath,
+			'baseUrl' => $baseUrl
+		];
 	}
 
 	/**

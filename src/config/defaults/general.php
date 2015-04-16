@@ -412,6 +412,15 @@ return [
 	 */
 	'requireUserAgentAndIpForSession' => true,
 
+	/**
+	 * The path to the root directory that should store published CP resources.
+	 */
+	'resourceBasePath' => '@webroot/cpresources',
+
+	/**
+	 * The URL to the root directory that should store published CP resources.
+	 */
+	'resourceBaseUrl' => '@web/cpresources',
 
 	/**
 	 * The URI segment Craft should use for resource URLs on the front end.
