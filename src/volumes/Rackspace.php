@@ -160,7 +160,7 @@ class Rackspace extends Volume
 	 */
 	public function getRootUrl()
 	{
-		return rtrim($this->url, '/').'/'.rtrim($this->subfolder, '/').'/';
+		return rtrim(rtrim($this->url, '/').'/'.$this->subfolder, '/').'/';
 	}
 
 	// Protected Methods
