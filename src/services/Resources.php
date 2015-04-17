@@ -98,23 +98,6 @@ class Resources extends Component
 		{
 			switch($segs[0])
 			{
-				case 'js':
-				{
-					// Route to js/compressed/ if useCompressedJs is enabled
-					// unless js/uncompressed/* is requested, in which case drop the uncompressed/ seg
-					if (isset($segs[1]) && $segs[1] == 'uncompressed')
-					{
-						array_splice($segs, 1, 1);
-					}
-					else if (Craft::$app->config->get('useCompressedJs'))
-					{
-						array_splice($segs, 1, 0, 'compressed');
-					}
-
-					$path = implode('/', $segs);
-					break;
-				}
-
 				case 'userphotos':
 				{
 					if (isset($segs[1]) && $segs[1] == 'temp')
