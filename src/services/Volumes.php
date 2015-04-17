@@ -464,7 +464,7 @@ class Volumes extends Component
 
 		try
 		{
-			return ComponentHelper::createComponent($config, self::VOLUME_INTERFACE);
+			return ComponentHelper::createComponent($config, static::VOLUME_INTERFACE);
 		}
 		catch (InvalidComponentException $e)
 		{
