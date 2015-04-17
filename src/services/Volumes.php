@@ -377,7 +377,7 @@ class Volumes extends Component
 					// Update the top folder's name with the volume's new name
 					$topFolder = Craft::$app->assets->findFolder(array('volumeId' => $volume->id, 'parentId' => ':empty:'));
 
-					if ($topFolder->name != $volume->name)
+					if ($topFolder !== null && $topFolder->name != $volume->name)
 					{
 						$topFolder->name = $volume->name;
 						Craft::$app->assets->storeFolderRecord($topFolder);
