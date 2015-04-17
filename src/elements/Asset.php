@@ -704,7 +704,9 @@ class Asset extends Element
 	{
 		if ($this->hasThumb())
 		{
-			return $this->getUrl(['width' => $size, 'height' => $size]);
+			return UrlHelper::getResourceUrl('assetthumbs/'.$this->id.'/'.$size, [
+				Craft::$app->resources->dateParam => $this->dateModified->getTimestamp()
+			]);
 		}
 		else
 		{
