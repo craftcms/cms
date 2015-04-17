@@ -214,6 +214,9 @@ class Resources extends Component
 
 					$size = $segs[2];
 
+					// Make sure plugins are loaded in case the asset lives in a plugin-supplied volume type
+					Craft::$app->plugins->loadPlugins();
+
 					return Craft::$app->assetTransforms->getThumbServerPath($fileModel, $size);
 				}
 
@@ -239,6 +242,9 @@ class Resources extends Component
 
 				case 'transforms':
 				{
+					// Make sure plugins are loaded in case the asset lives in a plugin-supplied volume type
+					Craft::$app->plugins->loadPlugins();
+
 					try
 					{
 						if (!empty($segs[1]))
