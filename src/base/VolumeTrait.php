@@ -21,11 +21,6 @@ trait VolumeTrait
 	// =========================================================================
 
 	/**
-	 * @var array Settings
-	 */
-	public $settings;
-
-	/**
 	 * @var string Name
 	 */
 	public $name;
