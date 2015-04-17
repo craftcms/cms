@@ -559,7 +559,8 @@ class Plugins extends Component
 	public function getConfig($handle)
 	{
 		// Make sure this plugin has a config.json file
-		$configPath = Craft::$app->path->getPluginsPath()."/$handle/config.json";
+		$basePath = Craft::$app->path->getPluginsPath().'/'.$handle;
+		$configPath = $basePath.'/config.json';
 
 		if (($configPath = IOHelper::fileExists($configPath)) === false)
 		{
@@ -570,7 +571,6 @@ class Plugins extends Component
 		try
 		{
 			$config = array_merge([
-				'class' => "\\craft\\plugins\\$handle\\Plugin",
 				'developer' => null,
 				'developerUrl' => null
 			], JsonHelper::decode(IOHelper::getFileContents($configPath)));
@@ -586,6 +586,21 @@ class Plugins extends Component
 		{
 			Craft::warning("Missing 'name' or 'version' keys in $configPath.");
 			return null;
+		}
+
+		// Set the class
+		if (empty($config['class']))
+		{
+			// Do they have a custom Plugin class?
+			if (IOHelper::fileExists($basePath.'/Plugin.php'))
+			{
+				$config['class'] = "\\craft\\plugins\\$handle\\Plugin";
+			}
+			else
+			{
+				// Just use the base one
+				$config['class'] = Plugin::className();
+			}
 		}
 
 		return $config;

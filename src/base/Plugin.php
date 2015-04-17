@@ -21,7 +21,7 @@ use yii\base\Module;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */
-abstract class Plugin extends Module implements PluginInterface
+class Plugin extends Module implements PluginInterface
 {
 	// Traits
 	// =========================================================================
