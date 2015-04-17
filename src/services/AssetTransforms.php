@@ -11,6 +11,7 @@ use Craft;
 use craft\app\db\Query;
 use craft\app\dates\DateTime;
 use craft\app\elements\Asset;
+use craft\app\errors\VolumeFileExistsException;
 use craft\app\helpers\AssetsHelper;
 use craft\app\helpers\DateTimeHelper;
 use craft\app\helpers\ImageHelper;
@@ -1092,7 +1093,15 @@ class AssetTransforms extends Component
 		$transformPath = $file->getFolder()->path . $this->getTransformSubpath($file, $index);
 
 		$stream = fopen($createdTransform, "r");
-		$volume->createFileByStream($transformPath, $stream);
+
+		try
+		{
+			$volume->createFileByStream($transformPath, $stream);
+		}
+		catch (VolumeFileExistsException $e)
+		{
+		}
+
 		IOHelper::deleteFile($createdTransform);
 
 		if (!$file->getVolume()->isLocal())
