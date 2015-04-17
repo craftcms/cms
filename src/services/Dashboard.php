@@ -50,14 +50,20 @@ class Dashboard extends Component
 	 */
 	public function getAllWidgetTypes()
 	{
-		// TODO: Come up with a way for plugins to add more widget classes
-		return [
+		$widgetTypes = [
 			FeedWidget::className(),
 			GetHelpWidget::className(),
 			QuickPostWidget::className(),
 			RecentEntriesWidget::className(),
 			UpdatesWidget::className(),
 		];
+
+		foreach (Craft::$app->plugins->call('getWidgetTypes', [], true) as $pluginWidgetTypes)
+		{
+			$widgetTypes = array_merge($widgetTypes, $pluginWidgetTypes);
+		}
+
+		return $widgetTypes;
 	}
 
 	/**

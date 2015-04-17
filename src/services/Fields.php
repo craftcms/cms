@@ -271,8 +271,7 @@ class Fields extends Component
 	 */
 	public function getAllFieldTypes()
 	{
-		// TODO: Come up with a way for plugins to add more field classes
-		return [
+		$fieldTypes = [
 			AssetsField::className(),
 			CategoriesField::className(),
 			CheckboxesField::className(),
@@ -292,6 +291,13 @@ class Fields extends Component
 			TagsField::className(),
 			UsersField::className(),
 		];
+
+		foreach (Craft::$app->plugins->call('getFieldTypes', [], true) as $pluginFieldTypes)
+		{
+			$fieldTypes = array_merge($fieldTypes, $pluginFieldTypes);
+		}
+
+		return $fieldTypes;
 	}
 
 	/**

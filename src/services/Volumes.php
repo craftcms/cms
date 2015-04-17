@@ -42,11 +42,6 @@ class Volumes extends Component
 	// =========================================================================
 
 	/**
-	 * @var array
-	 */
-	private $_additionalVolumeTypes = [];
-
-	/**
 	 * @var
 	 */
 	private $_allVolumeIds;
@@ -84,28 +79,25 @@ class Volumes extends Component
 	 */
 	public function getAllVolumeTypes()
 	{
-		$volumeTypes = [Local::className()];
+		$volumeTypes = [
+			Local::className()
+		];
 
 		if (Craft::$app->getEdition() == Craft::Pro)
 		{
-			$volumeTypes[] = AwsS3::className();
-			$volumeTypes[] = GoogleCloud::className();
-			$volumeTypes[] = Rackspace::className();
+			$volumeTypes = array_merge($volumeTypes, [
+				AwsS3::className(),
+				GoogleCloud::className(),
+				Rackspace::className(),
+			]);
 		}
 
-		return array_merge($volumeTypes, $this->_additionalVolumeTypes);
-	}
+		foreach (Craft::$app->plugins->call('getVolumeTypes', [], true) as $pluginVolumeTypes)
+		{
+			$volumeTypes = array_merge($volumeTypes, $pluginVolumeTypes);
+		}
 
-	/**
-	 * Register a volume type
-	 *
-	 * @param array $types
-	 * @return bool
-	 */
-	public function registerVolumeType($types = array())
-	{
-		$this->_additionalVolumeTypes = array_merge($this->_additionalVolumeTypes, $types);
-		return true;
+		return $volumeTypes;
 	}
 
 	/**
