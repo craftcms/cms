@@ -610,11 +610,11 @@ class IOHelper
 	 * Returns the contents of a folder as an array of file and folder paths, or false if the folder does not exist or
 	 * is not readable.
 	 *
-	 * @param string $path               The path to test.
-	 * @param bool   $recursive          Whether to do a recursive folder search.
-	 * @param bool   $filter             The filter to use when performing the search.
-	 * @param bool   $includeHiddenFiles Whether to include hidden files (that start with a .) in the results.
-	 * @param bool   $suppressErrors     Whether to suppress any PHP Notices/Warnings/Errors (usually permissions
+	 * @param string          $path               The path to test.
+	 * @param boolean         $recursive          Whether to do a recursive folder search.
+	 * @param string|string[] $filter             The filter to use when performing the search.
+	 * @param boolean         $includeHiddenFiles Whether to include hidden files (that start with a .) in the results.
+	 * @param boolean         $suppressErrors     Whether to suppress any PHP Notices/Warnings/Errors (usually permissions
 	 *                                   related).
 	 *
 	 * @return array|bool An array of file and folder paths, or false if the folder does not exist or is not readable.
