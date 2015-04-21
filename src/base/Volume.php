@@ -150,7 +150,14 @@ abstract class Volume extends SavableComponent implements VolumeInterface
 	 */
 	public function renameFile($path, $newPath)
 	{
-		return $this->getFilesystem()->rename($path, $newPath);
+		try
+		{
+			return $this->getFilesystem()->rename($path, $newPath);
+		}
+		catch (FileExistsException $exception)
+		{
+			throw new VolumeFileExistsException($exception->getMessage());
+		}
 	}
 
 	/**

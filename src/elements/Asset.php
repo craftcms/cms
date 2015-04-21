@@ -321,7 +321,7 @@ class Asset extends Element
 			$newFilename = $params['filename'];
 
 			// Rename the file
-			$response = Craft::$app->assets->renameFile($element, $newFilename);
+			$response = Craft::$app->assets->renameAsset($element, $newFilename);
 
 			// Did it work?
 			if ($response->isConflict())
@@ -346,7 +346,7 @@ class Asset extends Element
 		if (!$success && $newFilename)
 		{
 			// Better rename it back
-			Craft::$app->assets->renameFile($element, $oldFilename);
+			Craft::$app->assets->renameAsset($element, $oldFilename);
 		}
 
 		return $success;

@@ -245,7 +245,6 @@ class AssetsController extends Controller
 			return $this->asErrorJson($exception->getMessage());
 		}
 
-		// AFTER REPLACE
 		return $this->asJson(['success' => true, 'fileId' => $fileId]);
 
 	}
@@ -362,7 +361,7 @@ class AssetsController extends Controller
 	{
 		$this->requireLogin();
 
-		$fileIds            = Craft::$app->getRequest()->getRequiredBodyParam('fileId');
+		$fileId             = Craft::$app->getRequest()->getRequiredBodyParam('fileId');
 		$folderId           = Craft::$app->getRequest()->getBodyParam('folderId');
 		$filename           = Craft::$app->getRequest()->getBodyParam('filename');
 		$conflictResolution = Craft::$app->getRequest()->getBodyParam('conflictResolution');
@@ -370,25 +369,50 @@ class AssetsController extends Controller
 		// TODO permission checks
 		try
 		{
+			$asset = Craft::$app->assets->getFileById($fileId);
+
+			if (empty($asset))
+			{
+				throw new AssetMissingException(Craft::t('app', 'The Asset is missing.'));
+			}
+
 			if (!empty($filename))
 			{
-				$file = Craft::$app->assets->getFileById($fileIds);
-
-				if (empty($file))
-				{
-					throw new AssetMissingException(Craft::t('app', 'The Asset cannot is missing.'));
-				}
-
-				Craft::$app->assets->renameFile($file, $filename);
+				Craft::$app->assets->renameAsset($asset, $filename);
 
 				return $this->asJson(['success' => true]);
 			}
 			else
 			{
-				// Move files.
+				if ($asset->folderId != $folderId)
+				{
+					if (!empty($conflictResolution))
+					{
+						if ($conflictResolution == 'replace')
+						{
+
+						}
+						else if ($conflictResolution == 'keep_both')
+						{
+
+						}
+					}
+					else
+					{
+						try
+						{
+							Craft::$app->assets->moveAsset($asset, $folderId);
+						}
+						catch (AssetConflictException $exception)
+						{
+							return $this->asJson(['prompt' => true, 'filename' => $asset->filename]);
+						}
+
+					}
+				}
 			}
 		}
-		catch (AssetException $exception)
+		catch (\Exception $exception)
 		{
 			return $this->asErrorJson($exception->getMessage());
 		}
