@@ -143,15 +143,21 @@ class ImagesService extends BaseApplicationComponent
 	 */
 	public function cleanImage($filePath)
 	{
-		if (craft()->config->get('rotateImagesOnUploadByExifData'))
+		try
 		{
-			$this->rotateImageByExifData($filePath);
+			if (craft()->config->get('rotateImagesOnUploadByExifData'))
+			{
+				$this->rotateImageByExifData($filePath);
+			}
+
+			$this->stripOrientationFromExifData($filePath);
+		}
+		catch (\Exception $e)
+		{
+			Craft::log('Tried to rotate or strip EXIF data from image and failed: '.$e->getMessage(), LogLevel::Error);
 		}
 
-		$this->stripOrientationFromExifData($filePath);
-
 		return $this->loadImage($filePath)->saveAs($filePath, true);
-
 	}
 
 	/**

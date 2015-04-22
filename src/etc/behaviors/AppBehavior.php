@@ -729,20 +729,23 @@ class AppBehavior extends BaseBehavior
 				// Is it set to "auto"?
 				if ($locale == 'auto')
 				{
-					// Place this within a try/catch in case userSession is being fussy.
-					try
+					// Prevents a PHP notice in case the session failed to start, for whatever reason.
+					if (craft()->getComponent('userSession', false))
 					{
-						// If the user is logged in *and* has a primary language set, use that
-						$user = craft()->userSession->getUser();
-
-						if ($user && $user->preferredLocale)
+						// Place this within a try/catch in case userSession is being fussy.
+						try
 						{
-							return $user->preferredLocale;
+							// If the user is logged in *and* has a primary language set, use that
+							$user = craft()->userSession->getUser();
+
+							if ($user && $user->preferredLocale)
+							{
+								return $user->preferredLocale;
+							}
+						} catch (\Exception $e)
+						{
+							Craft::log("Tried to determine the user's preferred locale, but got this exception: ".$e->getMessage(), LogLevel::Error);
 						}
-					}
-					catch (\Exception $e)
-					{
-						Craft::log("Tried to determine the user's preferred locale, but got this exception: ".$e->getMessage(), LogLevel::Error);
 					}
 
 					// Otherwise check if the browser's preferred language matches any of the site locales

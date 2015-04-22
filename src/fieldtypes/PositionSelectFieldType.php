@@ -23,7 +23,7 @@ class PositionSelectFieldType extends BaseFieldType
 	 */
 	public function getName()
 	{
-		return 'Position Select';
+		return Craft::t('Position Select');
 	}
 
 	/**

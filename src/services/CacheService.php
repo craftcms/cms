@@ -192,7 +192,7 @@ class CacheService extends BaseApplicationComponent
 		// In case there is a problem un-serializing the data.
 		try
 		{
-			$value = $this->_cacheComponent->get($ids);
+			$value = $this->_cacheComponent->mget($ids);
 		}
 		catch (\Exception $e)
 		{

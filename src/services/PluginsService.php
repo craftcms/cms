@@ -814,7 +814,7 @@ class PluginsService extends BaseApplicationComponent
 		if (IOHelper::folderExists($migrationsFolder))
 		{
 			$migrations = array();
-			$migrationFiles = IOHelper::getFolderContents($migrationsFolder, false, "(m(\d{6}_\d{6})_.*?)\.php");
+			$migrationFiles = IOHelper::getFolderContents($migrationsFolder, false, "(m(\d{6}_\d{6})_.*?)\.php$");
 
 			if ($migrationFiles)
 			{
