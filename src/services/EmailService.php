@@ -151,6 +151,9 @@ class EmailService extends BaseApplicationComponent
 		$originalTemplatesPath = craft()->path->getTemplatesPath();
 		craft()->path->setTemplatesPath($tempTemplatesPath);
 
+		// Tell the template which email key was being requested
+		$variables['emailKey'] = $key;
+
 		// Send the email
 		$return = $this->_sendEmail($user, $emailModel, $variables);
 
