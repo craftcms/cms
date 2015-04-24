@@ -717,7 +717,7 @@ class CategoriesService extends BaseApplicationComponent
 				}
 
 				// Update the category's descendants, who may be using this category's URI in their own URIs
-				craft()->elements->updateDescendantSlugsAndUris($category);
+				craft()->elements->updateDescendantSlugsAndUris($category, true, true);
 			}
 			else
 			{

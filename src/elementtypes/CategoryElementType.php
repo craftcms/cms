@@ -394,7 +394,7 @@ class CategoryElementType extends BaseElementType
 		if ($element->getGroup()->structureId == $structureId)
 		{
 			// Update its URI
-			craft()->elements->updateElementSlugAndUri($element);
+			craft()->elements->updateElementSlugAndUri($element, true, true, true);
 
 			// Make sure that each of the category's ancestors are related wherever the category is related
 			$newRelationValues = array();

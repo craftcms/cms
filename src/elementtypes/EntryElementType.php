@@ -773,7 +773,7 @@ class EntryElementType extends BaseElementType
 
 		if ($section->type == SectionType::Structure && $section->structureId == $structureId)
 		{
-			craft()->elements->updateElementSlugAndUri($element);
+			craft()->elements->updateElementSlugAndUri($element, true, true, true);
 		}
 	}
 }
