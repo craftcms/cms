@@ -21,6 +21,11 @@ class UpdateElementSlugsAndUrisTask extends BaseTask
 	 */
 	private $_elementIds;
 
+	/**
+	 * @var
+	 */
+	private $_skipRemainingEntries;
+
 	// Public Methods
 	// =========================================================================
 
@@ -42,6 +47,8 @@ class UpdateElementSlugsAndUrisTask extends BaseTask
 	public function getTotalSteps()
 	{
 		$this->_elementIds = (array) $this->getSettings()->elementId;
+		$this->_skipRemainingEntries = false;
+
 		return count($this->_elementIds);
 	}
 
@@ -54,6 +61,11 @@ class UpdateElementSlugsAndUrisTask extends BaseTask
 	 */
 	public function runStep($step)
 	{
+		if ($this->_skipRemainingEntries)
+		{
+			return true;
+		}
+
 		$elementsService = craft()->elements;
 		$settings = $this->getSettings();
 		$element = $elementsService->getElementById($this->_elementIds[$step], $settings->elementType, $settings->locale);
@@ -84,6 +96,11 @@ class UpdateElementSlugsAndUrisTask extends BaseTask
 					'updateDescendants'  => true,
 				));
 			}
+		}
+		else if ($step === 0)
+		{
+			// Don't bother updating the other entries
+			$this->_skipRemainingEntries = true;
 		}
 
 		return true;
