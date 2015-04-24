@@ -390,7 +390,7 @@ var CP = Garnish.Base.extend(
 			.velocity('fadeOut');
 
 		this.trigger('displayNotification', {
-			type: type,
+			notificationType: type,
 			message: message
 		});
 	},
