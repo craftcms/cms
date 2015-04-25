@@ -71,11 +71,6 @@ abstract class Model extends \yii\base\Model
 	 */
 	protected $classSuffix = 'Model';
 
-	/**
-	 * @var
-	 */
-	private $_classHandle;
-
 	// Public Methods
 	// =========================================================================
 
