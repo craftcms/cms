@@ -26,7 +26,7 @@ use yii\base\Component;
 /**
  * Class Updates service.
  *
- * An instance of the Updates service is globally accessible in Craft via [[Application::updates `Craft::$app->updates`]].
+ * An instance of the Updates service is globally accessible in Craft via [[Application::updates `Craft::$app->getUpdates()`]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
@@ -227,7 +227,7 @@ class Updates extends Component
 	{
 		Craft::info('Flushing update info from cache.', __METHOD__);
 
-		if (IOHelper::clearFolder(Craft::$app->path->getCompiledTemplatesPath(), true) && Craft::$app->getCache()->flush())
+		if (IOHelper::clearFolder(Craft::$app->getPath()->getCompiledTemplatesPath(), true) && Craft::$app->getCache()->flush())
 		{
 			return true;
 		}
@@ -256,14 +256,14 @@ class Updates extends Component
 	 */
 	public function check()
 	{
-		Craft::$app->config->maxPowerCaptain();
+		Craft::$app->getConfig()->maxPowerCaptain();
 
 		$updateModel = new UpdateModel();
 		$updateModel->app = new AppUpdateModel();
 		$updateModel->app->localVersion = Craft::$app->version;
 		$updateModel->app->localBuild   = Craft::$app->build;
 
-		$plugins = Craft::$app->plugins->getAllPlugins();
+		$plugins = Craft::$app->getPlugins()->getAllPlugins();
 
 		$pluginUpdateModels = [];
 
@@ -278,7 +278,7 @@ class Updates extends Component
 
 		$updateModel->plugins = $pluginUpdateModels;
 
-		$etModel = Craft::$app->et->checkForUpdates($updateModel);
+		$etModel = Craft::$app->getET()->checkForUpdates($updateModel);
 		return $etModel;
 	}
 
@@ -291,8 +291,8 @@ class Updates extends Component
 	public function getUnwritableFolders()
 	{
 		$checkPaths = [
-			Craft::$app->path->getAppPath(),
-			Craft::$app->path->getPluginsPath(),
+			Craft::$app->getPath()->getAppPath(),
+			Craft::$app->getPath()->getPluginsPath(),
 		];
 
 		$errorPath = null;
@@ -470,7 +470,7 @@ class Updates extends Component
 			}
 			else
 			{
-				$plugin = Craft::$app->plugins->getPlugin($handle);
+				$plugin = Craft::$app->getPlugins()->getPlugin($handle);
 				if ($plugin)
 				{
 					Craft::info('The plugin, '.$plugin->name.' wants to update the database.', __METHOD__);
@@ -531,9 +531,9 @@ class Updates extends Component
 			// Fire an 'afterUpdateFail' event
 			$this->trigger(static::EVENT_AFTER_UPDATE_FAIL, new Event());
 
-			Craft::$app->config->maxPowerCaptain();
+			Craft::$app->getConfig()->maxPowerCaptain();
 
-			if ($dbBackupPath && Craft::$app->config->get('backupDbOnUpdate') && Craft::$app->config->get('restoreDbOnUpdateFailure'))
+			if ($dbBackupPath && Craft::$app->getConfig()->get('backupDbOnUpdate') && Craft::$app->getConfig()->get('restoreDbOnUpdateFailure'))
 			{
 				Craft::info('Rolling back any database changes.', __METHOD__);
 				UpdateHelper::rollBackDatabaseChanges($dbBackupPath);
@@ -574,11 +574,11 @@ class Updates extends Component
 	 */
 	public function isPluginDbUpdateNeeded()
 	{
-		$plugins = Craft::$app->plugins->getAllPlugins();
+		$plugins = Craft::$app->getPlugins()->getAllPlugins();
 
 		foreach ($plugins as $plugin)
 		{
-			if (Craft::$app->plugins->doesPluginRequireDatabaseUpdate($plugin))
+			if (Craft::$app->getPlugins()->doesPluginRequireDatabaseUpdate($plugin))
 			{
 				return true;
 			}
@@ -663,11 +663,11 @@ class Updates extends Component
 	{
 		$pluginsThatNeedDbUpdate = [];
 
-		$plugins = Craft::$app->plugins->getAllPlugins();
+		$plugins = Craft::$app->getPlugins()->getAllPlugins();
 
 		foreach ($plugins as $plugin)
 		{
-			if (Craft::$app->plugins->doesPluginRequireDatabaseUpdate($plugin))
+			if (Craft::$app->getPlugins()->doesPluginRequireDatabaseUpdate($plugin))
 			{
 				$pluginsThatNeedDbUpdate[] = $plugin;
 			}

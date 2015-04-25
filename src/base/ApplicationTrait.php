@@ -28,6 +28,57 @@ use yii\base\InvalidConfigException;
 /**
  * ApplicationTrait
  *
+ * @property \craft\app\services\Assets           $assets           The assets service
+ * @property \craft\app\services\AssetIndexer     $assetIndexing    The asset indexer service
+ * @property \craft\app\services\AssetTransforms  $assetTransforms  The asset transforms service
+ * @property \craft\app\services\Categories       $categories       The categories service
+ * @property \craft\app\services\Config           $config           The config service
+ * @property \craft\app\services\Content          $content          The content service
+ * @property \craft\app\services\Dashboard        $dashboard        The dashboard service
+ * @property \craft\app\db\Connection             $db               The database connection component
+ * @property \craft\app\services\Deprecator       $deprecator       The deprecator service
+ * @property \craft\app\services\Elements         $elements         The elements service
+ * @property \craft\app\services\EmailMessages    $emailMessages    The email messages service
+ * @property \craft\app\services\Email            $email            The email service
+ * @property \craft\app\services\Entries          $entries          The entries service
+ * @property \craft\app\services\EntryRevisions   $entryRevisions   The entry revisions service
+ * @property \craft\app\services\ET               $et               The E.T. service
+ * @property \craft\app\services\Feeds            $feeds            The feeds service
+ * @property \craft\app\services\Fields           $fields           The fields service
+ * @property \craft\app\i18n\Formatter            $formatter        The formatter component
+ * @property \craft\app\services\Globals          $globals          The globals service
+ * @property \craft\app\i18n\I18N                 $i18n             The internationalization (i18n) component
+ * @property \craft\app\services\Images           $images           The images service
+ * @property \craft\app\i18n\Locale               $locale           The Locale object for the target language
+ * @property \craft\app\services\Matrix           $matrix           The matrix service
+ * @property \craft\app\db\MigrationManager       $migrator         The application’s migration manager
+ * @property \craft\app\services\Path             $path             The path service
+ * @property \craft\app\services\Plugins          $plugins          The plugins service
+ * @property \craft\app\services\Relations        $relations        The relations service
+ * @property \craft\app\services\Resources        $resources        The resources service
+ * @property \craft\app\services\Routes           $routes           The routes service
+ * @property \craft\app\services\Search           $search           The search service
+ * @property \craft\app\services\Security         $security         The security component
+ * @property \craft\app\services\Sections         $sections         The sections service
+ * @property \craft\app\services\Structures       $structures       The structures service
+ * @property \craft\app\services\SystemSettings   $systemSettings   The system settings service
+ * @property \craft\app\services\Tags             $tags             The tags service
+ * @property \craft\app\services\Tasks            $tasks            The tasks service
+ * @property \craft\app\services\TemplateCache    $templateCache    The template cache service
+ * @property \craft\app\services\Tokens           $tokens           The tokens service
+ * @property \craft\app\services\Updates          $updates          The updates service
+ * @property \craft\app\services\UserGroups       $userGroups       The user groups service
+ * @property \craft\app\services\UserPermissions  $userPermissions  The user permissions service
+ * @property \craft\app\services\Users            $users            The users service
+ * @property \craft\app\web\View                  $view             The view component
+ * @property \craft\app\services\Volumes          $volumes          The volumes service
+ *
+ * @method \craft\app\db\Connection               getDb()           Returns the database connection component.
+ * @method \craft\app\i18n\Formatter              getFormatter()    Returns the formatter component.
+ * @method \craft\app\i18n\I18N                   getI18n()         Returns the internationalization (i18n) component.
+ * @method \craft\app\services\Security           getSecurity()     Returns the security component.
+ * @method \craft\app\web\View                    getView()         Returns the view component.
+ *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */
@@ -120,16 +171,6 @@ trait ApplicationTrait
 
 	// Public Methods
 	// =========================================================================
-
-	/**
-	 * Returns a [[Locale]] object for the target language.
-	 *
-	 * @return Locale The locale object for the target language.
-	 */
-	public function getLocale()
-	{
-		return $this->get('locale');
-	}
 
 	/**
 	 * Returns the target app language.
@@ -427,14 +468,14 @@ trait ApplicationTrait
 		if (!isset($this->_siteName))
 		{
 			// Start by checking the config
-			$siteName = $this->config->getLocalized('siteName');
+			$siteName = $this->getConfig()->getLocalized('siteName');
 
 			if (!$siteName)
 			{
 				$siteName = $this->getInfo('siteName');
 
 				// Parse it for environment variables
-				$siteName = $this->config->parseEnvironmentString($siteName);
+				$siteName = $this->getConfig()->parseEnvironmentString($siteName);
 			}
 
 			$this->_siteName = $siteName;
@@ -457,7 +498,7 @@ trait ApplicationTrait
 		if (!isset($this->_siteUrl))
 		{
 			// Start by checking the config
-			$siteUrl = $this->config->getLocalized('siteUrl');
+			$siteUrl = $this->getConfig()->getLocalized('siteUrl');
 
 			if (!$siteUrl)
 			{
@@ -473,7 +514,7 @@ trait ApplicationTrait
 				if ($siteUrl)
 				{
 					// Parse it for environment variables
-					$siteUrl = $this->config->parseEnvironmentString($siteUrl);
+					$siteUrl = $this->getConfig()->parseEnvironmentString($siteUrl);
 				}
 				else
 				{
@@ -520,7 +561,7 @@ trait ApplicationTrait
 	public function isSystemOn()
 	{
 		/* @var $this \craft\app\web\Application|\craft\app\console\Application */
-		if (is_bool($on = $this->config->get('isSystemOn')))
+		if (is_bool($on = $this->getConfig()->get('isSystemOn')))
 		{
 			return $on;
 		}
@@ -673,12 +714,12 @@ trait ApplicationTrait
 		{
 			$messages = [];
 
-			$databaseServerName = $this->config->get('server', ConfigCategory::Db);
-			$databaseAuthName = $this->config->get('user', ConfigCategory::Db);
-			$databaseName = $this->config->get('database', ConfigCategory::Db);
-			$databasePort = $this->config->get('port', ConfigCategory::Db);
-			$databaseCharset = $this->config->get('charset', ConfigCategory::Db);
-			$databaseCollation = $this->config->get('collation', ConfigCategory::Db);
+			$databaseServerName = $this->getConfig()->get('server', ConfigCategory::Db);
+			$databaseAuthName = $this->getConfig()->get('user', ConfigCategory::Db);
+			$databaseName = $this->getConfig()->get('database', ConfigCategory::Db);
+			$databasePort = $this->getConfig()->get('port', ConfigCategory::Db);
+			$databaseCharset = $this->getConfig()->get('charset', ConfigCategory::Db);
+			$databaseCollation = $this->getConfig()->get('collation', ConfigCategory::Db);
 
 			if (!$databaseServerName)
 			{
@@ -759,10 +800,10 @@ trait ApplicationTrait
 		{
 			$fileTarget = new FileTarget();
 			$fileTarget->logFile = Craft::getAlias('@storage/logs/craft.log');
-			$fileTarget->fileMode = Craft::$app->config->get('defaultFilePermissions');
-			$fileTarget->dirMode = Craft::$app->config->get('defaultFolderPermissions');
+			$fileTarget->fileMode = Craft::$app->getConfig()->get('defaultFilePermissions');
+			$fileTarget->dirMode = Craft::$app->getConfig()->get('defaultFolderPermissions');
 
-			if (!Craft::$app->config->get('devMode') || !$this->_isCraftUpdating())
+			if (!Craft::$app->getConfig()->get('devMode') || !$this->_isCraftUpdating())
 			{
 				//$fileTarget->setLevels(array(Logger::LEVEL_ERROR, Logger::LEVEL_WARNING));
 			}
@@ -773,6 +814,229 @@ trait ApplicationTrait
 		$this->set('log', $dispatcher);
 	}
 
+	// Service Getters
+	// -------------------------------------------------------------------------
+
+	/**
+	 * Returns the assets service.
+	 *
+	 * @return \craft\app\services\Assets The assets service
+	 */
+	public function getAssets()
+	{
+		/* @var $this \craft\app\web\Application|\craft\app\console\Application */
+		return $this->get('assets');
+	}
+
+	/**
+	 * Returns the asset indexing service.
+	 *
+	 * @return \craft\app\services\AssetIndexer The asset indexing service
+	 */
+	public function getAssetIndexer()
+	{
+		/* @var $this \craft\app\web\Application|\craft\app\console\Application */
+		return $this->get('assetIndexer');
+	}
+
+	/**
+	 * Returns the asset transforms service.
+	 *
+	 * @return \craft\app\services\AssetTransforms The asset transforms service
+	 */
+	public function getAssetTransforms()
+	{
+		/* @var $this \craft\app\web\Application|\craft\app\console\Application */
+		return $this->get('assetTransforms');
+	}
+
+	/**
+	 * Returns the categories service.
+	 *
+	 * @return \craft\app\services\Categories The categories service
+	 */
+	public function getCategories()
+	{
+		/* @var $this \craft\app\web\Application|\craft\app\console\Application */
+		return $this->get('categories');
+	}
+
+	/**
+	 * Returns the config service.
+	 *
+	 * @return \craft\app\services\Config The config service
+	 */
+	public function getConfig()
+	{
+		/* @var $this \craft\app\web\Application|\craft\app\console\Application */
+		return $this->get('config');
+	}
+
+	/**
+	 * Returns the content service.
+	 *
+	 * @return \craft\app\services\Content The content service
+	 */
+	public function getContent()
+	{
+		/* @var $this \craft\app\web\Application|\craft\app\console\Application */
+		return $this->get('content');
+	}
+
+	/**
+	 * Returns the dashboard service.
+	 *
+	 * @return \craft\app\services\Dashboard The dashboard service
+	 */
+	public function getDashboard()
+	{
+		/* @var $this \craft\app\web\Application|\craft\app\console\Application */
+		return $this->get('dashboard');
+	}
+
+	/**
+	 * Returns the deprecator service.
+	 *
+	 * @return \craft\app\services\Deprecator The deprecator service
+	 */
+	public function getDeprecator()
+	{
+		/* @var $this \craft\app\web\Application|\craft\app\console\Application */
+		return $this->get('deprecator');
+	}
+
+	/**
+	 * Returns the elements service.
+	 *
+	 * @return \craft\app\services\Elements The elements service
+	 */
+	public function getElements()
+	{
+		/* @var $this \craft\app\web\Application|\craft\app\console\Application */
+		return $this->get('elements');
+	}
+
+	/**
+	 * Returns the email messages service.
+	 *
+	 * @return \craft\app\services\EmailMessages The email messages service
+	 */
+	public function getEmailMessages()
+	{
+		/* @var $this \craft\app\web\Application|\craft\app\console\Application */
+		return $this->get('emailMessages');
+	}
+
+	/**
+	 * Returns the email service.
+	 *
+	 * @return \craft\app\services\Email The email service
+	 */
+	public function getEmail()
+	{
+		/* @var $this \craft\app\web\Application|\craft\app\console\Application */
+		return $this->get('email');
+	}
+
+	/**
+	 * Returns the entries service.
+	 *
+	 * @return \craft\app\services\Entries The entries service
+	 */
+	public function getEntries()
+	{
+		/* @var $this \craft\app\web\Application|\craft\app\console\Application */
+		return $this->get('entries');
+	}
+
+	/**
+	 * Returns the entry revisions service.
+	 *
+	 * @return \craft\app\services\Entries The entry revisions service
+	 */
+	public function getEntryRevisions()
+	{
+		/* @var $this \craft\app\web\Application|\craft\app\console\Application */
+		return $this->get('entryRevisions');
+	}
+
+	/**
+	 * Returns the E.T. service.
+	 *
+	 * @return \craft\app\services\ET The E.T. service
+	 */
+	public function getET()
+	{
+		/* @var $this \craft\app\web\Application|\craft\app\console\Application */
+		return $this->get('et');
+	}
+
+	/**
+	 * Returns the feeds service.
+	 *
+	 * @return \craft\app\services\Feeds The feeds service
+	 */
+	public function getFeeds()
+	{
+		/* @var $this \craft\app\web\Application|\craft\app\console\Application */
+		return $this->get('feeds');
+	}
+
+	/**
+	 * Returns the fields service.
+	 *
+	 * @return \craft\app\services\Fields The fields service
+	 */
+	public function getFields()
+	{
+		/* @var $this \craft\app\web\Application|\craft\app\console\Application */
+		return $this->get('fields');
+	}
+
+	/**
+	 * Returns the globals service.
+	 *
+	 * @return \craft\app\services\Globals The globals service
+	 */
+	public function getGlobals()
+	{
+		/* @var $this \craft\app\web\Application|\craft\app\console\Application */
+		return $this->get('globals');
+	}
+
+	/**
+	 * Returns the images service.
+	 *
+	 * @return \craft\app\services\Images The images service
+	 */
+	public function getImages()
+	{
+		/* @var $this \craft\app\web\Application|\craft\app\console\Application */
+		return $this->get('images');
+	}
+
+	/**
+	 * Returns a Locale object for the target language.
+	 *
+	 * @return Locale The Locale object for the target language
+	 */
+	public function getLocale()
+	{
+		/* @var $this \craft\app\web\Application|\craft\app\console\Application */
+		return $this->get('locale');
+	}
+
+	/**
+	 * Returns the matrix service.
+	 *
+	 * @return \craft\app\services\Matrix The matrix service
+	 */
+	public function getMatrix()
+	{
+		/* @var $this \craft\app\web\Application|\craft\app\console\Application */
+		return $this->get('matrix');
+	}
+
 	/**
 	 * Returns the application’s migration manager.
 	 *
@@ -780,7 +1044,206 @@ trait ApplicationTrait
 	 */
 	public function getMigrator()
 	{
+		/* @var $this \craft\app\web\Application|\craft\app\console\Application */
 		return $this->get('migrator');
+	}
+
+	/**
+	 * Returns the path service.
+	 *
+	 * @return \craft\app\services\Path The path service
+	 */
+	public function getPath()
+	{
+		/* @var $this \craft\app\web\Application|\craft\app\console\Application */
+		return $this->get('path');
+	}
+
+	/**
+	 * Returns the plugins service.
+	 *
+	 * @return \craft\app\services\Plugins The plugins service
+	 */
+	public function getPlugins()
+	{
+		/* @var $this \craft\app\web\Application|\craft\app\console\Application */
+		return $this->get('plugins');
+	}
+
+	/**
+	 * Returns the relations service.
+	 *
+	 * @return \craft\app\services\Relations The relations service
+	 */
+	public function getRelations()
+	{
+		/* @var $this \craft\app\web\Application|\craft\app\console\Application */
+		return $this->get('relations');
+	}
+
+	/**
+	 * Returns the resources service.
+	 *
+	 * @return \craft\app\services\Resources The resources service
+	 */
+	public function getResources()
+	{
+		/* @var $this \craft\app\web\Application|\craft\app\console\Application */
+		return $this->get('resources');
+	}
+
+	/**
+	 * Returns the routes service.
+	 *
+	 * @return \craft\app\services\Routes The routes service
+	 */
+	public function getRoutes()
+	{
+		/* @var $this \craft\app\web\Application|\craft\app\console\Application */
+		return $this->get('routes');
+	}
+
+	/**
+	 * Returns the search service.
+	 *
+	 * @return \craft\app\services\Search The search service
+	 */
+	public function getSearch()
+	{
+		/* @var $this \craft\app\web\Application|\craft\app\console\Application */
+		return $this->get('search');
+	}
+
+	/**
+	 * Returns the sections service.
+	 *
+	 * @return \craft\app\services\Sections The sections service
+	 */
+	public function getSections()
+	{
+		/* @var $this \craft\app\web\Application|\craft\app\console\Application */
+		return $this->get('sections');
+	}
+
+	/**
+	 * Returns the structures service.
+	 *
+	 * @return \craft\app\services\Structures The structures service
+	 */
+	public function getStructures()
+	{
+		/* @var $this \craft\app\web\Application|\craft\app\console\Application */
+		return $this->get('structures');
+	}
+
+	/**
+	 * Returns the system settings service.
+	 *
+	 * @return \craft\app\services\SystemSettings The system settings service
+	 */
+	public function getSystemSettings()
+	{
+		/* @var $this \craft\app\web\Application|\craft\app\console\Application */
+		return $this->get('systemSettings');
+	}
+
+	/**
+	 * Returns the tags service.
+	 *
+	 * @return \craft\app\services\Tags The tags service
+	 */
+	public function getTags()
+	{
+		/* @var $this \craft\app\web\Application|\craft\app\console\Application */
+		return $this->get('tags');
+	}
+
+	/**
+	 * Returns the tasks service.
+	 *
+	 * @return \craft\app\services\Tasks The tasks service
+	 */
+	public function getTasks()
+	{
+		/* @var $this \craft\app\web\Application|\craft\app\console\Application */
+		return $this->get('tasks');
+	}
+
+	/**
+	 * Returns the template cache service.
+	 *
+	 * @return \craft\app\services\TemplateCache The template cache service
+	 */
+	public function getTemplateCache()
+	{
+		/* @var $this \craft\app\web\Application|\craft\app\console\Application */
+		return $this->get('templateCache');
+	}
+
+	/**
+	 * Returns the tokens service.
+	 *
+	 * @return \craft\app\services\Tokens The tokens service
+	 */
+	public function getTokens()
+	{
+		/* @var $this \craft\app\web\Application|\craft\app\console\Application */
+		return $this->get('tokens');
+	}
+
+	/**
+	 * Returns the updates service.
+	 *
+	 * @return \craft\app\services\Updates The updates service
+	 */
+	public function getUpdates()
+	{
+		/* @var $this \craft\app\web\Application|\craft\app\console\Application */
+		return $this->get('updates');
+	}
+
+	/**
+	 * Returns the user groups service.
+	 *
+	 * @return \craft\app\services\UserGroups The user groups service
+	 */
+	public function getUserGroups()
+	{
+		/* @var $this \craft\app\web\Application|\craft\app\console\Application */
+		return $this->get('userGroups');
+	}
+
+	/**
+	 * Returns the user permissions service.
+	 *
+	 * @return \craft\app\services\UserPermissions The user permissions service
+	 */
+	public function getUserPermissions()
+	{
+		/* @var $this \craft\app\web\Application|\craft\app\console\Application */
+		return $this->get('userPermissions');
+	}
+
+	/**
+	 * Returns the users service.
+	 *
+	 * @return \craft\app\services\Users The users service
+	 */
+	public function getUsers()
+	{
+		/* @var $this \craft\app\web\Application|\craft\app\console\Application */
+		return $this->get('users');
+	}
+
+	/**
+	 * Returns the volumes service.
+	 *
+	 * @return \craft\app\services\Volumes The volumes service
+	 */
+	public function getVolumes()
+	{
+		/* @var $this \craft\app\web\Application|\craft\app\console\Application */
+		return $this->get('volumes');
 	}
 
 	// Private Methods
@@ -818,7 +1281,7 @@ trait ApplicationTrait
 	private function _getAssetManagerDefinition()
 	{
 		/* @var $this \craft\app\web\Application|\craft\app\console\Application */
-		$configService = Craft::$app->config;
+		$configService = Craft::$app->getConfig();
 		$basePath = Craft::getAlias($configService->get('resourceBasePath'));
 		$baseUrl = $configService->get('resourceBaseUrl');
 
@@ -841,7 +1304,7 @@ trait ApplicationTrait
 	private function _getCacheDefinition()
 	{
 		/* @var $this \craft\app\web\Application|\craft\app\console\Application */
-		$configService = Craft::$app->config;
+		$configService = Craft::$app->getConfig();
 		$cacheMethod = $configService->get('cacheMethod');
 
 		switch ($cacheMethod)
@@ -910,7 +1373,7 @@ trait ApplicationTrait
 	private function _getDbDefinition()
 	{
 		/* @var $this \craft\app\web\Application|\craft\app\console\Application */
-		$configService = $this->config;
+		$configService = $this->getConfig();
 
 		try
 		{
@@ -963,7 +1426,7 @@ trait ApplicationTrait
 	}
 
 	/**
-	 * Returns the definition for the [[Locale]] object that will be available from Craft::$app->locale.
+	 * Returns the definition for the Locale object that will be available from Craft::$app->getLocale().
 	 *
 	 * @return Locale
 	 */
@@ -982,7 +1445,7 @@ trait ApplicationTrait
 	{
 		/* @var $this \craft\app\web\Application|\craft\app\console\Application */
 		// Table prefixes cannot be longer than 5 characters
-		$tablePrefix = rtrim($this->config->get('tablePrefix', ConfigCategory::Db), '_');
+		$tablePrefix = rtrim($this->getConfig()->get('tablePrefix', ConfigCategory::Db), '_');
 
 		if ($tablePrefix)
 		{
@@ -1051,7 +1514,7 @@ trait ApplicationTrait
 	private function _setTimeZone()
 	{
 		/* @var $this \craft\app\web\Application|\craft\app\console\Application */
-		$timezone = $this->config->get('timezone');
+		$timezone = $this->getConfig()->get('timezone');
 
 		if (!$timezone)
 		{
@@ -1088,15 +1551,15 @@ trait ApplicationTrait
 	private function _processConnectionString()
 	{
 		/* @var $this \craft\app\web\Application|\craft\app\console\Application */
-		$unixSocket = $this->config->get('unixSocket', ConfigCategory::Db);
+		$unixSocket = $this->getConfig()->get('unixSocket', ConfigCategory::Db);
 
 		if (!empty($unixSocket))
 		{
-			return strtolower('mysql:unix_socket='.$unixSocket.';dbname=').$this->config->get('database', ConfigCategory::Db).';';
+			return strtolower('mysql:unix_socket='.$unixSocket.';dbname=').$this->getConfig()->get('database', ConfigCategory::Db).';';
 		}
 		else
 		{
-			return strtolower('mysql:host='.$this->config->get('server', ConfigCategory::Db).';dbname=').$this->config->get('database', ConfigCategory::Db).strtolower(';port='.$this->config->get('port', ConfigCategory::Db).';');
+			return strtolower('mysql:host='.$this->getConfig()->get('server', ConfigCategory::Db).';dbname=').$this->getConfig()->get('database', ConfigCategory::Db).strtolower(';port='.$this->getConfig()->get('port', ConfigCategory::Db).';');
 		}
 	}
 
@@ -1134,7 +1597,7 @@ trait ApplicationTrait
 
 		if ($edition == Craft::Client || $edition == Craft::Pro)
 		{
-			$pathService = $this->path;
+			$pathService = $this->getPath();
 
 			$this->setComponents(require $pathService->getAppPath().'/config/components/client.php');
 
@@ -1155,7 +1618,7 @@ trait ApplicationTrait
 		/* @var $this \craft\app\web\Application|\craft\app\console\Application */
 		$request = $this->getRequest();
 
-		if ($this->updates->isCraftDbMigrationNeeded() ||
+		if ($this->getUpdates()->isCraftDbMigrationNeeded() ||
 			($this->isInMaintenanceMode() && $request->getIsCpRequest()) ||
 			$request->getActionSegments() == ['update', 'cleanUp'] ||
 			$request->getActionSegments() == ['update', 'rollback']

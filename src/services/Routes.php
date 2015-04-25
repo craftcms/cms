@@ -19,7 +19,7 @@ use yii\base\Component;
 /**
  * Class Routes service.
  *
- * An instance of the Routes service is globally accessible in Craft via [[Application::routes `Craft::$app->routes`]].
+ * An instance of the Routes service is globally accessible in Craft via [[Application::routes `Craft::$app->getRoutes()`]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
@@ -36,7 +36,7 @@ class Routes extends Component
 	 */
 	public function getConfigFileRoutes()
 	{
-		$path = Craft::$app->path->getConfigPath().'/routes.php';
+		$path = Craft::$app->getPath()->getConfigPath().'/routes.php';
 
 		if (IOHelper::fileExists($path))
 		{

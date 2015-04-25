@@ -64,14 +64,14 @@ class StructuresController extends Controller
 		// Make sure they have permission to edit this structure
 		$this->requireAuthorization('editStructure:'.$structureId);
 
-		$this->_structure = Craft::$app->structures->getStructureById($structureId);
+		$this->_structure = Craft::$app->getStructures()->getStructureById($structureId);
 
 		if (!$this->_structure)
 		{
 			throw new Exception(Craft::t('app', 'No structure exists with the ID “{id}”.', ['id' => $structureId]));
 		}
 
-		$this->_element = Craft::$app->elements->getElementById($elementId, null, $localeId);
+		$this->_element = Craft::$app->getElements()->getElementById($elementId, null, $localeId);
 
 		if (!$this->_element)
 		{
@@ -86,7 +86,7 @@ class StructuresController extends Controller
 	 */
 	public function actionGetElementLevelDelta()
 	{
-		$delta = Craft::$app->structures->getElementLevelDelta($this->_structure->id, $this->_element);
+		$delta = Craft::$app->getStructures()->getElementLevelDelta($this->_structure->id, $this->_element);
 
 		return $this->asJson([
 			'delta' => $delta
@@ -105,17 +105,17 @@ class StructuresController extends Controller
 
 		if ($prevElementId)
 		{
-			$prevElement = Craft::$app->elements->getElementById($prevElementId, null, $this->_element->locale);
-			$success = Craft::$app->structures->moveAfter($this->_structure->id, $this->_element, $prevElement, 'auto', true);
+			$prevElement = Craft::$app->getElements()->getElementById($prevElementId, null, $this->_element->locale);
+			$success = Craft::$app->getStructures()->moveAfter($this->_structure->id, $this->_element, $prevElement, 'auto', true);
 		}
 		else if ($parentElementId)
 		{
-			$parentElement = Craft::$app->elements->getElementById($parentElementId, null, $this->_element->locale);
-			$success = Craft::$app->structures->prepend($this->_structure->id, $this->_element, $parentElement, 'auto', true);
+			$parentElement = Craft::$app->getElements()->getElementById($parentElementId, null, $this->_element->locale);
+			$success = Craft::$app->getStructures()->prepend($this->_structure->id, $this->_element, $parentElement, 'auto', true);
 		}
 		else
 		{
-			$success = Craft::$app->structures->prependToRoot($this->_structure->id, $this->_element, 'auto', true);
+			$success = Craft::$app->getStructures()->prependToRoot($this->_structure->id, $this->_element, 'auto', true);
 		}
 
 		return $this->asJson([

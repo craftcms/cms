@@ -21,7 +21,7 @@ Craft::$app->requireEdition(Craft::Pro);
 /**
  * Class UserGroups service.
  *
- * An instance of the UserGroups service is globally accessible in Craft via [[Application::userGroups `Craft::$app->userGroups`]].
+ * An instance of the UserGroups service is globally accessible in Craft via [[Application::userGroups `Craft::$app->getUserGroups()`]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
@@ -200,7 +200,7 @@ class UserGroups extends Component
 	 */
 	public function assignUserToDefaultGroup(User $user)
 	{
-		$defaultGroupId = Craft::$app->systemSettings->getSetting('users', 'defaultGroup');
+		$defaultGroupId = Craft::$app->getSystemSettings()->getSetting('users', 'defaultGroup');
 
 		if ($defaultGroupId)
 		{

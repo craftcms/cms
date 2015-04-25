@@ -55,7 +55,7 @@ class ResaveElements extends Task
 		$class = $this->elementType;
 
 		// Let's save ourselves some trouble and just clear all the caches for this element class
-		Craft::$app->templateCache->deleteCachesByElementType($class);
+		Craft::$app->getTemplateCache()->deleteCachesByElementType($class);
 
 		// Now find the affected element IDs
 		$query = $class::find()
@@ -85,7 +85,7 @@ class ResaveElements extends Task
 				->locale($this->_localeId)
 				->one();
 
-			if (!$element || Craft::$app->elements->saveElement($element, false))
+			if (!$element || Craft::$app->getElements()->saveElement($element, false))
 			{
 				return true;
 			}

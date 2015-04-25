@@ -173,11 +173,11 @@ class MatrixBlockQuery extends ElementQuery
 		if ($this->fieldId && is_numeric($this->fieldId))
 		{
 			/** @var MatrixField $matrixField */
-			$matrixField = Craft::$app->fields->getFieldById($this->fieldId);
+			$matrixField = Craft::$app->getFields()->getFieldById($this->fieldId);
 
 			if ($matrixField)
 			{
-				$this->contentTable = Craft::$app->matrix->getContentTableName($matrixField);
+				$this->contentTable = Craft::$app->getMatrix()->getContentTableName($matrixField);
 			}
 		}
 

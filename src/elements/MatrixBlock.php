@@ -68,7 +68,7 @@ class MatrixBlock extends Element
 	{
 		$fields = [];
 
-		foreach (Craft::$app->matrix->getBlockTypesByFieldId($query->fieldId) as $blockType)
+		foreach (Craft::$app->getMatrix()->getBlockTypesByFieldId($query->fieldId) as $blockType)
 		{
 			$fieldColumnPrefix = 'field_'.$blockType->handle.'_';
 
@@ -203,7 +203,7 @@ class MatrixBlock extends Element
 	{
 		if ($this->typeId)
 		{
-			return Craft::$app->matrix->getBlockTypeById($this->typeId);
+			return Craft::$app->getMatrix()->getBlockTypeById($this->typeId);
 		}
 	}
 
@@ -216,7 +216,7 @@ class MatrixBlock extends Element
 	{
 		if (!isset($this->_owner) && $this->ownerId)
 		{
-			$this->_owner = Craft::$app->elements->getElementById($this->ownerId, null, $this->locale);
+			$this->_owner = Craft::$app->getElements()->getElementById($this->ownerId, null, $this->locale);
 
 			if (!$this->_owner)
 			{
@@ -245,7 +245,7 @@ class MatrixBlock extends Element
 	 */
 	public function getContentTable()
 	{
-		return Craft::$app->matrix->getContentTableName($this->_getField());
+		return Craft::$app->getMatrix()->getContentTableName($this->_getField());
 	}
 
 	/**
@@ -276,6 +276,6 @@ class MatrixBlock extends Element
 	 */
 	private function _getField()
 	{
-		return Craft::$app->fields->getFieldById($this->fieldId);
+		return Craft::$app->getFields()->getFieldById($this->fieldId);
 	}
 }

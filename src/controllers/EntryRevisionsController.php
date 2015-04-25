@@ -42,7 +42,7 @@ class EntryRevisionsController extends BaseEntriesController
 
 		if ($draftId)
 		{
-			$draft = Craft::$app->entryRevisions->getDraftById($draftId);
+			$draft = Craft::$app->getEntryRevisions()->getDraftById($draftId);
 
 			if (!$draft)
 			{
@@ -77,7 +77,7 @@ class EntryRevisionsController extends BaseEntriesController
 				$draftEnabled = $draft->enabled;
 				$draft->enabled = false;
 
-				Craft::$app->entries->saveEntry($draft);
+				Craft::$app->getEntries()->saveEntry($draft);
 
 				$draft->enabled = $draftEnabled;
 			}
@@ -90,7 +90,7 @@ class EntryRevisionsController extends BaseEntriesController
 		$fieldsLocation = Craft::$app->getRequest()->getParam('fieldsLocation', 'fields');
 		$draft->setContentFromPost($fieldsLocation);
 
-		if ($draft->id && Craft::$app->entryRevisions->saveDraft($draft))
+		if ($draft->id && Craft::$app->getEntryRevisions()->saveDraft($draft))
 		{
 			Craft::$app->getSession()->setNotice(Craft::t('app', 'Draft saved.'));
 			return $this->redirectToPostedUrl($draft);
@@ -120,7 +120,7 @@ class EntryRevisionsController extends BaseEntriesController
 		$draftId = Craft::$app->getRequest()->getRequiredBodyParam('draftId');
 		$name = Craft::$app->getRequest()->getRequiredBodyParam('name');
 
-		$draft = Craft::$app->entryRevisions->getDraftById($draftId);
+		$draft = Craft::$app->getEntryRevisions()->getDraftById($draftId);
 
 		if (!$draft)
 		{
@@ -136,7 +136,7 @@ class EntryRevisionsController extends BaseEntriesController
 		$draft->name = $name;
 		$draft->revisionNotes = Craft::$app->getRequest()->getBodyParam('notes');
 
-		if (Craft::$app->entryRevisions->saveDraft($draft, false))
+		if (Craft::$app->getEntryRevisions()->saveDraft($draft, false))
 		{
 			return $this->asJson(['success' => true]);
 		}
@@ -157,7 +157,7 @@ class EntryRevisionsController extends BaseEntriesController
 		$this->requirePostRequest();
 
 		$draftId = Craft::$app->getRequest()->getBodyParam('draftId');
-		$draft = Craft::$app->entryRevisions->getDraftById($draftId);
+		$draft = Craft::$app->getEntryRevisions()->getDraftById($draftId);
 
 		if (!$draft)
 		{
@@ -169,7 +169,7 @@ class EntryRevisionsController extends BaseEntriesController
 			$this->requirePermission('deletePeerEntryDrafts:'.$draft->sectionId);
 		}
 
-		Craft::$app->entryRevisions->deleteDraft($draft);
+		Craft::$app->getEntryRevisions()->deleteDraft($draft);
 
 		return $this->redirectToPostedUrl();
 	}
@@ -185,7 +185,7 @@ class EntryRevisionsController extends BaseEntriesController
 		$this->requirePostRequest();
 
 		$draftId = Craft::$app->getRequest()->getBodyParam('draftId');
-		$draft = Craft::$app->entryRevisions->getDraftById($draftId);
+		$draft = Craft::$app->getEntryRevisions()->getDraftById($draftId);
 		$userId = Craft::$app->getUser()->getIdentity()->id;
 
 		if (!$draft)
@@ -194,7 +194,7 @@ class EntryRevisionsController extends BaseEntriesController
 		}
 
 		// Permission enforcement
-		$entry = Craft::$app->entries->getEntryById($draft->id, $draft->locale);
+		$entry = Craft::$app->getEntries()->getEntryById($draft->id, $draft->locale);
 
 		if (!$entry)
 		{
@@ -237,7 +237,7 @@ class EntryRevisionsController extends BaseEntriesController
 		$draft->setContentFromPost($fieldsLocation);
 
 		// Publish the draft (finally!)
-		if (Craft::$app->entryRevisions->publishDraft($draft))
+		if (Craft::$app->getEntryRevisions()->publishDraft($draft))
 		{
 			Craft::$app->getSession()->setNotice(Craft::t('app', 'Draft published.'));
 			return $this->redirectToPostedUrl($draft);
@@ -264,7 +264,7 @@ class EntryRevisionsController extends BaseEntriesController
 		$this->requirePostRequest();
 
 		$versionId = Craft::$app->getRequest()->getBodyParam('versionId');
-		$version = Craft::$app->entryRevisions->getVersionById($versionId);
+		$version = Craft::$app->getEntryRevisions()->getVersionById($versionId);
 
 		if (!$version)
 		{
@@ -272,7 +272,7 @@ class EntryRevisionsController extends BaseEntriesController
 		}
 
 		// Permission enforcement
-		$entry = Craft::$app->entries->getEntryById($version->id, $version->locale);
+		$entry = Craft::$app->getEntries()->getEntryById($version->id, $version->locale);
 
 		if (!$entry)
 		{
@@ -301,7 +301,7 @@ class EntryRevisionsController extends BaseEntriesController
 		}
 
 		// Revert to the version
-		if (Craft::$app->entryRevisions->revertEntryToVersion($version))
+		if (Craft::$app->getEntryRevisions()->revertEntryToVersion($version))
 		{
 			Craft::$app->getSession()->setNotice(Craft::t('app', 'Entry reverted to past version.'));
 			return $this->redirectToPostedUrl($version);

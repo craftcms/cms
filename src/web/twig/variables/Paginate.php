@@ -68,7 +68,7 @@ class Paginate
 					$path .= '/';
 				}
 
-				$path .= \Craft::$app->config->get('pageTrigger').$page;
+				$path .= \Craft::$app->getConfig()->get('pageTrigger').$page;
 			}
 
 			return UrlHelper::getUrl($path);

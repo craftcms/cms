@@ -25,6 +25,6 @@ class Deprecator
 	 */
 	public function getTotalLogs()
 	{
-		return \Craft::$app->deprecator->getTotalLogs();
+		return \Craft::$app->getDeprecator()->getTotalLogs();
 	}
 }

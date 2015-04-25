@@ -379,7 +379,7 @@ class ElementIndexController extends BaseElementsController
 				// $action could be a string or config array
 				if (!$action instanceof ElementActionInterface)
 				{
-					$actions[$i] = $action = Craft::$app->elements->createAction($action);
+					$actions[$i] = $action = Craft::$app->getElements()->createAction($action);
 
 					if ($actions[$i] === null)
 					{

@@ -16,7 +16,7 @@ use yii\base\Component;
 /**
  * The Path service provides APIs for getting server paths that are used by Craft.
  *
- * An instance of the Path service is globally accessible in Craft via [[Application::path `Craft::$app->path`]].
+ * An instance of the Path service is globally accessible in Craft via [[Application::path `Craft::$app->getPath()`]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
@@ -420,7 +420,7 @@ class Path extends Component
 	 */
 	public function getCachePath()
 	{
-		$path = Craft::getAlias(Craft::$app->config->get('cachePath', ConfigCategory::FileCache));
+		$path = Craft::getAlias(Craft::$app->getConfig()->get('cachePath', ConfigCategory::FileCache));
 
 		if (!$path)
 		{

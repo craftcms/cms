@@ -36,7 +36,7 @@ class EntryRevisions
 	 */
 	public function getDraftsByEntryId($entryId, $localeId = null)
 	{
-		return \Craft::$app->entryRevisions->getDraftsByEntryId($entryId, $localeId);
+		return \Craft::$app->getEntryRevisions()->getDraftsByEntryId($entryId, $localeId);
 	}
 
 	/**
@@ -49,7 +49,7 @@ class EntryRevisions
 	 */
 	public function getEditableDraftsByEntryId($entryId, $localeId = null)
 	{
-		return \Craft::$app->entryRevisions->getEditableDraftsByEntryId($entryId, $localeId);
+		return \Craft::$app->getEntryRevisions()->getEditableDraftsByEntryId($entryId, $localeId);
 	}
 
 	/**
@@ -61,7 +61,7 @@ class EntryRevisions
 	 */
 	public function getDraftById($draftId)
 	{
-		return \Craft::$app->entryRevisions->getDraftById($draftId);
+		return \Craft::$app->getEntryRevisions()->getDraftById($draftId);
 	}
 
 	/**
@@ -74,7 +74,7 @@ class EntryRevisions
 	 */
 	public function getDraftByOffset($entryId, $offset = 0)
 	{
-		return \Craft::$app->entryRevisions->getDraftByOffset($entryId, $offset);
+		return \Craft::$app->getEntryRevisions()->getDraftByOffset($entryId, $offset);
 	}
 
 	// Versions
@@ -90,7 +90,7 @@ class EntryRevisions
 	 */
 	public function getVersionsByEntryId($entryId, $localeId)
 	{
-		return \Craft::$app->entryRevisions->getVersionsByEntryId($entryId, $localeId, 10);
+		return \Craft::$app->getEntryRevisions()->getVersionsByEntryId($entryId, $localeId, 10);
 	}
 
 	/**
@@ -102,7 +102,7 @@ class EntryRevisions
 	 */
 	public function getVersionById($versionId)
 	{
-		return \Craft::$app->entryRevisions->getVersionById($versionId);
+		return \Craft::$app->getEntryRevisions()->getVersionById($versionId);
 	}
 
 	/**
@@ -115,6 +115,6 @@ class EntryRevisions
 	 */
 	public function getVersionByOffset($entryId, $offset = 0)
 	{
-		return \Craft::$app->entryRevisions->getVersionByOffset($entryId, $offset);
+		return \Craft::$app->getEntryRevisions()->getVersionByOffset($entryId, $offset);
 	}
 }

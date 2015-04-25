@@ -96,7 +96,7 @@ class Craft extends Yii
 
 		$translation = parent::t($category, $message, $params, $language);
 
-		if (Craft::$app->config->get('translationDebugOutput'))
+		if (Craft::$app->getConfig()->get('translationDebugOutput'))
 		{
 			$translation = '@'.$translation.'@';
 		}
@@ -115,7 +115,7 @@ class Craft extends Yii
 		if (!isset(static::$_baseCookieConfig))
 		{
 			static::$_baseCookieConfig = [
-				'domain' => static::$app->config->get('defaultCookieDomain'),
+				'domain' => static::$app->getConfig()->get('defaultCookieDomain'),
 				'httpOnly' => true
 			];
 		}
@@ -136,7 +136,7 @@ class Craft extends Yii
 		)
 		{
 			$storedFieldVersion = static::$app->getInfo('fieldVersion');
-			$compiledClassesPath = static::$app->path->getRuntimePath().'/compiled_classes';
+			$compiledClassesPath = static::$app->getPath()->getRuntimePath().'/compiled_classes';
 
 			$contentBehaviorFile = $compiledClassesPath.'/ContentBehavior.php';
 			$contentTraitFile = $compiledClassesPath.'/ContentTrait.php';
@@ -192,28 +192,28 @@ EOD;
 			}
 
 			static::_writeFieldAttributesFile(
-				static::$app->path->getAppPath().'/behaviors/ContentBehavior.php.template',
+				static::$app->getPath()->getAppPath().'/behaviors/ContentBehavior.php.template',
 				['{VERSION}', '/* PROPERTIES */'],
 				[$storedFieldVersion, implode("\n\n", $properties)],
 				$contentBehaviorFile
 			);
 
 			static::_writeFieldAttributesFile(
-				static::$app->path->getAppPath().'/behaviors/ContentTrait.php.template',
+				static::$app->getPath()->getAppPath().'/behaviors/ContentTrait.php.template',
 				['{VERSION}', '{PROPERTIES}'],
 				[$storedFieldVersion, implode("\n", $propertyDocs)],
 				$contentTraitFile
 			);
 
 			static::_writeFieldAttributesFile(
-				static::$app->path->getAppPath().'/behaviors/ElementQueryBehavior.php.template',
+				static::$app->getPath()->getAppPath().'/behaviors/ElementQueryBehavior.php.template',
 				['{VERSION}', '/* METHODS */'],
 				[$storedFieldVersion, implode("\n\n", $methods)],
 				$elementQueryBehaviorFile
 			);
 
 			static::_writeFieldAttributesFile(
-				static::$app->path->getAppPath().'/behaviors/ElementQueryTrait.php.template',
+				static::$app->getPath()->getAppPath().'/behaviors/ElementQueryTrait.php.template',
 				['{VERSION}', '{METHODS}'],
 				[$storedFieldVersion, implode("\n", $methodDocs)],
 				$elementQueryTraitFile

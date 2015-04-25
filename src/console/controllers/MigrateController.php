@@ -90,7 +90,7 @@ class MigrateController extends BaseMigrateController
 		{
 			if (is_string($this->plugin))
 			{
-				$this->plugin = Craft::$app->plugins->getPlugin($this->plugin);
+				$this->plugin = Craft::$app->getPlugins()->getPlugin($this->plugin);
 
 				if ($this->plugin === null)
 				{

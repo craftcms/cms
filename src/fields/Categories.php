@@ -112,9 +112,9 @@ class Categories extends BaseRelationField
 		if ($value !== null)
 		{
 			// Fill in any gaps
-			$value = Craft::$app->categories->fillGapsInCategoryIds($value);
+			$value = Craft::$app->getCategories()->fillGapsInCategoryIds($value);
 
-			Craft::$app->relations->saveRelations($this, $element, $value);
+			Craft::$app->getRelations()->saveRelations($this, $element, $value);
 		}
 	}
 }

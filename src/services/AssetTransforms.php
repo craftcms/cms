@@ -31,7 +31,7 @@ use yii\base\Component;
 /**
  * Class AssetTransforms service.
  *
- * An instance of the AssetTransforms service is globally accessible in Craft via [[Application::assetTransforms `Craft::$app->assetTransforms`]].
+ * An instance of the AssetTransforms service is globally accessible in Craft via [[Application::assetTransforms `Craft::$app->getAssetTransforms()`]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
@@ -383,7 +383,7 @@ class AssetTransforms extends Component
 
 		$index->transform = $transform;
 
-		$file = Craft::$app->assets->getFileById($index->fileId);
+		$file = Craft::$app->getAssets()->getFileById($index->fileId);
 		$volume = $file->getVolume();
 		$index->detectedFormat = !empty($index->format) ? $index->format : $this->detectAutoTransformFormat($file);
 
@@ -603,7 +603,7 @@ class AssetTransforms extends Component
 	 */
 	public function getUrlForTransformByTransformIndex(AssetTransformIndex $transformIndexModel)
 	{
-		$file = Craft::$app->assets->getFileById($transformIndexModel->fileId);
+		$file = Craft::$app->getAssets()->getFileById($transformIndexModel->fileId);
 		$volume = $file->getVolume();
 		$baseUrl = $volume->getRootUrl();
 		$appendix = AssetsHelper::getUrlAppendix($volume, $file);
@@ -644,7 +644,7 @@ class AssetTransforms extends Component
 	 */
 	public function getThumbServerPath(Asset $fileModel, $size)
 	{
-		$thumbFolder = Craft::$app->path->getAssetsThumbsPath().'/'.$size.'/';
+		$thumbFolder = Craft::$app->getPath()->getAssetsThumbsPath().'/'.$size.'/';
 		IOHelper::ensureFolderExists($thumbFolder);
 
 		$extension = $this->_getThumbExtension($fileModel);
@@ -655,7 +655,7 @@ class AssetTransforms extends Component
 		{
 			$imageSource = $this->getLocalImageSource($fileModel);
 
-			Craft::$app->images->loadImage($imageSource)
+			Craft::$app->getImages()->loadImage($imageSource)
 				->scaleAndCrop($size, $size)
 				->saveAs($thumbPath);
 
@@ -724,7 +724,7 @@ class AssetTransforms extends Component
 	 */
 	public function getCachedCloudImageSize()
 	{
-		return (int) Craft::$app->config->get('maxCachedCloudImageSize');
+		return (int) Craft::$app->getConfig()->get('maxCachedCloudImageSize');
 	}
 
 	/**
@@ -762,7 +762,7 @@ class AssetTransforms extends Component
 		// Resize if constrained by maxCachedImageSizes setting
 		if ($maxCachedImageSize > 0)
 		{
-			Craft::$app->images->loadImage($source)->scaleToFit($maxCachedImageSize, $maxCachedImageSize)->setQuality(100)->saveAs($destination ?: $source);
+			Craft::$app->getImages()->loadImage($source)->scaleToFit($maxCachedImageSize, $maxCachedImageSize)->setQuality(100)->saveAs($destination ?: $source);
 		}
 		else
 		{
@@ -792,7 +792,7 @@ class AssetTransforms extends Component
 
 			// The only reasonable way to check for transparency is with Imagick. If Imagick is not present, then
 			// we fallback to jpg
-			if (Craft::$app->images->isGd() || !method_exists('Imagick', 'getImageAlphaChannel'))
+			if (Craft::$app->getImages()->isGd() || !method_exists('Imagick', 'getImageAlphaChannel'))
 			{
 				return 'jpg';
 			}
@@ -802,7 +802,7 @@ class AssetTransforms extends Component
 			$path = IOHelper::getTempFilePath($file->getExtension());
 			$localCopy = $volume->saveFileLocally($file->getUri(), $path);
 
-			$image = Craft::$app->images->loadImage($localCopy);
+			$image = Craft::$app->getImages()->loadImage($localCopy);
 
 			if ($image->isTransparent())
 			{
@@ -897,7 +897,7 @@ class AssetTransforms extends Component
 		$this->deleteCreatedTransformsForFile($file);
 		$this->deleteTransformIndexDataByFileId($file->id);
 
-		IOHelper::deleteFile(Craft::$app->path->getAssetsImageSourcePath().$file->id.'.'.IOHelper::getExtension($file->filename), true);
+		IOHelper::deleteFile(Craft::$app->getPath()->getAssetsImageSourcePath().$file->id.'.'.IOHelper::getExtension($file->filename), true);
 	}
 
 	/**
@@ -909,7 +909,7 @@ class AssetTransforms extends Component
 	 */
 	public function deleteThumbnailsForFile(Asset $file)
 	{
-		$thumbFolders = IOHelper::getFolderContents(Craft::$app->path->getAssetsThumbsPath());
+		$thumbFolders = IOHelper::getFolderContents(Craft::$app->getPath()->getAssetsThumbsPath());
 
 		foreach ($thumbFolders as $folder)
 		{
@@ -1060,9 +1060,9 @@ class AssetTransforms extends Component
 
 		$volume = $file->getVolume();
 		$imageSource = $file->getTransformSource();
-		$quality = $transform->quality ? $transform->quality : Craft::$app->config->get('defaultImageQuality');
+		$quality = $transform->quality ? $transform->quality : Craft::$app->getConfig()->get('defaultImageQuality');
 
-		$image = Craft::$app->images->loadImage($imageSource);
+		$image = Craft::$app->getImages()->loadImage($imageSource);
 		$image->setQuality($quality);
 
 		switch ($transform->mode)

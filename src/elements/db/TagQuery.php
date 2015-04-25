@@ -61,7 +61,7 @@ class TagQuery extends ElementQuery
 			}
 			case 'name':
 			{
-				Craft::$app->deprecator->log('tag_name_param', 'Tags’ ‘name’ param has been deprecated. Use ‘title’ instead.');
+				Craft::$app->getDeprecator()->log('tag_name_param', 'Tags’ ‘name’ param has been deprecated. Use ‘title’ instead.');
 				$this->title = $value;
 				break;
 			}
@@ -79,7 +79,7 @@ class TagQuery extends ElementQuery
 	{
 		if ($name === 'name')
 		{
-			Craft::$app->deprecator->log('tag_name_param', 'Tags’ ‘name’ param has been deprecated. Use ‘title’ instead.');
+			Craft::$app->getDeprecator()->log('tag_name_param', 'Tags’ ‘name’ param has been deprecated. Use ‘title’ instead.');
 
 			if (count($params) == 1)
 			{
@@ -164,7 +164,7 @@ class TagQuery extends ElementQuery
 
 			if ($count)
 			{
-				Craft::$app->deprecator->log('tag_orderby_name', 'Ordering tags by ‘name’ has been deprecated. Order by ‘title’ instead.');
+				Craft::$app->getDeprecator()->log('tag_orderby_name', 'Ordering tags by ‘name’ has been deprecated. Order by ‘title’ instead.');
 			}
 		}
 

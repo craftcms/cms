@@ -249,7 +249,7 @@ class Extension extends \Twig_Extension
 	 */
 	public function parseRefsFilter($str)
 	{
-		$str = Craft::$app->elements->parseRefs($str);
+		$str = Craft::$app->getElements()->parseRefs($str);
 		return TemplateHelper::getRaw($str);
 	}
 
@@ -487,8 +487,8 @@ class Extension extends \Twig_Extension
 		$globals['blx']   = $craftVariable;
 
 		$globals['now']       = DateTimeHelper::currentUTCDateTime();
-		$globals['loginUrl']  = UrlHelper::getUrl(Craft::$app->config->getLoginPath());
-		$globals['logoutUrl'] = UrlHelper::getUrl(Craft::$app->config->getLogoutPath());
+		$globals['loginUrl']  = UrlHelper::getUrl(Craft::$app->getConfig()->getLoginPath());
+		$globals['logoutUrl'] = UrlHelper::getUrl(Craft::$app->getConfig()->getLogoutPath());
 
 		$globals['POS_HEAD'] = View::POS_HEAD;
 		$globals['POS_BEGIN'] = View::POS_BEGIN;
@@ -496,7 +496,7 @@ class Extension extends \Twig_Extension
 		$globals['POS_READY'] = View::POS_READY;
 		$globals['POS_LOAD'] = View::POS_LOAD;
 
-		if (Craft::$app->isInstalled() && !Craft::$app->updates->isCraftDbMigrationNeeded())
+		if (Craft::$app->isInstalled() && !Craft::$app->getUpdates()->isCraftDbMigrationNeeded())
 		{
 			$globals['siteName'] = Craft::$app->getSiteName();
 			$globals['siteUrl'] = Craft::$app->getSiteUrl();
@@ -511,7 +511,7 @@ class Extension extends \Twig_Extension
 
 			if (!$request->getIsConsoleRequest() && $request->getIsSiteRequest())
 			{
-				foreach (Craft::$app->globals->getAllSets() as $globalSet)
+				foreach (Craft::$app->getGlobals()->getAllSets() as $globalSet)
 				{
 					$globals[$globalSet->handle] = $globalSet;
 				}
@@ -556,7 +556,7 @@ class Extension extends \Twig_Extension
 	 */
 	public function getHeadHtml()
 	{
-		Craft::$app->deprecator->log('getHeadHtml', 'getHeadHtml() has been deprecated. Use head() instead.');
+		Craft::$app->getDeprecator()->log('getHeadHtml', 'getHeadHtml() has been deprecated. Use head() instead.');
 
 		ob_start();
 		ob_implicit_flush(false);
@@ -571,7 +571,7 @@ class Extension extends \Twig_Extension
 	 */
 	public function getFootHtml()
 	{
-		Craft::$app->deprecator->log('getFootHtml', 'getFootHtml() has been deprecated. Use endBody() instead.');
+		Craft::$app->getDeprecator()->log('getFootHtml', 'getFootHtml() has been deprecated. Use endBody() instead.');
 
 		ob_start();
 		ob_implicit_flush(false);

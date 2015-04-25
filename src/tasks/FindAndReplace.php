@@ -69,16 +69,16 @@ class FindAndReplace extends Task
 		if ($this->matrixFieldId)
 		{
 			/** @var Matrix $matrixField */
-			$matrixField = Craft::$app->fields->getFieldById($this->matrixFieldId);
+			$matrixField = Craft::$app->getFields()->getFieldById($this->matrixFieldId);
 
 			if (!$matrixField || $matrixField->type != 'Matrix')
 			{
 				return 0;
 			}
 
-			$this->_table = Craft::$app->matrix->getContentTableName($matrixField);
+			$this->_table = Craft::$app->getMatrix()->getContentTableName($matrixField);
 
-			$blockTypes = Craft::$app->matrix->getBlockTypesByFieldId($this->matrixFieldId);
+			$blockTypes = Craft::$app->getMatrix()->getBlockTypesByFieldId($this->matrixFieldId);
 
 			foreach ($blockTypes as $blockType)
 			{
@@ -94,7 +94,7 @@ class FindAndReplace extends Task
 		{
 			$this->_table = 'content';
 
-			foreach (Craft::$app->fields->getAllFields() as $field)
+			foreach (Craft::$app->getFields()->getAllFields() as $field)
 			{
 				$this->_checkField($field, 'field_');
 			}
@@ -123,7 +123,7 @@ class FindAndReplace extends Task
 
 				if (isset($this->_matrixFieldIds[$step]))
 				{
-					$field = Craft::$app->fields->getFieldById($this->_matrixFieldIds[$step]);
+					$field = Craft::$app->getFields()->getFieldById($this->_matrixFieldIds[$step]);
 
 					if ($field)
 					{

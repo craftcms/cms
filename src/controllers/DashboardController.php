@@ -51,7 +51,7 @@ class DashboardController extends Controller
 
 		if ($widget === null && $widgetId !== null)
 		{
-			$widget = Craft::$app->dashboard->getWidgetById($widgetId);
+			$widget = Craft::$app->getDashboard()->getWidgetById($widgetId);
 
 			if ($widget === null)
 			{
@@ -61,7 +61,7 @@ class DashboardController extends Controller
 
 		if ($widget === null)
 		{
-			$widget = Craft::$app->dashboard->createWidget('craft\app\widgets\Feed');
+			$widget = Craft::$app->getDashboard()->createWidget('craft\app\widgets\Feed');
 		}
 
 		$widgetTypeInfo = new ComponentInfo($widget);
@@ -69,7 +69,7 @@ class DashboardController extends Controller
 		// Widget types
 		// ---------------------------------------------------------------------
 
-		$allWidgetTypes = Craft::$app->dashboard->getAllWidgetTypes();
+		$allWidgetTypes = Craft::$app->getDashboard()->getAllWidgetTypes();
 		$widgetTypeOptions = [];
 
 		foreach ($allWidgetTypes as $class)
@@ -121,7 +121,7 @@ class DashboardController extends Controller
 	{
 		$this->requirePostRequest();
 
-		$dashboardService = Craft::$app->dashboard;
+		$dashboardService = Craft::$app->getDashboard();
 		$request = Craft::$app->getRequest();
 		$type = $request->getRequiredBodyParam('type');
 
@@ -133,7 +133,7 @@ class DashboardController extends Controller
 		]);
 
 		// Did it save?
-		if (Craft::$app->dashboard->saveWidget($widget))
+		if (Craft::$app->getDashboard()->saveWidget($widget))
 		{
 			Craft::$app->getSession()->setNotice(Craft::t('app', 'Widget saved.'));
 			return $this->redirectToPostedUrl();
@@ -160,7 +160,7 @@ class DashboardController extends Controller
 		$this->requireAjaxRequest();
 
 		$widgetId = JsonHelper::decode(Craft::$app->getRequest()->getRequiredBodyParam('id'));
-		Craft::$app->dashboard->deleteWidgetById($widgetId);
+		Craft::$app->getDashboard()->deleteWidgetById($widgetId);
 
 		return $this->asJson(['success' => true]);
 	}
@@ -176,7 +176,7 @@ class DashboardController extends Controller
 		$this->requireAjaxRequest();
 
 		$widgetIds = JsonHelper::decode(Craft::$app->getRequest()->getRequiredBodyParam('ids'));
-		Craft::$app->dashboard->reorderWidgets($widgetIds);
+		Craft::$app->getDashboard()->reorderWidgets($widgetIds);
 
 		return $this->asJson(['success' => true]);
 	}
@@ -193,7 +193,7 @@ class DashboardController extends Controller
 		$url = Craft::$app->getRequest()->getRequiredParam('url');
 		$limit = Craft::$app->getRequest()->getParam('limit');
 
-		$items = Craft::$app->feeds->getFeedItems($url, $limit);
+		$items = Craft::$app->getFeeds()->getFeedItems($url, $limit);
 
 		foreach ($items as &$item)
 		{
@@ -221,7 +221,7 @@ class DashboardController extends Controller
 	{
 		$this->requirePostRequest();
 
-		Craft::$app->config->maxPowerCaptain();
+		Craft::$app->getConfig()->maxPowerCaptain();
 
 		$success = false;
 		$errors = [];
@@ -246,7 +246,7 @@ class DashboardController extends Controller
 				"------------------------------\n\n" .
 				'Craft '.Craft::$app->getEditionName().' '.Craft::$app->version.'.'.Craft::$app->build;
 
-			$plugins = Craft::$app->plugins->getAllPlugins();
+			$plugins = Craft::$app->getPlugins()->getAllPlugins();
 
 			if ($plugins)
 			{
@@ -282,34 +282,34 @@ class DashboardController extends Controller
 						$zipFile = $this->_createZip();
 					}
 
-					if ($getHelpModel->attachLogs && IOHelper::folderExists(Craft::$app->path->getLogPath()))
+					if ($getHelpModel->attachLogs && IOHelper::folderExists(Craft::$app->getPath()->getLogPath()))
 					{
 						// Grab it all.
-						$logFolderContents = IOHelper::getFolderContents(Craft::$app->path->getLogPath());
+						$logFolderContents = IOHelper::getFolderContents(Craft::$app->getPath()->getLogPath());
 
 						foreach ($logFolderContents as $file)
 						{
 							// Make sure it's a file.
 							if (IOHelper::fileExists($file))
 							{
-								Zip::add($zipFile, $file, Craft::$app->path->getStoragePath());
+								Zip::add($zipFile, $file, Craft::$app->getPath()->getStoragePath());
 							}
 						}
 					}
 
-					if ($getHelpModel->attachDbBackup && IOHelper::folderExists(Craft::$app->path->getDbBackupPath()))
+					if ($getHelpModel->attachDbBackup && IOHelper::folderExists(Craft::$app->getPath()->getDbBackupPath()))
 					{
 						// Make a fresh database backup of the current schema/data. We want all data from all tables
 						// for debugging.
 						Craft::$app->getDb()->backup([]);
 
-						$backups = IOHelper::getLastModifiedFiles(Craft::$app->path->getDbBackupPath(), 3);
+						$backups = IOHelper::getLastModifiedFiles(Craft::$app->getPath()->getDbBackupPath(), 3);
 
 						foreach ($backups as $backup)
 						{
 							if (IOHelper::getExtension($backup) == 'sql')
 							{
-								Zip::add($zipFile, $backup, Craft::$app->path->getStoragePath());
+								Zip::add($zipFile, $backup, Craft::$app->getPath()->getStoragePath());
 							}
 						}
 					}
@@ -323,7 +323,7 @@ class DashboardController extends Controller
 						$zipFile = $this->_createZip();
 					}
 
-					$tempFolder = Craft::$app->path->getTempPath().'/'.StringHelper::UUID();
+					$tempFolder = Craft::$app->getPath()->getTempPath().'/'.StringHelper::UUID();
 
 					if (!IOHelper::folderExists($tempFolder))
 					{
@@ -348,18 +348,18 @@ class DashboardController extends Controller
 						$zipFile = $this->_createZip();
 					}
 
-					if (IOHelper::folderExists(Craft::$app->path->getLogPath()))
+					if (IOHelper::folderExists(Craft::$app->getPath()->getLogPath()))
 					{
 						// Grab it all.
-						$templateFolderContents = IOHelper::getFolderContents(Craft::$app->path->getSiteTemplatesPath());
+						$templateFolderContents = IOHelper::getFolderContents(Craft::$app->getPath()->getSiteTemplatesPath());
 
 						foreach ($templateFolderContents as $file)
 						{
 							// Make sure it's a file.
 							if (IOHelper::fileExists($file))
 							{
-								$templateFolderName = IOHelper::getFolderName(Craft::$app->path->getSiteTemplatesPath(), false);
-								$siteTemplatePath = Craft::$app->path->getSiteTemplatesPath();
+								$templateFolderName = IOHelper::getFolderName(Craft::$app->getPath()->getSiteTemplatesPath(), false);
+								$siteTemplatePath = Craft::$app->getPath()->getSiteTemplatesPath();
 								$tempPath = substr($siteTemplatePath, 0, (StringHelper::length($siteTemplatePath) - StringHelper::length($templateFolderName)) - 1);
 								Zip::add($zipFile, $file, $tempPath);
 							}
@@ -433,7 +433,7 @@ class DashboardController extends Controller
 	 */
 	private function _createZip()
 	{
-		$zipFile = Craft::$app->path->getTempPath().'/'.StringHelper::UUID().'.zip';
+		$zipFile = Craft::$app->getPath()->getTempPath().'/'.StringHelper::UUID().'.zip';
 		IOHelper::createFile($zipFile);
 
 		return $zipFile;

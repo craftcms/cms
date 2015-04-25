@@ -74,7 +74,7 @@ class Tag extends Element
 	{
 		$sources = [];
 
-		foreach (Craft::$app->tags->getAllTagGroups() as $tagGroup)
+		foreach (Craft::$app->getTags()->getAllTagGroups() as $tagGroup)
 		{
 			$key = 'taggroup:'.$tagGroup->id;
 
@@ -128,7 +128,7 @@ class Tag extends Element
 	public static function saveElement(ElementInterface $element, $params)
 	{
 		/** @var Tag $element */
-		return Craft::$app->tags->saveTag($element);
+		return Craft::$app->getTags()->saveTag($element);
 	}
 
 	// Properties
@@ -184,7 +184,7 @@ class Tag extends Element
 	{
 		if ($this->groupId)
 		{
-			return Craft::$app->tags->getTagGroupById($this->groupId);
+			return Craft::$app->getTags()->getTagGroupById($this->groupId);
 		}
 	}
 
@@ -201,7 +201,7 @@ class Tag extends Element
 	 */
 	public function getName()
 	{
-		Craft::$app->deprecator->log('Tag::name', 'The Tag ‘name’ property has been deprecated. Use ‘title’ instead.');
+		Craft::$app->getDeprecator()->log('Tag::name', 'The Tag ‘name’ property has been deprecated. Use ‘title’ instead.');
 		return $this->getContent()->title;
 	}
 }

@@ -78,7 +78,7 @@ class InfoPanel extends Panel
 	{
 		$plugins = [];
 
-		foreach (Craft::$app->plugins->getAllPlugins() as $plugin)
+		foreach (Craft::$app->getPlugins()->getAllPlugins() as $plugin)
 		{
 			$plugins[] = [
 				'name' => $plugin->name,
@@ -96,7 +96,7 @@ class InfoPanel extends Panel
 	 */
 	private function _getRequirementResults()
 	{
-		require_once(Craft::$app->path->getAppPath().'/requirements/RequirementsChecker.php');
+		require_once(Craft::$app->getPath()->getAppPath().'/requirements/RequirementsChecker.php');
 		$reqCheck = new \RequirementsChecker();
 		$reqCheck->checkCraft();
 		return $reqCheck->getResult()['requirements'];
@@ -109,7 +109,7 @@ class InfoPanel extends Panel
 	 */
 	private function _getPhpInfo()
 	{
-		Craft::$app->config->maxPowerCaptain();
+		Craft::$app->getConfig()->maxPowerCaptain();
 
 		ob_start();
 		phpinfo(-1);

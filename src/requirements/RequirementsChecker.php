@@ -449,10 +449,10 @@ class RequirementsChecker
 		else
 		{
 			// Check if we're running in the context of Craft.
-			$this->dbCreds['server'] = Craft::$app->config->get('server', 'db');
-			$this->dbCreds['user'] = Craft::$app->config->get('user', 'db');
-			$this->dbCreds['password'] = Craft::$app->config->get('password', 'db');
-			$this->dbCreds['database'] = Craft::$app->config->get('database', 'db');
+			$this->dbCreds['server'] = Craft::$app->getConfig()->get('server', 'db');
+			$this->dbCreds['user'] = Craft::$app->getConfig()->get('user', 'db');
+			$this->dbCreds['password'] = Craft::$app->getConfig()->get('password', 'db');
+			$this->dbCreds['database'] = Craft::$app->getConfig()->get('database', 'db');
 
 			return true;
 		}

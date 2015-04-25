@@ -21,7 +21,7 @@ use yii\base\Component;
 /**
  * Class Tasks service.
  *
- * An instance of the Tasks service is globally accessible in Craft via [[Application::tasks `Craft::$app->tasks`]].
+ * An instance of the Tasks service is globally accessible in Craft via [[Application::tasks `Craft::$app->getTasks()`]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
@@ -251,7 +251,7 @@ class Tasks extends Component
 		}
 
 		// It's go time.
-		Craft::$app->config->maxPowerCaptain();
+		Craft::$app->getConfig()->maxPowerCaptain();
 
 		while ($task = $this->getNextPendingTask())
 		{

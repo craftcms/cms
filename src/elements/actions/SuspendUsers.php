@@ -86,7 +86,7 @@ EOT;
 		{
 			if (!$user->isCurrent())
 			{
-				Craft::$app->users->suspendUser($user);
+				Craft::$app->getUsers()->suspendUser($user);
 			}
 		}
 

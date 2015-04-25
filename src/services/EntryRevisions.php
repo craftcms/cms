@@ -26,7 +26,7 @@ Craft::$app->requireEdition(Craft::Client);
 /**
  * Class EntryRevisions service.
  *
- * An instance of the EntryRevisions service is globally accessible in Craft via [[Application::entryRevisions `Craft::$app->entryRevisions`]].
+ * An instance of the EntryRevisions service is globally accessible in Craft via [[Application::entryRevisions `Craft::$app->getEntryRevisions()`]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
@@ -84,7 +84,7 @@ class EntryRevisions extends Component
 			// This is a little hacky, but fixes a bug where entries are getting the wrong URL when a draft is published
 			// inside of a structured section since the selected URL Format depends on the entry's level, and there's no
 			// reason to store the level along with the other draft data.
-			$entry = Craft::$app->entries->getEntryById($draftRecord->entryId, $draftRecord->locale);
+			$entry = Craft::$app->getEntries()->getEntryById($draftRecord->entryId, $draftRecord->locale);
 
 			$draft->root  = $entry->root;
 			$draft->lft   = $entry->lft;
@@ -228,7 +228,7 @@ class EntryRevisions extends Component
 			$draft->revisionNotes = Craft::t('app', 'Published draft “{name}”.', ['name' => $draft->name]);
 		}
 
-		if (Craft::$app->entries->saveEntry($draft))
+		if (Craft::$app->getEntries()->saveEntry($draft))
 		{
 			// Fire an 'afterPublishDraft' event
 			$this->trigger(static::EVENT_AFTER_PUBLISH_DRAFT, new DraftEvent([
@@ -407,7 +407,7 @@ class EntryRevisions extends Component
 		// Set the version notes
 		$version->revisionNotes = Craft::t('app', 'Reverted version {num}.', ['num' => $version->num]);
 
-		if (Craft::$app->entries->saveEntry($version))
+		if (Craft::$app->getEntries()->saveEntry($version))
 		{
 			// Fire an 'afterRevertEntryToVersion' event
 			$this->trigger(static::EVENT_AFTER_REVERT_ENTRY_TO_VERSION, new EntryEvent([
@@ -478,7 +478,7 @@ class EntryRevisions extends Component
 
 		$content = $revision->getContentFromPost();
 
-		foreach (Craft::$app->fields->getAllFields() as $field)
+		foreach (Craft::$app->getFields()->getAllFields() as $field)
 		{
 			if (isset($content[$field->handle]) && $content[$field->handle] !== null)
 			{

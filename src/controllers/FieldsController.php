@@ -60,7 +60,7 @@ class FieldsController extends Controller
 
 		$isNewGroup = empty($group->id);
 
-		if (Craft::$app->fields->saveGroup($group))
+		if (Craft::$app->getFields()->saveGroup($group))
 		{
 			if ($isNewGroup)
 			{
@@ -91,7 +91,7 @@ class FieldsController extends Controller
 		$this->requireAjaxRequest();
 
 		$groupId = Craft::$app->getRequest()->getRequiredBodyParam('id');
-		$success = Craft::$app->fields->deleteGroupById($groupId);
+		$success = Craft::$app->getFields()->deleteGroupById($groupId);
 
 		Craft::$app->getSession()->setNotice(Craft::t('app', 'Group deleted.'));
 
@@ -122,7 +122,7 @@ class FieldsController extends Controller
 
 		if ($field === null && $fieldId !== null)
 		{
-			$field = Craft::$app->fields->getFieldById($fieldId);
+			$field = Craft::$app->getFields()->getFieldById($fieldId);
 
 			if ($field === null)
 			{
@@ -132,7 +132,7 @@ class FieldsController extends Controller
 
 		if ($field === null)
 		{
-			$field = Craft::$app->fields->createField('craft\app\fields\PlainText');
+			$field = Craft::$app->getFields()->createField('craft\app\fields\PlainText');
 		}
 
 		$fieldTypeInfo = new ComponentInfo($field);
@@ -140,7 +140,7 @@ class FieldsController extends Controller
 		// Field types
 		// ---------------------------------------------------------------------
 
-		$allFieldTypes = Craft::$app->fields->getAllFieldTypes();
+		$allFieldTypes = Craft::$app->getFields()->getAllFieldTypes();
 		$fieldTypeOptions = [];
 
 		foreach ($allFieldTypes as $class)
@@ -157,7 +157,7 @@ class FieldsController extends Controller
 		// Groups
 		// ---------------------------------------------------------------------
 
-		$allGroups = Craft::$app->fields->getAllGroups();
+		$allGroups = Craft::$app->getFields()->getAllGroups();
 
 		if (empty($allGroups))
 		{
@@ -169,7 +169,7 @@ class FieldsController extends Controller
 			$groupId = ($field !== null && $field->groupId !== null) ? $field->groupId : $allGroups[0]->id;
 		}
 
-		$fieldGroup = Craft::$app->fields->getGroupById($groupId);
+		$fieldGroup = Craft::$app->getFields()->getGroupById($groupId);
 
 		if ($fieldGroup === null)
 		{
@@ -228,7 +228,7 @@ class FieldsController extends Controller
 	{
 		$this->requirePostRequest();
 
-		$fieldsService = Craft::$app->fields;
+		$fieldsService = Craft::$app->getFields();
 		$request = Craft::$app->getRequest();
 		$type = $request->getRequiredBodyParam('type');
 
@@ -270,7 +270,7 @@ class FieldsController extends Controller
 		$this->requireAjaxRequest();
 
 		$fieldId = Craft::$app->getRequest()->getRequiredBodyParam('id');
-		$success = Craft::$app->fields->deleteFieldById($fieldId);
+		$success = Craft::$app->getFields()->deleteFieldById($fieldId);
 		return $this->asJson(['success' => $success]);
 	}
 }

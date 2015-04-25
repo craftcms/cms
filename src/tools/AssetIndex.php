@@ -43,7 +43,7 @@ class AssetIndex extends Tool
 	 */
 	public static function optionsHtml()
 	{
-		$sources = Craft::$app->volumes->getAllVolumes();
+		$sources = Craft::$app->getVolumes()->getAllVolumes();
 		$sourceOptions = [];
 
 		foreach ($sources as $source)
@@ -72,7 +72,7 @@ class AssetIndex extends Tool
 		if (!empty($params['start']))
 		{
 			$batches = [];
-			$sessionId = Craft::$app->assetIndexing->getIndexingSessionId();
+			$sessionId = Craft::$app->getAssetIndexer()->getIndexingSessionId();
 
 			// Selection of sources or all sources?
 			if (is_array($params['sources']))
@@ -81,7 +81,7 @@ class AssetIndex extends Tool
 			}
 			else
 			{
-				$sourceIds = Craft::$app->volumes->getViewableVolumeIds();
+				$sourceIds = Craft::$app->getVolumes()->getViewableVolumeIds();
 			}
 
 			$missingFolders = [];
@@ -92,7 +92,7 @@ class AssetIndex extends Tool
 			foreach ($sourceIds as $sourceId)
 			{
 				// Get the indexing list
-				$indexList = Craft::$app->assetIndexing->prepareIndexList($sessionId, $sourceId);
+				$indexList = Craft::$app->getAssetIndexer()->prepareIndexList($sessionId, $sourceId);
 
 				if (!empty($indexList['error']))
 				{
@@ -141,7 +141,7 @@ class AssetIndex extends Tool
 		else if (!empty($params['process']))
 		{
 			// Index the file
-			Craft::$app->assetIndexing->processIndexForVolume($params['sessionId'], $params['offset'], $params['sourceId']);
+			Craft::$app->getAssetIndexer()->processIndexForVolume($params['sessionId'], $params['offset'], $params['sourceId']);
 
 			// More files to index.
 			if (++$params['offset'] < $params['total'])
@@ -159,7 +159,7 @@ class AssetIndex extends Tool
 				if (Craft::$app->getSession()->get('assetsTotalSourcesToIndex', 0) <= Craft::$app->getSession()->get('assetsTotalSourcesIndexed', 0))
 				{
 					$sourceIds = Craft::$app->getSession()->get('assetsSourcesBeingIndexed', []);
-					$missingFiles = Craft::$app->assetIndexing->getMissingFiles($sourceIds, $params['sessionId']);
+					$missingFiles = Craft::$app->getAssetIndexer()->getMissingFiles($sourceIds, $params['sessionId']);
 					$missingFolders = Craft::$app->getSession()->get('assetsMissingFolders', []);
 					$skippedFiles = Craft::$app->getSession()->get('assetsSkippedFiles', []);
 
@@ -202,13 +202,13 @@ class AssetIndex extends Tool
 		{
 			if (!empty($params['deleteFile']) && is_array($params['deleteFile']))
 			{
-				Craft::$app->db->createCommand()->delete('assettransformindex', array('in', 'fileId', $params['deleteFile']));
-				Craft::$app->assets->deleteFilesByIds($params['deleteFile'], false);
+				Craft::$app->getDb()->createCommand()->delete('assettransformindex', array('in', 'fileId', $params['deleteFile']));
+				Craft::$app->getAssets()->deleteFilesByIds($params['deleteFile'], false);
 			}
 
 			if (!empty($params['deleteFolder']) && is_array($params['deleteFolder']))
 			{
-				Craft::$app->assets->deleteFoldersByIds($params['deleteFolder'], false);
+				Craft::$app->getAssets()->deleteFoldersByIds($params['deleteFolder'], false);
 			}
 
 			return [

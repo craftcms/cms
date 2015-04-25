@@ -35,7 +35,7 @@ class GeneratePendingTransforms extends Task
 	public function getTotalSteps()
 	{
 		// Get all of the pending transform index IDs
-		$this->_indexIds = Craft::$app->assetTransforms->getPendingTransformIndexIds();
+		$this->_indexIds = Craft::$app->getAssetTransforms()->getPendingTransformIndexIds();
 
 		return count($this->_indexIds);
 	}
@@ -48,8 +48,8 @@ class GeneratePendingTransforms extends Task
 		// Don't let an exception stop us from processing the rest
 		try
 		{
-			$index = Craft::$app->assetTransforms->getTransformIndexModelById($this->_indexIds[$step]);
-			Craft::$app->assetTransforms->ensureTransformUrlByIndexModel($index);
+			$index = Craft::$app->getAssetTransforms()->getTransformIndexModelById($this->_indexIds[$step]);
+			Craft::$app->getAssetTransforms()->ensureTransformUrlByIndexModel($index);
 		}
 		catch (\Exception $e) { }
 

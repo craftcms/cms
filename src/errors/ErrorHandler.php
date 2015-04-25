@@ -25,7 +25,7 @@ use craft\app\helpers\StringHelper;
  * where <StatusCode> stands for the HTTP error code (e.g. error500.php). Localized templates are named similarly but
  * located under a subdirectory whose name is the language code (e.g. zh_cn/error500.php).
  *
- * Development templates are displayed when the application is in dev mode (i.e. Craft::$app->config->get('devMode') = true).
+ * Development templates are displayed when the application is in dev mode (i.e. Craft::$app->getConfig()->get('devMode') = true).
  * Detailed error information with source code are displayed in these templates. Production templates are meant to be
  * shown to end-users and are used when the application is in production mode. For security reasons, they only display
  * the error message without any sensitive information.
@@ -160,11 +160,11 @@ class ErrorHandler extends \CErrorHandler
 			{
 				if (isset($step['class']) && $step['class'] == '\\craft\\app\\services\\Tasks' && $step['function'] == 'runTask')
 				{
-					$task = Craft::$app->tasks->getRunningTask();
+					$task = Craft::$app->getTasks()->getRunningTask();
 
 					if ($task)
 					{
-						Craft::$app->tasks->fail($task, $event->message.' on line '.$event->line.' of '.$event->file);
+						Craft::$app->getTasks()->fail($task, $event->message.' on line '.$event->line.' of '.$event->file);
 					}
 
 					break;

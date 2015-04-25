@@ -29,7 +29,7 @@ class Globals
 	 */
 	public function getAllSets($indexBy = null)
 	{
-		return \Craft::$app->globals->getAllSets($indexBy);
+		return \Craft::$app->getGlobals()->getAllSets($indexBy);
 	}
 
 	/**
@@ -42,7 +42,7 @@ class Globals
 	 */
 	public function getEditableSets($indexBy = null, $localeId = null)
 	{
-		return \Craft::$app->globals->getEditableSets($indexBy, $localeId);
+		return \Craft::$app->getGlobals()->getEditableSets($indexBy, $localeId);
 	}
 
 	/**
@@ -52,7 +52,7 @@ class Globals
 	 */
 	public function getTotalSets()
 	{
-		return \Craft::$app->globals->getTotalSets();
+		return \Craft::$app->getGlobals()->getTotalSets();
 	}
 
 	/**
@@ -62,7 +62,7 @@ class Globals
 	 */
 	public function getTotalEditableSets()
 	{
-		return \Craft::$app->globals->getTotalEditableSets();
+		return \Craft::$app->getGlobals()->getTotalEditableSets();
 	}
 
 	/**
@@ -75,7 +75,7 @@ class Globals
 	 */
 	public function getSetById($globalSetId, $localeId = null)
 	{
-		return \Craft::$app->globals->getSetById($globalSetId, $localeId);
+		return \Craft::$app->getGlobals()->getSetById($globalSetId, $localeId);
 	}
 
 	/**
@@ -88,6 +88,6 @@ class Globals
 	 */
 	public function getSetByHandle($globalSetHandle, $localeId = null)
 	{
-		return \Craft::$app->globals->getSetByHandle($globalSetHandle, $localeId);
+		return \Craft::$app->getGlobals()->getSetByHandle($globalSetHandle, $localeId);
 	}
 }

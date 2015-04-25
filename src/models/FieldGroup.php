@@ -63,6 +63,6 @@ class FieldGroup extends Model
 	 */
 	public function getFields()
 	{
-		return Craft::$app->fields->getFieldsByGroupId($this->id);
+		return Craft::$app->getFields()->getFieldsByGroupId($this->id);
 	}
 }

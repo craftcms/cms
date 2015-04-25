@@ -47,7 +47,7 @@ class VolumesController extends Controller
 	 */
 	public function actionVolumeIndex()
 	{
-		$variables['volumes'] = Craft::$app->volumes->getAllVolumes();
+		$variables['volumes'] = Craft::$app->getVolumes()->getAllVolumes();
 		return $this->renderTemplate('settings/assets/volumes/_index', $variables);
 	}
 
@@ -67,7 +67,7 @@ class VolumesController extends Controller
 		{
 			if ($volumeId !== null)
 			{
-				$volume = Craft::$app->volumes->getVolumeById($volumeId);
+				$volume = Craft::$app->getVolumes()->getVolumeById($volumeId);
 
 				if (!$volume)
 				{
@@ -76,13 +76,13 @@ class VolumesController extends Controller
 			}
 			else
 			{
-				$volume = Craft::$app->volumes->createVolume('craft\app\volumes\Local');
+				$volume = Craft::$app->getVolumes()->createVolume('craft\app\volumes\Local');
 			}
 		}
 
 		if (Craft::$app->getEdition() == Craft::Pro)
 		{
-			$allVolumeTypes = Craft::$app->volumes->getAllVolumeTypes();
+			$allVolumeTypes = Craft::$app->getVolumes()->getAllVolumeTypes();
 			$volumeInstances = [];
 			$volumeTypeOptions = [];
 
@@ -90,7 +90,7 @@ class VolumesController extends Controller
 			{
 				if ($class === $volume->getType() || $class::isSelectable())
 				{
-					$volumeInstances[$class] = Craft::$app->volumes->createVolume($class);
+					$volumeInstances[$class] = Craft::$app->getVolumes()->createVolume($class);
 
 					$volumeTypeOptions[] = [
 						'value' => $class,
@@ -154,7 +154,7 @@ class VolumesController extends Controller
 
 		if ($existingVolumeId)
 		{
-			$volume = Craft::$app->volumes->getVolumeById($existingVolumeId);
+			$volume = Craft::$app->getVolumes()->getVolumeById($existingVolumeId);
 		}
 		else
 		{
@@ -167,7 +167,7 @@ class VolumesController extends Controller
 				$volumeType = 'craft\app\volumes\Local';
 			}
 
-			$volume = Craft::$app->volumes->createVolume($volumeType);
+			$volume = Craft::$app->getVolumes()->createVolume($volumeType);
 		}
 
 		$volume->name   = Craft::$app->getRequest()->getBodyParam('name');
@@ -196,11 +196,11 @@ class VolumesController extends Controller
 		}
 
 		// Set the field layout
-		$fieldLayout = Craft::$app->fields->assembleLayoutFromPost();
+		$fieldLayout = Craft::$app->getFields()->assembleLayoutFromPost();
 		$fieldLayout->type = Asset::className();
 		$volume->setFieldLayout($fieldLayout);
 
-		if (Craft::$app->volumes->saveVolume($volume))
+		if (Craft::$app->getVolumes()->saveVolume($volume))
 		{
 			Craft::$app->getSession()->setNotice(Craft::t('app', 'Volume saved.'));
 			return $this->redirectToPostedUrl();
@@ -227,7 +227,7 @@ class VolumesController extends Controller
 		$this->requireAjaxRequest();
 
 		$volumeIds = JsonHelper::decode(Craft::$app->getRequest()->getRequiredBodyParam('ids'));
-		Craft::$app->volumes->reorderVolumes($volumeIds);
+		Craft::$app->getVolumes()->reorderVolumes($volumeIds);
 
 		return $this->asJson(['success' => true]);
 	}
@@ -244,7 +244,7 @@ class VolumesController extends Controller
 
 		$volumeId = Craft::$app->getRequest()->getRequiredBodyParam('id');
 
-		Craft::$app->volumes->deleteVolumeById($volumeId);
+		Craft::$app->getVolumes()->deleteVolumeById($volumeId);
 
 		return $this->asJson(['success' => true]);
 	}

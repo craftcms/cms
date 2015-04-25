@@ -117,7 +117,7 @@ class UrlHelper
 	public static function getUrlWithToken($url, $token)
 	{
 		return static::getUrlWithParams($url, [
-			Craft::$app->config->get('tokenParam') => $token
+			Craft::$app->getConfig()->get('tokenParam') => $token
 		]);
 	}
 
@@ -184,7 +184,7 @@ class UrlHelper
 
 		if (!$request->getIsConsoleRequest() && $request->getIsCpRequest())
 		{
-			$path = Craft::$app->config->get('cpTrigger').($path ? '/'.$path : '');
+			$path = Craft::$app->getConfig()->get('cpTrigger').($path ? '/'.$path : '');
 			$cpUrl = true;
 		}
 		else
@@ -213,7 +213,7 @@ class UrlHelper
 	public static function getCpUrl($path = '', $params = null, $protocol = '')
 	{
 		$path = trim($path, '/');
-		$path = Craft::$app->config->get('cpTrigger').($path ? '/'.$path : '');
+		$path = Craft::$app->getConfig()->get('cpTrigger').($path ? '/'.$path : '');
 
 		return static::_getUrl($path, $params, $protocol, true, false);
 	}
@@ -252,11 +252,11 @@ class UrlHelper
 			// If we've served this resource before, we should have a cached copy of the server path already. Use that
 			// to get its timestamp, and add timestamp to the resource URL so the Resources service sends it with
 			// a Pragma: Cache header.
-			$dateParam = Craft::$app->resources->dateParam;
+			$dateParam = Craft::$app->getResources()->dateParam;
 
 			if (!isset($params[$dateParam]))
 			{
-				$realPath = Craft::$app->resources->getCachedResourcePath($path);
+				$realPath = Craft::$app->getResources()->getCachedResourcePath($path);
 
 				if ($realPath)
 				{
@@ -285,7 +285,7 @@ class UrlHelper
 			}
 		}
 
-		return static::getUrl(Craft::$app->config->getResourceTrigger().'/'.$path, $params, $protocol);
+		return static::getUrl(Craft::$app->getConfig()->getResourceTrigger().'/'.$path, $params, $protocol);
 	}
 
 	/**
@@ -298,7 +298,7 @@ class UrlHelper
 	 */
 	public static function getActionUrl($path = '', $params = null, $protocol = '')
 	{
-		$path = Craft::$app->config->get('actionTrigger').'/'.trim($path, '/');
+		$path = Craft::$app->getConfig()->get('actionTrigger').'/'.trim($path, '/');
 
 		return static::getUrl($path, $params, $protocol, true);
 	}
@@ -329,13 +329,13 @@ class UrlHelper
 			$path = substr($path, 0, $qpos);
 		}
 
-		$showScriptName = ($mustShowScriptName || !Craft::$app->config->omitScriptNameInUrls());
+		$showScriptName = ($mustShowScriptName || !Craft::$app->getConfig()->omitScriptNameInUrls());
 		$request = Craft::$app->getRequest();
 
 		if ($cpUrl)
 		{
 			// Did they set the base URL manually?
-			$baseUrl = Craft::$app->config->get('baseCpUrl');
+			$baseUrl = Craft::$app->getConfig()->get('baseCpUrl');
 
 			if ($baseUrl)
 			{
@@ -381,13 +381,13 @@ class UrlHelper
 		}
 
 		// Put it all together
-		if (!$showScriptName || Craft::$app->config->usePathInfo())
+		if (!$showScriptName || Craft::$app->getConfig()->usePathInfo())
 		{
 			if ($path)
 			{
 				$url = rtrim($baseUrl, '/').'/'.trim($path, '/');
 
-				if (($request->getIsConsoleRequest() || $request->getIsSiteRequest()) && Craft::$app->config->get('addTrailingSlashesToUrls'))
+				if (($request->getIsConsoleRequest() || $request->getIsSiteRequest()) && Craft::$app->getConfig()->get('addTrailingSlashesToUrls'))
 				{
 					$url .= '/';
 				}
@@ -403,7 +403,7 @@ class UrlHelper
 
 			if ($path)
 			{
-				$pathParam = Craft::$app->config->get('pathParam');
+				$pathParam = Craft::$app->getConfig()->get('pathParam');
 				$params = $pathParam.'='.$path.($params ? '&'.$params : '');
 			}
 		}

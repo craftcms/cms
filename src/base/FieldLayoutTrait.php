@@ -40,7 +40,7 @@ trait FieldLayoutTrait
 		{
 			if (!empty($this->fieldLayoutId))
 			{
-				$this->_fieldLayout = Craft::$app->fields->getLayoutById($this->fieldLayoutId);
+				$this->_fieldLayout = Craft::$app->getFields()->getLayoutById($this->fieldLayoutId);
 			}
 
 			if (empty($this->_fieldLayout))

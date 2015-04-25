@@ -20,7 +20,7 @@ use yii\base\Component;
 /**
  * The Tokens service.
  *
- * An instance of the Tokens service is globally accessible in Craft via [[Application::tokens `Craft::$app->tokens`]].
+ * An instance of the Tokens service is globally accessible in Craft via [[Application::tokens `Craft::$app->getTokens()`]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
@@ -55,7 +55,7 @@ class Tokens extends Component
 		if (!$expiryDate)
 		{
 			$expiryDate = DateTimeHelper::currentUTCDateTime();
-			$expiryDate->add(new DateInterval(Craft::$app->config->get('defaultTokenDuration')));
+			$expiryDate->add(new DateInterval(Craft::$app->getConfig()->get('defaultTokenDuration')));
 		}
 
 		$tokenRecord = new TokenRecord();

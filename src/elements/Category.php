@@ -91,11 +91,11 @@ class Category extends Element
 
 		if ($context == 'index')
 		{
-			$groups = Craft::$app->categories->getEditableGroups();
+			$groups = Craft::$app->getCategories()->getEditableGroups();
 		}
 		else
 		{
-			$groups = Craft::$app->categories->getAllGroups();
+			$groups = Craft::$app->getCategories()->getAllGroups();
 		}
 
 		foreach ($groups as $group)
@@ -121,7 +121,7 @@ class Category extends Element
 	{
 		if (preg_match('/^group:(\d+)$/', $source, $matches))
 		{
-			$group = Craft::$app->categories->getGroupById($matches[1]);
+			$group = Craft::$app->getCategories()->getGroupById($matches[1]);
 		}
 
 		if (empty($group))
@@ -137,24 +137,24 @@ class Category extends Element
 		if ($group->hasUrls)
 		{
 			// View
-			$actions[] = Craft::$app->elements->createAction([
+			$actions[] = Craft::$app->getElements()->createAction([
 				'type'  => View::className(),
 				'label' => Craft::t('app', 'View category'),
 			]);
 		}
 
 		// Edit
-		$actions[] = Craft::$app->elements->createAction([
+		$actions[] = Craft::$app->getElements()->createAction([
 			'type'  => Edit::className(),
 			'label' => Craft::t('app', 'Edit category'),
 		]);
 
 		// New Child
-		$structure = Craft::$app->structures->getStructureById($group->structureId);
+		$structure = Craft::$app->getStructures()->getStructureById($group->structureId);
 
 		if ($structure)
 		{
-			$actions[] = Craft::$app->elements->createAction([
+			$actions[] = Craft::$app->getElements()->createAction([
 				'type'        => NewChild::className(),
 				'label'       => Craft::t('app', 'Create a new child category'),
 				'maxLevels'   => $structure->maxLevels,
@@ -163,14 +163,14 @@ class Category extends Element
 		}
 
 		// Delete
-		$actions[] = Craft::$app->elements->createAction([
+		$actions[] = Craft::$app->getElements()->createAction([
 			'type'                => Delete::className(),
 			'confirmationMessage' => Craft::t('app', 'Are you sure you want to delete the selected categories?'),
 			'successMessage'      => Craft::t('app', 'Categories deleted.'),
 		]);
 
 		// Allow plugins to add additional actions
-		$allPluginActions = Craft::$app->plugins->call('addCategoryActions', [$source], true);
+		$allPluginActions = Craft::$app->getPlugins()->call('addCategoryActions', [$source], true);
 
 		foreach ($allPluginActions as $pluginActions)
 		{
@@ -191,7 +191,7 @@ class Category extends Element
 		];
 
 		// Allow plugins to modify the attributes
-		Craft::$app->plugins->call('modifyCategorySortableAttributes', [&$attributes]);
+		Craft::$app->getPlugins()->call('modifyCategorySortableAttributes', [&$attributes]);
 
 		return $attributes;
 	}
@@ -207,7 +207,7 @@ class Category extends Element
 		];
 
 		// Allow plugins to modify the attributes
-		Craft::$app->plugins->call('modifyCategoryTableAttributes', [&$attributes, $source]);
+		Craft::$app->getPlugins()->call('modifyCategoryTableAttributes', [&$attributes, $source]);
 
 		return $attributes;
 	}
@@ -219,7 +219,7 @@ class Category extends Element
 	{
 		/** @var Category $element */
 		// First give plugins a chance to set this
-		$pluginAttributeHtml = Craft::$app->plugins->callFirst('getCategoryTableAttributeHtml', [$element, $attribute], true);
+		$pluginAttributeHtml = Craft::$app->getPlugins()->callFirst('getCategoryTableAttributeHtml', [$element, $attribute], true);
 
 		if ($pluginAttributeHtml !== null)
 		{
@@ -277,7 +277,7 @@ class Category extends Element
 			$element->slug = $params['slug'];
 		}
 
-		return Craft::$app->categories->saveCategory($element);
+		return Craft::$app->getCategories()->saveCategory($element);
 	}
 
 	/**
@@ -312,7 +312,7 @@ class Category extends Element
 		if ($element->getGroup()->structureId == $structureId)
 		{
 			// Update its URI
-			Craft::$app->elements->updateElementSlugAndUri($element);
+			Craft::$app->getElements()->updateElementSlugAndUri($element);
 
 			// Make sure that each of the category's ancestors are related wherever the category is related
 			$newRelationValues = [];
@@ -449,7 +449,7 @@ class Category extends Element
 	{
 		if ($this->groupId)
 		{
-			return Craft::$app->categories->getGroupById($this->groupId);
+			return Craft::$app->getCategories()->getGroupById($this->groupId);
 		}
 	}
 }

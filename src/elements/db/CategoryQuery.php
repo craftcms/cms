@@ -155,7 +155,7 @@ class CategoryQuery extends ElementQuery
 		if ($this->editable)
 		{
 			// Limit the query to only the category groups the user has permission to edit
-			$editableGroupIds = Craft::$app->categories->getEditableGroupIds();
+			$editableGroupIds = Craft::$app->getCategories()->getEditableGroupIds();
 			$this->subQuery->andWhere(['in', 'categories.groupId', $editableGroupIds]);
 		}
 	}

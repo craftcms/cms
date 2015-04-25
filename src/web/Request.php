@@ -123,7 +123,7 @@ class Request extends \yii\web\Request
 	 */
 	public function __construct($config = [])
 	{
-		$configService = Craft::$app->config;
+		$configService = Craft::$app->getConfig();
 
 		// Is CSRF protection enabled?
 		if ($configService->get('enableCsrfProtection') === true)
@@ -133,7 +133,7 @@ class Request extends \yii\web\Request
 			$config['csrfCookie'] = Craft::getCookieConfig();
 		}
 
-		$this->cookieValidationKey = Craft::$app->security->getValidationKey();
+		$this->cookieValidationKey = Craft::$app->getSecurity()->getValidationKey();
 
 		parent::__construct($config);
 	}
@@ -145,7 +145,7 @@ class Request extends \yii\web\Request
 	{
 		parent::init();
 
-		$configService = Craft::$app->config;
+		$configService = Craft::$app->getConfig();
 
 		// Sanitize
 		$path = $this->getFullPath();
@@ -200,7 +200,7 @@ class Request extends \yii\web\Request
 		{
 			try
 			{
-				if (Craft::$app->config->usePathInfo())
+				if (Craft::$app->getConfig()->usePathInfo())
 				{
 					$this->_fullPath = $this->getPathInfo();
 
@@ -315,7 +315,7 @@ class Request extends \yii\web\Request
 	 */
 	public function getToken()
 	{
-		return $this->getQueryParam(Craft::$app->config->get('tokenParam'));
+		return $this->getQueryParam(Craft::$app->getConfig()->get('tokenParam'));
 	}
 
 	/**
@@ -658,7 +658,7 @@ class Request extends \yii\web\Request
 			return '';
 		}
 
-		$pathSubstr = Craft::$app->config->get('pathParam').'=';
+		$pathSubstr = Craft::$app->getConfig()->get('pathParam').'=';
 
 		foreach ($parts as $key => $part)
 		{
@@ -761,7 +761,7 @@ class Request extends \yii\web\Request
 	 */
 	private function _getQueryStringPath()
 	{
-		$pathParam = Craft::$app->config->get('pathParam');
+		$pathParam = Craft::$app->getConfig()->get('pathParam');
 		return $this->getQueryParam($pathParam, '');
 	}
 
@@ -777,7 +777,7 @@ class Request extends \yii\web\Request
 			return;
 		}
 
-		$configService = Craft::$app->config;
+		$configService = Craft::$app->getConfig();
 
 		// If there's a token in the query string, then that should take precedence over everything else
 		if (!$this->getQueryParam($configService->get('tokenParam')))
@@ -860,7 +860,7 @@ class Request extends \yii\web\Request
 
 					if ($invalid === true)
 					{
-						Craft::$app->deprecator->log('yii1-route', 'A Yii 1-styled route was requested: "'.$requestedRoute.'". It should be changed to: "'.implode('/', $this->_actionSegments).'".');
+						Craft::$app->getDeprecator()->log('yii1-route', 'A Yii 1-styled route was requested: "'.$requestedRoute.'". It should be changed to: "'.implode('/', $this->_actionSegments).'".');
 					}
 				}
 			}

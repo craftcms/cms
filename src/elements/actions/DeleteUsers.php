@@ -111,7 +111,7 @@ EOT;
 
 		if (!empty($this->transferContentTo))
 		{
-			$transferContentTo = Craft::$app->users->getUserById($this->transferContentTo);
+			$transferContentTo = Craft::$app->getUsers()->getUserById($this->transferContentTo);
 
 			if (!$transferContentTo)
 			{
@@ -128,7 +128,7 @@ EOT;
 		{
 			if (!in_array($user->id, $undeletableIds))
 			{
-				Craft::$app->users->deleteUser($user, $transferContentTo);
+				Craft::$app->getUsers()->deleteUser($user, $transferContentTo);
 			}
 		}
 

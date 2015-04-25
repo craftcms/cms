@@ -29,7 +29,7 @@ class Sections
 	 */
 	public function getAllSections($indexBy = null)
 	{
-		return \Craft::$app->sections->getAllSections($indexBy);
+		return \Craft::$app->getSections()->getAllSections($indexBy);
 	}
 
 	/**
@@ -41,7 +41,7 @@ class Sections
 	 */
 	public function getEditableSections($indexBy = null)
 	{
-		return \Craft::$app->sections->getEditableSections($indexBy);
+		return \Craft::$app->getSections()->getEditableSections($indexBy);
 	}
 
 	/**
@@ -51,7 +51,7 @@ class Sections
 	 */
 	public function getTotalSections()
 	{
-		return \Craft::$app->sections->getTotalSections();
+		return \Craft::$app->getSections()->getTotalSections();
 	}
 
 	/**
@@ -61,7 +61,7 @@ class Sections
 	 */
 	public function getTotalEditableSections()
 	{
-		return \Craft::$app->sections->getTotalEditableSections();
+		return \Craft::$app->getSections()->getTotalEditableSections();
 	}
 
 	/**
@@ -73,7 +73,7 @@ class Sections
 	 */
 	public function getSectionById($sectionId)
 	{
-		return \Craft::$app->sections->getSectionById($sectionId);
+		return \Craft::$app->getSections()->getSectionById($sectionId);
 	}
 
 	/**
@@ -85,6 +85,6 @@ class Sections
 	 */
 	public function getSectionByHandle($handle)
 	{
-		return \Craft::$app->sections->getSectionByHandle($handle);
+		return \Craft::$app->getSections()->getSectionByHandle($handle);
 	}
 }

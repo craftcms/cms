@@ -21,68 +21,17 @@ use yii\web\NotFoundHttpException;
 /**
  * Craft Web Application class
  *
- * @property \craft\app\services\Assets           $assets           The assets service.
- * @property \craft\app\services\AssetIndexing    $assetIndexing    The asset indexing service.
- * @property \craft\app\services\Volumes          $volumes          The asset sources service.
- * @property \craft\app\services\AssetTransforms  $assetTransforms  The asset transforms service.
- * @property \craft\app\services\Categories       $categories       The categories service.
- * @property \craft\app\services\Config           $config           The config service.
- * @property \craft\app\services\Content          $content          The content service.
- * @property \craft\app\services\Dashboard        $dashboard        The dashboard service.
- * @property \craft\app\db\Connection             $db               The database connection component.
- * @property \craft\app\services\Deprecator       $deprecator       The deprecator service.
- * @property \craft\app\services\Elements         $elements         The elements service.
- * @property \craft\app\services\EmailMessages    $emailMessages    The email messages service.
- * @property \craft\app\services\Email            $email            The email service.
- * @property \craft\app\services\Entries          $entries          The entries service.
- * @property \craft\app\services\EntryRevisions   $entryRevisions   The entry revisions service.
- * @property \craft\app\errors\ErrorHandler       $errorHandler     The error handler component.
- * @property \craft\app\services\Et               $et               The E.T. service.
- * @property \craft\app\services\Feeds            $feeds            The feeds service.
- * @property \craft\app\services\Fields           $fields           The fields service.
- * @property \craft\app\cache\FileCache           $fileCache        [[\craft\app\cache\FileCache File caching]].
- * @property \craft\app\i18n\Formatter            $formatter        The formatter component.
- * @property \craft\app\services\Globals          $globals          The globals service.
- * @property \craft\app\i18n\I18N                 $i18n             The internationalization (i18n) component.
- * @property \craft\app\services\Images           $images           The images service.
- * @property \craft\app\i18n\Locale               $locale           The locale component.
- * @property \craft\app\services\Matrix           $matrix           The matrix service.
- * @property \craft\app\db\MigrationManager       $migrator         The application’s migration manager.
- * @property \craft\app\services\Path             $path             The path service.
- * @property \craft\app\services\Plugins          $plugins          The plugins service.
- * @property \craft\app\services\Relations        $relations        The relations service.
- * @property Request                              $request          The request component.
- * @property \craft\app\services\Resources        $resources        The resources service.
- * @property Response                             $response         The response component.
- * @property \craft\app\services\Routes           $routes           The routes service.
- * @property \craft\app\services\Search           $search           The search service.
- * @property \craft\app\services\Sections         $sections         The sections service.
- * @property \craft\app\services\Security         $security         The security component.
- * @property Session                              $session          The session component.
- * @property \craft\app\services\Structures       $structures       The structures service.
- * @property \craft\app\services\SystemSettings   $systemSettings   The system settings service.
- * @property \craft\app\services\Tags             $tags             The tags service.
- * @property \craft\app\services\Tasks            $tasks            The tasks service.
- * @property \craft\app\services\TemplateCache    $templateCache    The template cache service.
- * @property \craft\app\services\Tokens           $tokens           The tokens service.
- * @property \craft\app\services\Updates          $updates          The updates service.
- * @property UrlManager                           $urlManager       The URL manager for this application.
- * @property \craft\app\services\UserGroups       $userGroups       The user groups service.
- * @property \craft\app\services\UserPermissions  $userPermissions  The user permission service.
- * @property \craft\app\services\Users            $users            The users service.
- * @property User                                 $user             The user component.
- * @property View                                 $view             The view component.
- * @method \craft\app\db\Connection               getDb()           Returns the database connection component.
- * @method \craft\app\errors\ErrorHandler         getErrorHandler() Returns the error handler component.
- * @method \craft\app\i18n\Formatter              getFormatter()    Returns the formatter component.
- * @method \craft\app\i18n\I18N                   getI18n()         Returns the internationalization (i18n) component.
+ * @property Request                              $request          The request component
+ * @property Response                             $response         The response component
+ * @property Session                              $session          The session component
+ * @property UrlManager                           $urlManager       The URL manager for this application
+ * @property User                                 $user             The user component
+ *
  * @method Request                                getRequest()      Returns the request component.
  * @method Response                               getResponse()     Returns the response component.
- * @method \craft\app\services\Security           getSecurity()     Returns the security component.
  * @method Session                                getSession()      Returns the session component.
  * @method UrlManager                             getUrlManager()   Returns the URL manager for this application.
  * @method User                                   getUser()         Returns the user component.
- * @method View                                   getView()         Returns the view component.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
@@ -141,7 +90,7 @@ class Application extends \yii\web\Application
 		//$this->coreMessages->attachEventHandler('onMissingTranslation', ['Craft\LocalizationHelper', 'findMissingTranslation']);
 
 		// If there is a custom appId set, apply it here.
-		if ($appId = $this->config->get('appId'))
+		if ($appId = $this->getConfig()->get('appId'))
 		{
 			$this->setId($appId);
 		}
@@ -200,7 +149,7 @@ class Application extends \yii\web\Application
 		}
 
 		// Makes sure that the uploaded files are compatible with the current DB schema
-		if (!$this->updates->isSchemaVersionCompatible())
+		if (!$this->getUpdates()->isSchemaVersionCompatible())
 		{
 			$this->_unregisterDebugModule();
 
@@ -231,19 +180,19 @@ class Application extends \yii\web\Application
 		}
 
 		// If there's a new version, but the schema hasn't changed, just update the info table
-		if ($this->updates->hasCraftBuildChanged())
+		if ($this->getUpdates()->hasCraftBuildChanged())
 		{
-			$this->updates->updateCraftVersionInfo();
+			$this->getUpdates()->updateCraftVersionInfo();
 		}
 
 		// If the system is offline, make sure they have permission to be here
 		$this->_enforceSystemStatusPermissions($request);
 
 		// Load the plugins
-		$this->plugins->loadPlugins();
+		$this->getPlugins()->loadPlugins();
 
 		// Check if a plugin needs to update the database.
-		if ($this->updates->isPluginDbUpdateNeeded())
+		if ($this->getUpdates()->isPluginDbUpdateNeeded())
 		{
 			return $this->_processUpdateLogic($request) ?: $this->getResponse();
 		}
@@ -269,7 +218,7 @@ class Application extends \yii\web\Application
 
 			if ($firstSeg)
 			{
-				$plugin = $plugin = $this->plugins->getPlugin($firstSeg);
+				$plugin = $plugin = $this->getPlugins()->getPlugin($firstSeg);
 
 				if ($plugin)
 				{
@@ -324,7 +273,7 @@ class Application extends \yii\web\Application
 	{
 		$exceptionArr['error'] = $data['message'];
 
-		if ($this->config->get('devMode'))
+		if ($this->getConfig()->get('devMode'))
 		{
 			$exceptionArr['trace']  = $data['trace'];
 			$exceptionArr['traces'] = (isset($data['traces']) ? $data['traces'] : null);
@@ -350,7 +299,7 @@ class Application extends \yii\web\Application
 	 */
 	public function returnAjaxError($code, $message, $file, $line)
 	{
-		if($this->config->get('devMode'))
+		if($this->getConfig()->get('devMode'))
 		{
 			$outputTrace = '';
 			$trace = debug_backtrace();
@@ -461,7 +410,7 @@ class Application extends \yii\web\Application
 			$requestedRoute = $route;
 			$parts = preg_split('/(?=[\p{Lu}])+/u', $route);
 			$route = StringHelper::toLowerCase(implode('-', $parts));
-			$this->deprecator->log('yii1-route', 'A Yii 1-styled route was requested: "'.$requestedRoute.'". It should be changed to: "'.$route.'".');
+			$this->getDeprecator()->log('yii1-route', 'A Yii 1-styled route was requested: "'.$requestedRoute.'". It should be changed to: "'.$route.'".');
 		}
 
 		return parent::createController($route);
@@ -524,7 +473,7 @@ class Application extends \yii\web\Application
 			$segs = array_slice(array_merge($request->getSegments()), 1);
 			$path = implode('/', $segs);
 
-			$this->resources->sendResource($path);
+			$this->getResources()->sendResource($path);
 		}
 	}
 
@@ -657,7 +606,7 @@ class Application extends \yii\web\Application
 		if ($request->getIsCpRequest() && !$update)
 		{
 			$cachedAppPath = $this->getCache()->get('appPath');
-			$appPath = $this->path->getAppPath();
+			$appPath = $this->getPath()->getAppPath();
 
 			if ($cachedAppPath === false || $cachedAppPath !== $appPath)
 			{
@@ -695,7 +644,7 @@ class Application extends \yii\web\Application
 			}
 			else
 			{
-				if ($this->updates->isBreakpointUpdateNeeded())
+				if ($this->getUpdates()->isBreakpointUpdateNeeded())
 				{
 					throw new HttpException(200, Craft::t('app', 'You need to be on at least Craft {url} before you can manually update to Craft {targetVersion} build {targetBuild}.', [
 						'url'           => '<a href="'.Craft::$app->minBuildUrl.'">build '.Craft::$app->minBuildRequired.'</a>',
@@ -757,7 +706,7 @@ class Application extends \yii\web\Application
 					$error = Craft::t('app', 'Your account doesn’t have permission to access the site when the system is offline.');
 				}
 
-				$error .= ' ['.Craft::t('app', 'Log out?').']('.UrlHelper::getUrl($this->config->getLogoutPath()).')';
+				$error .= ' ['.Craft::t('app', 'Log out?').']('.UrlHelper::getUrl($this->getConfig()->getLogoutPath()).')';
 			}
 			else
 			{
@@ -787,7 +736,7 @@ class Application extends \yii\web\Application
 		}
 
 		$request = $this->getRequest();
-		$actionTrigger = $this->config->get('actionTrigger');
+		$actionTrigger = $this->getConfig()->get('actionTrigger');
 
 		if ($request->getIsCpRequest() ||
 

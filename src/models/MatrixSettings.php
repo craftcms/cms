@@ -85,7 +85,7 @@ class MatrixSettings extends Model
 		{
 			if (!empty($this->_matrixField->id))
 			{
-				$this->_blockTypes = Craft::$app->matrix->getBlockTypesByFieldId($this->_matrixField->id);
+				$this->_blockTypes = Craft::$app->getMatrix()->getBlockTypesByFieldId($this->_matrixField->id);
 			}
 			else
 			{
@@ -124,7 +124,7 @@ class MatrixSettings extends Model
 		// Enforce $clearErrors without copying code if we don't have to
 		$validates = parent::validate($attributes, $clearErrors);
 
-		if (!Craft::$app->matrix->validateFieldSettings($this))
+		if (!Craft::$app->getMatrix()->validateFieldSettings($this))
 		{
 			$validates = false;
 		}

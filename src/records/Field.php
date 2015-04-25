@@ -69,7 +69,7 @@ class Field extends ActiveRecord
 	public function rules()
 	{
 		// TODO: MySQL specific
-		$maxHandleLength = 64 - strlen(Craft::$app->content->fieldColumnPrefix);
+		$maxHandleLength = 64 - strlen(Craft::$app->getContent()->fieldColumnPrefix);
 
 		return [
 			[['handle'], 'craft\\app\\validators\\Handle', 'reservedWords' => ['archived', 'children', 'dateCreated', 'dateUpdated', 'enabled', 'id', 'link', 'locale', 'parents', 'siblings', 'uid', 'uri', 'url', 'ref', 'status', 'title']],

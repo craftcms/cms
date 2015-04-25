@@ -29,7 +29,7 @@ class EmailMessages
 	 */
 	public function getAllMessages()
 	{
-		return \Craft::$app->emailMessages->getAllMessages();
+		return \Craft::$app->getEmailMessages()->getAllMessages();
 	}
 
 	/**
@@ -42,6 +42,6 @@ class EmailMessages
 	 */
 	public function getMessage($key, $language = null)
 	{
-		return \Craft::$app->emailMessages->getMessage($key, $language);
+		return \Craft::$app->getEmailMessages()->getMessage($key, $language);
 	}
 }

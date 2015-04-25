@@ -113,7 +113,7 @@ class FileCache extends \yii\caching\FileCache
 		{
 			if (IOHelper::writeToFile($cacheFile, $value, true, false, true) !== false)
 			{
-				IOHelper::changePermissions($cacheFile, Craft::$app->config->get('defaultFilePermissions'));
+				IOHelper::changePermissions($cacheFile, Craft::$app->getConfig()->get('defaultFilePermissions'));
 				return IOHelper::touch($cacheFile, $expire);
 			}
 			else
@@ -125,7 +125,7 @@ class FileCache extends \yii\caching\FileCache
 		{
 			if (IOHelper::writeToFile($cacheFile, $value) !== false)
 			{
-				IOHelper::changePermissions($cacheFile, Craft::$app->config->get('defaultFilePermissions'));
+				IOHelper::changePermissions($cacheFile, Craft::$app->getConfig()->get('defaultFilePermissions'));
 				return IOHelper::touch($cacheFile, $expire);
 			}
 			else

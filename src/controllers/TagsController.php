@@ -39,7 +39,7 @@ class TagsController extends Controller
 	{
 		$this->requireAdmin();
 
-		$tagGroups = Craft::$app->tags->getAllTagGroups();
+		$tagGroups = Craft::$app->getTags()->getAllTagGroups();
 
 		return $this->renderTemplate('settings/tags/index', [
 			'tagGroups' => $tagGroups
@@ -62,7 +62,7 @@ class TagsController extends Controller
 		{
 			if ($tagGroup === null)
 			{
-				$tagGroup = Craft::$app->tags->getTagGroupById($tagGroupId);
+				$tagGroup = Craft::$app->getTags()->getTagGroupById($tagGroupId);
 
 				if (!$tagGroup)
 				{
@@ -121,12 +121,12 @@ class TagsController extends Controller
 		$tagGroup->handle = Craft::$app->getRequest()->getBodyParam('handle');
 
 		// Set the field layout
-		$fieldLayout = Craft::$app->fields->assembleLayoutFromPost();
+		$fieldLayout = Craft::$app->getFields()->assembleLayoutFromPost();
 		$fieldLayout->type = Tag::className();
 		$tagGroup->setFieldLayout($fieldLayout);
 
 		// Save it
-		if (Craft::$app->tags->saveTagGroup($tagGroup))
+		if (Craft::$app->getTags()->saveTagGroup($tagGroup))
 		{
 			Craft::$app->getSession()->setNotice(Craft::t('app', 'Tag group saved.'));
 			return $this->redirectToPostedUrl($tagGroup);
@@ -155,7 +155,7 @@ class TagsController extends Controller
 
 		$sectionId = Craft::$app->getRequest()->getRequiredBodyParam('id');
 
-		Craft::$app->tags->deleteTagGroupById($sectionId);
+		Craft::$app->getTags()->deleteTagGroupById($sectionId);
 		return $this->asJson(['success' => true]);
 	}
 
@@ -230,7 +230,7 @@ class TagsController extends Controller
 		$tag->groupId = Craft::$app->getRequest()->getRequiredBodyParam('groupId');
 		$tag->getContent()->title = Craft::$app->getRequest()->getRequiredBodyParam('title');
 
-		if (Craft::$app->tags->saveTag($tag))
+		if (Craft::$app->getTags()->saveTag($tag))
 		{
 			return $this->asJson([
 				'success' => true,

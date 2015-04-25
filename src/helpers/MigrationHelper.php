@@ -62,7 +62,7 @@ class MigrationHelper
 	 */
 	public static function dropForeignKeyIfExists($tableName, $columns, Migration $migration = null)
 	{
-		$tableName = Craft::$app->db->getSchema()->getRawTableName($tableName);
+		$tableName = Craft::$app->getDb()->getSchema()->getRawTableName($tableName);
 		$table = static::getTable($tableName);
 
 		foreach ($table->fks as $i => $fk)
@@ -88,7 +88,7 @@ class MigrationHelper
 	 */
 	public static function dropIndexIfExists($tableName, $columns, $unique = false, Migration $migration = null)
 	{
-		$tableName = Craft::$app->db->getSchema()->getRawTableName($tableName);
+		$tableName = Craft::$app->getDb()->getSchema()->getRawTableName($tableName);
 		$table = static::getTable($tableName);
 
 		foreach ($table->indexes as $i => $index)
@@ -113,8 +113,8 @@ class MigrationHelper
 	 */
 	public static function renameTable($oldName, $newName, Migration $migration = null)
 	{
-		$oldName = Craft::$app->db->getSchema()->getRawTableName($oldName);
-		$newName = Craft::$app->db->getSchema()->getRawTableName($newName);
+		$oldName = Craft::$app->getDb()->getSchema()->getRawTableName($oldName);
+		$newName = Craft::$app->getDb()->getSchema()->getRawTableName($newName);
 
 		// Drop any foreign keys pointing to this table
 		$fks = static::findForeignKeysTo($oldName);
@@ -179,7 +179,7 @@ class MigrationHelper
 	 */
 	public static function renameColumn($tableName, $oldName, $newName, Migration $migration = null)
 	{
-		$tableName = Craft::$app->db->getSchema()->getRawTableName($tableName);
+		$tableName = Craft::$app->getDb()->getSchema()->getRawTableName($tableName);
 		$table = static::getTable($tableName);
 		$allOtherTableFks = static::findForeignKeysTo($tableName);
 
@@ -275,7 +275,7 @@ class MigrationHelper
 	 */
 	public static function makeElemental($tableName, $elementType, $hasContent = false, $isLocalized = false, $locales = null, Migration $migration = null)
 	{
-		$tableName = Craft::$app->db->getSchema()->getRawTableName($tableName);
+		$tableName = Craft::$app->getDb()->getSchema()->getRawTableName($tableName);
 		$db = Craft::$app->getDb();
 		$fks = static::findForeignKeysTo($tableName);
 
@@ -483,7 +483,7 @@ class MigrationHelper
 	 */
 	public static function getTable($tableName)
 	{
-		$tableName = Craft::$app->db->getSchema()->getRawTableName($tableName);
+		$tableName = Craft::$app->getDb()->getSchema()->getRawTableName($tableName);
 		$tables = static::getTables();
 
 		if (isset($tables[$tableName]))
@@ -506,7 +506,7 @@ class MigrationHelper
 	 */
 	public static function findForeignKeysTo($tableName, $column = 'id')
 	{
-		$tableName = Craft::$app->db->getSchema()->getRawTableName($tableName);
+		$tableName = Craft::$app->getDb()->getSchema()->getRawTableName($tableName);
 		$fks = [];
 
 		foreach (static::getTables() as $otherTable)

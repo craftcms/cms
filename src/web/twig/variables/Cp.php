@@ -31,24 +31,24 @@ class Cp
 	{
 		$nav['dashboard'] = ['name' => \Craft::t('app', 'Dashboard')];
 
-		if (\Craft::$app->sections->getTotalEditableSections())
+		if (\Craft::$app->getSections()->getTotalEditableSections())
 		{
 			$nav['entries'] = ['name' => \Craft::t('app', 'Entries')];
 		}
 
-		$globals = \Craft::$app->globals->getEditableSets();
+		$globals = \Craft::$app->getGlobals()->getEditableSets();
 
 		if ($globals)
 		{
 			$nav['globals'] = ['name' => \Craft::t('app', 'Globals'), 'url' => 'globals/'.$globals[0]->handle];
 		}
 
-		if (\Craft::$app->categories->getEditableGroupIds())
+		if (\Craft::$app->getCategories()->getEditableGroupIds())
 		{
 			$nav['categories'] = ['name' => \Craft::t('app', 'Categories')];
 		}
 
-		if (\Craft::$app->volumes->getTotalViewablevolumes())
+		if (\Craft::$app->getVolumes()->getTotalViewablevolumes())
 		{
 			$nav['assets'] = ['name' => \Craft::t('app', 'Assets')];
 		}
@@ -59,7 +59,7 @@ class Cp
 		}
 
 		// Add any Plugin nav items
-		$plugins = \Craft::$app->plugins->getAllPlugins();
+		$plugins = \Craft::$app->getPlugins()->getAllPlugins();
 
 		foreach ($plugins as $plugin)
 		{
@@ -142,7 +142,7 @@ class Cp
 	public function areAlertsCached()
 	{
 		// The license key status gets cached on each Elliott request
-		return (\Craft::$app->et->getLicenseKeyStatus() !== false);
+		return (\Craft::$app->getET()->getLicenseKeyStatus() !== false);
 	}
 
 	/**

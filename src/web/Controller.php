@@ -206,7 +206,7 @@ abstract class Controller extends \yii\web\Controller
 	 */
 	public function requireToken()
 	{
-		if (!Craft::$app->getRequest()->getQueryParam(Craft::$app->config->get('tokenParam')))
+		if (!Craft::$app->getRequest()->getQueryParam(Craft::$app->getConfig()->get('tokenParam')))
 		{
 			throw new HttpException(400);
 		}

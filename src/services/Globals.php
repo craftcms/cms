@@ -18,7 +18,7 @@ use yii\base\Component;
 /**
  * Class Globals service.
  *
- * An instance of the Globals service is globally accessible in Craft via [[Application::globals `Craft::$app->globals`]].
+ * An instance of the Globals service is globally accessible in Craft via [[Application::globals `Craft::$app->getGlobals()`]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
@@ -225,7 +225,7 @@ class Globals extends Component
 		}
 		else
 		{
-			return Craft::$app->elements->getElementById($globalSetId, GlobalSet::className(), $localeId);
+			return Craft::$app->getElements()->getElementById($globalSetId, GlobalSet::className(), $localeId);
 		}
 	}
 
@@ -305,7 +305,7 @@ class Globals extends Component
 			$transaction = Craft::$app->getDb()->getTransaction() === null ? Craft::$app->getDb()->beginTransaction() : null;
 			try
 			{
-				if (Craft::$app->elements->saveElement($globalSet, false))
+				if (Craft::$app->getElements()->saveElement($globalSet, false))
 				{
 					// Now that we have an element ID, save it on the other stuff
 					if ($isNewSet)
@@ -316,12 +316,12 @@ class Globals extends Component
 					if (!$isNewSet && $oldSet->fieldLayoutId)
 					{
 						// Drop the old field layout
-						Craft::$app->fields->deleteLayoutById($oldSet->fieldLayoutId);
+						Craft::$app->getFields()->deleteLayoutById($oldSet->fieldLayoutId);
 					}
 
 					// Save the new one
 					$fieldLayout = $globalSet->getFieldLayout();
-					Craft::$app->fields->saveLayout($fieldLayout);
+					Craft::$app->getFields()->saveLayout($fieldLayout);
 
 					// Update the set record/model with the new layout ID
 					$globalSet->fieldLayoutId = $fieldLayout->id;
@@ -378,10 +378,10 @@ class Globals extends Component
 
 			if ($fieldLayoutId)
 			{
-				Craft::$app->fields->deleteLayoutById($fieldLayoutId);
+				Craft::$app->getFields()->deleteLayoutById($fieldLayoutId);
 			}
 
-			$affectedRows = Craft::$app->elements->deleteElementById($setId);
+			$affectedRows = Craft::$app->getElements()->deleteElementById($setId);
 
 			if ($transaction !== null)
 			{
@@ -425,7 +425,7 @@ class Globals extends Component
 			// Is the event giving us the go-ahead?
 			if ($event->performAction)
 			{
-				$success = Craft::$app->elements->saveElement($globalSet);
+				$success = Craft::$app->getElements()->saveElement($globalSet);
 
 				// If it didn't work, rollback the transaction in case something changed in onBeforeSaveGlobalContent
 				if (!$success)

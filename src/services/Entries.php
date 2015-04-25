@@ -19,7 +19,7 @@ use yii\base\Component;
 /**
  * The Entries service provides APIs for managing entries in Craft.
  *
- * An instance of the Entries service is globally accessible in Craft via [[Application::entries `Craft::$app->entries`]].
+ * An instance of the Entries service is globally accessible in Craft via [[Application::entries `Craft::$app->getEntries()`]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
@@ -58,7 +58,7 @@ class Entries extends Component
 	 * Returns an entry by its ID.
 	 *
 	 * ```php
-	 * $entry = Craft::$app->entries->getEntryById($entryId);
+	 * $entry = Craft::$app->getEntries()->getEntryById($entryId);
 	 * ```
 	 *
 	 * @param int    $entryId  The entry’s ID.
@@ -69,7 +69,7 @@ class Entries extends Component
 	 */
 	public function getEntryById($entryId, $localeId = null)
 	{
-		return Craft::$app->elements->getElementById($entryId, Entry::className(), $localeId);
+		return Craft::$app->getElements()->getElementById($entryId, Entry::className(), $localeId);
 	}
 
 	/**
@@ -88,7 +88,7 @@ class Entries extends Component
 	 *     'body' => "<p>I can’t believe I literally just called this “Hello World!”.</p>",
 	 * ));
 	 *
-	 * $success = Craft::$app->entries->saveEntry($entry);
+	 * $success = Craft::$app->getEntries()->saveEntry($entry);
 	 *
 	 * if (!$success)
 	 * {
@@ -143,7 +143,7 @@ class Entries extends Component
 		}
 
 		// Get the section
-		$section = Craft::$app->sections->getSectionById($entry->sectionId);
+		$section = Craft::$app->getSections()->getSectionById($entry->sectionId);
 
 		if (!$section)
 		{
@@ -210,7 +210,7 @@ class Entries extends Component
 			if ($event->performAction)
 			{
 				// Save the element
-				$success = Craft::$app->elements->saveElement($entry);
+				$success = Craft::$app->getElements()->saveElement($entry);
 
 				// If it didn't work, rollback the transaction in case something changed in onBeforeSaveEntry
 				if (!$success)
@@ -258,22 +258,22 @@ class Entries extends Component
 					{
 						if (!$entry->newParentId)
 						{
-							Craft::$app->structures->appendToRoot($section->structureId, $entry);
+							Craft::$app->getStructures()->appendToRoot($section->structureId, $entry);
 						}
 						else
 						{
-							Craft::$app->structures->append($section->structureId, $entry, $parentEntry);
+							Craft::$app->getStructures()->append($section->structureId, $entry, $parentEntry);
 						}
 					}
 
 					// Update the entry's descendants, who may be using this entry's URI in their own URIs
-					Craft::$app->elements->updateDescendantSlugsAndUris($entry);
+					Craft::$app->getElements()->updateDescendantSlugsAndUris($entry);
 				}
 
 				// Save a new version
 				if (Craft::$app->getEdition() >= Craft::Client && $section->enableVersioning)
 				{
-					Craft::$app->entryRevisions->saveVersion($entry);
+					Craft::$app->getEntryRevisions()->saveVersion($entry);
 				}
 			}
 			else
@@ -351,7 +351,7 @@ class Entries extends Component
 
 					foreach ($children as $child)
 					{
-						Craft::$app->structures->moveBefore($section->structureId, $child, $entry, 'update', true);
+						Craft::$app->getStructures()->moveBefore($section->structureId, $child, $entry, 'update', true);
 					}
 				}
 
@@ -359,7 +359,7 @@ class Entries extends Component
 			}
 
 			// Delete 'em
-			$success = Craft::$app->elements->deleteElementById($entryIds);
+			$success = Craft::$app->getElements()->deleteElementById($entryIds);
 
 			if ($transaction !== null)
 			{

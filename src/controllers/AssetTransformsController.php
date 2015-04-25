@@ -44,7 +44,7 @@ class AssetTransformsController extends Controller
 	 */
 	public function actionTransformIndex()
 	{
-		$variables['transforms'] = Craft::$app->assetTransforms->getAllTransforms();
+		$variables['transforms'] = Craft::$app->getAssetTransforms()->getAllTransforms();
 		$variables['transformModes'] = AssetTransform::getTransformModes();
 
 		return $this->renderTemplate('settings/assets/transforms/_index', $variables);
@@ -64,7 +64,7 @@ class AssetTransformsController extends Controller
 		{
 			if ($transformHandle !== null)
 			{
-				$transform = Craft::$app->assetTransforms->getTransformByHandle($transformHandle);
+				$transform = Craft::$app->getAssetTransforms()->getTransformByHandle($transformHandle);
 
 				if (!$transform)
 				{
@@ -129,7 +129,7 @@ class AssetTransformsController extends Controller
 		if (!$errors)
 		{
 			// Did it save?
-			if (Craft::$app->assetTransforms->saveTransform($transform))
+			if (Craft::$app->getAssetTransforms()->saveTransform($transform))
 			{
 				Craft::$app->getSession()->setNotice(Craft::t('app', 'Transform saved.'));
 				return $this->redirectToPostedUrl($transform);
@@ -156,7 +156,7 @@ class AssetTransformsController extends Controller
 
 		$transformId = Craft::$app->getRequest()->getRequiredBodyParam('id');
 
-		Craft::$app->assetTransforms->deleteTransform($transformId);
+		Craft::$app->getAssetTransforms()->deleteTransform($transformId);
 
 		return $this->asJson(['success' => true]);
 	}

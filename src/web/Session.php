@@ -40,7 +40,7 @@ class Session extends \yii\web\Session
 	public function __construct($config = [])
 	{
 		// Set the state-based property names
-		$appId = Craft::$app->config->get('appId');
+		$appId = Craft::$app->getConfig()->get('appId');
 		$stateKeyPrefix = md5('Craft.'.get_class($this).($appId ? '.'.$appId : ''));
 		$config['flashParam']      = $stateKeyPrefix.'__flash';
 		$config['authAccessParam'] = $stateKeyPrefix.'__auth_access';
@@ -51,7 +51,7 @@ class Session extends \yii\web\Session
 		// Set the default session cookie params
 		$cookieParams = ['httponly' => true];
 
-		if (($defaultCookieDomain = Craft::$app->config->get('defaultCookieDomain')) !== '')
+		if (($defaultCookieDomain = Craft::$app->getConfig()->get('defaultCookieDomain')) !== '')
 		{
 			$cookieParams['domain'] = $defaultCookieDomain;
 		}
@@ -59,14 +59,14 @@ class Session extends \yii\web\Session
 		$this->setCookieParams($cookieParams);
 
 		// Should we be overriding the save path?
-		$overridePhpSessionLocation = Craft::$app->config->get('overridePhpSessionLocation');
+		$overridePhpSessionLocation = Craft::$app->getConfig()->get('overridePhpSessionLocation');
 
 		if (
 			$overridePhpSessionLocation === true ||
 			($overridePhpSessionLocation === 'auto' && !StringHelper::contains($this->getSavePath(), 'tcp://'))
 		)
 		{
-			$savePath = Craft::$app->path->getSessionPath();
+			$savePath = Craft::$app->getPath()->getSessionPath();
 			$this->setSavePath($savePath);
 		}
 

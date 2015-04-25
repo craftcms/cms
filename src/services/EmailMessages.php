@@ -17,7 +17,7 @@ Craft::$app->requireEdition(Craft::Client);
 /**
  * Class EmailMessages service.
  *
- * An instance of the EmailMessages service is globally accessible in Craft via [[Application::emailMessages `Craft::$app->emailMessages`]].
+ * An instance of the EmailMessages service is globally accessible in Craft via [[Application::emailMessages `Craft::$app->getEmailMessages()`]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
@@ -192,9 +192,9 @@ class EmailMessages extends Component
 			];
 
 			// Give plugins a chance to add additional messages
-			foreach (Craft::$app->plugins->call('registerEmailMessages') as $pluginHandle => $pluginKeys)
+			foreach (Craft::$app->getPlugins()->call('registerEmailMessages') as $pluginHandle => $pluginKeys)
 			{
-				$pluginSourceLocale = Craft::$app->plugins->getPlugin($pluginHandle)->sourceLanguage;
+				$pluginSourceLocale = Craft::$app->getPlugins()->getPlugin($pluginHandle)->sourceLanguage;
 
 				foreach ($pluginKeys as $key)
 				{

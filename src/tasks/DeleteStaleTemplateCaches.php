@@ -55,7 +55,7 @@ class DeleteStaleTemplateCaches extends Task
 	public function getTotalSteps()
 	{
 		// What type of element(s) are we dealing with?
-		$this->_elementType = Craft::$app->elements->getElementTypeById($this->elementId);
+		$this->_elementType = Craft::$app->getElements()->getElementTypeById($this->elementId);
 
 		if (!$this->_elementType)
 		{
@@ -127,7 +127,7 @@ class DeleteStaleTemplateCaches extends Task
 
 			if ($cacheIdsToDelete)
 			{
-				Craft::$app->templateCache->deleteCacheById($cacheIdsToDelete);
+				Craft::$app->getTemplateCache()->deleteCacheById($cacheIdsToDelete);
 				$this->_deletedCacheIds = array_merge($this->_deletedCacheIds, $cacheIdsToDelete);
 			}
 		}

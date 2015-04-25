@@ -23,7 +23,7 @@ use yii\base\Component;
 /**
  * Class TemplateCache service.
  *
- * An instance of the TemplateCache service is globally accessible in Craft via [[Application::templateCache `Craft::$app->templateCache`]].
+ * An instance of the TemplateCache service is globally accessible in Craft via [[Application::templateCache `Craft::$app->getTemplateCache()`]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
@@ -155,7 +155,7 @@ class TemplateCache extends Component
 			Event::on(ElementQuery::className(), ElementQuery::EVENT_AFTER_PREPARE, [$this, 'includeElementQueryInTemplateCaches']);
 		}
 
-		if (Craft::$app->config->get('cacheElementQueries'))
+		if (Craft::$app->getConfig()->get('cacheElementQueries'))
 		{
 			$this->_cacheQueryParams[$key] = [];
 		}
@@ -223,7 +223,7 @@ class TemplateCache extends Component
 	{
 		// If there are any transform generation URLs in the body, don't cache it.
 		// Can't use getResourceUrl() here because that will append ?d= or ?x= to the URL.
-		if (StringHelper::contains($body, UrlHelper::getSiteUrl(Craft::$app->config->getResourceTrigger().'/transforms')))
+		if (StringHelper::contains($body, UrlHelper::getSiteUrl(Craft::$app->getConfig()->getResourceTrigger().'/transforms')))
 		{
 			return;
 		}
@@ -236,7 +236,7 @@ class TemplateCache extends Component
 
 		if (!$expiration)
 		{
-			$duration = Craft::$app->config->getCacheDuration();
+			$duration = Craft::$app->getConfig()->getCacheDuration();
 
 			if($duration <= 0)
 			{
@@ -439,11 +439,11 @@ class TemplateCache extends Component
 			return false;
 		}
 
-		if ($deleteQueryCaches && Craft::$app->config->get('cacheElementQueries'))
+		if ($deleteQueryCaches && Craft::$app->getConfig()->get('cacheElementQueries'))
 		{
 			// If there are any pending DeleteStaleTemplateCaches tasks, just append this element to it
 			/** @var DeleteStaleTemplateCaches $task */
-			$task = Craft::$app->tasks->getNextPendingTask(DeleteStaleTemplateCaches::className());
+			$task = Craft::$app->getTasks()->getNextPendingTask(DeleteStaleTemplateCaches::className());
 
 			if ($task)
 			{
@@ -465,11 +465,11 @@ class TemplateCache extends Component
 				$task->elementId = array_unique($task->elementId);
 
 				// Save the task
-				Craft::$app->tasks->saveTask($task, false);
+				Craft::$app->getTasks()->saveTask($task, false);
 			}
 			else
 			{
-				Craft::$app->tasks->queueTask([
+				Craft::$app->getTasks()->queueTask([
 					'type'      => DeleteStaleTemplateCaches::className(),
 					'elementId' => $elementId
 				]);
@@ -619,13 +619,13 @@ class TemplateCache extends Component
 
 			if (($pageNum = Craft::$app->getRequest()->getPageNum()) != 1)
 			{
-				$this->_path .= '/'.Craft::$app->config->get('pageTrigger').$pageNum;
+				$this->_path .= '/'.Craft::$app->getConfig()->get('pageTrigger').$pageNum;
 			}
 
 			if ($queryString = Craft::$app->getRequest()->getQueryString())
 			{
 				// Strip the path param
-				$pathParam = Craft::$app->config->get('pathParam');
+				$pathParam = Craft::$app->getConfig()->get('pathParam');
 				$queryString = trim(preg_replace('/'.preg_quote($pathParam, '/').'=[^&]*/', '', $queryString), '&');
 
 				if ($queryString)

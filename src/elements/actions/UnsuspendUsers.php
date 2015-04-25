@@ -43,7 +43,7 @@ class UnsuspendUsers extends ElementAction
 
 		foreach ($users as $user)
 		{
-			Craft::$app->users->unsuspendUser($user);
+			Craft::$app->getUsers()->unsuspendUser($user);
 		}
 
 		$this->setMessage(Craft::t('app', 'Users unsuspended.'));

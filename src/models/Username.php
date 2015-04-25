@@ -39,7 +39,7 @@ class Username extends Model
 			[['username'], 'safe', 'on' => 'search'],
 		];
 
-		if (!Craft::$app->config->get('useEmailAsUsername'))
+		if (!Craft::$app->getConfig()->get('useEmailAsUsername'))
 		{
 			$rules[] = [['username'], 'required'];
 		}

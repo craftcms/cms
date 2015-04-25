@@ -15,7 +15,7 @@ use yii\base\Component;
 /**
  * The Feeds service provides APIs for fetching remote RSS and Atom feeds.
  *
- * An instance of the Feeds service is globally accessible in Craft via [[Application::feeds `Craft::$app->feeds`]].
+ * An instance of the Feeds service is globally accessible in Craft via [[Application::feeds `Craft::$app->getFeeds()`]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
@@ -86,7 +86,7 @@ class Feeds extends Component
 
 		if (!$cacheDuration)
 		{
-			$cacheDuration = Craft::$app->config->getCacheDuration();
+			$cacheDuration = Craft::$app->getConfig()->getCacheDuration();
 		}
 		else
 		{
@@ -95,7 +95,7 @@ class Feeds extends Component
 
 		$feed = new \SimplePie();
 		$feed->set_feed_url($url);
-		$feed->set_cache_location(Craft::$app->path->getCachePath());
+		$feed->set_cache_location(Craft::$app->getPath()->getCachePath());
 		$feed->set_cache_duration($cacheDuration);
 		$feed->init();
 

@@ -65,7 +65,7 @@ class DbBackup extends Tool
 
 		if (IOHelper::fileExists($file) && isset($params['downloadBackup']) && (bool)$params['downloadBackup'])
 		{
-			$destZip = Craft::$app->path->getTempPath().'/'.IOHelper::getFilename($file, false).'.zip';
+			$destZip = Craft::$app->getPath()->getTempPath().'/'.IOHelper::getFilename($file, false).'.zip';
 
 			if (IOHelper::fileExists($destZip))
 			{
@@ -74,7 +74,7 @@ class DbBackup extends Tool
 
 			IOHelper::createFile($destZip);
 
-			if (Zip::add($destZip, $file, Craft::$app->path->getDbBackupPath()))
+			if (Zip::add($destZip, $file, Craft::$app->getPath()->getDbBackupPath()))
 			{
 				return ['backupFile' => IOHelper::getFilename($destZip, false)];
 			}

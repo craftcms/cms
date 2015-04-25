@@ -30,7 +30,7 @@ use yii\base\Component;
 /**
  * The Users service provides APIs for managing users.
  *
- * An instance of the Users service is globally accessible in Craft via [[Application::users `Craft::$app->users`]].
+ * An instance of the Users service is globally accessible in Craft via [[Application::users `Craft::$app->getUsers()`]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
@@ -143,7 +143,7 @@ class Users extends Component
 	 * Returns a user by their ID.
 	 *
 	 * ```php
-	 * $user = Craft::$app->users->getUserById($userId);
+	 * $user = Craft::$app->getUsers()->getUserById($userId);
 	 * ```
 	 *
 	 * @param int $userId The user’s ID.
@@ -152,14 +152,14 @@ class Users extends Component
 	 */
 	public function getUserById($userId)
 	{
-		return Craft::$app->elements->getElementById($userId, User::className());
+		return Craft::$app->getElements()->getElementById($userId, User::className());
 	}
 
 	/**
 	 * Returns a user by their username or email.
 	 *
 	 * ```php
-	 * $user = Craft::$app->users->getUserByUsernameOrEmail($loginName);
+	 * $user = Craft::$app->getUsers()->getUserByUsernameOrEmail($loginName);
 	 * ```
 	 *
 	 * @param string $usernameOrEmail The user’s username or email.
@@ -187,7 +187,7 @@ class Users extends Component
 	 * Returns a user by their email.
 	 *
 	 * ```php
-	 * $user = Craft::$app->users->getUserByEmail($email);
+	 * $user = Craft::$app->getUsers()->getUserByEmail($email);
 	 * ```
 	 *
 	 * @param string $email The user’s email.
@@ -210,7 +210,7 @@ class Users extends Component
 	 * Returns a user by their UID.
 	 *
 	 * ```php
-	 * $user = Craft::$app->users->getUserByUid($userUid);
+	 * $user = Craft::$app->getUsers()->getUserByUid($userUid);
 	 * ```
 	 *
 	 * @param int $uid The user’s UID.
@@ -251,7 +251,7 @@ class Users extends Component
 		if ($userRecord)
 		{
 			$minCodeIssueDate = DateTimeHelper::currentUTCDateTime();
-			$duration = new DateInterval(Craft::$app->config->get('verificationCodeDuration'));
+			$duration = new DateInterval(Craft::$app->getConfig()->get('verificationCodeDuration'));
 			$minCodeIssueDate->sub($duration);
 
 			$valid = $userRecord->verificationCodeIssuedDate > $minCodeIssueDate;
@@ -294,7 +294,7 @@ class Users extends Component
 	 * ```php
 	 * if (Craft::$app->getEdition() == Craft::Client)
 	 * {
-	 *     $clientAccount = Craft::$app->users->getClient();
+	 *     $clientAccount = Craft::$app->getUsers()->getClient();
 	 * }
 	 * ```
 	 *
@@ -322,7 +322,7 @@ class Users extends Component
 	 *
 	 * $user->getContent()->birthYear = 1812;
 	 *
-	 * $success = Craft::$app->users->saveUser($user);
+	 * $success = Craft::$app->getUsers()->saveUser($user);
 	 *
 	 * if (!$success)
 	 * {
@@ -375,7 +375,7 @@ class Users extends Component
 		if (Craft::$app->getEdition() == Craft::Pro)
 		{
 			// Validate any content.
-			if (!Craft::$app->content->validateContent($user))
+			if (!Craft::$app->getContent()->validateContent($user))
 			{
 				$user->addErrors($user->getContent()->getErrors());
 			}
@@ -407,7 +407,7 @@ class Users extends Component
 			if ($event->performAction)
 			{
 				// Save the element
-				$success = Craft::$app->elements->saveElement($user, false);
+				$success = Craft::$app->getElements()->saveElement($user, false);
 
 				// If it didn't work, rollback the transaction in case something changed in onBeforeSaveUser
 				if (!$success)
@@ -434,8 +434,8 @@ class Users extends Component
 					if ($user->username != $oldUsername)
 					{
 						// Rename the user's photo directory
-						$oldFolder = Craft::$app->path->getUserPhotosPath().'/'.$oldUsername;
-						$newFolder = Craft::$app->path->getUserPhotosPath().'/'.$user->username;
+						$oldFolder = Craft::$app->getPath()->getUserPhotosPath().'/'.$oldUsername;
+						$newFolder = Craft::$app->getPath()->getUserPhotosPath().'/'.$user->username;
 
 						if (IOHelper::folderExists($newFolder))
 						{
@@ -509,7 +509,7 @@ class Users extends Component
 	{
 		$preferences = $user->mergePreferences($preferences);
 
-		Craft::$app->db->createCommand()->insertOrUpdate(
+		Craft::$app->getDb()->createCommand()->insertOrUpdate(
 			'{{%userpreferences}}',
 			['userId' => $user->id],
 			['preferences' => JsonHelper::encode($preferences)],
@@ -538,7 +538,7 @@ class Users extends Component
 			$url = $this->getEmailVerifyUrl($user);
 		}
 
-		return Craft::$app->email->sendEmailByKey($user, 'account_activation', [
+		return Craft::$app->getEmail()->sendEmailByKey($user, 'account_activation', [
 			'link' => TemplateHelper::getRaw($url),
 		]);
 	}
@@ -556,7 +556,7 @@ class Users extends Component
 	{
 		$url = $this->getEmailVerifyUrl($user);
 
-		return Craft::$app->email->sendEmailByKey($user, 'verify_new_email', [
+		return Craft::$app->getEmail()->sendEmailByKey($user, 'verify_new_email', [
 			'link' => TemplateHelper::getRaw($url),
 		]);
 	}
@@ -574,7 +574,7 @@ class Users extends Component
 	{
 		$url = $this->getPasswordResetUrl($user);
 
-		return Craft::$app->email->sendEmailByKey($user, 'forgot_password', [
+		return Craft::$app->getEmail()->sendEmailByKey($user, 'forgot_password', [
 			'link' => TemplateHelper::getRaw($url),
 		]);
 	}
@@ -599,7 +599,7 @@ class Users extends Component
 		else
 		{
 			// We want to hide the CP trigger if they don't have access to the CP.
-			$path = Craft::$app->config->get('actionTrigger').'/users/verifyemail';
+			$path = Craft::$app->getConfig()->get('actionTrigger').'/users/verifyemail';
 			$url = UrlHelper::getSiteUrl($path, ['code' => $unhashedVerificationCode, 'id' => $userRecord->uid], Craft::$app->getRequest()->getIsSecureConnection() ? 'https' : 'http');
 		}
 
@@ -626,7 +626,7 @@ class Users extends Component
 		else
 		{
 			// We want to hide the CP trigger if they don't have access to the CP.
-			$path = Craft::$app->config->get('actionTrigger').'/users/setpassword';
+			$path = Craft::$app->getConfig()->get('actionTrigger').'/users/setpassword';
 			$url = UrlHelper::getSiteUrl($path, ['code' => $unhashedVerificationCode, 'id' => $userRecord->uid], Craft::$app->getRequest()->getIsSecureConnection() ? 'https' : 'http');
 		}
 
@@ -646,7 +646,7 @@ class Users extends Component
 	public function saveUserPhoto($filename, Image $image, User $user)
 	{
 		$userName = IOHelper::cleanFilename($user->username);
-		$userPhotoFolder = Craft::$app->path->getUserPhotosPath().'/'.$userName;
+		$userPhotoFolder = Craft::$app->getPath()->getUserPhotosPath().'/'.$userName;
 		$targetFolder = $userPhotoFolder.'/original';
 
 		IOHelper::ensureFolderExists($userPhotoFolder);
@@ -658,7 +658,7 @@ class Users extends Component
 
 		if ($result)
 		{
-			IOHelper::changePermissions($targetPath, Craft::$app->config->get('defaultFilePermissions'));
+			IOHelper::changePermissions($targetPath, Craft::$app->getConfig()->get('defaultFilePermissions'));
 			$record = UserRecord::findOne($user->id);
 			$record->photo = $filename;
 			$record->save();
@@ -680,7 +680,7 @@ class Users extends Component
 	 */
 	public function deleteUserPhoto(User $user)
 	{
-		$folder = Craft::$app->path->getUserPhotosPath().'/'.$user->username;
+		$folder = Craft::$app->getPath()->getUserPhotosPath().'/'.$user->username;
 
 		if (IOHelper::folderExists($folder))
 		{
@@ -753,7 +753,7 @@ class Users extends Component
 		$userRecord->lastInvalidLoginDate = $user->lastInvalidLoginDate = $currentTime;
 		$userRecord->lastLoginAttemptIPAddress = Craft::$app->getRequest()->getUserIP();
 
-		$maxInvalidLogins = Craft::$app->config->get('maxInvalidLogins');
+		$maxInvalidLogins = Craft::$app->getConfig()->get('maxInvalidLogins');
 
 		if ($maxInvalidLogins)
 		{
@@ -868,7 +868,7 @@ class Users extends Component
 			$userRecord = $this->_getUserRecordById($user->id);
 			$userRecord->email = $user->unverifiedEmail;
 
-			if (Craft::$app->config->get('useEmailAsUsername'))
+			if (Craft::$app->getConfig()->get('useEmailAsUsername'))
 			{
 				$userRecord->username = $user->unverifiedEmail;
 			}
@@ -1124,7 +1124,7 @@ class Users extends Component
 				if ($transferContentTo)
 				{
 					// Delete the template caches for any entries authored by this user
-					Craft::$app->templateCache->deleteCachesByElementId($entryIds);
+					Craft::$app->getTemplateCache()->deleteCachesByElementId($entryIds);
 
 					// Update the entry/version/draft tables to point to the new user
 					$userRefs = [
@@ -1145,11 +1145,11 @@ class Users extends Component
 				else
 				{
 					// Delete the entries
-					Craft::$app->elements->deleteElementById($entryIds);
+					Craft::$app->getElements()->deleteElementById($entryIds);
 				}
 
 				// Delete the user
-				$success = Craft::$app->elements->deleteElementById($user->id);
+				$success = Craft::$app->getElements()->deleteElementById($user->id);
 
 				// If it didn't work, rollback the transaction in case something changed in onBeforeDeleteUser
 				if (!$success)
@@ -1296,7 +1296,7 @@ class Users extends Component
 	 */
 	public function purgeExpiredPendingUsers()
 	{
-		if (($duration = Craft::$app->config->get('purgePendingUsersDuration')) !== false)
+		if (($duration = Craft::$app->getConfig()->get('purgePendingUsersDuration')) !== false)
 		{
 			$interval = new DateInterval($duration);
 			$expire = DateTimeHelper::currentUTCDateTime();
@@ -1369,7 +1369,7 @@ class Users extends Component
 	{
 		if ($userRecord->invalidLoginWindowStart)
 		{
-			$duration = new DateInterval(Craft::$app->config->get('invalidLoginWindowDuration'));
+			$duration = new DateInterval(Craft::$app->getConfig()->get('invalidLoginWindowDuration'));
 			$end = $userRecord->invalidLoginWindowStart->add($duration);
 			return ($end >= DateTimeHelper::currentUTCDateTime());
 		}
@@ -1401,7 +1401,7 @@ class Users extends Component
 		$validates = false;
 
 		// If it's a new user AND we allow public registration, set it on the 'password' field and not 'newpassword'.
-		if (!$user->id && Craft::$app->systemSettings->getSetting('users', 'allowPublicRegistration'))
+		if (!$user->id && Craft::$app->getSystemSettings()->getSetting('users', 'allowPublicRegistration'))
 		{
 			$passwordErrorField = 'password';
 		}

@@ -47,7 +47,7 @@ class BaseEntryRevisionModel extends Entry
 
 		foreach ($content as $fieldId => $value)
 		{
-			$field = Craft::$app->fields->getFieldById($fieldId);
+			$field = Craft::$app->getFields()->getFieldById($fieldId);
 
 			if ($field)
 			{
@@ -66,7 +66,7 @@ class BaseEntryRevisionModel extends Entry
 	 */
 	public function getCreator()
 	{
-		return Craft::$app->users->getUserById($this->creatorId);
+		return Craft::$app->getUsers()->getUserById($this->creatorId);
 	}
 
 	/**

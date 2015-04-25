@@ -39,7 +39,7 @@ class AssetsHelper
 		$extension = strpos($extension, '.') !== false ? pathinfo($extension, PATHINFO_EXTENSION) : $extension;
 		$filename = uniqid('assets', true).'.'.$extension;
 
-		return IOHelper::createFile(Craft::$app->path->getTempPath().'/'.$filename)->getRealPath();
+		return IOHelper::createFile(Craft::$app->getPath()->getTempPath().'/'.$filename)->getRealPath();
 	}
 
 	/**
@@ -104,14 +104,14 @@ class AssetsHelper
 		}
 
 
-		$separator = Craft::$app->config->get('filenameWordSeparator');
+		$separator = Craft::$app->getConfig()->get('filenameWordSeparator');
 
 		if (!is_string($separator))
 		{
 			$separator = null;
 		}
 
-		$baseName = IOHelper::cleanFilename($baseName, Craft::$app->config->get('convertFilenamesToAscii'), $separator);
+		$baseName = IOHelper::cleanFilename($baseName, Craft::$app->getConfig()->get('convertFilenamesToAscii'), $separator);
 
 		if ($isFilename && empty($baseName))
 		{

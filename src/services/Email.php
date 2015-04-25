@@ -20,7 +20,7 @@ use yii\helpers\Markdown;
 /**
  * The Email service provides APIs for sending email in Craft.
  *
- * An instance of the Email service is globally accessible in Craft via [[Application::email `Craft::$app->email`]].
+ * An instance of the Email service is globally accessible in Craft via [[Application::email `Craft::$app->getEmail()`]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
@@ -80,7 +80,7 @@ class Email extends Component
 	 * $email->subject = 'Heyyyyy';
 	 * $email->body    = 'How you doin, {{ user.name }}?';
 	 *
-	 * Craft::$app->email->sendEmail($email);
+	 * Craft::$app->getEmail()->sendEmail($email);
 	 * ```
 	 *
 	 * @param EmailModel $emailModel The EmailModel object that defines information about the email to be sent.
@@ -91,7 +91,7 @@ class Email extends Component
 	 */
 	public function sendEmail(EmailModel $emailModel, $variables = [])
 	{
-		$user = Craft::$app->users->getUserByEmail($emailModel->toEmail);
+		$user = Craft::$app->getUsers()->getUserByEmail($emailModel->toEmail);
 
 		if (!$user)
 		{
@@ -114,7 +114,7 @@ class Email extends Component
 	 * by providing the corresponding language strings.
 	 *
 	 * ```php
-	 * Craft::$app->email->sendEmailByKey($user, 'account_activation', [
+	 * Craft::$app->getEmail()->sendEmailByKey($user, 'account_activation', [
 	 *     'link' => $activationUrl
 	 * ]);
 	 * ```
@@ -132,7 +132,7 @@ class Email extends Component
 
 		if (Craft::$app->getEdition() >= Craft::Client)
 		{
-			$message = Craft::$app->emailMessages->getMessage($key, $user->getPreferredLocale());
+			$message = Craft::$app->getEmailMessages()->getMessage($key, $user->getPreferredLocale());
 
 			$emailModel->subject  = $message->subject;
 			$emailModel->body     = $message->body;
@@ -152,14 +152,14 @@ class Email extends Component
 
 			if (!empty($settings['template']))
 			{
-				$tempTemplatesPath = Craft::$app->path->getSiteTemplatesPath();
+				$tempTemplatesPath = Craft::$app->getPath()->getSiteTemplatesPath();
 				$template = $settings['template'];
 			}
 		}
 
 		if (empty($template))
 		{
-			$tempTemplatesPath = Craft::$app->path->getCpTemplatesPath();
+			$tempTemplatesPath = Craft::$app->getPath()->getCpTemplatesPath();
 			$template = '_special/email';
 		}
 
@@ -175,14 +175,14 @@ class Email extends Component
 			"{% endset %}\n";
 
 		// Temporarily swap the templates path
-		$originalTemplatesPath = Craft::$app->path->getTemplatesPath();
-		Craft::$app->path->setTemplatesPath($tempTemplatesPath);
+		$originalTemplatesPath = Craft::$app->getPath()->getTemplatesPath();
+		Craft::$app->getPath()->setTemplatesPath($tempTemplatesPath);
 
 		// Send the email
 		$return = $this->_sendEmail($user, $emailModel, $variables);
 
 		// Return to the original templates path
-		Craft::$app->path->setTemplatesPath($originalTemplatesPath);
+		Craft::$app->getPath()->setTemplatesPath($originalTemplatesPath);
 
 		return $return;
 	}
@@ -196,7 +196,7 @@ class Email extends Component
 	{
 		if (!isset($this->_settings))
 		{
-			$this->_settings = Craft::$app->systemSettings->getSettings('email');
+			$this->_settings = Craft::$app->getSystemSettings()->getSettings('email');
 		}
 
 		return $this->_settings;
@@ -309,7 +309,7 @@ class Email extends Component
 						$emailSettings['timeout'] = $this->_defaultEmailTimeout;
 					}
 
-					$pop->authorize($emailSettings['host'], $emailSettings['port'], $emailSettings['timeout'], $emailSettings['username'], $emailSettings['password'], Craft::$app->config->get('devMode') ? 1 : 0);
+					$pop->authorize($emailSettings['host'], $emailSettings['port'], $emailSettings['timeout'], $emailSettings['username'], $emailSettings['password'], Craft::$app->getConfig()->get('devMode') ? 1 : 0);
 
 					$this->_setSmtpSettings($email, $emailSettings);
 					break;
@@ -333,7 +333,7 @@ class Email extends Component
 					}
 			}
 
-			$testToEmail = Craft::$app->config->get('testToEmailAddress');
+			$testToEmail = Craft::$app->getConfig()->get('testToEmailAddress');
 
 			// If they have the test email config var set to a non-empty string use it instead of the supplied email.
 			if (is_string($testToEmail) && $testToEmail !== '')

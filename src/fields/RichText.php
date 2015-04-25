@@ -75,7 +75,7 @@ class RichText extends Field
 	public function getSettingsHtml()
 	{
 		$configOptions = ['' => Craft::t('app', 'Default')];
-		$configPath = Craft::$app->path->getConfigPath().'/redactor';
+		$configPath = Craft::$app->getPath()->getConfigPath().'/redactor';
 
 		if (IOHelper::folderExists($configPath))
 		{
@@ -159,7 +159,7 @@ class RichText extends Field
 			}, $value);
 
 			// Now parse 'em
-			$value = Craft::$app->elements->parseRefs($value);
+			$value = Craft::$app->getElements()->parseRefs($value);
 		}
 
 		// Swap any <!--pagebreak-->'s with <hr>'s
@@ -260,7 +260,7 @@ class RichText extends Field
 	private function _getSectionSources()
 	{
 		$sources = [];
-		$sections = Craft::$app->sections->getAllSections();
+		$sections = Craft::$app->getSections()->getAllSections();
 		$showSingles = false;
 
 		foreach ($sections as $section)
@@ -292,7 +292,7 @@ class RichText extends Field
 	{
 		if ($this->configFile)
 		{
-			$configPath = Craft::$app->path->getConfigPath().'/redactor/'.$this->configFile;
+			$configPath = Craft::$app->getPath()->getConfigPath().'/redactor/'.$this->configFile;
 			$js = IOHelper::getFileContents($configPath);
 		}
 
@@ -318,7 +318,7 @@ class RichText extends Field
 
 		// Gotta use the uncompressed Redactor JS until the compressed one gets our Live Preview menu fix
 		Craft::$app->getView()->registerJsResource('lib/redactor/redactor.js');
-		//Craft::$app->getView()->registerJsResource('lib/redactor/redactor'.(Craft::$app->config->get('useCompressedJs') ? '.min' : '').'.js');
+		//Craft::$app->getView()->registerJsResource('lib/redactor/redactor'.(Craft::$app->getConfig()->get('useCompressedJs') ? '.min' : '').'.js');
 
 		$this->_maybeIncludeRedactorPlugin($configJs, 'fullscreen', false);
 		$this->_maybeIncludeRedactorPlugin($configJs, 'table', false);
@@ -375,7 +375,7 @@ class RichText extends Field
 	{
 		$path = 'lib/redactor/lang/'.$lang.'.js';
 
-		if (IOHelper::fileExists(Craft::$app->path->getResourcesPath().'/'.$path))
+		if (IOHelper::fileExists(Craft::$app->getPath()->getResourcesPath().'/'.$path))
 		{
 			Craft::$app->getView()->registerJsResource($path);
 			static::$_redactorLang = $lang;

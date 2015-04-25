@@ -39,7 +39,7 @@ class TasksController extends Controller
 		$this->_returnRunningTaskInfo();
 
 		// Apparently not. Is there a pending task?
-		$task = Craft::$app->tasks->getNextPendingTask();
+		$task = Craft::$app->getTasks()->getNextPendingTask();
 
 		if ($task)
 		{
@@ -50,7 +50,7 @@ class TasksController extends Controller
 			$response->sendAndClose();
 
 			// Start running tasks
-			Craft::$app->tasks->runPendingTasks();
+			Craft::$app->getTasks()->runPendingTasks();
 		}
 
 		Craft::$app->end();
@@ -69,7 +69,7 @@ class TasksController extends Controller
 		$this->_returnRunningTaskInfo();
 
 		// No running tasks left? Check for a failed one
-		if (Craft::$app->tasks->haveTasksFailed())
+		if (Craft::$app->getTasks()->haveTasksFailed())
 		{
 			return $this->asJson(['status' => 'error']);
 		}
@@ -89,16 +89,16 @@ class TasksController extends Controller
 		$this->requirePermission('accessCp');
 
 		$taskId = Craft::$app->getRequest()->getRequiredBodyParam('taskId');
-		$task = Craft::$app->tasks->rerunTaskById($taskId);
+		$task = Craft::$app->getTasks()->rerunTaskById($taskId);
 
-		if (!Craft::$app->tasks->isTaskRunning())
+		if (!Craft::$app->getTasks()->isTaskRunning())
 		{
 			JsonHelper::sendJsonHeaders();
 			$response = Craft::$app->getResponse();
 			$response->content = JsonHelper::encode($task);
 			$response->sendAndClose();
 
-			Craft::$app->tasks->runPendingTasks();
+			Craft::$app->getTasks()->runPendingTasks();
 		}
 		else
 		{
@@ -120,7 +120,7 @@ class TasksController extends Controller
 		$this->requirePermission('accessCp');
 
 		$taskId = Craft::$app->getRequest()->getRequiredBodyParam('taskId');
-		Craft::$app->tasks->deleteTaskById($taskId);
+		Craft::$app->getTasks()->deleteTaskById($taskId);
 
 		Craft::$app->end();
 	}
@@ -134,7 +134,7 @@ class TasksController extends Controller
 	{
 		$this->requireAjaxRequest();
 		$this->requirePermission('accessCp');
-		return $this->asJson(Craft::$app->tasks->getAllTasks());
+		return $this->asJson(Craft::$app->getTasks()->getAllTasks());
 	}
 
 	// Private Methods
@@ -147,7 +147,7 @@ class TasksController extends Controller
 	 */
 	private function _returnRunningTaskInfo()
 	{
-		if ($task = Craft::$app->tasks->getRunningTask())
+		if ($task = Craft::$app->getTasks()->getRunningTask())
 		{
 			return $this->asJson($task);
 		}

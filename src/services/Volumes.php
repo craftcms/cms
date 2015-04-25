@@ -92,7 +92,7 @@ class Volumes extends Component
 			]);
 		}
 
-		foreach (Craft::$app->plugins->call('getVolumeTypes', [], true) as $pluginVolumeTypes)
+		foreach (Craft::$app->getPlugins()->call('getVolumeTypes', [], true) as $pluginVolumeTypes)
 		{
 			$volumeTypes = array_merge($volumeTypes, $pluginVolumeTypes);
 		}
@@ -269,7 +269,7 @@ class Volumes extends Component
 			$volume->id = $volumeId;
 			$volume->name = TempAssetvolumeType::volumeName;
 			$volume->type = TempAssetvolumeType::volumeType;
-			$volume->settings = array('path' => Craft::$app->path->getAssetsTempvolumePath(), 'url' => UrlHelper::getResourceUrl('tempassets').'/');*/
+			$volume->settings = array('path' => Craft::$app->getPath()->getAssetsTempvolumePath(), 'url' => UrlHelper::getResourceUrl('tempassets').'/');*/
 			return;// $volume;
 		}
 		else
@@ -335,7 +335,7 @@ class Volumes extends Component
 
 				if (!$isNewVolume)
 				{
-					Craft::$app->fields->deleteLayoutById($volumeRecord->fieldLayoutId);
+					Craft::$app->getFields()->deleteLayoutById($volumeRecord->fieldLayoutId);
 				}
 				else
 				{
@@ -350,7 +350,7 @@ class Volumes extends Component
 
 				// Save the new one
 				$fieldLayout = $volume->getFieldLayout();
-				Craft::$app->fields->saveLayout($fieldLayout);
+				Craft::$app->getFields()->saveLayout($fieldLayout);
 
 				// Update the volume record/model with the new layout ID
 				$volume->fieldLayoutId = $fieldLayout->id;
@@ -367,16 +367,16 @@ class Volumes extends Component
 				else
 				{
 					// Update the top folder's name with the volume's new name
-					$topFolder = Craft::$app->assets->findFolder(array('volumeId' => $volume->id, 'parentId' => ':empty:'));
+					$topFolder = Craft::$app->getAssets()->findFolder(array('volumeId' => $volume->id, 'parentId' => ':empty:'));
 
 					if ($topFolder !== null && $topFolder->name != $volume->name)
 					{
 						$topFolder->name = $volume->name;
-						Craft::$app->assets->storeFolderRecord($topFolder);
+						Craft::$app->getAssets()->storeFolderRecord($topFolder);
 					}
 				}
 
-				Craft::$app->assetIndexing->ensureTopFolder($volume);
+				Craft::$app->getAssetIndexer()->ensureTopFolder($volume);
 
 				if ($transaction !== null)
 				{
@@ -490,7 +490,7 @@ class Volumes extends Component
 				->where(array('volumeId' => $volumeId))
 				->column();
 
-			Craft::$app->elements->deleteElementById($assetFileIds);
+			Craft::$app->getElements()->deleteElementById($assetFileIds);
 
 			// Nuke the asset volume.
 			$affectedRows = Craft::$app->getDb()->createCommand()->delete('{{%volumes}}', array('id' => $volumeId));

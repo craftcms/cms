@@ -132,7 +132,7 @@ class Assets extends BaseRelationField
 			}
 		}
 
-		foreach (Craft::$app->volumes->getAllVolumes() as $source)
+		foreach (Craft::$app->getVolumes()->getAllVolumes() as $source)
 		{
 			$sourceOptions[] = ['label' => $source->name, 'value' => $source->id];
 		}
@@ -222,7 +222,7 @@ class Assets extends BaseRelationField
 			{
 				// Resolve all conflicts by keeping both
 				$actions = array_fill(0, count($filesToMove), AssetConflictResolution::KeepBoth);
-				Craft::$app->assets->moveFiles($filesToMove, $targetFolderId, '', $actions);
+				Craft::$app->getAssets()->moveFiles($filesToMove, $targetFolderId, '', $actions);
 			}
 		}
 
@@ -248,7 +248,7 @@ class Assets extends BaseRelationField
 
 			foreach ($value as $fileId)
 			{
-				$file = Craft::$app->assets->getFileById($fileId);
+				$file = Craft::$app->getAssets()->getFileById($fileId);
 
 				if ($file && !in_array(mb_strtolower(IOHelper::getExtension($file->filename)), $allowedExtensions))
 				{
@@ -334,7 +334,7 @@ class Assets extends BaseRelationField
 					{
 						$tempPath = AssetsHelper::getTempFilePath($file->name);
 						move_uploaded_file($file->tempName, $tempPath);
-						$response = Craft::$app->assets->insertFileByLocalPath($tempPath, $file->name, $targetFolderId);
+						$response = Craft::$app->getAssets()->insertFileByLocalPath($tempPath, $file->name, $targetFolderId);
 						$fileIds[] = $response->getDataItem('fileId');
 						IOHelper::deleteFile($tempPath, true);
 					}
@@ -418,7 +418,7 @@ class Assets extends BaseRelationField
 	 */
 	private function _resolveSourcePathToFolderId($volumeId, $subpath, $element)
 	{
-		$folder = Craft::$app->assets->findFolder([
+		$folder = Craft::$app->getAssets()->findFolder([
 			'volumeId' => $volumeId,
 			'parentId' => ':empty:'
 		]);
@@ -454,7 +454,7 @@ class Assets extends BaseRelationField
 		else
 		{
 			$folderCriteria = ['volumeId' => $volumeId, 'path' => $folder->path.$subpath];
-			$existingFolder = Craft::$app->assets->findFolder($folderCriteria);
+			$existingFolder = Craft::$app->getAssets()->findFolder($folderCriteria);
 		}
 
 
@@ -474,12 +474,12 @@ class Assets extends BaseRelationField
 				}
 
 				$folderCriteria = ['parentId' => $currentFolder->id, 'name' => $part];
-				$existingFolder = Craft::$app->assets->findFolder($folderCriteria);
+				$existingFolder = Craft::$app->getAssets()->findFolder($folderCriteria);
 
 				if (!$existingFolder)
 				{
 					$folderId = $this->_createSubFolder($currentFolder, $part);
-					$existingFolder = Craft::$app->assets->getFolderById($folderId);
+					$existingFolder = Craft::$app->getAssets()->getFolderById($folderId);
 				}
 
 				$currentFolder = $existingFolder;
@@ -503,7 +503,7 @@ class Assets extends BaseRelationField
 	 */
 	private function _createSubFolder($currentFolder, $folderName)
 	{
-		$response = Craft::$app->assets->createFolder($currentFolder->id, $folderName);
+		$response = Craft::$app->getAssets()->createFolder($currentFolder->id, $folderName);
 
 		if ($response->isError() || $response->isConflict())
 		{
@@ -516,7 +516,7 @@ class Assets extends BaseRelationField
 					'path' => trim($currentFolder->path.'/'.$folderName, '/').'/'
 				]
 			);
-			$folderId = Craft::$app->assets->storeFolder($newFolder);
+			$folderId = Craft::$app->getAssets()->storeFolder($newFolder);
 
 			return $folderId;
 		}
@@ -592,10 +592,10 @@ class Assets extends BaseRelationField
 			// New element, so we default to User's upload folder for this field
 			$userModel = Craft::$app->getUser()->getIdentity();
 
-			$userFolder = Craft::$app->assets->getUserFolder($userModel);
+			$userFolder = Craft::$app->getAssets()->getUserFolder($userModel);
 
 			$folderName = 'field_'.$this->id;
-			$elementFolder = Craft::$app->assets->findFolder(['parentId' => $userFolder->id, 'name' => $folderName]);
+			$elementFolder = Craft::$app->getAssets()->findFolder(['parentId' => $userFolder->id, 'name' => $folderName]);
 
 			if (!$elementFolder)
 			{
@@ -606,7 +606,7 @@ class Assets extends BaseRelationField
 				$folderId = $elementFolder->id;
 			}
 
-			IOHelper::ensureFolderExists(Craft::$app->path->getAssetsTempSourcePath().'/'.$folderName);
+			IOHelper::ensureFolderExists(Craft::$app->getPath()->getAssetsTempSourcePath().'/'.$folderName);
 		}
 
 		return $folderId;

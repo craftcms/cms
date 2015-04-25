@@ -40,7 +40,7 @@ use yii\base\Component;
 /**
  * Class Assets service.
  *
- * An instance of the Assets service is globally accessible in Craft via [[Application::assets `Craft::$app->assets`]].
+ * An instance of the Assets service is globally accessible in Craft via [[Application::assets `Craft::$app->getAssets()`]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
@@ -124,7 +124,7 @@ class Assets extends Component
 	 */
 	public function getFileById($fileId, $localeId = null)
 	{
-		return Craft::$app->elements->getElementById($fileId, Asset::className(), $localeId);
+		return Craft::$app->getElements()->getElementById($fileId, Asset::className(), $localeId);
 	}
 
 	/**
@@ -265,8 +265,8 @@ class Assets extends Component
 		if (!$volume->isLocal() && $asset->kind == 'image' && !empty($asset->newFilePath))
 		{
 			// Store the local source for now and set it up for deleting, if needed
-			Craft::$app->assetTransforms->storeLocalSource($asset->newFilePath, $asset->getImageTransformSourcePath());
-			Craft::$app->assetTransforms->queueSourceForDeletingIfNecessary($asset->getImageTransformSourcePath());
+			Craft::$app->getAssetTransforms()->storeLocalSource($asset->newFilePath, $asset->getImageTransformSourcePath());
+			Craft::$app->getAssetTransforms()->queueSourceForDeletingIfNecessary($asset->getImageTransformSourcePath());
 		}
 	}
 
@@ -284,7 +284,7 @@ class Assets extends Component
 	 */
 	public function replaceFile($fileId, $pathOnServer, $fileName)
 	{
-		$existingFile = Craft::$app->assets->getFileById($fileId);
+		$existingFile = Craft::$app->getAssets()->getFileById($fileId);
 
 		if (!$existingFile)
 		{
@@ -302,14 +302,14 @@ class Assets extends Component
 
 		// TODO check event
 
-		$existingFile = Craft::$app->assets->getFileById($fileId);
+		$existingFile = Craft::$app->getAssets()->getFileById($fileId);
 
 		$volume = $existingFile->getVolume();
 
 		// Clear all thumb and transform data
 		if (ImageHelper::isImageManipulatable($existingFile->getExtension()))
 		{
-			Craft::$app->assetTransforms->deleteAllTransformData($existingFile);
+			Craft::$app->getAssetTransforms()->deleteAllTransformData($existingFile);
 		}
 
 		// Open the stream for, uhh, streaming
@@ -339,7 +339,7 @@ class Assets extends Component
 		else
 		{
 			// Get an available name to avoid conflicts and upload the file
-			$fileName = Craft::$app->assets->getNameReplacementInFolder($fileName, $existingFile->getFolder());
+			$fileName = Craft::$app->getAssets()->getNameReplacementInFolder($fileName, $existingFile->getFolder());
 
 			// Delete old, change the name, upload the new
 			$volume->deleteFile($existingFile->getUri());
@@ -362,7 +362,7 @@ class Assets extends Component
 		$existingFile->size = IOHelper::getFileSize($pathOnServer);
 		$existingFile->dateModified = IOHelper::getLastTimeModified($pathOnServer);
 
-		Craft::$app->assets->saveAsset($existingFile);
+		Craft::$app->getAssets()->saveAsset($existingFile);
 
 		$event = new AssetEvent(['asset' => $existingFile, 'newFilename' => $fileName]);
 		$this->trigger(static::EVENT_AFTER_REPLACE_FILE, $event);
@@ -402,7 +402,7 @@ class Assets extends Component
 					$volume->deleteFile($file->getUri());
 				}
 
-				Craft::$app->elements->deleteElementById($fileId);
+				Craft::$app->getElements()->deleteElementById($fileId);
 
 				$this->trigger(static::EVENT_AFTER_DELETE_ASSET, $event);
 
@@ -746,37 +746,37 @@ class Assets extends Component
 		}
 
 		// Get the transform index model
-		$index = Craft::$app->assetTransforms->getTransformIndex($file, $transform);
+		$index = Craft::$app->getAssetTransforms()->getTransformIndex($file, $transform);
 
 		// Does the file actually exist?
 		if ($index->fileExists)
 		{
-			return Craft::$app->assetTransforms->getUrlForTransformByTransformIndex($index);
+			return Craft::$app->getAssetTransforms()->getUrlForTransformByTransformIndex($index);
 		}
 		else
 		{
-			if (Craft::$app->config->get('generateTransformsBeforePageLoad'))
+			if (Craft::$app->getConfig()->get('generateTransformsBeforePageLoad'))
 			{
 				// Mark the transform as in progress
 				$index->inProgress = true;
-				Craft::$app->assetTransforms->storeTransformIndexData($index);
+				Craft::$app->getAssetTransforms()->storeTransformIndexData($index);
 
 				// Generate the transform
-				Craft::$app->assetTransforms->generateTransform($index);
+				Craft::$app->getAssetTransforms()->generateTransform($index);
 
 				// Update the index
 				$index->fileExists = true;
-				Craft::$app->assetTransforms->storeTransformIndexData($index);
+				Craft::$app->getAssetTransforms()->storeTransformIndexData($index);
 
 				// Return the transform URL
-				return Craft::$app->assetTransforms->getUrlForTransformByTransformIndex($index);
+				return Craft::$app->getAssetTransforms()->getUrlForTransformByTransformIndex($index);
 			}
 			else
 			{
 				// Queue up a new Generate Pending Transforms task, if there isn't one already
-				if (!Craft::$app->tasks->areTasksPending('GeneratePendingTransforms'))
+				if (!Craft::$app->getTasks()->areTasksPending('GeneratePendingTransforms'))
 				{
-					Craft::$app->tasks->createTask('GeneratePendingTransforms');
+					Craft::$app->getTasks()->createTask('GeneratePendingTransforms');
 				}
 
 				// Return the temporary transform URL
@@ -1194,7 +1194,7 @@ class Assets extends Component
 			if ($event->performAction)
 			{
 				// Save the element
-				$success = Craft::$app->elements->saveElement($asset, false);
+				$success = Craft::$app->getElements()->saveElement($asset, false);
 
 				// If it didn't work, rollback the transaction in case something changed in onBeforeSaveAsset
 				if (!$success)

@@ -72,7 +72,7 @@ class ClearCaches extends Tool
 	 */
 	private static function _getFolders($obfuscate = true)
 	{
-		$runtimePath = Craft::$app->path->getRuntimePath();
+		$runtimePath = Craft::$app->getPath()->getRuntimePath();
 
 		$folders = [
 			$obfuscate ? md5('dataCache') : 'dataCache'                                               => Craft::t('app', 'Data caches'),
@@ -82,7 +82,7 @@ class ClearCaches extends Tool
 			$obfuscate ? md5($runtimePath.'/temp') : $runtimePath.'/temp'                             => Craft::t('app', 'Temp files'),
 		];
 
-		$pluginCachePaths = Craft::$app->plugins->call('registerCachePaths');
+		$pluginCachePaths = Craft::$app->getPlugins()->call('registerCachePaths');
 
 		if (is_array($pluginCachePaths) && count($pluginCachePaths) > 0)
 		{
@@ -153,7 +153,7 @@ class ClearCaches extends Tool
 
 		if ($params['caches'] == '*' || in_array('templateCaches', $params['caches']))
 		{
-			Craft::$app->templateCache->deleteAllCaches();
+			Craft::$app->getTemplateCache()->deleteAllCaches();
 		}
 
 		if ($params['caches'] == '*' || in_array('assetTransformIndex', $params['caches']))

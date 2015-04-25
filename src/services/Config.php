@@ -24,7 +24,7 @@ use yii\base\Component;
  * The Config service provides APIs for retrieving the values of Craft’s [config settings](http://buildwithcraft.com/docs/config-settings),
  * as well as the values of any plugins’ config settings.
  *
- * An instance of the Config service is globally accessible in Craft via [[Application::config `Craft::$app->config`]].
+ * An instance of the Config service is globally accessible in Craft via [[Application::config `Craft::$app->getConfig()`]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
@@ -68,7 +68,7 @@ class Config extends Component
 	 * for a full list of config settings that Craft will check for within that file.
 	 *
 	 * ```php
-	 * $isDevMode = Craft::$app->config->get('devMode');
+	 * $isDevMode = Craft::$app->getConfig()->get('devMode');
 	 * ```
 	 *
 	 * If you want to get the config setting from a different config file (e.g. config/myplugin.php), you can specify
@@ -76,7 +76,7 @@ class Config extends Component
 	 * craft/plugins/PluginHandle]/config.php file and use the array it returns as the list of default values.
 	 *
 	 * ```php
-	 * $myConfigSetting = Craft::$app->config->get('myConfigSetting', 'myplugin');
+	 * $myConfigSetting = Craft::$app->getConfig()->get('myConfigSetting', 'myplugin');
 	 * ```
 	 *
 	 * @param string $item The name of the config setting.
@@ -102,14 +102,14 @@ class Config extends Component
 	 * for a full list of config settings that Craft will check for within that file.
 	 *
 	 * ```php
-	 * Craft::$app->config->set('devMode', true);
+	 * Craft::$app->getConfig()->set('devMode', true);
 	 * ```
 	 *
 	 * If you want to set a config setting from a different config file (e.g. config/myplugin.php), you can specify
 	 * its filename as a third argument.
 	 *
 	 * ```php
-	 * Craft::$app->config->set('myConfigSetting', 'foo', 'myplugin');
+	 * Craft::$app->getConfig()->set('myConfigSetting', 'foo', 'myplugin');
 	 * ```
 	 *
 	 * @param string $item  The name of the config setting.
@@ -190,7 +190,7 @@ class Config extends Component
 	 * craft/plugins/PluginHandle]/config.php file and use the array it returns as the list of default values.
 	 *
 	 * ```php
-	 * if (Craft::$app->config->exists('myConfigSetting', 'myplugin'))
+	 * if (Craft::$app->getConfig()->exists('myConfigSetting', 'myplugin'))
 	 * {
 	 *     Craft::info('This site has some pretty useless config settings.');
 	 * }
@@ -233,8 +233,8 @@ class Config extends Component
 	 * [PHP interval specification](http://php.net/manual/en/dateinterval.construct.php).
 	 *
 	 * ```php
-	 * Craft::$app->config->get('cacheDuration'); // 'P1D'
-	 * Craft::$app->config->getCacheDuration();   // 86400
+	 * Craft::$app->getConfig()->get('cacheDuration'); // 'P1D'
+	 * Craft::$app->getConfig()->getCacheDuration();   // 86400
 	 * ```
 	 *
 	 * @return int The cacheDuration config setting value, in seconds.
@@ -475,14 +475,14 @@ class Config extends Component
 	{
 		if ($remembered)
 		{
-			$duration = Craft::$app->config->get('rememberedUserSessionDuration');
+			$duration = Craft::$app->getConfig()->get('rememberedUserSessionDuration');
 		}
 
 		// Even if $remembered = true, it's possible that they've disabled long-term user sessions
 		// by setting rememberedUserSessionDuration = 0
 		if (empty($duration))
 		{
-			$duration = Craft::$app->config->get('userSessionDuration');
+			$duration = Craft::$app->getConfig()->get('userSessionDuration');
 		}
 
 		if ($duration)
@@ -683,7 +683,7 @@ class Config extends Component
 			return;
 		}
 
-		$pathService = Craft::$app->path;
+		$pathService = Craft::$app->getPath();
 
 		// Is this a valid Craft config category?
 		if (ConfigCategory::isValidName($category))

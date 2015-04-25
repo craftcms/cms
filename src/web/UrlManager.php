@@ -49,7 +49,7 @@ class UrlManager extends \yii\web\UrlManager
 	 */
 	public function __construct($config = [])
 	{
-		$config['showScriptName'] = !Craft::$app->config->omitScriptNameInUrls();
+		$config['showScriptName'] = !Craft::$app->getConfig()->omitScriptNameInUrls();
 		$config['rules'] = $this->_getRules();
 
 		parent::__construct($config);
@@ -216,7 +216,7 @@ class UrlManager extends \yii\web\UrlManager
 		// Load the config file rules
 		if ($request->getIsCpRequest())
 		{
-			$baseCpRoutesPath = Craft::$app->path->getAppPath().'/config/cproutes';
+			$baseCpRoutesPath = Craft::$app->getPath()->getAppPath().'/config/cproutes';
 			$rules = require($baseCpRoutesPath.'/common.php');
 
 			if (Craft::$app->getEdition() >= Craft::Client)
@@ -233,12 +233,12 @@ class UrlManager extends \yii\web\UrlManager
 		}
 		else
 		{
-			$rules = Craft::$app->routes->getConfigFileRoutes();
+			$rules = Craft::$app->getRoutes()->getConfigFileRoutes();
 			$pluginHook = 'registerSiteRoutes';
 		}
 
 		// Load the plugin-supplied rules
-		$allPluginRules = Craft::$app->plugins->call($pluginHook);
+		$allPluginRules = Craft::$app->getPlugins()->call($pluginHook);
 
 		foreach ($allPluginRules as $pluginRules)
 		{
@@ -259,7 +259,7 @@ class UrlManager extends \yii\web\UrlManager
 		// Is there a token in the URL?
 		if (($token = $request->getToken()) !== null)
 		{
-			return Craft::$app->tokens->getTokenRoute($token);
+			return Craft::$app->getTokens()->getTokenRoute($token);
 		}
 
 		$path = $request->getPath();
@@ -301,12 +301,12 @@ class UrlManager extends \yii\web\UrlManager
 
 			if (Craft::$app->isInstalled() && Craft::$app->getRequest()->getIsSiteRequest())
 			{
-				$element = Craft::$app->elements->getElementByUri($path, Craft::$app->language, true);
+				$element = Craft::$app->getElements()->getElementByUri($path, Craft::$app->language, true);
 
 				if ($element)
 				{
 					// Do any plugins want a say in this?
-					$route = Craft::$app->plugins->callFirst('getElementRoute', [$element], true);
+					$route = Craft::$app->getPlugins()->callFirst('getElementRoute', [$element], true);
 
 					if (!$route)
 					{
@@ -359,7 +359,7 @@ class UrlManager extends \yii\web\UrlManager
 	 */
 	private function _isPublicTemplatePath()
 	{
-		$trigger = Craft::$app->config->get('privateTemplateTrigger');
+		$trigger = Craft::$app->getConfig()->get('privateTemplateTrigger');
 		$length = strlen($trigger);
 
 		foreach (Craft::$app->getRequest()->getSegments() as $requestPathSeg)

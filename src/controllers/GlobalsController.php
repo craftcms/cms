@@ -45,12 +45,12 @@ class GlobalsController extends Controller
 		$globalSet->handle = Craft::$app->getRequest()->getBodyParam('handle');
 
 		// Set the field layout
-		$fieldLayout = Craft::$app->fields->assembleLayoutFromPost();
+		$fieldLayout = Craft::$app->getFields()->assembleLayoutFromPost();
 		$fieldLayout->type = GlobalSet::className();
 		$globalSet->setFieldLayout($fieldLayout);
 
 		// Save it
-		if (Craft::$app->globals->saveSet($globalSet))
+		if (Craft::$app->getGlobals()->saveSet($globalSet))
 		{
 			Craft::$app->getSession()->setNotice(Craft::t('app', 'Global set saved.'));
 			return $this->redirectToPostedUrl($globalSet);
@@ -79,7 +79,7 @@ class GlobalsController extends Controller
 
 		$globalSetId = Craft::$app->getRequest()->getRequiredBodyParam('id');
 
-		Craft::$app->globals->deleteSetById($globalSetId);
+		Craft::$app->getGlobals()->deleteSetById($globalSetId);
 		return $this->asJson(['success' => true]);
 	}
 
@@ -175,7 +175,7 @@ class GlobalsController extends Controller
 			$this->requirePermission('editLocale:'.$localeId);
 		}
 
-		$globalSet = Craft::$app->globals->getSetById($globalSetId, $localeId);
+		$globalSet = Craft::$app->getGlobals()->getSetById($globalSetId, $localeId);
 
 		if (!$globalSet)
 		{
@@ -184,7 +184,7 @@ class GlobalsController extends Controller
 
 		$globalSet->setContentFromPost('fields');
 
-		if (Craft::$app->globals->saveContent($globalSet))
+		if (Craft::$app->getGlobals()->saveContent($globalSet))
 		{
 			Craft::$app->getSession()->setNotice(Craft::t('app', 'Globals saved.'));
 			return $this->redirectToPostedUrl();

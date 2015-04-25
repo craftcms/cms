@@ -192,7 +192,7 @@ class HttpRequest
 	 */
 	public function getUrlFormat()
 	{
-		if (\Craft::$app->config->usePathInfo())
+		if (\Craft::$app->getConfig()->usePathInfo())
 		{
 			return 'pathinfo';
 		}
@@ -376,7 +376,7 @@ class HttpRequest
 	 */
 	public function getQuery($name = null, $default = null)
 	{
-		\Craft::$app->deprecator->log('craft.request.getQuery()', 'craft.request.getQuery() is deprecated. Use getQueryParam() instead.');
+		\Craft::$app->getDeprecator()->log('craft.request.getQuery()', 'craft.request.getQuery() is deprecated. Use getQueryParam() instead.');
 		return $this->getQueryParam($name, $default);
 	}
 
@@ -391,7 +391,7 @@ class HttpRequest
 	 */
 	public function getPost($name = null, $default = null)
 	{
-		\Craft::$app->deprecator->log('craft.request.getPost()', 'craft.request.getPost() is deprecated. Use getBodyParam() instead.');
+		\Craft::$app->getDeprecator()->log('craft.request.getPost()', 'craft.request.getPost() is deprecated. Use getBodyParam() instead.');
 		return $this->getBodyParam($name, $default);
 	}
 
@@ -403,7 +403,7 @@ class HttpRequest
 	 */
 	public function getUserHostAddress()
 	{
-		\Craft::$app->deprecator->log('craft.request.getUserHostAddress()', 'craft.request.getUserHostAddress() is deprecated. Use getUserIP() instead.');
+		\Craft::$app->getDeprecator()->log('craft.request.getUserHostAddress()', 'craft.request.getUserHostAddress() is deprecated. Use getUserIP() instead.');
 		return $this->getUserIP();
 	}
 
@@ -419,7 +419,7 @@ class HttpRequest
 	 */
 	public function getIpAddress()
 	{
-		\Craft::$app->deprecator->log('craft.request.getIpAddress()', 'craft.request.getIpAddress() is deprecated. Use getUserIP() instead.');
+		\Craft::$app->getDeprecator()->log('craft.request.getIpAddress()', 'craft.request.getIpAddress() is deprecated. Use getUserIP() instead.');
 		return $this->getUserIP();
 	}
 }

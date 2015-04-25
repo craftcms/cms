@@ -28,6 +28,6 @@ class Plugins
 	 */
 	public function getPluginInfo()
 	{
-		return \Craft::$app->plugins->getPluginInfo();
+		return \Craft::$app->getPlugins()->getPluginInfo();
 	}
 }

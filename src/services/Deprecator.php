@@ -18,7 +18,7 @@ use yii\base\Component;
 /**
  * Class Deprecator service.
  *
- * An instance of the Deprecator service is globally accessible in Craft via [[Application::deprecator `Craft::$app->deprecator`]].
+ * An instance of the Deprecator service is globally accessible in Craft via [[Application::deprecator `Craft::$app->getDeprecator()`]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
@@ -242,7 +242,7 @@ class Deprecator extends Component
 
 		/* HIDE */
 		$foundPlugin = false;
-		$pluginsPath = realpath(Craft::$app->path->getPluginsPath()).'/';
+		$pluginsPath = realpath(Craft::$app->getPath()->getPluginsPath()).'/';
 		$pluginsPathLength = strlen($pluginsPath);
 		/* end HIDE */
 
@@ -310,7 +310,7 @@ class Deprecator extends Component
 					{
 						$firstSeg = array_shift(explode('/', $logTrace['template']));
 
-						if (Craft::$app->plugins->getPlugin($firstSeg))
+						if (Craft::$app->getPlugins()->getPlugin($firstSeg))
 						{
 							$log->plugin = $firstSeg;
 							$foundPlugin = true;
@@ -333,7 +333,7 @@ class Deprecator extends Component
 					$remainingFilePath = StringHelper::substr($filePath, $pluginsPathLength);
 					$firstSeg = array_shift(explode('/', $remainingFilePath));
 
-					if (Craft::$app->plugins->getPlugin($firstSeg))
+					if (Craft::$app->getPlugins()->getPlugin($firstSeg))
 					{
 						$log->plugin = $firstSeg;
 						$foundPlugin = true;
