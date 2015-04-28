@@ -87,6 +87,11 @@ class Plugin extends Module implements PluginInterface
 	 */
 	private $_settingsModel;
 
+	/**
+	 * @var string The plugin’s base path
+	 */
+	private $_basePath;
+
 	// Public Methods
 	// =========================================================================
 
@@ -219,6 +224,21 @@ class Plugin extends Module implements PluginInterface
 	{
 		return null;
 	}
+
+	/**
+	  * Returns the root directory of the module.
+	  * It defaults to the directory containing the module class file.
+	  * @return string the root directory of the module.
+	  */
+	 public function getBasePath()
+	 {
+		 if ($this->_basePath === null)
+		 {
+			 $this->_basePath = Craft::$app->getPath()->getPluginsPath().'/'.$this->id;
+		 }
+
+		 return $this->_basePath;
+	 }
 
 	// Component Registration
 	// -------------------------------------------------------------------------
