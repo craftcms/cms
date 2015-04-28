@@ -289,7 +289,7 @@ class Assets extends Component
 		// Clear all thumb and transform data
 		if (ImageHelper::isImageManipulatable($fileToReplace->getExtension()))
 		{
-			Craft::$app->assetTransforms->deleteAllTransformData($fileToReplace);
+			Craft::$app->getAssetTransforms()->deleteAllTransformData($fileToReplace);
 		}
 
 		// Replace the file
@@ -309,10 +309,10 @@ class Assets extends Component
 			$fileToReplace->setContent($fileToReplaceWith->getContent());
 		}
 
-		Craft::$app->assets->saveAsset($fileToReplace);
+		$this->saveAsset($fileToReplace);
 
 		// And delete the conflicting record
-		Craft::$app->assets->deleteFilesByIds($fileToReplaceWith->id, false);
+		$this->deleteFilesByIds($fileToReplaceWith->id, false);
 	}
 
 	/**
@@ -331,7 +331,7 @@ class Assets extends Component
 	 */
 	public function replaceAssetFile($assetId, $pathOnServer, $filename)
 	{
-		$existingFile = Craft::$app->assets->getFileById($assetId);
+		$existingFile = $this->getFileById($assetId);
 
 		if (!$existingFile)
 		{
@@ -349,7 +349,7 @@ class Assets extends Component
 
 		// TODO check event
 
-		$existingFile = Craft::$app->assets->getFileById($assetId);
+		$existingFile = $this->getFileById($assetId);
 
 		$volume = $existingFile->getVolume();
 
@@ -386,7 +386,7 @@ class Assets extends Component
 		else
 		{
 			// Get an available name to avoid conflicts and upload the file
-			$filename = Craft::$app->assets->getNameReplacementInFolder($filename, $existingFile->getFolder());
+			$filename = $this->getNameReplacementInFolder($filename, $existingFile->getFolder());
 
 			// Delete old, change the name, upload the new
 			$volume->deleteFile($existingFile->getUri());
@@ -414,7 +414,7 @@ class Assets extends Component
 		$existingFile->size = IOHelper::getFileSize($pathOnServer);
 		$existingFile->dateModified = IOHelper::getLastTimeModified($pathOnServer);
 
-		Craft::$app->getAssets()->saveAsset($existingFile);
+		$this->saveAsset($existingFile);
 
 		$event = new ReplaceAssetEvent(['asset' => $existingFile, 'filename' => $filename]);
 		$this->trigger(static::EVENT_AFTER_REPLACE_FILE, $event);
@@ -1115,7 +1115,7 @@ class Assets extends Component
 		if ($asset->volumeId == $targetFolder->volumeId)
 		{
 			$sourceVolume->renameFile($fromPath, $toPath);
-			$transformIndexes = Craft::$app->assetTransforms->getAllCreatedTransformsForFile($asset);
+			$transformIndexes = Craft::$app->getAssetTransforms()->getAllCreatedTransformsForFile($asset);
 
 			// Move the transforms
 			foreach ($transformIndexes as $transformIndex)
@@ -1123,7 +1123,7 @@ class Assets extends Component
 				/**
 				 * @var AssetTransformIndex $transformIndex
 				 */
-				$fromTransformPath = Craft::$app->assetTransforms->getTransformSubpath($asset, $transformIndex);
+				$fromTransformPath = Craft::$app->getAssetTransforms()->getTransformSubpath($asset, $transformIndex);
 				$toTransformPath = $fromTransformPath;
 
 				// In case we're changing the filename, make sure that we're not missing that.
@@ -1141,12 +1141,12 @@ class Assets extends Component
 				{
 					$sourceVolume->renameFile($baseFrom.$fromTransformPath, $baseTo.$toTransformPath);
 					$transformIndex->filename = $filename;
-					Craft::$app->assetTransforms->storeTransformIndexData($transformIndex);
+					Craft::$app->getAssetTransforms()->storeTransformIndexData($transformIndex);
 				}
 				catch (VolumeFileNotFoundException $exception)
 				{
 					// No biggie, just delete the transform index as well then
-					Craft::$app->assetTransforms->deleteTransformIndex($transformIndex->id);
+					Craft::$app->getAssetTransforms()->deleteTransformIndex($transformIndex->id);
 				}
 			}
 		}
@@ -1172,7 +1172,7 @@ class Assets extends Component
 			}
 
 			// Nuke the transforms
-			Craft::$app->assetTransforms->deleteAllTransformData($asset);
+			Craft::$app->getAssetTransforms()->deleteAllTransformData($asset);
 		}
 	}
 	/**

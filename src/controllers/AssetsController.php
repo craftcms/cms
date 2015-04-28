@@ -85,31 +85,8 @@ class AssetsController extends Controller
 					$filename = AssetsHelper::prepareAssetName(Craft::$app->getRequest()->getRequiredBodyParam('filename'));
 					$fileToReplace = Craft::$app->getAssets()->findFile(array('filename' => $filename, 'folderId' => $fileToReplaceWith->folderId));
 
-					// Clear all thumb and transform data
-					if (ImageHelper::isImageManipulatable($fileToReplace->getExtension()))
-					{
-						Craft::$app->getAssetTransforms()->deleteAllTransformData($fileToReplace);
-					}
-
-					if (ImageHelper::isImageManipulatable($fileToReplaceWith->getExtension()))
-					{
-						Craft::$app->getAssetTransforms()->deleteAllTransformData($fileToReplaceWith);
-					}
-
-					// Replace the file
-					$volume->deleteFile($fileToReplace->getUri());
-					$volume->renameFile($fileToReplaceWith->getUri(), $fileToReplace->getUri());
-
-					// Update the attributes and save the Asset
-					$fileToReplace->dateModified = $fileToReplaceWith->dateModified;
-					$fileToReplace->size         = $fileToReplaceWith->size;
-					$fileToReplace->kind         = $fileToReplaceWith->kind;
-					$fileToReplace->width        = $fileToReplaceWith->width;
-					$fileToReplace->height       = $fileToReplaceWith->height;
-
-					Craft::$app->assets->replaceAsset($fileToReplace, $fileToReplaceWith);
-
-x				}
+					Craft::$app->getAssets()->replaceAsset($fileToReplace, $fileToReplaceWith);
+				}
 				else if ($conflictResolution == 'cancel')
 				{
 					Craft::$app->getAssets()->deleteFilesByIds($fileId);
@@ -235,7 +212,7 @@ x				}
 				throw new UploadFailedException(UPLOAD_ERR_CANT_WRITE);
 			}
 
-			Craft::$app->assets->replaceAssetFile($fileId, $pathOnServer, $fileName);
+			Craft::$app->getAssets()->replaceAssetFile($fileId, $pathOnServer, $fileName);
 		}
 		catch (Exception $exception)
 		{
@@ -366,7 +343,7 @@ x				}
 		// TODO permission checks
 		try
 		{
-			$asset = Craft::$app->assets->getFileById($fileId);
+			$asset = Craft::$app->getAssets()->getFileById($fileId);
 
 			if (empty($asset))
 			{
@@ -375,7 +352,7 @@ x				}
 
 			if (!empty($filename))
 			{
-				Craft::$app->assets->renameAsset($asset, $filename);
+				Craft::$app->getAssets()->renameAsset($asset, $filename);
 
 				return $this->asJson(['success' => true]);
 			}
@@ -385,24 +362,24 @@ x				}
 				{
 					if (!empty($conflictResolution))
 					{
-						$conflictingAsset = Craft::$app->assets->findFile(['filename' => $asset->filename, 'folderId' => $folderId]);
+						$conflictingAsset = Craft::$app->getAssets()->findFile(['filename' => $asset->filename, 'folderId' => $folderId]);
 
 						if ($conflictResolution == 'replace')
 						{
-							Craft::$app->assets->replaceAsset($conflictingAsset, $asset, true);
+							Craft::$app->getAssets()->replaceAsset($conflictingAsset, $asset, true);
 						}
 						else if ($conflictResolution == 'keepBoth')
 						{
-							$targetFolder = Craft::$app->assets->getFolderById($folderId);
-							$newFilename = Craft::$app->assets->getNameReplacementInFolder($asset->filename, $targetFolder);
-							Craft::$app->assets->moveAsset($asset, $folderId, $newFilename);
+							$targetFolder = Craft::$app->getAssets()->getFolderById($folderId);
+							$newFilename = Craft::$app->getAssets()->getNameReplacementInFolder($asset->filename, $targetFolder);
+							Craft::$app->getAssets()->moveAsset($asset, $folderId, $newFilename);
 						}
 					}
 					else
 					{
 						try
 						{
-							Craft::$app->assets->moveAsset($asset, $folderId);
+							Craft::$app->getAssets()->moveAsset($asset, $folderId);
 						}
 						catch (AssetConflictException $exception)
 						{
