@@ -103,7 +103,7 @@ class Install extends InstallMigration
 		Craft::$app->setIsInstalled();
 
 		// Set the language to the desired locale
-		Craft::$app->setLanguage($this->locale);
+		Craft::$app->language = $this->locale;
 
 		// Save the first user
 		echo "    > save the first user ...";

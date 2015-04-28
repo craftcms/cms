@@ -765,7 +765,7 @@ class CategoriesController extends Controller
 			throw new HttpException(404);
 		}
 
-		Craft::$app->setLanguage($category->locale);
+		Craft::$app->language = $category->locale;
 
 		// Have this category override any freshly queried categories with the same ID/locale
 		Craft::$app->getElements()->setPlaceholderElement($category);

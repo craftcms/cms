@@ -412,7 +412,7 @@ class EntriesController extends BaseEntriesController
 			$this->enforceEditEntryPermissions($entry);
 
 			// Set the language to the user's preferred locale so DateFormatter returns the right format
-			Craft::$app->setLanguage(Craft::$app->getTargetLanguage(true));
+			Craft::$app->language = Craft::$app->getTargetLanguage(true);
 
 			$this->_populateEntryModel($entry);
 		}
@@ -932,7 +932,7 @@ class EntriesController extends BaseEntriesController
 			throw new HttpException(404);
 		}
 
-		Craft::$app->setLanguage($entry->locale);
+		Craft::$app->language = $entry->locale;
 
 		if (!$entry->postDate)
 		{
