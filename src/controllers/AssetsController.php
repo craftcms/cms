@@ -81,37 +81,11 @@ class AssetsController extends Controller
 				if ($conflictResolution == 'replace')
 				{
 					$fileToReplaceWith = Craft::$app->getAssets()->getFileById($fileId);
-					$volume = $fileToReplaceWith->getVolume();
 
 					$filename = AssetsHelper::prepareAssetName(Craft::$app->getRequest()->getRequiredBodyParam('filename'));
 					$fileToReplace = Craft::$app->getAssets()->findFile(array('filename' => $filename, 'folderId' => $fileToReplaceWith->folderId));
 
-					// Clear all thumb and transform data
-					if (ImageHelper::isImageManipulatable($fileToReplace->getExtension()))
-					{
-						Craft::$app->getAssetTransforms()->deleteAllTransformData($fileToReplace);
-					}
-
-					if (ImageHelper::isImageManipulatable($fileToReplaceWith->getExtension()))
-					{
-						Craft::$app->getAssetTransforms()->deleteAllTransformData($fileToReplaceWith);
-					}
-
-					// Replace the file
-					$volume->deleteFile($fileToReplace->getUri());
-					$volume->renameFile($fileToReplaceWith->getUri(), $fileToReplace->getUri());
-
-					// Update the attributes and save the Asset
-					$fileToReplace->dateModified = $fileToReplaceWith->dateModified;
-					$fileToReplace->size         = $fileToReplaceWith->size;
-					$fileToReplace->kind         = $fileToReplaceWith->kind;
-					$fileToReplace->width        = $fileToReplaceWith->width;
-					$fileToReplace->height       = $fileToReplaceWith->height;
-
-					Craft::$app->getAssets()->saveAsset($fileToReplace);
-
-					// And delete the conflicting record
-					Craft::$app->getAssets()->deleteFilesByIds($fileToReplaceWith->id, false);
+					Craft::$app->getAssets()->replaceAsset($fileToReplace, $fileToReplaceWith);
 				}
 				else if ($conflictResolution == 'cancel')
 				{
@@ -238,14 +212,13 @@ class AssetsController extends Controller
 				throw new UploadFailedException(UPLOAD_ERR_CANT_WRITE);
 			}
 
-			Craft::$app->getAssets()->replaceFile($fileId, $pathOnServer, $fileName);
+			Craft::$app->getAssets()->replaceAssetFile($fileId, $pathOnServer, $fileName);
 		}
 		catch (Exception $exception)
 		{
 			return $this->asErrorJson($exception->getMessage());
 		}
 
-		// AFTER REPLACE
 		return $this->asJson(['success' => true, 'fileId' => $fileId]);
 
 	}
@@ -362,33 +335,61 @@ class AssetsController extends Controller
 	{
 		$this->requireLogin();
 
-		$fileIds            = Craft::$app->getRequest()->getRequiredBodyParam('fileId');
+		$fileId             = Craft::$app->getRequest()->getRequiredBodyParam('fileId');
 		$folderId           = Craft::$app->getRequest()->getBodyParam('folderId');
 		$filename           = Craft::$app->getRequest()->getBodyParam('filename');
-		$conflictResolution = Craft::$app->getRequest()->getBodyParam('conflictResolution');
+		$conflictResolution = Craft::$app->getRequest()->getBodyParam('userResponse');
 
 		// TODO permission checks
 		try
 		{
+			$asset = Craft::$app->getAssets()->getFileById($fileId);
+
+			if (empty($asset))
+			{
+				throw new AssetMissingException(Craft::t('app', 'The Asset is missing.'));
+			}
+
 			if (!empty($filename))
 			{
-				$file = Craft::$app->getAssets()->getFileById($fileIds);
-
-				if (empty($file))
-				{
-					throw new AssetMissingException(Craft::t('app', 'The Asset cannot is missing.'));
-				}
-
-				Craft::$app->getAssets()->renameFile($file, $filename);
+				Craft::$app->getAssets()->renameAsset($asset, $filename);
 
 				return $this->asJson(['success' => true]);
 			}
 			else
 			{
-				// Move files.
+				if ($asset->folderId != $folderId)
+				{
+					if (!empty($conflictResolution))
+					{
+						$conflictingAsset = Craft::$app->getAssets()->findFile(['filename' => $asset->filename, 'folderId' => $folderId]);
+
+						if ($conflictResolution == 'replace')
+						{
+							Craft::$app->getAssets()->replaceAsset($conflictingAsset, $asset, true);
+						}
+						else if ($conflictResolution == 'keepBoth')
+						{
+							$targetFolder = Craft::$app->getAssets()->getFolderById($folderId);
+							$newFilename = Craft::$app->getAssets()->getNameReplacementInFolder($asset->filename, $targetFolder);
+							Craft::$app->getAssets()->moveAsset($asset, $folderId, $newFilename);
+						}
+					}
+					else
+					{
+						try
+						{
+							Craft::$app->getAssets()->moveAsset($asset, $folderId);
+						}
+						catch (AssetConflictException $exception)
+						{
+							return $this->asJson(['prompt' => true, 'filename' => $asset->filename, 'fileId' => $asset->id]);
+						}
+					}
+				}
 			}
 		}
-		catch (AssetException $exception)
+		catch (\Exception $exception)
 		{
 			return $this->asErrorJson($exception->getMessage());
 		}

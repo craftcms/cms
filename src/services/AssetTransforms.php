@@ -437,6 +437,13 @@ class AssetTransforms extends Component
 			/** @var array $matchFound */
 			$from = $file->getFolder()->path.$this->getTransformSubpath($file, AssetTransformIndex::create($matchFound));
 			$to = $file->getFolder()->path.$this->getTransformSubpath($file, $index);
+
+			// Sanity check
+			if ($volume->fileExists($to))
+			{
+				return;
+			}
+
 			$volume->copyFile($from, $to);
 		}
 		else
@@ -620,7 +627,7 @@ class AssetTransforms extends Component
 	 */
 	public function deleteTransformIndexDataByFileId($fileId)
 	{
-		Craft::$app->getDb()->createCommand()->delete('{{%assettransformindex}}', 'fileId = :fileId', [':fileId' => $fileId]);
+		Craft::$app->getDb()->createCommand()->delete('{{%assettransformindex}}', 'fileId = :fileId', [':fileId' => $fileId])->execute();
 	}
 
 	/**
@@ -632,7 +639,7 @@ class AssetTransforms extends Component
 	 */
 	public function deleteTransformIndex($indexId)
 	{
-		Craft::$app->getDb()->createCommand()->delete('{{%assettransformindex}}', 'id = :id', [':id' => $indexId]);
+		Craft::$app->getDb()->createCommand()->delete('{{%assettransformindex}}', 'id = :id', [':id' => $indexId])->execute();
 	}
 	/**
 	 * Get a thumb server path by file model and size.
@@ -923,18 +930,17 @@ class AssetTransforms extends Component
 	/**
 	 * Delete created transforms for a file.
 	 *
-	 * @param Asset $file
+	 * @param Asset $asset
 	 */
-	public function deleteCreatedTransformsForFile(Asset $file)
+	public function deleteCreatedTransformsForFile(Asset $asset)
 	{
-		$indexModels = $this->getAllCreatedTransformsForFile($file);
+		$transformIndexes = $this->getAllCreatedTransformsForFile($asset);
 
-		$volume = $file->getVolume();
+		$volume = $asset->getVolume();
 
-		foreach ($indexModels as $index)
+		foreach ($transformIndexes as $transformIndex)
 		{
-			// TODO Transform handling!
-			//$volume->deleteTransform($file, $index);
+			$volume->deleteFile($asset->getFolder()->path.Craft::$app->assetTransforms->getTransformSubpath($asset, $transformIndex));
 		}
 	}
 
@@ -1059,6 +1065,14 @@ class AssetTransforms extends Component
 		}
 
 		$volume = $file->getVolume();
+		$transformPath = $file->getFolder()->path . $this->getTransformSubpath($file, $index);
+
+		// Already created. Relax, grasshopper!
+		if ($volume->fileExists($transformPath))
+		{
+			return;
+		}
+
 		$imageSource = $file->getTransformSource();
 		$quality = $transform->quality ? $transform->quality : Craft::$app->getConfig()->get('defaultImageQuality');
 
@@ -1090,7 +1104,6 @@ class AssetTransforms extends Component
 		$image->saveAs($createdTransform);
 
 		clearstatcache(true, $createdTransform);
-		$transformPath = $file->getFolder()->path . $this->getTransformSubpath($file, $index);
 
 		$stream = fopen($createdTransform, "r");
 

@@ -1,4 +1,4 @@
-/*! Craft 3.0.0 - 2015-04-13 */
+/*! Craft 3.0.0 - 2015-04-27 */
 (function($){
 
 if (typeof window.Craft == 'undefined')
@@ -4875,22 +4875,14 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 			var originatingSource = this.$source;
 
 			var targetFolderId = this._getFolderIdFromSourceKey(this._fileDrag.$activeDropTarget.data('key')),
-				originalFileIds = [],
-				newFilenames = [];
+				originalFileIds = [];
 
 			// For each file, prepare array data.
 			for (var i = 0; i < this._fileDrag.$draggee.length; i++)
 			{
-				var originalFileId = Craft.getElementInfo(this._fileDrag.$draggee[i]).id,
-					filename = Craft.getElementInfo(this._fileDrag.$draggee[i]).url.split('/').pop();
-
-				if (filename.indexOf('?') !== -1)
-				{
-					filename = filename.split('?').shift();
-				}
+				var originalFileId = Craft.getElementInfo(this._fileDrag.$draggee[i]).id;
 
 				originalFileIds.push(originalFileId);
-				newFilenames.push(filename);
 			}
 
 			// Are any files actually getting moved?
@@ -4910,8 +4902,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 				{
 					parameterArray.push({
 						fileId: originalFileIds[i],
-						folderId: targetFolderId,
-						filename: newFilenames[i]
+						folderId: targetFolderId
 					});
 				}
 
@@ -4923,17 +4914,21 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 					// Loop trough all the responses
 					for (var i = 0; i < responseArray.length; i++)
 					{
-						var data = responseArray[i];
+						var response = responseArray[i];
 
 						// Push prompt into prompt array
-						if (data.prompt)
+						if (response.prompt)
 						{
-							this.promptHandler.addPrompt(data);
+							promptData = this._fileConflictTemplate;
+							promptData.message = Craft.t(promptData.message, {file: response.filename});
+							response.prompt = promptData;
+
+							this.promptHandler.addPrompt(response);
 						}
 
-						if (data.error)
+						if (response.error)
 						{
-							alert(data.error);
+							alert(response.error);
 						}
 					}
 
@@ -4983,9 +4978,9 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 								// Find the matching request parameters for this file and modify them slightly
 								for (var ii = 0; ii < parameterArray.length; ii++)
 								{
-									if (parameterArray[ii].filename == returnData[i].filename)
+									if (parameterArray[ii].fileId == returnData[i].fileId)
 									{
-										parameterArray[ii].action = returnData[i].choice;
+										parameterArray[ii].userResponse = returnData[i].choice;
 										newParameterArray.push(parameterArray[ii]);
 									}
 								}
@@ -5517,6 +5512,8 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 		this._positionProgressBar();
 		this.progressBar.resetProgressBar();
 		this.progressBar.showProgressBar();
+
+		this.promptHandler.resetPrompts();
 	},
 
 	/**
