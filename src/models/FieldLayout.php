@@ -70,7 +70,7 @@ class FieldLayout extends Model
 		{
 			if ($this->id)
 			{
-				$this->_tabs = Craft::$app->fields->getLayoutTabsById($this->id);
+				$this->_tabs = Craft::$app->getFields()->getLayoutTabsById($this->id);
 			}
 			else
 			{
@@ -92,7 +92,7 @@ class FieldLayout extends Model
 		{
 			if ($this->id)
 			{
-				$this->_fields = Craft::$app->fields->getFieldsByLayoutId($this->id);
+				$this->_fields = Craft::$app->getFields()->getFieldsByLayoutId($this->id);
 			}
 			else
 			{

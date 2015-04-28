@@ -17,7 +17,7 @@ use yii\base\Component;
 /**
  * Service for image operations.
  *
- * An instance of the Images service is globally accessible in Craft via [[Application::images `Craft::$app->images`]].
+ * An instance of the Images service is globally accessible in Craft via [[Application::images `Craft::$app->getImages()`]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
@@ -41,7 +41,7 @@ class Images extends Component
 	{
 		if ($this->_isGd === null)
 		{
-			if (Craft::$app->config->get('imageDriver') == 'gd')
+			if (Craft::$app->getConfig()->get('imageDriver') == 'gd')
 			{
 				$this->_isGd = true;
 			}
@@ -118,7 +118,7 @@ class Images extends Component
 		if ($toTheMax)
 		{
 			// Turn it up to 11.
-			Craft::$app->config->maxPowerCaptain();
+			Craft::$app->getConfig()->maxPowerCaptain();
 		}
 
 		// Find out how much memory this image is going to need.
@@ -154,7 +154,7 @@ class Images extends Component
 	 */
 	public function cleanImage($filePath)
 	{
-		if (Craft::$app->config->get('rotateImagesOnUploadByExifData'))
+		if (Craft::$app->getConfig()->get('rotateImagesOnUploadByExifData'))
 		{
 			$this->rotateImageByExifData($filePath);
 		}

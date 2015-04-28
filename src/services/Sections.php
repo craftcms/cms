@@ -28,7 +28,7 @@ use yii\base\Component;
 /**
  * Class Sections service.
  *
- * An instance of the Sections service is globally accessible in Craft via [[Application::sections `Craft::$app->sections`]].
+ * An instance of the Sections service is globally accessible in Craft via [[Application::sections `Craft::$app->getSections()`]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
@@ -518,7 +518,7 @@ class Sections extends Component
 					{
 						if (!$isNewSection && $oldSection->type == Section::TYPE_STRUCTURE)
 						{
-							$structure = Craft::$app->structures->getStructureById($oldSection->structureId);
+							$structure = Craft::$app->getStructures()->getStructureById($oldSection->structureId);
 							$isNewStructure = false;
 						}
 
@@ -529,7 +529,7 @@ class Sections extends Component
 						}
 
 						$structure->maxLevels = $section->maxLevels;
-						Craft::$app->structures->saveStructure($structure);
+						Craft::$app->getStructures()->saveStructure($structure);
 
 						$sectionRecord->structureId = $structure->id;
 						$section->structureId = $structure->id;
@@ -539,7 +539,7 @@ class Sections extends Component
 						if (!$isNewSection && $oldSection->structureId)
 						{
 							// Delete the old one
-							Craft::$app->structures->deleteStructureById($oldSection->structureId);
+							Craft::$app->getStructures()->deleteStructureById($oldSection->structureId);
 							$sectionRecord->structureId = null;
 						}
 					}
@@ -693,7 +693,7 @@ class Sections extends Component
 									// If there are any more, get rid of them
 									if ($entryIds)
 									{
-										Craft::$app->elements->deleteElementById($entryIds);
+										Craft::$app->getElements()->deleteElementById($entryIds);
 									}
 
 									// Make sure it's enabled and all that.
@@ -777,7 +777,7 @@ class Sections extends Component
 								/** @var Entry $entry */
 								foreach ($query->each() as $entry)
 								{
-									Craft::$app->structures->appendToRoot($section->structureId, $entry, 'insert');
+									Craft::$app->getStructures()->appendToRoot($section->structureId, $entry, 'insert');
 								}
 							}
 
@@ -796,7 +796,7 @@ class Sections extends Component
 						    ->localeEnabled(false)
 						    ->limit(null);
 
-						Craft::$app->tasks->queueTask([
+						Craft::$app->getTasks()->queueTask([
 							'type'        => ResaveElements::className(),
 							'description' => Craft::t('app', 'Resaving {section} entries', ['section' => $section->name]),
 							'elementType' => Entry::className(),
@@ -868,7 +868,7 @@ class Sections extends Component
 				->where(['sectionId' => $sectionId])
 				->column();
 
-			Craft::$app->elements->deleteElementById($entryIds);
+			Craft::$app->getElements()->deleteElementById($entryIds);
 
 			// Delete the structure, if there is one
 			$structureId = (new Query())
@@ -879,7 +879,7 @@ class Sections extends Component
 
 			if ($structureId)
 			{
-				Craft::$app->structures->deleteStructureById($structureId);
+				Craft::$app->getStructures()->deleteStructureById($structureId);
 			}
 
 			// Delete the section.
@@ -915,14 +915,14 @@ class Sections extends Component
 		if ($section->hasUrls)
 		{
 			// Set Craft to the site template path
-			$oldTemplatesPath = Craft::$app->path->getTemplatesPath();
-			Craft::$app->path->setTemplatesPath(Craft::$app->path->getSiteTemplatesPath());
+			$oldTemplatesPath = Craft::$app->getPath()->getTemplatesPath();
+			Craft::$app->getPath()->setTemplatesPath(Craft::$app->getPath()->getSiteTemplatesPath());
 
 			// Does the template exist?
 			$templateExists = Craft::$app->getView()->doesTemplateExist($section->template);
 
 			// Restore the original template path
-			Craft::$app->path->setTemplatesPath($oldTemplatesPath);
+			Craft::$app->getPath()->setTemplatesPath($oldTemplatesPath);
 
 			if ($templateExists)
 			{
@@ -1064,12 +1064,12 @@ class Sections extends Component
 					if (!$isNewEntryType && $oldEntryType->fieldLayoutId)
 					{
 						// Drop the old field layout
-						Craft::$app->fields->deleteLayoutById($oldEntryType->fieldLayoutId);
+						Craft::$app->getFields()->deleteLayoutById($oldEntryType->fieldLayoutId);
 					}
 
 					// Save the new one
 					$fieldLayout = $entryType->getFieldLayout();
-					Craft::$app->fields->saveLayout($fieldLayout);
+					Craft::$app->getFields()->saveLayout($fieldLayout);
 
 					// Update the entry type record/model with the new layout ID
 					$entryType->fieldLayoutId = $fieldLayout->id;
@@ -1200,7 +1200,7 @@ class Sections extends Component
 
 			if ($fieldLayoutIds)
 			{
-				Craft::$app->fields->deleteLayoutById($fieldLayoutIds);
+				Craft::$app->getFields()->deleteLayoutById($fieldLayoutIds);
 			}
 
 			// Grab the entry IDs so we can clean the elements table.
@@ -1219,7 +1219,7 @@ class Sections extends Component
 
 			$entryIds = $query->column();
 
-			Craft::$app->elements->deleteElementById($entryIds);
+			Craft::$app->getElements()->deleteElementById($entryIds);
 
 			// Delete the entry type.
 			if (is_array($entryTypeId))

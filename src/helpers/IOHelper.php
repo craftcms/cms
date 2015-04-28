@@ -610,11 +610,11 @@ class IOHelper
 	 * Returns the contents of a folder as an array of file and folder paths, or false if the folder does not exist or
 	 * is not readable.
 	 *
-	 * @param string $path               The path to test.
-	 * @param bool   $recursive          Whether to do a recursive folder search.
-	 * @param bool   $filter             The filter to use when performing the search.
-	 * @param bool   $includeHiddenFiles Whether to include hidden files (that start with a .) in the results.
-	 * @param bool   $suppressErrors     Whether to suppress any PHP Notices/Warnings/Errors (usually permissions
+	 * @param string          $path               The path to test.
+	 * @param boolean         $recursive          Whether to do a recursive folder search.
+	 * @param string|string[] $filter             The filter to use when performing the search.
+	 * @param boolean         $includeHiddenFiles Whether to include hidden files (that start with a .) in the results.
+	 * @param boolean         $suppressErrors     Whether to suppress any PHP Notices/Warnings/Errors (usually permissions
 	 *                                   related).
 	 *
 	 * @return array|bool An array of file and folder paths, or false if the folder does not exist or is not readable.
@@ -719,7 +719,7 @@ class IOHelper
 	{
 		if ($permissions == null)
 		{
-			$permissions = Craft::$app->config->get('defaultFolderPermissions');
+			$permissions = Craft::$app->getConfig()->get('defaultFolderPermissions');
 		}
 
 		$path = static::normalizePathSeparators($path);
@@ -782,7 +782,7 @@ class IOHelper
 		if (static::isWritable($path, $suppressErrors))
 		{
 			// Let's try to use our auto-magic detection.
-			if (Craft::$app->config->get('useWriteFileLock') === 'auto')
+			if (Craft::$app->getConfig()->get('useWriteFileLock') === 'auto')
 			{
 				// We haven't cached file lock information yet and this is not a noFileLock request.
 				if (($useFileLock = Craft::$app->getCache()->get('useWriteFileLock')) === false && !$noFileLock)
@@ -863,7 +863,7 @@ class IOHelper
 				}
 			}
 			// We were explicitly told not to use LOCK_EX
-			else if (Craft::$app->config->get('useWriteFileLock') === false)
+			else if (Craft::$app->getConfig()->get('useWriteFileLock') === false)
 			{
 				if (static::_writeToFile($path, $contents, false, $append, $suppressErrors))
 				{
@@ -1059,7 +1059,7 @@ class IOHelper
 
 			if (!static::folderExists($destFolder, $suppressErrors))
 			{
-				static::createFolder($destFolder, Craft::$app->config->get('defaultFolderPermissions'), $suppressErrors);
+				static::createFolder($destFolder, Craft::$app->getConfig()->get('defaultFolderPermissions'), $suppressErrors);
 			}
 
 			if (static::isReadable($path, $suppressErrors))
@@ -1112,7 +1112,7 @@ class IOHelper
 
 				if (!static::folderExists($destFolder, $suppressErrors))
 				{
-					static::createFolder($destFolder, Craft::$app->config->get('defaultFolderPermissions'), $suppressErrors);
+					static::createFolder($destFolder, Craft::$app->getConfig()->get('defaultFolderPermissions'), $suppressErrors);
 				}
 
 				if (static::fileExists($item, $suppressErrors))
@@ -1398,9 +1398,9 @@ class IOHelper
 	 */
 	public static function getAllowedFileExtensions()
 	{
-		$allowedFileExtensions = ArrayHelper::toArray(Craft::$app->config->get('allowedFileExtensions'));
+		$allowedFileExtensions = ArrayHelper::toArray(Craft::$app->getConfig()->get('allowedFileExtensions'));
 
-		if (($extraExtensions = Craft::$app->config->get('extraAllowedFileExtensions')) !== '')
+		if (($extraExtensions = Craft::$app->getConfig()->get('extraAllowedFileExtensions')) !== '')
 		{
 			$extraExtensions = ArrayHelper::toArray($extraExtensions);
 			$allowedFileExtensions = array_merge($allowedFileExtensions, $extraExtensions);
@@ -1492,7 +1492,7 @@ class IOHelper
 	{
 		if (!IOHelper::folderExists($folderPath, $suppressErrors))
 		{
-			IOHelper::createFolder($folderPath, Craft::$app->config->get('defaultFolderPermissions'), $suppressErrors);
+			IOHelper::createFolder($folderPath, Craft::$app->getConfig()->get('defaultFolderPermissions'), $suppressErrors);
 		}
 	}
 
@@ -1650,7 +1650,7 @@ class IOHelper
 		$extension = strpos($extension, '.') !== false ? pathinfo($extension, PATHINFO_EXTENSION) : $extension;
 		$fileName = uniqid('craft', true).'.'.$extension;
 
-		return static::createFile(Craft::$app->path->getTempPath().'/'.$fileName)->getRealPath();
+		return static::createFile(Craft::$app->getPath()->getTempPath().'/'.$fileName)->getRealPath();
 	}
 
 	// Private Methods

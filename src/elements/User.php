@@ -126,7 +126,7 @@ class User extends Element implements IdentityInterface
 
 		if (Craft::$app->getEdition() == Craft::Pro)
 		{
-			foreach (Craft::$app->userGroups->getAllGroups() as $group)
+			foreach (Craft::$app->getUserGroups()->getAllGroups() as $group)
 			{
 				$key = 'group:'.$group->id;
 
@@ -149,7 +149,7 @@ class User extends Element implements IdentityInterface
 		$actions = [];
 
 		// Edit
-		$actions[] = Craft::$app->elements->createAction([
+		$actions[] = Craft::$app->getElements()->createAction([
 			'type'  => Edit::className(),
 			'label' => Craft::t('app', 'Edit user'),
 		]);
@@ -170,7 +170,7 @@ class User extends Element implements IdentityInterface
 		}
 
 		// Allow plugins to add additional actions
-		$allPluginActions = Craft::$app->plugins->call('addUserActions', [$source], true);
+		$allPluginActions = Craft::$app->getPlugins()->call('addUserActions', [$source], true);
 
 		foreach ($allPluginActions as $pluginActions)
 		{
@@ -193,7 +193,7 @@ class User extends Element implements IdentityInterface
 	 */
 	public static function defineSortableAttributes()
 	{
-		if (Craft::$app->config->get('useEmailAsUsername'))
+		if (Craft::$app->getConfig()->get('useEmailAsUsername'))
 		{
 			$attributes = [
 				'email'         => Craft::t('app', 'Email'),
@@ -216,7 +216,7 @@ class User extends Element implements IdentityInterface
 		}
 
 		// Allow plugins to modify the attributes
-		Craft::$app->plugins->call('modifyUserSortableAttributes', [&$attributes]);
+		Craft::$app->getPlugins()->call('modifyUserSortableAttributes', [&$attributes]);
 
 		return $attributes;
 	}
@@ -226,7 +226,7 @@ class User extends Element implements IdentityInterface
 	 */
 	public static function defineTableAttributes($source = null)
 	{
-		if (Craft::$app->config->get('useEmailAsUsername'))
+		if (Craft::$app->getConfig()->get('useEmailAsUsername'))
 		{
 			$attributes = [
 				'email'         => Craft::t('app', 'Email'),
@@ -249,7 +249,7 @@ class User extends Element implements IdentityInterface
 		}
 
 		// Allow plugins to modify the attributes
-		Craft::$app->plugins->call('modifyUserTableAttributes', [&$attributes, $source]);
+		Craft::$app->getPlugins()->call('modifyUserTableAttributes', [&$attributes, $source]);
 
 		return $attributes;
 	}
@@ -261,7 +261,7 @@ class User extends Element implements IdentityInterface
 	{
 		/** @var User $element */
 		// First give plugins a chance to set this
-		$pluginAttributeHtml = Craft::$app->plugins->callFirst('getUserTableAttributeHtml', [$element, $attribute], true);
+		$pluginAttributeHtml = Craft::$app->getPlugins()->callFirst('getUserTableAttributeHtml', [$element, $attribute], true);
 
 		if ($pluginAttributeHtml !== null)
 		{
@@ -364,7 +364,7 @@ class User extends Element implements IdentityInterface
 			$element->lastName = $params['lastName'];
 		}
 
-		return Craft::$app->users->saveUser($element);
+		return Craft::$app->getUsers()->saveUser($element);
 	}
 
 	// IdentityInterface Methods
@@ -375,7 +375,7 @@ class User extends Element implements IdentityInterface
 	 */
 	public static function findIdentity($id)
 	{
-		$user = Craft::$app->users->getUserById($id);
+		$user = Craft::$app->getUsers()->getUserById($id);
 
 		if ($user !== null && $user->getStatus() == self::STATUS_ACTIVE)
 		{
@@ -543,7 +543,7 @@ class User extends Element implements IdentityInterface
 	{
 		try
 		{
-			if (Craft::$app->config->get('useEmailAsUsername'))
+			if (Craft::$app->getConfig()->get('useEmailAsUsername'))
 			{
 				return $this->email;
 			}
@@ -568,13 +568,13 @@ class User extends Element implements IdentityInterface
 		// Is the user in cooldown mode, and are they past their window?
 		if ($this->locked)
 		{
-			$cooldownDuration = Craft::$app->config->get('cooldownDuration');
+			$cooldownDuration = Craft::$app->getConfig()->get('cooldownDuration');
 
 			if ($cooldownDuration)
 			{
 				if (!$this->getRemainingCooldownTime())
 				{
-					Craft::$app->users->activateUser($this);
+					Craft::$app->getUsers()->activateUser($this);
 				}
 			}
 		}
@@ -683,7 +683,7 @@ class User extends Element implements IdentityInterface
 
 			case self::STATUS_LOCKED:
 			{
-				if (Craft::$app->config->get('cooldownDuration'))
+				if (Craft::$app->getConfig()->get('cooldownDuration'))
 				{
 					$this->authError = self::AUTH_ACCOUNT_COOLDOWN;
 				}
@@ -699,7 +699,7 @@ class User extends Element implements IdentityInterface
 				// Validate the password
 				if (!Craft::$app->getSecurity()->validatePassword($password, $this->password))
 				{
-					Craft::$app->users->handleInvalidLogin($this);
+					Craft::$app->getUsers()->handleInvalidLogin($this);
 
 					// Was that one bad password too many?
 					if ($this->getStatus() == self::STATUS_LOCKED)
@@ -768,7 +768,7 @@ class User extends Element implements IdentityInterface
 		{
 			if (Craft::$app->getEdition() == Craft::Pro)
 			{
-				$this->_groups = Craft::$app->userGroups->getGroupsByUserId($this->id);
+				$this->_groups = Craft::$app->getUserGroups()->getGroupsByUserId($this->id);
 			}
 			else
 			{
@@ -991,7 +991,7 @@ class User extends Element implements IdentityInterface
 			}
 			else if ($this->id)
 			{
-				return Craft::$app->userPermissions->doesUserHavePermission($this->id, $permission);
+				return Craft::$app->getUserPermissions()->doesUserHavePermission($this->id, $permission);
 			}
 			else
 			{
@@ -1015,7 +1015,7 @@ class User extends Element implements IdentityInterface
 	{
 		if ($this->id)
 		{
-			return Craft::$app->users->hasUserShunnedMessage($this->id, $message);
+			return Craft::$app->getUsers()->hasUserShunnedMessage($this->id, $message);
 		}
 		else
 		{
@@ -1033,7 +1033,7 @@ class User extends Element implements IdentityInterface
 		if ($this->getStatus() == self::STATUS_LOCKED)
 		{
 			$cooldownEnd = clone $this->lockoutDate;
-			$cooldownEnd->add(new DateInterval(Craft::$app->config->get('cooldownDuration')));
+			$cooldownEnd->add(new DateInterval(Craft::$app->getConfig()->get('cooldownDuration')));
 
 			return $cooldownEnd;
 		}
@@ -1112,7 +1112,7 @@ class User extends Element implements IdentityInterface
 	{
 		if ($this->_preferences === null)
 		{
-			$this->_preferences = Craft::$app->users->getUserPreferences($this->id);
+			$this->_preferences = Craft::$app->getUsers()->getUserPreferences($this->id);
 		}
 
 		return $this->_preferences;
@@ -1141,7 +1141,7 @@ class User extends Element implements IdentityInterface
 		$locale = $this->getPreference('locale');
 
 		// Make sure it's valid
-		if ($locale !== null && in_array($locale, Craft::$app->i18n->getSiteLocaleIds()))
+		if ($locale !== null && in_array($locale, Craft::$app->getI18n()->getSiteLocaleIds()))
 		{
 			return $locale;
 		}
@@ -1208,7 +1208,7 @@ class User extends Element implements IdentityInterface
 	 */
 	private function _validateUserAgent($userAgent)
 	{
-		if (Craft::$app->config->get('requireMatchingUserAgentForSession'))
+		if (Craft::$app->getConfig()->get('requireMatchingUserAgentForSession'))
 		{
 			$requestUserAgent = Craft::$app->getRequest()->getUserAgent();
 

@@ -37,17 +37,17 @@ class CpHelper
 			return $alerts;
 		}
 
-		if (Craft::$app->updates->isUpdateInfoCached() || $fetch)
+		if (Craft::$app->getUpdates()->isUpdateInfoCached() || $fetch)
 		{
 			// Fetch the updates regardless of whether we're on the Updates page or not, because the other alerts are
 			// relying on cached Elliott info
-			$updateModel = Craft::$app->updates->getUpdates();
+			$updateModel = Craft::$app->getUpdates()->getUpdates();
 
 			if ($path != 'updates' && $user->can('performUpdates'))
 			{
 				if (!empty($updateModel->app->releases))
 				{
-					if (Craft::$app->updates->criticalCraftUpdateAvailable($updateModel->app->releases))
+					if (Craft::$app->getUpdates()->criticalCraftUpdateAvailable($updateModel->app->releases))
 					{
 						$alerts[] = Craft::t('app', 'There’s a critical Craft update available.') .
 							' <a class="go nowrap" href="'.UrlHelper::getUrl('updates').'">'.Craft::t('app', 'Go to Updates').'</a>';
@@ -56,12 +56,12 @@ class CpHelper
 			}
 
 			// Domain mismatch?
-			$licenseKeyStatus = Craft::$app->et->getLicenseKeyStatus();
+			$licenseKeyStatus = Craft::$app->getET()->getLicenseKeyStatus();
 
 			if ($licenseKeyStatus == LicenseKeyStatus::MismatchedDomain)
 			{
-				$licensedDomain = Craft::$app->et->getLicensedDomain();
-				$licenseKeyPath = Craft::$app->path->getLicenseKeyPath();
+				$licensedDomain = Craft::$app->getET()->getLicensedDomain();
+				$licenseKeyPath = Craft::$app->getPath()->getLicenseKeyPath();
 				$licenseKeyFile = IOHelper::getFolderName($licenseKeyPath, false).'/'.IOHelper::getFilename($licenseKeyPath);
 
 				$message = Craft::t('app', 'The license located at {file} belongs to {domain}.', [

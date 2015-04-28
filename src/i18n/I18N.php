@@ -107,8 +107,8 @@ class I18N extends \yii\i18n\I18N
 			}
 			else
 			{
-				$appLocalesPath = Craft::$app->path->getAppPath().'/config/locales';
-				$customLocalesPath = Craft::$app->path->getConfigPath().'/locales';
+				$appLocalesPath = Craft::$app->getPath()->getAppPath().'/config/locales';
+				$customLocalesPath = Craft::$app->getPath()->getConfigPath().'/locales';
 
 				$localeFiles = IOHelper::getFolderContents($appLocalesPath, false, '\.php$');
 				$customLocaleFiles = IOHelper::getFolderContents($customLocalesPath, false, '\.php$');
@@ -170,7 +170,7 @@ class I18N extends \yii\i18n\I18N
 		{
 			$this->_appLocales = [new Locale('en-US')];
 
-			$path = Craft::$app->path->getCpTranslationsPath();
+			$path = Craft::$app->getPath()->getCpTranslationsPath();
 			$folders = IOHelper::getFolderContents($path, false, ".*\.php");
 
 			if (is_array($folders) && count($folders) > 0)
@@ -384,9 +384,9 @@ class I18N extends \yii\i18n\I18N
 			}
 
 			// Re-save all of the localizable elements
-			if (!Craft::$app->tasks->areTasksPending(ResaveAllElements::className()))
+			if (!Craft::$app->getTasks()->areTasksPending(ResaveAllElements::className()))
 			{
-				Craft::$app->tasks->queueTask([
+				Craft::$app->getTasks()->queueTask([
 					'type'            => ResaveAllElements::className(),
 					'localizableOnly' => true,
 				]);
@@ -422,12 +422,12 @@ class I18N extends \yii\i18n\I18N
 		// Did the primary site locale just change?
 		if ($oldPrimaryLocaleId != $newPrimaryLocaleId)
 		{
-			Craft::$app->config->maxPowerCaptain();
+			Craft::$app->getConfig()->maxPowerCaptain();
 
 			// Update all of the non-localized elements
 			$nonLocalizedElementTypes = [];
 
-			foreach (Craft::$app->elements->getAllElementTypes() as $elementType)
+			foreach (Craft::$app->getElements()->getAllElementTypes() as $elementType)
 			{
 				if (!$elementType::isLocalized())
 				{
@@ -504,7 +504,7 @@ class I18N extends \yii\i18n\I18N
 
 				foreach ($sectionIds as $sectionId)
 				{
-					$sectionLocales = Craft::$app->sections->getSectionLocales($sectionId);
+					$sectionLocales = Craft::$app->getSections()->getSectionLocales($sectionId);
 
 					if (count($sectionLocales) == 1 && $sectionLocales[0]->locale == $localeId)
 					{
@@ -534,7 +534,7 @@ class I18N extends \yii\i18n\I18N
 						if ($entryIds)
 						{
 							// Delete their template caches
-							Craft::$app->templateCache->deleteCachesByElementId($entryIds);
+							Craft::$app->getTemplateCache()->deleteCachesByElementId($entryIds);
 
 							// Update the entry tables
 							Craft::$app->getDb()->createCommand()->update(
@@ -633,7 +633,7 @@ class I18N extends \yii\i18n\I18N
 						// Delete those sections
 						foreach ($soloSectionIds as $sectionId)
 						{
-							Craft::$app->sections->deleteSectionById($sectionId);
+							Craft::$app->getSections()->deleteSectionById($sectionId);
 						}
 					}
 				}

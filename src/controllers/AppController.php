@@ -41,11 +41,11 @@ class AppController extends Controller
 		$this->requirePermission('performUpdates');
 
 		$forceRefresh = (bool) Craft::$app->getRequest()->getBodyParam('forceRefresh');
-		Craft::$app->updates->getUpdates($forceRefresh);
+		Craft::$app->getUpdates()->getUpdates($forceRefresh);
 
 		return $this->asJson([
-			'total'    => Craft::$app->updates->getTotalAvailableUpdates(),
-			'critical' => Craft::$app->updates->isCriticalUpdateAvailable()
+			'total'    => Craft::$app->getUpdates()->getTotalAvailableUpdates(),
+			'critical' => Craft::$app->getUpdates()->isCriticalUpdateAvailable()
 		]);
 	}
 
@@ -82,7 +82,7 @@ class AppController extends Controller
 		$currentTime = DateTimeHelper::currentUTCDateTime();
 		$tomorrow = $currentTime->add(new DateInterval('P1D'));
 
-		if (Craft::$app->users->shunMessageForUser($user->id, $message, $tomorrow))
+		if (Craft::$app->getUsers()->shunMessageForUser($user->id, $message, $tomorrow))
 		{
 			return $this->asJson([
 				'success' => true
@@ -105,7 +105,7 @@ class AppController extends Controller
 		$this->requirePostRequest();
 		$this->requireAdmin();
 
-		$response = Craft::$app->et->transferLicenseToCurrentDomain();
+		$response = Craft::$app->getET()->transferLicenseToCurrentDomain();
 
 		if ($response === true)
 		{
@@ -129,7 +129,7 @@ class AppController extends Controller
 		$this->requireAjaxRequest();
 		$this->requireAdmin();
 
-		$etResponse = Craft::$app->et->fetchEditionInfo();
+		$etResponse = Craft::$app->getET()->fetchEditionInfo();
 
 		if (!$etResponse)
 		{
@@ -201,7 +201,7 @@ class AppController extends Controller
 			'expectedPrice' => Craft::$app->getRequest()->getRequiredBodyParam('expectedPrice'),
 		]);
 
-		if (Craft::$app->et->purchaseUpgrade($model))
+		if (Craft::$app->getET()->purchaseUpgrade($model))
 		{
 			return $this->asJson([
 				'success' => true,

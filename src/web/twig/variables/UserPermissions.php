@@ -27,7 +27,7 @@ class UserPermissions
 	 */
 	public function getAllPermissions()
 	{
-		return \Craft::$app->userPermissions->getAllPermissions();
+		return \Craft::$app->getUserPermissions()->getAllPermissions();
 	}
 
 	/**
@@ -39,6 +39,6 @@ class UserPermissions
 	 */
 	public function getGroupPermissionsByUserId($userId)
 	{
-		return \Craft::$app->userPermissions->getGroupPermissionsByUserId($userId);
+		return \Craft::$app->getUserPermissions()->getGroupPermissionsByUserId($userId);
 	}
 }

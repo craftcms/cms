@@ -52,7 +52,7 @@ class RegisterResourceTokenParser extends \Twig_TokenParser
 		// Is this the deprecated version?
 		if ($this->_newTag !== null)
 		{
-			\Craft::$app->deprecator->log($this->_tag, "{% $this->_tag %} is now deprecated. Use {% $this->_newTag %} instead.");
+			\Craft::$app->getDeprecator()->log($this->_tag, "{% $this->_tag %} is now deprecated. Use {% $this->_newTag %} instead.");
 		}
 
 		$lineno = $token->getLine();

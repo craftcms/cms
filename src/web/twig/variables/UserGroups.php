@@ -31,7 +31,7 @@ class UserGroups
 	 */
 	public function getAllGroups($indexBy = null)
 	{
-		return \Craft::$app->userGroups->getAllGroups($indexBy);
+		return \Craft::$app->getUserGroups()->getAllGroups($indexBy);
 	}
 
 	/**
@@ -43,7 +43,7 @@ class UserGroups
 	 */
 	public function getGroupById($groupId)
 	{
-		return \Craft::$app->userGroups->getGroupById($groupId);
+		return \Craft::$app->getUserGroups()->getGroupById($groupId);
 	}
 
 	/**
@@ -55,6 +55,6 @@ class UserGroups
 	 */
 	public function getGroupByHandle($groupHandle)
 	{
-		return \Craft::$app->userGroups->getGroupByHandle($groupHandle);
+		return \Craft::$app->getUserGroups()->getGroupByHandle($groupHandle);
 	}
 }

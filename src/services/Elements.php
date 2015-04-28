@@ -35,7 +35,7 @@ use yii\base\Component;
 /**
  * The Elements service provides APIs for managing elements.
  *
- * An instance of the Elements service is globally accessible in Craft via [[Application::elements `Craft::$app->elements`]].
+ * An instance of the Elements service is globally accessible in Craft via [[Application::elements `Craft::$app->getElements()`]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
@@ -305,7 +305,7 @@ class Elements extends Component
 				$validateContent = (bool) $element->enabled;
 			}
 
-			if ($validateContent && !Craft::$app->content->validateContent($element))
+			if ($validateContent && !Craft::$app->getContent()->validateContent($element))
 			{
 				$element->addErrors($element->getContent()->getErrors());
 				return false;
@@ -391,11 +391,11 @@ class Elements extends Component
 					// Save the content
 					if ($element::hasContent())
 					{
-						Craft::$app->content->saveContent($element, false, (bool)$element->id);
+						Craft::$app->getContent()->saveContent($element, false, (bool)$element->id);
 					}
 
 					// Update the search index
-					Craft::$app->search->indexElementAttributes($element);
+					Craft::$app->getSearch()->indexElementAttributes($element);
 
 					// Update the locale records and content
 
@@ -488,12 +488,12 @@ class Elements extends Component
 								if (!$isNewElement)
 								{
 									// Do we already have a content row for this locale?
-									$content = Craft::$app->content->getContent($localizedElement);
+									$content = Craft::$app->getContent()->getContent($localizedElement);
 								}
 
 								if (!$content)
 								{
-									$content = Craft::$app->content->createContent($localizedElement);
+									$content = Craft::$app->getContent()->createContent($localizedElement);
 									$content->setAttributes($element->getContent()->getAttributes());
 									$content->id = null;
 									$content->locale = $localeId;
@@ -504,7 +504,7 @@ class Elements extends Component
 
 							if (!$localizedElement->getContent()->id)
 							{
-								Craft::$app->content->saveContent($localizedElement, false, false);
+								Craft::$app->getContent()->saveContent($localizedElement, false, false);
 							}
 						}
 
@@ -576,7 +576,7 @@ class Elements extends Component
 
 						// Finally, delete any caches involving this element. (Even do this for new elements, since they
 						// might pop up in a cached criteria.)
-						Craft::$app->templateCache->deleteCachesByElement($element);
+						Craft::$app->getTemplateCache()->deleteCachesByElement($element);
 					}
 				}
 			}
@@ -648,7 +648,7 @@ class Elements extends Component
 		])->execute();
 
 		// Delete any caches involving this element
-		Craft::$app->templateCache->deleteCachesByElement($element);
+		Craft::$app->getTemplateCache()->deleteCachesByElement($element);
 
 		if ($updateOtherLocales)
 		{
@@ -796,14 +796,14 @@ class Elements extends Component
 			{
 				$refTagPrefix = "{{$elementTypeHandle}:";
 
-				Craft::$app->tasks->queueTask([
+				Craft::$app->getTasks()->queueTask([
 					'type'        => FindAndReplace::className(),
 					'description' => Craft::t('app', 'Updating element references'),
 					'find'        => $refTagPrefix.$mergedElementId.':',
 					'replace'     => $refTagPrefix.$prevailingElementId.':',
 				]);
 
-				Craft::$app->tasks->queueTask([
+				Craft::$app->getTasks()->queueTask([
 					'type'        => FindAndReplace::className(),
 					'description' => Craft::t('app', 'Updating element references'),
 					'find'        => $refTagPrefix.$mergedElementId.'}',
@@ -892,7 +892,7 @@ class Elements extends Component
 
 			// Delete the caches before they drop their elementId relations (passing `false` because there's no chance
 			// this element is suddenly going to show up in a new query)
-			Craft::$app->templateCache->deleteCachesByElementId($elementIds, false);
+			Craft::$app->getTemplateCache()->deleteCachesByElementId($elementIds, false);
 
 			// Now delete the rows in the elements table
 			if (count($elementIds) == 1)
@@ -917,7 +917,7 @@ class Elements extends Component
 
 			if ($matrixBlockIds)
 			{
-				Craft::$app->matrix->deleteBlockById($matrixBlockIds);
+				Craft::$app->getMatrix()->deleteBlockById($matrixBlockIds);
 			}
 
 			// Delete the elements table rows, which will cascade across all other InnoDB tables

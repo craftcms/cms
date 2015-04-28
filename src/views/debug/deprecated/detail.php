@@ -28,5 +28,5 @@ echo $this->render('logtable', [
 
 echo $this->render('logtable', [
 	'panel' => $panel,
-	'logs' => Craft::$app->deprecator->getLogs(null)
+	'logs' => Craft::$app->getDeprecator()->getLogs(null)
 ]);

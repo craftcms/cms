@@ -49,14 +49,14 @@ class DeprecatedPanel extends Panel
 
 		if ($request->getQueryParam('clear'))
 		{
-			Craft::$app->deprecator->deleteAllLogs();
+			Craft::$app->getDeprecator()->deleteAllLogs();
 		}
 
 		$logId = $request->getQueryParam('trace');
 
 		if ($logId)
 		{
-			$log = Craft::$app->deprecator->getLogById($logId);
+			$log = Craft::$app->getDeprecator()->getLogById($logId);
 
 			if ($log === null)
 			{
@@ -79,6 +79,6 @@ class DeprecatedPanel extends Panel
 	 */
 	public function save()
 	{
-		return ArrayHelper::toArray(Craft::$app->deprecator->getRequestLogs());
+		return ArrayHelper::toArray(Craft::$app->getDeprecator()->getRequestLogs());
 	}
 }

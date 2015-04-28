@@ -23,7 +23,7 @@ use yii\helpers\FileHelper;
 /**
  * Class Resources service.
  *
- * An instance of the Resources service is globally accessible in Craft via [[Application::resources `Craft::$app->resources`]].
+ * An instance of the Resources service is globally accessible in Craft via [[Application::resources `Craft::$app->getResources()`]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
@@ -98,23 +98,6 @@ class Resources extends Component
 		{
 			switch($segs[0])
 			{
-				case 'js':
-				{
-					// Route to js/compressed/ if useCompressedJs is enabled
-					// unless js/uncompressed/* is requested, in which case drop the uncompressed/ seg
-					if (isset($segs[1]) && $segs[1] == 'uncompressed')
-					{
-						array_splice($segs, 1, 1);
-					}
-					else if (Craft::$app->config->get('useCompressedJs'))
-					{
-						array_splice($segs, 1, 0, 'compressed');
-					}
-
-					$path = implode('/', $segs);
-					break;
-				}
-
 				case 'userphotos':
 				{
 					if (isset($segs[1]) && $segs[1] == 'temp')
@@ -124,7 +107,7 @@ class Resources extends Component
 							return false;
 						}
 
-						return Craft::$app->path->getTempUploadsPath().'/userphotos/'.$segs[2].'/'.$segs[3];
+						return Craft::$app->getPath()->getTempUploadsPath().'/userphotos/'.$segs[2].'/'.$segs[3];
 					}
 					else
 					{
@@ -143,7 +126,7 @@ class Resources extends Component
 						$username = AssetsHelper::cleanAssetName($segs[1], false);
 						$filename = AssetsHelper::cleanAssetName($segs[3]);
 
-						$userPhotosPath = Craft::$app->path->getUserPhotosPath().'/'.$username;
+						$userPhotosPath = Craft::$app->getPath()->getUserPhotosPath().'/'.$username;
 						$sizedPhotoFolder = $userPhotosPath.'/'.$size;
 						$sizedPhotoPath = $sizedPhotoFolder.'/'.$filename;
 
@@ -161,7 +144,7 @@ class Resources extends Component
 
 							if (IOHelper::isWritable($sizedPhotoFolder))
 							{
-								Craft::$app->images->loadImage($originalPhotoPath)
+								Craft::$app->getImages()->loadImage($originalPhotoPath)
 									->resize($size)
 									->saveAs($sizedPhotoPath);
 							}
@@ -183,14 +166,14 @@ class Resources extends Component
 					}
 
 					$size = $segs[1];
-					$sourceFile = Craft::$app->path->getResourcesPath().'/images/'.static::DefaultUserphotoFilename;
-					$targetFolder = Craft::$app->path->getUserPhotosPath().'/__default__';
+					$sourceFile = Craft::$app->getPath()->getResourcesPath().'/images/'.static::DefaultUserphotoFilename;
+					$targetFolder = Craft::$app->getPath()->getUserPhotosPath().'/__default__';
 					IOHelper::ensureFolderExists($targetFolder);
 
 					if (IOHelper::isWritable($targetFolder))
 					{
 						$targetFile = $targetFolder.'/'.$size.'.'.IOHelper::getExtension($sourceFile);
-						Craft::$app->images->loadImage($sourceFile)
+						Craft::$app->getImages()->loadImage($sourceFile)
 							->resize($size)
 							->saveAs($targetFile);
 
@@ -206,14 +189,35 @@ class Resources extends Component
 				{
 					array_shift($segs);
 
-					return Craft::$app->path->getTempUploadsPath().'/'.implode('/', $segs);
+					return Craft::$app->getPath()->getTempUploadsPath().'/'.implode('/', $segs);
 				}
 
 				case 'tempassets':
 				{
 					array_shift($segs);
 
-					return Craft::$app->path->getAssetsTempSourcePath().'/'.implode('/', $segs);
+					return Craft::$app->getPath()->getAssetsTempSourcePath().'/'.implode('/', $segs);
+				}
+
+				case 'assetthumbs':
+				{
+					if (empty($segs[1]) || empty($segs[2]) || !is_numeric($segs[1]) || !is_numeric($segs[2]))
+					{
+						return false;
+					}
+
+					$fileModel = Craft::$app->getAssets()->getFileById($segs[1]);
+					if (empty($fileModel))
+					{
+						return false;
+					}
+
+					$size = $segs[2];
+
+					// Make sure plugins are loaded in case the asset lives in a plugin-supplied volume type
+					Craft::$app->getPlugins()->loadPlugins();
+
+					return Craft::$app->getAssetTransforms()->getThumbServerPath($fileModel, $size);
 				}
 
 				case 'icons':
@@ -233,16 +237,19 @@ class Resources extends Component
 
 				case 'logo':
 				{
-					return Craft::$app->path->getStoragePath().'/'.implode('/', $segs);
+					return Craft::$app->getPath()->getStoragePath().'/'.implode('/', $segs);
 				}
 
 				case 'transforms':
 				{
+					// Make sure plugins are loaded in case the asset lives in a plugin-supplied volume type
+					Craft::$app->getPlugins()->loadPlugins();
+
 					try
 					{
 						if (!empty($segs[1]))
 						{
-							$transformIndexModel = Craft::$app->assetTransforms->getTransformIndexModelById((int) $segs[1]);
+							$transformIndexModel = Craft::$app->getAssetTransforms()->getTransformIndexModelById((int) $segs[1]);
 						}
 
 						if (empty($transformIndexModel))
@@ -250,7 +257,7 @@ class Resources extends Component
 							throw new HttpException(404);
 						}
 
-						$url = Craft::$app->assetTransforms->ensureTransformUrlByIndexModel($transformIndexModel);
+						$url = Craft::$app->getAssetTransforms()->ensureTransformUrlByIndexModel($transformIndexModel);
 					}
 					catch (Exception $exception)
 					{
@@ -264,7 +271,7 @@ class Resources extends Component
 		}
 
 		// Check app/resources folder first.
-		$appResourcePath = Craft::$app->path->getResourcesPath().'/'.$path;
+		$appResourcePath = Craft::$app->getPath()->getResourcesPath().'/'.$path;
 
 		if (IOHelper::fileExists($appResourcePath))
 		{
@@ -274,7 +281,7 @@ class Resources extends Component
 		// See if the first segment is a plugin handle.
 		if (isset($segs[0]))
 		{
-			$pluginResourcePath = Craft::$app->path->getPluginsPath().'/'.$segs[0].'/'.'resources/'.implode('/', array_splice($segs, 1));
+			$pluginResourcePath = Craft::$app->getPath()->getPluginsPath().'/'.$segs[0].'/'.'resources/'.implode('/', array_splice($segs, 1));
 
 			if (IOHelper::fileExists($pluginResourcePath))
 			{
@@ -283,7 +290,7 @@ class Resources extends Component
 		}
 
 		// Maybe a plugin wants to do something custom with this URL
-		$pluginPath = Craft::$app->plugins->callFirst('getResourcePath', [$path], true);
+		$pluginPath = Craft::$app->getPlugins()->callFirst('getResourcePath', [$path], true);
 
 		if ($pluginPath && IOHelper::fileExists($pluginPath))
 		{
@@ -421,7 +428,7 @@ class Resources extends Component
 		$url = UrlHelper::getUrl($path);
 
 		// Is this going to be a resource URL?
-		$rootResourceUrl = UrlHelper::getUrl(Craft::$app->config->getResourceTrigger()).'/';
+		$rootResourceUrl = UrlHelper::getUrl(Craft::$app->getConfig()->getResourceTrigger()).'/';
 		$rootResourceUrlLength = strlen($rootResourceUrl);
 
 		if (strncmp($rootResourceUrl, $url, $rootResourceUrlLength) === 0)
@@ -465,7 +472,7 @@ class Resources extends Component
 			$ext = $extAlias[$ext];
 		}
 
-		$sizeFolder = Craft::$app->path->getAssetsIconsPath().'/'.$size;
+		$sizeFolder = Craft::$app->getPath()->getAssetsIconsPath().'/'.$size;
 
 		// See if we have the icon already
 		$iconLocation = $sizeFolder.'/'.$ext.'.png';
@@ -492,14 +499,14 @@ class Resources extends Component
 			}
 		}
 
-		$sourceFolder = Craft::$app->path->getAssetsIconsPath().'/'.$sourceSize['size'];
+		$sourceFolder = Craft::$app->getPath()->getAssetsIconsPath().'/'.$sourceSize['size'];
 
 		// Do we have a source icon that we can resize?
 		$sourceIconLocation = $sourceFolder.'/'.$ext.'.png';
 
 		if (!IOHelper::fileExists($sourceIconLocation))
 		{
-			$sourceFile = Craft::$app->path->getAppPath().'/resources/images/fileicons/'.$sourceSize['size'].'.png';
+			$sourceFile = Craft::$app->getPath()->getAppPath().'/resources/images/fileicons/'.$sourceSize['size'].'.png';
 			$image = imagecreatefrompng($sourceFile);
 
 			// Text placement.
@@ -507,7 +514,7 @@ class Resources extends Component
 			{
 				$color = imagecolorallocate($image, 153, 153, 153);
 				$text = StringHelper::toUpperCase($ext);
-				$font = Craft::$app->path->getResourcesPath().'/fonts/helveticaneue-webfont.ttf';
+				$font = Craft::$app->getPath()->getResourcesPath().'/fonts/helveticaneue-webfont.ttf';
 
 				// Get the bounding box so we can calculate the position
 				$box = imagettfbbox($sourceSize['extSize'], 0, $font, $text);
@@ -531,7 +538,7 @@ class Resources extends Component
 		if ($size != $sourceSize['size'])
 		{
 			// Resize the source icon to fit this size.
-			Craft::$app->images->loadImage($sourceIconLocation)
+			Craft::$app->getImages()->loadImage($sourceIconLocation)
 				->scaleAndCrop($size, $size)
 				->saveAs($iconLocation);
 		}

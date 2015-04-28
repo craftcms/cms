@@ -110,7 +110,7 @@ class TemplateLoader implements \Twig_LoaderInterface, \Twig_ExistsLoaderInterfa
 		// If this is a CP request and a DB update is needed, force a recompile.
 		$request = Craft::$app->getRequest();
 
-		if (!$request->getIsConsoleRequest() && $request->getIsCpRequest() && Craft::$app->updates->isCraftDbMigrationNeeded())
+		if (!$request->getIsConsoleRequest() && $request->getIsCpRequest() && Craft::$app->getUpdates()->isCraftDbMigrationNeeded())
 		{
 			return false;
 		}

@@ -103,7 +103,7 @@ abstract class Task extends SavableComponent implements TaskInterface
 	 */
 	protected function runSubTask($task)
 	{
-		$tasksService = Craft::$app->tasks;
+		$tasksService = Craft::$app->getTasks();
 
 		if (!$task instanceof TaskInterface)
 		{

@@ -196,7 +196,7 @@ abstract class Element extends Component implements ElementInterface
 			if (isset($source['structureId']))
 			{
 				$elementQuery->orderBy('lft asc');
-				$variables['structure'] = Craft::$app->structures->getStructureById($source['structureId']);
+				$variables['structure'] = Craft::$app->getStructures()->getStructureById($source['structureId']);
 
 				// Are they allowed to make changes to this structure?
 				if ($context == 'index' && $variables['structure'] && !empty($source['structureEditable']))
@@ -295,7 +295,7 @@ abstract class Element extends Component implements ElementInterface
 						$find = ['/'];
 						$replace = ['/<wbr>'];
 
-						$wordSeparator = Craft::$app->config->get('slugWordSeparator');
+						$wordSeparator = Craft::$app->getConfig()->get('slugWordSeparator');
 
 						if ($wordSeparator)
 						{
@@ -336,10 +336,10 @@ abstract class Element extends Component implements ElementInterface
 	 */
 	public static function getFieldsForElementsQuery(ElementQueryInterface $query)
 	{
-		$contentService = Craft::$app->content;
+		$contentService = Craft::$app->getContent();
 		$originalFieldContext = $contentService->fieldContext;
 		$contentService->fieldContext = 'global';
-		$fields = Craft::$app->fields->getAllFields();
+		$fields = Craft::$app->getFields()->getAllFields();
 		$contentService->fieldContext = $originalFieldContext;
 		return $fields;
 	}
@@ -393,7 +393,7 @@ abstract class Element extends Component implements ElementInterface
 	 */
 	public static function saveElement(ElementInterface $element, $params)
 	{
-		return Craft::$app->elements->saveElement($element);
+		return Craft::$app->getElements()->saveElement($element);
 	}
 
 	/**
@@ -555,7 +555,7 @@ abstract class Element extends Component implements ElementInterface
 
 		if (!$this->locale)
 		{
-			$this->locale = Craft::$app->i18n->getPrimarySiteLocaleId();
+			$this->locale = Craft::$app->getI18n()->getPrimarySiteLocaleId();
 		}
 	}
 
@@ -600,7 +600,7 @@ abstract class Element extends Component implements ElementInterface
 	 */
 	public function getFieldLayout()
 	{
-		return Craft::$app->fields->getLayoutByType($this->getType());
+		return Craft::$app->getFields()->getLayoutByType($this->getType());
 	}
 
 	/**
@@ -634,7 +634,7 @@ abstract class Element extends Component implements ElementInterface
 		{
 			$useLocaleSiteUrl = (
 				($this->locale != Craft::$app->language) &&
-				($localeSiteUrl = Craft::$app->config->getLocalized('siteUrl', $this->locale))
+				($localeSiteUrl = Craft::$app->getConfig()->getLocalized('siteUrl', $this->locale))
 			);
 
 			if ($useLocaleSiteUrl)
@@ -1024,11 +1024,11 @@ abstract class Element extends Component implements ElementInterface
 	{
 		if (!isset($this->_content))
 		{
-			$this->_content = Craft::$app->content->getContent($this);
+			$this->_content = Craft::$app->getContent()->getContent($this);
 
 			if (!$this->_content)
 			{
-				$this->_content = Craft::$app->content->createContent($this);
+				$this->_content = Craft::$app->getContent()->createContent($this);
 			}
 		}
 
@@ -1044,7 +1044,7 @@ abstract class Element extends Component implements ElementInterface
 		{
 			if (!isset($this->_content))
 			{
-				$this->_content = Craft::$app->content->createContent($this);
+				$this->_content = Craft::$app->getContent()->createContent($this);
 			}
 
 			$this->_content->setAttributes($content, false);
@@ -1168,7 +1168,7 @@ abstract class Element extends Component implements ElementInterface
 	 */
 	public function getContentTable()
 	{
-		return Craft::$app->content->contentTable;
+		return Craft::$app->getContent()->contentTable;
 	}
 
 	/**
@@ -1176,7 +1176,7 @@ abstract class Element extends Component implements ElementInterface
 	 */
 	public function getFieldColumnPrefix()
 	{
-		return Craft::$app->content->fieldColumnPrefix;
+		return Craft::$app->getContent()->fieldColumnPrefix;
 	}
 
 	/**
@@ -1184,7 +1184,7 @@ abstract class Element extends Component implements ElementInterface
 	 */
 	public function getFieldContext()
 	{
-		return Craft::$app->content->fieldContext;
+		return Craft::$app->getContent()->fieldContext;
 	}
 
 	// Events
@@ -1257,12 +1257,12 @@ abstract class Element extends Component implements ElementInterface
 	{
 		if (!isset($this->_fieldsByHandle) || !array_key_exists($handle, $this->_fieldsByHandle))
 		{
-			$contentService = Craft::$app->content;
+			$contentService = Craft::$app->getContent();
 
 			$originalFieldContext = $contentService->fieldContext;
 			$contentService->fieldContext = $this->getFieldContext();
 
-			$this->_fieldsByHandle[$handle] = Craft::$app->fields->getFieldByHandle($handle);
+			$this->_fieldsByHandle[$handle] = Craft::$app->getFields()->getFieldByHandle($handle);
 
 			$contentService->fieldContext = $originalFieldContext;
 		}

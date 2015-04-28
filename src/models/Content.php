@@ -158,7 +158,7 @@ class Content extends Model
 		// Have the attributes already been defined?
 		if (isset($this->_attributeConfigs))
 		{
-			foreach (Craft::$app->fields->getAllFields() as $field)
+			foreach (Craft::$app->getFields()->getAllFields() as $field)
 			{
 				if (in_array($field->id, $this->_requiredFields) && isset($this->_attributeConfigs[$field->handle]))
 				{
@@ -188,7 +188,7 @@ class Content extends Model
 	{
 		$validates = parent::validate($attributes, $clearErrors);
 
-		foreach (Craft::$app->fields->getAllFields() as $field)
+		foreach (Craft::$app->getFields()->getAllFields() as $field)
 		{
 			$handle = $field->handle;
 

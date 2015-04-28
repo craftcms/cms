@@ -21,7 +21,7 @@ use yii\base\InvalidParamException;
 /**
  * The Plugins service provides APIs for managing plugins.
  *
- * An instance of the Plugins service is globally accessible in Craft via [[Application::plugins `Craft::$app->plugins`]].
+ * An instance of the Plugins service is globally accessible in Craft via [[Application::plugins `Craft::$app->getPlugins()`]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
@@ -75,7 +75,7 @@ class Plugins extends Component
 	 */
 	public function loadPlugins()
 	{
-		if ($this->_pluginsLoaded === true || $this->_loadingPlugins === true || Craft::$app->isInstalled() === false || Craft::$app->updates->isCraftDbMigrationNeeded() === true)
+		if ($this->_pluginsLoaded === true || $this->_loadingPlugins === true || Craft::$app->isInstalled() === false || Craft::$app->getUpdates()->isCraftDbMigrationNeeded() === true)
 		{
 			return;
 		}
@@ -517,7 +517,7 @@ class Plugins extends Component
 		// Skip the autoloader since we haven't added a @craft\plugins\PluginHandle alias yet
 		if (!class_exists($class, false))
 		{
-			$path = Craft::$app->path->getPluginsPath()."/$handle/Plugin.php";
+			$path = Craft::$app->getPath()->getPluginsPath()."/$handle/Plugin.php";
 
 			if (($path = IOHelper::fileExists($path)) !== false)
 			{
@@ -559,7 +559,8 @@ class Plugins extends Component
 	public function getConfig($handle)
 	{
 		// Make sure this plugin has a config.json file
-		$configPath = Craft::$app->path->getPluginsPath()."/$handle/config.json";
+		$basePath = Craft::$app->getPath()->getPluginsPath().'/'.$handle;
+		$configPath = $basePath.'/config.json';
 
 		if (($configPath = IOHelper::fileExists($configPath)) === false)
 		{
@@ -570,7 +571,6 @@ class Plugins extends Component
 		try
 		{
 			$config = array_merge([
-				'class' => "\\craft\\plugins\\$handle\\Plugin",
 				'developer' => null,
 				'developerUrl' => null
 			], JsonHelper::decode(IOHelper::getFileContents($configPath)));
@@ -588,6 +588,21 @@ class Plugins extends Component
 			return null;
 		}
 
+		// Set the class
+		if (empty($config['class']))
+		{
+			// Do they have a custom Plugin class?
+			if (IOHelper::fileExists($basePath.'/Plugin.php'))
+			{
+				$config['class'] = "\\craft\\plugins\\$handle\\Plugin";
+			}
+			else
+			{
+				// Just use the base one
+				$config['class'] = Plugin::className();
+			}
+		}
+
 		return $config;
 	}
 
@@ -603,7 +618,7 @@ class Plugins extends Component
 		$info = [];
 		$names = [];
 
-		$pluginsPath = Craft::$app->path->getPluginsPath();
+		$pluginsPath = Craft::$app->getPath()->getPluginsPath();
 		$folders = IOHelper::getFolderContents($pluginsPath, false);
 
 		if ($folders !== false)

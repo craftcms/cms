@@ -157,7 +157,7 @@ class View extends \yii\web\View
 			$twig->addExtension(new \Twig_Extension_StringLoader());
 			$twig->addExtension(new Extension($this));
 
-			if (Craft::$app->config->get('devMode'))
+			if (Craft::$app->getConfig()->get('devMode'))
 			{
 				$twig->addExtension(new \Twig_Extension_Debug());
 			}
@@ -207,7 +207,7 @@ class View extends \yii\web\View
 
 				if (!$template)
 				{
-					$template = rtrim(Craft::$app->path->getTemplatesPath(), '/\\').'/'.$this->_renderingTemplate;
+					$template = rtrim(Craft::$app->getPath()->getTemplatesPath(), '/\\').'/'.$this->_renderingTemplate;
 				}
 			}
 
@@ -478,7 +478,7 @@ class View extends \yii\web\View
 		$name = trim(preg_replace('#/{2,}#', '/', strtr($name, '\\', '/')), '/');
 
 		// Get the latest template base path
-		$templatesPath = rtrim(Craft::$app->path->getTemplatesPath(), '/\\');
+		$templatesPath = rtrim(Craft::$app->getPath()->getTemplatesPath(), '/\\');
 
 		$key = $templatesPath.':'.$name;
 
@@ -524,10 +524,10 @@ class View extends \yii\web\View
 			$parts = array_filter(explode('/', $name));
 			$pluginHandle = StringHelper::toLowerCase(array_shift($parts));
 
-			if ($pluginHandle && ($plugin = Craft::$app->plugins->getPlugin($pluginHandle)) !== null)
+			if ($pluginHandle && ($plugin = Craft::$app->getPlugins()->getPlugin($pluginHandle)) !== null)
 			{
 				// Get the template path for the plugin.
-				$basePath = Craft::$app->path->getPluginsPath().'/'.StringHelper::toLowerCase($plugin->getHandle()).'/templates';
+				$basePath = Craft::$app->getPath()->getPluginsPath().'/'.StringHelper::toLowerCase($plugin->getHandle()).'/templates';
 
 				// Get the new template name to look for within the plugin's templates folder
 				$tempName = implode('/', $parts);
@@ -757,9 +757,9 @@ class View extends \yii\web\View
 	 */
 	public function getCsrfInput()
 	{
-		if (Craft::$app->config->get('enableCsrfProtection') === true)
+		if (Craft::$app->getConfig()->get('enableCsrfProtection') === true)
 		{
-			return '<input type="hidden" name="'.Craft::$app->config->get('csrfTokenName').'" value="'.Craft::$app->getRequest()->getCsrfToken().'">';
+			return '<input type="hidden" name="'.Craft::$app->getConfig()->get('csrfTokenName').'" value="'.Craft::$app->getRequest()->getCsrfToken().'">';
 		}
 
 		return '';
@@ -1140,8 +1140,8 @@ class View extends \yii\web\View
 			}
 			else
 			{
-				$this->_defaultTemplateExtensions = Craft::$app->config->get('defaultTemplateExtensions');
-				$this->_indexTemplateFilenames = Craft::$app->config->get('indexTemplateFilenames');
+				$this->_defaultTemplateExtensions = Craft::$app->getConfig()->get('defaultTemplateExtensions');
+				$this->_indexTemplateFilenames = Craft::$app->getConfig()->get('indexTemplateFilenames');
 			}
 		}
 
@@ -1194,12 +1194,12 @@ class View extends \yii\web\View
 		{
 			$this->_twigOptions = [
 				'base_template_class' => '\\craft\\app\\web\\twig\\Template',
-				'cache'               => Craft::$app->path->getCompiledTemplatesPath(),
+				'cache'               => Craft::$app->getPath()->getCompiledTemplatesPath(),
 				'auto_reload'         => true,
 				'charset'             => Craft::$app->charset,
 			];
 
-			if (Craft::$app->config->get('devMode'))
+			if (Craft::$app->getConfig()->get('devMode'))
 			{
 				$this->_twigOptions['debug'] = true;
 				$this->_twigOptions['strict_variables'] = true;
@@ -1219,7 +1219,7 @@ class View extends \yii\web\View
 	private function _addPluginTwigExtensions(\Twig_Environment $twig)
 	{
 		// Check if the Plugins service has been loaded yet
-		$pluginsService = Craft::$app->plugins;
+		$pluginsService = Craft::$app->getPlugins();
 		$pluginsService->loadPlugins();
 
 		// Could be that this is getting called in the middle of plugin loading, so check again

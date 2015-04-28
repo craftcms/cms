@@ -76,7 +76,7 @@ class Matrix extends Field
 		{
 			if (!empty($this->id))
 			{
-				$this->_blockTypes = Craft::$app->matrix->getBlockTypesByFieldId($this->id);
+				$this->_blockTypes = Craft::$app->getMatrix()->getBlockTypesByFieldId($this->id);
 			}
 			else
 			{
@@ -116,7 +116,7 @@ class Matrix extends Field
 				{
 					foreach ($config['fields'] as $fieldId => $fieldConfig)
 					{
-						$fields[] = Craft::$app->fields->createField([
+						$fields[] = Craft::$app->getFields()->createField([
 							'type'         => $fieldConfig['type'],
 							'id'           => $fieldId,
 							'name'         => $fieldConfig['name'],
@@ -144,7 +144,7 @@ class Matrix extends Field
 		$validates = parent::validate($attributeNames, $clearErrors);
 
 		// Run Matrix field validation as well
-		if (!Craft::$app->matrix->validateFieldSettings($this))
+		if (!Craft::$app->getMatrix()->validateFieldSettings($this))
 		{
 			$validates = false;
 		}
@@ -188,7 +188,7 @@ class Matrix extends Field
 
 		$fieldTypeOptions = [];
 
-		foreach (Craft::$app->fields->getAllFieldTypes() as $class)
+		foreach (Craft::$app->getFields()->getAllFieldTypes() as $class)
 		{
 			// No Matrix-Inception, sorry buddy.
 			if ($class !== self::className())
@@ -208,7 +208,7 @@ class Matrix extends Field
 	 */
 	public function afterSave()
 	{
-		Craft::$app->matrix->saveSettings($this, false);
+		Craft::$app->getMatrix()->saveSettings($this, false);
 		parent::afterSave();
 	}
 
@@ -217,7 +217,7 @@ class Matrix extends Field
 	 */
 	public function beforeDelete()
 	{
-		Craft::$app->matrix->deleteMatrixField($this);
+		Craft::$app->getMatrix()->deleteMatrixField($this);
 		return parent::beforeDelete();
 	}
 
@@ -328,7 +328,7 @@ class Matrix extends Field
 
 		foreach ($value as $block)
 		{
-			if (!Craft::$app->matrix->validateBlock($block))
+			if (!Craft::$app->getMatrix()->validateBlock($block))
 			{
 				$blocksValidate = false;
 			}
@@ -370,7 +370,7 @@ class Matrix extends Field
 	public function getSearchKeywords($value, $element)
 	{
 		$keywords = [];
-		$contentService = Craft::$app->content;
+		$contentService = Craft::$app->getContent();
 
 		foreach ($value as $block)
 		{
@@ -382,7 +382,7 @@ class Matrix extends Field
 			$contentService->fieldColumnPrefix = $block->getFieldColumnPrefix();
 			$contentService->fieldContext      = $block->getFieldContext();
 
-			foreach (Craft::$app->fields->getAllFields() as $field)
+			foreach (Craft::$app->getFields()->getAllFields() as $field)
 			{
 				$fieldValue = $block->getFieldValue($field->handle);
 				$keywords[] = $field->getSearchKeywords($fieldValue, $element);
@@ -401,7 +401,7 @@ class Matrix extends Field
 	 */
 	public function afterElementSave(ElementInterface $element)
 	{
-		Craft::$app->matrix->saveField($this, $element);
+		Craft::$app->getMatrix()->saveField($this, $element);
 	}
 
 	/**
@@ -436,7 +436,7 @@ class Matrix extends Field
 	protected function prepareValueBeforeSave($value, $element)
 	{
 		// Get the possible block types for this field
-		$blockTypes = Craft::$app->matrix->getBlockTypesByFieldId($this->id, 'handle');
+		$blockTypes = Craft::$app->getMatrix()->getBlockTypesByFieldId($this->id, 'handle');
 
 		if (!is_array($value))
 		{
@@ -550,7 +550,7 @@ class Matrix extends Field
 		$namespace = Craft::$app->getView()->namespaceInputName('blockTypes[__BLOCK_TYPE__][fields][__FIELD__][typesettings]', $originalNamespace);
 		Craft::$app->getView()->setNamespace($namespace);
 
-		foreach (Craft::$app->fields->getAllFieldTypes() as $class)
+		foreach (Craft::$app->getFields()->getAllFieldTypes() as $class)
 		{
 			// No Matrix-Inception, sorry buddy.
 			if ($class === self::className())

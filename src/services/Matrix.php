@@ -29,7 +29,7 @@ use yii\base\Component;
 /**
  * The Matrix service provides APIs for managing Matrix fields.
  *
- * An instance of the Matrix service is globally accessible in Craft via [[Application::matrix `Craft::$app->matrix`]].
+ * An instance of the Matrix service is globally accessible in Craft via [[Application::matrix `Craft::$app->getMatrix()`]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
@@ -186,7 +186,7 @@ class Matrix extends Component
 		// Can't validate multiple new rows at once so we'll need to give these temporary context to avoid false unique
 		// handle validation errors, and just validate those manually. Also apply the future fieldColumnPrefix so that
 		// field handle validation takes its length into account.
-		$contentService = Craft::$app->content;
+		$contentService = Craft::$app->getContent();
 		$originalFieldContext      = $contentService->fieldContext;
 		$originalFieldColumnPrefix = $contentService->fieldColumnPrefix;
 
@@ -258,8 +258,8 @@ class Matrix extends Component
 			$transaction = Craft::$app->getDb()->getTransaction() === null ? Craft::$app->getDb()->beginTransaction() : null;
 			try
 			{
-				$contentService = Craft::$app->content;
-				$fieldsService  = Craft::$app->fields;
+				$contentService = Craft::$app->getContent();
+				$fieldsService  = Craft::$app->getFields();
 
 				$originalFieldContext         = $contentService->fieldContext;
 				$originalFieldColumnPrefix    = $contentService->fieldColumnPrefix;
@@ -425,18 +425,18 @@ class Matrix extends Component
 			$this->deleteBlockById($blockIds);
 
 			// Now delete the block type fields
-			$originalFieldColumnPrefix = Craft::$app->content->fieldColumnPrefix;
-			Craft::$app->content->fieldColumnPrefix = 'field_'.$blockType->handle.'_';
+			$originalFieldColumnPrefix = Craft::$app->getContent()->fieldColumnPrefix;
+			Craft::$app->getContent()->fieldColumnPrefix = 'field_'.$blockType->handle.'_';
 
 			foreach ($blockType->getFields() as $field)
 			{
-				Craft::$app->fields->deleteField($field);
+				Craft::$app->getFields()->deleteField($field);
 			}
 
-			Craft::$app->content->fieldColumnPrefix = $originalFieldColumnPrefix;
+			Craft::$app->getContent()->fieldColumnPrefix = $originalFieldColumnPrefix;
 
 			// Delete the field layout
-			Craft::$app->fields->deleteLayoutById($blockType->fieldLayoutId);
+			Craft::$app->getFields()->deleteLayoutById($blockType->fieldLayoutId);
 
 			// Finally delete the actual block type
 			$affectedRows = Craft::$app->getDb()->createCommand()->delete('{{%matrixblocktypes}}', ['id' => $blockType->id])->execute();
@@ -569,8 +569,8 @@ class Matrix extends Component
 				// Save the new ones
 				$sortOrder = 0;
 
-				$originalContentTable = Craft::$app->content->contentTable;
-				Craft::$app->content->contentTable = $newContentTable;
+				$originalContentTable = Craft::$app->getContent()->contentTable;
+				Craft::$app->getContent()->contentTable = $newContentTable;
 
 				foreach ($matrixField->getBlockTypes() as $blockType)
 				{
@@ -580,7 +580,7 @@ class Matrix extends Component
 					$this->saveBlockType($blockType, false);
 				}
 
-				Craft::$app->content->contentTable = $originalContentTable;
+				Craft::$app->getContent()->contentTable = $originalContentTable;
 
 				if ($transaction !== null)
 				{
@@ -621,9 +621,9 @@ class Matrix extends Component
 		$transaction = Craft::$app->getDb()->getTransaction() === null ? Craft::$app->getDb()->beginTransaction() : null;
 		try
 		{
-			$originalContentTable = Craft::$app->content->contentTable;
+			$originalContentTable = Craft::$app->getContent()->contentTable;
 			$contentTable = $this->getContentTableName($matrixField);
-			Craft::$app->content->contentTable = $contentTable;
+			Craft::$app->getContent()->contentTable = $contentTable;
 
 			// Delete the block types
 			$blockTypes = $this->getBlockTypesByFieldId($matrixField->id);
@@ -636,7 +636,7 @@ class Matrix extends Component
 			// Drop the content table
 			Craft::$app->getDb()->createCommand()->dropTable($contentTable)->execute();
 
-			Craft::$app->content->contentTable = $originalContentTable;
+			Craft::$app->getContent()->contentTable = $originalContentTable;
 
 			if ($transaction !== null)
 			{
@@ -703,7 +703,7 @@ class Matrix extends Component
 	 */
 	public function getBlockById($blockId, $localeId = null)
 	{
-		return Craft::$app->elements->getElementById($blockId, MatrixBlock::className(), $localeId);
+		return Craft::$app->getElements()->getElementById($blockId, MatrixBlock::className(), $localeId);
 	}
 
 	/**
@@ -729,15 +729,15 @@ class Matrix extends Component
 		$blockRecord->validate();
 		$block->addErrors($blockRecord->getErrors());
 
-		$originalFieldContext = Craft::$app->content->fieldContext;
-		Craft::$app->content->fieldContext = 'matrixBlockType:'.$block->typeId;
+		$originalFieldContext = Craft::$app->getContent()->fieldContext;
+		Craft::$app->getContent()->fieldContext = 'matrixBlockType:'.$block->typeId;
 
-		if (!Craft::$app->content->validateContent($block))
+		if (!Craft::$app->getContent()->validateContent($block))
 		{
 			$block->addErrors($block->getContent()->getErrors());
 		}
 
-		Craft::$app->content->fieldContext = $originalFieldContext;
+		Craft::$app->getContent()->fieldContext = $originalFieldContext;
 
 		return !$block->hasErrors();
 	}
@@ -768,7 +768,7 @@ class Matrix extends Component
 			$transaction = Craft::$app->getDb()->getTransaction() === null ? Craft::$app->getDb()->beginTransaction() : null;
 			try
 			{
-				if (Craft::$app->elements->saveElement($block, false))
+				if (Craft::$app->getElements()->saveElement($block, false))
 				{
 					if ($isNewBlock)
 					{
@@ -827,7 +827,7 @@ class Matrix extends Component
 		}
 
 		// Pass this along to the Elements service for the heavy lifting.
-		return Craft::$app->elements->deleteElementById($blockIds);
+		return Craft::$app->getElements()->deleteElementById($blockIds);
 	}
 
 	/**
@@ -961,7 +961,7 @@ class Matrix extends Component
 
 			if ($parentMatrixFieldId)
 			{
-				$this->_parentMatrixFields[$matrixField->id] = Craft::$app->fields->getFieldById($parentMatrixFieldId);
+				$this->_parentMatrixFields[$matrixField->id] = Craft::$app->getFields()->getFieldById($parentMatrixFieldId);
 			}
 			else
 			{

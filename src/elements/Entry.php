@@ -112,12 +112,12 @@ class Entry extends Element
 	{
 		if ($context == 'index')
 		{
-			$sections = Craft::$app->sections->getEditableSections();
+			$sections = Craft::$app->getSections()->getEditableSections();
 			$editable = true;
 		}
 		else
 		{
-			$sections = Craft::$app->sections->getAllSections();
+			$sections = Craft::$app->getSections()->getAllSections();
 			$editable = false;
 		}
 
@@ -197,19 +197,19 @@ class Entry extends Element
 		{
 			case '*':
 			{
-				$sections = Craft::$app->sections->getEditableSections();
+				$sections = Craft::$app->getSections()->getEditableSections();
 				break;
 			}
 			case 'singles':
 			{
-				$sections = Craft::$app->sections->getSectionsByType(Section::TYPE_SINGLE);
+				$sections = Craft::$app->getSections()->getSectionsByType(Section::TYPE_SINGLE);
 				break;
 			}
 			default:
 			{
 				if (preg_match('/^section:(\d+)$/', $source, $matches))
 				{
-					$section = Craft::$app->sections->getSectionById($matches[1]);
+					$section = Craft::$app->getSections()->getSectionById($matches[1]);
 				}
 
 				if (empty($section))
@@ -252,7 +252,7 @@ class Entry extends Element
 		if ($canSetStatus)
 		{
 			/** @var SetStatus $setStatusAction */
-			$setStatusAction = Craft::$app->elements->createAction(SetStatus::className());
+			$setStatusAction = Craft::$app->getElements()->createAction(SetStatus::className());
 			$setStatusAction->on(SetStatus::EVENT_AFTER_SET_STATUS, function(SetStatusEvent $event)
 			{
 				if ($event->status == static::STATUS_ENABLED)
@@ -271,7 +271,7 @@ class Entry extends Element
 		// Edit
 		if ($canEdit)
 		{
-			$actions[] = Craft::$app->elements->createAction([
+			$actions[] = Craft::$app->getElements()->createAction([
 				'type'  => Edit::className(),
 				'label' => Craft::t('app', 'Edit entry'),
 			]);
@@ -280,7 +280,7 @@ class Entry extends Element
 		if ($source == '*' || $source == 'singles' || $sections[0]->hasUrls)
 		{
 			// View
-			$actions[] = Craft::$app->elements->createAction([
+			$actions[] = Craft::$app->getElements()->createAction([
 				'type'  => View::className(),
 				'label' => Craft::t('app', 'View entry'),
 			]);
@@ -297,11 +297,11 @@ class Entry extends Element
 				$userSessionService->checkPermission('createEntries:'.$section->id)
 			)
 			{
-				$structure = Craft::$app->structures->getStructureById($section->structureId);
+				$structure = Craft::$app->getStructures()->getStructureById($section->structureId);
 
 				if ($structure)
 				{
-					$actions[] = Craft::$app->elements->createAction([
+					$actions[] = Craft::$app->getElements()->createAction([
 						'type'        => NewChild::className(),
 						'label'       => Craft::t('app', 'Create a new child entry'),
 						'maxLevels'   => $structure->maxLevels,
@@ -316,7 +316,7 @@ class Entry extends Element
 				$userSessionService->checkPermission('deletePeerEntries:'.$section->id)
 			)
 			{
-				$actions[] = Craft::$app->elements->createAction([
+				$actions[] = Craft::$app->getElements()->createAction([
 					'type'                => Delete::className(),
 					'confirmationMessage' => Craft::t('app', 'Are you sure you want to delete the selected entries?'),
 					'successMessage'      => Craft::t('app', 'Entries deleted.'),
@@ -325,7 +325,7 @@ class Entry extends Element
 		}
 
 		// Allow plugins to add additional actions
-		$allPluginActions = Craft::$app->plugins->call('addEntryActions', [$source], true);
+		$allPluginActions = Craft::$app->getPlugins()->call('addEntryActions', [$source], true);
 
 		foreach ($allPluginActions as $pluginActions)
 		{
@@ -348,7 +348,7 @@ class Entry extends Element
 		];
 
 		// Allow plugins to modify the attributes
-		Craft::$app->plugins->call('modifyEntrySortableAttributes', [&$attributes]);
+		Craft::$app->getPlugins()->call('modifyEntrySortableAttributes', [&$attributes]);
 
 		return $attributes;
 	}
@@ -375,7 +375,7 @@ class Entry extends Element
 		}
 
 		// Allow plugins to modify the attributes
-		Craft::$app->plugins->call('modifyEntryTableAttributes', [&$attributes, $source]);
+		Craft::$app->getPlugins()->call('modifyEntryTableAttributes', [&$attributes, $source]);
 
 		return $attributes;
 	}
@@ -387,7 +387,7 @@ class Entry extends Element
 	{
 		/** @var Entry $element */
 		// First give plugins a chance to set this
-		$pluginAttributeHtml = Craft::$app->plugins->callFirst('getEntryTableAttributeHtml', [$element, $attribute], true);
+		$pluginAttributeHtml = Craft::$app->getPlugins()->callFirst('getEntryTableAttributeHtml', [$element, $attribute], true);
 
 		if ($pluginAttributeHtml !== null)
 		{
@@ -479,7 +479,7 @@ class Entry extends Element
 	{
 		/** @var Entry $element */
 		// Route this through \craft\app\services\Entries::saveEntry() so the proper entry events get fired.
-		return Craft::$app->entries->saveEntry($element);
+		return Craft::$app->getEntries()->saveEntry($element);
 	}
 
 	/**
@@ -523,7 +523,7 @@ class Entry extends Element
 
 		if ($section->type == Section::TYPE_STRUCTURE && $section->structureId == $structureId)
 		{
-			Craft::$app->elements->updateElementSlugAndUri($element);
+			Craft::$app->getElements()->updateElementSlugAndUri($element);
 		}
 	}
 
@@ -668,7 +668,7 @@ class Entry extends Element
 	{
 		if ($this->sectionId)
 		{
-			return Craft::$app->sections->getSectionById($this->sectionId);
+			return Craft::$app->getSections()->getSectionById($this->sectionId);
 		}
 	}
 
@@ -709,7 +709,7 @@ class Entry extends Element
 	{
 		if ($this->authorId)
 		{
-			return Craft::$app->users->getUserById($this->authorId);
+			return Craft::$app->getUsers()->getUserById($this->authorId);
 		}
 	}
 

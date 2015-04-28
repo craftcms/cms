@@ -69,7 +69,7 @@ class TemplatesController extends Controller
 		if (Craft::$app->getRequest()->getIsSiteRequest() && !Craft::$app->getView()->doesTemplateExist('offline'))
 		{
 			// Set the Path service to use the CP templates path instead
-			Craft::$app->path->setTemplatesPath(Craft::$app->path->getCpTemplatesPath());
+			Craft::$app->getPath()->setTemplatesPath(Craft::$app->getPath()->getCpTemplatesPath());
 		}
 
 		// Output the offline template
@@ -104,7 +104,7 @@ class TemplatesController extends Controller
 	 */
 	public function actionRequirementsCheck()
 	{
-		require_once(Craft::$app->path->getAppPath().'/requirements/RequirementsChecker.php');
+		require_once(Craft::$app->getPath()->getAppPath().'/requirements/RequirementsChecker.php');
 
 		// Run the requirements checker
 		$reqCheck = new \RequirementsChecker();
@@ -135,7 +135,7 @@ class TemplatesController extends Controller
 		else
 		{
 			// Cache the app path.
-			Craft::$app->getCache()->set('appPath', Craft::$app->path->getAppPath());
+			Craft::$app->getCache()->set('appPath', Craft::$app->getPath()->getAppPath());
 		}
 	}
 
@@ -162,7 +162,7 @@ class TemplatesController extends Controller
 
 		if (Craft::$app->getRequest()->getIsSiteRequest())
 		{
-			$prefix = Craft::$app->config->get('errorTemplatePrefix');
+			$prefix = Craft::$app->getConfig()->get('errorTemplatePrefix');
 
 			if (Craft::$app->getView()->doesTemplateExist($prefix.$statusCode))
 			{
@@ -180,7 +180,7 @@ class TemplatesController extends Controller
 
 		if (!isset($template))
 		{
-			Craft::$app->path->setTemplatesPath(Craft::$app->path->getCpTemplatesPath());
+			Craft::$app->getPath()->setTemplatesPath(Craft::$app->getPath()->getCpTemplatesPath());
 
 			if (Craft::$app->getView()->doesTemplateExist($statusCode))
 			{

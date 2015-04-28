@@ -86,7 +86,7 @@ class DbBackup
 	public function run()
 	{
 		// Normalize the ignored table names if there is a table prefix set.
-		if (($tablePrefix = Craft::$app->config->get('tablePrefix', ConfigCategory::Db)) !== '')
+		if (($tablePrefix = Craft::$app->getConfig()->get('tablePrefix', ConfigCategory::Db)) !== '')
 		{
 			foreach ($this->_ignoreDataTables as $key => $tableName)
 			{
@@ -96,11 +96,11 @@ class DbBackup
 
 		$this->_currentVersion = 'v'.Craft::$app->version.'.'.Craft::$app->build;
 		$filename = IOHelper::cleanFilename(Craft::$app->getSiteName()).'_'.gmdate('ymd_His').'_'.$this->_currentVersion.'.sql';
-		$this->_filePath = Craft::$app->path->getDbBackupPath().'/'.StringHelper::toLowerCase($filename);
+		$this->_filePath = Craft::$app->getPath()->getDbBackupPath().'/'.StringHelper::toLowerCase($filename);
 
 		$this->_processHeader();
 
-		foreach (Craft::$app->getDb()->getSchema()->getTables() as $resultName => $val)
+		foreach (Craft::$app->getDb()->getSchema()->getTableNames() as $resultName => $val)
 		{
 			$this->_processResult($resultName);
 		}

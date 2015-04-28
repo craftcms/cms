@@ -57,7 +57,7 @@ class SystemSettingsController extends Controller
 		$tools = [];
 
 		// Only include the Update Asset Indexes tool if there are any asset sources
-		if (count(Craft::$app->volumes->getAllVolumes()) !== 0)
+		if (count(Craft::$app->getVolumes()->getAllVolumes()) !== 0)
 		{
 			$tools[] = new ToolInfo(AssetIndex::className());
 		}
@@ -178,7 +178,7 @@ class SystemSettingsController extends Controller
 		// If $settings is an instance of EmailSettingsModel, there were validation errors.
 		if (!$settings instanceof EmailSettingsModel)
 		{
-			if (Craft::$app->systemSettings->saveSettings('email', $settings))
+			if (Craft::$app->getSystemSettings()->saveSettings('email', $settings))
 			{
 				Craft::$app->getSession()->setNotice(Craft::t('app', 'Email settings saved.'));
 				$this->redirectToPostedUrl();
@@ -210,7 +210,7 @@ class SystemSettingsController extends Controller
 		{
 			try
 			{
-				if (Craft::$app->email->sendTestEmail($settings))
+				if (Craft::$app->getEmail()->sendTestEmail($settings))
 				{
 					$this->returnJson(['success' => true]);
 				}
@@ -238,7 +238,7 @@ class SystemSettingsController extends Controller
 		{
 			if ($globalSetId !== null)
 			{
-				$globalSet = Craft::$app->globals->getSetById($globalSetId);
+				$globalSet = Craft::$app->getGlobals()->getSetById($globalSetId);
 
 				if (!$globalSet)
 				{

@@ -25,7 +25,7 @@ use yii\base\Component;
 /**
  * Class Dashboard service.
  *
- * An instance of the Dashboard service is globally accessible in Craft via [[Application::dashboard `Craft::$app->dashboard`]].
+ * An instance of the Dashboard service is globally accessible in Craft via [[Application::dashboard `Craft::$app->getDashboard()`]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
@@ -50,14 +50,20 @@ class Dashboard extends Component
 	 */
 	public function getAllWidgetTypes()
 	{
-		// TODO: Come up with a way for plugins to add more widget classes
-		return [
+		$widgetTypes = [
 			FeedWidget::className(),
 			GetHelpWidget::className(),
 			QuickPostWidget::className(),
 			RecentEntriesWidget::className(),
 			UpdatesWidget::className(),
 		];
+
+		foreach (Craft::$app->getPlugins()->call('getWidgetTypes', [], true) as $pluginWidgetTypes)
+		{
+			$widgetTypes = array_merge($widgetTypes, $pluginWidgetTypes);
+		}
+
+		return $widgetTypes;
 	}
 
 	/**

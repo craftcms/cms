@@ -19,12 +19,12 @@ use GuzzleHttp\Client;
 use GuzzleHttp\Exception\RequestException;
 
 /**
- * Class Et
+ * Class ET
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */
-class Et
+class ET
 {
 	// Properties
 	// =========================================================================
@@ -67,11 +67,11 @@ class Et
 	 * @param int $timeout
 	 * @param int $connectTimeout
 	 *
-	 * @return Et
+	 * @return ET
 	 */
 	public function __construct($endpoint, $timeout = 30, $connectTimeout = 2)
 	{
-		$endpoint .= Craft::$app->config->get('endpointSuffix');
+		$endpoint .= Craft::$app->getConfig()->get('endpointSuffix');
 
 		$this->_endpoint = $endpoint;
 		$this->_timeout = $timeout;
@@ -225,7 +225,7 @@ class Et
 						return IOHelper::getFilename($this->_destinationFilename);
 					}
 
-					$etModel = Craft::$app->et->decodeEtModel($response->getBody());
+					$etModel = Craft::$app->getET()->decodeEtModel($response->getBody());
 
 					if ($etModel)
 					{
@@ -301,7 +301,7 @@ class Et
 	 */
 	private function _getLicenseKey()
 	{
-		$keyFile = Craft::$app->path->getLicenseKeyPath();
+		$keyFile = Craft::$app->getPath()->getLicenseKeyPath();
 
 		// Check to see if the key exists and it's not a temp one.
 		if (IOHelper::fileExists($keyFile) && IOHelper::getFileContents($keyFile) !== 'temp')
@@ -320,10 +320,10 @@ class Et
 	 */
 	private function _setLicenseKey($key)
 	{
-		$keyFile = Craft::$app->path->getLicenseKeyPath();
+		$keyFile = Craft::$app->getPath()->getLicenseKeyPath();
 
 		// Make sure the key file does not exist first, or if it exists it is a temp key file.
-		// Et should never overwrite a valid license key.
+		// ET should never overwrite a valid license key.
 		if (!IOHelper::fileExists($keyFile) || (IOHelper::fileExists($keyFile) && IOHelper::getFileContents($keyFile) == 'temp'))
 		{
 			if ($this->_isConfigFolderWritable())
@@ -350,6 +350,6 @@ class Et
 	 */
 	private function _isConfigFolderWritable()
 	{
-		return IOHelper::isWritable(IOHelper::getFolderName(Craft::$app->path->getLicenseKeyPath()));
+		return IOHelper::isWritable(IOHelper::getFolderName(Craft::$app->getPath()->getLicenseKeyPath()));
 	}
 }

@@ -62,7 +62,7 @@ class EmailMessagesController extends Controller
 			$message->locale = Craft::$app->language;
 		}
 
-		if (Craft::$app->emailMessages->saveMessage($message))
+		if (Craft::$app->getEmailMessages()->saveMessage($message))
 		{
 			return $this->asJson(['success' => true]);
 		}

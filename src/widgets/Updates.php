@@ -60,9 +60,9 @@ class Updates extends Widget
 			return false;
 		}
 
-		$cached = Craft::$app->updates->isUpdateInfoCached();
+		$cached = Craft::$app->getUpdates()->isUpdateInfoCached();
 
-		if (!$cached || !Craft::$app->updates->getTotalAvailableUpdates())
+		if (!$cached || !Craft::$app->getUpdates()->getTotalAvailableUpdates())
 		{
 			Craft::$app->getView()->registerJsResource('js/UpdatesWidget.js');
 			Craft::$app->getView()->registerJs('new Craft.UpdatesWidget('.$this->id.', '.($cached ? 'true' : 'false').');');
@@ -79,7 +79,7 @@ class Updates extends Widget
 		if ($cached)
 		{
 			return Craft::$app->getView()->renderTemplate('_components/widgets/Updates/body', [
-				'total' => Craft::$app->updates->getTotalAvailableUpdates()
+				'total' => Craft::$app->getUpdates()->getTotalAvailableUpdates()
 			]);
 		}
 		else

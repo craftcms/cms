@@ -3,7 +3,7 @@
 return [
 	// Non-configured components
 	'assets'               => 'craft\app\services\Assets',
-	'assetIndexing'        => 'craft\app\services\AssetIndexing',
+	'assetIndexer'         => 'craft\app\services\AssetIndexer',
 	'assetTransforms'      => 'craft\app\services\AssetTransforms',
 	'categories'           => 'craft\app\services\Categories',
 	'config'               => 'craft\app\services\Config',
@@ -14,7 +14,7 @@ return [
 	'elements'             => 'craft\app\services\Elements',
 	'email'                => 'craft\app\services\Email',
 	'entries'              => 'craft\app\services\Entries',
-	'et'                   => 'craft\app\services\Et',
+	'et'                   => 'craft\app\services\ET',
 	'feeds'                => 'craft\app\services\Feeds',
 	'fields'               => 'craft\app\services\Fields',
 	'globals'              => 'craft\app\services\Globals',
@@ -29,7 +29,6 @@ return [
 	'routes'               => 'craft\app\services\Routes',
 	'search'               => 'craft\app\services\Search',
 	'security'             => 'craft\app\services\Security',
-	'session'              => 'craft\app\web\Session',
 	'structures'           => 'craft\app\services\Structures',
 	'tags'                 => 'craft\app\services\Tags',
 	'tasks'                => 'craft\app\services\Tasks',

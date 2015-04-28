@@ -394,13 +394,13 @@ class EntryQuery extends ElementQuery
 			}
 
 			// Limit the query to only the sections the user has permission to edit
-			$editableSectionIds = Craft::$app->sections->getEditableSectionIds();
+			$editableSectionIds = Craft::$app->getSections()->getEditableSectionIds();
 			$this->subQuery->andWhere(['in', 'entries.sectionId', $editableSectionIds]);
 
 			// Enforce the editPeerEntries permissions for non-Single sections
 			$noPeerConditions = [];
 
-			foreach (Craft::$app->sections->getEditableSections() as $section)
+			foreach (Craft::$app->getSections()->getEditableSections() as $section)
 			{
 				if (
 					$section->type != Section::TYPE_SINGLE &&

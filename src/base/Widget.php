@@ -47,7 +47,7 @@ abstract class Widget extends SavableComponent implements WidgetInterface
 	 */
 	public static function isSelectable()
 	{
-		return (static::allowMultipleInstances() || !Craft::$app->dashboard->doesUserHaveWidget(static::className()));
+		return (static::allowMultipleInstances() || !Craft::$app->getDashboard()->doesUserHaveWidget(static::className()));
 	}
 
 	/**
@@ -134,6 +134,6 @@ abstract class Widget extends SavableComponent implements WidgetInterface
 	 */
 	public function getUser()
 	{
-		return Craft::$app->users->getUserById($this->userId);
+		return Craft::$app->getUsers()->getUserById($this->userId);
 	}
 }

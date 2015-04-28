@@ -47,7 +47,7 @@ class PluginsController extends Controller
 		$this->requirePostRequest();
 		$pluginHandle = Craft::$app->getRequest()->getRequiredBodyParam('pluginHandle');
 
-		if (Craft::$app->plugins->installPlugin($pluginHandle))
+		if (Craft::$app->getPlugins()->installPlugin($pluginHandle))
 		{
 			Craft::$app->getSession()->setNotice(Craft::t('app', 'Plugin installed.'));
 		}
@@ -69,7 +69,7 @@ class PluginsController extends Controller
 		$this->requirePostRequest();
 		$pluginHandle = Craft::$app->getRequest()->getRequiredBodyParam('pluginHandle');
 
-		if (Craft::$app->plugins->uninstallPlugin($pluginHandle))
+		if (Craft::$app->getPlugins()->uninstallPlugin($pluginHandle))
 		{
 			Craft::$app->getSession()->setNotice(Craft::t('app', 'Plugin uninstalled.'));
 		}
@@ -91,7 +91,7 @@ class PluginsController extends Controller
 		$this->requirePostRequest();
 		$pluginHandle = Craft::$app->getRequest()->getRequiredBodyParam('pluginHandle');
 
-		if (Craft::$app->plugins->enablePlugin($pluginHandle))
+		if (Craft::$app->getPlugins()->enablePlugin($pluginHandle))
 		{
 			Craft::$app->getSession()->setNotice(Craft::t('app', 'Plugin enabled.'));
 		}
@@ -113,7 +113,7 @@ class PluginsController extends Controller
 		$this->requirePostRequest();
 		$pluginHandle = Craft::$app->getRequest()->getRequiredBodyParam('pluginHandle');
 
-		if (Craft::$app->plugins->disablePlugin($pluginHandle))
+		if (Craft::$app->getPlugins()->disablePlugin($pluginHandle))
 		{
 			Craft::$app->getSession()->setNotice(Craft::t('app', 'Plugin disabled.'));
 		}
@@ -137,7 +137,7 @@ class PluginsController extends Controller
 	{
 		if ($plugin === null)
 		{
-			$plugin = Craft::$app->plugins->getPlugin($pluginHandle);
+			$plugin = Craft::$app->getPlugins()->getPlugin($pluginHandle);
 
 			if ($plugin === null)
 			{
@@ -158,14 +158,14 @@ class PluginsController extends Controller
 		$this->requirePostRequest();
 		$pluginHandle = Craft::$app->getRequest()->getRequiredBodyParam('pluginHandle');
 		$settings = Craft::$app->getRequest()->getBodyParam('settings');
-		$plugin = Craft::$app->plugins->getPlugin($pluginHandle);
+		$plugin = Craft::$app->getPlugins()->getPlugin($pluginHandle);
 
 		if ($plugin === null)
 		{
 			throw new Exception(Craft::t('app', 'No plugin exists with the class “{class}”', ['class' => $pluginHandle]));
 		}
 
-		if (Craft::$app->plugins->savePluginSettings($plugin, $settings))
+		if (Craft::$app->getPlugins()->savePluginSettings($plugin, $settings))
 		{
 			Craft::$app->getSession()->setNotice(Craft::t('app', 'Plugin settings saved.'));
 

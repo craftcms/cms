@@ -19,7 +19,7 @@ use yii\base\Component;
 /**
  * Class Structures service.
  *
- * An instance of the Structures service is globally accessible in Craft via [[Application::structures `Craft::$app->structures`]].
+ * An instance of the Structures service is globally accessible in Craft via [[Application::structures `Craft::$app->getStructures()`]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0

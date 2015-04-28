@@ -239,7 +239,7 @@ abstract class Field extends SavableComponent implements FieldInterface
 			{
 				$handle = $this->handle;
 				/** @var ElementQuery $query */
-				$query->subQuery->andWhere(DbHelper::parseParam('content.'.Craft::$app->content->fieldColumnPrefix.$handle, $value, $query->subQuery->params));
+				$query->subQuery->andWhere(DbHelper::parseParam('content.'.Craft::$app->getContent()->fieldColumnPrefix.$handle, $value, $query->subQuery->params));
 			}
 			else
 			{
@@ -261,7 +261,7 @@ abstract class Field extends SavableComponent implements FieldInterface
 	 */
 	public function getGroup()
 	{
-		return Craft::$app->fields->getGroupById($this->groupId);
+		return Craft::$app->getFields()->getGroupById($this->groupId);
 	}
 
 	// Protected Methods

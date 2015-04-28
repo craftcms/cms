@@ -28,7 +28,7 @@ class Tasks
 	 */
 	public function getRunningTask()
 	{
-		return \Craft::$app->tasks->getRunningTask();
+		return \Craft::$app->getTasks()->getRunningTask();
 	}
 
 	/**
@@ -38,7 +38,7 @@ class Tasks
 	 */
 	public function isTaskRunning()
 	{
-		return \Craft::$app->tasks->isTaskRunning();
+		return \Craft::$app->getTasks()->isTaskRunning();
 	}
 
 	/**
@@ -49,7 +49,7 @@ class Tasks
 	 */
 	public function areTasksPending($type = null)
 	{
-		return \Craft::$app->tasks->areTasksPending($type);
+		return \Craft::$app->getTasks()->areTasksPending($type);
 	}
 
 	/**
@@ -59,7 +59,7 @@ class Tasks
 	 */
 	public function haveTasksFailed()
 	{
-		return \Craft::$app->tasks->haveTasksFailed();
+		return \Craft::$app->getTasks()->haveTasksFailed();
 	}
 
 	/**
@@ -69,6 +69,6 @@ class Tasks
 	 */
 	public function getTotalTasks()
 	{
-		return \Craft::$app->tasks->getTotalTasks();
+		return \Craft::$app->getTasks()->getTotalTasks();
 	}
 }

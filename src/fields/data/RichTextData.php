@@ -45,7 +45,7 @@ class RichTextData extends \Twig_Markup
 		$this->_rawContent = $content;
 
 		// Parse the ref tags
-		$content = Craft::$app->elements->parseRefs($content);
+		$content = Craft::$app->getElements()->parseRefs($content);
 
 		parent::__construct($content, Craft::$app->charset);
 	}

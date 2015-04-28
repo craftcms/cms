@@ -180,7 +180,7 @@ class App
 	 */
 	public function isUpdateInfoCached()
 	{
-		return \Craft::$app->updates->isUpdateInfoCached();
+		return \Craft::$app->getUpdates()->isUpdateInfoCached();
 	}
 
 	/**
@@ -190,7 +190,7 @@ class App
 	 */
 	public function getTotalAvailableUpdates()
 	{
-		return \Craft::$app->updates->getTotalAvailableUpdates();
+		return \Craft::$app->getUpdates()->getTotalAvailableUpdates();
 	}
 
 	/**
@@ -200,7 +200,7 @@ class App
 	 */
 	public function isCriticalUpdateAvailable()
 	{
-		return \Craft::$app->updates->isCriticalUpdateAvailable();
+		return \Craft::$app->getUpdates()->isCriticalUpdateAvailable();
 	}
 
 	/**
@@ -221,7 +221,7 @@ class App
 			$uploadInBytes = min($uploadInBytes, $memoryLimit);
 		}
 
-		$configLimit = (int) \Craft::$app->config->get('maxUploadFileSize');
+		$configLimit = (int) \Craft::$app->getConfig()->get('maxUploadFileSize');
 
 		if ($configLimit)
 		{

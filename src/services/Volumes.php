@@ -42,11 +42,6 @@ class Volumes extends Component
 	// =========================================================================
 
 	/**
-	 * @var array
-	 */
-	private $_additionalVolumeTypes = [];
-
-	/**
 	 * @var
 	 */
 	private $_allVolumeIds;
@@ -84,28 +79,25 @@ class Volumes extends Component
 	 */
 	public function getAllVolumeTypes()
 	{
-		$volumeTypes = [Local::className()];
+		$volumeTypes = [
+			Local::className()
+		];
 
 		if (Craft::$app->getEdition() == Craft::Pro)
 		{
-			$volumeTypes[] = AwsS3::className();
-			$volumeTypes[] = GoogleCloud::className();
-			$volumeTypes[] = Rackspace::className();
+			$volumeTypes = array_merge($volumeTypes, [
+				AwsS3::className(),
+				GoogleCloud::className(),
+				Rackspace::className(),
+			]);
 		}
 
-		return array_merge($volumeTypes, $this->_additionalVolumeTypes);
-	}
+		foreach (Craft::$app->getPlugins()->call('getVolumeTypes', [], true) as $pluginVolumeTypes)
+		{
+			$volumeTypes = array_merge($volumeTypes, $pluginVolumeTypes);
+		}
 
-	/**
-	 * Register a volume type
-	 *
-	 * @param array $types
-	 * @return bool
-	 */
-	public function registerVolumeType($types = array())
-	{
-		$this->_additionalVolumeTypes = array_merge($this->_additionalVolumeTypes, $types);
-		return true;
+		return $volumeTypes;
 	}
 
 	/**
@@ -277,7 +269,7 @@ class Volumes extends Component
 			$volume->id = $volumeId;
 			$volume->name = TempAssetvolumeType::volumeName;
 			$volume->type = TempAssetvolumeType::volumeType;
-			$volume->settings = array('path' => Craft::$app->path->getAssetsTempvolumePath(), 'url' => UrlHelper::getResourceUrl('tempassets').'/');*/
+			$volume->settings = array('path' => Craft::$app->getPath()->getAssetsTempvolumePath(), 'url' => UrlHelper::getResourceUrl('tempassets').'/');*/
 			return;// $volume;
 		}
 		else
@@ -343,7 +335,7 @@ class Volumes extends Component
 
 				if (!$isNewVolume)
 				{
-					Craft::$app->fields->deleteLayoutById($volumeRecord->fieldLayoutId);
+					Craft::$app->getFields()->deleteLayoutById($volumeRecord->fieldLayoutId);
 				}
 				else
 				{
@@ -358,7 +350,7 @@ class Volumes extends Component
 
 				// Save the new one
 				$fieldLayout = $volume->getFieldLayout();
-				Craft::$app->fields->saveLayout($fieldLayout);
+				Craft::$app->getFields()->saveLayout($fieldLayout);
 
 				// Update the volume record/model with the new layout ID
 				$volume->fieldLayoutId = $fieldLayout->id;
@@ -375,16 +367,16 @@ class Volumes extends Component
 				else
 				{
 					// Update the top folder's name with the volume's new name
-					$topFolder = Craft::$app->assets->findFolder(array('volumeId' => $volume->id, 'parentId' => ':empty:'));
+					$topFolder = Craft::$app->getAssets()->findFolder(array('volumeId' => $volume->id, 'parentId' => ':empty:'));
 
-					if ($topFolder->name != $volume->name)
+					if ($topFolder !== null && $topFolder->name != $volume->name)
 					{
 						$topFolder->name = $volume->name;
-						Craft::$app->assets->storeFolderRecord($topFolder);
+						Craft::$app->getAssets()->storeFolderRecord($topFolder);
 					}
 				}
 
-				Craft::$app->assetIndexing->ensureTopFolder($volume);
+				Craft::$app->getAssetIndexer()->ensureTopFolder($volume);
 
 				if ($transaction !== null)
 				{
@@ -498,7 +490,7 @@ class Volumes extends Component
 				->where(array('volumeId' => $volumeId))
 				->column();
 
-			Craft::$app->elements->deleteElementById($assetFileIds);
+			Craft::$app->getElements()->deleteElementById($assetFileIds);
 
 			// Nuke the asset volume.
 			$affectedRows = Craft::$app->getDb()->createCommand()->delete('{{%volumes}}', array('id' => $volumeId));

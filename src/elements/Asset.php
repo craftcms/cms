@@ -89,14 +89,14 @@ class Asset extends Element
 	{
 		if ($context == 'index')
 		{
-			$sourceIds = Craft::$app->volumes->getViewableVolumeIds();
+			$sourceIds = Craft::$app->getVolumes()->getViewableVolumeIds();
 		}
 		else
 		{
-			$sourceIds = Craft::$app->volumes->getAllVolumeIds();
+			$sourceIds = Craft::$app->getVolumes()->getAllVolumeIds();
 		}
 
-		$tree = Craft::$app->assets->getFolderTreeByVolumeIds($sourceIds);
+		$tree = Craft::$app->getAssets()->getFolderTreeByVolumeIds($sourceIds);
 
 		return static::_assembleSourceList($tree);
 	}
@@ -108,7 +108,7 @@ class Asset extends Element
 	{
 		if (preg_match('/folder:(\d+)(:single)?/', $key, $matches))
 		{
-			$folder = Craft::$app->assets->getFolderById($matches[1]);
+			$folder = Craft::$app->getAssets()->getFolderById($matches[1]);
 
 			if ($folder)
 			{
@@ -134,46 +134,46 @@ class Asset extends Element
 		$actions = [];
 
 		// View
-		$actions[] = Craft::$app->elements->createAction([
+		$actions[] = Craft::$app->getElements()->createAction([
 			'type'  => View::className(),
 			'label' => Craft::t('app', 'View asset'),
 		]);
 
 		// Edit
-		$actions[] = Craft::$app->elements->createAction([
+		$actions[] = Craft::$app->getElements()->createAction([
 			'type'  => Edit::className(),
 			'label' => Craft::t('app', 'Edit asset'),
 		]);
 
 		// Rename File
 		if (
-			Craft::$app->assets->canUserPerformAction($folderId, 'removeFromVolume') &&
-			Craft::$app->assets->canUserPerformAction($folderId, 'uploadToVolume')
+			Craft::$app->getAssets()->canUserPerformAction($folderId, 'removeFromVolume') &&
+			Craft::$app->getAssets()->canUserPerformAction($folderId, 'uploadToVolume')
 		)
 		{
 			$actions[] = RenameFile::className();
 		}
 
 		// Replace File
-		if (Craft::$app->assets->canUserPerformAction($folderId, 'uploadToVolume'))
+		if (Craft::$app->getAssets()->canUserPerformAction($folderId, 'uploadToVolume'))
 		{
 			$actions[] = ReplaceFile::className();
 		}
 
 		// Copy Reference Tag
-		$actions[] = Craft::$app->elements->createAction([
+		$actions[] = Craft::$app->getElements()->createAction([
 			'type'        => CopyReferenceTag::className(),
 			'elementType' => Asset::className(),
 		]);
 
 		// Delete
-		if (Craft::$app->assets->canUserPerformAction($folderId, 'removeFromVolume'))
+		if (Craft::$app->getAssets()->canUserPerformAction($folderId, 'removeFromVolume'))
 		{
 			$actions[] = DeleteAssets::className();
 		}
 
 		// Allow plugins to add additional actions
-		$allPluginActions = Craft::$app->plugins->call('addAssetActions', [$source], true);
+		$allPluginActions = Craft::$app->getPlugins()->call('addAssetActions', [$source], true);
 
 		foreach ($allPluginActions as $pluginActions)
 		{
@@ -204,7 +204,7 @@ class Asset extends Element
 		];
 
 		// Allow plugins to modify the attributes
-		Craft::$app->plugins->call('modifyAssetSortableAttributes', [&$attributes]);
+		Craft::$app->getPlugins()->call('modifyAssetSortableAttributes', [&$attributes]);
 
 		return $attributes;
 	}
@@ -222,7 +222,7 @@ class Asset extends Element
 		];
 
 		// Allow plugins to modify the attributes
-		Craft::$app->plugins->call('modifyAssetTableAttributes', [&$attributes, $source]);
+		Craft::$app->getPlugins()->call('modifyAssetTableAttributes', [&$attributes, $source]);
 
 		return $attributes;
 	}
@@ -234,7 +234,7 @@ class Asset extends Element
 	{
 		/** @var Asset $element */
 		// First give plugins a chance to set this
-		$pluginAttributeHtml = Craft::$app->plugins->callFirst('getAssetTableAttributeHtml', [$element, $attribute], true);
+		$pluginAttributeHtml = Craft::$app->getPlugins()->callFirst('getAssetTableAttributeHtml', [$element, $attribute], true);
 
 		if ($pluginAttributeHtml !== null)
 		{
@@ -312,7 +312,7 @@ class Asset extends Element
 		if (!empty($params['filename']) && $params['filename'] != $element->filename)
 		{
 			// Validate the content before we do anything drastic
-			if (!Craft::$app->content->validateContent($element))
+			if (!Craft::$app->getContent()->validateContent($element))
 			{
 				return false;
 			}
@@ -386,7 +386,7 @@ class Asset extends Element
 			'label'     => ($folder->parentId ? $folder->name : Craft::t('app', $folder->name)),
 			'hasThumbs' => true,
 			'criteria'  => ['folderId' => $folder->id],
-			'data'      => ['upload' => is_null($folder->volumeId) ? true : Craft::$app->assets->canUserPerformAction($folder->id, 'uploadToVolume')]
+			'data'      => ['upload' => is_null($folder->volumeId) ? true : Craft::$app->getAssets()->canUserPerformAction($folder->id, 'uploadToVolume')]
 		];
 
 		if ($includeNestedFolders)
@@ -503,7 +503,7 @@ class Asset extends Element
 	 */
 	public function __isset($name)
 	{
-		if (parent::__isset($name) || Craft::$app->assetTransforms->getTransformByHandle($name))
+		if (parent::__isset($name) || Craft::$app->getAssetTransforms()->getTransformByHandle($name))
 		{
 			return true;
 		}
@@ -535,7 +535,7 @@ class Asset extends Element
 		catch (UnknownPropertyException $e)
 		{
 			// Is $name a transform handle?
-			$transform = Craft::$app->assetTransforms->getTransformByHandle($name);
+			$transform = Craft::$app->getAssetTransforms()->getTransformByHandle($name);
 
 			if ($transform)
 			{
@@ -605,7 +605,7 @@ class Asset extends Element
 			if (preg_match('/field_([0-9]+)/', $folder->name, $matches))
 			{
 				$fieldId = $matches[1];
-				$field = Craft::$app->fields->getFieldById($fieldId);
+				$field = Craft::$app->getFields()->getFieldById($fieldId);
 				$settings = $field->settings;
 
 				if ($settings['useSingleFolder'])
@@ -617,7 +617,7 @@ class Asset extends Element
 					$sourceId = $settings['defaultUploadLocationSource'];
 				}
 
-				$source = Craft::$app->volumes->getVolumeById($sourceId);
+				$source = Craft::$app->getVolumes()->getVolumeById($sourceId);
 
 				if ($source)
 				{
@@ -656,7 +656,7 @@ class Asset extends Element
 	 */
 	public function getFolder()
 	{
-		return Craft::$app->assets->getFolderById($this->folderId);
+		return Craft::$app->getAssets()->getFolderById($this->folderId);
 	}
 
 	/**
@@ -664,7 +664,7 @@ class Asset extends Element
 	 */
 	public function getVolume()
 	{
-		return Craft::$app->volumes->getVolumeById($this->volumeId);
+		return Craft::$app->getVolumes()->getVolumeById($this->volumeId);
 	}
 
 	/**
@@ -676,7 +676,7 @@ class Asset extends Element
 	 */
 	public function setTransform($transform)
 	{
-		$this->_transform = Craft::$app->assetTransforms->normalizeTransform($transform);
+		$this->_transform = Craft::$app->getAssetTransforms()->normalizeTransform($transform);
 		return $this;
 	}
 
@@ -694,7 +694,7 @@ class Asset extends Element
 			$transform = $this->_transform;
 		}
 
-		return Craft::$app->assets->getUrlForFile($this, $transform);
+		return Craft::$app->getAssets()->getUrlForFile($this, $transform);
 	}
 
 	/**
@@ -704,7 +704,9 @@ class Asset extends Element
 	{
 		if ($this->hasThumb())
 		{
-			return $this->getUrl(['width' => $size, 'height' => $size]);
+			return UrlHelper::getResourceUrl('assetthumbs/'.$this->id.'/'.$size, [
+				Craft::$app->getResources()->dateParam => $this->dateModified->getTimestamp()
+			]);
 		}
 		else
 		{
@@ -737,7 +739,7 @@ class Asset extends Element
 		if ($this->kind == 'image' && $this->height && $this->width)
 		{
 			// Gd doesn't process bitmaps
-			if ($this->getExtension() == 'bmp' && Craft::$app->images->isGd())
+			if ($this->getExtension() == 'bmp' && Craft::$app->getImages()->isGd())
 			{
 				return false;
 			}
@@ -798,7 +800,7 @@ class Asset extends Element
 	{
 		if (!$this->_transformSource)
 		{
-			Craft::$app->assetTransforms->getLocalImageSource($this);
+			Craft::$app->getAssetTransforms()->getLocalImageSource($this);
 		}
 
 		return $this->_transformSource;
@@ -833,7 +835,7 @@ class Asset extends Element
 	 */
 	public function getImageTransformSourcePath()
 	{
-		$volume = Craft::$app->volumes->getVolumeById($this->volumeId);
+		$volume = Craft::$app->getVolumes()->getVolumeById($this->volumeId);
 
 		if ($volume->isLocal())
 		{
@@ -841,7 +843,7 @@ class Asset extends Element
 		}
 		else
 		{
-			return Craft::$app->path->getAssetsImageSourcePath().'/'.$this->id.'.'.$this->getExtension();
+			return Craft::$app->getPath()->getAssetsImageSourcePath().'/'.$this->id.'.'.$this->getExtension();
 		}
 	}
 
@@ -873,7 +875,7 @@ class Asset extends Element
 			return $this->$dimension;
 		}
 
-		$transform = Craft::$app->assetTransforms->normalizeTransform($transform);
+		$transform = Craft::$app->getAssetTransforms()->normalizeTransform($transform);
 
 		$dimensions = [
 			'width' => $transform->width,

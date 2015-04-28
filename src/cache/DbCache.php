@@ -45,7 +45,7 @@ class DbCache extends \yii\caching\DbCache
 	 */
 	protected function createCacheTable($db, $tableName)
 	{
-		if (!Craft::$app->getDb()->tableExists(Craft::$app->config->get('cacheTableName', ConfigCategory::DbCache), true))
+		if (!Craft::$app->getDb()->tableExists(Craft::$app->getConfig()->get('cacheTableName', ConfigCategory::DbCache), true))
 		{
 			parent::createCacheTable($db, $tableName);
 		}

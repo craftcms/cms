@@ -15,6 +15,12 @@ use craft\app\helpers\StringHelper;
 /**
  * Craft Console Application class
  *
+ * @property Request                              $request          The request component
+ * @property User                                 $user             The user component
+ *
+ * @method Request                                getRequest()      Returns the request component.
+ * @method User                                   getUser()         Returns the user component.
+ *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */
@@ -66,7 +72,7 @@ class Application extends \yii\console\Application
 		parent::init();
 
 		// Load the plugins
-		$this->plugins->loadPlugins();
+		$this->getPlugins()->loadPlugins();
 
 		// Validate some basics on the database configuration file.
 		$this->validateDbConfigFile();

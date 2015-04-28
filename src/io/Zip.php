@@ -45,7 +45,7 @@ class Zip
 
 		IOHelper::createFile($destZip);
 
-		Craft::$app->config->maxPowerCaptain();
+		Craft::$app->getConfig()->maxPowerCaptain();
 
 		$zip = static::_getZipInstance($destZip);
 		return $zip->zip(IOHelper::getRealPath($source), IOHelper::getRealPath($destZip));
@@ -59,7 +59,7 @@ class Zip
 	 */
 	public static function unzip($srcZip, $destFolder)
 	{
-		Craft::$app->config->maxPowerCaptain();
+		Craft::$app->getConfig()->maxPowerCaptain();
 
 		if (IOHelper::fileExists($srcZip))
 		{
@@ -134,7 +134,7 @@ class Zip
 			return false;
 		}
 
-		Craft::$app->config->maxPowerCaptain();
+		Craft::$app->getConfig()->maxPowerCaptain();
 
 		$zip = static::_getZipInstance($sourceZip);
 

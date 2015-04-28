@@ -35,7 +35,7 @@ class Updater
 	 */
 	public function __construct()
 	{
-		Craft::$app->config->maxPowerCaptain();
+		Craft::$app->getConfig()->maxPowerCaptain();
 	}
 
 	/**
@@ -44,7 +44,7 @@ class Updater
 	 */
 	public function getLatestUpdateInfo()
 	{
-		$updateModel = Craft::$app->updates->getUpdates(true);
+		$updateModel = Craft::$app->getUpdates()->getUpdates(true);
 
 		if (!empty($updateModel->errors))
 		{
@@ -62,7 +62,7 @@ class Updater
 	 */
 	public function getUpdateFileInfo()
 	{
-		$md5 = Craft::$app->et->getUpdateFileInfo();
+		$md5 = Craft::$app->getET()->getUpdateFileInfo();
 		return ['md5' => $md5];
 	}
 
@@ -75,11 +75,11 @@ class Updater
 	public function processDownload($md5)
 	{
 		Craft::info('Starting to process the update download.', __METHOD__);
-		$tempPath = Craft::$app->path->getTempPath();
+		$tempPath = Craft::$app->getPath()->getTempPath();
 
 		// Download the package from ET.
 		Craft::info('Downloading patch file to '.$tempPath, __METHOD__);
-		if (($filename = Craft::$app->et->downloadUpdate($tempPath, $md5)) !== false)
+		if (($filename = Craft::$app->getET()->downloadUpdate($tempPath, $md5)) !== false)
 		{
 			$downloadFilePath = $tempPath.'/'.$filename;
 		}
@@ -99,7 +99,7 @@ class Updater
 
 		// Unpack the downloaded package.
 		Craft::info('Unpacking the downloaded package.', __METHOD__);
-		$unzipFolder = Craft::$app->path->getTempPath().'/'.$uid;
+		$unzipFolder = Craft::$app->getPath()->getTempPath().'/'.$uid;
 
 		if (!$this->_unpackPackage($downloadFilePath, $unzipFolder))
 		{
@@ -199,7 +199,7 @@ class Updater
 		}
 		else
 		{
-			$pluginInfo = Craft::$app->plugins->getStoredPluginInfo($plugin->getHandle());
+			$pluginInfo = Craft::$app->getPlugins()->getStoredPluginInfo($plugin->getHandle());
 			$result = $plugin->update($pluginInfo['version']);
 		}
 
@@ -214,14 +214,14 @@ class Updater
 			// Setting new Craft info.
 			Craft::info('Settings new Craft release info in craft_info table.', __METHOD__);
 
-			if (!Craft::$app->updates->updateCraftVersionInfo())
+			if (!Craft::$app->getUpdates()->updateCraftVersionInfo())
 			{
 				throw new Exception(Craft::t('app', 'The update was performed successfully, but there was a problem setting the new info in the database info table.'));
 			}
 		}
 		else
 		{
-			if (!Craft::$app->updates->setNewPluginInfo($plugin))
+			if (!Craft::$app->getUpdates()->setNewPluginInfo($plugin))
 			{
 				throw new Exception(Craft::t('app', 'The update was performed successfully, but there was a problem setting the new info in the plugins table.'));
 			}
@@ -242,7 +242,7 @@ class Updater
 	{
 		// Clear the updates cache.
 		Craft::info('Clearing the update cache.', __METHOD__);
-		if (!Craft::$app->updates->flushUpdateInfoFromCache())
+		if (!Craft::$app->getUpdates()->flushUpdateInfoFromCache())
 		{
 			throw new Exception(Craft::t('app', 'The update was performed successfully, but there was a problem invalidating the update cache.'));
 		}
@@ -273,7 +273,7 @@ class Updater
 	 */
 	private function _cleanTempFiles($unzipFolder)
 	{
-		$appPath = Craft::$app->path->getAppPath();
+		$appPath = Craft::$app->getPath()->getAppPath();
 
 		// Get rid of all the .bak files/folders.
 		$filesToDelete = IOHelper::getFolderContents($appPath, true, ".*\.bak$");
@@ -333,7 +333,7 @@ class Updater
 		}
 
 		// Clear the temp folder.
-		IOHelper::clearFolder(Craft::$app->path->getTempPath(), true);
+		IOHelper::clearFolder(Craft::$app->getPath()->getTempPath(), true);
 	}
 
 	/**
@@ -397,7 +397,7 @@ class Updater
 			}
 
 			$rowData = explode(';', $row);
-			$filePath = IOHelper::normalizePathSeparators(Craft::$app->path->getAppPath().'/'.$rowData[0]);
+			$filePath = IOHelper::normalizePathSeparators(Craft::$app->getPath()->getAppPath().'/'.$rowData[0]);
 
 			if (UpdateHelper::isManifestLineAFolder($filePath))
 			{
@@ -454,7 +454,7 @@ class Updater
 				}
 
 				$rowData = explode(';', $row);
-				$filePath = IOHelper::normalizePathSeparators(Craft::$app->path->getAppPath().'/'.$rowData[0]);
+				$filePath = IOHelper::normalizePathSeparators(Craft::$app->getPath()->getAppPath().'/'.$rowData[0]);
 
 				// It's a folder
 				if (UpdateHelper::isManifestLineAFolder($filePath))
@@ -507,7 +507,7 @@ class Updater
 		}
 
 		// Make sure we can write to craft/app/requirements
-		if (!IOHelper::isWritable(Craft::$app->path->getAppPath().'/requirements'))
+		if (!IOHelper::isWritable(Craft::$app->getPath()->getAppPath().'/requirements'))
 		{
 			throw new Exception(Markdown::process(Craft::t('app', 'Craft needs to be able to write to your craft/app/requirements folder and cannot. Please check your [permissions]({url}).', ['url' => 'http://buildwithcraft.com/docs/updating#one-click-updating'])));
 		}
@@ -517,14 +517,14 @@ class Updater
 		// Make a dupe of the requirements file and give it a random file name.
 		IOHelper::copyFile($requirementsFile, $requirementsFolderPath.'/'.$tempFilename);
 
-		$newTempFilePath = Craft::$app->path->getAppPath().'/requirements/'.$tempFilename;
+		$newTempFilePath = Craft::$app->getPath()->getAppPath().'/requirements/'.$tempFilename;
 
 		// Copy the random file name requirements to the requirements folder.
 		// We don't want to execute any PHP from the storage folder.
 		IOHelper::copyFile($requirementsFolderPath.'/'.$tempFilename, $newTempFilePath);
 
 		require_once($newTempFilePath);
-		require_once(Craft::$app->path->getAppPath().'/requirements/RequirementsChecker.php');
+		require_once(Craft::$app->getPath()->getAppPath().'/requirements/RequirementsChecker.php');
 
 		// Run the requirements checker
 		$reqCheck = new \RequirementsChecker();

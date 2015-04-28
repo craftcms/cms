@@ -61,7 +61,7 @@ class Image
 	 */
 	public function __construct()
 	{
-		$extension = mb_strtolower(Craft::$app->config->get('imageDriver'));
+		$extension = mb_strtolower(Craft::$app->getConfig()->get('imageDriver'));
 
 		// If it's explicitly set, take their word for it.
 		if ($extension === 'gd')
@@ -75,7 +75,7 @@ class Image
 		else
 		{
 			// Let's try to auto-detect.
-			if (Craft::$app->images->isGd())
+			if (Craft::$app->getImages()->isGd())
 			{
 				$this->_instance = new \Imagine\Gd\Imagine();
 			}
@@ -85,7 +85,7 @@ class Image
 			}
 		}
 
-		$this->_quality = Craft::$app->config->get('defaultImageQuality');
+		$this->_quality = Craft::$app->getConfig()->get('defaultImageQuality');
 	}
 
 	/**
@@ -128,7 +128,7 @@ class Image
 			throw new Exception(Craft::t('app', 'No file exists at the path “{path}”', ['path' => $path]));
 		}
 
-		if (!Craft::$app->images->checkMemoryForImage($path))
+		if (!Craft::$app->getImages()->checkMemoryForImage($path))
 		{
 			throw new Exception(Craft::t('app', 'Not enough memory available to perform this image operation.'));
 		}
@@ -146,7 +146,7 @@ class Image
 
 		if ($this->_extension == 'gif')
 		{
-			if (!Craft::$app->images->isGd() && $this->_image->layers())
+			if (!Craft::$app->getImages()->isGd() && $this->_image->layers())
 			{
 				$this->_isAnimatedGif = true;
 			}
@@ -410,7 +410,7 @@ class Image
 	 */
 	public function isTransparent()
 	{
-		if (Craft::$app->images->isImagick() && method_exists("Imagick", "getImageAlphaChannel"))
+		if (Craft::$app->getImages()->isImagick() && method_exists("Imagick", "getImageAlphaChannel"))
 		{
 			return $this->_image->getImagick()->getImageAlphaChannel();
 		}
@@ -528,7 +528,7 @@ class Image
 	 */
 	private function _getResizeFilter()
 	{
-		return (Craft::$app->images->isGd() ? \Imagine\Image\ImageInterface::FILTER_UNDEFINED : \Imagine\Image\ImageInterface::FILTER_LANCZOS);
+		return (Craft::$app->getImages()->isGd() ? \Imagine\Image\ImageInterface::FILTER_UNDEFINED : \Imagine\Image\ImageInterface::FILTER_LANCZOS);
 	}
 
 	/**

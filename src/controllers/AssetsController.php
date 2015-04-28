@@ -80,17 +80,39 @@ class AssetsController extends Controller
 				// and is conflicting with an existing file.
 				if ($conflictResolution == 'replace')
 				{
-					$fileToReplaceWith = Craft::$app->assets->getFileById($fileId);
+					$fileToReplaceWith = Craft::$app->getAssets()->getFileById($fileId);
 
 					$filename = AssetsHelper::prepareAssetName(Craft::$app->getRequest()->getRequiredBodyParam('filename'));
-					$fileToReplace = Craft::$app->assets->findFile(array('filename' => $filename, 'folderId' => $fileToReplaceWith->folderId));
+					$fileToReplace = Craft::$app->getAssets()->findFile(array('filename' => $filename, 'folderId' => $fileToReplaceWith->folderId));
+
+					// Clear all thumb and transform data
+					if (ImageHelper::isImageManipulatable($fileToReplace->getExtension()))
+					{
+						Craft::$app->getAssetTransforms()->deleteAllTransformData($fileToReplace);
+					}
+
+					if (ImageHelper::isImageManipulatable($fileToReplaceWith->getExtension()))
+					{
+						Craft::$app->getAssetTransforms()->deleteAllTransformData($fileToReplaceWith);
+					}
+
+					// Replace the file
+					$volume->deleteFile($fileToReplace->getUri());
+					$volume->renameFile($fileToReplaceWith->getUri(), $fileToReplace->getUri());
+
+					// Update the attributes and save the Asset
+					$fileToReplace->dateModified = $fileToReplaceWith->dateModified;
+					$fileToReplace->size         = $fileToReplaceWith->size;
+					$fileToReplace->kind         = $fileToReplaceWith->kind;
+					$fileToReplace->width        = $fileToReplaceWith->width;
+					$fileToReplace->height       = $fileToReplaceWith->height;
 
 					Craft::$app->assets->replaceAsset($fileToReplace, $fileToReplaceWith);
 
-				}
+x				}
 				else if ($conflictResolution == 'cancel')
 				{
-					Craft::$app->assets->deleteFilesByIds($fileId);
+					Craft::$app->getAssets()->deleteFilesByIds($fileId);
 				}
 
 				return $this->asJson(['success' => true]);
@@ -109,14 +131,14 @@ class AssetsController extends Controller
 
 				if (empty($folderId))
 				{
-					$field = Craft::$app->fields->getFieldById($fieldId);
+					$field = Craft::$app->getFields()->getFieldById($fieldId);
 
 					if (!($field instanceof AssetsField))
 					{
 						throw new HttpException(400, Craft::t('app', 'The field provided is not an Assets field.'));
 					}
 
-					$element = $elementId ? Craft::$app->elements->getElementById($elementId) : null;
+					$element = $elementId ? Craft::$app->getElements()->getElementById($elementId) : null;
 					$folderId = $field->resolveDynamicPath($element);
 				}
 
@@ -125,7 +147,7 @@ class AssetsController extends Controller
 					throw new HttpException(400, Craft::t('app', 'The target destination provided for uploading is not valid.'));
 				}
 
-				$folder = Craft::$app->assets->findFolder(['id' => $folderId]);
+				$folder = Craft::$app->getAssets()->findFolder(['id' => $folderId]);
 
 				if (!$folder)
 				{
@@ -149,16 +171,16 @@ class AssetsController extends Controller
 
 				try
 				{
-					Craft::$app->assets->saveAsset($asset);
+					Craft::$app->getAssets()->saveAsset($asset);
 					IOHelper::deleteFile($pathOnServer, true);
 				}
 				catch (AssetConflictException $exception)
 				{
 					// Okay, get a replacement name and re-save Asset.
-					$replacementName = Craft::$app->assets->getNameReplacementInFolder($asset->filename, $folder);
+					$replacementName = Craft::$app->getAssets()->getNameReplacementInFolder($asset->filename, $folder);
 					$asset->filename = $replacementName;
 
-					Craft::$app->assets->saveAsset($asset);
+					Craft::$app->getAssets()->saveAsset($asset);
 					IOHelper::deleteFile($pathOnServer, true);
 
 					return $this->asJson(['prompt' => true, 'fileId' => $asset->id, 'filename' => $uploadedFile->name]);
@@ -243,7 +265,7 @@ class AssetsController extends Controller
 
 		try
 		{
-			$parentFolder = Craft::$app->assets->findFolder(['id' => $parentId]);
+			$parentFolder = Craft::$app->getAssets()->findFolder(['id' => $parentId]);
 
 			if (!$parentFolder)
 			{
@@ -256,7 +278,7 @@ class AssetsController extends Controller
 			$folderModel->volumeId = $parentFolder->volumeId;
 			$folderModel->path     = $parentFolder->path . $folderName .'/';
 
-			Craft::$app->assets->createFolder($folderModel);
+			Craft::$app->getAssets()->createFolder($folderModel);
 
 			return $this->asJson([
 				'success' => true,
@@ -286,7 +308,7 @@ class AssetsController extends Controller
 		// TODO permission checks
 		try
 		{
-			Craft::$app->assets->deleteFoldersByIds($folderId);
+			Craft::$app->getAssets()->deleteFoldersByIds($folderId);
 		}
 		catch (AssetException $exception)
 		{
@@ -312,15 +334,15 @@ class AssetsController extends Controller
 
 		try
 		{
-			Craft::$app->assets->checkPermissionByFolderIds($folderId, 'removeFromAssetVolume');
-			Craft::$app->assets->checkPermissionByFolderIds($folderId, 'createSubfoldersInAssetVolume');
+			Craft::$app->getAssets()->checkPermissionByFolderIds($folderId, 'removeFromAssetVolume');
+			Craft::$app->getAssets()->checkPermissionByFolderIds($folderId, 'createSubfoldersInAssetVolume');
 		}
 		catch (Exception $e)
 		{
 			return $this->asErrorJson($e->getMessage());
 		}
 
-		$response = Craft::$app->assets->renameFolder($folderId, $newName);
+		$response = Craft::$app->getAssets()->renameFolder($folderId, $newName);
 
 		return $this->asJson($response->getResponseData());
 	}
@@ -413,16 +435,16 @@ class AssetsController extends Controller
 
 		try
 		{
-			Craft::$app->assets->checkPermissionByFolderIds($folderId, 'removeFromAssetVolume');
-			Craft::$app->assets->checkPermissionByFolderIds($parentId, 'uploadToAssetVolume');
-			Craft::$app->assets->checkPermissionByFolderIds($parentId, 'createSubfoldersInAssetVolume');
+			Craft::$app->getAssets()->checkPermissionByFolderIds($folderId, 'removeFromAssetVolume');
+			Craft::$app->getAssets()->checkPermissionByFolderIds($parentId, 'uploadToAssetVolume');
+			Craft::$app->getAssets()->checkPermissionByFolderIds($parentId, 'createSubfoldersInAssetVolume');
 		}
 		catch (Exception $e)
 		{
 			return $this->asErrorJson($e->getMessage());
 		}
 
-		$response = Craft::$app->assets->moveFolder($folderId, $parentId, $action);
+		$response = Craft::$app->getAssets()->moveFolder($folderId, $parentId, $action);
 
 		return $this->asJson($response->getResponseData());
 	}
@@ -443,17 +465,17 @@ class AssetsController extends Controller
 		{
 			$fileId = Craft::$app->getRequest()->getBodyParam('fileId');
 			$handle = Craft::$app->getRequest()->getBodyParam('handle');
-			$fileModel = Craft::$app->assets->getFileById($fileId);
-			$transformIndexModel = Craft::$app->assetTransforms->getTransformIndex($fileModel, $handle);
+			$fileModel = Craft::$app->getAssets()->getFileById($fileId);
+			$transformIndexModel = Craft::$app->getAssetTransforms()->getTransformIndex($fileModel, $handle);
 		}
 		else
 		{
-			$transformIndexModel = Craft::$app->assetTransforms->getTransformIndexModelById($transformId);
+			$transformIndexModel = Craft::$app->getAssetTransforms()->getTransformIndexModelById($transformId);
 		}
 
 		try
 		{
-			$url = Craft::$app->assetTransforms->ensureTransformUrlByIndexModel($transformIndexModel);
+			$url = Craft::$app->getAssetTransforms()->ensureTransformUrlByIndexModel($transformIndexModel);
 		}
 		catch (Exception $exception)
 		{
@@ -476,7 +498,7 @@ class AssetsController extends Controller
 	public function actionGetTransformInfo()
 	{
 		$this->requireAjaxRequest();
-		$transforms = Craft::$app->assetTransforms->getAllTransforms();
+		$transforms = Craft::$app->getAssetTransforms()->getAllTransforms();
 		$output = [];
 		foreach ($transforms as $transform)
 		{
@@ -498,12 +520,12 @@ class AssetsController extends Controller
 	 */
 	private function _checkUploadPermissions($folderId)
 	{
-		$folder = Craft::$app->assets->getFolderById($folderId);
+		$folder = Craft::$app->getAssets()->getFolderById($folderId);
 
 		// if folder exists and the volume ID is null, it's a temp volume and we always allow uploads there.
 		if (!(is_object($folder) && is_null($folder->volumeId)))
 		{
-			Craft::$app->assets->checkPermissionByFolderIds($folderId, 'uploadToAssetVolume');
+			Craft::$app->getAssets()->checkPermissionByFolderIds($folderId, 'uploadToAssetVolume');
 		}
 	}
 }

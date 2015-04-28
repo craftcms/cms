@@ -81,7 +81,7 @@ class FieldLayoutTab extends Model
 		{
 			if ($this->layoutId)
 			{
-				$this->_layout = Craft::$app->fields->getLayoutById($this->layoutId);
+				$this->_layout = Craft::$app->getFields()->getLayoutById($this->layoutId);
 			}
 			else
 			{

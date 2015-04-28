@@ -34,7 +34,7 @@ class Fields
 	 */
 	public function getAllGroups($indexBy = null)
 	{
-		return \Craft::$app->fields->getAllGroups($indexBy);
+		return \Craft::$app->getFields()->getAllGroups($indexBy);
 	}
 
 	/**
@@ -45,7 +45,7 @@ class Fields
 	 */
 	public function getGroupById($groupId)
 	{
-		return \Craft::$app->fields->getGroupById($groupId);
+		return \Craft::$app->getFields()->getGroupById($groupId);
 	}
 
 	// Fields
@@ -59,7 +59,7 @@ class Fields
 	 */
 	public function createField($config)
 	{
-		return \Craft::$app->fields->createField($config);
+		return \Craft::$app->getFields()->createField($config);
 	}
 
 	/**
@@ -70,7 +70,7 @@ class Fields
 	 */
 	public function getFieldById($fieldId)
 	{
-		return \Craft::$app->fields->getFieldById($fieldId);
+		return \Craft::$app->getFields()->getFieldById($fieldId);
 	}
 
 	/**
@@ -81,7 +81,7 @@ class Fields
 	 */
 	public function getFieldByHandle($handle)
 	{
-		return \Craft::$app->fields->getFieldByHandle($handle);
+		return \Craft::$app->getFields()->getFieldByHandle($handle);
 	}
 
 	/**
@@ -92,7 +92,7 @@ class Fields
 	 */
 	public function getAllFields($indexBy = null)
 	{
-		return \Craft::$app->fields->getAllFields($indexBy);
+		return \Craft::$app->getFields()->getAllFields($indexBy);
 	}
 
 	/**
@@ -104,7 +104,7 @@ class Fields
 	 */
 	public function getFieldsByGroupId($groupId, $indexBy = null)
 	{
-		return \Craft::$app->fields->getFieldsByGroupId($groupId, $indexBy);
+		return \Craft::$app->getFields()->getFieldsByGroupId($groupId, $indexBy);
 	}
 
 	/**
@@ -115,7 +115,7 @@ class Fields
 	 */
 	public function getLayoutById($layoutId)
 	{
-		return \Craft::$app->fields->getLayoutById($layoutId);
+		return \Craft::$app->getFields()->getLayoutById($layoutId);
 	}
 
 	/**
@@ -126,7 +126,7 @@ class Fields
 	 */
 	public function getLayoutByType($type)
 	{
-		return \Craft::$app->fields->getLayoutByType($type);
+		return \Craft::$app->getFields()->getLayoutByType($type);
 	}
 
 	/**
@@ -136,7 +136,7 @@ class Fields
 	 */
 	public function getAllFieldTypes()
 	{
-		return \Craft::$app->fields->getAllFieldTypes();
+		return \Craft::$app->getFields()->getAllFieldTypes();
 	}
 
 	/**

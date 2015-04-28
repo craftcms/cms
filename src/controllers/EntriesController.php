@@ -153,7 +153,7 @@ class EntriesController extends BaseEntriesController
 
 			if ($parentId)
 			{
-				$variables['parent'] = Craft::$app->entries->getEntryById($parentId, $variables['localeId']);
+				$variables['parent'] = Craft::$app->getEntries()->getEntryById($parentId, $variables['localeId']);
 			}
 		}
 
@@ -164,7 +164,7 @@ class EntriesController extends BaseEntriesController
 		{
 			if ($entry->id)
 			{
-				$variables['enabledLocales'] = Craft::$app->elements->getEnabledLocalesForElement($entry->id);
+				$variables['enabledLocales'] = Craft::$app->getElements()->getEnabledLocalesForElement($entry->id);
 			}
 			else
 			{
@@ -268,7 +268,7 @@ class EntriesController extends BaseEntriesController
 		}
 
 		// Enable Live Preview?
-		if (!Craft::$app->getRequest()->getIsMobileBrowser(true) && Craft::$app->sections->isSectionTemplateValid($section))
+		if (!Craft::$app->getRequest()->getIsMobileBrowser(true) && Craft::$app->getSections()->isSectionTemplateValid($section))
 		{
 			Craft::$app->getView()->registerJs('Craft.LivePreview.init('.JsonHelper::encode([
 				'fields'        => '#title-field, #fields > div > div > .field',
@@ -397,7 +397,7 @@ class EntriesController extends BaseEntriesController
 
 		if ($versionId)
 		{
-			$entry = Craft::$app->entryRevisions->getVersionById($versionId);
+			$entry = Craft::$app->getEntryRevisions()->getVersionById($versionId);
 
 			if (!$entry)
 			{
@@ -468,7 +468,7 @@ class EntriesController extends BaseEntriesController
 		}
 
 		// Save the entry (finally!)
-		if (Craft::$app->entries->saveEntry($entry))
+		if (Craft::$app->getEntries()->saveEntry($entry))
 		{
 			if (Craft::$app->getRequest()->getIsAjax())
 			{
@@ -529,7 +529,7 @@ class EntriesController extends BaseEntriesController
 
 		$entryId = Craft::$app->getRequest()->getRequiredBodyParam('entryId');
 		$localeId = Craft::$app->getRequest()->getBodyParam('locale');
-		$entry = Craft::$app->entries->getEntryById($entryId, $localeId);
+		$entry = Craft::$app->getEntries()->getEntryById($entryId, $localeId);
 
 		if (!$entry)
 		{
@@ -547,7 +547,7 @@ class EntriesController extends BaseEntriesController
 			$this->requirePermission('deletePeerEntries:'.$entry->sectionId);
 		}
 
-		if (Craft::$app->entries->deleteEntry($entry))
+		if (Craft::$app->getEntries()->deleteEntry($entry))
 		{
 			if (Craft::$app->getRequest()->getIsAjax())
 			{
@@ -592,7 +592,7 @@ class EntriesController extends BaseEntriesController
 	{
 		if ($entryId)
 		{
-			$entry = Craft::$app->entries->getEntryById($entryId, $locale);
+			$entry = Craft::$app->getEntries()->getEntryById($entryId, $locale);
 
 			if (!$entry)
 			{
@@ -603,7 +603,7 @@ class EntriesController extends BaseEntriesController
 		}
 		else if ($draftId)
 		{
-			$entry = Craft::$app->entryRevisions->getDraftById($draftId);
+			$entry = Craft::$app->getEntryRevisions()->getDraftById($draftId);
 
 			if (!$entry)
 			{
@@ -614,7 +614,7 @@ class EntriesController extends BaseEntriesController
 		}
 		else if ($versionId)
 		{
-			$entry = Craft::$app->entryRevisions->getVersionById($versionId);
+			$entry = Craft::$app->getEntryRevisions()->getVersionById($versionId);
 
 			if (!$entry)
 			{
@@ -632,13 +632,13 @@ class EntriesController extends BaseEntriesController
 		$this->enforceEditEntryPermissions($entry);
 
 		// Make sure the entry actually can be viewed
-		if (!Craft::$app->sections->isSectionTemplateValid($entry->getSection()))
+		if (!Craft::$app->getSections()->isSectionTemplateValid($entry->getSection()))
 		{
 			throw new HttpException(404);
 		}
 
 		// Create the token and redirect to the entry URL with the token in place
-		$token = Craft::$app->tokens->createToken(['action' => 'entries/view-shared-entry', 'params' => $params]);
+		$token = Craft::$app->getTokens()->createToken(['action' => 'entries/view-shared-entry', 'params' => $params]);
 		$url = UrlHelper::getUrlWithToken($entry->getUrl(), $token);
 		return Craft::$app->getResponse()->redirect($url);
 	}
@@ -660,15 +660,15 @@ class EntriesController extends BaseEntriesController
 
 		if ($entryId)
 		{
-			$entry = Craft::$app->entries->getEntryById($entryId, $locale);
+			$entry = Craft::$app->getEntries()->getEntryById($entryId, $locale);
 		}
 		else if ($draftId)
 		{
-			$entry = Craft::$app->entryRevisions->getDraftById($draftId);
+			$entry = Craft::$app->getEntryRevisions()->getDraftById($draftId);
 		}
 		else if ($versionId)
 		{
-			$entry = Craft::$app->entryRevisions->getVersionById($versionId);
+			$entry = Craft::$app->getEntryRevisions()->getVersionById($versionId);
 		}
 
 		if (empty($entry))
@@ -697,11 +697,11 @@ class EntriesController extends BaseEntriesController
 
 		if (!empty($variables['sectionHandle']))
 		{
-			$variables['section'] = Craft::$app->sections->getSectionByHandle($variables['sectionHandle']);
+			$variables['section'] = Craft::$app->getSections()->getSectionByHandle($variables['sectionHandle']);
 		}
 		else if (!empty($variables['sectionId']))
 		{
-			$variables['section'] = Craft::$app->sections->getSectionById($variables['sectionId']);
+			$variables['section'] = Craft::$app->getSections()->getSectionById($variables['sectionId']);
 		}
 
 		if (empty($variables['section']))
@@ -756,15 +756,15 @@ class EntriesController extends BaseEntriesController
 			{
 				if (!empty($variables['draftId']))
 				{
-					$variables['entry'] = Craft::$app->entryRevisions->getDraftById($variables['draftId']);
+					$variables['entry'] = Craft::$app->getEntryRevisions()->getDraftById($variables['draftId']);
 				}
 				else if (!empty($variables['versionId']))
 				{
-					$variables['entry'] = Craft::$app->entryRevisions->getVersionById($variables['versionId']);
+					$variables['entry'] = Craft::$app->getEntryRevisions()->getVersionById($variables['versionId']);
 				}
 				else
 				{
-					$variables['entry'] = Craft::$app->entries->getEntryById($variables['entryId'], $variables['localeId']);
+					$variables['entry'] = Craft::$app->getEntries()->getEntryById($variables['entryId'], $variables['localeId']);
 				}
 
 				if (!$variables['entry'])
@@ -847,7 +847,7 @@ class EntriesController extends BaseEntriesController
 
 		if ($entryId)
 		{
-			$entry = Craft::$app->entries->getEntryById($entryId, $localeId);
+			$entry = Craft::$app->getEntries()->getEntryById($entryId, $localeId);
 
 			if (!$entry)
 			{
@@ -940,7 +940,7 @@ class EntriesController extends BaseEntriesController
 		}
 
 		// Have this entry override any freshly queried entries with the same ID/locale
-		Craft::$app->elements->setPlaceholderElement($entry);
+		Craft::$app->getElements()->setPlaceholderElement($entry);
 
 		Craft::$app->getView()->getTwig()->disableStrictVariables();
 

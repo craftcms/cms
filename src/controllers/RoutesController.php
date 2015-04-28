@@ -55,7 +55,7 @@ class RoutesController extends Controller
 			$locale = null;
 		}
 
-		$routeRecord = Craft::$app->routes->saveRoute($urlParts, $template, $routeId, $locale);
+		$routeRecord = Craft::$app->getRoutes()->saveRoute($urlParts, $template, $routeId, $locale);
 
 		if ($routeRecord->hasErrors())
 		{
@@ -81,7 +81,7 @@ class RoutesController extends Controller
 		$this->requirePostRequest();
 
 		$routeId = Craft::$app->getRequest()->getRequiredBodyParam('routeId');
-		Craft::$app->routes->deleteRouteById($routeId);
+		Craft::$app->getRoutes()->deleteRouteById($routeId);
 
 		return $this->asJson(['success' => true]);
 	}
@@ -97,7 +97,7 @@ class RoutesController extends Controller
 		$this->requireAjaxRequest();
 
 		$routeIds = Craft::$app->getRequest()->getRequiredBodyParam('routeIds');
-		Craft::$app->routes->updateRouteOrder($routeIds);
+		Craft::$app->getRoutes()->updateRouteOrder($routeIds);
 
 		return $this->asJson(['success' => true]);
 	}

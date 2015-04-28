@@ -84,7 +84,7 @@ class VolumeFolder extends Model
 	 */
 	public function getVolume()
 	{
-		return Craft::$app->volumes->getVolumeById($this->volumeId);
+		return Craft::$app->getVolumes()->getVolumeById($this->volumeId);
 	}
 
 	/**
@@ -96,7 +96,7 @@ class VolumeFolder extends Model
 	{
 		if (is_null($this->_children))
 		{
-			$this->_children = Craft::$app->assets->findFolders(['parentId' => $this->id]);
+			$this->_children = Craft::$app->getAssets()->findFolders(['parentId' => $this->id]);
 		}
 
 		return $this->_children;
@@ -112,7 +112,7 @@ class VolumeFolder extends Model
 			return null;
 		}
 
-		return Craft::$app->assets->getFolderById($this->parentId);
+		return Craft::$app->getAssets()->getFolderById($this->parentId);
 	}
 
 	/**

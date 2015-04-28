@@ -53,11 +53,11 @@ class UserSettingsController extends Controller
 		$group->handle = Craft::$app->getRequest()->getBodyParam('handle');
 
 		// Did it save?
-		if (Craft::$app->userGroups->saveGroup($group))
+		if (Craft::$app->getUserGroups()->saveGroup($group))
 		{
 			// Save the new permissions
 			$permissions = Craft::$app->getRequest()->getBodyParam('permissions', []);
-			Craft::$app->userPermissions->saveGroupPermissions($group->id, $permissions);
+			Craft::$app->getUserPermissions()->saveGroupPermissions($group->id, $permissions);
 
 			Craft::$app->getSession()->setNotice(Craft::t('app', 'Group saved.'));
 			return $this->redirectToPostedUrl();
@@ -85,7 +85,7 @@ class UserSettingsController extends Controller
 
 		$groupId = Craft::$app->getRequest()->getRequiredBodyParam('id');
 
-		Craft::$app->userGroups->deleteGroupById($groupId);
+		Craft::$app->getUserGroups()->deleteGroupById($groupId);
 
 		return $this->asJson(['success' => true]);
 	}
@@ -103,7 +103,7 @@ class UserSettingsController extends Controller
 		$settings['allowPublicRegistration'] = (bool) Craft::$app->getRequest()->getBodyParam('allowPublicRegistration');
 		$settings['defaultGroup'] = Craft::$app->getRequest()->getBodyParam('defaultGroup');
 
-		if (Craft::$app->systemSettings->saveSettings('users', $settings))
+		if (Craft::$app->getSystemSettings()->saveSettings('users', $settings))
 		{
 			Craft::$app->getSession()->setNotice(Craft::t('app', 'User settings saved.'));
 			return $this->redirectToPostedUrl();

@@ -49,7 +49,7 @@ class RebrandController extends Controller
 			// Make sure a file was uploaded
 			if (!empty($file['name']) && !empty($file['size'])  )
 			{
-				$folderPath = Craft::$app->path->getTempUploadsPath();
+				$folderPath = Craft::$app->getPath()->getTempUploadsPath();
 				IOHelper::ensureFolderExists($folderPath);
 				IOHelper::clearFolder($folderPath, true);
 
@@ -58,13 +58,13 @@ class RebrandController extends Controller
 				move_uploaded_file($file['tmp_name'], $folderPath.'/'.$filename);
 
 				// Test if we will be able to perform image actions on this image
-				if (!Craft::$app->images->checkMemoryForImage($folderPath.'/'.$filename))
+				if (!Craft::$app->getImages()->checkMemoryForImage($folderPath.'/'.$filename))
 				{
 					IOHelper::deleteFile($folderPath.'/'.$filename);
 					return $this->asErrorJson(Craft::t('app', 'The uploaded image is too large'));
 				}
 
-				Craft::$app->images->cleanImage($folderPath.'/'.$filename);
+				Craft::$app->getImages()->cleanImage($folderPath.'/'.$filename);
 
 				$constraint = 500;
 				list ($width, $height) = getimagesize($folderPath.'/'.$filename);
@@ -129,16 +129,16 @@ class RebrandController extends Controller
 				$source = mb_substr($source, 0, mb_strpos($source, '&'));
 			}
 
-			$imagePath = Craft::$app->path->getTempUploadsPath().'/'.$source;
+			$imagePath = Craft::$app->getPath()->getTempUploadsPath().'/'.$source;
 
-			if (IOHelper::fileExists($imagePath) && Craft::$app->images->checkMemoryForImage($imagePath))
+			if (IOHelper::fileExists($imagePath) && Craft::$app->getImages()->checkMemoryForImage($imagePath))
 			{
-				$targetPath = Craft::$app->path->getStoragePath().'/logo';
+				$targetPath = Craft::$app->getPath()->getStoragePath().'/logo';
 
 				IOHelper::ensureFolderExists($targetPath);
 
 					IOHelper::clearFolder($targetPath);
-					Craft::$app->images
+					Craft::$app->getImages()
 						->loadImage($imagePath)
 						->crop($x1, $x2, $y1, $y2)
 						->scaleToFit(300, 300, false)
@@ -167,7 +167,7 @@ class RebrandController extends Controller
 	public function actionDeleteLogo()
 	{
 		$this->requireAdmin();
-		IOHelper::clearFolder(Craft::$app->path->getStoragePath().'/logo');
+		IOHelper::clearFolder(Craft::$app->getPath()->getStoragePath().'/logo');
 
 		$html = Craft::$app->getView()->renderTemplate('settings/general/_logo');
 		return $this->asJson(['html' => $html]);

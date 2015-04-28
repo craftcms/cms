@@ -101,7 +101,7 @@ class MigrationManager extends Component
 	public function up($limit = 0)
 	{
 		// This might take a while
-		Craft::$app->config->maxPowerCaptain();
+		Craft::$app->getConfig()->maxPowerCaptain();
 
 		$migrationNames = $this->getNewMigrations();
 
@@ -161,7 +161,7 @@ class MigrationManager extends Component
 	public function down($limit = 1)
 	{
 		// This might take a while
-		Craft::$app->config->maxPowerCaptain();
+		Craft::$app->getConfig()->maxPowerCaptain();
 
 		if ($limit === 'all' || $limit < 1)
 		{

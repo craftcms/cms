@@ -87,7 +87,7 @@ class RecentEntries extends Widget
 
 			if (is_numeric($sectionId))
 			{
-				$section = Craft::$app->sections->getSectionById($sectionId);
+				$section = Craft::$app->getSections()->getSectionById($sectionId);
 
 				if ($section)
 				{
@@ -201,7 +201,7 @@ class RecentEntries extends Widget
 	{
 		$sectionIds = [];
 
-		foreach (Craft::$app->sections->getEditableSections() as $section)
+		foreach (Craft::$app->getSections()->getEditableSections() as $section)
 		{
 			if ($section->type != Section::TYPE_SINGLE)
 			{

@@ -20,7 +20,7 @@ use yii\base\Component;
 /**
  * Class Tags service.
  *
- * An instance of the Tags service is globally accessible in Craft via [[Application::tags `Craft::$app->tags`]].
+ * An instance of the Tags service is globally accessible in Craft via [[Application::tags `Craft::$app->getTags()`]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
@@ -234,12 +234,12 @@ class Tags extends Component
 				if (!$isNewTagGroup && $oldTagGroup->fieldLayoutId)
 				{
 					// Drop the old field layout
-					Craft::$app->fields->deleteLayoutById($oldTagGroup->fieldLayoutId);
+					Craft::$app->getFields()->deleteLayoutById($oldTagGroup->fieldLayoutId);
 				}
 
 				// Save the new one
 				$fieldLayout = $tagGroup->getFieldLayout();
-				Craft::$app->fields->saveLayout($fieldLayout);
+				Craft::$app->getFields()->saveLayout($fieldLayout);
 
 				// Update the tag group record/model with the new layout ID
 				$tagGroup->fieldLayoutId = $fieldLayout->id;
@@ -307,7 +307,7 @@ class Tags extends Component
 
 			if ($fieldLayoutId)
 			{
-				Craft::$app->fields->deleteLayoutById($fieldLayoutId);
+				Craft::$app->getFields()->deleteLayoutById($fieldLayoutId);
 			}
 
 			// Grab the tag ids so we can clean the elements table.
@@ -317,7 +317,7 @@ class Tags extends Component
 				->where(['groupId' => $tagGroupId])
 				->column();
 
-			Craft::$app->elements->deleteElementById($tagIds);
+			Craft::$app->getElements()->deleteElementById($tagIds);
 
 			$affectedRows = Craft::$app->getDb()->createCommand()->delete('{{%taggroups}}', ['id' => $tagGroupId])->execute();
 
@@ -352,7 +352,7 @@ class Tags extends Component
 	 */
 	public function getTagById($tagId, $localeId)
 	{
-		return Craft::$app->elements->getElementById($tagId, Tag::className(), $localeId);
+		return Craft::$app->getElements()->getElementById($tagId, Tag::className(), $localeId);
 	}
 
 	/**
@@ -406,7 +406,7 @@ class Tags extends Component
 			// Is the event giving us the go-ahead?
 			if ($event->performAction)
 			{
-				$success = Craft::$app->elements->saveElement($tag, false);
+				$success = Craft::$app->getElements()->saveElement($tag, false);
 
 				// If it didn't work, rollback the transaction in case something changed in onBeforeSaveTag
 				if (!$success)

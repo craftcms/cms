@@ -95,7 +95,7 @@ class SearchIndex extends Tool
 
 				if ($element)
 				{
-					Craft::$app->search->indexElementAttributes($element);
+					Craft::$app->getSearch()->indexElementAttributes($element);
 
 					if ($class::hasContent())
 					{
@@ -110,7 +110,7 @@ class SearchIndex extends Tool
 							$keywords[$field->id] = $fieldSearchKeywords;
 						}
 
-						Craft::$app->search->indexElementFields($element->id, $localeId, $keywords);
+						Craft::$app->getSearch()->indexElementFields($element->id, $localeId, $keywords);
 					}
 				}
 			}

@@ -49,6 +49,16 @@ abstract class Volume extends SavableComponent implements VolumeInterface
 	/**
 	 * @inheritdoc
 	 */
+	public function attributeLabels()
+	{
+		return [
+			'url' => Craft::t('app', 'URL'),
+		];
+	}
+
+	/**
+	 * @inheritdoc
+	 */
 	public function rules()
 	{
 		$rules = parent::rules();
@@ -57,7 +67,7 @@ abstract class Volume extends SavableComponent implements VolumeInterface
 		$rules[] = [['fieldLayoutId'], 'number', 'min' => -2147483648, 'max' => 2147483647, 'integerOnly' => true];
 		$rules[] = [['handle'], 'string', 'max' => 255];
 		$rules[] = [['id', 'type', 'settings', 'name', 'handle', 'sortOrder', 'fieldLayoutId', 'url'], 'safe', 'on' => 'search'];
-		$rules[] = [['url'], 'required'];
+		$rules[] = [['name', 'handle', 'url'], 'required'];
 		return $rules;
 	}
 

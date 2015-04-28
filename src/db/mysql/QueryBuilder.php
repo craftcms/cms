@@ -42,13 +42,13 @@ class QueryBuilder extends \yii\db\mysql\QueryBuilder
 		// Use the default charset
 		if (strpos($options, 'DEFAULT CHARSET=') === false)
 		{
-			$options .= ' DEFAULT CHARSET='.Craft::$app->config->get('charset', ConfigCategory::Db);
+			$options .= ' DEFAULT CHARSET='.Craft::$app->getConfig()->get('charset', ConfigCategory::Db);
 		}
 
 		// Use the default collation
 		if (strpos($options, 'COLLATE=') === false)
 		{
-			$options .= ' COLLATE='.Craft::$app->config->get('collation', ConfigCategory::Db);
+			$options .= ' COLLATE='.Craft::$app->getConfig()->get('collation', ConfigCategory::Db);
 		}
 
 		return parent::createTable($table, $columns, $options);

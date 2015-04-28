@@ -78,7 +78,7 @@ class Local extends Volume
 	 */
 	public function getRootPath()
 	{
-		return Craft::$app->config->parseEnvironmentString($this->path);
+		return Craft::$app->getConfig()->parseEnvironmentString($this->path);
 	}
 
 	/**
@@ -86,7 +86,7 @@ class Local extends Volume
 	 */
 	public function getRootUrl()
 	{
-		return rtrim(Craft::$app->config->parseEnvironmentString($this->url), '/').'/';
+		return rtrim(Craft::$app->getConfig()->parseEnvironmentString($this->url), '/').'/';
 	}
 
 

@@ -41,7 +41,7 @@ class Security extends \yii\base\Security
 	{
 		parent::init();
 
-		$this->_blowFishHashCost = Craft::$app->config->get('blowfishHashCost');
+		$this->_blowFishHashCost = Craft::$app->getConfig()->get('blowfishHashCost');
 	}
 
 	/**
@@ -89,12 +89,12 @@ class Security extends \yii\base\Security
 	 */
 	public function getValidationKey()
 	{
-		if ($key = Craft::$app->config->get('validationKey'))
+		if ($key = Craft::$app->getConfig()->get('validationKey'))
 		{
 			return $key;
 		}
 
-		$validationKeyPath = Craft::$app->path->getRuntimePath().'/validation.key';
+		$validationKeyPath = Craft::$app->getPath()->getRuntimePath().'/validation.key';
 
 		if (IOHelper::fileExists($validationKeyPath))
 		{

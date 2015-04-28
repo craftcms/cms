@@ -18,7 +18,7 @@ Craft::$app->requireEdition(Craft::Pro);
 /**
  * Class UserPermissions service.
  *
- * An instance of the UserPermissions service is globally accessible in Craft via [[Application::userPermissions `Craft::$app->userPermissions`]].
+ * An instance of the UserPermissions service is globally accessible in Craft via [[Application::userPermissions `Craft::$app->getUserPermissions()`]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
@@ -68,7 +68,7 @@ class UserPermissions extends Component
 			],
 		];
 
-		foreach (Craft::$app->plugins->getAllPlugins() as $plugin)
+		foreach (Craft::$app->getPlugins()->getAllPlugins() as $plugin)
 		{
 			if ($plugin::hasCpSection())
 			{
@@ -127,7 +127,7 @@ class UserPermissions extends Component
 		// Entries
 		// ---------------------------------------------------------------------
 
-		$sections = Craft::$app->sections->getAllSections();
+		$sections = Craft::$app->getSections()->getAllSections();
 
 		foreach ($sections as $section)
 		{
@@ -146,7 +146,7 @@ class UserPermissions extends Component
 		// Global sets
 		// ---------------------------------------------------------------------
 
-		$globalSets = Craft::$app->globals->getAllSets();
+		$globalSets = Craft::$app->getGlobals()->getAllSets();
 
 		if ($globalSets)
 		{
@@ -156,7 +156,7 @@ class UserPermissions extends Component
 		// Categories
 		// ---------------------------------------------------------------------
 
-		$categoryGroups = Craft::$app->categories->getAllGroups();
+		$categoryGroups = Craft::$app->getCategories()->getAllGroups();
 
 		if ($categoryGroups)
 		{
@@ -166,7 +166,7 @@ class UserPermissions extends Component
 		// Asset sources
 		// ---------------------------------------------------------------------
 
-		$volumes = Craft::$app->volumes->getAllVolumes();
+		$volumes = Craft::$app->getVolumes()->getAllVolumes();
 
 		foreach ($volumes as $volume)
 		{
@@ -177,9 +177,9 @@ class UserPermissions extends Component
 		// Plugins
 		// ---------------------------------------------------------------------
 
-		foreach (Craft::$app->plugins->call('registerUserPermissions') as $pluginHandle => $pluginPermissions)
+		foreach (Craft::$app->getPlugins()->call('registerUserPermissions') as $pluginHandle => $pluginPermissions)
 		{
-			$plugin = Craft::$app->plugins->getPlugin($pluginHandle);
+			$plugin = Craft::$app->getPlugins()->getPlugin($pluginHandle);
 			$permissions[$plugin->name] = $pluginPermissions;
 		}
 

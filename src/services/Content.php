@@ -20,7 +20,7 @@ use yii\base\Component;
 /**
  * Class Content service.
  *
- * An instance of the Content service is globally accessible in Craft via [[Application::content `Craft::$app->content`]].
+ * An instance of the Content service is globally accessible in Craft via [[Application::content `Craft::$app->getContent()`]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
@@ -279,7 +279,7 @@ class Content extends Component
 			$values['title'] = $content->title;
 		}
 
-		foreach (Craft::$app->fields->getFieldsWithContent() as $field)
+		foreach (Craft::$app->getFields()->getFieldsWithContent() as $field)
 		{
 			$handle = $field->handle;
 			$value = $content->$handle;
@@ -406,7 +406,7 @@ class Content extends Component
 
 		foreach ($searchKeywordsByLocale as $localeId => $keywords)
 		{
-			Craft::$app->search->indexElementFields($element->id, $localeId, $keywords);
+			Craft::$app->getSearch()->indexElementFields($element->id, $localeId, $keywords);
 		}
 	}
 

@@ -71,11 +71,6 @@ abstract class Model extends \yii\base\Model
 	 */
 	protected $classSuffix = 'Model';
 
-	/**
-	 * @var
-	 */
-	private $_classHandle;
-
 	// Public Methods
 	// =========================================================================
 
@@ -168,7 +163,7 @@ abstract class Model extends \yii\base\Model
 	 */
 	public function getError($attribute)
 	{
-		Craft::$app->deprecator->log('Model::getError()', 'getError() has been deprecated. Use getFirstError() instead.');
+		Craft::$app->getDeprecator()->log('Model::getError()', 'getError() has been deprecated. Use getFirstError() instead.');
 		return $this->getFirstError($attribute);
 	}
 }

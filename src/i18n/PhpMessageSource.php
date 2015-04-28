@@ -48,7 +48,7 @@ class PhpMessageSource extends \CPhpMessageSource
 	 */
 	public function init()
 	{
-		$this->basePath = Craft::$app->path->getFrameworkPath().'messages';
+		$this->basePath = Craft::$app->getPath()->getFrameworkPath().'messages';
 		parent::init();
 	}
 
@@ -70,7 +70,7 @@ class PhpMessageSource extends \CPhpMessageSource
 			$parentMessages = parent::loadMessages($category, $language);
 
 			// See if there any craft/translations for Yii's system messages.
-			if (($filePath = IOHelper::fileExists(Craft::$app->path->getSiteTranslationsPath().'/'.$language.'.php')) !== false)
+			if (($filePath = IOHelper::fileExists(Craft::$app->getPath()->getSiteTranslationsPath().'/'.$language.'.php')) !== false)
 			{
 				$parentMessages = array_merge($parentMessages, include($filePath));
 			}
@@ -86,7 +86,7 @@ class PhpMessageSource extends \CPhpMessageSource
 			if (Craft::$app->isInstalled() && !Craft::$app->isInMaintenanceMode())
 			{
 				// Don't use PluginService, but go straight to the file system. Who cares if they are disabled.
-				$pluginPaths = IOHelper::getFolders(Craft::$app->path->getPluginsPath());
+				$pluginPaths = IOHelper::getFolders(Craft::$app->getPath()->getPluginsPath());
 
 				if ($pluginPaths)
 				{
@@ -98,13 +98,13 @@ class PhpMessageSource extends \CPhpMessageSource
 			}
 
 			// Craft's translations are up next
-			$paths[] = Craft::$app->path->getCpTranslationsPath();
+			$paths[] = Craft::$app->getPath()->getCpTranslationsPath();
 
 			// Add in Yii's i18n data, which we're going to do some special parsing on
-			$paths[] = Craft::$app->path->getFrameworkPath().'i18n/data';
+			$paths[] = Craft::$app->getPath()->getFrameworkPath().'i18n/data';
 
 			// Site translations take the highest precidence, so they get added last
-			$paths[] = Craft::$app->path->getSiteTranslationsPath();
+			$paths[] = Craft::$app->getPath()->getSiteTranslationsPath();
 
 			// Look for translation file from least to most specific. For example, nl.php gets loaded before nl_nl.php.
 			$translationFiles = [];

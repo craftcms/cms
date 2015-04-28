@@ -15,7 +15,7 @@ use yii\base\Component;
 /**
  * Class Relations service.
  *
- * An instance of the Relations service is globally accessible in Craft via [[Application::relations `Craft::$app->relations`]].
+ * An instance of the Relations service is globally accessible in Craft via [[Application::relations `Craft::$app->getRelations()`]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0

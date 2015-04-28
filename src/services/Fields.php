@@ -47,7 +47,7 @@ use yii\base\Component;
 /**
  * Class Fields service.
  *
- * An instance of the Fields service is globally accessible in Craft via [[Application::fields `Craft::$app->fields`]].
+ * An instance of the Fields service is globally accessible in Craft via [[Application::fields `Craft::$app->getFields()`]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
@@ -271,8 +271,7 @@ class Fields extends Component
 	 */
 	public function getAllFieldTypes()
 	{
-		// TODO: Come up with a way for plugins to add more field classes
-		return [
+		$fieldTypes = [
 			AssetsField::className(),
 			CategoriesField::className(),
 			CheckboxesField::className(),
@@ -292,6 +291,13 @@ class Fields extends Component
 			TagsField::className(),
 			UsersField::className(),
 		];
+
+		foreach (Craft::$app->getPlugins()->call('getFieldTypes', [], true) as $pluginFieldTypes)
+		{
+			$fieldTypes = array_merge($fieldTypes, $pluginFieldTypes);
+		}
+
+		return $fieldTypes;
 	}
 
 	/**
@@ -326,7 +332,7 @@ class Fields extends Component
 	 */
 	public function getAllFields($indexBy = null)
 	{
-		$context = Craft::$app->content->fieldContext;
+		$context = Craft::$app->getContent()->fieldContext;
 
 		if (!isset($this->_allFieldsInContext[$context]))
 		{
@@ -370,7 +376,7 @@ class Fields extends Component
 	 */
 	public function getFieldsWithContent()
 	{
-		$context = Craft::$app->content->fieldContext;
+		$context = Craft::$app->getContent()->fieldContext;
 
 		if (!isset($this->_fieldsWithContent[$context]))
 		{
@@ -426,7 +432,7 @@ class Fields extends Component
 	 */
 	public function getFieldByHandle($handle)
 	{
-		$context = Craft::$app->content->fieldContext;
+		$context = Craft::$app->getContent()->fieldContext;
 
 		if (!isset($this->_fieldsByContextAndHandle[$context]) || !array_key_exists($handle, $this->_fieldsByContextAndHandle[$context]))
 		{
@@ -496,7 +502,7 @@ class Fields extends Component
 			$transaction = Craft::$app->getDb()->getTransaction() === null ? Craft::$app->getDb()->beginTransaction() : null;
 			try
 			{
-				$field->context = Craft::$app->content->fieldContext;
+				$field->context = Craft::$app->getContent()->fieldContext;
 
 				$fieldRecord = $this->_getFieldRecord($field);
 				$isNewField = $fieldRecord->getIsNewRecord();
@@ -519,9 +525,9 @@ class Fields extends Component
 				}
 
 				// Create/alter the content table column
-				$contentTable = Craft::$app->content->contentTable;
+				$contentTable = Craft::$app->getContent()->contentTable;
 				$oldColumnName = $this->oldFieldColumnPrefix.$fieldRecord->getOldHandle();
-				$newColumnName = Craft::$app->content->fieldColumnPrefix.$field->handle;
+				$newColumnName = Craft::$app->getContent()->fieldColumnPrefix.$field->handle;
 
 				if ($field::hasContentColumn())
 				{
@@ -638,8 +644,8 @@ class Fields extends Component
 		try
 		{
 			// De we need to delete the content column?
-			$contentTable = Craft::$app->content->contentTable;
-			$fieldColumnPrefix = Craft::$app->content->fieldColumnPrefix;
+			$contentTable = Craft::$app->getContent()->contentTable;
+			$fieldColumnPrefix = Craft::$app->getContent()->fieldColumnPrefix;
 
 			if (Craft::$app->getDb()->columnExists($contentTable, $fieldColumnPrefix.$field->handle))
 			{

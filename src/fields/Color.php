@@ -5,8 +5,8 @@
  * @license http://buildwithcraft.com/license
  */
 
-namespace craft\app\fields
-;
+namespace craft\app\fields;
+
 use Craft;
 use craft\app\base\Field;
 use yii\db\Schema;

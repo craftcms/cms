@@ -89,7 +89,7 @@ abstract class Template extends \Twig_Template
 			// Don't initialize the TemplateCache service if we don't have to
 			if (Craft::$app->has('templateCache', true))
 			{
-				Craft::$app->templateCache->includeElementInTemplateCaches($elementId);
+				Craft::$app->getTemplateCache()->includeElementInTemplateCaches($elementId);
 			}
 		}
 	}

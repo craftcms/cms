@@ -47,12 +47,12 @@ class User extends \yii\web\User
 	public function __construct($config = [])
 	{
 		// Set the configurable properties
-		$configService = Craft::$app->config;
+		$configService = Craft::$app->getConfig();
 		$config['loginUrl']    = UrlHelper::getUrl($configService->getLoginPath());
 		$config['authTimeout'] = $configService->getUserSessionDuration(false);
 
 		// Set the state-based property names
-		$appId = Craft::$app->config->get('appId');
+		$appId = Craft::$app->getConfig()->get('appId');
 		$stateKeyPrefix = md5('Craft.'.get_class($this).($appId ? '.'.$appId : ''));
 		$config['identityCookie']           = Craft::getCookieConfig(['name' => $stateKeyPrefix.'_identity']);
 		$config['usernameCookie']           = Craft::getCookieConfig(['name' => $stateKeyPrefix.'_username']);
@@ -87,7 +87,7 @@ class User extends \yii\web\User
 	 */
 	public function sendUsernameCookie(UserElement $user)
 	{
-		$rememberUsernameDuration = Craft::$app->config->get('rememberUsernameDuration');
+		$rememberUsernameDuration = Craft::$app->getConfig()->get('rememberUsernameDuration');
 
 		if ($rememberUsernameDuration)
 		{
@@ -362,7 +362,7 @@ class User extends \yii\web\User
 	 */
 	private function _validateUserAgentAndIp()
 	{
-		if (Craft::$app->config->get('requireUserAgentAndIpForSession'))
+		if (Craft::$app->getConfig()->get('requireUserAgentAndIpForSession'))
 		{
 			$request = Craft::$app->getRequest();
 

@@ -29,7 +29,7 @@ class Dashboard
 	 */
 	public function createWidget($config)
 	{
-		return \Craft::$app->dashboard->createWidget($config);
+		return \Craft::$app->getDashboard()->createWidget($config);
 	}
 
 	/**
@@ -40,7 +40,7 @@ class Dashboard
 	 */
 	public function getAllWidgets($indexBy = null)
 	{
-		return \Craft::$app->dashboard->getAllWidgets($indexBy);
+		return \Craft::$app->getDashboard()->getAllWidgets($indexBy);
 	}
 
 	/**
@@ -50,7 +50,7 @@ class Dashboard
 	 */
 	public function getAllWidgetTypes()
 	{
-		return \Craft::$app->dashboard->getAllWidgetTypes();
+		return \Craft::$app->getDashboard()->getAllWidgetTypes();
 	}
 
 	/**

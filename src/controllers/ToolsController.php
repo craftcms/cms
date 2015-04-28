@@ -37,7 +37,7 @@ class ToolsController extends Controller
 		$this->requireAdmin();
 
 		// Any actions here require all we can get.
-		Craft::$app->config->maxPowerCaptain();
+		Craft::$app->getConfig()->maxPowerCaptain();
 	}
 
 	/**
@@ -67,7 +67,7 @@ class ToolsController extends Controller
 	{
 		$filename = Craft::$app->getRequest()->getRequiredQueryParam('filename');
 
-		if (($filePath = IOHelper::fileExists(Craft::$app->path->getTempPath().'/'.$filename.'.zip')) == true)
+		if (($filePath = IOHelper::fileExists(Craft::$app->getPath()->getTempPath().'/'.$filename.'.zip')) == true)
 		{
 			Craft::$app->getRequest()->sendFile(IOHelper::getFilename($filePath), IOHelper::getFileContents($filePath), ['forceDownload' => true]);
 		}

@@ -22,7 +22,7 @@ use yii\base\Component;
 /**
  * Handles search operations.
  *
- * An instance of the Search service is globally accessible in Craft via [[Application::search `Craft::$app->search`]].
+ * An instance of the Search service is globally accessible in Craft via [[Application::search `Craft::$app->getSearch()`]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
@@ -677,7 +677,7 @@ class Search extends Component
 	private function _getFieldIdFromAttribute($attribute)
 	{
 		// Get field id from service
-		$field = Craft::$app->fields->getFieldByHandle($attribute);
+		$field = Craft::$app->getFields()->getFieldByHandle($attribute);
 
 		// Fallback to 0
 		return ($field) ? $field->id : 0;

@@ -132,7 +132,7 @@ class Section extends Model
 		{
 			if ($this->id)
 			{
-				$this->_locales = Craft::$app->sections->getSectionLocales($this->id, 'locale');
+				$this->_locales = Craft::$app->getSections()->getSectionLocales($this->id, 'locale');
 			}
 			else
 			{
@@ -188,7 +188,7 @@ class Section extends Model
 		{
 			if ($this->id)
 			{
-				$this->_entryTypes = Craft::$app->sections->getEntryTypesBySectionId($this->id);
+				$this->_entryTypes = Craft::$app->getSections()->getEntryTypesBySectionId($this->id);
 			}
 			else
 			{

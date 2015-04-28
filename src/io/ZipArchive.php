@@ -44,7 +44,7 @@ class ZipArchive implements ZipInterface
 	 */
 	public function unzip($srcZip, $destFolder)
 	{
-		@ini_set('memory_limit', Craft::$app->config->get('phpMaxMemoryLimit'));
+		@ini_set('memory_limit', Craft::$app->getConfig()->get('phpMaxMemoryLimit'));
 
 		$zip = new \ZipArchive();
 		$zipContents = $zip->open($srcZip, \ZipArchive::CHECKCONS);

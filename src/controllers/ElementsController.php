@@ -87,8 +87,8 @@ class ElementsController extends BaseElementsController
 	{
 		$elementId = Craft::$app->getRequest()->getRequiredBodyParam('elementId');
 		$localeId = Craft::$app->getRequest()->getBodyParam('locale');
-		$elementType = Craft::$app->elements->getElementTypeById($elementId);
-		$element = Craft::$app->elements->getElementById($elementId, $elementType, $localeId);
+		$elementType = Craft::$app->getElements()->getElementTypeById($elementId);
+		$element = Craft::$app->getElements()->getElementById($elementId, $elementType, $localeId);
 
 		if (!$element || !$element->isEditable())
 		{
@@ -110,8 +110,8 @@ class ElementsController extends BaseElementsController
 	{
 		$elementId = Craft::$app->getRequest()->getRequiredBodyParam('elementId');
 		$localeId = Craft::$app->getRequest()->getRequiredBodyParam('locale');
-		$elementType = Craft::$app->elements->getElementTypeById($elementId);
-		$element = Craft::$app->elements->getElementById($elementId, $elementType, $localeId);
+		$elementType = Craft::$app->getElements()->getElementTypeById($elementId);
+		$element = Craft::$app->getElements()->getElementById($elementId, $elementType, $localeId);
 
 		if (!ElementHelper::isElementEditable($element) || !$element)
 		{
@@ -162,7 +162,7 @@ class ElementsController extends BaseElementsController
 		$categoryIds = Craft::$app->getRequest()->getParam('categoryIds', []);
 
 		// Fill in the gaps
-		$categoryIds = Craft::$app->categories->fillGapsInCategoryIds($categoryIds);
+		$categoryIds = Craft::$app->getCategories()->fillGapsInCategoryIds($categoryIds);
 
 		if ($categoryIds)
 		{

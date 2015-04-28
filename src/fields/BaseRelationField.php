@@ -266,7 +266,7 @@ abstract class BaseRelationField extends Field
 
 		if ($value !== null)
 		{
-			Craft::$app->relations->saveRelations($this, $element, $value);
+			Craft::$app->getRelations()->saveRelations($this, $element, $value);
 		}
 	}
 

@@ -16,17 +16,16 @@ use craft\app\db\Query;
 use \yii\base\Component;
 
 /**
- * Class AssetIndexingService
+ * Class AssetIndexer
  *
  * @author     Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright  Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license    http://buildwithcraft.com/license Craft License Agreement
  * @see        http://buildwithcraft.com
  * @package    craft.app.services
- * @since      1.0
- * @deprecated This class will have several breaking changes in Craft 3.0.
+ * @since      3.0
  */
-class AssetIndexing extends Component
+class AssetIndexer extends Component
 {
 	// Public Methods
 	// =========================================================================
@@ -54,7 +53,7 @@ class AssetIndexing extends Component
 	{
 		try
 		{
-			$volume = Craft::$app->volumes->getVolumeById($volumeId);
+			$volume = Craft::$app->getVolumes()->getVolumeById($volumeId);
 
 			$fileList = $volume->getFileList($directory);
 
@@ -125,13 +124,13 @@ class AssetIndexing extends Component
 			// Ensure folders are in the DB
 			foreach ($bucketFolders as $fullPath => $nothing)
 			{
-				$folderId = Craft::$app->assets->ensureFolderByFullPathAndVolumeId(rtrim($fullPath, '/').'/', $volumeId);
+				$folderId = Craft::$app->getAssets()->ensureFolderByFullPathAndVolumeId(rtrim($fullPath, '/').'/', $volumeId);
 				$indexedFolderIds[$folderId] = true;
 			}
 
 			$missingFolders = array();
 
-			$allFolders = Craft::$app->assets->findFolders(array(
+			$allFolders = Craft::$app->getAssets()->findFolders(array(
 				'volumeId' => $volumeId
 			));
 
@@ -162,7 +161,7 @@ class AssetIndexing extends Component
 	 */
 	public function processIndexForVolume($sessionId, $offset, $volumeId)
 	{
-		$volume = Craft::$app->volumes->getVolumeById($volumeId);
+		$volume = Craft::$app->getVolumes()->getVolumeById($volumeId);
 
 		$indexEntryModel = $this->getIndexEntry($volumeId, $sessionId, $offset);
 
@@ -192,8 +191,8 @@ class AssetIndexing extends Component
 						$volume->saveFileLocally($uriPath, $targetPath);
 
 						// Store the local source for now and set it up for deleting, if needed
-						Craft::$app->assetTransforms->storeLocalSource($targetPath);
-						Craft::$app->assetTransforms->queueSourceForDeletingIfNecessary($targetPath);
+						Craft::$app->getAssetTransforms()->storeLocalSource($targetPath);
+						Craft::$app->getAssetTransforms()->queueSourceForDeletingIfNecessary($targetPath);
 					}
 
 					clearstatcache();
@@ -203,7 +202,7 @@ class AssetIndexing extends Component
 
 			$asset->dateModified = $timeModified;
 
-			Craft::$app->assets->saveAsset($asset);
+			Craft::$app->getAssets()->saveAsset($asset);
 
 			return ['result' => $asset->id];
 		}
@@ -382,7 +381,7 @@ class AssetIndexing extends Component
 				$parentId = false;
 			}
 
-			$parentFolder = Craft::$app->assets->findFolder(array(
+			$parentFolder = Craft::$app->getAssets()->findFolder(array(
 				'volumeId' => $volume->id,
 				'path' => $searchFullPath,
 				'parentId' => $parentId
@@ -395,7 +394,7 @@ class AssetIndexing extends Component
 
 			$folderId = $parentFolder->id;
 
-			$assetModel = Craft::$app->assets->findFile(array(
+			$assetModel = Craft::$app->getAssets()->findFile(array(
 				'folderId' => $folderId,
 				'filename' => $filename
 			));
@@ -408,7 +407,7 @@ class AssetIndexing extends Component
 				$assetModel->filename = $filename;
 				$assetModel->kind = IOHelper::getFileKind($extension);
 				$assetModel->indexInProgress = true;
-				Craft::$app->assets->saveAsset($assetModel);
+				Craft::$app->getAssets()->saveAsset($assetModel);
 			}
 
 			return $assetModel;

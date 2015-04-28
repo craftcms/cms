@@ -42,7 +42,7 @@ class ElementHelper
 			$slug = str_replace(['.', '_', '-'], ' ', $element->title);
 
 			// Enforce the limitAutoSlugsToAscii config setting
-			if (Craft::$app->config->get('limitAutoSlugsToAscii'))
+			if (Craft::$app->getConfig()->get('limitAutoSlugsToAscii'))
 			{
 				$slug = StringHelper::toAscii($slug);
 			}
@@ -66,7 +66,7 @@ class ElementHelper
 		// Remove inner-word punctuation.
 		$slug = preg_replace('/[\'"‘’“”\[\]\(\)\{\}:]/u', '', $slug);
 
-		if (Craft::$app->config->get('allowUppercaseInSlug') === false)
+		if (Craft::$app->getConfig()->get('allowUppercaseInSlug') === false)
 		{
 			// Make it lowercase
 			$slug = StringHelper::toLowerCase($slug);
@@ -75,7 +75,7 @@ class ElementHelper
 		// Get the "words". Split on anything that is not alphanumeric, or a period, underscore, or hyphen.
 		preg_match_all('/[\p{L}\p{N}\._-]+/u', $slug, $words);
 		$words = ArrayHelper::filterEmptyStringsFromArray($words[0]);
-		$slug = implode(Craft::$app->config->get('slugWordSeparator'), $words);
+		$slug = implode(Craft::$app->getConfig()->get('slugWordSeparator'), $words);
 
 		return $slug;
 	}
@@ -120,8 +120,8 @@ class ElementHelper
 			$uniqueUriParams[':elementId'] = $element->id;
 		}
 
-		$slugWordSeparator = Craft::$app->config->get('slugWordSeparator');
-		$maxSlugIncrement = Craft::$app->config->get('maxSlugIncrement');
+		$slugWordSeparator = Craft::$app->getConfig()->get('slugWordSeparator');
+		$maxSlugIncrement = Craft::$app->getConfig()->get('maxSlugIncrement');
 
 		for ($i = 0; $i < $maxSlugIncrement; $i++)
 		{

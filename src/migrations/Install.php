@@ -113,7 +113,7 @@ class Install extends InstallMigration
 			'email'       => $this->email,
 			'admin'       => true
 		]);
-		Craft::$app->users->saveUser($user);
+		Craft::$app->getUsers()->saveUser($user);
 		echo " done\n";
 
 		// Log them in
@@ -124,7 +124,7 @@ class Install extends InstallMigration
 
 		// Save the default email settings
 		echo "    > save the email settings ...";
-		Craft::$app->systemSettings->saveSettings('email', [
+		Craft::$app->getSystemSettings()->saveSettings('email', [
 			'protocol'     => EmailerType::Php,
 			'emailAddress' => $this->email,
 			'senderName'   => $this->siteName

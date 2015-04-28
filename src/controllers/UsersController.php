@@ -65,14 +65,14 @@ class UsersController extends Controller
 		}
 
 		// First, a little house-cleaning for expired, pending users.
-		Craft::$app->users->purgeExpiredPendingUsers();
+		Craft::$app->getUsers()->purgeExpiredPendingUsers();
 
 		$loginName = Craft::$app->getRequest()->getBodyParam('loginName');
 		$password = Craft::$app->getRequest()->getBodyParam('password');
 		$rememberMe = (bool) Craft::$app->getRequest()->getBodyParam('rememberMe');
 
 		// Does a user exist with that username/email?
-		$user = Craft::$app->users->getUserByUsernameOrEmail($loginName);
+		$user = Craft::$app->getUsers()->getUserByUsernameOrEmail($loginName);
 
 		if (!$user)
 		{
@@ -86,7 +86,7 @@ class UsersController extends Controller
 		}
 
 		// Log them in
-		$duration = Craft::$app->config->getUserSessionDuration($rememberMe);
+		$duration = Craft::$app->getConfig()->getUserSessionDuration($rememberMe);
 
 		if (Craft::$app->getUser()->login($user, $duration))
 		{
@@ -174,7 +174,7 @@ class UsersController extends Controller
 
 			if ($userId)
 			{
-				$user = Craft::$app->users->getUserById($userId);
+				$user = Craft::$app->getUsers()->getUserById($userId);
 
 				if (!$user)
 				{
@@ -193,7 +193,7 @@ class UsersController extends Controller
 			}
 			else
 			{
-				$user = Craft::$app->users->getUserByUsernameOrEmail($loginName);
+				$user = Craft::$app->getUsers()->getUserByUsernameOrEmail($loginName);
 
 				if (!$user)
 				{
@@ -204,7 +204,7 @@ class UsersController extends Controller
 
 		if (!empty($user))
 		{
-			if (Craft::$app->users->sendPasswordResetEmail($user))
+			if (Craft::$app->getUsers()->sendPasswordResetEmail($user))
 			{
 				if (Craft::$app->getRequest()->getIsAjax())
 				{
@@ -250,14 +250,14 @@ class UsersController extends Controller
 		}
 
 		$userId = Craft::$app->getRequest()->getRequiredParam('userId');
-		$user = Craft::$app->users->getUserById($userId);
+		$user = Craft::$app->getUsers()->getUserById($userId);
 
 		if (!$user)
 		{
 			$this->_noUserExists($userId);
 		}
 
-		echo Craft::$app->users->getPasswordResetUrl($user);
+		echo Craft::$app->getUsers()->getPasswordResetUrl($user);
 		Craft::$app->end();
 	}
 
@@ -281,7 +281,7 @@ class UsersController extends Controller
 				Craft::$app->getUser()->sendUsernameCookie($userToProcess);
 
 				// Send them to the set password template.
-				$url = Craft::$app->config->getSetPasswordPath($code, $id, $userToProcess);
+				$url = Craft::$app->getConfig()->getSetPasswordPath($code, $id, $userToProcess);
 
 				$this->_processSetPasswordPath($userToProcess);
 
@@ -297,12 +297,12 @@ class UsersController extends Controller
 			// POST request. They've just set the password.
 			$code          = Craft::$app->getRequest()->getRequiredBodyParam('code');
 			$id            = Craft::$app->getRequest()->getRequiredParam('id');
-			$userToProcess = Craft::$app->users->getUserByUid($id);
+			$userToProcess = Craft::$app->getUsers()->getUserByUid($id);
 
-			$url = Craft::$app->config->getSetPasswordPath($code, $id, $userToProcess);
+			$url = Craft::$app->getConfig()->getSetPasswordPath($code, $id, $userToProcess);
 
 			// See if we still have a valid token.
-			$isCodeValid = Craft::$app->users->isVerificationCodeValidForUser($userToProcess, $code);
+			$isCodeValid = Craft::$app->getUsers()->isVerificationCodeValidForUser($userToProcess, $code);
 
 			if (!$userToProcess || !$isCodeValid)
 			{
@@ -321,12 +321,12 @@ class UsersController extends Controller
 				$forceDifferentPassword = false;
 			}
 
-			if (Craft::$app->users->changePassword($userToProcess, $forceDifferentPassword))
+			if (Craft::$app->getUsers()->changePassword($userToProcess, $forceDifferentPassword))
 			{
 				if ($userToProcess->status == User::STATUS_PENDING)
 				{
 					// Activate them
-					Craft::$app->users->activateUser($userToProcess);
+					Craft::$app->getUsers()->activateUser($userToProcess);
 
 					// Treat this as an activation request
 					$this->_onAfterActivateUser($userToProcess);
@@ -336,12 +336,12 @@ class UsersController extends Controller
 				if ($userToProcess->can('accessCp'))
 				{
 					// Send them to the login page
-					$url = Craft::$app->config->getLoginPath();
+					$url = Craft::$app->getConfig()->getLoginPath();
 				}
 				else
 				{
 					// Send them to the 'setPasswordSuccessPath'.
-					$setPasswordSuccessPath = Craft::$app->config->getLocalized('setPasswordSuccessPath');
+					$setPasswordSuccessPath = Craft::$app->getConfig()->getLocalized('setPasswordSuccessPath');
 					$url = UrlHelper::getSiteUrl($setPasswordSuccessPath);
 				}
 
@@ -376,7 +376,7 @@ class UsersController extends Controller
 			$userToProcess = $info['userToProcess'];
 			$userIsPending = $userToProcess->status == User::STATUS_PENDING;
 
-			Craft::$app->users->verifyEmailForUser($userToProcess);
+			Craft::$app->getUsers()->verifyEmailForUser($userToProcess);
 
 			if ($userIsPending)
 			{
@@ -401,14 +401,14 @@ class UsersController extends Controller
 		$this->requirePostRequest();
 
 		$userId = Craft::$app->getRequest()->getRequiredBodyParam('userId');
-		$user = Craft::$app->users->getUserById($userId);
+		$user = Craft::$app->getUsers()->getUserById($userId);
 
 		if (!$user)
 		{
 			$this->_noUserExists($userId);
 		}
 
-		if (Craft::$app->users->activateUser($user))
+		if (Craft::$app->getUsers()->activateUser($user))
 		{
 			Craft::$app->getSession()->setNotice(Craft::t('app', 'Successfully activated the user.'));
 		}
@@ -451,7 +451,7 @@ class UsersController extends Controller
 					case 'client':
 					{
 						$isClientAccount = true;
-						$user = Craft::$app->users->getClient();
+						$user = Craft::$app->getUsers()->getClient();
 
 						if (!$user)
 						{
@@ -464,7 +464,7 @@ class UsersController extends Controller
 					}
 					default:
 					{
-						$user = Craft::$app->users->getUserById($userId);
+						$user = Craft::$app->getUsers()->getUserById($userId);
 
 						if (!$user)
 						{
@@ -588,7 +588,7 @@ class UsersController extends Controller
 		}
 
 		// Give plugins a chance to add more actions
-		$pluginActions = Craft::$app->plugins->call('addUserAdministrationOptions', [$user], true);
+		$pluginActions = Craft::$app->getPlugins()->call('addUserAdministrationOptions', [$user], true);
 
 		if ($pluginActions)
 		{
@@ -726,7 +726,7 @@ class UsersController extends Controller
 
 		$userComponent = Craft::$app->getUser();
 		$currentUser = $userComponent->getIdentity();
-		$requireEmailVerification = Craft::$app->systemSettings->getSetting('users', 'requireEmailVerification');
+		$requireEmailVerification = Craft::$app->getSystemSettings()->getSetting('users', 'requireEmailVerification');
 
 		// Get the user being edited
 		// ---------------------------------------------------------------------
@@ -738,7 +738,7 @@ class UsersController extends Controller
 		// Are we editing an existing user?
 		if ($userId)
 		{
-			$user = Craft::$app->users->getUserById($userId);
+			$user = Craft::$app->getUsers()->getUserById($userId);
 
 			if (!$user)
 			{
@@ -757,7 +757,7 @@ class UsersController extends Controller
 			$this->requireAdmin();
 
 			// Make sure there's no Client user yet
-			if (Craft::$app->users->getClient())
+			if (Craft::$app->getUsers()->getClient())
 			{
 				throw new Exception(Craft::t('app', 'A client account already exists.'));
 			}
@@ -779,7 +779,7 @@ class UsersController extends Controller
 			else
 			{
 				// Make sure public registration is allowed
-				if (!Craft::$app->systemSettings->getSetting('users', 'allowPublicRegistration'))
+				if (!Craft::$app->getSystemSettings()->getSetting('users', 'allowPublicRegistration'))
 				{
 					throw new HttpException(403);
 				}
@@ -854,7 +854,7 @@ class UsersController extends Controller
 		// ---------------------------------------------------------------------
 
 		// Is the site set to use email addresses as usernames?
-		if (Craft::$app->config->get('useEmailAsUsername'))
+		if (Craft::$app->getConfig()->get('useEmailAsUsername'))
 		{
 			$user->username    =  $user->email;
 		}
@@ -889,7 +889,7 @@ class UsersController extends Controller
 		// Validate and save!
 		// ---------------------------------------------------------------------
 
-		if (Craft::$app->users->saveUser($user))
+		if (Craft::$app->getUsers()->saveUser($user))
 		{
 			// Save their preferences too
 			$preferences = [
@@ -905,7 +905,7 @@ class UsersController extends Controller
 				]);
 			}
 
-			Craft::$app->users->saveUserPreferences($user, $preferences);
+			Craft::$app->getUsers()->saveUserPreferences($user, $preferences);
 
 			// Is this the current user?
 			if ($user->isCurrent())
@@ -933,7 +933,7 @@ class UsersController extends Controller
 			if ($thisIsPublicRegistration)
 			{
 				// Assign them to the default user group
-				Craft::$app->userGroups->assignUserToDefaultGroup($user);
+				Craft::$app->getUserGroups()->assignUserToDefaultGroup($user);
 			}
 			else
 			{
@@ -954,12 +954,12 @@ class UsersController extends Controller
 					if ($isNewUser)
 					{
 						// Send the activation email
-						Craft::$app->users->sendActivationEmail($user);
+						Craft::$app->getUsers()->sendActivationEmail($user);
 					}
 					else
 					{
 						// Send the standard verification email
-						Craft::$app->users->sendNewEmailVerifyEmail($user);
+						Craft::$app->getUsers()->sendNewEmailVerifyEmail($user);
 					}
 				}
 				catch (\phpmailerException $e)
@@ -977,7 +977,7 @@ class UsersController extends Controller
 			if ($thisIsPublicRegistration && $user->status == User::STATUS_ACTIVE)
 			{
 				// Do we need to auto-login?
-				if (Craft::$app->config->get('autoLoginAfterAccountActivation') === true)
+				if (Craft::$app->getConfig()->get('autoLoginAfterAccountActivation') === true)
 				{
 					Craft::$app->getUser()->loginByUserId($user->id, false, true);
 				}
@@ -1020,10 +1020,10 @@ class UsersController extends Controller
 			// Make sure a file was uploaded
 			if (!empty($file['name']) && !empty($file['size'])  )
 			{
-				$user = Craft::$app->users->getUserById($userId);
+				$user = Craft::$app->getUsers()->getUserById($userId);
 				$userName = AssetsHelper::cleanAssetName($user->username, false);
 
-				$folderPath = Craft::$app->path->getTempUploadsPath().'/userphotos/'.$userName;
+				$folderPath = Craft::$app->getPath()->getTempUploadsPath().'/userphotos/'.$userName;
 
 				IOHelper::clearFolder($folderPath);
 
@@ -1033,13 +1033,13 @@ class UsersController extends Controller
 				move_uploaded_file($file['tmp_name'], $folderPath.'/'.$filename);
 
 				// Test if we will be able to perform image actions on this image
-				if (!Craft::$app->images->checkMemoryForImage($folderPath.'/'.$filename))
+				if (!Craft::$app->getImages()->checkMemoryForImage($folderPath.'/'.$filename))
 				{
 					IOHelper::deleteFile($folderPath.'/'.$filename);
 					return $this->asErrorJson(Craft::t('app', 'The uploaded image is too large'));
 				}
 
-				Craft::$app->images->cleanImage($folderPath.'/'.$filename);
+				Craft::$app->getImages()->cleanImage($folderPath.'/'.$filename);
 
 				$constraint = 500;
 				list ($width, $height) = getimagesize($folderPath.'/'.$filename);
@@ -1103,22 +1103,22 @@ class UsersController extends Controller
 				$source = mb_substr($source, 0, mb_strpos($source, '?'));
 			}
 
-			$user = Craft::$app->users->getUserById($userId);
+			$user = Craft::$app->getUsers()->getUserById($userId);
 			$userName = AssetsHelper::cleanAssetName($user->username, false);
 
 			// make sure that this is this user's file
-			$imagePath = Craft::$app->path->getTempUploadsPath().'/userphotos/'.$userName.'/'.$source;
+			$imagePath = Craft::$app->getPath()->getTempUploadsPath().'/userphotos/'.$userName.'/'.$source;
 
-			if (IOHelper::fileExists($imagePath) && Craft::$app->images->checkMemoryForImage($imagePath))
+			if (IOHelper::fileExists($imagePath) && Craft::$app->getImages()->checkMemoryForImage($imagePath))
 			{
-				Craft::$app->users->deleteUserPhoto($user);
+				Craft::$app->getUsers()->deleteUserPhoto($user);
 
-				$image = Craft::$app->images->loadImage($imagePath);
+				$image = Craft::$app->getImages()->loadImage($imagePath);
 				$image->crop($x1, $x2, $y1, $y2);
 
-				if (Craft::$app->users->saveUserPhoto(IOHelper::getFilename($imagePath), $image, $user))
+				if (Craft::$app->getUsers()->saveUserPhoto(IOHelper::getFilename($imagePath), $image, $user))
 				{
-					IOHelper::clearFolder(Craft::$app->path->getTempUploadsPath().'/userphotos/'.$userName);
+					IOHelper::clearFolder(Craft::$app->getPath()->getTempUploadsPath().'/userphotos/'.$userName);
 
 					$html = Craft::$app->getView()->renderTemplate('users/_userphoto',
 						[
@@ -1130,7 +1130,7 @@ class UsersController extends Controller
 				}
 			}
 
-			IOHelper::clearFolder(Craft::$app->path->getTempUploadsPath().'/userphotos/'.$userName);
+			IOHelper::clearFolder(Craft::$app->getPath()->getTempUploadsPath().'/userphotos/'.$userName);
 		}
 		catch (Exception $exception)
 		{
@@ -1156,11 +1156,11 @@ class UsersController extends Controller
 			$this->requirePermission('editUsers');
 		}
 
-		$user = Craft::$app->users->getUserById($userId);
-		Craft::$app->users->deleteUserPhoto($user);
+		$user = Craft::$app->getUsers()->getUserById($userId);
+		Craft::$app->getUsers()->deleteUserPhoto($user);
 
 		$user->photo = null;
-		Craft::$app->users->saveUser($user);
+		Craft::$app->getUsers()->saveUser($user);
 
 		$html = Craft::$app->getView()->renderTemplate('users/_userphoto',
 			[
@@ -1181,14 +1181,14 @@ class UsersController extends Controller
 		$this->requirePostRequest();
 
 		$userId = Craft::$app->getRequest()->getRequiredBodyParam('userId');
-		$user = Craft::$app->users->getUserById($userId);
+		$user = Craft::$app->getUsers()->getUserById($userId);
 
 		if (!$user)
 		{
 			$this->_noUserExists($userId);
 		}
 
-		Craft::$app->users->sendActivationEmail($user);
+		Craft::$app->getUsers()->sendActivationEmail($user);
 
 		if (Craft::$app->getRequest()->getIsAjax())
 		{
@@ -1214,7 +1214,7 @@ class UsersController extends Controller
 		$this->requirePermission('administrateUsers');
 
 		$userId = Craft::$app->getRequest()->getRequiredBodyParam('userId');
-		$user = Craft::$app->users->getUserById($userId);
+		$user = Craft::$app->getUsers()->getUserById($userId);
 
 		if (!$user)
 		{
@@ -1229,7 +1229,7 @@ class UsersController extends Controller
 			throw new HttpException(403);
 		}
 
-		Craft::$app->users->unlockUser($user);
+		Craft::$app->getUsers()->unlockUser($user);
 
 		Craft::$app->getSession()->setNotice(Craft::t('app', 'User activated.'));
 		return $this->redirectToPostedUrl();
@@ -1248,7 +1248,7 @@ class UsersController extends Controller
 		$this->requirePermission('administrateUsers');
 
 		$userId = Craft::$app->getRequest()->getRequiredBodyParam('userId');
-		$user = Craft::$app->users->getUserById($userId);
+		$user = Craft::$app->getUsers()->getUserById($userId);
 
 		if (!$user)
 		{
@@ -1263,7 +1263,7 @@ class UsersController extends Controller
 			throw new HttpException(403);
 		}
 
-		Craft::$app->users->suspendUser($user);
+		Craft::$app->getUsers()->suspendUser($user);
 
 		Craft::$app->getSession()->setNotice(Craft::t('app', 'User suspended.'));
 		return $this->redirectToPostedUrl();
@@ -1280,7 +1280,7 @@ class UsersController extends Controller
 		$this->requirePermission('deleteUsers');
 
 		$userId = Craft::$app->getRequest()->getRequiredBodyParam('userId');
-		$user = Craft::$app->users->getUserById($userId);
+		$user = Craft::$app->getUsers()->getUserById($userId);
 
 		if (!$user)
 		{
@@ -1303,7 +1303,7 @@ class UsersController extends Controller
 
 		if ($transferContentToId)
 		{
-			$transferContentTo = Craft::$app->users->getUserById($transferContentToId);
+			$transferContentTo = Craft::$app->getUsers()->getUserById($transferContentToId);
 
 			if (!$transferContentTo)
 			{
@@ -1316,7 +1316,7 @@ class UsersController extends Controller
 		}
 
 		// Delete the user
-		if (Craft::$app->users->deleteUser($user, $transferContentTo))
+		if (Craft::$app->getUsers()->deleteUser($user, $transferContentTo))
 		{
 			Craft::$app->getSession()->setNotice(Craft::t('app', 'User deleted.'));
 			return $this->redirectToPostedUrl();
@@ -1340,7 +1340,7 @@ class UsersController extends Controller
 		$this->requirePermission('administrateUsers');
 
 		$userId = Craft::$app->getRequest()->getRequiredBodyParam('userId');
-		$user = Craft::$app->users->getUserById($userId);
+		$user = Craft::$app->getUsers()->getUserById($userId);
 
 		if (!$user)
 		{
@@ -1355,7 +1355,7 @@ class UsersController extends Controller
 			throw new HttpException(403);
 		}
 
-		Craft::$app->users->unsuspendUser($user);
+		Craft::$app->getUsers()->unsuspendUser($user);
 
 		Craft::$app->getSession()->setNotice(Craft::t('app', 'User unsuspended.'));
 		return $this->redirectToPostedUrl();
@@ -1372,11 +1372,11 @@ class UsersController extends Controller
 		$this->requireAdmin();
 
 		// Set the field layout
-		$fieldLayout = Craft::$app->fields->assembleLayoutFromPost();
+		$fieldLayout = Craft::$app->getFields()->assembleLayoutFromPost();
 		$fieldLayout->type = User::className();
-		Craft::$app->fields->deleteLayoutsByType(User::className());
+		Craft::$app->getFields()->deleteLayoutsByType(User::className());
 
-		if (Craft::$app->fields->saveLayout($fieldLayout))
+		if (Craft::$app->getFields()->saveLayout($fieldLayout))
 		{
 			Craft::$app->getSession()->setNotice(Craft::t('app', 'User fields saved.'));
 			return $this->redirectToPostedUrl();
@@ -1452,7 +1452,7 @@ class UsersController extends Controller
 			case User::AUTH_PASSWORD_RESET_REQUIRED:
 			{
 				$message = Craft::t('app', 'You need to reset your password. Check your email for instructions.');
-				Craft::$app->users->sendPasswordResetEmail($user);
+				Craft::$app->getUsers()->sendPasswordResetEmail($user);
 				break;
 			}
 			case User::AUTH_ACCOUNT_SUSPENDED:
@@ -1513,13 +1513,13 @@ class UsersController extends Controller
 		// postCpLoginRedirect tells us
 		if (Craft::$app->getRequest()->getIsCpRequest() && $currentUser->can('accessCp'))
 		{
-			$postCpLoginRedirect = Craft::$app->config->get('postCpLoginRedirect');
+			$postCpLoginRedirect = Craft::$app->getConfig()->get('postCpLoginRedirect');
 			$defaultReturnUrl = UrlHelper::getCpUrl($postCpLoginRedirect);
 		}
 		else
 		{
 			// Otherwise send them wherever postLoginRedirect tells us
-			$postLoginRedirect = Craft::$app->config->get('postLoginRedirect');
+			$postLoginRedirect = Craft::$app->getConfig()->get('postLoginRedirect');
 			$defaultReturnUrl = UrlHelper::getSiteUrl($postLoginRedirect);
 		}
 
@@ -1559,19 +1559,19 @@ class UsersController extends Controller
 		if (!$user->can('accessCp'))
 		{
 			// Make sure we're looking at the front-end templates path to start with.
-			Craft::$app->path->setTemplatesPath(Craft::$app->path->getSiteTemplatesPath());
+			Craft::$app->getPath()->setTemplatesPath(Craft::$app->getPath()->getSiteTemplatesPath());
 
 			// If they haven't defined a front-end set password template
-			if (!Craft::$app->getView()->doesTemplateExist(Craft::$app->config->getLocalized('setPasswordPath')))
+			if (!Craft::$app->getView()->doesTemplateExist(Craft::$app->getConfig()->getLocalized('setPasswordPath')))
 			{
 				// Set the Path service to use the CP templates path instead
-				Craft::$app->path->setTemplatesPath(Craft::$app->path->getCpTemplatesPath());
+				Craft::$app->getPath()->setTemplatesPath(Craft::$app->getPath()->getCpTemplatesPath());
 			}
 		}
 		// The user can access the CP, so send them to Craft's set password template in the dashboard.
 		else
 		{
-			Craft::$app->path->setTemplatesPath(Craft::$app->path->getCpTemplatesPath());
+			Craft::$app->getPath()->setTemplatesPath(Craft::$app->getPath()->getCpTemplatesPath());
 		}
 	}
 
@@ -1618,14 +1618,14 @@ class UsersController extends Controller
 		// Delete their photo?
 		if (Craft::$app->getRequest()->getBodyParam('deleteUserPhoto'))
 		{
-			Craft::$app->users->deleteUserPhoto($user);
+			Craft::$app->getUsers()->deleteUserPhoto($user);
 		}
 
 		// Did they upload a new one?
 		if ($userPhoto = UploadedFile::getInstanceByName('userPhoto'))
 		{
-			Craft::$app->users->deleteUserPhoto($user);
-			$image = Craft::$app->images->loadImage($userPhoto->tempName);
+			Craft::$app->getUsers()->deleteUserPhoto($user);
+			$image = Craft::$app->getImages()->loadImage($userPhoto->tempName);
 			$imageWidth = $image->getWidth();
 			$imageHeight = $image->getHeight();
 
@@ -1634,7 +1634,7 @@ class UsersController extends Controller
 			$verticalMargin = ($imageHeight - $dimension) / 2;
 			$image->crop($horizontalMargin, $imageWidth - $horizontalMargin, $verticalMargin, $imageHeight - $verticalMargin);
 
-			Craft::$app->users->saveUserPhoto($userPhoto->name, $image, $user);
+			Craft::$app->getUsers()->saveUserPhoto($userPhoto->name, $image, $user);
 
 			IOHelper::deleteFile($userPhoto->tempName);
 		}
@@ -1655,7 +1655,7 @@ class UsersController extends Controller
 
 			if ($groupIds !== null)
 			{
-				Craft::$app->userGroups->assignUserToGroups($user->id, $groupIds);
+				Craft::$app->getUserGroups()->assignUserToGroups($user->id, $groupIds);
 			}
 
 			// Save any user permissions
@@ -1670,7 +1670,7 @@ class UsersController extends Controller
 
 			if ($permissions !== null)
 			{
-				Craft::$app->userPermissions->saveUserPermissions($user->id, $permissions);
+				Craft::$app->getUserPermissions()->saveUserPermissions($user->id, $permissions);
 			}
 		}
 	}
@@ -1687,18 +1687,18 @@ class UsersController extends Controller
 		}
 
 		$id            = Craft::$app->getRequest()->getRequiredParam('id');
-		$userToProcess = Craft::$app->users->getUserByUid($id);
+		$userToProcess = Craft::$app->getUsers()->getUserByUid($id);
 		$code          = Craft::$app->getRequest()->getRequiredParam('code');
 		$isCodeValid   = false;
 
 		if ($userToProcess)
 		{
 			// Fire a 'beforeVerifyUser' event
-			Craft::$app->users->trigger(Users::EVENT_BEFORE_VERIFY_EMAIL, new UserEvent([
+			Craft::$app->getUsers()->trigger(Users::EVENT_BEFORE_VERIFY_EMAIL, new UserEvent([
 				'user' => $userToProcess
 			]));
 
-			$isCodeValid = Craft::$app->users->isVerificationCodeValidForUser($userToProcess, $code);
+			$isCodeValid = Craft::$app->getUsers()->isVerificationCodeValidForUser($userToProcess, $code);
 		}
 
 		if (!$userToProcess || !$isCodeValid)
@@ -1707,7 +1707,7 @@ class UsersController extends Controller
 		}
 
 		// Fire an 'afterVerifyUser' event
-		Craft::$app->users->trigger(Users::EVENT_AFTER_VERIFY_EMAIL, new UserEvent([
+		Craft::$app->getUsers()->trigger(Users::EVENT_AFTER_VERIFY_EMAIL, new UserEvent([
 			'user' => $userToProcess
 		]));
 
@@ -1721,17 +1721,17 @@ class UsersController extends Controller
 	 */
 	private function _processInvalidToken($user)
 	{
-		$url = Craft::$app->config->getLocalized('invalidUserTokenPath');
+		$url = Craft::$app->getConfig()->getLocalized('invalidUserTokenPath');
 
 		// TODO: Remove this code in Craft 4
 		if ($url == '')
 		{
 			// Check the deprecated config setting.
-			$url = Craft::$app->config->getLocalized('activateAccountFailurePath');
+			$url = Craft::$app->getConfig()->getLocalized('activateAccountFailurePath');
 
 			if ($url)
 			{
-				Craft::$app->deprecator->log('activateAccountFailurePath', 'The ‘activateAccountFailurePath’ has been deprecated. Use ‘invalidUserTokenPath’ instead.');
+				Craft::$app->getDeprecator()->log('activateAccountFailurePath', 'The ‘activateAccountFailurePath’ has been deprecated. Use ‘invalidUserTokenPath’ instead.');
 			}
 		}
 
@@ -1743,11 +1743,11 @@ class UsersController extends Controller
 		{
 			if ($user && $user->can('accessCp'))
 			{
-				$url = UrlHelper::getCpUrl(Craft::$app->config->getLoginPath());
+				$url = UrlHelper::getCpUrl(Craft::$app->getConfig()->getLoginPath());
 			}
 			else
 			{
-				$url = UrlHelper::getSiteUrl(Craft::$app->config->getLoginPath());
+				$url = UrlHelper::getSiteUrl(Craft::$app->getConfig()->getLoginPath());
 			}
 
 			throw new HttpException('200', Craft::t('app', 'Invalid verification code. Please [login or reset your password]({loginUrl}).', ['loginUrl' => $url]));
@@ -1764,7 +1764,7 @@ class UsersController extends Controller
 		// Should we log them in?
 		$loggedIn = false;
 
-		if (Craft::$app->config->get('autoLoginAfterAccountActivation'))
+		if (Craft::$app->getConfig()->get('autoLoginAfterAccountActivation'))
 		{
 			$loggedIn = Craft::$app->getUser()->loginByUserId($user->id, false, true);
 		}
@@ -1772,12 +1772,12 @@ class UsersController extends Controller
 		// Can they access the CP?
 		if ($user->can('accessCp'))
 		{
-			$postCpLoginRedirect = Craft::$app->config->get('postCpLoginRedirect');
+			$postCpLoginRedirect = Craft::$app->getConfig()->get('postCpLoginRedirect');
 			$url = UrlHelper::getCpUrl($postCpLoginRedirect);
 		}
 		else
 		{
-			$activateAccountSuccessPath = Craft::$app->config->getLocalized('activateAccountSuccessPath');
+			$activateAccountSuccessPath = Craft::$app->getConfig()->getLocalized('activateAccountSuccessPath');
 			$url = UrlHelper::getSiteUrl($activateAccountSuccessPath);
 		}
 

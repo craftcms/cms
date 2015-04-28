@@ -7,6 +7,7 @@ return [
 			'enableCookieValidation' => true,
 		],
 		'response' => 'craft\app\web\Response',
+		'session'  => 'craft\app\web\Session',
 		'urlManager' => [
 			'class' => 'craft\app\web\UrlManager',
 			'enablePrettyUrl' => true,

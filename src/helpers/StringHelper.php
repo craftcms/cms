@@ -709,7 +709,7 @@ class StringHelper extends \yii\helpers\StringHelper
 			// Get the map from Stringy.
 			static::$_asciiCharMap = (new Stringy(''))->getAsciiCharMap();
 
-			foreach (Craft::$app->config->get('customAsciiCharMappings') as $asciiChar => $values)
+			foreach (Craft::$app->getConfig()->get('customAsciiCharMappings') as $asciiChar => $values)
 			{
 				static::$_asciiCharMap[$asciiChar] = $values;
 			}

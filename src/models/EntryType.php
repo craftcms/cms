@@ -120,7 +120,7 @@ class EntryType extends Model
 	{
 		if ($this->sectionId)
 		{
-			return Craft::$app->sections->getSectionById($this->sectionId);
+			return Craft::$app->getSections()->getSectionById($this->sectionId);
 		}
 	}
 }
