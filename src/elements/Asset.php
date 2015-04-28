@@ -18,6 +18,7 @@ use craft\app\elements\actions\RenameFile;
 use craft\app\elements\actions\ReplaceFile;
 use craft\app\elements\actions\View;
 use craft\app\elements\db\AssetQuery;
+use craft\app\errors\AssetConflictException;
 use craft\app\helpers\HtmlHelper;
 use craft\app\helpers\ImageHelper;
 use craft\app\helpers\IOHelper;
@@ -321,20 +322,16 @@ class Asset extends Element
 			$newFilename = $params['filename'];
 
 			// Rename the file
-			$response = Craft::$app->assets->renameAsset($element, $newFilename);
-
-			// Did it work?
-			if ($response->isConflict())
+			try
 			{
-				$element->addError('filename', $response->getDataItem('prompt')->message);
+				Craft::$app->getAssets()->renameAsset($element, $newFilename);
+			}
+			catch (AssetConflictException $exception)
+			{
+				$element->addError('filename', $exception->getMessage());
 				return false;
 			}
 
-			if ($response->isError())
-			{
-				$element->addError('filename', $response->errorMessage);
-				return false;
-			}
 		}
 		else
 		{
@@ -346,7 +343,7 @@ class Asset extends Element
 		if (!$success && $newFilename)
 		{
 			// Better rename it back
-			Craft::$app->assets->renameAsset($element, $oldFilename);
+			Craft::$app->getAssets()->renameAsset($element, $oldFilename);
 		}
 
 		return $success;
