@@ -353,7 +353,7 @@ class CategoriesController extends Controller
 
 		// Set the "Continue Editing" URL
 		$variables['continueEditingUrl'] = $variables['baseCpEditUrl'] .
-			(Craft::$app->isLocalized() && Craft::$app->getLanguage() != $variables['localeId'] ? '/'.$variables['localeId'] : '');
+			(Craft::$app->isLocalized() && Craft::$app->language != $variables['localeId'] ? '/'.$variables['localeId'] : '');
 
 		// Render the template!
 		Craft::$app->getView()->registerCssResource('css/category.css');

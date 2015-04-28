@@ -102,7 +102,7 @@ class Elements extends Component
 	 * @param int    $elementId   The element’s ID.
 	 * @param null   $elementType The element class.
 	 * @param string $localeId    The locale to fetch the element in.
-	 *                            Defaults to [[\craft\app\web\Application::getLanguage() `Craft::$app->getLanguage`]].
+	 *                            Defaults to [[\craft\app\web\Application::language `Craft::$app->language`]].
 	 *
 	 * @return ElementInterface|Element|null The matching element, or `null`.
 	 */
@@ -136,7 +136,7 @@ class Elements extends Component
 	 *
 	 * @param string      $uri         The element’s URI.
 	 * @param string|null $localeId    The locale to look for the URI in, and to return the element in.
-	 *                                 Defaults to [[\craft\app\web\Application::getLanguage() `Craft::$app->getLanguage()`]].
+	 *                                 Defaults to [[\craft\app\web\Application::language `Craft::$app->language`]].
 	 * @param bool        $enabledOnly Whether to only look for an enabled element. Defaults to `false`.
 	 *
 	 * @return ElementInterface|Element|null The matching element, or `null`.

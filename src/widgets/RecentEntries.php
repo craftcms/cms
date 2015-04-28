@@ -62,7 +62,7 @@ class RecentEntries extends Widget
 
 		if ($this->locale === null)
 		{
-			$this->locale = Craft::$app->getLanguage();
+			$this->locale = Craft::$app->language;
 		}
 	}
 

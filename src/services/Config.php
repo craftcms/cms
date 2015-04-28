@@ -142,7 +142,7 @@ class Config extends Component
 	 *
 	 * @param string $item     The name of the config setting.
 	 * @param string $localeId The locale ID to return. Defaults to
-	 *                         [[\craft\app\web\Application::getLanguage() `Craft::$app->getLanguage()`]].
+	 *                         [[\craft\app\web\Application::language `Craft::$app->language`]].
 	 * @param string $category The name of the config file (sans .php). Defaults to 'general'.
 	 *
 	 * @return mixed The value of the config setting, or `null` if a value could not be found.

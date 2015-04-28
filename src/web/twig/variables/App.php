@@ -160,7 +160,7 @@ class App
 	 */
 	public function getLocale()
 	{
-		return \Craft::$app->getLanguage();
+		return \Craft::$app->language;
 	}
 
 	/**

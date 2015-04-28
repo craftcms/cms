@@ -68,6 +68,9 @@ class Application extends \yii\console\Application
 		// Set the timezone
 		$this->_setTimeZone();
 
+		// Set the language
+		$this->_setLanguage();
+
 		// Call parent::init() before the plugin console command logic so the command runner gets initialized
 		parent::init();
 
@@ -76,28 +79,6 @@ class Application extends \yii\console\Application
 
 		// Validate some basics on the database configuration file.
 		$this->validateDbConfigFile();
-	}
-
-	/**
-	 * Returns the target application language.
-	 *
-	 * @return string
-	 */
-	public function getLanguage()
-	{
-		return $this->_getLanguage();
-	}
-
-	/**
-	 * Sets the target application language.
-	 *
-	 * @param string $language
-	 *
-	 * @return null
-	 */
-	public function setLanguage($language)
-	{
-		$this->_setLanguage($language);
 	}
 
 	/**

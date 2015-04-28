@@ -44,7 +44,7 @@ class AppAsset extends AssetBundle
 		$useCompressedJs = (bool) Craft::$app->getConfig()->get('useCompressedJs');
 
 		// Figure out which Datepicker i18n script to load
-		$language = Craft::$app->getLanguage();
+		$language = Craft::$app->language;
 
 		if (in_array($language, ['en-GB', 'fr-CA']))
 		{

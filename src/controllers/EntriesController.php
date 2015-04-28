@@ -336,7 +336,7 @@ class EntriesController extends BaseEntriesController
 		// Set the "Continue Editing" URL
 		$variables['continueEditingUrl'] = $variables['baseCpEditUrl'] .
 			(isset($variables['draftId']) ? '/drafts/'.$variables['draftId'] : '') .
-			(Craft::$app->isLocalized() && Craft::$app->getLanguage() != $variables['localeId'] ? '/'.$variables['localeId'] : '');
+			(Craft::$app->isLocalized() && Craft::$app->language != $variables['localeId'] ? '/'.$variables['localeId'] : '');
 
 		// Can the user delete the entry?
 		$variables['canDeleteEntry'] = $entry->id && (

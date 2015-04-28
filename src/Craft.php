@@ -82,7 +82,7 @@ class Craft extends Yii
      *                              reserved for Craft and 'yii' is reserved for the Yii framework.
 	 * @param string      $message  The original source message.
 	 * @param array       $params   An associative array of key => value pairs to be applied to the message using `strtr`.
-	 * @param string|null $language The target language. If set to null (default), Craft::$app->getLanguage() will be used.
+	 * @param string|null $language The target language. If set to null (default), Craft::$app->language will be used.
 
 	 *
 	 * @return string|null The translated message, or null if the source key could not be found.

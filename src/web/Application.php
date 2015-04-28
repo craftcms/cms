@@ -98,6 +98,9 @@ class Application extends \yii\web\Application
 		// Set the timezone
 		$this->_setTimeZone();
 
+		// Set the language
+		$this->_setLanguage();
+
 		parent::init();
 	}
 
@@ -238,28 +241,6 @@ class Application extends \yii\web\Application
 
 		// If we're still here, finally let Yii do it's thing.
 		return parent::handleRequest($request);
-	}
-
-	/**
-	 * Returns the target application language.
-	 *
-	 * @return string
-	 */
-	public function getLanguage()
-	{
-		return $this->_getLanguage();
-	}
-
-	/**
-	 * Sets the target application language.
-	 *
-	 * @param string $language
-	 *
-	 * @return null
-	 */
-	public function setLanguage($language)
-	{
-		$this->_setLanguage($language);
 	}
 
 	/**

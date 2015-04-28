@@ -697,7 +697,7 @@ class Matrix extends Component
 	 *
 	 * @param int    $blockId  The Matrix block’s ID.
 	 * @param string $localeId The locale ID to return.
-	 *                         Defaults to [[\craft\app\web\Application::getLanguage() `Craft::$app->getLanguage()`]].
+	 *                         Defaults to [[\craft\app\web\Application::language `Craft::$app->language`]].
 	 *
 	 * @return MatrixBlock|null The Matrix block, or `null` if it didn’t exist.
 	 */

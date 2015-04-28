@@ -63,7 +63,7 @@ class Entries extends Component
 	 *
 	 * @param int    $entryId  The entry’s ID.
 	 * @param string $localeId The locale to fetch the entry in.
-	 *                         Defaults to [[Application::getLanguage() `Craft::$app->getLanguage()`]].
+	 *                         Defaults to [[Application::language `Craft::$app->language`]].
 	 *
 	 * @return Entry|null The entry with the given ID, or `null` if an entry could not be found.
 	 */

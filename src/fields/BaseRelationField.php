@@ -391,7 +391,7 @@ abstract class BaseRelationField extends Field
 			}
 		}
 
-		return Craft::$app->getLanguage();
+		return Craft::$app->language;
 	}
 
 	/**

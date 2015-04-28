@@ -123,11 +123,6 @@ trait ApplicationTrait
 	private $_isDbConnectionValid = false;
 
 	/**
-	 * @var
-	 */
-	private $_language;
-
-	/**
 	 * @var bool
 	 */
 	private $_gettingLanguage = false;
@@ -1465,47 +1460,27 @@ trait ApplicationTrait
 	}
 
 	/**
-	 * Returns the target application language.
-	 *
-	 * @return string
-	 */
-	private function _getLanguage()
-	{
-		/* @var $this \craft\app\web\Application|\craft\app\console\Application */
-		if (!isset($this->_language))
-		{
-			// Defend against an infinite getLanguage() loop
-			if (!$this->_gettingLanguage)
-			{
-				$this->_gettingLanguage = true;
-				$request = $this->getRequest();
-				$useUserLanguage = $request->getIsConsoleRequest() || $request->getIsCpRequest();
-				$targetLanguage = $this->getTargetLanguage($useUserLanguage);
-				$this->setLanguage($targetLanguage);
-			}
-			else
-			{
-				// We tried to get the language, but something went wrong. Use fallback to prevent infinite loop.
-				$fallbackLanguage = $this->_getFallbackLanguage();
-				$this->setLanguage($fallbackLanguage);
-				$this->_gettingLanguage = false;
-			}
-		}
-
-		return $this->_language;
-	}
-
-	/**
 	 * Sets the target application language.
-	 *
-	 * @param string $language
-	 *
-	 * @return null
 	 */
-	private function _setLanguage($language)
+	private function _setLanguage()
 	{
 		/* @var $this \craft\app\web\Application|\craft\app\console\Application */
-		$this->_language = $language;
+		// Defend against an infinite _setLanguage() loop
+		if (!$this->_gettingLanguage)
+		{
+			$this->_gettingLanguage = true;
+			$request = $this->getRequest();
+			$useUserLanguage = $request->getIsConsoleRequest() || $request->getIsCpRequest();
+			$targetLanguage = $this->getTargetLanguage($useUserLanguage);
+			$this->language = $targetLanguage;
+		}
+		else
+		{
+			// We tried to get the language, but something went wrong. Use fallback to prevent infinite loop.
+			$fallbackLanguage = $this->_getFallbackLanguage();
+			$this->_gettingLanguage = false;
+			$this->language = $fallbackLanguage;
+		}
 	}
 
 	/**
