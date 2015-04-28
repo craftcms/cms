@@ -14,6 +14,7 @@ namespace craft\app\base;
 
 use Craft;
 use craft\app\errors\VolumeFileExistsException;
+use craft\app\errors\VolumeFileNotFoundException;
 use craft\app\errors\VolumeFolderExistsException;
 use League\Flysystem\AdapterInterface;
 use League\Flysystem\FileExistsException;
@@ -157,6 +158,10 @@ abstract class Volume extends SavableComponent implements VolumeInterface
 		catch (FileExistsException $exception)
 		{
 			throw new VolumeFileExistsException($exception->getMessage());
+		}
+		catch (FileNotFoundException $exception)
+		{
+			throw new VolumeFileNotFoundException(Craft::t('app', 'File was not found while attempting to rename {path}!', array('path' => $path)));
 		}
 	}
 

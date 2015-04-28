@@ -19,12 +19,14 @@ use craft\app\errors\AssetMissingException;
 use craft\app\errors\EventException;
 use craft\app\errors\VolumeException;
 use craft\app\errors\VolumeFileExistsException;
+use craft\app\errors\VolumeFileNotFoundException;
 use craft\app\errors\VolumeFolderExistsException;
 use craft\app\errors\ElementSaveException;
 use craft\app\errors\Exception;
 use craft\app\errors\FileException;
 use craft\app\errors\ModelValidationException;
 use craft\app\events\AssetEvent;
+use craft\app\events\ReplaceAssetEvent;
 use craft\app\helpers\AssetsHelper;
 use craft\app\helpers\DbHelper;
 use craft\app\helpers\ImageHelper;
@@ -34,6 +36,7 @@ use craft\app\helpers\UrlHelper;
 use craft\app\models\AssetTransformIndex;
 use craft\app\models\VolumeFolder as VolumeFolderModel;
 use craft\app\models\FolderCriteria;
+use craft\app\models\VolumeFolder;
 use craft\app\records\Asset as AssetRecord;
 use craft\app\records\VolumeFolder as VolumeFolderRecord;
 use yii\base\Component;
@@ -271,27 +274,71 @@ class Assets extends Component
 	}
 
 	/**
-	 * Replace an Asset.
+	 * Replaces an Asset with another.
 	 *
-	 * Replace an Asset by it's id, a local file and the filename to use.
+	 * @param Asset $fileToReplace
+	 * @param Asset $fileToReplaceWith
+	 * @param bool  $replaceContent whether to replace content as well.
 	 *
-	 * @param $fileId
+	 * @return null
+	 */
+	public function replaceAsset(Asset $fileToReplace, Asset $fileToReplaceWith, $replaceContent = false)
+	{
+		$targetVolume = $fileToReplace->getVolume();
+
+		// Clear all thumb and transform data
+		if (ImageHelper::isImageManipulatable($fileToReplace->getExtension()))
+		{
+			Craft::$app->assetTransforms->deleteAllTransformData($fileToReplace);
+		}
+
+		// Replace the file
+		$targetVolume->deleteFile($fileToReplace->getUri());
+
+		$this->_moveFileToFolder($fileToReplaceWith, $fileToReplace->getFolder());
+
+		// Update the attributes and save the Asset
+		$fileToReplace->dateModified = $fileToReplaceWith->dateModified;
+		$fileToReplace->size         = $fileToReplaceWith->size;
+		$fileToReplace->kind         = $fileToReplaceWith->kind;
+		$fileToReplace->width        = $fileToReplaceWith->width;
+		$fileToReplace->height       = $fileToReplaceWith->height;
+
+		if ($replaceContent)
+		{
+			$fileToReplace->setContent($fileToReplaceWith->getContent());
+		}
+
+		Craft::$app->assets->saveAsset($fileToReplace);
+
+		// And delete the conflicting record
+		Craft::$app->assets->deleteFilesByIds($fileToReplaceWith->id, false);
+	}
+
+	/**
+	 * Replace an Asset's file.
+	 *
+	 * Replace an Asset's file by it's id, a local file and the filename to use.
+	 *
+	 * @param $assetId
 	 * @param $pathOnServer
-	 * @param $fileName
+	 * @param $filename
+	 *g
+	 * @throws EventException
 	 * @throws FileException
 	 * @throws AssetLogicException
 	 * @return void
 	 */
-	public function replaceFile($fileId, $pathOnServer, $fileName)
+	public function replaceAssetFile($assetId, $pathOnServer, $filename)
 	{
-		$existingFile = Craft::$app->assets->getFileById($fileId);
+		$existingFile = Craft::$app->assets->getFileById($assetId);
 
 		if (!$existingFile)
 		{
-			throw new AssetLogicException(Craft::t('app', 'The file to be replaced cannot be found.'));
+			throw new AssetLogicException(Craft::t('app', 'The asset to be replaced cannot be found.'));
 		}
 
-		$event = new AssetEvent(['asset' => $existingFile, 'replaceWith' => $pathOnServer, 'newFilename' => $fileName]);
+		$event = new ReplaceAssetEvent(['asset' => $existingFile, 'replaceWith' => $pathOnServer, 'filename' => $filename]);
 		$this->trigger(static::EVENT_BEFORE_REPLACE_FILE, $event);
 
 		// Is the event preventing this from happening?
@@ -302,7 +349,7 @@ class Assets extends Component
 
 		// TODO check event
 
-		$existingFile = Craft::$app->assets->getFileById($fileId);
+		$existingFile = Craft::$app->assets->getFileById($assetId);
 
 		$volume = $existingFile->getVolume();
 
@@ -321,14 +368,14 @@ class Assets extends Component
 		}
 
 		// Re-use the same filename
-		if (StringHelper::toLowerCase($existingFile->filename) == StringHelper::toLowerCase($fileName))
+		if (StringHelper::toLowerCase($existingFile->filename) == StringHelper::toLowerCase($filename))
 		{
 			// The case is changing in the filename
-			if ($existingFile->filename != $fileName)
+			if ($existingFile->filename != $filename)
 			{
 				// Delete old, change the name, upload the new
 				$volume->deleteFile($existingFile->getUri());
-				$existingFile->filename = $fileName;
+				$existingFile->filename = $filename;
 				$volume->createFileByStream($existingFile->getUri(), $stream);
 			}
 			else
@@ -339,14 +386,14 @@ class Assets extends Component
 		else
 		{
 			// Get an available name to avoid conflicts and upload the file
-			$fileName = Craft::$app->assets->getNameReplacementInFolder($fileName, $existingFile->getFolder());
+			$filename = Craft::$app->assets->getNameReplacementInFolder($filename, $existingFile->getFolder());
 
 			// Delete old, change the name, upload the new
 			$volume->deleteFile($existingFile->getUri());
-			$existingFile->filename = $fileName;
+			$existingFile->filename = $filename;
 			$volume->createFileByStream($existingFile->getUri(), $stream);
 
-			$existingFile->kind = IOHelper::getFileKind(IOHelper::getExtension($fileName));
+			$existingFile->kind = IOHelper::getFileKind(IOHelper::getExtension($filename));
 		}
 
 		if (is_resource($stream))
@@ -369,7 +416,7 @@ class Assets extends Component
 
 		Craft::$app->assets->saveAsset($existingFile);
 
-		$event = new AssetEvent(['asset' => $existingFile, 'newFilename' => $fileName]);
+		$event = new ReplaceAssetEvent(['asset' => $existingFile, 'filename' => $filename]);
 		$this->trigger(static::EVENT_AFTER_REPLACE_FILE, $event);
 	}
 
@@ -742,7 +789,7 @@ class Assets extends Component
 	 */
 	public function getUrlForFile(Asset $file, $transform = null)
 	{
-		//TODO
+		//TODO Asset thumb cache bust?
 		if (!$transform || !ImageHelper::isImageManipulatable(IOHelper::getExtension($file->filename)))
 		{
 			$volume = $file->getVolume();
@@ -840,75 +887,39 @@ class Assets extends Component
 	 * Move an Asset.
 	 *
 	 * @param Asset $asset
-	 * @param $folderId
+	 * @param int $folderId Id of the folder of the destination
+	 * @param string $newFilename filename to use for the file at it's destination
 	 *
 	 * @throws AssetConflictException
 	 * @throws FileException
 	 * @return null
 	 */
-	public function moveAsset(Asset $asset, $folderId)
+	public function moveAsset(Asset $asset, $folderId, $newFilename = "")
 	{
-		$existingAsset = $this->findFile(array('filename' => $asset->filename, 'folderId' => $folderId));
+		$filename = $newFilename ?: $asset->filename;
+		$existingAsset = $this->findFile(array('filename' => $filename, 'folderId' => $folderId));
+
 		if ($existingAsset && $existingAsset->id != $asset->id)
 		{
-			throw new AssetConflictException(Craft::t('app', 'A file with the name “{filename}” already exists in the folder.', array('filename' => $asset->filename)));
+			throw new AssetConflictException(Craft::t('app', 'A file with the name “{filename}” already exists in the folder.', array('filename' => $filename)));
 		}
 
-		$sourceVolume = $asset->getVolume();
 		$targetFolder = $this->getFolderById($folderId);
 
-		$fromPath = $asset->getUri();
-		$toPath = $targetFolder->path.$asset->filename;
-
-		// Move inside the source.
-		if ($asset->volumeId == $targetFolder->volumeId)
+		if (!$targetFolder)
 		{
-			$sourceVolume->renameFile($fromPath, $toPath);
-			$transformIndexes = Craft::$app->assetTransforms->getAllCreatedTransformsForFile($asset);
-
-			// Move the transforms
-			foreach ($transformIndexes as $transformIndex)
-			{
-				/**
-				 * @var AssetTransformIndex $transformIndex
-				 */
-				$transformPath = Craft::$app->assetTransforms->getTransformSubpath($asset, $transformIndex);
-				$baseFrom = $asset->getFolder()->path;
-				$baseTo = $targetFolder->path;
-
-				$sourceVolume->renameFile($baseFrom.$transformPath, $baseTo.$transformPath);
-			}
-		}
-		// Move between sources
-		else
-		{
-			$localPath = IOHelper::getTempFilePath($asset->getExtension());
-			$sourceVolume->saveFileLocally($asset->getUri(), $localPath);
-			$targetVolume = $targetFolder->getVolume();
-			$stream = fopen($localPath, 'r');
-
-			if (!$stream)
-			{
-				throw new FileException(Craft::t('app', 'Could not open file for streaming at {path}', array('path' => $asset->newFilePath)));
-			}
-
-			$targetVolume->createFileByStream($toPath, $stream);
-			$sourceVolume->deleteFile($asset->getUri());
-
-			if (is_resource($stream))
-			{
-				fclose($stream);
-			}
-
-			// Nuke the transforms
-			Craft::$app->assetTransforms->deleteAllTransformData($asset);
+			throw new AssetLogicException(Craft::t('app', 'That folder does not exist'));
 		}
 
+		$this->_moveFileToFolder($asset, $targetFolder, $filename);
 
 		$asset->folderId = $folderId;
 		$asset->volumeId = $targetFolder->volumeId;
+		$asset->filename = $filename;
+
 		$this->saveAsset($asset);
 	}
+
 
 	/**
 	 * Return true if user has permission to perform the action on the folder.
@@ -1082,6 +1093,88 @@ class Assets extends Component
 	// Private Methods
 	// =========================================================================
 
+	/**
+	 * Move an Asset's file to the specified folder.
+	 *
+	 * @param Asset $asset
+	 * @param VolumeFolderModel $targetFolder
+	 * @param string $newFilename new filename to use
+	 *
+	 * @throws FileException
+	 * @return null
+	 */
+	private function _moveFileToFolder(Asset $asset, VolumeFolderModel $targetFolder, $newFilename = "")
+	{
+		$filename = $newFilename ?: $asset->filename;
+
+		$sourceVolume = $asset->getVolume();
+		$fromPath = $asset->getUri();
+		$toPath = $targetFolder->path.$filename;
+
+		// Move inside the source.
+		if ($asset->volumeId == $targetFolder->volumeId)
+		{
+			$sourceVolume->renameFile($fromPath, $toPath);
+			$transformIndexes = Craft::$app->assetTransforms->getAllCreatedTransformsForFile($asset);
+
+			// Move the transforms
+			foreach ($transformIndexes as $transformIndex)
+			{
+				/**
+				 * @var AssetTransformIndex $transformIndex
+				 */
+				$fromTransformPath = Craft::$app->assetTransforms->getTransformSubpath($asset, $transformIndex);
+				$toTransformPath = $fromTransformPath;
+
+				// In case we're changing the filename, make sure that we're not missing that.
+				$parts = explode("/", $toTransformPath);
+				$transformName = array_pop($parts);
+				$toTransformPath = join("/", $parts).'/'.IOHelper::getFilename($filename, false).'.'.IOHelper::getExtension($transformName);
+
+				$baseFrom = $asset->getFolder()->path;
+				$baseTo = $targetFolder->path;
+
+				// Overwrite existing transforms
+				$sourceVolume->deleteFile($baseTo.$toTransformPath);
+
+				try
+				{
+					$sourceVolume->renameFile($baseFrom.$fromTransformPath, $baseTo.$toTransformPath);
+					$transformIndex->filename = $filename;
+					Craft::$app->assetTransforms->storeTransformIndexData($transformIndex);
+				}
+				catch (VolumeFileNotFoundException $exception)
+				{
+					// No biggie, just delete the transform index as well then
+					Craft::$app->assetTransforms->deleteTransformIndex($transformIndex->id);
+				}
+			}
+		}
+		// Move between sources
+		else
+		{
+			$localPath = IOHelper::getTempFilePath($asset->getExtension());
+			$sourceVolume->saveFileLocally($asset->getUri(), $localPath);
+			$targetVolume = $targetFolder->getVolume();
+			$stream = fopen($localPath, 'r');
+
+			if (!$stream)
+			{
+				throw new FileException(Craft::t('app', 'Could not open file for streaming at {path}', array('path' => $asset->newFilePath)));
+			}
+
+			$targetVolume->createFileByStream($toPath, $stream);
+			$sourceVolume->deleteFile($asset->getUri());
+
+			if (is_resource($stream))
+			{
+				fclose($stream);
+			}
+
+			// Nuke the transforms
+			Craft::$app->assetTransforms->deleteAllTransformData($asset);
+		}
+	}
 	/**
 	 * Returns a DbCommand object prepped for retrieving assets.
 	 *

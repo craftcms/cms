@@ -272,17 +272,21 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 					// Loop trough all the responses
 					for (var i = 0; i < responseArray.length; i++)
 					{
-						var data = responseArray[i];
+						var response = responseArray[i];
 
 						// Push prompt into prompt array
-						if (data.prompt)
+						if (response.prompt)
 						{
-							this.promptHandler.addPrompt(data);
+							promptData = this._fileConflictTemplate;
+							promptData.message = Craft.t(promptData.message, {file: response.filename});
+							response.prompt = promptData;
+
+							this.promptHandler.addPrompt(response);
 						}
 
-						if (data.error)
+						if (response.error)
 						{
-							alert(data.error);
+							alert(response.error);
 						}
 					}
 
@@ -332,9 +336,9 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 								// Find the matching request parameters for this file and modify them slightly
 								for (var ii = 0; ii < parameterArray.length; ii++)
 								{
-									if (parameterArray[ii].filename == returnData[i].filename)
+									if (parameterArray[ii].fileId == returnData[i].fileId)
 									{
-										parameterArray[ii].action = returnData[i].choice;
+										parameterArray[ii].userResponse = returnData[i].choice;
 										newParameterArray.push(parameterArray[ii]);
 									}
 								}
@@ -866,6 +870,8 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 		this._positionProgressBar();
 		this.progressBar.resetProgressBar();
 		this.progressBar.showProgressBar();
+
+		this.promptHandler.resetPrompts();
 	},
 
 	/**
