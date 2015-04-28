@@ -162,7 +162,7 @@
 									{% set userLocale = account.getPreferredLocale() ?: (account.isCurrent() ? craft.locale : allSiteLocales[0]) %}
 
 									{% for locale in allSiteLocales %}
-										<option value="{{ locale.id }}" {% if locale.id == userLocale %}selected{% endif %}>{{ locale.getName() }}</option>
+										<option value="{{ locale.id }}" {% if locale.id == userLocale %}selected{% endif %}>{{ locale.getDisplayName() }}</option>
 									{% endfor %}
 								</select>
 							</div>
