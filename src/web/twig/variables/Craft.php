@@ -78,7 +78,7 @@ class Craft extends ServiceLocator
 			'tasks' => 'craft\app\web\twig\variables\Tasks',
 			'updates' => 'craft\app\web\twig\variables\Updates',
 			'session' => 'craft\app\web\twig\variables\UserSession',
-			'i18n' => 'craft\app\web\twig\variables\I18n',
+			'i18n' => 'craft\app\web\twig\variables\I18N',
 		];
 
 		switch (\Craft::$app->getEdition())

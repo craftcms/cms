@@ -9,7 +9,6 @@ namespace craft\app\dates;
 
 use Craft;
 use craft\app\helpers\DateTimeHelper;
-use yii\helpers\FormatConverter;
 
 /**
  * Class DateTime
