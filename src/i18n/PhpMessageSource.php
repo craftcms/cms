@@ -16,7 +16,7 @@ use craft\app\helpers\IOHelper;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */
-class PhpMessageSource extends \CPhpMessageSource
+class PhpMessageSource extends \yii\i18n\PhpMessageSource
 {
 	// Properties
 	// =========================================================================
@@ -28,17 +28,17 @@ class PhpMessageSource extends \CPhpMessageSource
 	 *
 	 * @var boolean
 	 */
-	public $forceTranslation = true;
+	//public $forceTranslation = true;
 
 	/**
 	 * @var
 	 */
-	private $_translations;
+	//private $_translations;
 
 	/**
 	 * @var array
 	 */
-	private $_messages = [];
+	//private $_messages = [];
 
 	// Public Methods
 	// ------------------------------------------------------------------------
@@ -46,11 +46,11 @@ class PhpMessageSource extends \CPhpMessageSource
 	/**
 	 *
 	 */
-	public function init()
-	{
-		$this->basePath = Craft::$app->getPath()->getFrameworkPath().'messages';
-		parent::init();
-	}
+	//public function init()
+	//{
+		//$this->basePath = Craft::$app->getPath()->getFrameworkPath().'messages';
+		//parent::init();
+	//}
 
 	// Protected Methods
 	// =========================================================================
@@ -63,90 +63,107 @@ class PhpMessageSource extends \CPhpMessageSource
 	 *
 	 * @return array The loaded messages
 	 */
-	protected function loadMessages($category, $language)
-	{
-		if ($category !== 'craft')
-		{
-			$parentMessages = parent::loadMessages($category, $language);
+	//protected function loadMessages($category, $language)
+	//{
+		//if ($category !== 'craft')
+		//{
+		//	$parentMessages = parent::loadMessages($category, $language);
 
 			// See if there any craft/translations for Yii's system messages.
-			if (($filePath = IOHelper::fileExists(Craft::$app->getPath()->getSiteTranslationsPath().'/'.$language.'.php')) !== false)
-			{
-				$parentMessages = array_merge($parentMessages, include($filePath));
-			}
+		//	if (($filePath = IOHelper::fileExists(Craft::$app->getPath()->getSiteTranslationsPath().'/'.$language.'.php')) !== false)
+		//	{
+		//		$parentMessages = array_merge($parentMessages, include($filePath));
+		//	}
+//
+//			return $parentMessages;
+//		}
 
-			return $parentMessages;
-		}
-
-		if (!isset($this->_translations[$language]))
-		{
-			$this->_translations[$language] = [];
+//		if (!isset($this->_translations[$language]))
+//		{
+//			$this->_translations[$language] = [];
 
 			// Plugin translations get added first so they always lose out for conflicts
-			if (Craft::$app->isInstalled() && !Craft::$app->isInMaintenanceMode())
-			{
+//			if (Craft::$app->isInstalled() && !Craft::$app->isInMaintenanceMode())
+//			{
 				// Don't use PluginService, but go straight to the file system. Who cares if they are disabled.
-				$pluginPaths = IOHelper::getFolders(Craft::$app->getPath()->getPluginsPath());
+//				$pluginPaths = IOHelper::getFolders(Craft::$app->getPath()->getPluginsPath());
 
-				if ($pluginPaths)
-				{
-					foreach ($pluginPaths as $pluginPath)
-					{
-						$paths[] = $pluginPath.'translations';
-					}
-				}
-			}
+//				if ($pluginPaths)
+//				{
+//					foreach ($pluginPaths as $pluginPath)
+//					{
+//						$paths[] = $pluginPath.'translations';
+//					}
+//				}
+//			}
 
 			// Craft's translations are up next
-			$paths[] = Craft::$app->getPath()->getCpTranslationsPath();
+//			$paths[] = Craft::$app->getPath()->getCpTranslationsPath();
 
 			// Add in Yii's i18n data, which we're going to do some special parsing on
-			$paths[] = Craft::$app->getPath()->getFrameworkPath().'i18n/data';
+//			$paths[] = Craft::$app->getPath()->getFrameworkPath().'i18n/data';
 
 			// Site translations take the highest precidence, so they get added last
-			$paths[] = Craft::$app->getPath()->getSiteTranslationsPath();
+//			$paths[] = Craft::$app->getPath()->getSiteTranslationsPath();
 
 			// Look for translation file from least to most specific. For example, nl.php gets loaded before nl_nl.php.
-			$translationFiles = [];
-			$parts = explode('_', $language);
-			$totalParts = count($parts);
+//			$translationFiles = [];
+//			$parts = explode('_', $language);
+//			$totalParts = count($parts);
 
-			for ($i = 1; $i <= $totalParts; $i++)
-			{
-				$translationFiles[] = implode('_', array_slice($parts, 0, $i));
-			}
+//			for ($i = 1; $i <= $totalParts; $i++)
+//			{
+//				$translationFiles[] = implode('_', array_slice($parts, 0, $i));
+//			}
 
 			// Now loop through all of the paths and translation files and import the ones that exist
-			foreach ($paths as $folderPath)
-			{
-				if (IOHelper::folderExists($folderPath))
-				{
-					foreach ($translationFiles as $file)
-					{
-						$path = $folderPath.'/'.$file.'.php';
+//			foreach ($paths as $folderPath)
+//			{
+//				if (IOHelper::folderExists($folderPath))
+//				{
+//					foreach ($translationFiles as $file)
+//					{
+//						$path = $folderPath.'/'.$file.'.php';
 
-						if (IOHelper::fileExists($path))
-						{
+//						if (IOHelper::fileExists($path))
+//						{
 							// Load it up.
-							$translations = include($path);
+//							$translations = include($path);
 
-							if (is_array($translations))
-							{
+//							if (is_array($translations))
+//							{
 								// If this is framework data and we're not on en_us, then do some special processing.
-								if (StringHelper::contains($path, 'framework/i18n/data') && $file !== 'en_us')
-								{
-									$translations = $this->_processFrameworkData($file);
-								}
+//								if (StringHelper::contains($path, 'framework/i18n/data') && $file !== 'en_us')
+//								{
+//									$translations = $this->_processFrameworkData($file);
+//								}
 
-								$this->_translations[$language] = array_merge($this->_translations[$language], $translations);
-							}
-						}
-					}
-				}
-			}
+//								$this->_translations[$language] = array_merge($this->_translations[$language], $translations);
+//							}
+//						}
+//					}
+//				}
+//			}
+//		}
+
+//		return $this->_translations[$language];
+	//}
+
+	/**
+     * Returns message file path for the specified language and category.
+	 *
+	 * @param string $category the message category
+	 * @param string $language the target language
+	 * @return string path to message file
+	 */
+	protected function getMessageFilePath($category, $language)
+	{
+		if ($category == 'app')
+		{
+			return Craft::getAlias($this->basePath)."/$language.php";
 		}
 
-		return $this->_translations[$language];
+		return parent::getMessageFilePath($category, $language);
 	}
 
 	// Private Methods
