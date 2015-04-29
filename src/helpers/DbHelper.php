@@ -52,10 +52,11 @@ class DbHelper
 	/**
 	 * Prepares a value to be sent to the database.
 	 *
-	 * @param mixed $value
+	 * @param mixed $value The value to be prepraed
+	 * @param boolean $jsonEncode Whether the value should be JSON-encoded if it's an object or array
 	 * @return array
 	 */
-	public static function prepValue($value)
+	public static function prepValue($value, $jsonEncode = true)
 	{
 		if ($value instanceof DateTime)
 		{
@@ -73,10 +74,13 @@ class DbHelper
 			// Run prepValue() on each of its values before JSON-encoding it
 			foreach ($value as $k => $v)
 			{
-				$value[$k] = static::prepValue($v);
+				$value[$k] = static::prepValue($v, false);
 			}
 
-			return JsonHelper::encode($value);
+			if ($jsonEncode)
+			{
+				$value = JsonHelper::encode($value);
+			}
 		}
 
 		return $value;
