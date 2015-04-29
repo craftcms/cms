@@ -7,7 +7,7 @@
 		<div class="select">
 			<select onchange="document.location.href='{{ url('globals/{locale}/'~globalSetHandle) }}'.replace('{locale}', this.value);">
 				{% for locale in craft.i18n.getEditableLocales() %}
-					<option value="{{ locale.id }}"{% if locale.id == localeId %} selected{% endif %}>{{ locale.name }}</option>
+					<option value="{{ locale.id }}"{% if locale.id == localeId %} selected{% endif %}>{{ locale.getDisplayName() }}</option>
 				{% endfor %}
 			</select>
 		</div>
