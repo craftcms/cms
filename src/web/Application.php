@@ -69,7 +69,7 @@ class Application extends \yii\web\Application
 
 		// Initialize the Cache service, Request and Logger right away (order is important)
 		$this->getCache();
-		$this->getRequest();
+		$request = $this->getRequest();
 		$this->processLogTargets();
 
 		// So we can try to translate Yii framework strings
@@ -83,6 +83,18 @@ class Application extends \yii\web\Application
 
 		// Set the timezone
 		$this->_setTimeZone();
+
+		// Validate some basics on the database configuration file.
+		$this->validateDbConfigFile();
+
+		// Process install requests
+		if (($response = $this->_processInstallRequest($request)) !== null)
+		{
+			return $response;
+		}
+
+		// Load the plugins
+		$this->getPlugins()->loadPlugins();
 
 		// Set the language
 		$this->_setLanguage();
@@ -112,15 +124,6 @@ class Application extends \yii\web\Application
 		if ($request->getIsCpRequest())
 		{
 			HeaderHelper::setHeader(['X-Robots-Tag' => 'none']);
-		}
-
-		// Validate some basics on the database configuration file.
-		$this->validateDbConfigFile();
-
-		// Process install requests
-		if (($response = $this->_processInstallRequest($request)) !== null)
-		{
-			return $response;
 		}
 
 		// If the system in is maintenance mode and it's a site request, throw a 503.
@@ -176,9 +179,6 @@ class Application extends \yii\web\Application
 
 		// If the system is offline, make sure they have permission to be here
 		$this->_enforceSystemStatusPermissions($request);
-
-		// Load the plugins
-		$this->getPlugins()->loadPlugins();
 
 		// Check if a plugin needs to update the database.
 		if ($this->getUpdates()->isPluginDbUpdateNeeded())
