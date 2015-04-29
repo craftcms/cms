@@ -61,14 +61,25 @@ class DbHelper
 		{
 			return DateTimeHelper::formatTimeForDb($value);
 		}
-		else if (is_object($value) || is_array($value))
+
+		if (is_object($value))
 		{
+			// Turn it into an array non-recursively so any DateTime properties stay that way
+			$value = ArrayHelper::toArray($value, [], false);
+		}
+
+		if (is_array($value))
+		{
+			// Run prepValue() on each of its values before JSON-encoding it
+			foreach ($value as $k => $v)
+			{
+				$value[$k] = static::prepValue($v);
+			}
+
 			return JsonHelper::encode($value);
 		}
-		else
-		{
-			return $value;
-		}
+
+		return $value;
 	}
 
 	/**
