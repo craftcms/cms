@@ -8,7 +8,6 @@ return [
 	'categories'           => 'craft\app\services\Categories',
 	'config'               => 'craft\app\services\Config',
 	'content'              => 'craft\app\services\Content',
-	//'coreMessages'         => 'Craft\PhpMessageSource',
 	'dashboard'            => 'craft\app\services\Dashboard',
 	'deprecator'           => 'craft\app\services\Deprecator',
 	'elements'             => 'craft\app\services\Elements',
@@ -22,7 +21,6 @@ return [
 	'install'              => 'craft\app\services\Install',
 	'images'               => 'craft\app\services\Images',
 	'matrix'               => 'craft\app\services\Matrix',
-	'messages'             => 'Craft\PhpMessageSource',
 	'path'                 => 'craft\app\services\Path',
 	'plugins'              => 'craft\app\services\Plugins',
 	'relations'            => 'craft\app\services\Relations',
@@ -82,5 +80,15 @@ return [
 				'smtpSecureTransportType' => 'none',
 			]
 		]
+	],
+	'i18n' => [
+		'class' => 'craft\app\i18n\I18N',
+		'translations' => [
+			'app' => [
+				'class' => 'craft\app\i18n\PhpMessageSource',
+				'sourceLanguage' => 'en-US',
+				'basePath' => '@app/translations',
+			],
+		],
 	],
 ];
