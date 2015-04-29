@@ -636,6 +636,8 @@ class CategoriesController extends Controller
 			}
 		}
 
+		$variables['category']->structureId = $variables['group']->structureId;
+
 		// Define the content tabs
 		// ---------------------------------------------------------------------
 

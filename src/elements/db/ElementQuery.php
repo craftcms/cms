@@ -1757,6 +1757,12 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
 
 		// Instantiate the element
 		$row['locale'] = $this->locale;
+
+		if ($this->structureId)
+		{
+			$row['structureId'] = $this->structureId;
+		}
+
 		$element = $class::create($row);
 
 		// Verify that an element was returned

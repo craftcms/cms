@@ -819,6 +819,7 @@ abstract class Element extends Component implements ElementInterface
 	public function getAncestors($dist = null)
 	{
 		return static::find()
+			->structureId($this->structureId)
 			->ancestorOf($this)
 			->locale($this->locale)
 			->ancestorDist($dist);
@@ -830,6 +831,7 @@ abstract class Element extends Component implements ElementInterface
 	public function getDescendants($dist = null)
 	{
 		return static::find()
+			->structureId($this->structureId)
 			->descendantOf($this)
 			->locale($this->locale)
 			->descendantDist($dist);
@@ -849,6 +851,7 @@ abstract class Element extends Component implements ElementInterface
 	public function getSiblings()
 	{
 		return static::find()
+			->structureId($this->structureId)
 			->siblingOf($this)
 			->locale($this->locale);
 	}
@@ -861,6 +864,7 @@ abstract class Element extends Component implements ElementInterface
 		if ($this->_prevSibling === null)
 		{
 			$this->_prevSibling = static::find()
+				->structureId($this->structureId)
 				->prevSiblingOf($this)
 				->locale($this->locale)
 				->status(null)
@@ -884,6 +888,7 @@ abstract class Element extends Component implements ElementInterface
 		if ($this->_nextSibling === null)
 		{
 			$this->_nextSibling = static::find()
+				->structureId($this->structureId)
 				->nextSiblingOf($this)
 				->locale($this->locale)
 				->status(null)

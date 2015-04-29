@@ -24,6 +24,11 @@ trait ElementTrait
 	public $id;
 
 	/**
+	 * @var int The element’s structure ID
+	 */
+	public $structureId;
+
+	/**
 	 * @var boolean Whether the element is enabled
 	 */
 	public $enabled = true;

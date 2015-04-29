@@ -786,6 +786,11 @@ class EntriesController extends BaseEntriesController
 			}
 		}
 
+		if ($variables['section']->type == Section::TYPE_STRUCTURE)
+		{
+			$variables['entry']->structureId = $variables['section']->structureId;
+		}
+
 		// Get the entry type
 		// ---------------------------------------------------------------------
 
