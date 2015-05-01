@@ -904,7 +904,7 @@ class AssetTransforms extends Component
 		$this->deleteCreatedTransformsForFile($file);
 		$this->deleteTransformIndexDataByFileId($file->id);
 
-		IOHelper::deleteFile(Craft::$app->getPath()->getAssetsImageSourcePath().$file->id.'.'.IOHelper::getExtension($file->filename), true);
+		IOHelper::deleteFile(Craft::$app->getPath()->getAssetsImageSourcePath().'/'.$file->id.'.'.IOHelper::getExtension($file->filename), true);
 	}
 
 	/**
