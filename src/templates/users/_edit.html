@@ -312,7 +312,7 @@
 					{% endif %}
 				</form>
 
-				{% if currentUser.admin and not account.isCurrent() and not account.suspended %}
+				{% if currentUser.admin and not account.isCurrent() %}
 					<form method="post" accept-charset="UTF-8">
 						<input type="hidden" name="action" value="users/impersonate">
 						{{ hiddenInputs }}
