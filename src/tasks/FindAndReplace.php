@@ -92,7 +92,7 @@ class FindAndReplace extends Task
 		}
 		else
 		{
-			$this->_table = 'content';
+			$this->_table = '{{%content}}';
 
 			foreach (Craft::$app->getFields()->getAllFields() as $field)
 			{

@@ -278,13 +278,15 @@ class Assets extends Component
 	 *
 	 * @param Asset $fileToReplace
 	 * @param Asset $fileToReplaceWith
-	 * @param bool  $replaceContent whether to replace content as well.
+	 * @param bool  $mergeAssets whether to replace content as well.
 	 *
 	 * @return null
 	 */
-	public function replaceAsset(Asset $fileToReplace, Asset $fileToReplaceWith, $replaceContent = false)
+	public function replaceAsset(Asset $fileToReplace, Asset $fileToReplaceWith, $mergeAssets = false)
 	{
 		$targetVolume = $fileToReplace->getVolume();
+
+		// TODO purge cached files for remote Volumes.
 
 		// Clear all thumb and transform data
 		if (ImageHelper::isImageManipulatable($fileToReplace->getExtension()))
@@ -292,27 +294,37 @@ class Assets extends Component
 			Craft::$app->getAssetTransforms()->deleteAllTransformData($fileToReplace);
 		}
 
-		// Replace the file
-		$targetVolume->deleteFile($fileToReplace->getUri());
-
-		$this->_moveFileToFolder($fileToReplaceWith, $fileToReplace->getFolder());
-
-		// Update the attributes and save the Asset
-		$fileToReplace->dateModified = $fileToReplaceWith->dateModified;
-		$fileToReplace->size         = $fileToReplaceWith->size;
-		$fileToReplace->kind         = $fileToReplaceWith->kind;
-		$fileToReplace->width        = $fileToReplaceWith->width;
-		$fileToReplace->height       = $fileToReplaceWith->height;
-
-		if ($replaceContent)
+		// Handle things differently depening on whether that's an upload or a file move.
+		if ($mergeAssets)
 		{
-			$fileToReplace->setContent($fileToReplaceWith->getContent());
+			Craft::$app->getElements()->mergeElementsByIds($fileToReplace->id, $fileToReplaceWith->id);
+
+			// Replace the file - delete the conflicting file and move the file in it's place.
+			$targetVolume->deleteFile($fileToReplace->getUri());
+			$this->_moveFileToFolder($fileToReplaceWith, $fileToReplace->getFolder());
+
+			$fileToReplaceWith->folderId = $fileToReplace->folderId;
+			$fileToReplaceWith->volumeId = $fileToReplace->volumeId;
+			$fileToReplaceWith->filename = $fileToReplace->filename;
+			$this->saveAsset($fileToReplaceWith);
+		}
+		else
+		{
+			// Update the attributes and save the Asset
+			$fileToReplace->dateModified = $fileToReplaceWith->dateModified;
+			$fileToReplace->size         = $fileToReplaceWith->size;
+			$fileToReplace->kind         = $fileToReplaceWith->kind;
+			$fileToReplace->width        = $fileToReplaceWith->width;
+			$fileToReplace->height       = $fileToReplaceWith->height;
+
+			// Replace the file - delete the conflicting file and move the file in it's place.
+			$targetVolume->deleteFile($fileToReplace->getUri());
+			$this->_moveFileToFolder($fileToReplaceWith, $fileToReplace->getFolder(), $fileToReplace->filename);
+
+			$this->saveAsset($fileToReplace);
+			$this->deleteFilesByIds($fileToReplaceWith->id, false);
 		}
 
-		$this->saveAsset($fileToReplace);
-
-		// And delete the conflicting record
-		$this->deleteFilesByIds($fileToReplaceWith->id, false);
 	}
 
 	/**
