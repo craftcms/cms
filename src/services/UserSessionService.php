@@ -807,6 +807,12 @@ class UserSessionService extends \CWebUser
 	 */
 	public function getIsGuest()
 	{
+		// If it's a console request, they're a guest.
+		if (craft()->isConsole())
+		{
+			return true;
+		}
+
 		return $this->isGuest();
 	}
 
