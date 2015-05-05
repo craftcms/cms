@@ -59,7 +59,7 @@ class TasksService extends BaseApplicationComponent
 		$task->parentId = $parentId;
 		$this->saveTask($task);
 
-		if (!$this->_listeningForRequestEnd && craft()->config->get('runTasksAutomatically') && !$this->isTaskRunning())
+		if (!$this->_listeningForRequestEnd && craft()->config->get('runTasksAutomatically') && !$this->isTaskRunning() && !craft()->isConsole())
 		{
 			// Turn this request into a runner once everything else is done
 			craft()->attachEventHandler('onEndRequest', array($this, 'handleRequestEnd'));
