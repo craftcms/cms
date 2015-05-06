@@ -13,10 +13,13 @@ use craft\app\base\TaskInterface;
 use craft\app\db\Query;
 use craft\app\errors\InvalidComponentException;
 use craft\app\helpers\ComponentHelper;
+use craft\app\helpers\JsonHelper;
 use craft\app\records\Task as TaskRecord;
 use craft\app\tasks\InvalidTask;
+use craft\app\web\View;
 use yii\base\Application;
 use yii\base\Component;
+use yii\base\Event;
 
 /**
  * Class Tasks service.
@@ -57,7 +60,7 @@ class Tasks extends Component
 	/**
 	 * @var
 	 */
-	private $_listeningForRequestEnd = false;
+	private $_listeningForBodyEnd = false;
 
 	// Public Methods
 	// =========================================================================
@@ -79,11 +82,10 @@ class Tasks extends Component
 
 		$this->saveTask($task);
 
-		if (!$this->_listeningForRequestEnd && !$this->isTaskRunning())
+		if (!$this->_listeningForBodyEnd && !Craft::$app->getRequest()->getIsConsoleRequest())
 		{
-			// Turn this request into a runner once everything else is done
-			Craft::$app->on(Application::EVENT_AFTER_REQUEST, [$this, 'closeAndRun']);
-			$this->_listeningForRequestEnd = true;
+			Craft::$app->getView()->on(View::EVENT_END_BODY, [$this, 'registerTaskAjaxScript']);
+			$this->_listeningForBodyEnd = true;
 		}
 
 		return $task;
@@ -636,6 +638,47 @@ class Tasks extends Component
 		$success = $taskRecord->deleteWithChildren();
 		unset($this->_taskRecordsById[$taskId]);
 		return $success;
+	}
+
+	/**
+	 * Registers a script to the request that will kick off a task runner, if there are any pending tasks.
+	 */
+	public function registerTaskAjaxScript()
+	{
+		// Ignore if tasks are already running
+		if ($this->isTaskRunning())
+		{
+			return;
+		}
+
+		$url = JsonHelper::encode(UrlHelper::getActionUrl('tasks/run-pending-tasks'));
+
+		// Ajax request code adapted from http://www.quirksmode.org/js/xmlhttp.html - thanks ppk!
+		$js = <<<EOT
+(function(){
+	var XMLHttpFactories = [
+		function () {return new XMLHttpRequest()},
+		function () {return new ActiveXObject("Msxml2.XMLHTTP")},
+		function () {return new ActiveXObject("Msxml3.XMLHTTP")},
+		function () {return new ActiveXObject("Microsoft.XMLHTTP")}
+	];
+	var req = false;
+	for (var i = 0; i < XMLHttpFactories.length; i++) {
+		try {
+			req = XMLHttpFactories[i]();
+		}
+		catch (e) {
+			continue;
+		}
+		break;
+	}
+	if (!req) return;
+	req.open('GET', $url, true);
+	if (req.readyState == 4) return;
+	req.send();
+})();
+EOT;
+		Craft::$app->getView()->registerJs($js);
 	}
 
 	// Private Methods

@@ -558,15 +558,14 @@ var CP = Garnish.Base.extend(
 	{
 		Craft.queueActionRequest('tasks/run-pending-tasks', $.proxy(function(taskInfo, textStatus)
 		{
-			if (taskInfo)
+			if (textStatus == 'success')
 			{
-				this.setRunningTaskInfo(taskInfo);
-				this.trackTaskProgress();
+				this.trackTaskProgress(true);
 			}
 		}, this));
 	},
 
-	trackTaskProgress: function()
+	trackTaskProgress: function(immediate)
 	{
 		// Ignore if we're already tracking tasks
 		if (this.trackTaskProgressTimeout)
@@ -591,7 +590,7 @@ var CP = Garnish.Base.extend(
 					}
 				}
 			}, this));
-		}, this), 1000);
+		}, this), (immediate ? 1 : 1000));
 	},
 
 	stopTrackingTaskProgress: function()
