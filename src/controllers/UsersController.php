@@ -790,7 +790,9 @@ class UsersController extends Controller
 			$user = new User();
 		}
 
-		if ($user->isCurrent())
+		$isCurrentUser = $user->isCurrent();
+
+		if ($isCurrentUser)
 		{
 			// Remember the old username in case it changes
 			$oldUsername = $user->username;
@@ -802,12 +804,17 @@ class UsersController extends Controller
 		$verifyNewEmail = false;
 
 		// Are they allowed to set the email address?
-		if ($isNewUser || $user->isCurrent() || $currentUser->can('changeUserEmails'))
+		if ($isNewUser || $isCurrentUser || $currentUser->can('changeUserEmails'))
 		{
 			$newEmail = Craft::$app->getRequest()->getBodyParam('email');
 
 			// Did it just change?
-			if ($newEmail && $newEmail != $user->email)
+			if ($newEmail && $newEmail == $user->email)
+			{
+				$newEmail = null;
+			}
+
+			if ($newEmail)
 			{
 				// Does that email need to be verified?
 				if ($requireEmailVerification && (!$currentUser || !$currentUser->admin || Craft::$app->getRequest()->getBodyParam('sendVerificationEmail')))
@@ -834,7 +841,7 @@ class UsersController extends Controller
 		{
 			$user->newPassword = Craft::$app->getRequest()->getBodyParam('password');
 		}
-		else if ($user->isCurrent())
+		else if ($isCurrentUser)
 		{
 			$user->newPassword = Craft::$app->getRequest()->getBodyParam('newPassword');
 		}
@@ -920,7 +927,7 @@ class UsersController extends Controller
 			}
 
 			// Is this the current user, and did their username just change?
-			if ($user->isCurrent() && $user->username !== $oldUsername)
+			if ($isCurrentUser && $user->username !== $oldUsername)
 			{
 				// Update the username cookie
 				Craft::$app->getUser()->sendUsernameCookie($user);
