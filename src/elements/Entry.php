@@ -184,6 +184,9 @@ class Entry extends Element
 			}
 		}
 
+		// Allow plugins to modify the sources
+		Craft::$app->getPlugins()->call('modifyEntrySources', [&$sources, $context]);
+
 		return $sources;
 	}
 

@@ -111,6 +111,9 @@ class Category extends Element
 			];
 		}
 
+		// Allow plugins to modify the sources
+		Craft::$app->getPlugins()->call('modifyCategorySources', [&$sources, $context]);
+
 		return $sources;
 	}
 

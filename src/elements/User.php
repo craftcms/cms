@@ -138,6 +138,9 @@ class User extends Element implements IdentityInterface
 			}
 		}
 
+		// Allow plugins to modify the sources
+		Craft::$app->getPlugins()->call('modifyUserSources', [&$sources, $context]);
+
 		return $sources;
 	}
 
