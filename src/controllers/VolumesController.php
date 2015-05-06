@@ -178,12 +178,7 @@ class VolumesController extends Controller
 
 		if (isset($typeSettings[$volume->type]))
 		{
-			if (!$volume->settings)
-			{
-				$volume->settings = [];
-			}
-
-			$volume->settings = array_merge($volume->settings, $typeSettings[$volume->type]);
+			$volume->settings = $typeSettings[$volume->type];
 
 			// For validating
 			foreach ($typeSettings[$volume->type] as $property => $value)
