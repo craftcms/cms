@@ -106,10 +106,12 @@ class UsersController extends BaseController
 		$this->requirePostRequest();
 
 		$userId = craft()->request->getPost('userId');
+		$originalUserId = craft()->userSession->getId();
 
 		if (craft()->userSession->loginByUserId($userId))
 		{
 			craft()->userSession->setNotice(Craft::t('Logged in.'));
+			craft()->httpSession->add(UserSessionService::USER_IMPERSONATE_KEY, $originalUserId);
 
 			$this->_handleSuccessfulLogin(true);
 		}
