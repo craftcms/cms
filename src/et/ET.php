@@ -88,6 +88,11 @@ class ET
 			'localEdition'      => Craft::$app->getEdition(),
 			'userEmail'         => Craft::$app->getUser()->getIdentity()->email,
 			'track'             => Craft::$app->track,
+			'serverInfo'        => array(
+				'extensions'    => get_loaded_extensions(),
+				'phpVersion'    => PHP_VERSION,
+				'mySqlVersion'  => Craft::$app->schemaVersion
+			),
 		]);
 
 		$this->_userAgent = 'Craft/'.Craft::$app->version.'.'.Craft::$app->build;
