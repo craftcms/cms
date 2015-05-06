@@ -789,19 +789,25 @@ class Sections extends Component
 
 					if (!$isNewSection)
 					{
-						$query = Entry::find()
-						    ->locale(ArrayHelper::getFirstValue(array_keys($oldSectionLocales)))
-						    ->sectionId($section->id)
-						    ->status(null)
-						    ->localeEnabled(false)
-						    ->limit(null);
+						// Get the most-primary locale that this section was already enabled in
+						$locales = array_intersect(Craft::$app->i18n->getSiteLocaleIds(), array_keys($oldSectionLocales));
 
-						Craft::$app->getTasks()->queueTask([
-							'type'        => ResaveElements::className(),
-							'description' => Craft::t('app', 'Resaving {section} entries', ['section' => $section->name]),
-							'elementType' => Entry::className(),
-							'criteria'    => $query->asArray()
-						]);
+						if ($locales)
+						{
+							$query = Entry::find()
+								->locale($locales[0])
+								->sectionId($section->id)
+								->status(null)
+								->localeEnabled(false)
+								->limit(null);
+
+							Craft::$app->getTasks()->queueTask([
+								'type'        => ResaveElements::className(),
+								'description' => Craft::t('app', 'Resaving {section} entries', ['section' => $section->name]),
+								'elementType' => Entry::className(),
+								'criteria'    => $query->asArray()
+							]);
+						}
 					}
 
 					$success = true;
