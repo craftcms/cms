@@ -810,7 +810,7 @@ class UsersController extends Controller
 			if ($newEmail && $newEmail != $user->email)
 			{
 				// Does that email need to be verified?
-				if ($requireEmailVerification && (!$currentUser->admin || Craft::$app->getRequest()->getBodyParam('sendVerificationEmail')))
+				if ($requireEmailVerification && (!$currentUser || !$currentUser->admin || Craft::$app->getRequest()->getBodyParam('sendVerificationEmail')))
 				{
 					// Save it as an unverified email for now
 					$user->unverifiedEmail = $newEmail;
@@ -874,7 +874,7 @@ class UsersController extends Controller
 		}
 
 		// There are some things only admins can change
-		if ($currentUser->admin)
+		if ($currentUser && $currentUser->admin)
 		{
 			$user->passwordResetRequired = (bool) Craft::$app->getRequest()->getBodyParam('passwordResetRequired', $user->passwordResetRequired);
 			$user->admin                 = (bool) Craft::$app->getRequest()->getBodyParam('admin', $user->admin);
