@@ -338,28 +338,40 @@ class Entries extends Component
 			foreach ($entries as $entry)
 			{
 				// Fire a 'beforeDeleteEntry' event
-				$this->trigger(static::EVENT_BEFORE_DELETE_ENTRY, new EntryEvent([
+				$event = new EntryEvent([
 					'entry' => $entry
-				]));
+				]);
 
-				$section = $entry->getSection();
+				$this->trigger(static::EVENT_BEFORE_DELETE_ENTRY, $event);
 
-				if ($section->type == Section::TYPE_STRUCTURE)
+				if ($event->performAction)
 				{
-					// First let's move the entry's children up a level, so this doesn't mess up the structure
-					$children = $entry->getChildren()->status(null)->localeEnabled(false)->limit(null)->find();
+					$section = $entry->getSection();
 
-					foreach ($children as $child)
+					if ($section->type == Section::TYPE_STRUCTURE)
 					{
-						Craft::$app->getStructures()->moveBefore($section->structureId, $child, $entry, 'update', true);
-					}
-				}
+						// First let's move the entry's children up a level, so this doesn't mess up the structure
+						$children = $entry->getChildren()->status(null)->localeEnabled(false)->limit(null)->find();
 
-				$entryIds[] = $entry->id;
+						foreach ($children as $child)
+						{
+							Craft::$app->getStructures()->moveBefore($section->structureId, $child, $entry, 'update', true);
+						}
+					}
+
+					$entryIds[] = $entry->id;
+				}
 			}
 
-			// Delete 'em
-			$success = Craft::$app->getElements()->deleteElementById($entryIds);
+			if ($entryIds)
+			{
+				// Delete 'em
+				$success = Craft::$app->getElements()->deleteElementById($entryIds);
+			}
+			else
+			{
+				$success = false;
+			}
 
 			if ($transaction !== null)
 			{
