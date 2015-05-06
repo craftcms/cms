@@ -11,6 +11,7 @@ use Craft;
 use craft\app\base\Element;
 use craft\app\base\ElementInterface;
 use craft\app\elements\Asset;
+use craft\app\elements\db\AssetQuery;
 use craft\app\errors\Exception;
 use craft\app\helpers\AssetsHelper;
 use craft\app\helpers\IOHelper;
@@ -165,14 +166,13 @@ class Assets extends BaseRelationField
 	{
 		$value = $this->getElementValue($element);
 
-		if (is_object($value))
+		if ($value instanceof AssetQuery)
 		{
-			$value = $value->find();
+			$value = $value->all();
 		}
 
 		if (is_array($value) && count($value))
 		{
-
 			$fileIds = [];
 
 			foreach ($value as $elementFile)
