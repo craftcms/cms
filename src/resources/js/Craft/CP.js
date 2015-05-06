@@ -130,12 +130,20 @@ var CP = Garnish.Base.extend(
 
 			if (this.$confirmUnloadForms.length)
 			{
-				this.initialFormValues = [];
+				if (!Craft.forceConfirmUnload)
+				{
+					this.initialFormValues = [];
+				}
 
 				for (var i = 0; i < this.$confirmUnloadForms.length; i++)
 				{
 					var $form = $(this.$confirmUnloadForms);
-					this.initialFormValues[i] = $form.serialize();
+
+					if (!Craft.forceConfirmUnload)
+					{
+						this.initialFormValues[i] = $form.serialize();
+					}
+
 					this.addListener($form, 'submit', function()
 					{
 						this.removeListener(Garnish.$win, 'beforeunload');
@@ -146,9 +154,10 @@ var CP = Garnish.Base.extend(
 				{
 					for (var i = 0; i < this.$confirmUnloadForms.length; i++)
 					{
-						var newFormValue = $(this.$confirmUnloadForms[i]).serialize();
-
-						if (this.initialFormValues[i] != newFormValue)
+						if (
+							Craft.forceConfirmUnload ||
+							this.initialFormValues[i] != $(this.$confirmUnloadForms[i]).serialize()
+						)
 						{
 							var message = Craft.t('Any changes will be lost if you leave this page.');
 

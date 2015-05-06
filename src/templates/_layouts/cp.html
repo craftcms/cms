@@ -81,6 +81,8 @@
 	"Are you sure you want to delete the selected blocks?"
 %}
 
+{% set forceConfirmUnload = craft.session.hasFlash('error') %}
+
 
 {% block body %}
 	{% if currentUser.admin and craft.config.devMode %}
