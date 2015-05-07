@@ -712,6 +712,8 @@ class HttpRequestService extends \CHttpRequest
 		$contentStart = 0;
 		$contentEnd = $fileSize - 1;
 
+		$httpVersion = $this->getHttpVersion();
+
 		if (isset($_SERVER['HTTP_RANGE']))
 		{
 			HeaderHelper::setHeader(array('Accept-Ranges' => 'bytes'));
@@ -757,12 +759,12 @@ class HttpRequestService extends \CHttpRequest
 				throw new HttpException(416, 'Requested Range Not Satisfiable');
 			}
 
-			HeaderHelper::setHeader('HTTP/1.1 206 Partial Content');
+			HeaderHelper::setHeader("HTTP/$httpVersion 206 Partial Content");
 			HeaderHelper::setHeader(array('Content-Range' => 'bytes '.$contentStart - $contentEnd / $fileSize));
 		}
 		else
 		{
-			HeaderHelper::setHeader('HTTP/1.1 200 OK');
+			HeaderHelper::setHeader("HTTP/$httpVersion 200 OK");
 		}
 
 		// Calculate new content length
@@ -1206,7 +1208,7 @@ class HttpRequestService extends \CHttpRequest
 	 */
 	public function validateCsrfToken($event)
 	{
-		if ($this->getIsPostRequest() || $this->getIsPutRequest() || $this->getIsDeleteRequest())
+		if ($this->getIsPostRequest() || $this->getIsPutRequest() || $this->getIsPatchRequest() || $this->getIsDeleteRequest())
 		{
 			$method = $this->getRequestType();
 
@@ -1224,13 +1226,18 @@ class HttpRequestService extends \CHttpRequest
 					break;
 				}
 
+				case 'PATCH':
+				{
+					$tokenFromPost = $this->getPatch($this->csrfTokenName);
+					break;
+				}
+
 				case 'DELETE':
 				{
 					$tokenFromPost = $this->getDelete($this->csrfTokenName);
 				}
 			}
 
-			$cookies = $this->getCookies();
 			$csrfCookie = $this->getCookies()->itemAt($this->csrfTokenName);
 
 			if (!empty($tokenFromPost) && $csrfCookie && $csrfCookie->value)
@@ -1313,8 +1320,6 @@ class HttpRequestService extends \CHttpRequest
 	 */
 	protected function createCsrfCookie()
 	{
-		$currentUser = false;
-
 		$cookie = $this->getCookies()->itemAt($this->csrfTokenName);
 
 		if ($cookie)
@@ -1322,7 +1327,7 @@ class HttpRequestService extends \CHttpRequest
 			// They have an existing CSRF cookie.
 			$value = $cookie->value;
 
-			// It's a CSRF cookie that came from an authenitcated request.
+			// It's a CSRF cookie that came from an authenticated request.
 			if (strpos($value, '|') !== false)
 			{
 				// Grab the existing nonce.
