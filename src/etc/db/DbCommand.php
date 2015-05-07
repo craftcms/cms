@@ -256,6 +256,32 @@ class DbCommand extends \CDbCommand
 	}
 
 	/**
+	 * @param string $table
+	 *
+	 * @return DbCommand
+	 */
+	public function naturalLeftJoin($table)
+	{
+		$this->_addJoinedTable($table);
+		$table = $this->getConnection()->addTablePrefix($table);
+
+		return parent::naturalLeftJoin($table);
+	}
+
+	/**
+	 * @param string $table
+	 *
+	 * @return \CDbCommand
+	 */
+	public function naturalRightJoin($table)
+	{
+		$this->_addJoinedTable($table);
+		$table = $this->getConnection()->addTablePrefix($table);
+
+		return parent::naturalRightJoin($table);
+	}
+
+	/**
 	 * @param mixed $conditions
 	 * @param array $params
 	 *
