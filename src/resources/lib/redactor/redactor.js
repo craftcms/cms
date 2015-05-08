@@ -1,6 +1,11 @@
 /*
+<<<<<<< HEAD
 	Redactor v10.0.8
 	Updated: March 10, 2015
+=======
+	Redactor v10.1.1
+	Updated: April 28, 2015
+>>>>>>> dev/2.4
 
 	http://imperavi.com/redactor/
 
@@ -27,9 +32,6 @@
 	}
 
 	var uuid = 0;
-
-	var reUrlYoutube = /https?:\/\/(?:[0-9A-Z-]+\.)?(?:youtu\.be\/|youtube\.com\S*[^\w\-\s])([\w\-]{11})(?=[^\w\-]|$)(?![?=&+%\w.\-]*(?:['"][^<>]*>|<\/a>))[?=&+%\w.-]*/ig;
-	var reUrlVimeo = /https?:\/\/(www\.)?vimeo.com\/(\d+)($|\/)/;
 
 	// Plugin
 	$.fn.redactor = function(options)
@@ -94,13 +96,17 @@
 
 	// Functionality
 	$.Redactor = Redactor;
+<<<<<<< HEAD
 	$.Redactor.VERSION = '10.0.8';
+=======
+	$.Redactor.VERSION = '10.1.1';
+>>>>>>> dev/2.4
 	$.Redactor.modules = ['alignment', 'autosave', 'block', 'buffer', 'build', 'button',
 						  'caret', 'clean', 'code', 'core', 'dropdown', 'file', 'focus',
 						  'image', 'indent', 'inline', 'insert', 'keydown', 'keyup',
 						  'lang', 'line', 'link', 'list', 'modal', 'observe', 'paragraphize',
 						  'paste', 'placeholder', 'progress', 'selection', 'shortcuts',
-						  'tabifier', 'tidy',  'toolbar', 'upload', 'utils'];
+						  'tabifier', 'tidy',  'toolbar', 'upload', 'utils', 'linkify'];
 
 	$.Redactor.opts = {
 
@@ -193,6 +199,10 @@
 
 		deniedTags: ['script', 'style'],
 		allowedTags: false, // or array
+
+		paragraphizeBlocks: ['table', 'div', 'pre', 'form', 'ul', 'ol', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'dl', 'blockquote', 'figcaption',
+							'address', 'section', 'header', 'footer', 'aside', 'article', 'object', 'style', 'script', 'iframe', 'select', 'input', 'textarea',
+							'button', 'option', 'map', 'area', 'math', 'hr', 'fieldset', 'legend', 'hgroup', 'nav', 'figure', 'details', 'menu', 'summary', 'p'],
 
 		removeComments: false,
 		replaceTags: [
@@ -325,7 +335,18 @@
 				filename: 'Name (optional)',
 				edit: 'Edit'
 			}
-		}
+		},
+
+		linkify: {
+			regexps: {
+				youtube: /https?:\/\/(?:[0-9A-Z-]+\.)?(?:youtu\.be\/|youtube\.com\S*[^\w\-\s])([\w\-]{11})(?=[^\w\-]|$)(?![?=&+%\w.\-]*(?:['"][^<>]*>|<\/a>))[?=&+%\w.-]*/ig,
+				vimeo: /https?:\/\/(www\.)?vimeo.com\/(\d+)($|\/)/,
+				image: /((https?|www)[^\s]+\.)(jpe?g|png|gif)(\?[^\s-]+)?/ig,
+				url: /(https?:\/\/(?:www\.|(?!www))[^\s\.]+\.[^\s]{2,}|www\.[^\s]+\.[^\s]{2,})/ig,
+			}
+		},
+
+		codemirror: false
 	};
 
 	// Functionality
@@ -526,11 +547,11 @@
 		autosave: function()
 		{
 			return {
+				html: false,
 				enable: function()
 				{
 					if (!this.opts.autosave) return;
 
-					this.autosave.html = false;
 					this.autosave.name = (this.opts.autosaveName) ? this.opts.autosaveName : this.$textarea.attr('name');
 
 					if (this.opts.autosaveOnChange) return;
@@ -546,7 +567,7 @@
 					this.autosave.source = this.code.get();
 
 					if (this.autosave.html === this.autosave.source) return;
-					if (this.utils.isEmpty(this.autosave.source)) return;
+					//if (this.utils.isEmpty(this.autosave.source)) return;
 
 					// data
 					var data = {};
@@ -919,7 +940,7 @@
 				},
 				formatListToBlockquote: function()
 				{
-					var block = $(this.block.blocks[0]).closest('ul, ol');
+					var block = $(this.block.blocks[0]).closest('ul, ol', this.$editor[0]);
 
 					$(block).find('ul, ol').contents().unwrap();
 					$(block).find('li').append($('<br>')).contents().unwrap();
@@ -1012,10 +1033,10 @@
 				},
 				formatTableWrapping: function($formatted)
 				{
-					if ($formatted.closest('table').length === 0) return;
+					if ($formatted.closest('table', this.$editor[0]).length === 0) return;
 
-					if ($formatted.closest('tr').length === 0) $formatted.wrap('<tr>');
-					if ($formatted.closest('td').length === 0 && $formatted.closest('th').length === 0)
+					if ($formatted.closest('tr', this.$editor[0]).length === 0) $formatted.wrap('<tr>');
+					if ($formatted.closest('td', this.$editor[0]).length === 0 && $formatted.closest('th').length === 0)
 					{
 						$formatted.wrap('<td>');
 					}
@@ -1328,6 +1349,9 @@
 					// paste
 					this.$editor.on('paste.redactor', $.proxy(this.paste.init, this));
 
+					// cut
+					this.$editor.on('cut.redactor', $.proxy(this.code.sync, this));
+
 					// keydown
 					this.$editor.on('keydown.redactor', $.proxy(this.keydown.init, this));
 
@@ -1374,8 +1398,11 @@
 				},
 				setHelpers: function()
 				{
-					// autosave
-					this.autosave.enable();
+					// linkify
+					if (this.linkify.isEnabled())
+					{
+						this.linkify.format();
+					}
 
 					// placeholder
 					this.placeholder.enable();
@@ -1950,13 +1977,13 @@
 					html = html.replace(new RegExp('<br\\s?/?></li>', 'gi'), '</li>');
 					html = html.replace(new RegExp('</li><br\\s?/?>', 'gi'), '</li>');
 					// remove verified
-					html = html.replace(new RegExp('<div(.*?[^>]) data-tagblock="redactor"(.*?[^>])>', 'gi'), '<div$1$2>');
-					html = html.replace(new RegExp('<(.*?) data-verified="redactor"(.*?[^>])>', 'gi'), '<$1$2>');
-					html = html.replace(new RegExp('<span(.*?[^>])\srel="(.*?[^>])"(.*?[^>])>', 'gi'), '<span$1$3>');
-					html = html.replace(new RegExp('<img(.*?[^>])\srel="(.*?[^>])"(.*?[^>])>', 'gi'), '<img$1$3>');
-					html = html.replace(new RegExp('<img(.*?[^>])\sstyle="" (.*?[^>])>', 'gi'), '<img$1 $2>');
-					html = html.replace(new RegExp('<img(.*?[^>])\sstyle (.*?[^>])>', 'gi'), '<img$1 $2>');
-					html = html.replace(new RegExp('<span class="redactor-invisible-space">(.*?)</span>', 'gi'), '$1');
+					html = html.replace(/<div(.*?[^>]) data-tagblock="redactor"(.*?[^>])>/gi, '<div$1$2>');
+					html = html.replace(/<(.*?) data-verified="redactor"(.*?[^>])>/gi, '<$1$2>');
+					html = html.replace(/<span(.*?[^>])\srel="(.*?[^>])"(.*?[^>])>/gi, '<span$1$3>');
+					html = html.replace(/<img(.*?[^>])\srel="(.*?[^>])"(.*?[^>])>/gi, '<img$1$3>');
+					html = html.replace(/<img(.*?[^>])\sstyle="" (.*?[^>])>'/gi, '<img$1 $2>');
+					html = html.replace(/<img(.*?[^>])\sstyle (.*?[^>])>'/gi, '<img$1 $2>');
+					html = html.replace(/<span class="redactor-invisible-space">(.*?)<\/span>/gi, '$1');
 					html = html.replace(/ data-save-url="(.*?[^>])"/gi, '');
 
 					// remove image resize
@@ -2226,29 +2253,16 @@
 					}
 
 					var options = {
-						deniedTags: false,
-						allowedTags: tags,
+						deniedTags: (this.opts.deniedTags) ? this.opts.deniedTags : false,
+						allowedTags: (this.opts.allowedTags) ? this.opts.allowedTags : tags,
 						removeComments: true,
 						removePhp: true,
-						removeAttr: false,
-						allowedAttr: attrAllowed,
+						removeAttr: (this.opts.removeAttr) ? this.opts.removeAttr : false,
+						allowedAttr: (this.opts.allowedAttr) ? this.opts.allowedAttr : attrAllowed,
 						removeEmpty: tagsEmpty
 					};
 
-					// denied tags
-					if (this.opts.deniedTags)
-					{
-						options.deniedTags = this.opts.deniedTags;
-					}
-
-					// allowed tags
-					if (this.opts.allowedTags)
-					{
-						options.allowedTags = this.opts.allowedTags;
-					}
-
 					return this.tidy.load(html, options);
-
 				},
 				onPasteRemoveEmpty: function(html)
 				{
@@ -2445,6 +2459,15 @@
 					});
 
 				},
+				cleanEmptyParagraph: function()
+				{
+					var p = this.$editor.find("p").first();
+
+					if (this.utils.isEmpty(p.html()))
+					{
+						p.remove();
+					}
+				},
 				setVerified: function(html)
 				{
 					if (this.utils.browser('msie')) return html;
@@ -2631,8 +2654,22 @@
 
 					this.start = false;
 
-					// autosave on change
+					if (this.autosave.html == false)
+					{
+						this.autosave.html = this.code.get();
+					}
+
+					if (this.opts.codemirror)
+					{
+						this.$textarea.next('.CodeMirror').each(function(i, el)
+						{
+							el.CodeMirror.setValue(html);
+						});
+					}
+
+					//autosave
 					this.autosave.onChange();
+					this.autosave.enable();
 				},
 				toggle: function()
 				{
@@ -2650,7 +2687,8 @@
 					this.code.offset = this.caret.getOffset();
 					var scroll = $(window).scrollTop();
 
-					var height = this.$editor.innerHeight();
+					var	width = this.$editor.innerWidth(),
+						height = this.$editor.innerHeight();
 
 					this.$editor.hide();
 
@@ -2660,17 +2698,33 @@
 					// indent code
 					html = this.tabifier.get(html);
 
-					this.$textarea.val(html).height(height).show().focus();
-					this.$textarea.on('keydown.redactor-textarea-indenting', this.code.textareaIndenting);
+					this.$textarea.val(html);
 
-					$(window).scrollTop(scroll);
-
-					if (this.$textarea[0].setSelectionRange)
+					if (this.opts.codemirror)
 					{
-						this.$textarea[0].setSelectionRange(0, 0);
+						this.$textarea.next('.CodeMirror').each(function(i, el)
+						{
+							$(el).show();
+							el.CodeMirror.setValue(html);
+							el.CodeMirror.setSize(width, height);
+							el.CodeMirror.refresh();
+							el.CodeMirror.focus();
+						});
 					}
+					else
+					{
+						this.$textarea.height(height).show().focus();
+						this.$textarea.on('keydown.redactor-textarea-indenting', this.code.textareaIndenting);
 
-					this.$textarea[0].scrollTop = 0;
+						$(window).scrollTop(scroll);
+
+						if (this.$textarea[0].setSelectionRange)
+						{
+							this.$textarea[0].setSelectionRange(0, 0);
+						}
+
+						this.$textarea[0].scrollTop = 0;
+					}
 
 					this.opts.visual = false;
 
@@ -2680,13 +2734,30 @@
 				},
 				showVisual: function()
 				{
+					var html;
+
 					if (this.opts.visual) return;
 
-					var html = this.$textarea.hide().val();
+					if (this.opts.codemirror)
+					{
+						this.$textarea.next('.CodeMirror').each(function(i, el)
+						{
+							html = el.CodeMirror.getValue();
+						});
+					}
+					else
+					{
+						html = this.$textarea.hide().val();
+					}
 
 					if (this.modified !== this.clean.removeSpaces(html))
 					{
 						this.code.set(html);
+					}
+
+					if (this.opts.codemirror)
+					{
+						this.$textarea.next('.CodeMirror').hide();
 					}
 
 					this.$editor.show();
@@ -2837,14 +2908,29 @@
 					{
 						$.each(this.opts.formattingAdd, $.proxy(function(i,s)
 						{
+<<<<<<< HEAD
 							var name = s.tag;
 							if (typeof s.class != 'undefined')
+=======
+							var name = s.tag,
+								func;
+
+							if (typeof s['class'] != 'undefined')
+>>>>>>> dev/2.4
 							{
 								name = name + '-' + s.class;
 							}
 
 							s.type = (this.utils.isBlockTag(s.tag)) ? 'block' : 'inline';
-							var func = (s.type == 'inline') ? 'inline.formatting' : 'block.formatting';
+
+							if (typeof s.func !== "undefined")
+							{
+								func = s.func;
+							}
+							else
+							{
+								func = (s.type == 'inline') ? 'inline.formatting' : 'block.formatting';
+							}
 
 							if (this.opts.linebreaks && s.type == 'block' && s.tag == 'p') return;
 
@@ -3163,7 +3249,7 @@
 				},
 				showEdit: function($image)
 				{
-					var $link = $image.closest('a');
+					var $link = $image.closest('a', this.$editor[0]);
 
 					this.modal.load('imageEdit', this.lang.get('edit'), 705);
 
@@ -3240,7 +3326,7 @@
 					this.image.hideResize();
 					this.buffer.set();
 
-					var $link = $image.closest('a');
+					var $link = $image.closest('a', this.$editor[0]);
 
 					$image.attr('alt', $('#redactor-image-title').val());
 
@@ -3368,8 +3454,11 @@
 
 					if (height < 50 || width < 100) return;
 
+					var height = Math.round(this.image.resizeHandle.el.width() / this.image.resizeHandle.ratio);
+
+					this.image.resizeHandle.el.attr({width: width, height: height});
 		            this.image.resizeHandle.el.width(width);
-		            this.image.resizeHandle.el.height(this.image.resizeHandle.el.width()/this.image.resizeHandle.ratio);
+		            this.image.resizeHandle.el.height(height);
 
 		            this.code.sync();
 				},
@@ -3413,7 +3502,7 @@
 				},
 				hideResize: function(e)
 				{
-					if (e && $(e.target).closest('#redactor-image-box').length !== 0) return;
+					if (e && $(e.target).closest('#redactor-image-box', this.$editor[0]).length !== 0) return;
 					if (e && e.target.tagName == 'IMG')
 					{
 						var $image = $(e.target);
@@ -3525,8 +3614,8 @@
 				remove: function(image)
 				{
 					var $image = $(image);
-					var $link = $image.closest('a');
-					var $figure = $image.closest('figure');
+					var $link = $image.closest('a', this.$editor[0]);
+					var $figure = $image.closest('figure', this.$editor[0]);
 					var $parent = $image.parent();
 					if ($('#redactor-image-box').length !== 0)
 					{
@@ -3711,7 +3800,7 @@
 
 					var current = this.selection.getCurrent();
 
-					var $item = $(current).closest('li');
+					var $item = $(current).closest('li', this.$editor[0]);
 					var $parent = $item.parent();
 					if ($item.length !== 0 && $parent.length !== 0 && $parent[0].tagName == 'LI')
 					{
@@ -3795,6 +3884,15 @@
 						if (tag == tags[i]) tag = replaced[i];
 					}
 
+					if (this.opts.allowedTags)
+					{
+						if ($.inArray(tag, this.opts.allowedTags) == -1) return;
+					}
+					else
+					{
+						if ($.inArray(tag, this.opts.deniedTags) !== -1) return;
+					}
+
 					this.inline.type = type || false;
 					this.inline.value = value || false;
 
@@ -3815,7 +3913,7 @@
 				formatCollapsed: function(tag)
 				{
 					var current = this.selection.getCurrent();
-					var $parent = $(current).closest(tag + '[data-redactor-tag=' + tag + ']');
+					var $parent = $(current).closest(tag + '[data-redactor-tag=' + tag + ']', this.$editor[0]);
 
 					// inline there is
 					if ($parent.length !== 0 && (this.inline.type != 'style' && $parent[0].tagName != 'SPAN'))
@@ -4465,7 +4563,7 @@
 						var $table = false;
 						if (this.keydown.block && this.keydown.block.tagName === 'TD')
 						{
-							$table = $(this.keydown.block).closest('table');
+							$table = $(this.keydown.block).closest('table', this.$editor[0]);
 						}
 
 						if ($table && $table.find('td').last()[0] === this.keydown.block)
@@ -4572,7 +4670,31 @@
 						// paragraphs
 						else if (!this.opts.linebreaks && this.keydown.block && this.keydown.block.tagName !== 'LI')
 						{
+<<<<<<< HEAD
 							setTimeout($.proxy(this.keydown.replaceDivToParagraph, this), 1);
+=======
+							if (this.keydown.block.tagName !== 'LI')
+							{
+								setTimeout($.proxy(this.keydown.replaceDivToParagraph, this), 1);
+							}
+							else
+							{
+								current = this.selection.getCurrent();
+								var $parent = $(current).closest('li', this.$editor[0]);
+								var $list = $parent.closest('ul,ol', this.$editor[0]);
+
+								if ($parent.length !== 0 && this.utils.isEmpty($parent.html()) && $list.next().length === 0 && this.utils.isEmpty($list.find("li").last().html()))
+								{
+									$list.find("li").last().remove();
+
+									var node = $(this.opts.emptyHtml);
+									$list.after(node);
+									this.caret.setStart(node);
+
+									return false;
+								}
+							}
+>>>>>>> dev/2.4
 						}
 						else if (!this.opts.linebreaks && !this.keydown.block)
 						{
@@ -4908,14 +5030,38 @@
 					e.stopPropagation();
 
 					this.selection.get();
+
 					var br1 = document.createElement('br');
 
 					this.range.deleteContents();
 					this.range.insertNode(br1);
 
+					// move br outside A tag
+					var $parentA = $(br1).parent("a");
+
+					if ($parentA.length > 0)
+					{
+<<<<<<< HEAD
+=======
+						$parentA.find(br1)
+								.remove();
+
+						$parentA.after(br1);
+					}
+
 					if (dbl === true)
 					{
+						var $next = $(br1).next();
+						if ($next.length !== 0 && $next[0].tagName === 'BR' && this.utils.isEndOfEditor())
+						{
+							this.caret.setAfter(br1);
+							this.code.sync();
+							return false;
+						}
+
+>>>>>>> dev/2.4
 						var br2 = document.createElement('br');
+
 						this.range.insertNode(br2);
 						this.caret.setAfter(br2);
 					}
@@ -4940,9 +5086,9 @@
 				{
 					var $current = $(this.keydown.current);
 					var $parent = $(this.keydown.parent);
-					var td = $current.closest('td');
+					var td = $current.closest('td', this.$editor[0]);
 
-					if (td.length !== 0 && $current.closest('li') && $parent.children('li').length === 1)
+					if (td.length !== 0 && $current.closest('li', this.$editor[0]) && $parent.children('li').length === 1)
 					{
 						if (!this.utils.isEmpty($current.text())) return;
 
@@ -4998,13 +5144,8 @@
 					}
 
 					// linkify
-					if (this.keyup.isLinkify(key))
-					{
-						this.formatLinkify(this.opts.linkProtocol, this.opts.convertLinks, this.opts.convertUrlLinks, this.opts.convertImageLinks, this.opts.convertVideoLinks, this.opts.linkSize);
-
-						this.observe.load();
-						this.code.sync();
-					}
+					if (this.linkify.isEnabled() && this.linkify.isKey(key))
+						this.linkify.format();
 
 					if (key === this.keyCode.DELETE || key === this.keyCode.BACKSPACE)
 					{
@@ -5025,7 +5166,10 @@
 						}
 
 						// remove empty paragraphs
-						this.$editor.find('p').each($.proxy(this.utils.removeEmpty, this));
+						this.$editor.find('p').each($.proxy(function(i, s)
+						{
+							this.utils.removeEmpty(i, $(s).html());
+						}, this));
 
 						// remove invisible space
 						if (this.opts.linebreaks && this.keyup.current && this.keyup.current.tagName == 'DIV' && this.utils.isEmpty(this.keyup.current.innerHTML))
@@ -5038,10 +5182,6 @@
 						// if empty
 						return this.keyup.formatEmpty(e);
 					}
-				},
-				isLinkify: function(key)
-				{
-					return this.opts.convertLinks && (this.opts.convertUrlLinks || this.opts.convertImageLinks || this.opts.convertVideoLinks) && key === this.keyCode.ENTER && !this.utils.isCurrentOrParent('PRE');
 				},
 				replaceToParagraph: function(clone)
 				{
@@ -5223,23 +5363,26 @@
 				cleanUrl: function()
 				{
 					var thref = self.location.href.replace(/\/$/i, '');
-					this.link.url = this.link.url.replace(thref, '');
-					this.link.url = this.link.url.replace(/^\/#/, '#');
-					this.link.url = this.link.url.replace('mailto:', '');
 
-					// remove host from href
-					if (!this.opts.linkProtocol)
+					if (typeof this.link.url !== "undefined")
 					{
-						var re = new RegExp('^(http|ftp|https)://' + self.location.host, 'i');
-						this.link.url = this.link.url.replace(re, '');
-					}
+						this.link.url = this.link.url.replace(thref, '');
+						this.link.url = this.link.url.replace(/^\/#/, '#');
+						this.link.url = this.link.url.replace('mailto:', '');
 
+						// remove host from href
+						if (!this.opts.linkProtocol)
+						{
+							var re = new RegExp('^(http|ftp|https)://' + self.location.host, 'i');
+							this.link.url = this.link.url.replace(re, '');
+						}
+					}
 				},
 				getData: function()
 				{
 					this.link.$node = false;
 
-					var $el = $(this.selection.getCurrent()).closest('a');
+					var $el = $(this.selection.getCurrent()).closest('a', this.$editor[0]);
 					if ($el.length !== 0 && $el[0].tagName === 'A')
 					{
 						this.link.$node = $el;
@@ -5258,6 +5401,8 @@
 				},
 				insert: function()
 				{
+					this.placeholder.remove();
+
 					var target = '';
 					var link = this.link.$inputUrl.val();
 					var text = this.link.$inputText.val();
@@ -5314,15 +5459,36 @@
 					{
 						this.buffer.set();
 
-						this.link.$node.text(text).attr('href', link);
-						if (target !== '')
+						var $link = this.link.$node,
+							$el   = $link.children();
+
+						if ($el.length > 0)
 						{
-							this.link.$node.attr('target', target);
+							while ($el.length)
+							{
+								$el = $el.children();
+							}
+
+							$el = $el.end();
 						}
 						else
 						{
-							this.link.$node.removeAttr('target');
+							$el = $link;
 						}
+
+						$link.attr('href', link);
+						$el.text(text);
+
+						if (target !== '')
+						{
+							$link.attr('target', target);
+						}
+						else
+						{
+							$link.removeAttr('target');
+						}
+
+						this.selection.selectElement($link);
 
 						this.code.sync();
 					}
@@ -5345,20 +5511,45 @@
 								if (target !== '') $a.attr('target', target);
 
 								$a = $(this.insert.node($a));
+
+								if (this.selection.getText().match(/\s$/))
+								{
+									$a.after(" ");
+								}
+
 								this.selection.selectElement($a);
 							}
 							else
 							{
 								document.execCommand('createLink', false, link);
 
+<<<<<<< HEAD
 								$a = $(this.selection.getCurrent()).closest('a');
+=======
+								$a = $(this.selection.getCurrent()).closest('a', this.$editor[0]);
+								if (this.utils.browser('mozilla'))
+								{
+									$a = $('a[_moz_dirty=""]');
+								}
+>>>>>>> dev/2.4
 
 								if (target !== '') $a.attr('target', target);
 								$a.removeAttr('style');
 
+<<<<<<< HEAD
 								if (this.link.text === '' || this.link.text != text)
 								{
+=======
+								if (this.selection.getText().match(/\s$/))
+								{
+									$a.after(" ");
+								}
+
+								if (this.link.text !== '' || this.link.text != text)
+								{
+>>>>>>> dev/2.4
 									$a.text(text);
+
 									this.selection.selectElement($a);
 								}
 							}
@@ -5388,11 +5579,16 @@
 					var len = nodes.length;
 					for (var i = 0; i < len; i++)
 					{
+<<<<<<< HEAD
 						if (nodes[i].tagName == 'A')
 						{
 							var $node = $(nodes[i]);
 							$node.replaceWith($node.contents());
 						}
+=======
+						var $node = $(nodes[i]).closest('a', this.$editor[0]);
+						$node.replaceWith($node.contents());
+>>>>>>> dev/2.4
 					}
 
 					// hide link's tooltip
@@ -5437,7 +5633,7 @@
 					this.selection.save();
 
 					var parent = this.selection.getParent();
-					var $list = $(parent).closest('ol, ul');
+					var $list = $(parent).closest('ol, ul', this.$editor[0]);
 
 					if (!this.utils.isRedactorParent($list) && $list.length !== 0)
 					{
@@ -5475,7 +5671,6 @@
 						}
 					}
 
-
 					this.selection.restore();
 					this.code.sync();
 				},
@@ -5483,7 +5678,7 @@
 				{
 					var parent = this.selection.getParent();
 					var current = this.selection.getCurrent();
-					var $td = $(current).closest('td, th');
+					var $td = $(current).closest('td, th', this.$editor[0]);
 
 					if (this.utils.browser('msie') && this.opts.linebreaks)
 					{
@@ -5494,7 +5689,7 @@
 						document.execCommand('insert' + cmd);
 					}
 
-					var $list = $(this.selection.getParent()).closest('ol, ul');
+					var $list = $(this.selection.getParent()).closest('ol, ul', this.$editor[0]);
 
 					if ($td.length !== 0)
 					{
@@ -5581,13 +5776,13 @@
 
 					this.indent.fixEmptyIndent();
 
-					if (!this.opts.linebreaks && $current.closest('li, th, td').length === 0)
+					if (!this.opts.linebreaks && $current.closest('li, th, td', this.$editor[0]).length === 0)
 					{
 						document.execCommand('formatblock', false, 'p');
 						this.$editor.find('ul, ol, blockquote').each($.proxy(this.utils.removeEmpty, this));
 					}
 
-					var $table = $(this.selection.getCurrent()).closest('table');
+					var $table = $(this.selection.getCurrent()).closest('table', this.$editor[0]);
 					var $prev = $table.prev();
 					if (!this.opts.linebreaks && $table.length !== 0 && $prev.length !== 0 && $prev[0].tagName == 'BR')
 					{
@@ -5968,19 +6163,19 @@
 
 					$.each(this.opts.activeButtonsStates, $.proxy(function(key, value)
 					{
-						var parentEl = $(parent).closest(key);
-						var currentEl = $(current).closest(key);
+						var parentEl = $(parent).closest(key, this.$editor[0]);
+						var currentEl = $(current).closest(key, this.$editor[0]);
 
 						if (parentEl.length !== 0 && !this.utils.isRedactorParent(parentEl)) return;
 						if (!this.utils.isRedactorParent(currentEl)) return;
-						if (parentEl.length !== 0 || currentEl.closest(key).length !== 0)
+						if (parentEl.length !== 0 || currentEl.closest(key, this.$editor[0]).length !== 0)
 						{
 							this.button.setActive(value);
 						}
 
 					}, this));
 
-					var $parent = $(parent).closest(this.opts.alignmentTags.toString().toLowerCase());
+					var $parent = $(parent).closest(this.opts.alignmentTags.toString().toLowerCase(), this.$editor[0]);
 					if (this.utils.isRedactorParent(parent) && $parent.length)
 					{
 						var align = ($parent.css('text-align') === '') ? 'left' : $parent.css('text-align');
@@ -5999,7 +6194,7 @@
 						var $img = $(img);
 
 						// IE fix (when we clicked on an image and then press backspace IE does goes to image's url)
-						$img.closest('a').on('click', function(e) { e.preventDefault(); });
+						$img.closest('a', this.$editor[0]).on('click', function(e) { e.preventDefault(); });
 
 						if (this.utils.browser('msie')) $img.attr('unselectable', 'on');
 
@@ -6032,20 +6227,18 @@
 				},
 				showTooltip: function(e)
 				{
-					var $link = $(e.target);
-					var $parent = $link.closest('a');
-					var tag = ($link.length !== 0) ? $link[0].tagName : false;
+					var $el = $(e.target);
 
-					if ($parent[0].tagName === 'A')
-					{
-						if (tag === 'IMG') return;
-						else if (tag !== 'A') $link = $parent;
-					}
-
-					if (tag !== 'A')
-					{
+					if ($el[0].tagName == 'IMG')
 						return;
-					}
+
+					if ($el[0].tagName !== 'A')
+						$el = $el.closest('a', this.$editor[0]);
+
+					if ($el[0].tagName !== 'A')
+						return;
+
+					var $link = $el;
 
 					var pos = this.observe.getTooltipPosition($link);
 					var tooltip = $('<span class="redactor-link-tooltip"></span>');
@@ -6076,7 +6269,7 @@
 					e = e.originalEvent || e;
 
 					var target = e.target;
-					var $parent = $(target).closest('a');
+					var $parent = $(target).closest('a', this.$editor[0]);
 					if ($parent.length !== 0 && $parent[0].tagName === 'A' && target.tagName !== 'A')
 					{
 						return;
@@ -6099,10 +6292,6 @@
 					if (this.opts.linebreaks) return html;
 					if (html === '' || html === '<p></p>') return this.opts.emptyHtml;
 
-					this.paragraphize.blocks = ['table', 'div', 'pre', 'form', 'ul', 'ol', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'dl', 'blockquote', 'figcaption',
-					'address', 'section', 'header', 'footer', 'aside', 'article', 'object', 'style', 'script', 'iframe', 'select', 'input', 'textarea',
-					'button', 'option', 'map', 'area', 'math', 'hr', 'fieldset', 'legend', 'hgroup', 'nav', 'figure', 'details', 'menu', 'summary', 'p'];
-
 					html = html + "\n";
 
 					this.paragraphize.safes = [];
@@ -6117,7 +6306,7 @@
 					html = this.paragraphize.clear(html);
 					html = this.paragraphize.restoreSafes(html);
 
-					html = html.replace(new RegExp('<br\\s?/?>\n?<(' + this.paragraphize.blocks.join('|') + ')(.*?[^>])>', 'gi'), '<p><br /></p>\n<$1$2>');
+					html = html.replace(new RegExp('<br\\s?/?>\n?<(' + this.opts.paragraphizeBlocks.join('|') + ')(.*?[^>])>', 'gi'), '<p><br /></p>\n<$1$2>');
 
 					return $.trim(html);
 				},
@@ -6133,7 +6322,7 @@
 
 					html = $div.html();
 
-					$div.find(this.paragraphize.blocks.join(', ')).each($.proxy(function(i,s)
+					$div.find(this.opts.paragraphizeBlocks.join(', ')).each($.proxy(function(i,s)
 					{
 						this.paragraphize.z++;
 						this.paragraphize.safes[this.paragraphize.z] = s.outerHTML;
@@ -6261,8 +6450,10 @@
 
 						$(window).off('scroll.redactor-freeze');
 
-					}, this), 1);
+						if (this.linkify.isEnabled())
+							this.linkify.format();
 
+					}, this), 1);
 				},
 				createPasteBox: function()
 				{
@@ -7154,24 +7345,13 @@
 						replacement.push(this.tidy.settings.replaceTags[i][0]);
 					}
 
-					this.tidy.$div.find(replacement.join(',')).each($.proxy(function(n,s)
+					$.each(replacement, $.proxy(function(key, value)
 					{
-						var tag = rTags[n];
-						$(s).replaceWith(function()
+						this.tidy.$div.find(value).replaceWith(function()
 						{
-							var replaced = $('<' + tag + ' />').append($(this).contents());
-
-							for (var i = 0; i < this.attributes.length; i++)
-							{
-								replaced.attr(this.attributes[i].name, this.attributes[i].value);
-							}
-
-							return replaced;
+							return $("<" + rTags[key] + " />", {html: $(this).html()});
 						});
-
 					}, this));
-
-					return html;
 				},
 				replaceStyles: function()
 				{
@@ -7676,6 +7856,9 @@
 						left: left
 					});
 
+					if (scrollTop > end)
+						$('.redactor-dropdown-' + this.uuid + ':visible').hide();
+
 					this.toolbar.setDropdownsFixed();
 					this.$toolbar.css('visibility', (scrollTop < end) ? 'visible' : 'hidden');
 				},
@@ -7691,7 +7874,10 @@
 
 					this.toolbar.unsetDropdownsFixed();
 					this.$toolbar.removeClass('toolbar-fixed-box');
+<<<<<<< HEAD
 
+=======
+>>>>>>> dev/2.4
 				},
 				setDropdownsFixed: function()
 				{
@@ -7840,6 +8026,7 @@
 
 					var xhr = new XMLHttpRequest();
 					xhr.open('POST', this.upload.url);
+					xhr.setRequestHeader("X-Requested-With", "XMLHttpRequest");
 
 					// complete
 					xhr.onreadystatechange = $.proxy(function()
@@ -8142,12 +8329,13 @@
 				},
 				removeEmpty: function(i, s)
 				{
-					var $s = $(s);
+					var $s = $($.parseHTML(s));
 
 					$s.find('.redactor-invisible-space').removeAttr('style').removeAttr('class');
 
 					if ($s.find('hr, br, img, iframe, source').length !== 0) return;
 					var text = $.trim($s.text());
+
 					if (this.utils.isEmpty(text, false))
 					{
 						$s.remove();
@@ -8275,7 +8463,7 @@
 				// tag detection
 				isTag: function(current, tag)
 				{
-					var element = $(current).closest(tag);
+					var element = $(current).closest(tag, this.$editor[0]);
 					if (element.length == 1)
 					{
 						return element[0];
@@ -8383,9 +8571,139 @@
 					return browser == match[1];
 				}
 			};
+		},
+		linkify: function()
+		{
+			return {
+				isKey: function(key)
+				{
+					return key == this.keyCode.ENTER || key == this.keyCode.SPACE;
+				},
+				isEnabled: function()
+				{
+					return this.opts.convertLinks && (this.opts.convertUrlLinks || this.opts.convertImageLinks || this.opts.convertVideoLinks) && !this.utils.isCurrentOrParent('PRE');
+				},
+				format: function()
+				{
+					var linkify = this.linkify,
+						opts    = this.opts;
+
+					this.$editor
+						.find(":not(iframe,img,a,pre)")
+						.addBack()
+						.contents()
+						.filter(function()
+						{
+							return this.nodeType === 3 && $.trim(this.nodeValue) != "" && !$(this).parent().is("pre") && (this.nodeValue.match(opts.linkify.regexps.youtube) || this.nodeValue.match(opts.linkify.regexps.vimeo) || this.nodeValue.match(opts.linkify.regexps.image) || this.nodeValue.match(opts.linkify.regexps.url));
+						})
+						.each(function()
+						{
+							var text = $(this).text(),
+								html = text;
+
+							if (opts.convertVideoLinks && (html.match(opts.linkify.regexps.youtube) || html.match(opts.linkify.regexps.vimeo)) )
+							{
+								html = linkify.convertVideoLinks(html);
+							}
+							else if (opts.convertImageLinks && html.match(opts.linkify.regexps.image))
+							{
+								html = linkify.convertImages(html);
+							}
+							else if (opts.convertUrlLinks)
+							{
+								html = linkify.convertLinks(html);
+							}
+
+							$(this).before(text.replace(text, html))
+								   .remove();
+						});
+
+					this.linkify.after();
+				},
+				convertVideoLinks: function(html)
+				{
+					var iframeStart = '<iframe width="500" height="281" src="',
+						iframeEnd = '" frameborder="0" allowfullscreen></iframe>';
+
+					if (html.match(this.opts.linkify.regexps.youtube))
+					{
+						html = html.replace(this.opts.linkify.regexps.youtube, iframeStart + '//www.youtube.com/embed/$1' + iframeEnd);
+					}
+
+					if (html.match(this.opts.linkify.regexps.vimeo))
+					{
+						html = html.replace(this.opts.linkify.regexps.vimeo, iframeStart + '//player.vimeo.com/video/$2' + iframeEnd);
+					}
+
+					return html;
+				},
+				convertImages: function(html)
+				{
+					var matches = html.match(this.opts.linkify.regexps.image);
+
+					if (matches)
+					{
+						html = html.replace(html, '<img src="' + matches + '" />');
+					}
+
+					return html;
+				},
+				convertLinks: function(html)
+				{
+					var matches = html.match(this.opts.linkify.regexps.url);
+
+					if (matches)
+					{
+						matches = $.grep(matches, function(v, k) { return $.inArray(v, matches) === k; });
+
+						var length = matches.length;
+
+						for (var i = 0; i < length; i++)
+						{
+							var href = matches[i],
+								text = href,
+								linkProtocol = this.opts.linkProtocol + '://';
+
+							if (href.match(/(https?|ftp):\/\//i) !== null)
+							{
+								linkProtocol = "";
+							}
+
+							if (text.length > this.opts.linkSize)
+							{
+								text = text.substring(0, this.opts.linkSize) + '...';
+							}
+
+							text = decodeURIComponent(text);
+
+							var regexB = "\\b";
+
+							if ($.inArray(href.slice(-1), ["/", "&", "="]) != -1)
+							{
+								regexB = "";
+							}
+
+							// escaping url
+							var regexp = new RegExp('(' + href.replace(/[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, "\\$&") + regexB + ')', 'g');
+
+							html = html.replace(regexp, '<a href="' + linkProtocol + $.trim(href) + '">' + $.trim(text) + '</a>');
+						}
+					}
+
+					return html;
+				},
+				after: function()
+				{
+					this.observe.load();
+					this.code.sync();
+				}
+			}
 		}
 	};
 
+<<<<<<< HEAD
+})(jQuery);
+=======
 	$(window).on('load.tools.redactor', function()
 	{
 		$('[data-tools="redactor"]').redactor();
@@ -8393,106 +8711,5 @@
 
 	// constructor
 	Redactor.prototype.init.prototype = Redactor.prototype;
-
-	// LINKIFY
-	$.Redactor.fn.formatLinkify = function(protocol, convertLinks, convertUrlLinks, convertImageLinks, convertVideoLinks, linkSize)
-	{
-		var urlCheck = '((?:http[s]?:\\/\\/(?:www\\.)?|www\\.){1}(?:[0-9A-Za-z\\-%_]+\\.)+[a-zA-Z]{2,}(?::[0-9]+)?(?:(?:/[0-9A-Za-z\\-#\\.%\+_]*)+)?(?:\\?(?:[0-9A-Za-z\\-\\.%_]+(?:=[0-9A-Za-z\\-\\.%_\\+]*)?)?(?:&(?:[0-9A-Za-z\\-\\.%_]+(?:=[0-9A-Za-z\\-\\.%_\\+]*)?)?)*)?(?:#[0-9A-Za-z\\-\\.%_\\+=\\?&;]*)?)';
-		var regex = new RegExp(urlCheck, 'gi');
-		var rProtocol = /(https?|ftp):\/\//i;
-		var urlImage = new RegExp('(?:([^:/?#]+):)?(?:\/\/([^/?#]*))?([^?#]*\\.(?:jpg|gif|png))(?:\\?([^#]*))?(?:#(.*))?', 'gi');
-
-		var childNodes = (this.$editor ? this.$editor[0] : this).childNodes, i = childNodes.length;
-		while (i--)
-		{
-			var n = childNodes[i];
-
-			if (n.nodeType === 3 && n.parentNode !== 'PRE')
-			{
-				var html = n.nodeValue;
-
-				// youtube & vimeo
-				if (convertVideoLinks && html)
-				{
-					var iframeStart = '<iframe width="500" height="281" src="',
-						iframeEnd = '" frameborder="0" allowfullscreen></iframe>';
-
-					if (html.match(reUrlYoutube))
-					{
-						html = html.replace(reUrlYoutube, iframeStart + '//www.youtube.com/embed/$1' + iframeEnd);
-						$(n).after(html).remove();
-					}
-					else if (html.match(reUrlVimeo))
-					{
-						html = html.replace(reUrlVimeo, iframeStart + '//player.vimeo.com/video/$2' + iframeEnd);
-						$(n).after(html).remove();
-					}
-				}
-
-				// image
-				if (convertImageLinks && html && html.match(urlImage))
-				{
-					var matches = html.match(urlImage);
-					html = html.replace(urlImage, '<img src="' + matches + '" />');
-
-					$(n).after(html).remove();
-					return;
-				}
-
-				// link
-				if (html.search(/\$/g) != -1) html = html.replace(/\$/g, '&#36;');
-
-				var matches = html.match(regex);
-				if (convertUrlLinks && html && matches)
-				{
-					var len = matches.length;
-					for (var z = 0; z < len; z++)
-					{
-						// remove dot in the end
-						if (matches[z].match(/\.$/) !== null) matches[z] = matches[z].replace(/\.$/, '');
-
-						var href = matches[z];
-						var text = href;
-
-						var space = '';
-						if (href.match(/\s$/) !== null) space = ' ';
-
-						var addProtocol = protocol + '://';
-						if (href.match(rProtocol) !== null) addProtocol = '';
-
-						if (text.length > linkSize) text = text.substring(0, linkSize) + '...';
-						text = text.replace(/&#36;/g, '$').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-
-						// buffer
-						var buffer = [];
-						var links = html.match('<a(.*?)</a>');
-						if (links !== null)
-						{
-							var len = links.length;
-							for (i = 0; i < len; i++)
-							{
-								buffer[i] = links[i];
-								html = html.replace(links[i], '{abuffer' + i + '}');
-							}
-						}
-
-						html = html.replace(href, '<a href=\"' + addProtocol + $.trim(href) + '\">' + $.trim(text) + '</a>' + space);
-
-						// rebuffer
-						$.each(buffer, function(i,s)
-						{
-							html = html.replace('{abuffer' + i + '}', s);
-						});
-					}
-
-					$(n).after(html).remove();
-				}
-			}
-			else if (n.nodeType === 1 && !/^(pre|a|button|textarea)$/i.test(n.tagName))
-			{
-				$.Redactor.fn.formatLinkify.call(n, protocol, convertLinks, convertUrlLinks, convertImageLinks, convertVideoLinks, linkSize);
-			}
-		}
-	};
-
 })(jQuery);
+>>>>>>> dev/2.4
