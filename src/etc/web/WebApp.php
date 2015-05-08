@@ -174,6 +174,8 @@ class WebApp extends \CWebApplication
 			HeaderHelper::setHeader(array('X-Content-Type-Options' => 'nosniff'));
 		}
 
+		HeaderHelper::setHeader(array('X-Powered-By' => 'Craft CMS'));
+
 		// Validate some basics on the database configuration file.
 		$this->validateDbConfigFile();
 
