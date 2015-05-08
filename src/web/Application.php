@@ -129,6 +129,8 @@ class Application extends \yii\web\Application
 			HeaderHelper::setHeader(['X-Content-Type-Options' => 'nosniff']);
 		}
 
+		HeaderHelper::setHeader(array('X-Powered-By' => 'Craft CMS'));
+
 		// If the system in is maintenance mode and it's a site request, throw a 503.
 		if ($this->isInMaintenanceMode() && $request->getIsSiteRequest())
 		{
