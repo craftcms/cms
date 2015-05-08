@@ -112,6 +112,23 @@ class DateTime extends \DateTime
 				$date = $dt['date'];
 				$format = $dateFormatter->getDatepickerPhpFormat();
 
+				// Valid separators are either '-', '.' or '/'.
+				if (mb_strpos($format, '.') !== false)
+				{
+					$separator = '.';
+				}
+				else if (mb_strpos($format, '-') !== false)
+				{
+					$separator = '-';
+				}
+				else
+				{
+					$separator = '/';
+				}
+
+				// Ensure that the submitted date is using the locale’s separator
+				$date = str_replace(array('-', '.', '/'), $separator, $date);
+
 				// Check for a two-digit year as well
 				$altFormat = str_replace('Y', 'y', $format);
 
