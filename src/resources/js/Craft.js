@@ -1,4 +1,4 @@
-/*! Craft 3.0.0 - 2015-04-27 */
+/*! Craft 3.0.0 - 2015-05-08 */
 (function($){
 
 if (typeof window.Craft == 'undefined')
@@ -4668,15 +4668,13 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 		message: "File “{file}” already exists at target location.",
 		choices: [
 			{value: 'keepBoth', title: Craft.t('Keep both')},
-			{value: 'replace', title: Craft.t('Replace it')},
-			{value: 'cancel', title: Craft.t('Cancel')}
+			{value: 'replace', title: Craft.t('Replace it')}
 		]
 	},
 	_folderConflictTemplate: {
 		message: "Folder “{folder}” already exists at target location",
 		choices: [
-			{value: 'replace', title: Craft.t('Replace the existing folder')},
-			{value: 'cancel', title: Craft.t('Cancel the folder move')}
+			{value: 'replace', title: Craft.t('Replace the existing folder')}
 		]
 	},
 
@@ -12562,7 +12560,7 @@ Craft.PromptHandler = Garnish.Base.extend({
     $promptApplyToRemainingContainer: null,
     $promptApplyToRemainingCheckbox: null,
     $promptApplyToRemainingLabel: null,
-    $promptButtons: null,
+	$pomptChoices: null,
 
 
     _prompts: [],
@@ -12677,34 +12675,49 @@ Craft.PromptHandler = Garnish.Base.extend({
 
         this.$promptMessage = $('<p class="prompt-msg"/>').appendTo(this.$prompt);
 
-        $('<p>').html(Craft.t('What do you want to do?')).appendTo(this.$prompt);
+		this.$promptChoices = $('<div class="options"></div>').appendTo(this.$prompt);
 
-        this.$promptApplyToRemainingContainer = $('<label class="assets-applytoremaining"/>').appendTo(this.$prompt).hide();
-        this.$promptApplyToRemainingCheckbox = $('<input type="checkbox"/>').appendTo(this.$promptApplyToRemainingContainer);
-        this.$promptApplyToRemainingLabel = $('<span/>').appendTo(this.$promptApplyToRemainingContainer);
-        this.$promptButtons = $('<div class="buttons"/>').appendTo(this.$prompt);
+		this.$promptApplyToRemainingContainer = $('<label class="assets-applytoremaining"/>').appendTo(this.$prompt).hide();
+		this.$promptApplyToRemainingCheckbox = $('<input type="checkbox"/>').appendTo(this.$promptApplyToRemainingContainer);
+		this.$promptApplyToRemainingLabel = $('<span/>').appendTo(this.$promptApplyToRemainingContainer);
 
+		this.$promptButtons = $('<div class="buttons right"/>').appendTo(this.$prompt);
 
         this.modal.setContainer(this.$modalContainerDiv);
 
         this.$promptMessage.html(message);
 
+		var $cancelButton = $('<div class="btn">'+Craft.t('Cancel')+'</div>').appendTo(this.$promptButtons),
+			$submitBtn = $('<input type="submit" class="btn submit disabled" value="'+Craft.t('OK')+'" />').appendTo(this.$promptButtons);
+
         for (var i = 0; i < choices.length; i++)
         {
-            var $btn = $('<div class="btn" data-choice="'+choices[i].value+'">' + choices[i].title + '</div>');
+            var $radioButtonHtml = $('<div><label><input type="radio" name="promptAction" value="'+choices[i].value+'"/> '+choices[i].title+'</label></div>').appendTo(this.$promptChoices),
+				$radioButton = $radioButtonHtml.find('input');
 
-            this.addListener($btn, 'activate', function(ev)
-            {
-                var choice = ev.currentTarget.getAttribute('data-choice'),
-                    applyToRemaining = this.$promptApplyToRemainingCheckbox.prop('checked');
-
-                this._selectPromptChoice(choice, applyToRemaining);
-            });
-
-            this.$promptButtons.append($btn);
+			this.addListener($radioButton, 'click', function(ev)
+			{
+				$submitBtn.removeClass('disabled');
+			});
         }
 
-        if (itemsToGo)
+		this.addListener($submitBtn, 'activate', function(ev)
+		{
+			var choice = $(ev.currentTarget).parents('.modal').find('input[name=promptAction]:checked').val(),
+				applyToRemaining = this.$promptApplyToRemainingCheckbox.prop('checked');
+
+			this._selectPromptChoice(choice, applyToRemaining);
+		});
+
+		this.addListener($cancelButton, 'activate', function(ev)
+		{
+			var choice = 'cancel',
+				applyToRemaining = this.$promptApplyToRemainingCheckbox.prop('checked');
+
+			this._selectPromptChoice(choice, applyToRemaining);
+		});
+
+		if (itemsToGo)
         {
             this.$promptApplyToRemainingContainer.show();
             this.$promptApplyToRemainingLabel.html(' ' + Craft.t('Apply this to the {number} remaining conflicts?', {number: itemsToGo}));
