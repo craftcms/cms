@@ -507,32 +507,32 @@ class Resources extends Component
 		if (!IOHelper::fileExists($sourceIconLocation))
 		{
 			$sourceFile = Craft::$app->getPath()->getAppPath().'/resources/images/fileicons/'.$sourceSize['size'].'.png';
-			$image = imagecreatefrompng($sourceFile);
+			$image = \imagecreatefrompng($sourceFile);
 
 			// Text placement.
 			if ($ext)
 			{
-				$color = imagecolorallocate($image, 153, 153, 153);
+				$color = \imagecolorallocate($image, 153, 153, 153);
 				$text = StringHelper::toUpperCase($ext);
 				$font = Craft::$app->getPath()->getResourcesPath().'/fonts/helveticaneue-webfont.ttf';
 
 				// Get the bounding box so we can calculate the position
-				$box = imagettfbbox($sourceSize['extSize'], 0, $font, $text);
+				$box = \imagettfbbox($sourceSize['extSize'], 0, $font, $text);
 				$width = $box[4] - $box[0];
 
 				// place the text in the center-bottom-ish of the image
-				imagettftext($image, $sourceSize['extSize'], 0, ceil(($sourceSize['size'] - $width) / 2), $sourceSize['extY'], $color, $font, $text);
+				\imagettftext($image, $sourceSize['extSize'], 0, ceil(($sourceSize['size'] - $width) / 2), $sourceSize['extY'], $color, $font, $text);
 			}
 
 			// Preserve transparency
-			imagealphablending($image, false);
-			$color = imagecolorallocatealpha($image, 0, 0, 0, 127);
-			imagefill($image, 0, 0, $color);
-			imagesavealpha($image, true);
+			\imagealphablending($image, false);
+			$color = \imagecolorallocatealpha($image, 0, 0, 0, 127);
+			\imagefill($image, 0, 0, $color);
+			\imagesavealpha($image, true);
 
 			// Make sure we have a folder to save to and save it.
 			IOHelper::ensureFolderExists($sourceFolder);
-			imagepng($image, $sourceIconLocation);
+			\imagepng($image, $sourceIconLocation);
 		}
 
 		if ($size != $sourceSize['size'])
