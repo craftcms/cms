@@ -63,14 +63,33 @@ class DateTimeHelper
 				$date = $dt['date'];
 				$format = FormatConverter::convertDateIcuToPhp('short', 'date', $locale->id);
 
-				// Check for 2 and 4 digit years
-				if (strpos($format, 'y') !== false)
+				// Valid separators are either '-', '.' or '/'.
+				if (StringHelper::contains($format, '.'))
 				{
-					$altFormat = str_replace('y', 'Y', $format);
+					$separator = '.';
+				}
+				else if (StringHelper::contains($format, '-'))
+				{
+					$separator = '-';
 				}
 				else
 				{
-					$altFormat = str_replace('Y', 'y', $format);
+					$separator = '/';
+				}
+
+				// Ensure that the submitted date is using the locale’s separator
+				$date = StringHelper::replace($date, '-', $separator);
+				$date = StringHelper::replace($date, '.', $separator);
+				$date = StringHelper::replace($date, '/', $separator);
+
+				// Check for 2 and 4 digit years
+				if (StringHelper::contains($format, 'y'))
+				{
+					$altFormat = StringHelper::replace($format, 'y', 'Y');
+				}
+				else
+				{
+					$altFormat = StringHelper::replace($format, 'Y', 'y');
 				}
 
 				if (DateTime::createFromFormat($altFormat, $date) !== false)
