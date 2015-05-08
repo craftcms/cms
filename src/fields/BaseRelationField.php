@@ -14,6 +14,7 @@ use craft\app\base\Element;
 use craft\app\elements\db\ElementQuery;
 use craft\app\elements\db\ElementQueryInterface;
 use craft\app\helpers\StringHelper;
+use craft\app\tasks\LocalizeRelations;
 
 /**
  * BaseRelationField is the base class for classes representing a relational field.
@@ -91,6 +92,11 @@ abstract class BaseRelationField extends Field
 	 */
 	protected $sortable = true;
 
+	/**
+	 * @var boolean Whether existing relations should be made translatable after the field is saved
+	 */
+	private $_makeExistingRelationsTranslatable = false;
+
 	// Public Methods
 	// =========================================================================
 
@@ -105,6 +111,42 @@ abstract class BaseRelationField extends Field
 		$attributes[] = 'targetLocale';
 		$attributes[] = 'limit';
 		return $attributes;
+	}
+
+	/**
+	 * @inheritdoc
+	 */
+	public function beforeSave()
+	{
+		$this->_makeExistingRelationsTranslatable = false;
+
+		if ($this->id && $this->translatable)
+		{
+			$existingField = Craft::$app->getFields()->getFieldById($this->id);
+
+			if ($existingField && !$existingField->translatable)
+			{
+				$this->_makeExistingRelationsTranslatable = true;
+			}
+		}
+
+		parent::beforeSave();
+	}
+
+	/**
+	 * @inheritdoc
+	 */
+	public function afterSave()
+	{
+		if ($this->_makeExistingRelationsTranslatable)
+		{
+			Craft::$app->getTasks()->queueTask([
+				'type' => LocalizeRelations::className(),
+				'fieldId' => $this->id,
+			]);
+		}
+
+		parent::afterSave();
 	}
 
 	/**

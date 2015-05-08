@@ -46,6 +46,11 @@ class DeleteStaleTemplateCaches extends Task
 	 */
 	private $_deletedCacheIds;
 
+	/**
+	 * @var
+	 */
+	private $_totalDeletedCriteriaRows;
+
 	// Public Methods
 	// =========================================================================
 

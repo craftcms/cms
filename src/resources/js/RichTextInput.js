@@ -23,7 +23,6 @@ Craft.RichTextInput = Garnish.Base.extend(
 
 		this.redactorConfig.lang = redactorLang;
 		this.redactorConfig.direction = Craft.orientation;
-		this.redactorConfig.buttonSource = true;
 		this.redactorConfig.imageUpload = true;
 
 		var that = this,
@@ -217,7 +216,7 @@ Craft.RichTextInput = Garnish.Base.extend(
 				unlink:
 				{
 					title: Craft.t('Unlink'),
-					exec:  'link.unlink'
+					func:  'link.unlink'
 				}
 			});
 		}
@@ -225,13 +224,13 @@ Craft.RichTextInput = Garnish.Base.extend(
 
 	leaveFullscreetOnSaveShortcut: function()
 	{
-		if (typeof this.redactor.fullscreen != 'undefined' && typeof this.redactor.toggleFullscreen == 'function')
+		if (typeof this.redactor.fullscreen != 'undefined' && typeof this.redactor.fullscreen.disable == 'function')
 		{
 			Craft.cp.on('beforeSaveShortcut', $.proxy(function()
 			{
-				if (this.redactor.fullscreen)
+				if (this.redactor.fullscreen.isOpen)
 				{
-					this.redactor.toggleFullscreen();
+					this.redactor.fullscreen.disable();
 				}
 			}, this));
 		}

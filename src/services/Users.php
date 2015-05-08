@@ -354,6 +354,7 @@ class Users extends Component
 		else
 		{
 			$userRecord = new UserRecord();
+			$userRecord->pending = true;
 		}
 
 		// Set the user record attributes
@@ -366,8 +367,6 @@ class Users extends Component
 		$userRecord->client                = $user->client;
 		$userRecord->passwordResetRequired = $user->passwordResetRequired;
 		$userRecord->unverifiedEmail       = $user->unverifiedEmail;
-
-		$this->_processSaveUserStatus($userRecord, $user->getStatus());
 
 		$userRecord->validate();
 		$user->addErrors($userRecord->getErrors());
@@ -477,6 +476,23 @@ class Users extends Component
 			$this->trigger(static::EVENT_AFTER_SAVE_USER, new UserEvent([
 				'user' => $user
 			]));
+
+			// They got unsuspended
+			if ($userRecord->suspended == true && $user->suspended == false)
+			{
+				$this->unsuspendUser($user);
+			}
+			// They got suspended
+			else if ($userRecord->suspended == false && $user->suspended == true)
+			{
+				$this->suspendUser($user);
+			}
+
+			// They got activated
+			if ($userRecord->pending == true && $user->pending == false)
+			{
+				$this->activateUser($user);
+			}
 		}
 
 		return $success;
@@ -619,18 +635,21 @@ class Users extends Component
 		$unhashedVerificationCode = $this->_setVerificationCodeOnUserRecord($userRecord);
 		$userRecord->save();
 
+		$path = Craft::$app->getConfig()->get('actionTrigger').'/users/setpassword';
+		$params = [
+			'code' => $unhashedVerificationCode,
+			'id' => $userRecord->uid
+		];
+		$scheme = Craft::$app->getRequest()->getIsSecureConnection() ? 'https' : 'http';
+
 		if ($user->can('accessCp'))
 		{
-			$url = UrlHelper::getActionUrl('users/setpassword', ['code' => $unhashedVerificationCode, 'id' => $userRecord->uid], Craft::$app->getRequest()->getIsSecureConnection() ? 'https' : 'http');
+			return UrlHelper::getCpUrl($path, $params, $scheme);
 		}
 		else
 		{
-			// We want to hide the CP trigger if they don't have access to the CP.
-			$path = Craft::$app->getConfig()->get('actionTrigger').'/users/setpassword';
-			$url = UrlHelper::getSiteUrl($path, ['code' => $unhashedVerificationCode, 'id' => $userRecord->uid], Craft::$app->getRequest()->getIsSecureConnection() ? 'https' : 'http');
+			return UrlHelper::getSiteUrl($path, $params, $scheme);
 		}
-
-		return $url;
 	}
 
 	/**
@@ -815,7 +834,6 @@ class Users extends Component
 				$user->setActive();
 				$userRecord->verificationCode = null;
 				$userRecord->verificationCodeIssuedDate = null;
-				$userRecord->lockoutDate = null;
 				$userRecord->save();
 
 				// If they have an unverified email address, now is the time to set it to their primary email address
@@ -915,6 +933,7 @@ class Users extends Component
 
 				$userRecord->invalidLoginCount = $user->invalidLoginCount = null;
 				$userRecord->invalidLoginWindowStart = null;
+				$userRecord->lockoutDate = $user->lockoutDate = null;
 
 				$userRecord->save();
 				$success = true;
@@ -1350,8 +1369,9 @@ class Users extends Component
 	 */
 	private function _setVerificationCodeOnUserRecord(UserRecord $userRecord)
 	{
-		$unhashedCode = StringHelper::UUID();
-		$hashedCode = Craft::$app->getSecurity()->hashPassword($unhashedCode);
+		$securityService = Craft::$app->getSecurity();
+		$unhashedCode = $securityService->generateRandomString(32);
+		$hashedCode = $securityService->hashPassword($unhashedCode);
 		$userRecord->verificationCode = $hashedCode;
 		$userRecord->verificationCodeIssuedDate = DateTimeHelper::currentUTCDateTime();
 
@@ -1486,49 +1506,5 @@ class Users extends Component
 		}
 
 		return $success;
-	}
-
-	/**
-	 * @param $userRecord
-	 * @param $status
-	 */
-	private function _processSaveUserStatus($userRecord, $status)
-	{
-		switch ($status)
-		{
-			case User::STATUS_ACTIVE:
-			{
-				$userRecord->archived = false;
-				$userRecord->locked = false;
-				$userRecord->pending = false;
-				$userRecord->suspended = false;
-
-				break;
-			}
-
-			case User::STATUS_PENDING:
-			{
-				$userRecord->pending = true;
-				break;
-			}
-
-			case User::STATUS_LOCKED:
-			{
-				$userRecord->locked = true;
-				break;
-			}
-
-			case User::STATUS_SUSPENDED:
-			{
-				$userRecord->suspended = true;
-				break;
-			}
-
-			case User::STATUS_ARCHIVED:
-			{
-				$userRecord->archived = true;
-				break;
-			}
-		}
 	}
 }

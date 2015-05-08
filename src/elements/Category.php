@@ -122,55 +122,55 @@ class Category extends Element
 	 */
 	public static function getAvailableActions($source = null)
 	{
+		// Get the group we need to check permissions on
 		if (preg_match('/^group:(\d+)$/', $source, $matches))
 		{
 			$group = Craft::$app->getCategories()->getGroupById($matches[1]);
 		}
 
-		if (empty($group))
-		{
-			return;
-		}
-
+		// Now figure out what we can do with it
 		$actions = [];
 
-		// Set Status
-		$actions[] = SetStatus::className();
-
-		if ($group->hasUrls)
+		if (!empty($group))
 		{
-			// View
+			// Set Status
+			$actions[] = SetStatus::className();
+
+			if ($group->hasUrls)
+			{
+				// View
+				$actions[] = Craft::$app->getElements()->createAction([
+					'type'  => View::className(),
+					'label' => Craft::t('app', 'View category'),
+				]);
+			}
+
+			// Edit
 			$actions[] = Craft::$app->getElements()->createAction([
-				'type'  => View::className(),
-				'label' => Craft::t('app', 'View category'),
+				'type'  => Edit::className(),
+				'label' => Craft::t('app', 'Edit category'),
+			]);
+
+			// New Child
+			$structure = Craft::$app->getStructures()->getStructureById($group->structureId);
+
+			if ($structure)
+			{
+				$actions[] = Craft::$app->getElements()->createAction([
+					'type'        => NewChild::className(),
+					'label'       => Craft::t('app', 'Create a new child category'),
+					'maxLevels'   => $structure->maxLevels,
+					'newChildUrl' => 'categories/'.$group->handle.'/new',
+				]);
+			}
+
+			// Delete
+			$actions[] = Craft::$app->getElements()->createAction([
+				'type'                => Delete::className(),
+				'confirmationMessage' => Craft::t('app', 'Are you sure you want to delete the selected categories?'),
+				'successMessage'      => Craft::t('app', 'Categories deleted.'),
 			]);
 		}
-
-		// Edit
-		$actions[] = Craft::$app->getElements()->createAction([
-			'type'  => Edit::className(),
-			'label' => Craft::t('app', 'Edit category'),
-		]);
-
-		// New Child
-		$structure = Craft::$app->getStructures()->getStructureById($group->structureId);
-
-		if ($structure)
-		{
-			$actions[] = Craft::$app->getElements()->createAction([
-				'type'        => NewChild::className(),
-				'label'       => Craft::t('app', 'Create a new child category'),
-				'maxLevels'   => $structure->maxLevels,
-				'newChildUrl' => 'categories/'.$group->handle.'/new',
-			]);
-		}
-
-		// Delete
-		$actions[] = Craft::$app->getElements()->createAction([
-			'type'                => Delete::className(),
-			'confirmationMessage' => Craft::t('app', 'Are you sure you want to delete the selected categories?'),
-			'successMessage'      => Craft::t('app', 'Categories deleted.'),
-		]);
 
 		// Allow plugins to add additional actions
 		$allPluginActions = Craft::$app->getPlugins()->call('addCategoryActions', [$source], true);
@@ -315,7 +315,7 @@ class Category extends Element
 		if ($element->getGroup()->structureId == $structureId)
 		{
 			// Update its URI
-			Craft::$app->getElements()->updateElementSlugAndUri($element);
+			Craft::$app->getElements()->updateElementSlugAndUri($element, true, true, true);
 
 			// Make sure that each of the category's ancestors are related wherever the category is related
 			$newRelationValues = [];

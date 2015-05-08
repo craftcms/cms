@@ -1093,7 +1093,9 @@ abstract class Element extends Component implements ElementInterface
 				// Do we have any post data for this field?
 				if (isset($content[$handle]))
 				{
-					$this->_content->$handle = $this->_rawPostContent[$handle] = $content[$handle];
+					$value = $content[$handle];
+					$this->_content->$handle = $value;
+					$this->setRawPostContent($handle, $value);
 				}
 				// Were any files uploaded for this field?
 				else if (!empty($this->_contentPostLocation) && UploadedFile::getInstancesByName($this->_contentPostLocation.'.'.$handle))
@@ -1102,6 +1104,17 @@ abstract class Element extends Component implements ElementInterface
 				}
 			}
 		}
+	}
+
+	/**
+	 * Sets a field’s raw post content.
+	 *
+	 * @param string $handle The field handle.
+	 * @param string|array   The posted field value.
+	 */
+	public function setRawPostContent($handle, $value)
+	{
+		$this->_rawPostContent[$handle] = $value;
 	}
 
 	/**

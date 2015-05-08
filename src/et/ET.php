@@ -91,7 +91,8 @@ class ET
 			'serverInfo'        => array(
 				'extensions'    => get_loaded_extensions(),
 				'phpVersion'    => PHP_VERSION,
-				'mySqlVersion'  => Craft::$app->schemaVersion
+				'mySqlVersion'  => Craft::$app->schemaVersion,
+				'proc'          => function_exists('proc_open') ? 1 : 0,
 			),
 		]);
 
@@ -206,6 +207,10 @@ class ET
 					$request = $client->post($this->_endpoint, $options);
 
 					$request->setBody($data, 'application/json');
+
+					// Potentially long-running request, so close session to prevent session blocking on subsequent requests.
+					Craft::$app->getSession()->close();
+
 					$response = $request->send();
 
 					// Clear the connection failure cached item if it exists.

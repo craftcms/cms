@@ -26,7 +26,7 @@
 {% block main %}
 	{% registerCssResource "css/updates.css" %}
 	{% registerJsResource "js/updates.js" %}
-	{% registerJs 'new Craft.UpdateInfo(' ~ craft.config.allowAutoUpdates ~');' %}
+	{% registerJs 'new Craft.UpdateInfo();' %}
 
 	<div id="graphic" class="spinner big"></div>
 	<div id="status">{{ "Checking for updates…"|t }}</div>

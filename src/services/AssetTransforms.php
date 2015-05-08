@@ -421,7 +421,7 @@ class AssetTransforms extends Component
 				{
 					$transformUri = $file->getFolder()->path.$this->getTransformSubpath($file, AssetTransformIndex::create($result));
 					$volume->deleteFile($transformUri);
-					$this->deleteTransform($result['id']);
+					$this->deleteTransformIndex($result['id']);
 				}
 				// Any other should do.
 				else

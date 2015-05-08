@@ -790,7 +790,7 @@ class Sections extends Component
 					if (!$isNewSection)
 					{
 						// Get the most-primary locale that this section was already enabled in
-						$locales = array_intersect(Craft::$app->i18n->getSiteLocaleIds(), array_keys($oldSectionLocales));
+						$locales = array_values(array_intersect(Craft::$app->i18n->getSiteLocaleIds(), array_keys($oldSectionLocales)));
 
 						if ($locales)
 						{

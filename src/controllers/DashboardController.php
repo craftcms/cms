@@ -301,7 +301,7 @@ class DashboardController extends Controller
 					{
 						// Make a fresh database backup of the current schema/data. We want all data from all tables
 						// for debugging.
-						Craft::$app->getDb()->backup([]);
+						Craft::$app->getDb()->backup();
 
 						$backups = IOHelper::getLastModifiedFiles(Craft::$app->getPath()->getDbBackupPath(), 3);
 

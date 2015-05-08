@@ -10,6 +10,7 @@ namespace craft\app\services;
 use Craft;
 use craft\app\dates\DateTime;
 use craft\app\helpers\DateTimeHelper;
+use craft\app\models\Url;
 use yii\base\Component;
 
 /**
@@ -93,6 +94,9 @@ class Feeds extends Component
 			$cacheDuration = DateTimeHelper::timeFormatToSeconds($cacheDuration);
 		}
 
+		// Potentially long-running request, so close session to prevent session blocking on subsequent requests.
+		Craft::$app->getSession()->close();
+
 		$feed = new \SimplePie();
 		$feed->set_feed_url($url);
 		$feed->set_cache_location(Craft::$app->getPath()->getCachePath());
@@ -108,6 +112,21 @@ class Feeds extends Component
 
 		foreach ($feed->get_items($offset, $limit) as $item)
 		{
+			// Validate the permalink
+			$permalink = $item->get_permalink();
+
+			if ($permalink)
+			{
+				$urlModel = new Url();
+				$urlModel->url = $permalink;
+
+				if (!$urlModel->validate())
+				{
+					Craft::log('An item was omitted from the feed ('.$url.') because its permalink was an invalid URL: '.$permalink);
+					continue;
+				}
+			}
+
 			$date = $item->get_date('U');
 			$dateUpdated = $item->get_updated_date('U');
 

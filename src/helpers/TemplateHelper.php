@@ -34,6 +34,13 @@ class TemplateHelper
 		$currentPage = Craft::$app->getRequest()->getPageNum();
 		$limit = $query->limit;
 		$total = $query->count() - $query->offset;
+
+		// If they specified limit as null or 0 (for whatever reason), just assume it's all going to be on one page.
+		if (!$limit)
+		{
+			$limit = $total;
+		}
+
 		$totalPages = ceil($total / $limit);
 
 		$paginateVariable = new Paginate();

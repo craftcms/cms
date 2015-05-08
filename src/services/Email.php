@@ -178,6 +178,9 @@ class Email extends Component
 		$originalTemplatesPath = Craft::$app->getPath()->getTemplatesPath();
 		Craft::$app->getPath()->setTemplatesPath($tempTemplatesPath);
 
+		// Tell the template which email key was being requested
+		$variables['emailKey'] = $key;
+
 		// Send the email
 		$return = $this->_sendEmail($user, $emailModel, $variables);
 

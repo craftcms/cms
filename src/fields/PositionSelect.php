@@ -26,7 +26,7 @@ class PositionSelect extends Field
 	 */
 	public static function displayName()
 	{
-		return 'Position Select';
+		return Craft::t('app', 'Position Select');
 	}
 
 	/**

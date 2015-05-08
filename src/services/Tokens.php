@@ -59,7 +59,7 @@ class Tokens extends Component
 		}
 
 		$tokenRecord = new TokenRecord();
-		$tokenRecord->token = Craft::$app->getSecurity()->generateRandomString(32, false);
+		$tokenRecord->token = Craft::$app->getSecurity()->generateRandomString(32);
 		$tokenRecord->route = $route;
 
 		if ($usageLimit)

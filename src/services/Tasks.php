@@ -84,7 +84,7 @@ class Tasks extends Component
 
 		$this->saveTask($task);
 
-		if (!$this->_listeningForResponse && !Craft::$app->getRequest()->getIsConsoleRequest())
+		if (!$this->_listeningForResponse && Craft::$app->getConfig()->get('runTasksAutomatically') && !Craft::$app->getRequest()->getIsConsoleRequest())
 		{
 			Craft::$app->getResponse()->on(Response::EVENT_AFTER_PREPARE, [$this, 'handleResponse']);
 			$this->_listeningForResponse = true;

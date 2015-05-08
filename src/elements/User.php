@@ -20,6 +20,7 @@ use craft\app\elements\actions\UnsuspendUsers;
 use craft\app\elements\db\ElementQueryInterface;
 use craft\app\elements\db\UserQuery;
 use craft\app\helpers\DateTimeHelper;
+use craft\app\helpers\HtmlHelper;
 use craft\app\helpers\UrlHelper;
 use craft\app\models\UserGroup;
 use craft\app\records\Session as SessionRecord;
@@ -56,6 +57,8 @@ class User extends Element implements IdentityInterface
 	const AUTH_NO_CP_ACCESS            = 'no_cp_access';
 	const AUTH_NO_CP_OFFLINE_ACCESS    = 'no_cp_offline_access';
 	const AUTH_USERNAME_INVALID        = 'username_invalid';
+
+	const IMPERSONATE_KEY = 'Craft.UserSessionService.prevImpersonateUserId';
 
 	// Static
 	// =========================================================================
@@ -279,7 +282,9 @@ class User extends Element implements IdentityInterface
 
 				if ($email)
 				{
-					return '<a href="mailto:'.$email.'">'.$email.'</a>';
+					return HtmlHelper::encodeParams('<a href="mailto:{email}">{email}</a>', [
+						'email' => $email
+					]);
 				}
 				else
 				{
@@ -380,9 +385,25 @@ class User extends Element implements IdentityInterface
 	{
 		$user = Craft::$app->getUsers()->getUserById($id);
 
-		if ($user !== null && $user->getStatus() == self::STATUS_ACTIVE)
+		if ($user !== null)
 		{
-			return $user;
+			if ($user->getStatus() == self::STATUS_ACTIVE)
+			{
+				return $user;
+			}
+			else
+			{
+				// If the previous user was an admin and we're impersonating the current user.
+				if ($previousUserId = Craft::$app->getSession()->get(self::IMPERSONATE_KEY))
+				{
+					$previousUser = craft()->users->getUserById($previousUserId);
+
+					if ($previousUser && $previousUser->admin)
+					{
+						return $user;
+					}
+				}
+			}
 		}
 	}
 
@@ -577,7 +598,7 @@ class User extends Element implements IdentityInterface
 			{
 				if (!$this->getRemainingCooldownTime())
 				{
-					Craft::$app->getUsers()->activateUser($this);
+					Craft::$app->getUsers()->unlockUser($this);
 				}
 			}
 		}
@@ -612,7 +633,7 @@ class User extends Element implements IdentityInterface
 		$rules[] = [['verificationCodeIssuedDate'], 'craft\\app\\validators\\DateTime'];
 		$rules[] = [['email', 'unverifiedEmail'], 'email'];
 		$rules[] = [['email', 'unverifiedEmail'], 'string', 'min' => 5];
-		$rules[] = [['username'], 'string', 'max' => 100];
+		$rules[] = [['username', 'photo'], 'string', 'max' => 100];
 		$rules[] = [['email', 'unverifiedEmail'], 'string', 'max' => 255];
 
 		return $rules;
@@ -915,8 +936,6 @@ class User extends Element implements IdentityInterface
 	public function setActive()
 	{
 		$this->pending = false;
-		$this->locked = false;
-		$this->suspended = false;
 		$this->archived = false;
 	}
 
@@ -1033,12 +1052,18 @@ class User extends Element implements IdentityInterface
 	 */
 	public function getCooldownEndTime()
 	{
-		if ($this->getStatus() == self::STATUS_LOCKED)
+		if ($this->getStatus() === self::STATUS_LOCKED)
 		{
-			$cooldownEnd = clone $this->lockoutDate;
-			$cooldownEnd->add(new DateInterval(Craft::$app->getConfig()->get('cooldownDuration')));
+			// There was an old bug that where a user's lockoutDate could be null if they've
+			// passed their cooldownDuration already, but there account status is still locked.
+			// If that's the case, just let it return null as if they are past the cooldownDuration.
+			if ($this->lockoutDate)
+			{
+				$cooldownEnd = clone $this->lockoutDate;
+				$cooldownEnd->add(new DateInterval(Craft::$app->getConfig()->get('cooldownDuration')));
 
-			return $cooldownEnd;
+				return $cooldownEnd;
+			}
 		}
 	}
 

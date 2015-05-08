@@ -9,6 +9,7 @@ namespace craft\app\db;
 
 use Craft;
 use craft\app\db\mysql\QueryBuilder;
+use craft\app\events\DbBackupEvent;
 use craft\app\helpers\ArrayHelper;
 use craft\app\helpers\StringHelper;
 
@@ -23,6 +24,14 @@ use craft\app\helpers\StringHelper;
  */
 class Connection extends \yii\db\Connection
 {
+	// Constants
+	// =========================================================================
+
+	/**
+	 * @event DbBackupEvent The event that is triggered after the DB backup is created.
+	 */
+	const EVENT_AFTER_CREATE_BACKUP = 'afterCreateBackup';
+
 	// Public Methods
 	// =========================================================================
 
@@ -63,6 +72,11 @@ class Connection extends \yii\db\Connection
 
 		if (($backupFile = $backup->run()) !== false)
 		{
+			// Fire an 'afterCreateBackup' event
+			$this->trigger(static::EVENT_AFTER_CREATE_BACKUP, new DbBackupEvent([
+				'filePath' => $backupFile
+			]));
+
 			return $backupFile;
 		}
 

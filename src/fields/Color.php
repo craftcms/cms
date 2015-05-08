@@ -9,6 +9,7 @@ namespace craft\app\fields;
 
 use Craft;
 use craft\app\base\Field;
+use craft\app\helpers\HtmlHelper;
 use yii\db\Schema;
 
 /**
@@ -66,8 +67,9 @@ class Color extends Field
 	{
 		if ($value)
 		{
-			return '<div class="color" style="cursor: default;"><div class="colorpreview" style="background-color: '.$value.';"></div></div>' .
-				'<div class="colorhex">'.$value.'</div>';
+			return HtmlHelper::encodeParams('<div class="color" style="cursor: default;"><div class="colorpreview" style="background-color: {bgColor};"></div></div><div class="colorhex">{bgColor}</div>', [
+				'bgColor' => $value
+			]);
 		}
 	}
 }

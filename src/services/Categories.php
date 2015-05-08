@@ -776,7 +776,7 @@ class Categories extends Component
 				}
 
 				// Update the category's descendants, who may be using this category's URI in their own URIs
-				Craft::$app->getElements()->updateDescendantSlugsAndUris($category);
+				Craft::$app->getElements()->updateDescendantSlugsAndUris($category, true, true);
 			}
 			else
 			{

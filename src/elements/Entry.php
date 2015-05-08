@@ -215,115 +215,117 @@ class Entry extends Element
 					$section = Craft::$app->getSections()->getSectionById($matches[1]);
 				}
 
-				if (empty($section))
+				if ($section)
 				{
-					return;
+					$sections = [$section];
 				}
-
-				$sections = [$section];
 			}
 		}
 
 		// Now figure out what we can do with these
 		$actions = [];
-		$userSessionService = Craft::$app->getUser();
-		$canSetStatus = true;
-		$canEdit = false;
 
-		foreach ($sections as $section)
+		if (!empty($sections))
 		{
-			$canPublishEntries = $userSessionService->checkPermission('publishEntries:'.$section->id);
+			$userSessionService = Craft::$app->getUser();
+			$canSetStatus = true;
+			$canEdit = false;
 
-			// Only show the Set Status action if we're sure they can make changes in all the sections
-			if (!(
-				$canPublishEntries &&
-				($section->type == Section::TYPE_SINGLE || $userSessionService->checkPermission('publishPeerEntries:'.$section->id))
-			))
+			foreach ($sections as $section)
 			{
-				$canSetStatus = false;
-			}
+				$canPublishEntries = $userSessionService->checkPermission('publishEntries:'.$section->id);
 
-			// Show the Edit action if they can publish changes to *any* of the sections
-			// (the trigger will disable itself for entries that aren't editable)
-			if ($canPublishEntries)
-			{
-				$canEdit = true;
-			}
-		}
-
-		// Set Status
-		if ($canSetStatus)
-		{
-			/** @var SetStatus $setStatusAction */
-			$setStatusAction = Craft::$app->getElements()->createAction(SetStatus::className());
-			$setStatusAction->on(SetStatus::EVENT_AFTER_SET_STATUS, function(SetStatusEvent $event)
-			{
-				if ($event->status == static::STATUS_ENABLED)
+				// Only show the Set Status action if we're sure they can make changes in all the sections
+				if (!(
+					$canPublishEntries &&
+					($section->type == Section::TYPE_SINGLE || $userSessionService->checkPermission('publishPeerEntries:'.$section->id))
+				))
 				{
-					// Set a Post Date as well
-					Craft::$app->getDb()->createCommand()->update(
-						'{{%entries}}',
-						['postDate' => DateTimeHelper::currentTimeForDb()],
-						['and', ['in', 'id', $event->elementIds], 'postDate is null']
-					)->execute();
+					$canSetStatus = false;
 				}
-			});
-			$actions[] = $setStatusAction;
-		}
 
-		// Edit
-		if ($canEdit)
-		{
-			$actions[] = Craft::$app->getElements()->createAction([
-				'type'  => Edit::className(),
-				'label' => Craft::t('app', 'Edit entry'),
-			]);
-		}
-
-		if ($source == '*' || $source == 'singles' || $sections[0]->hasUrls)
-		{
-			// View
-			$actions[] = Craft::$app->getElements()->createAction([
-				'type'  => View::className(),
-				'label' => Craft::t('app', 'View entry'),
-			]);
-		}
-
-		// Channel/Structure-only actions
-		if ($source != '*' && $source != 'singles')
-		{
-			$section = $sections[0];
-
-			// New child?
-			if (
-				$section->type == Section::TYPE_STRUCTURE &&
-				$userSessionService->checkPermission('createEntries:'.$section->id)
-			)
-			{
-				$structure = Craft::$app->getStructures()->getStructureById($section->structureId);
-
-				if ($structure)
+				// Show the Edit action if they can publish changes to *any* of the sections
+				// (the trigger will disable itself for entries that aren't editable)
+				if ($canPublishEntries)
 				{
-					$actions[] = Craft::$app->getElements()->createAction([
-						'type'        => NewChild::className(),
-						'label'       => Craft::t('app', 'Create a new child entry'),
-						'maxLevels'   => $structure->maxLevels,
-						'newChildUrl' => 'entries/'.$section->handle.'/new',
-					]);
+					$canEdit = true;
 				}
 			}
 
-			// Delete?
-			if (
-				$userSessionService->checkPermission('deleteEntries:'.$section->id) &&
-				$userSessionService->checkPermission('deletePeerEntries:'.$section->id)
-			)
+			// Set Status
+			if ($canSetStatus)
+			{
+				/** @var SetStatus $setStatusAction */
+				$setStatusAction = Craft::$app->getElements()->createAction(SetStatus::className());
+				$setStatusAction->on(SetStatus::EVENT_AFTER_SET_STATUS, function (SetStatusEvent $event)
+				{
+					if ($event->status == static::STATUS_ENABLED)
+					{
+						// Set a Post Date as well
+						Craft::$app->getDb()->createCommand()->update(
+							'{{%entries}}',
+							['postDate' => DateTimeHelper::currentTimeForDb()],
+							['and', ['in', 'id', $event->elementIds], 'postDate is null']
+						)->execute();
+					}
+				});
+				$actions[] = $setStatusAction;
+			}
+
+			// Edit
+			if ($canEdit)
 			{
 				$actions[] = Craft::$app->getElements()->createAction([
-					'type'                => Delete::className(),
-					'confirmationMessage' => Craft::t('app', 'Are you sure you want to delete the selected entries?'),
-					'successMessage'      => Craft::t('app', 'Entries deleted.'),
+					'type' => Edit::className(),
+					'label' => Craft::t('app', 'Edit entry'),
 				]);
+			}
+
+			if ($source == '*' || $source == 'singles' || $sections[0]->hasUrls)
+			{
+				// View
+				$actions[] = Craft::$app->getElements()->createAction([
+					'type' => View::className(),
+					'label' => Craft::t('app', 'View entry'),
+				]);
+			}
+
+			// Channel/Structure-only actions
+			if ($source != '*' && $source != 'singles')
+			{
+				$section = $sections[0];
+
+				// New child?
+				if (
+					$section->type == Section::TYPE_STRUCTURE &&
+					$userSessionService->checkPermission('createEntries:'.$section->id)
+				)
+				{
+					$structure = Craft::$app->getStructures()->getStructureById($section->structureId);
+
+					if ($structure)
+					{
+						$actions[] = Craft::$app->getElements()->createAction([
+							'type' => NewChild::className(),
+							'label' => Craft::t('app', 'Create a new child entry'),
+							'maxLevels' => $structure->maxLevels,
+							'newChildUrl' => 'entries/'.$section->handle.'/new',
+						]);
+					}
+				}
+
+				// Delete?
+				if (
+					$userSessionService->checkPermission('deleteEntries:'.$section->id) &&
+					$userSessionService->checkPermission('deletePeerEntries:'.$section->id)
+				)
+				{
+					$actions[] = Craft::$app->getElements()->createAction([
+						'type' => Delete::className(),
+						'confirmationMessage' => Craft::t('app', 'Are you sure you want to delete the selected entries?'),
+						'successMessage' => Craft::t('app', 'Entries deleted.'),
+					]);
+				}
 			}
 		}
 
@@ -526,7 +528,7 @@ class Entry extends Element
 
 		if ($section->type == Section::TYPE_STRUCTURE && $section->structureId == $structureId)
 		{
-			Craft::$app->getElements()->updateElementSlugAndUri($element);
+			Craft::$app->getElements()->updateElementSlugAndUri($element, true, true, true);
 		}
 	}
 

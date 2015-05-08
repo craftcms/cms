@@ -461,15 +461,17 @@ class Assets extends Component
 				));
 				$this->trigger(static::EVENT_BEFORE_DELETE_ASSET, $event);
 
-				if ($deleteFile)
+				if ($event->performAction)
 				{
-					$volume->deleteFile($file->getUri());
+					if ($deleteFile)
+					{
+						$volume->deleteFile($file->getUri());
+					}
+
+					Craft::$app->getElements()->deleteElementById($fileId);
+
+					$this->trigger(static::EVENT_AFTER_DELETE_ASSET, $event);
 				}
-
-				Craft::$app->getElements()->deleteElementById($fileId);
-
-				$this->trigger(static::EVENT_AFTER_DELETE_ASSET, $event);
-
 			}
 		}
 	}

@@ -290,6 +290,9 @@ class User extends \yii\web\User
 	 */
 	protected function afterLogout($identity)
 	{
+		// Delete the impersonation session, if there is one
+		Craft::$app->getSession()->remove(UserElement::IMPERSONATE_KEY);
+
 		// Delete the session row
 		$value = Craft::$app->getRequest()->getCookies()->getValue($this->identityCookie['name']);
 

@@ -44,12 +44,12 @@ class Update extends Model
 	// =========================================================================
 
 	/**
-	 * @var array App
+	 * @var AppUpdate App
 	 */
 	public $app;
 
 	/**
-	 * @var array Plugins
+	 * @var PluginUpdate[] Plugins
 	 */
 	public $plugins;
 

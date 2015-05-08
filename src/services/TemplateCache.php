@@ -13,6 +13,7 @@ use craft\app\dates\DateTime;
 use craft\app\db\Query;
 use craft\app\elements\db\ElementQuery;
 use craft\app\events\Event;
+use craft\app\helpers\ArrayHelper;
 use craft\app\helpers\DateTimeHelper;
 use craft\app\helpers\JsonHelper;
 use craft\app\helpers\StringHelper;
@@ -397,24 +398,26 @@ class TemplateCache extends Component
 			return false;
 		}
 
-		if (!is_array($elements))
+		if (is_array($elements))
 		{
+			$firstElement = ArrayHelper::getFirstValue($elements);
+		}
+		else
+		{
+			$firstElement = $elements;
 			$elements = [$elements];
 		}
 
+		$deleteQueryCaches = empty($this->_deletedCachesByElementType[$firstElement::className()]);
 		$elementIds = [];
 
 		/** @var ElementInterface[] $elements */
 		foreach ($elements as $element)
 		{
-			// Make sure we haven't just deleted all of the caches for this element type.
-			if (empty($this->_deletedCachesByElementType[$element::className()]))
-			{
-				$elementIds[] = $element->id;
-			}
+			$elementIds[] = $element->id;
 		}
 
-		return $this->deleteCachesByElementId($elementIds);
+		return $this->deleteCachesByElementId($elementIds, $deleteQueryCaches);
 	}
 
 	/**

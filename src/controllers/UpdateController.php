@@ -11,6 +11,7 @@ use Craft;
 use craft\app\enums\PluginVersionUpdateStatus;
 use craft\app\errors\EtException;
 use craft\app\errors\Exception;
+use craft\app\helpers\ArrayHelper;
 use craft\app\helpers\UpdateHelper;
 use craft\app\helpers\UrlHelper;
 use craft\app\web\Controller;
@@ -67,7 +68,10 @@ class UpdateController extends Controller
 
 		if ($updates)
 		{
-			return $this->asJson($updates);
+			$response = ArrayHelper::toArray($updates);
+			$response['allowAutoUpdates'] = craft()->config->allowAutoUpdates();
+
+			$this->asJson($response);
 		}
 		else
 		{
@@ -173,7 +177,7 @@ class UpdateController extends Controller
 			// If it's not a manual update, make sure they have auto-update permissions.
 			$this->requirePermission('performUpdates');
 
-			if (!Craft::$app->getConfig()->get('allowAutoUpdates'))
+			if (!Craft::$app->getConfig()->allowAutoUpdates())
 			{
 				return $this->asJson(['alive' => true, 'errorDetails' => Craft::t('app', 'Auto-updating is disabled on this system.'), 'finished' => true]);
 			}
@@ -215,7 +219,7 @@ class UpdateController extends Controller
 		$this->requirePostRequest();
 		$this->requireAjaxRequest();
 
-		if (!Craft::$app->getConfig()->get('allowAutoUpdates'))
+		if (!Craft::$app->getConfig()->allowAutoUpdates())
 		{
 			return $this->asJson(['alive' => true, 'errorDetails' => Craft::t('app', 'Auto-updating is disabled on this system.'), 'finished' => true]);
 		}
@@ -246,7 +250,7 @@ class UpdateController extends Controller
 		$this->requirePostRequest();
 		$this->requireAjaxRequest();
 
-		if (!Craft::$app->getConfig()->get('allowAutoUpdates'))
+		if (!Craft::$app->getConfig()->allowAutoUpdates())
 		{
 			return $this->asJson(['alive' => true, 'errorDetails' => Craft::t('app', 'Auto-updating is disabled on this system.'), 'finished' => true]);
 		}
@@ -275,7 +279,7 @@ class UpdateController extends Controller
 		$this->requirePostRequest();
 		$this->requireAjaxRequest();
 
-		if (!Craft::$app->getConfig()->get('allowAutoUpdates'))
+		if (!Craft::$app->getConfig()->allowAutoUpdates())
 		{
 			return $this->asJson(['alive' => true, 'errorDetails' => Craft::t('app', 'Auto-updating is disabled on this system.'), 'finished' => true]);
 		}

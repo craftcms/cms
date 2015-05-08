@@ -119,11 +119,14 @@ class Application extends \yii\web\Application
 		// If this is a resource request, we should respond with the resource ASAP
 		$this->_processResourceRequest();
 
-		// If this is a CP request, prevent robots from indexing/following the page
-		// (see https://developers.google.com/webmasters/control-crawl-index/docs/robots_meta_tag)
 		if ($request->getIsCpRequest())
 		{
+			// Prevent robots from indexing/following the page
+			// (see https://developers.google.com/webmasters/control-crawl-index/docs/robots_meta_tag)
 			HeaderHelper::setHeader(['X-Robots-Tag' => 'none']);
+			// Prevent some possible XSS attack vectors
+			HeaderHelper::setHeader(['X-Frame-Options' => 'SAMEORIGIN']);
+			HeaderHelper::setHeader(['X-Content-Type-Options' => 'nosniff']);
 		}
 
 		// If the system in is maintenance mode and it's a site request, throw a 503.

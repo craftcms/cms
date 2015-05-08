@@ -8,6 +8,7 @@
 namespace craft\app\web\twig\variables;
 
 use craft\app\db\Query;
+use craft\app\helpers\HtmlHelper;
 use craft\app\helpers\JsonHelper;
 
 /**
@@ -49,7 +50,10 @@ class Routes
 				}
 				else
 				{
-					$urlDisplayHtml .= '<span class="token" data-name="'.$part[0].'" data-value="'.$part[1].'"><span>'.$part[0].'</span></span>';
+					$urlDisplayHtml .= HtmlHelper::encodeParams('<span class="token" data-name="{name}" data-value="{value}"><span>{name}</span></span>', [
+						'name' => $part[0],
+						'value' => $part[1]
+					]);
 				}
 			}
 

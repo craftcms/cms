@@ -1,5 +1,5 @@
 (function ($) {
-	$.Redactor.opts.langs['nb'] = {
+	$.Redactor.opts.langs['no'] = {
 		html: 'HTML',
 		video: 'Sett inn video...',
 		image: 'Sett inn bilde...',
@@ -69,6 +69,7 @@
 		alignment: 'Justering',
 		filename: 'Filnavn (valgfritt)',
 		edit: 'Endre',
-		center: 'Midten'
+		center: 'Midten',
+		upload_label: 'Drop file here or '
 	};
 })(jQuery);

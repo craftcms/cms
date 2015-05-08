@@ -423,45 +423,7 @@ class I18N extends \yii\i18n\I18N
 		// Did the primary site locale just change?
 		if ($oldPrimaryLocaleId != $newPrimaryLocaleId)
 		{
-			Craft::$app->getConfig()->maxPowerCaptain();
-
-			// Update all of the non-localized elements
-			$nonLocalizedElementTypes = [];
-
-			foreach (Craft::$app->getElements()->getAllElementTypes() as $elementType)
-			{
-				if (!$elementType::isLocalized())
-				{
-					$nonLocalizedElementTypes[] = $elementType::className();
-				}
-			}
-
-			if ($nonLocalizedElementTypes)
-			{
-				$elementIds = (new Query())
-					->select('id')
-					->from('{{%elements}}')
-					->where(['in', 'type', $nonLocalizedElementTypes])
-					->column();
-
-				if ($elementIds)
-				{
-					// To be sure we don't hit any unique constraint MySQL errors, first make sure there are no rows for
-					// these elements that don't currently use the old primary locale
-					$deleteConditions = ['and', ['in', 'elementId', $elementIds], 'locale != :locale'];
-					$deleteParams     = [':locale' => $oldPrimaryLocaleId];
-
-					Craft::$app->getDb()->createCommand()->delete('{{%elements_i18n}}', $deleteConditions, $deleteParams)->execute();
-					Craft::$app->getDb()->createCommand()->delete('{{%content}}', $deleteConditions, $deleteParams)->execute();
-
-					// Now convert the locales
-					$updateColumns    = ['locale' => $newPrimaryLocaleId];
-					$updateConditions = ['in', 'elementId', $elementIds];
-
-					Craft::$app->getDb()->createCommand()->update('{{%elements_i18n}}', $updateColumns, $updateConditions)->execute();
-					Craft::$app->getDb()->createCommand()->update('{{%content}}', $updateColumns, $updateConditions)->execute();
-				}
-			}
+			$this->_processNewPrimaryLocale($oldPrimaryLocaleId, $newPrimaryLocaleId);
 		}
 
 		return true;
@@ -639,6 +601,31 @@ class I18N extends \yii\i18n\I18N
 					}
 				}
 
+				$primaryLocaleId = $this->getPrimarySiteLocaleId();
+
+				// Did the primary locale ID just get deleted?
+				if ($primaryLocaleId === $localeId)
+				{
+					// Find out what's *about* to be the new primary locale, since we're going to nuke the current one
+					// a few lines down.
+					$allLocales = $this->getSiteLocaleIds();
+
+					if (isset($allLocales[1]))
+					{
+						$newPrimaryLocaleId = $allLocales[1];
+					}
+					else
+					{
+						$newPrimaryLocaleId = false;
+					}
+
+					// Did the primary site locale just change?
+					if ($primaryLocaleId != $newPrimaryLocaleId)
+					{
+						$this->_processNewPrimaryLocale($primaryLocaleId, $newPrimaryLocaleId);
+					}
+				}
+
 				// Delete the locale
 				$affectedRows = Craft::$app->getDb()->createCommand()->delete('{{%locales}}', ['locale' => $localeId])->execute();
 				$success = (bool) $affectedRows;
@@ -686,5 +673,58 @@ class I18N extends \yii\i18n\I18N
 		}
 
 		return $success;
+	}
+
+	// Private Methods
+	// =========================================================================
+
+	/**
+	 * @param $oldPrimaryLocaleId
+	 * @param $newPrimaryLocaleId
+	 */
+	private function _processNewPrimaryLocale($oldPrimaryLocaleId, $newPrimaryLocaleId)
+	{
+		Craft::$app->getConfig()->maxPowerCaptain();
+
+		// Update all of the non-localized elements
+		$nonLocalizedElementTypes = [];
+
+		foreach (Craft::$app->getElements()->getAllElementTypes() as $elementType)
+		{
+			/** ElementInterface|Element $elementType */
+			if (!$elementType::isLocalized())
+			{
+				$nonLocalizedElementTypes[] = $elementType::className();
+			}
+		}
+
+		if ($nonLocalizedElementTypes)
+		{
+			$elementIds = (new Query())
+				->select('id')
+				->from('{{%elements}}')
+				->where(['in', 'type', $nonLocalizedElementTypes])
+				->column();
+
+			if ($elementIds)
+			{
+				// To be sure we don't hit any unique constraint MySQL errors, first make sure there are no rows for
+				// these elements that don't currently use the old primary locale
+				$deleteConditions = ['and', array('in', 'elementId', $elementIds), 'locale != :locale'];
+				$deleteParams = [':locale' => $oldPrimaryLocaleId];
+
+				$db = Craft::$app->getDb();
+
+				$db->createCommand()->delete('{{%elements_i18n}}', $deleteConditions, $deleteParams)->execute();
+				$db->createCommand()->delete('{{%content}}', $deleteConditions, $deleteParams)->execute();
+
+				// Now convert the locales
+				$updateColumns = ['locale' => $newPrimaryLocaleId];
+				$updateConditions = ['in', 'elementId', $elementIds];
+
+				$db->createCommand()->update('{{%elements_i18n}}', $updateColumns, $updateConditions)->execute();
+				$db->createCommand()->update('{{%content}}', $updateColumns, $updateConditions)->execute();
+			}
+		}
 	}
 }

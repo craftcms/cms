@@ -52,7 +52,14 @@ class DbBackup
 	 *
 	 * @var array
 	 */
-	private $_ignoreDataTables = ['assetindexdata', 'templatecaches', 'templatecachecriteria', 'templatecacheelements'];
+	private $_ignoreDataTables = array(
+		'assetindexdata',
+		'assettransformindex',
+		'sessions',
+		'templatecaches',
+		'templatecachecriteria',
+		'templatecacheelements'
+	);
 
 	// Public Methods
 	// =========================================================================
@@ -395,7 +402,7 @@ class DbBackup
 
 				for ($counter = 0; $counter < $totalBatches; $counter++)
 				{
-					@set_time_limit(120);
+					@set_time_limit(240);
 
 					$offset = $batchSize * $counter;
 					$rows = Craft::$app->getDb()->createCommand('SELECT * FROM ' . Craft::$app->getDb()->quoteTableName($tableName) . ' LIMIT ' . $offset . ',' . $batchSize . ';')->queryAll();

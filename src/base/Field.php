@@ -13,6 +13,7 @@ use craft\app\elements\db\ElementQueryInterface;
 use craft\app\elements\MatrixBlock;
 use craft\app\events\Event;
 use craft\app\helpers\DbHelper;
+use craft\app\helpers\HtmlHelper;
 use craft\app\helpers\StringHelper;
 use Exception;
 use yii\base\ErrorHandler;
@@ -171,7 +172,10 @@ abstract class Field extends SavableComponent implements FieldInterface
 	 */
 	public function getInputHtml($value, $element)
 	{
-		return '<textarea name="'.$this->handle.'">'.$value.'</textarea>';
+		return HtmlHelper::encodeParams('<textarea name="{name}">{value}</textarea>', [
+			'name' => $this->handle,
+			'value' => $value
+		]);
 	}
 
 	/**

@@ -267,7 +267,7 @@ class Entries extends Component
 					}
 
 					// Update the entry's descendants, who may be using this entry's URI in their own URIs
-					Craft::$app->getElements()->updateDescendantSlugsAndUris($entry);
+					Craft::$app->getElements()->updateDescendantSlugsAndUris($entry, true, true);
 				}
 
 				// Save a new version

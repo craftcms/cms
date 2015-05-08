@@ -130,52 +130,50 @@ class Asset extends Element
 	 */
 	public static function getAvailableActions($source = null)
 	{
-		if (!preg_match('/^folder:(\d+)$/', $source, $matches))
-		{
-			return;
-		}
-
-		$folderId = $matches[1];
-
 		$actions = [];
 
-		// View
-		$actions[] = Craft::$app->getElements()->createAction([
-			'type'  => View::className(),
-			'label' => Craft::t('app', 'View asset'),
-		]);
-
-		// Edit
-		$actions[] = Craft::$app->getElements()->createAction([
-			'type'  => Edit::className(),
-			'label' => Craft::t('app', 'Edit asset'),
-		]);
-
-		// Rename File
-		if (
-			Craft::$app->getAssets()->canUserPerformAction($folderId, 'removeFromVolume') &&
-			Craft::$app->getAssets()->canUserPerformAction($folderId, 'uploadToVolume')
-		)
+		if (preg_match('/^folder:(\d+)$/', $source, $matches))
 		{
-			$actions[] = RenameFile::className();
-		}
+			$folderId = $matches[1];
 
-		// Replace File
-		if (Craft::$app->getAssets()->canUserPerformAction($folderId, 'uploadToVolume'))
-		{
-			$actions[] = ReplaceFile::className();
-		}
+			// View
+			$actions[] = Craft::$app->getElements()->createAction([
+				'type'  => View::className(),
+				'label' => Craft::t('app', 'View asset'),
+			]);
 
-		// Copy Reference Tag
-		$actions[] = Craft::$app->getElements()->createAction([
-			'type'        => CopyReferenceTag::className(),
-			'elementType' => Asset::className(),
-		]);
+			// Edit
+			$actions[] = Craft::$app->getElements()->createAction([
+				'type'  => Edit::className(),
+				'label' => Craft::t('app', 'Edit asset'),
+			]);
 
-		// Delete
-		if (Craft::$app->getAssets()->canUserPerformAction($folderId, 'removeFromVolume'))
-		{
-			$actions[] = DeleteAssets::className();
+			// Rename File
+			if (
+				Craft::$app->getAssets()->canUserPerformAction($folderId, 'removeFromVolume') &&
+				Craft::$app->getAssets()->canUserPerformAction($folderId, 'uploadToVolume')
+			)
+			{
+				$actions[] = RenameFile::className();
+			}
+
+			// Replace File
+			if (Craft::$app->getAssets()->canUserPerformAction($folderId, 'uploadToVolume'))
+			{
+				$actions[] = ReplaceFile::className();
+			}
+
+			// Copy Reference Tag
+			$actions[] = Craft::$app->getElements()->createAction([
+				'type'        => CopyReferenceTag::className(),
+				'elementType' => Asset::className(),
+			]);
+
+			// Delete
+			if (Craft::$app->getAssets()->canUserPerformAction($folderId, 'removeFromVolume'))
+			{
+				$actions[] = DeleteAssets::className();
+			}
 		}
 
 		// Allow plugins to add additional actions
@@ -251,7 +249,9 @@ class Asset extends Element
 		{
 			case 'filename':
 			{
-				return '<span style="word-break: break-word;">'.$element->filename.'</span>';
+				return HtmlHelper::encodeParams('<span style="word-break: break-word;">{filename}</span>', [
+					'filename' => $element->filename,
+				]);
 			}
 
 			case 'size':
@@ -781,6 +781,11 @@ class Asset extends Element
 
 	public function getHeight($transform = null)
 	{
+		if ($transform !== null && !ImageHelper::isImageManipulatable($this->getExtension()))
+		{
+			$transform = null;
+		}
+
 		return $this->_getDimension('height', $transform);
 	}
 
@@ -793,6 +798,11 @@ class Asset extends Element
 	 */
 	public function getWidth($transform = null)
 	{
+		if ($transform !== null && !ImageHelper::isImageManipulatable($this->getExtension()))
+		{
+			$transform = null;
+		}
+
 		return $this->_getDimension('width', $transform);
 	}
 

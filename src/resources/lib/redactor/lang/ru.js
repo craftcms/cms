@@ -70,6 +70,7 @@ $.Redactor.opts.langs['ru'] = {
 	alignment: 'Выравнивание',
 	filename: 'Название (необязательно)',
 	edit: 'Ред.',
-	center: 'По центру'
+	center: 'По центру',
+	upload_label: 'Drop file here or '
 };
 })( jQuery );

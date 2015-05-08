@@ -29,33 +29,33 @@ class Cp
 	 */
 	public function nav()
 	{
-		$nav['dashboard'] = ['name' => \Craft::t('app', 'Dashboard')];
+		$nav['dashboard'] = ['label' => \Craft::t('app', 'Dashboard')];
 
 		if (\Craft::$app->getSections()->getTotalEditableSections())
 		{
-			$nav['entries'] = ['name' => \Craft::t('app', 'Entries')];
+			$nav['entries'] = ['label' => \Craft::t('app', 'Entries')];
 		}
 
 		$globals = \Craft::$app->getGlobals()->getEditableSets();
 
 		if ($globals)
 		{
-			$nav['globals'] = ['name' => \Craft::t('app', 'Globals'), 'url' => 'globals/'.$globals[0]->handle];
+			$nav['globals'] = ['label' => \Craft::t('app', 'Globals'), 'url' => 'globals/'.$globals[0]->handle];
 		}
 
 		if (\Craft::$app->getCategories()->getEditableGroupIds())
 		{
-			$nav['categories'] = ['name' => \Craft::t('app', 'Categories')];
+			$nav['categories'] = ['label' => \Craft::t('app', 'Categories')];
 		}
 
 		if (\Craft::$app->getVolumes()->getTotalViewablevolumes())
 		{
-			$nav['assets'] = ['name' => \Craft::t('app', 'Assets')];
+			$nav['assets'] = ['label' => \Craft::t('app', 'Assets')];
 		}
 
 		if (\Craft::$app->getEdition() == \Craft::Pro && \Craft::$app->getUser()->checkPermission('editUsers'))
 		{
-			$nav['users'] = ['name' => \Craft::t('app', 'Users')];
+			$nav['users'] = ['label' => \Craft::t('app', 'Users')];
 		}
 
 		// Add any Plugin nav items
@@ -68,11 +68,15 @@ class Cp
 				$handle = $plugin->getHandle();
 				if (\Craft::$app->getUser()->checkPermission('accessPlugin-'.$handle))
 				{
-					$nav[$handle] = ['name' => $plugin->name];
+					$nav[$handle] = ['label' => $plugin->name];
 				}
 			}
 		}
 
+		// Allow plugins to modify the nav
+		\Craft::$app->getPlugins()->call('modifyCpNav', [&$nav]);
+
+		// Figure out which item is selected, and normalize the items
 		$firstSegment = \Craft::$app->getRequest()->getSegment(1);
 
 		if ($firstSegment == 'myaccount')
@@ -82,6 +86,11 @@ class Cp
 
 		foreach ($nav as $handle => &$item)
 		{
+			if (is_string($item))
+			{
+				$item = ['label' => $item];
+			}
+
 			$item['sel'] = ($handle == $firstSegment);
 
 			if (isset($item['url']))

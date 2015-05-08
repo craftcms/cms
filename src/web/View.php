@@ -1370,7 +1370,7 @@ class View extends \yii\web\View
 			$html .= ' hasicon';
 		}
 
-		$label = HtmlHelper::encode($element);
+		$label = (string) $element;
 
 		$html .= '" data-id="'.$element->id.'" data-locale="'.$element->locale.'" data-status="'.$element->getStatus().'" data-label="'.$label.'" data-url="'.$element->getUrl().'"';
 
@@ -1414,11 +1414,14 @@ class View extends \yii\web\View
 
 		if ($context['context'] == 'index' && ($cpEditUrl = $element->getCpEditUrl()))
 		{
-			$html .= '<a href="'.$cpEditUrl.'">'.$label.'</a>';
+			$html .= HtmlHelper::encodeParams('<a href="{cpEditUrl}">{label}</a>', [
+				'cpEditUrl' => $cpEditUrl,
+				'label' => $label
+			]);
 		}
 		else
 		{
-			$html .= $label;
+			$html .= HtmlHelper::encode($label);
 		}
 
 		$html .= '</span></div></div>';

@@ -19,6 +19,7 @@ use craft\app\elements\User;
 use craft\app\services\Users;
 use craft\app\web\Controller;
 use craft\app\web\Response;
+use craft\app\web\Session;
 use craft\app\web\UploadedFile;
 
 /**
@@ -111,10 +112,12 @@ class UsersController extends Controller
 		$this->requirePostRequest();
 
 		$userId = Craft::$app->getRequest()->getBodyParam('userId');
+		$originalUserId = Craft::$app->getUser()->getId();
 
 		if (Craft::$app->getUser()->loginByUserId($userId))
 		{
 			Craft::$app->getSession()->setNotice(Craft::t('app', 'Logged in.'));
+			Craft::$app->getSession()->set(User::IMPERSONATE_KEY, $originalUserId);
 
 			return $this->_handleSuccessfulLogin(true);
 		}
@@ -281,11 +284,7 @@ class UsersController extends Controller
 				Craft::$app->getUser()->sendUsernameCookie($userToProcess);
 
 				// Send them to the set password template.
-				$url = Craft::$app->getConfig()->getSetPasswordPath($code, $id, $userToProcess);
-
-				$this->_processSetPasswordPath($userToProcess);
-
-				return $this->renderTemplate($url, [
+				return $this->_renderSetPasswordTemplate($userToProcess, [
 					'code'    => $code,
 					'id'      => $id,
 					'newUser' => ($userToProcess->password ? false : true),
@@ -298,8 +297,6 @@ class UsersController extends Controller
 			$code          = Craft::$app->getRequest()->getRequiredBodyParam('code');
 			$id            = Craft::$app->getRequest()->getRequiredParam('id');
 			$userToProcess = Craft::$app->getUsers()->getUserByUid($id);
-
-			$url = Craft::$app->getConfig()->getSetPasswordPath($code, $id, $userToProcess);
 
 			// See if we still have a valid token.
 			$isCodeValid = Craft::$app->getUsers()->isVerificationCodeValidForUser($userToProcess, $code);
@@ -335,8 +332,8 @@ class UsersController extends Controller
 				// Can they access the CP?
 				if ($userToProcess->can('accessCp'))
 				{
-					// Send them to the login page
-					$url = Craft::$app->getConfig()->getLoginPath();
+					// Send them to the CP login page
+					$url = UrlHelper::getCpUrl(Craft::$app->getConfig()->getCpLoginPath());
 				}
 				else
 				{
@@ -350,12 +347,9 @@ class UsersController extends Controller
 
 			Craft::$app->getSession()->setNotice(Craft::t('app', 'Couldn’t update password.'));
 
-			$this->_processSetPasswordPath($userToProcess);
+			$errors = $userToProcess->getErrors('newPassword');
 
-			$errors = [];
-			$errors = array_merge($errors, $userToProcess->getErrors('newPassword'));
-
-			return $this->renderTemplate($url, [
+			return $this->_renderSetPasswordTemplate($userToProcess, [
 				'errors' => $errors,
 				'code' => $code,
 				'id' => $id,
@@ -848,7 +842,7 @@ class UsersController extends Controller
 
 		// If editing an existing user and either of these properties are being changed,
 		// require the user's current password for additional security
-		if (!$isNewUser && ($newEmail || $user->newPassword))
+		if (!$isNewUser && (!empty($newEmail) || $user->newPassword))
 		{
 			if (!$this->_verifyExistingPassword())
 			{
@@ -1105,10 +1099,7 @@ class UsersController extends Controller
 			$source = Craft::$app->getRequest()->getRequiredBodyParam('source');
 
 			// Strip off any querystring info, if any.
-			if (($qIndex = mb_strpos($source, '?')) !== false)
-			{
-				$source = mb_substr($source, 0, mb_strpos($source, '?'));
-			}
+			$source = UrlHelper::stripQueryString($source);
 
 			$user = Craft::$app->getUsers()->getUserById($userId);
 			$userName = AssetsHelper::cleanAssetName($user->username, false);
@@ -1199,7 +1190,7 @@ class UsersController extends Controller
 
 		if (Craft::$app->getRequest()->getIsAjax())
 		{
-			die('great!');
+			$this->returnJson(array('success' => true));
 		}
 		else
 		{
@@ -1556,30 +1547,33 @@ class UsersController extends Controller
 	}
 
 	/**
-	 * @param $user
+	 * Renders the Set Password template for a given user.
 	 *
-	 * @return null
+	 * @param User  $user
+	 * @param array $variables
+	 * @return Response
 	 */
-	private function _processSetPasswordPath($user)
+	private function _renderSetPasswordTemplate(User $user, $variables)
 	{
-		// If the user cannot access the CP
+		$pathService = Craft::$app->getPath();
+		$configService = Craft::$app->getConfig();
+
+		// If the user doesn't have CP access, see if a custom Set Password template exists
 		if (!$user->can('accessCp'))
 		{
-			// Make sure we're looking at the front-end templates path to start with.
-			Craft::$app->getPath()->setTemplatesPath(Craft::$app->getPath()->getSiteTemplatesPath());
+			$pathService->setTemplatesPath($pathServices->getSiteTemplatesPath());
+			$templatePath = $configService->getLocalized('setPasswordPath');
 
-			// If they haven't defined a front-end set password template
-			if (!Craft::$app->getView()->doesTemplateExist(Craft::$app->getConfig()->getLocalized('setPasswordPath')))
+			if (Craft::$app->getView()->doesTemplateExist($templatePath))
 			{
-				// Set the Path service to use the CP templates path instead
-				Craft::$app->getPath()->setTemplatesPath(Craft::$app->getPath()->getCpTemplatesPath());
+				return $this->renderTemplate($templatePath, $variables);
 			}
 		}
-		// The user can access the CP, so send them to Craft's set password template in the dashboard.
-		else
-		{
-			Craft::$app->getPath()->setTemplatesPath(Craft::$app->getPath()->getCpTemplatesPath());
-		}
+
+		// Otherwise go with the CP's template
+		$pathService->setTemplatesPath($pathService->getCpTemplatesPath());
+		$templatePath = $configService->getCpSetPasswordPath();
+		return $this->renderTemplate($templatePath, $variables);
 	}
 
 	/**

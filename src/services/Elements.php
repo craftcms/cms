@@ -30,6 +30,7 @@ use craft\app\records\Element as ElementRecord;
 use craft\app\records\ElementLocale as ElementLocaleRecord;
 use craft\app\records\StructureElement as StructureElementRecord;
 use craft\app\tasks\FindAndReplace;
+use craft\app\tasks\UpdateElementSlugsAndUris;
 use yii\base\Component;
 
 /**
@@ -630,13 +631,28 @@ class Elements extends Component
 	 * Updates an element’s slug and URI, along with any descendants.
 	 *
 	 * @param ElementInterface|Element $element            The element to update.
-	 * @param bool                     $|Elementu|ElementpdateO|Elementt|ElementherLocales Whether the element’s other locales should also be updated.
-	 * @param bool                     $updateDescendants  Whether the element’s descendants should also be updated.
+	 * @param boolean                  $updateOtherLocales Whether the element’s other locales should also be updated.
+	 * @param boolean                  $updateDescendants  Whether the element’s descendants should also be updated.
+	 * @param boolean                  $asTask             Whether the element’s slug and URI should be updated via a background task.
 	 *
 	 * @return null
 	 */
-	public function updateElementSlugAndUri(ElementInterface $element, $updateOtherLocales = true, $updateDescendants = true)
+	public function updateElementSlugAndUri(ElementInterface $element, $updateOtherLocales = true, $updateDescendants = true, $asTask = false)
 	{
+		if ($asTask)
+		{
+			Craft::$app->getTasks()->queueTask([
+				'type'               => UpdateElementSlugsAndUris::className(),
+				'elementId'          => $element->id,
+				'elementType'        => $element::className(),
+				'locale'             => $element->locale,
+				'updateOtherLocales' => $updateOtherLocales,
+				'updateDescendants'  => $updateDescendants,
+			]);
+
+			return;
+		}
+
 		ElementHelper::setUniqueUri($element);
 
 		Craft::$app->getDb()->createCommand()->update('{{%elements_i18n}}', [
@@ -657,7 +673,7 @@ class Elements extends Component
 
 		if ($updateDescendants)
 		{
-			$this->updateDescendantSlugsAndUris($element);
+			$this->updateDescendantSlugsAndUris($element, $updateOtherLocales);
 		}
 	}
 
@@ -692,22 +708,45 @@ class Elements extends Component
 	/**
 	 * Updates an element’s descendants’ slugs and URIs.
 	 *
-	 * @param ElementInterface|Element $element The element whose descendants should be updated.
+	 * @param ElementInterface|Element $element            The element whose descendants should be updated.
+	 * @param bool                     $updateOtherLocales Whether the element’s other locales should also be updated.
+	 * @param bool                     $asTask             Whether the descendants’ slugs and URIs should be updated via a background task.
 	 *
 	 * @return null
 	 */
-	public function updateDescendantSlugsAndUris(ElementInterface $element)
+	public function updateDescendantSlugsAndUris(ElementInterface $element, $updateOtherLocales = true, $asTask = false)
 	{
-		$children = $element::find()
+		$query = $element::find()
 		    ->descendantOf($element)
 		    ->descendantDist(1)
 		    ->status(null)
 		    ->localeEnabled(null)
-			->all();
+			->locale($element->locale);
 
-		foreach ($children as $child)
+		if ($asTask)
 		{
-			$this->updateElementSlugAndUri($child);
+			$childIds = $query->ids();
+
+			if ($childIds)
+			{
+				Craft::$app->getTasks()->queueTask([
+					'type'               => UpdateElementSlugsAndUris::className(),
+					'elementId'          => $childIds,
+					'elementType'        => $element::className(),
+					'locale'             => $element->locale,
+					'updateOtherLocales' => $updateOtherLocales,
+					'updateDescendants'  => true,
+				]);
+			}
+		}
+		else
+		{
+			$children = $query->all();
+
+			foreach ($children as $child)
+			{
+				$this->updateElementSlugAndUri($child, $updateOtherLocales, true, false);
+			}
 		}
 	}
 

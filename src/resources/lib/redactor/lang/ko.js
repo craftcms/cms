@@ -70,6 +70,7 @@ $.Redactor.opts.langs['ko'] = {
 	alignment: '정렬',
 	filename: '파일명 (선택)',
 	edit: '편집',
-	center: 'Center'
+	center: 'Center',
+	upload_label: 'Drop file here or '
 };
 })( jQuery );

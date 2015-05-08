@@ -69,6 +69,6 @@ class TagGroup extends ActiveRecord
 	 */
 	public function getTags()
 	{
-		return $this->hasMany(Tag::className(), ['tagId' => 'id']);
+		return $this->hasMany(Tag::className(), ['groupId' => 'id']);
 	}
 }
