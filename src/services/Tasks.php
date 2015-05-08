@@ -13,10 +13,15 @@ use craft\app\base\TaskInterface;
 use craft\app\db\Query;
 use craft\app\errors\InvalidComponentException;
 use craft\app\helpers\ComponentHelper;
+use craft\app\helpers\HeaderHelper;
+use craft\app\helpers\JsonHelper;
 use craft\app\records\Task as TaskRecord;
 use craft\app\tasks\InvalidTask;
+use craft\app\web\View;
 use yii\base\Application;
 use yii\base\Component;
+use yii\base\Event;
+use yii\web\Response;
 
 /**
  * Class Tasks service.
@@ -57,7 +62,7 @@ class Tasks extends Component
 	/**
 	 * @var
 	 */
-	private $_listeningForRequestEnd = false;
+	private $_listeningForResponse = false;
 
 	// Public Methods
 	// =========================================================================
@@ -79,11 +84,10 @@ class Tasks extends Component
 
 		$this->saveTask($task);
 
-		if (!$this->_listeningForRequestEnd && !$this->isTaskRunning())
+		if (!$this->_listeningForResponse && !Craft::$app->getRequest()->getIsConsoleRequest())
 		{
-			// Turn this request into a runner once everything else is done
-			Craft::$app->on(Application::EVENT_AFTER_REQUEST, [$this, 'closeAndRun']);
-			$this->_listeningForRequestEnd = true;
+			Craft::$app->getResponse()->on(Response::EVENT_AFTER_PREPARE, [$this, 'handleResponse']);
+			$this->_listeningForResponse = true;
 		}
 
 		return $task;
@@ -636,6 +640,75 @@ class Tasks extends Component
 		$success = $taskRecord->deleteWithChildren();
 		unset($this->_taskRecordsById[$taskId]);
 		return $success;
+	}
+
+	/**
+	 * Figure out how to initiate a new task runner.
+	 */
+	public function handleResponse()
+	{
+		// Ignore if tasks are already running
+		if ($this->isTaskRunning())
+		{
+			return;
+		}
+
+		$response = Craft::$app->getResponse();
+
+		// Make sure nothing has been output to the browser yet, and there's no pending response body
+		if (!headers_sent() && !ob_get_length() && $response->content === null)
+		{
+			$this->closeAndRun();
+		}
+		// Is this a site request and are we responding with HTML or XHTML?
+		// (CP requests don't need to be told to run pending tasks)
+		else if (
+			Craft::$app->getRequest()->getIsSiteRequest() &&
+			in_array(HeaderHelper::getMimeType(), ['text/html', 'application/xhtml+xml'])
+		)
+		{
+			// Just output JS that tells the browser to fire an Ajax request to kick off task running
+			$url = JsonHelper::encode(UrlHelper::getActionUrl('tasks/run-pending-tasks'));
+
+			// Ajax request code adapted from http://www.quirksmode.org/js/xmlhttp.html - thanks ppk!
+			$js = <<<EOT
+<script type="text/javascript">
+/*<![CDATA[*/
+(function(){
+	var XMLHttpFactories = [
+		function () {return new XMLHttpRequest()},
+		function () {return new ActiveXObject("Msxml2.XMLHTTP")},
+		function () {return new ActiveXObject("Msxml3.XMLHTTP")},
+		function () {return new ActiveXObject("Microsoft.XMLHTTP")}
+	];
+	var req = false;
+	for (var i = 0; i < XMLHttpFactories.length; i++) {
+		try {
+			req = XMLHttpFactories[i]();
+		}
+		catch (e) {
+			continue;
+		}
+		break;
+	}
+	if (!req) return;
+	req.open('GET', $url, true);
+	if (req.readyState == 4) return;
+	req.send();
+})();
+/*]]>*/
+</script>
+EOT;
+
+			if ($response->content === null)
+			{
+				$response->content = $js;
+			}
+			else
+			{
+				$response->content .= $js;
+			}
+		}
 	}
 
 	// Private Methods

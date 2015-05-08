@@ -819,6 +819,9 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 					{
 						Craft.cp.displayNotice(response.message);
 					}
+
+					// There may be a new background task that needs to be run
+					Craft.cp.runPendingTasks();
 				}
 				else
 				{

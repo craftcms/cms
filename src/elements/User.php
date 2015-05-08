@@ -98,7 +98,7 @@ class User extends Element implements IdentityInterface
 			self::STATUS_PENDING   => Craft::t('app', 'Pending'),
 			self::STATUS_LOCKED    => Craft::t('app', 'Locked'),
 			self::STATUS_SUSPENDED => Craft::t('app', 'Suspended'),
-			self::STATUS_ARCHIVED  => Craft::t('app', 'Archived')
+			//self::STATUS_ARCHIVED  => Craft::t('app', 'Archived')
 		];
 	}
 
@@ -137,6 +137,9 @@ class User extends Element implements IdentityInterface
 				];
 			}
 		}
+
+		// Allow plugins to modify the sources
+		Craft::$app->getPlugins()->call('modifyUserSources', [&$sources, $context]);
 
 		return $sources;
 	}

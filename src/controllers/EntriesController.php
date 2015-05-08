@@ -783,6 +783,20 @@ class EntriesController extends BaseEntriesController
 				{
 					$variables['entry']->locale = $variables['localeId'];
 				}
+
+				if (craft()->isLocalized())
+				{
+					// Set the default locale status based on the section's settings
+					foreach ($variables['section']->getLocales() as $locale)
+					{
+						if ($locale->locale == $variables['entry']->locale)
+						{
+							$variables['entry']->localeEnabled = $locale->enabledByDefault;
+							break;
+						}
+					}
+				}
+
 			}
 		}
 

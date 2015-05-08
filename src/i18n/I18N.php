@@ -388,6 +388,7 @@ class I18N extends \yii\i18n\I18N
 			{
 				Craft::$app->getTasks()->queueTask([
 					'type'            => ResaveAllElements::className(),
+					'locale'          => $this->getPrimarySiteLocaleId(),
 					'localizableOnly' => true,
 				]);
 			}

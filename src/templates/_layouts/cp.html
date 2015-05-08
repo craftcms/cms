@@ -1,6 +1,6 @@
 {% extends "_layouts/basecp" %}
 
-{%- includeTranslations
+{% includeTranslations
 	"week",
 	"weeks",
 	"day",
@@ -79,7 +79,9 @@
 	"Delete users",
 	"(blank)",
 	"Are you sure you want to delete the selected blocks?"
--%}
+%}
+
+{% set forceConfirmUnload = craft.session.hasFlash('error') %}
 
 
 {% block body %}

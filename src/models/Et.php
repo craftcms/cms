@@ -102,6 +102,11 @@ class Et extends Model
 	 */
 	public $errors;
 
+	/**
+	 * @var array Server info
+	 */
+	public $serverInfo;
+
 	// Public Methods
 	// =========================================================================
 

@@ -248,7 +248,7 @@ abstract class Controller extends \yii\web\Controller
 	/**
 	 * Sets the response format of the given data as JSON.
 	 *
-	 * @param array|null $var The array that should be JSON-encoded.
+	 * @param mixed $var The array that should be JSON-encoded.
 	 *
 	 * @return Response The response object.
 	 */
@@ -264,7 +264,7 @@ abstract class Controller extends \yii\web\Controller
 	/**
 	 * Sets the response format of the given data as JSONP.
 	 *
-	 * @param array|null $var The array that should be JSON-encoded.
+	 * @param mixed $var The array that should be JSON-encoded.
 	 *
 	 * @return Response The response object.
 	 */
@@ -280,7 +280,7 @@ abstract class Controller extends \yii\web\Controller
 	/**
 	 * Sets the response format of the given data as RAW.
 	 *
-	 * @param array|null $var The RAW array data.
+	 * @param mixed $var The RAW array data.
 	 *
 	 * @return Response The response object.
 	 */
@@ -296,7 +296,7 @@ abstract class Controller extends \yii\web\Controller
 	/**
 	 * Sets the response format of the given data as XML.
 	 *
-	 * @param array|null $var The array that should be XML-encoded.
+	 * @param mixed $var The array that should be XML-encoded.
 	 *
 	 * @return Response The response object.
 	 */

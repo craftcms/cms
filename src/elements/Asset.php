@@ -99,7 +99,12 @@ class Asset extends Element
 
 		$tree = Craft::$app->getAssets()->getFolderTreeByVolumeIds($sourceIds);
 
-		return static::_assembleSourceList($tree);
+		$sources = static::_assembleSourceList($tree);
+
+		// Allow plugins to modify the sources
+		Craft::$app->getPlugins()->call('modifyAssetSources', [&$sources, $context]);
+
+		return $sources;
 	}
 
 	/**

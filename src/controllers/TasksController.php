@@ -22,6 +22,14 @@ use craft\app\web\Controller;
  */
 class TasksController extends Controller
 {
+	// Properties
+	// =========================================================================
+
+	/**
+	 * @inheritdoc
+	 */
+	protected $allowAnonymous = ['actionRunPendingTasks'];
+
 	// Public Methods
 	// =========================================================================
 
@@ -32,25 +40,21 @@ class TasksController extends Controller
 	 */
 	public function actionRunPendingTasks()
 	{
-		$this->requireAjaxRequest();
-		$this->requirePermission('accessCp');
+		$tasksService = Craft::$app->getTasks();
 
-		// If there's already a running task, treat this like a getRunningTaskInfo request
-		$this->_returnRunningTaskInfo();
-
-		// Apparently not. Is there a pending task?
-		$task = Craft::$app->getTasks()->getNextPendingTask();
-
-		if ($task)
+		// Make sure tasks aren't already running
+		if (!$tasksService->isTaskRunning())
 		{
-			// Return info about the next pending task without stopping PHP execution
-			JsonHelper::sendJsonHeaders();
-			$response = Craft::$app->getResponse();
-			$response->content = JsonHelper::encode($task);
-			$response->sendAndClose();
+			$task = $tasksService->getNextPendingTask();
 
-			// Start running tasks
-			Craft::$app->getTasks()->runPendingTasks();
+			if ($task)
+			{
+				// Close the connection
+				Craft::$app->getResponse()->sendAndClose();
+
+					// Start running tasks
+				$tasksService->runPendingTasks();
+			}
 		}
 
 		Craft::$app->end();
@@ -66,10 +70,15 @@ class TasksController extends Controller
 		$this->requireAjaxRequest();
 		$this->requirePermission('accessCp');
 
-		$this->_returnRunningTaskInfo();
+		$tasksService = Craft::$app->getTasks();
+
+		if ($task = $tasksService->getRunningTask())
+		{
+			$this->asJson($task);
+		}
 
 		// No running tasks left? Check for a failed one
-		if (Craft::$app->getTasks()->haveTasksFailed())
+		if ($tasksService->haveTasksFailed())
 		{
 			return $this->asJson(['status' => 'error']);
 		}
@@ -135,21 +144,5 @@ class TasksController extends Controller
 		$this->requireAjaxRequest();
 		$this->requirePermission('accessCp');
 		return $this->asJson(Craft::$app->getTasks()->getAllTasks());
-	}
-
-	// Private Methods
-	// =========================================================================
-
-	/**
-	 * Returns info about the currently running task, if there is one.
-	 *
-	 * @return null
-	 */
-	private function _returnRunningTaskInfo()
-	{
-		if ($task = Craft::$app->getTasks()->getRunningTask())
-		{
-			return $this->asJson($task);
-		}
 	}
 }

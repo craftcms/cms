@@ -437,11 +437,24 @@ Garnish = $.extend(Garnish, {
 	 */
 	scrollContainerToElement: function(container, elem)
 	{
-		var $container = $(container),
-			$elem = $(elem);
+		if (typeof elem === typeof undefined)
+		{
+			var $elem = $(container);
+				$container = $elem.scrollParent();
+		}
+		else
+		{
+			var $container = $(container),
+				$elem = $(elem);
+		}
+
+		if ($container.prop('nodeName') === 'HTML')
+		{
+			$container = Garnish.$win;
+		}
 
 		var scrollTop = $container.scrollTop(),
-				elemOffset = $elem.offset().top;
+			elemOffset = $elem.offset().top;
 
 		if ($container[0] == window)
 		{
@@ -452,10 +465,12 @@ Garnish = $.extend(Garnish, {
 			var elemScrollOffset = elemOffset - $container.offset().top;
 		}
 
+		var targetScrollTop = false;
+
 		// Is the element above the fold?
 		if (elemScrollOffset < 0)
 		{
-			$container.scrollTop(scrollTop + elemScrollOffset);
+			targetScrollTop = scrollTop + elemScrollOffset - 10;
 		}
 		else
 		{
@@ -465,7 +480,23 @@ Garnish = $.extend(Garnish, {
 			// Is it below the fold?
 			if (elemScrollOffset + elemHeight > containerHeight)
 			{
-				$container.scrollTop(scrollTop + (elemScrollOffset - (containerHeight - elemHeight)));
+				targetScrollTop = scrollTop + (elemScrollOffset - (containerHeight - elemHeight)) + 10;
+			}
+		}
+
+		if (targetScrollTop !== false)
+		{
+			// Velocity only allows you to scroll to an arbitrary position if you're scrolling the main window
+			if ($container[0] == window)
+			{
+				$('html').velocity('scroll', {
+					offset: targetScrollTop+'px',
+					mobileHA: false
+				});
+			}
+			else
+			{
+				$container.scrollTop(targetScrollTop);
 			}
 		}
 	},
@@ -2124,6 +2155,9 @@ Garnish.Drag = Garnish.BaseDrag.extend({
 		{
 			Garnish.copyInputValues($draggee, $draggeeHelper);
 		}
+
+		// Remove any name= attributes so radio buttons don't lose their values
+		$draggeeHelper.find('[name]').attr('name', '');
 
 		$draggeeHelper.css({
 			width: $draggee.width() + 1, // Prevent the brower from wrapping text if the width was actually a fraction of a pixel larger
