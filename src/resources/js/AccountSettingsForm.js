@@ -38,17 +38,19 @@ Craft.AccountSettingsForm = Garnish.Base.extend(
 	{
 		if (!this.currentPasswordModal)
 		{
+			var passwordMessage = "";
+
 			if (this.isCurrent)
 			{
-				var $passwordMessage = Craft.t('Please enter your current password.');
+				passwordMessage = Craft.t('Please enter your current password.');
 			}
 			else
 			{
-				var $passwordMessage = Craft.t('Please enter your password.');
+				passwordMessage = Craft.t('Please enter your password.');
 			}
 
 			var $form = $('<form id="verifypasswordmodal" class="modal fitted"/>').appendTo(Garnish.$bod),
-				$body = $('<div class="body"><p>'+$passwordMessage+'</p></div>').appendTo($form),
+				$body = $('<div class="body"><p>'+passwordMessage+'</p></div>').appendTo($form),
 				$passwordWrapper = $('<div class="passwordwrapper"/>').appendTo($body),
 				$buttons = $('<div class="buttons right"/>').appendTo($body),
 				$cancelBtn = $('<div class="btn">'+Craft.t('Cancel')+'</div>').appendTo($buttons),
