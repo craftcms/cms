@@ -14,6 +14,7 @@ use craft\app\elements\Asset;
 use craft\app\elements\db\AssetQuery;
 use craft\app\errors\ActionCancelledException;
 use craft\app\errors\AssetConflictException;
+use craft\app\errors\AssetDisallowedExtensionException;
 use craft\app\errors\AssetLogicException;
 use craft\app\errors\AssetMissingException;
 use craft\app\errors\EventException;
@@ -187,10 +188,11 @@ class Assets extends Component
 	 *
 	 * @param Asset $asset
 	 *
-	 * @throws FileException                  If there was a problem with the actual file.
-	 * @throws AssetConflictException         If a file with such name already exists.
-	 * @throws AssetLogicException            If something violates Asset's logic (e.g. Asset outside of a folder).
-	 * @throws VolumeFileExistsException If the file actually exists on the volume, but on in the index.
+	 * @throws AssetDisallowedExtensionException If the file extension is not allowed.
+	 * @throws FileException                     If there was a problem with the actual file.
+	 * @throws AssetConflictException            If a file with such name already exists.
+	 * @throws AssetLogicException               If something violates Asset's logic (e.g. Asset outside of a folder).
+	 * @throws VolumeFileExistsException         If the file actually exists on the volume, but on in the index.
 	 * @return void
 	 */
 	public function saveAsset(Asset $asset)
@@ -205,6 +207,13 @@ class Assets extends Component
 		if (empty($asset->folderId))
 		{
 			throw new AssetLogicException(Craft::t('app', 'All Assets must have folder ID set.'));
+		}
+
+		$extension = $asset->getExtension();
+
+		if (!IOHelper::isExtensionAllowed($extension))
+		{
+			throw new AssetDisallowedExtensionException(Craft::t('app', 'The extension “{extension}” is not allowed.', array('extension' => $extension)));
 		}
 
 		$asset->filename = AssetsHelper::prepareAssetName($asset->filename);
@@ -480,12 +489,20 @@ class Assets extends Component
 	 * @param Asset  $asset
 	 * @param string $newFilename
 	 *
-	 * @throws AssetConflictException If a file with such a name already exists/
-	 * @throws AssetLogicException    If something violates Asset's logic (e.g. Asset outside of a folder).
+	 * @throws AssetDisallowedExtensionException If the extension is not allowed.
+	 * @throws AssetConflictException            If a file with such a name already exists/
+	 * @throws AssetLogicException               If something violates Asset's logic (e.g. Asset outside of a folder).
 	 * @return null
 	 */
 	public function renameAsset(Asset $asset, $newFilename)
 	{
+		$extension = IOHelper::getExtension($newFilename);
+
+		if (!IOHelper::isExtensionAllowed($extension))
+		{
+			throw new AssetDisallowedExtensionException(Craft::t('app', 'The extension “{extension}” is not allowed.', array('extension' => $extension)));
+		}
+
 		$newFilename = AssetsHelper::prepareAssetName($newFilename);
 
 		$existingAsset = $this->findFile(array('filename' => $newFilename, 'folderId' => $asset->folderId));
@@ -902,13 +919,22 @@ class Assets extends Component
 	 * @param int $folderId Id of the folder of the destination
 	 * @param string $newFilename filename to use for the file at it's destination
 	 *
-	 * @throws AssetConflictException
-	 * @throws FileException
+	 * @throws AssetDisallowedExtensionException If the extension is not allowed.
+	 * @throws AssetConflictException            If there is a conflict.
+	 * @throws AssetLogicException               If the target folder does not exist.
 	 * @return null
 	 */
 	public function moveAsset(Asset $asset, $folderId, $newFilename = "")
 	{
 		$filename = $newFilename ?: $asset->filename;
+
+		$extension = IOHelper::getExtension($filename);
+
+		if (!IOHelper::isExtensionAllowed($extension))
+		{
+			throw new AssetDisallowedExtensionException(Craft::t('app', 'The extension “{extension}” is not allowed.', array('extension' => $extension)));
+		}
+
 		$existingAsset = $this->findFile(array('filename' => $filename, 'folderId' => $folderId));
 
 		if ($existingAsset && $existingAsset->id != $asset->id)
