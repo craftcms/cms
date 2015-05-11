@@ -8,6 +8,7 @@
 use craft\app\db\Query;
 use craft\app\helpers\IOHelper;
 use yii\helpers\VarDumper;
+use yii\web\Request;
 
 /**
  * Craft is helper class serving common Craft and Yii framework functionality.
@@ -107,10 +108,11 @@ class Craft extends Yii
 	/**
 	 * Generates and returns a cookie config.
 	 *
-	 * @param array|null $config Any config options that should be included in the config.
+	 * @param array|null $config  Any config options that should be included in the config.
+	 * @param Request    $request The request object
 	 * @return array The cookie config array.
 	 */
-	public static function getCookieConfig($config = [])
+	public static function getCookieConfig($config = [], $request = null)
 	{
 		if (!isset(static::$_baseCookieConfig))
 		{
@@ -119,9 +121,14 @@ class Craft extends Yii
 			$defaultCookieDomain = $configService->get('defaultCookieDomain');
 			$useSecureCookies = $configService->get('useSecureCookies');
 
-			if ($useSecureCookies === 'auto' && static::$app->getRequest()->getIsSecureConnection())
+			if ($useSecureCookies === 'auto')
 			{
-				$useSecureCookies = true;
+				if ($request === null)
+				{
+					$request = static::$app->getRequest();
+				}
+
+				$useSecureCookies = $request->getIsSecureConnection();
 			}
 
 			static::$_baseCookieConfig = [

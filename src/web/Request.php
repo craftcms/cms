@@ -130,7 +130,7 @@ class Request extends \yii\web\Request
 		{
 			$config['enableCsrfValidation'] = true;
 			$config['csrfParam'] = $configService->get('csrfTokenName');
-			$config['csrfCookie'] = Craft::getCookieConfig();
+			$config['csrfCookie'] = Craft::getCookieConfig([], $this);
 		}
 
 		$this->cookieValidationKey = Craft::$app->getSecurity()->getValidationKey();
