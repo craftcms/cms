@@ -202,7 +202,7 @@ class Request extends \yii\web\Request
 			{
 				if (Craft::$app->getConfig()->usePathInfo())
 				{
-					$this->_fullPath = $this->getPathInfo();
+					$this->_fullPath = $this->getPathInfo(true);
 
 					if (!$this->_fullPath)
 					{
@@ -215,7 +215,7 @@ class Request extends \yii\web\Request
 
 					if (!$this->_fullPath)
 					{
-						$this->_fullPath = $this->getPathInfo();
+						$this->_fullPath = $this->getPathInfo(true);
 					}
 				}
 			}
@@ -251,12 +251,24 @@ class Request extends \yii\web\Request
 	/**
 	 * Returns the requested path, sans CP trigger and pagination info.
 	 *
-	 * @return string The path.
-	 * @see getFullPath()
+	 * If $returnRealPathInfo is returned, then [[parent::getPathInfo()]] will be returned.
+	 *
+	 * @param boolean $returnRealPathInfo Whether the real path info should be returned instead.
+	 * @see \yii\web\UrlManager::processRequest()
+	 * @see \yii\web\UrlRule::processRequest()
+	 * @return string The requested path, or the path info.
+	 * @throws InvalidConfigException if the path info cannot be determined due to unexpected server configuration
 	 */
-	public function getPath()
+	public function getPathInfo($returnRealPathInfo = false)
 	{
-		return $this->_path;
+		if ($returnRealPathInfo)
+		{
+			return parent::getPathInfo();
+		}
+		else
+		{
+			return $this->_path;
+		}
 	}
 
 	/**

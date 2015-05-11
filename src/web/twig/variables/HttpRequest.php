@@ -68,7 +68,7 @@ class HttpRequest
 	 */
 	public function getPath()
 	{
-		return \Craft::$app->getRequest()->getPath();
+		return \Craft::$app->getRequest()->getPathInfo();
 	}
 
 	/**
@@ -78,7 +78,7 @@ class HttpRequest
 	 */
 	public function getUrl()
 	{
-		$uri = \Craft::$app->getRequest()->getPath();
+		$uri = \Craft::$app->getRequest()->getPathInfo();
 		return UrlHelper::getUrl($uri);
 	}
 
@@ -255,7 +255,7 @@ class HttpRequest
 	 */
 	public function getPathInfo()
 	{
-		return \Craft::$app->getRequest()->getPathInfo();
+		return \Craft::$app->getRequest()->getPathInfo(true);
 	}
 
 	/**

@@ -630,7 +630,7 @@ class Application extends \yii\web\Application
 					{
 						if ($request->getPathInfo() !== '')
 						{
-							$this->getUser()->setReturnUrl($request->getPath());
+							$this->getUser()->setReturnUrl($request->getPathInfo());
 						}
 					}
 
@@ -713,8 +713,8 @@ class Application extends \yii\web\Application
 		if ($request->getIsCpRequest() ||
 
 			// Special case because we hide the cpTrigger in emails.
-			$request->getPath() === $actionTrigger.'/users/set-password' ||
-			$request->getPath() === $actionTrigger.'/users/verify-email'
+			$request->getPathInfo() === $actionTrigger.'/users/set-password' ||
+			$request->getPathInfo() === $actionTrigger.'/users/verify-email'
 		)
 		{
 			if ($this->getUser()->checkPermission('accessCpWhenSystemIsOff'))

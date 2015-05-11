@@ -59,7 +59,7 @@ class Paginate
 	{
 		if ($page >= 1 && $page <= $this->totalPages)
 		{
-			$path = \Craft::$app->getRequest()->getPath();
+			$path = \Craft::$app->getRequest()->getPathInfo();
 
 			if ($page != 1)
 			{
