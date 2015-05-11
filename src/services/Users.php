@@ -355,6 +355,10 @@ class Users extends Component
 		{
 			$userRecord = new UserRecord();
 			$userRecord->pending = true;
+			$userRecord->locked = $user->locked;
+			$userRecord->suspended = $user->suspended;
+			$userRecord->pending = $user->pending;
+			$userRecord->archived = $user->archived;
 		}
 
 		// Set the user record attributes

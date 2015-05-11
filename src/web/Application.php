@@ -64,12 +64,14 @@ class Application extends \yii\web\Application
 	 */
 	public function init()
 	{
+		parent::init();
+
 		// NOTE: Nothing that triggers a database connection should be made here until *after* _processResourceRequest()
 		// in handleRequest() is called.
 
 		// Initialize the Cache service, Request and Logger right away (order is important)
 		$this->getCache();
-		$request = $this->getRequest();
+		$this->getRequest();
 		$this->processLogTargets();
 
 		// So we can try to translate Yii framework strings
@@ -87,19 +89,11 @@ class Application extends \yii\web\Application
 		// Validate some basics on the database configuration file.
 		$this->validateDbConfigFile();
 
-		// Process install requests
-		if (($response = $this->_processInstallRequest($request)) !== null)
-		{
-			return $response;
-		}
-
 		// Load the plugins
 		$this->getPlugins()->loadPlugins();
 
 		// Set the language
 		$this->_setLanguage();
-
-		parent::init();
 	}
 
 	/**
@@ -136,6 +130,12 @@ class Application extends \yii\web\Application
 		{
 			$this->_unregisterDebugModule();
 			throw new ServiceUnavailableHttpException();
+		}
+
+		// Process install requests
+		if (($response = $this->_processInstallRequest($request)) !== null)
+		{
+			return $response;
 		}
 
 		// Check if the app path has changed.  If so, run the requirements check again.
