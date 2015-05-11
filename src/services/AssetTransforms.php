@@ -411,6 +411,7 @@ class AssetTransforms extends Component
 				->where('fileId = :fileId', [':fileId' => $file->id])
 				->andWhere(['in', 'location', $possibleLocations])
 				->andWhere('id <> :indexId', [':indexId' => $index->id])
+				->andWhere('fileExists = 1')
 				->all();
 
 			foreach ($results as $result)
