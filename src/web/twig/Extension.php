@@ -10,6 +10,7 @@ namespace craft\app\web\twig;
 use Craft;
 use craft\app\helpers\DateTimeHelper;
 use craft\app\helpers\DbHelper;
+use craft\app\helpers\HeaderHelper;
 use craft\app\helpers\StringHelper;
 use craft\app\helpers\TemplateHelper;
 use craft\app\helpers\UrlHelper;
