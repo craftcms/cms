@@ -26,15 +26,13 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 		message: "File “{file}” already exists at target location.",
 		choices: [
 			{value: 'keepBoth', title: Craft.t('Keep both')},
-			{value: 'replace', title: Craft.t('Replace it')},
-			{value: 'cancel', title: Craft.t('Cancel')}
+			{value: 'replace', title: Craft.t('Replace it')}
 		]
 	},
 	_folderConflictTemplate: {
 		message: "Folder “{folder}” already exists at target location",
 		choices: [
-			{value: 'replace', title: Craft.t('Replace the existing folder')},
-			{value: 'cancel', title: Craft.t('Cancel the folder move')}
+			{value: 'replace', title: Craft.t('Replace the existing folder')}
 		]
 	},
 
