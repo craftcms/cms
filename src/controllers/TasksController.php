@@ -77,7 +77,7 @@ class TasksController extends Controller
 
 		if ($task = $tasksService->getRunningTask())
 		{
-			$this->asJson($task);
+			return $this->asJson($task);
 		}
 
 		// No running tasks left? Check for a failed one
@@ -89,7 +89,7 @@ class TasksController extends Controller
 		// Any pending tasks?
 		if ($task = $tasksService->getNextPendingTask())
 		{
-			$this->asJson($task);
+			return $this->asJson($task);
 		}
 
 		Craft::$app->end();

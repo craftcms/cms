@@ -71,7 +71,7 @@ class UpdateController extends Controller
 			$response = ArrayHelper::toArray($updates);
 			$response['allowAutoUpdates'] = Craft::$app->getConfig()->allowAutoUpdates();
 
-			$this->asJson($response);
+			return $this->asJson($response);
 		}
 		else
 		{
