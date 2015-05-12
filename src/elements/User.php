@@ -396,7 +396,7 @@ class User extends Element implements IdentityInterface
 				// If the previous user was an admin and we're impersonating the current user.
 				if ($previousUserId = Craft::$app->getSession()->get(self::IMPERSONATE_KEY))
 				{
-					$previousUser = craft()->users->getUserById($previousUserId);
+					$previousUser = Craft::$app->getUsers()->getUserById($previousUserId);
 
 					if ($previousUser && $previousUser->admin)
 					{

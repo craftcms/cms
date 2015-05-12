@@ -1,5 +1,7 @@
 <?php
 namespace Craft;
+use Craft;
+use craft\app\db\Query;
 
 /**
  * The LocalizeRelations Task.
@@ -51,13 +53,13 @@ class LocalizeRelationsTask extends BaseTask
 	 */
 	public function getTotalSteps()
 	{
-		$this->_relations = craft()->db->createCommand()
+		$this->_relations = (new Query())
 			->select('id, sourceId, sourceLocale, targetId, sortOrder')
-			->from('relations')
-			->where('fieldId=:fieldId AND sourceLocale IS NULL', array('fieldId' => $this->getSettings()->fieldId))
-			->queryAll();
+			->from('{{%relations}}')
+			->where(['fieldId' => $this->getSettings()->fieldId, 'sourceLocale' => null])
+			->all();
 
-		$this->_allLocales = craft()->i18n->getSiteLocaleIds();
+		$this->_allLocales = Craft::$app->getI18n()->getSiteLocaleIds();
 
 		return count($this->_relations);
 	}
@@ -76,19 +78,26 @@ class LocalizeRelationsTask extends BaseTask
 			$this->_workingLocale = $this->_allLocales[0];
 
 			// Update the existing one.
-			$affectedRows = craft()->db->createCommand()->update('relations', array('sourceLocale' => $this->_workingLocale), array('id' => $this->_relations[$step]['id']));
+			$affectedRows = Craft::$app->getDb()->createCommand()->update(
+				'{{$relations}}',
+				['sourceLocale' => $this->_workingLocale],
+				['id' => $this->_relations[$step]['id']]
+			);
 
 			for ($counter = 1; $counter < count($this->_allLocales); $counter++)
 			{
 				$this->_workingLocale = $this->_allLocales[$counter];
 
-				$affectedRows = craft()->db->createCommand()->insert('relations', array(
-					'fieldid'      => $this->getSettings()->fieldId,
-					'sourceId'     => $this->_relations[$step]['sourceId'],
-					'sourceLocale' => $this->_workingLocale,
-					'targetId'     => $this->_relations[$step]['targetId'],
-					'sortOrder'    => $this->_relations[$step]['sortOrder'],
-				));
+				$affectedRows = Craft::$app->getDb()->createCommand()->insert(
+					'{{$relations}}',
+					[
+						'fieldid'      => $this->getSettings()->fieldId,
+						'sourceId'     => $this->_relations[$step]['sourceId'],
+						'sourceLocale' => $this->_workingLocale,
+						'targetId'     => $this->_relations[$step]['targetId'],
+						'sortOrder'    => $this->_relations[$step]['sortOrder'],
+					]
+				);
 			}
 
 			return true;

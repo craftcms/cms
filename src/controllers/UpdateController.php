@@ -69,7 +69,7 @@ class UpdateController extends Controller
 		if ($updates)
 		{
 			$response = ArrayHelper::toArray($updates);
-			$response['allowAutoUpdates'] = craft()->config->allowAutoUpdates();
+			$response['allowAutoUpdates'] = Craft::$app->getConfig()->allowAutoUpdates();
 
 			$this->asJson($response);
 		}

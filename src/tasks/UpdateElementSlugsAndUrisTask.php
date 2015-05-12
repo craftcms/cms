@@ -1,5 +1,6 @@
 <?php
 namespace Craft;
+use Craft;
 
 /**
  * Update Element Slugs and URIs Task
@@ -66,7 +67,7 @@ class UpdateElementSlugsAndUrisTask extends BaseTask
 			return true;
 		}
 
-		$elementsService = craft()->elements;
+		$elementsService = Craft::$app->getElements();
 		$settings = $this->getSettings();
 		$element = $elementsService->getElementById($this->_elementIds[$step], $settings->elementType, $settings->locale);
 
