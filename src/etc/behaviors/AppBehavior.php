@@ -489,6 +489,9 @@ class AppBehavior extends BaseBehavior
 					throw new Exception(Craft::t('Craft appears to be installed but the info table is empty.'));
 				}
 
+				// Prevent an infinite loop in createFromString.
+				$row['releaseDate'] = DateTime::createFromString($row['releaseDate'], null, false);
+
 				$this->_info = new InfoModel($row);
 			}
 			else
