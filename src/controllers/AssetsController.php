@@ -406,24 +406,92 @@ class AssetsController extends Controller
 	{
 		$this->requireLogin();
 
-		$folderId = Craft::$app->getRequest()->getRequiredBodyParam('folderId');
-		$parentId = Craft::$app->getRequest()->getRequiredBodyParam('parentId');
-		$action = Craft::$app->getRequest()->getBodyParam('action');
+		$folderToMoveId     = Craft::$app->getRequest()->getRequiredBodyParam('folderId');
+		$newParentFolderId  = Craft::$app->getRequest()->getRequiredBodyParam('parentId');
+		$conflictResolution = Craft::$app->getRequest()->getBodyParam('userResponse');
 
+		// TODO permission checks
 		try
 		{
-			Craft::$app->getAssets()->checkPermissionByFolderIds($folderId, 'removeFromAssetVolume');
-			Craft::$app->getAssets()->checkPermissionByFolderIds($parentId, 'uploadToAssetVolume');
-			Craft::$app->getAssets()->checkPermissionByFolderIds($parentId, 'createSubfoldersInAssetVolume');
+			$folderToMove      = Craft::$app->getAssets()->getFolderById($folderToMoveId);
+			$destinationFolder = Craft::$app->getAssets()->getFolderById($newParentFolderId);
+			$removeFromTree = [];
+
+			if (empty($folderToMove))
+			{
+				throw new AssetLogicException(Craft::t('app', 'The folder you are trying to move does not exist!'));
+			}
+
+			if (empty($destinationFolder))
+			{
+				throw new AssetLogicException(Craft::t('app', 'The destination folder does not exist!'));
+			}
+
+			$sourceTree = Craft::$app->getAssets()->getAllDescendantFolders($folderToMove);
+
+			if (empty($conflictResolution))
+			{
+				$existingFolder = Craft::$app->getAssets()->findFolder(['parentId' => $newParentFolderId, 'name' => $folderToMove->name]);
+
+				if ($existingFolder)
+				{
+					return $this->asJson(['prompt' => true, 'foldername' => $folderToMove->name, 'folderId' => $folderToMoveId, 'parentId' => $newParentFolderId]);
+				}
+				else
+				{
+					// No conflicts, mirror the existing structure
+					$folderIdChanges = AssetsHelper::mirrorFolderStructure($folderToMove, $destinationFolder);
+
+					// Get the file transfer list.
+					$allSourceFolderIds = array_keys($sourceTree);
+					$allSourceFolderIds[] = $folderToMoveId;
+					$assets = Craft::$app->getAssets()->findFiles(['folderId' => $allSourceFolderIds]);
+					$fileTransferList = AssetsHelper::getFileTransferList($assets, $folderIdChanges, $conflictResolution == 'merge');
+				}
+			}
+			else
+			{
+				$existingFolder = Craft::$app->getAssets()->findFolder(['parentId' => $newParentFolderId, 'name' => $folderToMove->name]);
+				$targetTreeMap = [];
+
+				// When merging folders, make sure that we're not overwriting folders
+				if ($conflictResolution == 'merge')
+				{
+					$targetTree = Craft::$app->getAssets()->getAllDescendantFolders($existingFolder);
+					$targetPrefixLength = strlen($destinationFolder->path);
+					$targetTreeMap = [];
+
+					foreach ($targetTree as $existingFolder)
+					{
+						$targetTreeMap[substr($existingFolder->path, $targetPrefixLength)] = $existingFolder->id;
+					}
+
+					$removeFromTree = [$existingFolder->id];
+				}
+				// When replacing, just nuke everything that's in our way
+				else if ($conflictResolution == 'replace')
+				{
+					$removeFromTree = [$existingFolder->id];
+					Craft::$app->getAssets()->deleteFoldersByIds($existingFolder->id);
+				}
+
+				// Mirror the structure, passing along the exsting folder map
+				$folderIdChanges = AssetsHelper::mirrorFolderStructure($folderToMove, $destinationFolder, $targetTreeMap);
+
+				// Get file transfer list for the progress bar
+				$allSourceFolderIds = array_keys($sourceTree);
+				$allSourceFolderIds[] = $folderToMoveId;
+				$assets = Craft::$app->getAssets()->findFiles(['folderId' => $allSourceFolderIds]);
+				$fileTransferList = AssetsHelper::getFileTransferList($assets, $folderIdChanges, $conflictResolution == 'merge');
+			}
 		}
-		catch (Exception $e)
+		catch (AssetLogicException $exception)
 		{
-			return $this->asErrorJson($e->getMessage());
+			return $this->asErrorJson($exception->getMessage());
 		}
 
-		$response = Craft::$app->getAssets()->moveFolder($folderId, $parentId, $action);
+		return $this->asJson(['success' => true, 'changedIds' => $folderIdChanges, 'transferList' => $fileTransferList, 'removeFromTree' => $removeFromTree]);
 
-		return $this->asJson($response->getResponseData());
 	}
 
 	/**

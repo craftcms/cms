@@ -10,6 +10,7 @@ namespace craft\app\helpers;
 use Craft;
 use craft\app\base\Volume;
 use craft\app\elements\Asset;
+use craft\app\models\VolumeFolder;
 
 /**
  * Class AssetsHelper
@@ -119,5 +120,76 @@ class AssetsHelper
 		}
 
 		return $baseName.$extension;
+	}
+
+	/**
+	 * Mirror a folder structure on a Volume.
+	 *
+	 * @param VolumeFolder $sourceParentFolder Folder who's children folder structure should be mirrored.
+	 * @param VolumeFolder $destinationFolder  The destination folder
+	 * @param array        $targetTreeMap map of relative path => existing folder id
+	 *
+	 * @return array $folderIdChanges map of original folder id => new folder id
+	 */
+	public static function mirrorFolderStructure(VolumeFolder $sourceParentFolder, VolumeFolder $destinationFolder, $targetTreeMap = array())
+	{
+		$sourceTree = Craft::$app->getAssets()->getAllDescendantFolders($sourceParentFolder);
+		$previousParent = $sourceParentFolder->getParent();
+		$sourcePrefixLength = strlen($previousParent->path);
+		$folderIdChanges = [];
+
+		foreach ($sourceTree as $sourceFolder)
+		{
+			$relativePath = substr($sourceFolder->path, $sourcePrefixLength);
+
+			// If we have a target tree map, try to see if we should just point to an existing folder.
+			if ($targetTreeMap && isset($targetTreeMap[$relativePath]))
+			{
+				$folderIdChanges[$sourceFolder->id] = $targetTreeMap[$relativePath];
+			}
+			else
+			{
+				$folder           = new VolumeFolder();
+				$folder->name     = $sourceFolder->name;
+				$folder->volumeId = $destinationFolder->volumeId;
+				$folder->path     = ltrim(rtrim($destinationFolder->path, '/').('/').$relativePath, '/');
+
+				// Any and all parent folders should be already mirrored
+				$folder->parentId = (isset($folderIdChanges[$sourceFolder->parentId]) ? $folderIdChanges[$sourceFolder->parentId] : $destinationFolder->id);
+
+				Craft::$app->getAssets()->createFolder($folder);
+
+				$folderIdChanges[$sourceFolder->id] = $folder->id;
+			}
+		}
+
+		return $folderIdChanges;
+	}
+
+	public static function getFileTransferList($assets, $folderIdChanges, $merge = false)
+	{
+		$fileTransferList = [];
+
+		// Build the transfer list for files
+		foreach ($assets as $asset)
+		{
+			$newFolderId = $folderIdChanges[$asset->folderId];
+			$transferItem = ['fileId' => $asset->id, 'folderId' => $newFolderId];
+
+			// If we're merging, preemptively figure out if there'll be conflicts and resolve them
+			if ($merge)
+			{
+				$conflictingAsset = Craft::$app->getAssets()->findFile(['filename' => $asset->filename, 'folderId' => $newFolderId]);
+
+				if ($conflictingAsset)
+				{
+					$transferItem['userResponse'] = 'replace';
+				}
+			}
+
+			$fileTransferList[] = $transferItem;
+		}
+
+		return $fileTransferList;
 	}
 }

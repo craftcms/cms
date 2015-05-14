@@ -141,22 +141,23 @@ class Assets extends Component
 	 */
 	public function findFile($criteria = null)
 	{
-		if ($criteria instanceof AssetQuery)
-		{
-			$query = $criteria;
-		}
-		else
-		{
-			$query = Asset::find()->configure($criteria);
-		}
-
-		if (is_string($query->filename))
-		{
-			// Backslash-escape any commas in a given string.
-			$query->filename = DbHelper::escapeParam($query->filename);
-		}
+		$query = $this->_createFileQuery($criteria);
 
 		return $query->one();
+	}
+
+	/**
+	 * Finds all files that matches the given criteria.
+	 *
+	 * @param mixed $criteria
+	 *
+	 * @return array|null
+	 */
+	public function findFiles($criteria = null)
+	{
+		$query = $this->_createFileQuery($criteria);
+
+		return $query->all();
 	}
 
 	/**
@@ -734,16 +735,26 @@ class Assets extends Component
 	 * Returns all of the folders that are descendants of a given folder.
 	 *
 	 * @param VolumeFolderModel $parentFolder
+	 * @param string $orderBy
 	 *
 	 * @return array
 	 */
-	public function getAllDescendantFolders(VolumeFolderModel $parentFolder)
+	public function getAllDescendantFolders(VolumeFolderModel $parentFolder, $orderBy = "path")
 	{
+		/**
+		 * @var $query Query
+		 */
 		$query = (new Query())
 			->select('f.*')
 			->from('{{%volumefolders}} AS f')
 			->where(['like', 'path', $parentFolder->path.'%', false])
-			->andWhere('volumeId = :volumeId', array(':volumeId' => $parentFolder->volumeId));
+			->andWhere('volumeId = :volumeId', array(':volumeId' => $parentFolder->volumeId))
+			->andWhere('parentId IS NOT NULL');
+
+		if ($orderBy)
+		{
+			$query->orderBy($orderBy);
+		}
 
 		$results = $query->all();
 		$descendantFolders = array();
@@ -948,7 +959,7 @@ class Assets extends Component
 
 		if (!$targetFolder)
 		{
-			throw new AssetLogicException(Craft::t('app', 'That folder does not exist'));
+			throw new AssetLogicException(Craft::t('app', 'The destination folder does not exist'));
 		}
 
 		$this->_moveFileToFolder($asset, $targetFolder, $filename);
@@ -1215,6 +1226,32 @@ class Assets extends Component
 			Craft::$app->getAssetTransforms()->deleteAllTransformData($asset);
 		}
 	}
+
+	/**
+	 * Returns an AssetQuery object prepped for retrieving assets.
+	 *
+	 * @return AssetQuery
+	 */
+	private function _createFileQuery($criteria)
+	{
+		if ($criteria instanceof AssetQuery)
+		{
+			$query = $criteria;
+		}
+		else
+		{
+			$query = Asset::find()->configure($criteria);
+		}
+
+		if (is_string($query->filename))
+		{
+			// Backslash-escape any commas in a given string.
+			$query->filename = DbHelper::escapeParam($query->filename);
+		}
+
+		return $query;
+	}
+
 	/**
 	 * Returns a DbCommand object prepped for retrieving assets.
 	 *

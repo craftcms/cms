@@ -1,4 +1,4 @@
-/*! Craft 3.0.0 - 2015-05-11 */
+/*! Craft 3.0.0 - 2015-05-14 */
 (function($){
 
 if (typeof window.Craft == 'undefined')
@@ -4693,7 +4693,8 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 	_folderConflictTemplate: {
 		message: "Folder “{folder}” already exists at target location",
 		choices: [
-			{value: 'replace', title: Craft.t('Replace the existing folder')}
+			{value: 'replace', title: Craft.t('Replace the folder (all existing files will be deleted)')},
+			{value: 'merge', title: Craft.t('Merge the folder (any conflicting files will be replaced)')}
 		]
 	},
 
@@ -5144,21 +5145,19 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 						// If succesful and have data, then update
 						if (data.success)
 						{
-							if (data.transferList && data.deleteList && data.changedFolderIds)
+							// TODO REFACTOR THIS OUT
+							if (data.transferList && data.changedIds)
 							{
 								for (var ii = 0; ii < data.transferList.length; ii++)
 								{
 									fileMoveList.push(data.transferList[ii]);
 								}
 
-								for (var ii = 0; ii < data.deleteList.length; ii++)
-								{
-									folderDeleteList.push(data.deleteList[ii]);
-								}
+								folderDeleteList = folderIds;
 
-								for (var oldFolderId in data.changedFolderIds)
+								for (var oldFolderId in data.changedIds)
 								{
-									changedFolderIds[oldFolderId] = data.changedFolderIds[oldFolderId];
+									changedFolderIds[oldFolderId] = data.changedIds[oldFolderId];
 								}
 
 								removeFromTree.push(data.removeFromTree);
@@ -5168,6 +5167,10 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 						// Push prompt into prompt array
 						if (data.prompt)
 						{
+							promptData = this._folderConflictTemplate;
+							promptData.message = Craft.t(promptData.message, {folder: data.foldername});
+							data.prompt = promptData;
+
 							this.promptHandler.addPrompt(data);
 						}
 
@@ -5183,7 +5186,6 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 						var promptCallback = $.proxy(function(returnData)
 						{
 							this.promptHandler.resetPrompts();
-							this.setNewElementDataHtml('');
 
 							var newParameterArray = [];
 
@@ -5195,7 +5197,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 									continue;
 								}
 
-								parameterArray[0].action = returnData[i].choice;
+								parameterArray[0].userResponse = returnData[i].choice;
 								newParameterArray.push(parameterArray[0]);
 							}
 
@@ -5290,7 +5292,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 			//Move the folders around in the tree
 			var topFolderLi = $();
 			var folderToMove = $();
-			var topMovedFolderId = 0;
+			var topFolderMovedId = 0;
 
 			// Change the folder ids
 			for (var previousFolderId in changedFolderIds)
@@ -5299,13 +5301,13 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 
 				// Change the id and select the containing element as the folder element.
 				folderToMove = folderToMove
-									.attr('data-key', 'folder:' + changedFolderIds[previousFolderId].newId)
-									.data('key', 'folder:' + changedFolderIds[previousFolderId].newId).parent();
+									.attr('data-key', 'folder:' + changedFolderIds[previousFolderId])
+									.data('key', 'folder:' + changedFolderIds[previousFolderId]).parent();
 
 				if (topFolderLi.length == 0 || topFolderLi.parents().filter(folderToMove).length > 0)
 				{
 					topFolderLi = folderToMove;
-					topFolderMovedId = changedFolderIds[previousFolderId].newId;
+					topFolderMovedId = changedFolderIds[previousFolderId];
 				}
 			}
 
@@ -5324,13 +5326,14 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 			var siblings = topFolderLi.siblings('ul, .toggle');
 			var parentSource = this._getParentSource(topFolder);
 
-			var newParent = this._getSourceByFolderId(targetFolderId);
-			this._prepareParentForChildren(newParent);
-			this._appendSubfolder(newParent, topFolderLi);
+			var $newParent = this._getSourceByFolderId(targetFolderId);
+			this._prepareParentForChildren($newParent);
+			this._appendSubfolder($newParent, topFolderLi);
 
 			topFolder.after(siblings);
 
 			this._cleanUpTree(parentSource);
+			this._cleanUpTree($newParent);
 			this.$sidebar.find('ul>ul, ul>.toggle').remove();
 
 			// Delete the old folders
@@ -5341,7 +5344,10 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 
 			this.setIndexAvailable();
 			this.progressBar.hideProgressBar();
+			
+			this._folderDrag.$items.find('[data-key="folder:' + topFolderMovedId + '"]').parent().remove();
 			this._folderDrag.returnHelpersToDraggees();
+
 			this._selectSourceByFolderId(topFolderMovedId);
 
 		}, this);
