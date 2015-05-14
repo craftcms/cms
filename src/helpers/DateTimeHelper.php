@@ -54,7 +54,7 @@ class DateTimeHelper
 		// Eventually this will accept a database parameter and format the timestamp for the given database date/time
 		// datatype. For now, it's MySQL only.
 
-		if ($timeStamp)
+		if (!is_null($timeStamp))
 		{
 			if ($timeStamp instanceof \DateTime)
 			{
