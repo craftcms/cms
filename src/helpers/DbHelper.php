@@ -424,7 +424,7 @@ class DbHelper
 				$operator = '=';
 			}
 
-			$val = DateTimeHelper::toDateTime($val);
+			$val = DateTimeHelper::toDateTime($val, Craft::$app->getTimeZone());
 
 			$normalizedValues[] = $operator.DateTimeHelper::formatTimeForDb($val->getTimestamp());
 		}

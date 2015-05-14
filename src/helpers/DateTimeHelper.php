@@ -35,16 +35,17 @@ class DateTimeHelper
 	 *  - Unix timestamps
 	 *
 	 * @param mixed $object
+	 * @param string|null  $timezone     The [PHP timezone identifier](http://php.net/manual/en/timezones.php)
+	 *                                   that $date is set to, if not already specified in $date. Defaults to 'UTC'.
+	 * @param bool  $setToSystemTimeZone Whether to set the resulting DateTime object to the system timezone.
 	 * @return DateTime
 	 */
-	public static function toDateTime($object)
+	public static function toDateTime($object, $timezone = null, $setToSystemTimeZone = true)
 	{
 		if ($object instanceof \DateTime)
 		{
 			return $object;
 		}
-
-		$timezone = Craft::$app->getTimeZone();
 
 		// Was this a date/time-picker?
 		if (is_array($object) && (isset($object['date']) || isset($object['time'])))
@@ -62,6 +63,9 @@ class DateTimeHelper
 			{
 				$date = $dt['date'];
 				$format = FormatConverter::convertDateIcuToPhp('short', 'date', $locale->id);
+
+				// Make sure it's a 4 digit year format.
+				$format = StringHelper::replace($format, 'y', 'Y');
 
 				// Valid separators are either '-', '.' or '/'.
 				if (StringHelper::contains($format, '.'))
@@ -82,15 +86,8 @@ class DateTimeHelper
 				$date = StringHelper::replace($date, '.', $separator);
 				$date = StringHelper::replace($date, '/', $separator);
 
-				// Check for 2 and 4 digit years
-				if (StringHelper::contains($format, 'y'))
-				{
-					$altFormat = StringHelper::replace($format, 'y', 'Y');
-				}
-				else
-				{
-					$altFormat = StringHelper::replace($format, 'Y', 'y');
-				}
+				// Check for a two-digit year as well
+				$altFormat = StringHelper::replace($format, 'Y', 'y');
 
 				if (DateTime::createFromFormat($altFormat, $date) !== false)
 				{
@@ -170,10 +167,20 @@ class DateTimeHelper
 			}
 		}
 
-		$format .= ' e';
-		$date   .= ' '.$timezone;
+		if ($timezone)
+		{
+			$format .= ' e';
+			$date   .= ' '.$timezone;
+		}
 
-		return DateTime::createFromFormat('!'.$format, $date);
+		$dt = DateTime::createFromFormat('!'.$format, $date);
+
+		if ($setToSystemTimeZone)
+		{
+			$dt->setTimezone(new \DateTimeZone(Craft::$app->getTimeZone()));
+		}
+
+		return $dt;
 	}
 
 	/**
