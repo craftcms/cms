@@ -11,9 +11,9 @@ use Craft;
 use craft\app\enums\LicenseKeyStatus;
 use craft\app\errors\EtException;
 use craft\app\errors\Exception;
+use craft\app\helpers\ArrayHelper;
 use craft\app\helpers\DateTimeHelper;
 use craft\app\helpers\IOHelper;
-use craft\app\helpers\JsonHelper;
 use craft\app\models\Et as EtModel;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\RequestException;
@@ -190,81 +190,75 @@ class ET
 			{
 				try
 				{
-					$data = JsonHelper::encode($this->_model);
-
 					$client = new Client([
 						'headers' => [
-							'User-Agent' => $this->_userAgent.' '.Client::getDefaultUserAgent()
-						]
-					]);
-
-					$options = [
+							'User-Agent'  => $this->_userAgent.' '.Client::getDefaultUserAgent()
+						],
 						'timeout'         => $this->getTimeout(),
 						'connect_timeout' => $this->getConnectTimeout(),
 						'allow_redirects' => $this->getAllowRedirects(),
-					];
-
-					$request = $client->post($this->_endpoint, $options);
-
-					$request->setBody($data, 'application/json');
+					]);
 
 					// Potentially long-running request, so close session to prevent session blocking on subsequent requests.
 					Craft::$app->getSession()->close();
 
-					$response = $request->send();
+					$response = $client->post($this->_endpoint, ['json' => ArrayHelper::toArray($this->_model)]);
 
-					// Clear the connection failure cached item if it exists.
-					if (Craft::$app->getCache()->get('etConnectFailure'))
+					if ($response->getStatusCode() == 200)
 					{
-						Craft::$app->getCache()->delete('etConnectFailure');
-					}
-
-					if ($this->_destinationFilename)
-					{
-						$body = $response->getBody();
-
-						// Make sure we're at the beginning of the stream.
-						$body->rewind();
-
-						// Write it out to the file
-						IOHelper::writeToFile($this->_destinationFilename, $body->getStream(), true);
-
-						// Close the stream.
-						$body->close();
-
-						return IOHelper::getFilename($this->_destinationFilename);
-					}
-
-					$etModel = Craft::$app->getET()->decodeEtModel($response->getBody());
-
-					if ($etModel)
-					{
-						if ($missingLicenseKey && !empty($etModel->licenseKey))
-						{
-							$this->_setLicenseKey($etModel->licenseKey);
-						}
-
-						// Cache the license key status and which edition it has
-						Craft::$app->getCache()->set('licenseKeyStatus', $etModel->licenseKeyStatus);
-						Craft::$app->getCache()->set('licensedEdition', $etModel->licensedEdition);
-						Craft::$app->getCache()->set('editionTestableDomain@'.Craft::$app->getRequest()->getHostName(), $etModel->editionTestableDomain ? 1 : 0);
-
-						if ($etModel->licenseKeyStatus == LicenseKeyStatus::MismatchedDomain)
-						{
-							Craft::$app->getCache()->set('licensedDomain', $etModel->licensedDomain);
-						}
-
-						return $etModel;
-					}
-					else
-					{
-						Craft::warning('Error in calling '.$this->_endpoint.' Response: '.$response->getBody(), __METHOD__);
-
+						// Clear the connection failure cached item if it exists.
 						if (Craft::$app->getCache()->get('etConnectFailure'))
 						{
-							// There was an error, but at least we connected.
 							Craft::$app->getCache()->delete('etConnectFailure');
 						}
+
+						if ($this->_destinationFilename)
+						{
+							$body = $response->getBody();
+
+							// Make sure we're at the beginning of the stream.
+							$body->rewind();
+
+							// Write it out to the file
+							IOHelper::writeToFile($this->_destinationFilename, $body->getStream(), true);
+
+							// Close the stream.
+							$body->close();
+
+							return IOHelper::getFilename($this->_destinationFilename);
+						}
+
+						$responseBody = (string)$response->getBody();
+						$etModel = Craft::$app->getET()->decodeEtModel($responseBody);
+
+						if ($etModel)
+						{
+							if ($missingLicenseKey && !empty($etModel->licenseKey))
+							{
+								$this->_setLicenseKey($etModel->licenseKey);
+							}
+
+							// Cache the license key status and which edition it has
+							Craft::$app->getCache()->set('licenseKeyStatus', $etModel->licenseKeyStatus);
+							Craft::$app->getCache()->set('licensedEdition', $etModel->licensedEdition);
+							Craft::$app->getCache()->set('editionTestableDomain@'.Craft::$app->getRequest()->getHostName(), $etModel->editionTestableDomain ? 1 : 0);
+
+							if ($etModel->licenseKeyStatus == LicenseKeyStatus::MismatchedDomain)
+							{
+								Craft::$app->getCache()->set('licensedDomain', $etModel->licensedDomain);
+							}
+
+							return $etModel;
+						}
+					}
+
+					// If we made it here something, somewhere went wrong.
+					Craft::warning('Error in calling '.$this->_endpoint.' Response: '.$response->getBody(), __METHOD__);
+
+					if (Craft::$app->getCache()->get('etConnectFailure'))
+					{
+						// There was an error, but at least we connected.
+						Craft::$app->getCache()->delete('etConnectFailure');
 					}
 				}
 				catch (RequestException $e)

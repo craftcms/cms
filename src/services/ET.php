@@ -10,7 +10,9 @@ namespace craft\app\services;
 use Craft;
 use craft\app\helpers\IOHelper;
 use craft\app\helpers\JsonHelper;
+use craft\app\models\AppUpdate;
 use craft\app\models\Et as EtModel;
+use craft\app\models\PluginUpdate;
 use craft\app\models\Update as UpdateModel;
 use craft\app\models\UpgradePurchase as UpgradePurchaseModel;
 use yii\base\Component;
@@ -28,12 +30,12 @@ class ET extends Component
 	// Constants
 	// =========================================================================
 
-	const Ping              = '@@@elliottEndpointUrl@@@actions/elliott/app/ping';
-	const CheckForUpdates   = '@@@elliottEndpointUrl@@@actions/elliott/app/checkForUpdates';
-	const TransferLicense   = '@@@elliottEndpointUrl@@@actions/elliott/app/transferLicenseToCurrentDomain';
-	const GetEditionInfo    = '@@@elliottEndpointUrl@@@actions/elliott/app/getEditionInfo';
-	const PurchaseUpgrade   = '@@@elliottEndpointUrl@@@actions/elliott/app/purchaseUpgrade';
-	const GetUpdateFileInfo = '@@@elliottEndpointUrl@@@actions/elliott/app/getUpdateFileInfo';
+	const Ping              = 'https://elliott.buildwithcraft.com/actions/elliott/app/ping';
+	const CheckForUpdates   = 'https://elliott.buildwithcraft.com/actions/elliott/app/checkForUpdates';
+	const TransferLicense   = 'https://elliott.buildwithcraft.com/actions/elliott/app/transferLicenseToCurrentDomain';
+	const GetEditionInfo    = 'https://elliott.buildwithcraft.com/actions/elliott/app/getEditionInfo';
+	const PurchaseUpgrade   = 'https://elliott.buildwithcraft.com/actions/elliott/app/purchaseUpgrade';
+	const GetUpdateFileInfo = 'https://elliott.buildwithcraft.com/actions/elliott/app/getUpdateFileInfo';
 
 	// Public Methods
 	// =========================================================================
@@ -63,7 +65,22 @@ class ET extends Component
 
 		if ($etResponse)
 		{
-			$etResponse->data = new UpdateModel($etResponse->data);
+			$updateModel = new UpdateModel();
+			$updateModel->setAttributes($etResponse->data, false);
+
+			$appUpdateModel = new AppUpdate();
+			$appUpdateModel->setAttributes($updateModel->app, false);
+			$updateModel->app = $appUpdateModel;
+
+			foreach ($updateModel->plugins as $key => $pluginUpdateInfo)
+			{
+				$pluginUpdateModel = new PluginUpdate();
+				$pluginUpdateModel->setAttributes($pluginUpdateInfo);
+
+				$updateModel->plugins[$key] = $pluginUpdateModel;
+			}
+
+			$etResponse->data = $updateModel;
 			return $etResponse;
 		}
 	}
