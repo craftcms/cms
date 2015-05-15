@@ -11,6 +11,7 @@ use Craft;
 use craft\app\base\Field;
 use craft\app\elements\db\ElementQuery;
 use craft\app\elements\db\ElementQueryInterface;
+use craft\app\helpers\DateTimeHelper;
 use craft\app\helpers\DbHelper;
 use yii\db\Schema;
 
@@ -200,12 +201,10 @@ class Date extends Field
 	{
 		if ($value)
 		{
-			// Set it to the system timezone
-			$timezone = Craft::$app->getTimeZone();
-			$value->setTimezone(new \DateTimeZone($timezone));
-
-			return $value;
+			$value = DateTimeHelper::toDateTime($value);
 		}
+
+		return $value;
 	}
 
 	/**
@@ -219,5 +218,18 @@ class Date extends Field
 			/** @var ElementQuery $query */
 			$query->subQuery->andWhere(DbHelper::parseDateParam('content.'.Craft::$app->getContent()->fieldColumnPrefix.$handle, $value, $query->subQuery->params));
 		}
+	}
+
+	/**
+	 * @inheritdoc
+	 */
+	protected function prepareValueBeforeSave($value, $element)
+	{
+		if ($value)
+		{
+			$value = DateTimeHelper::toDateTime($value);
+		}
+
+		return $value;
 	}
 }

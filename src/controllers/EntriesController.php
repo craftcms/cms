@@ -784,7 +784,7 @@ class EntriesController extends BaseEntriesController
 					$variables['entry']->locale = $variables['localeId'];
 				}
 
-				if (craft()->isLocalized())
+				if (Craft::$app->isLocalized())
 				{
 					// Set the default locale status based on the section's settings
 					foreach ($variables['section']->getLocales() as $locale)
@@ -899,8 +899,8 @@ class EntriesController extends BaseEntriesController
 		// Set the entry attributes, defaulting to the existing values for whatever is missing from the post data
 		$entry->typeId        = Craft::$app->getRequest()->getBodyParam('typeId', $entry->typeId);
 		$entry->slug          = Craft::$app->getRequest()->getBodyParam('slug', $entry->slug);
-		$entry->postDate      = (($postDate   = Craft::$app->getRequest()->getBodyParam('postDate')) ? DateTimeHelper::toDateTime($postDate) : $entry->postDate);
-		$entry->expiryDate    = (($expiryDate = Craft::$app->getRequest()->getBodyParam('expiryDate')) ? DateTimeHelper::toDateTime($expiryDate) : null);
+		$entry->postDate      = (($postDate   = Craft::$app->getRequest()->getBodyParam('postDate')) ? DateTimeHelper::toDateTime($postDate, Craft::$app->getTimeZone()) : $entry->postDate);
+		$entry->expiryDate    = (($expiryDate = Craft::$app->getRequest()->getBodyParam('expiryDate')) ? DateTimeHelper::toDateTime($expiryDate, Craft::$app->getTimeZone()) : null);
 		$entry->enabled       = (bool) Craft::$app->getRequest()->getBodyParam('enabled', $entry->enabled);
 		$entry->localeEnabled = (bool) Craft::$app->getRequest()->getBodyParam('localeEnabled', $entry->localeEnabled);
 

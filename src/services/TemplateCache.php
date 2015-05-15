@@ -618,7 +618,7 @@ class TemplateCache extends Component
 				$this->_path = 'site:';
 			}
 
-			$this->_path .= Craft::$app->getRequest()->getPath();
+			$this->_path .= Craft::$app->getRequest()->getPathInfo();
 
 			if (($pageNum = Craft::$app->getRequest()->getPageNum()) != 1)
 			{

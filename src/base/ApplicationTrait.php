@@ -16,6 +16,7 @@ use craft\app\enums\ConfigCategory;
 use craft\app\errors\DbConnectException;
 use craft\app\errors\Exception;
 use craft\app\helpers\AppHelper;
+use craft\app\helpers\DateTimeHelper;
 use craft\app\helpers\DbHelper;
 use craft\app\helpers\IOHelper;
 use craft\app\helpers\StringHelper;
@@ -623,6 +624,9 @@ trait ApplicationTrait
 
 				// TODO: Remove this after the next breakpoint
 				$this->_storedVersion = $row['version'];
+
+				// Prevent an infinite loop in toDateTime.
+				$row['releaseDate'] = DateTimeHelper::toDateTime($row['releaseDate'], null, false);
 
 				$this->_info = Info::create($row);
 			}

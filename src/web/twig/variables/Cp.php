@@ -161,6 +161,6 @@ class Cp
 	 */
 	public function getAlerts()
 	{
-		return CpHelper::getAlerts(\Craft::$app->getRequest()->getPath());
+		return CpHelper::getAlerts(\Craft::$app->getRequest()->getPathInfo());
 	}
 }

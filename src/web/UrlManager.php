@@ -142,7 +142,7 @@ class UrlManager extends \yii\web\UrlManager
 
 			if ($request->getIsSiteRequest())
 			{
-				$path = $request->getPath();
+				$path = $request->getPathInfo();
 				$this->_getMatchedElementRoute($path);
 			}
 			else
@@ -262,7 +262,7 @@ class UrlManager extends \yii\web\UrlManager
 			return Craft::$app->getTokens()->getTokenRoute($token);
 		}
 
-		$path = $request->getPath();
+		$path = $request->getPathInfo();
 
 		// Is this an element request?
 		if (($route = $this->_getMatchedElementRoute($path)) !== false)

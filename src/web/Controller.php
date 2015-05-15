@@ -233,7 +233,7 @@ abstract class Controller extends \yii\web\Controller
 			}
 			else
 			{
-				$url = Craft::$app->getRequest()->getPath();
+				$url = Craft::$app->getRequest()->getPathInfo();
 			}
 		}
 

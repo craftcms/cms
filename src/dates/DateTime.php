@@ -9,6 +9,7 @@ namespace craft\app\dates;
 
 use Craft;
 use craft\app\helpers\DateTimeHelper;
+use craft\app\i18n\Locale;
 
 /**
  * Class DateTime

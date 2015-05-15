@@ -8,6 +8,7 @@ namespace craft\app\i18n;
 use Craft;
 use craft\app\helpers\ArrayHelper;
 use craft\app\helpers\IOHelper;
+use craft\app\helpers\StringHelper;
 use DateTime;
 use IntlDateFormatter;
 use NumberFormatter;
@@ -440,6 +441,31 @@ class Locale extends Object
 				$config['thousandSeparator']      = $this->getNumberSymbol(static::SYMBOL_GROUPING_SEPARATOR);
 				$config['currencyCode']           = $this->getNumberSymbol(static::SYMBOL_INTL_CURRENCY);
 			}
+			else
+			{
+				$config['dateTimeFormats'] = [
+					'short' => [
+						'date' => $this->getDateFormat(Locale::FORMAT_SHORT),
+						'time' => $this->getTimeFormat(Locale::FORMAT_SHORT),
+						'datetime' => $this->getDateTimeFormat(Locale::FORMAT_SHORT),
+					],
+					'medium' => [
+						'date' => $this->getDateFormat(Locale::FORMAT_MEDIUM),
+						'time' => $this->getTimeFormat(Locale::FORMAT_MEDIUM),
+						'datetime' => $this->getDateTimeFormat(Locale::FORMAT_MEDIUM),
+					],
+					'long' => [
+						'date' => $this->getDateFormat(Locale::FORMAT_LONG),
+						'time' => $this->getTimeFormat(Locale::FORMAT_LONG),
+						'datetime' => $this->getDateTimeFormat(Locale::FORMAT_LONG),
+					],
+					'full' => [
+						'date' => $this->getDateFormat(Locale::FORMAT_FULL),
+						'time' => $this->getTimeFormat(Locale::FORMAT_FULL),
+						'datetime' => $this->getDateTimeFormat(Locale::FORMAT_FULL),
+					],
+				];
+			}
 
 			$this->_formatter = new Formatter($config);
 		}
@@ -767,7 +793,9 @@ class Locale extends Object
 			$dateType = ($withDate ? $length : IntlDateFormatter::NONE);
 			$timeType = ($withTime ? $length : IntlDateFormatter::NONE);
 			$formatter = new IntlDateFormatter($this->id, $dateType, $timeType);
-			return $formatter->getPattern();
+			$pattern = $formatter->getPattern();
+
+			return StringHelper::replace($pattern, 'yy', 'Y');
 		}
 		else
 		{
@@ -786,7 +814,7 @@ class Locale extends Object
 
 			switch ($length)
 			{
-				case static::FORMAT_SHORT:  return $this->data['dateTimeFormats']['short'][$which]; break;
+				case static::FORMAT_SHORT:  return StringHelper::replace($this->data['dateTimeFormats']['short'][$which], 'yy', 'Y'); break;
 				case static::FORMAT_MEDIUM: return $this->data['dateTimeFormats']['medium'][$which]; break;
 				case static::FORMAT_LONG:   return $this->data['dateTimeFormats']['long'][$which]; break;
 				case static::FORMAT_FULL:   return $this->data['dateTimeFormats']['full'][$which]; break;
