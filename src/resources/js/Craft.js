@@ -1,4 +1,4 @@
-/*! Craft 3.0.0 - 2015-05-14 */
+/*! Craft 3.0.0 - 2015-05-15 */
 (function($){
 
 if (typeof window.Craft == 'undefined')
@@ -5327,6 +5327,14 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 			var parentSource = this._getParentSource(topFolder);
 
 			var $newParent = this._getSourceByFolderId(targetFolderId);
+
+			if (typeof removeFromTree != "undefined")
+			{
+				for (var i = 0; i < removeFromTree.length; i++)
+				{
+					$newParent.parent().find('[data-key="folder:' + removeFromTree[i] + '"]').parent().remove();
+				}
+			}
 			this._prepareParentForChildren($newParent);
 			this._appendSubfolder($newParent, topFolderLi);
 
@@ -5344,8 +5352,6 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 
 			this.setIndexAvailable();
 			this.progressBar.hideProgressBar();
-			
-			this._folderDrag.$items.find('[data-key="folder:' + topFolderMovedId + '"]').parent().remove();
 			this._folderDrag.returnHelpersToDraggees();
 
 			this._selectSourceByFolderId(topFolderMovedId);
