@@ -216,11 +216,8 @@ class ET
 						{
 							$body = $response->getBody();
 
-							// Make sure we're at the beginning of the stream.
-							$body->rewind();
-
 							// Write it out to the file
-							IOHelper::writeToFile($this->_destinationFilename, $body->getStream(), true);
+							IOHelper::writeToFile($this->_destinationFilename, $body, true);
 
 							// Close the stream.
 							$body->close();
