@@ -20,12 +20,12 @@ use yii\base\Component;
 /**
  * Class ET service.
  *
- * An instance of the ET service is globally accessible in Craft via [[Application::et `Craft::$app->getET()`]].
+ * An instance of the Et service is globally accessible in Craft via [[Application::et `Craft::$app->getET()`]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */
-class ET extends Component
+class Et extends Component
 {
 	// Constants
 	// =========================================================================
