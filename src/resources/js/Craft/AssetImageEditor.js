@@ -2,6 +2,9 @@
  * Asset image editor class
  */
 
+// TODO: Sometimes the rotation messes up the zoom
+// TODO: Rotating by 0.1 degree kills stuff for non-square images?
+
 Craft.AssetImageEditor = Garnish.Modal.extend(
 	{
 
@@ -27,10 +30,18 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 		rotation: 0,
 		frameRotation: 0,
 
+		// TODO: should this be limited to 50 (or some other arbitrary number)?
+		// Operation stack
+		doneOperations: [],
+		undoneOperations: [],
+
 		// zoom ratio for the image
 		zoomRatio: 1,
 
+		// Used when dragging the slider
 		previousSliderValue: 0,
+		// Used to store values when releasing the slider
+		previousSavedSliderValue: 0,
 
 		paddingSize: 24,
 		imageLoaded: false,
@@ -59,6 +70,11 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 			this.$img = null;
 			this.rotation = 0;
 			this.animationInProgress = false;
+			this.doneOperations = [];
+			this.undoneOperations = [];
+			this.previousSliderValue = 0;
+			this.previousSavedSliderValue = 0;
+
 
 			// Build the modal
 			var $container = $('<div class="modal asset-editor"></div>').appendTo(Garnish.$bod),
@@ -92,7 +108,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 			this.imageUrl = data.imageData.url;
 			this.aspectRatio = this.imageHeight / this.imageWidth;
 			this.initImage($.proxy(this, 'updateSizeAndPosition'));
-			this.initControls();
+			this.addListeners();
 		},
 
 		updateSizeAndPosition: function()
@@ -111,6 +127,12 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 		{
 			this.hide();
 			this.destroy();
+		},
+
+		hide: function ()
+		{
+			this.removeListeners();
+			this.base();
 		},
 
 		initImage: function (callback)
@@ -139,8 +161,8 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 				availableWidth = Garnish.$win.width() - (5 * this.paddingSize) - this.$container.find('.image-tools').outerWidth();
 
 			// The smallest of available and desired dimension is what we're going for to not have huge modals for small images
-			var targetImageHeight = availableHeight,//Math.min(availableHeight, desiredHeight),
-				targetImageWidth = availableWidth;//Math.min(availableWidth, desiredWidth);
+			var targetImageHeight = availableHeight,
+				targetImageWidth = availableWidth;
 
 			// Make the image area square, so we can rotate it comfortably.
 			var imageHolderSize = Math.max(parseInt(this.$container.find('.image-tools').css('min-height'), 10), Math.min(targetImageHeight, targetImageWidth));;
@@ -193,11 +215,21 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 			// Clear canvas
 			this.canvasContext.clearRect(0, 0, this.canvasImageWidth, this.canvasImageHeight);
 
-			// Calculate the zoom ratio unless we're in the middle of an animation or we're forced to (when resetting the straighten slider)
-			if (recalculateZoomRatio || !this.animationInProgress)
+			// Calculate the zoom ratio unless we're in the middle of an animation
+			// or we're forced to (when resetting the straighten slider)
+			if (!this.animationInProgress || recalculateZoomRatio)
 			{
-				var rectangle = this.calculateLargestProportionalRectangle(this.rotation, this.imageWidth, this.imageHeight);
-				this.zoomRatio = Math.max(this.imageWidth / rectangle.w, this.imageHeight / rectangle.h);
+				// For non-straightened images we know the zoom is going to be 1
+				if (this.rotation % 90 == 0)
+				{
+					this.zoomRatio = 1;
+				}
+				else
+				{
+					var rectangle = this.calculateLargestProportionalRectangle(this.rotation, this.imageWidth, this.imageHeight);
+					this.zoomRatio = Math.max(this.imageWidth / rectangle.w, this.imageHeight / rectangle.h);
+				}
+
 			}
 
 			// Remember the current context
@@ -229,12 +261,13 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 			this.clipImage();
 		},
 
-		initControls: function ()
+		addListeners: function ()
 		{
 			this.$container.find('a.rotate.clockwise').on('click', $.proxy(function ()
 			{
 				if (!this.animationInProgress)
 				{
+					this.addOperation({imageRotation: 90});
 					this.rotate(90);
 				}
 			}, this));
@@ -242,13 +275,19 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 			{
 				if (!this.animationInProgress)
 				{
+					this.addOperation({imageRotation: -90});
 					this.rotate(-90);
 				}
 			}, this));
 
 			var straighten = this.$container.find('.straighten')[0];
 
-			straighten.onchange = straighten.oninput = $.proxy(this, 'straightenImage');
+			straighten.oninput = $.proxy(this, 'straightenImage');
+			straighten.onchange = $.proxy(function (event)
+			{
+				this.straightenImage(event, true);
+			}, this);
+
 
 			straighten.onmousedown = $.proxy(function ()
 			{
@@ -265,9 +304,100 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 			$('.rotate.reset').on('click', $.proxy(function ()
 			{
 				this.$container.find('.straighten').val(0);
-				this.setStraightenOffset(0, false, true);
+				this.setStraightenOffset(0, false, true, true);
 			}, this));
 
+			// TODO: remove magic numbers and move them to Garnish Constants
+			this.addListener(Garnish.$doc, 'keydown', $.proxy(function (ev)
+			{
+				// CMD/CTRL + Y, CMD/CTRL + SHIFT + Z
+				if ((ev.metaKey || ev.ctrlKey) && (ev.keyCode == 89 || (ev.keyCode == 90 && ev.shiftKey)))
+				{
+					this.redo();
+					return false;
+				}
+			}, this));
+
+			this.addListener(Garnish.$doc, 'keydown', $.proxy(function (ev)
+			{
+				if ((ev.metaKey || ev.ctrlKey) && !ev.shiftKey && ev.keyCode == 90)
+				{
+					this.undo();
+					return false;
+				}
+			}, this));
+
+		},
+
+		removeListeners: function ()
+		{
+			this.removeListener(Garnish.$doc, 'keydown');
+		},
+
+		addOperation: function (operation)
+		{
+			this.doneOperations.push(operation);
+
+			// As soon as we do something, the stack of undone operations is gone.
+			this.undoneOperations = [];
+		},
+
+		undo: function ()
+		{
+			if (this.animationInProgress)
+			{
+				return;
+			}
+
+			if (this.doneOperations.length > 0)
+			{
+				var operation = this.doneOperations.pop();
+				this.performOperation(operation, true);
+				this.undoneOperations.push(operation);
+			}
+		},
+
+		redo: function ()
+		{
+			if (this.animationInProgress)
+			{
+				return;
+			}
+			if (this.undoneOperations.length > 0)
+			{
+				var operation = this.undoneOperations.pop();
+				this.performOperation(operation, false);
+				this.doneOperations.push(operation);
+			}
+
+		},
+
+		// TODO: This is a horrible name for this function
+		performOperation: function (operation, reverse)
+		{
+			var modifier = reverse ? -1 : 1;
+
+			if (typeof operation.imageRotation != "undefined")
+			{
+				this.rotation += modifier * operation.imageRotation;
+				this.frameRotation += modifier * operation.imageRotation;
+			}
+
+			if (typeof operation.straightenOffset != "undefined")
+			{
+				var value = modifier * operation.straightenOffset;
+				this.rotation += value;
+
+				var $straighten = this.$container.find('.straighten');
+				var newValue = parseFloat($straighten.val()) + value;
+
+				// TODO: this is the part where we refactor the code a bit to be less confusing.
+				this.previousSavedSliderValue = newValue;
+				this.previousSliderValue = newValue;
+				$straighten.val(newValue);
+			}
+
+			this.renderImage(true);
 		},
 
 		rotate: function (degrees, animateInstantly, preventFrameRotation)
@@ -342,20 +472,27 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 			return degrees;
 		},
 
-		straightenImage: function (event)
+		// Trigger operation - whether we're stopping to drag the slider and should trigger a state save
+		straightenImage: function (event, triggerOperation)
 		{
 			if (this.animationInProgress)
 			{
 				return;
 			}
-			this.setStraightenOffset($(event.currentTarget).val(), true);
+			this.setStraightenOffset($(event.currentTarget).val(), true, false, triggerOperation);
 		},
 
-		setStraightenOffset: function (degrees, animateInstantly, preventFrameRotation)
+		setStraightenOffset: function (degrees, animateInstantly, preventFrameRotation, triggerOperation)
 		{
 			var delta = degrees - this.previousSliderValue;
 
 			this.previousSliderValue = degrees;
+
+			if (triggerOperation)
+			{
+				this.addOperation({straightenOffset: degrees - this.previousSavedSliderValue});
+				this.previousSavedSliderValue = degrees;
+			}
 
 			this.rotate(delta, animateInstantly, preventFrameRotation);
 
