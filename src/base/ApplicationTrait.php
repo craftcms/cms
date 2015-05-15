@@ -387,6 +387,7 @@ trait ApplicationTrait
 		/* @var $this \craft\app\web\Application|\craft\app\console\Application */
 		$info = $this->getInfo();
 		$info->edition = $edition;
+
 		return $this->saveInfo($info);
 	}
 
