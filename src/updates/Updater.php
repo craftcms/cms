@@ -62,7 +62,7 @@ class Updater
 	 */
 	public function getUpdateFileInfo()
 	{
-		$md5 = Craft::$app->getET()->getUpdateFileInfo();
+		$md5 = Craft::$app->getEt()->getUpdateFileInfo();
 		return ['md5' => $md5];
 	}
 
@@ -79,7 +79,7 @@ class Updater
 
 		// Download the package from ET.
 		Craft::info('Downloading patch file to '.$tempPath, __METHOD__);
-		if (($filename = Craft::$app->getET()->downloadUpdate($tempPath, $md5)) !== false)
+		if (($filename = Craft::$app->getEt()->downloadUpdate($tempPath, $md5)) !== false)
 		{
 			$downloadFilePath = $tempPath.'/'.$filename;
 		}

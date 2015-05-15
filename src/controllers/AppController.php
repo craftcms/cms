@@ -105,7 +105,7 @@ class AppController extends Controller
 		$this->requirePostRequest();
 		$this->requireAdmin();
 
-		$response = Craft::$app->getET()->transferLicenseToCurrentDomain();
+		$response = Craft::$app->getEt()->transferLicenseToCurrentDomain();
 
 		if ($response === true)
 		{
@@ -129,7 +129,7 @@ class AppController extends Controller
 		$this->requireAjaxRequest();
 		$this->requireAdmin();
 
-		$etResponse = Craft::$app->getET()->fetchEditionInfo();
+		$etResponse = Craft::$app->getEt()->fetchEditionInfo();
 
 		if (!$etResponse)
 		{
@@ -201,7 +201,7 @@ class AppController extends Controller
 			'expectedPrice' => Craft::$app->getRequest()->getRequiredBodyParam('expectedPrice'),
 		]);
 
-		if (Craft::$app->getET()->purchaseUpgrade($model))
+		if (Craft::$app->getEt()->purchaseUpgrade($model))
 		{
 			return $this->asJson([
 				'success' => true,

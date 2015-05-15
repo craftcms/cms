@@ -151,7 +151,7 @@ class Cp
 	public function areAlertsCached()
 	{
 		// The license key status gets cached on each Elliott request
-		return (\Craft::$app->getET()->getLicenseKeyStatus() !== false);
+		return (\Craft::$app->getEt()->getLicenseKeyStatus() !== false);
 	}
 
 	/**

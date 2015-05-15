@@ -56,11 +56,11 @@ class CpHelper
 			}
 
 			// Domain mismatch?
-			$licenseKeyStatus = Craft::$app->getET()->getLicenseKeyStatus();
+			$licenseKeyStatus = Craft::$app->getEt()->getLicenseKeyStatus();
 
 			if ($licenseKeyStatus == LicenseKeyStatus::MismatchedDomain)
 			{
-				$licensedDomain = Craft::$app->getET()->getLicensedDomain();
+				$licensedDomain = Craft::$app->getEt()->getLicensedDomain();
 				$licenseKeyPath = Craft::$app->getPath()->getLicenseKeyPath();
 				$licenseKeyFile = IOHelper::getFolderName($licenseKeyPath, false).'/'.IOHelper::getFilename($licenseKeyPath);
 

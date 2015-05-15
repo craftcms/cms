@@ -12,7 +12,7 @@ use craft\app\base\Model;
 use craft\app\helpers\JsonHelper;
 
 /**
- * Class ET model.
+ * Class Et model.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0

@@ -43,7 +43,7 @@ use yii\base\InvalidConfigException;
  * @property \craft\app\services\Email            $email            The email service
  * @property \craft\app\services\Entries          $entries          The entries service
  * @property \craft\app\services\EntryRevisions   $entryRevisions   The entry revisions service
- * @property \craft\app\services\ET               $et               The E.T. service
+ * @property \craft\app\services\Et               $et               The E.T. service
  * @property \craft\app\services\Feeds            $feeds            The feeds service
  * @property \craft\app\services\Fields           $fields           The fields service
  * @property \craft\app\i18n\Formatter            $formatter        The formatter component
@@ -962,7 +962,7 @@ trait ApplicationTrait
 	/**
 	 * Returns the E.T. service.
 	 *
-	 * @return \craft\app\services\ET The E.T. service
+	 * @return \craft\app\services\Et The E.T. service
 	 */
 	public function getET()
 	{

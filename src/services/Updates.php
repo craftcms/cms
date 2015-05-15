@@ -278,7 +278,7 @@ class Updates extends Component
 
 		$updateModel->plugins = $pluginUpdateModels;
 
-		$etModel = Craft::$app->getET()->checkForUpdates($updateModel);
+		$etModel = Craft::$app->getEt()->checkForUpdates($updateModel);
 		return $etModel;
 	}
 

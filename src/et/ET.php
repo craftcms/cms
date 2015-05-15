@@ -19,12 +19,12 @@ use GuzzleHttp\Client;
 use GuzzleHttp\Exception\RequestException;
 
 /**
- * Class ET
+ * Class Et
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */
-class ET
+class Et
 {
 	// Properties
 	// =========================================================================
@@ -67,7 +67,7 @@ class ET
 	 * @param int $timeout
 	 * @param int $connectTimeout
 	 *
-	 * @return ET
+	 * @return Et
 	 */
 	public function __construct($endpoint, $timeout = 30, $connectTimeout = 2)
 	{
@@ -226,7 +226,7 @@ class ET
 						}
 
 						$responseBody = (string)$response->getBody();
-						$etModel = Craft::$app->getET()->decodeEtModel($responseBody);
+						$etModel = Craft::$app->getEt()->decodeEtModel($responseBody);
 
 						if ($etModel)
 						{

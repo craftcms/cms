@@ -13,7 +13,7 @@ return [
 	'elements'             => 'craft\app\services\Elements',
 	'email'                => 'craft\app\services\Email',
 	'entries'              => 'craft\app\services\Entries',
-	'et'                   => 'craft\app\services\ET',
+	'et'                   => 'craft\app\services\Et',
 	'feeds'                => 'craft\app\services\Feeds',
 	'fields'               => 'craft\app\services\Fields',
 	'globals'              => 'craft\app\services\Globals',

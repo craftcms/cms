@@ -18,9 +18,9 @@ use craft\app\models\UpgradePurchase as UpgradePurchaseModel;
 use yii\base\Component;
 
 /**
- * Class ET service.
+ * Class Et service.
  *
- * An instance of the Et service is globally accessible in Craft via [[Application::et `Craft::$app->getET()`]].
+ * An instance of the Et service is globally accessible in Craft via [[Application::et `Craft::$app->getEt()`]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
@@ -45,7 +45,7 @@ class Et extends Component
 	 */
 	public function ping()
 	{
-		$et = new \craft\app\et\ET(static::Ping);
+		$et = new \craft\app\et\Et(static::Ping);
 		$etResponse = $et->phoneHome();
 		return $etResponse;
 	}
@@ -59,7 +59,7 @@ class Et extends Component
 	 */
 	public function checkForUpdates($updateInfo)
 	{
-		$et = new \craft\app\et\ET(static::CheckForUpdates);
+		$et = new \craft\app\et\Et(static::CheckForUpdates);
 		$et->setData($updateInfo);
 		$etResponse = $et->phoneHome();
 
@@ -90,7 +90,7 @@ class Et extends Component
 	 */
 	public function getUpdateFileInfo()
 	{
-		$et = new \craft\app\et\ET(static::GetUpdateFileInfo);
+		$et = new \craft\app\et\Et(static::GetUpdateFileInfo);
 		$etResponse = $et->phoneHome();
 
 		if ($etResponse)
@@ -117,7 +117,7 @@ class Et extends Component
 
 		$path = 'http://download.buildwithcraft.com/craft/'.$updateModel->app->latestVersion.'/'.$buildVersion.'/Patch/'.$updateModel->app->localBuild.'/'.$md5.'.zip';
 
-		$et = new \craft\app\et\ET($path, 240);
+		$et = new \craft\app\et\Et($path, 240);
 		$et->setDestinationFilename($downloadPath);
 
 		if (($filename = $et->phoneHome()) !== null)
@@ -135,7 +135,7 @@ class Et extends Component
 	 */
 	public function transferLicenseToCurrentDomain()
 	{
-		$et = new \craft\app\et\ET(static::TransferLicense);
+		$et = new \craft\app\et\Et(static::TransferLicense);
 		$etResponse = $et->phoneHome();
 
 		if (!empty($etResponse->data['success']))
@@ -178,7 +178,7 @@ class Et extends Component
 	 */
 	public function fetchEditionInfo()
 	{
-		$et = new \craft\app\et\ET(static::GetEditionInfo);
+		$et = new \craft\app\et\Et(static::GetEditionInfo);
 		$etResponse = $et->phoneHome();
 		return $etResponse;
 	}
@@ -194,7 +194,7 @@ class Et extends Component
 	{
 		if ($model->validate())
 		{
-			$et = new \craft\app\et\ET(static::PurchaseUpgrade);
+			$et = new \craft\app\et\Et(static::PurchaseUpgrade);
 			$et->setData($model);
 			$etResponse = $et->phoneHome();
 
