@@ -394,8 +394,8 @@ trait ApplicationTrait
 	/**
 	 * Requires that Craft is running an equal or better edition than what's passed in
 	 *
-	 * @param int  $edition
-	 * @param bool $orBetter
+	 * @param int  $edition  The Craft edition to require.
+	 * @param bool $orBetter If true, makes $edition the minimum edition required.
 	 *
 	 * @throws Exception
 	 */
