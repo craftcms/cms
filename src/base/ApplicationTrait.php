@@ -378,7 +378,7 @@ trait ApplicationTrait
 	/**
 	 * Sets the Craft edition.
 	 *
-	 * @param int $edition
+	 * @param int $edition The edition to set.
 	 *
 	 * @return bool
 	 */
