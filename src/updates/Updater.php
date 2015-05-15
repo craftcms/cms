@@ -523,12 +523,11 @@ class Updater
 		// We don't want to execute any PHP from the storage folder.
 		IOHelper::copyFile($requirementsFolderPath.'/'.$tempFilename, $newTempFilePath);
 
-		require_once($newTempFilePath);
 		require_once(Craft::$app->getPath()->getAppPath().'/requirements/RequirementsChecker.php');
 
 		// Run the requirements checker
 		$reqCheck = new \RequirementsChecker();
-		$reqCheck->checkCraft();
+		$reqCheck->check($newTempFilePath);
 
 		if ($reqCheck->result['summary']['errors'] > 0)
 		{
