@@ -57,6 +57,9 @@ class Field extends ActiveRecord
 		'slug',
 		'status',
 		'title',
+		'prev',
+		'next',
+		'contentTable'
 	];
 
 	/**
