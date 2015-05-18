@@ -107,9 +107,9 @@ class DbBackup
 
 		$this->_processHeader();
 
-		foreach (Craft::$app->getDb()->getSchema()->getTableNames() as $resultName => $val)
+		foreach (Craft::$app->getDb()->getSchema()->getTableNames() as $tableName)
 		{
-			$this->_processResult($resultName);
+			$this->_processResult($tableName);
 		}
 
 		$this->_processConstraints();
@@ -424,7 +424,7 @@ class DbBackup
 								}
 								else
 								{
-									$row[$columnName] = Craft::$app->getDb()->getPdoInstance()->quote($value);
+									$row[$columnName] = Craft::$app->getDb()->getMasterPdo()->quote($value);
 								}
 							}
 
