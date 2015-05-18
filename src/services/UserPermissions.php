@@ -119,7 +119,7 @@ class UserPermissions extends Component
 			foreach ($locales as $locale)
 			{
 				$permissions[$label]['editLocale:'.$locale->id] = [
-					'label' => $locale->getDisplayName()
+					'label' => $locale->getDisplayName(Craft::$app->language)
 				];
 			}
 		}

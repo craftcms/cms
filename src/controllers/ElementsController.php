@@ -222,7 +222,7 @@ class ElementsController extends BaseElementsController
 
 					$response['locales'][] = [
 						'id'   => $localeId,
-						'name' => $locale->getDisplayName()
+						'name' => $locale->getDisplayName(Craft::$app->language)
 					];
 				}
 			}

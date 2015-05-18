@@ -453,7 +453,7 @@ abstract class BaseRelationField extends Field
 
 			foreach (Craft::$app->getI18n()->getSiteLocales() as $locale)
 			{
-				$localeOptions[] = ['label' => $locale->getDisplayName(), 'value' => $locale->id];
+				$localeOptions[] = ['label' => $locale->getDisplayName(Craft::$app->language), 'value' => $locale->id];
 			}
 
 			return Craft::$app->getView()->renderTemplateMacro('_includes/forms', 'selectField', [

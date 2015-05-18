@@ -112,7 +112,7 @@ class RecentEntries extends Widget
 
 			$title = Craft::t('app', '{title} ({locale})', [
 				'title'  => $title,
-				'locale' => $locale->getDisplayName()
+				'locale' => $locale->getDisplayName(Craft::$app->language)
 			]);
 		}
 
