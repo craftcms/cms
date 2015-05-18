@@ -130,7 +130,7 @@ abstract class BaseRelationField extends Field
 			}
 		}
 
-		parent::beforeSave();
+		return parent::beforeSave();
 	}
 
 	/**
