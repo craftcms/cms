@@ -39,7 +39,8 @@ class FieldRecord extends BaseRecord
 		'title',
 		'slug',
 		'prev',
-		'next'
+		'next',
+		'contentTable'
 	);
 
 	/**
