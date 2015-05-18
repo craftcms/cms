@@ -75,6 +75,16 @@ class I18N extends \yii\i18n\I18N
 	}
 
 	/**
+	 * Returns whether the [Intl extension](http://php.net/manual/en/book.intl.php) is loaded.
+	 *
+	 * @return boolean Whether the Intl extension is loaded.
+	 */
+	public function getIsIntlLoaded()
+	{
+		return $this->_intlLoaded;
+	}
+
+	/**
 	 * Returns a locale by its ID.
 	 *
 	 * @param string $localeId

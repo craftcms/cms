@@ -25,43 +25,64 @@
 ] %}
 
 
-{% block content %}
+{% block main %}
 	{% registerJsResource "js/locales.js" %}
 	{% registerCssResource "css/locales.css" %}
 
-	<form method="post" accept-charset="UTF-8">
-		<input type="hidden" name="action" value="languageSettings/save">
-		<input type="hidden" name="redirect" value="settings">
-		{{ getCsrfInput() }}
+	<div class="grid">
+		<div class="item">
+			<div class="pane">
+				<div class="content">
+					<form method="post" accept-charset="UTF-8">
+						<input type="hidden" name="action" value="languageSettings/save">
+						<input type="hidden" name="redirect" value="settings">
+						{{ getCsrfInput() }}
 
-		<h2>{{ "Which locales does your content target?"|t }}</h2>
+						<h2>{{ "Which locales does your content target?"|t }}</h2>
 
-		<div class="field">
-			<table id="locales" class="data fullwidth collapsible">
-				<tbody>
-					{% for locale in craft.i18n.getSiteLocales() %}
-						<tr data-id="{{ locale.id }}" data-name="{{ locale.getDisplayName(craft.locale) }}">
-							<th scope="row" data-title="{{ 'Name'|t }}" width="40%">{{ locale.getDisplayName(craft.locale) }}</th>
-							<td data-title="{{ 'Locale ID' }}">{{ locale.id }}</td>
-							<td class="thin"><a class="move icon" title="{{ 'Reorder'|t }}" role="button"></a></td>
-							<td class="thin"><a class="delete icon" title="{{ 'Delete'|t }}" role="button"></a></td>
-						</tr>
-					{% endfor %}
-				</tbody>
-			</table>
-		</div>
+						<div class="field">
+							<table id="locales" class="data fullwidth collapsible">
+								<tbody>
+								{% for locale in craft.i18n.getSiteLocales() %}
+								<tr data-id="{{ locale.id }}" data-name="{{ locale.getDisplayName(craft.locale) }}">
+									<th scope="row" data-title="{{ 'Name'|t }}" width="40%">{{ locale.getDisplayName(craft.locale) }}</th>
+									<td data-title="{{ 'Locale ID' }}">{{ locale.id }}</td>
+									<td class="thin"><a class="move icon" title="{{ 'Reorder'|t }}" role="button"></a></td>
+									<td class="thin"><a class="delete icon" title="{{ 'Delete'|t }}" role="button"></a></td>
+								</tr>
+								{% endfor %}
+								</tbody>
+							</table>
+						</div>
 
-		<div id="addlocale" class="field">
-			<div class="texticon add icon">
-				{{ forms.text({
-	                placeholder: "Add a new locale…"|t,
-					id: 'addlocaleinput',
-					autocomplete: false
-				}) }}
-				<div class="spinner hidden"></div>
+						<div id="addlocale" class="field">
+							<div class="texticon add icon">
+								{{ forms.text({
+								placeholder: "Add a new locale…"|t,
+								id: 'addlocaleinput',
+								autocomplete: false
+								}) }}
+								<div class="spinner hidden"></div>
+							</div>
+						</div>
+					</div>
+				</form>
 			</div>
 		</div>
-	</form>
+		{% if not craft.i18n.getIsIntlLoaded() %}
+			<div class="item" data-colspan="1">
+				<div class="pane">
+					<div class="content">
+						<h2>{{ "Not finding what you’re looking for?"|t }}</h2>
+						<p>{{ 'Your server doesn’t have the <a href="{intlUrl}">Intl extension</a> loaded, so you’ll have to manually save the locale data files for any locales you wish to enable. You can find them <a href="{localeDataUrl}">on GitHub</a>.'|t({
+							intlUrl: "http://php.net/manual/en/book.intl.php",
+							localeDataUrl: "https://github.com/pixelandtonic/CraftLocaleData"
+						})|raw }}</p>
+					</div>
+				</div>
+			</div>
+		{% endif %}
+	</div>
 {% endblock %}
 
 {% set js %}
