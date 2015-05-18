@@ -53,7 +53,7 @@ class LocalizeRelations extends Task
 		$this->_relations = (new Query())
 			->select('id, sourceId, sourceLocale, targetId, sortOrder')
 			->from('{{%relations}}')
-			->where(['and', 'fieldId = :fieldId', 'sourceLocale is null'], [':fieldId' => $this->getSettings()->fieldId])
+			->where(['and', 'fieldId = :fieldId', 'sourceLocale is null'], [':fieldId' => $this->fieldId])
 			->all();
 
 		$this->_allLocales = Craft::$app->getI18n()->getSiteLocaleIds();
