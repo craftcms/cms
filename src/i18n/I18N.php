@@ -72,7 +72,6 @@ class I18N extends \yii\i18n\I18N
 		parent::init();
 
 		$this->_intlLoaded = extension_loaded('intl');
-		$this->_intlLoaded = false;
 	}
 
 	/**
