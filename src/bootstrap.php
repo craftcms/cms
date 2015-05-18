@@ -111,19 +111,21 @@ $ensureFolderIsReadable($configPath);
 
 if ($appType === 'web')
 {
+	$licensePath = $configPath.'/license.key';
+
 	// If license.key doesn't exist yet, make sure the config folder is readable and we can write a temp one.
-	if (!file_exists($configPath.'/license.key'))
+	if (!file_exists($licensePath))
 	{
 		// Make sure config is at least readable.
 		$ensureFolderIsReadable($configPath);
 
 		// Try and write out a temp license.key file.
-		@file_put_contents($configPath.'/license.key', 'temp');
+		@file_put_contents($licensePath, 'temp');
 
 		// See if it worked.
-		if (!file_exists($configPath.'/license.key') || (file_exists($configPath.'/license.key') && file_get_contents($configPath) !== 'temp'))
+		if (!file_exists($licensePath) || (file_exists($licensePath) && file_get_contents($licensePath) !== 'temp'))
 		{
-			exit($configPath.'/license.key isn\'t writable by PHP. Please fix that.');
+			exit($licensePath.' isn\'t writable by PHP. Please fix that.');
 		}
 	}
 }
