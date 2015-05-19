@@ -164,7 +164,7 @@ class Path extends Component
 	 */
 	public function getDbBackupPath()
 	{
-		$path = $this->getStoragePath().'backups';
+		$path = $this->getStoragePath().'/backups';
 		IOHelper::ensureFolderExists($path);
 		return $path;
 	}
