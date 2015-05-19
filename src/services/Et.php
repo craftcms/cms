@@ -65,22 +65,45 @@ class Et extends Component
 
 		if ($etResponse)
 		{
+			// Populate the base UpdateModel
 			$updateModel = new UpdateModel();
 			$updateModel->setAttributes($etResponse->data, false);
 
+			// Populate any Craft specific attributes.
 			$appUpdateModel = new AppUpdate();
 			$appUpdateModel->setAttributes($updateModel->app, false);
 			$updateModel->app = $appUpdateModel;
 
+			// Populate any new Craft release information.
+			foreach ($appUpdateModel->releases as $key => $appReleaseInfo)
+			{
+				$appReleaseModel = new AppNewRelease();
+				$appReleaseModel->setAttributes($appReleaseInfo);
+
+				$appUpdateModel->releases[$key] = $appReleaseModel;
+			}
+
+			// For every plugin, populate their base information.
 			foreach ($updateModel->plugins as $key => $pluginUpdateInfo)
 			{
 				$pluginUpdateModel = new PluginUpdate();
 				$pluginUpdateModel->setAttributes($pluginUpdateInfo);
 
+				// Now populate a plugin's release information.
+				foreach ($pluginUpdateModel->releases as $key => $pluginReleaseInfo)
+				{
+					$pluginReleaseModel = new PluginNewRelease();
+					$pluginReleaseModel->setAttributes($pluginReleaseInfo);
+
+					$pluginUpdateModel->releases[$key] = $pluginReleaseModel;
+				}
+
 				$updateModel->plugins[$key] = $pluginUpdateModel;
 			}
 
+			// Put it all back on Et.
 			$etResponse->data = $updateModel;
+
 			return $etResponse;
 		}
 	}
