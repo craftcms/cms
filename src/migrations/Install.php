@@ -11,6 +11,7 @@ use Craft;
 use craft\app\elements\User;
 use craft\app\enums\EmailerType;
 use craft\app\db\InstallMigration;
+use craft\app\helpers\StringHelper;
 use craft\app\models\Info;
 
 /**
@@ -95,7 +96,7 @@ class Install extends InstallMigration
 			'on'            => '1',
 			'maintenance'   => '0',
 			'track'         => Craft::$app->track,
-			'fieldVersion'  => '1',
+			'fieldVersion'  => StringHelper::randomString(12),
 		]));
 		echo " done\n";
 
@@ -537,7 +538,7 @@ class Install extends InstallMigration
 					'on' => 'smallint(1) unsigned NOT NULL DEFAULT \'0\'',
 					'maintenance' => 'smallint(1) unsigned NOT NULL DEFAULT \'0\'',
 					'track' => 'string(40) COLLATE utf8_unicode_ci NOT NULL',
-					'fieldVersion' => 'integer(11) NOT NULL DEFAULT \'1\'',
+					'fieldVersion' => 'char(12) NOT NULL DEFAULT \'1\'',
 				],
 			],
 			'{{%locales}}' => [

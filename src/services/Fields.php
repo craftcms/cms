@@ -34,6 +34,7 @@ use craft\app\fields\Table as TableField;
 use craft\app\fields\Tags as TagsField;
 use craft\app\fields\Users as UsersField;
 use craft\app\helpers\ComponentHelper;
+use craft\app\helpers\StringHelper;
 use craft\app\models\FieldGroup as FieldGroupModel;
 use craft\app\models\FieldLayout as FieldLayoutModel;
 use craft\app\models\FieldLayoutTab as FieldLayoutTabModel;
@@ -1098,7 +1099,7 @@ class Fields extends Component
 	private function _updateFieldVersion()
 	{
 		$info = Craft::$app->getInfo();
-		$info->fieldVersion = ($info->fieldVersion ?: 0) + 1;
+		$info->fieldVersion = StringHelper::randomString(12);
 		Craft::$app->saveInfo($info);
 	}
 }

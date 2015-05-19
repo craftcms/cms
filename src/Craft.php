@@ -241,6 +241,11 @@ EOD;
 
 	/**
 	 * Determines if a field attribute file is valid.
+	 *
+	 * @param $path
+	 * @param $storedFieldVersion
+	 *
+	 * @return bool
 	 */
 	private static function _isFieldAttributesFileValid($path, $storedFieldVersion)
 	{
@@ -251,7 +256,7 @@ EOD;
 			$line = fgets($f);
 			fclose($f);
 
-			if (preg_match('/\/\/ v(\d+)/', $line, $matches))
+			if (preg_match('/\/\/ v([a-zA-Z0-9]{12})/', $line, $matches))
 			{
 				if ($matches[1] == $storedFieldVersion)
 				{
@@ -266,6 +271,11 @@ EOD;
 
 	/**
 	 * Writes a field attributes file.
+	 *
+	 * @param $templatePath
+	 * @param $search
+	 * @param $replace
+	 * @param $destinationPath
 	 */
 	private static function _writeFieldAttributesFile($templatePath, $search, $replace, $destinationPath)
 	{
