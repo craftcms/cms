@@ -88,7 +88,7 @@ class Routes extends Component
 
 			foreach ($results as $result)
 			{
-				$routes[$result['urlPattern']] = $result['template'];
+				$routes[$result['urlPattern']] = ['template' => $result['template']];
 			}
 
 			return $routes;
