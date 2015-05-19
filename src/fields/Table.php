@@ -167,6 +167,11 @@ class Table extends Field
 	 */
 	public function prepareValue($value, $element)
 	{
+		if (is_string($value) && !empty($value))
+		{
+			$value = JsonHelper::decode($value);
+		}
+
 		if (is_array($value) && ($columns = $this->columns))
 		{
 			// Make the values accessible from both the col IDs and the handles
