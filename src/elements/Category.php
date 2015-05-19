@@ -455,4 +455,15 @@ class Category extends Element
 			return Craft::$app->getCategories()->getGroupById($this->groupId);
 		}
 	}
+
+	// Protected Methods
+	// =========================================================================
+
+	/**
+	 * @inheritdoc
+	 */
+	protected function resolveStructureId()
+	{
+		return $this->getGroup()->structureId;
+	}
 }
