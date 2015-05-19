@@ -29,6 +29,7 @@ use yii\base\InvalidConfigException;
 /**
  * ApplicationTrait
  *
+ * @property \craft\app\web\AssetManager          $assetManager     The asset manager component
  * @property \craft\app\services\Assets           $assets           The assets service
  * @property \craft\app\services\AssetIndexer     $assetIndexing    The asset indexer service
  * @property \craft\app\services\AssetTransforms  $assetTransforms  The asset transforms service
@@ -74,6 +75,7 @@ use yii\base\InvalidConfigException;
  * @property \craft\app\web\View                  $view             The view component
  * @property \craft\app\services\Volumes          $volumes          The volumes service
  *
+ * @method \craft\app\web\AssetManager            getAssetManager() Returns the asset manager component.
  * @method \craft\app\db\Connection               getDb()           Returns the database connection component.
  * @method \craft\app\i18n\Formatter              getFormatter()    Returns the formatter component.
  * @method \craft\app\i18n\I18N                   getI18n()         Returns the internationalization (i18n) component.
@@ -1289,7 +1291,7 @@ trait ApplicationTrait
 		IOHelper::ensureFolderExists($basePath);
 
 		return [
-			'class' => 'yii\web\AssetManager',
+			'class' => 'craft\app\web\AssetManager',
 			'basePath' => $basePath,
 			'baseUrl' => $baseUrl
 		];
