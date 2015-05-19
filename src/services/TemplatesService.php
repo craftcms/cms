@@ -374,7 +374,7 @@ class TemplatesService extends BaseApplicationComponent
 	 */
 	public function includeFootNode($node, $first = false)
 	{
-		craft()->deprecator->log('TemplatesService::includeFootNode()', 'TemplatesService::includeFootNode() has been deprecated. Use includeFootNode() instead.');
+		craft()->deprecator->log('TemplatesService::includeFootNode()', 'TemplatesService::includeFootNode() has been deprecated. Use includeFootHtml() instead.');
 		$this->includeFootHtml($node, $first);
 	}
 
