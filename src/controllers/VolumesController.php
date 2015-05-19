@@ -10,7 +10,6 @@ namespace craft\app\controllers;
 use Craft;
 use craft\app\base\Volume;
 use craft\app\elements\Asset;
-use craft\app\errors\ModelException;
 use craft\app\errors\HttpException;
 use craft\app\helpers\JsonHelper;
 use craft\app\helpers\UrlHelper;
