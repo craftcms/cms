@@ -31,7 +31,7 @@ class m150403_184729_type_columns extends Migration
 
 		foreach ($map as $namespace => $tables)
 		{
-			$folderPath = CRAFT_BASE_PATH.'/app/'.substr($namespace, 10);
+			$folderPath = Craft::getAlias('@app/'.substr($namespace, 10));
 			$files = IOHelper::getFolderContents($folderPath, false);
 			$classes = [];
 
