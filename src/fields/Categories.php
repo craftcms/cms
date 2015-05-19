@@ -90,10 +90,10 @@ class Categories extends BaseRelationField
 		if ($this->source)
 		{
 			$class = self::elementType();
-			$this->source = $class::getSourceByKey($this->source, 'field');
+			$source = $class::getSourceByKey($this->source, 'field');
 		}
 
-		if (empty($this->source))
+		if (empty($source))
 		{
 			return '<p class="error">'.Craft::t('app', 'This field is not set to a valid category group.').'</p>';
 		}
@@ -111,10 +111,12 @@ class Categories extends BaseRelationField
 		// Make sure something was actually posted
 		if ($value !== null)
 		{
-			// Fill in any gaps
-			$value = Craft::$app->getCategories()->fillGapsInCategoryIds($value);
+			$ids = $value->ids();
 
-			Craft::$app->getRelations()->saveRelations($this, $element, $value);
+			// Fill in any gaps
+			$ids = Craft::$app->getCategories()->fillGapsInCategoryIds($ids);
+
+			Craft::$app->getRelations()->saveRelations($this, $element, $ids);
 		}
 	}
 }

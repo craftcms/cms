@@ -603,7 +603,7 @@ interface ElementInterface extends ComponentInterface
 	public function setPrev($element);
 
 	/**
-	 * Get the element’s parent.
+	 * Returns the element’s parent.
 	 *
 	 * @return ElementInterface|null
 	 */
@@ -617,6 +617,20 @@ interface ElementInterface extends ComponentInterface
 	 * @return null
 	 */
 	public function setParent($parent);
+
+	/**
+	 * Returns the ID of the structure that the element is associated with, if any.
+	 *
+	 * @return integer|null The ID of the structure, or null if there isn’t one
+	 */
+	public function getStructureId();
+
+	/**
+	 * Sets the ID of the structure that the element is associated with.
+	 *
+	 * @param integer|null $structureId The ID of the structure, or null to remove the previous association.
+	 */
+	public function setStructureId($structureId);
 
 	/**
 	 * Returns the element’s ancestors.

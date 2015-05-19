@@ -782,4 +782,15 @@ class Entry extends Element
 			return $url;
 		}
 	}
+
+	// Protected Methods
+	// =========================================================================
+
+	/**
+	 * @inheritdoc
+	 */
+	protected function resolveStructureId()
+	{
+		return $this->getSection()->structureId;
+	}
 }

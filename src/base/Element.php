@@ -455,6 +455,13 @@ abstract class Element extends Component implements ElementInterface
 	private $_prevElement;
 
 	/**
+	 * @var integer|boolean The structure ID that the element is associated with
+	 * @see getStructureId()
+	 * @see setStructureId()
+	 */
+	private $_structureId;
+
+	/**
 	 * @var
 	 */
 	private $_parent;
@@ -816,10 +823,45 @@ abstract class Element extends Component implements ElementInterface
 	/**
 	 * @inheritdoc
 	 */
+	public function getStructureId()
+	{
+		if ($this->_structureId === null)
+		{
+			$this->setStructureId($this->resolveStructureId());
+		}
+
+		if ($this->_structureId !== false)
+		{
+			return $this->_structureId;
+		}
+		else
+		{
+			return null;
+		}
+	}
+
+	/**
+	 * @inheritdoc
+	 */
+	public function setStructureId($structureId)
+	{
+		if (!empty($structureId))
+		{
+			$this->_structureId = $structureId;
+		}
+		else
+		{
+			$this->_structureId = false;
+		}
+	}
+
+	/**
+	 * @inheritdoc
+	 */
 	public function getAncestors($dist = null)
 	{
 		return static::find()
-			->structureId($this->structureId)
+			->structureId($this->getStructureId())
 			->ancestorOf($this)
 			->locale($this->locale)
 			->ancestorDist($dist);
@@ -831,7 +873,7 @@ abstract class Element extends Component implements ElementInterface
 	public function getDescendants($dist = null)
 	{
 		return static::find()
-			->structureId($this->structureId)
+			->structureId($this->getStructureId())
 			->descendantOf($this)
 			->locale($this->locale)
 			->descendantDist($dist);
@@ -851,7 +893,7 @@ abstract class Element extends Component implements ElementInterface
 	public function getSiblings()
 	{
 		return static::find()
-			->structureId($this->structureId)
+			->structureId($this->getStructureId())
 			->siblingOf($this)
 			->locale($this->locale);
 	}
@@ -864,7 +906,7 @@ abstract class Element extends Component implements ElementInterface
 		if ($this->_prevSibling === null)
 		{
 			$this->_prevSibling = static::find()
-				->structureId($this->structureId)
+				->structureId($this->getStructureId())
 				->prevSiblingOf($this)
 				->locale($this->locale)
 				->status(null)
@@ -888,7 +930,7 @@ abstract class Element extends Component implements ElementInterface
 		if ($this->_nextSibling === null)
 		{
 			$this->_nextSibling = static::find()
-				->structureId($this->structureId)
+				->structureId($this->getStructureId())
 				->nextSiblingOf($this)
 				->locale($this->locale)
 				->status(null)
@@ -1305,6 +1347,17 @@ abstract class Element extends Component implements ElementInterface
 		{
 			return [];
 		}
+	}
+
+	/**
+	 * Returns the ID of the structure that the element is inherently associated with, if any.
+	 *
+	 * @return integer|null
+	 * @see getStructureId()
+	 */
+	protected function resolveStructureId()
+	{
+		return null;
 	}
 
 	// Private Methods
