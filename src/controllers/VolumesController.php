@@ -150,45 +150,26 @@ class VolumesController extends Controller
 	{
 		$this->requirePostRequest();
 
-		$existingVolumeId = Craft::$app->getRequest()->getBodyParam('volumeId');
+		$request       = Craft::$app->getRequest();
+		$volumeService = Craft::$app->getVolumes();
 
-		if ($existingVolumeId)
+		if (Craft::$app->getEdition() == Craft::Pro)
 		{
-			$volume = Craft::$app->getVolumes()->getVolumeById($existingVolumeId);
+			$type = $request->getBodyParam('type');
 		}
 		else
 		{
-			if (Craft::$app->getEdition() == Craft::Pro)
-			{
-				$volumeType = Craft::$app->getRequest()->getBodyParam('type');
-			}
-			else
-			{
-				$volumeType = 'craft\app\volumes\Local';
-			}
-
-			$volume = Craft::$app->getVolumes()->createVolume($volumeType);
+			$type = 'craft\app\volumes\Local';
 		}
 
-		$volume->name   = Craft::$app->getRequest()->getBodyParam('name');
-		$volume->handle = Craft::$app->getRequest()->getBodyParam('handle');
-		$volume->url    = Craft::$app->getRequest()->getBodyParam('url');
-
-		$typeSettings = Craft::$app->getRequest()->getBodyParam('types');
-
-		if (isset($typeSettings[$volume->type]))
-		{
-			$volume->settings = $typeSettings[$volume->type];
-
-			// For validating
-			foreach ($typeSettings[$volume->type] as $property => $value)
-			{
-				if (property_exists($volume, $property))
-				{
-					$volume->{$property} = $value;
-				}
-			}
-		}
+		$volume = $volumeService->createVolume([
+			'id'       => $request->getBodyParam('volumeId'),
+			'type'     => $type,
+			'name'     => $request->getBodyParam('name'),
+			'handle'   => $request->getBodyParam('handle'),
+			'url'      => $request->getBodyParam('url'),
+			'settings' => $request->getBodyParam('types.'.$type)
+		]);
 
 		// Set the field layout
 		$fieldLayout = Craft::$app->getFields()->assembleLayoutFromPost();
