@@ -110,7 +110,7 @@ class I18N extends \yii\i18n\I18N
 	{
 		if ($this->_allLocaleIds === null)
 		{
-			if ($this->_intlLoaded)
+			if ($this->getIsIntlLoaded())
 			{
 				$this->_allLocaleIds = ResourceBundle::getLocales(null);
 			}

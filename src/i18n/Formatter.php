@@ -62,27 +62,12 @@ class Formatter extends \yii\i18n\Formatter
 	public $pmName;
 
 	/**
-     * @var array The locale's currency symbols.
-     */
-	public $currencySymbols;
-
-	/**
-	 * @var boolean Whether the [PHP intl extension](http://php.net/manual/en/book.intl.php) is loaded.
+	 * @var array The locale's currency symbols.
 	 */
-	private $_intlLoaded = false;
+	public $currencySymbols;
 
 	// Public Methods
 	// =========================================================================
-
-	/**
-	 * @inheritdoc
-	 */
-	public function init()
-	{
-		parent::init();
-
-		$this->_intlLoaded = extension_loaded('intl');
-	}
 
 	/**
 	 * @inheritdoc
@@ -105,7 +90,7 @@ class Formatter extends \yii\i18n\Formatter
 			$format = $this->dateTimeFormats[$format]['date'];
 		}
 
-		if ($this->_intlLoaded)
+		if (Craft::$app->getI18n()->getIsIntlLoaded())
 		{
 			return parent::asDate($value, $format);
 		}
@@ -136,7 +121,7 @@ class Formatter extends \yii\i18n\Formatter
 			$format = $this->dateTimeFormats[$format]['time'];
 		}
 
-		if ($this->_intlLoaded)
+		if (Craft::$app->getI18n()->getIsIntlLoaded())
 		{
 			return parent::asTime($value, $format);
 		}
@@ -167,7 +152,7 @@ class Formatter extends \yii\i18n\Formatter
 			$format = $this->dateTimeFormats[$format]['datetime'];
 		}
 
-		if ($this->_intlLoaded)
+		if (Craft::$app->getI18n()->getIsIntlLoaded())
 		{
 			return parent::asDatetime($value, $format);
 		}
@@ -197,7 +182,7 @@ class Formatter extends \yii\i18n\Formatter
 	{
 		$omitDecimals = ($omitIntegerDecimals && (int)$value == $value);
 
-		if ($this->_intlLoaded)
+		if (Craft::$app->getI18n()->getIsIntlLoaded())
 		{
 			if ($omitDecimals)
 			{
@@ -319,14 +304,14 @@ class Formatter extends \yii\i18n\Formatter
 
 			if ($this->standAloneMonthNames !== null)
 			{
-				$tr['LLLLL'] = '\''.$this->standAloneMonthNames['abbreviation'][$month].'\'';
+				$tr['LLLLL'] = '\''.$this->standAloneMonthNames['abbreviated'][$month].'\'';
 				$tr['LLLL']  = '\''.$this->standAloneMonthNames['full'][$month].'\'';
 				$tr['LLL']   = '\''.$this->standAloneMonthNames['medium'][$month].'\'';
 			}
 
 			if ($this->monthNames !== null)
 			{
-				$tr['MMMMM'] = '\''.$this->monthNames['abbreviation'][$month].'\'';
+				$tr['MMMMM'] = '\''.$this->monthNames['abbreviated'][$month].'\'';
 				$tr['MMMM']  = '\''.$this->monthNames['full'][$month].'\'';
 				$tr['MMM']   = '\''.$this->monthNames['medium'][$month].'\'';
 			}
@@ -339,7 +324,7 @@ class Formatter extends \yii\i18n\Formatter
 			if ($this->standAloneWeekDayNames !== null)
 			{
 				$tr['cccccc'] = '\''.$this->standAloneWeekDayNames['short'][$day].'\'';
-				$tr['ccccc']  = '\''.$this->standAloneWeekDayNames['abbreviation'][$day].'\'';
+				$tr['ccccc']  = '\''.$this->standAloneWeekDayNames['abbreviated'][$day].'\'';
 				$tr['cccc']   = '\''.$this->standAloneWeekDayNames['full'][$day].'\'';
 				$tr['ccc']    = '\''.$this->standAloneWeekDayNames['medium'][$day].'\'';
 			}
@@ -347,14 +332,14 @@ class Formatter extends \yii\i18n\Formatter
 			if ($this->weekDayNames !== null)
 			{
 				$tr['EEEEEE'] = '\''.$this->weekDayNames['short'][$day].'\'';
-				$tr['EEEEE']  = '\''.$this->weekDayNames['abbreviation'][$day].'\'';
+				$tr['EEEEE']  = '\''.$this->weekDayNames['abbreviated'][$day].'\'';
 				$tr['EEEE']   = '\''.$this->weekDayNames['full'][$day].'\'';
 				$tr['EEE']    = '\''.$this->weekDayNames['medium'][$day].'\'';
 				$tr['EE']     = '\''.$this->weekDayNames['medium'][$day].'\'';
 				$tr['E']      = '\''.$this->weekDayNames['medium'][$day].'\'';
 
 				$tr['eeeeee'] = '\''.$this->weekDayNames['short'][$day].'\'';
-				$tr['eeeee']  = '\''.$this->weekDayNames['abbreviation'][$day].'\'';
+				$tr['eeeee']  = '\''.$this->weekDayNames['abbreviated'][$day].'\'';
 				$tr['eeee']   = '\''.$this->weekDayNames['full'][$day].'\'';
 				$tr['eee']    = '\''.$this->weekDayNames['medium'][$day].'\'';
 			}

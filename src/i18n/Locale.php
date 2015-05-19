@@ -207,11 +207,6 @@ class Locale extends Object
 	private $data;
 
 	/**
-	 * @var boolean Whether the [PHP intl extension](http://php.net/manual/en/book.intl.php) is loaded.
-	 */
-	private $_intlLoaded = false;
-
-	/**
 	 * @var Formatter The locale's formatter.
 	 */
 	private $_formatter;
@@ -229,9 +224,8 @@ class Locale extends Object
 	public function __construct($id, $config = [])
 	{
 		$this->id = str_replace('_', '-', $id);
-		$this->_intlLoaded = extension_loaded('intl');
 
-		if (!$this->_intlLoaded)
+		if (!Craft::$app->getI18n()->getIsIntlLoaded())
 		{
 			// Load the locale data
 			$appDataPath = Craft::$app->getPath()->getAppPath().'/config/locales/'.$this->id.'.php';
@@ -350,7 +344,7 @@ class Locale extends Object
 			$inLocale = $this->id;
 		}
 
-		if ($this->_intlLoaded)
+		if (Craft::$app->getI18n()->getIsIntlLoaded())
 		{
 			return \Locale::getDisplayName($this->id, $inLocale);
 		}
@@ -427,7 +421,7 @@ class Locale extends Object
 				'locale' => $this->id,
 			];
 
-			if (!$this->_intlLoaded)
+			if (!Craft::$app->getI18n()->getIsIntlLoaded())
 			{
 				$config['dateTimeFormats']        = $this->data['dateTimeFormats'];
 				$config['standAloneMonthNames']   = $this->data['standAloneMonthNames'];
@@ -524,7 +518,7 @@ class Locale extends Object
 			$length = static::FORMAT_FULL;
 		}
 
-		if ($this->_intlLoaded)
+		if (Craft::$app->getI18n()->getIsIntlLoaded())
 		{
 			$formatter = new IntlDateFormatter($this->id, IntlDateFormatter::NONE, IntlDateFormatter::NONE);
 
@@ -586,7 +580,7 @@ class Locale extends Object
 			$length = static::FORMAT_FULL;
 		}
 
-		if ($this->_intlLoaded)
+		if (Craft::$app->getI18n()->getIsIntlLoaded())
 		{
 			$formatter = new IntlDateFormatter($this->id, IntlDateFormatter::NONE, IntlDateFormatter::NONE);
 
@@ -641,7 +635,7 @@ class Locale extends Object
 	 */
 	public function getAMName()
 	{
-		if ($this->_intlLoaded)
+		if (Craft::$app->getI18n()->getIsIntlLoaded())
 		{
 			return $this->getFormatter()->asDate(new DateTime('00:00'), 'a');
 		}
@@ -658,7 +652,7 @@ class Locale extends Object
 	 */
 	public function getPMName()
 	{
-		if ($this->_intlLoaded)
+		if (Craft::$app->getI18n()->getIsIntlLoaded())
 		{
 			return $this->getFormatter()->asDate(new DateTime('12:00'), 'a');
 		}
@@ -679,7 +673,7 @@ class Locale extends Object
 	 */
 	public function getTextAttribute($attribute)
 	{
-		if ($this->_intlLoaded)
+		if (Craft::$app->getI18n()->getIsIntlLoaded())
 		{
 			$formatter = new NumberFormatter($this->id, NumberFormatter::DECIMAL);
 			return $formatter->getTextAttribute($attribute);
@@ -712,7 +706,7 @@ class Locale extends Object
 	 */
 	public function getNumberSymbol($symbol)
 	{
-		if ($this->_intlLoaded)
+		if (Craft::$app->getI18n()->getIsIntlLoaded())
 		{
 			$formatter = new NumberFormatter($this->id, NumberFormatter::DECIMAL);
 			return $formatter->getSymbol($symbol);
@@ -751,7 +745,7 @@ class Locale extends Object
 	 */
 	public function getCurrencySymbol($currency)
 	{
-		if ($this->_intlLoaded)
+		if (Craft::$app->getI18n()->getIsIntlLoaded())
 		{
 			// This is way harder than it should be - http://stackoverflow.com/a/28307228/1688568
 			$formatter = new NumberFormatter($this->id, NumberFormatter::CURRENCY);
@@ -788,7 +782,7 @@ class Locale extends Object
 			$length = static::FORMAT_MEDIUM;
 		}
 
-		if ($this->_intlLoaded)
+		if (Craft::$app->getI18n()->getIsIntlLoaded())
 		{
 			$dateType = ($withDate ? $length : IntlDateFormatter::NONE);
 			$timeType = ($withTime ? $length : IntlDateFormatter::NONE);
