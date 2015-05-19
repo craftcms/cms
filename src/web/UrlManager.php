@@ -233,7 +233,13 @@ class UrlManager extends \yii\web\UrlManager
 		}
 		else
 		{
-			$rules = Craft::$app->getRoutes()->getConfigFileRoutes();
+			$routesService = Craft::$app->getRoutes();
+
+			$rules = array_merge(
+				$routesService->getConfigFileRoutes(),
+				$routesService->getDbRoutes()
+			);
+
 			$pluginHook = 'registerSiteRoutes';
 		}
 

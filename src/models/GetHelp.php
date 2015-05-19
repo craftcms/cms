@@ -75,7 +75,7 @@ class GetHelp extends Model
 			[['fromEmail'], 'string', 'min' => 5],
 			[['fromEmail'], 'string', 'max' => 255],
 			[['fromEmail', 'message', 'attachLogs', 'attachDbBackup', 'attachTemplates', 'attachment'], 'safe', 'on' => 'search'],
-			[['attachment'], 'file', 'maxSize' => 3145728, 'allowEmpty' => true],
+			[['attachment'], 'file', 'maxSize' => 3145728],
 		];
 	}
 }

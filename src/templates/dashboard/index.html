@@ -11,14 +11,6 @@
 	{% registerCssResource "css/dashboard.css" %}
 
 	<div class="grid">
-		{% if currentUser.admin and craft.deprecator.getTotalLogs() %}
-			<div class="item" data-colspan="4">
-				<div class="pane">
-					<p id="deprecationnotice" data-icon="alert">{{ 'New deprecation errors have been logged. Please take a minute to <a class="go" href="{url}">review them</a>'|t({ url: url('utils/deprecationerrors') })|raw }}</p>
-				</div>
-			</div>
-		{% endif %}
-
 		{% for widget in craft.dashboard.getAllWidgets() %}
 			{% set widgetTypeInfo = craft.dashboard.getWidgetTypeInfo(widget) %}
 			{% if not widgetTypeInfo.getIsInvalid() %}

@@ -795,7 +795,10 @@ class Locale extends Object
 			$formatter = new IntlDateFormatter($this->id, $dateType, $timeType);
 			$pattern = $formatter->getPattern();
 
-			return StringHelper::replace($pattern, 'yy', 'Y');
+			return strtr($pattern, [
+				'yyyy' => 'yyyy',
+				'yy'   => 'yyyy'
+			]);
 		}
 		else
 		{

@@ -1,0 +1,27 @@
+<div class="image-holder">
+    <canvas id="image-manipulator">
+    </canvas>
+</div>
+<div class="image-tools">
+    <section>
+        <div class="section-title">{{ "Rotation"|t }}</div>
+        <ul>
+            <li><a class="rotate clockwise">{{ "Rotate clockwise"|t }}</a></li>
+            <li><a class="rotate counter-clockwise">{{ "Rotate counterclockwise"|t }}</a></li>
+        </ul>
+        <input class="straighten" type="range" min="-45" max="45" step="0.1" value="0" /><br />
+        <a class="rotate reset">{{ "Reset" }}</a>
+    </section>
+    <hr />
+    <section>
+        <div class="section-title">{{ "Cropping"|t }}</div>
+        <ul>
+            <li><a class="crop cropping-tool">{{ "Crop image"|t }}</a></li>
+            <li><a class="crop focal-point">{{ "Set crop focal point"|t }}</a></li>
+        </ul>
+    </section>
+    <hr />
+    <section>
+        <div class="section-title">{{ "Filters"|t }}</div>
+    </section>
+</div>

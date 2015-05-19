@@ -228,18 +228,20 @@ class DbHelper
 	{
 		if ($contentLength <= static::getTextualColumnStorageCapacity(ColumnType::TinyText))
 		{
-			return ColumnType::Varchar;
+			return SCHEMA::TYPE_STRING;
 		}
 		else if ($contentLength <= static::getTextualColumnStorageCapacity(ColumnType::Text))
 		{
-			return ColumnType::Text;
+			return SCHEMA::TYPE_TEXT;
 		}
 		else if ($contentLength <= static::getTextualColumnStorageCapacity(ColumnType::MediumText))
 		{
+			// Yii doesn't support 'mediumtext' so we use our own.
 			return ColumnType::MediumText;
 		}
 		else
 		{
+			// Yii doesn't support 'longtext' so we use our own.
 			return ColumnType::LongText;
 		}
 	}

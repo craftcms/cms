@@ -794,18 +794,17 @@ class Sections extends Component
 
 						if ($locales)
 						{
-							$query = Entry::find()
-								->locale($locales[0])
-								->sectionId($section->id)
-								->status(null)
-								->localeEnabled(false)
-								->limit(null);
-
 							Craft::$app->getTasks()->queueTask([
 								'type'        => ResaveElements::className(),
 								'description' => Craft::t('app', 'Resaving {section} entries', ['section' => $section->name]),
 								'elementType' => Entry::className(),
-								'criteria'    => $query->asArray()
+								'criteria'    => [
+									'locale'        => $locales[0],
+									'sectionId'     => $section->id,
+									'status'        => null,
+									'localeEnabled' => false,
+									'limit'         => null,
+								]
 							]);
 						}
 					}

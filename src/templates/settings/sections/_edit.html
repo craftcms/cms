@@ -143,7 +143,7 @@
 										toggle: '.for-locale-'~locale.id
 									}) }}
 								</td>
-								<td><label for="locale-{{ locale.id }}">{{ locale.getDisplayName() }} ({{ locale.id }})</label></td>
+								<td><label for="locale-{{ locale.id }}">{{ locale.getDisplayName(craft.locale) }} ({{ locale.id }})</label></td>
 								<td class="centeralign">
 									<div class="for-locale-{{ locale.id }}{% if not localeSelected %} hidden{% endif %}">
 										{{ forms.lightswitch({

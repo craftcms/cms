@@ -156,4 +156,14 @@ class I18N
 		$format = $locale->getTimeFormat(Locale::FORMAT_SHORT);
 		return FormatConverter::convertDateIcuToPhp($format);
 	}
+
+	/**
+	 * Returns whether the [Intl extension](http://php.net/manual/en/book.intl.php) is loaded.
+	 *
+	 * @return boolean Whether the Intl extension is loaded.
+	 */
+	public function getIsIntlLoaded()
+	{
+		return \Craft::$app->getI18n()->getIsIntlLoaded();
+	}
 }

@@ -72,7 +72,16 @@ class I18N extends \yii\i18n\I18N
 		parent::init();
 
 		$this->_intlLoaded = extension_loaded('intl');
-		$this->_intlLoaded = false;
+	}
+
+	/**
+	 * Returns whether the [Intl extension](http://php.net/manual/en/book.intl.php) is loaded.
+	 *
+	 * @return boolean Whether the Intl extension is loaded.
+	 */
+	public function getIsIntlLoaded()
+	{
+		return $this->_intlLoaded;
 	}
 
 	/**

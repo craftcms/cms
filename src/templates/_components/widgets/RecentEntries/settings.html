@@ -29,7 +29,7 @@
 				<div class="select">
 					<select id="locale" name="locale">
 						{% for locale in editableLocales %}
-							<option value="{{ locale.id }}"{% if locale.id == widget.locale %} selected{% endif %}>{{ locale.getDisplayName() }}</option>
+							<option value="{{ locale.id }}"{% if locale.id == widget.locale %} selected{% endif %}>{{ locale.getDisplayName(craft.locale) }}</option>
 						{% endfor %}
 					</select>
 				</div>

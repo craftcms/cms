@@ -188,6 +188,12 @@ class Dashboard extends Component
 				$widgetRecord->type     = $widget->getType();
 				$widgetRecord->settings = $widget->getSettings();
 
+				// Enabled by default.
+				if ($isNewWidget)
+				{
+					$widgetRecord->enabled = true;
+				}
+
 				$widgetRecord->save(false);
 
 				// Now that we have a widget ID, save it on the model

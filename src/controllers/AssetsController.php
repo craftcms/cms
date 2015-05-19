@@ -435,6 +435,7 @@ class AssetsController extends Controller
 
 				if ($existingFolder)
 				{
+					// Throw a prompt
 					return $this->asJson(['prompt' => true, 'foldername' => $folderToMove->name, 'folderId' => $folderToMoveId, 'parentId' => $newParentFolderId]);
 				}
 				else
@@ -451,6 +452,7 @@ class AssetsController extends Controller
 			}
 			else
 			{
+				// Resolving a confclit
 				$existingFolder = Craft::$app->getAssets()->findFolder(['parentId' => $newParentFolderId, 'name' => $folderToMove->name]);
 				$targetTreeMap = [];
 

@@ -24,6 +24,16 @@ class Local extends Volume
 	/**
 	 * @inheritdoc
 	 */
+	public function rules()
+	{
+		$rules = parent::rules();
+		$rules[] = [['path'], 'required'];
+		return $rules;
+	}
+
+	/**
+	 * @inheritdoc
+	 */
 	public static function displayName()
 	{
 		return Craft::t('app', 'Local Folder');

@@ -647,6 +647,8 @@ class Tasks extends Component
 	 */
 	public function handleResponse()
 	{
+		Craft::$app->getResponse()->off(Response::EVENT_AFTER_PREPARE, [$this, 'handleResponse']);
+
 		// Ignore if tasks are already running
 		if ($this->isTaskRunning())
 		{

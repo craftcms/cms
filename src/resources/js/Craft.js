@@ -1,4 +1,4 @@
-/*! Craft 3.0.0 - 2015-05-15 */
+/*! Craft 3.0.0 - 2015-05-18 */
 (function($){
 
 if (typeof window.Craft == 'undefined')
@@ -222,7 +222,7 @@ $.extend(Craft,
 	 */
 	formatInputId: function(inputName)
 	{
-		return this.rtrim(inputName.replace(/[\[\]]+/g, '-'), '-');
+		return this.rtrim(inputName.replace(/[\[\]\\]+/g, '-'), '-');
 	},
 
 	/**

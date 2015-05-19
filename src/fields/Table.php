@@ -110,11 +110,11 @@ class Table extends Field
 
 		Craft::$app->getView()->registerJsResource('js/TableFieldSettings.js');
 		Craft::$app->getView()->registerJs('new Craft.TableFieldSettings(' .
-			'"'.Craft::$app->getView()->namespaceInputName('columns').'", ' .
-			'"'.Craft::$app->getView()->namespaceInputName('defaults').'", ' .
-			JsonHelper::encode($columns).', ' .
-			JsonHelper::encode($defaults).', ' .
-			JsonHelper::encode($columnSettings) .
+			JsonHelper::encode(Craft::$app->getView()->namespaceInputName('columns'), JSON_UNESCAPED_UNICODE).', ' .
+			JsonHelper::encode(Craft::$app->getView()->namespaceInputName('defaults'), JSON_UNESCAPED_UNICODE).', ' .
+			JsonHelper::encode($columns, JSON_UNESCAPED_UNICODE).', ' .
+			JsonHelper::encode($defaults, JSON_UNESCAPED_UNICODE).', ' .
+			JsonHelper::encode($columnSettings, JSON_UNESCAPED_UNICODE) .
 		');');
 
 		$columnsField = Craft::$app->getView()->renderTemplateMacro('_includes/forms', 'editableTableField', [
@@ -167,6 +167,11 @@ class Table extends Field
 	 */
 	public function prepareValue($value, $element)
 	{
+		if (is_string($value) && !empty($value))
+		{
+			$value = JsonHelper::decode($value);
+		}
+
 		if (is_array($value) && ($columns = $this->columns))
 		{
 			// Make the values accessible from both the col IDs and the handles
