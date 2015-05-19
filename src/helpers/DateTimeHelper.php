@@ -100,7 +100,7 @@ class DateTimeHelper
 				$format = '';
 
 				// Default to the current date
-				$current = new DateTime('now', new \DateTimeZone($timezone ?: self::UTC));
+				$current = new DateTime('now', new \DateTimeZone($timezone ?: DateTime::UTC));
 				$date .= $current->month().'/'.$current->day().'/'.$current->year();
 				$format .= 'n/j/Y';
 			}
