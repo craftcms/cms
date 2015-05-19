@@ -1264,8 +1264,29 @@ class View extends \yii\web\View
 			AppAsset::className()
 		]);
 
+		$sourcePath = Craft::getAlias('@app/resources');
+
+		// If the resource doesn't exist in craft/app/resources, check plugins' resources/ subfolders
+		if (!IOHelper::fileExists($sourcePath.'/'.$path))
+		{
+			$pathParts = explode('/', $path);
+
+			if (count($pathParts) > 1)
+			{
+				$pluginHandle = array_shift($pathParts);
+				$pluginSourcePath = Craft::getAlias('@craft/plugins/'.$pluginHandle.'/resources');
+				$pluginSubpath = implode('/', $pathParts);
+
+				if (IOHelper::fileExists($pluginSourcePath.'/'.$pluginSubpath))
+				{
+					$sourcePath = $pluginSourcePath;
+					$path = $pluginSubpath;
+				}
+			}
+		}
+
 		$bundle = new AssetBundle([
-			'sourcePath' => '@app/resources',
+			'sourcePath' => $sourcePath,
 			"{$kind}" => [$path],
 			"{$kind}Options" => $options,
 			'depends' => $depends,
