@@ -139,7 +139,7 @@ class DateTime extends \DateTime
 				$format = '';
 
 				// Default to the current date
-				$current = new DateTime('now', new \DateTimeZone($timezone));
+				$current = new DateTime('now', new \DateTimeZone($timezone ?: self::UTC));
 				$date .= $current->month().'/'.$current->day().'/'.$current->year();
 				$format .= 'n/j/Y';
 			}
