@@ -726,7 +726,7 @@ class User extends Element implements IdentityInterface
 					Craft::$app->getUsers()->handleInvalidLogin($this);
 
 					// Was that one bad password too many?
-					if ($this->getStatus() == self::STATUS_LOCKED)
+					if ($this->locked)
 					{
 						// Will set the authError to either AccountCooldown or AccountLocked
 						return $this->authenticate($password);
@@ -1052,7 +1052,7 @@ class User extends Element implements IdentityInterface
 	 */
 	public function getCooldownEndTime()
 	{
-		if ($this->getStatus() === self::STATUS_LOCKED)
+		if ($this->locked)
 		{
 			// There was an old bug that where a user's lockoutDate could be null if they've
 			// passed their cooldownDuration already, but there account status is still locked.
@@ -1074,7 +1074,7 @@ class User extends Element implements IdentityInterface
 	 */
 	public function getRemainingCooldownTime()
 	{
-		if ($this->getStatus() == self::STATUS_LOCKED)
+		if ($this->locked)
 		{
 			$currentTime = DateTimeHelper::currentUTCDateTime();
 			$cooldownEnd = $this->getCooldownEndTime();
