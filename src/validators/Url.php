@@ -6,6 +6,8 @@
  */
 
 namespace craft\app\validators;
+
+use Craft;
 use craft\app\helpers\StringHelper;
 use yii\validators\UrlValidator;
 
@@ -46,17 +48,31 @@ class Url extends UrlValidator
 	 */
 	public function validateValue($value)
 	{
-		// Ignore URLs with any environment variables in them
+		// Parse for environment variables if it looks like the URL might have one
 		if (StringHelper::contains($value, '{'))
 		{
-			return $value;
+			$envValue = Craft::$app->getConfig()->parseEnvironmentString($value);
+
+			if ($hasEnvVars = ($envValue !== $value))
+			{
+				$value = $envValue;
+			}
 		}
 
+		// Add support for protocol-relative URLs
 		if ($this->defaultScheme !== null && strncmp($value, '/', 1) === 0)
 		{
 			$this->defaultScheme = null;
 		}
 
-		return parent::validateValue($value);
+		$result = parent::validateValue($value);
+
+		if (!empty($hasEnvVars))
+		{
+			// Prevent yii\validators\UrlValidator::validateAttribute() from overwriting $model->$attribute
+			$this->defaultScheme = null;
+		}
+
+		return $result;
 	}
 }
