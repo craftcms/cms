@@ -679,25 +679,6 @@ class SectionsService extends BaseApplicationComponent
 								));
 							}
 
-							// Now make sure we've got all of the i18n rows in place.
-							foreach ($sectionLocales as $localeId => $sectionLocale)
-							{
-								craft()->db->createCommand()->insertOrUpdate('elements_i18n', array(
-									'elementId' => $singleEntryId,
-									'locale'    => $localeId,
-								), array(
-									'slug' => $section->handle,
-									'uri'  => $sectionLocale->urlFormat
-								));
-
-								craft()->db->createCommand()->insertOrUpdate('content', array(
-									'elementId' => $singleEntryId,
-									'locale'    => $localeId
-								), array(
-									'title' => $section->name
-								));
-							}
-
 							break;
 						}
 
