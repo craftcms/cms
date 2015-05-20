@@ -12,8 +12,6 @@ use craft\app\helpers\ElementHelper;
 use craft\app\elements\Entry;
 use craft\app\elements\User;
 
-Craft::$app->requireEdition(Craft::Client);
-
 /**
  * Class BaseEntryRevision model.
  *
