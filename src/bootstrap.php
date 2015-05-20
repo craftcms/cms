@@ -248,7 +248,7 @@ $class = 'craft\\app\\'.$appType.'\\Application';
 /* @var $app craft\app\web\Application|craft\app\console\Application */
 $app = new $class($config);
 
-if ($devMode && $appType === 'web')
+if ($appType === 'web')
 {
 	// See if we should enable the Debug module
 	$session = $app->getSession();
