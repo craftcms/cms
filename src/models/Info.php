@@ -17,6 +17,23 @@ use craft\app\base\Model;
  */
 class Info extends Model
 {
+	// Static
+	// =========================================================================
+
+	/**
+	 * @inheritdoc
+	 */
+	public static function populateModel($model, $config)
+	{
+		// Make sure $edition is going to be an integer
+		if (isset($config['edition']))
+		{
+			$config['edition'] = (int) $config['edition'];
+		}
+
+		parent::populateModel($model, $config);
+	}
+
 	// Properties
 	// =========================================================================
 

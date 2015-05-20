@@ -408,7 +408,7 @@ trait ApplicationTrait
 		{
 			$installedEdition = $this->getEdition();
 
-			if (($orBetter && $installedEdition < $edition) || (!$orBetter && $installedEdition != $edition))
+			if (($orBetter && $installedEdition < $edition) || (!$orBetter && $installedEdition !== $edition))
 			{
 				throw new Exception(Craft::t('app', 'Craft {edition} is required to perform this action.', [
 					'edition' => AppHelper::getEditionName($edition)
