@@ -375,6 +375,29 @@ class User extends Element implements IdentityInterface
 		return Craft::$app->getUsers()->saveUser($element);
 	}
 
+	/**
+	 * @inheritdoc
+	 */
+	public static function populateModel($model, $config)
+	{
+		/** @var static $model */
+		parent::populateModel($model, $config);
+
+		// Is the user in cooldown mode, and are they past their window?
+		if ($model->locked)
+		{
+			$cooldownDuration = Craft::$app->getConfig()->get('cooldownDuration');
+
+			if ($cooldownDuration)
+			{
+				if (!$model->getRemainingCooldownTime())
+				{
+					Craft::$app->getUsers()->unlockUser($model);
+				}
+			}
+		}
+	}
+
 	// IdentityInterface Methods
 	// -------------------------------------------------------------------------
 
@@ -579,28 +602,6 @@ class User extends Element implements IdentityInterface
 		catch (Exception $e)
 		{
 			ErrorHandler::convertExceptionToError($e);
-		}
-	}
-
-	/**
-	 * @inheritdoc
-	 */
-	public function init()
-	{
-		parent::init();
-
-		// Is the user in cooldown mode, and are they past their window?
-		if ($this->locked)
-		{
-			$cooldownDuration = Craft::$app->getConfig()->get('cooldownDuration');
-
-			if ($cooldownDuration)
-			{
-				if (!$this->getRemainingCooldownTime())
-				{
-					Craft::$app->getUsers()->unlockUser($this);
-				}
-			}
 		}
 	}
 
