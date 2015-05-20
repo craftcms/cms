@@ -126,7 +126,7 @@ class AppUpdate extends Model
 	/**
 	 * @var array Releases
 	 */
-	public $releases;
+	public $releases = [];
 
 	// Public Methods
 	// =========================================================================

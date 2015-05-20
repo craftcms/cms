@@ -51,7 +51,7 @@ class Update extends Model
 	/**
 	 * @var PluginUpdate[] Plugins
 	 */
-	public $plugins;
+	public $plugins = [];
 
 	/**
 	 * @var array Errors
