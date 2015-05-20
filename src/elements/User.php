@@ -380,10 +380,10 @@ class User extends Element implements IdentityInterface
 	 */
 	public static function populateModel($model, $config)
 	{
-		/** @var static $model */
 		parent::populateModel($model, $config);
 
 		// Is the user in cooldown mode, and are they past their window?
+		/** @var static $model */
 		if ($model->locked)
 		{
 			$cooldownDuration = Craft::$app->getConfig()->get('cooldownDuration');
