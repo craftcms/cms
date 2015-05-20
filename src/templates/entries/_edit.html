@@ -276,11 +276,11 @@
 										</div>
 									</div>
 								</td>
-								{% if CraftEdition >= CraftClient and section.enableVersioning %}
-									<td>
+								<td>
+									{% if CraftEdition >= CraftClient and section.enableVersioning %}
 										<input type="text" name="revisionNotes" class="fullwidth textline" placeholder="{{ 'Notes about your changes'|t }}" autocomplete="off">
-									</td>
-								{% endif %}
+									{% endif %}
+								</td>
 							</tr>
 						</table>
 					{% else %}
