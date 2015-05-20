@@ -1394,7 +1394,8 @@ class Users extends Component
 		if ($userRecord->invalidLoginWindowStart)
 		{
 			$duration = new DateInterval(Craft::$app->getConfig()->get('invalidLoginWindowDuration'));
-			$end = $userRecord->invalidLoginWindowStart->add($duration);
+			$invalidLoginWindowStart = DateTimeHelper::toDateTime($userRecord->invalidLoginWindowStart);
+			$end = $invalidLoginWindowStart->add($duration);
 			return ($end >= DateTimeHelper::currentUTCDateTime());
 		}
 		else
