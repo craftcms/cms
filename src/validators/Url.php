@@ -31,11 +31,18 @@ class Url extends UrlValidator
 	// =========================================================================
 
 	/**
-	 * Add support for protocol-relative URLs. {@see http://paulirish.com/2010/the-protocol-relative-url/}
-	 *
-	 * @param string $value
-	 *
-	 * @return string
+	 * @inheritdoc
+	 */
+	public function init()
+	{
+		parent::init();
+
+		// Enable support for international domain names
+		$this->enableIDN = true;
+	}
+
+	/**
+	 * @inheritdoc
 	 */
 	public function validateValue($value)
 	{
