@@ -89,6 +89,11 @@ class UserQuery extends ElementQuery
 	 */
 	public $lastLoginDate;
 
+	/**
+	 * @var boolean Whether the users' passwords should be fetched.
+	 */
+	public $withPassword = false;
+
 	// Public Methods
 	// =========================================================================
 
@@ -244,6 +249,18 @@ class UserQuery extends ElementQuery
 		return $this;
 	}
 
+	/**
+	 * Sets the [[withPassword]] property.
+	 *
+	 * @param boolean $value The property value (defaults to true)
+	 * @return static The query object itself
+	 */
+	public function withPassword($value = true)
+	{
+		$this->withPassword = $value;
+		return $this;
+	}
+
 	// Protected Methods
 	// =========================================================================
 
@@ -275,6 +292,11 @@ class UserQuery extends ElementQuery
 			'users.lastLoginDate',
 			'users.lockoutDate',
 		]);
+
+		if ($this->withPassword)
+		{
+			$this->query->addSelect('users.password');
+		}
 
 		if ($this->admin)
 		{

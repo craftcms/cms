@@ -406,7 +406,11 @@ class User extends Element implements IdentityInterface
 	 */
 	public static function findIdentity($id)
 	{
-		$user = Craft::$app->getUsers()->getUserById($id);
+		$user = User::find()
+			->id($id)
+			->status(null)
+			->withPassword()
+			->one();
 
 		if ($user !== null)
 		{

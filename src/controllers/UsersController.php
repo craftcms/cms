@@ -19,7 +19,6 @@ use craft\app\elements\User;
 use craft\app\services\Users;
 use craft\app\web\Controller;
 use craft\app\web\Response;
-use craft\app\web\Session;
 use craft\app\web\UploadedFile;
 
 /**
@@ -272,7 +271,7 @@ class UsersController extends Controller
 	 */
 	public function actionSetPassword()
 	{
-		// Have they just submitted a password, or are we just displaying teh page?
+		// Have they just submitted a password, or are we just displaying the page?
 		if (!Craft::$app->getRequest()->getIsPost())
 		{
 			if ($info = $this->_processTokenRequest())
@@ -732,7 +731,11 @@ class UsersController extends Controller
 		// Are we editing an existing user?
 		if ($userId)
 		{
-			$user = Craft::$app->getUsers()->getUserById($userId);
+			$user = User::find()
+				->id($userId)
+				->status(null)
+				->withPassword()
+				->one();
 
 			if (!$user)
 			{
@@ -1179,7 +1182,12 @@ class UsersController extends Controller
 		$this->requirePostRequest();
 
 		$userId = Craft::$app->getRequest()->getRequiredBodyParam('userId');
-		$user = Craft::$app->getUsers()->getUserById($userId);
+
+		$user = User::find()
+			->id($userId)
+			->status(null)
+			->withPassword()
+			->one();
 
 		if (!$user)
 		{
@@ -1688,9 +1696,14 @@ class UsersController extends Controller
 		}
 
 		$id            = Craft::$app->getRequest()->getRequiredParam('id');
-		$userToProcess = Craft::$app->getUsers()->getUserByUid($id);
 		$code          = Craft::$app->getRequest()->getRequiredParam('code');
 		$isCodeValid   = false;
+
+		$userToProcess = User::find()
+			->id($id)
+			->status(null)
+			->withPassword()
+			->one();
 
 		if ($userToProcess)
 		{
