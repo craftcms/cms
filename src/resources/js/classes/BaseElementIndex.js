@@ -1291,8 +1291,16 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
 	getDefaultSort: function()
 	{
-		// Default to whatever's first
-		return [this.$sortAttributesList.find('a:first').data('attr'), 'asc'];
+		// Does the source specify what to do?
+		if (Garnish.hasAttr(this.$source, 'data-default-sort'))
+		{
+			return this.$source.attr('data-default-sort').split(':');
+		}
+		else
+		{
+			// Default to whatever's first
+			return [this.$sortAttributesList.find('a:first').data('attr'), 'asc'];
+		}
 	},
 
 	getViewModesForSource: function()
