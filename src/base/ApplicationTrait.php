@@ -1284,16 +1284,11 @@ trait ApplicationTrait
 	{
 		/* @var $this \craft\app\web\Application|\craft\app\console\Application */
 		$configService = Craft::$app->getConfig();
-		$basePath = Craft::getAlias($configService->get('resourceBasePath'));
-		$baseUrl = $configService->get('resourceBaseUrl');
-
-		// Make sure the base path actually exists
-		IOHelper::ensureFolderExists($basePath);
 
 		return [
 			'class' => 'craft\app\web\AssetManager',
-			'basePath' => $basePath,
-			'baseUrl' => $baseUrl
+			'basePath' => $configService->get('resourceBasePath'),
+			'baseUrl' => $configService->get('resourceBaseUrl')
 		];
 	}
 

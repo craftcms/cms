@@ -9,6 +9,7 @@
 
 use craft\app\dates\DateTime;
 use craft\app\helpers\ArrayHelper;
+use craft\app\helpers\IOHelper;
 
 // Setup
 // -----------------------------------------------------------------------------
@@ -250,6 +251,15 @@ $app = new $class($config);
 
 if ($appType === 'web')
 {
+	// See if the resource base path exists and is writable
+	$resourceBasePath = Craft::getAlias($app->config->get('resourceBasePath'));
+	IOHelper::ensureFolderExists($resourceBasePath, true);
+
+	if (!IOHelper::folderExists($resourceBasePath) || !IOHelper::isWritable($resourceBasePath))
+	{
+		exit($resourceBasePath.' doesn\'t exist or isn\'t writable by PHP. Please fix that.');
+	}
+
 	// See if we should enable the Debug module
 	$session = $app->getSession();
 
