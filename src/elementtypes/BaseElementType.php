@@ -427,9 +427,7 @@ abstract class BaseElementType extends BaseComponentType implements IElementType
 	 *
 	 * @return BaseElementModel|void
 	 */
-	public function populateElementModel($row)
-	{
-	}
+	public abstract function populateElementModel($row);
 
 	/**
 	 * @inheritDoc IElementType::getEditorHtml()
