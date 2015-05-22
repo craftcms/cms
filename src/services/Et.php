@@ -10,8 +10,10 @@ namespace craft\app\services;
 use Craft;
 use craft\app\helpers\IOHelper;
 use craft\app\helpers\JsonHelper;
+use craft\app\models\AppNewRelease;
 use craft\app\models\AppUpdate;
 use craft\app\models\Et as EtModel;
+use craft\app\models\PluginNewRelease;
 use craft\app\models\PluginUpdate;
 use craft\app\models\Update as UpdateModel;
 use craft\app\models\UpgradePurchase as UpgradePurchaseModel;
@@ -84,7 +86,7 @@ class Et extends Component
 			}
 
 			// For every plugin, populate their base information.
-			foreach ($updateModel->plugins as $key => $pluginUpdateInfo)
+			foreach ($updateModel->plugins as $pluginHandle => $pluginUpdateInfo)
 			{
 				$pluginUpdateModel = new PluginUpdate();
 				$pluginUpdateModel->setAttributes($pluginUpdateInfo);
@@ -98,7 +100,7 @@ class Et extends Component
 					$pluginUpdateModel->releases[$key] = $pluginReleaseModel;
 				}
 
-				$updateModel->plugins[$key] = $pluginUpdateModel;
+				$updateModel->plugins[$pluginHandle] = $pluginUpdateModel;
 			}
 
 			// Put it all back on Et.
