@@ -117,6 +117,12 @@ return array(
 	'cacheMethod' => 'file',
 
 	/**
+	 * If set to true, any uploaded file names will have multi-byte characters (Chinese, Japanese, etc.) stripped
+	 * and any high-ASCII characters converted to their low ASCII counterparts (i.e. ñ → n).
+	 */
+	'convertFilenamesToAscii' => false,
+
+	/**
 	 * The amount of time a user must wait before re-attempting to log in after their account is locked due to too many
 	 * failed login attempts.
 	 *
