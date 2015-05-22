@@ -805,7 +805,7 @@ class UsersController extends Controller
 		{
 			$newEmail = Craft::$app->getRequest()->getBodyParam('email');
 
-			// Did it just change?
+			// Make sure it actually changed
 			if ($newEmail && $newEmail == $user->email)
 			{
 				$newEmail = null;
@@ -840,12 +840,13 @@ class UsersController extends Controller
 		}
 		else if ($isCurrentUser)
 		{
-			$user->newPassword = Craft::$app->getRequest()->getBodyParam('newPassword');
+			// If the password input was empty, pretend it didn't exist
+			$user->newPassword = Craft::$app->getRequest()->getBodyParam('newPassword') ?: null;
 		}
 
 		// If editing an existing user and either of these properties are being changed,
 		// require the user's current password for additional security
-		if (!$isNewUser && (!empty($newEmail) || $user->newPassword))
+		if (!$isNewUser && (!empty($newEmail) || $user->newPassword !== null))
 		{
 			if (!$this->_verifyExistingPassword())
 			{
