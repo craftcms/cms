@@ -1499,9 +1499,9 @@ class IOHelper
 	/**
 	 * Cleans a filename.
 	 *
-	 * @param string $filename
-	 * @param bool   $onlyAscii
-	 * @param string $separator
+	 * @param string $filename  The filename to clean.
+	 * @param bool   $onlyAscii Whether to only allow ASCII characters in the filename.
+	 * @param string $separator The separator to use for any whitespace. Defaults to '-'.
 	 *
 	 * @return mixed
 	 */

@@ -440,7 +440,7 @@ class Assets extends BaseRelationField
 
 		foreach ($pathParts as &$part)
 		{
-			$part = IOHelper::cleanFilename($part);
+			$part = IOHelper::cleanFilename($part, Craft::$app->getConfig()->get('convertFilenamesToAscii'));
 		}
 
 		$subpath = join('/', $pathParts);
