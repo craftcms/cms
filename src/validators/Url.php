@@ -39,8 +39,11 @@ class Url extends UrlValidator
 	{
 		parent::init();
 
-		// Enable support for international domain names
-		$this->enableIDN = true;
+		// Enable support for validating international domain names if the intl extension is available.
+		if (Craft::$app->getI18n()->getIsIntlLoaded())
+		{
+			$this->enableIDN = true;
+		}
 	}
 
 	/**
