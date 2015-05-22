@@ -1231,7 +1231,18 @@ class View extends \yii\web\View
 			{
 				foreach ($pluginExtensions as $extension)
 				{
-					$twig->addExtension($extension);
+					// It's possible for a plugin to register multiple extensions.
+					if (is_array($extension))
+					{
+						foreach ($extension as $innerExtension)
+						{
+							$twig->addExtension($innerExtension);
+						}
+					}
+					else
+					{
+						$twig->addExtension($extension);
+					}
 				}
 			}
 			catch (\LogicException $e)
