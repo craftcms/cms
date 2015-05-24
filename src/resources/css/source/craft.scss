@@ -1192,9 +1192,9 @@ ul.errors { margin-top: 5px; list-style-type: square; @include padding-left(20px
 ul.errors li { color: $errorcolor; }
 
 /* message pages */
-.message-container { position: absolute; z-index: 100; top: 0; @include left(0); width: 100%; height: 100%; }
-.message-container.no-access { background: rgba(50,50,50,0.9); }
-.message-container .pane { top: 50%; margin-top: -33px !important; margin-left: auto; margin-right: auto; width: 320px; }
+body.message .message-container { position: absolute; z-index: 100; top: 0; @include left(0); width: 100%; height: 100%; }
+body.message .message-container.no-access { background: rgba(50,50,50,0.9); }
+body.message .message-container .pane { top: 50%; margin-top: -33px !important; margin-left: auto; margin-right: auto; width: 320px; }
 
 /* ----------------------------------------
 /* Matrix
