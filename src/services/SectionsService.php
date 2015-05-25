@@ -610,10 +610,7 @@ class SectionsService extends BaseApplicationComponent
 					{
 						case SectionType::Single:
 						{
-							// In a nut, we want to make sure that there is one and only one Entry Type and Entry for this
-							// section. We also want to make sure the entry has rows in the i18n tables
-							// for each of the sections' locales.
-
+							// Make sure that there is one and only one Entry Type and Entry for this section.
 							$singleEntryId = null;
 
 							if (!$isNewSection)
@@ -664,19 +661,12 @@ class SectionsService extends BaseApplicationComponent
 							if (!$singleEntryId)
 							{
 								// Create it, baby
-
-								craft()->db->createCommand()->insert('elements', array(
-									'type' => ElementType::Entry
-								));
-
-								$singleEntryId = craft()->db->getLastInsertID();
-
-								craft()->db->createCommand()->insert('entries', array(
-									'id'        => $singleEntryId,
-									'sectionId' => $section->id,
-									'typeId'    => $entryTypeId,
-									'postDate'  => DateTimeHelper::currentTimeForDb()
-								));
+								$singleEntry = new EntryModel();
+								$singleEntry->sectionId = $section->id;
+								$singleEntry->typeId = $entryTypeId;
+								$singleEntry->title = $section->name;
+								craft()->entries->saveEntry($singleEntry);
+								$singleEntryId = $singleEntry->id;
 							}
 
 							break;
