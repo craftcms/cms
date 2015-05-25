@@ -520,6 +520,35 @@ class TemplateCacheService extends BaseApplicationComponent
 	}
 
 	/**
+	 * Deletes a cache by its key(s).
+	 *
+	 * @param int|array $key The cache key(s) to delete.
+	 *
+	 * @return bool
+	 */
+	public function deleteCachesByKey($key)
+	{
+		if ($this->_deletedAllCaches || !$this->_isTemplateCachingEnabled())
+		{
+			return false;
+		}
+
+		if (is_array($key))
+		{
+			$condition = array('in', 'cacheKey', $key);
+			$params = array();
+		}
+		else
+		{
+			$condition = 'cacheKey = :cacheKey';
+			$params = array(':cacheKey' => $key);
+		}
+
+		$affectedRows = craft()->db->createCommand()->delete(static::$_templateCachesTable, $condition, $params);
+		return (bool) $affectedRows;
+	}
+
+	/**
 	 * Deletes any expired caches.
 	 *
 	 * @return bool
