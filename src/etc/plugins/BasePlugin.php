@@ -75,6 +75,18 @@ abstract class BasePlugin extends BaseSavableComponentType implements IPlugin
 		return craft()->sourceLanguage;
 	}
 
+	public function getIcon()
+	{
+		$path = $this->getClassHandle().'/icon.png';
+
+		$realPath = craft()->resources->getResourcePath($path);
+
+		if($realPath)
+		{
+			return UrlHelper::getResourceUrl($path);
+		}
+	}
+
 	/**
 	 * Returns the URL to the plugin's settings in the CP.
 	 *
