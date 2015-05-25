@@ -781,48 +781,64 @@ class SectionsService extends BaseApplicationComponent
 			return false;
 		}
 
-		$transaction = craft()->db->getCurrentTransaction() === null ? craft()->db->beginTransaction() : null;
-		try
+		// Fire an 'onBeforeDeleteSection' event
+		$event = new Event($this, array(
+			'sectionId' => $sectionId
+		));
+
+		$this->onBeforeDeleteSection($event);
+
+		if ($event->performAction)
 		{
-			// Grab the entry ids so we can clean the elements table.
-			$entryIds = craft()->db->createCommand()
-				->select('id')
-				->from('entries')
-				->where(array('sectionId' => $sectionId))
-				->queryColumn();
+			$transaction = craft()->db->getCurrentTransaction() === null ? craft()->db->beginTransaction() : null;
 
-			craft()->elements->deleteElementById($entryIds);
-
-			// Delete the structure, if there is one
-			$structureId = craft()->db->createCommand()
-				->select('structureId')
-				->from('sections')
-				->where(array('id' => $sectionId))
-				->queryScalar();
-
-			if ($structureId)
+			try
 			{
-				craft()->structures->deleteStructureById($structureId);
+				// Grab the entry ids so we can clean the elements table.
+				$entryIds = craft()->db->createCommand()
+					->select('id')
+					->from('entries')
+					->where(array('sectionId' => $sectionId))
+					->queryColumn();
+
+				craft()->elements->deleteElementById($entryIds);
+
+				// Delete the structure, if there is one
+				$structureId = craft()->db->createCommand()
+					->select('structureId')
+					->from('sections')
+					->where(array('id' => $sectionId))
+					->queryScalar();
+
+				if ($structureId)
+				{
+					craft()->structures->deleteStructureById($structureId);
+				}
+
+				// Delete the section.
+				$affectedRows = craft()->db->createCommand()->delete('sections', array('id' => $sectionId));
+
+				if ($transaction !== null)
+				{
+					$transaction->commit();
+				}
+
+				// Fire an 'onDeleteSection' event
+				$this->onDeleteSection(new Event($this, array(
+					'sectionId' => $sectionId
+				)));
+
+				return (bool)$affectedRows;
 			}
-
-			// Delete the section.
-			$affectedRows = craft()->db->createCommand()->delete('sections', array('id' => $sectionId));
-
-			if ($transaction !== null)
+			catch (\Exception $e)
 			{
-				$transaction->commit();
-			}
+				if ($transaction !== null)
+				{
+					$transaction->rollback();
+				}
 
-			return (bool) $affectedRows;
-		}
-		catch (\Exception $e)
-		{
-			if ($transaction !== null)
-			{
-				$transaction->rollback();
+				throw $e;
 			}
-
-			throw $e;
 		}
 	}
 
@@ -1266,6 +1282,30 @@ class SectionsService extends BaseApplicationComponent
 	public function onSaveSection(Event $event)
 	{
 		$this->raiseEvent('onSaveSection', $event);
+	}
+
+	/**
+	 * Fires an 'onBeforeDeleteSection' event.
+	 *
+	 * @param Event $event
+	 *
+	 * @return null
+	 */
+	public function onBeforeDeleteSection(Event $event)
+	{
+		$this->raiseEvent('onBeforeDeleteSection', $event);
+	}
+
+	/**
+	 * Fires an 'onDeleteSection' event.
+	 *
+	 * @param Event $event
+	 *
+	 * @return null
+	 */
+	public function onDeleteSection(Event $event)
+	{
+		$this->raiseEvent('onDeleteSection', $event);
 	}
 
 	// Private Methods
