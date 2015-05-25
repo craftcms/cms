@@ -337,8 +337,10 @@ class UsersService extends BaseApplicationComponent
 					if ($user->username != $oldUsername)
 					{
 						// Rename the user's photo directory
-						$oldFolder = craft()->path->getUserPhotosPath().$oldUsername;
-						$newFolder = craft()->path->getUserPhotosPath().$user->username;
+						$cleanOldUsername = AssetsHelper::cleanAssetName($oldUsername, false);
+						$cleanUsername = AssetsHelper::cleanAssetName($user->username, false);
+						$oldFolder = craft()->path->getUserPhotosPath().$cleanOldUsername;
+						$newFolder = craft()->path->getUserPhotosPath().$cleanUsername;
 
 						if (IOHelper::folderExists($newFolder))
 						{
@@ -570,7 +572,7 @@ class UsersService extends BaseApplicationComponent
 	 */
 	public function saveUserPhoto($fileName, Image $image, UserModel $user)
 	{
-		$userName = IOHelper::cleanFilename($user->username, craft()->config->get('convertFilenamesToAscii'));
+		$userName = AssetsHelper::cleanAssetName($user->username, false);
 		$userPhotoFolder = craft()->path->getUserPhotosPath().$userName.'/';
 		$targetFolder = $userPhotoFolder.'original/';
 
@@ -605,7 +607,8 @@ class UsersService extends BaseApplicationComponent
 	 */
 	public function deleteUserPhoto(UserModel $user)
 	{
-		$folder = craft()->path->getUserPhotosPath().$user->username;
+		$username = AssetsHelper::cleanAssetName($user->username, false);
+		$folder = craft()->path->getUserPhotosPath().$username;
 
 		if (IOHelper::folderExists($folder))
 		{
