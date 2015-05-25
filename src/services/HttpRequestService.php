@@ -1198,6 +1198,34 @@ class HttpRequestService extends \CHttpRequest
 	}
 
 	/**
+	 * Returns whether the client is running "Windows", "Mac", "Linux" or "Other", based on the
+	 * browser's UserAgent string.
+	 *
+	 * @return string The OS the client is running.
+	 */
+	public function getClientOs()
+	{
+		$userAgent = $this->getUserAgent();
+
+		if (preg_match('/Linux/', $userAgent))
+		{
+			return 'Linux';
+		}
+		elseif (preg_match('/Win/', $userAgent))
+		{
+			return 'Windows';
+		}
+		elseif (preg_match('/Mac/', $userAgent))
+		{
+			return 'Mac';
+		}
+		else
+		{
+			return 'Other';
+		}
+	}
+
+	/**
 	 * Performs the CSRF validation. This is the event handler responding to {@link CApplication::onBeginRequest}.
 	 * The default implementation will compare the CSRF token obtained from session and from a POST field. If they
 	 * are different, a CSRF attack is detected.
