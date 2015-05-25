@@ -147,7 +147,16 @@
 								<h6>{{ category }}</h6>
 								<ul class="padded">
 									{% for handle, item in items %}
-										<li><a href="{{ url('settings/'~handle) }}" data-icon="{{ item.icon }}">{{ item.label }}</a></li>
+										<li>
+											<a href="{% if item.url is defined %}{{ url(item.url) }}{% else %}{{ url('settings/'~handle) }}{% endif %}" {% if item.icon is defined %}data-icon="{{ item.icon }}"{% endif %}>
+
+												{% if item.iconUrl is defined %}
+													<img src="{{ item.iconUrl }}" />
+												{% endif %}
+
+												{{ item.label }}
+											</a>
+										</li>
 									{% endfor %}
 								</ul>
 							{% endfor %}

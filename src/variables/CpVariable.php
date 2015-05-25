@@ -134,6 +134,18 @@ class CpVariable
 			$settings[$label]['locales'] = array('icon' => 'language', 'label' => Craft::t('Locales'));
 		}
 
+		$label = Craft::t('Plugins');
+
+		foreach(craft()->plugins->getPlugins() as $plugin)
+		{
+			$settingsUrl = $plugin->getSettingsUrl();
+
+			if($settingsUrl)
+			{
+				$settings[$label][$plugin->getClassHandle()] = array('url' => $settingsUrl, 'iconUrl' => $plugin->getIcon(), 'label' => $plugin->name);
+			}
+		}
+
 		return $settings;
 	}
 
