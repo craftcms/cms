@@ -664,9 +664,8 @@ class SectionsService extends BaseApplicationComponent
 								$singleEntry = new EntryModel();
 								$singleEntry->sectionId = $section->id;
 								$singleEntry->typeId = $entryTypeId;
-								$singleEntry->title = $section->name;
+								$singleEntry->getContent()->title = $section->name;
 								craft()->entries->saveEntry($singleEntry);
-								$singleEntryId = $singleEntry->id;
 							}
 
 							break;
