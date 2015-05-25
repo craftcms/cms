@@ -59,6 +59,8 @@ class HttpSessionService extends \CHttpSession
 			}
 		}
 
+		$this->sessionName = craft()->config->get('phpSessionName');
+
 		parent::init();
 	}
 

@@ -357,6 +357,13 @@ return array(
 	'phpMaxMemoryLimit' => '256M',
 
 	/**
+	 * The name of the PHP session cookie.
+	 *
+	 * @see https://php.net/manual/en/function.session-name.php
+	 */
+	'phpSessionName' => 'CraftSessionId',
+
+	/**
 	 * The path that users should be redirected to after logging in from the Control Panel.
 	 *
 	 * This setting will also come into effect if the user visits the CP’s Login page (/admin/login)

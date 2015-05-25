@@ -265,7 +265,6 @@ $components['log']['routes'] = array(
 $components['httpSession']['autoStart']   = true;
 $components['httpSession']['cookieMode']  = 'only';
 $components['httpSession']['class']       = 'Craft\HttpSessionService';
-$components['httpSession']['sessionName'] = 'CraftSessionId';
 
 $components['userSession']['class'] = 'Craft\UserSessionService';
 $components['userSession']['allowAutoLogin']  = true;
