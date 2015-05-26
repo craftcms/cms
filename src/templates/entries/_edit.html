@@ -14,6 +14,8 @@
 
 {% set canPublish = currentUser.can('publishEntries'~permissionSuffix) %}
 
+{% hook "cp.entries.edit" %}
+
 
 {% block main %}
 	<form id="entry-form" method="post" accept-charset="UTF-8" data-saveshortcut data-saveshortcut-redirect="{{ continueEditingUrl }}" data-confirm-unload>
@@ -179,6 +181,9 @@
 					{% endif %}
 
 				{% endif %}
+
+				{# Give plugins a chance to add other panes here #}
+				{% hook "cp.entries.edit.right-pane" %}
 
 				{# Action buttons #}
 
