@@ -249,7 +249,15 @@ class AppBehavior extends BaseBehavior
 	{
 		$info = $this->getInfo();
 		$info->edition = $edition;
-		return $this->saveInfo($info);
+
+		$result = $this->saveInfo($info);
+
+		// Fire an 'onEditionChange' event
+		$this->getOwner()->onEditionChange(new Event($this, array(
+			'edition' => $edition
+		)));
+
+		return $result;
 	}
 
 	/**

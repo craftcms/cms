@@ -628,6 +628,21 @@ class WebApp extends \CWebApplication
 		return false;
 	}
 
+	// Events
+	// =========================================================================
+
+	/**
+	 * Fires an onEditionChange event.
+	 *
+	 * @param Event $event
+	 *
+	 * @throws \CException
+	 */
+	public function onEditionChange(Event $event)
+	{
+		$this->raiseEvent('onEditionChange', $event);
+	}
+
 	// Private Methods
 	// =========================================================================
 
