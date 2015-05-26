@@ -129,7 +129,7 @@ class HttpRequestService extends \CHttpRequest
 		// Get the path segments
 		$this->_segments = array_filter(explode('/', $path), function($value)
 		{
-			// Explicit check in case there is a 0 in a segment (i.e. foo/0 or foo/0/bar)
+			// Explicitly check in case there is a 0 in a segment (i.e. foo/0 or foo/0/bar)
 			return $value !== '';
 		});
 
