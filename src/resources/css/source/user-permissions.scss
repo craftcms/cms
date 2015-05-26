@@ -2,5 +2,16 @@
 @import "shared";
 
 .user-permissions h3:first-child { margin-top: 14px !important; }
-.user-permissions h3 small { font-weight: normal; font-size: 0.9em; margin-left: 0.5em; }
+.user-permissions .select-all { font-size: 0.9em; margin: 13px 0; color: $linkcolor; cursor: pointer; }
+.user-permissions .select-all:hover { text-decoration: underline; }
 .user-permissions input.checkbox:disabled + label { opacity: .5; }
+
+body.ltr .user-permissions h3 { margin-right: 0.5em; }
+body.ltr .user-permissions h3,
+body.ltr .user-permissions .select-all { float: left; }
+body.ltr .user-permissions ul { clear: left; }
+
+body.rtl .user-permissions h3 { margin-left: 0.5em; }
+body.rtl .user-permissions h3,
+body.rtl .user-permissions .select-all { float: right; }
+body.rtl .user-permissions ul { clear: right; }

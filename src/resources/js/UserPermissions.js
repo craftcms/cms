@@ -11,7 +11,7 @@ Craft.UserPermissions = Garnish.Base.extend(
     init: function(wrapper)
     {
         this.$wrapper = wrapper;
-        this.$selectAllBtn = $('a.select-all', this.$wrapper);
+        this.$selectAllBtn = $('.select-all', this.$wrapper);
         this.$allCheckboxes = $('input[type=checkbox]', this.$wrapper);
         this.$rootCheckboxes = $(this.$wrapper).find('> ul > li > input[type=checkbox]');
 

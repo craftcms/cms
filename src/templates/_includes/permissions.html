@@ -36,7 +36,9 @@
 {% for category, catPermissions in craft.userPermissions.getAllPermissions() %}
 
 	<div class="user-permissions">
-		<h3>{{ category }} <small><a href="#" class="select-all">Select All</a></small></h3>
+		<h3>{{ category }}</h3>
+
+		<div class="select-all"></div>
 
 		{{ _self.permissionList(_context, catPermissions) }}
 	</div>
