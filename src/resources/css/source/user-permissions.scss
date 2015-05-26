@@ -1,0 +1,6 @@
+@charset "UTF-8";
+@import "shared";
+
+.user-permissions h3:first-child { margin-top: 14px !important; }
+.user-permissions h3 small { font-weight: normal; font-size: 0.9em; margin-left: 0.5em; }
+.user-permissions input.checkbox:disabled + label { opacity: .5; }
