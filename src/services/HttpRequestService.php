@@ -127,7 +127,11 @@ class HttpRequestService extends \CHttpRequest
 		}
 
 		// Get the path segments
-		$this->_segments = array_filter(explode('/', $path));
+		$this->_segments = array_filter(explode('/', $path), function($value)
+		{
+			// Explicit check in case there is a 0 in a segment (i.e. foo/0 or foo/0/bar)
+			return $value !== '';
+		});
 
 		// Is this a CP request?
 		$this->_isCpRequest = ($this->getSegment(1) == craft()->config->get('cpTrigger'));
