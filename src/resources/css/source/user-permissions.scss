@@ -15,25 +15,11 @@
 .user-permissions ul ul ul li:before { width: 30px; }
 .user-permissions ul ul ul ul li:before { width: 45px; }
 
-body.ltr .user-permissions h3 { margin-right: 0.5em; }
-body.ltr .user-permissions h3,
-body.ltr .user-permissions .select-all { float: left; }
+.user-permissions h3 { @include margin-right(0.5em); }
+.user-permissions h3,
+.user-permissions .select-all { @include floatleft; }
 
-body.ltr .user-permissions ul { clear: left; }
-body.ltr .user-permissions ul ul li .checkbox + label { padding-left:35px; }
-body.ltr .user-permissions ul ul ul li .checkbox + label { padding-left:55px; }
-body.ltr .user-permissions ul ul li:before { left: 20px; }
-
-
-body.rtl .user-permissions h3 { margin-left: 0.5em; }
-body.rtl .user-permissions h3,
-body.rtl .user-permissions .select-all { float: right; }
-
-body.rtl .user-permissions ul { clear: right; }
-body.rtl .user-permissions ul ul li .checkbox + label { padding-right:35px; }
-body.rtl .user-permissions ul ul ul li .checkbox + label { padding-right:55px; }
-body.rtl .user-permissions ul ul li:before { right: 20px; }
-
-
-
-
+.user-permissions ul { clear: both; }
+.user-permissions ul ul li .checkbox + label { @include padding-left(35px); }
+.user-permissions ul ul ul li .checkbox + label { @include padding-left(55px); }
+.user-permissions ul ul li:before { @include left(20px); }
