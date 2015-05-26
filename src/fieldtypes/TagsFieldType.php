@@ -82,6 +82,16 @@ class TagsFieldType extends BaseElementFieldType
 		}
 	}
 
+	/**
+	 * @inheritDoc BaseElementFieldType::getAddButtonLabel()
+	 *
+	 * @return string
+	 */
+	protected function getAddButtonLabel()
+	{
+		return Craft::t('Add tags');
+	}
+
 	// Private Methods
 	// =========================================================================
 
