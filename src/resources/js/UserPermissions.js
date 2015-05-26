@@ -1,7 +1,7 @@
 (function($) {
 
 
-Craft.UserPermission = Garnish.Base.extend(
+Craft.UserPermissions = Garnish.Base.extend(
 {
     $wrapper: null,
     $selectAllBtn: null,
