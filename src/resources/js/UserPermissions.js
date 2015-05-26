@@ -67,5 +67,10 @@ Craft.UserPermissions = Garnish.Base.extend(
     }
 });
 
+var userPermissions = $('.user-permissions');
+
+$.each(userPermissions, function() {
+    new Craft.UserPermissions(this);
+});
 
 })(jQuery);

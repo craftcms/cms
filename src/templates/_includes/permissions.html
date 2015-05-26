@@ -34,23 +34,10 @@
 
 
 {% for category, catPermissions in craft.userPermissions.getAllPermissions() %}
-
 	<div class="user-permissions">
 		<h3>{{ category }}</h3>
-
 		<div class="select-all"></div>
 
 		{{ _self.permissionList(_context, catPermissions) }}
 	</div>
 {% endfor %}
-
-
-{% set js %}
-	var userPermissions = $('.user-permissions');
-
-	$.each(userPermissions, function() {
-		new Craft.UserPermissions(this);
-	});
-{% endset %}
-
-{% includeJs js %}
