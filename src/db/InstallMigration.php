@@ -112,7 +112,7 @@ abstract class InstallMigration extends Migration
 	 * The array keys should be the table names (either their full names or in the `{{%shortname}}` format without a prefix),
 	 * and the values should be sub-arrays with the following keys:
 	 *
-	 * - 'keys' (array)              - The columns (name => definition) in the new table
+	 * - 'columns' (array)           - The columns (name => definition) in the new table
 	 * - 'options' (string)          - Additional SQL fragment that will be appended to the generated SQL (optional, default is null)
 	 * - 'addIdColumn' (boolean)     - Whether an `id` column should be added (optional, default is true)
 	 * - 'addAuditColumns' (boolean) - Whether `dateCreated` and `dateUpdated` columns should be added (optional, default is true)
