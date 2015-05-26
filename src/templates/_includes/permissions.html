@@ -5,7 +5,7 @@
 
 {% macro permissionList(context, permissions, id, disabled) %}
 	{% from "_includes/forms" import checkbox %}
-	<ul{% if id %} id="{{ id|replace(':', '-') }}"{% endif %} class="indent">
+	<ul{% if id %} id="{{ id|replace(':', '-') }}"{% endif %}>
 		{% for permissionName, props in permissions %}
 			{% set isInGroupPermissions = (context.groupPermissions is defined and permissionName|lower in context.groupPermissions) %}
 			{% set checked = (isInGroupPermissions
