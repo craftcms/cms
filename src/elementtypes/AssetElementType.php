@@ -323,7 +323,7 @@ class AssetElementType extends BaseElementType
 
 		if ($criteria->folderId)
 		{
-			if (!$criteria->includeSubfolders)
+			if ($criteria->includeSubfolders)
 			{
 				$folders = craft()->assets->getAllDescendantFolders(craft()->assets->getFolderById($criteria->folderId));
 				$query->andWhere(DbHelper::parseParam('assetfiles.folderId', array_keys($folders), $query->params));
