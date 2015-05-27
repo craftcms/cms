@@ -80,7 +80,7 @@ class Et extends Component
 			foreach ($appUpdateModel->releases as $key => $appReleaseInfo)
 			{
 				$appReleaseModel = new AppNewRelease();
-				$appReleaseModel->setAttributes($appReleaseInfo);
+				$appReleaseModel->setAttributes($appReleaseInfo, false);
 
 				$appUpdateModel->releases[$key] = $appReleaseModel;
 			}
@@ -89,13 +89,13 @@ class Et extends Component
 			foreach ($updateModel->plugins as $pluginHandle => $pluginUpdateInfo)
 			{
 				$pluginUpdateModel = new PluginUpdate();
-				$pluginUpdateModel->setAttributes($pluginUpdateInfo);
+				$pluginUpdateModel->setAttributes($pluginUpdateInfo, false);
 
-				// Now populate a plugin's release information.
+				// Now populate a plugin’s release information.
 				foreach ($pluginUpdateModel->releases as $key => $pluginReleaseInfo)
 				{
 					$pluginReleaseModel = new PluginNewRelease();
-					$pluginReleaseModel->setAttributes($pluginReleaseInfo);
+					$pluginReleaseModel->setAttributes($pluginReleaseInfo, false);
 
 					$pluginUpdateModel->releases[$key] = $pluginReleaseModel;
 				}
