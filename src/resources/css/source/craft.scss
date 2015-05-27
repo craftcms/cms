@@ -165,6 +165,8 @@ strong, b, i em { font-weight: bold; font-family: sans-serif; }
 .centeralign { text-align: center !important; }
 .nowrap { white-space: nowrap; }
 .light { color: $mediumtextcolor !important; font-weight: normal; }
+.smalltext { font-size: 11px; }
+input.checkbox + label.smalltext { padding-top: 2px; }
 
 .required:after { content: '*'; @include margin(-2px, 0, 0, 2px); font-size: 7px; color: $errorcolor; }
 
@@ -294,6 +296,7 @@ ul.icons li a:hover { text-decoration: none; color: $linkcolor; }
 .toolbar.fixed { position: fixed; z-index: 1; top: 0; margin: 0 -1px; padding: 7px 1px; background: #fff; @include box-shadow(0 1px 0 rgba(0,0,0,0.05)); }
 .toolbar .spinner { position: absolute; top: 0; @include right(-24px); }
 
+table.inputs td { vertical-align: top; }
 table.inputs td:not(:first-child) { @include padding-left(14px); }
 table.inputs :not(.btngroup) > .btn,
 table.inputs .btngroup { display: block; float: none; }

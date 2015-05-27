@@ -3,6 +3,10 @@
  */
 Craft.AssetIndex = Craft.BaseElementIndex.extend(
 {
+	$includeSubfoldersContainer: null,
+	$includeSubfoldersCheckbox: null,
+	showingIncludeSubfoldersCheckbox: false,
+
 	$uploadButton: null,
 	$uploadInput: null,
 	$progressBar: null,
@@ -842,6 +846,74 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 	_getFolderIdFromSourceKey: function(sourceKey)
 	{
 		return sourceKey.split(':')[1];
+	},
+
+	onStartSearching: function()
+	{
+		// Does this source have subfolders?
+		if (this.$source.siblings('ul').length)
+		{
+			if (this.$includeSubfoldersContainer === null)
+			{
+				var id = 'includeSubfolders-'+Math.floor(Math.random()*1000000000);
+
+				this.$includeSubfoldersContainer = $('<div style="margin-bottom: -23px; opacity: 0;"/>').insertAfter(this.$search);
+				var $subContainer = $('<div style="padding-top: 5px;"/>').appendTo(this.$includeSubfoldersContainer);
+				this.$includeSubfoldersCheckbox = $('<input type="checkbox" id="'+id+'" class="checkbox"/>').appendTo($subContainer);
+				$('<label class="light smalltext" for="'+id+'"/>').text(' '+Craft.t('Search in subfolders')).appendTo($subContainer);
+
+				this.addListener(this.$includeSubfoldersCheckbox, 'change', function()
+				{
+					this.setSelecetedSourceState('includeSubfolders', this.$includeSubfoldersCheckbox.prop('checked'));
+					this.updateElements();
+				});
+			}
+			else
+			{
+				this.$includeSubfoldersContainer.velocity('stop');
+			}
+
+			var checked = this.getSelectedSourceState('includeSubfolders', false)
+			this.$includeSubfoldersCheckbox.prop('checked', checked);
+
+			this.$includeSubfoldersContainer.velocity({
+				marginBottom: 0,
+				opacity: 1
+			}, 'fast');
+
+			this.showingIncludeSubfoldersCheckbox = true;
+		}
+
+		this.base();
+	},
+
+	onStopSearching: function()
+	{
+		if (this.showingIncludeSubfoldersCheckbox)
+		{
+			this.$includeSubfoldersContainer.velocity('stop');
+
+			this.$includeSubfoldersContainer.velocity({
+				marginBottom: -23,
+				opacity: 0
+			}, 'fast');
+
+			this.showingIncludeSubfoldersCheckbox = false;
+		}
+
+		this.base();
+	},
+
+	getControllerData: function()
+	{
+		var data = this.base();
+
+		if (this.searching && this.$includeSubfoldersCheckbox.prop('checked'))
+		{
+			data.criteria.includeSubfolders = true;
+		}
+
+		return data;
 	},
 
 	/**
