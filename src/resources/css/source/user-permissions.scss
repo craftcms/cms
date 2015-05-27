@@ -15,7 +15,7 @@
 .user-permissions ul ul ul li:before { width: 30px; }
 .user-permissions ul ul ul ul li:before { width: 45px; }
 
-.user-permissions h3 { @include margin-right(0.5em); }
+.user-permissions h3 { @include padding-right(0.5em); @include border-right(1px solid #eee); @include margin-right(0.5em); }
 .user-permissions h3,
 .user-permissions .select-all { @include floatleft; }
 
