@@ -573,7 +573,7 @@ class AppBehavior extends BaseBehavior
 			}
 			else
 			{
-				if (craft()->getComponent('request', false))
+				if (craft()->getComponent('request', false) && !craft()->isConsole())
 				{
 					// We tried to get the language, but something went wrong. Use fallback to prevent infinite loop.
 					$fallbackLanguage = $this->_getFallbackLanguage();
