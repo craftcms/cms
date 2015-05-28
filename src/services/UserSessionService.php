@@ -800,7 +800,15 @@ class UserSessionService extends \CWebUser
 			}
 			default:
 			{
-				$error = Craft::t('Invalid username or password.');
+				if (craft()->config->get('useEmailAsUsername'))
+				{
+					$error = Craft::t('Invalid email or password.');
+				}
+				else
+				{
+					$error = Craft::t('Invalid username or password.');
+				}
+
 			}
 		}
 

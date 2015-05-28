@@ -535,7 +535,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 			source:              this.instanceState.selectedSource,
 			status:              this.status,
 			viewState:           this.getSelectedSourceState(),
-			search:              (this.$search ? this.$search.val() : null)
+			search:              (this.searching ? this.$search.val() : null)
 		};
 
 		// Possible that the order/sort isn't entirely accurate if we're sorting by Score
