@@ -132,8 +132,6 @@ class TemplatesController extends BaseController
 				$this->renderTemplate('_special/cantrun', array('reqCheck' => $reqCheck));
 				craft()->end();
 			}
-
-
 		}
 		else
 		{
@@ -211,7 +209,7 @@ class TemplatesController extends BaseController
 			else
 			{
 				// Just output the error message
-				echo $e->getMessage();
+				echo str_replace(array('“', '”', '‘', '’'), array('"', '"', '\'', '\''), $e->getMessage());
 			}
 		}
 	}
