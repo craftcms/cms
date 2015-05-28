@@ -58,7 +58,7 @@ class ElementHelper
 
 		// Convert to kebab case
 		$glue = craft()->config->get('slugWordSeparator');
-		$lower = empty(craft()->config->get('allowUppercaseInSlug'));
+		$lower = !craft()->config->get('allowUppercaseInSlug');
 		$str = StringHelper::toKebabCase($str, $glue, $lower, false);
 
 		return $str;
