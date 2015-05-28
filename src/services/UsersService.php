@@ -813,11 +813,21 @@ class UsersService extends BaseApplicationComponent
 		if ($user->unverifiedEmail)
 		{
 			$userRecord = $this->_getUserRecordById($user->id);
+			$oldEmail = $userRecord->email;
 			$userRecord->email = $user->unverifiedEmail;
 
 			if (craft()->config->get('useEmailAsUsername'))
 			{
 				$userRecord->username = $user->unverifiedEmail;
+
+				$oldProfilePhotoPath = craft()->path->getUserPhotosPath().AssetsHelper::cleanAssetName($oldEmail);
+				$newProfilePhotoPath = craft()->path->getUserPhotosPath().AssetsHelper::cleanAssetName($user->unverifiedEmail);
+
+				// Update the user profile photo folder name, if it exists.
+				if (IOHelper::folderExists($oldProfilePhotoPath))
+				{
+					IOHelper::rename($oldProfilePhotoPath, $newProfilePhotoPath);
+				}
 			}
 
 			$userRecord->unverifiedEmail = null;
