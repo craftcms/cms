@@ -8,16 +8,18 @@ Craft.RichTextInput = Garnish.Base.extend(
 {
 	id: null,
 	sectionSources: null,
+	categorySources: null,
 	elementLocale: null,
 	redactorConfig: null,
 
 	$textarea: null,
 	redactor: null,
 
-	init: function(id, sectionSources, elementLocale, redactorConfig, redactorLang)
+	init: function(id, sectionSources, categorySources, elementLocale, redactorConfig, redactorLang)
 	{
 		this.id = id;
 		this.sectionSources = sectionSources;
+		this.categorySources = categorySources;
 		this.elementLocale = elementLocale;
 		this.redactorConfig = redactorConfig;
 
@@ -169,6 +171,42 @@ Craft.RichTextInput = Garnish.Base.extend(
 						else
 						{
 							this.entrySelectionModal.show();
+						}
+					}, this)
+				},
+				link_category:
+				{
+					title: Craft.t('Link to a category'),
+					func: $.proxy(function()
+					{
+						this.redactor.selection.save();
+
+						if (typeof this.categorySelectionModal == 'undefined')
+						{
+							this.categorySelectionModal = Craft.createElementSelectorModal('Category', {
+								storageKey: 'RichTextFieldType.LinkToCategory',
+								sources: this.categorySources,
+								criteria: { locale: this.elementLocale },
+								onSelect: $.proxy(function(categories)
+								{
+									if (categories.length)
+									{
+										this.redactor.selection.restore();
+										var category  = categories[0],
+											url       = category.url+'#category:'+category.id,
+											selection = this.redactor.selection.getText(),
+											title = selection.length > 0 ? selection : category.label;
+										this.redactor.insert.node($('<a href="'+url+'">'+title+'</a>')[0]);
+										this.redactor.code.sync();
+									}
+									this.redactor.dropdown.hideAll();
+								}, this),
+								closeOtherModals: false
+							});
+						}
+						else
+						{
+							this.categorySelectionModal.show();
 						}
 					}, this)
 				},
