@@ -8,6 +8,7 @@
 namespace craft\app\elements\db;
 
 use Craft;
+use craft\app\db\Query;
 use craft\app\elements\MatrixBlock;
 use craft\app\fields\Matrix as MatrixField;
 use craft\app\helpers\DbHelper;
