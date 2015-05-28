@@ -58,7 +58,14 @@ class ImageHelper
 	 */
 	public static function isImageManipulatable($extension)
 	{
-		return in_array(mb_strtolower($extension), array('jpg', 'jpeg', 'gif', 'png', 'wbmp', 'xbm'));
+		$extensions = array('jpg', 'jpeg', 'gif', 'png', 'wbmp', 'xbm');
+
+		if (craft()->images->isImagick())
+		{
+			$extensions[] = 'svg';
+		}
+
+		return in_array(mb_strtolower($extension), $extensions);
 
 	}
 

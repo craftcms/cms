@@ -178,7 +178,10 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 		if ($event->performAction)
 		{
 			// We hate Javascript and PHP in our image files.
-			if (IOHelper::getFileKind(IOHelper::getExtension($localFilePath)) == 'image' && ImageHelper::isImageManipulatable(IOHelper::getExtension($localFilePath)))
+			if (IOHelper::getFileKind(IOHelper::getExtension($localFilePath)) == 'image'
+				&& ImageHelper::isImageManipulatable(IOHelper::getExtension($localFilePath))
+				&& IOHelper::getExtension($localFilePath) != 'svg' // Not an image in the classic sense here.
+			)
 			{
 				craft()->images->cleanImage($localFilePath);
 			}
@@ -215,7 +218,15 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 
 				if ($fileModel->kind == 'image')
 				{
-					list ($width, $height) = getimagesize($localFilePath);
+					if ($fileModel->getExtension() == 'svg')
+					{
+						list ($width, $height) = AssetsHelper::getSvgDimensions($localFilePath);
+					}
+					else
+					{
+						list ($width, $height) = getimagesize($localFilePath);
+					}
+
 					$fileModel->width = $width;
 					$fileModel->height = $height;
 				}
@@ -527,6 +538,11 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 
 		$sourceTransformPath = $folder->path.craft()->assetTransforms->getTransformSubpath($file, $source);
 		$targetTransformPath = $targetFolder->path.craft()->assetTransforms->getTransformSubpath($file, $target);
+
+		if ($sourceTransformPath == $targetTransformPath)
+		{
+			return true;
+		}
 
 		return $this->copySourceFile($sourceTransformPath, $targetTransformPath);
 	}

@@ -603,6 +603,7 @@ class AssetTransformsService extends BaseApplicationComponent
 	{
 		craft()->db->createCommand()->delete('assettransformindex', 'id = :id', array(':id' => $indexId));
 	}
+
 	/**
 	 * Get a thumb server path by file model and size.
 	 *
@@ -1084,6 +1085,11 @@ class AssetTransformsService extends BaseApplicationComponent
 		// For non-web-safe formats we go with jpg.
 		if (!in_array(mb_strtolower(IOHelper::getExtension($file->filename)), ImageHelper::getWebSafeFormats()))
 		{
+			if ($file->getExtension() == 'svg' && craft()->images->isImagick())
+			{
+				return 'png';
+			}
+
 			return 'jpg';
 		}
 		else

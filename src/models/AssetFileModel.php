@@ -299,12 +299,22 @@ class AssetFileModel extends BaseElementModel
 	 */
 	public function hasThumb()
 	{
-		if ($this->kind == 'image' && $this->_getHeight() && $this->_getWidth())
+		if ($this->kind == 'image')
 		{
-			// Gd doesn't process bitmaps
-			if ($this->getExtension() == 'bmp' && craft()->images->isGd())
+			if ($this->_getHeight() && $this->_getWidth())
 			{
-				return false;
+				// Gd doesn't process bitmaps
+				if ($this->getExtension() == 'bmp' && craft()->images->isGd())
+				{
+					return false;
+				}
+			}
+			else
+			{
+				if ($this->getExtension() == 'svg' && !craft()->images->isImagick())
+				{
+					return false;
+				}
 			}
 
 			return true;

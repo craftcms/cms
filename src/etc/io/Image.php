@@ -128,7 +128,7 @@ class Image
 
 		$imageInfo = @getimagesize($path);
 
-		if (!is_array($imageInfo))
+		if (!is_array($imageInfo) && !(craft()->images->isImagick() && IOHelper::getExtension($path) == 'svg'))
 		{
 			throw new Exception(Craft::t('The file “{path}” does not appear to be an image.', array('path' => $path)));
 		}
