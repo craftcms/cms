@@ -201,6 +201,7 @@ Craft.EditableTable.Row = Garnish.Base.extend(
 				if (col.type == 'singleline' || col.type == 'number')
 				{
 					this.addListener($textarea, 'keypress', { type: col.type }, 'validateKeypress');
+					this.addListener($textarea, 'textchange', { type: col.type }, 'validateValue');
 				}
 
 				textareasByColId[colId] = $textarea;
@@ -280,6 +281,36 @@ Craft.EditableTable.Row = Garnish.Base.extend(
 		))
 		{
 			ev.preventDefault();
+		}
+	},
+
+	validateValue: function(ev)
+	{
+		var safeValue;
+
+		if (ev.data.type == 'number')
+		{
+			// Only grab the number at the beginning of the value (if any)
+			var match = ev.currentTarget.value.match(/^\s*(-?[\d\.]*)/);
+
+			if (match !== null)
+			{
+				safeValue = match[1];
+			}
+			else
+			{
+				safeValue = '';
+			}
+		}
+		else
+		{
+			// Just strip any newlines
+			safeValue = ev.currentTarget.value.replace(/[\r\n]/g, '');
+		}
+
+		if (safeValue !== ev.currentTarget.value)
+		{
+			ev.currentTarget.value = safeValue;
 		}
 	},
 
