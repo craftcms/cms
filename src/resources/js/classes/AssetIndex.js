@@ -908,7 +908,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 	{
 		var data = this.base();
 
-		if (this.searching && this.$includeSubfoldersCheckbox.prop('checked'))
+		if (this.showingIncludeSubfoldersCheckbox && this.$includeSubfoldersCheckbox.prop('checked'))
 		{
 			data.criteria.includeSubfolders = true;
 		}
