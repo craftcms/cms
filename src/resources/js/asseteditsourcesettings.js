@@ -52,7 +52,7 @@ $s3RefreshBucketsBtn.click(function()
                         currentBucketStillExists = true;
                     }
 
-                    $s3BucketSelect.append('<option value="'+response[i].bucket+'" data-url-prefix="'+response[i].url_prefix+'" data-location="'+response[i].location+'">'+response[i].bucket+'</option>');
+                    $s3BucketSelect.append('<option value="'+response[i].bucket+'" data-url-prefix="'+response[i].urlPrefix+'" data-location="'+response[i].location+'">'+response[i].bucket+'</option>');
                 }
 
                 if (currentBucketStillExists)

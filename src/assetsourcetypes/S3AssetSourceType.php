@@ -71,7 +71,7 @@ class S3AssetSourceType extends BaseAssetSourceType
 				$bucketList[] = array(
 					'bucket' => $bucket,
 					'location' => $location,
-					'url_prefix' => 'http://'.static::getEndpointByLocation($location).'/'.$bucket.'/'
+					'urlPrefix' => 'http://'.static::getEndpointByLocation($location).'/'.$bucket.'/'
 				);
 
 			}

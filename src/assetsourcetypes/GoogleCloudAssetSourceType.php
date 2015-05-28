@@ -61,7 +61,7 @@ class GoogleCloudAssetSourceType extends BaseAssetSourceType
 			$bucketList[] = array(
 				'bucket' => $bucket,
 				'location' => $location,
-				'url_prefix' => 'http://'.static::$_endpoint.'/'.$bucket.'/'
+				'urlPrefix' => 'http://'.static::$_endpoint.'/'.$bucket.'/'
 			);
 
 		}
