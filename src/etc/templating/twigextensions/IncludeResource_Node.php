@@ -26,12 +26,31 @@ class IncludeResource_Node extends \Twig_Node
 	public function compile(\Twig_Compiler $compiler)
 	{
 		$function = $this->getAttribute('function');
-		$path = $this->getNode('path');
+		$value = $this->getNode('value');
 
 		$compiler
-			->addDebugInfo($this)
-			->write('\Craft\craft()->templates->'.$function.'(')
-			->subcompile($path);
+			->addDebugInfo($this);
+
+		if ($this->getAttribute('capture'))
+		{
+			$compiler
+				->write("ob_start();\n")
+				->subcompile($value)
+				->write("\$_js = ob_get_clean();\n")
+			;
+		}
+		else
+		{
+			$compiler
+				->write("\$_js = ")
+				->subcompile($value)
+				->raw(";\n")
+			;
+		}
+
+		$compiler
+			->write("\\Craft\\craft()->templates->{$function}(\$_js")
+		;
 
 		if ($this->getAttribute('first'))
 		{
