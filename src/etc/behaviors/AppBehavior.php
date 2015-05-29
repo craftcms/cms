@@ -759,6 +759,12 @@ class AppBehavior extends BaseBehavior
 						}
 					}
 
+					// If they've set a default CP language, use it here.
+					if ($defaultCpLanguage = craft()->config->get('defaultCpLanguage'))
+					{
+						return $defaultCpLanguage;
+					}
+
 					// Otherwise check if the browser's preferred language matches any of the site locales
 					$browserLanguages = craft()->request->getBrowserLanguages();
 

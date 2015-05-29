@@ -158,6 +158,12 @@ return array(
 	'defaultCookieDomain' => '',
 
 	/**
+	 * Defines the default language the control panel should get set to if the logged-in user doesn't have a
+	 * preferred language set.
+	 */
+	'defaultCpLanguage' => '',
+
+	/**
 	 * The default permissions Craft will use when creating a file on the file system.
 	 */
 	'defaultFilePermissions' => 0664,
