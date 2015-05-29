@@ -74,6 +74,7 @@ class TagsFieldType extends BaseElementFieldType
 				'elements'        => $criteria,
 				'tagGroupId'      => $this->_getTagGroupId(),
 				'sourceElementId' => (isset($this->element->id) ? $this->element->id : null),
+				'selectionLabel'  => $this->getSettings()->selectionLabel,
 			));
 		}
 		else
@@ -89,7 +90,7 @@ class TagsFieldType extends BaseElementFieldType
 	 */
 	protected function getAddButtonLabel()
 	{
-		return Craft::t('Add tags');
+		return Craft::t('Add a tag');
 	}
 
 	// Private Methods
