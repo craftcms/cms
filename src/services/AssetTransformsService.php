@@ -625,7 +625,7 @@ class AssetTransformsService extends BaseApplicationComponent
 		{
 			$imageSource = $this->getLocalImageSource($fileModel);
 
-			craft()->images->loadImage($imageSource)
+			craft()->images->loadImage($imageSource, $size, $size)
 				->scaleAndCrop($size, $size)
 				->saveAs($thumbPath);
 
@@ -737,7 +737,10 @@ class AssetTransformsService extends BaseApplicationComponent
 		if ($maxCachedImageSize > 0 && ImageHelper::isImageManipulatable($localCopy))
 		{
 
-			craft()->images->loadImage($localCopy)->scaleToFit($maxCachedImageSize, $maxCachedImageSize)->setQuality(100)->saveAs($destination);
+			craft()->images->loadImage($localCopy, $maxCachedImageSize, $maxCachedImageSize)
+				->scaleToFit($maxCachedImageSize, $maxCachedImageSize)
+				->setQuality(100)
+				->saveAs($destination);
 
 			if ($localCopy != $destination)
 			{
@@ -1034,7 +1037,7 @@ class AssetTransformsService extends BaseApplicationComponent
 		$imageSource = $file->getTransformSource();
 		$quality = $transform->quality ? $transform->quality : craft()->config->get('defaultImageQuality');
 
-		$image = craft()->images->loadImage($imageSource);
+		$image = craft()->images->loadImage($imageSource, $transform->width, $transform->height);
 		$image->setQuality($quality);
 
 		switch ($transform->mode)

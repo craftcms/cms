@@ -144,7 +144,7 @@ class ResourcesService extends BaseApplicationComponent
 
 							if (IOHelper::isWritable($sizedPhotoFolder))
 							{
-								craft()->images->loadImage($originalPhotoPath)
+								craft()->images->loadImage($originalPhotoPath, $size, $size)
 									->resize($size)
 									->saveAs($sizedPhotoPath);
 							}
@@ -173,7 +173,7 @@ class ResourcesService extends BaseApplicationComponent
 					if (IOHelper::isWritable($targetFolder))
 					{
 						$targetFile = $targetFolder.$size.'.'.IOHelper::getExtension($sourceFile);
-						craft()->images->loadImage($sourceFile)
+						craft()->images->loadImage($sourceFile, $size, $size)
 							->resize($size)
 							->saveAs($targetFile);
 
@@ -532,7 +532,7 @@ class ResourcesService extends BaseApplicationComponent
 		if ($size != $sourceSize['size'])
 		{
 			// Resize the source icon to fit this size.
-			craft()->images->loadImage($sourceIconLocation)
+			craft()->images->loadImage($sourceIconLocation, $size, $size)
 				->scaleAndCrop($size, $size)
 				->saveAs($iconLocation);
 		}

@@ -17,6 +17,16 @@ class Image
 	// =========================================================================
 
 	/**
+	 * @var int The minimum width that the image should be loaded with if it’s an SVG.
+	 */
+	public $minSvgWidth;
+
+	/**
+	 * @var int The minimum height that the image should be loaded with if it’s an SVG.
+	 */
+	public $minSvgHeight;
+
+	/**
 	 * @var string
 	 */
 	private $_imageSourcePath;
@@ -126,15 +136,65 @@ class Image
 			throw new Exception(Craft::t("Not enough memory available to perform this image operation."));
 		}
 
-		$imageInfo = @getimagesize($path);
+		$extension = IOHelper::getExtension($path);
 
-		if (!is_array($imageInfo) && !(craft()->images->isImagick() && IOHelper::getExtension($path) == 'svg'))
+		if ($extension === 'svg')
 		{
-			throw new Exception(Craft::t('The file “{path}” does not appear to be an image.', array('path' => $path)));
+			if (!craft()->images->isImagick())
+			{
+				throw new Exception(Craft::t('The file “{path}” does not appear to be an image.', array('path' => $path)));
+			}
+
+			$svg = IOHelper::getFileContents($path);
+
+			if ($this->minSvgWidth !== null && $this->minSvgHeight !== null)
+			{
+				// Does the <svg> node contain valid `width` and `height` attributes?
+				$widthRegex = '/(.*<svg[^>]* width=")([\d\.]+px)(.*)/si';
+				$heightRegex = '/(.*<svg[^>]* height=")([\d\.]+px)(.*)/si';
+
+				if (
+					preg_match($widthRegex, $svg, $widthMatch) &&
+					preg_match($heightRegex, $svg, $heightMatch) &&
+					($width = floatval($widthMatch[2])) &&
+					($height = floatval($heightMatch[2]))
+				)
+				{
+					$scale = 1;
+
+					if ($width < $this->minSvgWidth)
+					{
+						$scale = $this->minSvgWidth / $width;
+					}
+
+					if ($height < $this->minSvgHeight)
+					{
+						$scale = max($scale, ($this->minSvgHeight / $height));
+					}
+
+					$width *= $scale * 2;
+					$height *= $scale * 2;
+
+					$svg = preg_replace($widthRegex, "\${1}{$width}px\${3}", $svg);
+					$svg = preg_replace($heightRegex, "\${1}{$height}px\${3}", $svg);
+				}
+			}
+
+			$this->_image = $this->_instance->load($svg);
+		}
+		else
+		{
+			$imageInfo = @getimagesize($path);
+
+			if (!is_array($imageInfo))
+			{
+				throw new Exception(Craft::t('The file “{path}” does not appear to be an image.', array('path' => $path)));
+			}
+
+			$this->_image = $this->_instance->open($path);
 		}
 
-		$this->_image = $this->_instance->open($path);
-		$this->_extension = IOHelper::getExtension($path);
+		$this->_extension = $extension;
 		$this->_imageSourcePath = $path;
 
 		if ($this->_extension == 'gif')
