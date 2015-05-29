@@ -118,7 +118,7 @@ class RebrandController extends BaseController
 
 					IOHelper::clearFolder($targetPath);
 					craft()->images
-						->loadImage($imagePath)
+						->loadImage($imagePath, 300, 300)
 						->crop($x1, $x2, $y1, $y2)
 						->scaleToFit(300, 300, false)
 						->saveAs($targetPath.$source);
