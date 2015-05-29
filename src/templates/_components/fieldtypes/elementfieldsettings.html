@@ -41,11 +41,11 @@
 {% endif %}
 
 {{ forms.textField({
-	label: "Selection Button Label"|t,
-	instructions: "Enter the text you want to appear on the {type} selection button."|t({ type: type|lower }),
-	id: 'addButtonLabel',
-	name: 'addButtonLabel',
-	value: settings.addButtonLabel,
+	label: "Selection Label"|t,
+	instructions: "Enter the text you want to appear on the {type} selection input."|t({ type: type|lower }),
+	id: 'selectionLabel',
+	name: 'selectionLabel',
+	value: settings.selectionLabel,
 	size: 25,
-	errors: settings.getErrors('addButtonLabel')
+	errors: settings.getErrors('selectionLabel')
 }) }}

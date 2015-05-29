@@ -391,7 +391,7 @@ abstract class BaseElementFieldType extends BaseFieldType
 			'criteria'           => $selectionCriteria,
 			'sourceElementId'    => (isset($this->element->id) ? $this->element->id : null),
 			'limit'              => ($this->allowLimit ? $settings->limit : null),
-			'addButtonLabel'     => $this->getSettings()->addButtonLabel,
+			'selectionLabel'     => $this->getSettings()->selectionLabel,
 		);
 	}
 
@@ -502,7 +502,7 @@ abstract class BaseElementFieldType extends BaseFieldType
 			$settings['limit'] = array(AttributeType::Number, 'min' => 0);
 		}
 
-		$settings['addButtonLabel'] = array(AttributeType::String, 'default' => $this->getAddButtonLabel());
+		$settings['selectionLabel'] = array(AttributeType::String, 'default' => $this->getAddButtonLabel());
 
 		return $settings;
 	}

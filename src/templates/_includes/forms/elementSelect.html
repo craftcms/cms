@@ -16,7 +16,7 @@
 		{% endfor %}
 	</div>
 
-	<div class="btn add icon dashed">{{ addButtonLabel }}</div>
+	<div class="btn add icon dashed">{{ selectionLabel is defined ? selectionLabel : (addButtonLabel is defined ? addButtonLabel : "Choose"|t) }}</div>
 </div>
 
 {% set js %}
