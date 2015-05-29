@@ -1214,6 +1214,12 @@ class UsersController extends BaseController
 			$this->_noUserExists($userId);
 		}
 
+		// Only allow activation emails to be send to pending users.
+		if ($user->getStatus() !== UserStatus::Pending)
+		{
+			throw new Exception(Craft::t('Invalid account status for user ID “{id}”.', array('id' => $userId)));
+		}
+
 		craft()->users->sendActivationEmail($user);
 
 		if (craft()->request->isAjaxRequest())
