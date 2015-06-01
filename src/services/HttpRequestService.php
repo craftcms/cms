@@ -1109,7 +1109,7 @@ class HttpRequestService extends \CHttpRequest
 
 		foreach ($parts as $key => $part)
 		{
-			if (mb_strpos($part, 'p=') !== false)
+			if (mb_strpos($part, craft()->urlManager->pathParam.'=') === 0)
 			{
 				unset($parts[$key]);
 				break;
