@@ -645,10 +645,10 @@ class TemplateCacheService extends BaseApplicationComponent
 				$this->_path .= '/'.craft()->config->get('pageTrigger').$pageNum;
 			}
 
-			if ($queryString = craft()->request->getQueryString())
+			// Get the querystring without the path param.
+			if ($queryString = craft()->request->getQueryStringWithoutPath())
 			{
-				// Strip the path param
-				$queryString = trim(preg_replace('/'.craft()->urlManager->pathParam.'=[^&]*/', '', $queryString), '&');
+				$queryString = trim($queryString, '&');
 
 				if ($queryString)
 				{
