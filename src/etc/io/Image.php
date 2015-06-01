@@ -56,6 +56,16 @@ class Image
 	 */
 	private $_instance;
 
+	/**
+	 * @var \Imagine\Image\Palette\RGB
+	 */
+	private $_palette;
+
+	/**
+	 * @var \Imagine\Image\FontInterface
+	 */
+	private $_font;
+
 	// Public Methods
 	// =========================================================================
 
@@ -494,6 +504,67 @@ class Image
 
 			return array();
 		}
+	}
+
+	/**
+	 * Set properties for text drawing on the image.
+	 *
+	 * @param $fontFile string path to the font file on server
+	 * @param $size     int    font size to use
+	 * @param $color    string font color to use in hex format
+	 *
+	 * @return null
+	 */
+	public function setFontProperties($fontFile, $size, $color)
+	{
+		if (empty($this->_palette))
+		{
+			$this->_palette = new \Imagine\Image\Palette\RGB();
+		}
+
+		$this->_font = $this->_instance->font($fontFile, $size, $this->_palette->color($color));
+	}
+
+	/**
+	 * Get the bounding text box for a text string and an angle
+	 *
+	 * @param $text
+	 * @param int $angle
+	 *
+	 * @throws Exception
+	 * @return \Imagine\Image\BoxInterface
+	 */
+	public function getTextBox($text, $angle = 0)
+	{
+		if (empty($this->_font))
+		{
+			throw new Exception(Craft::t("No font properties have been set. Call Image::setFontProperties() first."));
+		}
+
+		return $this->_font->box($text, $angle);
+	}
+
+	/**
+	 * Write text on an image
+	 *
+	 * @param $text
+	 * @param $x
+	 * @param $y
+	 * @param int $angle
+	 *
+	 * @return null;
+	 */
+	public function writeText($text, $x, $y, $angle = 0)
+	{
+
+		if (empty($this->_font))
+		{
+			throw new Exception(Craft::t("No font properties have been set. Call Image::setFontProperties() first."));
+		}
+
+		$point = new \Imagine\Image\Point($x, $y);
+
+		$this->_image->draw()->text($text, $this->_font, $point, $angle);
 	}
 
 	// Private Methods
