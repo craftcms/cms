@@ -253,19 +253,10 @@
 									<div class="btngroup submit first">
 										<input type="submit" class="btn submit" value="{{ 'Save'|t }}">
 
-										{% switch craft.request.getClientOs() %}
-											{% case 'Windows' %}
-												{% set saveAndContinueText = "Save and continue editing (Ctrl+S)"|t %}
-											{% case 'Mac' %}
-												{% set saveAndContinueText = "Save and continue editing (⌘+S)"|t %}
-											{% default %}
-												{% set saveAndContinueText = "Save and continue editing"|t %}
-										{% endswitch %}
-
 										<div class="btn submit menubtn"></div>
 										<div class="menu">
 											<ul>
-												<li><a class="formsubmit" data-redirect="{{ continueEditingUrl }}">{{ saveAndContinueText }}</a></li>
+												<li><a class="formsubmit" data-redirect="{{ continueEditingUrl }}">{{ "Save and continue editing"|t }}</a></li>
 
 												{% set nextEntryParams = [] %}
 												{% if showEntryTypes %}
