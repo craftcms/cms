@@ -27,6 +27,16 @@ class PluginVariable extends BaseComponentTypeVariable
 	}
 
 	/**
+	 * Returns the plugin’s description.
+	 *
+	 * @return string
+	 */
+	public function getDescription()
+	{
+		return $this->component->getDescription();
+	}
+
+	/**
 	 * Returns the plugin's version.
 	 *
 	 * @return string

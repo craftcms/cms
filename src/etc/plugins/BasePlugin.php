@@ -66,15 +66,19 @@ abstract class BasePlugin extends BaseSavableComponentType implements IPlugin
 	}
 
 	/**
-	 * Returns the plugin's source language
+	 * Returns the plugin's description.
 	 *
 	 * @return string
 	 */
-	public function getSourceLanguage()
+	public function getDescription()
 	{
-		return craft()->sourceLanguage;
 	}
 
+	/**
+	 * Returns the plugin's icon URL.
+	 *
+	 * @return string
+	 */
 	public function getIcon()
 	{
 		$path = $this->getClassHandle().'/icon.png';
@@ -85,6 +89,16 @@ abstract class BasePlugin extends BaseSavableComponentType implements IPlugin
 		{
 			return UrlHelper::getResourceUrl($path);
 		}
+	}
+
+	/**
+	 * Returns the plugin's source language
+	 *
+	 * @return string
+	 */
+	public function getSourceLanguage()
+	{
+		return craft()->sourceLanguage;
 	}
 
 	/**

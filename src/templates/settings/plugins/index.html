@@ -2,6 +2,7 @@
 
 {% extends "_layouts/cp" %}
 {% set title = "Plugins"|t %}
+{% includeCssResource "css/plugins.css" %}
 
 {% set crumbs = [
 	{ label: "Settings"|t, url: url('settings') }
@@ -25,6 +26,7 @@
 			<tbody>
 				{% for plugin in plugins %}
 					{% set name = plugin.getName() -%}
+					{% set description = plugin.getDescription() -%}
 					{% set classHandle = plugin.getClassHandle() -%}
 					{% set isInstalled = plugin.isInstalled() -%}
 					{% set isEnabled = plugin.isEnabled() -%}
@@ -39,6 +41,10 @@
 								{{ name }}
 							{% endif %}
 							<span class="light">{{ plugin.getVersion() }}</span>
+
+							{% if description %}
+								<span class="description">{{ description }}</span>
+							{% endif %}
 						</th>
 						<td data-title="{{ 'Developer'|t }}"><a{% if developerUrl %} href="{{ developerUrl }}" target="_blank"{% endif %}>{{ plugin.getDeveloper() }}</a></td>
 						<td data-title="{{ 'Status'|t }}">
