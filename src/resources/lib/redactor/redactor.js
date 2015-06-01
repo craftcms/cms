@@ -1,6 +1,6 @@
 /*
-	Redactor v10.1.1
-	Updated: April 28, 2015
+	Redactor v10.1.2
+	Updated: May 25, 2015
 
 	http://imperavi.com/redactor/
 
@@ -91,7 +91,7 @@
 
 	// Functionality
 	$.Redactor = Redactor;
-	$.Redactor.VERSION = '10.1.1';
+	$.Redactor.VERSION = '10.1.2';
 	$.Redactor.modules = ['alignment', 'autosave', 'block', 'buffer', 'build', 'button',
 						  'caret', 'clean', 'code', 'core', 'dropdown', 'file', 'focus',
 						  'image', 'indent', 'inline', 'insert', 'keydown', 'keyup',
@@ -1272,6 +1272,7 @@
 				callEditor: function()
 				{
 					this.build.disableMozillaEditing();
+					this.build.disableIeLinks();
 					this.build.setEvents();
 					this.build.setHelpers();
 
@@ -1468,6 +1469,13 @@
 						document.execCommand('enableObjectResizing', false, false);
 						document.execCommand('enableInlineTableEditing', false, false);
 					} catch (e) {}
+				},
+				disableIeLinks: function()
+				{
+					if (!this.utils.browser('ie')) return;
+
+					// IE prevent converting links
+					document.execCommand("AutoUrlDetect", false, false);
 				}
 			};
 		},
@@ -1526,7 +1534,7 @@
 				},
 				createTooltip: function($button, name, title)
 				{
-					var $tooltip = $('<span>').addClass('redactor-toolbar-tooltip redactor-toolbar-tooltip-' + name).hide().html(title);
+					var $tooltip = $('<span>').addClass('redactor-toolbar-tooltip redactor-toolbar-tooltip-' + this.uuid + ' redactor-toolbar-tooltip-' + name).hide().html(title);
 					$tooltip.appendTo('body');
 
 					$button.on('mouseover', function()
@@ -1623,6 +1631,8 @@
 				},
 				addCallback: function($btn, callback)
 				{
+					if ($btn == "buffer") return;
+
 					var type = (callback == 'dropdown') ? 'dropdown' : 'func';
 					var key = $btn.attr('rel');
 					$btn.on('touchstart click', $.proxy(function(e)
@@ -1649,6 +1659,8 @@
 				{
 					if (!this.opts.toolbar) return;
 
+					if (this.button.isMobileUndoRedo(key)) return "buffer";
+
 					var btn = this.button.build(key, { title: title });
 					btn.addClass('redactor-btn-image');
 
@@ -1660,6 +1672,8 @@
 				{
 					if (!this.opts.toolbar) return;
 
+					if (this.button.isMobileUndoRedo(key)) return "buffer";
+
 					var btn = this.button.build(key, { title: title });
 					btn.addClass('redactor-btn-image');
 					this.$toolbar.prepend($('<li>').append(btn));
@@ -1669,6 +1683,8 @@
 				addAfter: function(afterkey, key, title)
 				{
 					if (!this.opts.toolbar) return;
+
+					if (this.button.isMobileUndoRedo(key)) return "buffer";
 
 					var btn = this.button.build(key, { title: title });
 					btn.addClass('redactor-btn-image');
@@ -1683,6 +1699,8 @@
 				{
 					if (!this.opts.toolbar) return;
 
+					if (this.button.isMobileUndoRedo(key)) return "buffer";
+
 					var btn = this.button.build(key, { title: title });
 					btn.addClass('redactor-btn-image');
 					var $btn = this.button.get(beforekey);
@@ -1695,6 +1713,10 @@
 				remove: function(key)
 				{
 					this.button.get(key).remove();
+				},
+				isMobileUndoRedo: function(key)
+				{
+					return (key == "undo" || key == "redo") && !this.utils.isDesktop();
 				}
 			};
 		},
@@ -1991,13 +2013,22 @@
 					// remove br in the of li
 					html = html.replace(new RegExp('<br\\s?/?></li>', 'gi'), '</li>');
 					html = html.replace(new RegExp('</li><br\\s?/?>', 'gi'), '</li>');
+
+					// remove empty attributes
+					html = html.replace(/(style|rel)="\s*?"/, '');
+
 					// remove verified
 					html = html.replace(/<div(.*?[^>]) data-tagblock="redactor"(.*?[^>])>/gi, '<div$1$2>');
 					html = html.replace(/<(.*?) data-verified="redactor"(.*?[^>])>/gi, '<$1$2>');
-					html = html.replace(/<span(.*?[^>])\srel="(.*?[^>])"(.*?[^>])>/gi, '<span$1$3>');
-					html = html.replace(/<img(.*?[^>])\srel="(.*?[^>])"(.*?[^>])>/gi, '<img$1$3>');
-					html = html.replace(/<img(.*?[^>])\sstyle="" (.*?[^>])>'/gi, '<img$1 $2>');
-					html = html.replace(/<img(.*?[^>])\sstyle (.*?[^>])>'/gi, '<img$1 $2>');
+
+					var $div = $("<div/>").html($.parseHTML(html));
+					$div.find("span").removeAttr("rel");
+
+					html = $div.html();
+
+					// remove rel attribute from img
+					html = html.replace(/<img(.*?[^>])rel="(.*?[^>])"(.*?[^>])>/gi, '<img$1$3>');
+
 					html = html.replace(/<span class="redactor-invisible-space">(.*?)<\/span>/gi, '$1');
 					html = html.replace(/ data-save-url="(.*?[^>])"/gi, '');
 
@@ -2136,18 +2167,105 @@
 					// style
 					html = html.replace(/<style[^>]*>[\s\S]*?<\/style>/gi, '');
 
-					if (/(class=\"?Mso|style=\"[^\"]*\bmso\-|w:WordDocument)/.test(html))
+					if (html.match(/class="?Mso|style="[^"]*\bmso-|style='[^'']*\bmso-|w:WordDocument/i))
 					{
+						// comments
+						html = html.replace(/<!--[\s\S]+?-->/gi, '');
+
+						// scripts
+						html = html.replace(/<(!|script[^>]*>.*?<\/script(?=[>\s])|\/?(\?xml(:\w+)?|img|meta|link|style|\w:\w+)(?=[\s\/>]))[^>]*>/gi, '');
+
+						// Convert <s> into <strike>
+						html = html.replace(/<(\/?)s>/gi, "<$1strike>");
+
+						// Replace nbsp entites to char since it's easier to handle
+						html = html.replace(/ /gi, ' ');
+
+						// Convert <span style="mso-spacerun:yes">___</span> to string of alternating
+						// breaking/non-breaking spaces of same length
+						html = html.replace(/<span\s+style\s*=\s*"\s*mso-spacerun\s*:\s*yes\s*;?\s*"\s*>([\s\u00a0]*)<\/span>/gi, function(str, spaces) {
+							return (spaces.length > 0) ? spaces.replace(/./, " ").slice(Math.floor(spaces.length/2)).split("").join("\u00a0") : '';
+						});
+
 						html = this.clean.onPasteIeFixLinks(html);
 
 						// shapes
 						html = html.replace(/<img(.*?)v:shapes=(.*?)>/gi, '');
 						html = html.replace(/src="file\:\/\/(.*?)"/, 'src=""');
 
-						// list
-						html = html.replace(/<p(.*?)class="MsoListParagraphCxSpFirst"([\w\W]*?)<\/p>/gi, '<ul><li$2</li>');
-						html = html.replace(/<p(.*?)class="MsoListParagraphCxSpMiddle"([\w\W]*?)<\/p>/gi, '<li$2</li>');
-						html = html.replace(/<p(.*?)class="MsoListParagraphCxSpLast"([\w\W]*?)<\/p>/gi, '<li$2</li></ul>');
+						// lists
+						var $div = $("<div/>").html(html);
+
+						var lastList = false;
+						var lastLevel = 1;
+						var listsIds = [];
+
+						$div.find("p[style]").each(function()
+						{
+							var matches = $(this).attr('style').match(/mso\-list\:l([0-9]+)\slevel([0-9]+)/);
+
+							if (matches)
+							{
+								var currentList = parseInt(matches[1]);
+								var currentLevel = parseInt(matches[2]);
+								var listType = $(this).html().match(/^[\w]+\./) ? "ol" : "ul";
+
+								var $li = $("<li/>").html($(this).html());
+
+								$li.html($li.html().replace(/^([\w\.]+)\</, '<'));
+								$li.find("span:first").remove();
+
+								if (currentLevel == 1 && $.inArray(currentList, listsIds) == -1)
+								{
+									var $list = $("<" + listType + "/>").attr({"data-level": currentLevel,
+																			   "data-list": currentList})
+																	  .html($li);
+
+									$(this).replaceWith($list);
+
+									lastList = currentList;
+									listsIds.push(currentList);
+								}
+								else
+								{
+									if (currentLevel > lastLevel)
+									{
+										var $prevList = $div.find('[data-level="' + lastLevel + '"][data-list="' + lastList + '"]');
+
+										var $lastList = $prevList;
+
+										for(var i = lastLevel; i < currentLevel; i++)
+										{
+											$list = $("<" + listType + "/>");
+
+											$list.appendTo($lastList.find("li").last());
+
+											$lastList = $list;
+										}
+
+										$lastList.attr({"data-level": currentLevel,
+														"data-list": currentList})
+												 .html($li);
+
+									}
+									else
+									{
+										var $prevList = $div.find('[data-level="' + currentLevel + '"][data-list="' + currentList + '"]').last();
+
+										$prevList.append($li);
+									}
+
+									lastLevel = currentLevel;
+									lastList = currentList;
+
+									$(this).remove();
+								}
+							}
+						});
+
+						$div.find('[data-level][data-list]').removeAttr('data-level data-list');
+						html = $div.html();
+
 						// one line
 						html = html.replace(/<p(.*?)class="MsoListParagraph"([\w\W]*?)<\/p>/gi, '<ul><li$2</li></ul>');
 						// remove ms word's bullet
@@ -2166,12 +2284,6 @@
 
 						// ms word lists break lines
 						html = html.replace(/<p>\n?<li>/gi, '<li>');
-					}
-
-					// remove nbsp
-					if (this.opts.cleanSpaces)
-					{
-						html = html.replace(/(\s|&nbsp;)+/g, ' ');
 					}
 
 					return html;
@@ -2375,29 +2487,28 @@
 						}, this));
 					}
 
+					// replacing back selection marker in pre for caret sync
+					html = html.replace(/&lt;span id=&quot;selection-marker-([0-9])&quot; class=&quot;redactor-selection-marker&quot; data-verified=&quot;redactor&quot;&gt;​&lt;\/span&gt;/g, '<span id="selection-marker-$1" class="redactor-selection-marker" data-verified="redactor">​</span>');
+
 					return html;
 				},
 				saveCodeFormatting: function(html)
 				{
-					var code = html.match(/<code(.*?[^>])>(.*?)<\/code>/gi);
-					if (code !== null)
+					var $div = $("<div/>").html(html);
+
+					$div.find("code").each($.proxy(function(i,s)
 					{
-						$.each(code, $.proxy(function(i,s)
-						{
-							var arr = s.match(/<code(.*?[^>])>(.*?)<\/code>/i);
+						var html = $(s).html();
 
-							arr[2] = arr[2].replace(/&nbsp;/g, ' ');
-							arr[2] = this.clean.encodeEntities(arr[2]);
+						html = html.replace(/&nbsp;/g, ' ');
+						html = this.clean.encodeEntities(html);
+						html = html.replace(/\$/g, '&#36;');
 
-							// $ fix
-							arr[2] = arr[2].replace(/\$/g, '&#36;');
+						$(s).html(html);
 
-							html = html.replace(s, '<code' + arr[1] + '>' + arr[2] + '</code>');
+					}, this));
 
-						}, this));
-					}
-
-					return html;
+					return $div.html();
 				},
 				getTextFromHtml: function(html)
 				{
@@ -2505,9 +2616,9 @@
 				},
 				cleanEmptyParagraph: function()
 				{
-					var p = this.$editor.find("p").first();
+					var $p = this.$editor.find("p").first();
 
-					if (this.utils.isEmpty(p.html()))
+					if ($p.length > 0 && this.utils.isEmpty($p.html()))
 					{
 						p.remove();
 					}
@@ -2728,6 +2839,8 @@
 				},
 				showCode: function()
 				{
+					this.selection.save();
+
 					this.code.offset = this.caret.getOffset();
 					var scroll = $(window).scrollTop();
 
@@ -2737,10 +2850,37 @@
 					this.$editor.hide();
 
 					var html = this.$textarea.val();
+
 					this.modified = this.clean.removeSpaces(html);
 
 					// indent code
 					html = this.tabifier.get(html);
+
+					// caret position sync
+					var start = 0,
+						end = 0;
+
+					var $editorDiv = $("<div/>").append($.parseHTML(this.clean.onSync(this.$editor.html())));
+
+					var $selectionMarkers = $editorDiv.find("span.redactor-selection-marker");
+
+					if ($selectionMarkers.length > 0)
+					{
+						var editorHtml = this.tabifier.get($editorDiv.html());
+
+						if ($selectionMarkers.length == 1)
+						{
+							start = this.utils.strpos(editorHtml, $editorDiv.find("#selection-marker-1").prop("outerHTML"));
+							end   = start;
+						}
+						else if ($selectionMarkers.length == 2)
+						{
+							start = this.utils.strpos(editorHtml, $editorDiv.find("#selection-marker-1").prop("outerHTML"));
+							end	 = this.utils.strpos(editorHtml, $editorDiv.find("#selection-marker-2").prop("outerHTML")) - $editorDiv.find("#selection-marker-1").prop("outerHTML").toString().length;
+						}
+					}
+
+					this.selection.removeMarkers();
 
 					this.$textarea.val(html);
 
@@ -2752,6 +2892,19 @@
 							el.CodeMirror.setValue(html);
 							el.CodeMirror.setSize(width, height);
 							el.CodeMirror.refresh();
+
+							if (start == end)
+							{
+								el.CodeMirror.setCursor(el.CodeMirror.posFromIndex(start).line, el.CodeMirror.posFromIndex(end).ch);
+							}
+							else
+							{
+								el.CodeMirror.setSelection({line: el.CodeMirror.posFromIndex(start).line,
+															ch: el.CodeMirror.posFromIndex(start).ch},
+														  {line: el.CodeMirror.posFromIndex(end).line,
+														   ch:  el.CodeMirror.posFromIndex(end).ch});
+							}
+
 							el.CodeMirror.focus();
 						});
 					}
@@ -2764,7 +2917,7 @@
 
 						if (this.$textarea[0].setSelectionRange)
 						{
-							this.$textarea[0].setSelectionRange(0, 0);
+							this.$textarea[0].setSelectionRange(start, end);
 						}
 
 						this.$textarea[0].scrollTop = 0;
@@ -2782,16 +2935,50 @@
 
 					if (this.opts.visual) return;
 
+					var start = 0, end = 0;
+
 					if (this.opts.codemirror)
 					{
+						var selection;
+
 						this.$textarea.next('.CodeMirror').each(function(i, el)
 						{
+							selection = el.CodeMirror.listSelections();
+
+							start = el.CodeMirror.indexFromPos(selection[0].anchor);
+							end = el.CodeMirror.indexFromPos(selection[0].head);
+
 							html = el.CodeMirror.getValue();
 						});
 					}
 					else
 					{
+						start = this.$textarea.get(0).selectionStart;
+						end = this.$textarea.get(0).selectionEnd;
+
 						html = this.$textarea.hide().val();
+					}
+
+					// if selection starts from end
+					if (start > end && end > 0)
+					{
+						var tempStart = end;
+						var tempEnd = start;
+
+						start = tempStart;
+						end = tempEnd;
+					}
+
+					start = this.code.enlargeOffset(html, start);
+					end = this.code.enlargeOffset(html, end);
+
+					html = html.substr(0, start) + this.selection.getMarkerAsHtml(1) + html.substr(start);
+
+					if (end > start)
+					{
+						var markerLength = this.selection.getMarkerAsHtml(1).toString().length;
+
+						html = html.substr(0, end + markerLength) + this.selection.getMarkerAsHtml(2) + html.substr(end + markerLength);
 					}
 
 					if (this.modified !== this.clean.removeSpaces(html))
@@ -2811,13 +2998,12 @@
 						this.placeholder.remove();
 					}
 
-					this.caret.setOffset(this.code.offset);
+					this.selection.restore();
 
 					this.$textarea.off('keydown.redactor-textarea-indenting');
 
 					this.button.setActiveInVisual();
 					this.button.setInactive('html');
-
 					this.observe.load();
 					this.opts.visual = true;
 					this.core.setCallback('visual', html);
@@ -2832,6 +3018,35 @@
 					$el.get(0).selectionStart = $el.get(0).selectionEnd = start + 1;
 
 					return false;
+				},
+				enlargeOffset: function(html, offset)
+				{
+					var htmlLength = html.length;
+					var c = 0;
+
+					if (html[offset] == '>')
+					{
+						c++;
+					}
+					else
+					{
+						for(var i = offset; i <= htmlLength; i++)
+						{
+							c++;
+
+							if (html[i] == '>')
+							{
+								break;
+							}
+							else if (html[i] == '<' || i == htmlLength)
+							{
+								c = 0;
+								break;
+							}
+						}
+					}
+
+					return offset + c;
 				}
 			};
 		},
@@ -2872,7 +3087,32 @@
 				},
 				setCallback: function(type, e, data)
 				{
-					var callback = this.opts[type + 'Callback'];
+					var eventName = type + 'Callback';
+					var callback = this.opts[eventName];
+
+					if (this.$textarea)
+					{
+						var returnValue = false;
+						var eventNamespace = 'redactor';
+
+						var events = $._data(this.$textarea.get(0), 'events');
+
+						if (typeof events != 'undefined' && typeof events[type + 'Callback'] != 'undefined')
+						{
+							$.each(events[eventName], $.proxy(function(key, value)
+							{
+								if (value['namespace'] == eventNamespace)
+								{
+									var data = (typeof data == 'undefined') ? [e] : [e, data];
+
+									returnValue = (typeof data == 'undefined') ? value.handler.call(this, e) : value.handler.call(this, e, data);
+								}
+							}, this));
+						}
+
+						if (returnValue) return returnValue;
+					}
+
 					if ($.isFunction(callback))
 					{
 						return (typeof data == 'undefined') ? callback.call(this, e) : callback.call(this, e, data);
@@ -2884,6 +3124,8 @@
 				},
 				destroy: function()
 				{
+					this.opts.destroyed = true;
+
 					this.core.setCallback('destroy');
 
 					// off events and remove data
@@ -2913,7 +3155,6 @@
 						}
 					});
 
-
 					if (this.build.isTextarea())
 					{
 						this.$box.after(this.$element);
@@ -2935,11 +3176,10 @@
 					if (this.$modalOverlay) this.$modalOverlay.remove();
 
 					// buttons tooltip
-					$('.redactor-toolbar-tooltip').remove();
+					$('.redactor-toolbar-tooltip-' + this.uuid).remove();
 
 					// autosave
 					clearInterval(this.autosaveInterval);
-
 				}
 			};
 		},
@@ -3306,6 +3546,9 @@
 						this.image.update($image);
 
 					}, this));
+
+					// hide link's tooltip
+					$('.redactor-link-tooltip').remove();
 
 					$('#redactor-image-title').val($image.attr('alt'));
 
@@ -4591,8 +4834,12 @@
 					// shortcuts setup
 					this.shortcuts.init(e, key);
 
-					this.keydown.checkEvents(arrow, key);
-					this.keydown.setupBuffer(e, key);
+					if (this.utils.isDesktop())
+					{
+						this.keydown.checkEvents(arrow, key);
+						this.keydown.setupBuffer(e, key);
+					}
+
 					this.keydown.addArrowsEvent(arrow);
 					this.keydown.setupSelectAll(e, key);
 
@@ -4768,6 +5015,7 @@
 						}
 
 						var nodes = this.selection.getNodes();
+
 						if (nodes)
 						{
 							var len = nodes.length;
@@ -5409,8 +5657,14 @@
 					this.link.$inputUrl = $('#redactor-link-url');
 					this.link.$inputText = $('#redactor-link-url-text');
 
-					this.link.$inputText.val(this.link.text);
-					this.link.$inputUrl.val(this.link.url);
+					this.link.$inputUrl.val($.trim(this.link.url));
+					this.link.$inputText.val($.trim(this.link.text));
+
+					if (this.selection.getNodes().length > 1)
+					{
+						this.link.$inputText.hide();
+						this.link.$inputText.prev("label").hide();
+					}
 
 					this.link.buttonInsert.on('click', $.proxy(this.link.insert, this));
 
@@ -5601,7 +5855,10 @@
 
 								if (this.link.text !== '' || this.link.text != text)
 								{
-									$a.text(text);
+									if (this.selection.getNodes().length == 0)
+									{
+										$a.text(text);
+									}
 
 									this.selection.selectElement($a);
 								}
@@ -5979,11 +6236,6 @@
 					this.$modalOverlay.show();
 					this.$modalBox.show();
 
-					/* BEGIN HACK */
-					// make sure that the modal is at the end of the DOM
-					this.$modalBox.appendTo(document.body);
-					/* END HACK */
-
 					this.modal.setButtonsWidth();
 
 					this.utils.saveScroll();
@@ -6188,6 +6440,8 @@
 			return {
 				load: function()
 				{
+					if (typeof this.opts.destroyed != "undefined") return;
+
 					this.observe.images();
 					this.observe.links();
 				},
@@ -6984,6 +7238,19 @@
 
 					return this.clean.onSync(html);
 				},
+				replaceSelection: function(html)
+				{
+					this.selection.get();
+					this.range.deleteContents();
+					var div = document.createElement("div");
+					div.innerHTML = html;
+					var frag = document.createDocumentFragment(), child;
+					while ((child = div.firstChild)) {
+						frag.appendChild(child);
+					}
+
+					this.range.insertNode(frag);
+				},
 				replaceWithHtml: function(html)
 				{
 					html = this.selection.getMarkerAsHtml(1) + html + this.selection.getMarkerAsHtml(2);
@@ -6992,17 +7259,7 @@
 
 					if (window.getSelection && window.getSelection().getRangeAt)
 					{
-						this.range.deleteContents();
-						var div = document.createElement("div");
-						div.innerHTML = html;
-
-						var frag = document.createDocumentFragment(), child;
-						while ((child = div.firstChild))
-						{
-							frag.appendChild(child);
-						}
-
-						this.range.insertNode(frag);
+						this.selection.replaceSelection(html);
 					}
 					else if (document.selection && document.selection.createRange)
 					{
@@ -7910,13 +8167,6 @@
 				{
 					var top = this.opts.toolbarFixedTopOffset + scrollTop - boxTop;
 					var left = 0;
-
-					/* BEGIN HACK
-					var end = boxTop + this.$box.height() + 30;
-					*/
-					var end = boxTop + this.$box.height() - 32;
-					/* END HACK */
-
 					var end = boxTop + this.$box.height() - 32;
 					var width = this.$box.innerWidth();
 
@@ -8638,7 +8888,13 @@
 					if (match[1] == 'opr') return browser == 'webkit';
 
 					return browser == match[1];
-				}
+				},
+
+				strpos: function(haystack, needle, offset)
+				{
+					var i = haystack.indexOf(needle, offset);
+					return i >= 0 ? i : false;
+				},
 			};
 		},
 		linkify: function()
