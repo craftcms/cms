@@ -256,7 +256,10 @@
 										<div class="btn submit menubtn"></div>
 										<div class="menu">
 											<ul>
-												<li><a class="formsubmit" data-redirect="{{ continueEditingUrl }}">{{ "Save and continue editing"|t }}</a></li>
+												<li><a class="formsubmit" data-redirect="{{ continueEditingUrl }}">
+													{{ "Save and continue editing"|t }}
+													{{ forms.optionShortcutLabel('S') }}
+												</a></li>
 
 												{% set nextEntryParams = [] %}
 												{% if showEntryTypes %}
