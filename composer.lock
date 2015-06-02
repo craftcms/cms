@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "55d603866d71b84a8405a7963085c6c1",
+    "hash": "d1ffb1859da6897c247de32e5924f2ee",
     "packages": [
         {
             "name": "doctrine/instantiator",
@@ -262,28 +262,18 @@
             "version": "dev-master",
             "source": {
                 "type": "git",
-                "url": "https://github.com/lsolesen/pel.git",
-                "reference": "7c5e77aeb"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/lsolesen/pel/zipball/3f0598e9abd24e9ffb53643f2668691baf185bc7",
-                "reference": "7c5e77aeb",
-                "shasum": ""
+                "url": "https://github.com/pixelandtonic/pel",
+                "reference": "2ea07a80ce272a8114a134a3f8f64242e297c07b"
             },
             "require": {
                 "php": ">=5.0.0"
             },
-            "require-dev": {
-                "lastcraft/simpletest": ">=1.1"
-            },
             "type": "library",
             "autoload": {
                 "psr-4": {
-                    "lsolesen\\pel\\": "src/"
+                    "": "src/"
                 }
             },
-            "notification-url": "https://packagist.org/downloads/",
             "authors": [
                 {
                     "name": "Lars Olesen",
@@ -297,7 +287,7 @@
             "keywords": [
                 "template"
             ],
-            "time": "2015-01-06 21:50:50"
+            "time": "2015-06-02 21:10:40"
         },
         {
             "name": "mockery/mockery",
