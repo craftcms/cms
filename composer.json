@@ -5,7 +5,7 @@
         "simplepie/simplepie": "1.3.1",
         "phpmailer/phpmailer": "v5.2.10",
         "imagine/imagine": "v0.6.2",
-        "lsolesen/pel": "dev-master",
+        "lsolesen/pel": "dev-master#7c5e77aeb",
         "phpunit/phpunit": "4.6.9",
         "mockery/mockery": "0.9.4",
         "phpunit/dbunit": "1.3.2",
