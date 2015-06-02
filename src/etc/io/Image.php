@@ -547,12 +547,13 @@ class Image
 	/**
 	 * Write text on an image
 	 *
-	 * @param $text
-	 * @param $x
-	 * @param $y
+	 * @param     $text
+	 * @param     $x
+	 * @param     $y
 	 * @param int $angle
 	 *
-	 * @return null;
+	 * @return null
+	 * @throws Exception
 	 */
 	public function writeText($text, $x, $y, $angle = 0)
 	{

@@ -32,22 +32,15 @@
 		{% if not currentUser.can('registerUsers') or CraftEdition != CraftPro %}
 			<input type="submit" class="btn submit" value="{{ 'Save'|t }}">
 		{% else %}
-
-			{% switch craft.request.getClientOs() %}
-				{% case 'Windows' %}
-					{% set saveAndContinueText = "Save and continue editing (Ctrl+S)"|t %}
-				{% case 'Mac' %}
-					{% set saveAndContinueText = "Save and continue editing (⌘+S)"|t %}
-				{% default %}
-					{% set saveAndContinueText = "Save and continue editing"|t %}
-			{% endswitch %}
-
 			<div class="btngroup submit">
 				<input type="submit" class="btn submit" value="{{ 'Save'|t }}">
 				<div class="btn submit menubtn"></div>
 				<div class="menu">
 					<ul>
-						<li><a class="formsubmit" data-redirect="users/{id}">{{ saveAndContinueText }}</a></li>
+						<li><a class="formsubmit" data-redirect="users/{id}">
+							{{ "Save and continue editing"|t }}
+							{{ forms.optionShortcutLabel('S') }}
+						</a></li>
 						<li><a class="formsubmit" data-redirect="users/new">{{ "Save and add another"|t }}</a></li>
 					</ul>
 				</div>

@@ -189,3 +189,18 @@
 {% macro elementSelectField(config) %}
 	{{ _self.field(config, _self.elementSelect(config)) }}
 {% endmacro %}
+
+
+{# Other #}
+
+
+{% macro optionShortcutLabel(key, shift, alt) %}
+	{%- spaceless %}
+		{% switch craft.request.getClientOs() %}
+			{% case 'Mac' %}
+				<span class="shortcut">{{ (alt ? '⌥') ~ (shift ? '⇧') ~ '⌘' ~ key }}</span>
+			{% default %}
+				<span class="shortcut">{{ 'Ctrl+' ~ (alt ? 'Alt+') ~ (shift ? 'Shift+') ~ key }}</span>
+		{% endswitch %}
+	{% endspaceless -%}
+{% endmacro %}

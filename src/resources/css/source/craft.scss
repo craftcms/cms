@@ -949,6 +949,7 @@ body .redactor-dropdown a { margin: 0 -14px; padding: 3px 14px; color: $textcolo
 .menu:not(:hover) ul li a:not(.sel):not(.disabled).hover .light,
 body .redactor-dropdown a:hover { color: $textcolor; background-color: $lightselcolor; }
 .menu ul li a.sel { cursor: default; }
+.menu ul li a .shortcut { @include floatright; @include margin-left(14px); color: $mediumtextcolor; }
 .menu hr { margin: 5px -14px; }
 
 .menu ul.padded li a { @include padding-left(24px); }

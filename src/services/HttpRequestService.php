@@ -143,7 +143,27 @@ class HttpRequestService extends \CHttpRequest
 		}
 
 		// Is this a paginated request?
-		if ($this->_segments)
+		$pageTrigger = craft()->config->get('pageTrigger');
+
+		if (!is_string($pageTrigger) || !strlen($pageTrigger))
+		{
+			$pageTrigger = 'p';
+		}
+
+		// Is this query string-based pagination?
+		if ($pageTrigger[0] === '?')
+		{
+			$pageTrigger = trim($pageTrigger, '?=');
+
+			if ($pageTrigger === 'p')
+			{
+				// Avoid conflict with the main 'p' param
+				$pageTrigger = 'pg';
+			}
+
+			$this->_pageNum = (int) $this->getQuery($pageTrigger, '1');
+		}
+		else if ($this->_segments)
 		{
 			// Match against the entire path string as opposed to just the last segment so that we can support
 			// "/page/2"-style pagination URLs
@@ -1109,7 +1129,7 @@ class HttpRequestService extends \CHttpRequest
 
 		foreach ($parts as $key => $part)
 		{
-			if (mb_strpos($part, 'p=') !== false)
+			if (mb_strpos($part, craft()->urlManager->pathParam.'=') === 0)
 			{
 				unset($parts[$key]);
 				break;
