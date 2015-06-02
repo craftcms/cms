@@ -53,7 +53,7 @@ class ImageHelper
 	}
 
 	/**
-	 * Returns if an image is manipulatable or not.
+	 * Returns whether an image extension is considered manipulatable.
 	 *
 	 * @param $extension
 	 *
@@ -73,7 +73,7 @@ class ImageHelper
 	}
 
 	/**
-	 * Return a list of web safe formats.
+	 * Returns a list of web safe image formats.
 	 *
 	 * @return array
 	 */
@@ -157,9 +157,9 @@ class ImageHelper
 	}
 
 	/**
-	 * Return true if the file can have EXIF information embedded.
+	 * Returns whether an image can have EXIF information embedded.
 	 *
-	 * @param string $filePath the file path to check.
+	 * @param string $filePath The path to the image
 	 *
 	 * @return bool
 	 */
@@ -171,9 +171,9 @@ class ImageHelper
 	}
 
 	/**
-	 * Return an image size for a file path
+	 * Returns the size of an image based on its file path.
 	 *
-	 * @param $filePath
+	 * @param $filePath The path to the image
 	 *
 	 * @return array [$width, $height]
 	 */
@@ -194,7 +194,7 @@ class ImageHelper
 	/**
 	 * Parses SVG data and determines its size (normalized to pixels).
 	 *
-	 * @param string $svg The SVG data.
+	 * @param string $svg The SVG data
 	 *
 	 * @return array [$width, $height]
 	 */
