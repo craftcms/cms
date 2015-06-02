@@ -191,7 +191,7 @@ class MatrixBlockModel extends BaseElementModel
 	}
 
 	/**
-	 * @inheritdoc
+	 * @inheritDoc BaseElementModel::createContent()
 	 */
 	protected function createContent()
 	{
