@@ -178,7 +178,7 @@ class ImageHelper
 	{
 		if (IOHelper::getExtension($filePath) == 'svg')
 		{
-			return static::getSvgDimensions($filePath);
+			return static::getSvgSize($filePath);
 		}
 		else
 		{
@@ -194,7 +194,7 @@ class ImageHelper
 	 *
 	 * @return array [$width, $height]
 	 */
-	public static function getSvgDimensions($filePath)
+	public static function getSvgSize($filePath)
 	{
 		$svgData = file_get_contents($filePath);
 
