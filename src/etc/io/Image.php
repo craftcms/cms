@@ -176,8 +176,8 @@ class Image
 						$scale = max($scale, ($this->minSvgHeight / $height));
 					}
 
-					$width *= $scale;
-					$height *= $scale;
+					$width = round($width * $scale);
+					$height = round($height * $scale);
 
 					$svg = preg_replace(ImageHelper::SVG_WIDTH_RE, "\${1}{$width}px\"", $svg);
 					$svg = preg_replace(ImageHelper::SVG_HEIGHT_RE, "\${1}{$height}px\"", $svg);

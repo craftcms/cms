@@ -207,8 +207,8 @@ class ImageHelper
 			($matchedHeight = floatval($heightMatch[2]))
 		)
 		{
-			$width = $matchedWidth * self::_getSizeUnitMultiplier($widthMatch[3]);
-			$height = $matchedHeight * self::_getSizeUnitMultiplier($heightMatch[3]);
+			$width = round($matchedWidth * self::_getSizeUnitMultiplier($widthMatch[3]));
+			$height = round($matchedHeight * self::_getSizeUnitMultiplier($heightMatch[3]));
 		}
 		else
 		{
