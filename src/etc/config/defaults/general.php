@@ -393,6 +393,11 @@ return array(
 	'postLoginRedirect' => '',
 
 	/**
+	 * Whether the X-Powered-By header should be sent on each request, helping clients identify that the site is powered by Craft.
+	 */
+	'sendPoweredByHeader' => true,
+
+	/**
 	 * The template path segment prefix that should be used to identify "private" templates -- templates that aren't
 	 * directly accessible via a matching URL.
 	 */

@@ -152,8 +152,10 @@ class WebApp extends \CWebApplication
 		// If this is a resource request, we should respond with the resource ASAP
 		$this->_processResourceRequest();
 
+		$configService = $this->config;
+
 		// If we're not in devMode, or it's a 'dontExtendSession' request, we're going to remove some logging routes.
-		if (!$this->config->get('devMode') || (craft()->isInstalled() && !$this->userSession->shouldExtendSession()))
+		if (!$configService->get('devMode') || (craft()->isInstalled() && !$this->userSession->shouldExtendSession()))
 		{
 			$this->log->removeRoute('WebLogRoute');
 			$this->log->removeRoute('ProfileLogRoute');
@@ -174,7 +176,16 @@ class WebApp extends \CWebApplication
 			HeaderHelper::setHeader(array('X-Content-Type-Options' => 'nosniff'));
 		}
 
-		HeaderHelper::setHeader(array('X-Powered-By' => 'Craft CMS'));
+		// Send the X-Powered-By header?
+		if ($configService->get('sendPoweredByHeader'))
+		{
+			HeaderHelper::setHeader(array('X-Powered-By' => 'Craft CMS'));
+		}
+		else
+		{
+			// In case PHP is already setting one
+			HeaderHelper::removeHeader('X-Powered-By');
+		}
 
 		// Validate some basics on the database configuration file.
 		$this->validateDbConfigFile();
