@@ -112,7 +112,7 @@ class PhpMessageSource extends \CPhpMessageSource
 				$translationFiles[] = 'no';
 			}
 
-			for ($i = $totalParts; $i >= 1; $i--)
+			for ($i = 1; $i <= $totalParts; $i++)
 			{
 				$translationFiles[] = implode('_', array_slice($parts, 0, $i));
 			}
