@@ -20,6 +20,9 @@ class ImageHelper
 	const EXIF_IFD0_ROTATE_90  = 6;
 	const EXIF_IFD0_ROTATE_270 = 8;
 
+	const SVG_WIDTH_RE = '/(.*<svg[^>]* width=")([\d\.]+)([a-z]*)"/si';
+	const SVG_HEIGHT_RE = '/(.*<svg[^>]* height=")([\d\.]+)([a-z]*)"/si';
+
 	// Public Methods
 	// =========================================================================
 
@@ -178,7 +181,8 @@ class ImageHelper
 	{
 		if (IOHelper::getExtension($filePath) == 'svg')
 		{
-			return static::getSvgSize($filePath);
+			$svg = IOHelper::getFileContents($filePath);
+			return static::parseSvgSize($svg);
 		}
 		else
 		{
@@ -188,77 +192,85 @@ class ImageHelper
 	}
 
 	/**
-	 * Get dimensions for an SVG file by path
+	 * Parses SVG data and determines its size (normalized to pixels).
 	 *
-	 * @param $filePath
+	 * @param string $svg The SVG data.
 	 *
 	 * @return array [$width, $height]
 	 */
-	public static function getSvgSize($filePath)
+	public static function parseSvgSize($svg)
 	{
-		$svgData = file_get_contents($filePath);
-
-		$widthRegex = '/.*<svg[^>]* width="([\d]+)([a-z]*)"/si';
-		$heightRegex = '/.*<svg[^>]* height="([\d]+)([a-z]*)"/si';
-
 		if (
-			preg_match($widthRegex, $svgData, $widthMatch) &&
-			preg_match($heightRegex, $svgData, $heightMatch) &&
-			($matchedWidth = floatval($widthMatch[1])) &&
-			($matchedHeight = floatval($heightMatch[1]))
+			preg_match(self::SVG_WIDTH_RE, $svg, $widthMatch) &&
+			preg_match(self::SVG_HEIGHT_RE, $svg, $heightMatch) &&
+			($matchedWidth = floatval($widthMatch[2])) &&
+			($matchedHeight = floatval($heightMatch[2]))
 		)
 		{
-			$widthUnits = $widthMatch[2];
-			$heightUnits = $heightMatch[2];
-
-			$getMultiplier = function ($unit)
-			{
-				$ppi = 72;
-
-				switch ($unit)
-				{
-					case 'in':
-					{
-						return $ppi;
-					}
-					case 'pt':
-					{
-						return $ppi / 72;
-					}
-					case 'pc':
-					{
-						return $ppi / 6;
-					}
-					case 'cm':
-					{
-						return $ppi / 2.54;
-					}
-					case 'mm':
-					{
-						return $ppi / 25.4;
-					}
-					case 'em':
-					{
-						return 16;
-					}
-					case 'ex':
-					{
-						return 10;
-					}
-
-					case 'px':
-					default:
-						{
-						return 1;
-						}
-				}
-			};
-
-			return array($matchedWidth * $getMultiplier($widthUnits), $matchedHeight * $getMultiplier($heightUnits));
+			$width = $matchedWidth * self::_getSizeUnitMultiplier($widthMatch[3]);
+			$height = $matchedHeight * self::_getSizeUnitMultiplier($heightMatch[3]);
 		}
 		else
 		{
-			return array(null, null);
+			$width = null;
+			$height = null;
+		}
+
+		return array($width, $height);
+	}
+
+	// Private Methods
+	// =========================================================================
+
+	/**
+	 * Returns the multiplier that should be used to convert an image size unit to pixels.
+	 *
+	 * @param string $unit
+	 *
+	 * @return float The multiplier
+	 */
+	private static function _getSizeUnitMultiplier($unit)
+	{
+		$ppi = 72;
+
+		switch ($unit)
+		{
+			case 'px':
+			{
+				return 1;
+			}
+			case 'in':
+			{
+				return $ppi;
+			}
+			case 'pt':
+			{
+				return $ppi / 72;
+			}
+			case 'pc':
+			{
+				return $ppi / 6;
+			}
+			case 'cm':
+			{
+				return $ppi / 2.54;
+			}
+			case 'mm':
+			{
+				return $ppi / 25.4;
+			}
+			case 'em':
+			{
+				return 16;
+			}
+			case 'ex':
+			{
+				return 10;
+			}
+			default:
+			{
+				return 1;
+			}
 		}
 	}
 }

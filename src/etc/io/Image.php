@@ -160,15 +160,9 @@ class Image
 			if ($this->minSvgWidth !== null && $this->minSvgHeight !== null)
 			{
 				// Does the <svg> node contain valid `width` and `height` attributes?
-				$widthRegex = '/(.*<svg[^>]* width=")([\d\.]+px)(.*)/si';
-				$heightRegex = '/(.*<svg[^>]* height=")([\d\.]+px)(.*)/si';
+				list($width, $height) = ImageHelper::parseSvgSize($svg);
 
-				if (
-					preg_match($widthRegex, $svg, $widthMatch) &&
-					preg_match($heightRegex, $svg, $heightMatch) &&
-					($width = floatval($widthMatch[2])) &&
-					($height = floatval($heightMatch[2]))
-				)
+				if ($width !== null && $height !== null)
 				{
 					$scale = 1;
 
@@ -182,11 +176,11 @@ class Image
 						$scale = max($scale, ($this->minSvgHeight / $height));
 					}
 
-					$width *= $scale * 2;
-					$height *= $scale * 2;
+					$width *= $scale;
+					$height *= $scale;
 
-					$svg = preg_replace($widthRegex, "\${1}{$width}px\${3}", $svg);
-					$svg = preg_replace($heightRegex, "\${1}{$height}px\${3}", $svg);
+					$svg = preg_replace(ImageHelper::SVG_WIDTH_RE, "\${1}{$width}px\"", $svg);
+					$svg = preg_replace(ImageHelper::SVG_HEIGHT_RE, "\${1}{$height}px\"", $svg);
 				}
 			}
 
