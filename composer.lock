@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "f146b7f3af386a0908ad358a9ce4bfb7",
+    "hash": "55d603866d71b84a8405a7963085c6c1",
     "packages": [
         {
             "name": "doctrine/instantiator",
@@ -263,12 +263,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/lsolesen/pel.git",
-                "reference": "3f0598e9abd24e9ffb53643f2668691baf185bc7"
+                "reference": "7c5e77aeb"
             },
             "dist": {
                 "type": "zip",
                 "url": "https://api.github.com/repos/lsolesen/pel/zipball/3f0598e9abd24e9ffb53643f2668691baf185bc7",
-                "reference": "3f0598e9abd24e9ffb53643f2668691baf185bc7",
+                "reference": "7c5e77aeb",
                 "shasum": ""
             },
             "require": {
@@ -297,7 +297,7 @@
             "keywords": [
                 "template"
             ],
-            "time": "2015-03-19 16:29:36"
+            "time": "2015-01-06 21:50:50"
         },
         {
             "name": "mockery/mockery",
