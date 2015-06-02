@@ -113,26 +113,4 @@ class AssetsHelper
 
 		return $baseName.$extension;
 	}
-
-	/**
-	 * Get an SVG file dimensions.
-	 *
-	 * @param $filePath
-	 *
-	 * @return array
-	 */
-	public static function getSvgDimensions($filePath)
-	{
-		$svgData = file_get_contents($filePath);
-
-		preg_match('/width="([0-9]+)"/i', $svgData, $widthMatches);
-		preg_match('/height="([0-9]+)"/i', $svgData, $heightMatches);
-
-		if ($heightMatches && $widthMatches)
-		{
-			return array($widthMatches[1], $heightMatches[1]);
-		}
-
-		return array(null, null);
-	}
 }

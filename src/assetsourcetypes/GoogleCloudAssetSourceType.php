@@ -229,18 +229,10 @@ class GoogleCloudAssetSourceType extends BaseAssetSourceType
 				$this->_googleCloud->getObject($settings->bucket, $this->_getPathPrefix().$indexEntryModel->uri, $targetPath);
 				clearstatcache();
 
-				if ($fileModel->getExtension() == 'svg')
-				{
-					list ($width, $height) = AssetsHelper::getSvgDimensions($targetPath);
-				}
-				else
-				{
-					list ($width, $height) = getimagesize($targetPath);
-				}
+				list ($width, $height) = ImageHelper::getImageSize($indexEntryModel->uri);
 
 				$fileModel->width = $width;
 				$fileModel->height = $height;
-
 
 				// Store the local source or delete - maxCacheCloudImageSize is king.
 				craft()->assetTransforms->storeLocalSource($targetPath, $targetPath);

@@ -218,14 +218,7 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 
 				if ($fileModel->kind == 'image')
 				{
-					if ($fileModel->getExtension() == 'svg')
-					{
-						list ($width, $height) = AssetsHelper::getSvgDimensions($localFilePath);
-					}
-					else
-					{
-						list ($width, $height) = getimagesize($localFilePath);
-					}
+					list ($width, $height) = ImageHelper::getImageSize($localFilePath);
 
 					$fileModel->width = $width;
 					$fileModel->height = $height;

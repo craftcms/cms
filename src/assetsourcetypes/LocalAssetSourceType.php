@@ -178,14 +178,7 @@ class LocalAssetSourceType extends BaseAssetSourceType
 
 			if ($fileModel->kind == 'image')
 			{
-				if ($fileModel->getExtension() == 'svg')
-				{
-					list ($width, $height) = AssetsHelper::getSvgDimensions($indexEntryModel->uri);
-				}
-				else
-				{
-					list ($width, $height) = getimagesize($indexEntryModel->uri);
-				}
+				list ($width, $height) = ImageHelper::getImageSize($indexEntryModel->uri);
 
 				$fileModel->width = $width;
 				$fileModel->height = $height;

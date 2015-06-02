@@ -166,4 +166,99 @@ class ImageHelper
 
 		return in_array(StringHelper::toLowerCase($extension), array('jpg', 'jpeg', 'tiff'));
 	}
+
+	/**
+	 * Return an image size for a file path
+	 *
+	 * @param $filePath
+	 *
+	 * @return array [$width, $height]
+	 */
+	public static function getImageSize($filePath)
+	{
+		if (IOHelper::getExtension($filePath) == 'svg')
+		{
+			return static::getSvgDimensions($filePath);
+		}
+		else
+		{
+			$image = craft()->images->loadImage($filePath);
+			return array($image->getWidth(), $image->getHeight());
+		}
+	}
+
+	/**
+	 * Get dimensions for an SVG file by path
+	 *
+	 * @param $filePath
+	 *
+	 * @return array [$width, $height]
+	 */
+	public static function getSvgDimensions($filePath)
+	{
+		$svgData = file_get_contents($filePath);
+
+		$widthRegex = '/.*<svg[^>]* width="([\d]+)([a-z]*)"/si';
+		$heightRegex = '/.*<svg[^>]* height="([\d]+)([a-z]*)"/si';
+
+		if (
+			preg_match($widthRegex, $svgData, $widthMatch) &&
+			preg_match($heightRegex, $svgData, $heightMatch) &&
+			($matchedWidth = floatval($widthMatch[1])) &&
+			($matchedHeight = floatval($heightMatch[1]))
+		)
+		{
+			$widthUnits = $widthMatch[2];
+			$heightUnits = $heightMatch[2];
+
+			$getMultiplier = function ($unit)
+			{
+				$ppi = 72;
+
+				switch ($unit)
+				{
+					case 'in':
+					{
+						return $ppi;
+					}
+					case 'pt':
+					{
+						return $ppi / 72;
+					}
+					case 'pc':
+					{
+						return $ppi / 6;
+					}
+					case 'cm':
+					{
+						return $ppi / 2.54;
+					}
+					case 'mm':
+					{
+						return $ppi / 25.4;
+					}
+					case 'em':
+					{
+						return 16;
+					}
+					case 'ex':
+					{
+						return 10;
+					}
+
+					case 'px':
+					default:
+						{
+						return 1;
+						}
+				}
+			};
+
+			return array($matchedWidth * $getMultiplier($widthUnits), $matchedHeight * $getMultiplier($heightUnits));
+		}
+		else
+		{
+			return array(null, null);
+		}
+	}
 }

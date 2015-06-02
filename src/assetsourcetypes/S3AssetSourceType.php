@@ -270,14 +270,7 @@ class S3AssetSourceType extends BaseAssetSourceType
 				$this->_s3->getObject($settings->bucket, $this->_getPathPrefix().$indexEntryModel->uri, $targetPath);
 				clearstatcache();
 
-				if ($fileModel->getExtension() == 'svg')
-				{
-					list ($width, $height) = AssetsHelper::getSvgDimensions($targetPath);
-				}
-				else
-				{
-					list ($width, $height) = getimagesize($targetPath);
-				}
+				list ($width, $height) = ImageHelper::getImageSize($indexEntryModel->uri);
 
 				$fileModel->width = $width;
 				$fileModel->height = $height;
