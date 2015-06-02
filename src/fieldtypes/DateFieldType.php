@@ -120,6 +120,18 @@ class DateFieldType extends BaseFieldType
 	}
 
 	/**
+	 * @inheritDoc IFieldType::prepValueFromPost()
+	 *
+	 * @param mixed $value
+	 *
+	 * @return mixed
+	 */
+	public function prepValueFromPost($value)
+	{
+		return DateTime::createFromString($value, craft()->getTimeZone());
+	}
+
+	/**
 	 * @inheritDoc IFieldType::modifyElementsQuery()
 	 *
 	 * @param DbCommand $query
