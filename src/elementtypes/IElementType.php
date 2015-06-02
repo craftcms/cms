@@ -82,6 +82,8 @@ interface IElementType extends IComponentType
 	 * - **`data`** – An array of `data-X` attributes that should be set on the source’s `<a>` tag in the source list’s,
 	 *   HTML, where each key is the name of the attribute (without the “data-” prefix), and each value is the value of
 	 *   the attribute. (Optional)
+	 * - **`defaultSort` – A string identifying the sort attribute that should be selected by default, or an array where
+	 *   the first value identifies the sort attribute, and the second determines which direction to sort by. (Optional)
 	 * - **`hasThumbs`** – A boolean that defines whether this source supports Thumbs View. (Use your element model’s
 	 *   {@link BaseElementModel::getThumbUrl() getThumbUrl()} or {@link BaseElementModel::getIconUrl() getIconUrl()}
 	 *   methods to define your elements’ thumb/icon URLs.) (Optional)

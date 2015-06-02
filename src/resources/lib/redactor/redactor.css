@@ -205,6 +205,10 @@ body .redactor-box-fullscreen {
   background-color: #ccc;
   color: #444;
 }
+.redactor-toolbar li a:focus {
+  background: #000;
+  color: #fff;
+}
 .redactor-toolbar li a.redactor-btn-image {
   width: 14px;
   height: 14px;
@@ -226,6 +230,12 @@ body .redactor-box-fullscreen {
   outline: none;
   background-color: transparent !important;
   cursor: default;
+}
+/*
+	CodeMirror
+*/
+.redactor-box .CodeMirror {
+  display: none;
 }
 /*
 	Icons
@@ -391,6 +401,10 @@ body .redactor-box-fullscreen {
   color: #fff !important;
   text-decoration: none;
 }
+.redactor-dropdown a.selected {
+  background-color: #000;
+  color: #fff;
+}
 /*
 	IMAGE BOX
 */
@@ -546,6 +560,7 @@ body .redactor-box-fullscreen {
   overflow-y: auto;
 }
 #redactor-modal {
+  outline: 0;
   position: relative;
   margin: auto;
   margin-bottom: 20px;
@@ -845,6 +860,12 @@ body .redactor-box-fullscreen {
   padding-left: 2em;
   border: none;
 }
+.redactor-editor ol ol li {
+  list-style-type: lower-alpha;
+}
+.redactor-editor ol ol ol li {
+  list-style-type: lower-roman;
+}
 .redactor-editor dl dt {
   font-weight: bold;
 }
@@ -923,4 +944,96 @@ body .redactor-box-fullscreen {
 .redactor-editor h6 {
   font-size: 12px;
   text-transform: uppercase;
+}
+.redactor-box-contrast .redactor-editor {
+  background: #000;
+  color: #fff;
+  border-color: #000;
+}
+.redactor-box-contrast .redactor-editor h1,
+.redactor-box-contrast .redactor-editor h2,
+.redactor-box-contrast .redactor-editor h3,
+.redactor-box-contrast .redactor-editor h4,
+.redactor-box-contrast .redactor-editor h5,
+.redactor-box-contrast .redactor-editor h6,
+.redactor-box-contrast .redactor-editor blockquote,
+.redactor-box-contrast .redactor-editor a {
+  color: #fff;
+}
+.redactor-box-contrast .redactor-editor pre {
+  background: none;
+}
+.redactor-box-contrast .redactor-editor table td,
+.redactor-box-contrast .redactor-editor table th {
+  border-color: #fff;
+}
+.redactor-box-contrast .redactor-toolbar {
+  background: #000;
+  box-shadow: none;
+}
+.redactor-box-contrast .redactor-toolbar li a {
+  color: #fff;
+}
+.redactor-box-contrast .redactor-toolbar li a:active,
+.redactor-box-contrast .redactor-toolbar li a.redactor-act {
+  outline: none;
+  background-color: #fff;
+  color: #000;
+}
+.redactor-dropdown-contrast {
+  background: #000;
+  box-shadow: none;
+  border: 1px solid #fff;
+}
+.redactor-dropdown-contrast a {
+  color: #fff;
+  border-bottom-color: #fff;
+}
+.redactor-modal-contrast {
+  background: #000;
+  color: #fff;
+}
+.redactor-modal-contrast #redactor-modal-close:hover {
+  color: #fff;
+}
+.redactor-modal-contrast footer button {
+  background-color: #000;
+  color: #fff;
+}
+.redactor-modal-contrast footer button:hover {
+  color: #000;
+  background: #fff;
+}
+.redactor-modal-contrast #redactor-modal-list li {
+  color: #fff;
+  border-bottom-color: #fff;
+}
+.redactor-modal-contrast #redactor-modal-list a {
+  color: #fff;
+}
+.redactor-modal-contrast #redactor-modal-list a:hover {
+  background-color: #fff;
+}
+.redactor-modal-contrast #redactor-modal-tabber a {
+  border-color: #fff;
+  color: #fff;
+}
+.redactor-modal-contrast #redactor-modal-tabber a:hover,
+.redactor-modal-contrast #redactor-modal-tabber a.active {
+  background-color: #fff;
+  border-color: #fff;
+  color: #000;
+}
+.redactor-modal-contrast #redactor-droparea {
+  border-color: #fff;
+}
+.redactor-modal-contrast #redactor-droparea.drag-hover,
+.redactor-modal-contrast #redactor-droparea.drag-drop {
+  background: none;
+}
+.redactor-modal-contrast #redactor-droparea-placeholder {
+  color: #fff;
+}
+.redactor-voice-label {
+  display: none;
 }

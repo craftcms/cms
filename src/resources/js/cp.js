@@ -388,6 +388,11 @@ var CP = Garnish.Base.extend(
 			.velocity('fadeIn', { display: 'inline-block', duration: 'fast' })
 			.delay(notificationDuration)
 			.velocity('fadeOut');
+
+		this.trigger('displayNotification', {
+			notificationType: type,
+			message: message
+		});
 	},
 
 	/**

@@ -174,6 +174,8 @@ class WebApp extends \CWebApplication
 			HeaderHelper::setHeader(array('X-Content-Type-Options' => 'nosniff'));
 		}
 
+		HeaderHelper::setHeader(array('X-Powered-By' => 'Craft CMS'));
+
 		// Validate some basics on the database configuration file.
 		$this->validateDbConfigFile();
 
@@ -626,6 +628,21 @@ class WebApp extends \CWebApplication
 		return false;
 	}
 
+	// Events
+	// =========================================================================
+
+	/**
+	 * Fires an onEditionChange event.
+	 *
+	 * @param Event $event
+	 *
+	 * @throws \CException
+	 */
+	public function onEditionChange(Event $event)
+	{
+		$this->raiseEvent('onEditionChange', $event);
+	}
+
 	// Private Methods
 	// =========================================================================
 
@@ -841,7 +858,7 @@ class WebApp extends \CWebApplication
 				if ($this->updates->isBreakpointUpdateNeeded())
 				{
 					throw new HttpException(200, Craft::t('You need to be on at least @@@appName@@@ {url} before you can manually update to @@@appName@@@ {targetVersion} build {targetBuild}.', array(
-						'url'           => '<a href="'.CRAFT_MIN_BUILD_URL.'">build '.CRAFT_MIN_BUILD_REQUIRED.'</a>',
+						'url'           => '[build '.CRAFT_MIN_BUILD_REQUIRED.']('.CRAFT_MIN_BUILD_URL.')',
 						'targetVersion' => CRAFT_VERSION,
 						'targetBuild'   => CRAFT_BUILD
 					)));

@@ -7,6 +7,7 @@
 				<a data-key="{{ key }}"
 					{%- if source.hasThumbs is defined and source.hasThumbs %} data-has-thumbs{% endif %}
 					{%- if source.structureId is defined and source.structureId %} data-has-structure{% endif %}
+					{%- if source.defaultSort is defined %}{% set defaultSort = source.defaultSort %} data-default-sort="{{ defaultSort is iterable ? defaultSort|join(':') : defaultSort }}"{% endif %}
 					{%- if source.data is defined -%}
 						{% for dataKey, dataVal in source.data %} data-{{ dataKey }}="{{ dataVal }}"{% endfor %}
 					{%- endif -%}

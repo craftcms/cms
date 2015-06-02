@@ -106,10 +106,12 @@ class UsersController extends BaseController
 		$this->requirePostRequest();
 
 		$userId = craft()->request->getPost('userId');
+		$originalUserId = craft()->userSession->getId();
 
 		if (craft()->userSession->loginByUserId($userId))
 		{
 			craft()->userSession->setNotice(Craft::t('Logged in.'));
+			craft()->httpSession->add(UserSessionService::USER_IMPERSONATE_KEY, $originalUserId);
 
 			$this->_handleSuccessfulLogin(true);
 		}
@@ -963,8 +965,6 @@ class UsersController extends BaseController
 				$user->email = $originalEmail;
 			}
 
-			craft()->userSession->setNotice(Craft::t('User saved.'));
-
 			if (isset($_POST['redirect']) && mb_strpos($_POST['redirect'], '{userId}') !== false)
 			{
 				craft()->deprecator->log('UsersController::saveUser():userId_redirect', 'The {userId} token within the ‘redirect’ param on users/saveUser requests has been deprecated. Use {id} instead.');
@@ -981,17 +981,37 @@ class UsersController extends BaseController
 				}
 			}
 
-			$this->redirectToPostedUrl($user);
+			if (craft()->request->isAjaxRequest())
+			{
+				$return['success']   = true;
+				$return['id']        = $user->id;
+
+				$this->returnJson($return);
+			}
+			else
+			{
+				craft()->userSession->setNotice(Craft::t('User saved.'));
+				$this->redirectToPostedUrl($user);
+			}
 		}
 		else
 		{
-			craft()->userSession->setError(Craft::t('Couldn’t save user.'));
-		}
+			if (craft()->request->isAjaxRequest())
+			{
+				$this->returnJson(array(
+					'errors' => $user->getErrors(),
+				));
+			}
+			else
+			{
+				craft()->userSession->setError(Craft::t('Couldn’t save user.'));
 
-		// Send the account back to the template
-		craft()->urlManager->setRouteVariables(array(
-			'account' => $user
-		));
+				// Send the account back to the template
+				craft()->urlManager->setRouteVariables(array(
+					'account' => $user
+				));
+			}
+		}
 	}
 
 	/**
@@ -1193,6 +1213,12 @@ class UsersController extends BaseController
 		if (!$user)
 		{
 			$this->_noUserExists($userId);
+		}
+
+		// Only allow activation emails to be send to pending users.
+		if ($user->getStatus() !== UserStatus::Pending)
+		{
+			throw new Exception(Craft::t('Invalid account status for user ID “{id}”.', array('id' => $userId)));
 		}
 
 		craft()->users->sendActivationEmail($user);

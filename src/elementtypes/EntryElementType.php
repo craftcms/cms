@@ -121,16 +121,18 @@ class EntryElementType extends BaseElementType
 
 		$sources = array(
 			'*' => array(
-				'label'    => Craft::t('All entries'),
-				'criteria' => array('sectionId' => $sectionIds, 'editable' => $editable)
+				'label'       => Craft::t('All entries'),
+				'criteria'    => array('sectionId' => $sectionIds, 'editable' => $editable),
+				'defaultSort' => array('postDate', 'desc')
 			)
 		);
 
 		if ($singleSectionIds)
 		{
 			$sources['singles'] = array(
-				'label'    => Craft::t('Singles'),
-				'criteria' => array('sectionId' => $singleSectionIds, 'editable' => $editable)
+				'label'       => Craft::t('Singles'),
+				'criteria'    => array('sectionId' => $singleSectionIds, 'editable' => $editable),
+				'defaultSort' => array('title', 'asc')
 			);
 		}
 
@@ -157,8 +159,13 @@ class EntryElementType extends BaseElementType
 
 					if ($type == SectionType::Structure)
 					{
+						$sources[$key]['defaultSort'] = array('structure', 'asc');
 						$sources[$key]['structureId'] = $section->structureId;
 						$sources[$key]['structureEditable'] = craft()->userSession->checkPermission('publishEntries:'.$section->id);
+					}
+					else
+					{
+						$sources[$key]['defaultSort'] = array('postDate', 'desc');
 					}
 				}
 			}
@@ -773,7 +780,7 @@ class EntryElementType extends BaseElementType
 
 		if ($section->type == SectionType::Structure && $section->structureId == $structureId)
 		{
-			craft()->elements->updateElementSlugAndUri($element);
+			craft()->elements->updateElementSlugAndUri($element, true, true, true);
 		}
 	}
 }

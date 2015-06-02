@@ -2,6 +2,7 @@
 
 {% set siteName = craft.app.getSiteName() -%}
 {% set docTitle = docTitle is defined ? docTitle : title|striptags -%}
+{% set bodyClass = (bodyClass is defined ? bodyClass~' ' : '') ~ craft.i18n.getLocaleData().getOrientation() -%}
 
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en-US">
@@ -18,7 +19,7 @@
 	</script>
 	{% endblock %}
 </head>
-<body class="{{ craft.i18n.getLocaleData().getOrientation() }}">
+<body class="{{ bodyClass }}">
 	{% block body %}{% endblock %}
 	{% block foot %}{% endblock %}
 </body>

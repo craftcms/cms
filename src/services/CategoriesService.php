@@ -519,47 +519,63 @@ class CategoriesService extends BaseApplicationComponent
 			return false;
 		}
 
-		$transaction = craft()->db->getCurrentTransaction() === null ? craft()->db->beginTransaction() : null;
-		try
+		// Fire an 'onBeforeDeleteGroup' event
+		$event = new Event($this, array(
+			'groupId' => $groupId
+		));
+
+		$this->onBeforeDeleteGroup($event);
+
+		if ($event->performAction)
 		{
-			// Delete the field layout
-			$fieldLayoutId = craft()->db->createCommand()
-				->select('fieldLayoutId')
-				->from('categorygroups')
-				->where(array('id' => $groupId))
-				->queryScalar();
+			$transaction = craft()->db->getCurrentTransaction() === null ? craft()->db->beginTransaction() : null;
 
-			if ($fieldLayoutId)
+			try
 			{
-				craft()->fields->deleteLayoutById($fieldLayoutId);
+				// Delete the field layout
+				$fieldLayoutId = craft()->db->createCommand()
+					->select('fieldLayoutId')
+					->from('categorygroups')
+					->where(array('id' => $groupId))
+					->queryScalar();
+
+				if ($fieldLayoutId)
+				{
+					craft()->fields->deleteLayoutById($fieldLayoutId);
+				}
+
+				// Grab the category ids so we can clean the elements table.
+				$categoryIds = craft()->db->createCommand()
+					->select('id')
+					->from('categories')
+					->where(array('groupId' => $groupId))
+					->queryColumn();
+
+				craft()->elements->deleteElementById($categoryIds);
+
+				$affectedRows = craft()->db->createCommand()->delete('categorygroups', array('id' => $groupId));
+
+				if ($transaction !== null)
+				{
+					$transaction->commit();
+				}
+
+				// Fire an 'onDeleteGroup' event
+				$this->onDeleteGroup(new Event($this, array(
+					'groupId' => $groupId
+				)));
+
+				return (bool)$affectedRows;
 			}
-
-			// Grab the category ids so we can clean the elements table.
-			$categoryIds = craft()->db->createCommand()
-				->select('id')
-				->from('categories')
-				->where(array('groupId' => $groupId))
-				->queryColumn();
-
-			craft()->elements->deleteElementById($categoryIds);
-
-			$affectedRows = craft()->db->createCommand()->delete('categorygroups', array('id' => $groupId));
-
-			if ($transaction !== null)
+			catch (\Exception $e)
 			{
-				$transaction->commit();
-			}
+				if ($transaction !== null)
+				{
+					$transaction->rollback();
+				}
 
-			return (bool) $affectedRows;
-		}
-		catch (\Exception $e)
-		{
-			if ($transaction !== null)
-			{
-				$transaction->rollback();
+				throw $e;
 			}
-
-			throw $e;
 		}
 	}
 
@@ -717,7 +733,7 @@ class CategoriesService extends BaseApplicationComponent
 				}
 
 				// Update the category's descendants, who may be using this category's URI in their own URIs
-				craft()->elements->updateDescendantSlugsAndUris($category);
+				craft()->elements->updateDescendantSlugsAndUris($category, true, true);
 			}
 			else
 			{
@@ -935,6 +951,30 @@ class CategoriesService extends BaseApplicationComponent
 	public function onDeleteCategory(Event $event)
 	{
 		$this->raiseEvent('onDeleteCategory', $event);
+	}
+
+	/**
+	 * Fires an 'onBeforeDeleteGroup' event.
+	 *
+	 * @param Event $event
+	 *
+	 * @return null
+	 */
+	public function onBeforeDeleteGroup(Event $event)
+	{
+		$this->raiseEvent('onBeforeDeleteGroup', $event);
+	}
+
+	/**
+	 * Fires an 'onDeleteGroup' event.
+	 *
+	 * @param Event $event
+	 *
+	 * @return null
+	 */
+	public function onDeleteGroup(Event $event)
+	{
+		$this->raiseEvent('onDeleteGroup', $event);
 	}
 
 	// Private Methods

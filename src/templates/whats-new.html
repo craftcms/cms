@@ -1,42 +1,29 @@
 {% extends "_layouts/cp" %}
-{% set title = "What’s new in Craft 2.3" %}
+{% set title = "What’s new in Craft 2.4" %}
+{% set bodyClass = 'whats-new' %}
 {% includeCssResource "css/whats-new.css" %}
 
 {% block pageHeader %}{% endblock %}
 
-{% set url = 'http://buildwithcraft.com/updates/2.3' %}
+{% set url = 'http://buildwithcraft.com/updates/2.4' %}
 
 {% set content %}
 	<header>
 		<h1>{{ title }}</h1>
-		<p>Craft 2.3 packs <a href="{{ url }}">over <strong>230</strong> new features and improvements</a>, aimed to make working with content an even better experience than ever before.</p>
 	</header>
 
-	<div id="video-wrapper">
-		<iframe id="video" class="video" data-vimeo-id="113308175" src="//player.vimeo.com/video/113308175" width="870" height="489" frameborder="0" webkitallowfullscreen mozallowfullscreen allowfullscreen></iframe>
-	</div>
+	<h1>Customizable Selection Buttons</h1>
+	<p>Assets, Categories, Entries, Tags, and Users fields now make it possible to customize their selection button/input labels.</p>
+	<img src="{{ resourceUrl('images/whats-new/selection-labels.png') }}" alt="An Edit Entry page with three relational fields with customized selection inputs.">
 
-	<h1>Editing on the Index Pages</h1>
-	<p>It’s now possible to make changes to your entries, categories, assets, or users right from their index pages. You can edit a user from a modal window, update the status on a batch of entries, replace a file with a new one, bulk-delete a few unneeded categories, and more.</p>
-	<img src="{{ resourceUrl('images/whats-new/entry-index-editor.png') }}" alt="An entry being edited on the Entries index page.">
+	<h1>Redesigned User Permissions</h1>
+	<p>Each section of user permissions now has a “Select All” button which will immediately select all of the permissions in that group.</p>
+	<img src="{{ resourceUrl('images/whats-new/permissions.png') }}" alt="A user permissions selection list.">
 
-	<h1>Matrix, Revamped</h1>
-	<p>Matrix fields have a new look, and it’s now possible to reorder, expand/collapse, enable/disable, and delete multiple blocks at once. Matrix block type fields can now have instruction text, and they’re no longer required to have names.</p>
-	<img src="{{ resourceUrl('images/whats-new/matrix-field-batch-menu.png') }}" alt="A Matrix field with multiple blocks selected and a context menu open.">
+	<h1>Two New Languages</h1>
+	<p>The Control Panel has been translated into two new languages: Czech and Slovak. That brings the grand total up to <a href="http://buildwithcraft.com/help/cp-languages">18 supported languages!</a></p>
+	<img src="{{ resourceUrl('images/whats-new/slovak.png') }}" alt="The Settings page translated into Hebrew">
 
-	<h1>Five New Languages</h1>
-	<p>The Control Panel has been translated into five new languages: Simplified Chinese, Hebrew, Korean, Spanish, and Swedish. That brings the grand total up to <a href="http://buildwithcraft.com/help/cp-languages">15 supported languages!</a></p>
-	<img src="{{ resourceUrl('images/whats-new/assets-index-in-hebrew.png') }}" alt="The Assets index page translated into Hebrew">
-
-	<h1>More Scalable</h1>
-	<p>Several areas of the Control Panel have been updated to do a better job handling sites with hundreds (or even thousands) of entries, categories, users, and assets.</p>
-
-	<h1>More Extensible</h1>
-	<p>Plugins can add their own tools to element index pages using the new <a href="http://buildwithcraft.com/docs/plugins/element-actions">Element Actions</a> APIs, and there are some <a href="http://buildwithcraft.com/docs/plugins/hooks-reference#modifyEntryTableAttributes">new hooks</a> that make it possible to customize the index pages’ table columns.</p>
-
-	<h1>The List Goes On</h1>
-	<p>Check out the <a href="{{ url }}">release notes</a> for a complete list of all that’s changed!</p>
+	<h1>And More!</h1>
+	<p>There are over 60 additions and improvements in total. Check out the <a href="{{ url }}">release notes</a> for a complete list of all that’s changed!</p>
 {% endset %}
-
-{% includeJsResource 'lib/jquery.fitvids.js' %}
-{% includeJs '$("#content").fitVids();' %}

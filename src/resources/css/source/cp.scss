@@ -244,7 +244,7 @@ $fldGuideColor: #f4f3fb;
 .fld-field .menubtn:after { display: none; }
 
 .fld-tab .tabs { position: relative; z-index: 1; padding: 0 10px; }
-.fld-tab .tabs .tab { @include floatleft; margin: -1px; border-radius: 3px 3px 0 0; padding: 8px 10px 3px; border-bottom-color: $fldGuideColor; color: $fldChalkColor; }
+.fld-tab .tabs .tab { @include floatleft; margin: -1px; border-radius: 3px 3px 0 0; padding: 8px 10px 3px; border-bottom-color: $fldGuideColor; color: $fldChalkColor; white-space: normal; }
 .fld-tab .tabs .tab.draggable { cursor: move; }
 .fld-tab .fld-tabcontent { padding: 13px; }
 .fld-tab-caboose { min-height: 31px; }

@@ -144,7 +144,7 @@ class ResourcesService extends BaseApplicationComponent
 
 							if (IOHelper::isWritable($sizedPhotoFolder))
 							{
-								craft()->images->loadImage($originalPhotoPath)
+								craft()->images->loadImage($originalPhotoPath, $size, $size)
 									->resize($size)
 									->saveAs($sizedPhotoPath);
 							}
@@ -173,7 +173,7 @@ class ResourcesService extends BaseApplicationComponent
 					if (IOHelper::isWritable($targetFolder))
 					{
 						$targetFile = $targetFolder.$size.'.'.IOHelper::getExtension($sourceFile);
-						craft()->images->loadImage($sourceFile)
+						craft()->images->loadImage($sourceFile, $size, $size)
 							->resize($size)
 							->saveAs($targetFile);
 
@@ -481,8 +481,8 @@ class ResourcesService extends BaseApplicationComponent
 
 		// Determine the closest source size
 		$sourceSizes = array(
-			array('size' => 40,  'extSize' => 7,  'extY' => 32),
-			array('size' => 350, 'extSize' => 60, 'extY' => 280),
+			array('size' => 40,  'extSize' => 7,  'extY' => 25),
+			array('size' => 350, 'extSize' => 60, 'extY' => 220),
 		);
 
 		foreach ($sourceSizes as $sourceSize)
@@ -501,38 +501,34 @@ class ResourcesService extends BaseApplicationComponent
 		if (!IOHelper::fileExists($sourceIconLocation))
 		{
 			$sourceFile = craft()->path->getAppPath().'etc/assets/fileicons/'.$sourceSize['size'].'.png';
-			$image = imagecreatefrompng($sourceFile);
+			$image = craft()->images->loadImage($sourceFile);
 
 			// Text placement.
 			if ($ext)
 			{
-				$color = imagecolorallocate($image, 153, 153, 153);
-				$text = StringHelper::toUpperCase($ext);
 				$font = craft()->path->getAppPath().'etc/assets/helveticaneue-webfont.ttf';
 
-				// Get the bounding box so we can calculate the position
-				$box = imagettfbbox($sourceSize['extSize'], 0, $font, $text);
-				$width = $box[4] - $box[0];
+				$image->setFontProperties($font, $sourceSize['extSize'], "#999");
+				$text = StringHelper::toUpperCase($ext);
+
+				$box = $image->getTextBox($text);
+				$width = $box->getWidth();
 
 				// place the text in the center-bottom-ish of the image
-				imagettftext($image, $sourceSize['extSize'], 0, ceil(($sourceSize['size'] - $width) / 2), $sourceSize['extY'], $color, $font, $text);
+				$x = ceil(($sourceSize['size'] - $width) / 2);
+				$y = $sourceSize['extY'];
+				$image->writeText($text, $x, $y);
 			}
-
-			// Preserve transparency
-			imagealphablending($image, false);
-			$color = imagecolorallocatealpha($image, 0, 0, 0, 127);
-			imagefill($image, 0, 0, $color);
-			imagesavealpha($image, true);
 
 			// Make sure we have a folder to save to and save it.
 			IOHelper::ensureFolderExists($sourceFolder);
-			imagepng($image, $sourceIconLocation);
+			$image->saveAs($sourceIconLocation);
 		}
 
 		if ($size != $sourceSize['size'])
 		{
 			// Resize the source icon to fit this size.
-			craft()->images->loadImage($sourceIconLocation)
+			craft()->images->loadImage($sourceIconLocation, $size, $size)
 				->scaleAndCrop($size, $size)
 				->saveAs($iconLocation);
 		}

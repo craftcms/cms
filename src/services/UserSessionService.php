@@ -22,6 +22,7 @@ class UserSessionService extends \CWebUser
 	const FLASH_KEY_PREFIX = 'Craft.UserSessionService.flash.';
 	const FLASH_COUNTERS   = 'Craft.UserSessionService.flashcounters';
 	const AUTH_ACCESS_VAR  = '__auth_access';
+	const USER_IMPERSONATE_KEY = 'Craft.UserSessionService.prevImpersonateUserId';
 
 	// Properties
 	// =========================================================================
@@ -111,6 +112,7 @@ class UserSessionService extends \CWebUser
 				{
 					$validUser = false;
 
+					// TODO: Remove after next breakpoint.
 					// Keeping extra logic here so the upgrade to 2.3 won't freak.
 					// First the pre 2.3 check.
 					if ((isset($userRow['status']) && $userRow['status'] == UserStatus::Active) || (isset($userRow['status']) && $userRow['status'] == UserStatus::Pending))
@@ -122,6 +124,21 @@ class UserSessionService extends \CWebUser
 					if ((isset($userRow['suspended']) && isset($userRow['archived']) && isset($userRow['locked'])) && (!$userRow['suspended'] && !$userRow['archived'] && !$userRow['locked']))
 					{
 						$validUser = true;
+					}
+
+					// One last attempt.
+					if (!$validUser)
+					{
+						// If the previous user was an admin and we're impersonating the current user.
+						if ($previousUserId = craft()->httpSession->get(static::USER_IMPERSONATE_KEY))
+						{
+							$previousUser = craft()->users->getUserById($previousUserId);
+
+							if ($previousUser && $previousUser->admin)
+							{
+								$validUser = true;
+							}
+						}
 					}
 
 					if ($validUser)
@@ -783,7 +800,15 @@ class UserSessionService extends \CWebUser
 			}
 			default:
 			{
-				$error = Craft::t('Invalid username or password.');
+				if (craft()->config->get('useEmailAsUsername'))
+				{
+					$error = Craft::t('Invalid email or password.');
+				}
+				else
+				{
+					$error = Craft::t('Invalid username or password.');
+				}
+
 			}
 		}
 
@@ -807,6 +832,12 @@ class UserSessionService extends \CWebUser
 	 */
 	public function getIsGuest()
 	{
+		// If it's a console request, they're a guest.
+		if (craft()->isConsole())
+		{
+			return true;
+		}
+
 		return $this->isGuest();
 	}
 
@@ -1426,6 +1457,8 @@ class UserSessionService extends \CWebUser
 			// Let's keep the current nonce around.
 			craft()->request->regenCsrfCookie();
 		}
+
+		craft()->httpSession->remove(UserSessionService::USER_IMPERSONATE_KEY);
 
 		// Fire an 'onLogout' event
 		$this->onLogout(new Event($this));

@@ -28,13 +28,20 @@ class CraftTwigExtension extends \Twig_Extension
 			new Exit_TokenParser(),
 			new Header_TokenParser(),
 			new Hook_TokenParser(),
-			new IncludeResource_TokenParser('includeCss'),
+			new IncludeResource_TokenParser('includeCss', true),
+			new IncludeResource_TokenParser('includecss', true),
 			new IncludeResource_TokenParser('includeCssFile'),
+			new IncludeResource_TokenParser('includecssfile'),
 			new IncludeResource_TokenParser('includeCssResource'),
-			new IncludeResource_TokenParser('includeHiResCss'),
-			new IncludeResource_TokenParser('includeJs'),
+			new IncludeResource_TokenParser('includecssresource'),
+			new IncludeResource_TokenParser('includeHiResCss', true),
+			new IncludeResource_TokenParser('includehirescss', true),
+			new IncludeResource_TokenParser('includeJs', true),
+			new IncludeResource_TokenParser('includejs', true),
 			new IncludeResource_TokenParser('includeJsFile'),
+			new IncludeResource_TokenParser('includejsfile'),
 			new IncludeResource_TokenParser('includeJsResource'),
+			new IncludeResource_TokenParser('includejsresource'),
 			new IncludeTranslations_TokenParser(),
 			new Namespace_TokenParser(),
 			new Nav_TokenParser(),
@@ -85,6 +92,7 @@ class CraftTwigExtension extends \Twig_Extension
 			't'                  => $translateFilter,
 			'ucfirst'            => new \Twig_Filter_Method($this, 'ucfirstFilter'),
 			'ucwords'            => new \Twig_Filter_Function('ucwords'),
+			'kebab'              => new \Twig_Filter_Method($this, 'kebabFilter'),
 			'without'            => new \Twig_Filter_Method($this, 'withoutFilter'),
 		);
 	}
@@ -111,6 +119,21 @@ class CraftTwigExtension extends \Twig_Extension
 	public function lcfirstFilter($string)
 	{
 		return StringHelper::lowercaseFirst($string);
+	}
+
+	/**
+	 * Kebab-cases a string.
+	 *
+	 * @param string $string The string
+	 * @param string $glue The string used to glue the words together (default is a hyphen)
+	 * @param boolean $lower Whether the string should be lowercased (default is true)
+	 * @param boolean $removePunctuation Whether punctuation marks should be removed (default is true)
+	 *
+	 * @return string
+	 */
+	public function kebabFilter($string, $glue = '-', $lower = true, $removePunctuation = true)
+	{
+		return StringHelper::toKebabCase($string, $glue, $lower, $removePunctuation);
 	}
 
 	/**

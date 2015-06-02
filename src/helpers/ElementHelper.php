@@ -54,23 +54,14 @@ class ElementHelper
 	public static function createSlug($str)
 	{
 		// Remove HTML tags
-		$slug = preg_replace('/<(.*?)>/u', '', $str);
+		$str = StringHelper::stripHtml($str);
 
-		// Remove inner-word punctuation.
-		$slug = preg_replace('/[\'"‘’“”\[\]\(\)\{\}:]/u', '', $slug);
+		// Convert to kebab case
+		$glue = craft()->config->get('slugWordSeparator');
+		$lower = !craft()->config->get('allowUppercaseInSlug');
+		$str = StringHelper::toKebabCase($str, $glue, $lower, false);
 
-		if (craft()->config->get('allowUppercaseInSlug') === false)
-		{
-			// Make it lowercase
-			$slug = StringHelper::toLowerCase($slug);
-		}
-
-		// Get the "words". Split on anything that is not alphanumeric, or a period, underscore, or hyphen.
-		preg_match_all('/[\p{L}\p{N}\._-]+/u', $slug, $words);
-		$words = ArrayHelper::filterEmptyStringsFromArray($words[0]);
-		$slug = implode(craft()->config->get('slugWordSeparator'), $words);
-
-		return $slug;
+		return $str;
 	}
 
 	/**

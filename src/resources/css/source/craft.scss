@@ -165,6 +165,8 @@ strong, b, i em { font-weight: bold; font-family: sans-serif; }
 .centeralign { text-align: center !important; }
 .nowrap { white-space: nowrap; }
 .light { color: $mediumtextcolor !important; font-weight: normal; }
+.smalltext { font-size: 11px; }
+input.checkbox + label.smalltext { padding-top: 2px; }
 
 .required:after { content: '*'; @include margin(-2px, 0, 0, 2px); font-size: 7px; color: $errorcolor; }
 
@@ -294,6 +296,7 @@ ul.icons li a:hover { text-decoration: none; color: $linkcolor; }
 .toolbar.fixed { position: fixed; z-index: 1; top: 0; margin: 0 -1px; padding: 7px 1px; background: #fff; @include box-shadow(0 1px 0 rgba(0,0,0,0.05)); }
 .toolbar .spinner { position: absolute; top: 0; @include right(-24px); }
 
+table.inputs td { vertical-align: top; }
 table.inputs td:not(:first-child) { @include padding-left(14px); }
 table.inputs :not(.btngroup) > .btn,
 table.inputs .btngroup { display: block; float: none; }
@@ -946,6 +949,7 @@ body .redactor-dropdown a { margin: 0 -14px; padding: 3px 14px; color: $textcolo
 .menu:not(:hover) ul li a:not(.sel):not(.disabled).hover .light,
 body .redactor-dropdown a:hover { color: $textcolor; background-color: $lightselcolor; }
 .menu ul li a.sel { cursor: default; }
+.menu ul li a .shortcut { @include floatright; @include margin-left(14px); color: $mediumtextcolor; }
 .menu hr { margin: 5px -14px; }
 
 .menu ul.padded li a { @include padding-left(24px); }
@@ -1022,7 +1026,7 @@ div.checkbox:empty { @include padding-left(12px); }
 input.checkbox + label:empty:after,
 div.checkbox:empty:after { content: '.'; font-size: 0; } /* fixes a RTL bug */
 input.checkbox + label:before,
-div.checkbox:before { display: block; position: absolute; top: 2px; @include left(0); width: 12px; height: 12px; content: '.'; font-size: 0; border-radius: 2px; background: #fff;
+div.checkbox:before { display: block; position: absolute; top: 2px; @include left(0); width: 12px !important; height: 12px; content: '.'; font-size: 0; border-radius: 2px; background: #fff;
 	@include box-shadow(0 0 2px hsla(205, 100%, 60%, 0), inset 0 0 0 1px rgba(0,0,0,0.15), inset 0 1px 2px rgba(0,0,0,0.15), inset 0 0 0 1px hsla(205, 100%, 60%, 0));
 }
 input.checkbox:disabled + label:before,
@@ -1192,9 +1196,9 @@ ul.errors { margin-top: 5px; list-style-type: square; @include padding-left(20px
 ul.errors li { color: $errorcolor; }
 
 /* message pages */
-.message-container { position: absolute; z-index: 100; top: 0; @include left(0); width: 100%; height: 100%; }
-.message-container.no-access { background: rgba(50,50,50,0.9); }
-.message-container .pane { top: 50%; margin-top: -33px !important; margin-left: auto; margin-right: auto; width: 320px; }
+body.message .message-container { position: absolute; z-index: 100; top: 0; @include left(0); width: 100%; height: 100%; }
+body.message .message-container.no-access { background: rgba(50,50,50,0.9); }
+body.message .message-container .pane { top: 50%; margin-top: -33px !important; margin-left: auto; margin-right: auto; width: 320px; }
 
 /* ----------------------------------------
 /* Matrix

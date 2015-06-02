@@ -538,6 +538,65 @@ class StringHelper
 	}
 
 	/**
+	 * Kebab-cases a string.
+	 *
+	 * @param string $string The string
+	 * @param string $glue The string used to glue the words together (default is a hyphen)
+	 * @param boolean $lower Whether the string should be lowercased (default is true)
+	 * @param boolean $removePunctuation Whether punctuation marks should be removed (default is true)
+	 *
+	 * @return string
+	 */
+	public static function toKebabCase($string, $glue = '-', $lower = true, $removePunctuation = true)
+	{
+		if ($removePunctuation)
+		{
+			$string = str_replace(array('.', '_', '-'), ' ', $string);
+		}
+
+		// Remove inner-word punctuation.
+		$string = preg_replace('/[\'"‘’“”\[\]\(\)\{\}:]/u', '', $string);
+
+		// Split on the words and then glue it back together
+		$words = self::splitOnWords($string);
+		$string = implode($glue, $words);
+
+		if ($lower)
+		{
+			// Make it lowercase
+			$string = self::toLowerCase($string);
+		}
+
+		return $string;
+	}
+
+	/**
+	 * Splits a string into an array of the words in the string.
+	 *
+	 * @param string $string The string
+	 *
+	 * @return string[]
+	 */
+	public static function splitOnWords($string)
+	{
+		// Split on anything that is not alphanumeric, or a period, underscore, or hyphen.
+		preg_match_all('/[\p{L}\p{N}\._-]+/u', $string, $matches);
+		return ArrayHelper::filterEmptyStringsFromArray($matches[0]);
+	}
+
+	/**
+	 * Strips HTML tags out of a given string.
+	 *
+	 * @param $str The string.
+	 *
+	 * @return string
+	 */
+	public static function stripHtml($str)
+	{
+		return preg_replace('/<(.*?)>/u', '', $str);
+	}
+
+	/**
 	 * Backslash-escapes any commas in a given string.
 	 *
 	 * @param $str The string.

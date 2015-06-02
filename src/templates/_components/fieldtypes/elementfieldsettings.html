@@ -39,3 +39,13 @@
 		errors: settings.getErrors('limit')
 	}) }}
 {% endif %}
+
+{{ forms.textField({
+	label: "Selection Label"|t,
+	instructions: "Enter the text you want to appear on the {type} selection input."|t({ type: type|lower }),
+	id: 'selectionLabel',
+	name: 'selectionLabel',
+	value: settings.selectionLabel,
+	size: 25,
+	errors: settings.getErrors('selectionLabel')
+}) }}

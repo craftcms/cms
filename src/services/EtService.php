@@ -51,7 +51,36 @@ class EtService extends BaseApplicationComponent
 
 		if ($etResponse)
 		{
-			$etResponse->data = new UpdateModel($etResponse->data);
+			$updateModel = new UpdateModel($etResponse->data);
+
+			// Convert the Craft release dates into localized times.
+			if (count($updateModel->app->releases) > 0)
+			{
+				foreach ($updateModel->app->releases as $key => $release)
+				{
+					// Have to use setAttribute here.
+					$updateModel->app->releases[$key]->setAttribute('localizedDate', $release->date->localeDate());
+				}
+			}
+
+			// Convert any plugin release dates into localized times.
+			if (count($updateModel->plugins) > 0)
+			{
+				foreach ($updateModel->plugins as $pluginKey => $plugin)
+				{
+					if (count($plugin->releases) > 0)
+					{
+						foreach ($plugin->releases as $pluginReleaseKey => $pluginRelease)
+						{
+							// Have to use setAttribute here.
+							$updateModel->plugins[$pluginKey]->releases[$pluginReleaseKey]->setAttribute('localizedDate', $pluginRelease->date->localeDate());
+						}
+					}
+				}
+			}
+
+			$etResponse->data = $updateModel;
+
 			return $etResponse;
 		}
 	}

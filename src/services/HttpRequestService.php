@@ -127,7 +127,11 @@ class HttpRequestService extends \CHttpRequest
 		}
 
 		// Get the path segments
-		$this->_segments = array_filter(explode('/', $path));
+		$this->_segments = array_filter(explode('/', $path), function($value)
+		{
+			// Explicitly check in case there is a 0 in a segment (i.e. foo/0 or foo/0/bar)
+			return $value !== '';
+		});
 
 		// Is this a CP request?
 		$this->_isCpRequest = ($this->getSegment(1) == craft()->config->get('cpTrigger'));
@@ -139,7 +143,27 @@ class HttpRequestService extends \CHttpRequest
 		}
 
 		// Is this a paginated request?
-		if ($this->_segments)
+		$pageTrigger = craft()->config->get('pageTrigger');
+
+		if (!is_string($pageTrigger) || !strlen($pageTrigger))
+		{
+			$pageTrigger = 'p';
+		}
+
+		// Is this query string-based pagination?
+		if ($pageTrigger[0] === '?')
+		{
+			$pageTrigger = trim($pageTrigger, '?=');
+
+			if ($pageTrigger === 'p')
+			{
+				// Avoid conflict with the main 'p' param
+				$pageTrigger = 'pg';
+			}
+
+			$this->_pageNum = (int) $this->getQuery($pageTrigger, '1');
+		}
+		else if ($this->_segments)
 		{
 			// Match against the entire path string as opposed to just the last segment so that we can support
 			// "/page/2"-style pagination URLs
@@ -712,6 +736,8 @@ class HttpRequestService extends \CHttpRequest
 		$contentStart = 0;
 		$contentEnd = $fileSize - 1;
 
+		$httpVersion = $this->getHttpVersion();
+
 		if (isset($_SERVER['HTTP_RANGE']))
 		{
 			HeaderHelper::setHeader(array('Accept-Ranges' => 'bytes'));
@@ -757,12 +783,12 @@ class HttpRequestService extends \CHttpRequest
 				throw new HttpException(416, 'Requested Range Not Satisfiable');
 			}
 
-			HeaderHelper::setHeader('HTTP/1.1 206 Partial Content');
+			HeaderHelper::setHeader("HTTP/$httpVersion 206 Partial Content");
 			HeaderHelper::setHeader(array('Content-Range' => 'bytes '.$contentStart - $contentEnd / $fileSize));
 		}
 		else
 		{
-			HeaderHelper::setHeader('HTTP/1.1 200 OK');
+			HeaderHelper::setHeader("HTTP/$httpVersion 200 OK");
 		}
 
 		// Calculate new content length
@@ -1103,7 +1129,7 @@ class HttpRequestService extends \CHttpRequest
 
 		foreach ($parts as $key => $part)
 		{
-			if (mb_strpos($part, 'p=') !== false)
+			if (mb_strpos($part, craft()->urlManager->pathParam.'=') === 0)
 			{
 				unset($parts[$key]);
 				break;
@@ -1196,6 +1222,34 @@ class HttpRequestService extends \CHttpRequest
 	}
 
 	/**
+	 * Returns whether the client is running "Windows", "Mac", "Linux" or "Other", based on the
+	 * browser's UserAgent string.
+	 *
+	 * @return string The OS the client is running.
+	 */
+	public function getClientOs()
+	{
+		$userAgent = $this->getUserAgent();
+
+		if (preg_match('/Linux/', $userAgent))
+		{
+			return 'Linux';
+		}
+		elseif (preg_match('/Win/', $userAgent))
+		{
+			return 'Windows';
+		}
+		elseif (preg_match('/Mac/', $userAgent))
+		{
+			return 'Mac';
+		}
+		else
+		{
+			return 'Other';
+		}
+	}
+
+	/**
 	 * Performs the CSRF validation. This is the event handler responding to {@link CApplication::onBeginRequest}.
 	 * The default implementation will compare the CSRF token obtained from session and from a POST field. If they
 	 * are different, a CSRF attack is detected.
@@ -1206,7 +1260,7 @@ class HttpRequestService extends \CHttpRequest
 	 */
 	public function validateCsrfToken($event)
 	{
-		if ($this->getIsPostRequest() || $this->getIsPutRequest() || $this->getIsDeleteRequest())
+		if ($this->getIsPostRequest() || $this->getIsPutRequest() || $this->getIsPatchRequest() || $this->getIsDeleteRequest())
 		{
 			$method = $this->getRequestType();
 
@@ -1224,13 +1278,18 @@ class HttpRequestService extends \CHttpRequest
 					break;
 				}
 
+				case 'PATCH':
+				{
+					$tokenFromPost = $this->getPatch($this->csrfTokenName);
+					break;
+				}
+
 				case 'DELETE':
 				{
 					$tokenFromPost = $this->getDelete($this->csrfTokenName);
 				}
 			}
 
-			$cookies = $this->getCookies();
 			$csrfCookie = $this->getCookies()->itemAt($this->csrfTokenName);
 
 			if (!empty($tokenFromPost) && $csrfCookie && $csrfCookie->value)
@@ -1313,8 +1372,6 @@ class HttpRequestService extends \CHttpRequest
 	 */
 	protected function createCsrfCookie()
 	{
-		$currentUser = false;
-
 		$cookie = $this->getCookies()->itemAt($this->csrfTokenName);
 
 		if ($cookie)
@@ -1322,7 +1379,7 @@ class HttpRequestService extends \CHttpRequest
 			// They have an existing CSRF cookie.
 			$value = $cookie->value;
 
-			// It's a CSRF cookie that came from an authenitcated request.
+			// It's a CSRF cookie that came from an authenticated request.
 			if (strpos($value, '|') !== false)
 			{
 				// Grab the existing nonce.

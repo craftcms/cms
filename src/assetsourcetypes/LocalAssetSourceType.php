@@ -178,7 +178,8 @@ class LocalAssetSourceType extends BaseAssetSourceType
 
 			if ($fileModel->kind == 'image')
 			{
-				list ($width, $height) = getimagesize($indexEntryModel->uri);
+				list ($width, $height) = ImageHelper::getImageSize($indexEntryModel->uri);
+
 				$fileModel->width = $width;
 				$fileModel->height = $height;
 			}

@@ -82,22 +82,18 @@ class DateTime extends \DateTime
 	 *  - Unix timestamps
 	 *
 	 * @param string|array $date
-	 * @param string|null  $timezone The [PHP timezone identifier](http://php.net/manual/en/timezones.php),
-	 *                               if not specified in $date. Defaults to 'UTC'.
+	 * @param string|null  $timezone            The [PHP timezone identifier](http://php.net/manual/en/timezones.php)
+	 *                                          that $date is set to, if not already specified in $date. Defaults to 'UTC'.
+	 * @param bool         $setToSystemTimeZone Whether to set the resulting DateTime object to the system timezone.
 	 *
 	 * @return DateTime|null|false
 	 */
-	public static function createFromString($date, $timezone = null)
+	public static function createFromString($date, $timezone = null, $setToSystemTimeZone = true)
 	{
 		// Was this a date/time-picker?
 		if (is_array($date) && (isset($date['date']) || isset($date['time'])))
 		{
 			$dt = $date;
-
-			if (!$timezone)
-			{
-				$timezone = craft()->getTimeZone();
-			}
 
 			if (empty($dt['date']) && empty($dt['time']))
 			{
@@ -111,6 +107,23 @@ class DateTime extends \DateTime
 			{
 				$date = $dt['date'];
 				$format = $dateFormatter->getDatepickerPhpFormat();
+
+				// Valid separators are either '-', '.' or '/'.
+				if (mb_strpos($format, '.') !== false)
+				{
+					$separator = '.';
+				}
+				else if (mb_strpos($format, '-') !== false)
+				{
+					$separator = '-';
+				}
+				else
+				{
+					$separator = '/';
+				}
+
+				// Ensure that the submitted date is using the locale’s separator
+				$date = str_replace(array('-', '.', '/'), $separator, $date);
 
 				// Check for a two-digit year as well
 				$altFormat = str_replace('Y', 'y', $format);
@@ -126,7 +139,7 @@ class DateTime extends \DateTime
 				$format = '';
 
 				// Default to the current date
-				$current = new DateTime('now', new \DateTimeZone($timezone));
+				$current = new DateTime('now', new \DateTimeZone($timezone ?: self::UTC));
 				$date .= $current->month().'/'.$current->day().'/'.$current->year();
 				$format .= 'n/j/Y';
 			}
@@ -200,7 +213,14 @@ class DateTime extends \DateTime
 			$date   .= ' '.$timezone;
 		}
 
-		return static::createFromFormat('!'.$format, $date);
+		$dt = static::createFromFormat('!'.$format, $date);
+
+		if ($setToSystemTimeZone)
+		{
+			$dt->setTimezone(new \DateTimeZone(craft()->getTimeZone()));
+		}
+
+		return $dt;
 	}
 
 	/**

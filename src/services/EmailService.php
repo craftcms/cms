@@ -151,6 +151,9 @@ class EmailService extends BaseApplicationComponent
 		$originalTemplatesPath = craft()->path->getTemplatesPath();
 		craft()->path->setTemplatesPath($tempTemplatesPath);
 
+		// Tell the template which email key was being requested
+		$variables['emailKey'] = $key;
+
 		// Send the email
 		$return = $this->_sendEmail($user, $emailModel, $variables);
 
@@ -411,6 +414,14 @@ class EmailService extends BaseApplicationComponent
 
 			$variables['user'] = $user;
 
+			$oldLanguage = craft()->getLanguage();
+
+			// If they have a preferredLocale, use that.
+			if ($user->preferredLocale)
+			{
+				craft()->setLanguage($user->preferredLocale);
+			}
+
 			$email->Subject = craft()->templates->renderString($emailModel->subject, $variables);
 
 			// If they populated an htmlBody, use it.
@@ -427,6 +438,8 @@ class EmailService extends BaseApplicationComponent
 				$email->msgHTML($renderedHtmlBody);
 				$email->AltBody = craft()->templates->renderString($emailModel->body, $variables);
 			}
+
+			craft()->setLanguage($oldLanguage);
 
 			if (!$email->Send())
 			{

@@ -117,6 +117,12 @@ return array(
 	'cacheMethod' => 'file',
 
 	/**
+	 * If set to true, any uploaded file names will have multi-byte characters (Chinese, Japanese, etc.) stripped
+	 * and any high-ASCII characters converted to their low ASCII counterparts (i.e. ñ → n).
+	 */
+	'convertFilenamesToAscii' => false,
+
+	/**
 	 * The amount of time a user must wait before re-attempting to log in after their account is locked due to too many
 	 * failed login attempts.
 	 *
@@ -150,6 +156,12 @@ return array(
 	 * for all subdomains, for example, you could set this to '.domain.com'.
 	 */
 	'defaultCookieDomain' => '',
+
+	/**
+	 * Defines the default language the control panel should get set to if the logged-in user doesn't have a
+	 * preferred language set.
+	 */
+	'defaultCpLanguage' => '',
 
 	/**
 	 * The default permissions Craft will use when creating a file on the file system.
@@ -191,6 +203,13 @@ return array(
 	 * Also, see the 'csrfTokenName' config setting.
 	 */
 	'enableCsrfProtection' => false,
+
+	/**
+	 * Whether to enable Craft's template `{% cache %}` tag on a global basis.
+	 *
+	 * @see http://buildwithcraft.com/docs/templating/cache
+	 */
+	'enableTemplateCaching' => true,
 
 	/**
 	 * Any environment-specific variables that should be swapped out in URL and Path settings.
@@ -349,6 +368,13 @@ return array(
 	 * unzipping and updating.
 	 */
 	'phpMaxMemoryLimit' => '256M',
+
+	/**
+	 * The name of the PHP session cookie.
+	 *
+	 * @see https://php.net/manual/en/function.session-name.php
+	 */
+	'phpSessionName' => 'CraftSessionId',
 
 	/**
 	 * The path that users should be redirected to after logging in from the Control Panel.
