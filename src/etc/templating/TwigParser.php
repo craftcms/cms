@@ -16,9 +16,6 @@ class TwigParser extends \Twig_Parser
 	// Protected Methods
 	// =========================================================================
 
-	/**
-	 * @inheritdoc \Twig_Parser::filterBodyNodes()
-	 */
 	protected function filterBodyNodes(\Twig_NodeInterface $node)
 	{
 		// Bypass "include" nodes as they "capture" the output
