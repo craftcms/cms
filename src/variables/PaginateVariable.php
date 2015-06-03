@@ -87,7 +87,7 @@ class PaginateVariable
 						$path .= '/';
 					}
 
-					$path .= $page;
+					$path .= $pageTrigger.$page;
 				}
 			}
 
