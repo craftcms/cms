@@ -18,7 +18,7 @@
 		{% endnav %}
 	</ul>
 
-	<div class="btn add icon dashed">{{ selectionLabel }}</div>
+	<div class="btn add icon dashed">{{ selectionLabel|t }}</div>
 </div>
 
 {% if jsClass is defined %}
@@ -32,7 +32,7 @@
 			sourceElementId: {{ sourceElementId ?: 'null' }},
 			limit: {{ limit ?: 'null' }},
 			modalStorageKey: "{{ storageKey|e('js') }}",
-			selectionLabel: "{{ selectionLabel|e('js') }}"
+			selectionLabel: "{{ selectionLabel|t|e('js') }}"
 		});
 	{% endset %}
 
