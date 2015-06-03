@@ -162,9 +162,10 @@ class ElementsController extends BaseElementsController
 		}
 
 		$html = craft()->templates->render('_components/fieldtypes/Categories/input', array(
-			'elements' => $categories,
-			'id'       => craft()->request->getParam('id'),
-			'name'     => craft()->request->getParam('name'),
+			'elements'       => $categories,
+			'id'             => craft()->request->getParam('id'),
+			'name'           => craft()->request->getParam('name'),
+			'selectionLabel' => craft()->request->getParam('selectionLabel'),
 		));
 
 		$this->returnJson(array(

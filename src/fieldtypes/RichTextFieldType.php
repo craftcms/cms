@@ -128,6 +128,7 @@ class RichTextFieldType extends BaseFieldType
 			'"'.craft()->templates->namespaceInputId($id).'", ' .
 			JsonHelper::encode($this->_getSectionSources()).', ' .
 			JsonHelper::encode($this->_getCategorySources()).', ' .
+			JsonHelper::encode($this->_getAssetSources()).', ' .
 			'"'.(isset($this->element) ? $this->element->locale : craft()->language).'", ' .
 			$configJs.', ' .
 			'"'.static::$_redactorLang.'"' .
@@ -325,6 +326,22 @@ class RichTextFieldType extends BaseFieldType
 			{
 				$sources[] = 'group:'.$categoryGroup->id;
 			}
+		}
+
+		return $sources;
+	}
+
+	/**
+	 * @return array
+	 */
+	private function _getAssetSources()
+	{
+		$sources = array();
+		$assetSourceIds = craft()->assetSources->getAllSourceIds();
+
+		foreach ($assetSourceIds as $assetSourceId)
+		{
+			$sources[] = 'asset:'.$assetSourceId;
 		}
 
 		return $sources;

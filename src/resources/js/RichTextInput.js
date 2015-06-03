@@ -9,17 +9,19 @@ Craft.RichTextInput = Garnish.Base.extend(
 	id: null,
 	sectionSources: null,
 	categorySources: null,
+	assetSources: null,
 	elementLocale: null,
 	redactorConfig: null,
 
 	$textarea: null,
 	redactor: null,
 
-	init: function(id, sectionSources, categorySources, elementLocale, redactorConfig, redactorLang)
+	init: function(id, sectionSources, categorySources, assetSources, elementLocale, redactorConfig, redactorLang)
 	{
 		this.id = id;
 		this.sectionSources = sectionSources;
 		this.categorySources = categorySources;
+		this.assetSources = assetSources;
 		this.elementLocale = elementLocale;
 		this.redactorConfig = redactorConfig;
 
@@ -136,8 +138,7 @@ Craft.RichTextInput = Garnish.Base.extend(
 
 		if ($linkBtn)
 		{
-			this.redactor.button.addDropdown($linkBtn,
-			{
+			var dropdownOptions = {
 				link_entry:
 				{
 					title: Craft.t('Link to an entry'),
@@ -174,8 +175,11 @@ Craft.RichTextInput = Garnish.Base.extend(
 						}
 					}, this)
 				},
-				link_category:
-				{
+			};
+
+			if (this.categorySources.length)
+			{
+				dropdownOptions.link_category = {
 					title: Craft.t('Link to a category'),
 					func: $.proxy(function()
 					{
@@ -209,9 +213,12 @@ Craft.RichTextInput = Garnish.Base.extend(
 							this.categorySelectionModal.show();
 						}
 					}, this)
-				},
-				link_asset:
-				{
+				};
+			}
+
+			if (this.assetSources.length)
+			{
+				dropdownOptions.link_asset = {
 					title: Craft.t('Link to an asset'),
 					func: $.proxy(function()
 					{
@@ -245,18 +252,20 @@ Craft.RichTextInput = Garnish.Base.extend(
 							this.assetLinkSelectionModal.show();
 						}
 					}, this)
-				},
-				link:
-				{
-					title: Craft.t('Insert link'),
-					func:  'link.show'
-				},
-				unlink:
-				{
-					title: Craft.t('Unlink'),
-					func:  'link.unlink'
 				}
-			});
+			}
+
+			dropdownOptions.link = {
+				title: Craft.t('Insert link'),
+				func:  'link.show'
+			};
+
+			dropdownOptions.unlink = {
+				title: Craft.t('Unlink'),
+				func:  'link.unlink'
+			}
+
+			this.redactor.button.addDropdown($linkBtn, dropdownOptions);
 		}
 	},
 
