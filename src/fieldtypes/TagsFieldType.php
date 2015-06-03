@@ -74,7 +74,7 @@ class TagsFieldType extends BaseElementFieldType
 				'elements'        => $criteria,
 				'tagGroupId'      => $this->_getTagGroupId(),
 				'sourceElementId' => (isset($this->element->id) ? $this->element->id : null),
-				'selectionLabel'  => $this->getSettings()->selectionLabel,
+				'selectionLabel'  => Craft::t($this->getSettings()->selectionLabel),
 			));
 		}
 		else
