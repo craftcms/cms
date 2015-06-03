@@ -391,7 +391,7 @@ abstract class BaseElementFieldType extends BaseFieldType
 			'criteria'           => $selectionCriteria,
 			'sourceElementId'    => (isset($this->element->id) ? $this->element->id : null),
 			'limit'              => ($this->allowLimit ? $settings->limit : null),
-			'selectionLabel'     => $this->getSettings()->selectionLabel,
+			'selectionLabel'     => Craft::t($this->getSettings()->selectionLabel),
 		);
 	}
 

@@ -706,6 +706,11 @@ class GoogleCloudAssetSourceType extends BaseAssetSourceType
 	 */
 	protected function copySourceFile($sourceUri, $targetUri)
 	{
+		if ($sourceUri == $targetUri)
+		{
+			return true;
+		}
+
 		$bucket = $this->getSettings()->bucket;
 		return (bool) @$this->_googleCloud->copyObject($bucket, $sourceUri, $bucket, $targetUri, \GC::ACL_PUBLIC_READ);
 	}

@@ -159,6 +159,9 @@ class TemplatesService extends BaseApplicationComponent
 			// Give plugins a chance to add their own Twig extensions
 			$this->_addPluginTwigExtensions($twig);
 
+			// Set our custom parser to support "include" tags using the capture mode
+			$twig->setParser(new TwigParser($twig));
+
 			$this->_twigs[$loaderClass] = $twig;
 		}
 
