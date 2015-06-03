@@ -1225,6 +1225,11 @@ class RackspaceAssetSourceType extends BaseAssetSourceType
 	 */
 	private function _copyFile($sourceUri, $targetUri)
 	{
+		if ($sourceUri == $targetUri)
+		{
+			return true;
+		}
+
 		$targetUri = '/'.ltrim($targetUri, '/');
 		$this->_doAuthenticatedRequest(static::RACKSPACE_STORAGE_OPERATION, $sourceUri, 'COPY', array('Destination: '.$targetUri));
 	}

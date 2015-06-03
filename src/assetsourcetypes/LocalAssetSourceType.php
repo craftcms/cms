@@ -512,6 +512,11 @@ class LocalAssetSourceType extends BaseAssetSourceType
 	 */
 	protected function copySourceFile($sourceUri, $targetUri)
 	{
+		if ($sourceUri == $targetUri)
+		{
+			return true;
+		}
+
 		return IOHelper::copyFile($this->getSourceFileSystemPath().$sourceUri, $this->getSourceFileSystemPath().$targetUri, true);
 	}
 

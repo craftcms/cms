@@ -719,6 +719,11 @@ class S3AssetSourceType extends BaseAssetSourceType
 	 */
 	protected function copySourceFile($sourceUri, $targetUri)
 	{
+		if ($sourceUri == $targetUri)
+		{
+			return true;
+		}
+
 		$bucket = $this->getSettings()->bucket;
 
 		return (bool) @$this->_s3->copyObject($bucket, $sourceUri, $bucket, $targetUri, \S3::ACL_PUBLIC_READ);
