@@ -184,7 +184,16 @@ class Image
 				}
 			}
 
-			$this->_image = $this->_instance->load($svg);
+			try
+			{
+				$this->_image = $this->_instance->load($svg);
+			}
+			catch (\Imagine\Exception\RuntimeException $e)
+			{
+				// Invalid SVG. Maybe it's missing its DTD?
+				$svg = '<?xml version="1.0" encoding="UTF-8" standalone="no"?>'.$svg;
+				$this->_image = $this->_instance->load($svg);
+			}
 		}
 		else
 		{
