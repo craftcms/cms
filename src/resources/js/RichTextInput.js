@@ -7,7 +7,7 @@
 Craft.RichTextInput = Garnish.Base.extend(
 {
 	id: null,
-	sectionSources: null,
+	entrySources: null,
 	categorySources: null,
 	assetSources: null,
 	elementLocale: null,
@@ -16,10 +16,10 @@ Craft.RichTextInput = Garnish.Base.extend(
 	$textarea: null,
 	redactor: null,
 
-	init: function(id, sectionSources, categorySources, assetSources, elementLocale, redactorConfig, redactorLang)
+	init: function(id, entrySources, categorySources, assetSources, elementLocale, redactorConfig, redactorLang)
 	{
 		this.id = id;
-		this.sectionSources = sectionSources;
+		this.entrySources = entrySources;
 		this.categorySources = categorySources;
 		this.assetSources = assetSources;
 		this.elementLocale = elementLocale;
@@ -138,9 +138,11 @@ Craft.RichTextInput = Garnish.Base.extend(
 
 		if ($linkBtn)
 		{
-			var dropdownOptions = {
-				link_entry:
-				{
+			var dropdownOptions = {};
+
+			if (this.entrySources.length)
+			{
+				dropdownOptions.link_entry = {
 					title: Craft.t('Link to an entry'),
 					func: $.proxy(function()
 					{
@@ -150,7 +152,7 @@ Craft.RichTextInput = Garnish.Base.extend(
 						{
 							this.entrySelectionModal = Craft.createElementSelectorModal('Entry', {
 								storageKey: 'RichTextFieldType.LinkToEntry',
-								sources: this.sectionSources,
+								sources: this.entrySources,
 								criteria: { locale: this.elementLocale },
 								onSelect: $.proxy(function(entries)
 								{
@@ -174,7 +176,7 @@ Craft.RichTextInput = Garnish.Base.extend(
 							this.entrySelectionModal.show();
 						}
 					}, this)
-				},
+				};
 			};
 
 			if (this.categorySources.length)
