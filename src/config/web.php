@@ -26,6 +26,7 @@ return [
 	'modules' => [
 		'debug' => [
 			'class' => 'yii\debug\Module',
+			'allowedIPs' => ['*'],
 			'panels' => [
 				'config' => false,
 				'info' => ['class' => 'craft\app\debug\InfoPanel'],
