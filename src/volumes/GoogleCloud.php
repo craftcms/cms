@@ -23,159 +23,162 @@ Craft::$app->requireEdition(Craft::Pro);
 
 class GoogleCloud extends Volume
 {
-	// Static
-	// =========================================================================
+    // Static
+    // =========================================================================
 
-	/**
-	 * @inheritdoc
-	 */
-	public static function displayName()
-	{
-		return Craft::t('app', 'Google Cloud Storage');
-	}
+    /**
+     * @inheritdoc
+     */
+    public static function displayName()
+    {
+        return Craft::t('app', 'Google Cloud Storage');
+    }
 
-	// Properties
-	// =========================================================================
+    // Properties
+    // =========================================================================
 
-	/**
-	 * Whether this is a local source or not. Defaults to false.
-	 *
-	 * @var bool
-	 */
-	protected $isSourceLocal = false;
+    /**
+     * Whether this is a local source or not. Defaults to false.
+     *
+     * @var bool
+     */
+    protected $isSourceLocal = false;
 
-	/**
-	 * Path to the root of this sources local folder.
-	 *
-	 * @var string
-	 */
-	public $subfolder = "";
+    /**
+     * Path to the root of this sources local folder.
+     *
+     * @var string
+     */
+    public $subfolder = "";
 
-	/**
-	 * Google Cloud interoperable key ID
-	 *
-	 * @var string
-	 */
-	public $keyId = "";
+    /**
+     * Google Cloud interoperable key ID
+     *
+     * @var string
+     */
+    public $keyId = "";
 
-	/**
-	 * Google Cloud interoperable key secret
-	 *
-	 * @var string
-	 */
-	public $secret = "";
+    /**
+     * Google Cloud interoperable key secret
+     *
+     * @var string
+     */
+    public $secret = "";
 
-	/**
-	 * Bucket to use
-	 *
-	 * @var string
-	 */
-	public $bucket = "";
+    /**
+     * Bucket to use
+     *
+     * @var string
+     */
+    public $bucket = "";
 
-	// Public Methods
-	// =========================================================================
+    // Public Methods
+    // =========================================================================
 
 
-	/**
-	 * @inheritdoc
-	 */
-	public function rules()
-	{
-		$rules = parent::rules();
-		$rules[] = [['keyId', 'secret', 'bucket'], 'required'];
-		return $rules;
-	}
+    /**
+     * @inheritdoc
+     */
+    public function rules()
+    {
+        $rules = parent::rules();
+        $rules[] = [['keyId', 'secret', 'bucket'], 'required'];
 
-	/**
-	 * @inheritdoc
-	 */
-	public function getSettingsHtml()
-	{
-		return Craft::$app->getView()->renderTemplate('_components/volumes/GoogleCloud/settings', array(
-			'volume' => $this,
-		));
-	}
+        return $rules;
+    }
 
-	/**
-	 * Get the bucket list using the specified credentials.
-	 *
-	 * @param $keyId
-	 * @param $secret
-	 *
-	 * @throws \InvalidArgumentException
-	 * @return array
-	 */
-	public static function loadBucketList($keyId, $secret)
-	{
-		if (empty($keyId) || empty($secret))
-		{
-			throw new \InvalidArgumentException(Craft::t('app', 'You must specify secret key ID and the secret key to get the bucket list.'));
-		}
+    /**
+     * @inheritdoc
+     */
+    public function getSettingsHtml()
+    {
+        return Craft::$app->getView()->renderTemplate('_components/volumes/GoogleCloud/settings',
+            array(
+                'volume' => $this,
+            ));
+    }
 
-		$client = static::getClient($keyId, $secret, array('base_url' => 'https://storage.googleapis.com'));
-		$objects = $client->listBuckets();
-		if (empty($objects['Buckets']))
-		{
-			return array();
-		}
+    /**
+     * Get the bucket list using the specified credentials.
+     *
+     * @param $keyId
+     * @param $secret
+     *
+     * @throws \InvalidArgumentException
+     * @return array
+     */
+    public static function loadBucketList($keyId, $secret)
+    {
+        if (empty($keyId) || empty($secret)) {
+            throw new \InvalidArgumentException(Craft::t('app',
+                'You must specify secret key ID and the secret key to get the bucket list.'));
+        }
 
-		$buckets = $objects['Buckets'];
-		$bucketList = array();
+        $client = static::getClient($keyId, $secret,
+            array('base_url' => 'https://storage.googleapis.com'));
+        $objects = $client->listBuckets();
+        if (empty($objects['Buckets'])) {
+            return array();
+        }
 
-		foreach ($buckets as $bucket)
-		{
-			$bucketList[] = array(
-				'bucket'    => $bucket['Name'],
-				'urlPrefix' => 'http://storage.googleapis.com/'.$bucket['Name'].'/'
-			);
-		}
+        $buckets = $objects['Buckets'];
+        $bucketList = array();
 
-		return $bucketList;
-	}
+        foreach ($buckets as $bucket) {
+            $bucketList[] = array(
+                'bucket' => $bucket['Name'],
+                'urlPrefix' => 'http://storage.googleapis.com/'.$bucket['Name'].'/'
+            );
+        }
 
-	/**
-	 * @inheritdoc
-	 */
-	public function getRootPath()
-	{
-		return null;
-	}
+        return $bucketList;
+    }
 
-	/**
-	 * @inheritdoc
-	 */
-	public function getRootUrl()
-	{
-		return rtrim(rtrim($this->url, '/').'/'.$this->subfolder, '/').'/';
-	}
+    /**
+     * @inheritdoc
+     */
+    public function getRootPath()
+    {
+        return null;
+    }
 
-	// Protected Methods
-	// =========================================================================
+    /**
+     * @inheritdoc
+     */
+    public function getRootUrl()
+    {
+        return rtrim(rtrim($this->url, '/').'/'.$this->subfolder, '/').'/';
+    }
 
-	/**
-	 * @inheritdoc
-	 * @return AwsS3Adapter
-	 */
-	protected function createAdapter()
-	{
-		$client = static::getClient($this->keyId, $this->secret, array('base_url' => 'https://storage.googleapis.com'));
+    // Protected Methods
+    // =========================================================================
 
-		return new AwsS3Adapter($client, $this->bucket, $this->subfolder);
-	}
+    /**
+     * @inheritdoc
+     * @return AwsS3Adapter
+     */
+    protected function createAdapter()
+    {
+        $client = static::getClient($this->keyId, $this->secret,
+            array('base_url' => 'https://storage.googleapis.com'));
 
-	/**
-	 * Get the Google Cloud client.
-	 *
-	 * @param $keyId
-	 * @param $secret
-	 * @param $options
-	 *
-	 * @return S3Client
-	 */
-	protected static function getClient($keyId, $secret, $options = array())
-	{
-		$config = array_merge(array('key' => $keyId, 'secret' => $secret), $options);
+        return new AwsS3Adapter($client, $this->bucket, $this->subfolder);
+    }
 
-		return S3Client::factory($config);
-	}
+    /**
+     * Get the Google Cloud client.
+     *
+     * @param $keyId
+     * @param $secret
+     * @param $options
+     *
+     * @return S3Client
+     */
+    protected static function getClient($keyId, $secret, $options = array())
+    {
+        $config = array_merge(array('key' => $keyId, 'secret' => $secret),
+            $options);
+
+        return S3Client::factory($config);
+    }
 }

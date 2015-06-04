@@ -1,8 +1,8 @@
 <?php
 /**
- * @link http://buildwithcraft.com/
+ * @link      http://buildwithcraft.com/
  * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
- * @license http://buildwithcraft.com/license
+ * @license   http://buildwithcraft.com/license
  */
 
 namespace craft\app\controllers;
@@ -21,67 +21,71 @@ Craft::$app->requireEdition(Craft::Pro);
  * Note that all actions in the controller require an authenticated Craft session via [[Controller::allowAnonymous]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since  3.0
  */
 class LocalizationController extends Controller
 {
-	// Public Methods
-	// =========================================================================
+    // Public Methods
+    // =========================================================================
 
-	/**
-	 * @inheritdoc
-	 * @throws HttpException if the user isn’t an admin
-	 */
-	public function init()
-	{
-		// All localization related actions require an admin
-		$this->requireAdmin();
-	}
+    /**
+     * @inheritdoc
+     * @throws HttpException if the user isn’t an admin
+     */
+    public function init()
+    {
+        // All localization related actions require an admin
+        $this->requireAdmin();
+    }
 
-	/**
-	 * Adds a new a locale.
-	 *
-	 * @return null
-	 */
-	public function actionAddLocale()
-	{
-		$this->requirePostRequest();
-		$this->requireAjaxRequest();
+    /**
+     * Adds a new a locale.
+     *
+     * @return null
+     */
+    public function actionAddLocale()
+    {
+        $this->requirePostRequest();
+        $this->requireAjaxRequest();
 
-		$localeId = Craft::$app->getRequest()->getRequiredBodyParam('id');
-		$success = Craft::$app->getI18n()->addSiteLocale($localeId);
-		return $this->asJson(['success' => $success]);
-	}
+        $localeId = Craft::$app->getRequest()->getRequiredBodyParam('id');
+        $success = Craft::$app->getI18n()->addSiteLocale($localeId);
 
-	/**
-	 * Saves the new locale order.
-	 *
-	 * @return null
-	 */
-	public function actionReorderLocales()
-	{
-		$this->requirePostRequest();
-		$this->requireAjaxRequest();
+        return $this->asJson(['success' => $success]);
+    }
 
-		$localeIds = JsonHelper::decode(Craft::$app->getRequest()->getRequiredBodyParam('ids'));
-		$success = Craft::$app->getI18n()->reorderSiteLocales($localeIds);
-		return $this->asJson(['success' => $success]);
-	}
+    /**
+     * Saves the new locale order.
+     *
+     * @return null
+     */
+    public function actionReorderLocales()
+    {
+        $this->requirePostRequest();
+        $this->requireAjaxRequest();
 
-	/**
-	 * Deletes a locale.
-	 *
-	 * @return null
-	 */
-	public function actionDeleteLocale()
-	{
-		$this->requirePostRequest();
-		$this->requireAjaxRequest();
+        $localeIds = JsonHelper::decode(Craft::$app->getRequest()->getRequiredBodyParam('ids'));
+        $success = Craft::$app->getI18n()->reorderSiteLocales($localeIds);
 
-		$localeId = Craft::$app->getRequest()->getRequiredBodyParam('id');
-		$transferContentTo = Craft::$app->getRequest()->getBodyParam('transferContentTo');
+        return $this->asJson(['success' => $success]);
+    }
 
-		$success = Craft::$app->getI18n()->deleteSiteLocale($localeId, $transferContentTo);
-		return $this->asJson(['success' => $success]);
-	}
+    /**
+     * Deletes a locale.
+     *
+     * @return null
+     */
+    public function actionDeleteLocale()
+    {
+        $this->requirePostRequest();
+        $this->requireAjaxRequest();
+
+        $localeId = Craft::$app->getRequest()->getRequiredBodyParam('id');
+        $transferContentTo = Craft::$app->getRequest()->getBodyParam('transferContentTo');
+
+        $success = Craft::$app->getI18n()->deleteSiteLocale($localeId,
+            $transferContentTo);
+
+        return $this->asJson(['success' => $success]);
+    }
 }

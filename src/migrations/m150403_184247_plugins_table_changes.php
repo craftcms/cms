@@ -12,39 +12,41 @@ use yii\db\Expression;
  */
 class m150403_184247_plugins_table_changes extends Migration
 {
-	// Public Methods
-	// =========================================================================
+    // Public Methods
+    // =========================================================================
 
-	/**
-	 * @inheritdoc
-	 */
-	public function safeUp()
-	{
-		if ($this->db->columnExists('{{%plugins}}', 'class'))
-		{
-			MigrationHelper::renameColumn('{{%plugins}}', 'class', 'handle', $this);
-		}
+    /**
+     * @inheritdoc
+     */
+    public function safeUp()
+    {
+        if ($this->db->columnExists('{{%plugins}}', 'class')) {
+            MigrationHelper::renameColumn('{{%plugins}}', 'class', 'handle',
+                $this);
+        }
 
-		$this->update('{{%plugins}}', [
-			'handle' => new Expression('LOWER(`handle`)')
-		]);
+        $this->update('{{%plugins}}', [
+            'handle' => new Expression('LOWER(`handle`)')
+        ]);
 
-		MigrationHelper::dropIndexIfExists('{{%plugins}}', ['handle'], true, $this);
+        MigrationHelper::dropIndexIfExists('{{%plugins}}', ['handle'], true,
+            $this);
 
-		$this->createIndex(
-			$this->db->getIndexName('{{%plugins}}', 'handle', true),
-			'{{%plugins}}',
-			'handle',
-			true
-		);
-	}
+        $this->createIndex(
+            $this->db->getIndexName('{{%plugins}}', 'handle', true),
+            '{{%plugins}}',
+            'handle',
+            true
+        );
+    }
 
-	/**
-	 * @inheritdoc
-	 */
-	public function safeDown()
-	{
-		echo "m150403_184247_plugins_table_changes cannot be reverted.\n";
-		return false;
-	}
+    /**
+     * @inheritdoc
+     */
+    public function safeDown()
+    {
+        echo "m150403_184247_plugins_table_changes cannot be reverted.\n";
+
+        return false;
+    }
 }

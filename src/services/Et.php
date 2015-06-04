@@ -1,8 +1,8 @@
 <?php
 /**
- * @link http://buildwithcraft.com/
+ * @link      http://buildwithcraft.com/
  * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
- * @license http://buildwithcraft.com/license
+ * @license   http://buildwithcraft.com/license
  */
 
 namespace craft\app\services;
@@ -25,297 +25,316 @@ use yii\base\Component;
  * An instance of the Et service is globally accessible in Craft via [[Application::et `Craft::$app->getEt()`]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since  3.0
  */
 class Et extends Component
 {
-	// Constants
-	// =========================================================================
+    // Constants
+    // =========================================================================
 
-	const Ping              = 'https://elliott.buildwithcraft.com/actions/elliott/app/ping';
-	const CheckForUpdates   = 'https://elliott.buildwithcraft.com/actions/elliott/app/checkForUpdates';
-	const TransferLicense   = 'https://elliott.buildwithcraft.com/actions/elliott/app/transferLicenseToCurrentDomain';
-	const GetEditionInfo    = 'https://elliott.buildwithcraft.com/actions/elliott/app/getEditionInfo';
-	const PurchaseUpgrade   = 'https://elliott.buildwithcraft.com/actions/elliott/app/purchaseUpgrade';
-	const GetUpdateFileInfo = 'https://elliott.buildwithcraft.com/actions/elliott/app/getUpdateFileInfo';
+    const Ping = 'https://elliott.buildwithcraft.com/actions/elliott/app/ping';
+    const CheckForUpdates = 'https://elliott.buildwithcraft.com/actions/elliott/app/checkForUpdates';
+    const TransferLicense = 'https://elliott.buildwithcraft.com/actions/elliott/app/transferLicenseToCurrentDomain';
+    const GetEditionInfo = 'https://elliott.buildwithcraft.com/actions/elliott/app/getEditionInfo';
+    const PurchaseUpgrade = 'https://elliott.buildwithcraft.com/actions/elliott/app/purchaseUpgrade';
+    const GetUpdateFileInfo = 'https://elliott.buildwithcraft.com/actions/elliott/app/getUpdateFileInfo';
 
-	// Public Methods
-	// =========================================================================
+    // Public Methods
+    // =========================================================================
 
-	/**
-	 * @return EtModel|null
-	 */
-	public function ping()
-	{
-		$et = new \craft\app\et\Et(static::Ping);
-		$etResponse = $et->phoneHome();
-		return $etResponse;
-	}
+    /**
+     * @return EtModel|null
+     */
+    public function ping()
+    {
+        $et = new \craft\app\et\Et(static::Ping);
+        $etResponse = $et->phoneHome();
 
-	/**
-	 * Checks if any new updates are available.
-	 *
-	 * @param $updateInfo
-	 *
-	 * @return EtModel|null
-	 */
-	public function checkForUpdates($updateInfo)
-	{
-		$et = new \craft\app\et\Et(static::CheckForUpdates);
-		$et->setData($updateInfo);
-		$etResponse = $et->phoneHome();
+        return $etResponse;
+    }
 
-		if ($etResponse)
-		{
-			// Populate the base UpdateModel
-			$updateModel = new UpdateModel();
-			$updateModel->setAttributes($etResponse->data, false);
+    /**
+     * Checks if any new updates are available.
+     *
+     * @param $updateInfo
+     *
+     * @return EtModel|null
+     */
+    public function checkForUpdates($updateInfo)
+    {
+        $et = new \craft\app\et\Et(static::CheckForUpdates);
+        $et->setData($updateInfo);
+        $etResponse = $et->phoneHome();
 
-			// Populate any Craft specific attributes.
-			$appUpdateModel = new AppUpdate();
-			$appUpdateModel->setAttributes($updateModel->app, false);
-			$updateModel->app = $appUpdateModel;
+        if ($etResponse) {
+            // Populate the base UpdateModel
+            $updateModel = new UpdateModel();
+            $updateModel->setAttributes($etResponse->data, false);
 
-			// Populate any new Craft release information.
-			foreach ($appUpdateModel->releases as $key => $appReleaseInfo)
-			{
-				$appReleaseModel = new AppNewRelease();
-				$appReleaseModel->setAttributes($appReleaseInfo, false);
+            // Populate any Craft specific attributes.
+            $appUpdateModel = new AppUpdate();
+            $appUpdateModel->setAttributes($updateModel->app, false);
+            $updateModel->app = $appUpdateModel;
 
-				$appUpdateModel->releases[$key] = $appReleaseModel;
-			}
+            // Populate any new Craft release information.
+            foreach ($appUpdateModel->releases as $key => $appReleaseInfo) {
+                $appReleaseModel = new AppNewRelease();
+                $appReleaseModel->setAttributes($appReleaseInfo, false);
 
-			// For every plugin, populate their base information.
-			foreach ($updateModel->plugins as $pluginHandle => $pluginUpdateInfo)
-			{
-				$pluginUpdateModel = new PluginUpdate();
-				$pluginUpdateModel->setAttributes($pluginUpdateInfo, false);
+                $appUpdateModel->releases[$key] = $appReleaseModel;
+            }
 
-				// Now populate a plugin’s release information.
-				foreach ($pluginUpdateModel->releases as $key => $pluginReleaseInfo)
-				{
-					$pluginReleaseModel = new PluginNewRelease();
-					$pluginReleaseModel->setAttributes($pluginReleaseInfo, false);
+            // For every plugin, populate their base information.
+            foreach ($updateModel->plugins as $pluginHandle => $pluginUpdateInfo) {
+                $pluginUpdateModel = new PluginUpdate();
+                $pluginUpdateModel->setAttributes($pluginUpdateInfo, false);
 
-					$pluginUpdateModel->releases[$key] = $pluginReleaseModel;
-				}
+                // Now populate a plugin’s release information.
+                foreach ($pluginUpdateModel->releases as $key => $pluginReleaseInfo) {
+                    $pluginReleaseModel = new PluginNewRelease();
+                    $pluginReleaseModel->setAttributes($pluginReleaseInfo,
+                        false);
 
-				$updateModel->plugins[$pluginHandle] = $pluginUpdateModel;
-			}
+                    $pluginUpdateModel->releases[$key] = $pluginReleaseModel;
+                }
 
-			// Put it all back on Et.
-			$etResponse->data = $updateModel;
+                $updateModel->plugins[$pluginHandle] = $pluginUpdateModel;
+            }
 
-			return $etResponse;
-		}
-	}
+            // Put it all back on Et.
+            $etResponse->data = $updateModel;
 
-	/**
-	 * @return EtModel|null
-	 */
-	public function getUpdateFileInfo()
-	{
-		$et = new \craft\app\et\Et(static::GetUpdateFileInfo);
-		$etResponse = $et->phoneHome();
+            return $etResponse;
+        }
+    }
 
-		if ($etResponse)
-		{
-			return $etResponse->data;
-		}
-	}
+    /**
+     * @return EtModel|null
+     */
+    public function getUpdateFileInfo()
+    {
+        $et = new \craft\app\et\Et(static::GetUpdateFileInfo);
+        $etResponse = $et->phoneHome();
 
-	/**
-	 * @param string $downloadPath
-	 * @param string $md5
-	 *
-	 * @return bool
-	 */
-	public function downloadUpdate($downloadPath, $md5)
-	{
-		if (IOHelper::folderExists($downloadPath))
-		{
-			$downloadPath .= '/'.$md5.'.zip';
-		}
+        if ($etResponse) {
+            return $etResponse->data;
+        }
+    }
 
-		$updateModel = Craft::$app->getUpdates()->getUpdates();
-		$buildVersion = $updateModel->app->latestVersion.'.'.$updateModel->app->latestBuild;
+    /**
+     * @param string $downloadPath
+     * @param string $md5
+     *
+     * @return bool
+     */
+    public function downloadUpdate($downloadPath, $md5)
+    {
+        if (IOHelper::folderExists($downloadPath)) {
+            $downloadPath .= '/'.$md5.'.zip';
+        }
 
-		$path = 'http://download.buildwithcraft.com/craft/'.$updateModel->app->latestVersion.'/'.$buildVersion.'/Patch/'.$updateModel->app->localBuild.'/'.$md5.'.zip';
+        $updateModel = Craft::$app->getUpdates()->getUpdates();
+        $buildVersion = $updateModel->app->latestVersion.'.'.$updateModel->app->latestBuild;
 
-		$et = new \craft\app\et\Et($path, 240);
-		$et->setDestinationFilename($downloadPath);
+        $path = 'http://download.buildwithcraft.com/craft/'.$updateModel->app->latestVersion.'/'.$buildVersion.'/Patch/'.$updateModel->app->localBuild.'/'.$md5.'.zip';
 
-		if (($filename = $et->phoneHome()) !== null)
-		{
-			return $filename;
-		}
+        $et = new \craft\app\et\Et($path, 240);
+        $et->setDestinationFilename($downloadPath);
 
-		return false;
-	}
+        if (($filename = $et->phoneHome()) !== null) {
+            return $filename;
+        }
 
-	/**
-	 * Transfers the installed license to the current domain.
-	 *
-	 * @return true|string Returns true if the request was successful, otherwise returns the error.
-	 */
-	public function transferLicenseToCurrentDomain()
-	{
-		$et = new \craft\app\et\Et(static::TransferLicense);
-		$etResponse = $et->phoneHome();
+        return false;
+    }
 
-		if (!empty($etResponse->data['success']))
-		{
-			return true;
-		}
-		else
-		{
-			// Did they at least say why?
-			if (!empty($etResponse->errors))
-			{
-				switch ($etResponse->errors[0])
-				{
-					// Validation errors
-					case 'not_public_domain':
-					{
-						// So...
-						return true;
-					}
+    /**
+     * Transfers the installed license to the current domain.
+     *
+     * @return true|string Returns true if the request was successful, otherwise returns the error.
+     */
+    public function transferLicenseToCurrentDomain()
+    {
+        $et = new \craft\app\et\Et(static::TransferLicense);
+        $etResponse = $et->phoneHome();
 
-					default:
-					{
-						$error = $etResponse->data['error'];
-					}
-				}
-			}
-			else
-			{
-				$error = Craft::t('app', 'Craft is unable to transfer your license to this domain at this time.');
-			}
+        if (!empty($etResponse->data['success'])) {
+            return true;
+        } else {
+            // Did they at least say why?
+            if (!empty($etResponse->errors)) {
+                switch ($etResponse->errors[0]) {
+                    // Validation errors
+                    case 'not_public_domain': {
+                        // So...
+                        return true;
+                    }
 
-			return $error;
-		}
-	}
+                    default: {
+                        $error = $etResponse->data['error'];
+                    }
+                }
+            } else {
+                $error = Craft::t('app',
+                    'Craft is unable to transfer your license to this domain at this time.');
+            }
 
-	/**
-	 * Fetches info about the available Craft editions from Elliott.
-	 *
-	 * @return EtModel|null
-	 */
-	public function fetchEditionInfo()
-	{
-		$et = new \craft\app\et\Et(static::GetEditionInfo);
-		$etResponse = $et->phoneHome();
-		return $etResponse;
-	}
+            return $error;
+        }
+    }
 
-	/**
-	 * Attempts to purchase an edition upgrade.
-	 *
-	 * @param UpgradePurchaseModel $model
-	 *
-	 * @return bool
-	 */
-	public function purchaseUpgrade(UpgradePurchaseModel $model)
-	{
-		if ($model->validate())
-		{
-			$et = new \craft\app\et\Et(static::PurchaseUpgrade);
-			$et->setData($model);
-			$etResponse = $et->phoneHome();
+    /**
+     * Fetches info about the available Craft editions from Elliott.
+     *
+     * @return EtModel|null
+     */
+    public function fetchEditionInfo()
+    {
+        $et = new \craft\app\et\Et(static::GetEditionInfo);
+        $etResponse = $et->phoneHome();
 
-			if (!empty($etResponse->data['success']))
-			{
-				// Success! Let's get this sucker installed.
-				Craft::$app->setEdition($model->edition);
+        return $etResponse;
+    }
 
-				return true;
-			}
-			else
-			{
-				// Did they at least say why?
-				if (!empty($etResponse->errors))
-				{
-					switch ($etResponse->errors[0])
-					{
-						// Validation errors
-						case 'edition_doesnt_exist': $error = Craft::t('app', 'The selected edition doesn’t exist anymore.'); break;
-						case 'invalid_license_key':  $error = Craft::t('app', 'Your license key is invalid.'); break;
-						case 'license_has_edition':  $error = Craft::t('app', 'Your Craft license already has this edition.'); break;
-						case 'price_mismatch':       $error = Craft::t('app', 'The cost of this edition just changed.'); break;
-						case 'unknown_error':        $error = Craft::t('app', 'An unknown error occurred.'); break;
+    /**
+     * Attempts to purchase an edition upgrade.
+     *
+     * @param UpgradePurchaseModel $model
+     *
+     * @return bool
+     */
+    public function purchaseUpgrade(UpgradePurchaseModel $model)
+    {
+        if ($model->validate()) {
+            $et = new \craft\app\et\Et(static::PurchaseUpgrade);
+            $et->setData($model);
+            $etResponse = $et->phoneHome();
 
-						// Stripe errors
-						case 'incorrect_number':     $error = Craft::t('app', 'The card number is incorrect.'); break;
-						case 'invalid_number':       $error = Craft::t('app', 'The card number is invalid.'); break;
-						case 'invalid_expiry_month': $error = Craft::t('app', 'The expiration month is invalid.'); break;
-						case 'invalid_expiry_year':  $error = Craft::t('app', 'The expiration year is invalid.'); break;
-						case 'invalid_cvc':          $error = Craft::t('app', 'The security code is invalid.'); break;
-						case 'incorrect_cvc':        $error = Craft::t('app', 'The security code is incorrect.'); break;
-						case 'expired_card':         $error = Craft::t('app', 'Your card has expired.'); break;
-						case 'card_declined':        $error = Craft::t('app', 'Your card was declined.'); break;
-						case 'processing_error':     $error = Craft::t('app', 'An error occurred while processing your card.'); break;
+            if (!empty($etResponse->data['success'])) {
+                // Success! Let's get this sucker installed.
+                Craft::$app->setEdition($model->edition);
 
-						default:                     $error = $etResponse->errors[0];
-					}
-				}
-				else
-				{
-					// Something terrible must have happened!
-					$error = Craft::t('app', 'Craft is unable to purchase an edition upgrade at this time.');
-				}
+                return true;
+            } else {
+                // Did they at least say why?
+                if (!empty($etResponse->errors)) {
+                    switch ($etResponse->errors[0]) {
+                        // Validation errors
+                        case 'edition_doesnt_exist':
+                            $error = Craft::t('app',
+                                'The selected edition doesn’t exist anymore.');
+                            break;
+                        case 'invalid_license_key':
+                            $error = Craft::t('app',
+                                'Your license key is invalid.');
+                            break;
+                        case 'license_has_edition':
+                            $error = Craft::t('app',
+                                'Your Craft license already has this edition.');
+                            break;
+                        case 'price_mismatch':
+                            $error = Craft::t('app',
+                                'The cost of this edition just changed.');
+                            break;
+                        case 'unknown_error':
+                            $error = Craft::t('app',
+                                'An unknown error occurred.');
+                            break;
 
-				$model->addError('response', $error);
-			}
-		}
+                        // Stripe errors
+                        case 'incorrect_number':
+                            $error = Craft::t('app',
+                                'The card number is incorrect.');
+                            break;
+                        case 'invalid_number':
+                            $error = Craft::t('app',
+                                'The card number is invalid.');
+                            break;
+                        case 'invalid_expiry_month':
+                            $error = Craft::t('app',
+                                'The expiration month is invalid.');
+                            break;
+                        case 'invalid_expiry_year':
+                            $error = Craft::t('app',
+                                'The expiration year is invalid.');
+                            break;
+                        case 'invalid_cvc':
+                            $error = Craft::t('app',
+                                'The security code is invalid.');
+                            break;
+                        case 'incorrect_cvc':
+                            $error = Craft::t('app',
+                                'The security code is incorrect.');
+                            break;
+                        case 'expired_card':
+                            $error = Craft::t('app', 'Your card has expired.');
+                            break;
+                        case 'card_declined':
+                            $error = Craft::t('app', 'Your card was declined.');
+                            break;
+                        case 'processing_error':
+                            $error = Craft::t('app',
+                                'An error occurred while processing your card.');
+                            break;
 
-		return false;
-	}
+                        default:
+                            $error = $etResponse->errors[0];
+                    }
+                } else {
+                    // Something terrible must have happened!
+                    $error = Craft::t('app',
+                        'Craft is unable to purchase an edition upgrade at this time.');
+                }
 
-	/**
-	 * Returns the license key status, or false if it's unknown.
-	 *
-	 * @return string|false
-	 */
-	public function getLicenseKeyStatus()
-	{
-		return Craft::$app->getCache()->get('licenseKeyStatus');
-	}
+                $model->addError('response', $error);
+            }
+        }
 
-	/**
-	 * Returns the domain that the installed license key is licensed for, null if it's not set yet, or false if it's
-	 * unknown.
-	 *
-	 * @return string|null|false
-	 */
-	public function getLicensedDomain()
-	{
-		return Craft::$app->getCache()->get('licensedDomain');
-	}
+        return false;
+    }
 
-	/**
-	 * Creates a new EtModel with provided JSON, and returns it if it's valid.
-	 *
-	 * @param array $attributes
-	 *
-	 * @return EtModel|null
-	 */
-	public function decodeEtModel($attributes)
-	{
-		if ($attributes)
-		{
-			$attributes = JsonHelper::decode($attributes);
+    /**
+     * Returns the license key status, or false if it's unknown.
+     *
+     * @return string|false
+     */
+    public function getLicenseKeyStatus()
+    {
+        return Craft::$app->getCache()->get('licenseKeyStatus');
+    }
 
-			if (is_array($attributes))
-			{
-				$etModel = new EtModel($attributes);
+    /**
+     * Returns the domain that the installed license key is licensed for, null if it's not set yet, or false if it's
+     * unknown.
+     *
+     * @return string|null|false
+     */
+    public function getLicensedDomain()
+    {
+        return Craft::$app->getCache()->get('licensedDomain');
+    }
 
-				// Make sure it's valid. (At a minimum, localBuild and localVersion
-				// should be set.)
-				if ($etModel->validate())
-				{
-					return $etModel;
-				}
-			}
-		}
-	}
+    /**
+     * Creates a new EtModel with provided JSON, and returns it if it's valid.
+     *
+     * @param array $attributes
+     *
+     * @return EtModel|null
+     */
+    public function decodeEtModel($attributes)
+    {
+        if ($attributes) {
+            $attributes = JsonHelper::decode($attributes);
+
+            if (is_array($attributes)) {
+                $etModel = new EtModel($attributes);
+
+                // Make sure it's valid. (At a minimum, localBuild and localVersion
+                // should be set.)
+                if ($etModel->validate()) {
+                    return $etModel;
+                }
+            }
+        }
+    }
 }

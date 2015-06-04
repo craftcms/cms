@@ -18,97 +18,99 @@ use craft\app\io\flysystemadapters\Local as LocalAdapter;
  */
 class Local extends Volume
 {
-	// Static
-	// =========================================================================
+    // Static
+    // =========================================================================
 
-	/**
-	 * @inheritdoc
-	 */
-	public function rules()
-	{
-		$rules = parent::rules();
-		$rules[] = [['path'], 'required'];
-		return $rules;
-	}
+    /**
+     * @inheritdoc
+     */
+    public function rules()
+    {
+        $rules = parent::rules();
+        $rules[] = [['path'], 'required'];
 
-	/**
-	 * @inheritdoc
-	 */
-	public static function displayName()
-	{
-		return Craft::t('app', 'Local Folder');
-	}
+        return $rules;
+    }
 
-	/**
-	 * @inheritdoc
-	 */
-	public static function isLocal()
-	{
-		return true;
-	}
+    /**
+     * @inheritdoc
+     */
+    public static function displayName()
+    {
+        return Craft::t('app', 'Local Folder');
+    }
 
-	/**
-	 * @inheritdoc
-	 */
-	public static function populateModel($model, $config)
-	{
-		if (isset($config['path']))
-		{
-			$config['path'] = rtrim($config['path'], '/');
-		}
+    /**
+     * @inheritdoc
+     */
+    public static function isLocal()
+    {
+        return true;
+    }
 
-		parent::populateModel($model, $config);
-	}
+    /**
+     * @inheritdoc
+     */
+    public static function populateModel($model, $config)
+    {
+        if (isset($config['path'])) {
+            $config['path'] = rtrim($config['path'], '/');
+        }
 
-	// Properties
-	// =========================================================================
+        parent::populateModel($model, $config);
+    }
 
-	/**
-	 * Path to the root of this sources local folder.
-	 *
-	 * @var string
-	 */
-	public $path = "";
+    // Properties
+    // =========================================================================
 
-	// Public Methods
-	// =========================================================================
+    /**
+     * Path to the root of this sources local folder.
+     *
+     * @var string
+     */
+    public $path = "";
 
-	/**
-	 * @inheritdoc
-	 */
-	public function getSettingsHtml()
-	{
-		return Craft::$app->getView()->renderTemplate('_components/volumes/Local/settings', array(
-			'volume' => $this,
-		));
-	}
+    // Public Methods
+    // =========================================================================
 
-	/**
-	 * @inheritdoc
-	 */
-	public function getRootPath()
-	{
-		return Craft::$app->getConfig()->parseEnvironmentString($this->path);
-	}
+    /**
+     * @inheritdoc
+     */
+    public function getSettingsHtml()
+    {
+        return Craft::$app->getView()->renderTemplate('_components/volumes/Local/settings',
+            array(
+                'volume' => $this,
+            ));
+    }
 
-	/**
-	 * @inheritdoc
-	 */
-	public function getRootUrl()
-	{
-		return rtrim(Craft::$app->getConfig()->parseEnvironmentString($this->url), '/').'/';
-	}
+    /**
+     * @inheritdoc
+     */
+    public function getRootPath()
+    {
+        return Craft::$app->getConfig()->parseEnvironmentString($this->path);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getRootUrl()
+    {
+        return rtrim(Craft::$app->getConfig()->parseEnvironmentString($this->url),
+            '/').'/';
+    }
 
 
-	// Protected Methods
-	// =========================================================================
+    // Protected Methods
+    // =========================================================================
 
-	/**
-	 * @inheritdoc
-	 * @return LocalAdapter
-	 */
-	protected function createAdapter()
-	{
-		return new LocalAdapter($this->getRootPath());
-	}
+    /**
+     * @inheritdoc
+     * @return LocalAdapter
+     */
+    protected function createAdapter()
+    {
+        return new LocalAdapter($this->getRootPath());
+    }
 }

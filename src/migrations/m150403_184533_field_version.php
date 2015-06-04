@@ -10,26 +10,27 @@ use craft\app\db\Migration;
  */
 class m150403_184533_field_version extends Migration
 {
-	// Public Methods
-	// =========================================================================
+    // Public Methods
+    // =========================================================================
 
-	/**
-	 * @inheritdoc
-	 */
-	public function safeUp()
-	{
-		if (!$this->db->columnExists('{{%info}}', 'fieldVersion'))
-		{
-			$this->addColumnAfter('{{%info}}', 'fieldVersion', 'integer not null default \'1\'', 'track');
-		}
-	}
+    /**
+     * @inheritdoc
+     */
+    public function safeUp()
+    {
+        if (!$this->db->columnExists('{{%info}}', 'fieldVersion')) {
+            $this->addColumnAfter('{{%info}}', 'fieldVersion',
+                'integer not null default \'1\'', 'track');
+        }
+    }
 
-	/**
-	 * @inheritdoc
-	 */
-	public function safeDown()
-	{
-		echo "m150403_184533_field_version cannot be reverted.\n";
-		return false;
-	}
+    /**
+     * @inheritdoc
+     */
+    public function safeDown()
+    {
+        echo "m150403_184533_field_version cannot be reverted.\n";
+
+        return false;
+    }
 }

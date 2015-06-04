@@ -1,10 +1,10 @@
 <?php
 
 return [
-	'components' => [
-		'fixture' => [
-			'class' => 'system.test.CDbFixtureManager',
-		],
-		'request'
-	],
+    'components' => [
+        'fixture' => [
+            'class' => 'system.test.CDbFixtureManager',
+        ],
+        'request'
+    ],
 ];

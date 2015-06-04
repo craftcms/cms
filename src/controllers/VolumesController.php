@@ -1,8 +1,8 @@
 <?php
 /**
- * @link http://buildwithcraft.com/
+ * @link      http://buildwithcraft.com/
  * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
- * @license http://buildwithcraft.com/license
+ * @license   http://buildwithcraft.com/license
  */
 
 namespace craft\app\controllers;
@@ -22,239 +22,243 @@ use craft\app\web\Controller;
  * Note that all actions in the controller require an authenticated Craft session via [[Controller::allowAnonymous]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since  3.0
  */
 class VolumesController extends Controller
 {
-	// Public Methods
-	// =========================================================================
+    // Public Methods
+    // =========================================================================
 
-	/**
-	 * @inheritdoc
-	 * @throws HttpException if the user isn’t an admin
-	 */
-	public function init()
-	{
-		// All asset volume actions require an admin
-		$this->requireAdmin();
-	}
+    /**
+     * @inheritdoc
+     * @throws HttpException if the user isn’t an admin
+     */
+    public function init()
+    {
+        // All asset volume actions require an admin
+        $this->requireAdmin();
+    }
 
-	/**
-	 * Shows the asset volume list.
-	 *
-	 * @return string The rendering result
-	 */
-	public function actionVolumeIndex()
-	{
-		$variables['volumes'] = Craft::$app->getVolumes()->getAllVolumes();
-		return $this->renderTemplate('settings/assets/volumes/_index', $variables);
-	}
+    /**
+     * Shows the asset volume list.
+     *
+     * @return string The rendering result
+     */
+    public function actionVolumeIndex()
+    {
+        $variables['volumes'] = Craft::$app->getVolumes()->getAllVolumes();
 
-	/**
-	 * Edit an asset volume.
-	 *
-	 * @param int         $volumeId       The volume’s ID, if editing an existing volume.
-	 * @param Volume $volume         The volume being edited, if there were any validation errors.
-	 * @return string The rendering result
-	 * @throws HttpException
-	 */
-	public function actionEditVolume($volumeId = null, Volume $volume = null)
-	{
-		$this->requireAdmin();
+        return $this->renderTemplate('settings/assets/volumes/_index',
+            $variables);
+    }
 
-		if ($volume === null)
-		{
-			if ($volumeId !== null)
-			{
-				$volume = Craft::$app->getVolumes()->getVolumeById($volumeId);
+    /**
+     * Edit an asset volume.
+     *
+     * @param int $volumeId  The volume’s ID, if editing an existing volume.
+     * @param Volume $volume The volume being edited, if there were any validation errors.
+     *
+     * @return string The rendering result
+     * @throws HttpException
+     */
+    public function actionEditVolume($volumeId = null, Volume $volume = null)
+    {
+        $this->requireAdmin();
 
-				if (!$volume)
-				{
-					throw new HttpException(404, "No volume exists with the ID '$volumeId'.");
-				}
-			}
-			else
-			{
-				$volume = Craft::$app->getVolumes()->createVolume('craft\app\volumes\Local');
-			}
-		}
+        if ($volume === null) {
+            if ($volumeId !== null) {
+                $volume = Craft::$app->getVolumes()->getVolumeById($volumeId);
 
-		if (Craft::$app->getEdition() == Craft::Pro)
-		{
-			$allVolumeTypes = Craft::$app->getVolumes()->getAllVolumeTypes();
-			$volumeInstances = [];
-			$volumeTypeOptions = [];
+                if (!$volume) {
+                    throw new HttpException(404,
+                        "No volume exists with the ID '$volumeId'.");
+                }
+            } else {
+                $volume = Craft::$app->getVolumes()->createVolume('craft\app\volumes\Local');
+            }
+        }
 
-			foreach ($allVolumeTypes as $class)
-			{
-				if ($class === $volume->getType() || $class::isSelectable())
-				{
-					$volumeInstances[$class] = Craft::$app->getVolumes()->createVolume($class);
+        if (Craft::$app->getEdition() == Craft::Pro) {
+            $allVolumeTypes = Craft::$app->getVolumes()->getAllVolumeTypes();
+            $volumeInstances = [];
+            $volumeTypeOptions = [];
 
-					$volumeTypeOptions[] = [
-						'value' => $class,
-						'label' => $class::displayName()
-					];
-				}
-			}
-		}
-		else
-		{
-			$volumeTypeOptions = [];
-			$volumeInstances = [];
-			$allVolumeTypes = null;
-		}
+            foreach ($allVolumeTypes as $class) {
+                if ($class === $volume->getType() || $class::isSelectable()) {
+                    $volumeInstances[$class] = Craft::$app->getVolumes()->createVolume($class);
 
-		$isNewVolume = !$volume->id;
+                    $volumeTypeOptions[] = [
+                        'value' => $class,
+                        'label' => $class::displayName()
+                    ];
+                }
+            }
+        } else {
+            $volumeTypeOptions = [];
+            $volumeInstances = [];
+            $allVolumeTypes = null;
+        }
 
-		if ($isNewVolume)
-		{
-			$title = Craft::t('app', 'Create a new asset volume');
-		}
-		else
-		{
-			$title = $volume->name;
-		}
+        $isNewVolume = !$volume->id;
 
-		$crumbs = [
-			['label' => Craft::t('app', 'Settings'), 'url' => UrlHelper::getUrl('settings')],
-			['label' => Craft::t('app', 'Assets'),   'url' => UrlHelper::getUrl('settings/assets')],
-			['label' => Craft::t('app', 'Volumes'),  'url' => UrlHelper::getUrl('settings/assets')],
-		];
+        if ($isNewVolume) {
+            $title = Craft::t('app', 'Create a new asset volume');
+        } else {
+            $title = $volume->name;
+        }
 
-		$tabs = [
-			'settings'    => ['label' => Craft::t('app', 'Settings'),     'url' => '#assetvolume-settings'],
-			'fieldlayout' => ['label' => Craft::t('app', 'Field Layout'), 'url' => '#assetvolume-fieldlayout'],
-		];
+        $crumbs = [
+            [
+                'label' => Craft::t('app', 'Settings'),
+                'url' => UrlHelper::getUrl('settings')
+            ],
+            [
+                'label' => Craft::t('app', 'Assets'),
+                'url' => UrlHelper::getUrl('settings/assets')
+            ],
+            [
+                'label' => Craft::t('app', 'Volumes'),
+                'url' => UrlHelper::getUrl('settings/assets')
+            ],
+        ];
 
-		return $this->renderTemplate('settings/assets/volumes/_edit', [
-			'volumeId' => $volumeId,
-			'volume' => $volume,
-			'isNewVolume' => $isNewVolume,
-			'volumeTypes' => $allVolumeTypes,
-			'volumeTypeOptions' => $volumeTypeOptions,
-			'volumeInstances' => $volumeInstances,
-			'title' => $title,
-			'crumbs' => $crumbs,
-			'tabs' => $tabs
-		]);
-	}
+        $tabs = [
+            'settings' => [
+                'label' => Craft::t('app', 'Settings'),
+                'url' => '#assetvolume-settings'
+            ],
+            'fieldlayout' => [
+                'label' => Craft::t('app', 'Field Layout'),
+                'url' => '#assetvolume-fieldlayout'
+            ],
+        ];
 
-	/**
-	 * Saves an asset volume.
-	 *
-	 * @return null
-	 */
-	public function actionSaveVolume()
-	{
-		$this->requirePostRequest();
+        return $this->renderTemplate('settings/assets/volumes/_edit', [
+            'volumeId' => $volumeId,
+            'volume' => $volume,
+            'isNewVolume' => $isNewVolume,
+            'volumeTypes' => $allVolumeTypes,
+            'volumeTypeOptions' => $volumeTypeOptions,
+            'volumeInstances' => $volumeInstances,
+            'title' => $title,
+            'crumbs' => $crumbs,
+            'tabs' => $tabs
+        ]);
+    }
 
-		$request       = Craft::$app->getRequest();
-		$volumeService = Craft::$app->getVolumes();
+    /**
+     * Saves an asset volume.
+     *
+     * @return null
+     */
+    public function actionSaveVolume()
+    {
+        $this->requirePostRequest();
 
-		if (Craft::$app->getEdition() == Craft::Pro)
-		{
-			$type = $request->getBodyParam('type');
-		}
-		else
-		{
-			$type = 'craft\app\volumes\Local';
-		}
+        $request = Craft::$app->getRequest();
+        $volumeService = Craft::$app->getVolumes();
 
-		$volume = $volumeService->createVolume([
-			'id'       => $request->getBodyParam('volumeId'),
-			'type'     => $type,
-			'name'     => $request->getBodyParam('name'),
-			'handle'   => $request->getBodyParam('handle'),
-			'url'      => $request->getBodyParam('url'),
-			'settings' => $request->getBodyParam('types.'.$type)
-		]);
+        if (Craft::$app->getEdition() == Craft::Pro) {
+            $type = $request->getBodyParam('type');
+        } else {
+            $type = 'craft\app\volumes\Local';
+        }
 
-		// Set the field layout
-		$fieldLayout = Craft::$app->getFields()->assembleLayoutFromPost();
-		$fieldLayout->type = Asset::className();
-		$volume->setFieldLayout($fieldLayout);
+        $volume = $volumeService->createVolume([
+            'id' => $request->getBodyParam('volumeId'),
+            'type' => $type,
+            'name' => $request->getBodyParam('name'),
+            'handle' => $request->getBodyParam('handle'),
+            'url' => $request->getBodyParam('url'),
+            'settings' => $request->getBodyParam('types.'.$type)
+        ]);
 
-		if (Craft::$app->getVolumes()->saveVolume($volume))
-		{
-			Craft::$app->getSession()->setNotice(Craft::t('app', 'Volume saved.'));
-			return $this->redirectToPostedUrl();
-		}
-		else
-		{
-			Craft::$app->getSession()->setError(Craft::t('app', 'Couldn’t save volume.'));
-		}
+        // Set the field layout
+        $fieldLayout = Craft::$app->getFields()->assembleLayoutFromPost();
+        $fieldLayout->type = Asset::className();
+        $volume->setFieldLayout($fieldLayout);
 
-		// Send the volume back to the template
-		Craft::$app->getUrlManager()->setRouteParams([
-			'volume' => $volume
-		]);
-	}
+        if (Craft::$app->getVolumes()->saveVolume($volume)) {
+            Craft::$app->getSession()->setNotice(Craft::t('app',
+                'Volume saved.'));
 
-	/**
-	 * Reorders asset volumes.
-	 *
-	 * @return null
-	 */
-	public function actionReorderVolumes()
-	{
-		$this->requirePostRequest();
-		$this->requireAjaxRequest();
+            return $this->redirectToPostedUrl();
+        } else {
+            Craft::$app->getSession()->setError(Craft::t('app',
+                'Couldn’t save volume.'));
+        }
 
-		$volumeIds = JsonHelper::decode(Craft::$app->getRequest()->getRequiredBodyParam('ids'));
-		Craft::$app->getVolumes()->reorderVolumes($volumeIds);
+        // Send the volume back to the template
+        Craft::$app->getUrlManager()->setRouteParams([
+            'volume' => $volume
+        ]);
+    }
 
-		return $this->asJson(['success' => true]);
-	}
+    /**
+     * Reorders asset volumes.
+     *
+     * @return null
+     */
+    public function actionReorderVolumes()
+    {
+        $this->requirePostRequest();
+        $this->requireAjaxRequest();
 
-	/**
-	 * Deletes an asset volume.
-	 *
-	 * @return null
-	 */
-	public function actionDeleteVolume()
-	{
-		$this->requirePostRequest();
-		$this->requireAjaxRequest();
+        $volumeIds = JsonHelper::decode(Craft::$app->getRequest()->getRequiredBodyParam('ids'));
+        Craft::$app->getVolumes()->reorderVolumes($volumeIds);
 
-		$volumeId = Craft::$app->getRequest()->getRequiredBodyParam('id');
+        return $this->asJson(['success' => true]);
+    }
 
-		Craft::$app->getVolumes()->deleteVolumeById($volumeId);
+    /**
+     * Deletes an asset volume.
+     *
+     * @return null
+     */
+    public function actionDeleteVolume()
+    {
+        $this->requirePostRequest();
+        $this->requireAjaxRequest();
 
-		return $this->asJson(['success' => true]);
-	}
+        $volumeId = Craft::$app->getRequest()->getRequiredBodyParam('id');
 
-	/**
-	 * Load Assets VolumeType data.
-	 *
-	 * This is used to, for example, load Amazon S3 bucket list or Rackspace Cloud Storage Containers.
-	 *
-	 * @return null
-	 */
-	public function actionLoadVolumeTypeData()
-	{
-		$this->requirePostRequest();
-		$this->requireAjaxRequest();
+        Craft::$app->getVolumes()->deleteVolumeById($volumeId);
 
-		$volumeType = Craft::$app->getRequest()->getRequiredBodyParam('volumeType');
-		$dataType   = Craft::$app->getRequest()->getRequiredBodyParam('dataType');
-		$params     = Craft::$app->getRequest()->getBodyParam('params');
+        return $this->asJson(['success' => true]);
+    }
 
-		$volumeType = 'craft\app\volumes\\'.$volumeType;
+    /**
+     * Load Assets VolumeType data.
+     *
+     * This is used to, for example, load Amazon S3 bucket list or Rackspace Cloud Storage Containers.
+     *
+     * @return null
+     */
+    public function actionLoadVolumeTypeData()
+    {
+        $this->requirePostRequest();
+        $this->requireAjaxRequest();
 
-		if (!class_exists($volumeType))
-		{
-			return $this->asErrorJson(Craft::t('app', 'The volume type specified does not exist!'));
-		}
+        $volumeType = Craft::$app->getRequest()->getRequiredBodyParam('volumeType');
+        $dataType = Craft::$app->getRequest()->getRequiredBodyParam('dataType');
+        $params = Craft::$app->getRequest()->getBodyParam('params');
 
-		try
-		{
-			$result = call_user_func_array(array($volumeType, 'load'.ucfirst($dataType)), $params);
-			return $this->asJson($result);
-		}
-		catch (\Exception $exception)
-		{
-			return $this->asErrorJson($exception->getMessage());
-		}
-	}
+        $volumeType = 'craft\app\volumes\\'.$volumeType;
+
+        if (!class_exists($volumeType)) {
+            return $this->asErrorJson(Craft::t('app',
+                'The volume type specified does not exist!'));
+        }
+
+        try {
+            $result = call_user_func_array(array(
+                $volumeType,
+                'load'.ucfirst($dataType)
+            ), $params);
+
+            return $this->asJson($result);
+        } catch (\Exception $exception) {
+            return $this->asErrorJson($exception->getMessage());
+        }
+    }
 }

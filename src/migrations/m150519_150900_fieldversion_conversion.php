@@ -11,23 +11,24 @@ use craft\app\enums\ColumnType;
  */
 class m150519_150900_fieldversion_conversion extends Migration
 {
-	// Public Methods
-	// =========================================================================
+    // Public Methods
+    // =========================================================================
 
-	/**
-	 * @inheritdoc
-	 */
-	public function safeUp()
-	{
-		$this->alterColumn('{{%info}}', 'fieldVersion', 'char(12)');
-	}
+    /**
+     * @inheritdoc
+     */
+    public function safeUp()
+    {
+        $this->alterColumn('{{%info}}', 'fieldVersion', 'char(12)');
+    }
 
-	/**
-	 * @inheritdoc
-	 */
-	public function safeDown()
-	{
-		echo "m150519_150900_fieldversion_conversion cannot be reverted.\n";
-		return false;
-	}
+    /**
+     * @inheritdoc
+     */
+    public function safeDown()
+    {
+        echo "m150519_150900_fieldversion_conversion cannot be reverted.\n";
+
+        return false;
+    }
 }

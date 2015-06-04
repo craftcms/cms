@@ -1,8 +1,8 @@
 <?php
 /**
- * @link http://buildwithcraft.com/
+ * @link      http://buildwithcraft.com/
  * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
- * @license http://buildwithcraft.com/license
+ * @license   http://buildwithcraft.com/license
  */
 
 namespace craft\app\controllers;
@@ -21,101 +21,104 @@ Craft::$app->requireEdition(Craft::Pro);
  * Note that all actions in this controller require administrator access in order to execute.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since  3.0
  */
 class UserSettingsController extends Controller
 {
-	// Public Methods
-	// =========================================================================
+    // Public Methods
+    // =========================================================================
 
-	/**
-	 * @inheritdoc
-	 * @throws HttpException if the user isn’t an admin
-	 */
-	public function init()
-	{
-		// All user settings actions require an admin
-		$this->requireAdmin();
-	}
+    /**
+     * @inheritdoc
+     * @throws HttpException if the user isn’t an admin
+     */
+    public function init()
+    {
+        // All user settings actions require an admin
+        $this->requireAdmin();
+    }
 
-	/**
-	 * Saves a user group.
-	 *
-	 * @return null
-	 */
-	public function actionSaveGroup()
-	{
-		$this->requirePostRequest();
+    /**
+     * Saves a user group.
+     *
+     * @return null
+     */
+    public function actionSaveGroup()
+    {
+        $this->requirePostRequest();
 
-		$group = new UserGroupModel();
-		$group->id = Craft::$app->getRequest()->getBodyParam('groupId');
-		$group->name = Craft::$app->getRequest()->getBodyParam('name');
-		$group->handle = Craft::$app->getRequest()->getBodyParam('handle');
+        $group = new UserGroupModel();
+        $group->id = Craft::$app->getRequest()->getBodyParam('groupId');
+        $group->name = Craft::$app->getRequest()->getBodyParam('name');
+        $group->handle = Craft::$app->getRequest()->getBodyParam('handle');
 
-		// Did it save?
-		if (Craft::$app->getUserGroups()->saveGroup($group))
-		{
-			// Save the new permissions
-			$permissions = Craft::$app->getRequest()->getBodyParam('permissions', []);
-			Craft::$app->getUserPermissions()->saveGroupPermissions($group->id, $permissions);
+        // Did it save?
+        if (Craft::$app->getUserGroups()->saveGroup($group)) {
+            // Save the new permissions
+            $permissions = Craft::$app->getRequest()->getBodyParam('permissions',
+                []);
+            Craft::$app->getUserPermissions()->saveGroupPermissions($group->id,
+                $permissions);
 
-			Craft::$app->getSession()->setNotice(Craft::t('app', 'Group saved.'));
-			return $this->redirectToPostedUrl();
-		}
-		else
-		{
-			Craft::$app->getSession()->setError(Craft::t('app', 'Couldn’t save group.'));
-		}
+            Craft::$app->getSession()->setNotice(Craft::t('app',
+                'Group saved.'));
 
-		// Send the group back to the template
-		Craft::$app->getUrlManager()->setRouteParams([
-			'group' => $group
-		]);
-	}
+            return $this->redirectToPostedUrl();
+        } else {
+            Craft::$app->getSession()->setError(Craft::t('app',
+                'Couldn’t save group.'));
+        }
 
-	/**
-	 * Deletes a user group.
-	 *
-	 * @return null
-	 */
-	public function actionDeleteGroup()
-	{
-		$this->requirePostRequest();
-		$this->requireAjaxRequest();
+        // Send the group back to the template
+        Craft::$app->getUrlManager()->setRouteParams([
+            'group' => $group
+        ]);
+    }
 
-		$groupId = Craft::$app->getRequest()->getRequiredBodyParam('id');
+    /**
+     * Deletes a user group.
+     *
+     * @return null
+     */
+    public function actionDeleteGroup()
+    {
+        $this->requirePostRequest();
+        $this->requireAjaxRequest();
 
-		Craft::$app->getUserGroups()->deleteGroupById($groupId);
+        $groupId = Craft::$app->getRequest()->getRequiredBodyParam('id');
 
-		return $this->asJson(['success' => true]);
-	}
+        Craft::$app->getUserGroups()->deleteGroupById($groupId);
 
-	/**
-	 * Saves the system user settings.
-	 *
-	 * @return null
-	 */
-	public function actionSaveUserSettings()
-	{
-		$this->requirePostRequest();
+        return $this->asJson(['success' => true]);
+    }
 
-		$settings['requireEmailVerification'] = (bool) Craft::$app->getRequest()->getBodyParam('requireEmailVerification');
-		$settings['allowPublicRegistration'] = (bool) Craft::$app->getRequest()->getBodyParam('allowPublicRegistration');
-		$settings['defaultGroup'] = Craft::$app->getRequest()->getBodyParam('defaultGroup');
+    /**
+     * Saves the system user settings.
+     *
+     * @return null
+     */
+    public function actionSaveUserSettings()
+    {
+        $this->requirePostRequest();
 
-		if (Craft::$app->getSystemSettings()->saveSettings('users', $settings))
-		{
-			Craft::$app->getSession()->setNotice(Craft::t('app', 'User settings saved.'));
-			return $this->redirectToPostedUrl();
-		}
-		else
-		{
-			Craft::$app->getSession()->setError(Craft::t('app', 'Couldn’t save user settings.'));
+        $settings['requireEmailVerification'] = (bool)Craft::$app->getRequest()->getBodyParam('requireEmailVerification');
+        $settings['allowPublicRegistration'] = (bool)Craft::$app->getRequest()->getBodyParam('allowPublicRegistration');
+        $settings['defaultGroup'] = Craft::$app->getRequest()->getBodyParam('defaultGroup');
 
-			// Send the settings back to the template
-			Craft::$app->getUrlManager()->setRouteParams([
-				'settings' => $settings
-			]);
-		}
-	}
+        if (Craft::$app->getSystemSettings()->saveSettings('users', $settings)
+        ) {
+            Craft::$app->getSession()->setNotice(Craft::t('app',
+                'User settings saved.'));
+
+            return $this->redirectToPostedUrl();
+        } else {
+            Craft::$app->getSession()->setError(Craft::t('app',
+                'Couldn’t save user settings.'));
+
+            // Send the settings back to the template
+            Craft::$app->getUrlManager()->setRouteParams([
+                'settings' => $settings
+            ]);
+        }
+    }
 }

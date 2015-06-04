@@ -1,8 +1,8 @@
 <?php
 /**
- * @link http://buildwithcraft.com/
+ * @link      http://buildwithcraft.com/
  * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
- * @license http://buildwithcraft.com/license
+ * @license   http://buildwithcraft.com/license
  */
 
 namespace craft\app\tools;
@@ -16,104 +16,95 @@ use craft\app\db\Query;
  * SearchIndex represents a Rebuild Search Indexes tool.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since  3.0
  */
 class SearchIndex extends Tool
 {
-	// Static
-	// =========================================================================
+    // Static
+    // =========================================================================
 
-	/**
-	 * @inheritdoc
-	 */
-	public static function displayName()
-	{
-		return Craft::t('app', 'Rebuild Search Indexes');
-	}
+    /**
+     * @inheritdoc
+     */
+    public static function displayName()
+    {
+        return Craft::t('app', 'Rebuild Search Indexes');
+    }
 
-	/**
-	 * @inheritdoc
-	 */
-	public static function iconValue()
-	{
-		return 'search';
-	}
+    /**
+     * @inheritdoc
+     */
+    public static function iconValue()
+    {
+        return 'search';
+    }
 
-	// Public Methods
-	// =========================================================================
+    // Public Methods
+    // =========================================================================
 
-	/**
-	 * @inheritdoc
-	 */
-	public function performAction($params = [])
-	{
-		if (!empty($params['start']))
-		{
-			// Truncate the searchindex table
-			Craft::$app->getDb()->createCommand()->truncateTable('{{%searchindex}}')->execute();
+    /**
+     * @inheritdoc
+     */
+    public function performAction($params = [])
+    {
+        if (!empty($params['start'])) {
+            // Truncate the searchindex table
+            Craft::$app->getDb()->createCommand()->truncateTable('{{%searchindex}}')->execute();
 
-			// Get all the element IDs ever
-			$elements = (new Query())
-				->select(['id', 'type'])
-				->from('{{%elements}}')
-				->all();
+            // Get all the element IDs ever
+            $elements = (new Query())
+                ->select(['id', 'type'])
+                ->from('{{%elements}}')
+                ->all();
 
-			$batch = [];
+            $batch = [];
 
-			foreach ($elements as $element)
-			{
-				$batch[] = ['params' => $element];
-			}
+            foreach ($elements as $element) {
+                $batch[] = ['params' => $element];
+            }
 
-			return [
-				'batches' => [$batch]
-			];
-		}
-		else
-		{
-			/** @var ElementInterface $class */
-			$class = $params['type'];
+            return [
+                'batches' => [$batch]
+            ];
+        } else {
+            /** @var ElementInterface $class */
+            $class = $params['type'];
 
-			if ($class::isLocalized())
-			{
-				$localeIds = Craft::$app->getI18n()->getSiteLocaleIds();
-			}
-			else
-			{
-				$localeIds = [Craft::$app->getI18n()->getPrimarySiteLocaleId()];
-			}
+            if ($class::isLocalized()) {
+                $localeIds = Craft::$app->getI18n()->getSiteLocaleIds();
+            } else {
+                $localeIds = [Craft::$app->getI18n()->getPrimarySiteLocaleId()];
+            }
 
-			$query = $class::find()
-				->id($params['id'])
-				->status(null)
-				->localeEnabled(false);
+            $query = $class::find()
+                ->id($params['id'])
+                ->status(null)
+                ->localeEnabled(false);
 
-			foreach ($localeIds as $localeId)
-			{
-				$query->locale($localeId);
-				$element = $query->one();
+            foreach ($localeIds as $localeId) {
+                $query->locale($localeId);
+                $element = $query->one();
 
-				if ($element)
-				{
-					Craft::$app->getSearch()->indexElementAttributes($element);
+                if ($element) {
+                    Craft::$app->getSearch()->indexElementAttributes($element);
 
-					if ($class::hasContent())
-					{
-						$fieldLayout = $element->getFieldLayout();
-						$keywords = [];
+                    if ($class::hasContent()) {
+                        $fieldLayout = $element->getFieldLayout();
+                        $keywords = [];
 
-						foreach ($fieldLayout->getFields() as $field)
-						{
-							// Set the keywords for the content's locale
-							$fieldValue = $element->getFieldValue($field->handle);
-							$fieldSearchKeywords = $field->getSearchKeywords($fieldValue, $element);
-							$keywords[$field->id] = $fieldSearchKeywords;
-						}
+                        foreach ($fieldLayout->getFields() as $field) {
+                            // Set the keywords for the content's locale
+                            $fieldValue = $element->getFieldValue($field->handle);
+                            $fieldSearchKeywords = $field->getSearchKeywords($fieldValue,
+                                $element);
+                            $keywords[$field->id] = $fieldSearchKeywords;
+                        }
 
-						Craft::$app->getSearch()->indexElementFields($element->id, $localeId, $keywords);
-					}
-				}
-			}
-		}
-	}
+                        Craft::$app->getSearch()->indexElementFields($element->id,
+                            $localeId, $keywords);
+                    }
+                }
+            }
+        }
+    }
 }

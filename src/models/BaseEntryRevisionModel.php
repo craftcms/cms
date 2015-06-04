@@ -1,8 +1,8 @@
 <?php
 /**
- * @link http://buildwithcraft.com/
+ * @link      http://buildwithcraft.com/
  * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
- * @license http://buildwithcraft.com/license
+ * @license   http://buildwithcraft.com/license
  */
 
 namespace craft\app\models;
@@ -16,69 +16,66 @@ use craft\app\elements\User;
  * Class BaseEntryRevision model.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since  3.0
  */
 class BaseEntryRevisionModel extends Entry
 {
-	// Public Methods
-	// =========================================================================
+    // Public Methods
+    // =========================================================================
 
-	/**
-	 * @var integer The revision creator’s user ID
-	 */
-	public $creatorId;
+    /**
+     * @var integer The revision creator’s user ID
+     */
+    public $creatorId;
 
-	// Public Methods
-	// =========================================================================
+    // Public Methods
+    // =========================================================================
 
-	/**
-	 * Sets the revision content.
-	 *
-	 * @param array $content
-	 *
-	 * @return null
-	 */
-	public function setContentFromRevision($content)
-	{
-		// Swap the field IDs with handles
-		$contentByFieldHandles = [];
+    /**
+     * Sets the revision content.
+     *
+     * @param array $content
+     *
+     * @return null
+     */
+    public function setContentFromRevision($content)
+    {
+        // Swap the field IDs with handles
+        $contentByFieldHandles = [];
 
-		foreach ($content as $fieldId => $value)
-		{
-			$field = Craft::$app->getFields()->getFieldById($fieldId);
+        foreach ($content as $fieldId => $value) {
+            $field = Craft::$app->getFields()->getFieldById($fieldId);
 
-			if ($field)
-			{
-				$contentByFieldHandles[$field->handle] = $value;
-			}
-		}
+            if ($field) {
+                $contentByFieldHandles[$field->handle] = $value;
+            }
+        }
 
-		// Set the values and prep them
-		$this->setContentFromPost($contentByFieldHandles);
-	}
+        // Set the values and prep them
+        $this->setContentFromPost($contentByFieldHandles);
+    }
 
-	/**
-	 * Returns the draft's creator.
-	 *
-	 * @return User|null
-	 */
-	public function getCreator()
-	{
-		return Craft::$app->getUsers()->getUserById($this->creatorId);
-	}
+    /**
+     * Returns the draft's creator.
+     *
+     * @return User|null
+     */
+    public function getCreator()
+    {
+        return Craft::$app->getUsers()->getUserById($this->creatorId);
+    }
 
-	/**
-	 * Returns the element's full URL.
-	 *
-	 * @return string
-	 */
-	public function getUrl()
-	{
-		if ($this->uri === null)
-		{
-			ElementHelper::setUniqueUri($this);
-		}
+    /**
+     * Returns the element's full URL.
+     *
+     * @return string
+     */
+    public function getUrl()
+    {
+        if ($this->uri === null) {
+            ElementHelper::setUniqueUri($this);
+        }
 
-		return parent::getUrl();
-	}
+        return parent::getUrl();
+    }
 }

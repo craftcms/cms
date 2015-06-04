@@ -1,8 +1,8 @@
 <?php
 /**
- * @link http://buildwithcraft.com/
+ * @link      http://buildwithcraft.com/
  * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
- * @license http://buildwithcraft.com/license
+ * @license   http://buildwithcraft.com/license
  */
 
 namespace craft\app\models;
@@ -41,137 +41,183 @@ use craft\app\base\Model;
  *                                     should identify the header names, and their values, well, take a guess.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since  3.0
  */
 class Email extends Model
 {
-	// Properties
-	// =========================================================================
+    // Properties
+    // =========================================================================
 
-	/**
-	 * @var string From email
-	 */
-	public $fromEmail = 'support@buildwithcraft.com';
+    /**
+     * @var string From email
+     */
+    public $fromEmail = 'support@buildwithcraft.com';
 
-	/**
-	 * @var string From name
-	 */
-	public $fromName = 'Craft';
+    /**
+     * @var string From name
+     */
+    public $fromName = 'Craft';
 
-	/**
-	 * @var string To email
-	 */
-	public $toEmail;
+    /**
+     * @var string To email
+     */
+    public $toEmail;
 
-	/**
-	 * @var string To first name
-	 */
-	public $toFirstName;
+    /**
+     * @var string To first name
+     */
+    public $toFirstName;
 
-	/**
-	 * @var string To last name
-	 */
-	public $toLastName;
+    /**
+     * @var string To last name
+     */
+    public $toLastName;
 
-	/**
-	 * @var string Subject
-	 */
-	public $subject;
+    /**
+     * @var string Subject
+     */
+    public $subject;
 
-	/**
-	 * @var string Body
-	 */
-	public $body;
+    /**
+     * @var string Body
+     */
+    public $body;
 
-	/**
-	 * @var string Html body
-	 */
-	public $htmlBody;
+    /**
+     * @var string Html body
+     */
+    public $htmlBody;
 
-	/**
-	 * @var string Reply to
-	 */
-	public $replyTo;
+    /**
+     * @var string Reply to
+     */
+    public $replyTo;
 
-	/**
-	 * @var string Sender
-	 */
-	public $sender;
+    /**
+     * @var string Sender
+     */
+    public $sender;
 
-	/**
-	 * @var array Cc
-	 */
-	public $cc;
+    /**
+     * @var array Cc
+     */
+    public $cc;
 
-	/**
-	 * @var array Bcc
-	 */
-	public $bcc;
+    /**
+     * @var array Bcc
+     */
+    public $bcc;
 
-	/**
-	 * @var array String attachments
-	 */
-	public $stringAttachments;
+    /**
+     * @var array String attachments
+     */
+    public $stringAttachments;
 
-	/**
-	 * @var array Attachments
-	 */
-	public $attachments;
+    /**
+     * @var array Attachments
+     */
+    public $attachments;
 
-	/**
-	 * @var array Custom headers
-	 */
-	public $customHeaders;
+    /**
+     * @var array Custom headers
+     */
+    public $customHeaders;
 
-	// Public Methods
-	// =========================================================================
+    // Public Methods
+    // =========================================================================
 
-	/**
-	 * @inheritdoc
-	 */
-	public function rules()
-	{
-		return [
-			[['fromEmail', 'toEmail', 'subject', 'body'], 'required'],
-			[['fromEmail', 'toEmail', 'replyTo', 'sender'], 'email'],
-			[['fromEmail', 'toEmail', 'replyTo', 'sender'], 'string', 'min' => 5],
-			[['fromEmail', 'toEmail', 'replyTo', 'sender'], 'string', 'max' => 255],
-			[['fromEmail', 'fromName', 'toEmail', 'toFirstName', 'toLastName', 'subject', 'body', 'htmlBody', 'replyTo', 'sender', 'cc', 'bcc', 'stringAttachments', 'attachments', 'customHeaders'], 'safe', 'on' => 'search'],
-		];
-	}
+    /**
+     * @inheritdoc
+     */
+    public function rules()
+    {
+        return [
+            [['fromEmail', 'toEmail', 'subject', 'body'], 'required'],
+            [['fromEmail', 'toEmail', 'replyTo', 'sender'], 'email'],
+            [
+                ['fromEmail', 'toEmail', 'replyTo', 'sender'],
+                'string',
+                'min' => 5
+            ],
+            [
+                ['fromEmail', 'toEmail', 'replyTo', 'sender'],
+                'string',
+                'max' => 255
+            ],
+            [
+                [
+                    'fromEmail',
+                    'fromName',
+                    'toEmail',
+                    'toFirstName',
+                    'toLastName',
+                    'subject',
+                    'body',
+                    'htmlBody',
+                    'replyTo',
+                    'sender',
+                    'cc',
+                    'bcc',
+                    'stringAttachments',
+                    'attachments',
+                    'customHeaders'
+                ],
+                'safe',
+                'on' => 'search'
+            ],
+        ];
+    }
 
-	/**
-	 * Adds a string or binary attachment (non-filesystem) to the list. This method can be used to attach ascii or
-	 * binary data, such as a BLOB record from a database.
-	 *
-	 * @param string $string   String attachment data.
-	 * @param string $filename Name of the attachment.
-	 * @param string $encoding File encoding
-	 * @param string $type     File extension MIME type.
-	 *
-	 * @return null
-	 */
-	public function addStringAttachment($string, $filename, $encoding = 'base64', $type = 'application/octet-stream')
-	{
-		$existingAttachments = $this->stringAttachments;
-		$existingAttachments[] = ['string' => $string, 'filename' => $filename, 'encoding' => $encoding, 'type' => $type];
-		$this->stringAttachments = $existingAttachments;
-	}
+    /**
+     * Adds a string or binary attachment (non-filesystem) to the list. This method can be used to attach ascii or
+     * binary data, such as a BLOB record from a database.
+     *
+     * @param string $string   String attachment data.
+     * @param string $filename Name of the attachment.
+     * @param string $encoding File encoding
+     * @param string $type     File extension MIME type.
+     *
+     * @return null
+     */
+    public function addStringAttachment(
+        $string,
+        $filename,
+        $encoding = 'base64',
+        $type = 'application/octet-stream'
+    ) {
+        $existingAttachments = $this->stringAttachments;
+        $existingAttachments[] = [
+            'string' => $string,
+            'filename' => $filename,
+            'encoding' => $encoding,
+            'type' => $type
+        ];
+        $this->stringAttachments = $existingAttachments;
+    }
 
-	/**
-	 * Adds an attachment from a path on the filesystem. Returns false if the file could not be found or accessed.
-	 *
-	 * @param string $path     Path to the attachment.
-	 * @param string $name     Overrides the attachment name.
-	 * @param string $encoding File encoding (see $Encoding).
-	 * @param string $type     File extension (MIME) type.
-	 *
-	 * @return bool
-	 */
-	public function addAttachment($path, $name = '', $encoding = 'base64', $type = 'application/octet-stream')
-	{
-		$existingAttachments = $this->attachments;
-		$existingAttachments[] = ['path' => $path, 'name' => $name, 'encoding' => $encoding, 'type' => $type];
-		$this->attachments = $existingAttachments;
-	}
+    /**
+     * Adds an attachment from a path on the filesystem. Returns false if the file could not be found or accessed.
+     *
+     * @param string $path     Path to the attachment.
+     * @param string $name     Overrides the attachment name.
+     * @param string $encoding File encoding (see $Encoding).
+     * @param string $type     File extension (MIME) type.
+     *
+     * @return bool
+     */
+    public function addAttachment(
+        $path,
+        $name = '',
+        $encoding = 'base64',
+        $type = 'application/octet-stream'
+    ) {
+        $existingAttachments = $this->attachments;
+        $existingAttachments[] = [
+            'path' => $path,
+            'name' => $name,
+            'encoding' => $encoding,
+            'type' => $type
+        ];
+        $this->attachments = $existingAttachments;
+    }
 }

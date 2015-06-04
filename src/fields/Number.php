@@ -1,8 +1,8 @@
 <?php
 /**
- * @link http://buildwithcraft.com/
+ * @link      http://buildwithcraft.com/
  * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
- * @license http://buildwithcraft.com/license
+ * @license   http://buildwithcraft.com/license
  */
 
 namespace craft\app\fields;
@@ -17,108 +17,112 @@ use craft\app\i18n\Locale;
  * Number represents a Number field.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since  3.0
  */
 class Number extends Field
 {
-	// Static
-	// =========================================================================
+    // Static
+    // =========================================================================
 
-	/**
-	 * @inheritdoc
-	 */
-	public static function displayName()
-	{
-		return Craft::t('app', 'Number');
-	}
+    /**
+     * @inheritdoc
+     */
+    public static function displayName()
+    {
+        return Craft::t('app', 'Number');
+    }
 
-	// Properties
-	// =========================================================================
+    // Properties
+    // =========================================================================
 
-	/**
-	 * @var integer|float The minimum allowed number
-	 */
-	public $min = 0;
+    /**
+     * @var integer|float The minimum allowed number
+     */
+    public $min = 0;
 
-	/**
-	 * @var integer|float The maximum allowed number
-	 */
-	public $max;
+    /**
+     * @var integer|float The maximum allowed number
+     */
+    public $max;
 
-	/**
-	 * @var integer The number of digits allowed after the decimal point
-	 */
-	public $decimals = 0;
+    /**
+     * @var integer The number of digits allowed after the decimal point
+     */
+    public $decimals = 0;
 
-	// Public Methods
-	// =========================================================================
+    // Public Methods
+    // =========================================================================
 
-	/**
-	 * @inheritdoc
-	 */
-	public function rules()
-	{
-		$rules = parent::rules();
-		$rules[] = [['min', 'max'], 'number'];
-		$rules[] = [['decimals'], 'integer'];
-		$rules[] = [['max'], 'compare', 'compareAttribute' => 'min', 'operator' => '>='];
-		return $rules;
-	}
+    /**
+     * @inheritdoc
+     */
+    public function rules()
+    {
+        $rules = parent::rules();
+        $rules[] = [['min', 'max'], 'number'];
+        $rules[] = [['decimals'], 'integer'];
+        $rules[] = [
+            ['max'],
+            'compare',
+            'compareAttribute' => 'min',
+            'operator' => '>='
+        ];
 
-	/**
-	 * @inheritdoc
-	 */
-	public function getSettingsHtml()
-	{
-		return Craft::$app->getView()->renderTemplate('_components/fieldtypes/Number/settings', [
-			'field' => $this
-		]);
-	}
+        return $rules;
+    }
 
-	/**
-	 * @inheritdoc
-	 */
-	public function getContentColumnType()
-	{
-		return DbHelper::getNumericalColumnType($this->min, $this->max, $this->decimals);
-	}
+    /**
+     * @inheritdoc
+     */
+    public function getSettingsHtml()
+    {
+        return Craft::$app->getView()->renderTemplate('_components/fieldtypes/Number/settings',
+            [
+                'field' => $this
+            ]);
+    }
 
-	/**
-	 * @inheritdoc
-	 */
-	public function getInputHtml($value, $element)
-	{
-		if ($this->isFresh($element) && ($value < $this->min || $value > $this->max))
-		{
-			$value = $this->min;
-		}
+    /**
+     * @inheritdoc
+     */
+    public function getContentColumnType()
+    {
+        return DbHelper::getNumericalColumnType($this->min, $this->max,
+            $this->decimals);
+    }
 
-		$decimals = $this->decimals;
-		$decimalSeparator = Craft::$app->getLocale()->getNumberSymbol(Locale::SYMBOL_DECIMAL_SEPARATOR);
-		$value = number_format($value, $decimals, $decimalSeparator, '');
+    /**
+     * @inheritdoc
+     */
+    public function getInputHtml($value, $element)
+    {
+        if ($this->isFresh($element) && ($value < $this->min || $value > $this->max)) {
+            $value = $this->min;
+        }
 
-		return Craft::$app->getView()->renderTemplate('_includes/forms/text', [
-			'name'  => $this->handle,
-			'value' => $value,
-			'size'  => 5
-		]);
-	}
+        $decimals = $this->decimals;
+        $decimalSeparator = Craft::$app->getLocale()->getNumberSymbol(Locale::SYMBOL_DECIMAL_SEPARATOR);
+        $value = number_format($value, $decimals, $decimalSeparator, '');
 
-	// Protected Methods
-	// =========================================================================
+        return Craft::$app->getView()->renderTemplate('_includes/forms/text', [
+            'name' => $this->handle,
+            'value' => $value,
+            'size' => 5
+        ]);
+    }
 
-	/**
-	 * @inheritdoc
-	 */
-	protected function prepareValueBeforeSave($value, $element)
-	{
-		if ($value === '')
-		{
-			return 0;
-		}
-		else
-		{
-			return LocalizationHelper::normalizeNumber($value);
-		}
-	}
+    // Protected Methods
+    // =========================================================================
+
+    /**
+     * @inheritdoc
+     */
+    protected function prepareValueBeforeSave($value, $element)
+    {
+        if ($value === '') {
+            return 0;
+        } else {
+            return LocalizationHelper::normalizeNumber($value);
+        }
+    }
 }

@@ -1,8 +1,8 @@
 <?php
 /**
- * @link http://buildwithcraft.com/
+ * @link      http://buildwithcraft.com/
  * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
- * @license http://buildwithcraft.com/license
+ * @license   http://buildwithcraft.com/license
  */
 
 namespace craft\app\services;
@@ -28,349 +28,326 @@ use yii\base\Component;
  * An instance of the Dashboard service is globally accessible in Craft via [[Application::dashboard `Craft::$app->getDashboard()`]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since  3.0
  */
 class Dashboard extends Component
 {
-	// Constants
-	// =========================================================================
+    // Constants
+    // =========================================================================
 
-	/**
-	 * @var string The widget interface name
-	 */
-	const WIDGET_INTERFACE = 'craft\app\base\WidgetInterface';
+    /**
+     * @var string The widget interface name
+     */
+    const WIDGET_INTERFACE = 'craft\app\base\WidgetInterface';
 
-	// Public Methods
-	// =========================================================================
+    // Public Methods
+    // =========================================================================
 
-	/**
-	 * Returns all available widget type classes.
-	 *
-	 * @return WidgetInterface[] The available widget type classes.
-	 */
-	public function getAllWidgetTypes()
-	{
-		$widgetTypes = [
-			FeedWidget::className(),
-			GetHelpWidget::className(),
-			QuickPostWidget::className(),
-			RecentEntriesWidget::className(),
-			UpdatesWidget::className(),
-		];
+    /**
+     * Returns all available widget type classes.
+     *
+     * @return WidgetInterface[] The available widget type classes.
+     */
+    public function getAllWidgetTypes()
+    {
+        $widgetTypes = [
+            FeedWidget::className(),
+            GetHelpWidget::className(),
+            QuickPostWidget::className(),
+            RecentEntriesWidget::className(),
+            UpdatesWidget::className(),
+        ];
 
-		foreach (Craft::$app->getPlugins()->call('getWidgetTypes', [], true) as $pluginWidgetTypes)
-		{
-			$widgetTypes = array_merge($widgetTypes, $pluginWidgetTypes);
-		}
+        foreach (Craft::$app->getPlugins()->call('getWidgetTypes', [],
+            true) as $pluginWidgetTypes) {
+            $widgetTypes = array_merge($widgetTypes, $pluginWidgetTypes);
+        }
 
-		return $widgetTypes;
-	}
+        return $widgetTypes;
+    }
 
-	/**
-	 * Creates a widget with a given config.
-	 *
-	 * @param mixed $config The widget’s class name, or its config, with a `type` value and optionally a `settings` value.
-	 * @return WidgetInterface|Widget
-	 */
-	public function createWidget($config)
-	{
-		if (is_string($config))
-		{
-			$config = ['type' => $config];
-		}
+    /**
+     * Creates a widget with a given config.
+     *
+     * @param mixed $config The widget’s class name, or its config, with a `type` value and optionally a `settings` value.
+     *
+     * @return WidgetInterface|Widget
+     */
+    public function createWidget($config)
+    {
+        if (is_string($config)) {
+            $config = ['type' => $config];
+        }
 
-		try
-		{
-			return ComponentHelper::createComponent($config, self::WIDGET_INTERFACE);
-		}
-		catch (InvalidComponentException $e)
-		{
-			$config['errorMessage'] = $e->getMessage();
-			return InvalidWidget::create($config);
-		}
-	}
+        try {
+            return ComponentHelper::createComponent($config,
+                self::WIDGET_INTERFACE);
+        } catch (InvalidComponentException $e) {
+            $config['errorMessage'] = $e->getMessage();
 
-	/**
-	 * Returns the dashboard widgets for the current user.
-	 *
-	 * @param string|null $indexBy The attribute to index the widgets by
-	 * @return WidgetInterface[]|Widget[] The widgets
-	 */
-	public function getAllWidgets($indexBy = null)
-	{
-		$widgets = $this->_getUserWidgetRecords($indexBy);
+            return InvalidWidget::create($config);
+        }
+    }
 
-		// If there are no widget records, this is the first time they've hit the dashboard.
-		if (!$widgets)
-		{
-			// Add the defaults and try again
-			$this->_addDefaultUserWidgets();
-			$widgets = $this->_getUserWidgetRecords($indexBy);
-		}
-		else
-		{
-			// Get only the enabled widgets.
-			foreach ($widgets as $key => $widget)
-			{
-				if (!$widget->enabled)
-				{
-					unset($widgets[$key]);
-				}
-			}
-		}
+    /**
+     * Returns the dashboard widgets for the current user.
+     *
+     * @param string|null $indexBy The attribute to index the widgets by
+     *
+     * @return WidgetInterface[]|Widget[] The widgets
+     */
+    public function getAllWidgets($indexBy = null)
+    {
+        $widgets = $this->_getUserWidgetRecords($indexBy);
 
-		foreach ($widgets as $key => $value)
-		{
-			$widgets[$key] = $this->createWidget($value);
-		}
+        // If there are no widget records, this is the first time they've hit the dashboard.
+        if (!$widgets) {
+            // Add the defaults and try again
+            $this->_addDefaultUserWidgets();
+            $widgets = $this->_getUserWidgetRecords($indexBy);
+        } else {
+            // Get only the enabled widgets.
+            foreach ($widgets as $key => $widget) {
+                if (!$widget->enabled) {
+                    unset($widgets[$key]);
+                }
+            }
+        }
 
-		return $widgets;
-	}
+        foreach ($widgets as $key => $value) {
+            $widgets[$key] = $this->createWidget($value);
+        }
 
-	/**
-	 * Returns whether the current user has a widget of the given type.
-	 *
-	 * @param string $type The widget type
-	 * @return boolean Whether the current user has a widget of the given type
-	 */
-	public function doesUserHaveWidget($type)
-	{
-		return WidgetRecord::find()
-			->where([
-				'userId'  => Craft::$app->getUser()->getIdentity()->id,
-				'type'    => $type,
-				'enabled' => true
-			])
-			->exists();
-	}
+        return $widgets;
+    }
 
-	/**
-	 * Returns a widget by its ID.
-	 *
-	 * @param integer $id The widget’s ID
-	 * @return WidgetInterface|Widget|null The widget, or null if it doesn’t exist
-	 */
-	public function getWidgetById($id)
-	{
-		$widgetRecord = WidgetRecord::findOne([
-			'id' => $id,
-			'userId' => Craft::$app->getUser()->getIdentity()->id
-		]);
+    /**
+     * Returns whether the current user has a widget of the given type.
+     *
+     * @param string $type The widget type
+     *
+     * @return boolean Whether the current user has a widget of the given type
+     */
+    public function doesUserHaveWidget($type)
+    {
+        return WidgetRecord::find()
+            ->where([
+                'userId' => Craft::$app->getUser()->getIdentity()->id,
+                'type' => $type,
+                'enabled' => true
+            ])
+            ->exists();
+    }
 
-		if ($widgetRecord)
-		{
-			return $this->createWidget($widgetRecord);
-		}
-		else
-		{
-			return null;
-		}
-	}
+    /**
+     * Returns a widget by its ID.
+     *
+     * @param integer $id The widget’s ID
+     *
+     * @return WidgetInterface|Widget|null The widget, or null if it doesn’t exist
+     */
+    public function getWidgetById($id)
+    {
+        $widgetRecord = WidgetRecord::findOne([
+            'id' => $id,
+            'userId' => Craft::$app->getUser()->getIdentity()->id
+        ]);
 
-	/**
-	 * Saves a widget for the current user.
-	 *
-	 * @param WidgetInterface|Widget $widget   The widget to be saved
-	 * @param boolean                $validate Whether the widget should be validated first
-	 * @return boolean Whether the widget was saved successfully
-	 * @throws \Exception
-	 */
-	public function saveWidget(WidgetInterface $widget, $validate = true)
-	{
-		if ((!$validate || $widget->validate()) && $widget->beforeSave())
-		{
-			$transaction = Craft::$app->getDb()->getTransaction() === null ? Craft::$app->getDb()->beginTransaction() : null;
-			try
-			{
-				$widgetRecord = $this->_getUserWidgetRecordById($widget->id);
-				$isNewWidget = $widgetRecord->getIsNewRecord();
+        if ($widgetRecord) {
+            return $this->createWidget($widgetRecord);
+        } else {
+            return null;
+        }
+    }
 
-				$widgetRecord->type     = $widget->getType();
-				$widgetRecord->settings = $widget->getSettings();
+    /**
+     * Saves a widget for the current user.
+     *
+     * @param WidgetInterface|Widget $widget   The widget to be saved
+     * @param boolean                $validate Whether the widget should be validated first
+     *
+     * @return boolean Whether the widget was saved successfully
+     * @throws \Exception
+     */
+    public function saveWidget(WidgetInterface $widget, $validate = true)
+    {
+        if ((!$validate || $widget->validate()) && $widget->beforeSave()) {
+            $transaction = Craft::$app->getDb()->getTransaction() === null ? Craft::$app->getDb()->beginTransaction() : null;
+            try {
+                $widgetRecord = $this->_getUserWidgetRecordById($widget->id);
+                $isNewWidget = $widgetRecord->getIsNewRecord();
 
-				// Enabled by default.
-				if ($isNewWidget)
-				{
-					$widgetRecord->enabled = true;
-				}
+                $widgetRecord->type = $widget->getType();
+                $widgetRecord->settings = $widget->getSettings();
 
-				$widgetRecord->save(false);
+                // Enabled by default.
+                if ($isNewWidget) {
+                    $widgetRecord->enabled = true;
+                }
 
-				// Now that we have a widget ID, save it on the model
-				if ($isNewWidget)
-				{
-					$widget->id = $widgetRecord->id;
-				}
+                $widgetRecord->save(false);
 
-				$widget->afterSave();
+                // Now that we have a widget ID, save it on the model
+                if ($isNewWidget) {
+                    $widget->id = $widgetRecord->id;
+                }
 
-				if ($transaction !== null)
-				{
-					$transaction->commit();
-				}
+                $widget->afterSave();
 
-				return true;
-			}
-			catch (\Exception $e)
-			{
-				if ($transaction !== null)
-				{
-					$transaction->rollback();
-				}
+                if ($transaction !== null) {
+                    $transaction->commit();
+                }
 
-				throw $e;
-			}
+                return true;
+            } catch (\Exception $e) {
+                if ($transaction !== null) {
+                    $transaction->rollback();
+                }
 
-			return true;
-		}
-		else
-		{
-			return false;
-		}
-	}
+                throw $e;
+            }
 
-	/**
-	 * Soft deletes a widget.
-	 * @param integer $widgetId The widget’s ID
-	 * @return boolean Whether the widget was deleted successfully
-	 */
-	public function deleteWidgetById($widgetId)
-	{
-		$widgetRecord = $this->_getUserWidgetRecordById($widgetId);
-		$widgetRecord->enabled = false;
-		$widgetRecord->save();
+            return true;
+        } else {
+            return false;
+        }
+    }
 
-		return true;
-	}
+    /**
+     * Soft deletes a widget.
+     *
+     * @param integer $widgetId The widget’s ID
+     *
+     * @return boolean Whether the widget was deleted successfully
+     */
+    public function deleteWidgetById($widgetId)
+    {
+        $widgetRecord = $this->_getUserWidgetRecordById($widgetId);
+        $widgetRecord->enabled = false;
+        $widgetRecord->save();
 
-	/**
-	 * Reorders widgets.
-	 *
-	 * @param integer[] $widgetIds The widget IDs
-	 * @return boolean Whether the widgets were reordered successfully
-	 * @throws \Exception
-	 */
-	public function reorderWidgets($widgetIds)
-	{
-		$transaction = Craft::$app->getDb()->getTransaction() === null ? Craft::$app->getDb()->beginTransaction() : null;
+        return true;
+    }
 
-		try
-		{
-			foreach ($widgetIds as $widgetOrder => $widgetId)
-			{
-				$widgetRecord = $this->_getUserWidgetRecordById($widgetId);
-				$widgetRecord->sortOrder = $widgetOrder+1;
-				$widgetRecord->save();
-			}
+    /**
+     * Reorders widgets.
+     *
+     * @param integer[] $widgetIds The widget IDs
+     *
+     * @return boolean Whether the widgets were reordered successfully
+     * @throws \Exception
+     */
+    public function reorderWidgets($widgetIds)
+    {
+        $transaction = Craft::$app->getDb()->getTransaction() === null ? Craft::$app->getDb()->beginTransaction() : null;
 
-			if ($transaction !== null)
-			{
-				$transaction->commit();
-			}
-		}
-		catch (\Exception $e)
-		{
-			if ($transaction !== null)
-			{
-				$transaction->rollback();
-			}
+        try {
+            foreach ($widgetIds as $widgetOrder => $widgetId) {
+                $widgetRecord = $this->_getUserWidgetRecordById($widgetId);
+                $widgetRecord->sortOrder = $widgetOrder + 1;
+                $widgetRecord->save();
+            }
 
-			throw $e;
-		}
+            if ($transaction !== null) {
+                $transaction->commit();
+            }
+        } catch (\Exception $e) {
+            if ($transaction !== null) {
+                $transaction->rollback();
+            }
 
-		return true;
-	}
+            throw $e;
+        }
 
-	// Private Methods
-	// =========================================================================
+        return true;
+    }
 
-	/**
-	 * Adds the default widgets to the logged-in user.
-	 */
-	private function _addDefaultUserWidgets()
-	{
-		$user = Craft::$app->getUser()->getIdentity();
+    // Private Methods
+    // =========================================================================
 
-		// Recent Entries widget
-		$this->saveWidget($this->createWidget(RecentEntriesWidget::className()));
+    /**
+     * Adds the default widgets to the logged-in user.
+     */
+    private function _addDefaultUserWidgets()
+    {
+        $user = Craft::$app->getUser()->getIdentity();
 
-		// Get Help widget
-		if ($user->admin)
-		{
-			$this->saveWidget($this->createWidget(GetHelpWidget::className()));
-		}
+        // Recent Entries widget
+        $this->saveWidget($this->createWidget(RecentEntriesWidget::className()));
 
-		// Updates widget
-		if ($user->can('performupdates'))
-		{
-			$this->saveWidget($this->createWidget(UpdatesWidget::className()));
-		}
+        // Get Help widget
+        if ($user->admin) {
+            $this->saveWidget($this->createWidget(GetHelpWidget::className()));
+        }
 
-		// Blog & Tonic feed widget
-		$this->saveWidget($this->createWidget([
-			'type'  => FeedWidget::className(),
-			'url'   => 'http://feeds.feedburner.com/blogandtonic',
-			'title' => 'Blog & Tonic'
-		]));
-	}
+        // Updates widget
+        if ($user->can('performupdates')) {
+            $this->saveWidget($this->createWidget(UpdatesWidget::className()));
+        }
 
-	/**
-	 * Gets a widget's record.
-	 *
-	 * @param integer $widgetId
-	 *
-	 * @return WidgetRecord
-	 */
-	private function _getUserWidgetRecordById($widgetId = null)
-	{
-		$userId = Craft::$app->getUser()->getIdentity()->id;
+        // Blog & Tonic feed widget
+        $this->saveWidget($this->createWidget([
+            'type' => FeedWidget::className(),
+            'url' => 'http://feeds.feedburner.com/blogandtonic',
+            'title' => 'Blog & Tonic'
+        ]));
+    }
 
-		if ($widgetId)
-		{
-			$widgetRecord = WidgetRecord::findOne([
-				'id'     => $widgetId,
-				'userId' => $userId
-			]);
+    /**
+     * Gets a widget's record.
+     *
+     * @param integer $widgetId
+     *
+     * @return WidgetRecord
+     */
+    private function _getUserWidgetRecordById($widgetId = null)
+    {
+        $userId = Craft::$app->getUser()->getIdentity()->id;
 
-			if (!$widgetRecord)
-			{
-				$this->_noWidgetExists($widgetId);
-			}
-		}
-		else
-		{
-			$widgetRecord = new WidgetRecord();
-			$widgetRecord->userId = $userId;
-		}
+        if ($widgetId) {
+            $widgetRecord = WidgetRecord::findOne([
+                'id' => $widgetId,
+                'userId' => $userId
+            ]);
 
-		return $widgetRecord;
-	}
+            if (!$widgetRecord) {
+                $this->_noWidgetExists($widgetId);
+            }
+        } else {
+            $widgetRecord = new WidgetRecord();
+            $widgetRecord->userId = $userId;
+        }
 
-	/**
-	 * Throws a "No widget exists" exception.
-	 *
-	 * @param integer $widgetId
-	 *
-	 * @throws Exception
-	 * @return null
-	 */
-	private function _noWidgetExists($widgetId)
-	{
-		throw new Exception(Craft::t('app', 'No widget exists with the ID “{id}”.', ['id' => $widgetId]));
-	}
+        return $widgetRecord;
+    }
 
-	/**
-	 * Returns the widget records for the current user.
-	 *
-	 * @param string $indexBy
-	 * @return array
-	 */
-	private function _getUserWidgetRecords($indexBy = null)
-	{
-		return WidgetRecord::find()
-			->where(['userId' => Craft::$app->getUser()->getIdentity()->id])
-			->orderBy('sortOrder')
-			->indexBy($indexBy)
-			->all();
-	}
+    /**
+     * Throws a "No widget exists" exception.
+     *
+     * @param integer $widgetId
+     *
+     * @throws Exception
+     * @return null
+     */
+    private function _noWidgetExists($widgetId)
+    {
+        throw new Exception(Craft::t('app',
+            'No widget exists with the ID “{id}”.', ['id' => $widgetId]));
+    }
+
+    /**
+     * Returns the widget records for the current user.
+     *
+     * @param string $indexBy
+     *
+     * @return array
+     */
+    private function _getUserWidgetRecords($indexBy = null)
+    {
+        return WidgetRecord::find()
+            ->where(['userId' => Craft::$app->getUser()->getIdentity()->id])
+            ->orderBy('sortOrder')
+            ->indexBy($indexBy)
+            ->all();
+    }
 }

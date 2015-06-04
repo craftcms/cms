@@ -1,8 +1,8 @@
 <?php
 /**
- * @link http://buildwithcraft.com/
+ * @link      http://buildwithcraft.com/
  * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
- * @license http://buildwithcraft.com/license
+ * @license   http://buildwithcraft.com/license
  */
 
 namespace craft\app\io;
@@ -11,31 +11,31 @@ namespace craft\app\io;
  * Interface ZipInterface
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since  3.0
  */
 interface ZipInterface
 {
-	// Public Methods
-	// =========================================================================
+    // Public Methods
+    // =========================================================================
 
-	/**
-	 * @param $sourceFolder
-	 * @param $destZip
-	 *
-	 * @return mixed
-	 */
-	public function zip($sourceFolder, $destZip);
+    /**
+     * @param $sourceFolder
+     * @param $destZip
+     *
+     * @return mixed
+     */
+    public function zip($sourceFolder, $destZip);
 
-	/**
-	 * @param $sourceZip
-	 * @param $destFolder
-	 *
-	 * @return mixed
-	 */
-	public function unzip($sourceZip, $destFolder);
+    /**
+     * @param $sourceZip
+     * @param $destFolder
+     *
+     * @return mixed
+     */
+    public function unzip($sourceZip, $destFolder);
 
-	/**
-	 * Will add either a file or a folder to an existing zip file.  If it is a folder, it will add the contents
+    /**
+     * Will add either a file or a folder to an existing zip file.  If it is a folder, it will add the contents
      * recursively.
      *
      * @param string $sourceZip  The zip file to be added to.
@@ -45,6 +45,6 @@ interface ZipInterface
      * @param string $pathPrefix A path to be prepended to each file before it is added to the zip.
      *
      * @return bool
-	 */
-	public function add($sourceZip, $filePath, $basePath, $pathPrefix = null);
+     */
+    public function add($sourceZip, $filePath, $basePath, $pathPrefix = null);
 }

@@ -1,18 +1,18 @@
 <?php
 
 $config = [
-	'id' => 'Craft',
-	'name' => 'Craft',
-	'version' => '@@@version@@@',
-	'build' => '@@@build@@@',
-	'schemaVersion' => '@@@schemaVersion@@@',
-	'releaseDate' => '@@@releaseDate@@@',
-	'minBuildRequired' => '@@@minBuildRequired@@@',
-	'minBuildUrl' => '@@@minBuildUrl@@@',
-	'track' => '@@@track@@@',
-	'basePath' => '@craft/app',          // Defines the @app alias
-	'runtimePath' => '@storage/runtime', // Defines the @runtime alias
-	'controllerNamespace' => 'craft\app\controllers',
+    'id' => 'Craft',
+    'name' => 'Craft',
+    'version' => '@@@version@@@',
+    'build' => '@@@build@@@',
+    'schemaVersion' => '@@@schemaVersion@@@',
+    'releaseDate' => '@@@releaseDate@@@',
+    'minBuildRequired' => '@@@minBuildRequired@@@',
+    'minBuildUrl' => '@@@minBuildUrl@@@',
+    'track' => '@@@track@@@',
+    'basePath' => '@craft/app',          // Defines the @app alias
+    'runtimePath' => '@storage/runtime', // Defines the @runtime alias
+    'controllerNamespace' => 'craft\app\controllers',
 ];
 
 /* HIDE */

@@ -13,49 +13,53 @@ namespace Craft;
  */
 class urlModel extends BaseModel
 {
-	// Properties
-	// =========================================================================
+    // Properties
+    // =========================================================================
 
-	/**
-	 * @var FieldModel|null
-	 */
-	private $_matrixField;
+    /**
+     * @var FieldModel|null
+     */
+    private $_matrixField;
 
-	/**
-	 * @var
-	 */
-	private $_blockTypes;
+    /**
+     * @var
+     */
+    private $_blockTypes;
 
-	// Public Methods
-	// =========================================================================
+    // Public Methods
+    // =========================================================================
 
-	/**
-	 * Returns this model's validation rules.
-	 *
-	 * @return array
-	 */
-	public function rules()
-	{
-		$rules = parent::rules();
+    /**
+     * Returns this model's validation rules.
+     *
+     * @return array
+     */
+    public function rules()
+    {
+        $rules = parent::rules();
 
-		// Use Yii's stricter URL validator here
-		$rules[] = array('url', 'url');
+        // Use Yii's stricter URL validator here
+        $rules[] = array('url', 'url');
 
-		return $rules;
-	}
+        return $rules;
+    }
 
-	// Protected Methods
-	// =========================================================================
+    // Protected Methods
+    // =========================================================================
 
-	/**
-	 * @inheritDoc BaseModel::defineAttributes()
-	 *
-	 * @return array
-	 */
-	protected function defineAttributes()
-	{
-		return array(
-			'url' => array(AttributeType::String, 'required' => true, 'label' => 'URL')
-		);
-	}
+    /**
+     * @inheritDoc BaseModel::defineAttributes()
+     *
+     * @return array
+     */
+    protected function defineAttributes()
+    {
+        return array(
+            'url' => array(
+                AttributeType::String,
+                'required' => true,
+                'label' => 'URL'
+            )
+        );
+    }
 }

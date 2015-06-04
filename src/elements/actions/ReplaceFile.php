@@ -1,8 +1,8 @@
 <?php
 /**
- * @link http://buildwithcraft.com/
+ * @link      http://buildwithcraft.com/
  * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
- * @license http://buildwithcraft.com/license
+ * @license   http://buildwithcraft.com/license
  */
 
 namespace craft\app\elements\actions;
@@ -15,29 +15,29 @@ use craft\app\helpers\JsonHelper;
  * ReplaceFile represents a Replace File element action.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since  3.0
  */
 class ReplaceFile extends ElementAction
 {
-	// Public Methods
-	// =========================================================================
+    // Public Methods
+    // =========================================================================
 
-	/**
-	 * @inheritdoc
-	 */
-	public function getTriggerLabel()
-	{
-		return Craft::t('app', 'Replace file');
-	}
+    /**
+     * @inheritdoc
+     */
+    public function getTriggerLabel()
+    {
+        return Craft::t('app', 'Replace file');
+    }
 
-	/**
-	 * @inheritdoc
-	 */
-	public function getTriggerHtml()
-	{
-		$type = JsonHelper::encode(static::className());
+    /**
+     * @inheritdoc
+     */
+    public function getTriggerHtml()
+    {
+        $type = JsonHelper::encode(static::className());
 
-		$js = <<<EOT
+        $js = <<<EOT
 (function()
 {
 	var trigger = new Craft.ElementActionTrigger({
@@ -66,6 +66,6 @@ class ReplaceFile extends ElementAction
 })();
 EOT;
 
-		Craft::$app->getView()->registerJs($js);
-	}
+        Craft::$app->getView()->registerJs($js);
+    }
 }

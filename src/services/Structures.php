@@ -1,8 +1,8 @@
 <?php
 /**
- * @link http://buildwithcraft.com/
+ * @link      http://buildwithcraft.com/
  * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
- * @license http://buildwithcraft.com/license
+ * @license   http://buildwithcraft.com/license
  */
 
 namespace craft\app\services;
@@ -22,405 +22,418 @@ use yii\base\Component;
  * An instance of the Structures service is globally accessible in Craft via [[Application::structures `Craft::$app->getStructures()`]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since  3.0
  */
 class Structures extends Component
 {
-	// Constants
-	// =========================================================================
+    // Constants
+    // =========================================================================
 
-	/**
+    /**
      * @event MoveElementEvent The event that is triggered before an element is moved.
      *
      * You may set [[MoveElementEvent::performAction]] to `false` to prevent the element from getting moved.
      */
     const EVENT_BEFORE_MOVE_ELEMENT = 'beforeMoveElement';
 
-	/**
+    /**
      * @event MoveElementEvent The event that is triggered after an element is moved.
      */
     const EVENT_AFTER_MOVE_ELEMENT = 'afterMoveElement';
 
-	// Properties
-	// =========================================================================
+    // Properties
+    // =========================================================================
 
-	/**
-	 * @var
-	 */
-	private $_rootElementRecordsByStructureId;
+    /**
+     * @var
+     */
+    private $_rootElementRecordsByStructureId;
 
-	// Public Methods
-	// =========================================================================
+    // Public Methods
+    // =========================================================================
 
-	// Structure CRUD
-	// -------------------------------------------------------------------------
+    // Structure CRUD
+    // -------------------------------------------------------------------------
 
-	/**
-	 * Returns a structure by its ID.
-	 *
-	 * @param int $structureId
-	 *
-	 * @return StructureModel|null
-	 */
-	public function getStructureById($structureId)
-	{
-		$structureRecord = StructureRecord::findOne($structureId);
+    /**
+     * Returns a structure by its ID.
+     *
+     * @param int $structureId
+     *
+     * @return StructureModel|null
+     */
+    public function getStructureById($structureId)
+    {
+        $structureRecord = StructureRecord::findOne($structureId);
 
-		if ($structureRecord)
-		{
-			return StructureModel::create($structureRecord);
-		}
-	}
+        if ($structureRecord) {
+            return StructureModel::create($structureRecord);
+        }
+    }
 
-	/**
-	 * Saves a structure
-	 *
-	 * @param StructureModel $structure
-	 *
-	 * @throws Exception
-	 * @return bool
-	 */
-	public function saveStructure(StructureModel $structure)
-	{
-		if ($structure->id)
-		{
-			$structureRecord = StructureRecord::findOne($structure->id);
+    /**
+     * Saves a structure
+     *
+     * @param StructureModel $structure
+     *
+     * @throws Exception
+     * @return bool
+     */
+    public function saveStructure(StructureModel $structure)
+    {
+        if ($structure->id) {
+            $structureRecord = StructureRecord::findOne($structure->id);
 
-			if (!$structureRecord)
-			{
-				throw new Exception(Craft::t('app', 'No structure exists with the ID “{id}”.', ['id' => $structure->id]));
-			}
-		}
-		else
-		{
-			$structureRecord = new StructureRecord();
-		}
+            if (!$structureRecord) {
+                throw new Exception(Craft::t('app',
+                    'No structure exists with the ID “{id}”.',
+                    ['id' => $structure->id]));
+            }
+        } else {
+            $structureRecord = new StructureRecord();
+        }
 
-		$structureRecord->maxLevels = $structure->maxLevels;
+        $structureRecord->maxLevels = $structure->maxLevels;
 
-		$success = $structureRecord->save();
+        $success = $structureRecord->save();
 
-		if ($success)
-		{
-			$structure->id = $structureRecord->id;
-		}
-		else
-		{
-			$structure->addErrors($structureRecord->getErrors());
-		}
+        if ($success) {
+            $structure->id = $structureRecord->id;
+        } else {
+            $structure->addErrors($structureRecord->getErrors());
+        }
 
-		return $success;
-	}
+        return $success;
+    }
 
-	/**
-	 * Deletes a structure by its ID.
-	 *
-	 * @param int $structureId
-	 *
-	 * @return bool
-	 */
-	public function deleteStructureById($structureId)
-	{
-		if (!$structureId)
-		{
-			return false;
-		}
+    /**
+     * Deletes a structure by its ID.
+     *
+     * @param int $structureId
+     *
+     * @return bool
+     */
+    public function deleteStructureById($structureId)
+    {
+        if (!$structureId) {
+            return false;
+        }
 
-		$affectedRows = Craft::$app->getDb()->createCommand()->delete('{{%structures}}', [
-			'id' => $structureId
-		])->execute();
+        $affectedRows = Craft::$app->getDb()->createCommand()->delete('{{%structures}}',
+            [
+                'id' => $structureId
+            ])->execute();
 
-		return (bool) $affectedRows;
-	}
+        return (bool)$affectedRows;
+    }
 
-	/**
-	 * Returns the descendant level delta for a given element.
-	 *
-	 * @param int              $structureId
-	 * @param ElementInterface $element
-	 *
-	 * @return int
-	 */
-	public function getElementLevelDelta($structureId, ElementInterface $element)
-	{
-		$elementRecord = $this->_getElementRecord($structureId, $element);
-		$descendants = $elementRecord->descendants();
-		$criteria = $descendants->getDbCriteria();
-		$criteria->order = 'level desc';
-		$deepestDescendant = $descendants->find();
+    /**
+     * Returns the descendant level delta for a given element.
+     *
+     * @param int              $structureId
+     * @param ElementInterface $element
+     *
+     * @return int
+     */
+    public function getElementLevelDelta(
+        $structureId,
+        ElementInterface $element
+    ) {
+        $elementRecord = $this->_getElementRecord($structureId, $element);
+        $descendants = $elementRecord->descendants();
+        $criteria = $descendants->getDbCriteria();
+        $criteria->order = 'level desc';
+        $deepestDescendant = $descendants->find();
 
-		if ($deepestDescendant)
-		{
-			return $deepestDescendant->level - $elementRecord->level;
-		}
-		else
-		{
-			return 0;
-		}
-	}
+        if ($deepestDescendant) {
+            return $deepestDescendant->level - $elementRecord->level;
+        } else {
+            return 0;
+        }
+    }
 
-	// Moving elements around
-	// -------------------------------------------------------------------------
+    // Moving elements around
+    // -------------------------------------------------------------------------
 
-	/**
-	 * Prepends an element to another within a given structure.
-	 *
-	 * @param int              $structureId
-	 * @param ElementInterface $element
-	 * @param ElementInterface $parentElement
-	 * @param string           $mode          Whether this is an "insert", "update", or "auto".
-	 *
-	 * @return bool
-	 */
-	public function prepend($structureId, ElementInterface $element, ElementInterface $parentElement, $mode = 'auto')
-	{
-		$parentElementRecord = $this->_getElementRecord($structureId, $parentElement);
+    /**
+     * Prepends an element to another within a given structure.
+     *
+     * @param int              $structureId
+     * @param ElementInterface $element
+     * @param ElementInterface $parentElement
+     * @param string           $mode Whether this is an "insert", "update", or "auto".
+     *
+     * @return bool
+     */
+    public function prepend(
+        $structureId,
+        ElementInterface $element,
+        ElementInterface $parentElement,
+        $mode = 'auto'
+    ) {
+        $parentElementRecord = $this->_getElementRecord($structureId,
+            $parentElement);
 
-		return $this->_doIt($structureId, $element, $parentElementRecord, 'prependTo', $mode);
-	}
+        return $this->_doIt($structureId, $element, $parentElementRecord,
+            'prependTo', $mode);
+    }
 
-	/**
-	 * Appends an element to another within a given structure.
-	 *
-	 * @param int              $structureId
-	 * @param ElementInterface $element
-	 * @param ElementInterface $parentElement
-	 * @param string           $mode          Whether this is an "insert", "update", or "auto".
-	 *
-	 * @return bool
-	 */
-	public function append($structureId, ElementInterface $element, ElementInterface $parentElement, $mode = 'auto')
-	{
-		$parentElementRecord = $this->_getElementRecord($structureId, $parentElement);
+    /**
+     * Appends an element to another within a given structure.
+     *
+     * @param int              $structureId
+     * @param ElementInterface $element
+     * @param ElementInterface $parentElement
+     * @param string           $mode Whether this is an "insert", "update", or "auto".
+     *
+     * @return bool
+     */
+    public function append(
+        $structureId,
+        ElementInterface $element,
+        ElementInterface $parentElement,
+        $mode = 'auto'
+    ) {
+        $parentElementRecord = $this->_getElementRecord($structureId,
+            $parentElement);
 
-		return $this->_doIt($structureId, $element, $parentElementRecord, 'appendTo', $mode);
-	}
+        return $this->_doIt($structureId, $element, $parentElementRecord,
+            'appendTo', $mode);
+    }
 
-	/**
-	 * Prepends an element to the root of a given structure.
-	 *
-	 * @param int              $structureId
-	 * @param ElementInterface $element
-	 * @param string           $mode        Whether this is an "insert", "update", or "auto".
-	 *
-	 * @return bool
-	 */
-	public function prependToRoot($structureId, ElementInterface $element, $mode = 'auto')
-	{
-		$parentElementRecord = $this->_getRootElementRecord($structureId);
+    /**
+     * Prepends an element to the root of a given structure.
+     *
+     * @param int              $structureId
+     * @param ElementInterface $element
+     * @param string           $mode Whether this is an "insert", "update", or "auto".
+     *
+     * @return bool
+     */
+    public function prependToRoot(
+        $structureId,
+        ElementInterface $element,
+        $mode = 'auto'
+    ) {
+        $parentElementRecord = $this->_getRootElementRecord($structureId);
 
-		return $this->_doIt($structureId, $element, $parentElementRecord, 'prependTo', $mode);
-	}
+        return $this->_doIt($structureId, $element, $parentElementRecord,
+            'prependTo', $mode);
+    }
 
-	/**
-	 * Appends an element to the root of a given structure.
-	 *
-	 * @param int              $structureId
-	 * @param ElementInterface $element
-	 * @param string           $mode        Whether this is an "insert", "update", or "auto".
-	 *
-	 * @return bool
-	 */
-	public function appendToRoot($structureId, ElementInterface $element, $mode = 'auto')
-	{
-		$parentElementRecord = $this->_getRootElementRecord($structureId);
+    /**
+     * Appends an element to the root of a given structure.
+     *
+     * @param int              $structureId
+     * @param ElementInterface $element
+     * @param string           $mode Whether this is an "insert", "update", or "auto".
+     *
+     * @return bool
+     */
+    public function appendToRoot(
+        $structureId,
+        ElementInterface $element,
+        $mode = 'auto'
+    ) {
+        $parentElementRecord = $this->_getRootElementRecord($structureId);
 
-		return $this->_doIt($structureId, $element, $parentElementRecord, 'appendTo', $mode);
-	}
+        return $this->_doIt($structureId, $element, $parentElementRecord,
+            'appendTo', $mode);
+    }
 
-	/**
-	 * Moves an element before another within a given structure.
-	 *
-	 * @param int              $structureId
-	 * @param ElementInterface $element
-	 * @param ElementInterface $nextElement
-	 * @param string           $mode        Whether this is an "insert", "update", or "auto".
-	 *
-	 * @return bool
-	 */
-	public function moveBefore($structureId, ElementInterface $element, ElementInterface $nextElement, $mode = 'auto')
-	{
-		$nextElementRecord = $this->_getElementRecord($structureId, $nextElement);
+    /**
+     * Moves an element before another within a given structure.
+     *
+     * @param int              $structureId
+     * @param ElementInterface $element
+     * @param ElementInterface $nextElement
+     * @param string           $mode Whether this is an "insert", "update", or "auto".
+     *
+     * @return bool
+     */
+    public function moveBefore(
+        $structureId,
+        ElementInterface $element,
+        ElementInterface $nextElement,
+        $mode = 'auto'
+    ) {
+        $nextElementRecord = $this->_getElementRecord($structureId,
+            $nextElement);
 
-		return $this->_doIt($structureId, $element, $nextElementRecord, 'insertBefore', $mode);
-	}
+        return $this->_doIt($structureId, $element, $nextElementRecord,
+            'insertBefore', $mode);
+    }
 
-	/**
-	 * Moves an element after another within a given structure.
-	 *
-	 * @param int              $structureId
-	 * @param ElementInterface $element
-	 * @param ElementInterface $prevElement
-	 * @param string           $mode        Whether this is an "insert", "update", or "auto".
-	 *
-	 * @return bool
-	 */
-	public function moveAfter($structureId, ElementInterface $element, ElementInterface $prevElement, $mode = 'auto')
-	{
-		$prevElementRecord = $this->_getElementRecord($structureId, $prevElement);
+    /**
+     * Moves an element after another within a given structure.
+     *
+     * @param int              $structureId
+     * @param ElementInterface $element
+     * @param ElementInterface $prevElement
+     * @param string           $mode Whether this is an "insert", "update", or "auto".
+     *
+     * @return bool
+     */
+    public function moveAfter(
+        $structureId,
+        ElementInterface $element,
+        ElementInterface $prevElement,
+        $mode = 'auto'
+    ) {
+        $prevElementRecord = $this->_getElementRecord($structureId,
+            $prevElement);
 
-		return $this->_doIt($structureId, $element, $prevElementRecord, 'insertAfter', $mode);
-	}
+        return $this->_doIt($structureId, $element, $prevElementRecord,
+            'insertAfter', $mode);
+    }
 
-	// Private Methods
-	// =========================================================================
+    // Private Methods
+    // =========================================================================
 
-	/**
-	 * Returns a structure element record from given structure and element IDs.
-	 *
-	 * @param int              $structureId
-	 * @param ElementInterface $element
-	 *
-	 * @return StructureElementRecord|null
-	 */
-	private function _getElementRecord($structureId, ElementInterface $element)
-	{
-		$elementId = $element->id;
+    /**
+     * Returns a structure element record from given structure and element IDs.
+     *
+     * @param int              $structureId
+     * @param ElementInterface $element
+     *
+     * @return StructureElementRecord|null
+     */
+    private function _getElementRecord($structureId, ElementInterface $element)
+    {
+        $elementId = $element->id;
 
-		if ($elementId)
-		{
-			return StructureElementRecord::findOne([
-				'structureId' => $structureId,
-				'elementId'   => $elementId
-			]);
-		}
-	}
+        if ($elementId) {
+            return StructureElementRecord::findOne([
+                'structureId' => $structureId,
+                'elementId' => $elementId
+            ]);
+        }
+    }
 
-	/**
-	 * Returns the root node for a given structure ID, or creates one if it doesn't exist.
-	 *
-	 * @param int $structureId
-	 *
-	 * @return StructureElementRecord
-	 */
-	private function _getRootElementRecord($structureId)
-	{
-		if (!isset($this->_rootElementRecordsByStructureId[$structureId]))
-		{
-			$elementRecord = StructureElementRecord::find()
-				->where(['structureId' => $structureId])
-				->roots()
-				->one();
+    /**
+     * Returns the root node for a given structure ID, or creates one if it doesn't exist.
+     *
+     * @param int $structureId
+     *
+     * @return StructureElementRecord
+     */
+    private function _getRootElementRecord($structureId)
+    {
+        if (!isset($this->_rootElementRecordsByStructureId[$structureId])) {
+            $elementRecord = StructureElementRecord::find()
+                ->where(['structureId' => $structureId])
+                ->roots()
+                ->one();
 
-			if (!$elementRecord)
-			{
-				// Create it
-				$elementRecord = new StructureElementRecord();
-				$elementRecord->structureId = $structureId;
-				$elementRecord->makeRoot();
-			}
+            if (!$elementRecord) {
+                // Create it
+                $elementRecord = new StructureElementRecord();
+                $elementRecord->structureId = $structureId;
+                $elementRecord->makeRoot();
+            }
 
-			$this->_rootElementRecordsByStructureId[$structureId] = $elementRecord;
-		}
+            $this->_rootElementRecordsByStructureId[$structureId] = $elementRecord;
+        }
 
-		return $this->_rootElementRecordsByStructureId[$structureId];
-	}
+        return $this->_rootElementRecordsByStructureId[$structureId];
+    }
 
-	/**
-	 * Updates a ElementInterface with the new structure attributes from a StructureElement record.
-	 *
-	 * @param  int                    $structureId
-	 * @param  ElementInterface       $element
-	 * @param  StructureElementRecord $targetElementRecord
-	 * @param  string                 $action
-	 * @param  string                 $mode
-	 *
-	 * @throws \Exception
-	 * @return bool
-	 */
-	private function _doIt($structureId, ElementInterface $element, StructureElementRecord $targetElementRecord, $action, $mode)
-	{
-		// Figure out what we're doing
-		if ($mode != 'insert')
-		{
-			// See if there's an existing structure element record
-			$elementRecord = $this->_getElementRecord($structureId, $element);
+    /**
+     * Updates a ElementInterface with the new structure attributes from a StructureElement record.
+     *
+     * @param  int                    $structureId
+     * @param  ElementInterface       $element
+     * @param  StructureElementRecord $targetElementRecord
+     * @param  string                 $action
+     * @param  string                 $mode
+     *
+     * @throws \Exception
+     * @return bool
+     */
+    private function _doIt(
+        $structureId,
+        ElementInterface $element,
+        StructureElementRecord $targetElementRecord,
+        $action,
+        $mode
+    ) {
+        // Figure out what we're doing
+        if ($mode != 'insert') {
+            // See if there's an existing structure element record
+            $elementRecord = $this->_getElementRecord($structureId, $element);
 
-			if ($elementRecord)
-			{
-				$mode = 'update';
-			}
-		}
+            if ($elementRecord) {
+                $mode = 'update';
+            }
+        }
 
-		if (empty($elementRecord))
-		{
-			$elementRecord = new StructureElementRecord();
-			$elementRecord->structureId = $structureId;
-			$elementRecord->elementId   = $element->id;
+        if (empty($elementRecord)) {
+            $elementRecord = new StructureElementRecord();
+            $elementRecord->structureId = $structureId;
+            $elementRecord->elementId = $element->id;
 
-			$mode = 'insert';
-		}
+            $mode = 'insert';
+        }
 
-		$transaction = Craft::$app->getDb()->getTransaction() === null ? Craft::$app->getDb()->beginTransaction() : null;
-		try
-		{
-			if ($mode == 'update')
-			{
-				// Fire a 'beforeMoveElement' event
-				$event = new MoveElementEvent([
-					'structureId'  => $structureId,
-					'element'      => $element,
-				]);
+        $transaction = Craft::$app->getDb()->getTransaction() === null ? Craft::$app->getDb()->beginTransaction() : null;
+        try {
+            if ($mode == 'update') {
+                // Fire a 'beforeMoveElement' event
+                $event = new MoveElementEvent([
+                    'structureId' => $structureId,
+                    'element' => $element,
+                ]);
 
-				$this->trigger(static::EVENT_BEFORE_MOVE_ELEMENT, $event);
-			}
+                $this->trigger(static::EVENT_BEFORE_MOVE_ELEMENT, $event);
+            }
 
-			// Was there was no onBeforeMoveElement event, or is the event giving us the go-ahead?
-			if (!isset($event) || $event->performAction)
-			{
-				// Really do it
-				$success = $elementRecord->$action($targetElementRecord);
+            // Was there was no onBeforeMoveElement event, or is the event giving us the go-ahead?
+            if (!isset($event) || $event->performAction) {
+                // Really do it
+                $success = $elementRecord->$action($targetElementRecord);
 
-				// If it didn't work, rollback the transaction in case something changed in onBeforeMoveElement
-				if (!$success)
-				{
-					if ($transaction !== null)
-					{
-						$transaction->rollback();
-					}
+                // If it didn't work, rollback the transaction in case something changed in onBeforeMoveElement
+                if (!$success) {
+                    if ($transaction !== null) {
+                        $transaction->rollback();
+                    }
 
-					return false;
-				}
+                    return false;
+                }
 
-				$element->root  = $elementRecord->root;
-				$element->lft   = $elementRecord->lft;
-				$element->rgt   = $elementRecord->rgt;
-				$element->level = $elementRecord->level;
+                $element->root = $elementRecord->root;
+                $element->lft = $elementRecord->lft;
+                $element->rgt = $elementRecord->rgt;
+                $element->level = $elementRecord->level;
 
-				// Tell the element type about it
-				$element::onAfterMoveElementInStructure($element, $structureId);
-			}
-			else
-			{
-				$success = false;
-			}
+                // Tell the element type about it
+                $element::onAfterMoveElementInStructure($element, $structureId);
+            } else {
+                $success = false;
+            }
 
-			// Commit the transaction regardless of whether we moved the element, in case something changed
-			// in onBeforeMoveElement
-			if ($transaction !== null)
-			{
-				$transaction->commit();
-			}
-		}
-		catch (\Exception $e)
-		{
-			if ($transaction !== null)
-			{
-				$transaction->rollback();
-			}
+            // Commit the transaction regardless of whether we moved the element, in case something changed
+            // in onBeforeMoveElement
+            if ($transaction !== null) {
+                $transaction->commit();
+            }
+        } catch (\Exception $e) {
+            if ($transaction !== null) {
+                $transaction->rollback();
+            }
 
-			throw $e;
-		}
+            throw $e;
+        }
 
-		if ($success && $mode == 'update')
-		{
-			// Fire an 'afterMoveElement' event
-			$this->trigger(static::EVENT_AFTER_MOVE_ELEMENT, new MoveElementEvent([
-				'structureId'  => $structureId,
-				'element'      => $element,
-			]));
-		}
+        if ($success && $mode == 'update') {
+            // Fire an 'afterMoveElement' event
+            $this->trigger(static::EVENT_AFTER_MOVE_ELEMENT,
+                new MoveElementEvent([
+                    'structureId' => $structureId,
+                    'element' => $element,
+                ]));
+        }
 
-		return $success;
-	}
+        return $success;
+    }
 }

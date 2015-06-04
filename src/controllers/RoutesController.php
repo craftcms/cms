@@ -1,8 +1,8 @@
 <?php
 /**
- * @link http://buildwithcraft.com/
+ * @link      http://buildwithcraft.com/
  * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
- * @license http://buildwithcraft.com/license
+ * @license   http://buildwithcraft.com/license
  */
 
 namespace craft\app\controllers;
@@ -18,88 +18,84 @@ use craft\app\web\Controller;
  * Note that all actions in the controller require an authenticated Craft session via [[Controller::allowAnonymous]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since  3.0
  */
 class RoutesController extends Controller
 {
-	// Public Methods
-	// =========================================================================
+    // Public Methods
+    // =========================================================================
 
-	/**
-	 * @inheritdoc
-	 * @throws HttpException if the user isn’t an admin
-	 */
-	public function init()
-	{
-		// All route actions require an admin
-		$this->requireAdmin();
-	}
+    /**
+     * @inheritdoc
+     * @throws HttpException if the user isn’t an admin
+     */
+    public function init()
+    {
+        // All route actions require an admin
+        $this->requireAdmin();
+    }
 
-	/**
-	 * Saves a new or existing route.
-	 *
-	 * @return null
-	 */
-	public function actionSaveRoute()
-	{
-		$this->requirePostRequest();
-		$this->requireAjaxRequest();
+    /**
+     * Saves a new or existing route.
+     *
+     * @return null
+     */
+    public function actionSaveRoute()
+    {
+        $this->requirePostRequest();
+        $this->requireAjaxRequest();
 
-		$urlParts = Craft::$app->getRequest()->getRequiredBodyParam('url');
-		$template = Craft::$app->getRequest()->getRequiredBodyParam('template');
-		$routeId  = Craft::$app->getRequest()->getBodyParam('routeId');
-		$locale   = Craft::$app->getRequest()->getBodyParam('locale');
+        $urlParts = Craft::$app->getRequest()->getRequiredBodyParam('url');
+        $template = Craft::$app->getRequest()->getRequiredBodyParam('template');
+        $routeId = Craft::$app->getRequest()->getBodyParam('routeId');
+        $locale = Craft::$app->getRequest()->getBodyParam('locale');
 
-		if ($locale === '')
-		{
-			$locale = null;
-		}
+        if ($locale === '') {
+            $locale = null;
+        }
 
-		$routeRecord = Craft::$app->getRoutes()->saveRoute($urlParts, $template, $routeId, $locale);
+        $routeRecord = Craft::$app->getRoutes()->saveRoute($urlParts, $template,
+            $routeId, $locale);
 
-		if ($routeRecord->hasErrors())
-		{
-			return $this->asJson(['errors' => $routeRecord->getErrors()]);
-		}
-		else
-		{
-			return $this->asJson([
-				'success' => true,
-				'routeId' => $routeRecord->id,
-				'locale'  => $routeRecord->locale
-			]);
-		}
-	}
+        if ($routeRecord->hasErrors()) {
+            return $this->asJson(['errors' => $routeRecord->getErrors()]);
+        } else {
+            return $this->asJson([
+                'success' => true,
+                'routeId' => $routeRecord->id,
+                'locale' => $routeRecord->locale
+            ]);
+        }
+    }
 
-	/**
-	 * Deletes a route.
-	 *
-	 * @return null
-	 */
-	public function actionDeleteRoute()
-	{
-		$this->requirePostRequest();
+    /**
+     * Deletes a route.
+     *
+     * @return null
+     */
+    public function actionDeleteRoute()
+    {
+        $this->requirePostRequest();
 
-		$routeId = Craft::$app->getRequest()->getRequiredBodyParam('routeId');
-		Craft::$app->getRoutes()->deleteRouteById($routeId);
+        $routeId = Craft::$app->getRequest()->getRequiredBodyParam('routeId');
+        Craft::$app->getRoutes()->deleteRouteById($routeId);
 
-		return $this->asJson(['success' => true]);
-	}
+        return $this->asJson(['success' => true]);
+    }
 
-	/**
-	 * Updates the route order.
-	 *
-	 * @return null
-	 */
-	public function actionUpdateRouteOrder()
-	{
-		$this->requirePostRequest();
-		$this->requireAjaxRequest();
+    /**
+     * Updates the route order.
+     *
+     * @return null
+     */
+    public function actionUpdateRouteOrder()
+    {
+        $this->requirePostRequest();
+        $this->requireAjaxRequest();
 
-		$routeIds = Craft::$app->getRequest()->getRequiredBodyParam('routeIds');
-		Craft::$app->getRoutes()->updateRouteOrder($routeIds);
+        $routeIds = Craft::$app->getRequest()->getRequiredBodyParam('routeIds');
+        Craft::$app->getRoutes()->updateRouteOrder($routeIds);
 
-		return $this->asJson(['success' => true]);
-	}
-
+        return $this->asJson(['success' => true]);
+    }
 }

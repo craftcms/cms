@@ -1,8 +1,8 @@
 <?php
 /**
- * @link http://buildwithcraft.com/
+ * @link      http://buildwithcraft.com/
  * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
- * @license http://buildwithcraft.com/license
+ * @license   http://buildwithcraft.com/license
  */
 
 namespace craft\app\console\controllers;
@@ -40,161 +40,151 @@ use yii\helpers\Console;
  * ~~~
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since  3.0
  */
 class MigrateController extends BaseMigrateController
 {
-	// Properties
-	// =========================================================================
+    // Properties
+    // =========================================================================
 
-	/**
-	 * @var string|PluginInterface|Plugin The handle of the plugin to use during migration operations, or the plugin itself
-	 */
-	public $plugin;
+    /**
+     * @var string|PluginInterface|Plugin The handle of the plugin to use during migration operations, or the plugin itself
+     */
+    public $plugin;
 
-	/**
-	 * @var MigrationManager The migration manager that will be used in this request
-	 */
-	private $_migrator;
+    /**
+     * @var MigrationManager The migration manager that will be used in this request
+     */
+    private $_migrator;
 
-	// Public Methods
-	// =========================================================================
+    // Public Methods
+    // =========================================================================
 
-	/**
-	 * @inheritdoc
-	 */
-	public function init()
-	{
-		parent::init();
-		$this->templateFile = Craft::getAlias('@app/updates/migrationtemplate').'.php';
-	}
+    /**
+     * @inheritdoc
+     */
+    public function init()
+    {
+        parent::init();
+        $this->templateFile = Craft::getAlias('@app/updates/migrationtemplate').'.php';
+    }
 
-	/**
-	 * @inheritdoc
-	 */
-	public function options($actionID)
-	{
-		return array_merge(
-			parent::options($actionID),
-			['plugin']
-		);
-	}
+    /**
+     * @inheritdoc
+     */
+    public function options($actionID)
+    {
+        return array_merge(
+            parent::options($actionID),
+            ['plugin']
+        );
+    }
 
-	/**
-	 * @inheritdoc
-	 * @throws Exception if the 'plugin' option isn't valid
-	 */
-	public function beforeAction($action)
-	{
-		if (parent::beforeAction($action))
-		{
-			if (is_string($this->plugin))
-			{
-				$this->plugin = Craft::$app->getPlugins()->getPlugin($this->plugin);
+    /**
+     * @inheritdoc
+     * @throws Exception if the 'plugin' option isn't valid
+     */
+    public function beforeAction($action)
+    {
+        if (parent::beforeAction($action)) {
+            if (is_string($this->plugin)) {
+                $this->plugin = Craft::$app->getPlugins()->getPlugin($this->plugin);
 
-				if ($this->plugin === null)
-				{
-					throw new Exception("The 'plugin' option must be set to an installed and enabled plugin's handle.");
-				}
-			}
+                if ($this->plugin === null) {
+                    throw new Exception("The 'plugin' option must be set to an installed and enabled plugin's handle.");
+                }
+            }
 
-			$this->migrationPath = $this->getMigrator()->migrationPath;
+            $this->migrationPath = $this->getMigrator()->migrationPath;
 
-			return true;
-		}
-		else
-		{
-			return false;
-		}
-	}
+            return true;
+        } else {
+            return false;
+        }
+    }
 
-	/**
-	 * @inheritdoc
-	 */
-	public function actionCreate($name)
-	{
-		if (!preg_match('/^\w+$/', $name))
-		{
-			throw new Exception("The migration name should contain letters, digits and/or underscore characters only.");
-		}
+    /**
+     * @inheritdoc
+     */
+    public function actionCreate($name)
+    {
+        if (!preg_match('/^\w+$/', $name)) {
+            throw new Exception("The migration name should contain letters, digits and/or underscore characters only.");
+        }
 
-		$name = 'm'.gmdate('ymd_His').'_'.$name;
-		$file = $this->migrationPath.DIRECTORY_SEPARATOR.$name.'.php';
+        $name = 'm'.gmdate('ymd_His').'_'.$name;
+        $file = $this->migrationPath.DIRECTORY_SEPARATOR.$name.'.php';
 
-		if ($this->confirm("Create new migration '$file'?"))
-		{
-			$content = $this->renderFile(Craft::getAlias($this->templateFile), [
-				'namespace' => $this->getMigrator()->migrationNamespace,
-				'className' => $name
-			]);
+        if ($this->confirm("Create new migration '$file'?")) {
+            $content = $this->renderFile(Craft::getAlias($this->templateFile), [
+                'namespace' => $this->getMigrator()->migrationNamespace,
+                'className' => $name
+            ]);
 
-			IOHelper::writeToFile($file, $content);
-			$this->stdout("New migration created successfully.\n", Console::FG_GREEN);
-		}
-	}
+            IOHelper::writeToFile($file, $content);
+            $this->stdout("New migration created successfully.\n",
+                Console::FG_GREEN);
+        }
+    }
 
-	// Protected Methods
-	// =========================================================================
+    // Protected Methods
+    // =========================================================================
 
-	/**
-	 * Returns the migration manager that should be used for this request
-	 *
-	 * @return MigrationManager
-	 */
-	protected function getMigrator()
-	{
-		if ($this->_migrator === null)
-		{
-			if ($this->plugin !== null)
-			{
-				$this->_migrator = $this->plugin->getMigrator();
-			}
-			else
-			{
-				$this->_migrator = Craft::$app->getMigrator();
-			}
-		}
+    /**
+     * Returns the migration manager that should be used for this request
+     *
+     * @return MigrationManager
+     */
+    protected function getMigrator()
+    {
+        if ($this->_migrator === null) {
+            if ($this->plugin !== null) {
+                $this->_migrator = $this->plugin->getMigrator();
+            } else {
+                $this->_migrator = Craft::$app->getMigrator();
+            }
+        }
 
-		return $this->_migrator;
-	}
+        return $this->_migrator;
+    }
 
-	/**
-	 * @inheritdoc
-	 */
-	protected function createMigration($class)
-	{
-		return $this->getMigrator()->createMigration($class);
-	}
+    /**
+     * @inheritdoc
+     */
+    protected function createMigration($class)
+    {
+        return $this->getMigrator()->createMigration($class);
+    }
 
-	/**
-	 * @inheritdoc
-	 */
-	protected function getNewMigrations()
-	{
-		return $this->getMigrator()->getNewMigrations();
-	}
+    /**
+     * @inheritdoc
+     */
+    protected function getNewMigrations()
+    {
+        return $this->getMigrator()->getNewMigrations();
+    }
 
-	/**
-	 * @inheritdoc
-	 */
-	protected function getMigrationHistory($limit)
-	{
-		return $this->getMigrator()->getMigrationHistory($limit);
-	}
+    /**
+     * @inheritdoc
+     */
+    protected function getMigrationHistory($limit)
+    {
+        return $this->getMigrator()->getMigrationHistory($limit);
+    }
 
-	/**
-	 * @inheritdoc
-	 */
-	protected function addMigrationHistory($version)
-	{
-		$this->getMigrator()->addMigrationHistory($version);
-	}
+    /**
+     * @inheritdoc
+     */
+    protected function addMigrationHistory($version)
+    {
+        $this->getMigrator()->addMigrationHistory($version);
+    }
 
-	/**
-	 * @inheritdoc
-	 */
-	protected function removeMigrationHistory($version)
-	{
-		$this->getMigrator()->removeMigrationHistory($version);
-	}
+    /**
+     * @inheritdoc
+     */
+    protected function removeMigrationHistory($version)
+    {
+        $this->getMigrator()->removeMigrationHistory($version);
+    }
 }

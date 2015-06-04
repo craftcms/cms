@@ -1,8 +1,8 @@
 <?php
 /**
- * @link http://buildwithcraft.com/
+ * @link      http://buildwithcraft.com/
  * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
- * @license http://buildwithcraft.com/license
+ * @license   http://buildwithcraft.com/license
  */
 
 namespace craft\app\migrations;
@@ -27,27 +27,27 @@ use craft\app\helpers\MigrationHelper;
 use yii\db\Schema;
 
 /**
- * <?= $className ?> migration.
- */
+* <?= $className ?> migration.
+*/
 class <?= $className ?> extends Migration
 {
-	// Public Methods
-	// =========================================================================
+// Public Methods
+// =========================================================================
 
-	/**
-	 * @inheritdoc
-	 */
-	public function safeUp()
-	{
-		// Place migration code here...
-	}
+/**
+* @inheritdoc
+*/
+public function safeUp()
+{
+// Place migration code here...
+}
 
-	/**
-	 * @inheritdoc
-	 */
-	public function safeDown()
-	{
-		echo "<?= $className ?> cannot be reverted.\n";
-		return false;
-	}
+/**
+* @inheritdoc
+*/
+public function safeDown()
+{
+echo "<?= $className ?> cannot be reverted.\n";
+return false;
+}
 }
