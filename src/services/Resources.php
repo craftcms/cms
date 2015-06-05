@@ -106,15 +106,15 @@ class Resources extends Component
                             return false;
                         }
 
-                        $size = AssetsHelper::cleanAssetName($segs[2], false);
+                        $size = AssetsHelper::prepareAssetName($segs[2], false);
                         // Looking for either a numeric size or "original" keyword
                         if (!is_numeric($size) && $size != "original") {
                             return false;
                         }
 
-                        $username = AssetsHelper::cleanAssetName($segs[1],
+                        $username = AssetsHelper::prepareAssetName($segs[1],
                             false);
-                        $filename = AssetsHelper::cleanAssetName($segs[3]);
+                        $filename = AssetsHelper::prepareAssetName($segs[3]);
 
                         $userPhotosPath = Craft::$app->getPath()->getUserPhotosPath().'/'.$username;
                         $sizedPhotoFolder = $userPhotosPath.'/'.$size;
