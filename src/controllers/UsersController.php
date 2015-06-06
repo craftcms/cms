@@ -963,7 +963,7 @@ class UsersController extends Controller
             // Make sure a file was uploaded
             if (!empty($file['name']) && !empty($file['size'])) {
                 $user = Craft::$app->getUsers()->getUserById($userId);
-                $userName = AssetsHelper::cleanAssetName($user->username,
+                $userName = AssetsHelper::prepareAssetName($user->username,
                     false);
 
                 $folderPath = Craft::$app->getPath()->getTempUploadsPath().'/userphotos/'.$userName;
@@ -971,7 +971,7 @@ class UsersController extends Controller
                 IOHelper::clearFolder($folderPath);
 
                 IOHelper::ensureFolderExists($folderPath);
-                $filename = AssetsHelper::cleanAssetName($file['name']);
+                $filename = AssetsHelper::prepareAssetName($file['name']);
 
                 move_uploaded_file($file['tmp_name'],
                     $folderPath.'/'.$filename);
@@ -1044,7 +1044,7 @@ class UsersController extends Controller
             $source = UrlHelper::stripQueryString($source);
 
             $user = Craft::$app->getUsers()->getUserById($userId);
-            $userName = AssetsHelper::cleanAssetName($user->username, false);
+            $userName = AssetsHelper::prepareAssetName($user->username, false);
 
             // make sure that this is this user's file
             $imagePath = Craft::$app->getPath()->getTempUploadsPath().'/userphotos/'.$userName.'/'.$source;
