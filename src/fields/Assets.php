@@ -47,6 +47,14 @@ class Assets extends BaseRelationField
         return Asset::className();
     }
 
+    /**
+     * @inheritdoc
+     */
+    public static function defaultSelectionLabel()
+    {
+        return Craft::t('app', 'Add an asset');
+    }
+
     // Properties
     // =========================================================================
 
@@ -104,14 +112,6 @@ class Assets extends BaseRelationField
 
     // Public Methods
     // =========================================================================
-
-    /**
-     * @inheritdoc
-     */
-    public function getAddButtonLabel()
-    {
-        return Craft::t('app', 'Add an asset');
-    }
 
     /**
      * @inheritdoc

@@ -59,16 +59,35 @@ class Paginate
     {
         if ($page >= 1 && $page <= $this->totalPages) {
             $path = \Craft::$app->getRequest()->getPathInfo();
+            $params = [];
 
             if ($page != 1) {
-                if ($path) {
-                    $path .= '/';
+                $pageTrigger = \Craft::$app->getConfig()->get('pageTrigger');
+
+                if (!is_string($pageTrigger) || !strlen($pageTrigger)) {
+                    $pageTrigger = 'p';
                 }
 
-                $path .= \Craft::$app->getConfig()->get('pageTrigger').$page;
+                // Is this query string-based pagination?
+                if ($pageTrigger[0] === '?') {
+                    $pageTrigger = trim($pageTrigger, '?=');
+
+                    if ($pageTrigger === 'p') {
+                        // Avoid conflict with the main 'p' param
+                        $pageTrigger = 'pg';
+                    }
+
+                    $params = [$pageTrigger => $page];
+                } else {
+                    if ($path) {
+                        $path .= '/';
+                    }
+
+                    $path .= $pageTrigger.$page;
+                }
             }
 
-            return UrlHelper::getUrl($path);
+            return UrlHelper::getUrl($path, $params);
         }
     }
 

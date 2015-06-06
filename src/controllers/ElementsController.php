@@ -147,7 +147,8 @@ class ElementsController extends BaseElementsController
      */
     public function actionGetCategoriesInputHtml()
     {
-        $categoryIds = Craft::$app->getRequest()->getParam('categoryIds', []);
+        $request = Craft::$app->getRequest();
+        $categoryIds = $request->getParam('categoryIds', []);
 
         // Fill in the gaps
         $categoryIds = Craft::$app->getCategories()->fillGapsInCategoryIds($categoryIds);
@@ -155,10 +156,10 @@ class ElementsController extends BaseElementsController
         if ($categoryIds) {
             $categories = Category::find()
                 ->id($categoryIds)
-                ->locale(Craft::$app->getRequest()->getParam('locale'))
+                ->locale($request->getParam('locale'))
                 ->status(null)
                 ->localeEnabled(false)
-                ->limit(Craft::$app->getRequest()->getParam('limit'))
+                ->limit($request->getParam('limit'))
                 ->all();
         } else {
             $categories = [];
@@ -167,8 +168,9 @@ class ElementsController extends BaseElementsController
         $html = Craft::$app->getView()->renderTemplate('_components/fieldtypes/Categories/input',
             [
                 'elements' => $categories,
-                'id' => Craft::$app->getRequest()->getParam('id'),
-                'name' => Craft::$app->getRequest()->getParam('name'),
+                'id' => $request->getParam('id'),
+                'name' => $request->getParam('name'),
+                'selectionLabel' => $request->getParam('selectionLabel'),
             ]);
 
         return $this->asJson([

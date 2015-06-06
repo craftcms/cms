@@ -51,6 +51,18 @@ class Sections extends Component
     const EVENT_AFTER_SAVE_SECTION = 'afterSaveSection';
 
     /**
+     * @event SectionEvent The event that is triggered before a section is deleted.
+     *
+     * You may set [[SectionEvent::performAction]] to `false` to prevent the section from getting deleted.
+     */
+    const EVENT_BEFORE_DELETE_SECTION = 'beforeDeleteSection';
+
+    /**
+     * @event SectionEvent The event that is triggered after a section is deleted.
+     */
+    const EVENT_AFTER_DELETE_SECTION = 'afterDeleteSection';
+
+    /**
      * @event EntryTypeEvent The event that is triggered before an entry type is saved.
      *
      * You may set [[EntryTypeEvent::performAction]] to `false` to prevent the entry type from getting saved.
@@ -629,10 +641,7 @@ class Sections extends Component
 
                     switch ($section->type) {
                         case Section::TYPE_SINGLE: {
-                            // In a nut, we want to make sure that there is one and only one Entry Type and Entry for this
-                            // section. We also want to make sure the entry has rows in the i18n tables
-                            // for each of the sections' locales.
-
+                            // Make sure that there is one and only one Entry Type and Entry for this section.
                             $singleEntryId = null;
 
                             if (!$isNewSection) {
@@ -681,21 +690,11 @@ class Sections extends Component
 
                             if (!$singleEntryId) {
                                 // Create it, baby
-
-                                Craft::$app->getDb()->createCommand()->insert('{{%elements}}',
-                                    [
-                                        'type' => Entry::className()
-                                    ])->execute();
-
-                                $singleEntryId = Craft::$app->getDb()->getLastInsertID();
-
-                                Craft::$app->getDb()->createCommand()->insert('{{%entries}}',
-                                    [
-                                        'id' => $singleEntryId,
-                                        'sectionId' => $section->id,
-                                        'typeId' => $entryTypeId,
-                                        'postDate' => DateTimeHelper::currentTimeForDb()
-                                    ])->execute();
+                                $singleEntry = new Entry();
+                                $singleEntry->sectionId = $section->id;
+                                $singleEntry->typeId = $entryTypeId;
+                                $singleEntry->getContent()->title = $section->name;
+                                Craft::$app->getEntries()->saveEntry($singleEntry);
                             }
 
                             break;
@@ -792,6 +791,24 @@ class Sections extends Component
             return false;
         }
 
+        $section = $this->getSectionById($sectionId);
+
+        if (!$section) {
+            return false;
+        }
+
+        // Fire a 'beforeDeleteSection' event
+        $event = new SectionEvent([
+            'section' => $section
+        ]);
+
+        $this->trigger(static::EVENT_BEFORE_DELETE_SECTION, $event);
+
+        // Make sure the event is giving us the go ahead
+        if (!$event->performAction) {
+            return false;
+        }
+
         $transaction = Craft::$app->getDb()->getTransaction() === null ? Craft::$app->getDb()->beginTransaction() : null;
         try {
             // Grab the entry ids so we can clean the elements table.
@@ -815,14 +832,19 @@ class Sections extends Component
             }
 
             // Delete the section.
-            $affectedRows = Craft::$app->getDb()->createCommand()->delete('{{%sections}}',
+            Craft::$app->getDb()->createCommand()->delete('{{%sections}}',
                 ['id' => $sectionId])->execute();
 
             if ($transaction !== null) {
                 $transaction->commit();
             }
 
-            return (bool)$affectedRows;
+            // Fire an 'afterDeleteSection' event
+            $this->trigger(static::EVENT_AFTER_DELETE_SECTION, new SectionEvent([
+                'section' => $section
+            ]));
+
+            return true;
         } catch (\Exception $e) {
             if ($transaction !== null) {
                 $transaction->rollback();

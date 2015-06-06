@@ -40,6 +40,14 @@ class Tags extends BaseRelationField
         return Tag::className();
     }
 
+    /**
+     * @inheritdoc
+     */
+    public static function defaultSelectionLabel()
+    {
+        return Craft::t('app', 'Add a tag');
+    }
+
     // Properties
     // =========================================================================
 
@@ -68,14 +76,6 @@ class Tags extends BaseRelationField
     /**
      * @inheritdoc
      */
-    public function getAddButtonLabel()
-    {
-        return Craft::t('app', 'Add a tag');
-    }
-
-    /**
-     * @inheritdoc
-     */
     public function getInputHtml($value, $element)
     {
         if (!($value instanceof ElementQueryInterface)) {
@@ -95,6 +95,7 @@ class Tags extends BaseRelationField
                     'elements' => $value,
                     'tagGroupId' => $this->_getTagGroupId(),
                     'sourceElementId' => (!empty($element) ? $element->id : null),
+                    'selectionLabel'  => $this->selectionLabel,
                 ]);
         } else {
             return '<p class="error">'.Craft::t('app',

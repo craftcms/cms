@@ -11,6 +11,12 @@ use Craft;
 use craft\app\errors\Exception;
 use craft\app\helpers\ImageHelper;
 use craft\app\helpers\IOHelper;
+use Imagine\Image\AbstractFont;
+use Imagine\Image\FontInterface;
+use Imagine\Image\ImageInterface;
+use Imagine\Image\ImagineInterface;
+use Imagine\Image\Palette\RGB;
+use Imagine\Image\Point;
 
 /**
  * Class Image
@@ -44,14 +50,24 @@ class Image
     private $_quality = 0;
 
     /**
-     * @var \Imagine\Image\ImageInterface
+     * @var ImageInterface
      */
     private $_image;
 
     /**
-     * @var \Imagine\Image\ImagineInterface
+     * @var ImagineInterface
      */
     private $_instance;
+
+    /**
+     * @var RGB
+     */
+    private $_palette;
+
+    /**
+     * @var FontInterface|AbstractFont
+     */
+    private $_font;
 
     // Public Methods
     // =========================================================================
@@ -164,7 +180,7 @@ class Image
 
             // Create a new image instance to avoid object references messing up our dimensions.
             $newSize = new \Imagine\Image\Box($width, $height);
-            $startingPoint = new \Imagine\Image\Point($x1, $y1);
+            $startingPoint = new Point($x1, $y1);
             $gif = $this->_instance->create($newSize);
             $gif->layers()->remove(0);
 
@@ -175,7 +191,7 @@ class Image
 
             $this->_image = $gif;
         } else {
-            $this->_image->crop(new \Imagine\Image\Point($x1, $y1),
+            $this->_image->crop(new Point($x1, $y1),
                 new \Imagine\Image\Box($width, $height));
         }
 
@@ -422,6 +438,63 @@ class Image
         }
     }
 
+    /**
+     * Sets properties for text drawing on the image.
+     *
+     * @param string $fontFile Path to the font file on server
+     * @param int    $size     Font size to use
+     * @param string $color    Font color to use in hex format
+     *
+     * @return null
+     */
+    public function setFontProperties($fontFile, $size, $color)
+    {
+        if (empty($this->_palette)) {
+            $this->_palette = new RGB();
+        }
+
+        $this->_font = $this->_instance->font($fontFile, $size, $this->_palette->color($color));
+    }
+
+    /**
+     * Returns the bounding text box for a text string and an angle.
+     *
+     * @param string  $text
+     * @param integer $angle
+     *
+     * @throws Exception
+     * @return \Imagine\Image\BoxInterface
+     */
+    public function getTextBox($text, $angle = 0)
+    {
+        if (empty($this->_font)) {
+            throw new Exception('No font properties have been set. Call Image::setFontProperties() first.');
+        }
+
+        return $this->_font->box($text, $angle);
+    }
+
+    /**
+     * Writes text on an image.
+     *
+     * @param string  $text
+     * @param integer $x
+     * @param integer $y
+     * @param integer $angle
+     *
+     * @return null
+     * @throws Exception
+     */
+    public function writeText($text, $x, $y, $angle = 0)
+    {
+        if (empty($this->_font)) {
+            throw new Exception('No font properties have been set. Call Image::setFontProperties() first.');
+        }
+
+        $point = new Point($x, $y);
+        $this->_image->draw()->text($text, $this->_font, $point, $angle);
+    }
+
     // Private Methods
     // =========================================================================
 
@@ -515,7 +588,7 @@ class Image
      */
     private function _getResizeFilter()
     {
-        return (Craft::$app->getImages()->isGd() ? \Imagine\Image\ImageInterface::FILTER_UNDEFINED : \Imagine\Image\ImageInterface::FILTER_LANCZOS);
+        return (Craft::$app->getImages()->isGd() ? ImageInterface::FILTER_UNDEFINED : ImageInterface::FILTER_LANCZOS);
     }
 
     /**

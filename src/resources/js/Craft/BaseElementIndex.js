@@ -536,7 +536,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 			source:              this.instanceState.selectedSource,
 			status:              this.status,
 			viewState:           this.getSelectedSourceState(),
-			search:              (this.$search ? this.$search.val() : null)
+			search:              (this.searching ? this.$search.val() : null)
 		};
 
 		// Possible that the order/sort isn't entirely accurate if we're sorting by Score
@@ -1296,8 +1296,16 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
 	getDefaultSort: function()
 	{
-		// Default to whatever's first
-		return [this.$sortAttributesList.find('a:first').data('attr'), 'asc'];
+		// Does the source specify what to do?
+		if (Garnish.hasAttr(this.$source, 'data-default-sort'))
+		{
+			return this.$source.attr('data-default-sort').split(':');
+		}
+		else
+		{
+			// Default to whatever's first
+			return [this.$sortAttributesList.find('a:first').data('attr'), 'asc'];
+		}
 	},
 
 	getViewModesForSource: function()

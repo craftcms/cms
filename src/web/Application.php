@@ -43,6 +43,14 @@ class Application extends \yii\web\Application
 
     use ApplicationTrait;
 
+    // Constants
+    // =========================================================================
+
+    /**
+     * @event EditionChangeEvent The event that is triggered after the edition changes
+     */
+    const EVENT_AFTER_EDITION_CHANGE = 'afterEditionChange';
+
     // Public Methods
     // =========================================================================
 
@@ -121,7 +129,13 @@ class Application extends \yii\web\Application
             HeaderHelper::setHeader(['X-Content-Type-Options' => 'nosniff']);
         }
 
-        HeaderHelper::setHeader(array('X-Powered-By' => 'Craft CMS'));
+        // Send the X-Powered-By header?
+        if ($this->getConfig()->get('sendPoweredByHeader')) {
+            HeaderHelper::setHeader(['X-Powered-By' => 'Craft CMS']);
+        } else {
+            // In case PHP is already setting one
+            HeaderHelper::removeHeader('X-Powered-By');
+        }
 
         // If the system in is maintenance mode and it's a site request, throw a 503.
         if ($this->isInMaintenanceMode() && $request->getIsSiteRequest()) {
@@ -321,6 +335,10 @@ class Application extends \yii\web\Application
      */
     public function getTranslatedBrowserLanguage()
     {
+        if ($this->getRequest()->getIsConsoleRequest()) {
+            return false;
+        }
+
         $browserLanguages = $this->getRequest()->getAcceptableLanguages();
 
         if ($browserLanguages) {

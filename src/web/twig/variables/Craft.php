@@ -25,6 +25,7 @@ use yii\di\ServiceLocator;
  * @property App             $app
  * @property Config          $config
  * @property Elements        $elements
+ * @property CategoryGroups  $categoryGroups
  * @property Cp              $cp
  * @property Dashboard       $dashboard
  * @property Deprecator      $deprecator
@@ -64,6 +65,7 @@ class Craft extends ServiceLocator
             'app' => 'craft\app\web\twig\variables\App',
             'config' => 'craft\app\web\twig\variables\Config',
             'elements' => 'craft\app\web\twig\variables\Elements',
+            'categoryGroups' => 'craft\app\web\twig\variables\CategoryGroups',
             'cp' => 'craft\app\web\twig\variables\Cp',
             'dashboard' => 'craft\app\web\twig\variables\Dashboard',
             'deprecator' => 'craft\app\web\twig\variables\Deprecator',

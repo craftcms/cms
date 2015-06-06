@@ -39,6 +39,14 @@ class Categories extends BaseRelationField
         return Category::className();
     }
 
+    /**
+     * @inheritdoc
+     */
+    public static function defaultSelectionLabel()
+    {
+        return Craft::t('app', 'Add a category');
+    }
+
     // Properties
     // =========================================================================
 
@@ -72,14 +80,6 @@ class Categories extends BaseRelationField
 
     // Public Methods
     // =========================================================================
-
-    /**
-     * @inheritdoc
-     */
-    public function getAddButtonLabel()
-    {
-        return Craft::t('app', 'Add a category');
-    }
 
     /**
      * @inheritdoc

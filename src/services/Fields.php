@@ -316,39 +316,53 @@ class Fields extends Component
     }
 
     /**
-     * Returns all fields.
+     * Returns all fields within a field context(s).
      *
-     * @param string|null $indexBy The attribute to index the fields by
+     * @param string|null          $indexBy The field property to index the resulting fields by
+     * @param string|string[]|null $context The field context(s) to fetch fields from. Defaults to {@link ContentService::$fieldContext}.
      *
      * @return FieldInterface[]|Field[] The fields
      */
-    public function getAllFields($indexBy = null)
+    public function getAllFields($indexBy = null, $context = null)
     {
-        $context = Craft::$app->getContent()->fieldContext;
+        if ($context === null) {
+            $context = [Craft::$app->getContent()->fieldContext];
+        } else if (!is_array($context)) {
+            $context = [$context];
+        }
 
-        if (!isset($this->_allFieldsInContext[$context])) {
-            $results = $this->_createFieldQuery()
-                ->where('context = :context', [':context' => $context])
-                ->all();
+        $missingContexts = [];
 
-            $this->_allFieldsInContext[$context] = [];
-
-            foreach ($results as $result) {
-                $field = $this->createField($result);
-
-                $this->_allFieldsInContext[$context][] = $field;
-                $this->_fieldsById[$field->id] = $field;
-                $this->_fieldsByContextAndHandle[$context][$field->handle] = $field;
+        foreach ($context as $c) {
+            if (!isset($this->_allFieldsInContext[$c])) {
+                $missingContexts[] = $c;
+                $this->_allFieldsInContext[$c] = [];
             }
         }
 
-        if (!$indexBy) {
-            $fields = $this->_allFieldsInContext[$context];
-        } else {
-            $fields = [];
+        if (!empty($missingContexts)) {
+            $rows = $this->_createFieldQuery()
+                ->where(['in', 'context', $missingContexts])
+                ->all();
 
-            foreach ($this->_allFieldsInContext[$context] as $field) {
-                $fields[$field->$indexBy] = $field;
+            foreach ($rows as $row) {
+                $field = $this->createField($row);
+
+                $this->_allFieldsInContext[$field->context][] = $field;
+                $this->_fieldsById[$field->id] = $field;
+                $this->_fieldsByContextAndHandle[$field->context][$field->handle] = $field;
+            }
+        }
+
+        $fields = [];
+
+        foreach ($context as $c) {
+            if (!$indexBy) {
+                $fields = array_merge($fields, $this->_allFieldsInContext[$c]);
+            } else {
+                foreach ($this->_allFieldsInContext[$c] as $field) {
+                    $fields[$field->$indexBy] = $field;
+                }
             }
         }
 

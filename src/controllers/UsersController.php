@@ -782,9 +782,9 @@ class UsersController extends Controller
 
         // Are they allowed to set a new password?
         if ($thisIsPublicRegistration) {
-            $user->newPassword = Craft::$app->getRequest()->getBodyParam('password');
+            $user->newPassword = Craft::$app->getRequest()->getBodyParam('password', '');
         } else if ($isCurrentUser) {
-            // If the password input was empty, pretend it didn't exist
+            // If there was a newPassword input but it was empty, pretend it didn't exist
             $user->newPassword = Craft::$app->getRequest()->getBodyParam('newPassword') ?: null;
         }
 
@@ -909,9 +909,6 @@ class UsersController extends Controller
                 $user->email = $originalEmail;
             }
 
-            Craft::$app->getSession()->setNotice(Craft::t('app',
-                'User saved.'));
-
             // Is this public registration, and is the user going to be activated automatically?
             if ($thisIsPublicRegistration && $user->status == User::STATUS_ACTIVE) {
                 // Do we need to auto-login?
@@ -921,16 +918,27 @@ class UsersController extends Controller
                 }
             }
 
-            return $this->redirectToPostedUrl($user);
+            if (Craft::$app->getRequest()->getIsAjax()) {
+                return $this->asJson([
+                    'success' => true,
+                    'id' => $user->id
+                ]);
+            } else {
+                Craft::$app->getSession()->setNotice(Craft::t('app', 'User saved.'));
+                return $this->redirectToPostedUrl($user);
+            }
         } else {
-            Craft::$app->getSession()->setError(Craft::t('app',
-                'Couldn’t save user.'));
-        }
+            if (Craft::$app->getRequest()->getIsAjax()) {
+                return $this->asErrorJson(Craft::t('app', 'Couldn’t save user.'));
+            } else {
+                Craft::$app->getSession()->setError(Craft::t('app', 'Couldn’t save user.'));
 
-        // Send the account back to the template
-        Craft::$app->getUrlManager()->setRouteParams([
-            'user' => $user
-        ]);
+                // Send the account back to the template
+                Craft::$app->getUrlManager()->setRouteParams([
+                    'user' => $user
+                ]);
+            }
+        }
     }
 
     /**
@@ -1105,6 +1113,8 @@ class UsersController extends Controller
      * Sends a new activation email to a user.
      *
      * @return null
+     * @throws Exception
+     * @throws HttpException
      */
     public function actionSendActivationEmail()
     {
@@ -1120,6 +1130,11 @@ class UsersController extends Controller
 
         if (!$user) {
             $this->_noUserExists($userId);
+        }
+
+        // Only allow activation emails to be send to pending users.
+        if ($user->getStatus() !== User::STATUS_PENDING) {
+            throw new Exception(Craft::t('app', 'Invalid account status for user ID “{id}”.', ['id' => $userId]));
         }
 
         Craft::$app->getUsers()->sendActivationEmail($user);
@@ -1343,10 +1358,6 @@ class UsersController extends Controller
     private function _handleInvalidLogin($authError = null, User $user = null)
     {
         switch ($authError) {
-            case User::AUTH_INVALID_CREDENTIALS: {
-                $message = Craft::t('app', 'Invalid username or password.');
-                break;
-            }
             case User::AUTH_PENDING_VERIFICATION: {
                 $message = Craft::t('app', 'Account has not been activated.');
                 break;
@@ -1389,7 +1400,11 @@ class UsersController extends Controller
                 break;
             }
             default: {
-                $message = Craft::t('app', 'Invalid username or password.');
+                if (Craft::$app->getConfig()->get('useEmailAsUsername')) {
+                    $message = Craft::t('app', 'Invalid email or password.');
+                } else {
+                    $message = Craft::t('app', 'Invalid username or password.');
+                }
             }
         }
 

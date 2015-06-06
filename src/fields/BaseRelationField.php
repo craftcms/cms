@@ -44,6 +44,28 @@ abstract class BaseRelationField extends Field
     {
     }
 
+    /**
+     * @inheritdoc
+     */
+    public static function populateModel($model, $config)
+    {
+        if (!isset($config['selectionLabel'])) {
+            $config['selectionLabel'] = static::defaultSelectionLabel();
+        }
+
+        parent::populateModel($model, $config);
+    }
+
+    /**
+     * Returns the default [[selectionLabel]] value.
+     *
+     * @return string The default selection label
+     */
+    public static function defaultSelectionLabel()
+    {
+        return Craft::t('app', 'Choose');
+    }
+
     // Properties
     // =========================================================================
 
@@ -66,6 +88,11 @@ abstract class BaseRelationField extends Field
      * @var integer The maximum number of relations this field can have (used if [[allowLimit]] is set to true)
      */
     public $limit;
+
+    /**
+     * @var string The label that should be used on the selection input
+     */
+    public $selectionLabel;
 
     /**
      * @var string|null The JS class that should be initialized for the input
@@ -110,6 +137,7 @@ abstract class BaseRelationField extends Field
         $attributes[] = 'source';
         $attributes[] = 'targetLocale';
         $attributes[] = 'limit';
+        $attributes[] = 'selectionLabel';
 
         return $attributes;
     }
@@ -146,13 +174,6 @@ abstract class BaseRelationField extends Field
 
         parent::afterSave();
     }
-
-    /**
-     * Returns the label for the "Add" button.
-     *
-     * @return string
-     */
-    abstract public function getAddButtonLabel();
 
     /**
      * @inheritdoc
@@ -358,7 +379,7 @@ abstract class BaseRelationField extends Field
             'criteria' => $selectionCriteria,
             'sourceElementId' => (!empty($element->id) ? $element->id : null),
             'limit' => ($this->allowLimit ? $this->limit : null),
-            'addButtonLabel' => $this->getAddButtonLabel(),
+            'selectionLabel' => $this->selectionLabel,
         ];
     }
 

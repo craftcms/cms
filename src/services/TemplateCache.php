@@ -117,6 +117,11 @@ class TemplateCache extends Component
      */
     public function getTemplateCache($key, $global)
     {
+        // Make sure template caching is enabled
+        if ($this->_isTemplateCachingEnabled() === false) {
+            return;
+        }
+
         // Take the opportunity to delete any expired caches
         $this->deleteExpiredCachesIfOverdue();
 
@@ -154,6 +159,11 @@ class TemplateCache extends Component
      */
     public function startTemplateCache($key)
     {
+        // Make sure template caching is enabled
+        if ($this->_isTemplateCachingEnabled() === false) {
+            return;
+        }
+
         // Is this the first time we've started caching?
         if ($this->_cacheQueryParams === null) {
             Event::on(ElementQuery::className(),
@@ -177,6 +187,11 @@ class TemplateCache extends Component
      */
     public function includeElementQueryInTemplateCaches(Event $event)
     {
+        // Make sure template caching is enabled
+        if ($this->_isTemplateCachingEnabled() === false) {
+            return;
+        }
+
         if (!empty($this->_cacheQueryParams)) {
             /** @var ElementQuery $query */
             $query = $event->sender;
@@ -198,6 +213,11 @@ class TemplateCache extends Component
      */
     public function includeElementInTemplateCaches($elementId)
     {
+        // Make sure template caching is enabled
+        if ($this->_isTemplateCachingEnabled() === false) {
+            return;
+        }
+
         if (!empty($this->_cacheElementIds)) {
             foreach (array_keys($this->_cacheElementIds) as $cacheKey) {
                 if (array_search($elementId,
@@ -228,6 +248,11 @@ class TemplateCache extends Component
         $expiration,
         $body
     ) {
+        // Make sure template caching is enabled
+        if ($this->_isTemplateCachingEnabled() === false) {
+            return;
+        }
+
         // If there are any transform generation URLs in the body, don't cache it.
         // Can't use getResourceUrl() here because that will append ?d= or ?x= to the URL.
         if (StringHelper::contains($body,
@@ -329,7 +354,7 @@ class TemplateCache extends Component
      */
     public function deleteCacheById($cacheId)
     {
-        if ($this->_deletedAllCaches) {
+        if ($this->_deletedAllCaches || $this->_isTemplateCachingEnabled() === false) {
             return false;
         }
 
@@ -356,7 +381,7 @@ class TemplateCache extends Component
      */
     public function deleteCachesByElementType($elementType)
     {
-        if ($this->_deletedAllCaches || !empty($this->_deletedCachesByElementType[$elementType])) {
+        if ($this->_deletedAllCaches || !empty($this->_deletedCachesByElementType[$elementType]) || $this->_isTemplateCachingEnabled() === false) {
             return false;
         }
 
@@ -385,7 +410,7 @@ class TemplateCache extends Component
      */
     public function deleteCachesByElement($elements)
     {
-        if ($this->_deletedAllCaches) {
+        if ($this->_deletedAllCaches || $this->_isTemplateCachingEnabled() === false) {
             return false;
         }
 
@@ -425,7 +450,7 @@ class TemplateCache extends Component
         $elementId,
         $deleteQueryCaches = true
     ) {
-        if ($this->_deletedAllCaches) {
+        if ($this->_deletedAllCaches || $this->_isTemplateCachingEnabled() === false) {
             return false;
         }
 
@@ -494,7 +519,7 @@ class TemplateCache extends Component
      */
     public function deleteCachesByElementQuery(ElementQuery $query)
     {
-        if ($this->_deletedAllCaches) {
+        if ($this->_deletedAllCaches || $this->_isTemplateCachingEnabled() === false) {
             return false;
         }
 
@@ -507,13 +532,40 @@ class TemplateCache extends Component
     }
 
     /**
+     * Deletes a cache by its key(s).
+     *
+     * @param int|array $key The cache key(s) to delete.
+     *
+     * @return boolean
+     */
+    public function deleteCachesByKey($key)
+    {
+        if ($this->_deletedAllCaches || $this->_isTemplateCachingEnabled() === false) {
+            return false;
+        }
+
+        if (is_array($key)) {
+            $condition = ['in', 'cacheKey', $key];
+            $params = [];
+        } else {
+            $condition = 'cacheKey = :cacheKey';
+            $params = [':cacheKey' => $key];
+        }
+
+        $affectedRows = Craft::$app->getDb()->createCommand()->delete(
+            static::$_templateCachesTable, $condition, $params)->execute();
+
+        return (bool) $affectedRows;
+    }
+
+    /**
      * Deletes any expired caches.
      *
      * @return bool
      */
     public function deleteExpiredCaches()
     {
-        if ($this->_deletedAllCaches || $this->_deletedExpiredCaches) {
+        if ($this->_deletedAllCaches || $this->_deletedExpiredCaches || $this->_isTemplateCachingEnabled() === false) {
             return false;
         }
 
@@ -535,7 +587,7 @@ class TemplateCache extends Component
     public function deleteExpiredCachesIfOverdue()
     {
         // Ignore if we've already done this once during the request
-        if ($this->_deletedExpiredCaches) {
+        if ($this->_deletedExpiredCaches || $this->_isTemplateCachingEnabled() === false) {
             return false;
         }
 
@@ -562,7 +614,7 @@ class TemplateCache extends Component
      */
     public function deleteAllCaches()
     {
-        if ($this->_deletedAllCaches) {
+        if ($this->_deletedAllCaches || $this->_isTemplateCachingEnabled() === false) {
             return false;
         }
 
@@ -575,6 +627,20 @@ class TemplateCache extends Component
 
     // Private Methods
     // =========================================================================
+
+    /**
+     * Returns whether template caching is enabled, based on the 'enableTemplateCaching' config setting.
+     *
+     * @return boolean Whether template caching is enabled
+     */
+    private function _isTemplateCachingEnabled()
+    {
+        if (Craft::$app->getConfig()->get('enableTemplateCaching')) {
+            return true;
+        } else {
+            return false;
+        }
+    }
 
     /**
      * Returns the current request path, including a "site:" or "cp:" prefix.
@@ -596,11 +662,9 @@ class TemplateCache extends Component
                 $this->_path .= '/'.Craft::$app->getConfig()->get('pageTrigger').$pageNum;
             }
 
-            if ($queryString = Craft::$app->getRequest()->getQueryString()) {
-                // Strip the path param
-                $pathParam = Craft::$app->getConfig()->get('pathParam');
-                $queryString = trim(preg_replace('/'.preg_quote($pathParam,
-                        '/').'=[^&]*/', '', $queryString), '&');
+            // Get the querystring without the path param.
+            if ($queryString = Craft::$app->getRequest()->getQueryStringWithoutPath()) {
+                $queryString = trim($queryString, '&');
 
                 if ($queryString) {
                     $this->_path .= '?'.$queryString;

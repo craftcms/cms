@@ -12,7 +12,8 @@ use craft\app\db\Query;
 use craft\app\errors\Exception;
 use craft\app\events\CategoryEvent;
 use craft\app\elements\Category;
-use craft\app\models\CategoryGroup as CategoryGroupModel;
+use craft\app\events\CategoryGroupEvent;
+use craft\app\models\CategoryGroup;
 use craft\app\models\CategoryGroupLocale as CategoryGroupLocaleModel;
 use craft\app\models\Structure as StructureModel;
 use craft\app\records\Category as CategoryRecord;
@@ -55,6 +56,16 @@ class Categories extends Component
      */
     const EVENT_AFTER_DELETE_CATEGORY = 'afterDeleteCategory';
 
+    /**
+     * @event CategoryGroupEvent The event that is triggered before a category group is deleted.
+     */
+    const EVENT_BEFORE_DELETE_GROUP = 'beforeDeleteGroup';
+
+    /**
+     * @event CategoryGroupEvent The event that is triggered after a category group is deleted.
+     */
+    const EVENT_AFTER_DELETE_GROUP = 'afterDeleteGroup';
+
     // Properties
     // =========================================================================
 
@@ -87,7 +98,7 @@ class Categories extends Component
     /**
      * Returns all of the group IDs.
      *
-     * @return array
+     * @return integer[]
      */
     public function getAllGroupIds()
     {
@@ -108,7 +119,7 @@ class Categories extends Component
     /**
      * Returns all of the category group IDs that are editable by the current user.
      *
-     * @return array
+     * @return integer[]
      */
     public function getEditableGroupIds()
     {
@@ -130,7 +141,7 @@ class Categories extends Component
      *
      * @param string|null $indexBy
      *
-     * @return array
+     * @return CategoryGroup[]
      */
     public function getAllGroups($indexBy = null)
     {
@@ -171,7 +182,7 @@ class Categories extends Component
      *
      * @param string|null $indexBy
      *
-     * @return array
+     * @return CategoryGroup[]
      */
     public function getEditableGroups($indexBy = null)
     {
@@ -194,7 +205,7 @@ class Categories extends Component
     /**
      * Gets the total number of category groups.
      *
-     * @return int
+     * @return integer
      */
     public function getTotalGroups()
     {
@@ -206,7 +217,7 @@ class Categories extends Component
      *
      * @param int $groupId
      *
-     * @return CategoryGroupModel|null
+     * @return CategoryGroup|null
      */
     public function getGroupById($groupId)
     {
@@ -233,7 +244,7 @@ class Categories extends Component
      *
      * @param string $groupHandle
      *
-     * @return CategoryGroupModel|null
+     * @return CategoryGroup|null
      */
     public function getGroupByHandle($groupHandle)
     {
@@ -255,7 +266,7 @@ class Categories extends Component
      * @param int         $groupId
      * @param string|null $indexBy
      *
-     * @return array
+     * @return CategoryGroupLocaleModel[]
      */
     public function getGroupLocales($groupId, $indexBy = null)
     {
@@ -274,13 +285,13 @@ class Categories extends Component
     /**
      * Saves a category group.
      *
-     * @param CategoryGroupModel $group
+     * @param CategoryGroup $group
      *
-     * @return bool
+     * @return boolean
      * @throws Exception
      * @throws \Exception
      */
-    public function saveGroup(CategoryGroupModel $group)
+    public function saveGroup(CategoryGroup $group)
     {
         if ($group->id) {
             $groupRecord = CategoryGroupRecord::findOne($group->id);
@@ -291,7 +302,7 @@ class Categories extends Component
                     ['id' => $group->id]));
             }
 
-            $oldCategoryGroup = CategoryGroupModel::create($groupRecord);
+            $oldCategoryGroup = CategoryGroup::create($groupRecord);
             $isNewCategoryGroup = false;
         } else {
             $groupRecord = new CategoryGroupRecord();
@@ -520,11 +531,29 @@ class Categories extends Component
      * @param int $groupId
      *
      * @throws \Exception
-     * @return bool
+     * @return boolean
      */
     public function deleteGroupById($groupId)
     {
         if (!$groupId) {
+            return false;
+        }
+
+        $group = $this->getGroupById($groupId);
+
+        if (!$group) {
+            return false;
+        }
+
+        // Fire a 'beforeDeleteGroup' event
+        $event = new CategoryGroupEvent([
+            'categoryGroup' => $group
+        ]);
+
+        $this->trigger(static::EVENT_BEFORE_DELETE_GROUP, $event);
+
+        // Make sure the event is giving us the go ahead
+        if (!$event->performAction) {
             return false;
         }
 
@@ -550,14 +579,19 @@ class Categories extends Component
 
             Craft::$app->getElements()->deleteElementById($categoryIds);
 
-            $affectedRows = Craft::$app->getDb()->createCommand()->delete('{{%categorygroups}}',
+            Craft::$app->getDb()->createCommand()->delete('{{%categorygroups}}',
                 ['id' => $groupId])->execute();
 
             if ($transaction !== null) {
                 $transaction->commit();
             }
 
-            return (bool)$affectedRows;
+            // Fire an 'afterDeleteGroup' event
+            $this->trigger(static::EVENT_AFTER_DELETE_GROUP, new CategoryGroupEvent([
+                'categoryGroup' => $group
+            ]));
+
+            return true;
         } catch (\Exception $e) {
             if ($transaction !== null) {
                 $transaction->rollback();
@@ -570,11 +604,11 @@ class Categories extends Component
     /**
      * Returns whether a group’s categories have URLs, and if the group’s template path is valid.
      *
-     * @param CategoryGroupModel $group
+     * @param CategoryGroup $group
      *
-     * @return bool
+     * @return boolean
      */
-    public function isGroupTemplateValid(CategoryGroupModel $group)
+    public function isGroupTemplateValid(CategoryGroup $group)
     {
         if ($group->hasUrls) {
             // Set Craft to the site template path
@@ -740,7 +774,7 @@ class Categories extends Component
     /**
      * Deletes a category(s).
      *
-     * @param Category|array $categories
+     * @param Category|Category[] $categories
      *
      * @throws \Exception
      * @return bool
@@ -788,9 +822,9 @@ class Categories extends Component
     /**
      * Deletes an category(s) by its ID.
      *
-     * @param int|array $categoryId
+     * @param integer|integer[] $categoryId
      *
-     * @return bool
+     * @return boolean
      */
     public function deleteCategoryById($categoryId)
     {
@@ -815,9 +849,9 @@ class Categories extends Component
     /**
      * Updates a list of category IDs, filling in any gaps in the family tree.
      *
-     * @param array $ids The original list of category IDs
+     * @param integer[] $ids The original list of category IDs
      *
-     * @return array The list of category IDs with all the gaps filled in.
+     * @return integer[] The list of category IDs with all the gaps filled in.
      */
     public function fillGapsInCategoryIds($ids)
     {
@@ -858,11 +892,11 @@ class Categories extends Component
     // =========================================================================
 
     /**
-     * Creates a CategoryGroupModel with attributes from a CategoryGroupRecord.
+     * Creates a CategoryGroup with attributes from a CategoryGroupRecord.
      *
      * @param CategoryGroupRecord|null $groupRecord
      *
-     * @return CategoryGroupModel|null
+     * @return CategoryGroup|null
      */
     private function _createCategoryGroupFromRecord($groupRecord)
     {
@@ -870,7 +904,7 @@ class Categories extends Component
             return null;
         }
 
-        $group = CategoryGroupModel::create($groupRecord);
+        $group = CategoryGroup::create($groupRecord);
 
         if ($groupRecord->structure) {
             $group->maxLevels = $groupRecord->structure->maxLevels;
@@ -928,8 +962,8 @@ class Categories extends Component
     /**
      * Deletes categories, and their descendants.
      *
-     * @param array $categories
-     * @param bool  $deleteDescendants
+     * @param Category[] $categories
+     * @param boolean    $deleteDescendants
      *
      * @return bool
      */

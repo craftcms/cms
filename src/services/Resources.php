@@ -443,8 +443,8 @@ class Resources extends Component
 
         // Determine the closest source size
         $sourceSizes = [
-            ['size' => 40, 'extSize' => 7, 'extY' => 32],
-            ['size' => 350, 'extSize' => 60, 'extY' => 280],
+            ['size' => 40, 'extSize' => 7, 'extY' => 25],
+            ['size' => 350, 'extSize' => 60, 'extY' => 220],
         ];
 
         foreach ($sourceSizes as $sourceSize) {
@@ -460,33 +460,27 @@ class Resources extends Component
 
         if (!IOHelper::fileExists($sourceIconLocation)) {
             $sourceFile = Craft::$app->getPath()->getAppPath().'/resources/images/fileicons/'.$sourceSize['size'].'.png';
-            $image = \imagecreatefrompng($sourceFile);
+            $image = Craft::$app->getImages()->loadImage($sourceFile);
 
             // Text placement.
             if ($ext) {
-                $color = \imagecolorallocate($image, 153, 153, 153);
-                $text = StringHelper::toUpperCase($ext);
                 $font = Craft::$app->getPath()->getResourcesPath().'/fonts/helveticaneue-webfont.ttf';
 
-                // Get the bounding box so we can calculate the position
-                $box = \imagettfbbox($sourceSize['extSize'], 0, $font, $text);
-                $width = $box[4] - $box[0];
+                $image->setFontProperties($font, $sourceSize['extSize'], "#999");
+                $text = StringHelper::toUpperCase($ext);
+
+                $box = $image->getTextBox($text);
+                $width = $box->getWidth();
 
                 // place the text in the center-bottom-ish of the image
-                \imagettftext($image, $sourceSize['extSize'], 0,
-                    ceil(($sourceSize['size'] - $width) / 2),
-                    $sourceSize['extY'], $color, $font, $text);
+                $x = ceil(($sourceSize['size'] - $width) / 2);
+                $y = $sourceSize['extY'];
+                $image->writeText($text, $x, $y);
             }
-
-            // Preserve transparency
-            \imagealphablending($image, false);
-            $color = \imagecolorallocatealpha($image, 0, 0, 0, 127);
-            \imagefill($image, 0, 0, $color);
-            \imagesavealpha($image, true);
 
             // Make sure we have a folder to save to and save it.
             IOHelper::ensureFolderExists($sourceFolder);
-            \imagepng($image, $sourceIconLocation);
+            $image->saveAs($sourceIconLocation);
         }
 
         if ($size != $sourceSize['size']) {

@@ -14,8 +14,8 @@ use craft\app\events\DraftEvent;
 use craft\app\events\EntryEvent;
 use craft\app\helpers\JsonHelper;
 use craft\app\elements\Entry;
-use craft\app\models\EntryDraft as EntryDraftModel;
-use craft\app\models\EntryVersion as EntryVersionModel;
+use craft\app\models\EntryDraft;
+use craft\app\models\EntryVersion;
 use craft\app\models\Section;
 use craft\app\records\EntryDraft as EntryDraftRecord;
 use craft\app\records\EntryVersion as EntryVersionRecord;
@@ -71,14 +71,14 @@ class EntryRevisions extends Component
      *
      * @param int $draftId
      *
-     * @return EntryDraftModel|null
+     * @return EntryDraft|null
      */
     public function getDraftById($draftId)
     {
         $draftRecord = EntryDraftRecord::findOne($draftId);
 
         if ($draftRecord) {
-            $draft = EntryDraftModel::create($draftRecord);
+            $draft = EntryDraft::create($draftRecord);
 
             // This is a little hacky, but fixes a bug where entries are getting the wrong URL when a draft is published
             // inside of a structured section since the selected URL Format depends on the entry's level, and there's no
@@ -101,7 +101,7 @@ class EntryRevisions extends Component
      * @param int    $entryId
      * @param string $localeId
      *
-     * @return array
+     * @return EntryDraft[]
      */
     public function getDraftsByEntryId($entryId, $localeId = null)
     {
@@ -125,7 +125,7 @@ class EntryRevisions extends Component
             // Don't initialize the content
             unset($result['data']['fields']);
 
-            $drafts[] = EntryDraftModel::create($result);
+            $drafts[] = EntryDraft::create($result);
         }
 
         return $drafts;
@@ -137,7 +137,7 @@ class EntryRevisions extends Component
      * @param int    $entryId
      * @param string $localeId
      *
-     * @return array
+     * @return EntryDraft[]
      */
     public function getEditableDraftsByEntryId($entryId, $localeId = null)
     {
@@ -160,11 +160,11 @@ class EntryRevisions extends Component
     /**
      * Saves a draft.
      *
-     * @param EntryDraftModel $draft
+     * @param EntryDraft $draft
      *
      * @return bool
      */
-    public function saveDraft(EntryDraftModel $draft)
+    public function saveDraft(EntryDraft $draft)
     {
         $draftRecord = $this->_getDraftRecord($draft);
 
@@ -203,11 +203,11 @@ class EntryRevisions extends Component
     /**
      * Publishes a draft.
      *
-     * @param EntryDraftModel $draft
+     * @param EntryDraft $draft
      *
      * @return bool
      */
-    public function publishDraft(EntryDraftModel $draft)
+    public function publishDraft(EntryDraft $draft)
     {
         // If this is a single, we'll have to set the title manually
         if ($draft->getSection()->type == Section::TYPE_SINGLE) {
@@ -237,9 +237,13 @@ class EntryRevisions extends Component
     /**
      * Deletes a draft by it's model.
      *
-     * @param EntryDraftModel $draft
+     * @param EntryDraft $draft
+     *
+     * @return bool
+     * @throws \Exception
+     * @throws \yii\db\Exception
      */
-    public function deleteDraft(EntryDraftModel $draft)
+    public function deleteDraft(EntryDraft $draft)
     {
         $transaction = Craft::$app->getDb()->getTransaction() === null ? Craft::$app->getDb()->beginTransaction() : null;
 
@@ -289,27 +293,28 @@ class EntryRevisions extends Component
      *
      * @param int $versionId
      *
-     * @return EntryDraftModel|null
+     * @return EntryVersion|null
      */
     public function getVersionById($versionId)
     {
         $versionRecord = EntryVersionRecord::findOne($versionId);
 
         if ($versionRecord) {
-            return EntryVersionModel::create($versionRecord);
+            return EntryVersion::create($versionRecord);
         }
     }
 
     /**
      * Returns versions by an entry ID.
      *
-     * @param int      $entryId
-     * @param string   $localeId
-     * @param int|null $limit
+     * @param int      $entryId        The entry ID to search for.
+     * @param string   $localeId       The locale ID to search for.
+     * @param int|null $limit          The limit on the number of versions to retrieve.
+     * @param bool     $includeCurrent Whether to include the current "top" version of the entry.
      *
-     * @return array
+     * @return EntryVersion[]
      */
-    public function getVersionsByEntryId($entryId, $localeId, $limit = null)
+    public function getVersionsByEntryId($entryId, $localeId, $limit = null, $includeCurrent = false)
     {
         if (!$localeId) {
             $localeId = Craft::$app->getI18n()->getPrimarySiteLocale();
@@ -323,7 +328,7 @@ class EntryRevisions extends Component
             ->where(['and', 'entryId = :entryId', 'locale = :locale'],
                 [':entryId' => $entryId, ':locale' => $localeId])
             ->orderBy('dateCreated desc')
-            ->offset(1)
+            ->offset($includeCurrent ? 0 : 1)
             ->limit($limit)
             ->all();
 
@@ -333,7 +338,7 @@ class EntryRevisions extends Component
             // Don't initialize the content
             unset($result['data']['fields']);
 
-            $versions[] = EntryVersionModel::create($result);
+            $versions[] = EntryVersion::create($result);
         }
 
         return $versions;
@@ -372,11 +377,11 @@ class EntryRevisions extends Component
     /**
      * Reverts an entry to a version.
      *
-     * @param EntryVersionModel $version
+     * @param EntryVersion $version
      *
      * @return bool
      */
-    public function revertEntryToVersion(EntryVersionModel $version)
+    public function revertEntryToVersion(EntryVersion $version)
     {
         // If this is a single, we'll have to set the title manually
         if ($version->getSection()->type == Section::TYPE_SINGLE) {
@@ -406,12 +411,12 @@ class EntryRevisions extends Component
     /**
      * Returns a draft record.
      *
-     * @param EntryDraftModel $draft
+     * @param EntryDraft $draft
      *
      * @throws Exception
      * @return EntryDraftRecord
      */
-    private function _getDraftRecord(EntryDraftModel $draft)
+    private function _getDraftRecord(EntryDraft $draft)
     {
         if ($draft->draftId) {
             $draftRecord = EntryDraftRecord::findOne($draft->draftId);
@@ -435,7 +440,7 @@ class EntryRevisions extends Component
     /**
      * Returns an array of all the revision data for a draft or version.
      *
-     * @param EntryDraftModel|EntryVersionModel $revision
+     * @param EntryDraft|EntryVersion $revision
      *
      * @return array
      */

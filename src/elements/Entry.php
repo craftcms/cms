@@ -138,7 +138,8 @@ class Entry extends Element
                 'criteria' => [
                     'sectionId' => $sectionIds,
                     'editable' => $editable
-                ]
+                ],
+                'defaultSort' => ['postDate', 'desc']
             ]
         ];
 
@@ -148,7 +149,8 @@ class Entry extends Element
                 'criteria' => [
                     'sectionId' => $singleSectionIds,
                     'editable' => $editable
-                ]
+                ],
+                'defaultSort' => ['title', 'asc']
             ];
         }
 
@@ -177,8 +179,11 @@ class Entry extends Element
                     ];
 
                     if ($type == Section::TYPE_STRUCTURE) {
+                        $sources[$key]['defaultSort'] = ['structure', 'asc'];
                         $sources[$key]['structureId'] = $section->structureId;
                         $sources[$key]['structureEditable'] = Craft::$app->getUser()->checkPermission('publishEntries:'.$section->id);
+                    } else {
+                        $sources[$key]['defaultSort'] = ['postDate', 'desc'];
                     }
                 }
             }

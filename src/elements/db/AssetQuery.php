@@ -7,6 +7,7 @@
 
 namespace craft\app\elements\db;
 
+use Craft;
 use craft\app\base\Volume;
 use craft\app\db\Query;
 use craft\app\elements\Asset;
@@ -71,6 +72,11 @@ class AssetQuery extends ElementQuery
      * @var mixed The Date Modified that the resulting assets must have.
      */
     public $dateModified;
+
+    /**
+     * @var boolean Whether the query should search the subfolders of [[folderId]].
+     */
+    public $includeSubfolders = false;
 
     // Public Methods
     // =========================================================================
@@ -258,6 +264,20 @@ class AssetQuery extends ElementQuery
         return $this;
     }
 
+    /**
+     * Sets the [[includeSubfolders]] property.
+     *
+     * @param boolean $value The property value (defaults to true)
+     *
+     * @return static The query object itself
+     */
+    public function includeSubfolders($value = true)
+    {
+        $this->includeSubfolders = $value;
+
+        return $this;
+    }
+
     // Protected Methods
     // =========================================================================
 
@@ -290,8 +310,15 @@ class AssetQuery extends ElementQuery
         }
 
         if ($this->folderId) {
-            $this->subQuery->andWhere(DbHelper::parseParam('assets.folderId',
-                $this->folderId, $this->subQuery->params));
+            if ($this->includeSubfolders) {
+                $folders = Craft::$app->getAssets()->getAllDescendantFolders(
+                    Craft::$app->getAssets()->getFolderById($this->folderId));
+                $this->subQuery->andWhere(DbHelper::parseParam('assetfiles.folderId',
+                    array_keys($folders), $this->subQuery->params));
+            } else {
+                $this->subQuery->andWhere(DbHelper::parseParam('assets.folderId',
+                    $this->folderId, $this->subQuery->params));
+            }
         }
 
         if ($this->filename) {

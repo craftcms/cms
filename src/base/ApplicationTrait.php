@@ -15,6 +15,7 @@ use craft\app\db\Query;
 use craft\app\enums\ConfigCategory;
 use craft\app\errors\DbConnectException;
 use craft\app\errors\Exception;
+use craft\app\events\EditionChangeEvent;
 use craft\app\helpers\AppHelper;
 use craft\app\helpers\DateTimeHelper;
 use craft\app\helpers\DbHelper;
@@ -209,6 +210,11 @@ trait ApplicationTrait
                             __METHOD__);
                     }
 
+                    // If they've set a default CP language, use it here.
+                    if ($defaultCpLanguage = Craft::$app->getConfig()->get('defaultCpLanguage')) {
+                        return $defaultCpLanguage;
+                    }
+
                     // Otherwise check if the browser's preferred language matches any of the site locales
                     if (!$request->getIsConsoleRequest()) {
                         $browserLanguages = $request->getAcceptableLanguages();
@@ -365,9 +371,19 @@ trait ApplicationTrait
     {
         /* @var $this \craft\app\web\Application|\craft\app\console\Application */
         $info = $this->getInfo();
+        $oldEdition = $info->edition;
         $info->edition = $edition;
 
-        return $this->saveInfo($info);
+        $success = $this->saveInfo($info);
+
+        if ($success === true && !$this->getRequest()->getIsConsoleRequest()) {
+            $this->trigger(static::EVENT_AFTER_EDITION_CHANGE, new EditionChangeEvent([
+                'oldEdition' => $oldEdition,
+                'newEdition' => $edition
+            ]));
+        }
+
+        return $success;
     }
 
     /**
@@ -909,7 +925,7 @@ trait ApplicationTrait
     /**
      * Returns the entry revisions service.
      *
-     * @return \craft\app\services\Entries The entry revisions service
+     * @return \craft\app\services\EntryRevisions The entry revisions service
      */
     public function getEntryRevisions()
     {

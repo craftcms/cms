@@ -191,7 +191,7 @@ class Date extends Field
     public function prepareValue($value, $element)
     {
         if ($value) {
-            $value = DateTimeHelper::toDateTime($value);
+            $value = DateTimeHelper::toDateTime($value, Craft::$app->getTimeZone());
         }
 
         return $value;

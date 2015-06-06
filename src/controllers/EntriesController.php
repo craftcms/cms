@@ -706,8 +706,15 @@ class EntriesController extends BaseEntriesController
                 } else if (!empty($variables['versionId'])) {
                     $variables['entry'] = Craft::$app->getEntryRevisions()->getVersionById($variables['versionId']);
                 } else {
-                    $variables['entry'] = Craft::$app->getEntries()->getEntryById($variables['entryId'],
-                        $variables['localeId']);
+                    $variables['entry'] = Craft::$app->getEntries()->getEntryById($variables['entryId'], $variables['localeId']);
+
+                    if ($variables['entry'] && Craft::$app->getEdition() === Craft::Pro) {
+                        $versions = Craft::$app->getEntryRevisions()->getVersionsByEntryId($variables['entryId'], $variables['localeId'], 1, true);
+
+                        if (isset($versions[0])) {
+                            $variables['entry']->revisionNotes = $versions[0]->revisionNotes;
+                        }
+                    }
                 }
 
                 if (!$variables['entry']) {

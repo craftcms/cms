@@ -38,13 +38,10 @@ class Users extends BaseRelationField
         return User::className();
     }
 
-    // Public Methods
-    // =========================================================================
-
     /**
      * @inheritdoc
      */
-    public function getAddButtonLabel()
+    public static function defaultSelectionLabel()
     {
         return Craft::t('app', 'Add a user');
     }

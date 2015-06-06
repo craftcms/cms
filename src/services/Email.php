@@ -396,6 +396,13 @@ class Email extends Component
 
             $variables['user'] = $user;
 
+            $language = Craft::$app->language;
+
+            // If they have a preferredLocale, use that.
+            if ($user->preferredLocale) {
+                Craft::$app->language = $user->preferredLocale;
+            }
+
             $email->Subject = Craft::$app->getView()->renderString($emailModel->subject,
                 $variables);
 
@@ -414,6 +421,8 @@ class Email extends Component
                 $email->AltBody = Craft::$app->getView()->renderString($emailModel->body,
                     $variables);
             }
+
+            Craft::$app->language = $language;
 
             if (!$email->Send()) {
                 throw new Exception(Craft::t('app', 'Email error: {error}',

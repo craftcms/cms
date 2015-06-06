@@ -81,6 +81,8 @@ class MatrixBlock extends Element
         return $fields;
     }
 
+    private static $_preloadedFields = [];
+
     // Properties
     // =========================================================================
 
@@ -273,6 +275,35 @@ class MatrixBlock extends Element
     public function getFieldContext()
     {
         return 'matrixBlockType:'.$this->typeId;
+    }
+
+    // Protected Methods
+    // =========================================================================
+
+    /**
+     * @inheritdoc
+     */
+    protected function createContent()
+    {
+        if (!isset(self::$_preloadedFields[$this->fieldId])) {
+            $blockTypes = Craft::$app->getMatrix()->getBlockTypesByFieldId($this->fieldId);
+
+            if (count($blockTypes) > 1) {
+                $contexts = array();
+
+                foreach ($blockTypes as $blockType) {
+                    $contexts[] = 'matrixBlockType:'.$blockType->id;
+                }
+
+                // Preload them to save ourselves some DB queries, and discard
+                Craft::$app->getFields()->getAllFields(null, $contexts);
+            }
+
+            // Don't do this again for this field
+            self::$_preloadedFields[$this->fieldId] = true;
+        }
+
+        return parent::createContent();
     }
 
     // Private Methods

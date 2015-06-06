@@ -367,6 +367,63 @@ class StringHelper extends \yii\helpers\StringHelper
     }
 
     /**
+     * Kebab-cases a string.
+     *
+     * @param string  $string            The string
+     * @param string  $glue              The string used to glue the words together (default is a hyphen)
+     * @param boolean $lower             Whether the string should be lowercased (default is true)
+     * @param boolean $removePunctuation Whether punctuation marks should be removed (default is true)
+     *
+     * @return string The kebab-cased string
+     */
+    public static function toKebabCase($string, $glue = '-', $lower = true, $removePunctuation = true)
+    {
+        if ($removePunctuation) {
+            $string = str_replace(['.', '_', '-'], ' ', $string);
+        }
+
+        // Remove inner-word punctuation.
+        $string = preg_replace('/[\'"‘’“”\[\]\(\)\{\}:]/u', '', $string);
+
+        // Split on the words and then glue it back together
+        $words = self::splitOnWords($string);
+        $string = implode($glue, $words);
+
+        if ($lower) {
+            // Make it lowercase
+            $string = self::toLowerCase($string);
+        }
+
+        return $string;
+    }
+
+    /**
+     * Splits a string into an array of the words in the string.
+     *
+     * @param string $string The string
+     *
+     * @return string[] The words in the string
+     */
+    public static function splitOnWords($string)
+    {
+        // Split on anything that is not alphanumeric, or a period, underscore, or hyphen.
+        preg_match_all('/[\p{L}\p{N}\._-]+/u', $string, $matches);
+        return ArrayHelper::filterEmptyStringsFromArray($matches[0]);
+    }
+
+    /**
+     * Strips HTML tags out of a given string.
+     *
+     * @param $str The string.
+     *
+     * @return string The string, sans-HTML
+     */
+    public static function stripHtml($str)
+    {
+        return preg_replace('/<(.*?)>/u', '', $str);
+    }
+
+    /**
      * Returns a new string of a given length such that both sides of the string are padded.
      *
      * @param  string $str    The string to pad.

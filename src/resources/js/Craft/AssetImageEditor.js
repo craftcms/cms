@@ -7,7 +7,6 @@
 
 Craft.AssetImageEditor = Garnish.Modal.extend(
 	{
-
 		assetId: 0,
 
 		imageUrl: "",
@@ -165,7 +164,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 				targetImageWidth = availableWidth;
 
 			// Make the image area square, so we can rotate it comfortably.
-			var imageHolderSize = Math.max(parseInt(this.$container.find('.image-tools').css('min-height'), 10), Math.min(targetImageHeight, targetImageWidth));;
+			var imageHolderSize = Math.max(parseInt(this.$container.find('.image-tools').css('min-height'), 10), Math.min(targetImageHeight, targetImageWidth));
 
 			// Set it all up!
 			var containerWidth = imageHolderSize + this.$container.find('.image-tools').outerWidth() + (3 * this.paddingSize),
@@ -685,7 +684,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 				h = w0 * c;
 			}
 
-			return { w: w, h: h}
+			return { w: w, h: h};
 		}
 
 	},

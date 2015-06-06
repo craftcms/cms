@@ -38,13 +38,10 @@ class Entries extends BaseRelationField
         return Entry::className();
     }
 
-    // Public Methods
-    // =========================================================================
-
     /**
      * @inheritdoc
      */
-    public function getAddButtonLabel()
+    public static function defaultSelectionLabel()
     {
         return Craft::t('app', 'Add an entry');
     }

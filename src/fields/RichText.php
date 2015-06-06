@@ -137,6 +137,8 @@ class RichText extends Field
         Craft::$app->getView()->registerJs('new Craft.RichTextInput('.
             '"'.Craft::$app->getView()->namespaceInputId($id).'", '.
             JsonHelper::encode($this->_getSectionSources()).', '.
+            JsonHelper::encode($this->_getCategorySources()).', ' .
+            JsonHelper::encode($this->_getAssetSources()).', ' .
             '"'.(!empty($element) ? $element->locale : Craft::$app->language).'", '.
             $configJs.', '.
             '"'.static::$_redactorLang.'"'.
@@ -252,7 +254,7 @@ class RichText extends Field
     // =========================================================================
 
     /**
-     * Get available section sources.
+     * Returns the available section sources.
      *
      * @return array
      */
@@ -272,6 +274,43 @@ class RichText extends Field
 
         if ($showSingles) {
             array_unshift($sources, 'singles');
+        }
+
+        return $sources;
+    }
+
+    /**
+     * Returns the available category sources.
+     *
+     * @return array
+     */
+    private function _getCategorySources()
+    {
+        $sources = [];
+        $categoryGroups = Craft::$app->getCategories()->getAllGroups();
+
+        foreach ($categoryGroups as $categoryGroup) {
+            if ($categoryGroup->hasUrls) {
+                $sources[] = 'group:'.$categoryGroup->id;
+            }
+        }
+
+        return $sources;
+    }
+
+    /**
+     * Returns the available volume sources.
+     *
+     * @return array
+     */
+    private function _getAssetSources()
+    {
+        $sources = [];
+        $volumeIds = Craft::$app->getVolumes()->getAllVolumeIds();
+
+        foreach ($volumeIds as $volumeId)
+        {
+            $sources[] = 'volume:'.$volumeId;
         }
 
         return $sources;
@@ -317,9 +356,16 @@ class RichText extends Field
         $this->_maybeIncludeRedactorPlugin($configJs, 'video', false);
         $this->_maybeIncludeRedactorPlugin($configJs, 'pagebreak', true);
 
-        Craft::$app->getView()->includeTranslations('Insert image',
-            'Insert URL', 'Choose image', 'Link', 'Link to an entry',
-            'Insert link', 'Unlink', 'Link to an asset');
+        Craft::$app->getView()->includeTranslations(
+            'Insert image',
+            'Insert URL',
+            'Choose image',
+            'Link',
+            'Link to an entry',
+            'Insert link',
+            'Unlink',
+            'Link to an asset',
+            'Link to a category');
 
         Craft::$app->getView()->registerJsResource('js/RichTextInput.js');
 

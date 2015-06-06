@@ -103,12 +103,12 @@ return [
      */
     'cacheMethod' => 'file',
     /**
-     * When this is set to true, Craft will strip any multi-byte characters (Chinese, Japanese, etc.)
-     * from uploaded file names and attempt to convert any high-ASCII to their low ASCII counterparts (i.e. ñ → n).
+     * If set to true, any uploaded file names will have multi-byte characters (Chinese, Japanese, etc.) stripped
+     * and any high-ASCII characters converted to their low ASCII counterparts (i.e. ñ → n).
      *
-     * Defaults to true.
+     * Defaults to false.
      */
-    'convertFilenamesToAscii' => true,
+    'convertFilenamesToAscii' => false,
     /**
      * The amount of time a user must wait before re-attempting to log in after their account is locked due to too many
      * failed login attempts.
@@ -144,6 +144,11 @@ return [
      */
     'defaultCookieDomain' => '',
     /**
+     * Defines the default language the control panel should get set to if the logged-in user doesn't have a
+     * preferred language set.
+     */
+    'defaultCpLanguage' => null,
+    /**
      * The default permissions Craft will use when creating a file on the file system.
      */
     'defaultFilePermissions' => 0664,
@@ -176,6 +181,12 @@ return [
      * Also, see the 'csrfTokenName' config setting.
      */
     'enableCsrfProtection' => true,
+    /**
+     * Whether to enable Craft's template `{% cache %}` tag on a global basis.
+     *
+     * @see http://buildwithcraft.com/docs/templating/cache
+     */
+    'enableTemplateCaching' => true,
     /**
      * Any environment-specific variables that should be swapped out in URL and Path settings.
      * See http://buildwithcraft.com/docs/multi-environment-configs#environment-specific-variables for a full explanation
@@ -312,6 +323,12 @@ return [
      */
     'phpMaxMemoryLimit' => '',
     /**
+     * The name of the PHP session cookie.
+     *
+     * @see https://php.net/manual/en/function.session-name.php
+     */
+    'phpSessionName' => 'CraftSessionId',
+    /**
      * The path that users should be redirected to after logging in from the Control Panel.
      *
      * This setting will also come into effect if the user visits the CP’s Login page (/admin/login)
@@ -398,6 +415,10 @@ return [
      * keyword index.
      */
     'searchIgnoreWords' => ['the', 'and'],
+    /**
+     * Whether the X-Powered-By header should be sent on each request, helping clients identify that the site is powered by Craft.
+     */
+    'sendPoweredByHeader' => true,
     /**
      * The URI Craft should use for user password resetting. Note that this only affects front-end site requests.
      *

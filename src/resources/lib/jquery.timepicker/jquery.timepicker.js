@@ -1,5 +1,5 @@
 /*!
- * jquery-timepicker v1.6.11 - A jQuery timepicker plugin inspired by Google Calendar. It supports both mouse and keyboard navigation.
+ * jquery-timepicker v1.7.0 - A jQuery timepicker plugin inspired by Google Calendar. It supports both mouse and keyboard navigation.
  * Copyright (c) 2015 Jon Thornton - http://jonthornton.github.com/jquery-timepicker/
  * License: MIT
  */
@@ -64,6 +64,9 @@
 					self.on('change.timepicker', _formatValue);
 					self.on('keydown.timepicker', _keydownhandler);
 					self.on('keyup.timepicker', _keyuphandler);
+					if (settings.disableTextInput) {
+						self.on('keypress.timepicker', function(e) { e.preventDefault(); });
+					}
 
 					_formatValue.call(self.get(0));
 				}
@@ -284,6 +287,10 @@
 				var prettyTime = _roundAndFormatTime(_time2int(value), settings)
 			} else {
 				var prettyTime = _int2time(_time2int(value), settings);
+			}
+
+			if (value && prettyTime === null && settings.noneOption) {
+				prettyTime = value;
 			}
 
 			_setTimeValue(self, prettyTime);
@@ -867,8 +874,9 @@
 	{
 		var self = $(this);
 		var list = self.data('timepicker-list');
+		var settings = self.data('timepicker-settings');
 
-		if (!list || !_isVisible(list)) {
+		if (!list || !_isVisible(list) || settings.disableTextInput) {
 			return true;
 		}
 
@@ -900,7 +908,7 @@
 			case 186: // colon
 			case 8: // backspace
 			case 46: // delete
-				if (self.data('timepicker-settings').typeaheadHighlight) {
+				if (settings.typeaheadHighlight) {
 					_setSelected(self, list);
 				} else {
 					list.hide();
@@ -973,13 +981,13 @@
 	function _int2time(seconds, settings)
 	{
 		if (seconds === null) {
-			return;
+			return null;
 		}
 
 		var time = new Date(_baseDate.valueOf() + (seconds*1000));
 
 		if (isNaN(time.getTime())) {
-			return;
+			return null;
 		}
 
 		if ($.type(settings.timeFormat) === "function") {
@@ -1141,6 +1149,7 @@
 		timeFormat: 'g:ia',
 		scrollDefault: null,
 		selectOnBlur: false,
+		disableTextInput: false,
 		disableTouchKeyboard: false,
 		forceRoundTime: false,
 		roundingFunction: function(seconds, settings) {

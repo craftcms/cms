@@ -150,7 +150,10 @@ class Request extends \yii\web\Request
         $path = $this->getFullPath();
 
         // Get the path segments
-        $this->_segments = array_filter(explode('/', $path));
+        $this->_segments = array_filter(explode('/', $path), function($value) {
+            // Explicitly check in case there is a 0 in a segment (i.e. foo/0 or foo/0/bar)
+            return $value !== '';
+        });
 
         // Is this a CP request?
         $this->_isCpRequest = ($this->getSegment(1) == $configService->get('cpTrigger'));
@@ -161,7 +164,23 @@ class Request extends \yii\web\Request
         }
 
         // Is this a paginated request?
-        if ($this->_segments) {
+        $pageTrigger = Craft::$app->getConfig()->get('pageTrigger');
+
+        if (!is_string($pageTrigger) || !strlen($pageTrigger)) {
+            $pageTrigger = 'p';
+        }
+
+        // Is this query string-based pagination?
+        if ($pageTrigger[0] === '?') {
+            $pageTrigger = trim($pageTrigger, '?=');
+
+            if ($pageTrigger === 'p') {
+                // Avoid conflict with the main 'p' param
+                $pageTrigger = 'pg';
+            }
+
+            $this->_pageNum = (int) $this->getQueryParam($pageTrigger, '1');
+        } else if ($this->_segments) {
             // Match against the entire path string as opposed to just the last segment so that we can support
             // "/page/2"-style pagination URLs
             $path = implode('/', $this->_segments);
@@ -724,6 +743,31 @@ class Request extends \yii\web\Request
         }
 
         return $this->_ipAddress;
+    }
+
+    /**
+     * Returns whether the client is running "Windows", "Mac", "Linux" or "Other", based on the
+     * browser's UserAgent string.
+     *
+     * @return string The OS the client is running.
+     */
+    public function getClientOs()
+    {
+        $userAgent = $this->getUserAgent();
+
+        if (preg_match('/Linux/', $userAgent)) {
+            return 'Linux';
+        }
+
+        if (preg_match('/Win/', $userAgent)) {
+            return 'Windows';
+        }
+
+        if (preg_match('/Mac/', $userAgent)) {
+            return 'Mac';
+        }
+
+        return 'Other';
     }
 
     // Private Methods

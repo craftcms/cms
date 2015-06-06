@@ -428,4 +428,15 @@ class HttpRequest
 
         return $this->getUserIP();
     }
+
+    /**
+     * Returns whether the client is running "Windows", "Mac", "Linux" or "Other", based on the
+     * browser's UserAgent string.
+     *
+     * @return string The OS the client is running.
+     */
+    public function getClientOs()
+    {
+        return \Craft::$app->getRequest()->getClientOs();
+    }
 }

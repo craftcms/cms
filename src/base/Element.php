@@ -1046,7 +1046,7 @@ abstract class Element extends Component implements ElementInterface
             $this->_content = Craft::$app->getContent()->getContent($this);
 
             if (!$this->_content) {
-                $this->_content = Craft::$app->getContent()->createContent($this);
+                $this->_content = $this->createContent();
             }
         }
 
@@ -1060,7 +1060,7 @@ abstract class Element extends Component implements ElementInterface
     {
         if (is_array($content)) {
             if (!isset($this->_content)) {
-                $this->_content = Craft::$app->getContent()->createContent($this);
+                $this->_content = $this->createContent();
             }
 
             $this->_content->setAttributes($content, false);
@@ -1310,6 +1310,16 @@ abstract class Element extends Component implements ElementInterface
     protected function resolveStructureId()
     {
         return null;
+    }
+
+    /**
+     * Creates the content model associated with this element.
+     *
+     * @return Content The content model associated with this element
+     */
+    protected function createContent()
+    {
+        return Craft::$app->getContent()->createContent($this);
     }
 
     // Private Methods
