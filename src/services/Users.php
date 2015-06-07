@@ -145,7 +145,7 @@ class Users extends Component
      * $user = Craft::$app->getUsers()->getUserById($userId);
      * ```
      *
-     * @param int $userId The user’s ID.
+     * @param integer $userId The user’s ID.
      *
      * @return User|null The user with the given ID, or `null` if a user could not be found.
      */
@@ -211,7 +211,7 @@ class Users extends Component
      * $user = Craft::$app->getUsers()->getUserByUid($userUid);
      * ```
      *
-     * @param int $uid The user’s UID.
+     * @param integer $uid The user’s UID.
      *
      * @return User|null The user with the given UID, or `null` if a user could not be found.
      */
@@ -238,7 +238,7 @@ class Users extends Component
      * @param User   $user The user to check the code for.
      * @param string $code The verification code to check for.
      *
-     * @return bool Whether the code is still valid.
+     * @return boolean Whether the code is still valid.
      */
     public function isVerificationCodeValidForUser(User $user, $code)
     {
@@ -324,7 +324,7 @@ class Users extends Component
      *
      * @param User $user The user to be saved.
      *
-     * @return bool
+     * @return boolean
      * @throws Exception
      * @throws \Exception
      */
@@ -516,7 +516,7 @@ class Users extends Component
      *
      * @param User $user The user to send the activation email to.
      *
-     * @return bool Whether the email was sent successfully.
+     * @return boolean Whether the email was sent successfully.
      */
     public function sendActivationEmail(User $user)
     {
@@ -540,7 +540,7 @@ class Users extends Component
      *
      * @param User $user The user to send the activation email to.
      *
-     * @return bool Whether the email was sent successfully.
+     * @return boolean Whether the email was sent successfully.
      */
     public function sendNewEmailVerifyEmail(User $user)
     {
@@ -559,7 +559,7 @@ class Users extends Component
      *
      * @param User $user The user to send the forgot password email to.
      *
-     * @return bool Whether the email was sent successfully.
+     * @return boolean Whether the email was sent successfully.
      */
     public function sendPasswordResetEmail(User $user)
     {
@@ -634,7 +634,7 @@ class Users extends Component
      * @param User   $user     The user.
      *
      * @throws \Exception
-     * @return bool Whether the photo was saved successfully.
+     * @return boolean Whether the photo was saved successfully.
      */
     public function saveUserPhoto($filename, Image $image, User $user)
     {
@@ -670,7 +670,7 @@ class Users extends Component
      *
      * @param User $user The user.
      *
-     * @return null
+     * @return void
      */
     public function deleteUserPhoto(User $user)
     {
@@ -690,10 +690,10 @@ class Users extends Component
     /**
      * Changes a user’s password.
      *
-     * @param User $user           The user.
-     * @param bool $forceDifferent Whether to force the new password to be different than any existing password.
+     * @param User    $user           The user.
+     * @param boolean $forceDifferent Whether to force the new password to be different than any existing password.
      *
-     * @return bool Whether the user’s new password was saved successfully.
+     * @return boolean Whether the user’s new password was saved successfully.
      */
     public function changePassword(User $user, $forceDifferent = false)
     {
@@ -715,7 +715,7 @@ class Users extends Component
      *
      * @param User $user
      *
-     * @return bool
+     * @return boolean
      * @throws Exception
      */
     public function updateUserLoginInfo(User $user)
@@ -737,7 +737,7 @@ class Users extends Component
      *
      * @param User $user The user.
      *
-     * @return bool Whether the user’s record was updated successfully.
+     * @return boolean Whether the user’s record was updated successfully.
      */
     public function handleInvalidLogin(User $user)
     {
@@ -780,7 +780,7 @@ class Users extends Component
      * @param User $user The user.
      *
      * @throws \Exception
-     * @return bool Whether the user was activated successfully.
+     * @return boolean Whether the user was activated successfully.
      */
     public function activateUser(User $user)
     {
@@ -856,7 +856,8 @@ class Users extends Component
 
                 // Update the user profile photo folder name, if it exists.
                 if (IOHelper::folderExists($oldProfilePhotoPath)) {
-                    IOHelper::rename($oldProfilePhotoPath, $newProfilePhotoPath);
+                    IOHelper::rename($oldProfilePhotoPath,
+                        $newProfilePhotoPath);
                 }
             }
 
@@ -876,7 +877,7 @@ class Users extends Component
      * @param User $user The user.
      *
      * @throws \Exception
-     * @return bool Whether the user was unlocked successfully.
+     * @return boolean Whether the user was unlocked successfully.
      */
     public function unlockUser(User $user)
     {
@@ -936,7 +937,7 @@ class Users extends Component
      * @param User $user The user.
      *
      * @throws \Exception
-     * @return bool Whether the user was suspended successfully.
+     * @return boolean Whether the user was suspended successfully.
      */
     public function suspendUser(User $user)
     {
@@ -992,7 +993,7 @@ class Users extends Component
      * @param User $user The user.
      *
      * @throws \Exception
-     * @return bool Whether the user was unsuspended successfully.
+     * @return boolean Whether the user was unsuspended successfully.
      */
     public function unsuspendUser(User $user)
     {
@@ -1049,7 +1050,7 @@ class Users extends Component
      * @param User|null $transferContentTo The user who should take over the deleted user’s content.
      *
      * @throws \Exception
-     * @return bool Whether the user was deleted successfully.
+     * @return boolean Whether the user was deleted successfully.
      */
     public function deleteUser(User $user, User $transferContentTo = null)
     {
@@ -1144,11 +1145,11 @@ class Users extends Component
     /**
      * Shuns a message for a user.
      *
-     * @param int      $userId     The user’s ID.
+     * @param integer  $userId     The user’s ID.
      * @param string   $message    The message to be shunned.
      * @param DateTime $expiryDate When the message should be un-shunned. Defaults to `null` (never un-shun).
      *
-     * @return bool Whether the message was shunned successfully.
+     * @return boolean Whether the message was shunned successfully.
      */
     public function shunMessageForUser($userId, $message, $expiryDate = null)
     {
@@ -1172,10 +1173,10 @@ class Users extends Component
     /**
      * Un-shuns a message for a user.
      *
-     * @param int    $userId  The user’s ID.
-     * @param string $message The message to un-shun.
+     * @param integer $userId  The user’s ID.
+     * @param string  $message The message to un-shun.
      *
-     * @return bool Whether the message was un-shunned successfully.
+     * @return boolean Whether the message was un-shunned successfully.
      */
     public function unshunMessageForUser($userId, $message)
     {
@@ -1191,10 +1192,10 @@ class Users extends Component
     /**
      * Returns whether a message is shunned for a user.
      *
-     * @param int    $userId  The user’s ID.
-     * @param string $message The message to check.
+     * @param integer $userId  The user’s ID.
+     * @param string  $message The message to check.
      *
-     * @return bool Whether the user has shunned the message.
+     * @return boolean Whether the user has shunned the message.
      */
     public function hasUserShunnedMessage($userId, $message)
     {
@@ -1237,7 +1238,7 @@ class Users extends Component
      * setting, and if it is set to a valid duration, it will delete any user accounts that were created that duration
      * ago, and have still not activated their account.
      *
-     * @return null
+     * @return void
      */
     public function purgeExpiredPendingUsers()
     {
@@ -1273,7 +1274,7 @@ class Users extends Component
     /**
      * Gets a user record by its ID.
      *
-     * @param int $userId
+     * @param integer $userId
      *
      * @throws Exception
      * @return UserRecord
@@ -1313,7 +1314,7 @@ class Users extends Component
      *
      * @param UserRecord $userRecord
      *
-     * @return bool
+     * @return boolean
      */
     private function _isUserInsideInvalidLoginWindow(UserRecord $userRecord)
     {
@@ -1333,13 +1334,13 @@ class Users extends Component
      *
      * @param User       $user                        The user who is getting a new password.
      * @param UserRecord $userRecord                  The user’s record.
-     * @param bool       $updatePasswordResetRequired Whether the user’s
+     * @param boolean    $updatePasswordResetRequired Whether the user’s
      *                                                [[User::passwordResetRequired passwordResetRequired]]
      *                                                attribute should be set `false`. Default is `true`.
-     * @param bool       $forceDifferentPassword      Whether to force a new password to be different from any existing
+     * @param boolean    $forceDifferentPassword      Whether to force a new password to be different from any existing
      *                                                password.
      *
-     * @return bool
+     * @return boolean
      */
     private function _setPasswordOnUserRecord(
         User $user,

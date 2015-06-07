@@ -130,7 +130,7 @@ class SystemSettingsController extends Controller
     /**
      * Saves the general settings.
      *
-     * @return null
+     * @return void
      */
     public function actionSaveGeneralSettings()
     {
@@ -161,7 +161,7 @@ class SystemSettingsController extends Controller
     /**
      * Saves the email settings.
      *
-     * @return null
+     * @return void
      */
     public function actionSaveEmailSettings()
     {
@@ -192,7 +192,7 @@ class SystemSettingsController extends Controller
     /**
      * Tests the email settings.
      *
-     * @return null
+     * @return void
      */
     public function actionTestEmailSettings()
     {
@@ -219,8 +219,8 @@ class SystemSettingsController extends Controller
     /**
      * Global Set edit form.
      *
-     * @param int $globalSetId     The global set’s ID, if any.
-     * @param GlobalSet $globalSet The global set being edited, if there were any validation errors.
+     * @param integer   $globalSetId The global set’s ID, if any.
+     * @param GlobalSet $globalSet   The global set being edited, if there were any validation errors.
      *
      * @return string The rendering result
      * @throws HttpException

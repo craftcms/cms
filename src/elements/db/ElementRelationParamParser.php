@@ -137,7 +137,7 @@ class ElementRelationParamParser
     /**
      * Returns whether the relatedTo value appears to be for selecting the targets of a single relation field.
      *
-     * @return bool
+     * @return boolean
      */
     public function isRelationFieldQuery()
     {

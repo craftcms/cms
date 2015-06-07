@@ -34,7 +34,7 @@ class UpdateHelper
     /**
      * @param $manifestData
      *
-     * @return null
+     * @return void
      */
     public static function rollBackFileChanges($manifestData)
     {
@@ -74,7 +74,7 @@ class UpdateHelper
      *
      * @param $backupPath
      *
-     * @return null
+     * @return void
      */
     public static function rollBackDatabaseChanges($backupPath)
     {
@@ -87,7 +87,7 @@ class UpdateHelper
      * @param $manifestData
      * @param $sourceTempFolder
      *
-     * @return bool
+     * @return boolean
      */
     public static function doFileUpdate($manifestData, $sourceTempFolder)
     {
@@ -150,7 +150,7 @@ class UpdateHelper
     /**
      * @param $line
      *
-     * @return bool
+     * @return boolean
      */
     public static function isManifestVersionInfoLine($line)
     {
@@ -166,7 +166,7 @@ class UpdateHelper
      *
      * @param $manifestData
      *
-     * @return bool|string
+     * @return boolean|string
      */
     public static function getLocalBuildFromManifest($manifestData)
     {
@@ -186,7 +186,7 @@ class UpdateHelper
      *
      * @param $manifestData
      *
-     * @return bool|string
+     * @return boolean|string
      */
     public static function getLocalVersionFromManifest($manifestData)
     {
@@ -206,7 +206,7 @@ class UpdateHelper
      *
      * @param $line
      *
-     * @return bool
+     * @return boolean
      */
     public static function isManifestMigrationLine($line)
     {
@@ -286,7 +286,7 @@ class UpdateHelper
     /**
      * @param $line
      *
-     * @return bool
+     * @return boolean
      */
     public static function isManifestLineAFolder($line)
     {

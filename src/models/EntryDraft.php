@@ -24,9 +24,6 @@ class EntryDraft extends BaseEntryRevisionModel
 
     /**
      * @inheritdoc
-     *
-     * @param static $model
-     * @param array  $config
      */
     public static function populateModel($model, $config)
     {

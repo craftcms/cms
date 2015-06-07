@@ -49,11 +49,11 @@ class Craft extends Yii
     /**
      * Displays a variable.
      *
-     * @param mixed $var       The variable to be dumped.
-     * @param int   $depth     The maximum depth that the dumper should go into the variable. Defaults to 10.
-     * @param bool  $highlight Whether the result should be syntax-highlighted. Defaults to true.
+     * @param mixed   $var       The variable to be dumped.
+     * @param integer $depth     The maximum depth that the dumper should go into the variable. Defaults to 10.
+     * @param boolean $highlight Whether the result should be syntax-highlighted. Defaults to true.
      *
-     * @return null
+     * @return void
      */
     public static function dump($var, $depth = 10, $highlight = true)
     {
@@ -63,11 +63,11 @@ class Craft extends Yii
     /**
      * Displays a variable and ends the request. (“Dump and die”)
      *
-     * @param mixed $var       The variable to be dumped.
-     * @param int   $depth     The maximum depth that the dumper should go into the variable. Defaults to 10.
-     * @param bool  $highlight Whether the result should be syntax-highlighted. Defaults to true.
+     * @param mixed   $var       The variable to be dumped.
+     * @param integer $depth     The maximum depth that the dumper should go into the variable. Defaults to 10.
+     * @param boolean $highlight Whether the result should be syntax-highlighted. Defaults to true.
      *
-     * @return null
+     * @return void
      */
     public static function dd($var, $depth = 10, $highlight = true)
     {
@@ -245,7 +245,7 @@ EOD;
      * @param $path
      * @param $storedFieldVersion
      *
-     * @return bool
+     * @return boolean
      */
     private static function _isFieldAttributesFileValid(
         $path,

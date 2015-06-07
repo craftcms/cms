@@ -36,7 +36,7 @@ class AppHelper
     /**
      * Returns whether Craft is running on the dev server bundled with PHP 5.4+.
      *
-     * @return bool Whether Craft is running on the PHP Dev Server.
+     * @return boolean Whether Craft is running on the PHP Dev Server.
      */
     public static function isPhpDevServer()
     {
@@ -65,7 +65,7 @@ class AppHelper
     /**
      * Returns the name of the given Craft edition.
      *
-     * @param int $edition An edition’s ID.
+     * @param integer $edition An edition’s ID.
      *
      * @return string The edition’s name.
      */
@@ -89,7 +89,7 @@ class AppHelper
      *
      * @param mixed $edition An edition’s ID (or is it?)
      *
-     * @return bool Whether $edition is a valid edition ID.
+     * @return boolean Whether $edition is a valid edition ID.
      */
     public static function isValidEdition($edition)
     {
@@ -102,7 +102,7 @@ class AppHelper
      *
      * @param string $var The PHP config setting to retrieve.
      *
-     * @return bool Whether it is set to the php.ini equivelant of `true`.
+     * @return boolean Whether it is set to the php.ini equivelant of `true`.
      */
     public static function getPhpConfigValueAsBool($var)
     {
@@ -117,7 +117,7 @@ class AppHelper
      *
      * @param string $var The PHP config setting to retrieve.
      *
-     * @return int The size in bytes.
+     * @return integer The size in bytes.
      */
     public static function getPhpConfigValueInBytes($var)
     {

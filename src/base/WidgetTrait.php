@@ -8,7 +8,6 @@
 namespace craft\app\base;
 
 use Craft;
-use craft\app\elements\User;
 
 /**
  * WidgetTrait implements the common methods and properties for dashboard widget classes.

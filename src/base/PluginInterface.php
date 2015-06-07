@@ -23,7 +23,7 @@ interface PluginInterface
     /**
      * Returns whether the plugin has its own section in the CP.
      *
-     * @return bool Whether the plugin has its own section in the CP.
+     * @return boolean Whether the plugin has its own section in the CP.
      */
     public static function hasCpSection();
 

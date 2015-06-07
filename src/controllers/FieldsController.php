@@ -47,7 +47,7 @@ class FieldsController extends Controller
     /**
      * Saves a field group.
      *
-     * @return null
+     * @return void
      */
     public function actionSaveGroup()
     {
@@ -80,7 +80,7 @@ class FieldsController extends Controller
     /**
      * Deletes a field group.
      *
-     * @return null
+     * @return void
      */
     public function actionDeleteGroup()
     {
@@ -103,9 +103,9 @@ class FieldsController extends Controller
     /**
      * Edits a field.
      *
-     * @param integer $fieldId            The field’s ID, if editing an existing field
-     * @param FieldInterface|Field $field The field being edited, if there were any validation errors
-     * @param integer $groupId            The default group ID that the field should be saved in
+     * @param integer              $fieldId The field’s ID, if editing an existing field
+     * @param FieldInterface|Field $field   The field being edited, if there were any validation errors
+     * @param integer              $groupId The default group ID that the field should be saved in
      *
      * @return string The rendering result
      * @throws HttpException if there are no field groups, or the requested field doesn’t exist
@@ -220,7 +220,7 @@ class FieldsController extends Controller
     /**
      * Saves a field.
      *
-     * @return null
+     * @return void
      * @throws Exception
      */
     public function actionSaveField()
@@ -261,7 +261,7 @@ class FieldsController extends Controller
     /**
      * Deletes a field.
      *
-     * @return null
+     * @return void
      */
     public function actionDeleteField()
     {

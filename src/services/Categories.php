@@ -215,7 +215,7 @@ class Categories extends Component
     /**
      * Returns a group by its ID.
      *
-     * @param int $groupId
+     * @param integer $groupId
      *
      * @return CategoryGroup|null
      */
@@ -263,7 +263,7 @@ class Categories extends Component
     /**
      * Returns a group's locales.
      *
-     * @param int         $groupId
+     * @param integer     $groupId
      * @param string|null $indexBy
      *
      * @return CategoryGroupLocaleModel[]
@@ -528,7 +528,7 @@ class Categories extends Component
     /**
      * Deletes a category group by its ID.
      *
-     * @param int $groupId
+     * @param integer $groupId
      *
      * @throws \Exception
      * @return boolean
@@ -587,9 +587,10 @@ class Categories extends Component
             }
 
             // Fire an 'afterDeleteGroup' event
-            $this->trigger(static::EVENT_AFTER_DELETE_GROUP, new CategoryGroupEvent([
-                'categoryGroup' => $group
-            ]));
+            $this->trigger(static::EVENT_AFTER_DELETE_GROUP,
+                new CategoryGroupEvent([
+                    'categoryGroup' => $group
+                ]));
 
             return true;
         } catch (\Exception $e) {
@@ -635,8 +636,8 @@ class Categories extends Component
     /**
      * Returns a category by its ID.
      *
-     * @param int      $categoryId
-     * @param int|null $localeId
+     * @param integer      $categoryId
+     * @param integer|null $localeId
      *
      * @return Category|null
      */
@@ -652,7 +653,7 @@ class Categories extends Component
      * @param Category $category
      *
      * @throws Exception|\Exception
-     * @return bool
+     * @return boolean
      */
     public function saveCategory(Category $category)
     {
@@ -777,7 +778,7 @@ class Categories extends Component
      * @param Category|Category[] $categories
      *
      * @throws \Exception
-     * @return bool
+     * @return boolean
      */
     public function deleteCategory($categories)
     {
@@ -918,7 +919,7 @@ class Categories extends Component
      *
      * @param Category $category
      *
-     * @return bool
+     * @return boolean
      */
     private function _checkForNewParent(Category $category)
     {
@@ -965,7 +966,7 @@ class Categories extends Component
      * @param Category[] $categories
      * @param boolean    $deleteDescendants
      *
-     * @return bool
+     * @return boolean
      */
     private function _deleteCategories($categories, $deleteDescendants = true)
     {

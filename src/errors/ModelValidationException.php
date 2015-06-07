@@ -32,7 +32,7 @@ class ModelValidationException extends ModelException
      *
      * @param Model $model
      *
-     * @return null
+     * @return void
      */
     public function setModel(Model $model)
     {

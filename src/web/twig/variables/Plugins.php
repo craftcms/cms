@@ -7,9 +7,6 @@
 
 namespace craft\app\web\twig\variables;
 
-use craft\app\base\Plugin;
-use craft\app\base\PluginInterface;
-
 /**
  * Plugin functions.
  *

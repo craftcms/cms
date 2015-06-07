@@ -46,7 +46,7 @@ class PaginateTokenParser extends \Twig_TokenParser
     /**
      * @param \Twig_Token $token
      *
-     * @return bool
+     * @return boolean
      */
     public function decidePaginateEnd(\Twig_Token $token)
     {

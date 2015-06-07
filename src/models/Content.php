@@ -177,7 +177,7 @@ class Content extends Model
      *
      * @param array $requiredFields
      *
-     * @return null
+     * @return void
      */
     public function setRequiredFields($requiredFields)
     {
@@ -206,9 +206,9 @@ class Content extends Model
      * In addition we validates the custom fields on this model.
      *
      * @param array|null $attributes
-     * @param bool       $clearErrors
+     * @param boolean    $clearErrors
      *
-     * @return bool
+     * @return boolean
      */
     public function validate($attributes = null, $clearErrors = true)
     {

@@ -132,7 +132,7 @@ class UsersController extends Controller
     /**
      * Returns how many seconds are left in the current user session.
      *
-     * @return null
+     * @return void
      */
     public function actionGetRemainingSessionTime()
     {
@@ -141,7 +141,7 @@ class UsersController extends Controller
     }
 
     /**
-     * @return null
+     * @return void
      */
     public function actionLogout()
     {
@@ -160,7 +160,7 @@ class UsersController extends Controller
      * Sends a password reset email.
      *
      * @throws HttpException
-     * @return null
+     * @return void
      */
     public function actionSendPasswordResetEmail()
     {
@@ -226,7 +226,7 @@ class UsersController extends Controller
      * Generates a new verification code for a given user, and returns its URL.
      *
      * @throws HttpException|Exception
-     * @return null
+     * @return void
      */
     public function actionGetPasswordResetUrl()
     {
@@ -360,7 +360,7 @@ class UsersController extends Controller
     /**
      * Manually activates a user account.  Only admins have access.
      *
-     * @return null
+     * @return void
      */
     public function actionActivateUser()
     {
@@ -388,8 +388,8 @@ class UsersController extends Controller
     /**
      * Edit a user account.
      *
-     * @param int|string $userId The user’s ID, if any, or a string that indicates the user to be edited ('current' or 'client').
-     * @param User       $user   The user being edited, if there were any validation errors.
+     * @param integer|string $userId The user’s ID, if any, or a string that indicates the user to be edited ('current' or 'client').
+     * @param User           $user   The user being edited, if there were any validation errors.
      *
      * @return string The rendering result
      * @throws HttpException
@@ -673,7 +673,7 @@ class UsersController extends Controller
      * This action behaves the same regardless of whether it was requested from the Control Panel or the front-end site.
      *
      * @throws HttpException|Exception
-     * @return null
+     * @return void
      */
     public function actionSaveUser()
     {
@@ -782,7 +782,8 @@ class UsersController extends Controller
 
         // Are they allowed to set a new password?
         if ($thisIsPublicRegistration) {
-            $user->newPassword = Craft::$app->getRequest()->getBodyParam('password', '');
+            $user->newPassword = Craft::$app->getRequest()->getBodyParam('password',
+                '');
         } else if ($isCurrentUser) {
             // If there was a newPassword input but it was empty, pretend it didn't exist
             $user->newPassword = Craft::$app->getRequest()->getBodyParam('newPassword') ?: null;
@@ -924,14 +925,18 @@ class UsersController extends Controller
                     'id' => $user->id
                 ]);
             } else {
-                Craft::$app->getSession()->setNotice(Craft::t('app', 'User saved.'));
+                Craft::$app->getSession()->setNotice(Craft::t('app',
+                    'User saved.'));
+
                 return $this->redirectToPostedUrl($user);
             }
         } else {
             if (Craft::$app->getRequest()->getIsAjax()) {
-                return $this->asErrorJson(Craft::t('app', 'Couldn’t save user.'));
+                return $this->asErrorJson(Craft::t('app',
+                    'Couldn’t save user.'));
             } else {
-                Craft::$app->getSession()->setError(Craft::t('app', 'Couldn’t save user.'));
+                Craft::$app->getSession()->setError(Craft::t('app',
+                    'Couldn’t save user.'));
 
                 // Send the account back to the template
                 Craft::$app->getUrlManager()->setRouteParams([
@@ -944,7 +949,7 @@ class UsersController extends Controller
     /**
      * Upload a user photo.
      *
-     * @return null
+     * @return void
      */
     public function actionUploadUserPhoto()
     {
@@ -1020,7 +1025,7 @@ class UsersController extends Controller
     /**
      * Crop user photo.
      *
-     * @return null
+     * @return void
      */
     public function actionCropUserPhoto()
     {
@@ -1082,7 +1087,7 @@ class UsersController extends Controller
     /**
      * Delete all the photos for current user.
      *
-     * @return null
+     * @return void
      */
     public function actionDeleteUserPhoto()
     {
@@ -1112,7 +1117,7 @@ class UsersController extends Controller
     /**
      * Sends a new activation email to a user.
      *
-     * @return null
+     * @return void
      * @throws Exception
      * @throws HttpException
      */
@@ -1134,7 +1139,9 @@ class UsersController extends Controller
 
         // Only allow activation emails to be send to pending users.
         if ($user->getStatus() !== User::STATUS_PENDING) {
-            throw new Exception(Craft::t('app', 'Invalid account status for user ID “{id}”.', ['id' => $userId]));
+            throw new Exception(Craft::t('app',
+                'Invalid account status for user ID “{id}”.',
+                ['id' => $userId]));
         }
 
         Craft::$app->getUsers()->sendActivationEmail($user);
@@ -1153,7 +1160,7 @@ class UsersController extends Controller
      * Unlocks a user, bypassing the cooldown phase.
      *
      * @throws HttpException
-     * @return null
+     * @return void
      */
     public function actionUnlockUser()
     {
@@ -1187,7 +1194,7 @@ class UsersController extends Controller
      * Suspends a user.
      *
      * @throws HttpException
-     * @return null
+     * @return void
      */
     public function actionSuspendUser()
     {
@@ -1272,7 +1279,7 @@ class UsersController extends Controller
      * Unsuspends a user.
      *
      * @throws HttpException
-     * @return null
+     * @return void
      */
     public function actionUnsuspendUser()
     {
@@ -1305,7 +1312,7 @@ class UsersController extends Controller
     /**
      * Saves the asset field layout.
      *
-     * @return null
+     * @return void
      */
     public function actionSaveFieldLayout()
     {
@@ -1331,7 +1338,7 @@ class UsersController extends Controller
     /**
      * Verifies a password for a user.
      *
-     * @return bool
+     * @return boolean
      */
     public function actionVerifyPassword()
     {
@@ -1429,7 +1436,7 @@ class UsersController extends Controller
      * Redirects the user after a successful login attempt, or if they visited the Login page while they were already
      * logged in.
      *
-     * @param bool $setNotice Whether a flash notice should be set, if this isn't an Ajax request.
+     * @param boolean $setNotice Whether a flash notice should be set, if this isn't an Ajax request.
      *
      * @return Response
      */
@@ -1474,7 +1481,7 @@ class UsersController extends Controller
     /**
      * Renders the Set Password template for a given user.
      *
-     * @param User $user
+     * @param User  $user
      * @param array $variables
      *
      * @return Response
@@ -1504,10 +1511,10 @@ class UsersController extends Controller
     /**
      * Throws a "no user exists" exception
      *
-     * @param int $userId
+     * @param integer $userId
      *
      * @throws Exception
-     * @return null
+     * @return void
      */
     private function _noUserExists($userId)
     {
@@ -1518,7 +1525,7 @@ class UsersController extends Controller
     /**
      * Verifies that the current user's password was submitted with the request.
      *
-     * @return bool
+     * @return boolean
      */
     private function _verifyExistingPassword()
     {
@@ -1538,7 +1545,7 @@ class UsersController extends Controller
     /**
      * @param $user
      *
-     * @return null
+     * @return void
      */
     private function _processUserPhoto($user)
     {
@@ -1570,7 +1577,7 @@ class UsersController extends Controller
     /**
      * @param $user
      *
-     * @return null
+     * @return void
      */
     private function _processUserGroupsPermissions($user)
     {

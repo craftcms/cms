@@ -98,9 +98,9 @@ class DbHelper
     /**
      * Returns a number column type, taking the min, max, and number of decimal points into account.
      *
-     * @param int $min
-     * @param int $max
-     * @param int $decimals
+     * @param integer $min
+     * @param integer $max
+     * @param integer $decimals
      *
      * @return array
      */
@@ -166,7 +166,7 @@ class DbHelper
      * @param string $columnType The textual column type to check.
      * @param string $database   The type of database to use.
      *
-     * @return int The storage capacity of the column type in bytes.
+     * @return integer The storage capacity of the column type in bytes.
      */
     public static function getTextualColumnStorageCapacity(
         $columnType,

@@ -79,7 +79,7 @@ class ErrorHandler extends \CErrorHandler
      *
      * @param \Exception $exception The exception captured.
      *
-     * @return null
+     * @return void
      */
     protected function handleException($exception)
     {
@@ -129,7 +129,7 @@ class ErrorHandler extends \CErrorHandler
      *
      * @param \CErrorEvent $event the PHP error event
      *
-     * @return null
+     * @return void
      */
     protected function handleError($event)
     {
@@ -163,7 +163,7 @@ class ErrorHandler extends \CErrorHandler
      *
      * @param \Twig_Error $exception
      *
-     * @return null
+     * @return void
      */
     protected function handleTwigError(\Twig_Error $exception)
     {
@@ -206,7 +206,7 @@ class ErrorHandler extends \CErrorHandler
      *
      * @param DbConnectException $exception
      *
-     * @return null
+     * @return void
      */
     protected function handleDbConnectionError(DbConnectException $exception)
     {

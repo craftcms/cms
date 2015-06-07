@@ -69,7 +69,7 @@ class EntryRevisions extends Component
     /**
      * Returns a draft by its ID.
      *
-     * @param int $draftId
+     * @param integer $draftId
      *
      * @return EntryDraft|null
      */
@@ -98,8 +98,8 @@ class EntryRevisions extends Component
     /**
      * Returns drafts of a given entry.
      *
-     * @param int    $entryId
-     * @param string $localeId
+     * @param integer $entryId
+     * @param string  $localeId
      *
      * @return EntryDraft[]
      */
@@ -134,8 +134,8 @@ class EntryRevisions extends Component
     /**
      * Returns the drafts of a given entry that are editable by the current user.
      *
-     * @param int    $entryId
-     * @param string $localeId
+     * @param integer $entryId
+     * @param string  $localeId
      *
      * @return EntryDraft[]
      */
@@ -162,7 +162,7 @@ class EntryRevisions extends Component
      *
      * @param EntryDraft $draft
      *
-     * @return bool
+     * @return boolean
      */
     public function saveDraft(EntryDraft $draft)
     {
@@ -205,7 +205,7 @@ class EntryRevisions extends Component
      *
      * @param EntryDraft $draft
      *
-     * @return bool
+     * @return boolean
      */
     public function publishDraft(EntryDraft $draft)
     {
@@ -239,7 +239,7 @@ class EntryRevisions extends Component
      *
      * @param EntryDraft $draft
      *
-     * @return bool
+     * @return boolean
      * @throws \Exception
      * @throws \yii\db\Exception
      */
@@ -291,7 +291,7 @@ class EntryRevisions extends Component
     /**
      * Returns a version by its ID.
      *
-     * @param int $versionId
+     * @param integer $versionId
      *
      * @return EntryVersion|null
      */
@@ -307,15 +307,19 @@ class EntryRevisions extends Component
     /**
      * Returns versions by an entry ID.
      *
-     * @param int      $entryId        The entry ID to search for.
-     * @param string   $localeId       The locale ID to search for.
-     * @param int|null $limit          The limit on the number of versions to retrieve.
-     * @param bool     $includeCurrent Whether to include the current "top" version of the entry.
+     * @param integer      $entryId        The entry ID to search for.
+     * @param string       $localeId       The locale ID to search for.
+     * @param integer|null $limit          The limit on the number of versions to retrieve.
+     * @param boolean      $includeCurrent Whether to include the current "top" version of the entry.
      *
      * @return EntryVersion[]
      */
-    public function getVersionsByEntryId($entryId, $localeId, $limit = null, $includeCurrent = false)
-    {
+    public function getVersionsByEntryId(
+        $entryId,
+        $localeId,
+        $limit = null,
+        $includeCurrent = false
+    ) {
         if (!$localeId) {
             $localeId = Craft::$app->getI18n()->getPrimarySiteLocale();
         }
@@ -349,7 +353,7 @@ class EntryRevisions extends Component
      *
      * @param Entry $entry
      *
-     * @return bool
+     * @return boolean
      */
     public function saveVersion(Entry $entry)
     {
@@ -379,7 +383,7 @@ class EntryRevisions extends Component
      *
      * @param EntryVersion $version
      *
-     * @return bool
+     * @return boolean
      */
     public function revertEntryToVersion(EntryVersion $version)
     {

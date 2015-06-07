@@ -89,9 +89,9 @@ class SwitchTokenParser extends \Twig_TokenParser
     }
 
     /**
-     * @param $token
+     * @param \Twig_Token $token
      *
-     * @return mixed
+     * @return boolean
      */
     public function decideIfFork($token)
     {
@@ -99,9 +99,9 @@ class SwitchTokenParser extends \Twig_TokenParser
     }
 
     /**
-     * @param $token
+     * @param \Twig_Token $token
      *
-     * @return mixed
+     * @return boolean
      */
     public function decideIfEnd($token)
     {

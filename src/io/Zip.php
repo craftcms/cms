@@ -25,7 +25,7 @@ class Zip
      * @param $source
      * @param $destZip
      *
-     * @return bool 'true' if the zip was successfully created, 'false' if not.
+     * @return boolean 'true' if the zip was successfully created, 'false' if not.
      */
     public static function compress($source, $destZip)
     {
@@ -57,7 +57,7 @@ class Zip
      * @param $srcZip
      * @param $destFolder
      *
-     * @return bool
+     * @return boolean
      */
     public static function unzip($srcZip, $destFolder)
     {
@@ -115,7 +115,7 @@ class Zip
      * @param      $basePath
      * @param null $pathPrefix
      *
-     * @return bool
+     * @return boolean
      */
     public static function add(
         $sourceZip,

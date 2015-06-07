@@ -106,7 +106,7 @@ class Assets extends Component
     /**
      * Returns all top-level files in a volume.
      *
-     * @param int         $volumeId
+     * @param integer     $volumeId
      * @param string|null $indexBy
      *
      * @return array
@@ -166,7 +166,7 @@ class Assets extends Component
      *
      * @param mixed $criteria
      *
-     * @return int
+     * @return integer
      */
     public function getTotalFiles($criteria = null)
     {
@@ -285,11 +285,11 @@ class Assets extends Component
     /**
      * Replaces an Asset with another.
      *
-     * @param Asset $fileToReplace
-     * @param Asset $fileToReplaceWith
-     * @param bool  $mergeAssets whether to replace content as well.
+     * @param Asset   $fileToReplace
+     * @param Asset   $fileToReplaceWith
+     * @param boolean $mergeAssets whether to replace content as well.
      *
-     * @return null
+     * @return void
      */
     public function replaceAsset(
         Asset $fileToReplace,
@@ -445,9 +445,9 @@ class Assets extends Component
      * Delete a list of files by an array of ids (or a single id).
      *
      * @param array|int $fileIds
-     * @param bool      $deleteFile Should the file be deleted along the record. Defaults to true.
+     * @param boolean   $deleteFile Should the file be deleted along the record. Defaults to true.
      *
-     * @return null
+     * @return void
      */
     public function deleteFilesByIds($fileIds, $deleteFile = true)
     {
@@ -489,7 +489,7 @@ class Assets extends Component
      * @throws AssetDisallowedExtensionException If the extension is not allowed.
      * @throws AssetConflictException            If a file with such a name already exists/
      * @throws AssetLogicException               If something violates Asset's logic (e.g. Asset outside of a folder).
-     * @return null
+     * @return void
      */
     public function renameAsset(Asset $asset, $newFilename)
     {
@@ -575,10 +575,10 @@ class Assets extends Component
      * Deletes a folder by its ID.
      *
      * @param array|int $folderIds
-     * @param bool      $deleteFolder Should the file be deleted along the record. Defaults to true.
+     * @param boolean   $deleteFolder Should the file be deleted along the record. Defaults to true.
      *
      * @throws VolumeException If deleting a single folder and it cannot be deleted.
-     * @return null
+     * @return void
      */
     public function deleteFoldersByIds($folderIds, $deleteFolder = true)
     {
@@ -656,7 +656,7 @@ class Assets extends Component
     /**
      * Returns a folder by its ID.
      *
-     * @param int $folderId
+     * @param integer $folderId
      *
      * @return VolumeFolderModel|null
      */
@@ -791,7 +791,7 @@ class Assets extends Component
      *
      * @param mixed $criteria
      *
-     * @return int
+     * @return integer
      */
     public function getTotalFolders($criteria)
     {
@@ -914,14 +914,14 @@ class Assets extends Component
     /**
      * Move an Asset.
      *
-     * @param Asset  $asset
-     * @param int    $folderId    Id of the folder of the destination
-     * @param string $newFilename filename to use for the file at it's destination
+     * @param Asset   $asset
+     * @param integer $folderId    Id of the folder of the destination
+     * @param string  $newFilename filename to use for the file at it's destination
      *
      * @throws AssetDisallowedExtensionException If the extension is not allowed.
      * @throws AssetConflictException            If there is a conflict.
      * @throws AssetLogicException               If the target folder does not exist.
-     * @return null
+     * @return void
      */
     public function moveAsset(Asset $asset, $folderId, $newFilename = "")
     {
@@ -969,7 +969,7 @@ class Assets extends Component
      * @param $folderId
      * @param $action
      *
-     * @return bool
+     * @return boolean
      */
     public function canUserPerformAction($folderId, $action)
     {
@@ -989,7 +989,7 @@ class Assets extends Component
      * @param $permission
      *
      * @throws Exception
-     * @return null
+     * @return void
      */
     public function checkPermissionByFolderIds($folderIds, $permission)
     {
@@ -1019,7 +1019,7 @@ class Assets extends Component
      * @param $permission
      *
      * @throws Exception
-     * @return null
+     * @return void
      */
     public function checkPermissionByFileIds($fileIds, $permission)
     {
@@ -1047,7 +1047,7 @@ class Assets extends Component
      *
      * @param string $fullPath The path to ensure the folder exists at.
      *
-     * @return int
+     * @return integer
      */
     public function ensureFolderByFullPathAndVolumeId($fullPath, $volumeId)
     {
@@ -1097,7 +1097,7 @@ class Assets extends Component
      *
      * @param VolumeFolderModel $folder
      *
-     * @return bool
+     * @return boolean
      */
     public function storeFolderRecord(VolumeFolderModel $folder)
     {
@@ -1127,7 +1127,7 @@ class Assets extends Component
      * @param string            $newFilename new filename to use
      *
      * @throws FileException
-     * @return null
+     * @return void
      */
     private function _moveFileToFolder(
         Asset $asset,
@@ -1280,7 +1280,7 @@ class Assets extends Component
      * @param Query          $query
      * @param FolderCriteria $criteria
      *
-     * @return null
+     * @return void
      */
     private function _applyFolderConditions($query, FolderCriteria $criteria)
     {
@@ -1340,7 +1340,7 @@ class Assets extends Component
      * @param Asset $asset
      *
      * @throws \Exception
-     * @return bool
+     * @return boolean
      */
     private function _storeAssetRecord(Asset $asset)
     {

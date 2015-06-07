@@ -35,17 +35,7 @@ class FileCache extends \yii\caching\FileCache
     // =========================================================================
 
     /**
-     * Stores a value identified by a key into cache. If the cache already contains such a key, the existing value and
-     * expiration time will be replaced with the new ones.
-     *
-     * @param string           $id           The key identifying the value to be cached
-     * @param mixed            $value        The value to be cached
-     * @param int              $expire       The number of seconds in which the cached value will expire. 0 means never
-     *                                       expire.
-     * @param ICacheDependency $dependency   Dependency of the cached item. If the dependency changes, the item is
-     *                                       labeled invalid.
-     *
-     * @return bool true if the value is successfully stored into cache, false otherwise.
+     * @inheritdoc
      */
     public function set($id, $value, $expire = null, $dependency = null)
     {
@@ -55,17 +45,7 @@ class FileCache extends \yii\caching\FileCache
     }
 
     /**
-     * Stores a value identified by a key into cache if the cache does not contain this key. Nothing will be done if the
-     * cache already contains the key.
-     *
-     * @param string            $id          The key identifying the value to be cached
-     * @param mixed             $value       The value to be cached
-     * @param int               $expire      The number of seconds in which the cached value will expire. 0 means never
-     *                                       expire.
-     * @param \ICacheDependency $dependency  Dependency of the cached item. If the dependency changes, the item is
-     *                                       labeled invalid.
-     *
-     * @return bool true if the value is successfully stored into cache, false otherwise.
+     * @inheritdoc
      */
     public function add($id, $value, $expire = null, $dependency = null)
     {
@@ -81,11 +61,11 @@ class FileCache extends \yii\caching\FileCache
      * Stores a value identified by a key in cache. This is the implementation of the method declared in the parent
      * class.
      *
-     * @param string $key    The key identifying the value to be cached
-     * @param string $value  The value to be cached
-     * @param int    $expire The number of seconds in which the cached value will expire. 0 means never expire.
+     * @param string  $key    The key identifying the value to be cached
+     * @param string  $value  The value to be cached
+     * @param integer $expire The number of seconds in which the cached value will expire. 0 means never expire.
      *
-     * @return bool true if the value is successfully stored into cache, false otherwise.
+     * @return boolean true if the value is successfully stored into cache, false otherwise.
      */
     protected function setValue($key, $value, $expire)
     {

@@ -9,7 +9,6 @@ namespace craft\app\dates;
 
 use Craft;
 use craft\app\helpers\DateTimeHelper;
-use craft\app\i18n\Locale;
 
 /**
  * Class DateTime
@@ -82,7 +81,7 @@ class DateTime extends \DateTime
     {
         if (!$timezone) {
             // Default to the current app timezone
-            $timezone = Craft::$app->timezone;
+            $timezone = Craft::$app->getTimeZone();
         }
 
         if (is_string($timezone)) {
@@ -240,7 +239,7 @@ class DateTime extends \DateTime
 
     /**
      * @param \DateTime $datetime2
-     * @param bool      $absolute
+     * @param boolean   $absolute
      *
      * @return DateInterval
      */

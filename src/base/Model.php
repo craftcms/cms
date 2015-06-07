@@ -10,8 +10,6 @@ namespace craft\app\base;
 use Craft;
 use craft\app\helpers\ArrayHelper;
 use craft\app\helpers\DateTimeHelper;
-use craft\app\helpers\ModelHelper;
-use craft\app\helpers\StringHelper;
 use yii\base\UnknownMethodException;
 
 /**
@@ -30,7 +28,7 @@ abstract class Model extends \yii\base\Model
      *
      * @param mixed $config Attribute values to populate the model with (name => value).
      *
-     * @return static The new model
+     * @return Model The new model
      */
     public static function create($config)
     {
@@ -43,8 +41,8 @@ abstract class Model extends \yii\base\Model
     /**
      * Populates a new model instance with a given set of attributes.
      *
-     * @param static $model  The model to be populated.
-     * @param array  $config Attribute values to populate the model with (name => value).
+     * @param Model $model  The model to be populated.
+     * @param array $config Attribute values to populate the model with (name => value).
      */
     public static function populateModel($model, $config)
     {

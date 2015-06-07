@@ -113,7 +113,7 @@ class CacheTokenParser extends \Twig_TokenParser
     /**
      * @param \Twig_Token $token
      *
-     * @return bool
+     * @return boolean
      */
     public function decideCacheEnd(\Twig_Token $token)
     {

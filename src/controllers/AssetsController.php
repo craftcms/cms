@@ -54,7 +54,7 @@ class AssetsController extends Controller
      *
      * @throws HttpException
      * @throws \Exception
-     * @return null
+     * @return void
      */
     public function actionSaveAsset()
     {
@@ -179,7 +179,7 @@ class AssetsController extends Controller
      * Replace a file
      *
      * @throws Exception
-     * @return null
+     * @return void
      */
     public function actionReplaceFile()
     {
@@ -214,7 +214,7 @@ class AssetsController extends Controller
     /**
      * Create a folder.
      *
-     * @return null
+     * @return void
      * @throws HttpException
      */
     public function actionCreateFolder()
@@ -257,7 +257,7 @@ class AssetsController extends Controller
     /**
      * Delete a folder.
      *
-     * @return null
+     * @return void
      */
     public function actionDeleteFolder()
     {
@@ -278,7 +278,7 @@ class AssetsController extends Controller
     /**
      * Rename a folder
      *
-     * @return null
+     * @return void
      */
     public function actionRenameFolder()
     {
@@ -306,7 +306,7 @@ class AssetsController extends Controller
     /**
      * Move a file or multiple files.
      *
-     * @return null
+     * @return void
      */
     public function actionMoveFile()
     {
@@ -372,7 +372,7 @@ class AssetsController extends Controller
     /**
      * Move a folder.
      *
-     * @return null
+     * @return void
      */
     public function actionMoveFolder()
     {
@@ -479,7 +479,7 @@ class AssetsController extends Controller
      * Generate a transform.
      *
      * @throws HttpException
-     * @return null
+     * @return void
      */
     public function actionGenerateTransform()
     {
@@ -514,7 +514,7 @@ class AssetsController extends Controller
     /**
      * Get information about available transforms.
      *
-     * @return null
+     * @return void
      */
     public function actionGetTransformInfo()
     {
@@ -540,7 +540,7 @@ class AssetsController extends Controller
      *
      * @param $folderId
      *
-     * @return null
+     * @return void
      */
     private function _checkUploadPermissions($folderId)
     {

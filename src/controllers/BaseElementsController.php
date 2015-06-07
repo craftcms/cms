@@ -32,7 +32,7 @@ abstract class BaseElementsController extends Controller
      * Initializes the application component.
      *
      * @throws HttpException
-     * @return null
+     * @return void
      */
     public function init()
     {

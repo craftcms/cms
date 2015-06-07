@@ -80,8 +80,8 @@ class Matrix extends Component
     /**
      * Returns the block types for a given Matrix field.
      *
-     * @param int    $fieldId The Matrix field ID.
-     * @param string $indexBy The property the block types should be indexed by. Defaults to `null`.
+     * @param integer $fieldId The Matrix field ID.
+     * @param string  $indexBy The property the block types should be indexed by. Defaults to `null`.
      *
      * @return MatrixBlockTypeModel[] An array of block types.
      */
@@ -119,7 +119,7 @@ class Matrix extends Component
     /**
      * Returns a block type by its ID.
      *
-     * @param int $blockTypeId The block type ID.
+     * @param integer $blockTypeId The block type ID.
      *
      * @return MatrixBlockTypeModel|null The block type, or `null` if it didn’t exist.
      */
@@ -150,10 +150,10 @@ class Matrix extends Component
      * If the block type doesn’t validate, any validation errors will be stored on the block type.
      *
      * @param MatrixBlockTypeModel $blockType       The block type.
-     * @param bool                 $validateUniques Whether the Name and Handle attributes should be validated to
+     * @param boolean              $validateUniques Whether the Name and Handle attributes should be validated to
      *                                              ensure they’re unique. Defaults to `true`.
      *
-     * @return bool Whether the block type validated.
+     * @return boolean Whether the block type validated.
      */
     public function validateBlockType(
         MatrixBlockTypeModel $blockType,
@@ -232,10 +232,10 @@ class Matrix extends Component
      * Saves a block type.
      *
      * @param MatrixBlockTypeModel $blockType The block type to be saved.
-     * @param bool                 $validate  Whether the block type should be validated before being saved.
+     * @param boolean              $validate  Whether the block type should be validated before being saved.
      *                                        Defaults to `true`.
      *
-     * @return bool
+     * @return boolean
      * @throws Exception
      * @throws \Exception
      */
@@ -381,7 +381,7 @@ class Matrix extends Component
      * @param MatrixBlockTypeModel $blockType The block type.
      *
      * @throws \Exception
-     * @return bool Whether the block type was deleted successfully.
+     * @return boolean Whether the block type was deleted successfully.
      */
     public function deleteBlockType(MatrixBlockTypeModel $blockType)
     {
@@ -434,7 +434,7 @@ class Matrix extends Component
      *
      * @param MatrixField $matrixField The Matrix field
      *
-     * @return bool Whether the settings validated.
+     * @return boolean Whether the settings validated.
      */
     public function validateFieldSettings(MatrixField $matrixField)
     {
@@ -480,10 +480,10 @@ class Matrix extends Component
      * Saves a Matrix field's settings.
      *
      * @param MatrixField $matrixField The Matrix field
-     * @param bool        $validate    Whether the settings should be validated before being saved.
+     * @param boolean     $validate    Whether the settings should be validated before being saved.
      *
      * @throws \Exception
-     * @return bool Whether the settings saved successfully.
+     * @return boolean Whether the settings saved successfully.
      */
     public function saveSettings(MatrixField $matrixField, $validate = true)
     {
@@ -564,7 +564,7 @@ class Matrix extends Component
      * @param MatrixField $matrixField The Matrix field.
      *
      * @throws \Exception
-     * @return bool Whether the field was deleted successfully.
+     * @return boolean Whether the field was deleted successfully.
      */
     public function deleteMatrixField(MatrixField $matrixField)
     {
@@ -604,7 +604,7 @@ class Matrix extends Component
      * Returns the content table name for a given Matrix field.
      *
      * @param MatrixField $matrixField  The Matrix field.
-     * @param bool        $useOldHandle Whether the method should use the field’s old handle when determining the table
+     * @param boolean     $useOldHandle Whether the method should use the field’s old handle when determining the table
      *                                  name (e.g. to get the existing table name, rather than the new one).
      *
      * @return string|false The table name, or `false` if $useOldHandle was set to `true` and there was no old handle.
@@ -635,9 +635,9 @@ class Matrix extends Component
     /**
      * Returns a block by its ID.
      *
-     * @param int    $blockId  The Matrix block’s ID.
-     * @param string $localeId The locale ID to return.
-     *                         Defaults to [[\craft\app\web\Application::language `Craft::$app->language`]].
+     * @param integer $blockId  The Matrix block’s ID.
+     * @param string  $localeId The locale ID to return.
+     *                          Defaults to [[\craft\app\web\Application::language `Craft::$app->language`]].
      *
      * @return MatrixBlock|null The Matrix block, or `null` if it didn’t exist.
      */
@@ -654,7 +654,7 @@ class Matrix extends Component
      *
      * @param MatrixBlock $block The Matrix block to validate.
      *
-     * @return bool Whether the block validated.
+     * @return boolean Whether the block validated.
      */
     public function validateBlock(MatrixBlock $block)
     {
@@ -686,11 +686,11 @@ class Matrix extends Component
      * Saves a block.
      *
      * @param MatrixBlock $block    The Matrix block.
-     * @param bool        $validate Whether the block should be validated before being saved.
+     * @param boolean     $validate Whether the block should be validated before being saved.
      *                              Defaults to `true`.
      *
      * @throws \Exception
-     * @return bool Whether the block was saved successfully.
+     * @return boolean Whether the block was saved successfully.
      */
     public function saveBlock(MatrixBlock $block, $validate = true)
     {
@@ -734,9 +734,9 @@ class Matrix extends Component
     /**
      * Deletes a block(s) by its ID.
      *
-     * @param int|array $blockIds The Matrix block ID(s).
+     * @param integer|array $blockIds The Matrix block ID(s).
      *
-     * @return bool Whether the block(s) were deleted successfully.
+     * @return boolean Whether the block(s) were deleted successfully.
      */
     public function deleteBlockById($blockIds)
     {
@@ -766,7 +766,7 @@ class Matrix extends Component
      * @param ElementInterface|Element $owner The element the field is associated with
      *
      * @throws \Exception
-     * @return bool Whether the field was saved successfully.
+     * @return boolean Whether the field was saved successfully.
      */
     public function saveField(MatrixField $field, ElementInterface $owner)
     {
@@ -982,7 +982,7 @@ class Matrix extends Component
      *
      * @param string $name
      *
-     * @return null
+     * @return void
      */
     private function _createContentTable($name)
     {
@@ -1009,7 +1009,7 @@ class Matrix extends Component
      * @param MatrixField      $field
      * @param array            $blocks
      *
-     * @return null
+     * @return void
      */
     private function _applyFieldTranslationSetting($owner, $field, $blocks)
     {

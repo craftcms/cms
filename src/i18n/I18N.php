@@ -331,7 +331,7 @@ class I18N extends \yii\i18n\I18N
      *
      * @param string $localeId
      *
-     * @return bool
+     * @return boolean
      */
     public function addSiteLocale($localeId)
     {
@@ -395,7 +395,7 @@ class I18N extends \yii\i18n\I18N
      *
      * @param array $localeIds
      *
-     * @return bool
+     * @return boolean
      */
     public function reorderSiteLocales($localeIds)
     {
@@ -428,7 +428,7 @@ class I18N extends \yii\i18n\I18N
      * @param string|null $transferContentTo The locale that should take over the deleted locale’s content.
      *
      * @throws \Exception
-     * @return bool Whether the locale was successfully deleted.
+     * @return boolean Whether the locale was successfully deleted.
      */
     public function deleteSiteLocale($localeId, $transferContentTo)
     {

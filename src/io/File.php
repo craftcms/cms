@@ -80,7 +80,7 @@ class File extends BaseIO
     }
 
     /**
-     * @param bool $includeExtension
+     * @param boolean $includeExtension
      *
      * @return mixed
      */
@@ -140,7 +140,7 @@ class File extends BaseIO
     }
 
     /**
-     * @return bool
+     * @return boolean
      */
     public function isEmpty()
     {
@@ -152,7 +152,7 @@ class File extends BaseIO
     }
 
     /**
-     * @param bool $array
+     * @param boolean $array
      *
      * @return mixed
      */
@@ -179,7 +179,7 @@ class File extends BaseIO
      * @param $contents
      * @param $append
      *
-     * @return bool
+     * @return boolean
      */
     public function write($contents, $append)
     {
@@ -195,7 +195,7 @@ class File extends BaseIO
     /**
      * @param $destination
      *
-     * @return bool
+     * @return boolean
      */
     public function copy($destination)
     {
@@ -207,7 +207,7 @@ class File extends BaseIO
     }
 
     /**
-     * @return bool
+     * @return boolean
      */
     public function clear()
     {
@@ -219,7 +219,7 @@ class File extends BaseIO
     }
 
     /**
-     * @return bool
+     * @return boolean
      */
     public function delete()
     {
@@ -243,7 +243,7 @@ class File extends BaseIO
     }
 
     /**
-     * @return bool
+     * @return boolean
      */
     public function touch()
     {

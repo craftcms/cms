@@ -249,7 +249,7 @@ class Sections extends Component
     /**
      * Gets the total number of sections.
      *
-     * @return int
+     * @return integer
      */
     public function getTotalSections()
     {
@@ -259,7 +259,7 @@ class Sections extends Component
     /**
      * Gets the total number of sections that are editable by the current user.
      *
-     * @return int
+     * @return integer
      */
     public function getTotalEditableSections()
     {
@@ -269,7 +269,7 @@ class Sections extends Component
     /**
      * Returns a section by its ID.
      *
-     * @param int $sectionId
+     * @param integer $sectionId
      *
      * @return Section|null
      */
@@ -324,7 +324,7 @@ class Sections extends Component
     /**
      * Returns a section’s locales.
      *
-     * @param int         $sectionId
+     * @param integer     $sectionId
      * @param string|null $indexBy
      *
      * @return SectionLocale[] The section’s locales.
@@ -354,7 +354,7 @@ class Sections extends Component
      *
      * @param Section $section
      *
-     * @return bool
+     * @return boolean
      * @throws Exception
      * @throws \Exception
      */
@@ -780,10 +780,10 @@ class Sections extends Component
     /**
      * Deletes a section by its ID.
      *
-     * @param int $sectionId
+     * @param integer $sectionId
      *
      * @throws \Exception
-     * @return bool
+     * @return boolean
      */
     public function deleteSectionById($sectionId)
     {
@@ -840,9 +840,10 @@ class Sections extends Component
             }
 
             // Fire an 'afterDeleteSection' event
-            $this->trigger(static::EVENT_AFTER_DELETE_SECTION, new SectionEvent([
-                'section' => $section
-            ]));
+            $this->trigger(static::EVENT_AFTER_DELETE_SECTION,
+                new SectionEvent([
+                    'section' => $section
+                ]));
 
             return true;
         } catch (\Exception $e) {
@@ -859,7 +860,7 @@ class Sections extends Component
      *
      * @param Section $section
      *
-     * @return bool
+     * @return boolean
      */
     public function isSectionTemplateValid(Section $section)
     {
@@ -888,7 +889,7 @@ class Sections extends Component
     /**
      * Returns a section’s entry types.
      *
-     * @param int         $sectionId
+     * @param integer     $sectionId
      * @param string|null $indexBy
      *
      * @return array
@@ -911,7 +912,7 @@ class Sections extends Component
     /**
      * Returns an entry type by its ID.
      *
-     * @param int $entryTypeId
+     * @param integer $entryTypeId
      *
      * @return EntryType|null
      */
@@ -935,7 +936,7 @@ class Sections extends Component
     /**
      * Returns entry types that have a given handle.
      *
-     * @param int $entryTypeHandle
+     * @param integer $entryTypeHandle
      *
      * @return array
      */
@@ -958,7 +959,7 @@ class Sections extends Component
      * @param EntryType $entryType
      *
      * @throws \Exception
-     * @return bool
+     * @return boolean
      */
     public function saveEntryType(EntryType $entryType)
     {
@@ -1062,7 +1063,7 @@ class Sections extends Component
      * @param array $entryTypeIds
      *
      * @throws \Exception
-     * @return bool
+     * @return boolean
      */
     public function reorderEntryTypes($entryTypeIds)
     {
@@ -1092,10 +1093,10 @@ class Sections extends Component
     /**
      * Deletes an entry type(s) by its ID.
      *
-     * @param int|array $entryTypeId
+     * @param integer|array $entryTypeId
      *
      * @throws \Exception
-     * @return bool
+     * @return boolean
      */
     public function deleteEntryTypeById($entryTypeId)
     {
@@ -1166,7 +1167,7 @@ class Sections extends Component
     /**
      * Returns whether a homepage section exists.
      *
-     * @return bool
+     * @return boolean
      */
     public function doesHomepageExist()
     {
@@ -1190,7 +1191,7 @@ class Sections extends Component
      *
      * @param string $type
      *
-     * @return bool
+     * @return boolean
      */
     public function canHaveMore($type)
     {

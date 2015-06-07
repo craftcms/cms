@@ -125,7 +125,7 @@ class Et extends Component
      * @param string $downloadPath
      * @param string $md5
      *
-     * @return bool
+     * @return boolean
      */
     public function downloadUpdate($downloadPath, $md5)
     {
@@ -201,7 +201,7 @@ class Et extends Component
      *
      * @param UpgradePurchaseModel $model
      *
-     * @return bool
+     * @return boolean
      */
     public function purchaseUpgrade(UpgradePurchaseModel $model)
     {

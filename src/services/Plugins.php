@@ -124,7 +124,7 @@ class Plugins extends Component
     /**
      * Returns whether plugins have been loaded yet for this request.
      *
-     * @return bool Whether plugins have been loaded yet.
+     * @return boolean Whether plugins have been loaded yet.
      */
     public function arePluginsLoaded()
     {
@@ -166,7 +166,7 @@ class Plugins extends Component
      *
      * @param string $handle The plugin’s handle.
      *
-     * @return bool Whether the plugin was enabled successfully.
+     * @return boolean Whether the plugin was enabled successfully.
      * @throws Exception if the plugin isn't installed
      */
     public function enablePlugin($handle)
@@ -202,7 +202,7 @@ class Plugins extends Component
      *
      * @param string $handle The plugin’s handle
      *
-     * @return bool Whether the plugin was disabled successfully
+     * @return boolean Whether the plugin was disabled successfully
      * @throws Exception if the plugin isn’t installed
      */
     public function disablePlugin($handle)
@@ -238,7 +238,7 @@ class Plugins extends Component
      * @param string $handle The plugin’s handle.
      *
      * @throws Exception|\Exception
-     * @return bool Whether the plugin was installed successfully.
+     * @return boolean Whether the plugin was installed successfully.
      */
     public function installPlugin($handle)
     {
@@ -302,7 +302,7 @@ class Plugins extends Component
      *
      * @param string $handle The plugin’s handle.
      *
-     * @return bool Whether the plugin was uninstalled successfully
+     * @return boolean Whether the plugin was uninstalled successfully
      * @throws Exception|\Exception
      */
     public function uninstallPlugin($handle)
@@ -369,7 +369,7 @@ class Plugins extends Component
      * @param PluginInterface|Plugin $plugin   The plugin.
      * @param array                  $settings The plugin’s new settings.
      *
-     * @return bool Whether the plugin’s settings were saved successfully.
+     * @return boolean Whether the plugin’s settings were saved successfully.
      */
     public function savePluginSettings(PluginInterface $plugin, $settings)
     {
@@ -396,9 +396,9 @@ class Plugins extends Component
     /**
      * Calls a method on all plugins that have it, and returns an array of the results, indexed by plugin handles.
      *
-     * @param string $method     The name of the method.
-     * @param array  $args       Any arguments that should be passed when calling the method on the plugins.
-     * @param bool   $ignoreNull Whether plugins that have the method but return a null response should be ignored. Defaults to false.
+     * @param string  $method     The name of the method.
+     * @param array   $args       Any arguments that should be passed when calling the method on the plugins.
+     * @param boolean $ignoreNull Whether plugins that have the method but return a null response should be ignored. Defaults to false.
      *
      * @return array An array of the plugins’ responses.
      */
@@ -423,9 +423,9 @@ class Plugins extends Component
     /**
      * Calls a method on the first plugin that has it, and returns the result.
      *
-     * @param string $method     The name of the method.
-     * @param array  $args       Any arguments that should be passed when calling the method on the plugins.
-     * @param bool   $ignoreNull Whether plugins that have the method but return a null response should be ignored. Defaults to false.
+     * @param string  $method     The name of the method.
+     * @param array   $args       Any arguments that should be passed when calling the method on the plugins.
+     * @param boolean $ignoreNull Whether plugins that have the method but return a null response should be ignored. Defaults to false.
      *
      * @return mixed The plugin’s response, or null.
      */
@@ -447,7 +447,7 @@ class Plugins extends Component
      *
      * @param PluginInterface|Plugin $plugin The plugin
      *
-     * @return bool Whether the plugin’s local version number is greater than the record we have in the database
+     * @return boolean Whether the plugin’s local version number is greater than the record we have in the database
      */
     public function doesPluginRequireDatabaseUpdate(PluginInterface $plugin)
     {
@@ -658,7 +658,7 @@ class Plugins extends Component
      * @param string $handle
      *
      * @throws Exception
-     * @return null
+     * @return void
      */
     private function _noPluginExists($handle)
     {

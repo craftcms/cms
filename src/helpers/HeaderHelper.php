@@ -62,7 +62,7 @@ class HeaderHelper
      *
      * @param string $extension
      *
-     * @return bool Whether setting the header was successful.
+     * @return boolean Whether setting the header was successful.
      */
     public static function setContentTypeByExtension($extension)
     {
@@ -88,7 +88,7 @@ class HeaderHelper
     /**
      * Tells the browser not to cache the following content
      *
-     * @return null
+     * @return void
      */
     public static function setNoCache()
     {
@@ -104,9 +104,9 @@ class HeaderHelper
     /**
      * Tells the browser not to request this content again the next $sec seconds but use the browser cached content.
      *
-     * @param int $seconds Time in seconds to hold in browser cache
+     * @param integer $seconds Time in seconds to hold in browser cache
      *
-     * @return null
+     * @return void
      */
     public static function setExpires($seconds = 300)
     {
@@ -122,7 +122,7 @@ class HeaderHelper
     /**
      * Tells the browser that the following content is private
      *
-     * @return null
+     * @return void
      */
     public static function setPrivate()
     {
@@ -138,7 +138,7 @@ class HeaderHelper
     /**
      * Tells the browser that the following content is public
      *
-     * @return null
+     * @return void
      */
     public static function setPublic()
     {
@@ -153,10 +153,10 @@ class HeaderHelper
     /**
      * Forces a file download. Be sure to give the right extension.
      *
-     * @param string $filename The name of the file when it's downloaded
-     * @param int    $fileSize The size in bytes.
+     * @param string  $filename The name of the file when it's downloaded
+     * @param integer $fileSize The size in bytes.
      *
-     * @return null
+     * @return void
      */
     public static function setDownload($filename, $fileSize = null)
     {
@@ -181,9 +181,9 @@ class HeaderHelper
      * Tells the browser the length of the following content. This mostly makes sense when using the download function
      * so the browser can calculate how many bytes are left during the process.
      *
-     * @param int $sizeInBytes The content size in bytes
+     * @param integer $sizeInBytes The content size in bytes
      *
-     * @return null
+     * @return void
      */
     public static function setLength($sizeInBytes)
     {
@@ -195,7 +195,7 @@ class HeaderHelper
      *
      * @param $key
      *
-     * @return null
+     * @return void
      */
     public static function removeHeader($key)
     {
@@ -207,7 +207,7 @@ class HeaderHelper
      *
      * @param string $name
      *
-     * @return bool
+     * @return boolean
      */
     public static function isHeaderSet($name)
     {
@@ -243,7 +243,7 @@ class HeaderHelper
      *
      * @param array $header Use key => value
      *
-     * @return null
+     * @return void
      */
     public static function setHeader($header)
     {

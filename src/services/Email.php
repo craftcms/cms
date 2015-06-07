@@ -87,7 +87,7 @@ class Email extends Component
      * @param array      $variables  Any variables that should be made available to the email’s plain text and HTML
      *                               bodies as they are being rendered with Twig, in addition to the `user` variable.
      *
-     * @return bool Whether the email was successfully sent.
+     * @return boolean Whether the email was successfully sent.
      */
     public function sendEmail(EmailModel $emailModel, $variables = [])
     {
@@ -123,7 +123,7 @@ class Email extends Component
      * @param array  $variables Any variables that should be passed to the email body template.
      *
      * @throws Exception
-     * @return bool Whether the email was successfully sent.
+     * @return boolean Whether the email was successfully sent.
      */
     public function sendEmailByKey(User $user, $key, $variables = [])
     {
@@ -203,7 +203,7 @@ class Email extends Component
      *
      * @param array $settings The email settings to test.
      *
-     * @return bool Whether the email was successfully sent.
+     * @return boolean Whether the email was successfully sent.
      */
     public function sendTestEmail($settings)
     {
@@ -239,7 +239,7 @@ class Email extends Component
      * @param array      $variables
      *
      * @throws Exception
-     * @return bool
+     * @return boolean
      */
     private function _sendEmail(
         User $user,
@@ -453,7 +453,7 @@ class Email extends Component
      * @param $emailSettings
      *
      * @throws Exception
-     * @return null
+     * @return void
      */
     private function _setSmtpSettings(&$email, $emailSettings)
     {

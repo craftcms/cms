@@ -7,6 +7,8 @@
 
 namespace craft\app\base;
 
+use DateTime;
+
 /**
  * SavableComponentTrait implements the common methods and properties for savable component classes.
  *

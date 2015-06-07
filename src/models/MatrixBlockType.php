@@ -131,7 +131,7 @@ class MatrixBlockType extends Model
     /**
      * Returns whether this is a new component.
      *
-     * @return bool
+     * @return boolean
      */
     public function isNew()
     {
@@ -153,7 +153,7 @@ class MatrixBlockType extends Model
      *
      * @param FieldInterface[]|Field[] $fields
      *
-     * @return null
+     * @return void
      */
     public function setFields($fields)
     {

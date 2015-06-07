@@ -33,7 +33,7 @@ class UserPermissions
     /**
      * Returns all of the group permissions a given user has.
      *
-     * @param int $userId
+     * @param integer $userId
      *
      * @return array
      */

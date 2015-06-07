@@ -41,7 +41,7 @@ class EmailMessagesController extends Controller
     /**
      * Saves an email message.
      *
-     * @return null
+     * @return void
      */
     public function actionSaveMessage()
     {

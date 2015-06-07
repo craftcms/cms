@@ -137,8 +137,8 @@ class RichText extends Field
         Craft::$app->getView()->registerJs('new Craft.RichTextInput('.
             '"'.Craft::$app->getView()->namespaceInputId($id).'", '.
             JsonHelper::encode($this->_getSectionSources()).', '.
-            JsonHelper::encode($this->_getCategorySources()).', ' .
-            JsonHelper::encode($this->_getAssetSources()).', ' .
+            JsonHelper::encode($this->_getCategorySources()).', '.
+            JsonHelper::encode($this->_getAssetSources()).', '.
             '"'.(!empty($element) ? $element->locale : Craft::$app->language).'", '.
             $configJs.', '.
             '"'.static::$_redactorLang.'"'.
@@ -308,8 +308,7 @@ class RichText extends Field
         $sources = [];
         $volumeIds = Craft::$app->getVolumes()->getAllVolumeIds();
 
-        foreach ($volumeIds as $volumeId)
-        {
+        foreach ($volumeIds as $volumeId) {
             $sources[] = 'volume:'.$volumeId;
         }
 
@@ -340,7 +339,7 @@ class RichText extends Field
      *
      * @param string $configJs
      *
-     * @return null
+     * @return void
      */
     private function _includeFieldResources($configJs)
     {
@@ -383,11 +382,11 @@ class RichText extends Field
     /**
      * Includes a plugin’s JS file, if it appears to be requested by the config file.
      *
-     * @param string $configJs
-     * @param string $plugin
-     * @param bool   $includeCss
+     * @param string  $configJs
+     * @param string  $plugin
+     * @param boolean $includeCss
      *
-     * @return null
+     * @return void
      */
     private function _maybeIncludeRedactorPlugin(
         $configJs,
@@ -408,7 +407,7 @@ class RichText extends Field
      *
      * @param string $lang
      *
-     * @return bool
+     * @return boolean
      */
     private function _includeRedactorLangFile($lang)
     {

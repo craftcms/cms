@@ -96,11 +96,11 @@ class Routes extends Component
     /**
      * Saves a new or existing route.
      *
-     * @param array       $urlParts The URL as defined by the user. This is an array where each element is either a
-     *                              string or an array containing the name of a subpattern and the subpattern.
-     * @param string      $template The template to route matching URLs to.
-     * @param int|null    $routeId  The route ID, if editing an existing route.
-     * @param string|null $locale
+     * @param array        $urlParts The URL as defined by the user. This is an array where each element is either a
+     *                               string or an array containing the name of a subpattern and the subpattern.
+     * @param string       $template The template to route matching URLs to.
+     * @param integer|null $routeId  The route ID, if editing an existing route.
+     * @param string|null  $locale
      *
      * @throws Exception
      * @return RouteRecord
@@ -162,9 +162,9 @@ class Routes extends Component
     /**
      * Deletes a route by its ID.
      *
-     * @param int $routeId
+     * @param integer $routeId
      *
-     * @return bool
+     * @return boolean
      */
     public function deleteRouteById($routeId)
     {
@@ -179,7 +179,7 @@ class Routes extends Component
      *
      * @param array $routeIds An array of each of the route IDs, in their new order.
      *
-     * @return null
+     * @return void
      */
     public function updateRouteOrder($routeIds)
     {

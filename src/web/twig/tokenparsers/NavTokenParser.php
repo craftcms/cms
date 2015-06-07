@@ -86,7 +86,7 @@ class NavTokenParser extends \Twig_TokenParser
     /**
      * @param \Twig_Token $token
      *
-     * @return bool
+     * @return boolean
      */
     public function decideNavFork(\Twig_Token $token)
     {
@@ -96,7 +96,7 @@ class NavTokenParser extends \Twig_TokenParser
     /**
      * @param \Twig_Token $token
      *
-     * @return bool
+     * @return boolean
      */
     public function decideChildrenFork(\Twig_Token $token)
     {
@@ -106,7 +106,7 @@ class NavTokenParser extends \Twig_TokenParser
     /**
      * @param \Twig_Token $token
      *
-     * @return bool
+     * @return boolean
      */
     public function decideChildrenEnd(\Twig_Token $token)
     {
@@ -116,7 +116,7 @@ class NavTokenParser extends \Twig_TokenParser
     /**
      * @param \Twig_Token $token
      *
-     * @return bool
+     * @return boolean
      */
     public function decideNavEnd(\Twig_Token $token)
     {

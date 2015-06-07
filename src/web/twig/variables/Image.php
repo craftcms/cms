@@ -61,7 +61,7 @@ class Image
     /**
      * Returns the image's width.
      *
-     * @return int
+     * @return integer
      */
     public function getWidth()
     {
@@ -73,7 +73,7 @@ class Image
     /**
      * Returns the image's height.
      *
-     * @return int
+     * @return integer
      */
     public function getHeight()
     {

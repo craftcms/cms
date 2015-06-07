@@ -40,7 +40,7 @@ class Updater
 
     /**
      * @throws Exception
-     * @return null
+     * @return void
      */
     public function getLatestUpdateInfo()
     {
@@ -131,7 +131,7 @@ class Updater
      * @param $uid
      *
      * @throws Exception
-     * @return null
+     * @return void
      */
     public function backupFiles($uid)
     {
@@ -150,7 +150,7 @@ class Updater
      * @param $uid
      *
      * @throws Exception
-     * @return null
+     * @return void
      */
     public function updateFiles($uid)
     {
@@ -189,7 +189,7 @@ class Updater
      * @param PluginInterface|Plugin $plugin
      *
      * @throws Exception
-     * @return null
+     * @return void
      */
     public function updateDatabase(PluginInterface $plugin = null)
     {
@@ -233,7 +233,7 @@ class Updater
      * @param $uid
      *
      * @throws Exception
-     * @return bool
+     * @return boolean
      */
     public function cleanUp($uid)
     {
@@ -266,7 +266,7 @@ class Updater
      *
      * @param string $unzipFolder
      *
-     * @return null
+     * @return void
      */
     private function _cleanTempFiles($unzipFolder)
     {
@@ -328,7 +328,7 @@ class Updater
      * @param string $downloadFilePath
      * @param string $sourceMD5
      *
-     * @return bool
+     * @return boolean
      */
     private function _validateUpdate($downloadFilePath, $sourceMD5)
     {
@@ -348,7 +348,7 @@ class Updater
      * @param string $downloadFilePath
      * @param string $unzipFolder
      *
-     * @return bool
+     * @return boolean
      */
     private function _unpackPackage($downloadFilePath, $unzipFolder)
     {
@@ -366,7 +366,7 @@ class Updater
      *
      * @param string $unzipFolder
      *
-     * @return bool
+     * @return boolean
      */
     private function _validateManifestPathsWritable($unzipFolder)
     {
@@ -407,7 +407,7 @@ class Updater
      *
      * @param string $unzipFolder
      *
-     * @return bool
+     * @return boolean
      */
     private function _backupFiles($unzipFolder)
     {

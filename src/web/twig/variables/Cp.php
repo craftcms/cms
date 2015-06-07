@@ -8,7 +8,6 @@
 namespace craft\app\web\twig\variables;
 
 use craft\app\helpers\CpHelper;
-use craft\app\helpers\StringHelper;
 use craft\app\helpers\UrlHelper;
 
 /**
@@ -169,7 +168,7 @@ class Cp
     /**
      * Returns whether the CP alerts are cached.
      *
-     * @return bool
+     * @return boolean
      */
     public function areAlertsCached()
     {

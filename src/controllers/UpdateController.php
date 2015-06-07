@@ -52,7 +52,7 @@ class UpdateController extends Controller
     /**
      * Returns the available updates.
      *
-     * @return null
+     * @return void
      */
     public function actionGetAvailableUpdates()
     {
@@ -82,7 +82,7 @@ class UpdateController extends Controller
     /**
      * Returns the update info JSON.
      *
-     * @return null
+     * @return void
      */
     public function actionGetUpdates()
     {
@@ -174,7 +174,7 @@ class UpdateController extends Controller
     /**
      * Called during both a manual and auto-update.
      *
-     * @return null
+     * @return void
      */
     public function actionPrepare()
     {
@@ -233,7 +233,7 @@ class UpdateController extends Controller
     /**
      * Called during an auto-update.
      *
-     * @return null
+     * @return void
      */
     public function actionProcessDownload()
     {
@@ -276,7 +276,7 @@ class UpdateController extends Controller
     /**
      * Called during an auto-update.
      *
-     * @return null
+     * @return void
      */
     public function actionBackupFiles()
     {
@@ -317,7 +317,7 @@ class UpdateController extends Controller
     /**
      * Called during an auto-update.
      *
-     * @return null
+     * @return void
      */
     public function actionUpdateFiles()
     {
@@ -360,7 +360,7 @@ class UpdateController extends Controller
     /**
      * Called during both a manual and auto-update.
      *
-     * @return null
+     * @return void
      */
     public function actionBackupDatabase()
     {
@@ -407,7 +407,7 @@ class UpdateController extends Controller
     /**
      * Called during both a manual and auto-update.
      *
-     * @return null
+     * @return void
      */
     public function actionUpdateDatabase()
     {
@@ -447,7 +447,7 @@ class UpdateController extends Controller
      *
      * Called during both a manual and auto-update.
      *
-     * @return null
+     * @return void
      */
     public function actionCleanUp()
     {
@@ -494,7 +494,7 @@ class UpdateController extends Controller
      * Can be called during both a manual and auto-update.
      *
      * @throws Exception
-     * @return null
+     * @return void
      */
     public function actionRollback()
     {
@@ -534,7 +534,7 @@ class UpdateController extends Controller
     /**
      * @param $data
      *
-     * @return bool
+     * @return boolean
      */
     private function _isManualUpdate($data)
     {

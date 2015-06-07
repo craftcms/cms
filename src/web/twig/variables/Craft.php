@@ -84,12 +84,12 @@ class Craft extends ServiceLocator
         ];
 
         switch (\Craft::$app->getEdition()) {
+            /** @noinspection PhpMissingBreakStatementInspection */
             case \Craft::Pro: {
                 $config['components'] = array_merge($config['components'], [
                     'userGroups' => 'craft\app\web\twig\variables\UserGroups',
                     'userPermissions' => 'craft\app\web\twig\variables\UserPermissions',
                 ]);
-                // Keep going...
             }
             case \Craft::Client: {
                 $config['components'] = array_merge($config['components'], [
@@ -162,7 +162,7 @@ class Craft extends ServiceLocator
     /**
      * Returns whether this site has multiple locales.
      *
-     * @return bool
+     * @return boolean
      */
     public function getIsLocalized()
     {

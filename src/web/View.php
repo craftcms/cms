@@ -138,7 +138,7 @@ class View extends \yii\web\View
         }
 
         if (!isset($this->_twigs[$loaderClass])) {
-            /* @var $loader TemplateLoader */
+            /** @var $loader TemplateLoader */
             if ($loaderClass === 'craft\app\web\twig\TemplateLoader') {
                 $loader = new $loaderClass($this);
             } else {
@@ -174,7 +174,7 @@ class View extends \yii\web\View
     /**
      * Returns whether a template is currently being rendered.
      *
-     * @return bool Whether a template is currently being rendered.
+     * @return boolean Whether a template is currently being rendered.
      */
     public function getIsRenderingTemplate()
     {
@@ -371,7 +371,7 @@ class View extends \yii\web\View
      *
      * @param string $name The name of the template.
      *
-     * @return bool Whether the template exists.
+     * @return boolean Whether the template exists.
      */
     public function doesTemplateExist($name)
     {
@@ -599,7 +599,7 @@ class View extends \yii\web\View
      * in a buffer, and you will have the opportunity to fetch all of that code via [[clearJsBuffer()]] without
      * having it actually get output to the page.
      *
-     * @return null
+     * @return void
      */
     public function startJsBuffer()
     {
@@ -611,7 +611,7 @@ class View extends \yii\web\View
     /**
      * Clears and ends a Javascript buffer, returning whatever Javascript code was included while the buffer was active.
      *
-     * @param bool $scriptTag Whether the Javascript code should be wrapped in a `<script>` tag. Defaults to `true`.
+     * @param boolean $scriptTag Whether the Javascript code should be wrapped in a `<script>` tag. Defaults to `true`.
      *
      * @return string|null|false Returns `false` if there isn’t an active Javascript buffer, `null` if there is an
      *                           active buffer but no Javascript code was actually added to it, or a string of the
@@ -750,7 +750,7 @@ class View extends \yii\web\View
     /**
      * Prepares translations for inclusion in the template, to be used by the JS.
      *
-     * @return null
+     * @return void
      */
     public function includeTranslations()
     {
@@ -806,7 +806,7 @@ class View extends \yii\web\View
      *
      * @param string $namespace The new namespace.
      *
-     * @return null
+     * @return void
      */
     public function setNamespace($namespace)
     {
@@ -850,9 +850,9 @@ class View extends \yii\web\View
      * <input type="text" name="foo[bar][title]" id="foo-bar-title">
      * ```
      *
-     * @param string $html            The template with the inputs.
-     * @param string $namespace       The namespace. Defaults to the [[getNamespace() active namespace]].
-     * @param bool   $otherAttributes Whether id=, for=, etc., should also be namespaced. Defaults to `true`.
+     * @param string  $html            The template with the inputs.
+     * @param string  $namespace       The namespace. Defaults to the [[getNamespace() active namespace]].
+     * @param boolean $otherAttributes Whether id=, for=, etc., should also be namespaced. Defaults to `true`.
      *
      * @return string The HTML with namespaced input names.
      */
@@ -989,7 +989,7 @@ class View extends \yii\web\View
      * @param string   $hook   The hook name.
      * @param callback $method The callback function.
      *
-     * @return null
+     * @return void
      */
     public function hook($hook, $method)
     {
@@ -1024,7 +1024,7 @@ class View extends \yii\web\View
      *
      * @param Event $event
      *
-     * @return null
+     * @return void
      */
     public function onPluginsLoaded(Event $event)
     {
@@ -1176,7 +1176,7 @@ class View extends \yii\web\View
      *
      * @param \Twig_Environment $twig
      *
-     * @return null
+     * @return void
      */
     private function _addPluginTwigExtensions(\Twig_Environment $twig)
     {

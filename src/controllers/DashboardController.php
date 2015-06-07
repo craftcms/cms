@@ -39,8 +39,8 @@ class DashboardController extends Controller
     /**
      * Edits a widget.
      *
-     * @param integer $widgetId              The widget’s ID, if editing an existing widget
-     * @param WidgetInterface|Widget $widget The widget being edited, if there were any validation errors
+     * @param integer                $widgetId The widget’s ID, if editing an existing widget
+     * @param WidgetInterface|Widget $widget   The widget being edited, if there were any validation errors
      *
      * @return string The rendering result
      * @throws HttpException if the requested widget doesn’t exist
@@ -117,7 +117,7 @@ class DashboardController extends Controller
     /**
      * Saves a widget.
      *
-     * @return null
+     * @return void
      */
     public function actionSaveWidget()
     {
@@ -154,7 +154,7 @@ class DashboardController extends Controller
     /**
      * Deletes a widget.
      *
-     * @return null
+     * @return void
      */
     public function actionDeleteWidget()
     {
@@ -170,7 +170,7 @@ class DashboardController extends Controller
     /**
      * Reorders widgets.
      *
-     * @return null
+     * @return void
      */
     public function actionReorderWidgets()
     {
@@ -186,7 +186,7 @@ class DashboardController extends Controller
     /**
      * Returns the items for the Feed widget.
      *
-     * @return null
+     * @return void
      */
     public function actionGetFeedItems()
     {
@@ -213,7 +213,7 @@ class DashboardController extends Controller
     /**
      * Creates a new support ticket for the GetHelp widget.
      *
-     * @return null
+     * @return void
      */
     public function actionSendSupportRequest()
     {

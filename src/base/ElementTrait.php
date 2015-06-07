@@ -7,6 +7,8 @@
 
 namespace craft\app\base;
 
+use DateTime;
+
 /**
  * ElementTrait implements the common methods and properties for element classes.
  *

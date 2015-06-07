@@ -23,10 +23,10 @@ abstract class Migration extends \yii\db\Migration
     /**
      * @inheritdoc
      *
-     * @param string $table               The table that new rows will be inserted into.
-     * @param array  $columns             The column data (name=>value) to be inserted into the table.
-     * @param bool   $includeAuditColumns Whether to include the data for the audit columns
-     *                                    (dateCreated, dateUpdated, uid).
+     * @param string  $table               The table that new rows will be inserted into.
+     * @param array   $columns             The column data (name=>value) to be inserted into the table.
+     * @param boolean $includeAuditColumns Whether to include the data for the audit columns
+     *                                     (dateCreated, dateUpdated, uid).
      */
     public function insert($table, $columns, $includeAuditColumns = true)
     {
@@ -62,12 +62,12 @@ abstract class Migration extends \yii\db\Migration
      * Creates and executes a command that will insert some given data into a table, or update an existing row
      * in the event of a key constraint violation.
      *
-     * @param string $table               The table that the row will be inserted into, or updated.
-     * @param array  $keyColumns          The key-constrained column data (name => value) to be inserted into the table
-     *                                    in the event that a new row is getting created
-     * @param array  $updateColumns       The non-key-constrained column data (name => value) to be inserted into the table
-     *                                    or updated in the existing row.
-     * @param bool   $includeAuditColumns Whether `dateCreated`, `dateUpdated`, and `uid` values should be added to $columns.
+     * @param string  $table               The table that the row will be inserted into, or updated.
+     * @param array   $keyColumns          The key-constrained column data (name => value) to be inserted into the table
+     *                                     in the event that a new row is getting created
+     * @param array   $updateColumns       The non-key-constrained column data (name => value) to be inserted into the table
+     *                                     or updated in the existing row.
+     * @param boolean $includeAuditColumns Whether `dateCreated`, `dateUpdated`, and `uid` values should be added to $columns.
      */
     public function insertOrUpdate(
         $table,
@@ -90,7 +90,7 @@ abstract class Migration extends \yii\db\Migration
      * @param string|array $conditions          The condition that will be put in the WHERE part. Please
      *                                          refer to [[Query::where()]] on how to specify condition.
      * @param array        $params              The parameters to be bound to the command.
-     * @param bool         $includeAuditColumns Whether the `dateUpdated` value should be added to $columns.
+     * @param boolean      $includeAuditColumns Whether the `dateUpdated` value should be added to $columns.
      */
     public function update(
         $table,
@@ -126,11 +126,11 @@ abstract class Migration extends \yii\db\Migration
     /**
      * @inheritdoc
      *
-     * @param string $table           The name of the table to be created. The name will be properly quoted by the method.
-     * @param array  $columns         The columns (name => definition) in the new table.
-     * @param null   $options         Additional SQL fragment that will be appended to the generated SQL.
-     * @param bool   $addIdColumn     Whether an `id` column should be added.
-     * @param bool   $addAuditColumns Whether `dateCreated` and `dateUpdated` columns should be added.
+     * @param string  $table           The name of the table to be created. The name will be properly quoted by the method.
+     * @param array   $columns         The columns (name => definition) in the new table.
+     * @param null    $options         Additional SQL fragment that will be appended to the generated SQL.
+     * @param boolean $addIdColumn     Whether an `id` column should be added.
+     * @param boolean $addAuditColumns Whether `dateCreated` and `dateUpdated` columns should be added.
      */
     public function createTable(
         $table,
@@ -149,7 +149,7 @@ abstract class Migration extends \yii\db\Migration
     /**
      * Creates and executes a SQL statement for dropping a DB table, if it exists.
      *
-     * @param $table The table to be dropped. The name will be properly quoted by the method.
+     * @param string $table The table to be dropped. The name will be properly quoted by the method.
      */
     public function dropTableIfExists($table)
     {

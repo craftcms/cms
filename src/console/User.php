@@ -35,7 +35,7 @@ class User extends Component
     /**
      * Returns a value indicating whether the user is a guest (not authenticated).
      *
-     * @return bool Whether the current user is a guest.
+     * @return boolean Whether the current user is a guest.
      */
     public function getIsGuest()
     {
@@ -60,7 +60,7 @@ class User extends Component
     /**
      * Returns whether the current user is an admin.
      *
-     * @return bool Whether the current user is an admin.
+     * @return boolean Whether the current user is an admin.
      */
     public function getIsAdmin()
     {
@@ -74,7 +74,7 @@ class User extends Component
      *
      * @param string $permissionName The name of the permission.
      *
-     * @return bool Whether the current user has the permission.
+     * @return boolean Whether the current user has the permission.
      */
     public function checkPermission($permissionName)
     {
@@ -86,7 +86,7 @@ class User extends Component
     /**
      * Returns the current identity object.
      *
-     * @return bool|string
+     * @return boolean|string
      */
     public function getIdentity()
     {

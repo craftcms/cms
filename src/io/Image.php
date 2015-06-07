@@ -97,7 +97,7 @@ class Image
     }
 
     /**
-     * @return int
+     * @return integer
      */
     public function getWidth()
     {
@@ -105,7 +105,7 @@ class Image
     }
 
     /**
-     * @return int
+     * @return integer
      */
     public function getHeight()
     {
@@ -164,10 +164,10 @@ class Image
     /**
      * Crops the image to the specified coordinates.
      *
-     * @param int $x1
-     * @param int $x2
-     * @param int $y1
-     * @param int $y2
+     * @param integer $x1
+     * @param integer $x2
+     * @param integer $y1
+     * @param integer $y2
      *
      * @return Image
      */
@@ -201,9 +201,9 @@ class Image
     /**
      * Scale the image to fit within the specified size.
      *
-     * @param int      $targetWidth
-     * @param int|null $targetHeight
-     * @param bool     $scaleIfSmaller
+     * @param integer      $targetWidth
+     * @param integer|null $targetHeight
+     * @param boolean      $scaleIfSmaller
      *
      * @return Image
      */
@@ -227,10 +227,10 @@ class Image
     /**
      * Scale and crop image to exactly fit the specified size.
      *
-     * @param int      $targetWidth
-     * @param int|null $targetHeight
-     * @param bool     $scaleIfSmaller
-     * @param string   $cropPositions
+     * @param integer      $targetWidth
+     * @param integer|null $targetHeight
+     * @param boolean      $scaleIfSmaller
+     * @param string       $cropPositions
      *
      * @return Image
      */
@@ -313,8 +313,8 @@ class Image
     /**
      * Re-sizes the image. If $height is not specified, it will default to $width, creating a square.
      *
-     * @param int      $targetWidth
-     * @param int|null $targetHeight
+     * @param integer      $targetWidth
+     * @param integer|null $targetHeight
      *
      * @return Image
      */
@@ -347,7 +347,7 @@ class Image
     /**
      * Rotate an image by degrees.
      *
-     * @param int $degrees
+     * @param integer $degrees
      *
      * @return Image
      */
@@ -361,7 +361,7 @@ class Image
     /**
      * Set image quality.
      *
-     * @param int $quality
+     * @param integer $quality
      *
      * @return Image
      */
@@ -375,11 +375,11 @@ class Image
     /**
      * Saves the image to the target path.
      *
-     * @param string $targetPath
-     * @param bool   $sanitizeAndAutoQuality
+     * @param string  $targetPath
+     * @param boolean $sanitizeAndAutoQuality
      *
      * @throws \Imagine\Exception\RuntimeException
-     * @return null
+     * @return void
      */
     public function saveAs($targetPath, $sanitizeAndAutoQuality = false)
     {
@@ -403,7 +403,7 @@ class Image
     /**
      * Returns true if Imagick is installed and says that the image is transparent.
      *
-     * @return bool
+     * @return boolean
      */
     public function isTransparent()
     {
@@ -441,11 +441,11 @@ class Image
     /**
      * Sets properties for text drawing on the image.
      *
-     * @param string $fontFile Path to the font file on server
-     * @param int    $size     Font size to use
-     * @param string $color    Font color to use in hex format
+     * @param string  $fontFile Path to the font file on server
+     * @param integer $size     Font size to use
+     * @param string  $color    Font color to use in hex format
      *
-     * @return null
+     * @return void
      */
     public function setFontProperties($fontFile, $size, $color)
     {
@@ -453,7 +453,8 @@ class Image
             $this->_palette = new RGB();
         }
 
-        $this->_font = $this->_instance->font($fontFile, $size, $this->_palette->color($color));
+        $this->_font = $this->_instance->font($fontFile, $size,
+            $this->_palette->color($color));
     }
 
     /**
@@ -482,7 +483,7 @@ class Image
      * @param integer $y
      * @param integer $angle
      *
-     * @return null
+     * @return void
      * @throws Exception
      */
     public function writeText($text, $x, $y, $angle = 0)
@@ -501,8 +502,8 @@ class Image
     /**
      * Normalizes the given dimensions.  If width or height is set to 'AUTO', we calculate the missing dimension.
      *
-     * @param int|string $width
-     * @param int|string $height
+     * @param integer|string $width
+     * @param integer|string $height
      *
      * @throws Exception
      */
@@ -521,14 +522,14 @@ class Image
     }
 
     /**
-     * @param     $tempFilename
-     * @param     $originalSize
-     * @param     $extension
-     * @param     $minQuality
-     * @param     $maxQuality
-     * @param int $step
+     * @param         $tempFilename
+     * @param         $originalSize
+     * @param         $extension
+     * @param         $minQuality
+     * @param         $maxQuality
+     * @param integer $step
      *
-     * @return bool
+     * @return boolean
      */
     private function _autoGuessImageQuality(
         $tempFilename,
@@ -594,8 +595,8 @@ class Image
     /**
      * Get save options.
      *
-     * @param int|null $quality
-     * @param string   $extension
+     * @param integer|null $quality
+     * @param string       $extension
      *
      * @return array
      */

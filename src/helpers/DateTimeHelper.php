@@ -37,7 +37,7 @@ class DateTimeHelper
      * @param mixed       $object
      * @param string|null $timezone            The [PHP timezone identifier](http://php.net/manual/en/timezones.php)
      *                                         that $date is set to, if not already specified in $date. Defaults to 'UTC'.
-     * @param bool        $setToSystemTimeZone Whether to set the resulting DateTime object to the system timezone.
+     * @param boolean     $setToSystemTimeZone Whether to set the resulting DateTime object to the system timezone.
      *
      * @return DateTime
      */
@@ -179,7 +179,7 @@ class DateTimeHelper
     }
 
     /**
-     * @return int
+     * @return integer
      */
     public static function currentTimeStamp()
     {
@@ -227,8 +227,8 @@ class DateTimeHelper
     }
 
     /**
-     * @param int  $seconds     The number of seconds
-     * @param bool $showSeconds Whether to output seconds or not
+     * @param integer $seconds     The number of seconds
+     * @param boolean $showSeconds Whether to output seconds or not
      *
      * @return string
      */
@@ -291,7 +291,7 @@ class DateTimeHelper
     /**
      * @param $timestamp
      *
-     * @return bool
+     * @return boolean
      */
     public static function isValidTimeStamp($timestamp)
     {
@@ -353,7 +353,7 @@ class DateTimeHelper
      *
      * @param string $date Unix timestamp
      *
-     * @return bool true if date is today, false otherwise.
+     * @return boolean true if date is today, false otherwise.
      */
     public static function isToday($date)
     {
@@ -368,7 +368,7 @@ class DateTimeHelper
      *
      * @param string $date Unix timestamp
      *
-     * @return bool true if date was yesterday, false otherwise.
+     * @return boolean true if date was yesterday, false otherwise.
      */
     public static function wasYesterday($date)
     {
@@ -383,7 +383,7 @@ class DateTimeHelper
      *
      * @param string $date Unix timestamp
      *
-     * @return bool true if date is in this year, false otherwise.
+     * @return boolean true if date is in this year, false otherwise.
      */
     public static function isThisYear($date)
     {
@@ -398,7 +398,7 @@ class DateTimeHelper
      *
      * @param string $date Unix timestamp
      *
-     * @return bool true if date is in this week, false otherwise.
+     * @return boolean true if date is in this week, false otherwise.
      */
     public static function isThisWeek($date)
     {
@@ -413,7 +413,7 @@ class DateTimeHelper
      *
      * @param string $date Unix timestamp
      *
-     * @return bool True if date is in this month, false otherwise.
+     * @return boolean True if date is in this month, false otherwise.
      */
     public static function isThisMonth($date)
     {
@@ -426,12 +426,12 @@ class DateTimeHelper
     /**
      * Returns true if specified datetime was within the interval specified, else false.
      *
-     * @param mixed $timeInterval The numeric value with space then time type. Example of valid types: 6 hours, 2 days,
-     *                            1 minute.
-     * @param mixed $dateString   The datestring or unix timestamp to compare
-     * @param int   $userOffset   User's offset from GMT (in hours)
+     * @param mixed   $timeInterval The numeric value with space then time type. Example of valid types: 6 hours, 2 days,
+     *                              1 minute.
+     * @param mixed   $dateString   The datestring or unix timestamp to compare
+     * @param integer $userOffset   User's offset from GMT (in hours)
      *
-     * @return bool Whether the $dateString was within the specified $timeInterval.
+     * @return boolean Whether the $dateString was within the specified $timeInterval.
      */
     public static function wasWithinLast(
         $timeInterval,
@@ -457,7 +457,7 @@ class DateTimeHelper
      *
      * @param mixed $date The datestring (a valid strtotime) or unix timestamp to check.
      *
-     * @return bool true if the specified date was in the past, false otherwise.
+     * @return boolean true if the specified date was in the past, false otherwise.
      */
     public static function wasInThePast($date)
     {
@@ -673,8 +673,8 @@ class DateTimeHelper
     /**
      * Returns a UNIX timestamp, given either a UNIX timestamp or a valid strtotime() date string.
      *
-     * @param string $dateString Datetime string
-     * @param int    $userOffset User's offset from GMT (in hours)
+     * @param string  $dateString Datetime string
+     * @param integer $userOffset User's offset from GMT (in hours)
      *
      * @return string The parsed timestamp.
      */
@@ -707,13 +707,13 @@ class DateTimeHelper
      *
      * @param $timeFormatString
      *
-     * @return string
+     * @return integer
      */
     public static function timeFormatToSeconds($timeFormatString)
     {
         $interval = new DateInterval($timeFormatString);
 
-        return $interval->toSeconds();
+        return (int)$interval->toSeconds();
     }
 
     /**
@@ -721,7 +721,7 @@ class DateTimeHelper
      *
      * @param $intervalString
      *
-     * @return bool
+     * @return boolean
      */
     public static function isValidIntervalString($intervalString)
     {

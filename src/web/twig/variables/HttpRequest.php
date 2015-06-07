@@ -24,17 +24,17 @@ class HttpRequest
     /**
      * Returns whether this is an Ajax request.
      *
-     * @return bool
+     * @return boolean
      */
     public function getIsAjax()
     {
-        return \Craft::$app->getRequest()->getIsAjaxRequest();
+        return \Craft::$app->getRequest()->getIsAjax();
     }
 
     /**
      * Returns whether this is a secure connection.
      *
-     * @return bool
+     * @return boolean
      */
     public function getIsSecure()
     {
@@ -44,7 +44,7 @@ class HttpRequest
     /**
      * Returns whether this is a Live Preview request.
      *
-     * @return bool
+     * @return boolean
      */
     public function getIsLivePreview()
     {
@@ -96,7 +96,7 @@ class HttpRequest
     /**
      * Returns a specific URI segment, or null if the segment doesn't exist.
      *
-     * @param int $num
+     * @param integer $num
      *
      * @return string|null
      */
@@ -203,9 +203,9 @@ class HttpRequest
     /**
      * Returns whether the request is coming from a mobile browser.
      *
-     * @param bool $detectTablets
+     * @param boolean $detectTablets
      *
-     * @return bool
+     * @return boolean
      */
     public function getIsMobileBrowser($detectTablets = false)
     {
@@ -215,7 +215,7 @@ class HttpRequest
     /**
      * Returns the page number if this is a paginated request.
      *
-     * @return int
+     * @return integer
      */
     public function getPageNum()
     {
@@ -264,13 +264,13 @@ class HttpRequest
      */
     public function getRequestUri()
     {
-        return \Craft::$app->getRequest()->getRequestUri();
+        return \Craft::$app->getRequest()->getUrl();
     }
 
     /**
      * Returns the server port number.
      *
-     * @return int
+     * @return integer
      */
     public function getServerPort()
     {
@@ -284,7 +284,7 @@ class HttpRequest
      */
     public function getUrlReferrer()
     {
-        return \Craft::$app->getRequest()->getUrlReferrer();
+        return \Craft::$app->getRequest()->getReferrer();
     }
 
     /**
@@ -321,7 +321,7 @@ class HttpRequest
      * Returns the port to use for insecure requests. Defaults to 80, or the port specified by the server if the current
      * request is insecure.
      *
-     * @return int
+     * @return integer
      */
     public function getPort()
     {

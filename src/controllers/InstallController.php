@@ -74,7 +74,7 @@ class InstallController extends Controller
     /**
      * Validates the user account credentials.
      *
-     * @return null
+     * @return void
      */
     public function actionValidateAccount()
     {
@@ -103,7 +103,7 @@ class InstallController extends Controller
     /**
      * Validates the site settings.
      *
-     * @return null
+     * @return void
      */
     public function actionValidateSite()
     {
@@ -126,7 +126,7 @@ class InstallController extends Controller
     /**
      * Install action.
      *
-     * @return null
+     * @return void
      */
     public function actionInstall()
     {

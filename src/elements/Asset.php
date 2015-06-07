@@ -349,8 +349,8 @@ class Asset extends Element
     /**
      * Transforms an asset folder tree into a source list.
      *
-     * @param array $folders
-     * @param bool  $includeNestedFolders
+     * @param array   $folders
+     * @param boolean $includeNestedFolders
      *
      * @return array
      */
@@ -372,7 +372,7 @@ class Asset extends Element
      * Transforms an VolumeFolderModel into a source info array.
      *
      * @param VolumeFolder $folder
-     * @param bool         $includeNestedFolders
+     * @param boolean      $includeNestedFolders
      *
      * @return array
      */
@@ -738,7 +738,7 @@ class Asset extends Element
     /**
      * Does this file have a thumbnail?
      *
-     * @return bool
+     * @return boolean
      */
     public function hasThumb()
     {
@@ -777,7 +777,7 @@ class Asset extends Element
      *
      * @param string|null $transform The optional transform handle for which to get thumbnail.
      *
-     * @return bool|float|mixed
+     * @return boolean|float|mixed
      */
 
     public function getHeight($transform = null)
@@ -794,7 +794,7 @@ class Asset extends Element
      *
      * @param string|null $transform The optional transform handle for which to get thumbnail.
      *
-     * @return bool|float|mixed
+     * @return boolean|float|mixed
      */
     public function getWidth($transform = null)
     {

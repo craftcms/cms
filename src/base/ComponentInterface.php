@@ -23,7 +23,7 @@ interface ComponentInterface
     /**
      * Returns the fully qualified name of this class.
      *
-     * @return static The fully qualified name of this class.
+     * @return self|string The fully qualified name of this class.
      */
     public static function className();
 
@@ -46,7 +46,7 @@ interface ComponentInterface
      *
      * @param array $config The config settings to populate the component with
      *
-     * @return static The new component object
+     * @return self The new component object
      */
     public static function create($config);
 

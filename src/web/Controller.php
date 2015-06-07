@@ -12,7 +12,7 @@ use craft\app\errors\HttpException;
 use craft\app\helpers\HeaderHelper;
 use craft\app\helpers\IOHelper;
 use craft\app\helpers\UrlHelper;
-use craft\app\web\assets\AppAsset;
+use yii\base\InvalidParamException;
 
 /**
  * Controller is a base class that all controllers in Craft extend.
@@ -103,7 +103,7 @@ abstract class Controller extends \yii\web\Controller
     /**
      * Redirects the user to the login template if they're not logged in.
      *
-     * @return null
+     * @return void
      */
     public function requireLogin()
     {
@@ -119,7 +119,7 @@ abstract class Controller extends \yii\web\Controller
      * Throws a 403 error if the current user is not an admin.
      *
      * @throws HttpException
-     * @return null
+     * @return void
      */
     public function requireAdmin()
     {
@@ -139,7 +139,7 @@ abstract class Controller extends \yii\web\Controller
      * @param string $permissionName The name of the permission.
      *
      * @throws HttpException
-     * @return null
+     * @return void
      */
     public function requirePermission($permissionName)
     {
@@ -154,7 +154,7 @@ abstract class Controller extends \yii\web\Controller
      * @param string $action The name of the action to check.
      *
      * @throws HttpException
-     * @return null
+     * @return void
      */
     public function requireAuthorization($action)
     {
@@ -167,7 +167,7 @@ abstract class Controller extends \yii\web\Controller
      * Throws a 400 error if this isn’t a POST request
      *
      * @throws HttpException
-     * @return null
+     * @return void
      */
     public function requirePostRequest()
     {
@@ -180,7 +180,7 @@ abstract class Controller extends \yii\web\Controller
      * Throws a 400 error if this isn’t an Ajax request.
      *
      * @throws HttpException
-     * @return null
+     * @return void
      */
     public function requireAjaxRequest()
     {
@@ -193,7 +193,7 @@ abstract class Controller extends \yii\web\Controller
      * Throws a 400 error if the current request doesn’t have a valid token.
      *
      * @throws HttpException
-     * @return null
+     * @return void
      */
     public function requireToken()
     {
@@ -209,7 +209,7 @@ abstract class Controller extends \yii\web\Controller
      * @param string $default The default URL to redirect them to, if no 'redirect' parameter exists. If this is left
      *                        null, then the current request’s path will be used.
      *
-     * @return null
+     * @return void
      */
     public function redirectToPostedUrl($object = null, $default = null)
     {
@@ -299,7 +299,7 @@ abstract class Controller extends \yii\web\Controller
      *
      * @param string $error The error message.
      *
-     * @return null
+     * @return void
      */
     public function asErrorJson($error)
     {

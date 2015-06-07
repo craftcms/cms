@@ -7,6 +7,8 @@
 
 namespace craft\app\web\twig\variables;
 
+use craft\app\base\ToolInterface;
+
 /**
  * ToolInfo represents a tool class, making information about it available to the templates.
  *

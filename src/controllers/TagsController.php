@@ -50,8 +50,8 @@ class TagsController extends Controller
     /**
      * Edit a tag group.
      *
-     * @param int $tagGroupId    The tag group’s ID, if any.
-     * @param TagGroup $tagGroup The tag group being edited, if there were any validation errors.
+     * @param integer  $tagGroupId The tag group’s ID, if any.
+     * @param TagGroup $tagGroup   The tag group being edited, if there were any validation errors.
      *
      * @return string The rendering result
      * @throws HttpException
@@ -116,7 +116,7 @@ class TagsController extends Controller
     /**
      * Save a tag group.
      *
-     * @return null
+     * @return void
      */
     public function actionSaveTagGroup()
     {
@@ -155,7 +155,7 @@ class TagsController extends Controller
     /**
      * Deletes a tag group.
      *
-     * @return null
+     * @return void
      */
     public function actionDeleteTagGroup()
     {
@@ -173,7 +173,7 @@ class TagsController extends Controller
     /**
      * Searches for tags.
      *
-     * @return null
+     * @return void
      */
     public function actionSearchForTags()
     {
@@ -226,7 +226,7 @@ class TagsController extends Controller
     /**
      * Creates a new tag.
      *
-     * @return null
+     * @return void
      */
     public function actionCreateTag()
     {

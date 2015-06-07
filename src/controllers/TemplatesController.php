@@ -136,11 +136,11 @@ class TemplatesController extends Controller
      * Renders an error template.
      *
      * @throws \Exception
-     * @return null
+     * @return void
      */
     public function actionRenderError()
     {
-        /* @var $errorHandler \yii\web\ErrorHandler */
+        /** @var $errorHandler \yii\web\ErrorHandler */
         $errorHandler = Craft::$app->getErrorHandler();
         $exception = $errorHandler->exception;
 

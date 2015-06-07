@@ -175,7 +175,7 @@ class Volumes extends Component
     /**
      * Returns the total number of volumes
      *
-     * @return int
+     * @return integer
      */
     public function getTotalVolumes()
     {
@@ -185,7 +185,7 @@ class Volumes extends Component
     /**
      * Returns the total number of volumes that are viewable by the current user.
      *
-     * @return int
+     * @return integer
      */
     public function getTotalViewableVolumes()
     {
@@ -232,7 +232,7 @@ class Volumes extends Component
     /**
      * Returns a volume by its ID.
      *
-     * @param int $volumeId
+     * @param integer $volumeId
      *
      * @return Volume|null
      */
@@ -278,7 +278,7 @@ class Volumes extends Component
     /**
      * Saves an asset volume.
      *
-     * @param VolumeInterface|Volume $volume the Volume to be saved.
+     * @param VolumeInterface|Volume $volume   the Volume to be saved.
      * @param boolean                $validate $validate Whether the volume should be validate first
      *
      * @return boolean Whether the field was saved successfully
@@ -366,7 +366,7 @@ class Volumes extends Component
      * @param array $volumeIds
      *
      * @throws \Exception
-     * @return bool
+     * @return boolean
      */
     public function reorderVolumes($volumeIds)
     {
@@ -419,10 +419,10 @@ class Volumes extends Component
     /**
      * Deletes an asset volume by its ID.
      *
-     * @param int $volumeId
+     * @param integer $volumeId
      *
      * @throws \Exception
-     * @return bool
+     * @return boolean
      */
     public function deleteVolumeById($volumeId)
     {
@@ -478,7 +478,7 @@ class Volumes extends Component
     /**
      * Gets a volume's record.
      *
-     * @param int $volumeId
+     * @param integer $volumeId
      *
      * @throws VolumeException
      * @return AssetVolumeRecord

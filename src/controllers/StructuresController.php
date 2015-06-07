@@ -83,7 +83,7 @@ class StructuresController extends Controller
     /**
      * Returns the descendant level delta for a given element.
      *
-     * @return null
+     * @return void
      */
     public function actionGetElementLevelDelta()
     {
@@ -98,7 +98,7 @@ class StructuresController extends Controller
     /**
      * Moves an element within a structure.
      *
-     * @return null
+     * @return void
      */
     public function actionMoveElement()
     {

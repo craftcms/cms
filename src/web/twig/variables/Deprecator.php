@@ -21,7 +21,7 @@ class Deprecator
     /**
      * Returns the total number of deprecation errors that have been logged.
      *
-     * @return int
+     * @return integer
      */
     public function getTotalLogs()
     {

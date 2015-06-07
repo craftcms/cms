@@ -23,7 +23,7 @@ class UserSession
     /**
      * Returns whether the user is logged in.
      *
-     * @return bool
+     * @return boolean
      */
     public function isLoggedIn()
     {
@@ -43,7 +43,7 @@ class UserSession
     /**
      * Returns the number of seconds the user will be logged in for.
      *
-     * @return int
+     * @return integer
      */
     public function getRemainingSessionTime()
     {
@@ -79,7 +79,7 @@ class UserSession
     /**
      * Returns all flash data for the user.
      *
-     * @param bool $delete
+     * @param boolean $delete
      *
      * @return array
      */
@@ -91,9 +91,9 @@ class UserSession
     /**
      * Returns a flash message by a given key.
      *
-     * @param string $key
-     * @param mixed  $defaultValue
-     * @param bool   $delete
+     * @param string  $key
+     * @param mixed   $defaultValue
+     * @param boolean $delete
      *
      * @return mixed
      */

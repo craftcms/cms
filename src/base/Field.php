@@ -345,7 +345,7 @@ abstract class Field extends SavableComponent implements FieldInterface
      *
      * @param ElementInterface|Element|null $element
      *
-     * @return bool
+     * @return boolean
      */
     protected function isFresh($element)
     {

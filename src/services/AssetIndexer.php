@@ -202,7 +202,7 @@ class AssetIndexer extends Component
      *
      * @param Volume $volume
      *
-     * @return int
+     * @return integer
      */
     public function ensureTopFolder(Volume $volume)
     {
@@ -268,7 +268,7 @@ class AssetIndexer extends Component
      * @param $entryId
      * @param $recordId
      *
-     * @return null
+     * @return void
      */
     public function updateIndexEntryRecordId($entryId, $recordId)
     {
@@ -320,12 +320,12 @@ class AssetIndexer extends Component
     /**
      * Index a single file by Volume and path.
      *
-     * @param Volume $volume
-     * @param        $path
-     * @param bool   $checkIfExists
+     * @param Volume  $volume
+     * @param         $path
+     * @param boolean $checkIfExists
      *
      * @throws \craft\app\errors\VolumeFileNotFoundException
-     * @return bool|Asset
+     * @return boolean|Asset
      */
     public function indexFile(Volume $volume, $path, $checkIfExists = true)
     {
@@ -344,7 +344,7 @@ class AssetIndexer extends Component
     /**
      * Indexes a file.
      *
-     * @param Volume $volume The volume.
+     * @param Volume $volume  The volume.
      * @param string $uriPath The URI path fo the file to index.
      *
      * @return Asset|bool

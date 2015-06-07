@@ -41,7 +41,7 @@ class LocalizationController extends Controller
     /**
      * Adds a new a locale.
      *
-     * @return null
+     * @return void
      */
     public function actionAddLocale()
     {
@@ -57,7 +57,7 @@ class LocalizationController extends Controller
     /**
      * Saves the new locale order.
      *
-     * @return null
+     * @return void
      */
     public function actionReorderLocales()
     {
@@ -73,7 +73,7 @@ class LocalizationController extends Controller
     /**
      * Deletes a locale.
      *
-     * @return null
+     * @return void
      */
     public function actionDeleteLocale()
     {

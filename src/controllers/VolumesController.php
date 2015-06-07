@@ -55,8 +55,8 @@ class VolumesController extends Controller
     /**
      * Edit an asset volume.
      *
-     * @param int $volumeId  The volume’s ID, if editing an existing volume.
-     * @param Volume $volume The volume being edited, if there were any validation errors.
+     * @param integer $volumeId The volume’s ID, if editing an existing volume.
+     * @param Volume  $volume   The volume being edited, if there were any validation errors.
      *
      * @return string The rendering result
      * @throws HttpException
@@ -149,7 +149,7 @@ class VolumesController extends Controller
     /**
      * Saves an asset volume.
      *
-     * @return null
+     * @return void
      */
     public function actionSaveVolume()
     {
@@ -197,7 +197,7 @@ class VolumesController extends Controller
     /**
      * Reorders asset volumes.
      *
-     * @return null
+     * @return void
      */
     public function actionReorderVolumes()
     {
@@ -213,7 +213,7 @@ class VolumesController extends Controller
     /**
      * Deletes an asset volume.
      *
-     * @return null
+     * @return void
      */
     public function actionDeleteVolume()
     {
@@ -232,7 +232,7 @@ class VolumesController extends Controller
      *
      * This is used to, for example, load Amazon S3 bucket list or Rackspace Cloud Storage Containers.
      *
-     * @return null
+     * @return void
      */
     public function actionLoadVolumeTypeData()
     {

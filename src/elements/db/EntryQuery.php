@@ -122,7 +122,7 @@ class EntryQuery extends ElementQuery
      *
      * @param boolean $value The property value (defaults to true)
      *
-     * @return static The query object itself
+     * @return self The query object itself
      */
     public function editable($value = true)
     {
@@ -136,7 +136,7 @@ class EntryQuery extends ElementQuery
      *
      * @param string|string[]|Section $value The property value
      *
-     * @return static The query object itself
+     * @return self The query object itself
      */
     public function section($value)
     {
@@ -160,7 +160,7 @@ class EntryQuery extends ElementQuery
      *
      * @param integer|integer[] $value The property value
      *
-     * @return static The query object itself
+     * @return self The query object itself
      */
     public function sectionId($value)
     {
@@ -174,7 +174,7 @@ class EntryQuery extends ElementQuery
      *
      * @param string|string[]|EntryType $value The property value
      *
-     * @return static The query object itself
+     * @return self The query object itself
      */
     public function type($value)
     {
@@ -197,7 +197,7 @@ class EntryQuery extends ElementQuery
      *
      * @param integer|integer[] $value The property value
      *
-     * @return static The query object itself
+     * @return self The query object itself
      */
     public function typeId($value)
     {
@@ -211,7 +211,7 @@ class EntryQuery extends ElementQuery
      *
      * @param integer|integer[] $value The property value
      *
-     * @return static The query object itself
+     * @return self The query object itself
      */
     public function authorId($value)
     {
@@ -225,7 +225,7 @@ class EntryQuery extends ElementQuery
      *
      * @param string|string[]| $value The property value
      *
-     * @return static The query object itself
+     * @return self The query object itself
      */
     public function authorGroup($value)
     {
@@ -248,7 +248,7 @@ class EntryQuery extends ElementQuery
      *
      * @param integer|integer[] $value The property value
      *
-     * @return static The query object itself
+     * @return self The query object itself
      */
     public function authorGroupId($value)
     {
@@ -262,7 +262,7 @@ class EntryQuery extends ElementQuery
      *
      * @param mixed $value The property value
      *
-     * @return static The query object itself
+     * @return self The query object itself
      */
     public function postDate($value)
     {
@@ -276,7 +276,7 @@ class EntryQuery extends ElementQuery
      *
      * @param DateTime|string $value The property value
      *
-     * @return static The query object itself
+     * @return self The query object itself
      */
     public function before($value)
     {
@@ -295,7 +295,7 @@ class EntryQuery extends ElementQuery
      *
      * @param DateTime|string $value The property value
      *
-     * @return static The query object itself
+     * @return self The query object itself
      */
     public function after($value)
     {
@@ -314,7 +314,7 @@ class EntryQuery extends ElementQuery
      *
      * @param mixed $value The property value
      *
-     * @return static The query object itself
+     * @return self The query object itself
      */
     public function expiryDate($value)
     {

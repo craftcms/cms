@@ -1,5 +1,5 @@
 <?php
-/* @var $panel craft\app\debug\InfoPanel */
+/** @var $panel craft\app\debug\InfoPanel */
 ?>
 <div class="yii-debug-toolbar-block">
     <a href="<?= $panel->getUrl() ?>">

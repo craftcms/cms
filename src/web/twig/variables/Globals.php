@@ -48,7 +48,7 @@ class Globals
     /**
      * Returns the total number of global sets.
      *
-     * @return int
+     * @return integer
      */
     public function getTotalSets()
     {
@@ -58,7 +58,7 @@ class Globals
     /**
      * Returns the total number of global sets that are editable by the current user.
      *
-     * @return int
+     * @return integer
      */
     public function getTotalEditableSets()
     {
@@ -68,7 +68,7 @@ class Globals
     /**
      * Returns a global set by its ID.
      *
-     * @param int         $globalSetId
+     * @param integer     $globalSetId
      * @param string|null $localeId
      *
      * @return GlobalSet|null

@@ -70,7 +70,7 @@ class Updates extends Component
     /**
      * @param $craftReleases
      *
-     * @return bool
+     * @return boolean
      */
     public function criticalCraftUpdateAvailable($craftReleases)
     {
@@ -86,7 +86,7 @@ class Updates extends Component
     /**
      * @param $plugins
      *
-     * @return bool
+     * @return boolean
      */
     public function criticalPluginUpdateAvailable($plugins)
     {
@@ -104,7 +104,7 @@ class Updates extends Component
     }
 
     /**
-     * @return bool
+     * @return boolean
      */
     public function isUpdateInfoCached()
     {
@@ -112,7 +112,7 @@ class Updates extends Component
     }
 
     /**
-     * @return int
+     * @return integer
      */
     public function getTotalAvailableUpdates()
     {
@@ -163,7 +163,7 @@ class Updates extends Component
     }
 
     /**
-     * @param bool $forceRefresh
+     * @param boolean $forceRefresh
      *
      * @return UpdateModel|false
      */
@@ -201,7 +201,7 @@ class Updates extends Component
     }
 
     /**
-     * @return bool
+     * @return boolean
      */
     public function flushUpdateInfoFromCache()
     {
@@ -219,7 +219,7 @@ class Updates extends Component
     /**
      * @param PluginInterface|Plugin $plugin
      *
-     * @return bool
+     * @return boolean
      */
     public function setNewPluginInfo(PluginInterface $plugin)
     {
@@ -484,8 +484,8 @@ class Updates extends Component
     }
 
     /**
-     * @param string $uid
-     * @param bool   $dbBackupPath
+     * @param string  $uid
+     * @param boolean $dbBackupPath
      *
      * @return array
      */
@@ -530,7 +530,7 @@ class Updates extends Component
     /**
      * Returns if a plugin needs to run a database update or not.
      *
-     * @return bool
+     * @return boolean
      */
     public function isPluginDbUpdateNeeded()
     {
@@ -548,7 +548,7 @@ class Updates extends Component
     /**
      * Returns whether a different Craft build has been uploaded.
      *
-     * @return bool
+     * @return boolean
      */
     public function hasCraftBuildChanged()
     {
@@ -561,7 +561,7 @@ class Updates extends Component
      * Returns true is the build stored in craft_info is less than the minimum required build on the file system. This
      * effectively makes sure that a user cannot manually update past a manual breakpoint.
      *
-     * @return bool
+     * @return boolean
      */
     public function isBreakpointUpdateNeeded()
     {
@@ -573,7 +573,7 @@ class Updates extends Component
     /**
      * Returns whether the uploaded DB schema is equal to or greater than the installed schema
      *
-     * @return bool
+     * @return boolean
      */
     public function isSchemaVersionCompatible()
     {
@@ -586,7 +586,7 @@ class Updates extends Component
     /**
      * Returns whether Craft needs to run any database migrations.
      *
-     * @return bool
+     * @return boolean
      */
     public function isCraftDbMigrationNeeded()
     {
@@ -602,7 +602,7 @@ class Updates extends Component
     /**
      * Updates the Craft version info in the craft_info table.
      *
-     * @return bool
+     * @return boolean
      */
     public function updateCraftVersionInfo()
     {

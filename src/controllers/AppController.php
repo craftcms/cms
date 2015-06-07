@@ -34,7 +34,7 @@ class AppController extends Controller
     /**
      * Returns update info.
      *
-     * @return null
+     * @return void
      */
     public function actionCheckForUpdates()
     {
@@ -52,7 +52,7 @@ class AppController extends Controller
     /**
      * Loads any CP alerts.
      *
-     * @return null
+     * @return void
      */
     public function actionGetCpAlerts()
     {
@@ -70,7 +70,7 @@ class AppController extends Controller
     /**
      * Shuns a CP alert for 24 hours.
      *
-     * @return null
+     * @return void
      */
     public function actionShunCpAlert()
     {
@@ -98,7 +98,7 @@ class AppController extends Controller
     /**
      * Transfers the Craft license to the current domain.
      *
-     * @return null
+     * @return void
      */
     public function actionTransferLicenseToCurrentDomain()
     {
@@ -120,7 +120,7 @@ class AppController extends Controller
     /**
      * Returns the edition upgrade modal.
      *
-     * @return null
+     * @return void
      */
     public function actionGetUpgradeModal()
     {
@@ -183,7 +183,7 @@ class AppController extends Controller
     /**
      * Passes along a given CC token to Elliott to purchase a Craft edition.
      *
-     * @return null
+     * @return void
      */
     public function actionPurchaseUpgrade()
     {
@@ -213,7 +213,7 @@ class AppController extends Controller
      * Tries a Craft edition on for size.
      *
      * @throws Exception
-     * @return null
+     * @return void
      */
     public function actionTestUpgrade()
     {
@@ -236,7 +236,7 @@ class AppController extends Controller
     /**
      * Switches Craft to the edition it's licensed for.
      *
-     * @return null
+     * @return void
      */
     public function actionSwitchToLicensedEdition()
     {

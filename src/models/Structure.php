@@ -61,7 +61,7 @@ class Structure extends Model
     /**
      * Returns whether elements in this structure can be sorted by the current user.
      *
-     * @return bool
+     * @return boolean
      */
     public function isSortable()
     {

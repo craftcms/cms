@@ -3,6 +3,8 @@ namespace craft\app\base;
 
 use craft\app\errors\VolumeFileExistsException;
 use craft\app\errors\VolumeFolderExistsException;
+use League\Flysystem\FileExistsException;
+use League\Flysystem\FileNotFoundException;
 
 
 /**
@@ -23,7 +25,7 @@ interface VolumeInterface
     /**
      * Returns whether this source stores files locally on the server.
      *
-     * @return bool Whether files are stored locally.
+     * @return boolean Whether files are stored locally.
      */
     public static function isLocal();
 
@@ -56,11 +58,11 @@ interface VolumeInterface
     /**
      * Creates a file.
      *
-     * @param string $path   The path of the file, relative to the source’s root.
-     * @param string $stream The stream to file
+     * @param string   $path   The path of the file, relative to the source’s root.
+     * @param resource $stream The stream to file
      *
      * @throws VolumeFileExistsException
-     * @return bool Whether the operation was successful.
+     * @return boolean Whether the operation was successful.
      */
     public function createFileByStream($path, $stream);
 
@@ -70,7 +72,7 @@ interface VolumeInterface
      * @param string $path   The path of the file, relative to the source’s root.
      * @param string $stream The new contents of the file as a stream.
      *
-     * @return bool Whether the operation was successful.
+     * @return boolean Whether the operation was successful.
      */
     public function updateFileByStream($path, $stream);
 
@@ -82,7 +84,7 @@ interface VolumeInterface
      *
      * @throws FileExistsException
      *
-     * @return bool Whether the operation was successful.
+     * @return boolean Whether the operation was successful.
      */
     public function createOrUpdateFile($path, $contents);
 
@@ -102,7 +104,7 @@ interface VolumeInterface
      *
      * @param string $path The path of the file, relative to the source’s root.
      *
-     * @return bool Whether the file exists.
+     * @return boolean Whether the file exists.
      */
     public function fileExists($path);
 
@@ -111,7 +113,7 @@ interface VolumeInterface
      *
      * @param string $path The path of the file, relative to the source’s root.
      *
-     * @return bool Whether the operation was successful.
+     * @return boolean Whether the operation was successful.
      */
     public function deleteFile($path);
 
@@ -135,7 +137,7 @@ interface VolumeInterface
      * @throws FileExistsException
      * @throws FileNotFoundException
      *
-     * @return bool Whether the operation was successful.
+     * @return boolean Whether the operation was successful.
      */
     public function renameFile($path, $newPath);
 
@@ -145,7 +147,7 @@ interface VolumeInterface
      * @param string $path    The path of the file, relative to the source’s root.
      * @param string $newPath The path of the new file, relative to the source’s root.
      *
-     * @return bool Whether the operation was successful.
+     * @return boolean Whether the operation was successful.
      */
     public function copyFile($path, $newPath);
 
@@ -176,7 +178,7 @@ interface VolumeInterface
      *
      * @param string $path The path of the file, relative to the source’s root.
      *
-     * @return int|false The file’s size in bytes, or `false` if it could not be determined.
+     * @return integer|false The file’s size in bytes, or `false` if it could not be determined.
      */
     public function getSize($path);
 
@@ -186,7 +188,7 @@ interface VolumeInterface
      * @param string $path The path of the directory, relative to the source’s root.
      *
      * @throws VolumeFolderExistsException
-     * @return bool Whether the operation was successful.
+     * @return boolean Whether the operation was successful.
      */
     public function createDir($path);
 
@@ -195,7 +197,7 @@ interface VolumeInterface
      *
      * @param string $path The path of the directory, relative to the source’s root.
      *
-     * @return bool Whether the operation was successful.
+     * @return boolean Whether the operation was successful.
      */
     public function deleteDir($path);
 }

@@ -3,7 +3,7 @@
 use craft\app\dates\DateTime;
 use craft\app\helpers\AppHelper;
 
-/* @var $panel craft\app\debug\InfoPanel */
+/** @var $panel craft\app\debug\InfoPanel */
 ?>
     <h1>Info</h1>
 

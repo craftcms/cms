@@ -44,7 +44,7 @@ interface ZipInterface
      * @param string $basePath   The root path of the file(s) to be added that will be removed before adding.
      * @param string $pathPrefix A path to be prepended to each file before it is added to the zip.
      *
-     * @return bool
+     * @return boolean
      */
     public function add($sourceZip, $filePath, $basePath, $pathPrefix = null);
 }

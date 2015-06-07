@@ -177,7 +177,7 @@ class Email extends Model
      * @param string $encoding File encoding
      * @param string $type     File extension MIME type.
      *
-     * @return null
+     * @return void
      */
     public function addStringAttachment(
         $string,
@@ -203,7 +203,7 @@ class Email extends Model
      * @param string $encoding File encoding (see $Encoding).
      * @param string $type     File extension (MIME) type.
      *
-     * @return bool
+     * @return boolean
      */
     public function addAttachment(
         $path,

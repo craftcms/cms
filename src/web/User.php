@@ -118,7 +118,7 @@ class User extends \yii\web\User
     /**
      * Removes the stored return URL, if there is one.
      *
-     * @return null
+     * @return void
      * @see getReturnUrl()
      */
     public function removeReturnUrl()
@@ -139,7 +139,7 @@ class User extends \yii\web\User
     /**
      * Returns how many seconds are left in the current user session.
      *
-     * @return int The seconds left in the session, or -1 if their session will expire when their HTTP session ends.
+     * @return integer The seconds left in the session, or -1 if their session will expire when their HTTP session ends.
      */
     public function getRemainingSessionTime()
     {
@@ -167,7 +167,7 @@ class User extends \yii\web\User
     /**
      * Returns whether the current user is an admin.
      *
-     * @return bool Whether the current user is an admin.
+     * @return boolean Whether the current user is an admin.
      */
     public function getIsAdmin()
     {
@@ -181,7 +181,7 @@ class User extends \yii\web\User
      *
      * @param string $permissionName The name of the permission.
      *
-     * @return bool Whether the current user has the permission.
+     * @return boolean Whether the current user has the permission.
      */
     public function checkPermission($permissionName)
     {
@@ -283,6 +283,7 @@ class User extends \yii\web\User
      */
     protected function afterLogout($identity)
     {
+        /** @var UserElement $identity */
         // Delete the impersonation session, if there is one
         Craft::$app->getSession()->remove(UserElement::IMPERSONATE_KEY);
 
@@ -314,7 +315,7 @@ class User extends \yii\web\User
     /**
      * Statically sets the identity in the event that this request should not be extending it.
      *
-     * @return bool
+     * @return boolean
      */
     private function _setStaticIdentity()
     {
@@ -336,7 +337,7 @@ class User extends \yii\web\User
             if ($id === null) {
                 $identity = null;
             } else {
-                /* @var $class IdentityInterface */
+                /** @var $class IdentityInterface */
                 $class = $this->identityClass;
                 $identity = $class::findIdentity($id);
             }

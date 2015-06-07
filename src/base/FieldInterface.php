@@ -189,7 +189,7 @@ interface FieldInterface extends SavableComponentInterface
     /**
      * Performs any actions after a field is saved.
      *
-     * @return null
+     * @return void
      */
     public function afterSave();
 
@@ -203,7 +203,7 @@ interface FieldInterface extends SavableComponentInterface
     /**
      * Performs any actions after a field is deleted.
      *
-     * @return null
+     * @return void
      */
     public function afterDelete();
 

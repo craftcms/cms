@@ -3,9 +3,9 @@
 use craft\app\debug\DeprecatedPanel;
 use craft\app\models\DeprecationError;
 
-/* @var $panel DeprecatedPanel */
-/* @var $caption string */
-/* @var $logs DeprecationError[] */
+/** @var $panel DeprecatedPanel */
+/** @var $caption string */
+/** @var $logs DeprecationError[] */
 ?>
 
 <?php if (!empty($caption)): ?>

@@ -9,6 +9,7 @@ namespace craft\app\web;
 
 use Craft;
 use craft\app\helpers\IOHelper;
+use Exception;
 use yii\web\HttpException;
 
 /**
@@ -25,7 +26,7 @@ class Response extends \yii\web\Response
     /**
      * Sets headers that will instruct the client to cache this response.
      *
-     * @return static The response object itself.
+     * @return self The response object itself.
      */
     public function setCacheHeaders()
     {
@@ -45,7 +46,7 @@ class Response extends \yii\web\Response
      *
      * @param string $path The file to read the last modified date from.
      *
-     * @return static The response object itself.
+     * @return self The response object itself.
      */
     public function setLastModifiedHeader($path)
     {
@@ -66,7 +67,7 @@ class Response extends \yii\web\Response
      * @param string $attachmentName
      * @param array  $options
      *
-     * @return static
+     * @return self
      */
     public function sendFile($filePath, $attachmentName = null, $options = [])
     {
@@ -82,7 +83,7 @@ class Response extends \yii\web\Response
      * @param string $attachmentName
      * @param array  $options
      *
-     * @return static
+     * @return self
      * @throws HttpException
      */
     public function sendContentAsFile($content, $attachmentName, $options = [])
@@ -100,7 +101,7 @@ class Response extends \yii\web\Response
      *
      * @see http://stackoverflow.com/a/141026
      * @throws Exception An exception will be thrown if content has already been output.
-     * @return null
+     * @return void
      */
     public function sendAndClose()
     {

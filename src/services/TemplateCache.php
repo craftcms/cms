@@ -110,8 +110,8 @@ class TemplateCache extends Component
     /**
      * Returns a cached template by its key.
      *
-     * @param string $key    The template cache key
-     * @param bool   $global Whether the cache would have been stored globally.
+     * @param string  $key    The template cache key
+     * @param boolean $global Whether the cache would have been stored globally.
      *
      * @return string|null
      */
@@ -155,7 +155,7 @@ class TemplateCache extends Component
      *
      * @param string $key The template cache key.
      *
-     * @return null
+     * @return void
      */
     public function startTemplateCache($key)
     {
@@ -183,7 +183,7 @@ class TemplateCache extends Component
      *
      * @param Event $event The 'afterPrepare' element query event
      *
-     * @return null
+     * @return void
      */
     public function includeElementQueryInTemplateCaches(Event $event)
     {
@@ -207,9 +207,9 @@ class TemplateCache extends Component
     /**
      * Includes an element in any active caches.
      *
-     * @param int $elementId The element ID.
+     * @param integer $elementId The element ID.
      *
-     * @return null
+     * @return void
      */
     public function includeElementInTemplateCaches($elementId)
     {
@@ -233,13 +233,13 @@ class TemplateCache extends Component
      * Ends a template cache.
      *
      * @param string      $key        The template cache key.
-     * @param bool        $global     Whether the cache should be stored globally.
+     * @param boolean     $global     Whether the cache should be stored globally.
      * @param string|null $duration   How long the cache should be stored for.
      * @param mixed|null  $expiration When the cache should expire.
      * @param string      $body       The contents of the cache.
      *
      * @throws \Exception
-     * @return null
+     * @return void
      */
     public function endTemplateCache(
         $key,
@@ -348,9 +348,9 @@ class TemplateCache extends Component
     /**
      * Deletes a cache by its ID(s).
      *
-     * @param int|array $cacheId The cache ID.
+     * @param integer|array $cacheId The cache ID.
      *
-     * @return bool
+     * @return boolean
      */
     public function deleteCacheById($cacheId)
     {
@@ -377,7 +377,7 @@ class TemplateCache extends Component
      *
      * @param string $elementType The element class.
      *
-     * @return bool
+     * @return boolean
      */
     public function deleteCachesByElementType($elementType)
     {
@@ -406,7 +406,7 @@ class TemplateCache extends Component
      *
      * @param ElementInterface|ElementInterface[] $elements The element(s) whose caches should be deleted.
      *
-     * @return bool
+     * @return boolean
      */
     public function deleteCachesByElement($elements)
     {
@@ -439,12 +439,12 @@ class TemplateCache extends Component
     /**
      * Deletes caches that include an a given element ID(s).
      *
-     * @param int|array $elementId         The ID of the element(s) whose caches should be cleared.
-     * @param bool      $deleteQueryCaches Whether a DeleteStaleTemplateCaches task should be created, deleting any
-     *                                     query caches that may now involve this element, but hadn't previously.
-     *                                     (Defaults to `true`.)
+     * @param integer|array $elementId         The ID of the element(s) whose caches should be cleared.
+     * @param boolean       $deleteQueryCaches Whether a DeleteStaleTemplateCaches task should be created, deleting any
+     *                                         query caches that may now involve this element, but hadn't previously.
+     *                                         (Defaults to `true`.)
      *
-     * @return bool
+     * @return boolean
      */
     public function deleteCachesByElementId(
         $elementId,
@@ -515,7 +515,7 @@ class TemplateCache extends Component
      * @param ElementQuery $query The element query that should be used to find elements whose caches
      *                            should be deleted.
      *
-     * @return bool
+     * @return boolean
      */
     public function deleteCachesByElementQuery(ElementQuery $query)
     {
@@ -534,7 +534,7 @@ class TemplateCache extends Component
     /**
      * Deletes a cache by its key(s).
      *
-     * @param int|array $key The cache key(s) to delete.
+     * @param integer|array $key The cache key(s) to delete.
      *
      * @return boolean
      */
@@ -555,13 +555,13 @@ class TemplateCache extends Component
         $affectedRows = Craft::$app->getDb()->createCommand()->delete(
             static::$_templateCachesTable, $condition, $params)->execute();
 
-        return (bool) $affectedRows;
+        return (bool)$affectedRows;
     }
 
     /**
      * Deletes any expired caches.
      *
-     * @return bool
+     * @return boolean
      */
     public function deleteExpiredCaches()
     {
@@ -582,7 +582,7 @@ class TemplateCache extends Component
     /**
      * Deletes any expired caches if we haven't already done that within the past 24 hours.
      *
-     * @return bool
+     * @return boolean
      */
     public function deleteExpiredCachesIfOverdue()
     {
@@ -610,7 +610,7 @@ class TemplateCache extends Component
     /**
      * Deletes all the template caches.
      *
-     * @return bool
+     * @return boolean
      */
     public function deleteAllCaches()
     {

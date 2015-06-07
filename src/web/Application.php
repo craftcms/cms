@@ -17,6 +17,7 @@ use craft\app\helpers\UrlHelper;
 use yii\base\InvalidRouteException;
 use yii\web\ForbiddenHttpException;
 use yii\web\NotFoundHttpException;
+use yii\web\Response;
 
 /**
  * Craft Web Application class
@@ -68,7 +69,7 @@ class Application extends \yii\web\Application
     /**
      * Initializes the application.
      *
-     * @return null
+     * @return void
      */
     public function init()
     {
@@ -87,7 +88,7 @@ class Application extends \yii\web\Application
 
         // If there is a custom appId set, apply it here.
         if ($appId = $this->getConfig()->get('appId')) {
-            $this->setId($appId);
+            $this->id = $appId;
         }
 
         // Set the timezone
@@ -108,7 +109,7 @@ class Application extends \yii\web\Application
      *
      * @param Request $request the request to be handled
      *
-     * @return \yii\web\Response the resulting response
+     * @return Response the resulting response
      * @throws HttpException
      * @throws ServiceUnavailableHttpException
      * @throws \craft\app\errors\DbConnectException
@@ -237,7 +238,7 @@ class Application extends \yii\web\Application
      *
      * @param array $data
      *
-     * @return null
+     * @return void
      */
     public function returnAjaxException($data)
     {
@@ -259,12 +260,12 @@ class Application extends \yii\web\Application
     /**
      * Formats a PHP error into JSON before returning it to the client.
      *
-     * @param int    $code    The error code.
-     * @param string $message The error message.
-     * @param string $file    The error file.
-     * @param string $line    The error line.
+     * @param integer $code    The error code.
+     * @param string  $message The error message.
+     * @param string  $file    The error file.
+     * @param string  $line    The error line.
      *
-     * @return null
+     * @return void
      */
     public function returnAjaxError($code, $message, $file, $line)
     {
@@ -378,14 +379,14 @@ class Application extends \yii\web\Application
 
     /**
      * @inheritdoc
-     * @return \yii\web\Response|null The result of the action, normalized into a Response object
+     * @return Response|null The result of the action, normalized into a Response object
      */
     public function runAction($route, $params = [])
     {
         $result = parent::runAction($route, $params);
 
         if ($result !== null) {
-            if ($result instanceof \yii\web\Response) {
+            if ($result instanceof Response) {
                 return $result;
             } else {
                 $response = $this->getResponse();
@@ -418,7 +419,7 @@ class Application extends \yii\web\Application
      * Processes resource requests.
      *
      * @throws HttpException
-     * @return null
+     * @return void
      */
     private function _processResourceRequest()
     {
@@ -438,7 +439,7 @@ class Application extends \yii\web\Application
      *
      * @param Request $request
      *
-     * @return \yii\web\Response|null
+     * @return Response|null
      * @throws NotFoundHttpException
      * @throws \yii\base\ExitException
      */
@@ -482,7 +483,7 @@ class Application extends \yii\web\Application
      *
      * @param Request $request
      *
-     * @return \yii\web\Response|null
+     * @return Response|null
      * @throws NotFoundHttpException if the requested action route is invalid
      */
     private function _processActionRequest($request)
@@ -507,7 +508,7 @@ class Application extends \yii\web\Application
     /**
      * @param Request $request
      *
-     * @return bool
+     * @return boolean
      */
     private function _isSpecialCaseActionRequest($request)
     {
@@ -532,7 +533,7 @@ class Application extends \yii\web\Application
      *
      * @param Request|null $request
      *
-     * @return null
+     * @return Response|null
      */
     private function _processRequirementsCheck($request)
     {
@@ -568,7 +569,7 @@ class Application extends \yii\web\Application
     /**
      * @param Request $request
      *
-     * @return \yii\web\Response|null
+     * @return Response|null
      * @throws HttpException
      * @throws ServiceUnavailableHttpException
      * @throws \yii\base\ExitException
@@ -626,7 +627,7 @@ class Application extends \yii\web\Application
      *
      * @param Request $request
      *
-     * @return null
+     * @return void
      * @throws ServiceUnavailableHttpException
      */
     private function _enforceSystemStatusPermissions($request)
@@ -634,7 +635,7 @@ class Application extends \yii\web\Application
         if (!$this->_checkSystemStatusPermissions()) {
             $error = null;
 
-            if ($this->getUser()->isLoggedIn()) {
+            if (!$this->getUser()->getIsGuest()) {
                 if ($request->getIsCpRequest()) {
                     $error = Craft::t('app',
                         'Your account doesn’t have permission to access the Control Panel when the system is offline.');
@@ -661,7 +662,7 @@ class Application extends \yii\web\Application
     /**
      * Returns whether the user has permission to be accessing the site/CP while it's offline, if it is.
      *
-     * @return bool
+     * @return boolean
      */
     private function _checkSystemStatusPermissions()
     {

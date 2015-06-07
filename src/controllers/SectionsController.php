@@ -68,7 +68,7 @@ class SectionsController extends Controller
     /**
      * Edit a section.
      *
-     * @param int     $sectionId The section’s id, if any.
+     * @param integer $sectionId The section’s id, if any.
      * @param Section $section   The section being edited, if there were any validation errors.
      *
      * @return string The rendering result
@@ -159,7 +159,7 @@ class SectionsController extends Controller
     /**
      * Saves a section.
      *
-     * @return null
+     * @return void
      */
     public function actionSaveSection()
     {
@@ -235,7 +235,7 @@ class SectionsController extends Controller
     /**
      * Deletes a section.
      *
-     * @return null
+     * @return void
      */
     public function actionDeleteSection()
     {
@@ -254,7 +254,7 @@ class SectionsController extends Controller
     /**
      * Entry types index
      *
-     * @param int $sectionId The ID of the section whose entry types we’re listing
+     * @param integer $sectionId The ID of the section whose entry types we’re listing
      *
      * @return string The rendering result
      * @throws HttpException
@@ -297,8 +297,8 @@ class SectionsController extends Controller
     /**
      * Edit an entry type
      *
-     * @param int       $sectionId   The section’s ID.
-     * @param int       $entryTypeId The entry type’s ID, if any.
+     * @param integer   $sectionId   The section’s ID.
+     * @param integer   $entryTypeId The entry type’s ID, if any.
      * @param EntryType $entryType   The entry type being edited, if there were any validation errors.
      *
      * @return string The rendering result
@@ -370,7 +370,7 @@ class SectionsController extends Controller
      * @throws Exception
      * @throws HttpException
      * @throws \Exception
-     * @return null
+     * @return void
      */
     public function actionSaveEntryType()
     {
@@ -429,7 +429,7 @@ class SectionsController extends Controller
     /**
      * Reorders entry types.
      *
-     * @return null
+     * @return void
      */
     public function actionReorderEntryTypes()
     {
@@ -445,7 +445,7 @@ class SectionsController extends Controller
     /**
      * Deletes an entry type.
      *
-     * @return null
+     * @return void
      */
     public function actionDeleteEntryType()
     {

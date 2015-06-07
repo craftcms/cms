@@ -30,7 +30,7 @@ class GlobalsController extends Controller
     /**
      * Saves a global set.
      *
-     * @return null
+     * @return void
      */
     public function actionSaveSet()
     {
@@ -69,7 +69,7 @@ class GlobalsController extends Controller
     /**
      * Deletes a global set.
      *
-     * @return null
+     * @return void
      */
     public function actionDeleteSet()
     {
@@ -87,9 +87,9 @@ class GlobalsController extends Controller
     /**
      * Edits a global set's content.
      *
-     * @param string $globalSetHandle The global set’s handle.
-     * @param string $localeId        The locale ID, if specified.
-     * @param GlobalSet $globalSet    The global set being edited, if there were any validation errors.
+     * @param string    $globalSetHandle The global set’s handle.
+     * @param string    $localeId        The locale ID, if specified.
+     * @param GlobalSet $globalSet       The global set being edited, if there were any validation errors.
      *
      * @return string The rendering result
      * @throws HttpException
@@ -152,7 +152,7 @@ class GlobalsController extends Controller
      * Saves a global set's content.
      *
      * @throws Exception
-     * @return null
+     * @return void
      */
     public function actionSaveContent()
     {

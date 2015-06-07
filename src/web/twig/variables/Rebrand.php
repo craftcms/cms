@@ -38,7 +38,7 @@ class Rebrand
     /**
      * Returns whether a custom logo has been uploaded.
      *
-     * @return bool
+     * @return boolean
      */
     public function isLogoUploaded()
     {

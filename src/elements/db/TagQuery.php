@@ -95,7 +95,7 @@ class TagQuery extends ElementQuery
      *
      * @param string|string[]|TagGroup $value The property value
      *
-     * @return static The query object itself
+     * @return self The query object itself
      */
     public function group($value)
     {
@@ -118,7 +118,7 @@ class TagQuery extends ElementQuery
      *
      * @param integer|integer[] $value The property value
      *
-     * @return static The query object itself
+     * @return self The query object itself
      */
     public function groupId($value)
     {

@@ -45,7 +45,7 @@ class App
     /**
      * Returns the edition Craft is actually licensed to run in.
      *
-     * @return int|null
+     * @return integer|null
      */
     public function getLicensedEdition()
     {
@@ -65,7 +65,7 @@ class App
     /**
      * Returns whether Craft is running with the wrong edition.
      *
-     * @return bool
+     * @return boolean
      */
     public function hasWrongEdition()
     {
@@ -75,7 +75,7 @@ class App
     /**
      * Returns whether Craft is elligible to be upgraded to a different edition.
      *
-     * @return bool
+     * @return boolean
      */
     public function canUpgradeEdition()
     {
@@ -86,7 +86,7 @@ class App
      * Returns whether Craft is running on a domain that is eligible to test out
      * the editions.
      *
-     * @return bool
+     * @return boolean
      */
     public function canTestEditions()
     {
@@ -176,7 +176,7 @@ class App
     /**
      * Returns whether the update info is cached.
      *
-     * @return bool
+     * @return boolean
      */
     public function isUpdateInfoCached()
     {
@@ -186,7 +186,7 @@ class App
     /**
      * Returns how many updates are available.
      *
-     * @return int
+     * @return integer
      */
     public function getTotalAvailableUpdates()
     {
@@ -196,7 +196,7 @@ class App
     /**
      * Returns whether a critical update is available.
      *
-     * @return bool
+     * @return boolean
      */
     public function isCriticalUpdateAvailable()
     {
@@ -206,7 +206,7 @@ class App
     /**
      * Return max upload size in bytes.
      *
-     * @return int
+     * @return integer
      */
     public function getMaxUploadSize()
     {

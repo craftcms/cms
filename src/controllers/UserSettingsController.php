@@ -41,7 +41,7 @@ class UserSettingsController extends Controller
     /**
      * Saves a user group.
      *
-     * @return null
+     * @return void
      */
     public function actionSaveGroup()
     {
@@ -78,7 +78,7 @@ class UserSettingsController extends Controller
     /**
      * Deletes a user group.
      *
-     * @return null
+     * @return void
      */
     public function actionDeleteGroup()
     {
@@ -95,7 +95,7 @@ class UserSettingsController extends Controller
     /**
      * Saves the system user settings.
      *
-     * @return null
+     * @return void
      */
     public function actionSaveUserSettings()
     {

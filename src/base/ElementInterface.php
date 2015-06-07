@@ -11,6 +11,7 @@ use craft\app\elements\db\ElementQuery;
 use craft\app\elements\db\ElementQueryInterface;
 use craft\app\models\Content;
 use craft\app\models\FieldLayout;
+use Exception;
 
 
 /**
@@ -29,14 +30,14 @@ interface ElementInterface extends ComponentInterface
     /**
      * Returns whether elements of this type will be storing any data in the `content` table (tiles or custom fields).
      *
-     * @return bool Whether elements of this type will be storing any data in the `content` table.
+     * @return boolean Whether elements of this type will be storing any data in the `content` table.
      */
     public static function hasContent();
 
     /**
      * Returns whether elements of this type have traditional titles.
      *
-     * @return bool Whether elements of this type have traditional titles.
+     * @return boolean Whether elements of this type have traditional titles.
      */
     public static function hasTitles();
 
@@ -46,7 +47,7 @@ interface ElementInterface extends ComponentInterface
      * If this returns `true`, the element’s [[getLocales()]] method will
      * be responsible for defining which locales its data should be stored in.
      *
-     * @return bool Whether elements of this type store data on a per-locale basis.
+     * @return boolean Whether elements of this type store data on a per-locale basis.
      */
     public static function isLocalized();
 
@@ -58,7 +59,7 @@ interface ElementInterface extends ComponentInterface
      *
      * Use [[getStatuses()]] to customize which statuses the elements might have.
      *
-     * @return bool Whether elements of this type have statuses.
+     * @return boolean Whether elements of this type have statuses.
      * @see getStatuses()
      */
     public static function hasStatuses();
@@ -139,7 +140,7 @@ interface ElementInterface extends ComponentInterface
      *
      * @param mixed $criteria The element ID or a set of element criteria parameters
      *
-     * @return static Element instance matching the condition, or null if nothing matches.
+     * @return self Element instance matching the condition, or null if nothing matches.
      */
     public static function findOne($criteria = null);
 
@@ -182,7 +183,7 @@ interface ElementInterface extends ComponentInterface
      *
      * @param mixed $criteria The element ID, an array of IDs, or a set of element criteria parameters
      *
-     * @return array an array of Element instances, or an empty array if nothing matches.
+     * @return self[] an array of Element instances, or an empty array if nothing matches.
      */
     public static function findAll($criteria = null);
 
@@ -198,7 +199,7 @@ interface ElementInterface extends ComponentInterface
      * You can customize the database query condition that should be applied for your custom statuses from
      * [[getElementQueryStatusCondition()]].
      *
-     * @return array|null
+     * @return string[]|null
      * @see hasStatuses()
      */
     public static function getStatuses();
@@ -277,22 +278,22 @@ interface ElementInterface extends ComponentInterface
      * There is no need for this method to worry about the ‘title’ or ‘slug’ attributes, or custom field handles;
      * those are indexed automatically.
      *
-     * @return array The
+     * @return string[] The element attributes that should be searchable
      */
     public static function defineSearchableAttributes();
 
     /**
      * Returns the element index HTML.
      *
-     * @param ElementQueryInterface $elementQuery
-     * @param array                 $disabledElementIds
-     * @param array                 $viewState
-     * @param string|null           $sourceKey
-     * @param string|null           $context
-     * @param bool                  $includeContainer
-     * @param bool                  $showCheckboxes
+     * @param ElementQueryInterface|ElementQuery $elementQuery
+     * @param integer[]|null                     $disabledElementIds
+     * @param array                              $viewState
+     * @param string|null                        $sourceKey
+     * @param string|null                        $context
+     * @param boolean                            $includeContainer
+     * @param boolean                            $showCheckboxes
      *
-     * @return string
+     * @return string The element index HTML
      */
     public static function getIndexHtml(
         $elementQuery,
@@ -333,7 +334,7 @@ interface ElementInterface extends ComponentInterface
      * Note that this method will only get called once for the entire index; not each time that a new source is
      * selected.
      *
-     * @retrun array The attributes that elements can be sorted by.
+     * @return string[] The attributes that elements can be sorted by
      */
     public static function defineSortableAttributes();
 
@@ -352,7 +353,7 @@ interface ElementInterface extends ComponentInterface
      *
      * @param string|null $source The selected source’s key, if any.
      *
-     * @return array The table attributes.
+     * @return array The table attributes
      */
     public static function defineTableAttributes($source = null);
 
@@ -391,10 +392,10 @@ interface ElementInterface extends ComponentInterface
      * - If the attribute name is ‘dateCreated’ or ‘dateUpdated’, the date will be formatted according to the active
      *   locale.
      *
-     * @param ElementInterface $element   The element.
-     * @param string           $attribute The attribute name.
+     * @param ElementInterface|Element $element   The element.
+     * @param string                   $attribute The attribute name.
      *
-     * @return string
+     * @return string The HTML that should be shown for a given element’s attribute in Table View.
      */
     public static function getTableAttributeHtml(
         ElementInterface $element,
@@ -402,7 +403,7 @@ interface ElementInterface extends ComponentInterface
     );
 
     /**
-     * Returns the fields that should take part in an upcoming elements qurery.
+     * Returns the fields that should take part in an upcoming elements query.
      *
      * These fields will get their own criteria parameters in the [[ElementQueryInterface]] that gets passed in,
      * their field types will each have an opportunity to help build the element query, and their columns in the content
@@ -414,7 +415,7 @@ interface ElementInterface extends ComponentInterface
      *
      * @param ElementQueryInterface|ElementQuery $query
      *
-     * @return \craft\app\base\FieldInterface[]
+     * @return FieldInterface[]|Field[] The fields that should take part in the upcoming elements query
      */
     public static function getFieldsForElementsQuery(
         ElementQueryInterface $query
@@ -441,8 +442,8 @@ interface ElementInterface extends ComponentInterface
      * }
      * ```
      *
-     * @param ElementQueryInterface|ElementQuery $query  The database query.
-     * @param string                             $status The custom status.
+     * @param ElementQueryInterface|ElementQuery $query  The database query
+     * @param string                             $status The custom status
      *
      * @return string|false
      */
@@ -454,9 +455,9 @@ interface ElementInterface extends ComponentInterface
     /**
      * Returns the HTML for an editor HUD for the given element.
      *
-     * @param ElementInterface $element The element being edited.
+     * @param ElementInterface|Element $element The element being edited.
      *
-     * @return string The HTML for the editor HUD.
+     * @return string The HTML for the editor HUD
      */
     public static function getEditorHtml(ElementInterface $element);
 
@@ -466,17 +467,17 @@ interface ElementInterface extends ComponentInterface
      * This method will be called when an Element Editor’s Save button is clicked. It should just wrap your service’s
      * saveX() method.
      *
-     * @param ElementInterface $element The element being saved.
-     * @param array            $params  Any element params found in the POST data.
+     * @param ElementInterface|Element $element The element being saved
+     * @param array                    $params  Any element params found in the POST data
      *
-     * @return bool Whether the element was saved successfully.
+     * @return boolean Whether the element was saved successfully
      */
     public static function saveElement(ElementInterface $element, $params);
 
     /**
      * Returns the route for a given element.
      *
-     * @param static The matched element.
+     * @param ElementInterface|Element The matched element.
      *
      * @return mixed Can be false if no special action should be taken, a string if it should route to a template path,
      *               or an array that can specify a controller action path, params, etc.
@@ -486,10 +487,10 @@ interface ElementInterface extends ComponentInterface
     /**
      * Performs actions after an element has been moved within a structure.
      *
-     * @param ElementInterface $element     The element that was moved.
-     * @param int              $structureId The ID of the structure that it moved within.
+     * @param ElementInterface|Element $element     The element that was moved.
+     * @param integer                  $structureId The ID of the structure that it moved within.
      *
-     * @return null
+     * @return void
      */
     public static function onAfterMoveElementInStructure(
         ElementInterface $element,
@@ -502,7 +503,7 @@ interface ElementInterface extends ComponentInterface
     /**
      * Returns the element’s ID.
      *
-     * @return int|null
+     * @return integer|null
      * @internal This method is required by [[\yii\web\IdentityInterface]], but might as well
      * go here rather than only in [[\craft\app\elements\User]].
      */
@@ -553,7 +554,7 @@ interface ElementInterface extends ComponentInterface
     /**
      * Returns whether the current user can edit the element.
      *
-     * @return bool
+     * @return boolean
      */
     public function isEditable();
 
@@ -567,7 +568,7 @@ interface ElementInterface extends ComponentInterface
     /**
      * Returns the URL to the element’s thumbnail, if there is one.
      *
-     * @param int|null $size
+     * @param integer|null $size
      *
      * @return string|false
      */
@@ -576,7 +577,7 @@ interface ElementInterface extends ComponentInterface
     /**
      * Returns the URL to the element’s icon image, if there is one.
      *
-     * @param int|null $size
+     * @param integer|null $size
      *
      * @return string|false
      */
@@ -612,7 +613,7 @@ interface ElementInterface extends ComponentInterface
      *
      * @param ElementInterface|Element|false $element
      *
-     * @return null
+     * @return void
      */
     public function setNext($element);
 
@@ -628,16 +629,16 @@ interface ElementInterface extends ComponentInterface
     /**
      * Returns the element’s parent.
      *
-     * @return ElementInterface|null
+     * @return ElementInterface|Element|null
      */
     public function getParent();
 
     /**
      * Sets the element’s parent.
      *
-     * @param ElementInterface|null $parent
+     * @param ElementInterface|Element|null $parent
      *
-     * @return null
+     * @return void
      */
     public function setParent($parent);
 
@@ -658,7 +659,7 @@ interface ElementInterface extends ComponentInterface
     /**
      * Returns the element’s ancestors.
      *
-     * @param int|null $dist
+     * @param integer|null $dist
      *
      * @return ElementQueryInterface|ElementQuery
      */
@@ -667,7 +668,7 @@ interface ElementInterface extends ComponentInterface
     /**
      * Returns the element’s descendants.
      *
-     * @param int|null $dist
+     * @param integer|null $dist
      *
      * @return ElementQueryInterface|ElementQuery
      */
@@ -690,91 +691,91 @@ interface ElementInterface extends ComponentInterface
     /**
      * Returns the element’s previous sibling.
      *
-     * @return ElementInterface|null
+     * @return ElementInterface|Element|null
      */
     public function getPrevSibling();
 
     /**
      * Returns the element’s next sibling.
      *
-     * @return ElementInterface|null
+     * @return ElementInterface|Element|null
      */
     public function getNextSibling();
 
     /**
      * Returns whether the element has descendants.
      *
-     * @return bool
+     * @return boolean
      */
     public function hasDescendants();
 
     /**
      * Returns the total number of descendants that the element has.
      *
-     * @return bool
+     * @return boolean
      */
     public function getTotalDescendants();
 
     /**
      * Returns whether this element is an ancestor of another one.
      *
-     * @param ElementInterface $element
+     * @param ElementInterface|Element $element
      *
-     * @return bool
+     * @return boolean
      */
     public function isAncestorOf(ElementInterface $element);
 
     /**
      * Returns whether this element is a descendant of another one.
      *
-     * @param ElementInterface $element
+     * @param ElementInterface|Element $element
      *
-     * @return bool
+     * @return boolean
      */
     public function isDescendantOf(ElementInterface $element);
 
     /**
      * Returns whether this element is a direct parent of another one.
      *
-     * @param ElementInterface $element
+     * @param ElementInterface|Element $element
      *
-     * @return bool
+     * @return boolean
      */
     public function isParentOf(ElementInterface $element);
 
     /**
      * Returns whether this element is a direct child of another one.
      *
-     * @param ElementInterface $element
+     * @param ElementInterface|Element $element
      *
-     * @return bool
+     * @return boolean
      */
     public function isChildOf(ElementInterface $element);
 
     /**
      * Returns whether this element is a sibling of another one.
      *
-     * @param ElementInterface $element
+     * @param ElementInterface|Element $element
      *
-     * @return bool
+     * @return boolean
      */
     public function isSiblingOf(ElementInterface $element);
 
     /**
      * Returns whether this element is the direct previous sibling of another one.
      *
-     * @param ElementInterface $element
+     * @param ElementInterface|Element $element
      *
-     * @return bool
+     * @return boolean
      */
     public function isPrevSiblingOf(ElementInterface $element);
 
     /**
      * Returns whether this element is the direct next sibling of another one.
      *
-     * @param ElementInterface $element
+     * @param ElementInterface|Element $element
      *
-     * @return bool
+     * @return boolean
      */
     public function isNextSiblingOf(ElementInterface $element);
 
@@ -788,9 +789,9 @@ interface ElementInterface extends ComponentInterface
     /**
      * Treats custom fields as array offsets.
      *
-     * @param mixed $offset
+     * @param string|integer $offset
      *
-     * @return bool
+     * @return boolean
      */
     public function offsetExists($offset);
 
@@ -806,7 +807,7 @@ interface ElementInterface extends ComponentInterface
      *
      * @param Content|array $content
      *
-     * @return null
+     * @return void
      */
     public function setContent($content);
 
@@ -815,7 +816,7 @@ interface ElementInterface extends ComponentInterface
      *
      * @param array|string $content The array of field values, or the post location of the content
      *
-     * @return null
+     * @return void
      */
     public function setContentFromPost($content);
 
@@ -885,6 +886,8 @@ interface ElementInterface extends ComponentInterface
 
     /**
      * This method is called right after the element is saved.
+     *
+     * @return void
      */
     public function afterSave();
 }

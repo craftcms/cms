@@ -28,7 +28,7 @@ class ElementHelper
      *
      * @param ElementInterface $element
      *
-     * @return null
+     * @return void
      */
     public static function setValidSlug(ElementInterface $element)
     {
@@ -178,7 +178,7 @@ class ElementHelper
      *
      * @param string $urlFormat
      *
-     * @return bool
+     * @return boolean
      */
     public static function doesUrlFormatHaveSlugTag($urlFormat)
     {
@@ -194,7 +194,7 @@ class ElementHelper
      *
      * @param ElementInterface $element
      *
-     * @return bool
+     * @return boolean
      */
     public static function isElementEditable(ElementInterface $element)
     {

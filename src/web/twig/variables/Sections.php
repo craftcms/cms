@@ -47,7 +47,7 @@ class Sections
     /**
      * Gets the total number of sections.
      *
-     * @return int
+     * @return integer
      */
     public function getTotalSections()
     {
@@ -57,7 +57,7 @@ class Sections
     /**
      * Gets the total number of sections that are editable by the current user.
      *
-     * @return int
+     * @return integer
      */
     public function getTotalEditableSections()
     {
@@ -67,7 +67,7 @@ class Sections
     /**
      * Returns a section by its ID.
      *
-     * @param int $sectionId
+     * @param integer $sectionId
      *
      * @return SectionModel|null
      */

@@ -28,9 +28,9 @@ class IOHelper
     /**
      * Tests whether the given file path exists on the file system.
      *
-     * @param string $path            The path to test.
-     * @param bool   $caseInsensitive Whether to perform a case insensitive check or not.
-     * @param bool   $suppressErrors  Whether to suppress any PHP Notices/Warnings/Errors (usually permissions related).
+     * @param string  $path            The path to test.
+     * @param boolean $caseInsensitive Whether to perform a case insensitive check or not.
+     * @param boolean $suppressErrors  Whether to suppress any PHP Notices/Warnings/Errors (usually permissions related).
      *
      * @return string The resolved path of the file if it exists.
      */
@@ -70,11 +70,11 @@ class IOHelper
     /**
      * Tests whether the given folder path exists on the file system.
      *
-     * @param string $path            The path to test.
-     * @param bool   $caseInsensitive Whether to perform a case insensitive check or not.
-     * @param bool   $suppressErrors  Whether to suppress any PHP Notices/Warnings/Errors (usually permissions related).
+     * @param string  $path            The path to test.
+     * @param boolean $caseInsensitive Whether to perform a case insensitive check or not.
+     * @param boolean $suppressErrors  Whether to suppress any PHP Notices/Warnings/Errors (usually permissions related).
      *
-     * @return bool 'true' if the folder exists, otherwise 'false'.
+     * @return boolean 'true' if the folder exists, otherwise 'false'.
      */
     public static function folderExists(
         $path,
@@ -101,8 +101,8 @@ class IOHelper
     /**
      * If the file exists on the file system will return a new File instance, otherwise, false.
      *
-     * @param string $path           The path to the file.
-     * @param bool   $suppressErrors Whether to suppress any PHP Notices/Warnings/Errors (usually permissions related).
+     * @param string  $path           The path to the file.
+     * @param boolean $suppressErrors Whether to suppress any PHP Notices/Warnings/Errors (usually permissions related).
      *
      * @return File|bool
      */
@@ -118,8 +118,8 @@ class IOHelper
     /**
      * If the folder exists on the file system, will return a new Folder instance, otherwise, false.
      *
-     * @param string $path           The path to the folder.
-     * @param bool   $suppressErrors Whether to suppress any PHP Notices/Warnings/Errors (usually permissions related).
+     * @param string  $path           The path to the folder.
+     * @param boolean $suppressErrors Whether to suppress any PHP Notices/Warnings/Errors (usually permissions related).
      *
      * @return Folder|bool
      */
@@ -135,8 +135,8 @@ class IOHelper
     /**
      * If the path exists on the file system, will return the paths of any folders that are contained within it.
      *
-     * @param string $path           The folder path to check
-     * @param bool   $suppressErrors Whether to suppress any PHP Notices/Warnings/Errors (usually permissions related).
+     * @param string  $path           The folder path to check
+     * @param boolean $suppressErrors Whether to suppress any PHP Notices/Warnings/Errors (usually permissions related).
      *
      * @return array|bool
      */
@@ -164,8 +164,8 @@ class IOHelper
     /**
      * If the path exists on the file system, will return the paths of any files that are contained within it.
      *
-     * @param string $path           The folder path to check
-     * @param bool   $suppressErrors Whether to suppress any PHP Notices/Warnings/Errors (usually permissions related).
+     * @param string  $path           The folder path to check
+     * @param boolean $suppressErrors Whether to suppress any PHP Notices/Warnings/Errors (usually permissions related).
      *
      * @return array|bool
      */
@@ -183,8 +183,8 @@ class IOHelper
     /**
      * Returns the real filesystem path of the given path.
      *
-     * @param string $path           The path to test.
-     * @param bool   $suppressErrors Whether to suppress any PHP Notices/Warnings/Errors (usually permissions related).
+     * @param string  $path           The path to test.
+     * @param boolean $suppressErrors Whether to suppress any PHP Notices/Warnings/Errors (usually permissions related).
      *
      * @return string|false The real file or folder path, or `false `if the file doesn’t exist.
      */
@@ -210,10 +210,10 @@ class IOHelper
     /**
      * Tests whether the give filesystem path is readable.
      *
-     * @param string $path           The path to test.
-     * @param bool   $suppressErrors Whether to suppress any PHP Notices/Warnings/Errors (usually permissions related).
+     * @param string  $path           The path to test.
+     * @param boolean $suppressErrors Whether to suppress any PHP Notices/Warnings/Errors (usually permissions related).
      *
-     * @return bool 'true' if filesystem path is readable, otherwise 'false'.
+     * @return boolean 'true' if filesystem path is readable, otherwise 'false'.
      */
     public static function isReadable($path, $suppressErrors = false)
     {
@@ -227,10 +227,10 @@ class IOHelper
      * problems (especially on Windows). {@see https://bugs.php.net/bug.php?id=27609} and
      * {@see https://bugs.php.net/bug.php?id=30931}.
      *
-     * @param string $path           The path to test.
-     * @param bool   $suppressErrors Whether to suppress any PHP Notices/Warnings/Errors (usually permissions related).
+     * @param string  $path           The path to test.
+     * @param boolean $suppressErrors Whether to suppress any PHP Notices/Warnings/Errors (usually permissions related).
      *
-     * @return bool 'true' if filesystem object is writable, otherwise 'false'.
+     * @return boolean 'true' if filesystem object is writable, otherwise 'false'.
      */
     public static function isWritable($path, $suppressErrors = false)
     {
@@ -263,9 +263,9 @@ class IOHelper
     /**
      * Will return the file name of the given path with or without the extension.
      *
-     * @param string $path             The path to test.
-     * @param bool   $includeExtension Whether to include the extension in the file name.
-     * @param bool   $suppressErrors   Whether to suppress any PHP Notices/Warnings/Errors (usually permissions related).
+     * @param string  $path             The path to test.
+     * @param boolean $includeExtension Whether to include the extension in the file name.
+     * @param boolean $suppressErrors   Whether to suppress any PHP Notices/Warnings/Errors (usually permissions related).
      *
      * @return string The file name with or without the extension.
      */
@@ -289,9 +289,9 @@ class IOHelper
      * Will return the folder name of the given path either as the full path or
      * only the single top level folder.
      *
-     * @param string $path           The path to test.
-     * @param bool   $fullPath       Whether to include the full path in the return results or the top level folder only.
-     * @param bool   $suppressErrors Whether to suppress any PHP Notices/Warnings/Errors (usually permissions related).
+     * @param string  $path           The path to test.
+     * @param boolean $fullPath       Whether to include the full path in the return results or the top level folder only.
+     * @param boolean $suppressErrors Whether to suppress any PHP Notices/Warnings/Errors (usually permissions related).
      *
      * @return string The folder name.
      */
@@ -326,7 +326,7 @@ class IOHelper
      *
      * @param string      $path           The path to test.
      * @param null|string $default        If the file has no extension, this one will be returned by default.
-     * @param bool        $suppressErrors Whether to suppress any PHP Notices/Warnings/Errors (usually permissions related).
+     * @param boolean     $suppressErrors Whether to suppress any PHP Notices/Warnings/Errors (usually permissions related).
      *
      * @return string The file extension.
      */
@@ -379,8 +379,8 @@ class IOHelper
      * Returns the last modified time for the given path in DateTime format or false if the file or folder does not
      * exist.
      *
-     * @param string $path           The path to test.
-     * @param bool   $suppressErrors Whether to suppress any PHP Notices/Warnings/Errors (usually permissions related).
+     * @param string  $path           The path to test.
+     * @param boolean $suppressErrors Whether to suppress any PHP Notices/Warnings/Errors (usually permissions related).
      *
      * @return DateTime|false The last modified timestamp or false if the file or folder does not exist.
      */
@@ -402,10 +402,10 @@ class IOHelper
     /**
      * Returns the file size in bytes for the given path or false if the file does not exist.
      *
-     * @param string $path           The path to test.
-     * @param bool   $suppressErrors Whether to suppress any PHP Notices/Warnings/Errors (usually permissions related).
+     * @param string  $path           The path to test.
+     * @param boolean $suppressErrors Whether to suppress any PHP Notices/Warnings/Errors (usually permissions related).
      *
-     * @return bool|string The file size in bytes or false if the file does not exist.
+     * @return boolean|string The file size in bytes or false if the file does not exist.
      */
     public static function getFileSize($path, $suppressErrors = false)
     {
@@ -424,10 +424,10 @@ class IOHelper
     /**
      * Returns the folder size in bytes for the given path or false if the folder does not exist.
      *
-     * @param string $path           The path to test.
-     * @param bool   $suppressErrors Whether to suppress any PHP Notices/Warnings/Errors (usually permissions related).
+     * @param string  $path           The path to test.
+     * @param boolean $suppressErrors Whether to suppress any PHP Notices/Warnings/Errors (usually permissions related).
      *
-     * @return bool|string The folder size in bytes or false if the folder does not exist.
+     * @return boolean|string The folder size in bytes or false if the folder does not exist.
      */
     public static function getFolderSize($path, $suppressErrors = false)
     {
@@ -475,10 +475,10 @@ class IOHelper
     /**
      * Will take a path, make sure the file exists and if the size of the file is 0 bytes, return true.  Otherwise false.
      *
-     * @param string $path           The path to test.
-     * @param bool   $suppressErrors Whether to suppress any PHP Notices/Warnings/Errors (usually permissions related).
+     * @param string  $path           The path to test.
+     * @param boolean $suppressErrors Whether to suppress any PHP Notices/Warnings/Errors (usually permissions related).
      *
-     * @return bool Whether the file is empty or not.
+     * @return boolean Whether the file is empty or not.
      */
     public static function isFileEmpty($path, $suppressErrors = false)
     {
@@ -498,10 +498,10 @@ class IOHelper
      * Will take a path, make sure the folder exists and if the size of the folder is 0 bytes, return true.
      * Otherwise false.
      *
-     * @param string $path           The path to test.
-     * @param bool   $suppressErrors Whether to suppress any PHP Notices/Warnings/Errors (usually permissions related).
+     * @param string  $path           The path to test.
+     * @param boolean $suppressErrors Whether to suppress any PHP Notices/Warnings/Errors (usually permissions related).
      *
-     * @return bool Whether the folder is empty or not.
+     * @return boolean Whether the folder is empty or not.
      */
     public static function isFolderEmpty($path, $suppressErrors = false)
     {
@@ -520,9 +520,9 @@ class IOHelper
     /**
      * Returns owner of current filesystem object (UNIX systems). Returned value depends upon $getName parameter value.
      *
-     * @param string $path           The path to check.
-     * @param bool   $getName        Defaults to 'true', meaning that owner name instead of ID should be returned.
-     * @param bool   $suppressErrors Whether to suppress any PHP Notices/Warnings/Errors (usually permissions related).
+     * @param string  $path           The path to check.
+     * @param boolean $getName        Defaults to 'true', meaning that owner name instead of ID should be returned.
+     * @param boolean $suppressErrors Whether to suppress any PHP Notices/Warnings/Errors (usually permissions related).
      *
      * @return mixed Owner name, or ID if $getName set to 'false' or false if the file or folder does not exist.
      */
@@ -553,9 +553,9 @@ class IOHelper
      * Returns group of current filesystem object (UNIX systems). Returned value
      * depends upon $getName parameter value.
      *
-     * @param string $path           The path to check.
-     * @param bool   $getName        Defaults to 'true', meaning that group name instead of ID should be returned.
-     * @param bool   $suppressErrors Whether to suppress any PHP Notices/Warnings/Errors (usually permissions related).
+     * @param string  $path           The path to check.
+     * @param boolean $getName        Defaults to 'true', meaning that group name instead of ID should be returned.
+     * @param boolean $suppressErrors Whether to suppress any PHP Notices/Warnings/Errors (usually permissions related).
      *
      * @return mixed Group name, or ID if $getName set to 'false' or false if the file or folder does not exist.
      */
@@ -585,8 +585,8 @@ class IOHelper
     /**
      * Returns permissions of current filesystem object (UNIX systems).
      *
-     * @param string $path           The path to check
-     * @param bool   $suppressErrors Whether to suppress any PHP Notices/Warnings/Errors (usually permissions related).
+     * @param string  $path           The path to check
+     * @param boolean $suppressErrors Whether to suppress any PHP Notices/Warnings/Errors (usually permissions related).
      *
      * @return string Filesystem object permissions in octal format (i.e. '0755'), false if the file or folder doesn't
      *                exist
@@ -648,11 +648,11 @@ class IOHelper
     /**
      * Will return the contents of the file as a string or an array if it exists and is readable, otherwise false.
      *
-     * @param string $path           The path of the file.
-     * @param bool   $array          Whether to return the contents of the file as an array or not.
-     * @param bool   $suppressErrors Whether to suppress any PHP Notices/Warnings/Errors (usually permissions related).
+     * @param string  $path           The path of the file.
+     * @param boolean $array          Whether to return the contents of the file as an array or not.
+     * @param boolean $suppressErrors Whether to suppress any PHP Notices/Warnings/Errors (usually permissions related).
      *
-     * @return bool|string|array The contents of the file as a string, an array, or false if the file does not exist or
+     * @return boolean|string|array The contents of the file as a string, an array, or false if the file does not exist or
      *                           is not readable.
      */
     public static function getFileContents(
@@ -691,8 +691,8 @@ class IOHelper
      * Will create a file on the file system at the given path and return a [[File]] object or false if we don't
      * have write permissions.
      *
-     * @param string $path           The path of the file to create.
-     * @param bool   $suppressErrors Whether to suppress any PHP Notices/Warnings/Errors (usually permissions related).
+     * @param string  $path           The path of the file to create.
+     * @param boolean $suppressErrors Whether to suppress any PHP Notices/Warnings/Errors (usually permissions related).
      *
      * @return File|bool The newly created file as a [[File]] object or false if we don't have write permissions.
      */
@@ -722,9 +722,9 @@ class IOHelper
      * Will create a folder on the file system at the given path and return a [[Folder]] object or false if we don't
      * have write permissions.
      *
-     * @param string $path           The path of the file to create.
-     * @param int    $permissions    The permissions to set the folder to.
-     * @param bool   $suppressErrors Whether to suppress any PHP Notices/Warnings/Errors (usually permissions related).
+     * @param string  $path           The path of the file to create.
+     * @param integer $permissions    The permissions to set the folder to.
+     * @param boolean $suppressErrors Whether to suppress any PHP Notices/Warnings/Errors (usually permissions related).
      *
      * @return Folder|bool The newly created folder as a [[Folder]] object or false if we don't have write
      *                     permissions.
@@ -769,15 +769,15 @@ class IOHelper
     /**
      * Will write $contents to a file.
      *
-     * @param string    $path           The path of the file to write to.
-     * @param string    $contents       The contents to be written to the file.
-     * @param bool      $autoCreate     Whether or not to auto-create the file if it does not exist.
-     * @param bool      $append         If true, will append the data to the contents of the file, otherwise it will
-     *                                  overwrite the contents.
-     * @param bool|null $noFileLock     Whether to use file locking when writing to the file.
-     * @param bool      $suppressErrors Whether to suppress any PHP Notices/Warnings/Errors (usually permissions related).
+     * @param string       $path           The path of the file to write to.
+     * @param string       $contents       The contents to be written to the file.
+     * @param boolean      $autoCreate     Whether or not to auto-create the file if it does not exist.
+     * @param boolean      $append         If true, will append the data to the contents of the file, otherwise it will
+     *                                     overwrite the contents.
+     * @param boolean|null $noFileLock     Whether to use file locking when writing to the file.
+     * @param boolean      $suppressErrors Whether to suppress any PHP Notices/Warnings/Errors (usually permissions related).
      *
-     * @return bool 'true' upon successful writing to the file, otherwise false.
+     * @return boolean 'true' upon successful writing to the file, otherwise false.
      */
     public static function writeToFile(
         $path,
@@ -924,12 +924,12 @@ class IOHelper
     /**
      * Will attempt to change the owner of the given file system path (*nix only)
      *
-     * @param string $path           The path to change the owner of.
-     * @param string $owner          The new owner's name.
-     * @param bool   $recursive      If the path is a folder, whether to change the owner of all of the folder's children.
-     * @param bool   $suppressErrors Whether to suppress any PHP Notices/Warnings/Errors (usually permissions related).
+     * @param string  $path           The path to change the owner of.
+     * @param string  $owner          The new owner's name.
+     * @param boolean $recursive      If the path is a folder, whether to change the owner of all of the folder's children.
+     * @param boolean $suppressErrors Whether to suppress any PHP Notices/Warnings/Errors (usually permissions related).
      *
-     * @return bool 'true' if successful, 'false' if not or the given path does
+     * @return boolean 'true' if successful, 'false' if not or the given path does
      *              not exist.
      */
     public static function changeOwner(
@@ -989,13 +989,13 @@ class IOHelper
     /**
      * Will attempt to change the group of the given file system path (*nix only)
      *
-     * @param string $path           The path to change the group of.
-     * @param string $group          The new group name.
-     * @param bool   $recursive      If the path is a directory, whether to recursively change the group of the child
-     *                               files and folders.
-     * @param bool   $suppressErrors Whether to suppress any PHP Notices/Warnings/Errors (usually permissions related).
+     * @param string  $path           The path to change the group of.
+     * @param string  $group          The new group name.
+     * @param boolean $recursive      If the path is a directory, whether to recursively change the group of the child
+     *                                files and folders.
+     * @param boolean $suppressErrors Whether to suppress any PHP Notices/Warnings/Errors (usually permissions related).
      *
-     * @return bool 'true' if successful, 'false' if not, or the given path does not exist.
+     * @return boolean 'true' if successful, 'false' if not, or the given path does not exist.
      */
     public static function changeGroup(
         $path,
@@ -1054,11 +1054,11 @@ class IOHelper
     /**
      * Will attempt to change the permission of the given file system path (*nix only).
      *
-     * @param string $path           The path to change the permissions of.
-     * @param int    $permissions    The new permissions.
-     * @param bool   $suppressErrors Whether to suppress any PHP Notices/Warnings/Errors (usually permissions related).
+     * @param string  $path           The path to change the permissions of.
+     * @param integer $permissions    The new permissions.
+     * @param boolean $suppressErrors Whether to suppress any PHP Notices/Warnings/Errors (usually permissions related).
      *
-     * @return bool 'true' if successful, 'false' if not or the path does not exist.
+     * @return boolean 'true' if successful, 'false' if not or the path does not exist.
      */
     public static function changePermissions(
         $path,
@@ -1089,11 +1089,11 @@ class IOHelper
     /**
      * Will copy a file from one path to another and create folders if necessary.
      *
-     * @param string $path           The source path of the file.
-     * @param string $destination    The destination path to copy the file to.
-     * @param bool   $suppressErrors Whether to suppress any PHP Notices/Warnings/Errors (usually permissions related).
+     * @param string  $path           The source path of the file.
+     * @param string  $destination    The destination path to copy the file to.
+     * @param boolean $suppressErrors Whether to suppress any PHP Notices/Warnings/Errors (usually permissions related).
      *
-     * @return bool 'true' if the copy was successful, 'false' if it was not, the source file is not readable or does
+     * @return boolean 'true' if the copy was successful, 'false' if it was not, the source file is not readable or does
      *              not exist.
      */
     public static function copyFile(
@@ -1137,12 +1137,12 @@ class IOHelper
     /**
      * Will copy the contents of one folder to another.
      *
-     * @param string $path           The source path to copy.
-     * @param string $destination    The destination path to copy to.
-     * @param bool   $validate       Whether to compare the size of the folders after the copy is complete.
-     * @param bool   $suppressErrors Whether to suppress any PHP Notices/Warnings/Errors (usually permissions related).
+     * @param string  $path           The source path to copy.
+     * @param string  $destination    The destination path to copy to.
+     * @param boolean $validate       Whether to compare the size of the folders after the copy is complete.
+     * @param boolean $suppressErrors Whether to suppress any PHP Notices/Warnings/Errors (usually permissions related).
      *
-     * @return bool 'true' if the copy was successful, 'false' if it was not, or $validate is true and the size of the
+     * @return boolean 'true' if the copy was successful, 'false' if it was not, or $validate is true and the size of the
      *              folders do not match after the copy.
      */
     public static function copyFolder(
@@ -1205,11 +1205,11 @@ class IOHelper
     /**
      * Renames a given file or folder to a new name.
      *
-     * @param string $path           The original path of the file or folder.
-     * @param string $newName        The new name of the file or folder.
-     * @param bool   $suppressErrors Whether to suppress any PHP Notices/Warnings/Errors (usually permissions related).
+     * @param string  $path           The original path of the file or folder.
+     * @param string  $newName        The new name of the file or folder.
+     * @param boolean $suppressErrors Whether to suppress any PHP Notices/Warnings/Errors (usually permissions related).
      *
-     * @return bool 'true' if successful, 'false' if not or the source file or folder does not exist.
+     * @return boolean 'true' if successful, 'false' if not or the source file or folder does not exist.
      */
     public static function rename($path, $newName, $suppressErrors = false)
     {
@@ -1251,11 +1251,11 @@ class IOHelper
     /**
      * Moves a file from one location on disk to another.
      *
-     * @param string $path           The original path of the file/folder to move.
-     * @param string $newPath        The new path the file/folder should be moved to.
-     * @param bool   $suppressErrors Whether to suppress any PHP Notices/Warnings/Errors (usually permissions related).
+     * @param string  $path           The original path of the file/folder to move.
+     * @param string  $newPath        The new path the file/folder should be moved to.
+     * @param boolean $suppressErrors Whether to suppress any PHP Notices/Warnings/Errors (usually permissions related).
      *
-     * @return bool 'true' if the file was successfully moved, 'false', otherwise.
+     * @return boolean 'true' if the file was successfully moved, 'false', otherwise.
      */
     public static function move($path, $newPath, $suppressErrors = false)
     {
@@ -1265,10 +1265,10 @@ class IOHelper
     /**
      * Purges the contents of a file.
      *
-     * @param string $path           The path of the file to clear.
-     * @param bool   $suppressErrors Whether to suppress any PHP Notices/Warnings/Errors (usually permissions related).
+     * @param string  $path           The path of the file to clear.
+     * @param boolean $suppressErrors Whether to suppress any PHP Notices/Warnings/Errors (usually permissions related).
      *
-     * @return bool 'true' if the file was successfully cleared, 'false' if it wasn't, if the file is not writable or the file does not exist.
+     * @return boolean 'true' if the file was successfully cleared, 'false' if it wasn't, if the file is not writable or the file does not exist.
      */
     public static function clearFile($path, $suppressErrors = false)
     {
@@ -1294,10 +1294,10 @@ class IOHelper
     /**
      * Purges the contents of a folder while leaving the folder itself.
      *
-     * @param string $path           The path of the folder to clear.
-     * @param bool   $suppressErrors Whether to suppress any PHP Notices/Warnings/Errors (usually permissions related).
+     * @param string  $path           The path of the folder to clear.
+     * @param boolean $suppressErrors Whether to suppress any PHP Notices/Warnings/Errors (usually permissions related).
      *
-     * @return bool 'true' if is successfully purges the folder, 'false' if the folder does not exist.
+     * @return boolean 'true' if is successfully purges the folder, 'false' if the folder does not exist.
      */
     public static function clearFolder($path, $suppressErrors = false)
     {
@@ -1334,10 +1334,10 @@ class IOHelper
     /**
      * Deletes a file from the file system.
      *
-     * @param string $path           The path of the file to delete.
-     * @param bool   $suppressErrors Whether to suppress any PHP Notices/Warnings/Errors (usually permissions related).
+     * @param string  $path           The path of the file to delete.
+     * @param boolean $suppressErrors Whether to suppress any PHP Notices/Warnings/Errors (usually permissions related).
      *
-     * @return bool 'true' if successful, 'false' if it cannot be deleted, it does not exist or it is not writable.
+     * @return boolean 'true' if successful, 'false' if it cannot be deleted, it does not exist or it is not writable.
      */
     public static function deleteFile($path, $suppressErrors = false)
     {
@@ -1366,10 +1366,10 @@ class IOHelper
     /**
      * Deletes a folder from the file system.
      *
-     * @param string $path           The path of the folder to delete.
-     * @param bool   $suppressErrors Whether to suppress any PHP Notices/Warnings/Errors (usually permissions related).
+     * @param string  $path           The path of the folder to delete.
+     * @param boolean $suppressErrors Whether to suppress any PHP Notices/Warnings/Errors (usually permissions related).
      *
-     * @return bool 'true' if successful, 'false' if it cannot be deleted, it does not exist or it is not writable.
+     * @return boolean 'true' if successful, 'false' if it cannot be deleted, it does not exist or it is not writable.
      */
     public static function deleteFolder($path, $suppressErrors = false)
     {
@@ -1402,10 +1402,10 @@ class IOHelper
     /**
      * Calculates the MD5 hash for a given file path or false if one could not be calculated or the file does not exist.
      *
-     * @param string $path           The path of the file to calculate.
-     * @param bool   $suppressErrors Whether to suppress any PHP Notices/Warnings/Errors (usually permissions related).
+     * @param string  $path           The path of the file to calculate.
+     * @param boolean $suppressErrors Whether to suppress any PHP Notices/Warnings/Errors (usually permissions related).
      *
-     * @return bool|string The MD5 hash or false if it does not exist, isn't readable or could not be calculated.
+     * @return boolean|string The MD5 hash or false if it does not exist, isn't readable or could not be calculated.
      */
     public static function getFileMD5($path, $suppressErrors = false)
     {
@@ -1446,7 +1446,7 @@ class IOHelper
      *
      * @param $extension
      *
-     * @return bool
+     * @return boolean
      */
     public static function isExtensionAllowed($extension)
     {
@@ -1651,7 +1651,7 @@ class IOHelper
      *
      * @param string $extension
      *
-     * @return int|string
+     * @return integer|string
      */
     public static function getFileKind($extension)
     {
@@ -1670,10 +1670,10 @@ class IOHelper
     /**
      * Makes sure a folder exists. If it does not - creates one with write permissions
      *
-     * @param string $folderPath     The path to the folder.
-     * @param bool   $suppressErrors Whether to suppress any PHP Notices/Warnings/Errors (usually permissions related).
+     * @param string  $folderPath     The path to the folder.
+     * @param boolean $suppressErrors Whether to suppress any PHP Notices/Warnings/Errors (usually permissions related).
      *
-     * @return null
+     * @return void
      */
     public static function ensureFolderExists(
         $folderPath,
@@ -1689,9 +1689,9 @@ class IOHelper
     /**
      * Cleans a filename.
      *
-     * @param string $filename  The filename to clean.
-     * @param bool   $onlyAscii Whether to only allow ASCII characters in the filename.
-     * @param string $separator The separator to use for any whitespace. Defaults to '-'.
+     * @param string  $filename  The filename to clean.
+     * @param boolean $onlyAscii Whether to only allow ASCII characters in the filename.
+     * @param string  $separator The separator to use for any whitespace. Defaults to '-'.
      *
      * @return mixed
      */
@@ -1763,12 +1763,12 @@ class IOHelper
      * Will set the access and modification times of the given file to the given
      * time, or the current time if it is not supplied.
      *
-     * @param string $filename       The path to the file/folder to touch.
-     * @param null   $time           The time to set on the file/folder. If none
-     *                               is provided, will default to the current time.
-     * @param bool   $suppressErrors Whether to suppress any PHP Notices/Warnings/Errors (usually permissions related).
+     * @param string  $filename       The path to the file/folder to touch.
+     * @param null    $time           The time to set on the file/folder. If none
+     *                                is provided, will default to the current time.
+     * @param boolean $suppressErrors Whether to suppress any PHP Notices/Warnings/Errors (usually permissions related).
      *
-     * @return bool
+     * @return boolean
      */
     public static function touch(
         $filename,
@@ -1792,10 +1792,10 @@ class IOHelper
      * Returns the last $number of modified files from a given folder ordered by
      * the last modified date descending.
      *
-     * @param string $folder         The folder to get the files from.
-     * @param int    $number         The number of files to return.  If null is
-     *                               given, all files will be returned.
-     * @param bool   $suppressErrors Whether to suppress any PHP Notices/Warnings/Errors (usually permissions related).
+     * @param string  $folder         The folder to get the files from.
+     * @param integer $number         The number of files to return.  If null is
+     *                                given, all files will be returned.
+     * @param boolean $suppressErrors Whether to suppress any PHP Notices/Warnings/Errors (usually permissions related).
      *
      * @return array
      */
@@ -1858,7 +1858,7 @@ class IOHelper
      * @param array $errContext
      *
      * @throws ErrorException
-     * @return bool
+     * @return boolean
      */
     public function handleError(
         $errNo,
@@ -1897,13 +1897,13 @@ class IOHelper
     // =========================================================================
 
     /**
-     * @param string $path
-     * @param string $contents
-     * @param bool   $lock
-     * @param bool   $append
-     * @param bool   $suppressErrors Whether to suppress any PHP Notices/Warnings/Errors (usually permissions related).
+     * @param string  $path
+     * @param string  $contents
+     * @param boolean $lock
+     * @param boolean $append
+     * @param boolean $suppressErrors Whether to suppress any PHP Notices/Warnings/Errors (usually permissions related).
      *
-     * @return bool
+     * @return boolean
      */
     private static function _writeToFile(
         $path,
@@ -1934,10 +1934,10 @@ class IOHelper
     /**
      * Used by [[getFolderSize]] to calculate the size of a folder.
      *
-     * @param string $path           The path of the folder.
-     * @param bool   $suppressErrors Whether to suppress any PHP Notices/Warnings/Errors (usually permissions related).
+     * @param string  $path           The path of the folder.
+     * @param boolean $suppressErrors Whether to suppress any PHP Notices/Warnings/Errors (usually permissions related).
      *
-     * @return int The size of the folder in bytes.
+     * @return integer The size of the folder in bytes.
      */
     private static function _folderSize($path, $suppressErrors = false)
     {
@@ -1957,11 +1957,11 @@ class IOHelper
     }
 
     /**
-     * @param string $path
-     * @param bool   $recursive
-     * @param null   $filter
-     * @param bool   $includeHiddenFiles
-     * @param bool   $suppressErrors Whether to suppress any PHP Notices/Warnings/Errors (usually permissions related).
+     * @param string  $path
+     * @param boolean $recursive
+     * @param null    $filter
+     * @param boolean $includeHiddenFiles
+     * @param boolean $suppressErrors Whether to suppress any PHP Notices/Warnings/Errors (usually permissions related).
      *
      * @return array
      */
@@ -2035,7 +2035,7 @@ class IOHelper
      *                       with '/' is a regular expression. Any other string treated as an extension part of the given
      *                       filepath (eg. file extension)
      *
-     * @return bool Returns 'true' if the supplied string matched one of the filter rules.
+     * @return boolean Returns 'true' if the supplied string matched one of the filter rules.
      */
     private static function _filterPassed($str, $filter)
     {

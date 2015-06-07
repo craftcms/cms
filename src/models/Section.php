@@ -146,7 +146,7 @@ class Section extends Model
     /**
      * Returns whether this is the homepage section.
      *
-     * @return bool
+     * @return boolean
      */
     public function isHomepage()
     {
@@ -177,7 +177,7 @@ class Section extends Model
      *
      * @param array $locales
      *
-     * @return null
+     * @return void
      */
     public function setLocales($locales)
     {
@@ -187,10 +187,10 @@ class Section extends Model
     /**
      * Adds locale-specific errors to the model.
      *
-     * @param array $errors
+     * @param array  $errors
      * @param string $localeId
      *
-     * @return null
+     * @return void
      */
     public function addLocaleErrors($errors, $localeId)
     {

@@ -8,8 +8,6 @@
 namespace craft\app\base;
 
 use Craft;
-use craft\app\helpers\IOHelper;
-use craft\app\helpers\StringHelper;
 
 /**
  * Request trait.
@@ -32,7 +30,7 @@ trait RequestTrait
      */
     public function getScriptFilename()
     {
-        /* @var $this \craft\app\web\Request|\craft\app\console\Request */
+        /** @var $this \craft\app\web\Request|\craft\app\console\Request */
         return basename($this->getScriptFile());
     }
 }

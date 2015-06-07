@@ -57,7 +57,7 @@ class Folder extends BaseIO
     }
 
     /**
-     * @return bool
+     * @return boolean
      */
     public function isEmpty()
     {
@@ -83,7 +83,7 @@ class Folder extends BaseIO
     /**
      * @param $destination
      *
-     * @return bool
+     * @return boolean
      */
     public function copy($destination)
     {
@@ -95,9 +95,9 @@ class Folder extends BaseIO
     }
 
     /**
-     * @param bool $suppressErrors
+     * @param boolean $suppressErrors
      *
-     * @return bool
+     * @return boolean
      */
     public function clear($suppressErrors = false)
     {
@@ -109,7 +109,7 @@ class Folder extends BaseIO
     }
 
     /**
-     * @return bool
+     * @return boolean
      */
     public function delete()
     {

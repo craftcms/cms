@@ -25,7 +25,7 @@ class Config
      *
      * @param string $name
      *
-     * @return bool
+     * @return boolean
      */
     public function __isset($name)
     {
@@ -61,7 +61,7 @@ class Config
     /**
      * Returns whether generated URLs should be formatted using PATH_INFO.
      *
-     * @return bool
+     * @return boolean
      */
     public function usePathInfo()
     {
@@ -71,7 +71,7 @@ class Config
     /**
      * Returns whether generated URLs should omit 'index.php'.
      *
-     * @return bool
+     * @return boolean
      */
     public function omitScriptNameInUrls()
     {

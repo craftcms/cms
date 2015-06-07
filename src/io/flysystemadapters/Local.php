@@ -23,7 +23,7 @@ class Local extends LocalAdapter implements IFlysystemAdapter
      * @param string $path    The old path of the file, relative to the source’s root.
      * @param string $newPath The new path of the file, relative to the source’s root.
      *
-     * @return bool Whether the operation was successful.
+     * @return boolean Whether the operation was successful.
      */
     public function renameDir($path, $newPath)
     {

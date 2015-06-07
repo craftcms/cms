@@ -153,7 +153,7 @@ class AssetTransform extends Model
     /**
      * Return true if the transform is a named one.
      *
-     * @return bool
+     * @return boolean
      */
     public function isNamedTransform()
     {

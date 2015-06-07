@@ -69,7 +69,7 @@ class ElementIndexController extends BaseElementsController
     /**
      * Initializes the application component.
      *
-     * @return null
+     * @return void
      */
     public function init()
     {
@@ -317,7 +317,7 @@ class ElementIndexController extends BaseElementsController
     /**
      * Returns the element HTML to be returned to the client.
      *
-     * @param bool $includeContainer Whether the element container should be included in the HTML.
+     * @param boolean $includeContainer Whether the element container should be included in the HTML.
      *
      * @return string
      */
@@ -399,8 +399,8 @@ class ElementIndexController extends BaseElementsController
     /**
      * Returns the request response.
      *
-     * @param array $responseData
-     * @param bool  $includeLoadMoreInfo
+     * @param array   $responseData
+     * @param boolean $includeLoadMoreInfo
      *
      * @return Response
      */

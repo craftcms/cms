@@ -475,7 +475,7 @@ class Entry extends Element
     /**
      * @inheritdoc Element::saveElement()
      *
-     * @return bool
+     * @return boolean
      */
     public static function saveElement(ElementInterface $element, $params)
     {

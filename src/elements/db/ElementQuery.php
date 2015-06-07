@@ -428,10 +428,10 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
     /**
      * Required by the ArrayAccess interface.
      *
-     * @param string $name The offset to set
+     * @param string $name  The offset to set
      * @param mixed  $value The value
      *
-     * @return null
+     * @return void
      * @throws NotSupportedException if $name is numeric
      */
     public function offsetSet($name, $value)
@@ -1003,7 +1003,7 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
      *
      * @param string $value The property value
      *
-     * @return static The query object itself
+     * @return self The query object itself
      * @deprecated in Craft 3.0. Use [[orderBy()]] instead.
      */
     public function order($value)

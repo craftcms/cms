@@ -395,7 +395,7 @@ class Assets extends BaseRelationField
     /**
      * Resolve a source path to it's folder ID by the source path and the matched source beginning.
      *
-     * @param int                      $volumeId
+     * @param integer                  $volumeId
      * @param string                   $subpath
      * @param ElementInterface|Element $element
      *

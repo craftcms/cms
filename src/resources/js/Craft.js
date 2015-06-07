@@ -671,7 +671,7 @@ $.extend(Craft,
 	 *
 	 * @param mixed obj1
 	 * @param mixed obj2
-	 * @return bool
+	 * @return boolean
 	 */
 	compare: function(obj1, obj2)
 	{
@@ -847,7 +847,7 @@ $.extend(Craft,
 	 *
 	 * @param mixed elem
 	 * @param mixed arr
-	 * @return bool
+	 * @return boolean
 	 */
 	inArray: function(elem, arr)
 	{
@@ -859,7 +859,7 @@ $.extend(Craft,
 	 *
 	 * @param mixed elem
 	 * @param array arr
-	 * @return bool Whether the element could be found or not.
+	 * @return boolean Whether the element could be found or not.
 	 */
 	removeFromArray: function(elem, arr)
 	{
@@ -9801,7 +9801,7 @@ Craft.ElementActionTrigger = Garnish.Base.extend(
 	/**
 	 * Determines if this action can be performed on the currently selected elements.
 	 *
-	 * @return bool
+	 * @return boolean
 	 */
 	validateSelection: function()
 	{
@@ -13549,7 +13549,7 @@ Craft.PromptHandler = Garnish.Base.extend({
      * @param string message
      * @param array choices
      * @param function callback
-     * @param int itemsToGo
+     * @param integer itemsToGo
      */
     _showPrompt: function(message, choices, callback, itemsToGo)
     {

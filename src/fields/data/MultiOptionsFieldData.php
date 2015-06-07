@@ -49,7 +49,7 @@ class MultiOptionsFieldData extends \ArrayObject
     /**
      * @param mixed $value
      *
-     * @return bool
+     * @return boolean
      */
     public function contains($value)
     {

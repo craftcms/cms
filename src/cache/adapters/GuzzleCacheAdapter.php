@@ -32,7 +32,7 @@ class GuzzleCacheAdapter implements CacheAdapterInterface
      * @param string $id      cache id The cache id of the entry to check for.
      * @param array  $options Array of cache adapter options
      *
-     * @return bool Returns TRUE if a cache entry exists for the given cache id, FALSE otherwise.
+     * @return boolean Returns TRUE if a cache entry exists for the given cache id, FALSE otherwise.
      */
     public function contains($id, array $options = null)
     {
@@ -45,7 +45,7 @@ class GuzzleCacheAdapter implements CacheAdapterInterface
      * @param string $id      cache id
      * @param array  $options Array of cache adapter options
      *
-     * @return bool TRUE on success, FALSE on failure
+     * @return boolean TRUE on success, FALSE on failure
      */
     public function delete($id, array $options = null)
     {
@@ -68,12 +68,12 @@ class GuzzleCacheAdapter implements CacheAdapterInterface
     /**
      * Puts data into the cache.
      *
-     * @param string   $id       The cache id
-     * @param string   $data     The cache entry/data
-     * @param int|bool $lifeTime The lifetime. If != false, sets a specific lifetime for this cache entry
-     * @param array    $options  Array of cache adapter options
+     * @param string       $id       The cache id
+     * @param string       $data     The cache entry/data
+     * @param integer|bool $lifeTime The lifetime. If != false, sets a specific lifetime for this cache entry
+     * @param array        $options  Array of cache adapter options
      *
-     * @return bool TRUE if the entry was successfully stored in the cache, FALSE otherwise.
+     * @return boolean TRUE if the entry was successfully stored in the cache, FALSE otherwise.
      */
     public function save($id, $data, $lifeTime = false, array $options = null)
     {

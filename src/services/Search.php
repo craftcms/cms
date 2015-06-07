@@ -55,7 +55,7 @@ class Search extends Component
      *
      * @param ElementInterface $element
      *
-     * @return bool Whether the indexing was a success.
+     * @return boolean Whether the indexing was a success.
      */
     public function indexElementAttributes(ElementInterface $element)
     {
@@ -81,11 +81,11 @@ class Search extends Component
     /**
      * Indexes the field values for a given element and locale.
      *
-     * @param int    $elementId The ID of the element getting indexed.
-     * @param string $localeId  The locale ID of the content getting indexed.
-     * @param array  $fields    The field values, indexed by field ID.
+     * @param integer $elementId The ID of the element getting indexed.
+     * @param string  $localeId  The locale ID of the content getting indexed.
+     * @param array   $fields    The field values, indexed by field ID.
      *
-     * @return bool  Whether the indexing was a success.
+     * @return boolean  Whether the indexing was a success.
      */
     public function indexElementFields($elementId, $localeId, $fields)
     {
@@ -100,9 +100,9 @@ class Search extends Component
     /**
      * Filters a list of element IDs by a given search query.
      *
-     * @param array $elementIds   The list of element IDs to filter by the search query.
-     * @param mixed $query        The search query (either a string or a SearchQuery instance)
-     * @param bool  $scoreResults Whether to order the results based on how closely they match the query.
+     * @param array   $elementIds   The list of element IDs to filter by the search query.
+     * @param mixed   $query        The search query (either a string or a SearchQuery instance)
+     * @param boolean $scoreResults Whether to order the results based on how closely they match the query.
      *
      * @return array The filtered list of element IDs.
      */
@@ -195,13 +195,13 @@ class Search extends Component
     /**
      * Indexes keywords for a specific element attribute/field.
      *
-     * @param int         $elementId
+     * @param integer     $elementId
      * @param string      $attribute
      * @param string      $fieldId
      * @param string|null $localeId
      * @param string      $dirtyKeywords
      *
-     * @return null
+     * @return void
      */
     private function _indexElementKeywords(
         $elementId,
@@ -389,8 +389,8 @@ class Search extends Component
     /**
      * Generates partial WHERE clause for search from given tokens
      *
-     * @param array $tokens
-     * @param bool  $inclusive
+     * @param array   $tokens
+     * @param boolean $inclusive
      *
      * @return string|false
      */
@@ -584,7 +584,7 @@ class Search extends Component
      *
      * @param string $term The search term to check
      *
-     * @return bool
+     * @return boolean
      */
     private function _isFulltextTerm($term)
     {
@@ -615,7 +615,7 @@ class Search extends Component
      *
      * @param string $attribute
      *
-     * @return int
+     * @return integer
      */
     private function _getFieldIdFromAttribute($attribute)
     {
@@ -647,8 +647,8 @@ class Search extends Component
     /**
      * Get SQL but for MATCH AGAINST clause.
      *
-     * @param mixed $val  String or Array of keywords
-     * @param bool  $bool Use In Boolean Mode or not
+     * @param mixed   $val  String or Array of keywords
+     * @param boolean $bool Use In Boolean Mode or not
      *
      * @return string
      */

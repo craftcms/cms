@@ -43,7 +43,7 @@ class TemplateLoader implements \Twig_LoaderInterface, \Twig_ExistsLoaderInterfa
      *
      * @param string $name
      *
-     * @return bool
+     * @return boolean
      */
     public function exists($name)
     {
@@ -55,12 +55,14 @@ class TemplateLoader implements \Twig_LoaderInterface, \Twig_ExistsLoaderInterfa
      *
      * @param  string $name The name of the template to load, or a StringTemplate object.
      *
-     * @return string The template source code.
+     * @return string|StringTemplate The template source code.
      * @throws TemplateLoaderException if the template doesn’t exist or isn’t readable
      */
     public function getSource($name)
     {
-        if (is_string($name)) {
+        if ($name instanceof StringTemplate) {
+            return $name->template;
+        } else {
             $template = $this->_resolveTemplate($name);
 
             if (IOHelper::isReadable($template)) {
@@ -70,33 +72,31 @@ class TemplateLoader implements \Twig_LoaderInterface, \Twig_ExistsLoaderInterfa
                     'Tried to read the template at {path}, but could not. Check the permissions.',
                     ['path' => $template]));
             }
-        } else {
-            return $name->template;
         }
     }
 
     /**
      * Gets the cache key to use for the cache for a given template.
      *
-     * @param string $name The name of the template to load, or a StringTemplate object.
+     * @param StringTemplate|string $name The name of the template to load, or a StringTemplate object.
      *
      * @return string The cache key (the path to the template)
      * @throws TemplateLoaderException if the template doesn’t exist
      */
     public function getCacheKey($name)
     {
-        if (is_string($name)) {
-            return $this->_resolveTemplate($name);
-        } else {
+        if ($name instanceof StringTemplate) {
             return $name->cacheKey;
+        } else {
+            return $this->_resolveTemplate($name);
         }
     }
 
     /**
      * Returns whether the cached template is still up-to-date with the latest template.
      *
-     * @param string $name The template name, or a StringTemplate object.
-     * @param int    $time The last modification time of the cached template
+     * @param string  $name The template name, or a StringTemplate object.
+     * @param integer $time The last modification time of the cached template
      *
      * @return boolean
      * @throws TemplateLoaderException if the template doesn’t exist

@@ -83,7 +83,7 @@ class MatrixBlockQuery extends ElementQuery
      *
      * @param integer|integer[] $value The property value
      *
-     * @return static The query object itself
+     * @return self The query object itself
      */
     public function fieldId($value)
     {
@@ -97,7 +97,7 @@ class MatrixBlockQuery extends ElementQuery
      *
      * @param integer|integer[] $value The property value
      *
-     * @return static The query object itself
+     * @return self The query object itself
      */
     public function ownerId($value)
     {
@@ -111,7 +111,7 @@ class MatrixBlockQuery extends ElementQuery
      *
      * @param string|string[] $value The property value
      *
-     * @return static The query object itself
+     * @return self The query object itself
      */
     public function ownerLocale($value)
     {
@@ -125,7 +125,7 @@ class MatrixBlockQuery extends ElementQuery
      *
      * @param string|string[]|MatrixBlockType $value The property value
      *
-     * @return static The query object itself
+     * @return self The query object itself
      */
     public function type($value)
     {
@@ -148,7 +148,7 @@ class MatrixBlockQuery extends ElementQuery
      *
      * @param integer|integer[] $value The property value
      *
-     * @return static The query object itself
+     * @return self The query object itself
      */
     public function typeId($value)
     {

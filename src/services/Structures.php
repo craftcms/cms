@@ -58,7 +58,7 @@ class Structures extends Component
     /**
      * Returns a structure by its ID.
      *
-     * @param int $structureId
+     * @param integer $structureId
      *
      * @return StructureModel|null
      */
@@ -77,7 +77,7 @@ class Structures extends Component
      * @param StructureModel $structure
      *
      * @throws Exception
-     * @return bool
+     * @return boolean
      */
     public function saveStructure(StructureModel $structure)
     {
@@ -109,9 +109,9 @@ class Structures extends Component
     /**
      * Deletes a structure by its ID.
      *
-     * @param int $structureId
+     * @param integer $structureId
      *
-     * @return bool
+     * @return boolean
      */
     public function deleteStructureById($structureId)
     {
@@ -130,10 +130,10 @@ class Structures extends Component
     /**
      * Returns the descendant level delta for a given element.
      *
-     * @param int              $structureId
+     * @param integer          $structureId
      * @param ElementInterface $element
      *
-     * @return int
+     * @return integer
      */
     public function getElementLevelDelta(
         $structureId,
@@ -158,12 +158,12 @@ class Structures extends Component
     /**
      * Prepends an element to another within a given structure.
      *
-     * @param int              $structureId
+     * @param integer          $structureId
      * @param ElementInterface $element
      * @param ElementInterface $parentElement
      * @param string           $mode Whether this is an "insert", "update", or "auto".
      *
-     * @return bool
+     * @return boolean
      */
     public function prepend(
         $structureId,
@@ -181,12 +181,12 @@ class Structures extends Component
     /**
      * Appends an element to another within a given structure.
      *
-     * @param int              $structureId
+     * @param integer          $structureId
      * @param ElementInterface $element
      * @param ElementInterface $parentElement
      * @param string           $mode Whether this is an "insert", "update", or "auto".
      *
-     * @return bool
+     * @return boolean
      */
     public function append(
         $structureId,
@@ -204,11 +204,11 @@ class Structures extends Component
     /**
      * Prepends an element to the root of a given structure.
      *
-     * @param int              $structureId
+     * @param integer          $structureId
      * @param ElementInterface $element
      * @param string           $mode Whether this is an "insert", "update", or "auto".
      *
-     * @return bool
+     * @return boolean
      */
     public function prependToRoot(
         $structureId,
@@ -224,11 +224,11 @@ class Structures extends Component
     /**
      * Appends an element to the root of a given structure.
      *
-     * @param int              $structureId
+     * @param integer          $structureId
      * @param ElementInterface $element
      * @param string           $mode Whether this is an "insert", "update", or "auto".
      *
-     * @return bool
+     * @return boolean
      */
     public function appendToRoot(
         $structureId,
@@ -244,12 +244,12 @@ class Structures extends Component
     /**
      * Moves an element before another within a given structure.
      *
-     * @param int              $structureId
+     * @param integer          $structureId
      * @param ElementInterface $element
      * @param ElementInterface $nextElement
      * @param string           $mode Whether this is an "insert", "update", or "auto".
      *
-     * @return bool
+     * @return boolean
      */
     public function moveBefore(
         $structureId,
@@ -267,12 +267,12 @@ class Structures extends Component
     /**
      * Moves an element after another within a given structure.
      *
-     * @param int              $structureId
+     * @param integer          $structureId
      * @param ElementInterface $element
      * @param ElementInterface $prevElement
      * @param string           $mode Whether this is an "insert", "update", or "auto".
      *
-     * @return bool
+     * @return boolean
      */
     public function moveAfter(
         $structureId,
@@ -293,7 +293,7 @@ class Structures extends Component
     /**
      * Returns a structure element record from given structure and element IDs.
      *
-     * @param int              $structureId
+     * @param integer          $structureId
      * @param ElementInterface $element
      *
      * @return StructureElementRecord|null
@@ -313,7 +313,7 @@ class Structures extends Component
     /**
      * Returns the root node for a given structure ID, or creates one if it doesn't exist.
      *
-     * @param int $structureId
+     * @param integer $structureId
      *
      * @return StructureElementRecord
      */
@@ -348,7 +348,7 @@ class Structures extends Component
      * @param  string                 $mode
      *
      * @throws \Exception
-     * @return bool
+     * @return boolean
      */
     private function _doIt(
         $structureId,

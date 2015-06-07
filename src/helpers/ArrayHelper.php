@@ -53,7 +53,7 @@ class ArrayHelper extends \yii\helpers\ArrayHelper
      *     'length' => 301,
      * ]
      * ~~~
-     * @param bool                $recursive  Whether to recursively converts properties which are objects into arrays.
+     * @param boolean             $recursive  Whether to recursively converts properties which are objects into arrays.
      *
      * @return array The array representation of the given object.
      */
@@ -88,10 +88,10 @@ class ArrayHelper extends \yii\helpers\ArrayHelper
     /**
      * Prepends or appends a value to an array.
      *
-     * @param array &$arr
-     * @param mixed $value
+     * @param array   &$arr
+     * @param mixed   $value
      *
-     * @param bool  $prepend
+     * @param boolean $prepend
      */
     public static function prependOrAppend(&$arr, $value, $prepend)
     {
@@ -143,7 +143,7 @@ class ArrayHelper extends \yii\helpers\ArrayHelper
      *
      * @param string $val
      *
-     * @return bool
+     * @return boolean
      */
     private static function _isNotAnEmptyString($val)
     {

@@ -41,7 +41,7 @@ class SingleOptionFieldData extends OptionData
      *
      * @param array $options
      *
-     * @return null
+     * @return void
      */
     public function setOptions($options)
     {

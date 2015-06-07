@@ -41,7 +41,7 @@ class JsonHelper extends \yii\helpers\Json
     /**
      * Sets JSON helpers on the response.
      *
-     * @return null
+     * @return void
      */
     public static function sendJsonHeaders()
     {

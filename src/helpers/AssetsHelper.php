@@ -86,9 +86,9 @@ class AssetsHelper
     /**
      * Clean an Asset's filename.
      *
-     * @param      $name
-     * @param bool $isFilename if set to true (default), will separate extension
-     *                         and clean the filename separately.
+     * @param         $name
+     * @param boolean $isFilename if set to true (default), will separate extension
+     *                            and clean the filename separately.
      *
      * @return mixed
      */

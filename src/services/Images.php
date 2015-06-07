@@ -35,7 +35,7 @@ class Images extends Component
     /**
      * Returns whether image manipulations will be performed using GD or not.
      *
-     * @return bool|null
+     * @return boolean|null
      */
     public function isGd()
     {
@@ -66,7 +66,7 @@ class Images extends Component
     /**
      * Returns whether image manipulations will be performed using Imagick or not.
      *
-     * @return bool
+     * @return boolean
      */
     public function isImagick()
     {
@@ -96,10 +96,10 @@ class Images extends Component
      * attempt to do it with available memory. If that fails, Craft will bump the memory to amount defined by the
      * [phpMaxMemoryLimit](http://buildwithcraft.com/docs/config-settings#phpMaxMemoryLimit) config setting, then try again.
      *
-     * @param string $filePath The path to the image file.
-     * @param bool   $toTheMax If set to true, will set the PHP memory to the config setting phpMaxMemoryLimit.
+     * @param string  $filePath The path to the image file.
+     * @param boolean $toTheMax If set to true, will set the PHP memory to the config setting phpMaxMemoryLimit.
      *
-     * @return bool
+     * @return boolean
      */
     public function checkMemoryForImage($filePath, $toTheMax = false)
     {
@@ -139,7 +139,7 @@ class Images extends Component
      *
      * @param string $filePath
      *
-     * @return bool
+     * @return boolean
      */
     public function cleanImage($filePath)
     {
@@ -162,7 +162,7 @@ class Images extends Component
      *
      * @param string $filePath
      *
-     * @return null
+     * @return void
      */
     public function rotateImageByExifData($filePath)
     {
@@ -219,7 +219,7 @@ class Images extends Component
      *
      * @param $filePath
      *
-     * @return bool
+     * @return boolean
      */
     public function stripOrientationFromExifData($filePath)
     {

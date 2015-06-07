@@ -43,7 +43,7 @@ class ToolsController extends Controller
     /**
      * Performs a tool's action.
      *
-     * @return null
+     * @return void
      */
     public function actionPerformAction()
     {
@@ -63,7 +63,7 @@ class ToolsController extends Controller
     /**
      * Returns a database backup zip file to the browser.
      *
-     * @return null
+     * @return void
      */
     public function actionDownloadBackupFile()
     {

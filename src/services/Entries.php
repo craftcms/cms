@@ -61,9 +61,9 @@ class Entries extends Component
      * $entry = Craft::$app->getEntries()->getEntryById($entryId);
      * ```
      *
-     * @param int    $entryId  The entry’s ID.
-     * @param string $localeId The locale to fetch the entry in.
-     *                         Defaults to [[Application::language `Craft::$app->language`]].
+     * @param integer $entryId  The entry’s ID.
+     * @param string  $localeId The locale to fetch the entry in.
+     *                          Defaults to [[Application::language `Craft::$app->language`]].
      *
      * @return Entry|null The entry with the given ID, or `null` if an entry could not be found.
      */
@@ -99,7 +99,7 @@ class Entries extends Component
      *
      * @param Entry $entry The entry to be saved.
      *
-     * @return bool
+     * @return boolean
      * @throws Exception
      * @throws \Exception
      */
@@ -294,7 +294,7 @@ class Entries extends Component
      * @param Entry|Entry[] $entries An entry, or an array of entries, to be deleted.
      *
      * @throws \Exception
-     * @return bool Whether the entry deletion was successful.
+     * @return boolean Whether the entry deletion was successful.
      */
     public function deleteEntry($entries)
     {
@@ -372,9 +372,9 @@ class Entries extends Component
     /**
      * Deletes an entry(s) by its ID.
      *
-     * @param int|array $entryId The ID of an entry to delete, or an array of entry IDs.
+     * @param integer|array $entryId The ID of an entry to delete, or an array of entry IDs.
      *
-     * @return bool Whether the entry deletion was successful.
+     * @return boolean Whether the entry deletion was successful.
      */
     public function deleteEntryById($entryId)
     {
@@ -404,7 +404,7 @@ class Entries extends Component
      *
      * @param Entry $entry
      *
-     * @return bool
+     * @return boolean
      */
     private function _checkForNewParent(Entry $entry)
     {

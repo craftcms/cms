@@ -60,7 +60,7 @@ class Connection extends \yii\db\Connection
      *                                     to an array or database table names, they will get merged with the default
      *                                     list of table names whose data is to be ignored during a database backup.
      *
-     * @return bool|string The file path to the database backup, or false if something ennt wrong.
+     * @return boolean|string The file path to the database backup, or false if something ennt wrong.
      */
     public function backup($ignoreDataTables = null)
     {
@@ -96,10 +96,10 @@ class Connection extends \yii\db\Connection
     /**
      * Returns whether a table exists.
      *
-     * @param string    $table
-     * @param bool|null $refresh
+     * @param string       $table
+     * @param boolean|null $refresh
      *
-     * @return bool
+     * @return boolean
      */
     public function tableExists($table, $refresh = null)
     {
@@ -116,11 +116,11 @@ class Connection extends \yii\db\Connection
     /**
      * Checks if a column exists in a table.
      *
-     * @param string    $table
-     * @param string    $column
-     * @param bool|null $refresh
+     * @param string       $table
+     * @param string       $column
+     * @param boolean|null $refresh
      *
-     * @return bool
+     * @return boolean
      */
     public function columnExists($table, $column, $refresh = null)
     {
@@ -163,7 +163,7 @@ class Connection extends \yii\db\Connection
      *
      * @param string       $table
      * @param string|array $columns
-     * @param bool         $unique
+     * @param boolean      $unique
      *
      * @return string
      */

@@ -160,7 +160,7 @@ abstract class BaseIO
     /**
      * @param $owner
      *
-     * @return bool
+     * @return boolean
      */
     public function changeOwner($owner)
     {
@@ -174,7 +174,7 @@ abstract class BaseIO
     /**
      * @param $group
      *
-     * @return bool
+     * @return boolean
      */
     public function changeGroup($group)
     {
@@ -188,7 +188,7 @@ abstract class BaseIO
     /**
      * @param $permissions
      *
-     * @return bool
+     * @return boolean
      */
     public function changePermissions($permissions)
     {
@@ -202,7 +202,7 @@ abstract class BaseIO
     /**
      * @param string $newName
      *
-     * @return bool
+     * @return boolean
      */
     public function rename($newName)
     {
@@ -216,7 +216,7 @@ abstract class BaseIO
     /**
      * @param string $newPath
      *
-     * @return bool
+     * @return boolean
      */
     public function move($newPath)
     {
@@ -228,7 +228,7 @@ abstract class BaseIO
     }
 
     /**
-     * @param bool $fullPath
+     * @param boolean $fullPath
      *
      * @return string
      */

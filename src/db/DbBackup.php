@@ -71,7 +71,7 @@ class DbBackup
      *                            ignore for data backup in $_ignoreDataTables.  If set to false, no tables will be
      *                            ignored and a full database backup will be performed.
      *
-     * @return null
+     * @return void
      */
     public function setIgnoreDataTables($tables)
     {
@@ -122,7 +122,7 @@ class DbBackup
      * @param string $filePath The file path of the database backup to restore.
      *
      * @throws Exception
-     * @return null
+     * @return void
      */
     public function restore($filePath)
     {
@@ -151,7 +151,7 @@ class DbBackup
     /**
      * @param $value
      *
-     * @return null
+     * @return void
      */
     public function trimValue(&$value)
     {
@@ -192,7 +192,7 @@ class DbBackup
     }
 
     /**
-     * @return null
+     * @return void
      */
     private function _nukeDb()
     {
@@ -218,7 +218,7 @@ class DbBackup
     /**
      * Generate the foreign key constraints for all tables.
      *
-     * @return null
+     * @return void
      */
     private function _processConstraints()
     {
@@ -258,7 +258,7 @@ class DbBackup
     /**
      * Set sql file header
      *
-     * @return null
+     * @return void
      */
     private function _processHeader()
     {
@@ -276,7 +276,7 @@ class DbBackup
     /**j
      * Set sql file footer
      *
-     * @return null
+     * @return void
      */
     private function _processFooter()
     {

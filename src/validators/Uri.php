@@ -33,7 +33,7 @@ class Uri extends Validator
      * @param $object
      * @param $attribute
      *
-     * @return null
+     * @return void
      */
     public function validateAttribute($object, $attribute)
     {

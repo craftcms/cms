@@ -48,7 +48,7 @@ class NamespaceTokenParser extends \Twig_TokenParser
     /**
      * @param \Twig_Token $token
      *
-     * @return bool
+     * @return boolean
      */
     public function decideNamespaceEnd(\Twig_Token $token)
     {

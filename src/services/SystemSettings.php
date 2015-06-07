@@ -105,7 +105,7 @@ class SystemSettings extends Component
      * @param string $category
      * @param array  $settings
      *
-     * @return bool Whether the new settings saved
+     * @return boolean Whether the new settings saved
      */
     public function saveSettings($category, $settings = null)
     {

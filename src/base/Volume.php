@@ -36,7 +36,7 @@ abstract class Volume extends SavableComponent implements VolumeInterface
     /**
      * Returns whether this source stores files locally on the server.
      *
-     * @return bool Whether files are stored locally.
+     * @return boolean Whether files are stored locally.
      */
     public static function isLocal()
     {
@@ -121,10 +121,10 @@ abstract class Volume extends SavableComponent implements VolumeInterface
     public function createFileByStream($path, $stream)
     {
         try {
-            return $this->getFilesystem()->writeStream($path, $stream, array
-                (
+            return $this->getFilesystem()->writeStream($path, $stream,
+                [
                     'visibility' => AdapterInterface::VISIBILITY_PUBLIC
-                )
+                ]
             );
         } catch (FileExistsException $exception) {
             throw new VolumeFileExistsException($exception->getMessage());
@@ -267,7 +267,7 @@ abstract class Volume extends SavableComponent implements VolumeInterface
      * @param $uriPath
      * @param $targetPath
      *
-     * @return int $bytes amount of bytes copied
+     * @return integer $bytes amount of bytes copied
      */
     public function saveFileLocally($uriPath, $targetPath)
     {

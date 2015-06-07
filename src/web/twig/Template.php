@@ -8,6 +8,7 @@
 namespace craft\app\web\twig;
 
 use Craft;
+use craft\app\base\Element;
 use craft\app\base\ElementInterface;
 use yii\base\Object;
 
@@ -29,10 +30,8 @@ abstract class Template extends \Twig_Template
     {
         $name = $this->getTemplateName();
         Craft::beginProfile($name, __METHOD__);
-        $result = parent::display($context, $blocks);
+        parent::display($context, $blocks);
         Craft::endProfile($name, __METHOD__);
-
-        return $result;
     }
 
     // Protected Methods
@@ -41,12 +40,12 @@ abstract class Template extends \Twig_Template
     /**
      * Returns the attribute value for a given array/object.
      *
-     * @param mixed  $object            The object or array from where to get the item
-     * @param mixed  $item              The item to get from the array or object
-     * @param array  $arguments         An array of arguments to pass if the item is an object method
-     * @param string $type              The type of attribute (@see \Twig_Template constants)
-     * @param bool   $isDefinedTest     Whether this is only a defined check
-     * @param bool   $ignoreStrictCheck Whether to ignore the strict attribute check or not
+     * @param mixed   $object            The object or array from where to get the item
+     * @param mixed   $item              The item to get from the array or object
+     * @param array   $arguments         An array of arguments to pass if the item is an object method
+     * @param string  $type              The type of attribute (@see \Twig_Template constants)
+     * @param boolean $isDefinedTest     Whether this is only a defined check
+     * @param boolean $ignoreStrictCheck Whether to ignore the strict attribute check or not
      *
      * @throws \Twig_Error_Runtime If the attribute does not exist and Twig is running in strict mode and $isDefinedTest
      *                             is false
@@ -81,9 +80,9 @@ abstract class Template extends \Twig_Template
     /**
      * Includes this element in any active template caches.
      *
-     * @param ElementInterface $element
+     * @param ElementInterface|Element $element
      *
-     * @return null
+     * @return void
      */
     private function _includeElementInTemplateCaches(ElementInterface $element)
     {

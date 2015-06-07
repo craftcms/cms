@@ -905,7 +905,7 @@ class Fields extends Component
     /**
      * Deletes a field layout(s) by its ID.
      *
-     * @param int|array $layoutId The field layout’s ID
+     * @param integer|array $layoutId The field layout’s ID
      *
      * @return boolean Whether the field layout was deleted successfully
      */

@@ -30,7 +30,7 @@ class UrlHelper
      *
      * @param string $url
      *
-     * @return bool
+     * @return boolean
      */
     public static function isAbsoluteUrl($url)
     {
@@ -43,7 +43,7 @@ class UrlHelper
      *
      * @param string $url
      *
-     * @return bool
+     * @return boolean
      */
     public static function isProtocolRelativeUrl($url)
     {
@@ -55,7 +55,7 @@ class UrlHelper
      *
      * @param string $url
      *
-     * @return bool
+     * @return boolean
      */
     public static function isRootRelativeUrl($url)
     {
@@ -68,7 +68,7 @@ class UrlHelper
      *
      * @param string $url
      *
-     * @return bool
+     * @return boolean
      */
     public static function isFullUrl($url)
     {
@@ -148,7 +148,7 @@ class UrlHelper
      * @param string            $path
      * @param array|string|null $params
      * @param string|null       $protocol
-     * @param bool              $mustShowScriptName
+     * @param boolean           $mustShowScriptName
      *
      * @return string
      */

@@ -21,7 +21,7 @@ class Updates
     /**
      * Returns whether the update info is cached.
      *
-     * @return bool
+     * @return boolean
      */
     public function isUpdateInfoCached()
     {
@@ -31,7 +31,7 @@ class Updates
     /**
      * Returns whether a critical update is available.
      *
-     * @return bool
+     * @return boolean
      */
     public function isCriticalUpdateAvailable()
     {
@@ -49,7 +49,7 @@ class Updates
     }
 
     /**
-     * @param bool $forceRefresh
+     * @param boolean $forceRefresh
      *
      * @return mixed
      */

@@ -63,9 +63,9 @@ class Et
     // =========================================================================
 
     /**
-     * @param     $endpoint
-     * @param int $timeout
-     * @param int $connectTimeout
+     * @param         $endpoint
+     * @param integer $timeout
+     * @param integer $connectTimeout
      *
      * @return Et
      */
@@ -103,7 +103,7 @@ class Et
      * The maximum number of seconds to allow for an entire transfer to take place before timing out.  Set 0 to wait
      * indefinitely.
      *
-     * @return int
+     * @return integer
      */
     public function getTimeout()
     {
@@ -113,7 +113,7 @@ class Et
     /**
      * The maximum number of seconds to wait while trying to connect. Set to 0 to wait indefinitely.
      *
-     * @return int
+     * @return integer
      */
     public function getConnectTimeout()
     {
@@ -125,7 +125,7 @@ class Et
      *
      * @param $allowRedirects
      *
-     * @return null
+     * @return void
      */
     public function setAllowRedirects($allowRedirects)
     {
@@ -133,7 +133,7 @@ class Et
     }
 
     /**
-     * @return bool
+     * @return boolean
      */
     public function getAllowRedirects()
     {
@@ -143,7 +143,7 @@ class Et
     /**
      * @param $destinationFilename
      *
-     * @return null
+     * @return void
      */
     public function setDestinationFilename($destinationFilename)
     {
@@ -163,7 +163,7 @@ class Et
      *
      * @param $data
      *
-     * @return null
+     * @return void
      */
     public function setData($data)
     {
@@ -308,7 +308,7 @@ class Et
     /**
      * @param $key
      *
-     * @return bool
+     * @return boolean
      * @throws Exception|EtException
      */
     private function _setLicenseKey($key)
@@ -338,7 +338,7 @@ class Et
     }
 
     /**
-     * @return bool
+     * @return boolean
      */
     private function _isConfigFolderWritable()
     {

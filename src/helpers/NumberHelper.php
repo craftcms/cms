@@ -23,7 +23,7 @@ class NumberHelper
     /**
      * Returns the "word" version of a number
      *
-     * @param int $num The number
+     * @param integer $num The number
      *
      * @return string The number word, or the original number if it's >= 10
      */
@@ -52,7 +52,7 @@ class NumberHelper
     /**
      * Returns the uppercase alphabetic version of a number
      *
-     * @param int $num The number
+     * @param integer $num The number
      *
      * @return string The alphabetic version of the number
      */
@@ -74,7 +74,7 @@ class NumberHelper
     /**
      * Returns the lowercase alphabetic version of a number
      *
-     * @param int $num The number
+     * @param integer $num The number
      *
      * @return string The alphabetic version of the number
      */
@@ -88,7 +88,7 @@ class NumberHelper
     /**
      * Returns the uppercase roman numeral version of a number
      *
-     * @param int $num The number
+     * @param integer $num The number
      *
      * @return string The roman numeral version of the number
      */
@@ -125,7 +125,7 @@ class NumberHelper
     /**
      * Returns the lowercase roman numeral version of a number
      *
-     * @param int $num The number
+     * @param integer $num The number
      *
      * @return string The roman numeral version of the number
      */

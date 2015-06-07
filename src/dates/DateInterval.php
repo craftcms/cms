@@ -92,7 +92,7 @@ class DateInterval extends \DateInterval
     /**
      * Returns the DateInterval instance for the number of seconds.
      *
-     * @param int|string $seconds The number of seconds.
+     * @param integer|string $seconds The number of seconds.
      *
      * @return DateInterval The date interval.
      */
@@ -197,7 +197,7 @@ class DateInterval extends \DateInterval
     /**
      * Returns the interval in a human-friendly string.
      *
-     * @param bool $showSeconds
+     * @param boolean $showSeconds
      *
      * @return string
      */

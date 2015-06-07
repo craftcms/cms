@@ -73,7 +73,7 @@ class UserGroup extends Model
      *
      * @param string $permission
      *
-     * @return bool
+     * @return boolean
      */
     public function can($permission)
     {

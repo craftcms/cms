@@ -100,10 +100,10 @@ class Elements extends Component
      *
      * The element’s status will not be a factor when usisng this method.
      *
-     * @param int    $elementId   The element’s ID.
-     * @param null   $elementType The element class.
-     * @param string $localeId    The locale to fetch the element in.
-     *                            Defaults to [[\craft\app\web\Application::language `Craft::$app->language`]].
+     * @param integer $elementId   The element’s ID.
+     * @param null    $elementType The element class.
+     * @param string  $localeId    The locale to fetch the element in.
+     *                             Defaults to [[\craft\app\web\Application::language `Craft::$app->language`]].
      *
      * @return ElementInterface|Element|null The matching element, or `null`.
      */
@@ -138,7 +138,7 @@ class Elements extends Component
      * @param string      $uri         The element’s URI.
      * @param string|null $localeId    The locale to look for the URI in, and to return the element in.
      *                                 Defaults to [[\craft\app\web\Application::language `Craft::$app->language`]].
-     * @param bool        $enabledOnly Whether to only look for an enabled element. Defaults to `false`.
+     * @param boolean     $enabledOnly Whether to only look for an enabled element. Defaults to `false`.
      *
      * @return ElementInterface|Element|null The matching element, or `null`.
      */
@@ -197,7 +197,7 @@ class Elements extends Component
      *
      * If an array is passed in, then an array will be returned.
      *
-     * @param int|array $elementId An element’s ID, or an array of elements’ IDs.
+     * @param integer|array $elementId An element’s ID, or an array of elements’ IDs.
      *
      * @return ElementInterface|ElementInterface[]|Element|Element[]|null The element class(es).
      */
@@ -222,8 +222,8 @@ class Elements extends Component
     /**
      * Returns an element’s URI for a given locale.
      *
-     * @param int    $elementId The element’s ID.
-     * @param string $localeId  The locale to search for the element’s URI in.
+     * @param integer $elementId The element’s ID.
+     * @param string  $localeId  The locale to search for the element’s URI in.
      *
      * @return string|null The element’s URI, or `null`.
      */
@@ -239,7 +239,7 @@ class Elements extends Component
     /**
      * Returns the locales that a given element is enabled in.
      *
-     * @param int $elementId The element’s ID.
+     * @param integer $elementId The element’s ID.
      *
      * @return array The locales that the element is enabled in. If the element could not be found, an empty array
      *               will be returned.
@@ -280,11 +280,11 @@ class Elements extends Component
      * ensure that they point to valid section and entry type IDs.
      *
      * @param ElementInterface|ElementInterface $element         The element that is being saved
-     * @param bool|null                         $validateContent Whether the element's content should be validated. If left 'null', it
+     * @param boolean|null                      $validateContent Whether the element's content should be validated. If left 'null', it
      *                                                           will depend on whether the element is enabled or not.
      *
      * @throws Exception|\Exception
-     * @return bool
+     * @return boolean
      */
     public function saveElement(
         ElementInterface $element,
@@ -589,7 +589,7 @@ class Elements extends Component
      * @param boolean                  $updateDescendants  Whether the element’s descendants should also be updated.
      * @param boolean                  $asTask             Whether the element’s slug and URI should be updated via a background task.
      *
-     * @return null
+     * @return void
      */
     public function updateElementSlugAndUri(
         ElementInterface $element,
@@ -637,7 +637,7 @@ class Elements extends Component
      *
      * @param ElementInterface|Element $element The element to update.
      *
-     * @return null
+     * @return void
      */
     public function updateElementSlugAndUriInOtherLocales(
         ElementInterface $element
@@ -663,10 +663,10 @@ class Elements extends Component
      * Updates an element’s descendants’ slugs and URIs.
      *
      * @param ElementInterface|Element $element            The element whose descendants should be updated.
-     * @param bool                     $updateOtherLocales Whether the element’s other locales should also be updated.
-     * @param bool                     $asTask             Whether the descendants’ slugs and URIs should be updated via a background task.
+     * @param boolean                  $updateOtherLocales Whether the element’s other locales should also be updated.
+     * @param boolean                  $asTask             Whether the descendants’ slugs and URIs should be updated via a background task.
      *
-     * @return null
+     * @return void
      */
     public function updateDescendantSlugsAndUris(
         ElementInterface $element,
@@ -712,11 +712,11 @@ class Elements extends Component
      * - Any structures that contain the merged element
      * - Any reference tags in textual custom fields referencing the merged element
      *
-     * @param int $mergedElementId     The ID of the element that is going away.
-     * @param int $prevailingElementId The ID of the element that is sticking around.
+     * @param integer $mergedElementId     The ID of the element that is going away.
+     * @param integer $prevailingElementId The ID of the element that is sticking around.
      *
      * @throws \Exception
-     * @return bool Whether the elements were merged successfully.
+     * @return boolean Whether the elements were merged successfully.
      */
     public function mergeElementsByIds($mergedElementId, $prevailingElementId)
     {
@@ -828,10 +828,10 @@ class Elements extends Component
     /**
      * Deletes an element(s) by its ID(s).
      *
-     * @param int|array $elementIds The element’s ID, or an array of elements’ IDs.
+     * @param integer|array $elementIds The element’s ID, or an array of elements’ IDs.
      *
      * @throws \Exception
-     * @return bool Whether the element(s) were deleted successfully.
+     * @return boolean Whether the element(s) were deleted successfully.
      */
     public function deleteElementById($elementIds)
     {

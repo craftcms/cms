@@ -23,7 +23,7 @@ class RequireLoginNode extends \Twig_Node
      *
      * @param \Twig_Compiler $compiler
      *
-     * @return null
+     * @return void
      */
     public function compile(\Twig_Compiler $compiler)
     {

@@ -54,7 +54,7 @@ class CategoriesController extends Controller
     /**
      * Edit a category group.
      *
-     * @param int           $groupId       The category group’s ID, if editing an existing group.
+     * @param integer       $groupId       The category group’s ID, if editing an existing group.
      * @param CategoryGroup $categoryGroup The category group being edited, if there were any validation errors.
      *
      * @return string The rendering result
@@ -120,7 +120,7 @@ class CategoriesController extends Controller
     /**
      * Save a category group.
      *
-     * @return null
+     * @return void
      */
     public function actionSaveGroup()
     {
@@ -175,7 +175,7 @@ class CategoriesController extends Controller
     /**
      * Deletes a category group.
      *
-     * @return null
+     * @return void
      */
     public function actionDeleteCategoryGroup()
     {
@@ -219,8 +219,8 @@ class CategoriesController extends Controller
      * Displays the category edit page.
      *
      * @param string   $groupHandle The category group’s handle.
-     * @param int      $categoryId  The category’s ID, if editing an existing category.
-     * @param int      $localeId    The locale ID, if specified.
+     * @param integer  $categoryId  The category’s ID, if editing an existing category.
+     * @param integer  $localeId    The locale ID, if specified.
      * @param Category $category    The category being edited, if there were any validation errors.
      *
      * @return string The rendering result
@@ -378,7 +378,7 @@ class CategoriesController extends Controller
      * Previews a category.
      *
      * @throws HttpException
-     * @return null
+     * @return void
      */
     public function actionPreviewCategory()
     {
@@ -394,7 +394,7 @@ class CategoriesController extends Controller
     /**
      * Saves an category.
      *
-     * @return null
+     * @return void
      */
     public function actionSaveCategory()
     {
@@ -451,7 +451,7 @@ class CategoriesController extends Controller
      * Deletes a category.
      *
      * @throws Exception
-     * @return null
+     * @return void
      */
     public function actionDeleteCategory()
     {
@@ -501,7 +501,7 @@ class CategoriesController extends Controller
      * @param mixed $locale
      *
      * @throws HttpException
-     * @return null
+     * @return void
      */
     public function actionShareCategory($categoryId, $locale = null)
     {
@@ -541,7 +541,7 @@ class CategoriesController extends Controller
      * @param mixed $locale
      *
      * @throws HttpException
-     * @return null
+     * @return void
      */
     public function actionViewSharedCategory($categoryId, $locale = null)
     {
@@ -566,7 +566,7 @@ class CategoriesController extends Controller
      * @param array &$variables
      *
      * @throws HttpException|Exception
-     * @return null
+     * @return void
      */
     private function _prepEditCategoryVariables(&$variables)
     {
@@ -691,7 +691,7 @@ class CategoriesController extends Controller
      *
      * @param Category $category
      *
-     * @return null
+     * @return void
      */
     private function _enforceEditCategoryPermissions(Category $category)
     {
@@ -709,7 +709,7 @@ class CategoriesController extends Controller
      *
      * @param Category $category
      *
-     * @return null
+     * @return void
      */
     private function _populateCategoryModel(Category $category)
     {

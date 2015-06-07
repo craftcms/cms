@@ -1,7 +1,9 @@
 <?php
 /**
- * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.* _
- * @license   http://buildwithcraft.com/license*/
+ * @link      http://buildwithcraft.com/
+ * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
+ * @license   http://buildwithcraft.com/license
+ */
 
 namespace craft\app\i18n;
 
@@ -440,7 +442,7 @@ class Locale extends Object
     /**
      * Returns the localized ICU date format.
      *
-     * @param int $length The format length that should be returned. Values: Locale::FORMAT_SHORT, ::MEDIUM, ::LONG, ::FULL
+     * @param integer $length The format length that should be returned. Values: Locale::FORMAT_SHORT, ::MEDIUM, ::LONG, ::FULL
      *
      * @return string The localized ICU date format.
      */
@@ -452,7 +454,7 @@ class Locale extends Object
     /**
      * Returns the localized ICU time format.
      *
-     * @param int $length The format length that should be returned. Values: Locale::FORMAT_SHORT, ::MEDIUM, ::LONG, ::FULL
+     * @param integer $length The format length that should be returned. Values: Locale::FORMAT_SHORT, ::MEDIUM, ::LONG, ::FULL
      *
      * @return string The localized ICU time format.
      */
@@ -464,7 +466,7 @@ class Locale extends Object
     /**
      * Returns the localized ICU date + time format.
      *
-     * @param int $length The format length that should be returned. Values: Locale::FORMAT_SHORT, ::MEDIUM, ::LONG, ::FULL
+     * @param integer $length The format length that should be returned. Values: Locale::FORMAT_SHORT, ::MEDIUM, ::LONG, ::FULL
      *
      * @return string The localized ICU date + time format.
      */
@@ -476,8 +478,8 @@ class Locale extends Object
     /**
      * Returns a localized month name.
      *
-     * @param int     $month      The month to return (1-12).
-     * @param int     $length     The format length that should be returned. Values: Locale::FORMAT_ABBREVIATED, ::MEDIUM, ::FULL
+     * @param integer $month      The month to return (1-12).
+     * @param integer $length     The format length that should be returned. Values: Locale::FORMAT_ABBREVIATED, ::MEDIUM, ::FULL
      * @param boolean $standAlone Whether to return the "stand alone" month name.
      *
      * @return string The localized month name.
@@ -528,7 +530,7 @@ class Locale extends Object
     /**
      * Returns all of the localized month names.
      *
-     * @param int     $length     The format length that should be returned. Values: Locale::FORMAT_ABBREVIATED, ::MEDIUM, ::FULL
+     * @param integer $length     The format length that should be returned. Values: Locale::FORMAT_ABBREVIATED, ::MEDIUM, ::FULL
      * @param boolean $standAlone Whether to return the "stand alone" month names.
      *
      * @return array The localized month names.
@@ -547,8 +549,8 @@ class Locale extends Object
     /**
      * Returns a localized day of the week name.
      *
-     * @param int     $day        The day of the week to return (1-7), where 1 stands for Sunday.
-     * @param int     $length     The format length that should be returned. Values: Locale::FORMAT_ABBREVIATED, ::SHORT, ::MEDIUM, ::FULL
+     * @param integer $day        The day of the week to return (1-7), where 1 stands for Sunday.
+     * @param integer $length     The format length that should be returned. Values: Locale::FORMAT_ABBREVIATED, ::SHORT, ::MEDIUM, ::FULL
      * @param boolean $standAlone Whether to return the "stand alone" day of the week name.
      *
      * @return string The localized day of the week name.
@@ -604,7 +606,7 @@ class Locale extends Object
     /**
      * Returns all of the localized day of the week names.
      *
-     * @param int     $length     The format length that should be returned. Values: Locale::FORMAT_ABBREVIATED, ::MEDIUM, ::FULL
+     * @param integer $length     The format length that should be returned. Values: Locale::FORMAT_ABBREVIATED, ::MEDIUM, ::FULL
      * @param boolean $standAlone Whether to return the "stand alone" day of the week names.
      *
      * @return array The localized day of the week names.
@@ -654,7 +656,7 @@ class Locale extends Object
     /**
      * Returns a text attribute used by this locale.
      *
-     * @param int $attribute The attribute to return. Values: Locale::
+     * @param integer $attribute The attribute to return. Values: Locale::
      *
      * @return string The attribute.
      */
@@ -690,11 +692,11 @@ class Locale extends Object
     /**
      * Returns a number symbol used by this locale.
      *
-     * @param int $symbol The symbol to return. Values: Locale::SYMBOL_DECIMAL_SEPARATOR, ::SYMBOL_GROUPING_SEPARATOR,
-     *                    ::SYMBOL_PATTERN_SEPARATOR, ::SYMBOL_PERCENT, ::SYMBOL_ZERO_DIGIT, ::SYMBOL_DIGIT, ::SYMBOL_MINUS_SIGN,
-     *                    ::SYMBOL_PLUS_SIGN, ::SYMBOL_CURRENCY, ::SYMBOL_INTL_CURRENCY, ::SYMBOL_MONETARY_SEPARATOR,
-     *                    ::SYMBOL_EXPONENTIAL, ::SYMBOL_PERMILL, ::SYMBOL_PAD_ESCAPE, ::SYMBOL_INFINITY, ::SYMBOL_NAN,
-     *                    ::SYMBOL_SIGNIFICANT_DIGIT, ::SYMBOL_MONETARY_GROUPING_SEPARATOR
+     * @param integer $symbol The symbol to return. Values: Locale::SYMBOL_DECIMAL_SEPARATOR, ::SYMBOL_GROUPING_SEPARATOR,
+     *                        ::SYMBOL_PATTERN_SEPARATOR, ::SYMBOL_PERCENT, ::SYMBOL_ZERO_DIGIT, ::SYMBOL_DIGIT, ::SYMBOL_MINUS_SIGN,
+     *                        ::SYMBOL_PLUS_SIGN, ::SYMBOL_CURRENCY, ::SYMBOL_INTL_CURRENCY, ::SYMBOL_MONETARY_SEPARATOR,
+     *                        ::SYMBOL_EXPONENTIAL, ::SYMBOL_PERMILL, ::SYMBOL_PAD_ESCAPE, ::SYMBOL_INFINITY, ::SYMBOL_NAN,
+     *                        ::SYMBOL_SIGNIFICANT_DIGIT, ::SYMBOL_MONETARY_GROUPING_SEPARATOR
      *
      * @return string The symbol.
      */
@@ -779,7 +781,7 @@ class Locale extends Object
     /**
      * Returns a localized ICU date/time format.
      *
-     * @param int     $length   The format length that should be returned. Values: Locale::FORMAT_SHORT, ::MEDIUM, ::LONG, ::FULL
+     * @param integer $length   The format length that should be returned. Values: Locale::FORMAT_SHORT, ::MEDIUM, ::LONG, ::FULL
      * @param boolean $withDate Whether the date should be included in the format.
      * @param boolean $withTime Whether the time should be included in the format.
      *

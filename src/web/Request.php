@@ -150,7 +150,7 @@ class Request extends \yii\web\Request
         $path = $this->getFullPath();
 
         // Get the path segments
-        $this->_segments = array_filter(explode('/', $path), function($value) {
+        $this->_segments = array_filter(explode('/', $path), function ($value) {
             // Explicitly check in case there is a 0 in a segment (i.e. foo/0 or foo/0/bar)
             return $value !== '';
         });
@@ -179,7 +179,7 @@ class Request extends \yii\web\Request
                 $pageTrigger = 'pg';
             }
 
-            $this->_pageNum = (int) $this->getQueryParam($pageTrigger, '1');
+            $this->_pageNum = (int)$this->getQueryParam($pageTrigger, '1');
         } else if ($this->_segments) {
             // Match against the entire path string as opposed to just the last segment so that we can support
             // "/page/2"-style pagination URLs
@@ -292,7 +292,7 @@ class Request extends \yii\web\Request
     /**
      * Returns a specific segment from the Craft path.
      *
-     * @param int $num Which segment to return (1-indexed).
+     * @param integer $num Which segment to return (1-indexed).
      *
      * @return string|null The matching segment, or `null` if there wasn’t one.
      */
@@ -314,7 +314,7 @@ class Request extends \yii\web\Request
     /**
      * Returns the requested page number.
      *
-     * @return int The requested page number.
+     * @return integer The requested page number.
      */
     public function getPageNum()
     {
@@ -340,7 +340,7 @@ class Request extends \yii\web\Request
      * Note that even if this function returns `true`, the request will not necessarily route to the Control Panel.
      * It could instead route to a resource, for example.
      *
-     * @return bool Whether the current request should be routed to the Control Panel.
+     * @return boolean Whether the current request should be routed to the Control Panel.
      */
     public function getIsCpRequest()
     {
@@ -352,7 +352,7 @@ class Request extends \yii\web\Request
      *
      * The result will always just be the opposite of whatever [[getIsCpRequest()]] returns.
      *
-     * @return bool Whether the current request should be routed to the front-end site.
+     * @return boolean Whether the current request should be routed to the front-end site.
      */
     public function getIsSiteRequest()
     {
@@ -365,7 +365,7 @@ class Request extends \yii\web\Request
      * The result depends on whether the first segment in the Craft path matches the
      * [resource trigger](http://buildwithcraft.com/docs/config-settings#resourceTrigger).
      *
-     * @return bool Whether the current request should be routed to a resource.
+     * @return boolean Whether the current request should be routed to a resource.
      */
     public function getIsResourceRequest()
     {
@@ -384,7 +384,7 @@ class Request extends \yii\web\Request
      * - If there is an 'action' param in either the POST data or query string
      * - If the Craft path matches the Login path, the Logout path, or the Set Password path
      *
-     * @return bool Whether the current request should be routed to a controller action.
+     * @return boolean Whether the current request should be routed to a controller action.
      */
     public function getIsActionRequest()
     {
@@ -408,7 +408,7 @@ class Request extends \yii\web\Request
     /**
      * Returns whether this is a Live Preview request.
      *
-     * @return bool Whether this is a Live Preview request.
+     * @return boolean Whether this is a Live Preview request.
      */
     public function getIsLivePreview()
     {
@@ -424,9 +424,9 @@ class Request extends \yii\web\Request
      *
      * The detection script is provided by http://detectmobilebrowsers.com. It was last updated on 2014-11-24.
      *
-     * @param bool $detectTablets Whether tablets should be considered “mobile”.
+     * @param boolean $detectTablets Whether tablets should be considered “mobile”.
      *
-     * @return bool Whether the request is coming from a mobile browser.
+     * @return boolean Whether the request is coming from a mobile browser.
      */
     public function getIsMobileBrowser($detectTablets = false)
     {
@@ -788,7 +788,7 @@ class Request extends \yii\web\Request
     /**
      * Checks to see if this is an action or resource request.
      *
-     * @return null
+     * @return void
      */
     private function _checkRequestType()
     {
@@ -834,6 +834,7 @@ class Request extends \yii\web\Request
                 ) {
                     $this->_isActionRequest = true;
 
+                    /** @noinspection PhpUndefinedVariableInspection */
                     if ($triggerMatch) {
                         $this->_actionSegments = array_slice($this->_segments,
                             1);
@@ -945,7 +946,7 @@ class Request extends \yii\web\Request
     /**
      * @param string $ip
      *
-     * @return bool
+     * @return boolean
      */
     private function _validateIp($ip)
     {

@@ -152,7 +152,7 @@ class Et extends Model
     }
 
     /**
-     * @return null
+     * @return void
      */
     public function decode()
     {

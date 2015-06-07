@@ -8,6 +8,7 @@
 namespace craft\app\base;
 
 use Craft;
+use craft\app\db\Migration;
 use craft\app\db\MigrationManager;
 use craft\app\events\Event;
 use craft\app\helpers\IOHelper;

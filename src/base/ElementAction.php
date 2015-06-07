@@ -88,7 +88,7 @@ abstract class ElementAction extends SavableComponent implements ElementActionIn
      *
      * @param array $message The message that should be displayed to the user after the action is performed.
      *
-     * @return null
+     * @return void
      */
     protected function setMessage($message)
     {

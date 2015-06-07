@@ -29,8 +29,8 @@ class EntryRevisions
     /**
      * Returns entry drafts by an entry ID.
      *
-     * @param int    $entryId
-     * @param string $localeId
+     * @param integer $entryId
+     * @param string  $localeId
      *
      * @return array
      */
@@ -43,8 +43,8 @@ class EntryRevisions
     /**
      * Returns the drafts of a given entry that are editable by the current user.
      *
-     * @param int    $entryId
-     * @param string $localeId
+     * @param integer $entryId
+     * @param string  $localeId
      *
      * @return array
      */
@@ -57,7 +57,7 @@ class EntryRevisions
     /**
      * Returns an entry draft by its offset.
      *
-     * @param int $draftId
+     * @param integer $draftId
      *
      * @return EntryDraftModel|null
      */
@@ -66,28 +66,14 @@ class EntryRevisions
         return \Craft::$app->getEntryRevisions()->getDraftById($draftId);
     }
 
-    /**
-     * Returns an entry draft by its offset.
-     *
-     * @param int $entryId
-     * @param int $offset
-     *
-     * @return EntryDraftModel|null
-     */
-    public function getDraftByOffset($entryId, $offset = 0)
-    {
-        return \Craft::$app->getEntryRevisions()->getDraftByOffset($entryId,
-            $offset);
-    }
-
     // Versions
     // -------------------------------------------------------------------------
 
     /**
      * Returns entry versions by an entry ID.
      *
-     * @param int    $entryId
-     * @param string $localeId
+     * @param integer $entryId
+     * @param string  $localeId
      *
      * @return array
      */
@@ -100,26 +86,12 @@ class EntryRevisions
     /**
      * Returns an entry version by its ID.
      *
-     * @param int $versionId
+     * @param integer $versionId
      *
      * @return EntryVersionModel|null
      */
     public function getVersionById($versionId)
     {
         return \Craft::$app->getEntryRevisions()->getVersionById($versionId);
-    }
-
-    /**
-     * Returns an entry version by its offset.
-     *
-     * @param int $entryId
-     * @param int $offset
-     *
-     * @return EntryVersionModel|null
-     */
-    public function getVersionByOffset($entryId, $offset = 0)
-    {
-        return \Craft::$app->getEntryRevisions()->getVersionByOffset($entryId,
-            $offset);
     }
 }

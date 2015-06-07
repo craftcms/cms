@@ -187,7 +187,7 @@ class UserPermissions extends Component
     /**
      * Returns all of a given user group's permissions.
      *
-     * @param int $groupId
+     * @param integer $groupId
      *
      * @return array
      */
@@ -211,7 +211,7 @@ class UserPermissions extends Component
     /**
      * Returns all of the group permissions a given user has.
      *
-     * @param int $userId
+     * @param integer $userId
      *
      * @return array
      */
@@ -231,10 +231,10 @@ class UserPermissions extends Component
     /**
      * Returns whether a given user group has a given permission.
      *
-     * @param int    $groupId
-     * @param string $checkPermission
+     * @param integer $groupId
+     * @param string  $checkPermission
      *
-     * @return bool
+     * @return boolean
      */
     public function doesGroupHavePermission($groupId, $checkPermission)
     {
@@ -247,10 +247,10 @@ class UserPermissions extends Component
     /**
      * Saves new permissions for a user group.
      *
-     * @param int   $groupId
-     * @param array $permissions
+     * @param integer $groupId
+     * @param array   $permissions
      *
-     * @return bool
+     * @return boolean
      */
     public function saveGroupPermissions($groupId, $permissions)
     {
@@ -282,7 +282,7 @@ class UserPermissions extends Component
     /**
      * Returns all of a given user's permissions.
      *
-     * @param int $userId
+     * @param integer $userId
      *
      * @return array
      */
@@ -309,10 +309,10 @@ class UserPermissions extends Component
     /**
      * Returns whether a given user has a given permission.
      *
-     * @param int    $userId
-     * @param string $checkPermission
+     * @param integer $userId
+     * @param string  $checkPermission
      *
-     * @return bool
+     * @return boolean
      */
     public function doesUserHavePermission($userId, $checkPermission)
     {
@@ -325,10 +325,10 @@ class UserPermissions extends Component
     /**
      * Saves new permissions for a user.
      *
-     * @param int   $userId
-     * @param array $permissions
+     * @param integer $userId
+     * @param array   $permissions
      *
-     * @return bool
+     * @return boolean
      */
     public function saveUserPermissions($userId, $permissions)
     {
@@ -503,7 +503,7 @@ class UserPermissions extends Component
     /**
      * Returns the array source permissions.
      *
-     * @param int $sourceId
+     * @param integer $sourceId
      *
      * @return array
      */
@@ -563,7 +563,7 @@ class UserPermissions extends Component
      * @param array $groupPermissions
      * @param array &$filteredPermissions
      *
-     * @return null
+     * @return void
      */
     private function _findSelectedPermissions(
         $permissionsGroup,

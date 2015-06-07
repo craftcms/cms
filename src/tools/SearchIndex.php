@@ -8,6 +8,7 @@
 namespace craft\app\tools;
 
 use Craft;
+use craft\app\base\Element;
 use craft\app\base\Tool;
 use craft\app\base\ElementInterface;
 use craft\app\db\Query;
@@ -86,6 +87,7 @@ class SearchIndex extends Tool
                 $element = $query->one();
 
                 if ($element) {
+                    /** @var Element $element */
                     Craft::$app->getSearch()->indexElementAttributes($element);
 
                     if ($class::hasContent()) {

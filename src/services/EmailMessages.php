@@ -116,7 +116,7 @@ class EmailMessages extends Component
      *
      * @param RebrandEmailModel $message
      *
-     * @return bool
+     * @return boolean
      */
     public function saveMessage(RebrandEmailModel $message)
     {
@@ -168,7 +168,7 @@ class EmailMessages extends Component
     /**
      * Sets all of the email message keys and source locales.
      *
-     * @return null
+     * @return void
      */
     private function _setAllMessageKeysAndLocales()
     {

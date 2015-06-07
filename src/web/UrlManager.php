@@ -11,7 +11,6 @@ use Craft;
 use craft\app\base\ElementInterface;
 use craft\app\helpers\ArrayHelper;
 use craft\app\helpers\UrlHelper;
-use yii\web\UrlRuleInterface;
 
 /**
  * @inheritdoc
@@ -70,6 +69,7 @@ class UrlManager extends \yii\web\UrlManager
      */
     public function parseRequest($request)
     {
+        /** @var Request $request */
         // Just in case...
         if ($request->getIsConsoleRequest()) {
             return false;
@@ -321,7 +321,7 @@ class UrlManager extends \yii\web\UrlManager
     private function _getMatchedUrlRoute($request)
     {
         // Code adapted from \yii\web\UrlManager::parseRequest()
-        /* @var $rule UrlRule */
+        /** @var $rule UrlRule */
         foreach ($this->rules as $rule) {
             if (($route = $rule->parseRequest($this, $request)) !== false) {
                 if ($rule->params) {
@@ -338,7 +338,7 @@ class UrlManager extends \yii\web\UrlManager
     /**
      * Returns whether the current path is "public" (no segments that start with the privateTemplateTrigger).
      *
-     * @return bool
+     * @return boolean
      */
     private function _isPublicTemplatePath()
     {

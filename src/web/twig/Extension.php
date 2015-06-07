@@ -29,7 +29,6 @@ use craft\app\web\twig\tokenparsers\RequireEditionTokenParser;
 use craft\app\web\twig\tokenparsers\RequireLoginTokenParser;
 use craft\app\web\twig\tokenparsers\RequirePermissionTokenParser;
 use craft\app\web\twig\tokenparsers\SwitchTokenParser;
-use craft\app\web\twig\tokenparsersariable;
 use craft\app\web\twig\variables\Craft as CraftVariable;
 use craft\app\web\View;
 use yii\base\InvalidConfigException;
@@ -130,7 +129,8 @@ class Extension extends \Twig_Extension
 
         return [
             'currency' => new \Twig_Filter_Function('\Craft::$app->getFormatter()->asCurrency'),
-            'date' => new \Twig_Filter_Method($this, 'dateFilter', ['needs_environment' => true]),
+            'date' => new \Twig_Filter_Method($this, 'dateFilter',
+                ['needs_environment' => true]),
             'datetime' => new \Twig_Filter_Function('\Craft::$app->getFormatter()->asDateTime'),
             'filesize' => new \Twig_Filter_Function('\Craft::$app->getFormatter()->asShortSize'),
             'filter' => new \Twig_Filter_Function('array_filter'),
@@ -226,9 +226,14 @@ class Extension extends \Twig_Extension
      *
      * @return string The kebab-cased string
      */
-    public function kebabFilter($string, $glue = '-', $lower = true, $removePunctuation = true)
-    {
-        return StringHelper::toKebabCase($string, $glue, $lower, $removePunctuation);
+    public function kebabFilter(
+        $string,
+        $glue = '-',
+        $lower = true,
+        $removePunctuation = true
+    ) {
+        return StringHelper::toKebabCase($string, $glue, $lower,
+            $removePunctuation);
     }
 
     /**
@@ -379,7 +384,7 @@ class Extension extends \Twig_Extension
      * @param mixed $haystack
      * @param mixed $needle
      *
-     * @return int
+     * @return integer
      */
     public function indexOfFilter($haystack, $needle)
     {
@@ -398,7 +403,7 @@ class Extension extends \Twig_Extension
             }
         }
 
-        if ($index !== false) {
+        if (isset($index) && $index !== false) {
             return $index;
         } else {
             return -1;

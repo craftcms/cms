@@ -79,7 +79,7 @@ class Session extends \yii\web\Session
      *
      * @param string $message The message.
      *
-     * @return null
+     * @return void
      */
     public function setNotice($message)
     {
@@ -96,7 +96,7 @@ class Session extends \yii\web\Session
      *
      * @param string $message The message.
      *
-     * @return null
+     * @return void
      */
     public function setError($message)
     {
@@ -111,7 +111,7 @@ class Session extends \yii\web\Session
      *
      * @param string $resource The resource path to the JS file.
      *
-     * @return null
+     * @return void
      */
     public function addJsResourceFlash($resource)
     {
@@ -126,7 +126,7 @@ class Session extends \yii\web\Session
     /**
      * Returns the stored JS resource flashes.
      *
-     * @param bool $delete Whether to delete the stored flashes. Defaults to `true`.
+     * @param boolean $delete Whether to delete the stored flashes. Defaults to `true`.
      *
      * @return array The stored JS resource flashes.
      */
@@ -143,7 +143,7 @@ class Session extends \yii\web\Session
      *
      * @param string $js The Javascript code.
      *
-     * @return null
+     * @return void
      */
     public function addJsFlash($js)
     {
@@ -155,7 +155,7 @@ class Session extends \yii\web\Session
     /**
      * Returns the stored JS flashes.
      *
-     * @param bool $delete Whether to delete the stored flashes. Defaults to `true`.
+     * @param boolean $delete Whether to delete the stored flashes. Defaults to `true`.
      *
      * @return array The stored JS flashes.
      */
@@ -172,7 +172,7 @@ class Session extends \yii\web\Session
      *
      * @param string $action
      *
-     * @return null
+     * @return void
      */
     public function authorize($action)
     {
@@ -189,7 +189,7 @@ class Session extends \yii\web\Session
      *
      * @param string $action
      *
-     * @return null
+     * @return void
      */
     public function deauthorize($action)
     {
@@ -207,7 +207,7 @@ class Session extends \yii\web\Session
      *
      * @param string $action
      *
-     * @return bool
+     * @return boolean
      */
     public function checkAuthorization($action)
     {

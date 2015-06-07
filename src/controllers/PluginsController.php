@@ -40,7 +40,7 @@ class PluginsController extends Controller
     /**
      * Installs a plugin.
      *
-     * @return null
+     * @return void
      */
     public function actionInstallPlugin()
     {
@@ -61,7 +61,7 @@ class PluginsController extends Controller
     /**
      * Uninstalls a plugin.
      *
-     * @return null
+     * @return void
      */
     public function actionUninstallPlugin()
     {
@@ -82,7 +82,7 @@ class PluginsController extends Controller
     /**
      * Enables a plugin.
      *
-     * @return null
+     * @return void
      */
     public function actionEnablePlugin()
     {
@@ -103,7 +103,7 @@ class PluginsController extends Controller
     /**
      * Disables a plugin.
      *
-     * @return null
+     * @return void
      */
     public function actionDisablePlugin()
     {
@@ -124,8 +124,8 @@ class PluginsController extends Controller
     /**
      * Edits a plugin’s settings.
      *
-     * @param string $pluginHandle                The plugin’s handle
-     * @param PluginInterface|Plugin|null $plugin The plugin, if there were validation errors
+     * @param string                      $pluginHandle The plugin’s handle
+     * @param PluginInterface|Plugin|null $plugin       The plugin, if there were validation errors
      *
      * @throws HttpException if the requested plugin doesn’t exist or doesn’t have settings
      * @return string The plugin page HTML

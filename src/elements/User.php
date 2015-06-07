@@ -83,7 +83,7 @@ class User extends Element implements IdentityInterface
     /**
      * Returns whether this element type can have statuses.
      *
-     * @return bool
+     * @return boolean
      */
     public static function hasStatuses()
     {
@@ -339,7 +339,7 @@ class User extends Element implements IdentityInterface
     /**
      * @inheritdoc Element::saveElement()
      *
-     * @return bool
+     * @return boolean
      */
     public static function saveElement(ElementInterface $element, $params)
     {
@@ -669,7 +669,7 @@ class User extends Element implements IdentityInterface
      *
      * @param string $password The user's plain text passwerd.
      *
-     * @return bool
+     * @return boolean
      */
     public function authenticate($password)
     {
@@ -795,7 +795,7 @@ class User extends Element implements IdentityInterface
      *
      * @param mixed $group The user group model, its handle, or ID.
      *
-     * @return bool
+     * @return boolean
      */
     public function isInGroup($group)
     {
@@ -888,7 +888,7 @@ class User extends Element implements IdentityInterface
     /**
      * Sets a user's status to active.
      *
-     * @return null
+     * @return void
      */
     public function setActive()
     {
@@ -899,7 +899,7 @@ class User extends Element implements IdentityInterface
     /**
      * Returns the URL to the user's photo.
      *
-     * @param int $size
+     * @param integer $size
      *
      * @return string|null
      */
@@ -907,6 +907,7 @@ class User extends Element implements IdentityInterface
     {
         if ($this->photo) {
             $username = AssetsHelper::prepareAssetName($this->username, false);
+
             return UrlHelper::getResourceUrl('userphotos/'.$username.'/'.$size.'/'.$this->photo);
         }
     }
@@ -935,7 +936,7 @@ class User extends Element implements IdentityInterface
     /**
      * Returns whether this is the current logged-in user.
      *
-     * @return bool
+     * @return boolean
      */
     public function isCurrent()
     {
@@ -955,7 +956,7 @@ class User extends Element implements IdentityInterface
      *
      * @param string $permission
      *
-     * @return bool
+     * @return boolean
      */
     public function can($permission)
     {
@@ -978,7 +979,7 @@ class User extends Element implements IdentityInterface
      *
      * @param string $message
      *
-     * @return bool
+     * @return boolean
      */
     public function hasShunned($message)
     {
@@ -1049,10 +1050,10 @@ class User extends Element implements IdentityInterface
      *
      * In addition, we check that the username does not have any whitespace in it.
      *
-     * @param null $attributes
-     * @param bool $clearErrors
+     * @param null    $attributes
+     * @param boolean $clearErrors
      *
-     * @return bool|null
+     * @return boolean|null
      */
     public function validate($attributes = null, $clearErrors = true)
     {
@@ -1082,7 +1083,7 @@ class User extends Element implements IdentityInterface
     /**
      * Returns one of the user’s preferences by its key.
      *
-     * @param string $key The preference’s key
+     * @param string $key     The preference’s key
      * @param mixed  $default The default value, if the preference hasn’t been set
      *
      * @return array The user’s preferences.

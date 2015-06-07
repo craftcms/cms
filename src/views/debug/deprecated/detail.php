@@ -2,7 +2,7 @@
 
 use craft\app\models\DeprecationError;
 
-/* @var $panel craft\app\debug\DeprecatedPanel */
+/** @var $panel craft\app\debug\DeprecatedPanel */
 ?>
     <h1>Deprecation Errors</h1>
 

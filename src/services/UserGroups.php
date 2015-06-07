@@ -68,7 +68,7 @@ class UserGroups extends Component
     /**
      * Gets a user group by its ID.
      *
-     * @param int $groupId
+     * @param integer $groupId
      *
      * @return UserGroupModel
      */
@@ -84,7 +84,7 @@ class UserGroups extends Component
     /**
      * Gets a user group by its handle.
      *
-     * @param int $groupHandle
+     * @param integer $groupHandle
      *
      * @return UserGroupModel
      */
@@ -102,7 +102,7 @@ class UserGroups extends Component
     /**
      * Gets user groups by a user ID.
      *
-     * @param int         $userId
+     * @param integer     $userId
      * @param string|null $indexBy
      *
      * @return array
@@ -129,7 +129,7 @@ class UserGroups extends Component
      *
      * @param UserGroupModel $group
      *
-     * @return bool
+     * @return boolean
      */
     public function saveGroup(UserGroupModel $group)
     {
@@ -155,10 +155,10 @@ class UserGroups extends Component
     /**
      * Assigns a user to a given list of user groups.
      *
-     * @param int       $userId   The user’s ID.
-     * @param int|array $groupIds The groups’ IDs.
+     * @param integer       $userId   The user’s ID.
+     * @param integer|array $groupIds The groups’ IDs.
      *
-     * @return bool Whether the users were successfully assigned to the groups.
+     * @return boolean Whether the users were successfully assigned to the groups.
      */
     public function assignUserToGroups($userId, $groupIds = null)
     {
@@ -188,7 +188,7 @@ class UserGroups extends Component
      *
      * @param User $user The user that was just registered.
      *
-     * @return bool Whether the user was assigned to the default group.
+     * @return boolean Whether the user was assigned to the default group.
      */
     public function assignUserToDefaultGroup(User $user)
     {
@@ -227,9 +227,9 @@ class UserGroups extends Component
     /**
      * Deletes a user group by its ID.
      *
-     * @param int $groupId
+     * @param integer $groupId
      *
-     * @return bool
+     * @return boolean
      */
     public function deleteGroupById($groupId)
     {
@@ -245,7 +245,7 @@ class UserGroups extends Component
     /**
      * Gets a group's record.
      *
-     * @param int $groupId
+     * @param integer $groupId
      *
      * @return UserGroupRecord
      */
@@ -267,10 +267,10 @@ class UserGroups extends Component
     /**
      * Throws a "No group exists" exception.
      *
-     * @param int $groupId
+     * @param integer $groupId
      *
      * @throws Exception
-     * @return null
+     * @return void
      */
     private function _noGroupExists($groupId)
     {

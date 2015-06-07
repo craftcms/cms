@@ -103,7 +103,7 @@ class MatrixSettings extends Model
      *
      * @param array $blockTypes
      *
-     * @return null
+     * @return void
      */
     public function setBlockTypes($blockTypes)
     {
@@ -117,9 +117,9 @@ class MatrixSettings extends Model
      * In addition, we validate the block type settings.
      *
      * @param array|null $attributes
-     * @param bool       $clearErrors
+     * @param boolean    $clearErrors
      *
-     * @return bool
+     * @return boolean
      */
     public function validate($attributes = null, $clearErrors = true)
     {

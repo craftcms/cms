@@ -107,7 +107,6 @@ abstract class Element extends Component implements ElementInterface
 
     /**
      * @inheritdoc
-     * @return ElementQuery The newly created [[ElementQuery]] instance.
      */
     public static function find()
     {
@@ -116,7 +115,6 @@ abstract class Element extends Component implements ElementInterface
 
     /**
      * @inheritdoc
-     * @return static Element instance matching the condition, or `null` if nothing matches.
      */
     public static function findOne($criteria = null)
     {
@@ -125,7 +123,6 @@ abstract class Element extends Component implements ElementInterface
 
     /**
      * @inheritdoc
-     * @return static[] An array of Element instances, or an empty array if nothing matches.
      */
     public static function findAll($criteria = null)
     {
@@ -274,6 +271,7 @@ abstract class Element extends Component implements ElementInterface
         ElementInterface $element,
         $attribute
     ) {
+        /** @var $this $element */
         switch ($attribute) {
             case 'uri': {
                 $url = $element->getUrl();
@@ -354,6 +352,7 @@ abstract class Element extends Component implements ElementInterface
      */
     public static function getEditorHtml(ElementInterface $element)
     {
+        /** @var $this $element */
         $html = '';
 
         $fieldLayout = $element->getFieldLayout();
@@ -387,6 +386,7 @@ abstract class Element extends Component implements ElementInterface
      */
     public static function saveElement(ElementInterface $element, $params)
     {
+        /** @var $this $element */
         return Craft::$app->getElements()->saveElement($element);
     }
 
@@ -659,6 +659,7 @@ abstract class Element extends Component implements ElementInterface
             if ($useLocaleSiteUrl) {
                 // Temporarily set Craft to use this element’s locale's site URL
                 $siteUrl = Craft::$app->getSiteUrl();
+                /** @noinspection PhpUndefinedVariableInspection */
                 Craft::$app->setSiteUrl($localeSiteUrl);
             }
 
@@ -952,6 +953,7 @@ abstract class Element extends Component implements ElementInterface
      */
     public function isAncestorOf(ElementInterface $element)
     {
+        /** @var $this $element */
         return ($this->root == $element->root && $this->lft < $element->lft && $this->rgt > $element->rgt);
     }
 
@@ -960,6 +962,7 @@ abstract class Element extends Component implements ElementInterface
      */
     public function isDescendantOf(ElementInterface $element)
     {
+        /** @var $this $element */
         return ($this->root == $element->root && $this->lft > $element->lft && $this->rgt < $element->rgt);
     }
 
@@ -968,6 +971,7 @@ abstract class Element extends Component implements ElementInterface
      */
     public function isParentOf(ElementInterface $element)
     {
+        /** @var $this $element */
         return ($this->root == $element->root && $this->level == $element->level - 1 && $this->isAncestorOf($element));
     }
 
@@ -976,6 +980,7 @@ abstract class Element extends Component implements ElementInterface
      */
     public function isChildOf(ElementInterface $element)
     {
+        /** @var $this $element */
         return ($this->root == $element->root && $this->level == $element->level + 1 && $this->isDescendantOf($element));
     }
 
@@ -984,6 +989,7 @@ abstract class Element extends Component implements ElementInterface
      */
     public function isSiblingOf(ElementInterface $element)
     {
+        /** @var $this $element */
         if ($this->root == $element->root && $this->level && $this->level == $element->level) {
             if ($this->level == 1 || $this->isPrevSiblingOf($element) || $this->isNextSiblingOf($element)) {
                 return true;
@@ -1004,6 +1010,7 @@ abstract class Element extends Component implements ElementInterface
      */
     public function isPrevSiblingOf(ElementInterface $element)
     {
+        /** @var $this $element */
         return ($this->root == $element->root && $this->level == $element->level && $this->rgt == $element->lft - 1);
     }
 
@@ -1012,6 +1019,7 @@ abstract class Element extends Component implements ElementInterface
      */
     public function isNextSiblingOf(ElementInterface $element)
     {
+        /** @var $this $element */
         return ($this->root == $element->root && $this->level == $element->level && $this->lft == $element->rgt + 1);
     }
 
@@ -1246,7 +1254,7 @@ abstract class Element extends Component implements ElementInterface
      * @param mixed   $criteria Refer to [[findOne()]] and [[findAll()]] for the explanation of this parameter
      * @param boolean $one      Whether this method is called by [[findOne()]] or [[findAll()]]
      *
-     * @return static|static[]
+     * @return self|self[]
      */
     protected static function findByCondition($criteria, $one)
     {
@@ -1352,8 +1360,8 @@ abstract class Element extends Component implements ElementInterface
     /**
      * Returns an element right before/after this one, from a given set of criteria.
      *
-     * @param ElementQueryInterface|array|null $criteria
-     * @param int                              $dir
+     * @param mixed   $criteria
+     * @param integer $dir
      *
      * @return ElementInterface|null
      */

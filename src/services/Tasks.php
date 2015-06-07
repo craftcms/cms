@@ -195,7 +195,7 @@ class Tasks extends Component
     /**
      * Re-runs a task by a given ID.
      *
-     * @param int $taskId The task’s ID
+     * @param integer $taskId The task’s ID
      *
      * @return TaskInterface|Task|null The task
      */
@@ -249,7 +249,7 @@ class Tasks extends Component
      *
      * @param TaskInterface|Task $task
      *
-     * @return bool
+     * @return boolean
      */
     public function runTask(TaskInterface $task)
     {
@@ -316,7 +316,7 @@ class Tasks extends Component
      * @param TaskInterface|Task $task  The task
      * @param string|null        $error The error message
      *
-     * @return null
+     * @return void
      */
     public function fail(TaskInterface $task, $error = null)
     {
@@ -346,7 +346,7 @@ class Tasks extends Component
     /**
      * Returns a task by its ID.
      *
-     * @param int $taskId The task’s ID
+     * @param integer $taskId The task’s ID
      *
      * @return TaskInterface|Task|null The task, or null if it doesn’t exist
      */
@@ -575,7 +575,7 @@ class Tasks extends Component
     /**
      * Deletes a task by its ID.
      *
-     * @param int $taskId The task’s ID
+     * @param integer $taskId The task’s ID
      *
      * @return boolean Whether the task was deleted successfully
      */
@@ -667,7 +667,7 @@ EOT;
     /**
      * Returns a TaskRecord by its ID.
      *
-     * @param int $taskId The task’s ID
+     * @param integer $taskId The task’s ID
      *
      * @return TaskRecord|null The TaskRecord, or null if it doesn’t exist
      */

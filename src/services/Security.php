@@ -35,7 +35,7 @@ class Security extends \yii\base\Security
     // =========================================================================
 
     /**
-     * @return null
+     * @return void
      */
     public function init()
     {
@@ -45,7 +45,7 @@ class Security extends \yii\base\Security
     }
 
     /**
-     * @return int
+     * @return integer
      */
     public function getMinimumPasswordLength()
     {
@@ -55,9 +55,9 @@ class Security extends \yii\base\Security
     /**
      * Hashes a given password with the bcrypt blowfish encryption algorithm.
      *
-     * @param string $string       The string to hash
-     * @param bool   $validateHash If you want to validate the just generated hash. Will throw an exception if
-     *                             validation fails.
+     * @param string  $string       The string to hash
+     * @param boolean $validateHash If you want to validate the just generated hash. Will throw an exception if
+     *                              validation fails.
      *
      * @throws Exception
      * @return string The hash.

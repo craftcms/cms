@@ -91,7 +91,7 @@ class SearchHelper
      * Returns the FULLTEXT minimum word length.
      *
      * @todo Get actual value from DB
-     * @return int
+     * @return integer
      */
     public static function getMinWordLength()
     {

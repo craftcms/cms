@@ -133,12 +133,12 @@ class Content extends Component
      * Saves an element's content.
      *
      * @param ElementInterface $element            The element whose content we're saving.
-     * @param bool             $validate           Whether the element's content should be validated first.
-     * @param bool             $updateOtherLocales Whether any non-translatable fields' values should be copied to the
+     * @param boolean          $validate           Whether the element's content should be validated first.
+     * @param boolean          $updateOtherLocales Whether any non-translatable fields' values should be copied to the
      *                                             element's other locales.
      *
      * @throws Exception
-     * @return bool Whether the content was saved successfully. If it wasn't, any validation errors will be saved on the
+     * @return boolean Whether the content was saved successfully. If it wasn't, any validation errors will be saved on the
      *              element and its content model.
      */
     public function saveContent(
@@ -195,7 +195,7 @@ class Content extends Component
      *
      * @param ElementInterface $element The element whose content should be validated.
      *
-     * @return bool Whether the element's content validates.
+     * @return boolean Whether the element's content validates.
      */
     public function validateContent(ElementInterface $element)
     {
@@ -236,7 +236,7 @@ class Content extends Component
      *
      * @param ContentModel $content
      *
-     * @return bool
+     * @return boolean
      */
     private function _saveContentRow(ContentModel $content)
     {
@@ -311,7 +311,7 @@ class Content extends Component
      * @param array            &$nonTranslatableFields
      * @param array            &$otherContentModels
      *
-     * @return null
+     * @return void
      */
     private function _duplicateNonTranslatableFieldValues(
         ElementInterface $element,
@@ -366,7 +366,7 @@ class Content extends Component
      * @param array|null       &$nonTranslatableFields
      * @param array|null       &$otherContentModels
      *
-     * @return null
+     * @return void
      */
     private function _updateSearchIndexes(
         ElementInterface $element,

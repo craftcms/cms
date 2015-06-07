@@ -112,7 +112,7 @@ class Field extends ActiveRecord
     /**
      * Initializes the application component.
      *
-     * @return null
+     * @return void
      */
     public function init()
     {
@@ -125,7 +125,7 @@ class Field extends ActiveRecord
     /**
      * Store the old handle.
      *
-     * @return null
+     * @return void
      */
     public function storeOldHandle()
     {

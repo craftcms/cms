@@ -60,7 +60,7 @@ class RequirementsChecker
      *                                   requirements. If a string, it is treated as the path of the file, which
      *                                   contains the requirements;
      *
-     * @return static The instance of the class.
+     * @return self The instance of the class.
      */
     function check($requirements)
     {
@@ -177,7 +177,7 @@ class RequirementsChecker
      * @param string $version       The required PHP extension version.
      * @param string $compare       The comparison operator, by default '>='.
      *
-     * @return bool If the PHP extension version matches or not.
+     * @return boolean If the PHP extension version matches or not.
      */
     function checkPhpExtensionVersion($extensionName, $version, $compare = '>=')
     {
@@ -203,7 +203,7 @@ class RequirementsChecker
      *
      * @param string $name The configuration option name.
      *
-     * @return bool If the option is on or not.
+     * @return boolean If the option is on or not.
      */
     function checkPhpIniOn($name)
     {
@@ -221,7 +221,7 @@ class RequirementsChecker
      *
      * @param string $name The configuration option name.
      *
-     * @return bool If the option is off or not.
+     * @return boolean If the option is off or not.
      */
     function checkPhpIniOff($name)
     {
@@ -239,7 +239,7 @@ class RequirementsChecker
      *
      * @param string $verboseSize The verbose size representation.
      *
-     * @return int The actual size in bytes.
+     * @return integer The actual size in bytes.
      */
     function getByteSize($verboseSize)
     {
@@ -285,9 +285,9 @@ class RequirementsChecker
      * Renders a view file.
      * This method includes the view file as a PHP script and captures the display result if required.
      *
-     * @param string $_viewFile_ The view file.
-     * @param array  $_data_     The data to be extracted and made available to the view file.
-     * @param bool   $_return_   Whether the rendering result should be returned as a string.
+     * @param string  $_viewFile_ The view file.
+     * @param array   $_data_     The data to be extracted and made available to the view file.
+     * @param boolean $_return_   Whether the rendering result should be returned as a string.
      *
      * @return string The rendering result. Null if the rendering result is not required.
      */
@@ -315,8 +315,8 @@ class RequirementsChecker
     /**
      * Normalizes requirement ensuring it has correct format.
      *
-     * @param array $requirement    The raw requirement.
-     * @param int   $requirementKey The requirement key in the list.
+     * @param array   $requirement    The raw requirement.
+     * @param integer $requirementKey The requirement key in the list.
      *
      * @return array normalized requirement.
      */
@@ -424,7 +424,7 @@ class RequirementsChecker
     }
 
     /**
-     * @return bool
+     * @return boolean
      */
     function testIconvTruncateBug()
     {
@@ -465,7 +465,7 @@ class RequirementsChecker
     /**
      * Checks to see if the MySQL InnoDB storage engine is installed and enabled.
      *
-     * @return bool
+     * @return boolean
      */
     function isInnoDbSupported()
     {

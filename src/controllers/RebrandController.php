@@ -34,7 +34,7 @@ class RebrandController extends Controller
     /**
      * Upload a logo for the admin panel.
      *
-     * @return null
+     * @return void
      */
     public function actionUploadLogo()
     {
@@ -99,7 +99,7 @@ class RebrandController extends Controller
     /**
      * Crop user photo.
      *
-     * @return null
+     * @return void
      */
     public function actionCropLogo()
     {
@@ -148,7 +148,7 @@ class RebrandController extends Controller
     /**
      * Delete logo.
      *
-     * @return null
+     * @return void
      */
     public function actionDeleteLogo()
     {

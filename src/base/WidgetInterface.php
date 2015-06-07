@@ -52,7 +52,7 @@ interface WidgetInterface extends SavableComponentInterface
     /**
      * Returns the widget’s colspan.
      *
-     * @return int The widget’s colspan.
+     * @return integer The widget’s colspan.
      */
     public function getColspan();
 

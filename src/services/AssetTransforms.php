@@ -136,7 +136,7 @@ class AssetTransforms extends Component
      *
      * @throws AssetTransformException
      * @throws ModelValidationException
-     * @return bool
+     * @return boolean
      */
     public function saveTransform(AssetTransformModel $transform)
     {
@@ -194,10 +194,10 @@ class AssetTransforms extends Component
     /**
      * Deletes an asset transform by it's id.
      *
-     * @param int $transformId
+     * @param integer $transformId
      *
      * @throws \Exception
-     * @return bool
+     * @return boolean
      */
     public function deleteTransform($transformId)
     {
@@ -337,7 +337,7 @@ class AssetTransforms extends Component
      *
      * @param AssetTransformIndex $index
      *
-     * @return null
+     * @return void
      */
     public function generateTransform(AssetTransformIndex $index)
     {
@@ -502,7 +502,7 @@ class AssetTransforms extends Component
     /**
      * Get a transform index model by a row id.
      *
-     * @param int $transformId
+     * @param integer $transformId
      *
      * @return AssetTransformIndex|null
      */
@@ -525,8 +525,8 @@ class AssetTransforms extends Component
     /**
      * Get a transform index model by a row id.
      *
-     * @param int    $fileId
-     * @param string $transformHandle
+     * @param integer $fileId
+     * @param string  $transformHandle
      *
      * @return AssetTransformIndex|null
      */
@@ -585,9 +585,9 @@ class AssetTransforms extends Component
     /**
      * Delete transform records by a file id.
      *
-     * @param int $fileId
+     * @param integer $fileId
      *
-     * @return null
+     * @return void
      */
     public function deleteTransformIndexDataByFileId($fileId)
     {
@@ -598,9 +598,9 @@ class AssetTransforms extends Component
     /**
      * Delete a transform index by.
      *
-     * @param int $indexId
+     * @param integer $indexId
      *
-     * @return null
+     * @return void
      */
     public function deleteTransformIndex($indexId)
     {
@@ -614,7 +614,7 @@ class AssetTransforms extends Component
      * @param Asset $fileModel
      * @param       $size
      *
-     * @return bool|string
+     * @return boolean|string
      */
     public function getThumbServerPath(Asset $fileModel, $size)
     {
@@ -690,7 +690,7 @@ class AssetTransforms extends Component
     /**
      * Get the size of max cached cloud images dimension.
      *
-     * @return int
+     * @return integer
      */
     public function getCachedCloudImageSize()
     {
@@ -702,7 +702,7 @@ class AssetTransforms extends Component
      *
      * @param $imageSource
      *
-     * @return null
+     * @return void
      */
     public function queueSourceForDeletingIfNecessary($imageSource)
     {
@@ -722,7 +722,7 @@ class AssetTransforms extends Component
      * @param $source
      * @param $destination
      *
-     * @return null
+     * @return void
      */
     public function storeLocalSource($source, $destination = '')
     {
@@ -850,7 +850,7 @@ class AssetTransforms extends Component
      *
      * @param Asset $file
      *
-     * @return null
+     * @return void
      */
     public function deleteAllTransformData(Asset $file)
     {
@@ -867,7 +867,7 @@ class AssetTransforms extends Component
      *
      * @param Asset $file
      *
-     * @return null
+     * @return void
      */
     public function deleteThumbnailsForFile(Asset $file)
     {
@@ -998,7 +998,7 @@ class AssetTransforms extends Component
      * @param AssetTransformIndex $index
      *
      * @throws AssetTransformException if the AssetTransformIndex cannot be determined to have a transform
-     * @return null
+     * @return void
      */
     private function _createTransformForFile(
         Asset $file,

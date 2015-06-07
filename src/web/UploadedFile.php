@@ -58,8 +58,8 @@ class UploadedFile extends \yii\web\UploadedFile
      * If multiple files were uploaded and saved as 'Files[0]', 'Files[1]', 'Files[n]'..., you can have them all by
      * passing 'Files' as array name.
      *
-     * @param string $name The name of the array of files
-     * @param bool   $lookForSingleInstance If set to true, will look for a single instance of the given name.
+     * @param string  $name                  The name of the array of files
+     * @param boolean $lookForSingleInstance If set to true, will look for a single instance of the given name.
      *
      * @return UploadedFile[] The array of UploadedFile objects. Empty array is returned if no adequate upload was
      *                        found. Please note that this array will contain all files from all subarrays regardless

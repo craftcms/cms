@@ -68,7 +68,7 @@ class Resources extends Component
      * @param string $path
      * @param string $realPath
      *
-     * @return null
+     * @return void
      */
     public function cacheResourcePath($path, $realPath)
     {
@@ -279,7 +279,7 @@ class Resources extends Component
      * @param string $path
      *
      * @throws HttpException
-     * @return null
+     * @return void
      */
     public function sendResource($path)
     {
@@ -466,7 +466,8 @@ class Resources extends Component
             if ($ext) {
                 $font = Craft::$app->getPath()->getResourcesPath().'/fonts/helveticaneue-webfont.ttf';
 
-                $image->setFontProperties($font, $sourceSize['extSize'], "#999");
+                $image->setFontProperties($font, $sourceSize['extSize'],
+                    "#999");
                 $text = StringHelper::toUpperCase($ext);
 
                 $box = $image->getTextBox($text);

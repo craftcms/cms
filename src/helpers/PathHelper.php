@@ -25,7 +25,7 @@ class PathHelper
      *
      * @param string $path
      *
-     * @return bool
+     * @return boolean
      */
     public static function ensurePathIsContained($path)
     {

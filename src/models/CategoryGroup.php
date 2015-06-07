@@ -165,7 +165,7 @@ class CategoryGroup extends Model
      *
      * @param array $locales
      *
-     * @return null
+     * @return void
      */
     public function setLocales($locales)
     {

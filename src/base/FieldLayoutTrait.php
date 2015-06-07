@@ -43,6 +43,7 @@ trait FieldLayoutTrait
 
             if (empty($this->_fieldLayout)) {
                 $this->_fieldLayout = new FieldLayoutModel();
+                /** @noinspection PhpUndefinedFieldInspection */
                 $this->_fieldLayout->type = $this->_fieldLayoutElementType;
             }
         }
@@ -55,7 +56,7 @@ trait FieldLayoutTrait
      *
      * @param FieldLayoutModel $fieldLayout
      *
-     * @return null
+     * @return void
      */
     public function setFieldLayout(FieldLayoutModel $fieldLayout)
     {

@@ -95,7 +95,7 @@ class Tags extends BaseRelationField
                     'elements' => $value,
                     'tagGroupId' => $this->_getTagGroupId(),
                     'sourceElementId' => (!empty($element) ? $element->id : null),
-                    'selectionLabel'  => $this->selectionLabel,
+                    'selectionLabel' => $this->selectionLabel,
                 ]);
         } else {
             return '<p class="error">'.Craft::t('app',
@@ -123,7 +123,7 @@ class Tags extends BaseRelationField
     /**
      * Returns the tag group ID this field is associated with.
      *
-     * @return int|false
+     * @return integer|false
      */
     private function _getTagGroupId()
     {

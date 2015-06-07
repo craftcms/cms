@@ -28,10 +28,10 @@ abstract class BaseEnum
     /**
      * Checks to see if the given name is valid in the enum.
      *
-     * @param      $name   The name to search for.
-     * @param bool $strict Defaults to false. If set to true, will do a case sensitive search for the name.
+     * @param string  $name   The name to search for.
+     * @param boolean $strict Defaults to false. If set to true, will do a case sensitive search for the name.
      *
-     * @return bool true if it is a valid name, false otherwise.
+     * @return boolean true if it is a valid name, false otherwise.
      */
     public static function isValidName($name, $strict = false)
     {
@@ -50,10 +50,10 @@ abstract class BaseEnum
     /**
      * Checks to see if the given value is valid in the enum.
      *
-     * @param      $value  The value to search for.
-     * @param bool $strict Defaults to false. If set the true, will do a case sensitive search for the value.
+     * @param mixed   $value  The value to search for.
+     * @param boolean $strict Defaults to false. If set the true, will do a case sensitive search for the value.
      *
-     * @return bool true if it is a valid value, false otherwise.
+     * @return boolean true if it is a valid value, false otherwise.
      */
     public static function isValidValue($value, $strict = false)
     {
@@ -74,7 +74,7 @@ abstract class BaseEnum
     // =========================================================================
 
     /**
-     * @return null
+     * @return string[]
      */
     private static function _getConstants()
     {

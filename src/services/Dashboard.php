@@ -327,7 +327,7 @@ class Dashboard extends Component
      * @param integer $widgetId
      *
      * @throws Exception
-     * @return null
+     * @return void
      */
     private function _noWidgetExists($widgetId)
     {

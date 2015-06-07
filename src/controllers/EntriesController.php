@@ -46,12 +46,12 @@ class EntriesController extends BaseEntriesController
     /**
      * Called when a user beings up an entry for editing before being displayed.
      *
-     * @param string $sectionHandle The section’s handle
-     * @param int    $entryId       The entry’s ID, if editing an existing entry.
-     * @param int    $draftId       The entry draft’s ID, if editing an existing draft.
-     * @param int    $versionId     The entry version’s ID, if editing an existing version.
-     * @param int    $localeId      The locale ID, if specified.
-     * @param Entry  $entry         The entry being edited, if there were any validation errors.
+     * @param string  $sectionHandle The section’s handle
+     * @param integer $entryId       The entry’s ID, if editing an existing entry.
+     * @param integer $draftId       The entry draft’s ID, if editing an existing draft.
+     * @param integer $versionId     The entry version’s ID, if editing an existing version.
+     * @param integer $localeId      The locale ID, if specified.
+     * @param Entry   $entry         The entry being edited, if there were any validation errors.
      *
      * @return string The rendering result
      * @throws HttpException
@@ -345,7 +345,7 @@ class EntriesController extends BaseEntriesController
     /**
      * Switches between two entry types.
      *
-     * @return null
+     * @return void
      */
     public function actionSwitchEntryType()
     {
@@ -378,7 +378,7 @@ class EntriesController extends BaseEntriesController
      * Previews an entry.
      *
      * @throws HttpException
-     * @return null
+     * @return void
      */
     public function actionPreviewEntry()
     {
@@ -411,7 +411,7 @@ class EntriesController extends BaseEntriesController
     /**
      * Saves an entry.
      *
-     * @return null
+     * @return void
      */
     public function actionSaveEntry()
     {
@@ -495,7 +495,7 @@ class EntriesController extends BaseEntriesController
      * @throws Exception
      * @throws HttpException
      * @throws \Exception
-     * @return null
+     * @return void
      */
     public function actionDeleteEntry()
     {
@@ -551,7 +551,7 @@ class EntriesController extends BaseEntriesController
      * @param mixed $versionId
      *
      * @throws HttpException
-     * @return null
+     * @return void
      */
     public function actionShareEntry(
         $entryId = null,
@@ -614,7 +614,7 @@ class EntriesController extends BaseEntriesController
      * @param mixed $versionId
      *
      * @throws HttpException
-     * @return null
+     * @return void
      */
     public function actionViewSharedEntry(
         $entryId = null,
@@ -648,7 +648,7 @@ class EntriesController extends BaseEntriesController
      * @param array &$variables
      *
      * @throws HttpException|Exception
-     * @return null
+     * @return void
      */
     private function _prepEditEntryVariables(&$variables)
     {
@@ -706,10 +706,12 @@ class EntriesController extends BaseEntriesController
                 } else if (!empty($variables['versionId'])) {
                     $variables['entry'] = Craft::$app->getEntryRevisions()->getVersionById($variables['versionId']);
                 } else {
-                    $variables['entry'] = Craft::$app->getEntries()->getEntryById($variables['entryId'], $variables['localeId']);
+                    $variables['entry'] = Craft::$app->getEntries()->getEntryById($variables['entryId'],
+                        $variables['localeId']);
 
                     if ($variables['entry'] && Craft::$app->getEdition() === Craft::Pro) {
-                        $versions = Craft::$app->getEntryRevisions()->getVersionsByEntryId($variables['entryId'], $variables['localeId'], 1, true);
+                        $versions = Craft::$app->getEntryRevisions()->getVersionsByEntryId($variables['entryId'],
+                            $variables['localeId'], 1, true);
 
                         if (isset($versions[0])) {
                             $variables['entry']->revisionNotes = $versions[0]->revisionNotes;
@@ -821,7 +823,7 @@ class EntriesController extends BaseEntriesController
      *
      * @param Entry $entry
      *
-     * @return null
+     * @return void
      */
     private function _populateEntryModel(Entry $entry)
     {

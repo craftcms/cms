@@ -668,7 +668,7 @@ $.extend(Craft,
 	 *
 	 * @param mixed obj1
 	 * @param mixed obj2
-	 * @return bool
+	 * @return boolean
 	 */
 	compare: function(obj1, obj2)
 	{
@@ -844,7 +844,7 @@ $.extend(Craft,
 	 *
 	 * @param mixed elem
 	 * @param mixed arr
-	 * @return bool
+	 * @return boolean
 	 */
 	inArray: function(elem, arr)
 	{
@@ -856,7 +856,7 @@ $.extend(Craft,
 	 *
 	 * @param mixed elem
 	 * @param array arr
-	 * @return bool Whether the element could be found or not.
+	 * @return boolean Whether the element could be found or not.
 	 */
 	removeFromArray: function(elem, arr)
 	{

@@ -11,7 +11,6 @@ use Craft;
 use craft\app\base\Element;
 use craft\app\base\ElementInterface;
 use craft\app\base\Task;
-use craft\app\db\Query;
 
 /**
  * UpdateElementSlugsAndUris represents an Update Element Slugs and URIs background task.
@@ -25,7 +24,7 @@ class UpdateElementSlugsAndUris extends Task
     // =========================================================================
 
     /**
-     * @var interger|integer[] The ID(s) of the element(s) to update
+     * @var integer|integer[] The ID(s) of the element(s) to update
      */
     public $elementId;
 

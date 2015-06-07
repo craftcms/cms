@@ -22,9 +22,6 @@ class EntryVersion extends BaseEntryRevisionModel
 
     /**
      * @inheritdoc
-     *
-     * @param static $model
-     * @param array  $config
      */
     public static function populate($model, $config)
     {

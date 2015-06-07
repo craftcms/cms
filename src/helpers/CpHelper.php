@@ -23,7 +23,7 @@ class CpHelper
 
     /**
      * @param string|null $path
-     * @param bool        $fetch
+     * @param boolean     $fetch
      *
      * @return array
      */

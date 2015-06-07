@@ -22,10 +22,10 @@ class Feeds
     // =========================================================================
 
     /**
-     * @param string $url
-     * @param int    $limit
-     * @param int    $offset
-     * @param null   $cacheDuration
+     * @param string  $url
+     * @param integer $limit
+     * @param integer $offset
+     * @param null    $cacheDuration
      *
      * @return array
      */

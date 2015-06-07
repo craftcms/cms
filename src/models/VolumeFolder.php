@@ -140,7 +140,7 @@ class VolumeFolder extends Model
      *
      * @param VolumeFolder $folder
      *
-     * @return null
+     * @return void
      */
     public function addChild(VolumeFolder $folder)
     {

@@ -12,9 +12,9 @@ namespace craft\app\migrations;
  *
  * The following variables are available in this view:
  */
-/* @var $namespace         string The namespace of the generated migration. */
-/* @var $className         string The new migration class name. */
-/* @var $migrationNameDesc string The format of the migration class name. */
+/** @var $namespace         string The namespace of the generated migration. */
+/** @var $className         string The new migration class name. */
+/** @var $migrationNameDesc string The format of the migration class name. */
 
 echo "<?php\n";
 ?>

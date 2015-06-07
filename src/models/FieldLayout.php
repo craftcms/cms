@@ -123,7 +123,7 @@ class FieldLayout extends Model
      * @param array|FieldLayoutTab[] $tabs An array of the layout’s tabs, which can either be FieldLayoutTab
      *                                     objects or arrays defining the tab’s attributes.
      *
-     * @return null
+     * @return void
      */
     public function setTabs($tabs)
     {
@@ -146,7 +146,7 @@ class FieldLayout extends Model
      *                                         FieldLayoutFieldModel objects or arrays defining the tab’s
      *                                         attributes.
      *
-     * @return null
+     * @return void
      */
     public function setFields($fields)
     {

@@ -143,7 +143,7 @@ class ElementsController extends BaseElementsController
     /**
      * Returns the HTML for a Categories field input, based on a given list of selected category IDs.
      *
-     * @return null
+     * @return void
      */
     public function actionGetCategoriesInputHtml()
     {
@@ -185,7 +185,7 @@ class ElementsController extends BaseElementsController
      * Returns the editor HTML response for a given element.
      *
      * @param ElementInterface $element
-     * @param bool             $includeLocales
+     * @param boolean          $includeLocales
      *
      * @return Response
      * @throws HttpException

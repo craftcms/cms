@@ -44,7 +44,7 @@ class Tokens extends Component
      * @param mixed         $route      Where matching requests should be routed to. If you want them to be routed to a
      *                                  controller action, pass:
      *                                  `['action' => "controller/action", 'params' => ['foo' => 'bar']]`.
-     * @param int|null      $usageLimit The maximum number of times this token can be used. Defaults to no limit.
+     * @param integer|null  $usageLimit The maximum number of times this token can be used. Defaults to no limit.
      * @param DateTime|null $expiryDate The date that the token expires. Defaults to the 'defaultTokenDuration' config
      *                                  setting.
      *
@@ -122,9 +122,9 @@ class Tokens extends Component
     /**
      * Increments a token's usage count.
      *
-     * @param int $tokenId
+     * @param integer $tokenId
      *
-     * @return bool
+     * @return boolean
      */
     public function incrementTokenUsageCountById($tokenId)
     {
@@ -141,9 +141,9 @@ class Tokens extends Component
     /**
      * Deletes a token by its ID.
      *
-     * @param int $tokenId
+     * @param integer $tokenId
      *
-     * @return bool
+     * @return boolean
      */
     public function deleteTokenById($tokenId)
     {
@@ -155,7 +155,7 @@ class Tokens extends Component
     /**
      * Deletes any expired tokens.
      *
-     * @return bool
+     * @return boolean
      */
     public function deleteExpiredTokens()
     {
