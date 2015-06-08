@@ -133,7 +133,7 @@ class UsersController extends Controller
     /**
      * Returns how many seconds are left in the current user session.
      *
-     * @return null
+     * @return void
      */
     public function actionGetRemainingSessionTime()
     {
@@ -142,7 +142,7 @@ class UsersController extends Controller
     }
 
     /**
-     * @return null
+     * @return void
      */
     public function actionLogout()
     {
@@ -161,7 +161,7 @@ class UsersController extends Controller
      * Sends a password reset email.
      *
      * @throws HttpException
-     * @return null
+     * @return void
      */
     public function actionSendPasswordResetEmail()
     {
@@ -227,7 +227,7 @@ class UsersController extends Controller
      * Generates a new verification code for a given user, and returns its URL.
      *
      * @throws HttpException|Exception
-     * @return null
+     * @return void
      */
     public function actionGetPasswordResetUrl()
     {
@@ -336,7 +336,7 @@ class UsersController extends Controller
     /**
      * Verifies that a user has access to an email address.
      *
-     * @return null;
+     * @return void
      */
     public function actionVerifyEmail()
     {
@@ -361,7 +361,7 @@ class UsersController extends Controller
     /**
      * Manually activates a user account.  Only admins have access.
      *
-     * @return null
+     * @return void
      */
     public function actionActivateUser()
     {
@@ -674,7 +674,7 @@ class UsersController extends Controller
      * This action behaves the same regardless of whether it was requested from the Control Panel or the front-end site.
      *
      * @throws HttpException|Exception
-     * @return null
+     * @return void
      */
     public function actionSaveUser()
     {
@@ -937,7 +937,7 @@ class UsersController extends Controller
     /**
      * Upload a user photo.
      *
-     * @return null
+     * @return void
      */
     public function actionUploadUserPhoto()
     {
@@ -1013,7 +1013,7 @@ class UsersController extends Controller
     /**
      * Crop user photo.
      *
-     * @return null
+     * @return void
      */
     public function actionCropUserPhoto()
     {
@@ -1075,7 +1075,7 @@ class UsersController extends Controller
     /**
      * Delete all the photos for current user.
      *
-     * @return null
+     * @return void
      */
     public function actionDeleteUserPhoto()
     {
@@ -1105,7 +1105,7 @@ class UsersController extends Controller
     /**
      * Sends a new activation email to a user.
      *
-     * @return null
+     * @return void
      */
     public function actionSendActivationEmail()
     {
@@ -1139,7 +1139,7 @@ class UsersController extends Controller
      * Unlocks a user, bypassing the cooldown phase.
      *
      * @throws HttpException
-     * @return null
+     * @return void
      */
     public function actionUnlockUser()
     {
@@ -1173,7 +1173,7 @@ class UsersController extends Controller
      * Suspends a user.
      *
      * @throws HttpException
-     * @return null
+     * @return void
      */
     public function actionSuspendUser()
     {
@@ -1258,7 +1258,7 @@ class UsersController extends Controller
      * Unsuspends a user.
      *
      * @throws HttpException
-     * @return null
+     * @return void
      */
     public function actionUnsuspendUser()
     {
@@ -1291,7 +1291,7 @@ class UsersController extends Controller
     /**
      * Saves the asset field layout.
      *
-     * @return null
+     * @return void
      */
     public function actionSaveFieldLayout()
     {
@@ -1493,7 +1493,7 @@ class UsersController extends Controller
      * @param int $userId
      *
      * @throws Exception
-     * @return null
+     * @return void
      */
     private function _noUserExists($userId)
     {
@@ -1524,7 +1524,7 @@ class UsersController extends Controller
     /**
      * @param $user
      *
-     * @return null
+     * @return void
      */
     private function _processUserPhoto($user)
     {
@@ -1556,7 +1556,7 @@ class UsersController extends Controller
     /**
      * @param $user
      *
-     * @return null
+     * @return void
      */
     private function _processUserGroupsPermissions($user)
     {
