@@ -54,7 +54,7 @@ class AssetsController extends Controller
      *
      * @throws HttpException
      * @throws \Exception
-     * @return void
+     * @return mixed
      */
     public function actionSaveAsset()
     {
@@ -179,7 +179,7 @@ class AssetsController extends Controller
      * Replace a file
      *
      * @throws Exception
-     * @return void
+     * @return mixed
      */
     public function actionReplaceFile()
     {
@@ -214,7 +214,7 @@ class AssetsController extends Controller
     /**
      * Create a folder.
      *
-     * @return void
+     * @return mixed
      * @throws HttpException
      */
     public function actionCreateFolder()
@@ -257,7 +257,7 @@ class AssetsController extends Controller
     /**
      * Delete a folder.
      *
-     * @return void
+     * @return mixed
      */
     public function actionDeleteFolder()
     {
@@ -278,7 +278,7 @@ class AssetsController extends Controller
     /**
      * Rename a folder
      *
-     * @return void
+     * @return mixed
      */
     public function actionRenameFolder()
     {
@@ -306,7 +306,7 @@ class AssetsController extends Controller
     /**
      * Move a file or multiple files.
      *
-     * @return void
+     * @return mixed
      */
     public function actionMoveFile()
     {
@@ -372,7 +372,7 @@ class AssetsController extends Controller
     /**
      * Move a folder.
      *
-     * @return void
+     * @return mixed
      */
     public function actionMoveFolder()
     {
@@ -479,7 +479,7 @@ class AssetsController extends Controller
      * Generate a transform.
      *
      * @throws HttpException
-     * @return void
+     * @return mixed
      */
     public function actionGenerateTransform()
     {
@@ -514,7 +514,7 @@ class AssetsController extends Controller
     /**
      * Get information about available transforms.
      *
-     * @return void
+     * @return mixed
      */
     public function actionGetTransformInfo()
     {
@@ -530,27 +530,6 @@ class AssetsController extends Controller
         }
 
         return $this->asJson($output);
-    }
-
-    // Private Methods
-    // =========================================================================
-
-    /**
-     * Check upload permissions.
-     *
-     * @param $folderId
-     *
-     * @return void
-     */
-    private function _checkUploadPermissions($folderId)
-    {
-        $folder = Craft::$app->getAssets()->getFolderById($folderId);
-
-        // if folder exists and the volume ID is null, it's a temp volume and we always allow uploads there.
-        if (!(is_object($folder) && is_null($folder->volumeId))) {
-            Craft::$app->getAssets()->checkPermissionByFolderIds($folderId,
-                'uploadToAssetVolume');
-        }
     }
 }
 

@@ -628,7 +628,7 @@ class AssetTransforms extends Component
         if (!IOHelper::fileExists($thumbPath)) {
             $imageSource = $this->getLocalImageSource($fileModel);
 
-            Craft::$app->getImages()->loadImage($imageSource)
+            Craft::$app->getImages()->loadImage($imageSource, $size, $size)
                 ->scaleAndCrop($size, $size)
                 ->saveAs($thumbPath);
 
@@ -730,7 +730,7 @@ class AssetTransforms extends Component
 
         // Resize if constrained by maxCachedImageSizes setting
         if ($maxCachedImageSize > 0) {
-            Craft::$app->getImages()->loadImage($source)->scaleToFit($maxCachedImageSize,
+            Craft::$app->getImages()->loadImage($source, $maxCachedImageSize, $maxCachedImageSize)->scaleToFit($maxCachedImageSize,
                 $maxCachedImageSize)->setQuality(100)->saveAs($destination ?: $source);
         } else {
             if ($source != $destination) {
@@ -1036,7 +1036,7 @@ class AssetTransforms extends Component
         $imageSource = $file->getTransformSource();
         $quality = $transform->quality ? $transform->quality : Craft::$app->getConfig()->get('defaultImageQuality');
 
-        $image = Craft::$app->getImages()->loadImage($imageSource);
+        $image = Craft::$app->getImages()->loadImage($imageSource, $transform->width, $transform->height);
         $image->setQuality($quality);
 
         switch ($transform->mode) {
@@ -1088,9 +1088,16 @@ class AssetTransforms extends Component
     private function _getThumbExtension(Asset $file)
     {
         // For non-web-safe formats we go with jpg.
-        if (!in_array(mb_strtolower(IOHelper::getExtension($file->filename)),
-            ImageHelper::getWebSafeFormats())
+        if (!in_array(
+            mb_strtolower(IOHelper::getExtension($file->filename)),
+            ImageHelper::getWebSafeFormats()
+        )
         ) {
+            if ($file->getExtension() == 'svg' && Craft::$app->getImages(
+                )->isImagick()
+            ) {
+                return 'png';
+            }
             return 'jpg';
         } else {
             return $file->getExtension();

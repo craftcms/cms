@@ -7,6 +7,8 @@
 
 namespace craft\app\helpers;
 
+use craft;
+
 /**
  * Class ImageHelper
  *
@@ -21,6 +23,9 @@ class ImageHelper
     const EXIF_IFD0_ROTATE_180 = 3;
     const EXIF_IFD0_ROTATE_90 = 6;
     const EXIF_IFD0_ROTATE_270 = 8;
+
+    const SVG_WIDTH_RE = '/(.*<svg[^>]* width=")([\d\.]+)([a-z]*)"/si';
+    const SVG_HEIGHT_RE = '/(.*<svg[^>]* height=")([\d\.]+)([a-z]*)"/si';
 
     // Public Methods
     // =========================================================================
@@ -45,15 +50,17 @@ class ImageHelper
 
         if (empty($targetHeight)) {
             $targetHeight = round($targetWidth / $factor);
-        } else if (empty($targetWidth)) {
-            $targetWidth = round($targetHeight * $factor);
+        } else {
+            if (empty($targetWidth)) {
+                $targetWidth = round($targetHeight * $factor);
+            }
         }
 
         return [$targetWidth, $targetHeight];
     }
 
     /**
-     * Returns if an image is manipulatable or not.
+     * Returns whether an image extension is considered manipulatable.
      *
      * @param $extension
      *
@@ -61,12 +68,17 @@ class ImageHelper
      */
     public static function isImageManipulatable($extension)
     {
-        return in_array(mb_strtolower($extension),
-            ['jpg', 'jpeg', 'gif', 'png', 'wbmp', 'xbm']);
+        $extensions = array('jpg', 'jpeg', 'gif', 'png', 'wbmp', 'xbm');
+
+        if (Craft::$app->getImages()->isImagick()) {
+            $extensions[] = 'svg';
+        }
+
+        return in_array(mb_strtolower($extension), $extensions);
     }
 
     /**
-     * Return a list of web safe formats.
+     * Returns a list of web safe image formats.
      *
      * @return array
      */
@@ -144,17 +156,142 @@ class ImageHelper
     }
 
     /**
-     * Return true if the file can have EXIF information embedded.
+     * Returns whether an image can have EXIF information embedded.
      *
      * @param string $filePath the file path to check.
      *
-     * @return boolean
+     * @return bool
      */
     public static function canHaveExifData($filePath)
     {
         $extension = IOHelper::getExtension($filePath);
 
-        return in_array(StringHelper::toLowerCase($extension),
-            ['jpg', 'jpeg', 'tiff']);
+        return in_array(
+            StringHelper::toLowerCase($extension),
+            ['jpg', 'jpeg', 'tiff']
+        );
+    }
+
+    /**
+     * Clean an image provided by path from all malicious code and the like.
+     *
+     * @param $imagePath
+     *
+     * @return void
+     */
+    public static function cleanImageByPath($imagePath)
+    {
+
+        $extension = IOHelper::getExtension($imagePath);
+
+        if ($extension == 'svg') {
+            // No cleanup in the classic sense.
+            return;
+        }
+
+        if (static::isImageManipulatable($extension)) {
+            Craft::$app->getImages()->cleanImage($imagePath);
+        }
+    }
+
+    /**
+     * Returns the size of an image based on its file path.
+     *
+     * @param $filePath
+     *
+     * @return array [$width, $height]
+     */
+    public static function getImageSize($filePath)
+    {
+        if (IOHelper::getExtension($filePath) == 'svg') {
+            $svg = IOHelper::getFileContents($filePath);
+            return static::parseSvgSize($svg);
+        } else {
+            $image = Craft::$app->getImages()->loadImage($filePath);
+            return [$image->getWidth(), $image->getHeight()];
+        }
+    }
+
+    /**
+     * Parses SVG data and determines its size (normalized to pixels).
+     *
+     * @param string $svg The SVG data
+     *
+     * @return array [$width, $height]
+     */
+    public static function parseSvgSize($svg)
+    {
+        if (
+            preg_match(self::SVG_WIDTH_RE, $svg, $widthMatch) &&
+            preg_match(self::SVG_HEIGHT_RE, $svg, $heightMatch) &&
+            ($matchedWidth = floatval($widthMatch[2])) &&
+            ($matchedHeight = floatval($heightMatch[2]))
+        ) {
+            $width = round(
+                $matchedWidth * self::_getSizeUnitMultiplier($widthMatch[3])
+            );
+            $height = round(
+                $matchedHeight * self::_getSizeUnitMultiplier($heightMatch[3])
+            );
+        } else {
+            $width = null;
+            $height = null;
+        }
+
+        return array($width, $height);
+    }
+
+    // Private Methods
+    // =========================================================================
+
+    /**
+     * Returns the multiplier that should be used to convert an image size unit to pixels.
+     *
+     * @param string $unit
+     *
+     * @return float The multiplier
+     */
+    private static function _getSizeUnitMultiplier($unit)
+    {
+        $ppi = 72;
+
+        switch ($unit) {
+            case 'px':
+            {
+                return 1;
+            }
+            case 'in':
+            {
+                return $ppi;
+            }
+            case 'pt':
+            {
+                return $ppi / 72;
+            }
+            case 'pc':
+            {
+                return $ppi / 6;
+            }
+            case 'cm':
+            {
+                return $ppi / 2.54;
+            }
+            case 'mm':
+            {
+                return $ppi / 25.4;
+            }
+            case 'em':
+            {
+                return 16;
+            }
+            case 'ex':
+            {
+                return 10;
+            }
+            default:
+            {
+                return 1;
+            }
+        }
     }
 }

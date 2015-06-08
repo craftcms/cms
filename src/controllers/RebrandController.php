@@ -34,7 +34,7 @@ class RebrandController extends Controller
     /**
      * Upload a logo for the admin panel.
      *
-     * @return void
+     * @return mixed
      */
     public function actionUploadLogo()
     {
@@ -99,7 +99,7 @@ class RebrandController extends Controller
     /**
      * Crop user photo.
      *
-     * @return void
+     * @return mixed
      */
     public function actionCropLogo()
     {
@@ -125,7 +125,7 @@ class RebrandController extends Controller
 
                 IOHelper::clearFolder($targetPath);
                 Craft::$app->getImages()
-                    ->loadImage($imagePath)
+                    ->loadImage($imagePath, 300, 300)
                     ->crop($x1, $x2, $y1, $y2)
                     ->scaleToFit(300, 300, false)
                     ->saveAs($targetPath.'/'.$source);
@@ -148,7 +148,7 @@ class RebrandController extends Controller
     /**
      * Delete logo.
      *
-     * @return void
+     * @return mixed
      */
     public function actionDeleteLogo()
     {

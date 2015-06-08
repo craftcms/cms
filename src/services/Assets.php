@@ -238,7 +238,11 @@ class Assets extends Component
         }
 
         if (!empty($asset->newFilePath)) {
-            $stream = fopen($asset->newFilePath, 'r');
+			if (IOHelper::getFileKind(IOHelper::getExtension($asset->newFilePath)) == 'image') {
+				ImageHelper::cleanImageByPath($asset->newFilePath);
+			}
+
+			$stream = fopen($asset->newFilePath, 'r');
 
             if (!$stream) {
                 throw new FileException(Craft::t('app',
@@ -250,6 +254,7 @@ class Assets extends Component
 
             $event = new AssetEvent(['asset' => $asset]);
             $this->trigger(static::EVENT_BEFORE_UPLOAD_ASSET, $event);
+
 
             // Explicitly re-throw VolumeFileExistsException
             try {
@@ -267,7 +272,8 @@ class Assets extends Component
             $asset->kind = IOHelper::getFileKind($asset->getExtension());
 
             if ($asset->kind == 'image' && !empty($asset->newFilePath)) {
-                list ($asset->width, $asset->height) = getimagesize($asset->newFilePath);
+
+                list ($asset->width, $asset->height) = ImageHelper::getImageSize($asset->newFilePath);
             }
         }
 
@@ -345,7 +351,7 @@ class Assets extends Component
      * @param $assetId
      * @param $pathOnServer
      * @param $filename
-     *g
+     *
      *
      * @throws EventException
      * @throws FileException
@@ -361,11 +367,16 @@ class Assets extends Component
                 'The asset to be replaced cannot be found.'));
         }
 
+		if (IOHelper::getFileKind(IOHelper::getExtension($pathOnServer)) == 'image') {
+			ImageHelper::cleanImageByPath($pathOnServer);
+		}
+
         $event = new ReplaceAssetEvent([
             'asset' => $existingFile,
             'replaceWith' => $pathOnServer,
             'filename' => $filename
         ]);
+
         $this->trigger(static::EVENT_BEFORE_REPLACE_FILE, $event);
 
         // Is the event preventing this from happening?
@@ -423,7 +434,7 @@ class Assets extends Component
         }
 
         if ($existingFile->kind == "image") {
-            list ($existingFile->width, $existingFile->height) = getimagesize($pathOnServer);
+            list ($existingFile->width, $existingFile->height) = ImageHelper::getImageSize($pathOnServer);
         } else {
             $existingFile->width = null;
             $existingFile->height = null;

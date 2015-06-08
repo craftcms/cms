@@ -30,6 +30,16 @@ class Image
     // =========================================================================
 
     /**
+     * @var int The minimum width that the image should be loaded with if it’s an SVG.
+     */
+    public $minSvgWidth;
+
+    /**
+     * @var int The minimum height that the image should be loaded with if it’s an SVG.
+     */
+    public $minSvgHeight;
+
+    /**
      * @var string
      */
     private $_imageSourcePath;
@@ -77,19 +87,23 @@ class Image
      */
     public function __construct()
     {
-        $extension = mb_strtolower(Craft::$app->getConfig()->get('imageDriver'));
+        $extension = mb_strtolower(
+            Craft::$app->getConfig()->get('imageDriver')
+        );
 
         // If it's explicitly set, take their word for it.
         if ($extension === 'gd') {
             $this->_instance = new \Imagine\Gd\Imagine();
-        } else if ($extension === 'imagick') {
-            $this->_instance = new \Imagine\Imagick\Imagine();
         } else {
-            // Let's try to auto-detect.
-            if (Craft::$app->getImages()->isGd()) {
-                $this->_instance = new \Imagine\Gd\Imagine();
-            } else {
+            if ($extension === 'imagick') {
                 $this->_instance = new \Imagine\Imagick\Imagine();
+            } else {
+                // Let's try to auto-detect.
+                if (Craft::$app->getImages()->isGd()) {
+                    $this->_instance = new \Imagine\Gd\Imagine();
+                } else {
+                    $this->_instance = new \Imagine\Imagick\Imagine();
+                }
             }
         }
 
@@ -130,30 +144,89 @@ class Image
      */
     public function loadImage($path)
     {
+        $imageService = Craft::$app->getImages();
+
         if (!IOHelper::fileExists($path)) {
-            throw new Exception(Craft::t('app',
-                'No file exists at the path “{path}”', ['path' => $path]));
+            throw new Exception(Craft::t(
+                'app',
+                'No file exists at the path “{path}”',
+                ['path' => $path]
+            ));
         }
 
-        if (!Craft::$app->getImages()->checkMemoryForImage($path)) {
-            throw new Exception(Craft::t('app',
-                'Not enough memory available to perform this image operation.'));
+        if (!$imageService->checkMemoryForImage($path)) {
+            throw new Exception(Craft::t(
+                'app',
+                'Not enough memory available to perform this image operation.'
+            ));
         }
 
-        $imageInfo = @getimagesize($path);
+        $extension = IOHelper::getExtension($path);
 
-        if (!is_array($imageInfo)) {
-            throw new Exception(Craft::t('app',
-                'The file “{path}” does not appear to be an image.',
-                ['path' => $path]));
+        if ($extension === 'svg') {
+            if (!$imageService->isImagick()) {
+                throw new Exception(Craft::t(
+                    'The file “{path}” does not appear to be an image.',
+                    array('path' => $path)
+                ));
+            }
+
+            $svg = IOHelper::getFileContents($path);
+
+            if ($this->minSvgWidth !== null && $this->minSvgHeight !== null) {
+                // Does the <svg> node contain valid `width` and `height` attributes?
+                list($width, $height) = ImageHelper::parseSvgSize($svg);
+
+                if ($width !== null && $height !== null) {
+                    $scale = 1;
+
+                    if ($width < $this->minSvgWidth) {
+                        $scale = $this->minSvgWidth / $width;
+                    }
+
+                    if ($height < $this->minSvgHeight) {
+                        $scale = max($scale, ($this->minSvgHeight / $height));
+                    }
+
+                    $width = round($width * $scale);
+                    $height = round($height * $scale);
+
+                    $svg = preg_replace(
+                        ImageHelper::SVG_WIDTH_RE,
+                        "\${1}{$width}px\"",
+                        $svg
+                    );
+                    $svg = preg_replace(
+                        ImageHelper::SVG_HEIGHT_RE,
+                        "\${1}{$height}px\"",
+                        $svg
+                    );
+                }
+            }
+
+            try {
+                $this->_image = $this->_instance->load($svg);
+            } catch (\Imagine\Exception\RuntimeException $e) {
+                // Invalid SVG. Maybe it's missing its DTD?
+                $svg = '<?xml version="1.0" encoding="UTF-8" standalone="no"?>' . $svg;
+                $this->_image = $this->_instance->load($svg);
+            }
+        } else {
+            try {
+                $this->_image = $this->_instance->open($path);
+            } catch (\Imagine\Exception\RuntimeException $e) {
+                throw new Exception(Craft::t(
+                    'The file “{path}” does not appear to be an image.',
+                    array('path' => $path)
+                ));
+            }
         }
 
-        $this->_image = $this->_instance->open($path);
         $this->_extension = IOHelper::getExtension($path);
         $this->_imageSourcePath = $path;
 
         if ($this->_extension == 'gif') {
-            if (!Craft::$app->getImages()->isGd() && $this->_image->layers()) {
+            if (!$imageService->isGd() && $this->_image->layers()) {
                 $this->_isAnimatedGif = true;
             }
         }
@@ -191,8 +264,10 @@ class Image
 
             $this->_image = $gif;
         } else {
-            $this->_image->crop(new Point($x1, $y1),
-                new \Imagine\Image\Box($width, $height));
+            $this->_image->crop(
+                new Point($x1, $y1),
+                new \Imagine\Image\Box($width, $height)
+            );
         }
 
         return $this;
@@ -201,9 +276,9 @@ class Image
     /**
      * Scale the image to fit within the specified size.
      *
-     * @param integer      $targetWidth
+     * @param integer $targetWidth
      * @param integer|null $targetHeight
-     * @param boolean      $scaleIfSmaller
+     * @param boolean $scaleIfSmaller
      *
      * @return Image
      */
@@ -214,11 +289,17 @@ class Image
     ) {
         $this->_normalizeDimensions($targetWidth, $targetHeight);
 
-        if ($scaleIfSmaller || $this->getWidth() > $targetWidth || $this->getHeight() > $targetHeight) {
-            $factor = max($this->getWidth() / $targetWidth,
-                $this->getHeight() / $targetHeight);
-            $this->resize(round($this->getWidth() / $factor),
-                round($this->getHeight() / $factor));
+        if ($scaleIfSmaller || $this->getWidth(
+            ) > $targetWidth || $this->getHeight() > $targetHeight
+        ) {
+            $factor = max(
+                $this->getWidth() / $targetWidth,
+                $this->getHeight() / $targetHeight
+            );
+            $this->resize(
+                round($this->getWidth() / $factor),
+                round($this->getHeight() / $factor)
+            );
         }
 
         return $this;
@@ -227,10 +308,10 @@ class Image
     /**
      * Scale and crop image to exactly fit the specified size.
      *
-     * @param integer      $targetWidth
+     * @param integer $targetWidth
      * @param integer|null $targetHeight
-     * @param boolean      $scaleIfSmaller
-     * @param string       $cropPositions
+     * @param boolean $scaleIfSmaller
+     * @param string $cropPositions
      *
      * @return Image
      */
@@ -242,13 +323,19 @@ class Image
     ) {
         $this->_normalizeDimensions($targetWidth, $targetHeight);
 
-        list($verticalPosition, $horizontalPosition) = explode("-",
-            $cropPositions);
+        list($verticalPosition, $horizontalPosition) = explode(
+            "-",
+            $cropPositions
+        );
 
-        if ($scaleIfSmaller || $this->getWidth() > $targetWidth || $this->getHeight() > $targetHeight) {
+        if ($scaleIfSmaller || $this->getWidth(
+            ) > $targetWidth || $this->getHeight() > $targetHeight
+        ) {
             // Scale first.
-            $factor = min($this->getWidth() / $targetWidth,
-                $this->getHeight() / $targetHeight);
+            $factor = min(
+                $this->getWidth() / $targetWidth,
+                $this->getHeight() / $targetHeight
+            );
             $newHeight = round($this->getHeight() / $factor);
             $newWidth = round($this->getWidth() / $factor);
 
@@ -257,42 +344,48 @@ class Image
             // Now crop.
             if ($newWidth - $targetWidth > 0) {
                 switch ($horizontalPosition) {
-                    case 'left': {
+                    case 'left':
+                    {
                         $x1 = 0;
                         $x2 = $x1 + $targetWidth;
                         break;
                     }
-                    case 'right': {
+                    case 'right':
+                    {
                         $x2 = $newWidth;
                         $x1 = $newWidth - $targetWidth;
                         break;
                     }
-                    default: {
+                    default:
+                        {
                         $x1 = round(($newWidth - $targetWidth) / 2);
                         $x2 = $x1 + $targetWidth;
                         break;
-                    }
+                        }
                 }
 
                 $y1 = 0;
                 $y2 = $y1 + $targetHeight;
             } elseif ($newHeight - $targetHeight > 0) {
                 switch ($verticalPosition) {
-                    case 'top': {
+                    case 'top':
+                    {
                         $y1 = 0;
                         $y2 = $y1 + $targetHeight;
                         break;
                     }
-                    case 'bottom': {
+                    case 'bottom':
+                    {
                         $y2 = $newHeight;
                         $y1 = $newHeight - $targetHeight;
                         break;
                     }
-                    default: {
+                    default:
+                        {
                         $y1 = round(($newHeight - $targetHeight) / 2);
                         $y2 = $y1 + $targetHeight;
                         break;
-                    }
+                        }
                 }
 
                 $x1 = 0;
@@ -313,7 +406,7 @@ class Image
     /**
      * Re-sizes the image. If $height is not specified, it will default to $width, creating a square.
      *
-     * @param integer      $targetWidth
+     * @param integer $targetWidth
      * @param integer|null $targetHeight
      *
      * @return Image
@@ -330,15 +423,20 @@ class Image
             $gif->layers()->remove(0);
 
             foreach ($this->_image->layers() as $layer) {
-                $resizedLayer = $layer->resize($newSize,
-                    $this->_getResizeFilter());
+                $resizedLayer = $layer->resize(
+                    $newSize,
+                    $this->_getResizeFilter()
+                );
                 $gif->layers()->add($resizedLayer);
             }
 
             $this->_image = $gif;
         } else {
-            $this->_image->resize(new \Imagine\Image\Box($targetWidth,
-                $targetHeight), $this->_getResizeFilter());
+            $this->_image->resize(
+                new \Imagine\Image\Box($targetWidth,
+                    $targetHeight),
+                $this->_getResizeFilter()
+            );
         }
 
         return $this;
@@ -375,24 +473,33 @@ class Image
     /**
      * Saves the image to the target path.
      *
-     * @param string  $targetPath
+     * @param string $targetPath
      * @param boolean $sanitizeAndAutoQuality
      *
      * @throws \Imagine\Exception\RuntimeException
-     * @return void
+     * @return bool
      */
     public function saveAs($targetPath, $sanitizeAndAutoQuality = false)
     {
         $extension = IOHelper::getExtension($targetPath);
         $options = $this->_getSaveOptions(false, $extension);
-        $targetPath = IOHelper::getFolderName($targetPath).IOHelper::getFilename($targetPath,
-                false).'.'.$extension;
+        $targetPath = IOHelper::getFolderName(
+                $targetPath
+            ) . IOHelper::getFilename(
+                $targetPath,
+                false
+            ) . '.' . $extension;
 
         if (($extension == 'jpeg' || $extension == 'jpg' || $extension == 'png') && $sanitizeAndAutoQuality) {
             clearstatcache();
             $originalSize = IOHelper::getFileSize($this->_imageSourcePath);
-            $this->_autoGuessImageQuality($targetPath, $originalSize,
-                $extension, 0, 200);
+            $this->_autoGuessImageQuality(
+                $targetPath,
+                $originalSize,
+                $extension,
+                0,
+                200
+            );
         } else {
             $this->_image->save($targetPath, $options);
         }
@@ -407,8 +514,10 @@ class Image
      */
     public function isTransparent()
     {
-        if (Craft::$app->getImages()->isImagick() && method_exists("Imagick",
-                "getImageAlphaChannel")
+        if (Craft::$app->getImages()->isImagick() && method_exists(
+                "Imagick",
+                "getImageAlphaChannel"
+            )
         ) {
             return $this->_image->getImagick()->getImageAlphaChannel();
         }
@@ -441,9 +550,9 @@ class Image
     /**
      * Sets properties for text drawing on the image.
      *
-     * @param string  $fontFile Path to the font file on server
-     * @param integer $size     Font size to use
-     * @param string  $color    Font color to use in hex format
+     * @param string $fontFile Path to the font file on server
+     * @param integer $size Font size to use
+     * @param string $color Font color to use in hex format
      *
      * @return void
      */
@@ -453,14 +562,17 @@ class Image
             $this->_palette = new RGB();
         }
 
-        $this->_font = $this->_instance->font($fontFile, $size,
-            $this->_palette->color($color));
+        $this->_font = $this->_instance->font(
+            $fontFile,
+            $size,
+            $this->_palette->color($color)
+        );
     }
 
     /**
      * Returns the bounding text box for a text string and an angle.
      *
-     * @param string  $text
+     * @param string $text
      * @param integer $angle
      *
      * @throws Exception
@@ -478,7 +590,7 @@ class Image
     /**
      * Writes text on an image.
      *
-     * @param string  $text
+     * @param string $text
      * @param integer $x
      * @param integer $y
      * @param integer $angle
@@ -509,15 +621,23 @@ class Image
      */
     private function _normalizeDimensions(&$width, &$height = null)
     {
-        if (preg_match('/^(?P<width>[0-9]+|AUTO)x(?P<height>[0-9]+|AUTO)/',
-            $width, $matches)) {
+        if (preg_match(
+            '/^(?P<width>[0-9]+|AUTO)x(?P<height>[0-9]+|AUTO)/',
+            $width,
+            $matches
+        )
+        ) {
             $width = $matches['width'] != 'AUTO' ? $matches['width'] : null;
             $height = $matches['height'] != 'AUTO' ? $matches['height'] : null;
         }
 
         if (!$height || !$width) {
-            list($width, $height) = ImageHelper::calculateMissingDimension($width,
-                $height, $this->getWidth(), $this->getHeight());
+            list($width, $height) = ImageHelper::calculateMissingDimension(
+                $width,
+                $height,
+                $this->getWidth(),
+                $this->getHeight()
+            );
         }
     }
 
@@ -543,12 +663,18 @@ class Image
         @set_time_limit(30);
 
         if ($step == 0) {
-            $tempFilename = IOHelper::getFolderName($tempFilename).IOHelper::getFilename($tempFilename,
-                    false).'-temp.'.$extension;
+            $tempFilename = IOHelper::getFolderName(
+                    $tempFilename
+                ) . IOHelper::getFilename(
+                    $tempFilename,
+                    false
+                ) . '-temp.' . $extension;
         }
 
         // Find our target quality by splitting the min and max qualities
-        $midQuality = (int)ceil($minQuality + (($maxQuality - $minQuality) / 2));
+        $midQuality = (int)ceil(
+            $minQuality + (($maxQuality - $minQuality) / 2)
+        );
 
         // Set the min and max acceptable ranges. .10 means anything between 90% and 110% of the original file size is acceptable.
         $acceptableRange = .10;
@@ -556,18 +682,25 @@ class Image
         clearstatcache();
 
         // Generate a new temp image and get it's file size.
-        $this->_image->save($tempFilename,
-            $this->_getSaveOptions($midQuality, $extension));
+        $this->_image->save(
+            $tempFilename,
+            $this->_getSaveOptions($midQuality, $extension)
+        );
         $newFileSize = IOHelper::getFileSize($tempFilename);
 
         // If we're on step 10 OR we're within our acceptable range threshold OR midQuality = maxQuality (1 == 1),
         // let's use the current image.
-        if ($step == 10 || abs(1 - $originalSize / $newFileSize) < $acceptableRange || $midQuality == $maxQuality) {
+        if ($step == 10 || abs(
+                1 - $originalSize / $newFileSize
+            ) < $acceptableRange || $midQuality == $maxQuality
+        ) {
             clearstatcache();
 
             // Generate one last time.
-            $this->_image->save($tempFilename,
-                $this->_getSaveOptions($midQuality));
+            $this->_image->save(
+                $tempFilename,
+                $this->_getSaveOptions($midQuality)
+            );
 
             return true;
         }
@@ -575,12 +708,24 @@ class Image
         $step++;
 
         if ($newFileSize > $originalSize) {
-            return $this->_autoGuessImageQuality($tempFilename, $originalSize,
-                $extension, $minQuality, $midQuality, $step);
+            return $this->_autoGuessImageQuality(
+                $tempFilename,
+                $originalSize,
+                $extension,
+                $minQuality,
+                $midQuality,
+                $step
+            );
         } // Too much.
         else {
-            return $this->_autoGuessImageQuality($tempFilename, $originalSize,
-                $extension, $midQuality, $maxQuality, $step);
+            return $this->_autoGuessImageQuality(
+                $tempFilename,
+                $originalSize,
+                $extension,
+                $midQuality,
+                $maxQuality,
+                $step
+            );
         }
     }
 
@@ -589,14 +734,15 @@ class Image
      */
     private function _getResizeFilter()
     {
-        return (Craft::$app->getImages()->isGd() ? ImageInterface::FILTER_UNDEFINED : ImageInterface::FILTER_LANCZOS);
+        return (Craft::$app->getImages()->isGd(
+        ) ? ImageInterface::FILTER_UNDEFINED : ImageInterface::FILTER_LANCZOS);
     }
 
     /**
      * Get save options.
      *
      * @param integer|null $quality
-     * @param string       $extension
+     * @param string $extension
      *
      * @return array
      */
@@ -608,23 +754,27 @@ class Image
 
         switch ($extension) {
             case 'jpeg':
-            case 'jpg': {
+            case 'jpg':
+            {
                 return ['jpeg_quality' => $quality, 'flatten' => true];
             }
 
-            case 'gif': {
+            case 'gif':
+            {
                 $options = ['animated' => $this->_isAnimatedGif];
 
                 if ($this->_isAnimatedGif) {
                     // Imagine library does not provide this value and arbitrarily divides it by 10, when assigning,
                     // so we have to improvise a little
-                    $options['animated.delay'] = $this->_image->getImagick()->getImageDelay() * 10;
+                    $options['animated.delay'] = $this->_image->getImagick(
+                        )->getImageDelay() * 10;
                 }
 
                 return $options;
             }
 
-            case 'png': {
+            case 'png':
+            {
                 // Valid PNG quality settings are 0-9, so normalize and flip, because we're talking about compression
                 // levels, not quality, like jpg and gif.
                 $normalizedQuality = round(($quality * 9) / 100);
@@ -642,14 +792,19 @@ class Image
                     'png_compression_level' => $normalizedQuality,
                     'flatten' => false
                 ];
-                $pngInfo = ImageHelper::getPngImageInfo($this->_imageSourcePath);
+                $pngInfo = ImageHelper::getPngImageInfo(
+                    $this->_imageSourcePath
+                );
 
                 // Even though a 2 channel PNG is valid (Grayscale with alpha channel), Imagick doesn't recognize it as
                 // a valid format: http://www.imagemagick.org/script/formats.php
                 // So 2 channel PNGs get converted to 4 channel.
 
-                if (is_array($pngInfo) && isset($pngInfo['channels']) && $pngInfo['channels'] !== 2) {
-                    $format = 'png'.(8 * $pngInfo['channels']);
+                if (is_array(
+                        $pngInfo
+                    ) && isset($pngInfo['channels']) && $pngInfo['channels'] !== 2
+                ) {
+                    $format = 'png' . (8 * $pngInfo['channels']);
                 } else {
                     $format = 'png32';
                 }
@@ -659,9 +814,10 @@ class Image
                 return $options;
             }
 
-            default: {
+            default:
+                {
                 return [];
-            }
+                }
         }
     }
 }
