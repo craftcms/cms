@@ -1,8 +1,8 @@
 <?php
 /**
- * @link http://buildwithcraft.com/
+ * @link      http://buildwithcraft.com/
  * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
- * @license http://buildwithcraft.com/license
+ * @license   http://buildwithcraft.com/license
  */
 
 namespace craft\app\enums;
@@ -13,13 +13,13 @@ namespace craft\app\enums;
  * This class is a poor man's version of an enum, since PHP does not have support for native enumerations.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since  3.0
  */
 abstract class VersionUpdateStatus extends BaseEnum
 {
-	// Constants
-	// =========================================================================
+    // Constants
+    // =========================================================================
 
-	const UpToDate        = 'UpToDate';
-	const UpdateAvailable = 'UpdateAvailable';
+    const UpToDate = 'UpToDate';
+    const UpdateAvailable = 'UpdateAvailable';
 }

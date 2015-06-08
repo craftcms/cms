@@ -1,8 +1,8 @@
 <?php
 /**
- * @link http://buildwithcraft.com/
+ * @link      http://buildwithcraft.com/
  * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
- * @license http://buildwithcraft.com/license
+ * @license   http://buildwithcraft.com/license
  */
 
 namespace craft\app\elements\actions;
@@ -15,60 +15,59 @@ use craft\app\helpers\JsonHelper;
  * NewChild represents a New Child element action.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since  3.0
  */
 class NewChild extends ElementAction
 {
-	// Properties
-	// =========================================================================
+    // Properties
+    // =========================================================================
 
-	/**
-	 * @var string The trigger label
-	 */
-	public $label;
+    /**
+     * @var string The trigger label
+     */
+    public $label;
 
-	/**
-	 * @var integer The maximum number of levels that the structure is allowed to have
-	 */
-	public $maxLevels;
+    /**
+     * @var integer The maximum number of levels that the structure is allowed to have
+     */
+    public $maxLevels;
 
-	/**
-	 * @var string The URL that the user should be taken to after clicking on this element action
-	 */
-	public $newChildUrl;
+    /**
+     * @var string The URL that the user should be taken to after clicking on this element action
+     */
+    public $newChildUrl;
 
-	// Public Methods
-	// =========================================================================
+    // Public Methods
+    // =========================================================================
 
-	/**
-	 * @inheritdoc
-	 */
-	public function init()
-	{
-		if ($this->label === null)
-		{
-			$this->label = Craft::t('app', 'New Child');
-		}
-	}
+    /**
+     * @inheritdoc
+     */
+    public function init()
+    {
+        if ($this->label === null) {
+            $this->label = Craft::t('app', 'New Child');
+        }
+    }
 
-	/**
-	 * @inheritdoc
-	 */
-	public function getTriggerLabel()
-	{
-		return $this->label;
-	}
+    /**
+     * @inheritdoc
+     */
+    public function getTriggerLabel()
+    {
+        return $this->label;
+    }
 
-	/**
-	 * @inheritdoc
-	 */
-	public function getTriggerHtml()
-	{
-		$type = JsonHelper::encode(static::className());
-		$maxLevels = JsonHelper::encode($this->maxLevels);
-		$newChildUrl = JsonHelper::encode($this->newChildUrl);
+    /**
+     * @inheritdoc
+     */
+    public function getTriggerHtml()
+    {
+        $type = JsonHelper::encode(static::className());
+        $maxLevels = JsonHelper::encode($this->maxLevels);
+        $newChildUrl = JsonHelper::encode($this->newChildUrl);
 
-		$js = <<<EOT
+        $js = <<<EOT
 (function()
 {
 	var trigger = new Craft.ElementActionTrigger({
@@ -91,6 +90,6 @@ class NewChild extends ElementAction
 })();
 EOT;
 
-		Craft::$app->getView()->registerJs($js);
-	}
+        Craft::$app->getView()->registerJs($js);
+    }
 }

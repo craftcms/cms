@@ -1,8 +1,8 @@
 <?php
 /**
- * @link http://buildwithcraft.com/
+ * @link      http://buildwithcraft.com/
  * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
- * @license http://buildwithcraft.com/license
+ * @license   http://buildwithcraft.com/license
  */
 
 namespace craft\app\base;
@@ -15,42 +15,45 @@ use yii\base\Arrayable;
  * @property string $type The class name that should be used to represent the field
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since  3.0
  */
 abstract class Component extends Model implements ComponentInterface, Arrayable
 {
-	// Static
-	// =========================================================================
+    // Static
+    // =========================================================================
 
-	/**
-	 * Returns the display name of this class.
-	 * @return string The display name of this class.
-	 */
-	public static function displayName()
-	{
-		$classNameParts = explode('\\', static::className());
-		$displayName = array_pop($classNameParts);
-		return $displayName;
-	}
+    /**
+     * Returns the display name of this class.
+     *
+     * @return string The display name of this class.
+     */
+    public static function displayName()
+    {
+        $classNameParts = explode('\\', static::className());
+        $displayName = array_pop($classNameParts);
 
-	/**
-	 * @inheritdoc
-	 */
-	public static function classHandle()
-	{
-		$classNameParts = explode('\\', static::className());
-		$handle = array_pop($classNameParts);
-		return strtolower($handle);
-	}
+        return $displayName;
+    }
 
-	// Public Methods
-	// =========================================================================
+    /**
+     * @inheritdoc
+     */
+    public static function classHandle()
+    {
+        $classNameParts = explode('\\', static::className());
+        $handle = array_pop($classNameParts);
 
-	/**
-	 * @inheritdoc
-	 */
-	public function getType()
-	{
-		return static::className();
-	}
+        return strtolower($handle);
+    }
+
+    // Public Methods
+    // =========================================================================
+
+    /**
+     * @inheritdoc
+     */
+    public function getType()
+    {
+        return static::className();
+    }
 }

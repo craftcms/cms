@@ -22,195 +22,198 @@ use \OpenCloud\Rackspace as RackspaceClient;
 class Rackspace extends Volume
 {
 
-	/**
-	 * Cache key to use for caching purposes
-	 */
-	const CACHE_KEY_PREFIX = 'rackspace.';
+    /**
+     * Cache key to use for caching purposes
+     */
+    const CACHE_KEY_PREFIX = 'rackspace.';
 
-	// Static
-	// =========================================================================
+    // Static
+    // =========================================================================
 
-	/**
-	 * @inheritdoc
-	 */
-	public static function displayName()
-	{
-		return Craft::t('app', 'Rackspace Cloud Files');
-	}
+    /**
+     * @inheritdoc
+     */
+    public static function displayName()
+    {
+        return Craft::t('app', 'Rackspace Cloud Files');
+    }
 
-	// Properties
-	// =========================================================================
+    // Properties
+    // =========================================================================
 
-	/**
-	 * Whether this is a local source or not. Defaults to false.
-	 *
-	 * @var bool
-	 */
-	protected $isSourceLocal = false;
+    /**
+     * Whether this is a local source or not. Defaults to false.
+     *
+     * @var bool
+     */
+    protected $isSourceLocal = false;
 
-	/**
-	 * Set to true if the Adapter expects folder names to have trailing slashes
-	 *
-	 * @var bool
-	 */
-	protected $foldersHaveTrailingSlashes = false;
+    /**
+     * Set to true if the Adapter expects folder names to have trailing slashes
+     *
+     * @var bool
+     */
+    protected $foldersHaveTrailingSlashes = false;
 
-	/**
-	 * Path to the root of this sources local folder.
-	 *
-	 * @var string
-	 */
-	public $subfolder = "";
-	/**
-	 * Rackspace username
-	 *
-	 * @var string
-	 */
-	public $username = "";
+    /**
+     * Path to the root of this sources local folder.
+     *
+     * @var string
+     */
+    public $subfolder = "";
+    /**
+     * Rackspace username
+     *
+     * @var string
+     */
+    public $username = "";
 
-	/**
-	 * Rackspace API key
-	 *
-	 * @var string
-	 */
-	public $apiKey = "";
+    /**
+     * Rackspace API key
+     *
+     * @var string
+     */
+    public $apiKey = "";
 
-	/**
-	 * Container to use
-	 *
-	 * @var string
-	 */
-	public $container = "";
+    /**
+     * Container to use
+     *
+     * @var string
+     */
+    public $container = "";
 
-	/**
-	 * Region to use
-	 *
-	 * @var string
-	 */
-	public $region = "";
+    /**
+     * Region to use
+     *
+     * @var string
+     */
+    public $region = "";
 
-	// Public Methods
-	// =========================================================================
+    // Public Methods
+    // =========================================================================
 
-	/**
-	 * @inheritdoc
-	 */
-	public function rules()
-	{
-		$rules = parent::rules();
-		$rules[] = [['username', 'apiKey', 'region', 'container'], 'required'];
-		return $rules;
-	}
+    /**
+     * @inheritdoc
+     */
+    public function rules()
+    {
+        $rules = parent::rules();
+        $rules[] = [['username', 'apiKey', 'region', 'container'], 'required'];
 
-	/**
-	 * @inheritdoc
-	 *
-	 * @return string|null
-	 */
-	public function getSettingsHtml()
-	{
-		return Craft::$app->getView()->renderTemplate('_components/volumes/Rackspace/settings', array(
-			'volume' => $this
-		));
-	}
+        return $rules;
+    }
 
-	/**
-	 * Get the container list list using the specified credentials for the region.
-	 *
-	 * @param $username
-	 * @param $apiKey
-	 * @param $region
-	 *
-	 * @throws \InvalidArgumentException
-	 * @return array
-	 */
-	public static function loadContainerList($username, $apiKey, $region)
-	{
-		if (empty($username) || empty($apiKey) || empty($region))
-		{
-			throw new \InvalidArgumentException(Craft::t('app', 'You must specify a username, the API key and a region to get the container list.'));
-		}
+    /**
+     * @inheritdoc
+     *
+     * @return string|null
+     */
+    public function getSettingsHtml()
+    {
+        return Craft::$app->getView()->renderTemplate('_components/volumes/Rackspace/settings',
+            array(
+                'volume' => $this
+            ));
+    }
 
-		$client = static::getClient($username, $apiKey);
+    /**
+     * Get the container list list using the specified credentials for the region.
+     *
+     * @param $username
+     * @param $apiKey
+     * @param $region
+     *
+     * @throws \InvalidArgumentException
+     * @return array
+     */
+    public static function loadContainerList($username, $apiKey, $region)
+    {
+        if (empty($username) || empty($apiKey) || empty($region)) {
+            throw new \InvalidArgumentException(Craft::t('app',
+                'You must specify a username, the API key and a region to get the container list.'));
+        }
 
-		$service = $client->objectStoreService('cloudFiles', $region);
+        $client = static::getClient($username, $apiKey);
 
-		$containerList = $service->getCdnService()->listContainers();
+        $service = $client->objectStoreService('cloudFiles', $region);
 
-		$returnData = array();
+        $containerList = $service->getCdnService()->listContainers();
 
-		while ($container = $containerList->next())
-		{
-			$returnData[] = (object) array('container' => $container->name, 'urlPrefix' => rtrim($container->getCdnUri(), '/').'/');
-		}
+        $returnData = array();
 
-		return $returnData;
-	}
+        while ($container = $containerList->next()) {
+            $returnData[] = (object)array(
+                'container' => $container->name,
+                'urlPrefix' => rtrim($container->getCdnUri(), '/').'/'
+            );
+        }
 
-	/**
-	 * @inheritdoc
-	 */
-	public function getRootPath()
-	{
-		return null;
-	}
+        return $returnData;
+    }
 
-	/**
-	 * @inheritdoc
-	 */
-	public function getRootUrl()
-	{
-		return rtrim(rtrim($this->url, '/').'/'.$this->subfolder, '/').'/';
-	}
+    /**
+     * @inheritdoc
+     */
+    public function getRootPath()
+    {
+        return null;
+    }
 
-	// Protected Methods
-	// =========================================================================
+    /**
+     * @inheritdoc
+     */
+    public function getRootUrl()
+    {
+        return rtrim(rtrim($this->url, '/').'/'.$this->subfolder, '/').'/';
+    }
 
-	/**
-	 * @inheritdoc
-	 * @return RackspaceAdapter
-	 */
-	protected function createAdapter()
-	{
-		$client = static::getClient($this->username, $this->apiKey);
+    // Protected Methods
+    // =========================================================================
 
-		$store = $client->objectStoreService('cloudFiles', $this->region);
-		$container = $store->getContainer($this->container);
+    /**
+     * @inheritdoc
+     * @return RackspaceAdapter
+     */
+    protected function createAdapter()
+    {
+        $client = static::getClient($this->username, $this->apiKey);
 
-		return new RackspaceAdapter($container);
-	}
+        $store = $client->objectStoreService('cloudFiles', $this->region);
+        $container = $store->getContainer($this->container);
 
-	/**
-	 * Get the AWS S3 client.
-	 *
-	 * @param $username
-	 * @param $apiKey
-	 *
-	 * @return OpenStack
-	 */
-	protected static function getClient($username, $apiKey)
-	{
-		$config = array('username' => $username, 'apiKey' => $apiKey);
+        return new RackspaceAdapter($container);
+    }
 
-		$client = new RackspaceClient(RackspaceClient::US_IDENTITY_ENDPOINT, $config);
+    /**
+     * Get the AWS S3 client.
+     *
+     * @param $username
+     * @param $apiKey
+     *
+     * @return OpenStack
+     */
+    protected static function getClient($username, $apiKey)
+    {
+        $config = array('username' => $username, 'apiKey' => $apiKey);
 
-		// Check if we have a cached token
-		$tokenKey = static::CACHE_KEY_PREFIX.md5($username.$apiKey);
-		if (Craft::$app->cache->exists($tokenKey))
-		{
-			$client->importCredentials(unserialize(Craft::$app->cache->get($tokenKey)));
-		}
+        $client = new RackspaceClient(RackspaceClient::US_IDENTITY_ENDPOINT,
+            $config);
 
-		$token = $client->getTokenObject();
+        // Check if we have a cached token
+        $tokenKey = static::CACHE_KEY_PREFIX.md5($username.$apiKey);
+        if (Craft::$app->cache->exists($tokenKey)) {
+            $client->importCredentials(unserialize(Craft::$app->cache->get($tokenKey)));
+        }
 
-		// If it's not a valid token, re-authenticate and store the token
-		if (!$token || ($token && $token->hasExpired()))
-		{
-			$client->authenticate();
-			$tokenData = $client->exportCredentials();
-			Craft::$app->cache->set($tokenKey, serialize($tokenData));
-		}
+        $token = $client->getTokenObject();
 
-		return $client;
-	}
+        // If it's not a valid token, re-authenticate and store the token
+        if (!$token || ($token && $token->hasExpired())) {
+            $client->authenticate();
+            $tokenData = $client->exportCredentials();
+            Craft::$app->cache->set($tokenKey, serialize($tokenData));
+        }
+
+        return $client;
+    }
 }

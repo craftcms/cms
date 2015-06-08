@@ -1,8 +1,8 @@
 <?php
 /**
- * @link http://buildwithcraft.com/
+ * @link      http://buildwithcraft.com/
  * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
- * @license http://buildwithcraft.com/license
+ * @license   http://buildwithcraft.com/license
  */
 
 namespace craft\app\fields;
@@ -18,242 +18,246 @@ use yii\db\Schema;
  * Table represents a Table field.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since  3.0
  */
 class Table extends Field
 {
-	// Static
-	// =========================================================================
+    // Static
+    // =========================================================================
 
-	/**
-	 * @inheritdoc
-	 */
-	public static function displayName()
-	{
-		return Craft::t('app', 'Table');
-	}
+    /**
+     * @inheritdoc
+     */
+    public static function displayName()
+    {
+        return Craft::t('app', 'Table');
+    }
 
-	// Properties
-	// =========================================================================
+    // Properties
+    // =========================================================================
 
-	/**
-	 * @var array The columns that should be shown in the table
-	 */
-	public $columns;
+    /**
+     * @var array The columns that should be shown in the table
+     */
+    public $columns;
 
-	/**
-	 * @var array The default row values that new elements should have
-	 */
-	public $defaults = [];
+    /**
+     * @var array The default row values that new elements should have
+     */
+    public $defaults = [];
 
-	// Public Methods
-	// =========================================================================
+    // Public Methods
+    // =========================================================================
 
-	/**
-	 * @inheritdoc
-	 */
-	public function getContentColumnType()
-	{
-		return Schema::TYPE_TEXT;
-	}
+    /**
+     * @inheritdoc
+     */
+    public function getContentColumnType()
+    {
+        return Schema::TYPE_TEXT;
+    }
 
-	/**
-	 * @inheritdoc
-	 */
-	public function getSettingsHtml()
-	{
-		$columns = $this->columns;
-		$defaults = $this->defaults;
+    /**
+     * @inheritdoc
+     */
+    public function getSettingsHtml()
+    {
+        $columns = $this->columns;
+        $defaults = $this->defaults;
 
-		if (!$columns)
-		{
-			$columns = ['col1' => ['heading' => '', 'handle' => '', 'type' => 'singleline']];
+        if (!$columns) {
+            $columns = [
+                'col1' => [
+                    'heading' => '',
+                    'handle' => '',
+                    'type' => 'singleline'
+                ]
+            ];
 
-			// Update the actual settings model for getInputHtml()
-			$this->columns = $columns;
-		}
+            // Update the actual settings model for getInputHtml()
+            $this->columns = $columns;
+        }
 
-		if ($defaults === null)
-		{
-			$defaults = ['row1' => []];
-		}
+        if ($defaults === null) {
+            $defaults = ['row1' => []];
+        }
 
-		$columnSettings = [
-			'heading' => [
-				'heading' => Craft::t('app', 'Column Heading'),
-				'type' => 'singleline',
-				'autopopulate' => 'handle'
-			],
-			'handle' => [
-				'heading' => Craft::t('app', 'Handle'),
-				'class' => 'code',
-				'type' => 'singleline'
-			],
-			'width' => [
-				'heading' => Craft::t('app', 'Width'),
-				'class' => 'code',
-				'type' => 'singleline',
-				'width' => 50
-			],
-			'type' => [
-				'heading' => Craft::t('app', 'Type'),
-				'class' => 'thin',
-				'type' => 'select',
-				'options' => [
-					'singleline' => Craft::t('app', 'Single-line Text'),
-					'multiline' => Craft::t('app', 'Multi-line text'),
-					'number' => Craft::t('app', 'Number'),
-					'checkbox' => Craft::t('app', 'Checkbox'),
-				]
-			],
-		];
+        $columnSettings = [
+            'heading' => [
+                'heading' => Craft::t('app', 'Column Heading'),
+                'type' => 'singleline',
+                'autopopulate' => 'handle'
+            ],
+            'handle' => [
+                'heading' => Craft::t('app', 'Handle'),
+                'class' => 'code',
+                'type' => 'singleline'
+            ],
+            'width' => [
+                'heading' => Craft::t('app', 'Width'),
+                'class' => 'code',
+                'type' => 'singleline',
+                'width' => 50
+            ],
+            'type' => [
+                'heading' => Craft::t('app', 'Type'),
+                'class' => 'thin',
+                'type' => 'select',
+                'options' => [
+                    'singleline' => Craft::t('app', 'Single-line Text'),
+                    'multiline' => Craft::t('app', 'Multi-line text'),
+                    'number' => Craft::t('app', 'Number'),
+                    'checkbox' => Craft::t('app', 'Checkbox'),
+                ]
+            ],
+        ];
 
-		Craft::$app->getView()->registerJsResource('js/TableFieldSettings.js');
-		Craft::$app->getView()->registerJs('new Craft.TableFieldSettings(' .
-			'"'.Craft::$app->getView()->namespaceInputName('columns').'", ' .
-			'"'.Craft::$app->getView()->namespaceInputName('defaults').'", ' .
-			JsonHelper::encode($columns).', ' .
-			JsonHelper::encode($defaults).', ' .
-			JsonHelper::encode($columnSettings) .
-		');');
+        Craft::$app->getView()->registerJsResource('js/TableFieldSettings.js');
+        Craft::$app->getView()->registerJs('new Craft.TableFieldSettings('.
+            JsonHelper::encode(Craft::$app->getView()->namespaceInputName('columns'),
+                JSON_UNESCAPED_UNICODE).', '.
+            JsonHelper::encode(Craft::$app->getView()->namespaceInputName('defaults'),
+                JSON_UNESCAPED_UNICODE).', '.
+            JsonHelper::encode($columns, JSON_UNESCAPED_UNICODE).', '.
+            JsonHelper::encode($defaults, JSON_UNESCAPED_UNICODE).', '.
+            JsonHelper::encode($columnSettings, JSON_UNESCAPED_UNICODE).
+            ');');
 
-		$columnsField = Craft::$app->getView()->renderTemplateMacro('_includes/forms', 'editableTableField', [
-			[
-				'label'        => Craft::t('app', 'Table Columns'),
-				'instructions' => Craft::t('app', 'Define the columns your table should have.'),
-				'id'           => 'columns',
-				'name'         => 'columns',
-				'cols'         => $columnSettings,
-				'rows'         => $columns,
-				'addRowLabel'  => Craft::t('app', 'Add a column'),
-				'initJs'       => false
-			]
-		]);
+        $columnsField = Craft::$app->getView()->renderTemplateMacro('_includes/forms',
+            'editableTableField', [
+                [
+                    'label' => Craft::t('app', 'Table Columns'),
+                    'instructions' => Craft::t('app',
+                        'Define the columns your table should have.'),
+                    'id' => 'columns',
+                    'name' => 'columns',
+                    'cols' => $columnSettings,
+                    'rows' => $columns,
+                    'addRowLabel' => Craft::t('app', 'Add a column'),
+                    'initJs' => false
+                ]
+            ]);
 
-		$defaultsField = Craft::$app->getView()->renderTemplateMacro('_includes/forms', 'editableTableField', [
-			[
-				'label'        => Craft::t('app', 'Default Values'),
-				'instructions' => Craft::t('app', 'Define the default values for the field.'),
-				'id'           => 'defaults',
-				'name'         => 'defaults',
-				'cols'         => $columns,
-				'rows'         => $defaults,
-				'initJs'       => false
-			]
-		]);
+        $defaultsField = Craft::$app->getView()->renderTemplateMacro('_includes/forms',
+            'editableTableField', [
+                [
+                    'label' => Craft::t('app', 'Default Values'),
+                    'instructions' => Craft::t('app',
+                        'Define the default values for the field.'),
+                    'id' => 'defaults',
+                    'name' => 'defaults',
+                    'cols' => $columns,
+                    'rows' => $defaults,
+                    'initJs' => false
+                ]
+            ]);
 
-		return $columnsField.$defaultsField;
-	}
+        return $columnsField.$defaultsField;
+    }
 
-	/**
-	 * @inheritdoc
-	 */
-	public function getInputHtml($value, $element)
-	{
-		$input = '<input type="hidden" name="'.$this->handle.'" value="">';
+    /**
+     * @inheritdoc
+     */
+    public function getInputHtml($value, $element)
+    {
+        $input = '<input type="hidden" name="'.$this->handle.'" value="">';
 
-		$tableHtml = $this->_getInputHtml($value, $element, false);
+        $tableHtml = $this->_getInputHtml($value, $element, false);
 
-		if ($tableHtml)
-		{
-			$input .= $tableHtml;
-		}
+        if ($tableHtml) {
+            $input .= $tableHtml;
+        }
 
-		return $input;
-	}
+        return $input;
+    }
 
-	/**
-	 * @inheritdoc
-	 */
-	public function prepareValue($value, $element)
-	{
-		if (is_array($value) && ($columns = $this->columns))
-		{
-			// Make the values accessible from both the col IDs and the handles
-			foreach ($value as &$row)
-			{
-				foreach ($columns as $colId => $col)
-				{
-					if ($col['handle'])
-					{
-						$row[$col['handle']] = (isset($row[$colId]) ? $row[$colId] : null);
-					}
-				}
-			}
+    /**
+     * @inheritdoc
+     */
+    public function prepareValue($value, $element)
+    {
+        if (is_string($value) && !empty($value)) {
+            $value = JsonHelper::decode($value);
+        }
 
-			return $value;
-		}
-	}
+        if (is_array($value) && ($columns = $this->columns)) {
+            // Make the values accessible from both the col IDs and the handles
+            foreach ($value as &$row) {
+                foreach ($columns as $colId => $col) {
+                    if ($col['handle']) {
+                        $row[$col['handle']] = (isset($row[$colId]) ? $row[$colId] : null);
+                    }
+                }
+            }
 
-	/**
-	 * @inheritdoc
-	 */
-	public function getStaticHtml($value, $element)
-	{
-		return $this->_getInputHtml($value, $element, true);
-	}
+            return $value;
+        }
+    }
 
-	// Protected Methods
-	// =========================================================================
+    /**
+     * @inheritdoc
+     */
+    public function getStaticHtml($value, $element)
+    {
+        return $this->_getInputHtml($value, $element, true);
+    }
 
-	/**
-	 * @inheritdoc
-	 */
-	protected function prepareValueBeforeSave($value, $element)
-	{
-		if (is_array($value))
-		{
-			// Drop the string row keys
-			return array_values($value);
-		}
-	}
+    // Protected Methods
+    // =========================================================================
 
-	// Private Methods
-	// =========================================================================
+    /**
+     * @inheritdoc
+     */
+    protected function prepareValueBeforeSave($value, $element)
+    {
+        if (is_array($value)) {
+            // Drop the string row keys
+            return array_values($value);
+        }
+    }
 
-	/**
-	 * Returns the field's input HTML.
-	 *
-	 * @param mixed  $value
-	 * @param ElementInterface|Element|null $element
-	 * @param bool  $static
-	 *
-	 * @return string
-	 */
-	private function _getInputHtml($value, $element, $static)
-	{
-		$columns = $this->columns;
+    // Private Methods
+    // =========================================================================
 
-		if ($columns)
-		{
-			// Translate the column headings
-			foreach ($columns as &$column)
-			{
-				if (!empty($column['heading']))
-				{
-					$column['heading'] = Craft::t('app', $column['heading']);
-				}
-			}
+    /**
+     * Returns the field's input HTML.
+     *
+     * @param mixed                         $value
+     * @param ElementInterface|Element|null $element
+     * @param boolean                       $static
+     *
+     * @return string
+     */
+    private function _getInputHtml($value, $element, $static)
+    {
+        $columns = $this->columns;
 
-			if ($this->isFresh($element))
-			{
-				$defaults = $this->defaults;
+        if ($columns) {
+            // Translate the column headings
+            foreach ($columns as &$column) {
+                if (!empty($column['heading'])) {
+                    $column['heading'] = Craft::t('app', $column['heading']);
+                }
+            }
 
-				if (is_array($defaults))
-				{
-					$value = array_values($defaults);
-				}
-			}
+            if ($this->isFresh($element)) {
+                $defaults = $this->defaults;
 
-			$id = Craft::$app->getView()->formatInputId($this->handle);
+                if (is_array($defaults)) {
+                    $value = array_values($defaults);
+                }
+            }
 
-			return Craft::$app->getView()->renderTemplate('_includes/forms/editableTable', [
-				'id'     => $id,
-				'name'   => $this->handle,
-				'cols'   => $columns,
-				'rows'   => $value,
-				'static' => $static
-			]);
-		}
-	}
+            $id = Craft::$app->getView()->formatInputId($this->handle);
+
+            return Craft::$app->getView()->renderTemplate('_includes/forms/editableTable',
+                [
+                    'id' => $id,
+                    'name' => $this->handle,
+                    'cols' => $columns,
+                    'rows' => $value,
+                    'static' => $static
+                ]);
+        }
+    }
 }

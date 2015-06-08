@@ -1,8 +1,8 @@
 <?php
 /**
- * @link http://buildwithcraft.com/
+ * @link      http://buildwithcraft.com/
  * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
- * @license http://buildwithcraft.com/license
+ * @license   http://buildwithcraft.com/license
  */
 
 namespace craft\app\io;
@@ -14,175 +14,164 @@ use craft\app\helpers\IOHelper;
  * Class PclZip
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since  3.0
  */
 class PclZip implements ZipInterface
 {
-	// Public Methods
-	// =========================================================================
+    // Public Methods
+    // =========================================================================
 
-	/**
-	 * @inheritdoc
-	 */
-	public function zip($sourceFolder, $destZip)
-	{
-		$zip = new \PclZip($destZip);
-		$result = $zip->create($sourceFolder, PCLZIP_OPT_REMOVE_PATH, $sourceFolder);
+    /**
+     * @inheritdoc
+     */
+    public function zip($sourceFolder, $destZip)
+    {
+        $zip = new \PclZip($destZip);
+        $result = $zip->create($sourceFolder, PCLZIP_OPT_REMOVE_PATH,
+            $sourceFolder);
 
-		if ($result == 0)
-		{
-			Craft::error('Unable to create zip file: '.$destZip, __METHOD__);
-			return false;
-		}
+        if ($result == 0) {
+            Craft::error('Unable to create zip file: '.$destZip, __METHOD__);
 
-		return true;
-	}
+            return false;
+        }
 
-	/**
-	 * @inheritdoc
-	 */
-	public function unzip($srcZip, $destFolder)
-	{
-		$zip = new \PclZip($srcZip);
-		$tempDestFolders = null;
+        return true;
+    }
 
-		// check to see if it's a valid archive.
-		if (($zipFiles = $zip->extract(PCLZIP_OPT_EXTRACT_AS_STRING)) == false)
-		{
-			Craft::error('Tried to unzip '.$srcZip.', but PclZip thinks it is not a valid zip archive.', __METHOD__);
-			return false;
-		}
+    /**
+     * @inheritdoc
+     */
+    public function unzip($srcZip, $destFolder)
+    {
+        $zip = new \PclZip($srcZip);
+        $tempDestFolders = null;
 
-		if (count($zipFiles) == 0)
-		{
-			Craft::error($srcZip.' appears to be an empty zip archive.', __METHOD__);
-			return false;
-		}
+        // check to see if it's a valid archive.
+        if (($zipFiles = $zip->extract(PCLZIP_OPT_EXTRACT_AS_STRING)) == false) {
+            Craft::error('Tried to unzip '.$srcZip.', but PclZip thinks it is not a valid zip archive.',
+                __METHOD__);
 
-		// find out which directories we need to create in the destination.
-		foreach ($zipFiles as $zipFile)
-		{
-			if (substr($zipFile['filename'], 0, 9) === '__MACOSX/')
-			{
-				continue;
-			}
+            return false;
+        }
 
-			$folderName = IOHelper::getFolderName($zipFile['filename']);
-			if ($folderName == './')
-			{
-				$tempDestFolders[] = $destFolder.'/';
-			}
-			else
-			{
-				$tempDestFolders[] = $destFolder.'/'.rtrim(IOHelper::getFolderName($zipFile['filename']), '/');
-			}
-		}
+        if (count($zipFiles) == 0) {
+            Craft::error($srcZip.' appears to be an empty zip archive.',
+                __METHOD__);
 
-		$tempDestFolders = array_unique($tempDestFolders);
-		$finalDestFolders = [];
+            return false;
+        }
 
-		foreach ($tempDestFolders as $tempDestFolder)
-		{
-			// Skip over the working directory
-			if (rtrim($destFolder, '/') == rtrim($tempDestFolder, '/'))
-			{
-				continue;
-			}
+        // find out which directories we need to create in the destination.
+        foreach ($zipFiles as $zipFile) {
+            if (substr($zipFile['filename'], 0, 9) === '__MACOSX/') {
+                continue;
+            }
 
-			// Make sure the current directory is within the working directory
-			if (strpos($tempDestFolder, $destFolder) === false)
-			{
-				continue;
-			}
+            $folderName = IOHelper::getFolderName($zipFile['filename']);
+            if ($folderName == './') {
+                $tempDestFolders[] = $destFolder.'/';
+            } else {
+                $tempDestFolders[] = $destFolder.'/'.rtrim(IOHelper::getFolderName($zipFile['filename']),
+                        '/');
+            }
+        }
 
-			$finalDestFolders[] = $tempDestFolder;
-		}
+        $tempDestFolders = array_unique($tempDestFolders);
+        $finalDestFolders = [];
 
-		asort($finalDestFolders);
+        foreach ($tempDestFolders as $tempDestFolder) {
+            // Skip over the working directory
+            if (rtrim($destFolder, '/') == rtrim($tempDestFolder, '/')) {
+                continue;
+            }
 
-		// Create the destination directories.
-		foreach ($finalDestFolders as $finalDestFolder)
-		{
-			if (!IOHelper::folderExists($finalDestFolder))
-			{
-				if (!IOHelper::createFolder($finalDestFolder))
-				{
-					Craft::error('Could not create folder '.$finalDestFolder.' while unzipping: '.$srcZip, __METHOD__);
-					return false;
-				}
-			}
-		}
+            // Make sure the current directory is within the working directory
+            if (strpos($tempDestFolder, $destFolder) === false) {
+                continue;
+            }
 
-		unset($finalDestFolders);
+            $finalDestFolders[] = $tempDestFolder;
+        }
 
-		// Extract the files from the zip
-		foreach ($zipFiles as $zipFile)
-		{
-			// folders have already been created.
-			if ($zipFile['folder'])
-			{
-				continue;
-			}
+        asort($finalDestFolders);
 
-			if (substr($zipFile['filename'], 0, 9) === '__MACOSX/')
-			{
-				continue;
-			}
+        // Create the destination directories.
+        foreach ($finalDestFolders as $finalDestFolder) {
+            if (!IOHelper::folderExists($finalDestFolder)) {
+                if (!IOHelper::createFolder($finalDestFolder)) {
+                    Craft::error('Could not create folder '.$finalDestFolder.' while unzipping: '.$srcZip,
+                        __METHOD__);
 
-			$destFile = $destFolder.'/'.$zipFile['filename'];
+                    return false;
+                }
+            }
+        }
 
-			if (!IOHelper::writeToFile($destFile, $zipFile['content'], true, true))
-			{
-				Craft::error('Could not copy the file '.$destFile.' while unziping: '.$srcZip, __METHOD__);
-				return false;
-			}
-		}
+        unset($finalDestFolders);
 
-		return true;
-	}
+        // Extract the files from the zip
+        foreach ($zipFiles as $zipFile) {
+            // folders have already been created.
+            if ($zipFile['folder']) {
+                continue;
+            }
 
-	/**
-	 * @inheritdoc
-	 */
-	public function add($sourceZip, $pathToAdd, $basePath, $pathPrefix = null)
-	{
-		$zip = new \PclZip($sourceZip);
+            if (substr($zipFile['filename'], 0, 9) === '__MACOSX/') {
+                continue;
+            }
 
-		if (IOHelper::fileExists($pathToAdd))
-		{
-			$folderContents = [$pathToAdd];
-		}
-		else
-		{
-			$folderContents = IOHelper::getFolderContents($pathToAdd, true);
-		}
+            $destFile = $destFolder.'/'.$zipFile['filename'];
 
-		$filesToAdd = [];
+            if (!IOHelper::writeToFile($destFile, $zipFile['content'], true,
+                true)
+            ) {
+                Craft::error('Could not copy the file '.$destFile.' while unziping: '.$srcZip,
+                    __METHOD__);
 
-		foreach ($folderContents as $itemToZip)
-		{
-			if (IOHelper::isReadable($itemToZip))
-			{
-				if ((IOHelper::folderExists($itemToZip) && IOHelper::isFolderEmpty($itemToZip)) || IOHelper::fileExists($itemToZip))
-				{
-					$filesToAdd[] = $itemToZip;
-				}
-			}
-		}
+                return false;
+            }
+        }
 
-		if (!$pathPrefix)
-		{
-			$pathPrefix = '';
-		}
+        return true;
+    }
 
-		$result = $zip->add($filesToAdd, PCLZIP_OPT_ADD_PATH, $pathPrefix, PCLZIP_OPT_REMOVE_PATH, $basePath);
+    /**
+     * @inheritdoc
+     */
+    public function add($sourceZip, $pathToAdd, $basePath, $pathPrefix = null)
+    {
+        $zip = new \PclZip($sourceZip);
 
-		if ($result == 0)
-		{
-			Craft::error('Unable to add to zip file: '.$sourceZip, __METHOD__);
-			return false;
-		}
+        if (IOHelper::fileExists($pathToAdd)) {
+            $folderContents = [$pathToAdd];
+        } else {
+            $folderContents = IOHelper::getFolderContents($pathToAdd, true);
+        }
 
-		return true;
-	}
+        $filesToAdd = [];
+
+        foreach ($folderContents as $itemToZip) {
+            if (IOHelper::isReadable($itemToZip)) {
+                if ((IOHelper::folderExists($itemToZip) && IOHelper::isFolderEmpty($itemToZip)) || IOHelper::fileExists($itemToZip)) {
+                    $filesToAdd[] = $itemToZip;
+                }
+            }
+        }
+
+        if (!$pathPrefix) {
+            $pathPrefix = '';
+        }
+
+        $result = $zip->add($filesToAdd, PCLZIP_OPT_ADD_PATH, $pathPrefix,
+            PCLZIP_OPT_REMOVE_PATH, $basePath);
+
+        if ($result == 0) {
+            Craft::error('Unable to add to zip file: '.$sourceZip, __METHOD__);
+
+            return false;
+        }
+
+        return true;
+    }
 }

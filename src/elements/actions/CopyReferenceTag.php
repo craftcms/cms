@@ -1,8 +1,8 @@
 <?php
 /**
- * @link http://buildwithcraft.com/
+ * @link      http://buildwithcraft.com/
  * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
- * @license http://buildwithcraft.com/license
+ * @license   http://buildwithcraft.com/license
  */
 
 namespace craft\app\elements\actions;
@@ -16,40 +16,40 @@ use craft\app\helpers\JsonHelper;
  * CopyReferenceTag represents a Copy Reference Tag element action.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since  3.0
  */
 class CopyReferenceTag extends ElementAction
 {
-	// Properties
-	// =========================================================================
+    // Properties
+    // =========================================================================
 
-	/**
-	 * @var ElementInterface|string The element type associated with this action
-	 */
-	public $elementType;
+    /**
+     * @var ElementInterface|string The element type associated with this action
+     */
+    public $elementType;
 
-	// Public Methods
-	// =========================================================================
+    // Public Methods
+    // =========================================================================
 
-	/**
-	 * @inheritdoc
-	 */
-	public function getTriggerLabel()
-	{
-		return Craft::t('app', 'Copy reference tag');
-	}
+    /**
+     * @inheritdoc
+     */
+    public function getTriggerLabel()
+    {
+        return Craft::t('app', 'Copy reference tag');
+    }
 
-	/**
-	 * @inheritdoc
-	 */
-	public function getTriggerHtml()
-	{
-		$type = JsonHelper::encode(static::className());
-		$prompt = JsonHelper::encode(Craft::t('app', '{ctrl}C to copy.'));
-		$elementType = $this->elementType;
-		$elementTypeHandle = JsonHelper::encode($elementType::classHandle());
+    /**
+     * @inheritdoc
+     */
+    public function getTriggerHtml()
+    {
+        $type = JsonHelper::encode(static::className());
+        $prompt = JsonHelper::encode(Craft::t('app', '{ctrl}C to copy.'));
+        $elementType = $this->elementType;
+        $elementTypeHandle = JsonHelper::encode($elementType::classHandle());
 
-		$js = <<<EOT
+        $js = <<<EOT
 (function()
 {
 	var trigger = new Craft.ElementActionTrigger({
@@ -67,6 +67,6 @@ class CopyReferenceTag extends ElementAction
 })();
 EOT;
 
-		Craft::$app->getView()->registerJs($js);
-	}
+        Craft::$app->getView()->registerJs($js);
+    }
 }

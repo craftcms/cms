@@ -1,8 +1,8 @@
 <?php
 /**
- * @link http://buildwithcraft.com/
+ * @link      http://buildwithcraft.com/
  * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
- * @license http://buildwithcraft.com/license
+ * @license   http://buildwithcraft.com/license
  */
 
 namespace craft\app\controllers;
@@ -24,244 +24,233 @@ use craft\app\web\Controller;
  * Note that all actions in the controller require an authenticated Craft session via [[Controller::allowAnonymous]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since  3.0
  */
 class AppController extends Controller
 {
-	// Public Methods
-	// =========================================================================
+    // Public Methods
+    // =========================================================================
 
-	/**
-	 * Returns update info.
-	 *
-	 * @return null
-	 */
-	public function actionCheckForUpdates()
-	{
-		$this->requirePermission('performUpdates');
+    /**
+     * Returns update info.
+     *
+     * @return void
+     */
+    public function actionCheckForUpdates()
+    {
+        $this->requirePermission('performUpdates');
 
-		$forceRefresh = (bool) Craft::$app->getRequest()->getBodyParam('forceRefresh');
-		Craft::$app->getUpdates()->getUpdates($forceRefresh);
+        $forceRefresh = (bool)Craft::$app->getRequest()->getBodyParam('forceRefresh');
+        Craft::$app->getUpdates()->getUpdates($forceRefresh);
 
-		return $this->asJson([
-			'total'    => Craft::$app->getUpdates()->getTotalAvailableUpdates(),
-			'critical' => Craft::$app->getUpdates()->isCriticalUpdateAvailable()
-		]);
-	}
+        return $this->asJson([
+            'total' => Craft::$app->getUpdates()->getTotalAvailableUpdates(),
+            'critical' => Craft::$app->getUpdates()->isCriticalUpdateAvailable()
+        ]);
+    }
 
-	/**
-	 * Loads any CP alerts.
-	 *
-	 * @return null
-	 */
-	public function actionGetCpAlerts()
-	{
-		$this->requireAjaxRequest();
-		$this->requirePermission('accessCp');
+    /**
+     * Loads any CP alerts.
+     *
+     * @return void
+     */
+    public function actionGetCpAlerts()
+    {
+        $this->requireAjaxRequest();
+        $this->requirePermission('accessCp');
 
-		$path = Craft::$app->getRequest()->getRequiredBodyParam('path');
+        $path = Craft::$app->getRequest()->getRequiredBodyParam('path');
 
-		// Fetch 'em and send 'em
-		$alerts = CpHelper::getAlerts($path, true);
-		return $this->asJson($alerts);
-	}
+        // Fetch 'em and send 'em
+        $alerts = CpHelper::getAlerts($path, true);
 
-	/**
-	 * Shuns a CP alert for 24 hours.
-	 *
-	 * @return null
-	 */
-	public function actionShunCpAlert()
-	{
-		$this->requireAjaxRequest();
-		$this->requirePermission('accessCp');
+        return $this->asJson($alerts);
+    }
 
-		$message = Craft::$app->getRequest()->getRequiredBodyParam('message');
-		$user = Craft::$app->getUser()->getIdentity();
+    /**
+     * Shuns a CP alert for 24 hours.
+     *
+     * @return void
+     */
+    public function actionShunCpAlert()
+    {
+        $this->requireAjaxRequest();
+        $this->requirePermission('accessCp');
 
-		$currentTime = DateTimeHelper::currentUTCDateTime();
-		$tomorrow = $currentTime->add(new DateInterval('P1D'));
+        $message = Craft::$app->getRequest()->getRequiredBodyParam('message');
+        $user = Craft::$app->getUser()->getIdentity();
 
-		if (Craft::$app->getUsers()->shunMessageForUser($user->id, $message, $tomorrow))
-		{
-			return $this->asJson([
-				'success' => true
-			]);
-		}
-		else
-		{
-			return $this->asErrorJson(Craft::t('app', 'An unknown error occurred.'));
-		}
-	}
+        $currentTime = DateTimeHelper::currentUTCDateTime();
+        $tomorrow = $currentTime->add(new DateInterval('P1D'));
 
-	/**
-	 * Transfers the Craft license to the current domain.
-	 *
-	 * @return null
-	 */
-	public function actionTransferLicenseToCurrentDomain()
-	{
-		$this->requireAjaxRequest();
-		$this->requirePostRequest();
-		$this->requireAdmin();
+        if (Craft::$app->getUsers()->shunMessageForUser($user->id, $message,
+            $tomorrow)
+        ) {
+            return $this->asJson([
+                'success' => true
+            ]);
+        } else {
+            return $this->asErrorJson(Craft::t('app',
+                'An unknown error occurred.'));
+        }
+    }
 
-		$response = Craft::$app->getET()->transferLicenseToCurrentDomain();
+    /**
+     * Transfers the Craft license to the current domain.
+     *
+     * @return void
+     */
+    public function actionTransferLicenseToCurrentDomain()
+    {
+        $this->requireAjaxRequest();
+        $this->requirePostRequest();
+        $this->requireAdmin();
 
-		if ($response === true)
-		{
-			return $this->asJson([
-				'success' => true
-			]);
-		}
-		else
-		{
-			return $this->asErrorJson($response);
-		}
-	}
+        $response = Craft::$app->getEt()->transferLicenseToCurrentDomain();
 
-	/**
-	 * Returns the edition upgrade modal.
-	 *
-	 * @return null
-	 */
-	public function actionGetUpgradeModal()
-	{
-		$this->requireAjaxRequest();
-		$this->requireAdmin();
+        if ($response === true) {
+            return $this->asJson([
+                'success' => true
+            ]);
+        } else {
+            return $this->asErrorJson($response);
+        }
+    }
 
-		$etResponse = Craft::$app->getET()->fetchEditionInfo();
+    /**
+     * Returns the edition upgrade modal.
+     *
+     * @return void
+     */
+    public function actionGetUpgradeModal()
+    {
+        $this->requireAjaxRequest();
+        $this->requireAdmin();
 
-		if (!$etResponse)
-		{
-			return $this->asErrorJson(Craft::t('app', 'Craft is unable to fetch edition info at this time.'));
-		}
+        $etResponse = Craft::$app->getEt()->fetchEditionInfo();
 
-		// Make sure we've got a valid license key (mismatched domain is OK for these purposes)
-		if ($etResponse->licenseKeyStatus == LicenseKeyStatus::Invalid)
-		{
-			return $this->asErrorJson(Craft::t('app', 'Your license key is invalid.'));
-		}
+        if (!$etResponse) {
+            return $this->asErrorJson(Craft::t('app',
+                'Craft is unable to fetch edition info at this time.'));
+        }
 
-		// Make sure they've got a valid licensed edition, just to be safe
-		if (!AppHelper::isValidEdition($etResponse->licensedEdition))
-		{
-			return $this->asErrorJson(Craft::t('app', 'Your license has an invalid Craft edition associated with it.'));
-		}
+        // Make sure we've got a valid license key (mismatched domain is OK for these purposes)
+        if ($etResponse->licenseKeyStatus == LicenseKeyStatus::Invalid) {
+            return $this->asErrorJson(Craft::t('app',
+                'Your license key is invalid.'));
+        }
 
-		$editions = [];
-		$formatter = Craft::$app->getFormatter();
+        // Make sure they've got a valid licensed edition, just to be safe
+        if (!AppHelper::isValidEdition($etResponse->licensedEdition)) {
+            return $this->asErrorJson(Craft::t('app',
+                'Your license has an invalid Craft edition associated with it.'));
+        }
 
-		foreach ($etResponse->data as $edition => $info)
-		{
-			$editions[$edition]['price']          = $info['price'];
-			$editions[$edition]['formattedPrice'] = $formatter->asCurrency($info['price'], 'USD', [], [], true);
+        $editions = [];
+        $formatter = Craft::$app->getFormatter();
 
-			if (isset($info['salePrice']) && $info['salePrice'] < $info['price'])
-			{
-				$editions[$edition]['salePrice']          = $info['salePrice'];
-				$editions[$edition]['formattedSalePrice'] = $formatter->asCurrency($info['salePrice'], 'USD', [], [], true);
-			}
-			else
-			{
-				$editions[$edition]['salePrice'] = null;
-			}
-		}
+        foreach ($etResponse->data as $edition => $info) {
+            $editions[$edition]['price'] = $info['price'];
+            $editions[$edition]['formattedPrice'] = $formatter->asCurrency($info['price'],
+                'USD', [], [], true);
 
-		$canTestEditions = Craft::$app->canTestEditions();
+            if (isset($info['salePrice']) && $info['salePrice'] < $info['price']) {
+                $editions[$edition]['salePrice'] = $info['salePrice'];
+                $editions[$edition]['formattedSalePrice'] = $formatter->asCurrency($info['salePrice'],
+                    'USD', [], [], true);
+            } else {
+                $editions[$edition]['salePrice'] = null;
+            }
+        }
 
-		$modalHtml = Craft::$app->getView()->renderTemplate('_upgrademodal', [
-			'editions'        => $editions,
-			'licensedEdition' => $etResponse->licensedEdition,
-			'canTestEditions' => $canTestEditions
-		]);
+        $canTestEditions = Craft::$app->canTestEditions();
 
-		return $this->asJson([
-			'success'         => true,
-			'editions'        => $editions,
-			'licensedEdition' => $etResponse->licensedEdition,
-			'canTestEditions' => $canTestEditions,
-			'modalHtml'       => $modalHtml
-		]);
-	}
+        $modalHtml = Craft::$app->getView()->renderTemplate('_upgrademodal', [
+            'editions' => $editions,
+            'licensedEdition' => $etResponse->licensedEdition,
+            'canTestEditions' => $canTestEditions
+        ]);
 
-	/**
-	 * Passes along a given CC token to Elliott to purchase a Craft edition.
-	 *
-	 * @return null
-	 */
-	public function actionPurchaseUpgrade()
-	{
-		$this->requirePostRequest();
-		$this->requireAjaxRequest();
-		$this->requireAdmin();
+        return $this->asJson([
+            'success' => true,
+            'editions' => $editions,
+            'licensedEdition' => $etResponse->licensedEdition,
+            'canTestEditions' => $canTestEditions,
+            'modalHtml' => $modalHtml
+        ]);
+    }
 
-		$model = new UpgradePurchaseModel([
-			'ccTokenId'     => Craft::$app->getRequest()->getRequiredBodyParam('ccTokenId'),
-			'edition'       => Craft::$app->getRequest()->getRequiredBodyParam('edition'),
-			'expectedPrice' => Craft::$app->getRequest()->getRequiredBodyParam('expectedPrice'),
-		]);
+    /**
+     * Passes along a given CC token to Elliott to purchase a Craft edition.
+     *
+     * @return void
+     */
+    public function actionPurchaseUpgrade()
+    {
+        $this->requirePostRequest();
+        $this->requireAjaxRequest();
+        $this->requireAdmin();
 
-		if (Craft::$app->getET()->purchaseUpgrade($model))
-		{
-			return $this->asJson([
-				'success' => true,
-				'edition' => $model->edition
-			]);
-		}
-		else
-		{
-			return $this->asJson([
-				'errors' => $model->getErrors()
-			]);
-		}
-	}
+        $model = new UpgradePurchaseModel([
+            'ccTokenId' => Craft::$app->getRequest()->getRequiredBodyParam('ccTokenId'),
+            'edition' => Craft::$app->getRequest()->getRequiredBodyParam('edition'),
+            'expectedPrice' => Craft::$app->getRequest()->getRequiredBodyParam('expectedPrice'),
+        ]);
 
-	/**
-	 * Tries a Craft edition on for size.
-	 *
-	 * @throws Exception
-	 * @return null
-	 */
-	public function actionTestUpgrade()
-	{
-		$this->requirePostRequest();
-		$this->requireAjaxRequest();
-		$this->requireAdmin();
+        if (Craft::$app->getEt()->purchaseUpgrade($model)) {
+            return $this->asJson([
+                'success' => true,
+                'edition' => $model->edition
+            ]);
+        } else {
+            return $this->asJson([
+                'errors' => $model->getErrors()
+            ]);
+        }
+    }
 
-		if (!Craft::$app->canTestEditions())
-		{
-			throw new Exception('Tried to test an edition, but Craft isn\'t allowed to do that.');
-		}
+    /**
+     * Tries a Craft edition on for size.
+     *
+     * @throws Exception
+     * @return void
+     */
+    public function actionTestUpgrade()
+    {
+        $this->requirePostRequest();
+        $this->requireAjaxRequest();
+        $this->requireAdmin();
 
-		$edition = Craft::$app->getRequest()->getRequiredBodyParam('edition');
-		Craft::$app->setEdition($edition);
+        if (!Craft::$app->canTestEditions()) {
+            throw new Exception('Tried to test an edition, but Craft isn\'t allowed to do that.');
+        }
 
-		return $this->asJson([
-			'success' => true
-		]);
-	}
+        $edition = Craft::$app->getRequest()->getRequiredBodyParam('edition');
+        Craft::$app->setEdition($edition);
 
-	/**
-	 * Switches Craft to the edition it's licensed for.
-	 *
-	 * @return null
-	 */
-	public function actionSwitchToLicensedEdition()
-	{
-		$this->requirePostRequest();
-		$this->requireAjaxRequest();
+        return $this->asJson([
+            'success' => true
+        ]);
+    }
 
-		if (Craft::$app->hasWrongEdition())
-		{
-			$licensedEdition = Craft::$app->getLicensedEdition();
-			$success = Craft::$app->setEdition($licensedEdition);
-		}
-		else
-		{
-			// Just fake it
-			$success = true;
-		}
+    /**
+     * Switches Craft to the edition it's licensed for.
+     *
+     * @return void
+     */
+    public function actionSwitchToLicensedEdition()
+    {
+        $this->requirePostRequest();
+        $this->requireAjaxRequest();
 
-		return $this->asJson(['success' => $success]);
-	}
+        if (Craft::$app->hasWrongEdition()) {
+            $licensedEdition = Craft::$app->getLicensedEdition();
+            $success = Craft::$app->setEdition($licensedEdition);
+        } else {
+            // Just fake it
+            $success = true;
+        }
+
+        return $this->asJson(['success' => $success]);
+    }
 }

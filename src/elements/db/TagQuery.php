@@ -1,8 +1,8 @@
 <?php
 /**
- * @link http://buildwithcraft.com/
+ * @link      http://buildwithcraft.com/
  * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
- * @license http://buildwithcraft.com/license
+ * @license   http://buildwithcraft.com/license
  */
 
 namespace craft\app\elements\db;
@@ -19,155 +19,148 @@ use craft\app\models\TagType;
  *
  * @property string|string[]|TagGroup $group The handle(s) of the tag group(s) that resulting tags must belong to.
  *
- * @method Tag[]|array all($db=null)
- * @method Tag|array|null one($db=null)
- * @method Tag|array|null nth($n,$db=null)
+ * @method Tag[]|array all($db = null)
+ * @method Tag|array|null one($db = null)
+ * @method Tag|array|null nth($n, $db = null)
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since  3.0
  */
 class TagQuery extends ElementQuery
 {
-	// Properties
-	// =========================================================================
+    // Properties
+    // =========================================================================
 
-	// General parameters
-	// -------------------------------------------------------------------------
+    // General parameters
+    // -------------------------------------------------------------------------
 
-	/**
-	 * @inheritdoc
-	 */
-	public $orderBy = 'content.title';
+    /**
+     * @inheritdoc
+     */
+    public $orderBy = 'content.title';
 
-	/**
-	 * @var integer|integer[] The tag group ID(s) that the resulting tags must be in.
-	 */
-	public $groupId;
+    /**
+     * @var integer|integer[] The tag group ID(s) that the resulting tags must be in.
+     */
+    public $groupId;
 
-	// Public Methods
-	// =========================================================================
+    // Public Methods
+    // =========================================================================
 
-	/**
-	 * @inheritdoc
-	 */
-	public function __set($name, $value)
-	{
-		switch ($name)
-		{
-			case 'group':
-			{
-				$this->group($value);
-				break;
-			}
-			case 'name':
-			{
-				Craft::$app->getDeprecator()->log('tag_name_param', 'Tags’ ‘name’ param has been deprecated. Use ‘title’ instead.');
-				$this->title = $value;
-				break;
-			}
-			default:
-			{
-				parent::__set($name, $value);
-			}
-		}
-	}
+    /**
+     * @inheritdoc
+     */
+    public function __set($name, $value)
+    {
+        switch ($name) {
+            case 'group': {
+                $this->group($value);
+                break;
+            }
+            case 'name': {
+                Craft::$app->getDeprecator()->log('tag_name_param',
+                    'Tags’ ‘name’ param has been deprecated. Use ‘title’ instead.');
+                $this->title = $value;
+                break;
+            }
+            default: {
+                parent::__set($name, $value);
+            }
+        }
+    }
 
-	/**
-	 * @inheritdoc
-	 */
-	public function __call($name, $params)
-	{
-		if ($name === 'name')
-		{
-			Craft::$app->getDeprecator()->log('tag_name_param', 'Tags’ ‘name’ param has been deprecated. Use ‘title’ instead.');
+    /**
+     * @inheritdoc
+     */
+    public function __call($name, $params)
+    {
+        if ($name === 'name') {
+            Craft::$app->getDeprecator()->log('tag_name_param',
+                'Tags’ ‘name’ param has been deprecated. Use ‘title’ instead.');
 
-			if (count($params) == 1)
-			{
-				$this->title = $params[0];
-			}
-			else
-			{
-				$this->title = $params;
-			}
+            if (count($params) == 1) {
+                $this->title = $params[0];
+            } else {
+                $this->title = $params;
+            }
 
-			return $this;
-		}
-		else
-		{
-			return parent::__call($name, $params);
-		}
-	}
+            return $this;
+        } else {
+            return parent::__call($name, $params);
+        }
+    }
 
-	/**
-	 * Sets the [[groupId]] property based on a given tag group(s)’s handle(s).
-	 * @param string|string[]|TagGroup $value The property value
-	 * @return static The query object itself
-	 */
-	public function group($value)
-	{
-		if ($value instanceof TagGroup)
-		{
-			$this->groupId = $value->id;
-		}
-		else
-		{
-			$query = new Query();
-			$this->groupId = $query
-				->select('id')
-				->from('{{%taggroups}}')
-				->where(DbHelper::parseParam('handle', $value, $query->params))
-				->column();
-		}
+    /**
+     * Sets the [[groupId]] property based on a given tag group(s)’s handle(s).
+     *
+     * @param string|string[]|TagGroup $value The property value
+     *
+     * @return self The query object itself
+     */
+    public function group($value)
+    {
+        if ($value instanceof TagGroup) {
+            $this->groupId = $value->id;
+        } else {
+            $query = new Query();
+            $this->groupId = $query
+                ->select('id')
+                ->from('{{%taggroups}}')
+                ->where(DbHelper::parseParam('handle', $value, $query->params))
+                ->column();
+        }
 
-		return $this;
-	}
+        return $this;
+    }
 
-	/**
-	 * Sets the [[groupId]] property.
-	 * @param integer|integer[] $value The property value
-	 * @return static The query object itself
-	 */
-	public function groupId($value)
-	{
-		$this->groupId = $value;
-		return $this;
-	}
+    /**
+     * Sets the [[groupId]] property.
+     *
+     * @param integer|integer[] $value The property value
+     *
+     * @return self The query object itself
+     */
+    public function groupId($value)
+    {
+        $this->groupId = $value;
 
-	// Protected Methods
-	// =========================================================================
+        return $this;
+    }
 
-	/**
-	 * @inheritdoc
-	 */
-	protected function beforePrepare()
-	{
-		// See if 'group' was set to an invalid handle
-		if ($this->groupId === [])
-		{
-			return false;
-		}
+    // Protected Methods
+    // =========================================================================
 
-		$this->joinElementTable('tags');
+    /**
+     * @inheritdoc
+     */
+    protected function beforePrepare()
+    {
+        // See if 'group' was set to an invalid handle
+        if ($this->groupId === []) {
+            return false;
+        }
 
-		$this->query->select([
-			'tags.groupId',
-		]);
+        $this->joinElementTable('tags');
 
-		if ($this->groupId)
-		{
-			$this->subQuery->andWhere(DbHelper::parseParam('tags.groupId', $this->groupId, $this->subQuery->params));
-		}
+        $this->query->select([
+            'tags.groupId',
+        ]);
 
-		if (is_string($this->orderBy))
-		{
-			$this->orderBy = preg_replace('/\bname\b/', 'title', $this->orderBy, -1, $count);
+        if ($this->groupId) {
+            $this->subQuery->andWhere(DbHelper::parseParam('tags.groupId',
+                $this->groupId, $this->subQuery->params));
+        }
 
-			if ($count)
-			{
-				Craft::$app->getDeprecator()->log('tag_orderby_name', 'Ordering tags by ‘name’ has been deprecated. Order by ‘title’ instead.');
-			}
-		}
+        if (is_string($this->orderBy)) {
+            $this->orderBy = preg_replace('/\bname\b/', 'title', $this->orderBy,
+                -1, $count);
 
-		return parent::beforePrepare();
-	}
+            if ($count) {
+                Craft::$app->getDeprecator()->log('tag_orderby_name',
+                    'Ordering tags by ‘name’ has been deprecated. Order by ‘title’ instead.');
+            }
+        }
+
+        return parent::beforePrepare();
+    }
 }

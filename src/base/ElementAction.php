@@ -1,8 +1,8 @@
 <?php
 /**
- * @link http://buildwithcraft.com/
+ * @link      http://buildwithcraft.com/
  * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
- * @license http://buildwithcraft.com/license
+ * @license   http://buildwithcraft.com/license
  */
 
 namespace craft\app\base;
@@ -13,86 +13,85 @@ use craft\app\elements\db\ElementQueryInterface;
  * ElementAction is the base class for classes representing element actions in terms of objects.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since  3.0
  */
 abstract class ElementAction extends SavableComponent implements ElementActionInterface
 {
-	// Static
-	// =========================================================================
+    // Static
+    // =========================================================================
 
-	/**
-	 * @inheritdoc
-	 */
-	public static function isDestructive()
-	{
-		return false;
-	}
+    /**
+     * @inheritdoc
+     */
+    public static function isDestructive()
+    {
+        return false;
+    }
 
-	// Properties
-	// =========================================================================
+    // Properties
+    // =========================================================================
 
-	/**
-	 * @var
-	 */
-	private $_message;
+    /**
+     * @var
+     */
+    private $_message;
 
-	// Public Methods
-	// =========================================================================
+    // Public Methods
+    // =========================================================================
 
-	/**
-	 * @inheritdoc
-	 */
-	public function getTriggerLabel()
-	{
-		return static::displayName();
-	}
+    /**
+     * @inheritdoc
+     */
+    public function getTriggerLabel()
+    {
+        return static::displayName();
+    }
 
-	/**
-	 * @inheritdoc
-	 */
-	public function getTriggerHtml()
-	{
-		return null;
-	}
+    /**
+     * @inheritdoc
+     */
+    public function getTriggerHtml()
+    {
+        return null;
+    }
 
-	/**
-	 * @inheritdoc
-	 */
-	public function getConfirmationMessage()
-	{
-	}
+    /**
+     * @inheritdoc
+     */
+    public function getConfirmationMessage()
+    {
+    }
 
-	/**
-	 * @inheritdoc
-	 */
-	public function performAction(ElementQueryInterface $criteria)
-	{
-		return true;
-	}
+    /**
+     * @inheritdoc
+     */
+    public function performAction(ElementQueryInterface $criteria)
+    {
+        return true;
+    }
 
-	/**
-	 * @inheritdoc
-	 */
-	public function getMessage()
-	{
-		if (isset($this->_message))
-		{
-			return $this->_message;
-		}
-	}
+    /**
+     * @inheritdoc
+     */
+    public function getMessage()
+    {
+        if (isset($this->_message)) {
+            return $this->_message;
+        }
+    }
 
-	// Protected Methods
-	// =========================================================================
+    // Protected Methods
+    // =========================================================================
 
-	/**
-	 * Sets the message that should be displayed to the user after the action is performed.
-	 *
-	 * @param array $message The message that should be displayed to the user after the action is performed.
-	 *
-	 * @return null
-	 */
-	protected function setMessage($message)
-	{
-		$this->_message = $message;
-	}
+    /**
+     * Sets the message that should be displayed to the user after the action is performed.
+     *
+     * @param array $message The message that should be displayed to the user after the action is performed.
+     *
+     * @return void
+     */
+    protected function setMessage($message)
+    {
+        $this->_message = $message;
+    }
 }

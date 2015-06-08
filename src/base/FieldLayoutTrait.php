@@ -1,8 +1,8 @@
 <?php
 /**
- * @link http://buildwithcraft.com/
+ * @link      http://buildwithcraft.com/
  * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
- * @license http://buildwithcraft.com/license
+ * @license   http://buildwithcraft.com/license
  */
 
 namespace craft\app\base;
@@ -14,54 +14,52 @@ use craft\app\models\FieldLayout as FieldLayoutModel;
  * FieldLayoutTrait.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since  3.0
  */
 trait FieldLayoutTrait
 {
-	// Properties
-	// =========================================================================
+    // Properties
+    // =========================================================================
 
-	/**
-	 * @var
-	 */
-	private $_fieldLayout;
+    /**
+     * @var
+     */
+    private $_fieldLayout;
 
-	// Public Methods
-	// =========================================================================
+    // Public Methods
+    // =========================================================================
 
-	/**
-	 * Returns the owner's field layout.
-	 *
-	 * @return FieldLayoutModel
-	 */
-	public function getFieldLayout()
-	{
-		if (!isset($this->_fieldLayout))
-		{
-			if (!empty($this->fieldLayoutId))
-			{
-				$this->_fieldLayout = Craft::$app->getFields()->getLayoutById($this->fieldLayoutId);
-			}
+    /**
+     * Returns the owner's field layout.
+     *
+     * @return FieldLayoutModel
+     */
+    public function getFieldLayout()
+    {
+        if (!isset($this->_fieldLayout)) {
+            if (!empty($this->fieldLayoutId)) {
+                $this->_fieldLayout = Craft::$app->getFields()->getLayoutById($this->fieldLayoutId);
+            }
 
-			if (empty($this->_fieldLayout))
-			{
-				$this->_fieldLayout = new FieldLayoutModel();
-				$this->_fieldLayout->type = $this->_fieldLayoutElementType;
-			}
-		}
+            if (empty($this->_fieldLayout)) {
+                $this->_fieldLayout = new FieldLayoutModel();
+                /** @noinspection PhpUndefinedFieldInspection */
+                $this->_fieldLayout->type = $this->_fieldLayoutElementType;
+            }
+        }
 
-		return $this->_fieldLayout;
-	}
+        return $this->_fieldLayout;
+    }
 
-	/**
-	 * Sets the owner's field layout.
-	 *
-	 * @param FieldLayoutModel $fieldLayout
-	 *
-	 * @return null
-	 */
-	public function setFieldLayout(FieldLayoutModel $fieldLayout)
-	{
-		$this->_fieldLayout = $fieldLayout;
-	}
+    /**
+     * Sets the owner's field layout.
+     *
+     * @param FieldLayoutModel $fieldLayout
+     *
+     * @return void
+     */
+    public function setFieldLayout(FieldLayoutModel $fieldLayout)
+    {
+        $this->_fieldLayout = $fieldLayout;
+    }
 }

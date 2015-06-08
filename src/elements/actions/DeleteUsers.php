@@ -1,8 +1,8 @@
 <?php
 /**
- * @link http://buildwithcraft.com/
+ * @link      http://buildwithcraft.com/
  * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
- * @license http://buildwithcraft.com/license
+ * @license   http://buildwithcraft.com/license
  */
 
 namespace craft\app\elements\actions;
@@ -18,46 +18,46 @@ use craft\app\helpers\JsonHelper;
  * DeleteUsers represents a Delete Users element action.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since  3.0
  */
 class DeleteUsers extends ElementAction
 {
-	// Properties
-	// =========================================================================
+    // Properties
+    // =========================================================================
 
-	/**
-	 * @var integer The user ID that the deleted user’s content should be transferred to
-	 */
-	public $transferContentTo;
+    /**
+     * @var integer The user ID that the deleted user’s content should be transferred to
+     */
+    public $transferContentTo;
 
-	// Public Methods
-	// =========================================================================
+    // Public Methods
+    // =========================================================================
 
-	/**
-	 * @inheritdoc
-	 */
-	public function getTriggerLabel()
-	{
-		return Craft::t('app', 'Delete…');
-	}
+    /**
+     * @inheritdoc
+     */
+    public function getTriggerLabel()
+    {
+        return Craft::t('app', 'Delete…');
+    }
 
-	/**
-	 * @inheritdoc
-	 */
-	public static function isDestructive()
-	{
-		return true;
-	}
+    /**
+     * @inheritdoc
+     */
+    public static function isDestructive()
+    {
+        return true;
+    }
 
-	/**
-	 * @inheritdoc
-	 */
-	public function getTriggerHtml()
-	{
-		$type = JsonHelper::encode(static::className());
-		$undeletableIds = JsonHelper::encode($this->_getUndeletableUserIds());
+    /**
+     * @inheritdoc
+     */
+    public function getTriggerHtml()
+    {
+        $type = JsonHelper::encode(static::className());
+        $undeletableIds = JsonHelper::encode($this->_getUndeletableUserIds());
 
-		$js = <<<EOT
+        $js = <<<EOT
 (function()
 {
 	var trigger = new Craft.ElementActionTrigger({
@@ -91,71 +91,63 @@ class DeleteUsers extends ElementAction
 })();
 EOT;
 
-		Craft::$app->getView()->registerJs($js);
-	}
+        Craft::$app->getView()->registerJs($js);
+    }
 
-	/**
-	 * @inheritdoc
-	 */
-	public function performAction(ElementQueryInterface $query)
-	{
-		/** @var User[] $users */
-		$users = $query->all();
-		$undeletableIds = $this->_getUndeletableUserIds();
+    /**
+     * @inheritdoc
+     */
+    public function performAction(ElementQueryInterface $query)
+    {
+        /** @var User[] $users */
+        $users = $query->all();
+        $undeletableIds = $this->_getUndeletableUserIds();
 
-		// Are we transferring the user's content to a different user?
-		if (is_array($this->transferContentTo) && isset($this->transferContentTo[0]))
-		{
-			$this->transferContentTo = $this->transferContentTo[0];
-		}
+        // Are we transferring the user's content to a different user?
+        if (is_array($this->transferContentTo) && isset($this->transferContentTo[0])) {
+            $this->transferContentTo = $this->transferContentTo[0];
+        }
 
-		if (!empty($this->transferContentTo))
-		{
-			$transferContentTo = Craft::$app->getUsers()->getUserById($this->transferContentTo);
+        if (!empty($this->transferContentTo)) {
+            $transferContentTo = Craft::$app->getUsers()->getUserById($this->transferContentTo);
 
-			if (!$transferContentTo)
-			{
-				throw new Exception(Craft::t('app', 'No user exists with the ID “{id}”.', ['id' => $transferContentTo]));
-			}
-		}
-		else
-		{
-			$transferContentTo = null;
-		}
+            if (!$transferContentTo) {
+                throw new Exception(Craft::t('app',
+                    'No user exists with the ID “{id}”.',
+                    ['id' => $transferContentTo]));
+            }
+        } else {
+            $transferContentTo = null;
+        }
 
-		// Delete the users
-		foreach ($users as $user)
-		{
-			if (!in_array($user->id, $undeletableIds))
-			{
-				Craft::$app->getUsers()->deleteUser($user, $transferContentTo);
-			}
-		}
+        // Delete the users
+        foreach ($users as $user) {
+            if (!in_array($user->id, $undeletableIds)) {
+                Craft::$app->getUsers()->deleteUser($user, $transferContentTo);
+            }
+        }
 
-		$this->setMessage(Craft::t('app', 'Users deleted.'));
+        $this->setMessage(Craft::t('app', 'Users deleted.'));
 
-		return true;
-	}
+        return true;
+    }
 
-	// Private Methods
-	// =========================================================================
+    // Private Methods
+    // =========================================================================
 
-	/**
-	 * Returns a list of the user IDs that can't be deleted.
-	 *
-	 * @return array
-	 */
-	private function _getUndeletableUserIds()
-	{
-		if (!Craft::$app->getUser()->getIsAdmin())
-		{
-			// Only admins can delete other admins
-			return User::find()->admin()->ids();
-		}
-		else
-		{
-			// Can't delete your own account from here
-			return [Craft::$app->getUser()->getIdentity()->id];
-		}
-	}
+    /**
+     * Returns a list of the user IDs that can't be deleted.
+     *
+     * @return array
+     */
+    private function _getUndeletableUserIds()
+    {
+        if (!Craft::$app->getUser()->getIsAdmin()) {
+            // Only admins can delete other admins
+            return User::find()->admin()->ids();
+        } else {
+            // Can't delete your own account from here
+            return [Craft::$app->getUser()->getIdentity()->id];
+        }
+    }
 }

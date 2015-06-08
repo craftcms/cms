@@ -1,8 +1,8 @@
 <?php
 /**
- * @link http://buildwithcraft.com/
+ * @link      http://buildwithcraft.com/
  * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
- * @license http://buildwithcraft.com/license
+ * @license   http://buildwithcraft.com/license
  */
 
 namespace craft\app\fields;
@@ -14,38 +14,35 @@ use craft\app\elements\Entry;
  * Entries represents an Entries field.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since  3.0
  */
 class Entries extends BaseRelationField
 {
-	// Static
-	// =========================================================================
+    // Static
+    // =========================================================================
 
-	/**
-	 * @inheritdoc
-	 */
-	public static function displayName()
-	{
-		return Craft::t('app', 'Entries');
-	}
+    /**
+     * @inheritdoc
+     */
+    public static function displayName()
+    {
+        return Craft::t('app', 'Entries');
+    }
 
-	/**
-	 * @inheritdoc
-	 * @return Entry
-	 */
-	protected static function elementType()
-	{
-		return Entry::className();
-	}
+    /**
+     * @inheritdoc
+     * @return Entry
+     */
+    protected static function elementType()
+    {
+        return Entry::className();
+    }
 
-	// Public Methods
-	// =========================================================================
-
-	/**
-	 * @inheritdoc
-	 */
-	public function getAddButtonLabel()
-	{
-		return Craft::t('app', 'Add an entry');
-	}
+    /**
+     * @inheritdoc
+     */
+    public static function defaultSelectionLabel()
+    {
+        return Craft::t('app', 'Add an entry');
+    }
 }

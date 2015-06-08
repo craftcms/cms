@@ -1,268 +1,276 @@
-(function($){
+(function($) {
 
 
-/**
- * Rich Text input class
- */
-Craft.RichTextInput = Garnish.Base.extend(
-{
-	id: null,
-	sectionSources: null,
-	elementLocale: null,
-	redactorConfig: null,
-
-	$textarea: null,
-	redactor: null,
-
-	init: function(id, sectionSources, elementLocale, redactorConfig, redactorLang)
-	{
-		this.id = id;
-		this.sectionSources = sectionSources;
-		this.elementLocale = elementLocale;
-		this.redactorConfig = redactorConfig;
-
-		this.redactorConfig.lang = redactorLang;
-		this.redactorConfig.direction = Craft.orientation;
-		this.redactorConfig.imageUpload = true;
-
-		var that = this,
-			originalInitCallback = redactorConfig.initCallback;
-
-		this.redactorConfig.initCallback = function(ev, data)
+	/**
+	 * Rich Text input class
+	 */
+	Craft.RichTextInput = Garnish.Base.extend(
 		{
-			that.redactor = this;
-			that.onRedactorInit();
+			id: null,
+			entrySources: null,
+			categorySources: null,
+			assetSources: null,
+			elementLocale: null,
+			redactorConfig: null,
 
-			// Did the config have its own callback?
-			if ($.isFunction(originalInitCallback))
-			{
-				return originalInitCallback.call(this, ev, data);
-			}
-			else
-			{
-				return data;
-			}
-		};
+			$textarea: null,
+			redactor: null,
 
-		// Initialize Redactor
-		this.$textarea = $('#'+this.id);
+			init: function(id, entrySources, categorySources, assetSources, elementLocale, redactorConfig, redactorLang) {
+				this.id = id;
+				this.entrySources = entrySources;
+				this.categorySources = categorySources;
+				this.assetSources = assetSources;
+				this.elementLocale = elementLocale;
+				this.redactorConfig = redactorConfig;
 
-		this.initRedactor();
+				this.redactorConfig.lang = redactorLang;
+				this.redactorConfig.direction = Craft.orientation;
+				this.redactorConfig.imageUpload = true;
 
-		if (typeof Craft.livePreview != 'undefined')
-		{
-			// There's a UI glitch if Redactor is in Code view when Live Preview is shown/hidden
-			Craft.livePreview.on('beforeEnter beforeExit', $.proxy(function()
-			{
-				this.redactor.core.destroy();
-			}, this));
+				var that = this,
+					originalInitCallback = redactorConfig.initCallback;
 
-			Craft.livePreview.on('enter slideOut', $.proxy(function()
-			{
+				this.redactorConfig.initCallback = function(ev, data) {
+					that.redactor = this;
+					that.onRedactorInit();
+
+					// Did the config have its own callback?
+					if ($.isFunction(originalInitCallback)) {
+						return originalInitCallback.call(this, ev, data);
+					}
+					else {
+						return data;
+					}
+				};
+
+				// Initialize Redactor
+				this.$textarea = $('#' + this.id);
+
 				this.initRedactor();
-			}, this));
-		}
-	},
 
-	initRedactor: function()
-	{
-		this.$textarea.redactor(this.redactorConfig);
-		this.redactor = this.$textarea.data('redactor');
-	},
+				if (typeof Craft.livePreview != 'undefined') {
+					// There's a UI glitch if Redactor is in Code view when Live Preview is shown/hidden
+					Craft.livePreview.on('beforeEnter beforeExit', $.proxy(function() {
+						this.redactor.core.destroy();
+					}, this));
 
-	onRedactorInit: function()
-	{
-		// Only customize the toolbar if there is one,
-		// otherwise we get a JS error due to redactor.$toolbar being undefined
-		if (this.redactor.opts.toolbar)
-		{
-			this.customizeToolbar();
-		}
-
-		this.leaveFullscreetOnSaveShortcut();
-	},
-
-	customizeToolbar: function()
-	{
-		var $imageBtn = this.replaceRedactorButton('image', Craft.t('Insert image')),
-			$linkBtn = this.replaceRedactorButton('link', Craft.t('Link'));
-
-		if ($imageBtn)
-		{
-			this.redactor.button.addCallback($imageBtn, $.proxy(function()
-			{
-				this.redactor.selection.save();
-
-				if (typeof this.assetSelectionModal == 'undefined')
-				{
-					this.assetSelectionModal = Craft.createElementSelectorModal('Asset', {
-						storageKey: 'RichText.ChooseImage',
-						multiSelect: true,
-						criteria: { locale: this.elementLocale, kind: 'image' },
-						onSelect: $.proxy(function(assets, transform)
-						{
-							if (assets.length)
-							{
-								this.redactor.selection.restore();
-								for (var i = 0; i < assets.length; i++)
-								{
-									var asset = assets[i],
-										url   = asset.url+'#asset:'+asset.id;
-
-									if (transform)
-									{
-										url += ':'+transform;
-									}
-
-									this.redactor.insert.node($('<img src="'+url+'" />')[0]);
-									this.redactor.code.sync();
-								}
-								this.redactor.observe.images();
-								this.redactor.dropdown.hideAll();
-							}
-						}, this),
-						closeOtherModals: false,
-						canSelectImageTransforms: true
-					});
+					Craft.livePreview.on('enter slideOut', $.proxy(function() {
+						this.initRedactor();
+					}, this));
 				}
-				else
-				{
-					this.assetSelectionModal.show();
-				}
-			}, this));
-		}
+			},
 
-		if ($linkBtn)
-		{
-			this.redactor.button.addDropdown($linkBtn,
-			{
-				link_entry:
-				{
-					title: Craft.t('Link to an entry'),
-					func: $.proxy(function()
-					{
+			initRedactor: function() {
+				this.$textarea.redactor(this.redactorConfig);
+				this.redactor = this.$textarea.data('redactor');
+			},
+
+			onRedactorInit: function() {
+				// Only customize the toolbar if there is one,
+				// otherwise we get a JS error due to redactor.$toolbar being undefined
+				if (this.redactor.opts.toolbar) {
+					this.customizeToolbar();
+				}
+
+				this.leaveFullscreetOnSaveShortcut();
+			},
+
+			customizeToolbar: function() {
+				var $imageBtn = this.replaceRedactorButton('image', Craft.t('Insert image')),
+					$linkBtn = this.replaceRedactorButton('link', Craft.t('Link'));
+
+				if ($imageBtn) {
+					this.redactor.button.addCallback($imageBtn, $.proxy(function() {
 						this.redactor.selection.save();
 
-						if (typeof this.entrySelectionModal == 'undefined')
-						{
-							this.entrySelectionModal = Craft.createElementSelectorModal('Entry', {
-								storageKey: 'RichText.LinkToEntry',
-								sources: this.sectionSources,
-								criteria: { locale: this.elementLocale },
-								onSelect: $.proxy(function(entries)
-								{
-									if (entries.length)
-									{
+						if (typeof this.assetSelectionModal == 'undefined') {
+							this.assetSelectionModal = Craft.createElementSelectorModal('Asset', {
+								storageKey: 'RichText.ChooseImage',
+								multiSelect: true,
+								criteria: {
+									locale: this.elementLocale,
+									kind: 'image'
+								},
+								onSelect: $.proxy(function(assets, transform) {
+									if (assets.length) {
 										this.redactor.selection.restore();
-										var entry     = entries[0],
-											url       = entry.url+'#entry:'+entry.id,
-											selection = this.redactor.selection.getText(),
-											title = selection.length > 0 ? selection : entry.label;
-										this.redactor.insert.node($('<a href="'+url+'">'+title+'</a>')[0]);
-										this.redactor.code.sync();
-									}
-									this.redactor.dropdown.hideAll();
-								}, this),
-								closeOtherModals: false
-							});
-						}
-						else
-						{
-							this.entrySelectionModal.show();
-						}
-					}, this)
-				},
-				link_asset:
-				{
-					title: Craft.t('Link to an asset'),
-					func: $.proxy(function()
-					{
-						this.redactor.selection.save();
+										for (var i = 0; i < assets.length; i++) {
+											var asset = assets[i],
+												url = asset.url + '#asset:' + asset.id;
 
-						if (typeof this.assetLinkSelectionModal == 'undefined')
-						{
-							this.assetLinkSelectionModal = Craft.createElementSelectorModal('Asset', {
-								storageKey: 'RichText.LinkToAsset',
-								criteria: { locale: this.elementLocale },
-								onSelect: $.proxy(function(assets)
-								{
-									if (assets.length)
-									{
-										this.redactor.selection.restore();
-										var asset     = assets[0],
-											url       = asset.url+'#asset:'+asset.id,
-											selection = this.redactor.selection.getText(),
-											title     = selection.length > 0 ? selection : asset.label;
-										this.redactor.insert.node($('<a href="'+url+'">'+title+'</a>')[0]);
-										this.redactor.code.sync();
+											if (transform) {
+												url += ':' + transform;
+											}
+
+											this.redactor.insert.node($('<img src="' + url + '" />')[0]);
+											this.redactor.code.sync();
+										}
+										this.redactor.observe.images();
+										this.redactor.dropdown.hideAll();
 									}
-									this.redactor.dropdown.hideAll();
 								}, this),
 								closeOtherModals: false,
 								canSelectImageTransforms: true
 							});
 						}
-						else
-						{
-							this.assetLinkSelectionModal.show();
+						else {
+							this.assetSelectionModal.show();
 						}
-					}, this)
-				},
-				link:
-				{
-					title: Craft.t('Insert link'),
-					func:  'link.show'
-				},
-				unlink:
-				{
-					title: Craft.t('Unlink'),
-					func:  'link.unlink'
+					}, this));
 				}
-			});
-		}
-	},
 
-	leaveFullscreetOnSaveShortcut: function()
-	{
-		if (typeof this.redactor.fullscreen != 'undefined' && typeof this.redactor.fullscreen.disable == 'function')
-		{
-			Craft.cp.on('beforeSaveShortcut', $.proxy(function()
-			{
-				if (this.redactor.fullscreen.isOpen)
-				{
-					this.redactor.fullscreen.disable();
+				if ($linkBtn) {
+					var dropdownOptions = {};
+
+					if (this.entrySources.length) {
+						dropdownOptions.link_entry = {
+							title: Craft.t('Link to an entry'),
+							func: $.proxy(function() {
+								this.redactor.selection.save();
+
+								if (typeof this.entrySelectionModal == 'undefined') {
+									this.entrySelectionModal = Craft.createElementSelectorModal('Entry', {
+										storageKey: 'RichText.LinkToEntry',
+										sources: this.entrySources,
+										criteria: {locale: this.elementLocale},
+										onSelect: $.proxy(function(entries) {
+											if (entries.length) {
+												this.redactor.selection.restore();
+												var entry = entries[0],
+													url = entry.url + '#entry:' + entry.id,
+													selection = this.redactor.selection.getText(),
+													title = selection.length > 0 ? selection : entry.label;
+												this.redactor.insert.node($('<a href="' + url + '">' + title + '</a>')[0]);
+												this.redactor.code.sync();
+											}
+											this.redactor.dropdown.hideAll();
+										}, this),
+										closeOtherModals: false
+									});
+								}
+								else {
+									this.entrySelectionModal.show();
+								}
+							}, this)
+						};
+					}
+
+					if (this.categorySources.length) {
+						dropdownOptions.link_category = {
+							title: Craft.t('Link to a category'),
+							func: $.proxy(function() {
+								this.redactor.selection.save();
+
+								if (typeof this.categorySelectionModal == 'undefined') {
+									this.categorySelectionModal = Craft.createElementSelectorModal('Category', {
+										storageKey: 'RichTextFieldType.LinkToCategory',
+										sources: this.categorySources,
+										criteria: {locale: this.elementLocale},
+										onSelect: $.proxy(function(categories) {
+											if (categories.length) {
+												this.redactor.selection.restore();
+												var category = categories[0],
+													url = category.url + '#category:' + category.id,
+													selection = this.redactor.selection.getText(),
+													title = selection.length > 0 ? selection : category.label;
+												this.redactor.insert.node($('<a href="' + url + '">' + title + '</a>')[0]);
+												this.redactor.code.sync();
+											}
+											this.redactor.dropdown.hideAll();
+										}, this),
+										closeOtherModals: false
+									});
+								}
+								else {
+									this.categorySelectionModal.show();
+								}
+							}, this)
+						};
+					}
+
+					if (this.assetSources.length) {
+						dropdownOptions.link_asset = {
+							title: Craft.t('Link to an asset'),
+							func: $.proxy(function() {
+								this.redactor.selection.save();
+
+								if (typeof this.assetLinkSelectionModal == 'undefined') {
+									this.assetLinkSelectionModal = Craft.createElementSelectorModal('Asset', {
+										storageKey: 'RichText.LinkToAsset',
+										criteria: {locale: this.elementLocale},
+										onSelect: $.proxy(function(assets) {
+											if (assets.length) {
+												this.redactor.selection.restore();
+												var asset = assets[0],
+													url = asset.url + '#asset:' + asset.id,
+													selection = this.redactor.selection.getText(),
+													title = selection.length > 0 ? selection : asset.label;
+												this.redactor.insert.node($('<a href="' + url + '">' + title + '</a>')[0]);
+												this.redactor.code.sync();
+											}
+											this.redactor.dropdown.hideAll();
+										}, this),
+										closeOtherModals: false,
+										canSelectImageTransforms: true
+									});
+								}
+								else {
+									this.assetLinkSelectionModal.show();
+								}
+							}, this)
+						};
+					}
+
+					dropdownOptions.link = {
+						title: Craft.t('Insert link'),
+						func: 'link.show'
+					};
+
+					dropdownOptions.unlink = {
+						title: Craft.t('Unlink'),
+						func: 'link.unlink'
+					};
+
+					this.redactor.button.addDropdown($linkBtn, dropdownOptions);
 				}
-			}, this));
-		}
-	},
+			},
 
-	replaceRedactorButton: function(key, title)
-	{
-		// Ignore if the button isn't in use
-		if (!this.redactor.button.get(key).length)
-		{
-			return;
-		}
+			leaveFullscreetOnSaveShortcut: function() {
+				if (typeof this.redactor.fullscreen != 'undefined' && typeof this.redactor.fullscreen.disable == 'function') {
+					Craft.cp.on('beforeSaveShortcut', $.proxy(function() {
+						if (this.redactor.fullscreen.isOpen) {
+							this.redactor.fullscreen.disable();
+						}
+					}, this));
+				}
+			},
 
-		// Create a placeholder button
-		var placeholderKey = key+'_placeholder';
-		this.redactor.button.addAfter(key, placeholderKey);
+			replaceRedactorButton: function(key, title) {
+				// Ignore if the button isn't in use
+				if (!this.redactor.button.get(key).length) {
+					return;
+				}
 
-		// Remove the original
-		this.redactor.button.remove(key);
+				// Create a placeholder button
+				var placeholderKey = key + '_placeholder';
+				this.redactor.button.addAfter(key, placeholderKey);
 
-		// Add the new one
-		var $btn = this.redactor.button.addAfter(placeholderKey, key, title);
+				// Remove the original
+				this.redactor.button.remove(key);
 
-		// Set the dropdown
-		//this.redactor.button.addDropdown($btn, dropdown);
+				// Add the new one
+				var $btn = this.redactor.button.addAfter(placeholderKey, key, title);
 
-		// Remove the placeholder
-		this.redactor.button.remove(placeholderKey);
+				// Set the dropdown
+				//this.redactor.button.addDropdown($btn, dropdown);
 
-		return $btn;
-	}
-});
+				// Remove the placeholder
+				this.redactor.button.remove(placeholderKey);
+
+				return $btn;
+			}
+		});
 
 
 })(jQuery);

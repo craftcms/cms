@@ -47,18 +47,6 @@ Craft.EntryIndex = Craft.BaseElementIndex.extend(
 		return this.base();
 	},
 
-	getDefaultSort: function()
-	{
-		if (Garnish.hasAttr(this.$source, 'data-has-structure'))
-		{
-			return ['structure', 'asc'];
-		}
-		else
-		{
-			return ['postDate', 'desc'];
-		}
-	},
-
 	onSelectSource: function()
 	{
 		if (this.settings.context == 'index')

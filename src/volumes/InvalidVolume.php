@@ -1,8 +1,8 @@
 <?php
 /**
- * @link http://buildwithcraft.com/
+ * @link      http://buildwithcraft.com/
  * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
- * @license http://buildwithcraft.com/license
+ * @license   http://buildwithcraft.com/license
  */
 
 namespace craft\app\volumes;
@@ -16,39 +16,39 @@ use craft\app\base\VolumeTrait;
  * InvalidSource represents a s with an invalid class.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since  3.0
  */
 class InvalidVolume extends Volume implements InvalidComponentInterface
 {
-	// Traits
-	// =========================================================================
+    // Traits
+    // =========================================================================
 
-	use InvalidComponentTrait;
+    use InvalidComponentTrait;
 
-	// Public Methods
-	// =========================================================================
+    // Public Methods
+    // =========================================================================
 
-	/**
-	 * @inheritdoc
-	 */
-	protected function createAdapter()
-	{
-		return null;
-	}
+    /**
+     * @inheritdoc
+     */
+    protected function createAdapter()
+    {
+        return null;
+    }
 
-	/**
-	 * @inheritdoc
-	 */
-	public function getRootUrl()
-	{
-		return null;
-	}
+    /**
+     * @inheritdoc
+     */
+    public function getRootUrl()
+    {
+        return null;
+    }
 
-	/**
-	 * @inheritdoc
-	 */
-	public function getRootPath()
-	{
-		return null;
-	}
+    /**
+     * @inheritdoc
+     */
+    public function getRootPath()
+    {
+        return null;
+    }
 }

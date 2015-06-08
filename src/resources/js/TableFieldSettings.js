@@ -24,8 +24,8 @@ Craft.TableFieldSettings = Garnish.Base.extend(
 		this.columnsTableId = Craft.formatInputId(this.columnsTableName);
 		this.defaultsTableId = Craft.formatInputId(this.defaultsTableName);
 
-		this.columnsTableInputPath = this.columnsTableId.split('-');
-		this.defaultsTableInputPath = this.defaultsTableId.split('-');
+		this.columnsTableInputPath = Craft.filterArray(this.columnsTableName.split(/[\[\]]+/));
+		this.defaultsTableInputPath = Craft.filterArray(this.defaultsTableName.split(/[\[\]]+/));
 
 		this.defaults = defaults;
 		this.columnSettings = columnSettings;
@@ -84,7 +84,16 @@ Craft.TableFieldSettings = Garnish.Base.extend(
 		for (var i = 0; i < this.defaultsTableInputPath.length; i++)
 		{
 			var key = this.defaultsTableInputPath[i];
-			defaults = defaults[key];
+
+			if (typeof defaults[key] === typeof undefined)
+			{
+				defaults = {};
+				break;
+			}
+			else
+			{
+				defaults = defaults[key];
+			}
 		}
 
 		var tableHtml = '<table id="'+this.defaultsTableId+'" class="editable shadow-box">' +

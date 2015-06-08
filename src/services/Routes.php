@@ -1,8 +1,8 @@
 <?php
 /**
- * @link http://buildwithcraft.com/
+ * @link      http://buildwithcraft.com/
  * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
- * @license http://buildwithcraft.com/license
+ * @license   http://buildwithcraft.com/license
  */
 
 namespace craft\app\services;
@@ -22,198 +22,190 @@ use yii\base\Component;
  * An instance of the Routes service is globally accessible in Craft via [[Application::routes `Craft::$app->getRoutes()`]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since  3.0
  */
 class Routes extends Component
 {
-	// Public Methods
-	// =========================================================================
+    // Public Methods
+    // =========================================================================
 
-	/**
-	 * Returns the routes defined in craft/config/routes.php
-	 *
-	 * @return array
-	 */
-	public function getConfigFileRoutes()
-	{
-		$path = Craft::$app->getPath()->getConfigPath().'/routes.php';
+    /**
+     * Returns the routes defined in craft/config/routes.php
+     *
+     * @return array
+     */
+    public function getConfigFileRoutes()
+    {
+        $path = Craft::$app->getPath()->getConfigPath().'/routes.php';
 
-		if (IOHelper::fileExists($path))
-		{
-			$routes = require_once($path);
+        if (IOHelper::fileExists($path)) {
+            $routes = require_once($path);
 
-			if (is_array($routes))
-			{
-				// Check for any locale-specific routes
-				$locale = Craft::$app->language;
+            if (is_array($routes)) {
+                // Check for any locale-specific routes
+                $locale = Craft::$app->language;
 
-				if (
-					isset($routes[$locale]) &&
-					is_array($routes[$locale]) &&
-					!isset($routes[$locale]['route']) &&
-					!isset($routes[$locale]['template'])
-				)
-				{
-					$localizedRoutes = $routes[$locale];
-					unset($routes[$locale]);
+                if (
+                    isset($routes[$locale]) &&
+                    is_array($routes[$locale]) &&
+                    !isset($routes[$locale]['route']) &&
+                    !isset($routes[$locale]['template'])
+                ) {
+                    $localizedRoutes = $routes[$locale];
+                    unset($routes[$locale]);
 
-					// Merge them so that the localized routes come first
-					$routes = array_merge($localizedRoutes, $routes);
-				}
+                    // Merge them so that the localized routes come first
+                    $routes = array_merge($localizedRoutes, $routes);
+                }
 
-				return $routes;
-			}
-		}
+                return $routes;
+            }
+        }
 
-		return [];
-	}
+        return [];
+    }
 
-	/**
-	 * Returns the routes defined in the CP.
-	 *
-	 * @return array
-	 */
-	public function getDbRoutes()
-	{
-		$results = (new Query())
-			->select(['urlPattern', 'template'])
-			->from('{{%routes}}')
-			->where(['or', 'locale is null', 'locale = :locale'], [':locale' => Craft::$app->language])
-			->orderBy('sortOrder')
-			->all();
+    /**
+     * Returns the routes defined in the CP.
+     *
+     * @return array
+     */
+    public function getDbRoutes()
+    {
+        $results = (new Query())
+            ->select(['urlPattern', 'template'])
+            ->from('{{%routes}}')
+            ->where(['or', 'locale is null', 'locale = :locale'],
+                [':locale' => Craft::$app->language])
+            ->orderBy('sortOrder')
+            ->all();
 
-		if ($results)
-		{
-			$routes = [];
+        if ($results) {
+            $routes = [];
 
-			foreach ($results as $result)
-			{
-				$routes[$result['urlPattern']] = $result['template'];
-			}
+            foreach ($results as $result) {
+                $routes[$result['urlPattern']] = ['template' => $result['template']];
+            }
 
-			return $routes;
-		}
+            return $routes;
+        }
 
-		return [];
-	}
+        return [];
+    }
 
-	/**
-	 * Saves a new or existing route.
-	 *
-	 * @param array       $urlParts The URL as defined by the user. This is an array where each element is either a
-	 *                              string or an array containing the name of a subpattern and the subpattern.
-	 * @param string      $template The template to route matching URLs to.
-	 * @param int|null    $routeId  The route ID, if editing an existing route.
-	 * @param string|null $locale
-	 *
-	 * @throws Exception
-	 * @return RouteRecord
-	 */
-	public function saveRoute($urlParts, $template, $routeId = null, $locale = null)
-	{
-		if ($routeId !== null)
-		{
-			$routeRecord = RouteRecord::findOne($routeId);
+    /**
+     * Saves a new or existing route.
+     *
+     * @param array        $urlParts The URL as defined by the user. This is an array where each element is either a
+     *                               string or an array containing the name of a subpattern and the subpattern.
+     * @param string       $template The template to route matching URLs to.
+     * @param integer|null $routeId  The route ID, if editing an existing route.
+     * @param string|null  $locale
+     *
+     * @throws Exception
+     * @return RouteRecord
+     */
+    public function saveRoute(
+        $urlParts,
+        $template,
+        $routeId = null,
+        $locale = null
+    ) {
+        if ($routeId !== null) {
+            $routeRecord = RouteRecord::findOne($routeId);
 
-			if (!$routeRecord)
-			{
-				throw new Exception(Craft::t('app', 'No route exists with the ID “{id}”.', ['id' => $routeId]));
-			}
-		}
-		else
-		{
-			$routeRecord = new RouteRecord();
+            if (!$routeRecord) {
+                throw new Exception(Craft::t('app',
+                    'No route exists with the ID “{id}”.', ['id' => $routeId]));
+            }
+        } else {
+            $routeRecord = new RouteRecord();
 
-			// Get the next biggest sort order
-			$maxSortOrder = (new Query())
-				->from('{{%routes}}')
-				->max('sortOrder');
+            // Get the next biggest sort order
+            $maxSortOrder = (new Query())
+                ->from('{{%routes}}')
+                ->max('sortOrder');
 
-			$routeRecord->sortOrder = $maxSortOrder + 1;
-		}
+            $routeRecord->sortOrder = $maxSortOrder + 1;
+        }
 
-		// Compile the URL parts into a regex pattern
-		$urlPattern = '';
-		$urlParts = array_filter($urlParts);
+        // Compile the URL parts into a regex pattern
+        $urlPattern = '';
+        $urlParts = array_filter($urlParts);
 
-		foreach ($urlParts as $part)
-		{
-			if (is_string($part))
-			{
-				// Escape any special regex characters
-				$urlPattern .= $this->_escapeRegexChars($part);
-			}
-			else if (is_array($part))
-			{
-				// Is the name a valid handle?
-				if (preg_match('/^[a-zA-Z][a-zA-Z0-9_]*$/', $part[0]))
-				{
-					// Add the var as a named subpattern
-					$urlPattern .= '(?P<'.preg_quote($part[0], '/').'>'.$part[1].')';
-				}
-				else
-				{
-					// Just match it
-					$urlPattern .= '('.$part[1].')';
-				}
-			}
-		}
+        foreach ($urlParts as $part) {
+            if (is_string($part)) {
+                // Escape any special regex characters
+                $urlPattern .= $this->_escapeRegexChars($part);
+            } else if (is_array($part)) {
+                // Is the name a valid handle?
+                if (preg_match('/^[a-zA-Z][a-zA-Z0-9_]*$/', $part[0])) {
+                    // Add the var as a named subpattern
+                    $urlPattern .= '(?P<'.preg_quote($part[0],
+                            '/').'>'.$part[1].')';
+                } else {
+                    // Just match it
+                    $urlPattern .= '('.$part[1].')';
+                }
+            }
+        }
 
-		$routeRecord->locale     = $locale;
-		$routeRecord->urlParts   = JsonHelper::encode($urlParts);
-		$routeRecord->urlPattern = $urlPattern;
-		$routeRecord->template   = $template;
-		$routeRecord->save();
+        $routeRecord->locale = $locale;
+        $routeRecord->urlParts = JsonHelper::encode($urlParts);
+        $routeRecord->urlPattern = $urlPattern;
+        $routeRecord->template = $template;
+        $routeRecord->save();
 
-		return $routeRecord;
-	}
+        return $routeRecord;
+    }
 
-	/**
-	 * Deletes a route by its ID.
-	 *
-	 * @param int $routeId
-	 *
-	 * @return bool
-	 */
-	public function deleteRouteById($routeId)
-	{
-		Craft::$app->getDb()->createCommand()->delete('{{%routes}}', ['id' => $routeId])->execute();
-		return true;
-	}
+    /**
+     * Deletes a route by its ID.
+     *
+     * @param integer $routeId
+     *
+     * @return boolean
+     */
+    public function deleteRouteById($routeId)
+    {
+        Craft::$app->getDb()->createCommand()->delete('{{%routes}}',
+            ['id' => $routeId])->execute();
 
-	/**
-	 * Updates the route order.
-	 *
-	 * @param array $routeIds An array of each of the route IDs, in their new order.
-	 *
-	 * @return null
-	 */
-	public function updateRouteOrder($routeIds)
-	{
-		foreach ($routeIds as $order => $routeId)
-		{
-			$data = ['sortOrder' => $order + 1];
-			$condition = ['id' => $routeId];
+        return true;
+    }
 
-			Craft::$app->getDb()->createCommand()->update('{{%routes}}', $data, $condition)->execute();
-		}
-	}
+    /**
+     * Updates the route order.
+     *
+     * @param array $routeIds An array of each of the route IDs, in their new order.
+     *
+     * @return void
+     */
+    public function updateRouteOrder($routeIds)
+    {
+        foreach ($routeIds as $order => $routeId) {
+            $data = ['sortOrder' => $order + 1];
+            $condition = ['id' => $routeId];
 
-	/**
-	 * @param $string
-	 *
-	 * @return mixed
-	 */
-	private function _escapeRegexChars($string)
-	{
-		$charsToEscape = str_split("\\/^$.,{}[]()|<>:*+-=");
-		$escapedChars = [];
+            Craft::$app->getDb()->createCommand()->update('{{%routes}}', $data,
+                $condition)->execute();
+        }
+    }
 
-		foreach ($charsToEscape as $char)
-		{
-			$escapedChars[] = "\\".$char;
-		}
+    /**
+     * @param $string
+     *
+     * @return mixed
+     */
+    private function _escapeRegexChars($string)
+    {
+        $charsToEscape = str_split("\\/^$.,{}[]()|<>:*+-=");
+        $escapedChars = [];
 
-		return str_replace($charsToEscape, $escapedChars, $string);
-	}
+        foreach ($charsToEscape as $char) {
+            $escapedChars[] = "\\".$char;
+        }
+
+        return str_replace($charsToEscape, $escapedChars, $string);
+    }
 }

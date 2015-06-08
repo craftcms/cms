@@ -1,8 +1,8 @@
 <?php
 /**
- * @link http://buildwithcraft.com/
+ * @link      http://buildwithcraft.com/
  * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
- * @license http://buildwithcraft.com/license
+ * @license   http://buildwithcraft.com/license
  */
 
 namespace craft\app\elements\db;
@@ -17,102 +17,107 @@ use craft\app\models\GlobalSetType;
 /**
  * GlobalSetQuery represents a SELECT SQL statement for global sets in a way that is independent of DBMS.
  *
- * @method GlobalSet[]|array all($db=null)
- * @method GlobalSet|array|null one($db=null)
- * @method GlobalSet|array|null nth($n,$db=null)
+ * @method GlobalSet[]|array all($db = null)
+ * @method GlobalSet|array|null one($db = null)
+ * @method GlobalSet|array|null nth($n, $db = null)
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since  3.0
  */
 class GlobalSetQuery extends ElementQuery
 {
-	// Properties
-	// =========================================================================
+    // Properties
+    // =========================================================================
 
-	// General parameters
-	// -------------------------------------------------------------------------
+    // General parameters
+    // -------------------------------------------------------------------------
 
-	/**
-	 * @inheritdoc
-	 */
-	public $orderBy = 'name';
+    /**
+     * @inheritdoc
+     */
+    public $orderBy = 'name';
 
-	/**
-	 * @var boolean Whether to only return global sets that the user has permission to edit.
-	 */
-	public $editable;
+    /**
+     * @var boolean Whether to only return global sets that the user has permission to edit.
+     */
+    public $editable;
 
-	/**
-	 * @var string|string[] The handle(s) that the resulting global sets must have.
-	 */
-	public $handle;
+    /**
+     * @var string|string[] The handle(s) that the resulting global sets must have.
+     */
+    public $handle;
 
-	// Public Methods
-	// =========================================================================
+    // Public Methods
+    // =========================================================================
 
-	/**
-	 * Sets the [[editable]] property.
-	 * @param boolean $value The property value (defaults to true)
-	 * @return static The query object itself
-	 */
-	public function editable($value = true)
-	{
-		$this->editable = $value;
-		return $this;
-	}
+    /**
+     * Sets the [[editable]] property.
+     *
+     * @param boolean $value The property value (defaults to true)
+     *
+     * @return self The query object itself
+     */
+    public function editable($value = true)
+    {
+        $this->editable = $value;
 
-	/**
-	 * Sets the [[handle]] property.
-	 * @param string|string[] $value The property value
-	 * @return static The query object itself
-	 */
-	public function handle($value)
-	{
-		$this->handle = $value;
-		return $this;
-	}
+        return $this;
+    }
 
-	// Protected Methods
-	// =========================================================================
+    /**
+     * Sets the [[handle]] property.
+     *
+     * @param string|string[] $value The property value
+     *
+     * @return self The query object itself
+     */
+    public function handle($value)
+    {
+        $this->handle = $value;
 
-	/**
-	 * @inheritdoc
-	 */
-	protected function beforePrepare()
-	{
-		$this->joinElementTable('globalsets');
+        return $this;
+    }
 
-		$this->query->select([
-			'globalsets.name',
-			'globalsets.handle',
-			'globalsets.fieldLayoutId',
-		]);
+    // Protected Methods
+    // =========================================================================
 
-		if ($this->handle)
-		{
-			$this->subQuery->andWhere(DbHelper::parseParam('globalsets.handle', $this->handle, $this->subQuery->params));
-		}
+    /**
+     * @inheritdoc
+     */
+    protected function beforePrepare()
+    {
+        $this->joinElementTable('globalsets');
 
-		$this->_applyEditableParam();
+        $this->query->select([
+            'globalsets.name',
+            'globalsets.handle',
+            'globalsets.fieldLayoutId',
+        ]);
 
-		return parent::beforePrepare();
-	}
+        if ($this->handle) {
+            $this->subQuery->andWhere(DbHelper::parseParam('globalsets.handle',
+                $this->handle, $this->subQuery->params));
+        }
 
-	// Private Methods
-	// =========================================================================
+        $this->_applyEditableParam();
 
-	/**
-	 * Applies the 'editable' param to the query being prepared.
-	 *
-	 * @throws QueryAbortedException
-	 */
-	private function _applyEditableParam()
-	{
-		if ($this->editable)
-		{
-			// Limit the query to only the global sets the user has permission to edit
-			$editableSetIds = Craft::$app->getGlobals()->getEditableSetIds();
-			$this->subQuery->andWhere(['in', 'elements.id', $editableSetIds]);
-		}
-	}
+        return parent::beforePrepare();
+    }
+
+    // Private Methods
+    // =========================================================================
+
+    /**
+     * Applies the 'editable' param to the query being prepared.
+     *
+     * @throws QueryAbortedException
+     */
+    private function _applyEditableParam()
+    {
+        if ($this->editable) {
+            // Limit the query to only the global sets the user has permission to edit
+            $editableSetIds = Craft::$app->getGlobals()->getEditableSetIds();
+            $this->subQuery->andWhere(['in', 'elements.id', $editableSetIds]);
+        }
+    }
 }

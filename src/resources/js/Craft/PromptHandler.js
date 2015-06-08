@@ -105,7 +105,7 @@ Craft.PromptHandler = Garnish.Base.extend({
      * @param string message
      * @param array choices
      * @param function callback
-     * @param int itemsToGo
+     * @param integer itemsToGo
      */
     _showPrompt: function(message, choices, callback, itemsToGo)
     {

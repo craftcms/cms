@@ -1,8 +1,8 @@
 <?php
 /**
- * @link http://buildwithcraft.com/
+ * @link      http://buildwithcraft.com/
  * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
- * @license http://buildwithcraft.com/license
+ * @license   http://buildwithcraft.com/license
  */
 
 namespace craft\app\io;
@@ -13,258 +13,244 @@ use craft\app\helpers\IOHelper;
  * Class File
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since  3.0
  */
 class File extends BaseIO
 {
-	// Properties
-	// =========================================================================
+    // Properties
+    // =========================================================================
 
-	/**
-	 * @var string
-	 */
-	private $_baseName;
+    /**
+     * @var string
+     */
+    private $_baseName;
 
-	/**
-	 * @var string
-	 */
-	private $_filename;
+    /**
+     * @var string
+     */
+    private $_filename;
 
-	/**
-	 * @var string
-	 */
-	private $_extension;
+    /**
+     * @var string
+     */
+    private $_extension;
 
-	/**
-	 * @var string
-	 */
-	private $_mimeType;
+    /**
+     * @var string
+     */
+    private $_mimeType;
 
-	/**
-	 * @var
-	 */
-	private $_size;
+    /**
+     * @var
+     */
+    private $_size;
 
-	/**
-	 * @var bool
-	 */
-	private $_isEmpty;
+    /**
+     * @var bool
+     */
+    private $_isEmpty;
 
-	/**
-	 * @var
-	 */
-	private $_arrayContents;
+    /**
+     * @var
+     */
+    private $_arrayContents;
 
-	/**
-	 * @var
-	 */
-	private $_stringContents;
+    /**
+     * @var
+     */
+    private $_stringContents;
 
-	/**
-	 * @var
-	 */
-	private $_md5;
+    /**
+     * @var
+     */
+    private $_md5;
 
-	// Public Methods
-	// =========================================================================
+    // Public Methods
+    // =========================================================================
 
-	/**
-	 * @param string $path
-	 *
-	 * @return File
-	 */
-	public function __construct($path)
-	{
-		clearstatcache();
-		$this->path = $path;
-	}
+    /**
+     * @param string $path
+     *
+     * @return File
+     */
+    public function __construct($path)
+    {
+        clearstatcache();
+        $this->path = $path;
+    }
 
-	/**
-	 * @param bool $includeExtension
-	 *
-	 * @return mixed
-	 */
-	public function getFilename($includeExtension = true)
-	{
-		if ($includeExtension)
-		{
-			if (!$this->_filename)
-			{
-				$this->_filename = IOHelper::getFilename($this->getRealPath(), $includeExtension);
-			}
+    /**
+     * @param boolean $includeExtension
+     *
+     * @return mixed
+     */
+    public function getFilename($includeExtension = true)
+    {
+        if ($includeExtension) {
+            if (!$this->_filename) {
+                $this->_filename = IOHelper::getFilename($this->getRealPath(),
+                    $includeExtension);
+            }
 
-			return $this->_filename;
-		}
-		else
-		{
-			if (!$this->_baseName)
-			{
-				$this->_baseName = IOHelper::getFilename($this->getRealPath(), $includeExtension);
-			}
+            return $this->_filename;
+        } else {
+            if (!$this->_baseName) {
+                $this->_baseName = IOHelper::getFilename($this->getRealPath(),
+                    $includeExtension);
+            }
 
-			return $this->_baseName;
-		}
-	}
+            return $this->_baseName;
+        }
+    }
 
-	/**
-	 * @return string
-	 */
-	public function getExtension()
-	{
-		if (!$this->_extension)
-		{
-			$this->_extension = IOHelper::getExtension($this->getRealPath());
-		}
+    /**
+     * @return string
+     */
+    public function getExtension()
+    {
+        if (!$this->_extension) {
+            $this->_extension = IOHelper::getExtension($this->getRealPath());
+        }
 
-		return $this->_extension;
-	}
+        return $this->_extension;
+    }
 
-	/**
-	 * @return string
-	 */
-	public function getMimeType()
-	{
-		if (!$this->_mimeType)
-		{
-			$this->_mimeType = IOHelper::getMimeType($this->getRealPath());
-		}
+    /**
+     * @return string
+     */
+    public function getMimeType()
+    {
+        if (!$this->_mimeType) {
+            $this->_mimeType = IOHelper::getMimeType($this->getRealPath());
+        }
 
-		return $this->_mimeType;
-	}
+        return $this->_mimeType;
+    }
 
-	/**
-	 * @return mixed
-	 */
-	public function getSize()
-	{
-		if (!$this->_size)
-		{
-			$this->_size = IOHelper::getFileSize($this->getRealPath());
-		}
+    /**
+     * @return mixed
+     */
+    public function getSize()
+    {
+        if (!$this->_size) {
+            $this->_size = IOHelper::getFileSize($this->getRealPath());
+        }
 
-		return $this->_size;
-	}
+        return $this->_size;
+    }
 
-	/**
-	 * @return bool
-	 */
-	public function isEmpty()
-	{
-		if (!$this->_isEmpty)
-		{
-			$this->_isEmpty = IOHelper::isFileEmpty($this->getRealPath());
-		}
+    /**
+     * @return boolean
+     */
+    public function isEmpty()
+    {
+        if (!$this->_isEmpty) {
+            $this->_isEmpty = IOHelper::isFileEmpty($this->getRealPath());
+        }
 
-		return $this->_isEmpty;
-	}
+        return $this->_isEmpty;
+    }
 
-	/**
-	 * @param bool $array
-	 *
-	 * @return mixed
-	 */
-	public function getContents($array = false)
-	{
-		if ($array)
-		{
-			if (!$this->_arrayContents)
-			{
-				$this->_arrayContents = IOHelper::getFileContents($this->getRealPath(), $array);
-			}
+    /**
+     * @param boolean $array
+     *
+     * @return mixed
+     */
+    public function getContents($array = false)
+    {
+        if ($array) {
+            if (!$this->_arrayContents) {
+                $this->_arrayContents = IOHelper::getFileContents($this->getRealPath(),
+                    $array);
+            }
 
-			return $this->_arrayContents;
-		}
-		else
-		{
-			if (!$this->_stringContents)
-			{
-				$this->_stringContents = IOHelper::getFileContents($this->getRealPath(), $array);
-			}
+            return $this->_arrayContents;
+        } else {
+            if (!$this->_stringContents) {
+                $this->_stringContents = IOHelper::getFileContents($this->getRealPath(),
+                    $array);
+            }
 
-			return $this->_stringContents;
-		}
-	}
+            return $this->_stringContents;
+        }
+    }
 
-	/**
-	 * @param $contents
-	 * @param $append
-	 *
-	 * @return bool
-	 */
-	public function write($contents, $append)
-	{
-		if (!IOHelper::writeToFile($this->getRealPath(), $contents, false, $append))
-		{
-			return false;
-		}
+    /**
+     * @param $contents
+     * @param $append
+     *
+     * @return boolean
+     */
+    public function write($contents, $append)
+    {
+        if (!IOHelper::writeToFile($this->getRealPath(), $contents, false,
+            $append)
+        ) {
+            return false;
+        }
 
-		return true;
-	}
+        return true;
+    }
 
-	/**
-	 * @param $destination
-	 *
-	 * @return bool
-	 */
-	public function copy($destination)
-	{
-		if (!IOHelper::copyFile($this->getRealPath(), $destination))
-		{
-			return false;
-		}
+    /**
+     * @param $destination
+     *
+     * @return boolean
+     */
+    public function copy($destination)
+    {
+        if (!IOHelper::copyFile($this->getRealPath(), $destination)) {
+            return false;
+        }
 
-		return true;
-	}
+        return true;
+    }
 
-	/**
-	 * @return bool
-	 */
-	public function clear()
-	{
-		if (!IOHelper::clearFile($this->getRealPath()))
-		{
-			return false;
-		}
+    /**
+     * @return boolean
+     */
+    public function clear()
+    {
+        if (!IOHelper::clearFile($this->getRealPath())) {
+            return false;
+        }
 
-		return true;
-	}
+        return true;
+    }
 
-	/**
-	 * @return bool
-	 */
-	public function delete()
-	{
-		if (!IOHelper::deleteFile($this->getRealPath()))
-		{
-			return false;
-		}
+    /**
+     * @return boolean
+     */
+    public function delete()
+    {
+        if (!IOHelper::deleteFile($this->getRealPath())) {
+            return false;
+        }
 
-		return true;
-	}
+        return true;
+    }
 
-	/**
-	 * @return mixed
-	 */
-	public function getMD5()
-	{
-		if (!$this->_md5)
-		{
-			$this->_md5 = IOHelper::getFileMD5($this->getRealPath());
-		}
+    /**
+     * @return mixed
+     */
+    public function getMD5()
+    {
+        if (!$this->_md5) {
+            $this->_md5 = IOHelper::getFileMD5($this->getRealPath());
+        }
 
-		return $this->_md5;
-	}
+        return $this->_md5;
+    }
 
-	/**
-	 * @return bool
-	 */
-	public function touch()
-	{
-		if (!IOHelper::touch($this->getRealPath()))
-		{
-			return false;
-		}
+    /**
+     * @return boolean
+     */
+    public function touch()
+    {
+        if (!IOHelper::touch($this->getRealPath())) {
+            return false;
+        }
 
-		return true;
-	}
+        return true;
+    }
 }

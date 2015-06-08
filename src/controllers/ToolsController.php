@@ -1,8 +1,8 @@
 <?php
 /**
- * @link http://buildwithcraft.com/
+ * @link      http://buildwithcraft.com/
  * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
- * @license http://buildwithcraft.com/license
+ * @license   http://buildwithcraft.com/license
  */
 
 namespace craft\app\controllers;
@@ -20,56 +20,59 @@ use craft\app\web\Controller;
  * Note that all actions in this controller require administrator access in order to execute.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since  3.0
  */
 class ToolsController extends Controller
 {
-	// Public Methods
-	// =========================================================================
+    // Public Methods
+    // =========================================================================
 
-	/**
-	 * @inheritdoc
-	 * @throws HttpException if the user isn’t an admin
-	 */
-	public function init()
-	{
-		// All tool actions require an admin.
-		$this->requireAdmin();
+    /**
+     * @inheritdoc
+     * @throws HttpException if the user isn’t an admin
+     */
+    public function init()
+    {
+        // All tool actions require an admin.
+        $this->requireAdmin();
 
-		// Any actions here require all we can get.
-		Craft::$app->getConfig()->maxPowerCaptain();
-	}
+        // Any actions here require all we can get.
+        Craft::$app->getConfig()->maxPowerCaptain();
+    }
 
-	/**
-	 * Performs a tool's action.
-	 *
-	 * @return null
-	 */
-	public function actionPerformAction()
-	{
-		$this->requirePostRequest();
+    /**
+     * Performs a tool's action.
+     *
+     * @return void
+     */
+    public function actionPerformAction()
+    {
+        $this->requirePostRequest();
 
-		$class = Craft::$app->getRequest()->getRequiredBodyParam('tool');
-		$params = Craft::$app->getRequest()->getBodyParam('params', []);
+        $class = Craft::$app->getRequest()->getRequiredBodyParam('tool');
+        $params = Craft::$app->getRequest()->getBodyParam('params', []);
 
-		/** @var ToolInterface $tool */
-		$tool = ComponentHelper::createComponent($class, 'craft\app\base\ToolInterface');
-		$response = $tool->performAction($params);
-		return $this->asJson($response);
-	}
+        /** @var ToolInterface $tool */
+        $tool = ComponentHelper::createComponent($class,
+            'craft\app\base\ToolInterface');
+        $response = $tool->performAction($params);
 
-	/**
-	 * Returns a database backup zip file to the browser.
-	 *
-	 * @return null
-	 */
-	public function actionDownloadBackupFile()
-	{
-		$filename = Craft::$app->getRequest()->getRequiredQueryParam('filename');
+        return $this->asJson($response);
+    }
 
-		if (($filePath = IOHelper::fileExists(Craft::$app->getPath()->getTempPath().'/'.$filename.'.zip')) == true)
-		{
-			Craft::$app->getRequest()->sendFile(IOHelper::getFilename($filePath), IOHelper::getFileContents($filePath), ['forceDownload' => true]);
-		}
-	}
+    /**
+     * Returns a database backup zip file to the browser.
+     *
+     * @return void
+     */
+    public function actionDownloadBackupFile()
+    {
+        $filename = Craft::$app->getRequest()->getRequiredQueryParam('filename');
+
+        if (($filePath = IOHelper::fileExists(Craft::$app->getPath()->getTempPath().'/'.$filename.'.zip')) == true) {
+            Craft::$app->getRequest()->sendFile(IOHelper::getFilename($filePath),
+                IOHelper::getFileContents($filePath),
+                ['forceDownload' => true]);
+        }
+    }
 }

@@ -1,8 +1,8 @@
 <?php
 /**
- * @link http://buildwithcraft.com/
+ * @link      http://buildwithcraft.com/
  * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
- * @license http://buildwithcraft.com/license
+ * @license   http://buildwithcraft.com/license
  */
 
 namespace craft\app\base;
@@ -13,76 +13,73 @@ namespace craft\app\base;
  * @property string $type The class name that should be used to represent the field
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since  3.0
  */
 abstract class SavableComponent extends Component implements SavableComponentInterface
 {
-	// Traits
-	// =========================================================================
+    // Traits
+    // =========================================================================
 
-	use SavableComponentTrait;
+    use SavableComponentTrait;
 
-	// Static
-	// =========================================================================
+    // Static
+    // =========================================================================
 
-	/**
-	 * @inheritdoc
-	 */
-	public static function isSelectable()
-	{
-		return true;
-	}
+    /**
+     * @inheritdoc
+     */
+    public static function isSelectable()
+    {
+        return true;
+    }
 
-	// Public Methods
-	// =========================================================================
+    // Public Methods
+    // =========================================================================
 
-	/**
-	 * @inheritdoc
-	 */
-	public function isNew()
-	{
-		return (!$this->id || strncmp($this->id, 'new', 3) === 0);
-	}
+    /**
+     * @inheritdoc
+     */
+    public function isNew()
+    {
+        return (!$this->id || strncmp($this->id, 'new', 3) === 0);
+    }
 
-	/**
-	 * @inheritdoc
-	 */
-	public function getSettings()
-	{
-		$settings = [];
+    /**
+     * @inheritdoc
+     */
+    public function getSettings()
+    {
+        $settings = [];
 
-		foreach ($this->settingsAttributes() as $attribute)
-		{
-			$settings[$attribute] = $this->$attribute;
-		}
+        foreach ($this->settingsAttributes() as $attribute) {
+            $settings[$attribute] = $this->$attribute;
+        }
 
-		return $settings;
-	}
+        return $settings;
+    }
 
-	/**
-	 * @inheritdoc
-	 */
-	public function getSettingsHtml()
-	{
-		return null;
-	}
+    /**
+     * @inheritdoc
+     */
+    public function getSettingsHtml()
+    {
+        return null;
+    }
 
-	/**
-	 * @inheritdoc
-	 */
-	public function settingsAttributes()
-	{
-		$class = new \ReflectionClass($this);
-		$names = [];
+    /**
+     * @inheritdoc
+     */
+    public function settingsAttributes()
+    {
+        $class = new \ReflectionClass($this);
+        $names = [];
 
-		foreach ($class->getProperties(\ReflectionProperty::IS_PUBLIC) as $property)
-		{
-			if (!$property->isStatic() && $property->getDeclaringClass()->getName() === static::className())
-			{
-				$names[] = $property->getName();
-			}
-		}
+        foreach ($class->getProperties(\ReflectionProperty::IS_PUBLIC) as $property) {
+            if (!$property->isStatic() && $property->getDeclaringClass()->getName() === static::className()) {
+                $names[] = $property->getName();
+            }
+        }
 
-		return $names;
-	}
+        return $names;
+    }
 }

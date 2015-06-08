@@ -233,8 +233,8 @@ Garnish = $.extend(Garnish, {
 	 *
 	 * Last updated: 2014-11-24
 	 *
-	 * @param bool detectTablets
-	 * @return bool
+	 * @param boolean detectTablets
+	 * @return boolean
 	 */
 	isMobileBrowser: function(detectTablets)
 	{
@@ -253,7 +253,7 @@ Garnish = $.extend(Garnish, {
 	 * Returns whether a variable is an array.
 	 *
 	 * @param mixed val
-	 * @return bool
+	 * @return boolean
 	 */
 	isArray: function(val)
 	{
@@ -264,7 +264,7 @@ Garnish = $.extend(Garnish, {
 	 * Returns whether a variable is a jQuery collection.
 	 *
 	 * @param mixed val
-	 * @return bool
+	 * @return boolean
 	 */
 	isJquery: function(val)
 	{
@@ -275,7 +275,7 @@ Garnish = $.extend(Garnish, {
 	 * Returns whether a variable is a string.
 	 *
 	 * @param mixed val
-	 * @return bool
+	 * @return boolean
 	 */
 	isString: function(val)
 	{
@@ -297,7 +297,7 @@ Garnish = $.extend(Garnish, {
 	 * Returns whether something is a text node.
 	 *
 	 * @param object elem
-	 * @return bool
+	 * @return boolean
 	 */
 	isTextNode: function(elem)
 	{
@@ -307,10 +307,10 @@ Garnish = $.extend(Garnish, {
 	/**
 	 * Returns the distance between two coordinates.
 	 *
-	 * @param int x1 The first coordinate's X position.
-	 * @param int y1 The first coordinate's Y position.
-	 * @param int x2 The second coordinate's X position.
-	 * @param int y2 The second coordinate's Y position.
+	 * @param integer x1 The first coordinate's X position.
+	 * @param integer y1 The first coordinate's Y position.
+	 * @param integer x2 The second coordinate's X position.
+	 * @param integer y2 The second coordinate's Y position.
 	 * @return float
 	 */
 	getDist: function(x1, y1, x2, y2)
@@ -321,10 +321,10 @@ Garnish = $.extend(Garnish, {
 	/**
 	 * Returns whether an element is touching an x/y coordinate.
 	 *
-	 * @param int    x    The coordinate's X position.
-	 * @param int    y    The coordinate's Y position.
+	 * @param integer    x    The coordinate's X position.
+	 * @param integer    y    The coordinate's Y position.
 	 * @param object elem Either an actual element or a jQuery collection.
-	 * @return bool
+	 * @return boolean
 	 */
 	hitTest: function(x, y, elem)
 	{
@@ -343,7 +343,7 @@ Garnish = $.extend(Garnish, {
 	 *
 	 * @param object ev   The mouse event object containing pageX and pageY properties.
 	 * @param object elem Either an actual element or a jQuery collection.
-	 * @return bool
+	 * @return boolean
 	 */
 	isCursorOver: function(ev, elem)
 	{
@@ -378,7 +378,7 @@ Garnish = $.extend(Garnish, {
 	/**
 	 * Returns the body's real scrollTop, discarding any window banding in Safari.
 	 *
-	 * @return int
+	 * @return integer
 	 */
 	getBodyScrollTop: function()
 	{
@@ -4549,7 +4549,7 @@ Garnish.Modal = Garnish.Base.extend({
 
 		// Set the width first so that the height can adjust for the width
 		this.updateSizeAndPosition._windowWidth = Garnish.$win.width();
-		this.updateSizeAndPosition._width = Math.min(this.getWidth(), this.updateSizeAndPosition._windowWidth - 20);
+		this.updateSizeAndPosition._width = Math.min(this.getWidth(), this.updateSizeAndPosition._windowWidth - this.settings.minGutter*2);
 
 		this.$container.css({
 			'width':      this.updateSizeAndPosition._width,
@@ -4559,7 +4559,7 @@ Garnish.Modal = Garnish.Base.extend({
 
 		// Now set the height
 		this.updateSizeAndPosition._windowHeight = Garnish.$win.height();
-		this.updateSizeAndPosition._height = Math.min(this.getHeight(), this.updateSizeAndPosition._windowHeight - 20);
+		this.updateSizeAndPosition._height = Math.min(this.getHeight(), this.updateSizeAndPosition._windowHeight - this.settings.minGutter*2);
 
 		this.$container.css({
 			'height':     this.updateSizeAndPosition._height,
@@ -4677,6 +4677,7 @@ Garnish.Modal = Garnish.Base.extend({
 		draggable: false,
 		dragHandleSelector: null,
 		resizable: false,
+		minGutter: 10,
 		onShow: $.noop,
 		onHide: $.noop,
 		onFadeIn: $.noop,

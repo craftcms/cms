@@ -21,221 +21,211 @@ use \Aws\S3\S3Client as S3Client;
  */
 class AwsS3 extends Volume
 {
-	// Static
-	// =========================================================================
+    // Static
+    // =========================================================================
 
-	/**
-	 * @inheritdoc
-	 */
-	public static function displayName()
-	{
-		return Craft::t('app', 'Amazon S3');
-	}
+    /**
+     * @inheritdoc
+     */
+    public static function displayName()
+    {
+        return Craft::t('app', 'Amazon S3');
+    }
 
-	// Properties
-	// =========================================================================
+    // Properties
+    // =========================================================================
 
-	/**
-	 * Whether this is a local source or not. Defaults to false.
-	 *
-	 * @var bool
-	 */
-	protected $isVolumeLocal = false;
+    /**
+     * Whether this is a local source or not. Defaults to false.
+     *
+     * @var bool
+     */
+    protected $isVolumeLocal = false;
 
-	/**
-	 * Subfolder to use
-	 *
-	 * @var string
-	 */
-	public $subfolder = "";
+    /**
+     * Subfolder to use
+     *
+     * @var string
+     */
+    public $subfolder = "";
 
-	/**
-	 * AWS key ID
-	 *
-	 * @var string
-	 */
-	public $keyId = "";
+    /**
+     * AWS key ID
+     *
+     * @var string
+     */
+    public $keyId = "";
 
-	/**
-	 * AWS key secret
-	 *
-	 * @var string
-	 */
-	public $secret = "";
+    /**
+     * AWS key secret
+     *
+     * @var string
+     */
+    public $secret = "";
 
-	/**
-	 * Bucket to use
-	 *
-	 * @var string
-	 */
-	public $bucket = "";
+    /**
+     * Bucket to use
+     *
+     * @var string
+     */
+    public $bucket = "";
 
-	/**
-	 * Region to use
-	 *
-	 * @var string
-	 */
-	public $region = "";
+    /**
+     * Region to use
+     *
+     * @var string
+     */
+    public $region = "";
 
-	/**
-	 * Cache adapter
-	 *
-	 * @var GuzzleCacheAdapter
-	 */
-	private static $_cacheAdapter = null;
+    /**
+     * Cache adapter
+     *
+     * @var GuzzleCacheAdapter
+     */
+    private static $_cacheAdapter = null;
 
-	// Public Methods
-	// =========================================================================
+    // Public Methods
+    // =========================================================================
 
-	/**
-	 * @inheritdoc
-	 */
-	public function rules()
-	{
-		$rules = parent::rules();
-		$rules[] = [['bucket', 'region'], 'required'];
-		return $rules;
-	}
+    /**
+     * @inheritdoc
+     */
+    public function rules()
+    {
+        $rules = parent::rules();
+        $rules[] = [['bucket', 'region'], 'required'];
 
-	/**
-	 * @inheritdoc
-	 */
-	public function getSettingsHtml()
-	{
-		return Craft::$app->getView()->renderTemplate('_components/volumes/AwsS3/settings', array(
-			'volume' => $this
-		));
-	}
+        return $rules;
+    }
 
-	/**
-	 * Get the bucket list using the specified credentials.
-	 *
-	 * @param $keyId
-	 * @param $secret
-	 *
-	 * @throws \InvalidArgumentException
-	 * @return array
-	 */
-	public static function loadBucketList($keyId, $secret)
-	{
-		if (empty($keyId) || empty($secret))
-		{
-			$config = array();
-		}
-		else
-		{
-			$config = array(
-				'key' => $keyId,
-				'secret' => $secret
-			);
-		}
+    /**
+     * @inheritdoc
+     */
+    public function getSettingsHtml()
+    {
+        return Craft::$app->getView()->renderTemplate('_components/volumes/AwsS3/settings',
+            array(
+                'volume' => $this
+            ));
+    }
 
-		$client = static::getClient($config);
+    /**
+     * Get the bucket list using the specified credentials.
+     *
+     * @param $keyId
+     * @param $secret
+     *
+     * @throws \InvalidArgumentException
+     * @return array
+     */
+    public static function loadBucketList($keyId, $secret)
+    {
+        if (empty($keyId) || empty($secret)) {
+            $config = array();
+        } else {
+            $config = array(
+                'key' => $keyId,
+                'secret' => $secret
+            );
+        }
 
-		$objects = $client->listBuckets();
+        $client = static::getClient($config);
 
-		if (empty($objects['Buckets']))
-		{
-			return array();
-		}
+        $objects = $client->listBuckets();
 
-		$buckets = $objects['Buckets'];
-		$bucketList = array();
+        if (empty($objects['Buckets'])) {
+            return array();
+        }
 
-		foreach ($buckets as $bucket)
-		{
-			try
-			{
-				$location = $client->getBucketLocation(array('Bucket' => $bucket['Name']));
-			}
-			catch (AccessDeniedException $exception)
-			{
-				continue;
-			}
+        $buckets = $objects['Buckets'];
+        $bucketList = array();
 
-			$bucketList[] = array(
-				'bucket'    => $bucket['Name'],
-				'urlPrefix' => 'http://'.$bucket['Name'].'.s3.amazonaws.com/',
-				'region'    => isset($location['Location']) ? $location['Location'] : ''
-			);
-		}
+        foreach ($buckets as $bucket) {
+            try {
+                $location = $client->getBucketLocation(array('Bucket' => $bucket['Name']));
+            } catch (AccessDeniedException $exception) {
+                continue;
+            }
 
-		return $bucketList;
-	}
+            $bucketList[] = array(
+                'bucket' => $bucket['Name'],
+                'urlPrefix' => 'http://'.$bucket['Name'].'.s3.amazonaws.com/',
+                'region' => isset($location['Location']) ? $location['Location'] : ''
+            );
+        }
 
-	/**
-	 * @inheritdoc
-	 */
-	public function getRootPath()
-	{
-		return null;
-	}
+        return $bucketList;
+    }
 
-	/**
-	 * @inheritdoc
-	 */
-	public function getRootUrl()
-	{
-		return rtrim(rtrim($this->url, '/').'/'.$this->subfolder, '/').'/';
-	}
+    /**
+     * @inheritdoc
+     */
+    public function getRootPath()
+    {
+        return null;
+    }
 
-	// Protected Methods
-	// =========================================================================
+    /**
+     * @inheritdoc
+     */
+    public function getRootUrl()
+    {
+        return rtrim(rtrim($this->url, '/').'/'.$this->subfolder, '/').'/';
+    }
 
-	/**
-	 * @inheritdoc
-	 * @return AwsS3Adapter
-	 */
-	protected function createAdapter()
-	{
-		$keyId = $this->keyId;
-		$secret = $this->secret;
+    // Protected Methods
+    // =========================================================================
 
-		if (empty($keyId) || empty($secret))
-		{
-			$config = array();
-		}
-		else
-		{
-			$config = array(
-				'key' => $keyId,
-				'secret' => $secret
-			);
-		}
+    /**
+     * @inheritdoc
+     * @return AwsS3Adapter
+     */
+    protected function createAdapter()
+    {
+        $keyId = $this->keyId;
+        $secret = $this->secret;
 
-		$config['region'] = $this->region;
+        if (empty($keyId) || empty($secret)) {
+            $config = array();
+        } else {
+            $config = array(
+                'key' => $keyId,
+                'secret' => $secret
+            );
+        }
 
-		$client = static::getClient($config);
+        $config['region'] = $this->region;
 
-		return new AwsS3Adapter($client, $this->bucket, $this->subfolder);
-	}
+        $client = static::getClient($config);
 
-	/**
-	 * Get the AWS S3 client.
-	 *
-	 * @param $config
-	 *
-	 * @return S3Client
-	 */
-	protected static function getClient($config = array())
-	{
-		$config['credentials.cache'] = static::_getCredentialsCacheAdapter();
+        return new AwsS3Adapter($client, $this->bucket, $this->subfolder);
+    }
 
-		return S3Client::factory($config);
-	}
+    /**
+     * Get the AWS S3 client.
+     *
+     * @param $config
+     *
+     * @return S3Client
+     */
+    protected static function getClient($config = array())
+    {
+        $config['credentials.cache'] = static::_getCredentialsCacheAdapter();
 
-	/**
-	 * Get the credentials cache adapter.
-	 *
-	 * @return GuzzleCacheAdapter
-	 */
-	private static function _getCredentialsCacheAdapter()
-	{
-		if (empty(static::$_cacheAdapter))
-		{
-			static::$_cacheAdapter = new GuzzleCacheAdapter();
-		}
+        return S3Client::factory($config);
+    }
 
-		return static::$_cacheAdapter;
-	}
+    /**
+     * Get the credentials cache adapter.
+     *
+     * @return GuzzleCacheAdapter
+     */
+    private static function _getCredentialsCacheAdapter()
+    {
+        if (empty(static::$_cacheAdapter)) {
+            static::$_cacheAdapter = new GuzzleCacheAdapter();
+        }
+
+        return static::$_cacheAdapter;
+    }
 }

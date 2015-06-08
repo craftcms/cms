@@ -1,8 +1,8 @@
 <?php
 /**
- * @link http://buildwithcraft.com/
+ * @link      http://buildwithcraft.com/
  * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
- * @license http://buildwithcraft.com/license
+ * @license   http://buildwithcraft.com/license
  */
 
 namespace craft\app\elements;
@@ -20,262 +20,302 @@ use craft\app\models\MatrixBlockType;
  * MatrixBlock represents a matrix block element.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since  3.0
  */
 class MatrixBlock extends Element
 {
-	// Static
-	// =========================================================================
+    // Static
+    // =========================================================================
 
-	/**
-	 * @inheritdoc
-	 */
-	public static function displayName()
-	{
-		return Craft::t('app', 'Matrix Block');
-	}
+    /**
+     * @inheritdoc
+     */
+    public static function displayName()
+    {
+        return Craft::t('app', 'Matrix Block');
+    }
 
-	/**
-	 * @inheritdoc
-	 */
-	public static function hasContent()
-	{
-		return true;
-	}
+    /**
+     * @inheritdoc
+     */
+    public static function hasContent()
+    {
+        return true;
+    }
 
-	/**
-	 * @inheritdoc
-	 */
-	public static function isLocalized()
-	{
-		return true;
-	}
+    /**
+     * @inheritdoc
+     */
+    public static function isLocalized()
+    {
+        return true;
+    }
 
-	/**
-	 * @inheritdoc
-	 *
-	 * @return MatrixBlockQuery The newly created [[MatrixBlockQuery]] instance.
-	 */
-	public static function find()
-	{
-		return new MatrixBlockQuery(get_called_class());
-	}
+    /**
+     * @inheritdoc
+     *
+     * @return MatrixBlockQuery The newly created [[MatrixBlockQuery]] instance.
+     */
+    public static function find()
+    {
+        return new MatrixBlockQuery(get_called_class());
+    }
 
-	/**
-	 * @inheritdoc
-	 */
-	public static function getFieldsForElementsQuery(ElementQueryInterface $query)
-	{
-		$fields = [];
+    /**
+     * @inheritdoc
+     */
+    public static function getFieldsForElementsQuery(
+        ElementQueryInterface $query
+    ) {
+        $fields = [];
 
-		foreach (Craft::$app->getMatrix()->getBlockTypesByFieldId($query->fieldId) as $blockType)
-		{
-			$fieldColumnPrefix = 'field_'.$blockType->handle.'_';
+        foreach (Craft::$app->getMatrix()->getBlockTypesByFieldId($query->fieldId) as $blockType) {
+            $fieldColumnPrefix = 'field_'.$blockType->handle.'_';
 
-			foreach ($blockType->getFields() as $field)
-			{
-				$field->columnPrefix = $fieldColumnPrefix;
-				$fields[] = $field;
-			}
-		}
+            foreach ($blockType->getFields() as $field) {
+                $field->columnPrefix = $fieldColumnPrefix;
+                $fields[] = $field;
+            }
+        }
 
-		return $fields;
-	}
+        return $fields;
+    }
 
-	// Properties
-	// =========================================================================
+    private static $_preloadedFields = [];
 
-	/**
-	 * @var integer Field ID
-	 */
-	public $fieldId;
+    // Properties
+    // =========================================================================
 
-	/**
-	 * @var integer Owner ID
-	 */
-	public $ownerId;
+    /**
+     * @var integer Field ID
+     */
+    public $fieldId;
 
-	/**
-	 * @var string Owner locale
-	 */
-	public $ownerLocale;
+    /**
+     * @var integer Owner ID
+     */
+    public $ownerId;
 
-	/**
-	 * @var integer Type ID
-	 */
-	public $typeId;
+    /**
+     * @var string Owner locale
+     */
+    public $ownerLocale;
 
-	/**
-	 * @var integer Sort order
-	 */
-	public $sortOrder;
+    /**
+     * @var integer Type ID
+     */
+    public $typeId;
 
-	/**
-	 * @var boolean Collapsed
-	 */
-	public $collapsed = false;
+    /**
+     * @var integer Sort order
+     */
+    public $sortOrder;
 
-	/**
-	 * @var ElementInterface|Element The owner element
-	 */
-	private $_owner;
+    /**
+     * @var boolean Collapsed
+     */
+    public $collapsed = false;
 
-	// Public Methods
-	// =========================================================================
+    /**
+     * @var ElementInterface|Element The owner element
+     */
+    private $_owner;
 
-	/**
-	 * @inheritdoc
-	 */
-	public function rules()
-	{
-		$rules = parent::rules();
+    // Public Methods
+    // =========================================================================
 
-		$rules[] = [['fieldId'], 'number', 'min' => -2147483648, 'max' => 2147483647, 'integerOnly' => true];
-		$rules[] = [['ownerId'], 'number', 'min' => -2147483648, 'max' => 2147483647, 'integerOnly' => true];
-		$rules[] = [['ownerLocale'], 'craft\\app\\validators\\Locale'];
-		$rules[] = [['typeId'], 'number', 'min' => -2147483648, 'max' => 2147483647, 'integerOnly' => true];
-		$rules[] = [['sortOrder'], 'number', 'min' => -2147483648, 'max' => 2147483647, 'integerOnly' => true];
+    /**
+     * @inheritdoc
+     */
+    public function rules()
+    {
+        $rules = parent::rules();
 
-		return $rules;
-	}
+        $rules[] = [
+            ['fieldId'],
+            'number',
+            'min' => -2147483648,
+            'max' => 2147483647,
+            'integerOnly' => true
+        ];
+        $rules[] = [
+            ['ownerId'],
+            'number',
+            'min' => -2147483648,
+            'max' => 2147483647,
+            'integerOnly' => true
+        ];
+        $rules[] = [['ownerLocale'], 'craft\\app\\validators\\Locale'];
+        $rules[] = [
+            ['typeId'],
+            'number',
+            'min' => -2147483648,
+            'max' => 2147483647,
+            'integerOnly' => true
+        ];
+        $rules[] = [
+            ['sortOrder'],
+            'number',
+            'min' => -2147483648,
+            'max' => 2147483647,
+            'integerOnly' => true
+        ];
 
-	/**
-	 * @inheritdoc
-	 */
-	public function getFieldLayout()
-	{
-		$blockType = $this->getType();
+        return $rules;
+    }
 
-		if ($blockType)
-		{
-			return $blockType->getFieldLayout();
-		}
-	}
+    /**
+     * @inheritdoc
+     */
+    public function getFieldLayout()
+    {
+        $blockType = $this->getType();
 
-	/**
-	 * @inheritdoc
-	 */
-	public function getLocales()
-	{
-		// If the Matrix field is translatable, than each individual block is tied to a single locale, and thus aren't
-		// translatable. Otherwise all blocks belong to all locales, and their content is translatable.
+        if ($blockType) {
+            return $blockType->getFieldLayout();
+        }
+    }
 
-		if ($this->ownerLocale)
-		{
-			return [$this->ownerLocale];
-		}
-		else
-		{
-			$owner = $this->getOwner();
+    /**
+     * @inheritdoc
+     */
+    public function getLocales()
+    {
+        // If the Matrix field is translatable, than each individual block is tied to a single locale, and thus aren't
+        // translatable. Otherwise all blocks belong to all locales, and their content is translatable.
 
-			if ($owner)
-			{
-				// Just send back an array of locale IDs -- don't pass along enabledByDefault configs
-				$localeIds = [];
+        if ($this->ownerLocale) {
+            return [$this->ownerLocale];
+        } else {
+            $owner = $this->getOwner();
 
-				foreach ($owner->getLocales() as $localeId => $localeInfo)
-				{
-					if (is_numeric($localeId) && is_string($localeInfo))
-					{
-						$localeIds[] = $localeInfo;
-					}
-					else
-					{
-						$localeIds[] = $localeId;
-					}
-				}
+            if ($owner) {
+                // Just send back an array of locale IDs -- don't pass along enabledByDefault configs
+                $localeIds = [];
 
-				return $localeIds;
-			}
-			else
-			{
-				return [Craft::$app->getI18n()->getPrimarySiteLocaleId()];
-			}
-		}
-	}
+                foreach ($owner->getLocales() as $localeId => $localeInfo) {
+                    if (is_numeric($localeId) && is_string($localeInfo)) {
+                        $localeIds[] = $localeInfo;
+                    } else {
+                        $localeIds[] = $localeId;
+                    }
+                }
 
-	/**
-	 * Returns the block type.
-	 *
-	 * @return MatrixBlockType|null
-	 */
-	public function getType()
-	{
-		if ($this->typeId)
-		{
-			return Craft::$app->getMatrix()->getBlockTypeById($this->typeId);
-		}
-	}
+                return $localeIds;
+            } else {
+                return [Craft::$app->getI18n()->getPrimarySiteLocaleId()];
+            }
+        }
+    }
 
-	/**
-	 * Returns the owner.
-	 *
-	 * @return ElementInterface|Element|null
-	 */
-	public function getOwner()
-	{
-		if (!isset($this->_owner) && $this->ownerId)
-		{
-			$this->_owner = Craft::$app->getElements()->getElementById($this->ownerId, null, $this->locale);
+    /**
+     * Returns the block type.
+     *
+     * @return MatrixBlockType|null
+     */
+    public function getType()
+    {
+        if ($this->typeId) {
+            return Craft::$app->getMatrix()->getBlockTypeById($this->typeId);
+        }
+    }
 
-			if (!$this->_owner)
-			{
-				$this->_owner = false;
-			}
-		}
+    /**
+     * Returns the owner.
+     *
+     * @return ElementInterface|Element|null
+     */
+    public function getOwner()
+    {
+        if (!isset($this->_owner) && $this->ownerId) {
+            $this->_owner = Craft::$app->getElements()->getElementById($this->ownerId,
+                null, $this->locale);
 
-		if ($this->_owner)
-		{
-			return $this->_owner;
-		}
-	}
+            if (!$this->_owner) {
+                $this->_owner = false;
+            }
+        }
 
-	/**
-	 * Sets the owner
-	 *
-	 * @param Element $owner
-	 */
-	public function setOwner(Element $owner)
-	{
-		$this->_owner = $owner;
-	}
+        if ($this->_owner) {
+            return $this->_owner;
+        }
+    }
 
-	/**
-	 * @inheritdoc
-	 */
-	public function getContentTable()
-	{
-		return Craft::$app->getMatrix()->getContentTableName($this->_getField());
-	}
+    /**
+     * Sets the owner
+     *
+     * @param Element $owner
+     */
+    public function setOwner(Element $owner)
+    {
+        $this->_owner = $owner;
+    }
 
-	/**
-	 * @inheritdoc
-	 */
-	public function getFieldColumnPrefix()
-	{
-		return 'field_'.$this->getType()->handle.'_';
-	}
+    /**
+     * @inheritdoc
+     */
+    public function getContentTable()
+    {
+        return Craft::$app->getMatrix()->getContentTableName($this->_getField());
+    }
 
-	/**
-	 * Returns the field context this element's content uses.
-	 *
-	 * @return string
-	 */
-	public function getFieldContext()
-	{
-		return 'matrixBlockType:'.$this->typeId;
-	}
+    /**
+     * @inheritdoc
+     */
+    public function getFieldColumnPrefix()
+    {
+        return 'field_'.$this->getType()->handle.'_';
+    }
 
-	// Private Methods
-	// =========================================================================
+    /**
+     * Returns the field context this element's content uses.
+     *
+     * @return string
+     */
+    public function getFieldContext()
+    {
+        return 'matrixBlockType:'.$this->typeId;
+    }
 
-	/**
-	 * Returns the Matrix field.
-	 *
-	 * @return Matrix
-	 */
-	private function _getField()
-	{
-		return Craft::$app->getFields()->getFieldById($this->fieldId);
-	}
+    // Protected Methods
+    // =========================================================================
+
+    /**
+     * @inheritdoc
+     */
+    protected function createContent()
+    {
+        if (!isset(self::$_preloadedFields[$this->fieldId])) {
+            $blockTypes = Craft::$app->getMatrix()->getBlockTypesByFieldId($this->fieldId);
+
+            if (count($blockTypes) > 1) {
+                $contexts = array();
+
+                foreach ($blockTypes as $blockType) {
+                    $contexts[] = 'matrixBlockType:'.$blockType->id;
+                }
+
+                // Preload them to save ourselves some DB queries, and discard
+                Craft::$app->getFields()->getAllFields(null, $contexts);
+            }
+
+            // Don't do this again for this field
+            self::$_preloadedFields[$this->fieldId] = true;
+        }
+
+        return parent::createContent();
+    }
+
+    // Private Methods
+    // =========================================================================
+
+    /**
+     * Returns the Matrix field.
+     *
+     * @return Matrix
+     */
+    private function _getField()
+    {
+        return Craft::$app->getFields()->getFieldById($this->fieldId);
+    }
 }

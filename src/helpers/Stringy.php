@@ -1,8 +1,8 @@
 <?php
 /**
- * @link http://buildwithcraft.com/
+ * @link      http://buildwithcraft.com/
  * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
- * @license http://buildwithcraft.com/license
+ * @license   http://buildwithcraft.com/license
  */
 
 namespace craft\app\helpers;
@@ -12,15 +12,15 @@ namespace craft\app\helpers;
  * and the creators did not want to expose as public.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since  3.0
  */
 class Stringy extends \Stringy\Stringy
 {
-	/**
-	 * @return array
-	 */
-	public function getAsciiCharMap()
-	{
-		return parent::charsArray();
-	}
+    /**
+     * @return array
+     */
+    public function getAsciiCharMap()
+    {
+        return parent::charsArray();
+    }
 }

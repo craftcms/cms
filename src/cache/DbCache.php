@@ -1,8 +1,8 @@
 <?php
 /**
- * @link http://buildwithcraft.com/
+ * @link      http://buildwithcraft.com/
  * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
- * @license http://buildwithcraft.com/license
+ * @license   http://buildwithcraft.com/license
  */
 
 namespace craft\app\cache;
@@ -21,33 +21,34 @@ use craft\app\enums\ConfigCategory;
  * the database connection information stored in your craft/config/db.php file.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since  3.0
  */
 class DbCache extends \yii\caching\DbCache
 {
-	// Public Methods
-	// =========================================================================
+    // Public Methods
+    // =========================================================================
 
-	/**
-	 * @return Connection
-	 */
-	public function getDbConnection()
-	{
-		return Craft::$app->getDb();
-	}
+    /**
+     * @return Connection
+     */
+    public function getDbConnection()
+    {
+        return Craft::$app->getDb();
+    }
 
-	// Protected Methods
-	// =========================================================================
+    // Protected Methods
+    // =========================================================================
 
-	/**
-	 * @param Connection   $db
-	 * @param string         $tableName
-	 */
-	protected function createCacheTable($db, $tableName)
-	{
-		if (!Craft::$app->getDb()->tableExists(Craft::$app->getConfig()->get('cacheTableName', ConfigCategory::DbCache), true))
-		{
-			parent::createCacheTable($db, $tableName);
-		}
-	}
+    /**
+     * @param Connection $db
+     * @param string     $tableName
+     */
+    protected function createCacheTable($db, $tableName)
+    {
+        if (!Craft::$app->getDb()->tableExists(Craft::$app->getConfig()->get('cacheTableName',
+            ConfigCategory::DbCache), true)
+        ) {
+            parent::createCacheTable($db, $tableName);
+        }
+    }
 }
