@@ -10,6 +10,7 @@ namespace craft\app\controllers;
 use Craft;
 use craft\app\errors\Exception;
 use craft\app\helpers\AssetsHelper;
+use craft\app\helpers\ImageHelper;
 use craft\app\helpers\IOHelper;
 use craft\app\helpers\StringHelper;
 use craft\app\helpers\UrlHelper;
@@ -67,7 +68,7 @@ class RebrandController extends Controller
                 Craft::$app->getImages()->cleanImage($folderPath.'/'.$filename);
 
                 $constraint = 500;
-                list ($width, $height) = getimagesize($folderPath.'/'.$filename);
+                list ($width, $height) = ImageHelper::getImageSize($folderPath.'/'.$filename);
 
                 // If the file is in the format badscript.php.gif perhaps.
                 if ($width && $height) {
