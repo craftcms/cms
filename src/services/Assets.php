@@ -1153,6 +1153,10 @@ class Assets extends Component
 
         // Move inside the source.
         if ($asset->volumeId == $targetFolder->volumeId) {
+            if ($fromPath == $toPath) {
+                return;
+            }
+
             $sourceVolume->renameFile($fromPath, $toPath);
             $transformIndexes = Craft::$app->getAssetTransforms()->getAllCreatedTransformsForFile($asset);
 
