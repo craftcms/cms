@@ -895,7 +895,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 				this.$includeSubfoldersContainer.velocity('stop');
 			}
 
-			var checked = this.getSelectedSourceState('includeSubfolders', false)
+			var checked = this.getSelectedSourceState('includeSubfolders', false);
 			this.$includeSubfoldersCheckbox.prop('checked', checked);
 
 			this.$includeSubfoldersContainer.velocity({
