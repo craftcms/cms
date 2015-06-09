@@ -1,0 +1,20 @@
+@charset "UTF-8";
+@import "shared";
+
+.modal.asset-editor {
+  min-height: 410px !important; min-width: 500px !important;
+  .body {
+	padding-top: 0; padding-bottom: 0;
+	.image-holder {
+	  padding-top: 24px; padding-bottom: 24px; @include padding-left(0); @include padding-right(24px); @include floatleft; position: relative	;
+	  #image-manipulator { overflow: hidden; position: absolute;}
+	}
+	.image-tools {
+	  @include floatright; width: 151px; @include padding-left(24px); @include border-left(1px solid rgba(0,0,0,0.1)); min-height: 352px;
+	  section:first-child { margin-top: 24px; }
+	}
+	> .spinner.big { margin: 151px auto 0; display: block;}
+  }
+}
+
+.modal-shade.assetEditor{ background: rgba(0,0,0, 0.75)}
