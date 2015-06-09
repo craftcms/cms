@@ -39,7 +39,7 @@ class DateTimeHelper
      *                                         that $date is set to, if not already specified in $date. Defaults to 'UTC'.
      * @param boolean     $setToSystemTimeZone Whether to set the resulting DateTime object to the system timezone.
      *
-     * @return DateTime
+     * @return DateTime|false The DateTime object, or `false` if $object could not be converted to one
      */
     public static function toDateTime(
         $object,
@@ -163,7 +163,7 @@ class DateTimeHelper
 
         $dt = DateTime::createFromFormat('!'.$format, $date);
 
-        if ($setToSystemTimeZone) {
+        if ($dt !== false && $setToSystemTimeZone) {
             $dt->setTimezone(new \DateTimeZone(Craft::$app->getTimeZone()));
         }
 
