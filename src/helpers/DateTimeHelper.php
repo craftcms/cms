@@ -126,7 +126,7 @@ class DateTimeHelper
 								(?:\.\d+)?                       # .s (decimal fraction of a second -- not supported)
 							)?
 							(?:[ ]?(?P<ampm>(AM|PM|am|pm))?)?    # An optional space and AM or PM
-							(?:Z|(?P<tzd>[+\-]\d\d\:\d\d))?      # Z or [+ or -]hh:ss (UTC or a timezone offset)
+							(?:Z|(?P<tzd>[+\-]\d\d\:?\d\d))?      # Z or [+ or -]hh(:)ss (UTC or a timezone offset)
 						)?
 					)?
 				)?$/x', $date, $m)) {
@@ -141,7 +141,7 @@ class DateTimeHelper
                     ':'.(!empty($m['sec']) ? $m['sec'] : '00');
 
                 if (!empty($m['tzd'])) {
-                    $format .= 'P';
+                    $format .= strpos($m['tzd'], ':' !== false) ? 'P' : 'O';
                     $date .= $m['tzd'];
                 }
 
