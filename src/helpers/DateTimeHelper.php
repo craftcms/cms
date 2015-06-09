@@ -171,6 +171,23 @@ class DateTimeHelper
     }
 
     /**
+     * Converts a date to an ISO-8601 string.
+     *
+     * @param mixed $date The date, in any format that [[toDateTime()]] supports.
+     * @return string|false The date formatted as an ISO-8601 string, or `false` if $date was not a valid date
+     */
+    public static function toIso8601($date)
+    {
+        $date = self::toDateTime($date);
+
+        if ($date !== false) {
+            return $date->format(\DateTime::ISO8601);
+        } else {
+            return false;
+        }
+    }
+
+    /**
      * @return DateTime
      */
     public static function currentUTCDateTime()
