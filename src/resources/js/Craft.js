@@ -1,4 +1,4 @@
-/*! Craft 3.0.0 - 2015-06-06 */
+/*! Craft 3.0.0 - 2015-06-09 */
 (function($){
 
 if (typeof window.Craft == 'undefined')
@@ -162,6 +162,16 @@ $.extend(Craft,
 		}
 
 		return message;
+	},
+
+	formatDate: function(date)
+	{
+		if (typeof date != 'object')
+		{
+			date = new Date(date);
+		}
+
+		return $.datepicker.formatDate(Craft.datepickerFormat, date);
 	},
 
 	/**
@@ -6262,7 +6272,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 				this.$includeSubfoldersContainer.velocity('stop');
 			}
 
-			var checked = this.getSelectedSourceState('includeSubfolders', false)
+			var checked = this.getSelectedSourceState('includeSubfolders', false);
 			this.$includeSubfoldersCheckbox.prop('checked', checked);
 
 			this.$includeSubfoldersContainer.velocity({
@@ -13644,6 +13654,7 @@ Craft.PromptHandler = Garnish.Base.extend({
         this._selectPromptChoice('cancel', true);
     }
 });
+
 /**
  * Slug Generator
  */
