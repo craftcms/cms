@@ -7,6 +7,7 @@
 
 namespace craft\app\helpers;
 
+use craft\app\base\Model;
 use craft\app\enums\ColumnType;
 use DateTime;
 use yii\db\Schema;
@@ -40,43 +41,39 @@ class DbHelper
     public static function prepObjectValues($object)
     {
         // Convert the object to an array
-        $object = ArrayHelper::toArray($object, [], false);
+        $arr = ArrayHelper::toArray($object);
 
-        foreach ($object as $key => $value) {
-            $object[$key] = static::prepValue($value);
+        if ($object instanceof Model) {
+            $datetimeAttributes = $object->datetimeAttributes();
         }
 
-        return $object;
+        foreach ($arr as $key => $value) {
+            if (isset($datetimeAttributes) && in_array($key, $datetimeAttributes, true)) {
+                // Model::toArray() converts DateTime attributes to IS0-8601 strings
+                $arr[$key] = DateTimeHelper::formatTimeForDb($value);
+            } else {
+                $arr[$key] = static::prepValue($value);
+            }
+        }
+
+        return $arr;
     }
 
     /**
      * Prepares a value to be sent to the database.
      *
-     * @param mixed   $value      The value to be prepraed
-     * @param boolean $jsonEncode Whether the value should be JSON-encoded if it's an object or array
+     * @param mixed $value The value to be prepared
      *
-     * @return array
+     * @return mixed The prepped value
      */
-    public static function prepValue($value, $jsonEncode = true)
+    public static function prepValue($value)
     {
         if ($value instanceof DateTime) {
             return DateTimeHelper::formatTimeForDb($value);
         }
 
-        if (is_object($value)) {
-            // Turn it into an array non-recursively so any DateTime properties stay that way
-            $value = ArrayHelper::toArray($value, [], false);
-        }
-
-        if (is_array($value)) {
-            // Run prepValue() on each of its values before JSON-encoding it
-            foreach ($value as $k => $v) {
-                $value[$k] = static::prepValue($v, false);
-            }
-
-            if ($jsonEncode) {
-                $value = JsonHelper::encode($value);
-            }
+        if (is_object($value) || is_array($value)) {
+            return JsonHelper::encode($value);
         }
 
         return $value;
