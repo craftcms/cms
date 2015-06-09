@@ -121,12 +121,24 @@ class AppUpdate extends Model
     public $manualDownloadEndpoint;
 
     /**
-     * @var array Releases
+     * @var AppNewRelease[] Releases
      */
     public $releases = [];
 
     // Public Methods
     // =========================================================================
+
+    /**
+     * @inheritdoc
+     */
+    public function datetimeAttributes()
+    {
+        $attributes = parent::datetimeAttributes();
+        $attributes[] = 'latestDate';
+        $attributes[] = 'realLatestDate';
+
+        return $attributes;
+    }
 
     /**
      * @inheritdoc
