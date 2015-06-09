@@ -31,6 +31,7 @@
 			orientation:           "{{ orientation|e('js') }}",
 			left:                  "{{ orientation == 'ltr' ? 'left' : 'right' }}",
 			right:                 "{{ orientation == 'ltr' ? 'right' : 'left' }}",
+			datepickerFormat:      "{{ craft.i18n.getDatepickerJsFormat()|e('js') }}",
 			username:              {{ currentUser is defined and currentUser ? ('"'~currentUser.username|e('js')~'"')|raw : 'null' }},
 			remainingSessionTime:  {{ craft.request.getFirstSegment() not in ['updates', 'manualupdate'] ? craft.session.getRemainingSessionTime : 0 }},
 			Personal:              {{ CraftPersonal }},
