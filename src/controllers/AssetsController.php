@@ -24,6 +24,7 @@ use craft\app\elements\Asset;
 use craft\app\helpers\StringHelper;
 use craft\app\models\VolumeFolder;
 use craft\app\web\Controller;
+use craft\app\web\Response;
 use craft\app\web\UploadedFile;
 
 /**
@@ -54,7 +55,7 @@ class AssetsController extends Controller
      *
      * @throws HttpException
      * @throws \Exception
-     * @return mixed
+     * @return Response The response object.
      */
     public function actionSaveAsset()
     {
@@ -179,7 +180,7 @@ class AssetsController extends Controller
      * Replace a file
      *
      * @throws Exception
-     * @return mixed
+     * @return Response The response object.
      */
     public function actionReplaceFile()
     {
@@ -214,7 +215,7 @@ class AssetsController extends Controller
     /**
      * Create a folder.
      *
-     * @return mixed
+     * @return Response The response object.
      * @throws HttpException
      */
     public function actionCreateFolder()
@@ -257,7 +258,7 @@ class AssetsController extends Controller
     /**
      * Delete a folder.
      *
-     * @return mixed
+     * @return Response The response object.
      */
     public function actionDeleteFolder()
     {
@@ -306,7 +307,7 @@ class AssetsController extends Controller
     /**
      * Move a file or multiple files.
      *
-     * @return mixed
+     * @return Response The response object.
      */
     public function actionMoveFile()
     {
@@ -372,7 +373,7 @@ class AssetsController extends Controller
     /**
      * Move a folder.
      *
-     * @return mixed
+     * @return Response The response object.
      */
     public function actionMoveFolder()
     {
@@ -479,11 +480,11 @@ class AssetsController extends Controller
      * Generate a transform.
      *
      * @throws HttpException
-     * @return mixed
+     * @return Response The response object.
      */
     public function actionGenerateTransform()
     {
-        $transformId = Craft::$app->getRequest()->getQuery('transformId');
+        $transformId = Craft::$app->getRequest()->getQueryParam('transformId');
         $returnUrl = (bool)Craft::$app->getRequest()->getBodyParam('returnUrl',
             false);
 
@@ -514,7 +515,7 @@ class AssetsController extends Controller
     /**
      * Get information about available transforms.
      *
-     * @return mixed
+     * @return Response The response object.
      */
     public function actionGetTransformInfo()
     {

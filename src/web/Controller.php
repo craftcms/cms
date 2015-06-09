@@ -299,7 +299,7 @@ abstract class Controller extends \yii\web\Controller
      *
      * @param string $error The error message.
      *
-     * @return void
+     * @return Response The response object.
      */
     public function asErrorJson($error)
     {
