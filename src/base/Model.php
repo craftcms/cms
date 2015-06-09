@@ -109,7 +109,17 @@ abstract class Model extends \yii\base\Model
      */
     public function datetimeAttributes()
     {
-        return ['dateCreated', 'dateUpdated'];
+        $attributes = [];
+
+        if (property_exists($this, 'dateCreated')) {
+            $attributes[] = 'dateCreated';
+        }
+
+        if (property_exists($this, 'dateUpdated')) {
+            $attributes[] = 'dateUpdated';
+        }
+
+        return $attributes;
     }
 
     /**
