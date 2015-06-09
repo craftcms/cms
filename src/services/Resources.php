@@ -460,7 +460,7 @@ class Resources extends Component
 
         if (!IOHelper::fileExists($sourceIconLocation)) {
             $sourceFile = Craft::$app->getPath()->getAppPath().'/resources/images/fileicons/'.$sourceSize['size'].'.png';
-            $image = Craft::$app->getImages()->loadaImage($sourceFile);
+            $image = Craft::$app->getImages()->loadImage($sourceFile);
 
             // Text placement.
             if ($ext) {
