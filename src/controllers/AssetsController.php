@@ -532,5 +532,32 @@ class AssetsController extends Controller
 
         return $this->asJson($output);
     }
+
+    /**
+     * Return the image editor.
+     *
+     * @return Response The response object.
+     */
+    public function actionImageEditor()
+    {
+        $this->requireAjaxRequest();
+        $this->requireAdmin();
+        $assetId = Craft::$app->getRequest()->getRequiredBodyParam('assetId');
+        $image = Craft::$app->getAssets()->getFileById($assetId);
+
+        if ($image->kind == "image") {
+            $output['html'] = Craft::$app->getView()->renderTemplate('_components/tools/image_editor',
+                ['image' => $image]
+            );
+            $output['imageData'] = [
+                'height' => $image->height,
+                'width'  => $image->width,
+                'url'    => $image->getUrl()
+            ];
+
+            return $this->asJson($output);
+        }
+        return $this->asErrorJson(Craft::t('app', 'That Asset is not an image.'));
+    }
 }
 

@@ -14,6 +14,7 @@ use craft\app\base\Volume;
 use craft\app\elements\actions\CopyReferenceTag;
 use craft\app\elements\actions\DeleteAssets;
 use craft\app\elements\actions\Edit;
+use craft\app\elements\actions\EditImage;
 use craft\app\elements\actions\RenameFile;
 use craft\app\elements\actions\ReplaceFile;
 use craft\app\elements\actions\View;
@@ -164,6 +165,20 @@ class Asset extends Element
                 )
             ) {
                 $actions[] = RenameFile::className();
+            }
+
+            // Edit Image
+            if (
+                Craft::$app->getAssets()->canUserPerformAction(
+                    $folderId,
+                    'removeFromVolume'
+                ) &&
+                Craft::$app->getAssets()->canUserPerformAction(
+                    $folderId,
+                    'uploadToVolume'
+                )
+            ) {
+                $actions[] = EditImage::className();
             }
 
             // Replace File
