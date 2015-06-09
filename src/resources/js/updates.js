@@ -186,7 +186,7 @@ Craft.UpdateInfo = Garnish.Base.extend(
 			{
 				heading += ' <span class="light">' +
 					Craft.t('build {build}', { build: release.build }) +
-					' - ' + release.localizedDate +
+					' • ' + Craft.formatDate(release.date) +
 					'</span>';
 			}
 
