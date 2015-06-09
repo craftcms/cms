@@ -41,12 +41,6 @@ class View extends \yii\web\View
     // =========================================================================
 
     /**
-     * @var array the registered hi-res CSS code blocks.
-     * @see registerHiResCss()
-     */
-    public $hiResCss;
-
-    /**
      * @var
      */
     private $_twigs;
@@ -577,8 +571,15 @@ class View extends \yii\web\View
      */
     public function registerHiResCss($css, $options = [], $key = null)
     {
-        $key = $key ?: md5($css);
-        $this->hiResCss[$key] = Html::style($css, $options);
+        $css = "@media only screen and (-webkit-min-device-pixel-ratio: 1.5),\n" .
+            "only screen and (   -moz-min-device-pixel-ratio: 1.5),\n" .
+            "only screen and (     -o-min-device-pixel-ratio: 3/2),\n" .
+            "only screen and (        min-device-pixel-ratio: 1.5),\n" .
+            "only screen and (        min-resolution: 1.5dppx){\n" .
+            $css."\n" .
+            '}';
+
+        $this->registerCss($css, $options, $key);
     }
 
     /**
@@ -675,7 +676,6 @@ class View extends \yii\web\View
             $this->metaTags = null;
             $this->linkTags = null;
             $this->css = null;
-            $this->hiResCss = null;
             $this->cssFiles = null;
             unset($this->jsFiles[self::POS_HEAD], $this->js[self::POS_HEAD]);
         }
@@ -1031,37 +1031,6 @@ class View extends \yii\web\View
         foreach ($this->_twigs as $twig) {
             $this->_addPluginTwigExtensions($twig);
         }
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function clear()
-    {
-        parent::clear();
-        $this->hiResCss = null;
-    }
-
-    // Protected Methods
-    // =========================================================================
-
-    /**
-     * @inheritdoc
-     */
-    protected function renderHeadHtml()
-    {
-        $lines = [];
-        $html = parent::renderHeadHtml();
-
-        if (!empty($html)) {
-            $lines[] = $html;
-        }
-
-        if (!empty($this->hiResCss)) {
-            $lines[] = implode("\n", $this->hiResCss);
-        }
-
-        return empty($lines) ? '' : implode("\n", $lines);
     }
 
     // Private Methods
