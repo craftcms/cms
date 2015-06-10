@@ -271,7 +271,7 @@ class Content extends Component
         foreach (Craft::$app->getFields()->getFieldsWithContent() as $field) {
             $handle = $field->handle;
             $value = $content->$handle;
-            $values[$this->fieldColumnPrefix.$field->handle] = DbHelper::prepValue($value);
+            $values[$this->fieldColumnPrefix.$field->handle] = DbHelper::prepareValueForDb($value);
         }
 
         $isNewContent = !$content->id;

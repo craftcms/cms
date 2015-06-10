@@ -52,7 +52,7 @@ class DbHelper
                 // Model::toArray() converts DateTime attributes to IS0-8601 strings
                 $arr[$key] = DateTimeHelper::formatTimeForDb($value);
             } else {
-                $arr[$key] = static::prepValue($value);
+                $arr[$key] = static::prepareValueForDb($value);
             }
         }
 
@@ -66,7 +66,7 @@ class DbHelper
      *
      * @return mixed The prepped value
      */
-    public static function prepValue($value)
+    public static function prepareValueForDb($value)
     {
         if ($value instanceof DateTime) {
             return DateTimeHelper::formatTimeForDb($value);

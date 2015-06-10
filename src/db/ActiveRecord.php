@@ -53,7 +53,7 @@ abstract class ActiveRecord extends \yii\db\ActiveRecord
             } else if ($attribute === 'uid' && $this->getIsNewRecord()) {
                 $this->uid = StringHelper::UUID();
             } else {
-                $this->$attribute = DbHelper::prepValue($this->$attribute);
+                $this->$attribute = DbHelper::prepareValueForDb($this->$attribute);
             }
         }
 
