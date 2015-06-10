@@ -14,6 +14,7 @@ use craft\app\elements\Asset;
 use craft\app\errors\VolumeFileExistsException;
 use craft\app\helpers\AssetsHelper;
 use craft\app\helpers\DateTimeHelper;
+use craft\app\helpers\DbHelper;
 use craft\app\helpers\ImageHelper;
 use craft\app\helpers\IOHelper;
 use craft\app\models\AssetTransformIndex;
@@ -462,16 +463,18 @@ class AssetTransforms extends Component
      */
     public function storeTransformIndexData(AssetTransformIndex $index)
     {
-        $values = $index->toArray([
-            'fileId',
-            'filename',
-            'format',
-            'location',
-            'volumeId',
-            'fileExists',
-            'inProgress',
-            'dateIndexed',
-        ], [], false);
+        $values = DbHelper::prepareValuesForDb(
+            $index->toArray([
+                'fileId',
+                'filename',
+                'format',
+                'location',
+                'volumeId',
+                'fileExists',
+                'inProgress',
+                'dateIndexed',
+            ], [], false)
+        );
 
         if (!empty($index->id)) {
             Craft::$app->getDb()->createCommand()->update('{{%assettransformindex}}',
