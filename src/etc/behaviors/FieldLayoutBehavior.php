@@ -17,14 +17,19 @@ class FieldLayoutBehavior extends BaseBehavior
 	// =========================================================================
 
 	/**
-	 * @var
+	 * @var string The element type that the field layout will be associated with
 	 */
-	private $_fieldLayout;
+	public $elementType;
+
+	/**
+	 * @var string The name of the attribute on the owner class that is used to store the field layout’s ID
+	 */
+	public $idAttribute = 'fieldLayoutId';
 
 	/**
 	 * @var
 	 */
-	private $_elementType;
+	private $_fieldLayout;
 
 	// Public Methods
 	// =========================================================================
@@ -32,13 +37,20 @@ class FieldLayoutBehavior extends BaseBehavior
 	/**
 	 * Constructor
 	 *
-	 * @param $elementType
-	 *
-	 * @return \Craft\FieldLayoutBehavior
+	 * @param string|null $elementType The element type that the field layout will be associated with
+	 * @param string|null $idAttribute The name of the attribute on the owner class that is used to store the field layout’s ID
 	 */
-	public function __construct($elementType)
+	public function __construct($elementType = null, $idAttribute = null)
 	{
-		$this->_elementType = $elementType;
+		if ($elementType !== null)
+		{
+			$this->elementType = $elementType;
+		}
+
+		if ($idAttribute !== null)
+		{
+			$this->idAttribute = $idAttribute;
+		}
 	}
 
 	/**
@@ -50,15 +62,15 @@ class FieldLayoutBehavior extends BaseBehavior
 	{
 		if (!isset($this->_fieldLayout))
 		{
-			if (!empty($this->getOwner()->fieldLayoutId))
+			if (!empty($this->getOwner()->{$this->idAttribute}))
 			{
-				$this->_fieldLayout = craft()->fields->getLayoutById($this->getOwner()->fieldLayoutId);
+				$this->_fieldLayout = craft()->fields->getLayoutById($this->getOwner()->{$this->idAttribute});
 			}
 
 			if (empty($this->_fieldLayout))
 			{
 				$this->_fieldLayout = new FieldLayoutModel();
-				$this->_fieldLayout->type = $this->_elementType;
+				$this->_fieldLayout->type = $this->elementType;
 			}
 		}
 
