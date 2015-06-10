@@ -12,15 +12,14 @@
 %}
 
 {% block body %}
-	{% registerCssResource "css/update.css" %}
-	{% registerJsResource "js/update.js" %}
+	{% registercssresource "css/update.css" %}
+	{% registerjsresource "js/update.js" %}
 
 	<div id="graphic" class="spinner big"></div>
 	<div id="status">{{ "Preparing to update…"|t }}</div>
 {% endblock %}
 
 
-{% set js %}
+{% registerjs %}
 	new Craft.Updater('{{ handle }}', {{ craft.request.getSegment(1) == 'manualupdate' ? 1 : 0 }});
-{% endset %}
-{% registerJs js %}
+{% endregisterjs %}

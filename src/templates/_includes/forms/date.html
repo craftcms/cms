@@ -12,8 +12,7 @@
 	{%- include "_includes/forms/text" with { autocomplete: false, size: 10, value: (value ? value.localeDate() : '') } -%}
 </div>
 
-{%- set js %}
-
+{%- registerjs %}
 	var $datePicker = $('#{{ id|namespaceInputId|e('js') }}');
 	$datePicker.datepicker({
 		constrainInput: false,
@@ -23,6 +22,4 @@
 		nextText:   '{{ "Next"|t|e('js') }}',
 		firstDay:   {{ currentUser.getPreference('weekStartDay', 0) }},
 	});
-
-{%- endset %}
-{%- registerJs js %}
+{%- endregisterjs %}

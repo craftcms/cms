@@ -100,7 +100,9 @@
 			</ul>
 		{% endif %}
 	{% else %}
-		{% registerJs 'Craft.cp.fetchAlerts();' %}
+		{% registerjs %}
+			Craft.cp.fetchAlerts();
+		{% endregisterjs %}
 	{% endif %}
 
 	<header id="header">
@@ -108,12 +110,18 @@
 			<ul id="header-actions">
 				{% set task = craft.tasks.getRunningTask() %}
 				{% if task %}
-					{% registerJs 'Craft.cp.setRunningTaskInfo('~task.getInfo()|json_encode|raw~');' %}
-					{% registerJs 'Craft.cp.trackTaskProgress();' %}
+					{% registerjs %}
+						Craft.cp.setRunningTaskInfo({{ task.getInfo()|json_encode|raw }});
+						Craft.cp.trackTaskProgress();
+					{% endregisterjs %}
 				{% elseif craft.tasks.areTasksPending() %}
-					{% registerJs 'Craft.cp.runPendingTasks();' %}
+					{% registerjs %}
+						Craft.cp.runPendingTasks();
+					{% endregisterjs %}
 				{% elseif craft.tasks.haveTasksFailed() %}
-					{% registerJs 'Craft.cp.setRunningTaskInfo({ status: "error" });' %}
+					{% registerjs %}
+						Craft.cp.setRunningTaskInfo({ status: "error" });
+					{% endregisterjs %}
 				{% endif %}
 
 				{% if currentUser.can('performUpdates') %}
@@ -132,7 +140,9 @@
 							</li>
 						{% endif %}
 					{% else %}
-						{% registerJs 'Craft.cp.checkForUpdates();' %}
+						{% registerjs %}
+							Craft.cp.checkForUpdates();
+						{% endregisterjs %}
 					{% endif %}
 				{% endif %}
 

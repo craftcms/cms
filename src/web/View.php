@@ -22,6 +22,7 @@ use craft\app\services\Plugins;
 use craft\app\web\assets\AppAsset;
 use craft\app\web\twig\Environment;
 use craft\app\web\twig\Extension;
+use craft\app\web\twig\Parser;
 use craft\app\web\twig\StringTemplate;
 use craft\app\web\twig\Template;
 use craft\app\web\twig\TemplateLoader;
@@ -158,6 +159,9 @@ class View extends \yii\web\View
 
             // Give plugins a chance to add their own Twig extensions
             $this->_addPluginTwigExtensions($twig);
+
+            // Set our custom parser to support resource registration tags using the capture mode
+            $twig->setParser(new Parser($twig));
 
             $this->_twigs[$loaderClass] = $twig;
         }

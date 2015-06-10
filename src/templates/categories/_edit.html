@@ -155,5 +155,7 @@
 
 
 {% if not category.slug %}
-	{% registerJs "window.slugGenerator = new Craft.SlugGenerator('#title', '#slug');" %}
+	{% registerjs %}
+		window.slugGenerator = new Craft.SlugGenerator('#title', '#slug');
+	{% endregisterjs %}
 {% endif %}

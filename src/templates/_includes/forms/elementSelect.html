@@ -19,7 +19,7 @@
 	<div class="btn add icon dashed">{{ selectionLabel is defined ? selectionLabel : "Choose"|t }}</div>
 </div>
 
-{% set js %}
+{% registerjs %}
 	new {{ jsClass }}(
 		"{{ id   | namespaceInputId   | e('js') }}",
 		"{{ name | namespaceInputName | e('js') }}",
@@ -30,6 +30,4 @@
 		{{ limit ?: 'null' }},
 		"{{ storageKey|e('js') }}"
 	);
-{% endset %}
-
-{% registerJs js %}
+{% endregisterjs %}

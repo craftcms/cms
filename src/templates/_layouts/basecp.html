@@ -13,7 +13,7 @@
 		</div>
 	</noscript>
 
-	{% set js %}
+	{% registerjs at head %}
 		window.Craft = {
 			siteUid:               "{{ craft.app.getSiteUid()|e('js') }}",
 			baseUrl:               "{{ url()|e('js') }}",
@@ -58,6 +58,5 @@
 				window.Craft.fileKinds.{{ kind }}.push("{{ extension }}");
 			{% endfor %}
 		{% endfor %}
-	{% endset %}
-	{% registerJs js 1 %}
+	{% endregisterjs %}
 {% endblock %}

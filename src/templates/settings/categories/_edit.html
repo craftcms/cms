@@ -140,7 +140,7 @@
 
 
 {% if not categoryGroup.handle %}
-	{% set js %}
+	{% registerjs %}
 		new Craft.HandleGenerator('#name', '#handle');
 
 		{% for locale in craft.i18n.getSiteLocales() %}
@@ -148,6 +148,5 @@
 				new Craft.EntryUrlFormatGenerator('#name', '#urlFormat-{{ locale.id }}', { suffix: '/{slug}' });
 			{% endif %}
 		{% endfor %}
-	{% endset %}
-	{% registerJs js %}
+	{% endregisterjs %}
 {% endif %}

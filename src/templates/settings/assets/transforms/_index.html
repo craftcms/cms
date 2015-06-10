@@ -43,12 +43,11 @@
 </div>
 {% endset %}
 
-{% set js %}
+{% registerjs %}
 	new Craft.AdminTable({
 		tableSelector: '#transforms',
 		noItemsSelector: '#notransforms',
 		sortable: false,
 		deleteAction: 'asset-transforms/delete-transform'
 	});
-{% endset %}
-{% registerJs js %}
+{% endregisterjs %}

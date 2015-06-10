@@ -72,5 +72,7 @@
 
 
 {% if group is not defined or not group.handle %}
-	{% registerJs "new Craft.HandleGenerator('#name', '#handle');" %}
+	{% registerjs %}
+		new Craft.HandleGenerator('#name', '#handle');
+	{% endregisterjs %}
 {% endif %}

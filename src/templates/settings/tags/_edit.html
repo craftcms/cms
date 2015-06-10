@@ -55,8 +55,7 @@
 
 
 {% if not tagGroup.handle %}
-	{% set js %}
+	{% registerjs %}
 		new Craft.HandleGenerator('#name', '#handle');
-	{% endset %}
-	{% registerJs js %}
+	{% endregisterjs %}
 {% endif %}

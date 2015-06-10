@@ -14,5 +14,7 @@
 
 
 {% if groupHandle is defined %}
-	{% registerJs 'window.defaultGroupHandle = "'~groupHandle~'";' %}
+	{% registerjs %}
+		window.defaultGroupHandle = '{{ groupHandle }}';
+	{% endregisterjs %}
 {% endif %}

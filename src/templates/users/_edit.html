@@ -52,12 +52,12 @@
 
 {% block main %}
 	{% if CraftEdition == CraftPro %}
-		{% registerJsResource "lib/fileupload/jquery.ui.widget.js" %}
-		{% registerJsResource "lib/fileupload/jquery.fileupload.js" %}
-		{% registerJsResource "lib/imgareaselect/jquery.imgareaselect.pack.js" %}
-		{% registerJsResource "js/profile.js" %}
-		{% registerCssResource "lib/imgareaselect/imgareaselect-animated.css" %}
-		{% registerCssResource "css/profile.css" %}
+		{% registerjsresource "lib/fileupload/jquery.ui.widget.js" %}
+		{% registerjsresource "lib/fileupload/jquery.fileupload.js" %}
+		{% registerjsresource "lib/imgareaselect/jquery.imgareaselect.pack.js" %}
+		{% registerjsresource "js/profile.js" %}
+		{% registercssresource "lib/imgareaselect/imgareaselect-animated.css" %}
+		{% registercssresource "css/profile.css" %}
 	{% endif %}
 
 	<div class="grid">
