@@ -18,10 +18,7 @@ use craft\app\helpers\LoggingHelper;
 class FileTarget extends \yii\log\FileTarget
 {
     /**
-     * Generates the context information to be logged and removes any sensitive info that might have
-     * been in post.
-     *
-     * @return string The context information.
+     * @inheritdoc
      */
     protected function getContextMessage()
     {
