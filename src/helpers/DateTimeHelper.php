@@ -171,6 +171,21 @@ class DateTimeHelper
     }
 
     /**
+     * Determines whether the given value is an ISO-8601 date string, as formatted by [DateTime::ISO8601](http://php.net/manual/en/class.datetime.php#datetime.constants.iso8601).
+     *
+     * @param mixed $value The value
+     * @return boolean Whether the value is an ISO-8601 date string
+     */
+    public static function isIso8601($value)
+    {
+        if (is_string($value) && preg_match('/^\d\d\d\d-\d\d-\d\dT\d\d:\d\d:\d\d[\+\-]\d\d\d\d$/', $value)) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    /**
      * Converts a date to an ISO-8601 string.
      *
      * @param mixed $date The date, in any format that [[toDateTime()]] supports.
