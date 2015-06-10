@@ -1394,6 +1394,7 @@ trait ApplicationTrait
             } else {
                 $fileTarget->logFile = Craft::getAlias('@storage/logs/web.log');
 
+                // Only log errors and warnings, unless Craft is running in Dev Mode or it's being updated
                 if (!$configService->get('devMode') || !$this->_isCraftUpdating()) {
                     $fileTarget->setLevels(Logger::LEVEL_ERROR | Logger::LEVEL_WARNING);
                 }
