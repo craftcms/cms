@@ -242,13 +242,8 @@ class TemplateCache extends Component
      * @throws \Exception
      * @return void
      */
-    public function endTemplateCache(
-        $key,
-        $global,
-        $duration,
-        $expiration,
-        $body
-    ) {
+    public function endTemplateCache($key, $global, $duration, $expiration, $body)
+    {
         // Make sure template caching is enabled
         if ($this->_isTemplateCachingEnabled() === false) {
             return;
@@ -447,10 +442,8 @@ class TemplateCache extends Component
      *
      * @return boolean
      */
-    public function deleteCachesByElementId(
-        $elementId,
-        $deleteQueryCaches = true
-    ) {
+    public function deleteCachesByElementId($elementId, $deleteQueryCaches = true)
+    {
         if ($this->_deletedAllCaches || $this->_isTemplateCachingEnabled() === false) {
             return false;
         }

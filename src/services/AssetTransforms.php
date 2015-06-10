@@ -533,10 +533,8 @@ class AssetTransforms extends Component
      *
      * @return AssetTransformIndex|null
      */
-    public function getTransformIndexModelByFileIdAndHandle(
-        $fileId,
-        $transformHandle
-    ) {
+    public function getTransformIndexModelByFileIdAndHandle($fileId, $transformHandle)
+    {
         // Check if an entry exists already
         $entry = (new Query())
             ->select('ti.*')
@@ -573,9 +571,8 @@ class AssetTransforms extends Component
      *
      * @return string
      */
-    public function getUrlForTransformByTransformIndex(
-        AssetTransformIndex $transformIndexModel
-    ) {
+    public function getUrlForTransformByTransformIndex(AssetTransformIndex $transformIndexModel)
+    {
         $file = Craft::$app->getAssets()->getFileById($transformIndexModel->fileId);
         $volume = $file->getVolume();
         $baseUrl = $volume->getRootUrl();
@@ -733,7 +730,8 @@ class AssetTransforms extends Component
 
         // Resize if constrained by maxCachedImageSizes setting
         if ($maxCachedImageSize > 0) {
-            Craft::$app->getImages()->loadImage($source, $maxCachedImageSize, $maxCachedImageSize)->scaleToFit($maxCachedImageSize,
+            Craft::$app->getImages()->loadImage($source, $maxCachedImageSize,
+                $maxCachedImageSize)->scaleToFit($maxCachedImageSize,
                 $maxCachedImageSize)->setQuality(100)->saveAs($destination ?: $source);
         } else {
             if ($source != $destination) {
@@ -802,10 +800,8 @@ class AssetTransforms extends Component
      *
      * @return mixed|string
      */
-    public function getTransformSubfolder(
-        Asset $file,
-        AssetTransformIndex $index
-    ) {
+    public function getTransformSubfolder(Asset $file, AssetTransformIndex $index)
+    {
         $path = $index->location;
 
         if (!empty($index->filename) && $index->filename != $file->filename) {
@@ -823,10 +819,8 @@ class AssetTransforms extends Component
      *
      * @return mixed
      */
-    public function getTransformFilename(
-        Asset $file,
-        AssetTransformIndex $index
-    ) {
+    public function getTransformFilename(Asset $file, AssetTransformIndex $index)
+    {
         if (empty($index->filename)) {
             return $file->filename;
         } else {
@@ -972,9 +966,8 @@ class AssetTransforms extends Component
      *
      * @return string
      */
-    private function _getNamedTransformFolderName(
-        AssetTransformModel $transform
-    ) {
+    private function _getNamedTransformFolderName(AssetTransformModel $transform)
+    {
         return '_'.$transform->handle;
     }
 
@@ -985,9 +978,8 @@ class AssetTransforms extends Component
      *
      * @return string
      */
-    private function _getUnnamedTransformFolderName(
-        AssetTransformModel $transform
-    ) {
+    private function _getUnnamedTransformFolderName(AssetTransformModel $transform)
+    {
         return '_'.($transform->width ? $transform->width : 'AUTO').'x'.($transform->height ? $transform->height : 'AUTO').
         '_'.($transform->mode).
         '_'.($transform->position).
@@ -1003,10 +995,8 @@ class AssetTransforms extends Component
      * @throws AssetTransformException if the AssetTransformIndex cannot be determined to have a transform
      * @return void
      */
-    private function _createTransformForFile(
-        Asset $file,
-        AssetTransformIndex $index
-    ) {
+    private function _createTransformForFile(Asset $file, AssetTransformIndex $index)
+    {
         if (!ImageHelper::isImageManipulatable(IOHelper::getExtension($file->filename))) {
             return;
         }
@@ -1039,7 +1029,8 @@ class AssetTransforms extends Component
         $imageSource = $file->getTransformSource();
         $quality = $transform->quality ? $transform->quality : Craft::$app->getConfig()->get('defaultImageQuality');
 
-        $image = Craft::$app->getImages()->loadImage($imageSource, $transform->width, $transform->height);
+        $image = Craft::$app->getImages()->loadImage($imageSource,
+            $transform->width, $transform->height);
         $image->setQuality($quality);
 
         switch ($transform->mode) {
@@ -1096,11 +1087,11 @@ class AssetTransforms extends Component
             ImageHelper::getWebSafeFormats()
         )
         ) {
-            if ($file->getExtension() == 'svg' && Craft::$app->getImages(
-                )->isImagick()
+            if ($file->getExtension() == 'svg' && Craft::$app->getImages()->isImagick()
             ) {
                 return 'png';
             }
+
             return 'jpg';
         } else {
             return $file->getExtension();

@@ -167,13 +167,8 @@ class Formatter extends \yii\i18n\Formatter
      * @throws InvalidParamException if the input value is not numeric.
      * @throws InvalidConfigException if no currency is given and [[currencyCode]] is not defined.
      */
-    public function asCurrency(
-        $value,
-        $currency = null,
-        $options = [],
-        $textOptions = [],
-        $omitIntegerDecimals = false
-    ) {
+    public function asCurrency($value, $currency = null, $options = [], $textOptions = [], $omitIntegerDecimals = false)
+    {
         $omitDecimals = ($omitIntegerDecimals && (int)$value == $value);
 
         if (Craft::$app->getI18n()->getIsIntlLoaded()) {

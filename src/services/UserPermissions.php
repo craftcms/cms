@@ -538,10 +538,8 @@ class UserPermissions extends Component
      *
      * @return array $filteredPermissions The permissions we'll actually let them save.
      */
-    private function _filterOrphanedPermissions(
-        $postedPermissions,
-        $groupPermissions = []
-    ) {
+    private function _filterOrphanedPermissions($postedPermissions, $groupPermissions = [])
+    {
         $filteredPermissions = [];
 
         if ($postedPermissions) {
@@ -565,12 +563,8 @@ class UserPermissions extends Component
      *
      * @return void
      */
-    private function _findSelectedPermissions(
-        $permissionsGroup,
-        $postedPermissions,
-        $groupPermissions,
-        &$filteredPermissions
-    ) {
+    private function _findSelectedPermissions($permissionsGroup, $postedPermissions, $groupPermissions, &$filteredPermissions)
+    {
         foreach ($permissionsGroup as $name => $data) {
             // Was this permission in the post data, or do they already have it via their group?
             if (($inPostedPermissions = in_array($name,

@@ -95,11 +95,8 @@ class StringHelper extends \yii\helpers\StringHelper
      *
      * @return boolean Whether or not $haystack contains any $needles.
      */
-    public static function containsAny(
-        $haystack,
-        $needles,
-        $caseSensitive = true
-    ) {
+    public static function containsAny($haystack, $needles, $caseSensitive = true)
+    {
         return StaticStringy::containsAny($haystack, $needles, $caseSensitive);
     }
 
@@ -113,11 +110,8 @@ class StringHelper extends \yii\helpers\StringHelper
      *
      * @return boolean Whether or not $haystack contains all $needles.
      */
-    public static function containsAll(
-        $haystack,
-        $needles,
-        $caseSensitive = true
-    ) {
+    public static function containsAll($haystack, $needles, $caseSensitive = true)
+    {
         return StaticStringy::containsAll($haystack, $needles, $caseSensitive);
     }
 
@@ -131,11 +125,8 @@ class StringHelper extends \yii\helpers\StringHelper
      *
      * @return integer The number of $substring occurrences.
      */
-    public static function countSubstrings(
-        $str,
-        $substring,
-        $caseSensitive = true
-    ) {
+    public static function countSubstrings($str, $substring, $caseSensitive = true)
+    {
         return StaticStringy::countSubstr($str, $substring, $caseSensitive);
     }
 
@@ -376,12 +367,8 @@ class StringHelper extends \yii\helpers\StringHelper
      *
      * @return string The kebab-cased string
      */
-    public static function toKebabCase(
-        $string,
-        $glue = '-',
-        $lower = true,
-        $removePunctuation = true
-    ) {
+    public static function toKebabCase($string, $glue = '-', $lower = true, $removePunctuation = true)
+    {
         if ($removePunctuation) {
             $string = str_replace(['.', '_', '-'], ' ', $string);
         }
@@ -520,12 +507,8 @@ class StringHelper extends \yii\helpers\StringHelper
      *
      * @return string The resulting string after the replacements.
      */
-    public static function regexReplace(
-        $str,
-        $pattern,
-        $replacement,
-        $options = 'msr'
-    ) {
+    public static function regexReplace($str, $pattern, $replacement, $options = 'msr')
+    {
         return StaticStringy::regexReplace($str, $pattern, $replacement,
             $options);
     }

@@ -238,11 +238,11 @@ class Assets extends Component
         }
 
         if (!empty($asset->newFilePath)) {
-			if (IOHelper::getFileKind(IOHelper::getExtension($asset->newFilePath)) == 'image') {
-				ImageHelper::cleanImageByPath($asset->newFilePath);
-			}
+            if (IOHelper::getFileKind(IOHelper::getExtension($asset->newFilePath)) == 'image') {
+                ImageHelper::cleanImageByPath($asset->newFilePath);
+            }
 
-			$stream = fopen($asset->newFilePath, 'r');
+            $stream = fopen($asset->newFilePath, 'r');
 
             if (!$stream) {
                 throw new FileException(Craft::t('app',
@@ -297,11 +297,8 @@ class Assets extends Component
      *
      * @return void
      */
-    public function replaceAsset(
-        Asset $fileToReplace,
-        Asset $fileToReplaceWith,
-        $mergeAssets = false
-    ) {
+    public function replaceAsset(Asset $fileToReplace, Asset $fileToReplaceWith, $mergeAssets = false)
+    {
         $targetVolume = $fileToReplace->getVolume();
 
         // TODO purge cached files for remote Volumes.
@@ -367,9 +364,9 @@ class Assets extends Component
                 'The asset to be replaced cannot be found.'));
         }
 
-		if (IOHelper::getFileKind(IOHelper::getExtension($pathOnServer)) == 'image') {
-			ImageHelper::cleanImageByPath($pathOnServer);
-		}
+        if (IOHelper::getFileKind(IOHelper::getExtension($pathOnServer)) == 'image') {
+            ImageHelper::cleanImageByPath($pathOnServer);
+        }
 
         $event = new ReplaceAssetEvent([
             'asset' => $existingFile,
@@ -743,10 +740,8 @@ class Assets extends Component
      *
      * @return array
      */
-    public function getAllDescendantFolders(
-        VolumeFolderModel $parentFolder,
-        $orderBy = "path"
-    ) {
+    public function getAllDescendantFolders(VolumeFolderModel $parentFolder, $orderBy = "path")
+    {
         /**
          * @var $query Query
          */
@@ -883,10 +878,8 @@ class Assets extends Component
      * @throws AssetLogicException
      * @return string
      */
-    public function getNameReplacementInFolder(
-        $filename,
-        VolumeFolderModel $folder
-    ) {
+    public function getNameReplacementInFolder($filename, VolumeFolderModel $folder)
+    {
         $volume = $folder->getVolume();
         $fileList = $volume->getFileList($folder->path);
 
@@ -1140,11 +1133,8 @@ class Assets extends Component
      * @throws FileException
      * @return void
      */
-    private function _moveFileToFolder(
-        Asset $asset,
-        VolumeFolderModel $targetFolder,
-        $newFilename = ""
-    ) {
+    private function _moveFileToFolder(Asset $asset, VolumeFolderModel $targetFolder, $newFilename = "")
+    {
         $filename = $newFilename ?: $asset->filename;
 
         $sourceVolume = $asset->getVolume();

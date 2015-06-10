@@ -29,13 +29,8 @@ class FixedOrderExpression extends Expression
      * @param array      $params Parameters
      * @param array      $config Name-value pairs that will be used to initialize the object properties.
      */
-    public function __construct(
-        $column,
-        $values,
-        $db,
-        $params = [],
-        $config = []
-    ) {
+    public function __construct($column, $values, $db, $params = [], $config = [])
+    {
         $expression = $db->getQueryBuilder()->fixedOrder($column, $values);
         parent::__construct($expression, $params, $config);
     }

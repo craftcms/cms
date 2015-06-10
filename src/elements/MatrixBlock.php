@@ -64,9 +64,8 @@ class MatrixBlock extends Element
     /**
      * @inheritdoc
      */
-    public static function getFieldsForElementsQuery(
-        ElementQueryInterface $query
-    ) {
+    public static function getFieldsForElementsQuery(ElementQueryInterface $query)
+    {
         $fields = [];
 
         foreach (Craft::$app->getMatrix()->getBlockTypesByFieldId($query->fieldId) as $blockType) {

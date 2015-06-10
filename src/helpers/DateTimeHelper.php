@@ -41,11 +41,8 @@ class DateTimeHelper
      *
      * @return DateTime|false The DateTime object, or `false` if $object could not be converted to one
      */
-    public static function toDateTime(
-        $object,
-        $timezone = null,
-        $setToSystemTimeZone = true
-    ) {
+    public static function toDateTime($object, $timezone = null, $setToSystemTimeZone = true)
+    {
         if ($object instanceof \DateTime) {
             return $object;
         }
@@ -174,11 +171,14 @@ class DateTimeHelper
      * Determines whether the given value is an ISO-8601 date string, as formatted by [DateTime::ISO8601](http://php.net/manual/en/class.datetime.php#datetime.constants.iso8601).
      *
      * @param mixed $value The value
+     *
      * @return boolean Whether the value is an ISO-8601 date string
      */
     public static function isIso8601($value)
     {
-        if (is_string($value) && preg_match('/^\d\d\d\d-\d\d-\d\dT\d\d:\d\d:\d\d[\+\-]\d\d\d\d$/', $value)) {
+        if (is_string($value) && preg_match('/^\d\d\d\d-\d\d-\d\dT\d\d:\d\d:\d\d[\+\-]\d\d\d\d$/',
+                $value)
+        ) {
             return true;
         } else {
             return false;
@@ -189,6 +189,7 @@ class DateTimeHelper
      * Converts a date to an ISO-8601 string.
      *
      * @param mixed $date The date, in any format that [[toDateTime()]] supports.
+     *
      * @return string|false The date formatted as an ISO-8601 string, or `false` if $date was not a valid date
      */
     public static function toIso8601($date)
@@ -226,10 +227,8 @@ class DateTimeHelper
      *
      * @return string
      */
-    public static function secondsToHumanTimeDuration(
-        $seconds,
-        $showSeconds = true
-    ) {
+    public static function secondsToHumanTimeDuration($seconds, $showSeconds = true)
+    {
         $secondsInWeek = 604800;
         $secondsInDay = 86400;
         $secondsInHour = 3600;
@@ -427,11 +426,8 @@ class DateTimeHelper
      *
      * @return boolean Whether the $dateString was within the specified $timeInterval.
      */
-    public static function wasWithinLast(
-        $timeInterval,
-        $dateString,
-        $userOffset = null
-    ) {
+    public static function wasWithinLast($timeInterval, $dateString, $userOffset = null)
+    {
         if (is_numeric($timeInterval)) {
             $timeInterval = $timeInterval.' days';
         }

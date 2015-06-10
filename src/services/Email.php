@@ -241,11 +241,8 @@ class Email extends Component
      * @throws Exception
      * @return boolean
      */
-    private function _sendEmail(
-        User $user,
-        EmailModel $emailModel,
-        $variables = []
-    ) {
+    private function _sendEmail(User $user, EmailModel $emailModel, $variables = [])
+    {
         // Get the saved email settings.
         $emailSettings = $this->getSettings();
 

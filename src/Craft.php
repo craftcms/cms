@@ -87,12 +87,8 @@ class Craft extends Yii
      *
      * @return string|null The translated message, or null if the source key could not be found.
      */
-    public static function t(
-        $category,
-        $message,
-        $params = [],
-        $language = null
-    ) {
+    public static function t($category, $message, $params = [], $language = null)
+    {
         if (!$category) {
             $category = 'application';
         }
@@ -247,10 +243,8 @@ EOD;
      *
      * @return boolean
      */
-    private static function _isFieldAttributesFileValid(
-        $path,
-        $storedFieldVersion
-    ) {
+    private static function _isFieldAttributesFileValid($path, $storedFieldVersion)
+    {
         if (file_exists($path)) {
             // Make sure it's up-to-date
             $f = fopen($path, 'r');
@@ -277,12 +271,8 @@ EOD;
      * @param $replace
      * @param $destinationPath
      */
-    private static function _writeFieldAttributesFile(
-        $templatePath,
-        $search,
-        $replace,
-        $destinationPath
-    ) {
+    private static function _writeFieldAttributesFile($templatePath, $search, $replace, $destinationPath)
+    {
         $fileContents = IOHelper::getFileContents($templatePath);
         $fileContents = str_replace($search, $replace, $fileContents);
         IOHelper::writeToFile($destinationPath, $fileContents);

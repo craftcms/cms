@@ -60,10 +60,8 @@ class AssetTransformsController extends Controller
      * @return string The rendering result
      * @throws HttpException
      */
-    public function actionEditTransform(
-        $transformHandle = null,
-        AssetTransform $transform = null
-    ) {
+    public function actionEditTransform($transformHandle = null, AssetTransform $transform = null)
+    {
         if ($transform === null) {
             if ($transformHandle !== null) {
                 $transform = Craft::$app->getAssetTransforms()->getTransformByHandle($transformHandle);

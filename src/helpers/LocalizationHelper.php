@@ -63,9 +63,8 @@ class LocalizationHelper
      *
      * @return void
      */
-    public static function findMissingTranslation(
-        \CMissingTranslationEvent $event
-    ) {
+    public static function findMissingTranslation(\CMissingTranslationEvent $event)
+    {
         // Look for translation file from most to least specific.  So nl_nl.php gets checked before nl.php, for example.
         $translationFiles = [];
         $parts = explode('_', $event->language);

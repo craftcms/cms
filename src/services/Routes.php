@@ -105,12 +105,8 @@ class Routes extends Component
      * @throws Exception
      * @return RouteRecord
      */
-    public function saveRoute(
-        $urlParts,
-        $template,
-        $routeId = null,
-        $locale = null
-    ) {
+    public function saveRoute($urlParts, $template, $routeId = null, $locale = null)
+    {
         if ($routeId !== null) {
             $routeRecord = RouteRecord::findOne($routeId);
 

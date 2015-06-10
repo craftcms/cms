@@ -117,12 +117,8 @@ class Zip
      *
      * @return boolean
      */
-    public static function add(
-        $sourceZip,
-        $pathToAdd,
-        $basePath,
-        $pathPrefix = null
-    ) {
+    public static function add($sourceZip, $pathToAdd, $basePath, $pathPrefix = null)
+    {
         $sourceZip = IOHelper::normalizePathSeparators($sourceZip);
         $pathToAdd = IOHelper::normalizePathSeparators($pathToAdd);
         $basePath = IOHelper::normalizePathSeparators($basePath);

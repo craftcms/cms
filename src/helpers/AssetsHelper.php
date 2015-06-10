@@ -130,9 +130,7 @@ class AssetsHelper
      * @return array $folderIdChanges map of original folder id => new folder id
      */
     public static function mirrorFolderStructure(
-        VolumeFolder $sourceParentFolder,
-        VolumeFolder $destinationFolder,
-        $targetTreeMap = array()
+        VolumeFolder $sourceParentFolder, VolumeFolder $destinationFolder, $targetTreeMap = array()
     ) {
         $sourceTree = Craft::$app->getAssets()->getAllDescendantFolders($sourceParentFolder);
         $previousParent = $sourceParentFolder->getParent();
@@ -164,11 +162,8 @@ class AssetsHelper
         return $folderIdChanges;
     }
 
-    public static function getFileTransferList(
-        $assets,
-        $folderIdChanges,
-        $merge = false
-    ) {
+    public static function getFileTransferList($assets, $folderIdChanges, $merge = false)
+    {
         $fileTransferList = [];
 
         // Build the transfer list for files

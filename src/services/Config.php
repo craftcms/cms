@@ -146,11 +146,8 @@ class Config extends Component
      *
      * @return mixed The value of the config setting, or `null` if a value could not be found.
      */
-    public function getLocalized(
-        $item,
-        $localeId = null,
-        $category = ConfigCategory::General
-    ) {
+    public function getLocalized($item, $localeId = null, $category = ConfigCategory::General)
+    {
         $value = $this->get($item, $category);
 
         if (is_array($value)) {

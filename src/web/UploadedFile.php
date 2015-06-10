@@ -65,10 +65,8 @@ class UploadedFile extends \yii\web\UploadedFile
      *                        found. Please note that this array will contain all files from all subarrays regardless
      *                        how deeply nested they are.
      */
-    public static function getInstancesByName(
-        $name,
-        $lookForSingleInstance = true
-    ) {
+    public static function getInstancesByName($name, $lookForSingleInstance = true)
+    {
         $name = static::_normalizeName($name);
         $instances = parent::getInstancesByName($name);
 

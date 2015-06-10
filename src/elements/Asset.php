@@ -260,10 +260,8 @@ class Asset extends Element
     /**
      * @inheritdoc
      */
-    public static function getTableAttributeHtml(
-        ElementInterface $element,
-        $attribute
-    ) {
+    public static function getTableAttributeHtml(ElementInterface $element, $attribute)
+    {
         /** @var Asset $element */
         // First give plugins a chance to set this
         $pluginAttributeHtml = Craft::$app->getPlugins()->callFirst(
@@ -277,8 +275,7 @@ class Asset extends Element
         }
 
         switch ($attribute) {
-            case 'filename':
-            {
+            case 'filename': {
                 return HtmlHelper::encodeParams(
                     '<span style="word-break: break-word;">{filename}</span>',
                     [
@@ -287,8 +284,7 @@ class Asset extends Element
                 );
             }
 
-            case 'size':
-            {
+            case 'size': {
                 if ($element->size) {
                     return Craft::$app->getFormatter()->asShortSize(
                         $element->size
@@ -298,10 +294,9 @@ class Asset extends Element
                 }
             }
 
-            default:
-                {
+            default: {
                 return parent::getTableAttributeHtml($element, $attribute);
-                }
+            }
         }
     }
 
@@ -390,19 +385,17 @@ class Asset extends Element
     /**
      * Transforms an asset folder tree into a source list.
      *
-     * @param array $folders
+     * @param array   $folders
      * @param boolean $includeNestedFolders
      *
      * @return array
      */
-    private static function _assembleSourceList(
-        $folders,
-        $includeNestedFolders = true
-    ) {
+    private static function _assembleSourceList($folders, $includeNestedFolders = true)
+    {
         $sources = [];
 
         foreach ($folders as $folder) {
-            $sources['folder:' . $folder->id] = static::_assembleSourceInfoForFolder(
+            $sources['folder:'.$folder->id] = static::_assembleSourceInfoForFolder(
                 $folder,
                 $includeNestedFolders
             );
@@ -415,28 +408,26 @@ class Asset extends Element
      * Transforms an VolumeFolderModel into a source info array.
      *
      * @param VolumeFolder $folder
-     * @param boolean $includeNestedFolders
+     * @param boolean      $includeNestedFolders
      *
      * @return array
      */
-    private static function _assembleSourceInfoForFolder(
-        VolumeFolder $folder,
-        $includeNestedFolders = true
-    ) {
+    private static function _assembleSourceInfoForFolder(VolumeFolder $folder, $includeNestedFolders = true)
+    {
         $source = [
             'label' => ($folder->parentId ? $folder->name : Craft::t(
-                    'app',
-                    $folder->name
-                )),
+                'app',
+                $folder->name
+            )),
             'hasThumbs' => true,
             'criteria' => ['folderId' => $folder->id],
             'data' => [
                 'upload' => is_null(
-                        $folder->volumeId
-                    ) ? true : Craft::$app->getAssets()->canUserPerformAction(
-                        $folder->id,
-                        'uploadToVolume'
-                    )
+                    $folder->volumeId
+                ) ? true : Craft::$app->getAssets()->canUserPerformAction(
+                    $folder->id,
+                    'uploadToVolume'
+                )
             ]
         ];
 
@@ -551,8 +542,7 @@ class Asset extends Element
      */
     public function __isset($name)
     {
-        if (parent::__isset($name) || Craft::$app->getAssetTransforms(
-            )->getTransformByHandle($name)
+        if (parent::__isset($name) || Craft::$app->getAssetTransforms()->getTransformByHandle($name)
         ) {
             return true;
         } else {
@@ -580,8 +570,7 @@ class Asset extends Element
             return parent::__get($name);
         } catch (UnknownPropertyException $e) {
             // Is $name a transform handle?
-            $transform = Craft::$app->getAssetTransforms(
-            )->getTransformByHandle($name);
+            $transform = Craft::$app->getAssetTransforms()->getTransformByHandle($name);
 
             if ($transform) {
                 // Duplicate this model and set it to that transform
@@ -700,7 +689,7 @@ class Asset extends Element
     public function isEditable()
     {
         return Craft::$app->getUser()->checkPermission(
-            'uploadToVolume:' . $this->volumeId
+            'uploadToVolume:'.$this->volumeId
         );
     }
 
@@ -712,9 +701,7 @@ class Asset extends Element
     public function getImg()
     {
         if ($this->kind == 'image') {
-            $img = '<img src="' . $this->url . '" width="' . $this->getWidth(
-                ) . '" height="' . $this->getHeight(
-                ) . '" alt="' . HtmlHelper::encode($this->title) . '" />';
+            $img = '<img src="'.$this->url.'" width="'.$this->getWidth().'" height="'.$this->getHeight().'" alt="'.HtmlHelper::encode($this->title).'" />';
 
             return TemplateHelper::getRaw($img);
         }
@@ -745,8 +732,7 @@ class Asset extends Element
      */
     public function setTransform($transform)
     {
-        $this->_transform = Craft::$app->getAssetTransforms(
-        )->normalizeTransform($transform);
+        $this->_transform = Craft::$app->getAssetTransforms()->normalizeTransform($transform);
 
         return $this;
     }
@@ -774,10 +760,9 @@ class Asset extends Element
     {
         if ($this->hasThumb()) {
             return UrlHelper::getResourceUrl(
-                'assetthumbs/' . $this->id . '/' . $size,
+                'assetthumbs/'.$this->id.'/'.$size,
                 [
-                    Craft::$app->getResources(
-                    )->dateParam => $this->dateModified->getTimestamp()
+                    Craft::$app->getResources()->dateParam => $this->dateModified->getTimestamp()
                 ]
             );
         } else {
@@ -794,7 +779,7 @@ class Asset extends Element
             return false;
         } else {
             return UrlHelper::getResourceUrl(
-                'icons/' . $this->getExtension() . '/' . $size
+                'icons/'.$this->getExtension().'/'.$size
             );
         }
     }
@@ -914,7 +899,7 @@ class Asset extends Element
     {
         $folder = $this->getFolder();
 
-        return $folder->path . ($filename ? : $this->filename);
+        return $folder->path.($filename ?: $this->filename);
     }
 
     /**
@@ -927,10 +912,9 @@ class Asset extends Element
         $volume = Craft::$app->getVolumes()->getVolumeById($this->volumeId);
 
         if ($volume->isLocal()) {
-            return $volume->getRootPath() . '/' . $this->getUri();
+            return $volume->getRootPath().'/'.$this->getUri();
         } else {
-            return Craft::$app->getPath()->getAssetsImageSourcePath(
-            ) . '/' . $this->id . '.' . $this->getExtension();
+            return Craft::$app->getPath()->getAssetsImageSourcePath().'/'.$this->id.'.'.$this->getExtension();
         }
     }
 

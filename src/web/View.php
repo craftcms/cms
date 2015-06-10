@@ -575,12 +575,12 @@ class View extends \yii\web\View
      */
     public function registerHiResCss($css, $options = [], $key = null)
     {
-        $css = "@media only screen and (-webkit-min-device-pixel-ratio: 1.5),\n" .
-            "only screen and (   -moz-min-device-pixel-ratio: 1.5),\n" .
-            "only screen and (     -o-min-device-pixel-ratio: 3/2),\n" .
-            "only screen and (        min-device-pixel-ratio: 1.5),\n" .
-            "only screen and (        min-resolution: 1.5dppx){\n" .
-            $css."\n" .
+        $css = "@media only screen and (-webkit-min-device-pixel-ratio: 1.5),\n".
+            "only screen and (   -moz-min-device-pixel-ratio: 1.5),\n".
+            "only screen and (     -o-min-device-pixel-ratio: 3/2),\n".
+            "only screen and (        min-device-pixel-ratio: 1.5),\n".
+            "only screen and (        min-resolution: 1.5dppx){\n".
+            $css."\n".
             '}';
 
         $this->registerCss($css, $options, $key);
@@ -860,11 +860,8 @@ class View extends \yii\web\View
      *
      * @return string The HTML with namespaced input names.
      */
-    public function namespaceInputs(
-        $html,
-        $namespace = null,
-        $otherAttributes = true
-    ) {
+    public function namespaceInputs($html, $namespace = null, $otherAttributes = true)
+    {
         if ($namespace === null) {
             $namespace = $this->getNamespace();
         }

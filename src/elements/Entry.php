@@ -384,10 +384,8 @@ class Entry extends Element
     /**
      * @inheritdoc
      */
-    public static function getTableAttributeHtml(
-        ElementInterface $element,
-        $attribute
-    ) {
+    public static function getTableAttributeHtml(ElementInterface $element, $attribute)
+    {
         /** @var Entry $element */
         // First give plugins a chance to set this
         $pluginAttributeHtml = Craft::$app->getPlugins()->callFirst('getEntryTableAttributeHtml',
@@ -411,10 +409,8 @@ class Entry extends Element
     /**
      * @inheritdoc
      */
-    public static function getElementQueryStatusCondition(
-        ElementQueryInterface $query,
-        $status
-    ) {
+    public static function getElementQueryStatusCondition(ElementQueryInterface $query, $status)
+    {
         $currentTimeDb = DbHelper::prepareDateForDb(new \DateTime());
 
         switch ($status) {
@@ -521,10 +517,8 @@ class Entry extends Element
     /**
      * @inheritdoc
      */
-    public static function onAfterMoveElementInStructure(
-        ElementInterface $element,
-        $structureId
-    ) {
+    public static function onAfterMoveElementInStructure(ElementInterface $element, $structureId)
+    {
         /** @var Entry $element */
         // Was the entry moved within its section's structure?
         $section = $element->getSection();

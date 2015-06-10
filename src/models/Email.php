@@ -179,12 +179,8 @@ class Email extends Model
      *
      * @return void
      */
-    public function addStringAttachment(
-        $string,
-        $filename,
-        $encoding = 'base64',
-        $type = 'application/octet-stream'
-    ) {
+    public function addStringAttachment($string, $filename, $encoding = 'base64', $type = 'application/octet-stream')
+    {
         $existingAttachments = $this->stringAttachments;
         $existingAttachments[] = [
             'string' => $string,
@@ -205,12 +201,8 @@ class Email extends Model
      *
      * @return boolean
      */
-    public function addAttachment(
-        $path,
-        $name = '',
-        $encoding = 'base64',
-        $type = 'application/octet-stream'
-    ) {
+    public function addAttachment($path, $name = '', $encoding = 'base64', $type = 'application/octet-stream')
+    {
         $existingAttachments = $this->attachments;
         $existingAttachments[] = [
             'path' => $path,

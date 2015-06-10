@@ -681,10 +681,8 @@ class I18N extends \yii\i18n\I18N
      * @param $oldPrimaryLocaleId
      * @param $newPrimaryLocaleId
      */
-    private function _processNewPrimaryLocale(
-        $oldPrimaryLocaleId,
-        $newPrimaryLocaleId
-    ) {
+    private function _processNewPrimaryLocale($oldPrimaryLocaleId, $newPrimaryLocaleId)
+    {
         Craft::$app->getConfig()->maxPowerCaptain();
 
         // Update all of the non-localized elements

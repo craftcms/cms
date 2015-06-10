@@ -135,10 +135,8 @@ class Structures extends Component
      *
      * @return integer
      */
-    public function getElementLevelDelta(
-        $structureId,
-        ElementInterface $element
-    ) {
+    public function getElementLevelDelta($structureId, ElementInterface $element)
+    {
         $elementRecord = $this->_getElementRecord($structureId, $element);
         $descendants = $elementRecord->descendants();
         $criteria = $descendants->getDbCriteria();
@@ -165,12 +163,8 @@ class Structures extends Component
      *
      * @return boolean
      */
-    public function prepend(
-        $structureId,
-        ElementInterface $element,
-        ElementInterface $parentElement,
-        $mode = 'auto'
-    ) {
+    public function prepend($structureId, ElementInterface $element, ElementInterface $parentElement, $mode = 'auto')
+    {
         $parentElementRecord = $this->_getElementRecord($structureId,
             $parentElement);
 
@@ -188,12 +182,8 @@ class Structures extends Component
      *
      * @return boolean
      */
-    public function append(
-        $structureId,
-        ElementInterface $element,
-        ElementInterface $parentElement,
-        $mode = 'auto'
-    ) {
+    public function append($structureId, ElementInterface $element, ElementInterface $parentElement, $mode = 'auto')
+    {
         $parentElementRecord = $this->_getElementRecord($structureId,
             $parentElement);
 
@@ -210,11 +200,8 @@ class Structures extends Component
      *
      * @return boolean
      */
-    public function prependToRoot(
-        $structureId,
-        ElementInterface $element,
-        $mode = 'auto'
-    ) {
+    public function prependToRoot($structureId, ElementInterface $element, $mode = 'auto')
+    {
         $parentElementRecord = $this->_getRootElementRecord($structureId);
 
         return $this->_doIt($structureId, $element, $parentElementRecord,
@@ -230,11 +217,8 @@ class Structures extends Component
      *
      * @return boolean
      */
-    public function appendToRoot(
-        $structureId,
-        ElementInterface $element,
-        $mode = 'auto'
-    ) {
+    public function appendToRoot($structureId, ElementInterface $element, $mode = 'auto')
+    {
         $parentElementRecord = $this->_getRootElementRecord($structureId);
 
         return $this->_doIt($structureId, $element, $parentElementRecord,
@@ -251,12 +235,8 @@ class Structures extends Component
      *
      * @return boolean
      */
-    public function moveBefore(
-        $structureId,
-        ElementInterface $element,
-        ElementInterface $nextElement,
-        $mode = 'auto'
-    ) {
+    public function moveBefore($structureId, ElementInterface $element, ElementInterface $nextElement, $mode = 'auto')
+    {
         $nextElementRecord = $this->_getElementRecord($structureId,
             $nextElement);
 
@@ -274,12 +254,8 @@ class Structures extends Component
      *
      * @return boolean
      */
-    public function moveAfter(
-        $structureId,
-        ElementInterface $element,
-        ElementInterface $prevElement,
-        $mode = 'auto'
-    ) {
+    public function moveAfter($structureId, ElementInterface $element, ElementInterface $prevElement, $mode = 'auto')
+    {
         $prevElementRecord = $this->_getElementRecord($structureId,
             $prevElement);
 
@@ -350,13 +326,8 @@ class Structures extends Component
      * @throws \Exception
      * @return boolean
      */
-    private function _doIt(
-        $structureId,
-        ElementInterface $element,
-        StructureElementRecord $targetElementRecord,
-        $action,
-        $mode
-    ) {
+    private function _doIt($structureId, ElementInterface $element, StructureElementRecord $targetElementRecord, $action, $mode)
+    {
         // Figure out what we're doing
         if ($mode != 'insert') {
             // See if there's an existing structure element record

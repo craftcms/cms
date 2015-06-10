@@ -349,10 +349,8 @@ abstract class BaseRelationField extends Field
      *
      * @return array
      */
-    protected function getInputTemplateVariables(
-        $selectedElementsQuery,
-        $element
-    ) {
+    protected function getInputTemplateVariables($selectedElementsQuery, $element)
+    {
         if (!($selectedElementsQuery instanceof ElementQueryInterface)) {
             $class = static::elementType();
             $selectedElementsQuery = $class::find()

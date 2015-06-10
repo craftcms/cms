@@ -388,11 +388,8 @@ class RichText extends Field
      *
      * @return void
      */
-    private function _maybeIncludeRedactorPlugin(
-        $configJs,
-        $plugin,
-        $includeCss
-    ) {
+    private function _maybeIncludeRedactorPlugin($configJs, $plugin, $includeCss)
+    {
         if (preg_match('/([\'"])'.$plugin.'\1/', $configJs)) {
             if ($includeCss) {
                 Craft::$app->getView()->registerCssResource('lib/redactor/plugins/'.$plugin.'.css');

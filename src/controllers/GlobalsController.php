@@ -94,11 +94,8 @@ class GlobalsController extends Controller
      * @return string The rendering result
      * @throws HttpException
      */
-    public function actionEditContent(
-        $globalSetHandle,
-        $localeId = null,
-        GlobalSet $globalSet = null
-    ) {
+    public function actionEditContent($globalSetHandle, $localeId = null, GlobalSet $globalSet = null)
+    {
         // Get the locales the user is allowed to edit
         $editableLocaleIds = Craft::$app->getI18n()->getEditableLocaleIds();
 

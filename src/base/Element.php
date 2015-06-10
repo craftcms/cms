@@ -173,15 +173,8 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @inheritdoc
      */
-    public static function getIndexHtml(
-        $elementQuery,
-        $disabledElementIds,
-        $viewState,
-        $sourceKey,
-        $context,
-        $includeContainer,
-        $showCheckboxes
-    ) {
+    public static function getIndexHtml($elementQuery, $disabledElementIds, $viewState, $sourceKey, $context, $includeContainer, $showCheckboxes)
+    {
         $variables = [
             'viewMode' => $viewState['mode'],
             'context' => $context,
@@ -267,10 +260,8 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @inheritdoc
      */
-    public static function getTableAttributeHtml(
-        ElementInterface $element,
-        $attribute
-    ) {
+    public static function getTableAttributeHtml(ElementInterface $element, $attribute)
+    {
         /** @var $this $element */
         switch ($attribute) {
             case 'uri': {
@@ -321,9 +312,8 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @inheritdoc
      */
-    public static function getFieldsForElementsQuery(
-        ElementQueryInterface $query
-    ) {
+    public static function getFieldsForElementsQuery(ElementQueryInterface $query)
+    {
         $contentService = Craft::$app->getContent();
         $originalFieldContext = $contentService->fieldContext;
         $contentService->fieldContext = 'global';
@@ -339,10 +329,8 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @inheritdoc
      */
-    public static function getElementQueryStatusCondition(
-        ElementQueryInterface $query,
-        $status
-    ) {
+    public static function getElementQueryStatusCondition(ElementQueryInterface $query, $status)
+    {
     }
 
     // Element methods
@@ -401,10 +389,8 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @inheritdoc
      */
-    public static function onAfterMoveElementInStructure(
-        ElementInterface $element,
-        $structureId
-    ) {
+    public static function onAfterMoveElementInStructure(ElementInterface $element, $structureId)
+    {
     }
 
     // Properties

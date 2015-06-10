@@ -1336,12 +1336,8 @@ class Users extends Component
      *
      * @return boolean
      */
-    private function _setPasswordOnUserRecord(
-        User $user,
-        UserRecord $userRecord,
-        $updatePasswordResetRequired = true,
-        $forceDifferentPassword = false
-    ) {
+    private function _setPasswordOnUserRecord(User $user, UserRecord $userRecord, $updatePasswordResetRequired = true, $forceDifferentPassword = false)
+    {
         // Validate the password first
         $passwordModel = new PasswordModel();
         $passwordModel->password = $user->newPassword;

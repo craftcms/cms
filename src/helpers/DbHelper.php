@@ -117,11 +117,8 @@ class DbHelper
      *
      * @return array
      */
-    public static function getNumericalColumnType(
-        $min = null,
-        $max = null,
-        $decimals = null
-    ) {
+    public static function getNumericalColumnType($min = null, $max = null, $decimals = null)
+    {
         // Normalize the arguments
         $min = is_numeric($min) ? $min : -static::$_intColumnSizes[ColumnType::Int];
         $max = is_numeric($max) ? $max : static::$_intColumnSizes[ColumnType::Int] - 1;
@@ -181,10 +178,8 @@ class DbHelper
      *
      * @return integer The storage capacity of the column type in bytes.
      */
-    public static function getTextualColumnStorageCapacity(
-        $columnType,
-        $database = 'mysql'
-    ) {
+    public static function getTextualColumnStorageCapacity($columnType, $database = 'mysql')
+    {
         switch ($database) {
             case 'mysql': {
                 switch ($columnType) {

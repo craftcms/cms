@@ -151,13 +151,8 @@ class QueryBuilder extends \yii\db\mysql\QueryBuilder
      *
      * @return string The SQL statement for changing the definition of a column.
      */
-    public function alterColumn(
-        $table,
-        $column,
-        $type,
-        $newName = null,
-        $after = null
-    ) {
+    public function alterColumn($table, $column, $type, $newName = null, $after = null)
+    {
         if (!$newName) {
             $newName = $column;
         }
@@ -183,12 +178,8 @@ class QueryBuilder extends \yii\db\mysql\QueryBuilder
      *
      * @return string The SQL statement for inserting or updating data in a table.
      */
-    public function insertOrUpdate(
-        $table,
-        $keyColumns,
-        $updateColumns,
-        &$params
-    ) {
+    public function insertOrUpdate($table, $keyColumns, $updateColumns, &$params)
+    {
         $schema = $this->db->getSchema();
 
         if (($tableSchema = $schema->getTableSchema($table)) !== null) {

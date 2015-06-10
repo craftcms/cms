@@ -56,14 +56,8 @@ class EntriesController extends BaseEntriesController
      * @return string The rendering result
      * @throws HttpException
      */
-    public function actionEditEntry(
-        $sectionHandle,
-        $entryId = null,
-        $draftId = null,
-        $versionId = null,
-        $localeId = null,
-        Entry $entry = null
-    ) {
+    public function actionEditEntry($sectionHandle, $entryId = null, $draftId = null, $versionId = null, $localeId = null, Entry $entry = null)
+    {
         $variables = [
             'sectionHandle' => $sectionHandle,
             'entryId' => $entryId,
@@ -553,12 +547,8 @@ class EntriesController extends BaseEntriesController
      * @throws HttpException
      * @return void
      */
-    public function actionShareEntry(
-        $entryId = null,
-        $locale = null,
-        $draftId = null,
-        $versionId = null
-    ) {
+    public function actionShareEntry($entryId = null, $locale = null, $draftId = null, $versionId = null)
+    {
         if ($entryId) {
             $entry = Craft::$app->getEntries()->getEntryById($entryId, $locale);
 
@@ -616,12 +606,8 @@ class EntriesController extends BaseEntriesController
      * @throws HttpException
      * @return void
      */
-    public function actionViewSharedEntry(
-        $entryId = null,
-        $locale = null,
-        $draftId = null,
-        $versionId = null
-    ) {
+    public function actionViewSharedEntry($entryId = null, $locale = null, $draftId = null, $versionId = null)
+    {
         $this->requireToken();
 
         if ($entryId) {

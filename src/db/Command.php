@@ -54,12 +54,8 @@ class Command extends \yii\db\Command
      *
      * @return Command The command object itself.
      */
-    public function batchInsert(
-        $table,
-        $columns,
-        $rows,
-        $includeAuditColumns = true
-    ) {
+    public function batchInsert($table, $columns, $rows, $includeAuditColumns = true)
+    {
         if (!$rows) {
             return $this;
         }
@@ -94,12 +90,8 @@ class Command extends \yii\db\Command
      *
      * @return Command The command object itself.
      */
-    public function insertOrUpdate(
-        $table,
-        $keyColumns,
-        $updateColumns,
-        $includeAuditColumns = true
-    ) {
+    public function insertOrUpdate($table, $keyColumns, $updateColumns, $includeAuditColumns = true)
+    {
         if ($includeAuditColumns) {
             $now = DbHelper::prepareDateForDb(new \DateTime());
             $updateColumns['dateCreated'] = $now;
@@ -126,13 +118,8 @@ class Command extends \yii\db\Command
      *
      * @return Command The command object itself.
      */
-    public function update(
-        $table,
-        $columns,
-        $conditions = '',
-        $params = [],
-        $includeAuditColumns = true
-    ) {
+    public function update($table, $columns, $conditions = '', $params = [], $includeAuditColumns = true)
+    {
         if ($includeAuditColumns) {
             $columns['dateUpdated'] = DbHelper::prepareDateForDb(new \DateTime());
         }
@@ -170,13 +157,8 @@ class Command extends \yii\db\Command
      *
      * @return Command the command object itself
      */
-    public function createTable(
-        $table,
-        $columns,
-        $options = null,
-        $addIdColumn = true,
-        $addAuditColumns = true
-    ) {
+    public function createTable($table, $columns, $options = null, $addIdColumn = true, $addAuditColumns = true)
+    {
         $columns = array_merge(
             ($addIdColumn ? ['id' => 'pk'] : []),
             $columns,
@@ -273,13 +255,8 @@ class Command extends \yii\db\Command
      *
      * @return Command the command object itself
      */
-    public function alterColumn(
-        $table,
-        $column,
-        $type,
-        $newName = null,
-        $after = null
-    ) {
+    public function alterColumn($table, $column, $type, $newName = null, $after = null)
+    {
         $sql = $this->db->getQueryBuilder()->alterColumn($table, $column, $type,
             $newName, $after);
 

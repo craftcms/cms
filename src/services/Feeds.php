@@ -71,12 +71,8 @@ class Feeds extends Component
      *
      * @return array|string The list of feed items.
      */
-    public function getFeedItems(
-        $url,
-        $limit = null,
-        $offset = null,
-        $cacheDuration = null
-    ) {
+    public function getFeedItems($url, $limit = null, $offset = null, $cacheDuration = null)
+    {
         // Prevent $limit and $offset from being any empty value besides 0
         $limit = ($limit ?: 0);
         $offset = ($offset ?: 0);

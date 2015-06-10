@@ -141,11 +141,8 @@ class Content extends Component
      * @return boolean Whether the content was saved successfully. If it wasn't, any validation errors will be saved on the
      *              element and its content model.
      */
-    public function saveContent(
-        ElementInterface $element,
-        $validate = true,
-        $updateOtherLocales = true
-    ) {
+    public function saveContent(ElementInterface $element, $validate = true, $updateOtherLocales = true)
+    {
         if (!$element->id) {
             throw new Exception(Craft::t('app',
                 'Cannot save the content of an unsaved element.'));
@@ -313,13 +310,8 @@ class Content extends Component
      *
      * @return void
      */
-    private function _duplicateNonTranslatableFieldValues(
-        ElementInterface $element,
-        ContentModel $content,
-        FieldLayoutModel $fieldLayout,
-        &$nonTranslatableFields,
-        &$otherContentModels
-    ) {
+    private function _duplicateNonTranslatableFieldValues(ElementInterface $element, ContentModel $content, FieldLayoutModel $fieldLayout, &$nonTranslatableFields, &$otherContentModels)
+    {
         // Get all of the non-translatable fields
         $nonTranslatableFields = [];
 
@@ -368,13 +360,8 @@ class Content extends Component
      *
      * @return void
      */
-    private function _updateSearchIndexes(
-        ElementInterface $element,
-        ContentModel $content,
-        FieldLayoutModel $fieldLayout,
-        &$nonTranslatableFields = null,
-        &$otherContentModels = null
-    ) {
+    private function _updateSearchIndexes(ElementInterface $element, ContentModel $content, FieldLayoutModel $fieldLayout, &$nonTranslatableFields = null, &$otherContentModels = null)
+    {
         $searchKeywordsByLocale = [];
 
         foreach ($fieldLayout->getFields() as $field) {
