@@ -635,7 +635,7 @@ trait ApplicationTrait
     {
         /** @var $this \craft\app\web\Application|\craft\app\console\Application */
         if ($info->validate()) {
-            $attributes = DbHelper::prepObjectValues($info);
+            $attributes = DbHelper::prepareValuesForDb($info);
 
             if ($this->isInstalled()) {
                 // TODO: Remove this after the next breakpoint

@@ -32,31 +32,22 @@ class DbHelper
     // =========================================================================
 
     /**
-     * Prepares an object’s values to be sent to the database.
+     * Prepares an array or object’s values to be sent to the database.
      *
-     * @param mixed $object
+     * @param mixed $values The values to be prepared
      *
-     * @return array
+     * @return array The prepared values
      */
-    public static function prepObjectValues($object)
+    public static function prepareValuesForDb($values)
     {
-        // Convert the object to an array
-        $arr = ArrayHelper::toArray($object);
+        // Normalize to an array
+        $values = ArrayHelper::toArray($values);
 
-        if ($object instanceof Model) {
-            $datetimeAttributes = $object->datetimeAttributes();
+        foreach ($values as $key => $value) {
+            $values[$key] = static::prepareValueForDb($value);
         }
 
-        foreach ($arr as $key => $value) {
-            if (isset($datetimeAttributes) && in_array($key, $datetimeAttributes, true)) {
-                // Model::toArray() converts DateTime attributes to IS0-8601 strings
-                $arr[$key] = DateTimeHelper::formatTimeForDb($value);
-            } else {
-                $arr[$key] = static::prepareValueForDb($value);
-            }
-        }
-
-        return $arr;
+        return $values;
     }
 
     /**
