@@ -8,8 +8,8 @@
 namespace craft\app\helpers;
 
 use craft\app\base\Model;
+use craft\app\dates\DateTime;
 use craft\app\enums\ColumnType;
-use DateTime;
 use yii\db\Schema;
 
 /**
@@ -69,6 +69,30 @@ class DbHelper
         }
 
         return $value;
+    }
+
+    /**
+     * Prepares a date to be sent to the database.
+     *
+     * @param mixed $date The date to be prepared
+     *
+     * @return string|null The prepped date, or `null` if it could not be prepared
+     */
+    public static function prepareDateForDb($date)
+    {
+        $date = DateTimeHelper::toDateTime($date);
+
+        if ($date !== false) {
+            $timezone = $date->getTimezone();
+            $date->setTimezone(new \DateTimeZone(DateTime::UTC));
+            // TODO: MySQL specific
+            $formattedDate = $date->format(DateTime::MYSQL_DATETIME);
+            $date->setTimezone($timezone);
+
+            return $formattedDate;
+        } else {
+            return null;
+        }
     }
 
     /**
@@ -336,9 +360,9 @@ class DbHelper
     /**
      * Normalizes date params and then sends them off to parseParam().
      *
-     * @param string                $column
-     * @param string|array|DateTime $value
-     * @param array                 &$params
+     * @param string                 $column
+     * @param string|array|\DateTime $value
+     * @param array                  &$params
      *
      * @return mixed
      */
@@ -374,9 +398,10 @@ class DbHelper
                 $operator = '=';
             }
 
+            // Date params are set in the system timezone
             $val = DateTimeHelper::toDateTime($val, Craft::$app->getTimeZone());
 
-            $normalizedValues[] = $operator.DateTimeHelper::formatTimeForDb($val->getTimestamp());
+            $normalizedValues[] = $operator.static::prepareDateForDb($val);
         }
 
         return static::parseParam($column, $normalizedValues, $params);

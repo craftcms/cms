@@ -20,6 +20,7 @@ use craft\app\elements\db\EntryQuery;
 use craft\app\events\SetStatusEvent;
 use craft\app\helpers\ArrayHelper;
 use craft\app\helpers\DateTimeHelper;
+use craft\app\helpers\DbHelper;
 use craft\app\helpers\UrlHelper;
 use craft\app\models\EntryType;
 use craft\app\models\Section;
@@ -259,7 +260,7 @@ class Entry extends Element
                             // Set a Post Date as well
                             Craft::$app->getDb()->createCommand()->update(
                                 '{{%entries}}',
-                                ['postDate' => DateTimeHelper::currentTimeForDb()],
+                                ['postDate' => DbHelper::prepareDateForDb(new \DateTime())],
                                 [
                                     'and',
                                     ['in', 'id', $event->elementIds],
@@ -414,7 +415,7 @@ class Entry extends Element
         ElementQueryInterface $query,
         $status
     ) {
-        $currentTimeDb = DateTimeHelper::currentTimeForDb();
+        $currentTimeDb = DbHelper::prepareDateForDb(new \DateTime());
 
         switch ($status) {
             case Entry::STATUS_LIVE: {

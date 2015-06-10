@@ -12,8 +12,8 @@ use craft\app\dates\DateInterval;
 use craft\app\dates\DateTime;
 use craft\app\db\Query;
 use craft\app\helpers\DateTimeHelper;
+use craft\app\helpers\DbHelper;
 use craft\app\helpers\JsonHelper;
-use craft\app\helpers\StringHelper;
 use craft\app\records\Token as TokenRecord;
 use yii\base\Component;
 
@@ -166,7 +166,7 @@ class Tokens extends Component
 
         $affectedRows = Craft::$app->getDb()->createCommand()->delete('{{%tokens}}',
             'expiryDate <= :now',
-            ['now' => DateTimeHelper::currentTimeForDb()]
+            ['now' => DbHelper::prepareDateForDb(new DateTime())]
         )->execute();
 
         $this->_deletedExpiredTokens = true;

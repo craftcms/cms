@@ -7,7 +7,6 @@
 
 namespace craft\app\db;
 
-use craft\app\helpers\DateTimeHelper;
 use craft\app\helpers\DbHelper;
 use craft\app\helpers\StringHelper;
 
@@ -36,8 +35,9 @@ class Command extends \yii\db\Command
     public function insert($table, $columns, $includeAuditColumns = true)
     {
         if ($includeAuditColumns) {
-            $columns['dateCreated'] = DateTimeHelper::currentTimeForDb();
-            $columns['dateUpdated'] = DateTimeHelper::currentTimeForDb();
+            $now = DbHelper::prepareDateForDb(new \DateTime());
+            $columns['dateCreated'] = $now;
+            $columns['dateUpdated'] = $now;
             $columns['uid'] = StringHelper::UUID();
         }
 
@@ -69,7 +69,7 @@ class Command extends \yii\db\Command
             $columns[] = 'dateUpdated';
             $columns[] = 'uid';
 
-            $date = DateTimeHelper::currentTimeForDb();
+            $date = DbHelper::prepareDateForDb(new \DateTime());
 
             foreach ($rows as &$row) {
                 $row[] = $date;
@@ -101,9 +101,10 @@ class Command extends \yii\db\Command
         $includeAuditColumns = true
     ) {
         if ($includeAuditColumns) {
-            $updateColumns['dateCreated'] = DateTimeHelper::currentTimeForDb();
+            $now = DbHelper::prepareDateForDb(new \DateTime());
+            $updateColumns['dateCreated'] = $now;
+            $updateColumns['dateUpdated'] = $now;
             $updateColumns['uid'] = StringHelper::UUID();
-            $updateColumns['dateUpdated'] = DateTimeHelper::currentTimeForDb();
         }
 
         $params = [];
@@ -133,7 +134,7 @@ class Command extends \yii\db\Command
         $includeAuditColumns = true
     ) {
         if ($includeAuditColumns) {
-            $columns['dateUpdated'] = DateTimeHelper::currentTimeForDb();
+            $columns['dateUpdated'] = DbHelper::prepareDateForDb(new \DateTime());
         }
 
         return parent::update($table, $columns, $conditions, $params);

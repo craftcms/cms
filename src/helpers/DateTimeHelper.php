@@ -221,44 +221,6 @@ class DateTimeHelper
     }
 
     /**
-     * @return string
-     */
-    public static function currentTimeForDb()
-    {
-        // Eventually this will return the time in the appropriate database format for MySQL, Postgre, etc. For now,
-        // it's MySQL only.
-        $date = static::currentUTCDateTime();
-
-        return $date->format(DateTime::MYSQL_DATETIME, DateTime::UTC);
-    }
-
-    /**
-     * @param $timeStamp
-     *
-     * @return DateTime
-     */
-    public static function formatTimeForDb($timeStamp = null)
-    {
-        // Eventually this will accept a database parameter and format the timestamp for the given database date/time
-        // datatype. For now, it's MySQL only.
-
-        if (!is_null($timeStamp)) {
-            if ($timeStamp instanceof \DateTime) {
-                $dt = $timeStamp;
-            } else if (static::isValidTimeStamp($timeStamp)) {
-                $dt = new DateTime('@'.$timeStamp);
-            } else {
-                $dt = new DateTime($timeStamp);
-            }
-        } else {
-            $dt = new DateTime();
-        }
-
-        return $dt->format(DateTime::MYSQL_DATETIME,
-            new \DateTimeZone(DateTime::UTC));
-    }
-
-    /**
      * @param integer $seconds     The number of seconds
      * @param boolean $showSeconds Whether to output seconds or not
      *

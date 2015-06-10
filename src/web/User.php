@@ -11,6 +11,7 @@ use Craft;
 use craft\app\dates\DateInterval;
 use craft\app\helpers\DateTimeHelper;
 use craft\app\elements\User as UserElement;
+use craft\app\helpers\DbHelper;
 use craft\app\helpers\UrlHelper;
 use yii\web\Cookie;
 use yii\web\IdentityInterface;
@@ -405,9 +406,10 @@ class User extends \yii\web\User
     {
         $interval = new DateInterval('P3M');
         $expire = DateTimeHelper::currentUTCDateTime();
-        $pastTimeStamp = $expire->sub($interval)->getTimestamp();
-        $pastTime = DateTimeHelper::formatTimeForDb($pastTimeStamp);
-        Craft::$app->getDb()->createCommand()->delete('{{%sessions}}',
-            'dateUpdated < :pastTime', ['pastTime' => $pastTime])->execute();
+        $pastTime = $expire->sub($interval);
+
+        Craft::$app->getDb()->createCommand()
+            ->delete('{{%sessions}}', 'dateUpdated < :pastTime', ['pastTime' => DbHelper::prepareDateForDb($pastTime)])
+            ->execute();
     }
 }

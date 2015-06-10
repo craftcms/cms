@@ -16,6 +16,7 @@ use craft\app\events\DeleteUserEvent;
 use craft\app\events\UserEvent;
 use craft\app\helpers\AssetsHelper;
 use craft\app\helpers\DateTimeHelper;
+use craft\app\helpers\DbHelper;
 use craft\app\helpers\IOHelper;
 use craft\app\helpers\JsonHelper;
 use craft\app\helpers\TemplateHelper;
@@ -1153,18 +1154,12 @@ class Users extends Component
      */
     public function shunMessageForUser($userId, $message, $expiryDate = null)
     {
-        if ($expiryDate instanceof \DateTime) {
-            $expiryDate = DateTimeHelper::formatTimeForDb($expiryDate->getTimestamp());
-        } else {
-            $expiryDate = null;
-        }
-
         $affectedRows = Craft::$app->getDb()->createCommand()->insertOrUpdate('{{%shunnedmessages}}',
             [
                 'userId' => $userId,
                 'message' => $message
             ], [
-                'expiryDate' => $expiryDate
+                'expiryDate' => DbHelper::prepareDateForDb($expiryDate)
             ])->execute();
 
         return (bool)$affectedRows;
@@ -1209,7 +1204,7 @@ class Users extends Component
             ], [
                 ':userId' => $userId,
                 ':message' => $message,
-                ':now' => DateTimeHelper::formatTimeForDb()
+                ':now' => DbHelper::prepareDateForDb(new \DateTime())
             ])
             ->exists();
     }
@@ -1245,8 +1240,7 @@ class Users extends Component
         if (($duration = Craft::$app->getConfig()->get('purgePendingUsersDuration')) !== false) {
             $interval = new DateInterval($duration);
             $expire = DateTimeHelper::currentUTCDateTime();
-            $pastTimeStamp = $expire->sub($interval)->getTimestamp();
-            $pastTime = DateTimeHelper::formatTimeForDb($pastTimeStamp);
+            $pastTime = $expire->sub($interval);
 
             $ids = (new Query())
                 ->select('id')
@@ -1255,7 +1249,7 @@ class Users extends Component
                     'and',
                     'pending=1',
                     'verificationCodeIssuedDate < :pastTime'
-                ], [':pastTime' => $pastTime])
+                ], [':pastTime' => DbHelper::prepareDateForDb($pastTime)])
                 ->column();
 
             $affectedRows = Craft::$app->getDb()->createCommand()->delete('{{%elements}}',
