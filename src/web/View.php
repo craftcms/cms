@@ -22,6 +22,7 @@ use craft\app\services\Plugins;
 use craft\app\web\assets\AppAsset;
 use craft\app\web\twig\Environment;
 use craft\app\web\twig\Extension;
+use craft\app\web\twig\Parser;
 use craft\app\web\twig\StringTemplate;
 use craft\app\web\twig\Template;
 use craft\app\web\twig\TemplateLoader;
@@ -39,12 +40,6 @@ class View extends \yii\web\View
 {
     // Public Methods
     // =========================================================================
-
-    /**
-     * @var array the registered hi-res CSS code blocks.
-     * @see registerHiResCss()
-     */
-    public $hiResCss;
 
     /**
      * @var
@@ -164,6 +159,9 @@ class View extends \yii\web\View
 
             // Give plugins a chance to add their own Twig extensions
             $this->_addPluginTwigExtensions($twig);
+
+            // Set our custom parser to support resource registration tags using the capture mode
+            $twig->setParser(new Parser($twig));
 
             $this->_twigs[$loaderClass] = $twig;
         }
@@ -577,8 +575,15 @@ class View extends \yii\web\View
      */
     public function registerHiResCss($css, $options = [], $key = null)
     {
-        $key = $key ?: md5($css);
-        $this->hiResCss[$key] = Html::style($css, $options);
+        $css = "@media only screen and (-webkit-min-device-pixel-ratio: 1.5),\n".
+            "only screen and (   -moz-min-device-pixel-ratio: 1.5),\n".
+            "only screen and (     -o-min-device-pixel-ratio: 3/2),\n".
+            "only screen and (        min-device-pixel-ratio: 1.5),\n".
+            "only screen and (        min-resolution: 1.5dppx){\n".
+            $css."\n".
+            '}';
+
+        $this->registerCss($css, $options, $key);
     }
 
     /**
@@ -675,7 +680,6 @@ class View extends \yii\web\View
             $this->metaTags = null;
             $this->linkTags = null;
             $this->css = null;
-            $this->hiResCss = null;
             $this->cssFiles = null;
             unset($this->jsFiles[self::POS_HEAD], $this->js[self::POS_HEAD]);
         }
@@ -856,11 +860,8 @@ class View extends \yii\web\View
      *
      * @return string The HTML with namespaced input names.
      */
-    public function namespaceInputs(
-        $html,
-        $namespace = null,
-        $otherAttributes = true
-    ) {
+    public function namespaceInputs($html, $namespace = null, $otherAttributes = true)
+    {
         if ($namespace === null) {
             $namespace = $this->getNamespace();
         }
@@ -1031,37 +1032,6 @@ class View extends \yii\web\View
         foreach ($this->_twigs as $twig) {
             $this->_addPluginTwigExtensions($twig);
         }
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function clear()
-    {
-        parent::clear();
-        $this->hiResCss = null;
-    }
-
-    // Protected Methods
-    // =========================================================================
-
-    /**
-     * @inheritdoc
-     */
-    protected function renderHeadHtml()
-    {
-        $lines = [];
-        $html = parent::renderHeadHtml();
-
-        if (!empty($html)) {
-            $lines[] = $html;
-        }
-
-        if (!empty($this->hiResCss)) {
-            $lines[] = implode("\n", $this->hiResCss);
-        }
-
-        return empty($lines) ? '' : implode("\n", $lines);
     }
 
     // Private Methods

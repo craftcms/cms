@@ -93,5 +93,7 @@
 
 
 {% if not entryType.handle %}
-	{% registerJs "new Craft.HandleGenerator('#name', '#handle');" %}
+	{% registerjs %}
+		new Craft.HandleGenerator('#name', '#handle');
+	{% endregisterjs %}
 {% endif %}

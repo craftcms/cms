@@ -74,10 +74,8 @@ class SectionsController extends Controller
      * @return string The rendering result
      * @throws HttpException|Exception
      */
-    public function actionEditSection(
-        $sectionId = null,
-        Section $section = null
-    ) {
+    public function actionEditSection($sectionId = null, Section $section = null)
+    {
         $variables = [
             'sectionId' => $sectionId,
             'brandNewSection' => false
@@ -304,11 +302,8 @@ class SectionsController extends Controller
      * @return string The rendering result
      * @throws HttpException
      */
-    public function actionEditEntryType(
-        $sectionId,
-        $entryTypeId = null,
-        EntryType $entryType = null
-    ) {
+    public function actionEditEntryType($sectionId, $entryTypeId = null, EntryType $entryType = null)
+    {
         $section = Craft::$app->getSections()->getSectionById($sectionId);
 
         if (!$section) {

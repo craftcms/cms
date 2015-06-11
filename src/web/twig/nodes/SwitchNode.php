@@ -32,13 +32,8 @@ class SwitchNode extends \Twig_Node
     /**
      * @inheritdoc
      */
-    public function __construct(
-        \Twig_NodeInterface $value,
-        \Twig_NodeInterface $cases,
-        \Twig_NodeInterface $default = null,
-        $lineno,
-        $tag = null
-    ) {
+    public function __construct(\Twig_NodeInterface $value, \Twig_NodeInterface $cases, \Twig_NodeInterface $default = null, $lineno, $tag = null)
+    {
         $this->_cases = $cases;
 
         parent::__construct(['value' => $value, 'default' => $default], [],

@@ -45,10 +45,8 @@ class DashboardController extends Controller
      * @return string The rendering result
      * @throws HttpException if the requested widget doesn’t exist
      */
-    public function actionEditWidget(
-        $widgetId = null,
-        WidgetInterface $widget = null
-    ) {
+    public function actionEditWidget($widgetId = null, WidgetInterface $widget = null)
+    {
         // The widget
         // ---------------------------------------------------------------------
 

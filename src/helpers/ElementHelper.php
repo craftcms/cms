@@ -224,9 +224,8 @@ class ElementHelper
      *
      * @return array
      */
-    public static function getEditableLocaleIdsForElement(
-        ElementInterface $element
-    ) {
+    public static function getEditableLocaleIdsForElement(ElementInterface $element)
+    {
         $localeIds = [];
 
         if ($element->isEditable()) {

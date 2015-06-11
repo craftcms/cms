@@ -60,10 +60,8 @@ class CategoriesController extends Controller
      * @return string The rendering result
      * @throws HttpException
      */
-    public function actionEditCategoryGroup(
-        $groupId = null,
-        CategoryGroup $categoryGroup = null
-    ) {
+    public function actionEditCategoryGroup($groupId = null, CategoryGroup $categoryGroup = null)
+    {
         $this->requireAdmin();
 
         // Breadcrumbs
@@ -226,12 +224,8 @@ class CategoriesController extends Controller
      * @return string The rendering result
      * @throws HttpException
      */
-    public function actionEditCategory(
-        $groupHandle,
-        $categoryId = null,
-        $localeId = null,
-        Category $category = null
-    ) {
+    public function actionEditCategory($groupHandle, $categoryId = null, $localeId = null, Category $category = null)
+    {
         $variables = [
             'groupHandle' => $groupHandle,
             'categoryId' => $categoryId,

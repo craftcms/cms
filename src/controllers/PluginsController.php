@@ -130,10 +130,8 @@ class PluginsController extends Controller
      * @throws HttpException if the requested plugin doesn’t exist or doesn’t have settings
      * @return string The plugin page HTML
      */
-    public function actionEditPluginSettings(
-        $pluginHandle,
-        PluginInterface $plugin = null
-    ) {
+    public function actionEditPluginSettings($pluginHandle, PluginInterface $plugin = null)
+    {
         if ($plugin === null) {
             $plugin = Craft::$app->getPlugins()->getPlugin($pluginHandle);
 

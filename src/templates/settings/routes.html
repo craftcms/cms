@@ -29,8 +29,8 @@
 
 
 {% block content %}
-	{% registerCssResource "css/routes.css" %}
-	{% registerJsResource "js/routes.js" %}
+	{% registercssresource "css/routes.css" %}
+	{% registerjsresource "js/routes.js" %}
 
 	<p id="noroutes"{% if routes %} class="hidden"{% endif %}>
 		{{ "No routes exist yet."|t }}
@@ -58,7 +58,7 @@
 {% endblock %}
 
 
-{% set js %}
+{% registerjs %}
 	Craft.routes.tokens = {
 		{% for name, pattern in tokens %}
 			{% if not loop.first %},{% endif %}
@@ -69,5 +69,4 @@
 	{% if craft.isLocalized() %}
 		Craft.routes.locales = {{ craft.i18n.getSiteLocaleIds()|json_encode|raw }};
 	{% endif %}
-{% endset %}
-{% registerJs js %}
+{% endregisterjs %}

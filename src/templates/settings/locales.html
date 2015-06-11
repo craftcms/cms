@@ -26,8 +26,8 @@
 
 
 {% block main %}
-	{% registerJsResource "js/locales.js" %}
-	{% registerCssResource "css/locales.css" %}
+	{% registerjsresource "js/locales.js" %}
+	{% registercssresource "css/locales.css" %}
 
 	<div class="grid">
 		<div class="item">
@@ -85,7 +85,7 @@
 	</div>
 {% endblock %}
 
-{% set js %}
+{% registerjs %}
 	new Craft.Locales(
 	{
 		{%- for locale in craft.i18n.getAllLocales() %}
@@ -101,5 +101,4 @@
 		{%- endfor -%}
 
 	]);
-{% endset %}
-{% registerJs js %}
+{% endregisterjs %}

@@ -26,6 +26,7 @@ use craft\app\log\FileTarget;
 use craft\app\models\Info;
 use craft\app\web\Application as WebApplication;
 use yii\base\InvalidConfigException;
+use yii\log\Logger;
 
 /**
  * ApplicationTrait
@@ -635,7 +636,7 @@ trait ApplicationTrait
     {
         /** @var $this \craft\app\web\Application|\craft\app\console\Application */
         if ($info->validate()) {
-            $attributes = DbHelper::prepObjectValues($info);
+            $attributes = DbHelper::prepareValuesForDb($info);
 
             if ($this->isInstalled()) {
                 // TODO: Remove this after the next breakpoint
@@ -760,33 +761,6 @@ trait ApplicationTrait
     {
         /** @var $this \craft\app\web\Application|\craft\app\console\Application */
         $this->_isDbConnectionValid = $value;
-    }
-
-    /**
-     * Configures the available log targets.
-     *
-     * @throws \yii\base\InvalidConfigException
-     */
-    public function processLogTargets()
-    {
-        /** @var $this \craft\app\web\Application|\craft\app\console\Application */
-        $dispatcher = $this->getLog();
-
-        // Don't setup a target if it's an enabled session.
-        if (!$this->getRequest()->getIsConsoleRequest() && $this->getUser()->enableSession) {
-            $fileTarget = new FileTarget();
-            $fileTarget->logFile = Craft::getAlias('@storage/logs/craft.log');
-            $fileTarget->fileMode = Craft::$app->getConfig()->get('defaultFilePermissions');
-            $fileTarget->dirMode = Craft::$app->getConfig()->get('defaultFolderPermissions');
-
-            if (!Craft::$app->getConfig()->get('devMode') || !$this->_isCraftUpdating()) {
-                //$fileTarget->setLevels(array(Logger::LEVEL_ERROR, Logger::LEVEL_WARNING));
-            }
-
-            $dispatcher->targets[] = $fileTarget;
-        }
-
-        $this->set('log', $dispatcher);
     }
 
     // Service Getters
@@ -1245,6 +1219,8 @@ trait ApplicationTrait
                 return $this->getLocale()->getFormatter();
             case 'locale':
                 return $this->_getLocaleDefinition();
+            case 'log':
+                return $this->_getLogDispatcherDefinition();
         }
     }
 
@@ -1396,6 +1372,46 @@ trait ApplicationTrait
     {
         /** @var $this \craft\app\web\Application|\craft\app\console\Application */
         return new Locale($this->language);
+    }
+
+    /**
+     * Returns the definition for the Dispatcher object that will be available from Craft::$app->getLog().
+     *
+     * @return array|null
+     */
+    private function _getLogDispatcherDefinition()
+    {
+        /** @var $this \craft\app\web\Application|\craft\app\console\Application */
+        $isConsoleRequest = $this->getRequest()->getIsConsoleRequest();
+
+        // Don't log getAuthTimeout requests
+        if ($isConsoleRequest || $this->getUser()->enableSession) {
+            $configService = Craft::$app->getConfig();
+            $fileTarget = new FileTarget();
+
+            if ($isConsoleRequest) {
+                $fileTarget->logFile = Craft::getAlias('@storage/logs/console.log');
+            } else {
+                $fileTarget->logFile = Craft::getAlias('@storage/logs/web.log');
+
+                // Only log errors and warnings, unless Craft is running in Dev Mode or it's being updated
+                if (!$configService->get('devMode') || !$this->_isCraftUpdating()) {
+                    $fileTarget->setLevels(Logger::LEVEL_ERROR | Logger::LEVEL_WARNING);
+                }
+            }
+
+            $fileTarget->fileMode = $configService->get('defaultFilePermissions');
+            $fileTarget->dirMode = $configService->get('defaultFolderPermissions');
+
+            return [
+                'class' => '\yii\log\Dispatcher',
+                'targets' => [
+                    $fileTarget
+                ]
+            ];
+        } else {
+            return null;
+        }
     }
 
     /**

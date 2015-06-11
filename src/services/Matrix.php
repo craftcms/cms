@@ -155,10 +155,8 @@ class Matrix extends Component
      *
      * @return boolean Whether the block type validated.
      */
-    public function validateBlockType(
-        MatrixBlockTypeModel $blockType,
-        $validateUniques = true
-    ) {
+    public function validateBlockType(MatrixBlockTypeModel $blockType, $validateUniques = true)
+    {
         $validates = true;
 
         $blockTypeRecord = $this->_getBlockTypeRecord($blockType);
@@ -239,10 +237,8 @@ class Matrix extends Component
      * @throws Exception
      * @throws \Exception
      */
-    public function saveBlockType(
-        MatrixBlockTypeModel $blockType,
-        $validate = true
-    ) {
+    public function saveBlockType(MatrixBlockTypeModel $blockType, $validate = true)
+    {
         if (!$validate || $this->validateBlockType($blockType)) {
             $transaction = Craft::$app->getDb()->getTransaction() === null ? Craft::$app->getDb()->beginTransaction() : null;
             try {
@@ -609,10 +605,8 @@ class Matrix extends Component
      *
      * @return string|false The table name, or `false` if $useOldHandle was set to `true` and there was no old handle.
      */
-    public function getContentTableName(
-        MatrixField $matrixField,
-        $useOldHandle = false
-    ) {
+    public function getContentTableName(MatrixField $matrixField, $useOldHandle = false)
+    {
         $name = '';
 
         do {

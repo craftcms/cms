@@ -14,8 +14,8 @@
 %}
 
 {% block content %}
-	{% registerCssResource "css/email_messages.css" %}
-	{% registerJsResource "js/email_messages.js" %}
+	{% registercssresource "css/email_messages.css" %}
+	{% registerjsresource "js/email_messages.js" %}
 
 	<div id="messages">
 		{% for message in craft.emailMessages.getAllMessages %}

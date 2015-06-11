@@ -42,12 +42,11 @@
 	{% includeCss css %}
 {% endif %}
 
-{% set js %}
+{% registerjs %}
 	new Craft.Structure({{ structure.id }}, '#{{ id|namespaceInputId }}', {
 		storageKey:  {{ (storageKey is defined ? storageKey|json_encode : '"Structure.'~structure.id~'"')|raw }},
 		sortable:    {{ sortable ? 'true' : 'false' }},
 		newChildUrl: {{ newChildUrl ? newChildUrl|json_encode|raw : 'null' }},
 		maxLevels:   {{ structure.maxLevels ?: 'null' }}
 	});
-{% endset %}
-{% registerJs first %}
+{% endregisterjs %}

@@ -214,10 +214,8 @@ class Category extends Element
     /**
      * @inheritdoc
      */
-    public static function getTableAttributeHtml(
-        ElementInterface $element,
-        $attribute
-    ) {
+    public static function getTableAttributeHtml(ElementInterface $element, $attribute)
+    {
         /** @var Category $element */
         // First give plugins a chance to set this
         $pluginAttributeHtml = Craft::$app->getPlugins()->callFirst('getCategoryTableAttributeHtml',
@@ -309,10 +307,8 @@ class Category extends Element
     /**
      * @inheritdoc
      */
-    public static function onAfterMoveElementInStructure(
-        ElementInterface $element,
-        $structureId
-    ) {
+    public static function onAfterMoveElementInStructure(ElementInterface $element, $structureId)
+    {
         /** @var Category $element */
         // Was the category moved within its group's structure?
         if ($element->getGroup()->structureId == $structureId) {

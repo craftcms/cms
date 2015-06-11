@@ -152,12 +152,8 @@ class UrlHelper
      *
      * @return string
      */
-    public static function getUrl(
-        $path = '',
-        $params = null,
-        $protocol = '',
-        $mustShowScriptName = false
-    ) {
+    public static function getUrl($path = '', $params = null, $protocol = '', $mustShowScriptName = false)
+    {
         // Return $path if it appears to be an absolute URL.
         if (static::isFullUrl($path)) {
             if ($params) {
@@ -217,11 +213,8 @@ class UrlHelper
      *
      * @return string
      */
-    public static function getSiteUrl(
-        $path = '',
-        $params = null,
-        $protocol = ''
-    ) {
+    public static function getSiteUrl($path = '', $params = null, $protocol = '')
+    {
         $path = trim($path, '/');
 
         return static::_getUrl($path, $params, $protocol, false, false);
@@ -237,11 +230,8 @@ class UrlHelper
      *
      * @return string
      */
-    public static function getResourceUrl(
-        $path = '',
-        $params = null,
-        $protocol = ''
-    ) {
+    public static function getResourceUrl($path = '', $params = null, $protocol = '')
+    {
         $path = trim($path, '/');
 
         if ($path) {
@@ -287,11 +277,8 @@ class UrlHelper
      *
      * @return array|string
      */
-    public static function getActionUrl(
-        $path = '',
-        $params = null,
-        $protocol = ''
-    ) {
+    public static function getActionUrl($path = '', $params = null, $protocol = '')
+    {
         $path = Craft::$app->getConfig()->get('actionTrigger').'/'.trim($path,
                 '/');
 
@@ -333,13 +320,8 @@ class UrlHelper
      *
      * @return string
      */
-    private static function _getUrl(
-        $path,
-        $params,
-        $protocol,
-        $cpUrl,
-        $mustShowScriptName
-    ) {
+    private static function _getUrl($path, $params, $protocol, $cpUrl, $mustShowScriptName)
+    {
         // Normalize the params
         $params = static::_normalizeParams($params, $anchor);
 

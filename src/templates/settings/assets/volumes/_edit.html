@@ -38,7 +38,7 @@
             {% if CraftEdition == CraftPro %}
 				<hr>
 
-				{% registerJsResource "js/asseteditvolumesettings.js" %}
+				{% registerjsresource "js/asseteditvolumesettings.js" %}
 
 				{{ forms.selectField({
 					label: "Type"|t,
@@ -101,5 +101,7 @@
 
 
 {% if volume is not defined or not volume.handle %}
-    {% registerJs "new Craft.HandleGenerator('#name', '#handle');" %}
+    {% registerjs %}
+		new Craft.HandleGenerator('#name', '#handle');
+	{% endregisterjs %}
 {% endif %}

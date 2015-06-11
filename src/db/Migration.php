@@ -45,12 +45,8 @@ abstract class Migration extends \yii\db\Migration
      * @param array   $rows                The rows to be batch inserted into the table.
      * @param boolean $includeAuditColumns Whether `dateCreated`, `dateUpdated`, and `uid` values should be added to $columns.
      */
-    public function batchInsert(
-        $table,
-        $columns,
-        $rows,
-        $includeAuditColumns = true
-    ) {
+    public function batchInsert($table, $columns, $rows, $includeAuditColumns = true)
+    {
         echo "    > batch insert into $table ...";
         $time = microtime(true);
         $this->db->createCommand()->batchInsert($table, $columns, $rows,
@@ -69,12 +65,8 @@ abstract class Migration extends \yii\db\Migration
      *                                     or updated in the existing row.
      * @param boolean $includeAuditColumns Whether `dateCreated`, `dateUpdated`, and `uid` values should be added to $columns.
      */
-    public function insertOrUpdate(
-        $table,
-        $keyColumns,
-        $updateColumns,
-        $includeAuditColumns = true
-    ) {
+    public function insertOrUpdate($table, $keyColumns, $updateColumns, $includeAuditColumns = true)
+    {
         echo "    > insert or update into $table ...";
         $time = microtime(true);
         $this->db->createCommand()->insertOrUpdate($table, $keyColumns,
@@ -92,13 +84,8 @@ abstract class Migration extends \yii\db\Migration
      * @param array        $params              The parameters to be bound to the command.
      * @param boolean      $includeAuditColumns Whether the `dateUpdated` value should be added to $columns.
      */
-    public function update(
-        $table,
-        $columns,
-        $conditions = '',
-        $params = [],
-        $includeAuditColumns = true
-    ) {
+    public function update($table, $columns, $conditions = '', $params = [], $includeAuditColumns = true)
+    {
         echo "    > update in $table ...";
         $time = microtime(true);
         $this->db->createCommand()->update($table, $columns, $conditions,
@@ -132,13 +119,8 @@ abstract class Migration extends \yii\db\Migration
      * @param boolean $addIdColumn     Whether an `id` column should be added.
      * @param boolean $addAuditColumns Whether `dateCreated` and `dateUpdated` columns should be added.
      */
-    public function createTable(
-        $table,
-        $columns,
-        $options = null,
-        $addIdColumn = true,
-        $addAuditColumns = true
-    ) {
+    public function createTable($table, $columns, $options = null, $addIdColumn = true, $addAuditColumns = true)
+    {
         echo "    > create table $table ...";
         $time = microtime(true);
         $this->db->createCommand()->createTable($table, $columns, $options,
@@ -227,13 +209,8 @@ abstract class Migration extends \yii\db\Migration
      * @param string|null $newName The new column name, if any.
      * @param string|null $after   The column that this column should be placed after, if it should be moved.
      */
-    public function alterColumn(
-        $table,
-        $column,
-        $type,
-        $newName = null,
-        $after = null
-    ) {
+    public function alterColumn($table, $column, $type, $newName = null, $after = null)
+    {
         echo "    > alter column $column $type in table $table ...";
         $time = microtime(true);
         $this->db->createCommand()->alterColumn($table, $column, $type,

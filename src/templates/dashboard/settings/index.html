@@ -49,7 +49,7 @@
 {% endset %}
 
 
-{% set js %}
+{% registerjs %}
 	new Craft.AdminTable({
 		tableSelector: '#widgets',
 		noItemsSelector: '#nowidgets',
@@ -57,5 +57,4 @@
 		reorderAction: 'dashboard/reorder-widgets',
 		deleteAction: 'dashboard/delete-widget'
 	});
-{% endset %}
-{% registerJs js %}
+{% endregisterjs %}

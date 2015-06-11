@@ -66,6 +66,17 @@ class AppNewRelease extends Model
     /**
      * @inheritdoc
      */
+    public function datetimeAttributes()
+    {
+        $attributes = parent::datetimeAttributes();
+        $attributes[] = 'date';
+
+        return $attributes;
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function rules()
     {
         return [

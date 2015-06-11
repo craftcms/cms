@@ -116,7 +116,7 @@ class AssetIndexer extends Component
                         $total++;
                     }
                 } else {
-                    $skippedFiles[] = $volume->name . '/' . $file['path'];
+                    $skippedFiles[] = $volume->name.'/'.$file['path'];
                 }
             }
 
@@ -125,12 +125,11 @@ class AssetIndexer extends Component
 
             // Ensure folders are in the DB
             foreach ($bucketFolders as $fullPath => $nothing) {
-                $folderId = Craft::$app->getAssets(
-                )->ensureFolderByFullPathAndVolumeId(
+                $folderId = Craft::$app->getAssets()->ensureFolderByFullPathAndVolumeId(
                     rtrim(
                         $fullPath,
                         '/'
-                    ) . '/',
+                    ).'/',
                     $volumeId
                 );
                 $indexedFolderIds[$folderId] = true;
@@ -146,7 +145,7 @@ class AssetIndexer extends Component
 
             foreach ($allFolders as $folderModel) {
                 if (!isset($indexedFolderIds[$folderModel->id])) {
-                    $missingFolders[$folderModel->id] = $volume->name . '/' . $folderModel->path;
+                    $missingFolders[$folderModel->id] = $volume->name.'/'.$folderModel->path;
                 }
             }
 
@@ -203,8 +202,7 @@ class AssetIndexer extends Component
                         Craft::$app->getAssetTransforms()->storeLocalSource(
                             $targetPath
                         );
-                        Craft::$app->getAssetTransforms(
-                        )->queueSourceForDeletingIfNecessary($targetPath);
+                        Craft::$app->getAssetTransforms()->queueSourceForDeletingIfNecessary($targetPath);
                     }
 
                     clearstatcache();
@@ -347,7 +345,7 @@ class AssetIndexer extends Component
 
         foreach ($fileEntries as $fileEntry) {
             if (!isset($processedFiles[$fileEntry['fileId']])) {
-                $output[$fileEntry['fileId']] = $fileEntry['volumeName'] . '/' . $fileEntry['path'] . $fileEntry['filename'];
+                $output[$fileEntry['fileId']] = $fileEntry['volumeName'].'/'.$fileEntry['path'].$fileEntry['filename'];
             }
         }
 
@@ -357,7 +355,7 @@ class AssetIndexer extends Component
     /**
      * Index a single file by Volume and path.
      *
-     * @param Volume $volume
+     * @param Volume  $volume
      * @param         $path
      * @param boolean $checkIfExists
      *
@@ -383,7 +381,7 @@ class AssetIndexer extends Component
     /**
      * Indexes a file.
      *
-     * @param Volume $volume The volume.
+     * @param Volume $volume  The volume.
      * @param string $uriPath The URI path fo the file to index.
      *
      * @return Asset|bool
@@ -396,7 +394,7 @@ class AssetIndexer extends Component
             $parts = explode('/', $uriPath);
             $filename = array_pop($parts);
 
-            $searchFullPath = join('/', $parts) . (empty($parts) ? '' : '/');
+            $searchFullPath = join('/', $parts).(empty($parts) ? '' : '/');
 
             if (empty($searchFullPath)) {
                 $parentId = ':empty:';

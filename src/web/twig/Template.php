@@ -52,14 +52,8 @@ abstract class Template extends \Twig_Template
      * @return mixed               The attribute value, or a bool when $isDefinedTest is true, or null when the
      *                             attribute is not set and $ignoreStrictCheck is true
      */
-    protected function getAttribute(
-        $object,
-        $item,
-        array $arguments = [],
-        $type = \Twig_Template::ANY_CALL,
-        $isDefinedTest = false,
-        $ignoreStrictCheck = false
-    ) {
+    protected function getAttribute($object, $item, array $arguments = [], $type = \Twig_Template::ANY_CALL, $isDefinedTest = false, $ignoreStrictCheck = false)
+    {
         if ($object instanceof ElementInterface) {
             $this->_includeElementInTemplateCaches($object);
         }

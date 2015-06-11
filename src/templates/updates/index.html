@@ -24,9 +24,11 @@
 
 
 {% block main %}
-	{% registerCssResource "css/updates.css" %}
-	{% registerJsResource "js/updates.js" %}
-	{% registerJs 'new Craft.UpdateInfo();' %}
+	{% registercssresource "css/updates.css" %}
+	{% registerjsresource "js/updates.js" %}
+	{% registerjs %}
+		new Craft.UpdateInfo();
+	{% endregisterjs %}
 
 	<div id="graphic" class="spinner big"></div>
 	<div id="status">{{ "Checking for updates…"|t }}</div>

@@ -56,10 +56,8 @@ class TagsController extends Controller
      * @return string The rendering result
      * @throws HttpException
      */
-    public function actionEditTagGroup(
-        $tagGroupId = null,
-        TagGroup $tagGroup = null
-    ) {
+    public function actionEditTagGroup($tagGroupId = null, TagGroup $tagGroup = null)
+    {
         $this->requireAdmin();
 
         if ($tagGroupId !== null) {

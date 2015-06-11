@@ -3,8 +3,8 @@
 
 
 {% block content %}
-	{% registerCssResource 'css/settings.css' %}
-	{% registerJsResource 'js/settings.js' %}
+	{% registercssresource 'css/settings.css' %}
+	{% registerjsresource 'js/settings.js' %}
 
 	{% for category, items in craft.cp.settings() %}
 		<h2>{{ category }}</h2>
@@ -24,7 +24,9 @@
 		{% for tool in tools %}
 			{% set triggerId = 'tool-'~tool.getClassName()|id %}
 			<li><a id="{{ triggerId }}" data-icon="{{ tool.getIconValue() }}">{{ tool.getDisplayName() }}</a></li>
-			{% registerJs 'new Craft.Tool("'~triggerId|e('js')~'", "'~tool.getClassName()|e('js')~'", '~tool.getOptionsHtml()|json_encode~', "'~tool.getButtonLabel()|e('js')~'");' %}
+			{% registerjs %}
+				new Craft.Tool('{{ triggerId|e("js") }}', '{{ tool.getClassName()|e("js") }}', {{ tool.getOptionsHtml()|json_encode|raw }}, '{{ tool.getButtonLabel()|e("js") }}');
+			{% endregisterjs %}
 		{% endfor %}
 	</ul>
 {% endblock %}

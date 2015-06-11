@@ -257,10 +257,8 @@ class User extends Element implements IdentityInterface
     /**
      * @inheritdoc
      */
-    public static function getTableAttributeHtml(
-        ElementInterface $element,
-        $attribute
-    ) {
+    public static function getTableAttributeHtml(ElementInterface $element, $attribute)
+    {
         /** @var User $element */
         // First give plugins a chance to set this
         $pluginAttributeHtml = Craft::$app->getPlugins()->callFirst('getUserTableAttributeHtml',
@@ -293,10 +291,8 @@ class User extends Element implements IdentityInterface
     /**
      * @inheritdoc
      */
-    public static function getElementQueryStatusCondition(
-        ElementQueryInterface $query,
-        $status
-    ) {
+    public static function getElementQueryStatusCondition(ElementQueryInterface $query, $status)
+    {
         switch ($status) {
             case self::STATUS_ACTIVE: {
                 return 'users.archived = 0 AND users.suspended = 0 AND users.locked = 0 and users.pending = 0';

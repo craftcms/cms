@@ -190,10 +190,8 @@ class ElementsController extends BaseElementsController
      * @return Response
      * @throws HttpException
      */
-    private function _getEditorHtmlResponse(
-        ElementInterface $element,
-        $includeLocales
-    ) {
+    private function _getEditorHtmlResponse(ElementInterface $element, $includeLocales)
+    {
         $localeIds = ElementHelper::getEditableLocaleIdsForElement($element);
 
         if (!$localeIds) {

@@ -295,15 +295,7 @@ interface ElementInterface extends ComponentInterface
      *
      * @return string The element index HTML
      */
-    public static function getIndexHtml(
-        $elementQuery,
-        $disabledElementIds,
-        $viewState,
-        $sourceKey,
-        $context,
-        $includeContainer,
-        $showCheckboxes
-    );
+    public static function getIndexHtml($elementQuery, $disabledElementIds, $viewState, $sourceKey, $context, $includeContainer, $showCheckboxes);
 
     /**
      * Defines the attributes that elements can be sorted by.
@@ -397,10 +389,7 @@ interface ElementInterface extends ComponentInterface
      *
      * @return string The HTML that should be shown for a given element’s attribute in Table View.
      */
-    public static function getTableAttributeHtml(
-        ElementInterface $element,
-        $attribute
-    );
+    public static function getTableAttributeHtml(ElementInterface $element, $attribute);
 
     /**
      * Returns the fields that should take part in an upcoming elements query.
@@ -417,9 +406,7 @@ interface ElementInterface extends ComponentInterface
      *
      * @return FieldInterface[]|Field[] The fields that should take part in the upcoming elements query
      */
-    public static function getFieldsForElementsQuery(
-        ElementQueryInterface $query
-    );
+    public static function getFieldsForElementsQuery(ElementQueryInterface $query);
 
     /**
      * Returns the element query condition for a custom status parameter value.
@@ -447,10 +434,7 @@ interface ElementInterface extends ComponentInterface
      *
      * @return string|false
      */
-    public static function getElementQueryStatusCondition(
-        ElementQueryInterface $query,
-        $status
-    );
+    public static function getElementQueryStatusCondition(ElementQueryInterface $query, $status);
 
     /**
      * Returns the HTML for an editor HUD for the given element.
@@ -492,10 +476,7 @@ interface ElementInterface extends ComponentInterface
      *
      * @return void
      */
-    public static function onAfterMoveElementInStructure(
-        ElementInterface $element,
-        $structureId
-    );
+    public static function onAfterMoveElementInStructure(ElementInterface $element, $structureId);
 
     // Public Methods
     // =========================================================================

@@ -76,12 +76,23 @@ class PluginUpdate extends Model
     public $criticalUpdateAvailable = false;
 
     /**
-     * @var array Releases
+     * @var PluginNewRelease[] Releases
      */
     public $releases;
 
     // Public Methods
     // =========================================================================
+
+    /**
+     * @inheritdoc
+     */
+    public function datetimeAttributes()
+    {
+        $attributes = parent::datetimeAttributes();
+        $attributes[] = 'latestDate';
+
+        return $attributes;
+    }
 
     /**
      * @inheritdoc

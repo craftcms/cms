@@ -11,8 +11,8 @@
 {% set username = (craft.config.rememberUsernameDuration ? craft.session.rememberedUsername : '') %}
 
 {% block body %}
-	{% registerCssResource "css/login.css" %}
-	{% registerJsResource "js/login.js" %}
+	{% registercssresource "css/login.css" %}
+	{% registerjsresource "js/login.js" %}
 
     <script type="text/javascript">
 		var cookieTest = 'CraftCookieTest='+Math.floor(Math.random() * 1000000);

@@ -164,6 +164,16 @@ $.extend(Craft,
 		return message;
 	},
 
+	formatDate: function(date)
+	{
+		if (typeof date != 'object')
+		{
+			date = new Date(date);
+		}
+
+		return $.datepicker.formatDate(Craft.datepickerFormat, date);
+	},
+
 	/**
 	 * Escapes some HTML.
 	 *

@@ -83,14 +83,22 @@ class Extension extends \Twig_Extension
             new ExitTokenParser(),
             new HeaderTokenParser(),
             new HookTokenParser(),
-            new RegisterResourceTokenParser('registerAssetBundle'),
-            new RegisterResourceTokenParser('registerCss'),
-            new RegisterResourceTokenParser('registerCssFile'),
-            new RegisterResourceTokenParser('registerCssResource'),
-            new RegisterResourceTokenParser('registerHiResCss'),
-            new RegisterResourceTokenParser('registerJs'),
-            new RegisterResourceTokenParser('registerJsFile'),
-            new RegisterResourceTokenParser('registerJsResource'),
+            new RegisterResourceTokenParser('registerassetbundle',
+                'registerAssetBundle', false, true, false, false),
+            new RegisterResourceTokenParser('registercss', 'registerCss', true,
+                false, false, true),
+            new RegisterResourceTokenParser('registerhirescss',
+                'registerHiResCss', true, false, false, true),
+            new RegisterResourceTokenParser('registercssfile',
+                'registerCssFile', false, false, false, true),
+            new RegisterResourceTokenParser('registercssresource',
+                'registerCssResource', false, false, false, true),
+            new RegisterResourceTokenParser('registerjs', 'registerJs', true,
+                true, true, false),
+            new RegisterResourceTokenParser('registerjsfile', 'registerJsFile',
+                false, true, false, true),
+            new RegisterResourceTokenParser('registerjsresource',
+                'registerJsResource', false, true, false, true),
             new IncludeTranslationsTokenParser(),
             new NamespaceTokenParser(),
             new NavTokenParser(),
@@ -102,17 +110,40 @@ class Extension extends \Twig_Extension
             new RequirePermissionTokenParser(),
             new SwitchTokenParser(),
             // Deprecated tags
-            new RegisterResourceTokenParser('includeCss', 'registerCss'),
-            new RegisterResourceTokenParser('includeCssFile',
-                'registerCssFile'),
-            new RegisterResourceTokenParser('includeCssResource',
-                'registerCssResource'),
+            new RegisterResourceTokenParser('includeCss', 'registerCss', false,
+                false, false, true, 'registercss'),
             new RegisterResourceTokenParser('includeHiResCss',
-                'registerHiResCss'),
-            new RegisterResourceTokenParser('includeJs', 'registerJs'),
-            new RegisterResourceTokenParser('includeJsFile', 'registerJsFile'),
+                'registerHiResCss', true, false, false, true,
+                'registerhirescss'),
+            new RegisterResourceTokenParser('includeCssFile', 'registerCssFile',
+                true, false, false, true, 'registercssfile'),
+            new RegisterResourceTokenParser('includeCssResource',
+                'registerCssResource', false, false, false, true,
+                'registercssresource'),
+            new RegisterResourceTokenParser('includeJs', 'registerJs', false,
+                true, true, false, 'registerjs'),
+            new RegisterResourceTokenParser('includeJsFile', 'registerJsFile',
+                true, true, false, true, 'registerjsfile'),
             new RegisterResourceTokenParser('includeJsResource',
-                'registerJsResource'),
+                'registerJsResource', false, true, false, true,
+                'registerjsresource'),
+            new RegisterResourceTokenParser('includecss', 'registerCss', false,
+                false, false, true, 'registercss'),
+            new RegisterResourceTokenParser('includehirescss',
+                'registerHiResCss', true, false, false, true,
+                'registerhirescss'),
+            new RegisterResourceTokenParser('includecssfile', 'registerCssFile',
+                true, false, false, true, 'registercssfile'),
+            new RegisterResourceTokenParser('includecssresource',
+                'registerCssResource', false, false, false, true,
+                'registercssresource'),
+            new RegisterResourceTokenParser('includejs', 'registerJs', false,
+                true, true, false, 'registerjs'),
+            new RegisterResourceTokenParser('includejsfile', 'registerJsFile',
+                true, true, false, true, 'registerjsfile'),
+            new RegisterResourceTokenParser('includejsresource',
+                'registerJsResource', false, true, false, true,
+                'registerjsresource'),
         ];
     }
 
@@ -171,12 +202,8 @@ class Extension extends \Twig_Extension
      *
      * @return string the translated message.
      */
-    public function translateFilter(
-        $message,
-        $params = [],
-        $language = null,
-        $category = null
-    ) {
+    public function translateFilter($message, $params = [], $language = null, $category = null)
+    {
         if ($category === null) {
             if (Craft::$app->getRequest()->getIsSiteRequest()) {
                 $category = 'site';
@@ -226,12 +253,8 @@ class Extension extends \Twig_Extension
      *
      * @return string The kebab-cased string
      */
-    public function kebabFilter(
-        $string,
-        $glue = '-',
-        $lower = true,
-        $removePunctuation = true
-    ) {
+    public function kebabFilter($string, $glue = '-', $lower = true, $removePunctuation = true)
+    {
         return StringHelper::toKebabCase($string, $glue, $lower,
             $removePunctuation);
     }
@@ -331,12 +354,8 @@ class Extension extends \Twig_Extension
      *
      * @return mixed|string
      */
-    public function dateFilter(
-        \Twig_Environment $env,
-        $date,
-        $format = null,
-        $timezone = null
-    ) {
+    public function dateFilter(\Twig_Environment $env, $date, $format = null, $timezone = null)
+    {
         // Let Twig do it's thing.
         $value = \twig_date_format_filter($env, $date, $format, $timezone);
 

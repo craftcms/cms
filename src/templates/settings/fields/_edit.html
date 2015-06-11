@@ -99,5 +99,7 @@
 
 
 {% if field is empty or field.handle is empty %}
-	{% registerJs "new Craft.HandleGenerator('#name', '#handle');" %}
+	{% registerjs %}
+		new Craft.HandleGenerator('#name', '#handle');
+	{% endregisterjs %}
 {% endif %}

@@ -34,11 +34,8 @@ class IOHelper
      *
      * @return string The resolved path of the file if it exists.
      */
-    public static function fileExists(
-        $path,
-        $caseInsensitive = false,
-        $suppressErrors = false
-    ) {
+    public static function fileExists($path, $caseInsensitive = false, $suppressErrors = false)
+    {
         $resolvedPath = static::getRealPath($path, $suppressErrors);
 
         if ($resolvedPath) {
@@ -76,11 +73,8 @@ class IOHelper
      *
      * @return boolean 'true' if the folder exists, otherwise 'false'.
      */
-    public static function folderExists(
-        $path,
-        $caseInsensitive = false,
-        $suppressErrors = false
-    ) {
+    public static function folderExists($path, $caseInsensitive = false, $suppressErrors = false)
+    {
         $path = static::getRealPath($path, $suppressErrors);
 
         if ($path) {
@@ -269,11 +263,8 @@ class IOHelper
      *
      * @return string The file name with or without the extension.
      */
-    public static function getFilename(
-        $path,
-        $includeExtension = true,
-        $suppressErrors = false
-    ) {
+    public static function getFilename($path, $includeExtension = true, $suppressErrors = false)
+    {
         $path = static::normalizePathSeparators($path);
 
         if ($includeExtension) {
@@ -295,11 +286,8 @@ class IOHelper
      *
      * @return string The folder name.
      */
-    public static function getFolderName(
-        $path,
-        $fullPath = true,
-        $suppressErrors = false
-    ) {
+    public static function getFolderName($path, $fullPath = true, $suppressErrors = false)
+    {
         $path = static::normalizePathSeparators($path);
 
         if ($fullPath) {
@@ -330,11 +318,8 @@ class IOHelper
      *
      * @return string The file extension.
      */
-    public static function getExtension(
-        $path,
-        $default = null,
-        $suppressErrors = false
-    ) {
+    public static function getExtension($path, $default = null, $suppressErrors = false)
+    {
         $path = static::normalizePathSeparators($path);
         $extension = $suppressErrors ? @pathinfo($path,
             PATHINFO_EXTENSION) : pathinfo($path, PATHINFO_EXTENSION);
@@ -526,11 +511,8 @@ class IOHelper
      *
      * @return mixed Owner name, or ID if $getName set to 'false' or false if the file or folder does not exist.
      */
-    public static function getOwner(
-        $path,
-        $getName = true,
-        $suppressErrors = false
-    ) {
+    public static function getOwner($path, $getName = true, $suppressErrors = false)
+    {
         $path = static::normalizePathSeparators($path);
 
         if (static::fileExists($path,
@@ -559,11 +541,8 @@ class IOHelper
      *
      * @return mixed Group name, or ID if $getName set to 'false' or false if the file or folder does not exist.
      */
-    public static function getGroup(
-        $path,
-        $getName = true,
-        $suppressErrors = false
-    ) {
+    public static function getGroup($path, $getName = true, $suppressErrors = false)
+    {
         $path = static::normalizePathSeparators($path);
 
         if (static::fileExists($path,
@@ -618,13 +597,8 @@ class IOHelper
      *
      * @return array|bool An array of file and folder paths, or false if the folder does not exist or is not readable.
      */
-    public static function getFolderContents(
-        $path,
-        $recursive = true,
-        $filter = null,
-        $includeHiddenFiles = false,
-        $suppressErrors = false
-    ) {
+    public static function getFolderContents($path, $recursive = true, $filter = null, $includeHiddenFiles = false, $suppressErrors = false)
+    {
         $path = static::normalizePathSeparators($path);
 
         if (static::folderExists($path,
@@ -655,11 +629,8 @@ class IOHelper
      * @return boolean|string|array The contents of the file as a string, an array, or false if the file does not exist or
      *                           is not readable.
      */
-    public static function getFileContents(
-        $path,
-        $array = false,
-        $suppressErrors = false
-    ) {
+    public static function getFileContents($path, $array = false, $suppressErrors = false)
+    {
         $path = static::normalizePathSeparators($path);
 
         if (static::fileExists($path,
@@ -729,11 +700,8 @@ class IOHelper
      * @return Folder|bool The newly created folder as a [[Folder]] object or false if we don't have write
      *                     permissions.
      */
-    public static function createFolder(
-        $path,
-        $permissions = null,
-        $suppressErrors = false
-    ) {
+    public static function createFolder($path, $permissions = null, $suppressErrors = false)
+    {
         if ($permissions == null) {
             $permissions = Craft::$app->getConfig()->get('defaultFolderPermissions');
         }
@@ -779,14 +747,8 @@ class IOHelper
      *
      * @return boolean 'true' upon successful writing to the file, otherwise false.
      */
-    public static function writeToFile(
-        $path,
-        $contents,
-        $autoCreate = true,
-        $append = false,
-        $noFileLock = null,
-        $suppressErrors = false
-    ) {
+    public static function writeToFile($path, $contents, $autoCreate = true, $append = false, $noFileLock = null, $suppressErrors = false)
+    {
         $path = static::normalizePathSeparators($path);
 
         if (!static::fileExists($path, $suppressErrors) && $autoCreate) {
@@ -932,12 +894,8 @@ class IOHelper
      * @return boolean 'true' if successful, 'false' if not or the given path does
      *              not exist.
      */
-    public static function changeOwner(
-        $path,
-        $owner,
-        $recursive = false,
-        $suppressErrors = false
-    ) {
+    public static function changeOwner($path, $owner, $recursive = false, $suppressErrors = false)
+    {
         $path = static::normalizePathSeparators($path);
 
         if (posix_getpwnam($owner) == false xor (is_numeric($owner) && posix_getpwuid($owner) == false)) {
@@ -997,12 +955,8 @@ class IOHelper
      *
      * @return boolean 'true' if successful, 'false' if not, or the given path does not exist.
      */
-    public static function changeGroup(
-        $path,
-        $group,
-        $recursive = false,
-        $suppressErrors = false
-    ) {
+    public static function changeGroup($path, $group, $recursive = false, $suppressErrors = false)
+    {
         $path = static::normalizePathSeparators($path);
 
         if (posix_getgrnam($group) == false xor (is_numeric($group) && posix_getgrgid($group) == false)) {
@@ -1060,11 +1014,8 @@ class IOHelper
      *
      * @return boolean 'true' if successful, 'false' if not or the path does not exist.
      */
-    public static function changePermissions(
-        $path,
-        $permissions,
-        $suppressErrors = false
-    ) {
+    public static function changePermissions($path, $permissions, $suppressErrors = false)
+    {
         $path = static::normalizePathSeparators($path);
 
         if (static::fileExists($path,
@@ -1096,11 +1047,8 @@ class IOHelper
      * @return boolean 'true' if the copy was successful, 'false' if it was not, the source file is not readable or does
      *              not exist.
      */
-    public static function copyFile(
-        $path,
-        $destination,
-        $suppressErrors = false
-    ) {
+    public static function copyFile($path, $destination, $suppressErrors = false)
+    {
         $path = static::normalizePathSeparators($path);
 
         if (static::fileExists($path, $suppressErrors)) {
@@ -1145,12 +1093,8 @@ class IOHelper
      * @return boolean 'true' if the copy was successful, 'false' if it was not, or $validate is true and the size of the
      *              folders do not match after the copy.
      */
-    public static function copyFolder(
-        $path,
-        $destination,
-        $validate = false,
-        $suppressErrors = false
-    ) {
+    public static function copyFolder($path, $destination, $validate = false, $suppressErrors = false)
+    {
         $path = static::normalizePathSeparators($path);
 
         if (static::folderExists($path, $suppressErrors)) {
@@ -1675,10 +1619,8 @@ class IOHelper
      *
      * @return void
      */
-    public static function ensureFolderExists(
-        $folderPath,
-        $suppressErrors = false
-    ) {
+    public static function ensureFolderExists($folderPath, $suppressErrors = false)
+    {
         if (!IOHelper::folderExists($folderPath, $suppressErrors)) {
             IOHelper::createFolder($folderPath,
                 Craft::$app->getConfig()->get('defaultFolderPermissions'),
@@ -1695,11 +1637,8 @@ class IOHelper
      *
      * @return mixed
      */
-    public static function cleanFilename(
-        $filename,
-        $onlyAscii = false,
-        $separator = '-'
-    ) {
+    public static function cleanFilename($filename, $onlyAscii = false, $separator = '-')
+    {
         $disallowedChars = [
             'â€”',
             'â€“',
@@ -1770,11 +1709,8 @@ class IOHelper
      *
      * @return boolean
      */
-    public static function touch(
-        $filename,
-        $time = null,
-        $suppressErrors = false
-    ) {
+    public static function touch($filename, $time = null, $suppressErrors = false)
+    {
         if (!$time) {
             $time = time();
         }
@@ -1799,11 +1735,8 @@ class IOHelper
      *
      * @return array
      */
-    public static function getLastModifiedFiles(
-        $folder,
-        $number = null,
-        $suppressErrors = false
-    ) {
+    public static function getLastModifiedFiles($folder, $number = null, $suppressErrors = false)
+    {
         $fileResults = [];
 
         $files = static::getFiles($folder, $suppressErrors);
@@ -1860,13 +1793,8 @@ class IOHelper
      * @throws ErrorException
      * @return boolean
      */
-    public function handleError(
-        $errNo,
-        $errStr,
-        $errFile,
-        $errLine,
-        array $errContext
-    ) {
+    public function handleError($errNo, $errStr, $errFile, $errLine, array $errContext)
+    {
         // The error was suppressed with the @-operator
         if (0 === error_reporting()) {
             return false;
@@ -1905,13 +1833,8 @@ class IOHelper
      *
      * @return boolean
      */
-    private static function _writeToFile(
-        $path,
-        $contents,
-        $lock = true,
-        $append = true,
-        $suppressErrors = false
-    ) {
+    private static function _writeToFile($path, $contents, $lock = true, $append = true, $suppressErrors = false)
+    {
         $flags = 0;
 
         if ($lock) {
@@ -1965,13 +1888,8 @@ class IOHelper
      *
      * @return array
      */
-    private static function _folderContents(
-        $path,
-        $recursive = false,
-        $filter = null,
-        $includeHiddenFiles = false,
-        $suppressErrors = false
-    ) {
+    private static function _folderContents($path, $recursive = false, $filter = null, $includeHiddenFiles = false, $suppressErrors = false)
+    {
         $descendants = [];
 
         $path = static::normalizePathSeparators(static::getRealPath($path,

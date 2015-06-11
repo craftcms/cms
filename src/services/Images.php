@@ -77,8 +77,8 @@ class Images extends Component
      * Loads an image from a file system path.
      *
      * @param string $path
-     * @param int $minSvgWidth The minimum width that the image should be loaded with if it’s an SVG.
-     * @param int $minSvgHeight The minimum width that the image should be loaded with if it’s an SVG.
+     * @param int    $minSvgWidth  The minimum width that the image should be loaded with if it’s an SVG.
+     * @param int    $minSvgHeight The minimum width that the image should be loaded with if it’s an SVG.
      *
      * @throws \Exception
      * @return Image
@@ -91,6 +91,7 @@ class Images extends Component
         $image->minSvgHeight = $minSvgHeight;
 
         $image->loadImage($path);
+
         return $image;
     }
 

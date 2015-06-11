@@ -7,8 +7,9 @@
 
 namespace craft\app\helpers;
 
+use craft\app\base\Model;
+use craft\app\dates\DateTime;
 use craft\app\enums\ColumnType;
-use DateTime;
 use yii\db\Schema;
 
 /**
@@ -31,55 +32,67 @@ class DbHelper
     // =========================================================================
 
     /**
-     * Prepares an object’s values to be sent to the database.
+     * Prepares an array or object’s values to be sent to the database.
      *
-     * @param mixed $object
+     * @param mixed $values The values to be prepared
      *
-     * @return array
+     * @return array The prepared values
      */
-    public static function prepObjectValues($object)
+    public static function prepareValuesForDb($values)
     {
-        // Convert the object to an array
-        $object = ArrayHelper::toArray($object, [], false);
+        // Normalize to an array
+        $values = ArrayHelper::toArray($values);
 
-        foreach ($object as $key => $value) {
-            $object[$key] = static::prepValue($value);
+        foreach ($values as $key => $value) {
+            $values[$key] = static::prepareValueForDb($value);
         }
 
-        return $object;
+        return $values;
     }
 
     /**
      * Prepares a value to be sent to the database.
      *
-     * @param mixed   $value      The value to be prepraed
-     * @param boolean $jsonEncode Whether the value should be JSON-encoded if it's an object or array
+     * @param mixed $value The value to be prepared
      *
-     * @return array
+     * @return mixed The prepped value
      */
-    public static function prepValue($value, $jsonEncode = true)
+    public static function prepareValueForDb($value)
     {
-        if ($value instanceof DateTime) {
-            return DateTimeHelper::formatTimeForDb($value);
+        // Only DateTime objects and ISO-8601 strings should automatically be detected as dates
+        if ($value instanceof \DateTime || DateTimeHelper::isIso8601($value)) {
+            return static::prepareDateForDb($value);
         }
 
-        if (is_object($value)) {
-            // Turn it into an array non-recursively so any DateTime properties stay that way
-            $value = ArrayHelper::toArray($value, [], false);
-        }
-
-        if (is_array($value)) {
-            // Run prepValue() on each of its values before JSON-encoding it
-            foreach ($value as $k => $v) {
-                $value[$k] = static::prepValue($v, false);
-            }
-
-            if ($jsonEncode) {
-                $value = JsonHelper::encode($value);
-            }
+        if (is_object($value) || is_array($value)) {
+            return JsonHelper::encode($value);
         }
 
         return $value;
+    }
+
+    /**
+     * Prepares a date to be sent to the database.
+     *
+     * @param mixed $date The date to be prepared
+     *
+     * @return string|null The prepped date, or `null` if it could not be prepared
+     */
+    public static function prepareDateForDb($date)
+    {
+        $date = DateTimeHelper::toDateTime($date);
+
+        if ($date !== false) {
+            $timezone = $date->getTimezone();
+            $date->setTimezone(new \DateTimeZone(DateTime::UTC));
+            // TODO: MySQL specific
+            $formattedDate = $date->format(DateTime::MYSQL_DATETIME);
+            $date->setTimezone($timezone);
+
+            return $formattedDate;
+        } else {
+            return null;
+        }
     }
 
     /**
@@ -104,11 +117,8 @@ class DbHelper
      *
      * @return array
      */
-    public static function getNumericalColumnType(
-        $min = null,
-        $max = null,
-        $decimals = null
-    ) {
+    public static function getNumericalColumnType($min = null, $max = null, $decimals = null)
+    {
         // Normalize the arguments
         $min = is_numeric($min) ? $min : -static::$_intColumnSizes[ColumnType::Int];
         $max = is_numeric($max) ? $max : static::$_intColumnSizes[ColumnType::Int] - 1;
@@ -168,10 +178,8 @@ class DbHelper
      *
      * @return integer The storage capacity of the column type in bytes.
      */
-    public static function getTextualColumnStorageCapacity(
-        $columnType,
-        $database = 'mysql'
-    ) {
+    public static function getTextualColumnStorageCapacity($columnType, $database = 'mysql')
+    {
         switch ($database) {
             case 'mysql': {
                 switch ($columnType) {
@@ -347,9 +355,9 @@ class DbHelper
     /**
      * Normalizes date params and then sends them off to parseParam().
      *
-     * @param string                $column
-     * @param string|array|DateTime $value
-     * @param array                 &$params
+     * @param string                 $column
+     * @param string|array|\DateTime $value
+     * @param array                  &$params
      *
      * @return mixed
      */
@@ -385,9 +393,10 @@ class DbHelper
                 $operator = '=';
             }
 
+            // Date params are set in the system timezone
             $val = DateTimeHelper::toDateTime($val, Craft::$app->getTimeZone());
 
-            $normalizedValues[] = $operator.DateTimeHelper::formatTimeForDb($val->getTimestamp());
+            $normalizedValues[] = $operator.static::prepareDateForDb($val);
         }
 
         return static::parseParam($column, $normalizedValues, $params);

@@ -29,12 +29,8 @@ class Feeds
      *
      * @return array
      */
-    public function getFeedItems(
-        $url,
-        $limit = 0,
-        $offset = 0,
-        $cacheDuration = null
-    ) {
+    public function getFeedItems($url, $limit = 0, $offset = 0, $cacheDuration = null)
+    {
         $limit = NumberHelper::makeNumeric($limit);
         $offset = NumberHelper::makeNumeric($offset);
         $items = \Craft::$app->getFeeds()->getFeedItems($url, $limit, $offset,

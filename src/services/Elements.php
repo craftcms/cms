@@ -107,11 +107,8 @@ class Elements extends Component
      *
      * @return ElementInterface|Element|null The matching element, or `null`.
      */
-    public function getElementById(
-        $elementId,
-        $elementType = null,
-        $localeId = null
-    ) {
+    public function getElementById($elementId, $elementType = null, $localeId = null)
+    {
         if (!$elementId) {
             return null;
         }
@@ -142,11 +139,8 @@ class Elements extends Component
      *
      * @return ElementInterface|Element|null The matching element, or `null`.
      */
-    public function getElementByUri(
-        $uri,
-        $localeId = null,
-        $enabledOnly = false
-    ) {
+    public function getElementByUri($uri, $localeId = null, $enabledOnly = false)
+    {
         if ($uri === '') {
             $uri = '__home__';
         }
@@ -286,10 +280,8 @@ class Elements extends Component
      * @throws Exception|\Exception
      * @return boolean
      */
-    public function saveElement(
-        ElementInterface $element,
-        $validateContent = null
-    ) {
+    public function saveElement(ElementInterface $element, $validateContent = null)
+    {
         // Make sure the element is cool with this
         // (Needs to happen before validation, so field types have a chance to prepare their POST values)
         if (!$element->beforeSave()) {
@@ -591,12 +583,8 @@ class Elements extends Component
      *
      * @return void
      */
-    public function updateElementSlugAndUri(
-        ElementInterface $element,
-        $updateOtherLocales = true,
-        $updateDescendants = true,
-        $asTask = false
-    ) {
+    public function updateElementSlugAndUri(ElementInterface $element, $updateOtherLocales = true, $updateDescendants = true, $asTask = false)
+    {
         if ($asTask) {
             Craft::$app->getTasks()->queueTask([
                 'type' => UpdateElementSlugsAndUris::className(),
@@ -639,9 +627,8 @@ class Elements extends Component
      *
      * @return void
      */
-    public function updateElementSlugAndUriInOtherLocales(
-        ElementInterface $element
-    ) {
+    public function updateElementSlugAndUriInOtherLocales(ElementInterface $element)
+    {
         foreach (Craft::$app->getI18n()->getSiteLocaleIds() as $localeId) {
             if ($localeId == $element->locale) {
                 continue;
@@ -668,11 +655,8 @@ class Elements extends Component
      *
      * @return void
      */
-    public function updateDescendantSlugsAndUris(
-        ElementInterface $element,
-        $updateOtherLocales = true,
-        $asTask = false
-    ) {
+    public function updateDescendantSlugsAndUris(ElementInterface $element, $updateOtherLocales = true, $asTask = false)
+    {
         $query = $element::find()
             ->descendantOf($element)
             ->descendantDist(1)

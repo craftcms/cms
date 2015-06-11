@@ -21,7 +21,7 @@
 
 
 {% block content %}
-	{% registerCssResource 'css/transforms.css' %}
+	{% registercssresource 'css/transforms.css' %}
 
 	<form method="post" accept-charset="UTF-8" data-saveshortcut>
 		<input type="hidden" name="action" value="asset-transforms/save-transform">
@@ -151,7 +151,7 @@
 {% endblock %}
 
 
-{% set js %}
+{% registerjs %}
 	{% if transform is not defined or not transform.handle %}new Craft.HandleGenerator('#name', '#handle');{% endif %}
 
 	$('#mode input').change(function()
@@ -165,5 +165,4 @@
 			$('#position-container').addClass('hidden');
 		}
 	})
-{% endset %}
-{% registerJs js %}
+{% endregisterjs %}

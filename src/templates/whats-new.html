@@ -7,9 +7,11 @@
 {% set url = 'http://buildwithcraft.com/updates/3.0' %}
 
 {% block content %}
-	{% registerCssResource "css/whats-new.css" %}
-	{% registerJsResource 'lib/jquery.fitvids.js' %}
-	{% registerJs '$("#content").fitVids();' %}
+	{% registercssresource "css/whats-new.css" %}
+	{% registerjsresource "lib/jquery.fitvids.js" %}
+	{% registerjs %}
+		$('#content').fitVids();
+	{% endregisterjs %}
 
 	<header>
 		<h1>{{ title }}</h1>

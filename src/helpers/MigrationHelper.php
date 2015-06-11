@@ -60,11 +60,8 @@ class MigrationHelper
      *
      * @return void
      */
-    public static function dropForeignKeyIfExists(
-        $tableName,
-        $columns,
-        Migration $migration = null
-    ) {
+    public static function dropForeignKeyIfExists($tableName, $columns, Migration $migration = null)
+    {
         $tableName = Craft::$app->getDb()->getSchema()->getRawTableName($tableName);
         $table = static::getTable($tableName);
 
@@ -87,12 +84,8 @@ class MigrationHelper
      *
      * @return false
      */
-    public static function dropIndexIfExists(
-        $tableName,
-        $columns,
-        $unique = false,
-        Migration $migration = null
-    ) {
+    public static function dropIndexIfExists($tableName, $columns, $unique = false, Migration $migration = null)
+    {
         $tableName = Craft::$app->getDb()->getSchema()->getRawTableName($tableName);
         $table = static::getTable($tableName);
 
@@ -114,11 +107,8 @@ class MigrationHelper
      *
      * @return false
      */
-    public static function renameTable(
-        $oldName,
-        $newName,
-        Migration $migration = null
-    ) {
+    public static function renameTable($oldName, $newName, Migration $migration = null)
+    {
         $oldName = Craft::$app->getDb()->getSchema()->getRawTableName($oldName);
         $newName = Craft::$app->getDb()->getSchema()->getRawTableName($newName);
 
@@ -177,12 +167,8 @@ class MigrationHelper
      *
      * @return void
      */
-    public static function renameColumn(
-        $tableName,
-        $oldName,
-        $newName,
-        Migration $migration = null
-    ) {
+    public static function renameColumn($tableName, $oldName, $newName, Migration $migration = null)
+    {
         $tableName = Craft::$app->getDb()->getSchema()->getRawTableName($tableName);
         $table = static::getTable($tableName);
         $allOtherTableFks = static::findForeignKeysTo($tableName);
@@ -266,14 +252,8 @@ class MigrationHelper
      *
      * @return void
      */
-    public static function makeElemental(
-        $tableName,
-        $elementType,
-        $hasContent = false,
-        $isLocalized = false,
-        $locales = null,
-        Migration $migration = null
-    ) {
+    public static function makeElemental($tableName, $elementType, $hasContent = false, $isLocalized = false, $locales = null, Migration $migration = null)
+    {
         $tableName = Craft::$app->getDb()->getSchema()->getRawTableName($tableName);
         $db = Craft::$app->getDb();
         $fks = static::findForeignKeysTo($tableName);
@@ -545,10 +525,8 @@ class MigrationHelper
      *
      * @return void
      */
-    public static function dropAllForeignKeysOnTable(
-        $table,
-        Migration $migration = null
-    ) {
+    public static function dropAllForeignKeysOnTable($table, Migration $migration = null)
+    {
         foreach ($table->fks as $fk) {
             static::dropForeignKey($fk, $migration);
         }
@@ -562,10 +540,8 @@ class MigrationHelper
      *
      * @return void
      */
-    public static function dropAllForeignKeysToTable(
-        $table,
-        Migration $migration = null
-    ) {
+    public static function dropAllForeignKeysToTable($table, Migration $migration = null)
+    {
         foreach (array_keys($table->columns) as $column) {
             $fks = static::findForeignKeysTo($table->name, $column);
 
@@ -601,10 +577,8 @@ class MigrationHelper
      *
      * @return void
      */
-    public static function dropAllIndexesOnTable(
-        $table,
-        Migration $migration = null
-    ) {
+    public static function dropAllIndexesOnTable($table, Migration $migration = null)
+    {
         foreach ($table->indexes as $index) {
             static::dropIndex($index, $migration);
         }
@@ -618,10 +592,8 @@ class MigrationHelper
      *
      * @return void
      */
-    public static function dropAllUniqueIndexesOnTable(
-        $table,
-        Migration $migration = null
-    ) {
+    public static function dropAllUniqueIndexesOnTable($table, Migration $migration = null)
+    {
         foreach ($table->indexes as $index) {
             if ($index->unique) {
                 static::dropIndex($index, $migration);
@@ -655,10 +627,8 @@ class MigrationHelper
      *
      * @return void
      */
-    public static function restoreAllIndexesOnTable(
-        $table,
-        Migration $migration = null
-    ) {
+    public static function restoreAllIndexesOnTable($table, Migration $migration = null)
+    {
         foreach ($table->indexes as $index) {
             static::restoreIndex($index, $migration);
         }
@@ -672,10 +642,8 @@ class MigrationHelper
      *
      * @return void
      */
-    public static function restoreAllUniqueIndexesOnTable(
-        $table,
-        Migration $migration = null
-    ) {
+    public static function restoreAllUniqueIndexesOnTable($table, Migration $migration = null)
+    {
         foreach ($table->indexes as $index) {
             if ($index->unique) {
                 static::restoreIndex($index, $migration);
@@ -718,10 +686,8 @@ class MigrationHelper
      *
      * @return void
      */
-    public static function restoreAllForeignKeysOnTable(
-        $table,
-        Migration $migration = null
-    ) {
+    public static function restoreAllForeignKeysOnTable($table, Migration $migration = null)
+    {
         foreach ($table->fks as $fk) {
             static::restoreForeignKey($fk, $migration);
         }

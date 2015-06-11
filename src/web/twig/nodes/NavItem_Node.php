@@ -21,14 +21,8 @@ class NavItem_Node extends \Twig_Node
     /**
      * @inheritdoc
      */
-    public function __construct(
-        \Twig_Node_Expression_AssignName $valueTarget,
-        \Twig_NodeInterface $indent = null,
-        \Twig_NodeInterface $outdent = null,
-        \Twig_NodeInterface $lowerBody = null,
-        $lineno,
-        $tag = null
-    ) {
+    public function __construct(\Twig_Node_Expression_AssignName $valueTarget, \Twig_NodeInterface $indent = null, \Twig_NodeInterface $outdent = null, \Twig_NodeInterface $lowerBody = null, $lineno, $tag = null)
+    {
         parent::__construct([
             'value_target' => $valueTarget,
             'indent' => $indent,

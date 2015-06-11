@@ -9,6 +9,8 @@
 	{%- if autofocus is defined and autofocus and not craft.request.isMobileBrowser(true) %} autofocus{% endif %}
 	{%- if disabled is defined and disabled %} disabled {% endif %}>
 
-{%- registerJsResource "lib/colorpicker/js/colorpicker.js" -%}
-{%- registerCssResource "lib/colorpicker/css/colorpicker.css" -%}
-{%- registerJs 'new Craft.ColorPicker("'~(id|namespaceInputId)~'");' %}
+{%- registerjsresource "lib/colorpicker/js/colorpicker.js" -%}
+{%- registercssresource "lib/colorpicker/css/colorpicker.css" -%}
+{%- registerjs %}
+	new Craft.ColorPicker('{{ id|namespaceInputId }}');
+{% endregisterjs %}

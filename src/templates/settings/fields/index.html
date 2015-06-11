@@ -59,7 +59,7 @@
 
 
 {% block content %}
-	{% registerJsResource "js/fields.js" %}
+	{% registerjsresource "js/fields.js" %}
 
 	<p id="nofields"{% if fields %} class="hidden"{% endif %}>
 		{% if groupId is defined %}
@@ -106,12 +106,10 @@
 {% endblock %}
 
 
-{% set js %}
+{% registerjs %}
 	new Craft.AdminTable({
 		tableSelector: '#fields',
 		noItemsSelector: '#nofields',
 		deleteAction: 'fields/delete-field'
 	});
-{% endset %}
-{% registerJs js %}
-
+{% endregisterjs %}

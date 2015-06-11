@@ -783,7 +783,8 @@ class UsersController extends Controller
 
         // Are they allowed to set a new password?
         if ($thisIsPublicRegistration) {
-            $user->newPassword = Craft::$app->getRequest()->getBodyParam('password', '');
+            $user->newPassword = Craft::$app->getRequest()->getBodyParam('password',
+                '');
         } else if ($isCurrentUser) {
             // If there was a newPassword input but it was empty, pretend it didn't exist
             $user->newPassword = Craft::$app->getRequest()->getBodyParam('newPassword') ?: null;

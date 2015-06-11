@@ -20,6 +20,7 @@ use craft\app\elements\db\EntryQuery;
 use craft\app\events\SetStatusEvent;
 use craft\app\helpers\ArrayHelper;
 use craft\app\helpers\DateTimeHelper;
+use craft\app\helpers\DbHelper;
 use craft\app\helpers\UrlHelper;
 use craft\app\models\EntryType;
 use craft\app\models\Section;
@@ -259,7 +260,7 @@ class Entry extends Element
                             // Set a Post Date as well
                             Craft::$app->getDb()->createCommand()->update(
                                 '{{%entries}}',
-                                ['postDate' => DateTimeHelper::currentTimeForDb()],
+                                ['postDate' => DbHelper::prepareDateForDb(new \DateTime())],
                                 [
                                     'and',
                                     ['in', 'id', $event->elementIds],
@@ -383,10 +384,8 @@ class Entry extends Element
     /**
      * @inheritdoc
      */
-    public static function getTableAttributeHtml(
-        ElementInterface $element,
-        $attribute
-    ) {
+    public static function getTableAttributeHtml(ElementInterface $element, $attribute)
+    {
         /** @var Entry $element */
         // First give plugins a chance to set this
         $pluginAttributeHtml = Craft::$app->getPlugins()->callFirst('getEntryTableAttributeHtml',
@@ -410,11 +409,9 @@ class Entry extends Element
     /**
      * @inheritdoc
      */
-    public static function getElementQueryStatusCondition(
-        ElementQueryInterface $query,
-        $status
-    ) {
-        $currentTimeDb = DateTimeHelper::currentTimeForDb();
+    public static function getElementQueryStatusCondition(ElementQueryInterface $query, $status)
+    {
+        $currentTimeDb = DbHelper::prepareDateForDb(new \DateTime());
 
         switch ($status) {
             case Entry::STATUS_LIVE: {
@@ -520,10 +517,8 @@ class Entry extends Element
     /**
      * @inheritdoc
      */
-    public static function onAfterMoveElementInStructure(
-        ElementInterface $element,
-        $structureId
-    ) {
+    public static function onAfterMoveElementInStructure(ElementInterface $element, $structureId)
+    {
         /** @var Entry $element */
         // Was the entry moved within its section's structure?
         $section = $element->getSection();

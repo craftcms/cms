@@ -106,11 +106,8 @@ class Search extends Component
      *
      * @return array The filtered list of element IDs.
      */
-    public function filterElementIdsByQuery(
-        $elementIds,
-        $query,
-        $scoreResults = true
-    ) {
+    public function filterElementIdsByQuery($elementIds, $query, $scoreResults = true)
+    {
         if (is_string($query)) {
             $query = new SearchQuery($query);
         }
@@ -203,13 +200,8 @@ class Search extends Component
      *
      * @return void
      */
-    private function _indexElementKeywords(
-        $elementId,
-        $attribute,
-        $fieldId,
-        $localeId,
-        $dirtyKeywords
-    ) {
+    private function _indexElementKeywords($elementId, $attribute, $fieldId, $localeId, $dirtyKeywords)
+    {
         $attribute = StringHelper::toLowerCase($attribute);
 
         if (!$localeId) {

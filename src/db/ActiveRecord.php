@@ -7,7 +7,6 @@
 
 namespace craft\app\db;
 
-use craft\app\helpers\DateTimeHelper;
 use craft\app\helpers\DbHelper;
 use craft\app\helpers\StringHelper;
 
@@ -45,15 +44,17 @@ abstract class ActiveRecord extends \yii\db\ActiveRecord
     public function beforeSave($insert)
     {
         // Prepare the values
+        $now = DbHelper::prepareDateForDb(new \DateTime());
+
         foreach ($this->attributes() as $attribute) {
             if ($attribute === 'dateCreated' && $this->getIsNewRecord()) {
-                $this->dateCreated = DateTimeHelper::currentTimeForDb();
+                $this->dateCreated = $now;
             } else if ($attribute === 'dateUpdated') {
-                $this->dateUpdated = DateTimeHelper::currentTimeForDb();
+                $this->dateUpdated = $now;
             } else if ($attribute === 'uid' && $this->getIsNewRecord()) {
                 $this->uid = StringHelper::UUID();
             } else {
-                $this->$attribute = DbHelper::prepValue($this->$attribute);
+                $this->$attribute = DbHelper::prepareValueForDb($this->$attribute);
             }
         }
 

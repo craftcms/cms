@@ -78,10 +78,7 @@ class Application extends \yii\web\Application
         // NOTE: Nothing that triggers a database connection should be made here until *after* _processResourceRequest()
         // in handleRequest() is called.
 
-        // Initialize the Cache service, Request and Logger right away (order is important)
-        $this->getCache();
-        $this->getRequest();
-        $this->processLogTargets();
+        $this->getLog();
 
         // So we can try to translate Yii framework strings
         //$this->coreMessages->attachEventHandler('onMissingTranslation', ['Craft\LocalizationHelper', 'findMissingTranslation']);

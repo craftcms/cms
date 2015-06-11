@@ -9,7 +9,7 @@ namespace craft\app\services;
 
 use Craft;
 use craft\app\db\Query;
-use craft\app\helpers\DateTimeHelper;
+use craft\app\helpers\DbHelper;
 use craft\app\helpers\JsonHelper;
 use craft\app\helpers\StringHelper;
 use craft\app\models\DeprecationError;
@@ -68,7 +68,7 @@ class Deprecator extends Component
 
         $log->key = $key;
         $log->message = $message;
-        $log->lastOccurrence = DateTimeHelper::currentTimeForDb();
+        $log->lastOccurrence = new \DateTime();
         $log->template = (!$request->getIsConsoleRequest() && $request->getIsSiteRequest() ? Craft::$app->getView()->getRenderingTemplate() : null);
 
         // Everything else requires the stack trace
@@ -81,7 +81,7 @@ class Deprecator extends Component
             $db = Craft::$app->getDb();
 
             $values = [
-                'lastOccurrence' => DateTimeHelper::formatTimeForDb($log->lastOccurrence),
+                'lastOccurrence' => DbHelper::prepareDateForDb($log->lastOccurrence),
                 'file' => $log->file,
                 'line' => $log->line,
                 'class' => $log->class,

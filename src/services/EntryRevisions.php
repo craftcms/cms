@@ -314,12 +314,8 @@ class EntryRevisions extends Component
      *
      * @return EntryVersion[]
      */
-    public function getVersionsByEntryId(
-        $entryId,
-        $localeId,
-        $limit = null,
-        $includeCurrent = false
-    ) {
+    public function getVersionsByEntryId($entryId, $localeId, $limit = null, $includeCurrent = false)
+    {
         if (!$localeId) {
             $localeId = Craft::$app->getI18n()->getPrimarySiteLocale();
         }
