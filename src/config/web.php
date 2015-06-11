@@ -20,6 +20,7 @@ return [
             'autoRenewCookie' => true,
         ],
         'errorHandler' => [
+            'class' => 'craft\app\web\ErrorHandler',
             'errorAction' => 'templates/render-error'
         ]
     ],
