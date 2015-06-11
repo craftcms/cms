@@ -1,4 +1,4 @@
-/*! Craft 3.0.0 - 2015-06-09 */
+/*! Craft 3.0.0 - 2015-06-11 */
 (function($){
 
 if (typeof window.Craft == 'undefined')
@@ -4681,9 +4681,6 @@ Craft.AdminTable = Garnish.Base.extend(
  * Asset image editor class
  */
 
-// TODO: Sometimes the rotation messes up the zoom
-// TODO: Rotating by 0.1 degree kills stuff for non-square images?
-
 Craft.AssetImageEditor = Garnish.Modal.extend(
 	{
 		assetId: 0,
@@ -4826,24 +4823,11 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 
 		redrawEditor: function ()
 		{
-			var desiredHeight = 600,
-				desiredWidth = 600;
-
-			if (this.imageLoaded)
-			{
-				desiredHeight = this.originalImageHeight;
-				desiredWidth = this.originalImageWidth;
-			}
-
 			var availableHeight = Garnish.$win.height() - (4 * this.paddingSize) - this.$container.find('.footer').outerHeight(),
 				availableWidth = Garnish.$win.width() - (5 * this.paddingSize) - this.$container.find('.image-tools').outerWidth();
 
-			// The smallest of available and desired dimension is what we're going for to not have huge modals for small images
-			var targetImageHeight = availableHeight,
-				targetImageWidth = availableWidth;
-
 			// Make the image area square, so we can rotate it comfortably.
-			var imageHolderSize = Math.max(parseInt(this.$container.find('.image-tools').css('min-height'), 10), Math.min(targetImageHeight, targetImageWidth));
+			var imageHolderSize = Math.max(parseInt(this.$container.find('.image-tools').css('min-height'), 10), Math.min(availableHeight, availableWidth));
 
 			// Set it all up!
 			var containerWidth = imageHolderSize + this.$container.find('.image-tools').outerWidth() + (3 * this.paddingSize),
@@ -4904,10 +4888,9 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 				}
 				else
 				{
-					var rectangle = this.calculateLargestProportionalRectangle(this.rotation, this.imageWidth, this.imageHeight);
+					var rectangle = this.calculateLargestProportionalRectangle(this.rotation - this.frameRotation, this.imageWidth, this.imageHeight);
 					this.zoomRatio = Math.max(this.imageWidth / rectangle.w, this.imageHeight / rectangle.h);
 				}
-
 			}
 
 			// Remember the current context
@@ -4949,6 +4932,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 					this.rotate(90);
 				}
 			}, this));
+
 			this.$container.find('a.rotate.counter-clockwise').on('click', $.proxy(function ()
 			{
 				if (!this.animationInProgress)
