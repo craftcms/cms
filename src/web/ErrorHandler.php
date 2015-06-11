@@ -10,6 +10,7 @@ namespace craft\app\web;
 use Craft;
 use craft\app\helpers\StringHelper;
 use yii\db\Exception as DbException;
+use yii\log\FileTarget;
 use yii\web\HttpException;
 
 /**
@@ -43,6 +44,17 @@ class ErrorHandler extends \yii\web\ErrorHandler
 
         // Do some logging
         if ($exception instanceof HttpException) {
+            // If this is a 404 error, log to a special file
+            if ($exception->statusCode === 404) {
+                $logDispatcher = Craft::$app->getLog();
+
+                if (isset($logDispatcher->targets[0]) && $logDispatcher->targets[0] instanceof FileTarget) {
+                    /** @var FileTarget $logTarget */
+                    $logTarget = $logDispatcher->targets[0];
+                    $logTarget->logFile = Craft::getAlias('@storage/logs/web-404s.log');
+                }
+            }
+
             $status = $exception->statusCode ? $exception->statusCode : '';
             Craft::warning(($status ? $status.' - ' : '').$exception->getMessage(), __METHOD__);
         } else if ($exception instanceof \Twig_Error) {
