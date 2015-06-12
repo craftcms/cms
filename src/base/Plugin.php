@@ -99,6 +99,27 @@ class Plugin extends Module implements PluginInterface
     /**
      * @inheritdoc
      */
+    public function init()
+    {
+        parent::init();
+
+        // Set up a translation message source for the plugin
+        $i18n = Craft::$app->getI18n();
+        $handle = $this->getHandle();
+
+        if (!isset($i18n->translations[$handle]) && !isset($i18n->translations[$handle.'*'])) {
+            $i18n->translations[$handle] = [
+                'class' => 'craft\app\i18n\PhpMessageSource',
+                'sourceLanguage' => $this->sourceLanguage,
+                'basePath' => "@plugins/$handle/translations",
+                'allowOverrides' => true,
+            ];
+        }
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function getHandle()
     {
         return $this->id;
