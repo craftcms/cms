@@ -114,10 +114,10 @@
 
 {{ forms.textField({
 	label: "Selection Label"|t('app'),
-	instructions: "Enter the text you want to appear on the {type} selection input."|t('app', { type: type|lower }),
+	instructions: "Enter the text you want to appear on the {type} selection input."|t('app', { type: displayName|lower }),
 	id: 'selectionLabel',
 	name: 'selectionLabel',
-	value: settings.selectionLabel,
+	value: field.selectionLabel,
 	size: 25,
-	errors: settings.getErrors('selectionLabel')
+	errors: field.getErrors('selectionLabel')
 }) }}
