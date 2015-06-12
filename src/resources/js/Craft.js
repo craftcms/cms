@@ -1,4 +1,4 @@
-/*! Craft 3.0.0 - 2015-06-11 */
+/*! Craft 3.0.0 - 2015-06-12 */
 (function($){
 
 if (typeof window.Craft == 'undefined')
@@ -4681,11 +4681,14 @@ Craft.AdminTable = Garnish.Base.extend(
  * Asset image editor class
  */
 
+//TODO go over the logic and think on it - it definitely can be optimised and simplified. Especially undo/redo
+//TODO straightening to the right and then left makes the image shrink.
 Craft.AssetImageEditor = Garnish.Modal.extend(
 	{
 		assetId: 0,
 
 		imageUrl: "",
+		originalImageUrl: "",
 
 		// Original parameters for reference
 		originalImageHeight: 0,
@@ -4726,6 +4729,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 		drawGridLines: false,
 
 		$img: null,
+		imgUrl: null,
 
 		init: function(assetId)
 		{
@@ -4736,6 +4740,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 			this.imageWidth = 0;
 			this.originalImageHeight = 0;
 			this.originalImageWidth = 0;
+			this.originalImageUrl = "";
 			this.imageUrl = "";
 			this.aspectRatio = 0;
 			this.canvasImageHeight = 0;
@@ -4743,13 +4748,13 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 			this.imageLoaded = false;
 			this.canvas = null;
 			this.$img = null;
+			this.imgUrl = null;
 			this.rotation = 0;
 			this.animationInProgress = false;
 			this.doneOperations = [];
 			this.undoneOperations = [];
 			this.previousSliderValue = 0;
 			this.previousSavedSliderValue = 0;
-
 
 			// Build the modal
 			var $container = $('<div class="modal asset-editor"></div>').appendTo(Garnish.$bod),
@@ -4780,9 +4785,9 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 
 			this.imageHeight = this.originalImageHeight = data.imageData.height;
 			this.imageWidth = this.originalImageWidth = data.imageData.width;
-			this.imageUrl = data.imageData.url;
+			this.originalImageUrl = this.imageUrl = data.imageData.url;
 			this.aspectRatio = this.imageHeight / this.imageWidth;
-			this.initImage($.proxy(this, 'updateSizeAndPosition'));
+			this.initImage(this.imageUrl, $.proxy(this, 'updateSizeAndPosition'), true);
 			this.addListeners();
 		},
 
@@ -4810,13 +4815,23 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 			this.base();
 		},
 
-		initImage: function (callback)
+		initImage: function (url, callback, preventOperation)
 		{
 			this.$img = $('<img />');
 
-			this.$img.attr('src', this.imageUrl).on('load', $.proxy(function ()
+			this.$img.attr('src', url).on('load', $.proxy(function ()
 			{
+				if (!preventOperation) {
+					this.addOperation({
+						changeUrl: true,
+						from: this.imgUrl,
+						to: url
+					});
+				}
+
 				this.imageLoaded = true;
+				this.imgUrl = url;
+
 				callback();
 			}, this));
 		},
@@ -4976,8 +4991,9 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 				if ((ev.metaKey || ev.ctrlKey) && (ev.keyCode == 89 || (ev.keyCode == 90 && ev.shiftKey)))
 				{
 					this.redo();
-					return false;
 				}
+
+				return false;
 			}, this));
 
 			this.addListener(Garnish.$doc, 'keydown', $.proxy(function (ev)
@@ -4985,10 +5001,54 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 				if ((ev.metaKey || ev.ctrlKey) && !ev.shiftKey && ev.keyCode == 90)
 				{
 					this.undo();
-					return false;
 				}
+
+				return false;
 			}, this));
 
+			this.$container.find('#filter').on('change', $.proxy(function (ev)
+			{
+				var $paramContainer = this.$container.find('#filter-control-container').empty(),
+					$opt = $(ev.currentTarget).find(':selected');
+
+				if ($opt.attr('value')) {
+					$paramContainer.html('<br />');
+
+					if ($opt.data('has-parameter') == "yes") {
+						var $input = $('<input id="filterParameter" type="number" placeholder="0..255" />').on('keyup', $.proxy(function (ev)
+						{
+							if (parseFloat($(ev.currentTarget).val())) {
+								$paramContainer.find('.btn.apply-filter').removeClass('disabled');
+							}
+							else {
+								$paramContainer.find('.btn.apply-filter').addClass('disabled');
+							}
+
+						}, this));
+
+						$paramContainer.append($input);
+					}
+
+					$paramContainer.append($('<div class="buttons rightalign"><div class="btn submit apply-filter">' + Craft.t('Apply') + '</div></div>'));
+
+					var $applyButton = $paramContainer.find('.btn.apply-filter');
+
+					if ($opt.data('has-parameter') == "yes") {
+						$applyButton.addClass('disabled');
+					}
+
+					$applyButton.on('click', $.proxy(function (ev)
+					{
+						if ($applyButton.hasClass('disabled')) {
+							return false;
+						}
+
+						this._applyFilter($opt.attr('value'), typeof $input != "undefined" ? $input.val() : null);
+						$applyButton.addClass('disabled');
+						return true;
+					}, this));
+				}
+			}, this));
 		},
 
 		removeListeners: function ()
@@ -5031,7 +5091,6 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 				this.performOperation(operation, false);
 				this.doneOperations.push(operation);
 			}
-
 		},
 
 		// TODO: This is a horrible name for this function
@@ -5043,6 +5102,8 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 			{
 				this.rotation += modifier * operation.imageRotation;
 				this.frameRotation += modifier * operation.imageRotation;
+
+				this.renderImage(true);
 			}
 
 			if (typeof operation.straightenOffset != "undefined")
@@ -5057,9 +5118,22 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 				this.previousSavedSliderValue = newValue;
 				this.previousSliderValue = newValue;
 				$straighten.val(newValue);
+
+				this.renderImage(true);
 			}
 
-			this.renderImage(true);
+			if (typeof operation.changeUrl != "undefined") {
+				var url = "";
+
+				if (reverse) {
+					url = operation.from ? operation.from : this.originalImageUrl;
+				}
+				else {
+					url = operation.to;
+				}
+
+				this.initImage(url, $.proxy(this, 'redrawEditor'), true);
+			}
 		},
 
 		rotate: function (degrees, animateInstantly, preventFrameRotation)
@@ -5348,6 +5422,29 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 			}
 
 			return { w: w, h: h};
+		},
+
+		_applyFilter: function (filterName, parameter)
+		{
+			var params = {
+				filter:         filterName,
+				parameterValue: parameter
+			};
+
+			if (this.imgUrl != this.originalImageUrl) {
+				params.url = this.imgUrl;
+			}
+			else {
+				params.assetId = this.assetId;
+			}
+
+			Craft.postActionRequest("assetTransforms/applyFilter", params, $.proxy(function (data)
+			{
+				if (data.success && data.url) {
+					this.initImage(data.url, $.proxy(this, 'redrawEditor'));
+					this.$container.find('.btn.apply-filter').removeClass('disabled');
+				}
+			}, this));
 		}
 
 	},
