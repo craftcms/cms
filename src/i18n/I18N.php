@@ -61,6 +61,11 @@ class I18N extends \yii\i18n\I18N
      */
     private $_siteLocales;
 
+    /**
+     * @var boolean Whether [[translate()]] should wrap translations with `@` characters
+     */
+    private $_translationDebugOutput;
+
     // Public Methods
     // =========================================================================
 
@@ -674,6 +679,20 @@ class I18N extends \yii\i18n\I18N
         return $success;
     }
 
+    /**
+     * @inheritdoc
+     */
+    public function translate($category, $message, $params, $language)
+    {
+        $translation = parent::translate($category, $message, $params, $language);
+
+        if ($this->_shouldAddTranslationDebugOutput()) {
+            $translation = '@'.$translation.'@';
+        }
+
+        return $translation;
+    }
+
     // Private Methods
     // =========================================================================
 
@@ -729,5 +748,18 @@ class I18N extends \yii\i18n\I18N
                     $updateConditions)->execute();
             }
         }
+    }
+
+    /**
+     * Returns whether [[translate()]] should wrap translations with `@` characters,
+     * per the `translationDebugOutput` config setting.
+     */
+    private function _shouldAddTranslationDebugOutput()
+    {
+        if ($this->_translationDebugOutput === null) {
+            $this->_translationDebugOutput = (bool) Craft::$app->getConfig()->get('translationDebugOutput');
+        }
+
+        return $this->_translationDebugOutput;
     }
 }
