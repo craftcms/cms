@@ -17,7 +17,6 @@ return [
     'feeds' => 'craft\app\services\Feeds',
     'fields' => 'craft\app\services\Fields',
     'globals' => 'craft\app\services\Globals',
-    'i18n' => 'craft\app\i18n\I18N',
     'install' => 'craft\app\services\Install',
     'images' => 'craft\app\services\Images',
     'matrix' => 'craft\app\services\Matrix',
