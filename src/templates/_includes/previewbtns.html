@@ -3,11 +3,11 @@
 {% endif %}
 
 <div class="btn big livepreviewbtn">
-	{{ "Live Preview"|t }}
+	{{ "Live Preview"|t('app') }}
 	<div class="spinner hidden"></div>
 </div>
 
 {% if shareUrl is defined %}
-		<a href="{{ shareUrl }}" class="btn big sharebtn" title="{{ 'Share'|t }}" target="_blank"></a>
+		<a href="{{ shareUrl }}" class="btn big sharebtn" title="{{ 'Share'|t('app') }}" target="_blank"></a>
 	</div>
 {% endif %}

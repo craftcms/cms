@@ -6,32 +6,32 @@
 
 {% set content %}
 <p id="notransforms"{% if transforms|length %} class="hidden"{% endif %}>
-	{{ "No Asset transforms exist yet."|t }}
+	{{ "No Asset transforms exist yet."|t('app') }}
 </p>
 
 {% if transforms|length %}
 	<table id="transforms" class="data fullwidth collapsible">
 		<thead>
-			<th scope="col">{{ "Name"|t }}</th>
-			<th scope="col">{{ "Handle"|t }}</th>
-			<th scope="col">{{ "Mode"|t }}</th>
-			<th scope="col">{{ "Dimensions"|t }}</th>
-			<th scope="col">{{ "Format"|t }}</th>
+			<th scope="col">{{ "Name"|t('app') }}</th>
+			<th scope="col">{{ "Handle"|t('app') }}</th>
+			<th scope="col">{{ "Mode"|t('app') }}</th>
+			<th scope="col">{{ "Dimensions"|t('app') }}</th>
+			<th scope="col">{{ "Format"|t('app') }}</th>
 			<td class="thin"></td>
 		</thead>
 		<tbody>
 		{% for transform in transforms %}
-			<tr data-id="{{ transform.id }}" data-name="{{ transform.name|t }}">
-				<th scope="row" data-title="{{ 'Name'|t }}"><a href="{{ url('settings/assets/transforms/' ~ transform.handle) }}">{{ transform.name|t }}</a></th>
-                <td data-title="{{ 'Handle'|t }}"><code>{{ transform.handle }}</code></td>
-				<td data-title="{{ 'Mode'|t }}">
+			<tr data-id="{{ transform.id }}" data-name="{{ transform.name|t('app') }}">
+				<th scope="row" data-title="{{ 'Name'|t('app') }}"><a href="{{ url('settings/assets/transforms/' ~ transform.handle) }}">{{ transform.name|t('app') }}</a></th>
+                <td data-title="{{ 'Handle'|t('app') }}"><code>{{ transform.handle }}</code></td>
+				<td data-title="{{ 'Mode'|t('app') }}">
 					{% if transform.mode %}
 						{{ transformModes[transform.mode] }}
 					{%  endif %}
 				</td>
-				<td data-title="{{ 'Dimensions'|t }}">{{ transform.width ? transform.width : 'Auto'|t }} &times; {{ transform.height ? transform.height : 'Auto'|t }}</td>
-				<td data-title="{{ 'Format'|t }}">{{ transform.format ? transform.format|capitalize : 'Auto'|t }}</td>
-				<td class="thin"><a class="delete icon" title="{{ 'Delete'|t }}" role="button"></a></td>
+				<td data-title="{{ 'Dimensions'|t('app') }}">{{ transform.width ? transform.width : 'Auto'|t('app') }} &times; {{ transform.height ? transform.height : 'Auto'|t('app') }}</td>
+				<td data-title="{{ 'Format'|t('app') }}">{{ transform.format ? transform.format|capitalize : 'Auto'|t('app') }}</td>
+				<td class="thin"><a class="delete icon" title="{{ 'Delete'|t('app') }}" role="button"></a></td>
 			</tr>
 		{% endfor %}
 		</tbody>
@@ -39,7 +39,7 @@
 {% endif %}
 
 <div class="buttons">
-	<a class="btn submit add icon" href="{{ url('settings/assets/transforms/new') }}">{{ "New Transform"|t }}</a>
+	<a class="btn submit add icon" href="{{ url('settings/assets/transforms/new') }}">{{ "New Transform"|t('app') }}</a>
 </div>
 {% endset %}
 

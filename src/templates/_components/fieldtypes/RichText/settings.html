@@ -11,7 +11,7 @@
 	{% endset %}
 {% else %}
 	{% set configInput %}
-		<p>{{ 'You don’t have any <a href="http://buildwithcraft.com/docs/rich-text-fields#redactor-configs" target="_blank">Redactor configs</a> yet.'|t|raw }}</p>
+		<p>{{ 'You don’t have any <a href="http://buildwithcraft.com/docs/rich-text-fields#redactor-configs" target="_blank">Redactor configs</a> yet.'|t('app')|raw }}</p>
 	{% endset %}
 {% endif %}
 
@@ -25,30 +25,30 @@
 {% endset %}
 
 {{ forms.field({
-	label: "Config"|t,
-	instructions: "You can save custom Redactor configs as .json files in craft/config/redactor/."|t~' <a href="http://imperavi.com/redactor/docs/settings/" target="_blank">'~"View available settings"|t~'</a>.',
+	label: "Config"|t('app'),
+	instructions: "You can save custom Redactor configs as .json files in craft/config/redactor/."|t('app')~' <a href="http://imperavi.com/redactor/docs/settings/" target="_blank">'~"View available settings"|t('app')~'</a>.',
 	id: 'configFile'
 }, configInput) }}
 
 {{ forms.checkboxField({
-	label: "Clean up HTML?"|t,
-	instructions: "Removes <code>&lt;span&gt;</code>’s, empty tags, and most <code>style</code> attributes on save."|t,
+	label: "Clean up HTML?"|t('app'),
+	instructions: "Removes <code>&lt;span&gt;</code>’s, empty tags, and most <code>style</code> attributes on save."|t('app'),
 	id: 'cleanupHtml',
 	name: 'cleanupHtml',
 	checked: field.cleanupHtml
 }) }}
 
 {{ forms.checkboxField({
-	label: "Purify HTML?"|t,
-	instructions: 'Removes any potentially-malicious code on save, by running the submitted data through <a href="http://htmlpurifier.org/" target="_blank">HTML Purifier</a>.'|t,
+	label: "Purify HTML?"|t('app'),
+	instructions: 'Removes any potentially-malicious code on save, by running the submitted data through <a href="http://htmlpurifier.org/" target="_blank">HTML Purifier</a>.'|t('app'),
 	id: 'purifyHtml',
 	name: 'purifyHtml',
 	checked: field.purifyHtml
 }) }}
 
 {{ forms.field({
-	label: "Column Type"|t,
-	instructions: "The underlying database column type to use when saving content."|t,
+	label: "Column Type"|t('app'),
+	instructions: "The underlying database column type to use when saving content."|t('app'),
 	id: 'columnType',
-	warning: (existing ? "Changing this may result in data loss."|t),
+	warning: (existing ? "Changing this may result in data loss."|t('app')),
 }, columnType) }}

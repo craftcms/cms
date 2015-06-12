@@ -1,8 +1,8 @@
 {% extends "_layouts/cp" %}
-{% set title = "Sections"|t %}
+{% set title = "Sections"|t('app') %}
 
 {% set crumbs = [
-	{ label: "Settings"|t, url: url('settings') }
+	{ label: "Settings"|t('app'), url: url('settings') }
 ] %}
 
 {% set docsUrl = 'http://buildwithcraft.com/docs/sections-and-entries#sections' %}
@@ -10,39 +10,39 @@
 
 {% set content %}
 	<div id="nosections"{% if sections %} class="hidden"{% endif %}>
-		<p>{{ "No sections exist yet."|t }}</p>
+		<p>{{ "No sections exist yet."|t('app') }}</p>
 	</div>
 
 	{% if sections|length %}
 		<table id="sections" class="data fullwidth collapsible">
 			<thead>
-				<th scope="col">{{ "Name"|t }}</th>
-				<th scope="col">{{ "Handle"|t }}</th>
-				<th scope="col">{{ "Type"|t }}</th>
-				<th scope="col">{{ "URL Format"|t }}</th>
-				<th scope="col">{{ "Entry Types"|t}}</th>
+				<th scope="col">{{ "Name"|t('app') }}</th>
+				<th scope="col">{{ "Handle"|t('app') }}</th>
+				<th scope="col">{{ "Type"|t('app') }}</th>
+				<th scope="col">{{ "URL Format"|t('app') }}</th>
+				<th scope="col">{{ "Entry Types"|t('app')}}</th>
 				<td class="thin"></td>
 			</thead>
 			<tbody>
 				{% for section in sections %}
-					<tr data-id="{{ section.id }}" data-name="{{ section.name|t }}">
-						<th scope="row" data-title="{{ 'Name'|t }}"><a href="{{ url('settings/sections/' ~ section.id) }}">{{ section.name|t }}</a></th>
-						<td data-title="{{ 'Handle'|t }}"><code>{{ section.handle }}</code></td>
-						<td data-title="{{ 'Type'|t }}">{{ section.type|title|t }}</td>
-						<td data-title="{{ 'URL Format'|t }}" dir="ltr">
+					<tr data-id="{{ section.id }}" data-name="{{ section.name|t('app') }}">
+						<th scope="row" data-title="{{ 'Name'|t('app') }}"><a href="{{ url('settings/sections/' ~ section.id) }}">{{ section.name|t('app') }}</a></th>
+						<td data-title="{{ 'Handle'|t('app') }}"><code>{{ section.handle }}</code></td>
+						<td data-title="{{ 'Type'|t('app') }}">{{ section.type|title|t('app') }}</td>
+						<td data-title="{{ 'URL Format'|t('app') }}" dir="ltr">
 							{%- if section.isHomepage() -%}
-								<div data-icon="home" title="{{ 'Homepage'|t }}"></div>
+								<div data-icon="home" title="{{ 'Homepage'|t('app') }}"></div>
 							{%- else -%}
 								{{ section.getUrlFormat() }}
 							{%- endif -%}
 						</td>
-						<td data-title="{{ 'Entry Types'|t }}">
+						<td data-title="{{ 'Entry Types'|t('app') }}">
 							{% if section.type == 'single' and section.getEntryTypes()|length == 1 %}
 								{% set entryType = section.getEntryTypes()[0] %}
-								<a href="{{ entryType.getCpEditUrl() }}">{{ "Edit entry type"|t }}</a>
+								<a href="{{ entryType.getCpEditUrl() }}">{{ "Edit entry type"|t('app') }}</a>
 							{% else %}
-								<a href="{{ url('settings/sections/' ~ section.id ~ '/entrytypes') }}">{{ "Edit entry types ({count})"|t({ count: section.getEntryTypes()|length }) }}</a>
-								<a class="menubtn" title="{{ 'Entry Types'|t }}"></a>
+								<a href="{{ url('settings/sections/' ~ section.id ~ '/entrytypes') }}">{{ "Edit entry types ({count})"|t('app', { count: section.getEntryTypes()|length }) }}</a>
+								<a class="menubtn" title="{{ 'Entry Types'|t('app') }}"></a>
 								<div class="menu">
 									<ul>
 										{% for entryType in section.getEntryTypes() %}
@@ -52,7 +52,7 @@
 								</div>
 							{% endif %}
 						</td>
-						<td class="thin"><a class="delete icon" title="{{ 'Delete'|t }}" role="button"></a></td>
+						<td class="thin"><a class="delete icon" title="{{ 'Delete'|t('app') }}" role="button"></a></td>
 					</tr>
 				{% endfor %}
 			</tbody>
@@ -60,7 +60,7 @@
 	{% endif %}
 
 	<div id="newsectioncontainer" class="buttons{% if CraftEdition == CraftPersonal and sections|length >= maxSections %} hidden{% endif %}">
-		<a href="{{ url('settings/sections/new') }}" class="btn submit add icon">{{ "New Section"|t }}</a>
+		<a href="{{ url('settings/sections/new') }}" class="btn submit add icon">{{ "New Section"|t('app') }}</a>
 	</div>
 {% endset %}
 
@@ -71,7 +71,7 @@
 		noItemsSelector: '#nosections',
 		newItemBtnSelector: '#newsectioncontainer',
 		deleteAction: 'sections/delete-section',
-		confirmDeleteMessage: '{{ "Are you sure you want to delete “{name}” and all its entries?"|t }}',
+		confirmDeleteMessage: '{{ "Are you sure you want to delete “{name}” and all its entries?"|t('app') }}',
 		{% if CraftEdition == CraftPersonal %}maxItems: {{ maxSections }},{% endif %}
 		onDeleteItem: function()
 		{

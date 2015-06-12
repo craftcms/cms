@@ -14,8 +14,8 @@
 
 		{{ forms.selectField({
 			first: true,
-			label: "Group"|t,
-			instructions: "Which group should this field be displayed in?"|t,
+			label: "Group"|t('app'),
+			instructions: "Which group should this field be displayed in?"|t('app'),
 			id: 'group',
 			name: 'group',
 			options: groupOptions,
@@ -23,8 +23,8 @@
 		}) }}
 
 		{{ forms.textField({
-			label: "Name"|t,
-			instructions: "What this field will be called in the CP."|t,
+			label: "Name"|t('app'),
+			instructions: "What this field will be called in the CP."|t('app'),
 			id: 'name',
 			name: 'name',
 			value: (field is not empty ? field.name : null),
@@ -35,8 +35,8 @@
 		}) }}
 
 		{{ forms.textField({
-			label: "Handle"|t,
-			instructions: "How you’ll refer to this field in the templates."|t,
+			label: "Handle"|t('app'),
+			instructions: "How you’ll refer to this field in the templates."|t('app'),
 			id: 'handle',
 			class: 'code',
 			name: 'handle',
@@ -47,8 +47,8 @@
 		}) }}
 
 		{{ forms.textareaField({
-			label: "Instructions"|t,
-			instructions: "Helper text to guide the author."|t,
+			label: "Instructions"|t('app'),
+			instructions: "Helper text to guide the author."|t('app'),
 			id: 'instructions',
 			class: 'nicetext',
 			name: 'instructions',
@@ -59,7 +59,7 @@
 
 		{% if craft.isLocalized() %}
 			{{ forms.checkboxField({
-				label: "This field is translatable"|t,
+				label: "This field is translatable"|t('app'),
 				name: 'translatable',
 				checked: (field is not empty ? field.translatable : false)
 			}) }}
@@ -68,14 +68,14 @@
 		<hr>
 
 		{{ forms.selectField({
-			label: "Field Type"|t,
-			instructions: "What type of field is this?"|t,
-			warning: (fieldId is not empty ? "Changing this may result in data loss."|t),
+			label: "Field Type"|t('app'),
+			instructions: "What type of field is this?"|t('app'),
+			warning: (fieldId is not empty ? "Changing this may result in data loss."|t('app')),
 			id: 'type',
 			name: 'type',
 			options: fieldTypeOptions,
 			value: field.getType(),
-			errors: (fieldTypeInfo.getIsInvalid() ? ["The field type “{type}” could not be found."|t({ type: field.getType() })] : null),
+			errors: (fieldTypeInfo.getIsInvalid() ? ["The field type “{type}” could not be found."|t('app', { type: field.getType() })] : null),
 			toggle: true
 		}) }}
 
@@ -92,7 +92,7 @@
 		<hr>
 
 		<div class="buttons">
-			<input type="submit" class="btn submit" value="{{ 'Save'|t }}">
+			<input type="submit" class="btn submit" value="{{ 'Save'|t('app') }}">
 		</div>
 	</form>
 {% endset %}

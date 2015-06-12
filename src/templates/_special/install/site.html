@@ -2,12 +2,12 @@
 
 
 <div id="site" class="modal">
-	<h1>{{ "Setup your site"|t }}</h1>
+	<h1>{{ "Setup your site"|t('app') }}</h1>
 
 	<form id="siteform" accept-charset="UTF-8">
 		{{ getCsrfInput() }}
-		{{ forms.textField({ label: "Site Name"|t, id: 'siteName', value: defaultSiteName, maxlength: 255 }) }}
-		{{ forms.textField({ label: "Site URL"|t, id: 'siteUrl', value: defaultSiteUrl, maxlength: 255 }) }}
+		{{ forms.textField({ label: "Site Name"|t('app'), id: 'siteName', value: defaultSiteName, maxlength: 255 }) }}
+		{{ forms.textField({ label: "Site URL"|t('app'), id: 'siteUrl', value: defaultSiteUrl, maxlength: 255 }) }}
 
 		{% set localeInput %}
 			<div class="select">
@@ -19,10 +19,10 @@
 				</select>
 			</div>
 		{% endset %}
-		{{ forms.field({ label: "Locale"|t, id: 'locale' }, localeInput) }}
+		{{ forms.field({ label: "Locale"|t('app'), id: 'locale' }, localeInput) }}
 
 		<div class="buttons">
-			<div id="sitesubmit" class="btn big submit">{{ "Finish up"|t }}
+			<div id="sitesubmit" class="btn big submit">{{ "Finish up"|t('app') }}
 				<input type="submit" tabindex="-1">
 			</div>
 		</div>

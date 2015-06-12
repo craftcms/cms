@@ -6,7 +6,7 @@
 
 {% set content %}
 	<p id="novolumes"{% if volumes|length %} class="hidden"{% endif %}>
-		{{ "No volumes exist yet."|t }}
+		{{ "No volumes exist yet."|t('app') }}
 	</p>
 
 	{% if volumes|length %}
@@ -14,18 +14,18 @@
 
 		<table id="volumes" class="data fullwidth collapsible">
 			<thead>
-				<th scope="col">{{ "Name"|t }}</th>
-				{% if CraftEdition == CraftPro %}<th scope="col">{{ "Type"|t }}</th>{% endif %}
+				<th scope="col">{{ "Name"|t('app') }}</th>
+				{% if CraftEdition == CraftPro %}<th scope="col">{{ "Type"|t('app') }}</th>{% endif %}
 				{% if sortable %}<td class="thin"></td>{% endif %}
 				<td class="thin"></td>
 			</thead>
 			<tbody>
 				{% for volume in volumes %}
-					<tr data-id="{{ volume.id }}" data-name="{{ volume.name|t }}">
-						<th scope="row" data-title="{{ 'Name'|t }}"><a href="{{ url('settings/assets/volumes/' ~ volume.id) }}">{{ volume.name|t }}</a></th>
-						{% if CraftEdition == CraftPro %}<td data-title="{{ 'Type'|t }}">{{ volume.displayName() }}</td>{% endif %}
-						{% if sortable %}<td class="thin"><a class="move icon" title="{{ 'Reorder'|t }}" role="button"></a></td>{% endif %}
-						<td class="thin"><a class="delete icon" title="{{ 'Delete'|t }}" role="button"></a></td>
+					<tr data-id="{{ volume.id }}" data-name="{{ volume.name|t('app') }}">
+						<th scope="row" data-title="{{ 'Name'|t('app') }}"><a href="{{ url('settings/assets/volumes/' ~ volume.id) }}">{{ volume.name|t('app') }}</a></th>
+						{% if CraftEdition == CraftPro %}<td data-title="{{ 'Type'|t('app') }}">{{ volume.displayName() }}</td>{% endif %}
+						{% if sortable %}<td class="thin"><a class="move icon" title="{{ 'Reorder'|t('app') }}" role="button"></a></td>{% endif %}
+						<td class="thin"><a class="delete icon" title="{{ 'Delete'|t('app') }}" role="button"></a></td>
 					</tr>
 				{% endfor %}
 			</tbody>
@@ -33,7 +33,7 @@
 	{% endif %}
 
 	<div class="buttons">
-		<a class="btn submit add icon" href="{{ url('settings/assets/volumes/new') }}">{{ "New Volume"|t }}</a>
+		<a class="btn submit add icon" href="{{ url('settings/assets/volumes/new') }}">{{ "New Volume"|t('app') }}</a>
 	</div>
 {% endset %}
 

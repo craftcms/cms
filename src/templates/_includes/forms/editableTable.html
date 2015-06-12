@@ -38,15 +38,15 @@
 					</td>
 				{% endfor %}
 				{% if not static %}
-					<td class="thin action"><a class="move icon" title="{{ 'Reorder'|t }}"></a></td>
-					<td class="thin action"><a class="delete icon" title="{{ 'Delete'|t }}"></a></td>
+					<td class="thin action"><a class="move icon" title="{{ 'Reorder'|t('app') }}"></a></td>
+					<td class="thin action"><a class="delete icon" title="{{ 'Delete'|t('app') }}"></a></td>
 				{% endif %}
 			</tr>
 		{% endfor %}
 	</tbody>
 </table>
 {% if not static %}
-	<div class="btn add icon">{{ addRowLabel is defined ? addRowLabel : "Add a row"|t }}</div>
+	<div class="btn add icon">{{ addRowLabel is defined ? addRowLabel : "Add a row"|t('app') }}</div>
 {% endif %}
 
 {% if not static and (initJs is not defined or initJs) %}

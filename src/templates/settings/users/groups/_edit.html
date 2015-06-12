@@ -5,9 +5,9 @@
 {% import "_includes/forms" as forms %}
 
 {% set crumbs = [
-	{ label: "Settings"|t, url: url('settings') },
-	{ label: "Users"|t, url: url('settings/users') },
-	{ label: "User Groups"|t, url: url('settings/users') }
+	{ label: "Settings"|t('app'), url: url('settings') },
+	{ label: "Users"|t('app'), url: url('settings/users') },
+	{ label: "User Groups"|t('app'), url: url('settings/users') }
 ] %}
 
 {% set docsUrl = 'http://buildwithcraft.com/docs/users#user-groups' %}
@@ -23,9 +23,9 @@
 
 
 {% if isNewGroup %}
-	{% set title = "Create a new user group"|t %}
+	{% set title = "Create a new user group"|t('app') %}
 {% else %}
-	{% set title = group.name|t %}
+	{% set title = group.name|t('app') %}
 {% endif %}
 
 
@@ -39,7 +39,7 @@
 
 		{{ forms.textField({
 			first: true,
-			label: "Name"|t,
+			label: "Name"|t('app'),
 			id: 'name',
 			name: 'name',
 			value: (group is defined ? group.name : null),
@@ -50,7 +50,7 @@
 		}) }}
 
 		{{ forms.textField({
-			label: "Handle"|t,
+			label: "Handle"|t('app'),
 			id: 'handle',
 			name: 'handle',
 			value: (group is defined ? group.handle : null),
@@ -60,12 +60,12 @@
 
 		<hr>
 
-		<h2>{{ "Permissions"|t }}</h2>
+		<h2>{{ "Permissions"|t('app') }}</h2>
 
 		{% include "_includes/permissions" with { userOrGroup: (group is defined ? group : null) } only %}
 
 		<div class="buttons">
-			<input type="submit" class="btn submit" value="{{ 'Save'|t }}">
+			<input type="submit" class="btn submit" value="{{ 'Save'|t('app') }}">
 		</div>
 	</form>
 {% endset %}

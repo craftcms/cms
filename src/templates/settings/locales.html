@@ -2,7 +2,7 @@
 {% requireAdmin %}
 
 {% extends "_layouts/cp" %}
-{% set title = "Content Locales"|t %}
+{% set title = "Content Locales"|t('app') %}
 
 {% import "_includes/forms" as forms %}
 
@@ -21,7 +21,7 @@
 %}
 
 {% set crumbs = [
-	{ label: "Settings"|t, url: url('settings') }
+	{ label: "Settings"|t('app'), url: url('settings') }
 ] %}
 
 
@@ -38,17 +38,17 @@
 						<input type="hidden" name="redirect" value="settings">
 						{{ getCsrfInput() }}
 
-						<h2>{{ "Which locales does your content target?"|t }}</h2>
+						<h2>{{ "Which locales does your content target?"|t('app') }}</h2>
 
 						<div class="field">
 							<table id="locales" class="data fullwidth collapsible">
 								<tbody>
 								{% for locale in craft.i18n.getSiteLocales() %}
 								<tr data-id="{{ locale.id }}" data-name="{{ locale.getDisplayName(craft.locale) }}">
-									<th scope="row" data-title="{{ 'Name'|t }}" width="40%">{{ locale.getDisplayName(craft.locale) }}</th>
+									<th scope="row" data-title="{{ 'Name'|t('app') }}" width="40%">{{ locale.getDisplayName(craft.locale) }}</th>
 									<td data-title="{{ 'Locale ID' }}">{{ locale.id }}</td>
-									<td class="thin"><a class="move icon" title="{{ 'Reorder'|t }}" role="button"></a></td>
-									<td class="thin"><a class="delete icon" title="{{ 'Delete'|t }}" role="button"></a></td>
+									<td class="thin"><a class="move icon" title="{{ 'Reorder'|t('app') }}" role="button"></a></td>
+									<td class="thin"><a class="delete icon" title="{{ 'Delete'|t('app') }}" role="button"></a></td>
 								</tr>
 								{% endfor %}
 								</tbody>
@@ -58,7 +58,7 @@
 						<div id="addlocale" class="field">
 							<div class="texticon add icon">
 								{{ forms.text({
-								placeholder: "Add a new locale…"|t,
+								placeholder: "Add a new locale…"|t('app'),
 								id: 'addlocaleinput',
 								autocomplete: false
 								}) }}
@@ -73,8 +73,8 @@
 			<div class="item" data-colspan="1">
 				<div class="pane">
 					<div class="content">
-						<h2>{{ "Not finding what you’re looking for?"|t }}</h2>
-						<p>{{ 'Your server doesn’t have the <a href="{intlUrl}">Intl extension</a> loaded, so you’ll have to manually save the locale data files for any locales you wish to enable. You can find them <a href="{localeDataUrl}">on GitHub</a>.'|t({
+						<h2>{{ "Not finding what you’re looking for?"|t('app') }}</h2>
+						<p>{{ 'Your server doesn’t have the <a href="{intlUrl}">Intl extension</a> loaded, so you’ll have to manually save the locale data files for any locales you wish to enable. You can find them <a href="{localeDataUrl}">on GitHub</a>.'|t('app', {
 							intlUrl: "http://php.net/manual/en/book.intl.php",
 							localeDataUrl: "https://github.com/pixelandtonic/CraftLocaleData"
 						})|raw }}</p>

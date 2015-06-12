@@ -1,13 +1,13 @@
 {% if missingFolders and missingFiles %}
-	{% set items = "folders and files"|t %}
+	{% set items = "folders and files"|t('app') %}
 {% elseif missingFolders %}
-	{% set items = "folders"|t %}
+	{% set items = "folders"|t('app') %}
 {% else %}
-	{% set items = "files"|t %}
+	{% set items = "files"|t('app') %}
 {% endif %}
 {% if skippedFiles %}
-    <h2>{{ "Skipped files"|t({ items: items }) }}</h2>
-    <p>{{ 'The following items were not indexed.'|t }}</p>
+    <h2>{{ "Skipped files"|t('app', { items: items }) }}</h2>
+    <p>{{ 'The following items were not indexed.'|t('app') }}</p>
      <ul>
          {% for item in skippedFiles %}
             <li><label>{{ item }}</label></li>
@@ -16,8 +16,8 @@
 {% endif %}
 
 {% if missingFiles or missingFolders %}
-    <h2>{{ "Missing {items}"|t({ items: items }) }}</h2>
-    <p>{{ 'The following {items} could not be found. Should they be deleted from the index?'|t({ items: items }) }}</p>
+    <h2>{{ "Missing {items}"|t('app', { items: items }) }}</h2>
+    <p>{{ 'The following {items} could not be found. Should they be deleted from the index?'|t('app', { items: items }) }}</p>
 
     <ul>
         {% for folderId, folderName in missingFolders %}

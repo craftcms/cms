@@ -1,4 +1,4 @@
-{%- set allLabel = (allLabel is defined ? allLabel : "All"|t) %}
+{%- set allLabel = (allLabel is defined ? allLabel : "All"|t('app')) %}
 {%- set allValue = (allValue is defined ? allValue : '*') %}
 {%- set options = (options is defined ? options : []) %}
 {%- set values = (values is defined ? values : []) -%}
@@ -9,7 +9,7 @@
 		{% include "_includes/forms/checkbox" with {
 			id:        (id is defined ? id : null),
 			class:     'all',
-			label:     '<b>' ~ (allLabel is defined ? allLabel : "All"|t) ~ '</b>',
+			label:     '<b>' ~ (allLabel is defined ? allLabel : "All"|t('app')) ~ '</b>',
 			name:      (name is defined ? name : null),
 			value:     allValue,
 			checked:   allChecked,

@@ -5,7 +5,7 @@
 {% set selectedTab = 'messages' %}
 
 {% set crumbs = [
-	{ label: "Settings"|t, url: url('settings') }
+	{ label: "Settings"|t('app'), url: url('settings') }
 ] %}
 
 {% includeTranslations
@@ -19,7 +19,7 @@
 
 	<div id="messages">
 		{% for message in craft.emailMessages.getAllMessages %}
-			<h2>{{ (message.key~'_heading')|t }}</h2>
+			<h2>{{ (message.key~'_heading')|t('app') }}</h2>
 			<div class="pane message" data-key="{{ message.key }}">
 				<div class="subject">{{ message.subject }}</div>
 				<div class="body">{{ message.body|nl2br }}</div>

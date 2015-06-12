@@ -3,7 +3,7 @@
 {% import "_includes/forms" as forms %}
 
 {{ forms.textField({
-    label: "Username"|t,
+    label: "Username"|t('app'),
     id: 'username',
     name: 'username',
     value: volume.username,
@@ -13,7 +13,7 @@
 }) }}
 
 {{ forms.textField({
-    label: "API Key"|t,
+    label: "API Key"|t('app'),
     id: 'apiKey',
     name: 'apiKey',
     value: volume.apiKey,
@@ -52,7 +52,7 @@
             }) }}
         </td>
         <td>
-            <div class="btn rackspace-refresh-containers">{{ "Refresh"|t }}</div>
+            <div class="btn rackspace-refresh-containers">{{ "Refresh"|t('app') }}</div>
         </td>
         <td>
             <div class="spinner hidden"></div>
@@ -62,18 +62,18 @@
 {% endset %}
 
 {{ forms.field({
-    label: "Container"|t,
+    label: "Container"|t('app'),
     id: 'container'
 }, containerInput) }}
 
 {{ forms.textField({
-    label: "Subfolder"|t,
-    instructions: "If you want to use a container’s subfolder as a Volume, specify the path to use here."|t,
+    label: "Subfolder"|t('app'),
+    instructions: "If you want to use a container’s subfolder as a Volume, specify the path to use here."|t('app'),
     id: 'subfolder',
     class: 'ltr',
     name: 'subfolder',
     value: volume.subfolder,
     errors: volume.getErrors('subfolder'),
     required: false,
-    placeholder: "path/to/subfolder"|t
+    placeholder: "path/to/subfolder"|t('app')
 }) }}

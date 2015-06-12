@@ -3,23 +3,23 @@
 {% import "_includes/forms" as forms %}
 
 {{ forms.textField({
-    label: "Access Key ID"|t,
+    label: "Access Key ID"|t('app'),
     id: 'keyId',
     name: 'keyId',
     value: volume.keyId,
     errors: volume.getErrors('keyId'),
     class: 's3-key-id',
-    instructions: 'You can leave this field empty if you are using an EC2 instance with an applicable IAM role assigne.'|t
+    instructions: 'You can leave this field empty if you are using an EC2 instance with an applicable IAM role assigne.'|t('app')
 }) }}
 
 {{ forms.textField({
-    label: "Secret Access Key"|t,
+    label: "Secret Access Key"|t('app'),
     id: 'secret',
     name: 'secret',
     value: volume.secret,
     errors: volume.getErrors('secret'),
     class: 's3-secret-key',
-    instructions: 'You can leave this field empty if you are using an EC2 instance with an applicable IAM role assigne.'|t
+    instructions: 'You can leave this field empty if you are using an EC2 instance with an applicable IAM role assigne.'|t('app')
 }) }}
 
 {% set bucketInput %}
@@ -36,7 +36,7 @@
                 }) }}
             </td>
             <td>
-                <div class="btn s3-refresh-buckets">{{ "Refresh"|t }}</div>
+                <div class="btn s3-refresh-buckets">{{ "Refresh"|t('app') }}</div>
             </td>
             <td>
                 <div class="spinner hidden"></div>
@@ -46,20 +46,20 @@
 {% endset %}
 
 {{ forms.field({
-    label: "Bucket"|t,
+    label: "Bucket"|t('app'),
     id: 'bucket'
 }, bucketInput) }}
 
 {{ forms.textField({
-    label: "Subfolder"|t,
-    instructions: "If you want to use a bucket’s subfolder as a Volume, specify the path to use here."|t,
+    label: "Subfolder"|t('app'),
+    instructions: "If you want to use a bucket’s subfolder as a Volume, specify the path to use here."|t('app'),
     id: 'subfolder',
     class: 'ltr',
     name: 'subfolder',
     value: volume.subfolder,
     errors: volume.getErrors('subfolder'),
     required: false,
-    placeholder: "path/to/subfolder"|t
+    placeholder: "path/to/subfolder"|t('app')
 }) }}
 
 <input type="hidden" name="region" class="s3-region" value="{{ volume.region }}">

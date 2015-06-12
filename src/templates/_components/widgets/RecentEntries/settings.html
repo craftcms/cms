@@ -5,10 +5,10 @@
 	{% set sectionInput %}
 		<div class="select">
 			<select id="section" name="section">
-				<option value="*">{{ "All"|t }}</option>
+				<option value="*">{{ "All"|t('app') }}</option>
 				{% for section in craft.sections.getAllSections() %}
 					{% if section.type != 'single' %}
-						<option value="{{ section.id }}"{% if section.id == widget.section %} selected{% endif %}>{{ section.name|t }}</option>
+						<option value="{{ section.id }}"{% if section.id == widget.section %} selected{% endif %}>{{ section.name|t('app') }}</option>
 					{% endif %}
 				{% endfor %}
 			</select>
@@ -16,8 +16,8 @@
 	{% endset %}
 
 	{{ forms.field({
-		label: "Section"|t,
-		instructions: "Which section do you want to pull recent entries from?"|t,
+		label: "Section"|t('app'),
+		instructions: "Which section do you want to pull recent entries from?"|t('app'),
 		id: 'section',
 	}, sectionInput) }}
 
@@ -37,7 +37,7 @@
 
 			{{ forms.field({
 				id: 'locale',
-				label: "Locale"|t
+				label: "Locale"|t('app')
 			}, localeInput) }}
 		{% endif %}
 	{% endif %}
@@ -45,7 +45,7 @@
 
 
 {{ forms.textField({
-	label: "Limit"|t,
+	label: "Limit"|t('app'),
 	id: 'limit',
 	name: 'limit',
 	value: widget.limit,

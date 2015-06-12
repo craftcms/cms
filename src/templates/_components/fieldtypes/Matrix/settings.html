@@ -5,7 +5,7 @@
 	<div class="mc-sidebar block-types">
 		<div class="col-inner-container">
 			<div class="heading">
-				<h5>{{ "Block Types"|t }}</h5>
+				<h5>{{ "Block Types"|t('app') }}</h5>
 			</div>
 			<div class="items">
 				<div class="blocktypes">
@@ -14,22 +14,22 @@
 							<div class="name">{% if blockType.name %}{{ blockType.name }}{% else %}&nbsp;{% endif %}</div>
 							<div class="handle code">{% if blockType.handle %}{{ blockType.handle }}{% else %}&nbsp;{% endif %}</div>
 							<div class="actions">
-								<a class="move icon" title="{{ 'Reorder'|t }}" role="button"></a>
-								<a class="settings icon{% if blockType.hasErrors() %} error{% endif %}" title="{{ 'Settings'|t }}" role="button"></a>
+								<a class="move icon" title="{{ 'Reorder'|t('app') }}" role="button"></a>
+								<a class="settings icon{% if blockType.hasErrors() %} error{% endif %}" title="{{ 'Settings'|t('app') }}" role="button"></a>
 							</div>
 							<input class="hidden" name="blockTypes[{{ blockType.id }}][name]" value="{{ blockType.name }}">
 							<input class="hidden" name="blockTypes[{{ blockType.id }}][handle]" value="{{ blockType.handle }}">
 						</div>
 					{% endfor %}
 				</div>
-				<div class="btn add icon">{{ "New block type"|t }}</div>
+				<div class="btn add icon">{{ "New block type"|t('app') }}</div>
 			</div>
 		</div>
 	</div>
 	<div class="mc-sidebar fields">
 		<div class="col-inner-container hidden">
 			<div class="heading">
-				<h5>{{ "Fields"|t }}</h5>
+				<h5>{{ "Fields"|t('app') }}</h5>
 			</div>
 			<div class="items">
 				{% for blockType in matrixField.getBlockTypes() %}
@@ -37,24 +37,24 @@
 						{% for field in blockType.getFields() %}
 							<div class="matrixconfigitem mci-field{% if field.hasErrors() %} error{% endif %}" data-id="{{ field.id }}">
 								<div class="name{% if field.required %} required{% endif %}">
-									{%- if field.name and field.name != '__blank__' %}{{ field.name }}{% else %}<em class="light">{{ '(blank)'|t }}</em>{% endif -%}
+									{%- if field.name and field.name != '__blank__' %}{{ field.name }}{% else %}<em class="light">{{ '(blank)'|t('app') }}</em>{% endif -%}
 								&nbsp;</div>
 								<div class="handle code">{{ field.handle }}&nbsp;</div>
 								<div class="actions">
-									<a class="move icon" title="{{ 'Reorder'|t }}" role="button"></a>
+									<a class="move icon" title="{{ 'Reorder'|t('app') }}" role="button"></a>
 								</div>
 							</div>
 						{% endfor %}
 					</div>
 				{% endfor %}
-				<div class="btn add icon">{{ "New field"|t }}</div>
+				<div class="btn add icon">{{ "New field"|t('app') }}</div>
 			</div>
 		</div>
 	</div>
 	<div class="field-settings">
 		<div class="col-inner-container hidden">
 			<div class="heading">
-				<h5>{{ "Field Settings"|t }}</h5>
+				<h5>{{ "Field Settings"|t('app') }}</h5>
 			</div>
 			<div class="items">
 				{% for blockType in matrixField.getBlockTypes() %}
@@ -63,7 +63,7 @@
 							{% set fieldId = field.id %}
 							<div data-id="{{ fieldId }}" class="hidden">
 								{{ forms.textField({
-									label: "Name"|t,
+									label: "Name"|t('app'),
 									id: fieldId~'-name',
 									name: 'blockTypes['~blockType.id~'][fields]['~fieldId~'][name]',
 									value: (field.name != '__blank__' ? field.name),
@@ -72,7 +72,7 @@
 								}) }}
 
 								{{ forms.textField({
-									label: "Handle"|t,
+									label: "Handle"|t('app'),
 									id: fieldId~'-handle',
 									class: 'code',
 									name: 'blockTypes['~blockType.id~'][fields]['~fieldId~'][handle]',
@@ -83,7 +83,7 @@
 								}) }}
 
 								{{ forms.textareaField({
-									label: "Instructions"|t,
+									label: "Instructions"|t('app'),
 									id: fieldId~'-instructions',
 									class: 'nicetext',
 									name: 'blockTypes['~blockType.id~'][fields]['~fieldId~'][instructions]',
@@ -92,14 +92,14 @@
 								}) }}
 
 								{{ forms.checkboxField({
-									label: "This field is required"|t,
+									label: "This field is required"|t('app'),
 									name: 'blockTypes['~blockType.id~'][fields]['~fieldId~'][required]',
 									checked: field.required
 								}) }}
 
 								{% if craft.isLocalized() %}
 									{{ forms.checkboxField({
-										label: "This field is translatable"|t,
+										label: "This field is translatable"|t('app'),
 										name: 'blockTypes['~blockType.id~'][fields]['~fieldId~'][translatable]',
 										checked: field.translatable
 									}) }}
@@ -110,13 +110,13 @@
                                 {% set fieldTypeInfo = craft.fields.getFieldTypeInfo(field) %}
 
 								{{ forms.selectField({
-									label: "Field Type"|t,
-									warning: (not field.isNew() ? "Changing this may result in data loss."|t),
+									label: "Field Type"|t('app'),
+									warning: (not field.isNew() ? "Changing this may result in data loss."|t('app')),
 									id: fieldId~'-type',
 									name: 'blockTypes['~blockType.id~'][fields]['~fieldId~'][type]',
 									options: fieldTypes,
 									value: fieldTypeInfo.getClassName(),
-									errors: (fieldTypeInfo.getIsInvalid() ? ["The field type “{class}” could not be found."|t({ class: field.type })] : null),
+									errors: (fieldTypeInfo.getIsInvalid() ? ["The field type “{class}” could not be found."|t('app', { class: field.type })] : null),
 								}) }}
 
 								<div class="fieldtype-settings">
@@ -129,7 +129,7 @@
 
 								<hr>
 
-								<a class="error delete">{{ "Delete"|t }}</a>
+								<a class="error delete">{{ "Delete"|t('app') }}</a>
 							</div>
 						{% endfor %}
 					</div>
@@ -141,15 +141,15 @@
 
 <div class="matrix-configurator">
 	{{ forms.field({
-		label: "Configuration"|t,
-		instructions: "Define the types of blocks that can be created within this Matrix field, as well as the fields each block type is made up of."|t,
+		label: "Configuration"|t('app'),
+		instructions: "Define the types of blocks that can be created within this Matrix field, as well as the fields each block type is made up of."|t('app'),
 		name: 'config'
 	}, blockTypeInput) }}
 </div>
 
 {{ forms.textField({
-	label: "Max Blocks"|t,
-	instructions: "The maximum number of blocks the field is allowed to have."|t,
+	label: "Max Blocks"|t('app'),
+	instructions: "The maximum number of blocks the field is allowed to have."|t('app'),
 	id: 'maxBlocks',
 	name: 'maxBlocks',
 	value: matrixField.maxBlocks,

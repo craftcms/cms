@@ -1,6 +1,6 @@
 {% extends "_layouts/basecp" %}
 {% import "_includes/forms" as forms %}
-{% set title = "Login"|t %}
+{% set title = "Login"|t('app') %}
 {% set bodyClass = 'login' %}
 
 {% includeTranslations
@@ -28,20 +28,20 @@
 						{%- set padding = logo.height + 30 %}
 						style="background-image: url(\'{{ logo.url }}\'); background-size: {{ logo.width }}px {{ logo.height }}px; padding-top: {{ padding }}px; margin-top: -{{ round((156+padding)/2) }}px"
 					{%- endif %}>' +
-					'{% set placeHolderText = (craft.config.useEmailAsUsername ? "Email"|t : "Username or Email"|t) %}' +
+					'{% set placeHolderText = (craft.config.useEmailAsUsername ? "Email"|t('app') : "Username or Email"|t('app')) %}' +
 					'{{ forms.textField({ id: "loginName", name: "username", placeholder: placeHolderText, value: username })|e("js") }}' +
 
 					'<div id="login-fields" class="nested-fields">' +
-						'{{ forms.passwordField({ id: "password", name: "password", placeholder: "Password"|t })|e("js") }}' +
-						'<a id="forgot-password">{{ "Forget your password?"|t }}</a>' +
+						'{{ forms.passwordField({ id: "password", name: "password", placeholder: "Password"|t('app') })|e("js") }}' +
+						'<a id="forgot-password">{{ "Forget your password?"|t('app') }}</a>' +
 						{% if craft.config.rememberedUserSessionDuration %}
-							'{{ forms.checkboxField({ id: "rememberMe", label: "Keep me logged in"|t })|e("js") }}' +
+							'{{ forms.checkboxField({ id: "rememberMe", label: "Keep me logged in"|t('app') })|e("js") }}' +
 						{% endif %}
 					'</div>' +
 
 					'<div class="buttons">' +
 						'<div id="ssl-icon" class="disabled"><div class="{{ craft.request.isSecure ? "secure" : "insecure" }} icon"></div></div>' +
-						'<input id="submit" class="btn submit disabled" type="submit" value="{{ "Login"|t }}">' +
+						'<input id="submit" class="btn submit disabled" type="submit" value="{{ "Login"|t('app') }}">' +
 						'<div id="spinner" class="spinner hidden"></div>' +
 					'</div>' +
 				'</form>'
@@ -59,8 +59,8 @@
 						'<div class="pane-body">' +
 							'<div class="notice">' +
 								'<div class="icon"></div>' +
-								'<p>{{ "Cookies must be enabled to access the Craft control panel."|t }}<br>' +
-									'<a class="go nowrap" href="">{{ "See how"|t }}</a>' +
+								'<p>{{ "Cookies must be enabled to access the Craft control panel."|t('app') }}<br>' +
+									'<a class="go nowrap" href="">{{ "See how"|t('app') }}</a>' +
 								'</p>' +
 							'</div>' +
 						'</div>' +

@@ -8,7 +8,7 @@
 
 	{% if section.type != 'single' and entryType.hasTitleField %}
 		{{ forms.textField({
-			label: entryType.titleLabel|t,
+			label: entryType.titleLabel|t('app'),
 			id: 'title',
 			name: 'title',
 			required: true,
@@ -30,12 +30,12 @@
 
 	<div class="buttons">
 		<div class="btngroup submit first">
-			<input type="submit" class="btn submit" value="{{ 'Save'|t }}">
+			<input type="submit" class="btn submit" value="{{ 'Save'|t('app') }}">
 
 			<div class="btn submit menubtn"></div>
 			<div class="menu">
 				<ul>
-					<li><a class="save-and-continue-editing">{{ "Save and continue editing"|t }}</a></li>
+					<li><a class="save-and-continue-editing">{{ "Save and continue editing"|t('app') }}</a></li>
 				</ul>
 			</div>
 		</div>

@@ -20,29 +20,29 @@
 		{{ getCsrfInput() }}
 
 		{{ forms.checkboxField({
-			label: "Verify email addresses?"|t,
-			instructions: "Should new email addresses be verified before getting saved to user accounts? (This also affects new user registration.)"|t,
+			label: "Verify email addresses?"|t('app'),
+			instructions: "Should new email addresses be verified before getting saved to user accounts? (This also affects new user registration.)"|t('app'),
 			name: 'requireEmailVerification',
 			checked: settings.requireEmailVerification,
 		}) }}
 
 		{{ forms.checkboxField({
 			first: true,
-			label: "Allow public registration?"|t,
+			label: "Allow public registration?"|t('app'),
 			name: 'allowPublicRegistration',
 			checked: settings.allowPublicRegistration,
 			toggle: 'publicRegistrationSettings'
 		}) }}
 
 		<div id="publicRegistrationSettings" class="nested-fields{% if not settings.allowPublicRegistration %} hidden{% endif %}">
-			{% set groups = [{ label: "None"|t, value: '' }] %}
+			{% set groups = [{ label: "None"|t('app'), value: '' }] %}
 			{% for group in craft.userGroups.getAllGroups() %}
 				{% set groups = groups|merge([{ label: group.name, value: group.id }]) %}
 			{% endfor %}
 
 			{{ forms.selectField({
-				label: "Default User Group"|t,
-				instructions: "Choose a user group that publicly-registered members will be added to by default."|t,
+				label: "Default User Group"|t('app'),
+				instructions: "Choose a user group that publicly-registered members will be added to by default."|t('app'),
 				name: 'defaultGroup',
 				options: groups,
 				value: settings.defaultGroup
@@ -50,7 +50,7 @@
 		</div>
 
 		<div class="buttons">
-			<input type="submit" class="btn submit" value="{{ 'Save'|t }}">
+			<input type="submit" class="btn submit" value="{{ 'Save'|t('app') }}">
 		</div>
 	</form>
 {% endset %}

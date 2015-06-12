@@ -1,5 +1,5 @@
 {% extends "_layouts/basecp" %}
-{% set title = "Install Craft"|t %}
+{% set title = "Install Craft"|t('app') %}
 
 {% includeTranslations
 	"All done!",
@@ -12,7 +12,7 @@
 
 	<div id="bg"></div>
 	<div class="beginbtncontainer">
-		<div id="beginbtn" class="btn big submit">{{ "Begin"|t }}</div>
+		<div id="beginbtn" class="btn big submit">{{ "Begin"|t('app') }}</div>
 	</div>
 
 	{% include "_special/install/account" %}

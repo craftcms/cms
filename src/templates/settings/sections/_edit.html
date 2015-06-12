@@ -29,8 +29,8 @@
 					{% if craft.isLocalized() %}
 						<th></th>
 					{% endif %}
-					<th scope="col">{{ "Top-Level Entries"|t }}</th>
-					<th scope="col">{{ "Nested Entries"|t }}</th>
+					<th scope="col">{{ "Top-Level Entries"|t('app') }}</th>
+					<th scope="col">{{ "Nested Entries"|t('app') }}</th>
 				</thead>
 			{% endif %}
 			<tbody>
@@ -64,7 +64,7 @@
 	{% from "_includes/forms" import checkboxField %}
 
 	{{ checkboxField({
-		label: "Entries in this section have their own URLs"|t,
+		label: "Entries in this section have their own URLs"|t('app'),
 		id: sectionType~'-hasUrls',
 		name: 'types['~sectionType~'][hasUrls]',
 		checked: section.hasUrls,
@@ -76,8 +76,8 @@
 	{% from "_includes/forms" import textField %}
 
 	{{ textField({
-		label: "Entry Template"|t,
-		instructions: (sectionType == 'single' ? "The template to use when the entry’s URL is requested."|t : "The template to use when an entry’s URL is requested."|t),
+		label: "Entry Template"|t('app'),
+		instructions: (sectionType == 'single' ? "The template to use when the entry’s URL is requested."|t('app') : "The template to use when an entry’s URL is requested."|t('app')),
 		id: sectionType~'-template',
 		class: 'ltr',
 		name: 'types['~sectionType~'][template]',
@@ -98,8 +98,8 @@
 
 		{{ forms.textField({
 			first: true,
-			label: "Name"|t,
-			instructions: "What this section will be called in the CP."|t,
+			label: "Name"|t('app'),
+			instructions: "What this section will be called in the CP."|t('app'),
 			id: 'name',
 			name: 'name',
 			value: section.name,
@@ -110,8 +110,8 @@
 		}) }}
 
 		{{ forms.textField({
-			label: "Handle"|t,
-			instructions: "How you’ll refer to this section in the templates."|t,
+			label: "Handle"|t('app'),
+			instructions: "How you’ll refer to this section in the templates."|t('app'),
 			id: 'handle',
 			class: 'code',
 			name: 'handle',
@@ -126,8 +126,8 @@
 					<thead>
 						<tr>
 							<td></td>
-							<th scope="col">{{ "Locale"|t }}</th>
-							<th scope="col">{{ "Default Status"|t }}</th>
+							<th scope="col">{{ "Locale"|t('app') }}</th>
+							<th scope="col">{{ "Default Status"|t('app') }}</th>
 						</tr>
 					</thead>
 					<tbody>
@@ -160,14 +160,14 @@
 			{% endset %}
 
 			{{ forms.field({
-				label: "Which locales should entries in this section target?"|t,
+				label: "Which locales should entries in this section target?"|t('app'),
 				errors: section.getErrors('localeErrors'),
 			}, localesInput) }}
 		{% endif %}
 
 		{{ forms.selectField({
-			label: "Section Type"|t,
-			instructions: "What type of section is this?"|t ~ (section.id ? '<br><span class="error">'~"Careful—changing this may result in data loss."|t~'</span>' : ''),
+			label: "Section Type"|t('app'),
+			instructions: "What type of section is this?"|t('app') ~ (section.id ? '<br><span class="error">'~"Careful—changing this may result in data loss."|t('app')~'</span>' : ''),
 			id: 'type',
 			name: 'type',
 			options: typeOptions,
@@ -184,7 +184,7 @@
 
 				{% if canBeHomepage %}
 					{{ forms.checkboxField({
-						label: "This is for the homepage"|t,
+						label: "This is for the homepage"|t('app'),
 						id: 'single-homepage',
 						name: 'types[single][homepage]',
 						checked: section.isHomepage(),
@@ -194,8 +194,8 @@
 
 				<div id="single-uri-container"{% if section.isHomepage() %} class="hidden"{% endif %}>
 					{{ forms.field({
-						label: "URI"|t,
-						instructions: "What the entry URI should be."|t,
+						label: "URI"|t('app'),
+						instructions: "What the entry URI should be."|t('app'),
 						required: true,
 						errors: section.getErrors('urlFormat')
 					}, urlFormatInput('single', brandNewSection, section)) }}
@@ -207,8 +207,8 @@
 		{% endif %}
 
 		{% set urlFormatParams = {
-			label: "Entry URL Format"|t,
-			instructions: "What the entry URLs should look like. You can include tags that output entry properties, such as {ex1} or {ex2}."|t({ ex1: '<code>{slug}</code>', ex2: '<code>{postDate|date("Y")}</code>' }),
+			label: "Entry URL Format"|t('app'),
+			instructions: "What the entry URLs should look like. You can include tags that output entry properties, such as {ex1} or {ex2}."|t('app', { ex1: '<code>{slug}</code>', ex2: '<code>{postDate|date("Y")}</code>' }),
 			required: true,
 			errors: section.getErrors('urlFormat')
 		} %}
@@ -239,8 +239,8 @@
 				</div>
 
 				{{ forms.textField({
-					label: "Max Levels"|t,
-					instructions: "The maximum number of levels this section can have. Leave blank if you don’t care."|t,
+					label: "Max Levels"|t('app'),
+					instructions: "The maximum number of levels this section can have. Leave blank if you don’t care."|t('app'),
 					id: 'structure-maxLevels',
 					name: 'types[structure][maxLevels]',
 					value: section.maxLevels,
@@ -255,7 +255,7 @@
 
 		{% if CraftEdition >= CraftClient %}
 			{{ forms.checkboxField({
-				label: "Enable versioning for entries in this section?"|t,
+				label: "Enable versioning for entries in this section?"|t('app'),
 				id: 'enableVersioning',
 				name: 'enableVersioning',
 				checked: section.enableVersioning
@@ -263,7 +263,7 @@
 		{% endif %}
 
 		<div class="buttons">
-			<input type="submit" class="btn submit" value="{{ 'Save'|t }}">
+			<input type="submit" class="btn submit" value="{{ 'Save'|t('app') }}">
 		</div>
 	</form>
 {% endset %}

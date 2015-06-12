@@ -1,12 +1,12 @@
 {% extends "_layouts/elementindex" %}
-{% set title = "Categories"|t %}
+{% set title = "Categories"|t('app') %}
 {% set elementType = 'craft\\app\\elements\\Category' %}
 {% set showStatusMenu = false %}
 {% set showLocaleMenu = false %}
 
 {% block sidebar %}
 	<div class="buttons">
-		<a class="btn submit add icon" href="{{ url('categories/'~groups[0].handle~'/new') }}">{{ "New Category"|t }}</a>
+		<a class="btn submit add icon" href="{{ url('categories/'~groups[0].handle~'/new') }}">{{ "New Category"|t('app') }}</a>
 	</div>
 
 	{{ parent() }}

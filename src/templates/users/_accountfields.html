@@ -3,7 +3,7 @@
 {% if not craft.config.useEmailAsUsername %}
 	{{ forms.textField({
 		first: true,
-		label: "Username"|t,
+		label: "Username"|t('app'),
 		id: 'username',
 		name: 'username',
 		value: (account is defined ? account.username : null),
@@ -17,7 +17,7 @@
 <div class="grid" data-cols="2" data-mode="pct">
 	<div class="item" data-colspan="1">
 		{{ forms.textField({
-			label: "First Name"|t,
+			label: "First Name"|t('app'),
 			id: 'firstName',
 			name: 'firstName',
 			value: (account is defined ? account.firstName : null),
@@ -27,7 +27,7 @@
 	</div>
 	<div class="item" data-colspan="1">
 		{{ forms.textField({
-			label: "Last Name"|t,
+			label: "Last Name"|t('app'),
 			id: 'lastName',
 			name: 'lastName',
 			value: (account is defined ? account.lastName : null),

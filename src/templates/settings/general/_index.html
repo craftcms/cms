@@ -1,14 +1,14 @@
 {% extends "_layouts/cp" %}
 {% import "_includes/forms" as forms %}
-{% set title = "General Settings"|t %}
+{% set title = "General Settings"|t('app') %}
 
 {% set crumbs = [
-	{ label: "Settings"|t, url: url('settings') }
+	{ label: "Settings"|t('app'), url: url('settings') }
 ] %}
 
 
 {% macro configWarning(setting, file) -%}
-	{{ "This is being overridden by the {setting} config setting."|t({
+	{{ "This is being overridden by the {setting} config setting."|t('app', {
 		setting: '<a href="http://buildwithcraft.com/docs/config-settings#'~setting~'" target="_blank">'~setting~'</a>'
 	})|raw }}
 {%- endmacro %}
@@ -24,7 +24,7 @@
 
 		{{ forms.lightswitchField({
 			first: true,
-			label: "System Status"|t,
+			label: "System Status"|t('app'),
 			warning: (craft.config.isSystemOn is sameas(true) ? configWarning('isSystemOn')),
 			id: 'on',
 			name: 'on',
@@ -32,7 +32,7 @@
 		}) }}
 
 		{{ forms.textField({
-			label: "Site Name"|t,
+			label: "Site Name"|t('app'),
 			warning: (craft.config.siteName ? configWarning('siteName')),
 			id: 'siteName',
 			name: 'siteName',
@@ -43,7 +43,7 @@
 		}) }}
 
 		{{ forms.textField({
-			label: "Site URL"|t,
+			label: "Site URL"|t('app'),
 			warning: (craft.config.siteUrl ? configWarning('siteUrl')),
 			id: 'siteUrl',
 			class: 'ltr',
@@ -54,7 +54,7 @@
 		}) }}
 
 		{{ forms.selectField({
-			label: "Timezone"|t,
+			label: "Timezone"|t('app'),
 			warning: (craft.config.timezone ? configWarning('timezone')),
 			id: 'timezone',
 			name: 'timezone',
@@ -63,7 +63,7 @@
 		}) }}
 
 		<div class="buttons">
-			<input class="btn submit" type="submit" value="{{ 'Save'|t }}">
+			<input class="btn submit" type="submit" value="{{ 'Save'|t('app') }}">
 		</div>
 	</form>
 
@@ -86,7 +86,7 @@
 		{% endset %}
 
 		{{ forms.field({
-			label: "Logo"|t
+			label: "Logo"|t('app')
 		}, logoInput) }}
 
 		<div class="clear"></div>

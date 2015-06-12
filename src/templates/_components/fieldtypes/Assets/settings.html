@@ -18,7 +18,7 @@
 					class: 'ltr',
 					name: name~'Subpath',
 					value: field[name~'Subpath'],
-					placeholder: "path/to/subfolder"|t
+					placeholder: "path/to/subfolder"|t('app')
 				}) }}
 			</td>
 		</tr>
@@ -28,7 +28,7 @@
 {% from _self import uploadLocationInput %}
 
 {{ forms.checkboxField({
-	label: "Restrict uploads to a single folder?"|t,
+	label: "Restrict uploads to a single folder?"|t('app'),
 	id: 'useSingleFolder-toggle',
 	name: 'useSingleFolder',
 	class: 'use-single-folder-cb',
@@ -38,7 +38,7 @@
 	reverseToggle: 'multi-folder-settings'
 }) }}
 
-{% set uploadLocationNote = "Note that the subfolder path can contain variables like <code>{slug}</code> or <code>{author.username}</code>."|t %}
+{% set uploadLocationNote = "Note that the subfolder path can contain variables like <code>{slug}</code> or <code>{author.username}</code>."|t('app') %}
 {% if isMatrix %}
 	{% set uploadLocationNote = uploadLocationNote|replace({
 		'{slug}': '{owner.slug}',
@@ -49,8 +49,8 @@
 <div id="multi-folder-settings"{% if field.useSingleFolder %} class="hidden"{% endif %}>
 	{% if folderOptions %}
 		{{ forms.checkboxSelectField({
-			label: "Sources"|t,
-			instructions: "Which sources do you want to select {type} from?"|t({ type: displayName|lower }),
+			label: "Sources"|t('app'),
+			instructions: "Which sources do you want to select {type} from?"|t('app', { type: displayName|lower }),
 			id: 'sources',
 			name: 'sources',
 			options: folderOptions,
@@ -58,28 +58,28 @@
 		})}}
 	{% else %}
 		{{ forms.field({
-			label: "Sources"|t
-		}, '<p class="error">' ~ "No sources exist yet."|t ~ '</p>') }}
+			label: "Sources"|t('app')
+		}, '<p class="error">' ~ "No sources exist yet."|t('app') ~ '</p>') }}
 	{% endif %}
 
 
 	{{ forms.field({
-		label: "Default Upload Location"|t,
-		instructions: "Where should files be uploaded when they are dragged directly onto the field, or uploaded from the front end?"|t ~' '~ uploadLocationNote,
+		label: "Default Upload Location"|t('app'),
+		instructions: "Where should files be uploaded when they are dragged directly onto the field, or uploaded from the front end?"|t('app') ~' '~ uploadLocationNote,
 		errors: field.getErrors('defaultUploadLocationSubpath')
 	}, uploadLocationInput('defaultUploadLocation', field, sourceOptions)) }}
 </div>
 
 <div id="single-folder-settings"{% if not field.useSingleFolder %} class="hidden"{% endif %}>
 	{{ forms.field({
-		label: "Upload Location"|t,
+		label: "Upload Location"|t('app'),
 		instructions: uploadLocationNote,
 		errors: field.getErrors('singleUploadLocationSubpath')
 	}, uploadLocationInput('singleUploadLocation', field, sourceOptions)) }}
 </div>
 
 {{ forms.checkboxField({
-	label: "Restrict allowed file types?"|t,
+	label: "Restrict allowed file types?"|t('app'),
 	class: 'restrictFiles',
 	id: 'restrictFiles',
 	name: 'restrictFiles',
@@ -103,8 +103,8 @@
 {{ targetLocaleField }}
 
 {{ forms.textField({
-	label: "Limit"|t,
-	instructions: "Limit the number of selectable {type}."|t({ type: displayName|lower }),
+	label: "Limit"|t('app'),
+	instructions: "Limit the number of selectable {type}."|t('app', { type: displayName|lower }),
 	id: 'limit',
 	name: 'limit',
 	value: field.limit,
@@ -113,8 +113,8 @@
 }) }}
 
 {{ forms.textField({
-	label: "Selection Label"|t,
-	instructions: "Enter the text you want to appear on the {type} selection input."|t({ type: type|lower }),
+	label: "Selection Label"|t('app'),
+	instructions: "Enter the text you want to appear on the {type} selection input."|t('app', { type: type|lower }),
 	id: 'selectionLabel',
 	name: 'selectionLabel',
 	value: settings.selectionLabel,

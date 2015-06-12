@@ -168,21 +168,26 @@ class Extension extends \Twig_Extension
      * Translates the given message.
      *
      * @param string $message  The message to be translated.
+     * @param string $category the message category.
      * @param array  $params   The parameters that will be used to replace the corresponding placeholders in the message.
      * @param string $language The language code (e.g. `en-US`, `en`). If this is null, the current
      *                         [[\yii\base\Application::language|application language]] will be used.
-     * @param string $category the message category.
      *
      * @return string the translated message.
      */
-    public function translateFilter($message, $params = [], $language = null, $category = null)
+    public function translateFilter($message, $category = null, $params = null, $language = null)
     {
-        if ($category === null) {
-            if (Craft::$app->getRequest()->getIsSiteRequest()) {
-                $category = 'site';
-            } else {
-                $category = 'app';
-            }
+        // The front end site doesn't need to specify the category
+        if (is_array($category)) {
+            $language = $params;
+            $params = $category;
+            $category = 'site';
+        } else if ($category === null) {
+            $category = 'site';
+        }
+
+        if ($params === null) {
+            $params = [];
         }
 
         try {
