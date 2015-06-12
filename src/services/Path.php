@@ -231,6 +231,19 @@ class Path extends Component
     }
 
     /**
+     * Returns the path to the craft/storage/runtime/assets/modified/ folder.
+     *
+     * @return string The path to the craft/storage/runtime/assets/modified/ folder.
+     */
+    public function getModifiedAssetsPath()
+    {
+        $path = $this->getAssetsPath().'/modified-assets';
+        IOHelper::ensureFolderExists($path);
+
+        return $path;
+    }
+
+    /**
      * Returns the path to the craft/storage/runtime/assets/sources/ folder.
      *
      * @return string The path to the craft/storage/runtime/assets/sources/ folder.

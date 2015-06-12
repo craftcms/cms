@@ -539,7 +539,7 @@ class Image
      * @param integer $size     Font size to use
      * @param string  $color    Font color to use in hex format
      *
-     * @return void
+     * @return Image
      */
     public function setFontProperties($fontFile, $size, $color)
     {
@@ -552,6 +552,8 @@ class Image
             $size,
             $this->_palette->color($color)
         );
+
+        return $this;
     }
 
     /**
@@ -573,14 +575,14 @@ class Image
     }
 
     /**
-     * Writes text on an image.
+     * Writes text on the image.
      *
      * @param string  $text
      * @param integer $x
      * @param integer $y
      * @param integer $angle
      *
-     * @return void
+     * @return Image
      * @throws Exception
      */
     public function writeText($text, $x, $y, $angle = 0)
@@ -591,13 +593,42 @@ class Image
 
         $point = new Point($x, $y);
         $this->_image->draw()->text($text, $this->_font, $point, $angle);
+
+        return $this;
+    }
+
+    /**
+     * Applies a filter to the image.
+     *
+     * @param string $filterName The name of the filter
+     * @param null   $parameterValue
+     *
+     * @return $this
+     */
+    public function applyFilter($filterName, $parameterValue = null)
+    {
+        // TODO: enum this
+        switch ($filterName) {
+            case 'grayscale':
+            {
+                $this->_image->effects()->grayscale();
+                break;
+            }
+            case 'blur':
+            {
+                $this->_image->effects()->blur($parameterValue);
+                break;
+            }
+        }
+
+        return $this;
     }
 
     // Private Methods
     // =========================================================================
 
     /**
-     * Normalizes the given dimensions.  If width or height is set to 'AUTO', we calculate the missing dimension.
+     * Normalizes the given dimensions. If width or height is set to 'AUTO', we calculate the missing dimension.
      *
      * @param integer|string $width
      * @param integer|string $height

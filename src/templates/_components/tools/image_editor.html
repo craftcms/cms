@@ -22,6 +22,13 @@
     </section>
     <hr />
     <section>
-        <div class="section-title">{{ "Filters"|t }}</div>
+        <div class="section-title"><label for="filter">{{ "Filters"|t }}</label></div>
+
+        <select name="filter" id="filter">
+            <option value="">None</option>
+            <option value="grayscale" data-has-parameter="no">Grayscale</option>
+            <option value="blur" data-has-parameter="yes">Blur</option>
+        </select>
+        <div id="filter-control-container"></div>
     </section>
 </div>

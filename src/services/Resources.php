@@ -181,6 +181,13 @@ class Resources extends Component
                         $segs);
                 }
 
+                case 'modified-assets': {
+                    array_shift($segs);
+
+                    return Craft::$app->getPath()->getModifiedAssetsPath().'/'.implode('/',
+                        $segs);
+                }
+
                 case 'assetthumbs': {
                     if (empty($segs[1]) || empty($segs[2]) || !is_numeric($segs[1]) || !is_numeric($segs[2])) {
                         return false;
