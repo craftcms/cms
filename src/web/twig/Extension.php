@@ -324,26 +324,19 @@ class Extension extends \Twig_Extension
      * @param                   $date
      * @param null              $format
      * @param null              $timezone
+     * @param boolean           $translate Whether the formatted date string should be translated
      *
      * @return mixed|string
      */
-    public function dateFilter(\Twig_Environment $env, $date, $format = null, $timezone = null)
+    public function dateFilter(\Twig_Environment $env, $date, $format = null, $timezone = null, $translate = true)
     {
         // Let Twig do it's thing.
         $value = \twig_date_format_filter($env, $date, $format, $timezone);
 
-        // Get the "words".  Split on anything that is not a unicode letter or number.
-        preg_match_all('/[\p{L}\p{N}]+/u', $value, $words);
-
-        if ($words && isset($words[0]) && count($words[0]) > 0) {
-            foreach ($words[0] as $word) {
-                // Translate and swap out.
-                $translatedWord = Craft::t('app', $word);
-                $value = str_replace($word, $translatedWord, $value);
-            }
+        if ($translate) {
+            $value = DateTimeHelper::translateDate($value);
         }
 
-        // Return the translated value.
         return $value;
     }
 
