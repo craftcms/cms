@@ -1,6 +1,6 @@
 /*
-	Redactor v10.1.2
-	Updated: May 25, 2015
+	Redactor v10.1.3
+	Updated: June 4, 2015
 
 	http://imperavi.com/redactor/
 
@@ -91,7 +91,7 @@
 
 	// Functionality
 	$.Redactor = Redactor;
-	$.Redactor.VERSION = '10.1.2';
+	$.Redactor.VERSION = '10.1.3';
 	$.Redactor.modules = ['alignment', 'autosave', 'block', 'buffer', 'build', 'button',
 						  'caret', 'clean', 'code', 'core', 'dropdown', 'file', 'focus',
 						  'image', 'indent', 'inline', 'insert', 'keydown', 'keyup',
@@ -198,7 +198,8 @@
 
 		removeComments: false,
 		replaceTags: [
-			['strike', 'del']
+			['strike', 'del'],
+			['b', 'strong']
 		],
 		replaceStyles: [
             ['font-weight:\\s?bold', "strong"],
@@ -809,7 +810,6 @@
 					}
 					else
 					{
-
 						if (this.opts.linebreaks || tag != 'p')
 						{
 							if (tag == 'blockquote')
@@ -847,7 +847,6 @@
 								}
 
 							}
-
 
 							this.block.formatWrap(tag);
 						}
@@ -2021,7 +2020,7 @@
 					html = html.replace(/<div(.*?[^>]) data-tagblock="redactor"(.*?[^>])>/gi, '<div$1$2>');
 					html = html.replace(/<(.*?) data-verified="redactor"(.*?[^>])>/gi, '<$1$2>');
 
-					var $div = $("<div/>").html($.parseHTML(html));
+					var $div = $("<div/>").html($.parseHTML(html, document, true));
 					$div.find("span").removeAttr("rel");
 
 					html = $div.html();
@@ -2266,8 +2265,6 @@
 						$div.find('[data-level][data-list]').removeAttr('data-level data-list');
 						html = $div.html();
 
-						// one line
-						html = html.replace(/<p(.*?)class="MsoListParagraph"([\w\W]*?)<\/p>/gi, '<ul><li$2</li></ul>');
 						// remove ms word's bullet
 						html = html.replace(/·/g, '');
 						html = html.replace(/<p class="Mso(.*?)"/gi, '<p');
@@ -2458,11 +2455,14 @@
 					html = this.clean.savePreFormatting(html);
 					html = this.clean.saveCodeFormatting(html);
 
+					html = this.clean.restoreSelectionMarker(html);
+
 					return html;
 				},
 				savePreFormatting: function(html)
 				{
 					var pre = html.match(/<pre(.*?)>([\w\W]*?)<\/pre>/gi);
+
 					if (pre !== null)
 					{
 						$.each(pre, $.proxy(function(i,s)
@@ -2487,28 +2487,33 @@
 						}, this));
 					}
 
-					// replacing back selection marker in pre for caret sync
-					html = html.replace(/&lt;span id=&quot;selection-marker-([0-9])&quot; class=&quot;redactor-selection-marker&quot; data-verified=&quot;redactor&quot;&gt;​&lt;\/span&gt;/g, '<span id="selection-marker-$1" class="redactor-selection-marker" data-verified="redactor">​</span>');
-
 					return html;
 				},
 				saveCodeFormatting: function(html)
 				{
-					var $div = $("<div/>").html(html);
+					var code = html.match(/<code(.*?)>([\w\W]*?)<\/code>/gi);
 
-					$div.find("code").each($.proxy(function(i,s)
+					if (code !== null)
 					{
-						var html = $(s).html();
+						$.each(code, $.proxy(function(i,s)
+						{
+							var arr = s.match(/<code(.*?)>([\w\W]*?)<\/code>/i);
 
-						html = html.replace(/&nbsp;/g, ' ');
-						html = this.clean.encodeEntities(html);
-						html = html.replace(/\$/g, '&#36;');
+							arr[2] = arr[2].replace(/&nbsp;/g, ' ');
+							arr[2] = this.clean.encodeEntities(arr[2]);
+							arr[2] = arr[2].replace(/\$/g, '&#36;');
 
-						$(s).html(html);
+							html = html.replace(s, '<code' + arr[1] + '>' + arr[2] + '</code>');
+						}, this));
+					}
 
-					}, this));
+					return html;
+				},
+				restoreSelectionMarker: function(html)
+				{
+					html = html.replace(/&lt;span id=&quot;selection-marker-([0-9])&quot; class=&quot;redactor-selection-marker&quot; data-verified=&quot;redactor&quot;&gt;​&lt;\/span&gt;/g, '<span id="selection-marker-$1" class="redactor-selection-marker" data-verified="redactor">​</span>');
 
-					return $div.html();
+					return html;
 				},
 				getTextFromHtml: function(html)
 				{
@@ -2616,12 +2621,7 @@
 				},
 				cleanEmptyParagraph: function()
 				{
-					var $p = this.$editor.find("p").first();
 
-					if ($p.length > 0 && this.utils.isEmpty($p.html()))
-					{
-						p.remove();
-					}
 				},
 				setVerified: function(html)
 				{
@@ -2860,7 +2860,7 @@
 					var start = 0,
 						end = 0;
 
-					var $editorDiv = $("<div/>").append($.parseHTML(this.clean.onSync(this.$editor.html())));
+					var $editorDiv = $("<div/>").append($.parseHTML(this.clean.onSync(this.$editor.html()), document, true));
 
 					var $selectionMarkers = $editorDiv.find("span.redactor-selection-marker");
 
@@ -3088,16 +3088,15 @@
 				setCallback: function(type, e, data)
 				{
 					var eventName = type + 'Callback';
+					var eventNamespace = 'redactor';
 					var callback = this.opts[eventName];
 
 					if (this.$textarea)
 					{
 						var returnValue = false;
-						var eventNamespace = 'redactor';
+						var events = $._data(this.$textarea[0], 'events');
 
-						var events = $._data(this.$textarea.get(0), 'events');
-
-						if (typeof events != 'undefined' && typeof events[type + 'Callback'] != 'undefined')
+						if (typeof events != 'undefined' && typeof events[eventName] != 'undefined')
 						{
 							$.each(events[eventName], $.proxy(function(key, value)
 							{
@@ -3144,16 +3143,19 @@
 
 					var html = this.code.get();
 
-					// dropdowns off
-					this.$toolbar.find('a').each(function()
+					if (this.opts.toolbar)
 					{
-						var $el = $(this);
-						if ($el.data('dropdown'))
+						// dropdowns off
+						this.$toolbar.find('a').each(function()
 						{
-							$el.data('dropdown').remove();
-							$el.data('dropdown', {});
-						}
-					});
+							var $el = $(this);
+							if ($el.data('dropdown'))
+							{
+								$el.data('dropdown').remove();
+								$el.data('dropdown', {});
+							}
+						});
+					}
 
 					if (this.build.isTextarea())
 					{
@@ -3354,6 +3356,7 @@
 					this.$toolbar.find('a.dropact').removeClass('redactor-act').removeClass('dropact');
 
 					$(document.body).removeClass('body-redactor-hidden').css('margin-right', 0);
+
 					$('.redactor-dropdown-' + this.uuid).hide();
 					this.core.setCallback('dropdownHide');
 				},
@@ -3991,7 +3994,12 @@
 					}
 					else if (this.opts.linebreaks)
 					{
-						$image.before('<br>').after('<br>');
+						if (!this.utils.isEmpty(this.code.get()))
+						{
+							$image.before('<br>');
+						}
+
+						$image.after('<br>');
 					}
 
 					if (typeof json == 'string') return;
@@ -5657,14 +5665,8 @@
 					this.link.$inputUrl = $('#redactor-link-url');
 					this.link.$inputText = $('#redactor-link-url-text');
 
-					this.link.$inputUrl.val($.trim(this.link.url));
-					this.link.$inputText.val($.trim(this.link.text));
-
-					if (this.selection.getNodes().length > 1)
-					{
-						this.link.$inputText.hide();
-						this.link.$inputText.prev("label").hide();
-					}
+					this.link.$inputText.val(this.link.text);
+					this.link.$inputUrl.val(this.link.url);
 
 					this.link.buttonInsert.on('click', $.proxy(this.link.insert, this));
 
@@ -5855,10 +5857,7 @@
 
 								if (this.link.text !== '' || this.link.text != text)
 								{
-									if (this.selection.getNodes().length == 0)
-									{
-										$a.text(text);
-									}
+									$a.text(text);
 
 									this.selection.selectElement($a);
 								}
@@ -6834,14 +6833,16 @@
 					this.$editor.attr('placeholder', this.$element.attr('placeholder'));
 
 					this.placeholder.toggle();
-					this.$editor.on('keyup.redactor-placeholder', $.proxy(this.placeholder.toggle, this));
-
+					this.$editor.on('keydown.redactor-placeholder', $.proxy(this.placeholder.toggle, this));
 				},
 				toggle: function()
 				{
-					var func = 'removeClass';
-					if (this.utils.isEmpty(this.$editor.html(), false)) func = 'addClass';
-					this.$editor[func]('redactor-placeholder');
+					setTimeout($.proxy(function()
+					{
+						var func = this.utils.isEmpty(this.$editor.html(), false) ? 'addClass' : 'removeClass';
+
+						this.$editor[func]('redactor-placeholder');
+					}, this), 5);
 				},
 				remove: function()
 				{
@@ -8948,7 +8949,7 @@
 								   .remove();
 						});
 
-					this.linkify.after();
+					this.code.sync();
 				},
 				convertVideoLinks: function(html)
 				{
@@ -8974,6 +8975,16 @@
 					if (matches)
 					{
 						html = html.replace(html, '<img src="' + matches + '" />');
+
+						if (this.opts.linebreaks)
+						{
+							if (!this.utils.isEmpty(this.code.get()))
+							{
+								html = '<br>' + html;
+							}
+						}
+
+						html+= '<br>';
 					}
 
 					return html;
@@ -9021,11 +9032,6 @@
 					}
 
 					return html;
-				},
-				after: function()
-				{
-					this.observe.load();
-					this.code.sync();
 				}
 			}
 		}
