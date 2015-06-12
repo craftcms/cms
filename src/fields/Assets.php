@@ -160,6 +160,7 @@ class Assets extends BaseRelationField
                 'displayName' => self::displayName(),
                 'fileKindOptions' => $fileKindOptions,
                 'isMatrix' => $isMatrix,
+                'defaultSelectionLabel' => static::defaultSelectionLabel(),
             ]);
     }
 

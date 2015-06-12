@@ -4,7 +4,7 @@
 	{% if CraftEdition >= CraftClient %}
 		{% set sectionOptions = [] %}
 		{% for section in sections %}
-			{% set sectionOptions = sectionOptions|merge([{ label: section.name|t('app'), value: section.id }]) %}
+			{% set sectionOptions = sectionOptions|merge([{ label: section.name|t('site'), value: section.id }]) %}
 		{% endfor %}
 		{{ forms.selectField({
 			label: "Section"|t('app'),
@@ -29,7 +29,7 @@
 
 			{% set entryTypeOptions = [] %}
 			{% for entryType in section.getEntryTypes() %}
-				{% set entryTypeOptions = entryTypeOptions|merge([{ label: entryType.name|t('app'), value: entryType.id }]) %}
+				{% set entryTypeOptions = entryTypeOptions|merge([{ label: entryType.name|t('site'), value: entryType.id }]) %}
 			{% endfor %}
 
 			{% if entryTypeOptions|length == 1 %}

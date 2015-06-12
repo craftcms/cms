@@ -415,10 +415,7 @@ class Asset extends Element
     private static function _assembleSourceInfoForFolder(VolumeFolder $folder, $includeNestedFolders = true)
     {
         $source = [
-            'label' => ($folder->parentId ? $folder->name : Craft::t(
-                'app',
-                $folder->name
-            )),
+            'label' => ($folder->parentId ? $folder->name : Craft::t('site', $folder->name)),
             'hasThumbs' => true,
             'criteria' => ['folderId' => $folder->id],
             'data' => [

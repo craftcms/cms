@@ -22,7 +22,7 @@
 					<div class="menu">
 						<ul>
 							{% for section in newEntrySections %}
-								<li><a href="{{ url('entries/'~section.handle~'/new') }}">{{ section.name|t('app') }}</a></li>
+								<li><a href="{{ url('entries/'~section.handle~'/new') }}">{{ section.name|t('site') }}</a></li>
 							{% endfor %}
 						</ul>
 					</div>

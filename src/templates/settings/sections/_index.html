@@ -25,8 +25,8 @@
 			</thead>
 			<tbody>
 				{% for section in sections %}
-					<tr data-id="{{ section.id }}" data-name="{{ section.name|t('app') }}">
-						<th scope="row" data-title="{{ 'Name'|t('app') }}"><a href="{{ url('settings/sections/' ~ section.id) }}">{{ section.name|t('app') }}</a></th>
+					<tr data-id="{{ section.id }}" data-name="{{ section.name|t('site') }}">
+						<th scope="row" data-title="{{ 'Name'|t('app') }}"><a href="{{ url('settings/sections/' ~ section.id) }}">{{ section.name|t('site') }}</a></th>
 						<td data-title="{{ 'Handle'|t('app') }}"><code>{{ section.handle }}</code></td>
 						<td data-title="{{ 'Type'|t('app') }}">{{ section.type|title|t('app') }}</td>
 						<td data-title="{{ 'URL Format'|t('app') }}" dir="ltr">
@@ -46,7 +46,7 @@
 								<div class="menu">
 									<ul>
 										{% for entryType in section.getEntryTypes() %}
-											<li><a href="{{ entryType.getCpEditUrl() }}">{{ entryType.name }}</a></li>
+											<li><a href="{{ entryType.getCpEditUrl() }}">{{ entryType.name|t('site') }}</a></li>
 										{% endfor %}
 									</ul>
 								</div>

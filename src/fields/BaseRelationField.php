@@ -45,18 +45,6 @@ abstract class BaseRelationField extends Field
     }
 
     /**
-     * @inheritdoc
-     */
-    public static function populateModel($model, $config)
-    {
-        if (!isset($config['selectionLabel'])) {
-            $config['selectionLabel'] = static::defaultSelectionLabel();
-        }
-
-        parent::populateModel($model, $config);
-    }
-
-    /**
      * Returns the default [[selectionLabel]] value.
      *
      * @return string The default selection label
@@ -198,6 +186,7 @@ abstract class BaseRelationField extends Field
                 'targetLocaleField' => $this->getTargetLocaleFieldHtml(),
                 'field' => $this,
                 'displayName' => static::displayName(),
+                'defaultSelectionLabel' => static::defaultSelectionLabel(),
             ]);
     }
 
@@ -377,7 +366,7 @@ abstract class BaseRelationField extends Field
             'criteria' => $selectionCriteria,
             'sourceElementId' => (!empty($element->id) ? $element->id : null),
             'limit' => ($this->allowLimit ? $this->limit : null),
-            'selectionLabel' => $this->selectionLabel,
+            'selectionLabel' => ($this->selectionLabel ? Craft::t('site', $this->selectionLabel) : static::defaultSelectionLabel()),
         ];
     }
 

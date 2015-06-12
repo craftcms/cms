@@ -21,8 +21,8 @@
 			</thead>
 			<tbody>
 				{% for volume in volumes %}
-					<tr data-id="{{ volume.id }}" data-name="{{ volume.name|t('app') }}">
-						<th scope="row" data-title="{{ 'Name'|t('app') }}"><a href="{{ url('settings/assets/volumes/' ~ volume.id) }}">{{ volume.name|t('app') }}</a></th>
+					<tr data-id="{{ volume.id }}" data-name="{{ volume.name|t('site') }}">
+						<th scope="row" data-title="{{ 'Name'|t('app') }}"><a href="{{ url('settings/assets/volumes/' ~ volume.id) }}">{{ volume.name|t('site') }}</a></th>
 						{% if CraftEdition == CraftPro %}<td data-title="{{ 'Type'|t('app') }}">{{ volume.displayName() }}</td>{% endif %}
 						{% if sortable %}<td class="thin"><a class="move icon" title="{{ 'Reorder'|t('app') }}" role="button"></a></td>{% endif %}
 						<td class="thin"><a class="delete icon" title="{{ 'Delete'|t('app') }}" role="button"></a></td>

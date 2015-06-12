@@ -15,7 +15,7 @@
 		<ul class="padded">
 			{% for draft in drafts %}
 				<li><a{% if entry.className() == 'craft\\app\\models\\EntryDraft' and draft.draftId == draftId %} class="sel"{% endif %} href="{{ url(baseUrl~'drafts/'~draft.draftId) }}">
-					{{ draft.name }}
+					{{ draft.name|t('site') }}
 					<span class="light">{{ "by {creator}"|t('app', { creator: draft.creator }) }}</span>
 				</a></li>
 			{% endfor %}

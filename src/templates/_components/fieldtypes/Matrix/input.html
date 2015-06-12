@@ -15,7 +15,7 @@
 					<input type="hidden" name="{{ name }}[{{ blockId }}][type]" value="{{ block.getType() }}">
 					<input type="hidden" name="{{ name }}[{{ blockId }}][enabled]" value="{% if block.enabled %}1{% endif %}">
 					<div class="titlebar">
-						<div class="blocktype">{{ block.getType().name|t('app') }}</div>
+						<div class="blocktype">{{ block.getType().name|t('site') }}</div>
 						<div class="preview"></div>
 					</div>
 					<div class="checkbox" title="{{ 'Select'|t('app') }}"></div>
@@ -32,7 +32,7 @@
 							<hr class="padded">
 							<ul class="padded">
 								{% for blockType in blockTypes %}
-									<li><a data-icon="+" data-action="add" data-type="{{ blockType.handle }}">{{ "Add {type} above"|t('app', { type: blockType.name|t('app') }) }}</a></li>
+									<li><a data-icon="+" data-action="add" data-type="{{ blockType.handle }}">{{ "Add {type} above"|t('app', { type: blockType.name|t('site') }) }}</a></li>
 								{% endfor %}
 							</ul>
 							<hr class="padded">
@@ -58,7 +58,7 @@
 		<div class="buttons">
 			<div class="btngroup">
 				{% for blockType in blockTypes %}
-					<div class="btn{% if loop.first %} add icon{% endif %}" data-type="{{ blockType.handle }}">{{ blockType.name|t('app') }}</div>
+					<div class="btn{% if loop.first %} add icon{% endif %}" data-type="{{ blockType.handle }}">{{ blockType.name|t('site') }}</div>
 				{% endfor %}
 			</div>
 
@@ -66,7 +66,7 @@
 			<div class="menu">
 				<ul>
 					{% for blockType in blockTypes %}
-						<li><a data-type="{{ blockType.handle }}">{{ blockType.name|t('app') }}</a></li>
+						<li><a data-type="{{ blockType.handle }}">{{ blockType.name|t('site') }}</a></li>
 					{% endfor %}
 				</ul>
 			</div>

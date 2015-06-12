@@ -29,7 +29,7 @@
 				<tbody>
 					{% for globalSet in globalSets %}
 						<tr data-id="{{ globalSet.id }}" data-name="{{ globalSet.name }}">
-							<th scope="row" data-title="{{ 'Global Set Name'|t('app') }}"><a href="{{ url('settings/globals/' ~ globalSet.id) }}">{{ globalSet.name|t('app') }}</a></th>
+							<th scope="row" data-title="{{ 'Global Set Name'|t('app') }}"><a href="{{ url('settings/globals/' ~ globalSet.id) }}">{{ globalSet.name|t('site') }}</a></th>
 							<td class="code" data-title="{{ 'Handle'|t('app') }}">{{ globalSet.handle }}</td>
 							<td class="thin"><a class="delete icon" title="{{ 'Delete'|t('app') }}"></a></td>
 						</tr>

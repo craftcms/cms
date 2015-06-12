@@ -22,8 +22,8 @@
 			</thead>
 			<tbody>
 				{% for tagGroup in tagGroups %}
-					<tr data-id="{{ tagGroup.id }}" data-name="{{ tagGroup.name|t('app') }}">
-						<th scope="row" data-title="{{ 'Name'|t('app') }}"><a href="{{ url('settings/tags/' ~ tagGroup.id) }}">{{ tagGroup.name|t('app') }}</a></th>
+					<tr data-id="{{ tagGroup.id }}" data-name="{{ tagGroup.name|t('site') }}">
+						<th scope="row" data-title="{{ 'Name'|t('app') }}"><a href="{{ url('settings/tags/' ~ tagGroup.id) }}">{{ tagGroup.name|t('site') }}</a></th>
 						<td data-title="{{ 'Handle'|t('app') }}"><code>{{ tagGroup.handle }}</code></td>
 						<td class="thin"><a class="delete icon" title="{{ 'Delete'|t('app') }}" role="button"></a></td>
 					</tr>

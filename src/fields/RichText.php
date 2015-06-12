@@ -185,7 +185,7 @@ class RichText extends Field
 
             if ($postContentSize > $maxDbColumnSize) {
                 return Craft::t('app', '{attribute} is too long.',
-                    ['attribute' => Craft::t('app', $this->name)]);
+                    ['attribute' => Craft::t('site', $this->name)]);
             }
         }
 

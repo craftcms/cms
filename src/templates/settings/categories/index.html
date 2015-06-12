@@ -23,8 +23,8 @@
 			</thead>
 			<tbody>
 				{% for group in categoryGroups %}
-					<tr data-id="{{ group.id }}" data-name="{{ group.name|t('app') }}">
-						<th scope="row" data-title="{{ 'Name'|t('app') }}"><a href="{{ url('settings/categories/' ~ group.id) }}">{{ group.name|t('app') }}</a></th>
+					<tr data-id="{{ group.id }}" data-name="{{ group.name|t('site') }}">
+						<th scope="row" data-title="{{ 'Name'|t('app') }}"><a href="{{ url('settings/categories/' ~ group.id) }}">{{ group.name|t('site') }}</a></th>
 						<td data-title="{{ 'Handle'|t('app') }}"><code>{{ group.handle }}</code></td>
 						<td><a href="{{ url('categories/'~group.handle) }}">{{ "Edit Categories"|t('app') }}</a></td>
 						<td class="thin"><a class="delete icon" title="{{ 'Delete'|t('app') }}" role="button"></a></td>

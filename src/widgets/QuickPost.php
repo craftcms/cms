@@ -124,7 +124,7 @@ class QuickPost extends Widget
 
             if ($section !== null) {
                 return Craft::t('app', 'Post a new {section} entry',
-                    ['section' => $section->name]);
+                    ['section' => Craft::t('site', $section->name)]);
             }
         }
 

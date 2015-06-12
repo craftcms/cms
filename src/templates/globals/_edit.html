@@ -19,7 +19,7 @@
 	<nav>
 		<ul>
 			{% for theGlobalSet in globalSets %}
-				<li><a{% if theGlobalSet.handle == globalSetHandle %} class="sel"{% endif %} href="{{ theGlobalSet.getCpEditUrl() }}">{{ theGlobalSet.name|t('app') }}</a></li>
+				<li><a{% if theGlobalSet.handle == globalSetHandle %} class="sel"{% endif %} href="{{ theGlobalSet.getCpEditUrl() }}">{{ theGlobalSet.name|t('site') }}</a></li>
 			{% endfor %}
 		</ul>
 	</nav>

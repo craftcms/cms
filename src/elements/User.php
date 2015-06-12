@@ -133,7 +133,7 @@ class User extends Element implements IdentityInterface
                 $key = 'group:'.$group->id;
 
                 $sources[$key] = [
-                    'label' => Craft::t('app', $group->name),
+                    'label' => Craft::t('site', $group->name),
                     'criteria' => ['groupId' => $group->id],
                     'hasThumbs' => true
                 ];

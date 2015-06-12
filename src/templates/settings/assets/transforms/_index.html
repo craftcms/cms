@@ -21,8 +21,8 @@
 		</thead>
 		<tbody>
 		{% for transform in transforms %}
-			<tr data-id="{{ transform.id }}" data-name="{{ transform.name|t('app') }}">
-				<th scope="row" data-title="{{ 'Name'|t('app') }}"><a href="{{ url('settings/assets/transforms/' ~ transform.handle) }}">{{ transform.name|t('app') }}</a></th>
+			<tr data-id="{{ transform.id }}" data-name="{{ transform.name|t('site') }}">
+				<th scope="row" data-title="{{ 'Name'|t('app') }}"><a href="{{ url('settings/assets/transforms/' ~ transform.handle) }}">{{ transform.name|t('site') }}</a></th>
                 <td data-title="{{ 'Handle'|t('app') }}"><code>{{ transform.handle }}</code></td>
 				<td data-title="{{ 'Mode'|t('app') }}">
 					{% if transform.mode %}

@@ -168,7 +168,7 @@ class Entry extends Element
                     $key = 'section:'.$section->id;
 
                     $sources[$key] = [
-                        'label' => Craft::t('app', $section->name),
+                        'label' => Craft::t('site', $section->name),
                         'data' => [
                             'type' => $type,
                             'handle' => $section->handle

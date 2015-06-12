@@ -91,7 +91,7 @@ abstract class Field extends SavableComponent implements FieldInterface
     public function __toString()
     {
         try {
-            return Craft::t('app', $this->name);
+            return Craft::t('site', $this->name);
         } catch (Exception $e) {
             ErrorHandler::convertExceptionToError($e);
         }
