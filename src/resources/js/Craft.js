@@ -5103,6 +5103,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 				this.rotation += modifier * operation.imageRotation;
 				this.frameRotation += modifier * operation.imageRotation;
 
+				this.cleanUpRotationDegrees();
 				this.renderImage(true);
 			}
 
@@ -5119,6 +5120,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 				this.previousSliderValue = newValue;
 				$straighten.val(newValue);
 
+				this.cleanUpRotationDegrees();
 				this.renderImage(true);
 			}
 
