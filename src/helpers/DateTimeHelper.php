@@ -766,7 +766,7 @@ class DateTimeHelper
      *
      * @return array The translation pairs
      */
-    public static function _getDateTranslations($language)
+    private static function _getDateTranslations($language)
     {
         if (!isset(static::$_translationPairs[$language])) {
             if (strncmp(Craft::$app->language, 'en', 2) === 0) {
