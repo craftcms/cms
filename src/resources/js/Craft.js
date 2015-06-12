@@ -5029,7 +5029,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 						$paramContainer.append($input);
 					}
 
-					$paramContainer.append($('<div class="buttons rightalign"><div class="btn submit apply-filter">' + Craft.t('Apply') + '</div></div>'));
+					$paramContainer.append($('<div class="buttons leftalign"><div class="btn submit apply-filter">' + Craft.t('Apply') + '</div></div>'));
 
 					var $applyButton = $paramContainer.find('.btn.apply-filter');
 
@@ -5438,11 +5438,14 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 				params.assetId = this.assetId;
 			}
 
+			this.$container.find('#filter-control-container .buttons').append('<div class="spinner"></div>');
+
 			Craft.postActionRequest("assetTransforms/applyFilter", params, $.proxy(function (data)
 			{
 				if (data.success && data.url) {
 					this.initImage(data.url, $.proxy(this, 'redrawEditor'));
-					this.$container.find('.btn.apply-filter').removeClass('disabled');
+					this.$container.find('.btn.apply-filter').removeClass('disabled').end().find('.spinner').remove();
+
 				}
 			}, this));
 		}
