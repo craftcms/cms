@@ -37,7 +37,7 @@
 {% set crumbs = [
 	{ label: "Settings"|t, url: url('settings') },
 	{ label: "Fields"|t, url: url('settings/fields') },
-	{ label: groups[groupId].name, url: url('settings/fields/'~groupId) }
+	{ label: groups[groupId].name|t, url: url('settings/fields/'~groupId) }
 ] %}
 
 {% if fieldId is defined %}

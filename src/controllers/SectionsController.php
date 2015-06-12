@@ -270,10 +270,10 @@ class SectionsController extends BaseController
 		$variables['crumbs'] = array(
 			array('label' => Craft::t('Settings'), 'url' => UrlHelper::getUrl('settings')),
 			array('label' => Craft::t('Sections'), 'url' => UrlHelper::getUrl('settings/sections')),
-			array('label' => $variables['section']->name, 'url' => UrlHelper::getUrl('settings/sections/'.$variables['section']->id)),
+			array('label' => Craft::t($variables['section']->name), 'url' => UrlHelper::getUrl('settings/sections/'.$variables['section']->id)),
 		);
 
-		$variables['title'] = Craft::t('{section} Entry Types', array('section' => $variables['section']->name));
+		$variables['title'] = Craft::t('{section} Entry Types', array('section' => Craft::t($variables['section']->name)));
 
 		$this->renderTemplate('settings/sections/_entrytypes/index', $variables);
 	}
@@ -322,7 +322,7 @@ class SectionsController extends BaseController
 				$variables['entryType']->sectionId = $variables['section']->id;
 			}
 
-			$variables['title'] = Craft::t('Create a new {section} entry type', array('section' => $variables['section']->name));
+			$variables['title'] = Craft::t('Create a new {section} entry type', array('section' => Craft::t($variables['section']->name)));
 		}
 
 		$variables['crumbs'] = array(

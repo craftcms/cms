@@ -40,7 +40,7 @@
 		<ul id="groups">
 			<li><a href="{{ url('settings/fields') }}"{% if groupId is not defined %} class="sel"{% endif %}>{{ "All Fields"|t }}</a></li>
 			{% for group in groups %}
-				<li><a href="{{ url('settings/fields/'~group.id) }}"{% if groupId is defined and group.id == groupId %} class="sel"{% endif %} data-id="{{ group.id }}">{{ group.name }}</a></li>
+				<li><a href="{{ url('settings/fields/'~group.id) }}"{% if groupId is defined and group.id == groupId %} class="sel"{% endif %} data-id="{{ group.id }}">{{ group.name|t }}</a></li>
 			{% endfor %}
 		</ul>
 	</nav>
@@ -95,7 +95,7 @@
 								<span class="error">{{ field.type }}</span>
 							{% endif %}
 						</td>
-						{% if groupId is not defined %}<td data-title="{{ 'Group'|t }}">{{ field.group.name }}</td>{% endif %}
+						{% if groupId is not defined %}<td data-title="{{ 'Group'|t }}">{{ field.group.name|t }}</td>{% endif %}
 						<td class="thin"><a class="delete icon" title="{{ 'Delete'|t }}" role="button"></a></td>
 					</tr>
 				{% endfor %}

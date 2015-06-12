@@ -4,7 +4,7 @@
 {% set value = (element ? element.getFieldValue(field.handle) : null) %}
 {% set errors = (element and not static ? element.getErrors(field.handle) : null) %}
 {% set fieldtype = field.getFieldType() %}
-{% set instructions = (not static ? field.instructions|t : null) %}
+{% set instructions = (not static and field.instructions ? field.instructions|t : null) %}
 
 {% if fieldtype %}
 	{% if element %}

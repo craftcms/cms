@@ -53,7 +53,7 @@ class FeedWidget extends BaseWidget
 	 */
 	public function getTitle()
 	{
-		return $this->settings->title;
+		return Craft::t($this->settings->title);
 	}
 
 	/**
