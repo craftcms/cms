@@ -81,10 +81,22 @@ return [
     'i18n' => [
         'class' => 'craft\app\i18n\I18N',
         'translations' => [
+            'yii' => [
+                'class' => 'craft\app\i18n\PhpMessageSource',
+                'sourceLanguage' => 'en-US',
+                'basePath' => '@yii/messages',
+                'allowOverrides' => true,
+            ],
             'app' => [
                 'class' => 'craft\app\i18n\PhpMessageSource',
                 'sourceLanguage' => 'en-US',
                 'basePath' => '@app/translations',
+                'allowOverrides' => true,
+            ],
+            'site' => [
+                'class' => 'craft\app\i18n\PhpMessageSource',
+                'sourceLanguage' => 'en-US',
+                'basePath' => '@translations',
             ],
         ],
     ],
