@@ -18,11 +18,6 @@ use craft\app\base\Model;
  */
 class TagGroup extends Model
 {
-    // Traits
-    // =========================================================================
-
-    use \craft\app\base\FieldLayoutTrait;
-
     // Properties
     // =========================================================================
 
@@ -46,14 +41,21 @@ class TagGroup extends Model
      */
     public $fieldLayoutId;
 
-
-    /**
-     * @var The element type that tag groups' field layouts should be associated with.
-     */
-    private $_fieldLayoutElementType = 'craft\app\elements\Tag';
-
     // Public Methods
     // =========================================================================
+
+    /**
+     * @inheritdoc
+     */
+    public function behaviors()
+    {
+        return [
+            [
+                'class' => 'craft\app\behaviors\FieldLayoutBehavior',
+                'elementType' => 'craft\app\elements\Tag'
+            ],
+        ];
+    }
 
     /**
      * @inheritdoc

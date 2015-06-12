@@ -28,7 +28,6 @@ abstract class Volume extends SavableComponent implements VolumeInterface
     // =========================================================================
 
     use VolumeTrait;
-    use FieldLayoutTrait;
 
     // Public Methods
     // =========================================================================
@@ -45,6 +44,19 @@ abstract class Volume extends SavableComponent implements VolumeInterface
 
     // Public Methods
     // =========================================================================
+
+    /**
+     * @inheritdoc
+     */
+    public function behaviors()
+    {
+        return [
+            [
+                'class' => 'craft\app\behaviors\FieldLayoutBehavior',
+                'elementType' => 'craft\app\elements\Asset'
+            ],
+        ];
+    }
 
     /**
      * @inheritdoc
