@@ -191,7 +191,13 @@ class AssetTransformsController extends Controller
             $localPath = $asset->getTransformSource();
         }
 
-        $filename = StringHelper::randomString(15).'.'.IOHelper::getExtension($localPath);
+        $extension = IOHelper::getExtension($localPath);
+
+        if ($extension == 'svg') {
+            $extension = 'png';
+        }
+
+        $filename = StringHelper::randomString(15).'.'.$extension;
         $targetPath = Craft::$app->getPath()->getModifiedAssetsPath().'/'.$filename;
 
         try {
