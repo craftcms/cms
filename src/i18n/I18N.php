@@ -687,7 +687,13 @@ class I18N extends \yii\i18n\I18N
         $translation = parent::translate($category, $message, $params, $language);
 
         if ($this->_shouldAddTranslationDebugOutput()) {
-            $translation = '@'.$translation.'@';
+            switch ($category) {
+                case 'site': $char = '$'; break;
+                case 'app': $char = '@'; break;
+                default: $char = '#';
+            }
+
+            $translation = $char.$translation.$char;
         }
 
         return $translation;
