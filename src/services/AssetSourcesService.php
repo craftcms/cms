@@ -408,7 +408,7 @@ class AssetSourcesService extends BaseApplicationComponent
 				throw $e;
 			}
 
-            if ($isNewSource && !$this->_fetchedAllSources)
+            if ($isNewSource && $this->_fetchedAllSources)
             {
                 $this->_sourcesById[$source->id] = $source;
             }
