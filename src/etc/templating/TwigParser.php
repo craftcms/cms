@@ -2,7 +2,7 @@
 namespace Craft;
 
 /**
- * Cache twig node.
+ * TwigParser class.
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
