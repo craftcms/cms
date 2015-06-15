@@ -14,6 +14,7 @@ use craft\app\errors\HttpException;
 use craft\app\helpers\JsonHelper;
 use craft\app\helpers\UrlHelper;
 use craft\app\web\Controller;
+use craft\app\web\Response;
 
 /**
  * The VolumeController class is a controller that handles various actions related to asset volumes, such as
@@ -149,7 +150,7 @@ class VolumesController extends Controller
     /**
      * Saves an asset volume.
      *
-     * @return void
+     * @return Response
      */
     public function actionSaveVolume()
     {
@@ -197,7 +198,7 @@ class VolumesController extends Controller
     /**
      * Reorders asset volumes.
      *
-     * @return void
+     * @return Response
      */
     public function actionReorderVolumes()
     {
@@ -213,7 +214,7 @@ class VolumesController extends Controller
     /**
      * Deletes an asset volume.
      *
-     * @return void
+     * @return Response
      */
     public function actionDeleteVolume()
     {
@@ -232,7 +233,7 @@ class VolumesController extends Controller
      *
      * This is used to, for example, load Amazon S3 bucket list or Rackspace Cloud Storage Containers.
      *
-     * @return void
+     * @return Response
      */
     public function actionLoadVolumeTypeData()
     {
