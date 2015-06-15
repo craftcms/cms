@@ -347,6 +347,16 @@ class Volumes extends Component
                     $transaction->commit();
                 }
 
+                if ($isNewVolume && $this->_fetchedAllVolumes) {
+                    $this->_volumesById[$volume->id] = $volume;
+                }
+
+                if (isset($this->_viewableVolumeIds)) {
+                    if (Craft::$app->user->checkPermission('viewAssetVolume:'.$volume->id)) {
+                        $this->_viewableVolumeIds[] = $volume->id;
+                    }
+                }
+
                 return true;
             } catch (\Exception $e) {
                 if ($transaction !== null) {
