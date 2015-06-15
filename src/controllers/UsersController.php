@@ -1494,7 +1494,7 @@ class UsersController extends Controller
 
         // If the user doesn't have CP access, see if a custom Set Password template exists
         if (!$user->can('accessCp')) {
-            $pathService->setTemplatesPath($pathServices->getSiteTemplatesPath());
+            $pathService->setTemplatesPath($pathService->getSiteTemplatesPath());
             $templatePath = $configService->getLocalized('setPasswordPath');
 
             if (Craft::$app->getView()->doesTemplateExist($templatePath)) {
