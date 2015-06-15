@@ -128,7 +128,7 @@ class TemplatesService extends BaseApplicationComponent
 	 * @param string $loaderClass The name of the class that should be initialized as the Twig instance’s template
 	 *                            loader. If no class is passed in, {@link TemplateLoader} will be used.
 	 *
-	 * @return \Twig_Environment The Twig Environment instance.
+	 * @return TwigEnvironment The Twig Environment instance.
 	 */
 	public function getTwig($loaderClass = null)
 	{
@@ -142,7 +142,7 @@ class TemplatesService extends BaseApplicationComponent
 			$loader = new $loaderClass();
 			$options = $this->_getTwigOptions();
 
-			$twig = new \Twig_Environment($loader, $options);
+			$twig = new TwigEnvironment($loader, $options);
 
 			$twig->addExtension(new \Twig_Extension_StringLoader());
 			$twig->addExtension(new CraftTwigExtension());
