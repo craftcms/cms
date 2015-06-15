@@ -146,7 +146,8 @@ class UsersController extends Controller
      */
     public function actionLogout()
     {
-        Craft::$app->getUser()->logout();
+        // Passing false here for reasons.
+        Craft::$app->getUser()->logout(false);
 
         if (Craft::$app->getRequest()->getIsAjax()) {
             return $this->asJson([
