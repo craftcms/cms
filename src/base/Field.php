@@ -74,7 +74,7 @@ abstract class Field extends SavableComponent implements FieldInterface
     // =========================================================================
 
     /**
-     * @var bool Whether the field is fresh.
+     * @var boolean Whether the field is fresh.
      * @see isFresh()
      * @see setIsFresh()
      */

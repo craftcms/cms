@@ -54,14 +54,14 @@ class Tags extends BaseRelationField
     /**
      * Whether the field settings should allow multiple sources to be selected.
      *
-     * @var bool $allowMultipleSources
+     * @var boolean $allowMultipleSources
      */
     protected $allowMultipleSources = false;
 
     /**
      * Whether to allow the Limit setting.
      *
-     * @var bool $allowLimit
+     * @var boolean $allowLimit
      */
     protected $allowLimit = false;
 

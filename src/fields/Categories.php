@@ -53,7 +53,7 @@ class Categories extends BaseRelationField
     /**
      * Whether to allow multiple source selection in the settings.
      *
-     * @var bool $allowMultipleSources
+     * @var boolean $allowMultipleSources
      */
     protected $allowMultipleSources = false;
 
@@ -74,7 +74,7 @@ class Categories extends BaseRelationField
     /**
      * Whether the elements have a custom sort order.
      *
-     * @var bool $sortable
+     * @var boolean $sortable
      */
     protected $sortable = false;
 
