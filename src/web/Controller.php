@@ -209,7 +209,7 @@ abstract class Controller extends \yii\web\Controller
      * @param string $default The default URL to redirect them to, if no 'redirect' parameter exists. If this is left
      *                        null, then the current request’s path will be used.
      *
-     * @return void
+     * @return Response
      */
     public function redirectToPostedUrl($object = null, $default = null)
     {
