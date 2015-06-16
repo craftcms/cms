@@ -13,7 +13,6 @@
         "phpunit/phpunit": "4.6.6",
         "lsolesen/pel": "dev-master",
         "mockery/mockery": "0.9.4",
-        "phpmailer/phpmailer": "v5.2.10",
         "danielstjules/stringy": "1.9.0",
         "fxp/composer-asset-plugin": "1.0.0-beta4",
         "creocoder/yii2-nested-sets": "0.9",
