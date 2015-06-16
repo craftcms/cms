@@ -668,15 +668,10 @@ class Request extends \yii\web\Request
         $queryString = $this->getQueryString();
 
         $parts = explode('&', $queryString);
-
-        if (count($parts) == 1) {
-            return '';
-        }
-
-        $pathSubstr = Craft::$app->getConfig()->get('pathParam').'=';
+        $pathAssignment = Craft::$app->getConfig()->get('pathParam').'=';
 
         foreach ($parts as $key => $part) {
-            if (StringHelper::startsWith($part, $pathSubstr)) {
+            if (StringHelper::startsWith($part, $pathAssignment)) {
                 unset($parts[$key]);
                 break;
             }
