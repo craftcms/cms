@@ -90,9 +90,9 @@ var EmailSettingsForm = Garnish.Base.extend(
 
 }, {
 	protocolFields: {
-		smtp:  ['host', 'port', 'smtpKeepAlive', 'smtpAuth', 'smtpAuthCredentials', 'smtpSecureTransportType', 'timeout'],
+		smtp:  ['host', 'port', 'useAuthentication', 'smtpAuthCredentials', 'encryptionMethod', 'timeout'],
 		pop:   ['username', 'password', 'host', 'port', 'timeout'],
-		gmail: ['username', 'password']
+		gmail: ['username', 'password', 'timeout']
 	}
 });
 

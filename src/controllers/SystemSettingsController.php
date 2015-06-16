@@ -9,10 +9,10 @@ namespace craft\app\controllers;
 
 use Craft;
 use craft\app\dates\DateTime;
-use craft\app\enums\EmailerType;
 use craft\app\errors\HttpException;
+use craft\app\helpers\TemplateHelper;
 use craft\app\helpers\UrlHelper;
-use craft\app\models\EmailSettings as EmailSettingsModel;
+use craft\app\models\MailSettings;
 use craft\app\elements\GlobalSet;
 use craft\app\models\Info;
 use craft\app\tools\AssetIndex;
@@ -20,6 +20,7 @@ use craft\app\tools\ClearCaches;
 use craft\app\tools\DbBackup;
 use craft\app\tools\FindAndReplace;
 use craft\app\tools\SearchIndex;
+use craft\app\web\Response;
 use craft\app\web\twig\variables\ToolInfo;
 use craft\app\web\Controller;
 
@@ -159,29 +160,44 @@ class SystemSettingsController extends Controller
     }
 
     /**
+     * Renders the email settings page.
+     *
+     * @param MailSettings|null $settings The posted email settings, if there were any validation errors
+     *
+*@return Response
+     */
+    public function actionEditEmailSettings(MailSettings $settings = null)
+    {
+        if ($settings === null) {
+            $settings = new MailSettings();
+            $settings->setAttributes(Craft::$app->getSystemSettings()->getSettings('email'), false);
+        }
+
+        return $this->renderTemplate('settings/email/_index', [
+            'settings' => $settings
+        ]);
+    }
+
+    /**
      * Saves the email settings.
      *
-     * @return void
+     * @return Response|null
      */
     public function actionSaveEmailSettings()
     {
         $this->requirePostRequest();
 
-        $settings = $this->_getEmailSettingsFromPost();
+        $settings = $this->_createMailSettingsFromPost();
 
-        // If $settings is an instance of EmailSettingsModel, there were validation errors.
-        if (!$settings instanceof EmailSettingsModel) {
-            if (Craft::$app->getSystemSettings()->saveSettings('email',
-                $settings)
-            ) {
-                Craft::$app->getSession()->setNotice(Craft::t('app',
-                    'Email settings saved.'));
-                $this->redirectToPostedUrl();
-            }
+        if (
+            $settings->validate() &&
+            Craft::$app->getSystemSettings()->saveSettings('email', $settings->toArray())
+        ) {
+            Craft::$app->getSession()->setNotice(Craft::t('app', 'Email settings saved.'));
+            return $this->redirectToPostedUrl();
         }
 
-        Craft::$app->getSession()->setError(Craft::t('app',
-            'Couldn’t save email settings.'));
+        Craft::$app->getSession()->setError(Craft::t('app', 'Couldn’t save email settings.'));
 
         // Send the settings back to the template
         Craft::$app->getUrlManager()->setRouteParams([
@@ -199,21 +215,33 @@ class SystemSettingsController extends Controller
         $this->requirePostRequest();
         $this->requireAjaxRequest();
 
-        $settings = $this->_getEmailSettingsFromPost();
+        $settings = $this->_createMailSettingsFromPost();
 
-        // If $settings is an instance of EmailSettingsModel, there were validation errors.
-        if (!$settings instanceof EmailSettingsModel) {
-            try {
-                if (Craft::$app->getEmail()->sendTestEmail($settings)) {
-                    $this->returnJson(['success' => true]);
+        if ($settings->validate()) {
+            $mailer = $settings->createMailer();
+
+            $includedSettings = [];
+
+            foreach ($settings->attributes() as $name) {
+                if (!empty($settings->$name)) {
+                    $includedSettings[] = '<strong>'.$settings->getAttributeLabel($name).':</strong> '.$settings->$name;
                 }
-            } catch (\Exception $e) {
-                Craft::error($e->getMessage(), __METHOD__);
             }
-        }
 
-        $this->returnErrorJson(Craft::t('app',
-            'There was an error testing your email settings.'));
+            $settingsHtml = implode('<br/>', $includedSettings);
+
+            $message = $mailer
+                ->composeFromKey('test_email', ['settings' => TemplateHelper::getRaw($settingsHtml)])
+                ->setTo(Craft::$app->getUser()->getIdentity());
+
+            if ($message->send()) {
+                return $this->asJson(['success' => true]);
+            } else {
+                return $this->asErrorJson(Craft::t('app', 'There was an error testing your email settings.'));
+            }
+        } else {
+            return $this->asErrorJson(Craft::t('app', 'Your email settings are invalid.'));
+        }
     }
 
     /**
@@ -283,89 +311,35 @@ class SystemSettingsController extends Controller
     // =========================================================================
 
     /**
-     * Returns the email settings from the post data.
+     * Creates a MailSettings model, populated with post data.
      *
-     * @return array
+     * @return MailSettings
      */
-    private function _getEmailSettingsFromPost()
+    private function _createMailSettingsFromPost()
     {
-        $emailSettings = new EmailSettingsModel();
-        $gMailSmtp = 'smtp.gmail.com';
+        $request = Craft::$app->getRequest();
+        $settings = new MailSettings();
 
-        $emailSettings->protocol = Craft::$app->getRequest()->getBodyParam('protocol');
-        $emailSettings->host = Craft::$app->getRequest()->getBodyParam('host');
-        $emailSettings->port = Craft::$app->getRequest()->getBodyParam('port');
-        $emailSettings->smtpAuth = (bool)Craft::$app->getRequest()->getBodyParam('smtpAuth');
+        $settings->protocol = $request->getBodyParam('protocol');
+        $settings->host = $request->getBodyParam('host');
+        $settings->port = $request->getBodyParam('port');
+        $settings->useAuthentication = (bool)$request->getBodyParam('useAuthentication');
 
-        if ($emailSettings->smtpAuth && $emailSettings->protocol !== EmailerType::Gmail) {
-            $emailSettings->username = Craft::$app->getRequest()->getBodyParam('smtpUsername');
-            $emailSettings->password = Craft::$app->getRequest()->getBodyParam('smtpPassword');
+        if ($settings->useAuthentication && $settings->protocol !== MailSettings::PROTOCOL_GMAIL) {
+            $settings->username = $request->getBodyParam('smtpUsername');
+            $settings->password = $request->getBodyParam('smtpPassword');
         } else {
-            $emailSettings->username = Craft::$app->getRequest()->getBodyParam('username');
-            $emailSettings->password = Craft::$app->getRequest()->getBodyParam('password');
+            $settings->username = $request->getBodyParam('username');
+            $settings->password = $request->getBodyParam('password');
         }
 
-        $emailSettings->smtpKeepAlive = (bool)Craft::$app->getRequest()->getBodyParam('smtpKeepAlive');
-        $emailSettings->smtpSecureTransportType = Craft::$app->getRequest()->getBodyParam('smtpSecureTransportType');
-        $emailSettings->timeout = Craft::$app->getRequest()->getBodyParam('timeout');
-        $emailSettings->emailAddress = Craft::$app->getRequest()->getBodyParam('emailAddress');
-        $emailSettings->senderName = Craft::$app->getRequest()->getBodyParam('senderName');
+        $settings->encryptionMethod = $request->getBodyParam('encryptionMethod');
+        $settings->timeout = $request->getBodyParam('timeout');
+        $settings->fromEmail = $request->getBodyParam('fromEmail');
+        $settings->fromName = $request->getBodyParam('fromName');
 
         if (Craft::$app->getEdition() >= Craft::Client) {
-            $settings['template'] = Craft::$app->getRequest()->getBodyParam('template');
-            $emailSettings->template = $settings['template'];
-        }
-
-        // Validate user input
-        if (!$emailSettings->validate()) {
-            return $emailSettings;
-        }
-
-        $settings['protocol'] = $emailSettings->protocol;
-        $settings['emailAddress'] = $emailSettings->emailAddress;
-        $settings['senderName'] = $emailSettings->senderName;
-
-        switch ($emailSettings->protocol) {
-            case EmailerType::Smtp: {
-                if ($emailSettings->smtpAuth) {
-                    $settings['smtpAuth'] = 1;
-                    $settings['username'] = $emailSettings->username;
-                    $settings['password'] = $emailSettings->password;
-                }
-
-                $settings['smtpSecureTransportType'] = $emailSettings->smtpSecureTransportType;
-
-                $settings['port'] = $emailSettings->port;
-                $settings['host'] = $emailSettings->host;
-                $settings['timeout'] = $emailSettings->timeout;
-
-                if ($emailSettings->smtpKeepAlive) {
-                    $settings['smtpKeepAlive'] = 1;
-                }
-
-                break;
-            }
-
-            case EmailerType::Pop: {
-                $settings['port'] = $emailSettings->port;
-                $settings['host'] = $emailSettings->host;
-                $settings['username'] = $emailSettings->username;
-                $settings['password'] = $emailSettings->password;
-                $settings['timeout'] = $emailSettings->timeout;
-
-                break;
-            }
-
-            case EmailerType::Gmail: {
-                $settings['host'] = $gMailSmtp;
-                $settings['smtpAuth'] = 1;
-                $settings['smtpSecureTransportType'] = 'ssl';
-                $settings['username'] = $emailSettings->username;
-                $settings['password'] = $emailSettings->password;
-                $settings['port'] = $emailSettings->smtpSecureTransportType == 'tls' ? '587' : '465';
-                $settings['timeout'] = $emailSettings->timeout;
-                break;
-            }
+            $settings->template = $request->getBodyParam('template');
         }
 
         return $settings;

@@ -23,7 +23,9 @@ use craft\app\helpers\StringHelper;
 use craft\app\helpers\UrlHelper;
 use craft\app\i18n\Locale;
 use craft\app\log\FileTarget;
+use craft\app\mail\Mailer;
 use craft\app\models\Info;
+use craft\app\models\MailSettings;
 use craft\app\web\Application as WebApplication;
 use yii\base\InvalidConfigException;
 use yii\log\Logger;
@@ -43,7 +45,6 @@ use yii\log\Logger;
  * @property \craft\app\services\Deprecator       $deprecator       The deprecator service
  * @property \craft\app\services\Elements         $elements         The elements service
  * @property \craft\app\services\EmailMessages    $emailMessages    The email messages service
- * @property \craft\app\services\Email            $email            The email service
  * @property \craft\app\services\Entries          $entries          The entries service
  * @property \craft\app\services\EntryRevisions   $entryRevisions   The entry revisions service
  * @property \craft\app\services\Et               $et               The E.T. service
@@ -54,6 +55,7 @@ use yii\log\Logger;
  * @property \craft\app\i18n\I18N                 $i18n             The internationalization (i18n) component
  * @property \craft\app\services\Images           $images           The images service
  * @property \craft\app\i18n\Locale               $locale           The Locale object for the target language
+ * @property \craft\app\mail\Mailer               $mailer           The mailer component
  * @property \craft\app\services\Matrix           $matrix           The matrix service
  * @property \craft\app\db\MigrationManager       $migrator         The application’s migration manager
  * @property \craft\app\services\Path             $path             The path service
@@ -877,17 +879,6 @@ trait ApplicationTrait
     }
 
     /**
-     * Returns the email service.
-     *
-     * @return \craft\app\services\Email The email service
-     */
-    public function getEmail()
-    {
-        /** @var $this \craft\app\web\Application|\craft\app\console\Application */
-        return $this->get('email');
-    }
-
-    /**
      * Returns the entries service.
      *
      * @return \craft\app\services\Entries The entries service
@@ -973,6 +964,17 @@ trait ApplicationTrait
     {
         /** @var $this \craft\app\web\Application|\craft\app\console\Application */
         return $this->get('locale');
+    }
+
+    /**
+     * Returns the email service.
+     *
+     * @return \craft\app\mail\Mailer The mailer component
+     */
+    public function getMailer()
+    {
+        /** @var $this \craft\app\web\Application|\craft\app\console\Application */
+        return $this->get('mailer');
     }
 
     /**
@@ -1215,6 +1217,8 @@ trait ApplicationTrait
                 return $this->_getCacheDefinition();
             case 'db':
                 return $this->_getDbDefinition();
+            case 'mailer':
+                return $this->_getMailerDefinition();
             case 'formatter':
                 return $this->getLocale()->getFormatter();
             case 'locale':
@@ -1361,6 +1365,19 @@ trait ApplicationTrait
         $this->setIsDbConnectionValid(true);
 
         return $db;
+    }
+
+    /**
+     * Returns the definition for the Mailer object that will be available from Craft::$app->getMailer().
+     *
+     * @return Mailer
+     */
+    private function _getMailerDefinition()
+    {
+        /** @var $this \craft\app\web\Application|\craft\app\console\Application */
+        $settings = new MailSettings();
+        $settings->setAttributes($this->getSystemSettings()->getSettings('email'), false);
+        return $settings->createMailer();
     }
 
     /**

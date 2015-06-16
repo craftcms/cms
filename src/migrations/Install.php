@@ -9,9 +9,9 @@ namespace craft\app\migrations;
 
 use Craft;
 use craft\app\elements\User;
-use craft\app\enums\EmailerType;
 use craft\app\db\InstallMigration;
 use craft\app\helpers\StringHelper;
+use craft\app\models\MailSettings;
 use craft\app\models\Info;
 
 /**
@@ -126,9 +126,9 @@ class Install extends InstallMigration
         // Save the default email settings
         echo "    > save the email settings ...";
         Craft::$app->getSystemSettings()->saveSettings('email', [
-            'protocol' => EmailerType::Php,
-            'emailAddress' => $this->email,
-            'senderName' => $this->siteName
+            'protocol' => MailSettings::PROTOCOL_PHP,
+            'fromEmail' => $this->email,
+            'fromName' => $this->siteName
         ]);
         echo " done\n";
     }

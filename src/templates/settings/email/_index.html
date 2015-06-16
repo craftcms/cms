@@ -41,22 +41,22 @@
 			first: true,
 			label: "System Email Address"|t('app'),
 			instructions: "The email address Craft will use when sending email."|t('app'),
-			id: 'emailAddress',
-			name: 'emailAddress',
-			value: settings.emailAddress,
+			id: 'fromEmail',
+			name: 'fromEmail',
+			value: settings.fromEmail,
 			autofocus: true,
 			required: true,
-			errors: (freshSettings ? null : settings.getErrors('emailAddress'))
+			errors: (freshSettings ? null : settings.getErrors('fromEmail'))
 		}) }}
 
 		{{ forms.textField({
 			label: "Sender Name"|t('app'),
 			instructions: "The “From” name Craft will use when sending email."|t('app'),
-			id: 'senderName',
-			name: 'senderName',
-			value: settings.senderName,
+			id: 'fromName',
+			name: 'fromName',
+			value: settings.fromName,
 			required: true,
-			errors: (freshSettings ? null : settings.getErrors('senderName'))
+			errors: (freshSettings ? null : settings.getErrors('fromName'))
 		}) }}
 
 		{% if CraftEdition >= CraftClient %}
@@ -77,7 +77,12 @@
 			instructions: "The protocol Craft will use to send email."|t('app'),
 			id: 'protocol',
 			name: 'protocol',
-			options: { php: "PHP Mail"|t('app'), sendmail: "Sendmail"|t('app'), smtp: "SMTP"|t('app'), pop: "POP"|t('app'), gmail: "Gmail"|t('app') },
+			options: [
+				{ value: 'php', label: "PHP Mail"|t('app') },
+				{ value: 'sendmail', label: "Sendmail"|t('app') },
+				{ value: 'smtp', label: "SMTP"|t('app') },
+				{ value: 'gmail', label: "Gmail"|t('app') }
+			],
 			value: settings.protocol
 		}) }}
 
@@ -125,21 +130,14 @@
 			}) }}
 
 			{{ forms.checkboxField({
-				label: "Use SMTP Keep Alive"|t('app'),
-				id: 'smtpKeepAlive',
-				name: 'smtpKeepAlive',
-				checked: settings.smtpKeepAlive
-			}) }}
-
-			{{ forms.checkboxField({
-				label: "Use SMTP authentication"|t('app'),
-				id: 'smtpAuth',
-				name: 'smtpAuth',
-				checked: settings.smtpAuth,
+				label: "Use authentication"|t('app'),
+				id: 'useAuthentication',
+				name: 'useAuthentication',
+				checked: settings.useAuthentication,
 				toggle: 'smtpAuthCredentials-field'
 			}) }}
 
-			<div id="smtpAuthCredentials-field" class="nested-fields{% if not settings.smtpAuth %} hidden{% endif %}">
+			<div id="smtpAuthCredentials-field" class="nested-fields{% if not settings.useAuthentication %} hidden{% endif %}">
 				{{ forms.textField({
 					label: "Username"|t('app'),
 					id: 'smtp-username',
@@ -158,12 +156,16 @@
 			</div>
 
 			{{ forms.selectField({
-				label: "SMTP Secure Transport Type",
-				id: 'smtpSecureTransportType',
-				name: 'smtpSecureTransportType',
-				options: { none: "None"|t('app'), ssl: "SSL"|t('app'), tls: "TLS"|t('app') },
+				label: "Encryption Method",
+				id: 'encryptionMethod',
+				name: 'encryptionMethod',
+				options: [
+					{ value: '', label: "None"|t('app') },
+					{ value: 'ssl', label: "SSL"|t('app') },
+					{ value: 'tls', label: "TLS"|t('app') }
+				],
 				default: 'none',
-				value: settings.smtpSecureTransportType
+				value: settings.encryptionMethod
 			}) }}
 		</div>
 
