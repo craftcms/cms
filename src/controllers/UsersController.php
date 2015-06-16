@@ -1119,7 +1119,7 @@ class UsersController extends Controller
     /**
      * Sends a new activation email to a user.
      *
-     * @return void
+     * @return Response
      * @throws Exception
      * @throws HttpException
      */
@@ -1149,7 +1149,7 @@ class UsersController extends Controller
         Craft::$app->getUsers()->sendActivationEmail($user);
 
         if (Craft::$app->getRequest()->getIsAjax()) {
-            $this->returnJson(array('success' => true));
+            return $this->asJson(['success' => true]);
         } else {
             Craft::$app->getSession()->setNotice(Craft::t('app',
                 'Activation email sent.'));
