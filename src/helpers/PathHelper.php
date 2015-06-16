@@ -38,7 +38,7 @@ class PathHelper
         foreach ($segs as $seg) {
             if ($seg === '..') {
                 $level--;
-            } elseif ($seg !== '.') {
+            } else if ($seg !== '.') {
                 $level++;
             }
 

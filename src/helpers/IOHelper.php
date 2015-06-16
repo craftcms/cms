@@ -1120,7 +1120,7 @@ class IOHelper
                         Craft::error('Could not copy file from '.$item.' to '.$itemDest.'.',
                             __METHOD__);
                     }
-                } elseif (static::folderExists($item, $suppressErrors)) {
+                } else if (static::folderExists($item, $suppressErrors)) {
                     if (!static::createFolder($itemDest, $suppressErrors)) {
                         Craft::error('Could not create destination folder '.$itemDest,
                             __METHOD__);
@@ -1257,7 +1257,7 @@ class IOHelper
 
                     if (static::fileExists($item, $suppressErrors)) {
                         static::deleteFile($item, $suppressErrors);
-                    } elseif (static::folderExists($item, $suppressErrors)) {
+                    } else if (static::folderExists($item, $suppressErrors)) {
                         static::deleteFolder($item, $suppressErrors);
                     }
                 }
@@ -1920,7 +1920,7 @@ class IOHelper
                 if (static::_filterPassed($contents[$key], $filter)) {
                     if (static::fileExists($contents[$key], $suppressErrors)) {
                         $descendants[] = static::normalizePathSeparators($contents[$key]);
-                    } elseif (static::folderExists($contents[$key],
+                    } else if (static::folderExists($contents[$key],
                         $suppressErrors)
                     ) {
                         $descendants[] = static::normalizePathSeparators($contents[$key]);

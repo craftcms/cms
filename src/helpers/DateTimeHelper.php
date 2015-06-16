@@ -364,7 +364,7 @@ class DateTimeHelper
 
         if (static::isToday($date)) {
             $ret = sprintf('Today, %s', date("g:i a", $date));
-        } elseif (static::wasYesterday($date)) {
+        } else if (static::wasYesterday($date)) {
             $ret = sprintf('Yesterday, %s', date("g:i a", $date));
         } else {
             $ret = date("M jS{$y}, H:i", $date);
@@ -659,24 +659,24 @@ class DateTimeHelper
                 $relativeDate .= $months > 0 ? ($relativeDate ? ', ' : '').$months.' '.($months == 1 ? 'month' : 'months') : '';
                 $relativeDate .= $weeks > 0 ? ($relativeDate ? ', ' : '').$weeks.' '.($weeks == 1 ? 'week' : 'weeks') : '';
                 $relativeDate .= $days > 0 ? ($relativeDate ? ', ' : '').$days.' '.($days == 1 ? 'day' : 'days') : '';
-            } elseif (abs($months) > 0) {
+            } else if (abs($months) > 0) {
                 // months, weeks and days
                 $relativeDate .= ($relativeDate ? ', ' : '').$months.' '.($months == 1 ? 'month' : 'months');
                 $relativeDate .= $weeks > 0 ? ($relativeDate ? ', ' : '').$weeks.' '.($weeks == 1 ? 'week' : 'weeks') : '';
                 $relativeDate .= $days > 0 ? ($relativeDate ? ', ' : '').$days.' '.($days == 1 ? 'day' : 'days') : '';
-            } elseif (abs($weeks) > 0) {
+            } else if (abs($weeks) > 0) {
                 // weeks and days
                 $relativeDate .= ($relativeDate ? ', ' : '').$weeks.' '.($weeks == 1 ? 'week' : 'weeks');
                 $relativeDate .= $days > 0 ? ($relativeDate ? ', ' : '').$days.' '.($days == 1 ? 'day' : 'days') : '';
-            } elseif (abs($days) > 0) {
+            } else if (abs($days) > 0) {
                 // days and hours
                 $relativeDate .= ($relativeDate ? ', ' : '').$days.' '.($days == 1 ? 'day' : 'days');
                 $relativeDate .= $hours > 0 ? ($relativeDate ? ', ' : '').$hours.' '.($hours == 1 ? 'hour' : 'hours') : '';
-            } elseif (abs($hours) > 0) {
+            } else if (abs($hours) > 0) {
                 // hours and minutes
                 $relativeDate .= ($relativeDate ? ', ' : '').$hours.' '.($hours == 1 ? 'hour' : 'hours');
                 $relativeDate .= $minutes > 0 ? ($relativeDate ? ', ' : '').$minutes.' '.($minutes == 1 ? 'minute' : 'minutes') : '';
-            } elseif (abs($minutes) > 0) {
+            } else if (abs($minutes) > 0) {
                 // minutes only
                 $relativeDate .= ($relativeDate ? ', ' : '').$minutes.' '.($minutes == 1 ? 'minute' : 'minutes');
             } else {

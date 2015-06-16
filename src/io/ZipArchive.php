@@ -136,7 +136,7 @@ class ZipArchive implements ZipInterface
                     if (IOHelper::isFolderEmpty($itemToZip)) {
                         $zip->addEmptyDir($relFilePath);
                     }
-                } elseif (IOHelper::fileExists($itemToZip)) {
+                } else if (IOHelper::fileExists($itemToZip)) {
                     // We can't use $zip->addFile() here but it's a terrible, horrible, POS method that's buggy on Windows.
                     $fileContents = IOHelper::getFileContents($itemToZip);
 

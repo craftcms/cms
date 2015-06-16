@@ -442,11 +442,11 @@ class RequirementsChecker
                 $this->iconvMessage = $recommendedMessage;
 
                 return false;
-            } elseif (($c = strlen($r)) < 9000) {
+            } else if (($c = strlen($r)) < 9000) {
                 $this->iconvMessage = $warningMessage;
 
                 return false;
-            } elseif ($c > 9000) {
+            } else if ($c > 9000) {
                 $this->iconvMessage = $warningMessage;
 
                 return false;
