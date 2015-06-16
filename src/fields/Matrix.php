@@ -243,7 +243,7 @@ class Matrix extends Field
             if (is_array($value)) {
                 $prevElement = null;
 
-                foreach ($value as $element) {
+                foreach ($query->all() as $element) {
                     if ($prevElement) {
                         /** @var ElementInterface $prevElement */
                         $prevElement->setNext($element);
