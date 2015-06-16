@@ -299,7 +299,7 @@ class UsersController extends Controller
             if (Craft::$app->getUsers()->changePassword($userToProcess,
                 $forceDifferentPassword)
             ) {
-                if ($userToProcess->status == User::STATUS_PENDING) {
+                if ($userToProcess->getStatus() == User::STATUS_PENDING) {
                     // Activate them
                     Craft::$app->getUsers()->activateUser($userToProcess);
 
@@ -913,7 +913,7 @@ class UsersController extends Controller
             }
 
             // Is this public registration, and is the user going to be activated automatically?
-            if ($thisIsPublicRegistration && $user->status == User::STATUS_ACTIVE) {
+            if ($thisIsPublicRegistration && $user->getStatus() == User::STATUS_ACTIVE) {
                 // Do we need to auto-login?
                 if (Craft::$app->getConfig()->get('autoLoginAfterAccountActivation') === true) {
                     Craft::$app->getUser()->loginByUserId($user->id, false,

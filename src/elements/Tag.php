@@ -163,7 +163,7 @@ class Tag extends Element
     /**
      * @inheritdoc
      */
-    public function isEditable()
+    public function getIsEditable()
     {
         return true;
     }

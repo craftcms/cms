@@ -924,7 +924,7 @@ class User extends Element implements IdentityInterface
     /**
      * @inheritdoc
      */
-    public function isEditable()
+    public function getIsEditable()
     {
         return Craft::$app->getUser()->checkPermission('editUsers');
     }

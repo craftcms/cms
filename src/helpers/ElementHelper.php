@@ -198,7 +198,7 @@ class ElementHelper
      */
     public static function isElementEditable(ElementInterface $element)
     {
-        if ($element->isEditable()) {
+        if ($element->getIsEditable()) {
             if (Craft::$app->isLocalized()) {
                 foreach ($element->getLocales() as $localeId => $localeInfo) {
                     if (is_numeric($localeId) && is_string($localeInfo)) {
@@ -228,7 +228,7 @@ class ElementHelper
     {
         $localeIds = [];
 
-        if ($element->isEditable()) {
+        if ($element->getIsEditable()) {
             if (Craft::$app->isLocalized()) {
                 foreach ($element->getLocales() as $localeId => $localeInfo) {
                     if (is_numeric($localeId) && is_string($localeInfo)) {

@@ -753,7 +753,7 @@ class Entry extends Element
     /**
      * @inheritdoc
      */
-    public function isEditable()
+    public function getIsEditable()
     {
         return (
             Craft::$app->getUser()->checkPermission('publishEntries:'.$this->sectionId) && (

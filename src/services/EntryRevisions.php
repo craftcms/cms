@@ -449,7 +449,7 @@ class EntryRevisions extends Component
         $revisionData = [
             'typeId' => $revision->typeId,
             'authorId' => $revision->authorId,
-            'title' => $revision->title,
+            'title' => $revision->getTitle(),
             'slug' => $revision->slug,
             'postDate' => ($revision->postDate ? $revision->postDate->getTimestamp() : null),
             'expiryDate' => ($revision->expiryDate ? $revision->expiryDate->getTimestamp() : null),

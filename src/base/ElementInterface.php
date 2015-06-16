@@ -521,7 +521,7 @@ interface ElementInterface extends ComponentInterface
     /**
      * Returns an anchor pre-filled with this element’s URL and title.
      *
-     * @return \Twig_Markup
+     * @return \Twig_Markup|null
      */
     public function getLink();
 
@@ -537,12 +537,12 @@ interface ElementInterface extends ComponentInterface
      *
      * @return boolean
      */
-    public function isEditable();
+    public function getIsEditable();
 
     /**
      * Returns the element’s CP edit URL.
      *
-     * @return string|false
+     * @return string|null
      */
     public function getCpEditUrl();
 
@@ -551,7 +551,7 @@ interface ElementInterface extends ComponentInterface
      *
      * @param integer|null $size
      *
-     * @return string|false
+     * @return string|null
      */
     public function getThumbUrl($size = null);
 
@@ -560,7 +560,7 @@ interface ElementInterface extends ComponentInterface
      *
      * @param integer|null $size
      *
-     * @return string|false
+     * @return string|null
      */
     public function getIconUrl($size = null);
 
@@ -688,7 +688,7 @@ interface ElementInterface extends ComponentInterface
      *
      * @return boolean
      */
-    public function hasDescendants();
+    public function getHasDescendants();
 
     /**
      * Returns the total number of descendants that the element has.

@@ -200,8 +200,7 @@ class EntriesController extends BaseEntriesController
         if (!$entry->id) {
             $variables['title'] = Craft::t('app', 'Create a new entry');
         } else {
-            $variables['docTitle'] = Craft::t('app', $entry->title);
-            $variables['title'] = $entry->title;
+            $variables['docTitle'] = $variables['title'] = $entry->getTitle();
 
             if (Craft::$app->getEdition() >= Craft::Client && $entry::className() != Entry::className()) {
                 $variables['docTitle'] .= ' ('.$variables['revisionLabel'].')';
@@ -231,7 +230,7 @@ class EntriesController extends BaseEntriesController
                 /** @var Entry $ancestor */
                 foreach ($entry->getAncestors() as $ancestor) {
                     $variables['crumbs'][] = [
-                        'label' => $ancestor->title,
+                        'label' => $ancestor->getTitle(),
                         'url' => $ancestor->getCpEditUrl()
                     ];
                 }
@@ -447,7 +446,7 @@ class EntriesController extends BaseEntriesController
             if (Craft::$app->getRequest()->getIsAjax()) {
                 $return['success'] = true;
                 $return['id'] = $entry->id;
-                $return['title'] = $entry->title;
+                $return['title'] = $entry->getTitle();
                 $return['cpEditUrl'] = $entry->getCpEditUrl();
 
                 $author = $entry->getAuthor()->getAttributes();
@@ -814,29 +813,20 @@ class EntriesController extends BaseEntriesController
     private function _populateEntryModel(Entry $entry)
     {
         // Set the entry attributes, defaulting to the existing values for whatever is missing from the post data
-        $entry->typeId = Craft::$app->getRequest()->getBodyParam('typeId',
-            $entry->typeId);
-        $entry->slug = Craft::$app->getRequest()->getBodyParam('slug',
-            $entry->slug);
-        $entry->postDate = (($postDate = Craft::$app->getRequest()->getBodyParam('postDate')) ? DateTimeHelper::toDateTime($postDate,
-            Craft::$app->getTimeZone()) : $entry->postDate);
-        $entry->expiryDate = (($expiryDate = Craft::$app->getRequest()->getBodyParam('expiryDate')) ? DateTimeHelper::toDateTime($expiryDate,
-            Craft::$app->getTimeZone()) : null);
-        $entry->enabled = (bool)Craft::$app->getRequest()->getBodyParam('enabled',
-            $entry->enabled);
-        $entry->localeEnabled = (bool)Craft::$app->getRequest()->getBodyParam('localeEnabled',
-            $entry->localeEnabled);
+        $entry->typeId = Craft::$app->getRequest()->getBodyParam('typeId', $entry->typeId);
+        $entry->slug = Craft::$app->getRequest()->getBodyParam('slug', $entry->slug);
+        $entry->postDate = (($postDate = Craft::$app->getRequest()->getBodyParam('postDate')) ? DateTimeHelper::toDateTime($postDate, Craft::$app->getTimeZone()) : $entry->postDate);
+        $entry->expiryDate = (($expiryDate = Craft::$app->getRequest()->getBodyParam('expiryDate')) ? DateTimeHelper::toDateTime($expiryDate, Craft::$app->getTimeZone()) : null);
+        $entry->enabled = (bool)Craft::$app->getRequest()->getBodyParam('enabled', $entry->enabled);
+        $entry->localeEnabled = (bool)Craft::$app->getRequest()->getBodyParam('localeEnabled', $entry->localeEnabled);
 
-        $entry->getContent()->title = Craft::$app->getRequest()->getBodyParam('title',
-            $entry->title);
+        $entry->getContent()->title = Craft::$app->getRequest()->getBodyParam('title', $entry->getTitle());
 
-        $fieldsLocation = Craft::$app->getRequest()->getParam('fieldsLocation',
-            'fields');
+        $fieldsLocation = Craft::$app->getRequest()->getParam('fieldsLocation', 'fields');
         $entry->setContentFromPost($fieldsLocation);
 
         // Author
-        $authorId = Craft::$app->getRequest()->getBodyParam('author',
-            ($entry->authorId ? $entry->authorId : Craft::$app->getUser()->getIdentity()->id));
+        $authorId = Craft::$app->getRequest()->getBodyParam('author', ($entry->authorId ? $entry->authorId : Craft::$app->getUser()->getIdentity()->id));
 
         if (is_array($authorId)) {
             $authorId = isset($authorId[0]) ? $authorId[0] : null;

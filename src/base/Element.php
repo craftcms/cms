@@ -18,6 +18,7 @@ use craft\app\helpers\HtmlHelper;
 use craft\app\helpers\TemplateHelper;
 use craft\app\helpers\UrlHelper;
 use craft\app\models\Content;
+use craft\app\models\FieldLayout;
 use craft\app\web\UploadedFile;
 use Exception;
 use yii\base\ErrorHandler;
@@ -27,7 +28,36 @@ use yii\base\UnknownPropertyException;
 /**
  * Element is the base class for classes representing elements in terms of objects.
  *
- * @property string $title The element’s title.
+ * @property FieldLayout|null                   $fieldLayout         The field layout used by this element
+ * @property string[]                           $locales             The locale IDs this element is available in
+ * @property string|null                        $urlFormat           The URL format used to generate this element’s URL
+ * @property string|null                        $url                 The element’s full URL
+ * @property \Twig_Markup|null                  $link                An anchor pre-filled with this element’s URL and title
+ * @property string|null                        $ref                 The reference string to this element
+ * @property boolean                            $isEditable          Whether the current user can edit the element
+ * @property string|null                        $cpEditUrl           The element’s CP edit URL
+ * @property string|null                        $thumbUrl            The URL to the element’s thumbnail, if there is one
+ * @property string|null                        $iconUrl             The URL to the element’s icon image, if there is one
+ * @property string|null                        $status              The element’s status
+ * @property ElementInterface|self              $next                The next element relative to this one, from a given set of criteria
+ * @property ElementInterface|self              $prev                The previous element relative to this one, from a given set of criteria
+ * @property ElementInterface|self              $parent              The element’s parent
+ * @property integer|null                       $structureId         The ID of the structure that the element is associated with, if any
+ * @property ElementQueryInterface|ElementQuery $ancestors           The element’s ancestors
+ * @property ElementQueryInterface|ElementQuery $descendants         The element’s descendants
+ * @property ElementQueryInterface|ElementQuery $children            The element’s children
+ * @property ElementQueryInterface|ElementQuery $siblings            All of the element’s siblings
+ * @property ElementInterface|self              $prevSibling         The element’s previous sibling
+ * @property ElementInterface|self              $nextSibling         The element’s next sibling
+ * @property boolean                            $hasDescendants      Whether the element has descendants
+ * @property integer                            $totalDescendants    The total number of descendants that the element has
+ * @property string                             $title               The element’s title
+ * @property Content                            $content             The content for the element
+ * @property array                              $contentFromPost     The raw content from the post data, as it was given to [[setContentFromPost]]
+ * @property string|null                        $contentPostLocation The location in POST that the content was pulled from
+ * @property string                             $contentTable        The name of the table this element’s content is stored in
+ * @property string                             $fieldColumnPrefix   The field column prefix this element’s content uses
+ * @property string                             $fieldContext        The field context this element’s content uses
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
@@ -668,9 +698,15 @@ abstract class Element extends Component implements ElementInterface
      */
     public function getLink()
     {
-        $link = '<a href="'.$this->getUrl().'">'.HtmlHelper::encode($this->__toString()).'</a>';
+        $url = $this->getUrl();
 
-        return TemplateHelper::getRaw($link);
+        if ($url !== null) {
+            $link = '<a href="'.$url.'">'.HtmlHelper::encode($this->__toString()).'</a>';
+
+            return TemplateHelper::getRaw($link);
+        } else {
+            return null;
+        }
     }
 
     /**
@@ -683,7 +719,7 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @inheritdoc
      */
-    public function isEditable()
+    public function getIsEditable()
     {
         return false;
     }
@@ -693,7 +729,6 @@ abstract class Element extends Component implements ElementInterface
      */
     public function getCpEditUrl()
     {
-        return false;
     }
 
     /**
@@ -701,7 +736,6 @@ abstract class Element extends Component implements ElementInterface
      */
     public function getThumbUrl($size = null)
     {
-        return false;
     }
 
     /**
@@ -709,7 +743,6 @@ abstract class Element extends Component implements ElementInterface
      */
     public function getIconUrl($size = null)
     {
-        return false;
     }
 
     /**
@@ -917,7 +950,7 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @inheritdoc
      */
-    public function hasDescendants()
+    public function getHasDescendants()
     {
         return ($this->lft && $this->rgt && $this->rgt > $this->lft + 1);
     }
@@ -927,7 +960,7 @@ abstract class Element extends Component implements ElementInterface
      */
     public function getTotalDescendants()
     {
-        if ($this->hasDescendants()) {
+        if ($this->getHasDescendants()) {
             return ($this->rgt - $this->lft - 1) / 2;
         }
 

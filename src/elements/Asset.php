@@ -331,7 +331,7 @@ class Asset extends Element
                     'locale' => $element->locale,
                     'id' => 'title',
                     'name' => 'title',
-                    'value' => $element->title,
+                    'value' => $element->getTitle(),
                     'errors' => $element->getErrors('title'),
                     'required' => true
                 ]
@@ -683,7 +683,7 @@ class Asset extends Element
     /**
      * @inheritdoc
      */
-    public function isEditable()
+    public function getIsEditable()
     {
         return Craft::$app->getUser()->checkPermission(
             'uploadToVolume:'.$this->volumeId
@@ -698,7 +698,7 @@ class Asset extends Element
     public function getImg()
     {
         if ($this->kind == 'image') {
-            $img = '<img src="'.$this->url.'" width="'.$this->getWidth().'" height="'.$this->getHeight().'" alt="'.HtmlHelper::encode($this->title).'" />';
+            $img = '<img src="'.$this->getUrl().'" width="'.$this->getWidth().'" height="'.$this->getHeight().'" alt="'.HtmlHelper::encode($this->getTitle()).'" />';
 
             return TemplateHelper::getRaw($img);
         }

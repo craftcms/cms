@@ -298,8 +298,7 @@ class CategoriesController extends Controller
         if (!$category->id) {
             $variables['title'] = Craft::t('app', 'Create a new category');
         } else {
-            $variables['docTitle'] = Craft::t('app', $category->title);
-            $variables['title'] = Craft::t('app', $category->title);
+            $variables['docTitle'] = $variables['title'] = $category->getTitle();
         }
 
         // Breadcrumbs
@@ -317,7 +316,7 @@ class CategoriesController extends Controller
         /** @var Category $ancestor */
         foreach ($category->getAncestors() as $ancestor) {
             $variables['crumbs'][] = [
-                'label' => $ancestor->title,
+                'label' => $ancestor->getTitle(),
                 'url' => $ancestor->getCpEditUrl()
             ];
         }
@@ -406,13 +405,13 @@ class CategoriesController extends Controller
         if (Craft::$app->getCategories()->saveCategory($category)) {
             if (Craft::$app->getRequest()->getIsAjax()) {
                 $return['success'] = true;
-                $return['title'] = $category->title;
+                $return['title'] = $category->getTitle();
                 $return['cpEditUrl'] = $category->getCpEditUrl();
 
                 return $this->asJson([
                     'success' => true,
                     'id' => $category->id,
-                    'title' => $category->title,
+                    'title' => $category->getTitle(),
                     'status' => $category->getStatus(),
                     'url' => $category->getUrl(),
                     'cpEditUrl' => $category->getCpEditUrl()
@@ -708,16 +707,12 @@ class CategoriesController extends Controller
     private function _populateCategoryModel(Category $category)
     {
         // Set the category attributes, defaulting to the existing values for whatever is missing from the post data
-        $category->slug = Craft::$app->getRequest()->getBodyParam('slug',
-            $category->slug);
-        $category->enabled = (bool)Craft::$app->getRequest()->getBodyParam('enabled',
-            $category->enabled);
+        $category->slug = Craft::$app->getRequest()->getBodyParam('slug', $category->slug);
+        $category->enabled = (bool)Craft::$app->getRequest()->getBodyParam('enabled', $category->enabled);
 
-        $category->getContent()->title = Craft::$app->getRequest()->getBodyParam('title',
-            $category->title);
+        $category->getContent()->title = Craft::$app->getRequest()->getBodyParam('title', $category->getTitle());
 
-        $fieldsLocation = Craft::$app->getRequest()->getParam('fieldsLocation',
-            'fields');
+        $fieldsLocation = Craft::$app->getRequest()->getParam('fieldsLocation', 'fields');
         $category->setContentFromPost($fieldsLocation);
 
         // Parent

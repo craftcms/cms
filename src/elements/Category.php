@@ -442,7 +442,7 @@ class Category extends Element
     /**
      * @inheritdoc
      */
-    public function isEditable()
+    public function getIsEditable()
     {
         return Craft::$app->getUser()->checkPermission('editCategories:'.$this->groupId);
     }
