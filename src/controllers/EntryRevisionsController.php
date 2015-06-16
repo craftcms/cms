@@ -9,6 +9,7 @@ namespace craft\app\controllers;
 
 use Craft;
 use craft\app\errors\Exception;
+use craft\app\helpers\DateTimeHelper;
 use craft\app\models\EntryDraft as EntryDraftModel;
 use craft\app\models\Section;
 
@@ -317,8 +318,8 @@ class EntryRevisionsController extends BaseEntriesController
     {
         $draft->typeId = Craft::$app->getRequest()->getBodyParam('typeId');
         $draft->slug = Craft::$app->getRequest()->getBodyParam('slug');
-        $draft->postDate = Craft::$app->getRequest()->getBodyParam('postDate');
-        $draft->expiryDate = Craft::$app->getRequest()->getBodyParam('expiryDate');
+        $draft->postDate = (($postDate = Craft::$app->getRequest()->getBodyParam('postDate')) ? DateTimeHelper::toDateTime($postDate, Craft::$app->getTimeZone()) : $draft->postDate);
+        $draft->expiryDate = (($expiryDate = Craft::$app->getRequest()->getBodyParam('expiryDate')) ? DateTimeHelper::toDateTime($expiryDate, Craft::$app->getTimeZone()) : $draft->expiryDate);
         $draft->enabled = (bool)Craft::$app->getRequest()->getBodyParam('enabled');
         $draft->getContent()->title = Craft::$app->getRequest()->getBodyParam('title');
 

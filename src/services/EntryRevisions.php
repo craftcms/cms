@@ -12,6 +12,7 @@ use craft\app\db\Query;
 use craft\app\errors\Exception;
 use craft\app\events\DraftEvent;
 use craft\app\events\EntryEvent;
+use craft\app\helpers\ArrayHelper;
 use craft\app\helpers\JsonHelper;
 use craft\app\elements\Entry;
 use craft\app\models\EntryDraft;
@@ -78,13 +79,14 @@ class EntryRevisions extends Component
         $draftRecord = EntryDraftRecord::findOne($draftId);
 
         if ($draftRecord) {
-            $draft = EntryDraft::create($draftRecord);
+            $config = ArrayHelper::toArray($draftRecord, [], false);
+            $config['data'] = JsonHelper::decode($config['data']);
+            $draft = EntryDraft::create($config);
 
             // This is a little hacky, but fixes a bug where entries are getting the wrong URL when a draft is published
             // inside of a structured section since the selected URL Format depends on the entry's level, and there's no
             // reason to store the level along with the other draft data.
-            $entry = Craft::$app->getEntries()->getEntryById($draftRecord->entryId,
-                $draftRecord->locale);
+            $entry = Craft::$app->getEntries()->getEntryById($draftRecord->entryId, $draftRecord->locale);
 
             $draft->root = $entry->root;
             $draft->lft = $entry->lft;
@@ -300,7 +302,9 @@ class EntryRevisions extends Component
         $versionRecord = EntryVersionRecord::findOne($versionId);
 
         if ($versionRecord) {
-            return EntryVersion::create($versionRecord);
+            $config = ArrayHelper::toArray($versionRecord, [], false);
+            $config['data'] = JsonHelper::decode($config['data']);
+            return EntryVersion::create($config);
         }
     }
 
