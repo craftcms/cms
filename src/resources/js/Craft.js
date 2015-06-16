@@ -1,4 +1,4 @@
-/*! Craft 3.0.0 - 2015-06-09 */
+/*! Craft 3.0.0 - 2015-06-16 */
 (function($){
 
 if (typeof window.Craft == 'undefined')
@@ -11038,7 +11038,8 @@ Craft.FieldToggle = Garnish.Base.extend(
 		}
 		else
 		{
-			return Garnish.getInputPostVal(this.$toggle).replace(/[\[\]\\]+/g, '-');
+			var postVal = Garnish.getInputPostVal(this.$toggle);
+			return postVal === null ? null : postVal.replace(/[\[\]\\]+/g, '-');
 		}
 	},
 
