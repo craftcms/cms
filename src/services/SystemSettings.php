@@ -8,6 +8,7 @@
 namespace craft\app\services;
 
 use craft\app\dates\DateTime;
+use craft\app\helpers\JsonHelper;
 use craft\app\records\SystemSettings as SystemSettingsRecord;
 use yii\base\Component;
 
@@ -48,8 +49,8 @@ class SystemSettings extends Component
     {
         $record = $this->_getSettingsRecord($category);
 
-        if ($record && is_array($record->settings)) {
-            $settings = $record->settings;
+        if ($record !== null) {
+            $settings = JsonHelper::decode($record->settings);
         } else {
             $settings = [];
         }
@@ -75,7 +76,7 @@ class SystemSettings extends Component
 
         $record = $this->_getSettingsRecord($category);
 
-        if ($record) {
+        if ($record !== null) {
             return $record->dateUpdated;
         } else {
             return null;
@@ -111,7 +112,7 @@ class SystemSettings extends Component
     {
         $record = $this->_getSettingsRecord($category);
 
-        if (!$record) {
+        if ($record === null) {
             // If there are no new settings, we're already done
             if (!$settings) {
                 return true;
@@ -143,7 +144,7 @@ class SystemSettings extends Component
      *
      * @param string $category
      *
-     * @return mixed The SystemSettings record or false
+     * @return SystemSettingsRecord|null The SystemSettings record or null
      */
     private function _getSettingsRecord($category)
     {
@@ -159,6 +160,10 @@ class SystemSettings extends Component
             }
         }
 
-        return $this->_settingsRecords[$category];
+        if ($this->_settingsRecords[$category] !== false) {
+            return $this->_settingsRecords[$category];
+        } else {
+            return null;
+        }
     }
 }
