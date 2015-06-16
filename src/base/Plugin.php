@@ -35,7 +35,7 @@ class Plugin extends Module implements PluginInterface
     /**
      * @event Event The event that is triggered before the plugin is installed
      *
-     * You may set [[Event::performAction]] to `false` to prevent the plugin from getting installed.
+     * You may set [[Event::isValid]] to `false` to prevent the plugin from getting installed.
      */
     const EVENT_BEFORE_INSTALL = 'beforeInstall';
 
@@ -47,7 +47,7 @@ class Plugin extends Module implements PluginInterface
     /**
      * @event Event The event that is triggered before the plugin is updated
      *
-     * You may set [[Event::performAction]] to `false` to prevent the plugin from getting updated.
+     * You may set [[Event::isValid]] to `false` to prevent the plugin from getting updated.
      */
     const EVENT_BEFORE_UPDATE = 'beforeUpdate';
 
@@ -59,7 +59,7 @@ class Plugin extends Module implements PluginInterface
     /**
      * @event Event The event that is triggered before the plugin is uninstalled
      *
-     * You may set [[Event::performAction]] to `false` to prevent the plugin from getting uninstalled.
+     * You may set [[Event::isValid]] to `false` to prevent the plugin from getting uninstalled.
      */
     const EVENT_BEFORE_UNINSTALL = 'beforeUninstall';
 
@@ -318,7 +318,7 @@ class Plugin extends Module implements PluginInterface
         $event = new Event();
         $this->trigger(static::EVENT_BEFORE_INSTALL, $event);
 
-        return $event->performAction;
+        return $event->isValid;
     }
 
     /**
@@ -339,7 +339,7 @@ class Plugin extends Module implements PluginInterface
         $event = new Event();
         $this->trigger(static::EVENT_BEFORE_UPDATE, $event);
 
-        return $event->performAction;
+        return $event->isValid;
     }
 
     /**
@@ -360,7 +360,7 @@ class Plugin extends Module implements PluginInterface
         $event = new Event();
         $this->trigger(static::EVENT_BEFORE_UNINSTALL, $event);
 
-        return $event->performAction;
+        return $event->isValid;
     }
 
     /**

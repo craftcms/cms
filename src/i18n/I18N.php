@@ -28,7 +28,7 @@ class I18N extends \yii\i18n\I18N
     /**
      * @event DeleteLocaleEvent The event that is triggered before a locale is deleted.
      *
-     * You may set [[DeleteLocaleEvent::performAction]] to `false` to prevent the locale from getting deleted.
+     * You may set [[DeleteLocaleEvent::isValid]] to `false` to prevent the locale from getting deleted.
      */
     const EVENT_BEFORE_DELETE_LOCALE = 'beforeDeleteLocale';
 
@@ -449,7 +449,7 @@ class I18N extends \yii\i18n\I18N
             $this->trigger(static::EVENT_BEFORE_DELETE_LOCALE, $event);
 
             // Is the event is giving us the go-ahead?
-            if ($event->performAction) {
+            if ($event->isValid) {
                 // Get the section IDs that are enabled for this locale
                 $sectionIds = (new Query())
                     ->select('sectionId')

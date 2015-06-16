@@ -31,7 +31,7 @@ class Globals extends Component
     /**
      * @event GlobalSetEvent The event that is triggered before a global set's content is saved.
      *
-     * You may set [[GlobalSetEvent::performAction]] to `false` to prevent the global set's content from getting saved.
+     * You may set [[GlobalSetEvent::isValid]] to `false` to prevent the global set's content from getting saved.
      */
     const EVENT_BEFORE_SAVE_GLOBAL_CONTENT = 'beforeSaveGlobalContent';
 
@@ -379,7 +379,7 @@ class Globals extends Component
             $this->trigger(static::EVENT_BEFORE_SAVE_GLOBAL_CONTENT, $event);
 
             // Is the event giving us the go-ahead?
-            if ($event->performAction) {
+            if ($event->isValid) {
                 $success = Craft::$app->getElements()->saveElement($globalSet);
 
                 // If it didn't work, rollback the transaction in case something changed in onBeforeSaveGlobalContent

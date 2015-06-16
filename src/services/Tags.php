@@ -33,7 +33,7 @@ class Tags extends Component
     /**
      * @event TagEvent The event that is triggered before a tag is saved.
      *
-     * You may set [[TagEvent::performAction]] to `false` to prevent the tag from getting saved.
+     * You may set [[TagEvent::isValid]] to `false` to prevent the tag from getting saved.
      */
     const EVENT_BEFORE_SAVE_TAG = 'beforeSaveTag';
 
@@ -367,7 +367,7 @@ class Tags extends Component
             $this->trigger(static::EVENT_BEFORE_SAVE_TAG, $event);
 
             // Is the event giving us the go-ahead?
-            if ($event->performAction) {
+            if ($event->isValid) {
                 $success = Craft::$app->getElements()->saveElement($tag, false);
 
                 // If it didn't work, rollback the transaction in case something changed in onBeforeSaveTag

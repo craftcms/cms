@@ -31,7 +31,7 @@ class UserGroups extends Component
     /**
      * @event UserEvent The event that is triggered before a user is assigned to the default user group.
      *
-     * You may set [[UserEvent::performAction]] to `false` to prevent the user from getting assigned to the default
+     * You may set [[UserEvent::isValid]] to `false` to prevent the user from getting assigned to the default
      * user group.
      */
     const EVENT_BEFORE_ASSIGN_USER_TO_DEFAULT_GROUP = 'beforeAssignUserToDefaultGroup';

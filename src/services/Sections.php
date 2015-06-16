@@ -41,7 +41,7 @@ class Sections extends Component
     /**
      * @event SectionEvent The event that is triggered before a section is saved.
      *
-     * You may set [[SectionEvent::performAction]] to `false` to prevent the section from getting saved.
+     * You may set [[SectionEvent::isValid]] to `false` to prevent the section from getting saved.
      */
     const EVENT_BEFORE_SAVE_SECTION = 'beforeSaveSection';
 
@@ -53,7 +53,7 @@ class Sections extends Component
     /**
      * @event SectionEvent The event that is triggered before a section is deleted.
      *
-     * You may set [[SectionEvent::performAction]] to `false` to prevent the section from getting deleted.
+     * You may set [[SectionEvent::isValid]] to `false` to prevent the section from getting deleted.
      */
     const EVENT_BEFORE_DELETE_SECTION = 'beforeDeleteSection';
 
@@ -65,7 +65,7 @@ class Sections extends Component
     /**
      * @event EntryTypeEvent The event that is triggered before an entry type is saved.
      *
-     * You may set [[EntryTypeEvent::performAction]] to `false` to prevent the entry type from getting saved.
+     * You may set [[EntryTypeEvent::isValid]] to `false` to prevent the entry type from getting saved.
      */
     const EVENT_BEFORE_SAVE_ENTRY_TYPE = 'beforeSaveEntryType';
 
@@ -487,7 +487,7 @@ class Sections extends Component
                 $this->trigger(static::EVENT_BEFORE_SAVE_SECTION, $event);
 
                 // Is the event giving us the go-ahead?
-                if ($event->performAction) {
+                if ($event->isValid) {
                     // Do we need to create a structure?
                     if ($section->type == Section::TYPE_STRUCTURE) {
                         if (!$isNewSection && $oldSection->type == Section::TYPE_STRUCTURE) {
@@ -805,7 +805,7 @@ class Sections extends Component
         $this->trigger(static::EVENT_BEFORE_DELETE_SECTION, $event);
 
         // Make sure the event is giving us the go ahead
-        if (!$event->performAction) {
+        if (!$event->isValid) {
             return false;
         }
 
@@ -1001,7 +1001,7 @@ class Sections extends Component
                 $this->trigger(static::EVENT_BEFORE_SAVE_ENTRY_TYPE, $event);
 
                 // Is the event giving us the go-ahead?
-                if ($event->performAction) {
+                if ($event->isValid) {
                     if (!$isNewEntryType && $oldEntryType->fieldLayoutId) {
                         // Drop the old field layout
                         Craft::$app->getFields()->deleteLayoutById($oldEntryType->fieldLayoutId);

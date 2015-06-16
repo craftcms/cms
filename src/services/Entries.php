@@ -32,7 +32,7 @@ class Entries extends Component
     /**
      * @event EntryEvent The event that is triggered before an entry is saved.
      *
-     * You may set [[EntryEvent::performAction]] to `false` to prevent the entry from getting saved.
+     * You may set [[EntryEvent::isValid]] to `false` to prevent the entry from getting saved.
      */
     const EVENT_BEFORE_SAVE_ENTRY = 'beforeSaveEntry';
 
@@ -200,7 +200,7 @@ class Entries extends Component
             $this->trigger(static::EVENT_BEFORE_SAVE_ENTRY, $event);
 
             // Is the event giving us the go-ahead?
-            if ($event->performAction) {
+            if ($event->isValid) {
                 // Save the element
                 $success = Craft::$app->getElements()->saveElement($entry);
 
@@ -319,7 +319,7 @@ class Entries extends Component
 
                 $this->trigger(static::EVENT_BEFORE_DELETE_ENTRY, $event);
 
-                if ($event->performAction) {
+                if ($event->isValid) {
                     $section = $entry->getSection();
 
                     if ($section->type == Section::TYPE_STRUCTURE) {

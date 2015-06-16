@@ -37,7 +37,7 @@ class Categories extends Component
     /**
      * @event CategoryEvent The event that is triggered before a category is saved.
      *
-     * You may set [[CategoryEvent::performAction]] to `false` to prevent the category from getting saved.
+     * You may set [[CategoryEvent::isValid]] to `false` to prevent the category from getting saved.
      */
     const EVENT_BEFORE_SAVE_CATEGORY = 'beforeSaveCategory';
 
@@ -553,7 +553,7 @@ class Categories extends Component
         $this->trigger(static::EVENT_BEFORE_DELETE_GROUP, $event);
 
         // Make sure the event is giving us the go ahead
-        if (!$event->performAction) {
+        if (!$event->isValid) {
             return false;
         }
 
@@ -711,7 +711,7 @@ class Categories extends Component
             $this->trigger(static::EVENT_BEFORE_SAVE_CATEGORY, $event);
 
             // Is the event giving us the go-ahead?
-            if ($event->performAction) {
+            if ($event->isValid) {
                 $success = Craft::$app->getElements()->saveElement($category);
 
                 // If it didn't work, rollback the transaction in case something changed in onBeforeSaveCategory

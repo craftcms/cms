@@ -58,7 +58,7 @@ class Assets extends Component
     /**
      * @event AssetEvent The event that is triggered before an asset is uploaded.
      *
-     * You may set [[AssetEvent::performAction]] to `false` to prevent the asset from getting saved.
+     * You may set [[AssetEvent::isValid]] to `false` to prevent the asset from getting saved.
      */
     const EVENT_BEFORE_UPLOAD_ASSET = 'beforeUploadAsset';
 
@@ -377,7 +377,7 @@ class Assets extends Component
         $this->trigger(static::EVENT_BEFORE_REPLACE_FILE, $event);
 
         // Is the event preventing this from happening?
-        if (!$event->performAction) {
+        if (!$event->isValid) {
             throw new EventException(Craft::t('app',
                 'Something prevented the Asset file from being replaced.'));
         }
@@ -475,7 +475,7 @@ class Assets extends Component
                 ));
                 $this->trigger(static::EVENT_BEFORE_DELETE_ASSET, $event);
 
-                if ($event->performAction) {
+                if ($event->isValid) {
                     if ($deleteFile) {
                         $volume->deleteFile($file->getUri());
                     }
@@ -1404,7 +1404,7 @@ class Assets extends Component
             $this->trigger(static::EVENT_BEFORE_SAVE_ASSET, $event);
 
             // Is the event giving us the go-ahead?
-            if ($event->performAction) {
+            if ($event->isValid) {
                 // Save the element
                 $success = Craft::$app->getElements()->saveElement($asset,
                     false);

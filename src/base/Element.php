@@ -50,7 +50,7 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @event Event The event that is triggered before the element is saved
      *
-     * You may set [[Event::performAction]] to `false` to prevent the element from getting saved.
+     * You may set [[Event::isValid]] to `false` to prevent the element from getting saved.
      */
     const EVENT_BEFORE_SAVE = 'beforeSave';
 
@@ -1212,7 +1212,7 @@ abstract class Element extends Component implements ElementInterface
         $event = new Event();
         $this->trigger(self::EVENT_BEFORE_SAVE, $event);
 
-        return $event->performAction;
+        return $event->isValid;
     }
 
     /**

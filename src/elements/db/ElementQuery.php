@@ -1113,7 +1113,7 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
         $event = new Event();
         $this->trigger(self::EVENT_BEFORE_PREPARE, $event);
 
-        return $event->performAction;
+        return $event->isValid;
     }
 
     /**
@@ -1131,7 +1131,7 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
         $event = new Event();
         $this->trigger(self::EVENT_AFTER_PREPARE, $event);
 
-        return $event->performAction;
+        return $event->isValid;
     }
 
     /**

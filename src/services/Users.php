@@ -43,7 +43,7 @@ class Users extends Component
     /**
      * @event UserEvent The event that is triggered before a user is saved.
      *
-     * You may set [[UserEvent::performAction]] to `false` to prevent the user from getting saved.
+     * You may set [[UserEvent::isValid]] to `false` to prevent the user from getting saved.
      */
     const EVENT_BEFORE_SAVE_USER = 'beforeSaveUser';
 
@@ -65,7 +65,7 @@ class Users extends Component
     /**
      * @event UserEvent The event that is triggered before a user is activated.
      *
-     * You may set [[UserEvent::performAction]] to `false` to prevent the user from getting activated.
+     * You may set [[UserEvent::isValid]] to `false` to prevent the user from getting activated.
      */
     const EVENT_BEFORE_ACTIVATE_USER = 'beforeActivateUser';
 
@@ -77,7 +77,7 @@ class Users extends Component
     /**
      * @event UserEvent The event that is triggered before a user is unlocked.
      *
-     * You may set [[UserEvent::performAction]] to `false` to prevent the user from getting unlocked.
+     * You may set [[UserEvent::isValid]] to `false` to prevent the user from getting unlocked.
      */
     const EVENT_BEFORE_UNLOCK_USER = 'beforeUnlockUser';
 
@@ -89,7 +89,7 @@ class Users extends Component
     /**
      * @event UserEvent The event that is triggered before a user is suspended.
      *
-     * You may set [[UserEvent::performAction]] to `false` to prevent the user from getting suspended.
+     * You may set [[UserEvent::isValid]] to `false` to prevent the user from getting suspended.
      */
     const EVENT_BEFORE_SUSPEND_USER = 'beforeSuspendUser';
 
@@ -101,7 +101,7 @@ class Users extends Component
     /**
      * @event UserEvent The event that is triggered before a user is unsuspended.
      *
-     * You may set [[UserEvent::performAction]] to `false` to prevent the user from getting unsuspended.
+     * You may set [[UserEvent::isValid]] to `false` to prevent the user from getting unsuspended.
      */
     const EVENT_BEFORE_UNSUSPEND_USER = 'beforeUnsuspendUser';
 
@@ -113,7 +113,7 @@ class Users extends Component
     /**
      * @event DeleteUserEvent The event that is triggered before a user is deleted.
      *
-     * You may set [[UserEvent::performAction]] to `false` to prevent the user from getting deleted.
+     * You may set [[UserEvent::isValid]] to `false` to prevent the user from getting deleted.
      */
     const EVENT_BEFORE_DELETE_USER = 'beforeDeleteUser';
 
@@ -127,7 +127,7 @@ class Users extends Component
      *
      * The new password will be accessible from [[User::newPassword]].
      *
-     * You may set [[UserEvent::performAction]] to `false` to prevent the user's password from getting set.
+     * You may set [[UserEvent::isValid]] to `false` to prevent the user's password from getting set.
      */
     const EVENT_BEFORE_SET_PASSWORD = 'beforeSetPassword';
 
@@ -392,7 +392,7 @@ class Users extends Component
             $this->trigger(static::EVENT_BEFORE_SAVE_USER, $event);
 
             // Is the event is giving us the go-ahead?
-            if ($event->performAction) {
+            if ($event->isValid) {
                 // Save the element
                 $success = Craft::$app->getElements()->saveElement($user,
                     false);
@@ -796,7 +796,7 @@ class Users extends Component
             $this->trigger(static::EVENT_BEFORE_ACTIVATE_USER, $event);
 
             // Is the event is giving us the go-ahead?
-            if ($event->performAction) {
+            if ($event->isValid) {
                 $userRecord = $this->_getUserRecordById($user->id);
 
                 $userRecord->setActive();
@@ -893,7 +893,7 @@ class Users extends Component
             $this->trigger(static::EVENT_BEFORE_UNLOCK_USER, $event);
 
             // Is the event is giving us the go-ahead?
-            if ($event->performAction) {
+            if ($event->isValid) {
                 $userRecord = $this->_getUserRecordById($user->id);
 
                 $userRecord->locked = false;
@@ -953,7 +953,7 @@ class Users extends Component
             $this->trigger(static::EVENT_BEFORE_SUSPEND_USER, $event);
 
             // Is the event is giving us the go-ahead?
-            if ($event->performAction) {
+            if ($event->isValid) {
                 $userRecord = $this->_getUserRecordById($user->id);
 
                 $userRecord->suspended = true;
@@ -1009,7 +1009,7 @@ class Users extends Component
             $this->trigger(static::EVENT_BEFORE_UNSUSPEND_USER, $event);
 
             // Is the event is giving us the go-ahead?
-            if ($event->performAction) {
+            if ($event->isValid) {
                 $userRecord = $this->_getUserRecordById($user->id);
 
                 $userRecord->suspended = false;
@@ -1071,7 +1071,7 @@ class Users extends Component
             $this->trigger(static::EVENT_BEFORE_DELETE_USER, $event);
 
             // Is the event is giving us the go-ahead?
-            if ($event->performAction) {
+            if ($event->isValid) {
                 // Get the entry IDs that belong to this user
                 $entryIds = (new Query())
                     ->select('id')
@@ -1379,7 +1379,7 @@ class Users extends Component
                 $this->trigger(static::EVENT_BEFORE_SET_PASSWORD, $event);
 
                 // Is the event is giving us the go-ahead?
-                $validates = $event->performAction;
+                $validates = $event->isValid;
             }
         }
 

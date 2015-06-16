@@ -38,7 +38,7 @@ abstract class Field extends SavableComponent implements FieldInterface
     /**
      * @event Event The event that is triggered before the field is saved
      *
-     * You may set [[Event::performAction]] to `false` to prevent the field from getting saved.
+     * You may set [[Event::isValid]] to `false` to prevent the field from getting saved.
      */
     const EVENT_BEFORE_SAVE = 'beforeSave';
 
@@ -50,7 +50,7 @@ abstract class Field extends SavableComponent implements FieldInterface
     /**
      * @event Event The event that is triggered before the field is deleted
      *
-     * You may set [[Event::performAction]] to `false` to prevent the field from getting deleted.
+     * You may set [[Event::isValid]] to `false` to prevent the field from getting deleted.
      */
     const EVENT_BEFORE_DELETE = 'beforeDelete';
 
@@ -144,7 +144,7 @@ abstract class Field extends SavableComponent implements FieldInterface
         $event = new Event();
         $this->trigger(self::EVENT_BEFORE_SAVE, $event);
 
-        return $event->performAction;
+        return $event->isValid;
     }
 
     /**
@@ -165,7 +165,7 @@ abstract class Field extends SavableComponent implements FieldInterface
         $event = new Event();
         $this->trigger(self::EVENT_BEFORE_DELETE, $event);
 
-        return $event->performAction;
+        return $event->isValid;
     }
 
     /**

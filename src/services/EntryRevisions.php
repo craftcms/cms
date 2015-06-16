@@ -49,7 +49,7 @@ class EntryRevisions extends Component
     /**
      * @event DraftEvent The event that is triggered before a draft is deleted.
      *
-     * You may set [[DraftEvent::performAction]] to `false` to prevent the draft from getting deleted.
+     * You may set [[DraftEvent::isValid]] to `false` to prevent the draft from getting deleted.
      */
     const EVENT_BEFORE_DELETE_DRAFT = 'beforeDeleteDraft';
 
@@ -256,7 +256,7 @@ class EntryRevisions extends Component
             $this->trigger(static::EVENT_BEFORE_DELETE_DRAFT, $event);
 
             // Is the event giving us the go-ahead?
-            if ($event->performAction) {
+            if ($event->isValid) {
                 $draftRecord = $this->_getDraftRecord($draft);
                 $draftRecord->delete();
 

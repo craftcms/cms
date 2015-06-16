@@ -32,7 +32,7 @@ class Structures extends Component
     /**
      * @event MoveElementEvent The event that is triggered before an element is moved.
      *
-     * You may set [[MoveElementEvent::performAction]] to `false` to prevent the element from getting moved.
+     * You may set [[MoveElementEvent::isValid]] to `false` to prevent the element from getting moved.
      */
     const EVENT_BEFORE_MOVE_ELEMENT = 'beforeMoveElement';
 
@@ -359,7 +359,7 @@ class Structures extends Component
             }
 
             // Was there was no onBeforeMoveElement event, or is the event giving us the go-ahead?
-            if (!isset($event) || $event->performAction) {
+            if (!isset($event) || $event->isValid) {
                 // Really do it
                 $success = $elementRecord->$action($targetElementRecord);
 

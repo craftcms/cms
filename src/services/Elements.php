@@ -69,7 +69,7 @@ class Elements extends Component
     /**
      * @event ElementEvent The event that is triggered before an element is saved.
      *
-     * You may set [[ElementEvent::performAction]] to `false` to prevent the element from getting saved.
+     * You may set [[ElementEvent::isValid]] to `false` to prevent the element from getting saved.
      */
     const EVENT_BEFORE_SAVE_ELEMENT = 'beforeSaveElement';
 
@@ -351,7 +351,7 @@ class Elements extends Component
             $this->trigger(static::EVENT_BEFORE_SAVE_ELEMENT, $event);
 
             // Is the event giving us the go-ahead?
-            if ($event->performAction) {
+            if ($event->isValid) {
                 // Save the element record first
                 $success = $elementRecord->save(false);
 

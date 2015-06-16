@@ -30,7 +30,7 @@ abstract class Widget extends SavableComponent implements WidgetInterface
     /**
      * @event Event The event that is triggered before the widget is saved
      *
-     * You may set [[Event::performAction]] to `false` to prevent the widget from getting saved.
+     * You may set [[Event::isValid]] to `false` to prevent the widget from getting saved.
      */
     const EVENT_BEFORE_SAVE = 'beforeSave';
 
@@ -102,7 +102,7 @@ abstract class Widget extends SavableComponent implements WidgetInterface
         $event = new Event();
         $this->trigger(self::EVENT_BEFORE_SAVE, $event);
 
-        return $event->performAction;
+        return $event->isValid;
     }
 
     /**
