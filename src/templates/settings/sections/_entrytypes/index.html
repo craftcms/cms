@@ -15,8 +15,8 @@
 		</thead>
 		<tbody>
 			{% for entryType in section.getEntryTypes() %}
-				<tr data-id="{{ entryType.id }}" data-name="{{ entryType.name }}">
-					<th scope="row" data-title="{{ 'Name'|t }}"><a href="{{ url('settings/sections/' ~ section.id ~ '/entrytypes/' ~ entryType.id) }}">{{ entryType.name }}</a></th>
+				<tr data-id="{{ entryType.id }}" data-name="{{ entryType.name|t }}">
+					<th scope="row" data-title="{{ 'Name'|t }}"><a href="{{ url('settings/sections/' ~ section.id ~ '/entrytypes/' ~ entryType.id) }}">{{ entryType.name|t }}</a></th>
 					<td data-title="{{ 'Handle'|t }}"><code>{{ entryType.handle }}</code></td>
 					{% if multiple %}
 						<td class="thin"><a class="move icon" title="{{ 'Reorder'|t }}" role="button"></a></td>

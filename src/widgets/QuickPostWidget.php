@@ -103,7 +103,7 @@ class QuickPostWidget extends BaseWidget
 
 			if ($section)
 			{
-				return Craft::t('Post a new {section} entry', array('section' => $section->name));
+				return Craft::t('Post a new {section} entry', array('section' => Craft::t($section->name)));
 			}
 		}
 

@@ -46,7 +46,7 @@
 								<div class="menu">
 									<ul>
 										{% for entryType in section.getEntryTypes() %}
-											<li><a href="{{ entryType.getCpEditUrl() }}">{{ entryType.name }}</a></li>
+											<li><a href="{{ entryType.getCpEditUrl() }}">{{ entryType.name|t }}</a></li>
 										{% endfor %}
 									</ul>
 								</div>

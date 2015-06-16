@@ -215,7 +215,7 @@ class DateTime extends \DateTime
 
 		$dt = static::createFromFormat('!'.$format, $date);
 
-		if ($setToSystemTimeZone)
+		if ($dt !== false && $setToSystemTimeZone)
 		{
 			$dt->setTimezone(new \DateTimeZone(craft()->getTimeZone()));
 		}

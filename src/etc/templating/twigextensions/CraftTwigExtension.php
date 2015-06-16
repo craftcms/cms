@@ -446,7 +446,7 @@ class CraftTwigExtension extends \Twig_Extension
 		$globals['craft'] = $craftVariable;
 		$globals['blx']   = $craftVariable;
 
-		$globals['now'] = DateTimeHelper::currentUTCDateTime();
+		$globals['now'] = new DateTime(null, new \DateTimeZone(craft()->getTimeZone()));
 		$globals['loginUrl'] = UrlHelper::getUrl(craft()->config->getLoginPath());
 		$globals['logoutUrl'] = UrlHelper::getUrl(craft()->config->getLogoutPath());
 

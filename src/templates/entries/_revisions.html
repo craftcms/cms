@@ -15,7 +15,7 @@
 		<ul class="padded">
 			{% for draft in drafts %}
 				<li><a{% if entry.getClassHandle() == 'EntryDraft' and draft.draftId == draftId %} class="sel"{% endif %} href="{{ url(baseUrl~'drafts/'~draft.draftId) }}">
-					{{ draft.name }}
+					{{ draft.name|t }}
 					<span class="light">{{ "by {creator}"|t({ creator: draft.creator }) }}</span>
 				</a></li>
 			{% endfor %}

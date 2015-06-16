@@ -753,7 +753,7 @@ class EntriesController extends BaseEntriesController
 				{
 					$variables['entry'] = craft()->entries->getEntryById($variables['entryId'], $variables['localeId']);
 
-					if (craft()->getEdition() == Craft::Pro)
+					if ($variables['entry'] && craft()->getEdition() == Craft::Pro)
 					{
 						$versions = craft()->entryRevisions->getVersionsByEntryId($variables['entryId'], $variables['localeId'], 1, true);
 

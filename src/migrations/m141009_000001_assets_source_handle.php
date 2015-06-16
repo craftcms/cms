@@ -26,7 +26,8 @@ class m141009_000001_assets_source_handle extends BaseMigration
 		foreach ($sourceRows as $row)
 		{
 			$sourceName = $row['name'];
-			$handle = $this->_makeHandle($sourceName);
+			$sourceId = $row['id'];
+			$handle = $this->_makeHandle($sourceName, $sourceId);
 
 			craft()->db->createCommand()
 				->update('assetsources', array('handle' => $handle), 'id = :sourceId', array(':sourceId' => $row['id']));
@@ -46,14 +47,22 @@ class m141009_000001_assets_source_handle extends BaseMigration
 	 *
 	 * @return string
 	 */
-	private function _makeHandle($name)
+	private function _makeHandle($name, $sourceId)
 	{
 		// Remove HTML tags
 		$handle = preg_replace('/<(.*?)>/', '', $name);
 		$handle = preg_replace('/<[\'"‘’“”\[\]\(\)\{\}:]>/', '', $handle);
 		$handle = StringHelper::toLowerCase($handle);
 		$handle = StringHelper::asciiString($handle);
+
 		$handle = preg_replace('/^[^a-z]+/', '', $handle);
+
+		// In case it was an all non-ASCII handle, have a default.
+		if (!$handle)
+		{
+			$handle = 'source'.$sourceId;
+		}
+
 		$handleParts = preg_split('/[^a-z0-9]+/', $handle);
 
 		$handle = '';

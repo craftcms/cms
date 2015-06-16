@@ -2,7 +2,7 @@
 namespace Craft;
 
 /**
- * Cache twig node.
+ * TwigParser class.
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
@@ -16,9 +16,6 @@ class TwigParser extends \Twig_Parser
 	// Protected Methods
 	// =========================================================================
 
-	/**
-	 * @inheritdoc \Twig_Parser::filterBodyNodes()
-	 */
 	protected function filterBodyNodes(\Twig_NodeInterface $node)
 	{
 		// Bypass "include" nodes as they "capture" the output
