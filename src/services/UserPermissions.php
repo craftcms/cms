@@ -133,7 +133,7 @@ class UserPermissions extends Component
 
         foreach ($sections as $section) {
             $label = Craft::t('app', 'Section - {section}',
-                ['section' => Craft::t('app', 'app', $section->name)]);
+                ['section' => Craft::t('site', $section->name)]);
 
             if ($section->type == Section::TYPE_SINGLE) {
                 $permissions[$label] = $this->_getSingleEntryPermissions($section);
@@ -169,7 +169,7 @@ class UserPermissions extends Component
 
         foreach ($volumes as $volume) {
             $label = Craft::t('app', 'Volume - {volume}',
-                ['volume' => Craft::t('app', $volume->name)]);
+                ['volume' => Craft::t('site', $volume->name)]);
             $permissions[$label] = $this->_getVolumePermissions($volume->id);
         }
 
@@ -377,7 +377,7 @@ class UserPermissions extends Component
         return [
             "editEntries{$suffix}" => [
                 'label' => Craft::t('app', 'Edit “{title}”',
-                    ['title' => Craft::t('app', $section->name)]),
+                    ['title' => Craft::t('site', $section->name)]),
                 'nested' => [
                     "publishEntries{$suffix}" => [
                         'label' => Craft::t('app', 'Publish live changes')
@@ -472,7 +472,7 @@ class UserPermissions extends Component
         foreach ($globalSets as $globalSet) {
             $permissions['editGlobalSet:'.$globalSet->id] = [
                 'label' => Craft::t('app', 'Edit “{title}”',
-                    ['title' => Craft::t('app', $globalSet->name)])
+                    ['title' => Craft::t('site', $globalSet->name)])
             ];
         }
 
@@ -493,7 +493,7 @@ class UserPermissions extends Component
         foreach ($groups as $group) {
             $permissions['editCategories:'.$group->id] = [
                 'label' => Craft::t('app', 'Edit “{title}”',
-                    ['title' => Craft::t('app', $group->name)])
+                    ['title' => Craft::t('site', $group->name)])
             ];
         }
 

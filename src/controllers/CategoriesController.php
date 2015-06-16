@@ -309,7 +309,7 @@ class CategoriesController extends Controller
                 'url' => UrlHelper::getUrl('categories')
             ],
             [
-                'label' => Craft::t('app', $variables['group']->name),
+                'label' => Craft::t('site', $variables['group']->name),
                 'url' => UrlHelper::getUrl('categories/'.$variables['group']->handle)
             ]
         ];
@@ -641,7 +641,7 @@ class CategoriesController extends Controller
             }
 
             $variables['tabs'][] = [
-                'label' => Craft::t('app', $tab->name),
+                'label' => Craft::t('site', $tab->name),
                 'url' => '#tab'.($index + 1),
                 'class' => ($hasErrors ? 'error' : null)
             ];

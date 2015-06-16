@@ -10,6 +10,7 @@ namespace craft\app\helpers;
 use Craft;
 use craft\app\dates\DateInterval;
 use craft\app\dates\DateTime;
+use craft\app\i18n\Locale;
 use yii\helpers\FormatConverter;
 
 /**
@@ -20,6 +21,14 @@ use yii\helpers\FormatConverter;
  */
 class DateTimeHelper
 {
+    // Properties
+    // =========================================================================
+
+    /**
+     * @var array Translation pairs for [[translateDate()]]
+     */
+    private static $_translationPairs;
+
     // Public Methods
     // =========================================================================
 
@@ -219,6 +228,29 @@ class DateTimeHelper
         $date = static::currentUTCDateTime();
 
         return $date->getTimestamp();
+    }
+
+    /**
+     * Translates the words in a formatted date string to the application’s language.
+     *
+     * @param string $str The formatted date string
+     * @param string $language The language code (e.g. `en-US`, `en`). If this is null, the current
+     * [[\yii\base\Application::language|application language]] will be used.
+     *
+     * @return The translated date string
+     */
+    public static function translateDate($str, $language = null)
+    {
+        if ($language === null) {
+            $language = Craft::$app->language;
+        }
+
+        if (strncmp($language, 'en', 2) === 0) {
+            return $str;
+        }
+
+        $translations = self::_getDateTranslations($language);
+        return strtr($str, $translations);
     }
 
     /**
@@ -722,5 +754,46 @@ class DateTimeHelper
         }
 
         return false;
+    }
+
+    // Private Methods
+    // =========================================================================
+
+    /**
+     * Returns translation pairs for [[translateDate()]].
+     *
+     * @param string $language The target language
+     *
+     * @return array The translation pairs
+     */
+    private static function _getDateTranslations($language)
+    {
+        if (!isset(static::$_translationPairs[$language])) {
+            if (strncmp(Craft::$app->language, 'en', 2) === 0) {
+                $sourceLocale = Craft::$app->getLocale();
+            } else {
+                $sourceLocale = Craft::$app->getI18n()->getLocaleById('en-US');
+            }
+
+            $targetLocale = Craft::$app->getI18n()->getLocaleById($language);
+
+            $amName = $targetLocale->getAMName();
+            $pmName = $targetLocale->getPMName();
+
+            static::$_translationPairs[$language] = array_merge(
+                array_combine($sourceLocale->getMonthNames(Locale::FORMAT_FULL), $targetLocale->getMonthNames(Locale::FORMAT_FULL)),
+                array_combine($sourceLocale->getWeekDayNames(Locale::FORMAT_FULL), $targetLocale->getWeekDayNames(Locale::FORMAT_FULL)),
+                array_combine($sourceLocale->getMonthNames(Locale::FORMAT_MEDIUM), $targetLocale->getMonthNames(Locale::FORMAT_MEDIUM)),
+                array_combine($sourceLocale->getWeekDayNames(Locale::FORMAT_MEDIUM), $targetLocale->getWeekDayNames(Locale::FORMAT_MEDIUM)),
+                [
+                    'AM' => $amName,
+                    'PM' => $pmName,
+                    'am' => StringHelper::toLowerCase($amName),
+                    'pm' => StringHelper::toLowerCase($pmName)
+                ]
+            );
+        }
+
+        return static::$_translationPairs[$language];
     }
 }

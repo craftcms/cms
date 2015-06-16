@@ -76,33 +76,6 @@ class Craft extends Yii
     }
 
     /**
-     * Translates a given message into the specified language. If the config setting 'translationDebugOutput' is set,
-     * the the output will be wrapped in a pair of '@' to help diagnose any missing translations.
-     *
-     * @param string      $category The message category. Please use only word letters. Note, category 'craft' is
-     *                              reserved for Craft and 'yii' is reserved for the Yii framework.
-     * @param string      $message  The original source message.
-     * @param array       $params   An associative array of key => value pairs to be applied to the message using `strtr`.
-     * @param string|null $language The target language. If set to null (default), Craft::$app->language will be used.
-     *
-     * @return string|null The translated message, or null if the source key could not be found.
-     */
-    public static function t($category, $message, $params = [], $language = null)
-    {
-        if (!$category) {
-            $category = 'application';
-        }
-
-        $translation = parent::t($category, $message, $params, $language);
-
-        if (Craft::$app->getConfig()->get('translationDebugOutput')) {
-            $translation = '@'.$translation.'@';
-        }
-
-        return $translation;
-    }
-
-    /**
      * Generates and returns a cookie config.
      *
      * @param array|null $config  Any config options that should be included in the config.

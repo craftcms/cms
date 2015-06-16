@@ -1,11 +1,11 @@
 {% extends "_layouts/message" %}
-{% set title = "Can’t run Craft"|t %}
+{% set title = "Can’t run Craft"|t('app') %}
 
 {% block message %}
 	<h2>{{ title }} :(</h2>
 
 	{% if reqCheck.result['summary']['errors'] > 0 %}
-		<p>{{ "Your server doesn’t meet the following requirements to run Craft:"|t }}</p>
+		<p>{{ "Your server doesn’t meet the following requirements to run Craft:"|t('app') }}</p>
 
 		<ul class="bullets">
 			{% set results = reqCheck.getResult() %}
@@ -16,6 +16,6 @@
 			{% endfor %}
 		</ul>
 
-		<p>{{ "Please talk to your host/IT department about upgrading your server."|t }}</p>
+		<p>{{ "Please talk to your host/IT department about upgrading your server."|t('app') }}</p>
 	{% endif %}
 {% endblock %}

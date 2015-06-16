@@ -14,11 +14,11 @@
 						{% include "_elements/element" %}
 
 						{% if sortable %}
-							<a class="move icon" title="{{ 'Move'|t }}"></a>
+							<a class="move icon" title="{{ 'Move'|t('app') }}"></a>
 						{% endif %}
 
 						{% if newChildUrl %}
-							<a class="add icon" title="{{ 'New Child'|t }}"></a>
+							<a class="add icon" title="{{ 'New Child'|t('app') }}"></a>
 						{% endif %}
 					{% endblock %}
 				{% endspaceless -%}

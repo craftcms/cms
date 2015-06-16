@@ -1,8 +1,8 @@
 {% extends "_layouts/cp" %}
-{% set title = "Tag Groups"|t %}
+{% set title = "Tag Groups"|t('app') %}
 
 {% set crumbs = [
-	{ label: "Settings"|t, url: url('settings') }
+	{ label: "Settings"|t('app'), url: url('settings') }
 ] %}
 
 {% set docsUrl = 'http://buildwithcraft.com/docs/tags' %}
@@ -10,22 +10,22 @@
 
 {% set content %}
 	<div id="notaggroups"{% if tagGroups|length %} class="hidden"{% endif %}>
-		<p>{{ "No tag groups exist yet."|t }}</p>
+		<p>{{ "No tag groups exist yet."|t('app') }}</p>
 	</div>
 
 	{% if tagGroups|length %}
 		<table id="taggroups" class="data fullwidth collapsible">
 			<thead>
-				<th scope="col">{{ "Name"|t }}</th>
-				<th scope="col">{{ "Handle"|t }}</th>
+				<th scope="col">{{ "Name"|t('app') }}</th>
+				<th scope="col">{{ "Handle"|t('app') }}</th>
 				<td class="thin"></td>
 			</thead>
 			<tbody>
 				{% for tagGroup in tagGroups %}
-					<tr data-id="{{ tagGroup.id }}" data-name="{{ tagGroup.name|t }}">
-						<th scope="row" data-title="{{ 'Name'|t }}"><a href="{{ url('settings/tags/' ~ tagGroup.id) }}">{{ tagGroup.name|t }}</a></th>
-						<td data-title="{{ 'Handle'|t }}"><code>{{ tagGroup.handle }}</code></td>
-						<td class="thin"><a class="delete icon" title="{{ 'Delete'|t }}" role="button"></a></td>
+					<tr data-id="{{ tagGroup.id }}" data-name="{{ tagGroup.name|t('site') }}">
+						<th scope="row" data-title="{{ 'Name'|t('app') }}"><a href="{{ url('settings/tags/' ~ tagGroup.id) }}">{{ tagGroup.name|t('site') }}</a></th>
+						<td data-title="{{ 'Handle'|t('app') }}"><code>{{ tagGroup.handle }}</code></td>
+						<td class="thin"><a class="delete icon" title="{{ 'Delete'|t('app') }}" role="button"></a></td>
 					</tr>
 				{% endfor %}
 			</tbody>
@@ -33,7 +33,7 @@
 	{% endif %}
 
 	<div class="buttons">
-		<a href="{{ url('settings/tags/new') }}" class="btn submit add icon">{{ "New Tag Group"|t }}</a>
+		<a href="{{ url('settings/tags/new') }}" class="btn submit add icon">{{ "New Tag Group"|t('app') }}</a>
 	</div>
 {% endset %}
 
@@ -43,6 +43,6 @@
 		tableSelector: '#taggroups',
 		noItemsSelector: '#notaggroups',
 		deleteAction: 'tags/delete-tag-group',
-		confirmDeleteMessage: '{{ "Are you sure you want to delete “{name}” and all its tags?"|t }}',
+		confirmDeleteMessage: '{{ "Are you sure you want to delete “{name}” and all its tags?"|t('app') }}',
 	});
 {% endregisterjs %}

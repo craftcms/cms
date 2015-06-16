@@ -189,7 +189,7 @@ class FieldsController extends Controller
                 'url' => UrlHelper::getUrl('settings/fields')
             ],
             [
-                'label' => $fieldGroup->name,
+                'label' => Craft::t('site', $fieldGroup->name),
                 'url' => UrlHelper::getUrl('settings/fields/'.$groupId)
             ],
         ];

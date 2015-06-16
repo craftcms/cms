@@ -1,9 +1,9 @@
 {% extends "_layouts/cp" %}
-{% set title = "Dashboard"|t %}
+{% set title = "Dashboard"|t('app') %}
 
 
 {% set extraPageHeaderHtml %}
-	<a class="btn settings icon" href="{{ url('dashboard/settings') }}" title="{{ 'Settings'|t }}"></a>
+	<a class="btn settings icon" href="{{ url('dashboard/settings') }}" title="{{ 'Settings'|t('app') }}"></a>
 {% endset %}
 
 

@@ -146,7 +146,8 @@ class UsersController extends Controller
      */
     public function actionLogout()
     {
-        Craft::$app->getUser()->logout();
+        // Passing false here for reasons.
+        Craft::$app->getUser()->logout(false);
 
         if (Craft::$app->getRequest()->getIsAjax()) {
             return $this->asJson([
@@ -1494,7 +1495,7 @@ class UsersController extends Controller
 
         // If the user doesn't have CP access, see if a custom Set Password template exists
         if (!$user->can('accessCp')) {
-            $pathService->setTemplatesPath($pathServices->getSiteTemplatesPath());
+            $pathService->setTemplatesPath($pathService->getSiteTemplatesPath());
             $templatePath = $configService->getLocalized('setPasswordPath');
 
             if (Craft::$app->getView()->doesTemplateExist($templatePath)) {

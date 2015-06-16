@@ -2,7 +2,7 @@
 
 {% if CraftEdition == CraftPro and currentUser.can('editUsers') %}
 	{% set crumbs = [
-		{ label: "Users"|t, url: url('users') }
+		{ label: "Users"|t('app'), url: url('users') }
 	] %}
 {% endif %}
 
@@ -21,18 +21,18 @@
 {% set saveUserButtons %}
 	<div class="buttons">
 		{% if not currentUser.can('registerUsers') or CraftEdition != CraftPro %}
-			<input type="submit" class="btn submit" value="{{ 'Save'|t }}">
+			<input type="submit" class="btn submit" value="{{ 'Save'|t('app') }}">
 		{% else %}
 			<div class="btngroup submit">
-				<input type="submit" class="btn submit" value="{{ 'Save'|t }}">
+				<input type="submit" class="btn submit" value="{{ 'Save'|t('app') }}">
 				<div class="btn submit menubtn"></div>
 				<div class="menu">
 					<ul>
 						<li><a class="formsubmit" data-redirect="{{ isNewAccount ? 'users/{id}' : account.getCpEditUrl() }}">
-							{{ "Save and continue editing"|t }}
+							{{ "Save and continue editing"|t('app') }}
 							{{ forms.optionShortcutLabel('S') }}
 						</a></li>
-						<li><a class="formsubmit" data-redirect="users/new">{{ "Save and add another"|t }}</a></li>
+						<li><a class="formsubmit" data-redirect="users/new">{{ "Save and add another"|t('app') }}</a></li>
 					</ul>
 				</div>
 			</div>
@@ -75,8 +75,8 @@
 					{% if isNewAccount %}
 
 						{{ forms.textField({
-							label: "Email"|t,
-							instructions: (requireEmailVerification and not currentUser.admin ? 'A verification email will be sent automatically.'|t),
+							label: "Email"|t('app'),
+							instructions: (requireEmailVerification and not currentUser.admin ? 'A verification email will be sent automatically.'|t('app')),
 							id: 'email',
 							name: 'email',
 							value: account.email,
@@ -86,7 +86,7 @@
 
 						{% if requireEmailVerification and currentUser.admin %}
 							{{ forms.checkboxField({
-								label: "Send an activation email now?"|t,
+								label: "Send an activation email now?"|t('app'),
 								name: 'sendVerificationEmail',
 								checked: true
 							}) }}
@@ -107,7 +107,7 @@
 										}) }}
 									</td>
 									<td class="thin">
-										<div id="emailLockBtn" class="btn lock" data-icon="secure" title="{{ 'Click to change the email address.'|t }}"></div>
+										<div id="emailLockBtn" class="btn lock" data-icon="secure" title="{{ 'Click to change the email address.'|t('app') }}"></div>
 									</td>
 								</tr>
 							</table>
@@ -116,8 +116,8 @@
 						{% endset %}
 
 						{{ forms.field({
-							label: "Email"|t,
-							instructions: (requireEmailVerification and not currentUser.admin ? 'New email addresses must be verified before taking effect.'|t),
+							label: "Email"|t('app'),
+							instructions: (requireEmailVerification and not currentUser.admin ? 'New email addresses must be verified before taking effect.'|t('app')),
 							id: 'email',
 						}, emailInput) }}
 
@@ -132,7 +132,7 @@
 										}) }}
 									</td>
 									<td class="thin">
-										<div id="newPasswordLockBtn" class="btn lock" data-icon="secure" title="{{ 'Click to set a new password.'|t }}"></div>
+										<div id="newPasswordLockBtn" class="btn lock" data-icon="secure" title="{{ 'Click to set a new password.'|t('app') }}"></div>
 									</td>
 								</tr>
 							</table>
@@ -142,14 +142,14 @@
 
 						{% if account.isCurrent() %}
 							{{ forms.field({
-								label: "New Password"|t,
+								label: "New Password"|t('app'),
 								id: 'newPassword',
 							}, newPasswordInput) }}
 						{% endif %}
 
 						{% if currentUser.admin %}
 							{{ forms.checkboxField({
-								label: "Require a password reset on next login"|t,
+								label: "Require a password reset on next login"|t('app'),
 								name: 'passwordResetRequired',
 								checked: account.passwordResetRequired
 							}) }}
@@ -173,13 +173,13 @@
 
 						{{ forms.field({
 							id: 'preferredLocale',
-							label: "Preferred Locale"|t
+							label: "Preferred Locale"|t('app')
 						}, localeInput) }}
 					{% endif %}
 
 					{% if account.isCurrent() %}
 						{{ forms.selectField({
-							label: "Week Start Day"|t,
+							label: "Week Start Day"|t('app'),
 							id: 'weekStartDay',
 							name: 'weekStartDay',
 							options: craft.i18n.getLocaleData().getWeekDayNames(),
@@ -189,14 +189,14 @@
 
 					{% if account.admin %}
 						{{ forms.checkboxField({
-							label: "Show the debug toolbar on the front end"|t,
+							label: "Show the debug toolbar on the front end"|t('app'),
 							name: 'enableDebugToolbarForSite',
 							id: 'enableDebugToolbarForSite',
 							checked: account.getPreference('enableDebugToolbarForSite')
 						}) }}
 
 						{{ forms.checkboxField({
-							label: "Show the debug toolbar on the Control Panel"|t,
+							label: "Show the debug toolbar on the Control Panel"|t('app'),
 							name: 'enableDebugToolbarForCp',
 							id: 'enableDebugToolbarForCp',
 							checked: account.getPreference('enableDebugToolbarForCp')
@@ -210,7 +210,7 @@
 					<div id="profile" class="hidden">
 						{% if not isNewAccount %}
 							{{ forms.field({
-								label: "Photo"|t
+								label: "Photo"|t('app')
 							}, photoInput) }}
 
 							<hr>
@@ -227,7 +227,7 @@
 
 				{% if CraftEdition == CraftPro and currentUser.can('assignUserPermissions') %}
 					<div id="perms" class="hidden">
-						<h2>{{ "User Groups"|t }}</h2>
+						<h2>{{ "User Groups"|t('app') }}</h2>
 
 						{% set allGroups = craft.userGroups.getAllGroups() %}
 						{% set userGroups = account.getGroups('id') %}
@@ -239,7 +239,7 @@
 								{% for group in allGroups %}
 									<li>
 										{{ forms.checkbox({
-											label: group.name|t,
+											label: group.name|t('site'),
 											name: 'groups[]',
 											value: group.id,
 											checked: (group.id in userGroups|keys)
@@ -249,16 +249,16 @@
 							</ul>
 
 						{% else %}
-							<p>{{ "No user groups exist yet."|t }}</p>
+							<p>{{ "No user groups exist yet."|t('app') }}</p>
 						{% endif %}
 
 						<hr>
 
-						<h2>{{ "Permissions"|t }}</h2>
+						<h2>{{ "Permissions"|t('app') }}</h2>
 
 						{% if currentUser.admin %}
 							{{ forms.checkboxField({
-								label: '<strong>' ~ "Admin"|t ~ '</strong>',
+								label: '<strong>' ~ "Admin"|t('app') ~ '</strong>',
 								name: 'admin',
 								checked: account.admin,
 								reverseToggle: 'permissions'
@@ -287,7 +287,7 @@
 					{{ hiddenInputs }}
 
 					{% if actions|length %}
-						<div class="btn menubtn right" data-icon="settings" title="{{ 'Actions'|t }}"></div>
+						<div class="btn menubtn right" data-icon="settings" title="{{ 'Actions'|t('app') }}"></div>
 						<div class="menu">
 							{% for actionList in actions %}
 								{% if not loop.first %}<hr>{% endif %}
@@ -304,28 +304,28 @@
 						<div id="action-spinner" class="spinner hidden"></div>
 					{% endif %}
 
-					<h5 class="first">{{ "Account Status"|t }}</h5>
+					<h5 class="first">{{ "Account Status"|t('app') }}</h5>
 					<p><span class="status {{ account.status }}"></span> {{ statusLabel }}</p>
 
 					{% if account.status == 'locked' and craft.config.cooldownDuration %}
-						<h5>{{ "Cooldown Time Remaining"|t }}</h5>
+						<h5>{{ "Cooldown Time Remaining"|t('app') }}</h5>
 						<p>{{ account.remainingCooldownTime.humanDuration }}</p>
 					{% endif %}
 
-					<h5>{{ "Registration Date"|t }}</h5>
+					<h5>{{ "Registration Date"|t('app') }}</h5>
 					<p>{{ account.dateCreated.localeDate() }} {{ account.dateCreated.localeTime() }}</p>
 
 					{% if account.status != 'pending' %}
-						<h5>{{ "Last Login Date"|t }}</h5>
-						<p>{% if account.lastLoginDate %}{{ account.lastLoginDate.localeDate() }} {{ account.lastLoginDate.localeTime() }}{% else %}{{ "Never"|t }}{% endif %}</p>
+						<h5>{{ "Last Login Date"|t('app') }}</h5>
+						<p>{% if account.lastLoginDate %}{{ account.lastLoginDate.localeDate() }} {{ account.lastLoginDate.localeTime() }}{% else %}{{ "Never"|t('app') }}{% endif %}</p>
 
-						<h5>{{ "Last Invalid Login Date"|t }}</h5>
-						<p>{% if account.lastInvalidLoginDate %}{{ account.lastInvalidLoginDate.localeDate() }} {{ account.lastInvalidLoginDate.localeTime() }}{% else %}{{ "Never"|t }}{% endif %}</p>
+						<h5>{{ "Last Invalid Login Date"|t('app') }}</h5>
+						<p>{% if account.lastInvalidLoginDate %}{{ account.lastInvalidLoginDate.localeDate() }} {{ account.lastInvalidLoginDate.localeTime() }}{% else %}{{ "Never"|t('app') }}{% endif %}</p>
 
-						<h5>{{ "Last Password Change Date"|t }}</h5>
-						<p>{% if account.lastPasswordChangeDate %}{{ account.lastPasswordChangeDate.localeDate() }} {{ account.lastPasswordChangeDate.localeTime() }}{% else %}{{ "Never"|t }}{% endif %}</p>
+						<h5>{{ "Last Password Change Date"|t('app') }}</h5>
+						<p>{% if account.lastPasswordChangeDate %}{{ account.lastPasswordChangeDate.localeDate() }} {{ account.lastPasswordChangeDate.localeTime() }}{% else %}{{ "Never"|t('app') }}{% endif %}</p>
 
-						<h5>{{ "Invalid Login Count"|t }}</h5>
+						<h5>{{ "Invalid Login Count"|t('app') }}</h5>
 						<p>{% if account.invalidLoginCount %}{{ account.invalidLoginCount }}{% else %}0{% endif %}</p>
 					{% endif %}
 				</form>
@@ -334,7 +334,7 @@
 					<form method="post" accept-charset="UTF-8">
 						<input type="hidden" name="action" value="users/impersonate">
 						{{ hiddenInputs }}
-						<input type="submit" class="btn big fullwidth" value="{{ 'Login as {user}'|t({ user: account.username }) }}">
+						<input type="submit" class="btn big fullwidth" value="{{ 'Login as {user}'|t('app', { user: account.username }) }}">
 					</form>
 				{% endif %}
 			</div><!--/item-->

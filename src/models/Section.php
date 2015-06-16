@@ -140,7 +140,7 @@ class Section extends Model
      */
     public function __toString()
     {
-        return Craft::t('app', $this->name);
+        return Craft::t('site', $this->name);
     }
 
     /**

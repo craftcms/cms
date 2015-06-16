@@ -1,7 +1,7 @@
 {% requirePermission 'performUpdates' %}
 
 {% extends "_layouts/cp" %}
-{% set title = "Updates"|t %}
+{% set title = "Updates"|t('app') %}
 
 {% includeTranslations
 	"You’ve got updates!",
@@ -31,5 +31,5 @@
 	{% endregisterjs %}
 
 	<div id="graphic" class="spinner big"></div>
-	<div id="status">{{ "Checking for updates…"|t }}</div>
+	<div id="status">{{ "Checking for updates…"|t('app') }}</div>
 {% endblock %}

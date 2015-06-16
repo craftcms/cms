@@ -87,7 +87,7 @@
 
 {% block body %}
 	{% if currentUser.admin and craft.config.devMode %}
-		<div id="devmode" title="{{ 'Craft is running in Dev Mode.'|t }}"></div>
+		<div id="devmode" title="{{ 'Craft is running in Dev Mode.'|t('app') }}"></div>
 	{% endif %}
 
 	{% if craft.cp.areAlertsCached() %}
@@ -129,9 +129,9 @@
 						{% set totalUpdates = craft.app.getTotalAvailableUpdates() %}
 						{% if totalUpdates %}
 							{% if totalUpdates == 1 %}
-								{% set updateText = "1 update available"|t %}
+								{% set updateText = "1 update available"|t('app') %}
 							{% else %}
-								{% set updateText = "{num} updates available"|t({ num: totalUpdates }) %}
+								{% set updateText = "{num} updates available"|t('app', { num: totalUpdates }) %}
 							{% endif %}
 							<li class="updates{% if craft.app.isCriticalUpdateAvailable() %} critical{% endif %}">
 								<a data-icon="newstamp" href="{{ url('updates') }}" title="{{ updateText }}">
@@ -148,10 +148,10 @@
 
 				{% if currentUser.admin %}
 					<li>
-						<a class="settings" data-icon="settings" href="{{ url('settings') }}" title="{{ 'Settings'|t }}"></a>
+						<a class="settings" data-icon="settings" href="{{ url('settings') }}" title="{{ 'Settings'|t('app') }}"></a>
 					</li>
 					<li>
-						<a class="settingsmenu menubtn" title="{{ 'Settings'|t }}"></a>
+						<a class="settingsmenu menubtn" title="{{ 'Settings'|t('app') }}"></a>
 						<div id="settingsmenu" class="menu" data-align="right">
 							{% for category, items in craft.cp.settings() %}
 								<h6>{{ category }}</h6>
@@ -166,20 +166,20 @@
 				{% endif %}
 
 				<li>
-					<a data-icon="user" class="myaccount menubtn" title="{{ 'My Account'|t }}" role="button"></a>
+					<a data-icon="user" class="myaccount menubtn" title="{{ 'My Account'|t('app') }}" role="button"></a>
 					<div class="menu" data-align="right">
 						<ul>
-							<li><a href="{{ url('myaccount') }}">{{ "My Account"|t }}</a></li>
+							<li><a href="{{ url('myaccount') }}">{{ "My Account"|t('app') }}</a></li>
 							{% if CraftEdition == CraftClient and currentUser.admin %}
-								<li><a href="{{ url('clientaccount') }}">{{ "Client’s Account"|t }}</a></li>
+								<li><a href="{{ url('clientaccount') }}">{{ "Client’s Account"|t('app') }}</a></li>
 							{% endif %}
-							<li><a href="{{ logoutUrl }}">{{ "Sign out"|t }}</a></li>
+							<li><a href="{{ logoutUrl }}">{{ "Sign out"|t('app') }}</a></li>
 						</ul>
 					</div>
 				</li>
 			</ul>
 
-			<h2><a href="{{ siteUrl }}" title="{{ 'Site Homepage'|t }}" target="_blank">{{ siteName|t }}</a></h2>
+			<h2><a href="{{ siteUrl }}" title="{{ 'Site Homepage'|t('app') }}" target="_blank">{{ siteName|t('site') }}</a></h2>
 
 			<nav>
 				<ul id="nav">
@@ -194,7 +194,7 @@
 						</li>
 					{% endfor %}
 					<!-- HIDE -->{#
-					<li id="customize-nav-btn"><a class="settings icon" title="{{ 'Customize…'|t }}"><span>{{ "Customize…"|t }}</span></a></li>
+					<li id="customize-nav-btn"><a class="settings icon" title="{{ 'Customize…'|t('app') }}"><span>{{ "Customize…"|t('app') }}</span></a></li>
 					#}<!-- end HIDE -->
 				</ul>
 			</nav>
@@ -266,7 +266,7 @@
 								</div>
 
 								{% if hasHelp %}
-									<a id="help" class="help" title="{{ 'Help'|t }}" href="{{ docsUrl }}" target="_blank"></a>
+									<a id="help" class="help" title="{{ 'Help'|t('app') }}" href="{{ docsUrl }}" target="_blank"></a>
 								{% endif %}
 							</div>
 						</div>
@@ -278,15 +278,15 @@
 		<div id="footer">
 			<ul>
 				<li>Craft {{ craft.app.getEditionName()}} {{ craft.app.getVersion() }}.{{ craft.app.getBuild() }}</li>
-				<li>{{ "Released on"|t }} {{ craft.app.releaseDate.localeDate }}</li>
+				<li>{{ "Released on"|t('app') }} {{ craft.app.releaseDate.localeDate }}</li>
 				{% if currentUser.can('performUpdates') %}
-					<li><a id="footer-updates" href="{{ url('updates') }}">{{ craft.app.isUpdateInfoCached() and totalUpdates ? updateText : "Check for updates"|t }}</a></li>
+					<li><a id="footer-updates" href="{{ url('updates') }}">{{ craft.app.isUpdateInfoCached() and totalUpdates ? updateText : "Check for updates"|t('app') }}</a></li>
 				{% endif %}
-				<li>{{ "Copyright"|t }} {{ now.year}} Pixel &amp; Tonic, Inc. {{ "All rights reserved."|t }}</li>
+				<li>{{ "Copyright"|t('app') }} {{ now.year}} Pixel &amp; Tonic, Inc. {{ "All rights reserved."|t('app') }}</li>
 			</ul>
 
 			{% if (CraftEdition == CraftPersonal or craft.request.getPath == 'settings') and craft.app.canUpgradeEdition() %}
-				<p id="upgradepromo"><a>{{ "Upgrade Craft to take your site to the next level."|t }} <span class="go nowrap">{{ "Show me"|t }}</span></a></p>
+				<p id="upgradepromo"><a>{{ "Upgrade Craft to take your site to the next level."|t('app') }} <span class="go nowrap">{{ "Show me"|t('app') }}</span></a></p>
 			{% endif %}
 		</div>
 	</div>
@@ -294,13 +294,13 @@
 	{% if craft.app.hasWrongEdition() %}
 		<div id="wrongedition-modal" class="modal fitted hidden">
 			<div class="body">
-				<p>{{ "You’re running Craft {edition} with a Craft {licensedEdition} license."|t({ edition: craft.app.getEditionName(), licensedEdition: craft.app.getLicensedEditionName() }) }}</p>
-				<p>{{ "What would you like to do?"|t }}</p>
+				<p>{{ "You’re running Craft {edition} with a Craft {licensedEdition} license."|t('app', { edition: craft.app.getEditionName(), licensedEdition: craft.app.getLicensedEditionName() }) }}</p>
+				<p>{{ "What would you like to do?"|t('app') }}</p>
 				<div class="buttons">
 					<div class="btngroup">
-						<div id="wrongedition-switchbtn" class="btn">{{ "Switch to Craft {edition}"|t({ edition: craft.app.getLicensedEditionName() }) }}</div>
+						<div id="wrongedition-switchbtn" class="btn">{{ "Switch to Craft {edition}"|t('app', { edition: craft.app.getLicensedEditionName() }) }}</div>
 						{% if craft.app.getEdition() > craft.app.getLicensedEdition() %}
-							<div id="wrongedition-upgradebtn" class="btn">{{ "Upgrade your license"|t }}</div>
+							<div id="wrongedition-upgradebtn" class="btn">{{ "Upgrade your license"|t('app') }}</div>
 						{% endif %}
 					</div>
 				</div>

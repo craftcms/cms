@@ -5,7 +5,7 @@
 {% requirePermission 'editUsers' %}
 
 {% extends "_layouts/elementindex" %}
-{% set title = "Users"|t %}
+{% set title = "Users"|t('app') %}
 {% set elementType = 'craft\\app\\elements\\User' %}
 
 {% set docsUrl = 'http://buildwithcraft.com/docs/users' %}
@@ -13,7 +13,7 @@
 {% block sidebar %}
 	{% if currentUser.can('registerUsers') %}
 		<div class="buttons">
-			<a class="btn submit add icon" href="{{ url('users/new') }}">{{ "New User"|t }}</a>
+			<a class="btn submit add icon" href="{{ url('users/new') }}">{{ "New User"|t('app') }}</a>
 		</div>
 	{% endif %}
 

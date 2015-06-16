@@ -1,10 +1,10 @@
 {% requireAdmin %}
 
 {% extends "_layouts/cp" %}
-{% set title = "Routes"|t %}
+{% set title = "Routes"|t('app') %}
 
 {% set crumbs = [
-	{ label: "Settings"|t, url: url('settings') }
+	{ label: "Settings"|t('app'), url: url('settings') }
 ] %}
 
 {% includeTranslations
@@ -33,7 +33,7 @@
 	{% registerjsresource "js/routes.js" %}
 
 	<p id="noroutes"{% if routes %} class="hidden"{% endif %}>
-		{{ "No routes exist yet."|t }}
+		{{ "No routes exist yet."|t('app') }}
 	</p>
 
 	<div id="routes">
@@ -42,7 +42,7 @@
 				<div class="url-container">
 					{%- spaceless %}
 						{% if craft.isLocalized() %}
-							<span class="locale">{{ route.locale ?: "Global"|t }}</span>
+							<span class="locale">{{ route.locale ?: "Global"|t('app') }}</span>
 						{% endif %}
 						<span class="url" dir="ltr">{{ route.urlDisplayHtml|raw }}</span>
 					{% endspaceless -%}
@@ -53,7 +53,7 @@
 	</div>
 
 	<div class="buttons">
-		<div id="add-route-btn" class="btn submit add icon">{{ "New Route"|t }}</div>
+		<div id="add-route-btn" class="btn submit add icon">{{ "New Route"|t('app') }}</div>
 	</div>
 {% endblock %}
 

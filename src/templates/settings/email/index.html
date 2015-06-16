@@ -3,13 +3,13 @@
 {% extends (CraftEdition >= CraftClient ? "settings/email/_layout" : "_layouts/cp") %}
 
 {% set crumbs = [
-	{ label: "Settings"|t, url: url('settings') }
+	{ label: "Settings"|t('app'), url: url('settings') }
 ] %}
 
 {% if CraftEdition >= CraftClient %}
 	{% set selectedTab = 'settings' %}
 {% else %}
-	{% set title = "Email Settings"|t %}
+	{% set title = "Email Settings"|t('app') %}
 {% endif %}
 
 {% import "_includes/forms" as forms %}
@@ -39,8 +39,8 @@
 
 		{{ forms.textField({
 			first: true,
-			label: "System Email Address"|t,
-			instructions: "The email address Craft will use when sending email."|t,
+			label: "System Email Address"|t('app'),
+			instructions: "The email address Craft will use when sending email."|t('app'),
 			id: 'emailAddress',
 			name: 'emailAddress',
 			value: settings.emailAddress,
@@ -50,8 +50,8 @@
 		}) }}
 
 		{{ forms.textField({
-			label: "Sender Name"|t,
-			instructions: "The “From” name Craft will use when sending email."|t,
+			label: "Sender Name"|t('app'),
+			instructions: "The “From” name Craft will use when sending email."|t('app'),
 			id: 'senderName',
 			name: 'senderName',
 			value: settings.senderName,
@@ -61,8 +61,8 @@
 
 		{% if CraftEdition >= CraftClient %}
 			{{ forms.textField({
-				label: "HTML Email Template"|t,
-				instructions: "The template Craft will use for HTML emails"|t,
+				label: "HTML Email Template"|t('app'),
+				instructions: "The template Craft will use for HTML emails"|t('app'),
 				id: 'template',
 				name: 'template',
 				value: settings.template,
@@ -73,17 +73,17 @@
 		<hr>
 
 		{{ forms.selectField({
-			label: "Protocol"|t,
-			instructions: "The protocol Craft will use to send email."|t,
+			label: "Protocol"|t('app'),
+			instructions: "The protocol Craft will use to send email."|t('app'),
 			id: 'protocol',
 			name: 'protocol',
-			options: { php: "PHP Mail"|t, sendmail: "Sendmail"|t, smtp: "SMTP"|t, pop: "POP"|t, gmail: "Gmail"|t },
+			options: { php: "PHP Mail"|t('app'), sendmail: "Sendmail"|t('app'), smtp: "SMTP"|t('app'), pop: "POP"|t('app'), gmail: "Gmail"|t('app') },
 			value: settings.protocol
 		}) }}
 
 		<div id="hidden-fields" class="hidden">
 			{{ forms.textField({
-				label: "Username"|t,
+				label: "Username"|t('app'),
 				id: 'username',
 				name: 'username',
 				value: settings.username,
@@ -91,7 +91,7 @@
 			}) }}
 
 			{{ forms.passwordField({
-				label: "Password"|t,
+				label: "Password"|t('app'),
 				id: 'password',
 				name: 'password',
 				value: settings.password,
@@ -99,7 +99,7 @@
 			}) }}
 
 			{{ forms.textField({
-				label: "Port"|t,
+				label: "Port"|t('app'),
 				id: 'port',
 				name: 'port',
 				value: settings.port,
@@ -108,7 +108,7 @@
 			}) }}
 
 			{{ forms.textField({
-				label: "Host Name"|t,
+				label: "Host Name"|t('app'),
 				id: 'host',
 				name: 'host',
 				value: settings.host,
@@ -116,7 +116,7 @@
 			}) }}
 
 			{{ forms.textField({
-				label: "Timeout"|t,
+				label: "Timeout"|t('app'),
 				id: 'timeout',
 				name: 'timeout',
 				value: settings.timeout,
@@ -125,14 +125,14 @@
 			}) }}
 
 			{{ forms.checkboxField({
-				label: "Use SMTP Keep Alive"|t,
+				label: "Use SMTP Keep Alive"|t('app'),
 				id: 'smtpKeepAlive',
 				name: 'smtpKeepAlive',
 				checked: settings.smtpKeepAlive
 			}) }}
 
 			{{ forms.checkboxField({
-				label: "Use SMTP authentication"|t,
+				label: "Use SMTP authentication"|t('app'),
 				id: 'smtpAuth',
 				name: 'smtpAuth',
 				checked: settings.smtpAuth,
@@ -141,7 +141,7 @@
 
 			<div id="smtpAuthCredentials-field" class="nested-fields{% if not settings.smtpAuth %} hidden{% endif %}">
 				{{ forms.textField({
-					label: "Username"|t,
+					label: "Username"|t('app'),
 					id: 'smtp-username',
 					name: 'smtpUsername',
 					value: settings.username,
@@ -149,7 +149,7 @@
 				}) }}
 
 				{{ forms.passwordField({
-					label: "Password"|t,
+					label: "Password"|t('app'),
 					id: 'smtpPassword',
 					name: 'smtpPassword',
 					value: settings.password,
@@ -161,7 +161,7 @@
 				label: "SMTP Secure Transport Type",
 				id: 'smtpSecureTransportType',
 				name: 'smtpSecureTransportType',
-				options: { none: "None"|t, ssl: "SSL"|t, tls: "TLS"|t },
+				options: { none: "None"|t('app'), ssl: "SSL"|t('app'), tls: "TLS"|t('app') },
 				default: 'none',
 				value: settings.smtpSecureTransportType
 			}) }}
@@ -170,8 +170,8 @@
 		<hr>
 
 		<div class="buttons">
-			<input class="btn submit" type="submit" value="{{ 'Save'|t }}">
-			<div id="test" class="btn">{{ "Test"|t }}</div>
+			<input class="btn submit" type="submit" value="{{ 'Save'|t('app') }}">
+			<div id="test" class="btn">{{ "Test"|t('app') }}</div>
 			<div id="test-spinner" class="spinner hidden"></div>
 		</div>
 	</form>

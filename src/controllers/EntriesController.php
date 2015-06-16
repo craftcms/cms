@@ -201,7 +201,7 @@ class EntriesController extends BaseEntriesController
             $variables['title'] = Craft::t('app', 'Create a new entry');
         } else {
             $variables['docTitle'] = Craft::t('app', $entry->title);
-            $variables['title'] = Craft::t('app', $entry->title);
+            $variables['title'] = $entry->title;
 
             if (Craft::$app->getEdition() >= Craft::Client && $entry::className() != Entry::className()) {
                 $variables['docTitle'] .= ' ('.$variables['revisionLabel'].')';
@@ -223,7 +223,7 @@ class EntriesController extends BaseEntriesController
             ];
         } else {
             $variables['crumbs'][] = [
-                'label' => Craft::t('app', $section->name),
+                'label' => Craft::t('site', $section->name),
                 'url' => UrlHelper::getUrl('entries/'.$section->handle)
             ];
 
@@ -246,7 +246,7 @@ class EntriesController extends BaseEntriesController
 
             foreach ($entryTypes as $entryType) {
                 $variables['entryTypeOptions'][] = [
-                    'label' => Craft::t('app', $entryType->name),
+                    'label' => Craft::t('site', $entryType->name),
                     'value' => $entryType->id
                 ];
             }
@@ -766,7 +766,7 @@ class EntriesController extends BaseEntriesController
             }
 
             $variables['tabs'][] = [
-                'label' => Craft::t('app', $tab->name),
+                'label' => Craft::t('site', $tab->name),
                 'url' => '#tab'.($index + 1),
                 'class' => ($hasErrors ? 'error' : null)
             ];

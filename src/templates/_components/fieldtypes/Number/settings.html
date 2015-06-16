@@ -1,7 +1,7 @@
 {% import "_includes/forms" as forms %}
 
 {{ forms.textField({
-	label: "Min Value"|t,
+	label: "Min Value"|t('app'),
 	id: 'min',
 	name: 'min',
 	value: field.min,
@@ -10,7 +10,7 @@
 }) }}
 
 {{ forms.textField({
-	label: "Max Value"|t,
+	label: "Max Value"|t('app'),
 	id: 'max',
 	name: 'max',
 	value: field.max,
@@ -19,7 +19,7 @@
 }) }}
 
 {{ forms.textField({
-	label: "Decimal Points"|t,
+	label: "Decimal Points"|t('app'),
 	id: 'decimals',
 	name: 'decimals',
 	value: field.decimals,

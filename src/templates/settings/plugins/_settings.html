@@ -1,14 +1,14 @@
 {% requireAdmin %}
 
 {% set crumbs = [
-	{ label: "Settings"|t, url: url('settings') },
-	{ label: "Plugins"|t, url: url('settings/plugins') }
+	{ label: "Settings"|t('app'), url: url('settings') },
+	{ label: "Plugins"|t('app'), url: url('settings/plugins') }
 ] %}
 
 
 {% extends "_layouts/cp" %}
 {% set title = plugin.name %}
-{% set docTitle = title ~ ' - ' ~ "Plugins"|t %}
+{% set docTitle = title ~ ' - ' ~ "Plugins"|t('app') %}
 
 
 {% block content %}
@@ -23,7 +23,7 @@
 		{% endnamespace %}
 
 		<div class="buttons">
-			<input class="btn submit" type="submit" value="{{ 'Save'|t }}">
+			<input class="btn submit" type="submit" value="{{ 'Save'|t('app') }}">
 		</div>
 	</form>
 {% endblock %}

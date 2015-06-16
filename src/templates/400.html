@@ -1,11 +1,11 @@
 {% extends "_layouts/message" %}
-{% set title = "Bad Request"|t %}
+{% set title = "Bad Request"|t('app') %}
 
 {% block message %}
 	<h2>{{ title }}</h2>
 	{% if message %}
 		{% filter md %}{{ message }}{% endfilter %}
 	{% else %}
-		<p>{{ "The request could not be understood by the server due to malformed syntax."|t }}</p>
+		<p>{{ "The request could not be understood by the server due to malformed syntax."|t('app') }}</p>
 	{% endif %}
 {% endblock %}

@@ -1,5 +1,5 @@
 {% extends "_layouts/cp" %}
-{% set title = "Settings"|t %}
+{% set title = "Settings"|t('app') %}
 
 
 {% block content %}
@@ -18,7 +18,7 @@
 		<hr>
 	{% endfor %}
 
-	<h2>{{ "Tools"|t }}</h2>
+	<h2>{{ "Tools"|t('app') }}</h2>
 
 	<ul class="icons">
 		{% for tool in tools %}

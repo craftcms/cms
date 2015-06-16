@@ -2,14 +2,14 @@
 {% requireAdmin %}
 
 {% extends "_layouts/cp" %}
-{% set title="Users"|t %}
+{% set title="Users"|t('app') %}
 
 {% set crumbs = [
-	{ label: "Settings"|t, url: url('settings') }
+	{ label: "Settings"|t('app'), url: url('settings') }
 ] %}
 
 {% set tabs = {
-	groups: { label: "User Groups"|t, url: url('settings/users') },
-	fields: { label: "Fields"|t, url: url('settings/users/fields') },
-	settings: { label: "Settings"|t, url: url('settings/users/settings') }
+	groups: { label: "User Groups"|t('app'), url: url('settings/users') },
+	fields: { label: "Fields"|t('app'), url: url('settings/users/fields') },
+	settings: { label: "Settings"|t('app'), url: url('settings/users/settings') }
 } %}

@@ -214,7 +214,7 @@ class View extends \yii\web\View
      * @param array $variables The variables that should be available to the template.
      *
      * @return string the rendering result
-     * @throws InvalidParamException if the template doesn’t exist
+     * @throws \Twig_Error_Loader if the template doesn’t exist
      */
     public function renderTemplate($template, $variables = [])
     {
@@ -224,13 +224,7 @@ class View extends \yii\web\View
         $renderingTemplate = $this->_renderingTemplate;
         $this->_renderingTemplate = $template;
         Craft::beginProfile($template, __METHOD__);
-
-        try {
-            $output = $this->getTwig()->render($template, $variables);
-        } catch (\Twig_Error_Loader $e) {
-            throw new InvalidParamException("The template does not exist, or isn’t readable: $template");
-        }
-
+        $output = $this->getTwig()->render($template, $variables);
         Craft::endProfile($template, __METHOD__);
         $this->_renderingTemplate = $renderingTemplate;
 

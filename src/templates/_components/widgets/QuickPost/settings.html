@@ -4,11 +4,11 @@
 	{% if CraftEdition >= CraftClient %}
 		{% set sectionOptions = [] %}
 		{% for section in sections %}
-			{% set sectionOptions = sectionOptions|merge([{ label: section.name|t, value: section.id }]) %}
+			{% set sectionOptions = sectionOptions|merge([{ label: section.name|t('site'), value: section.id }]) %}
 		{% endfor %}
 		{{ forms.selectField({
-			label: "Section"|t,
-			instructions: "Which section do you want to publish entries to?"|t,
+			label: "Section"|t('app'),
+			instructions: "Which section do you want to publish entries to?"|t('app'),
 			id: 'section',
 			name: 'section',
 			options: sectionOptions,
@@ -29,15 +29,15 @@
 
 			{% set entryTypeOptions = [] %}
 			{% for entryType in section.getEntryTypes() %}
-				{% set entryTypeOptions = entryTypeOptions|merge([{ label: entryType.name|t, value: entryType.id }]) %}
+				{% set entryTypeOptions = entryTypeOptions|merge([{ label: entryType.name|t('site'), value: entryType.id }]) %}
 			{% endfor %}
 
 			{% if entryTypeOptions|length == 1 %}
 				<input type="hidden" name="sections[{{ section.id }}][entryType]" value="{{ widget.entryType }}" />
 			{% else %}
 				{{ forms.selectField({
-					label: "Entry Type"|t,
-					instructions: "Which type of entries do you want to publish?"|t,
+					label: "Entry Type"|t('app'),
+					instructions: "Which type of entries do you want to publish?"|t('app'),
 					id: 'entryType',
 					name: 'sections['~section.id~'][entryType]',
 					options: entryTypeOptions,
@@ -67,14 +67,14 @@
 			{% endset %}
 
 			{{ forms.field({
-				label: "Fields"|t,
-				instructions: "Which fields should be visible in the widget?"|t
+				label: "Fields"|t('app'),
+				instructions: "Which fields should be visible in the widget?"|t('app')
 			}, fieldsInput) }}
 		</div>
 	{% endfor %}
 
 {% else %}
 
-	<p>{{ "No sections are available."|t }}</p>
+	<p>{{ "No sections are available."|t('app') }}</p>
 
 {% endif %}

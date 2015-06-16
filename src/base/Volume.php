@@ -28,7 +28,24 @@ abstract class Volume extends SavableComponent implements VolumeInterface
     // =========================================================================
 
     use VolumeTrait;
-    use FieldLayoutTrait;
+
+    // Properties
+    // =========================================================================
+
+    /**
+     * @var boolean Whether the Flysystem adapter expects folder names to have trailing slashes
+     */
+    protected $foldersHaveTrailingSlashes = true;
+
+    /**
+     * @var AdapterInterface The Flysystem adapter, created by [[createAdapter()]]
+     */
+    private $_adapter;
+
+    /**
+     * @var Filesystem The Flysystem filesystem
+     */
+    private $_filesystem;
 
     // Public Methods
     // =========================================================================
@@ -45,6 +62,19 @@ abstract class Volume extends SavableComponent implements VolumeInterface
 
     // Public Methods
     // =========================================================================
+
+    /**
+     * @inheritdoc
+     */
+    public function behaviors()
+    {
+        return [
+            [
+                'class' => 'craft\app\behaviors\FieldLayoutBehavior',
+                'elementType' => 'craft\app\elements\Asset'
+            ],
+        ];
+    }
 
     /**
      * @inheritdoc

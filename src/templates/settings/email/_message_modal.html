@@ -8,7 +8,7 @@
 
 
 <header class="header">
-	<h1 class="left">{{ "Edit Message"|t }}</h1>
+	<h1 class="left">{{ "Edit Message"|t('app') }}</h1>
 
 	{% if craft.isLocalized() %}
 		<ul class="right">
@@ -25,7 +25,7 @@
 
 <div class="body">
 	{{ forms.textField({
-		label: "Subject"|t,
+		label: "Subject"|t('app'),
 		id: 'message-subject',
 		class: 'message-subject',
 		value: message.subject,
@@ -33,7 +33,7 @@
 	}) }}
 
 	{{ forms.textareaField({
-		label: "Body"|t,
+		label: "Body"|t('app'),
 		id: 'message-body',
 		class: 'message-body',
 		value: message.body,
@@ -43,7 +43,7 @@
 
 <footer class="footer">
 	<div class="buttons right">
-		<input type="button" class="btn cancel" value="{{ 'Cancel'|t }}">
-		<input type="submit" class="btn submit" value="{{ 'Save'|t }}">
+		<input type="button" class="btn cancel" value="{{ 'Cancel'|t('app') }}">
+		<input type="submit" class="btn submit" value="{{ 'Save'|t('app') }}">
 	</div>
 </footer>

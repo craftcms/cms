@@ -2,7 +2,7 @@
 	{%- spaceless %}
 		{# is it already installed? #}
 		{% if edition == CraftEdition  %}
-			<div class="installed">{{ "Installed"|t }}</div><br>
+			<div class="installed">{{ "Installed"|t('app') }}</div><br>
 		{% endif %}
 
 		<div class="btngroup">
@@ -20,9 +20,9 @@
 			{# if the domain is allowed to test editions, show an uninstall/test button #}
 			{% if canTestEditions %}
 				{% if edition == CraftEdition %}
-					<div class="btn test" data-edition="0">{{ "Uninstall"|t }}</div>
+					<div class="btn test" data-edition="0">{{ "Uninstall"|t('app') }}</div>
 				{% else %}
-					<div class="btn test" data-edition="{{ edition }}">{{ "Test"|t }}</div>
+					<div class="btn test" data-edition="{{ edition }}">{{ "Test"|t('app') }}</div>
 				{% endif %}
 			{% endif %}
 		</div>
@@ -49,106 +49,106 @@
 		</thead>
 		<tbody>
 			<tr>
-				<th class="group" colspan="3" data-icon="section">{{ "Content Publishing"|t }}</th>
+				<th class="group" colspan="3" data-icon="section">{{ "Content Publishing"|t('app') }}</th>
 			</tr>
 			<tr>
-				<th class="feature" scope="row">{{ "Unlimited Singles and Channels"|t }}</th>
-				<td><span data-icon="check"></span></td>
-				<td><span data-icon="check"></span></td>
-			</tr>
-			<tr>
-				<th class="feature" scope="row">{{ "Structure sections"|t }}</th>
+				<th class="feature" scope="row">{{ "Unlimited Singles and Channels"|t('app') }}</th>
 				<td><span data-icon="check"></span></td>
 				<td><span data-icon="check"></span></td>
 			</tr>
 			<tr>
-				<th class="feature" scope="row">{{ "Entry versioning"|t }}</th>
+				<th class="feature" scope="row">{{ "Structure sections"|t('app') }}</th>
 				<td><span data-icon="check"></span></td>
 				<td><span data-icon="check"></span></td>
 			</tr>
 			<tr>
-				<th class="feature" scope="row">{{ "Entry drafts"|t }}</th>
-				<td><span data-icon="check"></span></td>
-				<td><span data-icon="check"></span></td>
-			</tr>
-
-			<tr>
-				<th class="group" colspan="3" data-icon="users">{{ "User Accounts"|t }}</th>
-			</tr>
-			<tr>
-				<th class="feature" scope="row">{{ "Additional user accounts"|t }}</th>
-				<td>{{ "One “Client” account"|t }}</td>
-				<td>{{ "Unlimited"|t }}</td>
-			</tr>
-			<tr>
-				<th class="feature" scope="row">{{ "User groups"|t }}</th>
-				<td></td>
-				<td><span data-icon="check"></span></td>
-			</tr>
-			<tr>
-				<th class="feature" scope="row">{{ "User permissions"|t }}</th>
-				<td></td>
-				<td><span data-icon="check"></span></td>
-			</tr>
-			<tr>
-				<th class="feature" scope="row">{{ "Public user registration"|t }}</th>
-				<td></td>
-				<td><span data-icon="check"></span></td>
-			</tr>
-
-			<tr>
-				<th class="group" colspan="3" data-icon="brush">{{ "System Branding"|t }}</th>
-			</tr>
-			<tr>
-				<th class="feature" scope="row">{{ "Custom login screen logo"|t }}</th>
+				<th class="feature" scope="row">{{ "Entry versioning"|t('app') }}</th>
 				<td><span data-icon="check"></span></td>
 				<td><span data-icon="check"></span></td>
 			</tr>
 			<tr>
-				<th class="feature" scope="row">{{ "Custom HTML email template"|t }}</th>
-				<td><span data-icon="check"></span></td>
-				<td><span data-icon="check"></span></td>
-			</tr>
-			<tr>
-				<th class="feature" scope="row">{{ "Custom email message wording"|t }}</th>
+				<th class="feature" scope="row">{{ "Entry drafts"|t('app') }}</th>
 				<td><span data-icon="check"></span></td>
 				<td><span data-icon="check"></span></td>
 			</tr>
 
 			<tr>
-				<th class="group" colspan="3" data-icon="assets">{{ "Assets"|t }}</th>
+				<th class="group" colspan="3" data-icon="users">{{ "User Accounts"|t('app') }}</th>
 			</tr>
 			<tr>
-				<th class="feature" scope="row">{{ "Amazon S3 support"|t }}</th>
+				<th class="feature" scope="row">{{ "Additional user accounts"|t('app') }}</th>
+				<td>{{ "One “Client” account"|t('app') }}</td>
+				<td>{{ "Unlimited"|t('app') }}</td>
+			</tr>
+			<tr>
+				<th class="feature" scope="row">{{ "User groups"|t('app') }}</th>
 				<td></td>
 				<td><span data-icon="check"></span></td>
 			</tr>
 			<tr>
-				<th class="feature" scope="row">{{ "Rackspace Cloud Files support"|t }}</th>
+				<th class="feature" scope="row">{{ "User permissions"|t('app') }}</th>
 				<td></td>
 				<td><span data-icon="check"></span></td>
 			</tr>
 			<tr>
-				<th class="feature" scope="row">{{ "Google Cloud Storage support"|t }}</th>
+				<th class="feature" scope="row">{{ "Public user registration"|t('app') }}</th>
 				<td></td>
 				<td><span data-icon="check"></span></td>
 			</tr>
 
 			<tr>
-				<th class="group" colspan="3" data-icon="language">{{ "Localization and Translation"|t }}</th>
+				<th class="group" colspan="3" data-icon="brush">{{ "System Branding"|t('app') }}</th>
 			</tr>
 			<tr>
-				<th class="feature" scope="row">{{ "Section and entry locale targeting"|t }}</th>
+				<th class="feature" scope="row">{{ "Custom login screen logo"|t('app') }}</th>
+				<td><span data-icon="check"></span></td>
+				<td><span data-icon="check"></span></td>
+			</tr>
+			<tr>
+				<th class="feature" scope="row">{{ "Custom HTML email template"|t('app') }}</th>
+				<td><span data-icon="check"></span></td>
+				<td><span data-icon="check"></span></td>
+			</tr>
+			<tr>
+				<th class="feature" scope="row">{{ "Custom email message wording"|t('app') }}</th>
+				<td><span data-icon="check"></span></td>
+				<td><span data-icon="check"></span></td>
+			</tr>
+
+			<tr>
+				<th class="group" colspan="3" data-icon="assets">{{ "Assets"|t('app') }}</th>
+			</tr>
+			<tr>
+				<th class="feature" scope="row">{{ "Amazon S3 support"|t('app') }}</th>
 				<td></td>
 				<td><span data-icon="check"></span></td>
 			</tr>
 			<tr>
-				<th class="feature" scope="row">{{ "Content translations"|t }}</th>
+				<th class="feature" scope="row">{{ "Rackspace Cloud Files support"|t('app') }}</th>
 				<td></td>
 				<td><span data-icon="check"></span></td>
 			</tr>
 			<tr>
-				<th class="feature" scope="row">{{ "Locale-specific user permissions"|t }}</th>
+				<th class="feature" scope="row">{{ "Google Cloud Storage support"|t('app') }}</th>
+				<td></td>
+				<td><span data-icon="check"></span></td>
+			</tr>
+
+			<tr>
+				<th class="group" colspan="3" data-icon="language">{{ "Localization and Translation"|t('app') }}</th>
+			</tr>
+			<tr>
+				<th class="feature" scope="row">{{ "Section and entry locale targeting"|t('app') }}</th>
+				<td></td>
+				<td><span data-icon="check"></span></td>
+			</tr>
+			<tr>
+				<th class="feature" scope="row">{{ "Content translations"|t('app') }}</th>
+				<td></td>
+				<td><span data-icon="check"></span></td>
+			</tr>
+			<tr>
+				<th class="feature" scope="row">{{ "Locale-specific user permissions"|t('app') }}</th>
 				<td></td>
 				<td><span data-icon="check"></span></td>
 			</tr>
@@ -174,12 +174,12 @@
 		</div>
 
 		{{ forms.textField({
-			label: "Name on the card"|t,
+			label: "Name on the card"|t('app'),
 			id: 'cc-name'
 		}) }}
 
 		{{ forms.textField({
-			label: "Credit card number"|t,
+			label: "Credit card number"|t('app'),
 			id: 'cc-num',
 			autocomplete: false
 		}) }}
@@ -201,7 +201,7 @@
 						{% endset %}
 
 						{{ forms.field({
-							label: "Expiration month"|t,
+							label: "Expiration month"|t('app'),
 							id: 'cc-month'
 						}, monthInput) }}
 					</td>
@@ -218,14 +218,14 @@
 						{% endset %}
 
 						{{ forms.field({
-							label: "Exp. year"|t,
+							label: "Exp. year"|t('app'),
 							id: 'cc-year'
 						}, yearInput) }}
 					</td>
 
 					<td class="thin cc-cvc">
 						{{ forms.textField({
-							label: "CVC"|t,
+							label: "CVC"|t('app'),
 							id: 'cc-cvc',
 							size: 5,
 							autocomplete: false
@@ -237,20 +237,20 @@
 
 		<div class="footer">
 			<div class="buttons right">
-				<div id="upgrademodal-cancelcheckout" class="btn">{{ "Cancel"|t }}</div>
-				<input type="submit" class="btn submit" value="{{ 'Purchase'|t }}">
+				<div id="upgrademodal-cancelcheckout" class="btn">{{ "Cancel"|t('app') }}</div>
+				<input type="submit" class="btn submit" value="{{ 'Purchase'|t('app') }}">
 				<div class="spinner hidden"></div>
 			</div>
 		</div>
 	</form>
 
-	<p class="secure icon light centeralign">{{ "Your payment is safe and secure with {stripe}."|t({ stripe: '<a href="https://stripe.com/" target="_blank">Stripe</a>' })|raw }}
+	<p class="secure icon light centeralign">{{ "Your payment is safe and secure with {stripe}."|t('app', { stripe: '<a href="https://stripe.com/" target="_blank">Stripe</a>' })|raw }}
 </div>
 
 
 <div id="upgrademodal-success" class="body hidden">
 	<div class="message">
 		<p>{{ "Craft has been upgraded successfully!" }}</p>
-		<div class="btn">{{ "Reload"|t }}</div>
+		<div class="btn">{{ "Reload"|t('app') }}</div>
 	</div>
 </div>

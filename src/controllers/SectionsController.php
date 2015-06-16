@@ -276,13 +276,13 @@ class SectionsController extends Controller
                 'url' => UrlHelper::getUrl('settings/sections')
             ],
             [
-                'label' => $section->name,
+                'label' => Craft::t('site', $section->name),
                 'url' => UrlHelper::getUrl('settings/sections/'.$section->id)
             ],
         ];
 
         $title = Craft::t('app', '{section} Entry Types',
-            ['section' => $section->name]);
+            ['section' => Craft::t('site', $section->name)]);
 
         return $this->renderTemplate('settings/sections/_entrytypes/index', [
             'sectionId' => $sectionId,
@@ -327,7 +327,7 @@ class SectionsController extends Controller
             }
 
             $title = Craft::t('app', 'Create a new {section} entry type',
-                ['section' => $section->name]);
+                ['section' => Craft::t('site', $section->name)]);
         }
 
         $crumbs = [

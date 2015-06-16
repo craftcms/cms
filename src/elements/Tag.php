@@ -78,7 +78,7 @@ class Tag extends Element
             $key = 'taggroup:'.$tagGroup->id;
 
             $sources[$key] = [
-                'label' => Craft::t('app', $tagGroup->name),
+                'label' => Craft::t('site', $tagGroup->name),
                 'criteria' => ['groupId' => $tagGroup->id]
             ];
         }

@@ -9,7 +9,6 @@ namespace craft\app\elements;
 
 use Craft;
 use craft\app\base\Element;
-use craft\app\base\FieldLayoutTrait;
 use craft\app\elements\db\GlobalSetQuery;
 use craft\app\helpers\UrlHelper;
 
@@ -21,11 +20,6 @@ use craft\app\helpers\UrlHelper;
  */
 class GlobalSet extends Element
 {
-    // Traits
-    // =========================================================================
-
-    use FieldLayoutTrait;
-
     // Static
     // =========================================================================
 
@@ -81,11 +75,6 @@ class GlobalSet extends Element
      */
     public $fieldLayoutId;
 
-    /**
-     * @var string The element type that global sets' field layouts should be associated with.
-     */
-    private $_fieldLayoutElementType = 'craft\app\elements\GlobalSet';
-
     // Public Methods
     // =========================================================================
 
@@ -97,6 +86,19 @@ class GlobalSet extends Element
     public function __toString()
     {
         return $this->name;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function behaviors()
+    {
+        return [
+            [
+                'class' => 'craft\app\behaviors\FieldLayoutBehavior',
+                'elementType' => 'craft\app\elements\GlobalSet'
+            ],
+        ];
     }
 
     /**

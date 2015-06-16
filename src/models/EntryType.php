@@ -21,11 +21,6 @@ use craft\app\models\Section as SectionModel;
  */
 class EntryType extends Model
 {
-    // Traits
-    // =========================================================================
-
-    use \craft\app\base\FieldLayoutTrait;
-
     // Properties
     // =========================================================================
 
@@ -69,14 +64,21 @@ class EntryType extends Model
      */
     public $titleFormat;
 
-
-    /**
-     * @var The element type that entry types' field layouts should be associated with.
-     */
-    private $_fieldLayoutElementType = 'craft\app\elements\Entry';
-
     // Public Methods
     // =========================================================================
+
+    /**
+     * @inheritdoc
+     */
+    public function behaviors()
+    {
+        return [
+            [
+                'class' => 'craft\app\behaviors\FieldLayoutBehavior',
+                'elementType' => 'craft\app\elements\Entry'
+            ],
+        ];
+    }
 
     /**
      * @inheritdoc

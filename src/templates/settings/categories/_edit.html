@@ -33,8 +33,8 @@
 		<div id="categorygroup-settings">
 			{{ forms.textField({
 				first: true,
-				label: "Name"|t,
-				instructions: "What this category group will be called in the CP."|t,
+				label: "Name"|t('app'),
+				instructions: "What this category group will be called in the CP."|t('app'),
 				id: 'name',
 				name: 'name',
 				value: categoryGroup.name,
@@ -45,8 +45,8 @@
 			}) }}
 
 			{{ forms.textField({
-				label: "Handle"|t,
-				instructions: "How you’ll refer to this category group in the templates."|t,
+				label: "Handle"|t('app'),
+				instructions: "How you’ll refer to this category group in the templates."|t('app'),
 				id: 'handle',
 				class: 'code',
 				name: 'handle',
@@ -58,7 +58,7 @@
 			<hr>
 
 			{{ forms.checkboxField({
-				label: "Categories in this group have their own URLs"|t,
+				label: "Categories in this group have their own URLs"|t('app'),
 				id: 'hasUrls',
 				name: 'hasUrls',
 				checked: categoryGroup.hasUrls,
@@ -72,8 +72,8 @@
 							{% if craft.isLocalized() %}
 								<th></th>
 							{% endif %}
-							<th scope="col">{{ "Top-Level Categories"|t }}</th>
-							<th scope="col">{{ "Nested Categories"|t }}</th>
+							<th scope="col">{{ "Top-Level Categories"|t('app') }}</th>
+							<th scope="col">{{ "Nested Categories"|t('app') }}</th>
 						</thead>
 						<tbody>
 							{% for locale in craft.i18n.getSiteLocales() %}
@@ -96,15 +96,15 @@
 				{% endset %}
 
 				{{ forms.field({
-					label: "Category URL Formats"|t,
-					instructions: "What the category URLs should look like. <code>{slug}</code> is required, but it can also include any category properties."|t,
+					label: "Category URL Formats"|t('app'),
+					instructions: "What the category URLs should look like. <code>{slug}</code> is required, but it can also include any category properties."|t('app'),
 					required: true,
 					errors: categoryGroup.getErrors('urlFormat')
 				}, urlFormatInput) }}
 
 				{{ forms.textField({
-					label: "Category Template"|t,
-					instructions: "The template to use when a category’s URL is requested."|t,
+					label: "Category Template"|t('app'),
+					instructions: "The template to use when a category’s URL is requested."|t('app'),
 					id: 'template',
 					class: 'ltr',
 					name: 'template',
@@ -114,8 +114,8 @@
 			</div>
 
 			{{ forms.textField({
-				label: "Max Levels"|t,
-				instructions: "The maximum number of levels this category group can have. Leave blank if you don’t care."|t,
+				label: "Max Levels"|t('app'),
+				instructions: "The maximum number of levels this category group can have. Leave blank if you don’t care."|t('app'),
 				id: 'maxLevels',
 				name: 'maxLevels',
 				value: categoryGroup.maxLevels,
@@ -133,7 +133,7 @@
 		<hr>
 
 		<div class="buttons">
-			<input type="submit" class="btn submit" value="{{ 'Save'|t }}">
+			<input type="submit" class="btn submit" value="{{ 'Save'|t('app') }}">
 		</div>
 	</form>
 {% endset %}

@@ -11,13 +11,13 @@
 {% for element in elements %}
 	<tr data-id="{{ element.id }}"{% if structure %} data-level="{{ element.level }}" data-descendants="{{ element.getTotalDescendants() }}"{% endif %}{% if element.id in disabledElementIds %} class="disabled"{% endif %}>
 		{% if showCheckboxes %}
-			<td class="thin" data-checkboxcell><div class="checkbox" title="{{ 'Select'|t }}"></div></td>
+			<td class="thin" data-checkboxcell><div class="checkbox" title="{{ 'Select'|t('app') }}"></div></td>
 		{% endif %}
 		{% for attribute, label in attributes %}
 			{% if loop.first %}
 				<td data-title="{{ label }}"{% if structure %} style="padding-{{ padding }}: {{ basePadding + (element.level - 1) * 44 }}px;"{% endif %} data-titlecell="">
-					{%- if structureEditable %}<a class="move icon" title="{{ 'Reorder'|t }}" role="button">&nbsp;</a>{% endif %}
-					{%- if structure and element.hasDescendants() %}<span class="toggle{% if element.id not in collapsedElementIds %} expanded{% endif %}" title="{{ 'Show/hide children'|t }}"></span>{% endif %}
+					{%- if structureEditable %}<a class="move icon" title="{{ 'Reorder'|t('app') }}" role="button">&nbsp;</a>{% endif %}
+					{%- if structure and element.hasDescendants() %}<span class="toggle{% if element.id not in collapsedElementIds %} expanded{% endif %}" title="{{ 'Show/hide children'|t('app') }}"></span>{% endif %}
 					{%- include "_elements/element" -%}
 				</td>
 			{% else %}

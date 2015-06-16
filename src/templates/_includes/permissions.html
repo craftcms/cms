@@ -16,7 +16,7 @@
 			{% set checked = (isInGroupPermissions
 				? true
 				: (context.userOrGroup is not empty
-					? (context.userOrGroup.hasErrors
+					? (context.userOrGroup.hasErrors()
 						? (permissionName in craft.request.getPost('permissions', []))
 						: context.userOrGroup.can(permissionName))
 					: false)) %}

@@ -1,5 +1,5 @@
 {% extends "_layouts/elementindex" %}
-{% set title = "Entries"|t %}
+{% set title = "Entries"|t('app') %}
 {% set elementType = 'craft\\app\\elements\\Entry' %}
 
 
@@ -18,17 +18,17 @@
 		<div class="buttons">
 			{% if newEntrySections|length > 1 %}
 				<div class="btngroup submit">
-					<div class="btn submit menubtn add icon">{{ "New Entry"|t }}</div>
+					<div class="btn submit menubtn add icon">{{ "New Entry"|t('app') }}</div>
 					<div class="menu">
 						<ul>
 							{% for section in newEntrySections %}
-								<li><a href="{{ url('entries/'~section.handle~'/new') }}">{{ section.name|t }}</a></li>
+								<li><a href="{{ url('entries/'~section.handle~'/new') }}">{{ section.name|t('site') }}</a></li>
 							{% endfor %}
 						</ul>
 					</div>
 				</div>
 			{% else %}
-				<a class="btn submit add icon" href="{{ url('entries/'~newEntrySections[0].handle~'/new') }}">{{ "New Entry"|t }}</a>
+				<a class="btn submit add icon" href="{{ url('entries/'~newEntrySections[0].handle~'/new') }}">{{ "New Entry"|t('app') }}</a>
 			{% endif %}
 		</div>
 	{% endif %}

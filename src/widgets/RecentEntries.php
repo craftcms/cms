@@ -89,7 +89,7 @@ class RecentEntries extends Widget
 
                 if ($section) {
                     $title = Craft::t('app', 'Recent {section} Entries', [
-                        'section' => Craft::t('app', $section->name)
+                        'section' => Craft::t('site', $section->name)
                     ]);
                 }
             }

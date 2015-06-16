@@ -213,6 +213,11 @@ $config = ArrayHelper::merge(
     require $appPath.'/config/'.$appType.'.php'
 );
 
+// Allow sites to make custom changes to this
+if (file_exists($configPath.'/app.php')) {
+    $config = ArrayHelper::merge($config, require $configPath.'/app.php');
+}
+
 $config['releaseDate'] = new DateTime('@'.$config['releaseDate']);
 
 // Initialize the application

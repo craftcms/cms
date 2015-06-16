@@ -99,7 +99,7 @@ class Category extends Element
             $key = 'group:'.$group->id;
 
             $sources[$key] = [
-                'label' => Craft::t('app', $group->name),
+                'label' => Craft::t('site', $group->name),
                 'data' => ['handle' => $group->handle],
                 'criteria' => ['groupId' => $group->id],
                 'structureId' => $group->structureId,

@@ -15,7 +15,7 @@
 		<div id="assetvolume-settings">
 			{{ forms.textField({
 				first: true,
-				label: "Name"|t,
+				label: "Name"|t('app'),
 				id: 'name',
 				name: 'name',
 				value: (volume is defined ? volume.name : null),
@@ -27,7 +27,7 @@
 
             {{ forms.textField({
                 first: true,
-                label: "Handle"|t,
+                label: "Handle"|t('app'),
                 id: 'handle',
                 name: 'handle',
                 value: (volume is defined ? volume.handle : null),
@@ -41,8 +41,8 @@
 				{% registerjsresource "js/asseteditvolumesettings.js" %}
 
 				{{ forms.selectField({
-					label: "Type"|t,
-					instructions: "What type of volume is this?"|t,
+					label: "Type"|t('app'),
+					instructions: "What type of volume is this?"|t('app'),
 					id: 'type',
 					name: 'type',
 					options: volumeTypeOptions,
@@ -70,15 +70,15 @@
 			{% endif %}
 
             {{ forms.textField({
-                label: "URL"|t,
-                instructions: "The URL to your files."|t,
+                label: "URL"|t('app'),
+                instructions: "The URL to your files."|t('app'),
                 id: 'url',
                 class: 'ltr volume-url',
                 name: 'url',
                 value: (volume is defined ? volume.url : null),
                 errors: (volume is defined ? volume.getErrors('url') : null),
                 required: true,
-                placeholder: "http://example.com/path/to/folder/"|t
+                placeholder: "http://example.com/path/to/folder/"|t('app')
             }) }}
 
 		</div>
@@ -94,7 +94,7 @@
 		<hr>
 
 		<div class="buttons">
-			<input type="submit" class="btn submit" value="{{ 'Save'|t }}">
+			<input type="submit" class="btn submit" value="{{ 'Save'|t('app') }}">
 		</div>
 	</form>
 {% endblock %}

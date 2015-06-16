@@ -1,5 +1,5 @@
 {% extends "_layouts/message" %}
-{% set title = "Service Unavailable"|t %}
+{% set title = "Service Unavailable"|t('app') %}
 
 {% block message %}
 	<h2>{{ title }}</h2>
@@ -7,6 +7,6 @@
     {% if message %}
 		{% filter md %}{{ message }}{% endfilter %}
 	{% else %}
-		<p>{{ "Our site is temporarily unavailable. Please try again later."|t }}</p>
+		<p>{{ "Our site is temporarily unavailable. Please try again later."|t('app') }}</p>
 	{% endif %}
 {% endblock %}

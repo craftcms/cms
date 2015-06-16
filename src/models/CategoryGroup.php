@@ -18,11 +18,6 @@ use craft\app\base\Model;
  */
 class CategoryGroup extends Model
 {
-    // Traits
-    // =========================================================================
-
-    use \craft\app\base\FieldLayoutTrait;
-
     // Properties
     // =========================================================================
 
@@ -66,12 +61,6 @@ class CategoryGroup extends Model
      */
     public $maxLevels;
 
-
-    /**
-     * @var The element type that category groups' field layouts should be associated with.
-     */
-    private $_fieldLayoutElementType = 'craft\app\elements\Category';
-
     /**
      * @var
      */
@@ -79,6 +68,19 @@ class CategoryGroup extends Model
 
     // Public Methods
     // =========================================================================
+
+    /**
+     * @inheritdoc
+     */
+    public function behaviors()
+    {
+        return [
+            [
+                'class' => 'craft\app\behaviors\FieldLayoutBehavior',
+                'elementType' => 'craft\app\elements\Category'
+            ],
+        ];
+    }
 
     /**
      * @inheritdoc
@@ -138,7 +140,7 @@ class CategoryGroup extends Model
      */
     public function __toString()
     {
-        return Craft::t('app', $this->name);
+        return Craft::t('site', $this->name);
     }
 
     /**

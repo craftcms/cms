@@ -6,8 +6,8 @@
 {% set content %}
 	<table id="entrytypes" class="data fullwidth collapsible">
 		<thead>
-			<th scope="col">{{ "Name"|t }}</th>
-			<th scope="col">{{ "Handle"|t }}</th>
+			<th scope="col">{{ "Name"|t('app') }}</th>
+			<th scope="col">{{ "Handle"|t('app') }}</th>
 			{% if multiple %}
 				<td class="thin"></td>
 				<td class="thin"></td>
@@ -15,12 +15,12 @@
 		</thead>
 		<tbody>
 			{% for entryType in section.getEntryTypes() %}
-				<tr data-id="{{ entryType.id }}" data-name="{{ entryType.name }}">
-					<th scope="row" data-title="{{ 'Name'|t }}"><a href="{{ url('settings/sections/' ~ section.id ~ '/entrytypes/' ~ entryType.id) }}">{{ entryType.name }}</a></th>
-					<td data-title="{{ 'Handle'|t }}"><code>{{ entryType.handle }}</code></td>
+				<tr data-id="{{ entryType.id }}" data-name="{{ entryType.name|t('site') }}">
+					<th scope="row" data-title="{{ 'Name'|t('app') }}"><a href="{{ url('settings/sections/' ~ section.id ~ '/entrytypes/' ~ entryType.id) }}">{{ entryType.name|t('site') }}</a></th>
+					<td data-title="{{ 'Handle'|t('app') }}"><code>{{ entryType.handle }}</code></td>
 					{% if multiple %}
-						<td class="thin"><a class="move icon" title="{{ 'Reorder'|t }}" role="button"></a></td>
-						<td class="thin"><a class="delete icon" title="{{ 'Delete'|t }}" role="button"></a></td>
+						<td class="thin"><a class="move icon" title="{{ 'Reorder'|t('app') }}" role="button"></a></td>
+						<td class="thin"><a class="delete icon" title="{{ 'Delete'|t('app') }}" role="button"></a></td>
 					{% endif %}
 				</tr>
 			{% endfor %}
@@ -29,7 +29,7 @@
 
 	{% if section.type != 'single' %}
 		<div class="buttons">
-			<a href="{{ url('settings/sections/' ~ section.id ~ '/entrytypes/new') }}" class="btn submit add icon">{{ "New Entry Type"|t }}</a>
+			<a href="{{ url('settings/sections/' ~ section.id ~ '/entrytypes/new') }}" class="btn submit add icon">{{ "New Entry Type"|t('app') }}</a>
 		</div>
 	{% endif %}
 {% endset %}
@@ -43,7 +43,7 @@
 			minItems: 1,
 			sortable: true,
 			reorderAction: 'sections/reorder-entry-types',
-			confirmDeleteMessage: '{{ "Are you sure you want to delete “{name}” and all entries that use it?"|t }}',
+			confirmDeleteMessage: '{{ "Are you sure you want to delete “{name}” and all entries that use it?"|t('app') }}',
 		});
 	{% endregisterjs %}
 {% endif %}

@@ -1,8 +1,8 @@
 {% extends "_layouts/cp" %}
-{% set title = "Dashboard Settings"|t %}
+{% set title = "Dashboard Settings"|t('app') %}
 
 {% set crumbs = [
-	{ label: "Dashboard"|t, url: url('dashboard') }
+	{ label: "Dashboard"|t('app'), url: url('dashboard') }
 ] %}
 
 
@@ -11,10 +11,10 @@
 
 
 {% set content %}
-	<h2>{{ "My Widgets"|t }}</h2>
+	<h2>{{ "My Widgets"|t('app') }}</h2>
 
 	<p id="nowidgets"{% if widgets|length %} class="hidden"{% endif %}>
-		{{ "You don’t have any widgets yet."|t }}
+		{{ "You don’t have any widgets yet."|t('app') }}
 	</p>
 
 	{% if widgets|length %}
@@ -26,7 +26,7 @@
 						{% set widgetTypeInfo = craft.dashboard.getWidgetTypeInfo(widget) %}
 
 						<tr data-id="{{ widget.id }}" data-name="{{ widgetTitle }}">
-							<th scope="row" data-title="{{ 'Name'|t }}">
+							<th scope="row" data-title="{{ 'Name'|t('app') }}">
 								<a href="{{ url('dashboard/settings/' ~ widget.id) }}">{{ widgetTitle }}</a>
 								{% if not widgetTypeInfo.getIsInvalid() %}
 									{% if widgetTypeInfo.getDisplayName() != widgetTitle %}<span class="light">({{ widgetTypeInfo.getDisplayName() }})</span>{% endif %}
@@ -34,8 +34,8 @@
 									<span class="light error">({{ widget.type }})</span>
 								{% endif %}
 							</th>
-							{% if sortable %}<td class="thin"><a class="move icon" title="{{ 'Reorder'|t }}" role="button"></a></td>{% endif %}
-							<td class="thin"><a class="delete icon" title="{{ 'Delete'|t }}" role="button"></a></td>
+							{% if sortable %}<td class="thin"><a class="move icon" title="{{ 'Reorder'|t('app') }}" role="button"></a></td>{% endif %}
+							<td class="thin"><a class="delete icon" title="{{ 'Delete'|t('app') }}" role="button"></a></td>
 						</tr>
 					{% endif %}
 				{% endfor %}
@@ -44,7 +44,7 @@
 	{% endif %}
 
 	<div class="buttons">
-		<a href="{{ url('dashboard/settings/new') }}" class="btn submit add icon">{{ "New Widget"|t }}</a>
+		<a href="{{ url('dashboard/settings/new') }}" class="btn submit add icon">{{ "New Widget"|t('app') }}</a>
 	</div>
 {% endset %}
 

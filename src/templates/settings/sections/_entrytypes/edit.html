@@ -19,8 +19,8 @@
 		{% if section.type != 'single' %}
 			{{ forms.textField({
 				first: true,
-				label: "Name"|t,
-				instructions: "What this entry type will be called in the CP."|t,
+				label: "Name"|t('app'),
+				instructions: "What this entry type will be called in the CP."|t('app'),
 				id: 'name',
 				name: 'name',
 				value: entryType.name,
@@ -30,8 +30,8 @@
 			}) }}
 
 			{{ forms.textField({
-				label: "Handle"|t,
-				instructions: "How you’ll refer to this entry type in the templates."|t,
+				label: "Handle"|t('app'),
+				instructions: "How you’ll refer to this entry type in the templates."|t('app'),
 				id: 'handle',
 				class: 'code',
 				name: 'handle',
@@ -46,7 +46,7 @@
 
 		{{ forms.checkboxField({
 			first: (section.type == 'single'),
-			label: "Show the Title field?"|t,
+			label: "Show the Title field?"|t('app'),
 			name: 'hasTitleField',
 			toggle: 'titleLabel-container',
 			reverseToggle: 'titleFormat-container',
@@ -55,8 +55,8 @@
 
 		<div id="titleLabel-container"{% if not entryType.hasTitleField %} class="hidden"{% endif %}>
 			{{ forms.textField({
-				label: "Title Field Label"|t,
-				instructions: "What do you want the Title field to be called?"|t,
+				label: "Title Field Label"|t('app'),
+				instructions: "What do you want the Title field to be called?"|t('app'),
 				id: 'titleLabel',
 				name: 'titleLabel',
 				value: entryType.titleLabel,
@@ -67,8 +67,8 @@
 
 		<div id="titleFormat-container"{% if entryType.hasTitleField %} class="hidden"{% endif %}>
 			{{ forms.textField({
-				label: "Title Format"|t,
-				instructions: "What the auto-generated entry titles should look like. You can include tags that output entry properties, such as {ex}."|t({ ex: '<code>{myCustomField}</code>' }),
+				label: "Title Format"|t('app'),
+				instructions: "What the auto-generated entry titles should look like. You can include tags that output entry properties, such as {ex}."|t('app', { ex: '<code>{myCustomField}</code>' }),
 				id: 'titleFormat',
 				name: 'titleFormat',
 				value: entryType.titleFormat,
@@ -86,7 +86,7 @@
 		<hr>
 
 		<div class="buttons">
-			<input type="submit" class="btn submit" value="{{ 'Save'|t }}">
+			<input type="submit" class="btn submit" value="{{ 'Save'|t('app') }}">
 		</div>
 	</form>
 {% endset %}

@@ -7,9 +7,6 @@
 
 namespace craft\app\base;
 
-use League\Flysystem\AdapterInterface;
-use League\Flysystem\Filesystem;
-
 /**
  * VolumeTrait
  *
@@ -45,31 +42,4 @@ trait VolumeTrait
      * @var integer Field layout ID
      */
     public $fieldLayoutId;
-
-    /**
-     * Set to true if the Adapter expects folder names to have trailing slashes
-     *
-     * @var bool
-     */
-    protected $foldersHaveTrailingSlashes = true;
-
-    /**
-     * The Flysystem adapter, created by {@link createAdapter()}.
-     *
-     * @var AdapterInterface
-     */
-    private $_adapter;
-
-    /**
-     * The Flysystem filesystem.
-     *
-     * @var Filesystem
-     */
-    private $_filesystem;
-
-    /**
-     * @var string The element type that global sets' field layouts should be associated with.
-     */
-    private $_fieldLayoutElementType = 'craft\app\elements\Asset';
-
 }
