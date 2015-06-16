@@ -658,11 +658,7 @@ class TemplateCache extends Component
 
             // Get the querystring without the path param.
             if ($queryString = Craft::$app->getRequest()->getQueryStringWithoutPath()) {
-                $queryString = trim($queryString, '&');
-
-                if ($queryString) {
-                    $this->_path .= '?'.$queryString;
-                }
+                $this->_path .= '?'.$queryString;
             }
         }
 
