@@ -383,7 +383,7 @@ class Sections extends Component
         $sectionRecord->name = $section->name;
         $sectionRecord->handle = $section->handle;
         $sectionRecord->type = $section->type;
-        $sectionRecord->enableVersioning = $section->enableVersioning;
+        $sectionRecord->enableVersioning = $section->enableVersioning ? 1 : 0;
 
         if (($isNewSection || $section->type != $oldSection->type) && !$this->canHaveMore($section->type)) {
             $section->addError('type',
