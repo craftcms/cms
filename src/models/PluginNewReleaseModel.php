@@ -23,10 +23,11 @@ class PluginNewReleaseModel extends BaseModel
 	 */
 	protected function defineAttributes()
 	{
-		$attributes['version']  = AttributeType::String;
-		$attributes['date']     = AttributeType::DateTime;
-		$attributes['notes']    = AttributeType::String;
-		$attributes['critical'] = AttributeType::Bool;
+		$attributes['version']       = AttributeType::String;
+		$attributes['date']          = AttributeType::DateTime;
+		$attributes['localizedDate'] = AttributeType::String;
+		$attributes['notes']         = AttributeType::String;
+		$attributes['critical']      = AttributeType::Bool;
 
 		return $attributes;
 	}

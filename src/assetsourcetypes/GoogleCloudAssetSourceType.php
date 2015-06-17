@@ -61,7 +61,7 @@ class GoogleCloudAssetSourceType extends BaseAssetSourceType
 			$bucketList[] = array(
 				'bucket' => $bucket,
 				'location' => $location,
-				'url_prefix' => 'http://'.static::$_endpoint.'/'.$bucket.'/'
+				'urlPrefix' => 'http://'.static::$_endpoint.'/'.$bucket.'/'
 			);
 
 		}
@@ -228,7 +228,11 @@ class GoogleCloudAssetSourceType extends BaseAssetSourceType
 			{
 				$this->_googleCloud->getObject($settings->bucket, $this->_getPathPrefix().$indexEntryModel->uri, $targetPath);
 				clearstatcache();
-				list ($fileModel->width, $fileModel->height) = getimagesize($targetPath);
+
+				list ($width, $height) = ImageHelper::getImageSize($indexEntryModel->uri);
+
+				$fileModel->width = $width;
+				$fileModel->height = $height;
 
 				// Store the local source or delete - maxCacheCloudImageSize is king.
 				craft()->assetTransforms->storeLocalSource($targetPath, $targetPath);
@@ -702,6 +706,11 @@ class GoogleCloudAssetSourceType extends BaseAssetSourceType
 	 */
 	protected function copySourceFile($sourceUri, $targetUri)
 	{
+		if ($sourceUri == $targetUri)
+		{
+			return true;
+		}
+
 		$bucket = $this->getSettings()->bucket;
 		return (bool) @$this->_googleCloud->copyObject($bucket, $sourceUri, $bucket, $targetUri, \GC::ACL_PUBLIC_READ);
 	}

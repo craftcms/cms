@@ -21,6 +21,11 @@ class IncludeResource_TokenParser extends \Twig_TokenParser
 	 */
 	private $_tag;
 
+	/**
+	 * @var boolean
+	 */
+	private $_allowTagPair;
+
 	// Public Methods
 	// =========================================================================
 
@@ -31,9 +36,10 @@ class IncludeResource_TokenParser extends \Twig_TokenParser
 	 *
 	 * @return IncludeResource_TokenParser
 	 */
-	public function __construct($tag)
+	public function __construct($tag, $allowTagPair = false)
 	{
 		$this->_tag = $tag;
+		$this->_allowTagPair = $allowTagPair;
 	}
 
 	/**
@@ -47,23 +53,41 @@ class IncludeResource_TokenParser extends \Twig_TokenParser
 	{
 		$lineno = $token->getLine();
 		$stream = $this->parser->getStream();
-		$nodes['path'] = $this->parser->getExpressionParser()->parseExpression();
 
-		$first = $stream->test(\Twig_Token::NAME_TYPE, 'first');
-
-		if ($first)
+		if ($this->_allowTagPair && ($stream->test(\Twig_Token::NAME_TYPE, 'first') || $stream->test(\Twig_Token::BLOCK_END_TYPE)))
 		{
-			$stream->next();
+			$capture = true;
+
+			$first = $this->_getFirstToken($stream);
+			$stream->expect(\Twig_Token::BLOCK_END_TYPE);
+			$value = $this->parser->subparse(array($this, 'decideBlockEnd'), true);
+			$stream->expect(\Twig_Token::BLOCK_END_TYPE);
+		}
+		else
+		{
+			$capture = false;
+
+			$value = $this->parser->getExpressionParser()->parseExpression();
+			$first = $this->_getFirstToken($stream);
+			$stream->expect(\Twig_Token::BLOCK_END_TYPE);
 		}
 
-		$stream->expect(\Twig_Token::BLOCK_END_TYPE);
+		$nodes = array(
+			'value' => $value,
+		);
 
 		$attributes = array(
 			'function' => $this->_tag,
+			'capture'  => $capture,
 			'first'    => $first,
 		);
 
 		return new IncludeResource_Node($nodes, $attributes, $lineno, $this->getTag());
+	}
+
+	public function decideBlockEnd(\Twig_Token $token)
+	{
+		return $token->test('end'.strtolower($this->_tag));
 	}
 
 	/**
@@ -74,5 +98,20 @@ class IncludeResource_TokenParser extends \Twig_TokenParser
 	public function getTag()
 	{
 		return $this->_tag;
+	}
+
+	// Private Methods
+	// =========================================================================
+
+	private function _getFirstToken($stream)
+	{
+		$first = $stream->test(\Twig_Token::NAME_TYPE, 'first');
+
+		if ($first)
+		{
+			$stream->next();
+		}
+
+		return $first;
 	}
 }

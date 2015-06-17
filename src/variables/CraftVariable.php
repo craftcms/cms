@@ -144,6 +144,14 @@ class CraftVariable
 	}
 
 	/**
+	 * @return CategoryGroupsVariable
+	 */
+	public function categoryGroups()
+	{
+		return new CategoryGroupsVariable();
+	}
+
+	/**
 	 * @return ConfigVariable
 	 */
 	public function config()

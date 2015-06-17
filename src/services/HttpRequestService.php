@@ -127,7 +127,11 @@ class HttpRequestService extends \CHttpRequest
 		}
 
 		// Get the path segments
-		$this->_segments = array_filter(explode('/', $path));
+		$this->_segments = array_filter(explode('/', $path), function($value)
+		{
+			// Explicitly check in case there is a 0 in a segment (i.e. foo/0 or foo/0/bar)
+			return $value !== '';
+		});
 
 		// Is this a CP request?
 		$this->_isCpRequest = ($this->getSegment(1) == craft()->config->get('cpTrigger'));
@@ -139,7 +143,27 @@ class HttpRequestService extends \CHttpRequest
 		}
 
 		// Is this a paginated request?
-		if ($this->_segments)
+		$pageTrigger = craft()->config->get('pageTrigger');
+
+		if (!is_string($pageTrigger) || !strlen($pageTrigger))
+		{
+			$pageTrigger = 'p';
+		}
+
+		// Is this query string-based pagination?
+		if ($pageTrigger[0] === '?')
+		{
+			$pageTrigger = trim($pageTrigger, '?=');
+
+			if ($pageTrigger === 'p')
+			{
+				// Avoid conflict with the main 'p' param
+				$pageTrigger = 'pg';
+			}
+
+			$this->_pageNum = (int) $this->getQuery($pageTrigger, '1');
+		}
+		else if ($this->_segments)
 		{
 			// Match against the entire path string as opposed to just the last segment so that we can support
 			// "/page/2"-style pagination URLs
@@ -1105,7 +1129,7 @@ class HttpRequestService extends \CHttpRequest
 
 		foreach ($parts as $key => $part)
 		{
-			if (mb_strpos($part, 'p=') !== false)
+			if (mb_strpos($part, craft()->urlManager->pathParam.'=') === 0)
 			{
 				unset($parts[$key]);
 				break;
@@ -1195,6 +1219,34 @@ class HttpRequestService extends \CHttpRequest
 
 		// Close the session.
 		craft()->session->close();
+	}
+
+	/**
+	 * Returns whether the client is running "Windows", "Mac", "Linux" or "Other", based on the
+	 * browser's UserAgent string.
+	 *
+	 * @return string The OS the client is running.
+	 */
+	public function getClientOs()
+	{
+		$userAgent = $this->getUserAgent();
+
+		if (preg_match('/Linux/', $userAgent))
+		{
+			return 'Linux';
+		}
+		elseif (preg_match('/Win/', $userAgent))
+		{
+			return 'Windows';
+		}
+		elseif (preg_match('/Mac/', $userAgent))
+		{
+			return 'Mac';
+		}
+		else
+		{
+			return 'Other';
+		}
 	}
 
 	/**

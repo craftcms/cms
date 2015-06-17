@@ -14,6 +14,8 @@
 
 {% set canPublish = currentUser.can('publishEntries'~permissionSuffix) %}
 
+{% hook "cp.entries.edit" %}
+
 
 {% block main %}
 	<form id="entry-form" method="post" accept-charset="UTF-8" data-saveshortcut data-saveshortcut-redirect="{{ continueEditingUrl }}" data-confirm-unload>
@@ -100,7 +102,7 @@
 									id: 'parentId',
 									name: 'parentId',
 									elementType: elementType,
-									addButtonLabel: "Choose"|t,
+									selectionLabel: "Choose"|t,
 									sources: ['section:'~section.id],
 									criteria: parentOptionCriteria,
 									limit: 1,
@@ -114,7 +116,7 @@
 									id: 'author',
 									name: 'author',
 									elementType: userElementType,
-									addButtonLabel: "Choose"|t,
+									selectionLabel: "Choose"|t,
 									criteria: authorOptionCriteria,
 									limit: 1,
 									elements: (author is defined and author ? [author])
@@ -171,7 +173,7 @@
 
 					</div><!--/pane-->
 
-					{% if isVersion and entry.revisionNotes %}
+					{% if entry.revisionNotes %}
 						<div class="pane">
 							<h6>{{ "Version Notes"|t }}</h6>
 							<p class="light">{{ entry.revisionNotes }}</p>
@@ -179,6 +181,9 @@
 					{% endif %}
 
 				{% endif %}
+
+				{# Give plugins a chance to add other panes here #}
+				{% hook "cp.entries.edit.right-pane" %}
 
 				{# Action buttons #}
 
@@ -251,7 +256,10 @@
 										<div class="btn submit menubtn"></div>
 										<div class="menu">
 											<ul>
-												<li><a class="formsubmit" data-redirect="{{ continueEditingUrl }}">{{ "Save and continue editing"|t }}</a></li>
+												<li><a class="formsubmit" data-redirect="{{ continueEditingUrl }}">
+													{{ "Save and continue editing"|t }}
+													{{ forms.optionShortcutLabel('S') }}
+												</a></li>
 
 												{% set nextEntryParams = [] %}
 												{% if showEntryTypes %}
@@ -276,11 +284,11 @@
 										</div>
 									</div>
 								</td>
-								{% if CraftEdition >= CraftClient and section.enableVersioning %}
-									<td>
+								<td>
+									{% if CraftEdition >= CraftClient and section.enableVersioning %}
 										<input type="text" name="revisionNotes" class="fullwidth textline" placeholder="{{ 'Notes about your changes'|t }}" autocomplete="off">
-									</td>
-								{% endif %}
+									{% endif %}
+								</td>
 							</tr>
 						</table>
 					{% else %}

@@ -337,8 +337,10 @@ class UsersService extends BaseApplicationComponent
 					if ($user->username != $oldUsername)
 					{
 						// Rename the user's photo directory
-						$oldFolder = craft()->path->getUserPhotosPath().$oldUsername;
-						$newFolder = craft()->path->getUserPhotosPath().$user->username;
+						$cleanOldUsername = AssetsHelper::cleanAssetName($oldUsername, false);
+						$cleanUsername = AssetsHelper::cleanAssetName($user->username, false);
+						$oldFolder = craft()->path->getUserPhotosPath().$cleanOldUsername;
+						$newFolder = craft()->path->getUserPhotosPath().$cleanUsername;
 
 						if (IOHelper::folderExists($newFolder))
 						{
@@ -570,7 +572,7 @@ class UsersService extends BaseApplicationComponent
 	 */
 	public function saveUserPhoto($fileName, Image $image, UserModel $user)
 	{
-		$userName = IOHelper::cleanFilename($user->username);
+		$userName = AssetsHelper::cleanAssetName($user->username, false);
 		$userPhotoFolder = craft()->path->getUserPhotosPath().$userName.'/';
 		$targetFolder = $userPhotoFolder.'original/';
 
@@ -605,7 +607,8 @@ class UsersService extends BaseApplicationComponent
 	 */
 	public function deleteUserPhoto(UserModel $user)
 	{
-		$folder = craft()->path->getUserPhotosPath().$user->username;
+		$username = AssetsHelper::cleanAssetName($user->username, false);
+		$folder = craft()->path->getUserPhotosPath().$username;
 
 		if (IOHelper::folderExists($folder))
 		{
@@ -810,11 +813,21 @@ class UsersService extends BaseApplicationComponent
 		if ($user->unverifiedEmail)
 		{
 			$userRecord = $this->_getUserRecordById($user->id);
+			$oldEmail = $userRecord->email;
 			$userRecord->email = $user->unverifiedEmail;
 
 			if (craft()->config->get('useEmailAsUsername'))
 			{
 				$userRecord->username = $user->unverifiedEmail;
+
+				$oldProfilePhotoPath = craft()->path->getUserPhotosPath().AssetsHelper::cleanAssetName($oldEmail);
+				$newProfilePhotoPath = craft()->path->getUserPhotosPath().AssetsHelper::cleanAssetName($user->unverifiedEmail);
+
+				// Update the user profile photo folder name, if it exists.
+				if (IOHelper::folderExists($oldProfilePhotoPath))
+				{
+					IOHelper::rename($oldProfilePhotoPath, $newProfilePhotoPath);
+				}
 			}
 
 			$userRecord->unverifiedEmail = null;

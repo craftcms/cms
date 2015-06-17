@@ -17,6 +17,16 @@ class Image
 	// =========================================================================
 
 	/**
+	 * @var int The minimum width that the image should be loaded with if it’s an SVG.
+	 */
+	public $minSvgWidth;
+
+	/**
+	 * @var int The minimum height that the image should be loaded with if it’s an SVG.
+	 */
+	public $minSvgHeight;
+
+	/**
 	 * @var string
 	 */
 	private $_imageSourcePath;
@@ -45,6 +55,16 @@ class Image
 	 * @var \Imagine\Image\ImagineInterface
 	 */
 	private $_instance;
+
+	/**
+	 * @var \Imagine\Image\Palette\RGB
+	 */
+	private $_palette;
+
+	/**
+	 * @var \Imagine\Image\FontInterface
+	 */
+	private $_font;
 
 	// Public Methods
 	// =========================================================================
@@ -126,15 +146,68 @@ class Image
 			throw new Exception(Craft::t("Not enough memory available to perform this image operation."));
 		}
 
-		$imageInfo = @getimagesize($path);
+		$extension = IOHelper::getExtension($path);
 
-		if (!is_array($imageInfo))
+		if ($extension === 'svg')
 		{
-			throw new Exception(Craft::t('The file “{path}” does not appear to be an image.', array('path' => $path)));
+			if (!craft()->images->isImagick())
+			{
+				throw new Exception(Craft::t('The file “{path}” does not appear to be an image.', array('path' => $path)));
+			}
+
+			$svg = IOHelper::getFileContents($path);
+
+			if ($this->minSvgWidth !== null && $this->minSvgHeight !== null)
+			{
+				// Does the <svg> node contain valid `width` and `height` attributes?
+				list($width, $height) = ImageHelper::parseSvgSize($svg);
+
+				if ($width !== null && $height !== null)
+				{
+					$scale = 1;
+
+					if ($width < $this->minSvgWidth)
+					{
+						$scale = $this->minSvgWidth / $width;
+					}
+
+					if ($height < $this->minSvgHeight)
+					{
+						$scale = max($scale, ($this->minSvgHeight / $height));
+					}
+
+					$width = round($width * $scale);
+					$height = round($height * $scale);
+
+					$svg = preg_replace(ImageHelper::SVG_WIDTH_RE, "\${1}{$width}px\"", $svg);
+					$svg = preg_replace(ImageHelper::SVG_HEIGHT_RE, "\${1}{$height}px\"", $svg);
+				}
+			}
+
+			try
+			{
+				$this->_image = $this->_instance->load($svg);
+			}
+			catch (\Imagine\Exception\RuntimeException $e)
+			{
+				// Invalid SVG. Maybe it's missing its DTD?
+				$svg = '<?xml version="1.0" encoding="UTF-8" standalone="no"?>'.$svg;
+				$this->_image = $this->_instance->load($svg);
+			}
+		}
+		else
+		{
+			$imageInfo = @getimagesize($path);
+
+			if (!is_array($imageInfo))
+			{
+				throw new Exception(Craft::t('The file “{path}” does not appear to be an image.', array('path' => $path)));
+			}
+
+			$this->_image = $this->_instance->open($path);
 		}
 
-		$this->_image = $this->_instance->open($path);
-		$this->_extension = IOHelper::getExtension($path);
+		$this->_extension = $extension;
 		$this->_imageSourcePath = $path;
 
 		if ($this->_extension == 'gif')
@@ -434,6 +507,68 @@ class Image
 
 			return array();
 		}
+	}
+
+	/**
+	 * Set properties for text drawing on the image.
+	 *
+	 * @param $fontFile string path to the font file on server
+	 * @param $size     int    font size to use
+	 * @param $color    string font color to use in hex format
+	 *
+	 * @return null
+	 */
+	public function setFontProperties($fontFile, $size, $color)
+	{
+		if (empty($this->_palette))
+		{
+			$this->_palette = new \Imagine\Image\Palette\RGB();
+		}
+
+		$this->_font = $this->_instance->font($fontFile, $size, $this->_palette->color($color));
+	}
+
+	/**
+	 * Get the bounding text box for a text string and an angle
+	 *
+	 * @param $text
+	 * @param int $angle
+	 *
+	 * @throws Exception
+	 * @return \Imagine\Image\BoxInterface
+	 */
+	public function getTextBox($text, $angle = 0)
+	{
+		if (empty($this->_font))
+		{
+			throw new Exception(Craft::t("No font properties have been set. Call Image::setFontProperties() first."));
+		}
+
+		return $this->_font->box($text, $angle);
+	}
+
+	/**
+	 * Write text on an image
+	 *
+	 * @param     $text
+	 * @param     $x
+	 * @param     $y
+	 * @param int $angle
+	 *
+	 * @return null
+	 * @throws Exception
+	 */
+	public function writeText($text, $x, $y, $angle = 0)
+	{
+
+		if (empty($this->_font))
+		{
+			throw new Exception(Craft::t("No font properties have been set. Call Image::setFontProperties() first."));
+		}
+
+		$point = new \Imagine\Image\Point($x, $y);
+
+		$this->_image->draw()->text($text, $this->_font, $point, $angle);
 	}
 
 	// Private Methods

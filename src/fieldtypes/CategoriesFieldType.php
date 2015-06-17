@@ -98,4 +98,17 @@ class CategoriesFieldType extends BaseElementFieldType
 			craft()->relations->saveRelations($this->model, $this->element, $categoryIds);
 		}
 	}
+
+	// Protected Methods
+	// =========================================================================
+
+	/**
+	 * @inheritDoc BaseElementFieldType::getAddButtonLabel()
+	 *
+	 * @return string
+	 */
+	protected function getAddButtonLabel()
+	{
+		return Craft::t('Add a category');
+	}
 }

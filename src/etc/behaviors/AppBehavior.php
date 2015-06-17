@@ -249,7 +249,15 @@ class AppBehavior extends BaseBehavior
 	{
 		$info = $this->getInfo();
 		$info->edition = $edition;
-		return $this->saveInfo($info);
+
+		$result = $this->saveInfo($info);
+
+		// Fire an 'onEditionChange' event
+		$this->getOwner()->onEditionChange(new Event($this, array(
+			'edition' => $edition
+		)));
+
+		return $result;
 	}
 
 	/**
@@ -565,7 +573,7 @@ class AppBehavior extends BaseBehavior
 			}
 			else
 			{
-				if (craft()->getComponent('request', false))
+				if (craft()->getComponent('request', false) && !craft()->isConsole())
 				{
 					// We tried to get the language, but something went wrong. Use fallback to prevent infinite loop.
 					$fallbackLanguage = $this->_getFallbackLanguage();
@@ -749,6 +757,12 @@ class AppBehavior extends BaseBehavior
 						{
 							Craft::log("Tried to determine the user's preferred locale, but got this exception: ".$e->getMessage(), LogLevel::Error);
 						}
+					}
+
+					// If they've set a default CP language, use it here.
+					if ($defaultCpLanguage = craft()->config->get('defaultCpLanguage'))
+					{
+						return $defaultCpLanguage;
 					}
 
 					// Otherwise check if the browser's preferred language matches any of the site locales

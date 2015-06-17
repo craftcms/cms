@@ -828,7 +828,7 @@ abstract class BaseElementModel extends BaseModel
 
 			if (!$this->_content)
 			{
-				$this->_content = craft()->content->createContent($this);
+				$this->_content = $this->createContent();
 			}
 		}
 
@@ -848,7 +848,7 @@ abstract class BaseElementModel extends BaseModel
 		{
 			if (!isset($this->_content))
 			{
-				$this->_content = craft()->content->createContent($this);
+				$this->_content = $this->createContent();
 			}
 
 			$this->_content->setAttributes($content);
@@ -1126,6 +1126,16 @@ abstract class BaseElementModel extends BaseModel
 			'rgt'           => AttributeType::Number,
 			'level'         => AttributeType::Number,
 		);
+	}
+
+	/**
+	 * Creates the content model associated with this element.
+	 *
+	 * @return ContentModel The content model associated with this element
+	 */
+	protected function createContent()
+	{
+		return craft()->content->createContent($this);
 	}
 
 	// Private Methods

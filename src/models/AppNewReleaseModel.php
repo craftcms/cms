@@ -26,6 +26,7 @@ class AppNewReleaseModel extends BaseModel
 		$attributes['version']       = AttributeType::String;
 		$attributes['build']         = AttributeType::String;
 		$attributes['date']          = AttributeType::DateTime;
+		$attributes['localizedDate'] = AttributeType::String;
 		$attributes['notes']         = AttributeType::String;
 		$attributes['type']          = AttributeType::String;
 		$attributes['critical']      = AttributeType::Bool;

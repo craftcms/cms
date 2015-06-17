@@ -127,6 +127,8 @@ class RichTextFieldType extends BaseFieldType
 		craft()->templates->includeJs('new Craft.RichTextInput(' .
 			'"'.craft()->templates->namespaceInputId($id).'", ' .
 			JsonHelper::encode($this->_getSectionSources()).', ' .
+			JsonHelper::encode($this->_getCategorySources()).', ' .
+			JsonHelper::encode($this->_getAssetSources()).', ' .
 			'"'.(isset($this->element) ? $this->element->locale : craft()->language).'", ' .
 			$configJs.', ' .
 			'"'.static::$_redactorLang.'"' .
@@ -309,6 +311,43 @@ class RichTextFieldType extends BaseFieldType
 	}
 
 	/**
+	 * Get available category sources.
+	 *
+	 * @return array
+	 */
+	private function _getCategorySources()
+	{
+		$sources = array();
+		$categoryGroups = craft()->categories->getAllGroups();
+
+		foreach ($categoryGroups as $categoryGroup)
+		{
+			if ($categoryGroup->hasUrls)
+			{
+				$sources[] = 'group:'.$categoryGroup->id;
+			}
+		}
+
+		return $sources;
+	}
+
+	/**
+	 * @return array
+	 */
+	private function _getAssetSources()
+	{
+		$sources = array();
+		$assetSourceIds = craft()->assetSources->getAllSourceIds();
+
+		foreach ($assetSourceIds as $assetSourceId)
+		{
+			$sources[] = 'asset:'.$assetSourceId;
+		}
+
+		return $sources;
+	}
+
+	/**
 	 * Returns the Redactor config JS used by this field.
 	 *
 	 * @return string
@@ -349,7 +388,7 @@ class RichTextFieldType extends BaseFieldType
 		$this->_maybeIncludeRedactorPlugin($configJs, 'video', false);
 		$this->_maybeIncludeRedactorPlugin($configJs, 'pagebreak', true);
 
-		craft()->templates->includeTranslations('Insert image', 'Insert URL', 'Choose image', 'Link', 'Link to an entry', 'Insert link', 'Unlink', 'Link to an asset');
+		craft()->templates->includeTranslations('Insert image', 'Insert URL', 'Choose image', 'Link', 'Link to an entry', 'Insert link', 'Unlink', 'Link to an asset', 'Link to a category');
 
 		craft()->templates->includeJsResource('js/RichTextInput.js');
 

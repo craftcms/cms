@@ -1,8 +1,16 @@
 {% requireEdition CraftPro %}
 
-{% macro permissionList(context, permissions, id, hidden) %}
+{% includeTranslations
+    "Select All",
+    "Deselect All"
+%}
+
+{% includeJsResource 'js/UserPermissions.js' %}
+{% includeCssResource 'css/user-permissions.css' %}
+
+{% macro permissionList(context, permissions, id, disabled) %}
 	{% from "_includes/forms" import checkbox %}
-	<ul{% if id %} id="{{ id|replace(':', '-') }}"{% endif %} class="indent{% if hidden %} hidden{% endif %}">
+	<ul{% if id %} id="{{ id|replace(':', '-') }}"{% endif %}>
 		{% for permissionName, props in permissions %}
 			{% set isInGroupPermissions = (context.groupPermissions is defined and permissionName|lower in context.groupPermissions) %}
 			{% set checked = (isInGroupPermissions
@@ -19,8 +27,7 @@
 					name: 'permissions[]',
 					value: permissionName,
 					checked: checked,
-					disabled: isInGroupPermissions,
-					toggle: (hasNestedPermissions ? permissionName|replace(':', '-')~'-nested' : null)
+					disabled: disabled,
 				}) }}
 				{% if hasNestedPermissions %}
 					{{ _self.permissionList(context, props.nested, permissionName~'-nested', not checked) }}
@@ -30,8 +37,12 @@
 	</ul>
 {% endmacro %}
 
-{% for category, catPermissions in craft.userPermissions.getAllPermissions() %}
-	<h3>{{ category }}</h3>
 
-	{{ _self.permissionList(_context, catPermissions) }}
+{% for category, catPermissions in craft.userPermissions.getAllPermissions() %}
+	<div class="user-permissions">
+		<h3>{{ category }}</h3>
+		<div class="select-all"></div>
+
+		{{ _self.permissionList(_context, catPermissions) }}
+	</div>
 {% endfor %}

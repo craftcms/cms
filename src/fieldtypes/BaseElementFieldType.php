@@ -391,7 +391,7 @@ abstract class BaseElementFieldType extends BaseFieldType
 			'criteria'           => $selectionCriteria,
 			'sourceElementId'    => (isset($this->element->id) ? $this->element->id : null),
 			'limit'              => ($this->allowLimit ? $settings->limit : null),
-			'addButtonLabel'     => $this->getAddButtonLabel(),
+			'selectionLabel'     => Craft::t($this->getSettings()->selectionLabel),
 		);
 	}
 
@@ -501,6 +501,8 @@ abstract class BaseElementFieldType extends BaseFieldType
 		{
 			$settings['limit'] = array(AttributeType::Number, 'min' => 0);
 		}
+
+		$settings['selectionLabel'] = array(AttributeType::String, 'default' => $this->getAddButtonLabel());
 
 		return $settings;
 	}

@@ -7,17 +7,21 @@
 Craft.RichTextInput = Garnish.Base.extend(
 {
 	id: null,
-	sectionSources: null,
+	entrySources: null,
+	categorySources: null,
+	assetSources: null,
 	elementLocale: null,
 	redactorConfig: null,
 
 	$textarea: null,
 	redactor: null,
 
-	init: function(id, sectionSources, elementLocale, redactorConfig, redactorLang)
+	init: function(id, entrySources, categorySources, assetSources, elementLocale, redactorConfig, redactorLang)
 	{
 		this.id = id;
-		this.sectionSources = sectionSources;
+		this.entrySources = entrySources;
+		this.categorySources = categorySources;
+		this.assetSources = assetSources;
 		this.elementLocale = elementLocale;
 		this.redactorConfig = redactorConfig;
 
@@ -134,10 +138,11 @@ Craft.RichTextInput = Garnish.Base.extend(
 
 		if ($linkBtn)
 		{
-			this.redactor.button.addDropdown($linkBtn,
+			var dropdownOptions = {};
+
+			if (this.entrySources.length)
 			{
-				link_entry:
-				{
+				dropdownOptions.link_entry = {
 					title: Craft.t('Link to an entry'),
 					func: $.proxy(function()
 					{
@@ -147,7 +152,7 @@ Craft.RichTextInput = Garnish.Base.extend(
 						{
 							this.entrySelectionModal = Craft.createElementSelectorModal('Entry', {
 								storageKey: 'RichTextFieldType.LinkToEntry',
-								sources: this.sectionSources,
+								sources: this.entrySources,
 								criteria: { locale: this.elementLocale },
 								onSelect: $.proxy(function(entries)
 								{
@@ -171,9 +176,51 @@ Craft.RichTextInput = Garnish.Base.extend(
 							this.entrySelectionModal.show();
 						}
 					}, this)
-				},
-				link_asset:
-				{
+				};
+			};
+
+			if (this.categorySources.length)
+			{
+				dropdownOptions.link_category = {
+					title: Craft.t('Link to a category'),
+					func: $.proxy(function()
+					{
+						this.redactor.selection.save();
+
+						if (typeof this.categorySelectionModal == 'undefined')
+						{
+							this.categorySelectionModal = Craft.createElementSelectorModal('Category', {
+								storageKey: 'RichTextFieldType.LinkToCategory',
+								sources: this.categorySources,
+								criteria: { locale: this.elementLocale },
+								onSelect: $.proxy(function(categories)
+								{
+									if (categories.length)
+									{
+										this.redactor.selection.restore();
+										var category  = categories[0],
+											url       = category.url+'#category:'+category.id,
+											selection = this.redactor.selection.getText(),
+											title = selection.length > 0 ? selection : category.label;
+										this.redactor.insert.node($('<a href="'+url+'">'+title+'</a>')[0]);
+										this.redactor.code.sync();
+									}
+									this.redactor.dropdown.hideAll();
+								}, this),
+								closeOtherModals: false
+							});
+						}
+						else
+						{
+							this.categorySelectionModal.show();
+						}
+					}, this)
+				};
+			}
+
+			if (this.assetSources.length)
+			{
+				dropdownOptions.link_asset = {
 					title: Craft.t('Link to an asset'),
 					func: $.proxy(function()
 					{
@@ -207,18 +254,20 @@ Craft.RichTextInput = Garnish.Base.extend(
 							this.assetLinkSelectionModal.show();
 						}
 					}, this)
-				},
-				link:
-				{
-					title: Craft.t('Insert link'),
-					func:  'link.show'
-				},
-				unlink:
-				{
-					title: Craft.t('Unlink'),
-					func:  'link.unlink'
 				}
-			});
+			}
+
+			dropdownOptions.link = {
+				title: Craft.t('Insert link'),
+				func:  'link.show'
+			};
+
+			dropdownOptions.unlink = {
+				title: Craft.t('Unlink'),
+				func:  'link.unlink'
+			}
+
+			this.redactor.button.addDropdown($linkBtn, dropdownOptions);
 		}
 	},
 

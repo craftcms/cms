@@ -37,7 +37,10 @@
 				<div class="btn submit menubtn"></div>
 				<div class="menu">
 					<ul>
-						<li><a class="formsubmit" data-redirect="users/{id}">{{ "Save and continue editing"|t }}</a></li>
+						<li><a class="formsubmit" data-redirect="users/{id}">
+							{{ "Save and continue editing"|t }}
+							{{ forms.optionShortcutLabel('S') }}
+						</a></li>
 						<li><a class="formsubmit" data-redirect="users/new">{{ "Save and add another"|t }}</a></li>
 					</ul>
 				</div>
@@ -221,7 +224,7 @@
 								{% for group in allGroups %}
 									<li>
 										{{ forms.checkbox({
-											label: group.name,
+											label: group.name|t,
 											name: 'groups[]',
 											value: group.id,
 											checked: (group.id in userGroups|keys)

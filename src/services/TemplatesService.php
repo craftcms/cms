@@ -128,7 +128,7 @@ class TemplatesService extends BaseApplicationComponent
 	 * @param string $loaderClass The name of the class that should be initialized as the Twig instance’s template
 	 *                            loader. If no class is passed in, {@link TemplateLoader} will be used.
 	 *
-	 * @return \Twig_Environment The Twig Environment instance.
+	 * @return TwigEnvironment The Twig Environment instance.
 	 */
 	public function getTwig($loaderClass = null)
 	{
@@ -142,7 +142,7 @@ class TemplatesService extends BaseApplicationComponent
 			$loader = new $loaderClass();
 			$options = $this->_getTwigOptions();
 
-			$twig = new \Twig_Environment($loader, $options);
+			$twig = new TwigEnvironment($loader, $options);
 
 			$twig->addExtension(new \Twig_Extension_StringLoader());
 			$twig->addExtension(new CraftTwigExtension());
@@ -158,6 +158,9 @@ class TemplatesService extends BaseApplicationComponent
 
 			// Give plugins a chance to add their own Twig extensions
 			$this->_addPluginTwigExtensions($twig);
+
+			// Set our custom parser to support "include" tags using the capture mode
+			$twig->setParser(new TwigParser($twig));
 
 			$this->_twigs[$loaderClass] = $twig;
 		}
@@ -374,7 +377,7 @@ class TemplatesService extends BaseApplicationComponent
 	 */
 	public function includeFootNode($node, $first = false)
 	{
-		craft()->deprecator->log('TemplatesService::includeFootNode()', 'TemplatesService::includeFootNode() has been deprecated. Use includeFootNode() instead.');
+		craft()->deprecator->log('TemplatesService::includeFootNode()', 'TemplatesService::includeFootNode() has been deprecated. Use includeFootHtml() instead.');
 		$this->includeFootHtml($node, $first);
 	}
 
@@ -1285,7 +1288,18 @@ class TemplatesService extends BaseApplicationComponent
 			{
 				foreach ($pluginExtensions as $extension)
 				{
-					$twig->addExtension($extension);
+					// It's possible for a plugin to register multiple extensions.
+					if (is_array($extension))
+					{
+						foreach ($extension as $innerExtension)
+						{
+							$twig->addExtension($innerExtension);
+						}
+					}
+					else
+					{
+						$twig->addExtension($extension);
+					}
 				}
 			}
 			catch (\LogicException $e)

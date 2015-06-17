@@ -13,6 +13,11 @@ namespace Craft;
  */
 class MatrixBlockModel extends BaseElementModel
 {
+	// Static
+	// =========================================================================
+
+	private static $_preloadedFields = array();
+
 	// Properties
 	// =========================================================================
 
@@ -183,6 +188,37 @@ class MatrixBlockModel extends BaseElementModel
 
 			'collapsed'   => AttributeType::Bool,
 		));
+	}
+
+	/**
+	 * @inheritDoc BaseElementModel::createContent()
+	 */
+	protected function createContent()
+	{
+		$fieldId = $this->fieldId;
+
+		if (!isset(self::$_preloadedFields[$fieldId]))
+		{
+			$blockTypes = craft()->matrix->getBlockTypesByFieldId($fieldId);
+
+			if (count($blockTypes) > 1)
+			{
+				$contexts = array();
+
+				foreach ($blockTypes as $blockType)
+				{
+					$contexts[] = 'matrixBlockType:'.$blockType->id;
+				}
+
+				// Preload them to save ourselves some DB queries, and discard
+				craft()->fields->getAllFields(null, $contexts);
+			}
+
+			// Don't do this again for this field
+			self::$_preloadedFields[$fieldId] = true;
+		}
+
+		return parent::createContent();
 	}
 
 	// Private Methods

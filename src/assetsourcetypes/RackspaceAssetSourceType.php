@@ -257,7 +257,11 @@ class RackspaceAssetSourceType extends BaseAssetSourceType
 				$this->_downloadFile($this->_getPathPrefix().$uriPath, $targetPath);
 
 				clearstatcache();
-				list ($fileModel->width, $fileModel->height) = getimagesize($targetPath);
+
+				list ($width, $height) = ImageHelper::getImageSize($indexEntryModel->uri);
+
+				$fileModel->width = $width;
+				$fileModel->height = $height;
 
 				// Store the local source or delete - maxCacheCloudImageSize is king.
 				craft()->assetTransforms->storeLocalSource($targetPath, $targetPath);
@@ -1221,6 +1225,11 @@ class RackspaceAssetSourceType extends BaseAssetSourceType
 	 */
 	private function _copyFile($sourceUri, $targetUri)
 	{
+		if ($sourceUri == $targetUri)
+		{
+			return true;
+		}
+
 		$targetUri = '/'.ltrim($targetUri, '/');
 		$this->_doAuthenticatedRequest(static::RACKSPACE_STORAGE_OPERATION, $sourceUri, 'COPY', array('Destination: '.$targetUri));
 	}

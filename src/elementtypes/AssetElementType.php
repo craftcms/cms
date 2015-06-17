@@ -279,15 +279,16 @@ class AssetElementType extends BaseElementType
 	public function defineCriteriaAttributes()
 	{
 		return array(
-			'sourceId' => AttributeType::Number,
-			'source'   => AttributeType::Handle,
-			'folderId' => AttributeType::Number,
-			'filename' => AttributeType::String,
-			'kind'     => AttributeType::Mixed,
-			'width'    => AttributeType::Number,
-			'height'   => AttributeType::Number,
-			'size'     => AttributeType::Number,
-			'order'    => array(AttributeType::String, 'default' => 'title asc'),
+			'filename'          => AttributeType::String,
+			'folderId'          => AttributeType::Number,
+			'height'            => AttributeType::Number,
+			'includeSubfolders' => AttributeType::Bool,
+			'kind'              => AttributeType::Mixed,
+			'order'             => array(AttributeType::String, 'default' => 'title asc'),
+			'size'              => AttributeType::Number,
+			'source'            => AttributeType::Handle,
+			'sourceId'          => AttributeType::Number,
+			'width'             => AttributeType::Number,
 		);
 	}
 
@@ -322,7 +323,15 @@ class AssetElementType extends BaseElementType
 
 		if ($criteria->folderId)
 		{
-			$query->andWhere(DbHelper::parseParam('assetfiles.folderId', $criteria->folderId, $query->params));
+			if ($criteria->includeSubfolders)
+			{
+				$folders = craft()->assets->getAllDescendantFolders(craft()->assets->getFolderById($criteria->folderId));
+				$query->andWhere(DbHelper::parseParam('assetfiles.folderId', array_keys($folders), $query->params));
+			}
+			else
+			{
+				$query->andWhere(DbHelper::parseParam('assetfiles.folderId', $criteria->folderId, $query->params));
+			}
 		}
 
 		if ($criteria->filename)
