@@ -62,11 +62,6 @@ class Content extends Model
      */
     private $_requiredFields;
 
-    /**
-     * @var
-     */
-    private $_attributeConfigs;
-
     // Public Methods
     // =========================================================================
 
@@ -132,44 +127,19 @@ class Content extends Model
      */
     public function rules()
     {
-        return [
-            [
-                ['id'],
-                'number',
-                'min' => -2147483648,
-                'max' => 2147483647,
-                'integerOnly' => true
-            ],
-            [
-                ['elementId'],
-                'number',
-                'min' => -2147483648,
-                'max' => 2147483647,
-                'integerOnly' => true
-            ],
+        $rules = [
+            [['id'], 'number', 'min' => -2147483648, 'max' => 2147483647, 'integerOnly' => true],
+            [['elementId'], 'number', 'min' => -2147483648, 'max' => 2147483647, 'integerOnly' => true],
             [['locale'], 'craft\\app\\validators\\Locale'],
             [['linkColor'], 'string', 'length' => 7],
             [['title'], 'string', 'max' => 255],
-            [
-                [
-                    'id',
-                    'elementId',
-                    'locale',
-                    'title',
-                    'body',
-                    'description',
-                    'heading',
-                    'ingredients',
-                    'linkColor',
-                    'metaDescription',
-                    'photos',
-                    'siteIntro',
-                    'tags'
-                ],
-                'safe',
-                'on' => 'search'
-            ],
         ];
+
+        if (!empty($this->_requiredFields)) {
+            $rules[] = [$this->_requiredFields, 'required'];
+        }
+
+        return $rules;
     }
 
     /**
@@ -182,21 +152,6 @@ class Content extends Model
     public function setRequiredFields($requiredFields)
     {
         $this->_requiredFields = $requiredFields;
-
-        // Have the attributes already been defined?
-        if (isset($this->_attributeConfigs)) {
-            foreach (Craft::$app->getFields()->getAllFields() as $field) {
-                if (in_array($field->id,
-                        $this->_requiredFields) && isset($this->_attributeConfigs[$field->handle])
-                ) {
-                    $this->_attributeConfigs[$field->handle]['required'] = true;
-                }
-            }
-
-            if (in_array('title', $this->_requiredFields)) {
-                $this->_attributeConfigs['title']['required'] = true;
-            }
-        }
     }
 
     /**

@@ -213,7 +213,7 @@ class Content extends Component
                 $attributesToValidate[] = $field->handle;
 
                 if ($field->required) {
-                    $requiredFields[] = $field->id;
+                    $requiredFields[] = $field->handle;
                 }
             }
         }
