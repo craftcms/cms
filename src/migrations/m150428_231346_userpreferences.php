@@ -5,6 +5,8 @@ namespace craft\app\migrations;
 use Craft;
 use craft\app\db\Migration;
 use craft\app\db\Query;
+use craft\app\helpers\JsonHelper;
+use craft\app\helpers\MigrationHelper;
 
 /**
  * m150428_231346_userpreferences migration.
@@ -41,8 +43,7 @@ class m150428_231346_userpreferences extends Migration
         $this->_createUserPrefsIndexAndForeignKey();
         $this->_populateUserPrefsTable();
 
-        $this->dropForeignKey($this->db->getForeignKeyName($this->_usersTable,
-            'preferredLocale'), $this->_usersTable);
+        MigrationHelper::dropForeignKeyIfExists($this->_usersTable, ['preferredLocale'], $this);
         $this->dropColumn($this->_usersTable, 'preferredLocale');
         $this->dropColumn($this->_usersTable, 'weekStartDay');
     }
