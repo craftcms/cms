@@ -7,7 +7,9 @@ use League\Flysystem\FileExistsException;
 use League\Flysystem\FileNotFoundException;
 
 /**
- * Interface VolumeInterface
+ * VolumeInterface defines the common interface to be implemented by volume classes.
+ *
+ * A class implementing this interface should also use [[SavableComponentTrait]] and [[VolumeTrait]].
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
