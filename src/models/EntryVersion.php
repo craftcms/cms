@@ -23,7 +23,7 @@ class EntryVersion extends BaseEntryRevisionModel
     /**
      * @inheritdoc
      */
-    public static function populate($model, $config)
+    public static function populateModel($model, $config)
     {
         // Merge the version and entry data
         $entryData = $config['data'];
