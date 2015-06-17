@@ -6,7 +6,6 @@ use craft\app\errors\VolumeFolderExistsException;
 use League\Flysystem\FileExistsException;
 use League\Flysystem\FileNotFoundException;
 
-
 /**
  * Interface VolumeInterface
  *
@@ -17,7 +16,7 @@ use League\Flysystem\FileNotFoundException;
  * @package   craft.app.base
  * @since     3.0
  */
-interface VolumeInterface
+interface VolumeInterface extends SavableComponentInterface
 {
     // Static
     // =========================================================================
