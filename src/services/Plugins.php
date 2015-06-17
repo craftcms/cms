@@ -493,24 +493,17 @@ class Plugins extends Component
             return null;
         }
 
+        // Make this plugin's classes autoloadable
+        Craft::setAlias("@craft/plugins/$handle", "@plugins/$handle");
+
         $class = $config['class'];
-
-        // Skip the autoloader since we haven't added a @craft\plugins\PluginHandle alias yet
-        if (!class_exists($class, false)) {
-            $path = Craft::$app->getPath()->getPluginsPath()."/$handle/Plugin.php";
-
-            if (($path = IOHelper::fileExists($path)) !== false) {
-                require $path;
-            }
-        }
 
         // Make sure the class exists and it implements PluginInterface
         if (!is_subclass_of($class, 'craft\app\base\PluginInterface')) {
             return null;
         }
 
-        // Make this plugin's classes autoloadable and then create it
-        Craft::setAlias("@craft/plugins/$handle", "@plugins/$handle");
+        // Create the plugin
         /** @var PluginInterface|Plugin $plugin */
         $plugin = Craft::createObject($config, [$handle, Craft::$app]);
 
