@@ -690,7 +690,7 @@ class I18N extends \yii\i18n\I18N
             switch ($category) {
                 case 'site': $char = '$'; break;
                 case 'app': $char = '@'; break;
-                default: $char = '#';
+                default: $char = '%';
             }
 
             $translation = $char.$translation.$char;
