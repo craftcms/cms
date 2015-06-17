@@ -1375,9 +1375,7 @@ trait ApplicationTrait
     private function _getMailerDefinition()
     {
         /** @var $this \craft\app\web\Application|\craft\app\console\Application */
-        $settings = new MailSettings();
-        $settings->setAttributes($this->getSystemSettings()->getSettings('email'), false);
-        return $settings->createMailer();
+        return $this->getSystemSettings()->getSettings('mailer');
     }
 
     /**

@@ -1,0 +1,66 @@
+{% import "_includes/forms" as forms %}
+
+{{ forms.textField({
+	label: "Host Name"|t('app'),
+	id: 'host',
+	name: 'host',
+	value: adaptor.host,
+	errors: adaptor.getErrors('host')
+}) }}
+
+{{ forms.textField({
+	label: "Port"|t('app'),
+	id: 'port',
+	name: 'port',
+	value: adaptor.port,
+	size: 4,
+	errors: adaptor.getErrors('port')
+}) }}
+
+{{ forms.checkboxField({
+	label: "Use authentication"|t('app'),
+	id: 'useAuthentication',
+	name: 'useAuthentication',
+	checked: adaptor.useAuthentication,
+	toggle: 'auth-credentials'
+}) }}
+
+<div id="auth-credentials" class="nested-fields{% if not adaptor.useAuthentication %} hidden{% endif %}">
+	{{ forms.textField({
+		label: "Username"|t('app'),
+		id: 'username',
+		name: 'username',
+		value: adaptor.username,
+		errors: adaptor.getErrors('username')
+	}) }}
+
+	{{ forms.passwordField({
+		label: "Password"|t('app'),
+		id: 'password',
+		name: 'password',
+		value: adaptor.password,
+		errors: adaptor.getErrors('password')
+	}) }}
+</div>
+
+{{ forms.selectField({
+	label: "Encryption Method",
+	id: 'encryptionMethod',
+	name: 'encryptionMethod',
+	options: [
+		{ value: '', label: "None"|t('app') },
+		{ value: 'ssl', label: "SSL"|t('app') },
+		{ value: 'tls', label: "TLS"|t('app') }
+	],
+	default: 'none',
+	value: adaptor.encryptionMethod
+}) }}
+
+{{ forms.textField({
+	label: "Timeout"|t('app'),
+	id: 'timeout',
+	name: 'timeout',
+	value: adaptor.timeout,
+	size: 2,
+	errors: adaptor.getErrors('timeout')
+}) }}

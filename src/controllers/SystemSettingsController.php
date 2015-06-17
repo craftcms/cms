@@ -10,8 +10,17 @@ namespace craft\app\controllers;
 use Craft;
 use craft\app\dates\DateTime;
 use craft\app\errors\HttpException;
+use craft\app\errors\InvalidComponentException;
+use craft\app\helpers\ComponentHelper;
 use craft\app\helpers\TemplateHelper;
 use craft\app\helpers\UrlHelper;
+use craft\app\mail\Mailer;
+use craft\app\mail\transportadaptors\BaseTransportAdaptor;
+use craft\app\mail\transportadaptors\Gmail;
+use craft\app\mail\transportadaptors\Php;
+use craft\app\mail\transportadaptors\Sendmail;
+use craft\app\mail\transportadaptors\Smtp;
+use craft\app\mail\transportadaptors\TransportAdaptorInterface;
 use craft\app\models\MailSettings;
 use craft\app\elements\GlobalSet;
 use craft\app\models\Info;
@@ -162,19 +171,61 @@ class SystemSettingsController extends Controller
     /**
      * Renders the email settings page.
      *
-     * @param MailSettings|null $settings The posted email settings, if there were any validation errors
+     * @param MailSettings|null         $settings The posted email settings, if there were any validation errors
+     * @param TransportAdaptorInterface $adaptor  The transport adaptor, if there were any validation errors
      *
 *@return Response
      */
-    public function actionEditEmailSettings(MailSettings $settings = null)
+    public function actionEditEmailSettings(MailSettings $settings = null, TransportAdaptorInterface $adaptor = null)
     {
         if ($settings === null) {
             $settings = new MailSettings();
             $settings->setAttributes(Craft::$app->getSystemSettings()->getSettings('email'), false);
         }
 
+        if ($adaptor === null) {
+            $adaptor = $this->_createMailerTransportAdaptor($settings->transportType, $settings->transportSettings);
+        }
+
+        /** @var TransportAdaptorInterface[] $allTransportTypes */
+        $allTransportTypes = [
+            new Php(),
+            new Sendmail(),
+            new Smtp(),
+            new Gmail(),
+        ];
+
+        foreach (Craft::$app->getPlugins()->call('getMailTransportAdaptors', [], true) as $pluginTransportTypes) {
+            foreach ($pluginTransportTypes as $pluginTransportType) {
+                if (is_object($pluginTransportType)) {
+                    if ($pluginTransportType instanceof TransportAdaptorInterface) {
+                        $allTransportTypes[] = $pluginTransportType;
+                    }
+                } else {
+                    $pluginTransportType = $this->_createMailerTransportAdaptor($pluginTransportType, null, false);
+                    if ($pluginTransportType !== false) {
+                        $allTransportTypes[] = $pluginTransportType;
+                    }
+                }
+            }
+        }
+
+        $transportTypeOptions = [];
+
+        foreach ($allTransportTypes as $class) {
+            if ($class::className() === $adaptor->getType() || $class::isSelectable()) {
+                $transportTypeOptions[] = [
+                    'value' => $class::className(),
+                    'label' => $class::displayName()
+                ];
+            }
+        }
+
         return $this->renderTemplate('settings/email/_index', [
-            'settings' => $settings
+            'settings' => $settings,
+            'adaptor' => $adaptor,
+            'transportTypeOptions' => $transportTypeOptions,
+            'allTransportTypes' => $allTransportTypes,
         ]);
     }
 
@@ -187,12 +238,22 @@ class SystemSettingsController extends Controller
     {
         $this->requirePostRequest();
 
-        $settings = $this->_createMailSettingsFromPost();
+        /** @var MailSettings $settings */
+        /** @var TransportAdaptorInterface|BaseTransportAdaptor $adaptor */
+        list($settings, $adaptor) = $this->_createMailSettingsAndAdaptorFromPost();
 
-        if (
-            $settings->validate() &&
-            Craft::$app->getSystemSettings()->saveSettings('email', $settings->toArray())
-        ) {
+        $settingsIsValid = $settings->validate();
+        $adaptorIsValid = $adaptor->validate();
+
+        if ($settingsIsValid && $adaptorIsValid) {
+            $systemSettingsService = Craft::$app->getSystemSettings();
+            $emailSettings = $settings->toArray();
+            $emailSettings['transportSettings'] = $adaptor->toArray();
+            $systemSettingsService->saveSettings('email', $emailSettings);
+
+            $mailerConfig = $this->_getMailerConfig($settings, $adaptor);
+            $systemSettingsService->saveSettings('mailer', $mailerConfig);
+
             Craft::$app->getSession()->setNotice(Craft::t('app', 'Email settings saved.'));
             return $this->redirectToPostedUrl();
         }
@@ -201,7 +262,8 @@ class SystemSettingsController extends Controller
 
         // Send the settings back to the template
         Craft::$app->getUrlManager()->setRouteParams([
-            'settings' => $settings
+            'settings' => $settings,
+            'adaptor' => $adaptor
         ]);
     }
 
@@ -213,35 +275,56 @@ class SystemSettingsController extends Controller
     public function actionTestEmailSettings()
     {
         $this->requirePostRequest();
-        $this->requireAjaxRequest();
 
-        $settings = $this->_createMailSettingsFromPost();
+        /** @var MailSettings $settings */
+        /** @var TransportAdaptorInterface|BaseTransportAdaptor $adaptor */
+        list($settings, $adaptor) = $this->_createMailSettingsAndAdaptorFromPost();
 
-        if ($settings->validate()) {
-            $mailer = $settings->createMailer();
+        $settingsIsValid = $settings->validate();
+        $adaptorIsValid = $adaptor->validate();
 
+        if ($settingsIsValid && $adaptorIsValid) {
+            $mailerConfig = $this->_getMailerConfig($settings, $adaptor);
+            $mailer = Craft::createObject($mailerConfig);
+
+            // Compose the settings list as HTML
             $includedSettings = [];
 
-            foreach ($settings->attributes() as $name) {
+            foreach (['fromEmail', 'fromName', 'template'] as $name) {
                 if (!empty($settings->$name)) {
                     $includedSettings[] = '<strong>'.$settings->getAttributeLabel($name).':</strong> '.$settings->$name;
                 }
             }
 
+            $includedSettings[] = '<strong>'.Craft::t('app', 'Transport Type').':</strong> '.$adaptor::displayName();
+
+            foreach ($adaptor->settingsAttributes() as $name) {
+                if (!empty($adaptor->$name)) {
+                    $includedSettings[] = '<strong>'.$adaptor->getAttributeLabel($name).':</strong> '.$adaptor->$name;
+                }
+            }
+
             $settingsHtml = implode('<br/>', $includedSettings);
 
+            // Try to send the test email
             $message = $mailer
                 ->composeFromKey('test_email', ['settings' => TemplateHelper::getRaw($settingsHtml)])
                 ->setTo(Craft::$app->getUser()->getIdentity());
 
             if ($message->send()) {
-                return $this->asJson(['success' => true]);
+                Craft::$app->getSession()->setNotice(Craft::t('app', 'Email sent successfully! Check your inbox.'));
             } else {
-                return $this->asErrorJson(Craft::t('app', 'There was an error testing your email settings.'));
+                Craft::$app->getSession()->setError(Craft::t('app', 'There was an error testing your email settings.'));
             }
         } else {
-            return $this->asErrorJson(Craft::t('app', 'Your email settings are invalid.'));
+            Craft::$app->getSession()->setError(Craft::t('app', 'Your email settings are invalid.'));
         }
+
+        // Send the settings back to the template
+        Craft::$app->getUrlManager()->setRouteParams([
+            'settings' => $settings,
+            'adaptor' => $adaptor
+        ]);
     }
 
     /**
@@ -311,37 +394,70 @@ class SystemSettingsController extends Controller
     // =========================================================================
 
     /**
-     * Creates a MailSettings model, populated with post data.
+     * Creates a mailer transport adaptor of a given class with the given settings.
      *
-     * @return MailSettings
+     * @param string|null $class
+     * @param array|null  $settings
+     * @param boolean     $fallbackToPhp
+     *
+     * @return TransportAdaptorInterface|false
      */
-    private function _createMailSettingsFromPost()
+    private function _createMailerTransportAdaptor($class, $settings, $fallbackToPhp = true)
+    {
+        if ($class !== null) {
+            try {
+                return ComponentHelper::createComponent([
+                    'type' => $class,
+                    'settings' => $settings
+                ], 'craft\app\mail\transportadaptors\TransportAdaptorInterface');
+            } catch (InvalidComponentException $e) {
+                if (!$fallbackToPhp) {
+                    return false;
+                }
+            }
+        }
+
+        return new Php();
+    }
+
+    /**
+     * Creates a mailer component config based on the given mail settings and adaptor.
+     *
+     * @param MailSettings                                   $settings
+     * @param TransportAdaptorInterface|BaseTransportAdaptor $adaptor
+     *
+     * @return array
+     */
+    private function _getMailerConfig($settings, $adaptor)
+    {
+        return [
+            'class' => Mailer::className(),
+            'from' => [$settings->fromEmail => $settings->fromName],
+            'template' => $settings->template,
+            'transport' => $adaptor->getTransportConfig()
+        ];
+    }
+
+    /**
+     * Creates a MailSettings model and mailer transport adaptor, populated with post data.
+     *
+     * @return array
+     */
+    private function _createMailSettingsAndAdaptorFromPost()
     {
         $request = Craft::$app->getRequest();
         $settings = new MailSettings();
 
-        $settings->protocol = $request->getBodyParam('protocol');
-        $settings->host = $request->getBodyParam('host');
-        $settings->port = $request->getBodyParam('port');
-        $settings->useAuthentication = (bool)$request->getBodyParam('useAuthentication');
-
-        if ($settings->useAuthentication && $settings->protocol !== MailSettings::PROTOCOL_GMAIL) {
-            $settings->username = $request->getBodyParam('smtpUsername');
-            $settings->password = $request->getBodyParam('smtpPassword');
-        } else {
-            $settings->username = $request->getBodyParam('username');
-            $settings->password = $request->getBodyParam('password');
-        }
-
-        $settings->encryptionMethod = $request->getBodyParam('encryptionMethod');
-        $settings->timeout = $request->getBodyParam('timeout');
         $settings->fromEmail = $request->getBodyParam('fromEmail');
         $settings->fromName = $request->getBodyParam('fromName');
+        $settings->template = $request->getBodyParam('template');
 
-        if (Craft::$app->getEdition() >= Craft::Client) {
-            $settings->template = $request->getBodyParam('template');
-        }
+        $transportType = $request->getBodyParam('transportType');
+        $transportSettings = $request->getBodyParam('transportTypes.'.$transportType);
+        $adaptor = $this->_createMailerTransportAdaptor($transportType, $transportSettings);
 
-        return $settings;
+        $settings->transportType = $adaptor->getType();
+
+        return [$settings, $adaptor];
     }
 }

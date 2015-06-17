@@ -11,7 +11,6 @@ use Craft;
 use craft\app\elements\User;
 use craft\app\db\InstallMigration;
 use craft\app\helpers\StringHelper;
-use craft\app\models\MailSettings;
 use craft\app\models\Info;
 
 /**
@@ -126,9 +125,15 @@ class Install extends InstallMigration
         // Save the default email settings
         echo "    > save the email settings ...";
         Craft::$app->getSystemSettings()->saveSettings('email', [
-            'protocol' => MailSettings::PROTOCOL_PHP,
             'fromEmail' => $this->email,
-            'fromName' => $this->siteName
+            'fromName' => $this->siteName,
+            'transportType' => 'craft\app\mail\transportadaptors\Php'
+        ]);
+        Craft::$app->getSystemSettings()->saveSettings('mailer', [
+            'from' => [$this->email => $this->siteName],
+            'transport' => [
+                'class' => 'craft\app\mail\transportadaptors\Php'
+            ]
         ]);
         echo " done\n";
     }
