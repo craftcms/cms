@@ -8,6 +8,7 @@
 namespace craft\app\mail;
 
 use Craft;
+use craft\app\elements\User;
 use yii\base\InvalidConfigException;
 use yii\helpers\Markdown;
 
@@ -120,9 +121,10 @@ class Mailer extends \yii\swiftmailer\Mailer
             $variables = $message->variables ?: [];
             $variables['emailKey'] = $message->key;
 
+            // Do we need to temporarily swap the app language?
+            $language = Craft::$app->language;
+
             if ($message->language !== null) {
-                // Set Craft to the recipient's language
-                $language = Craft::$app->language;
                 Craft::$app->language = $message->language;
             }
 
@@ -130,9 +132,7 @@ class Mailer extends \yii\swiftmailer\Mailer
             $message->setTextBody(Craft::$app->getView()->renderString($textBodyTemplate, $variables));
             $message->setHtmlBody(Craft::$app->getView()->renderString($htmlBodyTemplate, $variables));
 
-            if ($message->language !== null) {
-                Craft::$app->language = $language;
-            }
+            Craft::$app->language = $language;
 
             // Return to the original templates path
             Craft::$app->getPath()->setTemplatesPath($originalTemplatesPath);
