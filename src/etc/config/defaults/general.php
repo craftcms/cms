@@ -597,16 +597,6 @@ return array(
 	'useXSendFile' => false,
 
 	/**
-	 * If set, should be a private, random, cryptographically secure key that is used to generate HMAC
-	 * in the SecurityService and is used for such things as verifying that cookies haven't been tampered with.
-	 * If not set, a random one is generated for you. Ultimately saved in craft/storage/runtime/state/state.bin.
-	 *
-	 * If you're in a load-balanced web server environment and you're not utilizing sticky sessions, this value
-	 * should be set to the same key across all web servers.
-	 */
-	'validationKey' => null,
-
-	/**
 	 * The amount of time a user verification code can be used before expiring.
 	 *
 	 * @see http://www.php.net/manual/en/dateinterval.construct.php
