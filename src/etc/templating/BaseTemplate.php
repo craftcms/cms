@@ -17,6 +17,29 @@ abstract class BaseTemplate extends \Twig_Template
 	// =========================================================================
 
 	/**
+	 * Displays the template.
+	 */
+	protected function displayWithErrorHandling(array $context, array $blocks = array())
+	{
+		try
+		{
+			parent::displayWithErrorHandling($context, $blocks);
+		}
+		catch (\Twig_Error_Runtime $e)
+		{
+			if (craft()->config->get('suppressTemplateErrors'))
+			{
+				// Just log it and move on
+				Craft::log($e->getRawMessage(), LogLevel::Error);
+			}
+			else
+			{
+				throw $e;
+			}
+		}
+	}
+
+	/**
 	 * Returns the attribute value for a given array/object.
 	 *
 	 * @param mixed  $object            The object or array from where to get the item
