@@ -505,7 +505,7 @@ class Extension extends \Twig_Extension
         $globals['craft'] = $craftVariable;
         $globals['blx'] = $craftVariable;
 
-        $globals['now'] = DateTimeHelper::currentUTCDateTime();
+        $globals['now'] = new \DateTime(null, new \DateTimeZone(Craft::$app->getTimeZone()));
         $globals['loginUrl'] = UrlHelper::getUrl(Craft::$app->getConfig()->getLoginPath());
         $globals['logoutUrl'] = UrlHelper::getUrl(Craft::$app->getConfig()->getLogoutPath());
 
