@@ -120,9 +120,19 @@ class Mailer extends \yii\swiftmailer\Mailer
             $variables = $message->variables ?: [];
             $variables['emailKey'] = $message->key;
 
+            if ($message->language !== null) {
+                // Set Craft to the recipient's language
+                $language = Craft::$app->language;
+                Craft::$app->language = $message->language;
+            }
+
             $message->setSubject(Craft::$app->getView()->renderString($subjectTemplate, $variables));
             $message->setTextBody(Craft::$app->getView()->renderString($textBodyTemplate, $variables));
             $message->setHtmlBody(Craft::$app->getView()->renderString($htmlBodyTemplate, $variables));
+
+            if ($message->language !== null) {
+                Craft::$app->language = $language;
+            }
 
             // Return to the original templates path
             Craft::$app->getPath()->setTemplatesPath($originalTemplatesPath);
