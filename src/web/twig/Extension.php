@@ -8,6 +8,7 @@
 namespace craft\app\web\twig;
 
 use Craft;
+use craft\app\dates\DateTime;
 use craft\app\helpers\DateTimeHelper;
 use craft\app\helpers\DbHelper;
 use craft\app\helpers\HeaderHelper;
@@ -505,7 +506,7 @@ class Extension extends \Twig_Extension
         $globals['craft'] = $craftVariable;
         $globals['blx'] = $craftVariable;
 
-        $globals['now'] = new \DateTime(null, new \DateTimeZone(Craft::$app->getTimeZone()));
+        $globals['now'] = new DateTime(null, new \DateTimeZone(Craft::$app->getTimeZone()));
         $globals['loginUrl'] = UrlHelper::getUrl(Craft::$app->getConfig()->getLoginPath());
         $globals['logoutUrl'] = UrlHelper::getUrl(Craft::$app->getConfig()->getLogoutPath());
 
