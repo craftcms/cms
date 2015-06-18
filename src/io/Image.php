@@ -191,16 +191,24 @@ class Image
                     $width = round($width * $scale);
                     $height = round($height * $scale);
 
-                    $svg = preg_replace(
-                        ImageHelper::SVG_WIDTH_RE,
-                        "\${1}{$width}px\"",
-                        $svg
-                    );
-                    $svg = preg_replace(
-                        ImageHelper::SVG_HEIGHT_RE,
-                        "\${1}{$height}px\"",
-                        $svg
-                    );
+                    if (preg_match(ImageHelper::SVG_WIDTH_RE, $svg) && preg_match(ImageHelper::SVG_HEIGHT_RE, $svg)) {
+                        $svg = preg_replace(
+                            ImageHelper::SVG_WIDTH_RE,
+                            "\${1}{$width}px\"",
+                            $svg
+                        );
+                        $svg = preg_replace(
+                            ImageHelper::SVG_HEIGHT_RE,
+                            "\${1}{$height}px\"",
+                            $svg
+                        );
+                    } else {
+                        $svg = preg_replace(
+                            ImageHelper::SVG_TAG_RE,
+                            "\${1} width=\"{$width}px\" height=\"{$height}px\" \${2}",
+                            $svg
+                        );
+                    }
                 }
             }
 

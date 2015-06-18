@@ -26,6 +26,8 @@ class ImageHelper
 
     const SVG_WIDTH_RE = '/(.*<svg[^>]* width=")([\d\.]+)([a-z]*)"/si';
     const SVG_HEIGHT_RE = '/(.*<svg[^>]* height=")([\d\.]+)([a-z]*)"/si';
+    const SVG_VIEWBOX_RE = '/.*<svg[^>].* viewbox="\d+(?:,|\s)\d+(?:,|\s)(\d+)(?:,|\s)(\d+)"/si';
+    const SVG_TAG_RE = '/(.*<svg)([^>].*)/si';
 
     // Public Methods
     // =========================================================================
@@ -231,6 +233,9 @@ class ImageHelper
             $height = round(
                 $matchedHeight * self::_getSizeUnitMultiplier($heightMatch[3])
             );
+        } elseif (preg_match(self::SVG_VIEWBOX_RE, $svg, $viewboxMatch)) {
+            $width = round($viewboxMatch[1]);
+            $height = round($viewboxMatch[2]);
         } else {
             $width = null;
             $height = null;
