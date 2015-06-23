@@ -196,7 +196,7 @@ class EntriesService extends BaseApplicationComponent
 						$entry->clearErrors();
 
 						// Create the new "title" error message.
-						$errors['title'] = str_replace('Title', $entryType->titleLabel, $originalTitleError);
+						$errors['title'] = str_replace(Craft::t('Title'), $entryType->titleLabel, $originalTitleError);
 
 						// Add all of the errors back on the model.
 						$entry->addErrors($errors);
