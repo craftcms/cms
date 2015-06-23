@@ -30,7 +30,7 @@ abstract class BaseTemplate extends \Twig_Template
 			if (craft()->config->get('suppressTemplateErrors'))
 			{
 				// Just log it and move on
-				Craft::log($e->getRawMessage(), LogLevel::Error);
+				craft()->errorHandler->logException($e);
 			}
 			else
 			{

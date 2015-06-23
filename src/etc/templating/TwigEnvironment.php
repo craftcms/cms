@@ -27,7 +27,7 @@ class TwigEnvironment extends \Twig_Environment
 			if (craft()->config->get('suppressTemplateErrors'))
 			{
 				// Just log it and return an empty template
-				Craft::log($e->getRawMessage(), LogLevel::Error);
+				craft()->errorHandler->logException($e);
 
 				$twig = craft()->templates->getTwig('Twig_Loader_String');
 				return $twig->loadTemplate('');

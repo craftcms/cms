@@ -68,6 +68,38 @@ class ErrorHandler extends \CErrorHandler
 		}
 	}
 
+	/**
+	 * Logs an exception in the same way that {@link \CWebApplication::handleException()} does.
+	 *
+	 * @param \Exception $exception The exception that should be logged
+	 *
+	 * @return void
+	 */
+	public function logException(\Exception $exception)
+	{
+		$category = 'exception.'.get_class($exception);
+
+		if ($exception instanceof \CHttpException)
+		{
+			$category .= '.'.$exception->statusCode;
+		}
+
+		$message = (string)$exception;
+
+		if (isset($_SERVER['REQUEST_URI']))
+		{
+			$message .= "\nREQUEST_URI=".$_SERVER['REQUEST_URI'];
+		}
+
+		if (isset($_SERVER['HTTP_REFERER']))
+		{
+			$message .= "\nHTTP_REFERER=".$_SERVER['HTTP_REFERER'];
+		}
+
+		$message .= "\n---";
+		Craft::log($message, \CLogger::LEVEL_ERROR, $category);
+	}
+
 	// Protected Methods
 	// =========================================================================
 
