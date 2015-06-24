@@ -234,6 +234,21 @@ class MatrixFieldType extends BaseFieldType
 		$id = craft()->templates->formatInputId($name);
 		$settings = $this->getSettings();
 
+		if ($value instanceof ElementCriteriaModel)
+		{
+			$value->limit = null;
+			$value->status = null;
+			$value->localeEnabled = null;
+		}
+
+		$html = craft()->templates->render('_components/fieldtypes/Matrix/input', array(
+			'id' => $id,
+			'name' => $name,
+			'blockTypes' => $settings->getBlockTypes(),
+			'blocks' => $value,
+			'static' => false
+		));
+
 		// Get the block types data
 		$blockTypeInfo = $this->_getBlockTypeInfoForInput($name);
 
@@ -248,20 +263,7 @@ class MatrixFieldType extends BaseFieldType
 
 		craft()->templates->includeTranslations('Disabled', 'Actions', 'Collapse', 'Expand', 'Disable', 'Enable', 'Add {type} above', 'Add a block');
 
-		if ($value instanceof ElementCriteriaModel)
-		{
-			$value->limit = null;
-			$value->status = null;
-			$value->localeEnabled = null;
-		}
-
-		return craft()->templates->render('_components/fieldtypes/Matrix/input', array(
-			'id' => $id,
-			'name' => $name,
-			'blockTypes' => $settings->getBlockTypes(),
-			'blocks' => $value,
-			'static' => false
-		));
+		return $html;
 	}
 
 	/**

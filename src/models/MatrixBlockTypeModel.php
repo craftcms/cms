@@ -70,6 +70,9 @@ class MatrixBlockTypeModel extends BaseModel
 		{
 			$this->_fields = array();
 
+			// Preload all of the fields in this block type's context
+			craft()->fields->getAllFields(null, 'matrixBlockType:'.$this->id);
+
 			$fieldLayoutFields = $this->getFieldLayout()->getFields();
 
 			foreach ($fieldLayoutFields as $fieldLayoutField)

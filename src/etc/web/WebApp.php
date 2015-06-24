@@ -155,7 +155,7 @@ class WebApp extends \CWebApplication
 	 */
 	public function processRequest()
 	{
-		// If this is a resource request, we should respond with the resource ASAP
+		// If this is a resource request, we should respond with the resource ASAP.
 		$this->_processResourceRequest();
 
 		$configService = $this->config;
