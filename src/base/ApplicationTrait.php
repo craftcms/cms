@@ -1335,7 +1335,6 @@ trait ApplicationTrait
                 'schemaMap' => [
                     'mysql' => '\\craft\\app\\db\\mysql\\Schema',
                 ],
-                'enableSavepoint' => false,
             ];
 
             $db = Craft::createObject($config);
