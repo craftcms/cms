@@ -256,7 +256,7 @@ class ErrorHandler extends \CErrorHandler
 
 		// If the exception exists, and it's an instance of HttpException or devMode isn't enabled
 		// set the errorAction to our TemplatesController->renderError().
-		if ($exception && ($exception instanceof HttpException || !craft()->config->get('devMode')))
+		if (!YII_DEBUG || $exception instanceof HttpException)
 		{
 			$this->errorAction = 'templates/renderError';
 		}
