@@ -241,7 +241,6 @@ $components['urlManager']['pathParam'] = 'p';
 
 $components['errorHandler'] = array(
 	'class' => 'Craft\ErrorHandler',
-	'errorAction' => 'templates/renderError'
 );
 
 $components['fileCache']['class'] = 'Craft\FileCache';
