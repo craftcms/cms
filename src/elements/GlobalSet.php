@@ -9,6 +9,7 @@ namespace craft\app\elements;
 
 use Craft;
 use craft\app\base\Element;
+use craft\app\behaviors\FieldLayoutBehavior;
 use craft\app\elements\db\GlobalSetQuery;
 use craft\app\helpers\UrlHelper;
 
@@ -129,6 +130,16 @@ class GlobalSet extends Element
         $rules[] = [['name', 'handle'], 'string', 'max' => 255];
 
         return $rules;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getFieldLayout()
+    {
+        /** @var FieldLayoutBehavior $behavior */
+        $behavior = $this->getBehavior('fieldLayout');
+        return $behavior->getFieldLayout();
     }
 
     /**
