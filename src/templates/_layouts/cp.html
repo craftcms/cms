@@ -201,6 +201,10 @@
 		</div>
 	</header>
 
+	{% if subnav is defined and subnav %}
+		{% include "_includes/subnav" %}
+	{% endif %}
+
 	<div class="container">
 		<div id="notifications-wrapper">
 			<div id="notifications">
