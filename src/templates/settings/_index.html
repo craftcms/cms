@@ -6,7 +6,7 @@
 
 {% set content %}
 
-	{% for category, items in craft.cp.settings() %}
+	{% for category, items in craft.cp.settings(80) %}
 		<h2>{{ category }}</h2>
 
 		<ul class="icons">
