@@ -61,7 +61,7 @@ class DateTimeHelper
             $dt = $object;
 
             if (empty($dt['date']) && empty($dt['time'])) {
-                return null;
+                return false;
             }
 
             $locale = Craft::$app->getLocale();
