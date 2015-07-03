@@ -349,6 +349,7 @@ class Matrix extends Field
      */
     public function getSearchKeywords($value, $element)
     {
+        /** @var MatrixBlock[] $value */
         $keywords = [];
         $contentService = Craft::$app->getContent();
 
