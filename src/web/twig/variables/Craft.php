@@ -157,6 +157,16 @@ class Craft extends ServiceLocator
     }
 
     /**
+     * Returns the system timezone.
+     *
+     * @return string
+     */
+    public function getTimeZone()
+    {
+        return \Craft::$app->getTimeZone();
+    }
+
+    /**
      * Returns whether this site has multiple locales.
      *
      * @return boolean

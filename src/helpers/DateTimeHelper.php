@@ -43,22 +43,23 @@ class DateTimeHelper
      *  - Relaxed versions of W3C and MySQL formats (single-digit months, days, and hours)
      *  - Unix timestamps
      *
-     * @param mixed       $object
-     * @param string|null $timezone            The [PHP timezone identifier](http://php.net/manual/en/timezones.php)
-     *                                         that $date is set to, if not already specified in $date. Defaults to 'UTC'.
-     * @param boolean     $setToSystemTimeZone Whether to set the resulting DateTime object to the system timezone.
+     * @param mixed   $value                The value that should be converted to a DateTime object.
+     * @param boolean $assumeSystemTimeZone Whether it should be assumed that the value was set in the system time zone if the timezone was not specified. If this is false, UTC will be assumed. (Defaults to false.)
+     * @param boolean $setToSystemTimeZone  Whether to set the resulting DateTime object to the system time zone. (Defaults to true.)
      *
      * @return DateTime|false The DateTime object, or `false` if $object could not be converted to one
      */
-    public static function toDateTime($object, $timezone = null, $setToSystemTimeZone = true)
+    public static function toDateTime($value, $assumeSystemTimeZone = false, $setToSystemTimeZone = true)
     {
-        if ($object instanceof \DateTime) {
-            return $object;
+        if ($value instanceof \DateTime) {
+            return $value;
         }
 
+        $defaultTimeZone = ($assumeSystemTimeZone ? Craft::$app->getTimeZone() : 'UTC');
+
         // Was this a date/time-picker?
-        if (is_array($object) && (isset($object['date']) || isset($object['time']))) {
-            $dt = $object;
+        if (is_array($value) && (isset($value['date']) || isset($value['time']))) {
+            $dt = $value;
 
             if (empty($dt['date']) && empty($dt['time'])) {
                 return false;
@@ -66,10 +67,15 @@ class DateTimeHelper
 
             $locale = Craft::$app->getLocale();
 
+            if (!empty($value['timezone']) && ($normalizedTimeZone = self::normalizeTimeZone($value['timezone'])) !== false) {
+                $timeZone = $normalizedTimeZone;
+            } else {
+                $timeZone = $defaultTimeZone;
+            }
+
             if (!empty($dt['date'])) {
                 $date = $dt['date'];
-                $format = FormatConverter::convertDateIcuToPhp('short', 'date',
-                    $locale->id);
+                $format = FormatConverter::convertDateIcuToPhp('short', 'date', $locale->id);
 
                 // Make sure it's a 4 digit year format.
                 $format = StringHelper::replace($format, 'y', 'Y');
@@ -99,8 +105,7 @@ class DateTimeHelper
                 $format = '';
 
                 // Default to the current date
-                $current = new DateTime('now',
-                    new \DateTimeZone($timezone ?: DateTime::UTC));
+                $current = new DateTime('now', new \DateTimeZone($timeZone));
                 $date .= $current->month().'/'.$current->day().'/'.$current->year();
                 $format .= 'n/j/Y';
             }
@@ -113,11 +118,14 @@ class DateTimeHelper
                 ], ['AM', 'PM'], $dt['time']);
 
                 $date .= ' '.$dt['time'];
-                $format .= ' '.FormatConverter::convertDateIcuToPhp('short',
-                        'time', $locale->id);
+                $format .= ' '.FormatConverter::convertDateIcuToPhp('short', 'time', $locale->id);
             }
+
+            // Add the timezone
+            $format .= ' e';
+            $date .= ' '.$timeZone;
         } else {
-            $date = trim((string)$object);
+            $date = trim((string)$value);
 
             if (preg_match('/^
 				(?P<year>\d{4})                                  # YYYY (four digit year)
@@ -132,7 +140,7 @@ class DateTimeHelper
 								(?:\.\d+)?                       # .s (decimal fraction of a second -- not supported)
 							)?
 							(?:[ ]?(?P<ampm>(AM|PM|am|pm))?)?    # An optional space and AM or PM
-							(?:Z|(?P<tzd>[+\-]\d\d\:?\d\d))?      # Z or [+ or -]hh(:)ss (UTC or a timezone offset)
+							(?P<tz>Z|(?P<tzd>[+\-]\d\d\:?\d\d))? # Z or [+ or -]hh(:)ss (UTC or a timezone offset)
 						)?
 					)?
 				)?$/x', $date, $m)) {
@@ -146,25 +154,30 @@ class DateTimeHelper
                     ':'.(!empty($m['min']) ? $m['min'] : '00').
                     ':'.(!empty($m['sec']) ? $m['sec'] : '00');
 
-                if (!empty($m['tzd'])) {
-                    $format .= strpos($m['tzd'], ':' !== false) ? 'P' : 'O';
-                    $date .= $m['tzd'];
-                }
-
                 if (!empty($m['ampm'])) {
                     $format .= ' A';
                     $date .= ' '.$m['ampm'];
                 }
+
+                // Was a time zone specified?
+                if (!empty($m['tz'])) {
+                    if (!empty($m['tzd'])) {
+                        $format .= strpos($m['tzd'], ':') !== false ? 'P' : 'O';
+                        $date .= $m['tzd'];
+                    } else {
+                        // "Z" = UTC
+                        $format .= 'e';
+                        $date .= 'UTC';
+                    }
+                } else {
+                    $format .= 'e';
+                    $date .= $defaultTimeZone;
+                }
             } else if (preg_match('/^\d{10}$/', $date)) {
                 $format = 'U';
             } else {
-                $format = '';
+                return false;
             }
-        }
-
-        if ($timezone) {
-            $format .= ' e';
-            $date .= ' '.$timezone;
         }
 
         $dt = DateTime::createFromFormat('!'.$format, $date);
@@ -174,6 +187,44 @@ class DateTimeHelper
         }
 
         return $dt;
+    }
+
+    /**
+     * Normalizes a time zone string to a PHP time zone identifier.
+     *
+     * Supports the following formats:
+     *
+     *  - Time zone abbreviation (EST, MDT)
+     *  - Difference to Greenwich time (GMT) in hours, with/without a colon between the hours and minutes (+0200, -0200, +02:00, -02:00)
+     *  - A PHP time zone identifier (UTC, GMT, Atlantic/Azores)
+     *
+     * @param string $timeZone The time zone to be normalized
+     * @return string|false The PHP time zone identifier, or `false` if it could not be determined
+     */
+    public static function normalizeTimeZone($timeZone)
+    {
+        // Is it already a PHP time zone identifier?
+        if (in_array($timeZone, timezone_identifiers_list())) {
+            return $timeZone;
+        }
+
+        // Is this a time zone abbreviation?
+        if (($timeZoneName = timezone_name_from_abbr($timeZone)) !== false) {
+            return $timeZoneName;
+        }
+
+        // Is it the difference to GMT?
+        if (preg_match('/[+\-]\d\d\:?\d\d/', $timeZone, $matches)) {
+            $format = strpos($timeZone, ':') !== false ? 'e' : 'O';
+            $dt = \DateTime::createFromFormat($format, $timeZone, new \DateTimeZone('UTC'));
+
+            if ($dt !== false) {
+                return $dt->format('e');
+            }
+        }
+
+        // Dunno
+        return false;
     }
 
     /**

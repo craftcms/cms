@@ -173,13 +173,11 @@ class Date extends Field
         $input = '';
 
         if ($this->showDate) {
-            $input .= Craft::$app->getView()->renderTemplate('_includes/forms/date',
-                $variables);
+            $input .= Craft::$app->getView()->renderTemplate('_includes/forms/date', $variables);
         }
 
         if ($this->showTime) {
-            $input .= ' '.Craft::$app->getView()->renderTemplate('_includes/forms/time',
-                    $variables);
+            $input .= ' '.Craft::$app->getView()->renderTemplate('_includes/forms/time', $variables);
         }
 
         return $input;
@@ -191,8 +189,7 @@ class Date extends Field
     public function prepareValue($value, $element)
     {
         if ($value) {
-            $value = DateTimeHelper::toDateTime($value,
-                Craft::$app->getTimeZone());
+            $value = DateTimeHelper::toDateTime($value);
         }
 
         return $value;

@@ -393,8 +393,8 @@ class DbHelper
                 $operator = '=';
             }
 
-            // Date params are set in the system timezone
-            $val = DateTimeHelper::toDateTime($val, Craft::$app->getTimeZone());
+            // Assume that date params are set in the system timezone
+            $val = DateTimeHelper::toDateTime($val, true);
 
             $normalizedValues[] = $operator.static::prepareDateForDb($val);
         }

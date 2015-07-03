@@ -49,16 +49,11 @@ class DateTime extends \DateTime
      */
     public static function createFromFormat($format, $time, $timezone = null)
     {
-        if (!$timezone) {
-            // Default to UTC
-            $timezone = static::UTC;
+        if ($timezone !== null) {
+            $dateTime = parent::createFromFormat($format, $time, $timezone);
+        } else {
+            $dateTime = parent::createFromFormat($format, $time);
         }
-
-        if (is_string($timezone)) {
-            $timezone = new \DateTimeZone($timezone);
-        }
-
-        $dateTime = parent::createFromFormat($format, $time, $timezone);
 
         if ($dateTime) {
             $timeStamp = $dateTime->getTimestamp();
@@ -72,33 +67,11 @@ class DateTime extends \DateTime
     }
 
     /**
-     * @param string $format
-     * @param mixed  $timezone The timezone to output the date in (defaults to the current app timezone).
-     *
-     * @return string
-     */
-    public function format($format, $timezone = null)
-    {
-        if (!$timezone) {
-            // Default to the current app timezone
-            $timezone = Craft::$app->getTimeZone();
-        }
-
-        if (is_string($timezone)) {
-            $timezone = new \DateTimeZone($timezone);
-        }
-
-        $this->setTimezone($timezone);
-
-        return parent::format($format);
-    }
-
-    /**
      * @return string
      */
     public function atom()
     {
-        return $this->format(static::ATOM, static::UTC);
+        return $this->format(static::ATOM);
     }
 
     /**
@@ -106,7 +79,7 @@ class DateTime extends \DateTime
      */
     public function cookie()
     {
-        return $this->format(static::COOKIE, static::UTC);
+        return $this->format(static::COOKIE);
     }
 
     /**
@@ -114,7 +87,7 @@ class DateTime extends \DateTime
      */
     public function iso8601()
     {
-        return $this->format(static::ISO8601, static::UTC);
+        return $this->format(static::ISO8601);
     }
 
     /**
@@ -122,7 +95,7 @@ class DateTime extends \DateTime
      */
     public function rfc822()
     {
-        return $this->format(static::RFC822, static::UTC);
+        return $this->format(static::RFC822);
     }
 
     /**
@@ -130,7 +103,7 @@ class DateTime extends \DateTime
      */
     public function rfc850()
     {
-        return $this->format(static::RFC850, static::UTC);
+        return $this->format(static::RFC850);
     }
 
     /**
@@ -138,7 +111,7 @@ class DateTime extends \DateTime
      */
     public function rfc1036()
     {
-        return $this->format(static::RFC1036, static::UTC);
+        return $this->format(static::RFC1036);
     }
 
     /**
@@ -146,7 +119,7 @@ class DateTime extends \DateTime
      */
     public function rfc1123()
     {
-        return $this->format(static::RFC1123, static::UTC);
+        return $this->format(static::RFC1123);
     }
 
     /**
@@ -154,7 +127,7 @@ class DateTime extends \DateTime
      */
     public function rfc2822()
     {
-        return $this->format(static::RFC2822, static::UTC);
+        return $this->format(static::RFC2822);
     }
 
     /**
@@ -162,7 +135,7 @@ class DateTime extends \DateTime
      */
     public function rfc3339()
     {
-        return $this->format(static::RFC3339, static::UTC);
+        return $this->format(static::RFC3339);
     }
 
     /**
@@ -170,7 +143,7 @@ class DateTime extends \DateTime
      */
     public function rss()
     {
-        return $this->format(static::RSS, static::UTC);
+        return $this->format(static::RSS);
     }
 
     /**

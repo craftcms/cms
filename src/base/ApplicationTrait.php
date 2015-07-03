@@ -611,8 +611,7 @@ trait ApplicationTrait
                 $this->_storedVersion = $row['version'];
 
                 // Prevent an infinite loop in toDateTime.
-                $row['releaseDate'] = DateTimeHelper::toDateTime($row['releaseDate'],
-                    null, false);
+                $row['releaseDate'] = DateTimeHelper::toDateTime($row['releaseDate'], false, false);
 
                 $this->_info = Info::create($row);
             } else {
