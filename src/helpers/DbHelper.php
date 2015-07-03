@@ -8,6 +8,7 @@
 namespace craft\app\helpers;
 
 use craft\app\base\Model;
+use craft\app\base\Savable;
 use craft\app\dates\DateTime;
 use craft\app\enums\ColumnType;
 use yii\db\Schema;
@@ -59,11 +60,17 @@ class DbHelper
      */
     public static function prepareValueForDb($value)
     {
+        // If the object explicitly defines its savable value, use that
+        if ($value instanceof Savable) {
+            return $value->getSavableValue();
+        }
+
         // Only DateTime objects and ISO-8601 strings should automatically be detected as dates
         if ($value instanceof \DateTime || DateTimeHelper::isIso8601($value)) {
             return static::prepareDateForDb($value);
         }
 
+        // If it's an object or array, just JSON-encode it
         if (is_object($value) || is_array($value)) {
             return JsonHelper::encode($value);
         }

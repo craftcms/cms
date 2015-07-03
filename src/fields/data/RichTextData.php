@@ -8,6 +8,7 @@
 namespace craft\app\fields\data;
 
 use Craft;
+use craft\app\base\Savable;
 
 /**
  * Stores the data for Rich Text fields.
@@ -15,7 +16,7 @@ use Craft;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
-class RichTextData extends \Twig_Markup
+class RichTextData extends \Twig_Markup implements Savable
 {
     // Properties
     // =========================================================================
@@ -49,6 +50,14 @@ class RichTextData extends \Twig_Markup
         $content = Craft::$app->getElements()->parseRefs($content);
 
         parent::__construct($content, Craft::$app->charset);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getSavableValue()
+    {
+        return $this->_rawContent;
     }
 
     /**
