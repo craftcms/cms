@@ -4,7 +4,7 @@ namespace Craft;
 craft()->requireEdition(Craft::Pro);
 
 /**
- * The TagsController class is a controller that handles various user group and user settings related tasks such as
+ * The UserSettingsController class is a controller that handles various user group and user settings related tasks such as
  * creating, editing and deleting user groups and saving Craft user settings.
  *
  * Note that all actions in this controller require administrator access in order to execute.

@@ -134,6 +134,9 @@ if (file_exists($generalConfigPath))
 	}
 }
 
+ini_set('log_errors', 1);
+ini_set('error_log', CRAFT_STORAGE_PATH.'runtime/logs/phperrors.log');
+
 if ($devMode)
 {
 	error_reporting(E_ALL & ~E_STRICT);
