@@ -414,7 +414,14 @@ class Image
 		}
 		else
 		{
-			$this->_image->resize(new \Imagine\Image\Box($targetWidth, $targetHeight), $this->_getResizeFilter());
+            if (craft()->images->isImagick() && craft()->config->get('optimizeImageFilesize'))
+            {
+                $this->_image->smartResize(new \Imagine\Image\Box($targetWidth, $targetHeight));
+            }
+            else
+            {
+                $this->_image->resize(new \Imagine\Image\Box($targetWidth, $targetHeight), $this->_getResizeFilter());
+            }
 		}
 
 		return $this;
