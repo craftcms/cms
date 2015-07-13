@@ -137,8 +137,13 @@ class UsersController extends Controller
      */
     public function actionGetRemainingSessionTime()
     {
-        echo Craft::$app->getUser()->getRemainingSessionTime();
-        Craft::$app->end();
+        $return = array('timeout' => Craft::$app->getUser()->getRemainingSessionTime());
+
+        if (Craft::$app->getConfig()->get('enableCsrfProtection')) {
+            $return['csrfTokenValue'] = Craft::$app->getRequest()->getCsrfToken();
+        }
+
+        return $this->asJson($return);
     }
 
     /**
