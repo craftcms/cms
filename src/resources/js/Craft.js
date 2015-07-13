@@ -1,4 +1,4 @@
-/*! Craft 3.0.0 - 2015-06-16 */
+/*! Craft 3.0.0 - 2015-07-13 */
 (function($){
 
 if (typeof window.Craft == 'undefined')
@@ -7317,6 +7317,8 @@ Craft.AuthManager = Garnish.Base.extend(
 	$loginBtn: null,
 	$loginErrorPara: null,
 
+	submitLoginIfLoggedOut: false,
+
 	/**
 	 * Init
 	 */
@@ -7348,9 +7350,16 @@ Craft.AuthManager = Garnish.Base.extend(
 			type: 'GET',
 			complete: $.proxy(function(jqXHR, textStatus)
 			{
-				if (textStatus == 'success' && !isNaN(jqXHR.responseText))
+				if (textStatus == 'success')
 				{
-					this.updateRemainingSessionTime(jqXHR.responseText);
+					this.updateRemainingSessionTime(jqXHR.responseJSON.timeout);
+
+					this.submitLoginIfLoggedOut = false;
+
+					if (typeof jqXHR.responseJSON.csrfTokenValue !== 'undefined' && typeof Craft.csrfTokenValue !== 'undefined')
+					{
+						Craft.csrfTokenValue = jqXHR.responseJSON.csrfTokenValue;
+					}
 				}
 				else
 				{
@@ -7390,10 +7399,20 @@ Craft.AuthManager = Garnish.Base.extend(
 					this.showLoginModalTimer = setTimeout($.proxy(this, 'showLoginModal'), this.remainingSessionTime*1000);
 				}
 			}
-			else if (!this.showingLoginModal)
+			else
 			{
-				// Show the login modal
-				this.showLoginModal();
+				if (this.showingLoginModal)
+				{
+					if (this.submitLoginIfLoggedOut)
+					{
+						this.submitLogin();
+					}
+				}
+				else
+				{
+					// Show the login modal
+					this.showLoginModal();
+				}
 			}
 
 			this.setCheckRemainingSessionTimer(Craft.AuthManager.checkInterval);
@@ -7676,40 +7695,55 @@ Craft.AuthManager = Garnish.Base.extend(
 			this.$passwordSpinner.removeClass('hidden');
 			this.clearLoginError();
 
-			var data = {
-				loginName: Craft.username,
-				password: this.$passwordInput.val()
-			};
-
-			Craft.postActionRequest('users/login', data, $.proxy(function(response, textStatus)
+			if (typeof Craft.csrfTokenValue != 'undefined')
 			{
-				this.$passwordSpinner.addClass('hidden');
+				// Check the auth status one last time before sending this off,
+				// in case the user has already logged back in from another window/tab
+				this.submitLoginIfLoggedOut = true;
+				this.checkRemainingSessionTime();
+			}
+			else
+			{
+				this.submitLogin();
+			}
+		}
+	},
 
-				if (textStatus == 'success')
+	submitLogin: function()
+	{
+		var data = {
+			loginName: Craft.username,
+			password: this.$passwordInput.val()
+		};
+
+		Craft.postActionRequest('users/login', data, $.proxy(function(response, textStatus)
+		{
+			this.$passwordSpinner.addClass('hidden');
+
+			if (textStatus == 'success')
+			{
+				if (response.success)
 				{
-					if (response.success)
-					{
-						this.hideLoginModal();
-						this.checkRemainingSessionTime();
-					}
-					else
-					{
-						this.showLoginError(response.error);
-						Garnish.shake(this.loginModal.$container);
-
-						if (!Garnish.isMobileBrowser(true))
-						{
-							this.$passwordInput.focus();
-						}
-					}
+					this.hideLoginModal();
+					this.checkRemainingSessionTime();
 				}
 				else
 				{
-					this.showLoginError();
-				}
+					this.showLoginError(response.error);
+					Garnish.shake(this.loginModal.$container);
 
-			}, this));
-		}
+					if (!Garnish.isMobileBrowser(true))
+					{
+						this.$passwordInput.focus();
+					}
+				}
+			}
+			else
+			{
+				this.showLoginError();
+			}
+
+		}, this));
 	},
 
 	showLoginError: function(error)
