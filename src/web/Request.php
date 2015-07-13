@@ -115,6 +115,11 @@ class Request extends \yii\web\Request
      */
     private $_queryParams;
 
+    /**
+     * @var string
+     */
+    private $_csrfToken;
+
     // Public Methods
     // =========================================================================
 
@@ -765,6 +770,142 @@ class Request extends \yii\web\Request
         return 'Other';
     }
 
+    /**
+     * Returns the token used to perform CSRF validation.
+     *
+     * This token is a masked version of [[rawCsrfToken]] to prevent [BREACH attacks](http://breachattack.com/).
+     * This token may be passed along via a hidden field of an HTML form or an HTTP header value
+     * to support CSRF validation.
+     * @param boolean $regenerate whether to regenerate CSRF token. When this parameter is true, each time
+     * this method is called, a new CSRF token will be generated and persisted (in session or cookie).
+     * @return string the token used to perform CSRF validation.
+     */
+    public function getCsrfToken($regenerate = false)
+    {
+        if ($this->_csrfToken === null || $regenerate) {
+            $token = $this->loadCsrfToken();
+
+            if ($regenerate || $token === null || ($this->_csrfToken = $token) == null || !$this->csrfTokenValidForCurrentUser($token)) {
+                $token = $this->generateCsrfToken();
+            }
+
+            // the mask doesn't need to be very random
+            $chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_-.';
+            $mask = substr(str_shuffle(str_repeat($chars, 5)), 0, static::CSRF_MASK_LENGTH);
+            // The + sign may be decoded as blank space later, which will fail the validation
+            $this->_csrfToken = str_replace('+', '.', base64_encode($mask . $this->_xorTokens($token, $mask)));
+        }
+
+        return $this->_csrfToken;
+    }
+
+    /**
+     * Regenerates a CSRF token.
+     */
+    public function regenCsrfToken()
+    {
+        $this->_csrfToken = $this->getCsrfToken(true);
+    }
+
+    // Protected Methods
+    // =========================================================================
+
+    /**
+     * Generates  an unmasked random token used to perform CSRF validation.
+     * @return string the random token for CSRF validation.
+     */
+    protected function generateCsrfToken()
+    {
+        $existingToken = $this->loadCsrfToken();
+
+        // They have an existing CSRF token.
+        if ($existingToken)
+        {
+            // It's a CSRF token that came from an authenticated request.
+            if (strpos($existingToken, '|') !== false)
+            {
+                // Grab the existing nonce.
+                $parts = explode('|', $existingToken);
+                $nonce = $parts[0];
+            }
+            else
+            {
+                // It's a CSRF token from an unauthenticated request.
+                $nonce = $existingToken;
+            }
+        }
+        else
+        {
+            // No previous CSRF token, generate a new nonce.
+             $nonce = Craft::$app->getSecurity()->generateRandomString(40);
+        }
+
+        // Authenticated users
+        if (Craft::$app->get('user', false) && ($currentUser = Craft::$app->getUser()->getIdentity()))
+        {
+            // We mix the password into the token so that it will become invalid when the user changes their password.
+            // The salt on the blowfish hash will be different even if they change their password to the same thing.
+            // Normally using the session ID would be a better choice, but PHP's bananas session handling makes that difficult.
+            $passwordHash = $currentUser->password;
+            $userId = $currentUser->id;
+            $hashable = implode('|', array($nonce, $userId, $passwordHash));
+            $token = $nonce.'|'.Craft::$app->getSecurity()->hashData($hashable, $this->cookieValidationKey);
+        }
+        else
+        {
+            // Unauthenticated users.
+            $token = $nonce;
+        }
+
+        if ($this->enableCsrfCookie) {
+            $cookie = $this->createCsrfCookie($token);
+            Craft::$app->getResponse()->getCookies()->add($cookie);
+        } else {
+            Craft::$app->getSession()->set($this->csrfParam, $token);
+        }
+
+        return $token;
+    }
+
+    /**
+     * Gets whether the CSRF token is valid for the current user or not
+     *
+     * @param $token
+     *
+     * @return bool
+     * @throws \CException
+     */
+    protected function csrfTokenValidForCurrentUser($token)
+    {
+        $currentUser = false;
+
+        if (Craft::$app->isInstalled() && Craft::$app->get('user', false)) {
+            $currentUser = Craft::$app->getUser()->getIdentity();
+        }
+
+        if ($currentUser) {
+            $splitToken = explode('|', $token, 2);
+
+            if (count($splitToken) !== 2) {
+                return false;
+            }
+
+            list($nonce, $hashFromToken) = $splitToken;
+
+            // Check that this token is for the current user
+            $passwordHash = $currentUser->password;
+            $userId = $currentUser->id;
+            $hashable = implode('|', array($nonce, $userId, $passwordHash));
+            $expectedToken = $nonce.'|'.Craft::$app->getSecurity()->hashData($hashable, $this->cookieValidationKey);
+
+            return Craft::$app->getSecurity()->compareString($expectedToken, $token);
+        }
+        else {
+            // If they're logged out, any token is fine
+            return true;
+        }
+    }
+
     // Private Methods
     // =========================================================================
 
@@ -953,5 +1094,28 @@ class Request extends \yii\web\Request
         }
 
         return true;
+    }
+
+    /**
+     * Returns the XOR result of two strings.
+     * If the two strings are of different lengths, the shorter one will be padded to the length of the longer one.
+     *
+     * @param string $token1
+     * @param string $token2
+     *
+     * @return string the XOR result
+     */
+    private function _xorTokens($token1, $token2)
+    {
+        $n1 = StringHelper::byteLength($token1);
+        $n2 = StringHelper::byteLength($token2);
+
+        if ($n1 > $n2) {
+            $token2 = str_pad($token2, $n1, $token2);
+        } elseif ($n1 < $n2) {
+            $token1 = str_pad($token1, $n2, $n1 === 0 ? ' ' : $token1);
+        }
+
+        return $token1 ^ $token2;
     }
 }
