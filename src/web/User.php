@@ -307,6 +307,12 @@ class User extends \yii\web\User
 
         $this->destroyDebugPreferencesInSession();
 
+        if (Craft::$app->getConfig()->get('enableCsrfProtection'))
+        {
+            // Let's keep the current nonce around.
+            Craft::$app->getRequest()->regenCsrfToken();
+        }
+
         parent::afterLogout($identity);
     }
 

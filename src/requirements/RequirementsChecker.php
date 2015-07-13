@@ -429,6 +429,7 @@ class RequirementsChecker
     function testIconvTruncateBug()
     {
         $warningMessage = 'You have a buggy version of iconv installed. (See <a href="https://bugs.php.net/bug.php?id=48147">PHP bug #48147</a> and <a href="http://sourceware.org/bugzilla/show_bug.cgi?id=13541">iconv bug #13541</a>.)';
+        $ignoreMessage = 'The version of iconv you have installed does not support //IGNORE, making it unusable for transcoding purposes.';
         $recommendedMessage = '<a href="http://php.net/manual/en/book.iconv.php">iconv</a> is recommended for more robust character set conversion support.';
 
         if (function_exists('iconv')) {
@@ -439,7 +440,7 @@ class RequirementsChecker
             restore_error_handler();
 
             if ($r === false) {
-                $this->iconvMessage = $recommendedMessage;
+                $this->iconvMessage = $ignoreMessage;
 
                 return false;
             } else if (($c = strlen($r)) < 9000) {
