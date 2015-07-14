@@ -110,15 +110,6 @@ class Content extends Model
     {
         return [
             'title' => Craft::t('app', 'Title'),
-            'body' => Craft::t('app', 'Body'),
-            'description' => Craft::t('app', 'Description'),
-            'heading' => Craft::t('app', 'Heading'),
-            'ingredients' => Craft::t('app', 'Ingredients'),
-            'linkColor' => Craft::t('app', 'Link Color'),
-            'metaDescription' => Craft::t('app', 'Meta Description'),
-            'photos' => Craft::t('app', 'Photos'),
-            'siteIntro' => Craft::t('app', 'Site Intro'),
-            'tags' => Craft::t('app', 'Tags'),
         ];
     }
 
@@ -131,7 +122,6 @@ class Content extends Model
             [['id'], 'number', 'min' => -2147483648, 'max' => 2147483647, 'integerOnly' => true],
             [['elementId'], 'number', 'min' => -2147483648, 'max' => 2147483647, 'integerOnly' => true],
             [['locale'], 'craft\\app\\validators\\Locale'],
-            [['linkColor'], 'string', 'length' => 7],
             [['title'], 'string', 'max' => 255],
         ];
 
