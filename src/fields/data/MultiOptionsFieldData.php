@@ -7,13 +7,16 @@
 
 namespace craft\app\fields\data;
 
+use craft\app\base\Savable;
+use craft\app\helpers\JsonHelper;
+
 /**
  * Multi-select option field data class.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
-class MultiOptionsFieldData extends \ArrayObject
+class MultiOptionsFieldData extends \ArrayObject implements Savable
 {
     // Properties
     // =========================================================================
@@ -62,5 +65,13 @@ class MultiOptionsFieldData extends \ArrayObject
         }
 
         return false;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getSavableValue()
+    {
+        return JsonHelper::encode($this->getArrayCopy());
     }
 }
