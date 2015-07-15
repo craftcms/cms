@@ -225,6 +225,9 @@ class Image
 			}
 		}
 
+		$this->_resizeHeight = $this->getHeight();
+		$this->_resizeWidth = $this->getWidth();
+
 		return $this;
 	}
 
