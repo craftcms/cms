@@ -179,8 +179,15 @@ class Image
 					$width = round($width * $scale);
 					$height = round($height * $scale);
 
-					$svg = preg_replace(ImageHelper::SVG_WIDTH_RE, "\${1}{$width}px\"", $svg);
-					$svg = preg_replace(ImageHelper::SVG_HEIGHT_RE, "\${1}{$height}px\"", $svg);
+                    if (preg_match(ImageHelper::SVG_WIDTH_RE, $svg) && preg_match(ImageHelper::SVG_HEIGHT_RE, $svg))
+                    {
+                        $svg = preg_replace(ImageHelper::SVG_WIDTH_RE, "\${1}{$width}px\"", $svg);
+                        $svg = preg_replace(ImageHelper::SVG_HEIGHT_RE, "\${1}{$height}px\"", $svg);
+                    }
+                    else
+                    {
+                        $svg = preg_replace(ImageHelper::SVG_TAG_RE, "\${1} width=\"{$width}px\" height=\"{$height}px\" \${2}", $svg);
+                    }
 				}
 			}
 
@@ -451,11 +458,12 @@ class Image
 	 */
 	public function saveAs($targetPath, $sanitizeAndAutoQuality = false)
 	{
-		$extension = IOHelper::getExtension($targetPath);
+		$extension = StringHelper::toLowerCase(IOHelper::getExtension($targetPath));
+
 		$options = $this->_getSaveOptions(false, $extension);
 		$targetPath = IOHelper::getFolderName($targetPath).IOHelper::getFileName($targetPath, false).'.'.$extension;
 
-		if (($extension == 'jpeg' || $extension == 'jpg' || $extension == 'png') && $sanitizeAndAutoQuality)
+		if (in_array($extension, array('jpg', 'jpg', 'png')) && $sanitizeAndAutoQuality)
 		{
 			clearstatcache();
 			$originalSize = IOHelper::getFileSize($this->_imageSourcePath);
