@@ -73,7 +73,7 @@ class EntryType extends Model
     public function behaviors()
     {
         return [
-            [
+            'fieldLayout' => [
                 'class' => 'craft\app\behaviors\FieldLayoutBehavior',
                 'elementType' => 'craft\app\elements\Entry'
             ],

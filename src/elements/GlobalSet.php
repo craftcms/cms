@@ -94,7 +94,7 @@ class GlobalSet extends Element
     public function behaviors()
     {
         return [
-            [
+            'fieldLayout' => [
                 'class' => 'craft\app\behaviors\FieldLayoutBehavior',
                 'elementType' => 'craft\app\elements\GlobalSet'
             ],
@@ -129,6 +129,16 @@ class GlobalSet extends Element
         $rules[] = [['name', 'handle'], 'string', 'max' => 255];
 
         return $rules;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getFieldLayout()
+    {
+        /** @var FieldLayoutBehavior $behavior */
+        $behavior = $this->getBehavior('fieldLayout');
+        return $behavior->getFieldLayout();
     }
 
     /**
