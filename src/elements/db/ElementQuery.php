@@ -899,6 +899,24 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
     /**
      * @inheritdoc
      */
+    public function count($q = '*', $db = null)
+    {
+        // Do we have a cached result set?
+        if ($this->_result !== null) {
+            // See if the params haven't changed
+            $criteria = $this->toArray([], [], false);
+
+            if ($criteria === $this->_resultCriteria) {
+                return count($this->_result);
+            }
+        }
+
+        return parent::count($q, $db);
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function all($db = null)
     {
         // Do we have a cached result set?
