@@ -176,6 +176,13 @@ return [
      */
     'devMode' => false,
     /**
+     * Whether to use a cookie to persist the CSRF token if 'enableCsrfProtection' is enabled. If false, the CSRF token
+     * will be stored in session under the 'csrfTokenName' config setting name. Note that while storing CSRF tokens in
+     * session increases security, it requires starting a session for every page that a CSRF token is need, which may
+     * degrade site performance.
+     */
+    'enableCsrfCookie' => true,
+    /**
      * Whether to enable CSRF protection via hidden form inputs for all forms submitted via Craft. Defaults to true.
      *
      * Also, see the 'csrfTokenName' config setting.
