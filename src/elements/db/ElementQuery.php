@@ -184,7 +184,7 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
     /**
      * @inheritdoc
      */
-    public $limit = 100;
+    public $limit;
 
     // Structure parameters
     // -------------------------------------------------------------------------
