@@ -360,10 +360,11 @@ class EntriesController extends BaseEntriesController
             Craft::$app->getView()->renderTemplate('entries/_fields',
                 $variables);
 
+        $view = Craft::$app->getView();
         return $this->asJson([
             'paneHtml' => $paneHtml,
-            'headHtml' => Craft::$app->getView()->getHeadHtml(),
-            'footHtml' => Craft::$app->getView()->getBodyEndHtml(true),
+            'headHtml' => $view->getHeadHtml(),
+            'footHtml' => $view->getBodyHtml(),
         ]);
     }
 

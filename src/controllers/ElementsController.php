@@ -227,8 +227,9 @@ class ElementsController extends BaseElementsController
             Craft::$app->getView()->namespaceInputs($element::getEditorHtml($element)).
             '</div>';
 
-        $response['headHtml'] = Craft::$app->getView()->getHeadHtml();
-        $response['footHtml'] = Craft::$app->getView()->getBodyEndHtml(true);
+        $view = Craft::$app->getView();
+        $response['headHtml'] = $view->getHeadHtml();
+        $response['footHtml'] = $view->getBodyHtml();
 
         return $this->asJson($response);
     }

@@ -682,49 +682,38 @@ class View extends \yii\web\View
     }
 
     /**
-     * Returns the content to be inserted at the beginning of the body section.
-     *
-     * This includes:
-     *
-     * - JS code registered with [[registerJs()]] with the position set to [[POS_BEGIN]]
-     * - JS files registered with [[registerJsFile()]] with the position set to [[POS_BEGIN]]
-     *
-     * @param boolean $clear Whether the content should be cleared from the queue (default is true)
-     *
-     * @return string the rendered content
-     */
-    public function getBodyBeginHtml($clear = true)
-    {
-        $html = $this->renderBodyBeginHtml();
-
-        if ($clear === true) {
-            unset($this->jsFiles[self::POS_BEGIN], $this->js[self::POS_BEGIN]);
-        }
-
-        return $html;
-    }
-
-    /**
      * Returns the content to be inserted at the end of the body section.
      *
      * This includes:
      *
-     * - JS code registered with [[registerJs()]] with the position set to [[POS_END]], [[POS_READY]], or [[POS_LOAD]]
-     * - JS files registered with [[registerJsFile()]] with the position set to [[POS_END]]
+     * - JS code registered with [[registerJs()]] with the position set to [[POS_BEGIN]], [[POS_END]], [[POS_READY]], or [[POS_LOAD]]
+     * - JS files registered with [[registerJsFile()]] with the position set to [[POS_BEGIN]] or [[POS_END]]
      *
-     * @param boolean $ajaxMode whether the view is rendering in AJAX mode.
-     *                          If true, the JS scripts registered at [[POS_READY]] and [[POS_LOAD]] positions
-     *                          will be rendered at the end of the view like normal scripts.
      * @param boolean $clear    Whether the content should be cleared from the queue (default is true)
      *
      * @return string the rendered content
      */
-    public function getBodyEndHtml($ajaxMode, $clear = true)
+    public function getBodyHtml($clear = true)
     {
-        $html = $this->renderBodyEndHtml($ajaxMode);
+        // Register any asset bundles
+        foreach (array_keys($this->assetBundles) as $bundle) {
+            $this->registerAssetFiles($bundle);
+        }
 
+        // Get the rendered body begin+end HTML
+        $html = $this->renderBodyBeginHtml() .
+            $this->renderBodyEndHtml(true);
+
+        // Clear out the queued up files
         if ($clear === true) {
-            unset($this->jsFiles[self::POS_END], $this->js[self::POS_END], $this->js[self::POS_READY], $this->js[self::POS_LOAD]);
+            unset(
+                $this->jsFiles[self::POS_BEGIN],
+                $this->jsFiles[self::POS_END],
+                $this->js[self::POS_BEGIN],
+                $this->js[self::POS_END],
+                $this->js[self::POS_READY],
+                $this->js[self::POS_LOAD]
+            );
         }
 
         return $html;
