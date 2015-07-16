@@ -83,7 +83,7 @@ class ElementsController extends BaseElementsController
         $element = Craft::$app->getElements()->getElementById($elementId,
             $elementType, $localeId);
 
-        if (!$element || !$element->isEditable()) {
+        if (!$element || !$element->getIsEditable()) {
             throw new HttpException(403);
         }
 
