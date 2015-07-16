@@ -122,9 +122,9 @@ class GlobalsController extends Controller
             ->locale($localeId)
             ->all();
 
-        foreach ($globalSets as $globalSet) {
-            if (Craft::$app->getUser()->checkPermission('editGlobalSet:'.$globalSet->id)) {
-                $editableGlobalSets[$globalSet->handle] = $globalSet;
+        foreach ($globalSets as $thisGlobalSet) {
+            if (Craft::$app->getUser()->checkPermission('editGlobalSet:'.$thisGlobalSet->id)) {
+                $editableGlobalSets[$thisGlobalSet->handle] = $thisGlobalSet;
             }
         }
 
