@@ -85,7 +85,7 @@ class Entries extends Component
      *
      * $entry->getContent()->title = "Hello World!";
      *
-     * $entry->setContentFromPost(array(
+     * $entry->setFieldValuesFromPost(array(
      *     'body' => "<p>I can’t believe I literally just called this “Hello World!”.</p>",
      * ));
      *
@@ -185,8 +185,7 @@ class Entries extends Component
         }
 
         if (!$entryType->hasTitleField) {
-            $entry->getContent()->title = Craft::$app->getView()->renderObjectTemplate($entryType->titleFormat,
-                $entry);
+            $entry->title = Craft::$app->getView()->renderObjectTemplate($entryType->titleFormat, $entry);
         }
 
         $transaction = Craft::$app->getDb()->getTransaction() === null ? Craft::$app->getDb()->beginTransaction() : null;

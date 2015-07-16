@@ -26,6 +26,11 @@ trait ElementTrait
     public $id;
 
     /**
+     * @var int The element’s content row ID
+     */
+    public $contentId;
+
+    /**
      * @var boolean Whether the element is enabled
      */
     public $enabled = true;
@@ -44,6 +49,11 @@ trait ElementTrait
      * @var boolean Whether the element is enabled for this [[locale]].
      */
     public $localeEnabled = true;
+
+    /**
+     * @var string The element’s title
+     */
+    public $title;
 
     /**
      * @var string The element’s slug
@@ -84,4 +94,9 @@ trait ElementTrait
      * @var int The element’s level within its structure
      */
     public $level;
+
+    /**
+     * @var boolean Whether the element is still awaiting its custom field values
+     */
+    public $awaitingFieldValues = false;
 }

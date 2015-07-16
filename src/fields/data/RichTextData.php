@@ -16,7 +16,7 @@ use craft\app\base\Savable;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
-class RichTextData extends \Twig_Markup implements Savable
+class RichTextData extends \Twig_Markup
 {
     // Properties
     // =========================================================================
@@ -50,14 +50,6 @@ class RichTextData extends \Twig_Markup implements Savable
         $content = Craft::$app->getElements()->parseRefs($content);
 
         parent::__construct($content, Craft::$app->charset);
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getSavableValue()
-    {
-        return $this->_rawContent;
     }
 
     /**

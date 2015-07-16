@@ -213,7 +213,7 @@ class EntryRevisions extends Component
     {
         // If this is a single, we'll have to set the title manually
         if ($draft->getSection()->type == Section::TYPE_SINGLE) {
-            $draft->getContent()->title = $draft->getSection()->name;
+            $draft->title = $draft->getSection()->name;
         }
 
         // Set the version notes
@@ -389,7 +389,7 @@ class EntryRevisions extends Component
     {
         // If this is a single, we'll have to set the title manually
         if ($version->getSection()->type == Section::TYPE_SINGLE) {
-            $version->getContent()->title = $version->getSection()->name;
+            $version->title = $version->getSection()->name;
         }
 
         // Set the version notes
@@ -453,7 +453,7 @@ class EntryRevisions extends Component
         $revisionData = [
             'typeId' => $revision->typeId,
             'authorId' => $revision->authorId,
-            'title' => $revision->getTitle(),
+            'title' => $revision->title,
             'slug' => $revision->slug,
             'postDate' => ($revision->postDate ? $revision->postDate->getTimestamp() : null),
             'expiryDate' => ($revision->expiryDate ? $revision->expiryDate->getTimestamp() : null),

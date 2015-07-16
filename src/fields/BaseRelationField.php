@@ -193,26 +193,27 @@ abstract class BaseRelationField extends Field
     /**
      * @inheritdoc
      */
-    function validateValue($value, $element)
+    public function validateValue($value, $element)
     {
         $errors = [];
 
-        if ($this->allowLimit && $this->limit && is_array($value) && count($value) > $this->limit) {
-            if ($this->limit == 1) {
-                $errors[] = Craft::t('app',
-                    'There can’t be more than one selection.');
-            } else {
-                $errors[] = Craft::t('app',
-                    'There can’t be more than {limit} selections.',
-                    ['limit' => $this->limit]);
+        // Do we need to validate the number of selections?
+        if ($this->required || ($this->allowLimit && $this->limit)) {
+            /** @var ElementQuery $value */
+            $total = $value->count();
+
+            if ($this->required && $total == 0) {
+                $errors[] = Craft::t('yii', '{attribute} cannot be blank.');
+            } else if ($this->allowLimit && $this->limit && $total > $this->limit) {
+                if ($this->limit == 1) {
+                    $errors[] = Craft::t('app', 'There can’t be more than one selection.');
+                } else {
+                    $errors[] = Craft::t('app', 'There can’t be more than {limit} selections.', ['limit' => $this->limit]);
+                }
             }
         }
 
-        if ($errors) {
-            return $errors;
-        } else {
-            return true;
-        }
+        return $errors;
     }
 
     /**

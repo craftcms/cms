@@ -839,7 +839,7 @@ class UsersController extends Controller
 
         // If this is Craft Pro, grab any profile content from post
         if (Craft::$app->getEdition() == Craft::Pro) {
-            $user->setContentFromPost('fields');
+            $user->setFieldValuesFromPost('fields');
         }
 
         // Validate and save!

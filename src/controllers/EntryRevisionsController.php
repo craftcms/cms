@@ -66,11 +66,7 @@ class EntryRevisionsController extends BaseEntriesController
             // Attempt to create a new entry
 
             // Manually validate 'title' since the Elements service will just give it a title automatically.
-            $fields = ['title'];
-            $content = $draft->getContent();
-            $content->setRequiredFields($fields);
-
-            if ($content->validate($fields)) {
+            if ($draft->validate(['title'])) {
                 $draftEnabled = $draft->enabled;
                 $draft->enabled = false;
 
@@ -78,13 +74,13 @@ class EntryRevisionsController extends BaseEntriesController
 
                 $draft->enabled = $draftEnabled;
             } else {
-                $draft->addErrors($content->getErrors());
+                $draft->addErrors($draft->getErrors());
             }
         }
 
         $fieldsLocation = Craft::$app->getRequest()->getParam('fieldsLocation',
             'fields');
-        $draft->setContentFromPost($fieldsLocation);
+        $draft->setFieldValuesFromPost($fieldsLocation);
 
         if ($draft->id && Craft::$app->getEntryRevisions()->saveDraft($draft)) {
             Craft::$app->getSession()->setNotice(Craft::t('app',
@@ -223,7 +219,7 @@ class EntryRevisionsController extends BaseEntriesController
         // Populate the field content
         $fieldsLocation = Craft::$app->getRequest()->getParam('fieldsLocation',
             'fields');
-        $draft->setContentFromPost($fieldsLocation);
+        $draft->setFieldValuesFromPost($fieldsLocation);
 
         // Publish the draft (finally!)
         if (Craft::$app->getEntryRevisions()->publishDraft($draft)) {
@@ -321,7 +317,7 @@ class EntryRevisionsController extends BaseEntriesController
         $draft->postDate = (($postDate = Craft::$app->getRequest()->getBodyParam('postDate')) ? DateTimeHelper::toDateTime($postDate) : $draft->postDate);
         $draft->expiryDate = (($expiryDate = Craft::$app->getRequest()->getBodyParam('expiryDate')) ? DateTimeHelper::toDateTime($expiryDate) : $draft->expiryDate);
         $draft->enabled = (bool)Craft::$app->getRequest()->getBodyParam('enabled');
-        $draft->getContent()->title = Craft::$app->getRequest()->getBodyParam('title');
+        $draft->title = Craft::$app->getRequest()->getBodyParam('title');
 
         // Author
         $authorId = Craft::$app->getRequest()->getBodyParam('author',

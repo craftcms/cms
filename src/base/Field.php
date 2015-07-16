@@ -180,6 +180,28 @@ abstract class Field extends SavableComponent implements FieldInterface
     /**
      * @inheritdoc
      */
+    public function beforeElementSave(ElementInterface $element)
+    {
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function afterElementSave(ElementInterface $element)
+    {
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function prepareValue($value, $element)
+    {
+        return $value;
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function getInputHtml($value, $element)
     {
         return HtmlHelper::encodeParams('<textarea name="{name}">{value}</textarea>',
@@ -209,24 +231,11 @@ abstract class Field extends SavableComponent implements FieldInterface
      */
     public function validateValue($value, $element)
     {
-        return true;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function beforeElementSave(ElementInterface $element)
-    {
-        $value = $this->getElementValue($element);
-        $value = $this->prepareValueBeforeSave($value, $element);
-        $this->setElementValue($element, $value);
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function afterElementSave(ElementInterface $element)
-    {
+        if ($this->required && $this->isValueEmpty($value, $element)) {
+            return [Craft::t('yii', '{attribute} cannot be blank.')];
+        } else {
+            return [];
+        }
     }
 
     /**
@@ -240,9 +249,9 @@ abstract class Field extends SavableComponent implements FieldInterface
     /**
      * @inheritdoc
      */
-    public function prepareValue($value, $element)
+    public function prepareValueForDb($value, $element)
     {
-        return $value;
+        return DbHelper::prepareValueForDb($value);
     }
 
     /**
@@ -282,6 +291,19 @@ abstract class Field extends SavableComponent implements FieldInterface
     // =========================================================================
 
     /**
+     * Returns whether the given value should be considered "empty" for required-field validation purposes.
+     *
+     * @param mixed                    $value   The field’s value
+     * @param ElementInterface|Element $element The element the field is associated with, if there is one
+     *
+     * @return boolean Whether the value should be considered "empty"
+     */
+    protected function isValueEmpty($value, $element)
+    {
+        return empty($value);
+    }
+
+    /**
      * Returns the location in POST that this field's content was pulled from.
      *
      * @param ElementInterface|Element $element The element this field is associated with
@@ -310,9 +332,7 @@ abstract class Field extends SavableComponent implements FieldInterface
      */
     protected function getElementValue(ElementInterface $element)
     {
-        $handle = $this->handle;
-
-        return $element->getContent()->$handle;
+        return $element->getFieldValue($this->handle);
     }
 
     /**
@@ -323,21 +343,7 @@ abstract class Field extends SavableComponent implements FieldInterface
      */
     protected function setElementValue(ElementInterface $element, $value)
     {
-        $handle = $this->handle;
-        $element->getContent()->$handle = $value;
-    }
-
-    /**
-     * Prepares this field’s value on an element before it is saved.
-     *
-     * @param mixed                    $value   The field’s raw POST value
-     * @param ElementInterface|Element $element The element that is about to be saved
-     *
-     * @return mixed The field’s prepared value
-     */
-    protected function prepareValueBeforeSave($value, $element)
-    {
-        return $value;
+        $element->setFieldValue($this->handle, $value);
     }
 
     /**
@@ -355,7 +361,7 @@ abstract class Field extends SavableComponent implements FieldInterface
                 $element = $element->getOwner();
             }
 
-            $this->_isFresh = (!$element || (empty($element->getContent()->id) && !$element->hasErrors()));
+            $this->_isFresh = (!$element || (!$element->contentId && !$element->hasErrors()));
         }
 
         return $this->_isFresh;

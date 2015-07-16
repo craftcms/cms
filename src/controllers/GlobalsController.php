@@ -30,17 +30,27 @@ class GlobalsController extends Controller
     /**
      * Saves a global set.
      *
-     * @return void
+     * @throws HttpException if this isn’t a post request or an admin isn’t logged in
+     * @throws Exception if the given ‘setId’ param is invalid
      */
     public function actionSaveSet()
     {
         $this->requirePostRequest();
         $this->requireAdmin();
 
-        $globalSet = new GlobalSet();
+        $globalSetId = Craft::$app->getRequest()->getBodyParam('setId');
+
+        if ($globalSetId) {
+            $globalSet = Craft::$app->getGlobals()->getSetById($globalSetId);
+
+            if (!$globalSet) {
+                throw new Exception(Craft::t('app', 'No global set exists with the ID “{id}”.', ['id' => $globalSetId]));
+            }
+        } else {
+            $globalSet = new GlobalSet();
+        }
 
         // Set the simple stuff
-        $globalSet->id = Craft::$app->getRequest()->getBodyParam('setId');
         $globalSet->name = Craft::$app->getRequest()->getBodyParam('name');
         $globalSet->handle = Craft::$app->getRequest()->getBodyParam('handle');
 
@@ -51,13 +61,11 @@ class GlobalsController extends Controller
 
         // Save it
         if (Craft::$app->getGlobals()->saveSet($globalSet)) {
-            Craft::$app->getSession()->setNotice(Craft::t('app',
-                'Global set saved.'));
+            Craft::$app->getSession()->setNotice(Craft::t('app', 'Global set saved.'));
 
             return $this->redirectToPostedUrl($globalSet);
         } else {
-            Craft::$app->getSession()->setError(Craft::t('app',
-                'Couldn’t save global set.'));
+            Craft::$app->getSession()->setError(Craft::t('app', 'Couldn’t save global set.'));
         }
 
         // Send the global set back to the template
@@ -175,7 +183,7 @@ class GlobalsController extends Controller
                 ['id' => $globalSetId]));
         }
 
-        $globalSet->setContentFromPost('fields');
+        $globalSet->setFieldValuesFromPost('fields');
 
         if (Craft::$app->getGlobals()->saveContent($globalSet)) {
             Craft::$app->getSession()->setNotice(Craft::t('app',

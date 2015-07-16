@@ -241,7 +241,7 @@ class Category extends Element
                     'locale' => $element->locale,
                     'id' => 'title',
                     'name' => 'title',
-                    'value' => $element->getContent()->title,
+                    'value' => $element->title,
                     'errors' => $element->getErrors('title'),
                     'first' => true,
                     'autofocus' => true,

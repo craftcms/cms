@@ -167,6 +167,69 @@ class Assets extends BaseRelationField
     /**
      * @inheritdoc
      */
+    public function beforeElementSave(ElementInterface $element)
+    {
+        // See if we have uploaded file(s).
+        $contentPostLocation = $this->getContentPostLocation($element);
+
+        if ($contentPostLocation) {
+            $uploadedFiles = UploadedFile::getInstancesByName($contentPostLocation);
+
+            if (!empty($uploadedFiles)) {
+                // See if we have to validate against fileKinds
+                if (isset($this->restrictFiles) && !empty($this->restrictFiles) && !empty($this->allowedKinds)) {
+                    $allowedExtensions = $this->_getAllowedExtensions($this->allowedKinds);
+                    $failedFiles = [];
+
+                    foreach ($uploadedFiles as $uploadedFile) {
+                        $extension = mb_strtolower(IOHelper::getExtension($uploadedFile->name));
+
+                        if (!in_array($extension, $allowedExtensions)) {
+                            $failedFiles[] = $uploadedFile;
+                        }
+                    }
+
+                    // If any files failed the validation, make a note of it.
+                    if (!empty($failedFiles)) {
+                        $this->_failedFiles = $failedFiles;
+
+                        return true;
+                    }
+                }
+
+                // If we got here either there are no restrictions or all files are valid so let's turn them into Assets
+                $fileIds = [];
+                $targetFolderId = $this->_determineUploadFolderId($element);
+
+                if (!empty($targetFolderId)) {
+                    foreach ($uploadedFiles as $file) {
+                        $tempPath = AssetsHelper::getTempFilePath($file->name);
+                        move_uploaded_file($file->tempName, $tempPath);
+                        $response = Craft::$app->getAssets()->insertFileByLocalPath($tempPath,
+                            $file->name, $targetFolderId);
+                        $fileIds[] = $response->getDataItem('fileId');
+                        IOHelper::deleteFile($tempPath, true);
+                    }
+
+                    $value = $this->getElementValue($element);
+
+                    if (is_array($value) && is_array($fileIds)) {
+                        $fileIds = array_merge($value, $fileIds);
+                    }
+
+                    // Make it look like the actual POST data contained these file IDs as well,
+                    // so they make it into entry draft/version data
+                    $element->setRawPostContent($this->handle, $fileIds);
+
+                    $this->setElementValue($element, $fileIds);
+                }
+            }
+        }
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function afterElementSave(ElementInterface $element)
     {
         $value = $this->getElementValue($element);
@@ -230,13 +293,9 @@ class Assets extends BaseRelationField
     /**
      * @inheritdoc
      */
-    function validateValue($value, $element)
+    public function validateValue($value, $element)
     {
-        $errors = parent::validate($value);
-
-        if (!is_array($errors)) {
-            $errors = [];
-        }
+        $errors = parent::validateValue($value, $element);
 
         // Check if this field restricts files and if files are passed at all.
         if (isset($this->restrictFiles) && !empty($this->restrictFiles) && !empty($this->allowedKinds) && is_array($value) && !empty($value)) {
@@ -261,11 +320,7 @@ class Assets extends BaseRelationField
                 ['filename' => $file->name]);
         }
 
-        if ($errors) {
-            return $errors;
-        } else {
-            return true;
-        }
+        return $errors;
     }
 
     /**
@@ -282,69 +337,6 @@ class Assets extends BaseRelationField
 
     // Protected Methods
     // =========================================================================
-
-    /**
-     * @inheritdoc
-     */
-    protected function prepareValueBeforeSave($value, $element)
-    {
-        // See if we have uploaded file(s).
-        $contentPostLocation = $this->getContentPostLocation($element);
-
-        if ($contentPostLocation) {
-            $uploadedFiles = UploadedFile::getInstancesByName($contentPostLocation);
-
-            if (!empty($uploadedFiles)) {
-                // See if we have to validate against fileKinds
-                if (isset($this->restrictFiles) && !empty($this->restrictFiles) && !empty($this->allowedKinds)) {
-                    $allowedExtensions = $this->_getAllowedExtensions($this->allowedKinds);
-                    $failedFiles = [];
-
-                    foreach ($uploadedFiles as $uploadedFile) {
-                        $extension = mb_strtolower(IOHelper::getExtension($uploadedFile->name));
-
-                        if (!in_array($extension, $allowedExtensions)) {
-                            $failedFiles[] = $uploadedFile;
-                        }
-                    }
-
-                    // If any files failed the validation, make a note of it.
-                    if (!empty($failedFiles)) {
-                        $this->_failedFiles = $failedFiles;
-
-                        return true;
-                    }
-                }
-
-                // If we got here either there are no restrictions or all files are valid so let's turn them into Assets
-                $fileIds = [];
-                $targetFolderId = $this->_determineUploadFolderId($element);
-
-                if (!empty($targetFolderId)) {
-                    foreach ($uploadedFiles as $file) {
-                        $tempPath = AssetsHelper::getTempFilePath($file->name);
-                        move_uploaded_file($file->tempName, $tempPath);
-                        $response = Craft::$app->getAssets()->insertFileByLocalPath($tempPath,
-                            $file->name, $targetFolderId);
-                        $fileIds[] = $response->getDataItem('fileId');
-                        IOHelper::deleteFile($tempPath, true);
-                    }
-
-                    if (is_array($value) && is_array($fileIds)) {
-                        $fileIds = array_merge($value, $fileIds);
-                    }
-
-                    // Make it look like the actual POST data contained these file IDs as well,
-                    // so they make it into entry draft/version data
-                    $element->setRawPostContent($this->handle, $fileIds);
-
-                    return $fileIds;
-                }
-            }
-        }
-
-        return parent::prepareValueBeforeSave($value, $element);
-    }
 
     /**
      * @inheritdoc

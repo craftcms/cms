@@ -666,11 +666,7 @@ class Matrix extends Component
 
         $originalFieldContext = Craft::$app->getContent()->fieldContext;
         Craft::$app->getContent()->fieldContext = 'matrixBlockType:'.$block->typeId;
-
-        if (!Craft::$app->getContent()->validateContent($block)) {
-            $block->addErrors($block->getContent()->getErrors());
-        }
-
+        Craft::$app->getContent()->validateContent($block);
         Craft::$app->getContent()->fieldContext = $originalFieldContext;
 
         return !$block->hasErrors();
@@ -764,18 +760,10 @@ class Matrix extends Component
      */
     public function saveField(MatrixField $field, ElementInterface $owner)
     {
-        $handle = $field->handle;
-        $blocks = $owner->getContent()->$handle;
-
-        if ($blocks === null) {
-            return true;
-        }
-
-        if ($blocks instanceof MatrixBlockQuery) {
-            $blocks = $blocks->getResult();
-        } else {
-            $blocks = [];
-        }
+        /** @var MatrixBlockQuery $query */
+        /** @var MatrixBlock[] $blocks */
+        $query = $owner->getFieldValue($field->handle);
+        $blocks = $query->getResult();
 
         $transaction = Craft::$app->getDb()->getTransaction() === null ? Craft::$app->getDb()->beginTransaction() : null;
         try {

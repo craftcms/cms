@@ -812,8 +812,7 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
                 'elmentsI18nId' => 'elements_i18n.id',
             ])
             ->from(['elements' => '{{%elements}}'])
-            ->innerJoin('{{%elements_i18n}} elements_i18n',
-                'elements_i18n.elementId = elements.id')
+            ->innerJoin('{{%elements_i18n}} elements_i18n', 'elements_i18n.elementId = elements.id')
             ->andWhere('elements_i18n.locale = :locale')
             ->andWhere($this->where)
             ->limit($this->limit)
@@ -1177,13 +1176,11 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
     private function _joinContentTable($class)
     {
         // Join in the content table on both queries
-        $this->subQuery->innerJoin($this->contentTable.' content',
-            'content.elementId = elements.id');
+        $this->subQuery->innerJoin($this->contentTable.' content', 'content.elementId = elements.id');
         $this->subQuery->addSelect(['contentId' => 'content.id']);
         $this->subQuery->andWhere('content.locale = :locale');
 
-        $this->query->innerJoin($this->contentTable.' content',
-            'content.id = subquery.contentId');
+        $this->query->innerJoin($this->contentTable.' content', 'content.id = subquery.contentId');
 
         // Select the content table columns on the main query
         $this->query->addSelect(['contentId' => 'content.id']);
@@ -1217,8 +1214,7 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
                     $contentService->fieldColumnPrefix = $field->columnPrefix;
                 }
 
-                $fieldResponse = $field->modifyElementsQuery($this,
-                    $fieldAttributeValue);
+                $fieldResponse = $field->modifyElementsQuery($this, $fieldAttributeValue);
 
                 // Set it back
                 $contentService->fieldColumnPrefix = $originalFieldColumnPrefix;
@@ -1743,6 +1739,7 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
             $row['structureId'] = $this->structureId;
         }
 
+        /** @var ElementInterface|Element $element */
         $element = $class::create($row);
 
         // Verify that an element was returned
@@ -1750,15 +1747,10 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
             return false;
         }
 
-        // Set the content
+        // Set the custom field values
         if ($class::hasContent() && $this->contentTable) {
             // Separate the content values from the main element attributes
-            $content = [
-                'id' => (isset($row['contentId']) ? $row['contentId'] : null),
-                'elementId' => $row['id'],
-                'locale' => $this->locale,
-                'title' => (isset($row['title']) ? $row['title'] : null)
-            ];
+            $fieldValues = [];
 
             if ($this->customFields) {
                 foreach ($this->customFields as $field) {
@@ -1766,17 +1758,16 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
                         // Account for results where multiple fields have the same handle, but from
                         // different columns e.g. two Matrix block types that each have a field with the
                         // same handle
-
                         $colName = $this->_getFieldContentColumnName($field);
 
-                        if (!isset($content[$field->handle]) || (empty($content[$field->handle]) && !empty($row[$colName]))) {
-                            $content[$field->handle] = $row[$colName];
+                        if (!isset($fieldValues[$field->handle]) || (empty($fieldValues[$field->handle]) && !empty($row[$colName]))) {
+                            $fieldValues[$field->handle] = $row[$colName];
                         }
                     }
                 }
             }
 
-            $element->setContent($content);
+            $element->setFieldValues($fieldValues);
         }
 
         // Fire an 'afterPopulateElement' event

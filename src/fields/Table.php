@@ -180,10 +180,10 @@ class Table extends Field
             $value = JsonHelper::decode($value);
         }
 
-        if (is_array($value) && ($columns = $this->columns)) {
+        if (is_array($value) && $this->columns) {
             // Make the values accessible from both the col IDs and the handles
             foreach ($value as &$row) {
-                foreach ($columns as $colId => $col) {
+                foreach ($this->columns as $colId => $col) {
                     if ($col['handle']) {
                         $row[$col['handle']] = (isset($row[$colId]) ? $row[$colId] : null);
                     }
@@ -197,23 +197,33 @@ class Table extends Field
     /**
      * @inheritdoc
      */
-    public function getStaticHtml($value, $element)
+    public function prepareValueForDb($value, $element)
     {
-        return $this->_getInputHtml($value, $element, true);
-    }
+        if (is_array($value)) {
+            // Drop the string row keys
+            $value = array_values($value);
 
-    // Protected Methods
-    // =========================================================================
+            // Drop the column handle values
+            if ($this->columns) {
+                foreach ($value as &$row) {
+                    foreach ($this->columns as $colId => $col) {
+                        if ($col['handle']) {
+                            unset($row[$col['handle']]);
+                        }
+                    }
+                }
+            }
+        }
+
+        return parent::prepareValueForDb($value, $element);
+    }
 
     /**
      * @inheritdoc
      */
-    protected function prepareValueBeforeSave($value, $element)
+    public function getStaticHtml($value, $element)
     {
-        if (is_array($value)) {
-            // Drop the string row keys
-            return array_values($value);
-        }
+        return $this->_getInputHtml($value, $element, true);
     }
 
     // Private Methods

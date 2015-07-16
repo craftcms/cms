@@ -200,7 +200,7 @@ class EntriesController extends BaseEntriesController
         if (!$entry->id) {
             $variables['title'] = Craft::t('app', 'Create a new entry');
         } else {
-            $variables['docTitle'] = $variables['title'] = $entry->getTitle();
+            $variables['docTitle'] = $variables['title'] = $entry->title;
 
             if (Craft::$app->getEdition() >= Craft::Client && $entry::className() != Entry::className()) {
                 $variables['docTitle'] .= ' ('.$variables['revisionLabel'].')';
@@ -230,7 +230,7 @@ class EntriesController extends BaseEntriesController
                 /** @var Entry $ancestor */
                 foreach ($entry->getAncestors() as $ancestor) {
                     $variables['crumbs'][] = [
-                        'label' => $ancestor->getTitle(),
+                        'label' => $ancestor->title,
                         'url' => $ancestor->getCpEditUrl()
                     ];
                 }
@@ -447,7 +447,7 @@ class EntriesController extends BaseEntriesController
             if (Craft::$app->getRequest()->getIsAjax()) {
                 $return['success'] = true;
                 $return['id'] = $entry->id;
-                $return['title'] = $entry->getTitle();
+                $return['title'] = $entry->title;
                 $return['cpEditUrl'] = $entry->getCpEditUrl();
 
                 $author = $entry->getAuthor()->getAttributes();
@@ -821,10 +821,10 @@ class EntriesController extends BaseEntriesController
         $entry->enabled = (bool)Craft::$app->getRequest()->getBodyParam('enabled', $entry->enabled);
         $entry->localeEnabled = (bool)Craft::$app->getRequest()->getBodyParam('localeEnabled', $entry->localeEnabled);
 
-        $entry->getContent()->title = Craft::$app->getRequest()->getBodyParam('title', $entry->getTitle());
+        $entry->title = Craft::$app->getRequest()->getBodyParam('title', $entry->title);
 
         $fieldsLocation = Craft::$app->getRequest()->getParam('fieldsLocation', 'fields');
-        $entry->setContentFromPost($fieldsLocation);
+        $entry->setFieldValuesFromPost($fieldsLocation);
 
         // Author
         $authorId = Craft::$app->getRequest()->getBodyParam('author', ($entry->authorId ? $entry->authorId : Craft::$app->getUser()->getIdentity()->id));

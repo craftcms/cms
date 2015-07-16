@@ -273,9 +273,9 @@ class Elements extends Component
      * saveElement() should be called only after the entry’s sectionId and typeId attributes had been validated to
      * ensure that they point to valid section and entry type IDs.
      *
-     * @param ElementInterface|ElementInterface $element         The element that is being saved
-     * @param boolean|null                      $validateContent Whether the element's content should be validated. If left 'null', it
-     *                                                           will depend on whether the element is enabled or not.
+     * @param ElementInterface|Element $element         The element that is being saved
+     * @param boolean|null             $validateContent Whether the element's content should be validated. If left 'null', it
+     *                                                  will depend on whether the element is enabled or not.
      *
      * @throws Exception|\Exception
      * @return boolean
@@ -290,31 +290,23 @@ class Elements extends Component
 
         $isNewElement = !$element->id;
 
-        // Validate the content first
-        if ($element::hasContent()) {
+        if ($element->hasContent()) {
+            // Do we need to validate the content?
             if ($validateContent === null) {
                 $validateContent = (bool)$element->enabled;
             }
 
             if ($validateContent && !Craft::$app->getContent()->validateContent($element)) {
-                $element->addErrors($element->getContent()->getErrors());
-
                 return false;
-            } else {
-                // Make sure there's a title
-                if ($element::hasTitles()) {
-                    $fields = ['title'];
-                    $content = $element->getContent();
-                    $content->setRequiredFields($fields);
+            }
 
-                    if (!$content->validate($fields) && $content->hasErrors('title')) {
-                        // Just set *something* on it
-                        if ($isNewElement) {
-                            $content->title = 'New '.$element::classHandle();
-                        } else {
-                            $content->title = $element::classHandle().' '.$element->id;
-                        }
-                    }
+            // Make sure there's a title
+            if ($element->hasTitles() && !$element->validate(['title'])) {
+                // Just set *something* on it
+                if ($isNewElement) {
+                    $element->title = 'New '.$element->classHandle();
+                } else {
+                    $element->title = $element->classHandle().' '.$element->id;
                 }
             }
         }
@@ -357,18 +349,13 @@ class Elements extends Component
 
                 if ($success) {
                     if ($isNewElement) {
-                        // Save the element id on the element model, in case {id} is in the URL format
+                        // Save the element ID on the element model, in case {id} is in the URL format
                         $element->id = $elementRecord->id;
-
-                        if ($element::hasContent()) {
-                            $element->getContent()->elementId = $element->id;
-                        }
                     }
 
                     // Save the content
-                    if ($element::hasContent()) {
-                        Craft::$app->getContent()->saveContent($element, false,
-                            (bool)$element->id);
+                    if ($element->hasContent()) {
+                        Craft::$app->getContent()->saveContent($element, false, !empty($element->id));
                     }
 
                     // Update the search index
@@ -441,28 +428,34 @@ class Elements extends Component
                             }
                         }
 
-                        if ($element::hasContent()) {
+                        if ($element->hasContent()) {
                             if (!$isMainLocale) {
-                                $content = null;
+                                $fieldValues = null;
 
                                 if (!$isNewElement) {
                                     // Do we already have a content row for this locale?
-                                    $content = Craft::$app->getContent()->getContent($localizedElement);
+                                    $fieldValues = Craft::$app->getContent()->getContentRow($localizedElement);
+
+                                    if ($fieldValues) {
+                                        $localizedElement->contentId = $fieldValues['id'];
+                                        if (isset($fieldValues['title'])) {
+                                            $localizedElement->title = $fieldValues['title'];
+                                        }
+                                        unset($fieldValues['id'], $fieldValues['elementId'], $fieldValues['locale'], $fieldValues['title']);
+                                    }
+
                                 }
 
-                                if (!$content) {
-                                    $content = Craft::$app->getContent()->createContent($localizedElement);
-                                    $content->setAttributes($element->getContent()->getAttributes());
-                                    $content->id = null;
-                                    $content->locale = $localeId;
+                                if (!$fieldValues) {
+                                    // Just default to whatever's on the main element we're saving here
+                                    $fieldValues = $element->getFieldValues();
                                 }
 
-                                $localizedElement->setContent($content);
+                                $localizedElement->setFieldValues($fieldValues);
                             }
 
-                            if (!$localizedElement->getContent()->id) {
-                                Craft::$app->getContent()->saveContent($localizedElement,
-                                    false, false);
+                            if (!$localizedElement->contentId) {
+                                Craft::$app->getContent()->saveContent($localizedElement, false, false);
                             }
                         }
 
@@ -563,9 +556,8 @@ class Elements extends Component
             if ($isNewElement) {
                 $element->id = null;
 
-                if ($element::hasContent()) {
-                    $element->getContent()->id = null;
-                    $element->getContent()->elementId = null;
+                if ($element->hasContent()) {
+                    $element->contentId = null;
                 }
             }
         }

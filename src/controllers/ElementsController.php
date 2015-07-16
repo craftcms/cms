@@ -115,13 +115,13 @@ class ElementsController extends BaseElementsController
         $params = Craft::$app->getRequest()->getBodyParam($namespace);
 
         if (isset($params['title'])) {
-            $element->getContent()->title = $params['title'];
+            $element->title = $params['title'];
             unset($params['title']);
         }
 
         if (isset($params['fields'])) {
             $fields = $params['fields'];
-            $element->setContentFromPost($fields);
+            $element->setFieldValuesFromPost($fields);
             unset($params['fields']);
         }
 

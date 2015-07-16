@@ -109,7 +109,7 @@ class Tag extends Element
                     'locale' => $element->locale,
                     'id' => 'title',
                     'name' => 'title',
-                    'value' => $element->getContent()->title,
+                    'value' => $element->title,
                     'errors' => $element->getErrors('title'),
                     'first' => true,
                     'autofocus' => true,
@@ -208,6 +208,6 @@ class Tag extends Element
         Craft::$app->getDeprecator()->log('Tag::name',
             'The Tag ‘name’ property has been deprecated. Use ‘title’ instead.');
 
-        return $this->getContent()->title;
+        return $this->title;
     }
 }

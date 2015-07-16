@@ -693,7 +693,7 @@ class Sections extends Component
                                 $singleEntry = new Entry();
                                 $singleEntry->sectionId = $section->id;
                                 $singleEntry->typeId = $entryTypeId;
-                                $singleEntry->getContent()->title = $section->name;
+                                $singleEntry->title = $section->name;
                                 Craft::$app->getEntries()->saveEntry($singleEntry);
                             }
 

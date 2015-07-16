@@ -271,4 +271,18 @@ abstract class BaseOptionsField extends Field
             return $defaultValues;
         }
     }
+
+    /**
+     * @inheritdoc
+     */
+    protected function isValueEmpty($value, $element)
+    {
+        if ($this->multi) {
+            /** @var MultiOptionsFieldData $value */
+            return count($value) === 0;
+        } else {
+            /** @var SingleOptionFieldData $value */
+            return empty($value->value);
+        }
+    }
 }

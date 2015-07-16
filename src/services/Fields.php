@@ -786,10 +786,8 @@ class Fields extends Component
      */
     public function assembleLayoutFromPost()
     {
-        $postedFieldLayout = Craft::$app->getRequest()->getBodyParam('fieldLayout',
-            []);
-        $requiredFields = Craft::$app->getRequest()->getBodyParam('requiredFields',
-            []);
+        $postedFieldLayout = Craft::$app->getRequest()->getBodyParam('fieldLayout', []);
+        $requiredFields = Craft::$app->getRequest()->getBodyParam('requiredFields', []);
 
         return $this->assembleLayout($postedFieldLayout, $requiredFields);
     }

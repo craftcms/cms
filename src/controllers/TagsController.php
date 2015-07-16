@@ -198,12 +198,12 @@ class TagsController extends Controller
         foreach ($tags as $tag) {
             $return[] = [
                 'id' => $tag->id,
-                'title' => $tag->getContent()->title
+                'title' => $tag->title
             ];
 
-            $tagTitleLengths[] = StringHelper::length($tag->getContent()->title);
+            $tagTitleLengths[] = StringHelper::length($tag->title);
 
-            $normalizedTitle = SearchHelper::normalizeKeywords($tag->getContent()->title);
+            $normalizedTitle = SearchHelper::normalizeKeywords($tag->title);
 
             if ($normalizedTitle == $normalizedSearch) {
                 $exactMatches[] = 1;
@@ -233,7 +233,7 @@ class TagsController extends Controller
 
         $tag = new Tag();
         $tag->groupId = Craft::$app->getRequest()->getRequiredBodyParam('groupId');
-        $tag->getContent()->title = Craft::$app->getRequest()->getRequiredBodyParam('title');
+        $tag->title = Craft::$app->getRequest()->getRequiredBodyParam('title');
 
         if (Craft::$app->getTags()->saveTag($tag)) {
             return $this->asJson([

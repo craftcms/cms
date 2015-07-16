@@ -161,8 +161,9 @@ interface FieldInterface extends SavableComponentInterface
      * @param mixed                    $value   The field’s value
      * @param ElementInterface|Element $element The element the field is associated with, if there is one
      *
-     * @return true|string|array `true` if everything checks out; otherwise a string for a single validation error, or
-     *                           an array of strings if there are multiple validation errors.
+     * @return string|string[]|null The error message(s) if there are any validation errors, or null if everything checks out.
+     *                              The messages can contain `{attribute}` and `{value}` tokens, which will be replaced with the
+     *                              field handle and value, respectively.
      */
     public function validateValue($value, $element);
 
@@ -226,8 +227,8 @@ interface FieldInterface extends SavableComponentInterface
      *
      * This method is called when the field’s value is first accessed from the element. For example, the first time
      * `entry.myFieldHandle` is called from a template, or right before [[getInputHtml()]] is called. Whatever
-     * this method returns is what `entry.myFieldHandle` will likewise return, and what [[getInputHtml()]]’s $value
-     * argument will be set to.
+     * this method returns is what `entry.myFieldHandle` will likewise return, and what [[getInputHtml()]]’s and
+     * [[prepareValueForDb()]]’s $value arguments will be set to.
      *
      * @param mixed                         $value   The raw field value
      * @param ElementInterface|Element|null $element The element the field is associated with, if there is one
@@ -235,6 +236,16 @@ interface FieldInterface extends SavableComponentInterface
      * @return mixed The prepared field value
      */
     public function prepareValue($value, $element);
+
+    /**
+     * Prepares the field’s value for DB storage.
+     *
+     * This method is called when the field’s value is about to be saved to the database.
+     *
+     * @param mixed                         $value   The raw field value
+     * @param ElementInterface|Element|null $element The element the field is associated with, if there is one
+     */
+    public function prepareValueForDb($value, $element);
 
     /**
      * Modifies an element query.

@@ -207,16 +207,4 @@ class Date extends Field
                 $value, $query->subQuery->params));
         }
     }
-
-    /**
-     * @inheritdoc
-     */
-    protected function prepareValueBeforeSave($value, $element)
-    {
-        if ($value) {
-            $value = DateTimeHelper::toDateTime($value);
-        }
-
-        return $value;
-    }
 }

@@ -9,7 +9,6 @@ namespace craft\app\base;
 
 use craft\app\elements\db\ElementQuery;
 use craft\app\elements\db\ElementQueryInterface;
-use craft\app\models\Content;
 use craft\app\models\FieldLayout;
 use Exception;
 
@@ -761,13 +760,6 @@ interface ElementInterface extends ComponentInterface
     public function isNextSiblingOf(ElementInterface $element);
 
     /**
-     * Returns the element’s title.
-     *
-     * @return string
-     */
-    public function getTitle();
-
-    /**
      * Treats custom fields as array offsets.
      *
      * @param string|integer $offset
@@ -777,32 +769,56 @@ interface ElementInterface extends ComponentInterface
     public function offsetExists($offset);
 
     /**
-     * Returns the content for the element.
+     * Returns the element’s custom field values.
      *
-     * @return Content
+     * @param array $fieldHandles The list of field handles whose values need to be returned.
+     * Defaults to null, meaning all fields’ values will be returned.
+     * If it is an array, only the fields in the array will be returned.
+     * @param array $except The list of field handles whose values should NOT be returned.
+     *
+     * @return array The field values (handle => value)
      */
-    public function getContent();
+    public function getFieldValues($fieldHandles = null, $except = []);
 
     /**
-     * Sets the content for the element.
+     * Sets the element’s custom field values.
      *
-     * @param Content|array $content
+     * @param array $values The custom field values (handle => value)
      *
      * @return void
      */
-    public function setContent($content);
+    public function setFieldValues($values);
 
     /**
-     * Sets the content from post data.
+     * Returns the value for a given field.
      *
-     * @param array|string $content The array of field values, or the post location of the content
+     * @param string $fieldHandle The field handle whose value needs to be returned
+     *
+     * @return mixed The field value
+     */
+    public function getFieldValue($fieldHandle);
+
+    /**
+     * Sets the value for a given field.
+     *
+     * @param string $fieldHandle The field handle whose value needs to be set
+     * @param mixed  $value       The value to set on the field
      *
      * @return void
      */
-    public function setContentFromPost($content);
+    public function setFieldValue($fieldHandle, $value);
 
     /**
-     * Returns the raw content from the post data, as it was given to [[setContentFromPost]]
+     * Sets the element’s custom field values, when the values have come from post data.
+     *
+     * @param array|string $values The array of field values, or the post location of the content
+     *
+     * @return void
+     */
+    public function setFieldValuesFromPost($values);
+
+    /**
+     * Returns the raw content from the post data, as it was given to [[setFieldValuesFromPost]]
      *
      * @return array
      */
@@ -823,16 +839,6 @@ interface ElementInterface extends ComponentInterface
      * @return string|null
      */
     public function setContentPostLocation($contentPostLocation);
-
-    /**
-     * Returns the prepped content for a given field.
-     *
-     * @param string $fieldHandle
-     *
-     * @throws Exception
-     * @return mixed
-     */
-    public function getFieldValue($fieldHandle);
 
     /**
      * Returns the name of the table this element’s content is stored in.

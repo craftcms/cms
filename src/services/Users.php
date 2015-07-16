@@ -367,9 +367,7 @@ class Users extends Component
 
         if (Craft::$app->getEdition() == Craft::Pro) {
             // Validate any content.
-            if (!Craft::$app->getContent()->validateContent($user)) {
-                $user->addErrors($user->getContent()->getErrors());
-            }
+            Craft::$app->getContent()->validateContent($user);
         }
 
         // If newPassword is set at all, even to an empty string, validate & set it.

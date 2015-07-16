@@ -173,6 +173,8 @@ class RichText extends Field
      */
     public function validateValue($value, $element)
     {
+        $errors = parent::validateValue($value, $element);
+
         $postContentSize = strlen($value);
         $maxDbColumnSize = DbHelper::getTextualColumnStorageCapacity($this->columnType);
 
@@ -184,12 +186,11 @@ class RichText extends Field
             $maxDbColumnSize = ceil($maxDbColumnSize * 0.9);
 
             if ($postContentSize > $maxDbColumnSize) {
-                return Craft::t('app', '{attribute} is too long.',
-                    ['attribute' => Craft::t('site', $this->name)]);
+                $errors[] = Craft::t('app', '{attribute} is too long.');
             }
         }
 
-        return true;
+        return $errors;
     }
 
     /**
@@ -200,14 +201,15 @@ class RichText extends Field
         return '<div class="text">'.($value ? $value : '&nbsp;').'</div>';
     }
 
-    // Protected Methods
-    // =========================================================================
-
     /**
      * @inheritdoc
      */
-    protected function prepareValueBeforeSave($value, $element)
+    public function prepareValueForDb($value, $element)
     {
+        // Get the raw value
+        /** @var RichTextData $value */
+        $value = $value->getRawContent();
+
         // Temporary fix (hopefully) for a Redactor bug where some HTML will get submitted when the field is blank,
         // if any text was typed into the field, and then deleted
         if ($value == '<p><br></p>') {
@@ -216,8 +218,7 @@ class RichText extends Field
 
         if ($value) {
             // Swap any pagebreak <hr>'s with <!--pagebreak-->'s
-            $value = preg_replace('/<hr class="redactor_pagebreak".*?>/',
-                '<!--pagebreak-->', $value);
+            $value = preg_replace('/<hr class="redactor_pagebreak".*?>/', '<!--pagebreak-->', $value);
 
             if ($this->purifyHtml) {
                 $value = HtmlPurifier::process($value, [
@@ -248,6 +249,19 @@ class RichText extends Field
             }, $value);
 
         return $value;
+    }
+
+    // Protected Methods
+    // =========================================================================
+
+    /**
+     * @inheritdoc
+     */
+    protected function isValueEmpty($value, $element)
+    {
+        /** @var RichTextData $value */
+        $rawContent = $value->getRawContent();
+        return empty($rawContent);
     }
 
     // Private Methods

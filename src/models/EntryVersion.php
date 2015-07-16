@@ -25,6 +25,7 @@ class EntryVersion extends BaseEntryRevisionModel
      */
     public static function populateModel($model, $config)
     {
+        /** @var static $model */
         // Merge the version and entry data
         $entryData = $config['data'];
         $fieldContent = isset($entryData['fields']) ? $entryData['fields'] : null;
@@ -37,7 +38,7 @@ class EntryVersion extends BaseEntryRevisionModel
 
         parent::populateModel($model, $config);
 
-        $model->getContent()->title = $title;
+        $model->title = $title;
 
         if ($fieldContent) {
             $model->setContentFromRevision($fieldContent);

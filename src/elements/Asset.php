@@ -331,7 +331,7 @@ class Asset extends Element
                     'locale' => $element->locale,
                     'id' => 'title',
                     'name' => 'title',
-                    'value' => $element->getTitle(),
+                    'value' => $element->title,
                     'errors' => $element->getErrors('title'),
                     'required' => true
                 ]
@@ -578,7 +578,7 @@ class Asset extends Element
                     $model->$attributeName = $this->$attributeName;
                 }
 
-                $model->setContent($this->getContent());
+                $model->setFieldValues($this->getFieldValues());
                 $model->setTransform($transform);
 
                 return $model;
@@ -698,7 +698,7 @@ class Asset extends Element
     public function getImg()
     {
         if ($this->kind == 'image') {
-            $img = '<img src="'.$this->getUrl().'" width="'.$this->getWidth().'" height="'.$this->getHeight().'" alt="'.HtmlHelper::encode($this->getTitle()).'" />';
+            $img = '<img src="'.$this->getUrl().'" width="'.$this->getWidth().'" height="'.$this->getHeight().'" alt="'.HtmlHelper::encode($this->title).'" />';
 
             return TemplateHelper::getRaw($img);
         }

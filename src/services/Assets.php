@@ -1388,10 +1388,9 @@ class Assets extends Component
             throw $exception;
         }
 
-        if ($isNewAsset && !$asset->getContent()->title) {
+        if ($isNewAsset && !$asset->title) {
             // Give it a default title based on the file name
-            $asset->getContent()->title = str_replace('_', ' ',
-                IOHelper::getFilename($asset->filename, false));
+            $asset->title = str_replace('_', ' ', IOHelper::getFilename($asset->filename, false));
         }
 
         $transaction = Craft::$app->getDb()->getTransaction() === null ? Craft::$app->getDb()->beginTransaction() : null;
