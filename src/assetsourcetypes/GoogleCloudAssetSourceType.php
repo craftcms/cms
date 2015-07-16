@@ -229,7 +229,7 @@ class GoogleCloudAssetSourceType extends BaseAssetSourceType
 				$this->_googleCloud->getObject($settings->bucket, $this->_getPathPrefix().$indexEntryModel->uri, $targetPath);
 				clearstatcache();
 
-				list ($width, $height) = ImageHelper::getImageSize($indexEntryModel->uri);
+				list ($width, $height) = ImageHelper::getImageSize($targetPath);
 
 				$fileModel->width = $width;
 				$fileModel->height = $height;

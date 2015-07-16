@@ -247,6 +247,24 @@ class ErrorHandler extends \CErrorHandler
 	}
 
 	/**
+	 * Renders the exception information. This method will display information from current {@link error} value.
+	 */
+	protected function renderError()
+	{
+		// This could be an exception because handleException can call renderError.
+		$exception = $this->getException();
+
+		// If the exception exists, and it's an instance of HttpException or devMode isn't enabled
+		// set the errorAction to our TemplatesController->renderError().
+		if (!YII_DEBUG || $exception instanceof HttpException)
+		{
+			$this->errorAction = 'templates/renderError';
+		}
+
+		parent::renderError();
+	}
+
+	/**
 	 * Returns server version information. If the site is in non-dev mode, an empty string is returned.
 	 *
 	 * @return string The server version information. Empty if in non-dev mode.

@@ -1069,10 +1069,26 @@ class UsersController extends BaseController
 					$this->returnErrorJson(Craft::t('The uploaded image is too large'));
 				}
 
-				craft()->images->cleanImage($folderPath.$fileName);
+                list ($width, $height) = ImageHelper::getImageSize($folderPath.$fileName);
+
+                if (IOHelper::getExtension($fileName) != 'svg')
+                {
+    				craft()->images->cleanImage($folderPath.$fileName);
+                }
+                else
+                {
+                    // Resave svg files as png
+                    $newFilename = preg_replace('/\.svg$/i', '.png', $fileName);
+
+                    craft()->images->
+                        loadImage($folderPath.$fileName, $width, $height)->
+                        saveAs($folderPath.$newFilename);
+
+                    IOHelper::deleteFile($folderPath.$fileName);
+                    $fileName = $newFilename;
+                }
 
 				$constraint = 500;
-				list ($width, $height) = getimagesize($folderPath.$fileName);
 
 				// If the file is in the format badscript.php.gif perhaps.
 				if ($width && $height)
@@ -1086,7 +1102,8 @@ class UsersController extends BaseController
 							'width' => round($width * $factor),
 							'height' => round($height * $factor),
 							'factor' => $factor,
-							'constraint' => $constraint
+							'constraint' => $constraint,
+                            'fileName' => $fileName
 						)
 					);
 
@@ -1133,14 +1150,19 @@ class UsersController extends BaseController
 			$user = craft()->users->getUserById($userId);
 			$userName = AssetsHelper::cleanAssetName($user->username, false);
 
-			// make sure that this is this user's file
+            if (IOHelper::getExtension($source) == 'svg')
+            {
+                $source = preg_replace('/\.svg$/i', '.png', $source);
+            }
+
+            // make sure that this is this user's file
 			$imagePath = craft()->path->getTempUploadsPath().'userphotos/'.$userName.'/'.$source;
 
 			if (IOHelper::fileExists($imagePath) && craft()->images->checkMemoryForImage($imagePath))
 			{
 				craft()->users->deleteUserPhoto($user);
 
-				$image = craft()->images->loadImage($imagePath);
+                $image = craft()->images->loadImage($imagePath);
 				$image->crop($x1, $x2, $y1, $y2);
 
 				if (craft()->users->saveUserPhoto(IOHelper::getFileName($imagePath), $image, $user))

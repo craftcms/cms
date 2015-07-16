@@ -258,7 +258,7 @@ class RackspaceAssetSourceType extends BaseAssetSourceType
 
 				clearstatcache();
 
-				list ($width, $height) = ImageHelper::getImageSize($indexEntryModel->uri);
+				list ($width, $height) = ImageHelper::getImageSize($targetPath);
 
 				$fileModel->width = $width;
 				$fileModel->height = $height;

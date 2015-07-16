@@ -127,6 +127,11 @@ Craft.ImageHandler = Garnish.Base.extend(
 						Craft.ImageUpload.$modalContainerDiv = $('<div class="modal fitted"></div>').addClass(settings.modalClass).appendTo(Garnish.$bod);
 					}
 
+					if (response.fileName)
+					{
+						this.source = response.fileName;
+					}
+
 					if (response.html)
 					{
 						Craft.ImageUpload.$modalContainerDiv.empty().append(response.html);
@@ -267,7 +272,8 @@ Craft.ImageModal = Garnish.Modal.extend(
 
 		$img.height(newHeight).width(newWidth);
 		this.factor = factor;
-		if (this.cropAreaTool)
+
+		if (this.cropAreaTool && typeof $img.imgAreaSelect({instance: true}) != "undefined")
 		{
 			$img.imgAreaSelect({instance: true}).update();
 		}

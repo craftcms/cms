@@ -51,6 +51,13 @@ class GeneratePendingTransformsTask extends BaseTask
 		try
 		{
 			$index = craft()->assetTransforms->getTransformIndexModelById($this->_indexIds[$step]);
+
+            // No transform means a probably already finished transform.
+            if (!$index)
+            {
+                return true;
+            }
+
 			craft()->assetTransforms->ensureTransformUrlByIndexModel($index);
 		}
 		catch (\Exception $e) { }

@@ -103,7 +103,22 @@ class MatrixBlockElementType extends BaseElementType
 	{
 		$fields = array();
 
-		foreach (craft()->matrix->getBlockTypesByFieldId($criteria->fieldId) as $blockType)
+		$blockTypes = craft()->matrix->getBlockTypesByFieldId($criteria->fieldId);
+
+		foreach ($blockTypes as $blockType)
+		{
+			$contexts = array();
+
+			foreach ($blockTypes as $blockType)
+			{
+				$contexts[] = 'matrixBlockType:'.$blockType->id;
+			}
+
+			// Preload them to save ourselves some DB queries, and discard
+			craft()->fields->getAllFields(null, $contexts);
+		}
+
+		foreach ($blockTypes as $blockType)
 		{
 			$fieldColumnPrefix = 'field_'.$blockType->handle.'_';
 

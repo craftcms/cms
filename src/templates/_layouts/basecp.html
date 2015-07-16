@@ -6,9 +6,24 @@
 		{%- set datepickerLocale = 'en-GB' %}
 	{%- case 'fr_ca' %}
 		{%- set datepickerLocale = 'fr-CA' %}
+	{%- case'fr_fr' %}
+		{%- set datepickerLocale = 'fr' %}
+	{%- case'ar_sa' %}
+		{%- set datepickerLocale = 'ar' %}
+	{%- case'de_de' %}
+		{%- set datepickerLocale = 'de' %}
+	{%- case'fr_fr' %}
+		{%- set datepickerLocale = 'fr' %}
+	{%- case'it_it' %}
+		{%- set datepickerLocale = 'it' %}
+	{%- case'nl_nl' %}
+		{%- set datepickerLocale = 'nl' %}
+	{%- case'nn_no' %}
+		{%- set datepickerLocale = 'nn' %}
+
 	{%- default %}
 		{%- set language = craft.i18n.getLocaleData().getLanguageID(craft.locale) %}
-		{%- if language in ['ar', 'de', 'fr', 'it', 'ja', 'nb', 'nl'] %}
+		{%- if language in ['ar', 'de', 'fr', 'it', 'ja', 'nb', 'nl', 'nn', 'no'] %}
 			{%- set datepickerLocale = language %}
 		{%- endif %}
 {%- endswitch %}
@@ -39,7 +54,7 @@
 	<noscript>
 		<div class="message-container no-access">
 			<div class="pane notice">
-				<p>{{ "JavaScript must be enabled to access the @@@appName@@@ control panel."|t }}</p>
+				<p>{{ "JavaScript must be enabled to access the Craft control panel."|t }}</p>
 			</div>
 		</div>
 	</noscript>
