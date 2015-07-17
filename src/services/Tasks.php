@@ -15,12 +15,10 @@ use craft\app\errors\InvalidComponentException;
 use craft\app\helpers\ComponentHelper;
 use craft\app\helpers\HeaderHelper;
 use craft\app\helpers\JsonHelper;
+use craft\app\helpers\UrlHelper;
 use craft\app\records\Task as TaskRecord;
 use craft\app\tasks\InvalidTask;
-use craft\app\web\View;
-use yii\base\Application;
 use yii\base\Component;
-use yii\base\Event;
 use yii\web\Response;
 
 /**
