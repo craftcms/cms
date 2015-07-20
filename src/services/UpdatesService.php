@@ -431,13 +431,13 @@ class UpdatesService extends BaseApplicationComponent
 				$plugin = craft()->plugins->getPlugin($handle);
 				if ($plugin)
 				{
-					Craft::log('The plugin, '.$plugin->getName().' wants to update the database.', LogLevel::Info, true);
+					Craft::log('The plugin "'.$plugin->getName().'" wants to update the database.', LogLevel::Info, true);
 					$updater->updateDatabase($plugin);
-					Craft::log('The plugin, '.$plugin->getName().' is done updating the database.', LogLevel::Info, true);
+					Craft::log('The plugin "'.$plugin->getName().'" is done updating the database.', LogLevel::Info, true);
 				}
 				else
 				{
-					Craft::log('Cannot find a plugin with the handle '.$handle.' or it is not enabled, therefore it cannot update the database.', LogLevel::Error);
+					Craft::log('Cannot find a plugin with the handle "'.$handle.'" or it is not enabled, therefore it cannot update the database.', LogLevel::Error);
 					throw new Exception(Craft::t('Cannot find an enabled plugin with the handle {handle}.', array('handle' => $handle)));
 				}
 			}

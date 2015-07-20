@@ -27,10 +27,10 @@ class Requirements
 			new PhpVersionRequirement(),
 			new Requirement(
 				Craft::t('$_SERVER Variable'),
-				($message = static::_checkServerVar()) === '',
+				($serverMessage = static::_checkServerVar()) === '',
 				true,
 				'<a href="http://buildwithcraft.com">@@@appName@@@</a>',
-				$message
+				$serverMessage
 			),
 			new Requirement(
 				Craft::t('Reflection extension'),
@@ -118,10 +118,10 @@ class Requirements
 			),
 			new Requirement(
 				Craft::t('crypt() with CRYPT_BLOWFISH enabled'),
+				($cryptMessage = static::_checkCryptBlowfish()) === '',
 				true,
-				function_exists('crypt') && defined('CRYPT_BLOWFISH') && CRYPT_BLOWFISH,
 				'<a href="http://www.yiiframework.com/doc/api/1.1/CPasswordHelper">CPasswordHelper</a>',
-				Craft::t('@@@appName@@@ requires the <a href="http://php.net/manual/en/function.crypt.php">crypt()</a> function with CRYPT_BLOWFISH enabled for secure password storage.')
+				$cryptMessage
 			),
 			new Requirement(
 				Craft::t('PCRE UTF-8 support'),
@@ -173,6 +173,33 @@ class Requirements
 		if (!isset($_SERVER["PATH_INFO"]) && strpos($_SERVER["PHP_SELF"], $_SERVER["SCRIPT_NAME"]) !== 0)
 		{
 			return Craft::t('Unable to determine URL path info. Please make sure $_SERVER["PATH_INFO"] (or $_SERVER["PHP_SELF"] and $_SERVER["SCRIPT_NAME"]) contains proper value.');
+		}
+
+		return '';
+	}
+
+	/**
+	 * Checks if crypt with blowfish is installed.  If it is, also checks to make sure the version installed isn't insecure.
+	 *
+	 * @see https://secure.php.net/security/crypt_blowfish.php
+	 *
+	 * @return string
+	 */
+	private static function _checkCryptBlowfish()
+	{
+		if (function_exists('crypt') && defined('CRYPT_BLOWFISH') && CRYPT_BLOWFISH)
+		{
+			$hash = '$2y$04$usesomesillystringfore7hnbRJHxXVLeakoG8K30oukPsA.ztMG';
+			$test = crypt('password', $hash);
+
+			if ($test !== $hash)
+			{
+				return Craft::t('You have an <a href="http://secure.php.net/security/crypt_blowfish.php">insecure version</a> of <a href="http://php.net/manual/en/function.crypt.php">crypt() with CRYPT_BLOWFISH</a>installed. You will need to upgrade your PHP version to 5.3.7 or greater in order to fix it.');
+			}
+		}
+		else
+		{
+			return Craft::t('@@@appName@@@ requires the <a href="http://php.net/manual/en/function.crypt.php">crypt()</a> function with CRYPT_BLOWFISH enabled for secure password storage.');
 		}
 
 		return '';
