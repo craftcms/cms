@@ -116,6 +116,7 @@ class RichText extends Field
      */
     public function prepareValue($value, $element)
     {
+        /** @var string|null $value */
         if ($value) {
             // Prevent everyone from having to use the |raw filter when outputting RTE content
             return new RichTextData($value);
@@ -129,6 +130,7 @@ class RichText extends Field
      */
     public function getInputHtml($value, $element)
     {
+        /** @var RichTextData|null $value */
         $configJs = $this->_getConfigJs();
         $this->_includeFieldResources($configJs);
 
@@ -173,9 +175,10 @@ class RichText extends Field
      */
     public function validateValue($value, $element)
     {
+        /** @var RichTextData|null $value */
         $errors = parent::validateValue($value, $element);
 
-        $postContentSize = strlen($value);
+        $postContentSize = $value ? strlen($value->getRawContent()) : 0;
         $maxDbColumnSize = DbHelper::getTextualColumnStorageCapacity($this->columnType);
 
         // Give ourselves 10% wiggle room.
@@ -198,6 +201,7 @@ class RichText extends Field
      */
     public function getStaticHtml($value, $element)
     {
+        /** @var RichTextData|null $value */
         return '<div class="text">'.($value ? $value : '&nbsp;').'</div>';
     }
 
@@ -206,8 +210,12 @@ class RichText extends Field
      */
     public function prepareValueForDb($value, $element)
     {
+        /** @var RichTextData|null $value */
+        if (!$value) {
+            return null;
+        }
+
         // Get the raw value
-        /** @var RichTextData $value */
         $value = $value->getRawContent();
 
         // Temporary fix (hopefully) for a Redactor bug where some HTML will get submitted when the field is blank,
@@ -259,7 +267,7 @@ class RichText extends Field
      */
     protected function isValueEmpty($value, $element)
     {
-        /** @var RichTextData $value */
+        /** @var RichTextData|null $value */
         $rawContent = $value->getRawContent();
         return empty($rawContent);
     }
