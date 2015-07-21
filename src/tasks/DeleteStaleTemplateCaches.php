@@ -8,11 +8,9 @@
 namespace craft\app\tasks;
 
 use Craft;
-use craft\app\base\ElementInterface;
 use craft\app\base\Task;
 use craft\app\db\Query;
 use craft\app\elements\db\ElementQuery;
-use craft\app\helpers\JsonHelper;
 
 /**
  * DeleteStaleTemplateCaches represents a Delete Stale Template Caches background task.
