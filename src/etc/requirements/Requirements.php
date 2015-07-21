@@ -194,7 +194,7 @@ class Requirements
 
 			if ($test !== $hash)
 			{
-				return Craft::t('You have an <a href="http://secure.php.net/security/crypt_blowfish.php">insecure version</a> of <a href="http://php.net/manual/en/function.crypt.php">crypt() with CRYPT_BLOWFISH</a>installed. You will need to upgrade your PHP version to 5.3.7 or greater in order to fix it.');
+				return Craft::t('You have an insecure version of crypt installed. Please update PHP to 5.3.7 or later. (<a href="https://secure.php.net/security/crypt_blowfish.php">Find out more</a>)');
 			}
 		}
 		else
