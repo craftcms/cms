@@ -11,6 +11,7 @@ use Craft;
 use craft\app\errors\Exception;
 use craft\app\helpers\ImageHelper;
 use craft\app\helpers\IOHelper;
+use craft\app\helpers\StringHelper;
 use Imagine\Image\AbstractFont;
 use Imagine\Image\FontInterface;
 use Imagine\Image\ImageInterface;
@@ -474,7 +475,7 @@ class Image
      */
     public function saveAs($targetPath, $sanitizeAndAutoQuality = false)
     {
-        $extension = IOHelper::getExtension($targetPath);
+        $extension = StringHelper::toLowerCase(IOHelper::getExtension($targetPath));
         $options = $this->_getSaveOptions(false, $extension);
         $targetPath = IOHelper::getFolderName(
                 $targetPath
@@ -486,13 +487,8 @@ class Image
         if (($extension == 'jpeg' || $extension == 'jpg' || $extension == 'png') && $sanitizeAndAutoQuality) {
             clearstatcache();
             $originalSize = IOHelper::getFileSize($this->_imageSourcePath);
-            $this->_autoGuessImageQuality(
-                $targetPath,
-                $originalSize,
-                $extension,
-                0,
-                200
-            );
+            $tempFile = $this->_autoGuessImageQuality($targetPath, $originalSize, $extension, 0, 200);
+            IOHelper::move($tempFile, $targetPath, true);
         } else {
             $this->_image->save($targetPath, $options);
         }
@@ -642,7 +638,7 @@ class Image
      * @param         $maxQuality
      * @param integer $step
      *
-     * @return boolean
+     * @return string $path the resulting file path
      */
     private function _autoGuessImageQuality($tempFilename, $originalSize, $extension, $minQuality, $maxQuality, $step = 0)
     {
@@ -684,12 +680,9 @@ class Image
             clearstatcache();
 
             // Generate one last time.
-            $this->_image->save(
-                $tempFilename,
-                $this->_getSaveOptions($midQuality)
-            );
+            $this->_image->save($tempFilename, $this->_getSaveOptions($midQuality));
 
-            return true;
+            return $tempFilename;
         }
 
         $step++;

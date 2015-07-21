@@ -27,7 +27,7 @@
 					name: 'permissions[]',
 					value: permissionName,
 					checked: checked,
-					disabled: disabled,
+					disabled: disabled or isInGroupPermissions,
 				}) }}
 				{% if hasNestedPermissions %}
 					{{ _self.permissionList(context, props.nested, permissionName~'-nested', not checked) }}

@@ -179,7 +179,6 @@ class ImageHelper
      */
     public static function cleanImageByPath($imagePath)
     {
-
         $extension = IOHelper::getExtension($imagePath);
 
         if ($extension == 'svg') {
@@ -195,7 +194,7 @@ class ImageHelper
     /**
      * Returns the size of an image based on its file path.
      *
-     * @param $filePath
+     * @param string $filePath The path to the image
      *
      * @return array [$width, $height]
      */

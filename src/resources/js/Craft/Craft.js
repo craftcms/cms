@@ -1409,7 +1409,10 @@ $.extend($.fn,
 	{
 		return this.each(function()
 		{
-			new Craft.Pane(this);
+			if (!$.data(this, 'pane'))
+			{
+				new Craft.Pane(this);
+			}
 		});
 	},
 
@@ -1493,7 +1496,7 @@ $.extend($.fn,
 	{
 		return this.each(function()
 		{
-			if (!$.data(this, 'text'))
+			if (!$.data(this, 'nicetext'))
 			{
 				new Garnish.NiceText(this);
 			}

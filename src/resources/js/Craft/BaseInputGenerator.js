@@ -5,6 +5,7 @@ Craft.BaseInputGenerator = Garnish.Base.extend(
 {
 	$source: null,
 	$target: null,
+	$form: null,
 	settings: null,
 
 	listening: null,
@@ -14,6 +15,8 @@ Craft.BaseInputGenerator = Garnish.Base.extend(
 	{
 		this.$source = $(source);
 		this.$target = $(target);
+		this.$form = this.$source.closest('form');
+
 		this.setSettings(settings);
 
 		this.startListening();
@@ -42,6 +45,7 @@ Craft.BaseInputGenerator = Garnish.Base.extend(
 		this.listening = true;
 
 		this.addListener(this.$source, 'textchange', 'onTextChange');
+		this.addListener(this.$form, 'submit', 'onFormSubmit');
 
 		this.addListener(this.$target, 'focus', function() {
 			this.addListener(this.$target, 'textchange', 'stopListening');
@@ -62,6 +66,7 @@ Craft.BaseInputGenerator = Garnish.Base.extend(
 
 		this.removeAllListeners(this.$source);
 		this.removeAllListeners(this.$target);
+		this.removeAllListeners(this.$form);
 	},
 
 	onTextChange: function()
@@ -72,6 +77,16 @@ Craft.BaseInputGenerator = Garnish.Base.extend(
 		}
 
 		this.timeout = setTimeout($.proxy(this, 'updateTarget'), 250);
+	},
+
+	onFormSubmit: function()
+	{
+		if (this.timeout)
+		{
+			clearTimeout(this.timeout);
+		}
+
+		this.updateTarget();
 	},
 
 	updateTarget: function()

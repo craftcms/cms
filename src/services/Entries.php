@@ -221,8 +221,7 @@ class Entries extends Component
                         $entry->clearErrors();
 
                         // Create the new "title" error message.
-                        $errors['title'] = str_replace('Title',
-                            $entryType->titleLabel, $originalTitleError);
+                        $errors['title'] = str_replace(Craft::t('app', 'Title'), $entryType->titleLabel, $originalTitleError);
 
                         // Add all of the errors back on the model.
                         $entry->addErrors($errors);

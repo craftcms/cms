@@ -996,10 +996,23 @@ class UsersController extends Controller
                         'The uploaded image is too large'));
                 }
 
-                Craft::$app->getImages()->cleanImage($folderPath.'/'.$filename);
+                list ($width, $height) = ImageHelper::getImageSize($folderPath.'/'.$filename);
+
+                if (IOHelper::getExtension($filename) != 'svg') {
+                    Craft::$app->getImages()->cleanImage($folderPath.'/'.$filename);
+                } else {
+                    // Resave svg files as png
+                    $newFilename = preg_replace('/\.svg$/i', '.png', $filename);
+
+                    Craft::$app->getImages()
+                        ->loadImage($folderPath.'/'.$filename, $width, $height)
+                        ->saveAs($folderPath.'/'.$newFilename);
+
+                    IOHelper::deleteFile($folderPath.'/'.$filename);
+                    $filename = $newFilename;
+                }
 
                 $constraint = 500;
-                list ($width, $height) = ImageHelper::getImageSize($folderPath.'/'.$filename);
 
                 // If the file is in the format badscript.php.gif perhaps.
                 if ($width && $height) {
@@ -1013,7 +1026,8 @@ class UsersController extends Controller
                             'width' => round($width * $factor),
                             'height' => round($height * $factor),
                             'factor' => $factor,
-                            'constraint' => $constraint
+                            'constraint' => $constraint,
+                            'fileName' => $filename
                         ]
                     );
 
@@ -1057,6 +1071,10 @@ class UsersController extends Controller
 
             $user = Craft::$app->getUsers()->getUserById($userId);
             $userName = AssetsHelper::prepareAssetName($user->username, false);
+
+            if (IOHelper::getExtension($source) == 'svg') {
+                $source = preg_replace('/\.svg$/i', '.png', $source);
+            }
 
             // make sure that this is this user's file
             $imagePath = Craft::$app->getPath()->getTempUploadsPath().'/userphotos/'.$userName.'/'.$source;

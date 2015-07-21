@@ -1,4 +1,4 @@
-/*! Craft 3.0.0 - 2015-07-13 */
+/*! Craft 3.0.0 - 2015-07-21 */
 (function($){
 
 if (typeof window.Craft == 'undefined')
@@ -1412,7 +1412,10 @@ $.extend($.fn,
 	{
 		return this.each(function()
 		{
-			new Craft.Pane(this);
+			if (!$.data(this, 'pane'))
+			{
+				new Craft.Pane(this);
+			}
 		});
 	},
 
@@ -1496,7 +1499,7 @@ $.extend($.fn,
 	{
 		return this.each(function()
 		{
-			if (!$.data(this, 'text'))
+			if (!$.data(this, 'nicetext'))
 			{
 				new Garnish.NiceText(this);
 			}
@@ -4343,6 +4346,7 @@ Craft.BaseInputGenerator = Garnish.Base.extend(
 {
 	$source: null,
 	$target: null,
+	$form: null,
 	settings: null,
 
 	listening: null,
@@ -4352,6 +4356,8 @@ Craft.BaseInputGenerator = Garnish.Base.extend(
 	{
 		this.$source = $(source);
 		this.$target = $(target);
+		this.$form = this.$source.closest('form');
+
 		this.setSettings(settings);
 
 		this.startListening();
@@ -4380,6 +4386,7 @@ Craft.BaseInputGenerator = Garnish.Base.extend(
 		this.listening = true;
 
 		this.addListener(this.$source, 'textchange', 'onTextChange');
+		this.addListener(this.$form, 'submit', 'onFormSubmit');
 
 		this.addListener(this.$target, 'focus', function() {
 			this.addListener(this.$target, 'textchange', 'stopListening');
@@ -4400,6 +4407,7 @@ Craft.BaseInputGenerator = Garnish.Base.extend(
 
 		this.removeAllListeners(this.$source);
 		this.removeAllListeners(this.$target);
+		this.removeAllListeners(this.$form);
 	},
 
 	onTextChange: function()
@@ -4410,6 +4418,16 @@ Craft.BaseInputGenerator = Garnish.Base.extend(
 		}
 
 		this.timeout = setTimeout($.proxy(this, 'updateTarget'), 250);
+	},
+
+	onFormSubmit: function()
+	{
+		if (this.timeout)
+		{
+			clearTimeout(this.timeout);
+		}
+
+		this.updateTarget();
 	},
 
 	updateTarget: function()
@@ -11925,6 +11943,11 @@ Craft.ImageHandler = Garnish.Base.extend(
 						Craft.ImageUpload.$modalContainerDiv = $('<div class="modal fitted"></div>').addClass(settings.modalClass).appendTo(Garnish.$bod);
 					}
 
+					if (response.fileName)
+					{
+						this.source = response.fileName;
+					}
+
 					if (response.html)
 					{
 						Craft.ImageUpload.$modalContainerDiv.empty().append(response.html);
@@ -12065,7 +12088,8 @@ Craft.ImageModal = Garnish.Modal.extend(
 
 		$img.height(newHeight).width(newWidth);
 		this.factor = factor;
-		if (this.cropAreaTool)
+
+		if (this.cropAreaTool && typeof $img.imgAreaSelect({instance: true}) != "undefined")
 		{
 			$img.imgAreaSelect({instance: true}).update();
 		}

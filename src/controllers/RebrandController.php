@@ -12,7 +12,6 @@ use craft\app\errors\Exception;
 use craft\app\helpers\AssetsHelper;
 use craft\app\helpers\ImageHelper;
 use craft\app\helpers\IOHelper;
-use craft\app\helpers\StringHelper;
 use craft\app\helpers\UrlHelper;
 use craft\app\web\Controller;
 
@@ -65,12 +64,25 @@ class RebrandController extends Controller
                         'The uploaded image is too large'));
                 }
 
-                Craft::$app->getImages()->cleanImage($folderPath.'/'.$filename);
-
-                $constraint = 500;
                 list ($width, $height) = ImageHelper::getImageSize($folderPath.'/'.$filename);
 
-                // If the file is in the format badscript.php.gif perhaps.
+                if (IOHelper::getExtension($filename) != 'svg') {
+                    Craft::$app->getImages()->cleanImage($folderPath.'/'.$filename);
+                } else {
+                    // Resave svg files as png
+                    $newFilename = preg_replace('/\.svg$/i', '.png', $filename);
+
+                    Craft::$app->getImages()
+                        ->loadImage($folderPath.'/'.$filename, $width, $height)
+                        ->saveAs($folderPath.'/'.$newFilename);
+
+                    IOHelper::deleteFile($folderPath.'/'.$filename);
+                    $filename = $newFilename;
+                }
+
+                $constraint = 500;
+
+                // If the file is in the format bad-script.php.gif perhaps.
                 if ($width && $height) {
                     // Never scale up the images, so make the scaling factor always <= 1
                     $factor = min($constraint / $width, $constraint / $height,
@@ -82,7 +94,8 @@ class RebrandController extends Controller
                             'width' => round($width * $factor),
                             'height' => round($height * $factor),
                             'factor' => $factor,
-                            'constraint' => $constraint
+                            'constraint' => $constraint,
+                            'fileName' => $filename
                         ]
                     );
 
@@ -114,7 +127,7 @@ class RebrandController extends Controller
             $y2 = Craft::$app->getRequest()->getRequiredBodyParam('y2');
             $source = Craft::$app->getRequest()->getRequiredBodyParam('source');
 
-            // Strip off any querystring info, if any.
+            // Strip off any query string info, if any.
             $source = UrlHelper::stripQueryString($source);
 
             $imagePath = Craft::$app->getPath()->getTempUploadsPath().'/'.$source;
@@ -123,8 +136,8 @@ class RebrandController extends Controller
                 $targetPath = Craft::$app->getPath()->getStoragePath().'/logo';
 
                 IOHelper::ensureFolderExists($targetPath);
-
                 IOHelper::clearFolder($targetPath);
+
                 Craft::$app->getImages()
                     ->loadImage($imagePath, 300, 300)
                     ->crop($x1, $x2, $y1, $y2)

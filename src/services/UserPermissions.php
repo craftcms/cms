@@ -561,28 +561,32 @@ class UserPermissions extends Component
      * @param array $groupPermissions
      * @param array &$filteredPermissions
      *
-     * @return void
+     * @return boolean Whether any permissions were added to $filteredPermissions
      */
     private function _findSelectedPermissions($permissionsGroup, $postedPermissions, $groupPermissions, &$filteredPermissions)
     {
+        $hasAssignedPermissions = false;
+
         foreach ($permissionsGroup as $name => $data) {
-            // Was this permission in the post data, or do they already have it via their group?
-            if (($inPostedPermissions = in_array($name,
-                    $postedPermissions)) || in_array(strtolower($name),
-                    $groupPermissions)
-            ) {
-                // If it was in the post data, give it to them directly now
-                if ($inPostedPermissions) {
-                    $filteredPermissions[] = $name;
+            // Should the user have this permission (either directly or via their group)?
+            if (($inPostedPermissions = in_array($name, $postedPermissions)) || in_array(strtolower($name), $groupPermissions)) {
+                // First assign any nested permissions
+                if (!empty($data['nested'])) {
+                    $hasAssignedNestedPermissions = $this->_findSelectedPermissions($data['nested'], $postedPermissions, $groupPermissions, $filteredPermissions);
+                } else {
+                    $hasAssignedNestedPermissions = false;
                 }
 
-                if (!empty($data['nested'])) {
-                    $this->_findSelectedPermissions($data['nested'],
-                        $postedPermissions, $groupPermissions,
-                        $filteredPermissions);
+                // Were they assigned this permission (or any of its nested permissions) directly?
+                if ($inPostedPermissions || $hasAssignedNestedPermissions) {
+                    // Assign the permission directly to the user
+                    $filteredPermissions[] = $name;
+                    $hasAssignedPermissions = true;
                 }
             }
         }
+
+        return $hasAssignedPermissions;
     }
 
     /**

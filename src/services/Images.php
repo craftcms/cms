@@ -156,8 +156,7 @@ class Images extends Component
 
             $this->stripOrientationFromExifData($filePath);
         } catch (\Exception $e) {
-            Craft::log('Tried to rotate or strip EXIF data from image and failed: '.$e->getMessage(),
-                LogLevel::Error);
+            Craft::error('Tried to rotate or strip EXIF data from image and failed: '.$e->getMessage());
         }
 
         return $this->loadImage($filePath)->saveAs($filePath, true);

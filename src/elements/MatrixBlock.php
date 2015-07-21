@@ -66,11 +66,19 @@ class MatrixBlock extends Element
      */
     public static function getFieldsForElementsQuery(ElementQueryInterface $query)
     {
+        $blockTypes = Craft::$app->getMatrix()->getBlockTypesByFieldId($query->fieldId);
+
+        // Preload all of the fields up front to save ourselves some DB queries, and discard
+        $contexts = [];
+        foreach ($blockTypes as $blockType) {
+            $contexts[] = 'matrixBlockType:'.$blockType->id;
+        }
+        Craft::$app->getFields()->getAllFields(null, $contexts);
+
+        // Now assemble the actual fields list
         $fields = [];
-
-        foreach (Craft::$app->getMatrix()->getBlockTypesByFieldId($query->fieldId) as $blockType) {
+        foreach ($blockTypes as $blockType) {
             $fieldColumnPrefix = 'field_'.$blockType->handle.'_';
-
             foreach ($blockType->getFields() as $field) {
                 $field->columnPrefix = $fieldColumnPrefix;
                 $fields[] = $field;

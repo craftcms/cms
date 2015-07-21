@@ -48,6 +48,10 @@ class GeneratePendingTransforms extends Task
         // Don't let an exception stop us from processing the rest
         try {
             $index = Craft::$app->getAssetTransforms()->getTransformIndexModelById($this->_indexIds[$step]);
+            if (!$index) {
+                // No transform means a probably already finished transform
+                return true;
+            }
             Craft::$app->getAssetTransforms()->ensureTransformUrlByIndexModel($index);
         } catch (\Exception $e) {
         }
