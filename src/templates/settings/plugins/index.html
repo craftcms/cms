@@ -19,6 +19,7 @@
 		<table id="plugins" class="data fullwidth collapsible">
 			<thead>
 				<th scope="col">{{ "Plugin"|t }}</th>
+				<th class="thin"></th>
 				<th scope="col">{{ "Developer"|t }}</th>
 				<th scope="col">{{ "Status"|t }}</th>
 				<td class="thin"></td>
@@ -48,11 +49,7 @@
 
 							<div class="infos">
 								<div class="name">
-									{% if settingsUrl %}
-										<a href="{{ settingsUrl }}">{{ name }}</a>
-									{% else %}
-										{{ name }}
-									{% endif %}
+									{{ name }}
 									<span class="light">{{ plugin.getVersion() }}</span>
 								</div>
 
@@ -61,6 +58,11 @@
 								{% endif %}
 							</div>
 						</th>
+						<td>
+							{% if settingsUrl %}
+								<a href="{{ settingsUrl }}" title="{{ "{name} Settings"|t({ name:plugin.name }) }}" data-icon="settings"></a>
+							{% endif %}
+						</td>
 						<td data-title="{{ 'Developer'|t }}"><a{% if developerUrl %} href="{{ developerUrl }}" target="_blank"{% endif %}>{{ plugin.getDeveloper() }}</a></td>
 						<td data-title="{{ 'Status'|t }}">
 							{% if isInstalled %}
