@@ -816,8 +816,8 @@ class EntriesController extends BaseEntriesController
         // Set the entry attributes, defaulting to the existing values for whatever is missing from the post data
         $entry->typeId = Craft::$app->getRequest()->getBodyParam('typeId', $entry->typeId);
         $entry->slug = Craft::$app->getRequest()->getBodyParam('slug', $entry->slug);
-        $entry->postDate = (($postDate = Craft::$app->getRequest()->getBodyParam('postDate')) ? DateTimeHelper::toDateTime($postDate) : $entry->postDate);
-        $entry->expiryDate = (($expiryDate = Craft::$app->getRequest()->getBodyParam('expiryDate')) ? DateTimeHelper::toDateTime($expiryDate) : null);
+        $entry->postDate = (($postDate = DateTimeHelper::toDateTime(Craft::$app->getRequest()->getBodyParam('postDate'))) !== false ? $postDate : $entry->postDate);
+        $entry->expiryDate = (($expiryDate = DateTimeHelper::toDateTime(Craft::$app->getRequest()->getBodyParam('expiryDate'))) !== false ? $expiryDate : null);
         $entry->enabled = (bool)Craft::$app->getRequest()->getBodyParam('enabled', $entry->enabled);
         $entry->localeEnabled = (bool)Craft::$app->getRequest()->getBodyParam('localeEnabled', $entry->localeEnabled);
 

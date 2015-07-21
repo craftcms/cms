@@ -188,11 +188,11 @@ class Date extends Field
      */
     public function prepareValue($value, $element)
     {
-        if ($value) {
-            $value = DateTimeHelper::toDateTime($value);
+        if ($value && ($date = DateTimeHelper::toDateTime($value)) !== false) {
+            return $date;
+        } else {
+            return null;
         }
-
-        return $value;
     }
 
     /**
