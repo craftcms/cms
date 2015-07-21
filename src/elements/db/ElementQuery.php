@@ -1008,8 +1008,10 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
             array_keys(Craft::getObjectVars($this)),
             array_keys(Craft::getObjectVars($this->getBehavior('customFields')))
         ));
+        $fields = array_combine($fields, $fields);
+        unset($fields['query'], $fields['subQuery']);
 
-        return array_combine($fields, $fields);
+        return $fields;
     }
 
     // Deprecated Methods
