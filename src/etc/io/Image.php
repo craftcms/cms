@@ -458,12 +458,11 @@ class Image
 	 */
 	public function saveAs($targetPath, $sanitizeAndAutoQuality = false)
 	{
-		$extension = StringHelper::toLowerCase(IOHelper::getExtension($targetPath));
-
+		$extension = IOHelper::getExtension($targetPath);
 		$options = $this->_getSaveOptions(false, $extension);
 		$targetPath = IOHelper::getFolderName($targetPath).IOHelper::getFileName($targetPath, false).'.'.$extension;
 
-		if (in_array($extension, array('jpg', 'jpg', 'png')) && $sanitizeAndAutoQuality)
+		if (($extension == 'jpeg' || $extension == 'jpg' || $extension == 'png') && $sanitizeAndAutoQuality)
 		{
 			clearstatcache();
 			$originalSize = IOHelper::getFileSize($this->_imageSourcePath);
