@@ -124,8 +124,9 @@ class DeleteStaleTemplateCaches extends Task
             $this->_totalDeletedCriteriaRows++;
         } else {
             // See if any of the updated elements would get fetched by this query
-            $elementIds = Craft::$app->getDb()->createCommand($row['query'])->queryColumn();
-            if (array_intersect($elementIds, $this->elementId)) {
+            /** @var ElementQuery|false $query */
+            $query = @unserialize(base64_decode($row['query']));
+            if ($query === false || array_intersect($query->ids(), $this->elementId)) {
                 // Delete this cache
                 Craft::$app->getTemplateCache()->deleteCacheById($row['cacheId']);
                 $this->_deletedCacheIds[] = $row['cacheId'];

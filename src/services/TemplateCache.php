@@ -16,7 +16,6 @@ use craft\app\events\Event;
 use craft\app\helpers\ArrayHelper;
 use craft\app\helpers\DateTimeHelper;
 use craft\app\helpers\DbHelper;
-use craft\app\helpers\JsonHelper;
 use craft\app\helpers\StringHelper;
 use craft\app\helpers\UrlHelper;
 use craft\app\tasks\DeleteStaleTemplateCaches;
@@ -192,16 +191,20 @@ class TemplateCache extends Component
         }
 
         if (!empty($this->_cachedQueries)) {
-            /** @var ElementQuery $query */
-            $query = $event->sender;
-            $select = $query->query->select;
-            $query->query->select = ['elements.id'];
-            $sql = $query->query->createCommand()->getRawSql();
-            $query->query->select = $select;
-            $hash = md5($sql);
+            /** @var ElementQuery $elementQuery */
+            $elementQuery = $event->sender;
+            $query = $elementQuery->query;
+            $subQuery = $elementQuery->subQuery;
+            $elementQuery->query = null;
+            $elementQuery->subQuery = null;
+            // We need to base64-encode the string so db\Connection::quoteSql() doesn't tweak any of the table/columns names
+            $serialized = base64_encode(serialize($elementQuery));
+            $elementQuery->query = $query;
+            $elementQuery->subQuery = $subQuery;
+            $hash = md5($serialized);
 
             foreach (array_keys($this->_cachedQueries) as $cacheKey) {
-                $this->_cachedQueries[$cacheKey][$hash] = [$query->elementType, $sql];
+                $this->_cachedQueries[$cacheKey][$hash] = [$elementQuery->elementType, $serialized];
             }
         }
     }
@@ -293,7 +296,6 @@ class TemplateCache extends Component
             // Tag it with any element queries that were executed within the cache
             if (!empty($this->_cachedQueries[$key])) {
                 $values = [];
-
                 foreach ($this->_cachedQueries[$key] as $query) {
                     $values[] = [
                         $cacheId,
@@ -301,14 +303,7 @@ class TemplateCache extends Component
                         $query[1]
                     ];
                 }
-
-                Craft::$app->getDb()->createCommand()->batchInsert(
-                    static::$_templateCacheQueriesTable,
-                    ['cacheId', 'type', 'query'],
-                    $values,
-                    false
-                )->execute();
-
+                Craft::$app->getDb()->createCommand()->batchInsert(static::$_templateCacheQueriesTable, ['cacheId', 'type', 'query'], $values, false)->execute();
                 unset($this->_cachedQueries[$key]);
             }
 
