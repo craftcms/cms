@@ -133,8 +133,7 @@ class MigrationHelper
         if ($migration !== null) {
             $migration->renameTable($oldName, $newName);
         } else {
-            Craft::$app->getDb()->createCommand()->renameTable($oldName,
-                $newName)->execute();
+            Craft::$app->getDb()->createCommand()->renameTable($oldName, $newName)->execute();
         }
 
         // Update our internal records
@@ -205,8 +204,7 @@ class MigrationHelper
         if ($migration !== null) {
             $migration->renameColumn($tableName, $oldName, $newName);
         } else {
-            Craft::$app->getDb()->createCommand()->renameColumn($tableName,
-                $oldName, $newName)->execute();
+            Craft::$app->getDb()->createCommand()->renameColumn($tableName, $oldName, $newName)->execute();
         }
 
         // Update the table records
@@ -265,29 +263,21 @@ class MigrationHelper
 
             // Rename the old id column and add the new one
             if ($migration !== null) {
-                $migration->renameColumn($fk->table->name, $fk->column,
-                    $fk->column.'_old');
-                $migration->addColumnAfter($fk->table->name, $fk->column,
-                    $fk->columnType, $fk->column.'_old');
+                $migration->renameColumn($fk->table->name, $fk->column, $fk->column.'_old');
+                $migration->addColumnAfter($fk->table->name, $fk->column, $fk->columnType, $fk->column.'_old');
             } else {
-                $db->createCommand()->renameColumn($fk->table->name,
-                    $fk->column, $fk->column.'_old')->execute();
-                $db->createCommand()->addColumnAfter($fk->table->name,
-                    $fk->column, $fk->columnType,
-                    $fk->column.'_old')->execute();
+                $db->createCommand()->renameColumn($fk->table->name, $fk->column, $fk->column.'_old')->execute();
+                $db->createCommand()->addColumnAfter($fk->table->name, $fk->column, $fk->columnType, $fk->column.'_old')->execute();
             }
         }
 
         // Rename the old id column and add the new one
         if ($migration !== null) {
             $migration->renameColumn($tableName, 'id', 'id_old');
-            $migration->addColumnAfter($tableName, 'id', static::$_idColumnType,
-                'id_old');
+            $migration->addColumnAfter($tableName, 'id', static::$_idColumnType, 'id_old');
         } else {
-            $db->createCommand()->renameColumn($tableName, 'id',
-                'id_old')->execute();
-            $db->createCommand()->addColumnAfter($tableName, 'id',
-                static::$_idColumnType, 'id_old')->execute();
+            $db->createCommand()->renameColumn($tableName, 'id', 'id_old')->execute();
+            $db->createCommand()->addColumnAfter($tableName, 'id', static::$_idColumnType, 'id_old')->execute();
         }
 
         // Get all of the rows
@@ -319,8 +309,7 @@ class MigrationHelper
             if ($migration !== null) {
                 $migration->insert('{{%elements}}', $columns);
             } else {
-                $db->createCommand()->insert('{{%elements}}',
-                    $columns)->execute();
+                $db->createCommand()->insert('{{%elements}}', $columns)->execute();
             }
 
             // Get the new element ID
@@ -333,8 +322,7 @@ class MigrationHelper
             if ($migration !== null) {
                 $migration->update($tableName, $columns, $conditions);
             } else {
-                $db->createCommand()->update($tableName, $columns,
-                    $conditions)->execute();
+                $db->createCommand()->update($tableName, $columns, $conditions)->execute();
             }
 
             // Update the other tables' new FK columns
@@ -345,8 +333,7 @@ class MigrationHelper
                 if ($migration !== null) {
                     $migration->update($fk->table->name, $columns, $conditions);
                 } else {
-                    $db->createCommand()->update($fk->table->name, $columns,
-                        $conditions)->execute();
+                    $db->createCommand()->update($fk->table->name, $columns, $conditions)->execute();
                 }
             }
 
@@ -366,22 +353,18 @@ class MigrationHelper
         $columns = ['elementId', 'locale', 'enabled'];
 
         if ($migration !== null) {
-            $migration->batchInsert('{{%elements_i18n}}', $columns,
-                $i18nValues);
+            $migration->batchInsert('{{%elements_i18n}}', $columns, $i18nValues);
         } else {
-            $db->createCommand()->batchInsert('{{%elements_i18n}}', $columns,
-                $i18nValues)->execute();
+            $db->createCommand()->batchInsert('{{%elements_i18n}}', $columns, $i18nValues)->execute();
         }
 
         if ($hasContent) {
             $columns = ['elementId', 'locale'];
 
             if ($migration !== null) {
-                $migration->batchInsert('{{%content}}', $columns,
-                    $contentValues);
+                $migration->batchInsert('{{%content}}', $columns, $contentValues);
             } else {
-                $db->createCommand()->batchInsert('{{%content}}', $columns,
-                    $contentValues)->execute();
+                $db->createCommand()->batchInsert('{{%content}}', $columns, $contentValues)->execute();
             }
         }
 
@@ -392,14 +375,11 @@ class MigrationHelper
         if ($migration !== null) {
             $migration->dropColumn($tableName, 'id_old');
             $migration->addPrimaryKey($pkName, $tableName, 'id');
-            $migration->addForeignKey($fkName, $tableName, 'id', 'elements',
-                'id', 'CASCADE');
+            $migration->addForeignKey($fkName, $tableName, 'id', 'elements', 'id', 'CASCADE');
         } else {
             $db->createCommand()->dropColumn($tableName, 'id_old')->execute();
-            $db->createCommand()->addPrimaryKey($pkName, $tableName,
-                'id')->execute();
-            $db->createCommand()->addForeignKey($fkName, $tableName, 'id',
-                'elements', 'id', 'CASCADE')->execute();
+            $db->createCommand()->addPrimaryKey($pkName, $tableName, 'id')->execute();
+            $db->createCommand()->addForeignKey($fkName, $tableName, 'id', 'elements', 'id', 'CASCADE')->execute();
         }
 
         // Now deal with the rest of the tables
@@ -408,8 +388,7 @@ class MigrationHelper
             if ($migration !== null) {
                 $migration->dropColumn($fk->table->name, $fk->column.'_old');
             } else {
-                $db->createCommand()->dropColumn($fk->table->name,
-                    $fk->column.'_old')->execute();
+                $db->createCommand()->dropColumn($fk->table->name, $fk->column.'_old')->execute();
             }
 
             // Restore its unique indexes and FKs
@@ -475,12 +454,10 @@ class MigrationHelper
 
                         // Get its column type
                         $fkColumnType = static::$_idColumnType;
-                        $fkColumnRequired = StringHelper::contains($otherTable->columns[$fkColumnName]->type,
-                            'NOT NULL');
+                        $fkColumnRequired = StringHelper::contains($otherTable->columns[$fkColumnName]->type, 'NOT NULL');
 
                         if (!$fkColumnRequired) {
-                            $fkColumnType = str_replace(' NOT NULL', '',
-                                $fkColumnType);
+                            $fkColumnType = str_replace(' NOT NULL', '', $fkColumnType);
                         }
 
                         $fks[] = (object)[
@@ -564,8 +541,7 @@ class MigrationHelper
         if ($migration !== null) {
             $migration->dropForeignKey($fk->name, $fk->table->name);
         } else {
-            Craft::$app->getDb()->createCommand()->dropForeignKey($fk->name,
-                $fk->table->name)->execute();
+            Craft::$app->getDb()->createCommand()->dropForeignKey($fk->name, $fk->table->name)->execute();
         }
     }
 
@@ -614,8 +590,7 @@ class MigrationHelper
         if ($migration !== null) {
             $migration->dropIndex($index->name, $index->table->name);
         } else {
-            Craft::$app->getDb()->createCommand()->dropIndex($index->name,
-                $index->table->name)->execute();
+            Craft::$app->getDb()->createCommand()->dropIndex($index->name, $index->table->name)->execute();
         }
     }
 
@@ -667,11 +642,9 @@ class MigrationHelper
         $indexName = $db->getIndexName($table, $columns, $index->unique);
 
         if ($migration !== null) {
-            $migration->createIndex($indexName, $table, $columns,
-                $index->unique);
+            $migration->createIndex($indexName, $table, $columns, $index->unique);
         } else {
-            $db->createCommand()->createIndex($indexName, $table, $columns,
-                $index->unique)->execute();
+            $db->createCommand()->createIndex($indexName, $table, $columns, $index->unique)->execute();
         }
 
         // Update our record of its name
@@ -709,12 +682,9 @@ class MigrationHelper
         $fkName = $db->getForeignKeyName($table, $columns);
 
         if ($migration !== null) {
-            $migration->addForeignKey($fkName, $table, $columns, $fk->refTable,
-                $fk->refColumns, $fk->onDelete, $fk->onUpdate);
+            $migration->addForeignKey($fkName, $table, $columns, $fk->refTable, $fk->refColumns, $fk->onDelete, $fk->onUpdate);
         } else {
-            $db->createCommand()->addForeignKey($fkName, $table, $columns,
-                $fk->refTable, $fk->refColumns, $fk->onDelete,
-                $fk->onUpdate)->execute();
+            $db->createCommand()->addForeignKey($fkName, $table, $columns, $fk->refTable, $fk->refColumns, $fk->onDelete, $fk->onUpdate)->execute();
         }
 
         // Update our record of its name
@@ -766,8 +736,7 @@ class MigrationHelper
             $createTableSql = $query['Create Table'];
 
             // Find the columns
-            if (preg_match_all('/^\s*`(\w+)`\s+(.*),$/m', $createTableSql,
-                $matches, PREG_SET_ORDER)) {
+            if (preg_match_all('/^\s*`(\w+)`\s+(.*),$/m', $createTableSql, $matches, PREG_SET_ORDER)) {
                 foreach ($matches as $match) {
                     $name = $match[1];
                     static::$_tables[$table]->columns[$name] = (object)[
@@ -778,16 +747,14 @@ class MigrationHelper
             }
 
             // Find the primary keys
-            if (preg_match('/PRIMARY KEY \(([^\)]+)\)/', $createTableSql,
-                $matches)) {
+            if (preg_match('/PRIMARY KEY \(([^\)]+)\)/', $createTableSql, $matches)) {
                 if (preg_match_all('/`(\w+)`/', $matches[0], $pkMatches)) {
                     static::$_tables[$table]->pks = $pkMatches[1];
                 }
             }
 
             // Find the foreign keys
-            if (preg_match_all("/CONSTRAINT `(\w+)` FOREIGN KEY \(`([\w`,]+)`\) REFERENCES `(\w+)` \(`([\w`,]+)`\)( ON DELETE (".static::$_fkRefActions."))?( ON UPDATE (".static::$_fkRefActions."))?/",
-                $createTableSql, $matches, PREG_SET_ORDER)) {
+            if (preg_match_all("/CONSTRAINT `(\w+)` FOREIGN KEY \(`([\w`,]+)`\) REFERENCES `(\w+)` \(`([\w`,]+)`\)( ON DELETE (".static::$_fkRefActions."))?( ON UPDATE (".static::$_fkRefActions."))?/", $createTableSql, $matches, PREG_SET_ORDER)) {
                 foreach ($matches as $match) {
                     $name = $match[1];
                     static::$_tables[$table]->fks[] = (object)[
@@ -803,8 +770,7 @@ class MigrationHelper
             }
 
             // Find the indexes
-            if (preg_match_all('/(UNIQUE )?KEY `(\w+)` \(`([\w`,]+)`\)/',
-                $createTableSql, $matches, PREG_SET_ORDER)) {
+            if (preg_match_all('/(UNIQUE )?KEY `(\w+)` \(`([\w`,]+)`\)/', $createTableSql, $matches, PREG_SET_ORDER)) {
                 foreach ($matches as $match) {
                     $name = $match[2];
                     static::$_tables[$table]->indexes[] = (object)[
