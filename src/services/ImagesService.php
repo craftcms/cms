@@ -163,7 +163,7 @@ class ImagesService extends BaseApplicationComponent
 			Craft::log('Tried to rotate or strip EXIF data from image and failed: '.$e->getMessage(), LogLevel::Error);
 		}
 
-		return $this->loadImage($filePath)->saveAs($filePath);
+		return $this->loadImage($filePath)->saveAs($filePath, true);
 	}
 
 	/**
@@ -208,7 +208,7 @@ class ImagesService extends BaseApplicationComponent
 
 		$image = $this->loadImage($filePath)->rotate($degrees);
 
-		return $image->saveAs($filePath);
+		return $image->saveAs($filePath, true);
 	}
 
 	/**
