@@ -54,7 +54,7 @@ class TemplateCache extends Component
      *
      * @var string
      */
-    private static $_templateCacheCriteriaTable = '{{%templatecachecriteria}}';
+    private static $_templateCacheQueriesTable = '{{%templatecachequeries}}';
 
     /**
      * The duration (in seconds) between the times when Craft will delete any expired template caches.
@@ -71,11 +71,11 @@ class TemplateCache extends Component
     private $_path;
 
     /**
-     * A list of element queries that are active within the existing caches.
+     * A list of element queries that were executed within the existing caches.
      *
      * @var array
      */
-    private $_cacheQueryParams;
+    private $_cachedQueries;
 
     /**
      * A list of element IDs that are active within the existing caches.
@@ -166,14 +166,12 @@ class TemplateCache extends Component
         }
 
         // Is this the first time we've started caching?
-        if ($this->_cacheQueryParams === null) {
-            Event::on(ElementQuery::className(),
-                ElementQuery::EVENT_AFTER_PREPARE,
-                [$this, 'includeElementQueryInTemplateCaches']);
+        if ($this->_cachedQueries === null) {
+            Event::on(ElementQuery::className(), ElementQuery::EVENT_AFTER_PREPARE, [$this, 'includeElementQueryInTemplateCaches']);
         }
 
         if (Craft::$app->getConfig()->get('cacheElementQueries')) {
-            $this->_cacheQueryParams[$key] = [];
+            $this->_cachedQueries[$key] = [];
         }
 
         $this->_cacheElementIds[$key] = [];
@@ -193,14 +191,17 @@ class TemplateCache extends Component
             return;
         }
 
-        if (!empty($this->_cacheQueryParams)) {
+        if (!empty($this->_cachedQueries)) {
             /** @var ElementQuery $query */
             $query = $event->sender;
-            $params = $query->toArray();
-            $hash = md5(serialize($params));
+            $select = $query->query->select;
+            $query->query->select = ['elements.id'];
+            $sql = $query->query->createCommand()->getRawSql();
+            $query->query->select = $select;
+            $hash = md5($sql);
 
-            foreach (array_keys($this->_cacheQueryParams) as $cacheKey) {
-                $this->_cacheQueryParams[$cacheKey][$hash] = $params;
+            foreach (array_keys($this->_cachedQueries) as $cacheKey) {
+                $this->_cachedQueries[$cacheKey][$hash] = [$query->elementType, $sql];
             }
         }
     }
@@ -289,26 +290,26 @@ class TemplateCache extends Component
 
             $cacheId = Craft::$app->getDb()->getLastInsertID();
 
-            // Tag it with any element criteria that were output within the cache
-            if (!empty($this->_cacheQueryParams[$key])) {
+            // Tag it with any element queries that were executed within the cache
+            if (!empty($this->_cachedQueries[$key])) {
                 $values = [];
 
-                foreach ($this->_cacheQueryParams[$key] as $params) {
+                foreach ($this->_cachedQueries[$key] as $query) {
                     $values[] = [
                         $cacheId,
-                        $params['elementType'],
-                        JsonHelper::encode($params)
+                        $query[0],
+                        $query[1]
                     ];
                 }
 
                 Craft::$app->getDb()->createCommand()->batchInsert(
-                    static::$_templateCacheCriteriaTable,
-                    ['cacheId', 'type', 'criteria'],
+                    static::$_templateCacheQueriesTable,
+                    ['cacheId', 'type', 'query'],
                     $values,
                     false
                 )->execute();
 
-                unset($this->_cacheQueryParams[$key]);
+                unset($this->_cachedQueries[$key]);
             }
 
             // Tag it with any element IDs that were output within the cache
@@ -385,7 +386,7 @@ class TemplateCache extends Component
 
         $cacheIds = (new Query())
             ->select('cacheId')
-            ->from(static::$_templateCacheCriteriaTable)
+            ->from(static::$_templateCacheQueriesTable)
             ->where(['type' => $elementType])
             ->column();
 

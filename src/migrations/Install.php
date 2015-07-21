@@ -866,21 +866,6 @@ class Install extends InstallMigration
                     ['level', false],
                 ],
             ],
-            '{{%templatecachecriteria}}' => [
-                'columns' => [
-                    'cacheId' => 'integer(11) NOT NULL',
-                    'type' => 'string(255) COLLATE utf8_unicode_ci NOT NULL',
-                    'criteria' => 'text COLLATE utf8_unicode_ci NOT NULL',
-                ],
-                'addAuditColumns' => false,
-                'indexes' => [
-                    ['cacheId', false],
-                    ['type', false],
-                ],
-                'foreignKeys' => [
-                    ['cacheId', '{{%templatecaches}}', 'id', 'CASCADE', null],
-                ],
-            ],
             '{{%templatecacheelements}}' => [
                 'columns' => [
                     'cacheId' => 'integer(11) NOT NULL',
@@ -894,6 +879,21 @@ class Install extends InstallMigration
                 ],
                 'foreignKeys' => [
                     ['elementId', '{{%elements}}', 'id', 'CASCADE', null],
+                    ['cacheId', '{{%templatecaches}}', 'id', 'CASCADE', null],
+                ],
+            ],
+            '{{%templatecachequeries}}' => [
+                'columns' => [
+                    'cacheId' => 'integer(11) NOT NULL',
+                    'type' => 'string(255) COLLATE utf8_unicode_ci NOT NULL',
+                    'query' => 'text COLLATE utf8_unicode_ci NOT NULL',
+                ],
+                'addAuditColumns' => false,
+                'indexes' => [
+                    ['cacheId', false],
+                    ['type', false],
+                ],
+                'foreignKeys' => [
                     ['cacheId', '{{%templatecaches}}', 'id', 'CASCADE', null],
                 ],
             ],

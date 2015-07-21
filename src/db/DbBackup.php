@@ -57,7 +57,7 @@ class DbBackup
         'assettransformindex',
         'sessions',
         'templatecaches',
-        'templatecachecriteria',
+        'templatecachequeries',
         'templatecacheelements'
     );
 

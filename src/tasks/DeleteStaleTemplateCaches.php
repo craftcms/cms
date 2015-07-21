@@ -8,12 +8,11 @@
 namespace craft\app\tasks;
 
 use Craft;
-use craft\app\base\Task;
 use craft\app\base\ElementInterface;
+use craft\app\base\Task;
 use craft\app\db\Query;
 use craft\app\elements\db\ElementQuery;
 use craft\app\helpers\JsonHelper;
-use yii\db\BatchQueryResult;
 
 /**
  * DeleteStaleTemplateCaches represents a Delete Stale Template Caches background task.
@@ -32,17 +31,27 @@ class DeleteStaleTemplateCaches extends Task
     public $elementId;
 
     /**
-     * @var ElementInterface|ElementInterface[] The element type(s) we're dealing with
+     * @var
      */
     private $_elementType;
 
     /**
-     * @var BatchQueryResult The element criteria query result
+     * @var
      */
-    private $_result;
+    private $_batch;
 
     /**
-     * @var integer[] The cache IDs that the task has already deleted
+     * @var
+     */
+    private $_batchRows;
+
+    /**
+     * @var
+     */
+    private $_noMoreRows;
+
+    /**
+     * @var
      */
     private $_deletedCacheIds;
 
@@ -66,24 +75,19 @@ class DeleteStaleTemplateCaches extends Task
             return 0;
         }
 
+        // Normalize $elementId
         if (!is_array($this->elementId)) {
             $this->elementId = [$this->elementId];
         }
 
-        // Prep the query result
-        $query = (new Query())
-            ->from('{{%templatecachecriteria}}');
+        // Figure out how many rows we're dealing with
+        $totalRows = $this->_getQuery()->count('id');
+        $this->_batch = 0;
+        $this->_noMoreRows = false;
+        $this->_deletedCacheIds = array();
+        $this->_totalDeletedCriteriaRows = 0;
 
-        if (is_array($this->_elementType)) {
-            $query->where(['in', 'type', $this->_elementType]);
-        } else {
-            $query->where(['type' => $this->_elementType]);
-        }
-
-        $this->_result = $query->each();
-
-        // Return the total number of rows
-        return $query->count('id');
+        return $totalRows;
     }
 
     /**
@@ -91,40 +95,40 @@ class DeleteStaleTemplateCaches extends Task
      */
     public function runStep($step)
     {
-        // Get the next row
-        $this->_result->next();
-        $row = $this->_result->current();
+        // Do we need to grab a fresh batch?
+        if (empty($this->_batchRows)) {
+            if (!$this->_noMoreRows) {
+                $this->_batch++;
+                $this->_batchRows = $this->_getQuery()
+                    ->orderBy('id')
+                    ->offset(100*($this->_batch-1) - $this->_totalDeletedCriteriaRows)
+                    ->limit(100)
+                    ->all();
 
-        // Make sure this row hasn't already been deleted by something else
-        if ($row === false) {
-            return true;
-        }
-
-        if (!in_array($row['cacheId'], $this->_deletedCacheIds)) {
-            $criteria = JsonHelper::decode($row['criteria']);
-            /** @var ElementInterface $elementType */
-            $elementType = $row['type'];
-            /** @var ElementQuery $query */
-            $query = $elementType::find()->configure($criteria);
-
-            // Chance over-correcting a little for the sake of templates with pending elements,
-            // whose caches should be recreated (see http://craftcms.stackexchange.com/a/2611/9)
-            $query->status(null);
-
-            $elementIds = $query->ids();
-            $cacheIdsToDelete = [];
-
-            foreach ($this->elementId as $elementId) {
-                if (in_array($elementId, $elementIds)) {
-                    $cacheIdsToDelete[] = $row['cacheId'];
-                    break;
+                // Still no more rows?
+                if (!$this->_batchRows) {
+                    $this->_noMoreRows = true;
                 }
             }
 
-            if ($cacheIdsToDelete) {
-                Craft::$app->getTemplateCache()->deleteCacheById($cacheIdsToDelete);
-                $this->_deletedCacheIds = array_merge($this->_deletedCacheIds,
-                    $cacheIdsToDelete);
+            if ($this->_noMoreRows) {
+                return true;
+            }
+        }
+
+        $row = array_shift($this->_batchRows);
+
+        // Have we already deleted this cache?
+        if (in_array($row['cacheId'], $this->_deletedCacheIds)) {
+            $this->_totalDeletedCriteriaRows++;
+        } else {
+            // See if any of the updated elements would get fetched by this query
+            $elementIds = Craft::$app->getDb()->createCommand($row['query'])->queryColumn();
+            if (array_intersect($elementIds, $this->elementId)) {
+                // Delete this cache
+                Craft::$app->getTemplateCache()->deleteCacheById($row['cacheId']);
+                $this->_deletedCacheIds[] = $row['cacheId'];
+                $this->_totalDeletedCriteriaRows++;
             }
         }
 
@@ -140,5 +144,27 @@ class DeleteStaleTemplateCaches extends Task
     protected function getDefaultDescription()
     {
         return Craft::t('app', 'Deleting stale template caches');
+    }
+
+    // Private Methods
+    // =========================================================================
+
+    /**
+     * Returns a Query object for selecting criteria that could be dropped by this task.
+     *
+     * @return Query
+     */
+    private function _getQuery()
+    {
+        $query = (new Query())
+            ->from('{{%templatecachequeries}}');
+
+        if (is_array($this->_elementType)) {
+            $query->where(['in', 'type', $this->_elementType]);
+        } else {
+            $query->where(['type' => $this->_elementType]);
+        }
+
+        return $query;
     }
 }
