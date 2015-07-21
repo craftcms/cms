@@ -459,15 +459,15 @@ class Image
 	public function saveAs($targetPath, $sanitizeAndAutoQuality = false)
 	{
 		$extension = StringHelper::toLowerCase(IOHelper::getExtension($targetPath));
-
 		$options = $this->_getSaveOptions(false, $extension);
 		$targetPath = IOHelper::getFolderName($targetPath).IOHelper::getFileName($targetPath, false).'.'.$extension;
 
-		if (in_array($extension, array('jpg', 'jpg', 'png')) && $sanitizeAndAutoQuality)
+		if (($extension == 'jpeg' || $extension == 'jpg' || $extension == 'png') && $sanitizeAndAutoQuality)
 		{
 			clearstatcache();
 			$originalSize = IOHelper::getFileSize($this->_imageSourcePath);
-			$this->_autoGuessImageQuality($targetPath, $originalSize, $extension, 0, 200);
+			$tempFile = $this->_autoGuessImageQuality($targetPath, $originalSize, $extension, 0, 200);
+			IOHelper::move($tempFile, $targetPath, true);
 		}
 		else
 		{
@@ -612,7 +612,7 @@ class Image
 	 * @param     $maxQuality
 	 * @param int $step
 	 *
-	 * @return bool
+	 * @return string $path the resulting file path
 	 */
 	private function _autoGuessImageQuality($tempFileName, $originalSize, $extension, $minQuality, $maxQuality, $step = 0)
 	{
@@ -644,7 +644,7 @@ class Image
 
 			// Generate one last time.
 			$this->_image->save($tempFileName, $this->_getSaveOptions($midQuality));
-			return true;
+			return $tempFileName;
 		}
 
 		$step++;
