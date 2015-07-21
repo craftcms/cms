@@ -1,6 +1,12 @@
 {
     "homepage": "http://buildwithcraft.com",
     "minimum-stability": "rc",
+    "repositories": [
+        {
+            "type": "git",
+            "url": "https://github.com/pixelandtonic/pel"
+        }
+    ],
     "require": {
         "php": ">=5.4.0",
         "yiisoft/yii2": "2.0.5",
