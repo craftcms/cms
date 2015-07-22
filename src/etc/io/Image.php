@@ -460,7 +460,7 @@ class Image
 	{
 		$extension = StringHelper::toLowerCase(IOHelper::getExtension($targetPath));
 		$options = $this->_getSaveOptions(false, $extension);
-		$targetPath = IOHelper::getFolderName($targetPath).IOHelper::getFileName($targetPath, false).'.'.$extension;
+		$targetPath = IOHelper::getFolderName($targetPath).IOHelper::getFileName($targetPath, false).'.'.IOHelper::getExtension($targetPath);
 
 		if (($extension == 'jpeg' || $extension == 'jpg' || $extension == 'png') && $sanitizeAndAutoQuality)
 		{
