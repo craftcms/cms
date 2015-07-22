@@ -25,7 +25,6 @@ use craft\app\i18n\Locale;
 use craft\app\log\FileTarget;
 use craft\app\mail\Mailer;
 use craft\app\models\Info;
-use craft\app\models\MailSettings;
 use craft\app\web\Application as WebApplication;
 use yii\base\InvalidConfigException;
 use yii\log\Logger;
@@ -1334,6 +1333,7 @@ trait ApplicationTrait
                 'schemaMap' => [
                     'mysql' => '\\craft\\app\\db\\mysql\\Schema',
                 ],
+                'enableSavepoint' => false,
             ];
 
             $db = Craft::createObject($config);
