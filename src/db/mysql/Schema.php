@@ -7,6 +7,7 @@
 
 namespace craft\app\db\mysql;
 
+use Craft;
 use yii\db\Exception;
 
 /**
