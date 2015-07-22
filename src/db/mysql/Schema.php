@@ -7,6 +7,8 @@
 
 namespace craft\app\db\mysql;
 
+use yii\db\Exception;
+
 /**
  * @inheritdoc
  *
@@ -72,6 +74,8 @@ class Schema extends \yii\db\mysql\Schema
      * Releases an existing savepoint.
      *
      * @param string $name The savepoint name.
+     *
+     * @throws Exception
      */
     public function releaseSavepoint($name)
     {
@@ -83,6 +87,9 @@ class Schema extends \yii\db\mysql\Schema
             if ($e->getCode() == 42000 && isset($e->errorInfo[1]) && $e->errorInfo[1] == 1305) {
                 Craft::warning('Tried to release a savepoint, but it does not exist: '.$e->getMessage(), __METHOD__);
             }
+            else {
+                throw $e;
+            }
         }
     }
 
@@ -90,6 +97,8 @@ class Schema extends \yii\db\mysql\Schema
      * Rolls back to a previously created savepoint.
      *
      * @param string $name The savepoint name.
+     *
+     * @throws Exception
      */
     public function rollBackSavepoint($name)
     {
@@ -100,6 +109,9 @@ class Schema extends \yii\db\mysql\Schema
             // Specifically look for a "SAVEPOINT does not exist" error.
             if ($e->getCode() == 42000 && isset($e->errorInfo[1]) && $e->errorInfo[1] == 1305) {
                 Craft::warning('Tried to roll back a savepoint, but it does not exist: '.$e->getMessage(), __METHOD__);
+            }
+            else {
+                throw $e;
             }
         }
     }
