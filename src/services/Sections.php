@@ -476,7 +476,7 @@ class Sections extends Component
         }
 
         if (!$section->hasErrors()) {
-            $transaction = Craft::$app->getDb()->getTransaction() === null ? Craft::$app->getDb()->beginTransaction() : null;
+            $transaction = Craft::$app->getDb()->beginTransaction();
 
             try {
                 // Fire a 'beforeSaveSection' event
@@ -753,13 +753,9 @@ class Sections extends Component
 
                 // Commit the transaction regardless of whether we saved the section, in case something changed
                 // in onBeforeSaveSection
-                if ($transaction !== null) {
-                    $transaction->commit();
-                }
+                $transaction->commit();
             } catch (\Exception $e) {
-                if ($transaction !== null) {
-                    $transaction->rollback();
-                }
+                $transaction->rollback();
 
                 throw $e;
             }
@@ -809,7 +805,7 @@ class Sections extends Component
             return false;
         }
 
-        $transaction = Craft::$app->getDb()->getTransaction() === null ? Craft::$app->getDb()->beginTransaction() : null;
+        $transaction = Craft::$app->getDb()->beginTransaction();
         try {
             // Grab the entry ids so we can clean the elements table.
             $entryIds = (new Query())
@@ -835,9 +831,7 @@ class Sections extends Component
             Craft::$app->getDb()->createCommand()->delete('{{%sections}}',
                 ['id' => $sectionId])->execute();
 
-            if ($transaction !== null) {
-                $transaction->commit();
-            }
+            $transaction->commit();
 
             // Fire an 'afterDeleteSection' event
             $this->trigger(static::EVENT_AFTER_DELETE_SECTION,
@@ -847,9 +841,7 @@ class Sections extends Component
 
             return true;
         } catch (\Exception $e) {
-            if ($transaction !== null) {
-                $transaction->rollback();
-            }
+            $transaction->rollback();
 
             throw $e;
         }
@@ -990,7 +982,7 @@ class Sections extends Component
         $entryType->addErrors($entryTypeRecord->getErrors());
 
         if (!$entryType->hasErrors()) {
-            $transaction = Craft::$app->getDb()->getTransaction() === null ? Craft::$app->getDb()->beginTransaction() : null;
+            $transaction = Craft::$app->getDb()->beginTransaction();
 
             try {
                 // Fire a 'beforeSaveEntryType' event
@@ -1032,13 +1024,9 @@ class Sections extends Component
 
                 // Commit the transaction regardless of whether we saved the user, in case something changed
                 // in onBeforeSaveEntryType
-                if ($transaction !== null) {
-                    $transaction->commit();
-                }
+                $transaction->commit();
             } catch (\Exception $e) {
-                if ($transaction !== null) {
-                    $transaction->rollback();
-                }
+                $transaction->rollback();
 
                 throw $e;
             }
@@ -1067,7 +1055,7 @@ class Sections extends Component
      */
     public function reorderEntryTypes($entryTypeIds)
     {
-        $transaction = Craft::$app->getDb()->getTransaction() === null ? Craft::$app->getDb()->beginTransaction() : null;
+        $transaction = Craft::$app->getDb()->beginTransaction();
 
         try {
             foreach ($entryTypeIds as $entryTypeOrder => $entryTypeId) {
@@ -1076,13 +1064,9 @@ class Sections extends Component
                 $entryTypeRecord->save();
             }
 
-            if ($transaction !== null) {
-                $transaction->commit();
-            }
+            $transaction->commit();
         } catch (\Exception $e) {
-            if ($transaction !== null) {
-                $transaction->rollback();
-            }
+            $transaction->rollback();
 
             throw $e;
         }
@@ -1104,7 +1088,7 @@ class Sections extends Component
             return false;
         }
 
-        $transaction = Craft::$app->getDb()->getTransaction() === null ? Craft::$app->getDb()->beginTransaction() : null;
+        $transaction = Craft::$app->getDb()->beginTransaction();
         try {
             // Delete the field layout
             $query = (new Query())
@@ -1147,15 +1131,11 @@ class Sections extends Component
                     ['id' => $entryTypeId])->execute();
             }
 
-            if ($transaction !== null) {
-                $transaction->commit();
-            }
+            $transaction->commit();
 
             return (bool)$affectedRows;
         } catch (\Exception $e) {
-            if ($transaction !== null) {
-                $transaction->rollback();
-            }
+            $transaction->rollback();
 
             throw $e;
         }

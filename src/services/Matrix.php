@@ -240,7 +240,7 @@ class Matrix extends Component
     public function saveBlockType(MatrixBlockTypeModel $blockType, $validate = true)
     {
         if (!$validate || $this->validateBlockType($blockType)) {
-            $transaction = Craft::$app->getDb()->getTransaction() === null ? Craft::$app->getDb()->beginTransaction() : null;
+            $transaction = Craft::$app->getDb()->beginTransaction();
             try {
                 $contentService = Craft::$app->getContent();
                 $fieldsService = Craft::$app->getFields();
@@ -354,13 +354,9 @@ class Matrix extends Component
                     $fieldsService->deleteLayoutById($oldBlockType->fieldLayoutId);
                 }
 
-                if ($transaction !== null) {
-                    $transaction->commit();
-                }
+                $transaction->commit();
             } catch (\Exception $e) {
-                if ($transaction !== null) {
-                    $transaction->rollback();
-                }
+                $transaction->rollback();
 
                 throw $e;
             }
@@ -381,7 +377,7 @@ class Matrix extends Component
      */
     public function deleteBlockType(MatrixBlockTypeModel $blockType)
     {
-        $transaction = Craft::$app->getDb()->getTransaction() === null ? Craft::$app->getDb()->beginTransaction() : null;
+        $transaction = Craft::$app->getDb()->beginTransaction();
         try {
             // First delete the blocks of this type
             $blockIds = (new Query())
@@ -409,15 +405,11 @@ class Matrix extends Component
             $affectedRows = Craft::$app->getDb()->createCommand()->delete('{{%matrixblocktypes}}',
                 ['id' => $blockType->id])->execute();
 
-            if ($transaction !== null) {
-                $transaction->commit();
-            }
+            $transaction->commit();
 
             return (bool)$affectedRows;
         } catch (\Exception $e) {
-            if ($transaction !== null) {
-                $transaction->rollback();
-            }
+            $transaction->rollback();
 
             throw $e;
         }
@@ -484,7 +476,7 @@ class Matrix extends Component
     public function saveSettings(MatrixField $matrixField, $validate = true)
     {
         if (!$validate || $this->validateFieldSettings($matrixField)) {
-            $transaction = Craft::$app->getDb()->getTransaction() === null ? Craft::$app->getDb()->beginTransaction() : null;
+            $transaction = Craft::$app->getDb()->beginTransaction();
             try {
                 // Create the content table first since the block type fields will need it
                 $oldContentTable = $this->getContentTableName($matrixField,
@@ -534,18 +526,14 @@ class Matrix extends Component
 
                 Craft::$app->getContent()->contentTable = $originalContentTable;
 
-                if ($transaction !== null) {
-                    $transaction->commit();
-                }
+                $transaction->commit();
 
                 // Update our cache of this field's block types
                 $this->_blockTypesByFieldId[$matrixField->id] = $matrixField->getBlockTypes();
 
                 return true;
             } catch (\Exception $e) {
-                if ($transaction !== null) {
-                    $transaction->rollback();
-                }
+                $transaction->rollback();
 
                 throw $e;
             }
@@ -564,7 +552,7 @@ class Matrix extends Component
      */
     public function deleteMatrixField(MatrixField $matrixField)
     {
-        $transaction = Craft::$app->getDb()->getTransaction() === null ? Craft::$app->getDb()->beginTransaction() : null;
+        $transaction = Craft::$app->getDb()->beginTransaction();
         try {
             $originalContentTable = Craft::$app->getContent()->contentTable;
             $contentTable = $this->getContentTableName($matrixField);
@@ -582,15 +570,11 @@ class Matrix extends Component
 
             Craft::$app->getContent()->contentTable = $originalContentTable;
 
-            if ($transaction !== null) {
-                $transaction->commit();
-            }
+            $transaction->commit();
 
             return true;
         } catch (\Exception $e) {
-            if ($transaction !== null) {
-                $transaction->rollback();
-            }
+            $transaction->rollback();
 
             throw $e;
         }
@@ -694,7 +678,7 @@ class Matrix extends Component
             $blockRecord->typeId = $block->typeId;
             $blockRecord->sortOrder = $block->sortOrder;
 
-            $transaction = Craft::$app->getDb()->getTransaction() === null ? Craft::$app->getDb()->beginTransaction() : null;
+            $transaction = Craft::$app->getDb()->beginTransaction();
             try {
                 if (Craft::$app->getElements()->saveElement($block, false)) {
                     if ($isNewBlock) {
@@ -703,16 +687,12 @@ class Matrix extends Component
 
                     $blockRecord->save(false);
 
-                    if ($transaction !== null) {
-                        $transaction->commit();
-                    }
+                    $transaction->commit();
 
                     return true;
                 }
             } catch (\Exception $e) {
-                if ($transaction !== null) {
-                    $transaction->rollback();
-                }
+                $transaction->rollback();
 
                 throw $e;
             }
@@ -765,7 +745,7 @@ class Matrix extends Component
         $query = $owner->getFieldValue($field->handle);
         $blocks = $query->getResult();
 
-        $transaction = Craft::$app->getDb()->getTransaction() === null ? Craft::$app->getDb()->beginTransaction() : null;
+        $transaction = Craft::$app->getDb()->beginTransaction();
         try {
             // First thing's first. Let's make sure that the blocks for this field/owner respect the field's translation
             // setting
@@ -814,13 +794,9 @@ class Matrix extends Component
 
             $this->deleteBlockById($deletedBlockIds);
 
-            if ($transaction !== null) {
-                $transaction->commit();
-            }
+            $transaction->commit();
         } catch (\Exception $e) {
-            if ($transaction !== null) {
-                $transaction->rollback();
-            }
+            $transaction->rollback();
 
             throw $e;
         }

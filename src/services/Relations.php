@@ -44,7 +44,7 @@ class Relations extends Component
         // Prevent duplicate target IDs.
         $targetIds = array_unique($targetIds);
 
-        $transaction = Craft::$app->getDb()->getTransaction() === null ? Craft::$app->getDb()->beginTransaction() : null;
+        $transaction = Craft::$app->getDb()->beginTransaction();
 
         try {
             // Delete the existing relations
@@ -101,13 +101,9 @@ class Relations extends Component
                     $columns, $values)->execute();
             }
 
-            if ($transaction !== null) {
-                $transaction->commit();
-            }
+            $transaction->commit();
         } catch (\Exception $e) {
-            if ($transaction !== null) {
-                $transaction->rollback();
-            }
+            $transaction->rollback();
 
             throw $e;
         }

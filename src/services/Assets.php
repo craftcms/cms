@@ -1393,7 +1393,7 @@ class Assets extends Component
             $asset->title = str_replace('_', ' ', IOHelper::getFilename($asset->filename, false));
         }
 
-        $transaction = Craft::$app->getDb()->getTransaction() === null ? Craft::$app->getDb()->beginTransaction() : null;
+        $transaction = Craft::$app->getDb()->beginTransaction();
 
         try {
             $event = new AssetEvent(array(
@@ -1410,9 +1410,7 @@ class Assets extends Component
 
                 // If it didn't work, rollback the transaction in case something changed in onBeforeSaveAsset
                 if (!$success) {
-                    if ($transaction !== null) {
-                        $transaction->rollback();
-                    }
+                    $transaction->rollback();
 
                     throw new ElementSaveException(Craft::t('app',
                         'Failed to save the Asset Element'));
@@ -1435,13 +1433,9 @@ class Assets extends Component
 
             // Commit the transaction regardless of whether we saved the asset, in case something changed
             // in onBeforeSaveAsset
-            if ($transaction !== null) {
-                $transaction->commit();
-            }
+            $transaction->commit();
         } catch (\Exception $e) {
-            if ($transaction !== null) {
-                $transaction->rollback();
-            }
+            $transaction->rollback();
 
             throw $e;
         }

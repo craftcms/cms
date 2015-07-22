@@ -437,7 +437,7 @@ class I18N extends \yii\i18n\I18N
      */
     public function deleteSiteLocale($localeId, $transferContentTo)
     {
-        $transaction = Craft::$app->getDb()->getTransaction() === null ? Craft::$app->getDb()->beginTransaction() : null;
+        $transaction = Craft::$app->getDb()->beginTransaction();
 
         try {
             // Fire a 'beforeDeleteLocale' event
@@ -644,9 +644,7 @@ class I18N extends \yii\i18n\I18N
 
                 // If it didn't work, rollback the transaction in case something changed in onBeforeDeleteLocale
                 if (!$success) {
-                    if ($transaction !== null) {
-                        $transaction->rollback();
-                    }
+                    $transaction->rollback();
 
                     return false;
                 }
@@ -656,13 +654,9 @@ class I18N extends \yii\i18n\I18N
 
             // Commit the transaction regardless of whether we deleted the locale,
             // in case something changed in onBeforeDeleteLocale
-            if ($transaction !== null) {
-                $transaction->commit();
-            }
+            $transaction->commit();
         } catch (\Exception $e) {
-            if ($transaction !== null) {
-                $transaction->rollback();
-            }
+            $transaction->rollback();
 
             throw $e;
         }

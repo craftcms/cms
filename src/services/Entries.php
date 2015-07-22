@@ -188,7 +188,7 @@ class Entries extends Component
             $entry->title = Craft::$app->getView()->renderObjectTemplate($entryType->titleFormat, $entry);
         }
 
-        $transaction = Craft::$app->getDb()->getTransaction() === null ? Craft::$app->getDb()->beginTransaction() : null;
+        $transaction = Craft::$app->getDb()->beginTransaction();
 
         try {
             // Fire a 'beforeSaveEntry' event
@@ -205,9 +205,7 @@ class Entries extends Component
 
                 // If it didn't work, rollback the transaction in case something changed in onBeforeSaveEntry
                 if (!$success) {
-                    if ($transaction !== null) {
-                        $transaction->rollback();
-                    }
+                    $transaction->rollback();
 
                     // If "title" has an error, check if they've defined a custom title label.
                     if ($entry->getFirstError('title')) {
@@ -265,13 +263,9 @@ class Entries extends Component
 
             // Commit the transaction regardless of whether we saved the entry, in case something changed
             // in onBeforeSaveEntry
-            if ($transaction !== null) {
-                $transaction->commit();
-            }
+            $transaction->commit();
         } catch (\Exception $e) {
-            if ($transaction !== null) {
-                $transaction->rollback();
-            }
+            $transaction->rollback();
 
             throw $e;
         }
@@ -300,7 +294,7 @@ class Entries extends Component
             return false;
         }
 
-        $transaction = Craft::$app->getDb()->getTransaction() === null ? Craft::$app->getDb()->beginTransaction() : null;
+        $transaction = Craft::$app->getDb()->beginTransaction();
 
         try {
             if (!is_array($entries)) {
@@ -341,13 +335,9 @@ class Entries extends Component
                 $success = false;
             }
 
-            if ($transaction !== null) {
-                $transaction->commit();
-            }
+            $transaction->commit();
         } catch (\Exception $e) {
-            if ($transaction !== null) {
-                $transaction->rollback();
-            }
+            $transaction->rollback();
 
             throw $e;
         }

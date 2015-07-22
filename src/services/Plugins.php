@@ -256,7 +256,7 @@ class Plugins extends Component
             $this->_noPluginExists($handle);
         }
 
-        $transaction = Craft::$app->getDb()->getTransaction() === null ? Craft::$app->getDb()->beginTransaction() : null;
+        $transaction = Craft::$app->getDb()->beginTransaction();
         try {
             $info = [
                 'handle' => $handle,
@@ -274,25 +274,19 @@ class Plugins extends Component
             $this->_setPluginMigrator($plugin, $handle, $info['id']);
 
             if ($plugin->install() !== false) {
-                if ($transaction !== null) {
-                    $transaction->commit();
-                }
+                $transaction->commit();
 
                 $this->_installedPluginInfo[$handle] = $info;
                 $this->_registerPlugin($handle, $plugin);
 
                 return true;
             } else {
-                if ($transaction !== null) {
-                    $transaction->rollBack();
-                }
+                $transaction->rollBack();
 
                 return false;
             }
         } catch (\Exception $e) {
-            if ($transaction !== null) {
-                $transaction->rollback();
-            }
+            $transaction->rollback();
 
             throw $e;
         }
@@ -327,7 +321,7 @@ class Plugins extends Component
             $this->_noPluginExists($handle);
         }
 
-        $transaction = Craft::$app->getDb()->getTransaction() === null ? Craft::$app->getDb()->beginTransaction() : null;
+        $transaction = Craft::$app->getDb()->beginTransaction();
         try {
             if ($plugin->uninstall() !== false) {
                 // Clean up the plugins and migrations tables
@@ -337,26 +331,20 @@ class Plugins extends Component
                 Craft::$app->getDb()->createCommand()->delete('{{%migrations}}',
                     ['pluginId' => $id])->execute();
 
-                if ($transaction !== null) {
-                    // Let's commit to this.
-                    $transaction->commit();
-                }
+                // Let's commit to this.
+                $transaction->commit();
 
                 $this->_unregisterPlugin($handle);
                 unset($this->_installedPluginInfo[$handle]);
 
                 return true;
             } else {
-                if ($transaction !== null) {
-                    $transaction->rollBack();
-                }
+                $transaction->rollBack();
 
                 return false;
             }
         } catch (\Exception $e) {
-            if ($transaction !== null) {
-                $transaction->rollback();
-            }
+            $transaction->rollback();
 
             throw $e;
         }

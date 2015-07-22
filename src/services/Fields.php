@@ -492,7 +492,7 @@ class Fields extends Component
     public function saveField(FieldInterface $field, $validate = true)
     {
         if ((!$validate || $field->validate()) && $field->beforeSave()) {
-            $transaction = Craft::$app->getDb()->getTransaction() === null ? Craft::$app->getDb()->beginTransaction() : null;
+            $transaction = Craft::$app->getDb()->beginTransaction();
             try {
                 $field->context = Craft::$app->getContent()->fieldContext;
 
@@ -574,15 +574,11 @@ class Fields extends Component
                     $this->_updateFieldVersion();
                 }
 
-                if ($transaction !== null) {
-                    $transaction->commit();
-                }
+                $transaction->commit();
 
                 return true;
             } catch (\Exception $e) {
-                if ($transaction !== null) {
-                    $transaction->rollback();
-                }
+                $transaction->rollback();
 
                 throw $e;
             }
@@ -626,7 +622,7 @@ class Fields extends Component
             return false;
         }
 
-        $transaction = Craft::$app->getDb()->getTransaction() === null ? Craft::$app->getDb()->beginTransaction() : null;
+        $transaction = Craft::$app->getDb()->beginTransaction();
         try {
             // De we need to delete the content column?
             $contentTable = Craft::$app->getContent()->contentTable;
@@ -651,15 +647,11 @@ class Fields extends Component
                 $this->_updateFieldVersion();
             }
 
-            if ($transaction !== null) {
-                $transaction->commit();
-            }
+            $transaction->commit();
 
             return (bool)$affectedRows;
         } catch (\Exception $e) {
-            if ($transaction !== null) {
-                $transaction->rollback();
-            }
+            $transaction->rollback();
 
             throw $e;
         }

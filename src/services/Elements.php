@@ -332,7 +332,7 @@ class Elements extends Component
         $elementRecord->enabled = (bool)$element->enabled;
         $elementRecord->archived = (bool)$element->archived;
 
-        $transaction = Craft::$app->getDb()->getTransaction() === null ? Craft::$app->getDb()->beginTransaction() : null;
+        $transaction = Craft::$app->getDb()->beginTransaction();
 
         try {
             // Fire a 'beforeSaveElement' event
@@ -536,13 +536,9 @@ class Elements extends Component
 
             // Commit the transaction regardless of whether we saved the user, in case something changed
             // in onBeforeSaveElement
-            if ($transaction !== null) {
-                $transaction->commit();
-            }
+            $transaction->commit();
         } catch (\Exception $e) {
-            if ($transaction !== null) {
-                $transaction->rollback();
-            }
+            $transaction->rollback();
 
             throw $e;
         }
@@ -696,7 +692,7 @@ class Elements extends Component
      */
     public function mergeElementsByIds($mergedElementId, $prevailingElementId)
     {
-        $transaction = Craft::$app->getDb()->getTransaction() === null ? Craft::$app->getDb()->beginTransaction() : null;
+        $transaction = Craft::$app->getDb()->beginTransaction();
         try {
             // Update any relations that point to the merged element
             $relations = (new Query())
@@ -787,15 +783,11 @@ class Elements extends Component
             // Now delete the merged element
             $success = $this->deleteElementById($mergedElementId);
 
-            if ($transaction !== null) {
-                $transaction->commit();
-            }
+            $transaction->commit();
 
             return $success;
         } catch (\Exception $e) {
-            if ($transaction !== null) {
-                $transaction->rollback();
-            }
+            $transaction->rollback();
 
             throw $e;
         }
@@ -819,7 +811,7 @@ class Elements extends Component
             $elementIds = [$elementIds];
         }
 
-        $transaction = Craft::$app->getDb()->getTransaction() === null ? Craft::$app->getDb()->beginTransaction() : null;
+        $transaction = Craft::$app->getDb()->beginTransaction();
 
         try {
             // Fire a 'beforeDeleteElements' event
@@ -883,15 +875,11 @@ class Elements extends Component
             Craft::$app->getDb()->createCommand()->delete('{{%searchindex}}',
                 $searchIndexCondition)->execute();
 
-            if ($transaction !== null) {
-                $transaction->commit();
-            }
+            $transaction->commit();
 
             return (bool)$affectedRows;
         } catch (\Exception $e) {
-            if ($transaction !== null) {
-                $transaction->rollback();
-            }
+            $transaction->rollback();
 
             throw $e;
         }

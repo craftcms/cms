@@ -346,7 +346,7 @@ class Structures extends Component
             $mode = 'insert';
         }
 
-        $transaction = Craft::$app->getDb()->getTransaction() === null ? Craft::$app->getDb()->beginTransaction() : null;
+        $transaction = Craft::$app->getDb()->beginTransaction();
         try {
             if ($mode == 'update') {
                 // Fire a 'beforeMoveElement' event
@@ -365,9 +365,7 @@ class Structures extends Component
 
                 // If it didn't work, rollback the transaction in case something changed in onBeforeMoveElement
                 if (!$success) {
-                    if ($transaction !== null) {
-                        $transaction->rollback();
-                    }
+                    $transaction->rollback();
 
                     return false;
                 }
@@ -385,13 +383,9 @@ class Structures extends Component
 
             // Commit the transaction regardless of whether we moved the element, in case something changed
             // in onBeforeMoveElement
-            if ($transaction !== null) {
-                $transaction->commit();
-            }
+            $transaction->commit();
         } catch (\Exception $e) {
-            if ($transaction !== null) {
-                $transaction->rollback();
-            }
+            $transaction->rollback();
 
             throw $e;
         }

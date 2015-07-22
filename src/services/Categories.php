@@ -351,7 +351,7 @@ class Categories extends Component
         $group->addErrors($groupRecord->getErrors());
 
         if (!$group->hasErrors()) {
-            $transaction = Craft::$app->getDb()->getTransaction() === null ? Craft::$app->getDb()->beginTransaction() : null;
+            $transaction = Craft::$app->getDb()->beginTransaction();
             try {
                 // Create/update the structure
 
@@ -508,13 +508,9 @@ class Categories extends Component
                     }
                 }
 
-                if ($transaction !== null) {
-                    $transaction->commit();
-                }
+                $transaction->commit();
             } catch (\Exception $e) {
-                if ($transaction !== null) {
-                    $transaction->rollback();
-                }
+                $transaction->rollback();
 
                 throw $e;
             }
@@ -557,7 +553,7 @@ class Categories extends Component
             return false;
         }
 
-        $transaction = Craft::$app->getDb()->getTransaction() === null ? Craft::$app->getDb()->beginTransaction() : null;
+        $transaction = Craft::$app->getDb()->beginTransaction();
         try {
             // Delete the field layout
             $fieldLayoutId = (new Query())
@@ -582,9 +578,7 @@ class Categories extends Component
             Craft::$app->getDb()->createCommand()->delete('{{%categorygroups}}',
                 ['id' => $groupId])->execute();
 
-            if ($transaction !== null) {
-                $transaction->commit();
-            }
+            $transaction->commit();
 
             // Fire an 'afterDeleteGroup' event
             $this->trigger(static::EVENT_AFTER_DELETE_GROUP,
@@ -594,9 +588,7 @@ class Categories extends Component
 
             return true;
         } catch (\Exception $e) {
-            if ($transaction !== null) {
-                $transaction->rollback();
-            }
+            $transaction->rollback();
 
             throw $e;
         }
@@ -700,7 +692,7 @@ class Categories extends Component
             return false;
         }
 
-        $transaction = Craft::$app->getDb()->getTransaction() === null ? Craft::$app->getDb()->beginTransaction() : null;
+        $transaction = Craft::$app->getDb()->beginTransaction();
 
         try {
             // Fire a 'beforeSaveCategory' event
@@ -716,9 +708,7 @@ class Categories extends Component
 
                 // If it didn't work, rollback the transaction in case something changed in onBeforeSaveCategory
                 if (!$success) {
-                    if ($transaction !== null) {
-                        $transaction->rollback();
-                    }
+                    $transaction->rollback();
 
                     return false;
                 }
@@ -750,13 +740,9 @@ class Categories extends Component
 
             // Commit the transaction regardless of whether we saved the category, in case something changed
             // in onBeforeSaveCategory
-            if ($transaction !== null) {
-                $transaction->commit();
-            }
+            $transaction->commit();
         } catch (\Exception $e) {
-            if ($transaction !== null) {
-                $transaction->rollback();
-            }
+            $transaction->rollback();
 
             throw $e;
         }
@@ -786,7 +772,7 @@ class Categories extends Component
             return false;
         }
 
-        $transaction = Craft::$app->getDb()->getTransaction() === null ? Craft::$app->getDb()->beginTransaction() : null;
+        $transaction = Craft::$app->getDb()->beginTransaction();
         try {
             if (!is_array($categories)) {
                 $categories = [$categories];
@@ -794,13 +780,9 @@ class Categories extends Component
 
             $success = $this->_deleteCategories($categories, true);
 
-            if ($transaction !== null) {
-                $transaction->commit();
-            }
+            $transaction->commit();
         } catch (\Exception $e) {
-            if ($transaction !== null) {
-                $transaction->rollback();
-            }
+            $transaction->rollback();
 
             throw $e;
         }

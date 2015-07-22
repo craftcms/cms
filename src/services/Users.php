@@ -379,7 +379,7 @@ class Users extends Component
             return false;
         }
 
-        $transaction = Craft::$app->getDb()->getTransaction() === null ? Craft::$app->getDb()->beginTransaction() : null;
+        $transaction = Craft::$app->getDb()->beginTransaction();
 
         try {
             // Fire a 'beforeSaveUser' event
@@ -397,9 +397,7 @@ class Users extends Component
 
                 // If it didn't work, rollback the transaction in case something changed in onBeforeSaveUser
                 if (!$success) {
-                    if ($transaction !== null) {
-                        $transaction->rollback();
-                    }
+                    $transaction->rollback();
 
                     return false;
                 }
@@ -438,13 +436,9 @@ class Users extends Component
 
             // Commit the transaction regardless of whether we saved the user, in case something changed
             // in onBeforeSaveUser
-            if ($transaction !== null) {
-                $transaction->commit();
-            }
+            $transaction->commit();
         } catch (\Exception $e) {
-            if ($transaction !== null) {
-                $transaction->rollback();
-            }
+            $transaction->rollback();
 
             throw $e;
         }
@@ -783,7 +777,7 @@ class Users extends Component
      */
     public function activateUser(User $user)
     {
-        $transaction = Craft::$app->getDb()->getTransaction() === null ? Craft::$app->getDb()->beginTransaction() : null;
+        $transaction = Craft::$app->getDb()->beginTransaction();
 
         try {
             // Fire a 'beforeActivateUser' event
@@ -812,13 +806,9 @@ class Users extends Component
 
             // Commit the transaction regardless of whether we activated the user, in case something changed
             // in onBeforeActivateUser
-            if ($transaction !== null) {
-                $transaction->commit();
-            }
+            $transaction->commit();
         } catch (\Exception $e) {
-            if ($transaction !== null) {
-                $transaction->rollback();
-            }
+            $transaction->rollback();
 
             throw $e;
         }
@@ -880,7 +870,7 @@ class Users extends Component
      */
     public function unlockUser(User $user)
     {
-        $transaction = Craft::$app->getDb()->getTransaction() === null ? Craft::$app->getDb()->beginTransaction() : null;
+        $transaction = Craft::$app->getDb()->beginTransaction();
 
         try {
             // Fire a 'beforeUnlockUser' event
@@ -909,13 +899,9 @@ class Users extends Component
 
             // Commit the transaction regardless of whether we unlocked the user, in case something changed
             // in onBeforeUnlockUser
-            if ($transaction !== null) {
-                $transaction->commit();
-            }
+            $transaction->commit();
         } catch (\Exception $e) {
-            if ($transaction !== null) {
-                $transaction->rollback();
-            }
+            $transaction->rollback();
 
             throw $e;
         }
@@ -940,7 +926,7 @@ class Users extends Component
      */
     public function suspendUser(User $user)
     {
-        $transaction = Craft::$app->getDb()->getTransaction() === null ? Craft::$app->getDb()->beginTransaction() : null;
+        $transaction = Craft::$app->getDb()->beginTransaction();
 
         try {
             // Fire a 'beforeSuspendUser' event
@@ -965,13 +951,9 @@ class Users extends Component
 
             // Commit the transaction regardless of whether we saved the user, in case something changed
             // in onBeforeSuspendUser
-            if ($transaction !== null) {
-                $transaction->commit();
-            }
+            $transaction->commit();
         } catch (\Exception $e) {
-            if ($transaction !== null) {
-                $transaction->rollback();
-            }
+            $transaction->rollback();
 
             throw $e;
         }
@@ -996,7 +978,7 @@ class Users extends Component
      */
     public function unsuspendUser(User $user)
     {
-        $transaction = Craft::$app->getDb()->getTransaction() === null ? Craft::$app->getDb()->beginTransaction() : null;
+        $transaction = Craft::$app->getDb()->beginTransaction();
 
         try {
             // Fire a 'beforeUnsuspendUser' event
@@ -1021,13 +1003,9 @@ class Users extends Component
 
             // Commit the transaction regardless of whether we unsuspended the user, in case something changed
             // in onBeforeUnsuspendUser
-            if ($transaction !== null) {
-                $transaction->commit();
-            }
+            $transaction->commit();
         } catch (\Exception $e) {
-            if ($transaction !== null) {
-                $transaction->rollback();
-            }
+            $transaction->rollback();
 
             throw $e;
         }
@@ -1057,7 +1035,7 @@ class Users extends Component
             return false;
         }
 
-        $transaction = Craft::$app->getDb()->getTransaction() === null ? Craft::$app->getDb()->beginTransaction() : null;
+        $transaction = Craft::$app->getDb()->beginTransaction();
 
         try {
             // Fire a 'beforeDeleteUser' event
@@ -1106,9 +1084,7 @@ class Users extends Component
 
                 // If it didn't work, rollback the transaction in case something changed in onBeforeDeleteUser
                 if (!$success) {
-                    if ($transaction !== null) {
-                        $transaction->rollback();
-                    }
+                    $transaction->rollback();
 
                     return false;
                 }
@@ -1118,13 +1094,9 @@ class Users extends Component
 
             // Commit the transaction regardless of whether we deleted the user,
             // in case something changed in onBeforeDeleteUser
-            if ($transaction !== null) {
-                $transaction->commit();
-            }
+            $transaction->commit();
         } catch (\Exception $e) {
-            if ($transaction !== null) {
-                $transaction->rollback();
-            }
+            $transaction->rollback();
 
             throw $e;
         }

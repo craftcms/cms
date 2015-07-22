@@ -279,7 +279,7 @@ class TemplateCache extends Component
         }
 
         // Save it
-        $transaction = Craft::$app->getDb()->getTransaction() === null ? Craft::$app->getDb()->beginTransaction() : null;
+        $transaction = Craft::$app->getDb()->beginTransaction();
 
         try {
             Craft::$app->getDb()->createCommand()->insert(static::$_templateCachesTable,
@@ -325,13 +325,9 @@ class TemplateCache extends Component
                 unset($this->_cacheElementIds[$key]);
             }
 
-            if ($transaction !== null) {
-                $transaction->commit();
-            }
+            $transaction->commit();
         } catch (\Exception $e) {
-            if ($transaction !== null) {
-                $transaction->rollback();
-            }
+            $transaction->rollback();
 
             throw $e;
         }

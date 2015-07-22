@@ -210,7 +210,7 @@ class Tags extends Component
         $tagGroup->addErrors($tagGroupRecord->getErrors());
 
         if (!$tagGroup->hasErrors()) {
-            $transaction = Craft::$app->getDb()->getTransaction() === null ? Craft::$app->getDb()->beginTransaction() : null;
+            $transaction = Craft::$app->getDb()->beginTransaction();
             try {
                 if (!$isNewTagGroup && $oldTagGroup->fieldLayoutId) {
                     // Drop the old field layout
@@ -236,13 +236,9 @@ class Tags extends Component
                 // Might as well update our cache of the tag group while we have it.
                 $this->_tagGroupsById[$tagGroup->id] = $tagGroup;
 
-                if ($transaction !== null) {
-                    $transaction->commit();
-                }
+                $transaction->commit();
             } catch (\Exception $e) {
-                if ($transaction !== null) {
-                    $transaction->rollback();
-                }
+                $transaction->rollback();
 
                 throw $e;
             }
@@ -267,7 +263,7 @@ class Tags extends Component
             return false;
         }
 
-        $transaction = Craft::$app->getDb()->getTransaction() === null ? Craft::$app->getDb()->beginTransaction() : null;
+        $transaction = Craft::$app->getDb()->beginTransaction();
         try {
             // Delete the field layout
             $fieldLayoutId = (new Query())
@@ -292,15 +288,11 @@ class Tags extends Component
             $affectedRows = Craft::$app->getDb()->createCommand()->delete('{{%taggroups}}',
                 ['id' => $tagGroupId])->execute();
 
-            if ($transaction !== null) {
-                $transaction->commit();
-            }
+            $transaction->commit();
 
             return (bool)$affectedRows;
         } catch (\Exception $e) {
-            if ($transaction !== null) {
-                $transaction->rollback();
-            }
+            $transaction->rollback();
 
             throw $e;
         }
@@ -356,7 +348,7 @@ class Tags extends Component
             return false;
         }
 
-        $transaction = Craft::$app->getDb()->getTransaction() === null ? Craft::$app->getDb()->beginTransaction() : null;
+        $transaction = Craft::$app->getDb()->beginTransaction();
 
         try {
             // Fire a 'beforeSaveTag' event
@@ -372,9 +364,7 @@ class Tags extends Component
 
                 // If it didn't work, rollback the transaction in case something changed in onBeforeSaveTag
                 if (!$success) {
-                    if ($transaction !== null) {
-                        $transaction->rollback();
-                    }
+                    $transaction->rollback();
 
                     return false;
                 }
@@ -391,13 +381,9 @@ class Tags extends Component
 
             // Commit the transaction regardless of whether we saved the tag, in case something changed
             // in onBeforeSaveTag
-            if ($transaction !== null) {
-                $transaction->commit();
-            }
+            $transaction->commit();
         } catch (\Exception $e) {
-            if ($transaction !== null) {
-                $transaction->rollback();
-            }
+            $transaction->rollback();
 
             throw $e;
         }

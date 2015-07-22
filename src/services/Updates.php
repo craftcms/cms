@@ -227,7 +227,7 @@ class Updates extends Component
             [
                 'version' => $plugin->version
             ], [
-                'handle' => $plugin::getHandle()
+                'handle' => $plugin->getHandle()
             ])->execute();
 
         return (bool)$affectedRows;

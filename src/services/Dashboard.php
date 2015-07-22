@@ -172,7 +172,7 @@ class Dashboard extends Component
     public function saveWidget(WidgetInterface $widget, $validate = true)
     {
         if ((!$validate || $widget->validate()) && $widget->beforeSave()) {
-            $transaction = Craft::$app->getDb()->getTransaction() === null ? Craft::$app->getDb()->beginTransaction() : null;
+            $transaction = Craft::$app->getDb()->beginTransaction();
             try {
                 $widgetRecord = $this->_getUserWidgetRecordById($widget->id);
                 $isNewWidget = $widgetRecord->getIsNewRecord();
@@ -194,15 +194,11 @@ class Dashboard extends Component
 
                 $widget->afterSave();
 
-                if ($transaction !== null) {
-                    $transaction->commit();
-                }
+                $transaction->commit();
 
                 return true;
             } catch (\Exception $e) {
-                if ($transaction !== null) {
-                    $transaction->rollback();
-                }
+                $transaction->rollback();
 
                 throw $e;
             }
@@ -239,7 +235,7 @@ class Dashboard extends Component
      */
     public function reorderWidgets($widgetIds)
     {
-        $transaction = Craft::$app->getDb()->getTransaction() === null ? Craft::$app->getDb()->beginTransaction() : null;
+        $transaction = Craft::$app->getDb()->beginTransaction();
 
         try {
             foreach ($widgetIds as $widgetOrder => $widgetId) {
@@ -248,13 +244,9 @@ class Dashboard extends Component
                 $widgetRecord->save();
             }
 
-            if ($transaction !== null) {
-                $transaction->commit();
-            }
+            $transaction->commit();
         } catch (\Exception $e) {
-            if ($transaction !== null) {
-                $transaction->rollback();
-            }
+            $transaction->rollback();
 
             throw $e;
         }

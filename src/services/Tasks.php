@@ -125,7 +125,7 @@ class Tasks extends Component
     public function saveTask(TaskInterface $task, $validate = true)
     {
         if (!$validate || $task->validate()) {
-            $transaction = Craft::$app->getDb()->getTransaction() === null ? Craft::$app->getDb()->beginTransaction() : null;
+            $transaction = Craft::$app->getDb()->beginTransaction();
             try {
                 if ($task->isNew()) {
                     $taskRecord = new TaskRecord();
@@ -158,15 +158,11 @@ class Tasks extends Component
                     }
                 }
 
-                if ($transaction !== null) {
-                    $transaction->commit();
-                }
+                $transaction->commit();
 
                 return true;
             } catch (\Exception $e) {
-                if ($transaction !== null) {
-                    $transaction->rollback();
-                }
+                $transaction->rollback();
 
                 throw $e;
             }

@@ -288,7 +288,7 @@ class Volumes extends Component
     public function saveVolume(VolumeInterface $volume, $validate = true)
     {
         if (!$validate || $volume->validate()) {
-            $transaction = Craft::$app->getDb()->getTransaction() === null ? Craft::$app->getDb()->beginTransaction() : null;
+            $transaction = Craft::$app->getDb()->beginTransaction();
 
             try {
                 $volumeRecord = $this->_getVolumeRecordById($volume->id);
@@ -343,9 +343,7 @@ class Volumes extends Component
 
                 Craft::$app->getAssetIndexer()->ensureTopFolder($volume);
 
-                if ($transaction !== null) {
-                    $transaction->commit();
-                }
+                $transaction->commit();
 
                 if ($isNewVolume && $this->_fetchedAllVolumes) {
                     $this->_volumesById[$volume->id] = $volume;
@@ -359,9 +357,7 @@ class Volumes extends Component
 
                 return true;
             } catch (\Exception $e) {
-                if ($transaction !== null) {
-                    $transaction->rollback();
-                }
+                $transaction->rollback();
 
                 throw $e;
             }
@@ -380,7 +376,7 @@ class Volumes extends Component
      */
     public function reorderVolumes($volumeIds)
     {
-        $transaction = Craft::$app->getDb()->getTransaction() === null ? Craft::$app->getDb()->beginTransaction() : null;
+        $transaction = Craft::$app->getDb()->beginTransaction();
 
         try {
             foreach ($volumeIds as $volumeOrder => $volumeId) {
@@ -389,13 +385,9 @@ class Volumes extends Component
                 $volumeRecord->save();
             }
 
-            if ($transaction !== null) {
-                $transaction->commit();
-            }
+            $transaction->commit();
         } catch (\Exception $e) {
-            if ($transaction !== null) {
-                $transaction->rollback();
-            }
+            $transaction->rollback();
 
             throw $e;
         }
@@ -440,7 +432,7 @@ class Volumes extends Component
             return false;
         }
 
-        $transaction = Craft::$app->getDb()->getTransaction() === null ? Craft::$app->getDb()->beginTransaction() : null;
+        $transaction = Craft::$app->getDb()->beginTransaction();
         try {
             // Grab the asset file ids so we can clean the elements table.
             $assetFileIds = (new Query())
@@ -455,15 +447,11 @@ class Volumes extends Component
             $affectedRows = Craft::$app->getDb()->createCommand()->delete('{{%volumes}}',
                 array('id' => $volumeId));
 
-            if ($transaction !== null) {
-                $transaction->commit();
-            }
+            $transaction->commit();
 
             return (bool)$affectedRows;
         } catch (\Exception $e) {
-            if ($transaction !== null) {
-                $transaction->rollback();
-            }
+            $transaction->rollback();
 
             throw $e;
         }
