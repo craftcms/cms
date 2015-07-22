@@ -68,6 +68,42 @@ class Schema extends \yii\db\mysql\Schema
         return '`'.$name.'`';
     }
 
+    /**
+     * Releases an existing savepoint.
+     *
+     * @param string $name The savepoint name.
+     */
+    public function releaseSavepoint($name)
+    {
+        try {
+            parent::releaseSavepoint($name);
+        }
+        catch(Exception $e) {
+            // Specifically look for a "SAVEPOINT does not exist" error.
+            if ($e->getCode() == 42000 && isset($e->errorInfo[1]) && $e->errorInfo[1] == 1305) {
+                Craft::warning('Tried to release a savepoint, but it does not exist: '.$e->getMessage(), __METHOD__);
+            }
+        }
+    }
+
+    /**
+     * Rolls back to a previously created savepoint.
+     *
+     * @param string $name The savepoint name.
+     */
+    public function rollBackSavepoint($name)
+    {
+        try {
+            parent::rollBackSavepoint($name);
+        }
+        catch(Exception $e) {
+            // Specifically look for a "SAVEPOINT does not exist" error.
+            if ($e->getCode() == 42000 && isset($e->errorInfo[1]) && $e->errorInfo[1] == 1305) {
+                Craft::warning('Tried to roll back a savepoint, but it does not exist: '.$e->getMessage(), __METHOD__);
+            }
+        }
+    }
+
     // Protected Methods
     // =========================================================================
 
