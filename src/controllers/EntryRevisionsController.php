@@ -338,8 +338,8 @@ class EntryRevisionsController extends BaseEntriesController
 	{
 		$draft->typeId     = craft()->request->getPost('typeId');
 		$draft->slug       = craft()->request->getPost('slug');
-		$draft->postDate   = craft()->request->getPost('postDate');
-		$draft->expiryDate = craft()->request->getPost('expiryDate');
+		$draft->postDate   = (($postDate   = craft()->request->getPost('postDate'))   ? DateTime::createFromString($postDate,   craft()->timezone) : $draft->postDate);
+		$draft->expiryDate = (($expiryDate = craft()->request->getPost('expiryDate')) ? DateTime::createFromString($expiryDate, craft()->timezone) : null);
 		$draft->enabled    = (bool) craft()->request->getPost('enabled');
 		$draft->getContent()->title = craft()->request->getPost('title');
 

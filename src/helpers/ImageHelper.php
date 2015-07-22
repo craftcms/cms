@@ -175,7 +175,7 @@ class ImageHelper
 	/**
 	 * Returns the size of an image based on its file path.
 	 *
-	 * @param $filePath The path to the image
+	 * @param string $filePath The path to the image
 	 *
 	 * @return array [$width, $height]
 	 */

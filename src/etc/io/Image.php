@@ -470,8 +470,17 @@ class Image
 		$extension = StringHelper::toLowerCase(IOHelper::getExtension($targetPath));
 
 		$options = $this->_getSaveOptions(false, $extension);
-		$targetPath = IOHelper::getFolderName($targetPath).IOHelper::getFileName($targetPath, false).'.'.$extension;
+		$targetPath = IOHelper::getFolderName($targetPath).IOHelper::getFileName($targetPath, false).'.'.IOHelper::getExtension($targetPath);
 
+		if (($extension == 'jpeg' || $extension == 'jpg' || $extension == 'png'))
+		{
+			clearstatcache();
+			$originalSize = IOHelper::getFileSize($this->_imageSourcePath);
+			$tempFile = $this->_autoGuessImageQuality($targetPath, $originalSize, $extension, 0, 200);
+			IOHelper::move($tempFile, $targetPath, true);
+		}
+		else
+		{
 		$this->_image->save($targetPath, $options);
 
 		return true;
@@ -601,6 +610,62 @@ class Image
 		if (!$height || !$width)
 		{
 			list($width, $height) = ImageHelper::calculateMissingDimension($width, $height, $this->getWidth(), $this->getHeight());
+		}
+	}
+
+	/**
+	 * @param     $tempFileName
+	 * @param     $originalSize
+	 * @param     $extension
+	 * @param     $minQuality
+	 * @param     $maxQuality
+	 * @param int $step
+	 *
+	 * @return string $path the resulting file path
+	 */
+	private function _autoGuessImageQuality($tempFileName, $originalSize, $extension, $minQuality, $maxQuality, $step = 0)
+	{
+		// Give ourselves some extra time.
+		@set_time_limit(30);
+
+		if ($step == 0)
+		{
+			$tempFileName = IOHelper::getFolderName($tempFileName).IOHelper::getFileName($tempFileName, false).'-temp.'.$extension;
+		}
+
+		// Find our target quality by splitting the min and max qualities
+		$midQuality = (int)ceil($minQuality + (($maxQuality - $minQuality) / 2));
+
+		// Set the min and max acceptable ranges. .10 means anything between 90% and 110% of the original file size is acceptable.
+		$acceptableRange = .10;
+
+		clearstatcache();
+
+		// Generate a new temp image and get it's file size.
+		$this->_image->save($tempFileName, $this->_getSaveOptions($midQuality, $extension));
+		$newFileSize = IOHelper::getFileSize($tempFileName);
+
+		// If we're on step 10 OR we're within our acceptable range threshold OR midQuality = maxQuality (1 == 1),
+		// let's use the current image.
+		if ($step == 10 || abs(1 - $originalSize / $newFileSize) < $acceptableRange || $midQuality == $maxQuality)
+		{
+			clearstatcache();
+
+			// Generate one last time.
+			$this->_image->save($tempFileName, $this->_getSaveOptions($midQuality));
+			return $tempFileName;
+		}
+
+		$step++;
+
+		if ($newFileSize > $originalSize)
+		{
+			return $this->_autoGuessImageQuality($tempFileName, $originalSize, $extension, $minQuality, $midQuality, $step);
+		}
+		// Too much.
+		else
+		{
+			return $this->_autoGuessImageQuality($tempFileName, $originalSize, $extension, $midQuality, $maxQuality, $step);
 		}
 	}
 
