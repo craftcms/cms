@@ -492,6 +492,10 @@ class MigrationHelper
         } else {
             Craft::$app->getDb()->createCommand()->dropTable($tableName)->execute();
         }
+
+        // Remove from cache.
+        $tableName = Craft::$app->getDb()->getSchema()->getRawTableName($tableName);
+        unset(static::$_tables[$tableName]);
     }
 
     /**
