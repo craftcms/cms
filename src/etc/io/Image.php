@@ -465,14 +465,14 @@ class Image
 	 * @throws \Imagine\Exception\RuntimeException
 	 * @return null
 	 */
-	public function saveAs($targetPath)
+	public function saveAs($targetPath, $autoQuality = false)
 	{
 		$extension = StringHelper::toLowerCase(IOHelper::getExtension($targetPath));
 
 		$options = $this->_getSaveOptions(false, $extension);
 		$targetPath = IOHelper::getFolderName($targetPath).IOHelper::getFileName($targetPath, false).'.'.IOHelper::getExtension($targetPath);
 
-		if (($extension == 'jpeg' || $extension == 'jpg' || $extension == 'png'))
+		if ($autoQuality && in_array($extension, array('jpeg', 'jpg', 'png')))
 		{
 			clearstatcache();
 			$originalSize = IOHelper::getFileSize($this->_imageSourcePath);
@@ -481,7 +481,8 @@ class Image
 		}
 		else
 		{
-		$this->_image->save($targetPath, $options);
+			$this->_image->save($targetPath, $options);
+		}
 
 		return true;
 	}
