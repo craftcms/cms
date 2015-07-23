@@ -100,7 +100,7 @@ class DbBackup
         }
 
         $this->_currentVersion = 'v'.Craft::$app->version.'.'.Craft::$app->build;
-        $siteName = IOHelper::cleanFilename(StringHelper::asciiString(craft()->getSiteName()));
+        $siteName = IOHelper::cleanFilename(Craft::$app->getSiteName(), true);
         $filename = ($siteName ? $siteName.'_' : '').gmdate('ymd_His').'_'.$this->_currentVersion.'.sql';
         $this->_filePath = Craft::$app->getPath()->getDbBackupPath().'/'.StringHelper::toLowerCase($filename);
 
