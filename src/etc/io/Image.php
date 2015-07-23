@@ -419,7 +419,7 @@ class Image
 		{
             if (craft()->images->isImagick() && craft()->config->get('optimizeImageFilesize'))
             {
-                $this->_image->smartResize(new \Imagine\Image\Box($targetWidth, $targetHeight), false, 100);
+                $this->_image->smartResize(new \Imagine\Image\Box($targetWidth, $targetHeight), false, $this->_quality);
             }
             else
             {
