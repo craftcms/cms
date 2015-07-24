@@ -201,8 +201,6 @@ class SectionsController extends BaseController
 
 		$section->setLocales($locales);
 
-		$section->hasUrls    = (bool) craft()->request->getPost('types.'.$section->type.'.hasUrls', true);
-
 		// Save it
 		if (craft()->sections->saveSection($section))
 		{
