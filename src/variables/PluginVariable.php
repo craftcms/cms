@@ -63,22 +63,21 @@ class PluginVariable extends BaseComponentTypeVariable
 	 */
 	public function getSettingsUrl()
 	{
+		// Make sure the plugin actually has settings
+		if (!$this->component->hasSettings())
+		{
+			return null;
+		}
+
 		// Is this plugin managing its own settings?
 		$url = $this->component->getSettingsUrl();
 
 		if (!$url)
 		{
-			// Check to see if they're using getSettingsHtml(), etc.
-			if ($this->component->getSettingsHtml())
-			{
-				$url = 'settings/plugins/'.mb_strtolower($this->component->getClassHandle());
-			}
+			$url = 'settings/plugins/'.mb_strtolower($this->component->getClassHandle());
 		}
 
-		if ($url)
-		{
-			return UrlHelper::getCpUrl($url);
-		}
+		return UrlHelper::getCpUrl($url);
 	}
 
 	/**

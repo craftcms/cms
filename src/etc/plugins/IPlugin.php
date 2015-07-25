@@ -45,6 +45,13 @@ interface IPlugin extends ISavableComponentType
 	public function getSourceLanguage();
 
 	/**
+	 * Returns whether the plugin has settings.
+	 *
+	 * @return bool Whether the plugin has settings
+	 */
+	public function hasSettings();
+
+	/**
 	 * Returns the URL to the plugin’s settings page in the CP.
 	 *
 	 * If your plugin requires a custom settings page, you can use this method to point to it.

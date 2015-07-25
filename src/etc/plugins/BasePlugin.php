@@ -76,6 +76,16 @@ abstract class BasePlugin extends BaseSavableComponentType implements IPlugin
 	}
 
 	/**
+	 * Returns whether the plugin has settings.
+	 *
+	 * @return bool Whether the plugin has settings
+	 */
+	public function hasSettings()
+	{
+		return $this->getSettingsUrl() || $this->getSettingsHtml();
+	}
+
+	/**
 	 * Returns the URL to the plugin's settings in the CP.
 	 *
 	 * A full URL is not required -- you can simply return "pluginname/settings".
