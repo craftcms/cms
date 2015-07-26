@@ -47,40 +47,7 @@ Craft.BaseElementSelectorModal = Garnish.Modal.extend(
 	{
 		if (!this.elementIndex)
 		{
-			// Get the modal body HTML based on the settings
-			var data = {
-				context:     'modal',
-				elementType: this.elementType,
-				sources:     this.settings.sources
-			};
-
-			Craft.postActionRequest('elements/getModalBody', data, $.proxy(function(response, textStatus)
-			{
-				if (textStatus == 'success')
-				{
-					this.$body.html(response);
-
-					if (this.$body.has('.sidebar:not(.hidden)').length)
-					{
-						this.$body.addClass('has-sidebar');
-					}
-
-					// Initialize the element index
-					this.elementIndex = Craft.createElementIndex(this.elementType, this.$body, {
-						context:            'modal',
-						storageKey:         this.settings.storageKey,
-						criteria:           this.settings.criteria,
-						disabledElementIds: this.settings.disabledElementIds,
-						selectable:         true,
-						multiSelect:        this.settings.multiSelect,
-						onSelectionChange:  $.proxy(this, 'onSelectionChange'),
-						onUpdateElements:   $.proxy(this, 'onUpdateElements'),
-						onEnableElements:   $.proxy(this, 'onEnableElements'),
-						onDisableElements:  $.proxy(this, 'onDisableElements')
-					});
-				}
-
-			}, this));
+			this._createElementIndex();
 		}
 		else
 		{
@@ -237,6 +204,44 @@ Craft.BaseElementSelectorModal = Garnish.Modal.extend(
 		}
 
 		this.base();
+	},
+
+	_createElementIndex: function()
+	{
+		// Get the modal body HTML based on the settings
+		var data = {
+			context:     'modal',
+			elementType: this.elementType,
+			sources:     this.settings.sources
+		};
+
+		Craft.postActionRequest('elements/getModalBody', data, $.proxy(function(response, textStatus)
+		{
+			if (textStatus == 'success')
+			{
+				this.$body.html(response);
+
+				if (this.$body.has('.sidebar:not(.hidden)').length)
+				{
+					this.$body.addClass('has-sidebar');
+				}
+
+				// Initialize the element index
+				this.elementIndex = Craft.createElementIndex(this.elementType, this.$body, {
+					context:            'modal',
+					storageKey:         this.settings.storageKey,
+					criteria:           this.settings.criteria,
+					disabledElementIds: this.settings.disabledElementIds,
+					selectable:         true,
+					multiSelect:        this.settings.multiSelect,
+					onSelectionChange:  $.proxy(this, 'onSelectionChange'),
+					onUpdateElements:   $.proxy(this, 'onUpdateElements'),
+					onEnableElements:   $.proxy(this, 'onEnableElements'),
+					onDisableElements:  $.proxy(this, 'onDisableElements')
+				});
+			}
+
+		}, this));
 	}
 },
 {
