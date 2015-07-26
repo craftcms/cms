@@ -17,6 +17,10 @@ $submitcolor: #da5a47;
 $submitHoverColor: #bf503f;
 $submitActiveColor: #8c3b2e;
 
+$secondarySubmitColor: hsl($hue, 10%, 60%);
+$secondarySubmitHoverColor: hsl($hue, 10%, 50%);
+$secondarySubmitActiveColor: hsl($hue, 10%, 40%);
+
 $errorcolor: #da5a47;
 $warningcolor: #e78640;
 $successcolor: #00b007;

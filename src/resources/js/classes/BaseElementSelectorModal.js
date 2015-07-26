@@ -15,7 +15,8 @@ Craft.BaseElementSelectorModal = Garnish.Modal.extend(
 	$search: null,
 	$elements: null,
 	$tbody: null,
-	$buttons: null,
+	$primaryButtons: null,
+	$secondaryButtons: null,
 	$cancelBtn: null,
 	$selectBtn: null,
 	$footerSpinner: null,
@@ -33,9 +34,10 @@ Craft.BaseElementSelectorModal = Garnish.Modal.extend(
 		this.base($container, this.settings);
 
 		this.$footerSpinner = $('<div class="spinner hidden"/>').appendTo($footer);
-		this.$buttons = $('<div class="buttons rightalign first"/>').appendTo($footer);
-		this.$cancelBtn = $('<div class="btn">'+Craft.t('Cancel')+'</div>').appendTo(this.$buttons);
-		this.$selectBtn = $('<div class="btn disabled submit">'+Craft.t('Select')+'</div>').appendTo(this.$buttons);
+		this.$primaryButtons = $('<div class="buttons rightalign"/>').appendTo($footer);
+		this.$secondaryButtons = $('<div class="buttons leftalign secondary-buttons"/>').appendTo($footer);
+		this.$cancelBtn = $('<div class="btn">'+Craft.t('Cancel')+'</div>').appendTo(this.$primaryButtons);
+		this.$selectBtn = $('<div class="btn disabled submit">'+Craft.t('Select')+'</div>').appendTo(this.$primaryButtons);
 
 		this.$body = $body;
 
@@ -234,6 +236,7 @@ Craft.BaseElementSelectorModal = Garnish.Modal.extend(
 					disabledElementIds: this.settings.disabledElementIds,
 					selectable:         true,
 					multiSelect:        this.settings.multiSelect,
+					buttonContainer:    this.$secondaryButtons,
 					onSelectionChange:  $.proxy(this, 'onSelectionChange'),
 					onUpdateElements:   $.proxy(this, 'onUpdateElements'),
 					onEnableElements:   $.proxy(this, 'onEnableElements'),
