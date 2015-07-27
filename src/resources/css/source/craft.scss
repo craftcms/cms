@@ -304,6 +304,7 @@ table.inputs .btngroup { display: block; float: none; }
 .buttons { position: relative; margin: 24px 0; min-height: 30px; }
 .buttons:before { @include clearafter; margin-bottom: -5px; }
 .buttons.right { @include margin-right(-5px); }
+.buttons.leftalign { @include floatleft; }
 .buttons.rightalign { @include floatright; }
 .buttons > .btn,
 .buttons > .btngroup { @include floatleft; @include margin(5px, 5px, 0, 0); }
@@ -441,9 +442,15 @@ body.rtl .btngroup .btn:not(:last-child) { border-top-left-radius: 0; border-bot
 /* submit buttons */
 .btn.submit { color: #fff; background-color: $submitcolor; }
 .btn.submit:not(.disabled):hover,
-.btn.submit:not(.disabled).hover { background-color: #bf503f; }
+.btn.submit:not(.disabled).hover { background-color: $submitHoverColor; }
 .btn.submit:not(.disabled):active,
-.btn.submit:not(.disabled).active { background-color: #8c3b2e; }
+.btn.submit:not(.disabled).active { background-color: $submitActiveColor; }
+
+.secondary-buttons .btn.submit { background-color: $secondarySubmitColor; }
+.secondary-buttons .btn.submit:not(.disabled):hover,
+.secondary-buttons .btn.submit:not(.disabled).hover { background-color: $secondarySubmitHoverColor; }
+.secondary-buttons .btn.submit:not(.disabled):active,
+.secondary-buttons .btn.submit:not(.disabled).active { background-color: $secondarySubmitActiveColor; }
 
 div.btn.submit { position: relative; overflow: hidden; }
 div.btn.submit input { position: absolute; left: 100%; }
@@ -905,6 +912,7 @@ body #redactor-modal-overlay {
 .elementselectormodal .body .main .elements .structure .row { margin-top: 1px; outline: none; }
 
 .elementselectormodal .footer { position: absolute; bottom: 0; left: 0; width: 100%; margin: 0; }
+.elementselectormodal .footer .buttons { margin: 0; }
 .elementselectormodal .footer .spinner { @include floatright; @include margin-right(-24px); }
 
 /* element editing HUD */

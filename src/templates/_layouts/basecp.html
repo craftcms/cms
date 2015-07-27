@@ -78,15 +78,8 @@
 			{% endif %}
 			runTasksAutomatically: {{ craft.config.runTasksAutomatically ? 'true' : 'false' }},
 			slugWordSeparator:     "{{ craft.config.slugWordSeparator|e('js') }}",
-			limitAutoSlugsToAscii: {{ craft.config.limitAutoSlugsToAscii ? 'true' : 'false' }}
+			limitAutoSlugsToAscii: {{ craft.config.limitAutoSlugsToAscii ? 'true' : 'false' }},
+			fileKinds:             {{ craft.app.getFileKinds()|json_encode|raw }}
 		};
-
-		window.Craft.fileKinds = {};
-		{% for kind, info in craft.app.getFileKinds() %}
-			window.Craft.fileKinds.{{ kind }} = [];
-			{% for extension in info.extensions %}
-				window.Craft.fileKinds.{{ kind }}.push("{{ extension }}");
-			{% endfor %}
-		{% endfor %}
 	</script>
 {% endblock %}

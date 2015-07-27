@@ -1468,7 +1468,12 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
 	addButton: function($button)
 	{
-		if (this.showingSidebar)
+		// Is there a predesignated place where buttons should go?
+		if (this.settings.buttonContainer)
+		{
+			$(this.settings.buttonContainer).append($button);
+		}
+		else if (this.showingSidebar)
 		{
 			this.$sidebarButtonContainer.append($button);
 		}
@@ -1988,6 +1993,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 		disabledElementIds: [],
 		selectable: false,
 		multiSelect: false,
+		buttonContainer: null,
 		onUpdateElements: $.noop,
 		onSelectionChange: $.noop,
 		onEnableElements: $.noop,
