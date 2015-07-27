@@ -177,7 +177,7 @@ return array(
 	 * The quality level Craft will use when saving JPG and PNG files. Ranges from 0 (worst quality, smallest file) to
 	 * 100 (best quality, biggest file).
 	 */
-	'defaultImageQuality' => 75,
+	'defaultImageQuality' => 82,
 
 	/**
 	 * The template file extensions Craft will look for when matching a template path to a file on the front end.
