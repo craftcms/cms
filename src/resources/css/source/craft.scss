@@ -378,6 +378,11 @@ table.inputs .btngroup { display: block; float: none; }
 .btn.icon.small:before,
 .menubtn.small:after { font-size: 9px; }
 
+.btn.icon.add.loading:before { visibility: hidden; }
+.btn.icon.add.loading { background-image: url(../images/spinner.gif); background-repeat: no-repeat; background-position: 5px 50%; }
+.btn.icon.add.loading.submit { background-image: url(../images/spinner_submit.gif); }
+.secondary-buttons .btn.icon.add.loading.submit { background-image: url(../images/spinner_submit_secondary.gif); }
+
 /* button groups */
 .btngroup { display: inline-block; font-size: 0; white-space: nowrap; }
 .btngroup .btn { font-size: 13px; vertical-align: middle; @include box-shadow(none); }
@@ -1303,6 +1308,10 @@ body.message .message-container .pane { top: 50%; margin-top: -33px !important; 
 
 	.spinner { background-image: url(../images/spinner_2x.gif); background-size: 20px; }
 	.spinner.big { background-image: url(../images/spinner_big_2x.gif); background-size: 48px; }
+
+	.btn.icon.add.loading { background-image: url(../images/spinner_2x.gif); background-size: 20px; }
+	.btn.icon.add.loading.submit { background-image: url(../images/spinner_submit_2x.gif); }
+	.secondary-buttons .btn.icon.add.loading.submit { background-image: url(../images/spinner_submit_secondary_2x.gif); }
 
 	.sel .element.loading:after,
 	.element.loading.sel:after { background-image: url(../images/spinner_element_2x.gif); background-size: 20px; }
