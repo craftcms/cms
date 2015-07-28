@@ -74,20 +74,15 @@ class ImagesService extends BaseApplicationComponent
 	 * Loads an image from a file system path.
 	 *
 	 * @param string $path
-	 * @param int $minSvgWidth The minimum width that the image should be loaded with if it’s an SVG.
-	 * @param int $minSvgHeight The minimum width that the image should be loaded with if it’s an SVG.
 	 *
 	 * @throws \Exception
 	 * @return Image
 	 */
-	public function loadImage($path, $minSvgWidth = 1000, $minSvgHeight = 1000)
+	public function loadImage($path)
 	{
 		$image = new Image();
-
-		$image->minSvgWidth = $minSvgWidth;
-		$image->minSvgHeight = $minSvgHeight;
-
 		$image->loadImage($path);
+
 		return $image;
 	}
 

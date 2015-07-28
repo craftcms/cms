@@ -17,16 +17,6 @@ class Image
 	// =========================================================================
 
 	/**
-	 * @var int The minimum width that the image should be loaded with if it’s an SVG.
-	 */
-	public $minSvgWidth;
-
-	/**
-	 * @var int The minimum height that the image should be loaded with if it’s an SVG.
-	 */
-	public $minSvgHeight;
-
-	/**
 	 * @var string
 	 */
 	private $_imageSourcePath;
@@ -40,6 +30,16 @@ class Image
 	 * @var bool
 	 */
 	private $_isAnimatedGif = false;
+
+	/**
+	 * @var bool
+	 */
+	private $_isSvg;
+
+	/**
+	 * @var string
+	 */
+	private $_svgContent;
 
 	/**
 	 * @var int
@@ -148,47 +148,17 @@ class Image
 
 		$extension = IOHelper::getExtension($path);
 
+		list($width, $height) = ImageHelper::getImageSize($path);
+
 		if ($extension === 'svg')
 		{
-			if (!craft()->images->isImagick())
-			{
-				throw new Exception(Craft::t('The file “{path}” does not appear to be an image.', array('path' => $path)));
-			}
 
 			$svg = IOHelper::getFileContents($path);
 
-			if ($this->minSvgWidth !== null && $this->minSvgHeight !== null)
+			// If the size is defined by viewbox only, add in width and height attributes
+			if (!preg_match(ImageHelper::SVG_WIDTH_RE, $svg) && preg_match(ImageHelper::SVG_HEIGHT_RE, $svg))
 			{
-				// Does the <svg> node contain valid `width` and `height` attributes?
-				list($width, $height) = ImageHelper::parseSvgSize($svg);
-
-				if ($width !== null && $height !== null)
-				{
-					$scale = 1;
-
-					if ($width < $this->minSvgWidth)
-					{
-						$scale = $this->minSvgWidth / $width;
-					}
-
-					if ($height < $this->minSvgHeight)
-					{
-						$scale = max($scale, ($this->minSvgHeight / $height));
-					}
-
-					$width = round($width * $scale);
-					$height = round($height * $scale);
-
-                    if (preg_match(ImageHelper::SVG_WIDTH_RE, $svg) && preg_match(ImageHelper::SVG_HEIGHT_RE, $svg))
-                    {
-                        $svg = preg_replace(ImageHelper::SVG_WIDTH_RE, "\${1}{$width}px\"", $svg);
-                        $svg = preg_replace(ImageHelper::SVG_HEIGHT_RE, "\${1}{$height}px\"", $svg);
-                    }
-                    else
-                    {
-                        $svg = preg_replace(ImageHelper::SVG_TAG_RE, "\${1} width=\"{$width}px\" height=\"{$height}px\" \${2}", $svg);
-                    }
-				}
+				$svg = preg_replace(ImageHelper::SVG_TAG_RE, "<svg width=\"{$width}px\" height=\"{$height}px\" ", $svg);
 			}
 
 			try
@@ -201,12 +171,13 @@ class Image
 				$svg = '<?xml version="1.0" encoding="UTF-8" standalone="no"?>'.$svg;
 				$this->_image = $this->_instance->load($svg);
 			}
+
+			$this->_svgContent = $svg;
+			$this->_isSvg = true;
 		}
 		else
 		{
-			$imageInfo = @getimagesize($path);
-
-			if (!is_array($imageInfo))
+			if (empty($width) || empty($height))
 			{
 				throw new Exception(Craft::t('The file “{path}” does not appear to be an image.', array('path' => $path)));
 			}
@@ -316,72 +287,98 @@ class Image
 			$newHeight = round($this->getHeight() / $factor);
 			$newWidth = round($this->getWidth() / $factor);
 
-			$this->resize($newWidth, $newHeight);
-
-			// Now crop.
-			if ($newWidth - $targetWidth > 0)
+			if ($this->_isSvg)
 			{
-				switch ($horizontalPosition)
-				{
-					case 'left':
-					{
-						$x1 = 0;
-						$x2 = $x1 + $targetWidth;
-						break;
-					}
-					case 'right':
-					{
-						$x2 = $newWidth;
-						$x1 = $newWidth - $targetWidth;
-						break;
-					}
-					default:
-					{
-						$x1 = round(($newWidth - $targetWidth) / 2);
-						$x2 = $x1 + $targetWidth;
-						break;
-					}
-				}
+				$this->resize($targetWidth, $targetHeight);
 
-				$y1 = 0;
-				$y2 = $y1 + $targetHeight;
-			}
-			elseif ($newHeight - $targetHeight > 0)
-			{
-				switch ($verticalPosition)
-				{
-					case 'top':
-					{
-						$y1 = 0;
-						$y2 = $y1 + $targetHeight;
-						break;
-					}
-					case 'bottom':
-					{
-						$y2 = $newHeight;
-						$y1 = $newHeight - $targetHeight;
-						break;
-					}
-					default:
-					{
-						$y1 = round(($newHeight - $targetHeight) / 2);
-						$y2 = $y1 + $targetHeight;
-						break;
-					}
-				}
+				$value = "x". strtr($cropPositions, array(
+						'left' => 'Min',
+						'center' => 'Mid',
+						'right' => 'Max',
+						'top' => 'Min',
+						'bottom' => 'Max',
+						'-' => 'Y'
+					)) ." slice";
 
-				$x1 = 0;
-				$x2 = $x1 + $targetWidth;
+				// If the size is defined by viewbox only, add in width and height attributes
+				if (preg_match(ImageHelper::SVG_ASPECT_RE, $this->_svgContent))
+				{
+					$this->_svgContent = preg_replace(ImageHelper::SVG_ASPECT_RE, "\${1}{$value}\"", $this->_svgContent);
+				}
+				else
+				{
+					$this->_svgContent = preg_replace(ImageHelper::SVG_TAG_RE, "<svg preserveAspectRatio=\"{$value}\"", $this->_svgContent);
+				}
 			}
 			else
 			{
-				$x1 = round(($newWidth - $targetWidth) / 2);
-				$x2 = $x1 + $targetWidth;
-				$y1 = round(($newHeight - $targetHeight) / 2);
-				$y2 = $y1 + $targetHeight;
-			}
+				$this->resize($newWidth, $newHeight);
 
-			$this->crop($x1, $x2, $y1, $y2);
+				// Now crop.
+				if ($newWidth - $targetWidth > 0)
+				{
+					switch ($horizontalPosition)
+					{
+						case 'left':
+						{
+							$x1 = 0;
+							$x2 = $x1 + $targetWidth;
+							break;
+						}
+						case 'right':
+						{
+							$x2 = $newWidth;
+							$x1 = $newWidth - $targetWidth;
+							break;
+						}
+						default:
+						{
+							$x1 = round(($newWidth - $targetWidth) / 2);
+							$x2 = $x1 + $targetWidth;
+							break;
+						}
+					}
+
+					$y1 = 0;
+					$y2 = $y1 + $targetHeight;
+				}
+				elseif ($newHeight - $targetHeight > 0)
+				{
+					switch ($verticalPosition)
+					{
+						case 'top':
+						{
+							$y1 = 0;
+							$y2 = $y1 + $targetHeight;
+							break;
+						}
+						case 'bottom':
+						{
+							$y2 = $newHeight;
+							$y1 = $newHeight - $targetHeight;
+							break;
+						}
+						default:
+						{
+							$y1 = round(($newHeight - $targetHeight) / 2);
+							$y2 = $y1 + $targetHeight;
+							break;
+						}
+					}
+
+					$x1 = 0;
+					$x2 = $x1 + $targetWidth;
+				}
+				else
+				{
+					$x1 = round(($newWidth - $targetWidth) / 2);
+					$x2 = $x1 + $targetWidth;
+					$y1 = round(($newHeight - $targetHeight) / 2);
+					$y2 = $y1 + $targetHeight;
+				}
+
+				$this->crop($x1, $x2, $y1, $y2);
+			}
 		}
 
 		return $this;
@@ -415,16 +412,28 @@ class Image
 
 			$this->_image = $gif;
 		}
+		else if ($this->_isSvg)
+		{
+			if (preg_match(ImageHelper::SVG_WIDTH_RE, $this->_svgContent) && preg_match(ImageHelper::SVG_HEIGHT_RE, $this->_svgContent))
+			{
+				$this->_svgContent = preg_replace(ImageHelper::SVG_WIDTH_RE, "\${1}{$targetWidth}px\"", $this->_svgContent);
+				$this->_svgContent = preg_replace(ImageHelper::SVG_HEIGHT_RE, "\${1}{$targetHeight}px\"", $this->_svgContent);
+			}
+			else
+			{
+				$this->_svgContent = preg_replace(ImageHelper::SVG_TAG_RE, "<svg width=\"{$targetWidth}px\" height=\"{$targetHeight}px\"", $this->_svgContent);
+			}
+		}
 		else
 		{
-            if (craft()->images->isImagick() && craft()->config->get('optimizeImageFilesize'))
-            {
-                $this->_image->smartResize(new \Imagine\Image\Box($targetWidth, $targetHeight), false, $this->_quality);
-            }
-            else
-            {
-                $this->_image->resize(new \Imagine\Image\Box($targetWidth, $targetHeight), $this->_getResizeFilter());
-            }
+			if (craft()->images->isImagick() && craft()->config->get('optimizeImageFilesize'))
+			{
+				$this->_image->smartResize(new \Imagine\Image\Box($targetWidth, $targetHeight), false, $this->_quality);
+			}
+			else
+			{
+				$this->_image->resize(new \Imagine\Image\Box($targetWidth, $targetHeight), $this->_getResizeFilter());
+			}
 		}
 
 		return $this;
@@ -468,6 +477,12 @@ class Image
 	public function saveAs($targetPath, $autoQuality = false)
 	{
 		$extension = StringHelper::toLowerCase(IOHelper::getExtension($targetPath));
+
+		if ($this->_isSvg)
+		{
+			IOHelper::writeToFile($targetPath, $this->_svgContent);
+			return true;
+		}
 
 		$options = $this->_getSaveOptions(false, $extension);
 		$targetPath = IOHelper::getFolderName($targetPath).IOHelper::getFileName($targetPath, false).'.'.IOHelper::getExtension($targetPath);

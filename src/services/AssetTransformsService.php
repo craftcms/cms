@@ -625,7 +625,7 @@ class AssetTransformsService extends BaseApplicationComponent
 		{
 			$imageSource = $this->getLocalImageSource($fileModel);
 
-			craft()->images->loadImage($imageSource, $size, $size)
+			craft()->images->loadImage($imageSource)
 				->scaleAndCrop($size, $size)
 				->saveAs($thumbPath);
 
@@ -993,9 +993,9 @@ class AssetTransformsService extends BaseApplicationComponent
 	private function _getUnnamedTransformFolderName(AssetTransformModel $transform)
 	{
 		return '_'.($transform->width ? $transform->width : 'AUTO').'x'.($transform->height ? $transform->height : 'AUTO') .
-			'_'.($transform->mode) .
-			'_'.($transform->position) .
-			($transform->quality ? '_'.$transform->quality : '');
+		'_'.($transform->mode) .
+		'_'.($transform->position) .
+		($transform->quality ? '_'.$transform->quality : '');
 	}
 
 	/**
@@ -1088,11 +1088,6 @@ class AssetTransformsService extends BaseApplicationComponent
 		// For non-web-safe formats we go with jpg.
 		if (!in_array(mb_strtolower(IOHelper::getExtension($file->filename)), ImageHelper::getWebSafeFormats()))
 		{
-			if ($file->getExtension() == 'svg' && craft()->images->isImagick())
-			{
-				return 'png';
-			}
-
 			return 'jpg';
 		}
 		else
