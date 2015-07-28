@@ -1274,6 +1274,20 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 		return true;
 	},
 
+	selectSourceByKey: function(key)
+	{
+		var $source = this.getSourceByKey(key);
+
+		if ($source)
+		{
+			return this.selectSource($source);
+		}
+		else
+		{
+			return false;
+		}
+	},
+
 	setStoredSortOptionsForSource: function()
 	{
 		// Default to whatever's first
