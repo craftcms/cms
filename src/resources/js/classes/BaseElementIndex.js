@@ -205,6 +205,10 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 				}
 			}
 		}
+		else if (this.settings.criteria && this.settings.criteria.locale)
+		{
+			this.locale = this.settings.criteria.locale;
+		}
 
 		// Is there a sort menu?
 		if (this.$sortMenuBtn.length)
