@@ -88,6 +88,11 @@
 						{% endif %}
 					{% endfor %}
 				{% endif %}
+			],
+			editableCategoryGroups: [
+				{% for group in craft.categoryGroups.getEditableGroups() %}
+					{id: {{ group.id }}, name: "{{ group.name|e('js') }}", handle: "{{ group.handle|e('js') }}"}{% if not loop.last %},{% endif %}
+				{% endfor %}
 			]
 		};
 	</script>
