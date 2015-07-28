@@ -446,16 +446,16 @@ body.rtl .btngroup .btn:not(:last-child) { border-top-left-radius: 0; border-bot
 
 /* submit buttons */
 .btn.submit { color: #fff; background-color: $submitcolor; }
-.btn.submit:not(.disabled):hover,
-.btn.submit:not(.disabled).hover { background-color: $submitHoverColor; }
-.btn.submit:not(.disabled):active,
-.btn.submit:not(.disabled).active { background-color: $submitActiveColor; }
+.btn.submit:not(.disabled):not(.inactive):hover,
+.btn.submit:not(.disabled):not(.inactive).hover { background-color: $submitHoverColor; }
+.btn.submit:not(.disabled):not(.inactive):active,
+.btn.submit:not(.disabled):not(.inactive).active { background-color: $submitActiveColor; }
 
 .secondary-buttons .btn.submit { background-color: $secondarySubmitColor; }
-.secondary-buttons .btn.submit:not(.disabled):hover,
-.secondary-buttons .btn.submit:not(.disabled).hover { background-color: $secondarySubmitHoverColor; }
-.secondary-buttons .btn.submit:not(.disabled):active,
-.secondary-buttons .btn.submit:not(.disabled).active { background-color: $secondarySubmitActiveColor; }
+.secondary-buttons .btn.submit:not(.disabled):not(.inactive):hover,
+.secondary-buttons .btn.submit:not(.disabled):not(.inactive).hover { background-color: $secondarySubmitHoverColor; }
+.secondary-buttons .btn.submit:not(.disabled):not(.inactive):active,
+.secondary-buttons .btn.submit:not(.disabled):not(.inactive).active { background-color: $secondarySubmitActiveColor; }
 
 div.btn.submit { position: relative; overflow: hidden; }
 div.btn.submit input { position: absolute; left: 100%; }
