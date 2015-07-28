@@ -148,10 +148,10 @@ class Image
 
 		$extension = IOHelper::getExtension($path);
 
-		list($width, $height) = ImageHelper::getImageSize($path);
-
 		if ($extension === 'svg')
 		{
+
+			list($width, $height) = ImageHelper::getImageSize($path);
 
 			$svg = IOHelper::getFileContents($path);
 
@@ -177,12 +177,14 @@ class Image
 		}
 		else
 		{
-			if (empty($width) || empty($height))
+			try
+			{
+				$this->_image = $this->_instance->open($path);
+			}
+			catch (\Exception $exception)
 			{
 				throw new Exception(Craft::t('The file “{path}” does not appear to be an image.', array('path' => $path)));
 			}
-
-			$this->_image = $this->_instance->open($path);
 		}
 
 		$this->_extension = $extension;
