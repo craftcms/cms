@@ -3,40 +3,6 @@
 {% set elementType = 'Entry' %}
 
 
-{% set sections = craft.sections.getEditableSections() %}
-{% set newEntrySections = [] %}
-
-{% for section in sections %}
-	{% if section.type != 'single' and currentUser.can('createEntries:'~section.id) %}
-		{% set newEntrySections = newEntrySections|merge([section]) %}
-	{% endif %}
-{% endfor %}
-
-
-{% block sidebar %}
-	{% if newEntrySections|length %}
-		<div class="buttons">
-			{% if newEntrySections|length > 1 %}
-				<div class="btngroup submit">
-					<div class="btn submit menubtn add icon">{{ "New Entry"|t }}</div>
-					<div class="menu">
-						<ul>
-							{% for section in newEntrySections %}
-								<li><a href="{{ url('entries/'~section.handle~'/new') }}">{{ section.name|t }}</a></li>
-							{% endfor %}
-						</ul>
-					</div>
-				</div>
-			{% else %}
-				<a class="btn submit add icon" href="{{ url('entries/'~newEntrySections[0].handle~'/new') }}">{{ "New Entry"|t }}</a>
-			{% endif %}
-		</div>
-	{% endif %}
-
-	{{ parent() }}
-{% endblock %}
-
-
 {% if sectionHandle is defined %}
 	{% includeJs 'window.defaultSectionHandle = "'~sectionHandle~'";' %}
 {% endif %}

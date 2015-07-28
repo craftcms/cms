@@ -79,7 +79,16 @@
 			runTasksAutomatically: {{ craft.config.runTasksAutomatically ? 'true' : 'false' }},
 			slugWordSeparator:     "{{ craft.config.slugWordSeparator|e('js') }}",
 			limitAutoSlugsToAscii: {{ craft.config.limitAutoSlugsToAscii ? 'true' : 'false' }},
-			fileKinds:             {{ craft.app.getFileKinds()|json_encode|raw }}
+			fileKinds:             {{ craft.app.getFileKinds()|json_encode|raw }},
+			publishableSections:    [
+				{% if currentUser is defined and currentUser %}
+					{% for section in craft.sections.getEditableSections() %}
+						{% if section.type != 'single' and currentUser.can('createEntries:'~section.id) %}
+							{id: {{ section.id }}, name: "{{ section.name|e('js') }}", handle: "{{ section.handle|e('js') }}", type: "{{ section.type }}"}{% if not loop.last %},{% endif %}
+						{% endif %}
+					{% endfor %}
+				{% endif %}
+			]
 		};
 	</script>
 {% endblock %}
