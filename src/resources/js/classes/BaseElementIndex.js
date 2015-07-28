@@ -17,6 +17,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 	elementSelect: null,
 	sourceSelect: null,
 	structureTableSort: null,
+	_autoSelectElements: null,
 
 	isIndexBusy: false,
 
@@ -1016,6 +1017,16 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 		return ids;
 	},
 
+	selectElementAfterUpdate: function(elementId)
+	{
+		if (this._autoSelectElements === null)
+		{
+			this._autoSelectElements = [];
+		}
+
+		this._autoSelectElements.push(elementId);
+	},
+
 	onUpdateElements: function(append, $newElements)
 	{
 		this.settings.onUpdateElements(append, $newElements);
@@ -1724,6 +1735,25 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 		if (this.getSelectedSourceState('mode') == 'table')
 		{
 			Craft.cp.updateResponsiveTables();
+		}
+
+		// Are there any elements we should auto-select?
+		if (this._autoSelectElements)
+		{
+			if (this.elementSelect)
+			{
+				for (var i = 0; i < this._autoSelectElements.length; i++)
+				{
+					var $element = this.$elementContainer.children('[data-id="'+this._autoSelectElements[i]+'"]:first');
+
+					if ($element.length)
+					{
+						this.elementSelect.selectItem($element, true);
+					}
+				}
+			}
+
+			this._autoSelectElements = null;
 		}
 
 		this.onUpdateElements(append, $newElements);
