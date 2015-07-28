@@ -3092,6 +3092,12 @@ Garnish.HUD = Garnish.Base.extend({
 		this.show();
 	},
 
+	updateBody: function(bodyContents)
+	{
+		this.$body.html('');
+		this.$body.append(bodyContents);
+	},
+
 	/**
 	 * Show
 	 */
