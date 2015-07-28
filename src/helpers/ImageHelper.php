@@ -20,10 +20,10 @@ class ImageHelper
 	const EXIF_IFD0_ROTATE_90  = 6;
 	const EXIF_IFD0_ROTATE_270 = 8;
 
-	const SVG_WIDTH_RE = '/(<svg[^>]* width=")([\d\.]+)([a-z]*)"/si';
-	const SVG_HEIGHT_RE = '/(<svg[^>]* height=")([\d\.]+)([a-z]*)"/si';
-	const SVG_VIEWBOX_RE = '/<svg[^>]* viewBox="\d+(?:,|\s)\d+(?:,|\s)(\d+)(?:,|\s)(\d+)"/si';
-	const SVG_ASPECT_RE = '/(<svg[^>]* preserveAspectRatio=")([a-z]+ [a-z]+)"/si';
+	const SVG_WIDTH_RE = '/(<svg[^>]*\swidth=")([\d\.]+)([a-z]*)"/si';
+	const SVG_HEIGHT_RE = '/(<svg[^>]*\sheight=")([\d\.]+)([a-z]*)"/si';
+	const SVG_VIEWBOX_RE = '/<svg[^>]*\sviewBox="\d+(?:,|\s)\d+(?:,|\s)(\d+)(?:,|\s)(\d+)"/si';
+	const SVG_ASPECT_RE = '/(<svg[^>]*\spreserveAspectRatio=")([a-z]+\s[a-z]+)"/si';
 	const SVG_TAG_RE = '/<svg/si';
 
 	// Public Methods
