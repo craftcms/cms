@@ -80,7 +80,7 @@
 			slugWordSeparator:     "{{ craft.config.slugWordSeparator|e('js') }}",
 			limitAutoSlugsToAscii: {{ craft.config.limitAutoSlugsToAscii ? 'true' : 'false' }},
 			fileKinds:             {{ craft.app.getFileKinds()|json_encode|raw }},
-			publishableSections:    [
+			publishableSections: [
 				{% if currentUser is defined and currentUser %}
 					{% for section in craft.sections.getEditableSections() %}
 						{% if section.type != 'single' and currentUser.can('createEntries:'~section.id) %}

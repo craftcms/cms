@@ -146,19 +146,16 @@ Craft.EntryIndex = Craft.BaseElementIndex.extend(
 		}
 
 		// Update the URL if we're on the Entries index
-		if (this.settings.context == 'index')
+		if (this.settings.context == 'index' && typeof history != typeof undefined)
 		{
-			if (typeof history != typeof undefined)
+			var uri = 'entries';
+
+			if (selectedSourceHandle)
 			{
-				var uri = 'entries';
-
-				if (selectedSourceHandle)
-				{
-					uri += '/'+selectedSourceHandle;
-				}
-
-				history.replaceState({}, '', Craft.getUrl(uri));
+				uri += '/'+selectedSourceHandle;
 			}
+
+			history.replaceState({}, '', Craft.getUrl(uri));
 		}
 
 		this.base();
