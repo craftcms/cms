@@ -564,13 +564,13 @@ class UsersService extends BaseApplicationComponent
 	 * Crops and saves a user’s photo.
 	 *
 	 * @param string    $fileName The name of the file.
-	 * @param Image     $image    The image.
+	 * @param BaseImage $image    The image.
 	 * @param UserModel $user     The user.
 	 *
 	 * @throws \Exception
 	 * @return bool Whether the photo was saved successfully.
 	 */
-	public function saveUserPhoto($fileName, Image $image, UserModel $user)
+	public function saveUserPhoto($fileName, BaseImage $image, UserModel $user)
 	{
 		$userName = AssetsHelper::cleanAssetName($user->username, false);
 		$userPhotoFolder = craft()->path->getUserPhotosPath().$userName.'/';

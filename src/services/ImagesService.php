@@ -80,7 +80,15 @@ class ImagesService extends BaseApplicationComponent
 	 */
 	public function loadImage($path)
 	{
-		$image = new Image();
+		if (StringHelper::toLowerCase(IOHelper::getExtension($path)) == 'svg')
+		{
+			$image = new SvgImage();
+		}
+		else
+		{
+			$image = new Image();
+		}
+
 		$image->loadImage($path);
 
 		return $image;
@@ -100,6 +108,11 @@ class ImagesService extends BaseApplicationComponent
 	 */
 	public function checkMemoryForImage($filePath, $toTheMax = false)
 	{
+		if (StringHelper::toLowerCase(IOHelper::getExtension($filePath)) == 'svg')
+		{
+			return true;
+		}
+
 		if (!function_exists('memory_get_usage'))
 		{
 			return false;

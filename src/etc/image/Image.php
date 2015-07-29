@@ -11,7 +11,7 @@ namespace Craft;
  * @package   craft.app.etc.io
  * @since     1.0
  */
-class Image
+class Image extends BaseImage
 {
 	// Properties
 	// =========================================================================
@@ -30,16 +30,6 @@ class Image
 	 * @var bool
 	 */
 	private $_isAnimatedGif = false;
-
-	/**
-	 * @var bool
-	 */
-	private $_isSvg;
-
-	/**
-	 * @var string
-	 */
-	private $_svgContent;
 
 	/**
 	 * @var int
@@ -150,41 +140,15 @@ class Image
 
 		if ($extension === 'svg')
 		{
-
-			list($width, $height) = ImageHelper::getImageSize($path);
-
-			$svg = IOHelper::getFileContents($path);
-
-			// If the size is defined by viewbox only, add in width and height attributes
-			if (!preg_match(ImageHelper::SVG_WIDTH_RE, $svg) && preg_match(ImageHelper::SVG_HEIGHT_RE, $svg))
-			{
-				$svg = preg_replace(ImageHelper::SVG_TAG_RE, "<svg width=\"{$width}px\" height=\"{$height}px\" ", $svg);
-			}
-
-			try
-			{
-				$this->_image = $this->_instance->load($svg);
-			}
-			catch (\Imagine\Exception\RuntimeException $e)
-			{
-				// Invalid SVG. Maybe it's missing its DTD?
-				$svg = '<?xml version="1.0" encoding="UTF-8" standalone="no"?>'.$svg;
-				$this->_image = $this->_instance->load($svg);
-			}
-
-			$this->_svgContent = $svg;
-			$this->_isSvg = true;
+			throw new Exception (Craft::t("This class does not support SVG files."));
 		}
-		else
+		try
 		{
-			try
-			{
-				$this->_image = $this->_instance->open($path);
-			}
-			catch (\Exception $exception)
-			{
-				throw new Exception(Craft::t('The file “{path}” does not appear to be an image.', array('path' => $path)));
-			}
+			$this->_image = $this->_instance->open($path);
+		}
+		catch (\Exception $exception)
+		{
+			throw new Exception(Craft::t('The file “{path}” does not appear to be an image.', array('path' => $path)));
 		}
 
 		$this->_extension = $extension;
@@ -255,7 +219,7 @@ class Image
 	 */
 	public function scaleToFit($targetWidth, $targetHeight = null, $scaleIfSmaller = true)
 	{
-		$this->_normalizeDimensions($targetWidth, $targetHeight);
+		$this->normalizeDimensions($targetWidth, $targetHeight);
 
 		if ($scaleIfSmaller || $this->getWidth() > $targetWidth || $this->getHeight() > $targetHeight)
 		{
@@ -278,7 +242,7 @@ class Image
 	 */
 	public function scaleAndCrop($targetWidth, $targetHeight = null, $scaleIfSmaller = true, $cropPositions = 'center-center')
 	{
-		$this->_normalizeDimensions($targetWidth, $targetHeight);
+		$this->normalizeDimensions($targetWidth, $targetHeight);
 
 		list($verticalPosition, $horizontalPosition) = explode("-", $cropPositions);
 
@@ -289,98 +253,73 @@ class Image
 			$newHeight = round($this->getHeight() / $factor);
 			$newWidth = round($this->getWidth() / $factor);
 
-			if ($this->_isSvg)
+
+			$this->resize($newWidth, $newHeight);
+
+			// Now crop.
+			if ($newWidth - $targetWidth > 0)
 			{
-				$this->resize($targetWidth, $targetHeight);
-
-				$value = "x". strtr($cropPositions, array(
-						'left' => 'Min',
-						'center' => 'Mid',
-						'right' => 'Max',
-						'top' => 'Min',
-						'bottom' => 'Max',
-						'-' => 'Y'
-					)) ." slice";
-
-				// If the size is defined by viewbox only, add in width and height attributes
-				if (preg_match(ImageHelper::SVG_ASPECT_RE, $this->_svgContent))
+				switch ($horizontalPosition)
 				{
-					$this->_svgContent = preg_replace(ImageHelper::SVG_ASPECT_RE, "\${1}{$value}\"", $this->_svgContent);
+					case 'left':
+					{
+						$x1 = 0;
+						$x2 = $x1 + $targetWidth;
+						break;
+					}
+					case 'right':
+					{
+						$x2 = $newWidth;
+						$x1 = $newWidth - $targetWidth;
+						break;
+					}
+					default:
+					{
+						$x1 = round(($newWidth - $targetWidth) / 2);
+						$x2 = $x1 + $targetWidth;
+						break;
+					}
 				}
-				else
+
+				$y1 = 0;
+				$y2 = $y1 + $targetHeight;
+			}
+			elseif ($newHeight - $targetHeight > 0)
+			{
+				switch ($verticalPosition)
 				{
-					$this->_svgContent = preg_replace(ImageHelper::SVG_TAG_RE, "<svg preserveAspectRatio=\"{$value}\"", $this->_svgContent);
+					case 'top':
+					{
+						$y1 = 0;
+						$y2 = $y1 + $targetHeight;
+						break;
+					}
+					case 'bottom':
+					{
+						$y2 = $newHeight;
+						$y1 = $newHeight - $targetHeight;
+						break;
+					}
+					default:
+					{
+						$y1 = round(($newHeight - $targetHeight) / 2);
+						$y2 = $y1 + $targetHeight;
+						break;
+					}
 				}
+
+				$x1 = 0;
+				$x2 = $x1 + $targetWidth;
 			}
 			else
 			{
-				$this->resize($newWidth, $newHeight);
-
-				// Now crop.
-				if ($newWidth - $targetWidth > 0)
-				{
-					switch ($horizontalPosition)
-					{
-						case 'left':
-						{
-							$x1 = 0;
-							$x2 = $x1 + $targetWidth;
-							break;
-						}
-						case 'right':
-						{
-							$x2 = $newWidth;
-							$x1 = $newWidth - $targetWidth;
-							break;
-						}
-						default:
-						{
-							$x1 = round(($newWidth - $targetWidth) / 2);
-							$x2 = $x1 + $targetWidth;
-							break;
-						}
-					}
-
-					$y1 = 0;
-					$y2 = $y1 + $targetHeight;
-				}
-				elseif ($newHeight - $targetHeight > 0)
-				{
-					switch ($verticalPosition)
-					{
-						case 'top':
-						{
-							$y1 = 0;
-							$y2 = $y1 + $targetHeight;
-							break;
-						}
-						case 'bottom':
-						{
-							$y2 = $newHeight;
-							$y1 = $newHeight - $targetHeight;
-							break;
-						}
-						default:
-						{
-							$y1 = round(($newHeight - $targetHeight) / 2);
-							$y2 = $y1 + $targetHeight;
-							break;
-						}
-					}
-
-					$x1 = 0;
-					$x2 = $x1 + $targetWidth;
-				}
-				else
-				{
-					$x1 = round(($newWidth - $targetWidth) / 2);
-					$x2 = $x1 + $targetWidth;
-					$y1 = round(($newHeight - $targetHeight) / 2);
-					$y2 = $y1 + $targetHeight;
-				}
-
-				$this->crop($x1, $x2, $y1, $y2);
+				$x1 = round(($newWidth - $targetWidth) / 2);
+				$x2 = $x1 + $targetWidth;
+				$y1 = round(($newHeight - $targetHeight) / 2);
+				$y2 = $y1 + $targetHeight;
 			}
+
+			$this->crop($x1, $x2, $y1, $y2);
 		}
 
 		return $this;
@@ -396,7 +335,7 @@ class Image
 	 */
 	public function resize($targetWidth, $targetHeight = null)
 	{
-		$this->_normalizeDimensions($targetWidth, $targetHeight);
+		$this->normalizeDimensions($targetWidth, $targetHeight);
 
 		if ($this->_isAnimatedGif)
 		{
@@ -413,18 +352,6 @@ class Image
 			}
 
 			$this->_image = $gif;
-		}
-		else if ($this->_isSvg)
-		{
-			if (preg_match(ImageHelper::SVG_WIDTH_RE, $this->_svgContent) && preg_match(ImageHelper::SVG_HEIGHT_RE, $this->_svgContent))
-			{
-				$this->_svgContent = preg_replace(ImageHelper::SVG_WIDTH_RE, "\${1}{$targetWidth}px\"", $this->_svgContent);
-				$this->_svgContent = preg_replace(ImageHelper::SVG_HEIGHT_RE, "\${1}{$targetHeight}px\"", $this->_svgContent);
-			}
-			else
-			{
-				$this->_svgContent = preg_replace(ImageHelper::SVG_TAG_RE, "<svg width=\"{$targetWidth}px\" height=\"{$targetHeight}px\"", $this->_svgContent);
-			}
 		}
 		else
 		{
@@ -479,12 +406,6 @@ class Image
 	public function saveAs($targetPath, $autoQuality = false)
 	{
 		$extension = StringHelper::toLowerCase(IOHelper::getExtension($targetPath));
-
-		if ($this->_isSvg)
-		{
-			IOHelper::writeToFile($targetPath, $this->_svgContent);
-			return true;
-		}
 
 		$options = $this->_getSaveOptions(false, $extension);
 		$targetPath = IOHelper::getFolderName($targetPath).IOHelper::getFileName($targetPath, false).'.'.IOHelper::getExtension($targetPath);
@@ -608,28 +529,6 @@ class Image
 
 	// Private Methods
 	// =========================================================================
-
-	/**
-	 * Normalizes the given dimensions.  If width or height is set to 'AUTO', we calculate the missing dimension.
-	 *
-	 * @param int|string $width
-	 * @param int|string $height
-	 *
-	 * @throws Exception
-	 */
-	private function _normalizeDimensions(&$width, &$height = null)
-	{
-		if (preg_match('/^(?P<width>[0-9]+|AUTO)x(?P<height>[0-9]+|AUTO)/', $width, $matches))
-		{
-			$width  = $matches['width']  != 'AUTO' ? $matches['width']  : null;
-			$height = $matches['height'] != 'AUTO' ? $matches['height'] : null;
-		}
-
-		if (!$height || !$width)
-		{
-			list($width, $height) = ImageHelper::calculateMissingDimension($width, $height, $this->getWidth(), $this->getHeight());
-		}
-	}
 
 	/**
 	 * @param     $tempFileName
