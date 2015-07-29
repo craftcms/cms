@@ -1,6 +1,6 @@
-(function($) {
-
-
+/**
+ * Delete User Modal
+ */
 Craft.DeleteUserModal = Garnish.Modal.extend(
 {
 	id: null,
@@ -161,6 +161,3 @@ Craft.DeleteUserModal = Garnish.Modal.extend(
 		onSubmit: $.noop
 	}
 });
-
-
-})(jQuery)
