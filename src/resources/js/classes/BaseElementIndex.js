@@ -528,7 +528,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
 	/**
 	 * Returns the data that should be passed to the elementIndex/getElements controller action
-	 * when loading the first batch of elements.
+	 * when loading element.
 	 */
 	getControllerData: function()
 	{
