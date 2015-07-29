@@ -168,25 +168,37 @@ class ElementsController extends BaseElementsController
 	 */
 	private function _getEditorElement()
 	{
-		// Are we editing an existing element?
 		$elementId = craft()->request->getPost('elementId');
 		$localeId = craft()->request->getPost('locale');
 
-		if ($elementId !== null)
+		// Determine the element type
+		$elementTypeClass = craft()->request->getPost('elementType');
+
+		if ($elementTypeClass === null && $elementId !== null)
 		{
 			$elementTypeClass = craft()->elements->getElementTypeById($elementId);
+		}
+
+		if ($elementTypeClass === null)
+		{
+			throw new HttpException(400, Craft::t('POST param “{name}” doesn’t exist.', array('name' => 'elementType')));
+		}
+
+		// Make sure it's a valid element type
+		$elementType = craft()->elements->getElementType($elementTypeClass);
+
+		if (!$elementType)
+		{
+			throw new HttpException(404);
+		}
+
+		// Instantiate the element
+		if ($elementId !== null)
+		{
 			$element = craft()->elements->getElementById($elementId, $elementTypeClass, $localeId);
 		}
 		else
 		{
-			$elementTypeClass = craft()->request->getRequiredPost('elementType');
-			$elementType = craft()->elements->getElementType($elementTypeClass);
-
-			if (!$elementType)
-			{
-				throw new HttpException(404);
-			}
-
 			$element = $elementType->populateElementModel(array());
 		}
 
@@ -195,6 +207,7 @@ class ElementsController extends BaseElementsController
 			throw new HttpException(404);
 		}
 
+		// Populate it with any posted attributse
 		$attributes = craft()->request->getPost('attributes', array());
 
 		if ($localeId)
@@ -207,6 +220,7 @@ class ElementsController extends BaseElementsController
 			$element->setAttributes($attributes);
 		}
 
+		// Make sure it's editable
 		if (!$element->isEditable())
 		{
 			throw new HttpException(403);
