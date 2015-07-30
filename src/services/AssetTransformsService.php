@@ -1037,8 +1037,11 @@ class AssetTransformsService extends BaseApplicationComponent
 		$imageSource = $file->getTransformSource();
 		$quality = $transform->quality ? $transform->quality : craft()->config->get('defaultImageQuality');
 
-		$image = craft()->images->loadImage($imageSource, $transform->width, $transform->height);
-		$image->setQuality($quality);
+		$image = craft()->images->loadImage($imageSource);
+		if ($image instanceof Image)
+		{
+			$image->setQuality($quality);
+		}
 
 		switch ($transform->mode)
 		{

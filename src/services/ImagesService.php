@@ -76,7 +76,7 @@ class ImagesService extends BaseApplicationComponent
 	 * @param string $path
 	 *
 	 * @throws \Exception
-	 * @return Image
+	 * @return BaseImage
 	 */
 	public function loadImage($path)
 	{
