@@ -49,7 +49,7 @@ class SvgImage extends BaseImage
 	 */
 	public function getWidth()
 	{
-		return $this->_height;
+		return $this->_width;
 
 	}
 
@@ -58,7 +58,7 @@ class SvgImage extends BaseImage
 	 */
 	public function getHeight()
 	{
-		return $this->_width;
+		return $this->_height;
 	}
 
 	/**
@@ -117,7 +117,25 @@ class SvgImage extends BaseImage
 		$width = $x2 - $x1;
 		$height = $y2 - $y1;
 
+		// If the SVG had a viewbox, it might have been scaled already.
+		if(preg_match(SvgImage::SVG_VIEWBOX_RE, $this->_svgContent, $viewboxMatch))
+		{
+			$viewBoxXFactor = $this->getWidth() / round($viewboxMatch[3]);
+			$viewBoxYFactor = $this->getHeight() / round($viewboxMatch[4]);
+		}
+		else
+		{
+			$viewBoxXFactor = 1;
+			$viewBoxYFactor = 1;
+		}
+
+
 		$this->resize($width, $height);
+
+		$x1 = $x1 / $viewBoxXFactor;
+		$y1 = $y1 / $viewBoxYFactor;
+		$width = $width / $viewBoxXFactor;
+		$height = $height / $viewBoxYFactor;
 
 		$value = "{$x1} {$y1} {$width} {$height}";
 
@@ -177,7 +195,7 @@ class SvgImage extends BaseImage
 
 			// Reverse the components
 			$cropPositions = join("-", array_reverse(explode("-", $cropPositions)));
-			
+
 			$value = "x". strtr($cropPositions, array(
 					'left' => 'Min',
 					'center' => 'Mid',
