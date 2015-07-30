@@ -304,7 +304,7 @@ class AssetFileModel extends BaseElementModel
 			if ($this->_getHeight() && $this->_getWidth())
 			{
 				// Gd doesn't process bitmaps
-				if (in_array($this->getExtension(), array('svg', 'bmp')) && craft()->images->isGd())
+				if (in_array($this->getExtension(), array('bmp')) && craft()->images->isGd())
 				{
 					return false;
 				}

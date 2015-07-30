@@ -207,6 +207,7 @@ class ResourcesService extends BaseApplicationComponent
 					}
 
 					$fileModel = craft()->assets->getFileById($segs[1]);
+
 					if (empty($fileModel))
 					{
 						return false;
