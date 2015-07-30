@@ -175,6 +175,9 @@ class SvgImage extends BaseImage
 			// Scale first.
 			$this->resize($targetWidth, $targetHeight);
 
+			// Reverse the components
+			$cropPositions = join("-", array_reverse(explode("-", $cropPositions)));
+			
 			$value = "x". strtr($cropPositions, array(
 					'left' => 'Min',
 					'center' => 'Mid',
