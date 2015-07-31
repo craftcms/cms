@@ -257,7 +257,20 @@ class SvgImage extends BaseImage
 	 */
 	public function saveAs($targetPath, $autoQuality = false)
 	{
-		IOHelper::writeToFile($targetPath, $this->_svgContent);
+		if (IOHelper::getExtension($targetPath) == 'svg')
+		{
+			IOHelper::writeToFile($targetPath, $this->_svgContent);
+		}
+		else if (craft()->images->isImagick())
+		{
+			$export = new Image();
+			$export->exportFromSvg($this->_svgContent, $targetPath);
+		}
+		else
+		{
+			throw new Exception(Craft::t("Imagick needs to be installed in order to export SVG files."));
+		}
+
 		return true;
 	}
 }

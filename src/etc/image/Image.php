@@ -140,8 +140,9 @@ class Image extends BaseImage
 
 		if ($extension === 'svg')
 		{
-			throw new Exception (Craft::t("This class does not support SVG files."));
+			throw new Exception (Craft::t("This class does not support modifying SVG files."));
 		}
+
 		try
 		{
 			$this->_image = $this->_instance->open($path);
@@ -423,6 +424,30 @@ class Image extends BaseImage
 		}
 
 		return true;
+	}
+
+	/**
+	 * Export an SVG to a different format.
+	 *
+	 * @param $svgContent
+	 * @param $targetPath
+	 *
+	 * @return null
+	 */
+	public function exportFromSvg($svgContent, $targetPath)
+	{
+		try
+		{
+			$this->_image = $this->_instance->load($svgContent);
+		}
+		catch (\Imagine\Exception\RuntimeException $e)
+		{
+			// Invalid SVG. Maybe it's missing its DTD?
+			$svgContent = '<?xml version="1.0" encoding="UTF-8" standalone="no"?>'.$svgContent;
+			$this->_image = $this->_instance->load($svgContent);
+		}
+
+		return $this->saveAs($targetPath);
 	}
 
 	/**
