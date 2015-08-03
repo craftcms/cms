@@ -7,7 +7,7 @@ Craft.CategoryIndex = Craft.BaseElementIndex.extend(
 	$newCategoryBtnGroup: null,
 	$newCategoryBtn: null,
 
-	onAfterHtmlInit: function()
+	afterInit: function()
 	{
 		// Find which of the visible groups the user has permission to create new categories in
 		this.editableGroups = [];

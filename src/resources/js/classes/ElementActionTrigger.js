@@ -33,13 +33,13 @@ Craft.ElementActionTrigger = Garnish.Base.extend(
 		}
 
 		this.updateTrigger();
-		Craft.elementIndex.elementSelect.on('selectionChange', $.proxy(this, 'updateTrigger'));
+		Craft.elementIndex.on('selectionChange', $.proxy(this, 'updateTrigger'));
 	},
 
 	updateTrigger: function()
 	{
 		// Ignore if the last element was just unselected
-		if (Craft.elementIndex.elementSelect.totalSelected == 0)
+		if (Craft.elementIndex.getSelectedElements().length == 0)
 		{
 			return;
 		}
@@ -62,7 +62,7 @@ Craft.ElementActionTrigger = Garnish.Base.extend(
 	validateSelection: function()
 	{
 		var valid = true;
-		this.$selectedItems = Craft.elementIndex.elementSelect.$selectedItems;
+		this.$selectedItems = Craft.elementIndex.getSelectedElements();
 
 		if (!this.settings.batch && this.$selectedItems.length > 1)
 		{

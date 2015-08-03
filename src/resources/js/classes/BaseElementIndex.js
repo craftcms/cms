@@ -14,33 +14,26 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 	sourceStatesStorageKey: null,
 
 	searchTimeout: null,
-	elementSelect: null,
 	sourceSelect: null,
-	structureTableSort: null,
-	_autoSelectElements: null,
-
-	isIndexBusy: false,
-
-	selectable: false,
-	multiSelect: false,
-	actions: null,
-	actionsHeadHtml: null,
-	actionsFootHtml: null,
-	showingActionTriggers: false,
-	_$triggers: null,
 
 	$container: null,
 	$main: null,
-	$scroller: null,
+	$mainSpinner: null,
+	isIndexBusy: false,
+
+	$sidebar: null,
+	showingSidebar: null,
+	sourceKey: null,
+	sourceViewModes: null,
+	$source: null,
+
 	$toolbar: null,
 	$toolbarTableRow: null,
 	toolbarOffset: null,
-	$selectAllContainer: null,
-	$selectAllCheckbox: null,
+
 	$search: null,
 	searching: false,
 	$clearSearchBtn: null,
-	$mainSpinner: null,
 
 	$statusMenuBtn: null,
 	statusMenu: null,
@@ -57,28 +50,21 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 	$scoreSortAttribute: null,
 	$structureSortAttribute: null,
 
+	$elements: null,
 	$viewModeBtnTd: null,
 	$viewModeBtnContainer: null,
 	viewModeBtns: null,
 	viewMode: null,
+	view: null,
+	_autoSelectElements: null,
 
-	$loadingMoreSpinner: null,
-	$sidebar: null,
-	$sidebarButtonContainer: null,
-	showingSidebar: null,
-	sourceKey: null,
-	sourceViewModes: null,
-	$source: null,
-	$elements: null,
-	$table: null,
-	$elementContainer: null,
-	$checkboxes: null,
-
-	_totalVisible: null,
-	_morePending: false,
-	_totalVisiblePostStructureTableDraggee: null,
-	_morePendingPostStructureTableDraggee: false,
-	loadingMore: false,
+	actions: null,
+	actionsHeadHtml: null,
+	actionsFootHtml: null,
+	$selectAllContainer: null,
+	$selectAllCheckbox: null,
+	showingActionTriggers: false,
+	_$triggers: null,
 
 	// Public methods
 	// =========================================================================
@@ -93,6 +79,8 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 		this.setSettings(settings, Craft.BaseElementIndex.defaults);
 
 		// Set the state objects
+		// ---------------------------------------------------------------------
+
 		this.instanceState = {
 			selectedSource: null
 		};
@@ -110,6 +98,8 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 		$.extend(this.sourceStates, Craft.getLocalStorage(this.sourceStatesStorageKey, {}));
 
 		// Find the DOM elements
+		// ---------------------------------------------------------------------
+
 		this.$main = this.$container.find('.main');
 		this.$toolbar = this.$container.find('.toolbar:first');
 		this.$toolbarTableRow = this.$toolbar.children('table').children('tbody').children('tr');
@@ -119,21 +109,12 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 		this.$search = this.$toolbarTableRow.find('.search:first input:first');
 		this.$clearSearchBtn = this.$toolbarTableRow.find('.search:first > .clear');
 		this.$mainSpinner = this.$toolbar.find('.spinner:first');
-		this.$loadingMoreSpinner = this.$container.find('.spinner.loadingmore')
 		this.$sidebar = this.$container.find('.sidebar:first');
-		this.$sidebarButtonContainer = this.$sidebar.children('.buttons');
 		this.$elements = this.$container.find('.elements:first');
-
-		if (!this.$sidebarButtonContainer.length)
-		{
-			this.$sidebarButtonContainer = $('<div class="buttons"/>').prependTo(this.$sidebar);
-		}
-
-		this.showingSidebar = (this.$sidebar.length && !this.$sidebar.hasClass('hidden'));
-
 		this.$viewModeBtnTd = this.$toolbarTableRow.find('.viewbtns:first');
 		this.$viewModeBtnContainer = $('<div class="btngroup fullwidth"/>').appendTo(this.$viewModeBtnTd);
 
+		// Keep the toolbar at the top of the window
 		if (this.settings.context == 'index' && !Garnish.isMobileBrowser(true))
 		{
 			this.addListener(Garnish.$win, 'scroll resize', 'updateFixedToolbar');
@@ -155,12 +136,21 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 			multi:             false,
 			allowEmpty:        false,
 			vertical:          true,
-			onSelectionChange: $.proxy(this, 'onSourceSelectionChange')
+			onSelectionChange: $.proxy(this, '_handleSourceSelectionChange')
 		});
 
 		this._initSources($sources);
 
-		// Initialize the locale menu button
+		// Initialize the status menu
+		// ---------------------------------------------------------------------
+
+		if (this.$statusMenuBtn.length)
+		{
+			this.statusMenu = this.$statusMenuBtn.menubtn().data('menubtn').menu;
+			this.statusMenu.on('optionselect', $.proxy(this, '_handleStatusChange'));
+		}
+
+		// Initialize the locale menu
 		// ---------------------------------------------------------------------
 
 		// Is there a locale menu?
@@ -186,7 +176,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 				this.settings.criteria = { id: '0' };
 			}
 
-			this.localeMenu.on('optionselect', $.proxy(this, 'onLocaleChange'));
+			this.localeMenu.on('optionselect', $.proxy(this, '_handleLocaleChange'));
 
 			if (this.locale)
 			{
@@ -211,68 +201,18 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 			this.locale = this.settings.criteria.locale;
 		}
 
-		// Is there a sort menu?
-		if (this.$sortMenuBtn.length)
-		{
-			this.sortMenu = this.$sortMenuBtn.menubtn().data('menubtn').menu;
-			this.$sortAttributesList = this.sortMenu.$container.children('.sort-attributes');
-			this.$sortDirectionsList = this.sortMenu.$container.children('.sort-directions');
-
-			this.sortMenu.on('optionselect', $.proxy(this, 'onSortChange'));
-		}
-
-		this.onAfterHtmlInit();
-
-		if (this.settings.context == 'index')
-		{
-			this.$scroller = Garnish.$win;
-		}
-		else
-		{
-			this.$scroller = this.$main;
-		}
-
-		// Select the initial source
-		var source = this.getDefaultSourceKey();
-
-		if (source)
-		{
-			var $source = this.getSourceByKey(source);
-
-			if ($source)
-			{
-				// Expand any parent sources
-				var $parentSources = $source.parentsUntil('.sidebar', 'li');
-				$parentSources.not(':first').addClass('expanded');
-			}
-		}
-
-		if (!source || !$source)
-		{
-			// Select the first source by default
-			var $source = this.$sources.first();
-		}
-
-		// Load up the elements!
-		this.initialized = true;
-		this.sourceSelect.selectItem($source);
-
-		// Status changes
-		if (this.$statusMenuBtn.length)
-		{
-			this.statusMenu = this.$statusMenuBtn.menubtn().data('menubtn').menu;
-			this.statusMenu.on('optionselect', $.proxy(this, 'onStatusChange'));
-		}
+		// Initialize the search input
+		// ---------------------------------------------------------------------
 
 		this.addListener(this.$search, 'textchange', $.proxy(function()
 		{
 			if (!this.searching && this.$search.val())
 			{
-				this.onStartSearching();
+				this.startSearching();
 			}
 			else if (this.searching && !this.$search.val())
 			{
-				this.onStopSearching();
+				this.stopSearching();
 			}
 
 			if (this.searchTimeout)
@@ -297,7 +237,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 				this.$search.focus();
 			}
 
-			this.onStopSearching();
+			this.stopSearching();
 
 			this.updateElements();
 
@@ -308,6 +248,63 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 		{
 			this.$search.focus();
 		}
+
+		// Initialize the sort menu
+		// ---------------------------------------------------------------------
+
+		// Is there a sort menu?
+		if (this.$sortMenuBtn.length)
+		{
+			this.sortMenu = this.$sortMenuBtn.menubtn().data('menubtn').menu;
+			this.$sortAttributesList = this.sortMenu.$container.children('.sort-attributes');
+			this.$sortDirectionsList = this.sortMenu.$container.children('.sort-directions');
+
+			this.sortMenu.on('optionselect', $.proxy(this, '_handleSortChange'));
+		}
+
+		// Let everyone know that the UI is initialized
+		// ---------------------------------------------------------------------
+
+		this.initialized = true;
+		this.afterInit();
+
+		// Select the initial source
+		// ---------------------------------------------------------------------
+
+		var sourceKey = this.getDefaultSourceKey();
+
+		if (sourceKey)
+		{
+			var $source = this.getSourceByKey(sourceKey);
+
+			if ($source)
+			{
+				// Expand any parent sources
+				var $parentSources = $source.parentsUntil('.sidebar', 'li');
+				$parentSources.not(':first').addClass('expanded');
+			}
+		}
+
+		if (!sourceKey || !$source)
+		{
+			// Select the first source by default
+			var $source = this.$sources.first();
+		}
+
+		if ($source.length)
+		{
+			this.selectSource($source);
+		}
+
+		// Load the first batch of elements!
+		// ---------------------------------------------------------------------
+
+		this.updateElements();
+	},
+
+	afterInit: function()
+	{
+		this.onAfterInit();
 	},
 
 	get $sources()
@@ -318,30 +315,6 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 		}
 
 		return this.sourceSelect.$items;
-	},
-
-	get totalVisible()
-	{
-		if (this._isStructureTableDraggingLastElements())
-		{
-			return this._totalVisiblePostStructureTableDraggee;
-		}
-		else
-		{
-			return this._totalVisible;
-		}
-	},
-
-	get morePending()
-	{
-		if (this._isStructureTableDraggingLastElements())
-		{
-			return this._morePendingPostStructureTableDraggee;
-		}
-		else
-		{
-			return this._morePending;
-		}
 	},
 
 	updateFixedToolbar: function()
@@ -391,7 +364,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
 		if ($toggle.length)
 		{
-			this.addListener($toggle, 'click', '_onToggleClick');
+			this.addListener($toggle, 'click', '_handleSourceToggleClick');
 		}
 	},
 
@@ -416,23 +389,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 		return this.instanceState.selectedSource;
 	},
 
-	onSourceSelectionChange: function()
-	{
-		// If the selected source was just removed (maybe because its parent was collapsed),
-		// there won't be a selected source
-		if (!this.sourceSelect.totalSelected)
-		{
-			this.sourceSelect.selectItem(this.$sources.first());
-			return;
-		}
-
-		if (this.selectSource(this.sourceSelect.$selectedItems))
-		{
-			this.updateElements();
-		}
-	},
-
-	onStartSearching: function()
+	startSearching: function()
 	{
 		// Show the clear button and add/select the Score sort option
 		this.$clearSearchBtn.removeClass('hidden');
@@ -450,7 +407,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 		this.searching = true;
 	},
 
-	onStopSearching: function()
+	stopSearching: function()
 	{
 		// Hide the clear button and Score sort option
 		this.$clearSearchBtn.addClass('hidden');
@@ -528,34 +485,36 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
 	/**
 	 * Returns the data that should be passed to the elementIndex/getElements controller action
-	 * when loading element.
+	 * when loading elements.
 	 */
-	getControllerData: function()
+	getViewParams: function()
 	{
-		var data = {
+		var criteria = $.extend({
+			status: this.status,
+			locale: this.locale,
+			search: (this.searching ? this.$search.val() : null),
+			limit: this.settings.batchSize
+		}, this.settings.criteria);
+
+		var params = {
 			context:             this.settings.context,
 			elementType:         this.elementType,
-			criteria:            $.extend({ status: this.status, locale: this.locale }, this.settings.criteria),
-			disabledElementIds:  this.settings.disabledElementIds,
 			source:              this.instanceState.selectedSource,
-			status:              this.status,
-			viewState:           this.getSelectedSourceState(),
-			search:              (this.searching ? this.$search.val() : null)
+			criteria:            criteria,
+			disabledElementIds:  this.settings.disabledElementIds,
+			viewState:           this.getSelectedSourceState()
 		};
 
 		// Possible that the order/sort isn't entirely accurate if we're sorting by Score
-		data.viewState.order = this.getSelectedSortAttribute();
-		data.viewState.sort = this.getSelectedSortDirection();
+		params.viewState.order = this.getSelectedSortAttribute();
+		params.viewState.sort = this.getSelectedSortDirection();
 
-		if (
-			this.getSelectedSourceState('mode') == 'table' &&
-			this.getSelectedSortAttribute() == 'structure'
-		)
+		if (this.getSelectedSortAttribute() == 'structure')
 		{
-			data.collapsedElementIds = this.instanceState.collapsedElementIds;
+			params.collapsedElementIds = this.instanceState.collapsedElementIds;
 		}
 
-		return data;
+		return params;
 	},
 
 	updateElements: function()
@@ -566,125 +525,21 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 			return;
 		}
 
-		// Prep the UI
-		// -------------------------------------------------------------
-
 		this.setIndexBusy();
-		this.removeListener(this.$scroller, 'scroll');
 
-		if (this.getSelectedSourceState('mode') == 'table' && this.$table)
-		{
-			Craft.cp.$collapsibleTables = Craft.cp.$collapsibleTables.not(this.$table);
-		}
+		var params = this.getViewParams();
 
-		// Fetch the elements
-		// -------------------------------------------------------------
-
-		var data = this.getControllerData();
-
-		Craft.postActionRequest('elementIndex/getElements', data, $.proxy(function(response, textStatus)
+		Craft.postActionRequest('elementIndex/getElements', params, $.proxy(function(response, textStatus)
 		{
 			this.setIndexAvailable();
 
 			if (textStatus == 'success')
 			{
-				// Cleanup
-				// -------------------------------------------------------------
-
-				this._prepForNewElements();
-
-				// Selectable setup
-				// -------------------------------------------------------------
-
-				if (this.settings.context == 'index' && response.actions && response.actions.length)
-				{
-					this.actions = response.actions;
-					this.actionsHeadHtml = response.actionsHeadHtml;
-					this.actionsFootHtml = response.actionsFootHtml;
-				}
-				else
-				{
-					this.actions = this.actionsHeadHtml = this.actionsFootHtml = null;
-				}
-
-				this.selectable = (this.actions || this.settings.selectable);
-
-				// Update the view with the new container + elements HTML
-				// -------------------------------------------------------------
-
-				this.$elements.html(response.html);
-				this.$scroller.scrollTop(0);
-
-				if (this.getSelectedSourceState('mode') == 'table')
-				{
-					this.$table = this.$elements.find('table:first');
-					Craft.cp.$collapsibleTables = Craft.cp.$collapsibleTables.add(this.$table);
-				}
-
-				// Find the new container
-				this.$elementContainer = this.getElementContainer();
-
-				// Get the new elements
-				var $newElements = this.$elementContainer.children();
-
-				// Initialize the selector stuff and the structure table sorter
-				this._setupNewElements($newElements);
-
-				this._onUpdateElements(response, false, $newElements);
-
-				if (
-					this.getSelectedSourceState('mode') == 'table' &&
-					this.getSelectedSortAttribute() == 'structure'
-				)
-				{
-					// Listen for toggle clicks
-					this.addListener(this.$elementContainer, 'click', function(ev)
-					{
-						var $target = $(ev.target);
-
-						if ($target.hasClass('toggle'))
-						{
-							if (this._collapseElement($target) === false)
-							{
-								this._expandElement($target);
-							}
-						}
-					});
-				}
-
-				// Listen for double-clicks
-				if (this.settings.context == 'index')
-				{
-					this.addListener(this.$elementContainer, 'dblclick', function(ev)
-					{
-						var $target = $(ev.target);
-
-						if ($target.prop('nodeName') == 'A')
-						{
-							// Let the link do its thing
-							return;
-						}
-
-						if ($target.hasClass('element'))
-						{
-							var $element = $target;
-						}
-						else
-						{
-							var $element = $target.closest('.element');
-
-							if (!$element.length)
-							{
-								return;
-							}
-						}
-
-						if (Garnish.hasAttr($element, 'data-editable'))
-						{
-							new Craft.ElementEditor($element);
-						}
-					});
-				}
+				this._updateView(params, response);
+			}
+			else
+			{
+				Craft.cp.displayError(Craft.t('An unknown error occurred.'));
 			}
 
 		}, this));
@@ -713,43 +568,12 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 		this.showingActionTriggers = true;
 	},
 
-	handleActionTriggerSubmit: function(ev)
-	{
-		ev.preventDefault();
-
-		var $form = $(ev.currentTarget);
-
-		// Make sure Craft.ElementActionTrigger isn't overriding this
-		if ($form.hasClass('disabled') || $form.data('custom-handler'))
-		{
-			return;
-		}
-
-		var actionHandle = $form.data('action'),
-			params = Garnish.getPostData($form);
-
-		this.submitAction(actionHandle, params);
-	},
-
-	handleMenuActionTriggerSubmit: function(ev)
-	{
-		var $option = $(ev.option);
-
-		// Make sure Craft.ElementActionTrigger isn't overriding this
-		if ($option.hasClass('disabled') || $option.data('custom-handler'))
-		{
-			return;
-		}
-
-		var actionHandle = $option.data('action');
-		this.submitAction(actionHandle);
-	},
-
-	submitAction: function(actionHandle, params)
+	submitAction: function(actionHandle, actionParams)
 	{
 		// Make sure something's selected
-		var totalSelected = this.elementSelect.totalSelected,
-			totalItems = this.elementSelect.$items.length;
+		var selectedElementIds = this.view.getSelectedElementIds(),
+			totalSelected = selectedElementIds.length,
+			totalItems = this.view.getEnabledElements.length;
 
 		if (totalSelected == 0)
 		{
@@ -772,15 +596,18 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 		}
 
 		// Get ready to submit
-		var data = $.extend(this.getControllerData(), params, {
+		var viewParams = this.getViewParams();
+
+		var params = $.extend(viewParams, actionParams, {
 			elementAction: actionHandle,
-			elementIds:    this.getSelectedElementIds()
+			elementIds: selectedElementIds
 		});
 
 		// Do it
 		this.setIndexBusy();
+		this._autoSelectElements = selectedElementIds;
 
-		Craft.postActionRequest('elementIndex/performAction', data, $.proxy(function(response, textStatus)
+		Craft.postActionRequest('elementIndex/performAction', params, $.proxy(function(response, textStatus)
 		{
 			this.setIndexAvailable();
 
@@ -788,32 +615,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 			{
 				if (response.success)
 				{
-					this._prepForNewElements();
-					this.$elementContainer.html('');
-					this.elementSelect = this.createElementSelect();
-
-					var $newElements = $(response.html).appendTo(this.$elementContainer);
-
-					// Initialize the selector stuff and the structure table sorter
-					this._setupNewElements($newElements);
-
-					// There may be less elements now if some had been lazy-loaded before. If that's the case and all of
-					// the elements were selected, we don't want to give the user the impression that all of the same
-					// elements are still selected.
-					if (totalItems <= 50 || totalSelected < totalItems)
-					{
-						for (var i = 0; i < data.elementIds.length; i++)
-						{
-							var $element = this.getElementById(data.elementIds[i]);
-
-							if ($element)
-							{
-								this.elementSelect.selectItem($element);
-							}
-						}
-					}
-
-					this._onUpdateElements(response, false, $newElements);
+					this._updateView(viewParams, response);
 
 					if (response.message)
 					{
@@ -851,11 +653,11 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 		// Do we have an action UI to update?
 		if (this.actions)
 		{
-			var totalSelected = this.elementSelect.totalSelected;
+			var totalSelected = this.view.getSelectedElements().length;
 
 			if (totalSelected != 0)
 			{
-				if (totalSelected == this.elementSelect.$items.length)
+				if (totalSelected == this.view.getEnabledElements().length)
 				{
 					this.$selectAllCheckbox.removeClass('indeterminate');
 					this.$selectAllCheckbox.addClass('checked');
@@ -876,188 +678,14 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 		}
 	},
 
-	/**
-	 * Checks if the user has reached the bottom of the scroll area, and if so, loads the next batch of elemets.
-	 */
-	maybeLoadMore: function()
+	getSelectedElements: function()
 	{
-		if (this.canLoadMore())
-		{
-			this.loadMore();
-		}
-	},
-
-	/**
-	 * Returns whether the user has reached the bottom of the scroll area.
-	 */
-	canLoadMore: function()
-	{
-		if (!this.morePending)
-		{
-			return false;
-		}
-
-		// Check if the user has reached the bottom of the scroll area
-		if (this.$scroller[0] == Garnish.$win[0])
-		{
-			var winHeight = Garnish.$win.innerHeight(),
-				winScrollTop = Garnish.$win.scrollTop(),
-				bodHeight = Garnish.$bod.height();
-
-			return (winHeight + winScrollTop >= bodHeight);
-		}
-		else
-		{
-			var containerScrollHeight = this.$scroller.prop('scrollHeight'),
-				containerScrollTop = this.$scroller.scrollTop(),
-				containerHeight = this.$scroller.outerHeight();
-
-			return (containerScrollHeight - containerScrollTop <= containerHeight + 15);
-		}
-	},
-
-	/**
-	 * Loads the next batch of elements.
-	 */
-	loadMore: function()
-	{
-		if (!this.morePending || this.loadingMore)
-		{
-			return;
-		}
-
-		this.loadingMore = true;
-		this.$loadingMoreSpinner.removeClass('hidden');
-		this.removeListener(this.$scroller, 'scroll');
-
-		var data = this.getLoadMoreData();
-
-		Craft.postActionRequest('elementIndex/getMoreElements', data, $.proxy(function(response, textStatus)
-		{
-			this.loadingMore = false;
-			this.$loadingMoreSpinner.addClass('hidden');
-
-			if (textStatus == 'success')
-			{
-				var $newElements = $(response.html).appendTo(this.$elementContainer);
-
-				if (this.actions || this.settings.selectable)
-				{
-					this.elementSelect.addItems($newElements.filter(':not(.disabled)'));
-					this.updateActionTriggers();
-				}
-
-				if (this.structureTableSort)
-				{
-					this.structureTableSort.addItems($newElements);
-				}
-
-				this._onUpdateElements(response, true, $newElements);
-			}
-
-		}, this));
-	},
-
-	/**
-	 * Returns the data that should be passed to the elementIndex/getMoreElements controller action
-	 * when loading a subsequent batch of elements.
-	 */
-	getLoadMoreData: function()
-	{
-		var data = this.getControllerData();
-		data.offset = this.totalVisible;
-
-		// If we are dragging the last elements on the page,
-		// tell the controller to only load elements positioned after the draggee.
-		if (this._isStructureTableDraggingLastElements())
-		{
-			data.criteria.positionedAfter = this.structureTableSort.$targetItem.data('id');
-		}
-
-		return data;
-	},
-
-	/**
-	 * Returns the element container.
-	 */
-	getElementContainer: function()
-	{
-		if (this.getSelectedSourceState('mode') == 'table')
-		{
-			return this.$table.children('tbody:first');
-		}
-		else
-		{
-			return this.$elements.children('ul');
-		}
-	},
-
-	createElementSelect: function()
-	{
-		return new Garnish.Select(this.$elementContainer, {
-			multi:             (this.actions || this.settings.multiSelect),
-			vertical:          (this.getSelectedSourceState('mode') != 'thumbs'),
-			handle:            (this.settings.context == 'index' ? '.checkbox, .element' : null),
-			filter:            ':not(a):not(.toggle)',
-			checkboxMode:      (this.settings.context == 'index' && this.actions),
-			onSelectionChange: $.proxy(this, 'onSelectionChange')
-		});
+		return this.view.getSelectedElements();
 	},
 
 	getSelectedElementIds: function()
 	{
-		var $selectedItems = this.elementSelect.$selectedItems,
-			ids = [];
-
-		for (var i = 0; i < $selectedItems.length; i++)
-		{
-			ids.push($selectedItems.eq(i).data('id'));
-		}
-
-		return ids;
-	},
-
-	selectElementAfterUpdate: function(elementId)
-	{
-		if (this._autoSelectElements === null)
-		{
-			this._autoSelectElements = [];
-		}
-
-		this._autoSelectElements.push(elementId);
-	},
-
-	onUpdateElements: function(append, $newElements)
-	{
-		this.settings.onUpdateElements(append, $newElements);
-	},
-
-	onStatusChange: function(ev)
-	{
-		this.statusMenu.$options.removeClass('sel');
-		var $option = $(ev.selectedOption).addClass('sel');
-		this.$statusMenuBtn.html($option.html());
-
-		this.status = $option.data('status');
-		this.updateElements();
-	},
-
-	onLocaleChange: function(ev)
-	{
-		this.localeMenu.$options.removeClass('sel');
-		var $option = $(ev.selectedOption).addClass('sel');
-		this.$localeMenuBtn.html($option.html());
-
-		this.locale = $option.data('locale');
-
-		if (this.initialized)
-		{
-			// Remember this locale for later
-			Craft.setLocalStorage('BaseElementIndex.locale', this.locale);
-
-			// Update the elements
-			this.updateElements();
-		}
+		return this.view.getSelectedElementIds();
 	},
 
 	getSortAttributeOption: function(attr)
@@ -1107,6 +735,11 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 		return this.$sortDirectionsList.find('a.sel:first').data('dir');
 	},
 
+	getSelectedViewMode: function()
+	{
+		return this.getSelectedSourceState('mode');
+	},
+
 	setSortDirection: function(dir)
 	{
 		if (dir != 'desc')
@@ -1117,39 +750,6 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 		this.$sortMenuBtn.attr('data-icon', dir);
 		this.$sortDirectionsList.find('a.sel').removeClass('sel');
 		this.getSortDirectionOption(dir).addClass('sel');
-	},
-
-	onSortChange: function(ev)
-	{
-		var $option = $(ev.selectedOption);
-
-		if ($option.hasClass('disabled') || $option.hasClass('sel'))
-		{
-			return;
-		}
-
-		// Is this an attribute or a direction?
-		if ($option.parent().parent().is(this.$sortAttributesList))
-		{
-			this.setSortAttribute($option.data('attr'));
-		}
-		else
-		{
-			this.setSortDirection($option.data('dir'));
-		}
-
-		// Save it to localStorage (unless we're sorting by score)
-		var attr = this.getSelectedSortAttribute();
-
-		if (attr != 'score')
-		{
-			this.setSelecetedSourceState({
-				order: attr,
-				sort: this.getSelectedSortDirection()
-			});
-		}
-
-		this.updateElements();
 	},
 
 	getSourceByKey: function(key)
@@ -1167,26 +767,31 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
 	selectSource: function($source)
 	{
-		if (this.$source && this.$source[0] && this.$source[0] == $source[0])
+		if (!$source || !$source.length)
 		{
 			return false;
 		}
 
-		if ($source[0] != this.sourceSelect.$selectedItems[0])
+		if (this.$source && this.$source[0] && this.$source[0] == $source[0])
 		{
-			this.sourceSelect.selectItem($source);
+			return false;
 		}
 
 		this.$source = $source;
 		this.sourceKey = $source.data('key');
 		this.setInstanceState('selectedSource', this.sourceKey);
 
+		if ($source[0] != this.sourceSelect.$selectedItems[0])
+		{
+			this.sourceSelect.selectItem($source);
+		}
+
 		if (this.searching)
 		{
 			// Clear the search value without triggering the textchange event
 			this.$search.data('textchangeValue', '');
 			this.$search.val('');
-			this.onStopSearching();
+			this.stopSearching();
 		}
 
 		// Sort menu
@@ -1251,7 +856,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 		}
 
 		// Figure out which mode we should start with
-		var viewMode = this.getSelectedSourceState('mode');
+		var viewMode = this.getSelectedViewMode();
 
 		if (!viewMode || !this.doesSourceHaveViewMode(viewMode))
 		{
@@ -1321,7 +926,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 	getDefaultSort: function()
 	{
 		// Does the source specify what to do?
-		if (Garnish.hasAttr(this.$source, 'data-default-sort'))
+		if (this.$source && Garnish.hasAttr(this.$source, 'data-default-sort'))
 		{
 			return this.$source.attr('data-default-sort').split(':');
 		}
@@ -1338,28 +943,12 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 			{ mode: 'table', title: Craft.t('Display in a table'), icon: 'list' }
 		];
 
-		if (Garnish.hasAttr(this.$source, 'data-has-thumbs'))
+		if (this.$source && Garnish.hasAttr(this.$source, 'data-has-thumbs'))
 		{
 			viewModes.push({ mode: 'thumbs', title: Craft.t('Display as thumbnails'), icon: 'grid' });
 		}
 
 		return viewModes;
-	},
-
-	onSelectSource: function()
-	{
-		this.settings.onSelectSource(this.sourceKey);
-	},
-
-	onAfterHtmlInit: function()
-	{
-		this.settings.onAfterHtmlInit()
-	},
-
-	onSelectionChange: function()
-	{
-		this.updateActionTriggers();
-		this.settings.onSelectionChange();
 	},
 
 	doesSourceHaveViewMode: function(viewMode)
@@ -1404,19 +993,38 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 		}
 	},
 
-	rememberDisabledElementId: function(elementId)
+	createView: function(mode, settings)
 	{
-		var index = $.inArray(elementId, this.settings.disabledElementIds);
+		var viewClass = this.getViewClass(mode);
+		return new viewClass(this, this.$elements, settings);
+	},
 
-		if (index == -1)
+	getViewClass: function(mode)
+	{
+		switch (mode)
 		{
-			this.settings.disabledElementIds.push(elementId);
+			case 'table':
+				return Craft.TableElementIndexView;
+			case 'thumbs':
+				return Craft.ThumbsElementIndexView;
+			default:
+				throw 'View mode "'+mode+'" not supported.';
 		}
 	},
 
-	forgetDisabledElementId: function(elementId)
+	rememberDisabledElementId: function(id)
 	{
-		var index = $.inArray(elementId, this.settings.disabledElementIds);
+		var index = $.inArray(id, this.settings.disabledElementIds);
+
+		if (index == -1)
+		{
+			this.settings.disabledElementIds.push(id);
+		}
+	},
+
+	forgetDisabledElementId: function(id)
+	{
+		var index = $.inArray(id, this.settings.disabledElementIds);
 
 		if (index != -1)
 		{
@@ -1430,11 +1038,11 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
 		for (var i = 0; i < $elements.length; i++)
 		{
-			var elementId = $($elements[i]).data('id');
-			this.forgetDisabledElementId(elementId);
+			var id = $($elements[i]).data('id');
+			this.forgetDisabledElementId(id);
 		}
 
-		this.settings.onEnableElements($elements);
+		this.onEnableElements($elements);
 	},
 
 	disableElements: function($elements)
@@ -1443,26 +1051,26 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
 		for (var i = 0; i < $elements.length; i++)
 		{
-			var elementId = $($elements[i]).data('id');
-			this.rememberDisabledElementId(elementId);
+			var id = $($elements[i]).data('id');
+			this.rememberDisabledElementId(id);
 		}
 
-		this.settings.onDisableElements($elements);
+		this.onDisableElements($elements);
 	},
 
-	getElementById: function(elementId)
+	getElementById: function(id)
 	{
-		return this.$elementContainer.find('[data-id='+elementId+']:first');
+		return this.view.getElementById(id)
 	},
 
-	enableElementsById: function(elementIds)
+	enableElementsById: function(ids)
 	{
-		elementIds = $.makeArray(elementIds);
+		ids = $.makeArray(ids);
 
-		for (var i = 0; i < elementIds.length; i++)
+		for (var i = 0; i < ids.length; i++)
 		{
-			var elementId = elementIds[i],
-				$element = this.getElementById(elementId);
+			var id = ids[i],
+				$element = this.getElementById(id);
 
 			if ($element.length)
 			{
@@ -1470,19 +1078,19 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 			}
 			else
 			{
-				this.forgetDisabledElementId(elementId);
+				this.forgetDisabledElementId(id);
 			}
 		}
 	},
 
-	disableElementsById: function(elementIds)
+	disableElementsById: function(ids)
 	{
-		elementIds = $.makeArray(elementIds);
+		ids = $.makeArray(ids);
 
-		for (var i = 0; i < elementIds.length; i++)
+		for (var i = 0; i < ids.length; i++)
 		{
-			var elementId = elementIds[i],
-				$element = this.getElementById(elementId);
+			var id = ids[i],
+				$element = this.getElementById(id);
 
 			if ($element.length)
 			{
@@ -1490,37 +1098,60 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 			}
 			else
 			{
-				this.rememberDisabledElementId(elementId);
+				this.rememberDisabledElementId(id);
 			}
 		}
+	},
+
+	selectElementAfterUpdate: function(id)
+	{
+		if (this._autoSelectElements === null)
+		{
+			this._autoSelectElements = [];
+		}
+
+		this._autoSelectElements.push(id);
 	},
 
 	addButton: function($button)
 	{
+		this.getButtonContainer().append($button);
+	},
+
+	isShowingSidebar: function()
+	{
+		if (this.showingSidebar === null)
+		{
+			this.showingSidebar = (this.$sidebar.length && !this.$sidebar.hasClass('hidden'));
+		}
+
+		return this.showingSidebar;
+	},
+
+	getButtonContainer: function()
+	{
 		// Is there a predesignated place where buttons should go?
 		if (this.settings.buttonContainer)
 		{
-			$(this.settings.buttonContainer).append($button);
+			return $(this.settings.buttonContainer);
 		}
-		else if (this.showingSidebar)
+		else if (this.isShowingSidebar())
 		{
-			this.$sidebarButtonContainer.append($button);
+			var $container = this.$sidebar.children('.buttons:first');
+
+			if ($container.length)
+			{
+				return $container;
+			}
+			else
+			{
+				return $('<div class="buttons"/>').prependTo(this.$sidebar);
+			}
 		}
 		else
 		{
-			$('<td class="thin"/>').prependTo(this.$toolbarTableRow).append($button);
+			return $('<td class="thin"/>').prependTo(this.$toolbarTableRow);
 		}
-	},
-
-	addCallback: function(currentCallback, newCallback)
-	{
-		return $.proxy(function() {
-			if (typeof currentCallback == 'function')
-			{
-				currentCallback.apply(this, arguments);
-			}
-			newCallback.apply(this, arguments);
-		}, this);
 	},
 
 	setIndexBusy: function()
@@ -1559,8 +1190,174 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 		this.base();
 	},
 
+	// Events
+	// =========================================================================
+
+	onAfterInit: function()
+	{
+		this.settings.onAfterInit()
+		this.trigger('afterInit');
+	},
+
+	onSelectSource: function()
+	{
+		this.settings.onSelectSource(this.sourceKey);
+		this.trigger('selectSource', {sourceKey: this.sourceKey});
+	},
+
+	onUpdateElements: function()
+	{
+		this.settings.onUpdateElements();
+		this.trigger('updateElements');
+	},
+
+	onSelectionChange: function()
+	{
+		this.settings.onSelectionChange();
+		this.trigger('selectionChange');
+	},
+
+	onEnableElements: function($elements)
+	{
+		this.settings.onEnableElements($elements);
+		this.trigger('enableElements', {elements: $elements});
+	},
+
+	onDisableElements: function($elements)
+	{
+		this.settings.onDisableElements($elements);
+		this.trigger('disableElements', {elements: $elements});
+	},
+
 	// Private methods
 	// =========================================================================
+
+	// UI state handlers
+	// -------------------------------------------------------------------------
+
+	_handleSourceSelectionChange: function()
+	{
+		// If the selected source was just removed (maybe because its parent was collapsed),
+		// there won't be a selected source
+		if (!this.sourceSelect.totalSelected)
+		{
+			this.sourceSelect.selectItem(this.$sources.first());
+			return;
+		}
+
+		if (this.selectSource(this.sourceSelect.$selectedItems))
+		{
+			this.updateElements();
+		}
+	},
+
+	_handleActionTriggerSubmit: function(ev)
+	{
+		ev.preventDefault();
+
+		var $form = $(ev.currentTarget);
+
+		// Make sure Craft.ElementActionTrigger isn't overriding this
+		if ($form.hasClass('disabled') || $form.data('custom-handler'))
+		{
+			return;
+		}
+
+		var actionHandle = $form.data('action'),
+			params = Garnish.getPostData($form);
+
+		this.submitAction(actionHandle, params);
+	},
+
+	_handleMenuActionTriggerSubmit: function(ev)
+	{
+		var $option = $(ev.option);
+
+		// Make sure Craft.ElementActionTrigger isn't overriding this
+		if ($option.hasClass('disabled') || $option.data('custom-handler'))
+		{
+			return;
+		}
+
+		var actionHandle = $option.data('action');
+		this.submitAction(actionHandle);
+	},
+
+	_handleStatusChange: function(ev)
+	{
+		this.statusMenu.$options.removeClass('sel');
+		var $option = $(ev.selectedOption).addClass('sel');
+		this.$statusMenuBtn.html($option.html());
+
+		this.status = $option.data('status');
+		this.updateElements();
+	},
+
+	_handleLocaleChange: function(ev)
+	{
+		this.localeMenu.$options.removeClass('sel');
+		var $option = $(ev.selectedOption).addClass('sel');
+		this.$localeMenuBtn.html($option.html());
+
+		this.locale = $option.data('locale');
+
+		if (this.initialized)
+		{
+			// Remember this locale for later
+			Craft.setLocalStorage('BaseElementIndex.locale', this.locale);
+
+			// Update the elements
+			this.updateElements();
+		}
+	},
+
+	_handleSortChange: function(ev)
+	{
+		var $option = $(ev.selectedOption);
+
+		if ($option.hasClass('disabled') || $option.hasClass('sel'))
+		{
+			return;
+		}
+
+		// Is this an attribute or a direction?
+		if ($option.parent().parent().is(this.$sortAttributesList))
+		{
+			this.setSortAttribute($option.data('attr'));
+		}
+		else
+		{
+			this.setSortDirection($option.data('dir'));
+		}
+
+		// Save it to localStorage (unless we're sorting by score)
+		var attr = this.getSelectedSortAttribute();
+
+		if (attr != 'score')
+		{
+			this.setSelecetedSourceState({
+				order: attr,
+				sort: this.getSelectedSortDirection()
+			});
+		}
+
+		this.updateElements();
+	},
+
+	_handleSelectionChange: function()
+	{
+		this.updateActionTriggers();
+		this.onSelectionChange();
+	},
+
+	_handleSourceToggleClick: function(ev)
+	{
+		this._toggleSource($(ev.currentTarget).prev('a'));
+		ev.stopPropagation();
+	},
+
+	// Source managemnet
+	// -------------------------------------------------------------------------
 
 	_getSourcesInList: function($list)
 	{
@@ -1592,12 +1389,6 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 		{
 			this.deinitSource($($sources[i]));
 		}
-	},
-
-	_onToggleClick: function(ev)
-	{
-		this._toggleSource($(ev.currentTarget).prev('a'));
-		ev.stopPropagation();
 	},
 
 	_toggleSource: function($source)
@@ -1632,20 +1423,26 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 		this._deinitSources($childSources);
 	},
 
-	_prepForNewElements: function()
+	// View
+	// -------------------------------------------------------------------------
+
+	_updateView: function(params, response)
 	{
-		if (this.actions)
+		// Cleanup
+		// -------------------------------------------------------------
+
+		// Kill the old view class
+		if (this.view)
 		{
-			// Get rid of the old action triggers regardless of whether the new batch has actions or not
-			this.hideActionTriggers();
-			this._$triggers = null;
+			this.view.destroy();
+			delete this.view;
 		}
 
-		// Reset the element select
-		if (this.elementSelect)
+		// Get rid of the old action triggers regardless of whether the new batch has actions or not
+		if (this.actions)
 		{
-			this.elementSelect.destroy();
-			delete this.elementSelect;
+			this.hideActionTriggers();
+			this.actions = this.actionsHeadHtml = this.actionsFootHtml = this._$triggers = null;
 		}
 
 		if (this.$selectAllContainer)
@@ -1653,283 +1450,89 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 			// Git rid of the old select all button
 			this.$selectAllContainer.detach();
 		}
-	},
 
-	_setupNewElements: function($newElements)
-	{
-		if (this.selectable)
-		{
-			// Initialize the element selector
-			this.elementSelect = this.createElementSelect();
-			this.elementSelect.addItems($newElements.filter(':not(.disabled)'));
-
-			if (this.actions)
-			{
-				// First time?
-				if (!this.$selectAllContainer)
-				{
-					// Create the select all button
-					this.$selectAllContainer = $('<td class="selectallcontainer thin"/>');
-					this.$selectAllBtn = $('<div class="btn"/>').appendTo(this.$selectAllContainer);
-					this.$selectAllCheckbox = $('<div class="checkbox"/>').appendTo(this.$selectAllBtn);
-
-					this.addListener(this.$selectAllBtn, 'click', function()
-					{
-						if (this.elementSelect.totalSelected == 0)
-						{
-							this.elementSelect.selectAll();
-						}
-						else
-						{
-							this.elementSelect.deselectAll();
-						}
-					});
-				}
-				else
-				{
-					// Reset the select all button
-					this.$selectAllCheckbox.removeClass('indeterminate checked');
-				}
-
-				// Place the select all button at the beginning of the toolbar
-				this.$selectAllContainer.prependTo(this.$toolbarTableRow);
-			}
-		}
-
-		// StructureTableSorter setup
+		// Batch actions setup
 		// -------------------------------------------------------------
 
-		if (
-			this.settings.context == 'index' &&
-			this.getSelectedSourceState('mode') == 'table' &&
-			this.getSelectedSortAttribute() == 'structure' &&
-			Garnish.hasAttr(this.$table, 'data-structure-id')
-		)
+		if (this.settings.context == 'index' && response.actions && response.actions.length)
 		{
-			// Create the sorter
-			this.structureTableSort = new Craft.StructureTableSorter(this, $newElements, {
-				onSortChange: $.proxy(this, '_onStructureTableSortChange')
-			});
-		}
-		else
-		{
-			this.structureTableSort = null;
-		}
-	},
+			this.actions = response.actions;
+			this.actionsHeadHtml = response.actionsHeadHtml;
+			this.actionsFootHtml = response.actionsFootHtml;
 
-	_onUpdateElements: function(response, append, $newElements)
-	{
-		Craft.appendHeadHtml(response.headHtml);
-		Craft.appendFootHtml(response.footHtml);
-
-		if (this._isStructureTableDraggingLastElements())
-		{
-			this._totalVisiblePostStructureTableDraggee = response.totalVisible;
-			this._morePendingPostStructureTableDraggee = response.more;
-		}
-		else
-		{
-			this._totalVisible = response.totalVisible;
-			this._morePending = this._morePendingPostStructureTableDraggee = response.more;
-		}
-
-		if (this.morePending)
-		{
-			// Is there room to load more right now?
-			if (this.canLoadMore())
+			// First time?
+			if (!this.$selectAllContainer)
 			{
-				this.loadMore();
+				// Create the select all button
+				this.$selectAllContainer = $('<td class="selectallcontainer thin"/>');
+				this.$selectAllBtn = $('<div class="btn"/>').appendTo(this.$selectAllContainer);
+				this.$selectAllCheckbox = $('<div class="checkbox"/>').appendTo(this.$selectAllBtn);
+
+				this.addListener(this.$selectAllBtn, 'click', function()
+				{
+					if (this.elementSelect.totalSelected == 0)
+					{
+						this.elementSelect.selectAll();
+					}
+					else
+					{
+						this.elementSelect.deselectAll();
+					}
+				});
 			}
 			else
 			{
-				this.addListener(this.$scroller, 'scroll', 'maybeLoadMore');
+				// Reset the select all button
+				this.$selectAllCheckbox.removeClass('indeterminate checked');
 			}
+
+			// Place the select all button at the beginning of the toolbar
+			this.$selectAllContainer.prependTo(this.$toolbarTableRow);
 		}
 
-		if (this.getSelectedSourceState('mode') == 'table')
-		{
-			Craft.cp.updateResponsiveTables();
-		}
+		// Update the view with the new container + elements HTML
+		// -------------------------------------------------------------
 
-		// Are there any elements we should auto-select?
+		this.$elements.html(response.html);
+		Craft.appendHeadHtml(response.headHtml);
+		Craft.appendFootHtml(response.footHtml);
+
+		// Create the view
+		// -------------------------------------------------------------
+
+		// Should we make the view selectable?
+		var selectable = (this.actions || this.settings.selectable);
+
+		this.view = this.createView(this.getSelectedViewMode(), {
+			context: this.settings.context,
+			batchSize: this.settings.batchSize,
+			params: params,
+			selectable: selectable,
+			multiSelect: (this.actions || this.settings.multiSelect),
+			checkboxMode: (this.settings.context == 'index' && this.actions),
+			onSelectionChange: $.proxy(this, '_handleSelectionChange')
+		});
+
+		// Auto-select elements
+		// -------------------------------------------------------------
+
 		if (this._autoSelectElements)
 		{
-			if (this.elementSelect)
+			if (selectable)
 			{
 				for (var i = 0; i < this._autoSelectElements.length; i++)
 				{
-					var $element = this.$elementContainer.children('[data-id="'+this._autoSelectElements[i]+'"]:first');
-
-					if ($element.length)
-					{
-						this.elementSelect.selectItem($element, true);
-					}
+					this.view.selectElementById(this._autoSelectElements[i]);
 				}
 			}
 
 			this._autoSelectElements = null;
 		}
 
-		this.onUpdateElements(append, $newElements);
-	},
+		// Trigger the event
+		// -------------------------------------------------------------
 
-	_collapseElement: function($toggle, force)
-	{
-		if (!force && !$toggle.hasClass('expanded'))
-		{
-			return false;
-		}
-
-		$toggle.removeClass('expanded');
-
-		// Find and remove the descendant rows
-		var $row = $toggle.parent().parent(),
-			id = $row.data('id'),
-			level = $row.data('level'),
-			$nextRow = $row.next();
-
-		while ($nextRow.length)
-		{
-			if (!Garnish.hasAttr($nextRow, 'data-spinnerrow'))
-			{
-				if ($nextRow.data('level') <= level)
-				{
-					break;
-				}
-
-				if (this.elementSelect)
-				{
-					this.elementSelect.removeItems($nextRow);
-				}
-
-				if (this.structureTableSort)
-				{
-					this.structureTableSort.removeItems($nextRow)
-				}
-
-				this._totalVisible--;
-			}
-
-			var $nextNextRow = $nextRow.next();
-			$nextRow.remove();
-			$nextRow = $nextNextRow;
-		}
-
-		// Remember that this row should be collapsed
-		if (!this.instanceState.collapsedElementIds)
-		{
-			this.instanceState.collapsedElementIds = [];
-		}
-
-		this.instanceState.collapsedElementIds.push(id);
-		this.setInstanceState('collapsedElementIds', this.instanceState.collapsedElementIds);
-
-		// Bottom of the index might be viewable now
-		this.maybeLoadMore();
-	},
-
-	_expandElement: function($toggle, force)
-	{
-		if (!force && $toggle.hasClass('expanded'))
-		{
-			return false;
-		}
-
-		$toggle.addClass('expanded');
-
-		// Remove this element from our list of collapsed elements
-		if (this.instanceState.collapsedElementIds)
-		{
-			var $row = $toggle.parent().parent(),
-				id = $row.data('id'),
-				index = $.inArray(id, this.instanceState.collapsedElementIds);
-
-			if (index != -1)
-			{
-				this.instanceState.collapsedElementIds.splice(index, 1);
-				this.setInstanceState('collapsedElementIds', this.instanceState.collapsedElementIds);
-
-				// Add a temporary row
-				var $spinnerRow = this._createSpinnerRowAfter($row);
-
-				// Update the elements
-				var data = this.getControllerData();
-				data.criteria.descendantOf = id;
-
-				Craft.postActionRequest('elementIndex/getMoreElements', data, $.proxy(function(response, textStatus)
-				{
-					// Do we even care about this anymore?
-					if (!$spinnerRow.parent().length)
-					{
-						return;
-					}
-
-					if (textStatus == 'success')
-					{
-						// Are there more descendants we didn't get in this batch?
-						if (response.more)
-						{
-							// Remove all the elements after it
-							var $nextRows = $spinnerRow.nextAll();
-
-							if (this.elementSelect)
-							{
-								this.elementSelect.removeItems($nextRows);
-							}
-
-							if (this.structureTableSort)
-							{
-								this.structureTableSort.removeItems($nextRows)
-							}
-
-							$nextRows.remove();
-							this._totalVisible -= $nextRows.length;
-						}
-						else
-						{
-							// Maintain the current 'more' status so
-							response.more = this._morePending;
-						}
-
-						var $newElements = $(response.html);
-						$spinnerRow.replaceWith($newElements);
-
-						if (this.actions || this.settings.selectable)
-						{
-							this.elementSelect.addItems($newElements.filter(':not(.disabled)'));
-							this.updateActionTriggers();
-						}
-
-						if (this.structureTableSort)
-						{
-							this.structureTableSort.addItems($newElements);
-						}
-
-						// Tweak response.totalVisible to account for the elements that come before them
-						response.totalVisible += this._totalVisible;
-
-						this._onUpdateElements(response, true, $newElements);
-					}
-
-				}, this));
-			}
-		}
-	},
-
-	_createSpinnerRowAfter: function($row)
-	{
-		return $(
-			'<tr data-spinnerrow>' +
-				'<td class="centeralign" colspan="'+$row.children().length+'">' +
-					'<div class="spinner"/>' +
-				'</td>' +
-			'</tr>'
-		).insertAfter($row);
-	},
-
-	_isStructureTableDraggingLastElements: function()
-	{
-		return (this.structureTableSort && this.structureTableSort.dragging && this.structureTableSort.draggingLastElements);
+		this.onUpdateElements();
 	},
 
 	_createTriggers: function()
@@ -1948,7 +1551,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 					.data('action', action.handle)
 					.append(action.trigger);
 
-				this.addListener($form, 'submit', 'handleActionTriggerSubmit');
+				this.addListener($form, 'submit', '_handleActionTriggerSubmit');
 				triggers.push($form);
 			}
 			else
@@ -2009,7 +1612,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
 		if ($btn)
 		{
-			$btn.data('menubtn').on('optionSelect', $.proxy(this, 'handleMenuActionTriggerSubmit'));
+			$btn.data('menubtn').on('optionSelect', $.proxy(this, '_handleMenuActionTriggerSubmit'));
 		}
 	},
 
@@ -2038,15 +1641,18 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 		context: 'index',
 		storageKey: null,
 		criteria: null,
+		batchSize: 50,
 		disabledElementIds: [],
 		selectable: false,
 		multiSelect: false,
 		buttonContainer: null,
+
+		onAfterInit: $.noop,
+		onSelectSource: $.noop,
 		onUpdateElements: $.noop,
 		onSelectionChange: $.noop,
 		onEnableElements: $.noop,
-		onDisableElements: $.noop,
-		onSelectSource: $.noop,
-		onAfterHtmlInit: $.noop
+		onDisableElements: $.noop
 	}
 });
+

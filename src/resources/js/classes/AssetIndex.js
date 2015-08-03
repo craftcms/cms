@@ -780,7 +780,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 	 *
 	 * @private
 	 */
-	onAfterHtmlInit: function()
+	afterInit: function()
 	{
 		if (!this.$uploadButton)
 		{
@@ -904,7 +904,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 		this.base();
 	},
 
-	getControllerData: function()
+	getElementParams: function()
 	{
 		var data = this.base();
 

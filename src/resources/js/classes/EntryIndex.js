@@ -7,7 +7,7 @@ Craft.EntryIndex = Craft.BaseElementIndex.extend(
 	$newEntryBtnGroup: null,
 	$newEntryBtn: null,
 
-	onAfterHtmlInit: function()
+	afterInit: function()
 	{
 		// Find which of the visible sections the user has permission to create new entries in
 		this.publishableSections = [];
