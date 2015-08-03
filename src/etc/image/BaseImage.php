@@ -93,6 +93,13 @@ abstract class BaseImage
 	 */
 	abstract public function saveAs($targetPath, $autoQuality = false);
 
+	/**
+	 * Returns true if the image is transparent.
+	 *
+	 * @return bool
+	 */
+	abstract public function isTransparent();
+
 	// Protected Methods
 	// =========================================================================
 

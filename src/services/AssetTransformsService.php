@@ -737,9 +737,8 @@ class AssetTransformsService extends BaseApplicationComponent
 		if ($maxCachedImageSize > 0 && ImageHelper::isImageManipulatable($localCopy))
 		{
 
-			craft()->images->loadImage($localCopy, $maxCachedImageSize, $maxCachedImageSize)
+			craft()->images->loadImage($localCopy)
 				->scaleToFit($maxCachedImageSize, $maxCachedImageSize)
-				->setQuality(100)
 				->saveAs($destination);
 
 			if ($localCopy != $destination)
@@ -1037,7 +1036,15 @@ class AssetTransformsService extends BaseApplicationComponent
 		$imageSource = $file->getTransformSource();
 		$quality = $transform->quality ? $transform->quality : craft()->config->get('defaultImageQuality');
 
-		$image = craft()->images->loadImage($imageSource);
+		if (StringHelper::toLowerCase($file->getExtension()) == 'svg' && $index->detectedFormat != 'svg')
+		{
+			$image = craft()->images->loadImage($imageSource, true, max($transform->width, $transform->height));
+		}
+		else
+		{
+			$image = craft()->images->loadImage($imageSource);
+		}
+
 		if ($image instanceof Image)
 		{
 			$image->setQuality($quality);

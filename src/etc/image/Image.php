@@ -138,11 +138,6 @@ class Image extends BaseImage
 
 		$extension = IOHelper::getExtension($path);
 
-		if ($extension === 'svg')
-		{
-			throw new Exception (Craft::t("This class does not support modifying SVG files."));
-		}
-
 		try
 		{
 			$this->_image = $this->_instance->open($path);
@@ -427,14 +422,13 @@ class Image extends BaseImage
 	}
 
 	/**
-	 * Export an SVG to a different format.
+	 * Load an image from an SVG string.
 	 *
 	 * @param $svgContent
-	 * @param $targetPath
 	 *
-	 * @return null
+	 * @return Image
 	 */
-	public function exportFromSvg($svgContent, $targetPath)
+	public function loadFromSVG($svgContent)
 	{
 		try
 		{
@@ -447,7 +441,7 @@ class Image extends BaseImage
 			$this->_image = $this->_instance->load($svgContent);
 		}
 
-		return $this->saveAs($targetPath);
+		return $this;
 	}
 
 	/**

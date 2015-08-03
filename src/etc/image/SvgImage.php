@@ -250,7 +250,8 @@ class SvgImage extends BaseImage
 	/**
 	 * Saves the image to the target path.
 	 *
-	 * @param string $targetPath
+	 * @param string  $targetPath
+	 * @param boolean $autoQuality
 	 *
 	 * @throws \Imagine\Exception\RuntimeException
 	 * @return null
@@ -261,16 +262,31 @@ class SvgImage extends BaseImage
 		{
 			IOHelper::writeToFile($targetPath, $this->_svgContent);
 		}
-		else if (craft()->images->isImagick())
-		{
-			$export = new Image();
-			$export->exportFromSvg($this->_svgContent, $targetPath);
-		}
 		else
 		{
-			throw new Exception(Craft::t("Imagick needs to be installed in order to export SVG files."));
+			throw new Exception(Craft::t("Manipulated SVG image rasterizing is unreliable. Please see ImagesService::loadImage()"));
 		}
 
+		return true;
+	}
+
+	/**
+	 * Get the SVG string.
+	 *
+	 * @return string
+	 */
+	public function getSvgString()
+	{
+		return $this->_svgContent;
+	}
+
+	/**
+	 * Returns true if the image is transparent.
+	 *
+	 * @return bool
+	 */
+	public function isTransparent()
+	{
 		return true;
 	}
 }

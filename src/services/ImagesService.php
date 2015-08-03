@@ -74,22 +74,33 @@ class ImagesService extends BaseApplicationComponent
 	 * Loads an image from a file system path.
 	 *
 	 * @param string $path
+	 * @param bool   $rasterize whether or not the image will be rasterized if it's an SVG
+	 * @param int    $svgSize   The size SVG should be scaled up to, if rasterized
 	 *
 	 * @throws \Exception
 	 * @return BaseImage
 	 */
-	public function loadImage($path)
+	public function loadImage($path, $rasterize = false, $svgSize = 1000)
 	{
 		if (StringHelper::toLowerCase(IOHelper::getExtension($path)) == 'svg')
 		{
 			$image = new SvgImage();
+			$image->loadImage($path);
+
+			if ($rasterize)
+			{
+				$image->scaleToFit($svgSize, $svgSize);
+				$svgString = $image->getSvgString();
+				$image = new Image();
+				$image->loadFromSVG($svgString);
+			}
 		}
 		else
 		{
 			$image = new Image();
+			$image->loadImage($path);
 		}
 
-		$image->loadImage($path);
 
 		return $image;
 	}
