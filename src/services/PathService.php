@@ -193,6 +193,18 @@ class PathService extends BaseApplicationComponent
 	}
 
 	/**
+	 * Returns the path to the craft/storage/runtime/pluginicons/ folder.
+	 *
+	 * @return string The path to the craft/storage/runtime/pluginicons/ folder.
+	 */
+	public function getPluginIconsPath()
+	{
+		$path = $this->getRuntimePath().'pluginicons/';
+		IOHelper::ensureFolderExists($path);
+		return $path;
+	}
+
+	/**
 	 * Returns the path to the craft/storage/runtime/logs/ folder.
 	 *
 	 * @return string The path to the craft/storage/runtime/logs/ folder.

@@ -27,6 +27,16 @@ class PluginVariable extends BaseComponentTypeVariable
 	}
 
 	/**
+	 * Returns the plugin’s description.
+	 *
+	 * @return string
+	 */
+	public function getDescription()
+	{
+		return $this->component->getDescription();
+	}
+
+	/**
 	 * Returns the plugin's version.
 	 *
 	 * @return string
@@ -88,6 +98,16 @@ class PluginVariable extends BaseComponentTypeVariable
 	public function isInstalled()
 	{
 		return $this->component->isInstalled;
+	}
+
+	/**
+	 * Returns the plugin's icon URL.
+	 *
+	 * @return bool
+	 */
+	public function getIconUrl($size = 72)
+	{
+		return $this->component->getIconUrl($size);
 	}
 
 	/**

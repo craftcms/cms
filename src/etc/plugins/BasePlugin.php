@@ -66,6 +66,32 @@ abstract class BasePlugin extends BaseSavableComponentType implements IPlugin
 	}
 
 	/**
+	 * Returns the plugin's description.
+	 *
+	 * @return string
+	 */
+	public function getDescription()
+	{
+	}
+
+	/**
+	 * Returns the plugin's icon URL.
+	 *
+	 * @return string
+	 */
+	public function getIconUrl($size = 100)
+	{
+		$baseFilename = 'icon';
+		$handle = StringHelper::toLowerCase($this->getClassHandle());
+		$originalIconFolderPath = craft()->path->getPluginsPath().$handle.'/resources/';
+
+		if(IOHelper::fileExists($originalIconFolderPath.$baseFilename.'.svg') || IOHelper::fileExists($originalIconFolderPath.$baseFilename.'.png'))
+		{
+			return UrlHelper::getResourceUrl('pluginicons/'.$handle.'/'.$size);
+		}
+	}
+
+	/**
 	 * Returns the plugin's source language
 	 *
 	 * @return string

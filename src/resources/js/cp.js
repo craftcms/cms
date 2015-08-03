@@ -13,11 +13,17 @@ var CP = Garnish.Base.extend(
 	$headerActionsList: null,
 	$siteName: null,
 	$nav: null,
+	$subnav: null,
 
 	$overflowNavMenuItem: null,
 	$overflowNavMenuBtn: null,
 	$overflowNavMenu: null,
 	$overflowNavMenuList: null,
+
+	$overflowSubnavMenuItem: null,
+	$overflowSubnavMenuBtn: null,
+	$overflowSubnavMenu: null,
+	$overflowSubnavMenuList: null,
 
 	$notificationWrapper: null,
 	$notificationContainer: null,
@@ -30,6 +36,12 @@ var CP = Garnish.Base.extend(
 	visibleNavItems: null,
 	totalNavWidth: null,
 	showingOverflowNavMenu: false,
+
+	subnavItems: null,
+	totalSubnavItems: null,
+	visibleSubnavItems: null,
+	totalSubnavWidth: null,
+	showingOverflowSubnavMenu: false,
 
 	fixedNotifications: false,
 
@@ -54,6 +66,7 @@ var CP = Garnish.Base.extend(
 		this.$headerActionsList = this.$header.find('#header-actions');
 		this.$siteName = this.$header.find('h2');
 		this.$nav = $('#nav');
+		this.$subnav = $('#subnav');
 		this.$notificationWrapper = $('#notifications-wrapper');
 		this.$notificationContainer = $('#notifications');
 		this.$main = $('#main');
@@ -80,6 +93,23 @@ var CP = Garnish.Base.extend(
 
 			this.navItems.push($li);
 			this.totalNavWidth += width;
+		}
+
+		// Find all the sub nav items
+		this.subnavItems = [];
+		this.totalSubnavWidth = CP.baseSubnavWidth;
+
+		var $subnavItems = this.$subnav.children();
+		this.totalSubnavItems = $subnavItems.length;
+		this.visibleSubnavItems = this.totalSubnavItems;
+
+		for (var i = 0; i < this.totalSubnavItems; i++)
+		{
+			var $li = $($subnavItems[i]),
+				width = $li.width();
+
+			this.subnavItems.push($li);
+			this.totalSubnavWidth += width;
 		}
 
 		this.addListener(Garnish.$win, 'resize', 'onWindowResize');
@@ -201,6 +231,9 @@ var CP = Garnish.Base.extend(
 		// Update the responsive nav
 		this.updateResponsiveNav();
 
+		// Update the responsive sub nav
+		this.updateResponsiveSubnav();
+
 		// Update any responsive tables
 		this.updateResponsiveTables();
 	},
@@ -275,6 +308,71 @@ var CP = Garnish.Base.extend(
 		}
 	},
 
+	updateResponsiveSubnav: function()
+	{
+		// Is an overflow menu going to be needed?
+		if (this.onWindowResize._cpWidth < this.totalSubnavWidth)
+		{
+			// Show the overflow menu button
+			if (!this.showingOverflowSubnavMenu)
+			{
+				if (!this.$overflowSubnavMenuBtn)
+				{
+					// Create it
+					this.$overflowSubnavMenuItem = $('<li/>').appendTo(this.$subnav);
+					this.$overflowSubnavMenuBtn = $('<a class="menubtn" title="'+Craft.t('More')+'">…</a>').appendTo(this.$overflowSubnavMenuItem);
+					this.$overflowSubnavMenu = $('<div id="overflow-subnav" class="menu" data-align="right"/>').appendTo(this.$overflowSubnavMenuItem);
+					this.$overflowSubnavMenuList = $('<ul/>').appendTo(this.$overflowSubnavMenu);
+					new Garnish.MenuBtn(this.$overflowSubnavMenuBtn);
+				}
+				else
+				{
+					this.$overflowSubnavMenuItem.show();
+				}
+
+				this.showingOverflowSubnavMenu = true;
+			}
+
+			// Is the nav too tall?
+			if (this.$subnav.height() > CP.subnavHeight)
+			{
+				// Move items to the overflow menu until the nav is back to its normal height
+				do
+				{
+					this.addLastVisibleSubnavItemToOverflowMenu();
+				}
+				while ((this.$subnav.height() > CP.subnavHeight) && (this.visibleSubnavItems > 0));
+			}
+			else
+			{
+				// See if we can fit any more nav items in the main menu
+				while ((this.$subnav.height() == CP.subnavHeight) && (this.visibleSubnavItems < this.totalSubnavItems))
+				{
+					this.addFirstOverflowSubnavItemToMainMenu();
+				}
+
+				// Now kick the last one back.
+				this.addLastVisibleSubnavItemToOverflowMenu();
+			}
+		}
+		else
+		{
+			if (this.showingOverflowSubnavMenu)
+			{
+				// Hide the overflow menu button
+				this.$overflowSubnavMenuItem.hide();
+
+				// Move any nav items in the overflow menu back to the main nav menu
+				while (this.visibleSubnavItems < this.totalSubnavItems)
+				{
+					this.addFirstOverflowSubnavItemToMainMenu();
+				}
+
+				this.showingOverflowSubnavMenu = false;
+			}
+		}
+	},
+
 	updateResponsiveTables: function()
 	{
 		if (!Garnish.isMobileBrowser())
@@ -343,6 +441,24 @@ var CP = Garnish.Base.extend(
 	{
 		this.navItems[this.visibleNavItems].insertBefore(this.$overflowNavMenuItem);
 		this.visibleNavItems++;
+	},
+
+	/**
+	 * Adds the last visible nav item to the overflow menu.
+	 */
+	addLastVisibleSubnavItemToOverflowMenu: function()
+	{
+		this.subnavItems[this.visibleSubnavItems-1].prependTo(this.$overflowSubnavMenuList);
+		this.visibleSubnavItems--;
+	},
+
+	/**
+	 * Adds the first overflow nav item back to the main nav menu.
+	 */
+	addFirstOverflowSubnavItemToMainMenu: function()
+	{
+		this.subnavItems[this.visibleSubnavItems].insertBefore(this.$overflowSubnavMenuItem);
+		this.visibleSubnavItems++;
 	},
 
 	updateFixedNotifications: function()
@@ -667,6 +783,8 @@ var CP = Garnish.Base.extend(
 	maxWidth: 1051, //1024,
 	navHeight: 38,
 	baseNavWidth: 30,
+	subnavHeight: 38,
+	baseSubnavWidth: 30,
 	notificationDuration: 2000
 });
 
