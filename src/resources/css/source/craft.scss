@@ -282,11 +282,12 @@ td.right { float: none; @include alignright; }
 
 ul.icons { margin-top: 20px; }
 ul.icons:after { @include clearafter; }
-ul.icons li { @include floatleft; margin: 0 5px 20px; }
+ul.icons li { @include floatleft; margin: 0 0 10px; }
 ul.icons li.break { clear: both; }
-ul.icons li a { display: block; position: relative; padding-top: 60px; width: 100px; text-align: center; color: $textcolor; }
+ul.icons li a { display: block; position: relative; padding: 10px; padding-top: 60px; width: 90px; text-align: center; color: $textcolor; border-radius: 4px; border: 1px solid #fff; }
+ul.icons li a img { width: 40px; height: 40px; position: absolute; top: 12px; left: 35px; }
 ul.icons li a:before { display: block; position: absolute; top: 0; @include left(0); width: 100%; font-size: 40px; line-height: 60px; }
-ul.icons li a:hover { text-decoration: none; color: $linkcolor; }
+ul.icons li a:hover { text-decoration: none; background-color: #f9f9f9; border-color: #f2f2f2; }
 
 /* ----------------------------------------
 /*  Buttons
@@ -734,19 +735,33 @@ ul.tree,
 .tree li .toggle { @include margin(7px, 0, 0, -15px); }
 
 /* status icons */
-.status { display: inline-block; @include margin-right(10px); width: 10px; height: 10px; background: url(../images/status.png) no-repeat 0 -30px; }
+.status { display: inline-block; @include margin-right(10px); width: 8px; height: 8px; border-radius: 100%; border: 1px solid transparent; }
+.status:not(.on):not(.live):not(.active):not(.enabled):not(.locked):not(.pending):not(.off):not(.suspended):not(.expired):not(.yellow):not(.orange):not(.red):not(.pink):not(.purple):not(.blue):not(.green):not(.turquoise):not(.light):not(.grey):not(.black) { border-color: rgba(0,0,0,0.40); }
 
+.status.green,
 .status.on,
 .status.live,
 .status.active,
-.status.enabled { background-position: 0 0; } /* green */
+.status.enabled { background-color: #27AE60; } /* green */
 
+.status.orange,
 .status.locked,
-.status.pending { background-position: 0 -10px; } /* orange */
+.status.pending { background-color: #F2842D; } /* orange */
 
+.status.red,
 .status.off,
 .status.suspended,
-.status.expired { background-position: 0 -20px; } /* red */
+.status.expired { background-color: #D0021B; } /* red */
+
+.status.yellow { background-color: #F1C40E; }
+.status.pink { background-color: #FF50F2; }
+.status.purple { background-color: #9B59B6; }
+.status.blue { background-color: #0D99F2; }
+.status.turquoise { background-color: #2CE0BD; }
+.status.light { background-color: #CCD1D6; }
+.status.grey { background-color: #98A3AE; }
+.status.black { background-color: #32475E; }
+
 .status.disabled { opacity: 1; }
 
 /* ----------------------------------------
@@ -968,7 +983,7 @@ body .redactor-dropdown a:hover { color: $textcolor; background-color: $lightsel
 .menu ul.padded li a { @include padding-left(24px); }
 .menu ul.padded li a[data-icon]:before,
 .menu ul.padded li a.icon:before,
-.menu ul.padded li a.sel:before { @include floatleft; @include margin(3px, 0, 0, -17px); font-size: 11px; color: $mediumtextcolor !important; }
+.menu ul.padded li a.sel:before { @include floatleft; @include margin(3px, 0, 0, -17px); font-size: 11px; color: #000 !important; opacity: .4; }
 .menu ul.padded li a.sel:not([data-icon]):before { content: 'check'; }
 .menu hr.padded { @include margin-left(10px); }
 
@@ -1304,7 +1319,7 @@ body.message .message-container .pane { top: 50%; margin-top: -33px !important; 
 
 	table thead th.ordered { background-image: url(../images/listview_sort_2x.png); background-size: 26px; }
 
-	.status { background-image: url(../images/status_2x.png); background-size: 10px 40px; }
+	// .status { background-image: url(../images/status_2x.png); background-size: 10px 40px; }
 
 	.spinner { background-image: url(../images/spinner_2x.gif); background-size: 20px; }
 	.spinner.big { background-image: url(../images/spinner_big_2x.gif); background-size: 48px; }

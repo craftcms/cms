@@ -1,0 +1,9 @@
+@charset "UTF-8";
+@import "shared";
+
+#plugins .icon {  display: inline-block; vertical-align: middle; margin-right: 12px; }
+#plugins .icon a {  display: block; line-height: 0; }
+#plugins .icon img {  width: 36px; }
+#plugins .infos { display: inline-block; vertical-align: middle; }
+#plugins .infos .name .light {  margin-left: 6px; }
+#plugins .infos .description { font-weight: normal; }

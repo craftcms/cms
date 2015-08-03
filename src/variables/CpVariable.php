@@ -21,7 +21,7 @@ class CpVariable
 	 *
 	 * @return array
 	 */
-	public function nav()
+	public function nav($iconSize = 32)
 	{
 		$nav['dashboard'] = array('label' => Craft::t('Dashboard'));
 
@@ -62,7 +62,7 @@ class CpVariable
 				if (craft()->userSession->checkPermission('accessPlugin-'.$plugin->getClassHandle()))
 				{
 					$lcHandle = StringHelper::toLowerCase($plugin->getClassHandle());
-					$nav[$lcHandle] = array('label' => $plugin->getName());
+					$nav[$lcHandle] = array('label' => $plugin->getName(), 'iconUrl' => $plugin->getIconUrl($iconSize));
 				}
 			}
 		}
@@ -105,7 +105,7 @@ class CpVariable
 	 *
 	 * @return array
 	 */
-	public function settings()
+	public function settings($iconSize = 32)
 	{
 		$label = Craft::t('System');
 
@@ -132,6 +132,18 @@ class CpVariable
 		if (craft()->getEdition() == Craft::Pro)
 		{
 			$settings[$label]['locales'] = array('icon' => 'language', 'label' => Craft::t('Locales'));
+		}
+
+		$label = Craft::t('Plugins');
+
+		foreach(craft()->plugins->getPlugins() as $plugin)
+		{
+			$settingsUrl = $plugin->getSettingsUrl();
+
+			if($settingsUrl)
+			{
+				$settings[$label][$plugin->getClassHandle()] = array('url' => $settingsUrl, 'iconUrl' => $plugin->getIconUrl($iconSize), 'label' => $plugin->name);
+			}
 		}
 
 		return $settings;

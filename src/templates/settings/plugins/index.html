@@ -2,6 +2,7 @@
 
 {% extends "_layouts/cp" %}
 {% set title = "Plugins"|t %}
+{% includeCssResource "css/plugins.css" %}
 
 {% set crumbs = [
 	{ label: "Settings"|t, url: url('settings') }
@@ -18,6 +19,7 @@
 		<table id="plugins" class="data fullwidth collapsible">
 			<thead>
 				<th scope="col">{{ "Plugin"|t }}</th>
+				<th class="thin"></th>
 				<th scope="col">{{ "Developer"|t }}</th>
 				<th scope="col">{{ "Status"|t }}</th>
 				<td class="thin"></td>
@@ -25,6 +27,7 @@
 			<tbody>
 				{% for plugin in plugins %}
 					{% set name = plugin.getName() -%}
+					{% set description = plugin.getDescription() -%}
 					{% set classHandle = plugin.getClassHandle() -%}
 					{% set isInstalled = plugin.isInstalled() -%}
 					{% set isEnabled = plugin.isEnabled() -%}
@@ -33,13 +36,33 @@
 
 					<tr data-name="{{ name }}">
 						<th data-title="{{ 'Name'|t }}">
-							{% if settingsUrl %}
-								<a href="{{ settingsUrl }}">{{ name }}</a>
-							{% else %}
-								{{ name }}
-							{% endif %}
-							<span class="light">{{ plugin.getVersion() }}</span>
+
+							<div class="icon">
+								<a href="{{ settingsUrl }}">
+									{% if plugin.iconUrl %}
+										<img src="{{ plugin.iconUrl }}" />
+									{% else %}
+									    <img src="{{ resourceUrl('images/default_plugin.svg') }}" width="36" height="36" />
+									{% endif %}
+								</a>
+							</div>
+
+							<div class="infos">
+								<div class="name">
+									{{ name }}
+									<span class="light">{{ plugin.getVersion() }}</span>
+								</div>
+
+								{% if description %}
+									<div class="description">{{ description }}</div>
+								{% endif %}
+							</div>
 						</th>
+						<td>
+							{% if settingsUrl %}
+								<a href="{{ settingsUrl }}" title="{{ "{name} Settings"|t({ name:plugin.name }) }}" data-icon="settings"></a>
+							{% endif %}
+						</td>
 						<td data-title="{{ 'Developer'|t }}"><a{% if developerUrl %} href="{{ developerUrl }}" target="_blank"{% endif %}>{{ plugin.getDeveloper() }}</a></td>
 						<td data-title="{{ 'Status'|t }}">
 							{% if isInstalled %}

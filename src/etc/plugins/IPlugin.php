@@ -24,6 +24,13 @@ interface IPlugin extends ISavableComponentType
 	public function getVersion();
 
 	/**
+	 * Returns the plugin's description.
+	 *
+	 * @return string The plugin's description.
+	 */
+	public function getDescription();
+
+	/**
 	 * Returns the plugin developer’s name.
 	 *
 	 * @return string The plugin developer’s name.
