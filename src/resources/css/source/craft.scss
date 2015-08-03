@@ -735,19 +735,33 @@ ul.tree,
 .tree li .toggle { @include margin(7px, 0, 0, -15px); }
 
 /* status icons */
-.status { display: inline-block; @include margin-right(10px); width: 10px; height: 10px; background: url(../images/status.png) no-repeat 0 -30px; }
+.status { display: inline-block; @include margin-right(10px); width: 8px; height: 8px; border-radius: 100%; border: 1px solid transparent; }
+.status:not(.on):not(.live):not(.active):not(.enabled):not(.locked):not(.pending):not(.off):not(.suspended):not(.expired):not(.yellow):not(.orange):not(.red):not(.pink):not(.purple):not(.blue):not(.green):not(.turquoise):not(.light):not(.grey):not(.black) { border-color: rgba(0,0,0,0.40); }
 
+.status.green,
 .status.on,
 .status.live,
 .status.active,
-.status.enabled { background-position: 0 0; } /* green */
+.status.enabled { background-color: #27AE60; } /* green */
 
+.status.orange,
 .status.locked,
-.status.pending { background-position: 0 -10px; } /* orange */
+.status.pending { background-color: #F2842D; } /* orange */
 
+.status.red,
 .status.off,
 .status.suspended,
-.status.expired { background-position: 0 -20px; } /* red */
+.status.expired { background-color: #D0021B; } /* red */
+
+.status.yellow { background-color: #F1C40E; }
+.status.pink { background-color: #FF50F2; }
+.status.purple { background-color: #9B59B6; }
+.status.blue { background-color: #0D99F2; }
+.status.turquoise { background-color: #2CE0BD; }
+.status.light { background-color: #CCD1D6; }
+.status.grey { background-color: #98A3AE; }
+.status.black { background-color: #32475E; }
+
 .status.disabled { opacity: 1; }
 
 /* ----------------------------------------
@@ -1305,7 +1319,7 @@ body.message .message-container .pane { top: 50%; margin-top: -33px !important; 
 
 	table thead th.ordered { background-image: url(../images/listview_sort_2x.png); background-size: 26px; }
 
-	.status { background-image: url(../images/status_2x.png); background-size: 10px 40px; }
+	// .status { background-image: url(../images/status_2x.png); background-size: 10px 40px; }
 
 	.spinner { background-image: url(../images/spinner_2x.gif); background-size: 20px; }
 	.spinner.big { background-image: url(../images/spinner_big_2x.gif); background-size: 48px; }
