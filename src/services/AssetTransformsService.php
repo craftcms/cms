@@ -737,9 +737,14 @@ class AssetTransformsService extends BaseApplicationComponent
 		if ($maxCachedImageSize > 0 && ImageHelper::isImageManipulatable($localCopy))
 		{
 
-			craft()->images->loadImage($localCopy)
-				->scaleToFit($maxCachedImageSize, $maxCachedImageSize)
-				->saveAs($destination);
+			$image = craft()->images->loadImage($localCopy);
+
+			if ($image instanceof Image)
+			{
+				$image->setQuality(100);
+			}
+
+			$image->scaleToFit($maxCachedImageSize, $maxCachedImageSize)->saveAs($destination);
 
 			if ($localCopy != $destination)
 			{
