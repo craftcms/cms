@@ -25,8 +25,16 @@ Craft.RichTextInput = Garnish.Base.extend(
 		this.elementLocale = elementLocale;
 		this.redactorConfig = redactorConfig;
 
-		this.redactorConfig.lang = redactorLang;
-		this.redactorConfig.direction = Craft.orientation;
+		if (!this.redactorConfig.lang)
+		{
+			this.redactorConfig.lang = redactorLang;
+		}
+
+		if (!this.redactorConfig.direction)
+		{
+			this.redactorConfig.direction = Craft.orientation;
+		}
+
 		this.redactorConfig.imageUpload = true;
 
 		var that = this,
