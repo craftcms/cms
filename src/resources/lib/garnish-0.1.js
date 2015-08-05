@@ -4715,7 +4715,7 @@ Garnish.Modal = Garnish.Base.extend({
 		onHide: $.noop,
 		onFadeIn: $.noop,
 		onFadeOut: $.noop,
-		closeOtherModals: true,
+		closeOtherModals: false,
 		hideOnEsc: true,
 		hideOnShadeClick: true,
 		shadeClass: 'modal-shade'
