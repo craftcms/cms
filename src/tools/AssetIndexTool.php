@@ -89,6 +89,8 @@ class AssetIndexTool extends BaseTool
 
 			$grandTotal = 0;
 
+			$filesToIndex = false;
+			
 			foreach ($sourceIds as $sourceId)
 			{
 				// Get the indexing list
@@ -117,9 +119,24 @@ class AssetIndexTool extends BaseTool
 										'process' => 1
 									)
 								);
+
+					$filesToIndex = true;
 				}
 
 				$batches[] = $batch;
+			}
+
+			if (!$filesToIndex)
+			{
+				$batches[] = array(
+					array(
+						'params' => array(
+							'process' => 1,
+							'noFiles' => 1,
+							'sessionId' => $sessionId,
+						)
+					)
+				);
 			}
 
 			craft()->httpSession->add('assetsSourcesBeingIndexed', $sourceIds);
@@ -134,11 +151,14 @@ class AssetIndexTool extends BaseTool
 		}
 		else if (!empty($params['process']))
 		{
-			// Index the file
-			craft()->assetIndexing->processIndexForSource($params['sessionId'], $params['offset'], $params['sourceId']);
+			if (empty($params['noFiles']))
+			{
+				// Index the file
+				craft()->assetIndexing->processIndexForSource($params['sessionId'], $params['offset'], $params['sourceId']);
+			}
 
 			// More files to index.
-			if (++$params['offset'] < $params['total'])
+			if (empty($params['noFiles']) && ++$params['offset'] < $params['total'])
 			{
 				return array(
 					'success' => true
