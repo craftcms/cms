@@ -58,10 +58,18 @@ class ImageHelper
 	 */
 	public static function isImageManipulatable($extension)
 	{
-		$extensions = array('jpg', 'jpeg', 'gif', 'png', 'wbmp', 'xbm', 'svg');
+		$path = craft()->path->getResourcesPath();
+		$file = $path."images/samples/sample.".StringHelper::toLowerCase($extension);
 
-		return in_array(mb_strtolower($extension), $extensions);
-
+		try
+		{
+			craft()->images->loadImage($file);
+			return true;
+		}
+		catch(\Exception $e)
+		{
+			return false;
+		}
 	}
 
 	/**
