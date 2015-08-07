@@ -1072,7 +1072,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 			var id = ids[i],
 				$element = this.getElementById(id);
 
-			if ($element.length)
+			if ($element && $element.length)
 			{
 				this.enableElements($element);
 			}
@@ -1092,7 +1092,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 			var id = ids[i],
 				$element = this.getElementById(id);
 
-			if ($element.length)
+			if ($element && $element.length)
 			{
 				this.disableElements($element);
 			}
