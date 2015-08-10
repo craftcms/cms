@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "7f9fa65d0913e1eeda5a47f1448511ba",
+    "hash": "7c68f98edd90c7f636d6b87a3a2398b1",
     "packages": [
         {
             "name": "aws/aws-sdk-php",
@@ -926,17 +926,11 @@
         },
         {
             "name": "imagine/imagine",
-            "version": "0.6.2",
+            "version": "dev-develop",
             "source": {
                 "type": "git",
-                "url": "https://github.com/avalanche123/Imagine.git",
-                "reference": "83ca8babede0e54f935ec09d55a726bf4b0a3f7c"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/avalanche123/Imagine/zipball/83ca8babede0e54f935ec09d55a726bf4b0a3f7c",
-                "reference": "83ca8babede0e54f935ec09d55a726bf4b0a3f7c",
-                "shasum": ""
+                "url": "https://github.com/pixelandtonic/Imagine",
+                "reference": "9d2b868e811f8d0986231d6c92a67b748e188c13"
             },
             "require": {
                 "php": ">=5.3.2"
@@ -960,7 +954,6 @@
                     "Imagine": "lib/"
                 }
             },
-            "notification-url": "https://packagist.org/downloads/",
             "license": [
                 "MIT"
             ],
@@ -979,7 +972,7 @@
                 "image manipulation",
                 "image processing"
             ],
-            "time": "2014-11-11 11:36:02"
+            "time": "2015-08-07 12:41:02"
         },
         {
             "name": "league/flysystem",
@@ -2977,7 +2970,8 @@
     "minimum-stability": "RC",
     "stability-flags": {
         "lsolesen/pel": 20,
-        "fxp/composer-asset-plugin": 10
+        "fxp/composer-asset-plugin": 10,
+        "imagine/imagine": 20
     },
     "prefer-stable": false,
     "prefer-lowest": false,
