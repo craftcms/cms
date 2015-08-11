@@ -1,8 +1,6 @@
 <?php
 namespace Craft;
 
-craft()->requireEdition(Craft::Pro);
-
 /**
  * Class UserGroup_UserRecord
  *
