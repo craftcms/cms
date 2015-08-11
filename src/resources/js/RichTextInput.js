@@ -16,7 +16,7 @@ Craft.RichTextInput = Garnish.Base.extend(
 	$textarea: null,
 	redactor: null,
 
-	init: function(id, entrySources, categorySources, assetSources, elementLocale, redactorConfig, redactorLang)
+	init: function(id, entrySources, categorySources, assetSources, elementLocale, direction, redactorConfig, redactorLang)
 	{
 		this.id = id;
 		this.entrySources = entrySources;
@@ -32,7 +32,7 @@ Craft.RichTextInput = Garnish.Base.extend(
 
 		if (!this.redactorConfig.direction)
 		{
-			this.redactorConfig.direction = Craft.orientation;
+			this.redactorConfig.direction = direction;
 		}
 
 		this.redactorConfig.imageUpload = true;

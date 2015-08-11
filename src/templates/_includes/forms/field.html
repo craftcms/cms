@@ -3,6 +3,7 @@
 {%- set locale = ((craft.isLocalized() and locale is defined) ? locale : null) %}
 {%- set instructions = (instructions is defined ? instructions : null) %}
 {%- set warning = (warning is defined ? warning : null) %}
+{%- set orientation = craft.i18n.getLocaleData(locale ?: craft.locale).getOrientation() %}
 {%- set errors = (errors is defined ? errors : null) -%}
 
 <div class="field{% if first is defined and first %} first{% endif %}"{% if id %} id="{{ id }}-field"{% endif %}>
@@ -21,7 +22,7 @@
 			{% endif %}
 		</div>
 	{% endif %}
-	<div class="input{% if errors %} errors{% endif %}">
+	<div class="input {{ orientation }}{% if errors %} errors{% endif %}">
 		{{ input|raw }}
 	</div>
 	{% if warning %}
