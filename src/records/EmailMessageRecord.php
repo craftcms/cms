@@ -1,8 +1,6 @@
 <?php
 namespace Craft;
 
-craft()->requireEdition(Craft::Client);
-
 /**
  * Class EmailMessageRecord
  *

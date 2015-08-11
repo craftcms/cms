@@ -766,19 +766,19 @@ Garnish.Base = Base.extend({
 		}
 	},
 
-	off: function(events)
+	off: function(events, handler)
 	{
 		var events = this._normalizeEvents(events);
 
-		for (var i = 0; i < events; i++)
+		for (var i = 0; i < events.length; i++)
 		{
 			var ev = events[i];
 
-			for (var j = this._eventHandlers.length - 1; j >= 0; i--)
+			for (var j = this._eventHandlers.length - 1; j >= 0; j--)
 			{
-				var handler = this._eventHandlers[j];
+				var eventHandler = this._eventHandlers[j];
 
-				if (handler.type == ev[0] && (!ev[1] || handler.namespace == ev[1]))
+				if (eventHandler.type == ev[0] && (!ev[1] || eventHandler.namespace == ev[1]) && eventHandler.handler === handler)
 				{
 					this._eventHandlers.splice(j, 1);
 				}
@@ -2156,6 +2156,9 @@ Garnish.Drag = Garnish.BaseDrag.extend({
 			Garnish.copyInputValues($draggee, $draggeeHelper);
 		}
 
+		// Remove any name= attributes so radio buttons don't lose their values
+		$draggeeHelper.find('[name]').attr('name', '');
+
 		$draggeeHelper.css({
 			width: $draggee.width() + 1, // Prevent the brower from wrapping text if the width was actually a fraction of a pixel larger
 			height: $draggee.height(),
@@ -3090,6 +3093,15 @@ Garnish.HUD = Garnish.Base.extend({
 	},
 
 	/**
+	 * Update the body contents
+	 */
+	updateBody: function(bodyContents)
+	{
+		this.$body.html('');
+		this.$body.append(bodyContents);
+	},
+
+	/**
 	 * Show
 	 */
 	show: function(ev)
@@ -3172,6 +3184,30 @@ Garnish.HUD = Garnish.Base.extend({
 
 	determineBestPosition: function()
 	{
+		// See if the trigger is fixed
+		var $parent = this.$trigger,
+			fixedTrigger = false;
+
+		do {
+			if ($parent.css('position') == 'fixed')
+			{
+				fixedTrigger = true;
+				break;
+			}
+
+			$parent = $parent.offsetParent();
+		}
+		while ($parent.length && $parent.prop('nodeName') != 'HTML');
+
+		if (fixedTrigger)
+		{
+			this.$hud.css('position', 'fixed');
+		}
+		else
+		{
+			this.$hud.css('position', 'absolute');
+		}
+
 		// Get the window sizez and trigger offset
 		this.updateElementProperties();
 
@@ -4546,7 +4582,7 @@ Garnish.Modal = Garnish.Base.extend({
 
 		// Set the width first so that the height can adjust for the width
 		this.updateSizeAndPosition._windowWidth = Garnish.$win.width();
-		this.updateSizeAndPosition._width = Math.min(this.getWidth(), this.updateSizeAndPosition._windowWidth - 20);
+		this.updateSizeAndPosition._width = Math.min(this.getWidth(), this.updateSizeAndPosition._windowWidth - this.settings.minGutter*2);
 
 		this.$container.css({
 			'width':      this.updateSizeAndPosition._width,
@@ -4556,7 +4592,7 @@ Garnish.Modal = Garnish.Base.extend({
 
 		// Now set the height
 		this.updateSizeAndPosition._windowHeight = Garnish.$win.height();
-		this.updateSizeAndPosition._height = Math.min(this.getHeight(), this.updateSizeAndPosition._windowHeight - 20);
+		this.updateSizeAndPosition._height = Math.min(this.getHeight(), this.updateSizeAndPosition._windowHeight - this.settings.minGutter*2);
 
 		this.$container.css({
 			'height':     this.updateSizeAndPosition._height,
@@ -4674,11 +4710,12 @@ Garnish.Modal = Garnish.Base.extend({
 		draggable: false,
 		dragHandleSelector: null,
 		resizable: false,
+		minGutter: 10,
 		onShow: $.noop,
 		onHide: $.noop,
 		onFadeIn: $.noop,
 		onFadeOut: $.noop,
-		closeOtherModals: true,
+		closeOtherModals: false,
 		hideOnEsc: true,
 		hideOnShadeClick: true,
 		shadeClass: 'modal-shade'

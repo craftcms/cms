@@ -229,7 +229,7 @@ class ElementsService extends BaseApplicationComponent
 					{
 						// Avoid matching fields named "asc" or "desc" in the string "column_name asc" or
 						// "column_name desc"
-						$order = preg_replace('/(?<!\s)\b'.$column['handle'].'\b/', $column['column'].'$1', $order);
+						$order = preg_replace('/(?<!\w\s)\b'.$column['handle'].'\b/', $column['column'].'$1', $order);
 					}
 				}
 
@@ -378,7 +378,7 @@ class ElementsService extends BaseApplicationComponent
 
 			if ($criteria->search)
 			{
-				$elementIds = craft()->search->filterElementIdsByQuery($elementIds, $criteria->search, false);
+				$elementIds = craft()->search->filterElementIdsByQuery($elementIds, $criteria->search, false, $criteria->locale);
 			}
 
 			return count($elementIds);
@@ -927,7 +927,7 @@ class ElementsService extends BaseApplicationComponent
 		{
 			$elementIds = $this->_getElementIdsFromQuery($query);
 			$scoredSearchResults = ($criteria->order == 'score');
-			$filteredElementIds = craft()->search->filterElementIdsByQuery($elementIds, $criteria->search, $scoredSearchResults);
+			$filteredElementIds = craft()->search->filterElementIdsByQuery($elementIds, $criteria->search, $scoredSearchResults, $criteria->locale);
 
 			// No results?
 			if (!$filteredElementIds)

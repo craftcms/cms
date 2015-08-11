@@ -455,7 +455,7 @@ class UrlManager extends \CUrlManager
 	{
 		if (!craft()->request->isAjaxRequest())
 		{
-			$trigger = craft()->config->get('privateTemplateTrigger');
+			$trigger = craft()->request->isCpRequest() ? '_' : craft()->config->get('privateTemplateTrigger');
 			$length = strlen($trigger);
 
 			foreach (craft()->request->getSegments() as $requestPathSeg)

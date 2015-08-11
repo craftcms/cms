@@ -108,10 +108,11 @@ class SearchService extends BaseApplicationComponent
 	 * @param array $elementIds   The list of element IDs to filter by the search query.
 	 * @param mixed $query        The search query (either a string or a SearchQuery instance)
 	 * @param bool  $scoreResults Whether to order the results based on how closely they match the query.
+	 * @param mixed $localeId     The locale to filter by.
 	 *
 	 * @return array The filtered list of element IDs.
 	 */
-	public function filterElementIdsByQuery($elementIds, $query, $scoreResults = true)
+	public function filterElementIdsByQuery($elementIds, $query, $scoreResults = true, $localeId = null)
 	{
 		if (is_string($query))
 		{
@@ -142,6 +143,12 @@ class SearchService extends BaseApplicationComponent
 		if (!$where)
 		{
 			return array();
+		}
+
+		// Add any locale restrictions
+		if ($localeId)
+		{
+			$where .= sprintf(' AND %s = %s', craft()->db->quoteColumnName('locale'), craft()->db->quoteValue($localeId));
 		}
 
 		// Begin creating SQL

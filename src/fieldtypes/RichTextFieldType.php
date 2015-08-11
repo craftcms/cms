@@ -123,13 +123,25 @@ class RichTextFieldType extends BaseFieldType
 		$this->_includeFieldResources($configJs);
 
 		$id = craft()->templates->formatInputId($name);
+		$localeId = (isset($this->element) ? $this->element->locale : craft()->language);
+
+		if (isset($this->model) && $this->model->translatable)
+		{
+			$locale = craft()->i18n->getLocaleData($localeId);
+			$orientation = '"'.$locale->getOrientation().'"';
+		}
+		else
+		{
+			$orientation = 'Craft.orientation';
+		}
 
 		craft()->templates->includeJs('new Craft.RichTextInput(' .
 			'"'.craft()->templates->namespaceInputId($id).'", ' .
 			JsonHelper::encode($this->_getSectionSources()).', ' .
 			JsonHelper::encode($this->_getCategorySources()).', ' .
 			JsonHelper::encode($this->_getAssetSources()).', ' .
-			'"'.(isset($this->element) ? $this->element->locale : craft()->language).'", ' .
+			'"'.$localeId.'", ' .
+			$orientation.', ' .
 			$configJs.', ' .
 			'"'.static::$_redactorLang.'"' .
 		');');
