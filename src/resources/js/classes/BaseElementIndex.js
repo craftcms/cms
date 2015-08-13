@@ -33,6 +33,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
 	$search: null,
 	searching: false,
+	searchText: null,
 	$clearSearchBtn: null,
 
 	$statusMenuBtn: null,
@@ -204,6 +205,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 		// Initialize the search input
 		// ---------------------------------------------------------------------
 
+		// Automatically update the elements after new search text has been sitting for a 1/2 second
 		this.addListener(this.$search, 'textchange', $.proxy(function()
 		{
 			if (!this.searching && this.$search.val())
@@ -220,9 +222,26 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 				clearTimeout(this.searchTimeout);
 			}
 
-			this.searchTimeout = setTimeout($.proxy(this, 'updateElements'), 500);
+			this.searchTimeout = setTimeout($.proxy(this, 'updateElementsIfSearchTextChanged'), 500);
 		}, this));
 
+		// Update the elements when the Return key is pressed
+		this.addListener(this.$search, 'keypress', $.proxy(function(ev)
+		{
+			if (ev.keyCode == Garnish.RETURN_KEY)
+			{
+				ev.preventDefault();
+
+				if (this.searchTimeout)
+				{
+					clearTimeout(this.searchTimeout);
+				}
+
+				this.updateElementsIfSearchTextChanged();
+			}
+		}, this));
+
+		// Clear the search when the X button is clicked
 		this.addListener(this.$clearSearchBtn, 'click', $.proxy(function()
 		{
 			this.$search.val('');
@@ -239,7 +258,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
 			this.stopSearching();
 
-			this.updateElements();
+			this.updateElementsIfSearchTextChanged();
 
 		}, this))
 
@@ -492,7 +511,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 		var criteria = $.extend({
 			status: this.status,
 			locale: this.locale,
-			search: (this.searching ? this.$search.val() : null),
+			search: this.searchText,
 			limit: this.settings.batchSize
 		}, this.settings.criteria);
 
@@ -543,6 +562,14 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 			}
 
 		}, this));
+	},
+
+	updateElementsIfSearchTextChanged: function()
+	{
+		if (this.searchText !== (this.searchText = this.searching ? this.$search.val() : null))
+		{
+			this.updateElements();
+		}
 	},
 
 	showActionTriggers: function()
@@ -788,8 +815,8 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
 		if (this.searching)
 		{
-			// Clear the search value without triggering the textchange event
-			this.$search.data('textchangeValue', '');
+			// Clear the search value without causing it to update elements
+			this.searchText = null;
 			this.$search.val('');
 			this.stopSearching();
 		}
