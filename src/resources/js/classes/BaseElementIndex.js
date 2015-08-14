@@ -1197,9 +1197,9 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 	{
 		this.sourceSelect.disable();
 
-		if (this.elementSelect)
+		if (this.view)
 		{
-			this.elementSelect.disable();
+			this.view.disable();
 		}
 
 		this.base();
@@ -1209,9 +1209,9 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 	{
 		this.sourceSelect.enable();
 
-		if (this.elementSelect)
+		if (this.view)
 		{
-			this.elementSelect.enable();
+			this.view.enable();
 		}
 
 		this.base();
@@ -1497,13 +1497,13 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
 				this.addListener(this.$selectAllBtn, 'click', function()
 				{
-					if (this.elementSelect.totalSelected == 0)
+					if (this.view.getSelectedElements().length == 0)
 					{
-						this.elementSelect.selectAll();
+						this.view.selectAllElements();
 					}
 					else
 					{
-						this.elementSelect.deselectAll();
+						this.view.deselectAllElements();
 					}
 				});
 			}

@@ -201,6 +201,16 @@ Craft.BaseElementIndexView = Garnish.Base.extend(
 		}
 	},
 
+	selectAllElements: function()
+	{
+		this.elementSelect.selectAll();
+	},
+
+	deselectAllElements: function()
+	{
+		this.elementSelect.deselectAll();
+	},
+
 	isVerticalList: function()
 	{
 		return false;
@@ -330,6 +340,22 @@ Craft.BaseElementIndexView = Garnish.Base.extend(
 	{
 		this.settings.onSelectionChange();
 		this.trigger('selectionChange');
+	},
+
+	disable: function()
+	{
+		if (this.elementSelect)
+		{
+			this.elementSelect.disable();
+		}
+	},
+
+	enable: function()
+	{
+		if (this.elementSelect)
+		{
+			this.elementSelect.enable();
+		}
 	},
 
 	destroy: function()
