@@ -66,17 +66,13 @@ class StructuresController extends Controller
         $this->_structure = Craft::$app->getStructures()->getStructureById($structureId);
 
         if (!$this->_structure) {
-            throw new Exception(Craft::t('app',
-                'No structure exists with the ID “{id}”.',
-                ['id' => $structureId]));
+            throw new Exception(Craft::t('app', 'No structure exists with the ID “{id}”.', ['id' => $structureId]));
         }
 
-        $this->_element = Craft::$app->getElements()->getElementById($elementId,
-            null, $localeId);
+        $this->_element = Craft::$app->getElements()->getElementById($elementId, null, $localeId);
 
         if (!$this->_element) {
-            throw new Exception(Craft::t('app',
-                'No element exists with the ID “{id}.”', ['id' => $elementId]));
+            throw new Exception(Craft::t('app', 'No element exists with the ID “{id}.”', ['id' => $elementId]));
         }
     }
 
@@ -87,8 +83,7 @@ class StructuresController extends Controller
      */
     public function actionGetElementLevelDelta()
     {
-        $delta = Craft::$app->getStructures()->getElementLevelDelta($this->_structure->id,
-            $this->_element);
+        $delta = Craft::$app->getStructures()->getElementLevelDelta($this->_structure->id, $this->_element);
 
         return $this->asJson([
             'delta' => $delta
@@ -106,18 +101,13 @@ class StructuresController extends Controller
         $prevElementId = Craft::$app->getRequest()->getBodyParam('prevId');
 
         if ($prevElementId) {
-            $prevElement = Craft::$app->getElements()->getElementById($prevElementId,
-                null, $this->_element->locale);
-            $success = Craft::$app->getStructures()->moveAfter($this->_structure->id,
-                $this->_element, $prevElement, 'auto', true);
+            $prevElement = Craft::$app->getElements()->getElementById($prevElementId, null, $this->_element->locale);
+            $success = Craft::$app->getStructures()->moveAfter($this->_structure->id, $this->_element, $prevElement, 'auto', true);
         } else if ($parentElementId) {
-            $parentElement = Craft::$app->getElements()->getElementById($parentElementId,
-                null, $this->_element->locale);
-            $success = Craft::$app->getStructures()->prepend($this->_structure->id,
-                $this->_element, $parentElement, 'auto', true);
+            $parentElement = Craft::$app->getElements()->getElementById($parentElementId, null, $this->_element->locale);
+            $success = Craft::$app->getStructures()->prepend($this->_structure->id, $this->_element, $parentElement, 'auto', true);
         } else {
-            $success = Craft::$app->getStructures()->prependToRoot($this->_structure->id,
-                $this->_element, 'auto', true);
+            $success = Craft::$app->getStructures()->prependToRoot($this->_structure->id, $this->_element, 'auto', true);
         }
 
         return $this->asJson([

@@ -21,23 +21,19 @@ class m150403_185142_volumes extends Migration
     public function safeUp()
     {
         if ($this->db->tableExists('{{%assetfiles}}')) {
-            MigrationHelper::renameTable('{{%assetfiles}}', '{{%assets}}',
-                $this);
+            MigrationHelper::renameTable('{{%assetfiles}}', '{{%assets}}', $this);
         }
 
         if ($this->db->tableExists('{{%assetsources}}')) {
-            MigrationHelper::renameTable('{{%assetsources}}', '{{%volumes}}',
-                $this);
+            MigrationHelper::renameTable('{{%assetsources}}', '{{%volumes}}', $this);
         }
 
         if ($this->db->tableExists('{{%assetfolders}}')) {
-            MigrationHelper::renameTable('{{%assetfolders}}',
-                '{{%volumefolders}}', $this);
+            MigrationHelper::renameTable('{{%assetfolders}}', '{{%volumefolders}}', $this);
         }
 
         if ($this->db->columnExists('{{%volumefolders}}', 'sourceId')) {
-            MigrationHelper::renameColumn('{{%volumefolders}}', 'sourceId',
-                'volumeId');
+            MigrationHelper::renameColumn('{{%volumefolders}}', 'sourceId', 'volumeId');
         }
 
         if (!$this->db->columnExists('{{%volumes}}', 'url')) {
@@ -45,28 +41,23 @@ class m150403_185142_volumes extends Migration
         }
 
         if (!$this->db->columnExists('{{%assetindexdata}}', 'timestamp')) {
-            $this->addColumnAfter('{{%assetindexdata}}', 'timestamp',
-                'datetime', 'size');
+            $this->addColumnAfter('{{%assetindexdata}}', 'timestamp', 'datetime', 'size');
         }
 
         if ($this->db->columnExists('{{%assets}}', 'sourceId')) {
-            MigrationHelper::renameColumn('{{%assets}}', 'sourceId', 'volumeId',
-                $this);
+            MigrationHelper::renameColumn('{{%assets}}', 'sourceId', 'volumeId', $this);
         }
 
         if ($this->db->columnExists('{{%assetfolders}}', 'sourceId')) {
-            MigrationHelper::renameColumn('{{%assetfolders}}', 'sourceId',
-                'volumeId', $this);
+            MigrationHelper::renameColumn('{{%assetfolders}}', 'sourceId', 'volumeId', $this);
         }
 
         if ($this->db->columnExists('{{%assetindexdata}}', 'sourceId')) {
-            MigrationHelper::renameColumn('{{%assetindexdata}}', 'sourceId',
-                'volumeId', $this);
+            MigrationHelper::renameColumn('{{%assetindexdata}}', 'sourceId', 'volumeId', $this);
         }
 
         if ($this->db->columnExists('{{%assettransformindex}}', 'sourceId')) {
-            MigrationHelper::renameColumn('{{%assettransformindex}}',
-                'sourceId', 'volumeId', $this);
+            MigrationHelper::renameColumn('{{%assettransformindex}}', 'sourceId', 'volumeId', $this);
         }
 
         // Update permissions
@@ -77,8 +68,7 @@ class m150403_185142_volumes extends Migration
             ->all();
 
         foreach ($permissions as $permission) {
-            $newName = str_replace('assetsource', 'volume',
-                $permission['name']);
+            $newName = str_replace('assetsource', 'volume', $permission['name']);
             $this->update('{{%userpermissions}}', ['name' => $newName],
                 ['id' => $permission['id']], [], false);
         }

@@ -270,8 +270,7 @@ abstract class BaseRelationField extends Field
     {
         $variables = $this->getInputTemplateVariables($value, $element);
 
-        return Craft::$app->getView()->renderTemplate($this->inputTemplate,
-            $variables);
+        return Craft::$app->getView()->renderTemplate($this->inputTemplate, $variables);
     }
 
     /**
@@ -323,8 +322,7 @@ abstract class BaseRelationField extends Field
 
             return $html;
         } else {
-            return '<p class="light">'.Craft::t('app',
-                'Nothing selected.').'</p>';
+            return '<p class="light">'.Craft::t('app', 'Nothing selected.').'</p>';
         }
     }
 
@@ -440,13 +438,11 @@ abstract class BaseRelationField extends Field
                 ];
             }
 
-            return Craft::$app->getView()->renderTemplateMacro('_includes/forms',
-                'selectField', [
+            return Craft::$app->getView()->renderTemplateMacro('_includes/forms', 'selectField',
+                [
                     [
                         'label' => Craft::t('app', 'Target Locale'),
-                        'instructions' => Craft::t('app',
-                            'Which locale do you want to select {type} in?',
-                            ['type' => StringHelper::toLowerCase(static::displayName())]),
+                        'instructions' => Craft::t('app', 'Which locale do you want to select {type} in?', ['type' => StringHelper::toLowerCase(static::displayName())]),
                         'id' => 'targetLocale',
                         'name' => 'targetLocale',
                         'options' => $localeOptions,

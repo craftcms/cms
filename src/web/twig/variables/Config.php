@@ -29,8 +29,7 @@ class Config
      */
     public function __isset($name)
     {
-        return \Craft::$app->getConfig()->exists($name,
-            ConfigCategory::General);
+        return \Craft::$app->getConfig()->exists($name, ConfigCategory::General);
     }
 
     /**

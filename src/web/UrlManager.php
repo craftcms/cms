@@ -79,8 +79,7 @@ class UrlManager extends \yii\web\UrlManager
             // Merge in any additional route params
             if ($this->_routeParams) {
                 if (isset($route[1])) {
-                    $route[1] = ArrayHelper::merge($route[1],
-                        $this->_routeParams);
+                    $route[1] = ArrayHelper::merge($route[1], $this->_routeParams);
                 } else {
                     $route[1] = $this->_routeParams;
                 }
@@ -164,8 +163,7 @@ class UrlManager extends \yii\web\UrlManager
                 // Code adapted from \yii\web\UrlManager::init()
                 if (
                     !isset($rule['verb']) &&
-                    preg_match("/^((?:($verbs),)*($verbs))\\s+(.*)$/", $key,
-                        $matches)
+                    preg_match("/^((?:($verbs),)*($verbs))\\s+(.*)$/", $key, $matches)
                 ) {
                     $rule['verb'] = explode(',', $matches[1]);
 
@@ -210,12 +208,10 @@ class UrlManager extends \yii\web\UrlManager
             $rules = require($baseCpRoutesPath.'/common.php');
 
             if (Craft::$app->getEdition() >= Craft::Client) {
-                $rules = array_merge($rules,
-                    require($baseCpRoutesPath.'/client.php'));
+                $rules = array_merge($rules, require($baseCpRoutesPath.'/client.php'));
 
                 if (Craft::$app->getEdition() == Craft::Pro) {
-                    $rules = array_merge($rules,
-                        require($baseCpRoutesPath.'/pro.php'));
+                    $rules = array_merge($rules, require($baseCpRoutesPath.'/pro.php'));
                 }
             }
 
@@ -289,8 +285,7 @@ class UrlManager extends \yii\web\UrlManager
             $this->_matchedElementRoute = false;
 
             if (Craft::$app->isInstalled() && Craft::$app->getRequest()->getIsSiteRequest()) {
-                $element = Craft::$app->getElements()->getElementByUri($path,
-                    Craft::$app->language, true);
+                $element = Craft::$app->getElements()->getElementByUri($path, Craft::$app->language, true);
 
                 if ($element) {
                     // Do any plugins want a say in this?

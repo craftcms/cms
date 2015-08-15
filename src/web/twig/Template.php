@@ -64,8 +64,7 @@ abstract class Template extends \Twig_Template
             }
         }
 
-        return parent::getAttribute($object, $item, $arguments, $type,
-            $isDefinedTest, $ignoreStrictCheck);
+        return parent::getAttribute($object, $item, $arguments, $type, $isDefinedTest, $ignoreStrictCheck);
     }
 
     // Private Methods

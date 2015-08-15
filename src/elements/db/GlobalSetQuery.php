@@ -95,8 +95,7 @@ class GlobalSetQuery extends ElementQuery
         ]);
 
         if ($this->handle) {
-            $this->subQuery->andWhere(DbHelper::parseParam('globalsets.handle',
-                $this->handle, $this->subQuery->params));
+            $this->subQuery->andWhere(DbHelper::parseParam('globalsets.handle', $this->handle, $this->subQuery->params));
         }
 
         $this->_applyEditableParam();

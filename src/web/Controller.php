@@ -55,8 +55,7 @@ abstract class Controller extends \yii\web\Controller
         if (parent::beforeAction($action)) {
             // Enforce $allowAnonymous
             if (
-                (is_array($this->allowAnonymous) && (!preg_grep("/{$action->id}/i",
-                        $this->allowAnonymous))) ||
+                (is_array($this->allowAnonymous) && (!preg_grep("/{$action->id}/i", $this->allowAnonymous))) ||
                 $this->allowAnonymous === false
             ) {
                 $this->requireLogin();
@@ -128,8 +127,7 @@ abstract class Controller extends \yii\web\Controller
 
         // Make sure they're an admin
         if (!Craft::$app->getUser()->getIsAdmin()) {
-            throw new HttpException(403, Craft::t('app',
-                'This action may only be performed by admins.'));
+            throw new HttpException(403, Craft::t('app', 'This action may only be performed by admins.'));
         }
     }
 

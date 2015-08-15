@@ -162,8 +162,7 @@ class Application extends \yii\web\Application
                 $build = $this->getInfo('build');
                 $url = "http://download.buildwithcraft.com/craft/{$version}/{$version}.{$build}/Craft-{$version}.{$build}.zip";
 
-                throw new HttpException(200, Craft::t('app',
-                    'Craft does not support backtracking to this version. Please upload Craft {url} or later.',
+                throw new HttpException(200, Craft::t('app', 'Craft does not support backtracking to this version. Please upload Craft {url} or later.',
                     [
                         'url' => '['.$build.']('.$url.')',
                     ]));
@@ -367,8 +366,7 @@ class Application extends \yii\web\Application
             $requestedRoute = $route;
             $parts = preg_split('/(?=[\p{Lu}])+/u', $route);
             $route = StringHelper::toLowerCase(implode('-', $parts));
-            $this->getDeprecator()->log('yii1-route',
-                'A Yii 1-styled route was requested: "'.$requestedRoute.'". It should be changed to: "'.$route.'".');
+            $this->getDeprecator()->log('yii1-route', 'A Yii 1-styled route was requested: "'.$requestedRoute.'". It should be changed to: "'.$route.'".');
         }
 
         return parent::createController($route);
@@ -494,8 +492,7 @@ class Application extends \yii\web\Application
 
                 return $this->runAction($route, $_GET);
             } catch (InvalidRouteException $e) {
-                throw new NotFoundHttpException(Craft::t('yii',
-                    'Page not found.'), $e->getCode(), $e);
+                throw new NotFoundHttpException(Craft::t('yii', 'Page not found.'), $e->getCode(), $e);
             }
         }
 
@@ -588,8 +585,7 @@ class Application extends \yii\web\Application
                 return $this->runAction('templates/manual-update');
             } else {
                 if ($this->getUpdates()->isBreakpointUpdateNeeded()) {
-                    throw new HttpException(200, Craft::t('app',
-                        'You need to be on at least Craft {url} before you can manually update to Craft {targetVersion} build {targetBuild}.',
+                    throw new HttpException(200, Craft::t('app', 'You need to be on at least Craft {url} before you can manually update to Craft {targetVersion} build {targetBuild}.',
                         [
                             'url' => '[build '.Craft::$app->minBuildRequired.']('.Craft::$app->minBuildUrl.')',
                             'targetVersion' => Craft::$app->version,
@@ -634,15 +630,12 @@ class Application extends \yii\web\Application
 
             if (!$this->getUser()->getIsGuest()) {
                 if ($request->getIsCpRequest()) {
-                    $error = Craft::t('app',
-                        'Your account doesn’t have permission to access the Control Panel when the system is offline.');
+                    $error = Craft::t('app', 'Your account doesn’t have permission to access the Control Panel when the system is offline.');
                 } else {
-                    $error = Craft::t('app',
-                        'Your account doesn’t have permission to access the site when the system is offline.');
+                    $error = Craft::t('app', 'Your account doesn’t have permission to access the site when the system is offline.');
                 }
 
-                $error .= ' ['.Craft::t('app',
-                        'Log out?').']('.UrlHelper::getUrl($this->getConfig()->getLogoutPath()).')';
+                $error .= ' ['.Craft::t('app', 'Log out?').']('.UrlHelper::getUrl($this->getConfig()->getLogoutPath()).')';
             } else {
                 // If this is a CP request, redirect to the Login page
                 if ($this->getRequest()->getIsCpRequest()) {

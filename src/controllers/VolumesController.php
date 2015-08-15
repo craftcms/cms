@@ -49,8 +49,7 @@ class VolumesController extends Controller
     {
         $variables['volumes'] = Craft::$app->getVolumes()->getAllVolumes();
 
-        return $this->renderTemplate('settings/assets/volumes/_index',
-            $variables);
+        return $this->renderTemplate('settings/assets/volumes/_index', $variables);
     }
 
     /**
@@ -71,8 +70,7 @@ class VolumesController extends Controller
                 $volume = Craft::$app->getVolumes()->getVolumeById($volumeId);
 
                 if (!$volume) {
-                    throw new HttpException(404,
-                        "No volume exists with the ID '$volumeId'.");
+                    throw new HttpException(404, "No volume exists with the ID '$volumeId'.");
                 }
             } else {
                 $volume = Craft::$app->getVolumes()->createVolume('craft\app\volumes\Local');
@@ -180,13 +178,11 @@ class VolumesController extends Controller
         $volume->setFieldLayout($fieldLayout);
 
         if (Craft::$app->getVolumes()->saveVolume($volume)) {
-            Craft::$app->getSession()->setNotice(Craft::t('app',
-                'Volume saved.'));
+            Craft::$app->getSession()->setNotice(Craft::t('app', 'Volume saved.'));
 
             return $this->redirectToPostedUrl();
         } else {
-            Craft::$app->getSession()->setError(Craft::t('app',
-                'Couldn’t save volume.'));
+            Craft::$app->getSession()->setError(Craft::t('app', 'Couldn’t save volume.'));
         }
 
         // Send the volume back to the template
@@ -247,8 +243,7 @@ class VolumesController extends Controller
         $volumeType = 'craft\app\volumes\\'.$volumeType;
 
         if (!class_exists($volumeType)) {
-            return $this->asErrorJson(Craft::t('app',
-                'The volume type specified does not exist!'));
+            return $this->asErrorJson(Craft::t('app', 'The volume type specified does not exist!'));
         }
 
         try {

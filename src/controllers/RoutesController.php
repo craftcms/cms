@@ -54,8 +54,7 @@ class RoutesController extends Controller
             $locale = null;
         }
 
-        $routeRecord = Craft::$app->getRoutes()->saveRoute($urlParts, $template,
-            $routeId, $locale);
+        $routeRecord = Craft::$app->getRoutes()->saveRoute($urlParts, $template, $routeId, $locale);
 
         if ($routeRecord->hasErrors()) {
             return $this->asJson(['errors' => $routeRecord->getErrors()]);

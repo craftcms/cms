@@ -221,8 +221,7 @@ class ElementIndexController extends BaseElementsController
     {
         if ($this->_sourceKey) {
             $elementType = $this->_elementType;
-            $source = $elementType::getSourceByKey($this->_sourceKey,
-                $this->_context);
+            $source = $elementType::getSourceByKey($this->_sourceKey, $this->_context);
 
             if (!$source) {
                 // That wasn't a valid source, or the user doesn't have access to it in this context
@@ -302,8 +301,7 @@ class ElementIndexController extends BaseElementsController
                     }
 
                     $descendantQuery->descendantOf($element);
-                    $descendantIds = array_merge($descendantIds,
-                        $descendantQuery->ids());
+                    $descendantIds = array_merge($descendantIds, $descendantQuery->ids());
                 }
 
                 if ($descendantIds) {

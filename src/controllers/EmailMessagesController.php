@@ -62,8 +62,7 @@ class EmailMessagesController extends Controller
         if (Craft::$app->getEmailMessages()->saveMessage($message)) {
             return $this->asJson(['success' => true]);
         } else {
-            return $this->asErrorJson(Craft::t('app',
-                'There was a problem saving your message.'));
+            return $this->asErrorJson(Craft::t('app', 'There was a problem saving your message.'));
         }
     }
 }

@@ -76,8 +76,7 @@ class Rebrand
     private function _getLogoPath()
     {
         if (!isset($this->_logoPath)) {
-            $files = IOHelper::getFolderContents(\Craft::$app->getPath()->getStoragePath().'/logo',
-                false);
+            $files = IOHelper::getFolderContents(\Craft::$app->getPath()->getStoragePath().'/logo', false);
 
             if (!empty($files)) {
                 $this->_logoPath = $files[0];

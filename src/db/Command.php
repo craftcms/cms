@@ -100,8 +100,7 @@ class Command extends \yii\db\Command
         }
 
         $params = [];
-        $sql = $this->db->getQueryBuilder()->insertOrUpdate($table, $keyColumns,
-            $updateColumns, $params);
+        $sql = $this->db->getQueryBuilder()->insertOrUpdate($table, $keyColumns, $updateColumns, $params);
 
         return $this->setSql($sql)->bindValues($params);
     }
@@ -140,8 +139,7 @@ class Command extends \yii\db\Command
     public function replace($table, $column, $find, $replace)
     {
         $params = [];
-        $sql = $this->db->getQueryBuilder()->replace($table, $column, $find,
-            $replace, $params);
+        $sql = $this->db->getQueryBuilder()->replace($table, $column, $find, $replace, $params);
 
         return $this->setSql($sql)->bindValues($params);
     }
@@ -195,8 +193,7 @@ class Command extends \yii\db\Command
      */
     public function addColumnFirst($table, $column, $type)
     {
-        $sql = $this->db->getQueryBuilder()->addColumnFirst($table, $column,
-            $type);
+        $sql = $this->db->getQueryBuilder()->addColumnFirst($table, $column, $type);
 
         return $this->setSql($sql);
     }
@@ -215,8 +212,7 @@ class Command extends \yii\db\Command
      */
     public function addColumnBefore($table, $column, $type, $before)
     {
-        $sql = $this->db->getQueryBuilder()->addColumnBefore($table, $column,
-            $type, $before);
+        $sql = $this->db->getQueryBuilder()->addColumnBefore($table, $column, $type, $before);
 
         return $this->setSql($sql);
     }
@@ -235,8 +231,7 @@ class Command extends \yii\db\Command
      */
     public function addColumnAfter($table, $column, $type, $after)
     {
-        $sql = $this->db->getQueryBuilder()->addColumnAfter($table, $column,
-            $type, $after);
+        $sql = $this->db->getQueryBuilder()->addColumnAfter($table, $column, $type, $after);
 
         return $this->setSql($sql);
     }
@@ -257,8 +252,7 @@ class Command extends \yii\db\Command
      */
     public function alterColumn($table, $column, $type, $newName = null, $after = null)
     {
-        $sql = $this->db->getQueryBuilder()->alterColumn($table, $column, $type,
-            $newName, $after);
+        $sql = $this->db->getQueryBuilder()->alterColumn($table, $column, $type, $newName, $after);
 
         return $this->setSql($sql);
     }

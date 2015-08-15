@@ -25,8 +25,7 @@ use yii\base\Component;
  * @license    http://buildwithcraft.com/license Craft License Agreement
  * @see        http://buildwithcraft.com
  * @package    craft.app.services
- * @since      1.0
- * @deprecated This class will have several breaking changes in Craft 3.0.
+ * @since      3.0
  */
 class Volumes extends Component
 {
@@ -91,8 +90,7 @@ class Volumes extends Component
             ]);
         }
 
-        foreach (Craft::$app->getPlugins()->call('getVolumeTypes', [],
-            true) as $pluginVolumeTypes) {
+        foreach (Craft::$app->getPlugins()->call('getVolumeTypes', [], true) as $pluginVolumeTypes) {
             $volumeTypes = array_merge($volumeTypes, $pluginVolumeTypes);
         }
 
@@ -128,7 +126,7 @@ class Volumes extends Component
     public function getViewableVolumeIds()
     {
         if (!isset($this->_viewableVolumeIds)) {
-            $this->_viewableVolumeIds = array();
+            $this->_viewableVolumeIds = [];
 
             foreach ($this->getAllVolumeIds() as $volumeId) {
                 if (Craft::$app->user->checkPermission('viewAssetVolume:'.$volumeId)) {
@@ -150,7 +148,7 @@ class Volumes extends Component
     public function getViewableVolumes($indexBy = null)
     {
         if (!isset($this->_viewableVolumes)) {
-            $this->_viewableVolumes = array();
+            $this->_viewableVolumes = [];
 
             foreach ($this->getAllVolumes() as $volume) {
                 if (Craft::$app->user->checkPermission('viewAssetVolume:'.$volume->id)) {
@@ -162,7 +160,7 @@ class Volumes extends Component
         if (!$indexBy) {
             return $this->_viewableVolumes;
         } else {
-            $volumes = array();
+            $volumes = [];
 
             foreach ($this->_viewableVolumes as $volume) {
                 $volumes[$volume->$indexBy] = $volume;
@@ -202,7 +200,7 @@ class Volumes extends Component
     public function getAllVolumes($indexBy = null)
     {
         if (!$this->_fetchedAllVolumes) {
-            $this->_volumesById = array();
+            $this->_volumesById = [];
 
             $results = $this->_createVolumeQuery()->all();
 
@@ -219,7 +217,7 @@ class Volumes extends Component
         } else if (!$indexBy) {
             return array_values($this->_volumesById);
         } else {
-            $volumes = array();
+            $volumes = [];
 
             foreach ($this->_volumesById as $volume) {
                 $volumes[$volume->$indexBy] = $volume;
@@ -245,7 +243,7 @@ class Volumes extends Component
             $volume->id = $volumeId;
             $volume->name = TempAssetvolumeType::volumeName;
             $volume->type = TempAssetvolumeType::volumeType;
-            $volume->settings = array('path' => Craft::$app->getPath()->getAssetsTempvolumePath(), 'url' => rtrim(UrlHelper::getResourceUrl(), '/').'/tempassets/');*/
+            $volume->settings = ['path' => Craft::$app->getPath()->getAssetsTempvolumePath(), 'url' => rtrim(UrlHelper::getResourceUrl(), '/').'/tempassets/'];*/
             return;// $volume;
         } else {
             // If we've already fetched all volumes we can save ourselves a trip to the DB for volume IDs that don't
@@ -255,7 +253,7 @@ class Volumes extends Component
                         $this->_volumesById))
             ) {
                 $result = $this->_createVolumeQuery()
-                    ->where('id = :id', array(':id' => $volumeId))
+                    ->where('id = :id', [':id' => $volumeId])
                     ->one();
 
                 if ($result) {
@@ -330,10 +328,10 @@ class Volumes extends Component
                     $volume->id = $volumeRecord->id;
                 } else {
                     // Update the top folder's name with the volume's new name
-                    $topFolder = Craft::$app->getAssets()->findFolder(array(
+                    $topFolder = Craft::$app->getAssets()->findFolder([
                         'volumeId' => $volume->id,
                         'parentId' => ':empty:'
-                    ));
+                    ]);
 
                     if ($topFolder !== null && $topFolder->name != $volume->name) {
                         $topFolder->name = $volume->name;
@@ -409,8 +407,7 @@ class Volumes extends Component
         }
 
         try {
-            return ComponentHelper::createComponent($config,
-                static::VOLUME_INTERFACE);
+            return ComponentHelper::createComponent($config, static::VOLUME_INTERFACE);
         } catch (InvalidComponentException $e) {
             $config['errorMessage'] = $e->getMessage();
 
@@ -438,14 +435,14 @@ class Volumes extends Component
             $assetFileIds = (new Query())
                 ->select('id')
                 ->from('{{%assets}}')
-                ->where(array('volumeId' => $volumeId))
+                ->where(['volumeId' => $volumeId])
                 ->column();
 
             Craft::$app->getElements()->deleteElementById($assetFileIds);
 
             // Nuke the asset volume.
             $affectedRows = Craft::$app->getDb()->createCommand()->delete('{{%volumes}}',
-                array('id' => $volumeId));
+                ['id' => $volumeId]);
 
             $transaction->commit();
 
@@ -488,7 +485,7 @@ class Volumes extends Component
 
             if (!$volumeRecord) {
                 throw new VolumeException(Craft::t('No volume exists with the ID “{id}”.',
-                    array('id' => $volumeId)));
+                    ['id' => $volumeId]));
             }
         } else {
             $volumeRecord = new AssetVolumeRecord();

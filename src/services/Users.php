@@ -152,8 +152,7 @@ class Users extends Component
      */
     public function getUserById($userId)
     {
-        return Craft::$app->getElements()->getElementById($userId,
-            User::className());
+        return Craft::$app->getElements()->getElementById($userId, User::className());
     }
 
     /**
@@ -261,19 +260,15 @@ class Users extends Component
                 $userRecord->verificationCode = null;
                 $userRecord->save();
             } else {
-                if (Craft::$app->getSecurity()->validatePassword($code,
-                    $userRecord->verificationCode)
-                ) {
+                if (Craft::$app->getSecurity()->validatePassword($code, $userRecord->verificationCode)) {
                     $valid = true;
                 } else {
                     $valid = false;
-                    Craft::warning('The verification code ('.$code.') given for userId: '.$user->id.' does not match the hash in the database.',
-                        __METHOD__);
+                    Craft::warning('The verification code ('.$code.') given for userId: '.$user->id.' does not match the hash in the database.', __METHOD__);
                 }
             }
         } else {
-            Craft::warning('Could not find a user with id:'.$user->id.'.',
-                __METHOD__);
+            Craft::warning('Could not find a user with id:'.$user->id.'.', __METHOD__);
         }
 
         return $valid;
@@ -337,8 +332,7 @@ class Users extends Component
             $userRecord = $this->_getUserRecordById($user->id);
 
             if (!$userRecord) {
-                throw new Exception(Craft::t('app',
-                    'No user exists with the ID “{id}”.', ['id' => $user->id]));
+                throw new Exception(Craft::t('app', 'No user exists with the ID “{id}”.', ['id' => $user->id]));
             }
 
             $oldUsername = $userRecord->username;
@@ -392,8 +386,7 @@ class Users extends Component
             // Is the event is giving us the go-ahead?
             if ($event->isValid) {
                 // Save the element
-                $success = Craft::$app->getElements()->saveElement($user,
-                    false);
+                $success = Craft::$app->getElements()->saveElement($user, false);
 
                 // If it didn't work, rollback the transaction in case something changed in onBeforeSaveUser
                 if (!$success) {
@@ -413,10 +406,8 @@ class Users extends Component
                     // Has the username changed?
                     if ($user->username != $oldUsername) {
                         // Rename the user's photo directory
-                        $cleanOldUsername = AssetsHelper::prepareAssetName($oldUsername,
-                            false);
-                        $cleanUsername = AssetsHelper::prepareAssetName($user->username,
-                            false);
+                        $cleanOldUsername = AssetsHelper::prepareAssetName($oldUsername, false);
+                        $cleanUsername = AssetsHelper::prepareAssetName($user->username, false);
                         $userPhotosPath = Craft::$app->getPath()->getUserPhotosPath();
                         $oldFolder = $userPhotosPath.'/'.$cleanOldUsername;
                         $newFolder = $userPhotosPath.'/'.$cleanUsername;
@@ -644,8 +635,7 @@ class Users extends Component
         $result = $image->saveAs($targetPath);
 
         if ($result) {
-            IOHelper::changePermissions($targetPath,
-                Craft::$app->getConfig()->get('defaultFilePermissions'));
+            IOHelper::changePermissions($targetPath, Craft::$app->getConfig()->get('defaultFilePermissions'));
             $record = UserRecord::findOne($user->id);
             $record->photo = $filename;
             $record->save();
@@ -692,9 +682,7 @@ class Users extends Component
     {
         $userRecord = $this->_getUserRecordById($user->id);
 
-        if ($this->_setPasswordOnUserRecord($user, $userRecord, true,
-            $forceDifferent)
-        ) {
+        if ($this->_setPasswordOnUserRecord($user, $userRecord, true, $forceDifferent)) {
             $userRecord->save();
 
             return true;
@@ -845,8 +833,7 @@ class Users extends Component
 
                 // Update the user profile photo folder name, if it exists.
                 if (IOHelper::folderExists($oldProfilePhotoPath)) {
-                    IOHelper::rename($oldProfilePhotoPath,
-                        $newProfilePhotoPath);
+                    IOHelper::rename($oldProfilePhotoPath, $newProfilePhotoPath);
                 }
             }
 
@@ -1226,8 +1213,7 @@ class Users extends Component
                 ['in', 'id', $ids])->execute();
 
             if ($affectedRows > 0) {
-                Craft::info('Just deleted '.$affectedRows.' pending users from the users table, because the were more than '.$duration.' old.',
-                    __METHOD__);
+                Craft::info('Just deleted '.$affectedRows.' pending users from the users table, because the were more than '.$duration.' old.', __METHOD__);
             }
         }
     }
@@ -1248,8 +1234,7 @@ class Users extends Component
         $userRecord = UserRecord::findOne($userId);
 
         if (!$userRecord) {
-            throw new Exception(Craft::t('app',
-                'No user exists with the ID “{id}”.', ['id' => $userId]));
+            throw new Exception(Craft::t('app', 'No user exists with the ID “{id}”.', ['id' => $userId]));
         }
 
         return $userRecord;
@@ -1326,12 +1311,9 @@ class Users extends Component
         if ($passwordModel->validate()) {
             if ($forceDifferentPassword) {
                 // See if the passwords are the same.
-                if (Craft::$app->getSecurity()->validatePassword($user->newPassword,
-                    $userRecord->password)
-                ) {
+                if (Craft::$app->getSecurity()->validatePassword($user->newPassword, $userRecord->password)) {
                     $user->addErrors([
-                        $passwordErrorField => Craft::t('app',
-                            'That password is the same as your old password. Please choose a new one.'),
+                        $passwordErrorField => Craft::t('app', 'That password is the same as your old password. Please choose a new one.'),
                     ]);
                 } else {
                     $validates = true;

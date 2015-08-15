@@ -118,17 +118,14 @@ class TemplatesController extends Controller
                     }
                 }
 
-                throw new Exception(Craft::t('app',
-                    'The update can’t be installed :( {message}',
-                    ['message' => $message]));
+                throw new Exception(Craft::t('app', 'The update can’t be installed :( {message}', ['message' => $message]));
             } else {
                 return $this->renderTemplate('_special/cantrun',
                     ['reqCheck' => $reqCheck]);
             }
         } else {
             // Cache the app path.
-            Craft::$app->getCache()->set('appPath',
-                Craft::$app->getPath()->getAppPath());
+            Craft::$app->getCache()->set('appPath', Craft::$app->getPath()->getAppPath());
         }
     }
 

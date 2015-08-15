@@ -130,12 +130,11 @@ abstract class BaseOptionsField extends Field
             $this->options = [['label' => '', 'value' => '']];
         }
 
-        return Craft::$app->getView()->renderTemplateMacro('_includes/forms',
-            'editableTableField', [
+        return Craft::$app->getView()->renderTemplateMacro('_includes/forms', 'editableTableField',
+            [
                 [
                     'label' => $this->getOptionsSettingsLabel(),
-                    'instructions' => Craft::t('app',
-                        'Define the available options.'),
+                    'instructions' => Craft::t('app', 'Define the available options.'),
                     'id' => 'options',
                     'name' => 'options',
                     'addRowLabel' => Craft::t('app', 'Add an option'),
@@ -190,8 +189,7 @@ abstract class BaseOptionsField extends Field
 
         foreach ($this->options as $option) {
             $selected = in_array($option['value'], $selectedValues);
-            $options[] = new OptionData($option['label'], $option['value'],
-                $selected);
+            $options[] = new OptionData($option['label'], $option['value'], $selected);
         }
 
         $value->setOptions($options);

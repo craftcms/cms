@@ -79,9 +79,9 @@ class Local extends Volume
     public function getSettingsHtml()
     {
         return Craft::$app->getView()->renderTemplate('_components/volumes/Local/settings',
-            array(
+            [
                 'volume' => $this,
-            ));
+            ]);
     }
 
     /**
@@ -97,8 +97,7 @@ class Local extends Volume
      */
     public function getRootUrl()
     {
-        return rtrim(Craft::$app->getConfig()->parseEnvironmentString($this->url),
-            '/').'/';
+        return rtrim(Craft::$app->getConfig()->parseEnvironmentString($this->url), '/').'/';
     }
 
 

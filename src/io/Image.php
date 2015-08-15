@@ -427,8 +427,7 @@ class Image
             $this->_image = $gif;
         } else {
             $this->_image->resize(
-                new \Imagine\Image\Box($targetWidth,
-                    $targetHeight),
+                new \Imagine\Image\Box($targetWidth, $targetHeight),
                 $this->_getResizeFilter()
             );
         }

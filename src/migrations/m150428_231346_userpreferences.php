@@ -32,8 +32,7 @@ class m150428_231346_userpreferences extends Migration
 
         if ($this->db->tableExists($this->_prefsTable)) {
             $this->truncateTable($this->_prefsTable);
-            $this->dropForeignKey($this->db->getForeignKeyName($this->_prefsTable,
-                'userId'), $this->_prefsTable);
+            $this->dropForeignKey($this->db->getForeignKeyName($this->_prefsTable, 'userId'), $this->_prefsTable);
             $this->_createUserPrefsIndexAndForeignKey();
 
             return;
@@ -132,8 +131,7 @@ class m150428_231346_userpreferences extends Migration
                 $rows[] = [$user['id'], JsonHelper::encode($prefs)];
             }
 
-            $this->batchInsert($this->_prefsTable, ['userId', 'preferences'],
-                $rows, false);
+            $this->batchInsert($this->_prefsTable, ['userId', 'preferences'], $rows, false);
         }
     }
 }

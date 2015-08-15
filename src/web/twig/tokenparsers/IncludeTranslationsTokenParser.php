@@ -41,8 +41,7 @@ class IncludeTranslationsTokenParser extends \Twig_TokenParser
 
         $stream->expect(\Twig_Token::BLOCK_END_TYPE);
 
-        return new IncludeTranslationsNode($messages, [], $lineno,
-            $this->getTag());
+        return new IncludeTranslationsNode($messages, [], $lineno, $this->getTag());
     }
 
     /**

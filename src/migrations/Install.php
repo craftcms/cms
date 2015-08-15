@@ -68,8 +68,7 @@ class Install extends InstallMigration
         // TODO: MySQL specific
         $this->db->createCommand(
             'CREATE FULLTEXT INDEX '.
-            $this->db->quoteTableName($this->db->getIndexName('{{%searchindex}}',
-                'keywords')).' ON '.
+            $this->db->quoteTableName($this->db->getIndexName('{{%searchindex}}', 'keywords')).' ON '.
             $this->db->quoteTableName('{{%searchindex}}').' '.
             '('.$this->db->quoteColumnName('keywords').')'
         )->execute();

@@ -248,8 +248,7 @@ abstract class Element extends Component implements ElementInterface
                 // typeId, title desc => typeId [sort], title desc
                 // typeId desc        => typeId [sort]
 
-                $elementQuery->orderBy(preg_replace('/^(.*?)(?:\s+(?:asc|desc))?(,.*)?$/i',
-                    "$1 {$sort}$2", $order));
+                $elementQuery->orderBy(preg_replace('/^(.*?)(?:\s+(?:asc|desc))?(,.*)?$/i', "$1 {$sort}$2", $order));
             }
         }
 
@@ -375,8 +374,7 @@ abstract class Element extends Component implements ElementInterface
 
         if ($fieldLayout) {
             $originalNamespace = Craft::$app->getView()->getNamespace();
-            $namespace = Craft::$app->getView()->namespaceInputName('fields',
-                $originalNamespace);
+            $namespace = Craft::$app->getView()->namespaceInputName('fields', $originalNamespace);
             Craft::$app->getView()->setNamespace($namespace);
 
             foreach ($fieldLayout->getFields() as $field) {
@@ -387,8 +385,7 @@ abstract class Element extends Component implements ElementInterface
                         'required' => $field->required
                     ]);
 
-                $html .= Craft::$app->getView()->namespaceInputs($fieldHtml,
-                    'fields');
+                $html .= Craft::$app->getView()->namespaceInputs($fieldHtml, 'fields');
             }
 
             Craft::$app->getView()->setNamespace($originalNamespace);
@@ -654,8 +651,7 @@ abstract class Element extends Component implements ElementInterface
         if ($this->uri !== null) {
             $useLocaleSiteUrl = (
                 ($this->locale != Craft::$app->language) &&
-                ($localeSiteUrl = Craft::$app->getConfig()->getLocalized('siteUrl',
-                    $this->locale))
+                ($localeSiteUrl = Craft::$app->getConfig()->getLocalized('siteUrl', $this->locale))
             );
 
             if ($useLocaleSiteUrl) {

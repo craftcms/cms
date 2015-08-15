@@ -76,8 +76,7 @@ class DbBackup
     public function setIgnoreDataTables($tables)
     {
         if (is_array($tables)) {
-            $this->_ignoreDataTables = array_merge($this->_ignoreDataTables,
-                $tables);
+            $this->_ignoreDataTables = array_merge($this->_ignoreDataTables, $tables);
         } else if ($tables === false) {
             $this->_ignoreDataTables = [];
         }
@@ -128,9 +127,7 @@ class DbBackup
     public function restore($filePath)
     {
         if (!IOHelper::fileExists($filePath)) {
-            throw new Exception(Craft::t('app',
-                'Could not find the SQL file to restore: {filePath}',
-                ['filePath' => $filePath]));
+            throw new Exception(Craft::t('app', 'Could not find the SQL file to restore: {filePath}', ['filePath' => $filePath]));
         }
 
         $this->_nukeDb();
@@ -235,11 +232,9 @@ class DbBackup
             if (count($value[0]) > 0) {
                 for ($i = 0; $i < count($value[0]); $i++) {
                     if (!StringHelper::contains($value[0][$i], 'CONSTRAINT')) {
-                        $sql .= preg_replace('/(FOREIGN[\s]+KEY)/', "\tADD $1",
-                            $value[0][$i]);
+                        $sql .= preg_replace('/(FOREIGN[\s]+KEY)/', "\tADD $1", $value[0][$i]);
                     } else {
-                        $sql .= preg_replace('/(CONSTRAINT)/', "\tADD $1",
-                            $value[0][$i]);
+                        $sql .= preg_replace('/(CONSTRAINT)/', "\tADD $1", $value[0][$i]);
                     }
 
                     if ($i == count($value[0]) - 1) {
@@ -281,8 +276,7 @@ class DbBackup
      */
     private function _processFooter()
     {
-        IOHelper::writeToFile($this->_filePath,
-            PHP_EOL.'SET FOREIGN_KEY_CHECKS = 1;'.PHP_EOL, true, true);
+        IOHelper::writeToFile($this->_filePath, PHP_EOL.'SET FOREIGN_KEY_CHECKS = 1;'.PHP_EOL, true, true);
     }
 
 
@@ -300,8 +294,7 @@ class DbBackup
         $q = Craft::$app->getDb()->createCommand('SHOW CREATE TABLE '.Craft::$app->getDb()->quoteTableName($resultName).';')->queryOne();
 
         if (isset($q['Create Table'])) {
-            return $this->_processTable($resultName, $q['Create Table'],
-                $action);
+            return $this->_processTable($resultName, $q['Create Table'], $action);
         } else if (isset($q['Create View'])) {
             return $this->_processView($resultName, $q['Create View'], $action);
         }
@@ -324,8 +317,7 @@ class DbBackup
             $pattern = '/CONSTRAINT.*|FOREIGN[\s]+KEY/';
 
             // constraints to $tableName
-            preg_match_all($pattern, $createQuery,
-                $this->_constraints[$tableName]);
+            preg_match_all($pattern, $createQuery, $this->_constraints[$tableName]);
 
             $createQuery = preg_split('/$\R?^/m', $createQuery);
             $createQuery = preg_replace($pattern, '', $createQuery);
@@ -343,8 +335,7 @@ class DbBackup
             }
 
             if ($removed) {
-                $createQuery[count($createQuery) - 2] = rtrim($createQuery[count($createQuery) - 2],
-                    ',');
+                $createQuery[count($createQuery) - 2] = rtrim($createQuery[count($createQuery) - 2], ',');
             }
 
             // resort the keys
@@ -368,9 +359,7 @@ class DbBackup
 
             if (!in_array($tableName, $this->_ignoreDataTables)) {
                 // Data!
-                IOHelper::writeToFile($this->_filePath,
-                    PHP_EOL.'--'.PHP_EOL.'-- Data for table `'.$tableName.'`'.PHP_EOL.'--'.PHP_EOL.PHP_EOL,
-                    true, true);
+                IOHelper::writeToFile($this->_filePath, PHP_EOL.'--'.PHP_EOL.'-- Data for table `'.$tableName.'`'.PHP_EOL.'--'.PHP_EOL.PHP_EOL, true, true);
 
                 $batchSize = 1000;
 
@@ -403,14 +392,12 @@ class DbBackup
                             }
 
                             $insertStatement .= ' ('.implode(', ', $row).');';
-                            IOHelper::writeToFile($this->_filePath,
-                                $insertStatement.PHP_EOL, true, true);
+                            IOHelper::writeToFile($this->_filePath, $insertStatement.PHP_EOL, true, true);
                         }
                     }
                 }
 
-                IOHelper::writeToFile($this->_filePath, PHP_EOL.PHP_EOL, true,
-                    true);
+                IOHelper::writeToFile($this->_filePath, PHP_EOL.PHP_EOL, true, true);
             }
         }
 

@@ -36,8 +36,7 @@ class EntryRevisions
      */
     public function getDraftsByEntryId($entryId, $localeId = null)
     {
-        return \Craft::$app->getEntryRevisions()->getDraftsByEntryId($entryId,
-            $localeId);
+        return \Craft::$app->getEntryRevisions()->getDraftsByEntryId($entryId, $localeId);
     }
 
     /**
@@ -50,8 +49,7 @@ class EntryRevisions
      */
     public function getEditableDraftsByEntryId($entryId, $localeId = null)
     {
-        return \Craft::$app->getEntryRevisions()->getEditableDraftsByEntryId($entryId,
-            $localeId);
+        return \Craft::$app->getEntryRevisions()->getEditableDraftsByEntryId($entryId, $localeId);
     }
 
     /**
@@ -79,8 +77,7 @@ class EntryRevisions
      */
     public function getVersionsByEntryId($entryId, $localeId)
     {
-        return \Craft::$app->getEntryRevisions()->getVersionsByEntryId($entryId,
-            $localeId, 10);
+        return \Craft::$app->getEntryRevisions()->getVersionsByEntryId($entryId, $localeId, 10);
     }
 
     /**

@@ -80,8 +80,7 @@ class Updates extends Widget
                     'total' => Craft::$app->getUpdates()->getTotalAvailableUpdates()
                 ]);
         } else {
-            return '<p class="centeralign">'.Craft::t('app',
-                'Checking for updates…').'</p>';
+            return '<p class="centeralign">'.Craft::t('app', 'Checking for updates…').'</p>';
         }
     }
 }

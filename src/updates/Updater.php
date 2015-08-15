@@ -51,8 +51,7 @@ class Updater
         }
 
         if ($updateModel->app->releases == null) {
-            throw new Exception(Craft::t('app',
-                'Craft is already up to date.'));
+            throw new Exception(Craft::t('app', 'Craft is already up to date.'));
         }
     }
 
@@ -84,8 +83,7 @@ class Updater
         ) {
             $downloadFilePath = $tempPath.'/'.$filename;
         } else {
-            throw new Exception(Craft::t('app',
-                'There was a problem downloading the package.'));
+            throw new Exception(Craft::t('app', 'There was a problem downloading the package.'));
         }
 
         $uid = StringHelper::UUID();
@@ -93,8 +91,7 @@ class Updater
         // Validate the downloaded update against ET.
         Craft::info('Validating downloaded update.', __METHOD__);
         if (!$this->_validateUpdate($downloadFilePath, $md5)) {
-            throw new Exception(Craft::t('app',
-                'There was a problem validating the downloaded package.'));
+            throw new Exception(Craft::t('app', 'There was a problem validating the downloaded package.'));
         }
 
         // Unpack the downloaded package.
@@ -102,8 +99,7 @@ class Updater
         $unzipFolder = Craft::$app->getPath()->getTempPath().'/'.$uid;
 
         if (!$this->_unpackPackage($downloadFilePath, $unzipFolder)) {
-            throw new Exception(Craft::t('app',
-                'There was a problem unpacking the downloaded package.'));
+            throw new Exception(Craft::t('app', 'There was a problem unpacking the downloaded package.'));
         }
 
         Craft::info('Validating any new requirements from the patch file.');
@@ -115,8 +111,7 @@ class Updater
         }
 
         // Validate that the paths in the update manifest file are all writable by Craft
-        Craft::info('Validating update manifest file paths are writable.',
-            __METHOD__);
+        Craft::info('Validating update manifest file paths are writable.', __METHOD__);
         $writableErrors = $this->_validateManifestPathsWritable($unzipFolder);
 
         if (count($writableErrors) > 0) {
@@ -138,11 +133,9 @@ class Updater
         $unzipFolder = UpdateHelper::getUnzipFolderFromUID($uid);
 
         // Backup any files about to be updated.
-        Craft::info('Backing up files that are about to be updated.',
-            __METHOD__);
+        Craft::info('Backing up files that are about to be updated.', __METHOD__);
         if (!$this->_backupFiles($unzipFolder)) {
-            throw new Exception(Craft::t('app',
-                'There was a problem backing up your files for the update.'));
+            throw new Exception(Craft::t('app', 'There was a problem backing up your files for the update.'));
         }
     }
 
@@ -162,11 +155,8 @@ class Updater
 
         // Update the files.
         Craft::info('Performing file update.', __METHOD__);
-        if (!UpdateHelper::doFileUpdate(UpdateHelper::getManifestData($unzipFolder),
-            $unzipFolder)
-        ) {
-            throw new Exception(Craft::t('app',
-                'There was a problem updating your files.'));
+        if (!UpdateHelper::doFileUpdate(UpdateHelper::getManifestData($unzipFolder), $unzipFolder)) {
+            throw new Exception(Craft::t('app', 'There was a problem updating your files.'));
         }
     }
 
@@ -178,8 +168,7 @@ class Updater
     {
         Craft::info('Starting to backup database.', __METHOD__);
         if (($dbBackupPath = Craft::$app->getDb()->backup()) === false) {
-            throw new Exception(Craft::t('app',
-                'There was a problem backing up your database.'));
+            throw new Exception(Craft::t('app', 'There was a problem backing up your database.'));
         } else {
             return IOHelper::getFilename($dbBackupPath, false);
         }
@@ -203,24 +192,20 @@ class Updater
         }
 
         if ($result === false) {
-            throw new Exception(Craft::t('app',
-                'There was a problem updating your database.'));
+            throw new Exception(Craft::t('app', 'There was a problem updating your database.'));
         }
 
         // If plugin is null we're looking at Craft.
         if ($plugin === null) {
             // Setting new Craft info.
-            Craft::info('Settings new Craft release info in craft_info table.',
-                __METHOD__);
+            Craft::info('Settings new Craft release info in craft_info table.', __METHOD__);
 
             if (!Craft::$app->getUpdates()->updateCraftVersionInfo()) {
-                throw new Exception(Craft::t('app',
-                    'The update was performed successfully, but there was a problem setting the new info in the database info table.'));
+                throw new Exception(Craft::t('app', 'The update was performed successfully, but there was a problem setting the new info in the database info table.'));
             }
         } else {
             if (!Craft::$app->getUpdates()->setNewPluginInfo($plugin)) {
-                throw new Exception(Craft::t('app',
-                    'The update was performed successfully, but there was a problem setting the new info in the plugins table.'));
+                throw new Exception(Craft::t('app', 'The update was performed successfully, but there was a problem setting the new info in the plugins table.'));
             }
         }
 
@@ -240,8 +225,7 @@ class Updater
         // Clear the updates cache.
         Craft::info('Clearing the update cache.', __METHOD__);
         if (!Craft::$app->getUpdates()->flushUpdateInfoFromCache()) {
-            throw new Exception(Craft::t('app',
-                'The update was performed successfully, but there was a problem invalidating the update cache.'));
+            throw new Exception(Craft::t('app', 'The update was performed successfully, but there was a problem invalidating the update cache.'));
         }
 
         // If uid !== false, then it's an auto-update.
@@ -273,8 +257,7 @@ class Updater
         $appPath = Craft::$app->getPath()->getAppPath();
 
         // Get rid of all the .bak files/folders.
-        $filesToDelete = IOHelper::getFolderContents($appPath, true,
-            ".*\.bak$");
+        $filesToDelete = IOHelper::getFolderContents($appPath, true, ".*\.bak$");
 
         // Now delete any files/folders that were marked for deletion in the manifest file.
         $manifestData = UpdateHelper::getManifestData($unzipFolder);
@@ -301,15 +284,13 @@ class Updater
             foreach ($filesToDelete as $fileToDelete) {
                 if (IOHelper::fileExists($fileToDelete)) {
                     if (IOHelper::isWritable($fileToDelete)) {
-                        Craft::info('Deleting file: '.$fileToDelete,
-                            __METHOD__);
+                        Craft::info('Deleting file: '.$fileToDelete, __METHOD__);
                         IOHelper::deleteFile($fileToDelete, true);
                     }
                 } else {
                     if (IOHelper::folderExists($fileToDelete)) {
                         if (IOHelper::isWritable($fileToDelete)) {
-                            Craft::info('Deleting .bak folder:'.$fileToDelete,
-                                __METHOD__);
+                            Craft::info('Deleting .bak folder:'.$fileToDelete, __METHOD__);
                             IOHelper::clearFolder($fileToDelete, true);
                             IOHelper::deleteFolder($fileToDelete, true);
                         }
@@ -431,11 +412,9 @@ class Updater
                 if (UpdateHelper::isManifestLineAFolder($filePath)) {
                     $folderPath = UpdateHelper::cleanManifestFolderLine($filePath);
                     if (IOHelper::folderExists($folderPath)) {
-                        Craft::info('Backing up folder '.$folderPath,
-                            __METHOD__);
+                        Craft::info('Backing up folder '.$folderPath, __METHOD__);
                         IOHelper::createFolder($folderPath.'.bak');
-                        IOHelper::copyFolder($folderPath.'/',
-                            $folderPath.'.bak/');
+                        IOHelper::copyFolder($folderPath.'/', $folderPath.'.bak/');
                     }
                 } // It's a file.
                 else {
@@ -469,30 +448,24 @@ class Updater
         $errors = [];
 
         if (!IOHelper::fileExists($requirementsFile)) {
-            throw new Exception(Craft::t('app',
-                'The requirements file is required and it does not exist at {path}.',
-                ['path' => $requirementsFile]));
+            throw new Exception(Craft::t('app', 'The requirements file is required and it does not exist at {path}.', ['path' => $requirementsFile]));
         }
 
         // Make sure we can write to craft/app/requirements
         if (!IOHelper::isWritable(Craft::$app->getPath()->getAppPath().'/requirements')) {
-            throw new Exception(Markdown::process(Craft::t('app',
-                'Craft needs to be able to write to your craft/app/requirements folder and cannot. Please check your [permissions]({url}).',
-                ['url' => 'http://buildwithcraft.com/docs/updating#one-click-updating'])));
+            throw new Exception(Markdown::process(Craft::t('app', 'Craft needs to be able to write to your craft/app/requirements folder and cannot. Please check your [permissions]({url}).', ['url' => 'http://buildwithcraft.com/docs/updating#one-click-updating'])));
         }
 
         $tempFilename = StringHelper::UUID().'.php';
 
         // Make a dupe of the requirements file and give it a random file name.
-        IOHelper::copyFile($requirementsFile,
-            $requirementsFolderPath.'/'.$tempFilename);
+        IOHelper::copyFile($requirementsFile, $requirementsFolderPath.'/'.$tempFilename);
 
         $newTempFilePath = Craft::$app->getPath()->getAppPath().'/requirements/'.$tempFilename;
 
         // Copy the random file name requirements to the requirements folder.
         // We don't want to execute any PHP from the storage folder.
-        IOHelper::copyFile($requirementsFolderPath.'/'.$tempFilename,
-            $newTempFilePath);
+        IOHelper::copyFile($requirementsFolderPath.'/'.$tempFilename, $newTempFilePath);
 
         require_once(Craft::$app->getPath()->getAppPath().'/requirements/RequirementsChecker.php');
 
@@ -503,8 +476,7 @@ class Updater
         if ($reqCheck->result['summary']['errors'] > 0) {
             foreach ($reqCheck->getResult()['requirements'] as $req) {
                 if ($req['failed'] === true) {
-                    Craft::error('Requirement "'.$req['name'].'" failed with the message: '.$req['memo'],
-                        __METHOD__);
+                    Craft::error('Requirement "'.$req['name'].'" failed with the message: '.$req['memo'], __METHOD__);
                     $errors[] = $req['memo'];
                 }
             }

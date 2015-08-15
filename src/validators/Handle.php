@@ -76,8 +76,7 @@ class Handle extends Validator
 
         // Handles are always required, so if it's blank, the required validator will catch this.
         if ($handle) {
-            $reservedWords = array_merge($this->reservedWords,
-                static::$baseReservedWords);
+            $reservedWords = array_merge($this->reservedWords, static::$baseReservedWords);
             $reservedWords = array_map([
                 '\craft\app\helpers\StringHelper',
                 'toLowerCase'
@@ -90,9 +89,7 @@ class Handle extends Validator
                 $this->addError($object, $attribute, $message);
             } else {
                 if (!preg_match('/^'.static::$handlePattern.'$/', $handle)) {
-                    $altMessage = Craft::t('app',
-                        '“{handle}” isn’t a valid handle.',
-                        ['handle' => $handle]);
+                    $altMessage = Craft::t('app', '“{handle}” isn’t a valid handle.', ['handle' => $handle]);
                     $message = $this->message !== null ? $this->message : $altMessage;
                     $this->addError($object, $attribute, $message);
                 }

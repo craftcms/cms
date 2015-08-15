@@ -129,8 +129,7 @@ class Assets extends Component
      */
     public function getFileById($fileId, $localeId = null)
     {
-        return Craft::$app->getElements()->getElementById($fileId,
-            Asset::className(), $localeId);
+        return Craft::$app->getElements()->getElementById($fileId, Asset::className(), $localeId);
     }
 
     /**
@@ -199,42 +198,34 @@ class Assets extends Component
         $isNew = empty($asset->id);
 
         if ($isNew && empty($asset->newFilePath) && empty($asset->indexInProgress)) {
-            throw new AssetLogicException(Craft::t('app',
-                'A new Asset cannot be created without a file.'));
+            throw new AssetLogicException(Craft::t('app', 'A new Asset cannot be created without a file.'));
         }
 
         if (empty($asset->folderId)) {
-            throw new AssetLogicException(Craft::t('app',
-                'All Assets must have folder ID set.'));
+            throw new AssetLogicException(Craft::t('app', 'All Assets must have folder ID set.'));
         }
 
         $extension = $asset->getExtension();
 
         if (!IOHelper::isExtensionAllowed($extension)) {
-            throw new AssetDisallowedExtensionException(Craft::t('app',
-                'The extension “{extension}” is not allowed.',
-                array('extension' => $extension)));
+            throw new AssetDisallowedExtensionException(Craft::t('app', 'The extension “{extension}” is not allowed.', ['extension' => $extension]));
         }
 
         $asset->filename = AssetsHelper::prepareAssetName($asset->filename);
 
-        $existingAsset = $this->findFile(array(
+        $existingAsset = $this->findFile([
             'filename' => $asset->filename,
             'folderId' => $asset->folderId
-        ));
+        ]);
 
         if ($existingAsset && $existingAsset->id != $asset->id) {
-            throw new AssetConflictException(Craft::t('app',
-                'A file with the name “{filename}” already exists in the folder.',
-                array('filename' => $asset->filename)));
+            throw new AssetConflictException(Craft::t('app', 'A file with the name “{filename}” already exists in the folder.', ['filename' => $asset->filename]));
         }
 
         $volume = $asset->getVolume();
 
         if (!$volume) {
-            throw new AssetLogicException(Craft::t('app',
-                'Volume does not exist with the id of {id}.',
-                array('id' => $asset->volumeId)));
+            throw new AssetLogicException(Craft::t('app', 'Volume does not exist with the id of {id}.', ['id' => $asset->volumeId]));
         }
 
         if (!empty($asset->newFilePath)) {
@@ -245,9 +236,7 @@ class Assets extends Component
             $stream = fopen($asset->newFilePath, 'r');
 
             if (!$stream) {
-                throw new FileException(Craft::t('app',
-                    'Could not open file for streaming at {path}',
-                    array('path' => $asset->newFilePath)));
+                throw new FileException(Craft::t('app', 'Could not open file for streaming at {path}', ['path' => $asset->newFilePath]));
             }
 
             $uriPath = $asset->getUri();
@@ -282,8 +271,7 @@ class Assets extends Component
         // Now that we have an ID, store the source
         if (!$volume->isLocal() && $asset->kind == 'image' && !empty($asset->newFilePath)) {
             // Store the local source for now and set it up for deleting, if needed
-            Craft::$app->getAssetTransforms()->storeLocalSource($asset->newFilePath,
-                $asset->getImageTransformSourcePath());
+            Craft::$app->getAssetTransforms()->storeLocalSource($asset->newFilePath, $asset->getImageTransformSourcePath());
             Craft::$app->getAssetTransforms()->queueSourceForDeletingIfNecessary($asset->getImageTransformSourcePath());
         }
     }
@@ -310,13 +298,11 @@ class Assets extends Component
 
         // Handle things differently depening on whether that's an upload or a file move.
         if ($mergeAssets) {
-            Craft::$app->getElements()->mergeElementsByIds($fileToReplace->id,
-                $fileToReplaceWith->id);
+            Craft::$app->getElements()->mergeElementsByIds($fileToReplace->id, $fileToReplaceWith->id);
 
             // Replace the file - delete the conflicting file and move the file in it's place.
             $targetVolume->deleteFile($fileToReplace->getUri());
-            $this->_moveFileToFolder($fileToReplaceWith,
-                $fileToReplace->getFolder());
+            $this->_moveFileToFolder($fileToReplaceWith, $fileToReplace->getFolder());
 
             $fileToReplaceWith->folderId = $fileToReplace->folderId;
             $fileToReplaceWith->volumeId = $fileToReplace->volumeId;
@@ -332,8 +318,7 @@ class Assets extends Component
 
             // Replace the file - delete the conflicting file and move the file in it's place.
             $targetVolume->deleteFile($fileToReplace->getUri());
-            $this->_moveFileToFolder($fileToReplaceWith,
-                $fileToReplace->getFolder(), $fileToReplace->filename);
+            $this->_moveFileToFolder($fileToReplaceWith, $fileToReplace->getFolder(), $fileToReplace->filename);
 
             $this->saveAsset($fileToReplace);
             $this->deleteFilesByIds($fileToReplaceWith->id, false);
@@ -360,8 +345,7 @@ class Assets extends Component
         $existingFile = $this->getFileById($assetId);
 
         if (!$existingFile) {
-            throw new AssetLogicException(Craft::t('app',
-                'The asset to be replaced cannot be found.'));
+            throw new AssetLogicException(Craft::t('app', 'The asset to be replaced cannot be found.'));
         }
 
         if (IOHelper::getFileKind(IOHelper::getExtension($pathOnServer)) == 'image') {
@@ -378,8 +362,7 @@ class Assets extends Component
 
         // Is the event preventing this from happening?
         if (!$event->isValid) {
-            throw new EventException(Craft::t('app',
-                'Something prevented the Asset file from being replaced.'));
+            throw new EventException(Craft::t('app', 'Something prevented the Asset file from being replaced.'));
         }
 
         // TODO check event
@@ -397,9 +380,7 @@ class Assets extends Component
         $stream = fopen($pathOnServer, 'r');
 
         if (!$stream) {
-            throw new FileException(Craft::t('app',
-                'Could not open file for streaming at {path}',
-                array('path' => $pathOnServer)));
+            throw new FileException(Craft::t('app', 'Could not open file for streaming at {path}', ['path' => $pathOnServer]));
         }
 
         // Re-use the same filename
@@ -415,8 +396,7 @@ class Assets extends Component
             }
         } else {
             // Get an available name to avoid conflicts and upload the file
-            $filename = $this->getNameReplacementInFolder($filename,
-                $existingFile->getFolder());
+            $filename = $this->getNameReplacementInFolder($filename, $existingFile->getFolder());
 
             // Delete old, change the name, upload the new
             $volume->deleteFile($existingFile->getUri());
@@ -460,7 +440,7 @@ class Assets extends Component
     public function deleteFilesByIds($fileIds, $deleteFile = true)
     {
         if (!is_array($fileIds)) {
-            $fileIds = array($fileIds);
+            $fileIds = [$fileIds];
         }
 
         foreach ($fileIds as $fileId) {
@@ -470,9 +450,9 @@ class Assets extends Component
                 $volume = $file->getVolume();
 
                 // Fire an 'onBeforeDeleteAsset' event
-                $event = new AssetEvent($this, array(
+                $event = new AssetEvent($this, [
                     'asset' => $file
-                ));
+                ]);
                 $this->trigger(static::EVENT_BEFORE_DELETE_ASSET, $event);
 
                 if ($event->isValid) {
@@ -504,30 +484,24 @@ class Assets extends Component
         $extension = IOHelper::getExtension($newFilename);
 
         if (!IOHelper::isExtensionAllowed($extension)) {
-            throw new AssetDisallowedExtensionException(Craft::t('app',
-                'The extension “{extension}” is not allowed.',
-                array('extension' => $extension)));
+            throw new AssetDisallowedExtensionException(Craft::t('app', 'The extension “{extension}” is not allowed.', ['extension' => $extension]));
         }
 
         $newFilename = AssetsHelper::prepareAssetName($newFilename);
 
-        $existingAsset = $this->findFile(array(
+        $existingAsset = $this->findFile([
             'filename' => $newFilename,
             'folderId' => $asset->folderId
-        ));
+        ]);
 
         if ($existingAsset && $existingAsset->id != $asset->id) {
-            throw new AssetConflictException(Craft::t('app',
-                'A file with the name “{filename}” already exists in the folder.',
-                array('filename' => $newFilename)));
+            throw new AssetConflictException(Craft::t('app', 'A file with the name “{filename}” already exists in the folder.', ['filename' => $newFilename]));
         }
 
         $volume = $asset->getVolume();
 
         if (!$volume) {
-            throw new AssetLogicException(Craft::t('app',
-                'Volume does not exist with the id of {id}.',
-                array('id' => $asset->volumeId)));
+            throw new AssetLogicException(Craft::t('app', 'Volume does not exist with the id of {id}.', ['id' => $asset->volumeId]));
         }
 
         if ($volume->renameFile($asset->getUri(), $asset->getUri($newFilename))
@@ -552,20 +526,16 @@ class Assets extends Component
         $parent = $folder->getParent();
 
         if (!$parent) {
-            throw new AssetLogicException(Craft::t('app',
-                'No folder exists with the ID “{id}”',
-                array('id' => $folder->parentId)));
+            throw new AssetLogicException(Craft::t('app', 'No folder exists with the ID “{id}”', ['id' => $folder->parentId]));
         }
 
-        $existingFolder = $this->findFolder(array(
+        $existingFolder = $this->findFolder([
             'parentId' => $folder->parentId,
             'name' => $folder->name
-        ));
+        ]);
 
         if ($existingFolder && (empty($folder->id) || $folder->id != $existingFolder)) {
-            throw new AssetConflictException(Craft::t('app',
-                'A folder with the name “{folderName}” already exists in the folder.',
-                array('folderName' => $folder->name)));
+            throw new AssetConflictException(Craft::t('app', 'A folder with the name “{folderName}” already exists in the folder.', ['folderName' => $folder->name]));
         }
 
         $volume = $parent->getVolume();
@@ -591,7 +561,7 @@ class Assets extends Component
     public function deleteFoldersByIds($folderIds, $deleteFolder = true)
     {
         if (!is_array($folderIds)) {
-            $folderIds = array($folderIds);
+            $folderIds = [$folderIds];
         }
 
         foreach ($folderIds as $folderId) {
@@ -603,9 +573,7 @@ class Assets extends Component
 
                     // If this is a batch operation, don't stop the show
                     if (!$volume->deleteDir($folder->path) && count($folderIds) == 1) {
-                        throw new VolumeException(Craft::t('app',
-                            'Folder “{folder}” cannot be deleted!',
-                            array('folder' => $folder->path)));
+                        throw new VolumeException(Craft::t('app', 'Folder “{folder}” cannot be deleted!', ['folder' => $folder->path]));
                     }
                 }
 
@@ -623,13 +591,13 @@ class Assets extends Component
      */
     public function getFolderTreeByVolumeIds($allowedVolumeIds)
     {
-        $folders = $this->findFolders(array(
+        $folders = $this->findFolders([
             'volumeId' => $allowedVolumeIds,
             'order' => 'path'
-        ));
+        ]);
         $tree = $this->_getFolderTreeByFolders($folders);
 
-        $sort = array();
+        $sort = [];
 
         foreach ($tree as $topFolder) {
             /**
@@ -655,10 +623,10 @@ class Assets extends Component
         $folder = $this->getFolderById($folderId);
 
         if (is_null($folder)) {
-            return array();
+            return [];
         }
 
-        return $this->_getFolderTreeByFolders(array($folder));
+        return $this->_getFolderTreeByFolders([$folder]);
     }
 
     /**
@@ -674,7 +642,7 @@ class Assets extends Component
                 $this->_foldersById)
         ) {
             $result = $this->_createFolderQuery()
-                ->where('id = :id', array(':id' => $folderId))
+                ->where('id = :id', [':id' => $folderId])
                 ->one();
 
             if ($result) {
@@ -721,7 +689,7 @@ class Assets extends Component
         }
 
         $results = $query->all();
-        $folders = array();
+        $folders = [];
 
         foreach ($results as $result) {
             $folder = VolumeFolderModel::create($result);
@@ -750,7 +718,7 @@ class Assets extends Component
             ->from('{{%volumefolders}} AS f')
             ->where(['like', 'path', $parentFolder->path.'%', false])
             ->andWhere('volumeId = :volumeId',
-                array(':volumeId' => $parentFolder->volumeId))
+                [':volumeId' => $parentFolder->volumeId])
             ->andWhere('parentId IS NOT NULL');
 
         if ($orderBy) {
@@ -758,7 +726,7 @@ class Assets extends Component
         }
 
         $results = $query->all();
-        $descendantFolders = array();
+        $descendantFolders = [];
 
         foreach ($results as $result) {
             $folder = VolumeFolderModel::create($result);
@@ -836,8 +804,7 @@ class Assets extends Component
         }
 
         // Get the transform index model
-        $index = Craft::$app->getAssetTransforms()->getTransformIndex($file,
-            $transform);
+        $index = Craft::$app->getAssetTransforms()->getTransformIndex($file, $transform);
 
         // Does the file actually exist?
         if ($index->fileExists) {
@@ -910,9 +877,7 @@ class Assets extends Component
             }
         }
 
-        throw new AssetLogicException(Craft::t('app',
-            'Could not find a suitable replacement filename for “{filename}”.',
-            array('filename' => $filename)));
+        throw new AssetLogicException(Craft::t('app', 'Could not find a suitable replacement filename for “{filename}”.', ['filename' => $filename]));
     }
 
     /**
@@ -934,27 +899,22 @@ class Assets extends Component
         $extension = IOHelper::getExtension($filename);
 
         if (!IOHelper::isExtensionAllowed($extension)) {
-            throw new AssetDisallowedExtensionException(Craft::t('app',
-                'The extension “{extension}” is not allowed.',
-                array('extension' => $extension)));
+            throw new AssetDisallowedExtensionException(Craft::t('app', 'The extension “{extension}” is not allowed.', ['extension' => $extension]));
         }
 
-        $existingAsset = $this->findFile(array(
+        $existingAsset = $this->findFile([
             'filename' => $filename,
             'folderId' => $folderId
-        ));
+        ]);
 
         if ($existingAsset && $existingAsset->id != $asset->id) {
-            throw new AssetConflictException(Craft::t('app',
-                'A file with the name “{filename}” already exists in the folder.',
-                array('filename' => $filename)));
+            throw new AssetConflictException(Craft::t('app', 'A file with the name “{filename}” already exists in the folder.', ['filename' => $filename]));
         }
 
         $targetFolder = $this->getFolderById($folderId);
 
         if (!$targetFolder) {
-            throw new AssetLogicException(Craft::t('app',
-                'The destination folder does not exist'));
+            throw new AssetLogicException(Craft::t('app', 'The destination folder does not exist'));
         }
 
         $this->_moveFileToFolder($asset, $targetFolder, $filename);
@@ -998,20 +958,18 @@ class Assets extends Component
     public function checkPermissionByFolderIds($folderIds, $permission)
     {
         if (!is_array($folderIds)) {
-            $folderIds = array($folderIds);
+            $folderIds = [$folderIds];
         }
 
         foreach ($folderIds as $folderId) {
             $folderModel = $this->getFolderById($folderId);
 
             if (!$folderModel) {
-                throw new Exception(Craft::t('app',
-                    'That folder does not seem to exist anymore. Re-index the Assets volume and try again.'));
+                throw new Exception(Craft::t('app', 'That folder does not seem to exist anymore. Re-index the Assets volume and try again.'));
             }
 
             if (!Craft::$app->user->checkPermission($permission.':'.$folderModel->volumeId)) {
-                throw new Exception(Craft::t('app',
-                    'You don’t have the required permissions for this operation.'));
+                throw new Exception(Craft::t('app', 'You don’t have the required permissions for this operation.'));
             }
         }
     }
@@ -1028,20 +986,18 @@ class Assets extends Component
     public function checkPermissionByFileIds($fileIds, $permission)
     {
         if (!is_array($fileIds)) {
-            $fileIds = array($fileIds);
+            $fileIds = [$fileIds];
         }
 
         foreach ($fileIds as $fileId) {
             $file = $this->getFileById($fileId);
 
             if (!$file) {
-                throw new Exception(Craft::t('app',
-                    'That file does not seem to exist anymore. Re-index the Assets volume and try again.'));
+                throw new Exception(Craft::t('app', 'That file does not seem to exist anymore. Re-index the Assets volume and try again.'));
             }
 
             if (!Craft::$app->user->checkPermission($permission.':'.$file->volumeId)) {
-                throw new Exception(Craft::t('app',
-                    'You don’t have the required permissions for this operation.'));
+                throw new Exception(Craft::t('app', 'You don’t have the required permissions for this operation.'));
             }
         }
     }
@@ -1055,10 +1011,10 @@ class Assets extends Component
      */
     public function ensureFolderByFullPathAndVolumeId($fullPath, $volumeId)
     {
-        $parameters = new FolderCriteria(array(
+        $parameters = new FolderCriteria([
             'path' => $fullPath,
             'volumeId' => $volumeId
-        ));
+        ]);
 
         $folderModel = $this->findFolder($parameters);
 
@@ -1155,8 +1111,7 @@ class Assets extends Component
                 /**
                  * @var AssetTransformIndex $transformIndex
                  */
-                $fromTransformPath = Craft::$app->getAssetTransforms()->getTransformSubpath($asset,
-                    $transformIndex);
+                $fromTransformPath = Craft::$app->getAssetTransforms()->getTransformSubpath($asset, $transformIndex);
                 $toTransformPath = $fromTransformPath;
 
                 // In case we're changing the filename, make sure that we're not missing that.
@@ -1173,8 +1128,7 @@ class Assets extends Component
                 $sourceVolume->deleteFile($baseTo.$toTransformPath);
 
                 try {
-                    $sourceVolume->renameFile($baseFrom.$fromTransformPath,
-                        $baseTo.$toTransformPath);
+                    $sourceVolume->renameFile($baseFrom.$fromTransformPath, $baseTo.$toTransformPath);
                     $transformIndex->filename = $filename;
                     Craft::$app->getAssetTransforms()->storeTransformIndexData($transformIndex);
                 } catch (VolumeFileNotFoundException $exception) {
@@ -1190,9 +1144,7 @@ class Assets extends Component
             $stream = fopen($localPath, 'r');
 
             if (!$stream) {
-                throw new FileException(Craft::t('app',
-                    'Could not open file for streaming at {path}',
-                    array('path' => $asset->newFilePath)));
+                throw new FileException(Craft::t('app', 'Could not open file for streaming at {path}', ['path' => $asset->newFilePath]));
             }
 
             $targetVolume->createFileByStream($toPath, $stream);
@@ -1249,8 +1201,8 @@ class Assets extends Component
      */
     private function _getFolderTreeByFolders($folders)
     {
-        $tree = array();
-        $referenceStore = array();
+        $tree = [];
+        $referenceStore = [];
 
         foreach ($folders as $folder) {
             /**
@@ -1265,7 +1217,7 @@ class Assets extends Component
             $referenceStore[$folder->id] = $folder;
         }
 
-        $sort = array();
+        $sort = [];
 
         foreach ($tree as $topFolder) {
             /**
@@ -1289,43 +1241,36 @@ class Assets extends Component
      */
     private function _applyFolderConditions($query, FolderCriteria $criteria)
     {
-        $whereConditions = array();
-        $whereParams = array();
+        $whereConditions = [];
+        $whereParams = [];
 
         if ($criteria->id) {
-            $whereConditions[] = DbHelper::parseParam('f.id', $criteria->id,
-                $whereParams);
+            $whereConditions[] = DbHelper::parseParam('f.id', $criteria->id, $whereParams);
         }
 
         if ($criteria->volumeId) {
-            $whereConditions[] = DbHelper::parseParam('f.volumeId',
-                $criteria->volumeId, $whereParams);
+            $whereConditions[] = DbHelper::parseParam('f.volumeId', $criteria->volumeId, $whereParams);
         }
 
         if ($criteria->parentId) {
-            $whereConditions[] = DbHelper::parseParam('f.parentId',
-                $criteria->parentId, $whereParams);
+            $whereConditions[] = DbHelper::parseParam('f.parentId', $criteria->parentId, $whereParams);
         }
 
         if ($criteria->name) {
-            $whereConditions[] = DbHelper::parseParam('f.name', $criteria->name,
-                $whereParams);
+            $whereConditions[] = DbHelper::parseParam('f.name', $criteria->name, $whereParams);
         }
 
         if (!is_null($criteria->path)) {
             // This folder has a comma in it.
             if (strpos($criteria->path, ',') !== false) {
                 // Escape the comma.
-                $condition = DbHelper::parseParam('f.path',
-                    str_replace(',', '\,', $criteria->path), $whereParams);
+                $condition = DbHelper::parseParam('f.path', str_replace(',', '\,', $criteria->path), $whereParams);
                 $lastKey = key(array_slice($whereParams, -1, 1, true));
 
                 // Now un-escape it.
-                $whereParams[$lastKey] = str_replace('\,', ',',
-                    $whereParams[$lastKey]);
+                $whereParams[$lastKey] = str_replace('\,', ',', $whereParams[$lastKey]);
             } else {
-                $condition = DbHelper::parseParam('f.path', $criteria->path,
-                    $whereParams);
+                $condition = DbHelper::parseParam('f.path', $criteria->path, $whereParams);
             }
 
             $whereConditions[] = $condition;
@@ -1355,9 +1300,7 @@ class Assets extends Component
             $assetRecord = AssetRecord::findOne(['id' => $asset->id]);
 
             if (!$assetRecord) {
-                throw new AssetMissingException(Craft::t('app',
-                    'No asset exists with the ID “{id}”.',
-                    array('id' => $asset->id)));
+                throw new AssetMissingException(Craft::t('app', 'No asset exists with the ID “{id}”.', ['id' => $asset->id]));
             }
         } else {
             $assetRecord = new AssetRecord();
@@ -1377,10 +1320,7 @@ class Assets extends Component
 
         if ($asset->hasErrors()) {
             $exception = new ModelValidationException(
-                Craft::t('app',
-                    'Saving the Asset failed with the following errors: {errors}',
-                    ['errors' => join(', ', $asset->getAllErrors())]
-                )
+                Craft::t('app', 'Saving the Asset failed with the following errors: {errors}', ['errors' => join(', ', $asset->getAllErrors())])
             );
 
             $exception->setModel($asset);
@@ -1396,24 +1336,21 @@ class Assets extends Component
         $transaction = Craft::$app->getDb()->beginTransaction();
 
         try {
-            $event = new AssetEvent(array(
-                    'asset' => $asset
-                )
-            );
+            $event = new AssetEvent([
+                'asset' => $asset
+            ]);
             $this->trigger(static::EVENT_BEFORE_SAVE_ASSET, $event);
 
             // Is the event giving us the go-ahead?
             if ($event->isValid) {
                 // Save the element
-                $success = Craft::$app->getElements()->saveElement($asset,
-                    false);
+                $success = Craft::$app->getElements()->saveElement($asset, false);
 
                 // If it didn't work, rollback the transaction in case something changed in onBeforeSaveAsset
                 if (!$success) {
                     $transaction->rollback();
 
-                    throw new ElementSaveException(Craft::t('app',
-                        'Failed to save the Asset Element'));
+                    throw new ElementSaveException(Craft::t('app', 'Failed to save the Asset Element'));
                 }
 
                 // Now that we have an element ID, save it on the other stuff
@@ -1426,9 +1363,7 @@ class Assets extends Component
 
                 $this->trigger(static::EVENT_AFTER_SAVE_ASSET, $event);
             } else {
-                throw new ActionCancelledException(Craft::t('app',
-                    'A plugin cancelled the save operation for {asset}!',
-                    array('asset' => $asset->filename)));
+                throw new ActionCancelledException(Craft::t('app', 'A plugin cancelled the save operation for {asset}!', ['asset' => $asset->filename]));
             }
 
             // Commit the transaction regardless of whether we saved the asset, in case something changed

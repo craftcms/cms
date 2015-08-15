@@ -102,8 +102,8 @@ class Tag extends Element
     public static function getEditorHtml(ElementInterface $element)
     {
         /** @var Tag $element */
-        $html = Craft::$app->getView()->renderTemplateMacro('_includes/forms',
-            'textField', [
+        $html = Craft::$app->getView()->renderTemplateMacro('_includes/forms', 'textField',
+            [
                 [
                     'label' => Craft::t('app', 'Title'),
                     'locale' => $element->locale,
@@ -205,8 +205,7 @@ class Tag extends Element
      */
     public function getName()
     {
-        Craft::$app->getDeprecator()->log('Tag::name',
-            'The Tag ‘name’ property has been deprecated. Use ‘title’ instead.');
+        Craft::$app->getDeprecator()->log('Tag::name', 'The Tag ‘name’ property has been deprecated. Use ‘title’ instead.');
 
         return $this->title;
     }

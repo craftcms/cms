@@ -177,8 +177,7 @@ class Formatter extends \yii\i18n\Formatter
                 $options[NumberFormatter::MIN_FRACTION_DIGITS] = 0;
             }
 
-            return parent::asCurrency($value, $currency, $options,
-                $textOptions);
+            return parent::asCurrency($value, $currency, $options, $textOptions);
         } else {
             // Code adapted from \yii\i18n\Formatter
             if ($value === null) {
@@ -202,8 +201,7 @@ class Formatter extends \yii\i18n\Formatter
 
             $decimals = $omitDecimals ? 0 : 2;
 
-            return $currency.$this->asDecimal($value, $decimals, $options,
-                $textOptions);
+            return $currency.$this->asDecimal($value, $decimals, $options, $textOptions);
         }
     }
 
@@ -236,8 +234,7 @@ class Formatter extends \yii\i18n\Formatter
 
         // Avoid time zone conversion for date-only values
         if ($type === 'date') {
-            list($timestamp, $hasTimeInfo) = $this->normalizeDatetimeValue($value,
-                true);
+            list($timestamp, $hasTimeInfo) = $this->normalizeDatetimeValue($value, true);
 
             if (!$hasTimeInfo) {
                 $timeZone = $this->defaultTimeZone;
@@ -252,8 +249,7 @@ class Formatter extends \yii\i18n\Formatter
 
         if (strncmp($format, 'php:', 4) === 0) {
             $format = substr($format, 4);
-            $format = FormatConverter::convertDatePhpToIcu($format, $type,
-                $this->locale);
+            $format = FormatConverter::convertDatePhpToIcu($format, $type, $this->locale);
         }
 
         if ($timeZone != null) {
@@ -324,8 +320,7 @@ class Formatter extends \yii\i18n\Formatter
             $format = strtr($format, $tr);
         }
 
-        $format = FormatConverter::convertDateIcuToPhp($format, $type,
-            $this->locale);
+        $format = FormatConverter::convertDateIcuToPhp($format, $type, $this->locale);
 
         return $timestamp->format($format);
     }

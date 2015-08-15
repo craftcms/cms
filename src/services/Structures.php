@@ -85,9 +85,7 @@ class Structures extends Component
             $structureRecord = StructureRecord::findOne($structure->id);
 
             if (!$structureRecord) {
-                throw new Exception(Craft::t('app',
-                    'No structure exists with the ID “{id}”.',
-                    ['id' => $structure->id]));
+                throw new Exception(Craft::t('app', 'No structure exists with the ID “{id}”.', ['id' => $structure->id]));
             }
         } else {
             $structureRecord = new StructureRecord();
@@ -165,11 +163,9 @@ class Structures extends Component
      */
     public function prepend($structureId, ElementInterface $element, ElementInterface $parentElement, $mode = 'auto')
     {
-        $parentElementRecord = $this->_getElementRecord($structureId,
-            $parentElement);
+        $parentElementRecord = $this->_getElementRecord($structureId, $parentElement);
 
-        return $this->_doIt($structureId, $element, $parentElementRecord,
-            'prependTo', $mode);
+        return $this->_doIt($structureId, $element, $parentElementRecord, 'prependTo', $mode);
     }
 
     /**
@@ -184,11 +180,9 @@ class Structures extends Component
      */
     public function append($structureId, ElementInterface $element, ElementInterface $parentElement, $mode = 'auto')
     {
-        $parentElementRecord = $this->_getElementRecord($structureId,
-            $parentElement);
+        $parentElementRecord = $this->_getElementRecord($structureId, $parentElement);
 
-        return $this->_doIt($structureId, $element, $parentElementRecord,
-            'appendTo', $mode);
+        return $this->_doIt($structureId, $element, $parentElementRecord, 'appendTo', $mode);
     }
 
     /**
@@ -204,8 +198,7 @@ class Structures extends Component
     {
         $parentElementRecord = $this->_getRootElementRecord($structureId);
 
-        return $this->_doIt($structureId, $element, $parentElementRecord,
-            'prependTo', $mode);
+        return $this->_doIt($structureId, $element, $parentElementRecord, 'prependTo', $mode);
     }
 
     /**
@@ -221,8 +214,7 @@ class Structures extends Component
     {
         $parentElementRecord = $this->_getRootElementRecord($structureId);
 
-        return $this->_doIt($structureId, $element, $parentElementRecord,
-            'appendTo', $mode);
+        return $this->_doIt($structureId, $element, $parentElementRecord, 'appendTo', $mode);
     }
 
     /**
@@ -237,11 +229,9 @@ class Structures extends Component
      */
     public function moveBefore($structureId, ElementInterface $element, ElementInterface $nextElement, $mode = 'auto')
     {
-        $nextElementRecord = $this->_getElementRecord($structureId,
-            $nextElement);
+        $nextElementRecord = $this->_getElementRecord($structureId, $nextElement);
 
-        return $this->_doIt($structureId, $element, $nextElementRecord,
-            'insertBefore', $mode);
+        return $this->_doIt($structureId, $element, $nextElementRecord, 'insertBefore', $mode);
     }
 
     /**
@@ -256,11 +246,9 @@ class Structures extends Component
      */
     public function moveAfter($structureId, ElementInterface $element, ElementInterface $prevElement, $mode = 'auto')
     {
-        $prevElementRecord = $this->_getElementRecord($structureId,
-            $prevElement);
+        $prevElementRecord = $this->_getElementRecord($structureId, $prevElement);
 
-        return $this->_doIt($structureId, $element, $prevElementRecord,
-            'insertAfter', $mode);
+        return $this->_doIt($structureId, $element, $prevElementRecord, 'insertAfter', $mode);
     }
 
     // Private Methods

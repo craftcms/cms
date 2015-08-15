@@ -120,21 +120,17 @@ class I18N extends \yii\i18n\I18N
                 $appLocalesPath = Craft::$app->getPath()->getAppPath().'/config/locales';
                 $customLocalesPath = Craft::$app->getPath()->getConfigPath().'/locales';
 
-                $localeFiles = IOHelper::getFolderContents($appLocalesPath,
-                    false, '\.php$');
-                $customLocaleFiles = IOHelper::getFolderContents($customLocalesPath,
-                    false, '\.php$');
+                $localeFiles = IOHelper::getFolderContents($appLocalesPath, false, '\.php$');
+                $customLocaleFiles = IOHelper::getFolderContents($customLocalesPath, false, '\.php$');
 
                 if ($customLocaleFiles !== false) {
-                    $localeFiles = array_merge($localeFiles,
-                        $customLocaleFiles);
+                    $localeFiles = array_merge($localeFiles, $customLocaleFiles);
                 }
 
                 $this->_allLocaleIds = [];
 
                 foreach ($localeFiles as $file) {
-                    $this->_allLocaleIds[] = IOHelper::getFilename($file,
-                        false);
+                    $this->_allLocaleIds[] = IOHelper::getFilename($file, false);
                 }
             }
 
@@ -419,8 +415,7 @@ class I18N extends \yii\i18n\I18N
 
         // Did the primary site locale just change?
         if ($oldPrimaryLocaleId != $newPrimaryLocaleId) {
-            $this->_processNewPrimaryLocale($oldPrimaryLocaleId,
-                $newPrimaryLocaleId);
+            $this->_processNewPrimaryLocale($oldPrimaryLocaleId, $newPrimaryLocaleId);
         }
 
         return true;
@@ -571,8 +566,7 @@ class I18N extends \yii\i18n\I18N
                                     if (strncmp($tableName, $matrixTablePrefix,
                                             $matrixTablePrefixLength) === 0
                                     ) {
-                                        $tableName = substr($tableName,
-                                            $tablePrefixLength);
+                                        $tableName = substr($tableName, $tablePrefixLength);
 
                                         Craft::$app->getDb()->createCommand()->delete(
                                             $tableName,
@@ -632,8 +626,7 @@ class I18N extends \yii\i18n\I18N
 
                     // Did the primary site locale just change?
                     if ($primaryLocaleId != $newPrimaryLocaleId) {
-                        $this->_processNewPrimaryLocale($primaryLocaleId,
-                            $newPrimaryLocaleId);
+                        $this->_processNewPrimaryLocale($primaryLocaleId, $newPrimaryLocaleId);
                     }
                 }
 
@@ -733,19 +726,15 @@ class I18N extends \yii\i18n\I18N
 
                 $db = Craft::$app->getDb();
 
-                $db->createCommand()->delete('{{%elements_i18n}}',
-                    $deleteConditions, $deleteParams)->execute();
-                $db->createCommand()->delete('{{%content}}', $deleteConditions,
-                    $deleteParams)->execute();
+                $db->createCommand()->delete('{{%elements_i18n}}', $deleteConditions, $deleteParams)->execute();
+                $db->createCommand()->delete('{{%content}}', $deleteConditions, $deleteParams)->execute();
 
                 // Now convert the locales
                 $updateColumns = ['locale' => $newPrimaryLocaleId];
                 $updateConditions = ['in', 'elementId', $elementIds];
 
-                $db->createCommand()->update('{{%elements_i18n}}',
-                    $updateColumns, $updateConditions)->execute();
-                $db->createCommand()->update('{{%content}}', $updateColumns,
-                    $updateConditions)->execute();
+                $db->createCommand()->update('{{%elements_i18n}}', $updateColumns, $updateConditions)->execute();
+                $db->createCommand()->update('{{%content}}', $updateColumns, $updateConditions)->execute();
             }
         }
     }

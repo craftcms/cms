@@ -299,8 +299,7 @@ class Deprecator extends Component
                     // Is this a plugin's template?
                     $request = Craft::$app->getRequest();
                     if (!$foundPlugin && !$request->getIsConsoleRequest() && $request->getIsCpRequest() && $logTrace['template']) {
-                        $firstSeg = array_shift(explode('/',
-                            $logTrace['template']));
+                        $firstSeg = array_shift(explode('/', $logTrace['template']));
 
                         if (Craft::$app->getPlugins()->getPlugin($firstSeg)) {
                             $log->plugin = $firstSeg;
@@ -321,8 +320,7 @@ class Deprecator extends Component
                 if (strncmp($pluginsPath, $logTrace['file'],
                         $pluginsPathLength) === 0
                 ) {
-                    $remainingFilePath = StringHelper::substr($filePath,
-                        $pluginsPathLength);
+                    $remainingFilePath = StringHelper::substr($filePath, $pluginsPathLength);
                     $firstSeg = array_shift(explode('/', $remainingFilePath));
 
                     if (Craft::$app->getPlugins()->getPlugin($firstSeg)) {

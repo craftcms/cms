@@ -99,8 +99,7 @@ class UserSession
      */
     public function getFlash($key, $defaultValue = null, $delete = true)
     {
-        return \Craft::$app->getSession()->getFlash($key, $defaultValue,
-            $delete);
+        return \Craft::$app->getSession()->getFlash($key, $defaultValue, $delete);
     }
 
     /**

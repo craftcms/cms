@@ -239,8 +239,7 @@ class Locale extends Object
 
             if (IOHelper::fileExists($customDataPath)) {
                 if ($this->data !== null) {
-                    $this->data = ArrayHelper::merge($this->data,
-                        require($customDataPath));
+                    $this->data = ArrayHelper::merge($this->data, require($customDataPath));
                 } else {
                     $this->data = require($customDataPath);
                 }
@@ -491,8 +490,7 @@ class Locale extends Object
         }
 
         if (Craft::$app->getI18n()->getIsIntlLoaded()) {
-            $formatter = new IntlDateFormatter($this->id,
-                IntlDateFormatter::NONE, IntlDateFormatter::NONE);
+            $formatter = new IntlDateFormatter($this->id, IntlDateFormatter::NONE, IntlDateFormatter::NONE);
 
             switch ($length) {
                 case static::FORMAT_ABBREVIATED:
@@ -562,8 +560,7 @@ class Locale extends Object
         }
 
         if (Craft::$app->getI18n()->getIsIntlLoaded()) {
-            $formatter = new IntlDateFormatter($this->id,
-                IntlDateFormatter::NONE, IntlDateFormatter::NONE);
+            $formatter = new IntlDateFormatter($this->id, IntlDateFormatter::NONE, IntlDateFormatter::NONE);
 
             switch ($length) {
                 case static::FORMAT_ABBREVIATED:
@@ -663,8 +660,7 @@ class Locale extends Object
     public function getTextAttribute($attribute)
     {
         if (Craft::$app->getI18n()->getIsIntlLoaded()) {
-            $formatter = new NumberFormatter($this->id,
-                NumberFormatter::DECIMAL);
+            $formatter = new NumberFormatter($this->id, NumberFormatter::DECIMAL);
 
             return $formatter->getTextAttribute($attribute);
         } else {
@@ -703,8 +699,7 @@ class Locale extends Object
     public function getNumberSymbol($symbol)
     {
         if (Craft::$app->getI18n()->getIsIntlLoaded()) {
-            $formatter = new NumberFormatter($this->id,
-                NumberFormatter::DECIMAL);
+            $formatter = new NumberFormatter($this->id, NumberFormatter::DECIMAL);
 
             return $formatter->getSymbol($symbol);
         } else {
@@ -760,11 +755,9 @@ class Locale extends Object
     {
         if (Craft::$app->getI18n()->getIsIntlLoaded()) {
             // This is way harder than it should be - http://stackoverflow.com/a/28307228/1688568
-            $formatter = new NumberFormatter($this->id,
-                NumberFormatter::CURRENCY);
+            $formatter = new NumberFormatter($this->id, NumberFormatter::CURRENCY);
             $withCurrency = $formatter->formatCurrency(0, $currency);
-            $formatter->setPattern(str_replace('¤', '',
-                $formatter->getPattern()));
+            $formatter->setPattern(str_replace('¤', '', $formatter->getPattern()));
             $withoutCurrency = $formatter->formatCurrency(0, $currency);
 
             return str_replace($withoutCurrency, '', $withCurrency);
@@ -814,8 +807,7 @@ class Locale extends Object
 
             switch ($length) {
                 case static::FORMAT_SHORT:
-                    return StringHelper::replace($this->data['dateTimeFormats']['short'][$which],
-                        'yy', 'Y');
+                    return StringHelper::replace($this->data['dateTimeFormats']['short'][$which], 'yy', 'Y');
                     break;
                 case static::FORMAT_MEDIUM:
                     return $this->data['dateTimeFormats']['medium'][$which];

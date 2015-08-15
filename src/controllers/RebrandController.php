@@ -53,15 +53,13 @@ class RebrandController extends Controller
 
                 $filename = AssetsHelper::prepareAssetName($file['name']);
 
-                move_uploaded_file($file['tmp_name'],
-                    $folderPath.'/'.$filename);
+                move_uploaded_file($file['tmp_name'], $folderPath.'/'.$filename);
 
                 // Test if we will be able to perform image actions on this image
                 if (!Craft::$app->getImages()->checkMemoryForImage($folderPath.'/'.$filename)) {
                     IOHelper::deleteFile($folderPath.'/'.$filename);
 
-                    return $this->asErrorJson(Craft::t('app',
-                        'The uploaded image is too large'));
+                    return $this->asErrorJson(Craft::t('app', 'The uploaded image is too large'));
                 }
 
                 list ($width, $height) = ImageHelper::getImageSize($folderPath.'/'.$filename);
@@ -85,8 +83,7 @@ class RebrandController extends Controller
                 // If the file is in the format bad-script.php.gif perhaps.
                 if ($width && $height) {
                     // Never scale up the images, so make the scaling factor always <= 1
-                    $factor = min($constraint / $width, $constraint / $height,
-                        1);
+                    $factor = min($constraint / $width, $constraint / $height, 1);
 
                     $html = Craft::$app->getView()->renderTemplate('_components/tools/cropper_modal',
                         [
@@ -106,8 +103,7 @@ class RebrandController extends Controller
             return $this->asErrorJson($exception->getMessage());
         }
 
-        return $this->asErrorJson(Craft::t('app',
-            'There was an error uploading your photo'));
+        return $this->asErrorJson(Craft::t('app', 'There was an error uploading your photo'));
     }
 
     /**
@@ -155,8 +151,7 @@ class RebrandController extends Controller
             return $this->asErrorJson($exception->getMessage());
         }
 
-        return $this->asErrorJson(Craft::t('app',
-            'Something went wrong when processing the logo.'));
+        return $this->asErrorJson(Craft::t('app', 'Something went wrong when processing the logo.'));
     }
 
     /**

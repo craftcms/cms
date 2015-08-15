@@ -183,8 +183,7 @@ class Plugins extends Component
             return true;
         }
 
-        $plugin = $this->createPlugin($handle,
-            $this->_installedPluginInfo[$handle]);
+        $plugin = $this->createPlugin($handle, $this->_installedPluginInfo[$handle]);
 
         if ($plugin === null) {
             $this->_noPluginExists($handle);
@@ -265,8 +264,7 @@ class Plugins extends Component
                 'installDate' => DbHelper::prepareDateForDb(new \DateTime()),
             ];
 
-            Craft::$app->getDb()->createCommand()->insert('{{%plugins}}',
-                $info)->execute();
+            Craft::$app->getDb()->createCommand()->insert('{{%plugins}}', $info)->execute();
 
             $info['installDate'] = DateTimeHelper::toDateTime($info['installDate']);
             $info['id'] = Craft::$app->getDb()->getLastInsertID();
@@ -313,8 +311,7 @@ class Plugins extends Component
         if ($this->_installedPluginInfo[$handle]['enabled'] === true) {
             $plugin = $this->getPlugin($handle);
         } else {
-            $plugin = $this->createPlugin($handle,
-                $this->_installedPluginInfo[$handle]);
+            $plugin = $this->createPlugin($handle, $this->_installedPluginInfo[$handle]);
         }
 
         if ($plugin === null) {
@@ -442,8 +439,7 @@ class Plugins extends Component
     {
         $this->loadPlugins();
 
-        return version_compare($plugin->version,
-            $this->_installedPluginInfo[$plugin->getHandle()]['version'], '>');
+        return version_compare($plugin->version, $this->_installedPluginInfo[$plugin->getHandle()]['version'], '>');
     }
 
     /**

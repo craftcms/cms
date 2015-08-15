@@ -290,8 +290,7 @@ class Config extends Component
                         $this->_omitScriptNameInUrls = false;
                     } else {
                         // Cache it early so the testScriptNameRedirect request isn't checking for it too
-                        Craft::$app->getCache()->set('omitScriptNameInUrls',
-                            'n');
+                        Craft::$app->getCache()->set('omitScriptNameInUrls', 'n');
 
                         // Test the server for it
                         try {
@@ -306,14 +305,12 @@ class Config extends Component
                                 $this->_omitScriptNameInUrls = 'y';
                             }
                         } catch (RequestException $e) {
-                            Craft::error('Unable to determine if a script name redirect is in place on the server: '.$e->getMessage(),
-                                __METHOD__);
+                            Craft::error('Unable to determine if a script name redirect is in place on the server: '.$e->getMessage(), __METHOD__);
                         }
                     }
 
                     // Cache it
-                    Craft::$app->getCache()->set('omitScriptNameInUrls',
-                        $this->_omitScriptNameInUrls);
+                    Craft::$app->getCache()->set('omitScriptNameInUrls', $this->_omitScriptNameInUrls);
                 }
             }
         }
@@ -386,14 +383,12 @@ class Config extends Component
                                 $this->_usePathInfo = 'y';
                             }
                         } catch (RequestException $e) {
-                            Craft::error('Unable to determine if PATH_INFO is enabled on the server: '.$e->getMessage(),
-                                __METHOD__);
+                            Craft::error('Unable to determine if PATH_INFO is enabled on the server: '.$e->getMessage(), __METHOD__);
                         }
                     }
 
                     // Cache it
-                    Craft::$app->getCache()->set('usePathInfo',
-                        $this->_usePathInfo);
+                    Craft::$app->getCache()->set('usePathInfo', $this->_usePathInfo);
                 }
             }
         }
@@ -645,10 +640,8 @@ class Config extends Component
 
         if ($configVal === 'minor-only') {
             // Return whether the major version number has changed
-            $localMajorVersion = array_shift(explode('.',
-                Craft::$app->version));
-            $updateMajorVersion = array_shift(explode('.',
-                $updateInfo->app->latestVersion));
+            $localMajorVersion = array_shift(explode('.', Craft::$app->version));
+            $updateMajorVersion = array_shift(explode('.', $updateInfo->app->latestVersion));
 
             return ($localMajorVersion === $updateMajorVersion);
         }
@@ -703,8 +696,7 @@ class Config extends Component
                     if (is_array($customConfig = require_once($filePath))) {
                         $this->_mergeConfigs($configSettings, $customConfig);
                     } else if (isset($blocksConfig)) {
-                        $configSettings = array_merge($configSettings,
-                            $blocksConfig);
+                        $configSettings = array_merge($configSettings, $blocksConfig);
                         unset($blocksConfig);
                     }
                 }
@@ -744,8 +736,7 @@ class Config extends Component
                 if ($env == '*' || StringHelper::contains(CRAFT_ENVIRONMENT,
                         $env)
                 ) {
-                    $mergedCustomConfig = ArrayHelper::merge($mergedCustomConfig,
-                        $envConfig);
+                    $mergedCustomConfig = ArrayHelper::merge($mergedCustomConfig, $envConfig);
                 }
             }
 

@@ -209,8 +209,7 @@ trait ApplicationTrait
                             return $preferredLocale;
                         }
                     } catch (\Exception $e) {
-                        Craft::error('Tried to determine the user’s preferred locale, but got this exception: '.$e->getMessage(),
-                            __METHOD__);
+                        Craft::error('Tried to determine the user’s preferred locale, but got this exception: '.$e->getMessage(), __METHOD__);
                     }
 
                     // If they've set a default CP language, use it here.
@@ -405,8 +404,8 @@ trait ApplicationTrait
             $installedEdition = $this->getEdition();
 
             if (($orBetter && $installedEdition < $edition) || (!$orBetter && $installedEdition !== $edition)) {
-                throw new Exception(Craft::t('app',
-                    'Craft {edition} is required to perform this action.', [
+                throw new Exception(Craft::t('app', 'Craft {edition} is required to perform this action.',
+                    [
                         'edition' => AppHelper::getEditionName($edition)
                     ]));
             }
@@ -602,8 +601,7 @@ trait ApplicationTrait
                     ->one();
 
                 if (!$row) {
-                    throw new Exception(Craft::t('app',
-                        'Craft appears to be installed but the info table is empty.'));
+                    throw new Exception(Craft::t('app', 'Craft appears to be installed but the info table is empty.'));
                 }
 
                 // TODO: Remove this after the next breakpoint
@@ -644,11 +642,9 @@ trait ApplicationTrait
                     unset($attributes['fieldVersion']);
                 }
 
-                $this->getDb()->createCommand()->update('{{%info}}',
-                    $attributes)->execute();
+                $this->getDb()->createCommand()->update('{{%info}}', $attributes)->execute();
             } else {
-                $this->getDb()->createCommand()->insert('{{%info}}',
-                    $attributes)->execute();
+                $this->getDb()->createCommand()->insert('{{%info}}', $attributes)->execute();
 
                 // Set the new id
                 $info->id = $this->getDb()->getLastInsertID();
@@ -686,53 +682,40 @@ trait ApplicationTrait
         if ($this->_isDbConfigValid === null) {
             $messages = [];
 
-            $databaseServerName = $this->getConfig()->get('server',
-                ConfigCategory::Db);
-            $databaseAuthName = $this->getConfig()->get('user',
-                ConfigCategory::Db);
-            $databaseName = $this->getConfig()->get('database',
-                ConfigCategory::Db);
+            $databaseServerName = $this->getConfig()->get('server', ConfigCategory::Db);
+            $databaseAuthName = $this->getConfig()->get('user', ConfigCategory::Db);
+            $databaseName = $this->getConfig()->get('database', ConfigCategory::Db);
             $databasePort = $this->getConfig()->get('port', ConfigCategory::Db);
-            $databaseCharset = $this->getConfig()->get('charset',
-                ConfigCategory::Db);
-            $databaseCollation = $this->getConfig()->get('collation',
-                ConfigCategory::Db);
+            $databaseCharset = $this->getConfig()->get('charset', ConfigCategory::Db);
+            $databaseCollation = $this->getConfig()->get('collation', ConfigCategory::Db);
 
             if (!$databaseServerName) {
-                $messages[] = Craft::t('app',
-                    'The database server name isn’t set in your db config file.');
+                $messages[] = Craft::t('app', 'The database server name isn’t set in your db config file.');
             }
 
             if (!$databaseAuthName) {
-                $messages[] = Craft::t('app',
-                    'The database user name isn’t set in your db config file.');
+                $messages[] = Craft::t('app', 'The database user name isn’t set in your db config file.');
             }
 
             if (!$databaseName) {
-                $messages[] = Craft::t('app',
-                    'The database name isn’t set in your db config file.');
+                $messages[] = Craft::t('app', 'The database name isn’t set in your db config file.');
             }
 
             if (!$databasePort) {
-                $messages[] = Craft::t('app',
-                    'The database port isn’t set in your db config file.');
+                $messages[] = Craft::t('app', 'The database port isn’t set in your db config file.');
             }
 
             if (!$databaseCharset) {
-                $messages[] = Craft::t('app',
-                    'The database charset isn’t set in your db config file.');
+                $messages[] = Craft::t('app', 'The database charset isn’t set in your db config file.');
             }
 
             if (!$databaseCollation) {
-                $messages[] = Craft::t('app',
-                    'The database collation isn’t set in your db config file.');
+                $messages[] = Craft::t('app', 'The database collation isn’t set in your db config file.');
             }
 
             if (!empty($messages)) {
                 $this->_isDbConfigValid = false;
-                throw new DbConnectException(Craft::t('app',
-                    'Database configuration errors: {errors}',
-                    ['errors' => implode(PHP_EOL, $messages)]));
+                throw new DbConnectException(Craft::t('app', 'Database configuration errors: {errors}', ['errors' => implode(PHP_EOL, $messages)]));
             }
 
             $this->_isDbConfigValid = true;
@@ -1263,8 +1246,7 @@ trait ApplicationTrait
             case 'db': {
                 return [
                     'class' => 'craft\app\cache\DbCache',
-                    'gcProbability' => $configService->get('gcProbability',
-                        ConfigCategory::DbCache),
+                    'gcProbability' => $configService->get('gcProbability', ConfigCategory::DbCache),
                     'cacheTableName' => $this->_getNormalizedTablePrefix().$configService->get('cacheTableName',
                             ConfigCategory::DbCache),
                     'autoCreateCacheTable' => true,
@@ -1274,20 +1256,16 @@ trait ApplicationTrait
             case 'file': {
                 return [
                     'class' => 'craft\app\cache\FileCache',
-                    'cachePath' => $configService->get('cachePath',
-                        ConfigCategory::FileCache),
-                    'gcProbability' => $configService->get('gcProbability',
-                        ConfigCategory::FileCache),
+                    'cachePath' => $configService->get('cachePath', ConfigCategory::FileCache),
+                    'gcProbability' => $configService->get('gcProbability', ConfigCategory::FileCache),
                 ];
             }
 
             case 'memcache': {
                 return [
                     'class' => 'craft\app\cache\MemCache',
-                    'servers' => $configService->get('servers',
-                        ConfigCategory::Memcache),
-                    'useMemcached' => $configService->get('useMemcached',
-                        ConfigCategory::Memcache),
+                    'servers' => $configService->get('servers', ConfigCategory::Memcache),
+                    'useMemcached' => $configService->get('useMemcached', ConfigCategory::Memcache),
                 ];
             }
 
@@ -1326,8 +1304,7 @@ trait ApplicationTrait
                 'dsn' => $this->_processConnectionString(),
                 'emulatePrepare' => true,
                 'username' => $configService->get('user', ConfigCategory::Db),
-                'password' => $configService->get('password',
-                    ConfigCategory::Db),
+                'password' => $configService->get('password', ConfigCategory::Db),
                 'charset' => $configService->get('charset', ConfigCategory::Db),
                 'tablePrefix' => $this->_getNormalizedTablePrefix(),
                 'schemaMap' => [
@@ -1343,20 +1320,16 @@ trait ApplicationTrait
 
             // TODO: Multi-db driver check.
             if (!extension_loaded('pdo')) {
-                throw new DbConnectException(Craft::t('app',
-                    'Craft requires the PDO extension to operate.'));
+                throw new DbConnectException(Craft::t('app', 'Craft requires the PDO extension to operate.'));
             } else if (!extension_loaded('pdo_mysql')) {
-                throw new DbConnectException(Craft::t('app',
-                    'Craft requires the PDO_MYSQL driver to operate.'));
+                throw new DbConnectException(Craft::t('app', 'Craft requires the PDO_MYSQL driver to operate.'));
             } else {
                 Craft::error($e->getMessage(), __METHOD__);
-                throw new DbConnectException(Craft::t('app',
-                    'Craft can’t connect to the database with the credentials in craft/config/db.php.'));
+                throw new DbConnectException(Craft::t('app', 'Craft can’t connect to the database with the credentials in craft/config/db.php.'));
             }
         } catch (\Exception $e) {
             Craft::error($e->getMessage(), __METHOD__);
-            throw new DbConnectException(Craft::t('app',
-                'Craft can’t connect to the database with the credentials in craft/config/db.php.'));
+            throw new DbConnectException(Craft::t('app', 'Craft can’t connect to the database with the credentials in craft/config/db.php.'));
         }
 
         $this->setIsDbConnectionValid(true);
@@ -1435,8 +1408,7 @@ trait ApplicationTrait
     {
         /** @var $this \craft\app\web\Application|\craft\app\console\Application */
         // Table prefixes cannot be longer than 5 characters
-        $tablePrefix = rtrim($this->getConfig()->get('tablePrefix',
-            ConfigCategory::Db), '_');
+        $tablePrefix = rtrim($this->getConfig()->get('tablePrefix', ConfigCategory::Db), '_');
 
         if ($tablePrefix) {
             if (StringHelper::length($tablePrefix) > 5) {
@@ -1516,13 +1488,11 @@ trait ApplicationTrait
         $unixSocket = $this->getConfig()->get('unixSocket', ConfigCategory::Db);
 
         if (!empty($unixSocket)) {
-            return strtolower('mysql:unix_socket='.$unixSocket.';dbname=').$this->getConfig()->get('database',
-                ConfigCategory::Db).';';
+            return strtolower('mysql:unix_socket='.$unixSocket.';dbname=').$this->getConfig()->get('database', ConfigCategory::Db).';';
         } else {
             return strtolower('mysql:host='.$this->getConfig()->get('server',
                     ConfigCategory::Db).';dbname=').$this->getConfig()->get('database',
-                ConfigCategory::Db).strtolower(';port='.$this->getConfig()->get('port',
-                    ConfigCategory::Db).';');
+                ConfigCategory::Db).strtolower(';port='.$this->getConfig()->get('port', ConfigCategory::Db).';');
         }
     }
 

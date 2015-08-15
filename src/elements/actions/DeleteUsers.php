@@ -112,9 +112,7 @@ EOT;
             $transferContentTo = Craft::$app->getUsers()->getUserById($this->transferContentTo);
 
             if (!$transferContentTo) {
-                throw new Exception(Craft::t('app',
-                    'No user exists with the ID “{id}”.',
-                    ['id' => $transferContentTo]));
+                throw new Exception(Craft::t('app', 'No user exists with the ID “{id}”.', ['id' => $transferContentTo]));
             }
         } else {
             $transferContentTo = null;

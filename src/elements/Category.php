@@ -160,8 +160,7 @@ class Category extends Element
             // Delete
             $actions[] = Craft::$app->getElements()->createAction([
                 'type' => Delete::className(),
-                'confirmationMessage' => Craft::t('app',
-                    'Are you sure you want to delete the selected categories?'),
+                'confirmationMessage' => Craft::t('app', 'Are you sure you want to delete the selected categories?'),
                 'successMessage' => Craft::t('app', 'Categories deleted.'),
             ]);
         }
@@ -234,8 +233,8 @@ class Category extends Element
     public static function getEditorHtml(ElementInterface $element)
     {
         /** @var Category $element */
-        $html = Craft::$app->getView()->renderTemplateMacro('_includes/forms',
-            'textField', [
+        $html = Craft::$app->getView()->renderTemplateMacro('_includes/forms', 'textField',
+            [
                 [
                     'label' => Craft::t('app', 'Title'),
                     'locale' => $element->locale,
@@ -249,8 +248,8 @@ class Category extends Element
                 ]
             ]);
 
-        $html .= Craft::$app->getView()->renderTemplateMacro('_includes/forms',
-            'textField', [
+        $html .= Craft::$app->getView()->renderTemplateMacro('_includes/forms', 'textField',
+            [
                 [
                     'label' => Craft::t('app', 'Slug'),
                     'locale' => $element->locale,
@@ -313,8 +312,7 @@ class Category extends Element
         // Was the category moved within its group's structure?
         if ($element->getGroup()->structureId == $structureId) {
             // Update its URI
-            Craft::$app->getElements()->updateElementSlugAndUri($element, true,
-                true, true);
+            Craft::$app->getElements()->updateElementSlugAndUri($element, true, true, true);
 
             // Make sure that each of the category's ancestors are related wherever the category is related
             $newRelationValues = [];
@@ -345,8 +343,7 @@ class Category extends Element
                     ])
                     ->column();
 
-                $missingAncestorRelations = array_diff($ancestorIds,
-                    $existingAncestorRelations);
+                $missingAncestorRelations = array_diff($ancestorIds, $existingAncestorRelations);
 
                 foreach ($missingAncestorRelations as $categoryId) {
                     $newRelationValues[] = [

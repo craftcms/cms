@@ -108,8 +108,7 @@ class PositionSelect extends Field
     public function getInputHtml($value, $element)
     {
         if (empty($this->options)) {
-            return '<p><em>'.Craft::t('app',
-                'No options selected.').'</em></p>';
+            return '<p><em>'.Craft::t('app', 'No options selected.').'</em></p>';
         }
 
         Craft::$app->getView()->registerJsResource('js/PositionSelectInput.js');

@@ -334,8 +334,7 @@ class Sections extends Component
         $sectionLocales = (new Query())
             ->select('*')
             ->from('{{%sections_i18n}} sections_i18n')
-            ->innerJoin('{{%locales}} locales',
-                'locales.locale = sections_i18n.locale')
+            ->innerJoin('{{%locales}} locales', 'locales.locale = sections_i18n.locale')
             ->where('sections_i18n.sectionId = :sectionId',
                 [':sectionId' => $sectionId])
             ->orderBy('locales.sortOrder')
@@ -367,9 +366,7 @@ class Sections extends Component
                 ->one();
 
             if (!$sectionRecord) {
-                throw new Exception(Craft::t('app',
-                    'No section exists with the ID “{id}”.',
-                    ['id' => $section->id]));
+                throw new Exception(Craft::t('app', 'No section exists with the ID “{id}”.', ['id' => $section->id]));
             }
 
             $oldSection = Section::create($sectionRecord);
@@ -386,9 +383,7 @@ class Sections extends Component
         $sectionRecord->enableVersioning = $section->enableVersioning ? 1 : 0;
 
         if (($isNewSection || $section->type != $oldSection->type) && !$this->canHaveMore($section->type)) {
-            $section->addError('type',
-                Craft::t('app', 'You can’t add any more {type} sections.',
-                    ['type' => Craft::t('app', ucfirst($section->type))]));
+            $section->addError('type', Craft::t('app', 'You can’t add any more {type} sections.', ['type' => Craft::t('app', ucfirst($section->type))]));
         }
 
         // Type-specific attributes
@@ -411,8 +406,7 @@ class Sections extends Component
         $sectionLocales = $section->getLocales();
 
         if (!$sectionLocales) {
-            $section->addError('localeErrors', Craft::t('app',
-                'At least one locale must be selected for the section.'));
+            $section->addError('localeErrors', Craft::t('app', 'At least one locale must be selected for the section.'));
         }
 
         foreach ($sectionLocales as $localeId => $sectionLocale) {
@@ -420,8 +414,7 @@ class Sections extends Component
                 $errorKey = 'urlFormat-'.$localeId;
 
                 if (empty($sectionLocale->urlFormat)) {
-                    $section->addError($errorKey,
-                        Craft::t('app', 'URI cannot be blank.'));
+                    $section->addError($errorKey, Craft::t('app', 'URI cannot be blank.'));
                 } else if ($section) {
                     // Make sure no other elements are using this URI already
                     $query = (new Query())
@@ -439,15 +432,13 @@ class Sections extends Component
                         );
 
                     if ($section->id) {
-                        $query->innerJoin('{{%entries}} entries',
-                            'entries.id = elements_i18n.elementId')
-                            ->andWhere('entries.sectionId != :sectionId',
-                                [':sectionId' => $section->id]);
+                        $query
+                            ->innerJoin('{{%entries}} entries', 'entries.id = elements_i18n.elementId')
+                            ->andWhere('entries.sectionId != :sectionId', [':sectionId' => $section->id]);
                     }
 
                     if ($query->exists()) {
-                        $section->addError($errorKey,
-                            Craft::t('app', 'This URI is already in use.'));
+                        $section->addError($errorKey, Craft::t('app', 'This URI is already in use.'));
                     }
                 }
 
@@ -465,8 +456,7 @@ class Sections extends Component
 
                 foreach ($urlFormatAttributes as $attribute) {
                     if (!$sectionLocale->validate([$attribute])) {
-                        $section->addError($attribute.'-'.$localeId,
-                            $sectionLocale->getError($attribute));
+                        $section->addError($attribute.'-'.$localeId, $sectionLocale->getError($attribute));
                     }
                 }
             } else {
@@ -582,8 +572,7 @@ class Sections extends Component
                         // Drop any locales that are no longer being used, as well as the associated entry/element locale
                         // rows
 
-                        $droppedLocaleIds = array_diff(array_keys($oldSectionLocales),
-                            array_keys($sectionLocales));
+                        $droppedLocaleIds = array_diff(array_keys($oldSectionLocales), array_keys($sectionLocales));
 
                         if ($droppedLocaleIds) {
                             Craft::$app->getDb()->createCommand()->delete('{{%sections_i18n}}',
@@ -712,8 +701,7 @@ class Sections extends Component
 
                                 /** @var Entry $entry */
                                 foreach ($query->each() as $entry) {
-                                    Craft::$app->getStructures()->appendToRoot($section->structureId,
-                                        $entry, 'insert');
+                                    Craft::$app->getStructures()->appendToRoot($section->structureId, $entry, 'insert');
                                 }
                             }
 
@@ -725,15 +713,12 @@ class Sections extends Component
 
                     if (!$isNewSection) {
                         // Get the most-primary locale that this section was already enabled in
-                        $locales = array_values(array_intersect(Craft::$app->i18n->getSiteLocaleIds(),
-                            array_keys($oldSectionLocales)));
+                        $locales = array_values(array_intersect(Craft::$app->i18n->getSiteLocaleIds(), array_keys($oldSectionLocales)));
 
                         if ($locales) {
                             Craft::$app->getTasks()->queueTask([
                                 'type' => ResaveElements::className(),
-                                'description' => Craft::t('app',
-                                    'Resaving {section} entries',
-                                    ['section' => $section->name]),
+                                'description' => Craft::t('app', 'Resaving {section} entries', ['section' => $section->name]),
                                 'elementType' => Entry::className(),
                                 'criteria' => [
                                     'locale' => $locales[0],
@@ -959,9 +944,7 @@ class Sections extends Component
             $entryTypeRecord = EntryTypeRecord::findOne($entryType->id);
 
             if (!$entryTypeRecord) {
-                throw new Exception(Craft::t('app',
-                    'No entry type exists with the ID “{id}”.',
-                    ['id' => $entryType->id]));
+                throw new Exception(Craft::t('app', 'No entry type exists with the ID “{id}”.', ['id' => $entryType->id]));
             }
 
             $isNewEntryType = false;
@@ -1160,8 +1143,7 @@ class Sections extends Component
 
         return (new Query())
             ->from('{{%sections}} sections')
-            ->innerJoin('{{%sections_i18n}} sections_i18n',
-                'sections_i18n.sectionId = sections.id')
+            ->innerJoin('{{%sections_i18n}} sections_i18n', 'sections_i18n.sectionId = sections.id')
             ->where($conditions, $params)
             ->exists();
     }
@@ -1203,8 +1185,7 @@ class Sections extends Component
     {
         return (new Query())
             ->select('sections.id, sections.structureId, sections.name, sections.handle, sections.type, sections.hasUrls, sections.template, sections.enableVersioning, structures.maxLevels')
-            ->leftJoin('{{%structures}} structures',
-                'structures.id = sections.structureId')
+            ->leftJoin('{{%structures}} structures', 'structures.id = sections.structureId')
             ->from('{{%sections}} sections')
             ->orderBy('name');
     }

@@ -195,8 +195,7 @@ class Request extends \yii\web\Request
             $path = implode('/', $this->_segments);
             $pageTrigger = preg_quote($configService->get('pageTrigger'), '/');
 
-            if (preg_match("/^(?:(.*)\/)?{$pageTrigger}(\d+)$/", $path,
-                $match)) {
+            if (preg_match("/^(?:(.*)\/)?{$pageTrigger}(\d+)$/", $path, $match)) {
                 // Capture the page num
                 $this->_pageNum = (int)$match[2];
 
@@ -536,9 +535,8 @@ class Request extends \yii\web\Request
             return $value;
         }
 
-        throw new HttpException(400,
-            Craft::t('app', 'Body param “{name}” doesn’t exist.',
-                ['name' => $name]));
+        throw new HttpException(400, Craft::t('app', 'Body param “{name}” doesn’t exist.',
+            ['name' => $name]));
     }
 
     /**
@@ -604,9 +602,8 @@ class Request extends \yii\web\Request
             return $value;
         }
 
-        throw new HttpException(400,
-            Craft::t('app', 'GET param “{name}” doesn’t exist.',
-                ['name' => $name]));
+        throw new HttpException(400, Craft::t('app', 'GET param “{name}” doesn’t exist.',
+            ['name' => $name]));
     }
 
     /**
@@ -661,9 +658,8 @@ class Request extends \yii\web\Request
             return $value;
         }
 
-        throw new HttpException(400,
-            Craft::t('app', 'Param “{name}” doesn’t exist.',
-                ['name' => $name]));
+        throw new HttpException(400, Craft::t('app', 'Param “{name}” doesn’t exist.',
+            ['name' => $name]));
     }
 
     /**
@@ -952,12 +948,9 @@ class Request extends \yii\web\Request
                     $logoutPath = $configService->getCpLogoutPath();
                     $setPasswordPath = $configService->getCpSetPasswordPath();
                 } else {
-                    $loginPath = trim($configService->getLocalized('loginPath'),
-                        '/');
-                    $logoutPath = trim($configService->getLocalized('logoutPath'),
-                        '/');
-                    $setPasswordPath = trim($configService->getLocalized('setPasswordPath'),
-                        '/');
+                    $loginPath = trim($configService->getLocalized('loginPath'), '/');
+                    $logoutPath = trim($configService->getLocalized('logoutPath'), '/');
+                    $setPasswordPath = trim($configService->getLocalized('setPasswordPath'), '/');
                 }
 
                 $verifyEmailPath = 'verifyemail';
@@ -976,11 +969,9 @@ class Request extends \yii\web\Request
 
                     /** @noinspection PhpUndefinedVariableInspection */
                     if ($triggerMatch) {
-                        $this->_actionSegments = array_slice($this->_segments,
-                            1);
+                        $this->_actionSegments = array_slice($this->_segments, 1);
                     } else if ($actionParam) {
-                        $this->_actionSegments = array_filter(explode('/',
-                            $actionParam));
+                        $this->_actionSegments = array_filter(explode('/', $actionParam));
                     } else {
                         if ($this->_path == $loginPath) {
                             $this->_actionSegments = ['users', 'login'];
@@ -1001,16 +992,13 @@ class Request extends \yii\web\Request
                     foreach ($this->_actionSegments as $k => $v) {
                         if (StringHelper::hasUpperCase($v)) {
                             $parts = preg_split('/(?=[\p{Lu}])+/u', $v);
-                            $this->_actionSegments[$k] = StringHelper::toLowerCase(implode('-',
-                                $parts));
+                            $this->_actionSegments[$k] = StringHelper::toLowerCase(implode('-', $parts));
                             $invalid = true;
                         }
                     }
 
                     if ($invalid === true) {
-                        Craft::$app->getDeprecator()->log('yii1-route',
-                            'A Yii 1-styled route was requested: "'.$requestedRoute.'". It should be changed to: "'.implode('/',
-                                $this->_actionSegments).'".');
+                        Craft::$app->getDeprecator()->log('yii1-route', 'A Yii 1-styled route was requested: "'.$requestedRoute.'". It should be changed to: "'.implode('/', $this->_actionSegments).'".');
                     }
                 }
             }

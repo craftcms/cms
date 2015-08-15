@@ -87,8 +87,7 @@ class RegisterResourceTokenParser extends \Twig_TokenParser
     {
         // Is this the deprecated version?
         if ($isDeprecated = ($this->_newTag !== null)) {
-            \Craft::$app->getDeprecator()->log($this->_tag,
-                "{% $this->_tag %} is now deprecated. Use {% $this->_newTag %} instead.");
+            \Craft::$app->getDeprecator()->log($this->_tag, "{% $this->_tag %} is now deprecated. Use {% $this->_newTag %} instead.");
         }
 
         $lineno = $token->getLine();
@@ -167,8 +166,7 @@ class RegisterResourceTokenParser extends \Twig_TokenParser
             'first' => $first
         ];
 
-        return new RegisterResourceNode($nodes, $attributes, $lineno,
-            $this->getTag());
+        return new RegisterResourceNode($nodes, $attributes, $lineno, $this->getTag());
     }
 
     /**

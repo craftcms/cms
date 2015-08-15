@@ -89,8 +89,7 @@ class ElementHelper
 
         // No slug, or a URL format with no {slug}, just parse the URL format and get on with our lives
         if (!$element->slug || !static::doesUrlFormatHaveSlugTag($urlFormat)) {
-            $element->uri = Craft::$app->getView()->renderObjectTemplate($urlFormat,
-                $element);
+            $element->uri = Craft::$app->getView()->renderObjectTemplate($urlFormat, $element);
 
             return;
         }
@@ -123,8 +122,7 @@ class ElementHelper
             $originalSlug = $element->slug;
             $element->slug = $testSlug;
 
-            $testUri = Craft::$app->getView()->renderObjectTemplate($urlFormat,
-                $element);
+            $testUri = Craft::$app->getView()->renderObjectTemplate($urlFormat, $element);
 
             // Make sure we're not over our max length.
             if (strlen($testUri) > 255) {
@@ -135,8 +133,7 @@ class ElementHelper
                 if (strlen($overage) > strlen($element->slug) - strlen($slugWordSeparator.$i)) {
                     // Chop off the overage amount from the slug
                     $testSlug = $element->slug;
-                    $testSlug = substr($testSlug, 0,
-                        strlen($testSlug) - $overage);
+                    $testSlug = substr($testSlug, 0, strlen($testSlug) - $overage);
 
                     // Update the slug
                     $element->slug = $testSlug;
@@ -146,8 +143,7 @@ class ElementHelper
                     continue;
                 } else {
                     // We're screwed, blow things up.
-                    throw new Exception(Craft::t('app',
-                        'The maximum length of a URI is 255 characters.'));
+                    throw new Exception(Craft::t('app', 'The maximum length of a URI is 255 characters.'));
                 }
             }
 
@@ -169,8 +165,7 @@ class ElementHelper
             }
         }
 
-        throw new Exception(Craft::t('app',
-            'Could not find a unique URI for this element.'));
+        throw new Exception(Craft::t('app', 'Could not find a unique URI for this element.'));
     }
 
     /**
@@ -183,8 +178,7 @@ class ElementHelper
     public static function doesUrlFormatHaveSlugTag($urlFormat)
     {
         $element = (object)['slug' => StringHelper::randomString()];
-        $uri = Craft::$app->getView()->renderObjectTemplate($urlFormat,
-            $element);
+        $uri = Craft::$app->getView()->renderObjectTemplate($urlFormat, $element);
 
         return StringHelper::contains($uri, $element->slug);
     }

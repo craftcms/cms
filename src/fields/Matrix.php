@@ -161,8 +161,7 @@ class Matrix extends Field
         Craft::$app->getView()->registerJs(
             'new Craft.MatrixConfigurator('.
             JsonHelper::encode($fieldTypeInfo, JSON_UNESCAPED_UNICODE).', '.
-            JsonHelper::encode(Craft::$app->getView()->getNamespace(),
-                JSON_UNESCAPED_UNICODE).
+            JsonHelper::encode(Craft::$app->getView()->getNamespace(), JSON_UNESCAPED_UNICODE).
             ');'
         );
 
@@ -264,9 +263,7 @@ class Matrix extends Field
             ($this->maxBlocks ? $this->maxBlocks : 'null').
             ');');
 
-        Craft::$app->getView()->includeTranslations('Disabled', 'Actions',
-            'Collapse', 'Expand', 'Disable', 'Enable', 'Add {type} above',
-            'Add a block');
+        Craft::$app->getView()->includeTranslations('Disabled', 'Actions', 'Collapse', 'Expand', 'Disable', 'Enable', 'Add {type} above', 'Add a block');
 
         if ($value instanceof MatrixBlockQuery) {
             $value
@@ -405,8 +402,7 @@ class Matrix extends Field
 
         // Set a temporary namespace for these
         $originalNamespace = Craft::$app->getView()->getNamespace();
-        $namespace = Craft::$app->getView()->namespaceInputName('blockTypes[__BLOCK_TYPE__][fields][__FIELD__][typesettings]',
-            $originalNamespace);
+        $namespace = Craft::$app->getView()->namespaceInputName('blockTypes[__BLOCK_TYPE__][fields][__FIELD__][typesettings]', $originalNamespace);
         Craft::$app->getView()->setNamespace($namespace);
 
         foreach (Craft::$app->getFields()->getAllFieldTypes() as $class) {
@@ -447,8 +443,7 @@ class Matrix extends Field
 
         // Set a temporary namespace for these
         $originalNamespace = Craft::$app->getView()->getNamespace();
-        $namespace = Craft::$app->getView()->namespaceInputName($this->handle.'[__BLOCK__][fields]',
-            $originalNamespace);
+        $namespace = Craft::$app->getView()->namespaceInputName($this->handle.'[__BLOCK__][fields]', $originalNamespace);
         Craft::$app->getView()->setNamespace($namespace);
 
         foreach ($this->getBlockTypes() as $blockType) {

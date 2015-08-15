@@ -80,15 +80,13 @@ class ElementsController extends BaseElementsController
         $elementId = Craft::$app->getRequest()->getRequiredBodyParam('elementId');
         $localeId = Craft::$app->getRequest()->getBodyParam('locale');
         $elementType = Craft::$app->getElements()->getElementTypeById($elementId);
-        $element = Craft::$app->getElements()->getElementById($elementId,
-            $elementType, $localeId);
+        $element = Craft::$app->getElements()->getElementById($elementId, $elementType, $localeId);
 
         if (!$element || !$element->getIsEditable()) {
             throw new HttpException(403);
         }
 
-        $includeLocales = (bool)Craft::$app->getRequest()->getBodyParam('includeLocales',
-            false);
+        $includeLocales = (bool)Craft::$app->getRequest()->getBodyParam('includeLocales', false);
 
         return $this->_getEditorHtmlResponse($element, $includeLocales);
     }
@@ -104,8 +102,7 @@ class ElementsController extends BaseElementsController
         $elementId = Craft::$app->getRequest()->getRequiredBodyParam('elementId');
         $localeId = Craft::$app->getRequest()->getRequiredBodyParam('locale');
         $elementType = Craft::$app->getElements()->getElementTypeById($elementId);
-        $element = Craft::$app->getElements()->getElementById($elementId,
-            $elementType, $localeId);
+        $element = Craft::$app->getElements()->getElementById($elementId, $elementType, $localeId);
 
         if (!ElementHelper::isElementEditable($element) || !$element) {
             throw new HttpException(403);

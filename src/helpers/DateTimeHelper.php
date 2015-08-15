@@ -149,8 +149,7 @@ class DateTimeHelper
                 $date = $m['year'].
                     '-'.(!empty($m['mon']) ? sprintf('%02d', $m['mon']) : '01').
                     '-'.(!empty($m['day']) ? sprintf('%02d', $m['day']) : '01').
-                    ' '.(!empty($m['hour']) ? sprintf('%02d',
-                        $m['hour']) : '00').
+                    ' '.(!empty($m['hour']) ? sprintf('%02d', $m['hour']) : '00').
                     ':'.(!empty($m['min']) ? $m['min'] : '00').
                     ':'.(!empty($m['sec']) ? $m['sec'] : '00');
 
@@ -624,10 +623,8 @@ class DateTimeHelper
 
         // If more than a week, then take into account the length of months
         if ($diff >= 604800) {
-            list($future['H'], $future['i'], $future['s'], $future['d'], $future['m'], $future['Y']) = explode('/',
-                date('H/i/s/d/m/Y', $futureTime));
-            list($past['H'], $past['i'], $past['s'], $past['d'], $past['m'], $past['Y']) = explode('/',
-                date('H/i/s/d/m/Y', $pastTime));
+            list($future['H'], $future['i'], $future['s'], $future['d'], $future['m'], $future['Y']) = explode('/', date('H/i/s/d/m/Y', $futureTime));
+            list($past['H'], $past['i'], $past['s'], $past['d'], $past['m'], $past['Y']) = explode('/', date('H/i/s/d/m/Y', $pastTime));
 
             $years = $months = $weeks = $days = $hours = $minutes = $seconds = 0;
 
@@ -656,8 +653,7 @@ class DateTimeHelper
                 $days = $future['d'] - $past['d'];
             } else {
                 $daysInPastMonth = date('t', $pastTime);
-                $daysInFutureMonth = date('t',
-                    mktime(0, 0, 0, $future['m'] - 1, 1, $future['Y']));
+                $daysInFutureMonth = date('t', mktime(0, 0, 0, $future['m'] - 1, 1, $future['Y']));
 
                 if (!$backwards) {
                     $days = ($daysInPastMonth - $past['d']) + $future['d'];

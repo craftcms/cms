@@ -322,10 +322,8 @@ class View extends \yii\web\View
         // Have we already parsed this template?
         if (!isset($this->_objectTemplates[$template])) {
             // Replace shortcut "{var}"s with "{{object.var}}"s, without affecting normal Twig tags
-            $formattedTemplate = preg_replace('/(?<![\{\%])\{(?![\{\%])/',
-                '{{object.', $template);
-            $formattedTemplate = preg_replace('/(?<![\}\%])\}(?![\}\%])/',
-                '|raw}}', $formattedTemplate);
+            $formattedTemplate = preg_replace('/(?<![\{\%])\{(?![\{\%])/', '{{object.', $template);
+            $formattedTemplate = preg_replace('/(?<![\}\%])\}(?![\}\%])/', '|raw}}', $formattedTemplate);
             $this->_objectTemplates[$template] = $twig->loadTemplate($formattedTemplate);
         }
 
@@ -452,12 +450,10 @@ class View extends \yii\web\View
     public function resolveTemplate($name)
     {
         // Normalize the template name
-        $name = trim(preg_replace('#/{2,}#', '/', strtr($name, '\\', '/')),
-            '/');
+        $name = trim(preg_replace('#/{2,}#', '/', strtr($name, '\\', '/')), '/');
 
         // Get the latest template base path
-        $templatesPath = rtrim(Craft::$app->getPath()->getTemplatesPath(),
-            '/\\');
+        $templatesPath = rtrim(Craft::$app->getPath()->getTemplatesPath(), '/\\');
 
         $key = $templatesPath.':'.$name;
 
@@ -856,19 +852,16 @@ class View extends \yii\web\View
                 [$this, '_createTextareaMarker'], $html);
 
             // name= attributes
-            $html = preg_replace('/(?<![\w\-])(name=(\'|"))([^\'"\[\]]+)([^\'"]*)\2/i',
-                '$1'.$namespace.'[$3]$4$2', $html);
+            $html = preg_replace('/(?<![\w\-])(name=(\'|"))([^\'"\[\]]+)([^\'"]*)\2/i', '$1'.$namespace.'[$3]$4$2', $html);
 
             // id= and for= attributes
             if ($otherAttributes) {
                 $idNamespace = $this->formatInputId($namespace);
-                $html = preg_replace('/(?<![\w\-])((id|for|list|data\-target|data\-reverse\-target|data\-target\-prefix)=(\'|")#?)([^\.\'"][^\'"]*)\3/i',
-                    '$1'.$idNamespace.'-$4$3', $html);
+                $html = preg_replace('/(?<![\w\-])((id|for|list|data\-target|data\-reverse\-target|data\-target\-prefix)=(\'|")#?)([^\.\'"][^\'"]*)\3/i', '$1'.$idNamespace.'-$4$3', $html);
             }
 
             // Bring back the textarea content
-            $html = str_replace(array_keys($this->_textareaMarkers),
-                array_values($this->_textareaMarkers), $html);
+            $html = str_replace(array_keys($this->_textareaMarkers), array_values($this->_textareaMarkers), $html);
         }
 
         return $html;
@@ -892,8 +885,7 @@ class View extends \yii\web\View
         }
 
         if ($namespace) {
-            $inputName = preg_replace('/([^\'"\[\]]+)([^\'"]*)/',
-                $namespace.'[$1]$2', $inputName);
+            $inputName = preg_replace('/([^\'"\[\]]+)([^\'"]*)/', $namespace.'[$1]$2', $inputName);
         }
 
         return $inputName;
@@ -1031,14 +1023,11 @@ class View extends \yii\web\View
     private function _validateTemplateName($name)
     {
         if (StringHelper::contains($name, "\0")) {
-            throw new \Twig_Error_Loader(Craft::t('app',
-                'A template name cannot contain NUL bytes.'));
+            throw new \Twig_Error_Loader(Craft::t('app', 'A template name cannot contain NUL bytes.'));
         }
 
         if (PathHelper::ensurePathIsContained($name) === false) {
-            throw new \Twig_Error_Loader(Craft::t('app',
-                'Looks like you try to load a template outside the template folder: {template}.',
-                ['template' => $name]));
+            throw new \Twig_Error_Loader(Craft::t('app', 'Looks like you try to load a template outside the template folder: {template}.', ['template' => $name]));
         }
     }
 
@@ -1153,8 +1142,7 @@ class View extends \yii\web\View
                     }
                 }
             } catch (\LogicException $e) {
-                Craft::warning('Tried to register plugin-supplied Twig extensions, but Twig environment has already initialized its extensions.',
-                    __METHOD__);
+                Craft::warning('Tried to register plugin-supplied Twig extensions, but Twig environment has already initialized its extensions.', __METHOD__);
 
                 return;
             }

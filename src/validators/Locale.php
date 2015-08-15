@@ -34,9 +34,7 @@ class Locale extends Validator
         if ($locale && !in_array($locale,
                 Craft::$app->getI18n()->getSiteLocaleIds())
         ) {
-            $message = Craft::t('app',
-                'Your site isn’t set up to save content for the locale “{locale}”.',
-                ['locale' => $locale]);
+            $message = Craft::t('app', 'Your site isn’t set up to save content for the locale “{locale}”.', ['locale' => $locale]);
             $this->addError($object, $attribute, $message);
         }
     }

@@ -80,8 +80,7 @@ class Feeds extends Component
         $items = [];
 
         if (!extension_loaded('dom')) {
-            Craft::warning('Craft needs the PHP DOM extension (http://www.php.net/manual/en/book.dom.php) enabled to parse feeds.',
-                __METHOD__);
+            Craft::warning('Craft needs the PHP DOM extension (http://www.php.net/manual/en/book.dom.php) enabled to parse feeds.', __METHOD__);
 
             return $items;
         }
@@ -103,8 +102,7 @@ class Feeds extends Component
 
         // Something went wrong.
         if ($feed->error()) {
-            Craft::warning('There was a problem parsing the feed: '.$feed->error(),
-                __METHOD__);
+            Craft::warning('There was a problem parsing the feed: '.$feed->error(), __METHOD__);
 
             return [];
         }

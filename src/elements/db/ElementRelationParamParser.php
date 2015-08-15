@@ -183,8 +183,7 @@ class ElementRelationParamParser
                     } else if ($element instanceof ElementInterface) {
                         $relElementIds[] = $element->id;
                     } else if ($element instanceof ElementQueryInterface) {
-                        $relElementIds = array_merge($relElementIds,
-                            $element->ids());
+                        $relElementIds = array_merge($relElementIds, $element->ids());
                     }
                 }
 
@@ -287,21 +286,17 @@ class ElementRelationParamParser
                             $relationsJoinParams[$sourceLocaleParam] = $relCriteria['sourceLocale'];
                         }
 
-                        $query->leftJoin('{{%relations}} '.$sourcesAlias,
-                            $relationsJoinConditions, $relationsJoinParams);
-                        $query->leftJoin('{{%matrixblocks}} '.$targetMatrixBlocksAlias,
-                            $targetMatrixBlocksAlias.'.id = '.$sourcesAlias.'.sourceId');
+                        $query->leftJoin('{{%relations}} '.$sourcesAlias, $relationsJoinConditions, $relationsJoinParams);
+                        $query->leftJoin('{{%matrixblocks}} '.$targetMatrixBlocksAlias, $targetMatrixBlocksAlias.'.id = '.$sourcesAlias.'.sourceId');
 
                         $condition = [
                             'and',
-                            DbHelper::parseParam($targetMatrixBlocksAlias.'.ownerId',
-                                $relElementIds, $query->params),
+                            DbHelper::parseParam($targetMatrixBlocksAlias.'.ownerId', $relElementIds, $query->params),
                             $targetMatrixBlocksAlias.'.fieldId = '.$fieldModel->id
                         ];
 
                         if ($blockTypeFieldIds) {
-                            $condition[] = DbHelper::parseParam($sourcesAlias.'.fieldId',
-                                $blockTypeFieldIds, $query->params);
+                            $condition[] = DbHelper::parseParam($sourcesAlias.'.fieldId', $blockTypeFieldIds, $query->params);
                         }
                     } else {
                         $this->_joinSourceMatrixBlocksCount++;
@@ -326,21 +321,17 @@ class ElementRelationParamParser
                             $relationsJoinParams[$sourceLocaleParam] = $relCriteria['sourceLocale'];
                         }
 
-                        $query->leftJoin('{{%matrixblocks}} '.$sourceMatrixBlocksAlias,
-                            $sourceMatrixBlocksAlias.'.ownerId = elements.id');
-                        $query->leftJoin('{{%relations}} '.$matrixBlockTargetsAlias,
-                            $relationsJoinConditions, $relationsJoinParams);
+                        $query->leftJoin('{{%matrixblocks}} '.$sourceMatrixBlocksAlias, $sourceMatrixBlocksAlias.'.ownerId = elements.id');
+                        $query->leftJoin('{{%relations}} '.$matrixBlockTargetsAlias, $relationsJoinConditions, $relationsJoinParams);
 
                         $condition = [
                             'and',
-                            DbHelper::parseParam($matrixBlockTargetsAlias.'.targetId',
-                                $relElementIds, $query->params),
+                            DbHelper::parseParam($matrixBlockTargetsAlias.'.targetId', $relElementIds, $query->params),
                             $sourceMatrixBlocksAlias.'.fieldId = '.$fieldModel->id
                         ];
 
                         if ($blockTypeFieldIds) {
-                            $condition[] = DbHelper::parseParam($matrixBlockTargetsAlias.'.fieldId',
-                                $blockTypeFieldIds, $query->params);
+                            $condition[] = DbHelper::parseParam($matrixBlockTargetsAlias.'.fieldId', $blockTypeFieldIds, $query->params);
                         }
                     }
 
@@ -384,17 +375,14 @@ class ElementRelationParamParser
                 $relationsJoinParams[$sourceLocaleParam] = $relCriteria['sourceLocale'];
             }
 
-            $query->leftJoin('{{%relations}} '.$relTableAlias,
-                $relationsJoinConditions, $relationsJoinParams);
-            $condition = DbHelper::parseParam($relTableAlias.'.'.$relConditionColumn,
-                $relElementIds, $query->params);
+            $query->leftJoin('{{%relations}} '.$relTableAlias, $relationsJoinConditions, $relationsJoinParams);
+            $condition = DbHelper::parseParam($relTableAlias.'.'.$relConditionColumn, $relElementIds, $query->params);
 
             if ($normalFieldIds) {
                 $condition = [
                     'and',
                     $condition,
-                    DbHelper::parseParam($relTableAlias.'.fieldId',
-                        $normalFieldIds, $query->params)
+                    DbHelper::parseParam($relTableAlias.'.fieldId', $normalFieldIds, $query->params)
                 ];
             }
 

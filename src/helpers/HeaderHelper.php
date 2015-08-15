@@ -45,8 +45,7 @@ class HeaderHelper
             if (static::$_mimeType !== null) {
                 // Drop the charset, if it's there
                 if (($pos = strpos(static::$_mimeType, ';')) !== false) {
-                    static::$_mimeType = rtrim(substr(static::$_mimeType, 0,
-                        $pos));
+                    static::$_mimeType = rtrim(substr(static::$_mimeType, 0, $pos));
                 }
             } else {
                 // Then it's whatever's in php.ini
@@ -69,8 +68,7 @@ class HeaderHelper
         $mimeType = FileHelper::getMimeTypeByExtension('.'.$extension);
 
         if (!$mimeType) {
-            Craft::warning('Tried to set the header mime type for the extension '.$extension.', but could not find in the mimeTypes list.',
-                __METHOD__);
+            Craft::warning('Tried to set the header mime type for the extension '.$extension.', but could not find in the mimeTypes list.', __METHOD__);
 
             return false;
         }

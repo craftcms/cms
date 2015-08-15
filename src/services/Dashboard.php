@@ -58,8 +58,7 @@ class Dashboard extends Component
             UpdatesWidget::className(),
         ];
 
-        foreach (Craft::$app->getPlugins()->call('getWidgetTypes', [],
-            true) as $pluginWidgetTypes) {
+        foreach (Craft::$app->getPlugins()->call('getWidgetTypes', [], true) as $pluginWidgetTypes) {
             $widgetTypes = array_merge($widgetTypes, $pluginWidgetTypes);
         }
 
@@ -80,8 +79,7 @@ class Dashboard extends Component
         }
 
         try {
-            return ComponentHelper::createComponent($config,
-                self::WIDGET_INTERFACE);
+            return ComponentHelper::createComponent($config, self::WIDGET_INTERFACE);
         } catch (InvalidComponentException $e) {
             $config['errorMessage'] = $e->getMessage();
 
@@ -323,8 +321,7 @@ class Dashboard extends Component
      */
     private function _noWidgetExists($widgetId)
     {
-        throw new Exception(Craft::t('app',
-            'No widget exists with the ID “{id}”.', ['id' => $widgetId]));
+        throw new Exception(Craft::t('app', 'No widget exists with the ID “{id}”.', ['id' => $widgetId]));
     }
 
     /**

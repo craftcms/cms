@@ -130,8 +130,7 @@ class AssetQuery extends ElementQuery
      */
     public function source($value)
     {
-        Craft::$app->getDeprecator()->log('AssetQuery::source()',
-            'The “source” asset parameter has been deprecated. Use “volume” instead.');
+        Craft::$app->getDeprecator()->log('AssetQuery::source()', 'The “source” asset parameter has been deprecated. Use “volume” instead.');
 
         return $this->volume($value);
     }
@@ -160,8 +159,7 @@ class AssetQuery extends ElementQuery
      */
     public function sourceId($value)
     {
-        Craft::$app->getDeprecator()->log('AssetQuery::sourceId()',
-            'The “sourceId” asset parameter has been deprecated. Use “volumeId” instead.');
+        Craft::$app->getDeprecator()->log('AssetQuery::sourceId()', 'The “sourceId” asset parameter has been deprecated. Use “volumeId” instead.');
 
         return $this->volumeId($value);
     }
@@ -305,50 +303,41 @@ class AssetQuery extends ElementQuery
         ]);
 
         if ($this->volumeId) {
-            $this->subQuery->andWhere(DbHelper::parseParam('assets.volumeId',
-                $this->volumeId, $this->subQuery->params));
+            $this->subQuery->andWhere(DbHelper::parseParam('assets.volumeId', $this->volumeId, $this->subQuery->params));
         }
 
         if ($this->folderId) {
             if ($this->includeSubfolders) {
                 $folders = Craft::$app->getAssets()->getAllDescendantFolders(
                     Craft::$app->getAssets()->getFolderById($this->folderId));
-                $this->subQuery->andWhere(DbHelper::parseParam('assetfiles.folderId',
-                    array_keys($folders), $this->subQuery->params));
+                $this->subQuery->andWhere(DbHelper::parseParam('assetfiles.folderId', array_keys($folders), $this->subQuery->params));
             } else {
-                $this->subQuery->andWhere(DbHelper::parseParam('assets.folderId',
-                    $this->folderId, $this->subQuery->params));
+                $this->subQuery->andWhere(DbHelper::parseParam('assets.folderId', $this->folderId, $this->subQuery->params));
             }
         }
 
         if ($this->filename) {
-            $this->subQuery->andWhere(DbHelper::parseParam('assets.filename',
-                $this->filename, $this->subQuery->params));
+            $this->subQuery->andWhere(DbHelper::parseParam('assets.filename', $this->filename, $this->subQuery->params));
         }
 
         if ($this->kind) {
-            $this->subQuery->andWhere(DbHelper::parseParam('assets.kind',
-                $this->kind, $this->subQuery->params));
+            $this->subQuery->andWhere(DbHelper::parseParam('assets.kind', $this->kind, $this->subQuery->params));
         }
 
         if ($this->width) {
-            $this->subQuery->andWhere(DbHelper::parseParam('assets.width',
-                $this->width, $this->subQuery->params));
+            $this->subQuery->andWhere(DbHelper::parseParam('assets.width', $this->width, $this->subQuery->params));
         }
 
         if ($this->height) {
-            $this->subQuery->andWhere(DbHelper::parseParam('assets.height',
-                $this->height, $this->subQuery->params));
+            $this->subQuery->andWhere(DbHelper::parseParam('assets.height', $this->height, $this->subQuery->params));
         }
 
         if ($this->size) {
-            $this->subQuery->andWhere(DbHelper::parseParam('assets.size',
-                $this->size, $this->subQuery->params));
+            $this->subQuery->andWhere(DbHelper::parseParam('assets.size', $this->size, $this->subQuery->params));
         }
 
         if ($this->dateModified) {
-            $this->subQuery->andWhere(DbHelper::parseDateParam('assets.dateModified',
-                $this->dateModified, $this->subQuery->params));
+            $this->subQuery->andWhere(DbHelper::parseDateParam('assets.dateModified', $this->dateModified, $this->subQuery->params));
         }
 
         return parent::beforePrepare();

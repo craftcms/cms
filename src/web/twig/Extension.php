@@ -234,8 +234,7 @@ class Extension extends \Twig_Extension
      */
     public function kebabFilter($string, $glue = '-', $lower = true, $removePunctuation = true)
     {
-        return StringHelper::toKebabCase($string, $glue, $lower,
-            $removePunctuation);
+        return StringHelper::toKebabCase($string, $glue, $lower, $removePunctuation);
     }
 
     /**
@@ -361,8 +360,7 @@ class Extension extends \Twig_Extension
         $template = '{'.$item.'}';
 
         foreach ($arr as $key => $object) {
-            $value = Craft::$app->getView()->renderObjectTemplate($template,
-                $object);
+            $value = Craft::$app->getView()->renderObjectTemplate($template, $object);
             $groups[$value][] = $object;
         }
 
@@ -570,8 +568,7 @@ class Extension extends \Twig_Extension
      */
     public function getHeadHtml()
     {
-        Craft::$app->getDeprecator()->log('getHeadHtml',
-            'getHeadHtml() has been deprecated. Use head() instead.');
+        Craft::$app->getDeprecator()->log('getHeadHtml', 'getHeadHtml() has been deprecated. Use head() instead.');
 
         ob_start();
         ob_implicit_flush(false);
@@ -586,8 +583,7 @@ class Extension extends \Twig_Extension
      */
     public function getFootHtml()
     {
-        Craft::$app->getDeprecator()->log('getFootHtml',
-            'getFootHtml() has been deprecated. Use endBody() instead.');
+        Craft::$app->getDeprecator()->log('getFootHtml', 'getFootHtml() has been deprecated. Use endBody() instead.');
 
         ob_start();
         ob_implicit_flush(false);

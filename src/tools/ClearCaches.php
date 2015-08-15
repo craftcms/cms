@@ -44,8 +44,7 @@ class ClearCaches extends Tool
     public static function optionsHtml()
     {
         $caches = self::_getFolders();
-        $caches['assetTransformIndex'] = Craft::t('app',
-            'Asset transform index');
+        $caches['assetTransformIndex'] = Craft::t('app', 'Asset transform index');
         $caches['assetIndexingData'] = Craft::t('app', 'Asset indexing data');
         $caches['templateCaches'] = Craft::t('app', 'Template caches');
 
@@ -77,16 +76,11 @@ class ClearCaches extends Tool
         $runtimePath = Craft::$app->getPath()->getRuntimePath();
 
         $folders = [
-            $obfuscate ? md5('dataCache') : 'dataCache' => Craft::t('app',
-                'Data caches'),
-            $obfuscate ? md5($runtimePath.'/cache') : $runtimePath.'/cache' => Craft::t('app',
-                'RSS caches'),
-            $obfuscate ? md5($runtimePath.'/assets') : $runtimePath.'/assets' => Craft::t('app',
-                'Asset caches'),
-            $obfuscate ? md5($runtimePath.'/compiled_templates') : $runtimePath.'/compiled_templates' => Craft::t('app',
-                'Compiled templates'),
-            $obfuscate ? md5($runtimePath.'/temp') : $runtimePath.'/temp' => Craft::t('app',
-                'Temp files'),
+            $obfuscate ? md5('dataCache') : 'dataCache' => Craft::t('app', 'Data caches'),
+            $obfuscate ? md5($runtimePath.'/cache') : $runtimePath.'/cache' => Craft::t('app', 'RSS caches'),
+            $obfuscate ? md5($runtimePath.'/assets') : $runtimePath.'/assets' => Craft::t('app', 'Asset caches'),
+            $obfuscate ? md5($runtimePath.'/compiled_templates') : $runtimePath.'/compiled_templates' => Craft::t('app', 'Compiled templates'),
+            $obfuscate ? md5($runtimePath.'/temp') : $runtimePath.'/temp' => Craft::t('app', 'Temp files'),
         ];
 
         $pluginCachePaths = Craft::$app->getPlugins()->call('registerCachePaths');

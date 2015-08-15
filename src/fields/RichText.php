@@ -78,13 +78,11 @@ class RichText extends Field
         $configPath = Craft::$app->getPath()->getConfigPath().'/redactor';
 
         if (IOHelper::folderExists($configPath)) {
-            $configFiles = IOHelper::getFolderContents($configPath, false,
-                '\.json$');
+            $configFiles = IOHelper::getFolderContents($configPath, false, '\.json$');
 
             if (is_array($configFiles)) {
                 foreach ($configFiles as $file) {
-                    $configOptions[IOHelper::getFilename($file)] = IOHelper::getFilename($file,
-                        false);
+                    $configOptions[IOHelper::getFilename($file)] = IOHelper::getFilename($file, false);
                 }
             }
         }
@@ -162,12 +160,9 @@ class RichText extends Field
         }
 
         // Swap any <!--pagebreak-->'s with <hr>'s
-        $value = str_replace('<!--pagebreak-->',
-            '<hr class="redactor_pagebreak" style="display:none" unselectable="on" contenteditable="false" />',
-            $value);
+        $value = str_replace('<!--pagebreak-->', '<hr class="redactor_pagebreak" style="display:none" unselectable="on" contenteditable="false" />', $value);
 
-        return '<textarea id="'.$id.'" name="'.$this->handle.'" style="display: none">'.htmlentities($value,
-            ENT_NOQUOTES, 'UTF-8').'</textarea>';
+        return '<textarea id="'.$id.'" name="'.$this->handle.'" style="display: none">'.htmlentities($value, ENT_NOQUOTES, 'UTF-8').'</textarea>';
     }
 
     /**
@@ -241,18 +236,15 @@ class RichText extends Field
                 $value = preg_replace('/<\/(?:span|font)>/', '', $value);
 
                 // Remove inline styles
-                $value = preg_replace('/(<(?:h1|h2|h3|h4|h5|h6|p|div|blockquote|pre|strong|em|b|i|u|a)\b[^>]*)\s+style="[^"]*"/',
-                    '$1', $value);
+                $value = preg_replace('/(<(?:h1|h2|h3|h4|h5|h6|p|div|blockquote|pre|strong|em|b|i|u|a)\b[^>]*)\s+style="[^"]*"/', '$1', $value);
 
                 // Remove empty tags
-                $value = preg_replace('/<(h1|h2|h3|h4|h5|h6|p|div|blockquote|pre|strong|em|a|b|i|u)\s*><\/\1>/',
-                    '', $value);
+                $value = preg_replace('/<(h1|h2|h3|h4|h5|h6|p|div|blockquote|pre|strong|em|a|b|i|u)\s*><\/\1>/', '', $value);
             }
         }
 
         // Find any element URLs and swap them with ref tags
-        $value = preg_replace_callback('/(href=|src=)([\'"])[^\'"]+?#(\w+):(\d+)(:'.Handle::$handlePattern.')?\2/',
-            function ($matches) {
+        $value = preg_replace_callback('/(href=|src=)([\'"])[^\'"]+?#(\w+):(\d+)(:'.Handle::$handlePattern.')?\2/', function ($matches) {
                 return $matches[1].$matches[2].'{'.$matches[3].':'.$matches[4].(!empty($matches[5]) ? $matches[5] : ':url').'}'.$matches[2];
             }, $value);
 

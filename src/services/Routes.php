@@ -111,8 +111,7 @@ class Routes extends Component
             $routeRecord = RouteRecord::findOne($routeId);
 
             if (!$routeRecord) {
-                throw new Exception(Craft::t('app',
-                    'No route exists with the ID “{id}”.', ['id' => $routeId]));
+                throw new Exception(Craft::t('app', 'No route exists with the ID “{id}”.', ['id' => $routeId]));
             }
         } else {
             $routeRecord = new RouteRecord();
@@ -183,8 +182,7 @@ class Routes extends Component
             $data = ['sortOrder' => $order + 1];
             $condition = ['id' => $routeId];
 
-            Craft::$app->getDb()->createCommand()->update('{{%routes}}', $data,
-                $condition)->execute();
+            Craft::$app->getDb()->createCommand()->update('{{%routes}}', $data, $condition)->execute();
         }
     }
 

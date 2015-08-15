@@ -129,14 +129,10 @@ class Craft extends Yii
             $elementQueryTraitFile = $compiledClassesPath.'/ElementQueryTrait.php';
 
             if (
-                static::_isFieldAttributesFileValid($contentBehaviorFile,
-                    $storedFieldVersion) &&
-                static::_isFieldAttributesFileValid($contentTraitFile,
-                    $storedFieldVersion) &&
-                static::_isFieldAttributesFileValid($elementQueryBehaviorFile,
-                    $storedFieldVersion) &&
-                static::_isFieldAttributesFileValid($elementQueryTraitFile,
-                    $storedFieldVersion)
+                static::_isFieldAttributesFileValid($contentBehaviorFile, $storedFieldVersion) &&
+                static::_isFieldAttributesFileValid($contentTraitFile, $storedFieldVersion) &&
+                static::_isFieldAttributesFileValid($elementQueryBehaviorFile, $storedFieldVersion) &&
+                static::_isFieldAttributesFileValid($elementQueryTraitFile, $storedFieldVersion)
             ) {
                 return;
             }

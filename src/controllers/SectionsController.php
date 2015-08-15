@@ -120,8 +120,7 @@ class SectionsController extends Controller
         }
 
         if (!$typeOptions) {
-            throw new Exception(Craft::t('app',
-                'Craft Client or Pro Edition is required to create any additional sections.'));
+            throw new Exception(Craft::t('app', 'Craft Client or Pro Edition is required to create any additional sections.'));
         }
 
         if (!$section->type) {
@@ -170,12 +169,10 @@ class SectionsController extends Controller
         $section->name = Craft::$app->getRequest()->getBodyParam('name');
         $section->handle = Craft::$app->getRequest()->getBodyParam('handle');
         $section->type = Craft::$app->getRequest()->getBodyParam('type');
-        $section->enableVersioning = Craft::$app->getRequest()->getBodyParam('enableVersioning',
-            true);
+        $section->enableVersioning = Craft::$app->getRequest()->getBodyParam('enableVersioning', true);
 
         // Type-specific attributes
-        $section->hasUrls = (bool)Craft::$app->getRequest()->getBodyParam('types.'.$section->type.'.hasUrls',
-            true);
+        $section->hasUrls = (bool)Craft::$app->getRequest()->getBodyParam('types.'.$section->type.'.hasUrls', true);
         $section->template = Craft::$app->getRequest()->getBodyParam('types.'.$section->type.'.template');
         $section->maxLevels = Craft::$app->getRequest()->getBodyParam('types.'.$section->type.'.maxLevels');
 
@@ -210,18 +207,15 @@ class SectionsController extends Controller
 
         $section->setLocales($locales);
 
-        $section->hasUrls = (bool)Craft::$app->getRequest()->getBodyParam('types.'.$section->type.'.hasUrls',
-            true);
+        $section->hasUrls = (bool)Craft::$app->getRequest()->getBodyParam('types.'.$section->type.'.hasUrls', true);
 
         // Save it
         if (Craft::$app->getSections()->saveSection($section)) {
-            Craft::$app->getSession()->setNotice(Craft::t('app',
-                'Section saved.'));
+            Craft::$app->getSession()->setNotice(Craft::t('app', 'Section saved.'));
 
             return $this->redirectToPostedUrl($section);
         } else {
-            Craft::$app->getSession()->setError(Craft::t('app',
-                'Couldn’t save section.'));
+            Craft::$app->getSession()->setError(Craft::t('app', 'Couldn’t save section.'));
         }
 
         // Send the section back to the template
@@ -262,8 +256,7 @@ class SectionsController extends Controller
         $section = Craft::$app->getSections()->getSectionById($sectionId);
 
         if ($section === null) {
-            throw new HttpException(404,
-                "No section exists with the ID '$sectionId'");
+            throw new HttpException(404, "No section exists with the ID '$sectionId'");
         }
 
         $crumbs = [
@@ -377,27 +370,19 @@ class SectionsController extends Controller
             $entryType = Craft::$app->getSections()->getEntryTypeById($entryTypeId);
 
             if (!$entryType) {
-                throw new Exception(Craft::t('app',
-                    'No entry type exists with the ID “{id}”.',
-                    ['id' => $entryTypeId]));
+                throw new Exception(Craft::t('app', 'No entry type exists with the ID “{id}”.', ['id' => $entryTypeId]));
             }
         } else {
             $entryType = new EntryType();
         }
 
         // Set the simple stuff
-        $entryType->sectionId = Craft::$app->getRequest()->getRequiredBodyParam('sectionId',
-            $entryType->sectionId);
-        $entryType->name = Craft::$app->getRequest()->getBodyParam('name',
-            $entryType->name);
-        $entryType->handle = Craft::$app->getRequest()->getBodyParam('handle',
-            $entryType->handle);
-        $entryType->hasTitleField = (bool)Craft::$app->getRequest()->getBodyParam('hasTitleField',
-            $entryType->hasTitleField);
-        $entryType->titleLabel = Craft::$app->getRequest()->getBodyParam('titleLabel',
-            $entryType->titleLabel);
-        $entryType->titleFormat = Craft::$app->getRequest()->getBodyParam('titleFormat',
-            $entryType->titleFormat);
+        $entryType->sectionId = Craft::$app->getRequest()->getRequiredBodyParam('sectionId', $entryType->sectionId);
+        $entryType->name = Craft::$app->getRequest()->getBodyParam('name', $entryType->name);
+        $entryType->handle = Craft::$app->getRequest()->getBodyParam('handle', $entryType->handle);
+        $entryType->hasTitleField = (bool)Craft::$app->getRequest()->getBodyParam('hasTitleField', $entryType->hasTitleField);
+        $entryType->titleLabel = Craft::$app->getRequest()->getBodyParam('titleLabel', $entryType->titleLabel);
+        $entryType->titleFormat = Craft::$app->getRequest()->getBodyParam('titleFormat', $entryType->titleFormat);
 
         // Set the field layout
         $fieldLayout = Craft::$app->getFields()->assembleLayoutFromPost();
@@ -406,13 +391,11 @@ class SectionsController extends Controller
 
         // Save it
         if (Craft::$app->getSections()->saveEntryType($entryType)) {
-            Craft::$app->getSession()->setNotice(Craft::t('app',
-                'Entry type saved.'));
+            Craft::$app->getSession()->setNotice(Craft::t('app', 'Entry type saved.'));
 
             return $this->redirectToPostedUrl($entryType);
         } else {
-            Craft::$app->getSession()->setError(Craft::t('app',
-                'Couldn’t save entry type.'));
+            Craft::$app->getSession()->setError(Craft::t('app', 'Couldn’t save entry type.'));
         }
 
         // Send the entry type back to the template

@@ -171,15 +171,13 @@ class Elements extends Component
         $result = (new Query())
             ->select('elements.id, elements.type')
             ->from('{{%elements}} elements')
-            ->innerJoin('{{%elements_i18n}} elements_i18n',
-                'elements_i18n.elementId = elements.id')
+            ->innerJoin('{{%elements_i18n}} elements_i18n', 'elements_i18n.elementId = elements.id')
             ->where($conditions, $params)
             ->one();
 
         if ($result) {
             // Return the actual element
-            return $this->getElementById($result['id'], $result['type'],
-                $localeId);
+            return $this->getElementById($result['id'], $result['type'], $localeId);
         }
     }
 
@@ -319,9 +317,7 @@ class Elements extends Component
             ]);
 
             if (!$elementRecord) {
-                throw new Exception(Craft::t('app',
-                    'No element exists with the ID “{id}”.',
-                    ['id' => $element->id]));
+                throw new Exception(Craft::t('app', 'No element exists with the ID “{id}”.', ['id' => $element->id]));
             }
         } else {
             $elementRecord = new ElementRecord();
@@ -468,9 +464,7 @@ class Elements extends Component
                         // If the slug was entirely composed of invalid characters, it will be blank now.
                         if ($originalSlug && !$localizedElement->slug) {
                             $localizedElement->slug = $originalSlug;
-                            $element->addError('slug',
-                                Craft::t('app', '{attribute} is invalid.',
-                                    ['attribute' => Craft::t('app', 'Slug')]));
+                            $element->addError('slug', Craft::t('app', '{attribute} is invalid.', ['attribute' => Craft::t('app', 'Slug')]));
 
                             // Don't bother with any of the other locales
                             $success = false;
@@ -628,8 +622,7 @@ class Elements extends Component
                 ->one();
 
             if ($elementInOtherLocale) {
-                $this->updateElementSlugAndUri($elementInOtherLocale, false,
-                    false);
+                $this->updateElementSlugAndUri($elementInOtherLocale, false, false);
             }
         }
     }
@@ -669,8 +662,7 @@ class Elements extends Component
             $children = $query->all();
 
             foreach ($children as $child) {
-                $this->updateElementSlugAndUri($child, $updateOtherLocales,
-                    true, false);
+                $this->updateElementSlugAndUri($child, $updateOtherLocales, true, false);
             }
         }
     }
@@ -758,16 +750,14 @@ class Elements extends Component
 
                 Craft::$app->getTasks()->queueTask([
                     'type' => FindAndReplace::className(),
-                    'description' => Craft::t('app',
-                        'Updating element references'),
+                    'description' => Craft::t('app', 'Updating element references'),
                     'find' => $refTagPrefix.$mergedElementId.':',
                     'replace' => $refTagPrefix.$prevailingElementId.':',
                 ]);
 
                 Craft::$app->getTasks()->queueTask([
                     'type' => FindAndReplace::className(),
-                    'description' => Craft::t('app',
-                        'Updating element references'),
+                    'description' => Craft::t('app', 'Updating element references'),
                     'find' => $refTagPrefix.$mergedElementId.'}',
                     'replace' => $refTagPrefix.$prevailingElementId.'}',
                 ]);
@@ -842,8 +832,7 @@ class Elements extends Component
 
             // Delete the caches before they drop their elementId relations (passing `false` because there's no chance
             // this element is suddenly going to show up in a new query)
-            Craft::$app->getTemplateCache()->deleteCachesByElementId($elementIds,
-                false);
+            Craft::$app->getTemplateCache()->deleteCachesByElementId($elementIds, false);
 
             // Now delete the rows in the elements table
             if (count($elementIds) == 1) {
@@ -868,12 +857,10 @@ class Elements extends Component
             }
 
             // Delete the elements table rows, which will cascade across all other InnoDB tables
-            $affectedRows = Craft::$app->getDb()->createCommand()->delete('{{%elements}}',
-                $condition)->execute();
+            $affectedRows = Craft::$app->getDb()->createCommand()->delete('{{%elements}}', $condition)->execute();
 
             // The searchindex table is MyISAM, though
-            Craft::$app->getDb()->createCommand()->delete('{{%searchindex}}',
-                $searchIndexCondition)->execute();
+            Craft::$app->getDb()->createCommand()->delete('{{%searchindex}}', $searchIndexCondition)->execute();
 
             $transaction->commit();
 
@@ -919,8 +906,7 @@ class Elements extends Component
      */
     public function createAction($config)
     {
-        return ComponentHelper::createComponent($config,
-            self::ACTION_INTERFACE);
+        return ComponentHelper::createComponent($config, self::ACTION_INTERFACE);
     }
 
     // Misc

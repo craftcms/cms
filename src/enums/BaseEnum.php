@@ -41,8 +41,7 @@ abstract class BaseEnum
             return array_key_exists($name, $constants);
         }
 
-        $keys = array_map(['\craft\app\helpers\StringHelper', 'toLowerCase'],
-            array_keys($constants));
+        $keys = array_map(['\craft\app\helpers\StringHelper', 'toLowerCase'], array_keys($constants));
 
         return in_array(StringHelper::toLowerCase($name), $keys);
     }

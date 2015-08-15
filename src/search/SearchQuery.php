@@ -77,8 +77,7 @@ class SearchQuery
      */
     private function _parse()
     {
-        for ($token = strtok($this->_query,
-            ' '); $token !== false; $token = strtok(' ')) {
+        for ($token = strtok($this->_query, ' '); $token !== false; $token = strtok(' ')) {
             $appendToPrevious = false;
 
             if ($token == 'OR') {

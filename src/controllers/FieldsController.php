@@ -62,8 +62,7 @@ class FieldsController extends Controller
 
         if (Craft::$app->getFields()->saveGroup($group)) {
             if ($isNewGroup) {
-                Craft::$app->getSession()->setNotice(Craft::t('app',
-                    'Group added.'));
+                Craft::$app->getSession()->setNotice(Craft::t('app', 'Group added.'));
             }
 
             return $this->asJson([
@@ -122,8 +121,7 @@ class FieldsController extends Controller
             $field = Craft::$app->getFields()->getFieldById($fieldId);
 
             if ($field === null) {
-                throw new HttpException(404,
-                    "No field exists with the ID '$fieldId'.");
+                throw new HttpException(404, "No field exists with the ID '$fieldId'.");
             }
         }
 
@@ -240,13 +238,11 @@ class FieldsController extends Controller
         ]);
 
         if ($fieldsService->saveField($field)) {
-            Craft::$app->getSession()->setNotice(Craft::t('app',
-                'Field saved.'));
+            Craft::$app->getSession()->setNotice(Craft::t('app', 'Field saved.'));
 
             return $this->redirectToPostedUrl($field);
         } else {
-            Craft::$app->getSession()->setError(Craft::t('app',
-                'Couldn’t save field.'));
+            Craft::$app->getSession()->setError(Craft::t('app', 'Couldn’t save field.'));
         }
 
         // Send the field back to the template

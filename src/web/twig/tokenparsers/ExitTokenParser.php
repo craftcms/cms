@@ -36,8 +36,7 @@ class ExitTokenParser extends \Twig_TokenParser
 
         $stream->expect(\Twig_Token::BLOCK_END_TYPE);
 
-        return new ExitNode(['status' => $status], [], $lineno,
-            $this->getTag());
+        return new ExitNode(['status' => $status], [], $lineno, $this->getTag());
     }
 
     /**

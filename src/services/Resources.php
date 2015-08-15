@@ -112,8 +112,7 @@ class Resources extends Component
                             return false;
                         }
 
-                        $username = AssetsHelper::prepareAssetName($segs[1],
-                            false);
+                        $username = AssetsHelper::prepareAssetName($segs[1], false);
                         $filename = AssetsHelper::prepareAssetName($segs[3]);
 
                         $userPhotosPath = Craft::$app->getPath()->getUserPhotosPath().'/'.$username;
@@ -135,8 +134,7 @@ class Resources extends Component
                                     ->resize($size)
                                     ->saveAs($sizedPhotoPath);
                             } else {
-                                Craft::error('Tried to write to target folder and could not: '.$sizedPhotoFolder,
-                                    __METHOD__);
+                                Craft::error('Tried to write to target folder and could not: '.$sizedPhotoFolder, __METHOD__);
                             }
                         }
 
@@ -162,23 +160,20 @@ class Resources extends Component
 
                         return $targetFile;
                     } else {
-                        Craft::error('Tried to write to the target folder, but could not:'.$targetFolder,
-                            __METHOD__);
+                        Craft::error('Tried to write to the target folder, but could not:'.$targetFolder, __METHOD__);
                     }
                 }
 
                 case 'tempuploads': {
                     array_shift($segs);
 
-                    return Craft::$app->getPath()->getTempUploadsPath().'/'.implode('/',
-                        $segs);
+                    return Craft::$app->getPath()->getTempUploadsPath().'/'.implode('/', $segs);
                 }
 
                 case 'tempassets': {
                     array_shift($segs);
 
-                    return Craft::$app->getPath()->getAssetsTempSourcePath().'/'.implode('/',
-                        $segs);
+                    return Craft::$app->getPath()->getAssetsTempSourcePath().'/'.implode('/', $segs);
                 }
 
                 case 'assetthumbs': {
@@ -196,8 +191,7 @@ class Resources extends Component
                     // Make sure plugins are loaded in case the asset lives in a plugin-supplied volume type
                     Craft::$app->getPlugins()->loadPlugins();
 
-                    return Craft::$app->getAssetTransforms()->getThumbServerPath($fileModel,
-                        $size);
+                    return Craft::$app->getAssetTransforms()->getThumbServerPath($fileModel, $size);
                 }
 
                 case 'icons': {
@@ -216,8 +210,7 @@ class Resources extends Component
                 }
 
                 case 'logo': {
-                    return Craft::$app->getPath()->getStoragePath().'/'.implode('/',
-                        $segs);
+                    return Craft::$app->getPath()->getStoragePath().'/'.implode('/', $segs);
                 }
 
                 case 'transforms': {
@@ -312,8 +305,7 @@ class Resources extends Component
         // If there is a timestamp and HTTP_IF_MODIFIED_SINCE exists, check the timestamp against requested file's last
         // modified date. If the last modified date is less than the timestamp, return a 304 not modified and let the
         // browser serve it from cache.
-        $timestamp = Craft::$app->getRequest()->getParam($this->dateParam,
-            null);
+        $timestamp = Craft::$app->getRequest()->getParam($this->dateParam, null);
 
         if ($timestamp !== null && array_key_exists('HTTP_IF_MODIFIED_SINCE',
                 $_SERVER)
@@ -466,8 +458,7 @@ class Resources extends Component
             if ($ext) {
                 $font = Craft::$app->getPath()->getResourcesPath().'/fonts/helveticaneue-webfont.ttf';
 
-                $image->setFontProperties($font, $sourceSize['extSize'],
-                    "#999");
+                $image->setFontProperties($font, $sourceSize['extSize'], "#999");
                 $text = StringHelper::toUpperCase($ext);
 
                 $box = $image->getTextBox($text);

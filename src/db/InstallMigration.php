@@ -41,8 +41,7 @@ abstract class InstallMigration extends Migration
                 foreach ($table['indexes'] as $index) {
                     $required = isset($index[1]) ? $index[1] : false;
                     $indexes[] = [
-                        $this->db->getIndexName($tableName, $index[0],
-                            $required),
+                        $this->db->getIndexName($tableName, $index[0], $required),
                         $tableName,
                         $index[0],
                         $required
@@ -53,8 +52,7 @@ abstract class InstallMigration extends Migration
             // Check if there's an explicit primary key after we've added the indexes to avoid creating an unnecessary PK index
             if (isset($table['primaryKey'])) {
                 $this->addPrimaryKey(
-                    $this->db->getPrimaryKeyName($tableName,
-                        $table['primaryKey']),
+                    $this->db->getPrimaryKeyName($tableName, $table['primaryKey']),
                     $tableName,
                     $table['primaryKey']
                 );
@@ -63,8 +61,7 @@ abstract class InstallMigration extends Migration
             if (isset($table['foreignKeys'])) {
                 foreach ($table['foreignKeys'] as $foreignKey) {
                     $foreignKeys[] = [
-                        $this->db->getForeignKeyName($tableName,
-                            $foreignKey[0]),
+                        $this->db->getForeignKeyName($tableName, $foreignKey[0]),
                         $tableName,
                         $foreignKey[0],
                         $foreignKey[1],
@@ -81,8 +78,7 @@ abstract class InstallMigration extends Migration
         }
 
         foreach ($foreignKeys as $foreignKey) {
-            $this->addForeignKey($foreignKey[0], $foreignKey[1], $foreignKey[2],
-                $foreignKey[3], $foreignKey[4], $foreignKey[5], $foreignKey[6]);
+            $this->addForeignKey($foreignKey[0], $foreignKey[1], $foreignKey[2], $foreignKey[3], $foreignKey[4], $foreignKey[5], $foreignKey[6]);
         }
     }
 

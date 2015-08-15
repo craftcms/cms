@@ -44,8 +44,7 @@ class IOHelper
             }
         } else if ($caseInsensitive) {
             $folder = static::getFolderName($path, true, $suppressErrors);
-            $files = static::getFolderContents($folder, false, null, false,
-                $suppressErrors);
+            $files = static::getFolderContents($folder, false, null, false, $suppressErrors);
             $lcaseFilename = StringHelper::toLowerCase($path);
 
             if (is_array($files) && count($files) > 0) {
@@ -83,9 +82,7 @@ class IOHelper
             }
 
             if ($caseInsensitive) {
-                return StringHelper::toLowerCase(static::getFolderName($path,
-                    true,
-                    $suppressErrors)) === StringHelper::toLowerCase($path);
+                return StringHelper::toLowerCase(static::getFolderName($path, true, $suppressErrors)) === StringHelper::toLowerCase($path);
             }
         }
 
@@ -139,13 +136,11 @@ class IOHelper
         $path = static::normalizePathSeparators($path, $suppressErrors);
 
         if (static::folderExists($path, $suppressErrors)) {
-            $folders = $suppressErrors ? @glob($path.'*',
-                GLOB_ONLYDIR) : glob($path.'*', GLOB_ONLYDIR);
+            $folders = $suppressErrors ? @glob($path.'*', GLOB_ONLYDIR) : glob($path.'*', GLOB_ONLYDIR);
 
             if ($folders) {
                 foreach ($folders as $key => $folder) {
-                    $folders[$key] = static::normalizePathSeparators($folder,
-                        $suppressErrors);
+                    $folders[$key] = static::normalizePathSeparators($folder, $suppressErrors);
                 }
 
                 return $folders;
@@ -233,8 +228,7 @@ class IOHelper
         if (static::folderExists($path, $suppressErrors)) {
             $path = rtrim(str_replace('\\', '/', $path), '/').'/';
 
-            return static::isWritable($path.uniqid(mt_rand()).'.tmp',
-                $suppressErrors);
+            return static::isWritable($path.uniqid(mt_rand()).'.tmp', $suppressErrors);
         }
 
         // Check tmp file for read/write capabilities
@@ -268,11 +262,9 @@ class IOHelper
         $path = static::normalizePathSeparators($path);
 
         if ($includeExtension) {
-            return $suppressErrors ? @pathinfo($path,
-                PATHINFO_BASENAME) : pathinfo($path, PATHINFO_BASENAME);
+            return $suppressErrors ? @pathinfo($path, PATHINFO_BASENAME) : pathinfo($path, PATHINFO_BASENAME);
         } else {
-            return $suppressErrors ? @pathinfo($path,
-                PATHINFO_FILENAME) : pathinfo($path, PATHINFO_FILENAME);
+            return $suppressErrors ? @pathinfo($path, PATHINFO_FILENAME) : pathinfo($path, PATHINFO_FILENAME);
         }
     }
 
@@ -291,8 +283,7 @@ class IOHelper
         $path = static::normalizePathSeparators($path);
 
         if ($fullPath) {
-            $folder = static::normalizePathSeparators($suppressErrors ? @pathinfo($path,
-                PATHINFO_DIRNAME) : pathinfo($path, PATHINFO_DIRNAME));
+            $folder = static::normalizePathSeparators($suppressErrors ? @pathinfo($path, PATHINFO_DIRNAME) : pathinfo($path, PATHINFO_DIRNAME));
 
             // normalizePathSeparators() only enforces the trailing slash for known directories so let's be sure
             // that it'll be there.
@@ -300,12 +291,10 @@ class IOHelper
         } else {
             if ($suppressErrors ? !@is_dir($path) : !is_dir($path)) {
                 // Chop off the file
-                $path = $suppressErrors ? @pathinfo($path,
-                    PATHINFO_DIRNAME) : pathinfo($path, PATHINFO_DIRNAME);
+                $path = $suppressErrors ? @pathinfo($path, PATHINFO_DIRNAME) : pathinfo($path, PATHINFO_DIRNAME);
             }
 
-            return $suppressErrors ? @pathinfo($path,
-                PATHINFO_BASENAME) : pathinfo($path, PATHINFO_BASENAME);
+            return $suppressErrors ? @pathinfo($path, PATHINFO_BASENAME) : pathinfo($path, PATHINFO_BASENAME);
         }
     }
 
@@ -321,8 +310,7 @@ class IOHelper
     public static function getExtension($path, $default = null, $suppressErrors = false)
     {
         $path = static::normalizePathSeparators($path);
-        $extension = $suppressErrors ? @pathinfo($path,
-            PATHINFO_EXTENSION) : pathinfo($path, PATHINFO_EXTENSION);
+        $extension = $suppressErrors ? @pathinfo($path, PATHINFO_EXTENSION) : pathinfo($path, PATHINFO_EXTENSION);
 
         if ($extension) {
             return $extension;
@@ -399,8 +387,7 @@ class IOHelper
         $path = static::normalizePathSeparators($path);
 
         if (static::fileExists($path, $suppressErrors)) {
-            return sprintf("%u",
-                $suppressErrors ? @filesize($path) : filesize($path));
+            return sprintf("%u", $suppressErrors ? @filesize($path) : filesize($path));
         }
 
         return false;
@@ -577,8 +564,7 @@ class IOHelper
         if (static::fileExists($path,
                 $suppressErrors) || static::folderExists($path, $suppressErrors)
         ) {
-            return mb_substr(sprintf('%o',
-                $suppressErrors ? @fileperms($path) : fileperms($path)), -4);
+            return mb_substr(sprintf('%o', $suppressErrors ? @fileperms($path) : fileperms($path)), -4);
         }
 
         return false;
@@ -610,8 +596,7 @@ class IOHelper
                 return $contents;
             }
 
-            Craft::warning('Tried to read the file contents at '.$path.' and could not.',
-                __METHOD__);
+            Craft::warning('Tried to read the file contents at '.$path.' and could not.', __METHOD__);
 
             return false;
         }
@@ -646,14 +631,12 @@ class IOHelper
                 }
             }
 
-            Craft::error('Tried to read the file contents at '.$path.' and could not.',
-                __METHOD__);
+            Craft::error('Tried to read the file contents at '.$path.' and could not.', __METHOD__);
 
             return false;
         }
 
-        Craft::error('Tried to read the file contents at '.$path.', but either the file does not exist or is it not readable.',
-            __METHOD__);
+        Craft::error('Tried to read the file contents at '.$path.', but either the file does not exist or is it not readable.', __METHOD__);
 
         return false;
     }
@@ -675,8 +658,7 @@ class IOHelper
             if (($handle = $suppressErrors ? @fopen($path, 'w') : fopen($path,
                     'w')) === false
             ) {
-                Craft::error('Tried to create a file at '.$path.', but could not.',
-                    __METHOD__);
+                Craft::error('Tried to create a file at '.$path.', but could not.', __METHOD__);
 
                 return false;
             }
@@ -711,25 +693,20 @@ class IOHelper
         if (!static::folderExists($path, $suppressErrors)) {
             $oldumask = $suppressErrors ? @umask(0) : umask(0);
 
-            if ($suppressErrors ? !@mkdir($path, $permissions,
-                true) : !mkdir($path, $permissions, true)
-            ) {
-                Craft::error('Tried to create a folder at '.$path.', but could not.',
-                    __METHOD__);
+            if ($suppressErrors ? !@mkdir($path, $permissions, true) : !mkdir($path, $permissions, true)) {
+                Craft::error('Tried to create a folder at '.$path.', but could not.', __METHOD__);
 
                 return false;
             }
 
             // Because setting permission with mkdir is a crapshoot.
-            $suppressErrors ? @chmod($path, $permissions) : chmod($path,
-                $permissions);
+            $suppressErrors ? @chmod($path, $permissions) : chmod($path, $permissions);
             $suppressErrors ? @umask($oldumask) : umask($oldumask);
 
             return new Folder($path);
         }
 
-        Craft::error('Tried to create a folder at '.$path.', but the folder already exists.',
-            __METHOD__);
+        Craft::error('Tried to create a folder at '.$path.', but the folder already exists.', __METHOD__);
 
         return false;
     }
@@ -774,33 +751,23 @@ class IOHelper
                     set_error_handler([new IOHelper(), 'handleError']);
 
                     try {
-                        Craft::info('Trying to write to file at '.$path.' using LOCK_EX.',
-                            __METHOD__);
-                        if (static::_writeToFile($path, $contents, true,
-                            $append, $suppressErrors)
-                        ) {
+                        Craft::info('Trying to write to file at '.$path.' using LOCK_EX.', __METHOD__);
+                        if (static::_writeToFile($path, $contents, true, $append, $suppressErrors)) {
                             // Restore quickly.
                             restore_error_handler();
 
                             // Cache the file lock info to use LOCK_EX for 2 months.
-                            Craft::info('Successfully wrote to file at '.$path.' using LOCK_EX. Saving in cache.',
-                                __METHOD__);
-                            Craft::$app->getCache()->set('useWriteFileLock',
-                                'yes', 5184000);
+                            Craft::info('Successfully wrote to file at '.$path.' using LOCK_EX. Saving in cache.', __METHOD__);
+                            Craft::$app->getCache()->set('useWriteFileLock', 'yes', 5184000);
 
                             return true;
                         } else {
                             // Try again without the lock flag.
-                            Craft::info('Trying to write to file at '.$path.' without LOCK_EX.',
-                                __METHOD__);
-                            if (static::_writeToFile($path, $contents, false,
-                                $append, $suppressErrors)
-                            ) {
+                            Craft::info('Trying to write to file at '.$path.' without LOCK_EX.', __METHOD__);
+                            if (static::_writeToFile($path, $contents, false, $append, $suppressErrors)) {
                                 // Cache the file lock info to not use LOCK_EX for 2 months.
-                                Craft::info('Successfully wrote to file at '.$path.' without LOCK_EX. Saving in cache.',
-                                    __METHOD__);
-                                Craft::$app->getCache()->set('useWriteFileLock',
-                                    'no', 5184000);
+                                Craft::info('Successfully wrote to file at '.$path.' without LOCK_EX. Saving in cache.', __METHOD__);
+                                Craft::$app->getCache()->set('useWriteFileLock', 'no', 5184000);
 
                                 return true;
                             }
@@ -810,16 +777,11 @@ class IOHelper
                         restore_error_handler();
 
                         // Try again without the lock flag.
-                        Craft::info('Trying to write to file at '.$path.' without LOCK_EX.',
-                            __METHOD__);
-                        if (static::_writeToFile($path, $contents, false,
-                            $append, $suppressErrors)
-                        ) {
+                        Craft::info('Trying to write to file at '.$path.' without LOCK_EX.', __METHOD__);
+                        if (static::_writeToFile($path, $contents, false, $append, $suppressErrors)) {
                             // Cache the file lock info to not use LOCK_EX for 2 months.
-                            Craft::info('Successfully wrote to file at '.$path.' without LOCK_EX. Saving in cache.',
-                                __METHOD__);
-                            Craft::$app->getCache()->set('useWriteFileLock',
-                                'no', 5184000);
+                            Craft::info('Successfully wrote to file at '.$path.' without LOCK_EX. Saving in cache.', __METHOD__);
+                            Craft::$app->getCache()->set('useWriteFileLock', 'no', 5184000);
 
                             return true;
                         }
@@ -831,20 +793,15 @@ class IOHelper
                     // If cache says use LOCK_X and this is not a noFileLock request.
                     if ($useFileLock == 'yes' && !$noFileLock) {
                         // Write with LOCK_EX
-                        if (static::_writeToFile($path, $contents, true,
-                            $append, $suppressErrors)
-                        ) {
+                        if (static::_writeToFile($path, $contents, true, $append, $suppressErrors)) {
                             return true;
                         }
                     } else {
                         // Write without LOCK_EX
-                        if (static::_writeToFile($path, $contents, false,
-                            $append, $suppressErrors)
-                        ) {
+                        if (static::_writeToFile($path, $contents, false, $append, $suppressErrors)) {
                             return true;
                         } else {
-                            Craft::error('Tried to write to file at '.$path.' and could not.',
-                                __METHOD__);
+                            Craft::error('Tried to write to file at '.$path.' and could not.', __METHOD__);
 
                             return false;
                         }
@@ -852,32 +809,25 @@ class IOHelper
                 }
             } // We were explicitly told not to use LOCK_EX
             else if (Craft::$app->getConfig()->get('useWriteFileLock') === false) {
-                if (static::_writeToFile($path, $contents, false, $append,
-                    $suppressErrors)
-                ) {
+                if (static::_writeToFile($path, $contents, false, $append, $suppressErrors)) {
                     return true;
                 } else {
-                    Craft::error('Tried to write to file at '.$path.' with no LOCK_EX and could not.',
-                        __METHOD__);
+                    Craft::error('Tried to write to file at '.$path.' with no LOCK_EX and could not.', __METHOD__);
 
                     return false;
                 }
             } // Not 'auto', not false, so default to using LOCK_EX
             else {
-                if (static::_writeToFile($path, $contents, true, $append,
-                    $suppressErrors)
-                ) {
+                if (static::_writeToFile($path, $contents, true, $append, $suppressErrors)) {
                     return true;
                 } else {
-                    Craft::error('Tried to write to file at '.$path.' with LOCK_EX and could not.',
-                        __METHOD__);
+                    Craft::error('Tried to write to file at '.$path.' with LOCK_EX and could not.', __METHOD__);
 
                     return false;
                 }
             }
         } else {
-            Craft::error('Tried to write to file at '.$path.', but the file is not writable.',
-                __METHOD__);
+            Craft::error('Tried to write to file at '.$path.', but the file is not writable.', __METHOD__);
         }
 
         return false;
@@ -899,8 +849,7 @@ class IOHelper
         $path = static::normalizePathSeparators($path);
 
         if (posix_getpwnam($owner) == false xor (is_numeric($owner) && posix_getpwuid($owner) == false)) {
-            Craft::error('Tried to change the owner of '.$path.', but the owner name "'.$owner.'" does not exist.',
-                __METHOD__);
+            Craft::error('Tried to change the owner of '.$path.', but the owner name "'.$owner.'" does not exist.', __METHOD__);
 
             return false;
         }
@@ -908,37 +857,31 @@ class IOHelper
         if (static::fileExists($path,
                 $suppressErrors) || static::folderExists($path, $suppressErrors)
         ) {
-            $success = $suppressErrors ? @chown($path, $owner) : chown($path,
-                $owner);
+            $success = $suppressErrors ? @chown($path, $owner) : chown($path, $owner);
 
             if ($success && static::folderExists($path,
                     $suppressErrors) && $recursive
             ) {
-                $contents = static::getFolderContents($path, true, null, false,
-                    $suppressErrors);
+                $contents = static::getFolderContents($path, true, null, false, $suppressErrors);
 
                 foreach ($contents as $path) {
                     $path = static::normalizePathSeparators($path);
 
-                    if ($suppressErrors ? !@chown($path, $owner) : chown($path,
-                        $owner)
-                    ) {
+                    if ($suppressErrors ? !@chown($path, $owner) : chown($path, $owner)) {
                         $success = false;
                     }
                 }
             }
 
             if (!$success) {
-                Craft::error('Tried to change the own of '.$path.', but could not.',
-                    __METHOD__);
+                Craft::error('Tried to change the own of '.$path.', but could not.', __METHOD__);
 
                 return false;
             }
 
             return true;
         } else {
-            Craft::error('Tried to change owner of '.$path.', but that path does not exist.',
-                __METHOD__);
+            Craft::error('Tried to change owner of '.$path.', but that path does not exist.', __METHOD__);
         }
 
         return false;
@@ -960,8 +903,7 @@ class IOHelper
         $path = static::normalizePathSeparators($path);
 
         if (posix_getgrnam($group) == false xor (is_numeric($group) && posix_getgrgid($group) == false)) {
-            Craft::error('Tried to change the group of '.$path.', but the group name "'.$group.'" does not exist.',
-                __METHOD__);
+            Craft::error('Tried to change the group of '.$path.', but the group name "'.$group.'" does not exist.', __METHOD__);
 
             return false;
         }
@@ -969,37 +911,31 @@ class IOHelper
         if (static::fileExists($path,
                 $suppressErrors) || static::folderExists($path, $suppressErrors)
         ) {
-            $success = $suppressErrors ? @chgrp($path, $group) : chgrp($path,
-                $group);
+            $success = $suppressErrors ? @chgrp($path, $group) : chgrp($path, $group);
 
             if ($success && static::folderExists($path,
                     $suppressErrors) && $recursive
             ) {
-                $contents = static::getFolderContents($path, true, null, false,
-                    $suppressErrors);
+                $contents = static::getFolderContents($path, true, null, false, $suppressErrors);
 
                 foreach ($contents as $path) {
                     $path = static::normalizePathSeparators($path);
 
-                    if ($suppressErrors ? !@chgrp($path, $group) : chgrp($path,
-                        $group)
-                    ) {
+                    if ($suppressErrors ? !@chgrp($path, $group) : chgrp($path, $group)) {
                         $success = false;
                     }
                 }
             }
 
             if (!$success) {
-                Craft::error('Tried to change the group of '.$path.', but could not.',
-                    __METHOD__);
+                Craft::error('Tried to change the group of '.$path.', but could not.', __METHOD__);
 
                 return false;
             }
 
             return true;
         } else {
-            Craft::error('Tried to change group of '.$path.', but that path does not exist.',
-                __METHOD__);
+            Craft::error('Tried to change group of '.$path.', but that path does not exist.', __METHOD__);
         }
 
         return false;
@@ -1021,17 +957,13 @@ class IOHelper
         if (static::fileExists($path,
                 $suppressErrors) || static::folderExists($path, $suppressErrors)
         ) {
-            if ($suppressErrors ? @chmod($path, $permissions) : chmod($path,
-                $permissions)
-            ) {
+            if ($suppressErrors ? @chmod($path, $permissions) : chmod($path, $permissions)) {
                 return true;
             }
 
-            Craft::error('Tried to change the permissions of '.$path.', but could not.',
-                __METHOD__);
+            Craft::error('Tried to change the permissions of '.$path.', but could not.', __METHOD__);
         } else {
-            Craft::error('Tried to change permissions of '.$path.', but that path does not exist.',
-                __METHOD__);
+            Craft::error('Tried to change permissions of '.$path.', but that path does not exist.', __METHOD__);
         }
 
         return false;
@@ -1052,31 +984,23 @@ class IOHelper
         $path = static::normalizePathSeparators($path);
 
         if (static::fileExists($path, $suppressErrors)) {
-            $destFolder = static::getFolderName($destination, true,
-                $suppressErrors);
+            $destFolder = static::getFolderName($destination, true, $suppressErrors);
 
             if (!static::folderExists($destFolder, $suppressErrors)) {
-                static::createFolder($destFolder,
-                    Craft::$app->getConfig()->get('defaultFolderPermissions'),
-                    $suppressErrors);
+                static::createFolder($destFolder, Craft::$app->getConfig()->get('defaultFolderPermissions'), $suppressErrors);
             }
 
             if (static::isReadable($path, $suppressErrors)) {
-                if ($suppressErrors ? @copy($path, $destination) : copy($path,
-                    $destination)
-                ) {
+                if ($suppressErrors ? @copy($path, $destination) : copy($path, $destination)) {
                     return true;
                 }
 
-                Craft::error('Tried to copy '.$path.' to '.$destination.', but could not.',
-                    __METHOD__);
+                Craft::error('Tried to copy '.$path.' to '.$destination.', but could not.', __METHOD__);
             } else {
-                Craft::error('Tried to copy '.$path.' to '.$destination.', but could not read the source file.',
-                    __METHOD__);
+                Craft::error('Tried to copy '.$path.' to '.$destination.', but could not read the source file.', __METHOD__);
             }
         } else {
-            Craft::error('Tried to copy '.$path.' to '.$destination.', but the source file does not exist.',
-                __METHOD__);
+            Craft::error('Tried to copy '.$path.' to '.$destination.', but the source file does not exist.', __METHOD__);
         }
 
         return false;
@@ -1098,32 +1022,24 @@ class IOHelper
         $path = static::normalizePathSeparators($path);
 
         if (static::folderExists($path, $suppressErrors)) {
-            $folderContents = static::getFolderContents($path, true, null, true,
-                $suppressErrors);
+            $folderContents = static::getFolderContents($path, true, null, true, $suppressErrors);
 
             foreach ($folderContents as $item) {
                 $itemDest = $destination.str_replace($path, '', $item);
 
-                $destFolder = static::getFolderName($itemDest, true,
-                    $suppressErrors);
+                $destFolder = static::getFolderName($itemDest, true, $suppressErrors);
 
                 if (!static::folderExists($destFolder, $suppressErrors)) {
-                    static::createFolder($destFolder,
-                        Craft::$app->getConfig()->get('defaultFolderPermissions'),
-                        $suppressErrors);
+                    static::createFolder($destFolder, Craft::$app->getConfig()->get('defaultFolderPermissions'), $suppressErrors);
                 }
 
                 if (static::fileExists($item, $suppressErrors)) {
-                    if ($suppressErrors ? !@copy($item, $itemDest) : copy($item,
-                        $itemDest)
-                    ) {
-                        Craft::error('Could not copy file from '.$item.' to '.$itemDest.'.',
-                            __METHOD__);
+                    if ($suppressErrors ? !@copy($item, $itemDest) : copy($item, $itemDest)) {
+                        Craft::error('Could not copy file from '.$item.' to '.$itemDest.'.', __METHOD__);
                     }
                 } else if (static::folderExists($item, $suppressErrors)) {
                     if (!static::createFolder($itemDest, $suppressErrors)) {
-                        Craft::error('Could not create destination folder '.$itemDest,
-                            __METHOD__);
+                        Craft::error('Could not create destination folder '.$itemDest, __METHOD__);
                     }
                 }
             }
@@ -1139,8 +1055,7 @@ class IOHelper
 
             return true;
         } else {
-            Craft::error('Cannot copy folder '.$path.' to '.$destination.' because the source path does not exist.',
-                __METHOD__);
+            Craft::error('Cannot copy folder '.$path.' to '.$destination.' because the source path does not exist.', __METHOD__);
         }
 
         return false;
@@ -1172,21 +1087,16 @@ class IOHelper
             }
 
             if (static::isWritable($path, $suppressErrors)) {
-                if ($suppressErrors ? @rename($path, $newName) : rename($path,
-                    $newName)
-                ) {
+                if ($suppressErrors ? @rename($path, $newName) : rename($path, $newName)) {
                     return true;
                 } else {
-                    Craft::error('Could not rename '.$path.' to '.$newName.'.',
-                        __METHOD__);
+                    Craft::error('Could not rename '.$path.' to '.$newName.'.', __METHOD__);
                 }
             } else {
-                Craft::error('Could not rename '.$path.' to '.$newName.' because the source file or folder is not writable.',
-                    __METHOD__);
+                Craft::error('Could not rename '.$path.' to '.$newName.' because the source file or folder is not writable.', __METHOD__);
             }
         } else {
-            Craft::error('Could not rename '.$path.' to '.$newName.' because the source file or folder does not exist.',
-                __METHOD__);
+            Craft::error('Could not rename '.$path.' to '.$newName.' because the source file or folder does not exist.', __METHOD__);
         }
 
         return false;
@@ -1224,12 +1134,10 @@ class IOHelper
 
                 return true;
             } else {
-                Craft::error('Could not clear the contents of '.$path.' because the source file is not writable.',
-                    __METHOD__);
+                Craft::error('Could not clear the contents of '.$path.' because the source file is not writable.', __METHOD__);
             }
         } else {
-            Craft::error('Could not clear the contents of '.$path.' because the source file does not exist.',
-                __METHOD__);
+            Craft::error('Could not clear the contents of '.$path.' because the source file does not exist.', __METHOD__);
         }
 
         return false;
@@ -1248,8 +1156,7 @@ class IOHelper
         $path = static::normalizePathSeparators($path);
 
         if (static::folderExists($path, $suppressErrors)) {
-            $folderContents = static::getFolderContents($path, true, null, true,
-                $suppressErrors);
+            $folderContents = static::getFolderContents($path, true, null, true, $suppressErrors);
 
             if ($folderContents) {
                 foreach ($folderContents as $item) {
@@ -1264,12 +1171,10 @@ class IOHelper
 
                 return true;
             } else {
-                Craft::error('Tried to read the folder contents of '.$path.', but could not.',
-                    __METHOD__);
+                Craft::error('Tried to read the folder contents of '.$path.', but could not.', __METHOD__);
             }
         } else {
-            Craft::error('Could not clear the contents of '.$path.' because the source folder does not exist.',
-                __METHOD__);
+            Craft::error('Could not clear the contents of '.$path.' because the source folder does not exist.', __METHOD__);
         }
 
         return false;
@@ -1292,16 +1197,13 @@ class IOHelper
                 if ($suppressErrors ? @unlink($path) : unlink($path)) {
                     return true;
                 } else {
-                    Craft::error('Could not delete the file '.$path.'.',
-                        __METHOD__);
+                    Craft::error('Could not delete the file '.$path.'.', __METHOD__);
                 }
             } else {
-                Craft::error('Could not delete the file '.$path.' because it is not writable.',
-                    __METHOD__);
+                Craft::error('Could not delete the file '.$path.' because it is not writable.', __METHOD__);
             }
         } else {
-            Craft::error('Could not delete the file '.$path.' because the file does not exist.',
-                __METHOD__);
+            Craft::error('Could not delete the file '.$path.' because the file does not exist.', __METHOD__);
         }
 
         return false;
@@ -1328,16 +1230,13 @@ class IOHelper
                 if ($suppressErrors ? @rmdir($path) : rmdir($path)) {
                     return true;
                 } else {
-                    Craft::error('Could not delete the folder '.$path.'.',
-                        __METHOD__);
+                    Craft::error('Could not delete the folder '.$path.'.', __METHOD__);
                 }
             } else {
-                Craft::error('Could not delete the folder '.$path.' because it is not writable.',
-                    __METHOD__);
+                Craft::error('Could not delete the folder '.$path.' because it is not writable.', __METHOD__);
             }
         } else {
-            Craft::error('Could not delete the folder '.$path.' because the folder does not exist.',
-                __METHOD__);
+            Craft::error('Could not delete the folder '.$path.' because the folder does not exist.', __METHOD__);
         }
 
         return false;
@@ -1360,8 +1259,7 @@ class IOHelper
         ) {
             return $suppressErrors ? @md5_file($path) : md5_file($path);
         } else {
-            Craft::error('Could not calculate the MD5 for the file '.$path.' because the file does not exist.',
-                __METHOD__);
+            Craft::error('Could not calculate the MD5 for the file '.$path.' because the file does not exist.', __METHOD__);
         }
 
         return false;
@@ -1378,8 +1276,7 @@ class IOHelper
 
         if (($extraExtensions = Craft::$app->getConfig()->get('extraAllowedFileExtensions')) !== '') {
             $extraExtensions = ArrayHelper::toArray($extraExtensions);
-            $allowedFileExtensions = array_merge($allowedFileExtensions,
-                $extraExtensions);
+            $allowedFileExtensions = array_merge($allowedFileExtensions, $extraExtensions);
         }
 
         return $allowedFileExtensions;
@@ -1397,8 +1294,7 @@ class IOHelper
         static $extensions = null;
 
         if (is_null($extensions)) {
-            $extensions = array_map('mb_strtolower',
-                static::getAllowedFileExtensions());
+            $extensions = array_map('mb_strtolower', static::getAllowedFileExtensions());
         }
 
         return in_array(mb_strtolower($extension), $extensions);
@@ -1622,9 +1518,7 @@ class IOHelper
     public static function ensureFolderExists($folderPath, $suppressErrors = false)
     {
         if (!IOHelper::folderExists($folderPath, $suppressErrors)) {
-            IOHelper::createFolder($folderPath,
-                Craft::$app->getConfig()->get('defaultFolderPermissions'),
-                $suppressErrors);
+            IOHelper::createFolder($folderPath, Craft::$app->getConfig()->get('defaultFolderPermissions'), $suppressErrors);
         }
     }
 
@@ -1686,8 +1580,7 @@ class IOHelper
         $filename = str_replace($disallowedChars, '', strip_tags($filename));
 
         if (!is_null($separator)) {
-            $filename = preg_replace('/(\s|'.preg_quote($separator, '/').')+/',
-                $separator, $filename);
+            $filename = preg_replace('/(\s|'.preg_quote($separator, '/').')+/', $separator, $filename);
         }
 
         // Nuke any trailing or leading .-_
@@ -1715,9 +1608,7 @@ class IOHelper
             $time = time();
         }
 
-        if ($suppressErrors ? @touch($filename, $time) : touch($filename,
-            $time)
-        ) {
+        if ($suppressErrors ? @touch($filename, $time) : touch($filename, $time)) {
             return true;
         }
 
@@ -1742,8 +1633,7 @@ class IOHelper
         $files = static::getFiles($folder, $suppressErrors);
 
         foreach ($files as $file) {
-            $lastModifiedTime = IOHelper::getLastTimeModified($file,
-                $suppressErrors);
+            $lastModifiedTime = IOHelper::getLastTimeModified($file, $suppressErrors);
             $fileResults[$lastModifiedTime->getTimestamp()] = $file;
         }
 
@@ -1814,8 +1704,7 @@ class IOHelper
      */
     public static function getTempFilePath($extension = "tmp")
     {
-        $extension = strpos($extension, '.') !== false ? pathinfo($extension,
-            PATHINFO_EXTENSION) : $extension;
+        $extension = strpos($extension, '.') !== false ? pathinfo($extension, PATHINFO_EXTENSION) : $extension;
         $fileName = uniqid('craft', true).'.'.$extension;
 
         return static::createFile(Craft::$app->getPath()->getTempPath().'/'.$fileName)->getRealPath();
@@ -1866,13 +1755,11 @@ class IOHelper
     {
         $size = 0;
 
-        foreach (static::getFolderContents($path, true, null, true,
-            $suppressErrors) as $item) {
+        foreach (static::getFolderContents($path, true, null, true, $suppressErrors) as $item) {
             $item = static::normalizePathSeparators($item);
 
             if (static::fileExists($item, $suppressErrors)) {
-                $size += sprintf("%u",
-                    $suppressErrors ? @filesize($item) : filesize($item));
+                $size += sprintf("%u", $suppressErrors ? @filesize($item) : filesize($item));
             }
         }
 
@@ -1892,8 +1779,7 @@ class IOHelper
     {
         $descendants = [];
 
-        $path = static::normalizePathSeparators(static::getRealPath($path,
-            $suppressErrors));
+        $path = static::normalizePathSeparators(static::getRealPath($path, $suppressErrors));
 
         if ($filter !== null) {
             if (is_string($filter)) {
@@ -1920,9 +1806,7 @@ class IOHelper
                 if (static::_filterPassed($contents[$key], $filter)) {
                     if (static::fileExists($contents[$key], $suppressErrors)) {
                         $descendants[] = static::normalizePathSeparators($contents[$key]);
-                    } else if (static::folderExists($contents[$key],
-                        $suppressErrors)
-                    ) {
+                    } else if (static::folderExists($contents[$key], $suppressErrors)) {
                         $descendants[] = static::normalizePathSeparators($contents[$key]);
                     }
                 }
@@ -1930,15 +1814,11 @@ class IOHelper
                 if (static::folderExists($contents[$key],
                         $suppressErrors) && $recursive
                 ) {
-                    $descendants = array_merge($descendants,
-                        static::_folderContents($contents[$key], $recursive,
-                            $filter, $includeHiddenFiles, $suppressErrors));
+                    $descendants = array_merge($descendants, static::_folderContents($contents[$key], $recursive, $filter, $includeHiddenFiles, $suppressErrors));
                 }
             }
         } else {
-            Craft::error('app',
-                Craft::t('Unable to get folder contents for “{path}”.',
-                    ['path' => $path]), __METHOD__);
+            Craft::error('app', Craft::t('Unable to get folder contents for “{path}”.', ['path' => $path]), __METHOD__);
         }
 
         return $descendants;

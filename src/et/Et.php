@@ -181,8 +181,7 @@ class Et
 
             // No craft/config/license.key file and we can't write to the config folder. Don't even make the call home.
             if ($missingLicenseKey && !$this->_isConfigFolderWritable()) {
-                throw new EtException('Craft needs to be able to write to your “craft/config” folder and it can’t.',
-                    10001);
+                throw new EtException('Craft needs to be able to write to your “craft/config” folder and it can’t.', 10001);
             }
 
             if (!Craft::$app->getCache()->get('etConnectFailure')) {
@@ -212,8 +211,7 @@ class Et
                             $body = $response->getBody();
 
                             // Write it out to the file
-                            IOHelper::writeToFile($this->_destinationFilename,
-                                $body, true);
+                            IOHelper::writeToFile($this->_destinationFilename, $body, true);
 
                             // Close the stream.
                             $body->close();
@@ -230,16 +228,12 @@ class Et
                             }
 
                             // Cache the license key status and which edition it has
-                            Craft::$app->getCache()->set('licenseKeyStatus',
-                                $etModel->licenseKeyStatus);
-                            Craft::$app->getCache()->set('licensedEdition',
-                                $etModel->licensedEdition);
-                            Craft::$app->getCache()->set('editionTestableDomain@'.Craft::$app->getRequest()->getHostName(),
-                                $etModel->editionTestableDomain ? 1 : 0);
+                            Craft::$app->getCache()->set('licenseKeyStatus', $etModel->licenseKeyStatus);
+                            Craft::$app->getCache()->set('licensedEdition', $etModel->licensedEdition);
+                            Craft::$app->getCache()->set('editionTestableDomain@'.Craft::$app->getRequest()->getHostName(), $etModel->editionTestableDomain ? 1 : 0);
 
                             if ($etModel->licenseKeyStatus == LicenseKeyStatus::MismatchedDomain) {
-                                Craft::$app->getCache()->set('licensedDomain',
-                                    $etModel->licensedDomain);
+                                Craft::$app->getCache()->set('licensedDomain', $etModel->licensedDomain);
                             }
 
                             return $etModel;
@@ -247,16 +241,14 @@ class Et
                     }
 
                     // If we made it here something, somewhere went wrong.
-                    Craft::warning('Error in calling '.$this->_endpoint.' Response: '.$response->getBody(),
-                        __METHOD__);
+                    Craft::warning('Error in calling '.$this->_endpoint.' Response: '.$response->getBody(), __METHOD__);
 
                     if (Craft::$app->getCache()->get('etConnectFailure')) {
                         // There was an error, but at least we connected.
                         Craft::$app->getCache()->delete('etConnectFailure');
                     }
                 } catch (RequestException $e) {
-                    Craft::warning('Error in calling '.$this->_endpoint.' Reason: '.$e->getMessage(),
-                        __METHOD__);
+                    Craft::warning('Error in calling '.$this->_endpoint.' Reason: '.$e->getMessage(), __METHOD__);
 
                     if (Craft::$app->getCache()->get('etConnectFailure')) {
                         // There was an error, but at least we connected.
@@ -266,8 +258,7 @@ class Et
             }
         } // Let's log and rethrow any EtExceptions.
         catch (EtException $e) {
-            Craft::error('Error in '.__METHOD__.'. Message: '.$e->getMessage(),
-                __METHOD__);
+            Craft::error('Error in '.__METHOD__.'. Message: '.$e->getMessage(), __METHOD__);
 
             if (Craft::$app->getCache()->get('etConnectFailure')) {
                 // There was an error, but at least we connected.
@@ -276,8 +267,7 @@ class Et
 
             throw $e;
         } catch (\Exception $e) {
-            Craft::error('Error in '.__METHOD__.'. Message: '.$e->getMessage(),
-                __METHOD__);
+            Craft::error('Error in '.__METHOD__.'. Message: '.$e->getMessage(), __METHOD__);
 
             // Cache the failure for 5 minutes so we don't try again.
             Craft::$app->getCache()->set('etConnectFailure', true, 300);
@@ -298,8 +288,7 @@ class Et
 
         // Check to see if the key exists and it's not a temp one.
         if (IOHelper::fileExists($keyFile) && IOHelper::getFileContents($keyFile) !== 'temp') {
-            return trim(preg_replace('/[\r\n]+/', '',
-                IOHelper::getFileContents($keyFile)));
+            return trim(preg_replace('/[\r\n]+/', '', IOHelper::getFileContents($keyFile)));
         }
 
         return null;
@@ -329,12 +318,10 @@ class Et
                 return IOHelper::writeToFile($keyFile, $formattedKey);
             }
 
-            throw new EtException('Craft needs to be able to write to your “craft/config” folder and it can’t.',
-                10001);
+            throw new EtException('Craft needs to be able to write to your “craft/config” folder and it can’t.', 10001);
         }
 
-        throw new Exception(Craft::t('app',
-            'Cannot overwrite an existing valid license.key file.'));
+        throw new Exception(Craft::t('app', 'Cannot overwrite an existing valid license.key file.'));
     }
 
     /**

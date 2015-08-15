@@ -226,9 +226,7 @@ abstract class Volume extends SavableComponent implements VolumeInterface
         } catch (FileExistsException $exception) {
             throw new VolumeFileExistsException($exception->getMessage());
         } catch (FileNotFoundException $exception) {
-            throw new VolumeFileNotFoundException(Craft::t('app',
-                'File was not found while attempting to rename {path}!',
-                array('path' => $path)));
+            throw new VolumeFileNotFoundException(Craft::t('app', 'File was not found while attempting to rename {path}!', array('path' => $path)));
         }
     }
 
@@ -272,8 +270,7 @@ abstract class Volume extends SavableComponent implements VolumeInterface
         if ($this->getAdapter()->has(rtrim($path,
                 '/').($this->foldersHaveTrailingSlashes ? '/' : ''))
         ) {
-            throw new VolumeFolderExistsException(Craft::t("Folder “{folder}” already exists on the source!",
-                array('folder' => $path)));
+            throw new VolumeFolderExistsException(Craft::t("Folder “{folder}” already exists on the source!", array('folder' => $path)));
         }
 
         return $this->getFilesystem()->createDir($path);

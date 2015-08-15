@@ -87,8 +87,7 @@ class AssetIndex extends Tool
 
             foreach ($sourceIds as $sourceId) {
                 // Get the indexing list
-                $indexList = Craft::$app->getAssetIndexer()->prepareIndexList($sessionId,
-                    $sourceId);
+                $indexList = Craft::$app->getAssetIndexer()->prepareIndexList($sessionId, $sourceId);
 
                 if (!empty($indexList['error'])) {
                     return $indexList;
@@ -119,12 +118,9 @@ class AssetIndex extends Tool
                 $batches[] = $batch;
             }
 
-            Craft::$app->getSession()->set('assetsSourcesBeingIndexed',
-                $sourceIds);
-            Craft::$app->getSession()->set('assetsMissingFolders',
-                $missingFolders);
-            Craft::$app->getSession()->set('assetsTotalSourcesToIndex',
-                count($sourceIds));
+            Craft::$app->getSession()->set('assetsSourcesBeingIndexed', $sourceIds);
+            Craft::$app->getSession()->set('assetsMissingFolders', $missingFolders);
+            Craft::$app->getSession()->set('assetsTotalSourcesToIndex', count($sourceIds));
             Craft::$app->getSession()->set('assetsSkippedFiles', $skippedFiles);
             Craft::$app->getSession()->set('assetsTotalSourcesIndexed', 0);
 
@@ -134,8 +130,7 @@ class AssetIndex extends Tool
             ];
         } else if (!empty($params['process'])) {
             // Index the file
-            Craft::$app->getAssetIndexer()->processIndexForVolume($params['sessionId'],
-                $params['offset'], $params['sourceId']);
+            Craft::$app->getAssetIndexer()->processIndexForVolume($params['sessionId'], $params['offset'], $params['sourceId']);
 
             // More files to index.
             if (++$params['offset'] < $params['total']) {
@@ -144,9 +139,7 @@ class AssetIndex extends Tool
                 ];
             } else {
                 // Increment the amount of sources indexed
-                Craft::$app->getSession()->set('assetsTotalSourcesIndexed',
-                    Craft::$app->getSession()->get('assetsTotalSourcesIndexed',
-                        0) + 1);
+                Craft::$app->getSession()->set('assetsTotalSourcesIndexed', Craft::$app->getSession()->get('assetsTotalSourcesIndexed', 0) + 1);
 
                 // Is this the last source to finish up?
                 if (Craft::$app->getSession()->get('assetsTotalSourcesToIndex',
@@ -155,8 +148,7 @@ class AssetIndex extends Tool
                 ) {
                     $sourceIds = Craft::$app->getSession()->get('assetsSourcesBeingIndexed',
                         []);
-                    $missingFiles = Craft::$app->getAssetIndexer()->getMissingFiles($sourceIds,
-                        $params['sessionId']);
+                    $missingFiles = Craft::$app->getAssetIndexer()->getMissingFiles($sourceIds, $params['sessionId']);
                     $missingFolders = Craft::$app->getSession()->get('assetsMissingFolders',
                         []);
                     $skippedFiles = Craft::$app->getSession()->get('assetsSkippedFiles',
@@ -204,15 +196,12 @@ class AssetIndex extends Tool
             }
         } else if (!empty($params['finish'])) {
             if (!empty($params['deleteFile']) && is_array($params['deleteFile'])) {
-                Craft::$app->getDb()->createCommand()->delete('assettransformindex',
-                    array('in', 'fileId', $params['deleteFile']));
-                Craft::$app->getAssets()->deleteFilesByIds($params['deleteFile'],
-                    false);
+                Craft::$app->getDb()->createCommand()->delete('assettransformindex', array('in', 'fileId', $params['deleteFile']));
+                Craft::$app->getAssets()->deleteFilesByIds($params['deleteFile'], false);
             }
 
             if (!empty($params['deleteFolder']) && is_array($params['deleteFolder'])) {
-                Craft::$app->getAssets()->deleteFoldersByIds($params['deleteFolder'],
-                    false);
+                Craft::$app->getAssets()->deleteFoldersByIds($params['deleteFolder'], false);
             }
 
             return [

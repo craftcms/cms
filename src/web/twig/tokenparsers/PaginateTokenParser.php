@@ -32,13 +32,11 @@ class PaginateTokenParser extends \Twig_TokenParser
         $targets = $this->parser->getExpressionParser()->parseAssignmentExpression();
         $this->parser->getStream()->expect(\Twig_Token::BLOCK_END_TYPE);
 
-        $nodes['body'] = $this->parser->subparse([$this, 'decidePaginateEnd'],
-            true);
+        $nodes['body'] = $this->parser->subparse([$this, 'decidePaginateEnd'], true);
         $this->parser->getStream()->expect(\Twig_Token::BLOCK_END_TYPE);
 
         $elementsTarget = $targets->getNode(0);
-        $nodes['elementsTarget'] = new \Twig_Node_Expression_AssignName($elementsTarget->getAttribute('name'),
-            $elementsTarget->getLine());
+        $nodes['elementsTarget'] = new \Twig_Node_Expression_AssignName($elementsTarget->getAttribute('name'), $elementsTarget->getLine());
 
         return new PaginateNode($nodes, [], $lineno, $this->getTag());
     }

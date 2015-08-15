@@ -316,8 +316,7 @@ class DbHelper
 
                 // This could be a LIKE condition
                 if ($operator == '=' || $operator == '!=') {
-                    $val = preg_replace('/^\*|(?<!\\\)\*$/', '%', $val, -1,
-                        $count);
+                    $val = preg_replace('/^\*|(?<!\\\)\*$/', '%', $val, -1, $count);
                     $like = (bool)$count;
                 } else {
                     $like = false;
