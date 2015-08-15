@@ -84,6 +84,8 @@ class UrlManager extends \yii\web\UrlManager
                 } else {
                     $route[1] = $this->_routeParams;
                 }
+            } else {
+                $this->_routeParams = $route[1];
             }
 
             return $route;
