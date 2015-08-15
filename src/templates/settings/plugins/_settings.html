@@ -19,7 +19,7 @@
 		{{ getCsrfInput() }}
 
 		{% namespace 'settings' %}
-			{{ settingsHtml }}
+			{{ settingsHtml|raw }}
 		{% endnamespace %}
 
 		<div class="buttons">
