@@ -280,32 +280,28 @@ class Elements extends Component
      */
     public function saveElement(ElementInterface $element, $validateContent = null)
     {
+        $isNewElement = !$element->id;
+
+        // Validation
+        $element->validate();
+        if ($element->hasContent() && ($validateContent || ($validateContent === null && $element->enabled))) {
+            Craft::$app->getContent()->validateContent($element);
+        }
+        if ($element->hasErrors()) {
+            return false;
+        }
+
         // Make sure the element is cool with this
-        // (Needs to happen before validation, so field types have a chance to prepare their POST values)
         if (!$element->beforeSave()) {
             return false;
         }
 
-        $isNewElement = !$element->id;
-
-        if ($element->hasContent()) {
-            // Do we need to validate the content?
-            if ($validateContent === null) {
-                $validateContent = (bool)$element->enabled;
-            }
-
-            if ($validateContent && !Craft::$app->getContent()->validateContent($element)) {
-                return false;
-            }
-
-            // Make sure there's a title
-            if ($element->hasTitles() && !$element->validate(['title'])) {
-                // Just set *something* on it
-                if ($isNewElement) {
-                    $element->title = 'New '.$element->classHandle();
-                } else {
-                    $element->title = $element->classHandle().' '.$element->id;
-                }
+        // Set a dummy title if there isn't one already and the element type has titles
+        if ($element->hasContent() && $element->hasTitles() && !$element->validate(['title'])) {
+            if ($isNewElement) {
+                $element->title = 'New '.$element->classHandle();
+            } else {
+                $element->title = $element->classHandle().' '.$element->id;
             }
         }
 

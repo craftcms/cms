@@ -594,7 +594,7 @@ abstract class Element extends Component implements ElementInterface
      */
     public function rules()
     {
-        return [
+        $rules = [
             [['id'], 'number', 'min' => -2147483648, 'max' => 2147483647, 'integerOnly' => true],
             [['contentId'], 'number', 'min' => -2147483648, 'max' => 2147483647, 'integerOnly' => true],
             [['locale'], 'craft\\app\\validators\\Locale'],
@@ -606,6 +606,13 @@ abstract class Element extends Component implements ElementInterface
             [['level'], 'number', 'min' => -2147483648, 'max' => 2147483647, 'integerOnly' => true],
             [['title'], 'string', 'max' => 255],
         ];
+
+        // Require the title?
+        if ($this->hasTitles()) {
+            $rules[] = [['title'], 'required'];
+        }
+
+        return $rules;
     }
 
     /**
