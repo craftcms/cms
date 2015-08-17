@@ -149,13 +149,15 @@ class ImagesService extends BaseApplicationComponent
 	 */
 	public function cleanImage($filePath)
 	{
+		$cleanedbyRotation = false;
+		$cleanedbyStripping = false;
+
 		try
 		{
 			if (craft()->config->get('rotateImagesOnUploadByExifData'))
 			{
 				$cleanedbyRotation = $this->rotateImageByExifData($filePath);
 			}
-
 			$cleanedbyStripping = $this->stripOrientationFromExifData($filePath);
 		}
 		catch (\Exception $e)
