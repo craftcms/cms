@@ -1,0 +1,48 @@
+<?php
+namespace craft\app\migrations;
+
+use Craft;
+use craft\app\db\Migration;
+use craft\app\db\Query;
+
+/**
+ * The class name is the UTC timestamp in the format of mYYMMDD_HHMMSS_migrationName
+ */
+class m150724_140822_adjust_quality_settings extends Migration
+{
+    /**
+     * Any migration code in here is wrapped inside of a transaction.
+     *
+     * @return bool
+     */
+    public function safeUp()
+    {
+        $transforms = (new Query())
+            ->select('id, quality')
+            ->from('{{%assettransforms}}')
+            ->all();
+
+        foreach ($transforms as $transform) {
+            $quality = $transform['quality'];
+
+            if (!$quality) {
+                continue;
+            }
+
+            $closest = 0;
+            $closestDistance = 100;
+            $qualityLevels = array(10, 30, 60, 82, 100);
+
+            foreach ($qualityLevels as $qualityLevel) {
+                if (abs($quality - $qualityLevel) <= $closestDistance) {
+                    $closest = $qualityLevel;
+                    $closestDistance = abs($quality - $qualityLevel);
+                }
+            }
+
+            $this->update('{{%assettransforms}}', ['quality' => $closest],
+                'id = :id', [':id' => $transform['id']]);
+        }
+        return true;
+    }
+}
