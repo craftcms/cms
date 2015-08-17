@@ -106,19 +106,19 @@ class Request extends \yii\web\Request
     private $_ipAddress;
 
     /**
-     * @var array
-     */
-    private $_bodyParams;
-
-    /**
-     * @var array
-     */
-    private $_queryParams;
-
-    /**
      * @var string
      */
     private $_csrfToken;
+
+    /**
+     * @var boolean
+     */
+    private $_encodedQueryParams = false;
+
+    /**
+     * @var boolean
+     */
+    private $_encodedBodyParams = false;
 
     // Public Methods
     // =========================================================================
@@ -243,23 +243,6 @@ class Request extends \yii\web\Request
         }
 
         return $this->_fullPath;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function resolve()
-    {
-        $result = parent::resolve();
-
-        // Merge in any additional parameters stored on UrlManager
-        $params = Craft::$app->getUrlManager()->getRouteParams();
-
-        if ($params) {
-            $result[1] = ArrayHelper::merge($result[1], $params);
-        }
-
-        return $result;
     }
 
     /**
@@ -484,11 +467,12 @@ class Request extends \yii\web\Request
      */
     public function getBodyParams()
     {
-        if (!isset($this->_bodyParams)) {
-            $this->_bodyParams = $this->_utf8AllTheThings(parent::getBodyParams());
+        if ($this->_encodedBodyParams === false) {
+            $this->setBodyParams($this->_utf8AllTheThings(parent::getBodyParams()));
+            $this->_encodedBodyParams = true;
         }
 
-        return $this->_bodyParams;
+        return parent::getBodyParams();
     }
 
     /**
@@ -542,21 +526,14 @@ class Request extends \yii\web\Request
     /**
      * @inheritdoc
      */
-    public function setBodyParams($values)
-    {
-        $this->_bodyParams = $values;
-    }
-
-    /**
-     * @inheritdoc
-     */
     public function getQueryParams()
     {
-        if (!isset($this->_queryParams)) {
-            $this->_queryParams = $this->_utf8AllTheThings(parent::getQueryParams());
+        if ($this->_encodedQueryParams === false) {
+            $this->setQueryParams($this->_utf8AllTheThings(parent::getQueryParams()));
+            $this->_encodedQueryParams = true;
         }
 
-        return $this->_queryParams;
+        return parent::getQueryParams();
     }
 
     /**
@@ -604,14 +581,6 @@ class Request extends \yii\web\Request
 
         throw new HttpException(400, Craft::t('app', 'GET param “{name}” doesn’t exist.',
             ['name' => $name]));
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function setQueryParams($values)
-    {
-        $this->_queryParams = $values;
     }
 
     /**
