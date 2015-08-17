@@ -26,7 +26,6 @@ use craft\app\web\twig\Parser;
 use craft\app\web\twig\StringTemplate;
 use craft\app\web\twig\Template;
 use craft\app\web\twig\TemplateLoader;
-use yii\base\InvalidParamException;
 use yii\helpers\Html;
 use yii\web\AssetBundle;
 
