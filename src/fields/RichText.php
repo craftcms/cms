@@ -260,8 +260,13 @@ class RichText extends Field
     protected function isValueEmpty($value, $element)
     {
         /** @var RichTextData|null $value */
-        $rawContent = $value->getRawContent();
-        return empty($rawContent);
+        if ($value) {
+            $rawContent = $value->getRawContent();
+
+            return empty($rawContent);
+        } else {
+            return true;
+        }
     }
 
     // Private Methods
