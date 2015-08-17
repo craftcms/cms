@@ -55,16 +55,6 @@ class UrlManager extends \yii\web\UrlManager
     }
 
     /**
-     * Sets params to be passed to the routed controller action.
-     *
-     * @param array $params
-     */
-    public function setRouteParams($params)
-    {
-        $this->_routeParams = ArrayHelper::merge($this->_routeParams, $params);
-    }
-
-    /**
      * @inheritdoc
      */
     public function parseRequest($request)
@@ -123,6 +113,16 @@ class UrlManager extends \yii\web\UrlManager
     public function getRouteParams()
     {
         return $this->_routeParams;
+    }
+
+    /**
+     * Sets params to be passed to the routed controller action.
+     *
+     * @param array $params
+     */
+    public function setRouteParams($params)
+    {
+        $this->_routeParams = ArrayHelper::merge($this->_routeParams, $params);
     }
 
     /**
