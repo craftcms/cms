@@ -324,8 +324,7 @@ class UserQuery extends ElementQuery
             $userIds = $query
                 ->select('userId')
                 ->from('{{%usergroups_users}}')
-                ->where(DbHelper::parseParam('groupId', $this->groupId,
-                    $query->params))
+                ->where(DbHelper::parseParam('groupId', $this->groupId, $query->params))
                 ->column();
 
             if (!empty($userIds)) {
@@ -336,28 +335,23 @@ class UserQuery extends ElementQuery
         }
 
         if ($this->email) {
-            $this->subQuery->andWhere(DbHelper::parseParam('users.email',
-                $this->email, $this->subQuery->params));
+            $this->subQuery->andWhere(DbHelper::parseParam('users.email', $this->email, $this->subQuery->params));
         }
 
         if ($this->username) {
-            $this->subQuery->andWhere(DbHelper::parseParam('users.username',
-                $this->username, $this->subQuery->params));
+            $this->subQuery->andWhere(DbHelper::parseParam('users.username', $this->username, $this->subQuery->params));
         }
 
         if ($this->firstName) {
-            $this->subQuery->andWhere(DbHelper::parseParam('users.firstName',
-                $this->firstName, $this->subQuery->params));
+            $this->subQuery->andWhere(DbHelper::parseParam('users.firstName', $this->firstName, $this->subQuery->params));
         }
 
         if ($this->lastName) {
-            $this->subQuery->andWhere(DbHelper::parseParam('users.lastName',
-                $this->lastName, $this->subQuery->params));
+            $this->subQuery->andWhere(DbHelper::parseParam('users.lastName', $this->lastName, $this->subQuery->params));
         }
 
         if ($this->lastLoginDate) {
-            $this->subQuery->andWhere(DbHelper::parseDateParam('entries.lastLoginDate',
-                $this->lastLoginDate, $this->subQuery->params));
+            $this->subQuery->andWhere(DbHelper::parseDateParam('entries.lastLoginDate', $this->lastLoginDate, $this->subQuery->params));
         }
 
         return parent::beforePrepare();
@@ -396,13 +390,11 @@ class UserQuery extends ElementQuery
                 $permittedUserIdsViaGroups = (new Query())
                     ->select('ug_u.userId')
                     ->from('{{%usergroups_users}} g_u')
-                    ->innerJoin('{{%userpermissions_usergroups}} p_g',
-                        'p_g.groupId = g_u.groupId')
+                    ->innerJoin('{{%userpermissions_usergroups}} p_g', 'p_g.groupId = g_u.groupId')
                     ->where(['p_g.permissionId' => $this->can])
                     ->column();
 
-                $permittedUserIds = array_unique(array_merge($permittedUserIds,
-                    $permittedUserIdsViaGroups));
+                $permittedUserIds = array_unique(array_merge($permittedUserIds, $permittedUserIdsViaGroups));
             }
 
             if (!empty($permittedUserIds)) {

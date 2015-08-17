@@ -233,8 +233,7 @@ class MatrixBlock extends Element
     public function getOwner()
     {
         if (!isset($this->_owner) && $this->ownerId) {
-            $this->_owner = Craft::$app->getElements()->getElementById($this->ownerId,
-                null, $this->locale);
+            $this->_owner = Craft::$app->getElements()->getElementById($this->ownerId, null, $this->locale);
 
             if (!$this->_owner) {
                 $this->_owner = false;

@@ -196,23 +196,19 @@ class MatrixBlockQuery extends ElementQuery
         ]);
 
         if ($this->fieldId) {
-            $this->subQuery->andWhere(DbHelper::parseParam('matrixblocks.fieldId',
-                $this->fieldId, $this->subQuery->params));
+            $this->subQuery->andWhere(DbHelper::parseParam('matrixblocks.fieldId', $this->fieldId, $this->subQuery->params));
         }
 
         if ($this->ownerId) {
-            $this->subQuery->andWhere(DbHelper::parseParam('matrixblocks.ownerId',
-                $this->ownerId, $this->subQuery->params));
+            $this->subQuery->andWhere(DbHelper::parseParam('matrixblocks.ownerId', $this->ownerId, $this->subQuery->params));
         }
 
         if ($this->ownerLocale) {
-            $this->subQuery->andWhere(DbHelper::parseParam('matrixblocks.ownerLocale',
-                $this->ownerLocale, $this->subQuery->params));
+            $this->subQuery->andWhere(DbHelper::parseParam('matrixblocks.ownerLocale', $this->ownerLocale, $this->subQuery->params));
         }
 
         if ($this->typeId) {
-            $this->subQuery->andWhere(DbHelper::parseParam('matrixblocks.typeId',
-                $this->typeId, $this->subQuery->params));
+            $this->subQuery->andWhere(DbHelper::parseParam('matrixblocks.typeId', $this->typeId, $this->subQuery->params));
         }
 
         return parent::beforePrepare();

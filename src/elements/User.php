@@ -700,9 +700,7 @@ class User extends Element implements IdentityInterface
 
             case self::STATUS_ACTIVE: {
                 // Validate the password
-                if (!Craft::$app->getSecurity()->validatePassword($password,
-                    $this->password)
-                ) {
+                if (!Craft::$app->getSecurity()->validatePassword($password, $this->password)) {
                     Craft::$app->getUsers()->handleInvalidLogin($this);
 
                     // Was that one bad password too many?
@@ -960,8 +958,7 @@ class User extends Element implements IdentityInterface
             if ($this->admin || $this->client) {
                 return true;
             } else if ($this->id) {
-                return Craft::$app->getUserPermissions()->doesUserHavePermission($this->id,
-                    $permission);
+                return Craft::$app->getUserPermissions()->doesUserHavePermission($this->id, $permission);
             } else {
                 return false;
             }
@@ -980,8 +977,7 @@ class User extends Element implements IdentityInterface
     public function hasShunned($message)
     {
         if ($this->id) {
-            return Craft::$app->getUsers()->hasUserShunnedMessage($this->id,
-                $message);
+            return Craft::$app->getUsers()->hasUserShunnedMessage($this->id, $message);
         } else {
             return false;
         }
@@ -1055,8 +1051,7 @@ class User extends Element implements IdentityInterface
     {
         // Don't allow whitespace in the username.
         if (preg_match('/\s+/', $this->username)) {
-            $this->addError('username',
-                Craft::t('app', 'Spaces are not allowed in the username.'));
+            $this->addError('username', Craft::t('app', 'Spaces are not allowed in the username.'));
         }
 
         return parent::validate($attributes, false);
@@ -1119,8 +1114,7 @@ class User extends Element implements IdentityInterface
      */
     public function mergePreferences($preferences)
     {
-        $this->_preferences = array_merge($this->getPreferences(),
-            $preferences);
+        $this->_preferences = array_merge($this->getPreferences(), $preferences);
 
         return $this->_preferences;
     }
@@ -1176,8 +1170,7 @@ class User extends Element implements IdentityInterface
             $requestUserAgent = Craft::$app->getRequest()->getUserAgent();
 
             if ($userAgent !== $requestUserAgent) {
-                Craft::warning('Tried to restore session from the the identity cookie, but the saved user agent ('.$userAgent.') does not match the current request’s ('.$requestUserAgent.').',
-                    __METHOD__);
+                Craft::warning('Tried to restore session from the the identity cookie, but the saved user agent ('.$userAgent.') does not match the current request’s ('.$requestUserAgent.').', __METHOD__);
 
                 return false;
             }

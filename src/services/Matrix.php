@@ -197,13 +197,12 @@ class Matrix extends Component
             if ($blockType->handle && $field->handle) {
                 $blockTypeAndFieldHandle = $blockType->handle.'_'.$field->handle;
 
-                if (in_array($blockTypeAndFieldHandle,
-                    $this->_uniqueBlockTypeAndFieldHandles)) {
+                if (in_array($blockTypeAndFieldHandle, $this->_uniqueBlockTypeAndFieldHandles)) {
                     // This error *might* not be entirely accurate, but it's such an edge case that it's probably better
                     // for the error to be worded for the common problem (two duplicate handles within the same block
                     // type).
-                    $error = Craft::t('app',
-                        '{attribute} "{value}" has already been taken.', [
+                    $error = Craft::t('app', '{attribute} "{value}" has already been taken.',
+                        [
                             'attribute' => Craft::t('app', 'Handle'),
                             'value' => $field->handle
                         ]);
@@ -315,8 +314,7 @@ class Matrix extends Component
                     }
 
                     if (!$fieldsService->saveField($field, false)) {
-                        throw new Exception(Craft::t('app',
-                            'An error occurred while saving this Matrix block type.'));
+                        throw new Exception(Craft::t('app', 'An error occurred while saving this Matrix block type.'));
                     }
 
                     $field->required = $field->required;
@@ -450,8 +448,8 @@ class Matrix extends Component
                 ) {
                     $uniqueAttributeValues[$attribute][] = $value;
                 } else {
-                    $blockType->addError($attribute, Craft::t('app',
-                        '{attribute} "{value}" has already been taken.', [
+                    $blockType->addError($attribute, Craft::t('app', '{attribute} "{value}" has already been taken.',
+                        [
                             'attribute' => $blockType->getAttributeLabel($attribute),
                             'value' => HtmlHelper::encode($value)
                         ]));
@@ -479,15 +477,13 @@ class Matrix extends Component
             $transaction = Craft::$app->getDb()->beginTransaction();
             try {
                 // Create the content table first since the block type fields will need it
-                $oldContentTable = $this->getContentTableName($matrixField,
-                    true);
+                $oldContentTable = $this->getContentTableName($matrixField, true);
                 $newContentTable = $this->getContentTableName($matrixField);
 
                 // Do we need to create/rename the content table?
                 if (!Craft::$app->getDb()->tableExists($newContentTable)) {
                     if ($oldContentTable && Craft::$app->getDb()->tableExists($oldContentTable)) {
-                        MigrationHelper::renameTable($oldContentTable,
-                            $newContentTable);
+                        MigrationHelper::renameTable($oldContentTable, $newContentTable);
                     } else {
                         $this->_createContentTable($newContentTable);
                     }
@@ -621,8 +617,7 @@ class Matrix extends Component
      */
     public function getBlockById($blockId, $localeId = null)
     {
-        return Craft::$app->getElements()->getElementById($blockId,
-            MatrixBlock::className(), $localeId);
+        return Craft::$app->getElements()->getElementById($blockId, MatrixBlock::className(), $localeId);
     }
 
     /**
@@ -829,10 +824,8 @@ class Matrix extends Component
             $parentMatrixFieldId = (new Query())
                 ->select('fields.id')
                 ->from('{{%fields}} fields')
-                ->innerJoin('{{%matrixblocktypes}} blocktypes',
-                    'blocktypes.fieldId = fields.id')
-                ->innerJoin('{{%fieldlayoutfields}} fieldlayoutfields',
-                    'fieldlayoutfields.layoutId = blocktypes.fieldLayoutId')
+                ->innerJoin('{{%matrixblocktypes}} blocktypes', 'blocktypes.fieldId = fields.id')
+                ->innerJoin('{{%fieldlayoutfields}} fieldlayoutfields', 'fieldlayoutfields.layoutId = blocktypes.fieldLayoutId')
                 ->where('fieldlayoutfields.fieldId = :matrixFieldId',
                     [':matrixFieldId' => $matrixField->id])
                 ->scalar();
@@ -889,9 +882,7 @@ class Matrix extends Component
                 $this->_blockTypeRecordsById[$blockTypeId] = MatrixBlockTypeRecord::findOne($blockTypeId);
 
                 if (!$this->_blockTypeRecordsById[$blockTypeId]) {
-                    throw new Exception(Craft::t('app',
-                        'No block type exists with the ID “{id}”.',
-                        ['id' => $blockTypeId]));
+                    throw new Exception(Craft::t('app', 'No block type exists with the ID “{id}”.', ['id' => $blockTypeId]));
                 }
             }
 
@@ -923,9 +914,7 @@ class Matrix extends Component
                     ->one();
 
                 if (!$this->_blockRecordsById[$blockId]) {
-                    throw new Exception(Craft::t('app',
-                        'No block exists with the ID “{id}”.',
-                        ['id' => $blockId]));
+                    throw new Exception(Craft::t('app', 'No block exists with the ID “{id}”.', ['id' => $blockId]));
                 }
             }
 
@@ -950,14 +939,9 @@ class Matrix extends Component
             'locale' => 'char(12) COLLATE utf8_unicode_ci NOT NULL'
         ])->execute();
 
-        $db->createCommand()->createIndex($db->getIndexName($name,
-            'elementId,locale'), $name, 'elementId,locale', true)->execute();
-        $db->createCommand()->addForeignKey($db->getForeignKeyName($name,
-            'elementId'), $name, 'elementId', '{{%elements}}', 'id', 'CASCADE',
-            null)->execute();
-        $db->createCommand()->addForeignKey($db->getForeignKeyName($name,
-            'locale'), $name, 'locale', '{{%locales}}', 'locale', 'CASCADE',
-            'CASCADE')->execute();
+        $db->createCommand()->createIndex($db->getIndexName($name, 'elementId,locale'), $name, 'elementId,locale', true)->execute();
+        $db->createCommand()->addForeignKey($db->getForeignKeyName($name, 'elementId'), $name, 'elementId', '{{%elements}}', 'id', 'CASCADE', null)->execute();
+        $db->createCommand()->addForeignKey($db->getForeignKeyName($name, 'locale'), $name, 'locale', '{{%locales}}', 'locale', 'CASCADE', 'CASCADE')->execute();
     }
 
     /**

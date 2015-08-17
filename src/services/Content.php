@@ -318,8 +318,7 @@ class Content extends Component
         foreach ($fieldLayout->getFields() as $field) {
             // Set the keywords for the content's locale
             $fieldValue = $element->getFieldValue($field->handle);
-            $fieldSearchKeywords = $field->getSearchKeywords($fieldValue,
-                $element);
+            $fieldSearchKeywords = $field->getSearchKeywords($fieldValue, $element);
             $searchKeywordsByLocale[$element->locale][$field->id] = $fieldSearchKeywords;
 
             // Should we queue up the other locales' new keywords too?
@@ -331,8 +330,7 @@ class Content extends Component
         }
 
         foreach ($searchKeywordsByLocale as $localeId => $keywords) {
-            Craft::$app->getSearch()->indexElementFields($element->id,
-                $localeId, $keywords);
+            Craft::$app->getSearch()->indexElementFields($element->id, $localeId, $keywords);
         }
     }
 

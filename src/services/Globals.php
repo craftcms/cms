@@ -204,8 +204,7 @@ class Globals extends Component
                 return $this->_globalSetsById[$globalSetId];
             }
         } else {
-            return Craft::$app->getElements()->getElementById($globalSetId,
-                GlobalSet::className(), $localeId);
+            return Craft::$app->getElements()->getElementById($globalSetId, GlobalSet::className(), $localeId);
         }
     }
 
@@ -256,9 +255,7 @@ class Globals extends Component
             $globalSetRecord = GlobalSetRecord::findOne($globalSet->id);
 
             if (!$globalSetRecord) {
-                throw new Exception(Craft::t('app',
-                    'No global set exists with the ID “{id}”.',
-                    ['id' => $globalSet->id]));
+                throw new Exception(Craft::t('app', 'No global set exists with the ID “{id}”.', ['id' => $globalSet->id]));
             }
 
             $oldSet = GlobalSet::create($globalSetRecord);

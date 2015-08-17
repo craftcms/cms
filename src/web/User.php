@@ -364,8 +364,7 @@ class User extends \yii\web\User
             $request = Craft::$app->getRequest();
 
             if ($request->getUserAgent() === null || $request->getUserIP() === null) {
-                Craft::warning('Request didn’t meet the user agent and IP requirement for maintaining a user session.',
-                    __METHOD__);
+                Craft::warning('Request didn’t meet the user agent and IP requirement for maintaining a user session.', __METHOD__);
 
                 return false;
             }

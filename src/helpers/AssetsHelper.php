@@ -37,8 +37,7 @@ class AssetsHelper
      */
     public static function getTempFilePath($extension = 'tmp')
     {
-        $extension = strpos($extension, '.') !== false ? pathinfo($extension,
-            PATHINFO_EXTENSION) : $extension;
+        $extension = strpos($extension, '.') !== false ? pathinfo($extension, PATHINFO_EXTENSION) : $extension;
         $filename = uniqid('assets', true).'.'.$extension;
 
         return IOHelper::createFile(Craft::$app->getPath()->getTempPath().'/'.$filename)->getRealPath();
@@ -109,9 +108,7 @@ class AssetsHelper
             $separator = null;
         }
 
-        $baseName = IOHelper::cleanFilename($baseName,
-            Craft::$app->getConfig()->get('convertFilenamesToAscii'),
-            $separator);
+        $baseName = IOHelper::cleanFilename($baseName, Craft::$app->getConfig()->get('convertFilenamesToAscii'), $separator);
 
         if ($isFilename && empty($baseName)) {
             $baseName = '-';

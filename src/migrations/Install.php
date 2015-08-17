@@ -68,8 +68,7 @@ class Install extends InstallMigration
         // TODO: MySQL specific
         $this->db->createCommand(
             'CREATE FULLTEXT INDEX '.
-            $this->db->quoteTableName($this->db->getIndexName('{{%searchindex}}',
-                'keywords')).' ON '.
+            $this->db->quoteTableName($this->db->getIndexName('{{%searchindex}}', 'keywords')).' ON '.
             $this->db->quoteTableName('{{%searchindex}}').' '.
             '('.$this->db->quoteColumnName('keywords').')'
         )->execute();
@@ -1022,7 +1021,7 @@ class Install extends InstallMigration
                     'pending' => 'smallint(1) NOT NULL',
                     'archived' => 'smallint(1) NOT NULL',
                     'lastLoginDate' => 'datetime DEFAULT NULL',
-                    'lastLoginAttemptIPAddress' => 'string(45) COLLATE utf8_unicode_ci DEFAULT NULL',
+                    'lastLoginAttemptIp' => 'string(45) COLLATE utf8_unicode_ci DEFAULT NULL',
                     'invalidLoginWindowStart' => 'datetime DEFAULT NULL',
                     'invalidLoginCount' => 'smallint(4) unsigned DEFAULT NULL',
                     'lastInvalidLoginDate' => 'datetime DEFAULT NULL',

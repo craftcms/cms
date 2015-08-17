@@ -162,8 +162,7 @@ class Section extends Model
     {
         if (!isset($this->_locales)) {
             if ($this->id) {
-                $this->_locales = Craft::$app->getSections()->getSectionLocales($this->id,
-                    'locale');
+                $this->_locales = Craft::$app->getSections()->getSectionLocales($this->id, 'locale');
             } else {
                 $this->_locales = [];
             }

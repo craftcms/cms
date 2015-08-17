@@ -150,8 +150,7 @@ class EntriesController extends BaseEntriesController
             }
 
             if ($parentId) {
-                $variables['parent'] = Craft::$app->getEntries()->getEntryById($parentId,
-                    $variables['localeId']);
+                $variables['parent'] = Craft::$app->getEntries()->getEntryById($parentId, $variables['localeId']);
             }
         }
 
@@ -186,8 +185,7 @@ class EntriesController extends BaseEntriesController
 
                 case EntryVersion::className(): {
                     /** @var EntryVersion $entry */
-                    $variables['revisionLabel'] = Craft::t('app',
-                        'Version {num}', ['num' => $entry->num]);
+                    $variables['revisionLabel'] = Craft::t('app', 'Version {num}', ['num' => $entry->num]);
                     break;
                 }
 
@@ -302,8 +300,7 @@ class EntriesController extends BaseEntriesController
                         }
                     }
 
-                    $variables['shareUrl'] = UrlHelper::getActionUrl('entries/share-entry',
-                        $shareParams);
+                    $variables['shareUrl'] = UrlHelper::getActionUrl('entries/share-entry', $shareParams);
                 }
             }
         } else {
@@ -357,8 +354,7 @@ class EntriesController extends BaseEntriesController
 
         $paneHtml = Craft::$app->getView()->renderTemplate('_includes/tabs',
                 $variables).
-            Craft::$app->getView()->renderTemplate('entries/_fields',
-                $variables);
+            Craft::$app->getView()->renderTemplate('entries/_fields', $variables);
 
         $view = Craft::$app->getView();
         return $this->asJson([
@@ -461,8 +457,7 @@ class EntriesController extends BaseEntriesController
 
                 return $this->asJson($return);
             } else {
-                Craft::$app->getSession()->setNotice(Craft::t('app',
-                    'Entry saved.'));
+                Craft::$app->getSession()->setNotice(Craft::t('app', 'Entry saved.'));
 
                 return $this->redirectToPostedUrl($entry);
             }
@@ -472,8 +467,7 @@ class EntriesController extends BaseEntriesController
                     'errors' => $entry->getErrors(),
                 ]);
             } else {
-                Craft::$app->getSession()->setError(Craft::t('app',
-                    'Couldn’t save entry.'));
+                Craft::$app->getSession()->setError(Craft::t('app', 'Couldn’t save entry.'));
 
                 // Send the entry back to the template
                 Craft::$app->getUrlManager()->setRouteParams([
@@ -500,8 +494,7 @@ class EntriesController extends BaseEntriesController
         $entry = Craft::$app->getEntries()->getEntryById($entryId, $localeId);
 
         if (!$entry) {
-            throw new Exception(Craft::t('app',
-                'No entry exists with the ID “{id}”.', ['id' => $entryId]));
+            throw new Exception(Craft::t('app', 'No entry exists with the ID “{id}”.', ['id' => $entryId]));
         }
 
         $currentUser = Craft::$app->getUser()->getIdentity();
@@ -516,8 +509,7 @@ class EntriesController extends BaseEntriesController
             if (Craft::$app->getRequest()->getIsAjax()) {
                 return $this->asJson(['success' => true]);
             } else {
-                Craft::$app->getSession()->setNotice(Craft::t('app',
-                    'Entry deleted.'));
+                Craft::$app->getSession()->setNotice(Craft::t('app', 'Entry deleted.'));
 
                 return $this->redirectToPostedUrl($entry);
             }
@@ -525,8 +517,7 @@ class EntriesController extends BaseEntriesController
             if (Craft::$app->getRequest()->getIsAjax()) {
                 return $this->asJson(['success' => false]);
             } else {
-                Craft::$app->getSession()->setError(Craft::t('app',
-                    'Couldn’t delete entry.'));
+                Craft::$app->getSession()->setError(Craft::t('app', 'Couldn’t delete entry.'));
 
                 // Send the entry back to the template
                 Craft::$app->getUrlManager()->setRouteParams([
@@ -658,15 +649,13 @@ class EntriesController extends BaseEntriesController
             // Only use the locales that the user has access to
             $sectionLocaleIds = array_keys($variables['section']->getLocales());
             $editableLocaleIds = Craft::$app->getI18n()->getEditableLocaleIds();
-            $variables['localeIds'] = array_merge(array_intersect($sectionLocaleIds,
-                $editableLocaleIds));
+            $variables['localeIds'] = array_merge(array_intersect($sectionLocaleIds, $editableLocaleIds));
         } else {
             $variables['localeIds'] = [Craft::$app->getI18n()->getPrimarySiteLocaleId()];
         }
 
         if (!$variables['localeIds']) {
-            throw new HttpException(403, Craft::t('app',
-                'Your account doesn’t have permission to edit any of this section’s locales.'));
+            throw new HttpException(403, Craft::t('app', 'Your account doesn’t have permission to edit any of this section’s locales.'));
         }
 
         if (empty($variables['localeId'])) {
@@ -692,12 +681,10 @@ class EntriesController extends BaseEntriesController
                 } else if (!empty($variables['versionId'])) {
                     $variables['entry'] = Craft::$app->getEntryRevisions()->getVersionById($variables['versionId']);
                 } else {
-                    $variables['entry'] = Craft::$app->getEntries()->getEntryById($variables['entryId'],
-                        $variables['localeId']);
+                    $variables['entry'] = Craft::$app->getEntries()->getEntryById($variables['entryId'], $variables['localeId']);
 
                     if ($variables['entry'] && Craft::$app->getEdition() === Craft::Pro) {
-                        $versions = Craft::$app->getEntryRevisions()->getVersionsByEntryId($variables['entryId'],
-                            $variables['localeId'], 1, true);
+                        $versions = Craft::$app->getEntryRevisions()->getVersionsByEntryId($variables['entryId'], $variables['localeId'], 1, true);
 
                         if (isset($versions[0])) {
                             $variables['entry']->revisionNotes = $versions[0]->revisionNotes;
@@ -743,8 +730,7 @@ class EntriesController extends BaseEntriesController
         $variables['entryType'] = $variables['entry']->getType();
 
         if (!$variables['entryType']) {
-            throw new Exception(Craft::t('app',
-                'No entry types are available for this entry.'));
+            throw new Exception(Craft::t('app', 'No entry types are available for this entry.'));
         }
 
         // Define the content tabs
@@ -785,12 +771,10 @@ class EntriesController extends BaseEntriesController
         $localeId = Craft::$app->getRequest()->getBodyParam('locale');
 
         if ($entryId) {
-            $entry = Craft::$app->getEntries()->getEntryById($entryId,
-                $localeId);
+            $entry = Craft::$app->getEntries()->getEntryById($entryId, $localeId);
 
             if (!$entry) {
-                throw new Exception(Craft::t('app',
-                    'No entry exists with the ID “{id}”.', ['id' => $entryId]));
+                throw new Exception(Craft::t('app', 'No entry exists with the ID “{id}”.', ['id' => $entryId]));
             }
         } else {
             $entry = new Entry();
@@ -862,8 +846,7 @@ class EntriesController extends BaseEntriesController
         $type = $entry->getType();
 
         if (!$section || !$type) {
-            Craft::error('Attempting to preview an entry that doesn’t have a section/type.',
-                __METHOD__);
+            Craft::error('Attempting to preview an entry that doesn’t have a section/type.', __METHOD__);
             throw new HttpException(404);
         }
 

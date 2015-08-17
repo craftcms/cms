@@ -48,11 +48,9 @@ class PluginsController extends Controller
         $pluginHandle = Craft::$app->getRequest()->getRequiredBodyParam('pluginHandle');
 
         if (Craft::$app->getPlugins()->installPlugin($pluginHandle)) {
-            Craft::$app->getSession()->setNotice(Craft::t('app',
-                'Plugin installed.'));
+            Craft::$app->getSession()->setNotice(Craft::t('app', 'Plugin installed.'));
         } else {
-            Craft::$app->getSession()->setError(Craft::t('app',
-                'Couldn’t install plugin.'));
+            Craft::$app->getSession()->setError(Craft::t('app', 'Couldn’t install plugin.'));
         }
 
         return $this->redirectToPostedUrl();
@@ -69,11 +67,9 @@ class PluginsController extends Controller
         $pluginHandle = Craft::$app->getRequest()->getRequiredBodyParam('pluginHandle');
 
         if (Craft::$app->getPlugins()->uninstallPlugin($pluginHandle)) {
-            Craft::$app->getSession()->setNotice(Craft::t('app',
-                'Plugin uninstalled.'));
+            Craft::$app->getSession()->setNotice(Craft::t('app', 'Plugin uninstalled.'));
         } else {
-            Craft::$app->getSession()->setError(Craft::t('app',
-                'Couldn’t uninstall plugin.'));
+            Craft::$app->getSession()->setError(Craft::t('app', 'Couldn’t uninstall plugin.'));
         }
 
         return $this->redirectToPostedUrl();
@@ -90,11 +86,9 @@ class PluginsController extends Controller
         $pluginHandle = Craft::$app->getRequest()->getRequiredBodyParam('pluginHandle');
 
         if (Craft::$app->getPlugins()->enablePlugin($pluginHandle)) {
-            Craft::$app->getSession()->setNotice(Craft::t('app',
-                'Plugin enabled.'));
+            Craft::$app->getSession()->setNotice(Craft::t('app', 'Plugin enabled.'));
         } else {
-            Craft::$app->getSession()->setError(Craft::t('app',
-                'Couldn’t enable plugin.'));
+            Craft::$app->getSession()->setError(Craft::t('app', 'Couldn’t enable plugin.'));
         }
 
         return $this->redirectToPostedUrl();
@@ -111,11 +105,9 @@ class PluginsController extends Controller
         $pluginHandle = Craft::$app->getRequest()->getRequiredBodyParam('pluginHandle');
 
         if (Craft::$app->getPlugins()->disablePlugin($pluginHandle)) {
-            Craft::$app->getSession()->setNotice(Craft::t('app',
-                'Plugin disabled.'));
+            Craft::$app->getSession()->setNotice(Craft::t('app', 'Plugin disabled.'));
         } else {
-            Craft::$app->getSession()->setError(Craft::t('app',
-                'Couldn’t disable plugin.'));
+            Craft::$app->getSession()->setError(Craft::t('app', 'Couldn’t disable plugin.'));
         }
 
         return $this->redirectToPostedUrl();
@@ -156,20 +148,16 @@ class PluginsController extends Controller
         $plugin = Craft::$app->getPlugins()->getPlugin($pluginHandle);
 
         if ($plugin === null) {
-            throw new Exception(Craft::t('app',
-                'No plugin exists with the class “{class}”',
-                ['class' => $pluginHandle]));
+            throw new Exception(Craft::t('app', 'No plugin exists with the class “{class}”', ['class' => $pluginHandle]));
         }
 
         if (Craft::$app->getPlugins()->savePluginSettings($plugin, $settings)) {
-            Craft::$app->getSession()->setNotice(Craft::t('app',
-                'Plugin settings saved.'));
+            Craft::$app->getSession()->setNotice(Craft::t('app', 'Plugin settings saved.'));
 
             return $this->redirectToPostedUrl();
         }
 
-        Craft::$app->getSession()->setError(Craft::t('app',
-            'Couldn’t save plugin settings.'));
+        Craft::$app->getSession()->setError(Craft::t('app', 'Couldn’t save plugin settings.'));
 
         // Send the plugin back to the template
         Craft::$app->getUrlManager()->setRouteParams([

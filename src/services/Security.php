@@ -64,13 +64,11 @@ class Security extends \yii\base\Security
      */
     public function hashPassword($password, $validateHash = false)
     {
-        $hash = $this->generatePasswordHash($password,
-            $this->_blowFishHashCost);
+        $hash = $this->generatePasswordHash($password, $this->_blowFishHashCost);
 
         if ($validateHash) {
             if (!$this->validatePassword($password, $hash)) {
-                throw new InvalidParamException(Craft::t('app',
-                    'Could not hash the given string.'));
+                throw new InvalidParamException(Craft::t('app', 'Could not hash the given string.'));
             }
         }
 
@@ -99,9 +97,7 @@ class Security extends \yii\base\Security
             return StringHelper::trim(IOHelper::getFileContents($validationKeyPath));
         } else {
             if (!IOHelper::isWritable($validationKeyPath)) {
-                throw new Exception(Craft::t('app',
-                    'Tried to write the validation key to {validationKeyPath}, but could not.',
-                    ['validationKeyPath' => $validationKeyPath]));
+                throw new Exception(Craft::t('app', 'Tried to write the validation key to {validationKeyPath}, but could not.', ['validationKeyPath' => $validationKeyPath]));
             }
 
             $key = $this->generateRandomString();
@@ -110,9 +106,7 @@ class Security extends \yii\base\Security
                 return $key;
             }
 
-            throw new Exception(Craft::t('app',
-                'Tried to write the validation key to {validationKeyPath}, but could not.',
-                ['validationKeyPath' => $validationKeyPath]));
+            throw new Exception(Craft::t('app', 'Tried to write the validation key to {validationKeyPath}, but could not.', ['validationKeyPath' => $validationKeyPath]));
         }
     }
 }

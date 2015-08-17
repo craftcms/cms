@@ -27,8 +27,7 @@ class PclZip implements ZipInterface
     public function zip($sourceFolder, $destZip)
     {
         $zip = new \PclZip($destZip);
-        $result = $zip->create($sourceFolder, PCLZIP_OPT_REMOVE_PATH,
-            $sourceFolder);
+        $result = $zip->create($sourceFolder, PCLZIP_OPT_REMOVE_PATH, $sourceFolder);
 
         if ($result == 0) {
             Craft::error('Unable to create zip file: '.$destZip, __METHOD__);
@@ -49,15 +48,13 @@ class PclZip implements ZipInterface
 
         // check to see if it's a valid archive.
         if (($zipFiles = $zip->extract(PCLZIP_OPT_EXTRACT_AS_STRING)) == false) {
-            Craft::error('Tried to unzip '.$srcZip.', but PclZip thinks it is not a valid zip archive.',
-                __METHOD__);
+            Craft::error('Tried to unzip '.$srcZip.', but PclZip thinks it is not a valid zip archive.', __METHOD__);
 
             return false;
         }
 
         if (count($zipFiles) == 0) {
-            Craft::error($srcZip.' appears to be an empty zip archive.',
-                __METHOD__);
+            Craft::error($srcZip.' appears to be an empty zip archive.', __METHOD__);
 
             return false;
         }
@@ -100,8 +97,7 @@ class PclZip implements ZipInterface
         foreach ($finalDestFolders as $finalDestFolder) {
             if (!IOHelper::folderExists($finalDestFolder)) {
                 if (!IOHelper::createFolder($finalDestFolder)) {
-                    Craft::error('Could not create folder '.$finalDestFolder.' while unzipping: '.$srcZip,
-                        __METHOD__);
+                    Craft::error('Could not create folder '.$finalDestFolder.' while unzipping: '.$srcZip, __METHOD__);
 
                     return false;
                 }
@@ -123,11 +119,8 @@ class PclZip implements ZipInterface
 
             $destFile = $destFolder.'/'.$zipFile['filename'];
 
-            if (!IOHelper::writeToFile($destFile, $zipFile['content'], true,
-                true)
-            ) {
-                Craft::error('Could not copy the file '.$destFile.' while unziping: '.$srcZip,
-                    __METHOD__);
+            if (!IOHelper::writeToFile($destFile, $zipFile['content'], true, true)) {
+                Craft::error('Could not copy the file '.$destFile.' while unziping: '.$srcZip, __METHOD__);
 
                 return false;
             }
@@ -163,8 +156,7 @@ class PclZip implements ZipInterface
             $pathPrefix = '';
         }
 
-        $result = $zip->add($filesToAdd, PCLZIP_OPT_ADD_PATH, $pathPrefix,
-            PCLZIP_OPT_REMOVE_PATH, $basePath);
+        $result = $zip->add($filesToAdd, PCLZIP_OPT_ADD_PATH, $pathPrefix, PCLZIP_OPT_REMOVE_PATH, $basePath);
 
         if ($result == 0) {
             Craft::error('Unable to add to zip file: '.$sourceZip, __METHOD__);

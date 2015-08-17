@@ -176,13 +176,11 @@ class CategoryQuery extends ElementQuery
                 $this->structureId = $query
                     ->select('structureId')
                     ->from('{{%categorygroups}}')
-                    ->where(DbHelper::parseParam('id', $this->groupId,
-                        $query->params))
+                    ->where(DbHelper::parseParam('id', $this->groupId, $query->params))
                     ->scalar();
             }
 
-            $this->subQuery->andWhere(DbHelper::parseParam('categories.groupId',
-                $this->groupId, $this->subQuery->params));
+            $this->subQuery->andWhere(DbHelper::parseParam('categories.groupId', $this->groupId, $this->subQuery->params));
         }
     }
 
@@ -201,15 +199,12 @@ class CategoryQuery extends ElementQuery
 
                 if ($parts) {
                     if (count($parts) == 1) {
-                        $conditionals[] = DbHelper::parseParam('elements_i18n.slug',
-                            $parts[0], $this->subQuery->params);
+                        $conditionals[] = DbHelper::parseParam('elements_i18n.slug', $parts[0], $this->subQuery->params);
                     } else {
                         $conditionals[] = [
                             'and',
-                            DbHelper::parseParam('categorygroups.handle',
-                                $parts[0], $this->subQuery->params),
-                            DbHelper::parseParam('elements_i18n.slug',
-                                $parts[1], $this->subQuery->params)
+                            DbHelper::parseParam('categorygroups.handle', $parts[0], $this->subQuery->params),
+                            DbHelper::parseParam('elements_i18n.slug', $parts[1], $this->subQuery->params)
                         ];
                         $joinCategoryGroups = true;
                     }
@@ -225,8 +220,7 @@ class CategoryQuery extends ElementQuery
                 }
 
                 if ($joinCategoryGroups) {
-                    $this->subQuery->innerJoin('{{%categorygroups}} categorygroups',
-                        'categorygroups.id = categories.groupId');
+                    $this->subQuery->innerJoin('{{%categorygroups}} categorygroups', 'categorygroups.id = categories.groupId');
                 }
             }
         }

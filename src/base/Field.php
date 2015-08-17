@@ -219,8 +219,7 @@ abstract class Field extends SavableComponent implements FieldInterface
         // Just return the input HTML with disabled inputs by default
         Craft::$app->getView()->startJsBuffer();
         $inputHtml = $this->getInputHtml($value, $element);
-        $inputHtml = preg_replace('/<(?:input|textarea|select)\s[^>]*/i',
-            '$0 disabled', $inputHtml);
+        $inputHtml = preg_replace('/<(?:input|textarea|select)\s[^>]*/i', '$0 disabled', $inputHtml);
         Craft::$app->getView()->clearJsBuffer();
 
         return $inputHtml;
@@ -263,8 +262,7 @@ abstract class Field extends SavableComponent implements FieldInterface
             if (self::hasContentColumn()) {
                 $handle = $this->handle;
                 /** @var ElementQuery $query */
-                $query->subQuery->andWhere(DbHelper::parseParam('content.'.Craft::$app->getContent()->fieldColumnPrefix.$handle,
-                    $value, $query->subQuery->params));
+                $query->subQuery->andWhere(DbHelper::parseParam('content.'.Craft::$app->getContent()->fieldColumnPrefix.$handle, $value, $query->subQuery->params));
             } else {
                 return false;
             }

@@ -83,8 +83,7 @@ class LocalizationController extends Controller
         $localeId = Craft::$app->getRequest()->getRequiredBodyParam('id');
         $transferContentTo = Craft::$app->getRequest()->getBodyParam('transferContentTo');
 
-        $success = Craft::$app->getI18n()->deleteSiteLocale($localeId,
-            $transferContentTo);
+        $success = Craft::$app->getI18n()->deleteSiteLocale($localeId, $transferContentTo);
 
         return $this->asJson(['success' => $success]);
     }

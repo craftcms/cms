@@ -54,8 +54,7 @@ class DashboardController extends Controller
             $widget = Craft::$app->getDashboard()->getWidgetById($widgetId);
 
             if ($widget === null) {
-                throw new HttpException(404,
-                    "No widget exists with the ID '$widgetId'.");
+                throw new HttpException(404, "No widget exists with the ID '$widgetId'.");
             }
         }
 
@@ -134,13 +133,11 @@ class DashboardController extends Controller
 
         // Did it save?
         if (Craft::$app->getDashboard()->saveWidget($widget)) {
-            Craft::$app->getSession()->setNotice(Craft::t('app',
-                'Widget saved.'));
+            Craft::$app->getSession()->setNotice(Craft::t('app', 'Widget saved.'));
 
             return $this->redirectToPostedUrl();
         } else {
-            Craft::$app->getSession()->setError(Craft::t('app',
-                'Couldn’t save widget.'));
+            Craft::$app->getSession()->setError(Craft::t('app', 'Couldn’t save widget.'));
         }
 
         // Send the widget back to the template
@@ -279,8 +276,7 @@ class DashboardController extends Controller
                         foreach ($logFolderContents as $file) {
                             // Make sure it's a file.
                             if (IOHelper::fileExists($file)) {
-                                Zip::add($zipFile, $file,
-                                    Craft::$app->getPath()->getStoragePath());
+                                Zip::add($zipFile, $file, Craft::$app->getPath()->getStoragePath());
                             }
                         }
                     }
@@ -290,13 +286,11 @@ class DashboardController extends Controller
                         // for debugging.
                         Craft::$app->getDb()->backup();
 
-                        $backups = IOHelper::getLastModifiedFiles(Craft::$app->getPath()->getDbBackupPath(),
-                            3);
+                        $backups = IOHelper::getLastModifiedFiles(Craft::$app->getPath()->getDbBackupPath(), 3);
 
                         foreach ($backups as $backup) {
                             if (IOHelper::getExtension($backup) == 'sql') {
-                                Zip::add($zipFile, $backup,
-                                    Craft::$app->getPath()->getStoragePath());
+                                Zip::add($zipFile, $backup, Craft::$app->getPath()->getStoragePath());
                             }
                         }
                     }
@@ -336,11 +330,9 @@ class DashboardController extends Controller
                         foreach ($templateFolderContents as $file) {
                             // Make sure it's a file.
                             if (IOHelper::fileExists($file)) {
-                                $templateFolderName = IOHelper::getFolderName(Craft::$app->getPath()->getSiteTemplatesPath(),
-                                    false);
+                                $templateFolderName = IOHelper::getFolderName(Craft::$app->getPath()->getSiteTemplatesPath(), false);
                                 $siteTemplatePath = Craft::$app->getPath()->getSiteTemplatesPath();
-                                $tempPath = substr($siteTemplatePath, 0,
-                                    (StringHelper::length($siteTemplatePath) - StringHelper::length($templateFolderName)) - 1);
+                                $tempPath = substr($siteTemplatePath, 0, (StringHelper::length($siteTemplatePath) - StringHelper::length($templateFolderName)) - 1);
                                 Zip::add($zipFile, $file, $tempPath);
                             }
                         }
@@ -356,8 +348,7 @@ class DashboardController extends Controller
                     $hsParams['callTimeout'] = 120;
                 }
             } catch (\Exception $e) {
-                Craft::warning('Tried to attach debug logs to a support request and something went horribly wrong: '.$e->getMessage(),
-                    __METHOD__);
+                Craft::warning('Tried to attach debug logs to a support request and something went horribly wrong: '.$e->getMessage(), __METHOD__);
 
                 // There was a problem zipping, so reset the params and just send the email without the attachment.
                 $requestParams = $requestParamDefaults;
@@ -381,8 +372,7 @@ class DashboardController extends Controller
 
                 $success = true;
             } else {
-                $hsErrors = array_filter(preg_split("/(\r\n|\n|\r)/",
-                    $hsapi->errors));
+                $hsErrors = array_filter(preg_split("/(\r\n|\n|\r)/", $hsapi->errors));
                 $errors = ['Support' => $hsErrors];
             }
         } else {

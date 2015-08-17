@@ -114,21 +114,18 @@ class Table extends Field
 
         Craft::$app->getView()->registerJsResource('js/TableFieldSettings.js');
         Craft::$app->getView()->registerJs('new Craft.TableFieldSettings('.
-            JsonHelper::encode(Craft::$app->getView()->namespaceInputName('columns'),
-                JSON_UNESCAPED_UNICODE).', '.
-            JsonHelper::encode(Craft::$app->getView()->namespaceInputName('defaults'),
-                JSON_UNESCAPED_UNICODE).', '.
+            JsonHelper::encode(Craft::$app->getView()->namespaceInputName('columns'), JSON_UNESCAPED_UNICODE).', '.
+            JsonHelper::encode(Craft::$app->getView()->namespaceInputName('defaults'), JSON_UNESCAPED_UNICODE).', '.
             JsonHelper::encode($columns, JSON_UNESCAPED_UNICODE).', '.
             JsonHelper::encode($defaults, JSON_UNESCAPED_UNICODE).', '.
             JsonHelper::encode($columnSettings, JSON_UNESCAPED_UNICODE).
             ');');
 
-        $columnsField = Craft::$app->getView()->renderTemplateMacro('_includes/forms',
-            'editableTableField', [
+        $columnsField = Craft::$app->getView()->renderTemplateMacro('_includes/forms', 'editableTableField',
+            [
                 [
                     'label' => Craft::t('app', 'Table Columns'),
-                    'instructions' => Craft::t('app',
-                        'Define the columns your table should have.'),
+                    'instructions' => Craft::t('app', 'Define the columns your table should have.'),
                     'id' => 'columns',
                     'name' => 'columns',
                     'cols' => $columnSettings,
@@ -138,12 +135,11 @@ class Table extends Field
                 ]
             ]);
 
-        $defaultsField = Craft::$app->getView()->renderTemplateMacro('_includes/forms',
-            'editableTableField', [
+        $defaultsField = Craft::$app->getView()->renderTemplateMacro('_includes/forms', 'editableTableField',
+            [
                 [
                     'label' => Craft::t('app', 'Default Values'),
-                    'instructions' => Craft::t('app',
-                        'Define the default values for the field.'),
+                    'instructions' => Craft::t('app', 'Define the default values for the field.'),
                     'id' => 'defaults',
                     'name' => 'defaults',
                     'cols' => $columns,

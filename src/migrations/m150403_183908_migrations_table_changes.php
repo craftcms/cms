@@ -20,14 +20,11 @@ class m150403_183908_migrations_table_changes extends Migration
     public function safeUp()
     {
         if (!$this->db->columnExists('{{%migrations}}', 'name')) {
-            MigrationHelper::renameColumn('{{%migrations}}', 'version', 'name',
-                $this);
+            MigrationHelper::renameColumn('{{%migrations}}', 'version', 'name', $this);
         }
 
         if (!$this->db->columnExists('{{%migrations}}', 'type')) {
-            $this->addColumnAfter('{{%migrations}}', 'type',
-                "enum('app', 'plugin', 'content') NOT NULL DEFAULT 'app'",
-                'pluginId');
+            $this->addColumnAfter('{{%migrations}}', 'type', "enum('app', 'plugin', 'content') NOT NULL DEFAULT 'app'", 'pluginId');
 
             $this->createIndex(
                 $this->db->getIndexName('{{%migrations}}', 'type,pluginId'),
@@ -36,11 +33,9 @@ class m150403_183908_migrations_table_changes extends Migration
             );
         }
 
-        MigrationHelper::dropIndexIfExists('{{%migrations}}', ['name'], true,
-            $this);
+        MigrationHelper::dropIndexIfExists('{{%migrations}}', ['name'], true, $this);
 
-        $this->update('{{%migrations}}', ['type' => 'plugin'],
-            'pluginId is not null');
+        $this->update('{{%migrations}}', ['type' => 'plugin'], 'pluginId is not null');
     }
 
     /**

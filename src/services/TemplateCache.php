@@ -255,8 +255,7 @@ class TemplateCache extends Component
 
         // If there are any transform generation URLs in the body, don't cache it.
         // Can't use getResourceUrl() here because that will append ?d= or ?x= to the URL.
-        if (StringHelper::contains($body,
-            UrlHelper::getSiteUrl(Craft::$app->getConfig()->getResourceTrigger().'/transforms'))
+        if (StringHelper::contains($body, UrlHelper::getSiteUrl(Craft::$app->getConfig()->getResourceTrigger().'/transforms'))
         ) {
             return;
         }
@@ -354,8 +353,7 @@ class TemplateCache extends Component
             $params = [':id' => $cacheId];
         }
 
-        $affectedRows = Craft::$app->getDb()->createCommand()->delete(static::$_templateCachesTable,
-            $condition, $params)->execute();
+        $affectedRows = Craft::$app->getDb()->createCommand()->delete(static::$_templateCachesTable, $condition, $params)->execute();
 
         return (bool)$affectedRows;
     }
@@ -455,8 +453,7 @@ class TemplateCache extends Component
                 }
 
                 if (is_array($elementId)) {
-                    $task->elementId = array_merge($task->elementId,
-                        $elementId);
+                    $task->elementId = array_merge($task->elementId, $elementId);
                 } else {
                     $task->elementId[] = $elementId;
                 }
@@ -555,8 +552,7 @@ class TemplateCache extends Component
             return false;
         }
 
-        $affectedRows = Craft::$app->getDb()->createCommand()->delete(static::$_templateCachesTable,
-            'expiryDate <= :now',
+        $affectedRows = Craft::$app->getDb()->createCommand()->delete(static::$_templateCachesTable, 'expiryDate <= :now',
             ['now' => DbHelper::prepareDateForDb(new \DateTime())]
         )->execute();
 
@@ -581,9 +577,7 @@ class TemplateCache extends Component
 
         if ($lastCleanupDate === false || DateTimeHelper::currentTimeStamp() - $lastCleanupDate > static::$_lastCleanupDateCacheDuration) {
             // Don't do it again for a while
-            Craft::$app->getCache()->set('lastTemplateCacheCleanupDate',
-                DateTimeHelper::currentTimeStamp(),
-                static::$_lastCleanupDateCacheDuration);
+            Craft::$app->getCache()->set('lastTemplateCacheCleanupDate', DateTimeHelper::currentTimeStamp(), static::$_lastCleanupDateCacheDuration);
 
             return $this->deleteExpiredCaches();
         } else {

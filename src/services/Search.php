@@ -71,8 +71,7 @@ class Search extends Component
         foreach ($searchableAttributes as $attribute) {
             $value = $element->$attribute;
             $value = StringHelper::toString($value);
-            $this->_indexElementKeywords($element->id, $attribute, '0',
-                $element->locale, $value);
+            $this->_indexElementKeywords($element->id, $attribute, '0', $element->locale, $value);
         }
 
         return true;
@@ -90,8 +89,7 @@ class Search extends Component
     public function indexElementFields($elementId, $localeId, $fields)
     {
         foreach ($fields as $fieldId => $value) {
-            $this->_indexElementKeywords($elementId, 'field', (string)$fieldId,
-                $localeId, $value);
+            $this->_indexElementKeywords($elementId, 'field', (string)$fieldId, $localeId, $value);
         }
 
         return true;
@@ -134,9 +132,7 @@ class Search extends Component
         }
 
         // Begin creating SQL
-        $sql = sprintf('SELECT * FROM %s WHERE %s',
-            Craft::$app->getDb()->quoteTableName('{{%searchindex}}'),
-            $where
+        $sql = sprintf('SELECT * FROM %s WHERE %s', Craft::$app->getDb()->quoteTableName('{{%searchindex}}'), $where
         );
 
         // Append elementIds to QSL
@@ -240,15 +236,14 @@ class Search extends Component
                 $position = mb_strrpos($cleanKeywords, ' ');
 
                 if ($position) {
-                    $cleanKeywords = mb_substr($cleanKeywords, 0,
-                        $position + 1);
+                    $cleanKeywords = mb_substr($cleanKeywords, 0, $position + 1);
                 }
             }
         }
 
         // Insert/update the row in searchindex
-        Craft::$app->getDb()->createCommand()->insertOrUpdate('{{%searchindex}}',
-            $keyColumns, [
+        Craft::$app->getDb()->createCommand()->insertOrUpdate('{{%searchindex}}', $keyColumns,
+            [
                 'keywords' => $cleanKeywords
             ], false)->execute();
     }
@@ -629,11 +624,7 @@ class Search extends Component
      */
     private function _sqlWhere($key, $oper, $val)
     {
-        return sprintf("(%s %s '%s')",
-            Craft::$app->getDb()->quoteColumnName($key),
-            $oper,
-            $val
-        );
+        return sprintf("(%s %s '%s')", Craft::$app->getDb()->quoteColumnName($key), $oper, $val);
     }
 
     /**
@@ -646,11 +637,7 @@ class Search extends Component
      */
     private function _sqlMatch($val, $bool = true)
     {
-        return sprintf("MATCH(%s) AGAINST('%s'%s)",
-            Craft::$app->getDb()->quoteColumnName('keywords'),
-            (is_array($val) ? implode(' ', $val) : $val),
-            ($bool ? ' IN BOOLEAN MODE' : '')
-        );
+        return sprintf("MATCH(%s) AGAINST('%s'%s)", Craft::$app->getDb()->quoteColumnName('keywords'), (is_array($val) ? implode(' ', $val) : $val), ($bool ? ' IN BOOLEAN MODE' : ''));
     }
 
     /**
@@ -670,8 +657,7 @@ class Search extends Component
             ->column();
 
         if ($elementIds) {
-            return Craft::$app->getDb()->quoteColumnName('elementId').' IN ('.implode(', ',
-                $elementIds).')';
+            return Craft::$app->getDb()->quoteColumnName('elementId').' IN ('.implode(', ', $elementIds).')';
         } else {
             return false;
         }

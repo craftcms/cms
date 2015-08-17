@@ -88,7 +88,6 @@ class Globals
      */
     public function getSetByHandle($globalSetHandle, $localeId = null)
     {
-        return \Craft::$app->getGlobals()->getSetByHandle($globalSetHandle,
-            $localeId);
+        return \Craft::$app->getGlobals()->getSetByHandle($globalSetHandle, $localeId);
     }
 }

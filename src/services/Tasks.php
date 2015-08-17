@@ -104,8 +104,7 @@ class Tasks extends Component
         }
 
         try {
-            return ComponentHelper::createComponent($config,
-                self::TASK_INTERFACE);
+            return ComponentHelper::createComponent($config, self::TASK_INTERFACE);
         } catch (InvalidComponentException $e) {
             $config['errorMessage'] = $e->getMessage();
 
@@ -290,8 +289,7 @@ class Tasks extends Component
         }
 
         if ($error === null) {
-            Craft::info('Finished task '.$task->id.' ('.$task->type.').',
-                __METHOD__);
+            Craft::info('Finished task '.$task->id.' ('.$task->type.').', __METHOD__);
 
             // We're done with this task, nuke it.
             $taskRecord->deleteWithChildren();

@@ -183,8 +183,7 @@ class UrlHelper
             $protocol = 'https';
         }
 
-        return static::_getUrl($path, $params, $protocol, $cpUrl,
-            $mustShowScriptName);
+        return static::_getUrl($path, $params, $protocol, $cpUrl, $mustShowScriptName);
     }
 
     /**
@@ -265,8 +264,7 @@ class UrlHelper
             }
         }
 
-        return static::getUrl(Craft::$app->getConfig()->getResourceTrigger().'/'.$path,
-            $params, $protocol);
+        return static::getUrl(Craft::$app->getConfig()->getResourceTrigger().'/'.$path, $params, $protocol);
     }
 
     /**

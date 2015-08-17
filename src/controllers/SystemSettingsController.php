@@ -104,8 +104,7 @@ class SystemSettingsController extends Controller
 
         foreach (\DateTimeZone::listIdentifiers() as $timezoneId) {
             $timezone = new \DateTimeZone($timezoneId);
-            $transition = $timezone->getTransitions($utc->getTimestamp(),
-                $utc->getTimestamp());
+            $transition = $timezone->getTransitions($utc->getTimestamp(), $utc->getTimestamp());
             $abbr = $transition[0]['abbr'];
 
             $offset = round($timezone->getOffset($utc) / 60);
@@ -154,12 +153,10 @@ class SystemSettingsController extends Controller
         $info->timezone = Craft::$app->getRequest()->getBodyParam('timezone');
 
         if (Craft::$app->saveInfo($info)) {
-            Craft::$app->getSession()->setNotice(Craft::t('app',
-                'General settings saved.'));
+            Craft::$app->getSession()->setNotice(Craft::t('app', 'General settings saved.'));
             $this->redirectToPostedUrl();
         } else {
-            Craft::$app->getSession()->setError(Craft::t('app',
-                'Couldn’t save general settings.'));
+            Craft::$app->getSession()->setError(Craft::t('app', 'Couldn’t save general settings.'));
 
             // Send the info back to the template
             Craft::$app->getUrlManager()->setRouteParams([

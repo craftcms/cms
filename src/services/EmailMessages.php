@@ -73,10 +73,8 @@ class EmailMessages extends Component
                 $message->body = $recordsByKey[$key]->body;
             } else {
                 // Default to whatever's in the translation file
-                $message->subject = $this->_translateMessageString($key,
-                    'subject', $localeId);
-                $message->body = $this->_translateMessageString($key, 'body',
-                    $localeId);
+                $message->subject = $this->_translateMessageString($key, 'subject', $localeId);
+                $message->body = $this->_translateMessageString($key, 'body', $localeId);
             }
 
             $messages[] = $message;
@@ -243,10 +241,8 @@ class EmailMessages extends Component
             $record = new EmailMessageRecord();
             $record->key = $key;
             $record->locale = $localeId;
-            $record->subject = $this->_translateMessageString($key, 'subject',
-                $localeId);
-            $record->body = $this->_translateMessageString($key, 'body',
-                $localeId);
+            $record->subject = $this->_translateMessageString($key, 'subject', $localeId);
+            $record->body = $this->_translateMessageString($key, 'body', $localeId);
         }
 
         return $record;

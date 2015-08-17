@@ -183,8 +183,7 @@ class Updates extends Component
 
                 if ($etModel == null) {
                     $updateModel = new UpdateModel();
-                    $errors[] = Craft::t('app',
-                        'Craft is unable to determine if an update is available at this time.');
+                    $errors[] = Craft::t('app', 'Craft is unable to determine if an update is available at this time.');
                     $updateModel->errors = $errors;
                 } else {
                     $updateModel = $etModel->data;
@@ -312,15 +311,13 @@ class Updates extends Component
             // No need to get the latest update info if this is a manual update.
             if (!$manual) {
                 $updateModel = $this->getUpdates();
-                Craft::info('Updating from '.$updateModel->app->localVersion.'.'.$updateModel->app->localBuild.' to '.$updateModel->app->latestVersion.'.'.$updateModel->app->latestBuild.'.',
-                    __METHOD__);
+                Craft::info('Updating from '.$updateModel->app->localVersion.'.'.$updateModel->app->localBuild.' to '.$updateModel->app->latestVersion.'.'.$updateModel->app->latestBuild.'.', __METHOD__);
                 $result = $updater->getUpdateFileInfo();
             }
 
             $result['success'] = true;
 
-            Craft::info('Finished preparing to update '.$handle.'.',
-                __METHOD__);
+            Craft::info('Finished preparing to update '.$handle.'.', __METHOD__);
 
             return $result;
         } catch (\Exception $e) {
@@ -357,8 +354,7 @@ class Updates extends Component
      */
     public function backupFiles($uid)
     {
-        Craft::info('Starting to backup files that need to be updated.',
-            __METHOD__);
+        Craft::info('Starting to backup files that need to be updated.', __METHOD__);
 
         try {
             $updater = new Updater();
@@ -405,8 +401,7 @@ class Updates extends Component
             $result = $updater->backupDatabase();
 
             if (!$result) {
-                Craft::info('Did not backup database because there were no migrations to run.',
-                    __METHOD__);
+                Craft::info('Did not backup database because there were no migrations to run.', __METHOD__);
 
                 return ['success' => true];
             } else {
@@ -439,17 +434,12 @@ class Updates extends Component
             } else {
                 $plugin = Craft::$app->getPlugins()->getPlugin($handle);
                 if ($plugin) {
-                    Craft::info('The plugin, '.$plugin->name.' wants to update the database.',
-                        __METHOD__);
+                    Craft::info('The plugin, '.$plugin->name.' wants to update the database.', __METHOD__);
                     $updater->updateDatabase($plugin);
-                    Craft::info('The plugin, '.$plugin->name.' is done updating the database.',
-                        __METHOD__);
+                    Craft::info('The plugin, '.$plugin->name.' is done updating the database.', __METHOD__);
                 } else {
-                    Craft::error('Cannot find a plugin with the handle '.$handle.' or it is not enabled, therefore it cannot update the database.',
-                        __METHOD__);
-                    throw new Exception(Craft::t('app',
-                        'Cannot find an enabled plugin with the handle {handle}.',
-                        ['handle' => $handle]));
+                    Craft::error('Cannot find a plugin with the handle '.$handle.' or it is not enabled, therefore it cannot update the database.', __METHOD__);
+                    throw new Exception(Craft::t('app', 'Cannot find an enabled plugin with the handle {handle}.', ['handle' => $handle]));
                 }
             }
 
@@ -475,8 +465,7 @@ class Updates extends Component
 
             Craft::info('Finished cleaning up after the update.', __METHOD__);
         } catch (\Exception $e) {
-            Craft::info('There was an error during cleanup, but we don\'t really care: '.$e->getMessage(),
-                __METHOD__);
+            Craft::info('There was an error during cleanup, but we don\'t really care: '.$e->getMessage(), __METHOD__);
         }
 
         // Fire an 'afterUpdate' event
@@ -500,8 +489,7 @@ class Updates extends Component
             if ($dbBackupPath && Craft::$app->getConfig()->get('backupDbOnUpdate') && Craft::$app->getConfig()->get('restoreDbOnUpdateFailure')) {
                 Craft::info('Rolling back any database changes.', __METHOD__);
                 UpdateHelper::rollBackDatabaseChanges($dbBackupPath);
-                Craft::info('Done rolling back any database changes.',
-                    __METHOD__);
+                Craft::info('Done rolling back any database changes.', __METHOD__);
             }
 
             // If uid !== false, it's an auto-update.
@@ -579,8 +567,7 @@ class Updates extends Component
     {
         $storedSchemaVersion = Craft::$app->getInfo('schemaVersion');
 
-        return version_compare(Craft::$app->schemaVersion, $storedSchemaVersion,
-            '>=');
+        return version_compare(Craft::$app->schemaVersion, $storedSchemaVersion, '>=');
     }
 
     /**
@@ -592,8 +579,7 @@ class Updates extends Component
     {
         if ($this->_isCraftDbMigrationNeeded === null) {
             $storedSchemaVersion = Craft::$app->getInfo('schemaVersion');
-            $this->_isCraftDbMigrationNeeded = version_compare(Craft::$app->schemaVersion,
-                $storedSchemaVersion, '>');
+            $this->_isCraftDbMigrationNeeded = version_compare(Craft::$app->schemaVersion, $storedSchemaVersion, '>');
         }
 
         return $this->_isCraftDbMigrationNeeded;

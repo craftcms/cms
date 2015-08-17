@@ -44,10 +44,8 @@ class CpHelper
             if ($path != 'updates' && $user->can('performUpdates')) {
                 if (!empty($updateModel->app->releases)) {
                     if (Craft::$app->getUpdates()->criticalCraftUpdateAvailable($updateModel->app->releases)) {
-                        $alerts[] = Craft::t('app',
-                                'There’s a critical Craft update available.').
-                            ' <a class="go nowrap" href="'.UrlHelper::getUrl('updates').'">'.Craft::t('app',
-                                'Go to Updates').'</a>';
+                        $alerts[] = Craft::t('app', 'There’s a critical Craft update available.').
+                            ' <a class="go nowrap" href="'.UrlHelper::getUrl('updates').'">'.Craft::t('app', 'Go to Updates').'</a>';
                     }
                 }
             }
@@ -61,8 +59,8 @@ class CpHelper
                 $licenseKeyFile = IOHelper::getFolderName($licenseKeyPath,
                         false).'/'.IOHelper::getFilename($licenseKeyPath);
 
-                $message = Craft::t('app',
-                    'The license located at {file} belongs to {domain}.', [
+                $message = Craft::t('app', 'The license located at {file} belongs to {domain}.',
+                    [
                         'file' => $licenseKeyFile,
                         'domain' => '<a href="http://'.$licensedDomain.'" target="_blank">'.$licensedDomain.'</a>'
                     ]);
@@ -72,8 +70,7 @@ class CpHelper
                     $action = '<a class="domain-mismatch">'.Craft::t('app',
                             'Transfer it to this domain?').'</a>';
                 } else {
-                    $action = Craft::t('app',
-                        'Please notify one of your site’s admins.');
+                    $action = Craft::t('app', 'Please notify one of your site’s admins.');
                 }
 
                 $alerts[] = $message.' '.$action;

@@ -103,8 +103,7 @@ class CacheTokenParser extends \Twig_TokenParser
         }
 
         $stream->expect(\Twig_Token::BLOCK_END_TYPE);
-        $nodes['body'] = $this->parser->subparse([$this, 'decideCacheEnd'],
-            true);
+        $nodes['body'] = $this->parser->subparse([$this, 'decideCacheEnd'], true);
         $stream->expect(\Twig_Token::BLOCK_END_TYPE);
 
         return new CacheNode($nodes, $attributes, $lineno, $this->getTag());

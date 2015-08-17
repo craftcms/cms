@@ -74,9 +74,7 @@ class DbBackup extends Tool
 
             IOHelper::createFile($destZip);
 
-            if (Zip::add($destZip, $file,
-                Craft::$app->getPath()->getDbBackupPath())
-            ) {
+            if (Zip::add($destZip, $file, Craft::$app->getPath()->getDbBackupPath())) {
                 return ['backupFile' => IOHelper::getFilename($destZip, false)];
             }
         }

@@ -104,9 +104,9 @@ class AwsS3 extends Volume
     public function getSettingsHtml()
     {
         return Craft::$app->getView()->renderTemplate('_components/volumes/AwsS3/settings',
-            array(
+            [
                 'volume' => $this
-            ));
+            ]);
     }
 
     /**
@@ -121,12 +121,12 @@ class AwsS3 extends Volume
     public static function loadBucketList($keyId, $secret)
     {
         if (empty($keyId) || empty($secret)) {
-            $config = array();
+            $config = [];
         } else {
-            $config = array(
+            $config = [
                 'key' => $keyId,
                 'secret' => $secret
-            );
+            ];
         }
 
         $client = static::getClient($config);
@@ -134,24 +134,24 @@ class AwsS3 extends Volume
         $objects = $client->listBuckets();
 
         if (empty($objects['Buckets'])) {
-            return array();
+            return [];
         }
 
         $buckets = $objects['Buckets'];
-        $bucketList = array();
+        $bucketList = [];
 
         foreach ($buckets as $bucket) {
             try {
-                $location = $client->getBucketLocation(array('Bucket' => $bucket['Name']));
+                $location = $client->getBucketLocation(['Bucket' => $bucket['Name']]);
             } catch (AccessDeniedException $exception) {
                 continue;
             }
 
-            $bucketList[] = array(
+            $bucketList[] = [
                 'bucket' => $bucket['Name'],
                 'urlPrefix' => 'http://'.$bucket['Name'].'.s3.amazonaws.com/',
                 'region' => isset($location['Location']) ? $location['Location'] : ''
-            );
+            ];
         }
 
         return $bucketList;
@@ -186,12 +186,12 @@ class AwsS3 extends Volume
         $secret = $this->secret;
 
         if (empty($keyId) || empty($secret)) {
-            $config = array();
+            $config = [];
         } else {
-            $config = array(
+            $config = [
                 'key' => $keyId,
                 'secret' => $secret
-            );
+            ];
         }
 
         $config['region'] = $this->region;
@@ -208,7 +208,7 @@ class AwsS3 extends Volume
      *
      * @return S3Client
      */
-    protected static function getClient($config = array())
+    protected static function getClient($config = [])
     {
         $config['credentials.cache'] = static::_getCredentialsCacheAdapter();
 

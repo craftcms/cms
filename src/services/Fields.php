@@ -284,8 +284,7 @@ class Fields extends Component
             UsersField::className(),
         ];
 
-        foreach (Craft::$app->getPlugins()->call('getFieldTypes', [],
-            true) as $pluginFieldTypes) {
+        foreach (Craft::$app->getPlugins()->call('getFieldTypes', [], true) as $pluginFieldTypes) {
             $fieldTypes = array_merge($fieldTypes, $pluginFieldTypes);
         }
 
@@ -306,8 +305,7 @@ class Fields extends Component
         }
 
         try {
-            return ComponentHelper::createComponent($config,
-                self::FIELD_INTERFACE);
+            return ComponentHelper::createComponent($config, self::FIELD_INTERFACE);
         } catch (InvalidComponentException $e) {
             $config['errorMessage'] = $e->getMessage();
 
@@ -526,21 +524,12 @@ class Fields extends Component
                     // Make sure we're working with the latest data in the case of a renamed field.
                     Craft::$app->getDb()->schema->refresh();
 
-                    if (Craft::$app->getDb()->columnExists($contentTable,
-                        $oldColumnName)
-                    ) {
-                        Craft::$app->getDb()->createCommand()->alterColumn($contentTable,
-                            $oldColumnName, $columnType,
-                            $newColumnName)->execute();
-                    } else if (Craft::$app->getDb()->columnExists($contentTable,
-                        $newColumnName)
-                    ) {
-                        Craft::$app->getDb()->createCommand()->alterColumn($contentTable,
-                            $newColumnName, $columnType)->execute();
+                    if (Craft::$app->getDb()->columnExists($contentTable, $oldColumnName)) {
+                        Craft::$app->getDb()->createCommand()->alterColumn($contentTable, $oldColumnName, $columnType, $newColumnName)->execute();
+                    } else if (Craft::$app->getDb()->columnExists($contentTable, $newColumnName)) {
+                        Craft::$app->getDb()->createCommand()->alterColumn($contentTable, $newColumnName, $columnType)->execute();
                     } else {
-                        Craft::$app->getDb()->createCommand()->addColumnBefore($contentTable,
-                            $newColumnName, $columnType,
-                            'dateCreated')->execute();
+                        Craft::$app->getDb()->createCommand()->addColumnBefore($contentTable, $newColumnName, $columnType, 'dateCreated')->execute();
                     }
                 } else {
                     // Did the old field have a column we need to remove?
@@ -548,8 +537,7 @@ class Fields extends Component
                         if ($fieldRecord->getOldHandle() && Craft::$app->getDb()->columnExists($contentTable,
                                 $oldColumnName)
                         ) {
-                            Craft::$app->getDb()->createCommand()->dropColumn($contentTable,
-                                $oldColumnName)->execute();
+                            Craft::$app->getDb()->createCommand()->dropColumn($contentTable, $oldColumnName)->execute();
                         }
                     }
                 }
@@ -628,11 +616,8 @@ class Fields extends Component
             $contentTable = Craft::$app->getContent()->contentTable;
             $fieldColumnPrefix = Craft::$app->getContent()->fieldColumnPrefix;
 
-            if (Craft::$app->getDb()->columnExists($contentTable,
-                $fieldColumnPrefix.$field->handle)
-            ) {
-                Craft::$app->getDb()->createCommand()->dropColumn($contentTable,
-                    $fieldColumnPrefix.$field->handle)->execute();
+            if (Craft::$app->getDb()->columnExists($contentTable, $fieldColumnPrefix.$field->handle)) {
+                Craft::$app->getDb()->createCommand()->dropColumn($contentTable, $fieldColumnPrefix.$field->handle)->execute();
             }
 
             // Delete the row in fields
@@ -884,8 +869,7 @@ class Fields extends Component
         }
 
         // Fire an 'afterSaveFieldLayout' event
-        $this->trigger(static::EVENT_AFTER_SAVE_FIELD_LAYOUT,
-            new FieldLayoutEvent([
+        $this->trigger(static::EVENT_AFTER_SAVE_FIELD_LAYOUT, new FieldLayoutEvent([
                 'layout' => $layout
             ]));
 
@@ -1029,9 +1013,7 @@ class Fields extends Component
             $groupRecord = FieldGroupRecord::findOne($group->id);
 
             if (!$groupRecord) {
-                throw new Exception(Craft::t('app',
-                    'No field group exists with the ID “{id}”.',
-                    ['id' => $group->id]));
+                throw new Exception(Craft::t('app', 'No field group exists with the ID “{id}”.', ['id' => $group->id]));
             }
         } else {
             $groupRecord = new FieldGroupRecord();
@@ -1059,9 +1041,7 @@ class Fields extends Component
                 $this->_fieldRecordsById[$fieldId] = FieldRecord::findOne($fieldId);
 
                 if (!$this->_fieldRecordsById[$fieldId]) {
-                    throw new Exception(Craft::t('app',
-                        'No field exists with the ID “{id}”.',
-                        ['id' => $fieldId]));
+                    throw new Exception(Craft::t('app', 'No field exists with the ID “{id}”.', ['id' => $fieldId]));
                 }
             }
 

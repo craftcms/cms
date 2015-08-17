@@ -73,8 +73,7 @@ class MigrationManager extends Component
         $this->migrationPath = Craft::getAlias($this->migrationPath);
         IOHelper::ensureFolderExists($this->migrationPath);
 
-        $this->db = Instance::ensure($this->db,
-            \yii\db\Connection::className());
+        $this->db = Instance::ensure($this->db, \yii\db\Connection::className());
     }
 
     /**

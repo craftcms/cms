@@ -136,22 +136,19 @@ class QuickPost extends Widget
      */
     public function getBodyHtml()
     {
-        Craft::$app->getView()->includeTranslations('Entry saved.',
-            'Couldn’t save entry.');
+        Craft::$app->getView()->includeTranslations('Entry saved.', 'Couldn’t save entry.');
         Craft::$app->getView()->registerJsResource('js/QuickPostWidget.js');
 
         $section = $this->_getSection();
 
         if ($section === null) {
-            return '<p>'.Craft::t('app',
-                'No section has been selected yet.').'</p>';
+            return '<p>'.Craft::t('app', 'No section has been selected yet.').'</p>';
         }
 
         $entryTypes = $section->getEntryTypes('id');
 
         if (!$entryTypes) {
-            return '<p>'.Craft::t('app',
-                'No entry types exist for this section.').'</p>';
+            return '<p>'.Craft::t('app', 'No entry types exist for this section.').'</p>';
         }
 
         if ($this->entryType && isset($entryTypes[$this->entryType])) {

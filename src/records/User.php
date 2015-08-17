@@ -28,7 +28,7 @@ use craft\app\db\ActiveRecord;
  * @property boolean              $pending                    Pending
  * @property boolean              $archived                   Archived
  * @property \DateTime            $lastLoginDate              Last login date
- * @property string               $lastLoginAttemptIPAddress  Last login attempt ipaddress
+ * @property string               $lastLoginAttemptIp         Last login attempt IP
  * @property \DateTime            $invalidLoginWindowStart    Invalid login window start
  * @property integer              $invalidLoginCount          Invalid login count
  * @property \DateTime            $lastInvalidLoginDate       Last invalid login date
@@ -82,7 +82,7 @@ class User extends ActiveRecord
             ],
             [['photo'], 'string', 'max' => 50],
             [['email', 'password', 'unverifiedEmail'], 'string', 'max' => 255],
-            [['lastLoginAttemptIPAddress'], 'string', 'max' => 45],
+            [['lastLoginAttemptIp'], 'string', 'max' => 45],
         ];
     }
 
@@ -135,8 +135,7 @@ class User extends ActiveRecord
     {
         // Don't allow whitespace in the username.
         if (preg_match('/\s+/', $this->username)) {
-            $this->addError('username',
-                Craft::t('app', 'Spaces are not allowed in the username.'));
+            $this->addError('username', Craft::t('app', 'Spaces are not allowed in the username.'));
         }
 
         return parent::validate($attributes, false);

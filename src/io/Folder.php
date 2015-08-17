@@ -76,8 +76,7 @@ class Folder extends BaseIO
      */
     public function getContents($recursive, $filter)
     {
-        return IOHelper::getFolderContents($this->getRealPath(), $recursive,
-            $filter);
+        return IOHelper::getFolderContents($this->getRealPath(), $recursive, $filter);
     }
 
     /**

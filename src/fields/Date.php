@@ -203,8 +203,7 @@ class Date extends Field
         if ($value !== null) {
             $handle = $this->handle;
             /** @var ElementQuery $query */
-            $query->subQuery->andWhere(DbHelper::parseDateParam('content.'.Craft::$app->getContent()->fieldColumnPrefix.$handle,
-                $value, $query->subQuery->params));
+            $query->subQuery->andWhere(DbHelper::parseDateParam('content.'.Craft::$app->getContent()->fieldColumnPrefix.$handle, $value, $query->subQuery->params));
         }
     }
 }

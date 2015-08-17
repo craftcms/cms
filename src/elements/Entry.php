@@ -302,8 +302,7 @@ class Entry extends Element
                     if ($structure) {
                         $actions[] = Craft::$app->getElements()->createAction([
                             'type' => NewChild::className(),
-                            'label' => Craft::t('app',
-                                'Create a new child entry'),
+                            'label' => Craft::t('app', 'Create a new child entry'),
                             'maxLevels' => $structure->maxLevels,
                             'newChildUrl' => 'entries/'.$section->handle.'/new',
                         ]);
@@ -317,8 +316,7 @@ class Entry extends Element
                 ) {
                     $actions[] = Craft::$app->getElements()->createAction([
                         'type' => Delete::className(),
-                        'confirmationMessage' => Craft::t('app',
-                            'Are you sure you want to delete the selected entries?'),
+                        'confirmationMessage' => Craft::t('app', 'Are you sure you want to delete the selected entries?'),
                         'successMessage' => Craft::t('app', 'Entries deleted.'),
                     ]);
                 }
@@ -524,8 +522,7 @@ class Entry extends Element
         $section = $element->getSection();
 
         if ($section->type == Section::TYPE_STRUCTURE && $section->structureId == $structureId) {
-            Craft::$app->getElements()->updateElementSlugAndUri($element, true,
-                true, true);
+            Craft::$app->getElements()->updateElementSlugAndUri($element, true, true, true);
         }
     }
 

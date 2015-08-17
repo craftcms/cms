@@ -152,8 +152,7 @@ class CategoryGroup extends Model
     {
         if (!isset($this->_locales)) {
             if ($this->id) {
-                $this->_locales = Craft::$app->getCategories()->getGroupLocales($this->id,
-                    'locale');
+                $this->_locales = Craft::$app->getCategories()->getGroupLocales($this->id, 'locale');
             } else {
                 $this->_locales = [];
             }

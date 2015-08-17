@@ -88,15 +88,13 @@ class File extends BaseIO
     {
         if ($includeExtension) {
             if (!$this->_filename) {
-                $this->_filename = IOHelper::getFilename($this->getRealPath(),
-                    $includeExtension);
+                $this->_filename = IOHelper::getFilename($this->getRealPath(), $includeExtension);
             }
 
             return $this->_filename;
         } else {
             if (!$this->_baseName) {
-                $this->_baseName = IOHelper::getFilename($this->getRealPath(),
-                    $includeExtension);
+                $this->_baseName = IOHelper::getFilename($this->getRealPath(), $includeExtension);
             }
 
             return $this->_baseName;
@@ -160,15 +158,13 @@ class File extends BaseIO
     {
         if ($array) {
             if (!$this->_arrayContents) {
-                $this->_arrayContents = IOHelper::getFileContents($this->getRealPath(),
-                    $array);
+                $this->_arrayContents = IOHelper::getFileContents($this->getRealPath(), $array);
             }
 
             return $this->_arrayContents;
         } else {
             if (!$this->_stringContents) {
-                $this->_stringContents = IOHelper::getFileContents($this->getRealPath(),
-                    $array);
+                $this->_stringContents = IOHelper::getFileContents($this->getRealPath(), $array);
             }
 
             return $this->_stringContents;
@@ -183,9 +179,7 @@ class File extends BaseIO
      */
     public function write($contents, $append)
     {
-        if (!IOHelper::writeToFile($this->getRealPath(), $contents, false,
-            $append)
-        ) {
+        if (!IOHelper::writeToFile($this->getRealPath(), $contents, false, $append)) {
             return false;
         }
 

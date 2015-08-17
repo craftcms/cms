@@ -164,8 +164,7 @@ class GlobalsController extends Controller
         $this->requirePostRequest();
 
         $globalSetId = Craft::$app->getRequest()->getRequiredBodyParam('setId');
-        $localeId = Craft::$app->getRequest()->getBodyParam('locale',
-            Craft::$app->getI18n()->getPrimarySiteLocaleId());
+        $localeId = Craft::$app->getRequest()->getBodyParam('locale', Craft::$app->getI18n()->getPrimarySiteLocaleId());
 
         // Make sure the user is allowed to edit this global set and locale
         $this->requirePermission('editGlobalSet:'.$globalSetId);
@@ -174,25 +173,20 @@ class GlobalsController extends Controller
             $this->requirePermission('editLocale:'.$localeId);
         }
 
-        $globalSet = Craft::$app->getGlobals()->getSetById($globalSetId,
-            $localeId);
+        $globalSet = Craft::$app->getGlobals()->getSetById($globalSetId, $localeId);
 
         if (!$globalSet) {
-            throw new Exception(Craft::t('app',
-                'No global set exists with the ID “{id}”.',
-                ['id' => $globalSetId]));
+            throw new Exception(Craft::t('app', 'No global set exists with the ID “{id}”.', ['id' => $globalSetId]));
         }
 
         $globalSet->setFieldValuesFromPost('fields');
 
         if (Craft::$app->getGlobals()->saveContent($globalSet)) {
-            Craft::$app->getSession()->setNotice(Craft::t('app',
-                'Globals saved.'));
+            Craft::$app->getSession()->setNotice(Craft::t('app', 'Globals saved.'));
 
             return $this->redirectToPostedUrl();
         } else {
-            Craft::$app->getSession()->setError(Craft::t('app',
-                'Couldn’t save globals.'));
+            Craft::$app->getSession()->setError(Craft::t('app', 'Couldn’t save globals.'));
         }
 
         // Send the global set back to the template

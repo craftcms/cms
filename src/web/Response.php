@@ -33,8 +33,7 @@ class Response extends \yii\web\Response
         $headers = $this->getHeaders();
 
         $cacheTime = 31536000; // 1 year
-        $headers->set('Expires',
-            gmdate('D, d M Y H:i:s', time() + $cacheTime).' GMT')
+        $headers->set('Expires', gmdate('D, d M Y H:i:s', time() + $cacheTime).' GMT')
             ->set('Pragma', 'cache')
             ->set('Cache-Control', 'max-age='.$cacheTime);
 
@@ -53,8 +52,7 @@ class Response extends \yii\web\Response
         $modifiedTime = IOHelper::getLastTimeModified($path);
 
         if ($modifiedTime) {
-            $this->getHeaders()->set('Last-Modified',
-                gmdate("D, d M Y H:i:s", $modifiedTime->getTimestamp()).' GMT');
+            $this->getHeaders()->set('Last-Modified', gmdate("D, d M Y H:i:s", $modifiedTime->getTimestamp()).' GMT');
         }
 
         return $this;

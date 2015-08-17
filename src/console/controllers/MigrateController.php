@@ -122,8 +122,7 @@ class MigrateController extends BaseMigrateController
             ]);
 
             IOHelper::writeToFile($file, $content);
-            $this->stdout("New migration created successfully.\n",
-                Console::FG_GREEN);
+            $this->stdout("New migration created successfully.\n", Console::FG_GREEN);
         }
     }
 

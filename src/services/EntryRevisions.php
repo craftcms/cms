@@ -422,9 +422,7 @@ class EntryRevisions extends Component
             $draftRecord = EntryDraftRecord::findOne($draft->draftId);
 
             if (!$draftRecord) {
-                throw new Exception(Craft::t('app',
-                    'No draft exists with the ID “{id}”.',
-                    ['id' => $draft->draftId]));
+                throw new Exception(Craft::t('app', 'No draft exists with the ID “{id}”.', ['id' => $draft->draftId]));
             }
         } else {
             $draftRecord = new EntryDraftRecord();

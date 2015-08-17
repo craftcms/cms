@@ -205,8 +205,7 @@ class Assets extends BaseRelationField
                     foreach ($uploadedFiles as $file) {
                         $tempPath = AssetsHelper::getTempFilePath($file->name);
                         move_uploaded_file($file->tempName, $tempPath);
-                        $response = Craft::$app->getAssets()->insertFileByLocalPath($tempPath,
-                            $file->name, $targetFolderId);
+                        $response = Craft::$app->getAssets()->insertFileByLocalPath($tempPath, $file->name, $targetFolderId);
                         $fileIds[] = $response->getDataItem('fileId');
                         IOHelper::deleteFile($tempPath, true);
                     }
@@ -280,10 +279,8 @@ class Assets extends BaseRelationField
 
             if (!empty($filesToMove)) {
                 // Resolve all conflicts by keeping both
-                $actions = array_fill(0, count($filesToMove),
-                    AssetConflictResolution::KeepBoth);
-                Craft::$app->getAssets()->moveFiles($filesToMove,
-                    $targetFolderId, '', $actions);
+                $actions = array_fill(0, count($filesToMove), AssetConflictResolution::KeepBoth);
+                Craft::$app->getAssets()->moveFiles($filesToMove, $targetFolderId, '', $actions);
             }
         }
 
@@ -307,17 +304,13 @@ class Assets extends BaseRelationField
                 if ($file && !in_array(mb_strtolower(IOHelper::getExtension($file->filename)),
                         $allowedExtensions)
                 ) {
-                    $errors[] = Craft::t('app',
-                        '"{filename}" is not allowed in this field.',
-                        ['filename' => $file->filename]);
+                    $errors[] = Craft::t('app', '"{filename}" is not allowed in this field.', ['filename' => $file->filename]);
                 }
             }
         }
 
         foreach ($this->_failedFiles as $file) {
-            $errors[] = Craft::t('app',
-                '"{filename}" is not allowed in this field.',
-                ['filename' => $file->name]);
+            $errors[] = Craft::t('app', '"{filename}" is not allowed in this field.', ['filename' => $file->name]);
         }
 
         return $errors;
@@ -404,19 +397,16 @@ class Assets extends BaseRelationField
 
         // Do we have the folder?
         if (empty($folder)) {
-            throw new Exception (Craft::t('app',
-                'Cannot find the target folder.'));
+            throw new Exception (Craft::t('app', 'Cannot find the target folder.'));
         }
 
         // Prepare the path by parsing tokens and normalizing slashes.
         $subpath = trim($subpath, '/');
-        $subpath = Craft::$app->getView()->renderObjectTemplate($subpath,
-            $element);
+        $subpath = Craft::$app->getView()->renderObjectTemplate($subpath, $element);
         $pathParts = explode('/', $subpath);
 
         foreach ($pathParts as &$part) {
-            $part = IOHelper::cleanFilename($part,
-                Craft::$app->getConfig()->get('convertFilenamesToAscii'));
+            $part = IOHelper::cleanFilename($part, Craft::$app->getConfig()->get('convertFilenamesToAscii'));
         }
 
         $subpath = join('/', $pathParts);
@@ -479,8 +469,7 @@ class Assets extends BaseRelationField
      */
     private function _createSubFolder($currentFolder, $folderName)
     {
-        $response = Craft::$app->getAssets()->createFolder($currentFolder->id,
-            $folderName);
+        $response = Craft::$app->getAssets()->createFolder($currentFolder->id, $folderName);
 
         if ($response->isError() || $response->isConflict()) {
             // If folder doesn't exist in DB, but we can't create it, it probably exists on the server.
@@ -520,8 +509,7 @@ class Assets extends BaseRelationField
         $allKinds = IOHelper::getFileKinds();
 
         foreach ($allowedKinds as $allowedKind) {
-            $extensions = array_merge($extensions,
-                $allKinds[$allowedKind]['extensions']);
+            $extensions = array_merge($extensions, $allKinds[$allowedKind]['extensions']);
         }
 
         return $extensions;

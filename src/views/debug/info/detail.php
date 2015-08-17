@@ -87,8 +87,7 @@ echo $this->render('../table', [
         Jump to:
         <?php foreach (array_keys($panel->data['phpInfo']) as $i => $section): ?>
             <?php if ($i !== 0): ?>|<?php endif; ?>
-            <a href="#<?= str_replace(' ', '-',
-                $section) ?>"><?= $section ?></a>
+            <a href="#<?= str_replace(' ', '-', $section) ?>"><?= $section ?></a>
         <?php endforeach; ?>
     </div>
 

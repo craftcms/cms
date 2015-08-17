@@ -4,11 +4,13 @@ namespace craft\app\migrations;
 
 use Craft;
 use craft\app\db\Migration;
+use craft\app\helpers\MigrationHelper;
+use yii\db\Schema;
 
 /**
- * m150403_184533_field_version migration.
+ * m150815_133521_last_login_attempt_ip migration.
  */
-class m150403_184533_field_version extends Migration
+class m150815_133521_last_login_attempt_ip extends Migration
 {
     // Public Methods
     // =========================================================================
@@ -18,9 +20,7 @@ class m150403_184533_field_version extends Migration
      */
     public function safeUp()
     {
-        if (!$this->db->columnExists('{{%info}}', 'fieldVersion')) {
-            $this->addColumnAfter('{{%info}}', 'fieldVersion', 'integer not null default \'1\'', 'track');
-        }
+        MigrationHelper::renameColumn('{{%users}}', 'lastLoginAttemptIPAddress', 'lastLoginAttemptIp', $this);
     }
 
     /**
@@ -28,8 +28,7 @@ class m150403_184533_field_version extends Migration
      */
     public function safeDown()
     {
-        echo "m150403_184533_field_version cannot be reverted.\n";
-
+        echo "m150815_133521_last_login_attempt_ip cannot be reverted.\n";
         return false;
     }
 }

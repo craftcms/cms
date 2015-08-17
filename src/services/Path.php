@@ -145,8 +145,7 @@ class Path extends Component
         IOHelper::ensureFolderExists($path);
 
         if (!IOHelper::fileExists($path.'/.gitignore')) {
-            IOHelper::writeToFile($path.'/.gitignore', "*\n!.gitignore\n\n",
-                true);
+            IOHelper::writeToFile($path.'/.gitignore', "*\n!.gitignore\n\n", true);
         }
 
         return $path;
@@ -419,8 +418,7 @@ class Path extends Component
      */
     public function getCachePath()
     {
-        $path = Craft::getAlias(Craft::$app->getConfig()->get('cachePath',
-            ConfigCategory::FileCache));
+        $path = Craft::getAlias(Craft::$app->getConfig()->get('cachePath', ConfigCategory::FileCache));
 
         if (!$path) {
             $path = $this->getRuntimePath().'/cache';

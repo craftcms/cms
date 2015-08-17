@@ -347,32 +347,26 @@ class EntryQuery extends ElementQuery
         ]);
 
         if ($this->postDate) {
-            $this->subQuery->andWhere(DbHelper::parseDateParam('entries.postDate',
-                $this->postDate, $this->subQuery->params));
+            $this->subQuery->andWhere(DbHelper::parseDateParam('entries.postDate', $this->postDate, $this->subQuery->params));
         }
 
         if ($this->expiryDate) {
-            $this->subQuery->andWhere(DbHelper::parseDateParam('entries.expiryDate',
-                $this->expiryDate, $this->subQuery->params));
+            $this->subQuery->andWhere(DbHelper::parseDateParam('entries.expiryDate', $this->expiryDate, $this->subQuery->params));
         }
 
         if ($this->typeId) {
-            $this->subQuery->andWhere(DbHelper::parseParam('entries.typeId',
-                $this->typeId, $this->subQuery->params));
+            $this->subQuery->andWhere(DbHelper::parseParam('entries.typeId', $this->typeId, $this->subQuery->params));
         }
 
         if (Craft::$app->getEdition() >= Craft::Client) {
             if ($this->authorId) {
-                $this->subQuery->andWhere(DbHelper::parseParam('entries.authorId',
-                    $this->authorId, $this->subQuery->params));
+                $this->subQuery->andWhere(DbHelper::parseParam('entries.authorId', $this->authorId, $this->subQuery->params));
             }
 
             if ($this->authorGroupId) {
                 $this->subQuery
-                    ->innerJoin('{{%usergroups_users}} usergroups_users',
-                        'usergroups_users.userId = entries.authorId')
-                    ->andWhere(DbHelper::parseParam('usergroups_users.groupId',
-                        $this->authorGroupId, $this->subQuery->params));
+                    ->innerJoin('{{%usergroups_users}} usergroups_users', 'usergroups_users.userId = entries.authorId')
+                    ->andWhere(DbHelper::parseParam('usergroups_users.groupId', $this->authorGroupId, $this->subQuery->params));
             }
         }
 
@@ -447,13 +441,11 @@ class EntryQuery extends ElementQuery
                 $this->structureId = $query
                     ->select('structureId')
                     ->from('{{%sections}}')
-                    ->where(DbHelper::parseParam('id', $this->sectionId,
-                        $query->params))
+                    ->where(DbHelper::parseParam('id', $this->sectionId, $query->params))
                     ->scalar();
             }
 
-            $this->subQuery->andWhere(DbHelper::parseParam('entries.sectionId',
-                $this->sectionId, $this->subQuery->params));
+            $this->subQuery->andWhere(DbHelper::parseParam('entries.sectionId', $this->sectionId, $this->subQuery->params));
         }
     }
 
@@ -472,15 +464,12 @@ class EntryQuery extends ElementQuery
 
                 if ($parts) {
                     if (count($parts) == 1) {
-                        $conditionals[] = DbHelper::parseParam('elements_i18n.slug',
-                            $parts[0], $this->subQuery->params);
+                        $conditionals[] = DbHelper::parseParam('elements_i18n.slug', $parts[0], $this->subQuery->params);
                     } else {
                         $conditionals[] = [
                             'and',
-                            DbHelper::parseParam('sections.handle', $parts[0],
-                                $this->subQuery->params),
-                            DbHelper::parseParam('elements_i18n.slug',
-                                $parts[1], $this->subQuery->params)
+                            DbHelper::parseParam('sections.handle', $parts[0], $this->subQuery->params),
+                            DbHelper::parseParam('elements_i18n.slug', $parts[1], $this->subQuery->params)
                         ];
                         $joinSections = true;
                     }
@@ -496,8 +485,7 @@ class EntryQuery extends ElementQuery
                 }
 
                 if ($joinSections) {
-                    $this->subQuery->innerJoin('{{%sections}} sections',
-                        'sections.id = entries.sectionId');
+                    $this->subQuery->innerJoin('{{%sections}} sections', 'sections.id = entries.sectionId');
                 }
             }
         }

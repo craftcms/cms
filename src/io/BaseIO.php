@@ -236,15 +236,13 @@ abstract class BaseIO
     {
         if ($fullPath) {
             if (!$this->_fullFolderName) {
-                $this->_fullFolderName = IOHelper::getFolderName($this->getRealPath(),
-                    $fullPath);
+                $this->_fullFolderName = IOHelper::getFolderName($this->getRealPath(), $fullPath);
             }
 
             return $this->_fullFolderName;
         } else {
             if (!$this->_folderNameOnly) {
-                $this->_folderNameOnly = IOHelper::getFolderName($this->getRealPath(),
-                    $fullPath);
+                $this->_folderNameOnly = IOHelper::getFolderName($this->getRealPath(), $fullPath);
             }
 
             return $this->_folderNameOnly;

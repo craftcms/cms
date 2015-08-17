@@ -74,8 +74,7 @@ class UpdateController extends Controller
 
             return $this->asJson($response);
         } else {
-            return $this->asErrorJson(Craft::t('app',
-                'Could not fetch available updates at this time.'));
+            return $this->asErrorJson(Craft::t('app', 'Could not fetch available updates at this time.'));
         }
     }
 
@@ -96,8 +95,7 @@ class UpdateController extends Controller
         $updateInfo = Craft::$app->getUpdates()->getUpdates();
 
         if (!$updateInfo) {
-            return $this->asErrorJson(Craft::t('app',
-                'There was a problem getting the latest update information.'));
+            return $this->asErrorJson(Craft::t('app', 'There was a problem getting the latest update information.'));
         }
 
         try {
@@ -153,14 +151,10 @@ class UpdateController extends Controller
                                 'releaseDate' => $updateInfo->plugins[$handle]->latestDate->getTimestamp()
                             ];
                         } else {
-                            return $this->asErrorJson(Craft::t('app',
-                                'Could not find any update information for the plugin with handle “{handle}”.',
-                                ['handle' => $handle]));
+                            return $this->asErrorJson(Craft::t('app', 'Could not find any update information for the plugin with handle “{handle}”.', ['handle' => $handle]));
                         }
                     } else {
-                        return $this->asErrorJson(Craft::t('app',
-                            'Could not find any update information for the plugin with handle “{handle}”.',
-                            ['handle' => $handle]));
+                        return $this->asErrorJson(Craft::t('app', 'Could not find any update information for the plugin with handle “{handle}”.', ['handle' => $handle]));
                     }
                 }
             }
@@ -191,8 +185,7 @@ class UpdateController extends Controller
             if (!Craft::$app->getConfig()->allowAutoUpdates()) {
                 return $this->asJson([
                     'alive' => true,
-                    'errorDetails' => Craft::t('app',
-                        'Auto-updating is disabled on this system.'),
+                    'errorDetails' => Craft::t('app', 'Auto-updating is disabled on this system.'),
                     'finished' => true
                 ]);
             }
@@ -200,8 +193,7 @@ class UpdateController extends Controller
             $manual = true;
         }
 
-        $return = Craft::$app->getUpdates()->prepareUpdate($manual,
-            $data['handle']);
+        $return = Craft::$app->getUpdates()->prepareUpdate($manual, $data['handle']);
 
         if (!$return['success']) {
             return $this->asJson([
@@ -246,8 +238,7 @@ class UpdateController extends Controller
         if (!Craft::$app->getConfig()->allowAutoUpdates()) {
             return $this->asJson([
                 'alive' => true,
-                'errorDetails' => Craft::t('app',
-                    'Auto-updating is disabled on this system.'),
+                'errorDetails' => Craft::t('app', 'Auto-updating is disabled on this system.'),
                 'finished' => true
             ]);
         }
@@ -289,8 +280,7 @@ class UpdateController extends Controller
         if (!Craft::$app->getConfig()->allowAutoUpdates()) {
             return $this->asJson([
                 'alive' => true,
-                'errorDetails' => Craft::t('app',
-                    'Auto-updating is disabled on this system.'),
+                'errorDetails' => Craft::t('app', 'Auto-updating is disabled on this system.'),
                 'finished' => true
             ]);
         }
@@ -330,8 +320,7 @@ class UpdateController extends Controller
         if (!Craft::$app->getConfig()->allowAutoUpdates()) {
             return $this->asJson([
                 'alive' => true,
-                'errorDetails' => Craft::t('app',
-                    'Auto-updating is disabled on this system.'),
+                'errorDetails' => Craft::t('app', 'Auto-updating is disabled on this system.'),
                 'finished' => true
             ]);
         }
@@ -343,8 +332,7 @@ class UpdateController extends Controller
             return $this->asJson([
                 'alive' => true,
                 'errorDetails' => $return['message'],
-                'nextStatus' => Craft::t('app',
-                    'An error was encountered. Rolling back…'),
+                'nextStatus' => Craft::t('app', 'An error was encountered. Rolling back…'),
                 'nextAction' => 'update/rollback'
             ]);
         }
@@ -384,8 +372,7 @@ class UpdateController extends Controller
                     return $this->asJson([
                         'alive' => true,
                         'errorDetails' => $return['message'],
-                        'nextStatus' => Craft::t('app',
-                            'An error was encountered. Rolling back…'),
+                        'nextStatus' => Craft::t('app', 'An error was encountered. Rolling back…'),
                         'nextAction' => 'update/rollback'
                     ]);
                 }
@@ -428,8 +415,7 @@ class UpdateController extends Controller
             return $this->asJson([
                 'alive' => true,
                 'errorDetails' => $return['message'],
-                'nextStatus' => Craft::t('app',
-                    'An error was encountered. Rolling back…'),
+                'nextStatus' => Craft::t('app', 'An error was encountered. Rolling back…'),
                 'nextAction' => 'update/rollback'
             ]);
         }
@@ -510,8 +496,7 @@ class UpdateController extends Controller
         }
 
         if (isset($data['dbBackupPath'])) {
-            $return = Craft::$app->getUpdates()->rollbackUpdate($uid,
-                $data['dbBackupPath']);
+            $return = Craft::$app->getUpdates()->rollbackUpdate($uid, $data['dbBackupPath']);
         } else {
             $return = Craft::$app->getUpdates()->rollbackUpdate($uid);
         }

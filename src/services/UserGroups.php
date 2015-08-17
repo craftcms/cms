@@ -192,8 +192,7 @@ class UserGroups extends Component
      */
     public function assignUserToDefaultGroup(User $user)
     {
-        $defaultGroupId = Craft::$app->getSystemSettings()->getSetting('users',
-            'defaultGroup');
+        $defaultGroupId = Craft::$app->getSystemSettings()->getSetting('users', 'defaultGroup');
 
         if ($defaultGroupId) {
             // Fire a 'beforeAssignUserToDefaultGroup' event
@@ -201,8 +200,7 @@ class UserGroups extends Component
                 'user' => $user
             ]);
 
-            $this->trigger(static::EVENT_BEFORE_ASSIGN_USER_TO_DEFAULT_GROUP,
-                $event);
+            $this->trigger(static::EVENT_BEFORE_ASSIGN_USER_TO_DEFAULT_GROUP, $event);
 
             // Is the event is giving us the go-ahead?
             if ($event->performAction) {
@@ -274,7 +272,6 @@ class UserGroups extends Component
      */
     private function _noGroupExists($groupId)
     {
-        throw new Exception(Craft::t('app',
-            'No group exists with the ID “{id}”.', ['id' => $groupId]));
+        throw new Exception(Craft::t('app', 'No group exists with the ID “{id}”.', ['id' => $groupId]));
     }
 }

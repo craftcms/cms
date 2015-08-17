@@ -114,8 +114,7 @@ class UpdateHelper
                     // update the file
                     case PatchManifestFileAction::Add: {
                         if ($folder) {
-                            Craft::info('Updating folder: '.$destFile,
-                                __METHOD__);
+                            Craft::info('Updating folder: '.$destFile, __METHOD__);
 
                             $tempFolder = rtrim($destFile,
                                     '/').StringHelper::UUID();
@@ -128,8 +127,7 @@ class UpdateHelper
                             IOHelper::clearFolder($tempTempFolder);
                             IOHelper::deleteFolder($tempTempFolder);
                         } else {
-                            Craft::info('Updating file: '.$destFile,
-                                __METHOD__);
+                            Craft::info('Updating file: '.$destFile, __METHOD__);
                             IOHelper::copyFile($sourceFile, $destFile);
                         }
 
@@ -230,12 +228,10 @@ class UpdateHelper
         if (static::$_manifestData == null) {
             if (IOHelper::fileExists($manifestDataPath.'/craft_manifest')) {
                 // get manifest file
-                $manifestFileData = IOHelper::getFileContents($manifestDataPath.'/craft_manifest',
-                    true);
+                $manifestFileData = IOHelper::getFileContents($manifestDataPath.'/craft_manifest', true);
 
                 if ($manifestFileData === false) {
-                    throw new Exception(Craft::t('app',
-                        'There was a problem reading the update manifest data.'));
+                    throw new Exception(Craft::t('app', 'There was a problem reading the update manifest data.'));
                 }
 
                 // Remove any trailing empty newlines
@@ -248,9 +244,7 @@ class UpdateHelper
 
                 // Only use the manifest data starting from the local version
                 for ($counter = 0; $counter < count($manifestData); $counter++) {
-                    if (StringHelper::contains($manifestData[$counter],
-                        '##'.$updateModel->app->localVersion.'.'.$updateModel->app->localBuild)
-                    ) {
+                    if (StringHelper::contains($manifestData[$counter], '##'.$updateModel->app->localVersion.'.'.$updateModel->app->localBuild)) {
                         break;
                     }
                 }

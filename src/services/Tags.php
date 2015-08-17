@@ -191,9 +191,7 @@ class Tags extends Component
             $tagGroupRecord = TagGroupRecord::findOne($tagGroup->id);
 
             if (!$tagGroupRecord) {
-                throw new Exception(Craft::t('app',
-                    'No tag group exists with the ID “{id}”.',
-                    ['id' => $tagGroup->id]));
+                throw new Exception(Craft::t('app', 'No tag group exists with the ID “{id}”.', ['id' => $tagGroup->id]));
             }
 
             $oldTagGroup = TagGroupModel::create($tagGroupRecord);
@@ -311,8 +309,7 @@ class Tags extends Component
      */
     public function getTagById($tagId, $localeId)
     {
-        return Craft::$app->getElements()->getElementById($tagId,
-            Tag::className(), $localeId);
+        return Craft::$app->getElements()->getElementById($tagId, Tag::className(), $localeId);
     }
 
     /**
@@ -332,8 +329,7 @@ class Tags extends Component
             $tagRecord = TagRecord::findOne($tag->id);
 
             if (!$tagRecord) {
-                throw new Exception(Craft::t('app',
-                    'No tag exists with the ID “{id}”.', ['id' => $tag->id]));
+                throw new Exception(Craft::t('app', 'No tag exists with the ID “{id}”.', ['id' => $tag->id]));
             }
         } else {
             $tagRecord = new TagRecord();

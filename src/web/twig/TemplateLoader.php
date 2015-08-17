@@ -68,9 +68,7 @@ class TemplateLoader implements \Twig_LoaderInterface, \Twig_ExistsLoaderInterfa
             if (IOHelper::isReadable($template)) {
                 return IOHelper::getFileContents($template);
             } else {
-                throw new TemplateLoaderException($name, Craft::t('app',
-                    'Tried to read the template at {path}, but could not. Check the permissions.',
-                    ['path' => $template]));
+                throw new TemplateLoaderException($name, Craft::t('app', 'Tried to read the template at {path}, but could not. Check the permissions.', ['path' => $template]));
             }
         }
     }
@@ -137,9 +135,7 @@ class TemplateLoader implements \Twig_LoaderInterface, \Twig_ExistsLoaderInterfa
         if ($template !== false) {
             return $template;
         } else {
-            throw new TemplateLoaderException($name,
-                Craft::t('app', 'Unable to find the template “{template}”.',
-                    ['template' => $name]));
+            throw new TemplateLoaderException($name, Craft::t('app', 'Unable to find the template “{template}”.', ['template' => $name]));
         }
     }
 }
