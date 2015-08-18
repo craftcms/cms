@@ -5290,7 +5290,7 @@ Garnish.Select = Garnish.Base.extend({
 	/**
 	 * Select Item
 	 */
-	selectItem: function($item, focus)
+	selectItem: function($item, focus, preventScroll)
 	{
 		if (!this.settings.multi)
 		{
@@ -5303,7 +5303,7 @@ Garnish.Select = Garnish.Base.extend({
 		if (focus)
 		{
 			this.setFocusableItem($item);
-			$item.focus();
+			this.focusItem($item, preventScroll);
 		}
 
 		this._selectItems($item);
@@ -5327,7 +5327,7 @@ Garnish.Select = Garnish.Base.extend({
 	/**
 	 * Select Range
 	 */
-	selectRange: function($item)
+	selectRange: function($item, preventScroll)
 	{
 		if (!this.settings.multi)
 		{
@@ -5340,7 +5340,7 @@ Garnish.Select = Garnish.Base.extend({
 		this.last = this.getItemIndex($item);
 
 		this.setFocusableItem($item);
-		$item.focus();
+		this.focusItem($item, preventScroll);
 
 		// prepare params for $.slice()
 		if (this.first < this.last)
@@ -5394,11 +5394,11 @@ Garnish.Select = Garnish.Base.extend({
 	/**
 	 * Toggle Item
 	 */
-	toggleItem: function($item)
+	toggleItem: function($item, preventScroll)
 	{
 		if (!this.isSelected($item))
 		{
-			this.selectItem($item, true);
+			this.selectItem($item, true, preventScroll);
 		}
 		else
 		{
@@ -5801,6 +5801,24 @@ Garnish.Select = Garnish.Base.extend({
 		this.$focusable = $item.attr('tabindex', '0');
 	},
 
+	/**
+	 * Sets the focus on an item.
+	 */
+	focusItem: function($item, preventScroll)
+	{
+		if (preventScroll)
+		{
+			var scrollLeft = Garnish.$doc.scrollLeft(),
+				scrollTop = Garnish.$doc.scrollTop();
+			$item.focus();
+			window.scrollTo(scrollLeft, scrollTop);
+		}
+		else
+		{
+			$item.focus();
+		}
+	},
+
 	// --------------------------------------------------------------------
 
 	/**
@@ -5849,11 +5867,11 @@ Garnish.Select = Garnish.Base.extend({
 		if (this.first !== null && ev.shiftKey)
 		{
 			// Shift key is consistent for both selection modes
-			this.selectRange($item);
+			this.selectRange($item, true);
 		}
 		else if (this._actAsCheckbox(ev))
 		{
-			this.toggleItem($item);
+			this.toggleItem($item, true);
 		}
 	},
 
@@ -5895,7 +5913,7 @@ Garnish.Select = Garnish.Base.extend({
 			else
 			{
 				this.deselectAll();
-				this.selectItem($item, true);
+				this.selectItem($item, true, true);
 			}
 		}
 	},

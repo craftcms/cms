@@ -79,6 +79,9 @@ class EtModel extends BaseModel
 		// The track this install is on.  Not required for backwards compatibility.
 		$attributes['track'] = array(AttributeType::String);
 
+		// Whether or not to show beta releases.
+		$attributes['showBeta'] = AttributeType::Bool;
+
 		// Any errors to return;
 		$attributes['errors'] = AttributeType::Mixed;
 
