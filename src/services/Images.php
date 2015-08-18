@@ -11,6 +11,9 @@ use Craft;
 use craft\app\helpers\AppHelper;
 use craft\app\helpers\ImageHelper;
 use craft\app\helpers\IOHelper;
+use craft\app\helpers\StringHelper;
+use craft\app\image\Raster;
+use craft\app\image\Svg;
 use craft\app\io\Image;
 use yii\base\Component;
 
@@ -76,20 +79,33 @@ class Images extends Component
      * Loads an image from a file system path.
      *
      * @param string $path
-     * @param int    $minSvgWidth  The minimum width that the image should be loaded with if it’s an SVG.
-     * @param int    $minSvgHeight The minimum width that the image should be loaded with if it’s an SVG.
+     * @param bool   $rasterize whether or not the image will be rasterized if it's an SVG
+     * @param int    $svgSize   The size SVG should be scaled up to, if rasterized
      *
      * @throws \Exception
      * @return Image
      */
-    public function loadImage($path, $minSvgWidth = 1000, $minSvgHeight = 1000)
+    public function loadImage($path, $rasterize = false, $svgSize = 1000)
     {
-        $image = new Image();
+        if (StringHelper::toLowerCase(IOHelper::getExtension($path)) == 'svg')
+        {
+            $image = new Svg();
+            $image->loadImage($path);
 
-        $image->minSvgWidth = $minSvgWidth;
-        $image->minSvgHeight = $minSvgHeight;
+            if ($rasterize)
+            {
+                $image->scaleToFit($svgSize, $svgSize);
+                $svgString = $image->getSvgString();
+                $image = new Raster();
+                $image->loadFromSVG($svgString);
+            }
+        }
+        else
+        {
+            $image = new Raster();
+            $image->loadImage($path);
+        }
 
-        $image->loadImage($path);
 
         return $image;
     }
@@ -108,6 +124,11 @@ class Images extends Component
      */
     public function checkMemoryForImage($filePath, $toTheMax = false)
     {
+        if (StringHelper::toLowerCase(IOHelper::getExtension($filePath)) == 'svg')
+        {
+            return true;
+        }
+
         if (!function_exists('memory_get_usage')) {
             return false;
         }

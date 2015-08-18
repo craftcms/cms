@@ -8,6 +8,7 @@
 namespace craft\app\helpers;
 
 use craft;
+use craft\app\image\Svg;
 
 /**
  * Class ImageHelper
@@ -82,7 +83,7 @@ class ImageHelper
      */
     public static function getWebSafeFormats()
     {
-        return ['jpg', 'jpeg', 'gif', 'png'];
+        return ['jpg', 'jpeg', 'gif', 'png', 'svg'];
     }
 
     /**
@@ -221,8 +222,8 @@ class ImageHelper
     public static function parseSvgSize($svg)
     {
         if (
-            preg_match(self::SVG_WIDTH_RE, $svg, $widthMatch) &&
-            preg_match(self::SVG_HEIGHT_RE, $svg, $heightMatch) &&
+            preg_match(Svg::SVG_WIDTH_RE, $svg, $widthMatch) &&
+            preg_match(Svg::SVG_HEIGHT_RE, $svg, $heightMatch) &&
             ($matchedWidth = floatval($widthMatch[2])) &&
             ($matchedHeight = floatval($heightMatch[2]))
         ) {
@@ -232,15 +233,15 @@ class ImageHelper
             $height = round(
                 $matchedHeight * self::_getSizeUnitMultiplier($heightMatch[3])
             );
-        } elseif (preg_match(self::SVG_VIEWBOX_RE, $svg, $viewboxMatch)) {
-            $width = round($viewboxMatch[1]);
-            $height = round($viewboxMatch[2]);
+        } elseif (preg_match(Svg::SVG_VIEWBOX_RE, $svg, $viewboxMatch)) {
+            $width = round($viewboxMatch[3]);
+            $height = round($viewboxMatch[4]);
         } else {
             $width = null;
             $height = null;
         }
 
-        return array($width, $height);
+        return [$width, $height];
     }
 
     // Private Methods

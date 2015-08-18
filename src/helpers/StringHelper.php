@@ -856,7 +856,7 @@ class StringHelper extends \yii\helpers\StringHelper
 
         // Otherwise set HTMLPurifier to the actual string encoding
         $config = \HTMLPurifier_Config::createDefault();
-        $config->set('Core.Encoding', static::getEncoding($string));
+        $config->set('Core.Encoding', (string) static::getEncoding($string));
 
         // Clean it
         $string = HtmlPurifier::cleanUtf8($string);
