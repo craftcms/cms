@@ -492,6 +492,12 @@ return array(
 	'setPasswordSuccessPath' => '',
 
 	/**
+	 * Whether or not to show beta Craft updates from the updates page in the control panel. It is highly recommended
+	 * that you do not use beta releases of Craft in a production environment.
+	 */
+	'showBetaUpdates' => false,
+
+	/**
 	 * The name of the site. If set, it will take precedence over the Site Name setting in Settings → General.
 	 *
 	 * This can be set to a string or an array with locale IDs used as the keys, if you want to set it on a per-locale

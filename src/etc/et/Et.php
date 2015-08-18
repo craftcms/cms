@@ -75,6 +75,7 @@ class Et
 			'localEdition'      => craft()->getEdition(),
 			'userEmail'         => craft()->userSession->getUser()->email,
 			'track'             => CRAFT_TRACK,
+			'showBeta'          => craft()->config->get('showBetaUpdates'),
 			'serverInfo'        => array(
 				'extensions'    => get_loaded_extensions(),
 				'phpVersion'    => PHP_VERSION,
