@@ -315,6 +315,11 @@ return [
      */
     'overridePhpSessionLocation' => false,
     /**
+     * If set to true and Imagick is used, Craft will take advantage of Imagick's advanced options to reduce the final
+     * image size without losing quality significantly.
+     */
+    'optimizeImageFilesize' => true,
+    /**
      * The string preceding a number which Craft will look for when determining if the current request is for a
      * particular page in a paginated list of pages.
      */

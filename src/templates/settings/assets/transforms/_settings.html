@@ -115,12 +115,19 @@
 			translatable: true
 		}) }}
 
-		{{ forms.textField({
-			label: "Quality"|t('app'),
+		{{ forms.selectField({
+			label: "Quality"|t,
 			id: "quality",
 			name: "quality",
-			size: 5,
-			value: (transform is defined ? transform.quality : null),
+			options: {
+				'0': "Auto"|t,
+				'10': "Low"|t,
+				'30': "Medium"|t,
+				'60': "High"|t,
+				'82': "Very High (Recommended)"|t,
+				'100': "Maximum"|t
+			},
+			value: (transform is defined ? transform.quality : 82),
 			errors: (transform is defined ? transform.getErrors('quality') : null),
 			translatable: true
 		}) }}

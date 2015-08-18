@@ -18,6 +18,7 @@ use craft\app\errors\AssetDisallowedExtensionException;
 use craft\app\errors\AssetLogicException;
 use craft\app\errors\AssetMissingException;
 use craft\app\errors\EventException;
+use craft\app\errors\UploadFailedException;
 use craft\app\errors\VolumeException;
 use craft\app\errors\VolumeFileExistsException;
 use craft\app\errors\VolumeFileNotFoundException;
@@ -191,6 +192,7 @@ class Assets extends Component
      * @throws AssetConflictException            If a file with such name already exists.
      * @throws AssetLogicException               If something violates Asset's logic (e.g. Asset outside of a folder).
      * @throws VolumeFileExistsException         If the file actually exists on the volume, but on in the index.
+     * @throws UploadFailedException             If for some reason it's not possible to write the file to the final location
      * @return void
      */
     public function saveAsset(Asset $asset)
@@ -247,9 +249,14 @@ class Assets extends Component
 
             // Explicitly re-throw VolumeFileExistsException
             try {
-                $volume->createFileByStream($uriPath, $stream);
+                $result = $volume->createFileByStream($uriPath, $stream);
             } catch (VolumeFileExistsException $exception) {
                 throw $exception;
+            }
+
+            if (!$result)
+            {
+                throw new UploadFailedException(UPLOAD_ERR_CANT_WRITE);
             }
 
             if (is_resource($stream)) {
