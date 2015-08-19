@@ -130,7 +130,7 @@ class CategoriesController extends Controller
         $group->id = Craft::$app->getRequest()->getBodyParam('groupId');
         $group->name = Craft::$app->getRequest()->getBodyParam('name');
         $group->handle = Craft::$app->getRequest()->getBodyParam('handle');
-        $group->hasUrls = Craft::$app->getRequest()->getBodyParam('hasUrls');
+        $group->hasUrls = (bool) Craft::$app->getRequest()->getBodyParam('hasUrls');
         $group->template = Craft::$app->getRequest()->getBodyParam('template');
         $group->maxLevels = Craft::$app->getRequest()->getBodyParam('maxLevels');
 

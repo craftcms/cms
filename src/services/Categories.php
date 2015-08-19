@@ -309,7 +309,7 @@ class Categories extends Component
 
         $groupRecord->name = $group->name;
         $groupRecord->handle = $group->handle;
-        $groupRecord->hasUrls = $group->hasUrls;
+        $groupRecord->hasUrls = (bool) $group->hasUrls;
 
         if ($group->hasUrls) {
             $groupRecord->template = $group->template;
