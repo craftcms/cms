@@ -260,7 +260,7 @@ class UserPermissions extends Component
 
             // Add the new group permissions
             Craft::$app->getDb()->createCommand()->batchInsert(
-                'userpermissions_usergroups',
+                '{{%userpermissions_usergroups}}',
                 ['permissionId', 'groupId'],
                 $groupPermissionVals
             )->execute();
