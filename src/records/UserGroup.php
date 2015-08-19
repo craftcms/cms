@@ -33,18 +33,9 @@ class UserGroup extends ActiveRecord
     public function rules()
     {
         return [
-            [
-                ['handle'],
-                'craft\\app\\validators\\Handle',
-                'reservedWords' => [
-                    'id',
-                    'dateCreated',
-                    'dateUpdated',
-                    'uid',
-                    'title'
-                ]
-            ],
+            [['handle'], 'craft\\app\\validators\\Handle', 'reservedWords' => ['id', 'dateCreated', 'dateUpdated', 'uid', 'title']],
             [['name', 'handle'], 'required'],
+            [['name', 'handle'], 'unique'],
             [['name', 'handle'], 'string', 'max' => 255],
         ];
     }
