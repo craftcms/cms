@@ -242,7 +242,7 @@ class Fields extends Component
         // Manually delete the fields (rather than relying on cascade deletes) so we have a chance to delete the
         // content columns
         /** @var FieldRecord $fieldRecord */
-        foreach ($groupRecord->getFields() as $fieldRecord) {
+        foreach ($groupRecord->getFields()->all() as $fieldRecord) {
             $field = $this->createField($fieldRecord);
             $this->deleteField($field);
         }
