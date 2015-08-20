@@ -10,8 +10,6 @@ namespace craft\app\records;
 use Craft;
 use craft\app\db\ActiveRecord;
 
-Craft::$app->requireEdition(Craft::Pro);
-
 /**
  * Class UserGroup record.
  *

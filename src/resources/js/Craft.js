@@ -1,4 +1,4 @@
-/*! Craft 3.0.0 - 2015-07-21 */
+/*! Craft 3.0.0 - 2015-08-20 */
 (function($){
 
 if (typeof window.Craft == 'undefined')
@@ -3658,6 +3658,10 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
 		}
 
 		this.$container = this.getContainer();
+
+		// Store a reference to this class
+		this.$container.data('elementSelect', this);
+
 		this.$elementsContainer = this.getElementsContainer();
 		this.$addElementBtn = this.getAddElementsBtn();
 
@@ -11223,6 +11227,15 @@ Craft.Grid = Garnish.Base.extend(
 	init: function(container, settings)
 	{
 		this.$container = $(container);
+
+		// Is this already a grid?
+		if (this.$container.data('grid'))
+		{
+			Garnish.log('Double-instantiating a grid on an element');
+			this.$container.data('grid').destroy();
+		}
+
+		this.$container.data('grid', this);
 
 		this.setSettings(settings, Craft.Grid.defaults);
 

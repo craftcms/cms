@@ -133,13 +133,25 @@ class RichText extends Field
         $this->_includeFieldResources($configJs);
 
         $id = Craft::$app->getView()->formatInputId($this->handle);
+        $localeId = ($element ? $element->locale : Craft::$app->language);
+
+        if (isset($this->model) && $this->model->translatable)
+        {
+            $locale = craft()->i18n->getLocaleData($localeId);
+            $orientation = '"'.$locale->getOrientation().'"';
+        }
+        else
+        {
+            $orientation = 'Craft.orientation';
+        }
 
         Craft::$app->getView()->registerJs('new Craft.RichTextInput('.
             '"'.Craft::$app->getView()->namespaceInputId($id).'", '.
             JsonHelper::encode($this->_getSectionSources()).', '.
             JsonHelper::encode($this->_getCategorySources()).', '.
             JsonHelper::encode($this->_getAssetSources()).', '.
-            '"'.(!empty($element) ? $element->locale : Craft::$app->language).'", '.
+            '"'.$localeId.'", ' .
+            $orientation.', ' .
             $configJs.', '.
             '"'.static::$_redactorLang.'"'.
             ');');

@@ -84,6 +84,7 @@ class AssetIndex extends Tool
             $skippedFiles = [];
 
             $grandTotal = 0;
+            $filesToIndex = false;
 
             foreach ($sourceIds as $sourceId) {
                 // Get the indexing list
@@ -113,9 +114,23 @@ class AssetIndex extends Tool
                             'process' => 1
                         ]
                     ];
+
+                    $filesToIndex = true;
                 }
 
                 $batches[] = $batch;
+            }
+
+            if (!$filesToIndex) {
+                $batches[] = [
+                    [
+                        'params' => [
+                            'process' => 1,
+                            'noFiles' => 1,
+                            'sessionId' => $sessionId,
+                        ]
+                    ]
+                ];
             }
 
             Craft::$app->getSession()->set('assetsSourcesBeingIndexed', $sourceIds);
@@ -129,11 +144,13 @@ class AssetIndex extends Tool
                 'total' => $grandTotal
             ];
         } else if (!empty($params['process'])) {
-            // Index the file
-            Craft::$app->getAssetIndexer()->processIndexForVolume($params['sessionId'], $params['offset'], $params['sourceId']);
+            if (empty($params['noFiles'])) {
+                // Index the file
+                Craft::$app->getAssetIndexer()->processIndexForVolume($params['sessionId'], $params['offset'], $params['sourceId']);
+            }
 
             // More files to index.
-            if (++$params['offset'] < $params['total']) {
+            if (empty($params['noFiles']) && ++$params['offset'] < $params['total']) {
                 return [
                     'success' => true
                 ];

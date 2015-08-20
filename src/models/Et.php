@@ -98,6 +98,11 @@ class Et extends Model
     public $track;
 
     /**
+     * @var boolean Show beta updates
+     */
+    public $showBeta = false;
+
+    /**
      * @var array Errors
      */
     public $errors;

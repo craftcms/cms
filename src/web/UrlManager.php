@@ -339,7 +339,12 @@ class UrlManager extends \yii\web\UrlManager
      */
     private function _isPublicTemplatePath()
     {
-        $trigger = Craft::$app->getConfig()->get('privateTemplateTrigger');
+        $request = Craft::$app->getRequest();
+        if ($request->getIsConsoleRequest() || $request->getIsCpRequest()) {
+            $trigger = '_';
+        } else {
+            $trigger = Craft::$app->getConfig()->get('privateTemplateTrigger');
+        }
         $length = strlen($trigger);
 
         foreach (Craft::$app->getRequest()->getSegments() as $requestPathSeg) {

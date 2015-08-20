@@ -169,14 +169,22 @@ class Images extends Component
      */
     public function cleanImage($filePath)
     {
+        $cleanedByRotation = false;
+        $cleanedByStripping = false;
+
         try {
             if (Craft::$app->getConfig()->get('rotateImagesOnUploadByExifData')) {
-                $this->rotateImageByExifData($filePath);
+                $cleanedByRotation = $this->rotateImageByExifData($filePath);
             }
 
-            $this->stripOrientationFromExifData($filePath);
+            $cleanedByStripping = $this->stripOrientationFromExifData($filePath);
         } catch (\Exception $e) {
             Craft::error('Tried to rotate or strip EXIF data from image and failed: '.$e->getMessage());
+        }
+
+        // Image has already been cleaned if it had exif/orientation data
+        if ($cleanedByRotation || $cleanedByStripping) {
+            return true;
         }
 
         return $this->loadImage($filePath)->saveAs($filePath, true);
@@ -187,17 +195,16 @@ class Images extends Component
      *
      * @param string $filePath
      *
-     * @return mixed
+     * @return boolean
      */
     public function rotateImageByExifData($filePath)
     {
         if (!ImageHelper::canHaveExifData($filePath)) {
-            return null;
+            return false;
         }
 
         $exif = $this->getExifData($filePath);
-
-        $degrees = 0;
+        $degrees = false;
 
         if (!empty($exif['ifd0.Orientation'])) {
             switch ($exif['ifd0.Orientation']) {
@@ -214,6 +221,10 @@ class Images extends Component
                     break;
                 }
             }
+        }
+
+        if ($degrees === false) {
+            return false;
         }
 
         $image = $this->loadImage($filePath)->rotate($degrees);
@@ -267,11 +278,11 @@ class Images extends Component
                 // Delete the Orientation entry and re-save the file
                 $ifd0->offsetUnset(\PelTag::ORIENTATION);
                 $file->saveFile($filePath);
-            }
 
-            return true;
-        } else {
-            return false;
+                return true;
+            }
         }
+
+        return false;
     }
 }

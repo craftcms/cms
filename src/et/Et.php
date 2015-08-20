@@ -88,6 +88,7 @@ class Et
             'localEdition' => Craft::$app->getEdition(),
             'userEmail' => Craft::$app->getUser()->getIdentity()->email,
             'track' => Craft::$app->track,
+            'showBeta' => Craft::$app->getConfig()->get('showBetaUpdates'),
             'serverInfo' => array(
                 'extensions' => get_loaded_extensions(),
                 'phpVersion' => PHP_VERSION,

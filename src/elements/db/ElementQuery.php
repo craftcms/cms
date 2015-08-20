@@ -1536,7 +1536,7 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
 
             $elementIds = $this->query->column('elements.id');
             $scoredSearchResults = ($this->orderBy === ['score' => SORT_ASC]);
-            $filteredElementIds = Craft::$app->getSearch()->filterElementIdsByQuery($elementIds, $this->search, $scoredSearchResults);
+            $filteredElementIds = Craft::$app->getSearch()->filterElementIdsByQuery($elementIds, $this->search, $scoredSearchResults, $this->locale);
 
             $this->query->limit = $limit;
             $this->query->offset = $offset;
@@ -1592,7 +1592,7 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
                     if ($field->hasContentColumn()) {
                         // Avoid matching fields named "asc" or "desc" in the string "column_name asc" or
                         // "column_name desc"
-                        $orderBy = preg_replace('/(?<!\s)\b'.$field->handle.'\b/', 'content.'.$this->_getFieldContentColumnName($field), $orderBy);
+                        $orderBy = preg_replace('/(?<!\w\s)\b'.$field->handle.'\b/', 'content.'.$this->_getFieldContentColumnName($field), $orderBy);
                     }
                 }
             }

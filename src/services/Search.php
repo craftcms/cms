@@ -101,10 +101,11 @@ class Search extends Component
      * @param array   $elementIds   The list of element IDs to filter by the search query.
      * @param mixed   $query        The search query (either a string or a SearchQuery instance)
      * @param boolean $scoreResults Whether to order the results based on how closely they match the query.
+     * @param string  $localeId     The locale to filter by.
      *
      * @return array The filtered list of element IDs.
      */
-    public function filterElementIdsByQuery($elementIds, $query, $scoreResults = true)
+    public function filterElementIdsByQuery($elementIds, $query, $scoreResults = true, $localeId = null)
     {
         if (is_string($query)) {
             $query = new SearchQuery($query);
@@ -131,9 +132,12 @@ class Search extends Component
             return [];
         }
 
+        if ($localeId) {
+            $where .= sprintf(' AND %s = %s', Craft::$app->getDb()->quoteColumnName('locale'), Craft::$app->getDb()->quoteValue($localeId));
+        }
+
         // Begin creating SQL
-        $sql = sprintf('SELECT * FROM %s WHERE %s', Craft::$app->getDb()->quoteTableName('{{%searchindex}}'), $where
-        );
+        $sql = sprintf('SELECT * FROM %s WHERE %s', Craft::$app->getDb()->quoteTableName('{{%searchindex}}'), $where);
 
         // Append elementIds to QSL
         if ($elementIds) {

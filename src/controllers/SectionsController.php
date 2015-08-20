@@ -207,8 +207,6 @@ class SectionsController extends Controller
 
         $section->setLocales($locales);
 
-        $section->hasUrls = (bool)Craft::$app->getRequest()->getBodyParam('types.'.$section->type.'.hasUrls', true);
-
         // Save it
         if (Craft::$app->getSections()->saveSection($section)) {
             Craft::$app->getSession()->setNotice(Craft::t('app', 'Section saved.'));
