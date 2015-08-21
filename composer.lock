@@ -8,16 +8,16 @@
     "packages": [
         {
             "name": "aws/aws-sdk-php",
-            "version": "2.8.18",
+            "version": "2.8.19",
             "source": {
                 "type": "git",
                 "url": "https://github.com/aws/aws-sdk-php.git",
-                "reference": "f8c68d5de3e204320a2a47d0d786a8ee17b1a8ee"
+                "reference": "282aa6e96275c49fcc363429297ddc1ba006c42a"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/aws/aws-sdk-php/zipball/f8c68d5de3e204320a2a47d0d786a8ee17b1a8ee",
-                "reference": "f8c68d5de3e204320a2a47d0d786a8ee17b1a8ee",
+                "url": "https://api.github.com/repos/aws/aws-sdk-php/zipball/282aa6e96275c49fcc363429297ddc1ba006c42a",
+                "reference": "282aa6e96275c49fcc363429297ddc1ba006c42a",
                 "shasum": ""
             },
             "require": {
@@ -67,7 +67,7 @@
                 "s3",
                 "sdk"
             ],
-            "time": "2015-08-12 20:41:18"
+            "time": "2015-08-20 23:04:59"
         },
         {
             "name": "bower-asset/bootstrap",
@@ -930,7 +930,7 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/pixelandtonic/Imagine",
-                "reference": "64e3d0ea9f9434b53dab3fb24750d5b9a19ab351"
+                "reference": "9b6e412939e65916230c395929b26a084e28a9cd"
             },
             "require": {
                 "php": ">=5.3.2"
@@ -972,7 +972,7 @@
                 "image manipulation",
                 "image processing"
             ],
-            "time": "2015-08-18 13:32:15"
+            "time": "2015-08-21 17:50:08"
         },
         {
             "name": "league/flysystem",
@@ -1789,20 +1789,20 @@
         },
         {
             "name": "phpunit/phpunit-mock-objects",
-            "version": "2.3.6",
+            "version": "2.3.7",
             "source": {
                 "type": "git",
                 "url": "https://github.com/sebastianbergmann/phpunit-mock-objects.git",
-                "reference": "18dfbcb81d05e2296c0bcddd4db96cade75e6f42"
+                "reference": "5e2645ad49d196e020b85598d7c97e482725786a"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/sebastianbergmann/phpunit-mock-objects/zipball/18dfbcb81d05e2296c0bcddd4db96cade75e6f42",
-                "reference": "18dfbcb81d05e2296c0bcddd4db96cade75e6f42",
+                "url": "https://api.github.com/repos/sebastianbergmann/phpunit-mock-objects/zipball/5e2645ad49d196e020b85598d7c97e482725786a",
+                "reference": "5e2645ad49d196e020b85598d7c97e482725786a",
                 "shasum": ""
             },
             "require": {
-                "doctrine/instantiator": "~1.0,>=1.0.2",
+                "doctrine/instantiator": "^1.0.2",
                 "php": ">=5.3.3",
                 "phpunit/php-text-template": "~1.2",
                 "sebastian/exporter": "~1.2"
@@ -1841,7 +1841,7 @@
                 "mock",
                 "xunit"
             ],
-            "time": "2015-07-10 06:54:24"
+            "time": "2015-08-19 09:14:08"
         },
         {
             "name": "psr/log",
