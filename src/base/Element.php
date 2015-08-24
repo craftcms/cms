@@ -566,11 +566,15 @@ abstract class Element extends Component implements ElementInterface
     public function attributes()
     {
         $names = parent::attributes();
+
+        // Include custom field handles
         $class = new \ReflectionClass(ContentBehavior::className());
 
         foreach ($class->getProperties(\ReflectionProperty::IS_PUBLIC) as $property) {
-            if (!in_array($property->getName(), $names)) {
-                $names[] = $property->getName();
+            $name = $property->getName();
+
+            if ($name !== 'owner' && !in_array($name, $names)) {
+                $names[] = $name;
             }
         }
 
