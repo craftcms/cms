@@ -8,7 +8,7 @@
 namespace craft\app\web\twig\variables;
 
 use craft\app\dates\DateTime;
-use craft\app\helpers\AppHelper;
+use craft\app\helpers\App;
 use craft\app\helpers\IOHelper;
 
 /**
@@ -210,9 +210,9 @@ class App
      */
     public function getMaxUploadSize()
     {
-        $maxUpload = AppHelper::getPhpConfigValueInBytes('upload_max_filesize');
-        $maxPost = AppHelper::getPhpConfigValueInBytes('post_max_size');
-        $memoryLimit = AppHelper::getPhpConfigValueInBytes('memory_limit');
+        $maxUpload = App::getPhpConfigValueInBytes('upload_max_filesize');
+        $maxPost = App::getPhpConfigValueInBytes('post_max_size');
+        $memoryLimit = App::getPhpConfigValueInBytes('memory_limit');
 
         $uploadInBytes = min($maxUpload, $maxPost);
 

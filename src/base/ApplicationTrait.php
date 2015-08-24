@@ -16,7 +16,7 @@ use craft\app\enums\ConfigCategory;
 use craft\app\errors\DbConnectException;
 use craft\app\errors\Exception;
 use craft\app\events\EditionChangeEvent;
-use craft\app\helpers\AppHelper;
+use craft\app\helpers\App;
 use craft\app\helpers\DateTimeHelper;
 use craft\app\helpers\DbHelper;
 use craft\app\helpers\StringHelper;
@@ -316,7 +316,7 @@ trait ApplicationTrait
     public function getEditionName()
     {
         /** @var $this \craft\app\web\Application|\craft\app\console\Application */
-        return AppHelper::getEditionName($this->getEdition());
+        return App::getEditionName($this->getEdition());
     }
 
     /**
@@ -345,7 +345,7 @@ trait ApplicationTrait
         $licensedEdition = $this->getLicensedEdition();
 
         if ($licensedEdition !== null) {
-            return AppHelper::getEditionName($licensedEdition);
+            return App::getEditionName($licensedEdition);
         }
     }
 
@@ -406,7 +406,7 @@ trait ApplicationTrait
             if (($orBetter && $installedEdition < $edition) || (!$orBetter && $installedEdition !== $edition)) {
                 throw new Exception(Craft::t('app', 'Craft {edition} is required to perform this action.',
                     [
-                        'edition' => AppHelper::getEditionName($edition)
+                        'edition' => App::getEditionName($edition)
                     ]));
             }
         }

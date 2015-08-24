@@ -862,7 +862,7 @@ class StringHelper extends \yii\helpers\StringHelper
         $string = HtmlPurifier::cleanUtf8($string);
 
         // Convert it to UTF8 if possible
-        if (AppHelper::checkForValidIconv()) {
+        if (App::checkForValidIconv()) {
             $string = HtmlPurifier::convertToUtf8($string, $config);
         } else {
             $encoding = static::getEncoding($string);

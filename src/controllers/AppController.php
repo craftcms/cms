@@ -11,7 +11,7 @@ use Craft;
 use craft\app\dates\DateInterval;
 use craft\app\enums\LicenseKeyStatus;
 use craft\app\errors\Exception;
-use craft\app\helpers\AppHelper;
+use craft\app\helpers\App;
 use craft\app\helpers\CpHelper;
 use craft\app\helpers\DateTimeHelper;
 use craft\app\models\UpgradePurchase as UpgradePurchaseModel;
@@ -136,7 +136,7 @@ class AppController extends Controller
         }
 
         // Make sure they've got a valid licensed edition, just to be safe
-        if (!AppHelper::isValidEdition($etResponse->licensedEdition)) {
+        if (!App::isValidEdition($etResponse->licensedEdition)) {
             return $this->asErrorJson(Craft::t('app', 'Your license has an invalid Craft edition associated with it.'));
         }
 

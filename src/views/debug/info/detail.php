@@ -1,7 +1,7 @@
 <?php
 
 use craft\app\dates\DateTime;
-use craft\app\helpers\AppHelper;
+use craft\app\helpers\App;
 
 /** @var $panel craft\app\debug\InfoPanel */
 ?>
@@ -23,7 +23,7 @@ $values = [
     ],
     [
         'Edition',
-        'Craft '.AppHelper::getEditionName($panel->data['craftEdition'])
+        'Craft '.App::getEditionName($panel->data['craftEdition'])
     ],
 ];
 

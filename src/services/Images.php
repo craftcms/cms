@@ -8,7 +8,7 @@
 namespace craft\app\services;
 
 use Craft;
-use craft\app\helpers\AppHelper;
+use craft\app\helpers\App;
 use craft\app\helpers\ImageHelper;
 use craft\app\helpers\IOHelper;
 use craft\app\helpers\StringHelper;
@@ -146,7 +146,7 @@ class Images extends Component
         $channels = isset($imageInfo['channels']) ? $imageInfo['channels'] : 4;
         $memoryNeeded = round(($imageInfo[0] * $imageInfo[1] * $bits * $channels / 8 + $K64) * $tweakFactor);
 
-        $memoryLimit = AppHelper::getPhpConfigValueInBytes('memory_limit');
+        $memoryLimit = App::getPhpConfigValueInBytes('memory_limit');
 
         if ($memoryLimit == -1 || memory_get_usage() + $memoryNeeded < $memoryLimit) {
             return true;

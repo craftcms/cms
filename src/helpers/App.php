@@ -15,7 +15,7 @@ use Craft;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
-class AppHelper
+class App
 {
     // Properties
     // =========================================================================
