@@ -442,7 +442,7 @@ class Volumes extends Component
 
             // Nuke the asset volume.
             $affectedRows = Craft::$app->getDb()->createCommand()->delete('{{%volumes}}',
-                ['id' => $volumeId]);
+                ['id' => $volumeId])->execute();
 
             $transaction->commit();
 
