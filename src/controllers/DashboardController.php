@@ -275,6 +275,15 @@ class DashboardController extends BaseController
 					// Bump the default timeout because of the attachment.
 					$hsParams['callTimeout'] = 120;
 				}
+
+				// Grab the license.key file.
+				if (IOHelper::fileExists(craft()->path->getLicenseKeyPath()))
+				{
+					$requestParams['File2_sFilename'] = 'license.key';
+					$requestParams['File2_sFileMimeType'] = 'text/plain';
+					$requestParams['File2_bFileBody'] = base64_encode(IOHelper::getFileContents(craft()->path->getLicenseKeyPath()));
+				}
+
 			}
 			catch(\Exception $e)
 			{
