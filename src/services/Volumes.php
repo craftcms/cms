@@ -90,8 +90,7 @@ class Volumes extends Component
             ]);
         }
 
-        foreach (Craft::$app->getPlugins()->call('getVolumeTypes', [],
-            true) as $pluginVolumeTypes) {
+        foreach (Craft::$app->getPlugins()->call('getVolumeTypes', [], true) as $pluginVolumeTypes) {
             $volumeTypes = array_merge($volumeTypes, $pluginVolumeTypes);
         }
 
@@ -410,8 +409,7 @@ class Volumes extends Component
         }
 
         try {
-            return ComponentHelper::createComponent($config,
-                static::VOLUME_INTERFACE);
+            return ComponentHelper::createComponent($config, static::VOLUME_INTERFACE);
         } catch (InvalidComponentException $e) {
             $config['errorMessage'] = $e->getMessage();
 

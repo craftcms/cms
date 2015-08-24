@@ -43,12 +43,7 @@ class ImageHelper
      *
      * @return array Array of the width and height.
      */
-    public static function calculateMissingDimension(
-        $targetWidth,
-        $targetHeight,
-        $sourceWidth,
-        $sourceHeight
-    ) {
+    public static function calculateMissingDimension($targetWidth, $targetHeight, $sourceWidth, $sourceHeight) {
         $factor = $sourceWidth / $sourceHeight;
 
         if (empty($targetHeight)) {
