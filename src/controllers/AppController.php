@@ -12,7 +12,7 @@ use craft\app\dates\DateInterval;
 use craft\app\enums\LicenseKeyStatus;
 use craft\app\errors\Exception;
 use craft\app\helpers\App;
-use craft\app\helpers\CpHelper;
+use craft\app\helpers\Cp;
 use craft\app\helpers\DateTimeHelper;
 use craft\app\models\UpgradePurchase as UpgradePurchaseModel;
 use craft\app\web\Controller;
@@ -62,7 +62,7 @@ class AppController extends Controller
         $path = Craft::$app->getRequest()->getRequiredBodyParam('path');
 
         // Fetch 'em and send 'em
-        $alerts = CpHelper::getAlerts($path, true);
+        $alerts = Cp::getAlerts($path, true);
 
         return $this->asJson($alerts);
     }

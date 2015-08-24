@@ -11,12 +11,12 @@ use Craft;
 use craft\app\enums\LicenseKeyStatus;
 
 /**
- * Class CpHelper
+ * Class Cp
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
-class CpHelper
+class Cp
 {
     // Public Methods
     // =========================================================================

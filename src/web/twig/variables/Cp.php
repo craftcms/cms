@@ -7,7 +7,7 @@
 
 namespace craft\app\web\twig\variables;
 
-use craft\app\helpers\CpHelper;
+use craft\app\helpers\Cp;
 use craft\app\helpers\UrlHelper;
 
 /**
@@ -183,6 +183,6 @@ class Cp
      */
     public function getAlerts()
     {
-        return CpHelper::getAlerts(\Craft::$app->getRequest()->getPathInfo());
+        return Cp::getAlerts(\Craft::$app->getRequest()->getPathInfo());
     }
 }
