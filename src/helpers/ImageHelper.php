@@ -43,8 +43,12 @@ class ImageHelper
      *
      * @return array Array of the width and height.
      */
-    public static function calculateMissingDimension($targetWidth, $targetHeight, $sourceWidth, $sourceHeight)
-    {
+    public static function calculateMissingDimension(
+        $targetWidth,
+        $targetHeight,
+        $sourceWidth,
+        $sourceHeight
+    ) {
         $factor = $sourceWidth / $sourceHeight;
 
         if (empty($targetHeight)) {
@@ -70,13 +74,10 @@ class ImageHelper
         $path = Craft::$app->getPath()->getResourcesPath();
         $file = $path."images/samples/sample.".StringHelper::toLowerCase($extension);
 
-        try
-        {
+        try {
             Craft::$app->getImages()->loadImage($file);
             return true;
-        }
-        catch(\Exception $e)
-        {
+        } catch (\Exception $e) {
             return false;
         }
 
