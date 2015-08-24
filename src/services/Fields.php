@@ -33,7 +33,7 @@ use craft\app\fields\RichText as RichTextField;
 use craft\app\fields\Table as TableField;
 use craft\app\fields\Tags as TagsField;
 use craft\app\fields\Users as UsersField;
-use craft\app\helpers\ComponentHelper;
+use craft\app\helpers\Component;
 use craft\app\helpers\StringHelper;
 use craft\app\models\FieldGroup as FieldGroupModel;
 use craft\app\models\FieldLayout as FieldLayoutModel;
@@ -305,7 +305,7 @@ class Fields extends Component
         }
 
         try {
-            return ComponentHelper::createComponent($config, self::FIELD_INTERFACE);
+            return Component::createComponent($config, self::FIELD_INTERFACE);
         } catch (InvalidComponentException $e) {
             $config['errorMessage'] = $e->getMessage();
 

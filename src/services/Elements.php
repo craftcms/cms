@@ -23,7 +23,7 @@ use craft\app\errors\Exception;
 use craft\app\events\DeleteElementsEvent;
 use craft\app\events\ElementEvent;
 use craft\app\events\MergeElementsEvent;
-use craft\app\helpers\ComponentHelper;
+use craft\app\helpers\Component;
 use craft\app\helpers\ElementHelper;
 use craft\app\helpers\StringHelper;
 use craft\app\records\Element as ElementRecord;
@@ -902,7 +902,7 @@ class Elements extends Component
      */
     public function createAction($config)
     {
-        return ComponentHelper::createComponent($config, self::ACTION_INTERFACE);
+        return Component::createComponent($config, self::ACTION_INTERFACE);
     }
 
     // Misc

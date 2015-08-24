@@ -8,7 +8,6 @@
 namespace craft\app\helpers;
 
 use Craft;
-use craft\app\base\Component;
 use craft\app\base\ComponentInterface;
 use craft\app\errors\InvalidComponentException;
 use yii\base\InvalidConfigException;
@@ -19,7 +18,7 @@ use yii\base\InvalidConfigException;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
-class ComponentHelper
+class Component
 {
     // Public Methods
     // =========================================================================
@@ -43,7 +42,7 @@ class ComponentHelper
             $config = ArrayHelper::toArray($config);
 
             if (empty($config['type'])) {
-                throw new InvalidConfigException('The config passed into ComponentHelper::createComponent() did not specify a class: '.JsonHelper::encode($config));
+                throw new InvalidConfigException('The config passed into Component::createComponent() did not specify a class: '.JsonHelper::encode($config));
             }
 
             $class = $config['type'];

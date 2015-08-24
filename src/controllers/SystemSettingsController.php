@@ -11,7 +11,7 @@ use Craft;
 use craft\app\dates\DateTime;
 use craft\app\errors\HttpException;
 use craft\app\errors\InvalidComponentException;
-use craft\app\helpers\ComponentHelper;
+use craft\app\helpers\Component;
 use craft\app\helpers\TemplateHelper;
 use craft\app\helpers\UrlHelper;
 use craft\app\mail\Mailer;
@@ -403,7 +403,7 @@ class SystemSettingsController extends Controller
     {
         if ($class !== null) {
             try {
-                return ComponentHelper::createComponent([
+                return Component::createComponent([
                     'type' => $class,
                     'settings' => $settings
                 ], 'craft\app\mail\transportadaptors\TransportAdaptorInterface');

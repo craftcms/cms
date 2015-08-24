@@ -8,7 +8,7 @@ use craft\app\db\Query;
 use craft\app\errors\ModelValidationException;
 use craft\app\errors\VolumeException;
 use craft\app\errors\InvalidComponentException;
-use craft\app\helpers\ComponentHelper;
+use craft\app\helpers\Component;
 use craft\app\records\Volume as AssetVolumeRecord;
 use craft\app\volumes\AwsS3;
 use craft\app\volumes\GoogleCloud;
@@ -409,7 +409,7 @@ class Volumes extends Component
         }
 
         try {
-            return ComponentHelper::createComponent($config, static::VOLUME_INTERFACE);
+            return Component::createComponent($config, static::VOLUME_INTERFACE);
         } catch (InvalidComponentException $e) {
             $config['errorMessage'] = $e->getMessage();
 

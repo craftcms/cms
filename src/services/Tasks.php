@@ -12,7 +12,7 @@ use craft\app\base\Task;
 use craft\app\base\TaskInterface;
 use craft\app\db\Query;
 use craft\app\errors\InvalidComponentException;
-use craft\app\helpers\ComponentHelper;
+use craft\app\helpers\Component;
 use craft\app\helpers\HeaderHelper;
 use craft\app\helpers\JsonHelper;
 use craft\app\helpers\UrlHelper;
@@ -104,7 +104,7 @@ class Tasks extends Component
         }
 
         try {
-            return ComponentHelper::createComponent($config, self::TASK_INTERFACE);
+            return Component::createComponent($config, self::TASK_INTERFACE);
         } catch (InvalidComponentException $e) {
             $config['errorMessage'] = $e->getMessage();
 
