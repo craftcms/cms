@@ -8,7 +8,7 @@
 namespace craft\app\controllers;
 
 use Craft;
-use craft\app\helpers\JsonHelper;
+use craft\app\helpers\Json;
 use craft\app\web\Controller;
 
 /**
@@ -104,9 +104,9 @@ class TasksController extends Controller
         $task = Craft::$app->getTasks()->rerunTaskById($taskId);
 
         if (!Craft::$app->getTasks()->isTaskRunning()) {
-            JsonHelper::sendJsonHeaders();
+            Json::sendJsonHeaders();
             $response = Craft::$app->getResponse();
-            $response->content = JsonHelper::encode($task);
+            $response->content = Json::encode($task);
             $response->sendAndClose();
 
             Craft::$app->getTasks()->runPendingTasks();

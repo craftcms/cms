@@ -11,8 +11,8 @@ use Craft;
 use craft\app\base\Element;
 use craft\app\errors\Exception;
 use craft\app\errors\HttpException;
-use craft\app\helpers\JsonHelper;
-use craft\app\helpers\UrlHelper;
+use craft\app\helpers\Json;
+use craft\app\helpers\Url;
 use craft\app\elements\Category;
 use craft\app\models\CategoryGroup;
 use craft\app\models\CategoryGroupLocale as CategoryGroupLocaleModel;
@@ -68,11 +68,11 @@ class CategoriesController extends Controller
         $variables['crumbs'] = [
             [
                 'label' => Craft::t('app', 'Settings'),
-                'url' => UrlHelper::getUrl('settings')
+                'url' => Url::getUrl('settings')
             ],
             [
                 'label' => Craft::t('app', 'Categories'),
-                'url' => UrlHelper::getUrl('settings/categories')
+                'url' => Url::getUrl('settings/categories')
             ]
         ];
 
@@ -301,11 +301,11 @@ class CategoriesController extends Controller
         $variables['crumbs'] = [
             [
                 'label' => Craft::t('app', 'Categories'),
-                'url' => UrlHelper::getUrl('categories')
+                'url' => Url::getUrl('categories')
             ],
             [
                 'label' => Craft::t('site', $variables['group']->name),
-                'url' => UrlHelper::getUrl('categories/'.$variables['group']->handle)
+                'url' => Url::getUrl('categories/'.$variables['group']->handle)
             ]
         ];
 
@@ -319,7 +319,7 @@ class CategoriesController extends Controller
 
         // Enable Live Preview?
         if (!Craft::$app->getRequest()->getIsMobileBrowser(true) && Craft::$app->getCategories()->isGroupTemplateValid($variables['group'])) {
-            Craft::$app->getView()->registerJs('Craft.LivePreview.init('.JsonHelper::encode([
+            Craft::$app->getView()->registerJs('Craft.LivePreview.init('.Json::encode([
                     'fields' => '#title-field, #fields > div > div > .field',
                     'extraFields' => '#settings',
                     'previewUrl' => $category->getUrl(),
@@ -339,7 +339,7 @@ class CategoriesController extends Controller
                 if ($category->getStatus() == Element::STATUS_ENABLED) {
                     $variables['shareUrl'] = $category->getUrl();
                 } else {
-                    $variables['shareUrl'] = UrlHelper::getActionUrl('categories/share-category',
+                    $variables['shareUrl'] = Url::getActionUrl('categories/share-category',
                         [
                             'categoryId' => $category->id,
                             'locale' => $category->locale
@@ -511,7 +511,7 @@ class CategoriesController extends Controller
             ]
         ]);
 
-        $url = UrlHelper::getUrlWithToken($category->getUrl(), $token);
+        $url = Url::getUrlWithToken($category->getUrl(), $token);
 
         return Craft::$app->getResponse()->redirect($url);
     }

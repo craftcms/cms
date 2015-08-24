@@ -12,10 +12,10 @@ use craft\app\errors\Exception;
 use craft\app\errors\HttpException;
 use craft\app\events\UserEvent;
 use craft\app\helpers\Assets;
-use craft\app\helpers\ImageHelper;
-use craft\app\helpers\IOHelper;
-use craft\app\helpers\JsonHelper;
-use craft\app\helpers\UrlHelper;
+use craft\app\helpers\Image;
+use craft\app\helpers\Io;
+use craft\app\helpers\Json;
+use craft\app\helpers\Url;
 use craft\app\elements\User;
 use craft\app\services\Users;
 use craft\app\web\Controller;
@@ -308,11 +308,11 @@ class UsersController extends Controller
                 // Can they access the CP?
                 if ($userToProcess->can('accessCp')) {
                     // Send them to the CP login page
-                    $url = UrlHelper::getCpUrl(Craft::$app->getConfig()->getCpLoginPath());
+                    $url = Url::getCpUrl(Craft::$app->getConfig()->getCpLoginPath());
                 } else {
                     // Send them to the 'setPasswordSuccessPath'.
                     $setPasswordSuccessPath = Craft::$app->getConfig()->getLocalized('setPasswordSuccessPath');
-                    $url = UrlHelper::getSiteUrl($setPasswordSuccessPath);
+                    $url = Url::getSiteUrl($setPasswordSuccessPath);
                 }
 
                 return $this->redirect($url);
@@ -350,7 +350,7 @@ class UsersController extends Controller
             }
 
             // Redirect to the site/CP root
-            $url = UrlHelper::getUrl('');
+            $url = Url::getUrl('');
 
             return $this->redirect($url);
         }
@@ -636,7 +636,7 @@ class UsersController extends Controller
 
         Craft::$app->getView()->registerCssResource('css/account.css');
         Craft::$app->getView()->registerJsResource('js/AccountSettingsForm.js');
-        Craft::$app->getView()->registerJs('new Craft.AccountSettingsForm('.JsonHelper::encode($user->id).', '.($user->isCurrent() ? 'true' : 'false').');');
+        Craft::$app->getView()->registerJs('new Craft.AccountSettingsForm('.Json::encode($user->id).', '.($user->isCurrent() ? 'true' : 'false').');');
 
         Craft::$app->getView()->includeTranslations(
             'Please enter your current password.',
@@ -946,23 +946,23 @@ class UsersController extends Controller
 
                 $folderPath = Craft::$app->getPath()->getTempUploadsPath().'/userphotos/'.$userName;
 
-                IOHelper::clearFolder($folderPath);
+                Io::clearFolder($folderPath);
 
-                IOHelper::ensureFolderExists($folderPath);
+                Io::ensureFolderExists($folderPath);
                 $filename = Assets::prepareAssetName($file['name']);
 
                 move_uploaded_file($file['tmp_name'], $folderPath.'/'.$filename);
 
                 // Test if we will be able to perform image actions on this image
                 if (!Craft::$app->getImages()->checkMemoryForImage($folderPath.'/'.$filename)) {
-                    IOHelper::deleteFile($folderPath.'/'.$filename);
+                    Io::deleteFile($folderPath.'/'.$filename);
 
                     return $this->asErrorJson(Craft::t('app', 'The uploaded image is too large'));
                 }
 
-                list ($width, $height) = ImageHelper::getImageSize($folderPath.'/'.$filename);
+                list ($width, $height) = Image::getImageSize($folderPath.'/'.$filename);
 
-                if (IOHelper::getExtension($filename) != 'svg') {
+                if (Io::getExtension($filename) != 'svg') {
                     Craft::$app->getImages()->cleanImage($folderPath.'/'.$filename);
                 } else {
                     // Resave svg files as png
@@ -972,7 +972,7 @@ class UsersController extends Controller
                         ->loadImage($folderPath.'/'.$filename, $width, $height)
                         ->saveAs($folderPath.'/'.$newFilename);
 
-                    IOHelper::deleteFile($folderPath.'/'.$filename);
+                    Io::deleteFile($folderPath.'/'.$filename);
                     $filename = $newFilename;
                 }
 
@@ -985,7 +985,7 @@ class UsersController extends Controller
 
                     $html = Craft::$app->getView()->renderTemplate('_components/tools/cropper_modal',
                         [
-                            'imageUrl' => UrlHelper::getResourceUrl('userphotos/temp/'.$userName.'/'.$filename),
+                            'imageUrl' => Url::getResourceUrl('userphotos/temp/'.$userName.'/'.$filename),
                             'width' => round($width * $factor),
                             'height' => round($height * $factor),
                             'factor' => $factor,
@@ -1028,26 +1028,26 @@ class UsersController extends Controller
             $source = Craft::$app->getRequest()->getRequiredBodyParam('source');
 
             // Strip off any querystring info, if any.
-            $source = UrlHelper::stripQueryString($source);
+            $source = Url::stripQueryString($source);
 
             $user = Craft::$app->getUsers()->getUserById($userId);
             $userName = Assets::prepareAssetName($user->username, false);
 
-            if (IOHelper::getExtension($source) == 'svg') {
+            if (Io::getExtension($source) == 'svg') {
                 $source = preg_replace('/\.svg$/i', '.png', $source);
             }
 
             // make sure that this is this user's file
             $imagePath = Craft::$app->getPath()->getTempUploadsPath().'/userphotos/'.$userName.'/'.$source;
 
-            if (IOHelper::fileExists($imagePath) && Craft::$app->getImages()->checkMemoryForImage($imagePath)) {
+            if (Io::fileExists($imagePath) && Craft::$app->getImages()->checkMemoryForImage($imagePath)) {
                 Craft::$app->getUsers()->deleteUserPhoto($user);
 
                 $image = Craft::$app->getImages()->loadImage($imagePath);
                 $image->crop($x1, $x2, $y1, $y2);
 
-                if (Craft::$app->getUsers()->saveUserPhoto(IOHelper::getFilename($imagePath), $image, $user)) {
-                    IOHelper::clearFolder(Craft::$app->getPath()->getTempUploadsPath().'/userphotos/'.$userName);
+                if (Craft::$app->getUsers()->saveUserPhoto(Io::getFilename($imagePath), $image, $user)) {
+                    Io::clearFolder(Craft::$app->getPath()->getTempUploadsPath().'/userphotos/'.$userName);
 
                     $html = Craft::$app->getView()->renderTemplate('users/_userphoto',
                         [
@@ -1059,7 +1059,7 @@ class UsersController extends Controller
                 }
             }
 
-            IOHelper::clearFolder(Craft::$app->getPath()->getTempUploadsPath().'/userphotos/'.$userName);
+            Io::clearFolder(Craft::$app->getPath()->getTempUploadsPath().'/userphotos/'.$userName);
         } catch (Exception $exception) {
             return $this->asErrorJson($exception->getMessage());
         }
@@ -1417,11 +1417,11 @@ class UsersController extends Controller
         // postCpLoginRedirect tells us
         if (Craft::$app->getRequest()->getIsCpRequest() && $currentUser->can('accessCp')) {
             $postCpLoginRedirect = Craft::$app->getConfig()->get('postCpLoginRedirect');
-            $defaultReturnUrl = UrlHelper::getCpUrl($postCpLoginRedirect);
+            $defaultReturnUrl = Url::getCpUrl($postCpLoginRedirect);
         } else {
             // Otherwise send them wherever postLoginRedirect tells us
             $postLoginRedirect = Craft::$app->getConfig()->get('postLoginRedirect');
-            $defaultReturnUrl = UrlHelper::getSiteUrl($postLoginRedirect);
+            $defaultReturnUrl = Url::getSiteUrl($postLoginRedirect);
         }
 
         // Were they trying to access a URL beforehand?
@@ -1533,7 +1533,7 @@ class UsersController extends Controller
 
             Craft::$app->getUsers()->saveUserPhoto($userPhoto->name, $image, $user);
 
-            IOHelper::deleteFile($userPhoto->tempName);
+            Io::deleteFile($userPhoto->tempName);
         }
     }
 
@@ -1632,12 +1632,12 @@ class UsersController extends Controller
         }
 
         if ($url != '') {
-            return $this->redirect(UrlHelper::getSiteUrl($url));
+            return $this->redirect(Url::getSiteUrl($url));
         } else {
             if ($user && $user->can('accessCp')) {
-                $url = UrlHelper::getCpUrl(Craft::$app->getConfig()->getLoginPath());
+                $url = Url::getCpUrl(Craft::$app->getConfig()->getLoginPath());
             } else {
-                $url = UrlHelper::getSiteUrl(Craft::$app->getConfig()->getLoginPath());
+                $url = Url::getSiteUrl(Craft::$app->getConfig()->getLoginPath());
             }
 
             throw new HttpException('200', Craft::t('app', 'Invalid verification code. Please [login or reset your password]({loginUrl}).', ['loginUrl' => $url]));
@@ -1661,10 +1661,10 @@ class UsersController extends Controller
         // Can they access the CP?
         if ($user->can('accessCp')) {
             $postCpLoginRedirect = Craft::$app->getConfig()->get('postCpLoginRedirect');
-            $url = UrlHelper::getCpUrl($postCpLoginRedirect);
+            $url = Url::getCpUrl($postCpLoginRedirect);
         } else {
             $activateAccountSuccessPath = Craft::$app->getConfig()->getLocalized('activateAccountSuccessPath');
-            $url = UrlHelper::getSiteUrl($activateAccountSuccessPath);
+            $url = Url::getSiteUrl($activateAccountSuccessPath);
         }
 
         return $this->redirect($url);

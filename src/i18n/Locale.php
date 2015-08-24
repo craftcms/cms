@@ -9,7 +9,7 @@ namespace craft\app\i18n;
 
 use Craft;
 use craft\app\helpers\ArrayHelper;
-use craft\app\helpers\IOHelper;
+use craft\app\helpers\Io;
 use craft\app\helpers\StringHelper;
 use DateTime;
 use IntlDateFormatter;
@@ -233,11 +233,11 @@ class Locale extends Object
             $appDataPath = Craft::$app->getPath()->getAppPath().'/config/locales/'.$this->id.'.php';
             $customDataPath = Craft::$app->getPath()->getConfigPath().'/locales/'.$this->id.'.php';
 
-            if (IOHelper::fileExists($appDataPath)) {
+            if (Io::fileExists($appDataPath)) {
                 $this->data = require($appDataPath);
             }
 
-            if (IOHelper::fileExists($customDataPath)) {
+            if (Io::fileExists($customDataPath)) {
                 if ($this->data !== null) {
                     $this->data = ArrayHelper::merge($this->data, require($customDataPath));
                 } else {

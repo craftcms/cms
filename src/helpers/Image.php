@@ -11,12 +11,12 @@ use craft;
 use craft\app\image\Svg;
 
 /**
- * Class ImageHelper
+ * Class Image
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
-class ImageHelper
+class Image
 {
     // Constants
     // =========================================================================
@@ -165,7 +165,7 @@ class ImageHelper
      */
     public static function canHaveExifData($filePath)
     {
-        $extension = IOHelper::getExtension($filePath);
+        $extension = Io::getExtension($filePath);
 
         return in_array(
             StringHelper::toLowerCase($extension),
@@ -182,7 +182,7 @@ class ImageHelper
      */
     public static function cleanImageByPath($imagePath)
     {
-        $extension = IOHelper::getExtension($imagePath);
+        $extension = Io::getExtension($imagePath);
 
         if ($extension == 'svg') {
             // No cleanup in the classic sense.
@@ -203,8 +203,8 @@ class ImageHelper
      */
     public static function getImageSize($filePath)
     {
-        if (IOHelper::getExtension($filePath) == 'svg') {
-            $svg = IOHelper::getFileContents($filePath);
+        if (Io::getExtension($filePath) == 'svg') {
+            $svg = Io::getFileContents($filePath);
 
             return static::parseSvgSize($svg);
         } else {

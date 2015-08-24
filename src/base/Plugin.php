@@ -11,7 +11,7 @@ use Craft;
 use craft\app\db\Migration;
 use craft\app\db\MigrationManager;
 use craft\app\events\Event;
-use craft\app\helpers\IOHelper;
+use craft\app\helpers\Io;
 use yii\base\Module;
 
 /**
@@ -297,7 +297,7 @@ class Plugin extends Module implements PluginInterface
         $migrator = $this->getMigrator();
         $path = $migrator->migrationPath.'/Install.php';
 
-        if (IOHelper::fileExists($path)) {
+        if (Io::fileExists($path)) {
             require_once($path);
 
             $class = $migrator->migrationNamespace.'\\Install';
@@ -403,12 +403,12 @@ class Plugin extends Module implements PluginInterface
     {
         $path = $this->getBasePath().'/'.$subpath;
         // Regex pulled from http://php.net/manual/en/language.oop5.basic.php
-        $files = IOHelper::getFolderContents($path, $recursive,
+        $files = Io::getFolderContents($path, $recursive,
             ['\/[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*\.php$']);
         $classes = [];
 
         if (!empty($files)) {
-            $chop = strlen(IOHelper::getRealPath($path));
+            $chop = strlen(Io::getRealPath($path));
             $classPrefix = "craft\\plugins\\{$this->id}\\".trim(str_replace('/',
                     '\\', $subpath), '\\').'\\';
 

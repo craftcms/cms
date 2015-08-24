@@ -8,7 +8,7 @@
 namespace craft\app\io;
 
 use Craft;
-use craft\app\helpers\IOHelper;
+use craft\app\helpers\Io;
 
 /**
  * Class Zip
@@ -29,26 +29,26 @@ class Zip
      */
     public static function compress($source, $destZip)
     {
-        $source = IOHelper::normalizePathSeparators($source);
-        $destZip = IOHelper::normalizePathSeparators($destZip);
+        $source = Io::normalizePathSeparators($source);
+        $destZip = Io::normalizePathSeparators($destZip);
 
-        if (!IOHelper::folderExists($source) && !IOHelper::fileExists($destZip)) {
+        if (!Io::folderExists($source) && !Io::fileExists($destZip)) {
             Craft::error('Tried to zip the contents of '.$source.' to '.$destZip.', but the source path does not exist.', __METHOD__);
 
             return false;
         }
 
-        if (IOHelper::fileExists($destZip)) {
-            IOHelper::deleteFile($destZip);
+        if (Io::fileExists($destZip)) {
+            Io::deleteFile($destZip);
         }
 
-        IOHelper::createFile($destZip);
+        Io::createFile($destZip);
 
         Craft::$app->getConfig()->maxPowerCaptain();
 
         $zip = static::_getZipInstance($destZip);
 
-        return $zip->zip(IOHelper::getRealPath($source), IOHelper::getRealPath($destZip));
+        return $zip->zip(Io::getRealPath($source), Io::getRealPath($destZip));
     }
 
     /**
@@ -61,19 +61,19 @@ class Zip
     {
         Craft::$app->getConfig()->maxPowerCaptain();
 
-        if (IOHelper::fileExists($srcZip)) {
-            if (IOHelper::getExtension($srcZip) == 'zip') {
-                if (!IOHelper::folderExists($destFolder)) {
-                    if (!IOHelper::createFolder($destFolder)) {
+        if (Io::fileExists($srcZip)) {
+            if (Io::getExtension($srcZip) == 'zip') {
+                if (!Io::folderExists($destFolder)) {
+                    if (!Io::createFolder($destFolder)) {
                         Craft::error('Tried to create the unzip destination folder, but could not: '.$destFolder, __METHOD__);
 
                         return false;
                     }
                 } else {
                     // If the destination folder exists and it has contents, clear them.
-                    if (($conents = IOHelper::getFolderContents($destFolder)) !== false) {
+                    if (($conents = Io::getFolderContents($destFolder)) !== false) {
                         // Begin the great purge.
-                        if (!IOHelper::clearFolder($destFolder)) {
+                        if (!Io::clearFolder($destFolder)) {
                             Craft::error('Tried to clear the contents of the unzip destination folder, but could not: '.$destFolder, __METHOD__);
 
                             return false;
@@ -113,11 +113,11 @@ class Zip
      */
     public static function add($sourceZip, $pathToAdd, $basePath, $pathPrefix = null)
     {
-        $sourceZip = IOHelper::normalizePathSeparators($sourceZip);
-        $pathToAdd = IOHelper::normalizePathSeparators($pathToAdd);
-        $basePath = IOHelper::normalizePathSeparators($basePath);
+        $sourceZip = Io::normalizePathSeparators($sourceZip);
+        $pathToAdd = Io::normalizePathSeparators($pathToAdd);
+        $basePath = Io::normalizePathSeparators($basePath);
 
-        if (!IOHelper::fileExists($sourceZip) || (!IOHelper::fileExists($pathToAdd) && !IOHelper::folderExists($pathToAdd))) {
+        if (!Io::fileExists($sourceZip) || (!Io::fileExists($pathToAdd) && !Io::folderExists($pathToAdd))) {
             Craft::error('Tried to add '.$pathToAdd.' to the zip file '.$sourceZip.', but one of them does not exist.', __METHOD__);
 
             return false;

@@ -17,7 +17,7 @@ use craft\app\elements\actions\NewChild;
 use craft\app\elements\actions\SetStatus;
 use craft\app\elements\actions\View;
 use craft\app\elements\db\CategoryQuery;
-use craft\app\helpers\UrlHelper;
+use craft\app\helpers\Url;
 use craft\app\models\CategoryGroup;
 use craft\app\models\FieldLayout;
 
@@ -452,7 +452,7 @@ class Category extends Element
         $group = $this->getGroup();
 
         if ($group) {
-            return UrlHelper::getCpUrl('categories/'.$group->handle.'/'.$this->id.($this->slug ? '-'.$this->slug : ''));
+            return Url::getCpUrl('categories/'.$group->handle.'/'.$this->id.($this->slug ? '-'.$this->slug : ''));
         }
     }
 

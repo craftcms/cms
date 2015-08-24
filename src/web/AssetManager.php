@@ -8,7 +8,7 @@
 namespace craft\app\web;
 
 use Craft;
-use craft\app\helpers\IOHelper;
+use craft\app\helpers\Io;
 
 /**
  * @inheritdoc
@@ -33,7 +33,7 @@ class AssetManager extends \yii\web\AssetManager
         foreach ($objects as $object) {
             /** @var \SplFileInfo $object */
             if (filemtime($object->getPath()) > $srcModTime) {
-                IOHelper::touch($src, null, true);
+                Io::touch($src, null, true);
                 break;
             }
         }

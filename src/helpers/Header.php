@@ -11,12 +11,12 @@ use Craft;
 use yii\helpers\FileHelper;
 
 /**
- * Class HeaderHelper
+ * Class Header
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
-class HeaderHelper
+class Header
 {
     // Properties
     // =========================================================================

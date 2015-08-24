@@ -10,7 +10,7 @@ namespace craft\app\widgets;
 use Craft;
 use craft\app\base\Widget;
 use craft\app\helpers\ArrayHelper;
-use craft\app\helpers\JsonHelper;
+use craft\app\helpers\Json;
 use craft\app\models\Section;
 use craft\app\web\View;
 
@@ -192,7 +192,7 @@ class QuickPost extends Widget
 
         Craft::$app->getView()->registerJs('new Craft.QuickPostWidget('.
             $this->id.', '.
-            JsonHelper::encode($params).', '.
+            Json::encode($params).', '.
             "function() {\n".$fieldJs.
             "\n});");
 

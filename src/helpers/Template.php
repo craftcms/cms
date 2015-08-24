@@ -12,12 +12,12 @@ use craft\app\elements\db\ElementQueryInterface;
 use craft\app\web\twig\variables\Paginate;
 
 /**
- * Class TemplateHelper
+ * Class Template
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
-class TemplateHelper
+class Template
 {
     // Public Methods
     // =========================================================================

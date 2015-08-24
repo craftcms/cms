@@ -21,8 +21,8 @@ use craft\app\elements\db\ElementQueryInterface;
 use craft\app\elements\db\UserQuery;
 use craft\app\helpers\Assets;
 use craft\app\helpers\DateTimeHelper;
-use craft\app\helpers\HtmlHelper;
-use craft\app\helpers\UrlHelper;
+use craft\app\helpers\Html;
+use craft\app\helpers\Url;
 use craft\app\models\UserGroup;
 use craft\app\records\Session as SessionRecord;
 use Exception;
@@ -273,7 +273,7 @@ class User extends Element implements IdentityInterface
                 $email = $element->email;
 
                 if ($email) {
-                    return HtmlHelper::encodeParams('<a href="mailto:{email}">{email}</a>',
+                    return Html::encodeParams('<a href="mailto:{email}">{email}</a>',
                         [
                             'email' => $email
                         ]);
@@ -902,7 +902,7 @@ class User extends Element implements IdentityInterface
         if ($this->photo) {
             $username = Assets::prepareAssetName($this->username, false);
 
-            return UrlHelper::getResourceUrl('userphotos/'.$username.'/'.$size.'/'.$this->photo);
+            return Url::getResourceUrl('userphotos/'.$username.'/'.$size.'/'.$this->photo);
         }
     }
 
@@ -913,7 +913,7 @@ class User extends Element implements IdentityInterface
     {
         $url = $this->getPhotoUrl($size);
         if (!$url) {
-            $url = UrlHelper::getResourceUrl('defaultuserphoto/'.$size);
+            $url = Url::getResourceUrl('defaultuserphoto/'.$size);
         }
 
         return $url;
@@ -1026,11 +1026,11 @@ class User extends Element implements IdentityInterface
     public function getCpEditUrl()
     {
         if ($this->isCurrent()) {
-            return UrlHelper::getCpUrl('myaccount');
+            return Url::getCpUrl('myaccount');
         } else if (Craft::$app->getEdition() == Craft::Client && $this->client) {
-            return UrlHelper::getCpUrl('clientaccount');
+            return Url::getCpUrl('clientaccount');
         } else if (Craft::$app->getEdition() == Craft::Pro) {
-            return UrlHelper::getCpUrl('users/'.$this->id);
+            return Url::getCpUrl('users/'.$this->id);
         } else {
             return false;
         }

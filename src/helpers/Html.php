@@ -7,15 +7,13 @@
 
 namespace craft\app\helpers;
 
-use yii\helpers\Html;
-
 /**
- * Class HtmlHelper
+ * Class Html
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
-class HtmlHelper extends Html
+class Html extends \yii\helpers\Html
 {
     /**
      * Will take an HTML string and an associative array of key=>value pairs, HTML encode the values and swap them back

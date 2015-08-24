@@ -6,7 +6,7 @@
  */
 
 use craft\app\db\Query;
-use craft\app\helpers\IOHelper;
+use craft\app\helpers\Io;
 use yii\helpers\VarDumper;
 use yii\web\Request;
 
@@ -242,9 +242,9 @@ EOD;
      */
     private static function _writeFieldAttributesFile($templatePath, $search, $replace, $destinationPath)
     {
-        $fileContents = IOHelper::getFileContents($templatePath);
+        $fileContents = Io::getFileContents($templatePath);
         $fileContents = str_replace($search, $replace, $fileContents);
-        IOHelper::writeToFile($destinationPath, $fileContents);
+        Io::writeToFile($destinationPath, $fileContents);
         include($destinationPath);
     }
 }

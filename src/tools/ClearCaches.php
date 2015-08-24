@@ -9,7 +9,7 @@ namespace craft\app\tools;
 
 use Craft;
 use craft\app\base\Tool;
-use craft\app\helpers\IOHelper;
+use craft\app\helpers\Io;
 
 /**
  * ClearCaches represents a Clear Caches tool.
@@ -130,7 +130,7 @@ class ClearCaches extends Tool
                     if ($allFolder == 'dataCache') {
                         Craft::$app->getCache()->flush();
                     } else {
-                        IOHelper::clearFolder($allFolder, true);
+                        Io::clearFolder($allFolder, true);
                         break;
                     }
                 }

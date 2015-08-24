@@ -45,7 +45,7 @@ class Cp
                 if (!empty($updateModel->app->releases)) {
                     if (Craft::$app->getUpdates()->criticalCraftUpdateAvailable($updateModel->app->releases)) {
                         $alerts[] = Craft::t('app', 'There’s a critical Craft update available.').
-                            ' <a class="go nowrap" href="'.UrlHelper::getUrl('updates').'">'.Craft::t('app', 'Go to Updates').'</a>';
+                            ' <a class="go nowrap" href="'.Url::getUrl('updates').'">'.Craft::t('app', 'Go to Updates').'</a>';
                     }
                 }
             }
@@ -56,8 +56,8 @@ class Cp
             if ($licenseKeyStatus == LicenseKeyStatus::MismatchedDomain) {
                 $licensedDomain = Craft::$app->getEt()->getLicensedDomain();
                 $licenseKeyPath = Craft::$app->getPath()->getLicenseKeyPath();
-                $licenseKeyFile = IOHelper::getFolderName($licenseKeyPath,
-                        false).'/'.IOHelper::getFilename($licenseKeyPath);
+                $licenseKeyFile = Io::getFolderName($licenseKeyPath,
+                        false).'/'.Io::getFilename($licenseKeyPath);
 
                 $message = Craft::t('app', 'The license located at {file} belongs to {domain}.',
                     [

@@ -8,12 +8,12 @@
 namespace craft\app\helpers;
 
 /**
- * Class LoggingHelper
+ * Class Logging
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
-class LoggingHelper
+class Logging
 {
     // Public Methods
     // =========================================================================

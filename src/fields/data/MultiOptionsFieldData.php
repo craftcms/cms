@@ -8,7 +8,7 @@
 namespace craft\app\fields\data;
 
 use craft\app\base\Savable;
-use craft\app\helpers\JsonHelper;
+use craft\app\helpers\Json;
 
 /**
  * Multi-select option field data class.
@@ -72,6 +72,6 @@ class MultiOptionsFieldData extends \ArrayObject implements Savable
      */
     public function getSavableValue()
     {
-        return JsonHelper::encode($this->getArrayCopy());
+        return Json::encode($this->getArrayCopy());
     }
 }

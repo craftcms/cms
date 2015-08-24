@@ -8,7 +8,7 @@
 namespace craft\app\cache;
 
 use Craft;
-use craft\app\helpers\IOHelper;
+use craft\app\helpers\Io;
 
 /**
  * Class FileCache
@@ -83,24 +83,24 @@ class FileCache extends \yii\caching\FileCache
         $cacheFile = $this->getCacheFile($key);
 
         if ($this->directoryLevel > 0) {
-            IOHelper::createFolder(IOHelper::getFolderName($cacheFile));
+            Io::createFolder(Io::getFolderName($cacheFile));
         }
 
         if ($this->_originalKey == 'useWriteFileLock') {
-            if (IOHelper::writeToFile($cacheFile, $value, true, false,
+            if (Io::writeToFile($cacheFile, $value, true, false,
                     true) !== false
             ) {
-                IOHelper::changePermissions($cacheFile, Craft::$app->getConfig()->get('defaultFilePermissions'));
+                Io::changePermissions($cacheFile, Craft::$app->getConfig()->get('defaultFilePermissions'));
 
-                return IOHelper::touch($cacheFile, $expire);
+                return Io::touch($cacheFile, $expire);
             } else {
                 return false;
             }
         } else {
-            if (IOHelper::writeToFile($cacheFile, $value) !== false) {
-                IOHelper::changePermissions($cacheFile, Craft::$app->getConfig()->get('defaultFilePermissions'));
+            if (Io::writeToFile($cacheFile, $value) !== false) {
+                Io::changePermissions($cacheFile, Craft::$app->getConfig()->get('defaultFilePermissions'));
 
-                return IOHelper::touch($cacheFile, $expire);
+                return Io::touch($cacheFile, $expire);
             } else {
                 return false;
             }

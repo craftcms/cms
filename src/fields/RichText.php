@@ -12,8 +12,8 @@ use craft\app\base\Field;
 use craft\app\fields\data\RichTextData;
 use craft\app\helpers\Db;
 use craft\app\helpers\HtmlPurifier;
-use craft\app\helpers\IOHelper;
-use craft\app\helpers\JsonHelper;
+use craft\app\helpers\Io;
+use craft\app\helpers\Json;
 use craft\app\helpers\StringHelper;
 use craft\app\models\Section;
 use craft\app\validators\Handle;
@@ -77,12 +77,12 @@ class RichText extends Field
         $configOptions = ['' => Craft::t('app', 'Default')];
         $configPath = Craft::$app->getPath()->getConfigPath().'/redactor';
 
-        if (IOHelper::folderExists($configPath)) {
-            $configFiles = IOHelper::getFolderContents($configPath, false, '\.json$');
+        if (Io::folderExists($configPath)) {
+            $configFiles = Io::getFolderContents($configPath, false, '\.json$');
 
             if (is_array($configFiles)) {
                 foreach ($configFiles as $file) {
-                    $configOptions[IOHelper::getFilename($file)] = IOHelper::getFilename($file, false);
+                    $configOptions[Io::getFilename($file)] = Io::getFilename($file, false);
                 }
             }
         }
@@ -147,9 +147,9 @@ class RichText extends Field
 
         Craft::$app->getView()->registerJs('new Craft.RichTextInput('.
             '"'.Craft::$app->getView()->namespaceInputId($id).'", '.
-            JsonHelper::encode($this->_getSectionSources()).', '.
-            JsonHelper::encode($this->_getCategorySources()).', '.
-            JsonHelper::encode($this->_getAssetSources()).', '.
+            Json::encode($this->_getSectionSources()).', '.
+            Json::encode($this->_getCategorySources()).', '.
+            Json::encode($this->_getAssetSources()).', '.
             '"'.$localeId.'", ' .
             $orientation.', ' .
             $configJs.', '.
@@ -355,7 +355,7 @@ class RichText extends Field
     {
         if ($this->configFile) {
             $configPath = Craft::$app->getPath()->getConfigPath().'/redactor/'.$this->configFile;
-            $js = IOHelper::getFileContents($configPath);
+            $js = Io::getFileContents($configPath);
         }
 
         if (empty($js)) {
@@ -441,7 +441,7 @@ class RichText extends Field
     {
         $path = 'lib/redactor/lang/'.$lang.'.js';
 
-        if (IOHelper::fileExists(Craft::$app->getPath()->getResourcesPath().'/'.$path)) {
+        if (Io::fileExists(Craft::$app->getPath()->getResourcesPath().'/'.$path)) {
             Craft::$app->getView()->registerJsResource($path);
             static::$_redactorLang = $lang;
 

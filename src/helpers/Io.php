@@ -15,12 +15,12 @@ use craft\app\io\Folder;
 use yii\helpers\FileHelper;
 
 /**
- * Class IOHelper
+ * Class Io
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
-class IOHelper
+class Io
 {
     // Public Methods
     // =========================================================================
@@ -748,7 +748,7 @@ class IOHelper
                 // We haven't cached file lock information yet and this is not a noFileLock request.
                 if (($useFileLock = Craft::$app->getCache()->get('useWriteFileLock')) === false && !$noFileLock) {
                     // For file systems that don't support file locking... LOOKING AT YOU NFS!!!
-                    set_error_handler([new IOHelper(), 'handleError']);
+                    set_error_handler([new Io(), 'handleError']);
 
                     try {
                         Craft::info('Trying to write to file at '.$path.' using LOCK_EX.', __METHOD__);
@@ -1517,8 +1517,8 @@ class IOHelper
      */
     public static function ensureFolderExists($folderPath, $suppressErrors = false)
     {
-        if (!IOHelper::folderExists($folderPath, $suppressErrors)) {
-            IOHelper::createFolder($folderPath, Craft::$app->getConfig()->get('defaultFolderPermissions'), $suppressErrors);
+        if (!Io::folderExists($folderPath, $suppressErrors)) {
+            Io::createFolder($folderPath, Craft::$app->getConfig()->get('defaultFolderPermissions'), $suppressErrors);
         }
     }
 
@@ -1633,7 +1633,7 @@ class IOHelper
         $files = static::getFiles($folder, $suppressErrors);
 
         foreach ($files as $file) {
-            $lastModifiedTime = IOHelper::getLastTimeModified($file, $suppressErrors);
+            $lastModifiedTime = Io::getLastTimeModified($file, $suppressErrors);
             $fileResults[$lastModifiedTime->getTimestamp()] = $file;
         }
 
@@ -1671,7 +1671,7 @@ class IOHelper
     }
 
     /**
-     * Custom error handler used in IOHelper used for detecting if the file system
+     * Custom error handler used in Io used for detecting if the file system
      * supports exclusive locks when writing.
      *
      * @param       $errNo

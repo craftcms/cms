@@ -10,12 +10,12 @@ namespace craft\app\helpers;
 use Craft;
 
 /**
- * Class NumberHelper
+ * Class Number
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
-class NumberHelper
+class Number
 {
     // Public Methods
     // =========================================================================

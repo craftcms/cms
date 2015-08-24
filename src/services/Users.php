@@ -17,10 +17,10 @@ use craft\app\events\UserEvent;
 use craft\app\helpers\Assets;
 use craft\app\helpers\DateTimeHelper;
 use craft\app\helpers\Db;
-use craft\app\helpers\IOHelper;
-use craft\app\helpers\JsonHelper;
-use craft\app\helpers\TemplateHelper;
-use craft\app\helpers\UrlHelper;
+use craft\app\helpers\Io;
+use craft\app\helpers\Json;
+use craft\app\helpers\Template;
+use craft\app\helpers\Url;
 use craft\app\io\Image;
 use craft\app\models\Password as PasswordModel;
 use craft\app\elements\User;
@@ -412,12 +412,12 @@ class Users extends Component
                         $oldFolder = $userPhotosPath.'/'.$cleanOldUsername;
                         $newFolder = $userPhotosPath.'/'.$cleanUsername;
 
-                        if (IOHelper::folderExists($newFolder)) {
-                            IOHelper::deleteFolder($newFolder);
+                        if (Io::folderExists($newFolder)) {
+                            Io::deleteFolder($newFolder);
                         }
 
-                        if (IOHelper::folderExists($oldFolder)) {
-                            IOHelper::rename($oldFolder, $newFolder);
+                        if (Io::folderExists($oldFolder)) {
+                            Io::rename($oldFolder, $newFolder);
                         }
                     }
                 }
@@ -472,7 +472,7 @@ class Users extends Component
             ->where(['userId' => $userId])
             ->scalar();
 
-        return $preferences ? JsonHelper::decode($preferences) : [];
+        return $preferences ? Json::decode($preferences) : [];
     }
 
     /**
@@ -488,7 +488,7 @@ class Users extends Component
         Craft::$app->getDb()->createCommand()->insertOrUpdate(
             '{{%userpreferences}}',
             ['userId' => $user->id],
-            ['preferences' => JsonHelper::encode($preferences)],
+            ['preferences' => Json::encode($preferences)],
             false
         )->execute();
     }
@@ -512,7 +512,7 @@ class Users extends Component
         }
 
         return Craft::$app->getMailer()
-            ->composeFromKey('account_activation', ['link' => TemplateHelper::getRaw($url)])
+            ->composeFromKey('account_activation', ['link' => Template::getRaw($url)])
             ->setTo($user)
             ->send();
     }
@@ -531,7 +531,7 @@ class Users extends Component
         $url = $this->getEmailVerifyUrl($user);
 
         return Craft::$app->getMailer()
-            ->composeFromKey('verify_new_email', ['link' => TemplateHelper::getRaw($url)])
+            ->composeFromKey('verify_new_email', ['link' => Template::getRaw($url)])
             ->setTo($user)
             ->send();
     }
@@ -550,7 +550,7 @@ class Users extends Component
         $url = $this->getPasswordResetUrl($user);
 
         return Craft::$app->getMailer()
-            ->composeFromKey('forgot_password', ['link' => TemplateHelper::getRaw($url)])
+            ->composeFromKey('forgot_password', ['link' => Template::getRaw($url)])
             ->setTo($user)
             ->send();
     }
@@ -569,13 +569,13 @@ class Users extends Component
         $userRecord->save();
 
         if ($user->can('accessCp')) {
-            $url = UrlHelper::getActionUrl('users/verifyemail',
+            $url = Url::getActionUrl('users/verifyemail',
                 ['code' => $unhashedVerificationCode, 'id' => $userRecord->uid],
                 Craft::$app->getRequest()->getIsSecureConnection() ? 'https' : 'http');
         } else {
             // We want to hide the CP trigger if they don't have access to the CP.
             $path = Craft::$app->getConfig()->get('actionTrigger').'/users/verifyemail';
-            $url = UrlHelper::getSiteUrl($path,
+            $url = Url::getSiteUrl($path,
                 ['code' => $unhashedVerificationCode, 'id' => $userRecord->uid],
                 Craft::$app->getRequest()->getIsSecureConnection() ? 'https' : 'http');
         }
@@ -604,9 +604,9 @@ class Users extends Component
         $scheme = Craft::$app->getRequest()->getIsSecureConnection() ? 'https' : 'http';
 
         if ($user->can('accessCp')) {
-            return UrlHelper::getCpUrl($path, $params, $scheme);
+            return Url::getCpUrl($path, $params, $scheme);
         } else {
-            return UrlHelper::getSiteUrl($path, $params, $scheme);
+            return Url::getSiteUrl($path, $params, $scheme);
         }
     }
 
@@ -626,8 +626,8 @@ class Users extends Component
         $userPhotoFolder = Craft::$app->getPath()->getUserPhotosPath().'/'.$userName;
         $targetFolder = $userPhotoFolder.'/original';
 
-        IOHelper::ensureFolderExists($userPhotoFolder);
-        IOHelper::ensureFolderExists($targetFolder);
+        Io::ensureFolderExists($userPhotoFolder);
+        Io::ensureFolderExists($targetFolder);
 
         $targetPath = $targetFolder.'/'.Assets::prepareAssetName($filename,
                 false);
@@ -635,7 +635,7 @@ class Users extends Component
         $result = $image->saveAs($targetPath);
 
         if ($result) {
-            IOHelper::changePermissions($targetPath, Craft::$app->getConfig()->get('defaultFilePermissions'));
+            Io::changePermissions($targetPath, Craft::$app->getConfig()->get('defaultFilePermissions'));
             $record = UserRecord::findOne($user->id);
             $record->photo = $filename;
             $record->save();
@@ -660,8 +660,8 @@ class Users extends Component
         $username = Assets::prepareAssetName($user->username, false);
         $folder = Craft::$app->getPath()->getUserPhotosPath().'/'.$username;
 
-        if (IOHelper::folderExists($folder)) {
-            IOHelper::deleteFolder($folder);
+        if (Io::folderExists($folder)) {
+            Io::deleteFolder($folder);
         }
 
         $record = UserRecord::findOne($user->id);
@@ -832,8 +832,8 @@ class Users extends Component
                 $newProfilePhotoPath = $userPhotosPath.'/'.Assets::cleanAssetName($user->unverifiedEmail);
 
                 // Update the user profile photo folder name, if it exists.
-                if (IOHelper::folderExists($oldProfilePhotoPath)) {
-                    IOHelper::rename($oldProfilePhotoPath, $newProfilePhotoPath);
+                if (Io::folderExists($oldProfilePhotoPath)) {
+                    Io::rename($oldProfilePhotoPath, $newProfilePhotoPath);
                 }
             }
 

@@ -11,8 +11,8 @@ use Craft;
 use craft\app\elements\Entry;
 use craft\app\errors\Exception;
 use craft\app\errors\HttpException;
-use craft\app\helpers\JsonHelper;
-use craft\app\helpers\UrlHelper;
+use craft\app\helpers\Json;
+use craft\app\helpers\Url;
 use craft\app\models\EntryType;
 use craft\app\models\Section;
 use craft\app\models\SectionLocale;
@@ -142,11 +142,11 @@ class SectionsController extends Controller
         $variables['crumbs'] = [
             [
                 'label' => Craft::t('app', 'Settings'),
-                'url' => UrlHelper::getUrl('settings')
+                'url' => Url::getUrl('settings')
             ],
             [
                 'label' => Craft::t('app', 'Sections'),
-                'url' => UrlHelper::getUrl('settings/sections')
+                'url' => Url::getUrl('settings/sections')
             ],
         ];
 
@@ -260,15 +260,15 @@ class SectionsController extends Controller
         $crumbs = [
             [
                 'label' => Craft::t('app', 'Settings'),
-                'url' => UrlHelper::getUrl('settings')
+                'url' => Url::getUrl('settings')
             ],
             [
                 'label' => Craft::t('app', 'Sections'),
-                'url' => UrlHelper::getUrl('settings/sections')
+                'url' => Url::getUrl('settings/sections')
             ],
             [
                 'label' => Craft::t('site', $section->name),
-                'url' => UrlHelper::getUrl('settings/sections/'.$section->id)
+                'url' => Url::getUrl('settings/sections/'.$section->id)
             ],
         ];
 
@@ -324,19 +324,19 @@ class SectionsController extends Controller
         $crumbs = [
             [
                 'label' => Craft::t('app', 'Settings'),
-                'url' => UrlHelper::getUrl('settings')
+                'url' => Url::getUrl('settings')
             ],
             [
                 'label' => Craft::t('app', 'Sections'),
-                'url' => UrlHelper::getUrl('settings/sections')
+                'url' => Url::getUrl('settings/sections')
             ],
             [
                 'label' => $section->name,
-                'url' => UrlHelper::getUrl('settings/sections/'.$section->id)
+                'url' => Url::getUrl('settings/sections/'.$section->id)
             ],
             [
                 'label' => Craft::t('app', 'Entry Types'),
-                'url' => UrlHelper::getUrl('settings/sections/'.$sectionId.'/entrytypes')
+                'url' => Url::getUrl('settings/sections/'.$sectionId.'/entrytypes')
             ],
         ];
 
@@ -412,7 +412,7 @@ class SectionsController extends Controller
         $this->requirePostRequest();
         $this->requireAjaxRequest();
 
-        $entryTypeIds = JsonHelper::decode(Craft::$app->getRequest()->getRequiredBodyParam('ids'));
+        $entryTypeIds = Json::decode(Craft::$app->getRequest()->getRequiredBodyParam('ids'));
         Craft::$app->getSections()->reorderEntryTypes($entryTypeIds);
 
         return $this->asJson(['success' => true]);

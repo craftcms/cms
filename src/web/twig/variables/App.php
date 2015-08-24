@@ -9,7 +9,7 @@ namespace craft\app\web\twig\variables;
 
 use craft\app\dates\DateTime;
 use craft\app\helpers\App;
-use craft\app\helpers\IOHelper;
+use craft\app\helpers\Io;
 
 /**
  * Class App variable.
@@ -236,6 +236,6 @@ class App
      */
     public function getFileKinds()
     {
-        return IOHelper::getFileKinds();
+        return Io::getFileKinds();
     }
 }

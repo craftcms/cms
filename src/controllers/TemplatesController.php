@@ -11,7 +11,7 @@ use Craft;
 use craft\app\errors\Exception;
 use craft\app\errors\HttpException;
 use craft\app\helpers\App;
-use craft\app\helpers\TemplateHelper;
+use craft\app\helpers\Template;
 use craft\app\web\Controller;
 use ErrorException;
 
@@ -179,7 +179,7 @@ class TemplatesController extends Controller
         // If this is a PHP error and html_errors (http://php.net/manual/en/errorfunc.configuration.php#ini.html-errors)
         // is enabled, then allow the HTML not get encoded
         if ($exception instanceof ErrorException && App::getPhpConfigValueAsBool('html_errors')) {
-            $variables['message'] = TemplateHelper::getRaw($variables['message']);
+            $variables['message'] = Template::getRaw($variables['message']);
         }
 
         return $this->renderTemplate($template, $variables);

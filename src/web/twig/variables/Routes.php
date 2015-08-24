@@ -8,8 +8,8 @@
 namespace craft\app\web\twig\variables;
 
 use craft\app\db\Query;
-use craft\app\helpers\HtmlHelper;
-use craft\app\helpers\JsonHelper;
+use craft\app\helpers\Html;
+use craft\app\helpers\Json;
 
 /**
  * Route functions.
@@ -39,13 +39,13 @@ class Routes
 
         foreach ($results as $result) {
             $urlDisplayHtml = '';
-            $urlParts = JsonHelper::decode($result['urlParts']);
+            $urlParts = Json::decode($result['urlParts']);
 
             foreach ($urlParts as $part) {
                 if (is_string($part)) {
                     $urlDisplayHtml .= $part;
                 } else {
-                    $urlDisplayHtml .= HtmlHelper::encodeParams('<span class="token" data-name="{name}" data-value="{value}"><span>{name}</span></span>',
+                    $urlDisplayHtml .= Html::encodeParams('<span class="token" data-name="{name}" data-value="{value}"><span>{name}</span></span>',
                         [
                             'name' => $part[0],
                             'value' => $part[1]

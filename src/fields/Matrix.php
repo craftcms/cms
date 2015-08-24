@@ -13,7 +13,7 @@ use craft\app\base\ElementInterface;
 use craft\app\base\Field;
 use craft\app\base\FieldInterface;
 use craft\app\elements\db\MatrixBlockQuery;
-use craft\app\helpers\JsonHelper;
+use craft\app\helpers\Json;
 use craft\app\helpers\StringHelper;
 use craft\app\elements\MatrixBlock;
 use craft\app\models\MatrixBlockType;
@@ -160,8 +160,8 @@ class Matrix extends Field
         Craft::$app->getView()->registerJsResource('js/MatrixConfigurator.js');
         Craft::$app->getView()->registerJs(
             'new Craft.MatrixConfigurator('.
-            JsonHelper::encode($fieldTypeInfo, JSON_UNESCAPED_UNICODE).', '.
-            JsonHelper::encode(Craft::$app->getView()->getNamespace(), JSON_UNESCAPED_UNICODE).
+            Json::encode($fieldTypeInfo, JSON_UNESCAPED_UNICODE).', '.
+            Json::encode(Craft::$app->getView()->getNamespace(), JSON_UNESCAPED_UNICODE).
             ');'
         );
 
@@ -258,7 +258,7 @@ class Matrix extends Field
 
         Craft::$app->getView()->registerJs('new Craft.MatrixInput('.
             '"'.Craft::$app->getView()->namespaceInputId($id).'", '.
-            JsonHelper::encode($blockTypeInfo, JSON_UNESCAPED_UNICODE).', '.
+            Json::encode($blockTypeInfo, JSON_UNESCAPED_UNICODE).', '.
             '"'.Craft::$app->getView()->namespaceInputName($this->handle).'", '.
             ($this->maxBlocks ? $this->maxBlocks : 'null').
             ');');

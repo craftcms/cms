@@ -9,7 +9,7 @@ namespace craft\app\tools;
 
 use Craft;
 use craft\app\base\Tool;
-use craft\app\helpers\IOHelper;
+use craft\app\helpers\Io;
 use craft\app\io\Zip;
 
 /**
@@ -64,18 +64,18 @@ class DbBackup extends Tool
         // table in this tools' case.
         $file = Craft::$app->getDb()->backup();
 
-        if (IOHelper::fileExists($file) && isset($params['downloadBackup']) && (bool)$params['downloadBackup']) {
-            $destZip = Craft::$app->getPath()->getTempPath().'/'.IOHelper::getFilename($file,
+        if (Io::fileExists($file) && isset($params['downloadBackup']) && (bool)$params['downloadBackup']) {
+            $destZip = Craft::$app->getPath()->getTempPath().'/'.Io::getFilename($file,
                     false).'.zip';
 
-            if (IOHelper::fileExists($destZip)) {
-                IOHelper::deleteFile($destZip, true);
+            if (Io::fileExists($destZip)) {
+                Io::deleteFile($destZip, true);
             }
 
-            IOHelper::createFile($destZip);
+            Io::createFile($destZip);
 
             if (Zip::add($destZip, $file, Craft::$app->getPath()->getDbBackupPath())) {
-                return ['backupFile' => IOHelper::getFilename($destZip, false)];
+                return ['backupFile' => Io::getFilename($destZip, false)];
             }
         }
     }

@@ -13,10 +13,10 @@ use craft\app\base\ElementInterface;
 use craft\app\events\Event;
 use craft\app\helpers\ArrayHelper;
 use craft\app\helpers\Element;
-use craft\app\helpers\HtmlHelper;
-use craft\app\helpers\IOHelper;
-use craft\app\helpers\JsonHelper;
-use craft\app\helpers\PathHelper;
+use craft\app\helpers\Html;
+use craft\app\helpers\Io;
+use craft\app\helpers\Json;
+use craft\app\helpers\Path;
 use craft\app\helpers\StringHelper;
 use craft\app\services\Plugins;
 use craft\app\web\assets\AppAsset;
@@ -470,7 +470,7 @@ class View extends \yii\web\View
         // Should we be looking for a localized version of the template?
         $request = Craft::$app->getRequest();
 
-        if (!$request->getIsConsoleRequest() && $request->getIsSiteRequest() && IOHelper::folderExists($templatesPath.'/'.Craft::$app->language)) {
+        if (!$request->getIsConsoleRequest() && $request->getIsSiteRequest() && Io::folderExists($templatesPath.'/'.Craft::$app->language)) {
             $basePaths[] = $templatesPath.'/'.Craft::$app->language;
         }
 
@@ -761,7 +761,7 @@ class View extends \yii\web\View
      */
     public function getTranslations()
     {
-        $translations = JsonHelper::encode(array_filter($this->_translations));
+        $translations = Json::encode(array_filter($this->_translations));
         $this->_translations = [];
 
         return $translations;
@@ -1025,7 +1025,7 @@ class View extends \yii\web\View
             throw new \Twig_Error_Loader(Craft::t('app', 'A template name cannot contain NUL bytes.'));
         }
 
-        if (PathHelper::ensurePathIsContained($name) === false) {
+        if (Path::ensurePathIsContained($name) === false) {
             throw new \Twig_Error_Loader(Craft::t('app', 'Looks like you try to load a template outside the template folder: {template}.', ['template' => $name]));
         }
     }
@@ -1041,8 +1041,8 @@ class View extends \yii\web\View
     private function _resolveTemplate($basePath, $name)
     {
         // Normalize the path and name
-        $basePath = rtrim(IOHelper::normalizePathSeparators($basePath), '/\\');
-        $name = trim(IOHelper::normalizePathSeparators($name), '/');
+        $basePath = rtrim(Io::normalizePathSeparators($basePath), '/\\');
+        $name = trim(Io::normalizePathSeparators($name), '/');
 
         // Set the defaultTemplateExtensions and indexTemplateFilenames vars
         if (!isset($this->_defaultTemplateExtensions)) {
@@ -1062,14 +1062,14 @@ class View extends \yii\web\View
             // Maybe $name is already the full file path
             $testPath = $basePath.'/'.$name;
 
-            if (IOHelper::fileExists($testPath)) {
+            if (Io::fileExists($testPath)) {
                 return $testPath;
             }
 
             foreach ($this->_defaultTemplateExtensions as $extension) {
                 $testPath = $basePath.'/'.$name.'.'.$extension;
 
-                if (IOHelper::fileExists($testPath)) {
+                if (Io::fileExists($testPath)) {
                     return $testPath;
                 }
             }
@@ -1079,7 +1079,7 @@ class View extends \yii\web\View
             foreach ($this->_defaultTemplateExtensions as $extension) {
                 $testPath = $basePath.'/'.($name ? $name.'/' : '').$filename.'.'.$extension;
 
-                if (IOHelper::fileExists($testPath)) {
+                if (Io::fileExists($testPath)) {
                     return $testPath;
                 }
             }
@@ -1172,7 +1172,7 @@ class View extends \yii\web\View
         $sourcePath = Craft::getAlias('@app/resources');
 
         // If the resource doesn't exist in craft/app/resources, check plugins' resources/ subfolders
-        if (!IOHelper::fileExists($sourcePath.'/'.$path)) {
+        if (!Io::fileExists($sourcePath.'/'.$path)) {
             $pathParts = explode('/', $path);
 
             if (count($pathParts) > 1) {
@@ -1180,7 +1180,7 @@ class View extends \yii\web\View
                 $pluginSourcePath = Craft::getAlias('@craft/plugins/'.$pluginHandle.'/resources');
                 $pluginSubpath = implode('/', $pathParts);
 
-                if (IOHelper::fileExists($pluginSourcePath.'/'.$pluginSubpath)) {
+                if (Io::fileExists($pluginSourcePath.'/'.$pluginSubpath)) {
                     $sourcePath = $pluginSourcePath;
                     $path = $pluginSubpath;
                 }
@@ -1317,13 +1317,13 @@ class View extends \yii\web\View
         $html .= '<span class="title">';
 
         if ($context['context'] == 'index' && ($cpEditUrl = $element->getCpEditUrl())) {
-            $html .= HtmlHelper::encodeParams('<a href="{cpEditUrl}">{label}</a>',
+            $html .= Html::encodeParams('<a href="{cpEditUrl}">{label}</a>',
                 [
                     'cpEditUrl' => $cpEditUrl,
                     'label' => $label
                 ]);
         } else {
-            $html .= HtmlHelper::encode($label);
+            $html .= Html::encode($label);
         }
 
         $html .= '</span></div></div>';

@@ -245,7 +245,7 @@ class Volumes extends Component
             $volume->id = $volumeId;
             $volume->name = TempAssetvolumeType::volumeName;
             $volume->type = TempAssetvolumeType::volumeType;
-            $volume->settings = ['path' => Craft::$app->getPath()->getAssetsTempvolumePath(), 'url' => rtrim(UrlHelper::getResourceUrl(), '/').'/tempassets/'];*/
+            $volume->settings = ['path' => Craft::$app->getPath()->getAssetsTempvolumePath(), 'url' => rtrim(Url::getResourceUrl(), '/').'/tempassets/'];*/
             return;// $volume;
         } else {
             // If we've already fetched all volumes we can save ourselves a trip to the DB for volume IDs that don't

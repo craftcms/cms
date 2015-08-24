@@ -10,7 +10,7 @@ namespace craft\app\models;
 use Craft;
 use craft\app\base\ElementInterface;
 use craft\app\base\Model;
-use craft\app\helpers\UrlHelper;
+use craft\app\helpers\Url;
 use craft\app\models\Section as SectionModel;
 
 /**
@@ -141,7 +141,7 @@ class EntryType extends Model
      */
     public function getCpEditUrl()
     {
-        return UrlHelper::getCpUrl('settings/sections/'.$this->sectionId.'/entrytypes/'.$this->id);
+        return Url::getCpUrl('settings/sections/'.$this->sectionId.'/entrytypes/'.$this->id);
     }
 
     /**

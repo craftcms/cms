@@ -9,8 +9,8 @@ namespace craft\app\services;
 
 use Craft;
 use craft\app\helpers\App;
-use craft\app\helpers\ImageHelper;
-use craft\app\helpers\IOHelper;
+use craft\app\helpers\Image;
+use craft\app\helpers\Io;
 use craft\app\helpers\StringHelper;
 use craft\app\image\Raster;
 use craft\app\image\Svg;
@@ -87,7 +87,7 @@ class Images extends Component
      */
     public function loadImage($path, $rasterize = false, $svgSize = 1000)
     {
-        if (StringHelper::toLowerCase(IOHelper::getExtension($path)) == 'svg')
+        if (StringHelper::toLowerCase(Io::getExtension($path)) == 'svg')
         {
             $image = new Svg();
             $image->loadImage($path);
@@ -124,7 +124,7 @@ class Images extends Component
      */
     public function checkMemoryForImage($filePath, $toTheMax = false)
     {
-        if (StringHelper::toLowerCase(IOHelper::getExtension($filePath)) == 'svg')
+        if (StringHelper::toLowerCase(Io::getExtension($filePath)) == 'svg')
         {
             return true;
         }
@@ -199,7 +199,7 @@ class Images extends Component
      */
     public function rotateImageByExifData($filePath)
     {
-        if (!ImageHelper::canHaveExifData($filePath)) {
+        if (!Image::canHaveExifData($filePath)) {
             return false;
         }
 
@@ -208,15 +208,15 @@ class Images extends Component
 
         if (!empty($exif['ifd0.Orientation'])) {
             switch ($exif['ifd0.Orientation']) {
-                case ImageHelper::EXIF_IFD0_ROTATE_180: {
+                case Image::EXIF_IFD0_ROTATE_180: {
                     $degrees = 180;
                     break;
                 }
-                case ImageHelper::EXIF_IFD0_ROTATE_90: {
+                case Image::EXIF_IFD0_ROTATE_90: {
                     $degrees = 90;
                     break;
                 }
-                case ImageHelper::EXIF_IFD0_ROTATE_270: {
+                case Image::EXIF_IFD0_ROTATE_270: {
                     $degrees = 270;
                     break;
                 }
@@ -241,7 +241,7 @@ class Images extends Component
      */
     public function getExifData($filePath)
     {
-        if (!ImageHelper::canHaveExifData($filePath)) {
+        if (!Image::canHaveExifData($filePath)) {
             return null;
         }
 
@@ -259,11 +259,11 @@ class Images extends Component
      */
     public function stripOrientationFromExifData($filePath)
     {
-        if (!ImageHelper::canHaveExifData($filePath)) {
+        if (!Image::canHaveExifData($filePath)) {
             return null;
         }
 
-        $data = new \PelDataWindow(IOHelper::getFileContents($filePath));
+        $data = new \PelDataWindow(Io::getFileContents($filePath));
 
         // Is this a valid JPEG?
         if (\PelJpeg::isValid($data)) {

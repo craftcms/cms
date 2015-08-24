@@ -7,7 +7,7 @@
 
 namespace craft\app\log;
 
-use craft\app\helpers\LoggingHelper;
+use craft\app\helpers\Logging;
 
 /**
  * Class FileTarget
@@ -25,6 +25,6 @@ class FileTarget extends \yii\log\FileTarget
         $message = parent::getContextMessage();
 
         // Remove any sensitive info.
-        return LoggingHelper::redact($message);
+        return Logging::redact($message);
     }
 }

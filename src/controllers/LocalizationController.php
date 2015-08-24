@@ -9,7 +9,7 @@ namespace craft\app\controllers;
 
 use Craft;
 use craft\app\errors\HttpException;
-use craft\app\helpers\JsonHelper;
+use craft\app\helpers\Json;
 use craft\app\web\Controller;
 
 Craft::$app->requireEdition(Craft::Pro);
@@ -64,7 +64,7 @@ class LocalizationController extends Controller
         $this->requirePostRequest();
         $this->requireAjaxRequest();
 
-        $localeIds = JsonHelper::decode(Craft::$app->getRequest()->getRequiredBodyParam('ids'));
+        $localeIds = Json::decode(Craft::$app->getRequest()->getRequiredBodyParam('ids'));
         $success = Craft::$app->getI18n()->reorderSiteLocales($localeIds);
 
         return $this->asJson(['success' => $success]);

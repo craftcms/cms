@@ -7,7 +7,7 @@
 
 namespace craft\app\io;
 
-use craft\app\helpers\IOHelper;
+use craft\app\helpers\Io;
 
 /**
  * Class Folder
@@ -50,7 +50,7 @@ class Folder extends BaseIO
     public function getSize()
     {
         if (!$this->_size) {
-            $this->_size = IOHelper::getFolderSize($this->getRealPath());
+            $this->_size = Io::getFolderSize($this->getRealPath());
         }
 
         return $this->_size;
@@ -62,7 +62,7 @@ class Folder extends BaseIO
     public function isEmpty()
     {
         if (!$this->_isEmpty) {
-            $this->_isEmpty = IOHelper::isFolderEmpty($this->getRealPath());
+            $this->_isEmpty = Io::isFolderEmpty($this->getRealPath());
         }
 
         return $this->_isEmpty;
@@ -76,7 +76,7 @@ class Folder extends BaseIO
      */
     public function getContents($recursive, $filter)
     {
-        return IOHelper::getFolderContents($this->getRealPath(), $recursive, $filter);
+        return Io::getFolderContents($this->getRealPath(), $recursive, $filter);
     }
 
     /**
@@ -86,7 +86,7 @@ class Folder extends BaseIO
      */
     public function copy($destination)
     {
-        if (!IOHelper::copyFolder($this->getRealPath(), $destination)) {
+        if (!Io::copyFolder($this->getRealPath(), $destination)) {
             return false;
         }
 
@@ -100,7 +100,7 @@ class Folder extends BaseIO
      */
     public function clear($suppressErrors = false)
     {
-        if (!IOHelper::clearFolder($this->getRealPath(), $suppressErrors)) {
+        if (!Io::clearFolder($this->getRealPath(), $suppressErrors)) {
             return false;
         }
 
@@ -112,7 +112,7 @@ class Folder extends BaseIO
      */
     public function delete()
     {
-        if (!IOHelper::deleteFolder($this->getRealPath())) {
+        if (!Io::deleteFolder($this->getRealPath())) {
             return false;
         }
 

@@ -18,8 +18,8 @@ use craft\app\errors\AssetMissingException;
 use craft\app\errors\UploadFailedException;
 use craft\app\fields\Assets as AssetsField;
 use craft\app\helpers\Assets;
-use craft\app\helpers\ImageHelper;
-use craft\app\helpers\IOHelper;
+use craft\app\helpers\Image;
+use craft\app\helpers\Io;
 use craft\app\elements\Asset;
 use craft\app\helpers\StringHelper;
 use craft\app\models\VolumeFolder;
@@ -121,11 +121,11 @@ class AssetsController extends Controller
                     throw new HttpException(400, Craft::t('app', 'The target folder provided for uploading is not valid.'));
                 }
 
-                $pathOnServer = IOHelper::getTempFilePath($uploadedFile->name);
+                $pathOnServer = Io::getTempFilePath($uploadedFile->name);
                 $result = $uploadedFile->saveAs($pathOnServer);
 
                 if (!$result) {
-                    IOHelper::deleteFile($pathOnServer, true);
+                    Io::deleteFile($pathOnServer, true);
                     throw new UploadFailedException(UPLOAD_ERR_CANT_WRITE);
                 }
 
@@ -137,14 +137,14 @@ class AssetsController extends Controller
 
                 try {
                     Craft::$app->getAssets()->saveAsset($asset);
-                    IOHelper::deleteFile($pathOnServer, true);
+                    Io::deleteFile($pathOnServer, true);
                 } catch (AssetConflictException $exception) {
                     // Okay, get a replacement name and re-save Asset.
                     $replacementName = Craft::$app->getAssets()->getNameReplacementInFolder($asset->filename, $folder);
                     $asset->filename = $replacementName;
 
                     Craft::$app->getAssets()->saveAsset($asset);
-                    IOHelper::deleteFile($pathOnServer, true);
+                    Io::deleteFile($pathOnServer, true);
 
                     return $this->asJson([
                         'prompt' => true,
@@ -153,7 +153,7 @@ class AssetsController extends Controller
                     ]);
                 } // No matter what happened, delete the file on server.
                 catch (\Exception $exception) {
-                    IOHelper::deleteFile($pathOnServer, true);
+                    Io::deleteFile($pathOnServer, true);
                     throw $exception;
                 }
 
@@ -188,11 +188,11 @@ class AssetsController extends Controller
             }
 
             $fileName = Assets::prepareAssetName($uploadedFile->name);
-            $pathOnServer = IOHelper::getTempFilePath($uploadedFile->name);
+            $pathOnServer = Io::getTempFilePath($uploadedFile->name);
             $result = $uploadedFile->saveAs($pathOnServer);
 
             if (!$result) {
-                IOHelper::deleteFile($pathOnServer, true);
+                Io::deleteFile($pathOnServer, true);
                 throw new UploadFailedException(UPLOAD_ERR_CANT_WRITE);
             }
 

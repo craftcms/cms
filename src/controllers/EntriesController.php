@@ -13,8 +13,8 @@ use craft\app\elements\User;
 use craft\app\errors\Exception;
 use craft\app\errors\HttpException;
 use craft\app\helpers\DateTimeHelper;
-use craft\app\helpers\JsonHelper;
-use craft\app\helpers\UrlHelper;
+use craft\app\helpers\Json;
+use craft\app\helpers\Url;
 use craft\app\elements\Entry;
 use craft\app\models\EntryDraft;
 use craft\app\models\EntryVersion;
@@ -209,19 +209,19 @@ class EntriesController extends BaseEntriesController
         $variables['crumbs'] = [
             [
                 'label' => Craft::t('app', 'Entries'),
-                'url' => UrlHelper::getUrl('entries')
+                'url' => Url::getUrl('entries')
             ]
         ];
 
         if ($section->type == Section::TYPE_SINGLE) {
             $variables['crumbs'][] = [
                 'label' => Craft::t('app', 'Singles'),
-                'url' => UrlHelper::getUrl('entries/singles')
+                'url' => Url::getUrl('entries/singles')
             ];
         } else {
             $variables['crumbs'][] = [
                 'label' => Craft::t('site', $section->name),
-                'url' => UrlHelper::getUrl('entries/'.$section->handle)
+                'url' => Url::getUrl('entries/'.$section->handle)
             ];
 
             if ($section->type == Section::TYPE_STRUCTURE) {
@@ -256,7 +256,7 @@ class EntriesController extends BaseEntriesController
 
         // Enable Live Preview?
         if (!Craft::$app->getRequest()->getIsMobileBrowser(true) && Craft::$app->getSections()->isSectionTemplateValid($section)) {
-            Craft::$app->getView()->registerJs('Craft.LivePreview.init('.JsonHelper::encode([
+            Craft::$app->getView()->registerJs('Craft.LivePreview.init('.Json::encode([
                     'fields' => '#title-field, #fields > div > div > .field',
                     'extraFields' => '#settings',
                     'previewUrl' => $entry->getUrl(),
@@ -300,7 +300,7 @@ class EntriesController extends BaseEntriesController
                         }
                     }
 
-                    $variables['shareUrl'] = UrlHelper::getActionUrl('entries/share-entry', $shareParams);
+                    $variables['shareUrl'] = Url::getActionUrl('entries/share-entry', $shareParams);
                 }
             }
         } else {
@@ -581,7 +581,7 @@ class EntriesController extends BaseEntriesController
             'action' => 'entries/view-shared-entry',
             'params' => $params
         ]);
-        $url = UrlHelper::getUrlWithToken($entry->getUrl(), $token);
+        $url = Url::getUrlWithToken($entry->getUrl(), $token);
 
         return Craft::$app->getResponse()->redirect($url);
     }

@@ -9,8 +9,8 @@ namespace craft\app\io;
 
 use Craft;
 use craft\app\errors\Exception;
-use craft\app\helpers\ImageHelper;
-use craft\app\helpers\IOHelper;
+use craft\app\helpers\Image;
+use craft\app\helpers\Io;
 use craft\app\helpers\StringHelper;
 use Imagine\Image\AbstractFont;
 use Imagine\Image\FontInterface;
@@ -147,7 +147,7 @@ class Image
     {
         $imageService = Craft::$app->getImages();
 
-        if (!IOHelper::fileExists($path)) {
+        if (!Io::fileExists($path)) {
             throw new Exception(Craft::t(
                 'app',
                 'No file exists at the path “{path}”',
@@ -162,7 +162,7 @@ class Image
             ));
         }
 
-        $extension = IOHelper::getExtension($path);
+        $extension = Io::getExtension($path);
 
         if ($extension === 'svg') {
             if (!$imageService->isImagick()) {
@@ -172,11 +172,11 @@ class Image
                 ));
             }
 
-            $svg = IOHelper::getFileContents($path);
+            $svg = Io::getFileContents($path);
 
             if ($this->minSvgWidth !== null && $this->minSvgHeight !== null) {
                 // Does the <svg> node contain valid `width` and `height` attributes?
-                list($width, $height) = ImageHelper::parseSvgSize($svg);
+                list($width, $height) = Image::parseSvgSize($svg);
 
                 if ($width !== null && $height !== null) {
                     $scale = 1;
@@ -192,20 +192,20 @@ class Image
                     $width = round($width * $scale);
                     $height = round($height * $scale);
 
-                    if (preg_match(ImageHelper::SVG_WIDTH_RE, $svg) && preg_match(ImageHelper::SVG_HEIGHT_RE, $svg)) {
+                    if (preg_match(Image::SVG_WIDTH_RE, $svg) && preg_match(Image::SVG_HEIGHT_RE, $svg)) {
                         $svg = preg_replace(
-                            ImageHelper::SVG_WIDTH_RE,
+                            Image::SVG_WIDTH_RE,
                             "\${1}{$width}px\"",
                             $svg
                         );
                         $svg = preg_replace(
-                            ImageHelper::SVG_HEIGHT_RE,
+                            Image::SVG_HEIGHT_RE,
                             "\${1}{$height}px\"",
                             $svg
                         );
                     } else {
                         $svg = preg_replace(
-                            ImageHelper::SVG_TAG_RE,
+                            Image::SVG_TAG_RE,
                             "\${1} width=\"{$width}px\" height=\"{$height}px\" \${2}",
                             $svg
                         );
@@ -231,7 +231,7 @@ class Image
             }
         }
 
-        $this->_extension = IOHelper::getExtension($path);
+        $this->_extension = Io::getExtension($path);
         $this->_imageSourcePath = $path;
 
         if ($this->_extension == 'gif') {
@@ -474,21 +474,21 @@ class Image
      */
     public function saveAs($targetPath, $sanitizeAndAutoQuality = false)
     {
-        $extension = IOHelper::getExtension($targetPath);
+        $extension = Io::getExtension($targetPath);
         $lcExtension = StringHelper::toLowerCase($extension);
         $options = $this->_getSaveOptions(false, $lcExtension);
-        $targetPath = IOHelper::getFolderName(
+        $targetPath = Io::getFolderName(
                 $targetPath
-            ).IOHelper::getFilename(
+            ).Io::getFilename(
                 $targetPath,
                 false
             ).'.'.$extension;
 
         if (($lcExtension == 'jpeg' || $lcExtension == 'jpg' || $lcExtension == 'png') && $sanitizeAndAutoQuality) {
             clearstatcache();
-            $originalSize = IOHelper::getFileSize($this->_imageSourcePath);
+            $originalSize = Io::getFileSize($this->_imageSourcePath);
             $tempFile = $this->_autoGuessImageQuality($targetPath, $originalSize, $lcExtension, 0, 200);
-            IOHelper::move($tempFile, $targetPath, true);
+            Io::move($tempFile, $targetPath, true);
         } else {
             $this->_image->save($targetPath, $options);
         }
@@ -621,7 +621,7 @@ class Image
         }
 
         if (!$height || !$width) {
-            list($width, $height) = ImageHelper::calculateMissingDimension(
+            list($width, $height) = Image::calculateMissingDimension(
                 $width,
                 $height,
                 $this->getWidth(),
@@ -646,9 +646,9 @@ class Image
         @set_time_limit(30);
 
         if ($step == 0) {
-            $tempFilename = IOHelper::getFolderName(
+            $tempFilename = Io::getFolderName(
                     $tempFilename
-                ).IOHelper::getFilename(
+                ).Io::getFilename(
                     $tempFilename,
                     false
                 ).'-temp.'.$extension;
@@ -669,7 +669,7 @@ class Image
             $tempFilename,
             $this->_getSaveOptions($midQuality, $extension)
         );
-        $newFileSize = IOHelper::getFileSize($tempFilename);
+        $newFileSize = Io::getFileSize($tempFilename);
 
         // If we're on step 10 OR we're within our acceptable range threshold OR midQuality = maxQuality (1 == 1),
         // let's use the current image.
@@ -767,7 +767,7 @@ class Image
                     'png_compression_level' => $normalizedQuality,
                     'flatten' => false
                 ];
-                $pngInfo = ImageHelper::getPngImageInfo(
+                $pngInfo = Image::getPngImageInfo(
                     $this->_imageSourcePath
                 );
 

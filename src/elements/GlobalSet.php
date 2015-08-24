@@ -11,7 +11,7 @@ use Craft;
 use craft\app\base\Element;
 use craft\app\behaviors\FieldLayoutBehavior;
 use craft\app\elements\db\GlobalSetQuery;
-use craft\app\helpers\UrlHelper;
+use craft\app\helpers\Url;
 
 /**
  * GlobalSet represents a global set element.
@@ -148,6 +148,6 @@ class GlobalSet extends Element
      */
     public function getCpEditUrl()
     {
-        return UrlHelper::getCpUrl('globals/'.$this->handle);
+        return Url::getCpUrl('globals/'.$this->handle);
     }
 }

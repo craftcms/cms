@@ -10,7 +10,7 @@ namespace craft\app\elements\actions;
 use Craft;
 use craft\app\base\ElementAction;
 use craft\app\base\ElementInterface;
-use craft\app\helpers\JsonHelper;
+use craft\app\helpers\Json;
 
 /**
  * CopyReferenceTag represents a Copy Reference Tag element action.
@@ -44,10 +44,10 @@ class CopyReferenceTag extends ElementAction
      */
     public function getTriggerHtml()
     {
-        $type = JsonHelper::encode(static::className());
-        $prompt = JsonHelper::encode(Craft::t('app', '{ctrl}C to copy.'));
+        $type = Json::encode(static::className());
+        $prompt = Json::encode(Craft::t('app', '{ctrl}C to copy.'));
         $elementType = $this->elementType;
-        $elementTypeHandle = JsonHelper::encode($elementType::classHandle());
+        $elementTypeHandle = Json::encode($elementType::classHandle());
 
         $js = <<<EOT
 (function()

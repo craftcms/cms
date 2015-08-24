@@ -12,7 +12,7 @@ use craft\app\base\ElementAction;
 use craft\app\elements\db\ElementQuery;
 use craft\app\elements\db\ElementQueryInterface;
 use craft\app\elements\User;
-use craft\app\helpers\JsonHelper;
+use craft\app\helpers\Json;
 
 /**
  * SuspendUsers represents a Suspend Users element action.
@@ -38,8 +38,8 @@ class SuspendUsers extends ElementAction
      */
     public function getTriggerHtml()
     {
-        $type = JsonHelper::encode(static::className());
-        $userId = JsonHelper::encode(Craft::$app->getUser()->getIdentity()->id);
+        $type = Json::encode(static::className());
+        $userId = Json::encode(Craft::$app->getUser()->getIdentity()->id);
 
         $js = <<<EOT
 (function()

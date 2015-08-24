@@ -11,7 +11,7 @@ use Craft;
 use craft\app\base\ToolInterface;
 use craft\app\errors\HttpException;
 use craft\app\helpers\Component;
-use craft\app\helpers\IOHelper;
+use craft\app\helpers\Io;
 use craft\app\web\Controller;
 
 /**
@@ -68,8 +68,8 @@ class ToolsController extends Controller
     {
         $filename = Craft::$app->getRequest()->getRequiredQueryParam('filename');
 
-        if (($filePath = IOHelper::fileExists(Craft::$app->getPath()->getTempPath().'/'.$filename.'.zip')) == true) {
-            Craft::$app->getRequest()->sendFile(IOHelper::getFilename($filePath), IOHelper::getFileContents($filePath), ['forceDownload' => true]);
+        if (($filePath = Io::fileExists(Craft::$app->getPath()->getTempPath().'/'.$filename.'.zip')) == true) {
+            Craft::$app->getRequest()->sendFile(Io::getFilename($filePath), Io::getFileContents($filePath), ['forceDownload' => true]);
         }
     }
 }

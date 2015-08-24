@@ -11,7 +11,7 @@ use Craft;
 use craft\app\base\Element;
 use craft\app\base\ElementInterface;
 use craft\app\base\Field;
-use craft\app\helpers\JsonHelper;
+use craft\app\helpers\Json;
 use yii\db\Schema;
 
 /**
@@ -114,11 +114,11 @@ class Table extends Field
 
         Craft::$app->getView()->registerJsResource('js/TableFieldSettings.js');
         Craft::$app->getView()->registerJs('new Craft.TableFieldSettings('.
-            JsonHelper::encode(Craft::$app->getView()->namespaceInputName('columns'), JSON_UNESCAPED_UNICODE).', '.
-            JsonHelper::encode(Craft::$app->getView()->namespaceInputName('defaults'), JSON_UNESCAPED_UNICODE).', '.
-            JsonHelper::encode($columns, JSON_UNESCAPED_UNICODE).', '.
-            JsonHelper::encode($defaults, JSON_UNESCAPED_UNICODE).', '.
-            JsonHelper::encode($columnSettings, JSON_UNESCAPED_UNICODE).
+            Json::encode(Craft::$app->getView()->namespaceInputName('columns'), JSON_UNESCAPED_UNICODE).', '.
+            Json::encode(Craft::$app->getView()->namespaceInputName('defaults'), JSON_UNESCAPED_UNICODE).', '.
+            Json::encode($columns, JSON_UNESCAPED_UNICODE).', '.
+            Json::encode($defaults, JSON_UNESCAPED_UNICODE).', '.
+            Json::encode($columnSettings, JSON_UNESCAPED_UNICODE).
             ');');
 
         $columnsField = Craft::$app->getView()->renderTemplateMacro('_includes/forms', 'editableTableField',
@@ -173,7 +173,7 @@ class Table extends Field
     public function prepareValue($value, $element)
     {
         if (is_string($value) && !empty($value)) {
-            $value = JsonHelper::decode($value);
+            $value = Json::decode($value);
         }
 
         if (is_array($value) && $this->columns) {

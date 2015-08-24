@@ -20,7 +20,7 @@ use craft\app\helpers\App;
 use craft\app\helpers\DateTimeHelper;
 use craft\app\helpers\Db;
 use craft\app\helpers\StringHelper;
-use craft\app\helpers\UrlHelper;
+use craft\app\helpers\Url;
 use craft\app\i18n\Locale;
 use craft\app\log\FileTarget;
 use craft\app\mail\Mailer;
@@ -508,7 +508,7 @@ trait ApplicationTrait
             $this->setSiteUrl($siteUrl);
         }
 
-        return UrlHelper::getUrlWithProtocol($this->_siteUrl, $protocol);
+        return Url::getUrlWithProtocol($this->_siteUrl, $protocol);
     }
 
     /**

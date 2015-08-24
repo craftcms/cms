@@ -14,8 +14,8 @@ use craft\app\db\Query;
 use craft\app\errors\Exception;
 use craft\app\helpers\DateTimeHelper;
 use craft\app\helpers\Db;
-use craft\app\helpers\IOHelper;
-use craft\app\helpers\JsonHelper;
+use craft\app\helpers\Io;
+use craft\app\helpers\Json;
 use yii\base\Component;
 use yii\base\InvalidParamException;
 
@@ -100,7 +100,7 @@ class Plugins extends Component
         foreach ($this->_installedPluginInfo as $handle => &$row) {
             // Clean up the row data
             $row['enabled'] = (bool)$row['enabled'];
-            $row['settings'] = JsonHelper::decode($row['settings']);
+            $row['settings'] = Json::decode($row['settings']);
             $row['installDate'] = DateTimeHelper::toDateTime($row['installDate']);
 
             // Skip disabled plugins
@@ -368,7 +368,7 @@ class Plugins extends Component
         }
 
         // JSON-encode them and save the plugin row
-        $settings = JsonHelper::encode($plugin->getSettings());
+        $settings = Json::encode($plugin->getSettings());
 
         $affectedRows = Craft::$app->getDb()->createCommand()->update(
             '{{%plugins}}',
@@ -516,7 +516,7 @@ class Plugins extends Component
         $basePath = Craft::$app->getPath()->getPluginsPath().'/'.$handle;
         $configPath = $basePath.'/config.json';
 
-        if (($configPath = IOHelper::fileExists($configPath)) === false) {
+        if (($configPath = Io::fileExists($configPath)) === false) {
             Craft::warning("Could not find a config.json file for the plugin '$handle'.");
 
             return null;
@@ -526,7 +526,7 @@ class Plugins extends Component
             $config = array_merge([
                 'developer' => null,
                 'developerUrl' => null
-            ], JsonHelper::decode(IOHelper::getFileContents($configPath)));
+            ], Json::decode(Io::getFileContents($configPath)));
         } catch (InvalidParamException $e) {
             Craft::warning("Could not decode $configPath: ".$e->getMessage());
 
@@ -543,7 +543,7 @@ class Plugins extends Component
         // Set the class
         if (empty($config['class'])) {
             // Do they have a custom Plugin class?
-            if (IOHelper::fileExists($basePath.'/Plugin.php')) {
+            if (Io::fileExists($basePath.'/Plugin.php')) {
                 $config['class'] = "\\craft\\plugins\\$handle\\Plugin";
             } else {
                 // Just use the base one
@@ -567,17 +567,17 @@ class Plugins extends Component
         $names = [];
 
         $pluginsPath = Craft::$app->getPath()->getPluginsPath();
-        $folders = IOHelper::getFolderContents($pluginsPath, false);
+        $folders = Io::getFolderContents($pluginsPath, false);
 
         if ($folders !== false) {
             foreach ($folders as $folder) {
                 // Skip if it's not a folder
-                if (IOHelper::folderExists($folder) === false) {
+                if (Io::folderExists($folder) === false) {
                     continue;
                 }
 
-                $folder = IOHelper::normalizePathSeparators($folder);
-                $handle = IOHelper::getFolderName($folder, false);
+                $folder = Io::normalizePathSeparators($folder);
+                $handle = Io::getFolderName($folder, false);
                 $config = $this->getConfig($handle);
 
                 // Skip if it doesn't have a valid config file

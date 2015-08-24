@@ -13,9 +13,9 @@ use craft\app\base\TaskInterface;
 use craft\app\db\Query;
 use craft\app\errors\InvalidComponentException;
 use craft\app\helpers\Component;
-use craft\app\helpers\HeaderHelper;
-use craft\app\helpers\JsonHelper;
-use craft\app\helpers\UrlHelper;
+use craft\app\helpers\Header;
+use craft\app\helpers\Json;
+use craft\app\helpers\Url;
 use craft\app\records\Task as TaskRecord;
 use craft\app\tasks\InvalidTask;
 use yii\base\Component;
@@ -609,11 +609,11 @@ class Tasks extends Component
         // (CP requests don't need to be told to run pending tasks)
         else if (
             Craft::$app->getRequest()->getIsSiteRequest() &&
-            in_array(HeaderHelper::getMimeType(),
+            in_array(Header::getMimeType(),
                 ['text/html', 'application/xhtml+xml'])
         ) {
             // Just output JS that tells the browser to fire an Ajax request to kick off task running
-            $url = JsonHelper::encode(UrlHelper::getActionUrl('tasks/run-pending-tasks'));
+            $url = Json::encode(Url::getActionUrl('tasks/run-pending-tasks'));
 
             // Ajax request code adapted from http://www.quirksmode.org/js/xmlhttp.html - thanks ppk!
             $js = <<<EOT

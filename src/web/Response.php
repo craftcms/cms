@@ -8,7 +8,7 @@
 namespace craft\app\web;
 
 use Craft;
-use craft\app\helpers\IOHelper;
+use craft\app\helpers\Io;
 use Exception;
 use yii\web\HttpException;
 
@@ -49,7 +49,7 @@ class Response extends \yii\web\Response
      */
     public function setLastModifiedHeader($path)
     {
-        $modifiedTime = IOHelper::getLastTimeModified($path);
+        $modifiedTime = Io::getLastTimeModified($path);
 
         if ($modifiedTime) {
             $this->getHeaders()->set('Last-Modified', gmdate("D, d M Y H:i:s", $modifiedTime->getTimestamp()).' GMT');

@@ -4,8 +4,8 @@ namespace craft\app\image;
 use Craft;
 use craft\app\base\Image;
 use craft\app\errors\Exception;
-use craft\app\helpers\ImageHelper;
-use craft\app\helpers\IOHelper;
+use craft\app\helpers\Image;
+use craft\app\helpers\Io;
 use craft\app\helpers\StringHelper;
 
 /**
@@ -131,7 +131,7 @@ class Raster extends Image
     {
         $imageService = Craft::$app->getImages();
 
-        if (!IOHelper::fileExists($path)) {
+        if (!Io::fileExists($path)) {
             throw new Exception(Craft::t('app',
                 'No file exists at the path “{path}”', array('path' => $path)));
         }
@@ -141,7 +141,7 @@ class Raster extends Image
                 'Not enough memory available to perform this image operation.'));
         }
 
-        $extension = IOHelper::getExtension($path);
+        $extension = Io::getExtension($path);
 
         try {
             $this->_image = $this->_instance->open($path);
@@ -392,18 +392,18 @@ class Raster extends Image
      */
     public function saveAs($targetPath, $autoQuality = false)
     {
-        $extension = StringHelper::toLowerCase(IOHelper::getExtension($targetPath));
+        $extension = StringHelper::toLowerCase(Io::getExtension($targetPath));
 
         $options = $this->_getSaveOptions(false, $extension);
-        $targetPath = IOHelper::getFolderName($targetPath).IOHelper::getFileName($targetPath,
-                false).'.'.IOHelper::getExtension($targetPath);
+        $targetPath = Io::getFolderName($targetPath).Io::getFileName($targetPath,
+                false).'.'.Io::getExtension($targetPath);
 
         if ($autoQuality && in_array($extension, array('jpeg', 'jpg', 'png'))) {
             clearstatcache();
-            $originalSize = IOHelper::getFileSize($this->_imageSourcePath);
+            $originalSize = Io::getFileSize($this->_imageSourcePath);
             $tempFile = $this->_autoGuessImageQuality($targetPath,
                 $originalSize, $extension, 0, 200);
-            IOHelper::move($tempFile, $targetPath, true);
+            Io::move($tempFile, $targetPath, true);
         } else {
             $this->_image->save($targetPath, $options);
         }
@@ -556,7 +556,7 @@ class Raster extends Image
         @set_time_limit(30);
 
         if ($step == 0) {
-            $tempFileName = IOHelper::getFolderName($tempFileName).IOHelper::getFileName($tempFileName,
+            $tempFileName = Io::getFolderName($tempFileName).Io::getFileName($tempFileName,
                     false).'-temp.'.$extension;
         }
 
@@ -571,7 +571,7 @@ class Raster extends Image
         // Generate a new temp image and get it's file size.
         $this->_image->save($tempFileName,
             $this->_getSaveOptions($midQuality, $extension));
-        $newFileSize = IOHelper::getFileSize($tempFileName);
+        $newFileSize = Io::getFileSize($tempFileName);
 
         // If we're on step 10 OR we're within our acceptable range threshold OR midQuality = maxQuality (1 == 1),
         // let's use the current image.
@@ -653,7 +653,7 @@ class Raster extends Image
                     'png_compression_level' => $normalizedQuality,
                     'flatten' => false
                 );
-                $pngInfo = ImageHelper::getPngImageInfo($this->_imageSourcePath);
+                $pngInfo = Image::getPngImageInfo($this->_imageSourcePath);
 
                 // Even though a 2 channel PNG is valid (Grayscale with alpha channel), Imagick doesn't recognize it as
                 // a valid format: http://www.imagemagick.org/script/formats.php

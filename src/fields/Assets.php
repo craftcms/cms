@@ -14,7 +14,7 @@ use craft\app\elements\Asset;
 use craft\app\elements\db\AssetQuery;
 use craft\app\errors\Exception;
 use craft\app\helpers\Assets;
-use craft\app\helpers\IOHelper;
+use craft\app\helpers\Io;
 use craft\app\helpers\StringHelper;
 use craft\app\models\VolumeFolder;
 use craft\app\web\UploadedFile;
@@ -143,7 +143,7 @@ class Assets extends BaseRelationField
 
         $fileKindOptions = [];
 
-        foreach (IOHelper::getFileKinds() as $value => $kind) {
+        foreach (Io::getFileKinds() as $value => $kind) {
             $fileKindOptions[] = ['value' => $value, 'label' => $kind['label']];
         }
 
@@ -182,7 +182,7 @@ class Assets extends BaseRelationField
                     $failedFiles = [];
 
                     foreach ($uploadedFiles as $uploadedFile) {
-                        $extension = mb_strtolower(IOHelper::getExtension($uploadedFile->name));
+                        $extension = mb_strtolower(Io::getExtension($uploadedFile->name));
 
                         if (!in_array($extension, $allowedExtensions)) {
                             $failedFiles[] = $uploadedFile;
@@ -207,7 +207,7 @@ class Assets extends BaseRelationField
                         move_uploaded_file($file->tempName, $tempPath);
                         $response = Craft::$app->getAssets()->insertFileByLocalPath($tempPath, $file->name, $targetFolderId);
                         $fileIds[] = $response->getDataItem('fileId');
-                        IOHelper::deleteFile($tempPath, true);
+                        Io::deleteFile($tempPath, true);
                     }
 
                     $value = $this->getElementValue($element);
@@ -301,7 +301,7 @@ class Assets extends BaseRelationField
             foreach ($value as $fileId) {
                 $file = Craft::$app->getAssets()->getFileById($fileId);
 
-                if ($file && !in_array(mb_strtolower(IOHelper::getExtension($file->filename)),
+                if ($file && !in_array(mb_strtolower(Io::getExtension($file->filename)),
                         $allowedExtensions)
                 ) {
                     $errors[] = Craft::t('app', '"{filename}" is not allowed in this field.', ['filename' => $file->filename]);
@@ -406,7 +406,7 @@ class Assets extends BaseRelationField
         $pathParts = explode('/', $subpath);
 
         foreach ($pathParts as &$part) {
-            $part = IOHelper::cleanFilename($part, Craft::$app->getConfig()->get('convertFilenamesToAscii'));
+            $part = Io::cleanFilename($part, Craft::$app->getConfig()->get('convertFilenamesToAscii'));
         }
 
         $subpath = join('/', $pathParts);
@@ -506,7 +506,7 @@ class Assets extends BaseRelationField
         }
 
         $extensions = [];
-        $allKinds = IOHelper::getFileKinds();
+        $allKinds = Io::getFileKinds();
 
         foreach ($allowedKinds as $allowedKind) {
             $extensions = array_merge($extensions, $allKinds[$allowedKind]['extensions']);
@@ -565,7 +565,7 @@ class Assets extends BaseRelationField
                 $folderId = $elementFolder->id;
             }
 
-            IOHelper::ensureFolderExists(Craft::$app->getPath()->getAssetsTempSourcePath().'/'.$folderName);
+            Io::ensureFolderExists(Craft::$app->getPath()->getAssetsTempSourcePath().'/'.$folderName);
         }
 
         return $folderId;

@@ -13,7 +13,7 @@ use craft\app\dates\DateTime;
 use craft\app\db\Query;
 use craft\app\helpers\DateTimeHelper;
 use craft\app\helpers\Db;
-use craft\app\helpers\JsonHelper;
+use craft\app\helpers\Json;
 use craft\app\records\Token as TokenRecord;
 use yii\base\Component;
 
@@ -111,7 +111,7 @@ class Tokens extends Component
             $route = $result['route'];
 
             // Might be JSON, might not be
-            $route = JsonHelper::encodeIfJson($route);
+            $route = Json::encodeIfJson($route);
 
             return $route;
         } else {

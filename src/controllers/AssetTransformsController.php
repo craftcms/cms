@@ -9,7 +9,7 @@ namespace craft\app\controllers;
 
 use Craft;
 use craft\app\errors\HttpException;
-use craft\app\helpers\ImageHelper;
+use craft\app\helpers\Image;
 use craft\app\models\AssetTransform;
 use craft\app\web\Controller;
 
@@ -114,7 +114,7 @@ class AssetTransformsController extends Controller
         }
 
         if (!empty($transform->format) && !in_array($transform->format,
-                ImageHelper::getWebSafeFormats())
+                Image::getWebSafeFormats())
         ) {
             Craft::$app->getSession()->setError(Craft::t('app', 'That is not an allowed format.'));
             $errors = true;

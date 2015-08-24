@@ -7,8 +7,8 @@
 
 namespace craft\app\web\twig\variables;
 
-use craft\app\helpers\IOHelper;
-use craft\app\helpers\UrlHelper;
+use craft\app\helpers\Io;
+use craft\app\helpers\Url;
 
 \Craft::$app->requireEdition(\Craft::Client);
 
@@ -30,6 +30,6 @@ class Logo extends Image
      */
     public function getUrl()
     {
-        return UrlHelper::getResourceUrl('logo/'.IOHelper::getFilename($this->path));
+        return Url::getResourceUrl('logo/'.Io::getFilename($this->path));
     }
 }

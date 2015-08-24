@@ -7,7 +7,7 @@
 
 namespace craft\app\web\twig\variables;
 
-use craft\app\helpers\UrlHelper;
+use craft\app\helpers\Url;
 use yii\web\Cookie;
 
 /**
@@ -80,7 +80,7 @@ class HttpRequest
     {
         $uri = \Craft::$app->getRequest()->getPathInfo();
 
-        return UrlHelper::getUrl($uri);
+        return Url::getUrl($uri);
     }
 
     /**

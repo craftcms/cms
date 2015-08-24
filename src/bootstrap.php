@@ -9,7 +9,7 @@
 
 use craft\app\dates\DateTime;
 use craft\app\helpers\ArrayHelper;
-use craft\app\helpers\IOHelper;
+use craft\app\helpers\Io;
 
 // Setup
 // -----------------------------------------------------------------------------
@@ -37,7 +37,7 @@ $getArg = function ($param, $unset = true) {
 };
 
 $createFolder = function ($path) {
-    // Code borrowed from IOHelper...
+    // Code borrowed from Io...
     if (!is_dir($path)) {
         $oldumask = umask(0);
 
@@ -228,9 +228,9 @@ $app = new $class($config);
 if ($appType === 'web') {
     // See if the resource base path exists and is writable
     $resourceBasePath = Craft::getAlias($app->config->get('resourceBasePath'));
-    IOHelper::ensureFolderExists($resourceBasePath, true);
+    Io::ensureFolderExists($resourceBasePath, true);
 
-    if (!IOHelper::folderExists($resourceBasePath) || !IOHelper::isWritable($resourceBasePath)) {
+    if (!Io::folderExists($resourceBasePath) || !Io::isWritable($resourceBasePath)) {
         exit($resourceBasePath.' doesn\'t exist or isn\'t writable by PHP. Please fix that.');
     }
 

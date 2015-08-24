@@ -8,8 +8,8 @@ use craft\app\db\Query;
 use craft\app\elements\Asset;
 use craft\app\errors\VolumeFileNotFoundException;
 use craft\app\helpers\Assets;
-use craft\app\helpers\ImageHelper;
-use craft\app\helpers\IOHelper;
+use craft\app\helpers\Image;
+use craft\app\helpers\Io;
 use craft\app\helpers\StringHelper;
 use craft\app\models\AssetIndexData as AssetIndexDataModel;
 use craft\app\records\AssetIndexData as AssetIndexDataRecord;
@@ -191,7 +191,7 @@ class AssetIndexer extends Component
             if ($asset->kind == 'image') {
                 $targetPath = $asset->getImageTransformSourcePath();
 
-                if ($asset->dateModified != $timeModified || !IOHelper::fileExists(
+                if ($asset->dateModified != $timeModified || !Io::fileExists(
                         $targetPath
                     )
                 ) {
@@ -206,7 +206,7 @@ class AssetIndexer extends Component
                     }
 
                     clearstatcache();
-                    list ($asset->width, $asset->height) = ImageHelper::getImageSize(
+                    list ($asset->width, $asset->height) = Image::getImageSize(
                         $targetPath
                     );
                 }
@@ -388,9 +388,9 @@ class AssetIndexer extends Component
      */
     private function _indexFile($volume, $uriPath)
     {
-        $extension = IOHelper::getExtension($uriPath);
+        $extension = Io::getExtension($uriPath);
 
-        if (IOHelper::isExtensionAllowed($extension)) {
+        if (Io::isExtensionAllowed($extension)) {
             $parts = explode('/', $uriPath);
             $filename = array_pop($parts);
 
@@ -428,7 +428,7 @@ class AssetIndexer extends Component
                 $assetModel->volumeId = $volume->id;
                 $assetModel->folderId = $folderId;
                 $assetModel->filename = $filename;
-                $assetModel->kind = IOHelper::getFileKind($extension);
+                $assetModel->kind = Io::getFileKind($extension);
                 $assetModel->indexInProgress = true;
                 Craft::$app->getAssets()->saveAsset($assetModel);
             }

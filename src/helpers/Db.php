@@ -71,7 +71,7 @@ class Db
 
         // If it's an object or array, just JSON-encode it
         if (is_object($value) || is_array($value)) {
-            return JsonHelper::encode($value);
+            return Json::encode($value);
         }
 
         return $value;

@@ -10,10 +10,10 @@ namespace craft\app\web;
 use Craft;
 use craft\app\base\ApplicationTrait;
 use craft\app\errors\HttpException;
-use craft\app\helpers\HeaderHelper;
-use craft\app\helpers\JsonHelper;
+use craft\app\helpers\Header;
+use craft\app\helpers\Json;
 use craft\app\helpers\StringHelper;
-use craft\app\helpers\UrlHelper;
+use craft\app\helpers\Url;
 use yii\base\InvalidRouteException;
 use yii\web\ForbiddenHttpException;
 use yii\web\NotFoundHttpException;
@@ -81,7 +81,7 @@ class Application extends \yii\web\Application
         $this->getLog();
 
         // So we can try to translate Yii framework strings
-        //$this->coreMessages->attachEventHandler('onMissingTranslation', ['Craft\LocalizationHelper', 'findMissingTranslation']);
+        //$this->coreMessages->attachEventHandler('onMissingTranslation', ['Craft\Localization', 'findMissingTranslation']);
 
         // If there is a custom appId set, apply it here.
         if ($appId = $this->getConfig()->get('appId')) {
@@ -121,18 +121,18 @@ class Application extends \yii\web\Application
         if ($request->getIsCpRequest()) {
             // Prevent robots from indexing/following the page
             // (see https://developers.google.com/webmasters/control-crawl-index/docs/robots_meta_tag)
-            HeaderHelper::setHeader(['X-Robots-Tag' => 'none']);
+            Header::setHeader(['X-Robots-Tag' => 'none']);
             // Prevent some possible XSS attack vectors
-            HeaderHelper::setHeader(['X-Frame-Options' => 'SAMEORIGIN']);
-            HeaderHelper::setHeader(['X-Content-Type-Options' => 'nosniff']);
+            Header::setHeader(['X-Frame-Options' => 'SAMEORIGIN']);
+            Header::setHeader(['X-Content-Type-Options' => 'nosniff']);
         }
 
         // Send the X-Powered-By header?
         if ($this->getConfig()->get('sendPoweredByHeader')) {
-            HeaderHelper::setHeader(['X-Powered-By' => 'Craft CMS']);
+            Header::setHeader(['X-Powered-By' => 'Craft CMS']);
         } else {
             // In case PHP is already setting one
-            HeaderHelper::removeHeader('X-Powered-By');
+            Header::removeHeader('X-Powered-By');
         }
 
         // If the system in is maintenance mode and it's a site request, throw a 503.
@@ -248,8 +248,8 @@ class Application extends \yii\web\Application
             $exceptionArr['type'] = $data['type'];
         }
 
-        JsonHelper::sendJsonHeaders();
-        echo JsonHelper::encode($exceptionArr);
+        Json::sendJsonHeaders();
+        echo Json::encode($exceptionArr);
         $this->end();
     }
 
@@ -306,8 +306,8 @@ class Application extends \yii\web\Application
             $errorArr = ['error' => $message];
         }
 
-        JsonHelper::sendJsonHeaders();
-        echo JsonHelper::encode($errorArr);
+        Json::sendJsonHeaders();
+        echo Json::encode($errorArr);
         $this->end();
     }
 
@@ -461,7 +461,7 @@ class Application extends \yii\web\Application
         else if (!$isInstalled) {
             // Give it to them if accessing the CP
             if ($isCpRequest) {
-                $url = UrlHelper::getUrl('install');
+                $url = Url::getUrl('install');
                 $this->getResponse()->redirect($url);
                 $this->end();
             } // Otherwise return a 503
@@ -635,7 +635,7 @@ class Application extends \yii\web\Application
                     $error = Craft::t('app', 'Your account doesn’t have permission to access the site when the system is offline.');
                 }
 
-                $error .= ' ['.Craft::t('app', 'Log out?').']('.UrlHelper::getUrl($this->getConfig()->getLogoutPath()).')';
+                $error .= ' ['.Craft::t('app', 'Log out?').']('.Url::getUrl($this->getConfig()->getLogoutPath()).')';
             } else {
                 // If this is a CP request, redirect to the Login page
                 if ($this->getRequest()->getIsCpRequest()) {

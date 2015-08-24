@@ -15,9 +15,9 @@ use craft\app\elements\db\ElementQuery;
 use craft\app\elements\db\ElementQueryInterface;
 use craft\app\events\Event;
 use craft\app\helpers\ArrayHelper;
-use craft\app\helpers\HtmlHelper;
-use craft\app\helpers\TemplateHelper;
-use craft\app\helpers\UrlHelper;
+use craft\app\helpers\Html;
+use craft\app\helpers\Template;
+use craft\app\helpers\Url;
 use craft\app\models\FieldLayout;
 use craft\app\web\UploadedFile;
 use Exception;
@@ -328,7 +328,7 @@ abstract class Element extends Component implements ElementInterface
                     return '<span title="'.$value->localeDate().' '.$value->localeTime().'">'.$value->uiTimestamp().'</span>';
                 }
 
-                return HtmlHelper::encode($value);
+                return Html::encode($value);
             }
         }
     }
@@ -669,9 +669,9 @@ abstract class Element extends Component implements ElementInterface
             }
 
             if ($this->uri == '__home__') {
-                $url = UrlHelper::getSiteUrl();
+                $url = Url::getSiteUrl();
             } else {
-                $url = UrlHelper::getSiteUrl($this->uri);
+                $url = Url::getSiteUrl($this->uri);
             }
 
             if ($useLocaleSiteUrl) {
@@ -690,9 +690,9 @@ abstract class Element extends Component implements ElementInterface
         $url = $this->getUrl();
 
         if ($url !== null) {
-            $link = '<a href="'.$url.'">'.HtmlHelper::encode($this->__toString()).'</a>';
+            $link = '<a href="'.$url.'">'.Html::encode($this->__toString()).'</a>';
 
-            return TemplateHelper::getRaw($link);
+            return Template::getRaw($link);
         } else {
             return null;
         }

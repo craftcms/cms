@@ -42,7 +42,7 @@ class Component
             $config = ArrayHelper::toArray($config);
 
             if (empty($config['type'])) {
-                throw new InvalidConfigException('The config passed into Component::createComponent() did not specify a class: '.JsonHelper::encode($config));
+                throw new InvalidConfigException('The config passed into Component::createComponent() did not specify a class: '.Json::encode($config));
             }
 
             $class = $config['type'];
@@ -70,7 +70,7 @@ class Component
             unset($config['settings']);
 
             if (is_string($settings)) {
-                $settings = JsonHelper::decode($settings);
+                $settings = Json::decode($settings);
             }
 
             $config = array_merge($config, $settings);

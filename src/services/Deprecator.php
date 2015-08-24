@@ -10,7 +10,7 @@ namespace craft\app\services;
 use Craft;
 use craft\app\db\Query;
 use craft\app\helpers\Db;
-use craft\app\helpers\JsonHelper;
+use craft\app\helpers\Json;
 use craft\app\helpers\StringHelper;
 use craft\app\models\DeprecationError;
 use yii\base\Component;
@@ -89,7 +89,7 @@ class Deprecator extends Component
                 'template' => $log->template,
                 'templateLine' => $log->templateLine,
                 'message' => $log->message,
-                'traces' => JsonHelper::encode($log->traces),
+                'traces' => Json::encode($log->traces),
             ];
 
             // Do we already have this one logged?

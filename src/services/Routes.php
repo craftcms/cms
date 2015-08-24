@@ -10,8 +10,8 @@ namespace craft\app\services;
 use Craft;
 use craft\app\db\Query;
 use craft\app\errors\Exception;
-use craft\app\helpers\IOHelper;
-use craft\app\helpers\JsonHelper;
+use craft\app\helpers\Io;
+use craft\app\helpers\Json;
 use craft\app\helpers\StringHelper;
 use craft\app\records\Route as RouteRecord;
 use yii\base\Component;
@@ -38,7 +38,7 @@ class Routes extends Component
     {
         $path = Craft::$app->getPath()->getConfigPath().'/routes.php';
 
-        if (IOHelper::fileExists($path)) {
+        if (Io::fileExists($path)) {
             $routes = require_once($path);
 
             if (is_array($routes)) {
@@ -146,7 +146,7 @@ class Routes extends Component
         }
 
         $routeRecord->locale = $locale;
-        $routeRecord->urlParts = JsonHelper::encode($urlParts);
+        $routeRecord->urlParts = Json::encode($urlParts);
         $routeRecord->urlPattern = $urlPattern;
         $routeRecord->template = $template;
         $routeRecord->save();

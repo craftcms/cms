@@ -21,7 +21,7 @@ use craft\app\events\SetStatusEvent;
 use craft\app\helpers\ArrayHelper;
 use craft\app\helpers\DateTimeHelper;
 use craft\app\helpers\Db;
-use craft\app\helpers\UrlHelper;
+use craft\app\helpers\Url;
 use craft\app\models\EntryType;
 use craft\app\models\Section;
 
@@ -770,7 +770,7 @@ class Entry extends Element
 
         if ($section) {
             // The slug *might* not be set if this is a Draft and they've deleted it for whatever reason
-            $url = UrlHelper::getCpUrl('entries/'.$section->handle.'/'.$this->id.($this->slug ? '-'.$this->slug : ''));
+            $url = Url::getCpUrl('entries/'.$section->handle.'/'.$this->id.($this->slug ? '-'.$this->slug : ''));
 
             if (Craft::$app->isLocalized() && $this->locale != Craft::$app->language) {
                 $url .= '/'.$this->locale;

@@ -11,12 +11,12 @@ use Craft;
 use craft\app\i18n\Locale;
 
 /**
- * Class LocalizationHelper
+ * Class Localization
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
-class LocalizationHelper
+class Localization
 {
     // Properties
     // =========================================================================
@@ -90,12 +90,12 @@ class LocalizationHelper
         }
 
         // No luck in cache, check the file system.
-        $frameworkMessagePath = IOHelper::normalizePathSeparators(Craft::getAlias('@app/framework/messages'));
+        $frameworkMessagePath = Io::normalizePathSeparators(Craft::getAlias('@app/framework/messages'));
 
         foreach ($translationFiles as $translationFile) {
             $path = $frameworkMessagePath.$translationFile.'/yii.php';
 
-            if (IOHelper::fileExists($path)) {
+            if (Io::fileExists($path)) {
                 // Load it up.
                 static::$_translations[$translationFile] = include($path);
 

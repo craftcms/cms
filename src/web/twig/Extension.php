@@ -11,10 +11,10 @@ use Craft;
 use craft\app\dates\DateTime;
 use craft\app\helpers\DateTimeHelper;
 use craft\app\helpers\Db;
-use craft\app\helpers\HeaderHelper;
+use craft\app\helpers\Header;
 use craft\app\helpers\StringHelper;
-use craft\app\helpers\TemplateHelper;
-use craft\app\helpers\UrlHelper;
+use craft\app\helpers\Template;
+use craft\app\helpers\Url;
 use craft\app\web\twig\tokenparsers\CacheTokenParser;
 use craft\app\web\twig\tokenparsers\ExitTokenParser;
 use craft\app\web\twig\tokenparsers\HeaderTokenParser;
@@ -250,7 +250,7 @@ class Extension extends \Twig_Extension
      */
     public function jsonEncodeFilter($value, $options = null)
     {
-        if ($options === null && (in_array(HeaderHelper::getMimeType(),
+        if ($options === null && (in_array(Header::getMimeType(),
                 array('text/html', 'application/xhtml+xml')))
         ) {
             $options = JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_QUOT;
@@ -295,7 +295,7 @@ class Extension extends \Twig_Extension
     {
         $str = Craft::$app->getElements()->parseRefs($str);
 
-        return TemplateHelper::getRaw($str);
+        return Template::getRaw($str);
     }
 
     /**
@@ -423,7 +423,7 @@ class Extension extends \Twig_Extension
     {
         $html = Markdown::process($str);
 
-        return TemplateHelper::getRaw($html);
+        return Template::getRaw($html);
     }
 
     /**
@@ -434,8 +434,8 @@ class Extension extends \Twig_Extension
     public function getFunctions()
     {
         return [
-            'actionUrl' => new \Twig_Function_Function('\\craft\\app\\helpers\\UrlHelper::getActionUrl'),
-            'cpUrl' => new \Twig_Function_Function('\\craft\\app\\helpers\\UrlHelper::getCpUrl'),
+            'actionUrl' => new \Twig_Function_Function('\\craft\\app\\helpers\\Url::getActionUrl'),
+            'cpUrl' => new \Twig_Function_Function('\\craft\\app\\helpers\\Url::getCpUrl'),
             'ceil' => new \Twig_Function_Function('ceil'),
             'floor' => new \Twig_Function_Function('floor'),
             'getCsrfInput' => new \Twig_Function_Method($this, 'getCsrfInputFunction'),
@@ -444,10 +444,10 @@ class Extension extends \Twig_Extension
             'min' => new \Twig_Function_Function('min'),
             'renderObjectTemplate' => new \Twig_Function_Function('\Craft::$app->getView()->renderObjectTemplate'),
             'round' => new \Twig_Function_Function('round'),
-            'resourceUrl' => new \Twig_Function_Function('\\craft\\app\\helpers\\UrlHelper::getResourceUrl'),
+            'resourceUrl' => new \Twig_Function_Function('\\craft\\app\\helpers\\Url::getResourceUrl'),
             'shuffle' => new \Twig_Function_Method($this, 'shuffleFunction'),
-            'siteUrl' => new \Twig_Function_Function('\\craft\\app\\helpers\\UrlHelper::getSiteUrl'),
-            'url' => new \Twig_Function_Function('\\craft\\app\\helpers\\UrlHelper::getUrl'),
+            'siteUrl' => new \Twig_Function_Function('\\craft\\app\\helpers\\Url::getSiteUrl'),
+            'url' => new \Twig_Function_Function('\\craft\\app\\helpers\\Url::getUrl'),
             // DOM event functions
             new \Twig_SimpleFunction('head', [$this->view, 'head']),
             new \Twig_SimpleFunction('beginBody', [$this->view, 'beginBody']),
@@ -469,7 +469,7 @@ class Extension extends \Twig_Extension
     {
         $html = Craft::$app->getView()->getCsrfInput();
 
-        return TemplateHelper::getRaw($html);
+        return Template::getRaw($html);
     }
 
     /**
@@ -505,8 +505,8 @@ class Extension extends \Twig_Extension
         $globals['blx'] = $craftVariable;
 
         $globals['now'] = new DateTime(null, new \DateTimeZone(Craft::$app->getTimeZone()));
-        $globals['loginUrl'] = UrlHelper::getUrl(Craft::$app->getConfig()->getLoginPath());
-        $globals['logoutUrl'] = UrlHelper::getUrl(Craft::$app->getConfig()->getLogoutPath());
+        $globals['loginUrl'] = Url::getUrl(Craft::$app->getConfig()->getLoginPath());
+        $globals['logoutUrl'] = Url::getUrl(Craft::$app->getConfig()->getLogoutPath());
 
         $globals['POS_HEAD'] = View::POS_HEAD;
         $globals['POS_BEGIN'] = View::POS_BEGIN;
@@ -574,7 +574,7 @@ class Extension extends \Twig_Extension
         ob_implicit_flush(false);
         $this->view->head();
 
-        return TemplateHelper::getRaw(ob_get_clean());
+        return Template::getRaw(ob_get_clean());
     }
 
     /**
@@ -589,6 +589,6 @@ class Extension extends \Twig_Extension
         ob_implicit_flush(false);
         $this->view->endBody();
 
-        return TemplateHelper::getRaw(ob_get_clean());
+        return Template::getRaw(ob_get_clean());
     }
 }

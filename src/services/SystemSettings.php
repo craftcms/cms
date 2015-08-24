@@ -8,7 +8,7 @@
 namespace craft\app\services;
 
 use craft\app\dates\DateTime;
-use craft\app\helpers\JsonHelper;
+use craft\app\helpers\Json;
 use craft\app\records\SystemSettings as SystemSettingsRecord;
 use yii\base\Component;
 
@@ -50,7 +50,7 @@ class SystemSettings extends Component
         $record = $this->_getSettingsRecord($category);
 
         if ($record !== null) {
-            $settings = JsonHelper::decode($record->settings);
+            $settings = Json::decode($record->settings);
         } else {
             $settings = [];
         }

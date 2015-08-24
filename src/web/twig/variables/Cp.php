@@ -8,7 +8,7 @@
 namespace craft\app\web\twig\variables;
 
 use craft\app\helpers\Cp;
-use craft\app\helpers\UrlHelper;
+use craft\app\helpers\Url;
 
 /**
  * CP functions
@@ -85,9 +85,9 @@ class Cp
             $item['sel'] = ($handle == $firstSegment);
 
             if (isset($item['url'])) {
-                $item['url'] = UrlHelper::getUrl($item['url']);
+                $item['url'] = Url::getUrl($item['url']);
             } else {
-                $item['url'] = UrlHelper::getUrl($handle);
+                $item['url'] = Url::getUrl($handle);
             }
         }
 

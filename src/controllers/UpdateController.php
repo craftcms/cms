@@ -12,8 +12,8 @@ use craft\app\enums\PluginVersionUpdateStatus;
 use craft\app\errors\EtException;
 use craft\app\errors\Exception;
 use craft\app\helpers\ArrayHelper;
-use craft\app\helpers\UpdateHelper;
-use craft\app\helpers\UrlHelper;
+use craft\app\helpers\Update;
+use craft\app\helpers\Url;
 use craft\app\web\Controller;
 
 /**
@@ -453,10 +453,10 @@ class UpdateController extends Controller
         $oldVersion = false;
 
         // Grab the old version from the manifest data before we nuke it.
-        $manifestData = UpdateHelper::getManifestData(UpdateHelper::getUnzipFolderFromUID($uid));
+        $manifestData = Update::getManifestData(Update::getUnzipFolderFromUID($uid));
 
         if ($manifestData) {
-            $oldVersion = UpdateHelper::getLocalVersionFromManifest($manifestData);
+            $oldVersion = Update::getLocalVersionFromManifest($manifestData);
         }
 
         Craft::$app->getUpdates()->updateCleanUp($uid, $handle);
@@ -464,7 +464,7 @@ class UpdateController extends Controller
         if ($oldVersion && version_compare($oldVersion, Craft::$app->version,
                 '<')
         ) {
-            $returnUrl = UrlHelper::getUrl('whats-new');
+            $returnUrl = Url::getUrl('whats-new');
         } else {
             $returnUrl = Craft::$app->getConfig()->get('postCpLoginRedirect');
         }

@@ -10,7 +10,7 @@ namespace craft\app\i18n;
 use Craft;
 use craft\app\db\Query;
 use craft\app\events\DeleteLocaleEvent;
-use craft\app\helpers\IOHelper;
+use craft\app\helpers\Io;
 use craft\app\tasks\ResaveAllElements;
 use ResourceBundle;
 
@@ -120,8 +120,8 @@ class I18N extends \yii\i18n\I18N
                 $appLocalesPath = Craft::$app->getPath()->getAppPath().'/config/locales';
                 $customLocalesPath = Craft::$app->getPath()->getConfigPath().'/locales';
 
-                $localeFiles = IOHelper::getFolderContents($appLocalesPath, false, '\.php$');
-                $customLocaleFiles = IOHelper::getFolderContents($customLocalesPath, false, '\.php$');
+                $localeFiles = Io::getFolderContents($appLocalesPath, false, '\.php$');
+                $customLocaleFiles = Io::getFolderContents($customLocalesPath, false, '\.php$');
 
                 if ($customLocaleFiles !== false) {
                     $localeFiles = array_merge($localeFiles, $customLocaleFiles);
@@ -130,7 +130,7 @@ class I18N extends \yii\i18n\I18N
                 $this->_allLocaleIds = [];
 
                 foreach ($localeFiles as $file) {
-                    $this->_allLocaleIds[] = IOHelper::getFilename($file, false);
+                    $this->_allLocaleIds[] = Io::getFilename($file, false);
                 }
             }
 
@@ -176,11 +176,11 @@ class I18N extends \yii\i18n\I18N
             $this->_appLocales = [new Locale('en-US')];
 
             $path = Craft::$app->getPath()->getCpTranslationsPath();
-            $folders = IOHelper::getFolderContents($path, false, ".*\.php");
+            $folders = Io::getFolderContents($path, false, ".*\.php");
 
             if (is_array($folders) && count($folders) > 0) {
                 foreach ($folders as $dir) {
-                    $localeId = IOHelper::getFilename($dir, false);
+                    $localeId = Io::getFilename($dir, false);
 
                     if ($localeId != 'en-US') {
                         $this->_appLocales[] = new Locale($localeId);

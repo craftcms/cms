@@ -15,8 +15,8 @@ use craft\app\errors\VolumeFileExistsException;
 use craft\app\helpers\Assets;
 use craft\app\helpers\DateTimeHelper;
 use craft\app\helpers\Db;
-use craft\app\helpers\ImageHelper;
-use craft\app\helpers\IOHelper;
+use craft\app\helpers\Image;
+use craft\app\helpers\Io;
 use craft\app\helpers\StringHelper;
 use craft\app\image\Raster;
 use craft\app\models\AssetTransformIndex;
@@ -355,7 +355,7 @@ class AssetTransforms extends Component
         $volume = $file->getVolume();
         $index->detectedFormat = !empty($index->format) ? $index->format : $this->detectAutoTransformFormat($file);
 
-        $transformFilename = IOHelper::getFilename($file->filename,
+        $transformFilename = Io::getFilename($file->filename,
                 false).'.'.$index->detectedFormat;
         $index->filename = $transformFilename;
 
@@ -604,13 +604,13 @@ class AssetTransforms extends Component
     public function getThumbServerPath(Asset $fileModel, $size)
     {
         $thumbFolder = Craft::$app->getPath()->getAssetsThumbsPath().'/'.$size.'/';
-        IOHelper::ensureFolderExists($thumbFolder);
+        Io::ensureFolderExists($thumbFolder);
 
         $extension = $this->_getThumbExtension($fileModel);
 
         $thumbPath = $thumbFolder.$fileModel->id.'.'.$extension;
 
-        if (!IOHelper::fileExists($thumbPath)) {
+        if (!Io::fileExists($thumbPath)) {
             $imageSource = $this->getLocalImageSource($fileModel);
 
             Craft::$app->getImages()->loadImage($imageSource, false, $size)
@@ -640,21 +640,21 @@ class AssetTransforms extends Component
         $imageSourcePath = $file->getImageTransformSourcePath();
 
         if (!$volume->isLocal()) {
-            if (!IOHelper::fileExists($imageSourcePath) || IOHelper::getFileSize($imageSourcePath) == 0) {
+            if (!Io::fileExists($imageSourcePath) || Io::getFileSize($imageSourcePath) == 0) {
                 if ($volume->isLocal()) {
                     throw new VolumeFileNotFoundException(Craft::t('Image “{file}” cannot be found.',
                         ['file' => $file->filename]));
                 }
 
                 // Delete it just in case it's a 0-byter
-                IOHelper::deleteFile($imageSourcePath, true);
+                Io::deleteFile($imageSourcePath, true);
 
-                $localCopy = IOHelper::getTempFilePath($file->getExtension());
+                $localCopy = Io::getTempFilePath($file->getExtension());
 
                 $volume->saveFileLocally($file->getUri(), $localCopy);
 
-                if (!IOHelper::fileExists($localCopy) || IOHelper::getFileSize($localCopy) == 0) {
-                    IOHelper::deleteFile($localCopy, true);
+                if (!Io::fileExists($localCopy) || Io::getFileSize($localCopy) == 0) {
+                    Io::deleteFile($localCopy, true);
                     throw new VolumeException(Craft::t('Tried to download the source file for image “{file}”, but it was 0 bytes long.',
                         ['file' => $file->filename]));
                 }
@@ -663,7 +663,7 @@ class AssetTransforms extends Component
 
                 // Delete the leftover data.
                 $this->queueSourceForDeletingIfNecessary($imageSourcePath);
-                IOHelper::deleteFile($localCopy, true);
+                Io::deleteFile($localCopy, true);
             }
         }
 
@@ -714,7 +714,7 @@ class AssetTransforms extends Component
         $maxCachedImageSize = $this->getCachedCloudImageSize();
 
         // Resize if constrained by maxCachedImageSizes setting
-        if ($maxCachedImageSize > 0 && ImageHelper::isImageManipulatable($source)) {
+        if ($maxCachedImageSize > 0 && Image::isImageManipulatable($source)) {
 
             $image = Craft::$app->getImages()->loadImage($source);
 
@@ -726,11 +726,11 @@ class AssetTransforms extends Component
                 $maxCachedImageSize)->saveAs($destination);
 
             if ($source != $destination) {
-                IOHelper::deleteFile($source);
+                Io::deleteFile($source);
             }
         } else {
             if ($source != $destination) {
-                IOHelper::move($source, $destination);
+                Io::move($source, $destination);
             }
         }
     }
@@ -745,7 +745,7 @@ class AssetTransforms extends Component
      */
     public function detectAutoTransformFormat(Asset $file)
     {
-        if (in_array(mb_strtolower($file->getExtension()), ImageHelper::getWebSafeFormats())) {
+        if (in_array(mb_strtolower($file->getExtension()), Image::getWebSafeFormats())) {
             return $file->getExtension();
         } else if ($file->kind == 'image') {
 
@@ -759,7 +759,7 @@ class AssetTransforms extends Component
 
             $volume = $file->getVolume();
 
-            $path = IOHelper::getTempFilePath($file->getExtension());
+            $path = Io::getTempFilePath($file->getExtension());
             $localCopy = $volume->saveFileLocally($file->getUri(), $path);
 
             $image = Craft::$app->getImages()->loadImage($localCopy);
@@ -776,7 +776,7 @@ class AssetTransforms extends Component
                 $this->queueSourceForDeletingIfNecessary($localCopy);
             } else {
                 // For local, though, we just delete the temp file.
-                IOHelper::deleteFile($localCopy);
+                Io::deleteFile($localCopy);
             }
 
             return $format;
@@ -847,7 +847,7 @@ class AssetTransforms extends Component
         $this->deleteCreatedTransformsForFile($file);
         $this->deleteTransformIndexDataByFileId($file->id);
 
-        IOHelper::deleteFile(Craft::$app->getPath()->getAssetsImageSourcePath().'/'.$file->id.'.'.IOHelper::getExtension($file->filename), true);
+        Io::deleteFile(Craft::$app->getPath()->getAssetsImageSourcePath().'/'.$file->id.'.'.Io::getExtension($file->filename), true);
     }
 
     /**
@@ -859,11 +859,11 @@ class AssetTransforms extends Component
      */
     public function deleteThumbnailsForFile(Asset $file)
     {
-        $thumbFolders = IOHelper::getFolderContents(Craft::$app->getPath()->getAssetsThumbsPath());
+        $thumbFolders = Io::getFolderContents(Craft::$app->getPath()->getAssetsThumbsPath());
 
         foreach ($thumbFolders as $folder) {
             if (is_dir($folder)) {
-                IOHelper::deleteFile($folder.'/'.$file->id.'.'.$this->_getThumbExtension($file));
+                Io::deleteFile($folder.'/'.$file->id.'.'.$this->_getThumbExtension($file));
             }
         }
     }
@@ -988,7 +988,7 @@ class AssetTransforms extends Component
      */
     private function _createTransformForFile(Asset $file, AssetTransformIndex $index)
     {
-        if (!ImageHelper::isImageManipulatable(IOHelper::getExtension($file->filename))) {
+        if (!Image::isImageManipulatable(Io::getExtension($file->filename))) {
             return;
         }
 
@@ -1047,7 +1047,7 @@ class AssetTransforms extends Component
             }
         }
 
-        $createdTransform = IOHelper::getTempFilePath($index->detectedFormat);
+        $createdTransform = Io::getTempFilePath($index->detectedFormat);
         $image->saveAs($createdTransform);
 
         clearstatcache(true, $createdTransform);
@@ -1059,7 +1059,7 @@ class AssetTransforms extends Component
         } catch (VolumeFileExistsException $e) {
         }
 
-        IOHelper::deleteFile($createdTransform);
+        Io::deleteFile($createdTransform);
 
         if (!$file->getVolume()->isLocal()) {
             $this->queueSourceForDeletingIfNecessary($imageSource);
@@ -1079,8 +1079,8 @@ class AssetTransforms extends Component
     {
         // For non-web-safe formats we go with jpg.
         if (!in_array(
-            mb_strtolower(IOHelper::getExtension($file->filename)),
-            ImageHelper::getWebSafeFormats()
+            mb_strtolower(Io::getExtension($file->filename)),
+            Image::getWebSafeFormats()
         )
         ) {
             return 'jpg';

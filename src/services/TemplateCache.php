@@ -17,7 +17,7 @@ use craft\app\helpers\ArrayHelper;
 use craft\app\helpers\DateTimeHelper;
 use craft\app\helpers\Db;
 use craft\app\helpers\StringHelper;
-use craft\app\helpers\UrlHelper;
+use craft\app\helpers\Url;
 use craft\app\tasks\DeleteStaleTemplateCaches;
 use yii\base\Component;
 
@@ -255,7 +255,7 @@ class TemplateCache extends Component
 
         // If there are any transform generation URLs in the body, don't cache it.
         // Can't use getResourceUrl() here because that will append ?d= or ?x= to the URL.
-        if (StringHelper::contains($body, UrlHelper::getSiteUrl(Craft::$app->getConfig()->getResourceTrigger().'/transforms'))
+        if (StringHelper::contains($body, Url::getSiteUrl(Craft::$app->getConfig()->getResourceTrigger().'/transforms'))
         ) {
             return;
         }

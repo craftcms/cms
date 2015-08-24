@@ -10,7 +10,7 @@ namespace craft\app\web;
 use Craft;
 use craft\app\base\ElementInterface;
 use craft\app\helpers\ArrayHelper;
-use craft\app\helpers\UrlHelper;
+use craft\app\helpers\Url;
 
 /**
  * @inheritdoc
@@ -102,7 +102,7 @@ class UrlManager extends \yii\web\UrlManager
         $route = trim($params[0], '/');
         unset($params[0]);
 
-        return UrlHelper::getActionUrl($route, $params, $scheme);
+        return Url::getActionUrl($route, $params, $scheme);
     }
 
     /**

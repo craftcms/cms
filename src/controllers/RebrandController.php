@@ -10,9 +10,9 @@ namespace craft\app\controllers;
 use Craft;
 use craft\app\errors\Exception;
 use craft\app\helpers\Assets;
-use craft\app\helpers\ImageHelper;
-use craft\app\helpers\IOHelper;
-use craft\app\helpers\UrlHelper;
+use craft\app\helpers\Image;
+use craft\app\helpers\Io;
+use craft\app\helpers\Url;
 use craft\app\web\Controller;
 
 Craft::$app->requireEdition(Craft::Client);
@@ -48,8 +48,8 @@ class RebrandController extends Controller
             // Make sure a file was uploaded
             if (!empty($file['name']) && !empty($file['size'])) {
                 $folderPath = Craft::$app->getPath()->getTempUploadsPath();
-                IOHelper::ensureFolderExists($folderPath);
-                IOHelper::clearFolder($folderPath, true);
+                Io::ensureFolderExists($folderPath);
+                Io::clearFolder($folderPath, true);
 
                 $filename = Assets::prepareAssetName($file['name']);
 
@@ -57,14 +57,14 @@ class RebrandController extends Controller
 
                 // Test if we will be able to perform image actions on this image
                 if (!Craft::$app->getImages()->checkMemoryForImage($folderPath.'/'.$filename)) {
-                    IOHelper::deleteFile($folderPath.'/'.$filename);
+                    Io::deleteFile($folderPath.'/'.$filename);
 
                     return $this->asErrorJson(Craft::t('app', 'The uploaded image is too large'));
                 }
 
-                list ($width, $height) = ImageHelper::getImageSize($folderPath.'/'.$filename);
+                list ($width, $height) = Image::getImageSize($folderPath.'/'.$filename);
 
-                if (IOHelper::getExtension($filename) != 'svg') {
+                if (Io::getExtension($filename) != 'svg') {
                     Craft::$app->getImages()->cleanImage($folderPath.'/'.$filename);
                 } else {
                     // Resave svg files as png
@@ -74,7 +74,7 @@ class RebrandController extends Controller
                         ->loadImage($folderPath.'/'.$filename, $width, $height)
                         ->saveAs($folderPath.'/'.$newFilename);
 
-                    IOHelper::deleteFile($folderPath.'/'.$filename);
+                    Io::deleteFile($folderPath.'/'.$filename);
                     $filename = $newFilename;
                 }
 
@@ -87,7 +87,7 @@ class RebrandController extends Controller
 
                     $html = Craft::$app->getView()->renderTemplate('_components/tools/cropper_modal',
                         [
-                            'imageUrl' => UrlHelper::getResourceUrl('tempuploads/'.$filename),
+                            'imageUrl' => Url::getResourceUrl('tempuploads/'.$filename),
                             'width' => round($width * $factor),
                             'height' => round($height * $factor),
                             'factor' => $factor,
@@ -124,15 +124,15 @@ class RebrandController extends Controller
             $source = Craft::$app->getRequest()->getRequiredBodyParam('source');
 
             // Strip off any query string info, if any.
-            $source = UrlHelper::stripQueryString($source);
+            $source = Url::stripQueryString($source);
 
             $imagePath = Craft::$app->getPath()->getTempUploadsPath().'/'.$source;
 
-            if (IOHelper::fileExists($imagePath) && Craft::$app->getImages()->checkMemoryForImage($imagePath)) {
+            if (Io::fileExists($imagePath) && Craft::$app->getImages()->checkMemoryForImage($imagePath)) {
                 $targetPath = Craft::$app->getPath()->getStoragePath().'/logo';
 
-                IOHelper::ensureFolderExists($targetPath);
-                IOHelper::clearFolder($targetPath);
+                Io::ensureFolderExists($targetPath);
+                Io::clearFolder($targetPath);
 
                 Craft::$app->getImages()
                     ->loadImage($imagePath, 300, 300)
@@ -140,13 +140,13 @@ class RebrandController extends Controller
                     ->scaleToFit(300, 300, false)
                     ->saveAs($targetPath.'/'.$source);
 
-                IOHelper::deleteFile($imagePath);
+                Io::deleteFile($imagePath);
 
                 $html = Craft::$app->getView()->renderTemplate('settings/general/_logo');
 
                 return $this->asJson(['html' => $html]);
             }
-            IOHelper::deleteFile($imagePath);
+            Io::deleteFile($imagePath);
         } catch (Exception $exception) {
             return $this->asErrorJson($exception->getMessage());
         }
@@ -162,7 +162,7 @@ class RebrandController extends Controller
     public function actionDeleteLogo()
     {
         $this->requireAdmin();
-        IOHelper::clearFolder(Craft::$app->getPath()->getStoragePath().'/logo');
+        Io::clearFolder(Craft::$app->getPath()->getStoragePath().'/logo');
 
         $html = Craft::$app->getView()->renderTemplate('settings/general/_logo');
 

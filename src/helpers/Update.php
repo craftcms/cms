@@ -13,12 +13,12 @@ use craft\app\enums\PatchManifestFileAction;
 use craft\app\errors\Exception;
 
 /**
- * Class UpdateHelper
+ * Class Update
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
-class UpdateHelper
+class Update
 {
     // Properties
     // =========================================================================
@@ -48,22 +48,22 @@ class UpdateHelper
             }
 
             $rowData = explode(';', $row);
-            $file = IOHelper::normalizePathSeparators(Craft::$app->getPath()->getAppPath().'/'.$rowData[0]);
+            $file = Io::normalizePathSeparators(Craft::$app->getPath()->getAppPath().'/'.$rowData[0]);
 
             // It's a folder
             if (static::isManifestLineAFolder($file)) {
                 $folderPath = static::cleanManifestFolderLine($file);
 
-                if (IOHelper::folderExists($folderPath.'.bak')) {
-                    IOHelper::rename($folderPath, $folderPath.'-tmp');
-                    IOHelper::rename($folderPath.'.bak', $folderPath);
-                    IOHelper::clearFolder($folderPath.'-tmp');
-                    IOHelper::deleteFolder($folderPath.'-tmp');
+                if (Io::folderExists($folderPath.'.bak')) {
+                    Io::rename($folderPath, $folderPath.'-tmp');
+                    Io::rename($folderPath.'.bak', $folderPath);
+                    Io::clearFolder($folderPath.'-tmp');
+                    Io::deleteFolder($folderPath.'-tmp');
                 }
             } // It's a file.
             else {
-                if (IOHelper::fileExists($file.'.bak')) {
-                    IOHelper::rename($file.'.bak', $file);
+                if (Io::fileExists($file.'.bak')) {
+                    Io::rename($file.'.bak', $file);
                 }
             }
         }
@@ -107,8 +107,8 @@ class UpdateHelper
                     $tempPath = $rowData[0];
                 }
 
-                $destFile = IOHelper::normalizePathSeparators(Craft::$app->getPath()->getAppPath().'/'.$tempPath);
-                $sourceFile = IOHelper::getRealPath(IOHelper::normalizePathSeparators($sourceTempFolder.'/app/'.$tempPath));
+                $destFile = Io::normalizePathSeparators(Craft::$app->getPath()->getAppPath().'/'.$tempPath);
+                $sourceFile = Io::getRealPath(Io::normalizePathSeparators($sourceTempFolder.'/app/'.$tempPath));
 
                 switch (trim($rowData[1])) {
                     // update the file
@@ -120,15 +120,15 @@ class UpdateHelper
                                     '/').StringHelper::UUID();
                             $tempTempFolder = rtrim($destFile, '/').'-tmp';
 
-                            IOHelper::createFolder($tempFolder);
-                            IOHelper::copyFolder($sourceFile, $tempFolder);
-                            IOHelper::rename($destFile, $tempTempFolder);
-                            IOHelper::rename($tempFolder, $destFile);
-                            IOHelper::clearFolder($tempTempFolder);
-                            IOHelper::deleteFolder($tempTempFolder);
+                            Io::createFolder($tempFolder);
+                            Io::copyFolder($sourceFile, $tempFolder);
+                            Io::rename($destFile, $tempTempFolder);
+                            Io::rename($tempFolder, $destFile);
+                            Io::clearFolder($tempTempFolder);
+                            Io::deleteFolder($tempTempFolder);
                         } else {
                             Craft::info('Updating file: '.$destFile, __METHOD__);
-                            IOHelper::copyFile($sourceFile, $destFile);
+                            Io::copyFile($sourceFile, $destFile);
                         }
 
                         break;
@@ -137,7 +137,7 @@ class UpdateHelper
             }
         } catch (\Exception $e) {
             Craft::error('Error updating files: '.$e->getMessage(), __METHOD__);
-            UpdateHelper::rollBackFileChanges($manifestData);
+            Update::rollBackFileChanges($manifestData);
 
             return false;
         }
@@ -226,9 +226,9 @@ class UpdateHelper
     public static function getManifestData($manifestDataPath)
     {
         if (static::$_manifestData == null) {
-            if (IOHelper::fileExists($manifestDataPath.'/craft_manifest')) {
+            if (Io::fileExists($manifestDataPath.'/craft_manifest')) {
                 // get manifest file
-                $manifestFileData = IOHelper::getFileContents($manifestDataPath.'/craft_manifest', true);
+                $manifestFileData = Io::getFileContents($manifestDataPath.'/craft_manifest', true);
 
                 if ($manifestFileData === false) {
                     throw new Exception(Craft::t('app', 'There was a problem reading the update manifest data.'));

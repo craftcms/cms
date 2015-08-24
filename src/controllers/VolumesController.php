@@ -11,8 +11,8 @@ use Craft;
 use craft\app\base\Volume;
 use craft\app\elements\Asset;
 use craft\app\errors\HttpException;
-use craft\app\helpers\JsonHelper;
-use craft\app\helpers\UrlHelper;
+use craft\app\helpers\Json;
+use craft\app\helpers\Url;
 use craft\app\web\Controller;
 use craft\app\web\Response;
 
@@ -109,15 +109,15 @@ class VolumesController extends Controller
         $crumbs = [
             [
                 'label' => Craft::t('app', 'Settings'),
-                'url' => UrlHelper::getUrl('settings')
+                'url' => Url::getUrl('settings')
             ],
             [
                 'label' => Craft::t('app', 'Assets'),
-                'url' => UrlHelper::getUrl('settings/assets')
+                'url' => Url::getUrl('settings/assets')
             ],
             [
                 'label' => Craft::t('app', 'Volumes'),
-                'url' => UrlHelper::getUrl('settings/assets')
+                'url' => Url::getUrl('settings/assets')
             ],
         ];
 
@@ -201,7 +201,7 @@ class VolumesController extends Controller
         $this->requirePostRequest();
         $this->requireAjaxRequest();
 
-        $volumeIds = JsonHelper::decode(Craft::$app->getRequest()->getRequiredBodyParam('ids'));
+        $volumeIds = Json::decode(Craft::$app->getRequest()->getRequiredBodyParam('ids'));
         Craft::$app->getVolumes()->reorderVolumes($volumeIds);
 
         return $this->asJson(['success' => true]);

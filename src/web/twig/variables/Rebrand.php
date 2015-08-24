@@ -7,7 +7,7 @@
 
 namespace craft\app\web\twig\variables;
 
-use craft\app\helpers\IOHelper;
+use craft\app\helpers\Io;
 
 \Craft::$app->requireEdition(\Craft::Client);
 
@@ -76,7 +76,7 @@ class Rebrand
     private function _getLogoPath()
     {
         if (!isset($this->_logoPath)) {
-            $files = IOHelper::getFolderContents(\Craft::$app->getPath()->getStoragePath().'/logo', false);
+            $files = Io::getFolderContents(\Craft::$app->getPath()->getStoragePath().'/logo', false);
 
             if (!empty($files)) {
                 $this->_logoPath = $files[0];

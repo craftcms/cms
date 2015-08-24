@@ -12,8 +12,8 @@ use craft\app\dates\DateTime;
 use craft\app\errors\HttpException;
 use craft\app\errors\InvalidComponentException;
 use craft\app\helpers\Component;
-use craft\app\helpers\TemplateHelper;
-use craft\app\helpers\UrlHelper;
+use craft\app\helpers\Template;
+use craft\app\helpers\Url;
 use craft\app\mail\Mailer;
 use craft\app\mail\transportadaptors\BaseTransportAdaptor;
 use craft\app\mail\transportadaptors\Gmail;
@@ -305,7 +305,7 @@ class SystemSettingsController extends Controller
 
             // Try to send the test email
             $message = $mailer
-                ->composeFromKey('test_email', ['settings' => TemplateHelper::getRaw($settingsHtml)])
+                ->composeFromKey('test_email', ['settings' => Template::getRaw($settingsHtml)])
                 ->setTo(Craft::$app->getUser()->getIdentity());
 
             if ($message->send()) {
@@ -357,11 +357,11 @@ class SystemSettingsController extends Controller
         $crumbs = [
             [
                 'label' => Craft::t('app', 'Settings'),
-                'url' => UrlHelper::getUrl('settings')
+                'url' => Url::getUrl('settings')
             ],
             [
                 'label' => Craft::t('app', 'Globals'),
-                'url' => UrlHelper::getUrl('settings/globals')
+                'url' => Url::getUrl('settings/globals')
             ]
         ];
 

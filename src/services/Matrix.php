@@ -15,8 +15,8 @@ use craft\app\elements\db\MatrixBlockQuery;
 use craft\app\enums\ColumnType;
 use craft\app\errors\Exception;
 use craft\app\fields\Matrix as MatrixField;
-use craft\app\helpers\HtmlHelper;
-use craft\app\helpers\MigrationHelper;
+use craft\app\helpers\Html;
+use craft\app\helpers\Migration;
 use craft\app\helpers\StringHelper;
 use craft\app\models\FieldLayout as FieldLayoutModel;
 use craft\app\models\FieldLayoutTab as FieldLayoutTabModel;
@@ -451,7 +451,7 @@ class Matrix extends Component
                     $blockType->addError($attribute, Craft::t('app', '{attribute} "{value}" has already been taken.',
                         [
                             'attribute' => $blockType->getAttributeLabel($attribute),
-                            'value' => HtmlHelper::encode($value)
+                            'value' => Html::encode($value)
                         ]));
 
                     $validates = false;
@@ -483,7 +483,7 @@ class Matrix extends Component
                 // Do we need to create/rename the content table?
                 if (!Craft::$app->getDb()->tableExists($newContentTable)) {
                     if ($oldContentTable && Craft::$app->getDb()->tableExists($oldContentTable)) {
-                        MigrationHelper::renameTable($oldContentTable, $newContentTable);
+                        Migration::renameTable($oldContentTable, $newContentTable);
                     } else {
                         $this->_createContentTable($newContentTable);
                     }

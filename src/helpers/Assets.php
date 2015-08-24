@@ -40,7 +40,7 @@ class Assets
         $extension = strpos($extension, '.') !== false ? pathinfo($extension, PATHINFO_EXTENSION) : $extension;
         $filename = uniqid('assets', true).'.'.$extension;
 
-        return IOHelper::createFile(Craft::$app->getPath()->getTempPath().'/'.$filename)->getRealPath();
+        return Io::createFile(Craft::$app->getPath()->getTempPath().'/'.$filename)->getRealPath();
     }
 
     /**
@@ -94,8 +94,8 @@ class Assets
     public static function prepareAssetName($name, $isFilename = true)
     {
         if ($isFilename) {
-            $baseName = IOHelper::getFilename($name, false);
-            $extension = '.'.IOHelper::getExtension($name);
+            $baseName = Io::getFilename($name, false);
+            $extension = '.'.Io::getExtension($name);
         } else {
             $baseName = $name;
             $extension = '';
@@ -108,7 +108,7 @@ class Assets
             $separator = null;
         }
 
-        $baseName = IOHelper::cleanFilename($baseName, Craft::$app->getConfig()->get('convertFilenamesToAscii'), $separator);
+        $baseName = Io::cleanFilename($baseName, Craft::$app->getConfig()->get('convertFilenamesToAscii'), $separator);
 
         if ($isFilename && empty($baseName)) {
             $baseName = '-';

@@ -19,11 +19,11 @@ use craft\app\elements\actions\ReplaceFile;
 use craft\app\elements\actions\View;
 use craft\app\elements\db\AssetQuery;
 use craft\app\errors\AssetConflictException;
-use craft\app\helpers\HtmlHelper;
-use craft\app\helpers\ImageHelper;
-use craft\app\helpers\IOHelper;
-use craft\app\helpers\TemplateHelper;
-use craft\app\helpers\UrlHelper;
+use craft\app\helpers\Html;
+use craft\app\helpers\Image;
+use craft\app\helpers\Io;
+use craft\app\helpers\Template;
+use craft\app\helpers\Url;
 use craft\app\models\VolumeFolder;
 use Exception;
 use yii\base\ErrorHandler;
@@ -276,7 +276,7 @@ class Asset extends Element
 
         switch ($attribute) {
             case 'filename': {
-                return HtmlHelper::encodeParams(
+                return Html::encodeParams(
                     '<span style="word-break: break-word;">{filename}</span>',
                     [
                         'filename' => $element->filename,
@@ -698,9 +698,9 @@ class Asset extends Element
     public function getImg()
     {
         if ($this->kind == 'image') {
-            $img = '<img src="'.$this->getUrl().'" width="'.$this->getWidth().'" height="'.$this->getHeight().'" alt="'.HtmlHelper::encode($this->title).'" />';
+            $img = '<img src="'.$this->getUrl().'" width="'.$this->getWidth().'" height="'.$this->getHeight().'" alt="'.Html::encode($this->title).'" />';
 
-            return TemplateHelper::getRaw($img);
+            return Template::getRaw($img);
         }
     }
 
@@ -756,7 +756,7 @@ class Asset extends Element
     public function getThumbUrl($size = 125)
     {
         if ($this->hasThumb()) {
-            return UrlHelper::getResourceUrl(
+            return Url::getResourceUrl(
                 'assetthumbs/'.$this->id.'/'.$size,
                 [
                     Craft::$app->getResources()->dateParam => $this->dateModified->getTimestamp()
@@ -775,7 +775,7 @@ class Asset extends Element
         if ($this->hasThumb()) {
             return false;
         } else {
-            return UrlHelper::getResourceUrl(
+            return Url::getResourceUrl(
                 'icons/'.$this->getExtension().'/'.$size
             );
         }
@@ -813,7 +813,7 @@ class Asset extends Element
      */
     public function getExtension()
     {
-        return IOHelper::getExtension($this->filename);
+        return Io::getExtension($this->filename);
     }
 
     /**
@@ -821,7 +821,7 @@ class Asset extends Element
      */
     public function getMimeType()
     {
-        return IOHelper::getMimeType($this->filename);
+        return Io::getMimeType($this->filename);
     }
 
     /**
@@ -834,7 +834,7 @@ class Asset extends Element
 
     public function getHeight($transform = null)
     {
-        if ($transform !== null && !ImageHelper::isImageManipulatable(
+        if ($transform !== null && !Image::isImageManipulatable(
                 $this->getExtension()
             )
         ) {
@@ -853,7 +853,7 @@ class Asset extends Element
      */
     public function getWidth($transform = null)
     {
-        if ($transform !== null && !ImageHelper::isImageManipulatable(
+        if ($transform !== null && !Image::isImageManipulatable(
                 $this->getExtension()
             )
         ) {
@@ -951,7 +951,7 @@ class Asset extends Element
 
         if (!$transform->width || !$transform->height) {
             // Fill in the blank
-            list($dimensions['width'], $dimensions['height']) = ImageHelper::calculateMissingDimension(
+            list($dimensions['width'], $dimensions['height']) = Image::calculateMissingDimension(
                 $dimensions['width'],
                 $dimensions['height'],
                 $this->width,

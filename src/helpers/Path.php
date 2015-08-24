@@ -10,12 +10,12 @@ namespace craft\app\helpers;
 use Craft;
 
 /**
- * Class PathHelper
+ * Class Path
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
-class PathHelper
+class Path
 {
     // Public Methods
     // =========================================================================

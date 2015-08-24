@@ -10,7 +10,7 @@ namespace craft\app\fields;
 use Craft;
 use craft\app\base\Field;
 use craft\app\helpers\Db;
-use craft\app\helpers\LocalizationHelper;
+use craft\app\helpers\Localization;
 use craft\app\i18n\Locale;
 
 /**
@@ -102,7 +102,7 @@ class Number extends Field
             if ($value === '') {
                 $value = 0;
             } else {
-                $value = LocalizationHelper::normalizeNumber($value);
+                $value = Localization::normalizeNumber($value);
             }
             $element->setRawPostValueForField($this->handle, $value);
         }

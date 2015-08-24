@@ -10,12 +10,12 @@ namespace craft\app\helpers;
 use Craft;
 
 /**
- * Class UrlHelper
+ * Class Url
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
-class UrlHelper
+class Url
 {
     // Properties
     // =========================================================================
@@ -247,7 +247,7 @@ class UrlHelper
                         $params = [$params];
                     }
 
-                    $timeModified = IOHelper::getLastTimeModified($realPath);
+                    $timeModified = Io::getLastTimeModified($realPath);
                     $params[$dateParam] = $timeModified->getTimestamp();
                 } else {
                     // Just set a random query string param on there, so even if the browser decides to cache it,

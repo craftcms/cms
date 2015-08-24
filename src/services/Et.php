@@ -8,8 +8,8 @@
 namespace craft\app\services;
 
 use Craft;
-use craft\app\helpers\IOHelper;
-use craft\app\helpers\JsonHelper;
+use craft\app\helpers\Io;
+use craft\app\helpers\Json;
 use craft\app\models\AppNewRelease;
 use craft\app\models\AppUpdate;
 use craft\app\models\Et as EtModel;
@@ -128,7 +128,7 @@ class Et extends Component
      */
     public function downloadUpdate($downloadPath, $md5)
     {
-        if (IOHelper::folderExists($downloadPath)) {
+        if (Io::folderExists($downloadPath)) {
             $downloadPath .= '/'.$md5.'.zip';
         }
 
@@ -309,7 +309,7 @@ class Et extends Component
     public function decodeEtModel($attributes)
     {
         if ($attributes) {
-            $attributes = JsonHelper::decode($attributes);
+            $attributes = Json::decode($attributes);
 
             if (is_array($attributes)) {
                 $etModel = new EtModel($attributes);

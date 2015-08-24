@@ -13,7 +13,7 @@ use craft\app\errors\Exception;
 use craft\app\events\DraftEvent;
 use craft\app\events\EntryEvent;
 use craft\app\helpers\ArrayHelper;
-use craft\app\helpers\JsonHelper;
+use craft\app\helpers\Json;
 use craft\app\elements\Entry;
 use craft\app\models\EntryDraft;
 use craft\app\models\EntryVersion;
@@ -80,7 +80,7 @@ class EntryRevisions extends Component
 
         if ($draftRecord) {
             $config = ArrayHelper::toArray($draftRecord, [], false);
-            $config['data'] = JsonHelper::decode($config['data']);
+            $config['data'] = Json::decode($config['data']);
             $draft = EntryDraft::create($config);
 
             // This is a little hacky, but fixes a bug where entries are getting the wrong URL when a draft is published
@@ -122,7 +122,7 @@ class EntryRevisions extends Component
             ->all();
 
         foreach ($results as $result) {
-            $result['data'] = JsonHelper::decode($result['data']);
+            $result['data'] = Json::decode($result['data']);
 
             // Don't initialize the content
             unset($result['data']['fields']);
@@ -299,7 +299,7 @@ class EntryRevisions extends Component
 
         if ($versionRecord) {
             $config = ArrayHelper::toArray($versionRecord, [], false);
-            $config['data'] = JsonHelper::decode($config['data']);
+            $config['data'] = Json::decode($config['data']);
             return EntryVersion::create($config);
         }
     }
@@ -333,7 +333,7 @@ class EntryRevisions extends Component
             ->all();
 
         foreach ($results as $result) {
-            $result['data'] = JsonHelper::decode($result['data']);
+            $result['data'] = Json::decode($result['data']);
 
             // Don't initialize the content
             unset($result['data']['fields']);

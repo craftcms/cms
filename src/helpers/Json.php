@@ -10,12 +10,12 @@ namespace craft\app\helpers;
 use yii\base\InvalidParamException;
 
 /**
- * Class JsonHelper
+ * Class Json
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
-class JsonHelper extends \yii\helpers\Json
+class Json extends \yii\helpers\Json
 {
     // Public Methods
     // =========================================================================
@@ -45,7 +45,7 @@ class JsonHelper extends \yii\helpers\Json
      */
     public static function sendJsonHeaders()
     {
-        HeaderHelper::setNoCache();
-        HeaderHelper::setContentTypeByExtension('json');
+        Header::setNoCache();
+        Header::setContentTypeByExtension('json');
     }
 }

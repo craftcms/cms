@@ -7,7 +7,7 @@
 
 namespace craft\app\io;
 
-use craft\app\helpers\IOHelper;
+use craft\app\helpers\Io;
 
 /**
  * Class File
@@ -88,13 +88,13 @@ class File extends BaseIO
     {
         if ($includeExtension) {
             if (!$this->_filename) {
-                $this->_filename = IOHelper::getFilename($this->getRealPath(), $includeExtension);
+                $this->_filename = Io::getFilename($this->getRealPath(), $includeExtension);
             }
 
             return $this->_filename;
         } else {
             if (!$this->_baseName) {
-                $this->_baseName = IOHelper::getFilename($this->getRealPath(), $includeExtension);
+                $this->_baseName = Io::getFilename($this->getRealPath(), $includeExtension);
             }
 
             return $this->_baseName;
@@ -107,7 +107,7 @@ class File extends BaseIO
     public function getExtension()
     {
         if (!$this->_extension) {
-            $this->_extension = IOHelper::getExtension($this->getRealPath());
+            $this->_extension = Io::getExtension($this->getRealPath());
         }
 
         return $this->_extension;
@@ -119,7 +119,7 @@ class File extends BaseIO
     public function getMimeType()
     {
         if (!$this->_mimeType) {
-            $this->_mimeType = IOHelper::getMimeType($this->getRealPath());
+            $this->_mimeType = Io::getMimeType($this->getRealPath());
         }
 
         return $this->_mimeType;
@@ -131,7 +131,7 @@ class File extends BaseIO
     public function getSize()
     {
         if (!$this->_size) {
-            $this->_size = IOHelper::getFileSize($this->getRealPath());
+            $this->_size = Io::getFileSize($this->getRealPath());
         }
 
         return $this->_size;
@@ -143,7 +143,7 @@ class File extends BaseIO
     public function isEmpty()
     {
         if (!$this->_isEmpty) {
-            $this->_isEmpty = IOHelper::isFileEmpty($this->getRealPath());
+            $this->_isEmpty = Io::isFileEmpty($this->getRealPath());
         }
 
         return $this->_isEmpty;
@@ -158,13 +158,13 @@ class File extends BaseIO
     {
         if ($array) {
             if (!$this->_arrayContents) {
-                $this->_arrayContents = IOHelper::getFileContents($this->getRealPath(), $array);
+                $this->_arrayContents = Io::getFileContents($this->getRealPath(), $array);
             }
 
             return $this->_arrayContents;
         } else {
             if (!$this->_stringContents) {
-                $this->_stringContents = IOHelper::getFileContents($this->getRealPath(), $array);
+                $this->_stringContents = Io::getFileContents($this->getRealPath(), $array);
             }
 
             return $this->_stringContents;
@@ -179,7 +179,7 @@ class File extends BaseIO
      */
     public function write($contents, $append)
     {
-        if (!IOHelper::writeToFile($this->getRealPath(), $contents, false, $append)) {
+        if (!Io::writeToFile($this->getRealPath(), $contents, false, $append)) {
             return false;
         }
 
@@ -193,7 +193,7 @@ class File extends BaseIO
      */
     public function copy($destination)
     {
-        if (!IOHelper::copyFile($this->getRealPath(), $destination)) {
+        if (!Io::copyFile($this->getRealPath(), $destination)) {
             return false;
         }
 
@@ -205,7 +205,7 @@ class File extends BaseIO
      */
     public function clear()
     {
-        if (!IOHelper::clearFile($this->getRealPath())) {
+        if (!Io::clearFile($this->getRealPath())) {
             return false;
         }
 
@@ -217,7 +217,7 @@ class File extends BaseIO
      */
     public function delete()
     {
-        if (!IOHelper::deleteFile($this->getRealPath())) {
+        if (!Io::deleteFile($this->getRealPath())) {
             return false;
         }
 
@@ -230,7 +230,7 @@ class File extends BaseIO
     public function getMD5()
     {
         if (!$this->_md5) {
-            $this->_md5 = IOHelper::getFileMD5($this->getRealPath());
+            $this->_md5 = Io::getFileMD5($this->getRealPath());
         }
 
         return $this->_md5;
@@ -241,7 +241,7 @@ class File extends BaseIO
      */
     public function touch()
     {
-        if (!IOHelper::touch($this->getRealPath())) {
+        if (!Io::touch($this->getRealPath())) {
             return false;
         }
 

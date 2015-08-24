@@ -15,8 +15,8 @@ use craft\app\enums\VersionUpdateStatus;
 use craft\app\errors\Exception;
 use craft\app\events\Event;
 use craft\app\events\UpdateEvent;
-use craft\app\helpers\IOHelper;
-use craft\app\helpers\UpdateHelper;
+use craft\app\helpers\Io;
+use craft\app\helpers\Update;
 use craft\app\models\AppUpdate as AppUpdateModel;
 use craft\app\models\PluginUpdate as PluginUpdateModel;
 use craft\app\models\Update as UpdateModel;
@@ -206,7 +206,7 @@ class Updates extends Component
     {
         Craft::info('Flushing update info from cache.', __METHOD__);
 
-        if (IOHelper::clearFolder(Craft::$app->getPath()->getCompiledTemplatesPath(),
+        if (Io::clearFolder(Craft::$app->getPath()->getCompiledTemplatesPath(),
                 true) && Craft::$app->getCache()->flush()
         ) {
             return true;
@@ -279,8 +279,8 @@ class Updates extends Component
         $errorPath = null;
 
         foreach ($checkPaths as $writablePath) {
-            if (!IOHelper::isWritable($writablePath)) {
-                $errorPath[] = IOHelper::getRealPath($writablePath);
+            if (!Io::isWritable($writablePath)) {
+                $errorPath[] = Io::getRealPath($writablePath);
             }
         }
 
@@ -488,17 +488,17 @@ class Updates extends Component
 
             if ($dbBackupPath && Craft::$app->getConfig()->get('backupDbOnUpdate') && Craft::$app->getConfig()->get('restoreDbOnUpdateFailure')) {
                 Craft::info('Rolling back any database changes.', __METHOD__);
-                UpdateHelper::rollBackDatabaseChanges($dbBackupPath);
+                Update::rollBackDatabaseChanges($dbBackupPath);
                 Craft::info('Done rolling back any database changes.', __METHOD__);
             }
 
             // If uid !== false, it's an auto-update.
             if ($uid !== false) {
                 Craft::info('Rolling back any file changes.', __METHOD__);
-                $manifestData = UpdateHelper::getManifestData(UpdateHelper::getUnzipFolderFromUID($uid));
+                $manifestData = Update::getManifestData(Update::getUnzipFolderFromUID($uid));
 
                 if ($manifestData) {
-                    UpdateHelper::rollBackFileChanges($manifestData);
+                    Update::rollBackFileChanges($manifestData);
                 }
 
                 Craft::info('Done rolling back any file changes.', __METHOD__);

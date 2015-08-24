@@ -12,7 +12,7 @@ use craft\app\base\ElementInterface;
 use craft\app\db\Query;
 use craft\app\enums\ColumnType;
 use craft\app\helpers\Db;
-use craft\app\helpers\SearchHelper;
+use craft\app\helpers\Search;
 use craft\app\helpers\StringHelper;
 use craft\app\search\SearchQuery;
 use craft\app\search\SearchQueryTerm;
@@ -209,7 +209,7 @@ class Search extends Component
         }
 
         // Clean 'em up
-        $cleanKeywords = SearchHelper::normalizeKeywords($dirtyKeywords);
+        $cleanKeywords = Search::normalizeKeywords($dirtyKeywords);
 
         // Save 'em
         $keyColumns = [
@@ -552,7 +552,7 @@ class Search extends Component
         static $terms = [];
 
         if (!array_key_exists($term, $terms)) {
-            $terms[$term] = SearchHelper::normalizeKeywords($term);
+            $terms[$term] = Search::normalizeKeywords($term);
         }
 
         return $terms[$term];
@@ -579,7 +579,7 @@ class Search extends Component
      */
     private function _isFulltextTerm($term)
     {
-        $ftStopWords = SearchHelper::getStopWords();
+        $ftStopWords = Search::getStopWords();
 
         // Check if complete term is in stopwords
         if (in_array($term, $ftStopWords)) {
@@ -591,7 +591,7 @@ class Search extends Component
 
         // Then loop through terms and return false it doesn't match up
         foreach ($words as $word) {
-            if (mb_strlen($word) < SearchHelper::getMinWordLength() || in_array($word,
+            if (mb_strlen($word) < Search::getMinWordLength() || in_array($word,
                     $ftStopWords)
             ) {
                 return false;

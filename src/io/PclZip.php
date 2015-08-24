@@ -8,7 +8,7 @@
 namespace craft\app\io;
 
 use Craft;
-use craft\app\helpers\IOHelper;
+use craft\app\helpers\Io;
 
 /**
  * Class PclZip
@@ -65,11 +65,11 @@ class PclZip implements ZipInterface
                 continue;
             }
 
-            $folderName = IOHelper::getFolderName($zipFile['filename']);
+            $folderName = Io::getFolderName($zipFile['filename']);
             if ($folderName == './') {
                 $tempDestFolders[] = $destFolder.'/';
             } else {
-                $tempDestFolders[] = $destFolder.'/'.rtrim(IOHelper::getFolderName($zipFile['filename']),
+                $tempDestFolders[] = $destFolder.'/'.rtrim(Io::getFolderName($zipFile['filename']),
                         '/');
             }
         }
@@ -95,8 +95,8 @@ class PclZip implements ZipInterface
 
         // Create the destination directories.
         foreach ($finalDestFolders as $finalDestFolder) {
-            if (!IOHelper::folderExists($finalDestFolder)) {
-                if (!IOHelper::createFolder($finalDestFolder)) {
+            if (!Io::folderExists($finalDestFolder)) {
+                if (!Io::createFolder($finalDestFolder)) {
                     Craft::error('Could not create folder '.$finalDestFolder.' while unzipping: '.$srcZip, __METHOD__);
 
                     return false;
@@ -119,7 +119,7 @@ class PclZip implements ZipInterface
 
             $destFile = $destFolder.'/'.$zipFile['filename'];
 
-            if (!IOHelper::writeToFile($destFile, $zipFile['content'], true, true)) {
+            if (!Io::writeToFile($destFile, $zipFile['content'], true, true)) {
                 Craft::error('Could not copy the file '.$destFile.' while unziping: '.$srcZip, __METHOD__);
 
                 return false;
@@ -136,17 +136,17 @@ class PclZip implements ZipInterface
     {
         $zip = new \PclZip($sourceZip);
 
-        if (IOHelper::fileExists($pathToAdd)) {
+        if (Io::fileExists($pathToAdd)) {
             $folderContents = [$pathToAdd];
         } else {
-            $folderContents = IOHelper::getFolderContents($pathToAdd, true);
+            $folderContents = Io::getFolderContents($pathToAdd, true);
         }
 
         $filesToAdd = [];
 
         foreach ($folderContents as $itemToZip) {
-            if (IOHelper::isReadable($itemToZip)) {
-                if ((IOHelper::folderExists($itemToZip) && IOHelper::isFolderEmpty($itemToZip)) || IOHelper::fileExists($itemToZip)) {
+            if (Io::isReadable($itemToZip)) {
+                if ((Io::folderExists($itemToZip) && Io::isFolderEmpty($itemToZip)) || Io::fileExists($itemToZip)) {
                     $filesToAdd[] = $itemToZip;
                 }
             }
