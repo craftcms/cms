@@ -7,7 +7,7 @@
 
 namespace craft\app\web\twig\variables;
 
-use craft\app\helpers\Image;
+use craft\app\helpers\Image as ImageHelper;
 
 /**
  * Class Image variable.
@@ -53,7 +53,7 @@ class Image
     public function getSize()
     {
         if (!isset($this->size)) {
-            $size = Image::getImageSize($this->path);
+            $size = ImageHelper::getImageSize($this->path);
             $this->size = [$size[0], $size[1]];
         }
 

@@ -10,7 +10,6 @@ namespace craft\app\volumes;
 use craft\app\base\Volume;
 use craft\app\base\InvalidComponentInterface;
 use craft\app\base\InvalidComponentTrait;
-use craft\app\base\VolumeTrait;
 
 /**
  * InvalidSource represents a s with an invalid class.

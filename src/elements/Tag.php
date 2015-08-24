@@ -11,7 +11,6 @@ use Craft;
 use craft\app\base\Element;
 use craft\app\base\ElementInterface;
 use craft\app\elements\db\TagQuery;
-use craft\app\models\FieldLayout;
 use craft\app\models\TagGroup;
 
 /**

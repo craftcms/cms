@@ -9,8 +9,6 @@ namespace craft\app\console;
 
 use Craft;
 use craft\app\base\ApplicationTrait;
-use craft\app\helpers\Io;
-use craft\app\helpers\StringHelper;
 
 /**
  * Craft Console Application class

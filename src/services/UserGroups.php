@@ -10,7 +10,6 @@ namespace craft\app\services;
 use Craft;
 use craft\app\db\Query;
 use craft\app\errors\Exception;
-use craft\app\events\Event;
 use craft\app\elements\User;
 use craft\app\models\UserGroup as UserGroupModel;
 use craft\app\records\UserGroup as UserGroupRecord;

@@ -12,7 +12,6 @@ use craft\app\base\ElementInterface;
 use craft\app\db\Query;
 use craft\app\enums\ColumnType;
 use craft\app\helpers\Db;
-use craft\app\helpers\Search;
 use craft\app\helpers\StringHelper;
 use craft\app\search\SearchQuery;
 use craft\app\search\SearchQueryTerm;

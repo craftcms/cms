@@ -4,7 +4,7 @@ namespace craft\app\image;
 use Craft;
 use craft\app\base\Image;
 use craft\app\errors\Exception;
-use craft\app\helpers\Image;
+use craft\app\helpers\Image as ImageHelper;
 use craft\app\helpers\Io;
 
 /**
@@ -23,11 +23,11 @@ class Svg extends Image
     // Constants
     // =========================================================================
 
-    const SVG_WIDTH_RE = '/(<svg[^>]*\swidth=")([\d\.]+)([a-z]*)"/si';
-    const SVG_HEIGHT_RE = '/(<svg[^>]*\sheight=")([\d\.]+)([a-z]*)"/si';
+    const SVG_WIDTH_RE   = '/(<svg[^>]*\swidth=")([\d\.]+)([a-z]*)"/si';
+    const SVG_HEIGHT_RE  = '/(<svg[^>]*\sheight=")([\d\.]+)([a-z]*)"/si';
     const SVG_VIEWBOX_RE = '/(<svg[^>]*\sviewBox=")(\d+(?:,|\s)\d+(?:,|\s)(\d+)(?:,|\s)(\d+))"/si';
-    const SVG_ASPECT_RE = '/(<svg[^>]*\spreserveAspectRatio=")([a-z]+\s[a-z]+)"/si';
-    const SVG_TAG_RE = '/<svg/si';
+    const SVG_ASPECT_RE  = '/(<svg[^>]*\spreserveAspectRatio=")([a-z]+\s[a-z]+)"/si';
+    const SVG_TAG_RE     = '/<svg/si';
 
     // Properties
     // =========================================================================
@@ -90,7 +90,7 @@ class Svg extends Image
                 'No file exists at the path “{path}”', array('path' => $path)));
         }
 
-        list($width, $height) = Image::getImageSize($path);
+        list($width, $height) = ImageHelper::getImageSize($path);
 
         $svg = Io::getFileContents($path);
 

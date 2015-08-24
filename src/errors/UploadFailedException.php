@@ -26,7 +26,7 @@ class UploadFailedException extends FileException
         switch ($errorCode) {
             case UPLOAD_ERR_INI_SIZE:
             case UPLOAD_ERR_FORM_SIZE: {
-                $message = Craft::t('app', 'The uploaded file exceeds the maximum allowed size..');
+                $message = Craft::t('app', 'The uploaded file exceeds the maximum allowed size.');
                 break;
             }
             case UPLOAD_ERR_PARTIAL:

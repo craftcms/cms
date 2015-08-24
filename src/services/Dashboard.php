@@ -11,7 +11,7 @@ use Craft;
 use craft\app\base\WidgetInterface;
 use craft\app\errors\Exception;
 use craft\app\errors\InvalidComponentException;
-use craft\app\helpers\Component;
+use craft\app\helpers\Component as ComponentHelper;
 use craft\app\records\Widget as WidgetRecord;
 use craft\app\base\Widget;
 use craft\app\widgets\Feed as FeedWidget;
@@ -79,7 +79,7 @@ class Dashboard extends Component
         }
 
         try {
-            return Component::createComponent($config, self::WIDGET_INTERFACE);
+            return ComponentHelper::createComponent($config, self::WIDGET_INTERFACE);
         } catch (InvalidComponentException $e) {
             $config['errorMessage'] = $e->getMessage();
 

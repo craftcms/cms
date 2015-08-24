@@ -10,7 +10,6 @@ namespace craft\app\web;
 use Craft;
 use craft\app\base\RequestTrait;
 use craft\app\errors\HttpException;
-use craft\app\helpers\ArrayHelper;
 use craft\app\helpers\StringHelper;
 use yii\base\InvalidConfigException;
 

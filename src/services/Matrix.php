@@ -12,7 +12,6 @@ use craft\app\base\Element;
 use craft\app\base\ElementInterface;
 use craft\app\db\Query;
 use craft\app\elements\db\MatrixBlockQuery;
-use craft\app\enums\ColumnType;
 use craft\app\errors\Exception;
 use craft\app\fields\Matrix as MatrixField;
 use craft\app\helpers\Html;

@@ -9,7 +9,7 @@ namespace craft\app\services;
 
 use Craft;
 use craft\app\helpers\App;
-use craft\app\helpers\Image;
+use craft\app\helpers\Image as ImageHelper;
 use craft\app\helpers\Io;
 use craft\app\helpers\StringHelper;
 use craft\app\image\Raster;
@@ -199,7 +199,7 @@ class Images extends Component
      */
     public function rotateImageByExifData($filePath)
     {
-        if (!Image::canHaveExifData($filePath)) {
+        if (!ImageHelper::canHaveExifData($filePath)) {
             return false;
         }
 
@@ -208,15 +208,15 @@ class Images extends Component
 
         if (!empty($exif['ifd0.Orientation'])) {
             switch ($exif['ifd0.Orientation']) {
-                case Image::EXIF_IFD0_ROTATE_180: {
+                case ImageHelper::EXIF_IFD0_ROTATE_180: {
                     $degrees = 180;
                     break;
                 }
-                case Image::EXIF_IFD0_ROTATE_90: {
+                case ImageHelper::EXIF_IFD0_ROTATE_90: {
                     $degrees = 90;
                     break;
                 }
-                case Image::EXIF_IFD0_ROTATE_270: {
+                case ImageHelper::EXIF_IFD0_ROTATE_270: {
                     $degrees = 270;
                     break;
                 }
@@ -241,7 +241,7 @@ class Images extends Component
      */
     public function getExifData($filePath)
     {
-        if (!Image::canHaveExifData($filePath)) {
+        if (!ImageHelper::canHaveExifData($filePath)) {
             return null;
         }
 
@@ -259,7 +259,7 @@ class Images extends Component
      */
     public function stripOrientationFromExifData($filePath)
     {
-        if (!Image::canHaveExifData($filePath)) {
+        if (!ImageHelper::canHaveExifData($filePath)) {
             return null;
         }
 

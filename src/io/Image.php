@@ -9,7 +9,7 @@ namespace craft\app\io;
 
 use Craft;
 use craft\app\errors\Exception;
-use craft\app\helpers\Image;
+use craft\app\helpers\Image as ImageHelper;
 use craft\app\helpers\Io;
 use craft\app\helpers\StringHelper;
 use Imagine\Image\AbstractFont;
@@ -176,7 +176,7 @@ class Image
 
             if ($this->minSvgWidth !== null && $this->minSvgHeight !== null) {
                 // Does the <svg> node contain valid `width` and `height` attributes?
-                list($width, $height) = Image::parseSvgSize($svg);
+                list($width, $height) = ImageHelper::parseSvgSize($svg);
 
                 if ($width !== null && $height !== null) {
                     $scale = 1;
@@ -192,20 +192,20 @@ class Image
                     $width = round($width * $scale);
                     $height = round($height * $scale);
 
-                    if (preg_match(Image::SVG_WIDTH_RE, $svg) && preg_match(Image::SVG_HEIGHT_RE, $svg)) {
+                    if (preg_match(ImageHelper::SVG_WIDTH_RE, $svg) && preg_match(ImageHelper::SVG_HEIGHT_RE, $svg)) {
                         $svg = preg_replace(
-                            Image::SVG_WIDTH_RE,
+                            ImageHelper::SVG_WIDTH_RE,
                             "\${1}{$width}px\"",
                             $svg
                         );
                         $svg = preg_replace(
-                            Image::SVG_HEIGHT_RE,
+                            ImageHelper::SVG_HEIGHT_RE,
                             "\${1}{$height}px\"",
                             $svg
                         );
                     } else {
                         $svg = preg_replace(
-                            Image::SVG_TAG_RE,
+                            ImageHelper::SVG_TAG_RE,
                             "\${1} width=\"{$width}px\" height=\"{$height}px\" \${2}",
                             $svg
                         );
@@ -621,7 +621,7 @@ class Image
         }
 
         if (!$height || !$width) {
-            list($width, $height) = Image::calculateMissingDimension(
+            list($width, $height) = ImageHelper::calculateMissingDimension(
                 $width,
                 $height,
                 $this->getWidth(),
@@ -767,7 +767,7 @@ class Image
                     'png_compression_level' => $normalizedQuality,
                     'flatten' => false
                 ];
-                $pngInfo = Image::getPngImageInfo(
+                $pngInfo = ImageHelper::getPngImageInfo(
                     $this->_imageSourcePath
                 );
 

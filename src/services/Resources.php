@@ -12,7 +12,6 @@ use craft\app\dates\DateTime;
 use craft\app\errors\Exception;
 use craft\app\errors\HttpException;
 use craft\app\helpers\Assets;
-use craft\app\helpers\Header;
 use craft\app\helpers\Io;
 use craft\app\helpers\Path;
 use craft\app\helpers\StringHelper;

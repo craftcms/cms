@@ -13,7 +13,7 @@ use craft\app\base\ElementInterface;
 use craft\app\elements\Asset;
 use craft\app\elements\db\AssetQuery;
 use craft\app\errors\Exception;
-use craft\app\helpers\Assets;
+use craft\app\helpers\Assets as AssetsHelper;
 use craft\app\helpers\Io;
 use craft\app\helpers\StringHelper;
 use craft\app\models\VolumeFolder;
@@ -203,7 +203,7 @@ class Assets extends BaseRelationField
 
                 if (!empty($targetFolderId)) {
                     foreach ($uploadedFiles as $file) {
-                        $tempPath = Assets::getTempFilePath($file->name);
+                        $tempPath = AssetsHelper::getTempFilePath($file->name);
                         move_uploaded_file($file->tempName, $tempPath);
                         $response = Craft::$app->getAssets()->insertFileByLocalPath($tempPath, $file->name, $targetFolderId);
                         $fileIds[] = $response->getDataItem('fileId');

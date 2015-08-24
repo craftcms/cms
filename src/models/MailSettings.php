@@ -9,7 +9,6 @@ namespace craft\app\models;
 
 use Craft;
 use craft\app\base\Model;
-use craft\app\mail\Mailer;
 use craft\app\mail\transportadaptors\TransportAdaptorInterface;
 
 /**

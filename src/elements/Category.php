@@ -19,7 +19,6 @@ use craft\app\elements\actions\View;
 use craft\app\elements\db\CategoryQuery;
 use craft\app\helpers\Url;
 use craft\app\models\CategoryGroup;
-use craft\app\models\FieldLayout;
 
 /**
  * Category represents a category element.

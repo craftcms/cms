@@ -10,7 +10,6 @@ namespace craft\app\elements;
 use Craft;
 use craft\app\base\Element;
 use craft\app\base\ElementInterface;
-use craft\app\db\Query;
 use craft\app\elements\db\ElementQueryInterface;
 use craft\app\elements\db\MatrixBlockQuery;
 use craft\app\fields\Matrix;

@@ -4,7 +4,7 @@ namespace craft\app\image;
 use Craft;
 use craft\app\base\Image;
 use craft\app\errors\Exception;
-use craft\app\helpers\Image;
+use craft\app\helpers\Image as ImageHelper;
 use craft\app\helpers\Io;
 use craft\app\helpers\StringHelper;
 
@@ -523,7 +523,7 @@ class Raster extends Image
 
         if (empty($this->_font)) {
             throw new Exception(Craft::t('app',
-                'No font properties have been set. Call Image::setFontProperties() first.'));
+                'No font properties have been set. Call ImageHelper::setFontProperties() first.'));
         }
 
         $point = new \Imagine\Image\Point($x, $y);
@@ -653,7 +653,7 @@ class Raster extends Image
                     'png_compression_level' => $normalizedQuality,
                     'flatten' => false
                 );
-                $pngInfo = Image::getPngImageInfo($this->_imageSourcePath);
+                $pngInfo = ImageHelper::getPngImageInfo($this->_imageSourcePath);
 
                 // Even though a 2 channel PNG is valid (Grayscale with alpha channel), Imagick doesn't recognize it as
                 // a valid format: http://www.imagemagick.org/script/formats.php

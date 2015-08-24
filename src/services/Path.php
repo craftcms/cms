@@ -10,7 +10,6 @@ namespace craft\app\services;
 use Craft;
 use craft\app\enums\ConfigCategory;
 use craft\app\helpers\Io;
-use craft\app\helpers\StringHelper;
 use yii\base\Component;
 
 /**

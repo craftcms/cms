@@ -5,10 +5,9 @@ use Craft;
 use craft\app\base\Volume;
 use craft\app\base\VolumeInterface;
 use craft\app\db\Query;
-use craft\app\errors\ModelValidationException;
 use craft\app\errors\VolumeException;
 use craft\app\errors\InvalidComponentException;
-use craft\app\helpers\Component;
+use craft\app\helpers\Component as ComponentHelper;
 use craft\app\records\Volume as AssetVolumeRecord;
 use craft\app\volumes\AwsS3;
 use craft\app\volumes\GoogleCloud;
@@ -409,7 +408,7 @@ class Volumes extends Component
         }
 
         try {
-            return Component::createComponent($config, static::VOLUME_INTERFACE);
+            return ComponentHelper::createComponent($config, static::VOLUME_INTERFACE);
         } catch (InvalidComponentException $e) {
             $config['errorMessage'] = $e->getMessage();
 

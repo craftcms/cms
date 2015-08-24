@@ -8,7 +8,6 @@
 namespace craft\app\fields\data;
 
 use Craft;
-use craft\app\base\Savable;
 
 /**
  * Stores the data for Rich Text fields.

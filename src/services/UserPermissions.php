@@ -1,4 +1,5 @@
 <?php
+
 /**
  * @link      http://buildwithcraft.com/
  * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.

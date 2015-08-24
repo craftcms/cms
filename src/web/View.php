@@ -12,8 +12,8 @@ use craft\app\base\Element;
 use craft\app\base\ElementInterface;
 use craft\app\events\Event;
 use craft\app\helpers\ArrayHelper;
-use craft\app\helpers\Element;
-use craft\app\helpers\Html;
+use craft\app\helpers\Element as ElementHelper;
+use craft\app\helpers\Html as HtmlHelper;
 use craft\app\helpers\Io;
 use craft\app\helpers\Json;
 use craft\app\helpers\Path;
@@ -1288,7 +1288,7 @@ class View extends \yii\web\View
             $html .= ' data-level="'.$element->level.'"';
         }
 
-        $isEditable = Element::isElementEditable($element);
+        $isEditable = ElementHelper::isElementEditable($element);
 
         if ($isEditable) {
             $html .= ' data-editable';
@@ -1317,13 +1317,13 @@ class View extends \yii\web\View
         $html .= '<span class="title">';
 
         if ($context['context'] == 'index' && ($cpEditUrl = $element->getCpEditUrl())) {
-            $html .= Html::encodeParams('<a href="{cpEditUrl}">{label}</a>',
+            $html .= HtmlHelper::encodeParams('<a href="{cpEditUrl}">{label}</a>',
                 [
                     'cpEditUrl' => $cpEditUrl,
                     'label' => $label
                 ]);
         } else {
-            $html .= Html::encode($label);
+            $html .= HtmlHelper::encode($label);
         }
 
         $html .= '</span></div></div>';
