@@ -46,6 +46,7 @@ class Field extends ActiveRecord
         'link',
         'locale',
         'next',
+        'owner',
         'parents',
         'prev',
         'siblings',
