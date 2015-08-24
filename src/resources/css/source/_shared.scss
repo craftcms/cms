@@ -111,7 +111,7 @@ $noticecolor: #5286d9;
 	font-variant: normal;
 	text-transform: none;
 	line-height: 1;
-	width: 1em;
+	direction: ltr; // Fixes a rendering issue in Chrome/Win
 	-webkit-font-smoothing: antialiased;
 	-moz-osx-font-smoothing: grayscale;
 
