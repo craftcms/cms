@@ -24,7 +24,7 @@ use craft\app\events\DeleteElementsEvent;
 use craft\app\events\ElementEvent;
 use craft\app\events\MergeElementsEvent;
 use craft\app\helpers\Component;
-use craft\app\helpers\ElementHelper;
+use craft\app\helpers\Element;
 use craft\app\helpers\StringHelper;
 use craft\app\records\Element as ElementRecord;
 use craft\app\records\ElementLocale as ElementLocaleRecord;
@@ -455,7 +455,7 @@ class Elements extends Component
                         $originalSlug = $localizedElement->slug;
 
                         // Clean up the slug
-                        ElementHelper::setValidSlug($localizedElement);
+                        Element::setValidSlug($localizedElement);
 
                         // If the slug was entirely composed of invalid characters, it will be blank now.
                         if ($originalSlug && !$localizedElement->slug) {
@@ -467,7 +467,7 @@ class Elements extends Component
                             break;
                         }
 
-                        ElementHelper::setUniqueUri($localizedElement);
+                        Element::setUniqueUri($localizedElement);
 
                         $localeRecord->slug = $localizedElement->slug;
                         $localeRecord->uri = $localizedElement->uri;
@@ -576,7 +576,7 @@ class Elements extends Component
             return;
         }
 
-        ElementHelper::setUniqueUri($element);
+        Element::setUniqueUri($element);
 
         Craft::$app->getDb()->createCommand()->update('{{%elements_i18n}}', [
             'slug' => $element->slug,

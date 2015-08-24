@@ -13,12 +13,12 @@ use craft\app\db\Query;
 use craft\app\errors\Exception;
 
 /**
- * Class ElementHelper
+ * Class Element
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
-class ElementHelper
+class Element
 {
     // Public Methods
     // =========================================================================

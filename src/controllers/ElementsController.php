@@ -12,7 +12,7 @@ use craft\app\base\ElementInterface;
 use craft\app\elements\Category;
 use craft\app\errors\HttpException;
 use craft\app\helpers\ArrayHelper;
-use craft\app\helpers\ElementHelper;
+use craft\app\helpers\Element;
 use craft\app\helpers\StringHelper;
 
 /**
@@ -104,7 +104,7 @@ class ElementsController extends BaseElementsController
         $elementType = Craft::$app->getElements()->getElementTypeById($elementId);
         $element = Craft::$app->getElements()->getElementById($elementId, $elementType, $localeId);
 
-        if (!ElementHelper::isElementEditable($element) || !$element) {
+        if (!Element::isElementEditable($element) || !$element) {
             throw new HttpException(403);
         }
 
@@ -189,7 +189,7 @@ class ElementsController extends BaseElementsController
      */
     private function _getEditorHtmlResponse(ElementInterface $element, $includeLocales)
     {
-        $localeIds = ElementHelper::getEditableLocaleIdsForElement($element);
+        $localeIds = Element::getEditableLocaleIdsForElement($element);
 
         if (!$localeIds) {
             throw new HttpException(403);

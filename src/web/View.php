@@ -12,7 +12,7 @@ use craft\app\base\Element;
 use craft\app\base\ElementInterface;
 use craft\app\events\Event;
 use craft\app\helpers\ArrayHelper;
-use craft\app\helpers\ElementHelper;
+use craft\app\helpers\Element;
 use craft\app\helpers\HtmlHelper;
 use craft\app\helpers\IOHelper;
 use craft\app\helpers\JsonHelper;
@@ -1288,7 +1288,7 @@ class View extends \yii\web\View
             $html .= ' data-level="'.$element->level.'"';
         }
 
-        $isEditable = ElementHelper::isElementEditable($element);
+        $isEditable = Element::isElementEditable($element);
 
         if ($isEditable) {
             $html .= ' data-editable';

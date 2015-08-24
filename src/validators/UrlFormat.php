@@ -8,7 +8,7 @@
 namespace craft\app\validators;
 
 use Craft;
-use craft\app\helpers\ElementHelper;
+use craft\app\helpers\Element;
 use yii\validators\Validator;
 
 /**
@@ -48,7 +48,7 @@ class UrlFormat extends Validator
             $object->$attribute = $urlFormat;
 
             if ($this->requireSlug) {
-                if (!ElementHelper::doesUrlFormatHaveSlugTag($urlFormat)) {
+                if (!Element::doesUrlFormatHaveSlugTag($urlFormat)) {
                     $this->addError($object, $attribute, Craft::t('app', '{attribute} must contain “{slug}”',
                             ['attribute' => $object->attribute]));
                 }

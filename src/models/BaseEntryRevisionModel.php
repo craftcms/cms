@@ -8,7 +8,7 @@
 namespace craft\app\models;
 
 use Craft;
-use craft\app\helpers\ElementHelper;
+use craft\app\helpers\Element;
 use craft\app\elements\Entry;
 use craft\app\elements\User;
 
@@ -73,7 +73,7 @@ class BaseEntryRevisionModel extends Entry
     public function getUrl()
     {
         if ($this->uri === null) {
-            ElementHelper::setUniqueUri($this);
+            Element::setUniqueUri($this);
         }
 
         return parent::getUrl();
