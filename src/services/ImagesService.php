@@ -149,26 +149,29 @@ class ImagesService extends BaseApplicationComponent
 	 */
 	public function cleanImage($filePath)
 	{
-		$cleanedbyRotation = false;
-		$cleanedbyStripping = false;
+		$cleanedByRotation = false;
+		$cleanedByStripping = false;
 
 		try
 		{
 			if (craft()->config->get('rotateImagesOnUploadByExifData'))
 			{
-				$cleanedbyRotation = $this->rotateImageByExifData($filePath);
+				$cleanedByRotation = $this->rotateImageByExifData($filePath);
 			}
-			$cleanedbyStripping = $this->stripOrientationFromExifData($filePath);
+			$cleanedByStripping = $this->stripOrientationFromExifData($filePath);
 		}
 		catch (\Exception $e)
 		{
 			Craft::log('Tried to rotate or strip EXIF data from image and failed: '.$e->getMessage(), LogLevel::Error);
 		}
 
-		if (!$cleanedbyRotation && !$cleanedbyStripping)
+		// Image has already been cleaned if it had exif/orientation data
+		if ($cleanedByRotation || $cleanedByStripping)
 		{
-			return $this->loadImage($filePath)->saveAs($filePath, true);
+			return true;
 		}
+
+		return $this->loadImage($filePath)->saveAs($filePath, true);
 	}
 
 	/**
@@ -176,13 +179,13 @@ class ImagesService extends BaseApplicationComponent
 	 *
 	 * @param string $filePath
 	 *
-	 * @return bool|null
+	 * @return bool
 	 */
 	public function rotateImageByExifData($filePath)
 	{
 		if (!ImageHelper::canHaveExifData($filePath))
 		{
-			return null;
+			return false;
 		}
 
 		$exif = $this->getExifData($filePath);
@@ -211,11 +214,13 @@ class ImagesService extends BaseApplicationComponent
 			}
 		}
 
-		if ($degrees)
-		{
-			$image = $this->loadImage($filePath)->rotate($degrees);
-			return $image->saveAs($filePath, true);
-		}
+        if ($degrees === false)
+        {
+            return false;
+        }
+
+		$image = $this->loadImage($filePath)->rotate($degrees);
+		return $image->saveAs($filePath, true);
 	}
 
 	/**
