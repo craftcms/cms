@@ -30,7 +30,7 @@ class EmailMessages extends Component
     /**
      * @var
      */
-    private $_messageKeysAndSourceLocales;
+    private $_messagesInfo;
 
     // Public Methods
     // =========================================================================
@@ -142,9 +142,9 @@ class EmailMessages extends Component
      */
     private function _getAllMessageKeys()
     {
-        $this->_setAllMessageKeysAndLocales();
+        $this->_setAllMessageInfo();
 
-        return array_keys($this->_messageKeysAndSourceLocales);
+        return array_keys($this->_messagesInfo);
     }
 
     /**
@@ -152,14 +152,14 @@ class EmailMessages extends Component
      *
      * @param string $key
      *
-     * @return string|null
+     * @return array|null
      */
-    private function _getMessageSourceLocaleByKey($key)
+    private function _getMessageInfoByKey($key)
     {
-        $this->_setAllMessageKeysAndLocales();
+        $this->_setAllMessageInfo();
 
-        if (isset($this->_messageKeysAndSourceLocales[$key])) {
-            return $this->_messageKeysAndSourceLocales[$key];
+        if (isset($this->_messagesInfo[$key])) {
+            return $this->_messagesInfo[$key];
         }
     }
 
@@ -168,24 +168,30 @@ class EmailMessages extends Component
      *
      * @return void
      */
-    private function _setAllMessageKeysAndLocales()
+    private function _setAllMessageInfo()
     {
-        if (!isset($this->_messageKeysAndSourceLocales)) {
-            $craftSourceLocale = Craft::$app->sourceLanguage;
+        if (!isset($this->_messagesInfo)) {
+            $craftMessageInfo = [
+                'category' => 'app',
+                'sourceLanguage' => Craft::$app->sourceLanguage
+            ];
 
-            $this->_messageKeysAndSourceLocales = [
-                'account_activation' => $craftSourceLocale,
-                'verify_new_email' => $craftSourceLocale,
-                'forgot_password' => $craftSourceLocale,
-                'test_email' => $craftSourceLocale,
+            $this->_messagesInfo = [
+                'account_activation' => $craftMessageInfo,
+                'verify_new_email' => $craftMessageInfo,
+                'forgot_password' => $craftMessageInfo,
+                'test_email' => $craftMessageInfo,
             ];
 
             // Give plugins a chance to add additional messages
             foreach (Craft::$app->getPlugins()->call('registerEmailMessages') as $pluginHandle => $pluginKeys) {
-                $pluginSourceLocale = Craft::$app->getPlugins()->getPlugin($pluginHandle)->sourceLanguage;
+                $plugin = Craft::$app->getPlugins()->getPlugin($pluginHandle);
 
                 foreach ($pluginKeys as $key) {
-                    $this->_messageKeysAndSourceLocales[$key] = $pluginSourceLocale;
+                    $this->_messagesInfo[$key] = [
+                        'category' => $pluginHandle,
+                        'sourceLanguage' => $plugin->sourceLanguage
+                    ];
                 }
             }
         }
@@ -202,17 +208,18 @@ class EmailMessages extends Component
      */
     private function _translateMessageString($key, $part, $localeId)
     {
-        $combinedKey = $key.'_'.$part;
+        $messageInfo = $this->_getMessageInfoByKey($key);
 
-        $t = Craft::t('app', $combinedKey, null, $localeId);
+        if (!$messageInfo) {
+            return null;
+        }
+
+        $combinedKey = $key.'_'.$part;
+        $t = Craft::t($messageInfo['category'], $combinedKey, null, $localeId);
 
         // If a translation couldn't be found, default to the message's source locale
         if ($t == $combinedKey) {
-            $sourceLocale = $this->_getMessageSourceLocaleByKey($key);
-
-            if ($sourceLocale) {
-                $t = Craft::t('app', $combinedKey, null, $sourceLocale);
-            }
+            $t = Craft::t($messageInfo['category'], $combinedKey, null, $messageInfo['sourceLanguage']);
         }
 
         return $t;
