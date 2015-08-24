@@ -90,7 +90,8 @@ class Volumes extends Component
             ]);
         }
 
-        foreach (Craft::$app->getPlugins()->call('getVolumeTypes', [], true) as $pluginVolumeTypes) {
+        foreach (Craft::$app->getPlugins()->call('getVolumeTypes', [],
+            true) as $pluginVolumeTypes) {
             $volumeTypes = array_merge($volumeTypes, $pluginVolumeTypes);
         }
 
@@ -214,16 +215,18 @@ class Volumes extends Component
 
         if ($indexBy == 'id') {
             return $this->_volumesById;
-        } else if (!$indexBy) {
-            return array_values($this->_volumesById);
         } else {
-            $volumes = [];
+            if (!$indexBy) {
+                return array_values($this->_volumesById);
+            } else {
+                $volumes = [];
 
-            foreach ($this->_volumesById as $volume) {
-                $volumes[$volume->$indexBy] = $volume;
+                foreach ($this->_volumesById as $volume) {
+                    $volumes[$volume->$indexBy] = $volume;
+                }
+
+                return $volumes;
             }
-
-            return $volumes;
         }
     }
 
@@ -276,8 +279,8 @@ class Volumes extends Component
     /**
      * Saves an asset volume.
      *
-     * @param VolumeInterface|Volume $volume   the Volume to be saved.
-     * @param boolean                $validate $validate Whether the volume should be validate first
+     * @param VolumeInterface|Volume $volume the Volume to be saved.
+     * @param boolean $validate Whether the volume should be validate first
      *
      * @return boolean Whether the field was saved successfully
      * @throws \Exception
@@ -407,7 +410,8 @@ class Volumes extends Component
         }
 
         try {
-            return ComponentHelper::createComponent($config, static::VOLUME_INTERFACE);
+            return ComponentHelper::createComponent($config,
+                static::VOLUME_INTERFACE);
         } catch (InvalidComponentException $e) {
             $config['errorMessage'] = $e->getMessage();
 
