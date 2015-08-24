@@ -139,6 +139,8 @@ class Request extends \yii\web\Request
             if (!$configService->get('enableCsrfCookie')) {
                 $config['enableCsrfCookie'] = false;
             }
+        } else {
+            $config['enableCsrfValidation'] = false;
         }
 
         $this->cookieValidationKey = Craft::$app->getSecurity()->getValidationKey();
