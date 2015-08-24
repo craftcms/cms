@@ -67,13 +67,19 @@ class ImageHelper
      */
     public static function isImageManipulatable($extension)
     {
-        $extensions = array('jpg', 'jpeg', 'gif', 'png', 'wbmp', 'xbm');
+        $path = Craft::$app->getPath()->getResourcesPath();
+        $file = $path."images/samples/sample.".StringHelper::toLowerCase($extension);
 
-        if (Craft::$app->getImages()->isImagick()) {
-            $extensions[] = 'svg';
+        try
+        {
+            Craft::$app->getImages()->loadImage($file);
+            return true;
+        }
+        catch(\Exception $e)
+        {
+            return false;
         }
 
-        return in_array(mb_strtolower($extension), $extensions);
     }
 
     /**
