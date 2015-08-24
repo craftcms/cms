@@ -7,7 +7,7 @@ use craft\app\dates\DateTime;
 use craft\app\db\Query;
 use craft\app\elements\Asset;
 use craft\app\errors\VolumeFileNotFoundException;
-use craft\app\helpers\AssetsHelper;
+use craft\app\helpers\Assets;
 use craft\app\helpers\ImageHelper;
 use craft\app\helpers\IOHelper;
 use craft\app\helpers\StringHelper;
@@ -91,10 +91,10 @@ class AssetIndexer extends Component
 
             foreach ($fileList as $file) {
                 $allowedByFilter = !preg_match(
-                    AssetsHelper::INDEX_SKIP_ITEMS_PATTERN,
+                    Assets::INDEX_SKIP_ITEMS_PATTERN,
                     $file['basename']
                 );
-                $allowedByName = $file['basename'] == AssetsHelper::prepareAssetName(
+                $allowedByName = $file['basename'] == Assets::prepareAssetName(
                         $file['basename'],
                         $file['type'] != 'dir'
                     );

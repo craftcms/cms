@@ -14,7 +14,7 @@ use craft\app\db\Query;
 use craft\app\errors\Exception;
 use craft\app\events\DeleteUserEvent;
 use craft\app\events\UserEvent;
-use craft\app\helpers\AssetsHelper;
+use craft\app\helpers\Assets;
 use craft\app\helpers\DateTimeHelper;
 use craft\app\helpers\DbHelper;
 use craft\app\helpers\IOHelper;
@@ -406,8 +406,8 @@ class Users extends Component
                     // Has the username changed?
                     if ($user->username != $oldUsername) {
                         // Rename the user's photo directory
-                        $cleanOldUsername = AssetsHelper::prepareAssetName($oldUsername, false);
-                        $cleanUsername = AssetsHelper::prepareAssetName($user->username, false);
+                        $cleanOldUsername = Assets::prepareAssetName($oldUsername, false);
+                        $cleanUsername = Assets::prepareAssetName($user->username, false);
                         $userPhotosPath = Craft::$app->getPath()->getUserPhotosPath();
                         $oldFolder = $userPhotosPath.'/'.$cleanOldUsername;
                         $newFolder = $userPhotosPath.'/'.$cleanUsername;
@@ -622,14 +622,14 @@ class Users extends Component
      */
     public function saveUserPhoto($filename, Image $image, User $user)
     {
-        $userName = AssetsHelper::prepareAssetName($user->username, false);
+        $userName = Assets::prepareAssetName($user->username, false);
         $userPhotoFolder = Craft::$app->getPath()->getUserPhotosPath().'/'.$userName;
         $targetFolder = $userPhotoFolder.'/original';
 
         IOHelper::ensureFolderExists($userPhotoFolder);
         IOHelper::ensureFolderExists($targetFolder);
 
-        $targetPath = $targetFolder.'/'.AssetsHelper::prepareAssetName($filename,
+        $targetPath = $targetFolder.'/'.Assets::prepareAssetName($filename,
                 false);
 
         $result = $image->saveAs($targetPath);
@@ -657,7 +657,7 @@ class Users extends Component
      */
     public function deleteUserPhoto(User $user)
     {
-        $username = AssetsHelper::prepareAssetName($user->username, false);
+        $username = Assets::prepareAssetName($user->username, false);
         $folder = Craft::$app->getPath()->getUserPhotosPath().'/'.$username;
 
         if (IOHelper::folderExists($folder)) {
@@ -828,8 +828,8 @@ class Users extends Component
                 $userRecord->username = $user->unverifiedEmail;
 
                 $userPhotosPath = Craft::$app->getPath()->getUserPhotosPath();
-                $oldProfilePhotoPath = $userPhotosPath.'/'.AssetsHelper::cleanAssetName($oldEmail);
-                $newProfilePhotoPath = $userPhotosPath.'/'.AssetsHelper::cleanAssetName($user->unverifiedEmail);
+                $oldProfilePhotoPath = $userPhotosPath.'/'.Assets::cleanAssetName($oldEmail);
+                $newProfilePhotoPath = $userPhotosPath.'/'.Assets::cleanAssetName($user->unverifiedEmail);
 
                 // Update the user profile photo folder name, if it exists.
                 if (IOHelper::folderExists($oldProfilePhotoPath)) {

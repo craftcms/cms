@@ -9,7 +9,7 @@ namespace craft\app\controllers;
 
 use Craft;
 use craft\app\errors\Exception;
-use craft\app\helpers\AssetsHelper;
+use craft\app\helpers\Assets;
 use craft\app\helpers\ImageHelper;
 use craft\app\helpers\IOHelper;
 use craft\app\helpers\UrlHelper;
@@ -51,7 +51,7 @@ class RebrandController extends Controller
                 IOHelper::ensureFolderExists($folderPath);
                 IOHelper::clearFolder($folderPath, true);
 
-                $filename = AssetsHelper::prepareAssetName($file['name']);
+                $filename = Assets::prepareAssetName($file['name']);
 
                 move_uploaded_file($file['tmp_name'], $folderPath.'/'.$filename);
 

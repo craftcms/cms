@@ -29,7 +29,7 @@ use craft\app\errors\FileException;
 use craft\app\errors\ModelValidationException;
 use craft\app\events\AssetEvent;
 use craft\app\events\ReplaceAssetEvent;
-use craft\app\helpers\AssetsHelper;
+use craft\app\helpers\Assets;
 use craft\app\helpers\DbHelper;
 use craft\app\helpers\ImageHelper;
 use craft\app\helpers\IOHelper;
@@ -213,7 +213,7 @@ class Assets extends Component
             throw new AssetDisallowedExtensionException(Craft::t('app', 'The extension “{extension}” is not allowed.', ['extension' => $extension]));
         }
 
-        $asset->filename = AssetsHelper::prepareAssetName($asset->filename);
+        $asset->filename = Assets::prepareAssetName($asset->filename);
 
         $existingAsset = $this->findFile([
             'filename' => $asset->filename,
@@ -494,7 +494,7 @@ class Assets extends Component
             throw new AssetDisallowedExtensionException(Craft::t('app', 'The extension “{extension}” is not allowed.', ['extension' => $extension]));
         }
 
-        $newFilename = AssetsHelper::prepareAssetName($newFilename);
+        $newFilename = Assets::prepareAssetName($newFilename);
 
         $existingAsset = $this->findFile([
             'filename' => $newFilename,
@@ -807,7 +807,7 @@ class Assets extends Component
         if (!$transform || !ImageHelper::isImageManipulatable(IOHelper::getExtension($file->filename))) {
             $volume = $file->getVolume();
 
-            return AssetsHelper::generateUrl($volume, $file);
+            return Assets::generateUrl($volume, $file);
         }
 
         // Get the transform index model

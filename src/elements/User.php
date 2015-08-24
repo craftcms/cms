@@ -19,7 +19,7 @@ use craft\app\elements\actions\SuspendUsers;
 use craft\app\elements\actions\UnsuspendUsers;
 use craft\app\elements\db\ElementQueryInterface;
 use craft\app\elements\db\UserQuery;
-use craft\app\helpers\AssetsHelper;
+use craft\app\helpers\Assets;
 use craft\app\helpers\DateTimeHelper;
 use craft\app\helpers\HtmlHelper;
 use craft\app\helpers\UrlHelper;
@@ -900,7 +900,7 @@ class User extends Element implements IdentityInterface
     public function getPhotoUrl($size = 100)
     {
         if ($this->photo) {
-            $username = AssetsHelper::prepareAssetName($this->username, false);
+            $username = Assets::prepareAssetName($this->username, false);
 
             return UrlHelper::getResourceUrl('userphotos/'.$username.'/'.$size.'/'.$this->photo);
         }

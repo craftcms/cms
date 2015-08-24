@@ -13,12 +13,12 @@ use craft\app\elements\Asset;
 use craft\app\models\VolumeFolder;
 
 /**
- * Class AssetsHelper
+ * Class Assets
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
-class AssetsHelper
+class Assets
 {
     // Constants
     // =========================================================================

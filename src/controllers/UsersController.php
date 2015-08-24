@@ -11,7 +11,7 @@ use Craft;
 use craft\app\errors\Exception;
 use craft\app\errors\HttpException;
 use craft\app\events\UserEvent;
-use craft\app\helpers\AssetsHelper;
+use craft\app\helpers\Assets;
 use craft\app\helpers\ImageHelper;
 use craft\app\helpers\IOHelper;
 use craft\app\helpers\JsonHelper;
@@ -942,14 +942,14 @@ class UsersController extends Controller
             // Make sure a file was uploaded
             if (!empty($file['name']) && !empty($file['size'])) {
                 $user = Craft::$app->getUsers()->getUserById($userId);
-                $userName = AssetsHelper::prepareAssetName($user->username, false);
+                $userName = Assets::prepareAssetName($user->username, false);
 
                 $folderPath = Craft::$app->getPath()->getTempUploadsPath().'/userphotos/'.$userName;
 
                 IOHelper::clearFolder($folderPath);
 
                 IOHelper::ensureFolderExists($folderPath);
-                $filename = AssetsHelper::prepareAssetName($file['name']);
+                $filename = Assets::prepareAssetName($file['name']);
 
                 move_uploaded_file($file['tmp_name'], $folderPath.'/'.$filename);
 
@@ -1031,7 +1031,7 @@ class UsersController extends Controller
             $source = UrlHelper::stripQueryString($source);
 
             $user = Craft::$app->getUsers()->getUserById($userId);
-            $userName = AssetsHelper::prepareAssetName($user->username, false);
+            $userName = Assets::prepareAssetName($user->username, false);
 
             if (IOHelper::getExtension($source) == 'svg') {
                 $source = preg_replace('/\.svg$/i', '.png', $source);
