@@ -12,7 +12,7 @@ use craft\app\db\Query;
 use craft\app\db\QueryAbortedException;
 use craft\app\elements\Category;
 use craft\app\helpers\ArrayHelper;
-use craft\app\helpers\DbHelper;
+use craft\app\helpers\Db;
 use craft\app\models\CategoryGroup;
 use craft\app\models\CategoryType;
 
@@ -96,7 +96,7 @@ class CategoryQuery extends ElementQuery
             $this->groupId = $query
                 ->select('id')
                 ->from('{{%categorygroups}}')
-                ->where(DbHelper::parseParam('handle', $value, $query->params))
+                ->where(Db::parseParam('handle', $value, $query->params))
                 ->column();
         }
 
@@ -176,11 +176,11 @@ class CategoryQuery extends ElementQuery
                 $this->structureId = $query
                     ->select('structureId')
                     ->from('{{%categorygroups}}')
-                    ->where(DbHelper::parseParam('id', $this->groupId, $query->params))
+                    ->where(Db::parseParam('id', $this->groupId, $query->params))
                     ->scalar();
             }
 
-            $this->subQuery->andWhere(DbHelper::parseParam('categories.groupId', $this->groupId, $this->subQuery->params));
+            $this->subQuery->andWhere(Db::parseParam('categories.groupId', $this->groupId, $this->subQuery->params));
         }
     }
 
@@ -199,12 +199,12 @@ class CategoryQuery extends ElementQuery
 
                 if ($parts) {
                     if (count($parts) == 1) {
-                        $conditionals[] = DbHelper::parseParam('elements_i18n.slug', $parts[0], $this->subQuery->params);
+                        $conditionals[] = Db::parseParam('elements_i18n.slug', $parts[0], $this->subQuery->params);
                     } else {
                         $conditionals[] = [
                             'and',
-                            DbHelper::parseParam('categorygroups.handle', $parts[0], $this->subQuery->params),
-                            DbHelper::parseParam('elements_i18n.slug', $parts[1], $this->subQuery->params)
+                            Db::parseParam('categorygroups.handle', $parts[0], $this->subQuery->params),
+                            Db::parseParam('elements_i18n.slug', $parts[1], $this->subQuery->params)
                         ];
                         $joinCategoryGroups = true;
                     }

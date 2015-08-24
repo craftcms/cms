@@ -18,7 +18,7 @@ use craft\app\errors\Exception;
 use craft\app\events\EditionChangeEvent;
 use craft\app\helpers\App;
 use craft\app\helpers\DateTimeHelper;
-use craft\app\helpers\DbHelper;
+use craft\app\helpers\Db;
 use craft\app\helpers\StringHelper;
 use craft\app\helpers\UrlHelper;
 use craft\app\i18n\Locale;
@@ -634,7 +634,7 @@ trait ApplicationTrait
     {
         /** @var $this \craft\app\web\Application|\craft\app\console\Application */
         if ($info->validate()) {
-            $attributes = DbHelper::prepareValuesForDb($info);
+            $attributes = Db::prepareValuesForDb($info);
 
             if ($this->isInstalled()) {
                 // TODO: Remove this after the next breakpoint

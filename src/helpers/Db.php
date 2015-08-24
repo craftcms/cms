@@ -7,19 +7,18 @@
 
 namespace craft\app\helpers;
 
-use craft\app\base\Model;
 use craft\app\base\Savable;
 use craft\app\dates\DateTime;
 use craft\app\enums\ColumnType;
 use yii\db\Schema;
 
 /**
- * Class DbHelper
+ * Class Db
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
-class DbHelper
+class Db
 {
     // Properties
     // =========================================================================
@@ -240,7 +239,7 @@ class DbHelper
 
     /**
      * Escapes commas and asterisks in a string so they are not treated as special characters in
-     * [[DbHelper::parseParam()]].
+     * [[Db::parseParam()]].
      *
      * @param string $value The param value.
      *

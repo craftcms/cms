@@ -15,7 +15,7 @@ use craft\app\elements\db\ElementQuery;
 use craft\app\events\Event;
 use craft\app\helpers\ArrayHelper;
 use craft\app\helpers\DateTimeHelper;
-use craft\app\helpers\DbHelper;
+use craft\app\helpers\Db;
 use craft\app\helpers\StringHelper;
 use craft\app\helpers\UrlHelper;
 use craft\app\tasks\DeleteStaleTemplateCaches;
@@ -133,7 +133,7 @@ class TemplateCache extends Component
         ];
 
         $params = [
-            ':now' => DbHelper::prepareDateForDb(new \DateTime()),
+            ':now' => Db::prepareDateForDb(new \DateTime()),
             ':key' => $key,
             ':locale' => Craft::$app->language
         ];
@@ -286,7 +286,7 @@ class TemplateCache extends Component
                     'cacheKey' => $key,
                     'locale' => Craft::$app->language,
                     'path' => ($global ? null : $this->_getPath()),
-                    'expiryDate' => DbHelper::prepareDateForDb($expiration),
+                    'expiryDate' => Db::prepareDateForDb($expiration),
                     'body' => $body
                 ], false)->execute();
 
@@ -553,7 +553,7 @@ class TemplateCache extends Component
         }
 
         $affectedRows = Craft::$app->getDb()->createCommand()->delete(static::$_templateCachesTable, 'expiryDate <= :now',
-            ['now' => DbHelper::prepareDateForDb(new \DateTime())]
+            ['now' => Db::prepareDateForDb(new \DateTime())]
         )->execute();
 
         $this->_deletedExpiredCaches = true;

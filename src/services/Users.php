@@ -16,7 +16,7 @@ use craft\app\events\DeleteUserEvent;
 use craft\app\events\UserEvent;
 use craft\app\helpers\Assets;
 use craft\app\helpers\DateTimeHelper;
-use craft\app\helpers\DbHelper;
+use craft\app\helpers\Db;
 use craft\app\helpers\IOHelper;
 use craft\app\helpers\JsonHelper;
 use craft\app\helpers\TemplateHelper;
@@ -1116,7 +1116,7 @@ class Users extends Component
                 'userId' => $userId,
                 'message' => $message
             ], [
-                'expiryDate' => DbHelper::prepareDateForDb($expiryDate)
+                'expiryDate' => Db::prepareDateForDb($expiryDate)
             ])->execute();
 
         return (bool)$affectedRows;
@@ -1161,7 +1161,7 @@ class Users extends Component
             ], [
                 ':userId' => $userId,
                 ':message' => $message,
-                ':now' => DbHelper::prepareDateForDb(new \DateTime())
+                ':now' => Db::prepareDateForDb(new \DateTime())
             ])
             ->exists();
     }
@@ -1206,7 +1206,7 @@ class Users extends Component
                     'and',
                     'pending=1',
                     'verificationCodeIssuedDate < :pastTime'
-                ], [':pastTime' => DbHelper::prepareDateForDb($pastTime)])
+                ], [':pastTime' => Db::prepareDateForDb($pastTime)])
                 ->column();
 
             $affectedRows = Craft::$app->getDb()->createCommand()->delete('{{%elements}}',

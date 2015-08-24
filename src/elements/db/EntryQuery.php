@@ -12,7 +12,7 @@ use craft\app\db\Query;
 use craft\app\db\QueryAbortedException;
 use craft\app\elements\Entry;
 use craft\app\helpers\ArrayHelper;
-use craft\app\helpers\DbHelper;
+use craft\app\helpers\Db;
 use craft\app\models\EntryType;
 use craft\app\models\Section;
 use craft\app\models\UserGroup;
@@ -148,7 +148,7 @@ class EntryQuery extends ElementQuery
             $this->sectionId = $query
                 ->select('id')
                 ->from('{{%sections}}')
-                ->where(DbHelper::parseParam('handle', $value, $query->params))
+                ->where(Db::parseParam('handle', $value, $query->params))
                 ->column();
         }
 
@@ -185,7 +185,7 @@ class EntryQuery extends ElementQuery
             $this->typeId = $query
                 ->select('id')
                 ->from('{{%entrytypes}}')
-                ->where(DbHelper::parseParam('handle', $value, $query->params))
+                ->where(Db::parseParam('handle', $value, $query->params))
                 ->column();
         }
 
@@ -236,7 +236,7 @@ class EntryQuery extends ElementQuery
             $this->authorGroupId = $query
                 ->select('id')
                 ->from('{{%usergroups}}')
-                ->where(DbHelper::parseParam('handle', $value, $query->params))
+                ->where(Db::parseParam('handle', $value, $query->params))
                 ->column();
         }
 
@@ -347,26 +347,26 @@ class EntryQuery extends ElementQuery
         ]);
 
         if ($this->postDate) {
-            $this->subQuery->andWhere(DbHelper::parseDateParam('entries.postDate', $this->postDate, $this->subQuery->params));
+            $this->subQuery->andWhere(Db::parseDateParam('entries.postDate', $this->postDate, $this->subQuery->params));
         }
 
         if ($this->expiryDate) {
-            $this->subQuery->andWhere(DbHelper::parseDateParam('entries.expiryDate', $this->expiryDate, $this->subQuery->params));
+            $this->subQuery->andWhere(Db::parseDateParam('entries.expiryDate', $this->expiryDate, $this->subQuery->params));
         }
 
         if ($this->typeId) {
-            $this->subQuery->andWhere(DbHelper::parseParam('entries.typeId', $this->typeId, $this->subQuery->params));
+            $this->subQuery->andWhere(Db::parseParam('entries.typeId', $this->typeId, $this->subQuery->params));
         }
 
         if (Craft::$app->getEdition() >= Craft::Client) {
             if ($this->authorId) {
-                $this->subQuery->andWhere(DbHelper::parseParam('entries.authorId', $this->authorId, $this->subQuery->params));
+                $this->subQuery->andWhere(Db::parseParam('entries.authorId', $this->authorId, $this->subQuery->params));
             }
 
             if ($this->authorGroupId) {
                 $this->subQuery
                     ->innerJoin('{{%usergroups_users}} usergroups_users', 'usergroups_users.userId = entries.authorId')
-                    ->andWhere(DbHelper::parseParam('usergroups_users.groupId', $this->authorGroupId, $this->subQuery->params));
+                    ->andWhere(Db::parseParam('usergroups_users.groupId', $this->authorGroupId, $this->subQuery->params));
             }
         }
 
@@ -441,11 +441,11 @@ class EntryQuery extends ElementQuery
                 $this->structureId = $query
                     ->select('structureId')
                     ->from('{{%sections}}')
-                    ->where(DbHelper::parseParam('id', $this->sectionId, $query->params))
+                    ->where(Db::parseParam('id', $this->sectionId, $query->params))
                     ->scalar();
             }
 
-            $this->subQuery->andWhere(DbHelper::parseParam('entries.sectionId', $this->sectionId, $this->subQuery->params));
+            $this->subQuery->andWhere(Db::parseParam('entries.sectionId', $this->sectionId, $this->subQuery->params));
         }
     }
 
@@ -464,12 +464,12 @@ class EntryQuery extends ElementQuery
 
                 if ($parts) {
                     if (count($parts) == 1) {
-                        $conditionals[] = DbHelper::parseParam('elements_i18n.slug', $parts[0], $this->subQuery->params);
+                        $conditionals[] = Db::parseParam('elements_i18n.slug', $parts[0], $this->subQuery->params);
                     } else {
                         $conditionals[] = [
                             'and',
-                            DbHelper::parseParam('sections.handle', $parts[0], $this->subQuery->params),
-                            DbHelper::parseParam('elements_i18n.slug', $parts[1], $this->subQuery->params)
+                            Db::parseParam('sections.handle', $parts[0], $this->subQuery->params),
+                            Db::parseParam('elements_i18n.slug', $parts[1], $this->subQuery->params)
                         ];
                         $joinSections = true;
                     }

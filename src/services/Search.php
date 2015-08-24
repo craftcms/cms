@@ -11,7 +11,7 @@ use Craft;
 use craft\app\base\ElementInterface;
 use craft\app\db\Query;
 use craft\app\enums\ColumnType;
-use craft\app\helpers\DbHelper;
+use craft\app\helpers\Db;
 use craft\app\helpers\SearchHelper;
 use craft\app\helpers\StringHelper;
 use craft\app\search\SearchQuery;
@@ -226,7 +226,7 @@ class Search extends Component
 
         $cleanKeywordsLength = strlen($cleanKeywords);
 
-        $maxDbColumnSize = DbHelper::getTextualColumnStorageCapacity(ColumnType::Text);
+        $maxDbColumnSize = Db::getTextualColumnStorageCapacity(ColumnType::Text);
 
         // Give ourselves 10% wiggle room.
         $maxDbColumnSize = ceil($maxDbColumnSize * 0.9);

@@ -9,7 +9,7 @@ namespace craft\app\fields;
 
 use Craft;
 use craft\app\base\Field;
-use craft\app\helpers\DbHelper;
+use craft\app\helpers\Db;
 use craft\app\helpers\LocalizationHelper;
 use craft\app\i18n\Locale;
 
@@ -87,7 +87,7 @@ class Number extends Field
      */
     public function getContentColumnType()
     {
-        return DbHelper::getNumericalColumnType($this->min, $this->max, $this->decimals);
+        return Db::getNumericalColumnType($this->min, $this->max, $this->decimals);
     }
 
     /**

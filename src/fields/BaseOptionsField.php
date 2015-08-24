@@ -13,7 +13,7 @@ use craft\app\fields\data\MultiOptionsFieldData;
 use craft\app\fields\data\OptionData;
 use craft\app\fields\data\SingleOptionFieldData;
 use craft\app\helpers\ArrayHelper;
-use craft\app\helpers\DbHelper;
+use craft\app\helpers\Db;
 use yii\db\Schema;
 
 /**
@@ -114,7 +114,7 @@ abstract class BaseOptionsField extends Field
             // Add +2 for the outer brackets and -1 for the last comma.
             $length += 1;
 
-            return DbHelper::getTextualColumnTypeByContentLength($length);
+            return Db::getTextualColumnTypeByContentLength($length);
         } else {
             return Schema::TYPE_STRING;
         }

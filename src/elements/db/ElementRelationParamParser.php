@@ -11,7 +11,7 @@ use Craft;
 use craft\app\base\ElementInterface;
 use craft\app\db\Query;
 use craft\app\helpers\ArrayHelper;
-use craft\app\helpers\DbHelper;
+use craft\app\helpers\Db;
 
 /**
  * Parses a relatedTo param on an ElementQuery.
@@ -291,12 +291,12 @@ class ElementRelationParamParser
 
                         $condition = [
                             'and',
-                            DbHelper::parseParam($targetMatrixBlocksAlias.'.ownerId', $relElementIds, $query->params),
+                            Db::parseParam($targetMatrixBlocksAlias.'.ownerId', $relElementIds, $query->params),
                             $targetMatrixBlocksAlias.'.fieldId = '.$fieldModel->id
                         ];
 
                         if ($blockTypeFieldIds) {
-                            $condition[] = DbHelper::parseParam($sourcesAlias.'.fieldId', $blockTypeFieldIds, $query->params);
+                            $condition[] = Db::parseParam($sourcesAlias.'.fieldId', $blockTypeFieldIds, $query->params);
                         }
                     } else {
                         $this->_joinSourceMatrixBlocksCount++;
@@ -326,12 +326,12 @@ class ElementRelationParamParser
 
                         $condition = [
                             'and',
-                            DbHelper::parseParam($matrixBlockTargetsAlias.'.targetId', $relElementIds, $query->params),
+                            Db::parseParam($matrixBlockTargetsAlias.'.targetId', $relElementIds, $query->params),
                             $sourceMatrixBlocksAlias.'.fieldId = '.$fieldModel->id
                         ];
 
                         if ($blockTypeFieldIds) {
-                            $condition[] = DbHelper::parseParam($matrixBlockTargetsAlias.'.fieldId', $blockTypeFieldIds, $query->params);
+                            $condition[] = Db::parseParam($matrixBlockTargetsAlias.'.fieldId', $blockTypeFieldIds, $query->params);
                         }
                     }
 
@@ -376,13 +376,13 @@ class ElementRelationParamParser
             }
 
             $query->leftJoin('{{%relations}} '.$relTableAlias, $relationsJoinConditions, $relationsJoinParams);
-            $condition = DbHelper::parseParam($relTableAlias.'.'.$relConditionColumn, $relElementIds, $query->params);
+            $condition = Db::parseParam($relTableAlias.'.'.$relConditionColumn, $relElementIds, $query->params);
 
             if ($normalFieldIds) {
                 $condition = [
                     'and',
                     $condition,
-                    DbHelper::parseParam($relTableAlias.'.fieldId', $normalFieldIds, $query->params)
+                    Db::parseParam($relTableAlias.'.fieldId', $normalFieldIds, $query->params)
                 ];
             }
 

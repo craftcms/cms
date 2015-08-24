@@ -12,7 +12,7 @@ use craft\app\elements\db\ElementQuery;
 use craft\app\elements\db\ElementQueryInterface;
 use craft\app\elements\MatrixBlock;
 use craft\app\events\Event;
-use craft\app\helpers\DbHelper;
+use craft\app\helpers\Db;
 use craft\app\helpers\HtmlHelper;
 use craft\app\helpers\StringHelper;
 use Exception;
@@ -250,7 +250,7 @@ abstract class Field extends SavableComponent implements FieldInterface
      */
     public function prepareValueForDb($value, $element)
     {
-        return DbHelper::prepareValueForDb($value);
+        return Db::prepareValueForDb($value);
     }
 
     /**
@@ -262,7 +262,7 @@ abstract class Field extends SavableComponent implements FieldInterface
             if (self::hasContentColumn()) {
                 $handle = $this->handle;
                 /** @var ElementQuery $query */
-                $query->subQuery->andWhere(DbHelper::parseParam('content.'.Craft::$app->getContent()->fieldColumnPrefix.$handle, $value, $query->subQuery->params));
+                $query->subQuery->andWhere(Db::parseParam('content.'.Craft::$app->getContent()->fieldColumnPrefix.$handle, $value, $query->subQuery->params));
             } else {
                 return false;
             }

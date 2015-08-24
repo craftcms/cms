@@ -11,7 +11,7 @@ use Craft;
 use craft\app\base\Volume;
 use craft\app\db\Query;
 use craft\app\elements\Asset;
-use craft\app\helpers\DbHelper;
+use craft\app\helpers\Db;
 
 /**
  * AssetQuery represents a SELECT SQL statement for assets in a way that is independent of DBMS.
@@ -113,7 +113,7 @@ class AssetQuery extends ElementQuery
             $this->volumeId = $query
                 ->select('id')
                 ->from('{{%volumes}}')
-                ->where(DbHelper::parseParam('handle', $value, $query->params))
+                ->where(Db::parseParam('handle', $value, $query->params))
                 ->column();
         }
 
@@ -303,41 +303,41 @@ class AssetQuery extends ElementQuery
         ]);
 
         if ($this->volumeId) {
-            $this->subQuery->andWhere(DbHelper::parseParam('assets.volumeId', $this->volumeId, $this->subQuery->params));
+            $this->subQuery->andWhere(Db::parseParam('assets.volumeId', $this->volumeId, $this->subQuery->params));
         }
 
         if ($this->folderId) {
             if ($this->includeSubfolders) {
                 $folders = Craft::$app->getAssets()->getAllDescendantFolders(
                     Craft::$app->getAssets()->getFolderById($this->folderId));
-                $this->subQuery->andWhere(DbHelper::parseParam('assetfiles.folderId', array_keys($folders), $this->subQuery->params));
+                $this->subQuery->andWhere(Db::parseParam('assetfiles.folderId', array_keys($folders), $this->subQuery->params));
             } else {
-                $this->subQuery->andWhere(DbHelper::parseParam('assets.folderId', $this->folderId, $this->subQuery->params));
+                $this->subQuery->andWhere(Db::parseParam('assets.folderId', $this->folderId, $this->subQuery->params));
             }
         }
 
         if ($this->filename) {
-            $this->subQuery->andWhere(DbHelper::parseParam('assets.filename', $this->filename, $this->subQuery->params));
+            $this->subQuery->andWhere(Db::parseParam('assets.filename', $this->filename, $this->subQuery->params));
         }
 
         if ($this->kind) {
-            $this->subQuery->andWhere(DbHelper::parseParam('assets.kind', $this->kind, $this->subQuery->params));
+            $this->subQuery->andWhere(Db::parseParam('assets.kind', $this->kind, $this->subQuery->params));
         }
 
         if ($this->width) {
-            $this->subQuery->andWhere(DbHelper::parseParam('assets.width', $this->width, $this->subQuery->params));
+            $this->subQuery->andWhere(Db::parseParam('assets.width', $this->width, $this->subQuery->params));
         }
 
         if ($this->height) {
-            $this->subQuery->andWhere(DbHelper::parseParam('assets.height', $this->height, $this->subQuery->params));
+            $this->subQuery->andWhere(Db::parseParam('assets.height', $this->height, $this->subQuery->params));
         }
 
         if ($this->size) {
-            $this->subQuery->andWhere(DbHelper::parseParam('assets.size', $this->size, $this->subQuery->params));
+            $this->subQuery->andWhere(Db::parseParam('assets.size', $this->size, $this->subQuery->params));
         }
 
         if ($this->dateModified) {
-            $this->subQuery->andWhere(DbHelper::parseDateParam('assets.dateModified', $this->dateModified, $this->subQuery->params));
+            $this->subQuery->andWhere(Db::parseDateParam('assets.dateModified', $this->dateModified, $this->subQuery->params));
         }
 
         return parent::beforePrepare();

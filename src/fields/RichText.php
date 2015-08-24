@@ -10,7 +10,7 @@ namespace craft\app\fields;
 use Craft;
 use craft\app\base\Field;
 use craft\app\fields\data\RichTextData;
-use craft\app\helpers\DbHelper;
+use craft\app\helpers\Db;
 use craft\app\helpers\HtmlPurifier;
 use craft\app\helpers\IOHelper;
 use craft\app\helpers\JsonHelper;
@@ -186,7 +186,7 @@ class RichText extends Field
         $errors = parent::validateValue($value, $element);
 
         $postContentSize = $value ? strlen($value->getRawContent()) : 0;
-        $maxDbColumnSize = DbHelper::getTextualColumnStorageCapacity($this->columnType);
+        $maxDbColumnSize = Db::getTextualColumnStorageCapacity($this->columnType);
 
         // Give ourselves 10% wiggle room.
         $maxDbColumnSize = ceil($maxDbColumnSize * 0.9);

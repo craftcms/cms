@@ -14,7 +14,7 @@ use craft\app\errors\Exception;
 use craft\app\events\EntryTypeEvent;
 use craft\app\events\SectionEvent;
 use craft\app\helpers\ArrayHelper;
-use craft\app\helpers\DbHelper;
+use craft\app\helpers\Db;
 use craft\app\models\EntryType;
 use craft\app\models\Section;
 use craft\app\models\SectionLocale;
@@ -664,7 +664,7 @@ class Sections extends Component
                                         [
                                             'typeId' => $entryTypeId,
                                             'authorId' => null,
-                                            'postDate' => DbHelper::prepareDateForDb(new \DateTime()),
+                                            'postDate' => Db::prepareDateForDb(new \DateTime()),
                                             'expiryDate' => null,
                                         ], [
                                             'id' => $singleEntryId

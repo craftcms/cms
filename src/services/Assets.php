@@ -30,7 +30,7 @@ use craft\app\errors\ModelValidationException;
 use craft\app\events\AssetEvent;
 use craft\app\events\ReplaceAssetEvent;
 use craft\app\helpers\Assets;
-use craft\app\helpers\DbHelper;
+use craft\app\helpers\Db;
 use craft\app\helpers\ImageHelper;
 use craft\app\helpers\IOHelper;
 use craft\app\helpers\StringHelper;
@@ -1181,7 +1181,7 @@ class Assets extends Component
 
         if (is_string($query->filename)) {
             // Backslash-escape any commas in a given string.
-            $query->filename = DbHelper::escapeParam($query->filename);
+            $query->filename = Db::escapeParam($query->filename);
         }
 
         return $query;
@@ -1252,32 +1252,32 @@ class Assets extends Component
         $whereParams = [];
 
         if ($criteria->id) {
-            $whereConditions[] = DbHelper::parseParam('f.id', $criteria->id, $whereParams);
+            $whereConditions[] = Db::parseParam('f.id', $criteria->id, $whereParams);
         }
 
         if ($criteria->volumeId) {
-            $whereConditions[] = DbHelper::parseParam('f.volumeId', $criteria->volumeId, $whereParams);
+            $whereConditions[] = Db::parseParam('f.volumeId', $criteria->volumeId, $whereParams);
         }
 
         if ($criteria->parentId) {
-            $whereConditions[] = DbHelper::parseParam('f.parentId', $criteria->parentId, $whereParams);
+            $whereConditions[] = Db::parseParam('f.parentId', $criteria->parentId, $whereParams);
         }
 
         if ($criteria->name) {
-            $whereConditions[] = DbHelper::parseParam('f.name', $criteria->name, $whereParams);
+            $whereConditions[] = Db::parseParam('f.name', $criteria->name, $whereParams);
         }
 
         if (!is_null($criteria->path)) {
             // This folder has a comma in it.
             if (strpos($criteria->path, ',') !== false) {
                 // Escape the comma.
-                $condition = DbHelper::parseParam('f.path', str_replace(',', '\,', $criteria->path), $whereParams);
+                $condition = Db::parseParam('f.path', str_replace(',', '\,', $criteria->path), $whereParams);
                 $lastKey = key(array_slice($whereParams, -1, 1, true));
 
                 // Now un-escape it.
                 $whereParams[$lastKey] = str_replace('\,', ',', $whereParams[$lastKey]);
             } else {
-                $condition = DbHelper::parseParam('f.path', $criteria->path, $whereParams);
+                $condition = Db::parseParam('f.path', $criteria->path, $whereParams);
             }
 
             $whereConditions[] = $condition;

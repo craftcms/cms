@@ -23,7 +23,7 @@ use craft\app\db\QueryAbortedException;
 use craft\app\events\Event;
 use craft\app\events\PopulateElementEvent;
 use craft\app\helpers\ArrayHelper;
-use craft\app\helpers\DbHelper;
+use craft\app\helpers\Db;
 use craft\app\helpers\StringHelper;
 use IteratorAggregate;
 use yii\base\Arrayable;
@@ -820,7 +820,7 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
         }
 
         if ($this->id) {
-            $this->subQuery->andWhere(DbHelper::parseParam('elements.id', $this->id, $this->subQuery->params));
+            $this->subQuery->andWhere(Db::parseParam('elements.id', $this->id, $this->subQuery->params));
         }
 
         if ($this->archived) {
@@ -831,23 +831,23 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
         }
 
         if ($this->dateCreated) {
-            $this->subQuery->andWhere(DbHelper::parseDateParam('elements.dateCreated', $this->dateCreated, $this->subQuery->params));
+            $this->subQuery->andWhere(Db::parseDateParam('elements.dateCreated', $this->dateCreated, $this->subQuery->params));
         }
 
         if ($this->dateUpdated) {
-            $this->subQuery->andWhere(DbHelper::parseDateParam('elements.dateUpdated', $this->dateUpdated, $this->subQuery->params));
+            $this->subQuery->andWhere(Db::parseDateParam('elements.dateUpdated', $this->dateUpdated, $this->subQuery->params));
         }
 
         if ($this->title && $class::hasTitles()) {
-            $this->subQuery->andWhere(DbHelper::parseParam('content.title', $this->title, $this->subQuery->params));
+            $this->subQuery->andWhere(Db::parseParam('content.title', $this->title, $this->subQuery->params));
         }
 
         if ($this->slug) {
-            $this->subQuery->andWhere(DbHelper::parseParam('elements_i18n.slug', $this->slug, $this->subQuery->params));
+            $this->subQuery->andWhere(Db::parseParam('elements_i18n.slug', $this->slug, $this->subQuery->params));
         }
 
         if ($this->uri) {
-            $this->subQuery->andWhere(DbHelper::parseParam('elements_i18n.uri', $this->uri, $this->subQuery->params));
+            $this->subQuery->andWhere(Db::parseParam('elements_i18n.uri', $this->uri, $this->subQuery->params));
         }
 
         if ($this->localeEnabled) {
@@ -1486,7 +1486,7 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
             }
 
             if ($this->level) {
-                $this->subQuery->andWhere(DbHelper::parseParam('structureelements.level', $this->level, $this->subQuery->params));
+                $this->subQuery->andWhere(Db::parseParam('structureelements.level', $this->level, $this->subQuery->params));
             }
         }
     }

@@ -9,7 +9,7 @@ namespace craft\app\services;
 
 use Craft;
 use craft\app\db\Query;
-use craft\app\helpers\DbHelper;
+use craft\app\helpers\Db;
 use craft\app\helpers\JsonHelper;
 use craft\app\helpers\StringHelper;
 use craft\app\models\DeprecationError;
@@ -81,7 +81,7 @@ class Deprecator extends Component
             $db = Craft::$app->getDb();
 
             $values = [
-                'lastOccurrence' => DbHelper::prepareDateForDb($log->lastOccurrence),
+                'lastOccurrence' => Db::prepareDateForDb($log->lastOccurrence),
                 'file' => $log->file,
                 'line' => $log->line,
                 'class' => $log->class,

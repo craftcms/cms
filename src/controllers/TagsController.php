@@ -9,7 +9,7 @@ namespace craft\app\controllers;
 
 use Craft;
 use craft\app\errors\HttpException;
-use craft\app\helpers\DbHelper;
+use craft\app\helpers\Db;
 use craft\app\helpers\SearchHelper;
 use craft\app\helpers\StringHelper;
 use craft\app\helpers\UrlHelper;
@@ -182,7 +182,7 @@ class TagsController extends Controller
 
         $tags = Tag::find()
             ->groupId($tagGroupId)
-            ->title(DbHelper::escapeParam($search).'*')
+            ->title(Db::escapeParam($search).'*')
             ->where(['not in', 'elements.id', $excludeIds])
             ->all();
 

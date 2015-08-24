@@ -13,7 +13,7 @@ use craft\app\base\PluginInterface;
 use craft\app\db\Query;
 use craft\app\errors\Exception;
 use craft\app\helpers\DateTimeHelper;
-use craft\app\helpers\DbHelper;
+use craft\app\helpers\Db;
 use craft\app\helpers\IOHelper;
 use craft\app\helpers\JsonHelper;
 use yii\base\Component;
@@ -261,7 +261,7 @@ class Plugins extends Component
                 'handle' => $handle,
                 'version' => $plugin->version,
                 'enabled' => true,
-                'installDate' => DbHelper::prepareDateForDb(new \DateTime()),
+                'installDate' => Db::prepareDateForDb(new \DateTime()),
             ];
 
             Craft::$app->getDb()->createCommand()->insert('{{%plugins}}', $info)->execute();

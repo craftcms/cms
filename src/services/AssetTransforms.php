@@ -14,7 +14,7 @@ use craft\app\elements\Asset;
 use craft\app\errors\VolumeFileExistsException;
 use craft\app\helpers\Assets;
 use craft\app\helpers\DateTimeHelper;
-use craft\app\helpers\DbHelper;
+use craft\app\helpers\Db;
 use craft\app\helpers\ImageHelper;
 use craft\app\helpers\IOHelper;
 use craft\app\helpers\StringHelper;
@@ -243,11 +243,11 @@ class AssetTransforms extends Component
 
         if ($entry) {
             // If the file has been indexed after any changes impacting the transform, return the record
-            $indexedAfterFileModified = $entry['dateIndexed'] >= DbHelper::prepareDateForDb($file->dateModified);
+            $indexedAfterFileModified = $entry['dateIndexed'] >= Db::prepareDateForDb($file->dateModified);
             $indexedAfterTransformParameterChange =
                 (!$transform->isNamedTransform()
                     || ($transform->isNamedTransform()
-                        && $entry['dateIndexed'] >= DbHelper::prepareDateForDb($transform->dimensionChangeTime)));
+                        && $entry['dateIndexed'] >= Db::prepareDateForDb($transform->dimensionChangeTime)));
 
             if ($indexedAfterFileModified && $indexedAfterTransformParameterChange) {
                 return AssetTransformIndex::create($entry);
@@ -263,7 +263,7 @@ class AssetTransforms extends Component
             'fileId' => $file->id,
             'format' => $transform->format,
             'volumeId' => $file->volumeId,
-            'dateIndexed' => DbHelper::prepareDateForDb($time),
+            'dateIndexed' => Db::prepareDateForDb($time),
             'location' => $transformLocation,
             'fileExists' => 0,
             'inProgress' => 0
@@ -453,7 +453,7 @@ class AssetTransforms extends Component
      */
     public function storeTransformIndexData(AssetTransformIndex $index)
     {
-        $values = DbHelper::prepareValuesForDb(
+        $values = Db::prepareValuesForDb(
             $index->toArray([
                 'fileId',
                 'filename',

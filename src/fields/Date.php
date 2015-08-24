@@ -12,7 +12,7 @@ use craft\app\base\Field;
 use craft\app\elements\db\ElementQuery;
 use craft\app\elements\db\ElementQueryInterface;
 use craft\app\helpers\DateTimeHelper;
-use craft\app\helpers\DbHelper;
+use craft\app\helpers\Db;
 use yii\db\Schema;
 
 /**
@@ -203,7 +203,7 @@ class Date extends Field
         if ($value !== null) {
             $handle = $this->handle;
             /** @var ElementQuery $query */
-            $query->subQuery->andWhere(DbHelper::parseDateParam('content.'.Craft::$app->getContent()->fieldColumnPrefix.$handle, $value, $query->subQuery->params));
+            $query->subQuery->andWhere(Db::parseDateParam('content.'.Craft::$app->getContent()->fieldColumnPrefix.$handle, $value, $query->subQuery->params));
         }
     }
 }

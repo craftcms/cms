@@ -10,7 +10,7 @@ namespace craft\app\elements\db;
 use Craft;
 use craft\app\db\Query;
 use craft\app\elements\Tag;
-use craft\app\helpers\DbHelper;
+use craft\app\helpers\Db;
 use craft\app\models\TagGroup;
 use craft\app\models\TagType;
 
@@ -104,7 +104,7 @@ class TagQuery extends ElementQuery
             $this->groupId = $query
                 ->select('id')
                 ->from('{{%taggroups}}')
-                ->where(DbHelper::parseParam('handle', $value, $query->params))
+                ->where(Db::parseParam('handle', $value, $query->params))
                 ->column();
         }
 
@@ -145,7 +145,7 @@ class TagQuery extends ElementQuery
         ]);
 
         if ($this->groupId) {
-            $this->subQuery->andWhere(DbHelper::parseParam('tags.groupId', $this->groupId, $this->subQuery->params));
+            $this->subQuery->andWhere(Db::parseParam('tags.groupId', $this->groupId, $this->subQuery->params));
         }
 
         if (is_string($this->orderBy)) {

@@ -7,7 +7,7 @@
 
 namespace craft\app\db;
 
-use craft\app\helpers\DbHelper;
+use craft\app\helpers\Db;
 use craft\app\helpers\StringHelper;
 
 /**
@@ -35,7 +35,7 @@ class Command extends \yii\db\Command
     public function insert($table, $columns, $includeAuditColumns = true)
     {
         if ($includeAuditColumns) {
-            $now = DbHelper::prepareDateForDb(new \DateTime());
+            $now = Db::prepareDateForDb(new \DateTime());
             $columns['dateCreated'] = $now;
             $columns['dateUpdated'] = $now;
             $columns['uid'] = StringHelper::UUID();
@@ -65,7 +65,7 @@ class Command extends \yii\db\Command
             $columns[] = 'dateUpdated';
             $columns[] = 'uid';
 
-            $date = DbHelper::prepareDateForDb(new \DateTime());
+            $date = Db::prepareDateForDb(new \DateTime());
 
             foreach ($rows as &$row) {
                 $row[] = $date;
@@ -93,7 +93,7 @@ class Command extends \yii\db\Command
     public function insertOrUpdate($table, $keyColumns, $updateColumns, $includeAuditColumns = true)
     {
         if ($includeAuditColumns) {
-            $now = DbHelper::prepareDateForDb(new \DateTime());
+            $now = Db::prepareDateForDb(new \DateTime());
             $updateColumns['dateCreated'] = $now;
             $updateColumns['dateUpdated'] = $now;
             $updateColumns['uid'] = StringHelper::UUID();
@@ -120,7 +120,7 @@ class Command extends \yii\db\Command
     public function update($table, $columns, $conditions = '', $params = [], $includeAuditColumns = true)
     {
         if ($includeAuditColumns) {
-            $columns['dateUpdated'] = DbHelper::prepareDateForDb(new \DateTime());
+            $columns['dateUpdated'] = Db::prepareDateForDb(new \DateTime());
         }
 
         return parent::update($table, $columns, $conditions, $params);
@@ -160,7 +160,7 @@ class Command extends \yii\db\Command
         $columns = array_merge(
             ($addIdColumn ? ['id' => 'pk'] : []),
             $columns,
-            ($addAuditColumns ? DbHelper::getAuditColumnConfig() : [])
+            ($addAuditColumns ? Db::getAuditColumnConfig() : [])
         );
 
         return parent::createTable($table, $columns, $options);

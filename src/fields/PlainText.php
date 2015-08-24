@@ -9,7 +9,7 @@ namespace craft\app\fields;
 
 use Craft;
 use craft\app\base\Field;
-use craft\app\helpers\DbHelper;
+use craft\app\helpers\Db;
 use yii\db\Schema;
 
 /**
@@ -87,7 +87,7 @@ class PlainText extends Field
         if (!$this->maxLength) {
             return Schema::TYPE_TEXT;
         } else {
-            return DbHelper::getTextualColumnTypeByContentLength($this->maxLength);
+            return Db::getTextualColumnTypeByContentLength($this->maxLength);
         }
     }
 

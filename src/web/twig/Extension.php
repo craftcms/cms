@@ -10,7 +10,7 @@ namespace craft\app\web\twig;
 use Craft;
 use craft\app\dates\DateTime;
 use craft\app\helpers\DateTimeHelper;
-use craft\app\helpers\DbHelper;
+use craft\app\helpers\Db;
 use craft\app\helpers\HeaderHelper;
 use craft\app\helpers\StringHelper;
 use craft\app\helpers\TemplateHelper;
@@ -401,7 +401,7 @@ class Extension extends \Twig_Extension
 
     /**
      * Escapes commas and asterisks in a string so they are not treated as special characters in
-     * [[DbHelper::parseParam()]].
+     * [[Db::parseParam()]].
      *
      * @param string $value The param value.
      *
@@ -409,7 +409,7 @@ class Extension extends \Twig_Extension
      */
     public function literalFilter($value)
     {
-        return DbHelper::escapeParam($value);
+        return Db::escapeParam($value);
     }
 
     /**

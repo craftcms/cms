@@ -8,7 +8,7 @@
 namespace craft\app\db;
 
 use Craft;
-use craft\app\helpers\DbHelper;
+use craft\app\helpers\Db;
 use craft\app\helpers\IOHelper;
 use yii\base\Component;
 use yii\base\InvalidConfigException;
@@ -328,7 +328,7 @@ class MigrationManager extends Component
             $this->migrationTable,
             array_merge($this->fixedColumnValues, [
                 'name' => $name,
-                'applyTime' => DbHelper::prepareDateForDb(new \DateTime())
+                'applyTime' => Db::prepareDateForDb(new \DateTime())
             ])
         )->execute();
     }
