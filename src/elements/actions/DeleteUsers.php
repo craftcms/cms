@@ -80,7 +80,7 @@ class DeleteUsers extends ElementAction
 			var modal = new Craft.DeleteUserModal(Craft.elementIndex.getSelectedElementIds(), {
 				onSubmit: function()
 				{
-					Craft.elementIndex.submitAction('DeleteUsers', Garnish.getPostData(modal.\$container));
+					Craft.elementIndex.submitAction({$type}, Garnish.getPostData(modal.\$container));
 					modal.hide();
 
 					return false;

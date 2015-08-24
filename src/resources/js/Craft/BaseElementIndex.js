@@ -766,6 +766,11 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 			}
 		}
 
+		if (!action)
+		{
+			throw 'The requested action "'+actionHandle+'" doesn\'t exist.';
+		}
+
 		if (!action || (action.confirm && !confirm(action.confirm)))
 		{
 			return;

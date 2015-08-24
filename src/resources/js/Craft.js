@@ -1,4 +1,4 @@
-/*! Craft 3.0.0 - 2015-08-20 */
+/*! Craft 3.0.0 - 2015-08-24 */
 (function($){
 
 if (typeof window.Craft == 'undefined')
@@ -2358,6 +2358,11 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 				action = this.actions[i];
 				break;
 			}
+		}
+
+		if (!action)
+		{
+			throw 'The requested action "'+actionHandle+'" doesn\'t exist.';
 		}
 
 		if (!action || (action.confirm && !confirm(action.confirm)))
