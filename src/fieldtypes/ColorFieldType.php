@@ -60,7 +60,7 @@ class ColorFieldType extends BaseFieldType
 	}
 
 	/**
-	 * @inheritDoc BaseFieldType::getStaticHtml()
+	 * @inheritDoc IFieldType::getStaticHtml()
 	 *
 	 * @param mixed $value
 	 *
