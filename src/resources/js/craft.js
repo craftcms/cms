@@ -359,6 +359,11 @@ $.extend(Craft,
 				{
 					data = {};
 				}
+				else
+				{
+					// Don't modify the passed-in object
+					data = $.extend({}, data);
+				}
 
 				data[Craft.csrfTokenName] = Craft.csrfTokenValue;
 			}

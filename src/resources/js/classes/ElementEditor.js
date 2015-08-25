@@ -18,25 +18,85 @@ Craft.ElementEditor = Garnish.Base.extend(
 
 	hud: null,
 
-	init: function($element)
+	init: function($element, settings)
 	{
+		// Param mapping
+		if (typeof settings == typeof undefined && $.isPlainObject($element))
+		{
+			// (settings)
+			settings = $element;
+			$element = null;
+		}
+
 		this.$element = $element;
-		this.elementId = $element.data('id');
+		this.setSettings(settings, Craft.ElementEditor.defaults);
 
-		this.$element.addClass('loading');
+		this.loadHud();
+	},
 
-		var data = {
-			elementId:      this.elementId,
-			locale:         this.$element.data('locale'),
-			includeLocales: true
-		};
+	setElementAttribute: function(name, value)
+	{
+		if (!this.settings.attributes)
+		{
+			this.settings.attributes = {};
+		}
 
+		if (value === null)
+		{
+			delete this.settings.attributes[name];
+		}
+		else
+		{
+			this.settings.attributes[name] = value;
+		}
+	},
+
+	getBaseData: function()
+	{
+		var data = {};
+
+		if (this.settings.locale)
+		{
+			data.locale = this.settings.locale;
+		}
+		else if (this.$element && this.$element.data('locale'))
+		{
+			data.locale = this.$element.data('locale');
+		}
+
+		if (this.settings.elementId)
+		{
+			data.elementId = this.settings.elementId;
+		}
+		else if (this.$element && this.$element.data('id'))
+		{
+			data.elementId = this.$element.data('id');
+		}
+
+		if (this.settings.elementType)
+		{
+			data.elementType = this.settings.elementType;
+		}
+
+		if (this.settings.attributes)
+		{
+			data.attributes = this.settings.attributes;
+		}
+
+		return data;
+	},
+
+	loadHud: function()
+	{
+		this.onBeginLoading();
+		var data = this.getBaseData();
+		data.includeLocales = this.settings.showLocaleSwitcher;
 		Craft.postActionRequest('elements/getEditorHtml', data, $.proxy(this, 'showHud'));
 	},
 
 	showHud: function(response, textStatus)
 	{
-		this.$element.removeClass('loading');
+		this.onEndLoading();
 
 		if (textStatus == 'success')
 		{
@@ -76,14 +136,30 @@ Craft.ElementEditor = Garnish.Base.extend(
 
 			$hudContents = $hudContents.add(this.$form);
 
-			this.hud = new Garnish.HUD(this.$element, $hudContents, {
-				bodyClass: 'body elementeditor',
-				closeOtherHUDs: false
-			});
+			if (!this.hud)
+			{
+				var hudTrigger = (this.settings.hudTrigger || this.$element);
 
-			this.hud.on('hide', $.proxy(function() {
-				delete this.hud;
-			}, this));
+				this.hud = new Garnish.HUD(hudTrigger, $hudContents, {
+					bodyClass: 'body elementeditor',
+					closeOtherHUDs: false,
+					onShow: $.proxy(this, 'onShowHud'),
+					onHide: $.proxy(this, 'onHideHud')
+				});
+
+				this.hud.$hud.data('elementEditor', this);
+
+				this.hud.on('hide', $.proxy(function() {
+					delete this.hud;
+				}, this));
+			}
+			else
+			{
+				this.hud.updateBody($hudContents);
+			}
+
+			// Focus on the first text input
+			$hudContents.find('.text:first').focus();
 
 			this.addListener(this.$form, 'submit', 'saveElement');
 			this.addListener(this.$cancelBtn, 'click', function() {
@@ -103,10 +179,9 @@ Craft.ElementEditor = Garnish.Base.extend(
 
 		this.$localeSpinner.removeClass('hidden');
 
-		var data = {
-			elementId: this.elementId,
-			locale:    newLocale
-		};
+
+		var data = this.getBaseData();
+		data.locale = newLocale;
 
 		Craft.postActionRequest('elements/getEditorHtml', data, $.proxy(function(response, textStatus)
 		{
@@ -143,8 +218,7 @@ Craft.ElementEditor = Garnish.Base.extend(
 
 		this.$spinner.removeClass('hidden');
 
-		var data = this.$form.serialize();
-
+		var data = $.param(this.getBaseData())+'&'+this.$form.serialize();
 		Craft.postActionRequest('elements/saveElement', data, $.proxy(function(response, textStatus)
 		{
 			this.$spinner.addClass('hidden');
@@ -153,7 +227,7 @@ Craft.ElementEditor = Garnish.Base.extend(
 			{
 				if (textStatus == 'success' && response.success)
 				{
-					if (this.locale == this.$element.data('locale'))
+					if (this.$element && this.locale == this.$element.data('locale'))
 					{
 						// Update the label
 						var $title = this.$element.find('.title'),
@@ -177,6 +251,7 @@ Craft.ElementEditor = Garnish.Base.extend(
 					}
 
 					this.closeHud();
+					this.onSaveElement(response);
 				}
 				else
 				{
@@ -191,5 +266,66 @@ Craft.ElementEditor = Garnish.Base.extend(
 	{
 		this.hud.hide();
 		delete this.hud;
+	},
+
+	// Events
+	// -------------------------------------------------------------------------
+
+	onShowHud: function()
+	{
+		this.settings.onShowHud();
+		this.trigger('showHud');
+	},
+
+	onHideHud: function()
+	{
+		this.settings.onHideHud();
+		this.trigger('hideHud');
+	},
+
+	onBeginLoading: function()
+	{
+		if (this.$element)
+		{
+			this.$element.addClass('loading');
+		}
+
+		this.settings.onBeginLoading();
+		this.trigger('beginLoading');
+	},
+
+	onEndLoading: function()
+	{
+		if (this.$element)
+		{
+			this.$element.removeClass('loading');
+		}
+
+		this.settings.onEndLoading();
+		this.trigger('endLoading');
+	},
+
+	onSaveElement: function(response)
+	{
+		this.settings.onSaveElement(response);
+		this.trigger('saveElement', {
+			response: response
+		});
+	},
+},
+{
+	defaults: {
+		hudTrigger: null,
+		showLocaleSwitcher: true,
+		elementId: null,
+		elementType: null,
+		locale: null,
+		attributes: null,
+
+		onShowHud: $.noop,
+		onHideHud: $.noop,
+		onBeginLoading: $.noop,
+		onEndLoading: $.noop,
+		onSaveElement: $.noop
 	}
 });

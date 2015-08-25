@@ -50,7 +50,7 @@ class ImageVariable
 	{
 		if (!isset($this->size))
 		{
-			$size = getimagesize($this->path);
+			$size = ImageHelper::getImageSize($this->path);
 			$this->size = array($size[0], $size[1]);
 		}
 

@@ -15,7 +15,8 @@ Craft.BaseElementSelectorModal = Garnish.Modal.extend(
 	$search: null,
 	$elements: null,
 	$tbody: null,
-	$buttons: null,
+	$primaryButtons: null,
+	$secondaryButtons: null,
 	$cancelBtn: null,
 	$selectBtn: null,
 	$footerSpinner: null,
@@ -33,9 +34,10 @@ Craft.BaseElementSelectorModal = Garnish.Modal.extend(
 		this.base($container, this.settings);
 
 		this.$footerSpinner = $('<div class="spinner hidden"/>').appendTo($footer);
-		this.$buttons = $('<div class="buttons rightalign first"/>').appendTo($footer);
-		this.$cancelBtn = $('<div class="btn">'+Craft.t('Cancel')+'</div>').appendTo(this.$buttons);
-		this.$selectBtn = $('<div class="btn disabled submit">'+Craft.t('Select')+'</div>').appendTo(this.$buttons);
+		this.$primaryButtons = $('<div class="buttons rightalign"/>').appendTo($footer);
+		this.$secondaryButtons = $('<div class="buttons leftalign secondary-buttons"/>').appendTo($footer);
+		this.$cancelBtn = $('<div class="btn">'+Craft.t('Cancel')+'</div>').appendTo(this.$primaryButtons);
+		this.$selectBtn = $('<div class="btn disabled submit">'+Craft.t('Select')+'</div>').appendTo(this.$primaryButtons);
 
 		this.$body = $body;
 
@@ -47,40 +49,7 @@ Craft.BaseElementSelectorModal = Garnish.Modal.extend(
 	{
 		if (!this.elementIndex)
 		{
-			// Get the modal body HTML based on the settings
-			var data = {
-				context:     'modal',
-				elementType: this.elementType,
-				sources:     this.settings.sources
-			};
-
-			Craft.postActionRequest('elements/getModalBody', data, $.proxy(function(response, textStatus)
-			{
-				if (textStatus == 'success')
-				{
-					this.$body.html(response);
-
-					if (this.$body.has('.sidebar:not(.hidden)').length)
-					{
-						this.$body.addClass('has-sidebar');
-					}
-
-					// Initialize the element index
-					this.elementIndex = Craft.createElementIndex(this.elementType, this.$body, {
-						context:            'modal',
-						storageKey:         this.settings.storageKey,
-						criteria:           this.settings.criteria,
-						disabledElementIds: this.settings.disabledElementIds,
-						selectable:         true,
-						multiSelect:        this.settings.multiSelect,
-						onSelectionChange:  $.proxy(this, 'onSelectionChange'),
-						onUpdateElements:   $.proxy(this, 'onUpdateElements'),
-						onEnableElements:   $.proxy(this, 'onEnableElements'),
-						onDisableElements:  $.proxy(this, 'onDisableElements')
-					});
-				}
-
-			}, this));
+			this._createElementIndex();
 		}
 		else
 		{
@@ -94,15 +63,6 @@ Craft.BaseElementSelectorModal = Garnish.Modal.extend(
 		this.base();
 	},
 
-	onUpdateElements: function(appended)
-	{
-		if (!appended)
-		{
-			// Double-clicking should select the elements
-			this.addListener(this.elementIndex.$elementContainer, 'dblclick', 'selectElements');
-		}
-	},
-
 	onSelectionChange: function()
 	{
 		this.updateSelectBtnState();
@@ -112,7 +72,7 @@ Craft.BaseElementSelectorModal = Garnish.Modal.extend(
 	{
 		if (this.$selectBtn)
 		{
-			if (this.elementIndex.elementSelect.totalSelected)
+			if (this.elementIndex.getSelectedElements().length)
 			{
 				this.enableSelectBtn();
 			}
@@ -153,16 +113,6 @@ Craft.BaseElementSelectorModal = Garnish.Modal.extend(
 		this.$footerSpinner.addClass('hidden');
 	},
 
-	onEnableElements: function($elements)
-	{
-		this.elementIndex.elementSelect.addItems($elements);
-	},
-
-	onDisableElements: function($elements)
-	{
-		this.elementIndex.elementSelect.removeItems($elements);
-	},
-
 	cancel: function()
 	{
 		if (!this.$cancelBtn.hasClass('disabled'))
@@ -173,18 +123,19 @@ Craft.BaseElementSelectorModal = Garnish.Modal.extend(
 
 	selectElements: function()
 	{
-		if (this.elementIndex && this.elementIndex.elementSelect && this.elementIndex.elementSelect.totalSelected)
+		if (this.elementIndex && this.elementIndex.getSelectedElements().length)
 		{
-			this.elementIndex.elementSelect.clearMouseUpTimeout();
+			// TODO: This code shouldn't know about views' elementSelect objects
+			this.elementIndex.view.elementSelect.clearMouseUpTimeout();
 
-			var $selectedItems = this.elementIndex.elementSelect.getSelectedItems(),
-				elementInfo = this.getElementInfo($selectedItems);
+			var $selectedElements = this.elementIndex.getSelectedElements(),
+				elementInfo = this.getElementInfo($selectedElements);
 
 			this.onSelect(elementInfo);
 
 			if (this.settings.disableElementsOnSelect)
 			{
-				this.elementIndex.disableElements(this.elementIndex.elementSelect.getSelectedItems());
+				this.elementIndex.disableElements(this.elementIndex.getSelectedElements());
 			}
 
 			if (this.settings.hideOnSelect)
@@ -194,15 +145,15 @@ Craft.BaseElementSelectorModal = Garnish.Modal.extend(
 		}
 	},
 
-	getElementInfo: function($selectedItems)
+	getElementInfo: function($selectedElements)
 	{
 		var info = [];
 
-		for (var i = 0; i < $selectedItems.length; i++)
+		for (var i = 0; i < $selectedElements.length; i++)
 		{
-			var $item = $($selectedItems[i]);
+			var $element = $($selectedElements[i]);
 
-			info.push(Craft.getElementInfo($item));
+			info.push(Craft.getElementInfo($element));
 		}
 
 		return info;
@@ -237,6 +188,45 @@ Craft.BaseElementSelectorModal = Garnish.Modal.extend(
 		}
 
 		this.base();
+	},
+
+	_createElementIndex: function()
+	{
+		// Get the modal body HTML based on the settings
+		var data = {
+			context:     'modal',
+			elementType: this.elementType,
+			sources:     this.settings.sources
+		};
+
+		Craft.postActionRequest('elements/getModalBody', data, $.proxy(function(response, textStatus)
+		{
+			if (textStatus == 'success')
+			{
+				this.$body.html(response);
+
+				if (this.$body.has('.sidebar:not(.hidden)').length)
+				{
+					this.$body.addClass('has-sidebar');
+				}
+
+				// Initialize the element index
+				this.elementIndex = Craft.createElementIndex(this.elementType, this.$body, {
+					context:            'modal',
+					storageKey:         this.settings.storageKey,
+					criteria:           this.settings.criteria,
+					disabledElementIds: this.settings.disabledElementIds,
+					selectable:         true,
+					multiSelect:        this.settings.multiSelect,
+					buttonContainer:    this.$secondaryButtons,
+					onSelectionChange:  $.proxy(this, 'onSelectionChange')
+				});
+
+				// Double-clicking should select the elements
+				this.addListener(this.elementIndex.$elements, 'dblclick', 'selectElements');
+			}
+
+		}, this));
 	}
 },
 {

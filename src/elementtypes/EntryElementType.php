@@ -706,15 +706,51 @@ class EntryElementType extends BaseElementType
 	 */
 	public function getEditorHtml(BaseElementModel $element)
 	{
+		$html = '';
+
+		// Show the Entry Type field?
+		if (!$element->id)
+		{
+			$entryTypes = $element->getSection()->getEntryTypes();
+
+			if (count($entryTypes) > 1)
+			{
+				$entryTypeOptions = array();
+
+				foreach ($entryTypes as $entryType)
+				{
+					$entryTypeOptions[] = array('label' => Craft::t($entryType->name), 'value' => Craft::t($entryType->id));
+				}
+
+				$html .= craft()->templates->renderMacro('_includes/forms', 'selectField', array(
+					array(
+						'label' => Craft::t('Entry Type'),
+						'id' => 'entryType',
+						'value' => $element->typeId,
+						'options' => $entryTypeOptions,
+					)
+				));
+
+				$typeInputId = craft()->templates->namespaceInputId('entryType');
+				$js = <<<EOD
+$('#{$typeInputId}').on('change', function(ev) {
+	var \$typeInput = $(this),
+		editor = \$typeInput.closest('.hud').data('elementEditor');
+	if (editor) {
+		editor.setElementAttribute('typeId', \$typeInput.val());
+		editor.loadHud();
+	}
+});
+EOD;
+				craft()->templates->includeJs($js);
+			}
+		}
+
 		if ($element->getType()->hasTitleField)
 		{
-			$html = craft()->templates->render('entries/_titlefield', array(
+			$html .= craft()->templates->render('entries/_titlefield', array(
 				'entry' => $element
 			));
-		}
-		else
-		{
-			$html = '';
 		}
 
 		$html .= parent::getEditorHtml($element);

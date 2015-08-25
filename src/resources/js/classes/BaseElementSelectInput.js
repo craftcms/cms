@@ -322,6 +322,7 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
 	getModalSettings: function()
 	{
 		return $.extend({
+			closeOtherModals:   false,
 			storageKey:         this.modalStorageKey,
 			sources:            this.settings.sources,
 			criteria:           this.settings.criteria,

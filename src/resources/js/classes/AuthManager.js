@@ -1,6 +1,3 @@
-(function($) {
-
-
 /**
  * AuthManager class
  */
@@ -467,6 +464,3 @@ Craft.AuthManager = Garnish.Base.extend(
 	checkInterval: 60,
 	minSafeAuthTimeout: 120
 });
-
-
-})(jQuery);

@@ -1077,15 +1077,9 @@ class UsersController extends BaseController
                 }
                 else
                 {
-                    // Resave svg files as png
-                    $newFilename = preg_replace('/\.svg$/i', '.png', $fileName);
-
                     craft()->images->
-                        loadImage($folderPath.$fileName, $width, $height)->
-                        saveAs($folderPath.$newFilename);
-
-                    IOHelper::deleteFile($folderPath.$fileName);
-                    $fileName = $newFilename;
+                        loadImage($folderPath.$fileName)->
+                        saveAs($folderPath.$fileName);
                 }
 
 				$constraint = 500;
@@ -1149,11 +1143,6 @@ class UsersController extends BaseController
 
 			$user = craft()->users->getUserById($userId);
 			$userName = AssetsHelper::cleanAssetName($user->username, false);
-
-            if (IOHelper::getExtension($source) == 'svg')
-            {
-                $source = preg_replace('/\.svg$/i', '.png', $source);
-            }
 
             // make sure that this is this user's file
 			$imagePath = craft()->path->getTempUploadsPath().'userphotos/'.$userName.'/'.$source;

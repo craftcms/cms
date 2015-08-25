@@ -625,7 +625,7 @@ class AssetTransformsService extends BaseApplicationComponent
 		{
 			$imageSource = $this->getLocalImageSource($fileModel);
 
-			craft()->images->loadImage($imageSource, $size, $size)
+			craft()->images->loadImage($imageSource)
 				->scaleAndCrop($size, $size)
 				->saveAs($thumbPath);
 
@@ -737,10 +737,14 @@ class AssetTransformsService extends BaseApplicationComponent
 		if ($maxCachedImageSize > 0 && ImageHelper::isImageManipulatable($localCopy))
 		{
 
-			craft()->images->loadImage($localCopy, $maxCachedImageSize, $maxCachedImageSize)
-				->scaleToFit($maxCachedImageSize, $maxCachedImageSize)
-				->setQuality(100)
-				->saveAs($destination);
+			$image = craft()->images->loadImage($localCopy);
+
+			if ($image instanceof Image)
+			{
+				$image->setQuality(100);
+			}
+
+			$image->scaleToFit($maxCachedImageSize, $maxCachedImageSize)->saveAs($destination);
 
 			if ($localCopy != $destination)
 			{
@@ -993,9 +997,9 @@ class AssetTransformsService extends BaseApplicationComponent
 	private function _getUnnamedTransformFolderName(AssetTransformModel $transform)
 	{
 		return '_'.($transform->width ? $transform->width : 'AUTO').'x'.($transform->height ? $transform->height : 'AUTO') .
-			'_'.($transform->mode) .
-			'_'.($transform->position) .
-			($transform->quality ? '_'.$transform->quality : '');
+		'_'.($transform->mode) .
+		'_'.($transform->position) .
+		($transform->quality ? '_'.$transform->quality : '');
 	}
 
 	/**
@@ -1037,8 +1041,19 @@ class AssetTransformsService extends BaseApplicationComponent
 		$imageSource = $file->getTransformSource();
 		$quality = $transform->quality ? $transform->quality : craft()->config->get('defaultImageQuality');
 
-		$image = craft()->images->loadImage($imageSource, $transform->width, $transform->height);
-		$image->setQuality($quality);
+		if (StringHelper::toLowerCase($file->getExtension()) == 'svg' && $index->detectedFormat != 'svg')
+		{
+			$image = craft()->images->loadImage($imageSource, true, max($transform->width, $transform->height));
+		}
+		else
+		{
+			$image = craft()->images->loadImage($imageSource);
+		}
+
+		if ($image instanceof Image)
+		{
+			$image->setQuality($quality);
+		}
 
 		switch ($transform->mode)
 		{
@@ -1088,11 +1103,6 @@ class AssetTransformsService extends BaseApplicationComponent
 		// For non-web-safe formats we go with jpg.
 		if (!in_array(mb_strtolower(IOHelper::getExtension($file->filename)), ImageHelper::getWebSafeFormats()))
 		{
-			if ($file->getExtension() == 'svg' && craft()->images->isImagick())
-			{
-				return 'png';
-			}
-
 			return 'jpg';
 		}
 		else

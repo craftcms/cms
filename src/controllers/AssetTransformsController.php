@@ -108,6 +108,11 @@ class AssetTransformsController extends BaseController
 			$errors = true;
 		}
 
+		if (empty($transform->quality))
+		{
+			$transform->quality = null;
+		}
+
 		if (!empty($transform->format) && !in_array($transform->format, ImageHelper::getWebSafeFormats()))
 		{
 			craft()->userSession->setError(Craft::t('That is not an allowed format.'));

@@ -52,9 +52,9 @@ class NewChildElementAction extends BaseElementAction
 		}
 	});
 
-	if (Craft.elementIndex.structureTableSort)
+	if (Craft.elementIndex.view.structureTableSort)
 	{
-		Craft.elementIndex.structureTableSort.on('positionChange', $.proxy(trigger, 'updateTrigger'));
+		Craft.elementIndex.view.structureTableSort.on('positionChange', $.proxy(trigger, 'updateTrigger'));
 	}
 })();
 EOT;

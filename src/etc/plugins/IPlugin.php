@@ -24,6 +24,13 @@ interface IPlugin extends ISavableComponentType
 	public function getVersion();
 
 	/**
+	 * Returns the plugin's description.
+	 *
+	 * @return string The plugin's description.
+	 */
+	public function getDescription();
+
+	/**
 	 * Returns the plugin developer’s name.
 	 *
 	 * @return string The plugin developer’s name.
@@ -43,6 +50,13 @@ interface IPlugin extends ISavableComponentType
 	 * @return string The plugin’s source language.
 	 */
 	public function getSourceLanguage();
+
+	/**
+	 * Returns whether the plugin has settings.
+	 *
+	 * @return bool Whether the plugin has settings
+	 */
+	public function hasSettings();
 
 	/**
 	 * Returns the URL to the plugin’s settings page in the CP.

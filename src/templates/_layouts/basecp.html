@@ -78,15 +78,22 @@
 			{% endif %}
 			runTasksAutomatically: {{ craft.config.runTasksAutomatically ? 'true' : 'false' }},
 			slugWordSeparator:     "{{ craft.config.slugWordSeparator|e('js') }}",
-			limitAutoSlugsToAscii: {{ craft.config.limitAutoSlugsToAscii ? 'true' : 'false' }}
+			limitAutoSlugsToAscii: {{ craft.config.limitAutoSlugsToAscii ? 'true' : 'false' }},
+			fileKinds:             {{ craft.app.getFileKinds()|json_encode|raw }},
+			publishableSections: [
+				{% if currentUser is defined and currentUser %}
+					{% for section in craft.sections.getEditableSections() %}
+						{% if section.type != 'single' and currentUser.can('createEntries:'~section.id) %}
+							{id: {{ section.id }}, name: "{{ section.name|e('js') }}", handle: "{{ section.handle|e('js') }}", type: "{{ section.type }}"}{% if not loop.last %},{% endif %}
+						{% endif %}
+					{% endfor %}
+				{% endif %}
+			],
+			editableCategoryGroups: [
+				{% for group in craft.categoryGroups.getEditableGroups() %}
+					{id: {{ group.id }}, name: "{{ group.name|e('js') }}", handle: "{{ group.handle|e('js') }}"}{% if not loop.last %},{% endif %}
+				{% endfor %}
+			]
 		};
-
-		window.Craft.fileKinds = {};
-		{% for kind, info in craft.app.getFileKinds() %}
-			window.Craft.fileKinds.{{ kind }} = [];
-			{% for extension in info.extensions %}
-				window.Craft.fileKinds.{{ kind }}.push("{{ extension }}");
-			{% endfor %}
-		{% endfor %}
 	</script>
 {% endblock %}

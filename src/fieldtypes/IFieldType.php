@@ -149,6 +149,17 @@ interface IFieldType extends ISavableComponentType
 	public function getInputHtml($name, $value);
 
 	/**
+	 * Returns a static (non-editable) version of the field’s input HTML.
+	 *
+	 * This function is called to output field values when viewing entry drafts.
+	 *
+	 * @param mixed $value
+	 *
+	 * @return string
+	 */
+	public function getStaticHtml($value);
+
+	/**
 	 * Returns the input value as it should be stored in the database.
 	 *
 	 * This method is called from {@link BaseElementModel::setContentFromPost()}, and is the only chance your plugin has

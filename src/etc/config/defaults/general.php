@@ -177,7 +177,7 @@ return array(
 	 * The quality level Craft will use when saving JPG and PNG files. Ranges from 0 (worst quality, smallest file) to
 	 * 100 (best quality, biggest file).
 	 */
-	'defaultImageQuality' => 75,
+	'defaultImageQuality' => 82,
 
 	/**
 	 * The template file extensions Craft will look for when matching a template path to a file on the front end.
@@ -344,6 +344,12 @@ return array(
 	 * Possible values: true, false, 'auto'
 	 */
 	'omitScriptNameInUrls' => 'auto',
+
+    /**
+     * If set to true and Imagick is used, Craft will take advantage of Imagick's advanced options to reduce the final
+     * image size without losing quality significantly.
+     */
+    'optimizeImageFilesize' => true,
 
 	/**
 	 * Determines whether Craft should override PHP’s session storage location to your craft/storage/ folder.
@@ -601,6 +607,16 @@ return array(
 	 * Whether Craft should use XSendFile to serve files when possible.
 	 */
 	'useXSendFile' => false,
+
+	/**
+	 * If set, should be a private, random, cryptographically secure key that is used to generate HMAC
+	 * in the SecurityService and is used for such things as verifying that cookies haven't been tampered with.
+	 * If not set, a random one is generated for you. Ultimately saved in craft/storage/runtime/state/state.bin.
+	 *
+	 * If you're in a load-balanced web server environment and you're not utilizing sticky sessions, this value
+	 * should be set to the same key across all web servers.
+	 */
+	'validationKey' => null,
 
 	/**
 	 * The amount of time a user verification code can be used before expiring.

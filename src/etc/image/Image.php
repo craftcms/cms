@@ -8,23 +8,13 @@ namespace Craft;
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement
  * @see       http://buildwithcraft.com
- * @package   craft.app.etc.io
- * @since     1.0
+ * @package   craft.app.etc.image
+ * @since     2.5
  */
-class Image
+class Image extends BaseImage
 {
 	// Properties
 	// =========================================================================
-
-	/**
-	 * @var int The minimum width that the image should be loaded with if it’s an SVG.
-	 */
-	public $minSvgWidth;
-
-	/**
-	 * @var int The minimum height that the image should be loaded with if it’s an SVG.
-	 */
-	public $minSvgHeight;
 
 	/**
 	 * @var string
@@ -148,70 +138,13 @@ class Image
 
 		$extension = IOHelper::getExtension($path);
 
-		if ($extension === 'svg')
+		try
 		{
-			if (!craft()->images->isImagick())
-			{
-				throw new Exception(Craft::t('The file “{path}” does not appear to be an image.', array('path' => $path)));
-			}
-
-			$svg = IOHelper::getFileContents($path);
-
-			if ($this->minSvgWidth !== null && $this->minSvgHeight !== null)
-			{
-				// Does the <svg> node contain valid `width` and `height` attributes?
-				list($width, $height) = ImageHelper::parseSvgSize($svg);
-
-				if ($width !== null && $height !== null)
-				{
-					$scale = 1;
-
-					if ($width < $this->minSvgWidth)
-					{
-						$scale = $this->minSvgWidth / $width;
-					}
-
-					if ($height < $this->minSvgHeight)
-					{
-						$scale = max($scale, ($this->minSvgHeight / $height));
-					}
-
-					$width = round($width * $scale);
-					$height = round($height * $scale);
-
-                    if (preg_match(ImageHelper::SVG_WIDTH_RE, $svg) && preg_match(ImageHelper::SVG_HEIGHT_RE, $svg))
-                    {
-                        $svg = preg_replace(ImageHelper::SVG_WIDTH_RE, "\${1}{$width}px\"", $svg);
-                        $svg = preg_replace(ImageHelper::SVG_HEIGHT_RE, "\${1}{$height}px\"", $svg);
-                    }
-                    else
-                    {
-                        $svg = preg_replace(ImageHelper::SVG_TAG_RE, "\${1} width=\"{$width}px\" height=\"{$height}px\" \${2}", $svg);
-                    }
-				}
-			}
-
-			try
-			{
-				$this->_image = $this->_instance->load($svg);
-			}
-			catch (\Imagine\Exception\RuntimeException $e)
-			{
-				// Invalid SVG. Maybe it's missing its DTD?
-				$svg = '<?xml version="1.0" encoding="UTF-8" standalone="no"?>'.$svg;
-				$this->_image = $this->_instance->load($svg);
-			}
-		}
-		else
-		{
-			$imageInfo = @getimagesize($path);
-
-			if (!is_array($imageInfo))
-			{
-				throw new Exception(Craft::t('The file “{path}” does not appear to be an image.', array('path' => $path)));
-			}
-
 			$this->_image = $this->_instance->open($path);
+		}
+		catch (\Exception $exception)
+		{
+			throw new Exception(Craft::t('The file “{path}” does not appear to be an image.', array('path' => $path)));
 		}
 
 		$this->_extension = $extension;
@@ -224,6 +157,9 @@ class Image
 				$this->_isAnimatedGif = true;
 			}
 		}
+
+		$this->_resizeHeight = $this->getHeight();
+		$this->_resizeWidth = $this->getWidth();
 
 		return $this;
 	}
@@ -279,7 +215,7 @@ class Image
 	 */
 	public function scaleToFit($targetWidth, $targetHeight = null, $scaleIfSmaller = true)
 	{
-		$this->_normalizeDimensions($targetWidth, $targetHeight);
+		$this->normalizeDimensions($targetWidth, $targetHeight);
 
 		if ($scaleIfSmaller || $this->getWidth() > $targetWidth || $this->getHeight() > $targetHeight)
 		{
@@ -302,7 +238,7 @@ class Image
 	 */
 	public function scaleAndCrop($targetWidth, $targetHeight = null, $scaleIfSmaller = true, $cropPositions = 'center-center')
 	{
-		$this->_normalizeDimensions($targetWidth, $targetHeight);
+		$this->normalizeDimensions($targetWidth, $targetHeight);
 
 		list($verticalPosition, $horizontalPosition) = explode("-", $cropPositions);
 
@@ -312,6 +248,7 @@ class Image
 			$factor = min($this->getWidth() / $targetWidth, $this->getHeight() / $targetHeight);
 			$newHeight = round($this->getHeight() / $factor);
 			$newWidth = round($this->getWidth() / $factor);
+
 
 			$this->resize($newWidth, $newHeight);
 
@@ -394,7 +331,7 @@ class Image
 	 */
 	public function resize($targetWidth, $targetHeight = null)
 	{
-		$this->_normalizeDimensions($targetWidth, $targetHeight);
+		$this->normalizeDimensions($targetWidth, $targetHeight);
 
 		if ($this->_isAnimatedGif)
 		{
@@ -414,7 +351,14 @@ class Image
 		}
 		else
 		{
-			$this->_image->resize(new \Imagine\Image\Box($targetWidth, $targetHeight), $this->_getResizeFilter());
+			if (craft()->images->isImagick() && craft()->config->get('optimizeImageFilesize'))
+			{
+				$this->_image->smartResize(new \Imagine\Image\Box($targetWidth, $targetHeight), false, $this->_quality);
+			}
+			else
+			{
+				$this->_image->resize(new \Imagine\Image\Box($targetWidth, $targetHeight), $this->_getResizeFilter());
+			}
 		}
 
 		return $this;
@@ -451,18 +395,18 @@ class Image
 	 * Saves the image to the target path.
 	 *
 	 * @param string $targetPath
-	 * @param bool   $sanitizeAndAutoQuality
 	 *
 	 * @throws \Imagine\Exception\RuntimeException
 	 * @return null
 	 */
-	public function saveAs($targetPath, $sanitizeAndAutoQuality = false)
+	public function saveAs($targetPath, $autoQuality = false)
 	{
 		$extension = StringHelper::toLowerCase(IOHelper::getExtension($targetPath));
+
 		$options = $this->_getSaveOptions(false, $extension);
 		$targetPath = IOHelper::getFolderName($targetPath).IOHelper::getFileName($targetPath, false).'.'.IOHelper::getExtension($targetPath);
 
-		if (($extension == 'jpeg' || $extension == 'jpg' || $extension == 'png') && $sanitizeAndAutoQuality)
+		if ($autoQuality && in_array($extension, array('jpeg', 'jpg', 'png')))
 		{
 			clearstatcache();
 			$originalSize = IOHelper::getFileSize($this->_imageSourcePath);
@@ -475,6 +419,29 @@ class Image
 		}
 
 		return true;
+	}
+
+	/**
+	 * Load an image from an SVG string.
+	 *
+	 * @param $svgContent
+	 *
+	 * @return Image
+	 */
+	public function loadFromSVG($svgContent)
+	{
+		try
+		{
+			$this->_image = $this->_instance->load($svgContent);
+		}
+		catch (\Imagine\Exception\RuntimeException $e)
+		{
+			// Invalid SVG. Maybe it's missing its DTD?
+			$svgContent = '<?xml version="1.0" encoding="UTF-8" standalone="no"?>'.$svgContent;
+			$this->_image = $this->_instance->load($svgContent);
+		}
+
+		return $this;
 	}
 
 	/**
@@ -581,28 +548,6 @@ class Image
 
 	// Private Methods
 	// =========================================================================
-
-	/**
-	 * Normalizes the given dimensions.  If width or height is set to 'AUTO', we calculate the missing dimension.
-	 *
-	 * @param int|string $width
-	 * @param int|string $height
-	 *
-	 * @throws Exception
-	 */
-	private function _normalizeDimensions(&$width, &$height = null)
-	{
-		if (preg_match('/^(?P<width>[0-9]+|AUTO)x(?P<height>[0-9]+|AUTO)/', $width, $matches))
-		{
-			$width  = $matches['width']  != 'AUTO' ? $matches['width']  : null;
-			$height = $matches['height'] != 'AUTO' ? $matches['height'] : null;
-		}
-
-		if (!$height || !$width)
-		{
-			list($width, $height) = ImageHelper::calculateMissingDimension($width, $height, $this->getWidth(), $this->getHeight());
-		}
-	}
 
 	/**
 	 * @param     $tempFileName

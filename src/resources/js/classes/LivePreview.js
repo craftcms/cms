@@ -1,6 +1,6 @@
-(function($) {
-
-
+/**
+ * Live Preview
+ */
 Craft.LivePreview = Garnish.Base.extend(
 {
 	$extraFields: null,
@@ -468,6 +468,3 @@ Craft.LivePreview.init = function(settings)
 {
 	Craft.livePreview = new Craft.LivePreview(settings);
 };
-
-
-})(jQuery);

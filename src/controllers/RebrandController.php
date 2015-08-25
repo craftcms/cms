@@ -62,15 +62,9 @@ class RebrandController extends BaseController
                 }
                 else
                 {
-                    // Resave svg files as png
-                    $newFilename = preg_replace('/\.svg$/i', '.png', $fileName);
-
                     craft()->images->
-                        loadImage($folderPath.$fileName, $width, $height)->
-                        saveAs($folderPath.$newFilename);
-
-                    IOHelper::deleteFile($folderPath.$fileName);
-                    $fileName = $newFilename;
+                        loadImage($folderPath.$fileName)->
+                        saveAs($folderPath.$fileName);
                 }
 
 				$constraint = 500;
@@ -135,7 +129,7 @@ class RebrandController extends BaseController
                 IOHelper::clearFolder($targetPath);
 
                 craft()->images
-						->loadImage($imagePath, 300, 300)
+						->loadImage($imagePath)
 						->crop($x1, $x2, $y1, $y2)
 						->scaleToFit(300, 300, false)
 						->saveAs($targetPath.$source);

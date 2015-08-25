@@ -101,17 +101,9 @@ class ElementIndexController extends BaseElementsController
 	 */
 	public function actionGetElements()
 	{
-		// Get the action head/foot HTML before any more is added to it from the element HTML
-		if ($this->_context == 'index')
-		{
-			$responseData['actions']  = $this->_getActionData();
-			$responseData['actionsHeadHtml'] = craft()->templates->getHeadHtml();
-			$responseData['actionsFootHtml'] = craft()->templates->getFootHtml();
-		}
-
-		$responseData['html'] = $this->_getElementHtml(true);
-
-		$this->_respond($responseData, true);
+		$includeActions = ($this->_context == 'index');
+		$responseData = $this->_getElementResponseData(true, $includeActions);
+		$this->returnJson($responseData);
 	}
 
 	/**
@@ -121,9 +113,8 @@ class ElementIndexController extends BaseElementsController
 	 */
 	public function actionGetMoreElements()
 	{
-		$this->_respond(array(
-			'html' => $this->_getElementHtml(false),
-		), true);
+		$responseData = $this->_getElementResponseData(false, false);
+		$this->returnJson($responseData);
 	}
 
 	/**
@@ -191,7 +182,7 @@ class ElementIndexController extends BaseElementsController
 		$success = $action->performAction($actionCriteria);
 
 		// Respond
-		$response = array(
+		$responseData = array(
 			'success' => $success,
 			'message' => $action->getMessage(),
 		);
@@ -199,15 +190,10 @@ class ElementIndexController extends BaseElementsController
 		if ($success)
 		{
 			// Send a new set of elements
-			$response['html'] = $this->_getElementHtml(false);
-			$includeLoadMoreInfo = true;
-		}
-		else
-		{
-			$includeLoadMoreInfo = false;
+			$responseData = array_merge($responseData, $this->_getElementResponseData(true, true));
 		}
 
-		$this->_respond($response, $includeLoadMoreInfo);
+		$this->returnJson($responseData);
 	}
 
 	// Private Methods
@@ -259,20 +245,16 @@ class ElementIndexController extends BaseElementsController
 	 */
 	private function _getCriteria()
 	{
-		$criteria = craft()->elements->getCriteria(
-			$this->_elementType->getClassHandle(),
-			craft()->request->getPost('criteria')
-		);
-
-		$criteria->limit = 50;
-		$criteria->offset = craft()->request->getParam('offset');
-		$criteria->search = craft()->request->getParam('search');
+		$criteria = craft()->elements->getCriteria($this->_elementType->getClassHandle());
 
 		// Does the source specify any criteria attributes?
 		if (!empty($this->_source['criteria']))
 		{
 			$criteria->setAttributes($this->_source['criteria']);
 		}
+
+		// Override with the request's params
+		$criteria->setAttributes(craft()->request->getPost('criteria'));
 
 		// Exclude descendants of the collapsed element IDs
 		if (!$criteria->id)
@@ -335,16 +317,27 @@ class ElementIndexController extends BaseElementsController
 	/**
 	 * Returns the element HTML to be returned to the client.
 	 *
-	 * @param bool $includeContainer Whether the element container should be included in the HTML.
+	 * @param bool $includeContainer Whether the element container should be included in the response data
+	 * @param bool $includeActions   Whether info about the available actions should be included in the response data
 	 *
 	 * @return string
 	 */
-	private function _getElementHtml($includeContainer)
+	private function _getElementResponseData($includeContainer, $includeActions)
 	{
+		$responseData = array();
+
+		// Get the action head/foot HTML before any more is added to it from the element HTML
+		if ($includeActions)
+		{
+			$responseData['actions'] = $this->_getActionData();
+			$responseData['actionsHeadHtml'] = craft()->templates->getHeadHtml();
+			$responseData['actionsFootHtml'] = craft()->templates->getFootHtml();
+		}
+
 		$disabledElementIds = craft()->request->getParam('disabledElementIds', array());
 		$showCheckboxes = !empty($this->_actions);
 
-		return $this->_elementType->getIndexHtml(
+		$responseData['html'] = $this->_elementType->getIndexHtml(
 			$this->_criteria,
 			$disabledElementIds,
 			$this->_viewState,
@@ -353,6 +346,11 @@ class ElementIndexController extends BaseElementsController
 			$includeContainer,
 			$showCheckboxes
 		);
+
+		$responseData['headHtml'] = craft()->templates->getHeadHtml();
+		$responseData['footHtml'] = craft()->templates->getFootHtml();
+
+		return $responseData;
 	}
 
 	/**
@@ -412,38 +410,5 @@ class ElementIndexController extends BaseElementsController
 
 			return $actionData;
 		}
-	}
-
-	/**
-	 * Responds to the request.
-	 *
-	 * @param array $responseData
-	 * @param bool  $includeLoadMoreInfo
-	 *
-	 * @return null
-	 */
-	private function _respond($responseData, $includeLoadMoreInfo)
-	{
-		if ($includeLoadMoreInfo)
-		{
-			$totalElementsInBatch = count($this->_criteria);
-			$responseData['totalVisible'] = $this->_criteria->offset + $totalElementsInBatch;
-
-			if ($this->_criteria->limit)
-			{
-				// We'll risk a pointless additional Ajax request in the unlikely event that there are exactly a factor of
-				// 50 elements, rather than running two separate element queries
-				$responseData['more'] = ($totalElementsInBatch == $this->_criteria->limit);
-			}
-			else
-			{
-				$responseData['more'] = false;
-			}
-		}
-
-		$responseData['headHtml'] = craft()->templates->getHeadHtml();
-		$responseData['footHtml'] = craft()->templates->getFootHtml();
-
-		$this->returnJson($responseData);
 	}
 }

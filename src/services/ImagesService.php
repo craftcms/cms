@@ -74,20 +74,34 @@ class ImagesService extends BaseApplicationComponent
 	 * Loads an image from a file system path.
 	 *
 	 * @param string $path
-	 * @param int $minSvgWidth The minimum width that the image should be loaded with if it’s an SVG.
-	 * @param int $minSvgHeight The minimum width that the image should be loaded with if it’s an SVG.
+	 * @param bool   $rasterize whether or not the image will be rasterized if it's an SVG
+	 * @param int    $svgSize   The size SVG should be scaled up to, if rasterized
 	 *
 	 * @throws \Exception
-	 * @return Image
+	 * @return BaseImage
 	 */
-	public function loadImage($path, $minSvgWidth = 1000, $minSvgHeight = 1000)
+	public function loadImage($path, $rasterize = false, $svgSize = 1000)
 	{
-		$image = new Image();
+		if (StringHelper::toLowerCase(IOHelper::getExtension($path)) == 'svg')
+		{
+			$image = new SvgImage();
+			$image->loadImage($path);
 
-		$image->minSvgWidth = $minSvgWidth;
-		$image->minSvgHeight = $minSvgHeight;
+			if ($rasterize)
+			{
+				$image->scaleToFit($svgSize, $svgSize);
+				$svgString = $image->getSvgString();
+				$image = new Image();
+				$image->loadFromSVG($svgString);
+			}
+		}
+		else
+		{
+			$image = new Image();
+			$image->loadImage($path);
+		}
 
-		$image->loadImage($path);
+
 		return $image;
 	}
 
@@ -105,6 +119,11 @@ class ImagesService extends BaseApplicationComponent
 	 */
 	public function checkMemoryForImage($filePath, $toTheMax = false)
 	{
+		if (StringHelper::toLowerCase(IOHelper::getExtension($filePath)) == 'svg')
+		{
+			return true;
+		}
+
 		if (!function_exists('memory_get_usage'))
 		{
 			return false;
@@ -149,26 +168,18 @@ class ImagesService extends BaseApplicationComponent
 	 */
 	public function cleanImage($filePath)
 	{
-		$cleanedByRotation = false;
-		$cleanedByStripping = false;
-
 		try
 		{
 			if (craft()->config->get('rotateImagesOnUploadByExifData'))
 			{
-				$cleanedByRotation = $this->rotateImageByExifData($filePath);
+				$this->rotateImageByExifData($filePath);
 			}
-			$cleanedByStripping = $this->stripOrientationFromExifData($filePath);
+
+			$this->stripOrientationFromExifData($filePath);
 		}
 		catch (\Exception $e)
 		{
 			Craft::log('Tried to rotate or strip EXIF data from image and failed: '.$e->getMessage(), LogLevel::Error);
-		}
-
-		// Image has already been cleaned if it had exif/orientation data
-		if ($cleanedByRotation || $cleanedByStripping)
-		{
-			return true;
 		}
 
 		return $this->loadImage($filePath)->saveAs($filePath, true);
@@ -179,18 +190,18 @@ class ImagesService extends BaseApplicationComponent
 	 *
 	 * @param string $filePath
 	 *
-	 * @return bool
+	 * @return null
 	 */
 	public function rotateImageByExifData($filePath)
 	{
 		if (!ImageHelper::canHaveExifData($filePath))
 		{
-			return false;
+			return null;
 		}
 
 		$exif = $this->getExifData($filePath);
 
-		$degrees = false;
+		$degrees = 0;
 
 		if (!empty($exif['ifd0.Orientation']))
 		{
@@ -214,13 +225,9 @@ class ImagesService extends BaseApplicationComponent
 			}
 		}
 
-        if ($degrees === false)
-        {
-            return false;
-        }
-
 		$image = $this->loadImage($filePath)->rotate($degrees);
-		return $image->saveAs($filePath, true);
+
+		return $image->saveAs($filePath);
 	}
 
 	/**
@@ -273,11 +280,13 @@ class ImagesService extends BaseApplicationComponent
 				// Delete the Orientation entry and re-save the file
 				$ifd0->offsetUnset(\PelTag::ORIENTATION);
 				$file->saveFile($filePath);
-
-				return true;
 			}
-		}
 
-		return false;
+			return true;
+		}
+		else
+		{
+			return false;
+		}
 	}
 }

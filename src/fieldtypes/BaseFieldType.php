@@ -112,7 +112,7 @@ abstract class BaseFieldType extends BaseSavableComponentType implements IFieldT
 	}
 
 	/**
-	 * Returns static HTML for the field's value.
+	 * @inheritDoc IFieldType::getStaticHtml()
 	 *
 	 * @param mixed $value
 	 *
