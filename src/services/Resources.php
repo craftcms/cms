@@ -13,7 +13,7 @@ use craft\app\errors\Exception;
 use craft\app\errors\HttpException;
 use craft\app\helpers\Assets;
 use craft\app\helpers\Io;
-use craft\app\helpers\Path;
+use craft\app\helpers\Path as PathHelper;
 use craft\app\helpers\StringHelper;
 use craft\app\helpers\Url;
 use yii\base\Component;
@@ -275,7 +275,7 @@ class Resources extends Component
      */
     public function sendResource($path)
     {
-        if (Path::ensurePathIsContained($path) === false) {
+        if (PathHelper::ensurePathIsContained($path) === false) {
             throw new HttpException(404);
         }
 
