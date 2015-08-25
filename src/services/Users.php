@@ -828,8 +828,8 @@ class Users extends Component
                 $userRecord->username = $user->unverifiedEmail;
 
                 $userPhotosPath = Craft::$app->getPath()->getUserPhotosPath();
-                $oldProfilePhotoPath = $userPhotosPath.'/'.Assets::cleanAssetName($oldEmail);
-                $newProfilePhotoPath = $userPhotosPath.'/'.Assets::cleanAssetName($user->unverifiedEmail);
+                $oldProfilePhotoPath = $userPhotosPath.'/'.Assets::prepareAssetName($oldEmail);
+                $newProfilePhotoPath = $userPhotosPath.'/'.Assets::prepareAssetName($user->unverifiedEmail);
 
                 // Update the user profile photo folder name, if it exists.
                 if (Io::folderExists($oldProfilePhotoPath)) {
