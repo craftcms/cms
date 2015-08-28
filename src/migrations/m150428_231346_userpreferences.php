@@ -6,7 +6,7 @@ use Craft;
 use craft\app\db\Migration;
 use craft\app\db\Query;
 use craft\app\helpers\JsonHelper;
-use craft\app\helpers\MigrationHelper;
+use craft\app\helpers\Migration as MigrationHelper;
 
 /**
  * m150428_231346_userpreferences migration.
