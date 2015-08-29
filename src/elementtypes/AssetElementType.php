@@ -206,13 +206,11 @@ class AssetElementType extends BaseElementType
 	}
 
 	/**
-	 * @inheritDoc IElementType::defineTableAttributes()
-	 *
-	 * @param string|null $source
+	 * @inheritDoc IElementType::defineAvailableTableAttributes()
 	 *
 	 * @return array
 	 */
-	public function defineTableAttributes($source = null)
+	public function defineAvailableTableAttributes()
 	{
 		$attributes = array(
 			'title'        => Craft::t('Title'),
@@ -222,7 +220,21 @@ class AssetElementType extends BaseElementType
 		);
 
 		// Allow plugins to modify the attributes
-		craft()->plugins->call('modifyAssetTableAttributes', array(&$attributes, $source));
+		craft()->plugins->call('modifyAssetTableAttributes', array(&$attributes));
+
+		return $attributes;
+	}
+
+	/**
+	 * @inheritDoc IElementType::getDefaultTableAttributes()
+	 *
+	 * @param string|null $source
+	 *
+	 * @return array
+	 */
+	public function getDefaultTableAttributes($source = null)
+	{
+		$attributes = array('filename', 'size', 'dateModified');
 
 		return $attributes;
 	}

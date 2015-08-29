@@ -198,7 +198,7 @@ interface IElementType extends IComponentType
 	public function defineSortableAttributes();
 
 	/**
-	 * Defines the columns that can be shown in table views.
+	 * Defines all of the available columns that can be shown in table views.
 	 *
 	 * This method should return an array whose keys map to attribute names and database columns that can be sorted
 	 * against when querying for elements, and whose values make up the table’s column headers.
@@ -211,11 +211,21 @@ interface IElementType extends IComponentType
 	 * All other items besides the first one will also define which element attribute should be shown within the data
 	 * cells. (The actual HTML to be shown can be customized with {@link getTableAttributeHtml()}.)
 	 *
-	 * @param string|null $source The selected source’s key, if any.
-	 *
 	 * @return array The table attributes.
 	 */
-	public function defineTableAttributes($source = null);
+	public function defineAvailableTableAttributes();
+
+	/**
+	 * Returns the list of table attribute keys that should be shown by default.
+	 *
+	 * This method should return an array where each element in the array maps to one of the keys of the array returned
+	 * by {@link defineAvailableTableAttributes()}.
+	 *
+	 * @param string|null $source The selected source’s key, if any.
+	 *
+	 * @return array The table attribute keys.
+	 */
+	public function getDefaultTableAttributes($source = null);
 
 	/**
 	 * Returns the HTML that should be shown for a given element’s attribute in Table View.

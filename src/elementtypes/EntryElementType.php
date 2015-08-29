@@ -355,32 +355,47 @@ class EntryElementType extends BaseElementType
 	}
 
 	/**
-	 * @inheritDoc IElementType::defineTableAttributes()
+	 * @inheritDoc IElementType::defineAvailableTableAttributes()
+	 *
+	 * @return array
+	 */
+	public function defineAvailableTableAttributes()
+	{
+		$attributes = array(
+			'title'      => Craft::t('Title'),
+			'uri'        => Craft::t('URI'),
+			'section'    => Craft::t('Section'),
+			'postDate'   => Craft::t('Post Date'),
+			'expiryDate' => Craft::t('Expiry Date'),
+		);
+
+		// Allow plugins to modify the attributes
+		craft()->plugins->call('modifyEntryTableAttributes', array(&$attributes));
+
+		return $attributes;
+	}
+
+	/**
+	 * @inheritDoc IElementType::getDefaultTableAttributes()
 	 *
 	 * @param string|null $source
 	 *
 	 * @return array
 	 */
-	public function defineTableAttributes($source = null)
+	public function getDefaultTableAttributes($source = null)
 	{
-		$attributes = array(
-			'title' => Craft::t('Title'),
-			'uri'   => Craft::t('URI'),
-		);
+		$attributes = array('uri');
 
 		if ($source == '*')
 		{
-			$attributes['section'] = Craft::t('Section');
+			$attributes[] = 'section';
 		}
 
 		if ($source != 'singles')
 		{
-			$attributes['postDate']   = Craft::t('Post Date');
-			$attributes['expiryDate'] = Craft::t('Expiry Date');
+			$attributes[] = 'postDate';
+			$attributes[] = 'expiryDate';
 		}
-
-		// Allow plugins to modify the attributes
-		craft()->plugins->call('modifyEntryTableAttributes', array(&$attributes, $source));
 
 		return $attributes;
 	}

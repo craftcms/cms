@@ -199,13 +199,11 @@ class CategoryElementType extends BaseElementType
 	}
 
 	/**
-	 * @inheritDoc IElementType::defineTableAttributes()
-	 *
-	 * @param string|null $source
+	 * @inheritDoc IElementType::defineAvailableTableAttributes()
 	 *
 	 * @return array
 	 */
-	public function defineTableAttributes($source = null)
+	public function defineAvailableTableAttributes()
 	{
 		$attributes = array(
 			'title' => Craft::t('Title'),
@@ -213,7 +211,21 @@ class CategoryElementType extends BaseElementType
 		);
 
 		// Allow plugins to modify the attributes
-		craft()->plugins->call('modifyCategoryTableAttributes', array(&$attributes, $source));
+		craft()->plugins->call('modifyCategoryTableAttributes', array(&$attributes));
+
+		return $attributes;
+	}
+
+	/**
+	 * @inheritDoc IElementType::getDefaultTableAttributes()
+	 *
+	 * @param string|null $source
+	 *
+	 * @return array
+	 */
+	public function getDefaultTableAttributes($source = null)
+	{
+		$attributes = array('uri');
 
 		return $attributes;
 	}

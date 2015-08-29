@@ -188,38 +188,56 @@ class UserElementType extends BaseElementType
 	}
 
 	/**
-	 * @inheritDoc IElementType::defineTableAttributes()
-	 *
-	 * @param string|null $source
+	 * @inheritDoc IElementType::defineAvailableTableAttributes()
 	 *
 	 * @return array
 	 */
-	public function defineTableAttributes($source = null)
+	public function defineAvailableTableAttributes()
 	{
+
 		if (craft()->config->get('useEmailAsUsername'))
 		{
+			// Start with Email and don't even give Username as an option
 			$attributes = array(
-				'email'         => Craft::t('Email'),
-				'firstName'     => Craft::t('First Name'),
-				'lastName'      => Craft::t('Last Name'),
-				'dateCreated'   => Craft::t('Join Date'),
-				'lastLoginDate' => Craft::t('Last Login'),
+				'email' => Craft::t('Email'),
 			);
 		}
 		else
 		{
 			$attributes = array(
-				'username'      => Craft::t('Username'),
-				'firstName'     => Craft::t('First Name'),
-				'lastName'      => Craft::t('Last Name'),
-				'email'         => Craft::t('Email'),
-				'dateCreated'   => Craft::t('Join Date'),
-				'lastLoginDate' => Craft::t('Last Login'),
+				'username' => Craft::t('Username'),
+				'email'    => Craft::t('Email'),
 			);
 		}
 
+		$attributes['firstName'] = Craft::t('First Name');
+		$attributes['lastName'] = Craft::t('Last Name');
+		$attributes['dateCreated'] = Craft::t('Join Date');
+		$attributes['lastLoginDate'] = Craft::t('Last Login');
+
 		// Allow plugins to modify the attributes
-		craft()->plugins->call('modifyUserTableAttributes', array(&$attributes, $source));
+		craft()->plugins->call('modifyUserTableAttributes', array(&$attributes));
+
+		return $attributes;
+	}
+
+	/**
+	 * @inheritDoc IElementType::getDefaultTableAttributes()
+	 *
+	 * @param string|null $source
+	 *
+	 * @return array
+	 */
+	public function getDefaultTableAttributes($source = null)
+	{
+		if (craft()->config->get('useEmailAsUsername'))
+		{
+			$attributes = array('email', 'firstName', 'lastName', 'dateCreated', 'lastLoginDate');
+		}
+		else
+		{
+			$attributes = array('username', 'firstName', 'lastName', 'email', 'dateCreated', 'lastLoginDate');
+		}
 
 		return $attributes;
 	}

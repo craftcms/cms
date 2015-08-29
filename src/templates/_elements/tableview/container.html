@@ -4,8 +4,8 @@
 			{% if showCheckboxes %}
 				<th></th>
 			{% endif %}
-			{% for attribute, label in attributes %}
-				<th scope="col" data-attribute="{{ attribute }}">{{ label }}</th>
+			{% for attribute in attributes %}
+				<th scope="col" data-attribute="{{ attribute[0] }}">{{ attribute[1] }}</th>
 			{% endfor %}
 		</thead>
 		<tbody>

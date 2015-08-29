@@ -139,6 +139,7 @@ $components['content']['class']              = 'Craft\ContentService';
 $components['dashboard']['class']            = 'Craft\DashboardService';
 $components['deprecator']['class']           = 'Craft\DeprecatorService';
 $components['email']['class']                = 'Craft\EmailService';
+$components['elementIndexes']['class']       = 'Craft\ElementIndexesService';
 $components['elements']['class']             = 'Craft\ElementsService';
 $components['entries']['class']              = 'Craft\EntriesService';
 $components['et']['class']                   = 'Craft\EtService';

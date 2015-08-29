@@ -222,7 +222,7 @@ abstract class BaseElementType extends BaseComponentType implements IElementType
 			case 'table':
 			{
 				// Get the table columns
-				$variables['attributes'] = $this->defineTableAttributes($sourceKey);
+				$variables['attributes'] = craft()->elementIndexes->getTableAttributes($this->getClassHandle(), $sourceKey);
 
 				break;
 			}
@@ -241,19 +241,45 @@ abstract class BaseElementType extends BaseComponentType implements IElementType
 	 */
 	public function defineSortableAttributes()
 	{
-		return $this->defineTableAttributes();
+		return $this->defineAvailableTableAttributes();
 	}
 
 	/**
-	 * @inheritDoc IElementType::defineTableAttributes()
+	 * @inheritDoc IElementType::defineAvailableTableAttributes()
+	 *
+	 * @return array
+	 */
+	public function defineAvailableTableAttributes()
+	{
+		if (method_exists($this, 'defineTableAttributes'))
+		{
+			// Classic.
+			return $this->defineTableAttributes();
+		}
+
+		return array();
+	}
+
+	/**
+	 * @inheritDoc IElementType::getDefaultTableAttributes()
 	 *
 	 * @param string|null $source
 	 *
 	 * @return array
 	 */
-	public function defineTableAttributes($source = null)
+	public function getDefaultTableAttributes($source = null)
 	{
-		return array();
+		if (method_exists($this, 'defineTableAttributes'))
+		{
+			// Classic.
+			$availableTableAttributes = $this->defineTableAttributes($source);
+		}
+		else
+		{
+			$availableTableAttributes = $this->defineAvailableTableAttributes();
+		}
+
+		return array_keys($availableTableAttributes);
 	}
 
 	/**

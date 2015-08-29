@@ -8,7 +8,8 @@
 	{% exit 404 %}
 {% endif %}
 
-{% set sources = elementType.getSources('index') %}
+{% set sources = craft.elementIndexes.getSources(elementTypeClass, 'index') %}
+{% set customizableSources = (sources is not empty and context == 'index' and currentUser.admin) %}
 
 
 {% block sidebar %}
@@ -16,6 +17,11 @@
 		<nav>
 			{% include "_elements/sources" %}
 		</nav>
+
+		{% if customizableSources %}
+			<div class="heading"><span></span></div>
+			<a class="customize-sources settings icon" title="{{ 'Customize sources'|t }}"></a>
+		{% endif %}
 	{% endif %}
 {% endblock %}
 
