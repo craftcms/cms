@@ -202,7 +202,8 @@ td.right { float: none; @include alignright; }
 .warning { color: $warningcolor !important; }
 .error { color: $errorcolor !important; }
 
-.icon.move { display: inline-block; cursor: move; }
+.icon.move { display: inline-block; }
+.icon.move:not(.disabled) { cursor: move; }
 .icon.move:before { content: 'move'; color: rgba(0,0,0,0.2); }
 .icon.move:not(.disabled):hover:before { color: $linkcolor; }
 
@@ -1060,8 +1061,9 @@ input.checkbox + label:before,
 div.checkbox:before { display: block; position: absolute; top: 2px; @include left(0); width: 12px !important; height: 12px; content: '.'; font-size: 0; border-radius: 2px; background: #fff;
 	@include box-shadow(0 0 2px hsla(205, 100%, 60%, 0), inset 0 0 0 1px rgba(0,0,0,0.15), inset 0 1px 2px rgba(0,0,0,0.15), inset 0 0 0 1px hsla(205, 100%, 60%, 0));
 }
-input.checkbox:disabled + label:before,
-div.checkbox.disabled:before { opacity: 0.25; }
+input.checkbox:disabled + label,
+div.checkbox.disabled:before,
+div.checkbox.disabled:before + label { opacity: 0.25; }
 input.checkbox:checked + label:before,
 div.checkbox.checked:before,
 .sel div.checkbox:before,
