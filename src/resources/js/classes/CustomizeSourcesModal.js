@@ -85,15 +85,12 @@ Craft.CustomizeSourcesModal = Garnish.Modal.extend(
 		{
 			var source = this.addSource(response.sources[i]);
 			this.sources.push(source);
-
-			if (i === 0)
-			{
-				source.select();
-			}
 		}
 
-		//this.addListener(this.$newBlockTypeBtn, 'click', 'addBlockType');
-		//this.addListener(this.$newFieldBtn, 'click', 'addFieldToSelectedBlockType');
+		if (!this.selectedSource && typeof this.sources[0] != typeof undefined)
+		{
+			this.sources[0].select();
+		}
 	},
 
 	addSource: function(sourceData)
@@ -117,6 +114,12 @@ Craft.CustomizeSourcesModal = Garnish.Modal.extend(
 			$itemInput.attr('name', 'sourceOrder[][key]').val(sourceData.key);
 			source = new Craft.CustomizeSourcesModal.Source(this, $item, $itemLabel, $itemInput, sourceData);
 			source.updateItemLabel(sourceData.label);
+
+			// Select this by default?
+			if (sourceData.key == this.elementIndex.sourceKey)
+			{
+				source.select();
+			}
 		}
 
 		this.sourceSort.addItems($item);
@@ -154,6 +157,12 @@ Craft.CustomizeSourcesModal = Garnish.Modal.extend(
 		{
 			if (textStatus == 'success' && response.success)
 			{
+				// If a source is selected, have the element index select that one by default on the next request
+				if (this.selectedSource && this.selectedSource.sourceData.key)
+				{
+					this.elementIndex.selectSourceByKey(this.selectedSource.sourceData.key);
+				}
+
 				location.reload();
 			}
 			else
@@ -174,6 +183,7 @@ Craft.CustomizeSourcesModal.BaseSource = Garnish.Base.extend(
 	$itemLabel: null,
 	$itemInput: null,
 	$settingsContainer: null,
+
 	sourceData: null,
 
 	init: function(modal, $item, $itemLabel, $itemInput, sourceData)
