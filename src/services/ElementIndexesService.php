@@ -218,6 +218,33 @@ class ElementIndexesService extends BaseApplicationComponent
 	}
 
 	/**
+	 * Returns all of the available attributes that can be shown for a given element type source.
+	 *
+	 * @param string $elementTypeClass The element type class name
+	 *
+	 * @return array
+	 */
+	public function getAvailableTableAttributes($elementTypeClass)
+	{
+		$elementType = craft()->elements->getElementType($elementTypeClass);
+		$attributes = $elementType->defineAvailableTableAttributes();
+
+		foreach ($attributes as $key => $info)
+		{
+			if (!is_array($info))
+			{
+				$attributes[$key] = array('label' => $info);
+			}
+			else if (!isset($info['label']))
+			{
+				$attributes[$key]['label'] = '';
+			}
+		}
+
+		return $attributes;
+	}
+
+	/**
 	 * Returns the attributes that should be shown for a given element type source.
 	 *
 	 * @param string $elementTypeClass The element type class name
@@ -228,8 +255,7 @@ class ElementIndexesService extends BaseApplicationComponent
 	public function getTableAttributes($elementTypeClass, $sourceKey)
 	{
 		$settings = $this->getSettings($elementTypeClass);
-		$elementType = craft()->elements->getElementType($elementTypeClass);
-		$availableAttributes = $elementType->defineAvailableTableAttributes();
+		$availableAttributes = $this->getAvailableTableAttributes($elementTypeClass);
 		$attributes = array();
 
 		// Start with the first available attribute, no matter what
@@ -249,6 +275,7 @@ class ElementIndexesService extends BaseApplicationComponent
 		}
 		else
 		{
+			$elementType = craft()->elements->getElementType($elementTypeClass);
 			$attributeKeys = $elementType->getDefaultTableAttributes($sourceKey);
 		}
 

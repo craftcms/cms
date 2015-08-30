@@ -38,15 +38,21 @@ class ElementIndexSettingsController extends BaseElementsController
 				continue;
 			}
 
-			$source['tableAttributes'] = craft()->elementIndexes->getTableAttributes($elementTypeClass, $source['key']);
+			$tableAttributes = craft()->elementIndexes->getTableAttributes($elementTypeClass, $source['key']);
+			$source['tableAttributes'] = array();
+
+			foreach ($tableAttributes as $attribute)
+			{
+				$source['tableAttributes'][] = array($attribute[0], $attribute[1]['label']);
+			}
 		}
 
 		// Get the available table attributes
 		$availableTableAttributes = array();
 
-		foreach ($elementType->defineAvailableTableAttributes() as $key => $label)
+		foreach (craft()->elementIndexes->getAvailableTableAttributes($elementTypeClass) as $key => $labelInfo)
 		{
-			$availableTableAttributes[] = array($key, $label);
+			$availableTableAttributes[] = array($key, $labelInfo['label']);
 		}
 
 		$this->returnJson(array(

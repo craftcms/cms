@@ -15,13 +15,13 @@
 		{% endif %}
 		{% for attribute in attributes %}
 			{% if loop.first %}
-				<td data-title="{{ attribute[1] }}"{% if structure %} style="padding-{{ padding }}: {{ basePadding + (element.level - 1) * 44 }}px;"{% endif %} data-titlecell="">
+				<td data-title="{{ attribute[1].label }}"{% if structure %} style="padding-{{ padding }}: {{ basePadding + (element.level - 1) * 44 }}px;"{% endif %} data-titlecell="">
 					{%- if structureEditable %}<a class="move icon" title="{{ 'Reorder'|t }}" role="button">&nbsp;</a>{% endif %}
 					{%- if structure and element.hasDescendants() %}<span class="toggle{% if element.id not in collapsedElementIds %} expanded{% endif %}" title="{{ 'Show/hide children'|t }}"></span>{% endif %}
 					{%- include "_elements/element" -%}
 				</td>
 			{% else %}
-				<td data-title="{{ attribute[1] }}">
+				<td data-title="{{ attribute[1].label }}">
 					{{- elementType.getTableAttributeHtml(element, attribute[0])|raw -}}
 				</td>
 			{% endif %}

@@ -241,7 +241,15 @@ abstract class BaseElementType extends BaseComponentType implements IElementType
 	 */
 	public function defineSortableAttributes()
 	{
-		return $this->defineAvailableTableAttributes();
+		$tableAttributes = craft()->elementIndexes->getAvailableTableAttributes($this->getClassHandle());
+		$sortableAttributes = array();
+
+		foreach ($tableAttributes as $key => $labelInfo)
+		{
+			$sortableAttributes[$key] = $labelInfo['label'];
+		}
+
+		return $sortableAttributes;
 	}
 
 	/**
