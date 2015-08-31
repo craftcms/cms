@@ -24,15 +24,17 @@ Craft.CustomizeSourcesModal = Garnish.Modal.extend(
 
 	init: function(elementIndex)
 	{
-		this.base();
+		this.base({
+			resizable: true
+		});
+
 		this.elementIndex = elementIndex;
 
 		var $container = $('<form class="modal customize-sources-modal"/>').appendTo(Garnish.$bod);
-		this.setContainer($container);
 
-		this.$sidebar = $('<div class="cs-sidebar block-types"/>').appendTo(this.$container);
+		this.$sidebar = $('<div class="cs-sidebar block-types"/>').appendTo($container);
 		this.$sourcesContainer = $('<div class="sources">').appendTo(this.$sidebar);
-		this.$sourceSettingsContainer = $('<div class="source-settings">').appendTo(this.$container);
+		this.$sourceSettingsContainer = $('<div class="source-settings">').appendTo($container);
 
 		this.$footer = $('<div class="footer"/>').appendTo($container);
 		this.$footerBtnContainer = $('<div class="buttons right"/>').appendTo(this.$footer);
@@ -41,8 +43,9 @@ Craft.CustomizeSourcesModal = Garnish.Modal.extend(
 		this.$saveSpinner = $('<div class="spinner hidden"/>').appendTo(this.$footerBtnContainer);
 		this.$newHeadingBtn = $('<div class="btn add icon"/>').text(Craft.t('New heading')).appendTo($('<div class="buttons left"/>').appendTo(this.$footer));
 
-		this.$loadingSpinner = $('<div class="spinner"/>').appendTo(this.$container);
+		this.$loadingSpinner = $('<div class="spinner"/>').appendTo($container);
 
+		this.setContainer($container);
 		this.show();
 
 		var data = {
