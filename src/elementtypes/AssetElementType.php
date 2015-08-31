@@ -195,8 +195,10 @@ class AssetElementType extends BaseElementType
 		$attributes = array(
 			'title'        => Craft::t('Title'),
 			'filename'     => Craft::t('Filename'),
-			'size'         => Craft::t('Size'),
-			'dateModified' => Craft::t('Date Modified'),
+			'size'         => Craft::t('File Size'),
+			'dateModified' => Craft::t('File Modification Date'),
+			'dateCreated'  => Craft::t('Date Created'),
+			'dateUpdated'  => Craft::t('Date Updated'),
 		);
 
 		// Allow plugins to modify the attributes
@@ -213,10 +215,16 @@ class AssetElementType extends BaseElementType
 	public function defineAvailableTableAttributes()
 	{
 		$attributes = array(
-			'title'        => Craft::t('Title'),
-			'filename'     => Craft::t('Filename'),
-			'size'         => Craft::t('Size'),
-			'dateModified' => Craft::t('Date Modified'),
+			'title'        => array('label' => Craft::t('Title')),
+			'filename'     => array('label' => Craft::t('Filename')),
+			'size'         => array('label' => Craft::t('File Size')),
+			'kind'         => array('label' => Craft::t('File Kind')),
+			'imageSize'    => array('label' => Craft::t('Image Size')),
+			'width'        => array('label' => Craft::t('Image Width')),
+			'height'       => array('label' => Craft::t('Image Height')),
+			'dateModified' => array('label' => Craft::t('File Modified Date')),
+			'dateCreated'  => array('label' => Craft::t('Date Created')),
+			'dateUpdated'  => array('label' => Craft::t('Date Updated')),
 		);
 
 		// Allow plugins to modify the attributes
@@ -264,6 +272,11 @@ class AssetElementType extends BaseElementType
 				return HtmlHelper::encodeParams('<span style="word-break: break-word;">{fileName}</span>', array('fileName' => $element->filename));
 			}
 
+			case 'kind':
+			{
+				return IOHelper::getFileKindLabel($element->kind);
+			}
+
 			case 'size':
 			{
 				if ($element->size)
@@ -274,6 +287,26 @@ class AssetElementType extends BaseElementType
 				{
 					return '';
 				}
+			}
+
+			case 'imageSize':
+			{
+				if (($width = $element->getWidth()) && ($height = $element->getHeight()))
+				{
+					return "{$width} × {$height}";
+				}
+				else
+				{
+					return '';
+				}
+			}
+
+			case 'width':
+			case 'height':
+			{
+				$size = $element->$attribute;
+
+				return ($size ? $size.'px' : '');
 			}
 
 			default:

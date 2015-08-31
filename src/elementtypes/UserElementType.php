@@ -167,6 +167,8 @@ class UserElementType extends BaseElementType
 				'lastName'      => Craft::t('Last Name'),
 				'dateCreated'   => Craft::t('Join Date'),
 				'lastLoginDate' => Craft::t('Last Login'),
+				'dateCreated'   => Craft::t('Date Created'),
+				'dateUpdated'   => Craft::t('Date Updated'),
 			);
 		}
 		else
@@ -178,6 +180,8 @@ class UserElementType extends BaseElementType
 				'email'         => Craft::t('Email'),
 				'dateCreated'   => Craft::t('Join Date'),
 				'lastLoginDate' => Craft::t('Last Login'),
+				'dateCreated'   => Craft::t('Date Created'),
+				'dateUpdated'   => Craft::t('Date Updated'),
 			);
 		}
 
@@ -199,21 +203,30 @@ class UserElementType extends BaseElementType
 		{
 			// Start with Email and don't even give Username as an option
 			$attributes = array(
-				'email' => Craft::t('Email'),
+				'email' => array('label' => Craft::t('Email')),
 			);
 		}
 		else
 		{
 			$attributes = array(
-				'username' => Craft::t('Username'),
-				'email'    => Craft::t('Email'),
+				'username' => array('label' => Craft::t('Username')),
+				'email'    => array('label' => Craft::t('Email')),
 			);
 		}
 
-		$attributes['firstName'] = Craft::t('First Name');
-		$attributes['lastName'] = Craft::t('Last Name');
-		$attributes['dateCreated'] = Craft::t('Join Date');
-		$attributes['lastLoginDate'] = Craft::t('Last Login');
+		$attributes['fullName'] = array('label' => Craft::t('Full Name'));
+		$attributes['firstName'] = array('label' => Craft::t('First Name'));
+		$attributes['lastName'] = array('label' => Craft::t('Last Name'));
+
+		if (craft()->isLocalized())
+		{
+			$attributes['preferredLocale'] = array('label' => Craft::t('Preferred Locale'));
+		}
+
+		$attributes['dateCreated'] = array('label' => Craft::t('Join Date'));
+		$attributes['lastLoginDate'] = array('label' => Craft::t('Last Login'));
+		$attributes['dateCreated'] = array('label' => Craft::t('Date Created'));
+		$attributes['dateUpdated'] = array('label' => Craft::t('Date Updated'));
 
 		// Allow plugins to modify the attributes
 		craft()->plugins->call('modifyUserTableAttributes', array(&$attributes));
@@ -232,11 +245,11 @@ class UserElementType extends BaseElementType
 	{
 		if (craft()->config->get('useEmailAsUsername'))
 		{
-			$attributes = array('email', 'firstName', 'lastName', 'dateCreated', 'lastLoginDate');
+			$attributes = array('fullName', 'dateCreated', 'lastLoginDate');
 		}
 		else
 		{
-			$attributes = array('username', 'firstName', 'lastName', 'email', 'dateCreated', 'lastLoginDate');
+			$attributes = array('fullName', 'email', 'dateCreated', 'lastLoginDate');
 		}
 
 		return $attributes;
@@ -269,6 +282,22 @@ class UserElementType extends BaseElementType
 				if ($email)
 				{
 					return HtmlHelper::encodeParams('<a href="mailto:{email}">{email}</a>', array('email' => $email));
+				}
+				else
+				{
+					return '';
+				}
+			}
+
+			case 'preferredLocale':
+			{
+				$localeId = $element->preferredLocale;
+
+				if ($localeId)
+				{
+					$locale = new LocaleModel($localeId);
+
+					return $locale->getName();
 				}
 				else
 				{

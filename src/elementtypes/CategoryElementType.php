@@ -188,8 +188,10 @@ class CategoryElementType extends BaseElementType
 	public function defineSortableAttributes()
 	{
 		$attributes = array(
-			'title' => Craft::t('Title'),
-			'uri'   => Craft::t('URI'),
+			'title'        => Craft::t('Title'),
+			'uri'          => Craft::t('URI'),
+			'dateCreated'  => Craft::t('Date Created'),
+			'dateUpdated'  => Craft::t('Date Updated'),
 		);
 
 		// Allow plugins to modify the attributes
@@ -206,8 +208,11 @@ class CategoryElementType extends BaseElementType
 	public function defineAvailableTableAttributes()
 	{
 		$attributes = array(
-			'title' => Craft::t('Title'),
-			'uri'   => Craft::t('URI'),
+			'title'       => array('label' => Craft::t('Title')),
+			'uri'         => array('label' => Craft::t('URI')),
+			'link'        => array('label' => Craft::t('Link'), 'icon' => 'world'),
+			'dateCreated' => array('label' => Craft::t('Date Created')),
+			'dateUpdated' => array('label' => Craft::t('Date Updated')),
 		);
 
 		// Allow plugins to modify the attributes
@@ -225,7 +230,7 @@ class CategoryElementType extends BaseElementType
 	 */
 	public function getDefaultTableAttributes($source = null)
 	{
-		$attributes = array('uri');
+		$attributes = array('link');
 
 		return $attributes;
 	}

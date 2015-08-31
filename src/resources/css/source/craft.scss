@@ -670,6 +670,7 @@ table.collapsed tbody tr:last-child td:not(:last-child) { border-bottom: none; }
 .elements .tableview th,
 .elements .tableview td { padding-top: 5px; padding-bottom: 5px; }
 .elements .tableview td { position: relative; }
+.elements .tableview tr.sel td { background: $lightselcolor; }
 .elements .tableview .move { display: block; position: absolute; top: 9px; @include margin-left(-14px); font-size: 11px; text-decoration: none; }
 .elements .tableview .toggle { display: block; position: absolute; top: 9px; @include margin-left(-20px); }
 .elements .tableview .move + .toggle { @include margin-left(-34px); }

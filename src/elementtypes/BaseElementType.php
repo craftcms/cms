@@ -302,6 +302,20 @@ abstract class BaseElementType extends BaseComponentType implements IElementType
 	{
 		switch ($attribute)
 		{
+			case 'link':
+			{
+				$url = $element->getUrl();
+
+				if ($url)
+				{
+					return '<a href="'.$url.'" target="_blank" data-icon="world" title="'.Craft::t('Visit webpage').'"></a>';
+				}
+				else
+				{
+					return '';
+				}
+			}
+
 			case 'uri':
 			{
 				$url = $element->getUrl();
@@ -331,7 +345,7 @@ abstract class BaseElementType extends BaseComponentType implements IElementType
 						$value = str_replace($find, $replace, $value);
 					}
 
-					return '<a href="'.$url.'" target="_blank" class="go"><span dir="ltr">'.$value.'</span></a>';
+					return '<a href="'.$url.'" target="_blank" class="go" title="'.Craft::t('Visit webpage').'"><span dir="ltr">'.$value.'</span></a>';
 				}
 				else
 				{
