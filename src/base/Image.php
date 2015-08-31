@@ -2,6 +2,7 @@
 namespace craft\app\base;
 
 use craft\app\errors\Exception;
+use craft\app\helpers\Image as ImageHelper;
 
 /**
  * Base Image class.
@@ -37,7 +38,7 @@ abstract class Image
 	 * @param string $path
 	 *
 	 * @throws Exception
-	 * @return BaseImage
+	 * @return Image
 	 */
 	abstract public function loadImage($path);
 
@@ -49,7 +50,7 @@ abstract class Image
 	 * @param int $y1
 	 * @param int $y2
 	 *
-	 * @return BaseImage
+	 * @return Image
 	 */
 	abstract public function crop($x1, $x2, $y1, $y2);
 
@@ -60,7 +61,7 @@ abstract class Image
 	 * @param int|null $targetHeight
 	 * @param bool     $scaleIfSmaller
 	 *
-	 * @return BaseImage
+	 * @return Image
 	 */
 	abstract public function scaleToFit($targetWidth, $targetHeight = null, $scaleIfSmaller = true);
 
@@ -72,7 +73,7 @@ abstract class Image
 	 * @param bool     $scaleIfSmaller
 	 * @param string   $cropPositions
 	 *
-	 * @return BaseImage
+	 * @return Image
 	 */
 	abstract public function scaleAndCrop($targetWidth, $targetHeight = null, $scaleIfSmaller = true, $cropPositions = 'center-center');
 
