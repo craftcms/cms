@@ -227,6 +227,8 @@ Craft.CustomizeSourcesModal.BaseSource = Garnish.Base.extend(
 		{
 			this.$settingsContainer.removeClass('hidden');
 		}
+
+		this.modal.$sourceSettingsContainer.scrollTop(0);
 	},
 
 	createSettings: function()
