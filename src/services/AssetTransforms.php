@@ -12,7 +12,7 @@ use craft\app\db\Query;
 use craft\app\dates\DateTime;
 use craft\app\elements\Asset;
 use craft\app\errors\VolumeFileExistsException;
-use craft\app\helpers\Assets;
+use craft\app\helpers\Assets as AssetsHelper;
 use craft\app\helpers\Db;
 use craft\app\helpers\Image;
 use craft\app\helpers\Io;
@@ -563,7 +563,7 @@ class AssetTransforms extends Component
         $file = Craft::$app->getAssets()->getFileById($transformIndexModel->fileId);
         $volume = $file->getVolume();
         $baseUrl = $volume->getRootUrl();
-        $appendix = Assets::getUrlAppendix($volume, $file);
+        $appendix = AssetsHelper::getUrlAppendix($volume, $file);
 
         return $baseUrl.$file->getFolder()->path.$this->getTransformSubpath($file, $transformIndexModel).$appendix;
     }
