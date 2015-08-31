@@ -55,13 +55,11 @@ Craft.BaseElementIndexView = Garnish.Base.extend(
 
 			this._handleEnableElements = $.proxy(function(ev)
 			{
-				debugger;
 				this.elementSelect.addItems(ev.elements);
 			}, this);
 
 			this._handleDisableElements = $.proxy(function(ev)
 			{
-				debugger;
 				this.elementSelect.removeItems(ev.elements);
 			}, this);
 
