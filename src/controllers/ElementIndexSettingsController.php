@@ -101,7 +101,6 @@ class ElementIndexSettingsController extends BaseElementsController
 
 		if (craft()->elementIndexes->saveSettings($elementTypeClass, $settings))
 		{
-			craft()->userSession->setNotice(Craft::t('Source settings saved'));
 			$this->returnJson(array('success' => true));
 		}
 		else

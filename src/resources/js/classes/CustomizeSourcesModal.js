@@ -19,6 +19,7 @@ Craft.CustomizeSourcesModal = Garnish.Modal.extend(
 	sourceSort: null,
 	sources: null,
 	selectedSource: null,
+	updateSourcesOnSave: false,
 
 	availableTableAttributes: null,
 
@@ -78,7 +79,10 @@ Craft.CustomizeSourcesModal = Garnish.Modal.extend(
 		// Create the source item sorter
 		this.sourceSort = new Garnish.DragSort({
 			handle: '.move',
-			axis: 'y'
+			axis: 'y',
+			onSortChange: $.proxy(function() {
+				this.updateSourcesOnSave = true;
+			}, this)
 		});
 
 		// Create the sources
@@ -139,6 +143,7 @@ Craft.CustomizeSourcesModal = Garnish.Modal.extend(
 		Garnish.scrollContainerToElement(this.$sidebar, source.$item);
 
 		source.select();
+		this.updateSourcesOnSave = true;
 	},
 
 	save: function(ev)
@@ -158,23 +163,79 @@ Craft.CustomizeSourcesModal = Garnish.Modal.extend(
 
 		Craft.postActionRequest('elementIndexSettings/saveCustomizeSourcesModalSettings', data, $.proxy(function(response, textStatus)
 		{
+			this.$saveSpinner.addClass('hidden');
+
 			if (textStatus == 'success' && response.success)
 			{
+				// Have any changes been made to the source list?
+				if (this.updateSourcesOnSave)
+				{
+					var $sourcesContainer = this.elementIndex.$sidebar.children('nav').children('ul');
+
+					if ($sourcesContainer.length)
+					{
+						var $lastSource;
+
+						for (var i = 0; i < this.sourceSort.$items.length; i++)
+						{
+							var $item = this.sourceSort.$items.eq(i),
+								source = $item.data('source'),
+								$indexSource = source.getIndexSource();
+
+							if (!$indexSource)
+							{
+								continue;
+							}
+
+							if (!$lastSource)
+							{
+								$indexSource.prependTo($sourcesContainer);
+							}
+							else
+							{
+								$indexSource.insertAfter($lastSource);
+							}
+
+							$lastSource = $indexSource;
+						}
+
+						// Remove any additional sources (most likely just old headings)
+						if ($lastSource)
+						{
+							var $extraSources = $lastSource.nextAll();
+							this.elementIndex.sourceSelect.removeItems($extraSources);
+							$extraSources.remove();
+						}
+					}
+				}
+
 				// If a source is selected, have the element index select that one by default on the next request
 				if (this.selectedSource && this.selectedSource.sourceData.key)
 				{
 					this.elementIndex.selectSourceByKey(this.selectedSource.sourceData.key);
+					this.elementIndex.updateElements();
 				}
 
-				location.reload();
+				Craft.cp.displayNotice(Craft.t('Source settings saved'));
+				this.hide();
 			}
 			else
 			{
-				this.$saveSpinner.addClass('hidden');
 				var error = (textStatus == 'success' && response.error ? response.error : Craft.t('An unknown error occurred.'));
 				Craft.cp.displayError(error);
 			}
 		}, this));
+	},
+
+	destroy: function()
+	{
+		for (var i = 0; i < this.sources.length; i++)
+		{
+			this.sources[i].destroy();
+		}
+
+		delete this.sources;
+		this.base();
 	}
 });
 
@@ -196,6 +257,8 @@ Craft.CustomizeSourcesModal.BaseSource = Garnish.Base.extend(
 		this.$itemLabel = $itemLabel;
 		this.$itemInput = $itemInput;
 		this.sourceData = sourceData;
+
+		this.$item.data('source', this);
 
 		this.addListener(this.$item, 'click', 'select');
 	},
@@ -238,6 +301,10 @@ Craft.CustomizeSourcesModal.BaseSource = Garnish.Base.extend(
 	{
 	},
 
+	getIndexSource: function()
+	{
+	},
+
 	deselect: function()
 	{
 		this.$item.removeClass('sel');
@@ -248,6 +315,12 @@ Craft.CustomizeSourcesModal.BaseSource = Garnish.Base.extend(
 	updateItemLabel: function(val)
 	{
 		this.$itemLabel.text(val);
+	},
+
+	destroy: function()
+	{
+		this.$item.data('source', null);
+		this.base();
 	}
 });
 
@@ -325,6 +398,16 @@ Craft.CustomizeSourcesModal.Source = Craft.CustomizeSourcesModal.BaseSource.exte
 		}
 
 		return $option;
+	},
+
+	getIndexSource: function()
+	{
+		var $source = this.modal.elementIndex.getSourceByKey(this.sourceData.key);
+
+		if ($source)
+		{
+			return $source.closest('li');
+		}
 	}
 });
 
@@ -365,6 +448,7 @@ Craft.CustomizeSourcesModal.Heading = Craft.CustomizeSourcesModal.BaseSource.ext
 	handleLabelInputChange: function()
 	{
 		this.updateItemLabel(this.$labelInput.val());
+		this.modal.updateSourcesOnSave = true;
 	},
 
 	updateItemLabel: function(val)
@@ -376,8 +460,8 @@ Craft.CustomizeSourcesModal.Heading = Craft.CustomizeSourcesModal.BaseSource.ext
 	deleteHeading: function()
 	{
 		this.modal.sourceSort.removeItems(this.$item);
-
 		this.modal.sources.splice($.inArray(this, this.modal.sources), 1);
+		this.modal.updateSourcesOnSave = true;
 
 		if (this.isSelected())
 		{
@@ -392,5 +476,11 @@ Craft.CustomizeSourcesModal.Heading = Craft.CustomizeSourcesModal.BaseSource.ext
 		this.$item.remove();
 		this.$settingsContainer.remove();
 		this.destroy();
+	},
+
+	getIndexSource: function()
+	{
+		var label = (this.$labelInput ? this.$labelInput.val() : this.sourceData.heading);
+		return $('<li class="heading"/>').append($('<span/>').text(label));
 	}
 });
