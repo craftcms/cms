@@ -11,7 +11,7 @@ use Craft;
 use craft\app\dates\DateTime;
 use craft\app\errors\Exception;
 use craft\app\errors\HttpException;
-use craft\app\helpers\Assets;
+use craft\app\helpers\Assets as AssetsHelper;
 use craft\app\helpers\Io;
 use craft\app\helpers\Path as PathHelper;
 use craft\app\helpers\StringHelper;
@@ -105,14 +105,14 @@ class Resources extends Component
                             return false;
                         }
 
-                        $size = Assets::prepareAssetName($segs[2], false);
+                        $size = AssetsHelper::prepareAssetName($segs[2], false);
                         // Looking for either a numeric size or "original" keyword
                         if (!is_numeric($size) && $size != "original") {
                             return false;
                         }
 
-                        $username = Assets::prepareAssetName($segs[1], false);
-                        $filename = Assets::prepareAssetName($segs[3]);
+                        $username = AssetsHelper::prepareAssetName($segs[1], false);
+                        $filename = AssetsHelper::prepareAssetName($segs[3]);
 
                         $userPhotosPath = Craft::$app->getPath()->getUserPhotosPath().'/'.$username;
                         $sizedPhotoFolder = $userPhotosPath.'/'.$size;
