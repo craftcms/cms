@@ -500,18 +500,20 @@ div.btn.submit input { position: absolute; left: 100%; }
 .btn.dashed:not(.disabled).active { background-color: hsla($hue, 10%, 50%, 0.1) !important; }
 
 /* color buttons */
-.color { display: inline-block; vertical-align: middle; width: 30px; height: 30px; border-radius: 15px; padding: 0; background: url(../images/checkers.png); cursor: pointer; }
-.color .colorpreview { top: 0; @include left(0); width: 30px; height: 30px; border-radius: 15px;
+.color { display: inline-block; position: relative; vertical-align: middle; width: 30px; height: 30px; border-radius: 15px; padding: 0; background: url(../images/checkers.png); }
+.color:not(.static) { cursor: pointer; }
+.color.small { width: 15px; height: 15px; }
+.color .colorpreview { top: 0; @include left(0); width: 100%; height: 100%; border-radius: 15px;
 	@include linear-gradient(rgba(255,255,255,0.5), rgba(255,255,255,0));
 	@include box-shadow(inset 0 0 0 1px rgba(0,0,0,0.15), 0 1px 0 rgba(0,0,0,0.05));
 }
-.color:not(.disabled):hover .colorpreview,
-.color:not(.disabled):active .colorpreview,
-.color:not(.disabled).active .colorpreview {
+.color:not(.disabled):not(.static):hover .colorpreview,
+.color:not(.disabled):not(.static):active .colorpreview,
+.color:not(.disabled):not(.static).active .colorpreview {
 	@include box-shadow(inset 0 0 0 1px rgba(0,0,0,0.25), 0 1px 0 rgba(0,0,0,0.05));
 }
-.color:not(.disabled):active .colorpreview,
-.color:not(.disabled).active .colorpreview {
+.color:not(.disabled):not(.static):active .colorpreview,
+.color:not(.disabled):not(.static).active .colorpreview {
 	@include linear-gradient(rgba(0,0,0,0), rgba(0,0,0,0.1));
 }
 .colorpicker { z-index: 100; }

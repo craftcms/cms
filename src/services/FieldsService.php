@@ -242,7 +242,7 @@ class FieldsService extends BaseApplicationComponent
 		if (!empty($missingContexts))
 		{
 			$rows = $this->_createFieldQuery()
-				->where(array('in', 'context', $missingContexts))
+				->where(array('in', 'f.context', $missingContexts))
 				->queryAll();
 
 			foreach ($rows as $row)
@@ -312,7 +312,7 @@ class FieldsService extends BaseApplicationComponent
 		if (!isset($this->_fieldsById) || !array_key_exists($fieldId, $this->_fieldsById))
 		{
 			$result = $this->_createFieldQuery()
-				->where('id = :id', array(':id' => $fieldId))
+				->where('f.id = :id', array(':id' => $fieldId))
 				->queryRow();
 
 			if ($result)
@@ -345,7 +345,7 @@ class FieldsService extends BaseApplicationComponent
 		if (!isset($this->_fieldsByContextAndHandle[$context]) || !array_key_exists($handle, $this->_fieldsByContextAndHandle[$context]))
 		{
 			$result = $this->_createFieldQuery()
-				->where(array('and', 'handle = :handle', 'context = :context'), array(':handle' => $handle, ':context' => $context))
+				->where(array('and', 'f.handle = :handle', 'f.context = :context'), array(':handle' => $handle, ':context' => $context))
 				->queryRow();
 
 			if ($result)
@@ -374,7 +374,42 @@ class FieldsService extends BaseApplicationComponent
 	public function getFieldsByGroupId($groupId, $indexBy = null)
 	{
 		$results = $this->_createFieldQuery()
-			->where('groupId = :groupId', array(':groupId' => $groupId))
+			->where('f.groupId = :groupId', array(':groupId' => $groupId))
+			->queryAll();
+
+		$fields = array();
+
+		foreach ($results as $result)
+		{
+			$field = $this->_populateField($result);
+
+			if ($indexBy)
+			{
+				$fields[$field->$indexBy] = $field;
+			}
+			else
+			{
+				$fields[] = $field;
+			}
+		}
+
+		return $fields;
+	}
+
+	/**
+	 * Returns all of the fields used by a given element type.
+	 *
+	 * @param string      $elementTypeClass
+	 * @param string|null $indexBy
+	 *
+	 * @return FieldModel[]
+	 */
+	public function getFieldsByElementType($elementTypeClass, $indexBy = null)
+	{
+		$results = $this->_createFieldQuery()
+			->join('fieldlayoutfields flf', 'flf.fieldId = f.id')
+			->join('fieldlayouts fl', 'fl.id = flf.layoutId')
+			->where('fl.type = :type', array(':type' => $elementTypeClass))
 			->queryAll();
 
 		$fields = array();
@@ -981,9 +1016,9 @@ class FieldsService extends BaseApplicationComponent
 	private function _createFieldQuery()
 	{
 		return craft()->db->createCommand()
-			->select('id, groupId, name, handle, context, instructions, translatable, type, settings')
-			->from('fields')
-			->order('name');
+			->select('f.id, f.groupId, f.name, f.handle, f.context, f.instructions, f.translatable, f.type, f.settings')
+			->from('fields f')
+			->order('f.name');
 	}
 
 	/**

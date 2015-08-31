@@ -221,10 +221,11 @@ class ElementIndexesService extends BaseApplicationComponent
 	 * Returns all of the available attributes that can be shown for a given element type source.
 	 *
 	 * @param string $elementTypeClass The element type class name
+	 * @param bool   $includeFields    Whether custom fields should be included in the list
 	 *
 	 * @return array
 	 */
-	public function getAvailableTableAttributes($elementTypeClass)
+	public function getAvailableTableAttributes($elementTypeClass, $includeFields = true)
 	{
 		$elementType = craft()->elements->getElementType($elementTypeClass);
 		$attributes = $elementType->defineAvailableTableAttributes();
@@ -238,6 +239,15 @@ class ElementIndexesService extends BaseApplicationComponent
 			else if (!isset($info['label']))
 			{
 				$attributes[$key]['label'] = '';
+			}
+		}
+
+		if ($includeFields)
+		{
+			// Mix in custom fields
+			foreach ($this->getAvailableTableFields($elementTypeClass) as $field)
+			{
+				$attributes['field:'.$field->id] = array('label' => $field->name);
 			}
 		}
 
@@ -289,6 +299,31 @@ class ElementIndexesService extends BaseApplicationComponent
 		}
 
 		return $attributes;
+	}
+
+	/**
+	 * Returns the fields that are available to be shown as table attributes.
+	 *
+	 * @param string $elementTypeClass The element type class name
+	 *
+	 * @return FieldModel[]
+	 */
+	public function getAvailableTableFields($elementTypeClass)
+	{
+		$fields = craft()->fields->getFieldsByElementType($elementTypeClass);
+		$availableFields = array();
+
+		foreach ($fields as $field)
+		{
+			$fieldType = $field->getFieldType();
+
+			if ($fieldType && $fieldType instanceof IPreviewableFieldType)
+			{
+				$availableFields[] = $field;
+			}
+		}
+
+		return $availableFields;
 	}
 
 	// Private Methods

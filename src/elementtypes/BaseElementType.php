@@ -355,6 +355,28 @@ abstract class BaseElementType extends BaseComponentType implements IElementType
 
 			default:
 			{
+				// Is this a custom field?
+				if (strncmp($attribute, 'field:', 6) === 0)
+				{
+					$fieldId = substr($attribute, 6);
+					$field = craft()->fields->getFieldById($fieldId);
+
+					if ($field)
+					{
+						$fieldType = $field->getFieldType();
+
+						if ($fieldType && $fieldType instanceof IPreviewableFieldType)
+						{
+							$value = $element->getFieldValue($field->handle);
+							$fieldType->setElement($element);
+
+							return $fieldType->getTableAttributeHtml($value);
+						}
+					}
+
+					return '';
+				}
+
 				$value = $element->$attribute;
 
 				if ($value instanceof DateTime)

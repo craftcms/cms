@@ -25,6 +25,16 @@ class SingleOptionFieldData extends OptionData
 	// =========================================================================
 
 	/**
+	 * Returns the string representation of this data.
+	 *
+	 * @return string
+	 */
+	public function __toString()
+	{
+		return (string) $this->label;
+	}
+
+	/**
 	 * Returns the options.
 	 *
 	 * @return array|null

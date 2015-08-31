@@ -11,7 +11,7 @@ namespace Craft;
  * @package   craft.app.fieldtypes
  * @since     1.3
  */
-class LightswitchFieldType extends BaseFieldType
+class LightswitchFieldType extends BaseFieldType implements IPreviewableFieldType
 {
 	// Public Methods
 	// =========================================================================
@@ -98,6 +98,25 @@ class LightswitchFieldType extends BaseFieldType
 	{
 		// It's stored as '0' in the database, but it's returned as false. Change it back to '0'.
 		return $value == false ? '0' : $value;
+	}
+
+	/**
+	 * @inheritDoc IPreviewableFieldType::getTableAttributeHtml()
+	 *
+	 * @param mixed $value
+	 *
+	 * @return string
+	 */
+	public function getTableAttributeHtml($value)
+	{
+		if ($value)
+		{
+			return '<div class="status enabled" title="'.Craft::t('Enabled').'"></div>';
+		}
+		else
+		{
+			return '<div class="status" title="'.Craft::t('Not enabled').'"></div>';
+		}
 	}
 
 	// Protected Methods
