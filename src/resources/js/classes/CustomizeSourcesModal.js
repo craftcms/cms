@@ -23,9 +23,11 @@ Craft.CustomizeSourcesModal = Garnish.Modal.extend(
 
 	availableTableAttributes: null,
 
-	init: function(elementIndex)
+	init: function(elementIndex, settings)
 	{
-		this.base({
+		this.base();
+
+		this.setSettings(settings, {
 			resizable: true
 		});
 
