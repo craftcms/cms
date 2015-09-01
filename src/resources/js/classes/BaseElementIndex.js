@@ -149,7 +149,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 		// Customize button
 		if (this.$customizeSourcesBtn.length)
 		{
-			this.addListener(this.$customizeSourcesBtn, 'click', 'openCustomizeSourcesModal');
+			this.addListener(this.$customizeSourcesBtn, 'click', 'createCustomizeSourcesModal');
 		}
 
 		// Initialize the status menu
@@ -1203,16 +1203,17 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 		this.isIndexBusy = false;
 	},
 
-	openCustomizeSourcesModal: function()
+	createCustomizeSourcesModal: function()
 	{
 		// Recreate it each time
-		if (this.customizeSourcesModal)
-		{
-			this.customizeSourcesModal.destroy();
-			delete this.customizeSourcesModal;
-		}
+		var modal = new Craft.CustomizeSourcesModal(this, {
+			onHide: function() {
+				modal.destroy();
+				delete modal;
+			}
+		});
 
-		this.customizeSourcesModal = new Craft.CustomizeSourcesModal(this);
+		return modal;
 	},
 
 	disable: function()
