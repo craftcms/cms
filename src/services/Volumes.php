@@ -14,6 +14,7 @@ use craft\app\volumes\GoogleCloud;
 use craft\app\volumes\InvalidVolume;
 use craft\app\volumes\Local;
 use craft\app\volumes\Rackspace;
+use craft\app\volumes\Temp;
 use yii\base\Component;
 
 /**
@@ -239,13 +240,7 @@ class Volumes extends Component
     {
         // Temporary volume?
         if (is_null($volumeId)) {
-            // TODO TEMPORARY volume
-            /*$volume = new AssetvolumeModel();
-            $volume->id = $volumeId;
-            $volume->name = TempAssetvolumeType::volumeName;
-            $volume->type = TempAssetvolumeType::volumeType;
-            $volume->settings = ['path' => Craft::$app->getPath()->getAssetsTempvolumePath(), 'url' => rtrim(Url::getResourceUrl(), '/').'/tempassets/'];*/
-            return;// $volume;
+            return  new Temp();
         } else {
             // If we've already fetched all volumes we can save ourselves a trip to the DB for volume IDs that don't
             // exist

@@ -205,7 +205,8 @@ class Assets extends BaseRelationField
                     foreach ($uploadedFiles as $file) {
                         $tempPath = AssetsHelper::getTempFilePath($file->name);
                         move_uploaded_file($file->tempName, $tempPath);
-                        $response = Craft::$app->getAssets()->insertFileByLocalPath($tempPath, $file->name, $targetFolderId);
+                        $response = Craft::$app->getAssets()->insertFileByLocalPath($tempPath,
+                            $file->name, $targetFolderId);
                         $fileIds[] = $response->getDataItem('fileId');
                         Io::deleteFile($tempPath, true);
                     }
@@ -238,10 +239,10 @@ class Assets extends BaseRelationField
         }
 
         if (is_array($value) && count($value)) {
-            $fileIds = [];
+            $assetIds = [];
 
-            foreach ($value as $elementFile) {
-                $fileIds[] = $elementFile->id;
+            foreach ($value as $asset) {
+                $assetIds[] = $asset->id;
             }
 
             if ($this->useSingleFolder) {
@@ -251,24 +252,23 @@ class Assets extends BaseRelationField
                     $element
                 );
 
+                $criteria = [
+                    'id' => array_merge(['in'], $assetIds)
+                ];
+
                 // Move all the files for single upload directories.
-                $filesToMove = $fileIds;
+                $assetsToMove = Asset::find()->configure($criteria)->all();
             } else {
                 // Find the files with temp sources and just move those.
                 $criteria = [
-                    'id' => array_merge(['in'], $fileIds),
+                    'id' => array_merge(['in'], $assetIds),
                     'volumeId' => ':empty:'
                 ];
 
-                $filesInTempSource = Asset::find()->configure($criteria)->all();
-                $filesToMove = [];
-
-                foreach ($filesInTempSource as $file) {
-                    $filesToMove[] = $file->id;
-                }
+                $assetsToMove = Asset::find()->configure($criteria)->all();
 
                 // If we have some files to move, make sure the folder exists.
-                if (!empty($filesToMove)) {
+                if (!empty($assetsToMove)) {
                     $targetFolderId = $this->_resolveSourcePathToFolderId(
                         $this->defaultUploadLocationSource,
                         $this->defaultUploadLocationSubpath,
@@ -277,10 +277,26 @@ class Assets extends BaseRelationField
                 }
             }
 
-            if (!empty($filesToMove)) {
+            if (!empty($assetsToMove) && !empty($targetFolderId)) {
+
+                $targetFolder = Craft::$app->getAssets()->getFolderById($targetFolderId);
                 // Resolve all conflicts by keeping both
-                $actions = array_fill(0, count($filesToMove), AssetConflictResolution::KeepBoth);
-                Craft::$app->getAssets()->moveFiles($filesToMove, $targetFolderId, '', $actions);
+                foreach ($assetsToMove as $asset) {
+                    $conflictingAsset = Craft::$app->getAssets()->findFile([
+                        'filename' => $asset->filename,
+                        'folderId' => $targetFolderId
+                    ]);
+
+                    if ($conflictingAsset) {
+                        $newFilename = Craft::$app->getAssets()->getNameReplacementInFolder($asset->filename,
+                            $targetFolder);
+                        Craft::$app->getAssets()->moveAsset($asset,
+                            $targetFolderId, $newFilename);
+                    } else {
+                        Craft::$app->getAssets()->moveAsset($asset,
+                            $targetFolderId);
+                    }
+                }
             }
         }
 
@@ -304,13 +320,17 @@ class Assets extends BaseRelationField
                 if ($file && !in_array(mb_strtolower(Io::getExtension($file->filename)),
                         $allowedExtensions)
                 ) {
-                    $errors[] = Craft::t('app', '"{filename}" is not allowed in this field.', ['filename' => $file->filename]);
+                    $errors[] = Craft::t('app',
+                        '"{filename}" is not allowed in this field.',
+                        ['filename' => $file->filename]);
                 }
             }
         }
 
         foreach ($this->_failedFiles as $file) {
-            $errors[] = Craft::t('app', '"{filename}" is not allowed in this field.', ['filename' => $file->name]);
+            $errors[] = Craft::t('app',
+                '"{filename}" is not allowed in this field.',
+                ['filename' => $file->name]);
         }
 
         return $errors;
@@ -354,8 +374,10 @@ class Assets extends BaseRelationField
                     $sources[] = $source;
                 }
             }
-        } else if ($this->sources == '*') {
-            $sources = '*';
+        } else {
+            if ($this->sources == '*') {
+                $sources = '*';
+            }
         }
 
         return $sources;
@@ -381,8 +403,8 @@ class Assets extends BaseRelationField
     /**
      * Resolve a source path to it's folder ID by the source path and the matched source beginning.
      *
-     * @param integer                  $volumeId
-     * @param string                   $subpath
+     * @param integer $volumeId
+     * @param string $subpath
      * @param ElementInterface|Element $element
      *
      * @throws Exception
@@ -397,16 +419,19 @@ class Assets extends BaseRelationField
 
         // Do we have the folder?
         if (empty($folder)) {
-            throw new Exception (Craft::t('app', 'Cannot find the target folder.'));
+            throw new Exception (Craft::t('app',
+                'Cannot find the target folder.'));
         }
 
         // Prepare the path by parsing tokens and normalizing slashes.
         $subpath = trim($subpath, '/');
-        $subpath = Craft::$app->getView()->renderObjectTemplate($subpath, $element);
+        $subpath = Craft::$app->getView()->renderObjectTemplate($subpath,
+            $element);
         $pathParts = explode('/', $subpath);
 
         foreach ($pathParts as &$part) {
-            $part = Io::cleanFilename($part, Craft::$app->getConfig()->get('convertFilenamesToAscii'));
+            $part = Io::cleanFilename($part,
+                Craft::$app->getConfig()->get('convertFilenamesToAscii'));
         }
 
         $subpath = join('/', $pathParts);
@@ -446,7 +471,14 @@ class Assets extends BaseRelationField
                 $existingFolder = Craft::$app->getAssets()->findFolder($folderCriteria);
 
                 if (!$existingFolder) {
-                    $folderId = $this->_createSubFolder($currentFolder, $part);
+                    $folder = new VolumeFolder([
+                        'parentId' => $currentFolder->id,
+                        'name' => $part,
+                        'path' => $currentFolder->path.$part.'/'
+                    ]);
+
+                    Craft::$app->getAssets()->createFolder($folder);
+                    $folderId = $folder->id;
                     $existingFolder = Craft::$app->getAssets()->getFolderById($folderId);
                 }
 
@@ -457,39 +489,6 @@ class Assets extends BaseRelationField
         }
 
         return $currentFolder->id;
-    }
-
-    /**
-     * Create a subfolder in a folder by it's name.
-     *
-     * @param VolumeFolder $currentFolder
-     * @param string       $folderName
-     *
-     * @return mixed|null
-     */
-    private function _createSubFolder($currentFolder, $folderName)
-    {
-        $response = Craft::$app->getAssets()->createFolder($currentFolder->id, $folderName);
-
-        if ($response->isError() || $response->isConflict()) {
-            // If folder doesn't exist in DB, but we can't create it, it probably exists on the server.
-            $newFolder = new VolumeFolder(
-                [
-                    'parentId' => $currentFolder->id,
-                    'name' => $folderName,
-                    'volumeId' => $currentFolder->volumeId,
-                    'path' => trim($currentFolder->path.'/'.$folderName,
-                            '/').'/'
-                ]
-            );
-            $folderId = Craft::$app->getAssets()->storeFolder($newFolder);
-
-            return $folderId;
-        } else {
-            $folderId = $response->getDataItem('folderId');
-
-            return $folderId;
-        }
     }
 
     /**
@@ -509,7 +508,8 @@ class Assets extends BaseRelationField
         $allKinds = Io::getFileKinds();
 
         foreach ($allowedKinds as $allowedKind) {
-            $extensions = array_merge($extensions, $allKinds[$allowedKind]['extensions']);
+            $extensions = array_merge($extensions,
+                $allKinds[$allowedKind]['extensions']);
         }
 
         return $extensions;
@@ -560,7 +560,14 @@ class Assets extends BaseRelationField
             ]);
 
             if (!$elementFolder) {
-                $folderId = $this->_createSubFolder($userFolder, $folderName);
+                $folder = new VolumeFolder([
+                    'parentId' => $userFolder->id,
+                    'name' => $folderName,
+                    'path' => $userFolder->path.$folderName.'/'
+                ]);
+
+                Craft::$app->getAssets()->createFolder($folder);
+                $folderId = $folder->id;
             } else {
                 $folderId = $elementFolder->id;
             }
