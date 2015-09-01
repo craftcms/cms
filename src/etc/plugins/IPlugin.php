@@ -24,11 +24,18 @@ interface IPlugin extends ISavableComponentType
 	public function getVersion();
 
 	/**
-	 * Returns the plugin's description.
+	 * Returns the plugin’s description.
 	 *
-	 * @return string The plugin's description.
+	 * @return string|null The plugin’s description.
 	 */
 	public function getDescription();
+
+	/**
+	 * Returns the plugin’s icon URL.
+	 *
+	 * @return string|null
+	 */
+	public function getIconUrl();
 
 	/**
 	 * Returns the plugin developer’s name.
@@ -83,14 +90,14 @@ interface IPlugin extends ISavableComponentType
 	/**
 	 * Creates any tables defined by the plugin’s records.
 	 *
-	 * @return null
+	 * @return void
 	 */
 	public function createTables();
 
 	/**
-	 * Drops any tables defined by the plugin's records.
+	 * Drops any tables defined by the plugin’s records.
 	 *
-	 * @return null
+	 * @return void
 	 */
 	public function dropTables();
 
@@ -99,28 +106,28 @@ interface IPlugin extends ISavableComponentType
 	 *
 	 * @param string|null $scenario The scenario to initialize the records with.
 	 *
-	 * @return array
+	 * @return BaseRecord[]
 	 */
 	public function getRecords($scenario = null);
 
 	/**
 	 * Performs any actions that should occur before the plugin is installed.
 	 *
-	 * @return null
+	 * @return void
 	 */
 	public function onBeforeInstall();
 
 	/**
 	 * Performs any actions that should occur after the plugin is installed.
 	 *
-	 * @return null
+	 * @return void
 	 */
 	public function onAfterInstall();
 
 	/**
 	 * Performs any actions that should occur before the plugin is uninstalled.
 	 *
-	 * @return null
+	 * @return void
 	 */
 	public function onBeforeUninstall();
 }

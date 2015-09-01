@@ -66,18 +66,19 @@ abstract class BasePlugin extends BaseSavableComponentType implements IPlugin
 	}
 
 	/**
-	 * Returns the plugin's description.
+	 * @inheritDoc IPlugin::getDescription()
 	 *
-	 * @return string
+	 * @return string|null
 	 */
 	public function getDescription()
 	{
+		return null;
 	}
 
 	/**
-	 * Returns the plugin's icon URL.
+	 * @inheritDoc IPlugin::getIconUrl()
 	 *
-	 * @return string
+	 * @return string|null
 	 */
 	public function getIconUrl($size = 100)
 	{
@@ -85,14 +86,18 @@ abstract class BasePlugin extends BaseSavableComponentType implements IPlugin
 		$handle = StringHelper::toLowerCase($this->getClassHandle());
 		$originalIconFolderPath = craft()->path->getPluginsPath().$handle.'/resources/';
 
-		if(IOHelper::fileExists($originalIconFolderPath.$baseFilename.'.svg') || IOHelper::fileExists($originalIconFolderPath.$baseFilename.'.png'))
+		if (IOHelper::fileExists($originalIconFolderPath.$baseFilename.'.svg') || IOHelper::fileExists($originalIconFolderPath.$baseFilename.'.png'))
 		{
 			return UrlHelper::getResourceUrl('pluginicons/'.$handle.'/'.$size);
+		}
+		else
+		{
+			return null;
 		}
 	}
 
 	/**
-	 * Returns the plugin's source language
+	 * @inheritDoc IPlugin::getSourceLanguage()
 	 *
 	 * @return string
 	 */
@@ -102,7 +107,7 @@ abstract class BasePlugin extends BaseSavableComponentType implements IPlugin
 	}
 
 	/**
-	 * Returns whether the plugin has settings.
+	 * @inheritDoc IPlugin::hasSettings()
 	 *
 	 * @return bool Whether the plugin has settings
 	 */
@@ -112,20 +117,17 @@ abstract class BasePlugin extends BaseSavableComponentType implements IPlugin
 	}
 
 	/**
-	 * Returns the URL to the plugin's settings in the CP.
-	 *
-	 * A full URL is not required -- you can simply return "pluginname/settings".
-	 *
-	 * If this is left blank, a simple settings page will be provided, filled with whatever getSettingsHtml() returns.
+	 * @inheritDoc IPlugin::getSettingsUrl()
 	 *
 	 * @return string|null
 	 */
 	public function getSettingsUrl()
 	{
+		return null;
 	}
 
 	/**
-	 * Returns whether this plugin has its own section in the CP.
+	 * @inheritDoc IPlugin::hasCpSection()
 	 *
 	 * @return bool
 	 */
@@ -135,9 +137,9 @@ abstract class BasePlugin extends BaseSavableComponentType implements IPlugin
 	}
 
 	/**
-	 * Creates any tables defined by the plugin's records.
+	 * @inheritDoc IPlugin::createTables()
 	 *
-	 * @return null
+	 * @return void
 	 */
 	public function createTables()
 	{
@@ -157,9 +159,9 @@ abstract class BasePlugin extends BaseSavableComponentType implements IPlugin
 	}
 
 	/**
-	 * Drops any tables defined by the plugin's records.
+	 * @inheritDoc IPlugin::dropTables()
 	 *
-	 * @return null
+	 * @return void
 	 */
 	public function dropTables()
 	{
@@ -179,11 +181,11 @@ abstract class BasePlugin extends BaseSavableComponentType implements IPlugin
 	}
 
 	/**
-	 * Returns the record classes provided by this plugin.
+	 * @inheritDoc IPlugin::getRecords()
 	 *
-	 * @param string|null $scenario The scenario to initialize the records with.
+	 * @param string|null $scenario
 	 *
-	 * @return array
+	 * @return BaseRecord[]
 	 */
 	public function getRecords($scenario = null)
 	{
@@ -203,27 +205,27 @@ abstract class BasePlugin extends BaseSavableComponentType implements IPlugin
 	}
 
 	/**
-	 * Perform any actions after the plugin has been installed.
+	 * @inheritDoc IPlugin::onAfterInstall()
 	 *
-	 * @return null
+	 * @return void
 	 */
 	public function onAfterInstall()
 	{
 	}
 
 	/**
-	 * Perform any actions before the plugin has been installed.
+	 * @inheritDoc IPlugin::onBeforeInstall()
 	 *
-	 * @return null
+	 * @return void
 	 */
 	public function onBeforeInstall()
 	{
 	}
 
 	/**
-	 * Perform any actions before the plugin gets uninstalled.
+	 * @inheritDoc IPlugin::onBeforeUninstall()
 	 *
-	 * @return null
+	 * @return void
 	 */
 	public function onBeforeUninstall()
 	{
