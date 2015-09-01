@@ -51,7 +51,7 @@ abstract class Volume extends SavableComponent implements VolumeInterface
     // =========================================================================
 
     /**
-     * Returns whether this source stores files locally on the server.
+     * Returns whether this volume stores files locally on the server.
      *
      * @return boolean Whether files are stored locally.
      */
@@ -270,7 +270,7 @@ abstract class Volume extends SavableComponent implements VolumeInterface
         if ($this->getAdapter()->has(rtrim($path,
                 '/').($this->foldersHaveTrailingSlashes ? '/' : ''))
         ) {
-            throw new VolumeFolderExistsException(Craft::t("Folder “{folder}” already exists on the source!", array('folder' => $path)));
+            throw new VolumeFolderExistsException(Craft::t('app', "Folder “{folder}” already exists on the source!", array('folder' => $path)));
         }
 
         return $this->getFilesystem()->createDir($path);
