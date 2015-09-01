@@ -222,7 +222,7 @@ abstract class BaseElementType extends BaseComponentType implements IElementType
 			case 'table':
 			{
 				// Get the table columns
-				$variables['attributes'] = $this->defineTableAttributes($sourceKey);
+				$variables['attributes'] = craft()->elementIndexes->getTableAttributes($this->getClassHandle(), $sourceKey);
 
 				break;
 			}
@@ -241,19 +241,53 @@ abstract class BaseElementType extends BaseComponentType implements IElementType
 	 */
 	public function defineSortableAttributes()
 	{
-		return $this->defineTableAttributes();
+		$tableAttributes = craft()->elementIndexes->getAvailableTableAttributes($this->getClassHandle());
+		$sortableAttributes = array();
+
+		foreach ($tableAttributes as $key => $labelInfo)
+		{
+			$sortableAttributes[$key] = $labelInfo['label'];
+		}
+
+		return $sortableAttributes;
 	}
 
 	/**
-	 * @inheritDoc IElementType::defineTableAttributes()
+	 * @inheritDoc IElementType::defineAvailableTableAttributes()
+	 *
+	 * @return array
+	 */
+	public function defineAvailableTableAttributes()
+	{
+		if (method_exists($this, 'defineTableAttributes'))
+		{
+			// Classic.
+			return $this->defineTableAttributes();
+		}
+
+		return array();
+	}
+
+	/**
+	 * @inheritDoc IElementType::getDefaultTableAttributes()
 	 *
 	 * @param string|null $source
 	 *
 	 * @return array
 	 */
-	public function defineTableAttributes($source = null)
+	public function getDefaultTableAttributes($source = null)
 	{
-		return array();
+		if (method_exists($this, 'defineTableAttributes'))
+		{
+			// Classic.
+			$availableTableAttributes = $this->defineTableAttributes($source);
+		}
+		else
+		{
+			$availableTableAttributes = $this->defineAvailableTableAttributes();
+		}
+
+		return array_keys($availableTableAttributes);
 	}
 
 	/**
@@ -268,6 +302,20 @@ abstract class BaseElementType extends BaseComponentType implements IElementType
 	{
 		switch ($attribute)
 		{
+			case 'link':
+			{
+				$url = $element->getUrl();
+
+				if ($url)
+				{
+					return '<a href="'.$url.'" target="_blank" data-icon="world" title="'.Craft::t('Visit webpage').'"></a>';
+				}
+				else
+				{
+					return '';
+				}
+			}
+
 			case 'uri':
 			{
 				$url = $element->getUrl();
@@ -297,7 +345,7 @@ abstract class BaseElementType extends BaseComponentType implements IElementType
 						$value = str_replace($find, $replace, $value);
 					}
 
-					return '<a href="'.$url.'" target="_blank" class="go"><span dir="ltr">'.$value.'</span></a>';
+					return '<a href="'.$url.'" target="_blank" class="go" title="'.Craft::t('Visit webpage').'"><span dir="ltr">'.$value.'</span></a>';
 				}
 				else
 				{
@@ -307,6 +355,28 @@ abstract class BaseElementType extends BaseComponentType implements IElementType
 
 			default:
 			{
+				// Is this a custom field?
+				if (strncmp($attribute, 'field:', 6) === 0)
+				{
+					$fieldId = substr($attribute, 6);
+					$field = craft()->fields->getFieldById($fieldId);
+
+					if ($field)
+					{
+						$fieldType = $field->getFieldType();
+
+						if ($fieldType && $fieldType instanceof IPreviewableFieldType)
+						{
+							$value = $element->getFieldValue($field->handle);
+							$fieldType->setElement($element);
+
+							return $fieldType->getTableAttributeHtml($value);
+						}
+					}
+
+					return '';
+				}
+
 				$value = $element->$attribute;
 
 				if ($value instanceof DateTime)

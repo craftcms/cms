@@ -342,10 +342,12 @@ class EntryElementType extends BaseElementType
 	public function defineSortableAttributes()
 	{
 		$attributes = array(
-			'title'      => Craft::t('Title'),
-			'uri'        => Craft::t('URI'),
-			'postDate'   => Craft::t('Post Date'),
-			'expiryDate' => Craft::t('Expiry Date'),
+			'title'       => Craft::t('Title'),
+			'uri'         => Craft::t('URI'),
+			'postDate'    => Craft::t('Post Date'),
+			'expiryDate'  => Craft::t('Expiry Date'),
+			'dateCreated' => Craft::t('Date Created'),
+			'dateUpdated' => Craft::t('Date Updated'),
 		);
 
 		// Allow plugins to modify the attributes
@@ -355,32 +357,62 @@ class EntryElementType extends BaseElementType
 	}
 
 	/**
-	 * @inheritDoc IElementType::defineTableAttributes()
+	 * @inheritDoc IElementType::defineAvailableTableAttributes()
+	 *
+	 * @return array
+	 */
+	public function defineAvailableTableAttributes()
+	{
+		$attributes = array(
+			'title'       => array('label' => Craft::t('Title')),
+			'section'     => array('label' => Craft::t('Section')),
+			'type'        => array('label' => Craft::t('Entry Type')),
+			'author'      => array('label' => Craft::t('Author')),
+			'slug'        => array('label' => Craft::t('Slug')),
+			'uri'         => array('label' => Craft::t('URI')),
+			'postDate'    => array('label' => Craft::t('Post Date')),
+			'expiryDate'  => array('label' => Craft::t('Expiry Date')),
+			'link'        => array('label' => Craft::t('Link'), 'icon' => 'world'),
+			'dateCreated' => array('label' => Craft::t('Date Created')),
+			'dateUpdated' => array('label' => Craft::t('Date Updated')),
+		);
+
+		// Hide Author from Craft Personal/Client
+		if (craft()->getEdition() != Craft::Pro)
+		{
+			unset($attributes['author']);
+		}
+
+		// Allow plugins to modify the attributes
+		craft()->plugins->call('modifyEntryTableAttributes', array(&$attributes));
+
+		return $attributes;
+	}
+
+	/**
+	 * @inheritDoc IElementType::getDefaultTableAttributes()
 	 *
 	 * @param string|null $source
 	 *
 	 * @return array
 	 */
-	public function defineTableAttributes($source = null)
+	public function getDefaultTableAttributes($source = null)
 	{
-		$attributes = array(
-			'title' => Craft::t('Title'),
-			'uri'   => Craft::t('URI'),
-		);
+		$attributes = array();
 
 		if ($source == '*')
 		{
-			$attributes['section'] = Craft::t('Section');
+			$attributes[] = 'section';
 		}
 
 		if ($source != 'singles')
 		{
-			$attributes['postDate']   = Craft::t('Post Date');
-			$attributes['expiryDate'] = Craft::t('Expiry Date');
+			$attributes[] = 'postDate';
+			$attributes[] = 'expiryDate';
 		}
 
-		// Allow plugins to modify the attributes
-		craft()->plugins->call('modifyEntryTableAttributes', array(&$attributes, $source));
+		$attributes[] = 'author';
+		$attributes[] = 'link';
 
 		return $attributes;
 	}
@@ -405,9 +437,34 @@ class EntryElementType extends BaseElementType
 
 		switch ($attribute)
 		{
+			case 'author':
+			{
+				$author = $element->getAuthor();
+
+				if ($author)
+				{
+					return craft()->templates->render('_elements/element', array(
+						'element' => $author
+					));
+				}
+				else
+				{
+					return '';
+				}
+			}
+
 			case 'section':
 			{
-				return Craft::t($element->getSection()->name);
+				$section = $element->getSection();
+
+				return ($section ? Craft::t($section->name) : '');
+			}
+
+			case 'type':
+			{
+				$entryType = $element->getType();
+
+				return ($entryType ? Craft::t($entryType->name) : '');
 			}
 
 			default:

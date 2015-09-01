@@ -11,7 +11,7 @@ namespace Craft;
  * @package   craft.app.fieldtypes
  * @since     1.0
  */
-abstract class BaseOptionsFieldType extends BaseFieldType
+abstract class BaseOptionsFieldType extends BaseFieldType implements IPreviewableFieldType
 {
 	// Properties
 	// =========================================================================

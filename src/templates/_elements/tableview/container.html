@@ -4,8 +4,13 @@
 			{% if showCheckboxes %}
 				<th></th>
 			{% endif %}
-			{% for attribute, label in attributes %}
-				<th scope="col" data-attribute="{{ attribute }}">{{ label }}</th>
+			{% for attribute in attributes %}
+				{% set icon = (attribute[1].icon is defined ? attribute[1].icon : null) %}
+				{% if icon %}
+					<th scope="col" data-attribute="{{ attribute[0] }}" data-icon="{{ icon }}" title="{{ attribute[1].label }}"></th>
+				{% else %}
+					<th scope="col" data-attribute="{{ attribute[0] }}">{{ attribute[1].label }}</th>
+				{% endif %}
 			{% endfor %}
 		</thead>
 		<tbody>

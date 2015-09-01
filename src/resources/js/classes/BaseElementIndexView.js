@@ -46,21 +46,21 @@ Craft.BaseElementIndexView = Garnish.Base.extend(
 				{
 					multi:             this.settings.multiSelect,
 					vertical:          this.isVerticalList(),
-					handle:            (this.settings.context == 'index' ? '.checkbox, .element' : null),
+					handle:            (this.settings.context == 'index' ? '.checkbox, .element:first' : null),
 					filter:            ':not(a):not(.toggle)',
 					checkboxMode:      this.settings.checkboxMode,
 					onSelectionChange: $.proxy(this, 'onSelectionChange')
 				}
 			);
 
-			this._handleEnableElements = $.proxy(function($elements)
+			this._handleEnableElements = $.proxy(function(ev)
 			{
-				this.elementSelect.addItems($elements);
+				this.elementSelect.addItems(ev.elements);
 			}, this);
 
-			this._handleDisableElements = $.proxy(function($elements)
+			this._handleDisableElements = $.proxy(function(ev)
 			{
-				this.elementSelect.removeItems($elements);
+				this.elementSelect.removeItems(ev.elements);
 			}, this);
 
 			this.elementIndex.on('enableElements', this._handleEnableElements);

@@ -27,6 +27,9 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 	sourceViewModes: null,
 	$source: null,
 
+	$customizeSourcesBtn: null,
+	customizeSourcesModal: null,
+
 	$toolbar: null,
 	$toolbarTableRow: null,
 	toolbarOffset: null,
@@ -111,6 +114,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 		this.$clearSearchBtn = this.$toolbarTableRow.find('.search:first > .clear');
 		this.$mainSpinner = this.$toolbar.find('.spinner:first');
 		this.$sidebar = this.$container.find('.sidebar:first');
+		this.$customizeSourcesBtn = this.$sidebar.children('.customize-sources');
 		this.$elements = this.$container.find('.elements:first');
 		this.$viewModeBtnTd = this.$toolbarTableRow.find('.viewbtns:first');
 		this.$viewModeBtnContainer = $('<div class="btngroup fullwidth"/>').appendTo(this.$viewModeBtnTd);
@@ -141,6 +145,12 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 		});
 
 		this._initSources($sources);
+
+		// Customize button
+		if (this.$customizeSourcesBtn.length)
+		{
+			this.addListener(this.$customizeSourcesBtn, 'click', 'openCustomizeSourcesModal');
+		}
 
 		// Initialize the status menu
 		// ---------------------------------------------------------------------
@@ -1191,6 +1201,18 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 	{
 		this.$mainSpinner.addClass('hidden');
 		this.isIndexBusy = false;
+	},
+
+	openCustomizeSourcesModal: function()
+	{
+		// Recreate it each time
+		if (this.customizeSourcesModal)
+		{
+			this.customizeSourcesModal.destroy();
+			delete this.customizeSourcesModal;
+		}
+
+		this.customizeSourcesModal = new Craft.CustomizeSourcesModal(this);
 	},
 
 	disable: function()

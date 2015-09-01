@@ -11,7 +11,7 @@ namespace Craft;
  * @package   craft.app.fieldtypes
  * @since     1.0
  */
-class NumberFieldType extends BaseFieldType
+class NumberFieldType extends BaseFieldType implements IPreviewableFieldType
 {
 	// Public Methods
 	// =========================================================================

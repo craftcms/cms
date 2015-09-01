@@ -25,6 +25,23 @@ class MultiOptionsFieldData extends \ArrayObject
 	// =========================================================================
 
 	/**
+	 * Returns the string representation of this data.
+	 *
+	 * @return string
+	 */
+	public function __toString()
+	{
+		$labels = array();
+
+		foreach ($this as $option)
+		{
+			$labels[] = $option->label;
+		}
+
+		return implode(', ', $labels);
+	}
+
+	/**
 	 * Returns the options.
 	 *
 	 * @return array|null

@@ -162,6 +162,14 @@ class CraftVariable
 	/**
 	 * @return ElementsVariable
 	 */
+	public function elementIndexes()
+	{
+		return new ElementIndexesVariable();
+	}
+
+	/**
+	 * @return ElementsVariable
+	 */
 	public function elements()
 	{
 		return new ElementsVariable();

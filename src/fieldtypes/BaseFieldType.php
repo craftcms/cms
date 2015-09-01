@@ -183,6 +183,20 @@ abstract class BaseFieldType extends BaseSavableComponentType implements IFieldT
 	}
 
 	/**
+	 * @inheritDoc IPreviewableFieldType::getTableAttributeHtml()
+	 *
+	 * @param mixed $value
+	 *
+	 * @return string
+	 */
+	public function getTableAttributeHtml($value)
+	{
+		$value = (string) $value;
+
+		return StringHelper::stripHtml($value);
+	}
+
+	/**
 	 * @inheritDoc IFieldType::prepValue()
 	 *
 	 * @param mixed $value

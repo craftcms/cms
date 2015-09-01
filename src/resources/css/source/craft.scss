@@ -202,7 +202,8 @@ td.right { float: none; @include alignright; }
 .warning { color: $warningcolor !important; }
 .error { color: $errorcolor !important; }
 
-.icon.move { display: inline-block; cursor: move; }
+.icon.move { display: inline-block; }
+.icon.move:not(.disabled) { cursor: move; }
 .icon.move:before { content: 'move'; color: rgba(0,0,0,0.2); }
 .icon.move:not(.disabled):hover:before { color: $linkcolor; }
 
@@ -275,6 +276,31 @@ td.right { float: none; @include alignright; }
 .sidebar nav > ul > li > ul > li > ul > li > ul > li > .toggle { @include left(40px); }
 .sidebar nav > ul > li > ul > li > ul > li > ul > li > ul > li .toggle { @include left(60px); }
 
+/* Customize Sources */
+.sidebar .customize-sources { color: rgba(0,0,0,0.2); }
+.sidebar .customize-sources:hover { color: $linkcolor; }
+
+.customize-sources-modal { padding-left: 200px; }
+.customize-sources-modal > .spinner { position: absolute; top: calc(50% - 44px); left: calc(50% - 12px); }
+.customize-sources-modal > .cs-sidebar { position: absolute; top: 0; @include left(0); margin: 0; padding: 10px 0; border: none; width: 200px; height: calc(100% - 78px); background: hsla($hue, 8%, 0%, 0.03); overflow: auto;
+	@include box-shadow(inset -1px 0 0 rgba(0,0,0,0.06));
+}
+.customize-sources-modal > .cs-sidebar > .btn { @include margin(10px, 0, 0, 14px); }
+
+.customize-sources-item { position: relative; margin-top: -1px; @include margin-right(1px); @include padding(10px, 14px, 10px, 40px); background: #fcfcfc; border: solid rgba(0,0,0,0.06); border-width: 1px 0; @include user-select(none); cursor: default; }
+.customize-sources-item + .customize-sources-item:not(.heading) { border-top: 1px solid rgba(0,0,0,0.06); }
+.customize-sources-item.sel { background: #ececec; z-index: 1; }
+.customize-sources-item .move { display: block; position: absolute; @include left(7px); top: 11px; width: 24px; text-align: center; }
+
+.customize-sources-item + .customize-sources-item.heading { margin-top: 10px; }
+.customize-sources-item.heading .label { text-transform: uppercase; color: $lighttextcolor; font-size: 11px; font-weight: bold; }
+/*.matrix-configurator .mc-sidebar .items .btn { margin: 14px; }*/
+
+.customize-sources-modal > .source-settings { position: relative; height: calc(100% - 106px); padding: 24px; overflow: auto; }
+.customize-sources-table-column .move { @include margin-right(10px); }
+
+.customize-sources-modal > .footer { position: absolute; bottom: 0; left: 0; width: 100%; }
+
 /* help */
 .content.has-help { padding-bottom: 60px; }
 .content.has-help .help { position: absolute; bottom: 17px; @include right(17px); font-size: 24px; }
@@ -312,6 +338,7 @@ table.inputs .btngroup { display: block; float: none; }
 .buttons.rightalign { @include floatright; }
 .buttons > .btn,
 .buttons > .btngroup { @include floatleft; @include margin(5px, 5px, 0, 0); }
+.footer > .buttons { margin: 0; }
 
 /* .first doesn't help in this situation anymore */
 .buttons > .btn:first,
@@ -428,6 +455,7 @@ body.rtl .btngroup .btn:not(:last-child) { border-top-left-radius: 0; border-bot
 .btn + .spinner { @include margin-left(7px); }
 .buttons .spinner { display: block; @include floatleft; margin-top: 5px; }
 .buttons .btn + .spinner { @include margin-left(0); }
+.buttons.right .btn + .spinner { @include margin-left(-5px); @include margin-right(-19px); }
 
 /* small buttons */
 .btngroup.small .btn,
@@ -472,18 +500,20 @@ div.btn.submit input { position: absolute; left: 100%; }
 .btn.dashed:not(.disabled).active { background-color: hsla($hue, 10%, 50%, 0.1) !important; }
 
 /* color buttons */
-.color { display: inline-block; vertical-align: middle; width: 30px; height: 30px; border-radius: 15px; padding: 0; background: url(../images/checkers.png); cursor: pointer; }
-.color .colorpreview { top: 0; @include left(0); width: 30px; height: 30px; border-radius: 15px;
+.color { display: inline-block; position: relative; vertical-align: middle; width: 30px; height: 30px; border-radius: 15px; padding: 0; background: url(../images/checkers.png); }
+.color:not(.static) { cursor: pointer; }
+.color.small { width: 15px; height: 15px; }
+.color .colorpreview { top: 0; @include left(0); width: 100%; height: 100%; border-radius: 15px;
 	@include linear-gradient(rgba(255,255,255,0.5), rgba(255,255,255,0));
 	@include box-shadow(inset 0 0 0 1px rgba(0,0,0,0.15), 0 1px 0 rgba(0,0,0,0.05));
 }
-.color:not(.disabled):hover .colorpreview,
-.color:not(.disabled):active .colorpreview,
-.color:not(.disabled).active .colorpreview {
+.color:not(.disabled):not(.static):hover .colorpreview,
+.color:not(.disabled):not(.static):active .colorpreview,
+.color:not(.disabled):not(.static).active .colorpreview {
 	@include box-shadow(inset 0 0 0 1px rgba(0,0,0,0.25), 0 1px 0 rgba(0,0,0,0.05));
 }
-.color:not(.disabled):active .colorpreview,
-.color:not(.disabled).active .colorpreview {
+.color:not(.disabled):not(.static):active .colorpreview,
+.color:not(.disabled):not(.static).active .colorpreview {
 	@include linear-gradient(rgba(0,0,0,0), rgba(0,0,0,0.1));
 }
 .colorpicker { z-index: 100; }
@@ -642,6 +672,7 @@ table.collapsed tbody tr:last-child td:not(:last-child) { border-bottom: none; }
 .elements .tableview th,
 .elements .tableview td { padding-top: 5px; padding-bottom: 5px; }
 .elements .tableview td { position: relative; }
+.elements .tableview tr.sel td { background: $lightselcolor; }
 .elements .tableview .move { display: block; position: absolute; top: 9px; @include margin-left(-14px); font-size: 11px; text-decoration: none; }
 .elements .tableview .toggle { display: block; position: absolute; top: 9px; @include margin-left(-20px); }
 .elements .tableview .move + .toggle { @include margin-left(-34px); }
@@ -1060,8 +1091,9 @@ input.checkbox + label:before,
 div.checkbox:before { display: block; position: absolute; top: 2px; @include left(0); width: 12px !important; height: 12px; content: '.'; font-size: 0; border-radius: 2px; background: #fff;
 	@include box-shadow(0 0 2px hsla(205, 100%, 60%, 0), inset 0 0 0 1px rgba(0,0,0,0.15), inset 0 1px 2px rgba(0,0,0,0.15), inset 0 0 0 1px hsla(205, 100%, 60%, 0));
 }
-input.checkbox:disabled + label:before,
-div.checkbox.disabled:before { opacity: 0.25; }
+input.checkbox:disabled + label,
+div.checkbox.disabled:before,
+div.checkbox.disabled:before + label { opacity: 0.25; }
 input.checkbox:checked + label:before,
 div.checkbox.checked:before,
 .sel div.checkbox:before,

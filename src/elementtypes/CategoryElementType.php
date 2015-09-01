@@ -188,8 +188,10 @@ class CategoryElementType extends BaseElementType
 	public function defineSortableAttributes()
 	{
 		$attributes = array(
-			'title' => Craft::t('Title'),
-			'uri'   => Craft::t('URI'),
+			'title'        => Craft::t('Title'),
+			'uri'          => Craft::t('URI'),
+			'dateCreated'  => Craft::t('Date Created'),
+			'dateUpdated'  => Craft::t('Date Updated'),
 		);
 
 		// Allow plugins to modify the attributes
@@ -199,21 +201,36 @@ class CategoryElementType extends BaseElementType
 	}
 
 	/**
-	 * @inheritDoc IElementType::defineTableAttributes()
+	 * @inheritDoc IElementType::defineAvailableTableAttributes()
+	 *
+	 * @return array
+	 */
+	public function defineAvailableTableAttributes()
+	{
+		$attributes = array(
+			'title'       => array('label' => Craft::t('Title')),
+			'uri'         => array('label' => Craft::t('URI')),
+			'link'        => array('label' => Craft::t('Link'), 'icon' => 'world'),
+			'dateCreated' => array('label' => Craft::t('Date Created')),
+			'dateUpdated' => array('label' => Craft::t('Date Updated')),
+		);
+
+		// Allow plugins to modify the attributes
+		craft()->plugins->call('modifyCategoryTableAttributes', array(&$attributes));
+
+		return $attributes;
+	}
+
+	/**
+	 * @inheritDoc IElementType::getDefaultTableAttributes()
 	 *
 	 * @param string|null $source
 	 *
 	 * @return array
 	 */
-	public function defineTableAttributes($source = null)
+	public function getDefaultTableAttributes($source = null)
 	{
-		$attributes = array(
-			'title' => Craft::t('Title'),
-			'uri'   => Craft::t('URI'),
-		);
-
-		// Allow plugins to modify the attributes
-		craft()->plugins->call('modifyCategoryTableAttributes', array(&$attributes, $source));
+		$attributes = array('link');
 
 		return $attributes;
 	}

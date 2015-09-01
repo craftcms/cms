@@ -11,7 +11,7 @@ namespace Craft;
  * @package   craft.app.fieldtypes
  * @since     1.0
  */
-abstract class BaseElementFieldType extends BaseFieldType
+abstract class BaseElementFieldType extends BaseFieldType implements IPreviewableFieldType
 {
 	// Properties
 	// =========================================================================
@@ -317,6 +317,25 @@ abstract class BaseElementFieldType extends BaseFieldType
 		{
 			craft()->tasks->createTask('LocalizeRelations', null, array(
 				'fieldId' => $this->model->id,
+			));
+		}
+	}
+
+	/**
+	 * @inheritDoc IPreviewableFieldType::getTableAttributeHtml()
+	 *
+	 * @param mixed $value
+	 *
+	 * @return string
+	 */
+	public function getTableAttributeHtml($value)
+	{
+		$element = $value->first();
+
+		if ($element)
+		{
+			return craft()->templates->render('_elements/element', array(
+				'element' => $element,
 			));
 		}
 	}

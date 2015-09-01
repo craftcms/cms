@@ -92,20 +92,6 @@ class TagElementType extends BaseElementType
 	}
 
 	/**
-	 * @inheritDoc IElementType::defineTableAttributes()
-	 *
-	 * @param string|null $source
-	 *
-	 * @return array
-	 */
-	public function defineTableAttributes($source = null)
-	{
-		return array(
-			'title' => Craft::t('Title'),
-		);
-	}
-
-	/**
 	 * @inheritDoc IElementType::defineCriteriaAttributes()
 	 *
 	 * @return array

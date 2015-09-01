@@ -16,6 +16,11 @@ class IOHelper
 	// Public Methods
 	// =========================================================================
 
+	private static $_fileKinds;
+
+	// Public Methods
+	// =========================================================================
+
 	/**
 	 * Tests whether the given file path exists on the file system.
 	 *
@@ -1426,26 +1431,30 @@ class IOHelper
 	 */
 	public static function getFileKinds()
 	{
-		return array(
-			'access'      => array('label' => Craft::t('Access'),      'extensions' => array('adp','accdb','mdb','accde','accdt','accdr')),
-			'audio'       => array('label' => Craft::t('Audio'),       'extensions' => array('3gp','aac','act','aif','aiff','aifc','alac','amr','au','dct','dss','dvf','flac','gsm','iklax','ivs','m4a','m4p','mmf','mp3','mpc','msv','oga','ogg','opus','ra','tta','vox','wav','wma','wv')),
-			'compressed'  => array('label' => Craft::t('Compressed'),  'extensions' => array('bz2', 'tar', 'gz', '7z', 's7z', 'dmg', 'rar', 'zip', 'tgz', 'zipx')),
-			'excel'       => array('label' => Craft::t('Excel'),       'extensions' => array('xls', 'xlsx','xlsm','xltx','xltm')),
-			'flash'       => array('label' => Craft::t('Flash'),       'extensions' => array('fla','flv','swf','swt','swc')),
-			'html'        => array('label' => Craft::t('HTML'),        'extensions' => array('html','htm')),
-			'illustrator' => array('label' => Craft::t('Illustrator'), 'extensions' => array('ai')),
-			'image'       => array('label' => Craft::t('Image'),       'extensions' => array('jfif','jp2','jpx','jpg','jpeg','jpe','tiff','tif','png','gif','bmp','webp','ppm','pgm','pnm','pfm','pam','svg')),
-			'javascript'  => array('label' => Craft::t('Javascript'),  'extensions' => array('js')),
-			'json'        => array('label' => Craft::t('JSON'),        'extensions' => array('json')),
-			'pdf'         => array('label' => Craft::t('PDF'),         'extensions' => array('pdf')),
-			'photoshop'   => array('label' => Craft::t('Photoshop'),   'extensions' => array('psd','psb')),
-			'php'         => array('label' => Craft::t('PHP'),         'extensions' => array('php')),
-			'powerpoint'  => array('label' => Craft::t('PowerPoint'),  'extensions' => array('pps','ppsm','ppsx','ppt','pptm','pptx','potx')),
-			'text'        => array('label' => Craft::t('Text'),        'extensions' => array('txt','text')),
-			'video'       => array('label' => Craft::t('Video'),       'extensions' => array('avchd','asf','asx','avi','flv','fla','mov','m4v','mng','mpeg','mpg','m1s','mp2v','m2v','m2s','mp4','mkv','qt','flv','mp4','ogg','ogv','rm','wmv','webm')),
-			'word'        => array('label' => Craft::t('Word'),        'extensions' => array('doc','docx','dot','docm','dotm')),
-			'xml'         => array('label' => Craft::t('XML'),         'extensions' => array('xml')),
-		);
+		self::_buildFileKinds();
+
+		return self::$_fileKinds;
+	}
+
+	/**
+	 * Returns the label of a given file kind.
+	 *
+	 * @param string $kind
+	 *
+	 * @return array
+	 */
+	public static function getFileKindLabel($kind)
+	{
+		self::_buildFileKinds();
+
+		if (isset(self::$_fileKinds[$kind]['label']))
+		{
+			return self::$_fileKinds[$kind]['label'];
+		}
+		else
+		{
+			return null;
+		}
 	}
 
 	/**
@@ -1827,5 +1836,37 @@ class IOHelper
 		}
 
 		return $passed;
+	}
+
+	/**
+	 * Builds the internal file kinds array, if it hasn't been built already.
+	 *
+	 * @return void
+	 */
+	private function _buildFileKinds()
+	{
+		if (!isset(self::$_fileKinds))
+		{
+			self::$_fileKinds = array(
+				'access'      => array('label' => Craft::t('Access'),      'extensions' => array('adp','accdb','mdb','accde','accdt','accdr')),
+				'audio'       => array('label' => Craft::t('Audio'),       'extensions' => array('3gp','aac','act','aif','aiff','aifc','alac','amr','au','dct','dss','dvf','flac','gsm','iklax','ivs','m4a','m4p','mmf','mp3','mpc','msv','oga','ogg','opus','ra','tta','vox','wav','wma','wv')),
+				'compressed'  => array('label' => Craft::t('Compressed'),  'extensions' => array('bz2', 'tar', 'gz', '7z', 's7z', 'dmg', 'rar', 'zip', 'tgz', 'zipx')),
+				'excel'       => array('label' => Craft::t('Excel'),       'extensions' => array('xls', 'xlsx','xlsm','xltx','xltm')),
+				'flash'       => array('label' => Craft::t('Flash'),       'extensions' => array('fla','flv','swf','swt','swc')),
+				'html'        => array('label' => Craft::t('HTML'),        'extensions' => array('html','htm')),
+				'illustrator' => array('label' => Craft::t('Illustrator'), 'extensions' => array('ai')),
+				'image'       => array('label' => Craft::t('Image'),       'extensions' => array('jfif','jp2','jpx','jpg','jpeg','jpe','tiff','tif','png','gif','bmp','webp','ppm','pgm','pnm','pfm','pam','svg')),
+				'javascript'  => array('label' => Craft::t('Javascript'),  'extensions' => array('js')),
+				'json'        => array('label' => Craft::t('JSON'),        'extensions' => array('json')),
+				'pdf'         => array('label' => Craft::t('PDF'),         'extensions' => array('pdf')),
+				'photoshop'   => array('label' => Craft::t('Photoshop'),   'extensions' => array('psd','psb')),
+				'php'         => array('label' => Craft::t('PHP'),         'extensions' => array('php')),
+				'powerpoint'  => array('label' => Craft::t('PowerPoint'),  'extensions' => array('pps','ppsm','ppsx','ppt','pptm','pptx','potx')),
+				'text'        => array('label' => Craft::t('Text'),        'extensions' => array('txt','text')),
+				'video'       => array('label' => Craft::t('Video'),       'extensions' => array('avchd','asf','asx','avi','flv','fla','mov','m4v','mng','mpeg','mpg','m1s','mp2v','m2v','m2s','mp4','mkv','qt','flv','mp4','ogg','ogv','rm','wmv','webm')),
+				'word'        => array('label' => Craft::t('Word'),        'extensions' => array('doc','docx','dot','docm','dotm')),
+				'xml'         => array('label' => Craft::t('XML'),         'extensions' => array('xml')),
+			);
+		}
 	}
 }
