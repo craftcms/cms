@@ -459,14 +459,13 @@ class ResourcesService extends BaseApplicationComponent
 	 *
 	 * @param $size
 	 *
-	 * @return string
+	 * @return string|false
 	 */
 	private function _getPluginIconPath($handle, $size)
 	{
-		$baseFilename = 'icon';
 		$plugin = craft()->plugins->getPlugin($handle, false);
 
-		if(!$plugin)
+		if (!$plugin)
 		{
 			return false;
 		}
@@ -479,50 +478,69 @@ class ResourcesService extends BaseApplicationComponent
 		$handle = StringHelper::toLowerCase($handle);
 
 		$originalIconFolderPath = craft()->path->getPluginsPath().$handle.'/resources/';
+		$iconInfo = $this->_findPluginIcon($originalIconFolderPath);
 
-		if(IOHelper::fileExists($originalIconFolderPath.$baseFilename.'.svg'))
-		{
-			return $originalIconFolderPath.$baseFilename.'.svg';
-		}
-		elseif(IOHelper::fileExists($originalIconFolderPath.$baseFilename.'.png'))
-		{
-			$filename = $baseFilename.'.png';
-			$originalIconPath = $originalIconFolderPath.$filename;
-
-			if($size == 'original')
-			{
-				return $originalIconPath;
-			}
-			else
-			{
-				$pluginIconsPath = craft()->path->getPluginIconsPath().$handle.'/';
-				$sizedIconFolder = $pluginIconsPath.$size.'/';
-				$sizedIconPath = $sizedIconFolder.$filename;
-
-				// If the photo doesn't exist at this size, create it.
-				if (!IOHelper::fileExists($sizedIconPath))
-				{
-					IOHelper::ensureFolderExists($sizedIconFolder);
-
-					if (IOHelper::isWritable($sizedIconFolder))
-					{
-						craft()->images->loadImage($originalIconPath, $size, $size)
-							->resize($size)
-							->saveAs($sizedIconPath);
-					}
-					else
-					{
-						Craft::log('Tried to write to target folder and could not: '.$sizedIconFolder, LogLevel::Error);
-					}
-				}
-			}
-		}
-		else
+		if ($iconInfo === false)
 		{
 			return false;
 		}
 
-		return $sizedIconPath;
+		list($filename, $extension) = $iconInfo;
+		$originalIconPath = $originalIconFolderPath.$filename;
+
+		if ($extension == 'svg' || $size == 'original')
+		{
+			return $originalIconPath;
+		}
+		else
+		{
+			$pluginIconsPath = craft()->path->getPluginIconsPath().$handle.'/';
+			$sizedIconFolder = $pluginIconsPath.$size.'/';
+			$sizedIconPath = $sizedIconFolder.$filename;
+
+			// If the photo doesn't exist at this size, create it.
+			if (!IOHelper::fileExists($sizedIconPath))
+			{
+				IOHelper::ensureFolderExists($sizedIconFolder);
+
+				if (IOHelper::isWritable($sizedIconFolder))
+				{
+					craft()->images->loadImage($originalIconPath, $size, $size)
+						->resize($size)
+						->saveAs($sizedIconPath);
+				}
+				else
+				{
+					Craft::log('Tried to write to target folder and could not: '.$sizedIconFolder, LogLevel::Error);
+				}
+			}
+
+			return $sizedIconPath;
+		}
+	}
+
+	/**
+	 * Searches for a plugin icon in the given folder.
+	 *
+	 * @param string $basePath The folder to look in
+	 *
+	 * @return array|false
+	 */
+	private function _findPluginIcon($basePath)
+	{
+		$extensions = array('svg', 'png', 'jpg');
+
+		foreach ($extensions as $extension)
+		{
+			$filename = 'icon.'.$extension;
+
+			if (IOHelper::fileExists($basePath.$filename))
+			{
+				return array($filename, $extension);
+			}
+		}
+
+		return false;
 	}
 
 	/**

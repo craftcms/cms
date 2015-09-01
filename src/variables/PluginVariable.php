@@ -101,16 +101,6 @@ class PluginVariable extends BaseComponentTypeVariable
 	}
 
 	/**
-	 * Returns the plugin's icon URL.
-	 *
-	 * @return bool
-	 */
-	public function getIconUrl($size = 72)
-	{
-		return $this->component->getIconUrl($size);
-	}
-
-	/**
 	 * Returns if the plugin is currently enabled or not.
 	 *
 	 * @return bool

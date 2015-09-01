@@ -746,6 +746,33 @@ class PluginsService extends BaseApplicationComponent
 		}
 	}
 
+	/**
+	 * Returns a given plugin’s icon URL.
+	 *
+	 * @param string $pluginHandle The plugin’s class handle
+	 * @param int    $size         The size of the icon
+	 *
+	 * @return string
+	 */
+	public function getPluginIconUrl($pluginHandle, $size = 100)
+	{
+		$pluginHandle = StringHelper::toLowerCase($pluginHandle);
+		$basePath = craft()->path->getPluginsPath().$pluginHandle.'/resources/';
+
+		if (
+			IOHelper::fileExists($basePath.'icon.svg') ||
+			IOHelper::fileExists($basePath.'icon.png') ||
+			IOHelper::fileExists($basePath.'icon.jpg')
+		)
+		{
+			return UrlHelper::getResourceUrl('pluginicons/'.$pluginHandle.'/'.$size);
+		}
+		else
+		{
+			return UrlHelper::getResourceUrl('images/default_plugin.svg');
+		}
+	}
+
 	// Events
 	// =========================================================================
 

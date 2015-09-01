@@ -31,13 +31,6 @@ interface IPlugin extends ISavableComponentType
 	public function getDescription();
 
 	/**
-	 * Returns the plugin’s icon URL.
-	 *
-	 * @return string|null
-	 */
-	public function getIconUrl();
-
-	/**
 	 * Returns the plugin developer’s name.
 	 *
 	 * @return string The plugin developer’s name.

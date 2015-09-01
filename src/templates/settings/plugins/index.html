@@ -38,13 +38,7 @@
 						<th data-title="{{ 'Name'|t }}">
 
 							<div class="icon">
-								<a href="{{ settingsUrl }}">
-									{% if plugin.iconUrl %}
-										<img src="{{ plugin.iconUrl }}" />
-									{% else %}
-									    <img src="{{ resourceUrl('images/default_plugin.svg') }}" width="36" height="36" />
-									{% endif %}
-								</a>
+								<img src="{{ craft.plugins.getPluginIconUrl(classHandle, 72) }}" width="36" height="36">
 							</div>
 
 							<div class="infos">
