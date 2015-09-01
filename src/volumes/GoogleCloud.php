@@ -1,6 +1,6 @@
 <?php
 /**
- * The Google Cloud source type class. Handles the implementation of the Google Cloud Storage service as an asset source type in
+ * The Google Cloud Volume. Handles the implementation of the Google Cloud service as a volume in
  * Craft.
  *
  * @author     Pixel & Tonic, Inc. <support@pixelandtonic.com>
@@ -8,7 +8,7 @@
  * @license    http://buildwithcraft.com/license Craft License Agreement
  * @see        http://buildwithcraft.com
  * @package    craft.app.volumes
- * @since      1.0
+ * @since      3.0
  */
 
 namespace craft\app\volumes;

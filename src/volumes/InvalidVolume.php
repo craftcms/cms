@@ -12,7 +12,7 @@ use craft\app\base\InvalidComponentInterface;
 use craft\app\base\InvalidComponentTrait;
 
 /**
- * InvalidSource represents a s with an invalid class.
+ * InvalidSource represents a volume with an invalid class.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0

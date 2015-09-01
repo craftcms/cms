@@ -9,7 +9,7 @@ use \OpenCloud\Rackspace as RackspaceClient;
 
 
 /**
- * The Rackspace Cloud source type class. Handles the implementation of the Rackspace Cloud Storage service as an asset source type in
+ * The Rackspace Cloud volume class. Handles the implementation of the Rackspace Cloud Storage service as a volume type in
  * Craft.
  *
  * @author     Pixel & Tonic, Inc. <support@pixelandtonic.com>
@@ -17,7 +17,7 @@ use \OpenCloud\Rackspace as RackspaceClient;
  * @license    http://buildwithcraft.com/license Craft License Agreement
  * @see        http://buildwithcraft.com
  * @package    craft.app.volumes
- * @since      1.0
+ * @since      3.0
  */
 class Rackspace extends Volume
 {

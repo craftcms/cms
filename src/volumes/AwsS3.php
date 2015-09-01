@@ -9,7 +9,7 @@ use craft\app\io\flysystemadapters\AwsS3 as AwsS3Adapter;
 use \Aws\S3\S3Client as S3Client;
 
 /**
- * The Amazon S3 source type class. Handles the implementation of the AWS S3 service as an asset source type in
+ * The Amazon S3 Volume. Handles the implementation of the AWS S3 service as a volume in
  * Craft.
  *
  * @author     Pixel & Tonic, Inc. <support@pixelandtonic.com>
@@ -17,7 +17,7 @@ use \Aws\S3\S3Client as S3Client;
  * @license    http://buildwithcraft.com/license Craft License Agreement
  * @see        http://buildwithcraft.com
  * @package    craft.app.volumes
- * @since      1.0
+ * @since      3.0
  */
 class AwsS3 extends Volume
 {

@@ -6,7 +6,7 @@ use craft\app\base\Volume;
 use craft\app\io\flysystemadapters\Local as LocalAdapter;
 
 /**
- * The local asset source type class. Handles the implementation of the local filesystem as an asset source type in
+ * The local volume class. Handles the implementation of the local filesystem as a volume in
  * Craft.
  *
  * @author     Pixel & Tonic, Inc. <support@pixelandtonic.com>
@@ -14,7 +14,7 @@ use craft\app\io\flysystemadapters\Local as LocalAdapter;
  * @license    http://buildwithcraft.com/license Craft License Agreement
  * @see        http://buildwithcraft.com
  * @package    craft.app.volumes
- * @since      1.0
+ * @since      3.0
  */
 class Local extends Volume
 {
