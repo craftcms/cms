@@ -84,7 +84,7 @@ class PluginVariable extends BaseComponentTypeVariable
 
 		if (!$url)
 		{
-			$url = 'settings/plugins/'.mb_strtolower($this->component->getClassHandle());
+			$url = 'settings/plugins/'.StringHelper::toLowerCase($this->component->getClassHandle());
 		}
 
 		return UrlHelper::getCpUrl($url);
