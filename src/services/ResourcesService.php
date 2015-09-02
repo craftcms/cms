@@ -235,15 +235,16 @@ class ResourcesService extends BaseApplicationComponent
 
 				case 'pluginicons':
 				{
-					if (empty($segs[1]) || empty($segs[2]) || !is_string($segs[1]) || !isset($segs[2]))
+					if (empty($segs[1]) || empty($segs[2]) || empty($segs[3]))
 					{
 						return false;
 					}
 
-					$handle = $segs[1];
+					$pluginHandle = $segs[1];
 					$size = $segs[2];
+					$filename = $segs[3];
 
-					$iconPath = $this->_getPluginIconPath($handle, $size);
+					$iconPath = $this->_getPluginIconPath($pluginHandle, $filename, $size);
 
 					return $iconPath;
 				}
@@ -457,44 +458,34 @@ class ResourcesService extends BaseApplicationComponent
 	/**
 	 * Get plugin icon path for a size. The original icon path is returned for SVG files which don't get resized.
 	 *
+	 * @param string $pluginHandle
+	 * @param $filename
 	 * @param $size
 	 *
 	 * @return string|false
 	 */
-	private function _getPluginIconPath($handle, $size)
+	private function _getPluginIconPath($pluginHandle, $filename, $size)
 	{
-		$plugin = craft()->plugins->getPlugin($handle, false);
-
-		if (!$plugin)
-		{
-			return false;
-		}
-
 		if (!is_numeric($size) && $size != "original")
 		{
 			return false;
 		}
 
-		$handle = StringHelper::toLowerCase($handle);
+		$pluginHandle = StringHelper::toLowerCase($pluginHandle);
+		$iconInfo = craft()->plugins->getPluginIconInfo($pluginHandle);
 
-		$originalIconFolderPath = craft()->path->getPluginsPath().$handle.'/resources/';
-		$iconInfo = $this->_findPluginIcon($originalIconFolderPath);
-
-		if ($iconInfo === false)
+		if ($iconInfo === false || $iconInfo['filename'] !== $filename)
 		{
 			return false;
 		}
 
-		list($filename, $extension) = $iconInfo;
-		$originalIconPath = $originalIconFolderPath.$filename;
-
-		if ($extension == 'svg' || $size == 'original')
+		if ($iconInfo['extension'] == 'svg' || $size == 'original')
 		{
-			return $originalIconPath;
+			return $iconInfo['path'];
 		}
 		else
 		{
-			$pluginIconsPath = craft()->path->getPluginIconsPath().$handle.'/';
+			$pluginIconsPath = craft()->path->getPluginIconsPath().$pluginHandle.'/';
 			$sizedIconFolder = $pluginIconsPath.$size.'/';
 			$sizedIconPath = $sizedIconFolder.$filename;
 
@@ -505,7 +496,7 @@ class ResourcesService extends BaseApplicationComponent
 
 				if (IOHelper::isWritable($sizedIconFolder))
 				{
-					craft()->images->loadImage($originalIconPath, $size, $size)
+					craft()->images->loadImage($iconInfo['path'], $size, $size)
 						->resize($size)
 						->saveAs($sizedIconPath);
 				}
@@ -517,30 +508,6 @@ class ResourcesService extends BaseApplicationComponent
 
 			return $sizedIconPath;
 		}
-	}
-
-	/**
-	 * Searches for a plugin icon in the given folder.
-	 *
-	 * @param string $basePath The folder to look in
-	 *
-	 * @return array|false
-	 */
-	private function _findPluginIcon($basePath)
-	{
-		$extensions = array('svg', 'png', 'jpg');
-
-		foreach ($extensions as $extension)
-		{
-			$filename = 'icon.'.$extension;
-
-			if (IOHelper::fileExists($basePath.$filename))
-			{
-				return array($filename, $extension);
-			}
-		}
-
-		return false;
 	}
 
 	/**
