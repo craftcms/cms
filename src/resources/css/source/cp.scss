@@ -64,7 +64,7 @@ html { overflow-y: scroll; }
 #tasks-hud .task .task-status .menubtn { @include margin-right(-22px); }
 
 #settingsmenu ul li a { @include padding-left(46px); }
-#settingsmenu ul li a img { width: 16px; height: 16px; position: absolute; margin-left: -23px; margin-top: 1px; opacity: .4; }
+#settingsmenu ul li a img { width: 16px; height: 16px; position: absolute; margin-left: -23px; margin-top: 1px; }
 #settingsmenu ul li a:before { @include margin(1px, 0, 0, -22px); font-size: 15px; }
 
 #nav { @include floatleft; @include margin-left(-5px); }
