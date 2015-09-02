@@ -351,7 +351,7 @@ class Image extends BaseImage
 		}
 		else
 		{
-			if (craft()->images->isImagick() && craft()->config->get('optimizeImageFilesize'))
+			if (craft()->images->isImagick())
 			{
 				$this->_image->smartResize(new \Imagine\Image\Box($targetWidth, $targetHeight), false, $this->_quality);
 			}

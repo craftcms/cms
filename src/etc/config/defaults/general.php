@@ -345,12 +345,6 @@ return array(
 	 */
 	'omitScriptNameInUrls' => 'auto',
 
-    /**
-     * If set to true and Imagick is used, Craft will take advantage of Imagick's advanced options to reduce the final
-     * image size without losing quality significantly.
-     */
-    'optimizeImageFilesize' => true,
-
 	/**
 	 * Determines whether Craft should override PHP’s session storage location to your craft/storage/ folder.
 	 *
