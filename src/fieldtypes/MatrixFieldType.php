@@ -222,6 +222,37 @@ class MatrixFieldType extends BaseFieldType
 	}
 
 	/**
+	 * @inheritDoc IFieldType::modifyElementsQuery()
+	 *
+	 * @param DbCommand $query
+	 * @param mixed     $value
+	 *
+	 * @return null|false
+	 */
+	public function modifyElementsQuery(DbCommand $query, $value)
+	{
+		if ($value == 'not :empty:')
+		{
+			$value = ':notempty:';
+		}
+
+		if ($value == ':notempty:' || $value == ':empty:')
+		{
+			$alias = 'matrixblocks_'.$this->model->handle;
+			$operator = ($value == ':notempty:' ? '!=' : '=');
+
+			$query->andWhere(
+				"(select count({$alias}.id) from {{matrixblocks}} {$alias} where {$alias}.ownerId = elements.id and {$alias}.fieldId = :fieldId) {$operator} 0",
+				array(':fieldId' => $this->model->id)
+			);
+		}
+		else if ($value !== null)
+		{
+			return false;
+		}
+	}
+
+	/**
 	 * @inheritDoc IFieldType::getInputHtml()
 	 *
 	 * @param string $name
