@@ -59,10 +59,15 @@ class CpVariable
 		{
 			if ($plugin->hasCpSection())
 			{
-				if (craft()->userSession->checkPermission('accessPlugin-'.$plugin->getClassHandle()))
+				$pluginHandle = $plugin->getClassHandle();
+
+				if (craft()->userSession->checkPermission('accessPlugin-'.$pluginHandle))
 				{
-					$lcHandle = StringHelper::toLowerCase($plugin->getClassHandle());
-					$nav[$lcHandle] = array('label' => $plugin->getName(), 'iconUrl' => $plugin->getIconUrl($iconSize));
+					$lcHandle = StringHelper::toLowerCase($pluginHandle);
+					$nav[$lcHandle] = array(
+						'label' => $plugin->getName(),
+						'iconUrl' => craft()->plugins->getPluginIconUrl($pluginHandle, $iconSize)
+					);
 				}
 			}
 		}
@@ -136,13 +141,25 @@ class CpVariable
 
 		$label = Craft::t('Plugins');
 
-		foreach(craft()->plugins->getPlugins() as $plugin)
+		foreach (craft()->plugins->getPlugins() as $plugin)
 		{
-			$settingsUrl = $plugin->getSettingsUrl();
-
-			if($settingsUrl)
+			if ($plugin->hasSettings())
 			{
-				$settings[$label][$plugin->getClassHandle()] = array('url' => $settingsUrl, 'iconUrl' => $plugin->getIconUrl($iconSize), 'label' => $plugin->name);
+				$pluginHandle = $plugin->getClassHandle();
+
+				// Is this plugin managing its own settings?
+				$settingsUrl = $plugin->getSettingsUrl();
+
+				if (!$settingsUrl)
+				{
+					$settingsUrl = 'settings/plugins/'.StringHelper::toLowerCase($pluginHandle);
+				}
+
+				$settings[$label][$pluginHandle] = array(
+					'url' => $settingsUrl,
+					'iconUrl' => craft()->plugins->getPluginIconUrl($pluginHandle, $iconSize),
+					'label' => $plugin->name
+				);
 			}
 		}
 
