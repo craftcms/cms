@@ -1064,24 +1064,24 @@ class UsersController extends BaseController
 					$this->returnErrorJson(Craft::t('The uploaded image is too large'));
 				}
 
-                list ($width, $height) = ImageHelper::getImageSize($folderPath.$fileName);
+				list ($width, $height) = ImageHelper::getImageSize($folderPath.$fileName);
 
-                if (IOHelper::getExtension($fileName) != 'svg')
-                {
-    				craft()->images->cleanImage($folderPath.$fileName);
-                }
-                else
-                {
-                    // Resave svg files as png
-                    $newFilename = preg_replace('/\.svg$/i', '.png', $fileName);
+				if (IOHelper::getExtension($fileName) != 'svg')
+				{
+					craft()->images->cleanImage($folderPath.$fileName);
+				}
+				else
+				{
+					// Resave svg files as png
+					$newFilename = preg_replace('/\.svg$/i', '.png', $fileName);
 
-                    craft()->images->
-                        loadImage($folderPath.$fileName, $width, $height)->
-                        saveAs($folderPath.$newFilename);
+					craft()->images->
+						loadImage($folderPath.$fileName, $width, $height)->
+						saveAs($folderPath.$newFilename);
 
-                    IOHelper::deleteFile($folderPath.$fileName);
-                    $fileName = $newFilename;
-                }
+					IOHelper::deleteFile($folderPath.$fileName);
+					$fileName = $newFilename;
+				}
 
 				$constraint = 500;
 
@@ -1098,7 +1098,7 @@ class UsersController extends BaseController
 							'height' => round($height * $factor),
 							'factor' => $factor,
 							'constraint' => $constraint,
-                            'fileName' => $fileName
+							'fileName' => $fileName
 						)
 					);
 
@@ -1145,19 +1145,19 @@ class UsersController extends BaseController
 			$user = craft()->users->getUserById($userId);
 			$userName = AssetsHelper::cleanAssetName($user->username, false);
 
-            if (IOHelper::getExtension($source) == 'svg')
-            {
-                $source = preg_replace('/\.svg$/i', '.png', $source);
-            }
+			if (IOHelper::getExtension($source) == 'svg')
+			{
+				$source = preg_replace('/\.svg$/i', '.png', $source);
+			}
 
-            // make sure that this is this user's file
+			// make sure that this is this user's file
 			$imagePath = craft()->path->getTempUploadsPath().'userphotos/'.$userName.'/'.$source;
 
 			if (IOHelper::fileExists($imagePath) && craft()->images->checkMemoryForImage($imagePath))
 			{
 				craft()->users->deleteUserPhoto($user);
 
-                $image = craft()->images->loadImage($imagePath);
+				$image = craft()->images->loadImage($imagePath);
 				$image->crop($x1, $x2, $y1, $y2);
 
 				if (craft()->users->saveUserPhoto(IOHelper::getFileName($imagePath), $image, $user))
