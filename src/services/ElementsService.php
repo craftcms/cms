@@ -932,7 +932,7 @@ class ElementsService extends BaseApplicationComponent
 			// No results?
 			if (!$filteredElementIds)
 			{
-				return array();
+				return false;
 			}
 
 			$query->andWhere(array('in', 'elements.id', $filteredElementIds));
