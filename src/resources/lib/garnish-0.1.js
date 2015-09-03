@@ -1009,37 +1009,13 @@ Garnish.Base = Base.extend({
 					}
 
 					// Is this the first resize listener added to this element?
-					if (!elem.__resizeTrigger__)
+					if (!elem.__resizeListeners__)
 					{
-						// The element must be relative, absolute, or fixed
-						if (getComputedStyle(elem).position == 'static')
-						{
-							elem.style.position = 'relative';
-						}
+						$('> :last-child', elem).addClass('last');
 
-						var obj = elem.__resizeTrigger__ = document.createElement('object');
-						obj.className = 'resize-trigger';
-						obj.setAttribute('style', 'display: block; position: absolute; top: 0; left: 0; height: 100%; width: 100%; overflow: hidden; pointer-events: none; z-index: -1; visibility: hidden;');
-						obj.__resizeElement__ = $(elem);
-						obj.__resizeElement__.data('initialWidth', obj.__resizeElement__.prop('offsetWidth'));
-						obj.__resizeElement__.data('initialHeight', obj.__resizeElement__.prop('offsetHeight'));
-						obj.onload = objectLoad;
-						obj.type = 'text/html';
-						obj.__resizeElement__.prepend(obj);
-						obj.data = 'about:blank';
-
-						// Listen for window resizes too
-						Garnish.$win.on('resize', function()
-						{
-							// Has the object been loaded yet?
-							if (obj.contentDocument)
-							{
-								$(obj.contentDocument.defaultView).trigger('resize');
-							}
+						addResizeListener(elem, function(ev) {
+							$(this).trigger('resize', ev);
 						});
-
-						// Avoid a top margin on the next element
-						$(obj).next().addClass('first');
 					}
 				})($elem[i]);
 			}
@@ -1072,53 +1048,81 @@ Garnish.Base = Base.extend({
 	}
 });
 
-// Resize event helper functions
+// Cross-Browser, Event-based, Element Resize Detection script
+// source: http://www.backalleycoder.com/2013/03/18/cross-browser-event-based-element-resize-detection/ - thanks Daniel!
 // =============================================================================
 
-function resizeListener(ev)
-{
-	var win = ev.currentTarget;
+(function(){
+  var attachEvent = document.attachEvent;
+  var isIE = navigator.userAgent.match(/Trident/);
+  console.log(isIE);
+  var requestFrame = (function(){
+    var raf = window.requestAnimationFrame || window.mozRequestAnimationFrame || window.webkitRequestAnimationFrame ||
+        function(fn){ return window.setTimeout(fn, 20); };
+    return function(fn){ return raf(fn); };
+  })();
 
-	// Ignore if there's no resize trigger yet
-	if (typeof win.__resizeTrigger__ == typeof undefined)
-	{
-		return;
-	}
+  var cancelFrame = (function(){
+    var cancel = window.cancelAnimationFrame || window.mozCancelAnimationFrame || window.webkitCancelAnimationFrame ||
+           window.clearTimeout;
+    return function(id){ return cancel(id); };
+  })();
 
-	if (win.__resizeRAF__)
-	{
-		Garnish.cancelAnimationFrame(win.__resizeRAF__);
-	}
+  function resizeListener(e){
+    var win = e.target || e.srcElement;
+    if (win.__resizeRAF__) cancelFrame(win.__resizeRAF__);
+    win.__resizeRAF__ = requestFrame(function(){
+      var trigger = win.__resizeTrigger__;
+      trigger.__resizeListeners__.forEach(function(fn){
+        fn.call(trigger, e);
+      });
+    });
+  }
 
-	win.__resizeRAF__ = Garnish.requestAnimationFrame(function()
-	{
-		// Ignore if the size hasn't changed
-		if (
-			typeof win.__lastOffsetWidth__ != typeof undefined &&
-			win.__resizeTrigger__.prop('offsetWidth') == win.__lastOffsetWidth__ &&
-			win.__resizeTrigger__.prop('offsetHeight') == win.__lastOffsetHeight__
-		)
-		{
-			return;
-		}
+  function objectLoad(e){
+    this.contentDocument.defaultView.__resizeTrigger__ = this.__resizeElement__;
+    this.contentDocument.defaultView.addEventListener('resize', resizeListener);
+    /* HACK */
+    this.contentDocument.defaultView.__lastOffsetWidth__ = this.__resizeElement__.__initialWidth__;
+	this.contentDocument.defaultView.__lastOffsetHeight__ = this.__resizeElement__.__initialHeight__;
+	delete this.__resizeElement__.__initialWidth__;
+	delete this.__resizeElement__.__initialHeight__;
+	/* END HACK */
+  }
 
-		win.__lastOffsetWidth__ = win.__resizeTrigger__.prop('offsetWidth');
-		win.__lastOffsetHeight__ = win.__resizeTrigger__.prop('offsetHeight');
+  window.addResizeListener = function(element, fn){
+    if (!element.__resizeListeners__) {
+      element.__resizeListeners__ = [];
+      if (attachEvent) {
+        element.__resizeTrigger__ = element;
+        element.attachEvent('onresize', resizeListener);
+      }
+      else {
+        if (getComputedStyle(element).position == 'static') element.style.position = 'relative';
+        var obj = element.__resizeTrigger__ = document.createElement('object');
+        obj.setAttribute('style', 'display: block; position: absolute; top: 0; left: 0; height: 100%; width: 100%; overflow: hidden; pointer-events: none; z-index: -1;');
+        obj.__resizeElement__ = element;
+        obj.onload = objectLoad;
+        obj.type = 'text/html';
+        if (isIE) element.appendChild(obj);
+        obj.data = 'about:blank';
+        if (!isIE) element.appendChild(obj);
+      }
+    }
+    element.__resizeListeners__.push(fn);
+  };
 
-		win.__resizeTrigger__.trigger('resize');
-
-	});
-}
-
-function objectLoad(e)
-{
-	this.contentDocument.defaultView.__resizeTrigger__ = this.__resizeElement__;
-	this.contentDocument.defaultView.__lastOffsetWidth__ = this.__resizeElement__.data('initialWidth');
-	this.contentDocument.defaultView.__lastOffsetHeight__ = this.__resizeElement__.data('initialHeight');
-	this.__resizeElement__.removeData('initialWidth');
-	this.__resizeElement__.removeData('initialHeight');
-	$(this.contentDocument.defaultView).on('resize', resizeListener).trigger('resize');
-}
+  window.removeResizeListener = function(element, fn){
+    element.__resizeListeners__.splice(element.__resizeListeners__.indexOf(fn), 1);
+    if (!element.__resizeListeners__.length) {
+      if (attachEvent) element.detachEvent('onresize', resizeListener);
+      else {
+        element.__resizeTrigger__.contentDocument.defaultView.removeEventListener('resize', resizeListener);
+        element.__resizeTrigger__ = !element.removeChild(element.__resizeTrigger__);
+      }
+    }
+  }
+})();
 
 
 /**

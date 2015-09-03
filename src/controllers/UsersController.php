@@ -971,14 +971,13 @@ class UsersController extends BaseController
 				$_POST['redirect'] = str_replace('{userId}', '{id}', $_POST['redirect']);
 			}
 
-			// Is this public registration, and is the user going to be activated automatically?
-			if ($thisIsPublicRegistration && $user->status == UserStatus::Active)
+			// Is this public registration, and was the user going to be activated automatically?
+			$publicActivation = $thisIsPublicRegistration && $user->status == UserStatus::Active;
+
+			if ($publicActivation)
 			{
-				// Do we need to auto-login?
-				if (craft()->config->get('autoLoginAfterAccountActivation') === true)
-				{
-					craft()->userSession->loginByUserId($user->id, false, true);
-				}
+				// Maybe automatically log them in
+				$this->_maybeLoginUserAfterAccountActivation($user);
 			}
 
 			if (craft()->request->isAjaxRequest())
@@ -991,7 +990,16 @@ class UsersController extends BaseController
 			else
 			{
 				craft()->userSession->setNotice(Craft::t('User saved.'));
-				$this->redirectToPostedUrl($user);
+
+				// Is this public registration, and is the user going to be activated automatically?
+				if ($publicActivation)
+				{
+					$this->_redirectUserAfterAccountActivation($user);
+				}
+				else
+				{
+					$this->redirectToPostedUrl($user);
+				}
 			}
 		}
 		else
@@ -1069,24 +1077,24 @@ class UsersController extends BaseController
 					$this->returnErrorJson(Craft::t('The uploaded image is too large'));
 				}
 
-                list ($width, $height) = ImageHelper::getImageSize($folderPath.$fileName);
+				list ($width, $height) = ImageHelper::getImageSize($folderPath.$fileName);
 
-                if (IOHelper::getExtension($fileName) != 'svg')
-                {
-    				craft()->images->cleanImage($folderPath.$fileName);
-                }
-                else
-                {
-                    // Resave svg files as png
-                    $newFilename = preg_replace('/\.svg$/i', '.png', $fileName);
+				if (IOHelper::getExtension($fileName) != 'svg')
+				{
+					craft()->images->cleanImage($folderPath.$fileName);
+				}
+				else
+				{
+					// Resave svg files as png
+					$newFilename = preg_replace('/\.svg$/i', '.png', $fileName);
 
-                    craft()->images->
-                        loadImage($folderPath.$fileName, $width, $height)->
-                        saveAs($folderPath.$newFilename);
+					craft()->images->
+						loadImage($folderPath.$fileName, $width, $height)->
+						saveAs($folderPath.$newFilename);
 
-                    IOHelper::deleteFile($folderPath.$fileName);
-                    $fileName = $newFilename;
-                }
+					IOHelper::deleteFile($folderPath.$fileName);
+					$fileName = $newFilename;
+				}
 
 				$constraint = 500;
 
@@ -1103,7 +1111,7 @@ class UsersController extends BaseController
 							'height' => round($height * $factor),
 							'factor' => $factor,
 							'constraint' => $constraint,
-                            'fileName' => $fileName
+							'fileName' => $fileName
 						)
 					);
 
@@ -1150,19 +1158,19 @@ class UsersController extends BaseController
 			$user = craft()->users->getUserById($userId);
 			$userName = AssetsHelper::cleanAssetName($user->username, false);
 
-            if (IOHelper::getExtension($source) == 'svg')
-            {
-                $source = preg_replace('/\.svg$/i', '.png', $source);
-            }
+			if (IOHelper::getExtension($source) == 'svg')
+			{
+				$source = preg_replace('/\.svg$/i', '.png', $source);
+			}
 
-            // make sure that this is this user's file
+			// make sure that this is this user's file
 			$imagePath = craft()->path->getTempUploadsPath().'userphotos/'.$userName.'/'.$source;
 
 			if (IOHelper::fileExists($imagePath) && craft()->images->checkMemoryForImage($imagePath))
 			{
 				craft()->users->deleteUserPhoto($user);
 
-                $image = craft()->images->loadImage($imagePath);
+				$image = craft()->images->loadImage($imagePath);
 				$image->crop($x1, $x2, $y1, $y2);
 
 				if (craft()->users->saveUserPhoto(IOHelper::getFileName($imagePath), $image, $user))
@@ -1739,18 +1747,48 @@ class UsersController extends BaseController
 	/**
 	 * Takes over after a user has been activated.
 	 *
-	 * @param UserModel $user
+	 * @param UserModel $user The user that was just activated
+	 *
+	 * @return void
 	 */
 	private function _onAfterActivateUser(UserModel $user)
 	{
-		// Should we log them in?
-		$loggedIn = false;
+		$this->_maybeLoginUserAfterAccountActivation($user);
 
-		if (craft()->config->get('autoLoginAfterAccountActivation'))
+		if (!craft()->request->isAjaxRequest())
 		{
-			$loggedIn = craft()->userSession->loginByUserId($user->id, false, true);
+			$this->_redirectUserAfterAccountActivation($user);
 		}
+	}
 
+	/**
+	 * Possibly log a user in right after they were activate, if Craft is configured to do so.
+	 *
+	 * @param UserModel $user The user that was just activated
+	 *
+	 * @return bool Whether the user was just logged in
+	 */
+	private function _maybeLoginUserAfterAccountActivation(UserModel $user)
+	{
+		if (craft()->config->get('autoLoginAfterAccountActivation') === true)
+		{
+			return craft()->userSession->loginByUserId($user->id, false, true);
+		}
+		else
+		{
+			return false;
+		}
+	}
+
+	/**
+	 * Redirect the browser after a user’s account has been activated.
+	 *
+	 * @param UserModel $user The user that was just activated
+	 *
+	 * @return void
+	 */
+	private function _redirectUserAfterAccountActivation(UserModel $user)
+	{
 		// Can they access the CP?
 		if ($user->can('accessCp'))
 		{

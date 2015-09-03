@@ -574,8 +574,8 @@ class S3AssetSourceType extends BaseAssetSourceType
 						craft()->assetTransforms->storeTransformIndexData($destinationIndex);
 					}
 
-					$from = $file->getFolder()->path.craft()->assetTransforms->getTransformSubpath($file, $index);
-					$to   = $targetFolder->path.craft()->assetTransforms->getTransformSubpath($destination, $destinationIndex);
+					$from = $this->_getPathPrefix($originatingSettings).$file->getFolder()->path.craft()->assetTransforms->getTransformSubpath($file, $index);
+					$to   = $this->_getPathPrefix().$targetFolder->path.craft()->assetTransforms->getTransformSubpath($destination, $destinationIndex);
 
 					$this->copySourceFile($from, $to);
 					$this->deleteSourceFile($from);

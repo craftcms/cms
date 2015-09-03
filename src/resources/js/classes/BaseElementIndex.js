@@ -1582,8 +1582,6 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 	{
 		$source.parent('li').addClass('expanded');
 
-		this.$sidebar.trigger('resize');
-
 		var $childSources = this._getChildSources($source);
 		this._initSources($childSources);
 	},
@@ -1591,8 +1589,6 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 	_collapseSource: function($source)
 	{
 		$source.parent('li').removeClass('expanded');
-
-		this.$sidebar.trigger('resize');
 
 		var $childSources = this._getChildSources($source);
 		this._deinitSources($childSources);
