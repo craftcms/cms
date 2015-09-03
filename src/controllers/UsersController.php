@@ -971,7 +971,7 @@ class UsersController extends BaseController
 			}
 
 			// Is this public registration, and was the user going to be activated automatically?
-			$publicActivation = $thisIsPublicRegistration && $user->status == UserStatus::Active
+			$publicActivation = $thisIsPublicRegistration && $user->status == UserStatus::Active;
 
 			if ($publicActivation)
 			{
