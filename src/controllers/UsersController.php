@@ -973,11 +973,7 @@ class UsersController extends BaseController
 			// Is this public registration, and is the user going to be activated automatically?
 			if ($thisIsPublicRegistration && $user->status == UserStatus::Active)
 			{
-				// Do we need to auto-login?
-				if (craft()->config->get('autoLoginAfterAccountActivation') === true)
-				{
-					craft()->userSession->loginByUserId($user->id, false, true);
-				}
+				$this->_onAfterActivateUser($user);
 			}
 
 			if (craft()->request->isAjaxRequest())
@@ -1742,12 +1738,9 @@ class UsersController extends BaseController
 	 */
 	private function _onAfterActivateUser(UserModel $user)
 	{
-		// Should we log them in?
-		$loggedIn = false;
-
-		if (craft()->config->get('autoLoginAfterAccountActivation'))
+		if (craft()->config->get('autoLoginAfterAccountActivation') === true)
 		{
-			$loggedIn = craft()->userSession->loginByUserId($user->id, false, true);
+			craft()->userSession->loginByUserId($user->id, false, true);
 		}
 
 		// Can they access the CP?
