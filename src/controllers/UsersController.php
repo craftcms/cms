@@ -970,6 +970,15 @@ class UsersController extends BaseController
 				$_POST['redirect'] = str_replace('{userId}', '{id}', $_POST['redirect']);
 			}
 
+			// Is this public registration, and was the user going to be activated automatically?
+			$publicActivation = $thisIsPublicRegistration && $user->status == UserStatus::Active
+
+			if ($publicActivation)
+			{
+				// Maybe automatically log them in
+				$this->_maybeLoginUserAfterAccountActivation($user);
+			}
+
 			if (craft()->request->isAjaxRequest())
 			{
 				$return['success']   = true;
@@ -982,10 +991,9 @@ class UsersController extends BaseController
 				craft()->userSession->setNotice(Craft::t('User saved.'));
 
 				// Is this public registration, and is the user going to be activated automatically?
-				if ($thisIsPublicRegistration && $user->status == UserStatus::Active)
+				if ($publicActivation)
 				{
-					// Handle it like a normal activate-user request
-					$this->_onAfterActivateUser($user);
+					$this->_redirectUserAfterAccountActivation($user);
 				}
 				else
 				{
@@ -1738,15 +1746,48 @@ class UsersController extends BaseController
 	/**
 	 * Takes over after a user has been activated.
 	 *
-	 * @param UserModel $user
+	 * @param UserModel $user The user that was just activated
+	 *
+	 * @return void
 	 */
 	private function _onAfterActivateUser(UserModel $user)
 	{
+		$this->_maybeLoginUserAfterAccountActivation($user);
+
+		if (!craft()->request->isAjaxRequest())
+		{
+			$this->_redirectUserAfterAccountActivation($user);
+		}
+	}
+
+	/**
+	 * Possibly log a user in right after they were activate, if Craft is configured to do so.
+	 *
+	 * @param UserModel $user The user that was just activated
+	 *
+	 * @return bool Whether the user was just logged in
+	 */
+	private function _maybeLoginUserAfterAccountActivation(UserModel $user)
+	{
 		if (craft()->config->get('autoLoginAfterAccountActivation') === true)
 		{
-			craft()->userSession->loginByUserId($user->id, false, true);
+			return craft()->userSession->loginByUserId($user->id, false, true);
 		}
+		else
+		{
+			return false;
+		}
+	}
 
+	/**
+	 * Redirect the browser after a user’s account has been activated.
+	 *
+	 * @param UserModel $user The user that was just activated
+	 *
+	 * @return void
+	 */
+	private function _redirectUserAfterAccountActivation(UserModel $user)
+	{
 		// Can they access the CP?
 		if ($user->can('accessCp'))
 		{
