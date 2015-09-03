@@ -970,12 +970,6 @@ class UsersController extends BaseController
 				$_POST['redirect'] = str_replace('{userId}', '{id}', $_POST['redirect']);
 			}
 
-			// Is this public registration, and is the user going to be activated automatically?
-			if ($thisIsPublicRegistration && $user->status == UserStatus::Active)
-			{
-				$this->_onAfterActivateUser($user);
-			}
-
 			if (craft()->request->isAjaxRequest())
 			{
 				$return['success']   = true;
@@ -986,7 +980,17 @@ class UsersController extends BaseController
 			else
 			{
 				craft()->userSession->setNotice(Craft::t('User saved.'));
-				$this->redirectToPostedUrl($user);
+
+				// Is this public registration, and is the user going to be activated automatically?
+				if ($thisIsPublicRegistration && $user->status == UserStatus::Active)
+				{
+					// Handle it like a normal activate-user request
+					$this->_onAfterActivateUser($user);
+				}
+				else
+				{
+					$this->redirectToPostedUrl($user);
+				}
 			}
 		}
 		else
