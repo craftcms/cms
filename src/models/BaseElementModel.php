@@ -1125,6 +1125,8 @@ abstract class BaseElementModel extends BaseModel
 			'lft'           => AttributeType::Number,
 			'rgt'           => AttributeType::Number,
 			'level'         => AttributeType::Number,
+
+			'searchScore'   => AttributeType::Number,
 		);
 	}
 

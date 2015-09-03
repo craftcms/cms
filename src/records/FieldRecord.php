@@ -37,6 +37,7 @@ class FieldRecord extends BaseRecord
 		'ref',
 		'status',
 		'title',
+		'searchScore',
 		'slug',
 		'prev',
 		'next',

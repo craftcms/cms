@@ -23,6 +23,11 @@ class ElementsService extends BaseApplicationComponent
 	 */
 	private $_placeholderElements;
 
+	/**
+	 * @var array
+	 */
+	private $_searchResults;
+
 	// Public Methods
 	// =========================================================================
 
@@ -310,6 +315,13 @@ class ElementsService extends BaseApplicationComponent
 							}
 
 							$result['locale'] = $locale;
+
+							// Should we set a search score on the element?
+							if (isset($this->_searchResults[$result['id']]))
+							{
+								$result['searchScore'] = $this->_searchResults[$result['id']];
+							}
+
 							$element = $elementType->populateElementModel($result);
 
 							// Was an element returned?
@@ -923,25 +935,30 @@ class ElementsService extends BaseApplicationComponent
 		// Search
 		// ---------------------------------------------------------------------
 
+		$this->_searchResults = null;
+
 		if ($criteria->search)
 		{
 			$elementIds = $this->_getElementIdsFromQuery($query);
-			$scoredSearchResults = ($criteria->order == 'score');
-			$filteredElementIds = craft()->search->filterElementIdsByQuery($elementIds, $criteria->search, $scoredSearchResults, $criteria->locale);
+			$searchResults = craft()->search->filterElementIdsByQuery($elementIds, $criteria->search, true, $criteria->locale, true);
 
 			// No results?
-			if (!$filteredElementIds)
+			if (!$searchResults)
 			{
 				return false;
 			}
 
-			$query->andWhere(array('in', 'elements.id', $filteredElementIds));
+			$filteredElementIds = array_keys($searchResults);
 
-			if ($scoredSearchResults)
+			if ($criteria->order == 'score')
 			{
 				// Order the elements in the exact order that SearchService returned them in
 				$query->order(craft()->db->getSchema()->orderByColumnValues('elements.id', $filteredElementIds));
 			}
+
+			$query->andWhere(array('in', 'elements.id', $filteredElementIds));
+
+			$this->_searchResults = $searchResults;
 		}
 
 		return $query;
