@@ -1023,10 +1023,10 @@ Garnish.Base = Base.extend({
 						obj.__resizeElement__ = $(elem);
 						obj.__resizeElement__.data('initialWidth', obj.__resizeElement__.prop('offsetWidth'));
 						obj.__resizeElement__.data('initialHeight', obj.__resizeElement__.prop('offsetHeight'));
-						obj.onload = objectLoad;
-						obj.type = 'text/html';
 						obj.__resizeElement__.prepend(obj);
+						obj.onload = objectLoad;
 						obj.data = 'about:blank';
+						obj.type = 'text/html';
 
 						// Listen for window resizes too
 						Garnish.$win.on('resize', function()
