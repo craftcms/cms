@@ -125,10 +125,7 @@ Craft.MatrixInput = Garnish.Base.extend(
 		this.updateAddBlockBtn();
 
 		this.addListener(this.$container, 'resize', 'setNewBlockBtn');
-
-		Garnish.$doc.ready($.proxy(function() {
-			this.setNewBlockBtn();
-		}, this));
+		Garnish.$doc.ready($.proxy(this, 'setNewBlockBtn'));
 	},
 
 	setNewBlockBtn: function()
