@@ -56,6 +56,10 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
 		}
 
 		this.$container = this.getContainer();
+
+		// Store a reference to this class
+		this.$container.data('elementSelect', this);
+
 		this.$elementsContainer = this.getElementsContainer();
 		this.$addElementBtn = this.getAddElementsBtn();
 

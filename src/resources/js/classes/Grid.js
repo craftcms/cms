@@ -23,6 +23,15 @@ Craft.Grid = Garnish.Base.extend(
 	{
 		this.$container = $(container);
 
+		// Is this already a grid?
+		if (this.$container.data('grid'))
+		{
+			Garnish.log('Double-instantiating a grid on an element');
+			this.$container.data('grid').destroy();
+		}
+
+		this.$container.data('grid', this);
+
 		this.setSettings(settings, Craft.Grid.defaults);
 
 		if (this.settings.mode == 'pct')
@@ -40,11 +49,7 @@ Craft.Grid = Garnish.Base.extend(
 
 		// Adjust them when the container is resized
 		this.addListener(this.$container, 'resize', 'refreshCols');
-
-		// Trigger a window resize event in case anything needs to adjust itself, now that the items are layed out.
-		Garnish.requestAnimationFrame(function() {
-			Garnish.$win.trigger('resize');
-		});
+		Garnish.$doc.ready($.proxy(this, 'refreshCols'));
 	},
 
 	addItems: function(items)

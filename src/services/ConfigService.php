@@ -71,14 +71,16 @@ class ConfigService extends BaseApplicationComponent
 	 */
 	public function get($item, $file = ConfigFile::General)
 	{
-		if (!isset($this->_loadedConfigFiles[$file]))
+		$lowercaseFile = StringHelper::toLowerCase($file);
+
+		if (!isset($this->_loadedConfigFiles[$lowercaseFile]))
 		{
 			$this->_loadConfigFile($file);
 		}
 
 		if ($this->exists($item, $file))
 		{
-			return $this->_loadedConfigFiles[$file][$item];
+			return $this->_loadedConfigFiles[$lowercaseFile][$item];
 		}
 	}
 
@@ -215,12 +217,14 @@ class ConfigService extends BaseApplicationComponent
 	 */
 	public function exists($item, $file = ConfigFile::General)
 	{
-		if (!isset($this->_loadedConfigFiles[$file]))
+		$lowercaseFile = StringHelper::toLowerCase($file);
+
+		if (!isset($this->_loadedConfigFiles[$lowercaseFile]))
 		{
 			$this->_loadConfigFile($file);
 		}
 
-		if (array_key_exists($item, $this->_loadedConfigFiles[$file]))
+		if (array_key_exists($item, $this->_loadedConfigFiles[$lowercaseFile]))
 		{
 			return true;
 		}
@@ -750,6 +754,8 @@ class ConfigService extends BaseApplicationComponent
 	 */
 	private function _loadConfigFile($name)
 	{
+		$lowercaseName = StringHelper::toLowerCase($name);
+
 		// Is this a valid Craft config file?
 		if (ConfigFile::isValidName($name))
 		{
@@ -757,7 +763,7 @@ class ConfigService extends BaseApplicationComponent
 		}
 		else
 		{
-			$defaultsPath = CRAFT_PLUGINS_PATH.$name.'/config.php';
+			$defaultsPath = CRAFT_PLUGINS_PATH.$lowercaseName.'/config.php';
 		}
 
 		if (IOHelper::fileExists($defaultsPath))
@@ -798,6 +804,13 @@ class ConfigService extends BaseApplicationComponent
 		else
 		{
 			$customConfigPath = CRAFT_CONFIG_PATH.$name.'.php';
+
+			if (!IOHelper::fileExists($customConfigPath))
+			{
+				// Be a little forgiving on case sensitive file systems.
+				$customConfigPath = CRAFT_CONFIG_PATH.StringHelper::toLowerCase($name).'.php';
+			}
+
 			if (IOHelper::fileExists($customConfigPath))
 			{
 				if (is_array($customConfig = @include($customConfigPath)))
@@ -816,7 +829,7 @@ class ConfigService extends BaseApplicationComponent
 			}
 		}
 
-		$this->_loadedConfigFiles[$name] = $defaultsConfig;
+		$this->_loadedConfigFiles[$lowercaseName] = $defaultsConfig;
 	}
 
 	/**

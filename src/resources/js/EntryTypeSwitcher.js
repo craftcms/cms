@@ -42,9 +42,6 @@ Craft.EntryTypeSwitcher = Garnish.Base.extend(
 				{
 					slugGenerator.setNewSource('#title');
 				}
-
-				// Trigger a resize event to force a grid update
-				Garnish.$win.trigger('resize');
 			}
 		}, this));
 	}

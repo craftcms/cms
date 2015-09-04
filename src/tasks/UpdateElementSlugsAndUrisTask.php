@@ -70,6 +70,12 @@ class UpdateElementSlugsAndUrisTask extends BaseTask
 		$settings = $this->getSettings();
 		$element = $elementsService->getElementById($this->_elementIds[$step], $settings->elementType, $settings->locale);
 
+		// Make sure they haven't deleted this element
+		if (!$element)
+		{
+			return true;
+		}
+
 		$oldSlug = $element->slug;
 		$oldUri = $element->uri;
 
