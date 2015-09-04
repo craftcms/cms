@@ -1152,11 +1152,6 @@ class UsersController extends BaseController
 			$user = craft()->users->getUserById($userId);
 			$userName = AssetsHelper::cleanAssetName($user->username, false);
 
-			if (IOHelper::getExtension($source) == 'svg')
-			{
-				$source = preg_replace('/\.svg$/i', '.png', $source);
-			}
-
 			// make sure that this is this user's file
 			$imagePath = craft()->path->getTempUploadsPath().'userphotos/'.$userName.'/'.$source;
 
