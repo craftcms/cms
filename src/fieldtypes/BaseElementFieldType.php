@@ -93,20 +93,10 @@ abstract class BaseElementFieldType extends BaseFieldType implements IPreviewabl
 	 */
 	public function getSettingsHtml()
 	{
-		$sources = array();
-
-		foreach ($this->getElementType()->getSources() as $key => $source)
-		{
-			if (!isset($source['heading']))
-			{
-				$sources[] = array('label' => $source['label'], 'value' => $key);
-			}
-		}
-
 		return craft()->templates->render('_components/fieldtypes/elementfieldsettings', array(
 			'allowMultipleSources' => $this->allowMultipleSources,
 			'allowLimit'           => $this->allowLimit,
-			'sources'              => $sources,
+			'sources'              => $this->getSourceOptions(),
 			'targetLocaleField'    => $this->getTargetLocaleFieldHtml(),
 			'settings'             => $this->getSettings(),
 			'type'                 => $this->getName()
@@ -496,6 +486,42 @@ abstract class BaseElementFieldType extends BaseFieldType implements IPreviewabl
 		}
 
 		return craft()->getLanguage();
+	}
+
+	/**
+	 * Normalizes the available sources into select input options.
+	 *
+	 * @param array $sources The available sources.
+	 *
+	 * @return array
+	 */
+	protected function getSourceOptions()
+	{
+		$options = array();
+		$optionNames = array();
+
+		foreach ($this->getAvailableSources() as $source)
+		{
+			// Make sure it's not a heading
+			if (!isset($source['heading']))
+			{
+				$options[] = array('label' => $source['label'], 'value' => $source['key']);
+				$optionNames[] = $source['label'];
+			}
+		}
+
+		// Sort alphabetically
+		array_multisort($options, $optionNames, SORT_NATURAL);
+
+		return $options;
+	}
+
+	/**
+	 * Returns the sources that should be available to choose from within the field's settings
+	 */
+	protected function getAvailableSources()
+	{
+		return craft()->elementIndexes->getSources($this->elementType, 'modal');
 	}
 
 	/**
