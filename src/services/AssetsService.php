@@ -152,7 +152,7 @@ class AssetsService extends BaseApplicationComponent
 		if ($isNewFile && !$file->getContent()->title)
 		{
 			// Give it a default title based on the file name
-			$file->getContent()->title = str_replace('_', ' ', IOHelper::getFileName($file->filename, false));
+			$file->getContent()->title = $file->generateAttributeLabel(IOHelper::getFileName($file->filename, false));
 		}
 
 		$transaction = craft()->db->getCurrentTransaction() === null ? craft()->db->beginTransaction() : null;
