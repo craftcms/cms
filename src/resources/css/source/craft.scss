@@ -1356,6 +1356,7 @@ body.message .message-container .pane { top: 50%; margin-top: -33px !important; 
 	.color { background-image: url(../images/checkers_2x.png); background-size: 16px; }
 
 	table thead th.ordered { background-image: url(../images/listview_sort_2x.png); background-size: 26px; }
+	table thead th.ordered.loading { background-image: url(../images/spinner_tableheader_2x.gif); background-size: 26px; }
 
 	.spinner { background-image: url(../images/spinner_2x.gif); background-size: 20px; }
 	.spinner.big { background-image: url(../images/spinner_big_2x.gif); background-size: 48px; }
