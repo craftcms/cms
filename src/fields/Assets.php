@@ -208,6 +208,7 @@ class Assets extends BaseRelationField
                         move_uploaded_file($file->tempName, $pathOnServer);
 
                         $asset = new Asset();
+                        $asset->title = $asset->generateAttributeLabel(Io::getFilename($file->name, false));
                         $asset->newFilePath = $pathOnServer;
                         $asset->filename = $file->name;
                         $asset->folderId = $targetFolder->id;

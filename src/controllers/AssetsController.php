@@ -127,6 +127,7 @@ class AssetsController extends Controller
                 }
 
                 $asset = new Asset();
+                $asset->title = $asset->generateAttributeLabel(Io::getFilename($uploadedFile->name, false));
                 $asset->newFilePath = $pathOnServer;
                 $asset->filename = $uploadedFile->name;
                 $asset->folderId = $folder->id;
