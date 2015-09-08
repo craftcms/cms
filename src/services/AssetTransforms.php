@@ -315,12 +315,15 @@ class AssetTransforms extends Component
             $this->storeTransformIndexData($index);
 
             // Generate the transform
-            $this->generateTransform($index);
-
-            // Update the index
-            $index->inProgress = 0;
-            $index->fileExists = 1;
-            $this->storeTransformIndexData($index);
+            if ($this->_generateTransform($index)) {
+                // Update the index
+                $index->inProgress = 0;
+                $index->fileExists = 1;
+                $this->storeTransformIndexData($index);
+            } else {
+                throw new AssetTransformException(Craft::t('app',
+                    'Failed to generate transform with id of {id}.', ['id' => $index->id]));
+            }
         }
 
         return $this->getUrlForTransformByIndexId($index->id);
@@ -331,12 +334,13 @@ class AssetTransforms extends Component
      *
      * @param AssetTransformIndex $index
      *
-     * @return void
+     * @return bool true if transform exists for the index
      */
-    public function generateTransform(AssetTransformIndex $index)
+    private function _generateTransform(AssetTransformIndex $index)
     {
         // For _widthxheight_mode
-        if (preg_match('/_(?P<width>[0-9]+|AUTO)x(?P<height>[0-9]+|AUTO)_(?P<mode>[a-z]+)_(?P<position>[a-z\-]+)(_(?P<quality>[0-9]+))?/i', $index->location, $matches)) {
+        if (preg_match('/_(?P<width>[0-9]+|AUTO)x(?P<height>[0-9]+|AUTO)_(?P<mode>[a-z]+)_(?P<position>[a-z\-]+)(_(?P<quality>[0-9]+))?/i',
+            $index->location, $matches)) {
             $transform = new AssetTransformModel();
             $transform->width = ($matches['width'] != 'AUTO' ? $matches['width'] : null);
             $transform->height = ($matches['height'] != 'AUTO' ? $matches['height'] : null);
@@ -345,7 +349,8 @@ class AssetTransforms extends Component
             $transform->quality = isset($matches['quality']) ? $matches['quality'] : null;
         } else {
             // Load the dimensions for named transforms and merge with file-specific information.
-            $transform = $this->normalizeTransform(mb_substr($index->location, 1));
+            $transform = $this->normalizeTransform(mb_substr($index->location,
+                1));
         }
 
         $index->transform = $transform;
