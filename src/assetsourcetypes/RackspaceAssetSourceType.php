@@ -352,10 +352,23 @@ class RackspaceAssetSourceType extends BaseAssetSourceType
 	}
 
 	/**
+	 * @inheritDoc BaseAssetSourceType::fileExists()
+	 *
+	 * @param string $parentPath  Parent path
+	 * @param string $filename    The name of the file.
+	 *
+	 * @return boolean
+	 */
+	public function fileExists($parentPath, $fileName)
+	{
+		return (bool) $this->_getObjectInfo(rtrim($this->_getPathPrefix().$parentPath, '/').'/'.$fileName);
+	}
+
+	/**
 	 * @inheritDoc BaseAssetSourceType::folderExists()
 	 *
-	 * @param AssetFolderModel $parentPath
-	 * @param string           $folderName
+	 * @param string $parentPath  Parent path
+	 * @param string $folderName
 	 *
 	 * @return boolean
 	 */
