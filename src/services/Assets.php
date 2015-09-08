@@ -862,19 +862,7 @@ class Assets extends Component
             return Craft::$app->getAssetTransforms()->getUrlForTransformByTransformIndex($index);
         } else {
             if (Craft::$app->getConfig()->get('generateTransformsBeforePageLoad')) {
-                // Mark the transform as in progress
-                $index->inProgress = true;
-                Craft::$app->getAssetTransforms()->storeTransformIndexData($index);
-
-                // Generate the transform
-                Craft::$app->getAssetTransforms()->generateTransform($index);
-
-                // Update the index
-                $index->fileExists = true;
-                Craft::$app->getAssetTransforms()->storeTransformIndexData($index);
-
-                // Return the transform URL
-                return Craft::$app->getAssetTransforms()->getUrlForTransformByTransformIndex($index);
+                return Craft::$app->getAssetTransforms()->ensureTransformUrlByIndexModel($index);
             } else {
                 // Queue up a new Generate Pending Transforms task, if there isn't one already
                 if (!Craft::$app->getTasks()->areTasksPending('GeneratePendingTransforms')) {
