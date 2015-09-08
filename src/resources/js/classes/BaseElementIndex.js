@@ -512,6 +512,19 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 		Craft.setLocalStorage(this.sourceStatesStorageKey, this.sourceStates);
 	},
 
+	storeSortAttributeAndDirection: function()
+	{
+		var attr = this.getSelectedSortAttribute();
+
+		if (attr != 'score')
+		{
+			this.setSelecetedSourceState({
+				order: attr,
+				sort: this.getSelectedSortDirection()
+			});
+		}
+	},
+
 	/**
 	 * Returns the data that should be passed to the elementIndex/getElements controller action
 	 * when loading elements.
@@ -1380,17 +1393,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 			this.setSortDirection($option.data('dir'));
 		}
 
-		// Save it to localStorage (unless we're sorting by score)
-		var attr = this.getSelectedSortAttribute();
-
-		if (attr != 'score')
-		{
-			this.setSelecetedSourceState({
-				order: attr,
-				sort: this.getSelectedSortDirection()
-			});
-		}
-
+		this.storeSortAttributeAndDirection();
 		this.updateElements();
 	},
 

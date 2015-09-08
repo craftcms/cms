@@ -1,16 +1,14 @@
 <div class="tableview">
 	<table class="data fullwidth"{% if structureEditable is defined and structureEditable %} data-structure-id="{{ structure.id }}" data-max-levels="{{ structure.maxLevels }}"{% endif %}>
 		<thead>
-			{% if showCheckboxes %}
-				<th></th>
-			{% endif %}
 			{% for attribute in attributes %}
 				{% set icon = (attribute[1].icon is defined ? attribute[1].icon : null) %}
-				{% if icon %}
-					<th scope="col" data-attribute="{{ attribute[0] }}" data-icon="{{ icon }}" title="{{ attribute[1].label }}"></th>
-				{% else %}
-					<th scope="col" data-attribute="{{ attribute[0] }}">{{ attribute[1].label }}</th>
-				{% endif %}
+				<th scope="col" data-attribute="{{ attribute[0] }}"
+					{%- if icon %} data-icon="{{ icon }}" title="{{ attribute[1].label }}"{% endif %}
+					{%- if showCheckboxes and loop.first %} colspan="2"{% endif -%}
+				>
+					{%- if not icon %}{{ attribute[1].label }}{% endif -%}
+				</th>
 			{% endfor %}
 		</thead>
 		<tbody>

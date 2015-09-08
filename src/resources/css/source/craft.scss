@@ -564,16 +564,20 @@ h2 + .actions { margin-top: -54px; }
 /* ----------------------------------------*/
 
 table thead th { font-weight: bold; @include alignleft; vertical-align: top; font-size: 11px; line-height: 1.2; color: rgba(0,0,0,0.5); }
-table thead th.ordered { @include padding-right(26px); background: $bgcolor url(../images/listview_sort.png) no-repeat;
-	body.ltr & { background-position: 100% -4px; }
-	body.rtl & { background-position: 0 -4px; }
-	@include box-shadow(inset 0 1px 5px rgba(0,0,0,0.1));
+table thead th.ordered { @include padding-right(26px); background: #f2f2f2 url(../images/listview_sort.png) no-repeat;
+	body.ltr & { background-position: 100% -3px; }
+	body.rtl & { background-position: 0 -3px; }
 }
 table thead th.ordered.desc {
-	body.ltr & { background-position: 100% -35px; }
-	body.rtl & { background-position: 0 -35px; }
+	body.ltr & { background-position: 100% -34px; }
+	body.rtl & { background-position: 0 -34px; }
 }
 table thead th.ordered:first-child { @include padding-left(10px); }
+table thead th.ordered.loading { background-image: url(../images/spinner_tableheader.gif);
+	body.ltr & { background-position: 100% 4px; }
+	body.rtl & { background-position: 0 4px; }
+}
+table thead th.orderable:hover { background-color: #f9f9f9; }
 
 td.thin { width: 0.01% !important; vertical-align: middle; }
 
@@ -589,6 +593,7 @@ table.data tbody tr:first-child td { border-top: 1px dotted $hrcolor; }
 table.data thead + tbody tr:first-child th,
 table.data thead + tbody tr:first-child td { border-top-style: solid; }
 table.data th { font-weight: bold; }
+table.data th:first-child[colspan='2'] { @include padding-left(26px); } /* checkboxes */
 table.data thead th { white-space: nowrap; }
 table.data td.timestamp { @include alignright; vertical-align: bottom; white-space: nowrap; color: $lighttextcolor; }
 table.data td form { height: 22px; }
