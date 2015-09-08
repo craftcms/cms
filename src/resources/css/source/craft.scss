@@ -195,9 +195,6 @@ td.right { float: none; @include alignright; }
 .token[data-name='*']:before { @include icon; display: block; position: absolute; top: 0; left: 0; width: 100%; font-size: 9px; line-height: 17px; content: '*'; text-indent: 0; }
 .token:focus { border-color: $mediumtextcolor; background: #aaa; outline: none; }
 
-.settings-btn { display: block; width: 16px; height: 16px; background: url(../images/settings-btn.png); cursor: pointer; }
-.settings-btn.active { background-position: 0 100%; }
-
 .success { color: $successcolor !important; }
 .warning { color: $warningcolor !important; }
 .error { color: $errorcolor !important; }
