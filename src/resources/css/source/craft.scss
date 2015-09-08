@@ -593,7 +593,6 @@ table.data tbody tr:first-child td { border-top: 1px dotted $hrcolor; }
 table.data thead + tbody tr:first-child th,
 table.data thead + tbody tr:first-child td { border-top-style: solid; }
 table.data th { font-weight: bold; }
-table.data th:first-child[colspan='2'] { @include padding-left(26px); } /* checkboxes */
 table.data thead th { white-space: nowrap; }
 table.data td.timestamp { @include alignright; vertical-align: bottom; white-space: nowrap; color: $lighttextcolor; }
 table.data td form { height: 22px; }
