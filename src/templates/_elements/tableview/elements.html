@@ -11,7 +11,7 @@
 {% for element in elements %}
 	<tr data-id="{{ element.id }}"{% if structure %} data-level="{{ element.level }}" data-descendants="{{ element.getTotalDescendants() }}"{% endif %}{% if element.id in disabledElementIds %} class="disabled"{% endif %}>
 		{% if showCheckboxes %}
-			<td class="thin" data-checkboxcell><div class="checkbox" title="{{ 'Select'|t }}"></div></td>
+			<td class="thin checkbox-cell"><div class="checkbox" title="{{ 'Select'|t }}"></div></td>
 		{% endif %}
 		{% for attribute in attributes %}
 			{% if loop.first %}

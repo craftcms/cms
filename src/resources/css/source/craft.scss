@@ -675,10 +675,13 @@ table.collapsed tbody tr:last-child td:not(:last-child) { border-bottom: none; }
 .elements .tableview th,
 .elements .tableview td { padding-top: 5px; padding-bottom: 5px; }
 .elements .tableview td { position: relative; }
-.elements .tableview tr.sel td { background: $lightselcolor; }
+.elements .tableview td.checkbox-cell { @include padding-right(7px); }
+.elements .tableview td.checkbox-cell + td { @include padding-left(7px); }
+.elements .tableview tr.sel td:not(.checkbox-cell) { background: $lightselcolor; }
 .elements .tableview .move { display: block; position: absolute; top: 9px; @include margin-left(-14px); font-size: 11px; text-decoration: none; }
 .elements .tableview .toggle { display: block; position: absolute; top: 9px; @include margin-left(-20px); }
 .elements .tableview .move + .toggle { @include margin-left(-34px); }
+.elements .tableview td .element { padding-left: 0; padding-right: 0; }
 
 /* thumbs views */
 .elements .thumbsview { @include margin(-14px, 0, 0, -14px); }

@@ -1129,7 +1129,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 					var $helperCell = $($helperCells[i]);
 
 					// Skip the checkbox cell
-					if (Garnish.hasAttr($helperCell, 'data-checkboxcell'))
+					if ($helperCell.hasClass('checkbox-cell'))
 					{
 						$helperCell.remove();
 						$outerContainer.css('margin-'+Craft.left, 19); // 26 - 7

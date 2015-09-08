@@ -152,7 +152,7 @@ Craft.StructureTableSorter = Garnish.DragSort.extend({
 			var $helperCell = $($helperCells[i]);
 
 			// Skip the checkbox cell
-			if (Garnish.hasAttr($helperCell, 'data-checkboxcell'))
+			if ($helperCell.hasClass('checkbox-cell'))
 			{
 				$helperCell.remove();
 				continue;
