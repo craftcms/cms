@@ -168,19 +168,19 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 	 *
 	 * @param string           $localFilePath    The local file path of the file to insert.
 	 * @param AssetFolderModel $folder           The assetFolderModel where the file should be uploaded to.
-	 * @param string           $fileName         The name of the file to insert.
+	 * @param string           $filename         The name of the file to insert.
 	 * @param bool             $preventConflicts If set to true, will ensure that a conflict is not encountered by
 	 *                                           checking the file name prior insertion.
 	 *
 	 * @return AssetOperationResponseModel
 	 */
-	public function insertFileByPath($localFilePath, AssetFolderModel $folder, $fileName, $preventConflicts = false)
+	public function insertFileByPath($localFilePath, AssetFolderModel $folder, $filename, $preventConflicts = false)
 	{
 		// Fire an 'onBeforeUploadAsset' event
 		$event = new Event($this, array(
 			'path'     => $localFilePath,
 			'folder'   => $folder,
-			'filename' => $fileName
+			'filename' => $filename
 		));
 
 		craft()->assets->onBeforeUploadAsset($event);
@@ -198,17 +198,17 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 
 			if ($preventConflicts)
 			{
-				$newFileName = $this->getNameReplacement($folder, $fileName);
+				$newFileName = $this->getNameReplacement($folder, $filename);
 				$response = $this->insertFileInFolder($folder, $localFilePath, $newFileName);
 			}
 			else
 			{
-				$response = $this->insertFileInFolder($folder, $localFilePath, $fileName);
+				$response = $this->insertFileInFolder($folder, $localFilePath, $filename);
 
 				// Naming conflict. create a new file and ask the user what to do with it
 				if ($response->isConflict())
 				{
-					$newFileName = $this->getNameReplacement($folder, $fileName);
+					$newFileName = $this->getNameReplacement($folder, $filename);
 					$conflictResponse = $response;
 					$response = $this->insertFileInFolder($folder, $localFilePath, $newFileName);
 				}
@@ -216,12 +216,16 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 
 			if ($response->isSuccess())
 			{
-				$filename = IOHelper::getFileName($response->getDataItem('filePath'));
 
 				$fileModel = new AssetFileModel();
+
+				$fileModel->getContent()->title = $fileModel->generateAttributeLabel(IOHelper::getFileName($filename, false));
+
+				$filename = IOHelper::getFileName($response->getDataItem('filePath'));
+				$fileModel->filename = IOHelper::getFileName($filename);
+
 				$fileModel->sourceId = $this->model->id;
 				$fileModel->folderId = $folder->id;
-				$fileModel->filename = IOHelper::getFileName($filename);
 				$fileModel->kind = IOHelper::getFileKind(IOHelper::getExtension($filename));
 				$fileModel->size = filesize($localFilePath);
 				$fileModel->dateModified = IOHelper::getLastTimeModified($localFilePath);
