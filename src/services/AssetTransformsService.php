@@ -617,6 +617,7 @@ class AssetTransformsService extends BaseApplicationComponent
 	 * @param $fileModel
 	 * @param $size
 	 *
+	 * @throws Exception
 	 * @return bool|string
 	 */
 	public function getThumbServerPath(AssetFileModel $fileModel, $size)

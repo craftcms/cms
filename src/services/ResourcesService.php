@@ -176,19 +176,26 @@ class ResourcesService extends BaseApplicationComponent
 				{
 					if (empty($segs[1]) || empty($segs[2]) || !is_numeric($segs[1]) || !is_numeric($segs[2]))
 					{
-						return false;
+						return $this->_getBrokenImageThumbPath();
 					}
 
 					$fileModel = craft()->assets->getFileById($segs[1]);
 
 					if (empty($fileModel))
 					{
-						return false;
+						return $this->_getBrokenImageThumbPath();
 					}
 
 					$size = $segs[2];
 
-					return craft()->assetTransforms->getThumbServerPath($fileModel, $size);
+					try
+					{
+						return craft()->assetTransforms->getThumbServerPath($fileModel, $size);
+					}
+					catch (\Exception $e)
+					{
+						return $this->_getBrokenImageThumbPath();
+					}
 				}
 
 				case 'icons':
@@ -579,5 +586,16 @@ class ResourcesService extends BaseApplicationComponent
 		}
 
 		return $iconLocation;
+	}
+
+	/**
+	 * Returns the path to the broken image thumbnail.
+	 *
+	 * @return string
+	 */
+	private function _getBrokenImageThumbPath()
+	{
+		//http_response_code(404);
+		return craft()->path->getResourcesPath().'images/brokenimage.svg';
 	}
 }
