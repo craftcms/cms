@@ -83,13 +83,14 @@ class AssetsFieldType extends BaseElementFieldType
 		$isMatrix = (strncmp($namespace, 'types[Matrix][blockTypes][', 26) === 0);
 
 		return craft()->templates->render('_components/fieldtypes/Assets/settings', array(
-			'folderOptions'     => $folderOptions,
-			'sourceOptions'     => $sourceOptions,
-			'targetLocaleField' => $this->getTargetLocaleFieldHtml(),
-			'settings'          => $this->getSettings(),
-			'type'              => $this->getName(),
-			'fileKindOptions'   => $fileKindOptions,
-			'isMatrix'          => $isMatrix,
+			'folderOptions'         => $folderOptions,
+			'sourceOptions'         => $sourceOptions,
+			'targetLocaleField'     => $this->getTargetLocaleFieldHtml(),
+			'settings'              => $this->getSettings(),
+			'defaultSelectionLabel' => $this->getAddButtonLabel(),
+			'type'                  => $this->getName(),
+			'fileKindOptions'       => $fileKindOptions,
+			'isMatrix'              => $isMatrix,
 		));
 	}
 

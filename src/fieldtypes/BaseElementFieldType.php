@@ -94,12 +94,13 @@ abstract class BaseElementFieldType extends BaseFieldType implements IPreviewabl
 	public function getSettingsHtml()
 	{
 		return craft()->templates->render('_components/fieldtypes/elementfieldsettings', array(
-			'allowMultipleSources' => $this->allowMultipleSources,
-			'allowLimit'           => $this->allowLimit,
-			'sources'              => $this->getSourceOptions(),
-			'targetLocaleField'    => $this->getTargetLocaleFieldHtml(),
-			'settings'             => $this->getSettings(),
-			'type'                 => $this->getName()
+			'allowMultipleSources'  => $this->allowMultipleSources,
+			'allowLimit'            => $this->allowLimit,
+			'sources'               => $this->getSourceOptions(),
+			'targetLocaleField'     => $this->getTargetLocaleFieldHtml(),
+			'settings'              => $this->getSettings(),
+			'defaultSelectionLabel' => $this->getAddButtonLabel(),
+			'type'                  => $this->getName()
 		));
 	}
 
@@ -431,7 +432,7 @@ abstract class BaseElementFieldType extends BaseFieldType implements IPreviewabl
 			'criteria'           => $selectionCriteria,
 			'sourceElementId'    => (isset($this->element->id) ? $this->element->id : null),
 			'limit'              => ($this->allowLimit ? $settings->limit : null),
-			'selectionLabel'     => Craft::t($this->getSettings()->selectionLabel),
+			'selectionLabel'     => ($settings->selectionLabel ? Craft::t($settings->selectionLabel) : $this->getAddButtonLabel())
 		);
 	}
 
@@ -578,7 +579,7 @@ abstract class BaseElementFieldType extends BaseFieldType implements IPreviewabl
 			$settings['limit'] = array(AttributeType::Number, 'min' => 0);
 		}
 
-		$settings['selectionLabel'] = array(AttributeType::String, 'default' => $this->getAddButtonLabel());
+		$settings['selectionLabel'] = AttributeType::String;
 
 		return $settings;
 	}
