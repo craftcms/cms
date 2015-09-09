@@ -13,11 +13,6 @@ namespace Craft;
  */
 class ResourcesService extends BaseApplicationComponent
 {
-	// Constants
-	// =========================================================================
-
-	const DefaultUserphotoFilename = 'user.gif';
-
 	// Properties
 	// =========================================================================
 
@@ -160,29 +155,7 @@ class ResourcesService extends BaseApplicationComponent
 
 				case 'defaultuserphoto':
 				{
-					if (!isset($segs[1]) || !is_numeric($segs[1]))
-					{
-						return;
-					}
-
-					$size = $segs[1];
-					$sourceFile = craft()->path->getResourcesPath().'images/'.static::DefaultUserphotoFilename;
-					$targetFolder = craft()->path->getUserPhotosPath().'__default__/';
-					IOHelper::ensureFolderExists($targetFolder);
-
-					if (IOHelper::isWritable($targetFolder))
-					{
-						$targetFile = $targetFolder.$size.'.'.IOHelper::getExtension($sourceFile);
-						craft()->images->loadImage($sourceFile, $size, $size)
-							->resize($size)
-							->saveAs($targetFile);
-
-						return $targetFile;
-					}
-					else
-					{
-						Craft::log('Tried to write to the target folder, but could not:'.$targetFolder, LogLevel::Error);
-					}
+					return craft()->path->getResourcesPath().'images/user.svg';
 				}
 
 				case 'tempuploads':

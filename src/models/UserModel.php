@@ -244,9 +244,10 @@ class UserModel extends BaseElementModel
 	public function getThumbUrl($size = 100)
 	{
 		$url = $this->getPhotoUrl($size);
+
 		if (!$url)
 		{
-			$url = UrlHelper::getResourceUrl('defaultuserphoto/'.$size);
+			$url = UrlHelper::getResourceUrl('defaultuserphoto');
 		}
 
 		return $url;
