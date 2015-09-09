@@ -118,12 +118,14 @@ var CP = Garnish.Base.extend(
 		this.addListener(Garnish.$win, 'scroll', 'updateFixedNotifications');
 		this.updateFixedNotifications();
 
-		// Fade the notification out in two seconds
-		var $errorNotifications = this.$notificationContainer.children('.error'),
-			$otherNotifications = this.$notificationContainer.children(':not(.error)');
+		// Fade the notification out two seconds after page load
+		Garnish.$doc.ready($.proxy(function() {
+			var $errorNotifications = this.$notificationContainer.children('.error'),
+				$otherNotifications = this.$notificationContainer.children(':not(.error)');
 
-		$errorNotifications.delay(CP.notificationDuration * 2).velocity('fadeOut');
-		$otherNotifications.delay(CP.notificationDuration).velocity('fadeOut');
+			$errorNotifications.delay(CP.notificationDuration * 2).velocity('fadeOut');
+			$otherNotifications.delay(CP.notificationDuration).velocity('fadeOut');
+		}, this));
 
 		// Alerts
 		if (this.$alerts.length)
