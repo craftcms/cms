@@ -23,6 +23,7 @@
 {%- includeJsResource "js/cp.js" first -%}
 {%- includeJsResource "js/craft.js" first -%}
 {%- includeJsResource 'lib/garnish-0.1'~(useCompressedJs ? '.min')~'.js' first %}
+{%- includeJsResource 'lib/picturefill-3.0.0-rc1'~(useCompressedJs ? '.min')~'.js' first %}
 {%- includeJsResource 'lib/fileupload/jquery.fileupload.js' first %}
 {%- includeJsResource 'lib/fileupload/jquery.ui.widget.js' first %}
 {%- includeJsResource 'lib/jquery.placeholder.js' first %}
@@ -45,6 +46,7 @@
 	</noscript>
 
 	<script type="text/javascript">
+		// Create the Craft object
 		window.Craft = {
 			siteUid:               "{{ craft.app.getSiteUid()|e('js') }}",
 			baseUrl:               "{{ url()|e('js') }}",
@@ -95,5 +97,8 @@
 				{% endfor %}
 			]
 		};
+
+		// Picture element HTML5 shiv
+		document.createElement('picture');
 	</script>
 {% endblock %}

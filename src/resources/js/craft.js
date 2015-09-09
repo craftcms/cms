@@ -1147,6 +1147,63 @@ $.extend(Craft,
 	},
 
 	/**
+	 * Changes an element to the requested size.
+	 *
+	 * @param element
+	 * @param size
+	 */
+	setElementSize: function(element, size)
+	{
+		var $element = $(element);
+
+		if (size != 'small' && size != 'large')
+		{
+			size = 'small';
+		}
+
+		if ($element.hasClass(size))
+		{
+			return;
+		}
+
+		var otherSize = (size == 'small' ? 'large' : 'small');
+
+		$element
+			.addClass(size)
+			.removeClass(otherSize);
+
+		var hasThumb = $element.hasClass('hasthumb'),
+			hasIcon = hasThumb ? false : $element.hasClass('hasicon');
+
+		if (hasThumb || hasIcon)
+		{
+			var $oldImg, imgSize;
+
+			if (hasThumb)
+			{
+				$oldImg = $element.find('> .elementthumb > img');
+				imgSize = (size == 'small' ? '30' : '100');
+			}
+			else
+			{
+				$oldImg = $element.find('> .elementicon > img');
+				imgSize = (size == 'small' ? '20' : '90');
+			}
+
+			var $newImg = $('<img/>', {
+				sizes: imgSize+'px',
+				srcset: $oldImg.attr('srcset') || $oldImg.attr('data-pfsrcset')
+			});
+
+			$oldImg.replaceWith($newImg);
+
+			picturefill({
+				elements: [$newImg[0]]
+			});
+		}
+	},
+
+	/**
 	 * Shows an element editor HUD.
 	 *
 	 * @param object $element

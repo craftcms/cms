@@ -638,22 +638,33 @@ table.collapsed tbody tr:last-child td:not(:last-child) { border-bottom: none; }
 }
 
 /* elements */
-.element { display: inline-block; position: relative; padding: 6px 7px; cursor: default; outline: none !important; @include user-select(none); }
+.element { position: relative; cursor: default; outline: none !important; @include user-select(none); }
+.element.small { display: inline-block; padding: 6px 7px; }
+.element.large { display: block; padding: 105px 0 5px; }
+.element.small.hasthumb,
+.element.small.hasicon { @include padding-left(40px !important); }
+.element.large.hasthumb,
+.element.large.hasicon { @include padding-left(0 !important); }
 
-.element .label { display: inline-block; }
-
-.element.hasthumb,
-.element.hasicon { @include padding-left(40px !important); }
-.elements .thumbsview .element.hasthumb,
-.elements .thumbsview .element.hasicon { @include padding-left(0 !important); }
 .element.hasthumb .elementthumb,
-.element.hasicon .elementicon { position: absolute; top: 0; @include left(0); border-radius: 3px; width: 30px; height: 30px; background-repeat: no-repeat; background-position: 50% 50%; }
+.element.hasicon .elementicon { display: block; position: absolute; top: 0; @include left(0); border-radius: 3px; overflow: hidden; }
+.element.small.hasthumb .elementthumb,
+.element.small.hasicon .elementicon { width: 30px; height: 30px; }
+.element.large.hasthumb .elementthumb,
+.element.large.hasicon .elementicon { width: 100px; height: 100px; }
+
+.element.hasthumb .elementthumb img,
+.element.hasicon .elementicon img { display: block; width: 100%; height: 100%; }
+.element.hasthumb .elementthumb { background: #fff; }
+
+.element.small .label { display: inline-block; }
+.element.large .label { display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
 .element.sel,
 .sel .element { border-radius: 3px; background: $lightselcolor; cursor: default; }
 
-.element.sel .elementthumb:after,
-.sel .element .elementthumb:after { display: block; position: absolute; top: 0; left: 0; border-radius: 3px; width: 100%; height: 100%; content: '.'; font-size: 0; background: rgba(0,0,7,0.15); }
+.element.hasthumb.sel .elementthumb:after,
+.sel .element.hasthumb .elementthumb:after { display: block; position: absolute; top: 0; left: 0; border-radius: 3px; width: 100%; height: 100%; content: '.'; font-size: 0; background: rgba(0,0,7,0.15); }
 
 .element.removable .label,
 .element.loading .label { @include padding-right(27px); }
@@ -682,11 +693,6 @@ table.collapsed tbody tr:last-child td:not(:last-child) { border-bottom: none; }
 /* thumbs views */
 .elements .thumbsview { @include margin(-14px, 0, 0, -14px); }
 .elements .thumbsview li { position: relative; @include floatleft; @include margin(14px, 0, 0, 14px); width: 100px; outline: none; }
-
-.elements .thumbsview li .element { display: block; padding: 105px 0 5px !important; }
-.elements .thumbsview li .element .elementthumb,
-.elements .thumbsview li .element .elementicon { width: 100px; height: 100px; }
-.elements .thumbsview li .element .label { display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
 .elements .thumbsview li.has-checkbox .checkbox { position: absolute; top: 106px; @include left(4px); }
 .elements .thumbsview li.has-checkbox .element .label { @include padding-left(20px); }

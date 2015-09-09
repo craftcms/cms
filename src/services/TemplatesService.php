@@ -1360,46 +1360,71 @@ class TemplatesService extends BaseApplicationComponent
 			$context['context'] = 'index';
 		}
 
-		if (!isset($context['viewMode']))
+		// How big is the element going to be?
+		if (isset($context['size']) && ($context['size'] == 'small' || $context['size'] == 'large'))
 		{
-			$context['viewMode'] = 'table';
+			$elementSize = $context['size'];
 		}
-
-		$thumbClass = 'elementthumb'.$context['element']->id;
-		$iconClass = 'elementicon'.$context['element']->id;
-
-		if ($context['viewMode'] == 'thumbs')
+		else if (isset($context['viewMode']) && $context['viewMode'] == 'thumbs')
 		{
-			$thumbSize = 100;
-			$iconSize = 90;
-			$thumbSelectorPrefix = '.thumbsview ';
+			$elementSize = 'large';
 		}
 		else
 		{
-			$thumbSize = 30;
-			$iconSize = 20;
-			$thumbSelectorPrefix = '';
+			$elementSize = 'small';
 		}
 
-		$thumbUrl = $context['element']->getThumbUrl($thumbSize);
+		// Create the thumb/icon image, if there is one
+		// ---------------------------------------------------------------------
 
-		if ($thumbUrl)
-		{
-			$this->includeCss($thumbSelectorPrefix.'.'.$thumbClass." { background-image: url('".$thumbUrl."'); }");
-			$this->includeHiResCss($thumbSelectorPrefix.'.'.$thumbClass." { background-image: url('".$context['element']->getThumbUrl($thumbSize * 2)."'); background-size: ".$thumbSize.'px; }');
-		}
-		else
-		{
-			$iconUrl = $context['element']->getIconUrl($iconSize);
+		$thumbUrl = $context['element']->getThumbUrl(30);
+		$iconUrl = $thumbUrl ? null : $context['element']->getIconUrl(20);
 
-			if ($iconUrl)
+		if ($thumbUrl || $iconUrl)
+		{
+			// Determine the sizes to include in the srcset
+			if ($thumbUrl)
 			{
-				$this->includeCss($thumbSelectorPrefix.'.'.$iconClass." { background-image: url('".$iconUrl."'); }");
-				$this->includeHiResCss($thumbSelectorPrefix.'.'.$iconClass." { background-image: url('".$context['element']->getIconUrl($iconSize * 2)."); background-size: ".$iconSize.'px; }');
+				$sizes = array(30, 60, 100, 200);
 			}
+			else
+			{
+				$sizes = array(20, 40, 90, 180);
+			}
+
+			$srcsets = array();
+
+			foreach ($sizes as $i => $size)
+			{
+				if ($i == 0)
+				{
+					$srcset = $thumbUrl ?: $iconUrl;
+				}
+				else if ($thumbUrl)
+				{
+					$srcset = $context['element']->getThumbUrl($size);
+				}
+				else
+				{
+					$srcset = $context['element']->getIconUrl($size);
+				}
+
+				$srcsets[] = $srcset.' '.$size.'w';
+			}
+
+			$imgHtml = '<div class="'.($thumbUrl ? 'elementthumb' : 'elementicon').'">'.
+				'<img '.
+				'sizes="'.($elementSize == 'small' ? $sizes[0] : $sizes[2]).'px" '.
+				'srcset="'.implode(', ', $srcsets).'" '.
+				'alt="">'.
+				'</div> ';
+		}
+		else
+		{
+			$imgHtml = '';
 		}
 
-		$html = '<div class="element';
+		$html = '<div class="element '.$elementSize;
 
 		if ($context['context'] == 'field')
 		{
@@ -1439,15 +1464,7 @@ class TemplatesService extends BaseApplicationComponent
 			$html .= '<a class="delete icon" title="'.Craft::t('Remove').'"></a> ';
 		}
 
-		if ($thumbUrl)
-		{
-			$html .= '<div class="elementthumb '.$thumbClass.'"></div> ';
-		}
-		else if ($iconUrl)
-		{
-			$html .= '<div class="elementicon '.$iconClass.'"></div> ';
-		}
-
+		$html .= $imgHtml;
 		$html .= '<div class="label">';
 
 		if (isset($context['elementType']))

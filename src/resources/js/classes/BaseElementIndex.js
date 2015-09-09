@@ -1545,6 +1545,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 		this.$elements.html(response.html);
 		Craft.appendHeadHtml(response.headHtml);
 		Craft.appendFootHtml(response.footHtml);
+		picturefill();
 
 		// Create the view
 		// -------------------------------------------------------------
