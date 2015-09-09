@@ -377,12 +377,12 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
 	{
 		for (var i = 0; i < elements.length; i++)
 		{
-			var element = elements[i],
-				$element = this.createNewElement(element);
+			var elementInfo = elements[i],
+				$element = this.createNewElement(elementInfo);
 
 			this.appendElement($element);
 			this.addElements($element);
-			this.animateElementIntoPlace(element.$element, $element);
+			this.animateElementIntoPlace(elementInfo.$element, $element);
 		}
 
 		this.onSelectElements(elements);

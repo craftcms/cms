@@ -271,10 +271,10 @@ class ElementIndexesService extends BaseApplicationComponent
 		// Start with the first available attribute, no matter what
 		$firstKey = null;
 
-		foreach ($availableAttributes as $key => $label)
+		foreach ($availableAttributes as $key => $attributeInfo)
 		{
 			$firstKey = $key;
-			$attributes[] = array($key, $label);
+			$attributes[] = array($key, $attributeInfo);
 			break;
 		}
 
