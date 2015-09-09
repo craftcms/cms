@@ -683,7 +683,8 @@ table.collapsed tbody tr:last-child td:not(:last-child) { border-bottom: none; }
 .elements .tableview td { padding-top: 5px; padding-bottom: 5px; }
 .elements .tableview td { position: relative; }
 .elements .tableview td.checkbox-cell { @include padding-right(7px); }
-.elements .tableview td.checkbox-cell + td { @include padding-left(7px); }
+.elements .tableview td.checkbox-cell + td,
+.elements .tableview td.checkbox-cell + th { @include padding-left(7px); }
 .elements .tableview tr.sel td:not(.checkbox-cell) { background: $lightselcolor; }
 .elements .tableview .move { display: block; position: absolute; top: 9px; @include margin-left(-14px); font-size: 11px; text-decoration: none; }
 .elements .tableview .toggle { display: block; position: absolute; top: 9px; @include margin-left(-20px); }
