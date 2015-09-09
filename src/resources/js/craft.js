@@ -1140,6 +1140,7 @@ $.extend(Craft,
 			status:   $element.data('status'),
 			url:      $element.data('url'),
 			hasThumb: $element.hasClass('hasthumb'),
+			hasIcon:  $element.hasClass('hasicon'),
 			$element: $element
 		};
 
