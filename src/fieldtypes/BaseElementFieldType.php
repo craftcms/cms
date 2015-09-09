@@ -97,7 +97,7 @@ abstract class BaseElementFieldType extends BaseFieldType implements IPreviewabl
 			'allowMultipleSources'  => $this->allowMultipleSources,
 			'allowLimit'            => $this->allowLimit,
 			'sources'               => $this->getSourceOptions(),
-			'targetLocaleField'     => $this->getTargetLocaleFieldHtml(),
+			'targetLocaleFieldHtml' => $this->getTargetLocaleFieldHtml(),
 			'settings'              => $this->getSettings(),
 			'defaultSelectionLabel' => $this->getAddButtonLabel(),
 			'type'                  => $this->getName()
