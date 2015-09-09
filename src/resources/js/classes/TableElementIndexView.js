@@ -362,30 +362,44 @@ Craft.TableElementIndexView = Craft.BaseElementIndexView.extend(
 
 	_handleSelectedSortHeaderClick: function(ev)
 	{
+		var $header = $(ev.currentTarget);
+
+		if ($header.hasClass('loading'))
+		{
+			return;
+		}
+
 		// Reverse the sort direction
 		var selectedSortDir = this.elementIndex.getSelectedSortDirection(),
 			newSortDir = (selectedSortDir == 'asc' ? 'desc' : 'asc');
 
 		this.elementIndex.setSortDirection(newSortDir);
-		this._handleSortHeaderClick(ev);
+		this._handleSortHeaderClick(ev, $header);
 	},
 
 	_handleUnselectedSortHeaderClick: function(ev)
 	{
-		var attr = $(ev.currentTarget).attr('data-attribute');
+		var $header = $(ev.currentTarget);
+
+		if ($header.hasClass('loading'))
+		{
+			return;
+		}
+
+		var attr = $header.attr('data-attribute');
 
 		this.elementIndex.setSortAttribute(attr);
-		this._handleSortHeaderClick(ev);
+		this._handleSortHeaderClick(ev, $header);
 	},
 
-	_handleSortHeaderClick: function(ev)
+	_handleSortHeaderClick: function(ev, $header)
 	{
 		if (this.$selectedSortHeader)
 		{
 			this.$selectedSortHeader.removeClass('ordered asc desc');
 		}
 
-		$(ev.currentTarget).removeClass('orderable').addClass('ordered loading');
+		$header.removeClass('orderable').addClass('ordered loading');
 		this.elementIndex.storeSortAttributeAndDirection();
 		this.elementIndex.updateElements();
 
