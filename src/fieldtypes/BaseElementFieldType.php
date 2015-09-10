@@ -24,13 +24,6 @@ abstract class BaseElementFieldType extends BaseFieldType implements IPreviewabl
 	protected $elementType;
 
 	/**
-	 * The JS class that should be initialized for the input.
-	 *
-	 * @var string|null $inputJsClass
-	 */
-	protected $inputJsClass;
-
-	/**
 	 * Whether to allow multiple source selection in the settings.
 	 *
 	 * @var bool $allowMultipleSources
@@ -50,6 +43,13 @@ abstract class BaseElementFieldType extends BaseFieldType implements IPreviewabl
 	 * @var string
 	 */
 	protected $inputTemplate = '_includes/forms/elementSelect';
+
+	/**
+	 * The JS class that should be initialized for the input.
+	 *
+	 * @var string|null $inputJsClass
+	 */
+	protected $inputJsClass;
 
 	/**
 	 * Whether the elements have a custom sort order.

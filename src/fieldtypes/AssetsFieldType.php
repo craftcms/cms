@@ -24,18 +24,18 @@ class AssetsFieldType extends BaseElementFieldType
 	protected $elementType = 'Asset';
 
 	/**
-	 * The JS class that should be initialized for the input.
-	 *
-	 * @var string|null $inputJsClass
-	 */
-	protected $inputJsClass = 'Craft.AssetSelectInput';
-
-	/**
 	 * Template to use for field rendering.
 	 *
 	 * @var string
 	 */
 	protected $inputTemplate = '_components/fieldtypes/Assets/input';
+
+	/**
+	 * The JS class that should be initialized for the input.
+	 *
+	 * @var string|null $inputJsClass
+	 */
+	protected $inputJsClass = 'Craft.AssetSelectInput';
 
 	/**
 	 * Uploaded files that failed validation.
