@@ -257,7 +257,7 @@ class AssetFileModel extends BaseElementModel
 	 *
 	 * @param int $size
 	 *
-	 * @return string
+	 * @return string|null
 	 */
 	public function getThumbUrl($size = 125)
 	{
@@ -269,26 +269,7 @@ class AssetFileModel extends BaseElementModel
 		}
 		else
 		{
-			return false;
-		}
-	}
-
-	/**
-	 * @inheritDoc BaseElementModel::getIconUrl()
-	 *
-	 * @param int $size
-	 *
-	 * @return string
-	 */
-	public function getIconUrl($size = 125)
-	{
-		if ($this->hasThumb())
-		{
-			return false;
-		}
-		else
-		{
-			return UrlHelper::getResourceUrl('icons/'.$this->getExtension().'/'.$size);
+			return UrlHelper::getResourceUrl('icons/'.$this->getExtension());
 		}
 	}
 

@@ -19,6 +19,8 @@ class TemplatesService extends BaseApplicationComponent
 	// Properties
 	// =========================================================================
 
+	private static $_elementThumbSizes = array(30, 60, 100, 200);
+
 	/**
 	 * @var
 	 */
@@ -1377,44 +1379,29 @@ class TemplatesService extends BaseApplicationComponent
 		// Create the thumb/icon image, if there is one
 		// ---------------------------------------------------------------------
 
-		$thumbUrl = $context['element']->getThumbUrl(30);
-		$iconUrl = $thumbUrl ? null : $context['element']->getIconUrl(20);
+		$thumbUrl = $context['element']->getThumbUrl(self::$_elementThumbSizes[0]);
 
-		if ($thumbUrl || $iconUrl)
+		if ($thumbUrl)
 		{
-			// Determine the sizes to include in the srcset
-			if ($thumbUrl)
-			{
-				$sizes = array(30, 60, 100, 200);
-			}
-			else
-			{
-				$sizes = array(20, 40, 90, 180);
-			}
-
 			$srcsets = array();
 
-			foreach ($sizes as $i => $size)
+			foreach (self::$_elementThumbSizes as $i => $size)
 			{
 				if ($i == 0)
 				{
-					$srcset = $thumbUrl ?: $iconUrl;
-				}
-				else if ($thumbUrl)
-				{
-					$srcset = $context['element']->getThumbUrl($size);
+					$srcset = $thumbUrl;
 				}
 				else
 				{
-					$srcset = $context['element']->getIconUrl($size);
+					$srcset = $context['element']->getThumbUrl($size);
 				}
 
 				$srcsets[] = $srcset.' '.$size.'w';
 			}
 
-			$imgHtml = '<div class="'.($thumbUrl ? 'elementthumb' : 'elementicon').'">'.
+			$imgHtml = '<div class="elementthumb">'.
 				'<img '.
-				'sizes="'.($elementSize == 'small' ? $sizes[0] : $sizes[2]).'px" '.
+				'sizes="'.($elementSize == 'small' ? self::$_elementThumbSizes[0] : self::$_elementThumbSizes[2]).'px" '.
 				'srcset="'.implode(', ', $srcsets).'" '.
 				'alt="">'.
 				'</div> ';
@@ -1434,10 +1421,6 @@ class TemplatesService extends BaseApplicationComponent
 		if ($thumbUrl)
 		{
 			$html .= ' hasthumb';
-		}
-		else if ($iconUrl)
-		{
-			$html .= ' hasicon';
 		}
 
 		$label = $context['element'];

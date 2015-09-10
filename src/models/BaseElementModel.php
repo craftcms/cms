@@ -322,23 +322,11 @@ abstract class BaseElementModel extends BaseModel
 	 *
 	 * @param int|null $size
 	 *
-	 * @return string|false
+	 * @return string|null
 	 */
 	public function getThumbUrl($size = null)
 	{
-		return false;
-	}
-
-	/**
-	 * Returns the URL to the element's icon image, if there is one.
-	 *
-	 * @param int|null $size
-	 *
-	 * @return string|false
-	 */
-	public function getIconUrl($size = null)
-	{
-		return false;
+		return null;
 	}
 
 	/**
