@@ -796,12 +796,15 @@ class FieldsService extends BaseApplicationComponent
 	/**
 	 * Assembles a field layout from post data.
 	 *
+	 * @param string|null $namespace The namespace that the form data was posted in, if any.
+	 *
 	 * @return FieldLayoutModel
 	 */
-	public function assembleLayoutFromPost()
+	public function assembleLayoutFromPost($namespace = null)
 	{
-		$postedFieldLayout = craft()->request->getPost('fieldLayout', array());
-		$requiredFields = craft()->request->getPost('requiredFields', array());
+		$paramPrefix = ($namespace ? rtrim($namespace, '.').'.' : '');
+		$postedFieldLayout = craft()->request->getPost($paramPrefix.'fieldLayout', array());
+		$requiredFields = craft()->request->getPost($paramPrefix.'requiredFields', array());
 
 		return $this->assembleLayout($postedFieldLayout, $requiredFields);
 	}
