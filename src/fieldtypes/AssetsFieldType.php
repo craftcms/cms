@@ -24,6 +24,13 @@ class AssetsFieldType extends BaseElementFieldType
 	protected $elementType = 'Asset';
 
 	/**
+	 * Whether to allow the “Large Thumbnails” view mode.
+	 *
+	 * @var bool $allowLargeThumbsView
+	 */
+	protected $allowLargeThumbsView = true;
+
+	/**
 	 * Template to use for field rendering.
 	 *
 	 * @var string
@@ -87,6 +94,7 @@ class AssetsFieldType extends BaseElementFieldType
 			'folderOptions'         => $folderOptions,
 			'sourceOptions'         => $sourceOptions,
 			'targetLocaleFieldHtml' => $this->getTargetLocaleFieldHtml(),
+			'viewModeFieldHtml'     => $this->getViewModeFieldHtml(),
 			'settings'              => $this->getSettings(),
 			'defaultSelectionLabel' => $this->getAddButtonLabel(),
 			'type'                  => $this->getName(),

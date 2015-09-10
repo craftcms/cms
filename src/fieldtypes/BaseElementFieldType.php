@@ -38,6 +38,13 @@ abstract class BaseElementFieldType extends BaseFieldType implements IPreviewabl
 	protected $allowLimit = true;
 
 	/**
+	 * Whether to allow the “Large Thumbnails” view mode.
+	 *
+	 * @var bool $allowLargeThumbsView
+	 */
+	protected $allowLargeThumbsView = false;
+
+	/**
 	 * Template to use for field rendering.
 	 *
 	 * @var string
@@ -98,6 +105,7 @@ abstract class BaseElementFieldType extends BaseFieldType implements IPreviewabl
 			'allowLimit'            => $this->allowLimit,
 			'sources'               => $this->getSourceOptions(),
 			'targetLocaleFieldHtml' => $this->getTargetLocaleFieldHtml(),
+			'viewModeFieldHtml'     => $this->getViewModeFieldHtml(),
 			'settings'              => $this->getSettings(),
 			'defaultSelectionLabel' => $this->getAddButtonLabel(),
 			'type'                  => $this->getName()
@@ -432,6 +440,7 @@ abstract class BaseElementFieldType extends BaseFieldType implements IPreviewabl
 			'criteria'           => $selectionCriteria,
 			'sourceElementId'    => (isset($this->element->id) ? $this->element->id : null),
 			'limit'              => ($this->allowLimit ? $settings->limit : null),
+			'viewMode'           => $this->getViewMode(),
 			'selectionLabel'     => ($settings->selectionLabel ? Craft::t($settings->selectionLabel) : $this->getAddButtonLabel())
 		);
 	}
@@ -557,6 +566,78 @@ abstract class BaseElementFieldType extends BaseFieldType implements IPreviewabl
 	}
 
 	/**
+	 * Returns the HTML for the View Mode setting.
+	 *
+	 * @return string|null
+	 */
+	protected function getViewModeFieldHtml()
+	{
+		$supportedViewModes = $this->getSupportedViewModes();
+
+		if (!$supportedViewModes || count($supportedViewModes) == 1)
+		{
+			return null;
+		}
+
+		$viewModeOptions = array();
+
+		foreach ($supportedViewModes as $key => $label)
+		{
+			$viewModeOptions[] = array('label' => $label, 'value' => $key);
+		}
+
+		return craft()->templates->renderMacro('_includes/forms', 'selectField', array(
+			array(
+				'label' => Craft::t('View Mode'),
+				'instructions' => Craft::t('Choose how the field should look for authors.'),
+				'id' => 'viewMode',
+				'name' => 'viewMode',
+				'options' => $viewModeOptions,
+				'value' => $this->getSettings()->viewMode
+			)
+		));
+	}
+
+	/**
+	 * Returns the field’s supported view modes.
+	 *
+	 * @return array|null
+	 */
+	protected function getSupportedViewModes()
+	{
+		$viewModes = array(
+			'list' => Craft::t('List'),
+		);
+
+		if ($this->allowLargeThumbsView)
+		{
+			$viewModes['large'] = Craft::t('Large Thumbnails');
+		}
+
+		return $viewModes;
+	}
+
+	/**
+	 * Returns the field’s current view mode.
+	 *
+	 * @return string
+	 */
+	protected function getViewMode()
+	{
+		$supportedViewModes = $this->getSupportedViewModes();
+		$viewMode = $this->getSettings()->viewMode;
+
+		if ($viewMode && isset($supportedViewModes[$viewMode]))
+		{
+			return $viewMode;
+		}
+		else
+		{
+			return 'list';
+		}
+	}
+
+	/**
 	 * @inheritDoc BaseSavableComponentType::defineSettings()
 	 *
 	 * @return array
@@ -580,6 +661,7 @@ abstract class BaseElementFieldType extends BaseFieldType implements IPreviewabl
 		}
 
 		$settings['selectionLabel'] = AttributeType::String;
+		$settings['viewMode'] = AttributeType::String;
 
 		return $settings;
 	}

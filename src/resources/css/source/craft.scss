@@ -640,7 +640,7 @@ table.collapsed tbody tr:last-child td:not(:last-child) { border-bottom: none; }
 /* elements */
 .element { position: relative; cursor: default; outline: none !important; @include user-select(none); }
 .element.small { display: inline-block; padding: 6px 7px; }
-.element.large { display: block; padding: 105px 0 5px; }
+.element.large { display: block; padding: 105px 0 5px; width: 100px; }
 .element.small.hasthumb { @include padding-left(40px !important); }
 .element.large.hasthumb { @include padding-left(0 !important); }
 
@@ -659,9 +659,10 @@ table.collapsed tbody tr:last-child td:not(:last-child) { border-bottom: none; }
 .sel .element.hasthumb .elementthumb:after { display: block; position: absolute; top: 0; left: 0; border-radius: 3px; width: 100%; height: 100%; content: '.'; font-size: 0; background: rgba(0,0,7,0.15); }
 
 .element.removable .label,
-.element.loading .label { @include padding-right(27px); }
+.element.loading .label { @include padding-right(20px); }
 
-.element.removable .delete { position: absolute; @include right(7px); }
+.element.small.removable .delete { position: absolute; @include right(7px); }
+.element.large.removable .delete { position: absolute; @include right(0); }
 .element.removable .delete:before { color: rgba(0,0,0,0.2); }
 
 .element.loading:after { content: '.'; font-size: 0; position: absolute; bottom: 0; @include right(3px); @include spinner; height: 30px; }
@@ -681,11 +682,11 @@ table.collapsed tbody tr:last-child td:not(:last-child) { border-bottom: none; }
 .elements .tableview .move { display: block; position: absolute; top: 9px; @include margin-left(-14px); font-size: 11px; text-decoration: none; }
 .elements .tableview .toggle { display: block; position: absolute; top: 9px; @include margin-left(-20px); }
 .elements .tableview .move + .toggle { @include margin-left(-34px); }
-.elements .tableview td .element { padding-left: 0; padding-right: 0; }
+.elements .tableview td .element:first-child { padding-left: 0; padding-right: 0; }
 
 /* thumbs views */
 .elements .thumbsview { @include margin(-14px, 0, 0, -14px); }
-.elements .thumbsview li { position: relative; @include floatleft; @include margin(14px, 0, 0, 14px); width: 100px; outline: none; }
+.elements .thumbsview li { position: relative; @include floatleft; @include margin(14px, 0, 0, 14px); outline: none; }
 
 .elements .thumbsview li.has-checkbox .checkbox { position: absolute; top: 106px; @include left(4px); }
 .elements .thumbsview li.has-checkbox .element .label { @include padding-left(20px); }
@@ -737,7 +738,9 @@ table.collapsed tbody tr:last-child td:not(:last-child) { border-bottom: none; }
 .elementselect { position: relative; min-height: 40px; margin-bottom: -10px; }
 .elementselect:after { @include clearafter; }
 .elementselect .element,
-.elementselect .btn { @include floatleft; @include margin(0, 10px, 10px, 0); }
+.elementselect .btn { @include floatleft; @include margin(0, 7px, 7px, 0); }
+.elementselect .element.small,
+.elementselect .btn { clear: both; }
 .elementselect .element { z-index: 1; }
 .elementselect .caboose { @include floatleft; }
 
@@ -1023,6 +1026,7 @@ body .redactor-dropdown a:hover { color: $textcolor; background-color: $lightsel
 .menu hr.padded { @include margin-left(10px); }
 
 /* tag select fields */
+.tagselect .element.small { clear: none; }
 .tagselect .add { position: relative; z-index: 1; display: inline-block; width: 12em; }
 .tagselect .add .text { @include padding-right(30px); }
 .tagselect .add .spinner { position: absolute; top: 0; @include right(5px); }

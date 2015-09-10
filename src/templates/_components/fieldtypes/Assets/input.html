@@ -11,25 +11,29 @@
 <div id="{{ id }}" class="elementselect">
 	<div class="elements">
 		{% for element in elements %}
-			{% include "_elements/element" with { context: 'field' } %}
+			{% include "_elements/element" with {
+				context: 'field',
+				size: (viewMode == 'large' ? 'large' : 'small')
+			} %}
 		{% endfor %}
 	</div>
 
 	<div class="btn add icon dashed">{{ selectionLabel }}</div>
 </div>
 
-{% set js %}
-	new {{ jsClass }}(
-		"{{ id   | namespaceInputId   | e('js') }}",
-		"{{ name | namespaceInputName | e('js') }}",
-		"{{ elementType.getClassHandle()|e('js') }}",
-		{{ sources|json_encode|raw }},
-		{{ criteria|json_encode|raw }},
-		{{ sourceElementId ?: 'null' }},
-		{{ limit ? limit : 'null' }},
-		"{{ storageKey|e('js') }}",
-		{{ fieldId }}
-	);
-{% endset %}
+{% set jsSettings = {
+	id: id|namespaceInputId,
+	name: name|namespaceInputName,
+	elementType: elementType.getClassHandle(),
+	sources: sources,
+	criteria: criteria,
+	sourceElementId: sourceElementId,
+	viewMode: viewMode,
+	limit: limit,
+	modalStorageKey: storageKey,
+	fieldId: fieldId
+} %}
 
-{% includeJs js %}
+{% includejs %}
+	new {{ jsClass }}({{ jsSettings|json_encode|raw }});
+{% endincludejs %}

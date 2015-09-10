@@ -47,6 +47,10 @@
 		{% endif %}
 	{% endblock %}
 
+	{% block viewModeField %}
+		{{ viewModeFieldHtml }}
+	{% endblock %}
+
 	{% block selectionLabelField %}
 		{{ forms.textField({
 			label: "Selection Label"|t,
