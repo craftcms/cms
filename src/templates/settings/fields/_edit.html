@@ -62,7 +62,7 @@
 
 
 {% set content %}
-	<form method="post" accept-charset="UTF-8" data-saveshortcut>
+	<form method="post" accept-charset="UTF-8" data-saveshortcut data-confirm-unload>
 		<input type="hidden" name="action" value="fields/saveField">
 		<input type="hidden" name="redirect" value="settings/fields/{groupId}">
 		{% if fieldId is defined %}

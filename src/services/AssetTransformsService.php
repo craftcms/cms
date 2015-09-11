@@ -317,12 +317,17 @@ class AssetTransformsService extends BaseApplicationComponent
 			$this->storeTransformIndexData($index);
 
 			// Generate the transform
-			$this->generateTransform($index);
-
-			// Update the index
-			$index->inProgress = 0;
-			$index->fileExists = 1;
-			$this->storeTransformIndexData($index);
+			if ($this->generateTransform($index))
+			{
+				// Update the index
+				$index->inProgress = 0;
+				$index->fileExists = 1;
+				$this->storeTransformIndexData($index);
+			}
+			else
+			{
+				throw new Exception(Craft::t('Failed to save the transform.'));
+			}
 		}
 
 		return $this->getUrlForTransformByIndexId($index->id);
@@ -412,6 +417,8 @@ class AssetTransformsService extends BaseApplicationComponent
 		{
 			$this->_createTransformForFile($file, $index);
 		}
+
+		return $source->fileExists($file->getFolder()->path.$this->getTransformSubfolder($file, $index), $this->getTransformFilename($file, $index));
 	}
 
 	/**

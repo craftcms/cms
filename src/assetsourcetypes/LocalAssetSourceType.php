@@ -205,7 +205,7 @@ class LocalAssetSourceType extends BaseAssetSourceType
 	{
 		$folder =  $this->getSourceFileSystemPath().$file->getFolder()->path;
 		$targetPath = $folder.craft()->assetTransforms->getTransformSubpath($file, $index);
-		return IOHelper::copyFile($sourceImage, $targetPath);
+		return IOHelper::copyFile($sourceImage, $targetPath, true);
 	}
 
 	/**
@@ -238,10 +238,23 @@ class LocalAssetSourceType extends BaseAssetSourceType
 	}
 
 	/**
+	 * @inheritDoc BaseAssetSourceType::fileExists()
+	 *
+	 * @param string $parentPath  Parent path
+	 * @param string $filename    The name of the file.
+	 *
+	 * @return boolean
+	 */
+	public function fileExists($parentPath, $fileName)
+	{
+		return IOHelper::fileExists(rtrim($this->getSourceFileSystemPath().$parentPath, '/').'/'.$fileName);
+	}
+
+	/**
 	 * @inheritDoc BaseAssetSourceType::folderExists()
 	 *
-	 * @param AssetFolderModel $parentPath
-	 * @param string           $folderName
+	 * @param string $parentPath  Parent path
+	 * @param string $folderName
 	 *
 	 * @return boolean
 	 */

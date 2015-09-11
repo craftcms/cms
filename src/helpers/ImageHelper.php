@@ -22,7 +22,7 @@ class ImageHelper
 
 	const SVG_WIDTH_RE = '/(.*<svg[^>]* width=")([\d\.]+)([a-z]*)"/si';
 	const SVG_HEIGHT_RE = '/(.*<svg[^>]* height=")([\d\.]+)([a-z]*)"/si';
-    const SVG_VIEWBOX_RE = '/.*<svg[^>].* viewbox="\d+(?:,|\s)\d+(?:,|\s)(\d+)(?:,|\s)(\d+)"/si';
+    const SVG_VIEWBOX_RE = '/.*<svg[^>].* viewbox="[\d\.]+(?:,|\s)[\d\.]+(?:,|\s)([\d\.]+)(?:,|\s)([\d\.]+)"/si';
     const SVG_TAG_RE = '/(.*<svg)([^>].*)/si';
 
 	// Public Methods
