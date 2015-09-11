@@ -67,6 +67,7 @@ class CraftTwigExtension extends \Twig_Extension
 		$markdownFilter = new \Twig_Filter_Method($this, 'markdownFilter');
 
 		return array(
+			'camel'              => new \Twig_Filter_Method($this, 'camelFilter'),
 			'currency'           => new \Twig_Filter_Function('\Craft\craft()->numberFormatter->formatCurrency'),
 			'date'               => new \Twig_Filter_Method($this, 'dateFilter', array('needs_environment' => true)),
 			'datetime'           => new \Twig_Filter_Function('\Craft\craft()->dateFormatter->formatDateTime'),
@@ -76,6 +77,7 @@ class CraftTwigExtension extends \Twig_Extension
 			'indexOf'            => new \Twig_Filter_Method($this, 'indexOfFilter'),
 			'intersect'          => new \Twig_Filter_Function('array_intersect'),
 			'json_encode'        => new \Twig_Filter_Method($this, 'jsonEncodeFilter'),
+			'kebab'              => new \Twig_Filter_Method($this, 'kebabFilter'),
 			'lcfirst'            => new \Twig_Filter_Method($this, 'lcfirstFilter'),
 			'literal'            => new \Twig_Filter_Method($this, 'literalFilter'),
 			'markdown'           => $markdownFilter,
@@ -86,13 +88,14 @@ class CraftTwigExtension extends \Twig_Extension
 			'namespaceInputId'   => new \Twig_Filter_Function('\Craft\craft()->templates->namespaceInputId'),
 			'number'             => new \Twig_Filter_Function('\Craft\craft()->numberFormatter->formatDecimal'),
 			'parseRefs'          => new \Twig_Filter_Method($this, 'parseRefsFilter'),
+			'pascal'             => new \Twig_Filter_Method($this, 'pascalFilter'),
 			'percentage'         => new \Twig_Filter_Function('\Craft\craft()->numberFormatter->formatPercentage'),
 			'replace'            => new \Twig_Filter_Method($this, 'replaceFilter'),
+			'snake'              => new \Twig_Filter_Method($this, 'snakeFilter'),
 			'translate'          => $translateFilter,
 			't'                  => $translateFilter,
 			'ucfirst'            => new \Twig_Filter_Method($this, 'ucfirstFilter'),
 			'ucwords'            => new \Twig_Filter_Function('ucwords'),
-			'kebab'              => new \Twig_Filter_Method($this, 'kebabFilter'),
 			'without'            => new \Twig_Filter_Method($this, 'withoutFilter'),
 		);
 	}
@@ -122,7 +125,7 @@ class CraftTwigExtension extends \Twig_Extension
 	}
 
 	/**
-	 * Kebab-cases a string.
+	 * kebab-cases a string.
 	 *
 	 * @param string $string The string
 	 * @param string $glue The string used to glue the words together (default is a hyphen)
@@ -134,6 +137,42 @@ class CraftTwigExtension extends \Twig_Extension
 	public function kebabFilter($string, $glue = '-', $lower = true, $removePunctuation = true)
 	{
 		return StringHelper::toKebabCase($string, $glue, $lower, $removePunctuation);
+	}
+
+	/**
+	 * camelCases a string.
+	 *
+	 * @param string $string The string
+	 *
+	 * @return string
+	 */
+	public function camelFilter($string)
+	{
+		return StringHelper::toCamelCase($string);
+	}
+
+	/**
+	 * PascalCases a string.
+	 *
+	 * @param string $string The string
+	 *
+	 * @return string
+	 */
+	public function pascalFilter($string)
+	{
+		return StringHelper::toPascalCase($string);
+	}
+
+	/**
+	 * snake_cases a string.
+	 *
+	 * @param string $string The string
+	 *
+	 * @return string
+	 */
+	public function snakeFilter($string)
+	{
+		return StringHelper::toSnakeCase($string);
 	}
 
 	/**
