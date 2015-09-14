@@ -897,129 +897,6 @@ Garnish.Base = Base.extend({
 		{
 			this._listeners.push(elem);
 		}
-
-		// Prep for activate event?
-		if ($.inArray('activate', events) != -1 && !$elem.data('garnish-activatable'))
-		{
-			var activateNamespace = this._namespace+'-activate';
-
-			// Prevent buttons from getting focus on click
-			$elem.on('mousedown'+activateNamespace, function(ev)
-			{
-				ev.preventDefault();
-			});
-
-			$elem.on('click'+activateNamespace, function(ev)
-			{
-				ev.preventDefault();
-
-				var elemIndex = $.inArray(ev.currentTarget, $elem),
-					$evElem = $(elem[elemIndex]);
-
-				if (!$evElem.hasClass('disabled'))
-				{
-					$evElem.trigger('activate');
-				}
-			});
-
-			$elem.on('keydown'+activateNamespace, function(ev)
-			{
-				var elemIndex = $.inArray(ev.currentTarget, $elem);
-				if (elemIndex != -1 && ev.keyCode == Garnish.SPACE_KEY)
-				{
-					ev.preventDefault();
-					var $evElem = $elem.eq(elemIndex);
-
-					if (!$evElem.hasClass('disabled'))
-					{
-						$evElem.addClass('active');
-
-						Garnish.$doc.on('keyup'+activateNamespace, function(ev)
-						{
-							$elem.removeClass('active');
-							if (ev.keyCode == Garnish.SPACE_KEY)
-							{
-								ev.preventDefault();
-								$evElem.trigger('activate');
-							}
-							Garnish.$doc.off('keyup'+activateNamespace);
-						});
-					}
-				}
-			});
-
-			if (!$elem.hasClass('disabled'))
-			{
-				$elem.attr('tabindex', '0');
-			}
-			else
-			{
-				$elem.removeAttr('tabindex');
-			}
-
-			$elem.data('garnish-activatable', true);
-		}
-
-		// Prep for chanegtext event?
-		if ($.inArray('textchange', events) != -1)
-		{
-			// Store the initial values
-			for (var i = 0; i < $elem.length; i++)
-			{
-				var _$elem = $elem.eq(i);
-				_$elem.data('garnish-textchangeValue', _$elem.val());
-
-				if (!_$elem.data('garnish-textchangeable'))
-				{
-					var textchangeNamespace = this._namespace+'-textchange',
-						events = 'keypress'+textchangeNamespace +
-							' keyup'+textchangeNamespace +
-							' change'+textchangeNamespace +
-							' blur'+textchangeNamespace;
-
-					_$elem.on(events, function(ev)
-					{
-						var _$elem = $(ev.currentTarget),
-							val = _$elem.val();
-
-						if (val != _$elem.data('garnish-textchangeValue'))
-						{
-							_$elem.data('garnish-textchangeValue', val);
-							_$elem.trigger('textchange');
-						}
-					});
-
-					_$elem.data('garnish-textchangeable', true);
-				}
-			}
-		}
-
-		// Prep for resize event?
-		if ($.inArray('resize', events) != -1)
-		{
-			// Resize detection technique adapted from http://www.backalleycoder.com/2013/03/18/cross-browser-event-based-element-resize-detection/ -- thanks!
-			for (var i = 0; i < $elem.length; i++)
-			{
-				(function(elem)
-				{
-					// window is the only element that natively supports a resize event
-					if (elem == window)
-					{
-						return;
-					}
-
-					// Is this the first resize listener added to this element?
-					if (!elem.__resizeListeners__)
-					{
-						$('> :last-child', elem).addClass('last');
-
-						addResizeListener(elem, function(ev) {
-							$(this).trigger('resize', ev);
-						});
-					}
-				})($elem[i]);
-			}
-		}
 	},
 
 	removeListener: function(elem, events)
@@ -1046,6 +923,114 @@ Garnish.Base = Base.extend({
 	{
 		this.removeAllListeners(this._listeners);
 	}
+});
+
+// Register our custom jQuery events
+$.extend(jQuery.event.special, {
+	activate: {
+		setup: function(data, namespaces, eventHandle) {
+			var activateNamespace = this._namespace+'-activate';
+			var $elem = $(this);
+
+			$elem.on({
+				'mousedown.garnish-activate': function(e) {
+					// Prevent buttons from getting focus on click
+					e.preventDefault();
+				},
+				'click.garnish-activate': function(e) {
+					e.preventDefault();
+
+					if (!$elem.hasClass('disabled'))
+					{
+						$elem.trigger('activate');
+					}
+				},
+				'keydown.garnish-activate': function(e) {
+					// Ignore if the event was bubbled up, or if it wasn't the space key
+					if (this != $elem[0] || e.keyCode != Garnish.SPACE_KEY) {
+						return;
+					}
+
+					e.preventDefault();
+
+					if (!$elem.hasClass('disabled'))
+					{
+						$elem.addClass('active');
+
+						Garnish.$doc.on('keyup.garnish-activate', function(e) {
+							$elem.removeClass('active');
+
+							if (e.keyCode == Garnish.SPACE_KEY) {
+								e.preventDefault();
+								$elem.trigger('activate');
+							}
+
+							Garnish.$doc.off('keyup.garnish-activate');
+						});
+					}
+				}
+			});
+
+			if (!$elem.hasClass('disabled')) {
+				$elem.attr('tabindex', '0');
+			} else {
+				$elem.removeAttr('tabindex');
+			}
+		},
+		teardown: function() {
+			$(this).off('.garnish-activate');
+		}
+	},
+
+	textchange: {
+		setup: function(data, namespaces, eventHandle) {
+			var $elem = $(this);
+			$elem.data('garnish-textchange-value', $elem.val());
+			$elem.on('keypress.garnish-textchange keyup.garnish-textchange change.garnish-textchange blur.garnish-textchange', function(e) {
+				var val = $elem.val();
+				if (val != $elem.data('garnish-textchange-value'))
+				{
+					$elem.data('garnish-textchange-value', val);
+					$elem.trigger('textchange');
+				}
+			});
+		},
+		teardown: function() {
+			$(this).off('.garnish-textchange');
+		}
+	},
+
+	resize: {
+		setup: function(data, namespaces, eventHandle) {
+			// window is the only element that natively supports a resize event
+			if (this == window) {
+				return false;
+			}
+
+			$('> :last-child', this).addClass('last');
+			addResizeListener(this, triggerResizeEvent);
+		},
+		teardown: function() {
+			if (this == window) {
+				return false;
+			}
+
+			removeResizeListener(this, triggerResizeEvent);
+		}
+	}
+});
+
+window.triggerResizeEvent = function(e) {
+	$(this).trigger('resize', e);
+};
+
+jQuery.each(['activate','textchange','resize'], function(i, name) {
+	// Handle event binding
+	jQuery.fn[name] = function(data, fn) {
+		return arguments.length > 0 ?
+			this.on(name, null, data, fn) :
+			this.trigger(name);
+	};
 });
 
 // Cross-Browser, Event-based, Element Resize Detection script
@@ -1081,12 +1066,6 @@ Garnish.Base = Base.extend({
   function objectLoad(e){
     this.contentDocument.defaultView.__resizeTrigger__ = this.__resizeElement__;
     this.contentDocument.defaultView.addEventListener('resize', resizeListener);
-    /* HACK */
-    this.contentDocument.defaultView.__lastOffsetWidth__ = this.__resizeElement__.__initialWidth__;
-	this.contentDocument.defaultView.__lastOffsetHeight__ = this.__resizeElement__.__initialHeight__;
-	delete this.__resizeElement__.__initialWidth__;
-	delete this.__resizeElement__.__initialHeight__;
-	/* END HACK */
   }
 
   window.addResizeListener = function(element, fn){
