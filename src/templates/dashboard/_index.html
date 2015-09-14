@@ -1,0 +1,77 @@
+{% extends "_layouts/cp" %}
+{% set title = "Dashboard"|t %}
+{% includeJsResource 'js/Dashboard.js' %}
+{% includeCssResource "css/dashboard.css" %}
+{% set widgetTypes = craft.dashboard.getAllWidgetTypes() %}
+
+{% includeTranslations
+    "Cancel"
+%}
+
+{% set extraPageHeaderHtml %}
+
+    <div class="newwidget btngroup submit first">
+        <div class="btn submit menubtn add icon">{{ 'New widget'|t }}</div>
+
+        <div id="newwidgetmenu" class="menu">
+            <ul>
+                {% for widgetType in widgetTypes %}
+                    <li data-widget-type="{{ widgetType.classHandle }}">{{ not widgetType.title is empty ? widgetType.title : widgetType.classHandle }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+
+    <div id="managewidgetstrigger" class="btn settings icon" title="{{ 'Settings'|t }}"></div>
+
+{% endset %}
+
+
+{% block main %}
+    <div class="grid">
+        {% if currentUser.admin and craft.deprecator.getTotalLogs() %}
+            <div class="item" data-colspan="4">
+                <div class="pane">
+                    <p id="deprecationnotice" data-icon="alert">{{ 'New deprecation errors have been logged. Please take a minute to <a class="go" href="{url}">review them</a>'|t({ url: url('utils/deprecationerrors') })|raw }}</p>
+                </div>
+            </div>
+        {% endif %}
+
+        {% for widget in craft.dashboard.getUserWidgets %}
+            {% set widgetType = craft.dashboard.populateWidgetType(widget) %}
+            {% if widgetType %}
+                {% set body = widgetType.getBodyHtml() %}
+                {% if body is not sameas(false) %}
+                    <div class="item" data-colspan="{{ widgetType.getColspan() }}">
+                        <div id="widget{{ widget.id }}" class="pane widget {{ widgetType.classHandle|lower }}" data-id="{{ widget.id }}">
+                            <div class="spinner body-loading"></div>
+                            {% if not widgetType.getSettingsHtml|e('js') is empty %}
+                                <div class="settings icon"></div>
+                            {% endif %}
+                            <h2>{{ widgetType.title }}</h2>
+                            <div class="body">{{ body|raw }}</div>
+                        </div>
+                    </div>
+
+                    {% set js %}
+                        new Craft.Widget("#widget{{ widget.id }}", {
+                            settingsHtml: '{{ widgetType.getSettingsHtml|e('js') }}'
+                        });
+                    {% endset %}
+
+                    {% includeJs js %}
+                {% endif %}
+            {% endif %}
+        {% endfor %}
+    </div>
+{% endblock %}
+
+
+{% set js %}
+    new Craft.Dashboard({
+        manageHtml: '{{ manageHtml|e('js') }}',
+        settingsHtml: '{{ settingsHtml|e('js') }}'
+    });
+{% endset %}
+
+{% includeJs js %}

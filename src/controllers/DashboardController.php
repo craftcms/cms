@@ -20,6 +20,24 @@ class DashboardController extends BaseController
 	// =========================================================================
 
 	/**
+	 * Dashboard index.
+	 *
+	 * @param array $variables
+	 *
+	 * @return null
+	 */
+	public function actionIndex(array $variables = array())
+	{
+		$manageHtml = craft()->templates->render('dashboard/settings/_managewidgets');
+		$settingsHtml = craft()->templates->render('dashboard/settings/_widgetsettingsmodal');
+
+		$this->renderTemplate('dashboard/_index', array(
+			'manageHtml' => $manageHtml,
+			'settingsHtml' => $settingsHtml,
+		));
+	}
+
+	/**
 	 * Saves a widget.
 	 *
 	 * @return null

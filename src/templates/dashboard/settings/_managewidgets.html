@@ -1,0 +1,32 @@
+{% set widgets = craft.dashboard.getUserWidgets %}
+{% set sortable  = (widgets|length > 1) %}
+
+<p id="nowidgets"{% if widgets|length %} class="hidden"{% endif %}>
+    {{ "You don’t have any widgets yet."|t }}
+</p>
+
+{% if widgets|length %}
+    <table id="widgets" class="data collapsible">
+        <tbody>
+            {% for widget in widgets %}
+                {% if widget.type != 'GetHelp' or currentUser.admin %}
+                    {% set widgetType = craft.dashboard.populateWidgetType(widget) %}
+
+                    <tr data-id="{{ widget.id }}" data-name="{{ widgetType ? widgetType.title : widget.type }}">
+                        {% if sortable %}<td class="thin"><a class="move icon" title="{{ 'Reorder'|t }}" role="button"></a></td>{% endif %}
+
+                        <th scope="row" data-title="{{ 'Name'|t }}">
+                            {{ widgetType ? widgetType.title : "Unknown"|t }}
+                            {% if widgetType %}
+                                {% if widgetType.name != widgetType.title %}<span class="light">({{ widgetType.name }})</span>{% endif %}
+                            {% else %}
+                                <span class="light error">({{ widget.type }})</span>
+                            {% endif %}
+                        </th>
+                        <td class="thin"><a class="delete icon" title="{{ 'Delete'|t }}" role="button"></a></td>
+                    </tr>
+                {% endif %}
+            {% endfor %}
+        </tbody>
+    </table>
+{% endif %}

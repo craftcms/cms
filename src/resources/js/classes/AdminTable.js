@@ -90,6 +90,7 @@ Craft.AdminTable = Garnish.Base.extend(
 			{
 				if (response.success)
 				{
+					this.onAfterReorderObjects(ids);
 					Craft.cp.displayNotice(Craft.t(this.settings.reorderSuccessMessage));
 				}
 				else
@@ -156,6 +157,11 @@ Craft.AdminTable = Garnish.Base.extend(
 		{
 			Craft.cp.displayError(Craft.t(this.settings.deleteFailMessage, { name: name }));
 		}
+	},
+
+	onAfterReorderObjects: function(ids)
+	{
+		this.settings.onAfterReorderObjects(ids);
 	},
 
 	onDeleteObject: function(id)
@@ -244,6 +250,7 @@ Craft.AdminTable = Garnish.Base.extend(
 		confirmDeleteMessage:  Craft.t('Are you sure you want to delete “{name}”?'),
 		deleteSuccessMessage:  Craft.t('“{name}” deleted.'),
 		deleteFailMessage:     Craft.t('Couldn’t delete “{name}”.'),
-		onDeleteObject: $.noop
+		onDeleteObject: $.noop,
+		onAfterReorderObjects: $.noop
 	}
 });

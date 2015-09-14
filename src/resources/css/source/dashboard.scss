@@ -14,3 +14,24 @@
 
 /* Recent Entries widget */
 .recententries .body { overflow: hidden; }
+
+
+/* New Dashboard */
+
+#extra-headers { float: right; }
+#extra-headers > .btn { position: relative; right: 1px; float: right !important; margin-left: 10px !important; }
+
+#newwidgetmenu ul li { margin: 0 -14px; padding: 3px 14px; color: #29323d; text-decoration: none; white-space: nowrap; }
+#newwidgetmenu ul li:hover { color: #29323d; background-color: #d5d8dd; cursor: pointer; }
+
+.widgetsettingsmodal { max-width: 400px; }
+.widgetsettingsmodal #type-field { display: none; }
+
+.managewidgetshud { max-width: 400px; }
+
+.newwidget.btngroup .menubtn {background-color: #8F98A2; }
+.newwidget.btngroup .menubtn.btn.submit:not(.disabled):hover,
+.newwidget.btngroup .menubtn.btn.submit:not(.disabled).hover,  .newwidget.btngroup .menubtn.btn.active { background-color: #88919A; }
+
+.widget .settings { display: block; float: right; opacity: .3; margin-left: 7px; }
+.widget .settings:hover { float: right; opacity: 1; cursor: pointer; }
