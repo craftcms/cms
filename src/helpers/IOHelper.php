@@ -11,7 +11,7 @@ namespace Craft;
  * @package   craft.app.helpers
  * @since     1.0
  */
-class IOHelper
+class IOHelper extends \CFileHelper
 {
 	// Public Methods
 	// =========================================================================
@@ -346,6 +346,28 @@ class IOHelper
 	}
 
 	/**
+	 * Determines the file extension name based on its MIME type by calling
+	 * {@link \CFileHelper::getExtensionByMimeType}
+	 *
+	 * @param string $file the file name or mime type.
+	 * @param string $magicFile the path of the file that contains all available extension information.
+	 * If this is not set, the default 'system.utils.fileExtensions' file will be used.
+	 *
+	 * @return string The mime type.
+	 */
+	public static function getExtensionByMimeType($file, $magicFile = null)
+	{
+		static $mimeTypes = null;
+
+		if ($mimeTypes === null)
+		{
+			$mimeTypes = require(\Yii::getPathOfAlias('system.utils.fileExtensions').'.php');
+		}
+
+		return isset($mimeTypes[$file]) ? $mimeTypes[$file] : parent::getExtensionByMimeType($file, $magicFile);
+	}
+
+	/**
 	 * If the path points to a real file, we call {@link \CFileHelper::getMimeType}, otherwise
 	 * {@link \CFileHelper::getMimeTypeByExtension}
 	 *
@@ -361,7 +383,7 @@ class IOHelper
 		}
 		else
 		{
-			return \CFileHelper::getMimeTypeByExtension($path);
+			return static::getMimeTypeByExtension($path);
 		}
 	}
 
