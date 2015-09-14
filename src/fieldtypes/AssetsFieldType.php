@@ -135,7 +135,7 @@ class AssetsFieldType extends BaseElementFieldType
 					}
 					else
 					{
-						$extension = IOHelper::getExtensionByMimeType($type);
+						$extension = FileHelper::getExtensionByMimeType($type);
 						$filename = 'Uploaded file.'.$extension;
 					}
 

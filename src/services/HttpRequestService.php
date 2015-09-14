@@ -724,7 +724,7 @@ class HttpRequestService extends \CHttpRequest
 
 		if (empty($options['mimeType']))
 		{
-			if (($options['mimeType'] = \CFileHelper::getMimeTypeByExtension($fileName)) === null)
+			if (($options['mimeType'] = FileHelper::getMimeTypeByExtension($fileName)) === null)
 			{
 				$options['mimeType'] = 'text/plain';
 			}

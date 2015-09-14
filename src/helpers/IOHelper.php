@@ -11,7 +11,7 @@ namespace Craft;
  * @package   craft.app.helpers
  * @since     1.0
  */
-class IOHelper extends \CFileHelper
+class IOHelper
 {
 	// Public Methods
 	// =========================================================================
@@ -346,30 +346,8 @@ class IOHelper extends \CFileHelper
 	}
 
 	/**
-	 * Determines the file extension name based on its MIME type by calling
-	 * {@link \CFileHelper::getExtensionByMimeType}
-	 *
-	 * @param string $file the file name or mime type.
-	 * @param string $magicFile the path of the file that contains all available extension information.
-	 * If this is not set, the default 'system.utils.fileExtensions' file will be used.
-	 *
-	 * @return string The mime type.
-	 */
-	public static function getExtensionByMimeType($file, $magicFile = null)
-	{
-		static $mimeTypes = null;
-
-		if ($mimeTypes === null)
-		{
-			$mimeTypes = require(\Yii::getPathOfAlias('system.utils.fileExtensions').'.php');
-		}
-
-		return isset($mimeTypes[$file]) ? $mimeTypes[$file] : parent::getExtensionByMimeType($file, $magicFile);
-	}
-
-	/**
-	 * If the path points to a real file, we call {@link \CFileHelper::getMimeType}, otherwise
-	 * {@link \CFileHelper::getMimeTypeByExtension}
+	 * If the path points to a real file, we call {@link FileHelper::getMimeType()}, otherwise
+	 * {@link FileHelper::getMimeTypeByExtension()}
 	 *
 	 * @param string $path The path to test.
 	 *
@@ -379,16 +357,16 @@ class IOHelper extends \CFileHelper
 	{
 		if (@file_exists($path))
 		{
-			return \CFileHelper::getMimeType($path);
+			return FileHelper::getMimeType($path);
 		}
 		else
 		{
-			return static::getMimeTypeByExtension($path);
+			return FileHelper::getMimeTypeByExtension($path);
 		}
 	}
 
 	/**
-	 * A wrapper for {@link \CFileHelper::getMimeTypeByExtension}.
+	 * A wrapper for {@link FileHelper::getMimeTypeByExtension()}.
 	 *
 	 * @param  string $path The path to test.
 	 *
@@ -396,7 +374,7 @@ class IOHelper extends \CFileHelper
 	 */
 	public static function getMimeTypeByExtension($path)
 	{
-		return  \CFileHelper::getMimeTypeByExtension($path);
+		return FileHelper::getMimeTypeByExtension($path);
 	}
 
 	/**
