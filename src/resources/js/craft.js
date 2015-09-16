@@ -1140,7 +1140,6 @@ $.extend(Craft,
 			status:   $element.data('status'),
 			url:      $element.data('url'),
 			hasThumb: $element.hasClass('hasthumb'),
-			hasIcon:  $element.hasClass('hasicon'),
 			$element: $element
 		};
 
@@ -1173,28 +1172,14 @@ $.extend(Craft,
 			.addClass(size)
 			.removeClass(otherSize);
 
-		var hasThumb = $element.hasClass('hasthumb'),
-			hasIcon = hasThumb ? false : $element.hasClass('hasicon');
-
-		if (hasThumb || hasIcon)
+		if ($element.hasClass('hasthumb'))
 		{
-			var $oldImg, imgSize;
-
-			if (hasThumb)
-			{
-				$oldImg = $element.find('> .elementthumb > img');
+			var $oldImg = $element.find('> .elementthumb > img'),
 				imgSize = (size == 'small' ? '30' : '100');
-			}
-			else
-			{
-				$oldImg = $element.find('> .elementicon > img');
-				imgSize = (size == 'small' ? '20' : '90');
-			}
-
-			var $newImg = $('<img/>', {
-				sizes: imgSize+'px',
-				srcset: $oldImg.attr('srcset') || $oldImg.attr('data-pfsrcset')
-			});
+				$newImg = $('<img/>', {
+					sizes: imgSize+'px',
+					srcset: $oldImg.attr('srcset') || $oldImg.attr('data-pfsrcset')
+				});
 
 			$oldImg.replaceWith($newImg);
 
