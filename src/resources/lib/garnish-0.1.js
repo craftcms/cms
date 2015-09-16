@@ -448,7 +448,7 @@ Garnish = $.extend(Garnish, {
 				$elem = $(elem);
 		}
 
-		if ($container.prop('nodeName') === 'HTML')
+		if ($container.prop('nodeName') === 'HTML' || $container[0] == Garnish.$doc[0])
 		{
 			$container = Garnish.$win;
 		}
@@ -921,6 +921,7 @@ Garnish.Base = Base.extend({
 
 	destroy: function()
 	{
+		this.trigger('destroy');
 		this.removeAllListeners(this._listeners);
 	}
 });
@@ -1069,7 +1070,7 @@ jQuery.each(['activate','textchange','resize'], function(i, name) {
   }
 
   window.addResizeListener = function(element, fn){
-    if (!element.__resizeListeners__) {
+    if (!element.__resizeListeners__ || !element.__resizeTrigger__) {
       element.__resizeListeners__ = [];
       if (attachEvent) {
         element.__resizeTrigger__ = element;
