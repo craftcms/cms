@@ -223,6 +223,26 @@ Craft.ui =
 		return $field;
 	},
 
+	createErrorList: function(errors)
+	{
+		var $list = $('<ul class="errors"/>');
+
+		if (errors)
+		{
+			this.addErrorsToList($list, errors);
+		}
+
+		return $list;
+	},
+
+	addErrorsToList: function($list, errors)
+	{
+		for (var i = 0; i < errors.length; i++)
+		{
+			$('<li/>').text(errors[i]).appendTo($list);
+		}
+	},
+
 	addErrorsToField: function($field, errors)
 	{
 		if (!errors)
@@ -236,13 +256,10 @@ Craft.ui =
 
 		if (!$errors.length)
 		{
-			$errors = $('<ul class="errors"/>').appendTo($field);
+			$errors = this.createErrorList().appendTo($field);
 		}
 
-		for (var i = 0; i < errors.length; i++)
-		{
-			$('<li/>').text(errors[i]).appendTo($errors);
-		}
+		this.addErrorsToList($errors, errors);
 	},
 
 	clearErrorsFromField: function($field)
