@@ -375,9 +375,9 @@ class Assets extends BaseRelationField
     {
         // Look for the single folder setting
         if ($this->useSingleFolder) {
-            $folderId = $this->_determineUploadFolder($element);
-            Craft::$app->getSession()->authorize('uploadToVolume:'.$folderId);
-            $folderPath = 'folder:'.$folderId.':single';
+            $folder = $this->_determineUploadFolder($element);
+            Craft::$app->getSession()->authorize('uploadToVolume:'.$folder->id);
+            $folderPath = 'folder:'.$folder->id.':single';
 
             return [$folderPath];
         }
