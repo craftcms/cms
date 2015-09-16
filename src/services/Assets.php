@@ -264,6 +264,7 @@ class Assets extends Component
             try {
                 $result = $volume->createFileByStream($uriPath, $stream);
             } catch (VolumeFileExistsException $exception) {
+                // Replace the file if this is the temporary Volume.
                 if (is_null($asset->volumeId)) {
                     $volume->deleteFile($uriPath);
                     $result = $volume->createFileByStream($uriPath, $stream);
@@ -590,7 +591,10 @@ class Assets extends Component
         try {
             $volume->createDir(rtrim($folder->path, '/'));
         } catch (VolumeFolderExistsException $exception) {
-            throw $exception;
+            // Rethrow exception unless this is a temporary Volume.
+            if (!is_null($folder->volumeId)) {
+                throw $exception;
+            }
         }
         $this->storeFolderRecord($folder);
     }
