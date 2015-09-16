@@ -105,6 +105,13 @@ $noticecolor: #5286d9;
 	-ms-user-select: $value;
 }
 
+@mixin perspective($value) {
+	-webkit-perspective: $value;
+	-moz-perspective: $value;
+	-ms-perspective: $value;
+	perspective: $value;
+}
+
 @mixin icon {
 	font-family: 'Craft';
 	speak: none;

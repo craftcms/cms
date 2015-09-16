@@ -4,13 +4,43 @@
 #deprecationnotice { text-align: center; }
 #deprecationnotice:before { color: $mediumtextcolor; @include margin-right(5px); }
 
-.widget.quickpost { overflow: visible; }
+/* widgets */
+.widget { position: relative; @include perspective(1000);
+	-webkit-transition: opacity linear 200ms, -webkit-transform linear 200ms;
+	-moz-transition: opacity linear 200ms, -moz-transform linear 200ms;
+	-ms-transition: opacity linear 200ms, -ms-transform linear 200ms;
+	transition: opacity linear 200ms, transform linear 200ms;
+}
+.widget.scaleout { opacity: 0; @include transform(scale(0.5)); }
+.widget > .front,
+.widget > .back { backface-visibility: hidden; @include transition(600ms); transform-style: preserve-3d; }
+.widget > .front { z-index: 2; }
+.widget > .back { position: absolute; top: 0; left: 0; width: 100%; }
+.widget:not(.flipped) > .front { @include transform(rotateY(0deg)); }
+.widget:not(.flipped) > .back { @include transform(rotateY(-180deg)); }
+.widget.flipped > .front { @include transform(rotateY(180deg)); }
+.widget.flipped > .back { @include transform(rotateY(0deg)); }
 
-.widget .spinner.body-loading { display: none; }
-.widget.loading .spinner.body-loading { display: block; @include floatright; @include margin-left(10px); }
+.widget > .front > .pane > .spinner.body-loading { display: none; }
+.widget.loading > .front > .pane > .spinner.body-loading { display: block; @include floatright; @include margin-left(10px); }
+.widget.loading-new.new > .front > .pane { height: 252px; }
+.widget.loading-new.new > .front > .pane > .spinner.body-loading { display: block; position: absolute; top: calc(50% - 15px); left: calc(50% - 12px); }
+
+.widget > .front > .pane > .icon.settings { display: block; float: right; opacity: 0; margin-left: 7px; cursor: pointer; @include transition(opacity linear 200ms); }
+.widget:not(.flipped):hover > .front > .pane > .icon.settings { opacity: 0.3; }
+.widget:not(.flipped) > .front > .pane > .icon.settings:hover { opacity: 1; }
+
 .widget h2 { margin-top: 0; }
-
 .widget form + .errors { margin-top: 15px; }
+
+.widget > .back > .pane { background: $lightBgColor; }
+.widget > .back > .pane > .errors { margin-top: 24px; }
 
 /* Recent Entries widget */
 .recententries .body { overflow: hidden; }
+
+/* New Dashboard */
+
+#extra-headers { float: right; }
+
+.widgetmanagerhud { max-width: 400px; }

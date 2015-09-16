@@ -34,14 +34,7 @@
 			this.$form = this.$widget.find('form:first');
 			this.$form.prepend('<input type="hidden" name="widgetId" value="' + this.widgetId + '" />');
 
-
 			this.addListener(this.$sendBtn, 'activate', 'sendMessage');
-			if (typeof Craft.widgets == 'undefined')
-			{
-				Craft.widgets = {};
-			}
-
-			Craft.widgets[this.widgetId] = this;
 		},
 
 		sendMessage: function()

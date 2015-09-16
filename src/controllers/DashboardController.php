@@ -20,34 +20,128 @@ class DashboardController extends BaseController
 	// =========================================================================
 
 	/**
-	 * Saves a widget.
+	 * Dashboard index.
+	 *
+	 * @param array $variables
 	 *
 	 * @return null
 	 */
-	public function actionSaveUserWidget()
+	public function actionIndex(array $variables = array())
+	{
+		$dashboardService = craft()->dashboard;
+		$templatesService = craft()->templates;
+
+		$oldNamespace = $templatesService->getNamespace();
+
+		// Assemble the list of available widget types
+		$variables['widgetTypes'] = array();
+		$widgetTypes = $dashboardService->getAllWidgetTypes();
+		$templatesService->setNamespace('__NAMESPACE__');
+
+		foreach ($widgetTypes as $widgetType)
+		{
+			$templatesService->startJsBuffer();
+			$settingsHtml = $templatesService->namespaceInputs($widgetType->getSettingsHtml());
+			$settingsJs = $templatesService->clearJsBuffer();
+
+			$variables['widgetTypes'][] = array(
+				'type' => $widgetType->getClassHandle(),
+				'colspan' => $widgetType->getColspan(),
+				'name' => $widgetType->getName(),
+				'settingsHtml' => $settingsHtml,
+				'settingsJs' => $settingsJs,
+			);
+		}
+
+		$templatesService->setNamespace(null);
+
+		// Assemble the list of existing widgets
+		$variables['widgets'] = array();
+		$widgets = $dashboardService->getUserWidgets();
+
+		foreach ($widgets as $widget)
+		{
+			$templatesService->startJsBuffer();
+			$info = $this->_getWidgetInfo($widget);
+			$widgetJs = $templatesService->clearJsBuffer(false);
+
+			if ($info === false)
+			{
+				continue;
+			}
+
+			$variables['widgets'][] = $info;
+
+			craft()->templates->includeJs('new Craft.Widget("#widget'.$widget->id.'", '.
+				JsonHelper::encode($info['settingsHtml']).', '.
+				'function(){'.$info['settingsJs'].'}'.
+			');');
+
+			if ($widgetJs)
+			{
+				// Allow any widget JS to execute *after* we've created the Craft.Widget instance
+				$templatesService->includeJs($widgetJs);
+			}
+		}
+
+		$templatesService->includeTranslations('{type} Settings','Widget saved.', 'Couldn’t save widget.');
+
+		$this->renderTemplate('dashboard/_index', $variables);
+	}
+
+	/**
+	 * Creates a new widget.
+	 *
+	 * @return void
+	 */
+	public function actionCreateWidget()
 	{
 		$this->requirePostRequest();
+		$this->requireAjaxRequest();
+
+		$request = craft()->request;
+		$dashboardService = craft()->dashboard;
+
+		$type = $request->getRequiredPost('type');
+		$settingsNamespace = $request->getPost('settingsNamespace');
 
 		$widget = new WidgetModel();
-		$widget->id = craft()->request->getPost('widgetId');
-		$widget->type = craft()->request->getRequiredPost('type');
-		$widget->settings = craft()->request->getPost('types.'.$widget->type);
+		$widget->type = $type;
 
-		// Did it save?
-		if (craft()->dashboard->saveUserWidget($widget))
+		if ($settingsNamespace)
 		{
-			craft()->userSession->setNotice(Craft::t('Widget saved.'));
-			$this->redirectToPostedUrl();
-		}
-		else
-		{
-			craft()->userSession->setError(Craft::t('Couldn’t save widget.'));
+			$widget->settings = craft()->request->getPost($settingsNamespace);
 		}
 
-		// Send the widget back to the template
-		craft()->urlManager->setRouteVariables(array(
-			'widget' => $widget
-		));
+		$this->_saveAndReturnWidget($widget);
+	}
+
+	/**
+	 * Saves a widget’s settings.
+	 *
+	 * @return void
+	 *
+	 * @throws HttpException
+	 */
+	public function actionSaveWidgetSettings()
+	{
+		$this->requirePostRequest();
+		$this->requireAjaxRequest();
+
+		$request = craft()->request;
+		$dashboardService = craft()->dashboard;
+
+		$widgetId = $request->getRequiredPost('widgetId');
+		$widget = $dashboardService->getUserWidgetById($widgetId);
+
+		if (!$widget)
+		{
+			throw new HttpException(400);
+		}
+
+		$widget->settings = $request->getPost('widget'.$widget->id.'-settings');
+
+		$this->_saveAndReturnWidget($widget);
 	}
 
 	/**
@@ -128,13 +222,16 @@ class DashboardController extends BaseController
 		$tempFolder = null;
 		$widgetId = craft()->request->getPost('widgetId');
 
+		$namespace = craft()->request->getPost('namespace');
+		$namespace = $namespace ? $namespace.'.' : '';
+
 		$getHelpModel = new GetHelpModel();
-		$getHelpModel->fromEmail = craft()->request->getPost('fromEmail');
-		$getHelpModel->message = trim(craft()->request->getPost('message'));
-		$getHelpModel->attachLogs = (bool) craft()->request->getPost('attachLogs');
-		$getHelpModel->attachDbBackup = (bool) craft()->request->getPost('attachDbBackup');
-		$getHelpModel->attachTemplates = (bool)craft()->request->getPost('attachTemplates');
-		$getHelpModel->attachment = UploadedFile::getInstanceByName('attachAdditionalFile');
+		$getHelpModel->fromEmail = craft()->request->getPost($namespace.'fromEmail');
+		$getHelpModel->message = trim(craft()->request->getPost($namespace.'message'));
+		$getHelpModel->attachLogs = (bool) craft()->request->getPost($namespace.'attachLogs');
+		$getHelpModel->attachDbBackup = (bool) craft()->request->getPost($namespace.'attachDbBackup');
+		$getHelpModel->attachTemplates = (bool)craft()->request->getPost($namespace.'attachTemplates');
+		$getHelpModel->attachment = UploadedFile::getInstanceByName($namespace.'attachAdditionalFile');
 
 		if ($getHelpModel->validate())
 		{
@@ -338,6 +435,90 @@ class DashboardController extends BaseController
 
 	// Private Methods
 	// =========================================================================
+
+	/**
+	 * Returns the info about a widget required to display its body and settings in the Dashboard.
+	 *
+	 * @param WidgetModel $widget
+	 *
+	 * @return array|false
+	 */
+	private function _getWidgetInfo(WidgetModel $widget)
+	{
+		$dashboardService = craft()->dashboard;
+		$widgetType = $dashboardService->populateWidgetType($widget);
+
+		if (!$widgetType)
+		{
+			return false;
+		}
+
+		$templatesService = craft()->templates;
+		$namespace = $templatesService->getNamespace();
+
+		// Get the body HTML
+		$widgetBodyHtml = $widgetType->getBodyHtml();
+
+		if (!$widgetBodyHtml)
+		{
+			return false;
+		}
+
+		// Get the settings HTML + JS
+		$templatesService->setNamespace('widget'.$widget->id.'-settings');
+		$templatesService->startJsBuffer();
+		$settingsHtml = $templatesService->namespaceInputs($widgetType->getSettingsHtml());
+		$settingsJs = $templatesService->clearJsBuffer(false);
+
+		$templatesService->setNamespace($namespace);
+
+		return array(
+			'id' => $widget->id,
+			'type' => $widgetType->getClassHandle(),
+			'name' => $widgetType->getName(),
+			'colspan' => $widgetType->getColspan(),
+			'title' => $widgetType->getTitle(),
+			'bodyHtml' => $widgetBodyHtml,
+			'settingsHtml' => $settingsHtml,
+			'settingsJs' => $settingsJs,
+		);
+	}
+
+	/**
+	 * Attempts to save a widget and responds with JSON.
+	 *
+	 * @param WidgetModel $widget
+	 *
+	 * @return void
+	 */
+	private function _saveAndReturnWidget(WidgetModel $widget)
+	{
+		if (craft()->dashboard->saveUserWidget($widget))
+		{
+			$info = $this->_getWidgetInfo($widget);
+			$templatesService = craft()->templates;
+
+			$this->returnJson(array(
+				'success' => true,
+				'info' => $info,
+				'headHtml' => $templatesService->getHeadHtml(),
+				'footHtml' => $templatesService->getFootHtml(),
+			));
+		}
+		else
+		{
+			$errors = $widget->getAllErrors();
+
+			foreach ($widget->getSettingErrors() as $attribute => $attributeErrors)
+			{
+				$errors = array_merge($errors, $attributeErrors);
+			}
+
+			$this->returnJson(array(
+				'errors' => $errors
+			));
+		}
+	}
 
 	/**
 	 * @return string
