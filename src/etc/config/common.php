@@ -46,8 +46,6 @@ $cpRoutes['categories/(?P<groupHandle>{handle})/new']                           
 $cpRoutes['categories/(?P<groupHandle>{handle})/(?P<categoryId>\d+)(?:-{slug})?'] = array('action' => 'categories/editCategory');
 
 $cpRoutes['dashboard']                                               			  = array('action' => 'dashboard/index');
-$cpRoutes['dashboard/settings/new']                                               = 'dashboard/settings/_widgetsettings';
-$cpRoutes['dashboard/settings/(?P<widgetId>\d+)']                                 = 'dashboard/settings/_widgetsettings';
 
 $cpRoutes['entries/(?P<sectionHandle>{handle})']                                  = 'entries';
 $cpRoutes['entries/(?P<sectionHandle>{handle})/new']                              = array('action' => 'entries/editEntry');

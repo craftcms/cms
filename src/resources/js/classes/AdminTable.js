@@ -146,6 +146,11 @@ Craft.AdminTable = Garnish.Base.extend(
 
 		if (response.success)
 		{
+			if (this.sorter)
+			{
+				this.sorter.removeItems($row);
+			}
+
 			$row.remove();
 			this.totalObjects--;
 			this.updateUI();

@@ -59,17 +59,6 @@ Craft.Grid = Garnish.Base.extend(
 
 	addItems: function(items)
 	{
-		// Append the new item(s) after the last item
-		// (can't simply append it to the $container, since that will place it after the resize listener object)
-		if (this.$items.length)
-		{
-			this.$items.last().after(items);
-		}
-		else
-		{
-			this.$container.prepend(items);
-		}
-
 		this.$items = $().add(this.$items.add(items));
 		this.setItems();
 		this.refreshCols(true, false);
@@ -78,6 +67,13 @@ Craft.Grid = Garnish.Base.extend(
 	removeItems: function(items)
 	{
 		this.$items = $().add(this.$items.not(items));
+		this.setItems();
+		this.refreshCols(true, true);
+	},
+
+	resetItemOrder: function()
+	{
+		this.$items = $().add(this.$items);
 		this.setItems();
 		this.refreshCols(true, true);
 	},

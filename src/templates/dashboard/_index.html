@@ -2,76 +2,63 @@
 {% set title = "Dashboard"|t %}
 {% includeJsResource 'js/Dashboard.js' %}
 {% includeCssResource "css/dashboard.css" %}
-{% set widgetTypes = craft.dashboard.getAllWidgetTypes() %}
-
-{% includeTranslations
-    "Cancel"
-%}
 
 {% set extraPageHeaderHtml %}
+	<div class="buttons secondary-buttons">
+		<div class="newwidget btngroup submit">
+			<div id="newwidgetmenubtn" class="btn submit menubtn add icon">{{ 'New widget'|t }}</div>
+			<div class="menu">
+				<ul>
+					{% for widgetType in widgetTypes %}
+						<li><a data-type="{{ widgetType.type }}" data-colspan="{{ widgetType.colspan }}" data-settings-html="{{ widgetType.settingsHtml }}" data-settings-js="{{ widgetType.settingsJs }}">{{ widgetType.name }}</a></li>
+					{% endfor %}
+				</ul>
+			</div>
+		</div>
 
-    <div class="newwidget btngroup submit first">
-        <div class="btn submit menubtn add icon">{{ 'New widget'|t }}</div>
-
-        <div id="newwidgetmenu" class="menu">
-            <ul>
-                {% for widgetType in widgetTypes %}
-                    <li data-widget-type="{{ widgetType.classHandle }}">{{ not widgetType.title is empty ? widgetType.title : widgetType.classHandle }}</li>
-                {% endfor %}
-            </ul>
-        </div>
-    </div>
-
-    <div id="managewidgetstrigger" class="btn settings icon" title="{{ 'Settings'|t }}"></div>
-
+		<div id="widgetManagerBtn" class="btn settings icon submit" title="{{ 'Settings'|t }}"></div>
+	</div>
 {% endset %}
 
 
 {% block main %}
-    <div class="grid">
-        {% if currentUser.admin and craft.deprecator.getTotalLogs() %}
-            <div class="item" data-colspan="4">
-                <div class="pane">
-                    <p id="deprecationnotice" data-icon="alert">{{ 'New deprecation errors have been logged. Please take a minute to <a class="go" href="{url}">review them</a>'|t({ url: url('utils/deprecationerrors') })|raw }}</p>
-                </div>
-            </div>
-        {% endif %}
+	<div class="grid">
+		{% if currentUser.admin and craft.deprecator.getTotalLogs() %}
+			<div class="item" data-colspan="4">
+				<div class="pane">
+					<p id="deprecationnotice" data-icon="alert">{{ 'New deprecation errors have been logged. Please take a minute to <a class="go" href="{url}">review them</a>'|t({ url: url('utils/deprecationerrors') })|raw }}</p>
+				</div>
+			</div>
+		{% endif %}
 
-        {% for widget in craft.dashboard.getUserWidgets %}
-            {% set widgetType = craft.dashboard.populateWidgetType(widget) %}
-            {% if widgetType %}
-                {% set body = widgetType.getBodyHtml() %}
-                {% if body is not sameas(false) %}
-                    <div class="item" data-colspan="{{ widgetType.getColspan() }}">
-                        <div id="widget{{ widget.id }}" class="pane widget {{ widgetType.classHandle|lower }}" data-id="{{ widget.id }}">
-                            <div class="spinner body-loading"></div>
-                            {% if not widgetType.getSettingsHtml|e('js') is empty %}
-                                <div class="settings icon"></div>
-                            {% endif %}
-                            <h2>{{ widgetType.title }}</h2>
-                            <div class="body">{{ body|raw }}</div>
-                        </div>
-                    </div>
-
-                    {% set js %}
-                        new Craft.Widget("#widget{{ widget.id }}", {
-                            settingsHtml: '{{ widgetType.getSettingsHtml|e('js') }}'
-                        });
-                    {% endset %}
-
-                    {% includeJs js %}
-                {% endif %}
-            {% endif %}
-        {% endfor %}
-    </div>
+		{% for widget in widgets %}
+			<div class="item" data-colspan="{{ widget.colspan }}">
+				<div id="widget{{ widget.id }}" class="widget {{ widget.type|lower }}" data-id="{{ widget.id }}" data-name="{{ widget.name }}" data-title="{{ widget.title }}">
+					<div class="front">
+						<div class="pane">
+							<div class="spinner body-loading"></div>
+							<div class="settings icon hidden"></div>
+							<h2>{{ widget.title }}</h2>
+							<div class="body">
+								{{ widget.bodyHtml|raw }}
+							</div>
+						</div>
+					</div>
+					<div class="back">
+						<form class="pane">
+							<input type="hidden" name="widgetId" value="{{ widget.id }}">
+							<h2>{{ "{type} Settings"|t({ type: widget.name }) }}</h2>
+							<div class="settings"></div>
+							<hr>
+							<div class="buttons clearafter">
+								<input type="submit" class="btn submit" value="{{ 'Save'|t }}">
+								<div class="btn" role="button">{{ 'Cancel'|t }}</div>
+								<div class="spinner hidden"></div>
+							</div>
+						</form>
+					</div>
+				</div>
+			</div>
+		{% endfor %}
+	</div>
 {% endblock %}
-
-
-{% set js %}
-    new Craft.Dashboard({
-        manageHtml: '{{ manageHtml|e('js') }}',
-        settingsHtml: '{{ settingsHtml|e('js') }}'
-    });
-{% endset %}
-
-{% includeJs js %}

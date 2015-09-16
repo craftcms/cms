@@ -971,6 +971,11 @@ class TemplatesService extends BaseApplicationComponent
 	 */
 	public function namespaceInputs($html, $namespace = null, $otherAttributes = true)
 	{
+		if (!is_string($html) || $html === '')
+		{
+			return '';
+		}
+
 		if ($namespace === null)
 		{
 			$namespace = $this->getNamespace();
