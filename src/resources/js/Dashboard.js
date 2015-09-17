@@ -487,12 +487,13 @@ Craft.Widget = Garnish.Base.extend(
 	{
 		delete window.dashboard.widgets[this.$container.data('id')];
 		this.$container.addClass('scaleout');
-		this.base();
+		this.$grid.data('grid').removeItems(this.$gridItem);
 
 		setTimeout($.proxy(function() {
-			this.$grid.data('grid').removeItems(this.$gridItem);
 			this.$gridItem.remove();
 		}, this), 200);
+
+		this.base();
 	}
 });
 

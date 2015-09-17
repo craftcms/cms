@@ -61,7 +61,8 @@ Craft.Grid = Garnish.Base.extend(
 	{
 		this.$items = $().add(this.$items.add(items));
 		this.setItems();
-		this.refreshCols(true, false);
+		this.refreshCols(true, true);
+		$(items).velocity('finish');
 	},
 
 	removeItems: function(items)
