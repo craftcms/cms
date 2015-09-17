@@ -13,8 +13,7 @@
 }
 .widget.scaleout { opacity: 0; @include transform(scale(0.5)); }
 .widget > .front,
-.widget > .back { backface-visibility: hidden; @include transition(600ms); transform-style: preserve-3d; }
-.widget > .front { z-index: 2; }
+.widget > .back { backface-visibility: hidden; @include transition(600ms); }
 .widget > .back { position: absolute; top: 0; left: 0; width: 100%; }
 .widget:not(.flipped) > .front { @include transform(rotateY(0deg)); }
 .widget:not(.flipped) > .back { @include transform(rotateY(-180deg)); }
