@@ -19,6 +19,8 @@
 .widget:not(.flipped) > .back { @include transform(rotateY(-180deg)); }
 .widget.flipped > .front { @include transform(rotateY(180deg)); }
 .widget.flipped > .back { @include transform(rotateY(0deg)); }
+.widget:not(.flipped) > .back,
+.widget.flipped > .front { opacity: 0; }
 
 .widget > .front > .pane > .spinner.body-loading { display: none; }
 .widget.loading > .front > .pane > .spinner.body-loading { display: block; @include floatright; @include margin-left(10px); }
