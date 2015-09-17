@@ -488,8 +488,9 @@ class CraftTwigExtension extends \Twig_Extension
 		$globals['now'] = new DateTime(null, new \DateTimeZone(craft()->getTimeZone()));
 		$globals['loginUrl'] = UrlHelper::getUrl(craft()->config->getLoginPath());
 		$globals['logoutUrl'] = UrlHelper::getUrl(craft()->config->getLogoutPath());
+		$globals['isInstalled'] = craft()->isInstalled();
 
-		if (craft()->isInstalled() && !craft()->updates->isCraftDbMigrationNeeded())
+		if ($globals['isInstalled'] && !craft()->updates->isCraftDbMigrationNeeded())
 		{
 			$globals['siteName'] = craft()->getSiteName();
 			$globals['siteUrl'] = craft()->getSiteUrl();

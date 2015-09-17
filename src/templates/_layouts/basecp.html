@@ -83,7 +83,7 @@
 			limitAutoSlugsToAscii: {{ craft.config.limitAutoSlugsToAscii ? 'true' : 'false' }},
 			fileKinds:             {{ craft.app.getFileKinds()|json_encode|raw }},
 			publishableSections: [
-				{% if currentUser is defined and currentUser %}
+				{% if isInstalled and currentUser is defined and currentUser %}
 					{% for section in craft.sections.getEditableSections() %}
 						{% if section.type != 'single' and currentUser.can('createEntries:'~section.id) %}
 							{id: {{ section.id }}, name: "{{ section.name|e('js') }}", handle: "{{ section.handle|e('js') }}", type: "{{ section.type }}"}{% if not loop.last %},{% endif %}
@@ -92,9 +92,11 @@
 				{% endif %}
 			],
 			editableCategoryGroups: [
-				{% for group in craft.categoryGroups.getEditableGroups() %}
-					{id: {{ group.id }}, name: "{{ group.name|e('js') }}", handle: "{{ group.handle|e('js') }}"}{% if not loop.last %},{% endif %}
-				{% endfor %}
+				{% if isInstalled %}
+					{% for group in craft.categoryGroups.getEditableGroups() %}
+						{id: {{ group.id }}, name: "{{ group.name|e('js') }}", handle: "{{ group.handle|e('js') }}"}{% if not loop.last %},{% endif %}
+					{% endfor %}
+				{% endif %}
 			]
 		};
 
