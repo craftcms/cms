@@ -491,7 +491,8 @@ class Assets extends BaseRelationField
                     $folder = new VolumeFolder([
                         'parentId' => $currentFolder->id,
                         'name' => $part,
-                        'path' => $currentFolder->path.$part.'/'
+                        'path' => $currentFolder->path.$part.'/',
+                        'volumeId' => $volumeId,
                     ]);
 
                     Craft::$app->getAssets()->createFolder($folder);
