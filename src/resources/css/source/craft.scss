@@ -684,6 +684,7 @@ table.collapsed tbody tr:last-child td:not(:last-child) { border-bottom: none; }
 .elements .tableview .toggle { display: block; position: absolute; top: 9px; @include margin-left(-20px); }
 .elements .tableview .move + .toggle { @include margin-left(-34px); }
 .elements .tableview td .element:first-child { padding-left: 0; padding-right: 0; }
+.elements .tableview td .element.loading:first-child .label { @include padding-right(26px); }
 
 /* thumbs views */
 .elements .thumbsview { @include margin(-14px, 0, 0, -14px); }
