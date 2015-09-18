@@ -24,7 +24,11 @@ class FeedWidget extends BaseWidget
 	// Public Methods
 	// =========================================================================
 
+	public function getMaxColspan()
+	{
+		return 4;
 	}
+
 	public function getIconUrl()
 	{
 		return UrlHelper::getResourceUrl('images/widgets/feed_2x.png');
