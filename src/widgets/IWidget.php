@@ -32,9 +32,11 @@ interface IWidget extends ISavableComponentType
 	public function getBodyHtml();
 
 	/**
-	 * Returns the widget's colspan.
+	 * Returns the widget's maximum colspan.
 	 *
-	 * @return int The widget’s colspan.
+	 * @return int The widget’s maximum colspan.
 	 */
-	public function getColspan();
+	public function getMaxColspan();
+
+	public function getIconUrl();
 }

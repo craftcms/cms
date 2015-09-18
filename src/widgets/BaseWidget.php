@@ -31,11 +31,11 @@ abstract class BaseWidget extends BaseSavableComponentType implements IWidget
 	protected $multi = true;
 
 	/**
-	 * How many columns the widget should span, if there's enough room.
+	 * Maximum columns the widget can span.
 	 *
-	 * @var bool
+	 * @var int
 	 */
-	protected $colspan = 1;
+	protected $maxColspan = 1;
 
 	// Public Methods
 	// =========================================================================
@@ -69,13 +69,13 @@ abstract class BaseWidget extends BaseSavableComponentType implements IWidget
 	}
 
 	/**
-	 * @inheritDoc IWidget::getColspan()
+	 * @inheritDoc IWidget::getMaxColspan()
 	 *
 	 * @return int
 	 */
-	public function getColspan()
+	public function getMaxColspan()
 	{
-		return $this->colspan;
+		return $this->maxColspan;
 	}
 
 	/**
