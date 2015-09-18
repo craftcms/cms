@@ -1219,6 +1219,12 @@ class HttpRequestService extends \CHttpRequest
 
 		// Close the session.
 		craft()->session->close();
+
+		// In case we're running on php-fpm (https://secure.php.net/manual/en/book.fpm.php)
+		if (function_exists("fastcgi_finish_request"))
+		{
+			fastcgi_finish_request();
+		}
 	}
 
 	/**
