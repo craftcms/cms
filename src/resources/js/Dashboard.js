@@ -477,10 +477,54 @@ Craft.Widget = Garnish.Base.extend(
 			'<tr data-id="'+id+'" data-name="'+title+'">' +
 				'<td><img src="'+iconUrl+'" /></td>' +
 				'<td>'+this.getManagerRowLabel()+'</td>' +
+				'<td class="thin"><div class="colspan-picker"></div></td>' +
 				'<td class="thin"><a class="move icon" title="'+Craft.t('Reorder')+'" role="button"></a></td>' +
 				'<td class="thin"><a class="delete icon" title="'+Craft.t('Delete')+'" role="button"></a></td>' +
 			'</tr>'
 		);
+
+		$colspanPicker = $('.colspan-picker', $row);
+
+		if(!maxColspan)
+		{
+			maxColspan = 1;
+		}
+
+		if(maxColspan > 1)
+		{
+			for(i=1; i <= maxColspan; i++)
+			{
+				$('<a title="'+i+' Column" data-colspan="'+i+'" role="button">'+i+'</a>').appendTo($colspanPicker);
+			}
+
+			this.addListener($('a', $colspanPicker), 'click', $.proxy(function(ev) {
+
+				var colspan = $(ev.currentTarget).data('colspan');
+
+				this.$gridItem.data('colspan', colspan);
+				this.$grid.data('grid').refreshCols(true);
+
+				var data = {
+					id: id,
+					colspan:colspan
+				};
+
+				Craft.postActionRequest('dashboard/changeWidgetColspan', data, function(response, textStatus)
+				{
+					if (textStatus == 'success' && response.success)
+					{
+						Craft.cp.displayNotice(Craft.t('Widget’s colspan changed.'));
+					}
+					else
+					{
+						Craft.cp.displayError(Craft.t('Couldn’t change widget’s colspan.'));
+					}
+				});
+
+			}, this));
+		}
+
+		return $row;
 	},
 
 	getManagerRowLabel: function()
