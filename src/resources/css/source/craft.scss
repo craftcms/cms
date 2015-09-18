@@ -1171,9 +1171,11 @@ body .redactor-box textarea { padding: 6px 7px; }
 .timewrapper:before { top: 10px; @include left(7px); font-size: 11px; content: 'time'; }
 
 ::-webkit-input-placeholder { color: $lighttextcolor; }
+:-ms-input-placeholder { color: $lighttextcolor; }
+::-ms-input-placeholder { color: $lighttextcolor; }
 :-moz-placeholder { color: $lighttextcolor; }
 ::-moz-placeholder { color: $lighttextcolor; }
-:-ms-input-placeholder { color: $lighttextcolor; }
+::placeholder { color: $lighttextcolor; }
 
 .textline { border: none; border-bottom: 1px dashed hsl($hue, 11%, 85%); padding-left: 0; padding-right: 0; color: hsl($hue, 11%, 50%); background: none; }
 .textline:focus { outline: none; border-bottom-color: hsl($hue, 11%, 70%) }

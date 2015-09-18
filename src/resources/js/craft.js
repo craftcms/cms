@@ -992,9 +992,6 @@ $.extend(Craft,
 		$('.pill', $container).pill();
 		$('.formsubmit', $container).formsubmit();
 		$('.menubtn', $container).menubtn();
-
-		// Make placeholders work for IE9, too.
-		$('input[type!=password], textarea', $container).placeholder();
 	},
 
 	_elementIndexClasses: {},
