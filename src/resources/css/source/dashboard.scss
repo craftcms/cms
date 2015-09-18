@@ -44,3 +44,8 @@
 #extra-headers { float: right; }
 
 .widgetmanagerhud { max-width: 400px; }
+
+.newwidgetmenu ul li a { position: relative; padding-left: 35px; }
+.newwidgetmenu ul li a img { position: absolute; top: 4px; left: 14px; width: 15px; }
+
+.widgetmanagerhud table.data img { width: 15px; }

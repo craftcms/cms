@@ -464,10 +464,18 @@ Craft.Widget = Garnish.Base.extend(
 	getManagerRow: function()
 	{
 		var id = this.$container.data('id'),
-			title = this.$container.data('title');
+			title = this.$container.data('title'),
+			iconUrl = this.$container.data('icon-url'),
+			maxColspan = this.$container.data('max-colspan');
 
-		return $(
+		if(!iconUrl)
+		{
+			iconUrl = Craft.getResourceUrl('images/widgets/default.svg');
+		}
+
+		var $row = $(
 			'<tr data-id="'+id+'" data-name="'+title+'">' +
+				'<td><img src="'+iconUrl+'" /></td>' +
 				'<td>'+this.getManagerRowLabel()+'</td>' +
 				'<td class="thin"><a class="move icon" title="'+Craft.t('Reorder')+'" role="button"></a></td>' +
 				'<td class="thin"><a class="delete icon" title="'+Craft.t('Delete')+'" role="button"></a></td>' +

@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg width="30px" height="30px" viewBox="0 0 30 30" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:sketch="http://www.bohemiancoding.com/sketch/ns">
+    <!-- Generator: Sketch 3.3.3 (12072) - http://www.bohemiancoding.com/sketch -->
+    <title>recent-entries</title>
+    <desc>Created with Sketch.</desc>
+    <defs></defs>
+    <g id="Dashboard" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd" sketch:type="MSPage">
+        <g id="Icons@2x" sketch:type="MSLayerGroup" transform="translate(0.000000, -142.000000)">
+            <path d="M15,145.75 C21.2034375,145.75 26.25,150.796562 26.25,157 C26.25,163.203438 21.2034375,168.25 15,168.25 C8.7965625,168.25 3.75,163.203438 3.75,157 C3.75,150.796562 8.7965625,145.75 15,145.75 L15,145.75 Z M15,142 C6.71625,142 0,148.71625 0,157 C0,165.28375 6.71625,172 15,172 C23.28375,172 30,165.28375 30,157 C30,148.71625 23.28375,142 15,142 L15,142 L15,142 Z M20.083125,159.416875 L16.875,156.205 L16.875,149.5 L13.1034375,149.5 L13.1034375,156.9925 C13.1034375,157.556875 13.363125,158.043438 13.755,158.39125 L17.431875,162.068125 L20.083125,159.416875 L20.083125,159.416875 Z" id="recent-entries" fill="#8F98A4" sketch:type="MSShapeGroup"></path>
+            <g id="Slices"></g>
+        </g>
+    </g>
+</svg>

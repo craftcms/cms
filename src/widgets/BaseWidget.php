@@ -40,6 +40,10 @@ abstract class BaseWidget extends BaseSavableComponentType implements IWidget
 	// Public Methods
 	// =========================================================================
 
+	public function getIconUrl()
+	{
+	}
+
 	/**
 	 * @inheritDoc IComponentType::isSelectable()
 	 *
