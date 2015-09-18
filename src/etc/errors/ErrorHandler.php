@@ -203,7 +203,7 @@ class ErrorHandler extends \CErrorHandler
 
 		if ($exception instanceof \CHttpException || !YII_DEBUG)
 		{
-			$this->render('error', $data);
+			$this->renderError();
 		}
 		else
 		{
