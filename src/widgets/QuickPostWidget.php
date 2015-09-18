@@ -29,6 +29,11 @@ class QuickPostWidget extends BaseWidget
 	// Public Methods
 	// =========================================================================
 
+	public function getIconUrl()
+	{
+		return UrlHelper::getResourceUrl('images/widgets/quick-post.svg');
+	}
+
 	/**
 	 * @inheritDoc IComponentType::getName()
 	 *

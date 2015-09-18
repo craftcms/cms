@@ -24,6 +24,12 @@ class FeedWidget extends BaseWidget
 	// Public Methods
 	// =========================================================================
 
+	}
+	public function getIconUrl()
+	{
+		return UrlHelper::getResourceUrl('images/widgets/feed_2x.png');
+	}
+
 	/**
 	 * @inheritDoc IComponentType::getName()
 	 *

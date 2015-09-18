@@ -26,6 +26,11 @@ class UpdatesWidget extends BaseWidget
 	// Public Methods
 	// =========================================================================
 
+	public function getIconUrl()
+	{
+		return UrlHelper::getResourceUrl('images/widgets/updates.svg');
+	}
+
 	/**
 	 * @inheritDoc IComponentType::getName()
 	 *
