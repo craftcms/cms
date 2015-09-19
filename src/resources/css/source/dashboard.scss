@@ -49,3 +49,7 @@
 .newwidgetmenu ul li a img { position: absolute; top: 4px; left: 14px; width: 15px; }
 
 .widgetmanagerhud-img { width: 15px; }
+
+.colspan-picker { white-space: nowrap; font-size: 11px; }
+.colspan-picker a { position: relative; display: inline-block; padding: 0 3px; border: 1px solid #eee; margin-left: -1px; z-index: 1; }
+.colspan-picker a:hover { text-decoration: none; border-color: #ccc; z-index: 2; }
