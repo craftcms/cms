@@ -33,7 +33,7 @@
 
 		{% for widget in widgets %}
 			<div class="item" data-colspan="{{ widget.colspan }}">
-				<div id="widget{{ widget.id }}" class="widget {{ widget.type|lower }}" data-id="{{ widget.id }}" data-name="{{ widget.name }}" data-title="{{ widget.title }}" data-icon-url="{{ widget.iconUrl }}" data-max-colspan="{{ widget.maxColspan }}">
+				<div id="widget{{ widget.id }}" class="widget {{ widget.type|lower }}" data-id="{{ widget.id }}" data-name="{{ widget.name }}" data-title="{{ widget.title }}" data-icon-url="{{ widget.iconUrl }}" data-colspan="{{ widget.colspan }}" data-max-colspan="{{ widget.maxColspan }}">
 					<div class="front">
 						<div class="pane">
 							<div class="spinner body-loading"></div>

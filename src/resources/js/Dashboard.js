@@ -466,6 +466,7 @@ Craft.Widget = Garnish.Base.extend(
 		var id = this.$container.data('id'),
 			title = this.$container.data('title'),
 			iconUrl = this.$container.data('icon-url'),
+			colspan = this.$container.data('colspan');
 			maxColspan = this.$container.data('max-colspan');
 
 		if(!iconUrl)
@@ -485,6 +486,14 @@ Craft.Widget = Garnish.Base.extend(
 
 		$colspanPicker = $('.colspan-picker', $row);
 
+		this.addListener($colspanPicker, 'mouseover', function(ev) {
+			$(ev.currentTarget).addClass('is-hovering');
+		});
+
+		this.addListener($colspanPicker, 'mouseout', function(ev) {
+			$(ev.currentTarget).removeClass('is-hovering');
+		});
+
 		if(!maxColspan)
 		{
 			maxColspan = 1;
@@ -494,10 +503,60 @@ Craft.Widget = Garnish.Base.extend(
 		{
 			for(i=1; i <= maxColspan; i++)
 			{
-				$('<a title="'+i+' Column" data-colspan="'+i+'" role="button">'+i+'</a>').appendTo($colspanPicker);
+				var cssClass = '';
+
+				if(i <= colspan)
+				{
+					cssClass = 'active';
+				}
+
+				if(i == colspan)
+				{
+					cssClass += ' last';
+				}
+
+				$('<a title="'+i+' Column" data-colspan="'+i+'" role="button" class="'+cssClass+'"></a>').appendTo($colspanPicker);
 			}
 
-			this.addListener($('a', $colspanPicker), 'click', $.proxy(function(ev) {
+			var $columns = $('a', $colspanPicker);
+
+			this.addListener($columns, 'mouseover', function(ev) {
+
+				$columns.removeClass('is-highlighted');
+
+				$.each($columns, function(k, column)
+				{
+					if(k <= $(ev.currentTarget).index())
+					{
+						$(column).addClass('is-highlighted');
+					}
+				});
+			});
+
+			this.addListener($columns, 'mouseout', function(ev) {
+				$columns.removeClass('is-highlighted');
+			});
+
+			this.addListener($columns, 'click', $.proxy(function(ev) {
+
+				var $column = $(ev.currentTarget);
+
+				$columns.removeClass('last');
+				$columns.removeClass('active');
+				$column.addClass('active');
+
+				$.each($columns, function(k, v) {
+
+					if(k <= $column.index())
+					{
+						$(v).addClass('active');
+					}
+
+					if(k == $column.index())
+					{
+						$(v).addClass('last');
+					}
+				});
 
 				var colspan = $(ev.currentTarget).data('colspan');
 
