@@ -113,7 +113,7 @@ class MigrationHelper
 		foreach ($fks as $fk)
 		{
 			// Skip if this FK is from *and* to this table
-			if ($fk->table == $oldName)
+			if ($fk->table->name == $oldName)
 			{
 				continue;
 			}
@@ -140,7 +140,7 @@ class MigrationHelper
 		foreach ($fks as $fk)
 		{
 			// Skip if this FK is from *and* to this table
-			if ($fk->table == $oldName)
+			if ($fk->table->name == $oldName)
 			{
 				continue;
 			}
