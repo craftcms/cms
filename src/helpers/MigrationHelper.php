@@ -134,20 +134,24 @@ class MigrationHelper
 		static::$_tables[$newName]->name = $newName;
 		unset(static::$_tables[$oldName]);
 
-		static::restoreAllIndexesOnTable($table);
-		static::restoreAllForeignKeysOnTable($table);
-
+		// Restore FKs to this table
 		foreach ($fks as $fk)
 		{
+			// Update the FK ref table name
+			$fk->fk->refTable = $newName;
+
 			// Skip if this FK is from *and* to this table
-			if ($fk->table->name == $oldName)
+			if ($fk->table->name == $newName)
 			{
 				continue;
 			}
 
-			$fk->fk->refTable = $newName;
 			static::restoreForeignKey($fk->fk);
 		}
+
+		// Restore this table's indexes and FKs
+		static::restoreAllIndexesOnTable($table);
+		static::restoreAllForeignKeysOnTable($table);
 	}
 
 	/**
