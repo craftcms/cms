@@ -26,6 +26,11 @@ class GetHelpWidget extends BaseWidget
 	// Public Methods
 	// =========================================================================
 
+	public function getMaxColspan()
+	{
+		return 1;
+	}
+
 	public function getIconUrl()
 	{
 		return UrlHelper::getResourceUrl('images/widgets/get-help.svg');
