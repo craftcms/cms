@@ -496,7 +496,7 @@ class DashboardController extends BaseController
 			'type' => $widgetType->getClassHandle(),
 			'iconUrl' => $widgetType->getIconUrl(),
 			'name' => $widgetType->getName(),
-			'colspan' => $widget->colspan,
+			'colspan' => ($widget->colspan > 1 ? $widget->colspan : 1),
 			'maxColspan' => $widgetType->getMaxColspan(),
 			'title' => $widgetType->getTitle(),
 			'bodyHtml' => $widgetBodyHtml,
