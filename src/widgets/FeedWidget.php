@@ -26,7 +26,7 @@ class FeedWidget extends BaseWidget
 
 	public function getMaxColspan()
 	{
-		return 4;
+		return 2;
 	}
 
 	public function getIconUrl()
