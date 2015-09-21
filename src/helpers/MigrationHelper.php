@@ -112,6 +112,12 @@ class MigrationHelper
 
 		foreach ($fks as $fk)
 		{
+			// Skip if this FK is from *and* to this table
+			if ($fk->table == $oldName)
+			{
+				continue;
+			}
+
 			static::dropForeignKey($fk->fk);
 		}
 
@@ -133,6 +139,12 @@ class MigrationHelper
 
 		foreach ($fks as $fk)
 		{
+			// Skip if this FK is from *and* to this table
+			if ($fk->table == $oldName)
+			{
+				continue;
+			}
+
 			$fk->fk->refTable = $newName;
 			static::restoreForeignKey($fk->fk);
 		}
