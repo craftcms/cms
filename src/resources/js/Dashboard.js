@@ -572,7 +572,7 @@ Craft.Widget = Garnish.Base.extend(
 				{
 					if (textStatus == 'success' && response.success)
 					{
-						Craft.cp.displayNotice(Craft.t('Widget’s colspan changed.'));
+						// success
 					}
 					else
 					{

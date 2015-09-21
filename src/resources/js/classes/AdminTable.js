@@ -90,8 +90,8 @@ Craft.AdminTable = Garnish.Base.extend(
 			{
 				if (response.success)
 				{
+					// success
 					this.onAfterReorderObjects(ids);
-					Craft.cp.displayNotice(Craft.t(this.settings.reorderSuccessMessage));
 				}
 				else
 				{
