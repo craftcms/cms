@@ -33,10 +33,6 @@ abstract class BaseWidget extends BaseSavableComponentType implements IWidget
 	// Public Methods
 	// =========================================================================
 
-	public function getIconUrl()
-	{
-	}
-
 	/**
 	 * @inheritDoc IComponentType::isSelectable()
 	 *
@@ -66,18 +62,12 @@ abstract class BaseWidget extends BaseSavableComponentType implements IWidget
 	}
 
 	/**
-	 * @inheritDoc IWidget::getMaxColspan()
+	 * @inheritDoc IWidget::getIconUrl()
 	 *
-	 * @return int
+	 * @return string
 	 */
-	public function getMaxColspan()
+	public function getIconUrl()
 	{
-		if (method_exists($this, 'getColspan'))
-		{
-		    return $this->getColspan();
-		}
-
-		return 4;
 	}
 
 	/**
@@ -90,5 +80,20 @@ abstract class BaseWidget extends BaseSavableComponentType implements IWidget
 		return '<div style="margin: 0 -30px -30px;">' .
 				'<img style="display: block; width: 100%;" src="'.UrlHelper::getResourceUrl('images/prg.jpg').'">' .
 			'</div>';
+	}
+
+	/**
+	 * @inheritDoc IWidget::getMaxColspan()
+	 *
+	 * @return int
+	 */
+	public function getMaxColspan()
+	{
+		if (method_exists($this, 'getColspan'))
+		{
+		    return $this->getColspan();
+		}
+
+		return 4;
 	}
 }

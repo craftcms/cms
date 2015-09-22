@@ -26,16 +26,6 @@ class GetHelpWidget extends BaseWidget
 	// Public Methods
 	// =========================================================================
 
-	public function getMaxColspan()
-	{
-		return 1;
-	}
-
-	public function getIconUrl()
-	{
-		return UrlHelper::getResourceUrl('images/widgets/get-help.svg');
-	}
-
 	/**
 	 * @inheritDoc IComponentType::getName()
 	 *
@@ -54,6 +44,26 @@ class GetHelpWidget extends BaseWidget
 	public function getTitle()
 	{
 		return Craft::t('Send a message to @@@appName@@@ Support');
+	}
+
+	/**
+	 * @inheritDoc IWidget::getIconUrl()
+	 *
+	 * @return string
+	 */
+	public function getIconUrl()
+	{
+		return UrlHelper::getResourceUrl('images/widgets/get-help.svg');
+	}
+
+	/**
+	 * @inheritDoc IWidget::getMaxColspan()
+	 *
+	 * @return int
+	 */
+	public function getMaxColspan()
+	{
+		return 1;
 	}
 
 	/**

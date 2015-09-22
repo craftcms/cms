@@ -26,16 +26,6 @@ class UpdatesWidget extends BaseWidget
 	// Public Methods
 	// =========================================================================
 
-	public function getMaxColspan()
-	{
-		return 1;
-	}
-
-	public function getIconUrl()
-	{
-		return UrlHelper::getResourceUrl('images/widgets/updates.svg');
-	}
-
 	/**
 	 * @inheritDoc IComponentType::getName()
 	 *
@@ -60,6 +50,26 @@ class UpdatesWidget extends BaseWidget
 		}
 
 		return false;
+	}
+
+	/**
+	 * @inheritDoc IWidget::getIconUrl()
+	 *
+	 * @return string
+	 */
+	public function getIconUrl()
+	{
+		return UrlHelper::getResourceUrl('images/widgets/updates.svg');
+	}
+
+	/**
+	 * @inheritDoc IWidget::getMaxColspan()
+	 *
+	 * @return int
+	 */
+	public function getMaxColspan()
+	{
+		return 1;
 	}
 
 	/**

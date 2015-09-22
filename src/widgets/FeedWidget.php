@@ -24,16 +24,6 @@ class FeedWidget extends BaseWidget
 	// Public Methods
 	// =========================================================================
 
-	public function getMaxColspan()
-	{
-		return 2;
-	}
-
-	public function getIconUrl()
-	{
-		return UrlHelper::getResourceUrl('images/widgets/feed_2x.png');
-	}
-
 	/**
 	 * @inheritDoc IComponentType::getName()
 	 *
@@ -54,6 +44,26 @@ class FeedWidget extends BaseWidget
 		return craft()->templates->render('_components/widgets/Feed/settings', array(
 			'settings' => $this->getSettings()
 		));
+	}
+
+	/**
+	 * @inheritDoc IWidget::getIconUrl()
+	 *
+	 * @return string
+	 */
+	public function getIconUrl()
+	{
+		return UrlHelper::getResourceUrl('images/widgets/feed_2x.png');
+	}
+
+	/**
+	 * @inheritDoc IWidget::getMaxColspan()
+	 *
+	 * @return int
+	 */
+	public function getMaxColspan()
+	{
+		return 2;
 	}
 
 	/**

@@ -24,6 +24,13 @@ interface IWidget extends ISavableComponentType
 	public function getTitle();
 
 	/**
+	 * Returns the widget’s icon URL.
+	 *
+	 * @return string The widget’s icon URL.
+	 */
+	public function getIconUrl();
+
+	/**
 	 * Returns the widget's body HTML.
 	 *
 	 * @return string|false The widget’s body HTML, or `false` if the widget
@@ -37,6 +44,4 @@ interface IWidget extends ISavableComponentType
 	 * @return int The widget’s maximum colspan.
 	 */
 	public function getMaxColspan();
-
-	public function getIconUrl();
 }
