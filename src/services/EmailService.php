@@ -438,6 +438,7 @@ class EmailService extends BaseApplicationComponent
 			}
 
 			$success = true;
+			Craft::log('Successfully sent email with subject: '.$email->Subject, LogLevel::Info);
 		}
 		else
 		{
