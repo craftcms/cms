@@ -278,16 +278,14 @@ class AssetsController extends Controller
         $folderId = Craft::$app->getRequest()->getRequiredBodyParam('folderId');
         $newName = Craft::$app->getRequest()->getRequiredBodyParam('newName');
 
+        // TODO permission checks
         try {
-            Craft::$app->getAssets()->checkPermissionByFolderIds($folderId, 'removeFromAssetVolume');
-            Craft::$app->getAssets()->checkPermissionByFolderIds($folderId, 'createSubfoldersInAssetVolume');
-        } catch (Exception $e) {
-            return $this->asErrorJson($e->getMessage());
+            Craft::$app->getAssets()->renameFolderById($folderId, $newName);
+        } catch (AssetException $exception) {
+            return $this->asErrorJson($exception->getMessage());
         }
 
-        $response = Craft::$app->getAssets()->renameFolder($folderId, $newName);
-
-        return $this->asJson($response->getResponseData());
+        return $this->asJson(['success' => true]);
     }
 
 

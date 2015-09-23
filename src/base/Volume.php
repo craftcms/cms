@@ -13,9 +13,10 @@
 namespace craft\app\base;
 
 use Craft;
-use craft\app\errors\VolumeFileExistsException;
-use craft\app\errors\VolumeFileNotFoundException;
+use craft\app\errors\VolumeObjectExistsException;
+use craft\app\errors\VolumeObjectNotFoundException;
 use craft\app\errors\VolumeFolderExistsException;
+use craft\app\helpers\Io;
 use League\Flysystem\AdapterInterface;
 use League\Flysystem\FileExistsException;
 use League\Flysystem\FileNotFoundException;
@@ -157,7 +158,7 @@ abstract class Volume extends SavableComponent implements VolumeInterface
                 ]
             );
         } catch (FileExistsException $exception) {
-            throw new VolumeFileExistsException($exception->getMessage());
+            throw new VolumeObjectExistsException($exception->getMessage());
         }
     }
 
@@ -196,6 +197,14 @@ abstract class Volume extends SavableComponent implements VolumeInterface
     /**
      * @inheritdoc
      */
+    public function folderExists($path)
+    {
+        return $this->getFilesystem()->has($path);
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function deleteFile($path)
     {
         try {
@@ -224,9 +233,9 @@ abstract class Volume extends SavableComponent implements VolumeInterface
         try {
             return $this->getFilesystem()->rename($path, $newPath);
         } catch (FileExistsException $exception) {
-            throw new VolumeFileExistsException($exception->getMessage());
+            throw new VolumeObjectExistsException($exception->getMessage());
         } catch (FileNotFoundException $exception) {
-            throw new VolumeFileNotFoundException(Craft::t('app', 'File was not found while attempting to rename {path}!', array('path' => $path)));
+            throw new VolumeObjectNotFoundException(Craft::t('app', 'File was not found while attempting to rename {path}!', array('path' => $path)));
         }
     }
 
@@ -285,6 +294,43 @@ abstract class Volume extends SavableComponent implements VolumeInterface
             return $this->getFilesystem()->deleteDir($path);
         } catch (RootViolationException $exception) {
             return false;
+        }
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function renameDir($path, $newName)
+    {
+        $fileList = $this->getAdapter()->listContents($path, true);
+
+        $folders = [];
+
+        $parts = explode("/", $path);
+
+        array_pop($parts);
+        array_push($parts, $newName);
+
+        $newPath = join("/", $parts);
+
+        $pattern = '/^'.preg_quote($path, '/').'/';
+
+        foreach ($fileList as $object)
+        {
+            if ($object['type'] != 'dir')
+            {
+                $objectPath = preg_replace($pattern, $newPath, $object['path']);
+                $this->renameFile($object['path'], $objectPath);
+            }
+            else
+            {
+                $folders[] = $object;
+            }
+        }
+
+        foreach ($folders as $folder)
+        {
+            $this->getAdapter()->deleteDir($folder['path']);
         }
     }
 

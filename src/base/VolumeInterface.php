@@ -1,7 +1,7 @@
 <?php
 namespace craft\app\base;
 
-use craft\app\errors\VolumeFileExistsException;
+use craft\app\errors\VolumeObjectExistsException;
 use craft\app\errors\VolumeFolderExistsException;
 use League\Flysystem\FileExistsException;
 use League\Flysystem\FileNotFoundException;
@@ -62,7 +62,7 @@ interface VolumeInterface extends SavableComponentInterface
      * @param string   $path   The path of the file, relative to the source’s root.
      * @param resource $stream The stream to file
      *
-     * @throws VolumeFileExistsException
+     * @throws VolumeObjectExistsException
      * @return boolean Whether the operation was successful.
      */
     public function createFileByStream($path, $stream);
@@ -201,4 +201,16 @@ interface VolumeInterface extends SavableComponentInterface
      * @return boolean Whether the operation was successful.
      */
     public function deleteDir($path);
+
+    /**
+     * Renames a directory.
+     *
+     * @param string $path The path of the directory, relative to the source’s root.
+     * @param string $newPath The new path of the directory, relative to the source’s root.
+     *
+     * @throws VolumeFolderExistsException
+     *
+     * @return boolean Whether the operation was successful.
+     */
+    public function renameDir($path, $newName);
 }

@@ -15,18 +15,5 @@ use \League\Flysystem\AwsS3v2\AwsS3Adapter;
  */
 class AwsS3 extends AwsS3Adapter implements IFlysystemAdapter
 {
-    // Public Methods
-    // =========================================================================
-    /**
-     * Renames a directory.
-     *
-     * @param string $path    The old path of the file, relative to the source’s root.
-     * @param string $newPath The new path of the file, relative to the source’s root.
-     *
-     * @return boolean Whether the operation was successful.
-     */
-    public function renameDir($path, $newPath)
-    {
-        // TODO: Implement renameDir() method.
-    }
+
 }

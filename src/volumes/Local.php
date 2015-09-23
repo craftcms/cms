@@ -3,7 +3,12 @@ namespace craft\app\volumes;
 
 use Craft;
 use craft\app\base\Volume;
+use craft\app\errors\VolumeObjectExistsException;
+use craft\app\errors\VolumeObjectNotFoundException;
+use craft\app\helpers\Io;
 use craft\app\io\flysystemadapters\Local as LocalAdapter;
+use League\Flysystem\FileExistsException;
+use League\Flysystem\FileNotFoundException;
 
 /**
  * The local volume class. Handles the implementation of the local filesystem as a volume in
@@ -100,6 +105,21 @@ class Local extends Volume
         return rtrim(Craft::$app->getConfig()->parseEnvironmentString($this->url), '/').'/';
     }
 
+    /**
+     * @inheritdoc
+     */
+    public function renameDir($path, $newName)
+    {
+        $newPath = IO::getParentFolderPath($path).$newName;
+
+        try {
+            return $this->getFilesystem()->rename($path, $newPath);
+        } catch (FileExistsException $exception) {
+            throw new VolumeObjectExistsException($exception->getMessage());
+        } catch (FileNotFoundException $exception) {
+            throw new VolumeObjectNotFoundException(Craft::t('app', 'Folder was not found while attempting to rename {path}!', array('path' => $path)));
+        }
+    }
 
     // Protected Methods
     // =========================================================================

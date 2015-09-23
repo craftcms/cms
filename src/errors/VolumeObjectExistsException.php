@@ -17,7 +17,7 @@ namespace craft\app\errors;
  * @package   craft.app.exceptions
  * @since     3.0
  */
-class VolumeFileExistsException extends VolumeException
+class VolumeObjectExistsException extends VolumeException
 {
 
 }

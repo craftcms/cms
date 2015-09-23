@@ -21,8 +21,8 @@ use craft\app\errors\AssetMissingException;
 use craft\app\errors\EventException;
 use craft\app\errors\UploadFailedException;
 use craft\app\errors\VolumeException;
-use craft\app\errors\VolumeFileExistsException;
-use craft\app\errors\VolumeFileNotFoundException;
+use craft\app\errors\VolumeObjectExistsException;
+use craft\app\errors\VolumeObjectNotFoundException;
 use craft\app\errors\VolumeFolderExistsException;
 use craft\app\errors\ElementSaveException;
 use craft\app\errors\Exception;
@@ -194,7 +194,7 @@ class Assets extends Component
      * @throws FileException                     If there was a problem with the actual file.
      * @throws AssetConflictException            If a file with such name already exists.
      * @throws AssetLogicException               If something violates Asset's logic (e.g. Asset outside of a folder).
-     * @throws VolumeFileExistsException         If the file actually exists on the volume, but on in the index.
+     * @throws VolumeObjectExistsException         If the file actually exists on the volume, but on in the index.
      * @throws UploadFailedException             If for some reason it's not possible to write the file to the final location
      * @return void
      */
@@ -263,7 +263,7 @@ class Assets extends Component
             // Explicitly re-throw VolumeFileExistsException
             try {
                 $result = $volume->createFileByStream($uriPath, $stream);
-            } catch (VolumeFileExistsException $exception) {
+            } catch (VolumeObjectExistsException $exception) {
                 // Replace the file if this is the temporary Volume.
                 if (is_null($asset->volumeId)) {
                     $volume->deleteFile($uriPath);
@@ -597,6 +597,65 @@ class Assets extends Component
             }
         }
         $this->storeFolderRecord($folder);
+    }
+
+    /**
+     * Rename a folder by it's id.
+     *
+     * @param $folderId
+     * @param $newName
+     *
+     * @throws AssetConflictException           If a folder already exists with such name in Assets Index
+     * @throws AssetLogicException              If the folder to be renamed can't be found or trying to rename the top folder.
+     * @throws VolumeObjectExistsException      If a folder already exists with such name in the Volume, but not in Index
+     * @throws VolumeObjectNotFoundException    If the folder to be renamed can't be found in the Volume.
+     */
+    public function renameFolderById($folderId, $newName)
+    {
+        $newName = AssetsHelper::prepareAssetName($newName, false);
+        $folder = $this->getFolderById($folderId);
+
+        if (!$folder) {
+            throw new AssetLogicException(Craft::t('app',
+                'No folder exists with the ID “{id}”',
+                ['id' => $folderId]));
+        }
+
+        if (!$folder->parentId) {
+            throw new AssetLogicException(Craft::t('app',
+                "It's not possible to rename the top folder of a Volume."));
+        }
+
+        $conflictingFolder = $this->findFolder([
+            'parentId' => $folder->parentId,
+            'name' => $newName
+        ]);
+
+        if ($conflictingFolder) {
+            throw new AssetConflictException(Craft::t('app',
+                'A folder with the name “{folderName}” already exists in the folder.',
+                ['folderName' => $folder->name]));
+        }
+
+        $volume = $folder->getVolume();
+
+        $volume->renameDir(rtrim($folder->path, '/'), $newName);
+
+        $descendantFolders = $this->getAllDescendantFolders($folder);
+        $newFullPath = IO::getParentFolderPath($folder->path).$newName.'/';
+
+        foreach ($descendantFolders as $descendantFolder)
+        {
+            $descendantFolder->path = preg_replace('#^'.$folder->path.'#', $newFullPath, $descendantFolder->path);
+            $this->storeFolderRecord($descendantFolder);
+        }
+
+        // Now change the affected folder
+        $folder->name = $newName;
+        $folder->path = $newFullPath;
+        $this->storeFolderRecord($folder);
+
+        return;
     }
 
     /**
@@ -1239,7 +1298,7 @@ class Assets extends Component
                         $baseTo.$toTransformPath);
                     $transformIndex->filename = $filename;
                     Craft::$app->getAssetTransforms()->storeTransformIndexData($transformIndex);
-                } catch (VolumeFileNotFoundException $exception) {
+                } catch (VolumeObjectNotFoundException $exception) {
                     // No biggie, just delete the transform index as well then
                     Craft::$app->getAssetTransforms()->deleteTransformIndex($transformIndex->id);
                 }
