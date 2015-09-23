@@ -6,7 +6,7 @@ use craft\app\base\Volume;
 use craft\app\dates\DateTime;
 use craft\app\db\Query;
 use craft\app\elements\Asset;
-use craft\app\errors\VolumeFileNotFoundException;
+use craft\app\errors\VolumeObjectNotFoundException;
 use craft\app\helpers\Assets as AssetsHelper;
 use craft\app\helpers\Image;
 use craft\app\helpers\Io;
@@ -359,13 +359,13 @@ class AssetIndexer extends Component
      * @param         $path
      * @param boolean $checkIfExists
      *
-     * @throws \craft\app\errors\VolumeFileNotFoundException
+     * @throws \craft\app\errors\VolumeObjectNotFoundException
      * @return boolean|Asset
      */
     public function indexFile(Volume $volume, $path, $checkIfExists = true)
     {
         if ($checkIfExists && !$volume->fileExists($path)) {
-            throw new VolumeFileNotFoundException(Craft::t(
+            throw new VolumeObjectNotFoundException(Craft::t(
                 'app',
                 'File was not found while attempting to index {path}!',
                 array('path' => $path)

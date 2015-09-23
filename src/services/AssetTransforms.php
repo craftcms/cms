@@ -11,7 +11,7 @@ use Craft;
 use craft\app\db\Query;
 use craft\app\dates\DateTime;
 use craft\app\elements\Asset;
-use craft\app\errors\VolumeFileExistsException;
+use craft\app\errors\VolumeObjectExistsException;
 use craft\app\helpers\Assets as AssetsHelper;
 use craft\app\helpers\Db;
 use craft\app\helpers\Image;
@@ -22,7 +22,7 @@ use craft\app\models\AssetTransformIndex;
 use craft\app\models\AssetTransform as AssetTransformModel;
 use craft\app\records\AssetTransform as AssetTransformRecord;
 use craft\app\errors\AssetTransformException;
-use craft\app\errors\VolumeFileNotFoundException;
+use craft\app\errors\VolumeObjectNotFoundException;
 use craft\app\errors\VolumeException;
 use craft\app\errors\AssetLogicException;
 use craft\app\errors\ModelValidationException;
@@ -329,7 +329,8 @@ class AssetTransforms extends Component
                 $this->storeTransformIndexData($index);
             } else {
                 throw new AssetTransformException(Craft::t('app',
-                    'Failed to generate transform with id of {id}.', ['id' => $index->id]));
+                    'Failed to generate transform with id of {id}.',
+                    ['id' => $index->id]));
             }
         }
 
@@ -672,7 +673,7 @@ class AssetTransforms extends Component
         if (!$volume->isLocal()) {
             if (!Io::fileExists($imageSourcePath) || Io::getFileSize($imageSourcePath) == 0) {
                 if ($volume->isLocal()) {
-                    throw new VolumeFileNotFoundException(Craft::t('Image “{file}” cannot be found.',
+                    throw new VolumeObjectNotFoundException(Craft::t('Image “{file}” cannot be found.',
                         ['file' => $file->filename]));
                 }
 
@@ -741,10 +742,14 @@ class AssetTransforms extends Component
      */
     public function storeLocalSource($source, $destination = '')
     {
+        if (!$destination) {
+            $source = $destination;
+        }
+
         $maxCachedImageSize = $this->getCachedCloudImageSize();
 
         // Resize if constrained by maxCachedImageSizes setting
-        if ($maxCachedImageSize > 0 && Image::isImageManipulatable($source)) {
+        if ($maxCachedImageSize > 0 && Image::isImageManipulatable(IO::getExtension($source))) {
 
             $image = Craft::$app->getImages()->loadImage($source);
 
@@ -1101,7 +1106,7 @@ class AssetTransforms extends Component
 
         try {
             $volume->createFileByStream($transformPath, $stream);
-        } catch (VolumeFileExistsException $e) {
+        } catch (VolumeObjectExistsException $e) {
             // We're fine with that.
         }
 
