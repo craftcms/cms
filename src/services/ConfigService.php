@@ -858,6 +858,6 @@ class ConfigService extends BaseApplicationComponent
 			$customConfig = $mergedCustomConfig;
 		}
 
-		$baseConfig = array_merge($baseConfig, $customConfig);
+		$baseConfig = \CMap::mergeArray($baseConfig, $customConfig);
 	}
 }
