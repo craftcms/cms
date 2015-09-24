@@ -1,15 +1,33 @@
+{%- set class = [
+	'multiselect',
+	(class is defined ? class : null)
+]|filter|join(' ') %}
+
 {%- set options = (options is defined ? options : []) %}
 {%- set values = (values is defined ? values : []) -%}
+{%- set hasOptgroups = false -%}
 
-<select multiple
-	{%- if id is defined %} id="{{ id }}"{% endif %}
-	{%- if name is defined and name %} name="{{ name }}[]"{% endif %}
-	{%- if autofocus is defined and autofocus and not craft.request.isMobileBrowser(true) %} autofocus{% endif %}
-	{%- if disabled is defined and disabled %} disabled{% endif %}
-	{%- if size is defined %} size="{{ size }}"{% endif %}>
-	{%- for key, option in options %}
-		{%- set optionLabel = (option.label is defined ? option.label : option) %}
-		{%- set optionValue = (option.value is defined ? option.value : key) -%}
-		<option value="{{ optionValue }}"{% if optionValue in values %} selected{% endif %}>{{ optionLabel }}</option>
-	{%- endfor %}
-</select>
+<div class="{{ class }}">
+	<select multiple
+		{%- if id is defined %} id="{{ id }}"{% endif %}
+		{%- if name is defined and name %} name="{{ name }}[]"{% endif %}
+		{%- if autofocus is defined and autofocus and not craft.request.isMobileBrowser(true) %} autofocus{% endif %}
+		{%- if disabled is defined and disabled %} disabled{% endif %}
+		{%- if size is defined %} size="{{ size }}"{% endif %}>
+		{%- for key, option in options %}
+			{% if option.optgroup is defined %}
+				{% if hasOptgroups %}
+					</optgroup>
+				{% else %}
+					{% set hasOptgroups = true %}
+				{% endif %}
+				<optgroup label="{{ option.optgroup }}">
+			{% else %}
+				{% set optionLabel = (option.label is defined ? option.label : option) %}
+				{% set optionValue = (option.value is defined ? option.value : key) %}
+				{% set optionDisabled = (option.disabled is defined ? option.disabled : false) %}
+				<option value="{{ optionValue }}"{% if optionValue in values %} selected{% endif %}{% if optionDisabled %} disabled{% endif %}>{{ optionLabel }}</option>
+			{% endif %}
+		{%- endfor %}
+	</select>
+</div>
