@@ -1,19 +1,21 @@
 <div id="subnav-wrapper">
     <div class="container">
-        <ul id="subnav">
-            {% for itemId, item in subnav %}
-                {% set itemIsSelected = (
-                    (selectedSubnavItem is defined and selectedSubnavItem == itemId) or
-                    (selectedSubnavItem is not defined and loop.first)
-                ) -%}
+        <nav>
+            <ul id="subnav">
+                {% for itemId, item in subnav %}
+                    {% set itemIsSelected = (
+                        (selectedSubnavItem is defined and selectedSubnavItem == itemId) or
+                        (selectedSubnavItem is not defined and loop.first)
+                    ) -%}
 
-                <li>
-                    <a href="{% if item.url is defined %}{{ url(item.url) }}{% endif %}" {% if itemIsSelected %} class="sel"{% endif %}>
-                        {{ item.label }}
-                    </a>
-                </li>
+                    <li>
+                        <a href="{% if item.url is defined %}{{ url(item.url) }}{% endif %}" {% if itemIsSelected %} class="sel"{% endif %}>
+                            {{ item.label }}
+                        </a>
+                    </li>
 
-            {% endfor %}
-        </ul>
+                {% endfor %}
+            </ul>
+        </nav>
     </div>
 </div>
