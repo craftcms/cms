@@ -90,12 +90,13 @@ body.rtl [data-icon-after=structure]:after { content: attr('structurertl'); }
 .nav ul li a.sel { color: #2c2c2c; }
 
 /* headings */
+@mixin h6-styles { margin: 14px 0 3px; font-size: 10px; line-height: 1.2; color: $lighttextcolor; text-transform: uppercase; font-weight: bold; }
 h1 { margin-bottom: 24px; font-family: HelveticaNeue-Light, HelveticaNeue, sans-serif; font-size: 30px; line-height: 1; color: $submitcolor; }
 h2 { margin: 14px 0; font-size: 15px; font-weight: bold; line-height: 1.2; }
 h3 { margin: 14px 0; font-weight: bold; line-height: 1.2; }
 h4 { margin: 14px 0; font-weight: bold; line-height: 1.2; color: $mediumtextcolor; }
 h5 { margin: 14px 0 3px; line-height: 1.2; color: $mediumtextcolor; }
-h6 { margin: 14px 0 3px; font-size: 10px; line-height: 1.2; color: $lighttextcolor; text-transform: uppercase; font-weight: bold; }
+h6 { @include h6-styles; }
 
 h1[data-icon]:before { @include margin(-8px, 10px, 0, 0) }
 h2[data-icon]:before { @include margin(-4px, 6px, 0, 0); font-size: 19px; }
@@ -189,7 +190,9 @@ td.right { float: none; @include alignright; }
 
 .fullwidth { width: 100%; }
 
-.token { display: inline-block; border: 1px solid #c1c1c1; border-radius: 10px; padding: 0 7px 1px; font-size: 12px; line-height: 14px; color: $textcolor; text-shadow: 0 1px 1px rgba(255,255,255,0.5); background: #ddd; }
+@mixin token-styles { display: inline-block; border: 1px solid #c1c1c1; border-radius: 10px; padding: 1px 7px; font-size: 12px; line-height: 14px; color: $textcolor; text-shadow: 0 1px 1px rgba(255,255,255,0.5); background: #ddd; }
+
+.token { @include token-styles; }
 .token[data-name='*'] { position: relative; width: 10px; }
 .token[data-name='*'] span { opacity: 0; }
 .token[data-name='*']:before { @include icon; display: block; position: absolute; top: 0; left: 0; width: 100%; font-size: 9px; line-height: 17px; content: '*'; text-indent: 0; }
@@ -996,18 +999,23 @@ body #redactor-modal-overlay {
 /*  Menus
 /* ----------------------------------------*/
 
-.menu,
-.ui-datepicker,
-.ui-timepicker-list,
-body .redactor-dropdown { z-index: 100; margin-bottom: 10px; border-radius: 3px; background: #fff; @include user-select(none);
+@mixin menu-styles { z-index: 100; margin-bottom: 10px; border-radius: 3px; padding: 4px 14px; background: #fff; @include user-select(none);
 	@include box-shadow(0 0 0 1px rgba(0,0,0,0.1), 0 5px 25px -5px rgba(0,0,0,0.25));
 }
 
+@mixin menu-option-styles { margin: 0 -14px; padding: 3px 14px; color: $textcolor; text-decoration: none; white-space: nowrap; }
+@mixin menu-option-active-styles { color: $textcolor; background-color: $lightselcolor; }
+
 .menu,
-body .redactor-dropdown { padding: 4px 14px; }
+.ui-datepicker,
+.ui-timepicker-list,
+body .redactor-dropdown { @include menu-styles; }
+
+.ui-datepicker,
+.ui-timepicker-list { padding: 0; }
 
 .menu ul li a,
-body .redactor-dropdown a { margin: 0 -14px; padding: 3px 14px; color: $textcolor; text-decoration: none; white-space: nowrap; }
+body .redactor-dropdown a { @include menu-option-styles; }
 
 .menu { display: none; position: absolute; }
 .menu ul li a { display: block !important; font-size: 12px; }
@@ -1015,7 +1023,7 @@ body .redactor-dropdown a { margin: 0 -14px; padding: 3px 14px; color: $textcolo
 .menu ul li a:not(.sel):not(.disabled):hover .light,
 .menu:not(:hover) ul li a:not(.sel):not(.disabled).hover,
 .menu:not(:hover) ul li a:not(.sel):not(.disabled).hover .light,
-body .redactor-dropdown a:hover { color: $textcolor; background-color: $lightselcolor; }
+body .redactor-dropdown a:hover { @include menu-option-active-styles; }
 .menu ul li a.sel { cursor: default; }
 .menu ul li a .shortcut { @include floatright; @include margin-left(14px); color: $mediumtextcolor; }
 .menu hr { margin: 5px -14px; }
@@ -1036,6 +1044,9 @@ body .redactor-dropdown a:hover { color: $textcolor; background-color: $lightsel
 .tagmenu ul li a { @include padding-left(26px); }
 .tagmenu ul li a:before { @include floatleft; @include margin(3px, 0, 0, -18px); }
 
+/* selectize */
+
+
 /* ----------------------------------------
 /*  Fields
 /* ----------------------------------------*/
@@ -1044,21 +1055,25 @@ body .redactor-dropdown a:hover { color: $textcolor; background-color: $lightsel
 	@include box-shadow(0 1px 5px -1px rgba(0, 0, 0, 0.1));
 }
 
-.text,
-body .redactor-box,
-body .redactor-box textarea,
-.border-box,
-.matrix-configurator > .field > .input { border: none; border-radius: 2px;
+@mixin text-input-styles { border: none; border-radius: 2px;
 	@include box-shadow(0 0 2px hsla(205, 100%, 60%, 0), inset 0 0 0 1px rgba(0,0,0,0.1), inset 0 2px 4px rgba(0,0,0,0.1), inset 0 0 0 1px hsla(205, 100%, 60%, 0));
 	@include box-shadow-transition(100ms);
 }
 
+@mixin text-input-focussed-styles { border-color: $focusglowcolor; outline: none;
+	@include box-shadow(0 0 2px hsl(205, 100%, 60%), inset 0 0 0 1px rgba(0,0,0,0.1), inset 0 2px 4px rgba(0,0,0,0.1), inset 0 0 0 1px hsla(205, 100%, 60%, 0.5));
+}
+
+.text,
+body .redactor-box,
+body .redactor-box textarea,
+.border-box,
+.matrix-configurator > .field > .input { @include text-input-styles; }
+
 .text.focus,
 .text:focus,
 .border-box:focus,
-.border-box.focus { border-color: $focusglowcolor; outline: none;
-	@include box-shadow(0 0 2px hsl(205, 100%, 60%), inset 0 0 0 1px rgba(0,0,0,0.1), inset 0 2px 4px rgba(0,0,0,0.1), inset 0 0 0 1px hsla(205, 100%, 60%, 0.5));
-}
+.border-box.focus { @include text-input-focussed-styles; }
 
 input.text,
 textarea.text,
@@ -1216,30 +1231,67 @@ body #redactor-modal footer button:last-child { border-bottom-right-radius: 3px;
  * Waiting on this bug to get fixed before Firefox gets our fancy selects:
  * https://bugzilla.mozilla.org/show_bug.cgi?id=649849
  */
+@mixin select-styles { position: relative; border-radius: 3px; white-space: nowrap; }
+@mixin select-container-styles { display: inline-block; position: relative;
+	@include linear-gradient(#fff, hsl($hue, 5%, 98%));
+	@include box-shadow(inset 0 0 0 1px rgba(0,0,0,0.1), 0 1px 5px rgba(0,0,0,0.07));
+};
+@mixin select-arrow-styles { @include icon; position: absolute; z-index: 1; top: calc(50% - 5px); @include right(9px); font-size: 10px; content: '▼'; @include user-select(none); }
+@mixin select-input-styles { display: block; position: relative; border: 0; @include padding(7px, 22px, 7px, 10px); font-size: 13px; line-height: 16px; color: $textcolor; background: none;
+	@include box-shadow(0 0 2px hsla(205, 100%, 60%, 0), inset 0 0 0 1px hsla(205, 100%, 60%, 0));
+	-webkit-transition: border linear 100ms, -webkit-box-shadow linear 100ms;
+	-moz-transition: border linear 100ms, box-shadow linear 100ms;
+	-webkit-appearance: none;
+}
+@mixin select-input-fullwidth-styles { min-width: 100%; }
+@mixin select-input-focussed-styles { border-color: $focusglowcolor; outline: none;
+	@include box-shadow(0 0 2px hsl(205, 100%, 60%), inset 0 0 0 1px hsla(205, 100%, 60%, 0.5));
+}
+
 @media screen and (-webkit-min-device-pixel-ratio: 0)
 {
-	.select,
-	.select select { border-radius: 3px; white-space: nowrap; }
-	.select { display: inline-block; position: relative;
-		@include linear-gradient(#fff, hsl($hue, 5%, 98%));
-		@include box-shadow(inset 0 0 0 1px rgba(0,0,0,0.1), 0 1px 5px rgba(0,0,0,0.07));
-	}
-	.select:after { @include icon; position: absolute; top: 10px; @include right(9px); font-size: 10px; content: '▼'; @include user-select(none); }
-	.select select { display: block; position: relative; border: 0; @include padding(7px, 22px, 7px, 10px); font-size: 13px; color: $textcolor; background: none;
-		@include box-shadow(0 0 2px hsla(205, 100%, 60%, 0), inset 0 0 0 1px hsla(205, 100%, 60%, 0));
-		-webkit-transition: border linear 100ms, -webkit-box-shadow linear 100ms;
-		-moz-transition: border linear 100ms, box-shadow linear 100ms;
-		-webkit-appearance: none;
-	}
-	.select.fullwidth select { min-width: 100%; }
-	.select:hover select:not(:focus) { border-color: #ccc; }
-	.select select:focus { border-color: $focusglowcolor; outline: none;
-		@include box-shadow(0 0 2px hsl(205, 100%, 60%), inset 0 0 0 1px hsla(205, 100%, 60%, 0.5));
-	}
+	.select:not(.selectize),
+	.select:not(.selectize) select { @include select-styles; }
+	.select:not(.selectize) { @include select-container-styles; }
+	.select:not(.selectize):after { @include select-arrow-styles; }
+	.select:not(.selectize) select { @include select-input-styles; }
+	.select:not(.selectize).fullwidth select { @include select-input-fullwidth-styles; }
+	.select:not(.selectize) select:focus { @include select-input-focussed-styles; }
 
-	.select.small:after { top: 9px; }
-	.select.small select { padding-top: 4px; padding-bottom: 4px; font-size: 11px; }
+	.select:not(.selectize).small:after { top: 9px; }
+	.select:not(.selectize).small select { padding-top: 4px; padding-bottom: 4px; font-size: 11px; }
 }
+
+/* selectize reset */
+.selectize .selectize-control.single .selectize-input { border-color: inherit; @include box-shadow(none); background: none; }
+.selectize .selectize-control.single .selectize-input:after { display: none; }
+body .selectize-dropdown { border: none; }
+
+/* single select styles */
+.selectize.select .selectize-control,
+.selectize.select .selectize-control .selectize-input { @include select-styles; }
+.selectize.select .selectize-control { @include select-container-styles; }
+.selectize.select .selectize-control:after { @include select-arrow-styles; }
+.selectize.select .selectize-control .selectize-input { @include select-input-styles; }
+.selectize.select.fullwidth .selectize-control,
+.selectize.select.fullwidth .selectize-control .selectize-input { @include select-input-fullwidth-styles; }
+
+/* multi select styles */
+.selectize.multiselect .selectize-control.multi .selectize-input { @include text-input-styles; padding: 6px 8px; }
+.selectize.multiselect .selectize-control.multi .selectize-input.has-items { padding: 5px 8px; }
+.selectize.multiselect .selectize-control.multi .selectize-input > div { @include token-styles; margin-top: 1px; margin-bottom: 1px; }
+.selectize.multiselect .selectize-control.plugin-remove_button [data-value] .remove { padding: 0; }
+
+/* shared styles */
+.selectize .selectize-control .selectize-input.focus { @include text-input-focussed-styles; }
+
+/* menu styles */
+body .selectize-dropdown { @include menu-styles; margin-top: 1px; padding: 0; }
+body .selectize-dropdown-content { padding: 3px 14px; }
+body .selectize-dropdown [data-selectable],
+body .selectize-dropdown .optgroup-header { @include menu-option-styles; }
+body .selectize-dropdown .optgroup-header { @include h6-styles; margin: 0; padding: 4px 0; }
+body .selectize-dropdown .active { @include menu-option-active-styles; }
 
 /* datepicker */
 .ui-datepicker { position: fixed; top: -300px; @include margin-left(1px); -padding: 10px; width: 210px; height: 210px; }
