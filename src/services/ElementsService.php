@@ -64,7 +64,7 @@ class ElementsService extends BaseApplicationComponent
 	 * If no element type is provided, the method will first have to run a DB query to determine what type of element
 	 * the $elementId is, so you should definitely pass it if it’s known.
 	 *
-	 * The element’s status will not be a factor when usisng this method.
+	 * The element’s status will not be a factor when using this method.
 	 *
 	 * @param int    $elementId   The element’s ID.
 	 * @param null   $elementType The element type’s class handle.
