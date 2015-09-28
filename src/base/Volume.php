@@ -324,13 +324,13 @@ abstract class Volume extends SavableComponent implements VolumeInterface
             }
             else
             {
-                $folders[] = $object;
+                $folders[$object['path']] = true;
             }
         }
 
-        foreach ($folders as $folder)
+        foreach ($folders as $path => $value)
         {
-            $this->getAdapter()->deleteDir($folder['path']);
+            $this->deleteDir($path);
         }
     }
 
