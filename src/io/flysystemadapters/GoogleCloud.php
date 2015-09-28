@@ -4,7 +4,7 @@ namespace craft\app\io\flysystemadapters;
 use \League\Flysystem\AwsS3v2\AwsS3Adapter;
 
 /**
- * Amazon S3 Flysystem adapter class
+ * Google Cloud Flysystem adapter class
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
