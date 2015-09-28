@@ -15,7 +15,7 @@ namespace craft\app\volumes;
 
 use Craft;
 use craft\app\base\Volume;
-use craft\app\io\flysystemadapters\AwsS3 as AwsS3Adapter;
+use craft\app\io\flysystemadapters\GoogleCloud as GoogleCloudAdapter;
 use \Aws\S3\S3Client as S3Client;
 
 Craft::$app->requireEdition(Craft::Pro);
@@ -153,13 +153,13 @@ class GoogleCloud extends Volume
 
     /**
      * @inheritdoc
-     * @return AwsS3Adapter
+     * @return GoogleCloudAdapter
      */
     protected function createAdapter()
     {
         $client = static::getClient($this->keyId, $this->secret, ['base_url' => 'https://storage.googleapis.com']);
 
-        return new AwsS3Adapter($client, $this->bucket, $this->subfolder);
+        return new GoogleCloudAdapter($client, $this->bucket, $this->subfolder);
     }
 
     /**

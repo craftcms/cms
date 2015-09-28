@@ -235,7 +235,9 @@ abstract class Volume extends SavableComponent implements VolumeInterface
         } catch (FileExistsException $exception) {
             throw new VolumeObjectExistsException($exception->getMessage());
         } catch (FileNotFoundException $exception) {
-            throw new VolumeObjectNotFoundException(Craft::t('app', 'File was not found while attempting to rename {path}!', array('path' => $path)));
+            throw new VolumeObjectNotFoundException(Craft::t('app',
+                'File was not found while attempting to rename {path}!',
+                array('path' => $path)));
         }
     }
 
@@ -279,7 +281,9 @@ abstract class Volume extends SavableComponent implements VolumeInterface
         if ($this->getAdapter()->has(rtrim($path,
                 '/').($this->foldersHaveTrailingSlashes ? '/' : ''))
         ) {
-            throw new VolumeFolderExistsException(Craft::t('app', "Folder “{folder}” already exists on the source!", array('folder' => $path)));
+            throw new VolumeFolderExistsException(Craft::t('app',
+                "Folder “{folder}” already exists on the source!",
+                array('folder' => $path)));
         }
 
         return $this->getFilesystem()->createDir($path);
@@ -292,7 +296,8 @@ abstract class Volume extends SavableComponent implements VolumeInterface
     {
         try {
             return $this->getFilesystem()->deleteDir($path);
-        } catch (RootViolationException $exception) {
+        } catch (\Exception $exception) {
+            // We catch all Exceptions because most of the times these will be 3rd party exceptions.
             return false;
         }
     }
@@ -315,21 +320,16 @@ abstract class Volume extends SavableComponent implements VolumeInterface
 
         $pattern = '/^'.preg_quote($path, '/').'/';
 
-        foreach ($fileList as $object)
-        {
-            if ($object['type'] != 'dir')
-            {
+        foreach ($fileList as $object) {
+            if ($object['type'] != 'dir') {
                 $objectPath = preg_replace($pattern, $newPath, $object['path']);
                 $this->renameFile($object['path'], $objectPath);
-            }
-            else
-            {
+            } else {
                 $folders[$object['path']] = true;
             }
         }
 
-        foreach ($folders as $path => $value)
-        {
+        foreach ($folders as $path => $value) {
             $this->deleteDir($path);
         }
     }
