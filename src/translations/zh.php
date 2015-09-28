@@ -849,7 +849,7 @@ return array(
 	'Select' => '选择',
 	'Select a region first!' => '请先选择一个区域',
 	'Select All' => '全选',
-	'Select Transform' => '选择转换',
+	'Select transform' => '选择转换',
 	'Selection Label' => '选集标签',
 	'Send' => '发送',
 	'Send a message to Craft Support' => '发送消息到 Craft 客户支持',

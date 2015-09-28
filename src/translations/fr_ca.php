@@ -851,7 +851,7 @@ Si vous n\'attendiez pas ce courriel, veuillez l\'ignorer. ',
 	'Select' => 'Sélectionner',
 	'Select a region first!' => 'Sélectionnez d\'abord une région!',
 	'Select All' => 'Tout Sélectionner',
-	'Select Transform' => 'Sélectionner la transformation',
+	'Select transform' => 'Sélectionner la transformation',
 	'Selection Label' => 'Vignette de sélection',
 	'Send' => 'Envoyer',
 	'Send a message to Craft Support' => 'Envoyer un message à l\'assistance Craft',
@@ -1140,11 +1140,11 @@ Voici les paramètres que vous avez utilisés :
 	'Utilities' => 'Utilitaires',
 	'Value' => 'Valeur',
 	'Verify email addresses?' => 'Vérifier les adresses de courriel?',
-	'verify_new_email_body' => 'Hé {{user.friendlyName}}, 
+	'verify_new_email_body' => 'Hé {{user.friendlyName}},
 
-veuillez vérifier votre nouvelle adresse de courriel en cliquant sur ce lien : 
+veuillez vérifier votre nouvelle adresse de courriel en cliquant sur ce lien :
 
-{{link}} 
+{{link}}
 
 Si vous n\'attendiez pas ce courriel, veuillez l\'ignorer.
 ',
