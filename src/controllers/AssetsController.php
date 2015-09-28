@@ -280,12 +280,12 @@ class AssetsController extends Controller
 
         // TODO permission checks
         try {
-            Craft::$app->getAssets()->renameFolderById($folderId, $newName);
-        } catch (AssetException $exception) {
+            $newName = Craft::$app->getAssets()->renameFolderById($folderId, $newName);
+        } catch (\Exception $exception) {
             return $this->asErrorJson($exception->getMessage());
         }
 
-        return $this->asJson(['success' => true]);
+        return $this->asJson(['success' => true, 'newName' => $newName]);
     }
 
 
