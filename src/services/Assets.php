@@ -680,13 +680,7 @@ class Assets extends Component
             if ($folder) {
                 if ($deleteFolder) {
                     $volume = $folder->getVolume();
-
-                    // If this is a batch operation, don't stop the show
-                    if (!$volume->deleteDir($folder->path) && count($folderIds) == 1) {
-                        throw new VolumeException(Craft::t('app',
-                            'Folder “{folder}” cannot be deleted!',
-                            ['folder' => $folder->path]));
-                    }
+                    $volume->deleteDir($folder->path);
                 }
 
                 VolumeFolderRecord::deleteAll(['id' => $folderId]);
