@@ -22,6 +22,32 @@ class GoogleCloud extends AwsS3Adapter implements IFlysystemAdapter
     {
         $path = rtrim($this->applyPathPrefix($path), '/').'/';
 
-        return $this->delete($path);
+        $success = true;
+
+        $objects = $this->listContents($path);
+        $directoryList = [];
+
+        foreach ($objects as $object)
+        {
+            if ($object['type'] == 'dir')
+            {
+                $directoryList[] = $object['path'];
+            }
+            else
+            {
+                $success = $success && $this->delete($object['path']);
+            }
+        }
+
+        foreach ($directoryList as $directoryPath)
+        {
+            $directoryPath = rtrim($this->applyPathPrefix($directoryPath), '/').'/';
+
+            // This operation can return false as well, if the directory was not
+            // an object istelf but only part of the path for the files.
+            $this->delete($directoryPath);
+        }
+
+        return $success;
     }
 }
