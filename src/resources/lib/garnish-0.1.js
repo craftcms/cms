@@ -3026,6 +3026,7 @@ Garnish.escManager = new Garnish.EscManager();
 Garnish.HUD = Garnish.Base.extend({
 
 	$trigger: null,
+	$fixedTriggerParent: null,
 	$hud: null,
 	$tip: null,
 	$body: null,
@@ -3039,6 +3040,7 @@ Garnish.HUD = Garnish.Base.extend({
 	triggerWidth: null,
 	triggerHeight: null,
 	triggerOffset: null,
+	triggerFixedPosition: null,
 
 	width: null,
 	height: null,
@@ -3160,6 +3162,24 @@ Garnish.HUD = Garnish.Base.extend({
 		this.triggerOffset.right = this.triggerOffset.left + this.triggerWidth;
 		this.triggerOffset.bottom = this.triggerOffset.top + this.triggerHeight;
 
+		// is the trigger fixed?
+		if (this.$fixedTriggerParent)
+		{
+			var fixedTriggerParentOffset = this.$fixedTriggerParent.offset(),
+				fixedTriggerParentPosition = this.$fixedTriggerParent.position();
+
+			this.triggerFixedPosition = {
+				top: this.triggerOffset.top - (fixedTriggerParentOffset.top - fixedTriggerParentPosition.top),
+				left: this.triggerOffset.left - (fixedTriggerParentOffset.left - fixedTriggerParentPosition.left)
+			};
+			this.triggerFixedPosition.right = this.triggerFixedPosition.left + this.triggerWidth;
+			this.triggerFixedPosition.bottom = this.triggerFixedPosition.top + this.triggerHeight;
+		}
+		else
+		{
+			this.triggerFixedPosition = this.triggerOffset;
+		}
+
 		// get the HUD dimensions
 		this.width = this.$hud.outerWidth();
 		this.height = this.$hud.outerHeight();
@@ -3168,13 +3188,12 @@ Garnish.HUD = Garnish.Base.extend({
 	determineBestPosition: function()
 	{
 		// See if the trigger is fixed
-		var $parent = this.$trigger,
-			fixedTrigger = false;
+		var $parent = this.$trigger;
 
 		do {
 			if ($parent.css('position') == 'fixed')
 			{
-				fixedTrigger = true;
+				this.$fixedTriggerParent = $parent;
 				break;
 			}
 
@@ -3182,7 +3201,7 @@ Garnish.HUD = Garnish.Base.extend({
 		}
 		while ($parent.length && $parent.prop('nodeName') != 'HTML');
 
-		if (fixedTrigger)
+		if (this.$fixedTriggerParent)
 		{
 			this.$hud.css('position', 'fixed');
 		}
@@ -3191,7 +3210,7 @@ Garnish.HUD = Garnish.Base.extend({
 			this.$hud.css('position', 'absolute');
 		}
 
-		// Get the window sizez and trigger offset
+		// Get the window sizes and trigger offset
 		this.updateElementProperties();
 
 		// get the minimum horizontal/vertical clearance needed to fit the HUD
@@ -3251,7 +3270,7 @@ Garnish.HUD = Garnish.Base.extend({
 			// Center the HUD horizontally
 			var maxLeft = (this.windowWidth + this.windowScrollLeft) - (this.width + this.settings.windowSpacing),
 				minLeft = (this.windowScrollLeft + this.settings.windowSpacing),
-				triggerCenter = this.triggerOffset.left + Math.round(this.triggerWidth / 2),
+				triggerCenter = this.triggerFixedPosition.left + Math.round(this.triggerWidth / 2),
 				left = triggerCenter - Math.round(this.width / 2);
 
 			if (left > maxLeft) left = maxLeft;
@@ -3264,12 +3283,12 @@ Garnish.HUD = Garnish.Base.extend({
 
 			if (this.position == 'top')
 			{
-				var top = this.triggerOffset.top - (this.height + this.settings.triggerSpacing);
+				var top = this.triggerFixedPosition.top - (this.height + this.settings.triggerSpacing);
 				this.$hud.css('top', top);
 			}
 			else
 			{
-				var top = this.triggerOffset.bottom + this.settings.triggerSpacing;
+				var top = this.triggerFixedPosition.bottom + this.settings.triggerSpacing;
 				this.$hud.css('top', top);
 			}
 		}
@@ -3278,7 +3297,7 @@ Garnish.HUD = Garnish.Base.extend({
 			// Center the HUD vertically
 			var maxTop = (this.windowHeight + this.windowScrollTop) - (this.height + this.settings.windowSpacing),
 				minTop = (this.windowScrollTop + this.settings.windowSpacing),
-				triggerCenter = this.triggerOffset.top + Math.round(this.triggerHeight / 2),
+				triggerCenter = this.triggerFixedPosition.top + Math.round(this.triggerHeight / 2),
 				top = triggerCenter - Math.round(this.height / 2);
 
 			if (top > maxTop) top = maxTop;
@@ -3292,12 +3311,12 @@ Garnish.HUD = Garnish.Base.extend({
 
 			if (this.position == 'left')
 			{
-				var left = this.triggerOffset.left - (this.width + this.settings.triggerSpacing);
+				var left = this.triggerFixedPosition.left - (this.width + this.settings.triggerSpacing);
 				this.$hud.css('left', left);
 			}
 			else
 			{
-				var left = this.triggerOffset.right + this.settings.triggerSpacing;
+				var left = this.triggerFixedPosition.right + this.settings.triggerSpacing;
 				this.$hud.css('left', left);
 			}
 		}
