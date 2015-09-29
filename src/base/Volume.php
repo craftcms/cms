@@ -308,8 +308,7 @@ abstract class Volume extends SavableComponent implements VolumeInterface
     public function renameDir($path, $newName)
     {
         $fileList = $this->getAdapter()->listContents($path, true);
-
-        $folders = [];
+        $directoryList = [];
 
         $parts = explode("/", $path);
 
@@ -325,11 +324,11 @@ abstract class Volume extends SavableComponent implements VolumeInterface
                 $objectPath = preg_replace($pattern, $newPath, $object['path']);
                 $this->renameFile($object['path'], $objectPath);
             } else {
-                $folders[$object['path']] = true;
+                $directoryList[] = $object['path'];
             }
         }
 
-        foreach ($folders as $path => $value) {
+        foreach ($directoryList as $path) {
             $this->deleteDir($path);
         }
     }
