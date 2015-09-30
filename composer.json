@@ -9,6 +9,10 @@
         {
             "type": "git",
             "url": "https://github.com/pixelandtonic/Imagine"
+        },
+        {
+            "type": "git",
+            "url": "https://github.com/pixelandtonic/flysystem-google-cloud"
         }
     ],
     "require": {
@@ -31,7 +35,8 @@
         "league/flysystem-aws-s3-v2": "1.0.2",
         "league/flysystem-rackspace": "1.0.2",
         "league/flysystem-dropbox": "1.0.0",
-        "league/flysystem-ziparchive": "1.0.2"
+        "league/flysystem-ziparchive": "1.0.2",
+        "pixelandtonic/flysystem-google-cloud": "dev-master"
     },
     "extra": {
         "asset-installer-paths": {
