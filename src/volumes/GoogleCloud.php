@@ -15,7 +15,7 @@ namespace craft\app\volumes;
 
 use Craft;
 use craft\app\base\Volume;
-use craft\app\io\flysystemadapters\GoogleCloud as GoogleCloudAdapter;
+use \League\Flysystem\GoogleCloud\GoogleCloudAdapter;
 use \Aws\S3\S3Client as S3Client;
 
 Craft::$app->requireEdition(Craft::Pro);

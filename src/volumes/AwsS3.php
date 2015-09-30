@@ -5,7 +5,7 @@ use Aws\S3\Exception\AccessDeniedException;
 use Craft;
 use craft\app\base\Volume;
 use craft\app\cache\adapters\GuzzleCacheAdapter;
-use craft\app\io\flysystemadapters\AwsS3 as AwsS3Adapter;
+use \League\Flysystem\AwsS3v2\AwsS3Adapter;
 use \Aws\S3\S3Client as S3Client;
 
 /**

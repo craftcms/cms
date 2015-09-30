@@ -3,7 +3,7 @@ namespace craft\app\volumes;
 
 use Craft;
 use craft\app\base\Volume;
-use craft\app\io\flysystemadapters\Rackspace as RackspaceAdapter;
+use League\Flysystem\Rackspace\RackspaceAdapter;
 use \OpenCloud\OpenStack;
 use \OpenCloud\Rackspace as RackspaceClient;
 

@@ -6,7 +6,7 @@ use craft\app\base\Volume;
 use craft\app\errors\VolumeObjectExistsException;
 use craft\app\errors\VolumeObjectNotFoundException;
 use craft\app\helpers\Io;
-use craft\app\io\flysystemadapters\Local as LocalAdapter;
+use League\Flysystem\Adapter\Local as LocalAdapter;
 use League\Flysystem\FileExistsException;
 use League\Flysystem\FileNotFoundException;
 
