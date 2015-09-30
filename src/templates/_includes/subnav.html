@@ -9,9 +9,11 @@
                     ) -%}
 
                     <li>
-                        <a href="{% if item.url is defined %}{{ url(item.url) }}{% endif %}" {% if itemIsSelected %} class="sel"{% endif %}>
-                            {{ item.label }}
-                        </a>
+                        {% if item.icon is defined %}
+                            <a href="{{ url(item.url) }}"{% if itemIsSelected %} class="sel"{% endif %} data-icon="{{ item.icon }}" title="{{ item.label }}"></a>
+                        {% else %}
+                            <a href="{{ url(item.url) }}"{% if itemIsSelected %} class="sel"{% endif %}>{{ item.label }}</a>
+                        {% endif %}
                     </li>
 
                 {% endfor %}
