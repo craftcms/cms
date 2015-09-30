@@ -34,7 +34,7 @@ class ImagesService extends BaseApplicationComponent
 	{
 		if ($this->_isGd === null)
 		{
-			if (craft()->config->get('imageDriver') == 'gd')
+			if (strtolower(craft()->config->get('imageDriver')) == 'gd')
 			{
 				$this->_isGd = true;
 			}
