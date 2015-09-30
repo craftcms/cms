@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "1cb90fbba68654eeed8fb3938ffb39f9",
+    "hash": "9f9122806c9dd9b989bcf107ef5f20fc",
     "packages": [
         {
             "name": "aws/aws-sdk-php",
@@ -1857,7 +1857,7 @@
         },
         {
             "name": "pixelandtonic/flysystem-google-cloud",
-            "version": "dev-master",
+            "version": "1.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/pixelandtonic/flysystem-google-cloud",
@@ -3012,8 +3012,7 @@
     "stability-flags": {
         "lsolesen/pel": 20,
         "fxp/composer-asset-plugin": 10,
-        "imagine/imagine": 20,
-        "pixelandtonic/flysystem-google-cloud": 20
+        "imagine/imagine": 20
     },
     "prefer-stable": false,
     "prefer-lowest": false,

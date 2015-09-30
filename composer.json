@@ -36,7 +36,7 @@
         "league/flysystem-rackspace": "1.0.2",
         "league/flysystem-dropbox": "1.0.0",
         "league/flysystem-ziparchive": "1.0.2",
-        "pixelandtonic/flysystem-google-cloud": "dev-master"
+        "pixelandtonic/flysystem-google-cloud": "~1.0"
     },
     "extra": {
         "asset-installer-paths": {
