@@ -94,12 +94,8 @@ class AssetIndexer extends Component
                     AssetsHelper::INDEX_SKIP_ITEMS_PATTERN,
                     $file['basename']
                 );
-                $allowedByName = $file['basename'] == AssetsHelper::prepareAssetName(
-                        $file['basename'],
-                        $file['type'] != 'dir'
-                    );
 
-                if ($allowedByFilter && $allowedByName) {
+                if ($allowedByFilter) {
                     if ($file['type'] == 'dir') {
                         $bucketFolders[$file['path']] = true;
                     } else {
