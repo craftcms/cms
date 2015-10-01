@@ -220,8 +220,6 @@ class Assets extends Component
                 ['extension' => $extension]));
         }
 
-        $asset->filename = AssetsHelper::prepareAssetName($asset->filename);
-
         $existingAsset = $this->findFile([
             'filename' => $asset->filename,
             'folderId' => $asset->folderId

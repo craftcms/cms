@@ -126,10 +126,12 @@ class AssetsController extends Controller
                     throw new UploadFailedException(UPLOAD_ERR_CANT_WRITE);
                 }
 
+                $filename = Assets::prepareAssetName($uploadedFile->name);
+
                 $asset = new Asset();
-                $asset->title = $asset->generateAttributeLabel(Io::getFilename($uploadedFile->name, false));
+                $asset->title = $asset->generateAttributeLabel(Io::getFilename($filename, false));
                 $asset->newFilePath = $pathOnServer;
-                $asset->filename = $uploadedFile->name;
+                $asset->filename = $filename;
                 $asset->folderId = $folder->id;
                 $asset->volumeId = $folder->volumeId;
 
