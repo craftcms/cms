@@ -61,3 +61,39 @@
     required: false,
     placeholder: "path/to/subfolder"|t('app')
 }) }}
+
+
+{% set cacheInput %}
+    {% set expires = (volume.expires|length > 0 ? volume.expires|split(' ') : ['', ''])%}
+
+    <table class="inputs">
+        <tr>
+            <td>
+                {{ forms.textField({
+                    id: 'expiresAmount',
+                    value: expires[0],
+                    size: 2,
+                    class: 'expires-amount'
+                }) }}
+            </td>
+            <td>
+                {{ forms.select({
+                    id: 'expiresPeriod',
+                    options: periods,
+                    value: expires[1],
+                    class: 'expires-period'
+                }) }}
+            </td>
+        </tr>
+    </table>
+    {{ forms.hidden({
+        name: "expires",
+        value: volume.expires,
+        class: "expires-combined"
+    }) }}
+{% endset %}
+
+{{ forms.field({
+    label: "Cache Duration "|t,
+    id: 'cacheDuration',
+}, cacheInput) }}

@@ -15,6 +15,9 @@ namespace craft\app\volumes;
 
 use Craft;
 use craft\app\base\Volume;
+use craft\app\dates\DateTime;
+use craft\app\helpers\Assets;
+use craft\app\helpers\DateTimeHelper;
 use \League\Flysystem\GoogleCloud\GoogleCloudAdapter;
 use \Aws\S3\S3Client as S3Client;
 
@@ -72,6 +75,13 @@ class GoogleCloud extends Volume
      */
     public $bucket = "";
 
+    /**
+     * Cache expiration period.
+     *
+     * @var string
+     */
+    public $expires = "";
+
     // Public Methods
     // =========================================================================
 
@@ -95,6 +105,7 @@ class GoogleCloud extends Volume
         return Craft::$app->getView()->renderTemplate('_components/volumes/GoogleCloud/settings',
             [
                 'volume' => $this,
+                'periods' => array_merge(['' => ''], Assets::getPeriodList())
             ]);
     }
 
@@ -146,6 +157,23 @@ class GoogleCloud extends Volume
     public function getRootUrl()
     {
         return rtrim(rtrim($this->url, '/').'/'.$this->subfolder, '/').'/';
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function createFileByStream($path, $stream, $config = [])
+    {
+        if (!empty($this->expires)  && DateTimeHelper::isValidIntervalString($this->expires))
+        {
+            $expires = new DateTime();
+            $now = new DateTime();
+            $expires->modify('+'.$this->expires);
+            $diff = $expires->format('U') - $now->format('U');
+            $config['CacheControl'] = 'max-age='.$diff.', must-revalidate';
+        }
+
+        return parent::createFileByStream($path, $stream, $config);
     }
 
     // Protected Methods

@@ -149,14 +149,12 @@ abstract class Volume extends SavableComponent implements VolumeInterface
     /**
      * @inheritdoc
      */
-    public function createFileByStream($path, $stream)
+    public function createFileByStream($path, $stream, $config = [])
     {
+        $config = array_merge($config,
+            ['visibility' => AdapterInterface::VISIBILITY_PUBLIC]);
         try {
-            return $this->getFilesystem()->writeStream($path, $stream,
-                [
-                    'visibility' => AdapterInterface::VISIBILITY_PUBLIC
-                ]
-            );
+            return $this->getFilesystem()->writeStream($path, $stream, $config);
         } catch (FileExistsException $exception) {
             throw new VolumeObjectExistsException($exception->getMessage());
         }

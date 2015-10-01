@@ -5,6 +5,9 @@ use Aws\S3\Exception\AccessDeniedException;
 use Craft;
 use craft\app\base\Volume;
 use craft\app\cache\adapters\GuzzleCacheAdapter;
+use craft\app\dates\DateTime;
+use craft\app\helpers\Assets;
+use craft\app\helpers\DateTimeHelper;
 use \League\Flysystem\AwsS3v2\AwsS3Adapter;
 use \Aws\S3\S3Client as S3Client;
 
@@ -78,6 +81,13 @@ class AwsS3 extends Volume
     public $region = "";
 
     /**
+     * Cache expiration period.
+     *
+     * @var string
+     */
+    public $expires = "";
+
+    /**
      * Cache adapter
      *
      * @var GuzzleCacheAdapter
@@ -105,7 +115,8 @@ class AwsS3 extends Volume
     {
         return Craft::$app->getView()->renderTemplate('_components/volumes/AwsS3/settings',
             [
-                'volume' => $this
+                'volume' => $this,
+                'periods' => array_merge(['' => ''], Assets::getPeriodList())
             ]);
     }
 
@@ -173,6 +184,23 @@ class AwsS3 extends Volume
         return rtrim(rtrim($this->url, '/').'/'.$this->subfolder, '/').'/';
     }
 
+    /**
+     * @inheritdoc
+     */
+    public function createFileByStream($path, $stream, $config = [])
+    {
+        if (!empty($this->expires)  && DateTimeHelper::isValidIntervalString($this->expires))
+            {
+                $expires = new DateTime();
+                $now = new DateTime();
+                $expires->modify('+'.$this->expires);
+                $diff = $expires->format('U') - $now->format('U');
+                $config['CacheControl'] = 'max-age='.$diff.', must-revalidate';
+        }
+
+        return parent::createFileByStream($path, $stream, $config);
+    }
+
     // Protected Methods
     // =========================================================================
 
@@ -214,6 +242,9 @@ class AwsS3 extends Volume
 
         return S3Client::factory($config);
     }
+
+    // Private Methods
+    // =========================================================================
 
     /**
      * Get the credentials cache adapter.

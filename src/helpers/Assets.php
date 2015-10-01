@@ -10,6 +10,7 @@ namespace craft\app\helpers;
 use Craft;
 use craft\app\base\Volume;
 use craft\app\elements\Asset;
+use craft\app\enums\PeriodType;
 use craft\app\models\VolumeFolder;
 
 /**
@@ -159,6 +160,15 @@ class Assets
         return $folderIdChanges;
     }
 
+    /**
+     * Create an Asset transfer list based on a list of Assets and an array of
+     * changing folder ids.
+     *
+     * @param array $assets List of assets
+     * @param array $folderIdChanges A map of folder id changes
+     * @param bool  $merge If set to true, files will be merged in folders
+     * @return array
+     */
     public static function getFileTransferList($assets, $folderIdChanges, $merge = false)
     {
         $fileTransferList = [];
@@ -187,5 +197,22 @@ class Assets
         }
 
         return $fileTransferList;
+    }
+
+    /**
+     * Get a list of available periods for Cache duration settings.
+     * .
+     * @return array
+     */
+    public static function getPeriodList()
+    {
+        return [
+            PeriodType::Seconds => Craft::t('app', 'Seconds'),
+            PeriodType::Minutes => Craft::t('app', 'Minutes'),
+            PeriodType::Hours   => Craft::t('app', 'Hours'),
+            PeriodType::Days    => Craft::t('app', 'Days'),
+            PeriodType::Months  => Craft::t('app', 'Months'),
+            PeriodType::Years   => Craft::t('app', 'Years'),
+        ];
     }
 }
