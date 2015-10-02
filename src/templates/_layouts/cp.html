@@ -247,7 +247,7 @@
 			{% endblock %}
 		</header>
 
-		<main id="main" role="main">
+		<main id="main" role="main"{% if fitted is defined and fitted %} class="fitted"{% endif %}>
 			{% block main %}
 				{% set sidebar = sidebar is defined ? sidebar : block('sidebar')|trim %}
 				{% set hasSidebar = (sidebar is not empty) %}
@@ -255,7 +255,7 @@
 
 				<div class="grid">
 					<div class="item">
-						<div class="pane fitted">
+						<div class="pane">
 							{% if tabs is defined and tabs %}
 								{% include "_includes/tabs" %}
 							{% endif %}
