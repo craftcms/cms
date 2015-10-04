@@ -26,7 +26,7 @@
 		new {{ jsClass }}({
 			id: "{{ id   | namespaceInputId   | e('js') }}",
 			name: "{{ name | namespaceInputName | e('js') }}",
-			elementType: "{{ elementType.getClassHandle()|e('js') }}",
+			elementType: "{{ elementType|e('js') }}",
 			sources: {{ sources|json_encode|raw }},
 			criteria: {{ criteria|json_encode|raw }},
 			sourceElementId: {{ sourceElementId ?: 'null' }},
