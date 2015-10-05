@@ -9,9 +9,9 @@ use craft\app\helpers\Json;
 use craft\app\helpers\Migration as MigrationHelper;
 
 /**
- * m150403_185142_volumes migration.
+ * m151002_095935_volume_cache_settings migration.
  */
-class m151902_095935_volume_cache_settings extends Migration
+class m151002_095935_volume_cache_settings extends Migration
 {
     // Public Methods
     // =========================================================================
