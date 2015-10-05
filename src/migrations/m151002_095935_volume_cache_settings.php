@@ -21,7 +21,7 @@ class m151002_095935_volume_cache_settings extends Migration
      */
     public function safeUp()
     {
-        // Update permissions
+        // Update how cache settings are stored for S3 and Google Cloud Volumes.
         $volumes = (new Query())
             ->select('id, settings')
             ->from('{{%volumes}}')
@@ -50,7 +50,7 @@ class m151002_095935_volume_cache_settings extends Migration
      */
     public function safeDown()
     {
-        echo "m151902_095935_volume_cache_settings cannot be reverted.\n";
+        echo "m151002_095935_volume_cache_settings cannot be reverted.\n";
 
         return false;
     }
