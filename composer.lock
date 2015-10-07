@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "9f9122806c9dd9b989bcf107ef5f20fc",
+    "hash": "b9489c7898c62601c37cdedf6b462449",
     "packages": [
         {
             "name": "aws/aws-sdk-php",
@@ -1069,17 +1069,11 @@
         },
         {
             "name": "league/flysystem-aws-s3-v2",
-            "version": "1.0.2",
+            "version": "1.0.3",
             "source": {
                 "type": "git",
-                "url": "https://github.com/thephpleague/flysystem-aws-s3-v2.git",
-                "reference": "a5baeb6658410feaf360820b35c5117d958041df"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/thephpleague/flysystem-aws-s3-v2/zipball/a5baeb6658410feaf360820b35c5117d958041df",
-                "reference": "a5baeb6658410feaf360820b35c5117d958041df",
-                "shasum": ""
+                "url": "https://github.com/andris-sevcenko/flysystem-aws-s3-v2",
+                "reference": "80c7263ba411bfb28ab2d6284b40e5619a4bdf96"
             },
             "require": {
                 "aws/aws-sdk-php": "~2.7",
@@ -1101,7 +1095,6 @@
                     "League\\Flysystem\\AwsS3v2\\": "src/"
                 }
             },
-            "notification-url": "https://packagist.org/downloads/",
             "license": [
                 "MIT"
             ],
@@ -1112,7 +1105,7 @@
                 }
             ],
             "description": "Flysystem adapter for AWS S3 SDK v2",
-            "time": "2015-05-19 14:01:37"
+            "time": "2015-10-06 19:50:14"
         },
         {
             "name": "league/flysystem-dropbox",
