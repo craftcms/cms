@@ -934,6 +934,12 @@ body #redactor-modal-overlay {
 .hud .tip-bottom { bottom: -15px; width: 30px; height: 15px; background-image: url(../images/hudtip_bottom.png); }
 .hud.has-footer .tip-bottom { background-image: url(../images/hudtip_bottom_gray.png); }
 
+.hud ::-webkit-scrollbar { -webkit-appearance: none; }
+.hud ::-webkit-scrollbar:vertical { width: 11px; }
+.hud ::-webkit-scrollbar:horizontal { height: 11px; }
+.hud ::-webkit-scrollbar-thumb { border-radius: 8px; border: 2px solid transparent; background-color: rgba(0, 0, 0, .5); background-clip: content-box; }
+.hud ::-webkit-scrollbar-track { background-color: $lightBgColor; }
+
 /* element editor HUDs */
 .hud .elementeditor { padding: 0; }
 .hud .elementeditor .header,
