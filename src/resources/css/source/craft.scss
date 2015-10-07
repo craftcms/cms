@@ -252,16 +252,16 @@ td.right { float: none; @include alignright; }
 
 .sidebar nav { @include margin-left(-24px); @include padding-left(24px); width: 170px; overflow: auto; }
 .sidebar nav li { position: relative; }
-.sidebar nav li a { display: block; @include margin-left(-24px); padding: 4px 0; color: $textcolor; @include user-select(none); outline: none; }
-.sidebar nav li a:hover { text-decoration: none; color: $linkcolor; }
+.sidebar nav li a { display: block; @include margin-left(-24px); padding: 7px 0; color: $textcolor; @include user-select(none); outline: none; }
+.sidebar nav li a:hover { text-decoration: none; color: $textcolor; background: $sidebarHoverLinkBackgroundColor; }
 
 .sidebar nav li .toggle { position: absolute; top: 3px; }
 .sidebar nav li ul { display: none; }
 .sidebar nav li.expanded > ul { display: block; }
 
-.sidebar nav li a.sel { background: $lightselcolor; cursor: default; }
+.sidebar nav li a.sel { @include border-radius(0, 2px, 2px, 0); background: $darkselcolor; cursor: default; }
 .sidebar nav li a.sel,
-.sidebar nav li a.sel + .toggle { color: $textcolor; }
+.sidebar nav li a.sel + .toggle { color: #fff; }
 
 .sidebar nav > ul > li > a { @include padding-left(24px); }
 .sidebar nav > ul > li > ul > li > a { @include padding-left(44px); }
