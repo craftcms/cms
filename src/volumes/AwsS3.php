@@ -24,6 +24,14 @@ use \Aws\S3\S3Client as S3Client;
  */
 class AwsS3 extends Volume
 {
+
+    // Constants
+    // =========================================================================
+
+    const STORAGE_STANDARD           = "STANDARD";
+    const STORAGE_REDUCED_REDUNDANCY = "REDUCED_REDUNDANCY";
+    const STORAGE_STANDARD_IA        = "STANDARD_IA";
+
     // Static
     // =========================================================================
 
@@ -88,6 +96,13 @@ class AwsS3 extends Volume
     public $expires = "";
 
     /**
+     * S3 storage class to use.
+     *
+     * @var string
+     */
+    public $storageClass = "";
+
+    /**
      * Cache adapter
      *
      * @var GuzzleCacheAdapter
@@ -116,7 +131,8 @@ class AwsS3 extends Volume
         return Craft::$app->getView()->renderTemplate('_components/volumes/AwsS3/settings',
             [
                 'volume' => $this,
-                'periods' => array_merge(['' => ''], Assets::getPeriodList())
+                'periods' => array_merge(['' => ''], Assets::getPeriodList()),
+                'storageClasses' => static::getStorageClasses(),
             ]);
     }
 
@@ -198,7 +214,26 @@ class AwsS3 extends Volume
                 $config['CacheControl'] = 'max-age='.$diff.', must-revalidate';
         }
 
+        if (!empty($this->storageClass))
+        {
+            $config['StorageClass'] = $this->storageClass;
+        }
+
         return parent::createFileByStream($path, $stream, $config);
+    }
+
+    /**
+     * Return a list of available storage classes.
+     *
+     * @return array
+     */
+    public static function getStorageClasses()
+    {
+        return[
+            static::STORAGE_STANDARD => 'Standard',
+            static::STORAGE_REDUCED_REDUNDANCY => 'Reduced Redundancy Storage',
+            static::STORAGE_STANDARD_IA => 'Infrequent Access Storage'
+        ];
     }
 
     // Protected Methods

@@ -50,6 +50,15 @@
     id: 'bucket'
 }, bucketInput) }}
 
+{{ forms.selectField({
+    label: "Storage class"|t("app"),
+    instructions: "Click <a href=\"{link}\" title=\"Storage classes\" target=\"_blank\">here</a> for details."|t('app', {'link': "https://aws.amazon.com/s3/storage-classes/"}),
+    id: 'storageClass',
+    name: 'storageClass',
+    options: storageClasses,
+    value: volume.storageClass
+}) }}
+
 {{ forms.textField({
     label: "Subfolder"|t('app'),
     instructions: "If you want to use a bucket’s subfolder as a Volume, specify the path to use here."|t('app'),
