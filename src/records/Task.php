@@ -9,6 +9,7 @@ namespace craft\app\records;
 
 use Craft;
 use craft\app\db\ActiveRecord;
+use craft\app\db\NestedSetsTrait;
 use craft\app\db\TaskQuery;
 use creocoder\nestedsets\NestedSetsBehavior;
 
@@ -32,6 +33,11 @@ use creocoder\nestedsets\NestedSetsBehavior;
  */
 class Task extends ActiveRecord
 {
+    // Traits
+    // =========================================================================
+
+    use NestedSetsTrait;
+
     // Public Methods
     // =========================================================================
 

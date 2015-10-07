@@ -7,6 +7,7 @@
 
 namespace craft\app\records;
 
+use craft\app\db\NestedSetsTrait;
 use yii\db\ActiveQueryInterface;
 use Craft;
 use craft\app\db\ActiveRecord;
@@ -31,6 +32,11 @@ use creocoder\nestedsets\NestedSetsBehavior;
  */
 class StructureElement extends ActiveRecord
 {
+    // Traits
+    // =========================================================================
+
+    use NestedSetsTrait;
+
     // Public Methods
     // =========================================================================
 
