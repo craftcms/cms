@@ -1060,7 +1060,7 @@ body .redactor-dropdown a:hover { @include menu-option-active-styles; }
 }
 
 @mixin text-input-styles { border: none; border-radius: 2px;
-	@include box-shadow(0 0 2px hsla(205, 100%, 60%, 0), inset 0 0 0 1px rgba(0,0,0,0.1), inset 0 2px 4px rgba(0,0,0,0.1), inset 0 0 0 1px hsla(205, 100%, 60%, 0));
+	@include box-shadow(0 0 2px hsla(205, 100%, 60%, 0), inset 0 0 0 1px rgba(0,0,0,0.1), inset 0 1px 3px rgba(0,0,0,0.1), inset 0 0 0 1px hsla(205, 100%, 60%, 0));
 	@include box-shadow-transition(100ms);
 }
 
