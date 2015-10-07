@@ -16,17 +16,22 @@ html { overflow-y: scroll; }
 .container { margin: 0 auto; padding: 0 24px; @include box-sizing(border-box); }
 
 /* header */
-#header { position: relative; padding-top: 7px; max-height: 76px; overflow: hidden; background: $headerBgColor; }
+#header { position: relative; padding-top: 0px; max-height: 76px; overflow: hidden; background: $headerBgColor; }
 #header:after { @include clearafter; }
 #header .container { position: relative; }
 #header a { color: hsl($hue, 5%, 85%);
 	@include transition(color linear 100ms);
 }
 #header a:hover,
-#header a.active { color: #fff; text-decoration: none; }
+#header a.active,
+#subnav a:hover,
+#subnav a.active { color: #fff; text-decoration: none; background: $headerLinkHoverColor; }
+
+#header a:active,
+#subnav a:active { color: #fff; text-decoration: none; background: $headerLinkActiveColor; }
 
 #header h2 { @include margin(0, 14px, 0, 0); @include floatleft; }
-#header h2 a { display: block; padding: 10px 0; width: calc(100% + 14px); overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+#header h2 a { display: block; padding: 14px 0; width: calc(100% + 14px); overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
 
 #header-actions { @include floatright; height: 38px; }
 #header-actions > li { @include floatleft; }
@@ -68,18 +73,17 @@ html { overflow-y: scroll; }
 #settingsmenu ul li a:before { @include margin(1px, 0, 0, -22px); font-size: 15px; }
 
 #nav { @include floatleft; @include margin-left(-5px); }
-#nav li { @include floatleft; height: 40px; }
-#nav li a { display: block; margin: 2px 5px 0 5px; padding: 4px 5px; line-height: 28px; }
+#nav li { @include floatleft; height: 47px; }
+#nav li a { display: block; margin: 0; padding: 10px 10px 7px 10px; line-height: 28px; height: 47px; @include box-sizing(border-box); }
 #nav li a.active { color: #fff; }
 #nav li a.sel { position: relative; z-index: 1; border-radius: 3px 3px 0 0; color: #fff; border-bottom: 2px solid $submitcolor; }
 #nav li a:not(.sel) .badge { color: #333 !important; }
 #nav li a.menubtn { line-height: 26px; }
 
-#subnav-wrapper { background: $subnavBgColor; max-height: 40px; overflow: hidden; }
+#subnav-wrapper { background: $subnavBgColor; max-height: 43px; overflow: hidden; }
 #subnav { @include floatleft; @include margin-left(-5px); }
-#subnav li { @include floatleft; height: 40px; }
-#subnav li a { display: block; margin: 2px 5px 0 5px; padding: 4px 5px; line-height: 28px; color: hsl($hue, 5%, 85%);
-	@include transition(color linear 100ms); }
+#subnav li { @include floatleft; height: 43px; }
+#subnav li a { display: block; margin: 0; padding: 7px 10px 5px 10px; height: 43px; line-height: 28px; color: hsl($hue, 5%, 85%); @include transition(color linear 100ms); @include box-sizing(border-box); }
 #subnav li a:hover:not(.sel) { color: #fff; text-decoration: none; }
 #subnav li a.active { color: #fff; }
 #subnav li a.sel { color: #fff; border-bottom: 2px solid $submitcolor; }
