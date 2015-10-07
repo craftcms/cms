@@ -178,10 +178,10 @@ class PhpMessageSource extends \CPhpMessageSource
 		$amName = $locale->getAMName();
 		$pmName = $locale->getPMName();
 
-		$formattedFrameworkData['AM'] = $amName;
-		$formattedFrameworkData['am'] = $amName;
-		$formattedFrameworkData['PM'] = $pmName;
-		$formattedFrameworkData['pm'] = $pmName;
+		$formattedFrameworkData['AM'] = StringHelper::toUpperCase($amName);
+		$formattedFrameworkData['am'] = StringHelper::toLowerCase($amName);
+		$formattedFrameworkData['PM'] = StringHelper::toUpperCase($pmName);
+		$formattedFrameworkData['pm'] = StringHelper::toLowerCase($pmName);
 
 		return $formattedFrameworkData;
 	}

@@ -206,7 +206,7 @@ class MatrixService extends BaseApplicationComponent
 				}
 			}
 
-			if ($field->hasErrors())
+			if ($field->hasErrors() || $field->hasSettingErrors())
 			{
 				$blockType->hasFieldErrors = true;
 				$validates = false;

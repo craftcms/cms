@@ -4,7 +4,7 @@
 /**
  * CP class
  */
-var CP = Garnish.Base.extend(
+Craft.CP = Garnish.Base.extend(
 {
 	authManager: null,
 
@@ -80,7 +80,7 @@ var CP = Garnish.Base.extend(
 
 		// Find all the nav items
 		this.navItems = [];
-		this.totalNavWidth = CP.baseNavWidth;
+		this.totalNavWidth = Craft.CP.baseNavWidth;
 
 		var $navItems = this.$nav.children();
 		this.totalNavItems = $navItems.length;
@@ -97,7 +97,7 @@ var CP = Garnish.Base.extend(
 
 		// Find all the sub nav items
 		this.subnavItems = [];
-		this.totalSubnavWidth = CP.baseSubnavWidth;
+		this.totalSubnavWidth = Craft.CP.baseSubnavWidth;
 
 		var $subnavItems = this.$subnav.children();
 		this.totalSubnavItems = $subnavItems.length;
@@ -123,8 +123,8 @@ var CP = Garnish.Base.extend(
 			var $errorNotifications = this.$notificationContainer.children('.error'),
 				$otherNotifications = this.$notificationContainer.children(':not(.error)');
 
-			$errorNotifications.delay(CP.notificationDuration * 2).velocity('fadeOut');
-			$otherNotifications.delay(CP.notificationDuration).velocity('fadeOut');
+			$errorNotifications.delay(Craft.CP.notificationDuration * 2).velocity('fadeOut');
+			$otherNotifications.delay(Craft.CP.notificationDuration).velocity('fadeOut');
 		}, this));
 
 		// Alerts
@@ -228,7 +228,7 @@ var CP = Garnish.Base.extend(
 	onWindowResize: function()
 	{
 		// Get the new window width
-		this.onWindowResize._cpWidth = Math.min(Garnish.$win.width(), CP.maxWidth);
+		this.onWindowResize._cpWidth = Math.min(Garnish.$win.width(), Craft.CP.maxWidth);
 
 		// Update the responsive nav
 		this.updateResponsiveNav();
@@ -271,19 +271,19 @@ var CP = Garnish.Base.extend(
 			}
 
 			// Is the nav too tall?
-			if (this.$nav.height() > CP.navHeight)
+			if (this.$nav.height() > Craft.CP.navHeight)
 			{
 				// Move items to the overflow menu until the nav is back to its normal height
 				do
 				{
 					this.addLastVisibleNavItemToOverflowMenu();
 				}
-				while ((this.$nav.height() > CP.navHeight) && (this.visibleNavItems > 0));
+				while ((this.$nav.height() > Craft.CP.navHeight) && (this.visibleNavItems > 0));
 			}
 			else
 			{
 				// See if we can fit any more nav items in the main menu
-				while ((this.$nav.height() == CP.navHeight) && (this.visibleNavItems < this.totalNavItems))
+				while ((this.$nav.height() == Craft.CP.navHeight) && (this.visibleNavItems < this.totalNavItems))
 				{
 					this.addFirstOverflowNavItemToMainMenu();
 				}
@@ -336,19 +336,19 @@ var CP = Garnish.Base.extend(
 			}
 
 			// Is the nav too tall?
-			if (this.$subnav.height() > CP.subnavHeight)
+			if (this.$subnav.height() > Craft.CP.subnavHeight)
 			{
 				// Move items to the overflow menu until the nav is back to its normal height
 				do
 				{
 					this.addLastVisibleSubnavItemToOverflowMenu();
 				}
-				while ((this.$subnav.height() > CP.subnavHeight) && (this.visibleSubnavItems > 0));
+				while ((this.$subnav.height() > Craft.CP.subnavHeight) && (this.visibleSubnavItems > 0));
 			}
 			else
 			{
 				// See if we can fit any more nav items in the main menu
-				while ((this.$subnav.height() == CP.subnavHeight) && (this.visibleSubnavItems < this.totalSubnavItems))
+				while ((this.$subnav.height() == Craft.CP.subnavHeight) && (this.visibleSubnavItems < this.totalSubnavItems))
 				{
 					this.addFirstOverflowSubnavItemToMainMenu();
 				}
@@ -377,11 +377,6 @@ var CP = Garnish.Base.extend(
 
 	updateResponsiveTables: function()
 	{
-		if (!Garnish.isMobileBrowser())
-		{
-			return;
-		}
-
 		this.updateResponsiveTables._contentWidth = this.$content.width();
 
 		for (this.updateResponsiveTables._i = 0; this.updateResponsiveTables._i < this.$collapsibleTables.length; this.updateResponsiveTables._i++)
@@ -493,7 +488,7 @@ var CP = Garnish.Base.extend(
 	 */
 	displayNotification: function(type, message)
 	{
-		var notificationDuration = CP.notificationDuration;
+		var notificationDuration = Craft.CP.notificationDuration;
 
 		if (type == 'error')
 		{
@@ -724,7 +719,7 @@ var CP = Garnish.Base.extend(
 					}
 				}
 			}, this));
-		}, this), (typeof delay != typeof undefined ? delay : 1000));
+		}, this), (typeof delay != typeof undefined ? delay : Craft.CP.taskTrackerUpdateInterval));
 	},
 
 	stopTrackingTaskProgress: function()
@@ -787,10 +782,13 @@ var CP = Garnish.Base.extend(
 	baseNavWidth: 30,
 	subnavHeight: 38,
 	baseSubnavWidth: 30,
-	notificationDuration: 2000
+	notificationDuration: 2000,
+
+	taskTrackerUpdateInterval: 1000,
+	taskTrackerHudUpdateInterval: 500
 });
 
-Craft.cp = new CP();
+Craft.cp = new Craft.CP();
 
 
 /**
@@ -1172,7 +1170,7 @@ var TaskProgressHUD = Garnish.HUD.extend(
 
 			if (anyTasksRunning)
 			{
-				this.updateTasksTimeout = setTimeout($.proxy(this, 'updateTasks'), 500);
+				this.updateTasksTimeout = setTimeout($.proxy(this, 'updateTasks'), Craft.CP.taskTrackerHudUpdateInterval);
 			}
 			else
 			{
