@@ -660,7 +660,7 @@ table.collapsed tbody tr:last-child td:not(:last-child) { border-bottom: none; }
 .sel .element { border-radius: 3px; background: $lightselcolor; cursor: default; }
 
 .element.hasthumb.sel .elementthumb:after,
-.sel .element.hasthumb .elementthumb:after { display: block; position: absolute; top: 0; left: 0; border-radius: 3px; width: 100%; height: 100%; content: '.'; font-size: 0; background: rgba(0,0,7,0.15); }
+.sel .element.hasthumb .elementthumb:after { display: block; position: absolute; top: 0; left: 0; border-radius: 3px; width: 100%; height: 100%; content: '.'; font-size: 0; background: rgba(35,51,76,0.19); }
 
 .element.removable .label,
 .element.loading .label { @include padding-right(20px); }
