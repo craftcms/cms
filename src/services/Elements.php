@@ -809,13 +809,14 @@ class Elements extends Component
             // First delete any structure nodes with these elements, so NestedSetBehavior can do its thing. We need to
             // go one-by-one in case one of theme deletes the record of another in the process.
             foreach ($elementIds as $elementId) {
+                /* @var StructureElementRecord[] $records */
                 $records = StructureElementRecord::findAll([
                     'elementId' => $elementId
                 ]);
 
                 foreach ($records as $record) {
                     // If this element still has any children, move them up before the one getting deleted.
-                    $children = $record->children()->findAll();
+                    $children = $record->children()->all();
 
                     foreach ($children as $child) {
                         $child->insertBefore($record);
