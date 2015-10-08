@@ -105,7 +105,7 @@ class AssetsController extends Controller
                     }
 
                     $element = $elementId ? Craft::$app->getElements()->getElementById($elementId) : null;
-                    $folderId = $field->resolveDynamicPath($element);
+                    $folderId = $field->resolveDynamicPathToFolderId($element);
                 }
 
                 if (empty($folderId)) {
