@@ -43,21 +43,15 @@
             </td>
         </tr>
     </table>
+
+    <input type="hidden" name="region" class="s3-region" value="{{ volume.region }}" />
+
 {% endset %}
 
 {{ forms.field({
     label: "Bucket"|t('app'),
     id: 'bucket'
 }, bucketInput) }}
-
-{{ forms.selectField({
-    label: "Storage class"|t("app"),
-    instructions: "Click <a href=\"{link}\" title=\"Storage classes\" target=\"_blank\">here</a> for details."|t('app', {'link': "https://aws.amazon.com/s3/storage-classes/"}),
-    id: 'storageClass',
-    name: 'storageClass',
-    options: storageClasses,
-    value: volume.storageClass
-}) }}
 
 {{ forms.textField({
     label: "Subfolder"|t('app'),
@@ -71,7 +65,16 @@
     placeholder: "path/to/subfolder"|t('app')
 }) }}
 
-<input type="hidden" name="region" class="s3-region" value="{{ volume.region }}">
+<hr>
+
+{{ forms.selectField({
+    label: "Storage class"|t("app"),
+    instructions: "Click <a href=\"{link}\" title=\"Storage classes\" target=\"_blank\">here</a> for details."|t('app', {'link': "https://aws.amazon.com/s3/storage-classes/"}),
+    id: 'storageClass',
+    name: 'storageClass',
+    options: storageClasses,
+    value: volume.storageClass
+}) }}
 
 {% set cacheInput %}
     {% set expires = (volume.expires|length > 0 ? volume.expires|split(' ') : ['', ''])%}
@@ -107,3 +110,14 @@
     label: "Cache Duration "|t,
     id: 'cacheDuration',
 }, cacheInput) }}
+
+{{ forms.textField({
+    label: "ClodFront distribution ID"|t('app'),
+    instructions: "If you're using CloudFront as CDN for your Assets, enter the distribution ID here so Assets can purge the files from CDN."|t('app'),
+    id: 'cfDistributionId',
+    class: 'ltr',
+    name: 'cfDistributionId',
+    value: volume.cfDistributionId,
+    errors: volume.getErrors('cfDistributionId'),
+    required: false
+}) }}

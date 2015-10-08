@@ -1,6 +1,7 @@
 <?php
 namespace craft\app\volumes;
 
+use Aws\CloudFront\CloudFrontClient;
 use Aws\S3\Exception\AccessDeniedException;
 use Craft;
 use craft\app\base\Volume;
@@ -8,6 +9,7 @@ use craft\app\cache\adapters\GuzzleCacheAdapter;
 use craft\app\dates\DateTime;
 use craft\app\helpers\Assets;
 use craft\app\helpers\DateTimeHelper;
+use craft\app\helpers\StringHelper;
 use \League\Flysystem\AwsS3v2\AwsS3Adapter;
 use \Aws\S3\S3Client as S3Client;
 
@@ -101,6 +103,11 @@ class AwsS3 extends Volume
      * @var string
      */
     public $storageClass = "";
+
+    /**
+     * CloudFront Distribution ID
+     */
+    public $cfDistributionId;
 
     /**
      * Cache adapter
@@ -205,7 +212,7 @@ class AwsS3 extends Volume
      */
     public function createFileByStream($path, $stream, $config = [])
     {
-        if (!empty($this->expires)  && DateTimeHelper::isValidIntervalString($this->expires))
+        if (!empty($this->expires) && DateTimeHelper::isValidIntervalString($this->expires))
             {
                 $expires = new DateTime();
                 $now = new DateTime();
@@ -221,6 +228,32 @@ class AwsS3 extends Volume
 
         return parent::createFileByStream($path, $stream, $config);
     }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function deleteFile($path)
+    {
+        if (parent::deleteFile($path) && !empty($this->cfDistributionId))
+        {
+            // If there's a CloudFront distribution ID set, invalidate the path.
+            $cfClient = $this->_getCloudFrontClient();
+
+            // TODO: Can this trigger an error if path does not exist?
+            $cfClient->createInvalidation(
+                [
+                    'DistributionId' => $this->cfDistributionId,
+                    'Paths' =>
+                        [
+                            'Quantity' => 1,
+                            'Items' => ['/'.ltrim($path, '/')]
+                        ],
+                    'CallerReference' => 'Craft-'.StringHelper::randomString(24)
+                ]
+            );
+        }
+    }
+
 
     /**
      * Return a list of available storage classes.
@@ -245,19 +278,7 @@ class AwsS3 extends Volume
      */
     protected function createAdapter()
     {
-        $keyId = $this->keyId;
-        $secret = $this->secret;
-
-        if (empty($keyId) || empty($secret)) {
-            $config = [];
-        } else {
-            $config = [
-                'key' => $keyId,
-                'secret' => $secret
-            ];
-        }
-
-        $config['region'] = $this->region;
+        $config = $this->_getConfigArray();
 
         $client = static::getClient($config);
 
@@ -293,5 +314,40 @@ class AwsS3 extends Volume
         }
 
         return static::$_cacheAdapter;
+    }
+
+    /**
+     * Get a CloudFront client.
+     *
+     * @return CloudFrontClient
+     */
+    private function _getCloudFrontClient()
+    {
+        $config = $this->_getConfigArray();
+        return CloudFrontClient::factory($config);
+    }
+
+    /**
+     * Get the config array for AWS Clients.
+     *
+     * @return array
+     */
+    private function _getConfigArray()
+    {
+        $keyId = $this->keyId;
+        $secret = $this->secret;
+
+        if (empty($keyId) || empty($secret)) {
+            $config = [];
+        } else {
+            $config = [
+                'key' => $keyId,
+                'secret' => $secret
+            ];
+        }
+
+        $config['region'] = $this->region;
+
+        return $config;
     }
 }
