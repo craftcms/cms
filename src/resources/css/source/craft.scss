@@ -657,7 +657,7 @@ table.collapsed tbody tr:last-child td:not(:last-child) { border-bottom: none; }
 .element.hasthumb .elementthumb img { display: block; max-width: 100%; max-height: 100%; background: url(../images/checkers.svg) 0 0; }
 
 .element.small .label { display: inline-block; }
-.element.large .label { display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.element.large .label { display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; word-wrap: normal; }
 
 .element.sel,
 .sel .element { border-radius: 3px; background: $lightselcolor; cursor: default; }
@@ -1195,7 +1195,7 @@ body .redactor-box textarea { padding: 6px 7px; }
 .timewrapper:before { top: 10px; @include left(7px); font-size: 11px; content: 'time'; }
 
 ::-webkit-input-placeholder { color: $lighttextcolor; }
-:-ms-input-placeholder { color: $lighttextcolor; }
+input:-ms-input-placeholder { color: $lighttextcolor; }
 ::-ms-input-placeholder { color: $lighttextcolor; }
 :-moz-placeholder { color: $lighttextcolor; }
 ::-moz-placeholder { color: $lighttextcolor; }
@@ -1374,7 +1374,7 @@ body.message .message-container .pane { top: 50%; margin-top: -33px !important; 
 }
 .matrixblock.disabled { opacity: 1; }
 
-.matrixblock > .titlebar { margin: 0 -13px 14px; width: calc(100% + 26px); @include box-sizing(border-box); border-radius: 2px 2px 0 0; @include padding(6px, 70px, 6px, 33px); background: hsl(212, 10%, 94%); color: $lighttextcolor; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; cursor: default; }
+.matrixblock > .titlebar { margin: 0 -13px 14px; width: calc(100% + 26px); @include box-sizing(border-box); border-radius: 2px 2px 0 0; @include padding(6px, 70px, 6px, 33px); background: hsl(212, 10%, 94%); color: $lighttextcolor; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; word-wrap: normal; cursor: default; }
 .matrixblock.collapsed > .titlebar { border-radius: 2px; }
 .matrixblock.disabled > .titlebar { @include padding-right(90px); }
 .matrixblock > .titlebar > .blocktype { display: inline; color: $mediumtextcolor; }
