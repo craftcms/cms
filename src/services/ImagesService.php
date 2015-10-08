@@ -1,6 +1,10 @@
 <?php
 namespace Craft;
 
+use lsolesen\pel\PelJpeg;
+use lsolesen\pel\PelTag;
+use lsolesen\pel\PelDataWindow;
+
 /**
  * Service for image operations.
  *
@@ -30,7 +34,7 @@ class ImagesService extends BaseApplicationComponent
 	{
 		if ($this->_isGd === null)
 		{
-			if (craft()->config->get('imageDriver') == 'gd')
+			if (strtolower(craft()->config->get('imageDriver')) == 'gd')
 			{
 				$this->_isGd = true;
 			}
@@ -231,11 +235,11 @@ class ImagesService extends BaseApplicationComponent
 				}
 			}
 		}
-        if ($degrees === false)
 
-        {
-            return false;
-        }
+		if ($degrees === false)
+		{
+			return false;
+		}
 
 		$image = $this->loadImage($filePath)->rotate($degrees);
 		return $image->saveAs($filePath);
@@ -274,12 +278,12 @@ class ImagesService extends BaseApplicationComponent
 			return null;
 		}
 
-		$data = new \PelDataWindow(IOHelper::getFileContents($filePath));
+		$data = new PelDataWindow(IOHelper::getFileContents($filePath));
 
 		// Is this a valid JPEG?
-		if (\PelJpeg::isValid($data))
+		if (PelJpeg::isValid($data))
 		{
-			$jpeg = $file = new \PelJpeg();
+			$jpeg = $file = new PelJpeg();
 			$jpeg->load($data);
 			$exif = $jpeg->getExif();
 
@@ -289,7 +293,7 @@ class ImagesService extends BaseApplicationComponent
 				$ifd0 = $tiff->getIfd();
 
 				// Delete the Orientation entry and re-save the file
-				$ifd0->offsetUnset(\PelTag::ORIENTATION);
+				$ifd0->offsetUnset(PelTag::ORIENTATION);
 				$file->saveFile($filePath);
 
 				return true;

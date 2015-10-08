@@ -851,11 +851,12 @@ class UsersController extends BaseController
 		// Are they allowed to set a new password?
 		if ($thisIsPublicRegistration)
 		{
-			$user->newPassword = craft()->request->getPost('password');
+			$user->newPassword = craft()->request->getPost('password', '');
 		}
 		else if ($isCurrentUser)
 		{
-			$user->newPassword = craft()->request->getPost('newPassword');
+			// If there was a newPassword input but it was empty, pretend it didn't exist
+			$user->newPassword = (craft()->request->getPost('newPassword') ?: null);
 		}
 
 		// If editing an existing user and either of these properties are being changed,

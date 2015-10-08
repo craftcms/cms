@@ -647,19 +647,22 @@ table.collapsed tbody tr:last-child td:not(:last-child) { border-bottom: none; }
 .element.small.hasthumb { @include padding-left(40px !important); }
 .element.large.hasthumb { @include padding-left(0 !important); }
 
-.element.hasthumb .elementthumb { display: block; position: absolute; top: 0; @include left(0); border-radius: 3px; overflow: hidden; background: #fff; }
+.element.hasthumb .elementthumb { position: absolute; top: 0; @include left(0); border-radius: 3px; overflow: hidden; background: #fff;
+	display: flex; display: -ms-flexbox;
+	justify-content: center; -ms-flex-pack: center;
+	align-items: center; -ms-flex-align: center; }
 .element.small.hasthumb .elementthumb { width: 30px; height: 30px; }
 .element.large.hasthumb .elementthumb { width: 100px; height: 100px; }
-.element.hasthumb .elementthumb img { display: block; width: 100%; height: 100%; }
+.element.hasthumb .elementthumb img { display: block; max-width: 100%; max-height: 100%; background: url(../images/checkers.svg) 0 0; }
 
 .element.small .label { display: inline-block; }
-.element.large .label { display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.element.large .label { display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; word-wrap: normal; }
 
 .element.sel,
 .sel .element { border-radius: 3px; background: $lightselcolor; cursor: default; }
 
 .element.hasthumb.sel .elementthumb:after,
-.sel .element.hasthumb .elementthumb:after { display: block; position: absolute; top: 0; left: 0; border-radius: 3px; width: 100%; height: 100%; content: '.'; font-size: 0; background: rgba(0,0,7,0.15); }
+.sel .element.hasthumb .elementthumb:after { display: block; position: absolute; top: 0; left: 0; border-radius: 3px; width: 100%; height: 100%; content: '.'; font-size: 0; background: rgba(35,51,76,0.19); }
 
 .element.removable .label,
 .element.loading .label { @include padding-right(20px); }
@@ -938,6 +941,12 @@ body #redactor-modal-overlay {
 .hud .tip-bottom { bottom: -15px; width: 30px; height: 15px; background-image: url(../images/hudtip_bottom.png); }
 .hud.has-footer .tip-bottom { background-image: url(../images/hudtip_bottom_gray.png); }
 
+.hud ::-webkit-scrollbar { -webkit-appearance: none; }
+.hud ::-webkit-scrollbar:vertical { width: 11px; }
+.hud ::-webkit-scrollbar:horizontal { height: 11px; }
+.hud ::-webkit-scrollbar-thumb { border-radius: 8px; border: 2px solid transparent; background-color: rgba(0, 0, 0, .5); background-clip: content-box; }
+.hud ::-webkit-scrollbar-track { background-color: $lightBgColor; }
+
 /* element editor HUDs */
 .hud .elementeditor { padding: 0; }
 .hud .elementeditor .header,
@@ -1190,7 +1199,7 @@ body .redactor-box textarea { padding: 6px 7px; }
 .timewrapper:before { top: 10px; @include left(7px); font-size: 11px; content: 'time'; }
 
 ::-webkit-input-placeholder { color: $lighttextcolor; }
-:-ms-input-placeholder { color: $lighttextcolor; }
+input:-ms-input-placeholder { color: $lighttextcolor; }
 ::-ms-input-placeholder { color: $lighttextcolor; }
 :-moz-placeholder { color: $lighttextcolor; }
 ::-moz-placeholder { color: $lighttextcolor; }
@@ -1369,7 +1378,7 @@ body.message .message-container .pane { top: 50%; margin-top: -33px !important; 
 }
 .matrixblock.disabled { opacity: 1; }
 
-.matrixblock > .titlebar { margin: 0 -13px 14px; width: calc(100% + 26px); @include box-sizing(border-box); border-radius: 2px 2px 0 0; @include padding(6px, 70px, 6px, 33px); background: hsl(212, 10%, 94%); color: $lighttextcolor; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; cursor: default; }
+.matrixblock > .titlebar { margin: 0 -13px 14px; width: calc(100% + 26px); @include box-sizing(border-box); border-radius: 2px 2px 0 0; @include padding(6px, 70px, 6px, 33px); background: hsl(212, 10%, 94%); color: $lighttextcolor; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; word-wrap: normal; cursor: default; }
 .matrixblock.collapsed > .titlebar { border-radius: 2px; }
 .matrixblock.disabled > .titlebar { @include padding-right(90px); }
 .matrixblock > .titlebar > .blocktype { display: inline; color: $mediumtextcolor; }

@@ -197,7 +197,7 @@ class DateTime extends \DateTime
 					$date .= ' '.$m['ampm'];
 				}
 			}
-			else if (preg_match('/^\d{10}$/', $date))
+			else if (DateTimeHelper::isValidTimeStamp((int) $date))
 			{
 				$format = 'U';
 			}
