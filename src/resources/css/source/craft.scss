@@ -640,7 +640,7 @@ table.collapsed tbody tr:last-child td:not(:last-child) { border-bottom: none; }
 .elements .thumbsview li .element { display: block; padding: 105px 0 5px !important; }
 .elements .thumbsview li .element .elementthumb,
 .elements .thumbsview li .element .elementicon { width: 100px; height: 100px; }
-.elements .thumbsview li .element .label { display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.elements .thumbsview li .element .label { display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; word-wrap: normal; }
 
 .elements .thumbsview li.has-checkbox .checkbox { position: absolute; top: 106px; @include left(4px); }
 .elements .thumbsview li.has-checkbox .element .label { @include padding-left(20px); }
@@ -1244,7 +1244,7 @@ body.message .message-container .pane { top: 50%; margin-top: -33px !important; 
 }
 .matrixblock.disabled { opacity: 1; }
 
-.matrixblock > .titlebar { margin: 0 -13px 14px; width: calc(100% + 26px); @include box-sizing(border-box); border-radius: 2px 2px 0 0; @include padding(6px, 70px, 6px, 33px); background: hsl(212, 10%, 94%); color: $lighttextcolor; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; cursor: default; }
+.matrixblock > .titlebar { margin: 0 -13px 14px; width: calc(100% + 26px); @include box-sizing(border-box); border-radius: 2px 2px 0 0; @include padding(6px, 70px, 6px, 33px); background: hsl(212, 10%, 94%); color: $lighttextcolor; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; word-wrap: normal; cursor: default; }
 .matrixblock.collapsed > .titlebar { border-radius: 2px; }
 .matrixblock.disabled > .titlebar { @include padding-right(90px); }
 .matrixblock > .titlebar > .blocktype { display: inline; color: $mediumtextcolor; }
