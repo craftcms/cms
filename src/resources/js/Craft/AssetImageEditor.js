@@ -3,7 +3,6 @@
  */
 
 //TODO go over the logic and think on it - it definitely can be optimised and simplified. Especially undo/redo
-//TODO straightening to the right and then left makes the image shrink.
 Craft.AssetImageEditor = Garnish.Modal.extend(
 	{
 		assetId: 0,
@@ -52,8 +51,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 		$img: null,
 		imgUrl: null,
 
-		init: function(assetId)
-		{
+		init: function (assetId) {
 			this.setSettings(Craft.AssetImageEditor.defaults);
 
 			this.assetId = assetId;
@@ -85,9 +83,9 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 			this.base($container, this.settings);
 
 			this.$buttons = $('<div class="buttons rightalign"/>').appendTo($footer);
-			this.$cancelBtn = $('<div class="btn">'+Craft.t('Cancel')+'</div>').appendTo(this.$buttons);
-			this.$selectBtn = $('<div class="btn disabled submit">'+Craft.t('Replace Image')+'</div>').appendTo(this.$buttons);
-			this.$selectBtn = $('<div class="btn disabled submit">'+Craft.t('Save as New Image')+'</div>').appendTo(this.$buttons);
+			this.$cancelBtn = $('<div class="btn">' + Craft.t('Cancel') + '</div>').appendTo(this.$buttons);
+			this.$selectBtn = $('<div class="btn disabled submit">' + Craft.t('Replace Image') + '</div>').appendTo(this.$buttons);
+			this.$selectBtn = $('<div class="btn disabled submit">' + Craft.t('Save as New Image') + '</div>').appendTo(this.$buttons);
 
 			this.$body = $body;
 
@@ -98,8 +96,12 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 
 		},
 
-		loadEditor: function (data)
-		{
+		/**
+		 * Load the editor from Ajax response data.
+		 *
+		 * @param data data objeect.
+		 */
+		loadEditor: function (data) {
 			this.$body.html(data.html);
 			this.canvas = this.$body.find('canvas')[0];
 			this.canvasContext = this.canvas.getContext("2d");
@@ -108,48 +110,43 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 			this.imageWidth = this.originalImageWidth = data.imageData.width;
 			this.originalImageUrl = this.imageUrl = data.imageData.url;
 			this.aspectRatio = this.imageHeight / this.imageWidth;
-			this.initImage(this.imageUrl, $.proxy(this, 'updateSizeAndPosition'), true);
+			this.initImage(this.imageUrl, $.proxy(this, 'updateSizeAndPosition'));
 			this.addListeners();
 		},
 
-		updateSizeAndPosition: function()
-		{
-			if (!this.imageLoaded)
-			{
+		/**
+		 * Update modal size and position.
+		 */
+		updateSizeAndPosition: function () {
+			if (!this.imageLoaded) {
 				this.base();
 			}
-			else
-			{
+			else {
+				// If image is already loaded, we have some more stuff to take care of.
 				this.redrawEditor();
 			}
 		},
 
-		cancel: function ()
-		{
+		cancel: function () {
 			this.hide();
 			this.destroy();
 		},
 
-		hide: function ()
-		{
+		hide: function () {
 			this.removeListeners();
 			this.base();
 		},
 
-		initImage: function (url, callback, preventOperation)
-		{
+		/**
+		 * Load an image by URL and do a call on the callback when loaded.
+		 *
+		 * @param url URL of image to load
+		 * @param callback function to call when the image is loaded
+		 */
+		initImage: function (url, callback) {
 			this.$img = $('<img />');
 
-			this.$img.attr('src', url).on('load', $.proxy(function ()
-			{
-				if (!preventOperation) {
-					this.addOperation({
-						changeUrl: true,
-						from: this.imgUrl,
-						to: url
-					});
-				}
-
+			this.$img.attr('src', url).on('load', $.proxy(function () {
 				this.imageLoaded = true;
 				this.imgUrl = url;
 
@@ -157,15 +154,18 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 			}, this));
 		},
 
-		redrawEditor: function ()
-		{
+		/**
+		 * Redraw the editor so that everything is centered and with the maximum reasonable size.
+		 * Also render the image for this size.
+		 */
+		redrawEditor: function () {
 			var availableHeight = Garnish.$win.height() - (4 * this.paddingSize) - this.$container.find('.footer').outerHeight(),
 				availableWidth = Garnish.$win.width() - (5 * this.paddingSize) - this.$container.find('.image-tools').outerWidth();
 
-			// Make the image area square, so we can rotate it comfortably.
+			// Make the image holder area square, so we can rotate the image it comfortably.
 			var imageHolderSize = Math.max(parseInt(this.$container.find('.image-tools').css('min-height'), 10), Math.min(availableHeight, availableWidth));
 
-			// Set it all up!
+			// Calculate the container dimensions
 			var containerWidth = imageHolderSize + this.$container.find('.image-tools').outerWidth() + (3 * this.paddingSize),
 				containerHeight = imageHolderSize + this.$container.find('.footer').outerHeight() + (2 * this.paddingSize);
 
@@ -180,14 +180,17 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 			this.$container.css('left', Math.round((Garnish.$win.width() - containerWidth) / 2));
 			this.$container.css('top', Math.round((Garnish.$win.height() - containerHeight) / 2));
 
-			if (this.imageLoaded)
-			{
+			if (this.imageLoaded) {
 				this.renderImage(true);
 			}
 		},
 
-		renderImage: function (drawFrame, recalculateZoomRatio)
-		{
+		/**
+		 * Render the image
+		 * @param drawFrame boolean
+		 * @param recalculateZoomRatio boolean
+		 */
+		renderImage: function (drawFrame, recalculateZoomRatio) {
 
 			this.canvas.height = this.canvasImageHeight;
 			this.canvas.width = this.canvasImageWidth;
@@ -196,15 +199,12 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 			var xRatio = this.originalImageWidth / this.canvasImageWidth;
 
 			// Figure out the size
-			if (xRatio > 1 || yRatio > 1)
-			{
-				if (xRatio > yRatio)
-				{
+			if (xRatio > 1 || yRatio > 1) {
+				if (xRatio > yRatio) {
 					this.imageWidth = this.canvasImageWidth;
 					this.imageHeight = this.imageWidth * this.aspectRatio;
 				}
-				else
-				{
+				else {
 					this.imageHeight = this.canvasImageHeight;
 					this.imageWidth = this.imageHeight / this.aspectRatio;
 				}
@@ -213,17 +213,14 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 			// Clear canvas
 			this.canvasContext.clearRect(0, 0, this.canvasImageWidth, this.canvasImageHeight);
 
-			// Calculate the zoom ratio unless we're in the middle of an animation
+			// Calculate the zoom ratio if we're not in the middle of an animation
 			// or we're forced to (when resetting the straighten slider)
-			if (!this.animationInProgress || recalculateZoomRatio)
-			{
+			if (!this.animationInProgress || recalculateZoomRatio) {
 				// For non-straightened images we know the zoom is going to be 1
-				if (this.rotation % 90 == 0)
-				{
+				if (this.rotation % 90 == 0) {
 					this.zoomRatio = 1;
 				}
-				else
-				{
+				else {
 					var rectangle = this.calculateLargestProportionalRectangle(this.rotation - this.frameRotation, this.imageWidth, this.imageHeight);
 					this.zoomRatio = Math.max(this.imageWidth / rectangle.w, this.imageHeight / rectangle.h);
 				}
@@ -243,92 +240,81 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 			this.canvasContext.drawImage(this.$img[0], 0, 0, this.originalImageWidth, this.originalImageHeight,
 				-(adjustedWidth / 2), -(adjustedHeight / 2), adjustedWidth, adjustedHeight);
 
+			// Restore previous context
 			this.canvasContext.restore();
 
-			if (drawFrame)
-			{
+			if (drawFrame) {
 				this.drawFrame();
 			}
 
-			if (this.drawGridLines)
-			{
+			if (this.drawGridLines) {
 				this.drawGrid();
 			}
 
 			this.clipImage();
 		},
 
-		addListeners: function ()
-		{
-			this.$container.find('a.rotate.clockwise').on('click', $.proxy(function ()
-			{
-				if (!this.animationInProgress)
-				{
+		addListeners: function () {
+			// Rotation controls
+			this.$container.find('a.rotate.clockwise').on('click', $.proxy(function () {
+				if (!this.animationInProgress) {
 					this.addOperation({imageRotation: 90});
 					this.rotate(90);
 				}
 			}, this));
 
-			this.$container.find('a.rotate.counter-clockwise').on('click', $.proxy(function ()
-			{
-				if (!this.animationInProgress)
-				{
+			this.$container.find('a.rotate.counter-clockwise').on('click', $.proxy(function () {
+				if (!this.animationInProgress) {
 					this.addOperation({imageRotation: -90});
 					this.rotate(-90);
 				}
 			}, this));
 
+			// Straighten slider and the reset button
 			var straighten = this.$container.find('.straighten')[0];
 
 			straighten.oninput = $.proxy(this, 'straightenImage');
-			straighten.onchange = $.proxy(function (event)
-			{
+			straighten.onchange = $.proxy(function (event) {
 				this.straightenImage(event, true);
 			}, this);
 
 
-			straighten.onmousedown = $.proxy(function ()
-			{
+			straighten.onmousedown = $.proxy(function () {
 				this.showGridLines();
 				this.renderImage(true);
 			}, this);
 
-			straighten.onmouseup = $.proxy(function ()
-			{
+			straighten.onmouseup = $.proxy(function () {
 				this.hideGridLines();
 				this.renderImage(true);
 			}, this);
 
-			$('.rotate.reset').on('click', $.proxy(function ()
-			{
+			$('.rotate.reset').on('click', $.proxy(function () {
 				this.$container.find('.straighten').val(0);
 				this.setStraightenOffset(0, false, true, true);
 			}, this));
 
+			// Undo / redo
 			// TODO: remove magic numbers and move them to Garnish Constants
-			this.addListener(Garnish.$doc, 'keydown', $.proxy(function (ev)
-			{
+			this.addListener(Garnish.$doc, 'keydown', $.proxy(function (ev) {
 				// CMD/CTRL + Y, CMD/CTRL + SHIFT + Z
-				if ((ev.metaKey || ev.ctrlKey) && (ev.keyCode == 89 || (ev.keyCode == 90 && ev.shiftKey)))
-				{
+				if ((ev.metaKey || ev.ctrlKey) && (ev.keyCode == 89 || (ev.keyCode == 90 && ev.shiftKey))) {
 					this.redo();
 				}
 
 				return false;
 			}, this));
 
-			this.addListener(Garnish.$doc, 'keydown', $.proxy(function (ev)
-			{
-				if ((ev.metaKey || ev.ctrlKey) && !ev.shiftKey && ev.keyCode == 90)
-				{
+			this.addListener(Garnish.$doc, 'keydown', $.proxy(function (ev) {
+				if ((ev.metaKey || ev.ctrlKey) && !ev.shiftKey && ev.keyCode == 90) {
 					this.undo();
 				}
 
 				return false;
 			}, this));
 
-			this.$container.find('#filter').on('change', $.proxy(function (ev)
-			{
+			// Filters
+			this.$container.find('#filter').on('change', $.proxy(function (ev) {
 				var $paramContainer = this.$container.find('#filter-control-container').empty(),
 					$opt = $(ev.currentTarget).find(':selected');
 
@@ -336,8 +322,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 					$paramContainer.html('<br />');
 
 					if ($opt.data('has-parameter') == "yes") {
-						var $input = $('<input id="filterParameter" type="number" placeholder="0..255" />').on('keyup', $.proxy(function (ev)
-						{
+						var $input = $('<input id="filterParameter" type="number" placeholder="0..255" />').on('keyup', $.proxy(function (ev) {
 							if (parseFloat($(ev.currentTarget).val())) {
 								$paramContainer.find('.btn.apply-filter').removeClass('disabled');
 							}
@@ -358,8 +343,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 						$applyButton.addClass('disabled');
 					}
 
-					$applyButton.on('click', $.proxy(function (ev)
-					{
+					$applyButton.on('click', $.proxy(function (ev) {
 						if ($applyButton.hasClass('disabled')) {
 							return false;
 						}
@@ -372,55 +356,63 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 			}, this));
 		},
 
-		removeListeners: function ()
-		{
+		removeListeners: function () {
 			this.removeListener(Garnish.$doc, 'keydown');
 		},
 
-		addOperation: function (operation)
-		{
+		/**
+		 * Add a performed operation to the undo stack.
+		 *
+		 * @param operation object
+		 */
+		addOperation: function (operation) {
 			this.doneOperations.push(operation);
 
 			// As soon as we do something, the stack of undone operations is gone.
 			this.undoneOperations = [];
 		},
 
-		undo: function ()
-		{
-			if (this.animationInProgress)
-			{
+		/**
+		 * Undo an operation.
+ 		 */
+		undo: function () {
+			if (this.animationInProgress) {
 				return;
 			}
 
-			if (this.doneOperations.length > 0)
-			{
+			if (this.doneOperations.length > 0) {
 				var operation = this.doneOperations.pop();
 				this.performOperation(operation, true);
 				this.undoneOperations.push(operation);
 			}
 		},
 
-		redo: function ()
-		{
-			if (this.animationInProgress)
-			{
+		/**
+		 * Redo an operation.
+		 */
+		redo: function () {
+			if (this.animationInProgress) {
 				return;
 			}
-			if (this.undoneOperations.length > 0)
-			{
+			if (this.undoneOperations.length > 0) {
 				var operation = this.undoneOperations.pop();
 				this.performOperation(operation, false);
 				this.doneOperations.push(operation);
 			}
 		},
 
+		/**
+		 * Perform an operation that can be undone and redone.
+		 *
+		 * @param operation object
+		 * @param reverse boolean indicating whether this is a reverse of the operation
+		 */
 		// TODO: This is a horrible name for this function
-		performOperation: function (operation, reverse)
-		{
+		performOperation: function (operation, reverse) {
 			var modifier = reverse ? -1 : 1;
 
-			if (typeof operation.imageRotation != "undefined")
-			{
+			// Do or redo a rotation
+			if (typeof operation.imageRotation != "undefined") {
 				this.rotation += modifier * operation.imageRotation;
 				this.frameRotation += modifier * operation.imageRotation;
 
@@ -428,15 +420,16 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 				this.renderImage(true);
 			}
 
-			if (typeof operation.straightenOffset != "undefined")
-			{
+			// Do or redo image straightening
+			if (typeof operation.straightenOffset != "undefined") {
 				var value = modifier * operation.straightenOffset;
 				this.rotation += value;
 
 				var $straighten = this.$container.find('.straighten');
 				var newValue = parseFloat($straighten.val()) + value;
 
-				// TODO: this is the part where we refactor the code a bit to be less confusing.
+				// PreviousSavedSliderValue is the stored slider value for undo/redo
+				// PreviousSliderValue is used for calculating delta and relational rotaion
 				this.previousSavedSliderValue = newValue;
 				this.previousSliderValue = newValue;
 				$straighten.val(newValue);
@@ -444,49 +437,38 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 				this.cleanUpRotationDegrees();
 				this.renderImage(true);
 			}
-
-			if (typeof operation.changeUrl != "undefined") {
-				var url = "";
-
-				if (reverse) {
-					url = operation.from ? operation.from : this.originalImageUrl;
-				}
-				else {
-					url = operation.to;
-				}
-
-				this.initImage(url, $.proxy(this, 'redrawEditor'), true);
-			}
 		},
 
-		rotate: function (degrees, animateInstantly, preventFrameRotation)
-		{
+		/**
+		 * Rotate image by degrees.
+		 *
+		 * @param degrees amount of degrees
+		 * @param animateInstantly should the animation be instant?
+		 * @param preventFrameRotation should the frame be prevented from rotating
+		 */
+		rotate: function (degrees, animateInstantly, preventFrameRotation) {
 			var targetDegrees = this.rotation + degrees;
 
-			if (!animateInstantly)
-			{
+			// Animate!
+			if (!animateInstantly) {
 				this.animationInProgress = true;
 				var degreesPerFrame = Math.round(degrees / this.animationFrames * 10) / 10;
 
 				var frameCount = 0;
 
-				var animateCanvas = function ()
-				{
+				var animateCanvas = function () {
 					frameCount++;
 					this.rotation += degreesPerFrame;
 
-					if (!preventFrameRotation)
-					{
+					if (!preventFrameRotation) {
 						this.frameRotation += degreesPerFrame;
 					}
 
 					this.renderImage(true, preventFrameRotation);
-					if (frameCount < this.animationFrames)
-					{
+					if (frameCount < this.animationFrames) {
 						setTimeout($.proxy(animateCanvas, this), 1);
 					}
-					else
-					{
+					else {
 						// Clean up the fractions and whatnot
 						this.rotation = targetDegrees;
 						this.cleanUpRotationDegrees();
@@ -498,16 +480,15 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 
 				animateCanvas.call(this);
 			}
-			else
-			{
+			else {
 				this.rotation = targetDegrees;
 				this.cleanUpRotationDegrees();
 				this.renderImage(true);
 			}
 		},
 
-		cleanUpRotationDegrees: function ()
-		{
+		// Clean up any excess decimal parts and full rotations
+		cleanUpRotationDegrees: function () {
 			this.rotation = this._cleanUpDegrees(this.rotation);
 			this.frameRotation = this._cleanUpDegrees(this.frameRotation);
 		},
@@ -515,14 +496,11 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 		/**
 		 * Ensure a degree value is within [0..360] and has at most one decimal part.
 		 */
-		_cleanUpDegrees: function (degrees)
-		{
-			if (degrees > 360)
-			{
+		_cleanUpDegrees: function (degrees) {
+			if (degrees > 360) {
 				degrees -= 360;
 			}
-			else if (degrees < 0)
-			{
+			else if (degrees < 0) {
 				degrees += 360;
 			}
 
@@ -532,23 +510,33 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 		},
 
 		// Trigger operation - whether we're stopping to drag the slider and should trigger a state save
-		straightenImage: function (event, triggerOperation)
-		{
-			if (this.animationInProgress)
-			{
+		/**
+		 * Straigthen the image.
+		 *
+		 * @param event
+		 * @param triggerOperation true if the state should be saved
+		 */
+		straightenImage: function (event, triggerOperation) {
+			if (this.animationInProgress) {
 				return;
 			}
 			this.setStraightenOffset($(event.currentTarget).val(), true, false, triggerOperation);
 		},
 
-		setStraightenOffset: function (degrees, animateInstantly, preventFrameRotation, triggerOperation)
-		{
+		/**
+		 * Set the straighten offset.
+		 *
+		 * @param degrees the amount of degrees set
+		 * @param animateInstantly should the animation be instant?
+		 * @param preventFrameRotation should the frame be prevented from rotating
+		 * @param triggerOperation true if the state should be saved
+		 */
+		setStraightenOffset: function (degrees, animateInstantly, preventFrameRotation, triggerOperation) {
 			var delta = degrees - this.previousSliderValue;
 
 			this.previousSliderValue = degrees;
 
-			if (triggerOperation)
-			{
+			if (triggerOperation) {
 				this.addOperation({straightenOffset: degrees - this.previousSavedSliderValue});
 				this.previousSavedSliderValue = degrees;
 			}
@@ -557,21 +545,24 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 
 		},
 
-		showGridLines: function ()
-		{
+		/**
+		 * Show grid lines
+		 */
+		showGridLines: function () {
 			this.drawGridLines = true;
 		},
 
-		hideGridLines: function ()
-		{
+		/**
+		 * Hide grid lines
+		 */
+		hideGridLines: function () {
 			this.drawGridLines = false;
 		},
 
 		/**
 		 * Draw the frame around the image.
 		 */
-		drawFrame: function ()
-		{
+		drawFrame: function () {
 			// Remember the current context
 			this.canvasContext.save();
 
@@ -586,8 +577,12 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 
 		},
 
-		prepareImageFrameRectangle: function (canvasContext)
-		{
+		/**
+		 * Prepare the image frame rectangle for the canvas.
+		 *
+		 * @param canvasContext
+		 */
+		prepareImageFrameRectangle: function (canvasContext) {
 			canvasContext.translate(Math.round(this.canvasImageWidth / 2), Math.round(this.canvasImageHeight / 2));
 			canvasContext.rotate(this.frameRotation * Math.PI / 180);
 			canvasContext.rect(-(this.imageWidth / 2) + 1, -(this.imageHeight / 2) + 1, this.imageWidth - 2, this.imageHeight - 2);
@@ -596,8 +591,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 		/**
 		 * Draw the grid with guides for straightening.
 		 */
-		drawGrid: function ()
-		{
+		drawGrid: function () {
 			this.canvasContext.lineWidth = 1;
 
 			this.canvasContext.save();
@@ -609,10 +603,9 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 			var xStep = (this.imageWidth - 2) / 8;
 			var yStep = (this.imageHeight - 2) / 8;
 
-			for (var step = 0; step < 9; step++)
-			{
-				switch (step)
-				{
+			// Draw the grid lines
+			for (var step = 0; step < 9; step++) {
+				switch (step) {
 					case 0:
 					case 8:
 					case 4:
@@ -640,10 +633,8 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 				this.canvasContext.stroke();
 			}
 
-			for (step = 0; step < 9; step++)
-			{
-				switch (step)
-				{
+			for (step = 0; step < 9; step++) {
+				switch (step) {
 					case 0:
 					case 8:
 					case 4:
@@ -677,8 +668,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 		/**
 		 * Add a new clipping canvas on top of the existing canvas.
 		 */
-		clipImage: function ()
-		{
+		clipImage: function () {
 			var mask = Garnish.$doc[0].createElement('canvas');
 			mask.width = this.canvas.width;
 			mask.height = this.canvas.height;
@@ -698,79 +688,49 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 		 * Calculate the largest possible rectangle within a rotated rectangle.
 		 * Adapted from http://stackoverflow.com/a/18402507/2040791
 		 */
-		calculateLargestProportionalRectangle: function(angle, origWidth, origHeight)
-		{
+		calculateLargestProportionalRectangle: function (angle, origWidth, origHeight) {
 
 			var w0, h0;
 
-			if (origWidth <= origHeight)
-			{
+			if (origWidth <= origHeight) {
 				w0 = origWidth;
 				h0 = origHeight;
 			}
-			else
-			{
+			else {
 				w0 = origHeight;
 				h0 = origWidth;
 			}
 
 			// Angle normalization in range [-PI..PI)
-			if (angle > 180)
-			{
+			if (angle > 180) {
 				angle = 180 - angle;
 			}
-			if (angle < 0)
-			{
+			if (angle < 0) {
 				angle = angle + 180;
 			}
 			var ang = angle * (Math.PI / 180);
 
-			if (ang > Math.PI / 2)
-			{
+			if (ang > Math.PI / 2) {
 				ang = Math.PI - ang;
 			}
 
 			var c = w0 / (h0 * Math.sin(ang) + w0 * Math.cos(ang)),
 				w, h;
 
-			if (origWidth <= origHeight)
-			{
+			if (origWidth <= origHeight) {
 				w = w0 * c;
 				h = h0 * c;
 			}
-			else
-			{
+			else {
 				w = h0 * c;
 				h = w0 * c;
 			}
 
-			return { w: w, h: h};
+			return {w: w, h: h};
 		},
 
-		_applyFilter: function (filterName, parameter)
-		{
-			var params = {
-				filter:         filterName,
-				parameterValue: parameter
-			};
-
-			if (this.imgUrl != this.originalImageUrl) {
-				params.url = this.imgUrl;
-			}
-			else {
-				params.assetId = this.assetId;
-			}
-
-			this.$container.find('#filter-control-container .buttons').append('<div class="spinner"></div>');
-
-			Craft.postActionRequest("assetTransforms/applyFilter", params, $.proxy(function (data)
-			{
-				if (data.success && data.url) {
-					this.initImage(data.url, $.proxy(this, 'redrawEditor'));
-					this.$container.find('.btn.apply-filter').removeClass('disabled').end().find('.spinner').remove();
-
-				}
-			}, this));
+		_applyFilter: function (filterName, parameter) {
+			this.$container.find('.btn.apply-filter').removeClass('disabled').end().find('.spinner').remove();
 		}
 
 	},
