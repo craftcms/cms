@@ -7,7 +7,7 @@
 
 namespace craft\app\db;
 
-use craft\app\helpers\DbHelper;
+use craft\app\helpers\Db;
 use craft\app\helpers\StringHelper;
 
 /**
@@ -35,7 +35,7 @@ class Command extends \yii\db\Command
     public function insert($table, $columns, $includeAuditColumns = true)
     {
         if ($includeAuditColumns) {
-            $now = DbHelper::prepareDateForDb(new \DateTime());
+            $now = Db::prepareDateForDb(new \DateTime());
             $columns['dateCreated'] = $now;
             $columns['dateUpdated'] = $now;
             $columns['uid'] = StringHelper::UUID();
@@ -65,7 +65,7 @@ class Command extends \yii\db\Command
             $columns[] = 'dateUpdated';
             $columns[] = 'uid';
 
-            $date = DbHelper::prepareDateForDb(new \DateTime());
+            $date = Db::prepareDateForDb(new \DateTime());
 
             foreach ($rows as &$row) {
                 $row[] = $date;
@@ -93,15 +93,14 @@ class Command extends \yii\db\Command
     public function insertOrUpdate($table, $keyColumns, $updateColumns, $includeAuditColumns = true)
     {
         if ($includeAuditColumns) {
-            $now = DbHelper::prepareDateForDb(new \DateTime());
+            $now = Db::prepareDateForDb(new \DateTime());
             $updateColumns['dateCreated'] = $now;
             $updateColumns['dateUpdated'] = $now;
             $updateColumns['uid'] = StringHelper::UUID();
         }
 
         $params = [];
-        $sql = $this->db->getQueryBuilder()->insertOrUpdate($table, $keyColumns,
-            $updateColumns, $params);
+        $sql = $this->db->getQueryBuilder()->insertOrUpdate($table, $keyColumns, $updateColumns, $params);
 
         return $this->setSql($sql)->bindValues($params);
     }
@@ -121,7 +120,7 @@ class Command extends \yii\db\Command
     public function update($table, $columns, $conditions = '', $params = [], $includeAuditColumns = true)
     {
         if ($includeAuditColumns) {
-            $columns['dateUpdated'] = DbHelper::prepareDateForDb(new \DateTime());
+            $columns['dateUpdated'] = Db::prepareDateForDb(new \DateTime());
         }
 
         return parent::update($table, $columns, $conditions, $params);
@@ -140,8 +139,7 @@ class Command extends \yii\db\Command
     public function replace($table, $column, $find, $replace)
     {
         $params = [];
-        $sql = $this->db->getQueryBuilder()->replace($table, $column, $find,
-            $replace, $params);
+        $sql = $this->db->getQueryBuilder()->replace($table, $column, $find, $replace, $params);
 
         return $this->setSql($sql)->bindValues($params);
     }
@@ -162,7 +160,7 @@ class Command extends \yii\db\Command
         $columns = array_merge(
             ($addIdColumn ? ['id' => 'pk'] : []),
             $columns,
-            ($addAuditColumns ? DbHelper::getAuditColumnConfig() : [])
+            ($addAuditColumns ? Db::getAuditColumnConfig() : [])
         );
 
         return parent::createTable($table, $columns, $options);
@@ -195,8 +193,7 @@ class Command extends \yii\db\Command
      */
     public function addColumnFirst($table, $column, $type)
     {
-        $sql = $this->db->getQueryBuilder()->addColumnFirst($table, $column,
-            $type);
+        $sql = $this->db->getQueryBuilder()->addColumnFirst($table, $column, $type);
 
         return $this->setSql($sql);
     }
@@ -215,8 +212,7 @@ class Command extends \yii\db\Command
      */
     public function addColumnBefore($table, $column, $type, $before)
     {
-        $sql = $this->db->getQueryBuilder()->addColumnBefore($table, $column,
-            $type, $before);
+        $sql = $this->db->getQueryBuilder()->addColumnBefore($table, $column, $type, $before);
 
         return $this->setSql($sql);
     }
@@ -235,8 +231,7 @@ class Command extends \yii\db\Command
      */
     public function addColumnAfter($table, $column, $type, $after)
     {
-        $sql = $this->db->getQueryBuilder()->addColumnAfter($table, $column,
-            $type, $after);
+        $sql = $this->db->getQueryBuilder()->addColumnAfter($table, $column, $type, $after);
 
         return $this->setSql($sql);
     }
@@ -257,8 +252,7 @@ class Command extends \yii\db\Command
      */
     public function alterColumn($table, $column, $type, $newName = null, $after = null)
     {
-        $sql = $this->db->getQueryBuilder()->alterColumn($table, $column, $type,
-            $newName, $after);
+        $sql = $this->db->getQueryBuilder()->alterColumn($table, $column, $type, $newName, $after);
 
         return $this->setSql($sql);
     }

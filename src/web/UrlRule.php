@@ -72,8 +72,7 @@ class UrlRule extends \yii\web\UrlRule
                 ];
             }
 
-            $config['pattern'] = strtr($config['pattern'],
-                static::$_regexTokens);
+            $config['pattern'] = strtr($config['pattern'], static::$_regexTokens);
         }
 
         parent::__construct($config);
@@ -84,6 +83,7 @@ class UrlRule extends \yii\web\UrlRule
      */
     public function parseRequest($manager, $request)
     {
+        /** @var UrlManager $manager */
         $result = parent::parseRequest($manager, $request);
 
         // Is this a template route?
@@ -97,10 +97,12 @@ class UrlRule extends \yii\web\UrlRule
             }
 
             if (isset($result[1]['variables']['variables'])) {
-                $result[1]['variables'] = ArrayHelper::merge($result[1]['variables'],
-                    $result[1]['variables']['variables']);
+                $result[1]['variables'] = ArrayHelper::merge($result[1]['variables'], $result[1]['variables']['variables']);
                 unset($result[1]['variables']['variables']);
             }
+
+            // Merge in any registered route params
+            $result[1]['variables'] = array_merge($result[1]['variables'], $manager->getRouteParams());
         }
 
         return $result;

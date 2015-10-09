@@ -9,8 +9,6 @@ namespace craft\app\console;
 
 use Craft;
 use craft\app\base\ApplicationTrait;
-use craft\app\helpers\IOHelper;
-use craft\app\helpers\StringHelper;
 
 /**
  * Craft Console Application class
@@ -58,7 +56,7 @@ class Application extends \yii\console\Application
         $this->getLog();
 
         // So we can try to translate Yii framework strings
-        //$this->coreMessages->attachEventHandler('onMissingTranslation', ['Craft\LocalizationHelper', 'findMissingTranslation']);
+        //$this->coreMessages->attachEventHandler('onMissingTranslation', ['Craft\Localization', 'findMissingTranslation']);
 
         // Set the edition components
         $this->_setEditionComponents();

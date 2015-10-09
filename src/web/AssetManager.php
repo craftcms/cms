@@ -8,7 +8,7 @@
 namespace craft\app\web;
 
 use Craft;
-use craft\app\helpers\IOHelper;
+use craft\app\helpers\Io;
 
 /**
  * @inheritdoc
@@ -26,14 +26,14 @@ class AssetManager extends \yii\web\AssetManager
      */
     protected function publishDirectory($src, $options)
     {
-        // See if any of the subdirectories have a more recent modify date than $src
+        // See if any of the nested files/folders have a more recent modify date than $src
         $srcModTime = filemtime($src);
-        $subdirs = glob($src.DIRECTORY_SEPARATOR.'*',
-            GLOB_NOSORT | GLOB_ONLYDIR);
+        $objects = new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($src, \FilesystemIterator::SKIP_DOTS));
 
-        foreach ($subdirs as $dir) {
-            if (filemtime($dir) > $srcModTime) {
-                IOHelper::touch($src, null, true);
+        foreach ($objects as $object) {
+            /** @var \SplFileInfo $object */
+            if (filemtime($object->getPath()) > $srcModTime) {
+                Io::touch($src, null, true);
                 break;
             }
         }

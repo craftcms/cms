@@ -31,7 +31,7 @@ class Globals extends Component
     /**
      * @event GlobalSetEvent The event that is triggered before a global set's content is saved.
      *
-     * You may set [[GlobalSetEvent::performAction]] to `false` to prevent the global set's content from getting saved.
+     * You may set [[GlobalSetEvent::isValid]] to `false` to prevent the global set's content from getting saved.
      */
     const EVENT_BEFORE_SAVE_GLOBAL_CONTENT = 'beforeSaveGlobalContent';
 
@@ -204,8 +204,7 @@ class Globals extends Component
                 return $this->_globalSetsById[$globalSetId];
             }
         } else {
-            return Craft::$app->getElements()->getElementById($globalSetId,
-                GlobalSet::className(), $localeId);
+            return Craft::$app->getElements()->getElementById($globalSetId, GlobalSet::className(), $localeId);
         }
     }
 
@@ -256,9 +255,7 @@ class Globals extends Component
             $globalSetRecord = GlobalSetRecord::findOne($globalSet->id);
 
             if (!$globalSetRecord) {
-                throw new Exception(Craft::t('app',
-                    'No global set exists with the ID “{id}”.',
-                    ['id' => $globalSet->id]));
+                throw new Exception(Craft::t('app', 'No global set exists with the ID “{id}”.', ['id' => $globalSet->id]));
             }
 
             $oldSet = GlobalSet::create($globalSetRecord);
@@ -273,7 +270,7 @@ class Globals extends Component
         $globalSet->addErrors($globalSetRecord->getErrors());
 
         if (!$globalSet->hasErrors()) {
-            $transaction = Craft::$app->getDb()->getTransaction() === null ? Craft::$app->getDb()->beginTransaction() : null;
+            $transaction = Craft::$app->getDb()->beginTransaction();
             try {
                 if (Craft::$app->getElements()->saveElement($globalSet, false)
                 ) {
@@ -297,16 +294,12 @@ class Globals extends Component
 
                     $globalSetRecord->save(false);
 
-                    if ($transaction !== null) {
-                        $transaction->commit();
-                    }
+                    $transaction->commit();
 
                     return true;
                 }
             } catch (\Exception $e) {
-                if ($transaction !== null) {
-                    $transaction->rollback();
-                }
+                $transaction->rollback();
 
                 throw $e;
             }
@@ -329,7 +322,7 @@ class Globals extends Component
             return false;
         }
 
-        $transaction = Craft::$app->getDb()->getTransaction() === null ? Craft::$app->getDb()->beginTransaction() : null;
+        $transaction = Craft::$app->getDb()->beginTransaction();
         try {
             // Delete the field layout
             $fieldLayoutId = (new Query())
@@ -344,15 +337,11 @@ class Globals extends Component
 
             $affectedRows = Craft::$app->getElements()->deleteElementById($setId);
 
-            if ($transaction !== null) {
-                $transaction->commit();
-            }
+            $transaction->commit();
 
             return (bool)$affectedRows;
         } catch (\Exception $e) {
-            if ($transaction !== null) {
-                $transaction->rollback();
-            }
+            $transaction->rollback();
 
             throw $e;
         }
@@ -368,7 +357,7 @@ class Globals extends Component
      */
     public function saveContent(GlobalSet $globalSet)
     {
-        $transaction = Craft::$app->getDb()->getTransaction() === null ? Craft::$app->getDb()->beginTransaction() : null;
+        $transaction = Craft::$app->getDb()->beginTransaction();
 
         try {
             // Fire a 'beforeSaveGlobalContent' event
@@ -379,14 +368,12 @@ class Globals extends Component
             $this->trigger(static::EVENT_BEFORE_SAVE_GLOBAL_CONTENT, $event);
 
             // Is the event giving us the go-ahead?
-            if ($event->performAction) {
+            if ($event->isValid) {
                 $success = Craft::$app->getElements()->saveElement($globalSet);
 
                 // If it didn't work, rollback the transaction in case something changed in onBeforeSaveGlobalContent
                 if (!$success) {
-                    if ($transaction !== null) {
-                        $transaction->rollback();
-                    }
+                    $transaction->rollback();
 
                     return false;
                 }
@@ -396,13 +383,9 @@ class Globals extends Component
 
             // Commit the transaction regardless of whether we saved the user, in case something changed
             // in onBeforeSaveGlobalContent
-            if ($transaction !== null) {
-                $transaction->commit();
-            }
+            $transaction->commit();
         } catch (\Exception $e) {
-            if ($transaction !== null) {
-                $transaction->rollback();
-            }
+            $transaction->rollback();
 
             throw $e;
         }

@@ -94,7 +94,7 @@ class Updates
             if ($type == 'name') {
                 return $plugins[0]->name;
             } else {
-                //return $plugins[0]->getClassHandle();
+                return $plugins[0]->getHandle();
             }
         }
 

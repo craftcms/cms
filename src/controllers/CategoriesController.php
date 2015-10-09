@@ -11,8 +11,8 @@ use Craft;
 use craft\app\base\Element;
 use craft\app\errors\Exception;
 use craft\app\errors\HttpException;
-use craft\app\helpers\JsonHelper;
-use craft\app\helpers\UrlHelper;
+use craft\app\helpers\Json;
+use craft\app\helpers\Url;
 use craft\app\elements\Category;
 use craft\app\models\CategoryGroup;
 use craft\app\models\CategoryGroupLocale as CategoryGroupLocaleModel;
@@ -68,11 +68,11 @@ class CategoriesController extends Controller
         $variables['crumbs'] = [
             [
                 'label' => Craft::t('app', 'Settings'),
-                'url' => UrlHelper::getUrl('settings')
+                'url' => Url::getUrl('settings')
             ],
             [
                 'label' => Craft::t('app', 'Categories'),
-                'url' => UrlHelper::getUrl('settings/categories')
+                'url' => Url::getUrl('settings/categories')
             ]
         ];
 
@@ -94,8 +94,7 @@ class CategoriesController extends Controller
                 $variables['brandNewGroup'] = true;
             }
 
-            $variables['title'] = Craft::t('app',
-                'Create a new category group');
+            $variables['title'] = Craft::t('app', 'Create a new category group');
         }
 
         $variables['tabs'] = [
@@ -131,7 +130,7 @@ class CategoriesController extends Controller
         $group->id = Craft::$app->getRequest()->getBodyParam('groupId');
         $group->name = Craft::$app->getRequest()->getBodyParam('name');
         $group->handle = Craft::$app->getRequest()->getBodyParam('handle');
-        $group->hasUrls = Craft::$app->getRequest()->getBodyParam('hasUrls');
+        $group->hasUrls = (bool) Craft::$app->getRequest()->getBodyParam('hasUrls');
         $group->template = Craft::$app->getRequest()->getBodyParam('template');
         $group->maxLevels = Craft::$app->getRequest()->getBodyParam('maxLevels');
 
@@ -155,13 +154,11 @@ class CategoriesController extends Controller
 
         // Save it
         if (Craft::$app->getCategories()->saveGroup($group)) {
-            Craft::$app->getSession()->setNotice(Craft::t('app',
-                'Category group saved.'));
+            Craft::$app->getSession()->setNotice(Craft::t('app', 'Category group saved.'));
 
             return $this->redirectToPostedUrl($group);
         } else {
-            Craft::$app->getSession()->setError(Craft::t('app',
-                'Couldn’t save the category group.'));
+            Craft::$app->getSession()->setError(Craft::t('app', 'Couldn’t save the category group.'));
         }
 
         // Send the category group back to the template
@@ -286,8 +283,7 @@ class CategoriesController extends Controller
             }
 
             if ($parentId) {
-                $variables['parent'] = Craft::$app->getCategories()->getCategoryById($parentId,
-                    $variables['localeId']);
+                $variables['parent'] = Craft::$app->getCategories()->getCategoryById($parentId, $variables['localeId']);
             }
         }
 
@@ -298,19 +294,18 @@ class CategoriesController extends Controller
         if (!$category->id) {
             $variables['title'] = Craft::t('app', 'Create a new category');
         } else {
-            $variables['docTitle'] = Craft::t('app', $category->title);
-            $variables['title'] = Craft::t('app', $category->title);
+            $variables['docTitle'] = $variables['title'] = $category->title;
         }
 
         // Breadcrumbs
         $variables['crumbs'] = [
             [
                 'label' => Craft::t('app', 'Categories'),
-                'url' => UrlHelper::getUrl('categories')
+                'url' => Url::getUrl('categories')
             ],
             [
                 'label' => Craft::t('site', $variables['group']->name),
-                'url' => UrlHelper::getUrl('categories/'.$variables['group']->handle)
+                'url' => Url::getUrl('categories/'.$variables['group']->handle)
             ]
         ];
 
@@ -324,7 +319,7 @@ class CategoriesController extends Controller
 
         // Enable Live Preview?
         if (!Craft::$app->getRequest()->getIsMobileBrowser(true) && Craft::$app->getCategories()->isGroupTemplateValid($variables['group'])) {
-            Craft::$app->getView()->registerJs('Craft.LivePreview.init('.JsonHelper::encode([
+            Craft::$app->getView()->registerJs('Craft.LivePreview.init('.Json::encode([
                     'fields' => '#title-field, #fields > div > div > .field',
                     'extraFields' => '#settings',
                     'previewUrl' => $category->getUrl(),
@@ -344,7 +339,7 @@ class CategoriesController extends Controller
                 if ($category->getStatus() == Element::STATUS_ENABLED) {
                     $variables['shareUrl'] = $category->getUrl();
                 } else {
-                    $variables['shareUrl'] = UrlHelper::getActionUrl('categories/share-category',
+                    $variables['shareUrl'] = Url::getActionUrl('categories/share-category',
                         [
                             'categoryId' => $category->id,
                             'locale' => $category->locale
@@ -418,8 +413,7 @@ class CategoriesController extends Controller
                     'cpEditUrl' => $category->getCpEditUrl()
                 ]);
             } else {
-                Craft::$app->getSession()->setNotice(Craft::t('app',
-                    'Category saved.'));
+                Craft::$app->getSession()->setNotice(Craft::t('app', 'Category saved.'));
 
                 return $this->redirectToPostedUrl($category);
             }
@@ -430,8 +424,7 @@ class CategoriesController extends Controller
                     'errors' => $category->getErrors(),
                 ]);
             } else {
-                Craft::$app->getSession()->setError(Craft::t('app',
-                    'Couldn’t save category.'));
+                Craft::$app->getSession()->setError(Craft::t('app', 'Couldn’t save category.'));
 
                 // Send the category back to the template
                 Craft::$app->getUrlManager()->setRouteParams([
@@ -455,9 +448,7 @@ class CategoriesController extends Controller
         $category = Craft::$app->getCategories()->getCategoryById($categoryId);
 
         if (!$category) {
-            throw new Exception(Craft::t('app',
-                'No category exists with the ID “{id}”.',
-                ['id' => $categoryId]));
+            throw new Exception(Craft::t('app', 'No category exists with the ID “{id}”.', ['id' => $categoryId]));
         }
 
         // Make sure they have permission to do this
@@ -468,8 +459,7 @@ class CategoriesController extends Controller
             if (Craft::$app->getRequest()->getIsAjax()) {
                 return $this->asJson(['success' => true]);
             } else {
-                Craft::$app->getSession()->setNotice(Craft::t('app',
-                    'Category deleted.'));
+                Craft::$app->getSession()->setNotice(Craft::t('app', 'Category deleted.'));
 
                 return $this->redirectToPostedUrl($category);
             }
@@ -477,8 +467,7 @@ class CategoriesController extends Controller
             if (Craft::$app->getRequest()->getIsAjax()) {
                 return $this->asJson(['success' => false]);
             } else {
-                Craft::$app->getSession()->setError(Craft::t('app',
-                    'Couldn’t delete category.'));
+                Craft::$app->getSession()->setError(Craft::t('app', 'Couldn’t delete category.'));
 
                 // Send the category back to the template
                 Craft::$app->getUrlManager()->setRouteParams([
@@ -499,8 +488,7 @@ class CategoriesController extends Controller
      */
     public function actionShareCategory($categoryId, $locale = null)
     {
-        $category = Craft::$app->getCategories()->getCategoryById($categoryId,
-            $locale);
+        $category = Craft::$app->getCategories()->getCategoryById($categoryId, $locale);
 
         if (!$category) {
             throw new HttpException(404);
@@ -523,7 +511,7 @@ class CategoriesController extends Controller
             ]
         ]);
 
-        $url = UrlHelper::getUrlWithToken($category->getUrl(), $token);
+        $url = Url::getUrlWithToken($category->getUrl(), $token);
 
         return Craft::$app->getResponse()->redirect($url);
     }
@@ -541,8 +529,7 @@ class CategoriesController extends Controller
     {
         $this->requireToken();
 
-        $category = Craft::$app->getCategories()->getCategoryById($categoryId,
-            $locale);
+        $category = Craft::$app->getCategories()->getCategoryById($categoryId, $locale);
 
         if (!$category) {
             throw new HttpException(404);
@@ -583,8 +570,7 @@ class CategoriesController extends Controller
         $variables['localeIds'] = Craft::$app->getI18n()->getEditableLocaleIds();
 
         if (!$variables['localeIds']) {
-            throw new HttpException(403, Craft::t('app',
-                'Your account doesn’t have permission to edit any of this site’s locales.'));
+            throw new HttpException(403, Craft::t('app', 'Your account doesn’t have permission to edit any of this site’s locales.'));
         }
 
         if (empty($variables['localeId'])) {
@@ -605,8 +591,7 @@ class CategoriesController extends Controller
 
         if (empty($variables['category'])) {
             if (!empty($variables['categoryId'])) {
-                $variables['category'] = Craft::$app->getCategories()->getCategoryById($variables['categoryId'],
-                    $variables['localeId']);
+                $variables['category'] = Craft::$app->getCategories()->getCategoryById($variables['categoryId'], $variables['localeId']);
 
                 if (!$variables['category']) {
                     throw new HttpException(404);
@@ -660,13 +645,10 @@ class CategoriesController extends Controller
         $localeId = Craft::$app->getRequest()->getBodyParam('locale');
 
         if ($categoryId) {
-            $category = Craft::$app->getCategories()->getCategoryById($categoryId,
-                $localeId);
+            $category = Craft::$app->getCategories()->getCategoryById($categoryId, $localeId);
 
             if (!$category) {
-                throw new Exception(Craft::t('app',
-                    'No category exists with the ID “{id}”.',
-                    ['id' => $categoryId]));
+                throw new Exception(Craft::t('app', 'No category exists with the ID “{id}”.', ['id' => $categoryId]));
             }
         } else {
             $category = new Category();
@@ -708,17 +690,13 @@ class CategoriesController extends Controller
     private function _populateCategoryModel(Category $category)
     {
         // Set the category attributes, defaulting to the existing values for whatever is missing from the post data
-        $category->slug = Craft::$app->getRequest()->getBodyParam('slug',
-            $category->slug);
-        $category->enabled = (bool)Craft::$app->getRequest()->getBodyParam('enabled',
-            $category->enabled);
+        $category->slug = Craft::$app->getRequest()->getBodyParam('slug', $category->slug);
+        $category->enabled = (bool)Craft::$app->getRequest()->getBodyParam('enabled', $category->enabled);
 
-        $category->getContent()->title = Craft::$app->getRequest()->getBodyParam('title',
-            $category->title);
+        $category->title = Craft::$app->getRequest()->getBodyParam('title', $category->title);
 
-        $fieldsLocation = Craft::$app->getRequest()->getParam('fieldsLocation',
-            'fields');
-        $category->setContentFromPost($fieldsLocation);
+        $fieldsLocation = Craft::$app->getRequest()->getParam('fieldsLocation', 'fields');
+        $category->setFieldValuesFromPost($fieldsLocation);
 
         // Parent
         $parentId = Craft::$app->getRequest()->getBodyParam('parentId');
@@ -743,8 +721,7 @@ class CategoriesController extends Controller
         $group = $category->getGroup();
 
         if (!$group) {
-            Craft::error('Attempting to preview a category that doesn’t have a group.',
-                __METHOD__);
+            Craft::error('Attempting to preview a category that doesn’t have a group.', __METHOD__);
             throw new HttpException(404);
         }
 

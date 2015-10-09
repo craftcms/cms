@@ -111,8 +111,7 @@ class Fields
      */
     public function getFieldsByGroupId($groupId, $indexBy = null)
     {
-        return \Craft::$app->getFields()->getFieldsByGroupId($groupId,
-            $indexBy);
+        return \Craft::$app->getFields()->getFieldsByGroupId($groupId, $indexBy);
     }
 
     /**

@@ -269,7 +269,7 @@
 			amount = parent.find('.expires-amount').val(),
 			period = parent.find('.expires-period select').val();
 
-		var combinedValue = (parseInt(amount, 10) == 0 || period.length == 0) ? '' : amount + period;
+		var combinedValue = (parseInt(amount, 10) == 0 || period.length == 0) ? '' : amount + ' ' + period;
 
 		parent.find('[type=hidden]').val(combinedValue);
 	};

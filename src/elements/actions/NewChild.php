@@ -9,7 +9,7 @@ namespace craft\app\elements\actions;
 
 use Craft;
 use craft\app\base\ElementAction;
-use craft\app\helpers\JsonHelper;
+use craft\app\helpers\Json;
 
 /**
  * NewChild represents a New Child element action.
@@ -63,9 +63,9 @@ class NewChild extends ElementAction
      */
     public function getTriggerHtml()
     {
-        $type = JsonHelper::encode(static::className());
-        $maxLevels = JsonHelper::encode($this->maxLevels);
-        $newChildUrl = JsonHelper::encode($this->newChildUrl);
+        $type = Json::encode(static::className());
+        $maxLevels = Json::encode($this->maxLevels);
+        $newChildUrl = Json::encode($this->newChildUrl);
 
         $js = <<<EOT
 (function()

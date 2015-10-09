@@ -12,7 +12,8 @@ use craft\app\db\Query;
 use craft\app\errors\Exception;
 use craft\app\events\DraftEvent;
 use craft\app\events\EntryEvent;
-use craft\app\helpers\JsonHelper;
+use craft\app\helpers\ArrayHelper;
+use craft\app\helpers\Json;
 use craft\app\elements\Entry;
 use craft\app\models\EntryDraft;
 use craft\app\models\EntryVersion;
@@ -49,7 +50,7 @@ class EntryRevisions extends Component
     /**
      * @event DraftEvent The event that is triggered before a draft is deleted.
      *
-     * You may set [[DraftEvent::performAction]] to `false` to prevent the draft from getting deleted.
+     * You may set [[DraftEvent::isValid]] to `false` to prevent the draft from getting deleted.
      */
     const EVENT_BEFORE_DELETE_DRAFT = 'beforeDeleteDraft';
 
@@ -78,13 +79,14 @@ class EntryRevisions extends Component
         $draftRecord = EntryDraftRecord::findOne($draftId);
 
         if ($draftRecord) {
-            $draft = EntryDraft::create($draftRecord);
+            $config = ArrayHelper::toArray($draftRecord, [], false);
+            $config['data'] = Json::decode($config['data']);
+            $draft = EntryDraft::create($config);
 
             // This is a little hacky, but fixes a bug where entries are getting the wrong URL when a draft is published
             // inside of a structured section since the selected URL Format depends on the entry's level, and there's no
             // reason to store the level along with the other draft data.
-            $entry = Craft::$app->getEntries()->getEntryById($draftRecord->entryId,
-                $draftRecord->locale);
+            $entry = Craft::$app->getEntries()->getEntryById($draftRecord->entryId, $draftRecord->locale);
 
             $draft->root = $entry->root;
             $draft->lft = $entry->lft;
@@ -120,7 +122,7 @@ class EntryRevisions extends Component
             ->all();
 
         foreach ($results as $result) {
-            $result['data'] = JsonHelper::decode($result['data']);
+            $result['data'] = Json::decode($result['data']);
 
             // Don't initialize the content
             unset($result['data']['fields']);
@@ -211,7 +213,7 @@ class EntryRevisions extends Component
     {
         // If this is a single, we'll have to set the title manually
         if ($draft->getSection()->type == Section::TYPE_SINGLE) {
-            $draft->getContent()->title = $draft->getSection()->name;
+            $draft->title = $draft->getSection()->name;
         }
 
         // Set the version notes
@@ -245,7 +247,7 @@ class EntryRevisions extends Component
      */
     public function deleteDraft(EntryDraft $draft)
     {
-        $transaction = Craft::$app->getDb()->getTransaction() === null ? Craft::$app->getDb()->beginTransaction() : null;
+        $transaction = Craft::$app->getDb()->beginTransaction();
 
         try {
             // Fire a 'beforeDeleteDraft' event
@@ -256,7 +258,7 @@ class EntryRevisions extends Component
             $this->trigger(static::EVENT_BEFORE_DELETE_DRAFT, $event);
 
             // Is the event giving us the go-ahead?
-            if ($event->performAction) {
+            if ($event->isValid) {
                 $draftRecord = $this->_getDraftRecord($draft);
                 $draftRecord->delete();
 
@@ -267,13 +269,9 @@ class EntryRevisions extends Component
 
             // Commit the transaction regardless of whether we deleted the draft, in case something changed
             // in onBeforeDeleteDraft
-            if ($transaction !== null) {
-                $transaction->commit();
-            }
+            $transaction->commit();
         } catch (\Exception $e) {
-            if ($transaction !== null) {
-                $transaction->rollback();
-            }
+            $transaction->rollback();
 
             throw $e;
         }
@@ -300,7 +298,9 @@ class EntryRevisions extends Component
         $versionRecord = EntryVersionRecord::findOne($versionId);
 
         if ($versionRecord) {
-            return EntryVersion::create($versionRecord);
+            $config = ArrayHelper::toArray($versionRecord, [], false);
+            $config['data'] = Json::decode($config['data']);
+            return EntryVersion::create($config);
         }
     }
 
@@ -333,7 +333,7 @@ class EntryRevisions extends Component
             ->all();
 
         foreach ($results as $result) {
-            $result['data'] = JsonHelper::decode($result['data']);
+            $result['data'] = Json::decode($result['data']);
 
             // Don't initialize the content
             unset($result['data']['fields']);
@@ -385,7 +385,7 @@ class EntryRevisions extends Component
     {
         // If this is a single, we'll have to set the title manually
         if ($version->getSection()->type == Section::TYPE_SINGLE) {
-            $version->getContent()->title = $version->getSection()->name;
+            $version->title = $version->getSection()->name;
         }
 
         // Set the version notes
@@ -422,9 +422,7 @@ class EntryRevisions extends Component
             $draftRecord = EntryDraftRecord::findOne($draft->draftId);
 
             if (!$draftRecord) {
-                throw new Exception(Craft::t('app',
-                    'No draft exists with the ID “{id}”.',
-                    ['id' => $draft->draftId]));
+                throw new Exception(Craft::t('app', 'No draft exists with the ID “{id}”.', ['id' => $draft->draftId]));
             }
         } else {
             $draftRecord = new EntryDraftRecord();

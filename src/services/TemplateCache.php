@@ -15,10 +15,9 @@ use craft\app\elements\db\ElementQuery;
 use craft\app\events\Event;
 use craft\app\helpers\ArrayHelper;
 use craft\app\helpers\DateTimeHelper;
-use craft\app\helpers\DbHelper;
-use craft\app\helpers\JsonHelper;
+use craft\app\helpers\Db;
 use craft\app\helpers\StringHelper;
-use craft\app\helpers\UrlHelper;
+use craft\app\helpers\Url;
 use craft\app\tasks\DeleteStaleTemplateCaches;
 use yii\base\Component;
 
@@ -54,7 +53,7 @@ class TemplateCache extends Component
      *
      * @var string
      */
-    private static $_templateCacheCriteriaTable = '{{%templatecachecriteria}}';
+    private static $_templateCacheQueriesTable = '{{%templatecachequeries}}';
 
     /**
      * The duration (in seconds) between the times when Craft will delete any expired template caches.
@@ -71,11 +70,11 @@ class TemplateCache extends Component
     private $_path;
 
     /**
-     * A list of element queries that are active within the existing caches.
+     * A list of element queries that were executed within the existing caches.
      *
      * @var array
      */
-    private $_cacheQueryParams;
+    private $_cachedQueries;
 
     /**
      * A list of element IDs that are active within the existing caches.
@@ -134,7 +133,7 @@ class TemplateCache extends Component
         ];
 
         $params = [
-            ':now' => DbHelper::prepareDateForDb(new \DateTime()),
+            ':now' => Db::prepareDateForDb(new \DateTime()),
             ':key' => $key,
             ':locale' => Craft::$app->language
         ];
@@ -166,14 +165,12 @@ class TemplateCache extends Component
         }
 
         // Is this the first time we've started caching?
-        if ($this->_cacheQueryParams === null) {
-            Event::on(ElementQuery::className(),
-                ElementQuery::EVENT_AFTER_PREPARE,
-                [$this, 'includeElementQueryInTemplateCaches']);
+        if ($this->_cachedQueries === null) {
+            Event::on(ElementQuery::className(), ElementQuery::EVENT_AFTER_PREPARE, [$this, 'includeElementQueryInTemplateCaches']);
         }
 
         if (Craft::$app->getConfig()->get('cacheElementQueries')) {
-            $this->_cacheQueryParams[$key] = [];
+            $this->_cachedQueries[$key] = [];
         }
 
         $this->_cacheElementIds[$key] = [];
@@ -193,14 +190,21 @@ class TemplateCache extends Component
             return;
         }
 
-        if (!empty($this->_cacheQueryParams)) {
-            /** @var ElementQuery $query */
-            $query = $event->sender;
-            $params = $query->toArray();
-            $hash = md5(serialize($params));
+        if (!empty($this->_cachedQueries)) {
+            /** @var ElementQuery $elementQuery */
+            $elementQuery = $event->sender;
+            $query = $elementQuery->query;
+            $subQuery = $elementQuery->subQuery;
+            $elementQuery->query = null;
+            $elementQuery->subQuery = null;
+            // We need to base64-encode the string so db\Connection::quoteSql() doesn't tweak any of the table/columns names
+            $serialized = base64_encode(serialize($elementQuery));
+            $elementQuery->query = $query;
+            $elementQuery->subQuery = $subQuery;
+            $hash = md5($serialized);
 
-            foreach (array_keys($this->_cacheQueryParams) as $cacheKey) {
-                $this->_cacheQueryParams[$cacheKey][$hash] = $params;
+            foreach (array_keys($this->_cachedQueries) as $cacheKey) {
+                $this->_cachedQueries[$cacheKey][$hash] = [$elementQuery->elementType, $serialized];
             }
         }
     }
@@ -251,8 +255,7 @@ class TemplateCache extends Component
 
         // If there are any transform generation URLs in the body, don't cache it.
         // Can't use getResourceUrl() here because that will append ?d= or ?x= to the URL.
-        if (StringHelper::contains($body,
-            UrlHelper::getSiteUrl(Craft::$app->getConfig()->getResourceTrigger().'/transforms'))
+        if (StringHelper::contains($body, Url::getSiteUrl(Craft::$app->getConfig()->getResourceTrigger().'/transforms'))
         ) {
             return;
         }
@@ -275,7 +278,7 @@ class TemplateCache extends Component
         }
 
         // Save it
-        $transaction = Craft::$app->getDb()->getTransaction() === null ? Craft::$app->getDb()->beginTransaction() : null;
+        $transaction = Craft::$app->getDb()->beginTransaction();
 
         try {
             Craft::$app->getDb()->createCommand()->insert(static::$_templateCachesTable,
@@ -283,32 +286,24 @@ class TemplateCache extends Component
                     'cacheKey' => $key,
                     'locale' => Craft::$app->language,
                     'path' => ($global ? null : $this->_getPath()),
-                    'expiryDate' => DbHelper::prepareDateForDb($expiration),
+                    'expiryDate' => Db::prepareDateForDb($expiration),
                     'body' => $body
                 ], false)->execute();
 
             $cacheId = Craft::$app->getDb()->getLastInsertID();
 
-            // Tag it with any element criteria that were output within the cache
-            if (!empty($this->_cacheQueryParams[$key])) {
+            // Tag it with any element queries that were executed within the cache
+            if (!empty($this->_cachedQueries[$key])) {
                 $values = [];
-
-                foreach ($this->_cacheQueryParams[$key] as $params) {
+                foreach ($this->_cachedQueries[$key] as $query) {
                     $values[] = [
                         $cacheId,
-                        $params['elementType'],
-                        JsonHelper::encode($params)
+                        $query[0],
+                        $query[1]
                     ];
                 }
-
-                Craft::$app->getDb()->createCommand()->batchInsert(
-                    static::$_templateCacheCriteriaTable,
-                    ['cacheId', 'type', 'criteria'],
-                    $values,
-                    false
-                )->execute();
-
-                unset($this->_cacheQueryParams[$key]);
+                Craft::$app->getDb()->createCommand()->batchInsert(static::$_templateCacheQueriesTable, ['cacheId', 'type', 'query'], $values, false)->execute();
+                unset($this->_cachedQueries[$key]);
             }
 
             // Tag it with any element IDs that were output within the cache
@@ -329,13 +324,9 @@ class TemplateCache extends Component
                 unset($this->_cacheElementIds[$key]);
             }
 
-            if ($transaction !== null) {
-                $transaction->commit();
-            }
+            $transaction->commit();
         } catch (\Exception $e) {
-            if ($transaction !== null) {
-                $transaction->rollback();
-            }
+            $transaction->rollback();
 
             throw $e;
         }
@@ -362,8 +353,7 @@ class TemplateCache extends Component
             $params = [':id' => $cacheId];
         }
 
-        $affectedRows = Craft::$app->getDb()->createCommand()->delete(static::$_templateCachesTable,
-            $condition, $params)->execute();
+        $affectedRows = Craft::$app->getDb()->createCommand()->delete(static::$_templateCachesTable, $condition, $params)->execute();
 
         return (bool)$affectedRows;
     }
@@ -385,7 +375,7 @@ class TemplateCache extends Component
 
         $cacheIds = (new Query())
             ->select('cacheId')
-            ->from(static::$_templateCacheCriteriaTable)
+            ->from(static::$_templateCacheQueriesTable)
             ->where(['type' => $elementType])
             ->column();
 
@@ -463,8 +453,7 @@ class TemplateCache extends Component
                 }
 
                 if (is_array($elementId)) {
-                    $task->elementId = array_merge($task->elementId,
-                        $elementId);
+                    $task->elementId = array_merge($task->elementId, $elementId);
                 } else {
                     $task->elementId[] = $elementId;
                 }
@@ -563,9 +552,8 @@ class TemplateCache extends Component
             return false;
         }
 
-        $affectedRows = Craft::$app->getDb()->createCommand()->delete(static::$_templateCachesTable,
-            'expiryDate <= :now',
-            ['now' => DbHelper::prepareDateForDb(new \DateTime())]
+        $affectedRows = Craft::$app->getDb()->createCommand()->delete(static::$_templateCachesTable, 'expiryDate <= :now',
+            ['now' => Db::prepareDateForDb(new \DateTime())]
         )->execute();
 
         $this->_deletedExpiredCaches = true;
@@ -589,9 +577,7 @@ class TemplateCache extends Component
 
         if ($lastCleanupDate === false || DateTimeHelper::currentTimeStamp() - $lastCleanupDate > static::$_lastCleanupDateCacheDuration) {
             // Don't do it again for a while
-            Craft::$app->getCache()->set('lastTemplateCacheCleanupDate',
-                DateTimeHelper::currentTimeStamp(),
-                static::$_lastCleanupDateCacheDuration);
+            Craft::$app->getCache()->set('lastTemplateCacheCleanupDate', DateTimeHelper::currentTimeStamp(), static::$_lastCleanupDateCacheDuration);
 
             return $this->deleteExpiredCaches();
         } else {
@@ -658,11 +644,7 @@ class TemplateCache extends Component
 
             // Get the querystring without the path param.
             if ($queryString = Craft::$app->getRequest()->getQueryStringWithoutPath()) {
-                $queryString = trim($queryString, '&');
-
-                if ($queryString) {
-                    $this->_path .= '?'.$queryString;
-                }
+                $this->_path .= '?'.$queryString;
             }
         }
 

@@ -9,7 +9,6 @@ namespace craft\app\migrations;
 
 use Craft;
 use craft\app\elements\User;
-use craft\app\enums\EmailerType;
 use craft\app\db\InstallMigration;
 use craft\app\helpers\StringHelper;
 use craft\app\models\Info;
@@ -69,8 +68,7 @@ class Install extends InstallMigration
         // TODO: MySQL specific
         $this->db->createCommand(
             'CREATE FULLTEXT INDEX '.
-            $this->db->quoteTableName($this->db->getIndexName('{{%searchindex}}',
-                'keywords')).' ON '.
+            $this->db->quoteTableName($this->db->getIndexName('{{%searchindex}}', 'keywords')).' ON '.
             $this->db->quoteTableName('{{%searchindex}}').' '.
             '('.$this->db->quoteColumnName('keywords').')'
         )->execute();
@@ -126,9 +124,15 @@ class Install extends InstallMigration
         // Save the default email settings
         echo "    > save the email settings ...";
         Craft::$app->getSystemSettings()->saveSettings('email', [
-            'protocol' => EmailerType::Php,
-            'emailAddress' => $this->email,
-            'senderName' => $this->siteName
+            'fromEmail' => $this->email,
+            'fromName' => $this->siteName,
+            'transportType' => 'craft\app\mail\transportadaptors\Php'
+        ]);
+        Craft::$app->getSystemSettings()->saveSettings('mailer', [
+            'from' => [$this->email => $this->siteName],
+            'transport' => [
+                'class' => 'craft\app\mail\transportadaptors\Php'
+            ]
         ]);
         echo " done\n";
     }
@@ -861,21 +865,6 @@ class Install extends InstallMigration
                     ['level', false],
                 ],
             ],
-            '{{%templatecachecriteria}}' => [
-                'columns' => [
-                    'cacheId' => 'integer(11) NOT NULL',
-                    'type' => 'string(255) COLLATE utf8_unicode_ci NOT NULL',
-                    'criteria' => 'text COLLATE utf8_unicode_ci NOT NULL',
-                ],
-                'addAuditColumns' => false,
-                'indexes' => [
-                    ['cacheId', false],
-                    ['type', false],
-                ],
-                'foreignKeys' => [
-                    ['cacheId', '{{%templatecaches}}', 'id', 'CASCADE', null],
-                ],
-            ],
             '{{%templatecacheelements}}' => [
                 'columns' => [
                     'cacheId' => 'integer(11) NOT NULL',
@@ -889,6 +878,21 @@ class Install extends InstallMigration
                 ],
                 'foreignKeys' => [
                     ['elementId', '{{%elements}}', 'id', 'CASCADE', null],
+                    ['cacheId', '{{%templatecaches}}', 'id', 'CASCADE', null],
+                ],
+            ],
+            '{{%templatecachequeries}}' => [
+                'columns' => [
+                    'cacheId' => 'integer(11) NOT NULL',
+                    'type' => 'string(255) COLLATE utf8_unicode_ci NOT NULL',
+                    'query' => 'text COLLATE utf8_unicode_ci NOT NULL',
+                ],
+                'addAuditColumns' => false,
+                'indexes' => [
+                    ['cacheId', false],
+                    ['type', false],
+                ],
+                'foreignKeys' => [
                     ['cacheId', '{{%templatecaches}}', 'id', 'CASCADE', null],
                 ],
             ],
@@ -1017,7 +1021,7 @@ class Install extends InstallMigration
                     'pending' => 'smallint(1) NOT NULL',
                     'archived' => 'smallint(1) NOT NULL',
                     'lastLoginDate' => 'datetime DEFAULT NULL',
-                    'lastLoginAttemptIPAddress' => 'string(45) COLLATE utf8_unicode_ci DEFAULT NULL',
+                    'lastLoginAttemptIp' => 'string(45) COLLATE utf8_unicode_ci DEFAULT NULL',
                     'invalidLoginWindowStart' => 'datetime DEFAULT NULL',
                     'invalidLoginCount' => 'smallint(4) unsigned DEFAULT NULL',
                     'lastInvalidLoginDate' => 'datetime DEFAULT NULL',

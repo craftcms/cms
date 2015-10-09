@@ -10,7 +10,7 @@ namespace craft\app\widgets;
 use Craft;
 use craft\app\base\Widget;
 use craft\app\elements\Entry;
-use craft\app\helpers\JsonHelper;
+use craft\app\helpers\Json;
 use craft\app\models\Section;
 
 /**
@@ -129,7 +129,7 @@ class RecentEntries extends Widget
             }
         }
 
-        $js = 'new Craft.RecentEntriesWidget('.$this->id.', '.JsonHelper::encode($params).');';
+        $js = 'new Craft.RecentEntriesWidget('.$this->id.', '.Json::encode($params).');';
 
         Craft::$app->getView()->registerJsResource('js/RecentEntriesWidget.js');
         Craft::$app->getView()->registerJs($js);

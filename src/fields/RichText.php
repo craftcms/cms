@@ -10,10 +10,10 @@ namespace craft\app\fields;
 use Craft;
 use craft\app\base\Field;
 use craft\app\fields\data\RichTextData;
-use craft\app\helpers\DbHelper;
+use craft\app\helpers\Db;
 use craft\app\helpers\HtmlPurifier;
-use craft\app\helpers\IOHelper;
-use craft\app\helpers\JsonHelper;
+use craft\app\helpers\Io;
+use craft\app\helpers\Json;
 use craft\app\helpers\StringHelper;
 use craft\app\models\Section;
 use craft\app\validators\Handle;
@@ -77,14 +77,12 @@ class RichText extends Field
         $configOptions = ['' => Craft::t('app', 'Default')];
         $configPath = Craft::$app->getPath()->getConfigPath().'/redactor';
 
-        if (IOHelper::folderExists($configPath)) {
-            $configFiles = IOHelper::getFolderContents($configPath, false,
-                '\.json$');
+        if (Io::folderExists($configPath)) {
+            $configFiles = Io::getFolderContents($configPath, false, '\.json$');
 
             if (is_array($configFiles)) {
                 foreach ($configFiles as $file) {
-                    $configOptions[IOHelper::getFilename($file)] = IOHelper::getFilename($file,
-                        false);
+                    $configOptions[Io::getFilename($file)] = Io::getFilename($file, false);
                 }
             }
         }
@@ -116,6 +114,7 @@ class RichText extends Field
      */
     public function prepareValue($value, $element)
     {
+        /** @var string|null $value */
         if ($value) {
             // Prevent everyone from having to use the |raw filter when outputting RTE content
             return new RichTextData($value);
@@ -129,17 +128,30 @@ class RichText extends Field
      */
     public function getInputHtml($value, $element)
     {
+        /** @var RichTextData|null $value */
         $configJs = $this->_getConfigJs();
         $this->_includeFieldResources($configJs);
 
         $id = Craft::$app->getView()->formatInputId($this->handle);
+        $localeId = ($element ? $element->locale : Craft::$app->language);
+
+        if (isset($this->model) && $this->model->translatable)
+        {
+            $locale = craft()->i18n->getLocaleData($localeId);
+            $orientation = '"'.$locale->getOrientation().'"';
+        }
+        else
+        {
+            $orientation = 'Craft.orientation';
+        }
 
         Craft::$app->getView()->registerJs('new Craft.RichTextInput('.
             '"'.Craft::$app->getView()->namespaceInputId($id).'", '.
-            JsonHelper::encode($this->_getSectionSources()).', '.
-            JsonHelper::encode($this->_getCategorySources()).', '.
-            JsonHelper::encode($this->_getAssetSources()).', '.
-            '"'.(!empty($element) ? $element->locale : Craft::$app->language).'", '.
+            Json::encode($this->_getSectionSources()).', '.
+            Json::encode($this->_getCategorySources()).', '.
+            Json::encode($this->_getAssetSources()).', '.
+            '"'.$localeId.'", ' .
+            $orientation.', ' .
             $configJs.', '.
             '"'.static::$_redactorLang.'"'.
             ');');
@@ -160,12 +172,9 @@ class RichText extends Field
         }
 
         // Swap any <!--pagebreak-->'s with <hr>'s
-        $value = str_replace('<!--pagebreak-->',
-            '<hr class="redactor_pagebreak" style="display:none" unselectable="on" contenteditable="false" />',
-            $value);
+        $value = str_replace('<!--pagebreak-->', '<hr class="redactor_pagebreak" style="display:none" unselectable="on" contenteditable="false" />', $value);
 
-        return '<textarea id="'.$id.'" name="'.$this->handle.'" style="display: none">'.htmlentities($value,
-            ENT_NOQUOTES, 'UTF-8').'</textarea>';
+        return '<textarea id="'.$id.'" name="'.$this->handle.'" style="display: none">'.htmlentities($value, ENT_NOQUOTES, 'UTF-8').'</textarea>';
     }
 
     /**
@@ -173,8 +182,11 @@ class RichText extends Field
      */
     public function validateValue($value, $element)
     {
-        $postContentSize = strlen($value);
-        $maxDbColumnSize = DbHelper::getTextualColumnStorageCapacity($this->columnType);
+        /** @var RichTextData|null $value */
+        $errors = parent::validateValue($value, $element);
+
+        $postContentSize = $value ? strlen($value->getRawContent()) : 0;
+        $maxDbColumnSize = Db::getTextualColumnStorageCapacity($this->columnType);
 
         // Give ourselves 10% wiggle room.
         $maxDbColumnSize = ceil($maxDbColumnSize * 0.9);
@@ -184,12 +196,11 @@ class RichText extends Field
             $maxDbColumnSize = ceil($maxDbColumnSize * 0.9);
 
             if ($postContentSize > $maxDbColumnSize) {
-                return Craft::t('app', '{attribute} is too long.',
-                    ['attribute' => Craft::t('site', $this->name)]);
+                $errors[] = Craft::t('app', '{attribute} is too long.');
             }
         }
 
-        return true;
+        return $errors;
     }
 
     /**
@@ -197,17 +208,23 @@ class RichText extends Field
      */
     public function getStaticHtml($value, $element)
     {
+        /** @var RichTextData|null $value */
         return '<div class="text">'.($value ? $value : '&nbsp;').'</div>';
     }
-
-    // Protected Methods
-    // =========================================================================
 
     /**
      * @inheritdoc
      */
-    protected function prepareValueBeforeSave($value, $element)
+    public function prepareValueForDb($value, $element)
     {
+        /** @var RichTextData|null $value */
+        if (!$value) {
+            return null;
+        }
+
+        // Get the raw value
+        $value = $value->getRawContent();
+
         // Temporary fix (hopefully) for a Redactor bug where some HTML will get submitted when the field is blank,
         // if any text was typed into the field, and then deleted
         if ($value == '<p><br></p>') {
@@ -216,8 +233,7 @@ class RichText extends Field
 
         if ($value) {
             // Swap any pagebreak <hr>'s with <!--pagebreak-->'s
-            $value = preg_replace('/<hr class="redactor_pagebreak".*?>/',
-                '<!--pagebreak-->', $value);
+            $value = preg_replace('/<hr class="redactor_pagebreak".*?>/', '<!--pagebreak-->', $value);
 
             if ($this->purifyHtml) {
                 $value = HtmlPurifier::process($value, [
@@ -232,22 +248,37 @@ class RichText extends Field
                 $value = preg_replace('/<\/(?:span|font)>/', '', $value);
 
                 // Remove inline styles
-                $value = preg_replace('/(<(?:h1|h2|h3|h4|h5|h6|p|div|blockquote|pre|strong|em|b|i|u|a)\b[^>]*)\s+style="[^"]*"/',
-                    '$1', $value);
+                $value = preg_replace('/(<(?:h1|h2|h3|h4|h5|h6|p|div|blockquote|pre|strong|em|b|i|u|a)\b[^>]*)\s+style="[^"]*"/', '$1', $value);
 
                 // Remove empty tags
-                $value = preg_replace('/<(h1|h2|h3|h4|h5|h6|p|div|blockquote|pre|strong|em|a|b|i|u)\s*><\/\1>/',
-                    '', $value);
+                $value = preg_replace('/<(h1|h2|h3|h4|h5|h6|p|div|blockquote|pre|strong|em|a|b|i|u)\s*><\/\1>/', '', $value);
             }
         }
 
         // Find any element URLs and swap them with ref tags
-        $value = preg_replace_callback('/(href=|src=)([\'"])[^\'"]+?#(\w+):(\d+)(:'.Handle::$handlePattern.')?\2/',
-            function ($matches) {
+        $value = preg_replace_callback('/(href=|src=)([\'"])[^\'"]+?#(\w+):(\d+)(:'.Handle::$handlePattern.')?\2/', function ($matches) {
                 return $matches[1].$matches[2].'{'.$matches[3].':'.$matches[4].(!empty($matches[5]) ? $matches[5] : ':url').'}'.$matches[2];
             }, $value);
 
         return $value;
+    }
+
+    // Protected Methods
+    // =========================================================================
+
+    /**
+     * @inheritdoc
+     */
+    protected function isValueEmpty($value, $element)
+    {
+        /** @var RichTextData|null $value */
+        if ($value) {
+            $rawContent = $value->getRawContent();
+
+            return empty($rawContent);
+        } else {
+            return true;
+        }
     }
 
     // Private Methods
@@ -324,7 +355,7 @@ class RichText extends Field
     {
         if ($this->configFile) {
             $configPath = Craft::$app->getPath()->getConfigPath().'/redactor/'.$this->configFile;
-            $js = IOHelper::getFileContents($configPath);
+            $js = Io::getFileContents($configPath);
         }
 
         if (empty($js)) {
@@ -410,7 +441,7 @@ class RichText extends Field
     {
         $path = 'lib/redactor/lang/'.$lang.'.js';
 
-        if (IOHelper::fileExists(Craft::$app->getPath()->getResourcesPath().'/'.$path)) {
+        if (Io::fileExists(Craft::$app->getPath()->getResourcesPath().'/'.$path)) {
             Craft::$app->getView()->registerJsResource($path);
             static::$_redactorLang = $lang;
 

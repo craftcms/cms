@@ -121,8 +121,7 @@ class Craft extends ServiceLocator
     {
         // Are they calling one of the components as if it's still a function?
         if ($params === [] && $this->has($name)) {
-            \Craft::$app->getDeprecator()->log('CraftVariable::__call()',
-                "craft.{$name}() is no longer a function. Use “craft.{$name}” instead (without the parentheses).");
+            \Craft::$app->getDeprecator()->log('CraftVariable::__call()', "craft.{$name}() is no longer a function. Use “craft.{$name}” instead (without the parentheses).");
 
             return $this->get($name);
         } else {
@@ -154,6 +153,16 @@ class Craft extends ServiceLocator
     public function getLocale()
     {
         return \Craft::$app->language;
+    }
+
+    /**
+     * Returns the system timezone.
+     *
+     * @return string
+     */
+    public function getTimeZone()
+    {
+        return \Craft::$app->getTimeZone();
     }
 
     /**

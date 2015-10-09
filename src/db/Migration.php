@@ -32,8 +32,7 @@ abstract class Migration extends \yii\db\Migration
     {
         echo "    > insert into $table ...";
         $time = microtime(true);
-        $this->db->createCommand()->insert($table, $columns,
-            $includeAuditColumns)->execute();
+        $this->db->createCommand()->insert($table, $columns, $includeAuditColumns)->execute();
         echo " done (time: ".sprintf('%.3f', microtime(true) - $time)."s)\n";
     }
 
@@ -49,8 +48,7 @@ abstract class Migration extends \yii\db\Migration
     {
         echo "    > batch insert into $table ...";
         $time = microtime(true);
-        $this->db->createCommand()->batchInsert($table, $columns, $rows,
-            $includeAuditColumns)->execute();
+        $this->db->createCommand()->batchInsert($table, $columns, $rows, $includeAuditColumns)->execute();
         echo " done (time: ".sprintf('%.3f', microtime(true) - $time)."s)\n";
     }
 
@@ -69,8 +67,7 @@ abstract class Migration extends \yii\db\Migration
     {
         echo "    > insert or update into $table ...";
         $time = microtime(true);
-        $this->db->createCommand()->insertOrUpdate($table, $keyColumns,
-            $updateColumns, $includeAuditColumns)->execute();
+        $this->db->createCommand()->insertOrUpdate($table, $keyColumns, $updateColumns, $includeAuditColumns)->execute();
         echo " done (time: ".sprintf('%.3f', microtime(true) - $time)."s)\n";
     }
 
@@ -88,8 +85,7 @@ abstract class Migration extends \yii\db\Migration
     {
         echo "    > update in $table ...";
         $time = microtime(true);
-        $this->db->createCommand()->update($table, $columns, $conditions,
-            $params, $includeAuditColumns)->execute();
+        $this->db->createCommand()->update($table, $columns, $conditions, $params, $includeAuditColumns)->execute();
         echo " done (time: ".sprintf('%.3f', microtime(true) - $time)."s)\n";
     }
 
@@ -105,8 +101,7 @@ abstract class Migration extends \yii\db\Migration
     {
         echo "    > replace \"$find\" with \"$replace\" in $table.$column ...";
         $time = microtime(true);
-        $this->db->createCommand()->replace($table, $column, $find,
-            $replace)->execute();
+        $this->db->createCommand()->replace($table, $column, $find, $replace)->execute();
         echo " done (time: ".sprintf('%.3f', microtime(true) - $time)."s)\n";
     }
 
@@ -123,8 +118,7 @@ abstract class Migration extends \yii\db\Migration
     {
         echo "    > create table $table ...";
         $time = microtime(true);
-        $this->db->createCommand()->createTable($table, $columns, $options,
-            $addIdColumn, $addAuditColumns)->execute();
+        $this->db->createCommand()->createTable($table, $columns, $options, $addIdColumn, $addAuditColumns)->execute();
         echo " done (time: ".sprintf('%.3f', microtime(true) - $time)."s)\n";
     }
 
@@ -154,8 +148,7 @@ abstract class Migration extends \yii\db\Migration
     {
         echo "    > add column $column $type to first position in table $table ...";
         $time = microtime(true);
-        $this->db->createCommand()->addColumnFirst($table, $column,
-            $type)->execute();
+        $this->db->createCommand()->addColumnFirst($table, $column, $type)->execute();
         echo " done (time: ".sprintf('%.3f', microtime(true) - $time)."s)\n";
     }
 
@@ -173,8 +166,7 @@ abstract class Migration extends \yii\db\Migration
     {
         echo "    > add column $column $type before $before in table $table ...";
         $time = microtime(true);
-        $this->db->createCommand()->addColumnBefore($table, $column, $type,
-            $before)->execute();
+        $this->db->createCommand()->addColumnBefore($table, $column, $type, $before)->execute();
         echo " done (time: ".sprintf('%.3f', microtime(true) - $time)."s)\n";
     }
 
@@ -192,8 +184,7 @@ abstract class Migration extends \yii\db\Migration
     {
         echo "    > add column $column $type after $after in $table ...";
         $time = microtime(true);
-        $this->db->createCommand()->addColumnAfter($table, $column, $type,
-            $after)->execute();
+        $this->db->createCommand()->addColumnAfter($table, $column, $type, $after)->execute();
         echo " done (time: ".sprintf('%.3f', microtime(true) - $time)."s)\n";
     }
 
@@ -213,8 +204,7 @@ abstract class Migration extends \yii\db\Migration
     {
         echo "    > alter column $column $type in table $table ...";
         $time = microtime(true);
-        $this->db->createCommand()->alterColumn($table, $column, $type,
-            $newName, $after)->execute();
+        $this->db->createCommand()->alterColumn($table, $column, $type, $newName, $after)->execute();
         echo " done (time: ".sprintf('%.3f', microtime(true) - $time)."s)\n";
     }
 }

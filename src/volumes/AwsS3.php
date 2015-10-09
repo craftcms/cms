@@ -1,15 +1,20 @@
 <?php
 namespace craft\app\volumes;
 
+use Aws\CloudFront\CloudFrontClient;
 use Aws\S3\Exception\AccessDeniedException;
 use Craft;
 use craft\app\base\Volume;
 use craft\app\cache\adapters\GuzzleCacheAdapter;
-use craft\app\io\flysystemadapters\AwsS3 as AwsS3Adapter;
+use craft\app\dates\DateTime;
+use craft\app\helpers\Assets;
+use craft\app\helpers\DateTimeHelper;
+use craft\app\helpers\StringHelper;
+use \League\Flysystem\AwsS3v2\AwsS3Adapter;
 use \Aws\S3\S3Client as S3Client;
 
 /**
- * The Amazon S3 source type class. Handles the implementation of the AWS S3 service as an asset source type in
+ * The Amazon S3 Volume. Handles the implementation of the AWS S3 service as a volume in
  * Craft.
  *
  * @author     Pixel & Tonic, Inc. <support@pixelandtonic.com>
@@ -17,10 +22,18 @@ use \Aws\S3\S3Client as S3Client;
  * @license    http://buildwithcraft.com/license Craft License Agreement
  * @see        http://buildwithcraft.com
  * @package    craft.app.volumes
- * @since      1.0
+ * @since      3.0
  */
 class AwsS3 extends Volume
 {
+
+    // Constants
+    // =========================================================================
+
+    const STORAGE_STANDARD           = "STANDARD";
+    const STORAGE_REDUCED_REDUNDANCY = "REDUCED_REDUNDANCY";
+    const STORAGE_STANDARD_IA        = "STANDARD_IA";
+
     // Static
     // =========================================================================
 
@@ -78,6 +91,25 @@ class AwsS3 extends Volume
     public $region = "";
 
     /**
+     * Cache expiration period.
+     *
+     * @var string
+     */
+    public $expires = "";
+
+    /**
+     * S3 storage class to use.
+     *
+     * @var string
+     */
+    public $storageClass = "";
+
+    /**
+     * CloudFront Distribution ID
+     */
+    public $cfDistributionId;
+
+    /**
      * Cache adapter
      *
      * @var GuzzleCacheAdapter
@@ -104,9 +136,11 @@ class AwsS3 extends Volume
     public function getSettingsHtml()
     {
         return Craft::$app->getView()->renderTemplate('_components/volumes/AwsS3/settings',
-            array(
-                'volume' => $this
-            ));
+            [
+                'volume' => $this,
+                'periods' => array_merge(['' => ''], Assets::getPeriodList()),
+                'storageClasses' => static::getStorageClasses(),
+            ]);
     }
 
     /**
@@ -121,12 +155,12 @@ class AwsS3 extends Volume
     public static function loadBucketList($keyId, $secret)
     {
         if (empty($keyId) || empty($secret)) {
-            $config = array();
+            $config = [];
         } else {
-            $config = array(
+            $config = [
                 'key' => $keyId,
                 'secret' => $secret
-            );
+            ];
         }
 
         $client = static::getClient($config);
@@ -134,24 +168,24 @@ class AwsS3 extends Volume
         $objects = $client->listBuckets();
 
         if (empty($objects['Buckets'])) {
-            return array();
+            return [];
         }
 
         $buckets = $objects['Buckets'];
-        $bucketList = array();
+        $bucketList = [];
 
         foreach ($buckets as $bucket) {
             try {
-                $location = $client->getBucketLocation(array('Bucket' => $bucket['Name']));
+                $location = $client->getBucketLocation(['Bucket' => $bucket['Name']]);
             } catch (AccessDeniedException $exception) {
                 continue;
             }
 
-            $bucketList[] = array(
+            $bucketList[] = [
                 'bucket' => $bucket['Name'],
                 'urlPrefix' => 'http://'.$bucket['Name'].'.s3.amazonaws.com/',
                 'region' => isset($location['Location']) ? $location['Location'] : ''
-            );
+            ];
         }
 
         return $bucketList;
@@ -173,6 +207,67 @@ class AwsS3 extends Volume
         return rtrim(rtrim($this->url, '/').'/'.$this->subfolder, '/').'/';
     }
 
+    /**
+     * @inheritdoc
+     */
+    public function createFileByStream($path, $stream, $config = [])
+    {
+        if (!empty($this->expires) && DateTimeHelper::isValidIntervalString($this->expires))
+            {
+                $expires = new DateTime();
+                $now = new DateTime();
+                $expires->modify('+'.$this->expires);
+                $diff = $expires->format('U') - $now->format('U');
+                $config['CacheControl'] = 'max-age='.$diff.', must-revalidate';
+        }
+
+        if (!empty($this->storageClass))
+        {
+            $config['StorageClass'] = $this->storageClass;
+        }
+
+        return parent::createFileByStream($path, $stream, $config);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function deleteFile($path)
+    {
+        if (parent::deleteFile($path) && !empty($this->cfDistributionId))
+        {
+            // If there's a CloudFront distribution ID set, invalidate the path.
+            $cfClient = $this->_getCloudFrontClient();
+
+            $cfClient->createInvalidation(
+                [
+                    'DistributionId' => $this->cfDistributionId,
+                    'Paths' =>
+                        [
+                            'Quantity' => 1,
+                            'Items' => ['/'.ltrim($path, '/')]
+                        ],
+                    'CallerReference' => 'Craft-'.StringHelper::randomString(24)
+                ]
+            );
+        }
+    }
+
+
+    /**
+     * Return a list of available storage classes.
+     *
+     * @return array
+     */
+    public static function getStorageClasses()
+    {
+        return[
+            static::STORAGE_STANDARD => 'Standard',
+            static::STORAGE_REDUCED_REDUNDANCY => 'Reduced Redundancy Storage',
+            static::STORAGE_STANDARD_IA => 'Infrequent Access Storage'
+        ];
+    }
+
     // Protected Methods
     // =========================================================================
 
@@ -182,19 +277,7 @@ class AwsS3 extends Volume
      */
     protected function createAdapter()
     {
-        $keyId = $this->keyId;
-        $secret = $this->secret;
-
-        if (empty($keyId) || empty($secret)) {
-            $config = array();
-        } else {
-            $config = array(
-                'key' => $keyId,
-                'secret' => $secret
-            );
-        }
-
-        $config['region'] = $this->region;
+        $config = $this->_getConfigArray();
 
         $client = static::getClient($config);
 
@@ -208,12 +291,15 @@ class AwsS3 extends Volume
      *
      * @return S3Client
      */
-    protected static function getClient($config = array())
+    protected static function getClient($config = [])
     {
         $config['credentials.cache'] = static::_getCredentialsCacheAdapter();
 
         return S3Client::factory($config);
     }
+
+    // Private Methods
+    // =========================================================================
 
     /**
      * Get the credentials cache adapter.
@@ -227,5 +313,40 @@ class AwsS3 extends Volume
         }
 
         return static::$_cacheAdapter;
+    }
+
+    /**
+     * Get a CloudFront client.
+     *
+     * @return CloudFrontClient
+     */
+    private function _getCloudFrontClient()
+    {
+        $config = $this->_getConfigArray();
+        return CloudFrontClient::factory($config);
+    }
+
+    /**
+     * Get the config array for AWS Clients.
+     *
+     * @return array
+     */
+    private function _getConfigArray()
+    {
+        $keyId = $this->keyId;
+        $secret = $this->secret;
+
+        if (empty($keyId) || empty($secret)) {
+            $config = [];
+        } else {
+            $config = [
+                'key' => $keyId,
+                'secret' => $secret
+            ];
+        }
+
+        $config['region'] = $this->region;
+
+        return $config;
     }
 }

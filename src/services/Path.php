@@ -9,8 +9,7 @@ namespace craft\app\services;
 
 use Craft;
 use craft\app\enums\ConfigCategory;
-use craft\app\helpers\IOHelper;
-use craft\app\helpers\StringHelper;
+use craft\app\helpers\Io;
 use yii\base\Component;
 
 /**
@@ -142,11 +141,10 @@ class Path extends Component
     public function getRuntimePath()
     {
         $path = $this->getStoragePath().'/runtime';
-        IOHelper::ensureFolderExists($path);
+        Io::ensureFolderExists($path);
 
-        if (!IOHelper::fileExists($path.'/.gitignore')) {
-            IOHelper::writeToFile($path.'/.gitignore', "*\n!.gitignore\n\n",
-                true);
+        if (!Io::fileExists($path.'/.gitignore')) {
+            Io::writeToFile($path.'/.gitignore', "*\n!.gitignore\n\n", true);
         }
 
         return $path;
@@ -160,7 +158,7 @@ class Path extends Component
     public function getDbBackupPath()
     {
         $path = $this->getStoragePath().'/backups';
-        IOHelper::ensureFolderExists($path);
+        Io::ensureFolderExists($path);
 
         return $path;
     }
@@ -173,7 +171,7 @@ class Path extends Component
     public function getTempPath()
     {
         $path = $this->getRuntimePath().'/temp';
-        IOHelper::ensureFolderExists($path);
+        Io::ensureFolderExists($path);
 
         return $path;
     }
@@ -186,7 +184,7 @@ class Path extends Component
     public function getTempUploadsPath()
     {
         $path = $this->getTempPath().'/uploads';
-        IOHelper::ensureFolderExists($path);
+        Io::ensureFolderExists($path);
 
         return $path;
     }
@@ -199,7 +197,7 @@ class Path extends Component
     public function getUserPhotosPath()
     {
         $path = $this->getStoragePath().'/userphotos';
-        IOHelper::ensureFolderExists($path);
+        Io::ensureFolderExists($path);
 
         return $path;
     }
@@ -212,7 +210,7 @@ class Path extends Component
     public function getAssetsPath()
     {
         $path = $this->getRuntimePath().'/assets';
-        IOHelper::ensureFolderExists($path);
+        Io::ensureFolderExists($path);
 
         return $path;
     }
@@ -225,7 +223,7 @@ class Path extends Component
     public function getAssetsTempSourcePath()
     {
         $path = $this->getAssetsPath().'/tempuploads';
-        IOHelper::ensureFolderExists($path);
+        Io::ensureFolderExists($path);
 
         return $path;
     }
@@ -251,7 +249,7 @@ class Path extends Component
     public function getAssetsImageSourcePath()
     {
         $path = $this->getAssetsPath().'/sources';
-        IOHelper::ensureFolderExists($path);
+        Io::ensureFolderExists($path);
 
         return $path;
     }
@@ -264,7 +262,7 @@ class Path extends Component
     public function getAssetsThumbsPath()
     {
         $path = $this->getAssetsPath().'/thumbs';
-        IOHelper::ensureFolderExists($path);
+        Io::ensureFolderExists($path);
 
         return $path;
     }
@@ -277,7 +275,7 @@ class Path extends Component
     public function getAssetsIconsPath()
     {
         $path = $this->getAssetsPath().'/icons';
-        IOHelper::ensureFolderExists($path);
+        Io::ensureFolderExists($path);
 
         return $path;
     }
@@ -290,7 +288,7 @@ class Path extends Component
     public function getLogPath()
     {
         $path = $this->getStoragePath().'/logs';
-        IOHelper::ensureFolderExists($path);
+        Io::ensureFolderExists($path);
 
         return $path;
     }
@@ -404,7 +402,7 @@ class Path extends Component
     public function getCompiledTemplatesPath()
     {
         $path = $this->getRuntimePath().'/compiled_templates';
-        IOHelper::ensureFolderExists($path);
+        Io::ensureFolderExists($path);
 
         return $path;
     }
@@ -417,7 +415,7 @@ class Path extends Component
     public function getSessionPath()
     {
         $path = $this->getRuntimePath().'/sessions';
-        IOHelper::ensureFolderExists($path);
+        Io::ensureFolderExists($path);
 
         return $path;
     }
@@ -432,14 +430,13 @@ class Path extends Component
      */
     public function getCachePath()
     {
-        $path = Craft::getAlias(Craft::$app->getConfig()->get('cachePath',
-            ConfigCategory::FileCache));
+        $path = Craft::getAlias(Craft::$app->getConfig()->get('cachePath', ConfigCategory::FileCache));
 
         if (!$path) {
             $path = $this->getRuntimePath().'/cache';
         }
 
-        IOHelper::ensureFolderExists($path);
+        Io::ensureFolderExists($path);
 
         return $path;
     }

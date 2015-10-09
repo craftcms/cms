@@ -2,7 +2,7 @@
 {% set element = element is defined ? element : null %}
 
 {% set value = (element ? element.getFieldValue(field.handle) : null) %}
-{% set errors = (element and not static ? element.getErrors(field.handle) : null) %}
+{% set errors = (element and not static ? element.getErrors('field__'~field.handle) : null) %}
 {% set instructions = (not static and field.instructions ? field.instructions|t('site') : null) %}
 
 {% if not static %}

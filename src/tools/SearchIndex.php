@@ -97,13 +97,11 @@ class SearchIndex extends Tool
                         foreach ($fieldLayout->getFields() as $field) {
                             // Set the keywords for the content's locale
                             $fieldValue = $element->getFieldValue($field->handle);
-                            $fieldSearchKeywords = $field->getSearchKeywords($fieldValue,
-                                $element);
+                            $fieldSearchKeywords = $field->getSearchKeywords($fieldValue, $element);
                             $keywords[$field->id] = $fieldSearchKeywords;
                         }
 
-                        Craft::$app->getSearch()->indexElementFields($element->id,
-                            $localeId, $keywords);
+                        Craft::$app->getSearch()->indexElementFields($element->id, $localeId, $keywords);
                     }
                 }
             }

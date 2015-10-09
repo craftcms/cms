@@ -32,7 +32,7 @@ class Structures extends Component
     /**
      * @event MoveElementEvent The event that is triggered before an element is moved.
      *
-     * You may set [[MoveElementEvent::performAction]] to `false` to prevent the element from getting moved.
+     * You may set [[MoveElementEvent::isValid]] to `false` to prevent the element from getting moved.
      */
     const EVENT_BEFORE_MOVE_ELEMENT = 'beforeMoveElement';
 
@@ -85,9 +85,7 @@ class Structures extends Component
             $structureRecord = StructureRecord::findOne($structure->id);
 
             if (!$structureRecord) {
-                throw new Exception(Craft::t('app',
-                    'No structure exists with the ID “{id}”.',
-                    ['id' => $structure->id]));
+                throw new Exception(Craft::t('app', 'No structure exists with the ID “{id}”.', ['id' => $structure->id]));
             }
         } else {
             $structureRecord = new StructureRecord();
@@ -165,11 +163,9 @@ class Structures extends Component
      */
     public function prepend($structureId, ElementInterface $element, ElementInterface $parentElement, $mode = 'auto')
     {
-        $parentElementRecord = $this->_getElementRecord($structureId,
-            $parentElement);
+        $parentElementRecord = $this->_getElementRecord($structureId, $parentElement);
 
-        return $this->_doIt($structureId, $element, $parentElementRecord,
-            'prependTo', $mode);
+        return $this->_doIt($structureId, $element, $parentElementRecord, 'prependTo', $mode);
     }
 
     /**
@@ -184,11 +180,9 @@ class Structures extends Component
      */
     public function append($structureId, ElementInterface $element, ElementInterface $parentElement, $mode = 'auto')
     {
-        $parentElementRecord = $this->_getElementRecord($structureId,
-            $parentElement);
+        $parentElementRecord = $this->_getElementRecord($structureId, $parentElement);
 
-        return $this->_doIt($structureId, $element, $parentElementRecord,
-            'appendTo', $mode);
+        return $this->_doIt($structureId, $element, $parentElementRecord, 'appendTo', $mode);
     }
 
     /**
@@ -204,8 +198,7 @@ class Structures extends Component
     {
         $parentElementRecord = $this->_getRootElementRecord($structureId);
 
-        return $this->_doIt($structureId, $element, $parentElementRecord,
-            'prependTo', $mode);
+        return $this->_doIt($structureId, $element, $parentElementRecord, 'prependTo', $mode);
     }
 
     /**
@@ -221,8 +214,7 @@ class Structures extends Component
     {
         $parentElementRecord = $this->_getRootElementRecord($structureId);
 
-        return $this->_doIt($structureId, $element, $parentElementRecord,
-            'appendTo', $mode);
+        return $this->_doIt($structureId, $element, $parentElementRecord, 'appendTo', $mode);
     }
 
     /**
@@ -237,11 +229,9 @@ class Structures extends Component
      */
     public function moveBefore($structureId, ElementInterface $element, ElementInterface $nextElement, $mode = 'auto')
     {
-        $nextElementRecord = $this->_getElementRecord($structureId,
-            $nextElement);
+        $nextElementRecord = $this->_getElementRecord($structureId, $nextElement);
 
-        return $this->_doIt($structureId, $element, $nextElementRecord,
-            'insertBefore', $mode);
+        return $this->_doIt($structureId, $element, $nextElementRecord, 'insertBefore', $mode);
     }
 
     /**
@@ -256,11 +246,9 @@ class Structures extends Component
      */
     public function moveAfter($structureId, ElementInterface $element, ElementInterface $prevElement, $mode = 'auto')
     {
-        $prevElementRecord = $this->_getElementRecord($structureId,
-            $prevElement);
+        $prevElementRecord = $this->_getElementRecord($structureId, $prevElement);
 
-        return $this->_doIt($structureId, $element, $prevElementRecord,
-            'insertAfter', $mode);
+        return $this->_doIt($structureId, $element, $prevElementRecord, 'insertAfter', $mode);
     }
 
     // Private Methods
@@ -346,7 +334,7 @@ class Structures extends Component
             $mode = 'insert';
         }
 
-        $transaction = Craft::$app->getDb()->getTransaction() === null ? Craft::$app->getDb()->beginTransaction() : null;
+        $transaction = Craft::$app->getDb()->beginTransaction();
         try {
             if ($mode == 'update') {
                 // Fire a 'beforeMoveElement' event
@@ -359,15 +347,13 @@ class Structures extends Component
             }
 
             // Was there was no onBeforeMoveElement event, or is the event giving us the go-ahead?
-            if (!isset($event) || $event->performAction) {
+            if (!isset($event) || $event->isValid) {
                 // Really do it
                 $success = $elementRecord->$action($targetElementRecord);
 
                 // If it didn't work, rollback the transaction in case something changed in onBeforeMoveElement
                 if (!$success) {
-                    if ($transaction !== null) {
-                        $transaction->rollback();
-                    }
+                    $transaction->rollback();
 
                     return false;
                 }
@@ -385,13 +371,9 @@ class Structures extends Component
 
             // Commit the transaction regardless of whether we moved the element, in case something changed
             // in onBeforeMoveElement
-            if ($transaction !== null) {
-                $transaction->commit();
-            }
+            $transaction->commit();
         } catch (\Exception $e) {
-            if ($transaction !== null) {
-                $transaction->rollback();
-            }
+            $transaction->rollback();
 
             throw $e;
         }

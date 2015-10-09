@@ -32,7 +32,7 @@ class Entries extends Component
     /**
      * @event EntryEvent The event that is triggered before an entry is saved.
      *
-     * You may set [[EntryEvent::performAction]] to `false` to prevent the entry from getting saved.
+     * You may set [[EntryEvent::isValid]] to `false` to prevent the entry from getting saved.
      */
     const EVENT_BEFORE_SAVE_ENTRY = 'beforeSaveEntry';
 
@@ -69,8 +69,7 @@ class Entries extends Component
      */
     public function getEntryById($entryId, $localeId = null)
     {
-        return Craft::$app->getElements()->getElementById($entryId,
-            Entry::className(), $localeId);
+        return Craft::$app->getElements()->getElementById($entryId, Entry::className(), $localeId);
     }
 
     /**
@@ -85,7 +84,7 @@ class Entries extends Component
      *
      * $entry->getContent()->title = "Hello World!";
      *
-     * $entry->setContentFromPost(array(
+     * $entry->setFieldValuesFromPost(array(
      *     'body' => "<p>I can’t believe I literally just called this “Hello World!”.</p>",
      * ));
      *
@@ -111,13 +110,10 @@ class Entries extends Component
 
         if ($hasNewParent) {
             if ($entry->newParentId) {
-                $parentEntry = $this->getEntryById($entry->newParentId,
-                    $entry->locale);
+                $parentEntry = $this->getEntryById($entry->newParentId, $entry->locale);
 
                 if (!$parentEntry) {
-                    throw new Exception(Craft::t('app',
-                        'No entry exists with the ID “{id}”.',
-                        ['id' => $entry->newParentId]));
+                    throw new Exception(Craft::t('app', 'No entry exists with the ID “{id}”.', ['id' => $entry->newParentId]));
                 }
             } else {
                 $parentEntry = null;
@@ -131,9 +127,7 @@ class Entries extends Component
             $entryRecord = EntryRecord::findOne($entry->id);
 
             if (!$entryRecord) {
-                throw new Exception(Craft::t('app',
-                    'No entry exists with the ID “{id}”.',
-                    ['id' => $entry->id]));
+                throw new Exception(Craft::t('app', 'No entry exists with the ID “{id}”.', ['id' => $entry->id]));
             }
         } else {
             $entryRecord = new EntryRecord();
@@ -143,18 +137,14 @@ class Entries extends Component
         $section = Craft::$app->getSections()->getSectionById($entry->sectionId);
 
         if (!$section) {
-            throw new Exception(Craft::t('app',
-                'No section exists with the ID “{id}”.',
-                ['id' => $entry->sectionId]));
+            throw new Exception(Craft::t('app', 'No section exists with the ID “{id}”.', ['id' => $entry->sectionId]));
         }
 
         // Verify that the section is available in this locale
         $sectionLocales = $section->getLocales();
 
         if (!isset($sectionLocales[$entry->locale])) {
-            throw new Exception(Craft::t('app',
-                'The section “{section}” is not enabled for the locale {locale}',
-                ['section' => $section->name, 'locale' => $entry->locale]));
+            throw new Exception(Craft::t('app', 'The section “{section}” is not enabled for the locale {locale}', ['section' => $section->name, 'locale' => $entry->locale]));
         }
 
         // Set the entry data
@@ -185,11 +175,10 @@ class Entries extends Component
         }
 
         if (!$entryType->hasTitleField) {
-            $entry->getContent()->title = Craft::$app->getView()->renderObjectTemplate($entryType->titleFormat,
-                $entry);
+            $entry->title = Craft::$app->getView()->renderObjectTemplate($entryType->titleFormat, $entry);
         }
 
-        $transaction = Craft::$app->getDb()->getTransaction() === null ? Craft::$app->getDb()->beginTransaction() : null;
+        $transaction = Craft::$app->getDb()->beginTransaction();
 
         try {
             // Fire a 'beforeSaveEntry' event
@@ -200,15 +189,13 @@ class Entries extends Component
             $this->trigger(static::EVENT_BEFORE_SAVE_ENTRY, $event);
 
             // Is the event giving us the go-ahead?
-            if ($event->performAction) {
+            if ($event->isValid) {
                 // Save the element
                 $success = Craft::$app->getElements()->saveElement($entry);
 
                 // If it didn't work, rollback the transaction in case something changed in onBeforeSaveEntry
                 if (!$success) {
-                    if ($transaction !== null) {
-                        $transaction->rollback();
-                    }
+                    $transaction->rollback();
 
                     // If "title" has an error, check if they've defined a custom title label.
                     if ($entry->getFirstError('title')) {
@@ -222,8 +209,7 @@ class Entries extends Component
                         $entry->clearErrors();
 
                         // Create the new "title" error message.
-                        $errors['title'] = str_replace('Title',
-                            $entryType->titleLabel, $originalTitleError);
+                        $errors['title'] = str_replace(Craft::t('app', 'Title'), $entryType->titleLabel, $originalTitleError);
 
                         // Add all of the errors back on the model.
                         $entry->addErrors($errors);
@@ -244,17 +230,14 @@ class Entries extends Component
                     // Has the parent changed?
                     if ($hasNewParent) {
                         if (!$entry->newParentId) {
-                            Craft::$app->getStructures()->appendToRoot($section->structureId,
-                                $entry);
+                            Craft::$app->getStructures()->appendToRoot($section->structureId, $entry);
                         } else {
-                            Craft::$app->getStructures()->append($section->structureId,
-                                $entry, $parentEntry);
+                            Craft::$app->getStructures()->append($section->structureId, $entry, $parentEntry);
                         }
                     }
 
                     // Update the entry's descendants, who may be using this entry's URI in their own URIs
-                    Craft::$app->getElements()->updateDescendantSlugsAndUris($entry,
-                        true, true);
+                    Craft::$app->getElements()->updateDescendantSlugsAndUris($entry, true, true);
                 }
 
                 // Save a new version
@@ -267,13 +250,9 @@ class Entries extends Component
 
             // Commit the transaction regardless of whether we saved the entry, in case something changed
             // in onBeforeSaveEntry
-            if ($transaction !== null) {
-                $transaction->commit();
-            }
+            $transaction->commit();
         } catch (\Exception $e) {
-            if ($transaction !== null) {
-                $transaction->rollback();
-            }
+            $transaction->rollback();
 
             throw $e;
         }
@@ -302,7 +281,7 @@ class Entries extends Component
             return false;
         }
 
-        $transaction = Craft::$app->getDb()->getTransaction() === null ? Craft::$app->getDb()->beginTransaction() : null;
+        $transaction = Craft::$app->getDb()->beginTransaction();
 
         try {
             if (!is_array($entries)) {
@@ -319,7 +298,7 @@ class Entries extends Component
 
                 $this->trigger(static::EVENT_BEFORE_DELETE_ENTRY, $event);
 
-                if ($event->performAction) {
+                if ($event->isValid) {
                     $section = $entry->getSection();
 
                     if ($section->type == Section::TYPE_STRUCTURE) {
@@ -327,8 +306,7 @@ class Entries extends Component
                         $children = $entry->getChildren()->status(null)->localeEnabled(false)->limit(null)->find();
 
                         foreach ($children as $child) {
-                            Craft::$app->getStructures()->moveBefore($section->structureId,
-                                $child, $entry, 'update', true);
+                            Craft::$app->getStructures()->moveBefore($section->structureId, $child, $entry, 'update', true);
                         }
                     }
 
@@ -343,13 +321,9 @@ class Entries extends Component
                 $success = false;
             }
 
-            if ($transaction !== null) {
-                $transaction->commit();
-            }
+            $transaction->commit();
         } catch (\Exception $e) {
-            if ($transaction !== null) {
-                $transaction->rollback();
-            }
+            $transaction->rollback();
 
             throw $e;
         }

@@ -3,13 +3,13 @@ namespace craft\app\volumes;
 
 use Craft;
 use craft\app\base\Volume;
-use craft\app\io\flysystemadapters\Rackspace as RackspaceAdapter;
+use League\Flysystem\Rackspace\RackspaceAdapter;
 use \OpenCloud\OpenStack;
 use \OpenCloud\Rackspace as RackspaceClient;
 
 
 /**
- * The Rackspace Cloud source type class. Handles the implementation of the Rackspace Cloud Storage service as an asset source type in
+ * The Rackspace Cloud volume class. Handles the implementation of the Rackspace Cloud Storage service as a volume type in
  * Craft.
  *
  * @author     Pixel & Tonic, Inc. <support@pixelandtonic.com>
@@ -17,7 +17,7 @@ use \OpenCloud\Rackspace as RackspaceClient;
  * @license    http://buildwithcraft.com/license Craft License Agreement
  * @see        http://buildwithcraft.com
  * @package    craft.app.volumes
- * @since      1.0
+ * @since      3.0
  */
 class Rackspace extends Volume
 {
@@ -111,9 +111,9 @@ class Rackspace extends Volume
     public function getSettingsHtml()
     {
         return Craft::$app->getView()->renderTemplate('_components/volumes/Rackspace/settings',
-            array(
+            [
                 'volume' => $this
-            ));
+            ]);
     }
 
     /**
@@ -129,8 +129,7 @@ class Rackspace extends Volume
     public static function loadContainerList($username, $apiKey, $region)
     {
         if (empty($username) || empty($apiKey) || empty($region)) {
-            throw new \InvalidArgumentException(Craft::t('app',
-                'You must specify a username, the API key and a region to get the container list.'));
+            throw new \InvalidArgumentException(Craft::t('app', 'You must specify a username, the API key and a region to get the container list.'));
         }
 
         $client = static::getClient($username, $apiKey);
@@ -139,13 +138,13 @@ class Rackspace extends Volume
 
         $containerList = $service->getCdnService()->listContainers();
 
-        $returnData = array();
+        $returnData = [];
 
         while ($container = $containerList->next()) {
-            $returnData[] = (object)array(
+            $returnData[] = (object)[
                 'container' => $container->name,
                 'urlPrefix' => rtrim($container->getCdnUri(), '/').'/'
-            );
+            ];
         }
 
         return $returnData;
@@ -194,10 +193,9 @@ class Rackspace extends Volume
      */
     protected static function getClient($username, $apiKey)
     {
-        $config = array('username' => $username, 'apiKey' => $apiKey);
+        $config = ['username' => $username, 'apiKey' => $apiKey];
 
-        $client = new RackspaceClient(RackspaceClient::US_IDENTITY_ENDPOINT,
-            $config);
+        $client = new RackspaceClient(RackspaceClient::US_IDENTITY_ENDPOINT, $config);
 
         // Check if we have a cached token
         $tokenKey = static::CACHE_KEY_PREFIX.md5($username.$apiKey);

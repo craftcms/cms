@@ -11,17 +11,18 @@ use Craft;
 use craft\app\db\Query;
 use craft\app\dates\DateTime;
 use craft\app\elements\Asset;
-use craft\app\errors\VolumeFileExistsException;
-use craft\app\helpers\AssetsHelper;
-use craft\app\helpers\DateTimeHelper;
-use craft\app\helpers\DbHelper;
-use craft\app\helpers\ImageHelper;
-use craft\app\helpers\IOHelper;
+use craft\app\errors\VolumeObjectExistsException;
+use craft\app\helpers\Assets as AssetsHelper;
+use craft\app\helpers\Db;
+use craft\app\helpers\Image;
+use craft\app\helpers\Io;
+use craft\app\helpers\StringHelper;
+use craft\app\image\Raster;
 use craft\app\models\AssetTransformIndex;
 use craft\app\models\AssetTransform as AssetTransformModel;
 use craft\app\records\AssetTransform as AssetTransformRecord;
 use craft\app\errors\AssetTransformException;
-use craft\app\errors\VolumeFileNotFoundException;
+use craft\app\errors\VolumeObjectNotFoundException;
 use craft\app\errors\VolumeException;
 use craft\app\errors\AssetLogicException;
 use craft\app\errors\ModelValidationException;
@@ -84,13 +85,15 @@ class AssetTransforms extends Component
 
         if ($indexBy == 'handle') {
             $transforms = $this->_transformsByHandle;
-        } else if (!$indexBy) {
-            $transforms = array_values($this->_transformsByHandle);
         } else {
-            $transforms = [];
+            if (!$indexBy) {
+                $transforms = array_values($this->_transformsByHandle);
+            } else {
+                $transforms = [];
 
-            foreach ($this->_transformsByHandle as $transform) {
-                $transforms[$transform->$indexBy] = $transform;
+                foreach ($this->_transformsByHandle as $transform) {
+                    $transforms[$transform->$indexBy] = $transform;
+                }
             }
         }
 
@@ -147,7 +150,7 @@ class AssetTransforms extends Component
             if (!$transformRecord) {
                 throw new AssetTransformException(Craft::t('app',
                     'Can’t find the transform with ID “{id}”',
-                    array('id' => $transform->id)));
+                    ['id' => $transform->id]));
             }
         } else {
             $transformRecord = new AssetTransformRecord();
@@ -211,7 +214,7 @@ class AssetTransforms extends Component
     /**
      * Get a transform index row. If it doesn't exist - create one.
      *
-     * @param Asset  $file
+     * @param Asset $file
      * @param string $transform
      *
      * @return AssetTransformIndex
@@ -244,13 +247,11 @@ class AssetTransforms extends Component
 
         if ($entry) {
             // If the file has been indexed after any changes impacting the transform, return the record
-            $indexedAfterFileModified = $entry['dateIndexed'] >= $file->dateModified->format(DateTime::MYSQL_DATETIME,
-                    DateTime::UTC);
+            $indexedAfterFileModified = $entry['dateIndexed'] >= Db::prepareDateForDb($file->dateModified);
             $indexedAfterTransformParameterChange =
                 (!$transform->isNamedTransform()
                     || ($transform->isNamedTransform()
-                        && $entry['dateIndexed'] >= $transform->dimensionChangeTime->format(DateTime::MYSQL_DATETIME,
-                            DateTime::UTC)));
+                        && $entry['dateIndexed'] >= Db::prepareDateForDb($transform->dimensionChangeTime)));
 
             if ($indexedAfterFileModified && $indexedAfterTransformParameterChange) {
                 return AssetTransformIndex::create($entry);
@@ -268,8 +269,7 @@ class AssetTransforms extends Component
             'fileId' => $file->id,
             'format' => $transform->format,
             'volumeId' => $file->volumeId,
-            'dateIndexed' => $time->format(DateTime::MYSQL_DATETIME,
-                DateTime::UTC),
+            'dateIndexed' => Db::prepareDateForDb($time),
             'location' => $transformLocation,
             'fileExists' => 0,
             'inProgress' => 0
@@ -322,12 +322,16 @@ class AssetTransforms extends Component
             $this->storeTransformIndexData($index);
 
             // Generate the transform
-            $this->generateTransform($index);
-
-            // Update the index
-            $index->inProgress = 0;
-            $index->fileExists = 1;
-            $this->storeTransformIndexData($index);
+            if ($this->_generateTransform($index)) {
+                // Update the index
+                $index->inProgress = 0;
+                $index->fileExists = 1;
+                $this->storeTransformIndexData($index);
+            } else {
+                throw new AssetTransformException(Craft::t('app',
+                    'Failed to generate transform with id of {id}.',
+                    ['id' => $index->id]));
+            }
         }
 
         return $this->getUrlForTransformByIndexId($index->id);
@@ -338,9 +342,9 @@ class AssetTransforms extends Component
      *
      * @param AssetTransformIndex $index
      *
-     * @return void
+     * @return bool true if transform exists for the index
      */
-    public function generateTransform(AssetTransformIndex $index)
+    private function _generateTransform(AssetTransformIndex $index)
     {
         // For _widthxheight_mode
         if (preg_match('/_(?P<width>[0-9]+|AUTO)x(?P<height>[0-9]+|AUTO)_(?P<mode>[a-z]+)_(?P<position>[a-z\-]+)(_(?P<quality>[0-9]+))?/i',
@@ -363,7 +367,7 @@ class AssetTransforms extends Component
         $volume = $file->getVolume();
         $index->detectedFormat = !empty($index->format) ? $index->format : $this->detectAutoTransformFormat($file);
 
-        $transformFilename = IOHelper::getFilename($file->filename,
+        $transformFilename = Io::getFilename($file->filename,
                 false).'.'.$index->detectedFormat;
         $index->filename = $transformFilename;
 
@@ -414,13 +418,16 @@ class AssetTransforms extends Component
 
             // Sanity check
             if ($volume->fileExists($to)) {
-                return;
+                return true;
             }
 
             $volume->copyFile($from, $to);
         } else {
             $this->_createTransformForFile($file, $index);
         }
+
+        return $volume->fileExists($file->getFolder()->path.$this->getTransformSubpath($file,
+                $index));
     }
 
     /**
@@ -435,22 +442,28 @@ class AssetTransforms extends Component
     {
         if (!$transform) {
             return null;
-        } else if (is_string($transform)) {
-            $transformModel = $this->getTransformByHandle($transform);
-
-            if ($transformModel) {
-                return $transformModel;
-            }
-
-            throw new AssetTransformException(Craft::t('app',
-                'The transform “{handle}” cannot be found!',
-                array('handle' => $transform)));
-        } else if ($transform instanceof AssetTransformModel) {
-            return $transform;
-        } else if (is_object($transform) || is_array($transform)) {
-            return AssetTransformModel::create($transform);
         } else {
-            return null;
+            if (is_string($transform)) {
+                $transformModel = $this->getTransformByHandle($transform);
+
+                if ($transformModel) {
+                    return $transformModel;
+                }
+
+                throw new AssetTransformException(Craft::t('app',
+                    'The transform “{handle}” cannot be found!',
+                    ['handle' => $transform]));
+            } else {
+                if ($transform instanceof AssetTransformModel) {
+                    return $transform;
+                } else {
+                    if (is_object($transform) || is_array($transform)) {
+                        return AssetTransformModel::create($transform);
+                    } else {
+                        return null;
+                    }
+                }
+            }
         }
     }
 
@@ -463,7 +476,7 @@ class AssetTransforms extends Component
      */
     public function storeTransformIndexData(AssetTransformIndex $index)
     {
-        $values = DbHelper::prepareValuesForDb(
+        $values = Db::prepareValuesForDb(
             $index->toArray([
                 'fileId',
                 'filename',
@@ -529,12 +542,14 @@ class AssetTransforms extends Component
      * Get a transform index model by a row id.
      *
      * @param integer $fileId
-     * @param string  $transformHandle
+     * @param string $transformHandle
      *
      * @return AssetTransformIndex|null
      */
-    public function getTransformIndexModelByFileIdAndHandle($fileId, $transformHandle)
-    {
+    public function getTransformIndexModelByFileIdAndHandle(
+        $fileId,
+        $transformHandle
+    ) {
         // Check if an entry exists already
         $entry = (new Query())
             ->select('ti.*')
@@ -571,8 +586,9 @@ class AssetTransforms extends Component
      *
      * @return string
      */
-    public function getUrlForTransformByTransformIndex(AssetTransformIndex $transformIndexModel)
-    {
+    public function getUrlForTransformByTransformIndex(
+        AssetTransformIndex $transformIndexModel
+    ) {
         $file = Craft::$app->getAssets()->getFileById($transformIndexModel->fileId);
         $volume = $file->getVolume();
         $baseUrl = $volume->getRootUrl();
@@ -619,16 +635,16 @@ class AssetTransforms extends Component
     public function getThumbServerPath(Asset $fileModel, $size)
     {
         $thumbFolder = Craft::$app->getPath()->getAssetsThumbsPath().'/'.$size.'/';
-        IOHelper::ensureFolderExists($thumbFolder);
+        Io::ensureFolderExists($thumbFolder);
 
         $extension = $this->_getThumbExtension($fileModel);
 
         $thumbPath = $thumbFolder.$fileModel->id.'.'.$extension;
 
-        if (!IOHelper::fileExists($thumbPath)) {
+        if (!Io::fileExists($thumbPath)) {
             $imageSource = $this->getLocalImageSource($fileModel);
 
-            Craft::$app->getImages()->loadImage($imageSource, $size, $size)
+            Craft::$app->getImages()->loadImage($imageSource, false, $size)
                 ->scaleAndCrop($size, $size)
                 ->saveAs($thumbPath);
 
@@ -655,30 +671,30 @@ class AssetTransforms extends Component
         $imageSourcePath = $file->getImageTransformSourcePath();
 
         if (!$volume->isLocal()) {
-            if (!IOHelper::fileExists($imageSourcePath) || IOHelper::getFileSize($imageSourcePath) == 0) {
+            if (!Io::fileExists($imageSourcePath) || Io::getFileSize($imageSourcePath) == 0) {
                 if ($volume->isLocal()) {
-                    throw new VolumeFileNotFoundException(Craft::t('Image “{file}” cannot be found.',
-                        array('file' => $file->filename)));
+                    throw new VolumeObjectNotFoundException(Craft::t('Image “{file}” cannot be found.',
+                        ['file' => $file->filename]));
                 }
 
                 // Delete it just in case it's a 0-byter
-                IOHelper::deleteFile($imageSourcePath, true);
+                Io::deleteFile($imageSourcePath, true);
 
-                $localCopy = IOHelper::getTempFilePath($file->getExtension());
+                $localCopy = Io::getTempFilePath($file->getExtension());
 
                 $volume->saveFileLocally($file->getUri(), $localCopy);
 
-                if (!IOHelper::fileExists($localCopy) || IOHelper::getFileSize($localCopy) == 0) {
-                    IOHelper::deleteFile($localCopy, true);
+                if (!Io::fileExists($localCopy) || Io::getFileSize($localCopy) == 0) {
+                    Io::deleteFile($localCopy, true);
                     throw new VolumeException(Craft::t('Tried to download the source file for image “{file}”, but it was 0 bytes long.',
-                        array('file' => $file->filename)));
+                        ['file' => $file->filename]));
                 }
 
                 $this->storeLocalSource($localCopy, $imageSourcePath);
 
                 // Delete the leftover data.
                 $this->queueSourceForDeletingIfNecessary($imageSourcePath);
-                IOHelper::deleteFile($localCopy, true);
+                Io::deleteFile($localCopy, true);
             }
         }
 
@@ -726,16 +742,30 @@ class AssetTransforms extends Component
      */
     public function storeLocalSource($source, $destination = '')
     {
+        if (!$destination) {
+            $source = $destination;
+        }
+
         $maxCachedImageSize = $this->getCachedCloudImageSize();
 
         // Resize if constrained by maxCachedImageSizes setting
-        if ($maxCachedImageSize > 0) {
-            Craft::$app->getImages()->loadImage($source, $maxCachedImageSize,
-                $maxCachedImageSize)->scaleToFit($maxCachedImageSize,
-                $maxCachedImageSize)->setQuality(100)->saveAs($destination ?: $source);
+        if ($maxCachedImageSize > 0 && Image::isImageManipulatable(IO::getExtension($source))) {
+
+            $image = Craft::$app->getImages()->loadImage($source);
+
+            if ($image instanceof Raster) {
+                $image->setQuality(100);
+            }
+
+            $image->scaleToFit($maxCachedImageSize,
+                $maxCachedImageSize)->saveAs($destination);
+
+            if ($source != $destination) {
+                Io::deleteFile($source);
+            }
         } else {
             if ($source != $destination) {
-                IOHelper::copyFile($source, $destination);
+                Io::move($source, $destination);
             }
         }
     }
@@ -751,41 +781,43 @@ class AssetTransforms extends Component
     public function detectAutoTransformFormat(Asset $file)
     {
         if (in_array(mb_strtolower($file->getExtension()),
-            ImageHelper::getWebSafeFormats())) {
+            Image::getWebSafeFormats())) {
             return $file->getExtension();
-        } else if ($file->kind == 'image') {
+        } else {
+            if ($file->kind == 'image') {
 
-            // The only reasonable way to check for transparency is with Imagick. If Imagick is not present, then
-            // we fallback to jpg
-            if (Craft::$app->getImages()->isGd() || !method_exists('Imagick',
-                    'getImageAlphaChannel')
-            ) {
-                return 'jpg';
+                // The only reasonable way to check for transparency is with Imagick. If Imagick is not present, then
+                // we fallback to jpg
+                if (Craft::$app->getImages()->isGd() || !method_exists('Imagick',
+                        'getImageAlphaChannel')
+                ) {
+                    return 'jpg';
+                }
+
+                $volume = $file->getVolume();
+
+                $path = Io::getTempFilePath($file->getExtension());
+                $localCopy = $volume->saveFileLocally($file->getUri(), $path);
+
+                $image = Craft::$app->getImages()->loadImage($localCopy);
+
+                if ($image->isTransparent()) {
+                    $format = 'png';
+                } else {
+                    $format = 'jpg';
+                }
+
+                if (!$volume->isLocal()) {
+                    // Store for potential later use and queue for deletion if needed.
+                    $file->setTransformSource($localCopy);
+                    $this->queueSourceForDeletingIfNecessary($localCopy);
+                } else {
+                    // For local, though, we just delete the temp file.
+                    Io::deleteFile($localCopy);
+                }
+
+                return $format;
             }
-
-            $volume = $file->getVolume();
-
-            $path = IOHelper::getTempFilePath($file->getExtension());
-            $localCopy = $volume->saveFileLocally($file->getUri(), $path);
-
-            $image = Craft::$app->getImages()->loadImage($localCopy);
-
-            if ($image->isTransparent()) {
-                $format = 'png';
-            } else {
-                $format = 'jpg';
-            }
-
-            if (!$volume->isLocal()) {
-                // Store for potential later use and queue for deletion if needed.
-                $file->setTransformSource($localCopy);
-                $this->queueSourceForDeletingIfNecessary($localCopy);
-            } else {
-                // For local, though, we just delete the temp file.
-                IOHelper::deleteFile($localCopy);
-            }
-
-            return $format;
         }
 
         throw new AssetLogicException(Craft::t('app',
@@ -795,13 +827,15 @@ class AssetTransforms extends Component
     /**
      * Return a subfolder used by the Transform Index for the File.
      *
-     * @param Asset               $file
+     * @param Asset $file
      * @param AssetTransformIndex $index
      *
      * @return mixed|string
      */
-    public function getTransformSubfolder(Asset $file, AssetTransformIndex $index)
-    {
+    public function getTransformSubfolder(
+        Asset $file,
+        AssetTransformIndex $index
+    ) {
         $path = $index->location;
 
         if (!empty($index->filename) && $index->filename != $file->filename) {
@@ -814,13 +848,15 @@ class AssetTransforms extends Component
     /**
      * Return the filename used by the Transform Index for the File.
      *
-     * @param Asset               $file
+     * @param Asset $file
      * @param AssetTransformIndex $index
      *
      * @return mixed
      */
-    public function getTransformFilename(Asset $file, AssetTransformIndex $index)
-    {
+    public function getTransformFilename(
+        Asset $file,
+        AssetTransformIndex $index
+    ) {
         if (empty($index->filename)) {
             return $file->filename;
         } else {
@@ -831,7 +867,7 @@ class AssetTransforms extends Component
     /**
      * Get a transform subpath used by the Transform Index for the File.
      *
-     * @param Asset               $file
+     * @param Asset $file
      * @param AssetTransformIndex $index
      *
      * @return string
@@ -855,7 +891,7 @@ class AssetTransforms extends Component
         $this->deleteCreatedTransformsForFile($file);
         $this->deleteTransformIndexDataByFileId($file->id);
 
-        IOHelper::deleteFile(Craft::$app->getPath()->getAssetsImageSourcePath().'/'.$file->id.'.'.IOHelper::getExtension($file->filename),
+        Io::deleteFile(Craft::$app->getPath()->getAssetsImageSourcePath().'/'.$file->id.'.'.Io::getExtension($file->filename),
             true);
     }
 
@@ -868,11 +904,11 @@ class AssetTransforms extends Component
      */
     public function deleteThumbnailsForFile(Asset $file)
     {
-        $thumbFolders = IOHelper::getFolderContents(Craft::$app->getPath()->getAssetsThumbsPath());
+        $thumbFolders = Io::getFolderContents(Craft::$app->getPath()->getAssetsThumbsPath());
 
         foreach ($thumbFolders as $folder) {
             if (is_dir($folder)) {
-                IOHelper::deleteFile($folder.'/'.$file->id.'.'.$this->_getThumbExtension($file));
+                Io::deleteFile($folder.'/'.$file->id.'.'.$this->_getThumbExtension($file));
             }
         }
     }
@@ -966,8 +1002,8 @@ class AssetTransforms extends Component
      *
      * @return string
      */
-    private function _getNamedTransformFolderName(AssetTransformModel $transform)
-    {
+    private function _getNamedTransformFolderName(AssetTransformModel $transform
+    ) {
         return '_'.$transform->handle;
     }
 
@@ -978,8 +1014,9 @@ class AssetTransforms extends Component
      *
      * @return string
      */
-    private function _getUnnamedTransformFolderName(AssetTransformModel $transform)
-    {
+    private function _getUnnamedTransformFolderName(
+        AssetTransformModel $transform
+    ) {
         return '_'.($transform->width ? $transform->width : 'AUTO').'x'.($transform->height ? $transform->height : 'AUTO').
         '_'.($transform->mode).
         '_'.($transform->position).
@@ -989,15 +1026,17 @@ class AssetTransforms extends Component
     /**
      * Create a transform for the file by the transform index.
      *
-     * @param Asset               $file
+     * @param Asset $file
      * @param AssetTransformIndex $index
      *
      * @throws AssetTransformException if the AssetTransformIndex cannot be determined to have a transform
      * @return void
      */
-    private function _createTransformForFile(Asset $file, AssetTransformIndex $index)
-    {
-        if (!ImageHelper::isImageManipulatable(IOHelper::getExtension($file->filename))) {
+    private function _createTransformForFile(
+        Asset $file,
+        AssetTransformIndex $index
+    ) {
+        if (!Image::isImageManipulatable(Io::getExtension($file->filename))) {
             return;
         }
 
@@ -1029,9 +1068,16 @@ class AssetTransforms extends Component
         $imageSource = $file->getTransformSource();
         $quality = $transform->quality ? $transform->quality : Craft::$app->getConfig()->get('defaultImageQuality');
 
-        $image = Craft::$app->getImages()->loadImage($imageSource,
-            $transform->width, $transform->height);
-        $image->setQuality($quality);
+        if (StringHelper::toLowerCase($file->getExtension()) == 'svg' && $index->detectedFormat != 'svg') {
+            $image = Craft::$app->getImages()->loadImage($imageSource, true,
+                max($transform->width, $transform->height));
+        } else {
+            $image = Craft::$app->getImages()->loadImage($imageSource);
+        }
+
+        if ($image instanceof Raster) {
+            $image->setQuality($quality);
+        }
 
         switch ($transform->mode) {
             case 'fit': {
@@ -1051,7 +1097,7 @@ class AssetTransforms extends Component
             }
         }
 
-        $createdTransform = IOHelper::getTempFilePath($index->detectedFormat);
+        $createdTransform = Io::getTempFilePath($index->detectedFormat);
         $image->saveAs($createdTransform);
 
         clearstatcache(true, $createdTransform);
@@ -1060,10 +1106,11 @@ class AssetTransforms extends Component
 
         try {
             $volume->createFileByStream($transformPath, $stream);
-        } catch (VolumeFileExistsException $e) {
+        } catch (VolumeObjectExistsException $e) {
+            // We're fine with that.
         }
 
-        IOHelper::deleteFile($createdTransform);
+        Io::deleteFile($createdTransform);
 
         if (!$file->getVolume()->isLocal()) {
             $this->queueSourceForDeletingIfNecessary($imageSource);
@@ -1083,15 +1130,10 @@ class AssetTransforms extends Component
     {
         // For non-web-safe formats we go with jpg.
         if (!in_array(
-            mb_strtolower(IOHelper::getExtension($file->filename)),
-            ImageHelper::getWebSafeFormats()
+            mb_strtolower(Io::getExtension($file->filename)),
+            Image::getWebSafeFormats()
         )
         ) {
-            if ($file->getExtension() == 'svg' && Craft::$app->getImages()->isImagick()
-            ) {
-                return 'png';
-            }
-
             return 'jpg';
         } else {
             return $file->getExtension();

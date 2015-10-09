@@ -12,15 +12,13 @@ use craft\app\base\Task;
 use craft\app\base\TaskInterface;
 use craft\app\db\Query;
 use craft\app\errors\InvalidComponentException;
-use craft\app\helpers\ComponentHelper;
-use craft\app\helpers\HeaderHelper;
-use craft\app\helpers\JsonHelper;
+use craft\app\helpers\Component as ComponentHelper;
+use craft\app\helpers\Header;
+use craft\app\helpers\Json;
+use craft\app\helpers\Url;
 use craft\app\records\Task as TaskRecord;
 use craft\app\tasks\InvalidTask;
-use craft\app\web\View;
-use yii\base\Application;
 use yii\base\Component;
-use yii\base\Event;
 use yii\web\Response;
 
 /**
@@ -106,8 +104,7 @@ class Tasks extends Component
         }
 
         try {
-            return ComponentHelper::createComponent($config,
-                self::TASK_INTERFACE);
+            return ComponentHelper::createComponent($config, self::TASK_INTERFACE);
         } catch (InvalidComponentException $e) {
             $config['errorMessage'] = $e->getMessage();
 
@@ -127,7 +124,7 @@ class Tasks extends Component
     public function saveTask(TaskInterface $task, $validate = true)
     {
         if (!$validate || $task->validate()) {
-            $transaction = Craft::$app->getDb()->getTransaction() === null ? Craft::$app->getDb()->beginTransaction() : null;
+            $transaction = Craft::$app->getDb()->beginTransaction();
             try {
                 if ($task->isNew()) {
                     $taskRecord = new TaskRecord();
@@ -160,15 +157,11 @@ class Tasks extends Component
                     }
                 }
 
-                if ($transaction !== null) {
-                    $transaction->commit();
-                }
+                $transaction->commit();
 
                 return true;
             } catch (\Exception $e) {
-                if ($transaction !== null) {
-                    $transaction->rollback();
-                }
+                $transaction->rollback();
 
                 throw $e;
             }
@@ -296,8 +289,7 @@ class Tasks extends Component
         }
 
         if ($error === null) {
-            Craft::info('Finished task '.$task->id.' ('.$task->type.').',
-                __METHOD__);
+            Craft::info('Finished task '.$task->id.' ('.$task->type.').', __METHOD__);
 
             // We're done with this task, nuke it.
             $taskRecord->deleteWithChildren();
@@ -617,11 +609,11 @@ class Tasks extends Component
         // (CP requests don't need to be told to run pending tasks)
         else if (
             Craft::$app->getRequest()->getIsSiteRequest() &&
-            in_array(HeaderHelper::getMimeType(),
+            in_array(Header::getMimeType(),
                 ['text/html', 'application/xhtml+xml'])
         ) {
             // Just output JS that tells the browser to fire an Ajax request to kick off task running
-            $url = JsonHelper::encode(UrlHelper::getActionUrl('tasks/run-pending-tasks'));
+            $url = Json::encode(Url::getActionUrl('tasks/run-pending-tasks'));
 
             // Ajax request code adapted from http://www.quirksmode.org/js/xmlhttp.html - thanks ppk!
             $js = <<<EOT

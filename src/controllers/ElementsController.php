@@ -12,7 +12,7 @@ use craft\app\base\ElementInterface;
 use craft\app\elements\Category;
 use craft\app\errors\HttpException;
 use craft\app\helpers\ArrayHelper;
-use craft\app\helpers\ElementHelper;
+use craft\app\helpers\Element;
 use craft\app\helpers\StringHelper;
 
 /**
@@ -80,15 +80,13 @@ class ElementsController extends BaseElementsController
         $elementId = Craft::$app->getRequest()->getRequiredBodyParam('elementId');
         $localeId = Craft::$app->getRequest()->getBodyParam('locale');
         $elementType = Craft::$app->getElements()->getElementTypeById($elementId);
-        $element = Craft::$app->getElements()->getElementById($elementId,
-            $elementType, $localeId);
+        $element = Craft::$app->getElements()->getElementById($elementId, $elementType, $localeId);
 
-        if (!$element || !$element->isEditable()) {
+        if (!$element || !$element->getIsEditable()) {
             throw new HttpException(403);
         }
 
-        $includeLocales = (bool)Craft::$app->getRequest()->getBodyParam('includeLocales',
-            false);
+        $includeLocales = (bool)Craft::$app->getRequest()->getBodyParam('includeLocales', false);
 
         return $this->_getEditorHtmlResponse($element, $includeLocales);
     }
@@ -104,10 +102,9 @@ class ElementsController extends BaseElementsController
         $elementId = Craft::$app->getRequest()->getRequiredBodyParam('elementId');
         $localeId = Craft::$app->getRequest()->getRequiredBodyParam('locale');
         $elementType = Craft::$app->getElements()->getElementTypeById($elementId);
-        $element = Craft::$app->getElements()->getElementById($elementId,
-            $elementType, $localeId);
+        $element = Craft::$app->getElements()->getElementById($elementId, $elementType, $localeId);
 
-        if (!ElementHelper::isElementEditable($element) || !$element) {
+        if (!Element::isElementEditable($element) || !$element) {
             throw new HttpException(403);
         }
 
@@ -115,13 +112,13 @@ class ElementsController extends BaseElementsController
         $params = Craft::$app->getRequest()->getBodyParam($namespace);
 
         if (isset($params['title'])) {
-            $element->getContent()->title = $params['title'];
+            $element->title = $params['title'];
             unset($params['title']);
         }
 
         if (isset($params['fields'])) {
             $fields = $params['fields'];
-            $element->setContentFromPost($fields);
+            $element->setFieldValuesFromPost($fields);
             unset($params['fields']);
         }
 
@@ -192,7 +189,7 @@ class ElementsController extends BaseElementsController
      */
     private function _getEditorHtmlResponse(ElementInterface $element, $includeLocales)
     {
-        $localeIds = ElementHelper::getEditableLocaleIdsForElement($element);
+        $localeIds = Element::getEditableLocaleIdsForElement($element);
 
         if (!$localeIds) {
             throw new HttpException(403);
@@ -227,8 +224,9 @@ class ElementsController extends BaseElementsController
             Craft::$app->getView()->namespaceInputs($element::getEditorHtml($element)).
             '</div>';
 
-        $response['headHtml'] = Craft::$app->getView()->getHeadHtml();
-        $response['footHtml'] = Craft::$app->getView()->getBodyEndHtml(true);
+        $view = Craft::$app->getView();
+        $response['headHtml'] = $view->getHeadHtml();
+        $response['footHtml'] = $view->getBodyHtml();
 
         return $this->asJson($response);
     }

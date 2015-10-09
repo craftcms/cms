@@ -13,7 +13,7 @@ use craft\app\fields\data\MultiOptionsFieldData;
 use craft\app\fields\data\OptionData;
 use craft\app\fields\data\SingleOptionFieldData;
 use craft\app\helpers\ArrayHelper;
-use craft\app\helpers\DbHelper;
+use craft\app\helpers\Db;
 use yii\db\Schema;
 
 /**
@@ -114,7 +114,7 @@ abstract class BaseOptionsField extends Field
             // Add +2 for the outer brackets and -1 for the last comma.
             $length += 1;
 
-            return DbHelper::getTextualColumnTypeByContentLength($length);
+            return Db::getTextualColumnTypeByContentLength($length);
         } else {
             return Schema::TYPE_STRING;
         }
@@ -130,12 +130,11 @@ abstract class BaseOptionsField extends Field
             $this->options = [['label' => '', 'value' => '']];
         }
 
-        return Craft::$app->getView()->renderTemplateMacro('_includes/forms',
-            'editableTableField', [
+        return Craft::$app->getView()->renderTemplateMacro('_includes/forms', 'editableTableField',
+            [
                 [
                     'label' => $this->getOptionsSettingsLabel(),
-                    'instructions' => Craft::t('app',
-                        'Define the available options.'),
+                    'instructions' => Craft::t('app', 'Define the available options.'),
                     'id' => 'options',
                     'name' => 'options',
                     'addRowLabel' => Craft::t('app', 'Add an option'),
@@ -190,8 +189,7 @@ abstract class BaseOptionsField extends Field
 
         foreach ($this->options as $option) {
             $selected = in_array($option['value'], $selectedValues);
-            $options[] = new OptionData($option['label'], $option['value'],
-                $selected);
+            $options[] = new OptionData($option['label'], $option['value'], $selected);
         }
 
         $value->setOptions($options);
@@ -269,6 +267,20 @@ abstract class BaseOptionsField extends Field
 
         if ($this->multi) {
             return $defaultValues;
+        }
+    }
+
+    /**
+     * @inheritdoc
+     */
+    protected function isValueEmpty($value, $element)
+    {
+        if ($this->multi) {
+            /** @var MultiOptionsFieldData $value */
+            return count($value) === 0;
+        } else {
+            /** @var SingleOptionFieldData $value */
+            return empty($value->value);
         }
     }
 }

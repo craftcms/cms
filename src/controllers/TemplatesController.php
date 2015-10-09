@@ -10,8 +10,8 @@ namespace craft\app\controllers;
 use Craft;
 use craft\app\errors\Exception;
 use craft\app\errors\HttpException;
-use craft\app\helpers\AppHelper;
-use craft\app\helpers\TemplateHelper;
+use craft\app\helpers\App;
+use craft\app\helpers\Template;
 use craft\app\web\Controller;
 use ErrorException;
 
@@ -118,17 +118,14 @@ class TemplatesController extends Controller
                     }
                 }
 
-                throw new Exception(Craft::t('app',
-                    'The update can’t be installed :( {message}',
-                    ['message' => $message]));
+                throw new Exception(Craft::t('app', 'The update can’t be installed :( {message}', ['message' => $message]));
             } else {
                 return $this->renderTemplate('_special/cantrun',
                     ['reqCheck' => $reqCheck]);
             }
         } else {
             // Cache the app path.
-            Craft::$app->getCache()->set('appPath',
-                Craft::$app->getPath()->getAppPath());
+            Craft::$app->getCache()->set('appPath', Craft::$app->getPath()->getAppPath());
         }
     }
 
@@ -181,8 +178,8 @@ class TemplatesController extends Controller
 
         // If this is a PHP error and html_errors (http://php.net/manual/en/errorfunc.configuration.php#ini.html-errors)
         // is enabled, then allow the HTML not get encoded
-        if ($exception instanceof ErrorException && AppHelper::getPhpConfigValueAsBool('html_errors')) {
-            $variables['message'] = TemplateHelper::getRaw($variables['message']);
+        if ($exception instanceof ErrorException && App::getPhpConfigValueAsBool('html_errors')) {
+            $variables['message'] = Template::getRaw($variables['message']);
         }
 
         return $this->renderTemplate($template, $variables);

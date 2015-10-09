@@ -30,6 +30,17 @@ class InvalidField extends Field implements InvalidComponentInterface
     /**
      * @inheritdoc
      */
+    public static function hasContentColumn()
+    {
+        return false;
+    }
+
+    // Public Methods
+    // =========================================================================
+
+    /**
+     * @inheritdoc
+     */
     public function getInputHtml($value, $element)
     {
         return '<p class="error">'.$this->errorMessage.'</p>';

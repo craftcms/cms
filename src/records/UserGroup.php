@@ -10,8 +10,6 @@ namespace craft\app\records;
 use Craft;
 use craft\app\db\ActiveRecord;
 
-Craft::$app->requireEdition(Craft::Pro);
-
 /**
  * Class UserGroup record.
  *
@@ -33,18 +31,9 @@ class UserGroup extends ActiveRecord
     public function rules()
     {
         return [
-            [
-                ['handle'],
-                'craft\\app\\validators\\Handle',
-                'reservedWords' => [
-                    'id',
-                    'dateCreated',
-                    'dateUpdated',
-                    'uid',
-                    'title'
-                ]
-            ],
+            [['handle'], 'craft\\app\\validators\\Handle', 'reservedWords' => ['id', 'dateCreated', 'dateUpdated', 'uid', 'title']],
             [['name', 'handle'], 'required'],
+            [['name', 'handle'], 'unique'],
             [['name', 'handle'], 'string', 'max' => 255],
         ];
     }

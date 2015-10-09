@@ -10,7 +10,7 @@ namespace craft\app\elements\db;
 use Craft;
 use craft\app\db\QueryAbortedException;
 use craft\app\elements\GlobalSet;
-use craft\app\helpers\DbHelper;
+use craft\app\helpers\Db;
 use craft\app\models\GlobalSetGroup;
 use craft\app\models\GlobalSetType;
 
@@ -95,8 +95,7 @@ class GlobalSetQuery extends ElementQuery
         ]);
 
         if ($this->handle) {
-            $this->subQuery->andWhere(DbHelper::parseParam('globalsets.handle',
-                $this->handle, $this->subQuery->params));
+            $this->subQuery->andWhere(Db::parseParam('globalsets.handle', $this->handle, $this->subQuery->params));
         }
 
         $this->_applyEditableParam();

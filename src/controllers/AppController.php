@@ -11,8 +11,8 @@ use Craft;
 use craft\app\dates\DateInterval;
 use craft\app\enums\LicenseKeyStatus;
 use craft\app\errors\Exception;
-use craft\app\helpers\AppHelper;
-use craft\app\helpers\CpHelper;
+use craft\app\helpers\App;
+use craft\app\helpers\Cp;
 use craft\app\helpers\DateTimeHelper;
 use craft\app\models\UpgradePurchase as UpgradePurchaseModel;
 use craft\app\web\Controller;
@@ -62,7 +62,7 @@ class AppController extends Controller
         $path = Craft::$app->getRequest()->getRequiredBodyParam('path');
 
         // Fetch 'em and send 'em
-        $alerts = CpHelper::getAlerts($path, true);
+        $alerts = Cp::getAlerts($path, true);
 
         return $this->asJson($alerts);
     }
@@ -83,15 +83,12 @@ class AppController extends Controller
         $currentTime = DateTimeHelper::currentUTCDateTime();
         $tomorrow = $currentTime->add(new DateInterval('P1D'));
 
-        if (Craft::$app->getUsers()->shunMessageForUser($user->id, $message,
-            $tomorrow)
-        ) {
+        if (Craft::$app->getUsers()->shunMessageForUser($user->id, $message, $tomorrow)) {
             return $this->asJson([
                 'success' => true
             ]);
         } else {
-            return $this->asErrorJson(Craft::t('app',
-                'An unknown error occurred.'));
+            return $this->asErrorJson(Craft::t('app', 'An unknown error occurred.'));
         }
     }
 
@@ -130,20 +127,17 @@ class AppController extends Controller
         $etResponse = Craft::$app->getEt()->fetchEditionInfo();
 
         if (!$etResponse) {
-            return $this->asErrorJson(Craft::t('app',
-                'Craft is unable to fetch edition info at this time.'));
+            return $this->asErrorJson(Craft::t('app', 'Craft is unable to fetch edition info at this time.'));
         }
 
         // Make sure we've got a valid license key (mismatched domain is OK for these purposes)
         if ($etResponse->licenseKeyStatus == LicenseKeyStatus::Invalid) {
-            return $this->asErrorJson(Craft::t('app',
-                'Your license key is invalid.'));
+            return $this->asErrorJson(Craft::t('app', 'Your license key is invalid.'));
         }
 
         // Make sure they've got a valid licensed edition, just to be safe
-        if (!AppHelper::isValidEdition($etResponse->licensedEdition)) {
-            return $this->asErrorJson(Craft::t('app',
-                'Your license has an invalid Craft edition associated with it.'));
+        if (!App::isValidEdition($etResponse->licensedEdition)) {
+            return $this->asErrorJson(Craft::t('app', 'Your license has an invalid Craft edition associated with it.'));
         }
 
         $editions = [];
@@ -151,13 +145,11 @@ class AppController extends Controller
 
         foreach ($etResponse->data as $edition => $info) {
             $editions[$edition]['price'] = $info['price'];
-            $editions[$edition]['formattedPrice'] = $formatter->asCurrency($info['price'],
-                'USD', [], [], true);
+            $editions[$edition]['formattedPrice'] = $formatter->asCurrency($info['price'], 'USD', [], [], true);
 
             if (isset($info['salePrice']) && $info['salePrice'] < $info['price']) {
                 $editions[$edition]['salePrice'] = $info['salePrice'];
-                $editions[$edition]['formattedSalePrice'] = $formatter->asCurrency($info['salePrice'],
-                    'USD', [], [], true);
+                $editions[$edition]['formattedSalePrice'] = $formatter->asCurrency($info['salePrice'], 'USD', [], [], true);
             } else {
                 $editions[$edition]['salePrice'] = null;
             }

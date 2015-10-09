@@ -16,7 +16,7 @@
 			$textarea: null,
 			redactor: null,
 
-			init: function(id, entrySources, categorySources, assetSources, elementLocale, redactorConfig, redactorLang) {
+			init: function(id, entrySources, categorySources, assetSources, elementLocale, direction, redactorConfig, redactorLang) {
 				this.id = id;
 				this.entrySources = entrySources;
 				this.categorySources = categorySources;
@@ -24,8 +24,16 @@
 				this.elementLocale = elementLocale;
 				this.redactorConfig = redactorConfig;
 
-				this.redactorConfig.lang = redactorLang;
-				this.redactorConfig.direction = Craft.orientation;
+				if (!this.redactorConfig.lang)
+				{
+					this.redactorConfig.lang = redactorLang;
+				}
+
+				if (!this.redactorConfig.direction)
+				{
+					this.redactorConfig.direction = direction;
+				}
+
 				this.redactorConfig.imageUpload = true;
 
 				var that = this,

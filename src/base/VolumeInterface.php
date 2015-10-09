@@ -1,14 +1,15 @@
 <?php
 namespace craft\app\base;
 
-use craft\app\errors\VolumeFileExistsException;
+use craft\app\errors\VolumeObjectExistsException;
 use craft\app\errors\VolumeFolderExistsException;
 use League\Flysystem\FileExistsException;
 use League\Flysystem\FileNotFoundException;
 
-
 /**
- * Interface VolumeInterface
+ * VolumeInterface defines the common interface to be implemented by volume classes.
+ *
+ * A class implementing this interface should also use [[SavableComponentTrait]] and [[VolumeTrait]].
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
@@ -17,7 +18,7 @@ use League\Flysystem\FileNotFoundException;
  * @package   craft.app.base
  * @since     3.0
  */
-interface VolumeInterface
+interface VolumeInterface extends SavableComponentInterface
 {
     // Static
     // =========================================================================
@@ -60,11 +61,12 @@ interface VolumeInterface
      *
      * @param string   $path   The path of the file, relative to the source’s root.
      * @param resource $stream The stream to file
+     * @param array    $config Additional config options to pass to the adapter.
      *
-     * @throws VolumeFileExistsException
+     * @throws VolumeObjectExistsException
      * @return boolean Whether the operation was successful.
      */
-    public function createFileByStream($path, $stream);
+    public function createFileByStream($path, $stream, $config = []);
 
     /**
      * Updates a file.
@@ -200,4 +202,16 @@ interface VolumeInterface
      * @return boolean Whether the operation was successful.
      */
     public function deleteDir($path);
+
+    /**
+     * Renames a directory.
+     *
+     * @param string $path The path of the directory, relative to the source’s root.
+     * @param string $newPath The new path of the directory, relative to the source’s root.
+     *
+     * @throws VolumeFolderExistsException
+     *
+     * @return boolean Whether the operation was successful.
+     */
+    public function renameDir($path, $newName);
 }

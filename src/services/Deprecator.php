@@ -9,8 +9,8 @@ namespace craft\app\services;
 
 use Craft;
 use craft\app\db\Query;
-use craft\app\helpers\DbHelper;
-use craft\app\helpers\JsonHelper;
+use craft\app\helpers\Db;
+use craft\app\helpers\Json;
 use craft\app\helpers\StringHelper;
 use craft\app\models\DeprecationError;
 use yii\base\Component;
@@ -81,7 +81,7 @@ class Deprecator extends Component
             $db = Craft::$app->getDb();
 
             $values = [
-                'lastOccurrence' => DbHelper::prepareDateForDb($log->lastOccurrence),
+                'lastOccurrence' => Db::prepareDateForDb($log->lastOccurrence),
                 'file' => $log->file,
                 'line' => $log->line,
                 'class' => $log->class,
@@ -89,7 +89,7 @@ class Deprecator extends Component
                 'template' => $log->template,
                 'templateLine' => $log->templateLine,
                 'message' => $log->message,
-                'traces' => JsonHelper::encode($log->traces),
+                'traces' => Json::encode($log->traces),
             ];
 
             // Do we already have this one logged?
@@ -299,8 +299,7 @@ class Deprecator extends Component
                     // Is this a plugin's template?
                     $request = Craft::$app->getRequest();
                     if (!$foundPlugin && !$request->getIsConsoleRequest() && $request->getIsCpRequest() && $logTrace['template']) {
-                        $firstSeg = array_shift(explode('/',
-                            $logTrace['template']));
+                        $firstSeg = array_shift(explode('/', $logTrace['template']));
 
                         if (Craft::$app->getPlugins()->getPlugin($firstSeg)) {
                             $log->plugin = $firstSeg;
@@ -321,8 +320,7 @@ class Deprecator extends Component
                 if (strncmp($pluginsPath, $logTrace['file'],
                         $pluginsPathLength) === 0
                 ) {
-                    $remainingFilePath = StringHelper::substr($filePath,
-                        $pluginsPathLength);
+                    $remainingFilePath = StringHelper::substr($filePath, $pluginsPathLength);
                     $firstSeg = array_shift(explode('/', $remainingFilePath));
 
                     if (Craft::$app->getPlugins()->getPlugin($firstSeg)) {

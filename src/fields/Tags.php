@@ -54,14 +54,14 @@ class Tags extends BaseRelationField
     /**
      * Whether the field settings should allow multiple sources to be selected.
      *
-     * @var bool $allowMultipleSources
+     * @var boolean $allowMultipleSources
      */
     protected $allowMultipleSources = false;
 
     /**
      * Whether to allow the Limit setting.
      *
-     * @var bool $allowLimit
+     * @var boolean $allowLimit
      */
     protected $allowLimit = false;
 
@@ -98,8 +98,7 @@ class Tags extends BaseRelationField
                     'selectionLabel' => ($this->selectionLabel ? Craft::t('site', $this->selectionLabel) : static::defaultSelectionLabel()),
                 ]);
         } else {
-            return '<p class="error">'.Craft::t('app',
-                'This field is not set to a valid source.').'</p>';
+            return '<p class="error">'.Craft::t('app', 'This field is not set to a valid source.').'</p>';
         }
     }
 

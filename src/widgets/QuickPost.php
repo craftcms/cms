@@ -10,7 +10,7 @@ namespace craft\app\widgets;
 use Craft;
 use craft\app\base\Widget;
 use craft\app\helpers\ArrayHelper;
-use craft\app\helpers\JsonHelper;
+use craft\app\helpers\Json;
 use craft\app\models\Section;
 use craft\app\web\View;
 
@@ -136,22 +136,19 @@ class QuickPost extends Widget
      */
     public function getBodyHtml()
     {
-        Craft::$app->getView()->includeTranslations('Entry saved.',
-            'Couldn’t save entry.');
+        Craft::$app->getView()->includeTranslations('Entry saved.', 'Couldn’t save entry.');
         Craft::$app->getView()->registerJsResource('js/QuickPostWidget.js');
 
         $section = $this->_getSection();
 
         if ($section === null) {
-            return '<p>'.Craft::t('app',
-                'No section has been selected yet.').'</p>';
+            return '<p>'.Craft::t('app', 'No section has been selected yet.').'</p>';
         }
 
         $entryTypes = $section->getEntryTypes('id');
 
         if (!$entryTypes) {
-            return '<p>'.Craft::t('app',
-                'No entry types exist for this section.').'</p>';
+            return '<p>'.Craft::t('app', 'No entry types exist for this section.').'</p>';
         }
 
         if ($this->entryType && isset($entryTypes[$this->entryType])) {
@@ -195,7 +192,7 @@ class QuickPost extends Widget
 
         Craft::$app->getView()->registerJs('new Craft.QuickPostWidget('.
             $this->id.', '.
-            JsonHelper::encode($params).', '.
+            Json::encode($params).', '.
             "function() {\n".$fieldJs.
             "\n});");
 

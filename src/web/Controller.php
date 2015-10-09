@@ -9,9 +9,9 @@ namespace craft\app\web;
 
 use Craft;
 use craft\app\errors\HttpException;
-use craft\app\helpers\HeaderHelper;
-use craft\app\helpers\IOHelper;
-use craft\app\helpers\UrlHelper;
+use craft\app\helpers\Header;
+use craft\app\helpers\Io;
+use craft\app\helpers\Url;
 use yii\base\InvalidParamException;
 
 /**
@@ -55,8 +55,7 @@ abstract class Controller extends \yii\web\Controller
         if (parent::beforeAction($action)) {
             // Enforce $allowAnonymous
             if (
-                (is_array($this->allowAnonymous) && (!preg_grep("/{$action->id}/i",
-                        $this->allowAnonymous))) ||
+                (is_array($this->allowAnonymous) && (!preg_grep("/{$action->id}/i", $this->allowAnonymous))) ||
                 $this->allowAnonymous === false
             ) {
                 $this->requireLogin();
@@ -82,19 +81,19 @@ abstract class Controller extends \yii\web\Controller
     {
         // Set the MIME type for the request based on the matched template's file extension (unless the
         // Content-Type header was already set, perhaps by the template via the {% header %} tag)
-        if (!HeaderHelper::isHeaderSet('Content-Type')) {
+        if (!Header::isHeaderSet('Content-Type')) {
             $templateFile = Craft::$app->getView()->resolveTemplate($template);
-            $extension = IOHelper::getExtension($templateFile, 'html');
+            $extension = Io::getExtension($templateFile, 'html');
 
             if ($extension == 'twig') {
                 $extension = 'html';
             }
 
-            HeaderHelper::setContentTypeByExtension($extension);
+            Header::setContentTypeByExtension($extension);
         }
 
         // Set the charset header
-        HeaderHelper::setHeader(['charset' => 'utf-8']);
+        Header::setHeader(['charset' => 'utf-8']);
 
         // Render and return the template
         return $this->getView()->renderPageTemplate($template, $variables);
@@ -128,8 +127,7 @@ abstract class Controller extends \yii\web\Controller
 
         // Make sure they're an admin
         if (!Craft::$app->getUser()->getIsAdmin()) {
-            throw new HttpException(403, Craft::t('app',
-                'This action may only be performed by admins.'));
+            throw new HttpException(403, Craft::t('app', 'This action may only be performed by admins.'));
         }
     }
 
@@ -209,7 +207,7 @@ abstract class Controller extends \yii\web\Controller
      * @param string $default The default URL to redirect them to, if no 'redirect' parameter exists. If this is left
      *                        null, then the current request’s path will be used.
      *
-     * @return void
+     * @return Response
      */
     public function redirectToPostedUrl($object = null, $default = null)
     {
@@ -312,7 +310,7 @@ abstract class Controller extends \yii\web\Controller
     public function redirect($url, $statusCode = 302)
     {
         if (is_string($url)) {
-            $url = UrlHelper::getUrl($url);
+            $url = Url::getUrl($url);
         }
 
         if ($url !== null) {

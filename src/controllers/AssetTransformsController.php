@@ -9,7 +9,7 @@ namespace craft\app\controllers;
 
 use Craft;
 use craft\app\errors\HttpException;
-use craft\app\helpers\ImageHelper;
+use craft\app\helpers\Image;
 use craft\app\helpers\IOHelper;
 use craft\app\helpers\UrlHelper;
 use craft\app\models\AssetTransform;
@@ -51,8 +51,7 @@ class AssetTransformsController extends Controller
         $variables['transforms'] = Craft::$app->getAssetTransforms()->getAllTransforms();
         $variables['transformModes'] = AssetTransform::getTransformModes();
 
-        return $this->renderTemplate('settings/assets/transforms/_index',
-            $variables);
+        return $this->renderTemplate('settings/assets/transforms/_index', $variables);
     }
 
     /**
@@ -109,35 +108,30 @@ class AssetTransformsController extends Controller
         $errors = false;
 
         if (empty($transform->width) && empty($transform->height)) {
-            Craft::$app->getSession()->setError(Craft::t('app',
-                'You must set at least one of the dimensions.'));
+            Craft::$app->getSession()->setError(Craft::t('app', 'You must set at least one of the dimensions.'));
             $errors = true;
         }
 
         if (!empty($transform->quality) && (!is_numeric($transform->quality) || $transform->quality > 100 || $transform->quality < 1)) {
-            Craft::$app->getSession()->setError(Craft::t('app',
-                'Quality must be a number between 1 and 100 (included).'));
+            Craft::$app->getSession()->setError(Craft::t('app', 'Quality must be a number between 1 and 100 (included).'));
             $errors = true;
         }
 
         if (!empty($transform->format) && !in_array($transform->format,
-                ImageHelper::getWebSafeFormats())
+                Image::getWebSafeFormats())
         ) {
-            Craft::$app->getSession()->setError(Craft::t('app',
-                'That is not an allowed format.'));
+            Craft::$app->getSession()->setError(Craft::t('app', 'That is not an allowed format.'));
             $errors = true;
         }
 
         if (!$errors) {
             // Did it save?
             if (Craft::$app->getAssetTransforms()->saveTransform($transform)) {
-                Craft::$app->getSession()->setNotice(Craft::t('app',
-                    'Transform saved.'));
+                Craft::$app->getSession()->setNotice(Craft::t('app', 'Transform saved.'));
 
                 return $this->redirectToPostedUrl($transform);
             } else {
-                Craft::$app->getSession()->setError(Craft::t('app',
-                    'Couldn’t save source.'));
+                Craft::$app->getSession()->setError(Craft::t('app', 'Couldn’t save source.'));
             }
         }
 

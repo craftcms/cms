@@ -111,10 +111,11 @@ class ElementIndexController extends BaseElementsController
     public function actionGetElements()
     {
         // Get the action head/foot HTML before any more is added to it from the element HTML
+        $view = Craft::$app->getView();
         if ($this->_context == 'index') {
             $responseData['actions'] = $this->_getActionData();
-            $responseData['actionsHeadHtml'] = Craft::$app->getView()->getHeadHtml();
-            $responseData['actionsFootHtml'] = Craft::$app->getView()->getBodyEndHtml(true);
+            $responseData['actionsHeadHtml'] = $view->getHeadHtml();
+            $responseData['actionsFootHtml'] = $view->getBodyHtml();
         }
 
         $responseData['html'] = $this->_getElementHtml(true);
@@ -220,8 +221,7 @@ class ElementIndexController extends BaseElementsController
     {
         if ($this->_sourceKey) {
             $elementType = $this->_elementType;
-            $source = $elementType::getSourceByKey($this->_sourceKey,
-                $this->_context);
+            $source = $elementType::getSourceByKey($this->_sourceKey, $this->_context);
 
             if (!$source) {
                 // That wasn't a valid source, or the user doesn't have access to it in this context
@@ -301,8 +301,7 @@ class ElementIndexController extends BaseElementsController
                     }
 
                     $descendantQuery->descendantOf($element);
-                    $descendantIds = array_merge($descendantIds,
-                        $descendantQuery->ids());
+                    $descendantIds = array_merge($descendantIds, $descendantQuery->ids());
                 }
 
                 if ($descendantIds) {
@@ -419,8 +418,9 @@ class ElementIndexController extends BaseElementsController
             }
         }
 
-        $responseData['headHtml'] = Craft::$app->getView()->getHeadHtml();
-        $responseData['footHtml'] = Craft::$app->getView()->getBodyEndHtml(true);
+        $view = Craft::$app->getView();
+        $responseData['headHtml'] = $view->getHeadHtml();
+        $responseData['footHtml'] = $view->getBodyHtml();
 
         return $this->asJson($responseData);
     }

@@ -9,10 +9,10 @@ namespace craft\app\controllers;
 
 use Craft;
 use craft\app\errors\HttpException;
-use craft\app\helpers\DbHelper;
-use craft\app\helpers\SearchHelper;
+use craft\app\helpers\Db;
+use craft\app\helpers\Search;
 use craft\app\helpers\StringHelper;
-use craft\app\helpers\UrlHelper;
+use craft\app\helpers\Url;
 use craft\app\elements\Tag;
 use craft\app\models\TagGroup;
 use craft\app\web\Controller;
@@ -82,11 +82,11 @@ class TagsController extends Controller
         $crumbs = [
             [
                 'label' => Craft::t('app', 'Settings'),
-                'url' => UrlHelper::getUrl('settings')
+                'url' => Url::getUrl('settings')
             ],
             [
                 'label' => Craft::t('app', 'Tags'),
-                'url' => UrlHelper::getUrl('settings/tags')
+                'url' => Url::getUrl('settings/tags')
             ]
         ];
 
@@ -135,13 +135,11 @@ class TagsController extends Controller
 
         // Save it
         if (Craft::$app->getTags()->saveTagGroup($tagGroup)) {
-            Craft::$app->getSession()->setNotice(Craft::t('app',
-                'Tag group saved.'));
+            Craft::$app->getSession()->setNotice(Craft::t('app', 'Tag group saved.'));
 
             return $this->redirectToPostedUrl($tagGroup);
         } else {
-            Craft::$app->getSession()->setError(Craft::t('app',
-                'Couldn’t save the tag group.'));
+            Craft::$app->getSession()->setError(Craft::t('app', 'Couldn’t save the tag group.'));
         }
 
         // Send the tag group back to the template
@@ -184,7 +182,7 @@ class TagsController extends Controller
 
         $tags = Tag::find()
             ->groupId($tagGroupId)
-            ->title(DbHelper::escapeParam($search).'*')
+            ->title(Db::escapeParam($search).'*')
             ->where(['not in', 'elements.id', $excludeIds])
             ->all();
 
@@ -193,17 +191,17 @@ class TagsController extends Controller
         $tagTitleLengths = [];
         $exactMatch = false;
 
-        $normalizedSearch = SearchHelper::normalizeKeywords($search);
+        $normalizedSearch = Search::normalizeKeywords($search);
 
         foreach ($tags as $tag) {
             $return[] = [
                 'id' => $tag->id,
-                'title' => $tag->getContent()->title
+                'title' => $tag->title
             ];
 
-            $tagTitleLengths[] = StringHelper::length($tag->getContent()->title);
+            $tagTitleLengths[] = StringHelper::length($tag->title);
 
-            $normalizedTitle = SearchHelper::normalizeKeywords($tag->getContent()->title);
+            $normalizedTitle = Search::normalizeKeywords($tag->title);
 
             if ($normalizedTitle == $normalizedSearch) {
                 $exactMatches[] = 1;
@@ -233,7 +231,7 @@ class TagsController extends Controller
 
         $tag = new Tag();
         $tag->groupId = Craft::$app->getRequest()->getRequiredBodyParam('groupId');
-        $tag->getContent()->title = Craft::$app->getRequest()->getRequiredBodyParam('title');
+        $tag->title = Craft::$app->getRequest()->getRequiredBodyParam('title');
 
         if (Craft::$app->getTags()->saveTag($tag)) {
             return $this->asJson([

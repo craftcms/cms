@@ -105,9 +105,7 @@ class FindAndReplace extends Task
         // inadvertently nuke textual content in the database.
         if ($this->replace !== null) {
             if (isset($this->_textColumns[$step])) {
-                Craft::$app->getDb()->createCommand()->replace($this->_table,
-                    $this->_textColumns[$step], $this->find,
-                    $this->replace)->execute();
+                Craft::$app->getDb()->createCommand()->replace($this->_table, $this->_textColumns[$step], $this->find, $this->replace)->execute();
 
                 return true;
             } else {
@@ -119,9 +117,7 @@ class FindAndReplace extends Task
                     if ($field) {
                         return $this->runSubTask([
                             'type' => FindAndReplace::className(),
-                            'description' => Craft::t('app',
-                                'Working in Matrix field “{field}”',
-                                ['field' => $field->name]),
+                            'description' => Craft::t('app', 'Working in Matrix field “{field}”', ['field' => $field->name]),
                             'find' => $this->find,
                             'replace' => $this->replace,
                             'matrixFieldId' => $field->id
@@ -135,8 +131,7 @@ class FindAndReplace extends Task
                 }
             }
         } else {
-            Craft::error('Invalid "replace" in the Find and Replace task probably caused by invalid JSON in the database.',
-                __METHOD__);
+            Craft::error('Invalid "replace" in the Find and Replace task probably caused by invalid JSON in the database.', __METHOD__);
 
             return false;
         }

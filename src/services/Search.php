@@ -11,9 +11,9 @@ use Craft;
 use craft\app\base\ElementInterface;
 use craft\app\db\Query;
 use craft\app\enums\ColumnType;
-use craft\app\helpers\DbHelper;
-use craft\app\helpers\SearchHelper;
+use craft\app\helpers\Db;
 use craft\app\helpers\StringHelper;
+use craft\app\helpers\Search as SearchHelper;
 use craft\app\search\SearchQuery;
 use craft\app\search\SearchQueryTerm;
 use craft\app\search\SearchQueryTermGroup;
@@ -71,8 +71,7 @@ class Search extends Component
         foreach ($searchableAttributes as $attribute) {
             $value = $element->$attribute;
             $value = StringHelper::toString($value);
-            $this->_indexElementKeywords($element->id, $attribute, '0',
-                $element->locale, $value);
+            $this->_indexElementKeywords($element->id, $attribute, '0', $element->locale, $value);
         }
 
         return true;
@@ -90,8 +89,7 @@ class Search extends Component
     public function indexElementFields($elementId, $localeId, $fields)
     {
         foreach ($fields as $fieldId => $value) {
-            $this->_indexElementKeywords($elementId, 'field', (string)$fieldId,
-                $localeId, $value);
+            $this->_indexElementKeywords($elementId, 'field', (string)$fieldId, $localeId, $value);
         }
 
         return true;
@@ -103,10 +101,11 @@ class Search extends Component
      * @param array   $elementIds   The list of element IDs to filter by the search query.
      * @param mixed   $query        The search query (either a string or a SearchQuery instance)
      * @param boolean $scoreResults Whether to order the results based on how closely they match the query.
+     * @param string  $localeId     The locale to filter by.
      *
      * @return array The filtered list of element IDs.
      */
-    public function filterElementIdsByQuery($elementIds, $query, $scoreResults = true)
+    public function filterElementIdsByQuery($elementIds, $query, $scoreResults = true, $localeId = null)
     {
         if (is_string($query)) {
             $query = new SearchQuery($query);
@@ -133,11 +132,12 @@ class Search extends Component
             return [];
         }
 
+        if ($localeId) {
+            $where .= sprintf(' AND %s = %s', Craft::$app->getDb()->quoteColumnName('locale'), Craft::$app->getDb()->quoteValue($localeId));
+        }
+
         // Begin creating SQL
-        $sql = sprintf('SELECT * FROM %s WHERE %s',
-            Craft::$app->getDb()->quoteTableName('{{%searchindex}}'),
-            $where
-        );
+        $sql = sprintf('SELECT * FROM %s WHERE %s', Craft::$app->getDb()->quoteTableName('{{%searchindex}}'), $where);
 
         // Append elementIds to QSL
         if ($elementIds) {
@@ -226,7 +226,7 @@ class Search extends Component
 
         $cleanKeywordsLength = strlen($cleanKeywords);
 
-        $maxDbColumnSize = DbHelper::getTextualColumnStorageCapacity(ColumnType::Text);
+        $maxDbColumnSize = Db::getTextualColumnStorageCapacity(ColumnType::Text);
 
         // Give ourselves 10% wiggle room.
         $maxDbColumnSize = ceil($maxDbColumnSize * 0.9);
@@ -240,15 +240,14 @@ class Search extends Component
                 $position = mb_strrpos($cleanKeywords, ' ');
 
                 if ($position) {
-                    $cleanKeywords = mb_substr($cleanKeywords, 0,
-                        $position + 1);
+                    $cleanKeywords = mb_substr($cleanKeywords, 0, $position + 1);
                 }
             }
         }
 
         // Insert/update the row in searchindex
-        Craft::$app->getDb()->createCommand()->insertOrUpdate('{{%searchindex}}',
-            $keyColumns, [
+        Craft::$app->getDb()->createCommand()->insertOrUpdate('{{%searchindex}}', $keyColumns,
+            [
                 'keywords' => $cleanKeywords
             ], false)->execute();
     }
@@ -629,11 +628,7 @@ class Search extends Component
      */
     private function _sqlWhere($key, $oper, $val)
     {
-        return sprintf("(%s %s '%s')",
-            Craft::$app->getDb()->quoteColumnName($key),
-            $oper,
-            $val
-        );
+        return sprintf("(%s %s '%s')", Craft::$app->getDb()->quoteColumnName($key), $oper, $val);
     }
 
     /**
@@ -646,11 +641,7 @@ class Search extends Component
      */
     private function _sqlMatch($val, $bool = true)
     {
-        return sprintf("MATCH(%s) AGAINST('%s'%s)",
-            Craft::$app->getDb()->quoteColumnName('keywords'),
-            (is_array($val) ? implode(' ', $val) : $val),
-            ($bool ? ' IN BOOLEAN MODE' : '')
-        );
+        return sprintf("MATCH(%s) AGAINST('%s'%s)", Craft::$app->getDb()->quoteColumnName('keywords'), (is_array($val) ? implode(' ', $val) : $val), ($bool ? ' IN BOOLEAN MODE' : ''));
     }
 
     /**
@@ -670,8 +661,7 @@ class Search extends Component
             ->column();
 
         if ($elementIds) {
-            return Craft::$app->getDb()->quoteColumnName('elementId').' IN ('.implode(', ',
-                $elementIds).')';
+            return Craft::$app->getDb()->quoteColumnName('elementId').' IN ('.implode(', ', $elementIds).')';
         } else {
             return false;
         }

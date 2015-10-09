@@ -9,8 +9,8 @@ namespace craft\app\fields;
 
 use Craft;
 use craft\app\base\Field;
-use craft\app\helpers\DbHelper;
-use craft\app\helpers\LocalizationHelper;
+use craft\app\helpers\Db;
+use craft\app\helpers\Localization;
 use craft\app\i18n\Locale;
 
 /**
@@ -87,8 +87,27 @@ class Number extends Field
      */
     public function getContentColumnType()
     {
-        return DbHelper::getNumericalColumnType($this->min, $this->max,
-            $this->decimals);
+        return Db::getNumericalColumnType($this->min, $this->max, $this->decimals);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function prepareValue($value, $element)
+    {
+        // Is this a post request?
+        $request = Craft::$app->getRequest();
+        if (!$request->getIsConsoleRequest() && $request->getIsPost()) {
+            // Normalize the number and make it look like this is what was posted
+            if ($value === '') {
+                $value = 0;
+            } else {
+                $value = Localization::normalizeNumber($value);
+            }
+            $element->setRawPostValueForField($this->handle, $value);
+        }
+
+        return $value;
     }
 
     /**
@@ -109,20 +128,5 @@ class Number extends Field
             'value' => $value,
             'size' => 5
         ]);
-    }
-
-    // Protected Methods
-    // =========================================================================
-
-    /**
-     * @inheritdoc
-     */
-    protected function prepareValueBeforeSave($value, $element)
-    {
-        if ($value === '') {
-            return 0;
-        } else {
-            return LocalizationHelper::normalizeNumber($value);
-        }
     }
 }

@@ -23,6 +23,15 @@ Craft.Grid = Garnish.Base.extend(
 	{
 		this.$container = $(container);
 
+		// Is this already a grid?
+		if (this.$container.data('grid'))
+		{
+			Garnish.log('Double-instantiating a grid on an element');
+			this.$container.data('grid').destroy();
+		}
+
+		this.$container.data('grid', this);
+
 		this.setSettings(settings, Craft.Grid.defaults);
 
 		if (this.settings.mode == 'pct')

@@ -6,7 +6,7 @@
  */
 
 use craft\app\db\Query;
-use craft\app\helpers\IOHelper;
+use craft\app\helpers\Io;
 use yii\helpers\VarDumper;
 use yii\web\Request;
 
@@ -129,14 +129,10 @@ class Craft extends Yii
             $elementQueryTraitFile = $compiledClassesPath.'/ElementQueryTrait.php';
 
             if (
-                static::_isFieldAttributesFileValid($contentBehaviorFile,
-                    $storedFieldVersion) &&
-                static::_isFieldAttributesFileValid($contentTraitFile,
-                    $storedFieldVersion) &&
-                static::_isFieldAttributesFileValid($elementQueryBehaviorFile,
-                    $storedFieldVersion) &&
-                static::_isFieldAttributesFileValid($elementQueryTraitFile,
-                    $storedFieldVersion)
+                static::_isFieldAttributesFileValid($contentBehaviorFile, $storedFieldVersion) &&
+                static::_isFieldAttributesFileValid($contentTraitFile, $storedFieldVersion) &&
+                static::_isFieldAttributesFileValid($elementQueryBehaviorFile, $storedFieldVersion) &&
+                static::_isFieldAttributesFileValid($elementQueryTraitFile, $storedFieldVersion)
             ) {
                 return;
             }
@@ -246,9 +242,9 @@ EOD;
      */
     private static function _writeFieldAttributesFile($templatePath, $search, $replace, $destinationPath)
     {
-        $fileContents = IOHelper::getFileContents($templatePath);
+        $fileContents = Io::getFileContents($templatePath);
         $fileContents = str_replace($search, $replace, $fileContents);
-        IOHelper::writeToFile($destinationPath, $fileContents);
+        Io::writeToFile($destinationPath, $fileContents);
         include($destinationPath);
     }
 }

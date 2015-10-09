@@ -8,7 +8,7 @@
 namespace craft\app\io;
 
 use Craft;
-use craft\app\helpers\IOHelper;
+use craft\app\helpers\Io;
 
 /**
  * Class ZipArchive
@@ -44,8 +44,7 @@ class ZipArchive implements ZipInterface
      */
     public function unzip($srcZip, $destFolder)
     {
-        @ini_set('memory_limit',
-            Craft::$app->getConfig()->get('phpMaxMemoryLimit'));
+        Craft::$app->getConfig()->maxPowerCaptain();
 
         $zip = new \ZipArchive();
         $zipContents = $zip->open($srcZip, \ZipArchive::CHECKCONS);
@@ -58,18 +57,17 @@ class ZipArchive implements ZipInterface
 
         for ($i = 0; $i < $zip->numFiles; $i++) {
             if (!$info = $zip->statIndex($i)) {
-                Craft::error('Could not retrieve a file from the zip archive '.$srcZip,
-                    __METHOD__);
+                Craft::error('Could not retrieve a file from the zip archive '.$srcZip, __METHOD__);
 
                 return false;
             }
 
             // normalize directory separators
-            $info = IOHelper::normalizePathSeparators($info['name']);
+            $info = Io::normalizePathSeparators($info['name']);
 
             // found a directory
             if (mb_substr($info, -1) === '/') {
-                IOHelper::createFolder($destFolder.'/'.$info);
+                Io::createFolder($destFolder.'/'.$info);
                 continue;
             }
 
@@ -81,17 +79,13 @@ class ZipArchive implements ZipInterface
             $contents = $zip->getFromIndex($i);
 
             if ($contents === false) {
-                Craft::error('Could not extract file from zip archive '.$srcZip,
-                    __METHOD__);
+                Craft::error('Could not extract file from zip archive '.$srcZip, __METHOD__);
 
                 return false;
             }
 
-            if (!IOHelper::writeToFile($destFolder.'/'.$info, $contents, true,
-                true)
-            ) {
-                Craft::error('Could not copy file to '.$destFolder.'/'.$info.' while unzipping from '.$srcZip,
-                    __METHOD__);
+            if (!Io::writeToFile($destFolder.'/'.$info, $contents, true, true)) {
+                Craft::error('Could not copy file to '.$destFolder.'/'.$info.' while unzipping from '.$srcZip, __METHOD__);
 
                 return false;
             }
@@ -116,33 +110,32 @@ class ZipArchive implements ZipInterface
             return false;
         }
 
-        if (IOHelper::fileExists($pathToAdd)) {
+        if (Io::fileExists($pathToAdd)) {
             $folderContents = [$pathToAdd];
         } else {
-            $folderContents = IOHelper::getFolderContents($pathToAdd, true);
+            $folderContents = Io::getFolderContents($pathToAdd, true);
         }
 
         foreach ($folderContents as $itemToZip) {
-            if (IOHelper::isReadable($itemToZip)) {
+            if (Io::isReadable($itemToZip)) {
                 // Figure out the relative path we'll be adding to the zip.
                 $relFilePath = mb_substr($itemToZip, mb_strlen($basePath));
 
                 if ($pathPrefix) {
-                    $pathPrefix = IOHelper::normalizePathSeparators($pathPrefix);
+                    $pathPrefix = Io::normalizePathSeparators($pathPrefix);
                     $relFilePath = $pathPrefix.$relFilePath;
                 }
 
-                if (IOHelper::folderExists($itemToZip)) {
-                    if (IOHelper::isFolderEmpty($itemToZip)) {
+                if (Io::folderExists($itemToZip)) {
+                    if (Io::isFolderEmpty($itemToZip)) {
                         $zip->addEmptyDir($relFilePath);
                     }
-                } elseif (IOHelper::fileExists($itemToZip)) {
+                } else if (Io::fileExists($itemToZip)) {
                     // We can't use $zip->addFile() here but it's a terrible, horrible, POS method that's buggy on Windows.
-                    $fileContents = IOHelper::getFileContents($itemToZip);
+                    $fileContents = Io::getFileContents($itemToZip);
 
                     if (!$zip->addFromString($relFilePath, $fileContents)) {
-                        Craft::error('There was an error adding the file '.$itemToZip.' to the zip: '.$itemToZip,
-                            __METHOD__);
+                        Craft::error('There was an error adding the file '.$itemToZip.' to the zip: '.$itemToZip, __METHOD__);
                     }
                 }
             }

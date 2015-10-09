@@ -16,13 +16,14 @@ use craft\app\enums\ConfigCategory;
 use craft\app\errors\DbConnectException;
 use craft\app\errors\Exception;
 use craft\app\events\EditionChangeEvent;
-use craft\app\helpers\AppHelper;
+use craft\app\helpers\App;
 use craft\app\helpers\DateTimeHelper;
-use craft\app\helpers\DbHelper;
+use craft\app\helpers\Db;
 use craft\app\helpers\StringHelper;
-use craft\app\helpers\UrlHelper;
+use craft\app\helpers\Url;
 use craft\app\i18n\Locale;
 use craft\app\log\FileTarget;
+use craft\app\mail\Mailer;
 use craft\app\models\Info;
 use craft\app\web\Application as WebApplication;
 use yii\base\InvalidConfigException;
@@ -43,7 +44,6 @@ use yii\log\Logger;
  * @property \craft\app\services\Deprecator       $deprecator       The deprecator service
  * @property \craft\app\services\Elements         $elements         The elements service
  * @property \craft\app\services\EmailMessages    $emailMessages    The email messages service
- * @property \craft\app\services\Email            $email            The email service
  * @property \craft\app\services\Entries          $entries          The entries service
  * @property \craft\app\services\EntryRevisions   $entryRevisions   The entry revisions service
  * @property \craft\app\services\Et               $et               The E.T. service
@@ -54,6 +54,7 @@ use yii\log\Logger;
  * @property \craft\app\i18n\I18N                 $i18n             The internationalization (i18n) component
  * @property \craft\app\services\Images           $images           The images service
  * @property \craft\app\i18n\Locale               $locale           The Locale object for the target language
+ * @property \craft\app\mail\Mailer               $mailer           The mailer component
  * @property \craft\app\services\Matrix           $matrix           The matrix service
  * @property \craft\app\db\MigrationManager       $migrator         The application’s migration manager
  * @property \craft\app\services\Path             $path             The path service
@@ -208,8 +209,7 @@ trait ApplicationTrait
                             return $preferredLocale;
                         }
                     } catch (\Exception $e) {
-                        Craft::error('Tried to determine the user’s preferred locale, but got this exception: '.$e->getMessage(),
-                            __METHOD__);
+                        Craft::error('Tried to determine the user’s preferred locale, but got this exception: '.$e->getMessage(), __METHOD__);
                     }
 
                     // If they've set a default CP language, use it here.
@@ -316,7 +316,7 @@ trait ApplicationTrait
     public function getEditionName()
     {
         /** @var $this \craft\app\web\Application|\craft\app\console\Application */
-        return AppHelper::getEditionName($this->getEdition());
+        return App::getEditionName($this->getEdition());
     }
 
     /**
@@ -345,7 +345,7 @@ trait ApplicationTrait
         $licensedEdition = $this->getLicensedEdition();
 
         if ($licensedEdition !== null) {
-            return AppHelper::getEditionName($licensedEdition);
+            return App::getEditionName($licensedEdition);
         }
     }
 
@@ -404,9 +404,9 @@ trait ApplicationTrait
             $installedEdition = $this->getEdition();
 
             if (($orBetter && $installedEdition < $edition) || (!$orBetter && $installedEdition !== $edition)) {
-                throw new Exception(Craft::t('app',
-                    'Craft {edition} is required to perform this action.', [
-                        'edition' => AppHelper::getEditionName($edition)
+                throw new Exception(Craft::t('app', 'Craft {edition} is required to perform this action.',
+                    [
+                        'edition' => App::getEditionName($edition)
                     ]));
             }
         }
@@ -508,7 +508,7 @@ trait ApplicationTrait
             $this->setSiteUrl($siteUrl);
         }
 
-        return UrlHelper::getUrlWithProtocol($this->_siteUrl, $protocol);
+        return Url::getUrlWithProtocol($this->_siteUrl, $protocol);
     }
 
     /**
@@ -601,16 +601,14 @@ trait ApplicationTrait
                     ->one();
 
                 if (!$row) {
-                    throw new Exception(Craft::t('app',
-                        'Craft appears to be installed but the info table is empty.'));
+                    throw new Exception(Craft::t('app', 'Craft appears to be installed but the info table is empty.'));
                 }
 
                 // TODO: Remove this after the next breakpoint
                 $this->_storedVersion = $row['version'];
 
                 // Prevent an infinite loop in toDateTime.
-                $row['releaseDate'] = DateTimeHelper::toDateTime($row['releaseDate'],
-                    null, false);
+                $row['releaseDate'] = DateTimeHelper::toDateTime($row['releaseDate'], false, false);
 
                 $this->_info = Info::create($row);
             } else {
@@ -636,7 +634,7 @@ trait ApplicationTrait
     {
         /** @var $this \craft\app\web\Application|\craft\app\console\Application */
         if ($info->validate()) {
-            $attributes = DbHelper::prepareValuesForDb($info);
+            $attributes = Db::prepareValuesForDb($info);
 
             if ($this->isInstalled()) {
                 // TODO: Remove this after the next breakpoint
@@ -644,11 +642,9 @@ trait ApplicationTrait
                     unset($attributes['fieldVersion']);
                 }
 
-                $this->getDb()->createCommand()->update('{{%info}}',
-                    $attributes)->execute();
+                $this->getDb()->createCommand()->update('{{%info}}', $attributes)->execute();
             } else {
-                $this->getDb()->createCommand()->insert('{{%info}}',
-                    $attributes)->execute();
+                $this->getDb()->createCommand()->insert('{{%info}}', $attributes)->execute();
 
                 // Set the new id
                 $info->id = $this->getDb()->getLastInsertID();
@@ -686,53 +682,40 @@ trait ApplicationTrait
         if ($this->_isDbConfigValid === null) {
             $messages = [];
 
-            $databaseServerName = $this->getConfig()->get('server',
-                ConfigCategory::Db);
-            $databaseAuthName = $this->getConfig()->get('user',
-                ConfigCategory::Db);
-            $databaseName = $this->getConfig()->get('database',
-                ConfigCategory::Db);
+            $databaseServerName = $this->getConfig()->get('server', ConfigCategory::Db);
+            $databaseAuthName = $this->getConfig()->get('user', ConfigCategory::Db);
+            $databaseName = $this->getConfig()->get('database', ConfigCategory::Db);
             $databasePort = $this->getConfig()->get('port', ConfigCategory::Db);
-            $databaseCharset = $this->getConfig()->get('charset',
-                ConfigCategory::Db);
-            $databaseCollation = $this->getConfig()->get('collation',
-                ConfigCategory::Db);
+            $databaseCharset = $this->getConfig()->get('charset', ConfigCategory::Db);
+            $databaseCollation = $this->getConfig()->get('collation', ConfigCategory::Db);
 
             if (!$databaseServerName) {
-                $messages[] = Craft::t('app',
-                    'The database server name isn’t set in your db config file.');
+                $messages[] = Craft::t('app', 'The database server name isn’t set in your db config file.');
             }
 
             if (!$databaseAuthName) {
-                $messages[] = Craft::t('app',
-                    'The database user name isn’t set in your db config file.');
+                $messages[] = Craft::t('app', 'The database user name isn’t set in your db config file.');
             }
 
             if (!$databaseName) {
-                $messages[] = Craft::t('app',
-                    'The database name isn’t set in your db config file.');
+                $messages[] = Craft::t('app', 'The database name isn’t set in your db config file.');
             }
 
             if (!$databasePort) {
-                $messages[] = Craft::t('app',
-                    'The database port isn’t set in your db config file.');
+                $messages[] = Craft::t('app', 'The database port isn’t set in your db config file.');
             }
 
             if (!$databaseCharset) {
-                $messages[] = Craft::t('app',
-                    'The database charset isn’t set in your db config file.');
+                $messages[] = Craft::t('app', 'The database charset isn’t set in your db config file.');
             }
 
             if (!$databaseCollation) {
-                $messages[] = Craft::t('app',
-                    'The database collation isn’t set in your db config file.');
+                $messages[] = Craft::t('app', 'The database collation isn’t set in your db config file.');
             }
 
             if (!empty($messages)) {
                 $this->_isDbConfigValid = false;
-                throw new DbConnectException(Craft::t('app',
-                    'Database configuration errors: {errors}',
-                    ['errors' => implode(PHP_EOL, $messages)]));
+                throw new DbConnectException(Craft::t('app', 'Database configuration errors: {errors}', ['errors' => implode(PHP_EOL, $messages)]));
             }
 
             $this->_isDbConfigValid = true;
@@ -877,17 +860,6 @@ trait ApplicationTrait
     }
 
     /**
-     * Returns the email service.
-     *
-     * @return \craft\app\services\Email The email service
-     */
-    public function getEmail()
-    {
-        /** @var $this \craft\app\web\Application|\craft\app\console\Application */
-        return $this->get('email');
-    }
-
-    /**
      * Returns the entries service.
      *
      * @return \craft\app\services\Entries The entries service
@@ -973,6 +945,17 @@ trait ApplicationTrait
     {
         /** @var $this \craft\app\web\Application|\craft\app\console\Application */
         return $this->get('locale');
+    }
+
+    /**
+     * Returns the email service.
+     *
+     * @return \craft\app\mail\Mailer The mailer component
+     */
+    public function getMailer()
+    {
+        /** @var $this \craft\app\web\Application|\craft\app\console\Application */
+        return $this->get('mailer');
     }
 
     /**
@@ -1215,6 +1198,8 @@ trait ApplicationTrait
                 return $this->_getCacheDefinition();
             case 'db':
                 return $this->_getDbDefinition();
+            case 'mailer':
+                return $this->_getMailerDefinition();
             case 'formatter':
                 return $this->getLocale()->getFormatter();
             case 'locale':
@@ -1261,8 +1246,7 @@ trait ApplicationTrait
             case 'db': {
                 return [
                     'class' => 'craft\app\cache\DbCache',
-                    'gcProbability' => $configService->get('gcProbability',
-                        ConfigCategory::DbCache),
+                    'gcProbability' => $configService->get('gcProbability', ConfigCategory::DbCache),
                     'cacheTableName' => $this->_getNormalizedTablePrefix().$configService->get('cacheTableName',
                             ConfigCategory::DbCache),
                     'autoCreateCacheTable' => true,
@@ -1272,20 +1256,16 @@ trait ApplicationTrait
             case 'file': {
                 return [
                     'class' => 'craft\app\cache\FileCache',
-                    'cachePath' => $configService->get('cachePath',
-                        ConfigCategory::FileCache),
-                    'gcProbability' => $configService->get('gcProbability',
-                        ConfigCategory::FileCache),
+                    'cachePath' => $configService->get('cachePath', ConfigCategory::FileCache),
+                    'gcProbability' => $configService->get('gcProbability', ConfigCategory::FileCache),
                 ];
             }
 
             case 'memcache': {
                 return [
                     'class' => 'craft\app\cache\MemCache',
-                    'servers' => $configService->get('servers',
-                        ConfigCategory::Memcache),
-                    'useMemcached' => $configService->get('useMemcached',
-                        ConfigCategory::Memcache),
+                    'servers' => $configService->get('servers', ConfigCategory::Memcache),
+                    'useMemcached' => $configService->get('useMemcached', ConfigCategory::Memcache),
                 ];
             }
 
@@ -1324,14 +1304,12 @@ trait ApplicationTrait
                 'dsn' => $this->_processConnectionString(),
                 'emulatePrepare' => true,
                 'username' => $configService->get('user', ConfigCategory::Db),
-                'password' => $configService->get('password',
-                    ConfigCategory::Db),
+                'password' => $configService->get('password', ConfigCategory::Db),
                 'charset' => $configService->get('charset', ConfigCategory::Db),
                 'tablePrefix' => $this->_getNormalizedTablePrefix(),
                 'schemaMap' => [
                     'mysql' => '\\craft\\app\\db\\mysql\\Schema',
                 ],
-                'enableSavepoint' => false,
             ];
 
             $db = Craft::createObject($config);
@@ -1342,25 +1320,32 @@ trait ApplicationTrait
 
             // TODO: Multi-db driver check.
             if (!extension_loaded('pdo')) {
-                throw new DbConnectException(Craft::t('app',
-                    'Craft requires the PDO extension to operate.'));
+                throw new DbConnectException(Craft::t('app', 'Craft requires the PDO extension to operate.'));
             } else if (!extension_loaded('pdo_mysql')) {
-                throw new DbConnectException(Craft::t('app',
-                    'Craft requires the PDO_MYSQL driver to operate.'));
+                throw new DbConnectException(Craft::t('app', 'Craft requires the PDO_MYSQL driver to operate.'));
             } else {
                 Craft::error($e->getMessage(), __METHOD__);
-                throw new DbConnectException(Craft::t('app',
-                    'Craft can’t connect to the database with the credentials in craft/config/db.php.'));
+                throw new DbConnectException(Craft::t('app', 'Craft can’t connect to the database with the credentials in craft/config/db.php.'));
             }
         } catch (\Exception $e) {
             Craft::error($e->getMessage(), __METHOD__);
-            throw new DbConnectException(Craft::t('app',
-                'Craft can’t connect to the database with the credentials in craft/config/db.php.'));
+            throw new DbConnectException(Craft::t('app', 'Craft can’t connect to the database with the credentials in craft/config/db.php.'));
         }
 
         $this->setIsDbConnectionValid(true);
 
         return $db;
+    }
+
+    /**
+     * Returns the definition for the Mailer object that will be available from Craft::$app->getMailer().
+     *
+     * @return Mailer
+     */
+    private function _getMailerDefinition()
+    {
+        /** @var $this \craft\app\web\Application|\craft\app\console\Application */
+        return $this->getSystemSettings()->getSettings('mailer');
     }
 
     /**
@@ -1423,8 +1408,7 @@ trait ApplicationTrait
     {
         /** @var $this \craft\app\web\Application|\craft\app\console\Application */
         // Table prefixes cannot be longer than 5 characters
-        $tablePrefix = rtrim($this->getConfig()->get('tablePrefix',
-            ConfigCategory::Db), '_');
+        $tablePrefix = rtrim($this->getConfig()->get('tablePrefix', ConfigCategory::Db), '_');
 
         if ($tablePrefix) {
             if (StringHelper::length($tablePrefix) > 5) {
@@ -1504,13 +1488,11 @@ trait ApplicationTrait
         $unixSocket = $this->getConfig()->get('unixSocket', ConfigCategory::Db);
 
         if (!empty($unixSocket)) {
-            return strtolower('mysql:unix_socket='.$unixSocket.';dbname=').$this->getConfig()->get('database',
-                ConfigCategory::Db).';';
+            return strtolower('mysql:unix_socket='.$unixSocket.';dbname=').$this->getConfig()->get('database', ConfigCategory::Db).';';
         } else {
             return strtolower('mysql:host='.$this->getConfig()->get('server',
                     ConfigCategory::Db).';dbname=').$this->getConfig()->get('database',
-                ConfigCategory::Db).strtolower(';port='.$this->getConfig()->get('port',
-                    ConfigCategory::Db).';');
+                ConfigCategory::Db).strtolower(';port='.$this->getConfig()->get('port', ConfigCategory::Db).';');
         }
     }
 

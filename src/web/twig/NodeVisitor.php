@@ -43,8 +43,7 @@ class NodeVisitor implements \Twig_NodeVisitorInterface
                     $this->_foundBeginBody = true;
                     $beginBodyPos = strlen($matches[0]);
 
-                    return $this->_splitTextNode($node, $data, $beginBodyPos,
-                        'beginBody');
+                    return $this->_splitTextNode($node, $data, $beginBodyPos, 'beginBody');
                 }
             }
 
@@ -64,16 +63,14 @@ class NodeVisitor implements \Twig_NodeVisitorInterface
                     $this->_foundBeginBody = true;
                     $beginBodyPos = $matches[0][1] + strlen($matches[0][0]);
 
-                    return $this->_splitTextNode($node, $data, $beginBodyPos,
-                        'beginBody');
+                    return $this->_splitTextNode($node, $data, $beginBodyPos, 'beginBody');
                 }
             } else if ($this->_foundEndBody === false && ($endBodyPos = stripos($data,
                     '</body>')) !== false
             ) {
                 $this->_foundEndBody = true;
 
-                return $this->_splitTextNode($node, $data, $endBodyPos,
-                    'endBody');
+                return $this->_splitTextNode($node, $data, $endBodyPos, 'endBody');
             }
         }
 
@@ -141,8 +138,7 @@ class NodeVisitor implements \Twig_NodeVisitorInterface
 
                         if ($node instanceof \Twig_Node_Print) {
                             // Switch it to a {% do %} tag
-                            $node = new \Twig_Node_Do($expression,
-                                $expression->getLine());
+                            $node = new \Twig_Node_Do($expression, $expression->getLine());
                         }
                     }
                 }
@@ -182,8 +178,7 @@ class NodeVisitor implements \Twig_NodeVisitorInterface
 
         return new \Twig_Node([
             new \Twig_Node_Text($preSplitHtml, $startLine),
-            new \Twig_Node_Do(new \Twig_Node_Expression_Function($name,
-                new \Twig_Node(), $splitLine), $splitLine),
+            new \Twig_Node_Do(new \Twig_Node_Expression_Function($name, new \Twig_Node(), $splitLine), $splitLine),
             new \Twig_Node_Text($postSplitHtml, $splitLine)
         ], [], $startLine);
     }

@@ -30,6 +30,11 @@ body, input, select, textarea { font-family: HelveticaNeue, sans-serif; }
 
 body.rtl .ltr { text-align: right; direction: ltr; }
 
+body.rtl .input.ltr { text-align: left; direction: ltr; }
+body.ltr .input.rtl { text-align: right; direction: rtl; }
+
+body.rtl .text.ltr { text-align: right !important; direction: ltr !important; }
+
 /* icons */
 .icon:before,
 .menu ul.padded li a.sel:before,
@@ -846,7 +851,7 @@ body #redactor-modal-overlay {
 
 .modal { position: fixed; width: 66%; height: 66%; min-width: 600px; min-height: 400px; overflow: hidden; }
 .modal.fitted { width: auto; height: auto; min-width: 0; min-height: 0; }
-.modal .resizehandle { position: absolute; z-index: 1; bottom: 0; @include right(0); width: 24px; height: 24px; background: no-repeat 50% 50%; cursor: move;
+.modal .resizehandle { position: absolute; z-index: 1; bottom: 0; @include right(0); width: 24px; height: 24px; background: no-repeat 50% 50%; cursor: nwse-resize;
 	body.ltr & { background-image: url(../images/resizehandle.png); }
 	body.rtl & { background-image: url(../images/resizehandle_rtl.png); }
 }

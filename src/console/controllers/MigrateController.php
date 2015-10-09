@@ -11,7 +11,7 @@ use Craft;
 use craft\app\base\Plugin;
 use craft\app\base\PluginInterface;
 use craft\app\db\MigrationManager;
-use craft\app\helpers\IOHelper;
+use craft\app\helpers\Io;
 use yii\console\controllers\BaseMigrateController;
 use yii\console\Exception;
 use yii\helpers\Console;
@@ -121,9 +121,8 @@ class MigrateController extends BaseMigrateController
                 'className' => $name
             ]);
 
-            IOHelper::writeToFile($file, $content);
-            $this->stdout("New migration created successfully.\n",
-                Console::FG_GREEN);
+            Io::writeToFile($file, $content);
+            $this->stdout("New migration created successfully.\n", Console::FG_GREEN);
         }
     }
 

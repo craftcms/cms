@@ -8,8 +8,8 @@
 namespace craft\app\db;
 
 use Craft;
-use craft\app\helpers\DbHelper;
-use craft\app\helpers\IOHelper;
+use craft\app\helpers\Db;
+use craft\app\helpers\Io;
 use yii\base\Component;
 use yii\base\InvalidConfigException;
 use yii\db\MigrationInterface;
@@ -71,10 +71,9 @@ class MigrationManager extends Component
         }
 
         $this->migrationPath = Craft::getAlias($this->migrationPath);
-        IOHelper::ensureFolderExists($this->migrationPath);
+        Io::ensureFolderExists($this->migrationPath);
 
-        $this->db = Instance::ensure($this->db,
-            \yii\db\Connection::className());
+        $this->db = Instance::ensure($this->db, \yii\db\Connection::className());
     }
 
     /**
@@ -329,7 +328,7 @@ class MigrationManager extends Component
             $this->migrationTable,
             array_merge($this->fixedColumnValues, [
                 'name' => $name,
-                'applyTime' => DbHelper::prepareDateForDb(new \DateTime())
+                'applyTime' => Db::prepareDateForDb(new \DateTime())
             ])
         )->execute();
     }

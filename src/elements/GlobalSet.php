@@ -9,8 +9,9 @@ namespace craft\app\elements;
 
 use Craft;
 use craft\app\base\Element;
+use craft\app\behaviors\FieldLayoutBehavior;
 use craft\app\elements\db\GlobalSetQuery;
-use craft\app\helpers\UrlHelper;
+use craft\app\helpers\Url;
 
 /**
  * GlobalSet represents a global set element.
@@ -93,12 +94,13 @@ class GlobalSet extends Element
      */
     public function behaviors()
     {
-        return [
-            [
-                'class' => 'craft\app\behaviors\FieldLayoutBehavior',
-                'elementType' => 'craft\app\elements\GlobalSet'
-            ],
+        $behaviors = parent::behaviors();
+        $behaviors['fieldLayout'] = [
+            'class' => 'craft\app\behaviors\FieldLayoutBehavior',
+            'elementType' => 'craft\app\elements\GlobalSet'
         ];
+
+        return $behaviors;
     }
 
     /**
@@ -134,8 +136,18 @@ class GlobalSet extends Element
     /**
      * @inheritdoc
      */
+    public function getFieldLayout()
+    {
+        /** @var FieldLayoutBehavior $behavior */
+        $behavior = $this->getBehavior('fieldLayout');
+        return $behavior->getFieldLayout();
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function getCpEditUrl()
     {
-        return UrlHelper::getCpUrl('globals/'.$this->handle);
+        return Url::getCpUrl('globals/'.$this->handle);
     }
 }

@@ -13,9 +13,10 @@
 namespace craft\app\base;
 
 use Craft;
-use craft\app\errors\VolumeFileExistsException;
-use craft\app\errors\VolumeFileNotFoundException;
+use craft\app\errors\VolumeObjectExistsException;
+use craft\app\errors\VolumeObjectNotFoundException;
 use craft\app\errors\VolumeFolderExistsException;
+use craft\app\helpers\Io;
 use League\Flysystem\AdapterInterface;
 use League\Flysystem\FileExistsException;
 use League\Flysystem\FileNotFoundException;
@@ -51,7 +52,7 @@ abstract class Volume extends SavableComponent implements VolumeInterface
     // =========================================================================
 
     /**
-     * Returns whether this source stores files locally on the server.
+     * Returns whether this volume stores files locally on the server.
      *
      * @return boolean Whether files are stored locally.
      */
@@ -69,7 +70,7 @@ abstract class Volume extends SavableComponent implements VolumeInterface
     public function behaviors()
     {
         return [
-            [
+            'fieldLayout' => [
                 'class' => 'craft\app\behaviors\FieldLayoutBehavior',
                 'elementType' => 'craft\app\elements\Asset'
             ],
@@ -148,16 +149,14 @@ abstract class Volume extends SavableComponent implements VolumeInterface
     /**
      * @inheritdoc
      */
-    public function createFileByStream($path, $stream)
+    public function createFileByStream($path, $stream, $config = [])
     {
+        $config = array_merge($config,
+            ['visibility' => AdapterInterface::VISIBILITY_PUBLIC]);
         try {
-            return $this->getFilesystem()->writeStream($path, $stream,
-                [
-                    'visibility' => AdapterInterface::VISIBILITY_PUBLIC
-                ]
-            );
+            return $this->getFilesystem()->writeStream($path, $stream, $config);
         } catch (FileExistsException $exception) {
-            throw new VolumeFileExistsException($exception->getMessage());
+            throw new VolumeObjectExistsException($exception->getMessage());
         }
     }
 
@@ -196,6 +195,14 @@ abstract class Volume extends SavableComponent implements VolumeInterface
     /**
      * @inheritdoc
      */
+    public function folderExists($path)
+    {
+        return $this->getFilesystem()->has($path);
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function deleteFile($path)
     {
         try {
@@ -224,9 +231,9 @@ abstract class Volume extends SavableComponent implements VolumeInterface
         try {
             return $this->getFilesystem()->rename($path, $newPath);
         } catch (FileExistsException $exception) {
-            throw new VolumeFileExistsException($exception->getMessage());
+            throw new VolumeObjectExistsException($exception->getMessage());
         } catch (FileNotFoundException $exception) {
-            throw new VolumeFileNotFoundException(Craft::t('app',
+            throw new VolumeObjectNotFoundException(Craft::t('app',
                 'File was not found while attempting to rename {path}!',
                 array('path' => $path)));
         }
@@ -272,7 +279,8 @@ abstract class Volume extends SavableComponent implements VolumeInterface
         if ($this->getAdapter()->has(rtrim($path,
                 '/').($this->foldersHaveTrailingSlashes ? '/' : ''))
         ) {
-            throw new VolumeFolderExistsException(Craft::t("Folder “{folder}” already exists on the source!",
+            throw new VolumeFolderExistsException(Craft::t('app',
+                "Folder “{folder}” already exists on the source!",
                 array('folder' => $path)));
         }
 
@@ -286,8 +294,40 @@ abstract class Volume extends SavableComponent implements VolumeInterface
     {
         try {
             return $this->getFilesystem()->deleteDir($path);
-        } catch (RootViolationException $exception) {
+        } catch (\Exception $exception) {
+            // We catch all Exceptions because most of the times these will be 3rd party exceptions.
             return false;
+        }
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function renameDir($path, $newName)
+    {
+        $fileList = $this->getAdapter()->listContents($path, true);
+        $directoryList = [];
+
+        $parts = explode("/", $path);
+
+        array_pop($parts);
+        array_push($parts, $newName);
+
+        $newPath = join("/", $parts);
+
+        $pattern = '/^'.preg_quote($path, '/').'/';
+
+        foreach ($fileList as $object) {
+            if ($object['type'] != 'dir') {
+                $objectPath = preg_replace($pattern, $newPath, $object['path']);
+                $this->renameFile($object['path'], $objectPath);
+            } else {
+                $directoryList[] = $object['path'];
+            }
+        }
+
+        foreach ($directoryList as $path) {
+            $this->deleteDir($path);
         }
     }
 

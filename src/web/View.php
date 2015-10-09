@@ -12,11 +12,11 @@ use craft\app\base\Element;
 use craft\app\base\ElementInterface;
 use craft\app\events\Event;
 use craft\app\helpers\ArrayHelper;
-use craft\app\helpers\ElementHelper;
-use craft\app\helpers\HtmlHelper;
-use craft\app\helpers\IOHelper;
-use craft\app\helpers\JsonHelper;
-use craft\app\helpers\PathHelper;
+use craft\app\helpers\Element as ElementHelper;
+use craft\app\helpers\Html as HtmlHelper;
+use craft\app\helpers\Io;
+use craft\app\helpers\Json;
+use craft\app\helpers\Path;
 use craft\app\helpers\StringHelper;
 use craft\app\services\Plugins;
 use craft\app\web\assets\AppAsset;
@@ -26,7 +26,6 @@ use craft\app\web\twig\Parser;
 use craft\app\web\twig\StringTemplate;
 use craft\app\web\twig\Template;
 use craft\app\web\twig\TemplateLoader;
-use yii\base\InvalidParamException;
 use yii\helpers\Html;
 use yii\web\AssetBundle;
 
@@ -322,10 +321,8 @@ class View extends \yii\web\View
         // Have we already parsed this template?
         if (!isset($this->_objectTemplates[$template])) {
             // Replace shortcut "{var}"s with "{{object.var}}"s, without affecting normal Twig tags
-            $formattedTemplate = preg_replace('/(?<![\{\%])\{(?![\{\%])/',
-                '{{object.', $template);
-            $formattedTemplate = preg_replace('/(?<![\}\%])\}(?![\}\%])/',
-                '|raw}}', $formattedTemplate);
+            $formattedTemplate = preg_replace('/(?<![\{\%])\{(?![\{\%])/', '{{object.', $template);
+            $formattedTemplate = preg_replace('/(?<![\}\%])\}(?![\}\%])/', '|raw}}', $formattedTemplate);
             $this->_objectTemplates[$template] = $twig->loadTemplate($formattedTemplate);
         }
 
@@ -452,12 +449,10 @@ class View extends \yii\web\View
     public function resolveTemplate($name)
     {
         // Normalize the template name
-        $name = trim(preg_replace('#/{2,}#', '/', strtr($name, '\\', '/')),
-            '/');
+        $name = trim(preg_replace('#/{2,}#', '/', strtr($name, '\\', '/')), '/');
 
         // Get the latest template base path
-        $templatesPath = rtrim(Craft::$app->getPath()->getTemplatesPath(),
-            '/\\');
+        $templatesPath = rtrim(Craft::$app->getPath()->getTemplatesPath(), '/\\');
 
         $key = $templatesPath.':'.$name;
 
@@ -475,7 +470,7 @@ class View extends \yii\web\View
         // Should we be looking for a localized version of the template?
         $request = Craft::$app->getRequest();
 
-        if (!$request->getIsConsoleRequest() && $request->getIsSiteRequest() && IOHelper::folderExists($templatesPath.'/'.Craft::$app->language)) {
+        if (!$request->getIsConsoleRequest() && $request->getIsSiteRequest() && Io::folderExists($templatesPath.'/'.Craft::$app->language)) {
             $basePaths[] = $templatesPath.'/'.Craft::$app->language;
         }
 
@@ -682,49 +677,38 @@ class View extends \yii\web\View
     }
 
     /**
-     * Returns the content to be inserted at the beginning of the body section.
-     *
-     * This includes:
-     *
-     * - JS code registered with [[registerJs()]] with the position set to [[POS_BEGIN]]
-     * - JS files registered with [[registerJsFile()]] with the position set to [[POS_BEGIN]]
-     *
-     * @param boolean $clear Whether the content should be cleared from the queue (default is true)
-     *
-     * @return string the rendered content
-     */
-    public function getBodyBeginHtml($clear = true)
-    {
-        $html = $this->renderBodyBeginHtml();
-
-        if ($clear === true) {
-            unset($this->jsFiles[self::POS_BEGIN], $this->js[self::POS_BEGIN]);
-        }
-
-        return $html;
-    }
-
-    /**
      * Returns the content to be inserted at the end of the body section.
      *
      * This includes:
      *
-     * - JS code registered with [[registerJs()]] with the position set to [[POS_END]], [[POS_READY]], or [[POS_LOAD]]
-     * - JS files registered with [[registerJsFile()]] with the position set to [[POS_END]]
+     * - JS code registered with [[registerJs()]] with the position set to [[POS_BEGIN]], [[POS_END]], [[POS_READY]], or [[POS_LOAD]]
+     * - JS files registered with [[registerJsFile()]] with the position set to [[POS_BEGIN]] or [[POS_END]]
      *
-     * @param boolean $ajaxMode whether the view is rendering in AJAX mode.
-     *                          If true, the JS scripts registered at [[POS_READY]] and [[POS_LOAD]] positions
-     *                          will be rendered at the end of the view like normal scripts.
      * @param boolean $clear    Whether the content should be cleared from the queue (default is true)
      *
      * @return string the rendered content
      */
-    public function getBodyEndHtml($ajaxMode, $clear = true)
+    public function getBodyHtml($clear = true)
     {
-        $html = $this->renderBodyEndHtml($ajaxMode);
+        // Register any asset bundles
+        foreach (array_keys($this->assetBundles) as $bundle) {
+            $this->registerAssetFiles($bundle);
+        }
 
+        // Get the rendered body begin+end HTML
+        $html = $this->renderBodyBeginHtml() .
+            $this->renderBodyEndHtml(true);
+
+        // Clear out the queued up files
         if ($clear === true) {
-            unset($this->jsFiles[self::POS_END], $this->js[self::POS_END], $this->js[self::POS_READY], $this->js[self::POS_LOAD]);
+            unset(
+                $this->jsFiles[self::POS_BEGIN],
+                $this->jsFiles[self::POS_END],
+                $this->js[self::POS_BEGIN],
+                $this->js[self::POS_END],
+                $this->js[self::POS_READY],
+                $this->js[self::POS_LOAD]
+            );
         }
 
         return $html;
@@ -777,7 +761,7 @@ class View extends \yii\web\View
      */
     public function getTranslations()
     {
-        $translations = JsonHelper::encode(array_filter($this->_translations));
+        $translations = Json::encode(array_filter($this->_translations));
         $this->_translations = [];
 
         return $translations;
@@ -867,19 +851,16 @@ class View extends \yii\web\View
                 [$this, '_createTextareaMarker'], $html);
 
             // name= attributes
-            $html = preg_replace('/(?<![\w\-])(name=(\'|"))([^\'"\[\]]+)([^\'"]*)\2/i',
-                '$1'.$namespace.'[$3]$4$2', $html);
+            $html = preg_replace('/(?<![\w\-])(name=(\'|"))([^\'"\[\]]+)([^\'"]*)\2/i', '$1'.$namespace.'[$3]$4$2', $html);
 
             // id= and for= attributes
             if ($otherAttributes) {
                 $idNamespace = $this->formatInputId($namespace);
-                $html = preg_replace('/(?<![\w\-])((id|for|list|data\-target|data\-reverse\-target|data\-target\-prefix)=(\'|")#?)([^\.\'"][^\'"]*)\3/i',
-                    '$1'.$idNamespace.'-$4$3', $html);
+                $html = preg_replace('/(?<![\w\-])((id|for|list|data\-target|data\-reverse\-target|data\-target\-prefix)=(\'|")#?)([^\.\'"][^\'"]*)\3/i', '$1'.$idNamespace.'-$4$3', $html);
             }
 
             // Bring back the textarea content
-            $html = str_replace(array_keys($this->_textareaMarkers),
-                array_values($this->_textareaMarkers), $html);
+            $html = str_replace(array_keys($this->_textareaMarkers), array_values($this->_textareaMarkers), $html);
         }
 
         return $html;
@@ -903,8 +884,7 @@ class View extends \yii\web\View
         }
 
         if ($namespace) {
-            $inputName = preg_replace('/([^\'"\[\]]+)([^\'"]*)/',
-                $namespace.'[$1]$2', $inputName);
+            $inputName = preg_replace('/([^\'"\[\]]+)([^\'"]*)/', $namespace.'[$1]$2', $inputName);
         }
 
         return $inputName;
@@ -1042,14 +1022,11 @@ class View extends \yii\web\View
     private function _validateTemplateName($name)
     {
         if (StringHelper::contains($name, "\0")) {
-            throw new \Twig_Error_Loader(Craft::t('app',
-                'A template name cannot contain NUL bytes.'));
+            throw new \Twig_Error_Loader(Craft::t('app', 'A template name cannot contain NUL bytes.'));
         }
 
-        if (PathHelper::ensurePathIsContained($name) === false) {
-            throw new \Twig_Error_Loader(Craft::t('app',
-                'Looks like you try to load a template outside the template folder: {template}.',
-                ['template' => $name]));
+        if (Path::ensurePathIsContained($name) === false) {
+            throw new \Twig_Error_Loader(Craft::t('app', 'Looks like you try to load a template outside the template folder: {template}.', ['template' => $name]));
         }
     }
 
@@ -1064,8 +1041,8 @@ class View extends \yii\web\View
     private function _resolveTemplate($basePath, $name)
     {
         // Normalize the path and name
-        $basePath = rtrim(IOHelper::normalizePathSeparators($basePath), '/\\');
-        $name = trim(IOHelper::normalizePathSeparators($name), '/');
+        $basePath = rtrim(Io::normalizePathSeparators($basePath), '/\\');
+        $name = trim(Io::normalizePathSeparators($name), '/');
 
         // Set the defaultTemplateExtensions and indexTemplateFilenames vars
         if (!isset($this->_defaultTemplateExtensions)) {
@@ -1085,14 +1062,14 @@ class View extends \yii\web\View
             // Maybe $name is already the full file path
             $testPath = $basePath.'/'.$name;
 
-            if (IOHelper::fileExists($testPath)) {
+            if (Io::fileExists($testPath)) {
                 return $testPath;
             }
 
             foreach ($this->_defaultTemplateExtensions as $extension) {
                 $testPath = $basePath.'/'.$name.'.'.$extension;
 
-                if (IOHelper::fileExists($testPath)) {
+                if (Io::fileExists($testPath)) {
                     return $testPath;
                 }
             }
@@ -1102,7 +1079,7 @@ class View extends \yii\web\View
             foreach ($this->_defaultTemplateExtensions as $extension) {
                 $testPath = $basePath.'/'.($name ? $name.'/' : '').$filename.'.'.$extension;
 
-                if (IOHelper::fileExists($testPath)) {
+                if (Io::fileExists($testPath)) {
                     return $testPath;
                 }
             }
@@ -1164,8 +1141,7 @@ class View extends \yii\web\View
                     }
                 }
             } catch (\LogicException $e) {
-                Craft::warning('Tried to register plugin-supplied Twig extensions, but Twig environment has already initialized its extensions.',
-                    __METHOD__);
+                Craft::warning('Tried to register plugin-supplied Twig extensions, but Twig environment has already initialized its extensions.', __METHOD__);
 
                 return;
             }
@@ -1196,7 +1172,7 @@ class View extends \yii\web\View
         $sourcePath = Craft::getAlias('@app/resources');
 
         // If the resource doesn't exist in craft/app/resources, check plugins' resources/ subfolders
-        if (!IOHelper::fileExists($sourcePath.'/'.$path)) {
+        if (!Io::fileExists($sourcePath.'/'.$path)) {
             $pathParts = explode('/', $path);
 
             if (count($pathParts) > 1) {
@@ -1204,7 +1180,7 @@ class View extends \yii\web\View
                 $pluginSourcePath = Craft::getAlias('@craft/plugins/'.$pluginHandle.'/resources');
                 $pluginSubpath = implode('/', $pathParts);
 
-                if (IOHelper::fileExists($pluginSourcePath.'/'.$pluginSubpath)) {
+                if (Io::fileExists($pluginSourcePath.'/'.$pluginSubpath)) {
                     $sourcePath = $pluginSourcePath;
                     $path = $pluginSubpath;
                 }

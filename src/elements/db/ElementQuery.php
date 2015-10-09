@@ -23,7 +23,7 @@ use craft\app\db\QueryAbortedException;
 use craft\app\events\Event;
 use craft\app\events\PopulateElementEvent;
 use craft\app\helpers\ArrayHelper;
-use craft\app\helpers\DbHelper;
+use craft\app\helpers\Db;
 use craft\app\helpers\StringHelper;
 use IteratorAggregate;
 use yii\base\Arrayable;
@@ -184,7 +184,7 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
     /**
      * @inheritdoc
      */
-    public $limit = 100;
+    public $limit;
 
     // Structure parameters
     // -------------------------------------------------------------------------
@@ -313,8 +313,7 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
     public function __isset($name)
     {
         if ($name === 'order') {
-            Craft::$app->getDeprecator()->log('ElementQuery::order()',
-                'The “order” element parameter has been deprecated. Use “orderBy” instead.');
+            Craft::$app->getDeprecator()->log('ElementQuery::order()', 'The “order” element parameter has been deprecated. Use “orderBy” instead.');
 
             return isset($this->orderBy);
         } else {
@@ -328,8 +327,7 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
     public function __get($name)
     {
         if ($name === 'order') {
-            Craft::$app->getDeprecator()->log('ElementQuery::order()',
-                'The “order” element parameter has been deprecated. Use “orderBy” instead.');
+            Craft::$app->getDeprecator()->log('ElementQuery::order()', 'The “order” element parameter has been deprecated. Use “orderBy” instead.');
 
             return $this->orderBy;
         } else {
@@ -343,8 +341,7 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
     public function __set($name, $value)
     {
         if ($name === 'order') {
-            Craft::$app->getDeprecator()->log('ElementQuery::order()',
-                'The “order” element parameter has been deprecated. Use “orderBy” instead.');
+            Craft::$app->getDeprecator()->log('ElementQuery::order()', 'The “order” element parameter has been deprecated. Use “orderBy” instead.');
             $this->orderBy = $value;
         } else {
             parent::__set($name, $value);
@@ -357,8 +354,7 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
     public function __call($name, $params)
     {
         if ($name === 'order') {
-            Craft::$app->getDeprecator()->log('ElementQuery::order()',
-                'The “order” element parameter has been deprecated. Use “orderBy” instead.');
+            Craft::$app->getDeprecator()->log('ElementQuery::order()', 'The “order” element parameter has been deprecated. Use “orderBy” instead.');
 
             if (count($params) == 1) {
                 $this->orderBy = $params[0];
@@ -801,10 +797,8 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
 
         $this->query
             ->from(['subquery' => $this->subQuery])
-            ->innerJoin('{{%elements}} elements',
-                'elements.id = subquery.elementsId')
-            ->innerJoin('{{%elements_i18n}} elements_i18n',
-                'elements_i18n.id = subquery.elmentsI18nId');
+            ->innerJoin('{{%elements}} elements', 'elements.id = subquery.elementsId')
+            ->innerJoin('{{%elements_i18n}} elements_i18n', 'elements_i18n.id = subquery.elmentsI18nId');
 
         $this->subQuery
             ->addSelect([
@@ -812,8 +806,7 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
                 'elmentsI18nId' => 'elements_i18n.id',
             ])
             ->from(['elements' => '{{%elements}}'])
-            ->innerJoin('{{%elements_i18n}} elements_i18n',
-                'elements_i18n.elementId = elements.id')
+            ->innerJoin('{{%elements_i18n}} elements_i18n', 'elements_i18n.elementId = elements.id')
             ->andWhere('elements_i18n.locale = :locale')
             ->andWhere($this->where)
             ->limit($this->limit)
@@ -827,8 +820,7 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
         }
 
         if ($this->id) {
-            $this->subQuery->andWhere(DbHelper::parseParam('elements.id',
-                $this->id, $this->subQuery->params));
+            $this->subQuery->andWhere(Db::parseParam('elements.id', $this->id, $this->subQuery->params));
         }
 
         if ($this->archived) {
@@ -839,28 +831,23 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
         }
 
         if ($this->dateCreated) {
-            $this->subQuery->andWhere(DbHelper::parseDateParam('elements.dateCreated',
-                $this->dateCreated, $this->subQuery->params));
+            $this->subQuery->andWhere(Db::parseDateParam('elements.dateCreated', $this->dateCreated, $this->subQuery->params));
         }
 
         if ($this->dateUpdated) {
-            $this->subQuery->andWhere(DbHelper::parseDateParam('elements.dateUpdated',
-                $this->dateUpdated, $this->subQuery->params));
+            $this->subQuery->andWhere(Db::parseDateParam('elements.dateUpdated', $this->dateUpdated, $this->subQuery->params));
         }
 
         if ($this->title && $class::hasTitles()) {
-            $this->subQuery->andWhere(DbHelper::parseParam('content.title',
-                $this->title, $this->subQuery->params));
+            $this->subQuery->andWhere(Db::parseParam('content.title', $this->title, $this->subQuery->params));
         }
 
         if ($this->slug) {
-            $this->subQuery->andWhere(DbHelper::parseParam('elements_i18n.slug',
-                $this->slug, $this->subQuery->params));
+            $this->subQuery->andWhere(Db::parseParam('elements_i18n.slug', $this->slug, $this->subQuery->params));
         }
 
         if ($this->uri) {
-            $this->subQuery->andWhere(DbHelper::parseParam('elements_i18n.uri',
-                $this->uri, $this->subQuery->params));
+            $this->subQuery->andWhere(Db::parseParam('elements_i18n.uri', $this->uri, $this->subQuery->params));
         }
 
         if ($this->localeEnabled) {
@@ -894,6 +881,24 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
         $elements = $this->_createElements($rows);
 
         return $elements;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function count($q = '*', $db = null)
+    {
+        // Do we have a cached result set?
+        if ($this->_result !== null) {
+            // See if the params haven't changed
+            $criteria = $this->toArray([], [], false);
+
+            if ($criteria === $this->_resultCriteria) {
+                return count($this->_result);
+            }
+        }
+
+        return parent::count($q, $db);
     }
 
     /**
@@ -944,8 +949,7 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
         // TODO: Remove this in Craft 4
         // Make sure $db is not a list of attributes
         if ($this->_setAttributes($db)) {
-            Craft::$app->getDeprecator()->log('ElementQuery::ids($attributes)',
-                'Passing a list of parameters to the ids() element query function is now deprecated. Set the parameters before calling ids().');
+            Craft::$app->getDeprecator()->log('ElementQuery::ids($attributes)', 'Passing a list of parameters to the ids() element query function is now deprecated. Set the parameters before calling ids().');
             $db = null;
         }
 
@@ -991,8 +995,10 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
             array_keys(Craft::getObjectVars($this)),
             array_keys(Craft::getObjectVars($this->getBehavior('customFields')))
         ));
+        $fields = array_combine($fields, $fields);
+        unset($fields['query'], $fields['subQuery']);
 
-        return array_combine($fields, $fields);
+        return $fields;
     }
 
     // Deprecated Methods
@@ -1008,8 +1014,7 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
      */
     public function order($value)
     {
-        Craft::$app->getDeprecator()->log('ElementQuery::order()',
-            'The “order” element parameter has been deprecated. Use “orderBy” instead.');
+        Craft::$app->getDeprecator()->log('ElementQuery::order()', 'The “order” element parameter has been deprecated. Use “orderBy” instead.');
 
         return $this->orderBy($value);
     }
@@ -1024,8 +1029,7 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
      */
     public function find($attributes = null)
     {
-        Craft::$app->getDeprecator()->log('ElementQuery::find()',
-            'The find() function used to query for elements is now deprecated. Use all() instead.');
+        Craft::$app->getDeprecator()->log('ElementQuery::find()', 'The find() function used to query for elements is now deprecated. Use all() instead.');
         $this->_setAttributes($attributes);
 
         return $this->all();
@@ -1041,8 +1045,7 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
      */
     public function first($attributes = null)
     {
-        Craft::$app->getDeprecator()->log('ElementQuery::first()',
-            'The first() function used to query for elements is now deprecated. Use one() instead.');
+        Craft::$app->getDeprecator()->log('ElementQuery::first()', 'The first() function used to query for elements is now deprecated. Use one() instead.');
         $this->_setAttributes($attributes);
 
         return $this->one();
@@ -1058,8 +1061,7 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
      */
     public function last($attributes = null)
     {
-        Craft::$app->getDeprecator()->log('ElementQuery::last()',
-            'The last() function used to query for elements is now deprecated. Use nth() instead.');
+        Craft::$app->getDeprecator()->log('ElementQuery::last()', 'The last() function used to query for elements is now deprecated. Use nth() instead.');
         $this->_setAttributes($attributes);
         $count = $this->count();
         $offset = $this->offset;
@@ -1080,8 +1082,7 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
      */
     public function total($attributes = null)
     {
-        Craft::$app->getDeprecator()->log('ElementQuery::total()',
-            'The total() function used to query for elements is now deprecated. Use count() instead.');
+        Craft::$app->getDeprecator()->log('ElementQuery::total()', 'The total() function used to query for elements is now deprecated. Use count() instead.');
         $this->_setAttributes($attributes);
 
         return $this->count();
@@ -1113,7 +1114,7 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
         $event = new Event();
         $this->trigger(self::EVENT_BEFORE_PREPARE, $event);
 
-        return $event->performAction;
+        return $event->isValid;
     }
 
     /**
@@ -1131,7 +1132,7 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
         $event = new Event();
         $this->trigger(self::EVENT_AFTER_PREPARE, $event);
 
-        return $event->performAction;
+        return $event->isValid;
     }
 
     /**
@@ -1159,13 +1160,11 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
     private function _joinContentTable($class)
     {
         // Join in the content table on both queries
-        $this->subQuery->innerJoin($this->contentTable.' content',
-            'content.elementId = elements.id');
+        $this->subQuery->innerJoin($this->contentTable.' content', 'content.elementId = elements.id');
         $this->subQuery->addSelect(['contentId' => 'content.id']);
         $this->subQuery->andWhere('content.locale = :locale');
 
-        $this->query->innerJoin($this->contentTable.' content',
-            'content.id = subquery.contentId');
+        $this->query->innerJoin($this->contentTable.' content', 'content.id = subquery.contentId');
 
         // Select the content table columns on the main query
         $this->query->addSelect(['contentId' => 'content.id']);
@@ -1199,8 +1198,7 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
                     $contentService->fieldColumnPrefix = $field->columnPrefix;
                 }
 
-                $fieldResponse = $field->modifyElementsQuery($this,
-                    $fieldAttributeValue);
+                $fieldResponse = $field->modifyElementsQuery($this, $fieldAttributeValue);
 
                 // Set it back
                 $contentService->fieldColumnPrefix = $originalFieldColumnPrefix;
@@ -1236,8 +1234,7 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
                     } else if ($status == Element::STATUS_DISABLED) {
                         $statusConditions[] = 'elements.enabled = 0';
                     } else {
-                        $elementStatusCondition = $class::getElementQueryStatusCondition($this,
-                            $status);
+                        $elementStatusCondition = $class::getElementQueryStatusCondition($this, $status);
 
                         if ($elementStatusCondition) {
                             $statusConditions[] = $elementStatusCondition;
@@ -1290,14 +1287,12 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
                 ];
             }
 
-            Craft::$app->getDeprecator()->log('element_old_relation_params',
-                'The ‘childOf’, ‘childField’, ‘parentOf’, and ‘parentField’ element params have been deprecated. Use ‘relatedTo’ instead.');
+            Craft::$app->getDeprecator()->log('element_old_relation_params', 'The ‘childOf’, ‘childField’, ‘parentOf’, and ‘parentField’ element params have been deprecated. Use ‘relatedTo’ instead.');
         }
 
         if ($this->relatedTo) {
             $relationParamParser = new ElementRelationParamParser();
-            $relConditions = $relationParamParser->parseRelationParam($this->relatedTo,
-                $this->subQuery);
+            $relConditions = $relationParamParser->parseRelationParam($this->relatedTo, $this->subQuery);
 
             if ($relConditions === false) {
                 throw new QueryAbortedException();
@@ -1330,12 +1325,10 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
                     'structureelements.rgt',
                     'structureelements.level',
                 ])
-                ->innerJoin('{{%structureelements}} structureelements',
-                    'structureelements.elementId = subquery.elementsId');
+                ->innerJoin('{{%structureelements}} structureelements', 'structureelements.elementId = subquery.elementsId');
 
             $this->subQuery
-                ->innerJoin('{{%structureelements}} structureelements',
-                    'structureelements.elementId = elements.id')
+                ->innerJoin('{{%structureelements}} structureelements', 'structureelements.elementId = elements.id')
                 ->andWhere(['structureelements.structureId' => $this->structureId]);
 
             if ($this->ancestorOf !== null) {
@@ -1456,8 +1449,7 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
             }
 
             if ($this->positionedBefore !== null) {
-                $this->_normalizeStructureParamValue('positionedBefore',
-                    $class);
+                $this->_normalizeStructureParamValue('positionedBefore', $class);
 
                 $this->subQuery
                     ->andWhere([
@@ -1490,13 +1482,11 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
             if (!$this->level && $this->depth) {
                 $this->level = $this->depth;
                 $this->depth = null;
-                Craft::$app->getDeprecator()->log('element_depth_param',
-                    'The ‘depth’ element param has been deprecated. Use ‘level’ instead.');
+                Craft::$app->getDeprecator()->log('element_depth_param', 'The ‘depth’ element param has been deprecated. Use ‘level’ instead.');
             }
 
             if ($this->level) {
-                $this->subQuery->andWhere(DbHelper::parseParam('structureelements.level',
-                    $this->level, $this->subQuery->params));
+                $this->subQuery->andWhere(Db::parseParam('structureelements.level', $this->level, $this->subQuery->params));
             }
         }
     }
@@ -1546,8 +1536,7 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
 
             $elementIds = $this->query->column('elements.id');
             $scoredSearchResults = ($this->orderBy === ['score' => SORT_ASC]);
-            $filteredElementIds = Craft::$app->getSearch()->filterElementIdsByQuery($elementIds,
-                $this->search, $scoredSearchResults);
+            $filteredElementIds = Craft::$app->getSearch()->filterElementIdsByQuery($elementIds, $this->search, $scoredSearchResults, $this->locale);
 
             $this->query->limit = $limit;
             $this->query->offset = $offset;
@@ -1566,8 +1555,7 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
             if ($scoredSearchResults) {
                 // Order the elements in the exact order that the Search service returned them in
                 $orderBy = [
-                    new FixedOrderExpression('elements.id', $filteredElementIds,
-                        $db)
+                    new FixedOrderExpression('elements.id', $filteredElementIds, $db)
                 ];
                 $this->query->orderBy($orderBy);
             }
@@ -1604,9 +1592,7 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
                     if ($field->hasContentColumn()) {
                         // Avoid matching fields named "asc" or "desc" in the string "column_name asc" or
                         // "column_name desc"
-                        $orderBy = preg_replace('/(?<!\s)\b'.$field->handle.'\b/',
-                            'content.'.$this->_getFieldContentColumnName($field),
-                            $orderBy);
+                        $orderBy = preg_replace('/(?<!\w\s)\b'.$field->handle.'\b/', 'content.'.$this->_getFieldContentColumnName($field), $orderBy);
                     }
                 }
             }
@@ -1708,8 +1694,7 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
     private function _createElement($row)
     {
         // Do we have a placeholder for this element?
-        $element = Craft::$app->getElements()->getPlaceholderElement($row['id'],
-            $this->locale);
+        $element = Craft::$app->getElements()->getPlaceholderElement($row['id'], $this->locale);
 
         if ($element !== null) {
             return $element;
@@ -1725,6 +1710,7 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
             $row['structureId'] = $this->structureId;
         }
 
+        /** @var ElementInterface|Element $element */
         $element = $class::create($row);
 
         // Verify that an element was returned
@@ -1732,15 +1718,10 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
             return false;
         }
 
-        // Set the content
+        // Set the custom field values
         if ($class::hasContent() && $this->contentTable) {
             // Separate the content values from the main element attributes
-            $content = [
-                'id' => (isset($row['contentId']) ? $row['contentId'] : null),
-                'elementId' => $row['id'],
-                'locale' => $this->locale,
-                'title' => (isset($row['title']) ? $row['title'] : null)
-            ];
+            $fieldValues = [];
 
             if ($this->customFields) {
                 foreach ($this->customFields as $field) {
@@ -1748,22 +1729,20 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
                         // Account for results where multiple fields have the same handle, but from
                         // different columns e.g. two Matrix block types that each have a field with the
                         // same handle
-
                         $colName = $this->_getFieldContentColumnName($field);
 
-                        if (!isset($content[$field->handle]) || (empty($content[$field->handle]) && !empty($row[$colName]))) {
-                            $content[$field->handle] = $row[$colName];
+                        if (!isset($fieldValues[$field->handle]) || (empty($fieldValues[$field->handle]) && !empty($row[$colName]))) {
+                            $fieldValues[$field->handle] = $row[$colName];
                         }
                     }
                 }
             }
 
-            $element->setContent($content);
+            $element->setFieldValues($fieldValues);
         }
 
         // Fire an 'afterPopulateElement' event
-        $this->trigger(static::EVENT_AFTER_POPULATE_ELEMENT,
-            new PopulateElementEvent([
+        $this->trigger(static::EVENT_AFTER_POPULATE_ELEMENT, new PopulateElementEvent([
                 'element' => $element,
                 'row' => $row
             ]));

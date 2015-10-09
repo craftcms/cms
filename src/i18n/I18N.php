@@ -10,7 +10,7 @@ namespace craft\app\i18n;
 use Craft;
 use craft\app\db\Query;
 use craft\app\events\DeleteLocaleEvent;
-use craft\app\helpers\IOHelper;
+use craft\app\helpers\Io;
 use craft\app\tasks\ResaveAllElements;
 use ResourceBundle;
 
@@ -28,7 +28,7 @@ class I18N extends \yii\i18n\I18N
     /**
      * @event DeleteLocaleEvent The event that is triggered before a locale is deleted.
      *
-     * You may set [[DeleteLocaleEvent::performAction]] to `false` to prevent the locale from getting deleted.
+     * You may set [[DeleteLocaleEvent::isValid]] to `false` to prevent the locale from getting deleted.
      */
     const EVENT_BEFORE_DELETE_LOCALE = 'beforeDeleteLocale';
 
@@ -120,21 +120,17 @@ class I18N extends \yii\i18n\I18N
                 $appLocalesPath = Craft::$app->getPath()->getAppPath().'/config/locales';
                 $customLocalesPath = Craft::$app->getPath()->getConfigPath().'/locales';
 
-                $localeFiles = IOHelper::getFolderContents($appLocalesPath,
-                    false, '\.php$');
-                $customLocaleFiles = IOHelper::getFolderContents($customLocalesPath,
-                    false, '\.php$');
+                $localeFiles = Io::getFolderContents($appLocalesPath, false, '\.php$');
+                $customLocaleFiles = Io::getFolderContents($customLocalesPath, false, '\.php$');
 
                 if ($customLocaleFiles !== false) {
-                    $localeFiles = array_merge($localeFiles,
-                        $customLocaleFiles);
+                    $localeFiles = array_merge($localeFiles, $customLocaleFiles);
                 }
 
                 $this->_allLocaleIds = [];
 
                 foreach ($localeFiles as $file) {
-                    $this->_allLocaleIds[] = IOHelper::getFilename($file,
-                        false);
+                    $this->_allLocaleIds[] = Io::getFilename($file, false);
                 }
             }
 
@@ -180,11 +176,11 @@ class I18N extends \yii\i18n\I18N
             $this->_appLocales = [new Locale('en-US')];
 
             $path = Craft::$app->getPath()->getCpTranslationsPath();
-            $folders = IOHelper::getFolderContents($path, false, ".*\.php");
+            $folders = Io::getFolderContents($path, false, ".*\.php");
 
             if (is_array($folders) && count($folders) > 0) {
                 foreach ($folders as $dir) {
-                    $localeId = IOHelper::getFilename($dir, false);
+                    $localeId = Io::getFilename($dir, false);
 
                     if ($localeId != 'en-US') {
                         $this->_appLocales[] = new Locale($localeId);
@@ -419,8 +415,7 @@ class I18N extends \yii\i18n\I18N
 
         // Did the primary site locale just change?
         if ($oldPrimaryLocaleId != $newPrimaryLocaleId) {
-            $this->_processNewPrimaryLocale($oldPrimaryLocaleId,
-                $newPrimaryLocaleId);
+            $this->_processNewPrimaryLocale($oldPrimaryLocaleId, $newPrimaryLocaleId);
         }
 
         return true;
@@ -437,7 +432,7 @@ class I18N extends \yii\i18n\I18N
      */
     public function deleteSiteLocale($localeId, $transferContentTo)
     {
-        $transaction = Craft::$app->getDb()->getTransaction() === null ? Craft::$app->getDb()->beginTransaction() : null;
+        $transaction = Craft::$app->getDb()->beginTransaction();
 
         try {
             // Fire a 'beforeDeleteLocale' event
@@ -449,7 +444,7 @@ class I18N extends \yii\i18n\I18N
             $this->trigger(static::EVENT_BEFORE_DELETE_LOCALE, $event);
 
             // Is the event is giving us the go-ahead?
-            if ($event->performAction) {
+            if ($event->isValid) {
                 // Get the section IDs that are enabled for this locale
                 $sectionIds = (new Query())
                     ->select('sectionId')
@@ -571,8 +566,7 @@ class I18N extends \yii\i18n\I18N
                                     if (strncmp($tableName, $matrixTablePrefix,
                                             $matrixTablePrefixLength) === 0
                                     ) {
-                                        $tableName = substr($tableName,
-                                            $tablePrefixLength);
+                                        $tableName = substr($tableName, $tablePrefixLength);
 
                                         Craft::$app->getDb()->createCommand()->delete(
                                             $tableName,
@@ -632,8 +626,7 @@ class I18N extends \yii\i18n\I18N
 
                     // Did the primary site locale just change?
                     if ($primaryLocaleId != $newPrimaryLocaleId) {
-                        $this->_processNewPrimaryLocale($primaryLocaleId,
-                            $newPrimaryLocaleId);
+                        $this->_processNewPrimaryLocale($primaryLocaleId, $newPrimaryLocaleId);
                     }
                 }
 
@@ -644,9 +637,7 @@ class I18N extends \yii\i18n\I18N
 
                 // If it didn't work, rollback the transaction in case something changed in onBeforeDeleteLocale
                 if (!$success) {
-                    if ($transaction !== null) {
-                        $transaction->rollback();
-                    }
+                    $transaction->rollback();
 
                     return false;
                 }
@@ -656,13 +647,9 @@ class I18N extends \yii\i18n\I18N
 
             // Commit the transaction regardless of whether we deleted the locale,
             // in case something changed in onBeforeDeleteLocale
-            if ($transaction !== null) {
-                $transaction->commit();
-            }
+            $transaction->commit();
         } catch (\Exception $e) {
-            if ($transaction !== null) {
-                $transaction->rollback();
-            }
+            $transaction->rollback();
 
             throw $e;
         }
@@ -690,7 +677,7 @@ class I18N extends \yii\i18n\I18N
             switch ($category) {
                 case 'site': $char = '$'; break;
                 case 'app': $char = '@'; break;
-                default: $char = '#';
+                default: $char = '%';
             }
 
             $translation = $char.$translation.$char;
@@ -739,19 +726,15 @@ class I18N extends \yii\i18n\I18N
 
                 $db = Craft::$app->getDb();
 
-                $db->createCommand()->delete('{{%elements_i18n}}',
-                    $deleteConditions, $deleteParams)->execute();
-                $db->createCommand()->delete('{{%content}}', $deleteConditions,
-                    $deleteParams)->execute();
+                $db->createCommand()->delete('{{%elements_i18n}}', $deleteConditions, $deleteParams)->execute();
+                $db->createCommand()->delete('{{%content}}', $deleteConditions, $deleteParams)->execute();
 
                 // Now convert the locales
                 $updateColumns = ['locale' => $newPrimaryLocaleId];
                 $updateConditions = ['in', 'elementId', $elementIds];
 
-                $db->createCommand()->update('{{%elements_i18n}}',
-                    $updateColumns, $updateConditions)->execute();
-                $db->createCommand()->update('{{%content}}', $updateColumns,
-                    $updateConditions)->execute();
+                $db->createCommand()->update('{{%elements_i18n}}', $updateColumns, $updateConditions)->execute();
+                $db->createCommand()->update('{{%content}}', $updateColumns, $updateConditions)->execute();
             }
         }
     }

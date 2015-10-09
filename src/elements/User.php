@@ -19,10 +19,10 @@ use craft\app\elements\actions\SuspendUsers;
 use craft\app\elements\actions\UnsuspendUsers;
 use craft\app\elements\db\ElementQueryInterface;
 use craft\app\elements\db\UserQuery;
-use craft\app\helpers\AssetsHelper;
+use craft\app\helpers\Assets;
 use craft\app\helpers\DateTimeHelper;
-use craft\app\helpers\HtmlHelper;
-use craft\app\helpers\UrlHelper;
+use craft\app\helpers\Html;
+use craft\app\helpers\Url;
 use craft\app\models\UserGroup;
 use craft\app\records\Session as SessionRecord;
 use Exception;
@@ -273,7 +273,7 @@ class User extends Element implements IdentityInterface
                 $email = $element->email;
 
                 if ($email) {
-                    return HtmlHelper::encodeParams('<a href="mailto:{email}">{email}</a>',
+                    return Html::encodeParams('<a href="mailto:{email}">{email}</a>',
                         [
                             'email' => $email
                         ]);
@@ -700,9 +700,7 @@ class User extends Element implements IdentityInterface
 
             case self::STATUS_ACTIVE: {
                 // Validate the password
-                if (!Craft::$app->getSecurity()->validatePassword($password,
-                    $this->password)
-                ) {
+                if (!Craft::$app->getSecurity()->validatePassword($password, $this->password)) {
                     Craft::$app->getUsers()->handleInvalidLogin($this);
 
                     // Was that one bad password too many?
@@ -902,9 +900,9 @@ class User extends Element implements IdentityInterface
     public function getPhotoUrl($size = 100)
     {
         if ($this->photo) {
-            $username = AssetsHelper::prepareAssetName($this->username, false);
+            $username = Assets::prepareAssetName($this->username, false);
 
-            return UrlHelper::getResourceUrl('userphotos/'.$username.'/'.$size.'/'.$this->photo);
+            return Url::getResourceUrl('userphotos/'.$username.'/'.$size.'/'.$this->photo);
         }
     }
 
@@ -915,7 +913,7 @@ class User extends Element implements IdentityInterface
     {
         $url = $this->getPhotoUrl($size);
         if (!$url) {
-            $url = UrlHelper::getResourceUrl('defaultuserphoto/'.$size);
+            $url = Url::getResourceUrl('defaultuserphoto/'.$size);
         }
 
         return $url;
@@ -924,7 +922,7 @@ class User extends Element implements IdentityInterface
     /**
      * @inheritdoc
      */
-    public function isEditable()
+    public function getIsEditable()
     {
         return Craft::$app->getUser()->checkPermission('editUsers');
     }
@@ -960,8 +958,7 @@ class User extends Element implements IdentityInterface
             if ($this->admin || $this->client) {
                 return true;
             } else if ($this->id) {
-                return Craft::$app->getUserPermissions()->doesUserHavePermission($this->id,
-                    $permission);
+                return Craft::$app->getUserPermissions()->doesUserHavePermission($this->id, $permission);
             } else {
                 return false;
             }
@@ -980,8 +977,7 @@ class User extends Element implements IdentityInterface
     public function hasShunned($message)
     {
         if ($this->id) {
-            return Craft::$app->getUsers()->hasUserShunnedMessage($this->id,
-                $message);
+            return Craft::$app->getUsers()->hasUserShunnedMessage($this->id, $message);
         } else {
             return false;
         }
@@ -1030,11 +1026,11 @@ class User extends Element implements IdentityInterface
     public function getCpEditUrl()
     {
         if ($this->isCurrent()) {
-            return UrlHelper::getCpUrl('myaccount');
+            return Url::getCpUrl('myaccount');
         } else if (Craft::$app->getEdition() == Craft::Client && $this->client) {
-            return UrlHelper::getCpUrl('clientaccount');
+            return Url::getCpUrl('clientaccount');
         } else if (Craft::$app->getEdition() == Craft::Pro) {
-            return UrlHelper::getCpUrl('users/'.$this->id);
+            return Url::getCpUrl('users/'.$this->id);
         } else {
             return false;
         }
@@ -1055,8 +1051,7 @@ class User extends Element implements IdentityInterface
     {
         // Don't allow whitespace in the username.
         if (preg_match('/\s+/', $this->username)) {
-            $this->addError('username',
-                Craft::t('app', 'Spaces are not allowed in the username.'));
+            $this->addError('username', Craft::t('app', 'Spaces are not allowed in the username.'));
         }
 
         return parent::validate($attributes, false);
@@ -1119,8 +1114,7 @@ class User extends Element implements IdentityInterface
      */
     public function mergePreferences($preferences)
     {
-        $this->_preferences = array_merge($this->getPreferences(),
-            $preferences);
+        $this->_preferences = array_merge($this->getPreferences(), $preferences);
 
         return $this->_preferences;
     }
@@ -1176,8 +1170,7 @@ class User extends Element implements IdentityInterface
             $requestUserAgent = Craft::$app->getRequest()->getUserAgent();
 
             if ($userAgent !== $requestUserAgent) {
-                Craft::warning('Tried to restore session from the the identity cookie, but the saved user agent ('.$userAgent.') does not match the current request’s ('.$requestUserAgent.').',
-                    __METHOD__);
+                Craft::warning('Tried to restore session from the the identity cookie, but the saved user agent ('.$userAgent.') does not match the current request’s ('.$requestUserAgent.').', __METHOD__);
 
                 return false;
             }

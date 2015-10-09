@@ -9,7 +9,7 @@ namespace craft\app\elements\actions;
 
 use Craft;
 use craft\app\base\ElementAction;
-use craft\app\helpers\JsonHelper;
+use craft\app\helpers\Json;
 
 /**
  * RenameFile represents a Rename File element action.
@@ -35,8 +35,8 @@ class RenameFile extends ElementAction
      */
     public function getTriggerHtml()
     {
-        $type = JsonHelper::encode(static::className());
-        $prompt = JsonHelper::encode(Craft::t('app', 'Enter the new filename'));
+        $type = Json::encode(static::className());
+        $prompt = Json::encode(Craft::t('app', 'Enter the new filename'));
 
         $js = <<<EOT
 (function()

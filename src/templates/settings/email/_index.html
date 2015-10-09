@@ -1,0 +1,100 @@
+{% requireAdmin %}
+
+{% extends (CraftEdition >= CraftClient ? "settings/email/_layout" : "_layouts/cp") %}
+
+{% set crumbs = [
+	{ label: "Settings"|t('app'), url: url('settings') }
+] %}
+
+{% if CraftEdition >= CraftClient %}
+	{% set selectedTab = 'settings' %}
+{% else %}
+	{% set title = "Email Settings"|t('app') %}
+{% endif %}
+
+{% import "_includes/forms" as forms %}
+
+{% includeTranslations
+	"Email sent successfully! Check your inbox.",
+	"An unknown error occurred."
+%}
+
+
+{% if settings is not defined %}
+	{% set settings = craft.systemSettings.email %}
+	{% set freshSettings = true %}
+{% else %}
+	{% set freshSettings = false %}
+{% endif %}
+
+
+{% block content %}
+	<form id="settings-form" method="post" class="centered" accept-charset="UTF-8" data-saveshortcut>
+		<input type="hidden" name="action" value="system-settings/save-email-settings">
+		<input type="hidden" name="redirect" value="settings">
+
+		{{ getCsrfInput() }}
+
+		{{ forms.textField({
+			first: true,
+			label: "System Email Address"|t('app'),
+			instructions: "The email address Craft will use when sending email."|t('app'),
+			id: 'fromEmail',
+			name: 'fromEmail',
+			value: settings.fromEmail,
+			autofocus: true,
+			required: true,
+			errors: (freshSettings ? null : settings.getErrors('fromEmail'))
+		}) }}
+
+		{{ forms.textField({
+			label: "Sender Name"|t('app'),
+			instructions: "The “From” name Craft will use when sending email."|t('app'),
+			id: 'fromName',
+			name: 'fromName',
+			value: settings.fromName,
+			required: true,
+			errors: (freshSettings ? null : settings.getErrors('fromName'))
+		}) }}
+
+		{% if CraftEdition >= CraftClient %}
+			{{ forms.textField({
+				label: "HTML Email Template"|t('app'),
+				instructions: "The template Craft will use for HTML emails"|t('app'),
+				id: 'template',
+				name: 'template',
+				value: settings.template,
+				errors: (freshSettings ? null : settings.getErrors('template'))
+			}) }}
+		{% endif %}
+
+		<hr>
+
+		{{ forms.selectField({
+			label: "Transport Type"|t('app'),
+			instructions: "How should Craft send the emails?"|t('app'),
+			id: 'transportType',
+			name: 'transportType',
+			options: transportTypeOptions,
+			value: adaptor.getType(),
+			toggle: true
+		}) }}
+
+
+		{% for _adaptor in allTransportTypes %}
+			{% set isCurrent = (_adaptor.getType() == adaptor.getType()) %}
+			<div id="{{ _adaptor.getType()|id }}"{% if not isCurrent %} class="hidden"{% endif %}>
+				{% namespace 'transportTypes['~_adaptor.getType()~']' %}
+					{{ (isCurrent ? adaptor : _adaptor).getSettingsHtml()|raw }}
+				{% endnamespace %}
+			</div>
+		{% endfor %}
+
+		<hr>
+
+		<div class="buttons">
+			<input class="btn submit" type="submit" value="{{ 'Save'|t('app') }}">
+			<div id="test" class="btn formsubmit" data-action="system-settings/test-email-settings">{{ "Test"|t('app') }}</div>
+		</div>
+	</form>
+{% endblock %}

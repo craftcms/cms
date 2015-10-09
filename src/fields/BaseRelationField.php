@@ -193,26 +193,27 @@ abstract class BaseRelationField extends Field
     /**
      * @inheritdoc
      */
-    function validateValue($value, $element)
+    public function validateValue($value, $element)
     {
         $errors = [];
 
-        if ($this->allowLimit && $this->limit && is_array($value) && count($value) > $this->limit) {
-            if ($this->limit == 1) {
-                $errors[] = Craft::t('app',
-                    'There can’t be more than one selection.');
-            } else {
-                $errors[] = Craft::t('app',
-                    'There can’t be more than {limit} selections.',
-                    ['limit' => $this->limit]);
+        // Do we need to validate the number of selections?
+        if ($this->required || ($this->allowLimit && $this->limit)) {
+            /** @var ElementQuery $value */
+            $total = $value->count();
+
+            if ($this->required && $total == 0) {
+                $errors[] = Craft::t('yii', '{attribute} cannot be blank.');
+            } else if ($this->allowLimit && $this->limit && $total > $this->limit) {
+                if ($this->limit == 1) {
+                    $errors[] = Craft::t('app', 'There can’t be more than one selection.');
+                } else {
+                    $errors[] = Craft::t('app', 'There can’t be more than {limit} selections.', ['limit' => $this->limit]);
+                }
             }
         }
 
-        if ($errors) {
-            return $errors;
-        } else {
-            return true;
-        }
+        return $errors;
     }
 
     /**
@@ -269,8 +270,7 @@ abstract class BaseRelationField extends Field
     {
         $variables = $this->getInputTemplateVariables($value, $element);
 
-        return Craft::$app->getView()->renderTemplate($this->inputTemplate,
-            $variables);
+        return Craft::$app->getView()->renderTemplate($this->inputTemplate, $variables);
     }
 
     /**
@@ -322,8 +322,7 @@ abstract class BaseRelationField extends Field
 
             return $html;
         } else {
-            return '<p class="light">'.Craft::t('app',
-                'Nothing selected.').'</p>';
+            return '<p class="light">'.Craft::t('app', 'Nothing selected.').'</p>';
         }
     }
 
@@ -439,13 +438,11 @@ abstract class BaseRelationField extends Field
                 ];
             }
 
-            return Craft::$app->getView()->renderTemplateMacro('_includes/forms',
-                'selectField', [
+            return Craft::$app->getView()->renderTemplateMacro('_includes/forms', 'selectField',
+                [
                     [
                         'label' => Craft::t('app', 'Target Locale'),
-                        'instructions' => Craft::t('app',
-                            'Which locale do you want to select {type} in?',
-                            ['type' => StringHelper::toLowerCase(static::displayName())]),
+                        'instructions' => Craft::t('app', 'Which locale do you want to select {type} in?', ['type' => StringHelper::toLowerCase(static::displayName())]),
                         'id' => 'targetLocale',
                         'name' => 'targetLocale',
                         'options' => $localeOptions,

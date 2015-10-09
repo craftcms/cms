@@ -8,9 +8,12 @@
 namespace craft\app\services;
 
 use Craft;
-use craft\app\helpers\AppHelper;
-use craft\app\helpers\ImageHelper;
-use craft\app\helpers\IOHelper;
+use craft\app\helpers\App;
+use craft\app\helpers\Image as ImageHelper;
+use craft\app\helpers\Io;
+use craft\app\helpers\StringHelper;
+use craft\app\image\Raster;
+use craft\app\image\Svg;
 use craft\app\io\Image;
 use lsolesen\pel\PelDataWindow;
 use lsolesen\pel\PelJpeg;
@@ -49,8 +52,7 @@ class Images extends Component
                 // Taken from Imagick\Imagine() constructor.
                 $imagick = new \Imagick();
                 $v = $imagick->getVersion();
-                list($version, $year, $month, $day, $q, $website) = sscanf($v['versionString'],
-                    'ImageMagick %s %04d-%02d-%02d %s %s');
+                list($version, $year, $month, $day, $q, $website) = sscanf($v['versionString'], 'ImageMagick %s %04d-%02d-%02d %s %s');
 
                 // Update this if Imagine updates theirs.
                 if (version_compare('6.2.9', $version) <= 0) {
@@ -80,20 +82,33 @@ class Images extends Component
      * Loads an image from a file system path.
      *
      * @param string $path
-     * @param int    $minSvgWidth  The minimum width that the image should be loaded with if it’s an SVG.
-     * @param int    $minSvgHeight The minimum width that the image should be loaded with if it’s an SVG.
+     * @param bool   $rasterize whether or not the image will be rasterized if it's an SVG
+     * @param int    $svgSize   The size SVG should be scaled up to, if rasterized
      *
      * @throws \Exception
      * @return Image
      */
-    public function loadImage($path, $minSvgWidth = 1000, $minSvgHeight = 1000)
+    public function loadImage($path, $rasterize = false, $svgSize = 1000)
     {
-        $image = new Image();
+        if (StringHelper::toLowerCase(Io::getExtension($path)) == 'svg')
+        {
+            $image = new Svg();
+            $image->loadImage($path);
 
-        $image->minSvgWidth = $minSvgWidth;
-        $image->minSvgHeight = $minSvgHeight;
+            if ($rasterize)
+            {
+                $image->scaleToFit($svgSize, $svgSize);
+                $svgString = $image->getSvgString();
+                $image = new Raster();
+                $image->loadFromSVG($svgString);
+            }
+        }
+        else
+        {
+            $image = new Raster();
+            $image->loadImage($path);
+        }
 
-        $image->loadImage($path);
 
         return $image;
     }
@@ -112,6 +127,11 @@ class Images extends Component
      */
     public function checkMemoryForImage($filePath, $toTheMax = false)
     {
+        if (StringHelper::toLowerCase(Io::getExtension($filePath)) == 'svg')
+        {
+            return true;
+        }
+
         if (!function_exists('memory_get_usage')) {
             return false;
         }
@@ -129,7 +149,7 @@ class Images extends Component
         $channels = isset($imageInfo['channels']) ? $imageInfo['channels'] : 4;
         $memoryNeeded = round(($imageInfo[0] * $imageInfo[1] * $bits * $channels / 8 + $K64) * $tweakFactor);
 
-        $memoryLimit = AppHelper::getPhpConfigValueInBytes('memory_limit');
+        $memoryLimit = App::getPhpConfigValueInBytes('memory_limit');
 
         if ($memoryLimit == -1 || memory_get_usage() + $memoryNeeded < $memoryLimit) {
             return true;
@@ -152,15 +172,22 @@ class Images extends Component
      */
     public function cleanImage($filePath)
     {
+        $cleanedByRotation = false;
+        $cleanedByStripping = false;
+
         try {
             if (Craft::$app->getConfig()->get('rotateImagesOnUploadByExifData')) {
-                $this->rotateImageByExifData($filePath);
+                $cleanedByRotation = $this->rotateImageByExifData($filePath);
             }
 
-            $this->stripOrientationFromExifData($filePath);
+            $cleanedByStripping = $this->stripOrientationFromExifData($filePath);
         } catch (\Exception $e) {
-            Craft::log('Tried to rotate or strip EXIF data from image and failed: '.$e->getMessage(),
-                LogLevel::Error);
+            Craft::error('Tried to rotate or strip EXIF data from image and failed: '.$e->getMessage());
+        }
+
+        // Image has already been cleaned if it had exif/orientation data
+        if ($cleanedByRotation || $cleanedByStripping) {
+            return true;
         }
 
         return $this->loadImage($filePath)->saveAs($filePath, true);
@@ -171,17 +198,16 @@ class Images extends Component
      *
      * @param string $filePath
      *
-     * @return mixed
+     * @return boolean
      */
     public function rotateImageByExifData($filePath)
     {
         if (!ImageHelper::canHaveExifData($filePath)) {
-            return null;
+            return false;
         }
 
         $exif = $this->getExifData($filePath);
-
-        $degrees = 0;
+        $degrees = false;
 
         if (!empty($exif['ifd0.Orientation'])) {
             switch ($exif['ifd0.Orientation']) {
@@ -198,6 +224,10 @@ class Images extends Component
                     break;
                 }
             }
+        }
+
+        if ($degrees === false) {
+            return false;
         }
 
         $image = $this->loadImage($filePath)->rotate($degrees);
@@ -236,7 +266,7 @@ class Images extends Component
             return null;
         }
 
-        $data = new PelDataWindow(IOHelper::getFileContents($filePath));
+        $data = new \PelDataWindow(Io::getFileContents($filePath));
 
         // Is this a valid JPEG?
         if (PelJpeg::isValid($data)) {
@@ -251,11 +281,11 @@ class Images extends Component
                 // Delete the Orientation entry and re-save the file
                 $ifd0->offsetUnset(PelTag::ORIENTATION);
                 $file->saveFile($filePath);
-            }
 
-            return true;
-        } else {
-            return false;
+                return true;
+            }
         }
+
+        return false;
     }
 }

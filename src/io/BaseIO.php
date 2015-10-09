@@ -7,7 +7,7 @@
 
 namespace craft\app\io;
 
-use craft\app\helpers\IOHelper;
+use craft\app\helpers\Io;
 
 /**
  * Class BaseIO
@@ -79,7 +79,7 @@ abstract class BaseIO
     public function getRealPath()
     {
         if (!$this->_realPath) {
-            $this->_realPath = IOHelper::getRealPath($this->path);
+            $this->_realPath = Io::getRealPath($this->path);
         }
 
         return $this->_realPath;
@@ -91,7 +91,7 @@ abstract class BaseIO
     public function isReadable()
     {
         if (!$this->_isReadable) {
-            $this->_isReadable = IOHelper::isReadable($this->getRealPath());
+            $this->_isReadable = Io::isReadable($this->getRealPath());
         }
 
         return $this->_isReadable;
@@ -103,7 +103,7 @@ abstract class BaseIO
     public function isWritable()
     {
         if (!$this->_isWritable) {
-            $this->_isWritable = IOHelper::isWritable($this->getRealPath());
+            $this->_isWritable = Io::isWritable($this->getRealPath());
         }
 
         return $this->_isWritable;
@@ -115,7 +115,7 @@ abstract class BaseIO
     public function getOwner()
     {
         if (!$this->_owner) {
-            $this->_owner = IOHelper::getOwner($this->getRealPath());
+            $this->_owner = Io::getOwner($this->getRealPath());
         }
 
         return $this->_owner;
@@ -127,7 +127,7 @@ abstract class BaseIO
     public function getGroup()
     {
         if (!$this->_group) {
-            $this->_group = IOHelper::getGroup($this->getRealPath());
+            $this->_group = Io::getGroup($this->getRealPath());
         }
 
         return $this->_group;
@@ -139,7 +139,7 @@ abstract class BaseIO
     public function getPermissions()
     {
         if (!$this->_permissions) {
-            $this->_permissions = IOHelper::getPermissions($this->getRealPath());
+            $this->_permissions = Io::getPermissions($this->getRealPath());
         }
 
         return $this->_permissions;
@@ -151,7 +151,7 @@ abstract class BaseIO
     public function getLastTimeModified()
     {
         if (!$this->_lastTimeModified) {
-            $this->_lastTimeModified = IOHelper::getLastTimeModified($this->getRealPath());
+            $this->_lastTimeModified = Io::getLastTimeModified($this->getRealPath());
         }
 
         return $this->_lastTimeModified;
@@ -164,7 +164,7 @@ abstract class BaseIO
      */
     public function changeOwner($owner)
     {
-        if (!IOHelper::changeOwner($this->getRealPath(), $owner)) {
+        if (!Io::changeOwner($this->getRealPath(), $owner)) {
             return false;
         }
 
@@ -178,7 +178,7 @@ abstract class BaseIO
      */
     public function changeGroup($group)
     {
-        if (!IOHelper::changeGroup($this->getRealPath(), $group)) {
+        if (!Io::changeGroup($this->getRealPath(), $group)) {
             return false;
         }
 
@@ -192,7 +192,7 @@ abstract class BaseIO
      */
     public function changePermissions($permissions)
     {
-        if (!IOHelper::changePermissions($this->getRealPath(), $permissions)) {
+        if (!Io::changePermissions($this->getRealPath(), $permissions)) {
             return false;
         }
 
@@ -206,7 +206,7 @@ abstract class BaseIO
      */
     public function rename($newName)
     {
-        if (!IOHelper::rename($this->getRealPath(), $newName)) {
+        if (!Io::rename($this->getRealPath(), $newName)) {
             return false;
         }
 
@@ -220,7 +220,7 @@ abstract class BaseIO
      */
     public function move($newPath)
     {
-        if (!IOHelper::move($this->getRealPath(), $newPath)) {
+        if (!Io::move($this->getRealPath(), $newPath)) {
             return false;
         }
 
@@ -236,15 +236,13 @@ abstract class BaseIO
     {
         if ($fullPath) {
             if (!$this->_fullFolderName) {
-                $this->_fullFolderName = IOHelper::getFolderName($this->getRealPath(),
-                    $fullPath);
+                $this->_fullFolderName = Io::getFolderName($this->getRealPath(), $fullPath);
             }
 
             return $this->_fullFolderName;
         } else {
             if (!$this->_folderNameOnly) {
-                $this->_folderNameOnly = IOHelper::getFolderName($this->getRealPath(),
-                    $fullPath);
+                $this->_folderNameOnly = Io::getFolderName($this->getRealPath(), $fullPath);
             }
 
             return $this->_folderNameOnly;

@@ -9,12 +9,12 @@ namespace craft\app\services;
 
 use Craft;
 use craft\app\enums\ConfigCategory;
-use craft\app\helpers\AppHelper;
+use craft\app\helpers\App;
 use craft\app\helpers\ArrayHelper;
 use craft\app\helpers\DateTimeHelper;
-use craft\app\helpers\IOHelper;
+use craft\app\helpers\Io;
 use craft\app\helpers\StringHelper;
-use craft\app\helpers\UrlHelper;
+use craft\app\helpers\Url;
 use craft\app\elements\User;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\RequestException;
@@ -286,12 +286,11 @@ class Config extends Component
                 } else {
                     // PHP Dev Server does omit the script name from 404s without any help from a redirect script,
                     // *unless* the URI looks like a file, in which case it'll just throw a 404.
-                    if (AppHelper::isPhpDevServer()) {
+                    if (App::isPhpDevServer()) {
                         $this->_omitScriptNameInUrls = false;
                     } else {
                         // Cache it early so the testScriptNameRedirect request isn't checking for it too
-                        Craft::$app->getCache()->set('omitScriptNameInUrls',
-                            'n');
+                        Craft::$app->getCache()->set('omitScriptNameInUrls', 'n');
 
                         // Test the server for it
                         try {
@@ -306,14 +305,12 @@ class Config extends Component
                                 $this->_omitScriptNameInUrls = 'y';
                             }
                         } catch (RequestException $e) {
-                            Craft::error('Unable to determine if a script name redirect is in place on the server: '.$e->getMessage(),
-                                __METHOD__);
+                            Craft::error('Unable to determine if a script name redirect is in place on the server: '.$e->getMessage(), __METHOD__);
                         }
                     }
 
                     // Cache it
-                    Craft::$app->getCache()->set('omitScriptNameInUrls',
-                        $this->_omitScriptNameInUrls);
+                    Craft::$app->getCache()->set('omitScriptNameInUrls', $this->_omitScriptNameInUrls);
                 }
             }
         }
@@ -370,7 +367,7 @@ class Config extends Component
                     }
                     // PHP Dev Server supports path info, and doesn't support simultaneous requests, so we need to
                     // explicitly check for that.
-                    else if (AppHelper::isPhpDevServer()) {
+                    else if (App::isPhpDevServer()) {
                         $this->_usePathInfo = 'y';
                     } else {
                         // Cache it early so the testPathInfo request isn't checking for it too
@@ -386,14 +383,12 @@ class Config extends Component
                                 $this->_usePathInfo = 'y';
                             }
                         } catch (RequestException $e) {
-                            Craft::error('Unable to determine if PATH_INFO is enabled on the server: '.$e->getMessage(),
-                                __METHOD__);
+                            Craft::error('Unable to determine if PATH_INFO is enabled on the server: '.$e->getMessage(), __METHOD__);
                         }
                     }
 
                     // Cache it
-                    Craft::$app->getCache()->set('usePathInfo',
-                        $this->_usePathInfo);
+                    Craft::$app->getCache()->set('usePathInfo', $this->_usePathInfo);
                 }
             }
         }
@@ -506,7 +501,7 @@ class Config extends Component
      * of returning a full **URL**. And it requires you pass in both a user’s UID *and* the User - presumably we
      * could get away with just the User and get the UID from that.
      *
-     * @todo     Create a new getSetPasswordUrl() method (probably elsewhere, such as UrlHelper) which handles
+     * @todo     Create a new getSetPasswordUrl() method (probably elsewhere, such as Url) which handles
      * everything that setting $full to `true` currently does here. The function should not accetp a UID since that's
      * already covered by the User. Let this function continue working as a wrapper for getSetPasswordUrl() for the
      * time being, with deprecation logs.
@@ -518,12 +513,12 @@ class Config extends Component
 
             if ($full) {
                 if (Craft::$app->getRequest()->getIsSecureConnection()) {
-                    $url = UrlHelper::getCpUrl($url, [
+                    $url = Url::getCpUrl($url, [
                         'code' => $code,
                         'id' => $uid
                     ], 'https');
                 } else {
-                    $url = UrlHelper::getCpUrl($url, [
+                    $url = Url::getCpUrl($url, [
                         'code' => $code,
                         'id' => $uid
                     ]);
@@ -534,12 +529,12 @@ class Config extends Component
 
             if ($full) {
                 if (Craft::$app->getRequest()->getIsSecureConnection()) {
-                    $url = UrlHelper::getUrl($url, [
+                    $url = Url::getUrl($url, [
                         'code' => $code,
                         'id' => $uid
                     ], 'https');
                 } else {
-                    $url = UrlHelper::getUrl($url, [
+                    $url = Url::getUrl($url, [
                         'code' => $code,
                         'id' => $uid
                     ]);
@@ -645,10 +640,8 @@ class Config extends Component
 
         if ($configVal === 'minor-only') {
             // Return whether the major version number has changed
-            $localMajorVersion = array_shift(explode('.',
-                Craft::$app->version));
-            $updateMajorVersion = array_shift(explode('.',
-                $updateInfo->app->latestVersion));
+            $localMajorVersion = array_shift(explode('.', Craft::$app->version));
+            $updateMajorVersion = array_shift(explode('.', $updateInfo->app->latestVersion));
 
             return ($localMajorVersion === $updateMajorVersion);
         }
@@ -678,7 +671,7 @@ class Config extends Component
             $defaultsPath = $pathService->getPluginsPath().'/'.$category.'/config.php';
         }
 
-        if (IOHelper::fileExists($defaultsPath)) {
+        if (Io::fileExists($defaultsPath)) {
             $configSettings = @require_once($defaultsPath);
         }
 
@@ -703,8 +696,7 @@ class Config extends Component
                     if (is_array($customConfig = require_once($filePath))) {
                         $this->_mergeConfigs($configSettings, $customConfig);
                     } else if (isset($blocksConfig)) {
-                        $configSettings = array_merge($configSettings,
-                            $blocksConfig);
+                        $configSettings = array_merge($configSettings, $blocksConfig);
                         unset($blocksConfig);
                     }
                 }
@@ -712,7 +704,7 @@ class Config extends Component
         } else {
             $filePath = $pathService->getConfigPath().'/'.$category.'.php';
 
-            if (IOHelper::fileExists($filePath)) {
+            if (Io::fileExists($filePath)) {
                 // Originally db.php defined a $dbConfig variable, and later returned an array directly.
                 if (is_array($customConfig = require_once($filePath))) {
                     $this->_mergeConfigs($configSettings, $customConfig);
@@ -744,8 +736,7 @@ class Config extends Component
                 if ($env == '*' || StringHelper::contains(CRAFT_ENVIRONMENT,
                         $env)
                 ) {
-                    $mergedCustomConfig = ArrayHelper::merge($mergedCustomConfig,
-                        $envConfig);
+                    $mergedCustomConfig = ArrayHelper::merge($mergedCustomConfig, $envConfig);
                 }
             }
 

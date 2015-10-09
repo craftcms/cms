@@ -82,14 +82,17 @@ class UpdateElementSlugsAndUris extends Task
         }
 
         $elementsService = Craft::$app->getElements();
-        $element = $elementsService->getElementById($this->_elementIds[$step],
-            $this->elementType, $this->locale);
+        $element = $elementsService->getElementById($this->_elementIds[$step], $this->elementType, $this->locale);
+
+        // Make sure they haven't deleted this element
+        if (!$element) {
+            return true;
+        }
 
         $oldSlug = $element->slug;
         $oldUri = $element->uri;
 
-        $elementsService->updateElementSlugAndUri($element,
-            $this->updateOtherLocales, false, false);
+        $elementsService->updateElementSlugAndUri($element, $this->updateOtherLocales, false, false);
 
         // Only go deeper if something just changed
         if ($this->updateDescendants && ($element->slug !== $oldSlug || $element->uri !== $oldUri)) {

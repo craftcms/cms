@@ -12,7 +12,7 @@ use craft\app\base\ElementAction;
 use craft\app\elements\db\ElementQueryInterface;
 use craft\app\elements\User;
 use craft\app\errors\Exception;
-use craft\app\helpers\JsonHelper;
+use craft\app\helpers\Json;
 
 /**
  * DeleteUsers represents a Delete Users element action.
@@ -54,8 +54,8 @@ class DeleteUsers extends ElementAction
      */
     public function getTriggerHtml()
     {
-        $type = JsonHelper::encode(static::className());
-        $undeletableIds = JsonHelper::encode($this->_getUndeletableUserIds());
+        $type = Json::encode(static::className());
+        $undeletableIds = Json::encode($this->_getUndeletableUserIds());
 
         $js = <<<EOT
 (function()
@@ -80,7 +80,7 @@ class DeleteUsers extends ElementAction
 			var modal = new Craft.DeleteUserModal(Craft.elementIndex.getSelectedElementIds(), {
 				onSubmit: function()
 				{
-					Craft.elementIndex.submitAction('DeleteUsers', Garnish.getPostData(modal.\$container));
+					Craft.elementIndex.submitAction({$type}, Garnish.getPostData(modal.\$container));
 					modal.hide();
 
 					return false;
@@ -112,9 +112,7 @@ EOT;
             $transferContentTo = Craft::$app->getUsers()->getUserById($this->transferContentTo);
 
             if (!$transferContentTo) {
-                throw new Exception(Craft::t('app',
-                    'No user exists with the ID “{id}”.',
-                    ['id' => $transferContentTo]));
+                throw new Exception(Craft::t('app', 'No user exists with the ID “{id}”.', ['id' => $transferContentTo]));
             }
         } else {
             $transferContentTo = null;

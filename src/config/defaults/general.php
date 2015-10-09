@@ -176,6 +176,13 @@ return [
      */
     'devMode' => false,
     /**
+     * Whether to use a cookie to persist the CSRF token if 'enableCsrfProtection' is enabled. If false, the CSRF token
+     * will be stored in session under the 'csrfTokenName' config setting name. Note that while storing CSRF tokens in
+     * session increases security, it requires starting a session for every page that a CSRF token is need, which may
+     * degrade site performance.
+     */
+    'enableCsrfCookie' => true,
+    /**
      * Whether to enable CSRF protection via hidden form inputs for all forms submitted via Craft. Defaults to true.
      *
      * Also, see the 'csrfTokenName' config setting.
@@ -308,6 +315,11 @@ return [
      */
     'overridePhpSessionLocation' => false,
     /**
+     * If set to true and Imagick is used, Craft will take advantage of Imagick's advanced options to reduce the final
+     * image size without losing quality significantly.
+     */
+    'optimizeImageFilesize' => true,
+    /**
      * The string preceding a number which Craft will look for when determining if the current request is for a
      * particular page in a paginated list of pages.
      */
@@ -434,6 +446,11 @@ return [
      * basis.
      */
     'setPasswordSuccessPath' => '',
+    /**
+     * Whether or not to show beta Craft updates from the updates page in the control panel. It is highly recommended
+     * that you do not use beta releases of Craft in a production environment.
+     */
+    'showBetaUpdates' => false,
     /**
      * The name of the site. If set, it will take precedence over the Site Name setting in Settings → General.
      *

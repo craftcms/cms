@@ -43,8 +43,7 @@ class DeleteAssets extends ElementAction
      */
     public function getConfirmationMessage()
     {
-        return Craft::t('app',
-            'Are you sure you want to delete the selected assets?');
+        return Craft::t('app', 'Are you sure you want to delete the selected assets?');
     }
 
     /**

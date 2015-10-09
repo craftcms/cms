@@ -8,7 +8,7 @@
 namespace craft\app\web;
 
 use Craft;
-use craft\app\helpers\IOHelper;
+use craft\app\helpers\Io;
 use Exception;
 use yii\web\HttpException;
 
@@ -33,8 +33,7 @@ class Response extends \yii\web\Response
         $headers = $this->getHeaders();
 
         $cacheTime = 31536000; // 1 year
-        $headers->set('Expires',
-            gmdate('D, d M Y H:i:s', time() + $cacheTime).' GMT')
+        $headers->set('Expires', gmdate('D, d M Y H:i:s', time() + $cacheTime).' GMT')
             ->set('Pragma', 'cache')
             ->set('Cache-Control', 'max-age='.$cacheTime);
 
@@ -50,11 +49,10 @@ class Response extends \yii\web\Response
      */
     public function setLastModifiedHeader($path)
     {
-        $modifiedTime = IOHelper::getLastTimeModified($path);
+        $modifiedTime = Io::getLastTimeModified($path);
 
         if ($modifiedTime) {
-            $this->getHeaders()->set('Last-Modified',
-                gmdate("D, d M Y H:i:s", $modifiedTime->getTimestamp()).' GMT');
+            $this->getHeaders()->set('Last-Modified', gmdate("D, d M Y H:i:s", $modifiedTime->getTimestamp()).' GMT');
         }
 
         return $this;

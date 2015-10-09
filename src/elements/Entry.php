@@ -20,8 +20,8 @@ use craft\app\elements\db\EntryQuery;
 use craft\app\events\SetStatusEvent;
 use craft\app\helpers\ArrayHelper;
 use craft\app\helpers\DateTimeHelper;
-use craft\app\helpers\DbHelper;
-use craft\app\helpers\UrlHelper;
+use craft\app\helpers\Db;
+use craft\app\helpers\Url;
 use craft\app\models\EntryType;
 use craft\app\models\Section;
 
@@ -260,7 +260,7 @@ class Entry extends Element
                             // Set a Post Date as well
                             Craft::$app->getDb()->createCommand()->update(
                                 '{{%entries}}',
-                                ['postDate' => DbHelper::prepareDateForDb(new \DateTime())],
+                                ['postDate' => Db::prepareDateForDb(new \DateTime())],
                                 [
                                     'and',
                                     ['in', 'id', $event->elementIds],
@@ -302,8 +302,7 @@ class Entry extends Element
                     if ($structure) {
                         $actions[] = Craft::$app->getElements()->createAction([
                             'type' => NewChild::className(),
-                            'label' => Craft::t('app',
-                                'Create a new child entry'),
+                            'label' => Craft::t('app', 'Create a new child entry'),
                             'maxLevels' => $structure->maxLevels,
                             'newChildUrl' => 'entries/'.$section->handle.'/new',
                         ]);
@@ -317,8 +316,7 @@ class Entry extends Element
                 ) {
                     $actions[] = Craft::$app->getElements()->createAction([
                         'type' => Delete::className(),
-                        'confirmationMessage' => Craft::t('app',
-                            'Are you sure you want to delete the selected entries?'),
+                        'confirmationMessage' => Craft::t('app', 'Are you sure you want to delete the selected entries?'),
                         'successMessage' => Craft::t('app', 'Entries deleted.'),
                     ]);
                 }
@@ -411,7 +409,7 @@ class Entry extends Element
      */
     public static function getElementQueryStatusCondition(ElementQueryInterface $query, $status)
     {
-        $currentTimeDb = DbHelper::prepareDateForDb(new \DateTime());
+        $currentTimeDb = Db::prepareDateForDb(new \DateTime());
 
         switch ($status) {
             case Entry::STATUS_LIVE: {
@@ -524,8 +522,7 @@ class Entry extends Element
         $section = $element->getSection();
 
         if ($section->type == Section::TYPE_STRUCTURE && $section->structureId == $structureId) {
-            Craft::$app->getElements()->updateElementSlugAndUri($element, true,
-                true, true);
+            Craft::$app->getElements()->updateElementSlugAndUri($element, true, true, true);
         }
     }
 
@@ -753,7 +750,7 @@ class Entry extends Element
     /**
      * @inheritdoc
      */
-    public function isEditable()
+    public function getIsEditable()
     {
         return (
             Craft::$app->getUser()->checkPermission('publishEntries:'.$this->sectionId) && (
@@ -773,7 +770,7 @@ class Entry extends Element
 
         if ($section) {
             // The slug *might* not be set if this is a Draft and they've deleted it for whatever reason
-            $url = UrlHelper::getCpUrl('entries/'.$section->handle.'/'.$this->id.($this->slug ? '-'.$this->slug : ''));
+            $url = Url::getCpUrl('entries/'.$section->handle.'/'.$this->id.($this->slug ? '-'.$this->slug : ''));
 
             if (Craft::$app->isLocalized() && $this->locale != Craft::$app->language) {
                 $url .= '/'.$this->locale;

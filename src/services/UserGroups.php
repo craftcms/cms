@@ -10,7 +10,6 @@ namespace craft\app\services;
 use Craft;
 use craft\app\db\Query;
 use craft\app\errors\Exception;
-use craft\app\events\Event;
 use craft\app\elements\User;
 use craft\app\models\UserGroup as UserGroupModel;
 use craft\app\records\UserGroup as UserGroupRecord;
@@ -31,7 +30,7 @@ class UserGroups extends Component
     /**
      * @event UserEvent The event that is triggered before a user is assigned to the default user group.
      *
-     * You may set [[UserEvent::performAction]] to `false` to prevent the user from getting assigned to the default
+     * You may set [[UserEvent::isValid]] to `false` to prevent the user from getting assigned to the default
      * user group.
      */
     const EVENT_BEFORE_ASSIGN_USER_TO_DEFAULT_GROUP = 'beforeAssignUserToDefaultGroup';
@@ -192,8 +191,7 @@ class UserGroups extends Component
      */
     public function assignUserToDefaultGroup(User $user)
     {
-        $defaultGroupId = Craft::$app->getSystemSettings()->getSetting('users',
-            'defaultGroup');
+        $defaultGroupId = Craft::$app->getSystemSettings()->getSetting('users', 'defaultGroup');
 
         if ($defaultGroupId) {
             // Fire a 'beforeAssignUserToDefaultGroup' event
@@ -201,8 +199,7 @@ class UserGroups extends Component
                 'user' => $user
             ]);
 
-            $this->trigger(static::EVENT_BEFORE_ASSIGN_USER_TO_DEFAULT_GROUP,
-                $event);
+            $this->trigger(static::EVENT_BEFORE_ASSIGN_USER_TO_DEFAULT_GROUP, $event);
 
             // Is the event is giving us the go-ahead?
             if ($event->performAction) {
@@ -274,7 +271,6 @@ class UserGroups extends Component
      */
     private function _noGroupExists($groupId)
     {
-        throw new Exception(Craft::t('app',
-            'No group exists with the ID “{id}”.', ['id' => $groupId]));
+        throw new Exception(Craft::t('app', 'No group exists with the ID “{id}”.', ['id' => $groupId]));
     }
 }

@@ -10,7 +10,7 @@ namespace craft\app\elements\db;
 use Craft;
 use craft\app\db\Query;
 use craft\app\elements\Tag;
-use craft\app\helpers\DbHelper;
+use craft\app\helpers\Db;
 use craft\app\models\TagGroup;
 use craft\app\models\TagType;
 
@@ -58,8 +58,7 @@ class TagQuery extends ElementQuery
                 break;
             }
             case 'name': {
-                Craft::$app->getDeprecator()->log('tag_name_param',
-                    'Tags’ ‘name’ param has been deprecated. Use ‘title’ instead.');
+                Craft::$app->getDeprecator()->log('tag_name_param', 'Tags’ ‘name’ param has been deprecated. Use ‘title’ instead.');
                 $this->title = $value;
                 break;
             }
@@ -75,8 +74,7 @@ class TagQuery extends ElementQuery
     public function __call($name, $params)
     {
         if ($name === 'name') {
-            Craft::$app->getDeprecator()->log('tag_name_param',
-                'Tags’ ‘name’ param has been deprecated. Use ‘title’ instead.');
+            Craft::$app->getDeprecator()->log('tag_name_param', 'Tags’ ‘name’ param has been deprecated. Use ‘title’ instead.');
 
             if (count($params) == 1) {
                 $this->title = $params[0];
@@ -106,7 +104,7 @@ class TagQuery extends ElementQuery
             $this->groupId = $query
                 ->select('id')
                 ->from('{{%taggroups}}')
-                ->where(DbHelper::parseParam('handle', $value, $query->params))
+                ->where(Db::parseParam('handle', $value, $query->params))
                 ->column();
         }
 
@@ -147,17 +145,14 @@ class TagQuery extends ElementQuery
         ]);
 
         if ($this->groupId) {
-            $this->subQuery->andWhere(DbHelper::parseParam('tags.groupId',
-                $this->groupId, $this->subQuery->params));
+            $this->subQuery->andWhere(Db::parseParam('tags.groupId', $this->groupId, $this->subQuery->params));
         }
 
         if (is_string($this->orderBy)) {
-            $this->orderBy = preg_replace('/\bname\b/', 'title', $this->orderBy,
-                -1, $count);
+            $this->orderBy = preg_replace('/\bname\b/', 'title', $this->orderBy, -1, $count);
 
             if ($count) {
-                Craft::$app->getDeprecator()->log('tag_orderby_name',
-                    'Ordering tags by ‘name’ has been deprecated. Order by ‘title’ instead.');
+                Craft::$app->getDeprecator()->log('tag_orderby_name', 'Ordering tags by ‘name’ has been deprecated. Order by ‘title’ instead.');
             }
         }
 

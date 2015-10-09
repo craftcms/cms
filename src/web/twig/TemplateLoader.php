@@ -8,7 +8,7 @@
 namespace craft\app\web\twig;
 
 use Craft;
-use craft\app\helpers\IOHelper;
+use craft\app\helpers\Io;
 use craft\app\web\View;
 
 /**
@@ -65,12 +65,10 @@ class TemplateLoader implements \Twig_LoaderInterface, \Twig_ExistsLoaderInterfa
         } else {
             $template = $this->_resolveTemplate($name);
 
-            if (IOHelper::isReadable($template)) {
-                return IOHelper::getFileContents($template);
+            if (Io::isReadable($template)) {
+                return Io::getFileContents($template);
             } else {
-                throw new TemplateLoaderException($name, Craft::t('app',
-                    'Tried to read the template at {path}, but could not. Check the permissions.',
-                    ['path' => $template]));
+                throw new TemplateLoaderException($name, Craft::t('app', 'Tried to read the template at {path}, but could not. Check the permissions.', ['path' => $template]));
             }
         }
     }
@@ -111,7 +109,7 @@ class TemplateLoader implements \Twig_LoaderInterface, \Twig_ExistsLoaderInterfa
         }
 
         if (is_string($name)) {
-            $sourceModifiedTime = IOHelper::getLastTimeModified($this->_resolveTemplate($name));
+            $sourceModifiedTime = Io::getLastTimeModified($this->_resolveTemplate($name));
 
             return $sourceModifiedTime->getTimestamp() <= $time;
         } else {
@@ -137,9 +135,7 @@ class TemplateLoader implements \Twig_LoaderInterface, \Twig_ExistsLoaderInterfa
         if ($template !== false) {
             return $template;
         } else {
-            throw new TemplateLoaderException($name,
-                Craft::t('app', 'Unable to find the template “{template}”.',
-                    ['template' => $name]));
+            throw new TemplateLoaderException($name, Craft::t('app', 'Unable to find the template “{template}”.', ['template' => $name]));
         }
     }
 }

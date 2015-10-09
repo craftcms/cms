@@ -23,11 +23,11 @@
 			{% set hasNestedPermissions = props.nested is defined and props.nested is not empty %}
 			<li>
 				{{ checkbox({
-					label: props.label,
+					label: props.label|e,
 					name: 'permissions[]',
 					value: permissionName,
 					checked: checked,
-					disabled: disabled,
+					disabled: disabled or isInGroupPermissions,
 				}) }}
 				{% if hasNestedPermissions %}
 					{{ _self.permissionList(context, props.nested, permissionName~'-nested', not checked) }}

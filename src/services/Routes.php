@@ -10,8 +10,8 @@ namespace craft\app\services;
 use Craft;
 use craft\app\db\Query;
 use craft\app\errors\Exception;
-use craft\app\helpers\IOHelper;
-use craft\app\helpers\JsonHelper;
+use craft\app\helpers\Io;
+use craft\app\helpers\Json;
 use craft\app\helpers\StringHelper;
 use craft\app\records\Route as RouteRecord;
 use yii\base\Component;
@@ -38,7 +38,7 @@ class Routes extends Component
     {
         $path = Craft::$app->getPath()->getConfigPath().'/routes.php';
 
-        if (IOHelper::fileExists($path)) {
+        if (Io::fileExists($path)) {
             $routes = require_once($path);
 
             if (is_array($routes)) {
@@ -111,8 +111,7 @@ class Routes extends Component
             $routeRecord = RouteRecord::findOne($routeId);
 
             if (!$routeRecord) {
-                throw new Exception(Craft::t('app',
-                    'No route exists with the ID “{id}”.', ['id' => $routeId]));
+                throw new Exception(Craft::t('app', 'No route exists with the ID “{id}”.', ['id' => $routeId]));
             }
         } else {
             $routeRecord = new RouteRecord();
@@ -147,7 +146,7 @@ class Routes extends Component
         }
 
         $routeRecord->locale = $locale;
-        $routeRecord->urlParts = JsonHelper::encode($urlParts);
+        $routeRecord->urlParts = Json::encode($urlParts);
         $routeRecord->urlPattern = $urlPattern;
         $routeRecord->template = $template;
         $routeRecord->save();
@@ -183,8 +182,7 @@ class Routes extends Component
             $data = ['sortOrder' => $order + 1];
             $condition = ['id' => $routeId];
 
-            Craft::$app->getDb()->createCommand()->update('{{%routes}}', $data,
-                $condition)->execute();
+            Craft::$app->getDb()->createCommand()->update('{{%routes}}', $data, $condition)->execute();
         }
     }
 

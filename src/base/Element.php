@@ -8,26 +8,54 @@
 namespace craft\app\base;
 
 use Craft;
+use craft\app\behaviors\ContentBehavior;
 use craft\app\behaviors\ContentTrait;
 use craft\app\dates\DateTime;
 use craft\app\elements\db\ElementQuery;
 use craft\app\elements\db\ElementQueryInterface;
 use craft\app\events\Event;
 use craft\app\helpers\ArrayHelper;
-use craft\app\helpers\HtmlHelper;
-use craft\app\helpers\TemplateHelper;
-use craft\app\helpers\UrlHelper;
-use craft\app\models\Content;
+use craft\app\helpers\Html;
+use craft\app\helpers\Template;
+use craft\app\helpers\Url;
+use craft\app\models\FieldLayout;
 use craft\app\web\UploadedFile;
 use Exception;
-use yii\base\ErrorHandler;
 use yii\base\InvalidCallException;
 use yii\base\UnknownPropertyException;
 
 /**
  * Element is the base class for classes representing elements in terms of objects.
  *
- * @property string $title The element’s title.
+ * @property FieldLayout|null                   $fieldLayout         The field layout used by this element
+ * @property string[]                           $locales             The locale IDs this element is available in
+ * @property string|null                        $urlFormat           The URL format used to generate this element’s URL
+ * @property string|null                        $url                 The element’s full URL
+ * @property \Twig_Markup|null                  $link                An anchor pre-filled with this element’s URL and title
+ * @property string|null                        $ref                 The reference string to this element
+ * @property boolean                            $isEditable          Whether the current user can edit the element
+ * @property string|null                        $cpEditUrl           The element’s CP edit URL
+ * @property string|null                        $thumbUrl            The URL to the element’s thumbnail, if there is one
+ * @property string|null                        $iconUrl             The URL to the element’s icon image, if there is one
+ * @property string|null                        $status              The element’s status
+ * @property ElementInterface|self              $next                The next element relative to this one, from a given set of criteria
+ * @property ElementInterface|self              $prev                The previous element relative to this one, from a given set of criteria
+ * @property ElementInterface|self              $parent              The element’s parent
+ * @property integer|null                       $structureId         The ID of the structure that the element is associated with, if any
+ * @property ElementQueryInterface|ElementQuery $ancestors           The element’s ancestors
+ * @property ElementQueryInterface|ElementQuery $descendants         The element’s descendants
+ * @property ElementQueryInterface|ElementQuery $children            The element’s children
+ * @property ElementQueryInterface|ElementQuery $siblings            All of the element’s siblings
+ * @property ElementInterface|self              $prevSibling         The element’s previous sibling
+ * @property ElementInterface|self              $nextSibling         The element’s next sibling
+ * @property boolean                            $hasDescendants      Whether the element has descendants
+ * @property integer                            $totalDescendants    The total number of descendants that the element has
+ * @property string                             $title               The element’s title
+ * @property array                              $contentFromPost     The raw content from the post data, as it was given to [[setFieldValuesFromPost]]
+ * @property string|null                        $contentPostLocation The location in POST that the content was pulled from
+ * @property string                             $contentTable        The name of the table this element’s content is stored in
+ * @property string                             $fieldColumnPrefix   The field column prefix this element’s content uses
+ * @property string                             $fieldContext        The field context this element’s content uses
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
@@ -50,7 +78,7 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @event Event The event that is triggered before the element is saved
      *
-     * You may set [[Event::performAction]] to `false` to prevent the element from getting saved.
+     * You may set [[Event::isValid]] to `false` to prevent the element from getting saved.
      */
     const EVENT_BEFORE_SAVE = 'beforeSave';
 
@@ -220,8 +248,7 @@ abstract class Element extends Component implements ElementInterface
                 // typeId, title desc => typeId [sort], title desc
                 // typeId desc        => typeId [sort]
 
-                $elementQuery->orderBy(preg_replace('/^(.*?)(?:\s+(?:asc|desc))?(,.*)?$/i',
-                    "$1 {$sort}$2", $order));
+                $elementQuery->orderBy(preg_replace('/^(.*?)(?:\s+(?:asc|desc))?(,.*)?$/i', "$1 {$sort}$2", $order));
             }
         }
 
@@ -301,7 +328,7 @@ abstract class Element extends Component implements ElementInterface
                     return '<span title="'.$value->localeDate().' '.$value->localeTime().'">'.$value->uiTimestamp().'</span>';
                 }
 
-                return HtmlHelper::encode($value);
+                return Html::encode($value);
             }
         }
     }
@@ -347,8 +374,7 @@ abstract class Element extends Component implements ElementInterface
 
         if ($fieldLayout) {
             $originalNamespace = Craft::$app->getView()->getNamespace();
-            $namespace = Craft::$app->getView()->namespaceInputName('fields',
-                $originalNamespace);
+            $namespace = Craft::$app->getView()->namespaceInputName('fields', $originalNamespace);
             Craft::$app->getView()->setNamespace($namespace);
 
             foreach ($fieldLayout->getFields() as $field) {
@@ -359,8 +385,7 @@ abstract class Element extends Component implements ElementInterface
                         'required' => $field->required
                     ]);
 
-                $html .= Craft::$app->getView()->namespaceInputs($fieldHtml,
-                    'fields');
+                $html .= Craft::$app->getView()->namespaceInputs($fieldHtml, 'fields');
             }
 
             Craft::$app->getView()->setNamespace($originalNamespace);
@@ -417,11 +442,6 @@ abstract class Element extends Component implements ElementInterface
     private $_rawPostContent;
 
     /**
-     * @var
-     */
-    private $_content;
-
-    /**
      * @var array Stores a record of the fields that have already prepared their values
      */
     private $_preparedFields;
@@ -468,11 +488,7 @@ abstract class Element extends Component implements ElementInterface
      */
     public function __toString()
     {
-        try {
-            return (string)$this->getTitle();
-        } catch (Exception $e) {
-            ErrorHandler::convertExceptionToError($e);
-        }
+        return $this->title;
     }
 
     /**
@@ -513,16 +529,23 @@ abstract class Element extends Component implements ElementInterface
      */
     public function __get($name)
     {
-        try {
-            return parent::__get($name);
-        } catch (UnknownPropertyException $e) {
-            // Is $name a field handle?
-            if ($this->getFieldByHandle($name)) {
-                return $this->getFieldValue($name);
-            } else {
-                throw $e;
-            }
+        // Give custom fields priority over other getters so we have a chance to prepare their values
+        $field = $this->getFieldByHandle($name);
+        if ($field !== null) {
+            return $this->getFieldValue($name);
         }
+
+        return parent::__get($name);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function behaviors()
+    {
+        return [
+            'customFields' => ContentBehavior::className(),
+        ];
     }
 
     /**
@@ -540,9 +563,31 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @inheritdoc
      */
+    public function attributes()
+    {
+        $names = parent::attributes();
+
+        // Include custom field handles
+        $class = new \ReflectionClass(ContentBehavior::className());
+
+        foreach ($class->getProperties(\ReflectionProperty::IS_PUBLIC) as $property) {
+            $name = $property->getName();
+
+            if ($name !== 'owner' && !in_array($name, $names)) {
+                $names[] = $name;
+            }
+        }
+
+        return $names;
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function attributeLabels()
     {
         return [
+            'title' => Craft::t('app', 'Title'),
             'slug' => Craft::t('app', 'Slug'),
             'uri' => Craft::t('app', 'URI'),
         ];
@@ -553,46 +598,25 @@ abstract class Element extends Component implements ElementInterface
      */
     public function rules()
     {
-        return [
-            [
-                ['id'],
-                'number',
-                'min' => -2147483648,
-                'max' => 2147483647,
-                'integerOnly' => true
-            ],
+        $rules = [
+            [['id'], 'number', 'min' => -2147483648, 'max' => 2147483647, 'integerOnly' => true],
+            [['contentId'], 'number', 'min' => -2147483648, 'max' => 2147483647, 'integerOnly' => true],
             [['locale'], 'craft\\app\\validators\\Locale'],
             [['dateCreated'], 'craft\\app\\validators\\DateTime'],
             [['dateUpdated'], 'craft\\app\\validators\\DateTime'],
-            [
-                ['root'],
-                'number',
-                'min' => -2147483648,
-                'max' => 2147483647,
-                'integerOnly' => true
-            ],
-            [
-                ['lft'],
-                'number',
-                'min' => -2147483648,
-                'max' => 2147483647,
-                'integerOnly' => true
-            ],
-            [
-                ['rgt'],
-                'number',
-                'min' => -2147483648,
-                'max' => 2147483647,
-                'integerOnly' => true
-            ],
-            [
-                ['level'],
-                'number',
-                'min' => -2147483648,
-                'max' => 2147483647,
-                'integerOnly' => true
-            ],
+            [['root'], 'number', 'min' => -2147483648, 'max' => 2147483647, 'integerOnly' => true],
+            [['lft'], 'number', 'min' => -2147483648, 'max' => 2147483647, 'integerOnly' => true],
+            [['rgt'], 'number', 'min' => -2147483648, 'max' => 2147483647, 'integerOnly' => true],
+            [['level'], 'number', 'min' => -2147483648, 'max' => 2147483647, 'integerOnly' => true],
+            [['title'], 'string', 'max' => 255],
         ];
+
+        // Require the title?
+        if ($this->hasTitles()) {
+            $rules[] = [['title'], 'required'];
+        }
+
+        return $rules;
     }
 
     /**
@@ -638,8 +662,7 @@ abstract class Element extends Component implements ElementInterface
         if ($this->uri !== null) {
             $useLocaleSiteUrl = (
                 ($this->locale != Craft::$app->language) &&
-                ($localeSiteUrl = Craft::$app->getConfig()->getLocalized('siteUrl',
-                    $this->locale))
+                ($localeSiteUrl = Craft::$app->getConfig()->getLocalized('siteUrl', $this->locale))
             );
 
             if ($useLocaleSiteUrl) {
@@ -650,9 +673,9 @@ abstract class Element extends Component implements ElementInterface
             }
 
             if ($this->uri == '__home__') {
-                $url = UrlHelper::getSiteUrl();
+                $url = Url::getSiteUrl();
             } else {
-                $url = UrlHelper::getSiteUrl($this->uri);
+                $url = Url::getSiteUrl($this->uri);
             }
 
             if ($useLocaleSiteUrl) {
@@ -668,9 +691,15 @@ abstract class Element extends Component implements ElementInterface
      */
     public function getLink()
     {
-        $link = '<a href="'.$this->getUrl().'">'.HtmlHelper::encode($this->__toString()).'</a>';
+        $url = $this->getUrl();
 
-        return TemplateHelper::getRaw($link);
+        if ($url !== null) {
+            $link = '<a href="'.$url.'">'.Html::encode($this->__toString()).'</a>';
+
+            return Template::getRaw($link);
+        } else {
+            return null;
+        }
     }
 
     /**
@@ -683,7 +712,7 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @inheritdoc
      */
-    public function isEditable()
+    public function getIsEditable()
     {
         return false;
     }
@@ -693,7 +722,6 @@ abstract class Element extends Component implements ElementInterface
      */
     public function getCpEditUrl()
     {
-        return false;
     }
 
     /**
@@ -701,7 +729,6 @@ abstract class Element extends Component implements ElementInterface
      */
     public function getThumbUrl($size = null)
     {
-        return false;
     }
 
     /**
@@ -709,7 +736,6 @@ abstract class Element extends Component implements ElementInterface
      */
     public function getIconUrl($size = null)
     {
-        return false;
     }
 
     /**
@@ -917,7 +943,7 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @inheritdoc
      */
-    public function hasDescendants()
+    public function getHasDescendants()
     {
         return ($this->lft && $this->rgt && $this->rgt > $this->lft + 1);
     }
@@ -927,7 +953,7 @@ abstract class Element extends Component implements ElementInterface
      */
     public function getTotalDescendants()
     {
-        if ($this->hasDescendants()) {
+        if ($this->getHasDescendants()) {
             return ($this->rgt - $this->lft - 1) / 2;
         }
 
@@ -1012,16 +1038,6 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @inheritdoc
      */
-    public function getTitle()
-    {
-        $content = $this->getContent();
-
-        return $content->title;
-    }
-
-    /**
-     * @inheritdoc
-     */
     public function offsetExists($offset)
     {
         if ($offset == 'title' || parent::offsetExists($offset) || $this->getFieldByHandle($offset)) {
@@ -1034,71 +1050,81 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @inheritdoc
      */
-    public function getContent()
+    public function getFieldValues($fieldHandles = null, $except = [])
     {
-        if (!isset($this->_content)) {
-            $this->_content = Craft::$app->getContent()->getContent($this);
+        $values = [];
 
-            if (!$this->_content) {
-                $this->_content = $this->createContent();
+        foreach ($this->getFields() as $field) {
+            if ($fieldHandles === null || in_array($field->handle, $fieldHandles)) {
+                $values[$field->handle] = $this->getFieldValue($field->handle);
             }
         }
 
-        return $this->_content;
+        foreach ($except as $handle) {
+            unset($values[$handle]);
+        }
+
+        return $values;
     }
 
     /**
      * @inheritdoc
      */
-    public function setContent($content)
+    public function setFieldValues($values)
     {
-        if (is_array($content)) {
-            if (!isset($this->_content)) {
-                $this->_content = $this->createContent();
-            }
-
-            $this->_content->setAttributes($content, false);
-        } else if ($content instanceof Content) {
-            $this->_content = $content;
+        foreach ($values as $fieldHandle => $value) {
+            $this->setFieldValue($fieldHandle, $value);
         }
     }
 
     /**
      * @inheritdoc
      */
-    public function setContentFromPost($content)
+    public function getFieldValue($fieldHandle)
     {
-        if (is_string($content)) {
+        // Is this the first time this field value has been accessed?
+        if (!isset($this->_preparedFields[$fieldHandle])) {
+            $this->prepareFieldValue($fieldHandle);
+        }
+
+        $behavior = $this->getBehavior('customFields');
+
+        return $behavior->$fieldHandle;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function setFieldValue($fieldHandle, $value)
+    {
+        $behavior = $this->getBehavior('customFields');
+        $behavior->$fieldHandle = $value;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function setFieldValuesFromPost($values)
+    {
+        if (is_string($values)) {
             // Keep track of where the post data is coming from, in case any field types need to know where to
             // look in $_FILES
-            $this->setContentPostLocation($content);
-
-            $content = Craft::$app->getRequest()->getBodyParam($content, []);
+            $this->setContentPostLocation($values);
+            $values = Craft::$app->getRequest()->getBodyParam($values, []);
         }
 
-        if (!isset($this->_rawPostContent)) {
-            $this->_rawPostContent = [];
-        }
-
-        $fieldLayout = $this->getFieldLayout();
-
-        if ($fieldLayout) {
-            // Make sure $this->_content is set
-            $this->getContent();
-
-            foreach ($fieldLayout->getFields() as $field) {
-                $handle = $field->handle;
-
-                // Do we have any post data for this field?
-                if (isset($content[$handle])) {
-                    $value = $content[$handle];
-                    $this->_content->$handle = $value;
-                    $this->setRawPostContent($handle, $value);
-                } // Were any files uploaded for this field?
-                else if (!empty($this->_contentPostLocation) && UploadedFile::getInstancesByName($this->_contentPostLocation.'.'.$handle)) {
-                    $this->_content->$handle = null;
-                }
+        foreach ($this->getFields() as $field) {
+            // Do we have any post data for this field?
+            if (isset($values[$field->handle])) {
+                $value = $values[$field->handle];
+            } else if (!empty($this->_contentPostLocation) && UploadedFile::getInstancesByName($this->_contentPostLocation.'.'.$field->handle)) {
+                // A file was uploaded for this field
+                $value = null;
+            } else {
+                continue;
             }
+            $this->setFieldValue($field->handle, $value);
+            $this->setRawPostValueForField($field->handle, $value);
         }
     }
 
@@ -1108,7 +1134,7 @@ abstract class Element extends Component implements ElementInterface
      * @param string       $handle The field handle.
      * @param string|array The     posted field value.
      */
-    public function setRawPostContent($handle, $value)
+    public function setRawPostValueForField($handle, $value)
     {
         $this->_rawPostContent[$handle] = $value;
     }
@@ -1139,36 +1165,6 @@ abstract class Element extends Component implements ElementInterface
     public function setContentPostLocation($contentPostLocation)
     {
         $this->_contentPostLocation = $contentPostLocation;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getFieldValue($fieldHandle)
-    {
-        $content = $this->getContent();
-
-        // Is this the first time this field value has been accessed?
-        if (!isset($this->_preparedFields[$fieldHandle])) {
-            $field = $this->getFieldByHandle($fieldHandle);
-
-            if (!$field) {
-                throw new Exception(Craft::t('app',
-                    'No field exists with the handle “{handle}”',
-                    ['handle' => $fieldHandle]));
-            }
-
-            if (isset($content->$fieldHandle)) {
-                $value = $content->$fieldHandle;
-            } else {
-                $value = null;
-            }
-
-            $content->$fieldHandle = $field->prepareValue($value, $this);
-            $this->_preparedFields[$fieldHandle] = true;
-        }
-
-        return $content->$fieldHandle;
     }
 
     /**
@@ -1212,7 +1208,7 @@ abstract class Element extends Component implements ElementInterface
         $event = new Event();
         $this->trigger(self::EVENT_BEFORE_SAVE, $event);
 
-        return $event->performAction;
+        return $event->isValid;
     }
 
     /**
@@ -1231,6 +1227,27 @@ abstract class Element extends Component implements ElementInterface
 
     // Protected Methods
     // =========================================================================
+
+    /**
+     * Prepares a field’s value for use.
+     *
+     * @param string $fieldHandle The field handle
+     *
+     * @return void
+     * @throws Exception if there is no field with the handle $fieldValue
+     */
+    protected function prepareFieldValue($fieldHandle)
+    {
+        $field = $this->getFieldByHandle($fieldHandle);
+
+        if (!$field) {
+            throw new Exception(Craft::t('app', 'No field exists with the handle “{handle}”', ['handle' => $fieldHandle]));
+        }
+
+        $behavior = $this->getBehavior('customFields');
+        $behavior->$fieldHandle = $field->prepareValue($behavior->$fieldHandle, $this);
+        $this->_preparedFields[$fieldHandle] = true;
+    }
 
     /**
      * Finds Element instance(s) by the given condition.
@@ -1304,16 +1321,6 @@ abstract class Element extends Component implements ElementInterface
     protected function resolveStructureId()
     {
         return null;
-    }
-
-    /**
-     * Creates the content model associated with this element.
-     *
-     * @return Content The content model associated with this element
-     */
-    protected function createContent()
-    {
-        return Craft::$app->getContent()->createContent($this);
     }
 
     // Private Methods

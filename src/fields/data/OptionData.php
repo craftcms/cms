@@ -7,13 +7,15 @@
 
 namespace craft\app\fields\data;
 
+use craft\app\base\Savable;
+
 /**
  * Class OptionData
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
-class OptionData
+class OptionData implements Savable
 {
     // Properties
     // =========================================================================
@@ -58,5 +60,13 @@ class OptionData
     public function __toString()
     {
         return (string)$this->value;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getSavableValue()
+    {
+        return $this->value;
     }
 }

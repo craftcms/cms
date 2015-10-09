@@ -1,21 +1,19 @@
-{% if value is not defined -%}
-	{% set value = null -%}
-{% endif -%}
-
 {% set id = id ~ '-time' -%}
-
-{% if name is defined and name -%}
-	{% set name = name ~ '[time]' -%}
-{% endif -%}
+{% set name = name is defined ? name -%}
+{% set value = value is defined ? value -%}
 
 {% registerjsresource 'lib/jquery.timepicker/jquery.timepicker'~(craft.config.useCompressedJs ? '.min' : '')~'.js' -%}
 
-{% if value is not defined -%}
-	{% set value = null -%}
-{% endif -%}
-
 <div class="timewrapper">
-	{%- include "_includes/forms/text" with { autocomplete: false, size: 10, value: (value and value.localeTime is defined ? value.localeTime() : value) } -%}
+	{%- include "_includes/forms/text" with {
+		name: (name ? name~'[time]'),
+		autocomplete: false,
+		size: 10,
+		value: (value and value.localeTime is defined ? value.localeTime() : value)
+	} -%}
+	{% if name -%}
+		<input type="hidden" name="{{ name }}[timezone]" value="{{ craft.getTimeZone() }}">
+	{%- endif -%}
 </div>
 
 {%-	set localeData = craft.i18n.getLocaleData() %}

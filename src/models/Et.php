@@ -9,7 +9,7 @@ namespace craft\app\models;
 
 use Craft;
 use craft\app\base\Model;
-use craft\app\helpers\JsonHelper;
+use craft\app\helpers\Json;
 
 /**
  * Class Et model.
@@ -98,6 +98,11 @@ class Et extends Model
     public $track;
 
     /**
+     * @var boolean Show beta updates
+     */
+    public $showBeta = false;
+
+    /**
      * @var array Errors
      */
     public $errors;
@@ -156,6 +161,6 @@ class Et extends Model
      */
     public function decode()
     {
-        echo JsonHelper::decode($this);
+        echo Json::decode($this);
     }
 }

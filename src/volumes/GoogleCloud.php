@@ -1,6 +1,6 @@
 <?php
 /**
- * The Google Cloud source type class. Handles the implementation of the Google Cloud Storage service as an asset source type in
+ * The Google Cloud Volume. Handles the implementation of the Google Cloud service as a volume in
  * Craft.
  *
  * @author     Pixel & Tonic, Inc. <support@pixelandtonic.com>
@@ -8,14 +8,17 @@
  * @license    http://buildwithcraft.com/license Craft License Agreement
  * @see        http://buildwithcraft.com
  * @package    craft.app.volumes
- * @since      1.0
+ * @since      3.0
  */
 
 namespace craft\app\volumes;
 
 use Craft;
 use craft\app\base\Volume;
-use craft\app\io\flysystemadapters\AwsS3 as AwsS3Adapter;
+use craft\app\dates\DateTime;
+use craft\app\helpers\Assets;
+use craft\app\helpers\DateTimeHelper;
+use \League\Flysystem\GoogleCloud\GoogleCloudAdapter;
 use \Aws\S3\S3Client as S3Client;
 
 Craft::$app->requireEdition(Craft::Pro);
@@ -72,6 +75,13 @@ class GoogleCloud extends Volume
      */
     public $bucket = "";
 
+    /**
+     * Cache expiration period.
+     *
+     * @var string
+     */
+    public $expires = "";
+
     // Public Methods
     // =========================================================================
 
@@ -93,9 +103,10 @@ class GoogleCloud extends Volume
     public function getSettingsHtml()
     {
         return Craft::$app->getView()->renderTemplate('_components/volumes/GoogleCloud/settings',
-            array(
+            [
                 'volume' => $this,
-            ));
+                'periods' => array_merge(['' => ''], Assets::getPeriodList())
+            ]);
     }
 
     /**
@@ -110,25 +121,23 @@ class GoogleCloud extends Volume
     public static function loadBucketList($keyId, $secret)
     {
         if (empty($keyId) || empty($secret)) {
-            throw new \InvalidArgumentException(Craft::t('app',
-                'You must specify secret key ID and the secret key to get the bucket list.'));
+            throw new \InvalidArgumentException(Craft::t('app', 'You must specify secret key ID and the secret key to get the bucket list.'));
         }
 
-        $client = static::getClient($keyId, $secret,
-            array('base_url' => 'https://storage.googleapis.com'));
+        $client = static::getClient($keyId, $secret, ['base_url' => 'https://storage.googleapis.com']);
         $objects = $client->listBuckets();
         if (empty($objects['Buckets'])) {
-            return array();
+            return [];
         }
 
         $buckets = $objects['Buckets'];
-        $bucketList = array();
+        $bucketList = [];
 
         foreach ($buckets as $bucket) {
-            $bucketList[] = array(
+            $bucketList[] = [
                 'bucket' => $bucket['Name'],
                 'urlPrefix' => 'http://storage.googleapis.com/'.$bucket['Name'].'/'
-            );
+            ];
         }
 
         return $bucketList;
@@ -150,19 +159,35 @@ class GoogleCloud extends Volume
         return rtrim(rtrim($this->url, '/').'/'.$this->subfolder, '/').'/';
     }
 
+    /**
+     * @inheritdoc
+     */
+    public function createFileByStream($path, $stream, $config = [])
+    {
+        if (!empty($this->expires)  && DateTimeHelper::isValidIntervalString($this->expires))
+        {
+            $expires = new DateTime();
+            $now = new DateTime();
+            $expires->modify('+'.$this->expires);
+            $diff = $expires->format('U') - $now->format('U');
+            $config['CacheControl'] = 'max-age='.$diff.', must-revalidate';
+        }
+
+        return parent::createFileByStream($path, $stream, $config);
+    }
+
     // Protected Methods
     // =========================================================================
 
     /**
      * @inheritdoc
-     * @return AwsS3Adapter
+     * @return GoogleCloudAdapter
      */
     protected function createAdapter()
     {
-        $client = static::getClient($this->keyId, $this->secret,
-            array('base_url' => 'https://storage.googleapis.com'));
+        $client = static::getClient($this->keyId, $this->secret, ['base_url' => 'https://storage.googleapis.com']);
 
-        return new AwsS3Adapter($client, $this->bucket, $this->subfolder);
+        return new GoogleCloudAdapter($client, $this->bucket, $this->subfolder);
     }
 
     /**
@@ -174,10 +199,9 @@ class GoogleCloud extends Volume
      *
      * @return S3Client
      */
-    protected static function getClient($keyId, $secret, $options = array())
+    protected static function getClient($keyId, $secret, $options = [])
     {
-        $config = array_merge(array('key' => $keyId, 'secret' => $secret),
-            $options);
+        $config = array_merge(['key' => $keyId, 'secret' => $secret], $options);
 
         return S3Client::factory($config);
     }

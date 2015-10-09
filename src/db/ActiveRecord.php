@@ -7,7 +7,7 @@
 
 namespace craft\app\db;
 
-use craft\app\helpers\DbHelper;
+use craft\app\helpers\Db;
 use craft\app\helpers\StringHelper;
 
 /**
@@ -44,7 +44,7 @@ abstract class ActiveRecord extends \yii\db\ActiveRecord
     public function beforeSave($insert)
     {
         // Prepare the values
-        $now = DbHelper::prepareDateForDb(new \DateTime());
+        $now = Db::prepareDateForDb(new \DateTime());
 
         foreach ($this->attributes() as $attribute) {
             if ($attribute === 'dateCreated' && $this->getIsNewRecord()) {
@@ -54,7 +54,7 @@ abstract class ActiveRecord extends \yii\db\ActiveRecord
             } else if ($attribute === 'uid' && $this->getIsNewRecord()) {
                 $this->uid = StringHelper::UUID();
             } else {
-                $this->$attribute = DbHelper::prepareValueForDb($this->$attribute);
+                $this->$attribute = Db::prepareValueForDb($this->$attribute);
             }
         }
 

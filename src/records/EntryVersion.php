@@ -11,8 +11,6 @@ use yii\db\ActiveQueryInterface;
 use Craft;
 use craft\app\db\ActiveRecord;
 
-Craft::$app->requireEdition(Craft::Client);
-
 /**
  * Class EntryVersion record.
  *

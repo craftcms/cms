@@ -401,14 +401,10 @@ class RequirementsChecker
             }
         } else {
             // Check if we're running in the context of Craft.
-            $this->dbCreds['server'] = Craft::$app->getConfig()->get('server',
-                'db');
-            $this->dbCreds['user'] = Craft::$app->getConfig()->get('user',
-                'db');
-            $this->dbCreds['password'] = Craft::$app->getConfig()->get('password',
-                'db');
-            $this->dbCreds['database'] = Craft::$app->getConfig()->get('database',
-                'db');
+            $this->dbCreds['server'] = Craft::$app->getConfig()->get('server', 'db');
+            $this->dbCreds['user'] = Craft::$app->getConfig()->get('user', 'db');
+            $this->dbCreds['password'] = Craft::$app->getConfig()->get('password', 'db');
+            $this->dbCreds['database'] = Craft::$app->getConfig()->get('database', 'db');
 
             return true;
         }
@@ -429,24 +425,24 @@ class RequirementsChecker
     function testIconvTruncateBug()
     {
         $warningMessage = 'You have a buggy version of iconv installed. (See <a href="https://bugs.php.net/bug.php?id=48147">PHP bug #48147</a> and <a href="http://sourceware.org/bugzilla/show_bug.cgi?id=13541">iconv bug #13541</a>.)';
+        $ignoreMessage = 'The version of iconv you have installed does not support //IGNORE, making it unusable for transcoding purposes.';
         $recommendedMessage = '<a href="http://php.net/manual/en/book.iconv.php">iconv</a> is recommended for more robust character set conversion support.';
 
         if (function_exists('iconv')) {
             // Let's see what happens.
             set_error_handler(array($this, 'muteErrorHandler'));
-            $r = iconv('utf-8', 'ascii//IGNORE',
-                "\xCE\xB1".str_repeat('a', 9000));
+            $r = iconv('utf-8', 'ascii//IGNORE', "\xCE\xB1".str_repeat('a', 9000));
             restore_error_handler();
 
             if ($r === false) {
-                $this->iconvMessage = $recommendedMessage;
+                $this->iconvMessage = $ignoreMessage;
 
                 return false;
-            } elseif (($c = strlen($r)) < 9000) {
+            } else if (($c = strlen($r)) < 9000) {
                 $this->iconvMessage = $warningMessage;
 
                 return false;
-            } elseif ($c > 9000) {
+            } else if ($c > 9000) {
                 $this->iconvMessage = $warningMessage;
 
                 return false;
@@ -485,8 +481,7 @@ class RequirementsChecker
     function checkMySqlServerVersion()
     {
         if (($conn = $this->getDbConnection()) !== false) {
-            return version_compare($conn->getAttribute(PDO::ATTR_SERVER_VERSION),
-                $this->requiredMySqlVersion, ">=");
+            return version_compare($conn->getAttribute(PDO::ATTR_SERVER_VERSION), $this->requiredMySqlVersion, ">=");
         }
 
         return false;
@@ -498,8 +493,7 @@ class RequirementsChecker
 
         if (!$conn) {
             try {
-                $conn = new PDO("mysql:host={$this->dbCreds['server']};dbname={$this->dbCreds['database']}",
-                    $this->dbCreds['user'], $this->dbCreds['password']);
+                $conn = new PDO("mysql:host={$this->dbCreds['server']};dbname={$this->dbCreds['database']}", $this->dbCreds['user'], $this->dbCreds['password']);
                 $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
             } catch (PDOException $e) {
                 $this->dbConnectionError = "Can't connect to the database with the credentials supplied in db.php. Please double check them and try again.";

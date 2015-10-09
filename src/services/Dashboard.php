@@ -11,7 +11,7 @@ use Craft;
 use craft\app\base\WidgetInterface;
 use craft\app\errors\Exception;
 use craft\app\errors\InvalidComponentException;
-use craft\app\helpers\ComponentHelper;
+use craft\app\helpers\Component as ComponentHelper;
 use craft\app\records\Widget as WidgetRecord;
 use craft\app\base\Widget;
 use craft\app\widgets\Feed as FeedWidget;
@@ -58,8 +58,7 @@ class Dashboard extends Component
             UpdatesWidget::className(),
         ];
 
-        foreach (Craft::$app->getPlugins()->call('getWidgetTypes', [],
-            true) as $pluginWidgetTypes) {
+        foreach (Craft::$app->getPlugins()->call('getWidgetTypes', [], true) as $pluginWidgetTypes) {
             $widgetTypes = array_merge($widgetTypes, $pluginWidgetTypes);
         }
 
@@ -80,8 +79,7 @@ class Dashboard extends Component
         }
 
         try {
-            return ComponentHelper::createComponent($config,
-                self::WIDGET_INTERFACE);
+            return ComponentHelper::createComponent($config, self::WIDGET_INTERFACE);
         } catch (InvalidComponentException $e) {
             $config['errorMessage'] = $e->getMessage();
 
@@ -172,7 +170,7 @@ class Dashboard extends Component
     public function saveWidget(WidgetInterface $widget, $validate = true)
     {
         if ((!$validate || $widget->validate()) && $widget->beforeSave()) {
-            $transaction = Craft::$app->getDb()->getTransaction() === null ? Craft::$app->getDb()->beginTransaction() : null;
+            $transaction = Craft::$app->getDb()->beginTransaction();
             try {
                 $widgetRecord = $this->_getUserWidgetRecordById($widget->id);
                 $isNewWidget = $widgetRecord->getIsNewRecord();
@@ -194,15 +192,11 @@ class Dashboard extends Component
 
                 $widget->afterSave();
 
-                if ($transaction !== null) {
-                    $transaction->commit();
-                }
+                $transaction->commit();
 
                 return true;
             } catch (\Exception $e) {
-                if ($transaction !== null) {
-                    $transaction->rollback();
-                }
+                $transaction->rollback();
 
                 throw $e;
             }
@@ -239,7 +233,7 @@ class Dashboard extends Component
      */
     public function reorderWidgets($widgetIds)
     {
-        $transaction = Craft::$app->getDb()->getTransaction() === null ? Craft::$app->getDb()->beginTransaction() : null;
+        $transaction = Craft::$app->getDb()->beginTransaction();
 
         try {
             foreach ($widgetIds as $widgetOrder => $widgetId) {
@@ -248,13 +242,9 @@ class Dashboard extends Component
                 $widgetRecord->save();
             }
 
-            if ($transaction !== null) {
-                $transaction->commit();
-            }
+            $transaction->commit();
         } catch (\Exception $e) {
-            if ($transaction !== null) {
-                $transaction->rollback();
-            }
+            $transaction->rollback();
 
             throw $e;
         }
@@ -331,8 +321,7 @@ class Dashboard extends Component
      */
     private function _noWidgetExists($widgetId)
     {
-        throw new Exception(Craft::t('app',
-            'No widget exists with the ID “{id}”.', ['id' => $widgetId]));
+        throw new Exception(Craft::t('app', 'No widget exists with the ID “{id}”.', ['id' => $widgetId]));
     }
 
     /**

@@ -233,8 +233,8 @@ Garnish = $.extend(Garnish, {
 	 *
 	 * Last updated: 2014-11-24
 	 *
-	 * @param boolean detectTablets
-	 * @return boolean
+	 * @param bool detectTablets
+	 * @return bool
 	 */
 	isMobileBrowser: function(detectTablets)
 	{
@@ -253,7 +253,7 @@ Garnish = $.extend(Garnish, {
 	 * Returns whether a variable is an array.
 	 *
 	 * @param mixed val
-	 * @return boolean
+	 * @return bool
 	 */
 	isArray: function(val)
 	{
@@ -264,7 +264,7 @@ Garnish = $.extend(Garnish, {
 	 * Returns whether a variable is a jQuery collection.
 	 *
 	 * @param mixed val
-	 * @return boolean
+	 * @return bool
 	 */
 	isJquery: function(val)
 	{
@@ -275,7 +275,7 @@ Garnish = $.extend(Garnish, {
 	 * Returns whether a variable is a string.
 	 *
 	 * @param mixed val
-	 * @return boolean
+	 * @return bool
 	 */
 	isString: function(val)
 	{
@@ -297,7 +297,7 @@ Garnish = $.extend(Garnish, {
 	 * Returns whether something is a text node.
 	 *
 	 * @param object elem
-	 * @return boolean
+	 * @return bool
 	 */
 	isTextNode: function(elem)
 	{
@@ -307,10 +307,10 @@ Garnish = $.extend(Garnish, {
 	/**
 	 * Returns the distance between two coordinates.
 	 *
-	 * @param integer x1 The first coordinate's X position.
-	 * @param integer y1 The first coordinate's Y position.
-	 * @param integer x2 The second coordinate's X position.
-	 * @param integer y2 The second coordinate's Y position.
+	 * @param int x1 The first coordinate's X position.
+	 * @param int y1 The first coordinate's Y position.
+	 * @param int x2 The second coordinate's X position.
+	 * @param int y2 The second coordinate's Y position.
 	 * @return float
 	 */
 	getDist: function(x1, y1, x2, y2)
@@ -321,10 +321,10 @@ Garnish = $.extend(Garnish, {
 	/**
 	 * Returns whether an element is touching an x/y coordinate.
 	 *
-	 * @param integer    x    The coordinate's X position.
-	 * @param integer    y    The coordinate's Y position.
+	 * @param int    x    The coordinate's X position.
+	 * @param int    y    The coordinate's Y position.
 	 * @param object elem Either an actual element or a jQuery collection.
-	 * @return boolean
+	 * @return bool
 	 */
 	hitTest: function(x, y, elem)
 	{
@@ -343,7 +343,7 @@ Garnish = $.extend(Garnish, {
 	 *
 	 * @param object ev   The mouse event object containing pageX and pageY properties.
 	 * @param object elem Either an actual element or a jQuery collection.
-	 * @return boolean
+	 * @return bool
 	 */
 	isCursorOver: function(ev, elem)
 	{
@@ -378,7 +378,7 @@ Garnish = $.extend(Garnish, {
 	/**
 	 * Returns the body's real scrollTop, discarding any window banding in Safari.
 	 *
-	 * @return integer
+	 * @return int
 	 */
 	getBodyScrollTop: function()
 	{
@@ -766,19 +766,19 @@ Garnish.Base = Base.extend({
 		}
 	},
 
-	off: function(events)
+	off: function(events, handler)
 	{
 		var events = this._normalizeEvents(events);
 
-		for (var i = 0; i < events; i++)
+		for (var i = 0; i < events.length; i++)
 		{
 			var ev = events[i];
 
-			for (var j = this._eventHandlers.length - 1; j >= 0; i--)
+			for (var j = this._eventHandlers.length - 1; j >= 0; j--)
 			{
-				var handler = this._eventHandlers[j];
+				var eventHandler = this._eventHandlers[j];
 
-				if (handler.type == ev[0] && (!ev[1] || handler.namespace == ev[1]))
+				if (eventHandler.type == ev[0] && (!ev[1] || eventHandler.namespace == ev[1]) && eventHandler.handler === handler)
 				{
 					this._eventHandlers.splice(j, 1);
 				}
@@ -3093,6 +3093,15 @@ Garnish.HUD = Garnish.Base.extend({
 	},
 
 	/**
+	 * Update the body contents
+	 */
+	updateBody: function(bodyContents)
+	{
+		this.$body.html('');
+		this.$body.append(bodyContents);
+	},
+
+	/**
 	 * Show
 	 */
 	show: function(ev)
@@ -3175,6 +3184,30 @@ Garnish.HUD = Garnish.Base.extend({
 
 	determineBestPosition: function()
 	{
+		// See if the trigger is fixed
+		var $parent = this.$trigger,
+			fixedTrigger = false;
+
+		do {
+			if ($parent.css('position') == 'fixed')
+			{
+				fixedTrigger = true;
+				break;
+			}
+
+			$parent = $parent.offsetParent();
+		}
+		while ($parent.length && $parent.prop('nodeName') != 'HTML');
+
+		if (fixedTrigger)
+		{
+			this.$hud.css('position', 'fixed');
+		}
+		else
+		{
+			this.$hud.css('position', 'absolute');
+		}
+
 		// Get the window sizez and trigger offset
 		this.updateElementProperties();
 
@@ -4682,7 +4715,7 @@ Garnish.Modal = Garnish.Base.extend({
 		onHide: $.noop,
 		onFadeIn: $.noop,
 		onFadeOut: $.noop,
-		closeOtherModals: true,
+		closeOtherModals: false,
 		hideOnEsc: true,
 		hideOnShadeClick: true,
 		shadeClass: 'modal-shade'
@@ -5257,7 +5290,7 @@ Garnish.Select = Garnish.Base.extend({
 	/**
 	 * Select Item
 	 */
-	selectItem: function($item, focus)
+	selectItem: function($item, focus, preventScroll)
 	{
 		if (!this.settings.multi)
 		{
@@ -5270,7 +5303,7 @@ Garnish.Select = Garnish.Base.extend({
 		if (focus)
 		{
 			this.setFocusableItem($item);
-			$item.focus();
+			this.focusItem($item, preventScroll);
 		}
 
 		this._selectItems($item);
@@ -5294,7 +5327,7 @@ Garnish.Select = Garnish.Base.extend({
 	/**
 	 * Select Range
 	 */
-	selectRange: function($item)
+	selectRange: function($item, preventScroll)
 	{
 		if (!this.settings.multi)
 		{
@@ -5307,7 +5340,7 @@ Garnish.Select = Garnish.Base.extend({
 		this.last = this.getItemIndex($item);
 
 		this.setFocusableItem($item);
-		$item.focus();
+		this.focusItem($item, preventScroll);
 
 		// prepare params for $.slice()
 		if (this.first < this.last)
@@ -5361,11 +5394,11 @@ Garnish.Select = Garnish.Base.extend({
 	/**
 	 * Toggle Item
 	 */
-	toggleItem: function($item)
+	toggleItem: function($item, preventScroll)
 	{
 		if (!this.isSelected($item))
 		{
-			this.selectItem($item, true);
+			this.selectItem($item, true, preventScroll);
 		}
 		else
 		{
@@ -5768,6 +5801,24 @@ Garnish.Select = Garnish.Base.extend({
 		this.$focusable = $item.attr('tabindex', '0');
 	},
 
+	/**
+	 * Sets the focus on an item.
+	 */
+	focusItem: function($item, preventScroll)
+	{
+		if (preventScroll)
+		{
+			var scrollLeft = Garnish.$doc.scrollLeft(),
+				scrollTop = Garnish.$doc.scrollTop();
+			$item.focus();
+			window.scrollTo(scrollLeft, scrollTop);
+		}
+		else
+		{
+			$item.focus();
+		}
+	},
+
 	// --------------------------------------------------------------------
 
 	/**
@@ -5816,11 +5867,11 @@ Garnish.Select = Garnish.Base.extend({
 		if (this.first !== null && ev.shiftKey)
 		{
 			// Shift key is consistent for both selection modes
-			this.selectRange($item);
+			this.selectRange($item, true);
 		}
 		else if (this._actAsCheckbox(ev))
 		{
-			this.toggleItem($item);
+			this.toggleItem($item, true);
 		}
 	},
 
@@ -5862,7 +5913,7 @@ Garnish.Select = Garnish.Base.extend({
 			else
 			{
 				this.deselectAll();
-				this.selectItem($item, true);
+				this.selectItem($item, true, true);
 			}
 		}
 	},

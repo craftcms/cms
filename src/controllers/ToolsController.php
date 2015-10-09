@@ -10,8 +10,8 @@ namespace craft\app\controllers;
 use Craft;
 use craft\app\base\ToolInterface;
 use craft\app\errors\HttpException;
-use craft\app\helpers\ComponentHelper;
-use craft\app\helpers\IOHelper;
+use craft\app\helpers\Component;
+use craft\app\helpers\Io;
 use craft\app\web\Controller;
 
 /**
@@ -53,8 +53,7 @@ class ToolsController extends Controller
         $params = Craft::$app->getRequest()->getBodyParam('params', []);
 
         /** @var ToolInterface $tool */
-        $tool = ComponentHelper::createComponent($class,
-            'craft\app\base\ToolInterface');
+        $tool = Component::createComponent($class, 'craft\app\base\ToolInterface');
         $response = $tool->performAction($params);
 
         return $this->asJson($response);
@@ -69,10 +68,8 @@ class ToolsController extends Controller
     {
         $filename = Craft::$app->getRequest()->getRequiredQueryParam('filename');
 
-        if (($filePath = IOHelper::fileExists(Craft::$app->getPath()->getTempPath().'/'.$filename.'.zip')) == true) {
-            Craft::$app->getRequest()->sendFile(IOHelper::getFilename($filePath),
-                IOHelper::getFileContents($filePath),
-                ['forceDownload' => true]);
+        if (($filePath = Io::fileExists(Craft::$app->getPath()->getTempPath().'/'.$filename.'.zip')) == true) {
+            Craft::$app->getRequest()->sendFile(Io::getFilename($filePath), Io::getFileContents($filePath), ['forceDownload' => true]);
         }
     }
 }

@@ -62,20 +62,6 @@ return [
                 'allowPublicRegistration' => false,
                 'defaultGroup' => null,
             ],
-            'email' => [
-                'emailAddress' => null,
-                'senderName' => null,
-                'template' => null,
-                'protocol' => null,
-                'username' => null,
-                'password' => null,
-                'port' => 25,
-                'host' => null,
-                'timeout' => 30,
-                'smtpKeepAlive' => false,
-                'smtpAuth' => false,
-                'smtpSecureTransportType' => 'none',
-            ]
         ]
     ],
     'i18n' => [
@@ -85,18 +71,21 @@ return [
                 'class' => 'craft\app\i18n\PhpMessageSource',
                 'sourceLanguage' => 'en-US',
                 'basePath' => '@yii/messages',
+                'forceTranslation' => true,
                 'allowOverrides' => true,
             ],
             'app' => [
                 'class' => 'craft\app\i18n\PhpMessageSource',
                 'sourceLanguage' => 'en-US',
                 'basePath' => '@app/translations',
+                'forceTranslation' => true,
                 'allowOverrides' => true,
             ],
             'site' => [
                 'class' => 'craft\app\i18n\PhpMessageSource',
                 'sourceLanguage' => 'en-US',
                 'basePath' => '@translations',
+                'forceTranslation' => true,
             ],
         ],
     ],

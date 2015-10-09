@@ -11,12 +11,11 @@ use Craft;
 use craft\app\dates\DateTime;
 use craft\app\errors\Exception;
 use craft\app\errors\HttpException;
-use craft\app\helpers\AssetsHelper;
-use craft\app\helpers\HeaderHelper;
-use craft\app\helpers\IOHelper;
-use craft\app\helpers\PathHelper;
+use craft\app\helpers\Assets as AssetsHelper;
+use craft\app\helpers\Io;
+use craft\app\helpers\Path as PathHelper;
 use craft\app\helpers\StringHelper;
-use craft\app\helpers\UrlHelper;
+use craft\app\helpers\Url;
 use yii\base\Component;
 use yii\helpers\FileHelper;
 
@@ -57,7 +56,7 @@ class Resources extends Component
     {
         $realPath = Craft::$app->getCache()->get('resourcePath:'.$path);
 
-        if ($realPath && IOHelper::fileExists($realPath)) {
+        if ($realPath && Io::fileExists($realPath)) {
             return $realPath;
         }
     }
@@ -112,8 +111,7 @@ class Resources extends Component
                             return false;
                         }
 
-                        $username = AssetsHelper::prepareAssetName($segs[1],
-                            false);
+                        $username = AssetsHelper::prepareAssetName($segs[1], false);
                         $filename = AssetsHelper::prepareAssetName($segs[3]);
 
                         $userPhotosPath = Craft::$app->getPath()->getUserPhotosPath().'/'.$username;
@@ -121,22 +119,21 @@ class Resources extends Component
                         $sizedPhotoPath = $sizedPhotoFolder.'/'.$filename;
 
                         // If the photo doesn't exist at this size, create it.
-                        if (!IOHelper::fileExists($sizedPhotoPath)) {
+                        if (!Io::fileExists($sizedPhotoPath)) {
                             $originalPhotoPath = $userPhotosPath.'/original/'.$filename;
 
-                            if (!IOHelper::fileExists($originalPhotoPath)) {
+                            if (!Io::fileExists($originalPhotoPath)) {
                                 return false;
                             }
 
-                            IOHelper::ensureFolderExists($sizedPhotoFolder);
+                            Io::ensureFolderExists($sizedPhotoFolder);
 
-                            if (IOHelper::isWritable($sizedPhotoFolder)) {
+                            if (Io::isWritable($sizedPhotoFolder)) {
                                 Craft::$app->getImages()->loadImage($originalPhotoPath)
                                     ->resize($size)
                                     ->saveAs($sizedPhotoPath);
                             } else {
-                                Craft::error('Tried to write to target folder and could not: '.$sizedPhotoFolder,
-                                    __METHOD__);
+                                Craft::error('Tried to write to target folder and could not: '.$sizedPhotoFolder, __METHOD__);
                             }
                         }
 
@@ -152,33 +149,30 @@ class Resources extends Component
                     $size = $segs[1];
                     $sourceFile = Craft::$app->getPath()->getResourcesPath().'/images/'.static::DefaultUserphotoFilename;
                     $targetFolder = Craft::$app->getPath()->getUserPhotosPath().'/__default__';
-                    IOHelper::ensureFolderExists($targetFolder);
+                    Io::ensureFolderExists($targetFolder);
 
-                    if (IOHelper::isWritable($targetFolder)) {
-                        $targetFile = $targetFolder.'/'.$size.'.'.IOHelper::getExtension($sourceFile);
+                    if (Io::isWritable($targetFolder)) {
+                        $targetFile = $targetFolder.'/'.$size.'.'.Io::getExtension($sourceFile);
                         Craft::$app->getImages()->loadImage($sourceFile)
                             ->resize($size)
                             ->saveAs($targetFile);
 
                         return $targetFile;
                     } else {
-                        Craft::error('Tried to write to the target folder, but could not:'.$targetFolder,
-                            __METHOD__);
+                        Craft::error('Tried to write to the target folder, but could not:'.$targetFolder, __METHOD__);
                     }
                 }
 
                 case 'tempuploads': {
                     array_shift($segs);
 
-                    return Craft::$app->getPath()->getTempUploadsPath().'/'.implode('/',
-                        $segs);
+                    return Craft::$app->getPath()->getTempUploadsPath().'/'.implode('/', $segs);
                 }
 
                 case 'tempassets': {
                     array_shift($segs);
 
-                    return Craft::$app->getPath()->getAssetsTempSourcePath().'/'.implode('/',
-                        $segs);
+                    return Craft::$app->getPath()->getAssetsTempSourcePath().'/'.implode('/', $segs);
                 }
 
                 case 'modified-assets': {
@@ -203,8 +197,7 @@ class Resources extends Component
                     // Make sure plugins are loaded in case the asset lives in a plugin-supplied volume type
                     Craft::$app->getPlugins()->loadPlugins();
 
-                    return Craft::$app->getAssetTransforms()->getThumbServerPath($fileModel,
-                        $size);
+                    return Craft::$app->getAssetTransforms()->getThumbServerPath($fileModel, $size);
                 }
 
                 case 'icons': {
@@ -223,8 +216,7 @@ class Resources extends Component
                 }
 
                 case 'logo': {
-                    return Craft::$app->getPath()->getStoragePath().'/'.implode('/',
-                        $segs);
+                    return Craft::$app->getPath()->getStoragePath().'/'.implode('/', $segs);
                 }
 
                 case 'transforms': {
@@ -254,7 +246,7 @@ class Resources extends Component
         // Check app/resources folder first.
         $appResourcePath = Craft::$app->getPath()->getResourcesPath().'/'.$path;
 
-        if (IOHelper::fileExists($appResourcePath)) {
+        if (Io::fileExists($appResourcePath)) {
             return $appResourcePath;
         }
 
@@ -263,7 +255,7 @@ class Resources extends Component
             $pluginResourcePath = Craft::$app->getPath()->getPluginsPath().'/'.$segs[0].'/'.'resources/'.implode('/',
                     array_splice($segs, 1));
 
-            if (IOHelper::fileExists($pluginResourcePath)) {
+            if (Io::fileExists($pluginResourcePath)) {
                 return $pluginResourcePath;
             }
         }
@@ -272,7 +264,7 @@ class Resources extends Component
         $pluginPath = Craft::$app->getPlugins()->callFirst('getResourcePath',
             [$path], true);
 
-        if ($pluginPath && IOHelper::fileExists($pluginPath)) {
+        if ($pluginPath && Io::fileExists($pluginPath)) {
             return $pluginPath;
         }
 
@@ -312,21 +304,20 @@ class Resources extends Component
             $this->cacheResourcePath($path, $realPath);
         }
 
-        if ($realPath === false || !IOHelper::fileExists($realPath)) {
+        if ($realPath === false || !Io::fileExists($realPath)) {
             throw new HttpException(404);
         }
 
         // If there is a timestamp and HTTP_IF_MODIFIED_SINCE exists, check the timestamp against requested file's last
         // modified date. If the last modified date is less than the timestamp, return a 304 not modified and let the
         // browser serve it from cache.
-        $timestamp = Craft::$app->getRequest()->getParam($this->dateParam,
-            null);
+        $timestamp = Craft::$app->getRequest()->getParam($this->dateParam, null);
 
         if ($timestamp !== null && array_key_exists('HTTP_IF_MODIFIED_SINCE',
                 $_SERVER)
         ) {
             $requestDate = DateTime::createFromFormat('U', $timestamp);
-            $lastModifiedFileDate = IOHelper::getLastTimeModified($realPath);
+            $lastModifiedFileDate = Io::getLastTimeModified($realPath);
 
             if ($lastModifiedFileDate && $lastModifiedFileDate <= $requestDate) {
                 // Let the browser serve it from cache.
@@ -335,7 +326,7 @@ class Resources extends Component
             }
         }
 
-        $filename = IOHelper::getFilename($realPath);
+        $filename = Io::getFilename($realPath);
         $mimeType = FileHelper::getMimeTypeByExtension($realPath);
         $response = Craft::$app->getResponse();
 
@@ -352,7 +343,7 @@ class Resources extends Component
         // Is this a CSS file?
         if ($mimeType == 'text/css') {
             // Normalize the URLs
-            $contents = IOHelper::getFileContents($realPath);
+            $contents = Io::getFileContents($realPath);
             $contents = preg_replace_callback('/(url\(([\'"]?))(.+?)(\2\))/',
                 [&$this, '_normalizeCssUrl'], $contents);
 
@@ -381,7 +372,7 @@ class Resources extends Component
         }
 
         // Clean up any relative folders at the beginning of the CSS URL
-        $requestFolder = IOHelper::getFolderName(Craft::$app->getRequest()->getPathInfo());
+        $requestFolder = Io::getFolderName(Craft::$app->getRequest()->getPathInfo());
         $requestFolderParts = array_filter(explode('/', $requestFolder));
         $cssUrlParts = array_filter(explode('/', $match[3]));
 
@@ -392,18 +383,18 @@ class Resources extends Component
 
         $pathParts = array_merge($requestFolderParts, $cssUrlParts);
         $path = implode('/', $pathParts);
-        $url = UrlHelper::getUrl($path);
+        $url = Url::getUrl($path);
 
         // Is this going to be a resource URL?
-        $rootResourceUrl = UrlHelper::getUrl(Craft::$app->getConfig()->getResourceTrigger()).'/';
+        $rootResourceUrl = Url::getUrl(Craft::$app->getConfig()->getResourceTrigger()).'/';
         $rootResourceUrlLength = strlen($rootResourceUrl);
 
         if (strncmp($rootResourceUrl, $url, $rootResourceUrlLength) === 0) {
             // Isolate the relative resource path
             $resourcePath = substr($url, $rootResourceUrlLength);
 
-            // Give UrlHelper a chance to add the timestamp
-            $url = UrlHelper::getResourceUrl($resourcePath);
+            // Give Url a chance to add the timestamp
+            $url = Url::getResourceUrl($resourcePath);
         }
 
         // Return the normalized CSS URL declaration
@@ -441,12 +432,12 @@ class Resources extends Component
         // See if we have the icon already
         $iconLocation = $sizeFolder.'/'.$ext.'.png';
 
-        if (IOHelper::fileExists($iconLocation)) {
+        if (Io::fileExists($iconLocation)) {
             return $iconLocation;
         }
 
         // We are going to need that folder to exist.
-        IOHelper::ensureFolderExists($sizeFolder);
+        Io::ensureFolderExists($sizeFolder);
 
         // Determine the closest source size
         $sourceSizes = [
@@ -465,7 +456,7 @@ class Resources extends Component
         // Do we have a source icon that we can resize?
         $sourceIconLocation = $sourceFolder.'/'.$ext.'.png';
 
-        if (!IOHelper::fileExists($sourceIconLocation)) {
+        if (!Io::fileExists($sourceIconLocation)) {
             $sourceFile = Craft::$app->getPath()->getAppPath().'/resources/images/fileicons/'.$sourceSize['size'].'.png';
             $image = Craft::$app->getImages()->loadImage($sourceFile);
 
@@ -473,8 +464,7 @@ class Resources extends Component
             if ($ext) {
                 $font = Craft::$app->getPath()->getResourcesPath().'/fonts/helveticaneue-webfont.ttf';
 
-                $image->setFontProperties($font, $sourceSize['extSize'],
-                    "#999");
+                $image->setFontProperties($font, $sourceSize['extSize'], "#999");
                 $text = StringHelper::toUpperCase($ext);
 
                 $box = $image->getTextBox($text);
@@ -487,7 +477,7 @@ class Resources extends Component
             }
 
             // Make sure we have a folder to save to and save it.
-            IOHelper::ensureFolderExists($sourceFolder);
+            Io::ensureFolderExists($sourceFolder);
             $image->saveAs($sourceIconLocation);
         }
 

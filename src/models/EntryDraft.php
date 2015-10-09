@@ -27,6 +27,7 @@ class EntryDraft extends BaseEntryRevisionModel
      */
     public static function populateModel($model, $config)
     {
+        /** @var static $model */
         // Merge the draft and entry data
         $entryData = $config['data'];
         $fieldContent = isset($entryData['fields']) ? $entryData['fields'] : null;
@@ -39,8 +40,11 @@ class EntryDraft extends BaseEntryRevisionModel
 
         parent::populateModel($model, $config);
 
+        // Use the live content as a starting point
+        Craft::$app->getContent()->populateElementContent($model);
+
         if ($title) {
-            $model->getContent()->title = $title;
+            $model->title = $title;
         }
 
         if ($fieldContent) {

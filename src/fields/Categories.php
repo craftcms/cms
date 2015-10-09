@@ -53,7 +53,7 @@ class Categories extends BaseRelationField
     /**
      * Whether to allow multiple source selection in the settings.
      *
-     * @var bool $allowMultipleSources
+     * @var boolean $allowMultipleSources
      */
     protected $allowMultipleSources = false;
 
@@ -74,7 +74,7 @@ class Categories extends BaseRelationField
     /**
      * Whether the elements have a custom sort order.
      *
-     * @var bool $sortable
+     * @var boolean $sortable
      */
     protected $sortable = false;
 
@@ -93,8 +93,7 @@ class Categories extends BaseRelationField
         }
 
         if (empty($source)) {
-            return '<p class="error">'.Craft::t('app',
-                'This field is not set to a valid category group.').'</p>';
+            return '<p class="error">'.Craft::t('app', 'This field is not set to a valid category group.').'</p>';
         }
 
         return parent::getInputHtml($value, $element);

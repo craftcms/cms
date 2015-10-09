@@ -9,7 +9,7 @@ namespace craft\app\elements\actions;
 
 use Craft;
 use craft\app\base\ElementAction;
-use craft\app\helpers\JsonHelper;
+use craft\app\helpers\Json;
 
 /**
  * ReplaceFile represents a Replace File element action.
@@ -35,7 +35,7 @@ class ReplaceFile extends ElementAction
      */
     public function getTriggerHtml()
     {
-        $type = JsonHelper::encode(static::className());
+        $type = Json::encode(static::className());
 
         $js = <<<EOT
 (function()

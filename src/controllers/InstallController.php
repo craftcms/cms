@@ -82,14 +82,10 @@ class InstallController extends Controller
         $this->requireAjaxRequest();
 
         $accountSettings = new AccountSettingsModel();
-        $username = Craft::$app->getRequest()->getBodyParam('username');
-        if (!$username) {
-            $username = Craft::$app->getRequest()->getBodyParam('email');
-        }
-
-        $accountSettings->username = $username;
-        $accountSettings->email = Craft::$app->getRequest()->getBodyParam('email');
-        $accountSettings->password = Craft::$app->getRequest()->getBodyParam('password');
+        $request = Craft::$app->getRequest();
+        $accountSettings->email = $request->getBodyParam('email');
+        $accountSettings->username = $request->getBodyParam('username', $accountSettings->email);
+        $accountSettings->password = $request->getBodyParam('password');
 
         if ($accountSettings->validate()) {
             $return['validates'] = true;
@@ -111,8 +107,9 @@ class InstallController extends Controller
         $this->requireAjaxRequest();
 
         $siteSettings = new SiteSettingsModel();
-        $siteSettings->siteName = Craft::$app->getRequest()->getBodyParam('siteName');
-        $siteSettings->siteUrl = Craft::$app->getRequest()->getBodyParam('siteUrl');
+        $request = Craft::$app->getRequest();
+        $siteSettings->siteName = $request->getBodyParam('siteName');
+        $siteSettings->siteUrl = $request->getBodyParam('siteUrl');
 
         if ($siteSettings->validate()) {
             $return['validates'] = true;
@@ -137,13 +134,16 @@ class InstallController extends Controller
         $request = Craft::$app->getRequest();
         $migrator = Craft::$app->getMigrator();
 
+        $email = $request->getBodyParam('email');
+        $username = $request->getBodyParam('username', $email);
+
         $migration = new Install([
             'siteName' => $request->getBodyParam('siteName'),
             'siteUrl' => $request->getBodyParam('siteUrl'),
             'locale' => $request->getBodyParam('locale'),
-            'username' => $request->getBodyParam('username'),
+            'username' => $username,
             'password' => $request->getBodyParam('password'),
-            'email' => $request->getBodyParam('email'),
+            'email' => $email,
         ]);
 
         if ($migrator->migrateUp($migration) !== false) {

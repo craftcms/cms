@@ -23,8 +23,8 @@ use craft\app\errors\Exception;
 use craft\app\events\DeleteElementsEvent;
 use craft\app\events\ElementEvent;
 use craft\app\events\MergeElementsEvent;
-use craft\app\helpers\ComponentHelper;
-use craft\app\helpers\ElementHelper;
+use craft\app\helpers\Component as ComponentHelper;
+use craft\app\helpers\Element as ElementHelper;
 use craft\app\helpers\StringHelper;
 use craft\app\records\Element as ElementRecord;
 use craft\app\records\ElementLocale as ElementLocaleRecord;
@@ -69,7 +69,7 @@ class Elements extends Component
     /**
      * @event ElementEvent The event that is triggered before an element is saved.
      *
-     * You may set [[ElementEvent::performAction]] to `false` to prevent the element from getting saved.
+     * You may set [[ElementEvent::isValid]] to `false` to prevent the element from getting saved.
      */
     const EVENT_BEFORE_SAVE_ELEMENT = 'beforeSaveElement';
 
@@ -171,15 +171,13 @@ class Elements extends Component
         $result = (new Query())
             ->select('elements.id, elements.type')
             ->from('{{%elements}} elements')
-            ->innerJoin('{{%elements_i18n}} elements_i18n',
-                'elements_i18n.elementId = elements.id')
+            ->innerJoin('{{%elements_i18n}} elements_i18n', 'elements_i18n.elementId = elements.id')
             ->where($conditions, $params)
             ->one();
 
         if ($result) {
             // Return the actual element
-            return $this->getElementById($result['id'], $result['type'],
-                $localeId);
+            return $this->getElementById($result['id'], $result['type'], $localeId);
         }
     }
 
@@ -273,49 +271,37 @@ class Elements extends Component
      * saveElement() should be called only after the entry’s sectionId and typeId attributes had been validated to
      * ensure that they point to valid section and entry type IDs.
      *
-     * @param ElementInterface|ElementInterface $element         The element that is being saved
-     * @param boolean|null                      $validateContent Whether the element's content should be validated. If left 'null', it
-     *                                                           will depend on whether the element is enabled or not.
+     * @param ElementInterface|Element $element         The element that is being saved
+     * @param boolean|null             $validateContent Whether the element's content should be validated. If left 'null', it
+     *                                                  will depend on whether the element is enabled or not.
      *
      * @throws Exception|\Exception
      * @return boolean
      */
     public function saveElement(ElementInterface $element, $validateContent = null)
     {
+        $isNewElement = !$element->id;
+
+        // Validation
+        $element->validate();
+        if ($element->hasContent() && ($validateContent || ($validateContent === null && $element->enabled))) {
+            Craft::$app->getContent()->validateContent($element);
+        }
+        if ($element->hasErrors()) {
+            return false;
+        }
+
         // Make sure the element is cool with this
-        // (Needs to happen before validation, so field types have a chance to prepare their POST values)
         if (!$element->beforeSave()) {
             return false;
         }
 
-        $isNewElement = !$element->id;
-
-        // Validate the content first
-        if ($element::hasContent()) {
-            if ($validateContent === null) {
-                $validateContent = (bool)$element->enabled;
-            }
-
-            if ($validateContent && !Craft::$app->getContent()->validateContent($element)) {
-                $element->addErrors($element->getContent()->getErrors());
-
-                return false;
+        // Set a dummy title if there isn't one already and the element type has titles
+        if ($element->hasContent() && $element->hasTitles() && !$element->validate(['title'])) {
+            if ($isNewElement) {
+                $element->title = 'New '.$element->classHandle();
             } else {
-                // Make sure there's a title
-                if ($element::hasTitles()) {
-                    $fields = ['title'];
-                    $content = $element->getContent();
-                    $content->setRequiredFields($fields);
-
-                    if (!$content->validate($fields) && $content->hasErrors('title')) {
-                        // Just set *something* on it
-                        if ($isNewElement) {
-                            $content->title = 'New '.$element::classHandle();
-                        } else {
-                            $content->title = $element::classHandle().' '.$element->id;
-                        }
-                    }
-                }
+                $element->title = $element->classHandle().' '.$element->id;
             }
         }
 
@@ -327,9 +313,7 @@ class Elements extends Component
             ]);
 
             if (!$elementRecord) {
-                throw new Exception(Craft::t('app',
-                    'No element exists with the ID “{id}”.',
-                    ['id' => $element->id]));
+                throw new Exception(Craft::t('app', 'No element exists with the ID “{id}”.', ['id' => $element->id]));
             }
         } else {
             $elementRecord = new ElementRecord();
@@ -340,7 +324,7 @@ class Elements extends Component
         $elementRecord->enabled = (bool)$element->enabled;
         $elementRecord->archived = (bool)$element->archived;
 
-        $transaction = Craft::$app->getDb()->getTransaction() === null ? Craft::$app->getDb()->beginTransaction() : null;
+        $transaction = Craft::$app->getDb()->beginTransaction();
 
         try {
             // Fire a 'beforeSaveElement' event
@@ -351,24 +335,19 @@ class Elements extends Component
             $this->trigger(static::EVENT_BEFORE_SAVE_ELEMENT, $event);
 
             // Is the event giving us the go-ahead?
-            if ($event->performAction) {
+            if ($event->isValid) {
                 // Save the element record first
                 $success = $elementRecord->save(false);
 
                 if ($success) {
                     if ($isNewElement) {
-                        // Save the element id on the element model, in case {id} is in the URL format
+                        // Save the element ID on the element model, in case {id} is in the URL format
                         $element->id = $elementRecord->id;
-
-                        if ($element::hasContent()) {
-                            $element->getContent()->elementId = $element->id;
-                        }
                     }
 
                     // Save the content
-                    if ($element::hasContent()) {
-                        Craft::$app->getContent()->saveContent($element, false,
-                            (bool)$element->id);
+                    if ($element->hasContent()) {
+                        Craft::$app->getContent()->saveContent($element, false, !empty($element->id));
                     }
 
                     // Update the search index
@@ -441,28 +420,34 @@ class Elements extends Component
                             }
                         }
 
-                        if ($element::hasContent()) {
+                        if ($element->hasContent()) {
                             if (!$isMainLocale) {
-                                $content = null;
+                                $fieldValues = null;
 
                                 if (!$isNewElement) {
                                     // Do we already have a content row for this locale?
-                                    $content = Craft::$app->getContent()->getContent($localizedElement);
+                                    $fieldValues = Craft::$app->getContent()->getContentRow($localizedElement);
+
+                                    if ($fieldValues) {
+                                        $localizedElement->contentId = $fieldValues['id'];
+                                        if (isset($fieldValues['title'])) {
+                                            $localizedElement->title = $fieldValues['title'];
+                                        }
+                                        unset($fieldValues['id'], $fieldValues['elementId'], $fieldValues['locale'], $fieldValues['title']);
+                                    }
+
                                 }
 
-                                if (!$content) {
-                                    $content = Craft::$app->getContent()->createContent($localizedElement);
-                                    $content->setAttributes($element->getContent()->getAttributes());
-                                    $content->id = null;
-                                    $content->locale = $localeId;
+                                if (!$fieldValues) {
+                                    // Just default to whatever's on the main element we're saving here
+                                    $fieldValues = $element->getFieldValues();
                                 }
 
-                                $localizedElement->setContent($content);
+                                $localizedElement->setFieldValues($fieldValues);
                             }
 
-                            if (!$localizedElement->getContent()->id) {
-                                Craft::$app->getContent()->saveContent($localizedElement,
-                                    false, false);
+                            if (!$localizedElement->contentId) {
+                                Craft::$app->getContent()->saveContent($localizedElement, false, false);
                             }
                         }
 
@@ -475,9 +460,7 @@ class Elements extends Component
                         // If the slug was entirely composed of invalid characters, it will be blank now.
                         if ($originalSlug && !$localizedElement->slug) {
                             $localizedElement->slug = $originalSlug;
-                            $element->addError('slug',
-                                Craft::t('app', '{attribute} is invalid.',
-                                    ['attribute' => Craft::t('app', 'Slug')]));
+                            $element->addError('slug', Craft::t('app', '{attribute} is invalid.', ['attribute' => Craft::t('app', 'Slug')]));
 
                             // Don't bother with any of the other locales
                             $success = false;
@@ -543,13 +526,9 @@ class Elements extends Component
 
             // Commit the transaction regardless of whether we saved the user, in case something changed
             // in onBeforeSaveElement
-            if ($transaction !== null) {
-                $transaction->commit();
-            }
+            $transaction->commit();
         } catch (\Exception $e) {
-            if ($transaction !== null) {
-                $transaction->rollback();
-            }
+            $transaction->rollback();
 
             throw $e;
         }
@@ -563,9 +542,8 @@ class Elements extends Component
             if ($isNewElement) {
                 $element->id = null;
 
-                if ($element::hasContent()) {
-                    $element->getContent()->id = null;
-                    $element->getContent()->elementId = null;
+                if ($element->hasContent()) {
+                    $element->contentId = null;
                 }
             }
         }
@@ -640,8 +618,7 @@ class Elements extends Component
                 ->one();
 
             if ($elementInOtherLocale) {
-                $this->updateElementSlugAndUri($elementInOtherLocale, false,
-                    false);
+                $this->updateElementSlugAndUri($elementInOtherLocale, false, false);
             }
         }
     }
@@ -681,8 +658,7 @@ class Elements extends Component
             $children = $query->all();
 
             foreach ($children as $child) {
-                $this->updateElementSlugAndUri($child, $updateOtherLocales,
-                    true, false);
+                $this->updateElementSlugAndUri($child, $updateOtherLocales, true, false);
             }
         }
     }
@@ -704,7 +680,7 @@ class Elements extends Component
      */
     public function mergeElementsByIds($mergedElementId, $prevailingElementId)
     {
-        $transaction = Craft::$app->getDb()->getTransaction() === null ? Craft::$app->getDb()->beginTransaction() : null;
+        $transaction = Craft::$app->getDb()->beginTransaction();
         try {
             // Update any relations that point to the merged element
             $relations = (new Query())
@@ -770,16 +746,14 @@ class Elements extends Component
 
                 Craft::$app->getTasks()->queueTask([
                     'type' => FindAndReplace::className(),
-                    'description' => Craft::t('app',
-                        'Updating element references'),
+                    'description' => Craft::t('app', 'Updating element references'),
                     'find' => $refTagPrefix.$mergedElementId.':',
                     'replace' => $refTagPrefix.$prevailingElementId.':',
                 ]);
 
                 Craft::$app->getTasks()->queueTask([
                     'type' => FindAndReplace::className(),
-                    'description' => Craft::t('app',
-                        'Updating element references'),
+                    'description' => Craft::t('app', 'Updating element references'),
                     'find' => $refTagPrefix.$mergedElementId.'}',
                     'replace' => $refTagPrefix.$prevailingElementId.'}',
                 ]);
@@ -795,15 +769,11 @@ class Elements extends Component
             // Now delete the merged element
             $success = $this->deleteElementById($mergedElementId);
 
-            if ($transaction !== null) {
-                $transaction->commit();
-            }
+            $transaction->commit();
 
             return $success;
         } catch (\Exception $e) {
-            if ($transaction !== null) {
-                $transaction->rollback();
-            }
+            $transaction->rollback();
 
             throw $e;
         }
@@ -827,7 +797,7 @@ class Elements extends Component
             $elementIds = [$elementIds];
         }
 
-        $transaction = Craft::$app->getDb()->getTransaction() === null ? Craft::$app->getDb()->beginTransaction() : null;
+        $transaction = Craft::$app->getDb()->beginTransaction();
 
         try {
             // Fire a 'beforeDeleteElements' event
@@ -839,13 +809,14 @@ class Elements extends Component
             // First delete any structure nodes with these elements, so NestedSetBehavior can do its thing. We need to
             // go one-by-one in case one of theme deletes the record of another in the process.
             foreach ($elementIds as $elementId) {
+                /* @var StructureElementRecord[] $records */
                 $records = StructureElementRecord::findAll([
                     'elementId' => $elementId
                 ]);
 
                 foreach ($records as $record) {
                     // If this element still has any children, move them up before the one getting deleted.
-                    $children = $record->children()->findAll();
+                    $children = $record->children()->all();
 
                     foreach ($children as $child) {
                         $child->insertBefore($record);
@@ -858,8 +829,7 @@ class Elements extends Component
 
             // Delete the caches before they drop their elementId relations (passing `false` because there's no chance
             // this element is suddenly going to show up in a new query)
-            Craft::$app->getTemplateCache()->deleteCachesByElementId($elementIds,
-                false);
+            Craft::$app->getTemplateCache()->deleteCachesByElementId($elementIds, false);
 
             // Now delete the rows in the elements table
             if (count($elementIds) == 1) {
@@ -884,22 +854,16 @@ class Elements extends Component
             }
 
             // Delete the elements table rows, which will cascade across all other InnoDB tables
-            $affectedRows = Craft::$app->getDb()->createCommand()->delete('{{%elements}}',
-                $condition)->execute();
+            $affectedRows = Craft::$app->getDb()->createCommand()->delete('{{%elements}}', $condition)->execute();
 
             // The searchindex table is MyISAM, though
-            Craft::$app->getDb()->createCommand()->delete('{{%searchindex}}',
-                $searchIndexCondition)->execute();
+            Craft::$app->getDb()->createCommand()->delete('{{%searchindex}}', $searchIndexCondition)->execute();
 
-            if ($transaction !== null) {
-                $transaction->commit();
-            }
+            $transaction->commit();
 
             return (bool)$affectedRows;
         } catch (\Exception $e) {
-            if ($transaction !== null) {
-                $transaction->rollback();
-            }
+            $transaction->rollback();
 
             throw $e;
         }
@@ -939,8 +903,7 @@ class Elements extends Component
      */
     public function createAction($config)
     {
-        return ComponentHelper::createComponent($config,
-            self::ACTION_INTERFACE);
+        return ComponentHelper::createComponent($config, self::ACTION_INTERFACE);
     }
 
     // Misc

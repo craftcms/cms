@@ -9,7 +9,7 @@ namespace craft\app\widgets;
 
 use Craft;
 use craft\app\base\Widget;
-use craft\app\helpers\JsonHelper;
+use craft\app\helpers\Json;
 
 /**
  * Feed represents a Feed dashboard widget.
@@ -91,8 +91,8 @@ class Feed extends Widget
         Craft::$app->getView()->registerJsResource('js/FeedWidget.js');
         Craft::$app->getView()->registerJs(
             "new Craft.FeedWidget({$this->id}, ".
-            JsonHelper::encode($this->url).', '.
-            JsonHelper::encode($this->limit).');'
+            Json::encode($this->url).', '.
+            Json::encode($this->limit).');'
         );
 
         return Craft::$app->getView()->renderTemplate('_components/widgets/Feed/body',

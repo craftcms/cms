@@ -37,7 +37,7 @@ class Categories extends Component
     /**
      * @event CategoryEvent The event that is triggered before a category is saved.
      *
-     * You may set [[CategoryEvent::performAction]] to `false` to prevent the category from getting saved.
+     * You may set [[CategoryEvent::isValid]] to `false` to prevent the category from getting saved.
      */
     const EVENT_BEFORE_SAVE_CATEGORY = 'beforeSaveCategory';
 
@@ -297,9 +297,7 @@ class Categories extends Component
             $groupRecord = CategoryGroupRecord::findOne($group->id);
 
             if (!$groupRecord) {
-                throw new Exception(Craft::t('app',
-                    'No category group exists with the ID “{id}”.',
-                    ['id' => $group->id]));
+                throw new Exception(Craft::t('app', 'No category group exists with the ID “{id}”.', ['id' => $group->id]));
             }
 
             $oldCategoryGroup = CategoryGroup::create($groupRecord);
@@ -311,7 +309,7 @@ class Categories extends Component
 
         $groupRecord->name = $group->name;
         $groupRecord->handle = $group->handle;
-        $groupRecord->hasUrls = $group->hasUrls;
+        $groupRecord->hasUrls = (bool) $group->hasUrls;
 
         if ($group->hasUrls) {
             $groupRecord->template = $group->template;
@@ -336,8 +334,7 @@ class Categories extends Component
 
                 foreach ($urlFormatAttributes as $attribute) {
                     if (!$groupLocale->validate([$attribute])) {
-                        $group->addError($attribute.'-'.$localeId,
-                            $groupLocale->getError($attribute));
+                        $group->addError($attribute.'-'.$localeId, $groupLocale->getError($attribute));
                     }
                 }
             } else {
@@ -351,7 +348,7 @@ class Categories extends Component
         $group->addErrors($groupRecord->getErrors());
 
         if (!$group->hasErrors()) {
-            $transaction = Craft::$app->getDb()->getTransaction() === null ? Craft::$app->getDb()->beginTransaction() : null;
+            $transaction = Craft::$app->getDb()->beginTransaction();
             try {
                 // Create/update the structure
 
@@ -442,8 +439,7 @@ class Categories extends Component
                     // Drop any locales that are no longer being used, as well as the associated category/element
                     // locale rows
 
-                    $droppedLocaleIds = array_diff(array_keys($oldLocales),
-                        array_keys($groupLocales));
+                    $droppedLocaleIds = array_diff(array_keys($oldLocales), array_keys($groupLocales));
 
                     if ($droppedLocaleIds) {
                         Craft::$app->getDb()->createCommand()->delete('{{%categorygroups_i18n}}',
@@ -499,8 +495,7 @@ class Categories extends Component
                                         ->one();
 
                                     if ($category) {
-                                        Craft::$app->getElements()->updateElementSlugAndUri($category,
-                                            false, false);
+                                        Craft::$app->getElements()->updateElementSlugAndUri($category, false, false);
                                     }
                                 }
                             }
@@ -508,13 +503,9 @@ class Categories extends Component
                     }
                 }
 
-                if ($transaction !== null) {
-                    $transaction->commit();
-                }
+                $transaction->commit();
             } catch (\Exception $e) {
-                if ($transaction !== null) {
-                    $transaction->rollback();
-                }
+                $transaction->rollback();
 
                 throw $e;
             }
@@ -553,11 +544,11 @@ class Categories extends Component
         $this->trigger(static::EVENT_BEFORE_DELETE_GROUP, $event);
 
         // Make sure the event is giving us the go ahead
-        if (!$event->performAction) {
+        if (!$event->isValid) {
             return false;
         }
 
-        $transaction = Craft::$app->getDb()->getTransaction() === null ? Craft::$app->getDb()->beginTransaction() : null;
+        $transaction = Craft::$app->getDb()->beginTransaction();
         try {
             // Delete the field layout
             $fieldLayoutId = (new Query())
@@ -582,9 +573,7 @@ class Categories extends Component
             Craft::$app->getDb()->createCommand()->delete('{{%categorygroups}}',
                 ['id' => $groupId])->execute();
 
-            if ($transaction !== null) {
-                $transaction->commit();
-            }
+            $transaction->commit();
 
             // Fire an 'afterDeleteGroup' event
             $this->trigger(static::EVENT_AFTER_DELETE_GROUP,
@@ -594,9 +583,7 @@ class Categories extends Component
 
             return true;
         } catch (\Exception $e) {
-            if ($transaction !== null) {
-                $transaction->rollback();
-            }
+            $transaction->rollback();
 
             throw $e;
         }
@@ -643,8 +630,7 @@ class Categories extends Component
      */
     public function getCategoryById($categoryId, $localeId = null)
     {
-        return Craft::$app->getElements()->getElementById($categoryId,
-            Category::className(), $localeId);
+        return Craft::$app->getElements()->getElementById($categoryId, Category::className(), $localeId);
     }
 
     /**
@@ -663,13 +649,10 @@ class Categories extends Component
 
         if ($hasNewParent) {
             if ($category->newParentId) {
-                $parentCategory = $this->getCategoryById($category->newParentId,
-                    $category->locale);
+                $parentCategory = $this->getCategoryById($category->newParentId, $category->locale);
 
                 if (!$parentCategory) {
-                    throw new Exception(Craft::t('app',
-                        'No category exists with the ID “{id}”.',
-                        ['id' => $category->newParentId]));
+                    throw new Exception(Craft::t('app', 'No category exists with the ID “{id}”.', ['id' => $category->newParentId]));
                 }
             } else {
                 $parentCategory = null;
@@ -683,9 +666,7 @@ class Categories extends Component
             $categoryRecord = CategoryRecord::findOne($category->id);
 
             if (!$categoryRecord) {
-                throw new Exception(Craft::t('app',
-                    'No category exists with the ID “{id}”.',
-                    ['id' => $category->id]));
+                throw new Exception(Craft::t('app', 'No category exists with the ID “{id}”.', ['id' => $category->id]));
             }
         } else {
             $categoryRecord = new CategoryRecord();
@@ -700,7 +681,7 @@ class Categories extends Component
             return false;
         }
 
-        $transaction = Craft::$app->getDb()->getTransaction() === null ? Craft::$app->getDb()->beginTransaction() : null;
+        $transaction = Craft::$app->getDb()->beginTransaction();
 
         try {
             // Fire a 'beforeSaveCategory' event
@@ -711,14 +692,12 @@ class Categories extends Component
             $this->trigger(static::EVENT_BEFORE_SAVE_CATEGORY, $event);
 
             // Is the event giving us the go-ahead?
-            if ($event->performAction) {
+            if ($event->isValid) {
                 $success = Craft::$app->getElements()->saveElement($category);
 
                 // If it didn't work, rollback the transaction in case something changed in onBeforeSaveCategory
                 if (!$success) {
-                    if ($transaction !== null) {
-                        $transaction->rollback();
-                    }
+                    $transaction->rollback();
 
                     return false;
                 }
@@ -733,30 +712,23 @@ class Categories extends Component
                 // Has the parent changed?
                 if ($hasNewParent) {
                     if (!$category->newParentId) {
-                        Craft::$app->getStructures()->appendToRoot($category->getGroup()->structureId,
-                            $category);
+                        Craft::$app->getStructures()->appendToRoot($category->getGroup()->structureId, $category);
                     } else {
-                        Craft::$app->getStructures()->append($category->getGroup()->structureId,
-                            $category, $parentCategory);
+                        Craft::$app->getStructures()->append($category->getGroup()->structureId, $category, $parentCategory);
                     }
                 }
 
                 // Update the category's descendants, who may be using this category's URI in their own URIs
-                Craft::$app->getElements()->updateDescendantSlugsAndUris($category,
-                    true, true);
+                Craft::$app->getElements()->updateDescendantSlugsAndUris($category, true, true);
             } else {
                 $success = false;
             }
 
             // Commit the transaction regardless of whether we saved the category, in case something changed
             // in onBeforeSaveCategory
-            if ($transaction !== null) {
-                $transaction->commit();
-            }
+            $transaction->commit();
         } catch (\Exception $e) {
-            if ($transaction !== null) {
-                $transaction->rollback();
-            }
+            $transaction->rollback();
 
             throw $e;
         }
@@ -786,7 +758,7 @@ class Categories extends Component
             return false;
         }
 
-        $transaction = Craft::$app->getDb()->getTransaction() === null ? Craft::$app->getDb()->beginTransaction() : null;
+        $transaction = Craft::$app->getDb()->beginTransaction();
         try {
             if (!is_array($categories)) {
                 $categories = [$categories];
@@ -794,13 +766,9 @@ class Categories extends Component
 
             $success = $this->_deleteCategories($categories, true);
 
-            if ($transaction !== null) {
-                $transaction->commit();
-            }
+            $transaction->commit();
         } catch (\Exception $e) {
-            if ($transaction !== null) {
-                $transaction->rollback();
-            }
+            $transaction->rollback();
 
             throw $e;
         }

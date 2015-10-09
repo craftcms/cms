@@ -10,10 +10,10 @@ namespace craft\app\web;
 use Craft;
 use craft\app\base\ApplicationTrait;
 use craft\app\errors\HttpException;
-use craft\app\helpers\HeaderHelper;
-use craft\app\helpers\JsonHelper;
+use craft\app\helpers\Header;
+use craft\app\helpers\Json;
 use craft\app\helpers\StringHelper;
-use craft\app\helpers\UrlHelper;
+use craft\app\helpers\Url;
 use yii\base\InvalidRouteException;
 use yii\web\ForbiddenHttpException;
 use yii\web\NotFoundHttpException;
@@ -81,7 +81,7 @@ class Application extends \yii\web\Application
         $this->getLog();
 
         // So we can try to translate Yii framework strings
-        //$this->coreMessages->attachEventHandler('onMissingTranslation', ['Craft\LocalizationHelper', 'findMissingTranslation']);
+        //$this->coreMessages->attachEventHandler('onMissingTranslation', ['Craft\Localization', 'findMissingTranslation']);
 
         // If there is a custom appId set, apply it here.
         if ($appId = $this->getConfig()->get('appId')) {
@@ -121,18 +121,18 @@ class Application extends \yii\web\Application
         if ($request->getIsCpRequest()) {
             // Prevent robots from indexing/following the page
             // (see https://developers.google.com/webmasters/control-crawl-index/docs/robots_meta_tag)
-            HeaderHelper::setHeader(['X-Robots-Tag' => 'none']);
+            Header::setHeader(['X-Robots-Tag' => 'none']);
             // Prevent some possible XSS attack vectors
-            HeaderHelper::setHeader(['X-Frame-Options' => 'SAMEORIGIN']);
-            HeaderHelper::setHeader(['X-Content-Type-Options' => 'nosniff']);
+            Header::setHeader(['X-Frame-Options' => 'SAMEORIGIN']);
+            Header::setHeader(['X-Content-Type-Options' => 'nosniff']);
         }
 
         // Send the X-Powered-By header?
         if ($this->getConfig()->get('sendPoweredByHeader')) {
-            HeaderHelper::setHeader(['X-Powered-By' => 'Craft CMS']);
+            Header::setHeader(['X-Powered-By' => 'Craft CMS']);
         } else {
             // In case PHP is already setting one
-            HeaderHelper::removeHeader('X-Powered-By');
+            Header::removeHeader('X-Powered-By');
         }
 
         // If the system in is maintenance mode and it's a site request, throw a 503.
@@ -162,8 +162,7 @@ class Application extends \yii\web\Application
                 $build = $this->getInfo('build');
                 $url = "http://download.buildwithcraft.com/craft/{$version}/{$version}.{$build}/Craft-{$version}.{$build}.zip";
 
-                throw new HttpException(200, Craft::t('app',
-                    'Craft does not support backtracking to this version. Please upload Craft {url} or later.',
+                throw new HttpException(200, Craft::t('app', 'Craft does not support backtracking to this version. Please upload Craft {url} or later.',
                     [
                         'url' => '['.$build.']('.$url.')',
                     ]));
@@ -249,8 +248,8 @@ class Application extends \yii\web\Application
             $exceptionArr['type'] = $data['type'];
         }
 
-        JsonHelper::sendJsonHeaders();
-        echo JsonHelper::encode($exceptionArr);
+        Json::sendJsonHeaders();
+        echo Json::encode($exceptionArr);
         $this->end();
     }
 
@@ -307,8 +306,8 @@ class Application extends \yii\web\Application
             $errorArr = ['error' => $message];
         }
 
-        JsonHelper::sendJsonHeaders();
-        echo JsonHelper::encode($errorArr);
+        Json::sendJsonHeaders();
+        echo Json::encode($errorArr);
         $this->end();
     }
 
@@ -367,8 +366,7 @@ class Application extends \yii\web\Application
             $requestedRoute = $route;
             $parts = preg_split('/(?=[\p{Lu}])+/u', $route);
             $route = StringHelper::toLowerCase(implode('-', $parts));
-            $this->getDeprecator()->log('yii1-route',
-                'A Yii 1-styled route was requested: "'.$requestedRoute.'". It should be changed to: "'.$route.'".');
+            $this->getDeprecator()->log('yii1-route', 'A Yii 1-styled route was requested: "'.$requestedRoute.'". It should be changed to: "'.$route.'".');
         }
 
         return parent::createController($route);
@@ -463,12 +461,12 @@ class Application extends \yii\web\Application
         else if (!$isInstalled) {
             // Give it to them if accessing the CP
             if ($isCpRequest) {
-                $url = UrlHelper::getUrl('install');
+                $url = Url::getUrl('install');
                 $this->getResponse()->redirect($url);
                 $this->end();
-            } // Otherwise return a 404
+            } // Otherwise return a 503
             else {
-                throw new NotFoundHttpException();
+                throw new ServiceUnavailableHttpException();
             }
         }
 
@@ -494,8 +492,7 @@ class Application extends \yii\web\Application
 
                 return $this->runAction($route, $_GET);
             } catch (InvalidRouteException $e) {
-                throw new NotFoundHttpException(Craft::t('yii',
-                    'Page not found.'), $e->getCode(), $e);
+                throw new NotFoundHttpException(Craft::t('yii', 'Page not found.'), $e->getCode(), $e);
             }
         }
 
@@ -588,8 +585,7 @@ class Application extends \yii\web\Application
                 return $this->runAction('templates/manual-update');
             } else {
                 if ($this->getUpdates()->isBreakpointUpdateNeeded()) {
-                    throw new HttpException(200, Craft::t('app',
-                        'You need to be on at least Craft {url} before you can manually update to Craft {targetVersion} build {targetBuild}.',
+                    throw new HttpException(200, Craft::t('app', 'You need to be on at least Craft {url} before you can manually update to Craft {targetVersion} build {targetBuild}.',
                         [
                             'url' => '[build '.Craft::$app->minBuildRequired.']('.Craft::$app->minBuildUrl.')',
                             'targetVersion' => Craft::$app->version,
@@ -634,15 +630,12 @@ class Application extends \yii\web\Application
 
             if (!$this->getUser()->getIsGuest()) {
                 if ($request->getIsCpRequest()) {
-                    $error = Craft::t('app',
-                        'Your account doesn’t have permission to access the Control Panel when the system is offline.');
+                    $error = Craft::t('app', 'Your account doesn’t have permission to access the Control Panel when the system is offline.');
                 } else {
-                    $error = Craft::t('app',
-                        'Your account doesn’t have permission to access the site when the system is offline.');
+                    $error = Craft::t('app', 'Your account doesn’t have permission to access the site when the system is offline.');
                 }
 
-                $error .= ' ['.Craft::t('app',
-                        'Log out?').']('.UrlHelper::getUrl($this->getConfig()->getLogoutPath()).')';
+                $error .= ' ['.Craft::t('app', 'Log out?').']('.Url::getUrl($this->getConfig()->getLogoutPath()).')';
             } else {
                 // If this is a CP request, redirect to the Login page
                 if ($this->getRequest()->getIsCpRequest()) {

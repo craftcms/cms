@@ -11,7 +11,7 @@ use Craft;
 use craft\app\enums\ConfigCategory;
 use craft\app\errors\Exception;
 use craft\app\helpers\DateTimeHelper;
-use craft\app\helpers\IOHelper;
+use craft\app\helpers\Io;
 use craft\app\helpers\StringHelper;
 
 /**
@@ -57,7 +57,7 @@ class DbBackup
         'assettransformindex',
         'sessions',
         'templatecaches',
-        'templatecachecriteria',
+        'templatecachequeries',
         'templatecacheelements'
     );
 
@@ -76,8 +76,7 @@ class DbBackup
     public function setIgnoreDataTables($tables)
     {
         if (is_array($tables)) {
-            $this->_ignoreDataTables = array_merge($this->_ignoreDataTables,
-                $tables);
+            $this->_ignoreDataTables = array_merge($this->_ignoreDataTables, $tables);
         } else if ($tables === false) {
             $this->_ignoreDataTables = [];
         }
@@ -100,7 +99,8 @@ class DbBackup
         }
 
         $this->_currentVersion = 'v'.Craft::$app->version.'.'.Craft::$app->build;
-        $filename = IOHelper::cleanFilename(Craft::$app->getSiteName()).'_'.gmdate('ymd_His').'_'.$this->_currentVersion.'.sql';
+        $siteName = Io::cleanFilename(Craft::$app->getSiteName(), true);
+        $filename = ($siteName ? $siteName.'_' : '').gmdate('ymd_His').'_'.$this->_currentVersion.'.sql';
         $this->_filePath = Craft::$app->getPath()->getDbBackupPath().'/'.StringHelper::toLowerCase($filename);
 
         $this->_processHeader();
@@ -126,15 +126,13 @@ class DbBackup
      */
     public function restore($filePath)
     {
-        if (!IOHelper::fileExists($filePath)) {
-            throw new Exception(Craft::t('app',
-                'Could not find the SQL file to restore: {filePath}',
-                ['filePath' => $filePath]));
+        if (!Io::fileExists($filePath)) {
+            throw new Exception(Craft::t('app', 'Could not find the SQL file to restore: {filePath}', ['filePath' => $filePath]));
         }
 
         $this->_nukeDb();
 
-        $sql = IOHelper::getFileContents($filePath, true);
+        $sql = Io::getFileContents($filePath, true);
 
         array_walk($sql, [$this, 'trimValue']);
         $sql = array_filter($sql);
@@ -234,11 +232,9 @@ class DbBackup
             if (count($value[0]) > 0) {
                 for ($i = 0; $i < count($value[0]); $i++) {
                     if (!StringHelper::contains($value[0][$i], 'CONSTRAINT')) {
-                        $sql .= preg_replace('/(FOREIGN[\s]+KEY)/', "\tADD $1",
-                            $value[0][$i]);
+                        $sql .= preg_replace('/(FOREIGN[\s]+KEY)/', "\tADD $1", $value[0][$i]);
                     } else {
-                        $sql .= preg_replace('/(CONSTRAINT)/', "\tADD $1",
-                            $value[0][$i]);
+                        $sql .= preg_replace('/(CONSTRAINT)/', "\tADD $1", $value[0][$i]);
                     }
 
                     if ($i == count($value[0]) - 1) {
@@ -251,7 +247,7 @@ class DbBackup
             }
         }
 
-        IOHelper::writeToFile($this->_filePath, $sql, true, true);
+        Io::writeToFile($this->_filePath, $sql, true, true);
     }
 
 
@@ -269,7 +265,7 @@ class DbBackup
         $header .= 'SET AUTOCOMMIT = 0;'.PHP_EOL;
         $header .= 'SET NAMES utf8;'.PHP_EOL.PHP_EOL;
 
-        IOHelper::writeToFile($this->_filePath, $header, true, true);
+        Io::writeToFile($this->_filePath, $header, true, true);
     }
 
 
@@ -280,8 +276,7 @@ class DbBackup
      */
     private function _processFooter()
     {
-        IOHelper::writeToFile($this->_filePath,
-            PHP_EOL.'SET FOREIGN_KEY_CHECKS = 1;'.PHP_EOL, true, true);
+        Io::writeToFile($this->_filePath, PHP_EOL.'SET FOREIGN_KEY_CHECKS = 1;'.PHP_EOL, true, true);
     }
 
 
@@ -299,8 +294,7 @@ class DbBackup
         $q = Craft::$app->getDb()->createCommand('SHOW CREATE TABLE '.Craft::$app->getDb()->quoteTableName($resultName).';')->queryOne();
 
         if (isset($q['Create Table'])) {
-            return $this->_processTable($resultName, $q['Create Table'],
-                $action);
+            return $this->_processTable($resultName, $q['Create Table'], $action);
         } else if (isset($q['Create View'])) {
             return $this->_processView($resultName, $q['Create View'], $action);
         }
@@ -323,8 +317,7 @@ class DbBackup
             $pattern = '/CONSTRAINT.*|FOREIGN[\s]+KEY/';
 
             // constraints to $tableName
-            preg_match_all($pattern, $createQuery,
-                $this->_constraints[$tableName]);
+            preg_match_all($pattern, $createQuery, $this->_constraints[$tableName]);
 
             $createQuery = preg_split('/$\R?^/m', $createQuery);
             $createQuery = preg_replace($pattern, '', $createQuery);
@@ -342,8 +335,7 @@ class DbBackup
             }
 
             if ($removed) {
-                $createQuery[count($createQuery) - 2] = rtrim($createQuery[count($createQuery) - 2],
-                    ',');
+                $createQuery[count($createQuery) - 2] = rtrim($createQuery[count($createQuery) - 2], ',');
             }
 
             // resort the keys
@@ -356,7 +348,7 @@ class DbBackup
             $result .= $createQuery[$i].';'.PHP_EOL;
 
             // Write out what we have so far.
-            IOHelper::writeToFile($this->_filePath, $result, true, true);
+            Io::writeToFile($this->_filePath, $result, true, true);
 
             // See if we have any data.
             $totalRows = Craft::$app->getDb()->createCommand('SELECT count(*) FROM '.Craft::$app->getDb()->quoteTableName($tableName).';')->queryScalar();
@@ -367,9 +359,7 @@ class DbBackup
 
             if (!in_array($tableName, $this->_ignoreDataTables)) {
                 // Data!
-                IOHelper::writeToFile($this->_filePath,
-                    PHP_EOL.'--'.PHP_EOL.'-- Data for table `'.$tableName.'`'.PHP_EOL.'--'.PHP_EOL.PHP_EOL,
-                    true, true);
+                Io::writeToFile($this->_filePath, PHP_EOL.'--'.PHP_EOL.'-- Data for table `'.$tableName.'`'.PHP_EOL.'--'.PHP_EOL.PHP_EOL, true, true);
 
                 $batchSize = 1000;
 
@@ -402,14 +392,12 @@ class DbBackup
                             }
 
                             $insertStatement .= ' ('.implode(', ', $row).');';
-                            IOHelper::writeToFile($this->_filePath,
-                                $insertStatement.PHP_EOL, true, true);
+                            Io::writeToFile($this->_filePath, $insertStatement.PHP_EOL, true, true);
                         }
                     }
                 }
 
-                IOHelper::writeToFile($this->_filePath, PHP_EOL.PHP_EOL, true,
-                    true);
+                Io::writeToFile($this->_filePath, PHP_EOL.PHP_EOL, true, true);
             }
         }
 
@@ -432,7 +420,7 @@ class DbBackup
 
             $result .= $createQuery.';'.PHP_EOL.PHP_EOL;
 
-            IOHelper::writeToFile($this->_filePath, $result, true, true);
+            Io::writeToFile($this->_filePath, $result, true, true);
         }
 
         return $result;

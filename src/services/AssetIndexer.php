@@ -6,10 +6,10 @@ use craft\app\base\Volume;
 use craft\app\dates\DateTime;
 use craft\app\db\Query;
 use craft\app\elements\Asset;
-use craft\app\errors\VolumeFileNotFoundException;
-use craft\app\helpers\AssetsHelper;
-use craft\app\helpers\ImageHelper;
-use craft\app\helpers\IOHelper;
+use craft\app\errors\VolumeObjectNotFoundException;
+use craft\app\helpers\Assets as AssetsHelper;
+use craft\app\helpers\Image;
+use craft\app\helpers\Io;
 use craft\app\helpers\StringHelper;
 use craft\app\models\AssetIndexData as AssetIndexDataModel;
 use craft\app\records\AssetIndexData as AssetIndexDataRecord;
@@ -94,12 +94,8 @@ class AssetIndexer extends Component
                     AssetsHelper::INDEX_SKIP_ITEMS_PATTERN,
                     $file['basename']
                 );
-                $allowedByName = $file['basename'] == AssetsHelper::prepareAssetName(
-                        $file['basename'],
-                        $file['type'] != 'dir'
-                    );
 
-                if ($allowedByFilter && $allowedByName) {
+                if ($allowedByFilter) {
                     if ($file['type'] == 'dir') {
                         $bucketFolders[$file['path']] = true;
                     } else {
@@ -191,7 +187,7 @@ class AssetIndexer extends Component
             if ($asset->kind == 'image') {
                 $targetPath = $asset->getImageTransformSourcePath();
 
-                if ($asset->dateModified != $timeModified || !IOHelper::fileExists(
+                if ($asset->dateModified != $timeModified || !Io::fileExists(
                         $targetPath
                     )
                 ) {
@@ -206,7 +202,7 @@ class AssetIndexer extends Component
                     }
 
                     clearstatcache();
-                    list ($asset->width, $asset->height) = ImageHelper::getImageSize(
+                    list ($asset->width, $asset->height) = Image::getImageSize(
                         $targetPath
                     );
                 }
@@ -359,13 +355,13 @@ class AssetIndexer extends Component
      * @param         $path
      * @param boolean $checkIfExists
      *
-     * @throws \craft\app\errors\VolumeFileNotFoundException
+     * @throws \craft\app\errors\VolumeObjectNotFoundException
      * @return boolean|Asset
      */
     public function indexFile(Volume $volume, $path, $checkIfExists = true)
     {
         if ($checkIfExists && !$volume->fileExists($path)) {
-            throw new VolumeFileNotFoundException(Craft::t(
+            throw new VolumeObjectNotFoundException(Craft::t(
                 'app',
                 'File was not found while attempting to index {path}!',
                 array('path' => $path)
@@ -388,9 +384,9 @@ class AssetIndexer extends Component
      */
     private function _indexFile($volume, $uriPath)
     {
-        $extension = IOHelper::getExtension($uriPath);
+        $extension = Io::getExtension($uriPath);
 
-        if (IOHelper::isExtensionAllowed($extension)) {
+        if (Io::isExtensionAllowed($extension)) {
             $parts = explode('/', $uriPath);
             $filename = array_pop($parts);
 
@@ -428,7 +424,7 @@ class AssetIndexer extends Component
                 $assetModel->volumeId = $volume->id;
                 $assetModel->folderId = $folderId;
                 $assetModel->filename = $filename;
-                $assetModel->kind = IOHelper::getFileKind($extension);
+                $assetModel->kind = Io::getFileKind($extension);
                 $assetModel->indexInProgress = true;
                 Craft::$app->getAssets()->saveAsset($assetModel);
             }

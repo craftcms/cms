@@ -15,7 +15,7 @@ use craft\app\web\Controller;
 Craft::$app->requireEdition(Craft::Pro);
 
 /**
- * The TagsController class is a controller that handles various user group and user settings related tasks such as
+ * The UserSettingsController class is a controller that handles various user group and user settings related tasks such as
  * creating, editing and deleting user groups and saving Craft user settings.
  *
  * Note that all actions in this controller require administrator access in order to execute.
@@ -57,16 +57,13 @@ class UserSettingsController extends Controller
             // Save the new permissions
             $permissions = Craft::$app->getRequest()->getBodyParam('permissions',
                 []);
-            Craft::$app->getUserPermissions()->saveGroupPermissions($group->id,
-                $permissions);
+            Craft::$app->getUserPermissions()->saveGroupPermissions($group->id, $permissions);
 
-            Craft::$app->getSession()->setNotice(Craft::t('app',
-                'Group saved.'));
+            Craft::$app->getSession()->setNotice(Craft::t('app', 'Group saved.'));
 
             return $this->redirectToPostedUrl();
         } else {
-            Craft::$app->getSession()->setError(Craft::t('app',
-                'Couldn’t save group.'));
+            Craft::$app->getSession()->setError(Craft::t('app', 'Couldn’t save group.'));
         }
 
         // Send the group back to the template
@@ -107,13 +104,11 @@ class UserSettingsController extends Controller
 
         if (Craft::$app->getSystemSettings()->saveSettings('users', $settings)
         ) {
-            Craft::$app->getSession()->setNotice(Craft::t('app',
-                'User settings saved.'));
+            Craft::$app->getSession()->setNotice(Craft::t('app', 'User settings saved.'));
 
             return $this->redirectToPostedUrl();
         } else {
-            Craft::$app->getSession()->setError(Craft::t('app',
-                'Couldn’t save user settings.'));
+            Craft::$app->getSession()->setError(Craft::t('app', 'Couldn’t save user settings.'));
 
             // Send the settings back to the template
             Craft::$app->getUrlManager()->setRouteParams([

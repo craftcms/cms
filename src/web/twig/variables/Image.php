@@ -7,7 +7,7 @@
 
 namespace craft\app\web\twig\variables;
 
-use craft\app\helpers\ImageHelper;
+use craft\app\helpers\Image as ImageHelper;
 
 /**
  * Class Image variable.

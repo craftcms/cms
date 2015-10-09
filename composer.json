@@ -1,28 +1,46 @@
 {
     "homepage": "http://buildwithcraft.com",
     "minimum-stability": "rc",
+    "repositories": [
+        {
+            "type": "git",
+            "url": "https://github.com/pixelandtonic/pel"
+        },
+        {
+            "type": "git",
+            "url": "https://github.com/pixelandtonic/Imagine"
+        },
+        {
+            "type": "git",
+            "url": "https://github.com/pixelandtonic/flysystem-google-cloud"
+        },
+        {
+            "type": "git",
+            "url": "https://github.com/andris-sevcenko/flysystem-aws-s3-v2"
+        }
+    ],
     "require": {
         "php": ">=5.4.0",
-        "yiisoft/yii2": "2.0.4",
-        "yiisoft/yii2-debug": "2.0.4",
+        "yiisoft/yii2": "2.0.6",
+        "yiisoft/yii2-debug": "2.0.5",
         "yiisoft/yii2-authclient": "2.0.4",
         "yiisoft/yii2-swiftmailer": "2.0.4",
         "simplepie/simplepie": "1.3.1",
-        "guzzlehttp/guzzle": "5.2.0",
-        "twig/twig": "1.18.1",
-        "phpunit/phpunit": "4.6.6",
+        "guzzlehttp/guzzle": "5.3.0",
+        "twig/twig": "1.20.0",
+        "phpunit/phpunit": "4.8.4",
         "lsolesen/pel": "dev-master",
         "mockery/mockery": "0.9.4",
-        "phpmailer/phpmailer": "v5.2.10",
-        "danielstjules/stringy": "1.9.0",
+        "danielstjules/stringy": "2.0.0",
         "fxp/composer-asset-plugin": "1.0.0-beta4",
         "creocoder/yii2-nested-sets": "0.9",
-        "imagine/imagine": "v0.6.2",
-        "league/flysystem": "1.0.3",
-        "league/flysystem-aws-s3-v2": "1.0.1",
-        "league/flysystem-rackspace": "1.0.1",
+        "imagine/imagine": "dev-develop",
+        "league/flysystem": "1.0.11",
+        "league/flysystem-aws-s3-v2": "1.0.3",
+        "league/flysystem-rackspace": "1.0.2",
         "league/flysystem-dropbox": "1.0.0",
-        "league/flysystem-ziparchive": "1.0.2"
+        "league/flysystem-ziparchive": "1.0.2",
+        "pixelandtonic/flysystem-google-cloud": "1.0"
     },
     "extra": {
         "asset-installer-paths": {

@@ -13,8 +13,8 @@ use craft\app\elements\User;
 use craft\app\errors\Exception;
 use craft\app\errors\HttpException;
 use craft\app\helpers\DateTimeHelper;
-use craft\app\helpers\JsonHelper;
-use craft\app\helpers\UrlHelper;
+use craft\app\helpers\Json;
+use craft\app\helpers\Url;
 use craft\app\elements\Entry;
 use craft\app\models\EntryDraft;
 use craft\app\models\EntryVersion;
@@ -150,8 +150,7 @@ class EntriesController extends BaseEntriesController
             }
 
             if ($parentId) {
-                $variables['parent'] = Craft::$app->getEntries()->getEntryById($parentId,
-                    $variables['localeId']);
+                $variables['parent'] = Craft::$app->getEntries()->getEntryById($parentId, $variables['localeId']);
             }
         }
 
@@ -186,8 +185,7 @@ class EntriesController extends BaseEntriesController
 
                 case EntryVersion::className(): {
                     /** @var EntryVersion $entry */
-                    $variables['revisionLabel'] = Craft::t('app',
-                        'Version {num}', ['num' => $entry->num]);
+                    $variables['revisionLabel'] = Craft::t('app', 'Version {num}', ['num' => $entry->num]);
                     break;
                 }
 
@@ -200,8 +198,7 @@ class EntriesController extends BaseEntriesController
         if (!$entry->id) {
             $variables['title'] = Craft::t('app', 'Create a new entry');
         } else {
-            $variables['docTitle'] = Craft::t('app', $entry->title);
-            $variables['title'] = $entry->title;
+            $variables['docTitle'] = $variables['title'] = $entry->title;
 
             if (Craft::$app->getEdition() >= Craft::Client && $entry::className() != Entry::className()) {
                 $variables['docTitle'] .= ' ('.$variables['revisionLabel'].')';
@@ -212,19 +209,19 @@ class EntriesController extends BaseEntriesController
         $variables['crumbs'] = [
             [
                 'label' => Craft::t('app', 'Entries'),
-                'url' => UrlHelper::getUrl('entries')
+                'url' => Url::getUrl('entries')
             ]
         ];
 
         if ($section->type == Section::TYPE_SINGLE) {
             $variables['crumbs'][] = [
                 'label' => Craft::t('app', 'Singles'),
-                'url' => UrlHelper::getUrl('entries/singles')
+                'url' => Url::getUrl('entries/singles')
             ];
         } else {
             $variables['crumbs'][] = [
                 'label' => Craft::t('site', $section->name),
-                'url' => UrlHelper::getUrl('entries/'.$section->handle)
+                'url' => Url::getUrl('entries/'.$section->handle)
             ];
 
             if ($section->type == Section::TYPE_STRUCTURE) {
@@ -259,7 +256,7 @@ class EntriesController extends BaseEntriesController
 
         // Enable Live Preview?
         if (!Craft::$app->getRequest()->getIsMobileBrowser(true) && Craft::$app->getSections()->isSectionTemplateValid($section)) {
-            Craft::$app->getView()->registerJs('Craft.LivePreview.init('.JsonHelper::encode([
+            Craft::$app->getView()->registerJs('Craft.LivePreview.init('.Json::encode([
                     'fields' => '#title-field, #fields > div > div > .field',
                     'extraFields' => '#settings',
                     'previewUrl' => $entry->getUrl(),
@@ -303,8 +300,7 @@ class EntriesController extends BaseEntriesController
                         }
                     }
 
-                    $variables['shareUrl'] = UrlHelper::getActionUrl('entries/share-entry',
-                        $shareParams);
+                    $variables['shareUrl'] = Url::getActionUrl('entries/share-entry', $shareParams);
                 }
             }
         } else {
@@ -358,13 +354,13 @@ class EntriesController extends BaseEntriesController
 
         $paneHtml = Craft::$app->getView()->renderTemplate('_includes/tabs',
                 $variables).
-            Craft::$app->getView()->renderTemplate('entries/_fields',
-                $variables);
+            Craft::$app->getView()->renderTemplate('entries/_fields', $variables);
 
+        $view = Craft::$app->getView();
         return $this->asJson([
             'paneHtml' => $paneHtml,
-            'headHtml' => Craft::$app->getView()->getHeadHtml(),
-            'footHtml' => Craft::$app->getView()->getBodyEndHtml(true),
+            'headHtml' => $view->getHeadHtml(),
+            'footHtml' => $view->getBodyHtml(),
         ]);
     }
 
@@ -461,8 +457,7 @@ class EntriesController extends BaseEntriesController
 
                 return $this->asJson($return);
             } else {
-                Craft::$app->getSession()->setNotice(Craft::t('app',
-                    'Entry saved.'));
+                Craft::$app->getSession()->setNotice(Craft::t('app', 'Entry saved.'));
 
                 return $this->redirectToPostedUrl($entry);
             }
@@ -472,8 +467,7 @@ class EntriesController extends BaseEntriesController
                     'errors' => $entry->getErrors(),
                 ]);
             } else {
-                Craft::$app->getSession()->setError(Craft::t('app',
-                    'Couldn’t save entry.'));
+                Craft::$app->getSession()->setError(Craft::t('app', 'Couldn’t save entry.'));
 
                 // Send the entry back to the template
                 Craft::$app->getUrlManager()->setRouteParams([
@@ -500,8 +494,7 @@ class EntriesController extends BaseEntriesController
         $entry = Craft::$app->getEntries()->getEntryById($entryId, $localeId);
 
         if (!$entry) {
-            throw new Exception(Craft::t('app',
-                'No entry exists with the ID “{id}”.', ['id' => $entryId]));
+            throw new Exception(Craft::t('app', 'No entry exists with the ID “{id}”.', ['id' => $entryId]));
         }
 
         $currentUser = Craft::$app->getUser()->getIdentity();
@@ -516,8 +509,7 @@ class EntriesController extends BaseEntriesController
             if (Craft::$app->getRequest()->getIsAjax()) {
                 return $this->asJson(['success' => true]);
             } else {
-                Craft::$app->getSession()->setNotice(Craft::t('app',
-                    'Entry deleted.'));
+                Craft::$app->getSession()->setNotice(Craft::t('app', 'Entry deleted.'));
 
                 return $this->redirectToPostedUrl($entry);
             }
@@ -525,8 +517,7 @@ class EntriesController extends BaseEntriesController
             if (Craft::$app->getRequest()->getIsAjax()) {
                 return $this->asJson(['success' => false]);
             } else {
-                Craft::$app->getSession()->setError(Craft::t('app',
-                    'Couldn’t delete entry.'));
+                Craft::$app->getSession()->setError(Craft::t('app', 'Couldn’t delete entry.'));
 
                 // Send the entry back to the template
                 Craft::$app->getUrlManager()->setRouteParams([
@@ -590,7 +581,7 @@ class EntriesController extends BaseEntriesController
             'action' => 'entries/view-shared-entry',
             'params' => $params
         ]);
-        $url = UrlHelper::getUrlWithToken($entry->getUrl(), $token);
+        $url = Url::getUrlWithToken($entry->getUrl(), $token);
 
         return Craft::$app->getResponse()->redirect($url);
     }
@@ -658,15 +649,13 @@ class EntriesController extends BaseEntriesController
             // Only use the locales that the user has access to
             $sectionLocaleIds = array_keys($variables['section']->getLocales());
             $editableLocaleIds = Craft::$app->getI18n()->getEditableLocaleIds();
-            $variables['localeIds'] = array_merge(array_intersect($sectionLocaleIds,
-                $editableLocaleIds));
+            $variables['localeIds'] = array_merge(array_intersect($sectionLocaleIds, $editableLocaleIds));
         } else {
             $variables['localeIds'] = [Craft::$app->getI18n()->getPrimarySiteLocaleId()];
         }
 
         if (!$variables['localeIds']) {
-            throw new HttpException(403, Craft::t('app',
-                'Your account doesn’t have permission to edit any of this section’s locales.'));
+            throw new HttpException(403, Craft::t('app', 'Your account doesn’t have permission to edit any of this section’s locales.'));
         }
 
         if (empty($variables['localeId'])) {
@@ -692,12 +681,10 @@ class EntriesController extends BaseEntriesController
                 } else if (!empty($variables['versionId'])) {
                     $variables['entry'] = Craft::$app->getEntryRevisions()->getVersionById($variables['versionId']);
                 } else {
-                    $variables['entry'] = Craft::$app->getEntries()->getEntryById($variables['entryId'],
-                        $variables['localeId']);
+                    $variables['entry'] = Craft::$app->getEntries()->getEntryById($variables['entryId'], $variables['localeId']);
 
                     if ($variables['entry'] && Craft::$app->getEdition() === Craft::Pro) {
-                        $versions = Craft::$app->getEntryRevisions()->getVersionsByEntryId($variables['entryId'],
-                            $variables['localeId'], 1, true);
+                        $versions = Craft::$app->getEntryRevisions()->getVersionsByEntryId($variables['entryId'], $variables['localeId'], 1, true);
 
                         if (isset($versions[0])) {
                             $variables['entry']->revisionNotes = $versions[0]->revisionNotes;
@@ -743,8 +730,7 @@ class EntriesController extends BaseEntriesController
         $variables['entryType'] = $variables['entry']->getType();
 
         if (!$variables['entryType']) {
-            throw new Exception(Craft::t('app',
-                'No entry types are available for this entry.'));
+            throw new Exception(Craft::t('app', 'No entry types are available for this entry.'));
         }
 
         // Define the content tabs
@@ -785,12 +771,10 @@ class EntriesController extends BaseEntriesController
         $localeId = Craft::$app->getRequest()->getBodyParam('locale');
 
         if ($entryId) {
-            $entry = Craft::$app->getEntries()->getEntryById($entryId,
-                $localeId);
+            $entry = Craft::$app->getEntries()->getEntryById($entryId, $localeId);
 
             if (!$entry) {
-                throw new Exception(Craft::t('app',
-                    'No entry exists with the ID “{id}”.', ['id' => $entryId]));
+                throw new Exception(Craft::t('app', 'No entry exists with the ID “{id}”.', ['id' => $entryId]));
             }
         } else {
             $entry = new Entry();
@@ -814,29 +798,20 @@ class EntriesController extends BaseEntriesController
     private function _populateEntryModel(Entry $entry)
     {
         // Set the entry attributes, defaulting to the existing values for whatever is missing from the post data
-        $entry->typeId = Craft::$app->getRequest()->getBodyParam('typeId',
-            $entry->typeId);
-        $entry->slug = Craft::$app->getRequest()->getBodyParam('slug',
-            $entry->slug);
-        $entry->postDate = (($postDate = Craft::$app->getRequest()->getBodyParam('postDate')) ? DateTimeHelper::toDateTime($postDate,
-            Craft::$app->getTimeZone()) : $entry->postDate);
-        $entry->expiryDate = (($expiryDate = Craft::$app->getRequest()->getBodyParam('expiryDate')) ? DateTimeHelper::toDateTime($expiryDate,
-            Craft::$app->getTimeZone()) : null);
-        $entry->enabled = (bool)Craft::$app->getRequest()->getBodyParam('enabled',
-            $entry->enabled);
-        $entry->localeEnabled = (bool)Craft::$app->getRequest()->getBodyParam('localeEnabled',
-            $entry->localeEnabled);
+        $entry->typeId = Craft::$app->getRequest()->getBodyParam('typeId', $entry->typeId);
+        $entry->slug = Craft::$app->getRequest()->getBodyParam('slug', $entry->slug);
+        $entry->postDate = (($postDate = DateTimeHelper::toDateTime(Craft::$app->getRequest()->getBodyParam('postDate'))) !== false ? $postDate : $entry->postDate);
+        $entry->expiryDate = (($expiryDate = DateTimeHelper::toDateTime(Craft::$app->getRequest()->getBodyParam('expiryDate'))) !== false ? $expiryDate : null);
+        $entry->enabled = (bool)Craft::$app->getRequest()->getBodyParam('enabled', $entry->enabled);
+        $entry->localeEnabled = (bool)Craft::$app->getRequest()->getBodyParam('localeEnabled', $entry->localeEnabled);
 
-        $entry->getContent()->title = Craft::$app->getRequest()->getBodyParam('title',
-            $entry->title);
+        $entry->title = Craft::$app->getRequest()->getBodyParam('title', $entry->title);
 
-        $fieldsLocation = Craft::$app->getRequest()->getParam('fieldsLocation',
-            'fields');
-        $entry->setContentFromPost($fieldsLocation);
+        $fieldsLocation = Craft::$app->getRequest()->getParam('fieldsLocation', 'fields');
+        $entry->setFieldValuesFromPost($fieldsLocation);
 
         // Author
-        $authorId = Craft::$app->getRequest()->getBodyParam('author',
-            ($entry->authorId ? $entry->authorId : Craft::$app->getUser()->getIdentity()->id));
+        $authorId = Craft::$app->getRequest()->getBodyParam('author', ($entry->authorId ? $entry->authorId : Craft::$app->getUser()->getIdentity()->id));
 
         if (is_array($authorId)) {
             $authorId = isset($authorId[0]) ? $authorId[0] : null;
@@ -871,8 +846,7 @@ class EntriesController extends BaseEntriesController
         $type = $entry->getType();
 
         if (!$section || !$type) {
-            Craft::error('Attempting to preview an entry that doesn’t have a section/type.',
-                __METHOD__);
+            Craft::error('Attempting to preview an entry that doesn’t have a section/type.', __METHOD__);
             throw new HttpException(404);
         }
 

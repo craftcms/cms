@@ -1,15 +1,17 @@
-{% if value is not defined -%}
-	{% set value = null -%}
-{% endif -%}
-
 {% set id = id ~ '-date' -%}
-
-{% if name is defined and name -%}
-	{% set name = name ~ '[date]' -%}
-{% endif -%}
+{% set name = name is defined ? name -%}
+{% set value = value is defined ? value -%}
 
 <div class="datewrapper">
-	{%- include "_includes/forms/text" with { autocomplete: false, size: 10, value: (value ? value.localeDate() : '') } -%}
+	{%- include "_includes/forms/text" with {
+		name: (name ? name~'[date]'),
+		autocomplete: false,
+		size: 10,
+		value: (value ? value.localeDate() : '')
+	} -%}
+	{% if name -%}
+		<input type="hidden" name="{{ name }}[timezone]" value="{{ craft.getTimeZone() }}">
+	{%- endif -%}
 </div>
 
 {%- registerjs %}

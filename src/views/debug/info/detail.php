@@ -1,7 +1,7 @@
 <?php
 
 use craft\app\dates\DateTime;
-use craft\app\helpers\AppHelper;
+use craft\app\helpers\App;
 
 /** @var $panel craft\app\debug\InfoPanel */
 ?>
@@ -23,7 +23,7 @@ $values = [
     ],
     [
         'Edition',
-        'Craft '.AppHelper::getEditionName($panel->data['craftEdition'])
+        'Craft '.App::getEditionName($panel->data['craftEdition'])
     ],
 ];
 
@@ -87,8 +87,7 @@ echo $this->render('../table', [
         Jump to:
         <?php foreach (array_keys($panel->data['phpInfo']) as $i => $section): ?>
             <?php if ($i !== 0): ?>|<?php endif; ?>
-            <a href="#<?= str_replace(' ', '-',
-                $section) ?>"><?= $section ?></a>
+            <a href="#<?= str_replace(' ', '-', $section) ?>"><?= $section ?></a>
         <?php endforeach; ?>
     </div>
 

@@ -10,7 +10,7 @@ namespace craft\app\controllers;
 use Craft;
 use craft\app\base\Field;
 use craft\app\base\FieldInterface;
-use craft\app\helpers\UrlHelper;
+use craft\app\helpers\Url;
 use craft\app\models\FieldGroup as FieldGroupModel;
 use craft\app\web\twig\variables\ComponentInfo;
 use craft\app\web\Controller;
@@ -62,8 +62,7 @@ class FieldsController extends Controller
 
         if (Craft::$app->getFields()->saveGroup($group)) {
             if ($isNewGroup) {
-                Craft::$app->getSession()->setNotice(Craft::t('app',
-                    'Group added.'));
+                Craft::$app->getSession()->setNotice(Craft::t('app', 'Group added.'));
             }
 
             return $this->asJson([
@@ -122,8 +121,7 @@ class FieldsController extends Controller
             $field = Craft::$app->getFields()->getFieldById($fieldId);
 
             if ($field === null) {
-                throw new HttpException(404,
-                    "No field exists with the ID '$fieldId'.");
+                throw new HttpException(404, "No field exists with the ID '$fieldId'.");
             }
         }
 
@@ -182,15 +180,15 @@ class FieldsController extends Controller
         $crumbs = [
             [
                 'label' => Craft::t('app', 'Settings'),
-                'url' => UrlHelper::getUrl('settings')
+                'url' => Url::getUrl('settings')
             ],
             [
                 'label' => Craft::t('app', 'Fields'),
-                'url' => UrlHelper::getUrl('settings/fields')
+                'url' => Url::getUrl('settings/fields')
             ],
             [
                 'label' => Craft::t('site', $fieldGroup->name),
-                'url' => UrlHelper::getUrl('settings/fields/'.$groupId)
+                'url' => Url::getUrl('settings/fields/'.$groupId)
             ],
         ];
 
@@ -240,13 +238,11 @@ class FieldsController extends Controller
         ]);
 
         if ($fieldsService->saveField($field)) {
-            Craft::$app->getSession()->setNotice(Craft::t('app',
-                'Field saved.'));
+            Craft::$app->getSession()->setNotice(Craft::t('app', 'Field saved.'));
 
             return $this->redirectToPostedUrl($field);
         } else {
-            Craft::$app->getSession()->setError(Craft::t('app',
-                'Couldn’t save field.'));
+            Craft::$app->getSession()->setError(Craft::t('app', 'Couldn’t save field.'));
         }
 
         // Send the field back to the template

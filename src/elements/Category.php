@@ -17,9 +17,8 @@ use craft\app\elements\actions\NewChild;
 use craft\app\elements\actions\SetStatus;
 use craft\app\elements\actions\View;
 use craft\app\elements\db\CategoryQuery;
-use craft\app\helpers\UrlHelper;
+use craft\app\helpers\Url;
 use craft\app\models\CategoryGroup;
-use craft\app\models\FieldLayout;
 
 /**
  * Category represents a category element.
@@ -160,8 +159,7 @@ class Category extends Element
             // Delete
             $actions[] = Craft::$app->getElements()->createAction([
                 'type' => Delete::className(),
-                'confirmationMessage' => Craft::t('app',
-                    'Are you sure you want to delete the selected categories?'),
+                'confirmationMessage' => Craft::t('app', 'Are you sure you want to delete the selected categories?'),
                 'successMessage' => Craft::t('app', 'Categories deleted.'),
             ]);
         }
@@ -234,14 +232,14 @@ class Category extends Element
     public static function getEditorHtml(ElementInterface $element)
     {
         /** @var Category $element */
-        $html = Craft::$app->getView()->renderTemplateMacro('_includes/forms',
-            'textField', [
+        $html = Craft::$app->getView()->renderTemplateMacro('_includes/forms', 'textField',
+            [
                 [
                     'label' => Craft::t('app', 'Title'),
                     'locale' => $element->locale,
                     'id' => 'title',
                     'name' => 'title',
-                    'value' => $element->getContent()->title,
+                    'value' => $element->title,
                     'errors' => $element->getErrors('title'),
                     'first' => true,
                     'autofocus' => true,
@@ -249,8 +247,8 @@ class Category extends Element
                 ]
             ]);
 
-        $html .= Craft::$app->getView()->renderTemplateMacro('_includes/forms',
-            'textField', [
+        $html .= Craft::$app->getView()->renderTemplateMacro('_includes/forms', 'textField',
+            [
                 [
                     'label' => Craft::t('app', 'Slug'),
                     'locale' => $element->locale,
@@ -313,8 +311,7 @@ class Category extends Element
         // Was the category moved within its group's structure?
         if ($element->getGroup()->structureId == $structureId) {
             // Update its URI
-            Craft::$app->getElements()->updateElementSlugAndUri($element, true,
-                true, true);
+            Craft::$app->getElements()->updateElementSlugAndUri($element, true, true, true);
 
             // Make sure that each of the category's ancestors are related wherever the category is related
             $newRelationValues = [];
@@ -345,8 +342,7 @@ class Category extends Element
                     ])
                     ->column();
 
-                $missingAncestorRelations = array_diff($ancestorIds,
-                    $existingAncestorRelations);
+                $missingAncestorRelations = array_diff($ancestorIds, $existingAncestorRelations);
 
                 foreach ($missingAncestorRelations as $categoryId) {
                     $newRelationValues[] = [
@@ -442,7 +438,7 @@ class Category extends Element
     /**
      * @inheritdoc
      */
-    public function isEditable()
+    public function getIsEditable()
     {
         return Craft::$app->getUser()->checkPermission('editCategories:'.$this->groupId);
     }
@@ -455,7 +451,7 @@ class Category extends Element
         $group = $this->getGroup();
 
         if ($group) {
-            return UrlHelper::getCpUrl('categories/'.$group->handle.'/'.$this->id.($this->slug ? '-'.$this->slug : ''));
+            return Url::getCpUrl('categories/'.$group->handle.'/'.$this->id.($this->slug ? '-'.$this->slug : ''));
         }
     }
 

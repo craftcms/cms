@@ -14,7 +14,7 @@ use craft\app\errors\Exception;
 use craft\app\events\EntryTypeEvent;
 use craft\app\events\SectionEvent;
 use craft\app\helpers\ArrayHelper;
-use craft\app\helpers\DbHelper;
+use craft\app\helpers\Db;
 use craft\app\models\EntryType;
 use craft\app\models\Section;
 use craft\app\models\SectionLocale;
@@ -41,7 +41,7 @@ class Sections extends Component
     /**
      * @event SectionEvent The event that is triggered before a section is saved.
      *
-     * You may set [[SectionEvent::performAction]] to `false` to prevent the section from getting saved.
+     * You may set [[SectionEvent::isValid]] to `false` to prevent the section from getting saved.
      */
     const EVENT_BEFORE_SAVE_SECTION = 'beforeSaveSection';
 
@@ -53,7 +53,7 @@ class Sections extends Component
     /**
      * @event SectionEvent The event that is triggered before a section is deleted.
      *
-     * You may set [[SectionEvent::performAction]] to `false` to prevent the section from getting deleted.
+     * You may set [[SectionEvent::isValid]] to `false` to prevent the section from getting deleted.
      */
     const EVENT_BEFORE_DELETE_SECTION = 'beforeDeleteSection';
 
@@ -65,7 +65,7 @@ class Sections extends Component
     /**
      * @event EntryTypeEvent The event that is triggered before an entry type is saved.
      *
-     * You may set [[EntryTypeEvent::performAction]] to `false` to prevent the entry type from getting saved.
+     * You may set [[EntryTypeEvent::isValid]] to `false` to prevent the entry type from getting saved.
      */
     const EVENT_BEFORE_SAVE_ENTRY_TYPE = 'beforeSaveEntryType';
 
@@ -334,8 +334,7 @@ class Sections extends Component
         $sectionLocales = (new Query())
             ->select('*')
             ->from('{{%sections_i18n}} sections_i18n')
-            ->innerJoin('{{%locales}} locales',
-                'locales.locale = sections_i18n.locale')
+            ->innerJoin('{{%locales}} locales', 'locales.locale = sections_i18n.locale')
             ->where('sections_i18n.sectionId = :sectionId',
                 [':sectionId' => $sectionId])
             ->orderBy('locales.sortOrder')
@@ -367,9 +366,7 @@ class Sections extends Component
                 ->one();
 
             if (!$sectionRecord) {
-                throw new Exception(Craft::t('app',
-                    'No section exists with the ID “{id}”.',
-                    ['id' => $section->id]));
+                throw new Exception(Craft::t('app', 'No section exists with the ID “{id}”.', ['id' => $section->id]));
             }
 
             $oldSection = Section::create($sectionRecord);
@@ -383,12 +380,10 @@ class Sections extends Component
         $sectionRecord->name = $section->name;
         $sectionRecord->handle = $section->handle;
         $sectionRecord->type = $section->type;
-        $sectionRecord->enableVersioning = $section->enableVersioning;
+        $sectionRecord->enableVersioning = $section->enableVersioning ? 1 : 0;
 
         if (($isNewSection || $section->type != $oldSection->type) && !$this->canHaveMore($section->type)) {
-            $section->addError('type',
-                Craft::t('app', 'You can’t add any more {type} sections.',
-                    ['type' => Craft::t('app', ucfirst($section->type))]));
+            $section->addError('type', Craft::t('app', 'You can’t add any more {type} sections.', ['type' => Craft::t('app', ucfirst($section->type))]));
         }
 
         // Type-specific attributes
@@ -411,8 +406,7 @@ class Sections extends Component
         $sectionLocales = $section->getLocales();
 
         if (!$sectionLocales) {
-            $section->addError('localeErrors', Craft::t('app',
-                'At least one locale must be selected for the section.'));
+            $section->addError('localeErrors', Craft::t('app', 'At least one locale must be selected for the section.'));
         }
 
         foreach ($sectionLocales as $localeId => $sectionLocale) {
@@ -420,8 +414,7 @@ class Sections extends Component
                 $errorKey = 'urlFormat-'.$localeId;
 
                 if (empty($sectionLocale->urlFormat)) {
-                    $section->addError($errorKey,
-                        Craft::t('app', 'URI cannot be blank.'));
+                    $section->addError($errorKey, Craft::t('app', 'URI cannot be blank.'));
                 } else if ($section) {
                     // Make sure no other elements are using this URI already
                     $query = (new Query())
@@ -439,15 +432,13 @@ class Sections extends Component
                         );
 
                     if ($section->id) {
-                        $query->innerJoin('{{%entries}} entries',
-                            'entries.id = elements_i18n.elementId')
-                            ->andWhere('entries.sectionId != :sectionId',
-                                [':sectionId' => $section->id]);
+                        $query
+                            ->innerJoin('{{%entries}} entries', 'entries.id = elements_i18n.elementId')
+                            ->andWhere('entries.sectionId != :sectionId', [':sectionId' => $section->id]);
                     }
 
                     if ($query->exists()) {
-                        $section->addError($errorKey,
-                            Craft::t('app', 'This URI is already in use.'));
+                        $section->addError($errorKey, Craft::t('app', 'This URI is already in use.'));
                     }
                 }
 
@@ -465,8 +456,7 @@ class Sections extends Component
 
                 foreach ($urlFormatAttributes as $attribute) {
                     if (!$sectionLocale->validate([$attribute])) {
-                        $section->addError($attribute.'-'.$localeId,
-                            $sectionLocale->getError($attribute));
+                        $section->addError($attribute.'-'.$localeId, $sectionLocale->getError($attribute));
                     }
                 }
             } else {
@@ -476,7 +466,7 @@ class Sections extends Component
         }
 
         if (!$section->hasErrors()) {
-            $transaction = Craft::$app->getDb()->getTransaction() === null ? Craft::$app->getDb()->beginTransaction() : null;
+            $transaction = Craft::$app->getDb()->beginTransaction();
 
             try {
                 // Fire a 'beforeSaveSection' event
@@ -487,7 +477,7 @@ class Sections extends Component
                 $this->trigger(static::EVENT_BEFORE_SAVE_SECTION, $event);
 
                 // Is the event giving us the go-ahead?
-                if ($event->performAction) {
+                if ($event->isValid) {
                     // Do we need to create a structure?
                     if ($section->type == Section::TYPE_STRUCTURE) {
                         if (!$isNewSection && $oldSection->type == Section::TYPE_STRUCTURE) {
@@ -582,8 +572,7 @@ class Sections extends Component
                         // Drop any locales that are no longer being used, as well as the associated entry/element locale
                         // rows
 
-                        $droppedLocaleIds = array_diff(array_keys($oldSectionLocales),
-                            array_keys($sectionLocales));
+                        $droppedLocaleIds = array_diff(array_keys($oldSectionLocales), array_keys($sectionLocales));
 
                         if ($droppedLocaleIds) {
                             Craft::$app->getDb()->createCommand()->delete('{{%sections_i18n}}',
@@ -675,7 +664,7 @@ class Sections extends Component
                                         [
                                             'typeId' => $entryTypeId,
                                             'authorId' => null,
-                                            'postDate' => DbHelper::prepareDateForDb(new \DateTime()),
+                                            'postDate' => Db::prepareDateForDb(new \DateTime()),
                                             'expiryDate' => null,
                                         ], [
                                             'id' => $singleEntryId
@@ -693,7 +682,7 @@ class Sections extends Component
                                 $singleEntry = new Entry();
                                 $singleEntry->sectionId = $section->id;
                                 $singleEntry->typeId = $entryTypeId;
-                                $singleEntry->getContent()->title = $section->name;
+                                $singleEntry->title = $section->name;
                                 Craft::$app->getEntries()->saveEntry($singleEntry);
                             }
 
@@ -712,8 +701,7 @@ class Sections extends Component
 
                                 /** @var Entry $entry */
                                 foreach ($query->each() as $entry) {
-                                    Craft::$app->getStructures()->appendToRoot($section->structureId,
-                                        $entry, 'insert');
+                                    Craft::$app->getStructures()->appendToRoot($section->structureId, $entry, 'insert');
                                 }
                             }
 
@@ -725,15 +713,12 @@ class Sections extends Component
 
                     if (!$isNewSection) {
                         // Get the most-primary locale that this section was already enabled in
-                        $locales = array_values(array_intersect(Craft::$app->i18n->getSiteLocaleIds(),
-                            array_keys($oldSectionLocales)));
+                        $locales = array_values(array_intersect(Craft::$app->i18n->getSiteLocaleIds(), array_keys($oldSectionLocales)));
 
                         if ($locales) {
                             Craft::$app->getTasks()->queueTask([
                                 'type' => ResaveElements::className(),
-                                'description' => Craft::t('app',
-                                    'Resaving {section} entries',
-                                    ['section' => $section->name]),
+                                'description' => Craft::t('app', 'Resaving {section} entries', ['section' => $section->name]),
                                 'elementType' => Entry::className(),
                                 'criteria' => [
                                     'locale' => $locales[0],
@@ -753,13 +738,9 @@ class Sections extends Component
 
                 // Commit the transaction regardless of whether we saved the section, in case something changed
                 // in onBeforeSaveSection
-                if ($transaction !== null) {
-                    $transaction->commit();
-                }
+                $transaction->commit();
             } catch (\Exception $e) {
-                if ($transaction !== null) {
-                    $transaction->rollback();
-                }
+                $transaction->rollback();
 
                 throw $e;
             }
@@ -805,11 +786,11 @@ class Sections extends Component
         $this->trigger(static::EVENT_BEFORE_DELETE_SECTION, $event);
 
         // Make sure the event is giving us the go ahead
-        if (!$event->performAction) {
+        if (!$event->isValid) {
             return false;
         }
 
-        $transaction = Craft::$app->getDb()->getTransaction() === null ? Craft::$app->getDb()->beginTransaction() : null;
+        $transaction = Craft::$app->getDb()->beginTransaction();
         try {
             // Grab the entry ids so we can clean the elements table.
             $entryIds = (new Query())
@@ -835,9 +816,7 @@ class Sections extends Component
             Craft::$app->getDb()->createCommand()->delete('{{%sections}}',
                 ['id' => $sectionId])->execute();
 
-            if ($transaction !== null) {
-                $transaction->commit();
-            }
+            $transaction->commit();
 
             // Fire an 'afterDeleteSection' event
             $this->trigger(static::EVENT_AFTER_DELETE_SECTION,
@@ -847,9 +826,7 @@ class Sections extends Component
 
             return true;
         } catch (\Exception $e) {
-            if ($transaction !== null) {
-                $transaction->rollback();
-            }
+            $transaction->rollback();
 
             throw $e;
         }
@@ -967,9 +944,7 @@ class Sections extends Component
             $entryTypeRecord = EntryTypeRecord::findOne($entryType->id);
 
             if (!$entryTypeRecord) {
-                throw new Exception(Craft::t('app',
-                    'No entry type exists with the ID “{id}”.',
-                    ['id' => $entryType->id]));
+                throw new Exception(Craft::t('app', 'No entry type exists with the ID “{id}”.', ['id' => $entryType->id]));
             }
 
             $isNewEntryType = false;
@@ -990,7 +965,7 @@ class Sections extends Component
         $entryType->addErrors($entryTypeRecord->getErrors());
 
         if (!$entryType->hasErrors()) {
-            $transaction = Craft::$app->getDb()->getTransaction() === null ? Craft::$app->getDb()->beginTransaction() : null;
+            $transaction = Craft::$app->getDb()->beginTransaction();
 
             try {
                 // Fire a 'beforeSaveEntryType' event
@@ -1001,7 +976,7 @@ class Sections extends Component
                 $this->trigger(static::EVENT_BEFORE_SAVE_ENTRY_TYPE, $event);
 
                 // Is the event giving us the go-ahead?
-                if ($event->performAction) {
+                if ($event->isValid) {
                     if (!$isNewEntryType && $oldEntryType->fieldLayoutId) {
                         // Drop the old field layout
                         Craft::$app->getFields()->deleteLayoutById($oldEntryType->fieldLayoutId);
@@ -1032,13 +1007,9 @@ class Sections extends Component
 
                 // Commit the transaction regardless of whether we saved the user, in case something changed
                 // in onBeforeSaveEntryType
-                if ($transaction !== null) {
-                    $transaction->commit();
-                }
+                $transaction->commit();
             } catch (\Exception $e) {
-                if ($transaction !== null) {
-                    $transaction->rollback();
-                }
+                $transaction->rollback();
 
                 throw $e;
             }
@@ -1067,7 +1038,7 @@ class Sections extends Component
      */
     public function reorderEntryTypes($entryTypeIds)
     {
-        $transaction = Craft::$app->getDb()->getTransaction() === null ? Craft::$app->getDb()->beginTransaction() : null;
+        $transaction = Craft::$app->getDb()->beginTransaction();
 
         try {
             foreach ($entryTypeIds as $entryTypeOrder => $entryTypeId) {
@@ -1076,13 +1047,9 @@ class Sections extends Component
                 $entryTypeRecord->save();
             }
 
-            if ($transaction !== null) {
-                $transaction->commit();
-            }
+            $transaction->commit();
         } catch (\Exception $e) {
-            if ($transaction !== null) {
-                $transaction->rollback();
-            }
+            $transaction->rollback();
 
             throw $e;
         }
@@ -1104,7 +1071,7 @@ class Sections extends Component
             return false;
         }
 
-        $transaction = Craft::$app->getDb()->getTransaction() === null ? Craft::$app->getDb()->beginTransaction() : null;
+        $transaction = Craft::$app->getDb()->beginTransaction();
         try {
             // Delete the field layout
             $query = (new Query())
@@ -1147,15 +1114,11 @@ class Sections extends Component
                     ['id' => $entryTypeId])->execute();
             }
 
-            if ($transaction !== null) {
-                $transaction->commit();
-            }
+            $transaction->commit();
 
             return (bool)$affectedRows;
         } catch (\Exception $e) {
-            if ($transaction !== null) {
-                $transaction->rollback();
-            }
+            $transaction->rollback();
 
             throw $e;
         }
@@ -1180,8 +1143,7 @@ class Sections extends Component
 
         return (new Query())
             ->from('{{%sections}} sections')
-            ->innerJoin('{{%sections_i18n}} sections_i18n',
-                'sections_i18n.sectionId = sections.id')
+            ->innerJoin('{{%sections_i18n}} sections_i18n', 'sections_i18n.sectionId = sections.id')
             ->where($conditions, $params)
             ->exists();
     }
@@ -1223,8 +1185,7 @@ class Sections extends Component
     {
         return (new Query())
             ->select('sections.id, sections.structureId, sections.name, sections.handle, sections.type, sections.hasUrls, sections.template, sections.enableVersioning, structures.maxLevels')
-            ->leftJoin('{{%structures}} structures',
-                'structures.id = sections.structureId')
+            ->leftJoin('{{%structures}} structures', 'structures.id = sections.structureId')
             ->from('{{%sections}} sections')
             ->orderBy('name');
     }

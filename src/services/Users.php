@@ -14,13 +14,13 @@ use craft\app\db\Query;
 use craft\app\errors\Exception;
 use craft\app\events\DeleteUserEvent;
 use craft\app\events\UserEvent;
-use craft\app\helpers\AssetsHelper;
+use craft\app\helpers\Assets as AssetsHelper;
 use craft\app\helpers\DateTimeHelper;
-use craft\app\helpers\DbHelper;
-use craft\app\helpers\IOHelper;
-use craft\app\helpers\JsonHelper;
-use craft\app\helpers\TemplateHelper;
-use craft\app\helpers\UrlHelper;
+use craft\app\helpers\Db;
+use craft\app\helpers\Io;
+use craft\app\helpers\Json;
+use craft\app\helpers\Template;
+use craft\app\helpers\Url;
 use craft\app\io\Image;
 use craft\app\models\Password as PasswordModel;
 use craft\app\elements\User;
@@ -43,7 +43,7 @@ class Users extends Component
     /**
      * @event UserEvent The event that is triggered before a user is saved.
      *
-     * You may set [[UserEvent::performAction]] to `false` to prevent the user from getting saved.
+     * You may set [[UserEvent::isValid]] to `false` to prevent the user from getting saved.
      */
     const EVENT_BEFORE_SAVE_USER = 'beforeSaveUser';
 
@@ -65,7 +65,7 @@ class Users extends Component
     /**
      * @event UserEvent The event that is triggered before a user is activated.
      *
-     * You may set [[UserEvent::performAction]] to `false` to prevent the user from getting activated.
+     * You may set [[UserEvent::isValid]] to `false` to prevent the user from getting activated.
      */
     const EVENT_BEFORE_ACTIVATE_USER = 'beforeActivateUser';
 
@@ -77,7 +77,7 @@ class Users extends Component
     /**
      * @event UserEvent The event that is triggered before a user is unlocked.
      *
-     * You may set [[UserEvent::performAction]] to `false` to prevent the user from getting unlocked.
+     * You may set [[UserEvent::isValid]] to `false` to prevent the user from getting unlocked.
      */
     const EVENT_BEFORE_UNLOCK_USER = 'beforeUnlockUser';
 
@@ -89,7 +89,7 @@ class Users extends Component
     /**
      * @event UserEvent The event that is triggered before a user is suspended.
      *
-     * You may set [[UserEvent::performAction]] to `false` to prevent the user from getting suspended.
+     * You may set [[UserEvent::isValid]] to `false` to prevent the user from getting suspended.
      */
     const EVENT_BEFORE_SUSPEND_USER = 'beforeSuspendUser';
 
@@ -101,7 +101,7 @@ class Users extends Component
     /**
      * @event UserEvent The event that is triggered before a user is unsuspended.
      *
-     * You may set [[UserEvent::performAction]] to `false` to prevent the user from getting unsuspended.
+     * You may set [[UserEvent::isValid]] to `false` to prevent the user from getting unsuspended.
      */
     const EVENT_BEFORE_UNSUSPEND_USER = 'beforeUnsuspendUser';
 
@@ -113,7 +113,7 @@ class Users extends Component
     /**
      * @event DeleteUserEvent The event that is triggered before a user is deleted.
      *
-     * You may set [[UserEvent::performAction]] to `false` to prevent the user from getting deleted.
+     * You may set [[UserEvent::isValid]] to `false` to prevent the user from getting deleted.
      */
     const EVENT_BEFORE_DELETE_USER = 'beforeDeleteUser';
 
@@ -127,7 +127,7 @@ class Users extends Component
      *
      * The new password will be accessible from [[User::newPassword]].
      *
-     * You may set [[UserEvent::performAction]] to `false` to prevent the user's password from getting set.
+     * You may set [[UserEvent::isValid]] to `false` to prevent the user's password from getting set.
      */
     const EVENT_BEFORE_SET_PASSWORD = 'beforeSetPassword';
 
@@ -152,8 +152,7 @@ class Users extends Component
      */
     public function getUserById($userId)
     {
-        return Craft::$app->getElements()->getElementById($userId,
-            User::className());
+        return Craft::$app->getElements()->getElementById($userId, User::className());
     }
 
     /**
@@ -261,19 +260,15 @@ class Users extends Component
                 $userRecord->verificationCode = null;
                 $userRecord->save();
             } else {
-                if (Craft::$app->getSecurity()->validatePassword($code,
-                    $userRecord->verificationCode)
-                ) {
+                if (Craft::$app->getSecurity()->validatePassword($code, $userRecord->verificationCode)) {
                     $valid = true;
                 } else {
                     $valid = false;
-                    Craft::warning('The verification code ('.$code.') given for userId: '.$user->id.' does not match the hash in the database.',
-                        __METHOD__);
+                    Craft::warning('The verification code ('.$code.') given for userId: '.$user->id.' does not match the hash in the database.', __METHOD__);
                 }
             }
         } else {
-            Craft::warning('Could not find a user with id:'.$user->id.'.',
-                __METHOD__);
+            Craft::warning('Could not find a user with id:'.$user->id.'.', __METHOD__);
         }
 
         return $valid;
@@ -337,8 +332,7 @@ class Users extends Component
             $userRecord = $this->_getUserRecordById($user->id);
 
             if (!$userRecord) {
-                throw new Exception(Craft::t('app',
-                    'No user exists with the ID “{id}”.', ['id' => $user->id]));
+                throw new Exception(Craft::t('app', 'No user exists with the ID “{id}”.', ['id' => $user->id]));
             }
 
             $oldUsername = $userRecord->username;
@@ -367,9 +361,7 @@ class Users extends Component
 
         if (Craft::$app->getEdition() == Craft::Pro) {
             // Validate any content.
-            if (!Craft::$app->getContent()->validateContent($user)) {
-                $user->addErrors($user->getContent()->getErrors());
-            }
+            Craft::$app->getContent()->validateContent($user);
         }
 
         // If newPassword is set at all, even to an empty string, validate & set it.
@@ -381,7 +373,7 @@ class Users extends Component
             return false;
         }
 
-        $transaction = Craft::$app->getDb()->getTransaction() === null ? Craft::$app->getDb()->beginTransaction() : null;
+        $transaction = Craft::$app->getDb()->beginTransaction();
 
         try {
             // Fire a 'beforeSaveUser' event
@@ -392,16 +384,13 @@ class Users extends Component
             $this->trigger(static::EVENT_BEFORE_SAVE_USER, $event);
 
             // Is the event is giving us the go-ahead?
-            if ($event->performAction) {
+            if ($event->isValid) {
                 // Save the element
-                $success = Craft::$app->getElements()->saveElement($user,
-                    false);
+                $success = Craft::$app->getElements()->saveElement($user, false);
 
                 // If it didn't work, rollback the transaction in case something changed in onBeforeSaveUser
                 if (!$success) {
-                    if ($transaction !== null) {
-                        $transaction->rollback();
-                    }
+                    $transaction->rollback();
 
                     return false;
                 }
@@ -417,20 +406,18 @@ class Users extends Component
                     // Has the username changed?
                     if ($user->username != $oldUsername) {
                         // Rename the user's photo directory
-                        $cleanOldUsername = AssetsHelper::prepareAssetName($oldUsername,
-                            false);
-                        $cleanUsername = AssetsHelper::prepareAssetName($user->username,
-                            false);
+                        $cleanOldUsername = AssetsHelper::prepareAssetName($oldUsername, false);
+                        $cleanUsername = AssetsHelper::prepareAssetName($user->username, false);
                         $userPhotosPath = Craft::$app->getPath()->getUserPhotosPath();
                         $oldFolder = $userPhotosPath.'/'.$cleanOldUsername;
                         $newFolder = $userPhotosPath.'/'.$cleanUsername;
 
-                        if (IOHelper::folderExists($newFolder)) {
-                            IOHelper::deleteFolder($newFolder);
+                        if (Io::folderExists($newFolder)) {
+                            Io::deleteFolder($newFolder);
                         }
 
-                        if (IOHelper::folderExists($oldFolder)) {
-                            IOHelper::rename($oldFolder, $newFolder);
+                        if (Io::folderExists($oldFolder)) {
+                            Io::rename($oldFolder, $newFolder);
                         }
                     }
                 }
@@ -440,13 +427,9 @@ class Users extends Component
 
             // Commit the transaction regardless of whether we saved the user, in case something changed
             // in onBeforeSaveUser
-            if ($transaction !== null) {
-                $transaction->commit();
-            }
+            $transaction->commit();
         } catch (\Exception $e) {
-            if ($transaction !== null) {
-                $transaction->rollback();
-            }
+            $transaction->rollback();
 
             throw $e;
         }
@@ -489,7 +472,7 @@ class Users extends Component
             ->where(['userId' => $userId])
             ->scalar();
 
-        return $preferences ? JsonHelper::decode($preferences) : [];
+        return $preferences ? Json::decode($preferences) : [];
     }
 
     /**
@@ -505,7 +488,7 @@ class Users extends Component
         Craft::$app->getDb()->createCommand()->insertOrUpdate(
             '{{%userpreferences}}',
             ['userId' => $user->id],
-            ['preferences' => JsonHelper::encode($preferences)],
+            ['preferences' => Json::encode($preferences)],
             false
         )->execute();
     }
@@ -528,10 +511,10 @@ class Users extends Component
             $url = $this->getEmailVerifyUrl($user);
         }
 
-        return Craft::$app->getEmail()->sendEmailByKey($user,
-            'account_activation', [
-                'link' => TemplateHelper::getRaw($url),
-            ]);
+        return Craft::$app->getMailer()
+            ->composeFromKey('account_activation', ['link' => Template::getRaw($url)])
+            ->setTo($user)
+            ->send();
     }
 
     /**
@@ -547,10 +530,10 @@ class Users extends Component
     {
         $url = $this->getEmailVerifyUrl($user);
 
-        return Craft::$app->getEmail()->sendEmailByKey($user,
-            'verify_new_email', [
-                'link' => TemplateHelper::getRaw($url),
-            ]);
+        return Craft::$app->getMailer()
+            ->composeFromKey('verify_new_email', ['link' => Template::getRaw($url)])
+            ->setTo($user)
+            ->send();
     }
 
     /**
@@ -566,10 +549,10 @@ class Users extends Component
     {
         $url = $this->getPasswordResetUrl($user);
 
-        return Craft::$app->getEmail()->sendEmailByKey($user, 'forgot_password',
-            [
-                'link' => TemplateHelper::getRaw($url),
-            ]);
+        return Craft::$app->getMailer()
+            ->composeFromKey('forgot_password', ['link' => Template::getRaw($url)])
+            ->setTo($user)
+            ->send();
     }
 
     /**
@@ -586,13 +569,13 @@ class Users extends Component
         $userRecord->save();
 
         if ($user->can('accessCp')) {
-            $url = UrlHelper::getActionUrl('users/verifyemail',
+            $url = Url::getActionUrl('users/verifyemail',
                 ['code' => $unhashedVerificationCode, 'id' => $userRecord->uid],
                 Craft::$app->getRequest()->getIsSecureConnection() ? 'https' : 'http');
         } else {
             // We want to hide the CP trigger if they don't have access to the CP.
             $path = Craft::$app->getConfig()->get('actionTrigger').'/users/verifyemail';
-            $url = UrlHelper::getSiteUrl($path,
+            $url = Url::getSiteUrl($path,
                 ['code' => $unhashedVerificationCode, 'id' => $userRecord->uid],
                 Craft::$app->getRequest()->getIsSecureConnection() ? 'https' : 'http');
         }
@@ -621,9 +604,9 @@ class Users extends Component
         $scheme = Craft::$app->getRequest()->getIsSecureConnection() ? 'https' : 'http';
 
         if ($user->can('accessCp')) {
-            return UrlHelper::getCpUrl($path, $params, $scheme);
+            return Url::getCpUrl($path, $params, $scheme);
         } else {
-            return UrlHelper::getSiteUrl($path, $params, $scheme);
+            return Url::getSiteUrl($path, $params, $scheme);
         }
     }
 
@@ -643,8 +626,8 @@ class Users extends Component
         $userPhotoFolder = Craft::$app->getPath()->getUserPhotosPath().'/'.$userName;
         $targetFolder = $userPhotoFolder.'/original';
 
-        IOHelper::ensureFolderExists($userPhotoFolder);
-        IOHelper::ensureFolderExists($targetFolder);
+        Io::ensureFolderExists($userPhotoFolder);
+        Io::ensureFolderExists($targetFolder);
 
         $targetPath = $targetFolder.'/'.AssetsHelper::prepareAssetName($filename,
                 false);
@@ -652,8 +635,7 @@ class Users extends Component
         $result = $image->saveAs($targetPath);
 
         if ($result) {
-            IOHelper::changePermissions($targetPath,
-                Craft::$app->getConfig()->get('defaultFilePermissions'));
+            Io::changePermissions($targetPath, Craft::$app->getConfig()->get('defaultFilePermissions'));
             $record = UserRecord::findOne($user->id);
             $record->photo = $filename;
             $record->save();
@@ -678,8 +660,8 @@ class Users extends Component
         $username = AssetsHelper::prepareAssetName($user->username, false);
         $folder = Craft::$app->getPath()->getUserPhotosPath().'/'.$username;
 
-        if (IOHelper::folderExists($folder)) {
-            IOHelper::deleteFolder($folder);
+        if (Io::folderExists($folder)) {
+            Io::deleteFolder($folder);
         }
 
         $record = UserRecord::findOne($user->id);
@@ -700,9 +682,7 @@ class Users extends Component
     {
         $userRecord = $this->_getUserRecordById($user->id);
 
-        if ($this->_setPasswordOnUserRecord($user, $userRecord, true,
-            $forceDifferent)
-        ) {
+        if ($this->_setPasswordOnUserRecord($user, $userRecord, true, $forceDifferent)) {
             $userRecord->save();
 
             return true;
@@ -724,7 +704,7 @@ class Users extends Component
         $userRecord = $this->_getUserRecordById($user->id);
 
         $userRecord->lastLoginDate = $user->lastLoginDate = DateTimeHelper::currentUTCDateTime();
-        $userRecord->lastLoginAttemptIPAddress = Craft::$app->getRequest()->getUserIP();
+        $userRecord->lastLoginAttemptIp = Craft::$app->getRequest()->getUserIP();
         $userRecord->invalidLoginWindowStart = null;
         $userRecord->invalidLoginCount = $user->invalidLoginCount = null;
         $userRecord->verificationCode = null;
@@ -746,7 +726,7 @@ class Users extends Component
         $currentTime = DateTimeHelper::currentUTCDateTime();
 
         $userRecord->lastInvalidLoginDate = $user->lastInvalidLoginDate = $currentTime;
-        $userRecord->lastLoginAttemptIPAddress = Craft::$app->getRequest()->getUserIP();
+        $userRecord->lastLoginAttemptIp = Craft::$app->getRequest()->getUserIP();
 
         $maxInvalidLogins = Craft::$app->getConfig()->get('maxInvalidLogins');
 
@@ -785,7 +765,7 @@ class Users extends Component
      */
     public function activateUser(User $user)
     {
-        $transaction = Craft::$app->getDb()->getTransaction() === null ? Craft::$app->getDb()->beginTransaction() : null;
+        $transaction = Craft::$app->getDb()->beginTransaction();
 
         try {
             // Fire a 'beforeActivateUser' event
@@ -796,7 +776,7 @@ class Users extends Component
             $this->trigger(static::EVENT_BEFORE_ACTIVATE_USER, $event);
 
             // Is the event is giving us the go-ahead?
-            if ($event->performAction) {
+            if ($event->isValid) {
                 $userRecord = $this->_getUserRecordById($user->id);
 
                 $userRecord->setActive();
@@ -814,13 +794,9 @@ class Users extends Component
 
             // Commit the transaction regardless of whether we activated the user, in case something changed
             // in onBeforeActivateUser
-            if ($transaction !== null) {
-                $transaction->commit();
-            }
+            $transaction->commit();
         } catch (\Exception $e) {
-            if ($transaction !== null) {
-                $transaction->rollback();
-            }
+            $transaction->rollback();
 
             throw $e;
         }
@@ -852,13 +828,12 @@ class Users extends Component
                 $userRecord->username = $user->unverifiedEmail;
 
                 $userPhotosPath = Craft::$app->getPath()->getUserPhotosPath();
-                $oldProfilePhotoPath = $userPhotosPath.'/'.AssetsHelper::cleanAssetName($oldEmail);
-                $newProfilePhotoPath = $userPhotosPath.'/'.AssetsHelper::cleanAssetName($user->unverifiedEmail);
+                $oldProfilePhotoPath = $userPhotosPath.'/'.AssetsHelper::prepareAssetName($oldEmail);
+                $newProfilePhotoPath = $userPhotosPath.'/'.AssetsHelper::prepareAssetName($user->unverifiedEmail);
 
                 // Update the user profile photo folder name, if it exists.
-                if (IOHelper::folderExists($oldProfilePhotoPath)) {
-                    IOHelper::rename($oldProfilePhotoPath,
-                        $newProfilePhotoPath);
+                if (Io::folderExists($oldProfilePhotoPath)) {
+                    Io::rename($oldProfilePhotoPath, $newProfilePhotoPath);
                 }
             }
 
@@ -882,7 +857,7 @@ class Users extends Component
      */
     public function unlockUser(User $user)
     {
-        $transaction = Craft::$app->getDb()->getTransaction() === null ? Craft::$app->getDb()->beginTransaction() : null;
+        $transaction = Craft::$app->getDb()->beginTransaction();
 
         try {
             // Fire a 'beforeUnlockUser' event
@@ -893,7 +868,7 @@ class Users extends Component
             $this->trigger(static::EVENT_BEFORE_UNLOCK_USER, $event);
 
             // Is the event is giving us the go-ahead?
-            if ($event->performAction) {
+            if ($event->isValid) {
                 $userRecord = $this->_getUserRecordById($user->id);
 
                 $userRecord->locked = false;
@@ -911,13 +886,9 @@ class Users extends Component
 
             // Commit the transaction regardless of whether we unlocked the user, in case something changed
             // in onBeforeUnlockUser
-            if ($transaction !== null) {
-                $transaction->commit();
-            }
+            $transaction->commit();
         } catch (\Exception $e) {
-            if ($transaction !== null) {
-                $transaction->rollback();
-            }
+            $transaction->rollback();
 
             throw $e;
         }
@@ -942,7 +913,7 @@ class Users extends Component
      */
     public function suspendUser(User $user)
     {
-        $transaction = Craft::$app->getDb()->getTransaction() === null ? Craft::$app->getDb()->beginTransaction() : null;
+        $transaction = Craft::$app->getDb()->beginTransaction();
 
         try {
             // Fire a 'beforeSuspendUser' event
@@ -953,7 +924,7 @@ class Users extends Component
             $this->trigger(static::EVENT_BEFORE_SUSPEND_USER, $event);
 
             // Is the event is giving us the go-ahead?
-            if ($event->performAction) {
+            if ($event->isValid) {
                 $userRecord = $this->_getUserRecordById($user->id);
 
                 $userRecord->suspended = true;
@@ -967,13 +938,9 @@ class Users extends Component
 
             // Commit the transaction regardless of whether we saved the user, in case something changed
             // in onBeforeSuspendUser
-            if ($transaction !== null) {
-                $transaction->commit();
-            }
+            $transaction->commit();
         } catch (\Exception $e) {
-            if ($transaction !== null) {
-                $transaction->rollback();
-            }
+            $transaction->rollback();
 
             throw $e;
         }
@@ -998,7 +965,7 @@ class Users extends Component
      */
     public function unsuspendUser(User $user)
     {
-        $transaction = Craft::$app->getDb()->getTransaction() === null ? Craft::$app->getDb()->beginTransaction() : null;
+        $transaction = Craft::$app->getDb()->beginTransaction();
 
         try {
             // Fire a 'beforeUnsuspendUser' event
@@ -1009,7 +976,7 @@ class Users extends Component
             $this->trigger(static::EVENT_BEFORE_UNSUSPEND_USER, $event);
 
             // Is the event is giving us the go-ahead?
-            if ($event->performAction) {
+            if ($event->isValid) {
                 $userRecord = $this->_getUserRecordById($user->id);
 
                 $userRecord->suspended = false;
@@ -1023,13 +990,9 @@ class Users extends Component
 
             // Commit the transaction regardless of whether we unsuspended the user, in case something changed
             // in onBeforeUnsuspendUser
-            if ($transaction !== null) {
-                $transaction->commit();
-            }
+            $transaction->commit();
         } catch (\Exception $e) {
-            if ($transaction !== null) {
-                $transaction->rollback();
-            }
+            $transaction->rollback();
 
             throw $e;
         }
@@ -1059,7 +1022,7 @@ class Users extends Component
             return false;
         }
 
-        $transaction = Craft::$app->getDb()->getTransaction() === null ? Craft::$app->getDb()->beginTransaction() : null;
+        $transaction = Craft::$app->getDb()->beginTransaction();
 
         try {
             // Fire a 'beforeDeleteUser' event
@@ -1071,7 +1034,7 @@ class Users extends Component
             $this->trigger(static::EVENT_BEFORE_DELETE_USER, $event);
 
             // Is the event is giving us the go-ahead?
-            if ($event->performAction) {
+            if ($event->isValid) {
                 // Get the entry IDs that belong to this user
                 $entryIds = (new Query())
                     ->select('id')
@@ -1108,9 +1071,7 @@ class Users extends Component
 
                 // If it didn't work, rollback the transaction in case something changed in onBeforeDeleteUser
                 if (!$success) {
-                    if ($transaction !== null) {
-                        $transaction->rollback();
-                    }
+                    $transaction->rollback();
 
                     return false;
                 }
@@ -1120,13 +1081,9 @@ class Users extends Component
 
             // Commit the transaction regardless of whether we deleted the user,
             // in case something changed in onBeforeDeleteUser
-            if ($transaction !== null) {
-                $transaction->commit();
-            }
+            $transaction->commit();
         } catch (\Exception $e) {
-            if ($transaction !== null) {
-                $transaction->rollback();
-            }
+            $transaction->rollback();
 
             throw $e;
         }
@@ -1159,7 +1116,7 @@ class Users extends Component
                 'userId' => $userId,
                 'message' => $message
             ], [
-                'expiryDate' => DbHelper::prepareDateForDb($expiryDate)
+                'expiryDate' => Db::prepareDateForDb($expiryDate)
             ])->execute();
 
         return (bool)$affectedRows;
@@ -1204,7 +1161,7 @@ class Users extends Component
             ], [
                 ':userId' => $userId,
                 ':message' => $message,
-                ':now' => DbHelper::prepareDateForDb(new \DateTime())
+                ':now' => Db::prepareDateForDb(new \DateTime())
             ])
             ->exists();
     }
@@ -1249,15 +1206,14 @@ class Users extends Component
                     'and',
                     'pending=1',
                     'verificationCodeIssuedDate < :pastTime'
-                ], [':pastTime' => DbHelper::prepareDateForDb($pastTime)])
+                ], [':pastTime' => Db::prepareDateForDb($pastTime)])
                 ->column();
 
             $affectedRows = Craft::$app->getDb()->createCommand()->delete('{{%elements}}',
                 ['in', 'id', $ids])->execute();
 
             if ($affectedRows > 0) {
-                Craft::info('Just deleted '.$affectedRows.' pending users from the users table, because the were more than '.$duration.' old.',
-                    __METHOD__);
+                Craft::info('Just deleted '.$affectedRows.' pending users from the users table, because the were more than '.$duration.' old.', __METHOD__);
             }
         }
     }
@@ -1278,8 +1234,7 @@ class Users extends Component
         $userRecord = UserRecord::findOne($userId);
 
         if (!$userRecord) {
-            throw new Exception(Craft::t('app',
-                'No user exists with the ID “{id}”.', ['id' => $userId]));
+            throw new Exception(Craft::t('app', 'No user exists with the ID “{id}”.', ['id' => $userId]));
         }
 
         return $userRecord;
@@ -1356,12 +1311,9 @@ class Users extends Component
         if ($passwordModel->validate()) {
             if ($forceDifferentPassword) {
                 // See if the passwords are the same.
-                if (Craft::$app->getSecurity()->validatePassword($user->newPassword,
-                    $userRecord->password)
-                ) {
+                if (Craft::$app->getSecurity()->validatePassword($user->newPassword, $userRecord->password)) {
                     $user->addErrors([
-                        $passwordErrorField => Craft::t('app',
-                            'That password is the same as your old password. Please choose a new one.'),
+                        $passwordErrorField => Craft::t('app', 'That password is the same as your old password. Please choose a new one.'),
                     ]);
                 } else {
                     $validates = true;
@@ -1379,7 +1331,7 @@ class Users extends Component
                 $this->trigger(static::EVENT_BEFORE_SET_PASSWORD, $event);
 
                 // Is the event is giving us the go-ahead?
-                $validates = $event->performAction;
+                $validates = $event->isValid;
             }
         }
 

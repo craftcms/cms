@@ -19,7 +19,7 @@ class Event extends \yii\base\Event
     // =========================================================================
 
     /**
-     * @var bool Whether the caller should go through with the action.
+     * @var boolean Whether to continue performing the action that called this event
      */
-    public $performAction = true;
+    public $isValid = true;
 }

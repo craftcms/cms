@@ -54,8 +54,8 @@ class Lightswitch extends Field
      */
     public function getSettingsHtml()
     {
-        return Craft::$app->getView()->renderTemplateMacro('_includes/forms',
-            'lightswitchField', [
+        return Craft::$app->getView()->renderTemplateMacro('_includes/forms', 'lightswitchField',
+            [
                 [
                     'label' => Craft::t('app', 'Default Value'),
                     'id' => 'default',
@@ -97,8 +97,9 @@ class Lightswitch extends Field
     /**
      * @inheritdoc
      */
-    protected function prepareValueBeforeSave($value, $element)
+    protected function isValueEmpty($value, $element)
     {
-        return (bool)$value;
+        // Lightswitch fields can never get required-field validation errors
+        return false;
     }
 }

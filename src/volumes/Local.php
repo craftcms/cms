@@ -3,10 +3,15 @@ namespace craft\app\volumes;
 
 use Craft;
 use craft\app\base\Volume;
-use craft\app\io\flysystemadapters\Local as LocalAdapter;
+use craft\app\errors\VolumeObjectExistsException;
+use craft\app\errors\VolumeObjectNotFoundException;
+use craft\app\helpers\Io;
+use League\Flysystem\Adapter\Local as LocalAdapter;
+use League\Flysystem\FileExistsException;
+use League\Flysystem\FileNotFoundException;
 
 /**
- * The local asset source type class. Handles the implementation of the local filesystem as an asset source type in
+ * The local volume class. Handles the implementation of the local filesystem as a volume in
  * Craft.
  *
  * @author     Pixel & Tonic, Inc. <support@pixelandtonic.com>
@@ -14,7 +19,7 @@ use craft\app\io\flysystemadapters\Local as LocalAdapter;
  * @license    http://buildwithcraft.com/license Craft License Agreement
  * @see        http://buildwithcraft.com
  * @package    craft.app.volumes
- * @since      1.0
+ * @since      3.0
  */
 class Local extends Volume
 {
@@ -79,9 +84,9 @@ class Local extends Volume
     public function getSettingsHtml()
     {
         return Craft::$app->getView()->renderTemplate('_components/volumes/Local/settings',
-            array(
+            [
                 'volume' => $this,
-            ));
+            ]);
     }
 
     /**
@@ -97,10 +102,24 @@ class Local extends Volume
      */
     public function getRootUrl()
     {
-        return rtrim(Craft::$app->getConfig()->parseEnvironmentString($this->url),
-            '/').'/';
+        return rtrim(Craft::$app->getConfig()->parseEnvironmentString($this->url), '/').'/';
     }
 
+    /**
+     * @inheritdoc
+     */
+    public function renameDir($path, $newName)
+    {
+        $newPath = IO::getParentFolderPath($path).$newName;
+
+        try {
+            return $this->getFilesystem()->rename($path, $newPath);
+        } catch (FileExistsException $exception) {
+            throw new VolumeObjectExistsException($exception->getMessage());
+        } catch (FileNotFoundException $exception) {
+            throw new VolumeObjectNotFoundException(Craft::t('app', 'Folder was not found while attempting to rename {path}!', array('path' => $path)));
+        }
+    }
 
     // Protected Methods
     // =========================================================================

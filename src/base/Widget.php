@@ -9,7 +9,7 @@ namespace craft\app\base;
 
 use Craft;
 use craft\app\events\Event;
-use craft\app\helpers\UrlHelper;
+use craft\app\helpers\Url;
 
 /**
  * Widget is the base class for classes representing dashboard widgets in terms of objects.
@@ -30,7 +30,7 @@ abstract class Widget extends SavableComponent implements WidgetInterface
     /**
      * @event Event The event that is triggered before the widget is saved
      *
-     * You may set [[Event::performAction]] to `false` to prevent the widget from getting saved.
+     * You may set [[Event::isValid]] to `false` to prevent the widget from getting saved.
      */
     const EVENT_BEFORE_SAVE = 'beforeSave';
 
@@ -102,7 +102,7 @@ abstract class Widget extends SavableComponent implements WidgetInterface
         $event = new Event();
         $this->trigger(self::EVENT_BEFORE_SAVE, $event);
 
-        return $event->performAction;
+        return $event->isValid;
     }
 
     /**
@@ -137,7 +137,7 @@ abstract class Widget extends SavableComponent implements WidgetInterface
     public function getBodyHtml()
     {
         return '<div style="margin: 0 -30px -30px;">'.
-        '<img style="display: block; width: 100%;" src="'.UrlHelper::getResourceUrl('images/prg.jpg').'">'.
+        '<img style="display: block; width: 100%;" src="'.Url::getResourceUrl('images/prg.jpg').'">'.
         '</div>';
     }
 

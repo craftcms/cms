@@ -11,7 +11,7 @@ use Craft;
 use craft\app\base\Element;
 use craft\app\base\ElementInterface;
 use craft\app\base\Field;
-use craft\app\helpers\JsonHelper;
+use craft\app\helpers\Json;
 use yii\db\Schema;
 
 /**
@@ -114,21 +114,18 @@ class Table extends Field
 
         Craft::$app->getView()->registerJsResource('js/TableFieldSettings.js');
         Craft::$app->getView()->registerJs('new Craft.TableFieldSettings('.
-            JsonHelper::encode(Craft::$app->getView()->namespaceInputName('columns'),
-                JSON_UNESCAPED_UNICODE).', '.
-            JsonHelper::encode(Craft::$app->getView()->namespaceInputName('defaults'),
-                JSON_UNESCAPED_UNICODE).', '.
-            JsonHelper::encode($columns, JSON_UNESCAPED_UNICODE).', '.
-            JsonHelper::encode($defaults, JSON_UNESCAPED_UNICODE).', '.
-            JsonHelper::encode($columnSettings, JSON_UNESCAPED_UNICODE).
+            Json::encode(Craft::$app->getView()->namespaceInputName('columns'), JSON_UNESCAPED_UNICODE).', '.
+            Json::encode(Craft::$app->getView()->namespaceInputName('defaults'), JSON_UNESCAPED_UNICODE).', '.
+            Json::encode($columns, JSON_UNESCAPED_UNICODE).', '.
+            Json::encode($defaults, JSON_UNESCAPED_UNICODE).', '.
+            Json::encode($columnSettings, JSON_UNESCAPED_UNICODE).
             ');');
 
-        $columnsField = Craft::$app->getView()->renderTemplateMacro('_includes/forms',
-            'editableTableField', [
+        $columnsField = Craft::$app->getView()->renderTemplateMacro('_includes/forms', 'editableTableField',
+            [
                 [
                     'label' => Craft::t('app', 'Table Columns'),
-                    'instructions' => Craft::t('app',
-                        'Define the columns your table should have.'),
+                    'instructions' => Craft::t('app', 'Define the columns your table should have.'),
                     'id' => 'columns',
                     'name' => 'columns',
                     'cols' => $columnSettings,
@@ -138,12 +135,11 @@ class Table extends Field
                 ]
             ]);
 
-        $defaultsField = Craft::$app->getView()->renderTemplateMacro('_includes/forms',
-            'editableTableField', [
+        $defaultsField = Craft::$app->getView()->renderTemplateMacro('_includes/forms', 'editableTableField',
+            [
                 [
                     'label' => Craft::t('app', 'Default Values'),
-                    'instructions' => Craft::t('app',
-                        'Define the default values for the field.'),
+                    'instructions' => Craft::t('app', 'Define the default values for the field.'),
                     'id' => 'defaults',
                     'name' => 'defaults',
                     'cols' => $columns,
@@ -177,13 +173,13 @@ class Table extends Field
     public function prepareValue($value, $element)
     {
         if (is_string($value) && !empty($value)) {
-            $value = JsonHelper::decode($value);
+            $value = Json::decode($value);
         }
 
-        if (is_array($value) && ($columns = $this->columns)) {
+        if (is_array($value) && $this->columns) {
             // Make the values accessible from both the col IDs and the handles
             foreach ($value as &$row) {
-                foreach ($columns as $colId => $col) {
+                foreach ($this->columns as $colId => $col) {
                     if ($col['handle']) {
                         $row[$col['handle']] = (isset($row[$colId]) ? $row[$colId] : null);
                     }
@@ -197,23 +193,33 @@ class Table extends Field
     /**
      * @inheritdoc
      */
-    public function getStaticHtml($value, $element)
+    public function prepareValueForDb($value, $element)
     {
-        return $this->_getInputHtml($value, $element, true);
-    }
+        if (is_array($value)) {
+            // Drop the string row keys
+            $value = array_values($value);
 
-    // Protected Methods
-    // =========================================================================
+            // Drop the column handle values
+            if ($this->columns) {
+                foreach ($value as &$row) {
+                    foreach ($this->columns as $colId => $col) {
+                        if ($col['handle']) {
+                            unset($row[$col['handle']]);
+                        }
+                    }
+                }
+            }
+        }
+
+        return parent::prepareValueForDb($value, $element);
+    }
 
     /**
      * @inheritdoc
      */
-    protected function prepareValueBeforeSave($value, $element)
+    public function getStaticHtml($value, $element)
     {
-        if (is_array($value)) {
-            // Drop the string row keys
-            return array_values($value);
-        }
+        return $this->_getInputHtml($value, $element, true);
     }
 
     // Private Methods

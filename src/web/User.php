@@ -11,8 +11,8 @@ use Craft;
 use craft\app\dates\DateInterval;
 use craft\app\helpers\DateTimeHelper;
 use craft\app\elements\User as UserElement;
-use craft\app\helpers\DbHelper;
-use craft\app\helpers\UrlHelper;
+use craft\app\helpers\Db;
+use craft\app\helpers\Url;
 use yii\web\Cookie;
 use yii\web\IdentityInterface;
 
@@ -49,7 +49,7 @@ class User extends \yii\web\User
     {
         // Set the configurable properties
         $configService = Craft::$app->getConfig();
-        $config['loginUrl'] = UrlHelper::getUrl($configService->getLoginPath());
+        $config['loginUrl'] = Url::getUrl($configService->getLoginPath());
         $config['authTimeout'] = $configService->getUserSessionDuration(false);
 
         // Set the state-based property names
@@ -307,6 +307,11 @@ class User extends \yii\web\User
 
         $this->destroyDebugPreferencesInSession();
 
+        if (Craft::$app->getConfig()->get('enableCsrfProtection')) {
+            // Let's keep the current nonce around.
+            Craft::$app->getRequest()->regenCsrfToken();
+        }
+
         parent::afterLogout($identity);
     }
 
@@ -359,8 +364,7 @@ class User extends \yii\web\User
             $request = Craft::$app->getRequest();
 
             if ($request->getUserAgent() === null || $request->getUserIP() === null) {
-                Craft::warning('Request didn’t meet the user agent and IP requirement for maintaining a user session.',
-                    __METHOD__);
+                Craft::warning('Request didn’t meet the user agent and IP requirement for maintaining a user session.', __METHOD__);
 
                 return false;
             }
@@ -410,7 +414,7 @@ class User extends \yii\web\User
 
         Craft::$app->getDb()->createCommand()
             ->delete('{{%sessions}}', 'dateUpdated < :pastTime',
-                ['pastTime' => DbHelper::prepareDateForDb($pastTime)])
+                ['pastTime' => Db::prepareDateForDb($pastTime)])
             ->execute();
     }
 }

@@ -12,7 +12,7 @@ use craft\app\base\Field;
 use craft\app\elements\db\ElementQuery;
 use craft\app\elements\db\ElementQueryInterface;
 use craft\app\helpers\DateTimeHelper;
-use craft\app\helpers\DbHelper;
+use craft\app\helpers\Db;
 use yii\db\Schema;
 
 /**
@@ -173,13 +173,11 @@ class Date extends Field
         $input = '';
 
         if ($this->showDate) {
-            $input .= Craft::$app->getView()->renderTemplate('_includes/forms/date',
-                $variables);
+            $input .= Craft::$app->getView()->renderTemplate('_includes/forms/date', $variables);
         }
 
         if ($this->showTime) {
-            $input .= ' '.Craft::$app->getView()->renderTemplate('_includes/forms/time',
-                    $variables);
+            $input .= ' '.Craft::$app->getView()->renderTemplate('_includes/forms/time', $variables);
         }
 
         return $input;
@@ -190,12 +188,11 @@ class Date extends Field
      */
     public function prepareValue($value, $element)
     {
-        if ($value) {
-            $value = DateTimeHelper::toDateTime($value,
-                Craft::$app->getTimeZone());
+        if ($value && ($date = DateTimeHelper::toDateTime($value)) !== false) {
+            return $date;
+        } else {
+            return null;
         }
-
-        return $value;
     }
 
     /**
@@ -206,20 +203,7 @@ class Date extends Field
         if ($value !== null) {
             $handle = $this->handle;
             /** @var ElementQuery $query */
-            $query->subQuery->andWhere(DbHelper::parseDateParam('content.'.Craft::$app->getContent()->fieldColumnPrefix.$handle,
-                $value, $query->subQuery->params));
+            $query->subQuery->andWhere(Db::parseDateParam('content.'.Craft::$app->getContent()->fieldColumnPrefix.$handle, $value, $query->subQuery->params));
         }
-    }
-
-    /**
-     * @inheritdoc
-     */
-    protected function prepareValueBeforeSave($value, $element)
-    {
-        if ($value) {
-            $value = DateTimeHelper::toDateTime($value);
-        }
-
-        return $value;
     }
 }

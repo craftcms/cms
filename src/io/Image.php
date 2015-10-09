@@ -9,8 +9,9 @@ namespace craft\app\io;
 
 use Craft;
 use craft\app\errors\Exception;
-use craft\app\helpers\ImageHelper;
-use craft\app\helpers\IOHelper;
+use craft\app\helpers\Image as ImageHelper;
+use craft\app\helpers\Io;
+use craft\app\helpers\StringHelper;
 use Imagine\Image\AbstractFont;
 use Imagine\Image\FontInterface;
 use Imagine\Image\ImageInterface;
@@ -146,7 +147,7 @@ class Image
     {
         $imageService = Craft::$app->getImages();
 
-        if (!IOHelper::fileExists($path)) {
+        if (!Io::fileExists($path)) {
             throw new Exception(Craft::t(
                 'app',
                 'No file exists at the path “{path}”',
@@ -161,7 +162,7 @@ class Image
             ));
         }
 
-        $extension = IOHelper::getExtension($path);
+        $extension = Io::getExtension($path);
 
         if ($extension === 'svg') {
             if (!$imageService->isImagick()) {
@@ -171,7 +172,7 @@ class Image
                 ));
             }
 
-            $svg = IOHelper::getFileContents($path);
+            $svg = Io::getFileContents($path);
 
             if ($this->minSvgWidth !== null && $this->minSvgHeight !== null) {
                 // Does the <svg> node contain valid `width` and `height` attributes?
@@ -230,7 +231,7 @@ class Image
             }
         }
 
-        $this->_extension = IOHelper::getExtension($path);
+        $this->_extension = Io::getExtension($path);
         $this->_imageSourcePath = $path;
 
         if ($this->_extension == 'gif') {
@@ -362,7 +363,7 @@ class Image
 
                 $y1 = 0;
                 $y2 = $y1 + $targetHeight;
-            } elseif ($newHeight - $targetHeight > 0) {
+            } else if ($newHeight - $targetHeight > 0) {
                 switch ($verticalPosition) {
                     case 'top': {
                         $y1 = 0;
@@ -426,8 +427,7 @@ class Image
             $this->_image = $gif;
         } else {
             $this->_image->resize(
-                new \Imagine\Image\Box($targetWidth,
-                    $targetHeight),
+                new \Imagine\Image\Box($targetWidth, $targetHeight),
                 $this->_getResizeFilter()
             );
         }
@@ -474,25 +474,21 @@ class Image
      */
     public function saveAs($targetPath, $sanitizeAndAutoQuality = false)
     {
-        $extension = IOHelper::getExtension($targetPath);
-        $options = $this->_getSaveOptions(false, $extension);
-        $targetPath = IOHelper::getFolderName(
+        $extension = Io::getExtension($targetPath);
+        $lcExtension = StringHelper::toLowerCase($extension);
+        $options = $this->_getSaveOptions(false, $lcExtension);
+        $targetPath = Io::getFolderName(
                 $targetPath
-            ).IOHelper::getFilename(
+            ).Io::getFilename(
                 $targetPath,
                 false
             ).'.'.$extension;
 
-        if (($extension == 'jpeg' || $extension == 'jpg' || $extension == 'png') && $sanitizeAndAutoQuality) {
+        if (($lcExtension == 'jpeg' || $lcExtension == 'jpg' || $lcExtension == 'png') && $sanitizeAndAutoQuality) {
             clearstatcache();
-            $originalSize = IOHelper::getFileSize($this->_imageSourcePath);
-            $this->_autoGuessImageQuality(
-                $targetPath,
-                $originalSize,
-                $extension,
-                0,
-                200
-            );
+            $originalSize = Io::getFileSize($this->_imageSourcePath);
+            $tempFile = $this->_autoGuessImageQuality($targetPath, $originalSize, $lcExtension, 0, 200);
+            Io::move($tempFile, $targetPath, true);
         } else {
             $this->_image->save($targetPath, $options);
         }
@@ -673,7 +669,7 @@ class Image
      * @param         $maxQuality
      * @param integer $step
      *
-     * @return boolean
+     * @return string $path the resulting file path
      */
     private function _autoGuessImageQuality($tempFilename, $originalSize, $extension, $minQuality, $maxQuality, $step = 0)
     {
@@ -681,9 +677,9 @@ class Image
         @set_time_limit(30);
 
         if ($step == 0) {
-            $tempFilename = IOHelper::getFolderName(
+            $tempFilename = Io::getFolderName(
                     $tempFilename
-                ).IOHelper::getFilename(
+                ).Io::getFilename(
                     $tempFilename,
                     false
                 ).'-temp.'.$extension;
@@ -704,7 +700,7 @@ class Image
             $tempFilename,
             $this->_getSaveOptions($midQuality, $extension)
         );
-        $newFileSize = IOHelper::getFileSize($tempFilename);
+        $newFileSize = Io::getFileSize($tempFilename);
 
         // If we're on step 10 OR we're within our acceptable range threshold OR midQuality = maxQuality (1 == 1),
         // let's use the current image.
@@ -715,12 +711,9 @@ class Image
             clearstatcache();
 
             // Generate one last time.
-            $this->_image->save(
-                $tempFilename,
-                $this->_getSaveOptions($midQuality)
-            );
+            $this->_image->save($tempFilename, $this->_getSaveOptions($midQuality));
 
-            return true;
+            return $tempFilename;
         }
 
         $step++;

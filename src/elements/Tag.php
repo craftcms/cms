@@ -11,7 +11,6 @@ use Craft;
 use craft\app\base\Element;
 use craft\app\base\ElementInterface;
 use craft\app\elements\db\TagQuery;
-use craft\app\models\FieldLayout;
 use craft\app\models\TagGroup;
 
 /**
@@ -102,14 +101,14 @@ class Tag extends Element
     public static function getEditorHtml(ElementInterface $element)
     {
         /** @var Tag $element */
-        $html = Craft::$app->getView()->renderTemplateMacro('_includes/forms',
-            'textField', [
+        $html = Craft::$app->getView()->renderTemplateMacro('_includes/forms', 'textField',
+            [
                 [
                     'label' => Craft::t('app', 'Title'),
                     'locale' => $element->locale,
                     'id' => 'title',
                     'name' => 'title',
-                    'value' => $element->getContent()->title,
+                    'value' => $element->title,
                     'errors' => $element->getErrors('title'),
                     'first' => true,
                     'autofocus' => true,
@@ -163,7 +162,7 @@ class Tag extends Element
     /**
      * @inheritdoc
      */
-    public function isEditable()
+    public function getIsEditable()
     {
         return true;
     }
@@ -205,9 +204,8 @@ class Tag extends Element
      */
     public function getName()
     {
-        Craft::$app->getDeprecator()->log('Tag::name',
-            'The Tag ‘name’ property has been deprecated. Use ‘title’ instead.');
+        Craft::$app->getDeprecator()->log('Tag::name', 'The Tag ‘name’ property has been deprecated. Use ‘title’ instead.');
 
-        return $this->getContent()->title;
+        return $this->title;
     }
 }
