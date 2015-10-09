@@ -10,8 +10,8 @@ namespace craft\app\controllers;
 use Craft;
 use craft\app\errors\HttpException;
 use craft\app\helpers\Image;
-use craft\app\helpers\IOHelper;
-use craft\app\helpers\UrlHelper;
+use craft\app\helpers\Io;
+use craft\app\helpers\Url;
 use craft\app\models\AssetTransform;
 use craft\app\web\Controller;
 use \craft\app\helpers\StringHelper;
@@ -154,53 +154,5 @@ class AssetTransformsController extends Controller
         Craft::$app->getAssetTransforms()->deleteTransform($transformId);
 
         return $this->asJson(['success' => true]);
-    }
-
-    /**
-     * Apply a filter to an Asset.
-     *
-     * @return Response
-     */
-    public function actionApplyFilter()
-    {
-        $this->requirePostRequest();
-        $this->requireAjaxRequest();
-
-        $filter         = Craft::$app->getRequest()->getRequiredBodyParam('filter');
-        $parameterValue = Craft::$app->getRequest()->getBodyParam('parameterValue');
-        $assetId        = Craft::$app->getRequest()->getBodyParam('assetId');
-        $imageUrl       = Craft::$app->getRequest()->getBodyParam('url');
-
-        if ($imageUrl) {
-            $parts = explode("/", UrlHelper::stripQueryString($imageUrl));
-            $localPath = Craft::$app->getPath()->getModifiedAssetsPath().'/'.IOHelper::getFilename(end($parts), true);
-        }
-        else {
-            $asset = Craft::$app->getAssets()->getFileById($assetId);
-
-            if (!$asset) {
-                return $this->asErrorJson(Craft::t('app', "Could not find Asset with the id of {id}", ['id' => $assetId]));
-            }
-
-            $localPath = $asset->getTransformSource();
-        }
-
-        $extension = IOHelper::getExtension($localPath);
-
-        if ($extension == 'svg') {
-            $extension = 'png';
-        }
-
-        $filename = StringHelper::randomString(15).'.'.$extension;
-        $targetPath = Craft::$app->getPath()->getModifiedAssetsPath().'/'.$filename;
-
-        try {
-            Craft::$app->getImages()->loadImage($localPath)->applyFilter($filter, $parameterValue)->saveAs($targetPath);
-        }
-        catch (\Exception $exception) {
-            return $this->asErrorJson($exception->getMessage());
-        }
-
-        return $this->asJson(['success' => true, 'url' => UrlHelper::getResourceUrl('modified-assets/'.$filename)]);
     }
 }

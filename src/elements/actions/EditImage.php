@@ -9,7 +9,7 @@ namespace craft\app\elements\actions;
 
 use Craft;
 use craft\app\base\ElementAction;
-use craft\app\helpers\JsonHelper;
+use craft\app\helpers\Json;
 
 /**
  * EditImage represents an Edit Image action
@@ -64,7 +64,7 @@ class EditImage extends ElementAction
      */
     public function getTriggerHtml()
     {
-        $type = JsonHelper::encode(static::className());
+        $type = Json::encode(static::className());
 
         $js = <<<EOT
 (function()
