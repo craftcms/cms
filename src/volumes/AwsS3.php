@@ -239,7 +239,6 @@ class AwsS3 extends Volume
             // If there's a CloudFront distribution ID set, invalidate the path.
             $cfClient = $this->_getCloudFrontClient();
 
-            // TODO: Can this trigger an error if path does not exist?
             $cfClient->createInvalidation(
                 [
                     'DistributionId' => $this->cfDistributionId,
