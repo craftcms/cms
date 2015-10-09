@@ -10,3 +10,5 @@ body.rtl #action-spinner { left: 0; }
 #verifypasswordmodal .buttons .spinner { position: absolute; top: 0; margin-top: 0; }
 body.ltr #verifypasswordmodal .buttons .spinner { right: -19px; }
 body.rtl #verifypasswordmodal .buttons .spinner { left: -19px; }
+
+/*# sourceMappingURL=account.css.map */
