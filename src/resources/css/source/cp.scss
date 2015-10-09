@@ -76,7 +76,7 @@ html { overflow-y: scroll; }
 #nav li { @include floatleft; height: 47px; }
 #nav li a { display: block; margin: 0; padding: 10px 10px 7px 10px; line-height: 28px; height: 47px; @include box-sizing(border-box); }
 #nav li a.active { color: #fff; }
-#nav li a.sel { position: relative; z-index: 1; border-radius: 3px 3px 0 0; color: #fff; border-bottom: 2px solid $submitcolor; }
+#nav li a.sel { position: relative; z-index: 1; color: #fff; border-bottom: 2px solid $submitcolor; }
 #nav li a:not(.sel) .badge { color: #333 !important; }
 #nav li a.menubtn { line-height: 26px; }
 
@@ -137,16 +137,15 @@ html { overflow-y: scroll; }
 .tabs:after { @include clearafter; }
 .tabs .tab { display: block; padding: 9px 10px; color: #777; white-space: nowrap; }
 .tabs .tab:hover { text-decoration: none; color: $linkcolor; }
-.tabs .tab.sel { border-radius: 3px 3px 0 0; color: $textcolor; cursor: default; }
+.tabs .tab.sel { color: #000; padding-bottom: 7px; border-bottom: 2px solid $linkcolor; cursor: default; }
 
-.pane > .tabs { margin: -24px -24px 24px; padding: 0 14px; font-size: 0; overflow: hidden;
+.pane > .tabs { margin: -24px -24px 24px; padding: 0 24px; font-size: 0; overflow: hidden;
 	@include linear-gradient(hsl($hue, 8%, 97%), hsl($hue, 8%, 96%));
 	@include box-shadow(inset 0 -1px 0 rgba(0,0,0,0.05));
 }
 .pane > .tabs li { display: inline-block; font-size: 13px; }
 .pane > .tabs li a { color: #555; }
 .pane > .tabs li a:not(.sel):hover { color: $linkcolor; }
-.pane > .tabs li .tab.sel { @include pane; }
 
 /* grids */
 .grid { position: relative; margin: 23px -7px; }
