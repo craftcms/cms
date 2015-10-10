@@ -116,6 +116,17 @@ class ConsoleApp extends \CConsoleApplication
 	}
 
 	/**
+	 * Returns the system time zone.  Note that this method cannot be in {@link AppBehavior}, because Yii will check
+	 * {@link \CApplication::getTimeZone()} instead.
+	 *
+	 * @return string
+	 */
+	public function getTimeZone()
+	{
+		return $this->asa('AppBehavior')->getTimezone();
+	}
+
+	/**
 	 * Attaches an event handler, or remembers it for later if the component has not been initialized yet.
 	 *
 	 * The event should be identified in a `serviceHandle.eventName` format. For example, if you want to add an event
