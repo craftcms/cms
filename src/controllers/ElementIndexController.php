@@ -179,12 +179,38 @@ class ElementIndexController extends BaseElementsController
 		$actionCriteria->positionedBefore = null;
 		$actionCriteria->id = $elementIds;
 
-		$success = $action->performAction($actionCriteria);
+		// Fire an 'onBeforePerformAction' event
+		$event = new ElementActionEvent($this, array(
+			'action'   => $action,
+			'criteria' => $actionCriteria
+		));
+
+		craft()->elements->onBeforePerformAction($event);
+
+		if ($event->performAction)
+		{
+			$success = $action->performAction($actionCriteria);
+			$message = $action->getMessage();
+
+			if ($success)
+			{
+				// Fire an 'onPerformAction' event
+				craft()->elements->onPerformAction(new Event($this, array(
+					'action'   => $action,
+					'criteria' => $actionCriteria
+				)));
+			}
+		}
+		else
+		{
+			$success = false;
+			$message = $event->message;
+		}
 
 		// Respond
 		$responseData = array(
 			'success' => $success,
-			'message' => $action->getMessage(),
+			'message' => $message
 		);
 
 		if ($success)
