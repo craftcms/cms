@@ -519,19 +519,39 @@ class AssetsController extends Controller
         $assetId = Craft::$app->getRequest()->getRequiredBodyParam('assetId');
         $image = Craft::$app->getAssets()->getFileById($assetId);
 
+        $url    = $image->getUrl();
+        $height = $image->getHeight();
+        $width  = $image->getWidth();
+
+        if (max($image->height, $image->width) > 800) {
+            $targetPath = Craft::$app->getPath()->getAssetsEditorCopiesPath().'/'.$image->id.'.'.$image->getExtension();
+
+            if (!Io::fileExists($targetPath)) {
+                $resized = Craft::$app->getImages()->loadImage($image->getTransformSource())
+                    ->scaleToFit(800, 800);
+
+                $height = $resized->getHeight();
+                $width = $resized->getWidth();
+                $resized->saveAs($targetPath);
+            }
+
+            $url = Url::getResourceUrl('editimage/'.$image->id.'.'.$image->getExtension());
+        }
+
         if ($image->kind == "image") {
             $output['html'] = Craft::$app->getView()->renderTemplate('_components/tools/image_editor',
                 ['image' => $image]
             );
             $output['imageData'] = [
-                'height' => $image->height,
-                'width'  => $image->width,
-                'url'    => $image->getUrl()
+                'height' => $height,
+                'width ' => $width,
+                'url'    => $url
             ];
 
             return $this->asJson($output);
         }
-        return $this->asErrorJson(Craft::t('app', 'That Asset is not an image.'));
+        return $this->asErrorJson(Craft::t('app',
+            'That Asset is not an image.'));
     }
 }
 

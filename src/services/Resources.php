@@ -175,10 +175,10 @@ class Resources extends Component
                     return Craft::$app->getPath()->getAssetsTempSourcePath().'/'.implode('/', $segs);
                 }
 
-                case 'modified-assets': {
+                case 'editimage': {
                     array_shift($segs);
 
-                    return Craft::$app->getPath()->getModifiedAssetsPath().'/'.implode('/',
+                    return Craft::$app->getPath()->getAssetsEditorCopiesPath().'/'.implode('/',
                         $segs);
                 }
 

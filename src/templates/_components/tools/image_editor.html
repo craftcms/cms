@@ -1,34 +1,29 @@
+<div class="image-tools">
+    <div class="tool-groups">
+        <ul>
+            <li><a data-group="crop" class="sel">{{ "Crop"|t }}</a></li>
+            <li><a data-group="rotate">{{ "Rotate"|t }}</a></li>
+            <li><a data-group="enhance">{{ "Enhance"|t }}</a></li>
+        </ul>
+    </div>
+    <div class="tools">
+        <div class="crop group sel">
+            Cropping stuff
+        </div>
+        <div class="rotate group">
+            <ul>
+                <li><a class="rotate clockwise">{{ "Rotate clockwise"|t('app') }}</a></li>
+                <li><a class="rotate counter-clockwise">{{ "Rotate counterclockwise"|t('app') }}</a></li>
+            </ul>
+            <input class="straighten" type="range" min="-45" max="45" step="0.1" value="0" /><br />
+            <a class="rotate reset">{{ "Reset" }}</a>
+        </div>
+        <div class="enhance group">
+            Enhance
+        </div>
+    </div>
+</div>
 <div class="image-holder">
     <canvas id="image-manipulator">
     </canvas>
-</div>
-<div class="image-tools">
-    <section>
-        <div class="section-title">{{ "Rotation"|t('app') }}</div>
-        <ul>
-            <li><a class="rotate clockwise">{{ "Rotate clockwise"|t('app') }}</a></li>
-            <li><a class="rotate counter-clockwise">{{ "Rotate counterclockwise"|t('app') }}</a></li>
-        </ul>
-        <input class="straighten" type="range" min="-45" max="45" step="0.1" value="0" /><br />
-        <a class="rotate reset">{{ "Reset" }}</a>
-    </section>
-    <hr />
-    <section>
-        <div class="section-title">{{ "Cropping"|t('app') }}</div>
-        <ul>
-            <li><a class="crop cropping-tool">{{ "Crop image"|t('app') }}</a></li>
-            <li><a class="crop focal-point">{{ "Set crop focal point"|t('app') }}</a></li>
-        </ul>
-    </section>
-    <hr />
-    <section>
-        <div class="section-title"><label for="filter">{{ "Filters"|t('app') }}</label></div>
-
-        <select name="filter" id="filter">
-            <option value="">None</option>
-            <option value="grayscale" data-has-parameter="no">Grayscale</option>
-            <option value="blur" data-has-parameter="yes">Blur</option>
-        </select>
-        <div id="filter-control-container"></div>
-    </section>
 </div>
