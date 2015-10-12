@@ -935,6 +935,7 @@ class UsersController extends Controller
             $this->requirePermission('editUsers');
         }
 
+        // TODO stop accessing $_FILES array.
         // Upload the file and drop it in the temporary folder
         $file = $_FILES['image-upload'];
 
