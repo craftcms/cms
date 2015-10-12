@@ -21,7 +21,7 @@ use craft\app\helpers\Io;
 use craft\app\helpers\Json;
 use craft\app\helpers\Template;
 use craft\app\helpers\Url;
-use craft\app\io\Image;
+use craft\app\base\Image;
 use craft\app\models\Password as PasswordModel;
 use craft\app\elements\User;
 use craft\app\records\User as UserRecord;

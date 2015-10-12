@@ -14,7 +14,7 @@ use craft\app\helpers\Io;
 use craft\app\helpers\StringHelper;
 use craft\app\image\Raster;
 use craft\app\image\Svg;
-use craft\app\io\Image;
+use craft\app\base\Image;
 use yii\base\Component;
 
 /**
@@ -245,7 +245,7 @@ class Images extends Component
             return null;
         }
 
-        $image = new Image();
+        $image = new Raster();
 
         return $image->getExifMetadata($filePath);
     }
