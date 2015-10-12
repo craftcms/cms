@@ -1,4 +1,4 @@
-/*! Craft 3.0.0 - 2015-10-09 */
+/*! Craft 3.0.0 - 2015-10-12 */
 (function($){
 
 if (typeof window.Craft == 'undefined')
@@ -4708,13 +4708,11 @@ Craft.AdminTable = Garnish.Base.extend(
  * Asset image editor class
  */
 
-//TODO go over the logic and think on it - it definitely can be optimised and simplified. Especially undo/redo
 Craft.AssetImageEditor = Garnish.Modal.extend(
 	{
 		assetId: 0,
 
 		imageUrl: "",
-		originalImageUrl: "",
 
 		// Original parameters for reference
 		originalImageHeight: 0,
@@ -4765,7 +4763,6 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 			this.imageWidth = 0;
 			this.originalImageHeight = 0;
 			this.originalImageWidth = 0;
-			this.originalImageUrl = "";
 			this.imageUrl = "";
 			this.aspectRatio = 0;
 			this.canvasImageHeight = 0;
@@ -4811,10 +4808,9 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 			this.$body.html(data.html);
 			this.canvas = this.$body.find('canvas')[0];
 			this.canvasContext = this.canvas.getContext("2d");
-
+			this.imageUrl = data.imageData.url;
 			this.imageHeight = this.originalImageHeight = data.imageData.height;
 			this.imageWidth = this.originalImageWidth = data.imageData.width;
-			this.originalImageUrl = this.imageUrl = data.imageData.url;
 			this.aspectRatio = this.imageHeight / this.imageWidth;
 			this.initImage(this.imageUrl, $.proxy(this, 'updateSizeAndPosition'));
 			this.addListeners();
@@ -4869,7 +4865,8 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 				availableWidth = Garnish.$win.width() - (5 * this.paddingSize) - this.$container.find('.image-tools').outerWidth();
 
 			// Make the image holder area square, so we can rotate the image it comfortably.
-			var imageHolderSize = Math.max(parseInt(this.$container.find('.image-tools').css('min-height'), 10), Math.min(availableHeight, availableWidth));
+			// It should be the largest dimension that does not exceed the available space and image dimensions.
+			var imageHolderSize = Math.max(parseInt(this.$container.find('.image-tools').css('min-height'), 10), Math.min(availableHeight, availableWidth, Math.max(this.originalImageHeight, this.originalImageWidth) ));
 
 			// Calculate the container dimensions
 			var containerWidth = imageHolderSize + this.$container.find('.image-tools').outerWidth() + (3 * this.paddingSize),
@@ -4880,7 +4877,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 
 			this.canvasImageHeight = this.canvasImageWidth = imageHolderSize;
 
-			this.$container.find('.image-tools').height(imageHolderSize + (2 * this.paddingSize));
+			this.$container.find('.image-tools').height(imageHolderSize + (1 * this.paddingSize));
 
 			// Re-center.
 			this.$container.css('left', Math.round((Garnish.$win.width() - containerWidth) / 2));
@@ -4961,6 +4958,14 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 		},
 
 		addListeners: function () {
+			// Navigation controls
+
+			this.$container.find('.tool-groups a').on('click', $.proxy(function (ev) {
+				this.$container.find('.tool-groups a').removeClass('sel');
+				var group = $(ev.currentTarget).addClass('sel').data('group');
+				this.$container.find('div.group.' + group).addClass('sel').siblings('div.group').removeClass('sel');
+			}, this));
+
 			// Rotation controls
 			this.$container.find('a.rotate.clockwise').on('click', $.proxy(function () {
 				if (!this.animationInProgress) {
@@ -5019,47 +5024,6 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 				return false;
 			}, this));
 
-			// Filters
-			this.$container.find('#filter').on('change', $.proxy(function (ev) {
-				var $paramContainer = this.$container.find('#filter-control-container').empty(),
-					$opt = $(ev.currentTarget).find(':selected');
-
-				if ($opt.attr('value')) {
-					$paramContainer.html('<br />');
-
-					if ($opt.data('has-parameter') == "yes") {
-						var $input = $('<input id="filterParameter" type="number" placeholder="0..255" />').on('keyup', $.proxy(function (ev) {
-							if (parseFloat($(ev.currentTarget).val())) {
-								$paramContainer.find('.btn.apply-filter').removeClass('disabled');
-							}
-							else {
-								$paramContainer.find('.btn.apply-filter').addClass('disabled');
-							}
-
-						}, this));
-
-						$paramContainer.append($input);
-					}
-
-					$paramContainer.append($('<div class="buttons leftalign"><div class="btn submit apply-filter">' + Craft.t('Apply') + '</div></div>'));
-
-					var $applyButton = $paramContainer.find('.btn.apply-filter');
-
-					if ($opt.data('has-parameter') == "yes") {
-						$applyButton.addClass('disabled');
-					}
-
-					$applyButton.on('click', $.proxy(function (ev) {
-						if ($applyButton.hasClass('disabled')) {
-							return false;
-						}
-
-						this._applyFilter($opt.attr('value'), typeof $input != "undefined" ? $input.val() : null);
-						$applyButton.addClass('disabled');
-						return true;
-					}, this));
-				}
-			}, this));
 		},
 
 		removeListeners: function () {
@@ -5434,16 +5398,11 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 
 			return {w: w, h: h};
 		},
-
-		_applyFilter: function (filterName, parameter) {
-			this.$container.find('.btn.apply-filter').removeClass('disabled').end().find('.spinner').remove();
-		}
-
 	},
 	{
 		defaults: {
 			resizable: false,
-			shadeClass: "assetEditor"
+			shadeClass: "modal-shade asset-editor"
 		}
 	}
 );

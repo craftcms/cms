@@ -2,23 +2,37 @@
 .modal.asset-editor { min-height: 410px !important; min-width: 500px !important; }
 .modal.asset-editor .body { padding-top: 0; padding-bottom: 0; }
 .modal.asset-editor .body .image-holder { padding-top: 24px; padding-bottom: 24px; position: relative; }
-body.ltr .modal.asset-editor .body .image-holder { padding-left: 0; }
-body.rtl .modal.asset-editor .body .image-holder { padding-right: 0; }
 body.ltr .modal.asset-editor .body .image-holder { padding-right: 24px; }
 body.rtl .modal.asset-editor .body .image-holder { padding-left: 24px; }
-body.ltr .modal.asset-editor .body .image-holder { float: left; }
-body.rtl .modal.asset-editor .body .image-holder { float: right; }
+body.ltr .modal.asset-editor .body .image-holder { float: right; }
+body.rtl .modal.asset-editor .body .image-holder { float: left; }
 .modal.asset-editor .body .image-holder #image-manipulator { overflow: hidden; position: absolute; }
-.modal.asset-editor .body .image-tools { width: 151px; min-height: 352px; }
-body.ltr .modal.asset-editor .body .image-tools { float: right; }
-body.rtl .modal.asset-editor .body .image-tools { float: left; }
-body.ltr .modal.asset-editor .body .image-tools { padding-left: 24px; }
-body.rtl .modal.asset-editor .body .image-tools { padding-right: 24px; }
-body.ltr .modal.asset-editor .body .image-tools { border-left: 1px solid rgba(0, 0, 0, 0.1); }
-body.rtl .modal.asset-editor .body .image-tools { border-right: 1px solid rgba(0, 0, 0, 0.1); }
-.modal.asset-editor .body .image-tools section:first-child { margin-top: 24px; }
-.modal.asset-editor .body > .spinner.big { margin: 151px auto 0; display: block; }
+.modal.asset-editor .body .image-tools { margin-top: 24px; width: 300px; min-height: 352px; }
+body.ltr .modal.asset-editor .body .image-tools { float: left; }
+body.rtl .modal.asset-editor .body .image-tools { float: right; }
+.modal.asset-editor .body .image-tools .tool-groups { width: 126px; }
+body.ltr .modal.asset-editor .body .image-tools .tool-groups { float: left; }
+body.rtl .modal.asset-editor .body .image-tools .tool-groups { float: right; }
+body.ltr .modal.asset-editor .body .image-tools .tool-groups { padding-right: 24px; }
+body.rtl .modal.asset-editor .body .image-tools .tool-groups { padding-left: 24px; }
+.modal.asset-editor .body .image-tools .tool-groups li a { display: block; color: #29323d; -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none; outline: none; padding: 4px 0; }
+body.ltr .modal.asset-editor .body .image-tools .tool-groups li a { padding-left: 24px; }
+body.rtl .modal.asset-editor .body .image-tools .tool-groups li a { padding-right: 24px; }
+body.ltr .modal.asset-editor .body .image-tools .tool-groups li a { margin-left: -24px; }
+body.rtl .modal.asset-editor .body .image-tools .tool-groups li a { margin-right: -24px; }
+.modal.asset-editor .body .image-tools .tool-groups li a:hover { text-decoration: none; color: #0d78f2; }
+.modal.asset-editor .body .image-tools .tool-groups li a.sel { background: #737f8c; cursor: default; color: #fff; }
+body.ltr .modal.asset-editor .body .image-tools .tool-groups li a.sel { border-radius: 0 2px 2px 0; }
+body.rtl .modal.asset-editor .body .image-tools .tool-groups li a.sel { border-radius: 2px 0 0 2px; }
+.modal.asset-editor .body .image-tools .tools { width: 126px; }
+body.ltr .modal.asset-editor .body .image-tools .tools { float: left; }
+body.rtl .modal.asset-editor .body .image-tools .tools { float: right; }
+body.ltr .modal.asset-editor .body .image-tools .tools { padding-right: 24px; }
+body.rtl .modal.asset-editor .body .image-tools .tools { padding-left: 24px; }
+.modal.asset-editor .body .image-tools .tools input { outline: none; box-shadow: none; border-color: transparent; }
+.modal.asset-editor .body .image-tools .tools .group { display: none; }
+.modal.asset-editor .body .image-tools .tools .group.sel { display: block; }
 
-.modal-shade.assetEditor { background: rgba(0, 0, 0, 0.75); }
+.modal-shade.asset-editor { background: rgba(0, 0, 0, 0.75); }
 
 /*# sourceMappingURL=image_editor.css.map */
