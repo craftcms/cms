@@ -19,6 +19,7 @@ use craft\app\fields\Assets as AssetsField;
 use craft\app\helpers\Assets;
 use craft\app\helpers\Io;
 use craft\app\elements\Asset;
+use craft\app\helpers\Url;
 use craft\app\models\VolumeFolder;
 use craft\app\web\Controller;
 use craft\app\web\Response;
@@ -559,14 +560,13 @@ class AssetsController extends Controller
             $targetPath = Craft::$app->getPath()->getAssetsEditorCopiesPath().'/'.$image->id.'.'.$image->getExtension();
 
             if (!Io::fileExists($targetPath)) {
-                $resized = Craft::$app->getImages()->loadImage($image->getTransformSource())
-                    ->scaleToFit(800, 800);
-
-                $height = $resized->getHeight();
-                $width = $resized->getWidth();
-                $resized->saveAs($targetPath);
+                Craft::$app->getImages()->loadImage($image->getTransformSource())->scaleToFit(800,
+                    800)->saveAs($targetPath);
             }
 
+            $resized = Craft::$app->getImages()->loadImage($targetPath);
+            $width = $resized->getWidth();
+            $height = $resized->getHeight();
             $url = Url::getResourceUrl('editimage/'.$image->id.'.'.$image->getExtension());
         }
 
@@ -576,7 +576,7 @@ class AssetsController extends Controller
             );
             $output['imageData'] = [
                 'height' => $height,
-                'width ' => $width,
+                'width' => $width,
                 'url' => $url
             ];
 
