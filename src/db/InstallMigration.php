@@ -7,7 +7,7 @@
 
 namespace craft\app\db;
 
-use craft\app\helpers\Migration;
+use craft\app\helpers\Migration as MigrationHelper;
 
 /**
  * InstallMigration is the base class for installation migration classes.
@@ -90,7 +90,7 @@ abstract class InstallMigration extends Migration
         $tableNames = array_keys($this->defineSchema());
 
         foreach ($tableNames as $tableName) {
-            Migration::dropTable($tableName, $this);
+            MigrationHelper::dropTable($tableName, $this);
         }
     }
 
