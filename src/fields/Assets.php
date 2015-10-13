@@ -346,7 +346,7 @@ class Assets extends BaseRelationField
 
                 // Resolve all conflicts by keeping both
                 foreach ($assetsToMove as $asset) {
-                    $conflictingAsset = Craft::$app->getAssets()->findFile([
+                    $conflictingAsset = Craft::$app->getAssets()->findAsset([
                         'filename' => $asset->filename,
                         'folderId' => $targetFolder->id
                     ]);
@@ -379,7 +379,7 @@ class Assets extends BaseRelationField
             $allowedExtensions = $this->_getAllowedExtensions($this->allowedKinds);
 
             foreach ($value as $fileId) {
-                $file = Craft::$app->getAssets()->getFileById($fileId);
+                $file = Craft::$app->getAssets()->getAssetById($fileId);
 
                 if ($file && !in_array(mb_strtolower(Io::getExtension($file->filename)),
                         $allowedExtensions)

@@ -76,10 +76,10 @@ class AssetsController extends Controller
                 // When resolving a conflict, $fileId is the id of the file that was created
                 // and is conflicting with an existing file.
                 if ($conflictResolution == 'replace') {
-                    $fileToReplaceWith = Craft::$app->getAssets()->getFileById($fileId);
+                    $fileToReplaceWith = Craft::$app->getAssets()->getAssetById($fileId);
 
                     $filename = Assets::prepareAssetName(Craft::$app->getRequest()->getRequiredBodyParam('filename'));
-                    $fileToReplace = Craft::$app->getAssets()->findFile(array(
+                    $fileToReplace = Craft::$app->getAssets()->findAsset(array(
                         'filename' => $filename,
                         'folderId' => $fileToReplaceWith->folderId
                     ));
@@ -88,7 +88,7 @@ class AssetsController extends Controller
                         $fileToReplaceWith);
                 } else {
                     if ($conflictResolution == 'cancel') {
-                        Craft::$app->getAssets()->deleteFilesByIds($fileId);
+                        Craft::$app->getAssets()->deleteAssetsByIds($fileId);
                     }
                 }
 
@@ -323,7 +323,7 @@ class AssetsController extends Controller
 
         // TODO permission checks
         try {
-            $asset = Craft::$app->getAssets()->getFileById($fileId);
+            $asset = Craft::$app->getAssets()->getAssetById($fileId);
 
             if (empty($asset)) {
                 throw new AssetMissingException(Craft::t('app',
@@ -337,7 +337,7 @@ class AssetsController extends Controller
             } else {
                 if ($asset->folderId != $folderId) {
                     if (!empty($conflictResolution)) {
-                        $conflictingAsset = Craft::$app->getAssets()->findFile([
+                        $conflictingAsset = Craft::$app->getAssets()->findAsset([
                             'filename' => $asset->filename,
                             'folderId' => $folderId
                         ]);
@@ -428,7 +428,7 @@ class AssetsController extends Controller
                     // Get the file transfer list.
                     $allSourceFolderIds = array_keys($sourceTree);
                     $allSourceFolderIds[] = $folderToMoveId;
-                    $assets = Craft::$app->getAssets()->findFiles(['folderId' => $allSourceFolderIds]);
+                    $assets = Craft::$app->getAssets()->findAssets(['folderId' => $allSourceFolderIds]);
                     $fileTransferList = Assets::getFileTransferList($assets,
                         $folderIdChanges, $conflictResolution == 'merge');
                 }
@@ -467,7 +467,7 @@ class AssetsController extends Controller
                 // Get file transfer list for the progress bar
                 $allSourceFolderIds = array_keys($sourceTree);
                 $allSourceFolderIds[] = $folderToMoveId;
-                $assets = Craft::$app->getAssets()->findFiles(['folderId' => $allSourceFolderIds]);
+                $assets = Craft::$app->getAssets()->findAssets(['folderId' => $allSourceFolderIds]);
                 $fileTransferList = Assets::getFileTransferList($assets,
                     $folderIdChanges, $conflictResolution == 'merge');
             }
@@ -499,7 +499,7 @@ class AssetsController extends Controller
         if (empty($transformId)) {
             $fileId = Craft::$app->getRequest()->getBodyParam('fileId');
             $handle = Craft::$app->getRequest()->getBodyParam('handle');
-            $fileModel = Craft::$app->getAssets()->getFileById($fileId);
+            $fileModel = Craft::$app->getAssets()->getAssetById($fileId);
             $transformIndexModel = Craft::$app->getAssetTransforms()->getTransformIndex($fileModel,
                 $handle);
         } else {
@@ -550,7 +550,7 @@ class AssetsController extends Controller
         $this->requireAjaxRequest();
         $this->requireAdmin();
         $assetId = Craft::$app->getRequest()->getRequiredBodyParam('assetId');
-        $image = Craft::$app->getAssets()->getFileById($assetId);
+        $image = Craft::$app->getAssets()->getAssetById($assetId);
 
         $url = $image->getUrl();
         $height = $image->getHeight();
