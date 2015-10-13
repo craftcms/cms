@@ -1,19 +1,23 @@
-if (!RedactorPlugins) var RedactorPlugins = {};
-
 (function($)
 {
-	RedactorPlugins.video = function()
+	$.Redactor.prototype.video = function()
 	{
 		return {
 			reUrlYoutube: /https?:\/\/(?:[0-9A-Z-]+\.)?(?:youtu\.be\/|youtube\.com\S*[^\w\-\s])([\w\-]{11})(?=[^\w\-]|$)(?![?=&+%\w.-]*(?:['"][^<>]*>|<\/a>))[?=&+%\w.-]*/ig,
 			reUrlVimeo: /https?:\/\/(www\.)?vimeo.com\/(\d+)($|\/)/,
+			langs: {
+				en: {
+					"video": "Video",
+					"video-html-code": "Video Embed Code or Youtube/Vimeo Link"
+				}
+			},
 			getTemplate: function()
 			{
 				return String()
-				+ '<section id="redactor-modal-video-insert">'
-					+ '<label>' + this.lang.get('video_html_code') + '</label>'
+				+ '<div class="modal-section" id="redactor-modal-video-insert">'
+					+ '<label>' + this.lang.get('video-html-code') + '</label>'
 					+ '<textarea id="redactor-insert-video-area" style="height: 160px;"></textarea>'
-				+ '</section>';
+				+ '</div>';
 			},
 			init: function()
 			{
@@ -27,10 +31,9 @@ if (!RedactorPlugins) var RedactorPlugins = {};
 				this.modal.load('video', this.lang.get('video'), 700);
 				this.modal.createCancelButton();
 
-				var button = this.modal.createActionButton(this.lang.get('insert'));
-				button.on('click', this.video.insert);
+				// action button
+				this.modal.createActionButton(this.lang.get('insert')).on('click', this.video.insert);
 
-				this.selection.save();
 				this.modal.show();
 
 				$('#redactor-insert-video-area').focus();
@@ -58,18 +61,16 @@ if (!RedactorPlugins) var RedactorPlugins = {};
 					}
 				}
 
-				this.selection.restore();
 				this.modal.close();
+				this.placeholder.remove();
 
-				var current = this.selection.getBlock() || this.selection.getCurrent();
+				// buffer
+				this.buffer.set();
 
-				if (current) $(current).after(data);
-				else
-				{
-					this.insert.html(data);
-				}
+				// insert
+				this.air.collapsed();
+				this.insert.html(data);
 
-				this.code.sync();
 			}
 
 		};
