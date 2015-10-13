@@ -78,12 +78,12 @@ class Assets extends Component
     /**
      * @event AssetEvent The event that is triggered before an asset is replaced.
      */
-    const EVENT_BEFORE_REPLACE_FILE = 'beforeReplaceFile';
+    const EVENT_BEFORE_REPLACE_ASSET = 'beforeReplaceFile';
 
     /**
      * @event AssetEvent The event that is triggered after an asset is replaced.
      */
-    const EVENT_AFTER_REPLACE_FILE = 'afterReplaceFile';
+    const EVENT_AFTER_REPLACE_ASSET = 'afterReplaceFile';
 
     /**
      * @event AssetEvent The event that is triggered before an asset is deleted.
@@ -125,14 +125,14 @@ class Assets extends Component
     /**
      * Returns a file by its ID.
      *
-     * @param             $fileId
+     * @param             $assetId
      * @param string|null $localeId
      *
      * @return Asset|null
      */
-    public function getFileById($fileId, $localeId = null)
+    public function getAssetById($assetId, $localeId = null)
     {
-        return Craft::$app->getElements()->getElementById($fileId,
+        return Craft::$app->getElements()->getElementById($assetId,
             Asset::className(), $localeId);
     }
 
@@ -143,35 +143,35 @@ class Assets extends Component
      *
      * @return Asset|null
      */
-    public function findFile($criteria = null)
+    public function findAsset($criteria = null)
     {
-        $query = $this->_createFileQuery($criteria);
+        $query = $this->_createAssetQuery($criteria);
 
         return $query->one();
     }
 
     /**
-     * Finds all files that matches the given criteria.
+     * Finds all assets that matches the given criteria.
      *
      * @param mixed $criteria
      *
      * @return array|null
      */
-    public function findFiles($criteria = null)
+    public function findAssets($criteria = null)
     {
-        $query = $this->_createFileQuery($criteria);
+        $query = $this->_createAssetQuery($criteria);
 
         return $query->all();
     }
 
     /**
-     * Gets the total number of files that match a given criteria.
+     * Gets the total number of assets that match a given criteria.
      *
      * @param mixed $criteria
      *
      * @return integer
      */
-    public function getTotalFiles($criteria = null)
+    public function getTotalAssets($criteria = null)
     {
         if ($criteria instanceof AssetQuery) {
             $query = $criteria;
@@ -186,7 +186,7 @@ class Assets extends Component
      * Save an Asset.
      *
      * Saves an Asset. If the 'newFilePath' property is set, will replace the existing file.
-     * For new files, this property MUST bet set.
+     * For new assets, this property MUST bet set.
      *
      * @param Asset $asset
      *
@@ -194,7 +194,7 @@ class Assets extends Component
      * @throws FileException                     If there was a problem with the actual file.
      * @throws AssetConflictException            If a file with such name already exists.
      * @throws AssetLogicException               If something violates Asset's logic (e.g. Asset outside of a folder).
-     * @throws VolumeObjectExistsException         If the file actually exists on the volume, but on in the index.
+     * @throws VolumeObjectExistsException       If the file actually exists on the volume, but on in the index.
      * @throws UploadFailedException             If for some reason it's not possible to write the file to the final location
      * @return void
      */
@@ -220,7 +220,7 @@ class Assets extends Component
                 ['extension' => $extension]));
         }
 
-        $existingAsset = $this->findFile([
+        $existingAsset = $this->findAsset([
             'filename' => $asset->filename,
             'folderId' => $asset->folderId
         ]);
@@ -303,55 +303,55 @@ class Assets extends Component
     /**
      * Replaces an Asset with another.
      *
-     * @param Asset $fileToReplace
-     * @param Asset $fileToReplaceWith
+     * @param Asset $assetToReplace
+     * @param Asset $assetToReplaceWith
      * @param boolean $mergeAssets whether to replace content as well.
      *
      * @return void
      */
     public function replaceAsset(
-        Asset $fileToReplace,
-        Asset $fileToReplaceWith,
+        Asset $assetToReplace,
+        Asset $assetToReplaceWith,
         $mergeAssets = false
     ) {
-        $targetVolume = $fileToReplace->getVolume();
+        $targetVolume = $assetToReplace->getVolume();
 
         // TODO purge cached files for remote Volumes.
 
         // Clear all thumb and transform data
-        if (Image::isImageManipulatable($fileToReplace->getExtension())) {
-            Craft::$app->getAssetTransforms()->deleteAllTransformData($fileToReplace);
+        if (Image::isImageManipulatable($assetToReplace->getExtension())) {
+            Craft::$app->getAssetTransforms()->deleteAllTransformData($assetToReplace);
         }
 
-        // Handle things differently depening on whether that's an upload or a file move.
+        // Handle things differently depending on whether that's an upload or an asset move.
         if ($mergeAssets) {
-            Craft::$app->getElements()->mergeElementsByIds($fileToReplace->id,
-                $fileToReplaceWith->id);
+            Craft::$app->getElements()->mergeElementsByIds($assetToReplace->id,
+                $assetToReplaceWith->id);
 
-            // Replace the file - delete the conflicting file and move the file in it's place.
-            $targetVolume->deleteFile($fileToReplace->getUri());
-            $this->_moveFileToFolder($fileToReplaceWith,
-                $fileToReplace->getFolder());
+            // Replace the asset - delete the conflicting asset and move the asset in it's place.
+            $targetVolume->deleteFile($assetToReplace->getUri());
+            $this->_moveAssetToFolder($assetToReplaceWith,
+                $assetToReplace->getFolder());
 
-            $fileToReplaceWith->folderId = $fileToReplace->folderId;
-            $fileToReplaceWith->volumeId = $fileToReplace->volumeId;
-            $fileToReplaceWith->filename = $fileToReplace->filename;
-            $this->saveAsset($fileToReplaceWith);
+            $assetToReplaceWith->folderId = $assetToReplace->folderId;
+            $assetToReplaceWith->volumeId = $assetToReplace->volumeId;
+            $assetToReplaceWith->filename = $assetToReplace->filename;
+            $this->saveAsset($assetToReplaceWith);
         } else {
             // Update the attributes and save the Asset
-            $fileToReplace->dateModified = $fileToReplaceWith->dateModified;
-            $fileToReplace->size = $fileToReplaceWith->size;
-            $fileToReplace->kind = $fileToReplaceWith->kind;
-            $fileToReplace->width = $fileToReplaceWith->width;
-            $fileToReplace->height = $fileToReplaceWith->height;
+            $assetToReplace->dateModified = $assetToReplaceWith->dateModified;
+            $assetToReplace->size = $assetToReplaceWith->size;
+            $assetToReplace->kind = $assetToReplaceWith->kind;
+            $assetToReplace->width = $assetToReplaceWith->width;
+            $assetToReplace->height = $assetToReplaceWith->height;
 
-            // Replace the file - delete the conflicting file and move the file in it's place.
-            $targetVolume->deleteFile($fileToReplace->getUri());
-            $this->_moveFileToFolder($fileToReplaceWith,
-                $fileToReplace->getFolder(), $fileToReplace->filename);
+            // Replace the asset - delete the conflicting asset and move the asset in it's place.
+            $targetVolume->deleteFile($assetToReplace->getUri());
+            $this->_moveAssetToFolder($assetToReplaceWith,
+                $assetToReplace->getFolder(), $assetToReplace->filename);
 
-            $this->saveAsset($fileToReplace);
-            $this->deleteFilesByIds($fileToReplaceWith->id, false);
+            $this->saveAsset($assetToReplace);
+            $this->deleteAssetsByIds($assetToReplaceWith->id, false);
         }
     }
 
@@ -372,9 +372,9 @@ class Assets extends Component
      */
     public function replaceAssetFile($assetId, $pathOnServer, $filename)
     {
-        $existingFile = $this->getFileById($assetId);
+        $existingAsset = $this->getAssetById($assetId);
 
-        if (!$existingFile) {
+        if (!$existingAsset) {
             throw new AssetLogicException(Craft::t('app',
                 'The asset to be replaced cannot be found.'));
         }
@@ -384,12 +384,12 @@ class Assets extends Component
         }
 
         $event = new ReplaceAssetEvent([
-            'asset' => $existingFile,
+            'asset' => $existingAsset,
             'replaceWith' => $pathOnServer,
             'filename' => $filename
         ]);
 
-        $this->trigger(static::EVENT_BEFORE_REPLACE_FILE, $event);
+        $this->trigger(static::EVENT_BEFORE_REPLACE_ASSET, $event);
 
         // Is the event preventing this from happening?
         if (!$event->isValid) {
@@ -399,13 +399,13 @@ class Assets extends Component
 
         // TODO check event
 
-        $existingFile = $this->getFileById($assetId);
+        $existingAsset = $this->getAssetById($assetId);
 
-        $volume = $existingFile->getVolume();
+        $volume = $existingAsset->getVolume();
 
         // Clear all thumb and transform data
-        if (Image::isImageManipulatable($existingFile->getExtension())) {
-            Craft::$app->getAssetTransforms()->deleteAllTransformData($existingFile);
+        if (Image::isImageManipulatable($existingAsset->getExtension())) {
+            Craft::$app->getAssetTransforms()->deleteAllTransformData($existingAsset);
         }
 
         // Open the stream for, uhh, streaming
@@ -418,68 +418,68 @@ class Assets extends Component
         }
 
         // Re-use the same filename
-        if (StringHelper::toLowerCase($existingFile->filename) == StringHelper::toLowerCase($filename)) {
+        if (StringHelper::toLowerCase($existingAsset->filename) == StringHelper::toLowerCase($filename)) {
             // The case is changing in the filename
-            if ($existingFile->filename != $filename) {
+            if ($existingAsset->filename != $filename) {
                 // Delete old, change the name, upload the new
-                $volume->deleteFile($existingFile->getUri());
-                $existingFile->filename = $filename;
-                $volume->createFileByStream($existingFile->getUri(), $stream);
+                $volume->deleteFile($existingAsset->getUri());
+                $existingAsset->filename = $filename;
+                $volume->createFileByStream($existingAsset->getUri(), $stream);
             } else {
-                $volume->updateFileByStream($existingFile->getUri(), $stream);
+                $volume->updateFileByStream($existingAsset->getUri(), $stream);
             }
         } else {
             // Get an available name to avoid conflicts and upload the file
             $filename = $this->getNameReplacementInFolder($filename,
-                $existingFile->getFolder());
+                $existingAsset->getFolder());
 
             // Delete old, change the name, upload the new
-            $volume->deleteFile($existingFile->getUri());
-            $existingFile->filename = $filename;
-            $volume->createFileByStream($existingFile->getUri(), $stream);
+            $volume->deleteFile($existingAsset->getUri());
+            $existingAsset->filename = $filename;
+            $volume->createFileByStream($existingAsset->getUri(), $stream);
 
-            $existingFile->kind = Io::getFileKind(Io::getExtension($filename));
+            $existingAsset->kind = Io::getFileKind(Io::getExtension($filename));
         }
 
         if (is_resource($stream)) {
             fclose($stream);
         }
 
-        if ($existingFile->kind == "image") {
-            list ($existingFile->width, $existingFile->height) = Image::getImageSize($pathOnServer);
+        if ($existingAsset->kind == "image") {
+            list ($existingAsset->width, $existingAsset->height) = Image::getImageSize($pathOnServer);
         } else {
-            $existingFile->width = null;
-            $existingFile->height = null;
+            $existingAsset->width = null;
+            $existingAsset->height = null;
         }
 
-        $existingFile->size = Io::getFileSize($pathOnServer);
-        $existingFile->dateModified = Io::getLastTimeModified($pathOnServer);
+        $existingAsset->size = Io::getFileSize($pathOnServer);
+        $existingAsset->dateModified = Io::getLastTimeModified($pathOnServer);
 
-        $this->saveAsset($existingFile);
+        $this->saveAsset($existingAsset);
 
         $event = new ReplaceAssetEvent([
-            'asset' => $existingFile,
+            'asset' => $existingAsset,
             'filename' => $filename
         ]);
-        $this->trigger(static::EVENT_AFTER_REPLACE_FILE, $event);
+        $this->trigger(static::EVENT_AFTER_REPLACE_ASSET, $event);
     }
 
     /**
      * Delete a list of files by an array of ids (or a single id).
      *
-     * @param array|int $fileIds
+     * @param array|int $assetIds
      * @param boolean $deleteFile Should the file be deleted along the record. Defaults to true.
      *
      * @return void
      */
-    public function deleteFilesByIds($fileIds, $deleteFile = true)
+    public function deleteAssetsByIds($assetIds, $deleteFile = true)
     {
-        if (!is_array($fileIds)) {
-            $fileIds = [$fileIds];
+        if (!is_array($assetIds)) {
+            $assetIds = [$assetIds];
         }
 
-        foreach ($fileIds as $fileId) {
-            $file = $this->getFileById($fileId);
+        foreach ($assetIds as $assetId) {
+            $file = $this->getAssetById($assetId);
 
             if ($file) {
                 $volume = $file->getVolume();
@@ -495,7 +495,8 @@ class Assets extends Component
                         $volume->deleteFile($file->getUri());
                     }
 
-                    Craft::$app->getElements()->deleteElementById($fileId);
+                    Craft::$app->getElements()->deleteElementById($assetId);
+
 
                     $this->trigger(static::EVENT_AFTER_DELETE_ASSET, $event);
                 }
@@ -526,7 +527,7 @@ class Assets extends Component
 
         $newFilename = AssetsHelper::prepareAssetName($newFilename);
 
-        $existingAsset = $this->findFile([
+        $existingAsset = $this->findAsset([
             'filename' => $newFilename,
             'folderId' => $asset->folderId
         ]);
@@ -661,7 +662,7 @@ class Assets extends Component
      * Deletes a folder by its ID.
      *
      * @param array|int $folderIds
-     * @param boolean $deleteFolder Should the file be deleted along the record. Defaults to true.
+     * @param boolean $deleteFolder Should the folder be deleted along the record. Defaults to true.
      *
      * @throws VolumeException If deleting a single folder and it cannot be deleted.
      * @return void
@@ -895,22 +896,22 @@ class Assets extends Component
     /**
      * Get URL for a file.
      *
-     * @param Asset $file
+     * @param Asset $asset
      * @param string $transform
      *
      * @return string
      */
-    public function getUrlForFile(Asset $file, $transform = null)
+    public function getUrlForAsset(Asset $asset, $transform = null)
     {
         //TODO Asset thumb cache bust?
-        if (!$transform || !Image::isImageManipulatable(Io::getExtension($file->filename))) {
-            $volume = $file->getVolume();
+        if (!$transform || !Image::isImageManipulatable(Io::getExtension($asset->filename))) {
+            $volume = $asset->getVolume();
 
-            return AssetsHelper::generateUrl($volume, $file);
+            return AssetsHelper::generateUrl($volume, $asset);
         }
 
         // Get the transform index model
-        $index = Craft::$app->getAssetTransforms()->getTransformIndex($file,
+        $index = Craft::$app->getAssetTransforms()->getTransformIndex($asset,
             $transform);
 
         // Does the file actually exist?
@@ -1003,7 +1004,7 @@ class Assets extends Component
                 ['extension' => $extension]));
         }
 
-        $existingAsset = $this->findFile([
+        $existingAsset = $this->findAsset([
             'filename' => $filename,
             'folderId' => $folderId
         ]);
@@ -1021,7 +1022,7 @@ class Assets extends Component
                 'The destination folder does not exist'));
         }
 
-        $this->_moveFileToFolder($asset, $targetFolder, $filename);
+        $this->_moveAssetToFolder($asset, $targetFolder, $filename);
 
         $asset->folderId = $folderId;
         $asset->volumeId = $targetFolder->volumeId;
@@ -1096,7 +1097,7 @@ class Assets extends Component
         }
 
         foreach ($fileIds as $fileId) {
-            $file = $this->getFileById($fileId);
+            $file = $this->getAssetById($fileId);
 
             if (!$file) {
                 throw new Exception(Craft::t('app',
@@ -1244,7 +1245,7 @@ class Assets extends Component
      * @throws FileException
      * @return void
      */
-    private function _moveFileToFolder(
+    private function _moveAssetToFolder(
         Asset $asset,
         VolumeFolderModel $targetFolder,
         $newFilename = ""
@@ -1262,7 +1263,7 @@ class Assets extends Component
             }
 
             $sourceVolume->renameFile($fromPath, $toPath);
-            $transformIndexes = Craft::$app->getAssetTransforms()->getAllCreatedTransformsForFile($asset);
+            $transformIndexes = Craft::$app->getAssetTransforms()->getAllCreatedTransformsForAsset($asset);
 
             // Move the transforms
             foreach ($transformIndexes as $transformIndex) {
@@ -1326,7 +1327,7 @@ class Assets extends Component
      *
      * @return AssetQuery
      */
-    private function _createFileQuery($criteria)
+    private function _createAssetQuery($criteria)
     {
         if ($criteria instanceof AssetQuery) {
             $query = $criteria;
@@ -1534,7 +1535,7 @@ class Assets extends Component
                     $assetRecord->id = $asset->id;
                 }
 
-                // Save the file row
+                // Save the record
                 $assetRecord->save(false);
 
                 $this->trigger(static::EVENT_AFTER_SAVE_ASSET, $event);

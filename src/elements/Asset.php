@@ -747,7 +747,7 @@ class Asset extends Element
             $transform = $this->_transform;
         }
 
-        return Craft::$app->getAssets()->getUrlForFile($this, $transform);
+        return Craft::$app->getAssets()->getUrlForAsset($this, $transform);
     }
 
     /**

@@ -180,7 +180,7 @@ class Resources extends Component
                         return false;
                     }
 
-                    $fileModel = Craft::$app->getAssets()->getFileById($segs[1]);
+                    $fileModel = Craft::$app->getAssets()->getAssetById($segs[1]);
                     if (empty($fileModel)) {
                         return false;
                     }

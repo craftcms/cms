@@ -183,7 +183,7 @@ class Assets
 
             // If we're merging, preemptively figure out if there'll be conflicts and resolve them
             if ($merge) {
-                $conflictingAsset = Craft::$app->getAssets()->findFile([
+                $conflictingAsset = Craft::$app->getAssets()->findAsset([
                     'filename' => $asset->filename,
                     'folderId' => $newFolderId
                 ]);

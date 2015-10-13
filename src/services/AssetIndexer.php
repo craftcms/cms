@@ -412,7 +412,7 @@ class AssetIndexer extends Component
 
             $folderId = $parentFolder->id;
 
-            $assetModel = Craft::$app->getAssets()->findFile(
+            $assetModel = Craft::$app->getAssets()->findAsset(
                 array(
                     'folderId' => $folderId,
                     'filename' => $filename
