@@ -266,7 +266,7 @@ class Images extends Component
             return null;
         }
 
-        $data = new \PelDataWindow(Io::getFileContents($filePath));
+        $data = new PelDataWindow(Io::getFileContents($filePath));
 
         // Is this a valid JPEG?
         if (PelJpeg::isValid($data)) {
