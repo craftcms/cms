@@ -116,6 +116,17 @@ class ConsoleApp extends \CConsoleApplication
 	}
 
 	/**
+	 * Returns the system time zone.  Note that this method cannot be in {@link AppBehavior}, because Yii will check
+	 * {@link \CApplication::getTimeZone()} instead.
+	 *
+	 * @return string
+	 */
+	public function getTimeZone()
+	{
+		return $this->asa('AppBehavior')->getTimezone();
+	}
+
+	/**
 	 * Attaches an event handler, or remembers it for later if the component has not been initialized yet.
 	 *
 	 * The event should be identified in a `serviceHandle.eventName` format. For example, if you want to add an event
@@ -217,6 +228,28 @@ class ConsoleApp extends \CConsoleApplication
 		}
 
 		parent::setComponents($components, $merge);
+	}
+
+	/**
+	 * @todo Remove for Craft 3.
+	 *
+	 * @param int    $code The level of the error raised.
+	 * @param string $message The error message.
+	 * @param string $file The filename that the error was raised in.
+	 * @param int    $line The line number the error was raised at.
+	 */
+	public function handleError($code, $message, $file, $line)
+	{
+		// PHP 7 turned some E_STRICT messages to E_WARNINGs. Code 2 is for all warnings
+		// and since there are no messages specific codes we have to parse the string for what
+		// we're looking for. Lame, but it works since all PHP error messages are always in English.
+		// https://stackoverflow.com/questions/11556375/is-there-a-way-to-localize-phps-error-output
+		if (version_compare(PHP_VERSION, '7', '>=') && $code === 2 && strpos($message, 'should be compatible with') !== false)
+		{
+			return;
+		}
+
+		parent::handleError($code, $message, $file, $line);
 	}
 
 	// Protected Methods

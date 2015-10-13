@@ -49,11 +49,14 @@ class ElementsController extends BaseElementsController
 			$sources = $elementType->getSources($context);
 		}
 
+		$sourceKeys = array_keys($sources);
+		$sourceKey = array_shift($sourceKeys);
+
 		$this->renderTemplate('_elements/modalbody', array(
 			'context'     => $context,
 			'elementType' => $elementType,
 			'sources'     => $sources,
-			'showSidebar' => (count($sources) > 1 || ($sources && !empty($sources[array_shift(array_keys($sources))]['nested'])))
+			'showSidebar' => (count($sources) > 1 || ($sources && !empty($sources[$sourceKey]['nested'])))
 		));
 	}
 
