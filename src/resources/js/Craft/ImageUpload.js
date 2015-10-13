@@ -1,3 +1,5 @@
+// TODO I'm 999% sure this can be done smarter, better and more good looking.
+
 /**
  * postParameters     - an object of POST data to pass along with each Ajax request
  * modalClass         - class to add to the modal window to allow customization
