@@ -114,9 +114,7 @@ class WebApp extends \CWebApplication
 		// Attach our Craft app behavior.
 		$this->attachBehavior('AppBehavior', new AppBehavior());
 
-
-		
-	// If there is a custom validationKey set, apply it here.
+		// If there is a custom validationKey set, apply it here.
 		if ($validationKey = $this->config->get('validationKey'))
 		{
 			$this->security->setValidationKey($validationKey);
