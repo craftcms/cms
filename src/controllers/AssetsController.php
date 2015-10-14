@@ -17,6 +17,7 @@ use craft\app\errors\AssetMissingException;
 use craft\app\errors\UploadFailedException;
 use craft\app\fields\Assets as AssetsField;
 use craft\app\helpers\Assets;
+use craft\app\helpers\DateTimeHelper;
 use craft\app\helpers\Io;
 use craft\app\elements\Asset;
 use craft\app\helpers\Url;
@@ -137,14 +138,31 @@ class AssetsController extends Controller
                     }
 
                     $filename = Assets::prepareAssetName($uploadedFile->name);
+                    $mobileUpload = false;
+
+                    if (Io::getFileName($filename,
+                            false) == "image" && Craft::$app->getRequest()->getIsMobileBrowser(true)
+                    ) {
+                        $mobileUpload = true;
+                        $date = DateTimeHelper::currentUTCDateTime();
+                        $filename = "image_".$date->format('Ymd_His').".".Io::getExtension($filename);
+
+                    }
 
                     $asset = new Asset();
-                    $asset->title = $asset->generateAttributeLabel(Io::getFilename($filename,
-                        false));
+
+                    if ($mobileUpload) {
+                        $asset->title = Craft::t('app', 'Mobile Upload');
+                    } else {
+                        $asset->title = $asset->generateAttributeLabel(Io::getFilename($filename,
+                            false));
+                    }
+
                     $asset->newFilePath = $pathOnServer;
                     $asset->filename = $filename;
                     $asset->folderId = $folder->id;
                     $asset->volumeId = $folder->volumeId;
+
 
                     try {
                         Craft::$app->getAssets()->saveAsset($asset);
