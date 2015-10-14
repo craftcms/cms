@@ -196,6 +196,15 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 				craft()->images->cleanImage($localFilePath);
 			}
 
+			$mobileUpload = false;
+
+			if (IOHelper::getFileName($fileName, false) == "image" && craft()->request->isMobileBrowser(true))
+			{
+				$mobileUpload = true;
+				$date = DateTimeHelper::currentUTCDateTime();
+				$fileName = "image_".$date->format('Ymd_His').".".IOHelper::getExtension($fileName);
+			}
+
 			if ($preventConflicts)
 			{
 				$newFileName = $this->getNameReplacement($folder, $fileName);
@@ -232,6 +241,11 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 
 					$fileModel->width = $width;
 					$fileModel->height = $height;
+				}
+
+				if ($mobileUpload)
+				{
+					$fileModel->getContent()->title = Craft::t('Mobile Upload');
 				}
 
 				craft()->assets->storeFile($fileModel);
