@@ -210,7 +210,7 @@ class Requirements
 	 *
 	 * @return bool
 	 */
-	private function _isInnoDbEnabled()
+	private static function _isInnoDbEnabled()
 	{
 		$results = craft()->db->createCommand()->setText('SHOW ENGINES')->queryAll();
 

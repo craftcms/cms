@@ -114,19 +114,20 @@ class WebApp extends \CWebApplication
 		// Attach our Craft app behavior.
 		$this->attachBehavior('AppBehavior', new AppBehavior());
 
-		// If there is a custom validationKey set, apply it here.
+
+		
+	// If there is a custom validationKey set, apply it here.
 		if ($validationKey = $this->config->get('validationKey'))
 		{
 			$this->security->setValidationKey($validationKey);
 		}
 
-		// Initialize Cache, HttpRequestService and LogRouter right away (order is important)
-		$this->getComponent('cache');
-		$this->getComponent('request');
-
 		// Attach our own custom Logger
 		Craft::setLogger(new Logger());
 
+		// Initialize Cache, HttpRequestService and LogRouter right away (order is important)
+		$this->getComponent('cache');
+		$this->getComponent('request');
 		$this->getComponent('log');
 
 		// So we can try to translate Yii framework strings
