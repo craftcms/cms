@@ -198,11 +198,11 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 
 			$mobileUpload = false;
 
-			if (IOHelper::getFileName($fileName, false) == "image" && craft()->request->isMobileBrowser(true))
+			if (IOHelper::getFileName($filename, false) == "image" && craft()->request->isMobileBrowser(true))
 			{
 				$mobileUpload = true;
 				$date = DateTimeHelper::currentUTCDateTime();
-				$fileName = "image_".$date->format('Ymd_His').".".IOHelper::getExtension($fileName);
+				$filename = "image_".$date->format('Ymd_His').".".IOHelper::getExtension($filename);
 			}
 
 			if ($preventConflicts)
