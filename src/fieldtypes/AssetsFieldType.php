@@ -420,7 +420,14 @@ class AssetsFieldType extends BaseElementFieldType
 		else
 		{
 			// Prepare the path by parsing tokens and normalizing slashes.
-			$renderedSubpath = craft()->templates->renderObjectTemplate($subpath, $this->element);
+			try
+			{
+				$renderedSubpath = craft()->templates->renderObjectTemplate($subpath, $this->element);
+			}
+			catch (\Exception $e)
+			{
+				throw new InvalidSubpathException($subpath);
+			}
 
 			// Did any of the tokens return null?
 			if (
