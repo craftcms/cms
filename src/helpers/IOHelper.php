@@ -1494,7 +1494,7 @@ class IOHelper
 	 * @param bool   $onlyAscii Whether to only allow ASCII characters in the filename.
 	 * @param string $separator The separator to use for any whitespace. Defaults to '-'.
 	 *
-	 * @return mixed
+	 * @return string The cleansed filename.
 	 */
 	public static function cleanFilename($fileName, $onlyAscii = false, $separator = '-')
 	{
@@ -1517,6 +1517,27 @@ class IOHelper
 		$fileName = ($onlyAscii) ? StringHelper::asciiString($fileName) : $fileName;
 
 		return $fileName;
+	}
+
+	/**
+	 * Cleans a path.
+	 *
+	 * @param string $path      The path to clean.
+	 * @param bool   $onlyAscii Whether to only allow ASCII characters in the path.
+	 * @param string $separator The separator to use for any whitespace. Defaults to '-'.
+	 *
+	 * @return string The cleansed path.
+	 */
+	public static function cleanPath($path, $onlyAscii = false, $separator = '-')
+	{
+		$segments = explode('/', $path);
+
+		foreach ($segments as &$segment)
+		{
+			$segment = self::cleanFilename($segment, $onlyAscii, $separator);
+		}
+
+		return implode('/', $segments);
 	}
 
 	/**
