@@ -645,7 +645,7 @@ class AssetTransforms extends Component
             $imageSource = $this->getLocalImageSource($asset);
 
             Craft::$app->getImages()->loadImage($imageSource, false, $size)
-                ->scaleAndCrop($size, $size)
+                ->scaleToFit($size, $size)
                 ->saveAs($thumbPath);
 
             if (!$asset->getVolume()->isLocal()) {
