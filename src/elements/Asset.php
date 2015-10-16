@@ -757,7 +757,7 @@ class Asset extends Element
     {
         if ($this->hasThumb()) {
             return Url::getResourceUrl(
-                'assetthumbs/'.$this->id.'/'.$size,
+                'resized/'.$this->id.'/'.$size,
                 [
                     Craft::$app->getResources()->dateParam => $this->dateModified->getTimestamp()
                 ]

@@ -632,9 +632,9 @@ class AssetTransforms extends Component
      *
      * @return boolean|string
      */
-    public function getThumbServerPath(Asset $asset, $size)
+    public function getResizedAssetServerPath(Asset $asset, $size)
     {
-        $thumbFolder = Craft::$app->getPath()->getAssetsThumbsPath().'/'.$size.'/';
+        $thumbFolder = Craft::$app->getPath()->getResizedAssetsPath().'/'.$size.'/';
         Io::ensureFolderExists($thumbFolder);
 
         $extension = $this->_getThumbExtension($asset);
@@ -887,7 +887,7 @@ class AssetTransforms extends Component
      */
     public function deleteAllTransformData(Asset $asset)
     {
-        $this->deleteThumbnailsForAsset($asset);
+        $this->deleteResizedAssetVersion($asset);
         $this->deleteCreatedTransformsForAsset($asset);
         $this->deleteTransformIndexDataByAssetId($asset->id);
 
@@ -902,13 +902,13 @@ class AssetTransforms extends Component
      *
      * @return void
      */
-    public function deleteThumbnailsForAsset(Asset $asset)
+    public function deleteResizedAssetVersion(Asset $asset)
     {
-        $thumbFolders = Io::getFolderContents(Craft::$app->getPath()->getAssetsThumbsPath());
+        $thumbFolders = Io::getFolderContents(Craft::$app->getPath()->getResizedAssetsPath());
 
         foreach ($thumbFolders as $folder) {
             if (is_dir($folder)) {
-                Io::deleteFile($folder.'/'.$asset->id.'.'.$this->_getThumbExtension($asset));
+                Io::deleteFile($folder.'/'.$asset->id.'.'.$this->_getThumbExtension($asset), true);
             }
         }
     }
