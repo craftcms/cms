@@ -925,7 +925,7 @@ class AssetTransforms extends Component
         $volume = $asset->getVolume();
 
         foreach ($transformIndexes as $transformIndex) {
-            $volume->deleteFile($asset->getFolder()->path.Craft::$app->assetTransforms->getTransformSubpath($asset,
+            $volume->deleteFile($asset->getFolder()->path.$this->getTransformSubpath($asset,
                     $transformIndex));
         }
     }
