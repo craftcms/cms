@@ -139,11 +139,12 @@ class Resources extends Component
 
                         return $sizedPhotoPath;
                     }
+                    break;
                 }
 
                 case 'defaultuserphoto': {
                     if (!isset($segs[1]) || !is_numeric($segs[1])) {
-                        return;
+                        return null;
                     }
 
                     $size = $segs[1];
@@ -161,6 +162,8 @@ class Resources extends Component
                     } else {
                         Craft::error('Tried to write to the target folder, but could not:'.$targetFolder, __METHOD__);
                     }
+
+                    break;
                 }
 
                 case 'tempuploads': {
@@ -175,14 +178,7 @@ class Resources extends Component
                     return Craft::$app->getPath()->getAssetsTempSourcePath().'/'.implode('/', $segs);
                 }
 
-                case 'editimage': {
-                    array_shift($segs);
-
-                    return Craft::$app->getPath()->getAssetsEditorCopiesPath().'/'.implode('/',
-                        $segs);
-                }
-
-                case 'assetthumbs': {
+                case 'resized': {
                     if (empty($segs[1]) || empty($segs[2]) || !is_numeric($segs[1]) || !is_numeric($segs[2])) {
                         return false;
                     }
@@ -197,7 +193,7 @@ class Resources extends Component
                     // Make sure plugins are loaded in case the asset lives in a plugin-supplied volume type
                     Craft::$app->getPlugins()->loadPlugins();
 
-                    return Craft::$app->getAssetTransforms()->getThumbServerPath($fileModel, $size);
+                    return Craft::$app->getAssetTransforms()->getResizedAssetServerPath($fileModel, $size);
                 }
 
                 case 'icons': {

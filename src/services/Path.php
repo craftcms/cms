@@ -242,26 +242,13 @@ class Path extends Component
     }
 
     /**
-     * Return the path to the craft/storage/runtime/assets/editorcopies/ folder.
+     * Returns the path to the craft/storage/runtime/assets/resized/ folder.
      *
-     * @return string The path to the craft/storage/runtime/assets/editorcopies/ folder.
+     * @return string The path to the craft/storage/runtime/assets/resized/ folder.
      */
-    public function getAssetsEditorCopiesPath()
+    public function getResizedAssetsPath()
     {
-        $path = $this->getAssetsPath().'/editorcopies';
-        Io::ensureFolderExists($path);
-
-        return $path;
-    }
-
-    /**
-     * Returns the path to the craft/storage/runtime/assets/thumbs/ folder.
-     *
-     * @return string The path to the craft/storage/runtime/assets/thumbs/ folder.
-     */
-    public function getAssetsThumbsPath()
-    {
-        $path = $this->getAssetsPath().'/thumbs';
+        $path = $this->getAssetsPath().'/resized';
         Io::ensureFolderExists($path);
 
         return $path;
