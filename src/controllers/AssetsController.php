@@ -570,22 +570,26 @@ class AssetsController extends Controller
         $assetId = Craft::$app->getRequest()->getRequiredBodyParam('assetId');
         $image = Craft::$app->getAssets()->getAssetById($assetId);
 
-        $url = $image->getUrl();
+        $dimensionLimit = 800;
+
         $height = $image->getHeight();
         $width = $image->getWidth();
 
-        if (max($image->height, $image->width) > 800) {
-            $targetPath = Craft::$app->getPath()->getAssetsEditorCopiesPath().'/'.$image->id.'.'.$image->getExtension();
+        $scale = min(1, $dimensionLimit / $height, $dimensionLimit / $width);
 
-            if (!Io::fileExists($targetPath)) {
-                Craft::$app->getImages()->loadImage($image->getTransformSource())->scaleToFit(800,
-                    800)->saveAs($targetPath);
-            }
-
-            $resized = Craft::$app->getImages()->loadImage($targetPath);
-            $width = $resized->getWidth();
-            $height = $resized->getHeight();
-            $url = Url::getResourceUrl('editimage/'.$image->id.'.'.$image->getExtension());
+        if ($scale < 1) {
+            $url = Url::getResourceUrl(
+                'resized/'.$assetId.'/800',
+                [
+                    Craft::$app->getResources()->dateParam => $image->dateModified->getTimestamp()
+                ]
+            );
+            $width *= $scale;
+            $height *= $scale;
+        }
+        else
+        {
+            $url = $image->getUrl();
         }
 
         if ($image->kind == "image") {
@@ -593,8 +597,8 @@ class AssetsController extends Controller
                 ['image' => $image]
             );
             $output['imageData'] = [
-                'height' => $height,
-                'width' => $width,
+                'height' => (int) $height,
+                'width' => (int) $width,
                 'url' => $url
             ];
 
