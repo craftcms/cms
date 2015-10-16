@@ -479,24 +479,24 @@ class Assets extends Component
         }
 
         foreach ($assetIds as $assetId) {
-            $file = $this->getAssetById($assetId);
+            $asset = $this->getAssetById($assetId);
 
-            if ($file) {
-                $volume = $file->getVolume();
+            if ($asset) {
+                $volume = $asset->getVolume();
 
                 // Fire an 'onBeforeDeleteAsset' event
                 $event = new AssetEvent($this, [
-                    'asset' => $file
+                    'asset' => $asset
                 ]);
                 $this->trigger(static::EVENT_BEFORE_DELETE_ASSET, $event);
 
                 if ($event->isValid) {
                     if ($deleteFile) {
-                        $volume->deleteFile($file->getUri());
+                        $volume->deleteFile($asset->getUri());
                     }
 
                     Craft::$app->getElements()->deleteElementById($assetId);
-
+                    Craft::$app->getAssetTransforms()->deleteAllTransformData($asset);
 
                     $this->trigger(static::EVENT_AFTER_DELETE_ASSET, $event);
                 }
