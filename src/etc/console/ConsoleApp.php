@@ -53,6 +53,9 @@ class ConsoleApp extends \CConsoleApplication
 		// Attach our Craft app behavior.
 		$this->attachBehavior('AppBehavior', new AppBehavior());
 
+		// Attach our own custom Logger
+		Craft::setLogger(new Logger());
+
 		// Initialize Cache and LogRouter right away (order is important)
 		$this->getComponent('cache');
 		$this->getComponent('log');
@@ -62,9 +65,6 @@ class ConsoleApp extends \CConsoleApplication
 
 		// Set our own custom runtime path.
 		$this->setRuntimePath(craft()->path->getRuntimePath());
-
-		// Attach our own custom Logger
-		Craft::setLogger(new Logger());
 
 		// No need for these.
 		craft()->log->removeRoute('WebLogRoute');

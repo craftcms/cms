@@ -3466,7 +3466,7 @@ Garnish.HUD = Garnish.Base.extend({
 		this.onSubmit();
 	},
 
-	onSubmit: function(ev)
+	onSubmit: function()
 	{
 		this.trigger('submit');
 	},
@@ -3994,20 +3994,10 @@ Garnish.MenuBtn = Garnish.Base.extend({
 		setTimeout($.proxy(function() {
 			this.addListener(Garnish.$doc, 'mousedown', 'onMouseDown');
 		}, this), 1);
-
-		if (!Garnish.isMobileBrowser())
-		{
-			this.addListener(Garnish.$win, 'resize', 'hideMenu');
-		}
 	},
 
 	hideMenu: function()
 	{
-		if (!Garnish.isMobileBrowser())
-		{
-			this.removeListener(Garnish.$win, 'resize');
-		}
-
 		this.menu.hide();
 	},
 
@@ -4017,11 +4007,6 @@ Garnish.MenuBtn = Garnish.Base.extend({
 		this.showingMenu = false;
 
 		this.removeListener(Garnish.$doc, 'mousedown');
-
-		if (!Garnish.isMobileBrowser())
-		{
-			this.removeListener(Garnish.$doc, 'resize');
-		}
 	},
 
 	onOptionSelect: function(option)

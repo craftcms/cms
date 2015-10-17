@@ -185,17 +185,15 @@ class ArrayHelper
 	 */
 	public static function getFirstValue($arr)
 	{
-		if (count($arr))
+		if (is_array($arr))
 		{
-			if (isset($arr[0]))
+			foreach ($arr as $value)
 			{
-				return $arr[0];
-			}
-			else
-			{
-				return $arr[array_shift(array_keys($arr))];
+				return $value;
 			}
 		}
+
+		return null;
 	}
 
 	// Private Methods

@@ -97,6 +97,11 @@ $noticecolor: #5286d9;
 	transform: $params;
 }
 
+@mixin filter($params...) {
+	-webkit-filter: $params;
+	filter: $params;
+}
+
 @mixin transition($params...) {
 	-webkit-transition: $params;
 	-moz-transition: $params;
