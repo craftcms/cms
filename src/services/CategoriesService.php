@@ -1042,7 +1042,7 @@ class CategoriesService extends BaseApplicationComponent
 		$criteria->ancestorOf = $category;
 		$criteria->ancestorDist = 1;
 		$criteria->status = null;
-		$criteria->locale = $entry->locale;
+		$criteria->locale = $category->locale;
 		$criteria->localeEnabled = null;
 
 		$oldParent = $criteria->first();
