@@ -343,7 +343,7 @@ table.inputs .btngroup { display: block; float: none; }
 .buttons > .btngroup:first { margin-top: 5px !important; }
 
 .btn,
-.btngroup { border-radius: 3px; }
+.btngroup { border-radius: $btnBorderRadius; }
 
 .btn { display: inline-block; padding: 6px 12px; border: none; text-align: center; white-space: nowrap; @include user-select(none); cursor: pointer; @include box-sizing(border-box);
 	-webkit-appearance: none;
@@ -648,7 +648,7 @@ table.collapsed tbody tr:last-child td:not(:last-child) { border-bottom: none; }
 .element.small.hasthumb { @include padding-left(40px !important); }
 .element.large.hasthumb { @include padding-left(0 !important); }
 
-.element.hasthumb .elementthumb { position: absolute; top: 0; @include left(0); border-radius: 3px; overflow: hidden; background: #fff;
+.element.hasthumb .elementthumb { position: absolute; top: 0; @include left(0); border-radius: $elementBorderRadius; overflow: hidden; background: #fff;
 	display: flex; display: -ms-flexbox;
 	justify-content: center; -ms-flex-pack: center;
 	align-items: center; -ms-flex-align: center; }
@@ -660,10 +660,10 @@ table.collapsed tbody tr:last-child td:not(:last-child) { border-bottom: none; }
 .element.large .label { display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; word-wrap: normal; }
 
 .element.sel,
-.sel .element { border-radius: 3px; background: $lightselcolor; cursor: default; }
+.sel .element { border-radius: $elementBorderRadius; background: $lightselcolor; cursor: default; }
 
 .element.hasthumb.sel .elementthumb:after,
-.sel .element.hasthumb .elementthumb:after { display: block; position: absolute; top: 0; left: 0; border-radius: 3px; width: 100%; height: 100%; content: '.'; font-size: 0; background: rgba(35,51,76,0.19); }
+.sel .element.hasthumb .elementthumb:after { display: block; position: absolute; top: 0; left: 0; border-radius: $elementBorderRadius; width: 100%; height: 100%; content: '.'; font-size: 0; background: rgba(35,51,76,0.19); }
 
 .element.removable .label,
 .element.loading .label { @include padding-right(20px); }
@@ -765,7 +765,7 @@ table.editable tbody tr td.action + td.action { @include border-left(none); @inc
 table.editable tbody textarea { display: block; width: 100%; border: none; padding: 7px 10px; background: #fff; overflow: hidden; }
 table.editable tbody textarea:focus { border: 1px solid rgba(0,0,0,0.15); padding: 6px 9px; outline: none; }
 
-table.editable + .btn.add { display: block; border-radius: 0 0 3px 3px; border: 1px dashed rgba(0,0,0,0.2); border-top: none; background: none;
+table.editable + .btn.add { display: block; border-radius: 0 0 $btnBorderRadius $btnBorderRadius; border: 1px dashed rgba(0,0,0,0.2); border-top: none; background: none;
 	@include box-shadow(none);
 }
 
@@ -866,7 +866,7 @@ ul.tree,
 /*  Panes, Modals and HUDs
 /* ----------------------------------------*/
 
-.pane { @include pane; position: relative; margin: 14px 0; padding: 24px; border-radius: 3px; word-wrap: break-word; @include box-sizing(border-box); overflow: hidden; }
+.pane { @include pane; position: relative; margin: 14px 0; padding: 24px; border-radius: $paneBorderRadius; word-wrap: break-word; @include box-sizing(border-box); overflow: hidden; }
 .body { position: relative; }
 
 .modal,
@@ -875,7 +875,7 @@ body #redactor-modal { z-index: 100; }
 
 .modal,
 .hud .body,
-body #redactor-modal { border-radius: 3px; background: #fff;
+body #redactor-modal { border-radius: $paneBorderRadius; background: #fff;
 	@include box-shadow(0 0 0 1px rgba(0,0,0,0.1), 0 10px 50px -10px rgba(0,0,0,0.25));
 }
 
@@ -889,12 +889,12 @@ body #redactor-modal { border-radius: 3px; background: #fff;
 .header,
 .footer { position: relative; z-index: 1; @include box-sizing(border-box); }
 
-.header { border-radius: 3px 3px 0 0; padding: 24px;
+.header { border-radius: $paneBorderRadius $paneBorderRadius 0 0; padding: 24px;
 	@include linear-gradient(#fff, hsl($hue, 8%, 98%));
 	@include box-shadow(0 2px 1px -2px rgba(0,0,0,0.2));
 }
 
-.footer { border-radius: 0 0 3px 3px; padding: 14px 24px;
+.footer { border-radius: 0 0 $paneBorderRadius $paneBorderRadius; padding: 14px 24px;
 	@include linear-gradient(hsl($hue, 8%, 93%), hsl($hue, 8%, 92%));
 	@include box-shadow(inset 0 2px 1px -2px rgba(0,0,0,0.2));
 }
@@ -1007,7 +1007,7 @@ body #redactor-modal-overlay {
 /*  Menus
 /* ----------------------------------------*/
 
-@mixin menu-styles { z-index: 100; margin-bottom: 10px; border-radius: 3px; padding: 4px 14px; background: #fff; @include user-select(none);
+@mixin menu-styles { z-index: 100; margin-bottom: 10px; border-radius: $paneBorderRadius; padding: 4px 14px; background: #fff; @include user-select(none);
 	@include box-shadow(0 0 0 1px rgba(0,0,0,0.1), 0 5px 25px -5px rgba(0,0,0,0.25));
 }
 
@@ -1059,7 +1059,7 @@ body .redactor-dropdown a:hover { @include menu-option-active-styles; }
 /*  Fields
 /* ----------------------------------------*/
 
-.shadow-box { border-radius: 3px; border: 1px solid #ccc; overflow: hidden; width: 100%;
+.shadow-box { border-radius: $paneBorderRadius; border: 1px solid #ccc; overflow: hidden; width: 100%;
 	@include box-shadow(0 1px 5px -1px rgba(0, 0, 0, 0.1));
 }
 
@@ -1097,7 +1097,7 @@ table.editable textarea { font-size: 13px; line-height: 16px; color: $textcolor;
 
 .field { position: relative; margin: 24px 0; }
 .field > .heading { margin-bottom: 4px; }
-.field > .heading > .locale { display: inline-block; border-radius: 3px; @include margin-left(3px); padding: 0 4px; font-size: 11px; color: $mediumtextcolor; background: $bgcolor; }
+.field > .heading > .locale { display: inline-block; border-radius: $btnBorderRadius; @include margin-left(3px); padding: 0 4px; font-size: 11px; color: $mediumtextcolor; background: $bgcolor; }
 .field > .heading > .instructions { font-size: 11px; color: $mediumtextcolor; }
 .field > .warning { margin: 4px 0 0; font-size: 11px; }
 .field > .warning:before { @include margin(-2px, 2px, 0, 0); @include icon; content: 'alert'; }
@@ -1188,10 +1188,10 @@ body .redactor-box textarea { padding: 6px 7px; }
 .timewrapper .text { @include padding-left(22px); width: 100%; }
 
 .datewrapper { width: 8em; }
-.datewrapper:before { top: 8px; @include left(7px); content: 'date'; }
+.datewrapper:before { top: calc(50% - 7px); @include left(7px); content: 'date'; }
 
 .timewrapper { width: 7em; }
-.timewrapper:before { top: 10px; @include left(7px); font-size: 11px; content: 'time'; }
+.timewrapper:before { top: calc(50% - 5px); @include left(7px); font-size: 11px; content: 'time'; }
 
 ::-webkit-input-placeholder { color: $lighttextcolor; }
 input:-ms-input-placeholder { color: $lighttextcolor; }
@@ -1230,8 +1230,8 @@ body .redactor-box:not(.redactor-box-fullscreen) .redactor-editor { background: 
 .redactor-editor ol { @include padding-left(2em !important); @include padding-right(0 !important); }
 body .redactor-editor ul { list-style-type: disc; }
 body .redactor-box textarea { border-top-left-radius: 0; border-top-right-radius: 0; @include box-sizing(border-box); }
-body #redactor-modal footer button:first-child { border-bottom-left-radius: 3px; }
-body #redactor-modal footer button:last-child { border-bottom-right-radius: 3px; }
+body #redactor-modal footer button:first-child { border-bottom-left-radius: $btnBorderRadius; }
+body #redactor-modal footer button:last-child { border-bottom-right-radius: $btnBorderRadius; }
 
 /**
  * Selects
@@ -1239,7 +1239,7 @@ body #redactor-modal footer button:last-child { border-bottom-right-radius: 3px;
  * Waiting on this bug to get fixed before Firefox gets our fancy selects:
  * https://bugzilla.mozilla.org/show_bug.cgi?id=649849
  */
-@mixin select-styles { position: relative; border-radius: 3px; white-space: nowrap; }
+@mixin select-styles { position: relative; border-radius: $btnBorderRadius; white-space: nowrap; }
 @mixin select-container-styles { display: inline-block; position: relative;
 	@include linear-gradient(#fff, hsl($hue, 5%, 98%));
 	@include box-shadow(inset 0 0 0 1px rgba(0,0,0,0.1), 0 1px 5px rgba(0,0,0,0.07));
@@ -1368,7 +1368,7 @@ body.message .message-container .pane { top: 50%; margin-top: -33px !important; 
 }
 
 /* blocks */
-.matrixblock { position: relative; margin-bottom: 10px; padding: 1px 14px 14px; border-radius: 3px; background: hsl(212, 10%, 98%); @include user-select(none); outline: none;
+.matrixblock { position: relative; margin-bottom: 10px; padding: 1px 14px 14px; border-radius: $paneBorderRadius; background: hsl(212, 10%, 98%); @include user-select(none); outline: none;
 	@include box-shadow(inset 0 0 0 1px rgba(0,0,0,0.1));
 }
 .matrixblock.disabled { opacity: 1; }
