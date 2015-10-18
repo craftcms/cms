@@ -6,7 +6,7 @@
 {%- set orientation = craft.i18n.getLocaleData(locale ?: craft.locale).getOrientation() %}
 {%- set errors = (errors is defined ? errors : null) -%}
 
-<div class="field{% if first is defined and first %} first{% endif %}"{% if id %} id="{{ id }}-field"{% endif %}>
+<div class="field{% if first is defined and first %} first{% endif %}{% if errors %} has-errors{% endif %}"{% if id %} id="{{ id }}-field"{% endif %}>
 	{% if label or instructions %}
 		<div class="heading">
 			{% if label %}

@@ -250,6 +250,7 @@ Craft.ui =
 			return;
 		}
 
+		$field.addClass('has-errors');
 		$field.children('.input').addClass('errors');
 
 		var $errors = $field.children('ul.errors');
@@ -264,6 +265,7 @@ Craft.ui =
 
 	clearErrorsFromField: function($field)
 	{
+		$field.removeClass('has-errors');
 		$field.children('.input').removeClass('errors');
 		$field.children('ul.errors').remove();
 	},
