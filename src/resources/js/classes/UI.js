@@ -252,7 +252,7 @@ Craft.ui =
 
 		$field.children('.input').addClass('errors');
 
-		var $errors = $field.children('.errors');
+		var $errors = $field.children('ul.errors');
 
 		if (!$errors.length)
 		{
@@ -265,7 +265,7 @@ Craft.ui =
 	clearErrorsFromField: function($field)
 	{
 		$field.children('.input').removeClass('errors');
-		$field.children('.errors').remove();
+		$field.children('ul.errors').remove();
 	},
 
 	getAutofocusValue: function(autofocus)
