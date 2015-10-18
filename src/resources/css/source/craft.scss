@@ -867,6 +867,29 @@ ul.tree,
 /* ----------------------------------------*/
 
 .pane { @include pane; position: relative; margin: 14px 0; padding: 24px; border-radius: $paneBorderRadius; word-wrap: break-word; @include box-sizing(border-box); overflow: hidden; }
+
+.settings-pane { padding: 0; }
+.settings-pane > .field { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; margin: 0; padding: 8px 24px; min-height: 30px; }
+.settings-pane > .field:first-child { border-top-left-radius: $paneBorderRadius; border-top-right-radius: $paneBorderRadius; }
+.settings-pane > .field:last-child { border-bottom-left-radius: $paneBorderRadius; border-bottom-right-radius: $paneBorderRadius; }
+.settings-pane > .field + .field { border-top: 1px solid $hrcolor; }
+.settings-pane > .field > .heading { margin-bottom: 0; width: 70px; }
+.settings-pane > .field > .input { width: calc(100% - 84px); }
+
+.settings-pane > .field.has-errors { border: 1px solid $errorcolor; padding-left: 23px; padding-right: 23px; }
+.settings-pane > .field.has-errors + .field { border-top: none; }
+.settings-pane > .field.has-errors ul.errors { margin: 8px -23px -8px; padding: 8px 23px; width: 100%; background: $lightBgColor; list-style-type: none;}
+
+.settings-pane > .field > .input .text { display: block; margin: -8px 0; padding-top: 14px; padding-bottom: 14px; @include box-shadow(none); border: none !important; }
+.settings-pane > .field > .input > .datewrapper,
+.settings-pane > .field > .input > .timewrapper { @include floatleft; }
+.settings-pane > .field > .input > .datewrapper { width: 53%; }
+.settings-pane > .field > .input > .timewrapper { width: 47%; }
+.settings-pane > .field > .input > .datewrapper:before,
+.settings-pane > .field > .input > .timewrapper:before { left: 0; }
+.settings-pane > .field > .input > .datewrapper .text,
+.settings-pane > .field > .input > .timewrapper .text { @include padding-left(15px); }
+
 .body { position: relative; }
 
 .modal,

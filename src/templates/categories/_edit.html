@@ -69,7 +69,7 @@
 					</ul>
 				{% endif %}
 
-				<div id="settings" class="pane">
+				<div id="settings" class="pane settings-pane">
 
 					{{ forms.textField({
 						label: "Slug"|t,
@@ -82,7 +82,7 @@
 
 					{% if parentOptionCriteria is defined %}
 						{{ forms.elementSelectField({
-							label: "Parent Category"|t,
+							label: "Parent"|t,
 							id: 'parentId',
 							name: 'parentId',
 							elementType: elementType,
@@ -111,7 +111,7 @@
 					{% endset %}
 
 					{{ forms.field({
-						label: "Status"|t,
+						label: "Enabled"|t,
 						id: 'enabled'
 					}, statusInput) }}
 
