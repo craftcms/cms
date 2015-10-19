@@ -879,6 +879,7 @@ ul.tree,
 .settings-pane > .field:first-child { border-top-left-radius: $paneBorderRadius; border-top-right-radius: $paneBorderRadius; }
 .settings-pane > .field:last-child { border-bottom-left-radius: $paneBorderRadius; border-bottom-right-radius: $paneBorderRadius; }
 .settings-pane > .field + .field { border-top: 1px solid $hrcolor; }
+.settings-pane > .field + .field.has-focus { border-top: none; margin-top: 1px; }
 .settings-pane > .field > .heading { margin-bottom: 0; width: 70px; color: $mediumtextcolor; }
 .settings-pane > .field > .input { width: calc(100% - 84px); }
 
