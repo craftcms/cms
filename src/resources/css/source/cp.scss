@@ -13,22 +13,54 @@ html { overflow-y: scroll; }
 #alerts li:before { @include icon; @include margin(-1px, 3px, 0, 0); content: 'alert'; font-size: 16px; }
 #alerts li a { color: $errorcolor; text-decoration: underline; white-space: nowrap; }
 
-.container { margin: 0 auto; padding: 0 14px; max-width: 1294px; @include box-sizing(border-box); }
+.container { margin: 0 auto; padding: 0 24px; @include box-sizing(border-box); }
+
+body {
+	height: 100vh;
+	width: 100vw;
+	overflow: hidden;
+}
 
 /* header */
-#header { position: relative; padding-top: 7px; max-height: 76px; overflow: hidden; background: $headerBgColor; }
+#header { position: fixed; top: 0; @include left(0); width: 200px; height: 100vh; background: $headerBgColor; z-index: 100; }
+
 #header:after { @include clearafter; }
-#header .container { position: relative; }
+#header .container { position: relative; padding: 0; }
 #header a { color: hsl($hue, 5%, 85%);
 	@include transition(color linear 100ms);
 }
+
 #header a:hover,
-#header a.active { color: #fff; text-decoration: none; }
+#header a.active { color: #fff; text-decoration: none; background: $headerLinkHoverColor;  }
+#header a:active { color: #fff; text-decoration: none; background: $headerLinkActiveColor; }
 
-#header h2 { @include margin(0, 14px, 0, 0); @include floatleft; }
-#header h2 a { display: block; padding: 10px 0; width: calc(100% + 14px); overflow: hidden; white-space: nowrap; text-overflow: ellipsis; word-wrap: normal; }
+#header h2 { @include margin(0, 14px, 0, 18px); @include floatleft; }
+#header h2 a { display: block; padding: 14px 0; width: calc(100% + 14px); overflow: hidden; white-space: nowrap; text-overflow: ellipsis; word-wrap: normal; }
 
-#header-actions { @include floatright; height: 38px; }
+
+body > .container,
+#header { transition: all .25s ease-in-out; -webkit-transition: all .25s ease-in-out; }
+
+#container {  @include padding-left(224px); overflow: auto; height: 100vh; }
+
+@media only screen and (min-width: 1024px)
+{
+	#header { display: block; }
+}
+
+@media only screen and (max-width: 1024px)
+{
+	body.ltr > .container { width: calc(100% + 200px); @include transform(translate3d(-200px,0,0)); }
+	body.rtl > .container { width: calc(100% + 200px); @include transform(translate3d(200px,0,0)); }
+
+	body.showing-nav #header { display: block; }
+	body.showing-nav > .container { @include transform(translate3d(0,0,0)); }
+
+	body.ltr:not(.showing-nav) #header { @include transform(translate3d(-200px,0,0)); }
+	body.rtl:not(.showing-nav) #header { @include transform(translate3d(200px,0,0)); }
+}
+
+#header-actions { @include floatright; height: 38px; margin-top: 3px; @include margin-right(14px); }
 #header-actions > li { @include floatleft; }
 #header-actions a { display: block; padding: 0 7px; line-height: 36px; }
 #header-actions a.menubtn:after { @include margin-left(4px); }
@@ -67,24 +99,16 @@ html { overflow-y: scroll; }
 #settingsmenu ul li a img { width: 16px; height: 16px; position: absolute; margin-left: -23px; margin-top: 1px; }
 #settingsmenu ul li a:before { @include margin(1px, 0, 0, -22px); font-size: 15px; }
 
-#nav { @include floatleft; @include margin-left(-5px); }
-#nav li { @include floatleft; height: 40px; }
-#nav li a { display: block; margin: 2px 5px 0 5px; padding: 4px 5px; line-height: 28px; }
+#nav { padding-top: 50px; }
+#nav li a { display: block; margin: 0; padding: 7px 10px 7px 18px; line-height: 24px; @include box-sizing(border-box); }
 #nav li a.active { color: #fff; }
-#nav li a.sel { position: relative; z-index: 1; border-radius: 3px 3px 0 0; color: #fff; border-bottom: 2px solid $submitcolor; }
+#nav li a.sel { position: relative; z-index: 1; color: #fff; background: $headerLinkActiveColor; }
+
 #nav li a:not(.sel) .badge { color: #333 !important; }
 #nav li a.menubtn { line-height: 26px; }
-
-#subnav-wrapper { background: $subnavBgColor; max-height: 40px; overflow: hidden; }
-#subnav { @include floatleft; @include margin-left(-5px); }
-#subnav li { @include floatleft; height: 40px; }
-#subnav li a { display: block; margin: 2px 5px 0 5px; padding: 4px 5px; line-height: 28px; color: hsl($hue, 5%, 85%);
-	@include transition(color linear 100ms); }
-#subnav li a:hover:not(.sel) { color: #fff; text-decoration: none; }
-#subnav li a.active { color: #fff; }
-#subnav li a.sel { color: #fff; border-bottom: 2px solid $submitcolor; }
-#subnav li a:not(.sel) .badge { color: #fff !important; }
-#subnav li a.menubtn { line-height: 26px; }
+#nav li ul { background: $headerLinkActiveColor; }
+#nav li ul li a { @include padding-left(40px); }
+#nav span[data-icon] { margin-right: 3px; }
 
 
 /* HIDE */
@@ -112,14 +136,17 @@ html { overflow-y: scroll; }
 #notifications .notification.error { background: $submitcolor; }
 
 /* page header */
-#page-header { display: block; position: relative; z-index: 1; padding: 35px 0; overflow: hidden; }
+#page-header { display: block; position: relative; z-index: 1; padding: 20px 0; overflow: hidden; }
 #page-header h1 { display: inline; line-height: 1; }
 #page-header #extra-headers { display: inline-block; position: relative; top: 5px; }
 #page-header #extra-headers > .select,
 #page-header #extra-headers > .menubtn,
 #page-header #extra-headers > .btn { display: block; @include margin-left(5px); @include floatleft; }
 
-#crumbs { margin: -35px 0 10px; font-size: 0; }
+#page-header .show-nav { display: inline-block; position: relative; top: -7px; @include margin-left(-14px); color: $secondarySubmitColor; }
+#page-header .show-nav:before { @include icon; font-size: 16px; width: 43px; line-height: 24px; content: 'menu'; }
+
+#crumbs { margin: -20px 0 0; font-size: 0; }
 #crumbs:after { @include clearafter; }
 #crumbs li { display: inline-block; font-size: 13px; }
 #crumbs li:after { @include icon; margin: -1px 5px 0; font-size: 11px; color: $mediumtextcolor;
@@ -133,16 +160,15 @@ html { overflow-y: scroll; }
 .tabs:after { @include clearafter; }
 .tabs .tab { display: block; padding: 9px 10px; color: #777; white-space: nowrap; }
 .tabs .tab:hover { text-decoration: none; color: $linkcolor; }
-.tabs .tab.sel { border-radius: 3px 3px 0 0; color: $textcolor; cursor: default; }
+.tabs .tab.sel { color: #000; padding-bottom: 7px; border-bottom: 2px solid $linkcolor; cursor: default; }
 
-.pane > .tabs { margin: -24px -24px 24px; padding: 0 14px; border-radius: 3px 3px 0 0; font-size: 0; overflow: hidden;
+.pane > .tabs { margin: -24px -24px 24px; padding: 0 24px; font-size: 0; overflow: hidden;
 	@include linear-gradient(hsl($hue, 8%, 97%), hsl($hue, 8%, 96%));
 	@include box-shadow(inset 0 -1px 0 rgba(0,0,0,0.05));
 }
 .pane > .tabs li { display: inline-block; font-size: 13px; }
 .pane > .tabs li a { color: #555; }
 .pane > .tabs li a:not(.sel):hover { color: $linkcolor; }
-.pane > .tabs li .tab.sel { @include pane; }
 
 /* grids */
 .grid { position: relative; margin: 23px -7px; }
@@ -309,6 +335,60 @@ $fldGuideColor: #f4f3fb;
 .lp-iframe { width: 100%; height: 100%; }
 
 .lp-draghandle { position: absolute; z-index: 3; top: 0; margin-left: -3px; width: 6px; height: 100%; cursor: col-resize; }
+
+
+/* Sidebar */
+
+.show-sidebar { background: #fafafa; border-bottom: 1px solid #eee; display: block; position: relative; top: -24px; margin: 0 -24px; padding: 14px 24px; color: $secondarySubmitColor; z-index: 11; }
+.show-sidebar:hover { text-decoration: none; background: #fcfcfc; }
+.show-sidebar:after { @include icon; font-size: 16px; width: 43px; line-height: 24px; content: '▼'; @include floatright; margin-top: -3px; @include margin-right(-24px); }
+
+.sidebar { position: absolute; width: 170px; min-height: 100vh; height: 100%; @include margin(-24px, 0, 24px, -24px, !important); padding: 24px; overflow: auto; background: #fafafa; }
+
+@media only screen and (max-width: 768px) {
+
+	.sidebar { width: 100%; height: auto; min-height: auto; z-index: 10; border-bottom: 1px solid #eee; background: #fff;
+		@include box-shadow(0 0 32px 0 rgba(0,0,0,0.05));
+	}
+
+	.sidebar .btngroup { float: none !important; }
+	.sidebar .btngroup .btn { display: inline-block; }
+
+	#content:not(.showing-sidebar) .sidebar { display: none; }
+}
+
+@media only screen and (min-width: 769px) {
+	.content.has-sidebar:not(.hiding-sidebar) { @include margin-left(218px); }
+	.sidebar { @include margin(-24px, 0, 24px, -242px, !important); }
+}
+
+.sidebar .heading { position: relative; @include margin(14px, 0, 2px, -24px); padding: 0 24px; }
+.sidebar .heading span { display: inline-block; position: relative; z-index: 1; padding: 0 5px; margin: 0 -5px; text-transform: uppercase; color: $lighttextcolor; font-size: 11px; font-weight: bold; }
+
+.sidebar nav { @include margin-left(-24px); @include padding-left(24px); overflow: auto; }
+.sidebar nav li { position: relative; }
+.sidebar nav li a { display: block; @include margin-left(-24px); padding: 7px 0; color: $textcolor; @include user-select(none); outline: none; }
+.sidebar nav li a:hover { text-decoration: none; color: $textcolor; background: $sidebarHoverLinkBackgroundColor; }
+
+.sidebar nav li .toggle { position: absolute; top: 3px; }
+.sidebar nav li ul { display: none; }
+.sidebar nav li.expanded > ul { display: block; }
+
+.sidebar nav li a.sel { @include border-radius(0, 2px, 2px, 0); background: $darkselcolor; cursor: default; }
+.sidebar nav li a.sel,
+.sidebar nav li a.sel + .toggle { color: #fff; }
+
+.sidebar nav > ul > li > a { @include padding-left(24px); }
+.sidebar nav > ul > li > ul > li > a { @include padding-left(44px); }
+.sidebar nav > ul > li > ul > li > ul > li > a { @include padding-left(64px); }
+.sidebar nav > ul > li > ul > li > ul > li > ul > li > a { @include padding-left(84px); }
+.sidebar nav > ul > li > ul > li > ul > li > ul > li > ul > li a { @include padding-left(104px); }
+
+.sidebar nav > ul > li > .toggle { @include left(-20px); }
+.sidebar nav > ul > li > ul > li > .toggle { @include left(0px); }
+.sidebar nav > ul > li > ul > li > ul > li > .toggle { @include left(20px); }
+.sidebar nav > ul > li > ul > li > ul > li > ul > li > .toggle { @include left(40px); }
+.sidebar nav > ul > li > ul > li > ul > li > ul > li > ul > li .toggle { @include left(60px); }
 
 
 /* retina */

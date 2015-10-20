@@ -42,6 +42,7 @@
 
 /* New Dashboard */
 
-#extra-headers { float: right; }
+
+#extra-headers { @include floatright; }
 
 .widgetmanagerhud .body { width: 400px; }

@@ -189,13 +189,41 @@
 					{% for handle, item in craft.cp.nav() %}
 						<li id="nav-{{ handle }}">
 							<a{% if item.sel %} class="sel"{% endif %} href="{{ item.url }}">
+								{% if item.icon is defined %}
+									<span data-icon="{{ item.icon }}"></span>
+								{% endif %}
+
 								{{- item.label -}}
 								{%- if item.badge is defined and item.badge -%}
 									<span class="badge">{{ item.badge }}</span>
 								{%- endif -%}
 							</a>
+
+							{% set hasSubnav = (subnav is defined and subnav) %}
+
+							{% if item.sel and hasSubnav  %}
+					            <ul class="subnav">
+					                {% for itemId, item in subnav %}
+					                    {% set itemIsSelected = (
+					                        (selectedSubnavItem is defined and selectedSubnavItem == itemId) or
+					                        (selectedSubnavItem is not defined and loop.first)
+					                    ) -%}
+
+					                    <li>
+					                        {% if item.icon is defined %}
+					                            <a href="{{ url(item.url) }}"{% if itemIsSelected %} class="sel"{% endif %} data-icon="{{ item.icon }}" title="{{ item.label }}"></a>
+					                        {% else %}
+					                            <a href="{{ url(item.url) }}"{% if itemIsSelected %} class="sel"{% endif %}>{{ item.label }}</a>
+					                        {% endif %}
+					                    </li>
+
+					                {% endfor %}
+					            </ul>
+							{% endif %}
+
 						</li>
 					{% endfor %}
+
 					<!-- HIDE -->
 					<li id="customize-nav-btn"><a class="settings icon" title="{{ 'Customize…'|t }}"><span>{{ "Customize…"|t }}</span></a></li>
 					<!-- end HIDE -->
@@ -204,11 +232,8 @@
 		</div>
 	</header>
 
-	{% if subnav is defined and subnav %}
-		{% include "_includes/subnav" %}
-	{% endif %}
+	<div id="container" class="container">
 
-	<div class="container">
 		<div id="notifications-wrapper">
 			<div id="notifications">
 				{% for type in ['notice', 'error'] %}
@@ -246,7 +271,7 @@
 			{% endblock %}
 		</header>
 
-		<main id="main" role="main">
+		<main id="main" role="main"{% if fitted is defined and fitted %} class="fitted"{% endif %}>
 			{% block main %}
 				{% set sidebar = sidebar is defined ? sidebar : block('sidebar')|trim %}
 				{% set hasSidebar = (sidebar is not empty) %}
