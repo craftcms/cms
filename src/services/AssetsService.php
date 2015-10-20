@@ -624,6 +624,21 @@ class AssetsService extends BaseApplicationComponent
 	}
 
 	/**
+	 * Returns the root folder for a given source ID.
+	 *
+	 * @param int $sourceId
+	 *
+	 * @return AssetFolderModel|null
+	 */
+	public function getRootFolderBySourceId($sourceId)
+	{
+		return $this->findFolder(array(
+			'sourceId' => $sourceId,
+			'parentId' => ':empty:'
+		));
+	}
+
+	/**
 	 * Gets the total number of folders that match a given criteria.
 	 *
 	 * @param mixed $criteria

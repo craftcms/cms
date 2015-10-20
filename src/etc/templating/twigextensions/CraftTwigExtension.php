@@ -74,6 +74,7 @@ class CraftTwigExtension extends \Twig_Extension
 			'filesize'           => new \Twig_Filter_Function('\Craft\craft()->formatter->formatSize'),
 			'filter'             => new \Twig_Filter_Function('array_filter'),
 			'group'              => new \Twig_Filter_Method($this, 'groupFilter'),
+			'hash'               => new \Twig_Filter_Function('\Craft\craft()->security->hashData'),
 			'indexOf'            => new \Twig_Filter_Method($this, 'indexOfFilter'),
 			'intersect'          => new \Twig_Filter_Function('array_intersect'),
 			'json_encode'        => new \Twig_Filter_Method($this, 'jsonEncodeFilter'),

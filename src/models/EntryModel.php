@@ -135,7 +135,7 @@ class EntryModel extends BaseElementModel
 				else
 				{
 					// Just return the first one
-					return $sectionEntryTypes[array_shift(array_keys($sectionEntryTypes))];
+					return ArrayHelper::getFirstValue($sectionEntryTypes);
 				}
 			}
 		}

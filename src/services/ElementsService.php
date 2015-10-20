@@ -2029,6 +2029,30 @@ class ElementsService extends BaseApplicationComponent
 		$this->raiseEvent('onSaveElement', $event);
 	}
 
+	/**
+	 * Fires an 'onBeforePerformAction' event.
+	 *
+	 * @param Event $event
+	 *
+	 * @return null
+	 */
+	public function onBeforePerformAction(Event $event)
+	{
+		$this->raiseEvent('onBeforePerformAction', $event);
+	}
+
+	/**
+	 * Fires an 'onPerformAction' event.
+	 *
+	 * @param Event $event
+	 *
+	 * @return null
+	 */
+	public function onPerformAction(Event $event)
+	{
+		$this->raiseEvent('onPerformAction', $event);
+	}
+
 	// Private Methods
 	// =========================================================================
 

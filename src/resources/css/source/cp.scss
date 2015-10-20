@@ -85,7 +85,7 @@ body > .container,
 #header-actions #taskicon:hover .progressbar { border-color: #fff; }
 #header-actions #taskicon:hover .progressbar-inner { background: #fff; }
 
-#tasks-hud { padding: 0; max-height: 300px; overflow: auto; }
+#tasks-hud { padding: 0; overflow: auto; }
 #tasks-hud .task { @include padding(14px, 138px, 14px, 24px); overflow: hidden; }
 #tasks-hud .task:after { @include clearafter; }
 #tasks-hud .task + .task { border-top: 1px solid $hrcolor; }

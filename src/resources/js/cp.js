@@ -1025,7 +1025,7 @@ var TaskProgressHUD = Garnish.HUD.extend(
 		this.completedTasks = [];
 
 		this.base(this.icon.$a);
-		this.$body.attr('id', 'tasks-hud');
+		this.$main.attr('id', 'tasks-hud');
 
 		// Use the known task as a starting point
 		if (Craft.cp.runningTaskInfo && Craft.cp.runningTaskInfo.status != 'error')
@@ -1033,7 +1033,7 @@ var TaskProgressHUD = Garnish.HUD.extend(
 			this.showTaskInfo([Craft.cp.runningTaskInfo]);
 		}
 
-		this.$hud.trigger('resize');
+		this.$main.trigger('resize');
 	},
 
 	onShow: function()
@@ -1192,7 +1192,7 @@ TaskProgressHUD.Task = Garnish.Base.extend(
 		this.level = info.level;
 		this.description = info.description;
 
-		this.$container = $('<div class="task"/>').appendTo(this.hud.$body);
+		this.$container = $('<div class="task"/>').appendTo(this.hud.$main);
 		this.$statusContainer = $('<div class="task-status"/>').appendTo(this.$container);
 		this.$descriptionContainer = $('<div class="task-description"/>').appendTo(this.$container).text(info.description);
 
