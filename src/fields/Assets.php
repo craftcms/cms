@@ -298,18 +298,13 @@ class Assets extends BaseRelationField
     public function afterElementSave(ElementInterface $element)
     {
         $value = $this->getElementValue($element);
+        $assetsToMove = [];
 
         if ($value instanceof AssetQuery) {
             $value = $value->all();
         }
 
         if (is_array($value) && count($value)) {
-            $assetIds = [];
-
-            foreach ($value as $asset) {
-                $assetIds[] = $asset->id;
-            }
-
             if ($this->useSingleFolder) {
                 $targetFolder = $this->_resolveSourcePathToFolder(
                     $this->singleUploadLocationSource,
@@ -317,13 +312,19 @@ class Assets extends BaseRelationField
                     $element
                 );
 
-                $criteria = [
-                    'id' => array_merge(['in'], $assetIds)
-                ];
-
-                // Move all the files for single upload directories.
-                $assetsToMove = Asset::find()->configure($criteria)->all();
+                // Move only those Assets that have had their folder changed.
+                foreach ($value as $asset) {
+                    if ($targetFolder->id != $asset->folderId) {
+                        $assetsToMove[] = $asset;
+                    }
+                }
             } else {
+                $assetIds = array();
+
+                foreach ($value as $elementFile) {
+                    $assetIds[] = $elementFile->id;
+                }
+
                 // Find the files with temp sources and just move those.
                 $criteria = [
                     'id' => array_merge(['in'], $assetIds),
