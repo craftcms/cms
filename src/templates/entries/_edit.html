@@ -73,7 +73,7 @@
 				{% endif %}
 
 				{% if not isSingle or canPublish %}
-					<div id="settings" class="pane">
+					<div id="settings" class="pane settings-pane">
 
 						{% if not isSingle %}
 							{% if showEntryTypes %}
@@ -98,7 +98,7 @@
 
 							{% if parentOptionCriteria is defined %}
 								{{ forms.elementSelectField({
-									label: "Parent Entry"|t,
+									label: "Parent"|t,
 									id: 'parentId',
 									name: 'parentId',
 									elementType: elementType,
@@ -133,7 +133,7 @@
 							}) }}
 
 							{{ forms.dateTimeField({
-								label: "Expiration Date"|t,
+								label: "Expiry Date"|t,
 								id: 'expiryDate',
 								name: 'expiryDate',
 								value: (entry.expiryDate ? entry.expiryDate : null),
@@ -166,7 +166,7 @@
 							{% endset %}
 
 							{{ forms.field({
-								label: (canPublish ? "Status"|t),
+								label: (canPublish ? "Enabled"|t),
 								id: 'enabled'
 							}, statusInput) }}
 						{% endif %}

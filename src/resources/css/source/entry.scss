@@ -13,6 +13,3 @@ h1 span.draft span { display: none; }
 #locales li a:hover { color: $linkcolor; cursor: pointer; }
 #locales li .lightswitch { position: absolute; top: 50%; @include right(9px); margin-top: -9px; }
 #locales li .status { display: block; position: absolute; top: 50%; @include right(16px); margin: -5px 0 0; }
-
-#settings .select,
-#settings .select select { width: 100%; }

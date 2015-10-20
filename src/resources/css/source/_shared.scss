@@ -32,6 +32,10 @@ $warningcolor: #e78640;
 $successcolor: #00b007;
 $noticecolor: #5286d9;
 
+$btnBorderRadius: 3px;
+$paneBorderRadius: 3px;
+$elementBorderRadius: 3px;
+
 @mixin animation-iteration-count($count) {
 	-webkit-animation-iteration-count: $count;
 	-moz-animation-iteration-count: $count;

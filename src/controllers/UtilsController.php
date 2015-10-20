@@ -54,8 +54,6 @@ class UtilsController extends BaseController
 	 */
 	public function actionPhpInfo()
 	{
-		craft()->config->maxPowerCaptain();
-
 		ob_start();
 		phpinfo(-1);
 		$phpInfo = ob_get_clean();

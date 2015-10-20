@@ -6,6 +6,7 @@ Craft.Pane = Garnish.Base.extend(
 	$pane: null,
 	$content: null,
 
+	isSettingsPane: null,
 	tabs: null,
 	selectedTab: null,
 
@@ -22,6 +23,7 @@ Craft.Pane = Garnish.Base.extend(
 
 		this.$pane.data('pane', this);
 
+		this.isSettingsPane = this.$pane.hasClass('settings-pane');
 		this.$content = this.$pane.find('.content:not(.hidden):first');
 
 		// Initialize the tabs
@@ -63,6 +65,25 @@ Craft.Pane = Garnish.Base.extend(
 				$($tabs[0]).trigger('activate');
 			}
 		}
+
+		if (this.isSettingsPane)
+		{
+			var $inputs = Garnish.findInputs(this.$pane);
+			this.addListener($inputs, 'focus', 'focusField');
+			this.addListener($inputs, 'blur', 'blurField');
+		}
+
+		// this.initContent();
+	},
+
+	focusField: function(ev)
+	{
+		$(ev.currentTarget).closest('.field').addClass('has-focus');
+	},
+
+	blurField: function(ev)
+	{
+		$(ev.currentTarget).closest('.field').removeClass('has-focus');
 	},
 
 	/**
