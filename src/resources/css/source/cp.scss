@@ -314,6 +314,60 @@ $fldGuideColor: #f4f3fb;
 .lp-draghandle { position: absolute; z-index: 3; top: 0; margin-left: -3px; width: 6px; height: 100%; cursor: col-resize; }
 
 
+/* Sidebar */
+
+.show-sidebar { background: #fafafa; border-bottom: 1px solid #eee; display: block; position: relative; top: -24px; margin: 0 -24px; padding: 14px 24px; color: $secondarySubmitColor; z-index: 11; }
+.show-sidebar:hover { text-decoration: none; background: #fcfcfc; }
+.show-sidebar:after { @include icon; font-size: 16px; width: 43px; line-height: 24px; content: '▼'; @include floatright; margin-top: -3px; @include margin-right(-24px); }
+
+.sidebar { position: absolute; width: 170px; min-height: 100vh; height: 100%; @include margin(-24px, 0, 24px, -24px, !important); padding: 24px; overflow: auto; background: #fafafa; }
+
+@media only screen and (max-width: 768px) {
+
+	.sidebar { width: 100%; height: auto; z-index: 10; border-bottom: 1px solid #eee; background: #fff;
+		@include box-shadow(0 0 32px 0 rgba(0,0,0,0.05));
+	}
+
+	.sidebar .btngroup { float: none !important; }
+	.sidebar .btngroup .btn { display: inline-block; }
+
+	#content:not(.showing-sidebar) .sidebar { display: none; }
+}
+
+@media only screen and (min-width: 769px) {
+	.content.has-sidebar:not(.hiding-sidebar) { @include margin-left(218px); }
+	.sidebar { @include margin(-24px, 0, 24px, -242px, !important); }
+}
+
+.sidebar .heading { position: relative; @include margin(14px, 0, 2px, -24px); padding: 0 24px; }
+.sidebar .heading span { display: inline-block; position: relative; z-index: 1; padding: 0 5px; margin: 0 -5px; text-transform: uppercase; color: $lighttextcolor; font-size: 11px; font-weight: bold; }
+
+.sidebar nav { @include margin-left(-24px); @include padding-left(24px); overflow: auto; }
+.sidebar nav li { position: relative; }
+.sidebar nav li a { display: block; @include margin-left(-24px); padding: 7px 0; color: $textcolor; @include user-select(none); outline: none; }
+.sidebar nav li a:hover { text-decoration: none; color: $textcolor; background: $sidebarHoverLinkBackgroundColor; }
+
+.sidebar nav li .toggle { position: absolute; top: 3px; }
+.sidebar nav li ul { display: none; }
+.sidebar nav li.expanded > ul { display: block; }
+
+.sidebar nav li a.sel { @include border-radius(0, 2px, 2px, 0); background: $darkselcolor; cursor: default; }
+.sidebar nav li a.sel,
+.sidebar nav li a.sel + .toggle { color: #fff; }
+
+.sidebar nav > ul > li > a { @include padding-left(24px); }
+.sidebar nav > ul > li > ul > li > a { @include padding-left(44px); }
+.sidebar nav > ul > li > ul > li > ul > li > a { @include padding-left(64px); }
+.sidebar nav > ul > li > ul > li > ul > li > ul > li > a { @include padding-left(84px); }
+.sidebar nav > ul > li > ul > li > ul > li > ul > li > ul > li a { @include padding-left(104px); }
+
+.sidebar nav > ul > li > .toggle { @include left(-20px); }
+.sidebar nav > ul > li > ul > li > .toggle { @include left(0px); }
+.sidebar nav > ul > li > ul > li > ul > li > .toggle { @include left(20px); }
+.sidebar nav > ul > li > ul > li > ul > li > ul > li > .toggle { @include left(40px); }
+.sidebar nav > ul > li > ul > li > ul > li > ul > li > ul > li .toggle { @include left(60px); }
+
+
 /* retina */
 @media only screen and (-webkit-min-device-pixel-ratio: 1.5),
 	   only screen and (   -moz-min-device-pixel-ratio: 1.5),

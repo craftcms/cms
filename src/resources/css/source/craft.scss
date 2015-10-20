@@ -228,53 +228,6 @@ td.right { float: none; @include alignright; }
 .content { position: relative; }
 .content:after { @include clearafter; }
 
-/* sidebar */
-.content.has-sidebar:not(.hiding-sidebar) { @include margin-left(218px); }
-.content.has-sidebar:not(.hiding-sidebar) .show-sidebar { display: none; }
-
-.content.has-sidebar .show-sidebar { position: absolute; top: -24px; @include left(-24px);  color: $lighttextcolor;
-	@include transition(color linear 100ms);
-}
-.content.has-sidebar .show-sidebar:hover { color: $linkcolor; }
-.content.has-sidebar .show-sidebar:before { @include icon; width: 43px; line-height: 24px;
-	body.ltr & { content: 'menu rarr'; }
-	body.rtl & { content: 'menu larr'; }
-}
-.content.has-sidebar .show-sidebar.showing:before {
-	body.ltr & { content: 'menu larr'; }
-	body.rtl & { content: 'menu rarr'; }
-}
-
-.sidebar { position: absolute; @include margin(-24px, 0, 24px, -242px, !important); padding: 24px; width: 170px; overflow: auto; background: #fafafa; height: 100%; }
-
-.sidebar .heading { position: relative; @include margin(14px, 0, 2px, -24px); padding: 0 24px; }
-.sidebar .heading span { display: inline-block; position: relative; z-index: 1; padding: 0 5px; margin: 0 -5px; text-transform: uppercase; color: $lighttextcolor; font-size: 11px; font-weight: bold; background: #fafafa; }
-
-.sidebar nav { @include margin-left(-24px); @include padding-left(24px); width: 170px; overflow: auto; }
-.sidebar nav li { position: relative; }
-.sidebar nav li a { display: block; @include margin-left(-24px); padding: 7px 0; color: $textcolor; @include user-select(none); outline: none; }
-.sidebar nav li a:hover { text-decoration: none; color: $textcolor; background: $sidebarHoverLinkBackgroundColor; }
-
-.sidebar nav li .toggle { position: absolute; top: 3px; }
-.sidebar nav li ul { display: none; }
-.sidebar nav li.expanded > ul { display: block; }
-
-.sidebar nav li a.sel { @include border-radius(0, 2px, 2px, 0); background: $darkselcolor; cursor: default; }
-.sidebar nav li a.sel,
-.sidebar nav li a.sel + .toggle { color: #fff; }
-
-.sidebar nav > ul > li > a { @include padding-left(24px); }
-.sidebar nav > ul > li > ul > li > a { @include padding-left(44px); }
-.sidebar nav > ul > li > ul > li > ul > li > a { @include padding-left(64px); }
-.sidebar nav > ul > li > ul > li > ul > li > ul > li > a { @include padding-left(84px); }
-.sidebar nav > ul > li > ul > li > ul > li > ul > li > ul > li a { @include padding-left(104px); }
-
-.sidebar nav > ul > li > .toggle { @include left(-20px); }
-.sidebar nav > ul > li > ul > li > .toggle { @include left(0px); }
-.sidebar nav > ul > li > ul > li > ul > li > .toggle { @include left(20px); }
-.sidebar nav > ul > li > ul > li > ul > li > ul > li > .toggle { @include left(40px); }
-.sidebar nav > ul > li > ul > li > ul > li > ul > li > ul > li .toggle { @include left(60px); }
-
 /* Customize Sources */
 .sidebar .customize-sources { color: rgba(0,0,0,0.2); }
 .sidebar .customize-sources:hover { color: $linkcolor; }
