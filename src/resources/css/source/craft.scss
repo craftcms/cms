@@ -102,7 +102,7 @@ h1[data-icon]:before { @include margin(-8px, 10px, 0, 0) }
 h2[data-icon]:before { @include margin(-4px, 6px, 0, 0); font-size: 19px; }
 
 /* horizontal rule */
-hr { margin: 14px 0; border: none; border-top: 1px solid $hrcolor; height: 0; color: transparent; }
+hr { margin: 14px 0; border: none; border-top: 1px solid $hairlineColor; height: 0; color: transparent; }
 .pane hr { margin: 24px -24px; }
 
 /* paragraphs */
@@ -315,11 +315,7 @@ table.inputs .btngroup { display: block; float: none; }
 }
 .btn:not(.noborder):not(.submit),
 .btngroup:not(.noborder):not(.submit) {
-	@include box-shadow(0 0 0 1px rgba(0,0,0,0.15), 0 1px 2px -1px rgba(0,0,0,0.1));
-}
-.btn.submit,
-.btngroup.submit {
-	@include box-shadow(0 1px 2px -1px rgba(0,0,0,0.1));
+	@include box-shadow(inset 0 0 0 1px $hairlineColorAlpha);
 }
 
 .btn:active { outline: none; }
@@ -540,9 +536,9 @@ table.data td:not(:first-child) { @include padding-left(14px); }
 table.data thead th,
 table.data thead td { padding-top: 4px; padding-bottom: 4px; width: auto; cursor: default; }
 table.data tbody th,
-table.data tbody td { padding-top: 7px; padding-bottom: 7px; border-bottom: 1px dotted $hrcolor; }
+table.data tbody td { padding-top: 7px; padding-bottom: 7px; border-bottom: 1px dotted $hairlineColor; }
 table.data tbody tr:first-child th,
-table.data tbody tr:first-child td { border-top: 1px dotted $hrcolor; }
+table.data tbody tr:first-child td { border-top: 1px dotted $hairlineColor; }
 table.data thead + tbody tr:first-child th,
 table.data thead + tbody tr:first-child td { border-top-style: solid; }
 table.data th { font-weight: bold; }
@@ -562,7 +558,7 @@ table.collapsed tbody td { display: block; border: none; padding: 0; @include al
 table.collapsed tbody th,
 table.collapsed tbody td { padding: 2px 0 !important; }
 table.collapsed thead { display: none; }
-table.collapsed tbody tr { padding: 6px 0; border-bottom: 1px dotted $hrcolor; }
+table.collapsed tbody tr { padding: 6px 0; border-bottom: 1px dotted $hairlineColor; }
 table.collapsed tbody [data-title] { @include margin-right(0); }
 table.collapsed tbody [data-title]:before { margin-right: 5px; content: attr(data-title) ":"; font-weight: bold; }
 table.collapsed tbody td:empty { display: none; }
@@ -663,7 +659,7 @@ table.collapsed tbody tr:last-child td:not(:last-child) { border-bottom: none; }
 	body.ltr & { background-image: url(../images/branch.png); background-position: 0 0; }
 	body.rtl & { background-image: url(../images/branch_rtl.png); background-position: 100% 0; }
 }
-.structure ul li:not(:last-child):not(.last) { @include padding-left(37px); @include border-left(1px solid $hrcolor);
+.structure ul li:not(:last-child):not(.last) { @include padding-left(37px); @include border-left(1px solid $hairlineColor);
 	body.ltr & { background-position: -1px 0; }
 	body.rtl & { background-position: calc(100% + 1px) 0; }
 }
@@ -830,7 +826,7 @@ ul.tree,
 }
 .settings-pane > .field:first-child { border-top-left-radius: $paneBorderRadius; border-top-right-radius: $paneBorderRadius; }
 .settings-pane > .field:last-child { border-bottom-left-radius: $paneBorderRadius; border-bottom-right-radius: $paneBorderRadius; }
-.settings-pane > .field + .field { border-top: 1px solid $hrcolor; }
+.settings-pane > .field + .field { border-top: 1px solid $hairlineColor; }
 .settings-pane > .field + .field.has-focus { border-top: none; margin-top: 1px; }
 .settings-pane > .field > .heading { margin-bottom: 0; width: 70px; color: $mediumtextcolor; }
 .settings-pane > .field > .input { width: calc(100% - 84px); }
@@ -870,7 +866,7 @@ body #redactor-modal { z-index: 100; }
 .modal,
 .hud .body,
 body #redactor-modal { border-radius: $paneBorderRadius; background: #fff;
-	@include box-shadow(0 25px 100px rgba(0,0,0,0.6));
+	@include box-shadow(0 25px 100px rgba(0,0,0,0.5));
 }
 
 .modal,
@@ -1003,8 +999,8 @@ body #redactor-modal-overlay {
 /*  Menus
 /* ----------------------------------------*/
 
-@mixin menu-styles { z-index: 100; margin-bottom: 10px; border-radius: $paneBorderRadius; padding: 4px 14px; background: #fff; @include user-select(none);
-	@include box-shadow(0 0 0 1px rgba(0,0,0,0.1), 0 5px 25px -5px rgba(0,0,0,0.25));
+@mixin menu-styles { z-index: 100; margin-bottom: 10px; border-radius: $btnBorderRadius; padding: 4px 14px; background: #fff; @include user-select(none);
+	@include box-shadow(0 0 0 1px $hairlineColorAlpha, 0 5px 20px rgba(0,0,0,0.25));
 }
 
 @mixin menu-option-styles { margin: 0 -14px; padding: 3px 14px; color: $textcolor; text-decoration: none; white-space: nowrap; }
@@ -1059,13 +1055,13 @@ body .redactor-dropdown a:hover { @include menu-option-active-styles; }
 	@include box-shadow(0 1px 5px -1px rgba(0, 0, 0, 0.1));
 }
 
-@mixin text-input-styles { border: none; border-radius: 2px;
-	@include box-shadow(0 0 2px hsla(205, 100%, 60%, 0), inset 0 0 0 1px rgba(0,0,0,0.1), inset 0 1px 3px rgba(0,0,0,0.1), inset 0 0 0 1px hsla(205, 100%, 60%, 0));
+@mixin text-input-styles { border: 1px solid $hairlineColor; border-radius: $btnBorderRadius;
+	@include box-shadow(0 0 5px hsla(205, 100%, 60%, 0));
 	@include box-shadow-transition(100ms);
 }
 
 @mixin text-input-focussed-styles { border-color: $focusglowcolor; outline: none;
-	@include box-shadow(0 0 2px hsl(205, 100%, 60%), inset 0 0 0 1px rgba(0,0,0,0.1), inset 0 2px 4px rgba(0,0,0,0.1), inset 0 0 0 1px hsla(205, 100%, 60%, 0.5));
+	@include box-shadow(0 0 5px hsl(205, 100%, 75%));
 }
 
 .text,
@@ -1115,7 +1111,7 @@ input.checkbox + label:empty:after,
 div.checkbox:empty:after { content: '.'; font-size: 0; } /* fixes a RTL bug */
 input.checkbox + label:before,
 div.checkbox:before { display: block; position: absolute; top: 2px; @include left(0); width: 12px !important; height: 12px; content: '.'; font-size: 0; border-radius: 2px; background: #fff;
-	@include box-shadow(0 0 2px hsla(205, 100%, 60%, 0), inset 0 0 0 1px rgba(0,0,0,0.15), inset 0 1px 2px rgba(0,0,0,0.15), inset 0 0 0 1px hsla(205, 100%, 60%, 0));
+	@include box-shadow(0 0 2px hsla(205, 100%, 60%, 0), inset 0 0 0 1px rgba(0,0,0,0.15), inset 0 0 0 1px hsla(205, 100%, 60%, 0));
 }
 input.checkbox:disabled + label,
 div.checkbox.disabled:before,
@@ -1136,7 +1132,7 @@ div.checkbox.indeterminate:before { content: 'minus'; font-size: 7px; text-align
 
 input.checkbox:focus + label:before,
 :focus div.checkbox:before { outline: none;
-	@include box-shadow(0 0 2px hsl(205, 100%, 60%), inset 0 0 0 1px rgba(0,0,0,0.1), inset 0 1px 2px rgba(0,0,0,0.1), inset 0 0 0 1px hsla(205, 100%, 60%, 0.5));
+	@include box-shadow(0 0 2px hsl(205, 100%, 60%), inset 0 0 0 1px rgba(0,0,0,0.1), inset 0 0 0 1px hsla(205, 100%, 60%, 0.5));
 }
 input.checkbox:checked:focus + label:before,
 input.checkbox:indeterminate:focus + label:before,
@@ -1149,7 +1145,7 @@ input.checkbox:indeterminate:focus + label:before,
 .text,
 .textline,
 body .redactor-box:not(.redactor-box-fullscreen) .redactor-editor,
-body .redactor-box textarea { padding: 6px 7px; }
+body .redactor-box textarea { padding: 5px 7px; }
 
 .text { background: #fff; }
 .text input { margin: 0; padding: 0; border: none; outline: none; background: none; }

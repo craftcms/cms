@@ -88,7 +88,7 @@ body > .container,
 #tasks-hud { padding: 0; overflow: auto; }
 #tasks-hud .task { @include padding(14px, 138px, 14px, 24px); overflow: hidden; }
 #tasks-hud .task:after { @include clearafter; }
-#tasks-hud .task + .task { border-top: 1px solid $hrcolor; }
+#tasks-hud .task + .task { border-top: 1px solid $hairlineColor; }
 #tasks-hud .task .task-description { position: relative; }
 #tasks-hud .task .task-description .indent { position: absolute; top: -1px; @include left(-24px); @include margin-left(0); }
 #tasks-hud .task .task-status { @include floatright; @include margin-right(-114px); width: 100px; color: $lighttextcolor; text-align: center; }
@@ -182,7 +182,7 @@ body > .container,
 #footer li a { color: $lighttextcolor; text-decoration: underline; }
 #footer li a:hover { color: $mediumtextcolor; }
 #footer #upgradepromo { margin-top: 14px; }
-#footer #upgradepromo a { display: inline-block; border-radius: 5px; padding: 14px; border: 2px solid $hrcolor; font-size: 15px; color: $mediumtextcolor; }
+#footer #upgradepromo a { display: inline-block; border-radius: 5px; padding: 14px; border: 2px solid $hairlineColor; font-size: 15px; color: $mediumtextcolor; }
 #footer #upgradepromo a .go { color: $linkcolor; }
 #footer #upgradepromo a .go:after { @include padding-left(5px); }
 #footer #upgradepromo a:hover { text-decoration: none; }
