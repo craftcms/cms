@@ -23,33 +23,33 @@ class CpVariable
 	 */
 	public function nav($iconSize = 32)
 	{
-		$nav['dashboard'] = array('label' => Craft::t('Dashboard'));
+		$nav['dashboard'] = array('label' => Craft::t('Dashboard'), 'icon' => 'home');
 
 		if (craft()->sections->getTotalEditableSections())
 		{
-			$nav['entries'] = array('label' => Craft::t('Entries'));
+			$nav['entries'] = array('label' => Craft::t('Entries'), 'icon' => 'section');
 		}
 
 		$globals = craft()->globals->getEditableSets();
 
 		if ($globals)
 		{
-			$nav['globals'] = array('label' => Craft::t('Globals'), 'url' => 'globals/'.$globals[0]->handle);
+			$nav['globals'] = array('label' => Craft::t('Globals'), 'url' => 'globals/'.$globals[0]->handle, 'icon' => 'globe');
 		}
 
 		if (craft()->categories->getEditableGroupIds())
 		{
-			$nav['categories'] = array('label' => Craft::t('Categories'));
+			$nav['categories'] = array('label' => Craft::t('Categories'), 'icon' => 'categories');
 		}
 
 		if (craft()->assetSources->getTotalViewableSources())
 		{
-			$nav['assets'] = array('label' => Craft::t('Assets'));
+			$nav['assets'] = array('label' => Craft::t('Assets'), 'icon' => 'assets');
 		}
 
 		if (craft()->getEdition() == Craft::Pro && craft()->userSession->checkPermission('editUsers'))
 		{
-			$nav['users'] = array('label' => Craft::t('Users'));
+			$nav['users'] = array('label' => Craft::t('Users'), 'icon' => 'users');
 		}
 
 		// Add any Plugin nav items

@@ -189,6 +189,10 @@
 					{% for handle, item in craft.cp.nav() %}
 						<li id="nav-{{ handle }}">
 							<a{% if item.sel %} class="sel"{% endif %} href="{{ item.url }}">
+								{% if item.icon is defined %}
+									<span data-icon="{{ item.icon }}"></span>
+								{% endif %}
+
 								{{- item.label -}}
 								{%- if item.badge is defined and item.badge -%}
 									<span class="badge">{{ item.badge }}</span>
