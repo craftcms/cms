@@ -7,6 +7,7 @@ $lightBgColor: #f8f8f8;
 
 $headerLinkHoverColor: rgba(0,0,0,0.1);
 $headerLinkActiveColor: rgba(0,0,0,0.2);
+$sidebarBgColor: #fafafa;
 $sidebarHoverLinkBackgroundColor: hsl($hue, 20%, 95%);
 
 $textcolor: hsl($hue, 20%, 20%);
@@ -33,7 +34,7 @@ $successcolor: #00b007;
 $noticecolor: #5286d9;
 
 $btnBorderRadius: 3px;
-$paneBorderRadius: 3px;
+$paneBorderRadius: 4px;
 $elementBorderRadius: 3px;
 
 @mixin animation-iteration-count($count) {
