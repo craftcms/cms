@@ -84,12 +84,15 @@ Craft.Pane = Garnish.Base.extend(
 
 	focusField: function(ev)
 	{
-		$(ev.currentTarget).closest('.field').addClass('has-focus');
+		$(ev.currentTarget).closest('.field')
+			.removeClass('has-errors')
+			.addClass('has-focus');
 	},
 
 	blurField: function(ev)
 	{
-		$(ev.currentTarget).closest('.field').removeClass('has-focus');
+		$(ev.currentTarget).closest('.field')
+			.removeClass('has-focus');
 	},
 
 	/**

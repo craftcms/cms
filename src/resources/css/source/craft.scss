@@ -873,8 +873,8 @@ ul.tree,
 	@include box-shadow(0 0 2px hsla(205, 100%, 60%, 0), inset 0 0 0 1px hsla(205, 100%, 60%, 0));
 	@include box-shadow-transition(100ms);
 }
-.settings-pane > .field.has-focus {
-	@include box-shadow(0 0 2px hsl(205, 100%, 60%), inset 0 0 0 1px hsla(205, 100%, 60%, 0.5));
+.settings-pane > .field.has-focus { z-index: 1;
+	@include box-shadow(0 0 5px hsl(205, 100%, 60%));
 }
 .settings-pane > .field:first-child { border-top-left-radius: $paneBorderRadius; border-top-right-radius: $paneBorderRadius; }
 .settings-pane > .field:last-child { border-bottom-left-radius: $paneBorderRadius; border-bottom-right-radius: $paneBorderRadius; }
@@ -885,7 +885,7 @@ ul.tree,
 
 .settings-pane > .field.has-errors { border: 1px solid $errorcolor; padding-left: 23px; padding-right: 23px; }
 .settings-pane > .field.has-errors + .field { border-top: none; }
-.settings-pane > .field.has-errors ul.errors { margin: 8px -23px -8px; padding: 8px 23px; width: 100%; background: $lightBgColor; list-style-type: none;}
+.settings-pane > .field ul.errors { margin: 8px -23px -8px; padding: 8px 23px; width: 100%; background: $lightBgColor; list-style-type: none;}
 
 .settings-pane > .field > .input .text { display: block; margin: -8px 0; padding: 14px 0; border-radius: 0; @include box-shadow(none); border: none !important; }
 
