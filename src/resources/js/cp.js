@@ -14,6 +14,7 @@ Craft.CP = Garnish.Base.extend(
 	$siteName: null,
 	$nav: null,
 	$subnav: null,
+	$pageHeader: null,
 
 	$overflowNavMenuItem: null,
 	$overflowNavMenuBtn: null,
@@ -36,12 +37,16 @@ Craft.CP = Garnish.Base.extend(
 	visibleNavItems: null,
 	totalNavWidth: null,
 	showingOverflowNavMenu: false,
+	showingNavToggle: null,
+	showingSidebarToggle: null,
 
 	subnavItems: null,
 	totalSubnavItems: null,
 	visibleSubnavItems: null,
 	totalSubnavWidth: null,
 	showingOverflowSubnavMenu: false,
+
+	selectedItemLabel: null,
 
 	fixedNotifications: false,
 
@@ -63,10 +68,12 @@ Craft.CP = Garnish.Base.extend(
 		// Find all the key elements
 		this.$alerts = $('#alerts');
 		this.$header = $('#header');
+		this.$pageHeader = $('#page-header');
 		this.$headerActionsList = this.$header.find('#header-actions');
 		this.$siteName = this.$header.find('h2');
 		this.$nav = $('#nav');
 		this.$subnav = $('#subnav');
+		this.$sidebar = $('#sidebar');
 		this.$notificationWrapper = $('#notifications-wrapper');
 		this.$notificationContainer = $('#notifications');
 		this.$main = $('#main');
@@ -111,6 +118,12 @@ Craft.CP = Garnish.Base.extend(
 			this.subnavItems.push($li);
 			this.totalSubnavWidth += width;
 		}
+
+		// sidebar
+
+		this.$sidebarLinks = $('nav a', this.$sidebar);
+		this.addListener(this.$sidebarLinks, 'click', 'selectSidebarItem');
+
 
 		this.addListener(Garnish.$win, 'scroll', 'updateFixedNotifications');
 		this.updateFixedNotifications();
@@ -235,8 +248,8 @@ Craft.CP = Garnish.Base.extend(
 		// Update the responsive nav
 		this.updateResponsiveNav();
 
-		// Update the responsive sub nav
-		this.updateResponsiveSubnav();
+		// Update the responsive sidebar
+		this.updateResponsiveSidebar();
 
 		// Update any responsive tables
 		this.updateResponsiveTables();
@@ -249,132 +262,95 @@ Craft.CP = Garnish.Base.extend(
 
 	updateResponsiveNav: function()
 	{
-		// Is an overflow menu going to be needed?
-		if (this.onWindowResize._cpWidth < this.totalNavWidth)
+		if(this.onWindowResize._cpWidth < 1024)
 		{
-			// Show the overflow menu button
-			if (!this.showingOverflowNavMenu)
+			if (!this.showingNavToggle)
 			{
-				if (!this.$overflowNavMenuBtn)
-				{
-					// Create it
-					this.$overflowNavMenuItem = $('<li/>').appendTo(this.$nav);
-					this.$overflowNavMenuBtn = $('<a class="menubtn" title="'+Craft.t('More')+'">…</a>').appendTo(this.$overflowNavMenuItem);
-					this.$overflowNavMenu = $('<div id="overflow-nav" class="menu" data-align="right"/>').appendTo(this.$overflowNavMenuItem);
-					this.$overflowNavMenuList = $('<ul/>').appendTo(this.$overflowNavMenu);
-					new Garnish.MenuBtn(this.$overflowNavMenuBtn);
-				}
-				else
-				{
-					this.$overflowNavMenuItem.show();
-				}
-
-				this.showingOverflowNavMenu = true;
-			}
-
-			// Is the nav too tall?
-			if (this.$nav.height() > Craft.CP.navHeight)
-			{
-				// Move items to the overflow menu until the nav is back to its normal height
-				do
-				{
-					this.addLastVisibleNavItemToOverflowMenu();
-				}
-				while ((this.$nav.height() > Craft.CP.navHeight) && (this.visibleNavItems > 0));
-			}
-			else
-			{
-				// See if we can fit any more nav items in the main menu
-				while ((this.$nav.height() == Craft.CP.navHeight) && (this.visibleNavItems < this.totalNavItems))
-				{
-					this.addFirstOverflowNavItemToMainMenu();
-				}
-
-				// Now kick the last one back.
-				this.addLastVisibleNavItemToOverflowMenu();
+				this.showNavToggle();
 			}
 		}
 		else
 		{
-			if (this.showingOverflowNavMenu)
+			if (this.showingNavToggle)
 			{
-				// Hide the overflow menu button
-				this.$overflowNavMenuItem.hide();
-
-				// Move any nav items in the overflow menu back to the main nav menu
-				while (this.visibleNavItems < this.totalNavItems)
-				{
-					this.addFirstOverflowNavItemToMainMenu();
-				}
-
-				this.showingOverflowNavMenu = false;
+				this.hideNavToggle();
 			}
 		}
 	},
 
-	updateResponsiveSubnav: function()
+	showNavToggle: function()
 	{
-		// Is an overflow menu going to be needed?
-		if (this.onWindowResize._cpWidth < this.totalSubnavWidth)
+		this.$navBtn = $('<a class="show-nav" title="'+Craft.t('Show nav')+'"></a>').prependTo(this.$pageHeader);
+
+		this.addListener(this.$navBtn, 'click', 'toggleNav');
+
+		this.showingNavToggle = true;
+	},
+
+	hideNavToggle: function()
+	{
+		this.$navBtn.remove();
+		this.showingNavToggle = false;
+	},
+
+	toggleNav: function()
+	{
+		if(Garnish.$bod.hasClass('showing-nav'))
 		{
-			// Show the overflow menu button
-			if (!this.showingOverflowSubnavMenu)
-			{
-				if (!this.$overflowSubnavMenuBtn)
-				{
-					// Create it
-					this.$overflowSubnavMenuItem = $('<li/>').appendTo(this.$subnav);
-					this.$overflowSubnavMenuBtn = $('<a class="menubtn" title="'+Craft.t('More')+'">…</a>').appendTo(this.$overflowSubnavMenuItem);
-					this.$overflowSubnavMenu = $('<div id="overflow-subnav" class="menu" data-align="right"/>').appendTo(this.$overflowSubnavMenuItem);
-					this.$overflowSubnavMenuList = $('<ul/>').appendTo(this.$overflowSubnavMenu);
-					new Garnish.MenuBtn(this.$overflowSubnavMenuBtn);
-				}
-				else
-				{
-					this.$overflowSubnavMenuItem.show();
-				}
+			Garnish.$bod.toggleClass('showing-nav');
+		}
+		else
+		{
+			Garnish.$bod.toggleClass('showing-nav');
+		}
 
-				this.showingOverflowSubnavMenu = true;
-			}
+	},
 
-			// Is the nav too tall?
-			if (this.$subnav.height() > Craft.CP.subnavHeight)
+	updateResponsiveSidebar: function()
+	{
+		if(this.onWindowResize._cpWidth < 769)
+		{
+			if (!this.showingSidebarToggle)
 			{
-				// Move items to the overflow menu until the nav is back to its normal height
-				do
-				{
-					this.addLastVisibleSubnavItemToOverflowMenu();
-				}
-				while ((this.$subnav.height() > Craft.CP.subnavHeight) && (this.visibleSubnavItems > 0));
-			}
-			else
-			{
-				// See if we can fit any more nav items in the main menu
-				while ((this.$subnav.height() == Craft.CP.subnavHeight) && (this.visibleSubnavItems < this.totalSubnavItems))
-				{
-					this.addFirstOverflowSubnavItemToMainMenu();
-				}
-
-				// Now kick the last one back.
-				this.addLastVisibleSubnavItemToOverflowMenu();
+				this.showSidebarToggle();
 			}
 		}
 		else
 		{
-			if (this.showingOverflowSubnavMenu)
+			if (this.showingSidebarToggle)
 			{
-				// Hide the overflow menu button
-				this.$overflowSubnavMenuItem.hide();
-
-				// Move any nav items in the overflow menu back to the main nav menu
-				while (this.visibleSubnavItems < this.totalSubnavItems)
-				{
-					this.addFirstOverflowSubnavItemToMainMenu();
-				}
-
-				this.showingOverflowSubnavMenu = false;
+				this.hideSidebarToggle();
 			}
 		}
+	},
+
+	showSidebarToggle: function()
+	{
+		this.$sidebarBtn = $('<a class="show-sidebar" title="'+Craft.t('Show sidebar')+'">'+this.selectedItemLabel+'</a>').prependTo(this.$content);
+
+		this.addListener(this.$sidebarBtn, 'click', 'toggleSidebar');
+
+		this.showingSidebarToggle = true;
+	},
+
+	selectSidebarItem: function(ev)
+	{
+		var $link = $(ev.currentTarget);
+
+		this.selectedItemLabel = $link.html();
+
+		this.$sidebarBtn.html(this.selectedItemLabel);
+	},
+
+	hideSidebarToggle: function()
+	{
+		this.$sidebarBtn.remove();
+		this.showingSidebarToggle = false;
+	},
+
+	toggleSidebar: function()
+	{
+		$('.content.has-sidebar').toggleClass('showing-sidebar');
 	},
 
 	updateResponsiveTables: function()
