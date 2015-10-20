@@ -870,7 +870,7 @@ body #redactor-modal { z-index: 100; }
 .modal,
 .hud .body,
 body #redactor-modal { border-radius: $paneBorderRadius; background: #fff;
-	@include box-shadow(0 0 0 1px rgba(0,0,0,0.1), 0 10px 50px -10px rgba(0,0,0,0.25));
+	@include box-shadow(0 25px 100px rgba(0,0,0,0.6));
 }
 
 .modal,
