@@ -347,7 +347,7 @@ $fldGuideColor: #f4f3fb;
 
 @media only screen and (max-width: 768px) {
 
-	.sidebar { width: 100%; height: auto; z-index: 10; border-bottom: 1px solid #eee; background: #fff;
+	.sidebar { width: 100%; height: auto; min-height: auto; z-index: 10; border-bottom: 1px solid #eee; background: #fff;
 		@include box-shadow(0 0 32px 0 rgba(0,0,0,0.05));
 	}
 
