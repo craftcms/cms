@@ -188,7 +188,6 @@ class AssetsFieldType extends BaseElementFieldType
 
 		if (is_array($elementFiles) && count($elementFiles))
 		{
-			$fileIds = array();
 			$settings = $this->getSettings();
 
 			if ($this->getSettings()->useSingleFolder)
@@ -208,6 +207,13 @@ class AssetsFieldType extends BaseElementFieldType
 			}
 			else
 			{
+				$fileIds = array();
+
+				foreach ($elementFiles as $elementFile)
+				{
+					$fileIds[] = $elementFile->id;
+				}
+
 				// Find the files with temp sources and just move those.
 				$criteria =array(
 					'id' => array_merge(array('in'), $fileIds),
