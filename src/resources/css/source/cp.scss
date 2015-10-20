@@ -26,7 +26,7 @@ html { overflow-y: scroll; }
 #header a.active { color: #fff; text-decoration: none; }
 
 #header h2 { @include margin(0, 14px, 0, 0); @include floatleft; }
-#header h2 a { display: block; padding: 10px 0; width: calc(100% + 14px); overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+#header h2 a { display: block; padding: 10px 0; width: calc(100% + 14px); overflow: hidden; white-space: nowrap; text-overflow: ellipsis; word-wrap: normal; }
 
 #header-actions { @include floatright; height: 38px; }
 #header-actions > li { @include floatleft; }
@@ -53,7 +53,7 @@ html { overflow-y: scroll; }
 #header-actions #taskicon:hover .progressbar { border-color: #fff; }
 #header-actions #taskicon:hover .progressbar-inner { background: #fff; }
 
-#tasks-hud { padding: 0; max-height: 300px; overflow: auto; }
+#tasks-hud { padding: 0; overflow: auto; }
 #tasks-hud .task { @include padding(14px, 138px, 14px, 24px); overflow: hidden; }
 #tasks-hud .task:after { @include clearafter; }
 #tasks-hud .task + .task { border-top: 1px solid $hrcolor; }

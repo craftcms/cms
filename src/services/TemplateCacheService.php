@@ -226,8 +226,9 @@ class TemplateCacheService extends BaseApplicationComponent
 		}
 
 		// If there are any transform generation URLs in the body, don't cache it.
+		// stripslashes($body) in case the URL has been JS-encoded or something.
 		// Can't use getResourceUrl() here because that will append ?d= or ?x= to the URL.
-		if (strpos($body, UrlHelper::getSiteUrl(craft()->config->getResourceTrigger().'/transforms')))
+		if (strpos(stripslashes($body), UrlHelper::getSiteUrl(craft()->config->getResourceTrigger().'/transforms')))
 		{
 			return;
 		}

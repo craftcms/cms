@@ -263,15 +263,10 @@ class AssetsFieldType extends BaseElementFieldType
 			$elementFiles = $elementFiles->find();
 		}
 
+		$filesToMove = array();
+
 		if (is_array($elementFiles) && count($elementFiles))
 		{
-			$fileIds = array();
-
-			foreach ($elementFiles as $elementFile)
-			{
-				$fileIds[] = $elementFile->id;
-			}
-
 			$settings = $this->getSettings();
 
 			if ($this->getSettings()->useSingleFolder)
@@ -280,11 +275,24 @@ class AssetsFieldType extends BaseElementFieldType
 					$settings->singleUploadLocationSource,
 					$settings->singleUploadLocationSubpath);
 
-				// Move all the files for single upload directories.
-				$filesToMove = $fileIds;
+				// Move only the fiels with a changed folder ID.
+				foreach ($elementFiles as $elementFile)
+				{
+					if ($targetFolderId != $elementFile->folderId)
+					{
+						$filesToMove[] = $elementFile->id;
+					}
+				}
 			}
 			else
 			{
+				$fileIds = array();
+
+				foreach ($elementFiles as $elementFile)
+				{
+					$fileIds[] = $elementFile->id;
+				}
+
 				// Find the files with temp sources and just move those.
 				$criteria =array(
 					'id' => array_merge(array('in'), $fileIds),
@@ -482,79 +490,84 @@ class AssetsFieldType extends BaseElementFieldType
 	 */
 	private function _resolveSourcePathToFolderId($sourceId, $subpath)
 	{
-		$folder = craft()->assets->findFolder(array(
-			'sourceId' => $sourceId,
-			'parentId' => ':empty:'
-		));
+		// Are we looking for a subfolder?
+		$subpath = is_string($subpath) ? trim($subpath, '/') : '';
 
-		// Do we have the folder?
-		if (empty($folder))
+		if (strlen($subpath) === 0)
 		{
-			throw new Exception (Craft::t('Cannot find the target folder.'));
-		}
+			// Get the root folder in the source
+			$folder = craft()->assets->getRootFolderBySourceId($sourceId);
 
-		// Prepare the path by parsing tokens and normalizing slashes.
-		$subpath = trim($subpath, '/');
-		$subpath = craft()->templates->renderObjectTemplate($subpath, $this->element);
-		$pathParts = explode('/', $subpath);
-
-		foreach ($pathParts as &$part)
-		{
-			$part = IOHelper::cleanFilename($part, craft()->config->get('convertFilenamesToAscii'));
-		}
-
-		$subpath = join('/', $pathParts);
-
-		if (strlen($subpath))
-		{
-			$subpath = $subpath.'/';
-		}
-
-		// Let's see if the folder already exists.
-		if (empty($subpath))
-		{
-			$existingFolder = $folder;
-		}
-		else
-		{
-			$folderCriteria = array('sourceId' => $sourceId, 'path' => $folder->path.$subpath);
-			$existingFolder = craft()->assets->findFolder($folderCriteria);
-		}
-
-
-		// No dice, go over each folder in the path and create it if it's missing.
-		if (!$existingFolder)
-		{
-			$parts = explode('/', $subpath);
-
-			// Now make sure that every folder in the path exists.
-			$currentFolder = $folder;
-
-			foreach ($parts as $part)
+			// Make sure the root folder actually exists
+			if (!$folder)
 			{
-				if (empty($part))
-				{
-					continue;
-				}
-
-				$folderCriteria = array('parentId' => $currentFolder->id, 'name' => $part);
-				$existingFolder = craft()->assets->findFolder($folderCriteria);
-
-				if (!$existingFolder)
-				{
-					$folderId = $this->_createSubFolder($currentFolder, $part);
-					$existingFolder = craft()->assets->getFolderById($folderId);
-				}
-
-				$currentFolder = $existingFolder;
+				throw new Exception('Cannot find the target folder.');
 			}
 		}
 		else
 		{
-			$currentFolder = $existingFolder;
+			// Prepare the path by parsing tokens and normalizing slashes.
+			try
+			{
+				$renderedSubpath = craft()->templates->renderObjectTemplate($subpath, $this->element);
+			}
+			catch (\Exception $e)
+			{
+				throw new InvalidSubpathException($subpath);
+			}
+
+			// Did any of the tokens return null?
+			if (
+				strlen($renderedSubpath) === 0 ||
+				trim($renderedSubpath, '/') != $renderedSubpath ||
+				strpos($renderedSubpath, '//') !== false
+			)
+			{
+				throw new InvalidSubpathException($subpath);
+			}
+
+			$subpath = IOHelper::cleanPath($renderedSubpath, craft()->config->get('convertFilenamesToAscii'));
+
+			$folder = craft()->assets->findFolder(array(
+				'sourceId' => $sourceId,
+				'path'     => $subpath.'/'
+			));
+
+			// Ensure that the folder exists
+			if (!$folder)
+			{
+				// Start at the root, and, go over each folder in the path and create it if it's missing.
+				$parentFolder = craft()->assets->getRootFolderBySourceId($sourceId);
+
+				// Make sure the root folder actually exists
+				if (!$parentFolder)
+				{
+					throw new Exception('Cannot find the target folder.');
+				}
+
+				$segments = explode('/', $subpath);
+
+				foreach ($segments as $segment)
+				{
+					$folder = craft()->assets->findFolder(array(
+						'parentId' => $parentFolder->id,
+						'name' => $segment
+					));
+
+					// Create it if it doesn't exist
+					if (!$folder)
+					{
+						$folderId = $this->_createSubFolder($parentFolder, $segment);
+						$folder = craft()->assets->getFolderById($folderId);
+					}
+
+					// In case there's another segment after this...
+					$parentFolder = $folder;
+				}
+			}
 		}
 
-		return $currentFolder->id;
+		return $folder->id;
 	}
 
 	/**
@@ -627,43 +640,54 @@ class AssetsFieldType extends BaseElementFieldType
 	 */
 	private function _determineUploadFolderId($settings)
 	{
-		// If there's no dynamic tags in the set path, or if the element has already been saved, we con use the real
-		// folder
-		if (!empty($this->element->id)
-			|| (!empty($settings->useSingleFolder) && strpos($settings->singleUploadLocationSubpath, '{') === false)
-			|| (empty($settings->useSingleFolder) && strpos($settings->defaultUploadLocationSubpath, '{') === false)
-		)
+		// Use the appropriate settings for folder determination
+		if (empty($settings->useSingleFolder))
 		{
-			// Use the appropriate settings for folder determination
-			if (empty($settings->useSingleFolder))
-			{
-				$folderId = $this->_resolveSourcePathToFolderId($settings->defaultUploadLocationSource, $settings->defaultUploadLocationSubpath);
-			}
-			else
-			{
-				$folderId = $this->_resolveSourcePathToFolderId($settings->singleUploadLocationSource, $settings->singleUploadLocationSubpath);
-			}
+			$folderSourceId = $settings->defaultUploadLocationSource;
+			$folderSubpath = $settings->defaultUploadLocationSubpath;
 		}
 		else
 		{
-			// New element, so we default to User's upload folder for this field
-			$userModel = craft()->userSession->getUser();
+			$folderSourceId = $settings->singleUploadLocationSource;
+			$folderSubpath = $settings->singleUploadLocationSubpath;
+		}
 
-			$userFolder = craft()->assets->getUserFolder($userModel);
-
-			$folderName = 'field_'.$this->model->id;
-			$elementFolder = craft()->assets->findFolder(array('parentId' => $userFolder->id, 'name' => $folderName));
-
-			if (!$elementFolder)
+		// Attempt to find the actual folder ID
+		try
+		{
+			$folderId = $this->_resolveSourcePathToFolderId($folderSourceId, $folderSubpath);
+		}
+		catch (InvalidSubpathException $e)
+		{
+			// If this is a new element, the subpath probably just contained a token that returned null, like {id}
+			// so use the user's upload folder instead
+			if (empty($this->element->id))
 			{
-				$folderId = $this->_createSubFolder($userFolder, $folderName);
+				$userModel = craft()->userSession->getUser();
+				$userFolder = craft()->assets->getUserFolder($userModel);
+				$folderName = 'field_'.$this->model->id;
+
+				$folder = craft()->assets->findFolder(array(
+					'parentId' => $userFolder->id,
+					'name'     => $folderName
+				));
+
+				if ($folder)
+				{
+					$folderId = $folder->id;
+				}
+				else
+				{
+					$folderId = $this->_createSubFolder($userFolder, $folderName);
+				}
+
+				IOHelper::ensureFolderExists(craft()->path->getAssetsTempSourcePath().$folderName);
 			}
 			else
 			{
-				$folderId = $elementFolder->id;
+				// Existing element, so this is just a bad subpath
+				throw $e;
 			}
-
-			IOHelper::ensureFolderExists(craft()->path->getAssetsTempSourcePath().$folderName);
 		}
 
 		return $folderId;
