@@ -830,7 +830,7 @@ ul.tree,
 .meta .field.has-errors + .field { border-top: none; }
 .meta .field ul.errors { margin: 8px -23px -8px; padding: 8px 23px; width: 100%; background: $lightBgColor; list-style-type: none;}
 
-.meta .field > .input .text { display: block; margin: -8px 0; padding: 14px 0; border-radius: 0; @include box-shadow(none); border: none !important; }
+.meta .field > .input .text { display: block; margin: -8px 0; padding: 14px 0; border-radius: 0; @include box-shadow(none); border: none !important; background: transparent; }
 
 .meta .field > .input .datewrapper:before,
 .meta .field > .input .timewrapper:before { left: 0; }
