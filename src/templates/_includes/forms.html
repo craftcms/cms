@@ -130,7 +130,13 @@
 
 
 {% macro dateTimeField(config) %}
-	{{ _self.field(config, _self.date(config)~_self.time(config)) }}
+	{% set input %}
+		<div class="datetimewrapper">
+			{{ _self.date(config) }}
+			{{ _self.time(config) }}
+		</div>
+	{% endset %}
+	{{ _self.field(config, input) }}
 {% endmacro %}
 
 

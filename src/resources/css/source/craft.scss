@@ -828,17 +828,17 @@ ul.tree,
 
 .pane.meta > .field > .input .text { display: block; margin: -8px 0; padding: 14px 0; border-radius: 0; @include box-shadow(none); border: none !important; }
 
-.pane.meta > .field > .input > .datewrapper:before,
-.pane.meta > .field > .input > .timewrapper:before { left: 0; }
-.pane.meta > .field > .input > .datewrapper .text,
-.pane.meta > .field > .input > .timewrapper .text { @include padding-left(15px); }
+.pane.meta > .field > .input .datewrapper:before,
+.pane.meta > .field > .input .timewrapper:before { left: 0; }
+.pane.meta > .field > .input .datewrapper .text,
+.pane.meta > .field > .input .timewrapper .text { @include padding-left(15px); }
 
-.pane.meta > .field > .input > .datewrapper:not(:only-child),
-.pane.meta > .field > .input > .timewrapper:not(:only-child) { @include floatleft; }
-.pane.meta > .field > .input > .datewrapper:not(:only-child) { width: 55%; }
-.pane.meta > .field > .input > .timewrapper:not(:only-child) { width: 45%; }
-.pane.meta > .field > .input > .datewrapper:only-child,
-.pane.meta > .field > .input > .timewrapper:only-child { display: block; width: 100%; }
+.pane.meta > .field > .input > .datetimewrapper .datewrapper,
+.pane.meta > .field > .input > .datetimewrapper .timewrapper { @include floatleft; }
+.pane.meta > .field > .input > .datetimewrapper .datewrapper { width: 55%; }
+.pane.meta > .field > .input > .datetimewrapper .timewrapper { width: 45%; }
+.pane.meta > .field > .input > .datewrapper,
+.pane.meta > .field > .input > .timewrapper { display: block; width: 100%; }
 
 @media screen and (-webkit-min-device-pixel-ratio: 0)
 {
