@@ -467,38 +467,8 @@ class FieldsService extends BaseApplicationComponent
 				$fieldRecord = $this->_getFieldRecord($field);
 				$isNewField = $fieldRecord->isNewRecord();
 
-				$fieldRecord->groupId      = $field->groupId;
-				$fieldRecord->name         = $field->name;
-				$fieldRecord->handle       = $field->handle;
-				$fieldRecord->context      = $field->context;
-				$fieldRecord->instructions = $field->instructions;
-				$fieldRecord->translatable = $field->translatable;
-				$fieldRecord->type         = $field->type;
-
 				// Get the field type
 				$fieldType = $field->getFieldType();
-
-				// Give the field type a chance to prep the settings from post
-				$preppedSettings = $fieldType->prepSettings($field->settings);
-
-				// Set the prepped settings on the FieldRecord, FieldModel, and the field type
-				$fieldRecord->settings = $field->settings = $preppedSettings;
-				$fieldType->setSettings($preppedSettings);
-
-				if ($fieldRecord->settings instanceof BaseModel)
-				{
-					// Call getAttributes() without passing 'true' so the __model__ isn't saved
-					$fieldRecord->settings = $fieldRecord->settings->getAttributes();
-				}
-
-				$fieldType->onBeforeSave();
-				$fieldRecord->save(false);
-
-				// Now that we have a field ID, save it on the model
-				if ($isNewField)
-				{
-					$field->id = $fieldRecord->id;
-				}
 
 				// Create/alter the content table column
 				$columnType = $fieldType->defineContentAttribute();
@@ -537,6 +507,36 @@ class FieldsService extends BaseApplicationComponent
 							craft()->db->createCommand()->dropColumn($contentTable, $oldColumnName);
 						}
 					}
+				}
+
+				$fieldRecord->groupId      = $field->groupId;
+				$fieldRecord->name         = $field->name;
+				$fieldRecord->handle       = $field->handle;
+				$fieldRecord->context      = $field->context;
+				$fieldRecord->instructions = $field->instructions;
+				$fieldRecord->translatable = $field->translatable;
+				$fieldRecord->type         = $field->type;
+
+				// Give the field type a chance to prep the settings from post
+				$preppedSettings = $fieldType->prepSettings($field->settings);
+
+				// Set the prepped settings on the FieldRecord, FieldModel, and the field type
+				$fieldRecord->settings = $field->settings = $preppedSettings;
+				$fieldType->setSettings($preppedSettings);
+
+				if ($fieldRecord->settings instanceof BaseModel)
+				{
+					// Call getAttributes() without passing 'true' so the __model__ isn't saved
+					$fieldRecord->settings = $fieldRecord->settings->getAttributes();
+				}
+
+				$fieldType->onBeforeSave();
+				$fieldRecord->save(false);
+
+				// Now that we have a field ID, save it on the model
+				if ($isNewField)
+				{
+					$field->id = $fieldRecord->id;
 				}
 
 				if (!$isNewField)
