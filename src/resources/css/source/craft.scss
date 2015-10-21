@@ -811,45 +811,45 @@ ul.tree,
 .pane { @include pane; position: relative; margin: 14px 0; padding: 24px; border-radius: $paneBorderRadius; word-wrap: break-word; @include box-sizing(border-box); overflow: hidden; }
 
 /* meta panes */
-.pane.meta { padding: 0; overflow: visible; }
-.pane.meta .field { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; margin: 0 !important; padding: 8px 24px; min-height: 30px;
+.meta { padding: 0; overflow: visible; }
+.meta .field { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; margin: 0 !important; padding: 8px 24px; min-height: 30px;
 	@include box-shadow(0 0 2px hsla(205, 100%, 60%, 0), inset 0 0 0 1px hsla(205, 100%, 60%, 0));
 	@include box-shadow-transition(100ms);
 }
-.pane.meta .field.has-focus { z-index: 1;
+.meta .field.has-focus { z-index: 1;
 	@include box-shadow(0 0 5px hsl(205, 100%, 60%));
 }
-.pane.meta .field:first-child { border-top-left-radius: $paneBorderRadius; border-top-right-radius: $paneBorderRadius; }
-.pane.meta .field:last-child { border-bottom-left-radius: $paneBorderRadius; border-bottom-right-radius: $paneBorderRadius; }
-.pane.meta .field + .field { border-top: 1px solid $hairlineColor; }
-.pane.meta .field + .field.has-focus { border-top: none; margin-top: 1px !important; }
-.pane.meta .field > .heading { margin-bottom: 0; width: 86px; color: $mediumtextcolor; }
-.pane.meta .field > .input { width: calc(100% - 100px); }
+.meta .field:first-child { border-top-left-radius: $paneBorderRadius; border-top-right-radius: $paneBorderRadius; }
+.meta .field:last-child { border-bottom-left-radius: $paneBorderRadius; border-bottom-right-radius: $paneBorderRadius; }
+.meta .field + .field { border-top: 1px solid $hairlineColor; }
+.meta .field + .field.has-focus { border-top: none; margin-top: 1px !important; }
+.meta .field > .heading { margin-bottom: 0; width: 86px; color: $mediumtextcolor; }
+.meta .field > .input { width: calc(100% - 100px); }
 
-.pane.meta .field.has-errors { border: 1px solid $errorcolor; padding-left: 23px; padding-right: 23px; }
-.pane.meta .field.has-errors + .field { border-top: none; }
-.pane.meta .field ul.errors { margin: 8px -23px -8px; padding: 8px 23px; width: 100%; background: $lightBgColor; list-style-type: none;}
+.meta .field.has-errors { border: 1px solid $errorcolor; padding-left: 23px; padding-right: 23px; }
+.meta .field.has-errors + .field { border-top: none; }
+.meta .field ul.errors { margin: 8px -23px -8px; padding: 8px 23px; width: 100%; background: $lightBgColor; list-style-type: none;}
 
-.pane.meta .field > .input .text { display: block; margin: -8px 0; padding: 14px 0; border-radius: 0; @include box-shadow(none); border: none !important; }
+.meta .field > .input .text { display: block; margin: -8px 0; padding: 14px 0; border-radius: 0; @include box-shadow(none); border: none !important; }
 
-.pane.meta .field > .input .datewrapper:before,
-.pane.meta .field > .input .timewrapper:before { left: 0; }
-.pane.meta .field > .input .datewrapper .text,
-.pane.meta .field > .input .timewrapper .text { @include padding-left(15px); }
+.meta .field > .input .datewrapper:before,
+.meta .field > .input .timewrapper:before { left: 0; }
+.meta .field > .input .datewrapper .text,
+.meta .field > .input .timewrapper .text { @include padding-left(15px); }
 
-.pane.meta .field > .input > .datetimewrapper .datewrapper,
-.pane.meta .field > .input > .datetimewrapper .timewrapper { @include floatleft; }
-.pane.meta .field > .input > .datetimewrapper .datewrapper { width: 55%; }
-.pane.meta .field > .input > .datetimewrapper .timewrapper { width: 45%; }
-.pane.meta .field > .input > .datewrapper,
-.pane.meta .field > .input > .timewrapper { display: block; width: 100%; }
+.meta .field > .input > .datetimewrapper .datewrapper,
+.meta .field > .input > .datetimewrapper .timewrapper { @include floatleft; }
+.meta .field > .input > .datetimewrapper .datewrapper { width: 55%; }
+.meta .field > .input > .datetimewrapper .timewrapper { width: 45%; }
+.meta .field > .input > .datewrapper,
+.meta .field > .input > .timewrapper { display: block; width: 100%; }
 
 @media screen and (-webkit-min-device-pixel-ratio: 0)
 {
-	.pane.meta .field > .input .select { display: block; margin: -8px 0; width: 100%; border-radius: 0; @include box-shadow(none); background: none; }
-	.pane.meta .field > .input .select select { @include padding(14px, 12px, 14px, 0); width: 100%; @include box-shadow(none); }
-	.pane.meta .field > .input .select:after { right: 0; }
-	.pane.meta .field > .input .select + .spinner { position: absolute; top: calc(50% - 15px); right: 0; }
+	.meta .field > .input .select { display: block; margin: -8px 0; width: 100%; border-radius: 0; @include box-shadow(none); background: none; }
+	.meta .field > .input .select select { @include padding(14px, 12px, 14px, 0); width: 100%; @include box-shadow(none); }
+	.meta .field > .input .select:after { right: 0; }
+	.meta .field > .input .select + .spinner { position: absolute; top: calc(50% - 15px); right: 0; }
 }
 
 .body { position: relative; }
