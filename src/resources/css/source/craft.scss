@@ -283,9 +283,9 @@ table.inputs td:not(:first-child) { @include padding-left(14px); }
 table.inputs :not(.btngroup) > .btn,
 table.inputs .btngroup { display: block; float: none; }
 
-div.inputs { display: flex; align-items: center; align-content: stretch; }
-div.inputs > .label { white-space: nowrap; }
-div.inputs > *:not(:last-child) { @include margin-right(14px !important); }
+div.flex { display: flex; align-items: center; align-content: stretch; }
+div.flex > .label { white-space: nowrap; }
+div.flex > *:not(:last-child) { @include margin-right(14px !important); }
 
 .buttons { position: relative; margin: 24px 0; min-height: 30px; }
 .buttons:before { @include clearafter; margin-bottom: -5px; }
