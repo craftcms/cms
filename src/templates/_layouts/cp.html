@@ -140,7 +140,8 @@
 					{% endif %}
 				{% endif %}
 
-				{% if currentUser.admin %}
+				{#
+ 				{% if currentUser.admin %}
 					<li>
 						<a class="settings" data-icon="settings" href="{{ url('settings') }}" title="{{ 'Settings'|t }}"></a>
 					</li>
@@ -167,6 +168,7 @@
 						</div>
 					</li>
 				{% endif %}
+				#}
 
 				<li>
 					<a data-icon="user" class="myaccount menubtn" title="{{ 'My Account'|t }}" role="button"></a>
