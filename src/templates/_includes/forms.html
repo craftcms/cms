@@ -105,7 +105,17 @@
 
 
 {% macro textField(config) %}
-	{{ _self.field(config, _self.text(config)) }}
+	{% if config.unit is defined %}
+		{% set input %}
+			<div class="flex">
+				{{ _self.text(config) }}
+				<span class="label light">{{ config.unit }}</span>
+			</div>
+		{% endset %}
+	{% else %}
+		{% set input = _self.text(config) %}
+	{% endif %}
+	{{ _self.field(config, input) }}
 {% endmacro %}
 
 
