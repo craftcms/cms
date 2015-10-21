@@ -348,10 +348,11 @@ table.inputs .btngroup { display: block; float: none; }
 .btn.icon.small:before,
 .menubtn.small:after { font-size: 9px; }
 
+.btn.icon.add.loading { position: relative; }
 .btn.icon.add.loading:before { visibility: hidden; }
-.btn.icon.add.loading { background-image: url(../images/spinner.gif); background-repeat: no-repeat; background-position: 5px 50%; }
-.btn.icon.add.loading.submit { background-image: url(../images/spinner_submit.gif); }
-.secondary-buttons .btn.icon.add.loading.submit { background-image: url(../images/spinner_submit_secondary.gif); }
+.btn.icon.add.loading:after { position: absolute; content: '.'; font-size: 0; display: block; width: 24px; height: 100%; left: 5px; top: 0; background: url(../images/spinner.gif) no-repeat 0 50%; }
+.btn.icon.add.loading.submit:after { background-image: url(../images/spinner_submit.gif); }
+.secondary-buttons .btn.icon.add.loading.submit:after { background-image: url(../images/spinner_submit_secondary.gif); }
 
 /* button groups */
 .btngroup { display: inline-block; font-size: 0; white-space: nowrap; }
@@ -419,11 +420,11 @@ body.rtl .btngroup .btn:not(:last-child) { border-top-left-radius: 0; border-bot
 .btn.submit:not(.disabled):not(.inactive):active,
 .btn.submit:not(.disabled):not(.inactive).active { @include linear-gradient($submitActiveColor, #994032); }
 
-.secondary-buttons .btn.submit { background-color: $secondarySubmitColor; }
+.secondary-buttons .btn.submit { @include linear-gradient($secondarySubmitColor, #878f99); }
 .secondary-buttons .btn.submit:not(.disabled):not(.inactive):hover,
-.secondary-buttons .btn.submit:not(.disabled):not(.inactive).hover { background-color: $secondarySubmitHoverColor; }
+.secondary-buttons .btn.submit:not(.disabled):not(.inactive).hover { @include linear-gradient($secondarySubmitHoverColor, #697480); }
 .secondary-buttons .btn.submit:not(.disabled):not(.inactive):active,
-.secondary-buttons .btn.submit:not(.disabled):not(.inactive).active { background-color: $secondarySubmitActiveColor; }
+.secondary-buttons .btn.submit:not(.disabled):not(.inactive).active { @include linear-gradient($secondarySubmitActiveColor, #697380); }
 
 div.btn.submit { position: relative; overflow: hidden; }
 div.btn.submit input { position: absolute; left: 100%; }
@@ -1410,9 +1411,9 @@ body.message .message-container .pane { top: 50%; margin-top: -33px !important; 
 	.spinner { background-image: url(../images/spinner_2x.gif); background-size: 20px; }
 	.spinner.big { background-image: url(../images/spinner_big_2x.gif); background-size: 48px; }
 
-	.btn.icon.add.loading { background-image: url(../images/spinner_2x.gif); background-size: 20px; }
-	.btn.icon.add.loading.submit { background-image: url(../images/spinner_submit_2x.gif); }
-	.secondary-buttons .btn.icon.add.loading.submit { background-image: url(../images/spinner_submit_secondary_2x.gif); }
+	.btn.icon.add.loading:after { background-image: url(../images/spinner_2x.gif); background-size: 20px; }
+	.btn.icon.add.loading.submit:after { background-image: url(../images/spinner_submit_2x.gif); }
+	.secondary-buttons .btn.icon.add.loading.submit:after { background-image: url(../images/spinner_submit_secondary_2x.gif); }
 
 	.sel .element.loading:after,
 	.element.loading.sel:after { background-image: url(../images/spinner_element_2x.gif); background-size: 20px; }
