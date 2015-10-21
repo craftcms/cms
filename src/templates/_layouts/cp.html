@@ -140,7 +140,8 @@
 					{% endif %}
 				{% endif %}
 
-				{% if currentUser.admin %}
+				{#
+ 				{% if currentUser.admin %}
 					<li>
 						<a class="settings" data-icon="settings" href="{{ url('settings') }}" title="{{ 'Settings'|t }}"></a>
 					</li>
@@ -167,6 +168,7 @@
 						</div>
 					</li>
 				{% endif %}
+				#}
 
 				<li>
 					<a data-icon="user" class="myaccount menubtn" title="{{ 'My Account'|t }}" role="button"></a>
@@ -187,7 +189,10 @@
 			<nav>
 				<ul id="nav">
 					{% for handle, item in craft.cp.nav() %}
-						<li id="nav-{{ handle }}">
+
+						{% set hasSubnav = (subnav is defined and subnav) %}
+
+						<li id="nav-{{ handle }}"{% if item.sel and hasSubnav %} class="has-subnav"{% endif %}>
 							<a{% if item.sel %} class="sel"{% endif %} href="{{ item.url }}">
 								{% if item.icon is defined %}
 									<span data-icon="{{ item.icon }}"></span>
@@ -198,8 +203,6 @@
 									<span class="badge">{{ item.badge }}</span>
 								{%- endif -%}
 							</a>
-
-							{% set hasSubnav = (subnav is defined and subnav) %}
 
 							{% if item.sel and hasSubnav  %}
 					            <ul class="subnav">
@@ -224,9 +227,11 @@
 						</li>
 					{% endfor %}
 
+					{#
 					<!-- HIDE -->
 					<li id="customize-nav-btn"><a class="settings icon" title="{{ 'Customize…'|t }}"><span>{{ "Customize…"|t }}</span></a></li>
 					<!-- end HIDE -->
+					#}
 				</ul>
 			</nav>
 		</div>

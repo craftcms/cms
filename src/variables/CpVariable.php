@@ -23,7 +23,7 @@ class CpVariable
 	 */
 	public function nav($iconSize = 32)
 	{
-		$nav['dashboard'] = array('label' => Craft::t('Dashboard'), 'icon' => 'home');
+		$nav['dashboard'] = array('label' => Craft::t('Dashboard'), 'icon' => 'gauge');
 
 		if (craft()->sections->getTotalEditableSections())
 		{
@@ -71,6 +71,8 @@ class CpVariable
 				}
 			}
 		}
+
+		$nav['settings'] = array('label' => Craft::t('Settings'), 'icon' => 'settings');
 
 		// Allow plugins to modify the nav
 		craft()->plugins->call('modifyCpNav', array(&$nav));

@@ -100,13 +100,13 @@ body > .container,
 #settingsmenu ul li a:before { @include margin(1px, 0, 0, -22px); font-size: 15px; }
 
 #nav { padding-top: 50px; }
-#nav li a { display: block; margin: 0; padding: 7px 10px 7px 18px; line-height: 24px; @include box-sizing(border-box); }
+#nav li a { display: block; margin: 0; padding: 7px 10px 7px 18px; line-height: 24px; @include box-sizing(border-box); border-left: 4px solid transparent; }
 #nav li a.active { color: #fff; }
-#nav li a.sel { position: relative; z-index: 1; color: #fff; background: $headerLinkActiveColor; }
+#nav li:not(.has-subnav) a.sel { position: relative; z-index: 1; color: #fff; background: $headerLinkActiveColor; border-color: $submitcolor; }
 
 #nav li a:not(.sel) .badge { color: #333 !important; }
 #nav li a.menubtn { line-height: 26px; }
-#nav li ul { background: $headerLinkActiveColor; }
+#nav li.has-subnav { background: $headerLinkActiveColor; }
 #nav li ul li a { @include padding-left(40px); }
 #nav span[data-icon] { margin-right: 3px; }
 
