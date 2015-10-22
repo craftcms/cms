@@ -15,6 +15,7 @@ Craft.ui =
 			autocomplete: (typeof config.autocomplete === typeof undefined || !config.autocomplete ? 'off' : null),
 			disabled: this.getDisabledValue(config.disabled),
 			readonly: config.readonly,
+			title: config.title,
 			placeholder: config.placeholder
 		});
 
