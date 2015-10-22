@@ -88,12 +88,13 @@
 
 {% set forceConfirmUnload = craft.session.hasFlash('error') %}
 
+{% set devMode = currentUser.admin and craft.config.devMode %}
+{% if devMode %}
+	{% set bodyClass = (bodyClass is defined and bodyClass ? bodyClass ~ ' ' : '') ~ 'dev-mode' %}
+{% endif %}
+
 
 {% block body %}
-	{% if currentUser.admin and craft.config.devMode %}
-		<div id="devmode" title="{{ '@@@appName@@@ is running in Dev Mode.'|t }}"></div>
-	{% endif %}
-
 	{% if craft.cp.areAlertsCached() %}
 		{% set alerts = craft.cp.getAlerts() %}
 		{% if alerts %}
@@ -336,6 +337,10 @@
 			{% endif %}
 		</div>
 	</div>
+
+	{% if currentUser.admin and craft.config.devMode %}
+		<div id="devmode" title="{{ '@@@appName@@@ is running in Dev Mode.'|t }}"></div>
+	{% endif %}
 
 	{% if craft.app.hasWrongEdition() %}
 		<div id="wrongedition-modal" class="modal fitted hidden">

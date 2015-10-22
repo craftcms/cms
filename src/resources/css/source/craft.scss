@@ -276,6 +276,7 @@ ul.icons li a:hover { text-decoration: none; background-color: #f9f9f9; border-c
 
 .toolbar { position: relative; margin-bottom: 28px; min-height: 30px; }
 .toolbar.fixed { position: fixed; z-index: 1; top: 0; margin: 0 -1px; padding: 7px 1px; background: #fff; @include box-shadow(0 1px 0 rgba(0,0,0,0.05)); }
+body.dev-mode .toolbar.fixed { padding-top: 12px; }
 .toolbar .spinner { position: absolute; top: 0; @include right(-24px); }
 
 table.inputs td { vertical-align: top; }

@@ -109,7 +109,7 @@ Craft.BaseElementIndexView = Garnish.Base.extend(
 		{
 			if (this.settings.context == 'index')
 			{
-				this.$scroller = Garnish.$win;
+				this.$scroller = Craft.cp.$container;
 			}
 			else
 			{
@@ -269,22 +269,11 @@ Craft.BaseElementIndexView = Garnish.Base.extend(
 		}
 
 		// Check if the user has reached the bottom of the scroll area
-		if (this.$scroller[0] == Garnish.$win[0])
-		{
-			var winHeight = Garnish.$win.innerHeight(),
-				winScrollTop = Garnish.$win.scrollTop(),
-				bodHeight = Garnish.$bod.height();
+		var containerScrollHeight = this.$scroller.prop('scrollHeight'),
+			containerScrollTop = this.$scroller.scrollTop(),
+			containerHeight = this.$scroller.outerHeight();
 
-			return (winHeight + winScrollTop >= bodHeight);
-		}
-		else
-		{
-			var containerScrollHeight = this.$scroller.prop('scrollHeight'),
-				containerScrollTop = this.$scroller.scrollTop(),
-				containerHeight = this.$scroller.outerHeight();
-
-			return (containerScrollHeight - containerScrollTop <= containerHeight + 15);
-		}
+		return (containerScrollHeight - containerScrollTop <= containerHeight + 15);
 	},
 
 	/**
@@ -326,6 +315,7 @@ Craft.BaseElementIndexView = Garnish.Base.extend(
 				this.setMorePending($newElements.length == this.settings.batchSize);
 
 				// Is there room to load more right now?
+				this.addListener(this.$scroller, 'scroll', 'maybeLoadMore');
 				this.maybeLoadMore();
 			}
 

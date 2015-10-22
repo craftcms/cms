@@ -122,7 +122,8 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 		// Keep the toolbar at the top of the window
 		if (this.settings.context == 'index' && !Garnish.isMobileBrowser(true))
 		{
-			this.addListener(Garnish.$win, 'scroll resize', 'updateFixedToolbar');
+			this.addListener(Garnish.$win, 'resize', 'updateFixedToolbar');
+			this.addListener(Craft.cp.$container, 'scroll', 'updateFixedToolbar');
 		}
 
 		// Initialize the sources
@@ -358,7 +359,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 			}
 		}
 
-		this.updateFixedToolbar._scrollTop = Garnish.$win.scrollTop();
+		this.updateFixedToolbar._scrollTop = Craft.cp.$container.scrollTop();
 
 		if (this.updateFixedToolbar._scrollTop > this.toolbarOffset - 7)
 		{
@@ -1691,7 +1692,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 		context: 'index',
 		storageKey: null,
 		criteria: null,
-		batchSize: 50,
+		batchSize: 10,
 		disabledElementIds: [],
 		selectable: false,
 		multiSelect: false,

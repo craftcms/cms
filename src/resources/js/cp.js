@@ -8,6 +8,7 @@ Craft.CP = Garnish.Base.extend(
 {
 	authManager: null,
 
+	$container: null,
 	$alerts: null,
 	$header: null,
 	$headerActionsList: null,
@@ -66,6 +67,7 @@ Craft.CP = Garnish.Base.extend(
 		}
 
 		// Find all the key elements
+		this.$container = $('#container');
 		this.$alerts = $('#alerts');
 		this.$header = $('#header');
 		this.$pageHeader = $('#page-header');
@@ -125,7 +127,7 @@ Craft.CP = Garnish.Base.extend(
 		this.addListener(this.$sidebarLinks, 'click', 'selectSidebarItem');
 
 
-		this.addListener(Garnish.$win, 'scroll', 'updateFixedNotifications');
+		this.addListener(this.$container, 'scroll', 'updateFixedNotifications');
 		this.updateFixedNotifications();
 
 		Garnish.$doc.ready($.proxy(function()
@@ -439,7 +441,7 @@ Craft.CP = Garnish.Base.extend(
 	{
 		this.updateFixedNotifications._headerHeight = this.$header.height();
 
-		if (Garnish.$win.scrollTop() > this.updateFixedNotifications._headerHeight)
+		if (this.$container.scrollTop() > this.updateFixedNotifications._headerHeight)
 		{
 			if (!this.fixedNotifications)
 			{
@@ -565,7 +567,7 @@ Craft.CP = Garnish.Base.extend(
 							}
 							else
 							{
-								Craft.cp.displayError(response.error);
+								this.displayError(response.error);
 							}
 						}
 
@@ -599,7 +601,7 @@ Craft.CP = Garnish.Base.extend(
 						}
 						else
 						{
-							Craft.cp.displayError(response.error);
+							this.displayError(response.error);
 						}
 					}
 
