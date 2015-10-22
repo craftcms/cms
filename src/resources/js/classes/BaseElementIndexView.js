@@ -327,8 +327,6 @@ Craft.BaseElementIndexView = Garnish.Base.extend(
 
 				// Is there room to load more right now?
 				this.maybeLoadMore();
-
-				this.elementIndex.onUpdateElements();
 			}
 
 		}, this));
@@ -345,6 +343,15 @@ Craft.BaseElementIndexView = Garnish.Base.extend(
 	appendElements: function($newElements)
 	{
 		$newElements.appendTo(this.$elementContainer);
+		this.onAppendElements($newElements);
+	},
+
+	onAppendElements: function($newElements)
+	{
+		this.settings.onAppendElements($newElements);
+		this.trigger('appendElements', {
+			newElements: $newElements
+		});
 	},
 
 	onSelectionChange: function()
@@ -395,6 +402,7 @@ Craft.BaseElementIndexView = Garnish.Base.extend(
 		selectable: false,
 		multiSelect: false,
 		checkboxMode: false,
-		onSelectionChange: $.noop,
+		onAppendElements: $.noop,
+		onSelectionChange: $.noop
 	},
 });
