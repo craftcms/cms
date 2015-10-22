@@ -181,6 +181,17 @@ Craft.BaseElementIndexView = Garnish.Base.extend(
 		return ids;
 	},
 
+	selectElement: function($element)
+	{
+		if (!this.elementSelect)
+		{
+			throw 'This view is not selectable.';
+		}
+
+		this.elementSelect.selectItem($element, true);
+		return true;
+	},
+
 	selectElementById: function(id)
 	{
 		if (!this.elementSelect)
