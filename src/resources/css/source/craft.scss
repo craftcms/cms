@@ -285,7 +285,7 @@ table.inputs .btngroup { display: block; float: none; }
 
 div.flex { display: flex; align-items: center; align-content: stretch; }
 div.flex > .label { white-space: nowrap; }
-div.flex > *:not(:last-child) { @include margin-right(14px !important); }
+div.flex > *:not(:last-child) { @include margin-right(7px !important); }
 
 .buttons { position: relative; margin: 24px 0; min-height: 30px; }
 .buttons:before { @include clearafter; margin-bottom: -5px; }
