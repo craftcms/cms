@@ -283,6 +283,10 @@ table.inputs td:not(:first-child) { @include padding-left(14px); }
 table.inputs :not(.btngroup) > .btn,
 table.inputs .btngroup { display: block; float: none; }
 
+div.flex { display: flex; align-items: center; align-content: stretch; }
+div.flex > .label { white-space: nowrap; }
+div.flex > *:not(:last-child) { @include margin-right(7px !important); }
+
 .buttons { position: relative; margin: 24px 0; min-height: 30px; }
 .buttons:before { @include clearafter; margin-bottom: -5px; }
 .buttons.right { @include margin-right(-5px); }
@@ -348,10 +352,11 @@ table.inputs .btngroup { display: block; float: none; }
 .btn.icon.small:before,
 .menubtn.small:after { font-size: 9px; }
 
+.btn.icon.add.loading { position: relative; }
 .btn.icon.add.loading:before { visibility: hidden; }
-.btn.icon.add.loading { background-image: url(../images/spinner.gif); background-repeat: no-repeat; background-position: 5px 50%; }
-.btn.icon.add.loading.submit { background-image: url(../images/spinner_submit.gif); }
-.secondary-buttons .btn.icon.add.loading.submit { background-image: url(../images/spinner_submit_secondary.gif); }
+.btn.icon.add.loading:after { position: absolute; content: '.'; font-size: 0; display: block; width: 24px; height: 100%; left: 5px; top: 0; background: url(../images/spinner.gif) no-repeat 0 50%; }
+.btn.icon.add.loading.submit:after { background-image: url(../images/spinner_submit.gif); }
+.secondary-buttons .btn.icon.add.loading.submit:after { background-image: url(../images/spinner_submit_secondary.gif); }
 
 /* button groups */
 .btngroup { display: inline-block; font-size: 0; white-space: nowrap; }
@@ -419,11 +424,11 @@ body.rtl .btngroup .btn:not(:last-child) { border-top-left-radius: 0; border-bot
 .btn.submit:not(.disabled):not(.inactive):active,
 .btn.submit:not(.disabled):not(.inactive).active { @include linear-gradient($submitActiveColor, #994032); }
 
-.secondary-buttons .btn.submit { background-color: $secondarySubmitColor; }
+.secondary-buttons .btn.submit { @include linear-gradient($secondarySubmitColor, #878f99); }
 .secondary-buttons .btn.submit:not(.disabled):not(.inactive):hover,
-.secondary-buttons .btn.submit:not(.disabled):not(.inactive).hover { background-color: $secondarySubmitHoverColor; }
+.secondary-buttons .btn.submit:not(.disabled):not(.inactive).hover { @include linear-gradient($secondarySubmitHoverColor, #697480); }
 .secondary-buttons .btn.submit:not(.disabled):not(.inactive):active,
-.secondary-buttons .btn.submit:not(.disabled):not(.inactive).active { background-color: $secondarySubmitActiveColor; }
+.secondary-buttons .btn.submit:not(.disabled):not(.inactive).active { @include linear-gradient($secondarySubmitActiveColor, #697380); }
 
 div.btn.submit { position: relative; overflow: hidden; }
 div.btn.submit input { position: absolute; left: 100%; }
@@ -805,45 +810,46 @@ ul.tree,
 
 .pane { @include pane; position: relative; margin: 14px 0; padding: 24px; border-radius: $paneBorderRadius; word-wrap: break-word; @include box-sizing(border-box); overflow: hidden; }
 
-.settings-pane { padding: 0; overflow: visible; }
-.settings-pane > .field { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; margin: 0; padding: 8px 24px; min-height: 30px;
+/* meta panes */
+.meta { padding: 0; overflow: visible; }
+.meta .field { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; margin: 0 !important; padding: 8px 24px; min-height: 30px;
 	@include box-shadow(0 0 2px hsla(205, 100%, 60%, 0), inset 0 0 0 1px hsla(205, 100%, 60%, 0));
 	@include box-shadow-transition(100ms);
 }
-.settings-pane > .field.has-focus { z-index: 1;
+.meta .field.has-focus { z-index: 1;
 	@include box-shadow(0 0 5px hsl(205, 100%, 60%));
 }
-.settings-pane > .field:first-child { border-top-left-radius: $paneBorderRadius; border-top-right-radius: $paneBorderRadius; }
-.settings-pane > .field:last-child { border-bottom-left-radius: $paneBorderRadius; border-bottom-right-radius: $paneBorderRadius; }
-.settings-pane > .field + .field { border-top: 1px solid $hairlineColor; }
-.settings-pane > .field + .field.has-focus { border-top: none; margin-top: 1px; }
-.settings-pane > .field > .heading { margin-bottom: 0; width: 86px; color: $mediumtextcolor; }
-.settings-pane > .field > .input { width: calc(100% - 100px); }
+.meta.pane > .field:first-child { border-top-left-radius: $paneBorderRadius; border-top-right-radius: $paneBorderRadius; }
+.meta.pane > .field:last-child { border-bottom-left-radius: $paneBorderRadius; border-bottom-right-radius: $paneBorderRadius; }
+.meta .field + .field { border-top: 1px solid $hairlineColor; }
+.meta .field + .field.has-focus { border-top: none; margin-top: 1px !important; }
+.meta .field > .heading { margin-bottom: 0; width: 86px; color: $mediumtextcolor; }
+.meta .field > .input { width: calc(100% - 100px); }
 
-.settings-pane > .field.has-errors { border: 1px solid $errorcolor; padding-left: 23px; padding-right: 23px; }
-.settings-pane > .field.has-errors + .field { border-top: none; }
-.settings-pane > .field ul.errors { margin: 8px -23px -8px; padding: 8px 23px; width: 100%; background: $lightBgColor; list-style-type: none;}
+.meta .field.has-errors { border: 1px solid $errorcolor; padding-left: 23px; padding-right: 23px; }
+.meta .field.has-errors + .field { border-top: none; }
+.meta .field ul.errors { margin: 8px -23px -8px; padding: 8px 23px; width: 100%; background: $lightBgColor; list-style-type: none;}
 
-.settings-pane > .field > .input .text { display: block; margin: -8px 0; padding: 14px 0; border-radius: 0; @include box-shadow(none); border: none !important; }
+.meta .field > .input .text { display: block; margin: -8px 0; padding: 14px 0; border-radius: 0; @include box-shadow(none); border: none !important; background: transparent; }
 
-.settings-pane > .field > .input > .datewrapper:before,
-.settings-pane > .field > .input > .timewrapper:before { left: 0; }
-.settings-pane > .field > .input > .datewrapper .text,
-.settings-pane > .field > .input > .timewrapper .text { @include padding-left(15px); }
+.meta .field > .input .datewrapper:before,
+.meta .field > .input .timewrapper:before { left: 0; }
+.meta .field > .input .datewrapper .text,
+.meta .field > .input .timewrapper .text { @include padding-left(15px); }
 
-.settings-pane > .field > .input > .datewrapper:not(:only-child),
-.settings-pane > .field > .input > .timewrapper:not(:only-child) { @include floatleft; }
-.settings-pane > .field > .input > .datewrapper:not(:only-child) { width: 55%; }
-.settings-pane > .field > .input > .timewrapper:not(:only-child) { width: 45%; }
-.settings-pane > .field > .input > .datewrapper:only-child,
-.settings-pane > .field > .input > .timewrapper:only-child { display: block; width: 100%; }
+.meta .field > .input > .datetimewrapper .datewrapper,
+.meta .field > .input > .datetimewrapper .timewrapper { @include floatleft; }
+.meta .field > .input > .datetimewrapper .datewrapper { width: 55%; }
+.meta .field > .input > .datetimewrapper .timewrapper { width: 45%; }
+.meta .field > .input > .datewrapper,
+.meta .field > .input > .timewrapper { display: block; width: 100%; }
 
 @media screen and (-webkit-min-device-pixel-ratio: 0)
 {
-	.settings-pane > .field > .input .select { display: block; margin: -8px 0; width: 100%; border-radius: 0; @include box-shadow(none); background: none; }
-	.settings-pane > .field > .input .select select { @include padding(14px, 12px, 14px, 0); width: 100%; @include box-shadow(none); }
-	.settings-pane > .field > .input .select:after { right: 0; }
-	.settings-pane > .field > .input .select + .spinner { position: absolute; top: calc(50% - 15px); right: 0; }
+	.meta .field > .input .select { display: block; margin: -8px 0; width: 100%; border-radius: 0; @include box-shadow(none); background: none; }
+	.meta .field > .input .select select { @include padding(14px, 12px, 14px, 0); width: 100%; @include box-shadow(none); }
+	.meta .field > .input .select:after { right: 0; }
+	.meta .field > .input .select + .spinner { position: absolute; top: calc(50% - 15px); right: 0; }
 }
 
 .body { position: relative; }
@@ -1351,12 +1357,11 @@ body.message .message-container .pane { top: 50%; margin-top: -33px !important; 
 }
 
 /* blocks */
-.matrixblock { position: relative; margin-bottom: 10px; padding: 1px 14px 14px; border-radius: $paneBorderRadius; background: hsl(212, 10%, 98%); @include user-select(none); outline: none;
-	@include box-shadow(inset 0 0 0 1px rgba(0,0,0,0.1));
+.matrixblock { position: relative; margin-bottom: 10px; padding: 0 14px 14px; border-radius: $paneBorderRadius; border: 1px solid $hairlineColor; background: hsl(212, 10%, 98%); @include user-select(none); outline: none;
 }
 .matrixblock.disabled { opacity: 1; }
 
-.matrixblock > .titlebar { margin: 0 -13px 14px; width: calc(100% + 26px); @include box-sizing(border-box); border-radius: 2px 2px 0 0; @include padding(6px, 70px, 6px, 33px); background: hsl(212, 10%, 94%); color: $lighttextcolor; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; word-wrap: normal; cursor: default; }
+.matrixblock > .titlebar { margin: 0 -14px 14px; width: calc(100% + 28px); @include box-sizing(border-box); border-radius: 2px 2px 0 0; @include padding(6px, 70px, 6px, 33px); background: hsl(212, 10%, 94%); color: $lighttextcolor; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; word-wrap: normal; cursor: default; }
 .matrixblock.collapsed > .titlebar { border-radius: 2px; }
 .matrixblock.disabled > .titlebar { @include padding-right(90px); }
 .matrixblock > .titlebar > .blocktype { display: inline; color: $mediumtextcolor; }
@@ -1410,9 +1415,9 @@ body.message .message-container .pane { top: 50%; margin-top: -33px !important; 
 	.spinner { background-image: url(../images/spinner_2x.gif); background-size: 20px; }
 	.spinner.big { background-image: url(../images/spinner_big_2x.gif); background-size: 48px; }
 
-	.btn.icon.add.loading { background-image: url(../images/spinner_2x.gif); background-size: 20px; }
-	.btn.icon.add.loading.submit { background-image: url(../images/spinner_submit_2x.gif); }
-	.secondary-buttons .btn.icon.add.loading.submit { background-image: url(../images/spinner_submit_secondary_2x.gif); }
+	.btn.icon.add.loading:after { background-image: url(../images/spinner_2x.gif); background-size: 20px; }
+	.btn.icon.add.loading.submit:after { background-image: url(../images/spinner_submit_2x.gif); }
+	.secondary-buttons .btn.icon.add.loading.submit:after { background-image: url(../images/spinner_submit_secondary_2x.gif); }
 
 	.sel .element.loading:after,
 	.element.loading.sel:after { background-image: url(../images/spinner_element_2x.gif); background-size: 20px; }
