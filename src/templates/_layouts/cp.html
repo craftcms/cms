@@ -286,40 +286,42 @@
 			{% endblock %}
 		</header>
 
-		<main id="main" role="main"{% if fitted is defined and fitted %} class="fitted"{% endif %}>
-			{% block main %}
+		{# Is the template defining its own layout? #}
+		{% set main = block('main')|trim %}
+		{% set hasCustomLayout = (main is not empty) %}
+
+		<main id="main" role="main"{% if not hasCustomLayout %} class="single-pane"{% endif %}>
+			{% if hasCustomLayout %}
+				{{ main|raw }}
+			{% else %}
 				{% set sidebar = sidebar is defined ? sidebar : block('sidebar')|trim %}
 				{% set hasSidebar = (sidebar is not empty) %}
 				{% set hasHelp = (docsUrl is defined and docsUrl is not empty) %}
 
-				<div class="grid">
-					<div class="item">
-						<div class="pane">
-							{% if tabs is defined and tabs %}
-								{% include "_includes/tabs" %}
-							{% endif %}
+				<div class="pane">
+					{% if tabs is defined and tabs %}
+						{% include "_includes/tabs" %}
+					{% endif %}
 
-							<div id="content" class="content{% if hasSidebar %} has-sidebar{% endif %}{% if hasHelp %} has-help{% endif %}">
-								{% if hasSidebar %}
-									<div id="sidebar" class="sidebar">
-										{{ sidebar|raw }}
-									</div>
-								{% endif %}
-
-								<div class="body">
-									{% block content %}
-										{{ content is defined ? content }}
-									{% endblock %}
-								</div>
-
-								{% if hasHelp %}
-									<a id="help" class="help" title="{{ 'Help'|t }}" href="{{ docsUrl }}" target="_blank"></a>
-								{% endif %}
+					<div id="content" class="content{% if hasSidebar %} has-sidebar{% endif %}{% if hasHelp %} has-help{% endif %}">
+						{% if hasSidebar %}
+							<div id="sidebar" class="sidebar">
+								{{ sidebar|raw }}
 							</div>
+						{% endif %}
+
+						<div class="body">
+							{% block content %}
+								{{ content is defined ? content }}
+							{% endblock %}
 						</div>
+
+						{% if hasHelp %}
+							<a id="help" class="help" title="{{ 'Help'|t }}" href="{{ docsUrl }}" target="_blank"></a>
+						{% endif %}
 					</div>
 				</div>
-			{% endblock %}
+			{% endif %}
 		</main>
 
 		<div id="footer">
