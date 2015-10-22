@@ -91,7 +91,7 @@ body.rtl [data-icon-after=structure]:after { content: attr('structurertl'); }
 
 /* headings */
 @mixin h6-styles { margin: 14px 0 3px; font-size: 10px; line-height: 1.2; color: $lighttextcolor; text-transform: uppercase; font-weight: bold; }
-h1 { margin-bottom: 24px; font-family: HelveticaNeue-Light, HelveticaNeue, sans-serif; font-size: 30px; line-height: 1; color: $submitcolor; }
+h1 { margin-bottom: 24px; font-family: HelveticaNeue-Light, HelveticaNeue, sans-serif; font-size: 24px; line-height: 1; color: $submitcolor; }
 h2 { margin: 14px 0; font-size: 15px; font-weight: bold; line-height: 1.2; }
 h3 { margin: 14px 0; font-weight: bold; line-height: 1.2; }
 h4 { margin: 14px 0; font-weight: bold; line-height: 1.2; color: $mediumtextcolor; }
@@ -893,6 +893,8 @@ body #redactor-modal { border-radius: $paneBorderRadius; background: #fff;
 .pane .footer,
 .modal .body .footer { margin: 24px -24px -24px; }
 
+
+main.fitted .grid > .item { padding: 0; }
 main.fitted .pane { margin: 14px -24px; min-height: 100vh; }
 
 .modal-shade,

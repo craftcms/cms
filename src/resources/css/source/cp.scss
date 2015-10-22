@@ -137,17 +137,21 @@ body > .container,
 #notifications .notification.error { background: $submitcolor; }
 
 /* page header */
-#page-header { display: block; position: relative; z-index: 1; padding: 20px 0; overflow: hidden; }
+#page-header { display: block; position: relative; z-index: 1; padding: 20px 0; }
 #page-header h1 { display: inline; line-height: 1; }
 #page-header #extra-headers { display: inline-block; position: relative; top: 5px; }
 #page-header #extra-headers > .select,
 #page-header #extra-headers > .menubtn,
 #page-header #extra-headers > .btn { display: block; @include margin-left(5px); @include floatleft; }
 
-#page-header .show-nav { display: inline-block; position: relative; top: -7px; @include margin-left(-14px); color: $secondarySubmitColor; }
-#page-header .show-nav:before { @include icon; font-size: 16px; width: 43px; line-height: 24px; content: 'menu'; }
+#page-header .show-nav { width: 24px; height: 24px; display: block; line-height: 24px; color: $secondarySubmitColor; text-align: center;
+	@include floatleft;
+	@include margin-right(14px);
+}
 
-#crumbs { margin: -20px 0 0; font-size: 0; }
+#page-header .show-nav:before { @include icon; content: 'menu'; font-size: 16px; line-height: 0; }
+
+#crumbs { margin: -5px 0 0; font-size: 0; }
 #crumbs:after { @include clearafter; }
 #crumbs li { display: inline-block; font-size: 13px; }
 #crumbs li:after { @include icon; margin: -1px 5px 0; font-size: 11px; color: $mediumtextcolor;
