@@ -9,16 +9,16 @@
     "packages": [
         {
             "name": "aws/aws-sdk-php",
-            "version": "2.8.21",
+            "version": "2.8.22",
             "source": {
                 "type": "git",
                 "url": "https://github.com/aws/aws-sdk-php.git",
-                "reference": "92642ca4906e6681a1301971cf41500d7c68581c"
+                "reference": "d24eb9c69e5b6bdab53a7e223e58507bbea842dd"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/aws/aws-sdk-php/zipball/92642ca4906e6681a1301971cf41500d7c68581c",
-                "reference": "92642ca4906e6681a1301971cf41500d7c68581c",
+                "url": "https://api.github.com/repos/aws/aws-sdk-php/zipball/d24eb9c69e5b6bdab53a7e223e58507bbea842dd",
+                "reference": "d24eb9c69e5b6bdab53a7e223e58507bbea842dd",
                 "shasum": ""
             },
             "require": {
@@ -68,7 +68,7 @@
                 "s3",
                 "sdk"
             ],
-            "time": "2015-09-17 00:17:24"
+            "time": "2015-10-15 21:08:01"
         },
         {
             "name": "bower-asset/bootstrap",
@@ -931,7 +931,7 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/pixelandtonic/Imagine",
-                "reference": "bb551b2a187bc39b14101d3ed47fa45130acd6d1"
+                "reference": "53f58ee5c4d3a526745f99a3831e9d6051be306b"
             },
             "archive": {
                 "exclude": [
@@ -985,7 +985,7 @@
                 "image manipulation",
                 "image processing"
             ],
-            "time": "2015-09-20 00:39:12"
+            "time": "2015-10-22 20:24:15"
         },
         {
             "name": "league/flysystem",
