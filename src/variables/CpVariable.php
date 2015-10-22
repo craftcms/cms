@@ -64,9 +64,20 @@ class CpVariable
 				if (craft()->userSession->checkPermission('accessPlugin-'.$pluginHandle))
 				{
 					$lcHandle = StringHelper::toLowerCase($pluginHandle);
+					$iconPath = craft()->path->getPluginsPath().$pluginHandle.'/resources/icon-mask.svg';
+
+					if (IOHelper::fileExists($iconPath))
+					{
+						$iconSvg = IOHelper::getFileContents($iconPath);
+					}
+					else
+					{
+						$iconSvg = false;
+					}
+
 					$nav[$lcHandle] = array(
 						'label' => $plugin->getName(),
-						'iconUrl' => craft()->plugins->getPluginIconUrl($pluginHandle, $iconSize)
+						'iconSvg' => $iconSvg
 					);
 				}
 			}

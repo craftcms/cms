@@ -94,6 +94,10 @@ $elementBorderRadius: 3px;
 	background-image: radial-gradient($params);
 }
 
+@mixin svg-mask($color) {
+	rect, circle, ellipse, line, polyline, polygon, path, text { fill: $color; stroke-width: 0; }
+}
+
 @mixin transform($params...) {
 	-webkit-transform: $params;
 	-moz-transform: $params;

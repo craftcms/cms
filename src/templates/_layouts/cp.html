@@ -195,13 +195,22 @@
 
 						<li id="nav-{{ handle }}"{% if item.sel and hasSubnav %} class="has-subnav"{% endif %}>
 							<a{% if item.sel %} class="sel"{% endif %} href="{{ item.url }}">
-								{%- if item.icon is defined -%}
-									<span data-icon="{{ item.icon }}"></span>
-								{%- elseif item.iconUrl is defined -%}
-									<img src="{{ item.iconUrl }}" />
-								{%- endif -%}
+								<span class="icon">
+									{%- if item.icon is defined -%}
+										<span data-icon="{{ item.icon }}"></span>
+									{%- elseif item.iconSvg is defined and item.iconSvg -%}
+										{{ item.iconSvg|raw }}
+									{%- else -%}
+										<svg version="1.1" baseProfile="full" width="20" height="20" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+											<circle cx="10" cy="10" r="10" fill="#fff" fill-opacity="0.35"/>
+											<text x="10" y="15" font-size="15" font-family="sans-serif" font-weight="bold" text-anchor="middle" fill="#fff">{{ item.label[0:1]|upper }}</text>
+										</svg>
+									{%- endif -%}
+								</span>
 
-								{{- item.label -}}
+								<span class="label">
+									{{- item.label -}}
+								</span>
 
 								{%- if item.badge is defined and item.badge -%}
 									<span class="badge">{{ item.badge }}</span>
