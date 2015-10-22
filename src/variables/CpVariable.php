@@ -63,16 +63,19 @@ class CpVariable
 
 				if (craft()->userSession->checkPermission('accessPlugin-'.$pluginHandle))
 				{
+					$iconSvg = false;
 					$lcHandle = StringHelper::toLowerCase($pluginHandle);
-					$iconPath = craft()->path->getPluginsPath().$lcHandle.'/resources/icon-mask.svg';
+					$resourcesPath = craft()->path->getPluginsPath().$lcHandle.'/resources/';
 
-					if (IOHelper::fileExists($iconPath))
+					foreach (array('icon-mask.svg', 'icon.svg') as $testIcon)
 					{
-						$iconSvg = IOHelper::getFileContents($iconPath);
-					}
-					else
-					{
-						$iconSvg = false;
+						$iconPath = $resourcesPath.$testIcon;
+
+						if (IOHelper::fileExists($iconPath))
+						{
+							$iconSvg = IOHelper::getFileContents($iconPath);
+							break;
+						}
 					}
 
 					$nav[$lcHandle] = array(
