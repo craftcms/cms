@@ -100,16 +100,17 @@ body > .container,
 #settingsmenu ul li a:before { @include margin(1px, 0, 0, -22px); font-size: 15px; }
 
 #nav { padding-top: 50px; }
-#nav li a { display: block; margin: 0; padding: 7px; line-height: 24px; @include box-sizing(border-box); border-left: 4px solid transparent; }
-#nav li a.active { color: #fff; }
-#nav li:not(.has-subnav) a.sel { color: #fff; background: $headerLinkActiveColor; border-color: $submitcolor; }
+#nav li a { display: block; margin: 0; padding: 10px; line-height: 24px; @include box-sizing(border-box); border-left: 4px solid transparent; opacity: .8; }
+#nav li a.active { color: #fff; opacity: 1; }
+#nav li:not(.has-subnav) a.sel { color: #fff; background: $headerLinkActiveColor; border-color: $submitcolor; opacity: 1; }
 
 #nav li a:not(.sel) .badge { color: #333 !important; }
 #nav li a.menubtn { line-height: 26px; }
 #nav li.has-subnav { background: $headerLinkActiveColor; }
 #nav li ul li a { @include padding-left(40px); }
-#nav span[data-icon] { display: inline-block; width: 24px; text-align: center; }
 
+#nav li a span[data-icon] { display: inline-block; width: 24px; text-align: center; opacity: .5; font-size: 14px; }
+#nav li a img { width: 14px; padding: 0 5px; }
 
 /* HIDE */
 #customize-nav-btn span { display: none; }

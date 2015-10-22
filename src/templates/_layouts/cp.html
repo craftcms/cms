@@ -196,6 +196,8 @@
 							<a{% if item.sel %} class="sel"{% endif %} href="{{ item.url }}">
 								{% if item.icon is defined %}
 									<span data-icon="{{ item.icon }}"></span>
+								{% elseif item.iconUrl is defined %}
+									<img src="{{ item.iconUrl }}" />
 								{% endif %}
 
 								{{- item.label -}}
