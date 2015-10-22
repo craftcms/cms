@@ -92,6 +92,7 @@
 								id: 'slug',
 								name: 'slug',
 								value: entry.slug,
+								placeholder: "Enter slug"|t,
 								errors: (not isVersion ? entry.getErrors('slug')|merge(entry.getErrors('uri'))),
 								disabled: isVersion
 							}) }}
