@@ -31,8 +31,8 @@ body {
 }
 
 #header a:hover,
-#header a.active { color: #fff; text-decoration: none; background: $headerLinkHoverColor; border-color: rgba(0,0,0,0.2);  }
-#header a:active { color: #fff; text-decoration: none; background: $headerLinkActiveColor; border-color: rgba(0,0,0,0.4); }
+#header a.active { color: #fff; text-decoration: none; background: $headerLinkHoverColor; border-color: rgba(0,0,0,0.4);  }
+#header a:active { color: #fff; text-decoration: none; background: $headerLinkActiveColor; border-color: rgba(0,0,0,0.6); }
 
 #header h2 { @include margin(0, 14px, 0, 18px); @include floatleft; }
 #header h2 a { display: block; padding: 14px 0; width: calc(100% + 14px); overflow: hidden; white-space: nowrap; text-overflow: ellipsis; word-wrap: normal; }
@@ -100,7 +100,7 @@ body > .container,
 #settingsmenu ul li a:before { @include margin(1px, 0, 0, -22px); font-size: 15px; }
 
 #nav { padding-top: 50px; }
-#nav li a { display: block; margin: 0; padding: 10px; line-height: 24px; @include box-sizing(border-box); border-left: 4px solid transparent; opacity: .8; }
+#nav li a { display: block; margin: 0; padding: 10px 14px; line-height: 24px; @include box-sizing(border-box); border-left: 4px solid transparent; opacity: .8; }
 #nav li a.active { color: #fff; opacity: 1; }
 #nav li:not(.has-subnav) a.sel { color: #fff; background: $headerLinkActiveColor; border-color: $submitcolor; opacity: 1; }
 
@@ -109,8 +109,9 @@ body > .container,
 #nav li.has-subnav { background: $headerLinkActiveColor; }
 #nav li ul li a { @include padding-left(60px); }
 
-#nav li a span[data-icon] { display: inline-block; width: 24px; text-align: center; opacity: .5; font-size: 14px; }
-#nav li a img { width: 14px; padding: 0 5px; }
+#nav li a span[data-icon] { display: inline-block; text-align: center; opacity: .5; font-size: 15px; }
+#nav li a span[data-icon],
+#nav li a img { width: 15px; margin-left: 2px; margin-right: 14px; }
 
 /* HIDE */
 #customize-nav-btn span { display: none; }
