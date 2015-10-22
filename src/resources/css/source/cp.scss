@@ -107,7 +107,7 @@ body > .container,
 #nav li a:not(.sel) .badge { color: #333 !important; }
 #nav li a.menubtn { line-height: 26px; }
 #nav li.has-subnav { background: $headerLinkActiveColor; }
-#nav li ul li a { @include padding-left(40px); }
+#nav li ul li a { @include padding-left(60px); }
 
 #nav li a span[data-icon] { display: inline-block; width: 24px; text-align: center; opacity: .5; font-size: 14px; }
 #nav li a img { width: 14px; padding: 0 5px; }
