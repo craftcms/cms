@@ -16,6 +16,7 @@ Craft.CP = Garnish.Base.extend(
 	$nav: null,
 	$subnav: null,
 	$pageHeader: null,
+	$containerTopbar: null,
 
 	$overflowNavMenuItem: null,
 	$overflowNavMenuBtn: null,
@@ -71,6 +72,7 @@ Craft.CP = Garnish.Base.extend(
 		this.$alerts = $('#alerts');
 		this.$globalSidebar = $('#global-sidebar');
 		this.$pageHeader = $('#page-header');
+		this.$containerTopbar = $('#container .topbar');
 		this.$headerActionsList = this.$globalSidebar.find('#header-actions');
 		this.$siteName = this.$globalSidebar.find('h2');
 		this.$nav = $('#nav');
@@ -282,7 +284,7 @@ Craft.CP = Garnish.Base.extend(
 
 	showNavToggle: function()
 	{
-		this.$navBtn = $('<a class="show-nav" title="'+Craft.t('Show nav')+'"></a>').prependTo(this.$pageHeader);
+		this.$navBtn = $('<a class="show-nav" title="'+Craft.t('Show nav')+'"></a>').prependTo(this.$containerTopbar);
 
 		this.addListener(this.$navBtn, 'click', 'toggleNav');
 
