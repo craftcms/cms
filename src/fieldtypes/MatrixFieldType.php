@@ -596,7 +596,7 @@ class MatrixFieldType extends BaseFieldType
 	}
 
 	/**
-	 * Returns info about each field type for the configurator.
+	 * Returns info about each block type and their field types for the Matrix field input.
 	 *
 	 * @param string $name
 	 *
