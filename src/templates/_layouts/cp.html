@@ -87,6 +87,7 @@
 %}
 
 {% set forceConfirmUnload = craft.session.hasFlash('error') %}
+{% set fullPageForm = (fullPageForm is defined and fullPageForm) %}
 
 
 {% block body %}
@@ -246,7 +247,13 @@
 		{% endif %}
 	</header>
 
-	<div id="container">
+	{% if fullPageForm %}
+		<form id="container" method="post" accept-charset="UTF-8" data-saveshortcut{% if saveShortcutRedirect is defined %} data-saveshortcut-redirect="{{ saveShortcutRedirect }}"{% endif %} data-confirm-unload>
+			{{ getCsrfInput() }}
+	{% else %}
+		<div id="container">
+	{% endif %}
+
 		<div id="notifications-wrapper">
 			<div id="notifications">
 				{% for type in ['notice', 'error'] %}
@@ -269,6 +276,7 @@
 				</nav>
 			{% endif %}
 		</div>
+
 
 		<header id="page-header">
 			{% block pageHeader %}
@@ -338,7 +346,12 @@
 				<p id="upgradepromo"><a>{{ "Upgrade Craft to take your site to the next level."|t }} <span class="go nowrap">{{ "Show me"|t }}</span></a></p>
 			{% endif %}
 		</div>
-	</div>
+
+	{% if not fullPageForm %}
+		</div>
+	{% else %}
+		</form>
+	{% endif %}
 
 	{% if craft.app.hasWrongEdition() %}
 		<div id="wrongedition-modal" class="modal fitted hidden">

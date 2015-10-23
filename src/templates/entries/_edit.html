@@ -18,9 +18,6 @@
 
 
 {% block main %}
-	<form id="entry-form" method="post" accept-charset="UTF-8" data-saveshortcut data-saveshortcut-redirect="{{ continueEditingUrl }}" data-confirm-unload>
-		{{ getCsrfInput() }}
-
 		{% if not isVersion %}
 			<input type="hidden" name="sectionId" value="{{ section.id }}">
 			{% if entry.id %}<input type="hidden" name="entryId" value="{{ entry.id }}">{% endif %}
@@ -310,7 +307,6 @@
 
 			</div><!--/item-->
 		</div><!--/grid-->
-	</form>
 {% endblock %}
 
 

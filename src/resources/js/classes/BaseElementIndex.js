@@ -1208,7 +1208,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 			}
 			else
 			{
-				return $('<div class="buttons"/>').appendTo(this.$extraHeaders);
+				return $('<div class="buttons right"/>').appendTo(this.$extraHeaders);
 			}
 		}
 		else
