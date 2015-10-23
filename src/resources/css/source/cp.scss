@@ -38,6 +38,11 @@ body {
 
 #container { display: flex; flex-direction: column; position: relative; @include padding(0, 24px, 0, 244px); @include box-sizing(border-box); height: 100vh; overflow: auto; }
 
+body.mobile #container {
+	overflow-y: scroll; /* has to be scroll, not auto */
+	-webkit-overflow-scrolling: touch;
+}
+
 #main { flex-grow: 1; }
 #main.single-pane { display: flex; }
 #main.single-pane > .pane { display: flex; flex-direction: column; flex-grow: 1; margin: 0 -24px; border-radius: 0; }
