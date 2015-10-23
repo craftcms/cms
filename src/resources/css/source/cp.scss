@@ -20,24 +20,24 @@ body {
 }
 
 /* header */
-#header { position: fixed; top: 0; @include left(0); width: 200px; height: 100vh; overflow: auto; background: $headerBgColor; z-index: 100; }
-body.dev-mode #header { padding-top: 5px; }
+#global-sidebar { position: fixed; top: 0; @include left(0); width: 200px; height: 100vh; overflow: auto; background: $headerBgColor; z-index: 100; }
+body.dev-mode #global-sidebar { padding-top: 5px; }
 
-#header:after { @include clearafter; }
-#header a { color: hsl($hue, 5%, 85%);
+#global-sidebar:after { @include clearafter; }
+#global-sidebar a { color: hsl($hue, 5%, 85%);
 	@include transition(color linear 100ms);
 }
 
-#header a:hover,
-#header a.active { color: #fff; text-decoration: none; background: $headerLinkHoverColor; border-color: rgba(0,0,0,0.4);  }
-#header a:active { color: #fff; text-decoration: none; background: $headerLinkActiveColor; border-color: rgba(0,0,0,0.6); }
+#global-sidebar a:hover,
+#global-sidebar a.active { color: #fff; text-decoration: none; background: $headerLinkHoverColor; border-color: rgba(0,0,0,0.4);  }
+#global-sidebar a:active { color: #fff; text-decoration: none; background: $headerLinkActiveColor; border-color: rgba(0,0,0,0.6); }
 
-#header h2 { @include margin(0, 14px, 0, 18px); @include floatleft; }
-#header h2 a { display: block; padding: 14px 0; width: calc(100% + 14px); overflow: hidden; white-space: nowrap; text-overflow: ellipsis; word-wrap: normal; }
+#global-sidebar h2 { @include margin(0, 14px, 0, 18px); @include floatleft; }
+#global-sidebar h2 a { display: block; padding: 14px 0; width: calc(100% + 14px); overflow: hidden; white-space: nowrap; text-overflow: ellipsis; word-wrap: normal; }
 
 
 #container,
-#header { transition: all .25s ease-in-out; -webkit-transition: all .25s ease-in-out; }
+#global-sidebar { transition: all .25s ease-in-out; -webkit-transition: all .25s ease-in-out; }
 
 #container { display: flex; flex-direction: column; position: relative; @include padding(0, 24px, 0, 224px); @include box-sizing(border-box); overflow: auto; height: 100vh; }
 body.dev-mode #container { padding-top: 5px; }
@@ -50,7 +50,7 @@ body.dev-mode #container { padding-top: 5px; }
 
 @media only screen and (min-width: 1024px)
 {
-	#header { display: block; }
+	#global-sidebar { display: block; }
 }
 
 @media only screen and (max-width: 1024px)
@@ -58,11 +58,11 @@ body.dev-mode #container { padding-top: 5px; }
 	body.ltr #container { width: calc(100% + 200px); @include transform(translate3d(-200px,0,0)); }
 	body.rtl #container { width: calc(100% + 200px); @include transform(translate3d(200px,0,0)); }
 
-	body.showing-nav #header { display: block; }
+	body.showing-nav #global-sidebar { display: block; }
 	body.showing-nav #container { @include transform(translate3d(0,0,0)); }
 
-	body.ltr:not(.showing-nav) #header { @include transform(translate3d(-200px,0,0)); }
-	body.rtl:not(.showing-nav) #header { @include transform(translate3d(200px,0,0)); }
+	body.ltr:not(.showing-nav) #global-sidebar { @include transform(translate3d(-200px,0,0)); }
+	body.rtl:not(.showing-nav) #global-sidebar { @include transform(translate3d(200px,0,0)); }
 }
 
 #header-actions { @include floatright; height: 38px; margin-top: 3px; @include margin-right(14px); }
@@ -123,7 +123,7 @@ body.dev-mode #container { padding-top: 5px; }
 #overflow-nav #customize-nav-btn span { display: inline-block; }
 /* end HIDE */
 
-#header #nav li a .badge,
+#global-sidebar #nav li a .badge,
 #overflow-nav li a .badge { display: inline-block; position: relative; top: -6px; border-radius: 6px; padding: 0 3px; font-size: 10px; line-height: 12px; color: #fff; background: $submitcolor; }
 #overflow-nav li a:hover .badge { color: $headerBgColor; }
 

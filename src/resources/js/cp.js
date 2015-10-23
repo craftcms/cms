@@ -10,7 +10,7 @@ Craft.CP = Garnish.Base.extend(
 
 	$container: null,
 	$alerts: null,
-	$header: null,
+	$globalSidebar: null,
 	$headerActionsList: null,
 	$siteName: null,
 	$nav: null,
@@ -69,10 +69,10 @@ Craft.CP = Garnish.Base.extend(
 		// Find all the key elements
 		this.$container = $('#container');
 		this.$alerts = $('#alerts');
-		this.$header = $('#header');
+		this.$globalSidebar = $('#global-sidebar');
 		this.$pageHeader = $('#page-header');
-		this.$headerActionsList = this.$header.find('#header-actions');
-		this.$siteName = this.$header.find('h2');
+		this.$headerActionsList = this.$globalSidebar.find('#header-actions');
+		this.$siteName = this.$globalSidebar.find('h2');
 		this.$nav = $('#nav');
 		this.$subnav = $('#subnav');
 		this.$sidebar = $('#sidebar');
@@ -439,7 +439,7 @@ Craft.CP = Garnish.Base.extend(
 
 	updateFixedNotifications: function()
 	{
-		this.updateFixedNotifications._headerHeight = this.$header.height();
+		this.updateFixedNotifications._headerHeight = this.$globalSidebar.height();
 
 		if (this.$container.scrollTop() > this.updateFixedNotifications._headerHeight)
 		{
@@ -525,7 +525,7 @@ Craft.CP = Garnish.Base.extend(
 	{
 		if (Garnish.isArray(alerts) && alerts.length)
 		{
-			this.$alerts = $('<ul id="alerts"/>').insertBefore($('#header'));
+			this.$alerts = $('<ul id="alerts"/>').insertBefore($('#global-sidebar'));
 
 			for (var i = 0; i < alerts.length; i++)
 			{
