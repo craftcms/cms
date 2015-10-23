@@ -1557,10 +1557,10 @@ Garnish.BaseDrag = Garnish.Base.extend({
 	 */
 	_scrollWindow: function()
 	{
-		this._.scrollPos = Garnish.$win[this.scrollProperty]();
-		Garnish.$win[this.scrollProperty](this._.scrollPos + this.scrollDist);
+		this._.scrollPos = Garnish.BaseDrag.$scrollContainer[this.scrollProperty]();
+		Garnish.BaseDrag.$scrollContainer[this.scrollProperty](this._.scrollPos + this.scrollDist);
 
-		this['mouse'+this.scrollAxis] -= this._.scrollPos - Garnish.$win[this.scrollProperty]();
+		this['mouse'+this.scrollAxis] -= this._.scrollPos - Garnish.BaseDrag.$scrollContainer[this.scrollProperty]();
 		this['realMouse'+this.scrollAxis] = this['mouse'+this.scrollAxis];
 
 		this.drag();
@@ -1600,6 +1600,7 @@ Garnish.BaseDrag = Garnish.Base.extend({
 {
 	minMouseDist: 1,
 	windowScrollTargetSize: 25,
+	$scrollContainer: $(window),
 
 	defaults: {
 		handle: null,

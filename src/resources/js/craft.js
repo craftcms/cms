@@ -1,3 +1,6 @@
+// Configure Garnish
+Garnish.BaseDrag.$scrollContainer = $('#container');
+
 if (typeof Craft == 'undefined')
 {
 	Craft = {};
