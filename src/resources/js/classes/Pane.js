@@ -5,9 +5,11 @@ Craft.Pane = Garnish.Base.extend(
 {
 	$pane: null,
 	$content: null,
+	$sidebar: null,
 
 	tabs: null,
 	selectedTab: null,
+	hasSidebar: null,
 
 	init: function(pane)
 	{
@@ -71,7 +73,7 @@ Craft.Pane = Garnish.Base.extend(
 			this.addListener($inputs, 'blur', 'blurMetaField');
 		}
 
-		// this.initContent();
+		this.initContent();
 	},
 
 	focusMetaField: function(ev)
@@ -121,6 +123,79 @@ Craft.Pane = Garnish.Base.extend(
 		{
 			this.tabs[this.selectedTab].$tab.removeClass('sel');
 			this.tabs[this.selectedTab].$target.addClass('hidden');
+		}
+	},
+
+	initContent: function()
+	{
+		this.hasSidebar = this.$content.hasClass('has-sidebar');
+
+		if (this.hasSidebar)
+		{
+			this.$sidebar = this.$content.children('.sidebar');
+
+			this.addListener(this.$content, 'resize', function()
+			{
+				this.updateSidebarStyles();
+			});
+
+			this.addListener(this.$sidebar, 'resize', 'setMinContentSizeForSidebar');
+			this.setMinContentSizeForSidebar();
+
+			this.addListener(Garnish.$win, 'resize', 'updateSidebarStyles');
+			this.addListener(Craft.cp.$container, 'scroll', 'updateSidebarStyles');
+			this.updateSidebarStyles();
+		}
+	},
+
+	setMinContentSizeForSidebar: function()
+	{
+		if (true || this.$pane.hasClass('showing-sidebar'))
+		{
+			this.setMinContentSizeForSidebar._minHeight = this.$sidebar.prop('scrollHeight') - 48;
+		}
+		else
+		{
+			this.setMinContentSizeForSidebar._minHeight = 0;
+		}
+
+		this.$content.css('min-height', this.setMinContentSizeForSidebar._minHeight);
+	},
+
+	updateSidebarStyles: function()
+	{
+		if (true || this.$pane.hasClass('showing-sidebar'))
+		{
+			this.updateSidebarStyles._styles = {};
+
+			this.updateSidebarStyles._scrollTop = Craft.cp.$container.scrollTop();
+			this.updateSidebarStyles._windowHeight = Garnish.$win.height();
+			this.updateSidebarStyles._paneOffset = this.updateSidebarStyles._scrollTop + this.$pane.offset().top;
+			this.updateSidebarStyles._contentScrollTop = this.$content.offset().top - 24;
+			this.updateSidebarStyles._contentOffset = this.updateSidebarStyles._scrollTop + this.updateSidebarStyles._contentScrollTop;
+			this.updateSidebarStyles._contentHeight = this.$pane.outerHeight() - (this.updateSidebarStyles._contentOffset - this.updateSidebarStyles._paneOffset);
+
+			// Have we scrolled passed the top of the content div?
+			if (this.updateSidebarStyles._contentScrollTop < 0)
+			{
+				// Set the top position to the difference
+				this.updateSidebarStyles._styles.position = 'fixed';
+				this.updateSidebarStyles._styles.top = '24px';
+			}
+			else
+			{
+				this.updateSidebarStyles._styles.position = 'absolute';
+				this.updateSidebarStyles._styles.top = 'auto';
+			}
+
+			// Now figure out how tall the sidebar can be
+			var maxViewportY = this.updateSidebarStyles._scrollTop + this.updateSidebarStyles._windowHeight,
+				contentBottomOffset = this.updateSidebarStyles._contentOffset + this.updateSidebarStyles._contentHeight;
+
+			var height = Math.min(maxViewportY, contentBottomOffset) - Math.max(this.updateSidebarStyles._scrollTop, this.updateSidebarStyles._contentOffset);
+			this.updateSidebarStyles._styles.height = height - 48;
+
+			this.$sidebar.css(this.updateSidebarStyles._styles);
 		}
 	},
 
