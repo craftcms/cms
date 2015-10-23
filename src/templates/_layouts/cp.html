@@ -89,6 +89,16 @@
 {% set forceConfirmUnload = craft.session.hasFlash('error') %}
 {% set fullPageForm = (fullPageForm is defined and fullPageForm) %}
 
+{% if fullPageForm and extraPageHeaderHtml is not defined %}
+	{% set extraPageHeaderHtml %}
+		{%- spaceless %}
+			{% block saveButton %}
+				<input type="submit" class="btn submit" value="{{ 'Save'|t }}">
+			{% endblock %}
+		{% endspaceless -%}
+	{% endset %}
+{% endif %}
+
 
 {% block body %}
 	{% if craft.cp.areAlertsCached() %}
@@ -281,13 +291,17 @@
 		<header id="page-header">
 			{% block pageHeader %}
 
-				{% if title is defined and title %}
-					<h1>{{ title }}</h1>
-				{% endif %}
+				<div id="page-title">
+					{% block pageTitle %}
+						{% if title is defined and title %}
+							<h1>{{ title }}</h1>
+						{% endif %}
+					{% endblock %}
+				</div>
 
 				{% if extraPageHeaderHtml is defined %}
 					<div id="extra-headers">
-						{{ extraPageHeaderHtml }}
+						{{ extraPageHeaderHtml|raw }}
 					</div>
 				{% endif %}
 
