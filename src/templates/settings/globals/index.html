@@ -3,6 +3,10 @@
 {% extends "_layouts/cp" %}
 {% set title = "Globals"|t %}
 
+{% set extraPageHeaderHtml %}
+	<a href="{{ url('settings/globals/new') }}" class="btn submit add icon">{{ "New Global Set"|t }}</a>
+{% endset %}
+
 {% set crumbs = [
 	{ label: "Settings"|t, url: url('settings') }
 ] %}
@@ -37,10 +41,6 @@
 				</tbody>
 			</table>
 		{% endif %}
-
-		<div class="buttons">
-			<a href="{{ url('settings/globals/new') }}" class="btn submit add icon">{{ "New Global Set"|t }}</a>
-		</div>
 	</div>
 {% endset %}
 

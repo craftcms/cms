@@ -1,6 +1,10 @@
 {% extends "_layouts/cp" %}
 {% set title = "Category Groups"|t %}
 
+{% set extraPageHeaderHtml %}
+	<a href="{{ url('settings/categories/new') }}" class="btn submit add icon">{{ "New Category Group"|t }}</a>
+{% endset %}
+
 {% set crumbs = [
 	{ label: "Settings"|t, url: url('settings') }
 ] %}
@@ -34,9 +38,6 @@
 		</table>
 	{% endif %}
 
-	<div class="buttons">
-		<a href="{{ url('settings/categories/new') }}" class="btn submit add icon">{{ "New Category Group"|t }}</a>
-	</div>
 {% endset %}
 
 

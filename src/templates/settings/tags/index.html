@@ -1,6 +1,10 @@
 {% extends "_layouts/cp" %}
 {% set title = "Tag Groups"|t %}
 
+{% set extraPageHeaderHtml %}
+	<a href="{{ url('settings/tags/new') }}" class="btn submit add icon">{{ "New Tag Group"|t }}</a>
+{% endset %}
+
 {% set crumbs = [
 	{ label: "Settings"|t, url: url('settings') }
 ] %}
@@ -32,9 +36,6 @@
 		</table>
 	{% endif %}
 
-	<div class="buttons">
-		<a href="{{ url('settings/tags/new') }}" class="btn submit add icon">{{ "New Tag Group"|t }}</a>
-	</div>
 {% endset %}
 
 
