@@ -13,8 +13,6 @@ html { overflow-y: scroll; }
 #alerts li:before { @include icon; @include margin(-1px, 3px, 0, 0); content: 'alert'; font-size: 16px; }
 #alerts li a { color: $errorcolor; text-decoration: underline; white-space: nowrap; }
 
-.container { margin: 0 auto; padding: 0 24px; @include box-sizing(border-box); }
-
 body {
 	height: 100vh;
 	width: 100vw;
@@ -26,7 +24,6 @@ body {
 body.dev-mode #header { padding-top: 5px; }
 
 #header:after { @include clearafter; }
-#header .container { position: relative; padding: 0; }
 #header a { color: hsl($hue, 5%, 85%);
 	@include transition(color linear 100ms);
 }
@@ -39,10 +36,10 @@ body.dev-mode #header { padding-top: 5px; }
 #header h2 a { display: block; padding: 14px 0; width: calc(100% + 14px); overflow: hidden; white-space: nowrap; text-overflow: ellipsis; word-wrap: normal; }
 
 
-body > .container,
+#container,
 #header { transition: all .25s ease-in-out; -webkit-transition: all .25s ease-in-out; }
 
-#container { display: flex; flex-direction: column; position: relative; @include padding-left(224px); overflow: auto; height: 100vh; }
+#container { display: flex; flex-direction: column; position: relative; @include padding(0, 24px, 0, 224px); @include box-sizing(border-box); overflow: auto; height: 100vh; }
 body.dev-mode #container { padding-top: 5px; }
 
 #main { flex-grow: 1; }
@@ -58,11 +55,11 @@ body.dev-mode #container { padding-top: 5px; }
 
 @media only screen and (max-width: 1024px)
 {
-	body.ltr > .container { width: calc(100% + 200px); @include transform(translate3d(-200px,0,0)); }
-	body.rtl > .container { width: calc(100% + 200px); @include transform(translate3d(200px,0,0)); }
+	body.ltr #container { width: calc(100% + 200px); @include transform(translate3d(-200px,0,0)); }
+	body.rtl #container { width: calc(100% + 200px); @include transform(translate3d(200px,0,0)); }
 
 	body.showing-nav #header { display: block; }
-	body.showing-nav > .container { @include transform(translate3d(0,0,0)); }
+	body.showing-nav #container { @include transform(translate3d(0,0,0)); }
 
 	body.ltr:not(.showing-nav) #header { @include transform(translate3d(-200px,0,0)); }
 	body.rtl:not(.showing-nav) #header { @include transform(translate3d(200px,0,0)); }
@@ -422,7 +419,7 @@ $fldGuideColor: #f4f3fb;
 }
 
 @media only screen and (max-width: 320px) {
-	.container { @include padding-left(10px); @include padding-right(10px); }
+	#container { @include padding-left(10px); @include padding-right(10px); }
 	#header-actions { @include right(10px); }
 	#nav { @include margin-left(-10px); }
 }
