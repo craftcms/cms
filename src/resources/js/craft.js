@@ -1280,6 +1280,7 @@ $.extend($.fn,
 
 			if ($container.data('item-selector')) settings.itemSelector = $container.data('item-selector');
 			if ($container.data('cols'))          settings.cols = parseInt($container.data('cols'));
+			if ($container.data('max-cols'))      settings.maxCols = parseInt($container.data('max-cols'));
 			if ($container.data('min-col-width')) settings.minColWidth = parseInt($container.data('min-col-width'));
 			if ($container.data('mode'))          settings.mode = $container.data('mode');
 			if ($container.data('fill-mode'))     settings.fillMode = $container.data('fill-mode');

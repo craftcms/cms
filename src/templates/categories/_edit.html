@@ -12,7 +12,7 @@
 		{% if category.id %}<input type="hidden" name="categoryId" value="{{ category.id }}">{% endif %}
 		{% if craft.isLocalized() %}<input type="hidden" name="locale" value="{{ category.locale }}">{% endif %}
 
-		<div class="grid first">
+		<div class="grid first" data-max-cols="3">
 			<div class="item" data-position="left" data-min-colspan="2" data-max-colspan="3">
 				<div id="fields" class="pane">
 					{% include "_includes/tabs" %}

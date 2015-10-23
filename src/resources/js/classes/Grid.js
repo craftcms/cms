@@ -121,6 +121,11 @@ Craft.Grid = Garnish.Base.extend(
 		else
 		{
 			this.refreshCols._.totalCols = Math.floor(this.$container.width() / this.settings.minColWidth);
+
+			if (this.settings.maxCols && this.refreshCols._.totalCols > this.settings.maxCols)
+			{
+				this.refreshCols._.totalCols = this.settings.maxCols;
+			}
 		}
 
 		if (this.refreshCols._.totalCols == 0)
@@ -518,6 +523,7 @@ Craft.Grid = Garnish.Base.extend(
 	defaults: {
 		itemSelector: '.item',
 		cols: null,
+		maxCols: null,
 		minColWidth: 320,
 		mode: 'pct',
 		fillMode: 'top',
