@@ -85,10 +85,6 @@ Craft.CP = Garnish.Base.extend(
 		this.$collapsibleTables = $('table.collapsible');
 		this.$upgradePromo = $('#upgradepromo > a');
 
-		// Keep the site name contained
-		this.onActionItemListResize();
-		this.addListener(this.$headerActionsList, 'resize', 'onActionItemListResize');
-
 		// Find all the nav items
 		this.navItems = [];
 		this.totalNavWidth = Craft.CP.baseNavWidth;
@@ -257,11 +253,6 @@ Craft.CP = Garnish.Base.extend(
 
 		// Update any responsive tables
 		this.updateResponsiveTables();
-	},
-
-	onActionItemListResize: function()
-	{
-		this.$siteName.css('max-width', 'calc(100% - '+(this.$headerActionsList.width()+14)+'px)');
 	},
 
 	updateResponsiveNav: function()
