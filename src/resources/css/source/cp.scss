@@ -106,6 +106,7 @@ body.mobile #container {
 #settingsmenu ul li a img { width: 16px; height: 16px; position: absolute; margin-left: -23px; margin-top: 1px; }
 #settingsmenu ul li a:before { @include margin(1px, 0, 0, -22px); font-size: 15px; }
 
+#nav { padding: 7px 0; }
 #nav li a { display: flex; align-items: center; margin: 0; padding: 10px 14px; min-height: 24px; @include box-sizing(border-box); border-left: 4px solid transparent; opacity: .8; }
 #nav li a.active { color: #fff; opacity: 1; }
 #nav li:not(.has-subnav) a.sel { color: #fff; background: $headerLinkActiveColor; border-color: $submitcolor; opacity: 1; }
@@ -115,7 +116,7 @@ body.mobile #container {
 #nav li.has-subnav { background: $headerLinkActiveColor; }
 #nav li ul li a { @include padding-left(60px); }
 
-#nav li a .icon { display: flex; align-items: center; justify-content: center; width: 15px; @include padding-right(7px); opacity: 0.5; }
+#nav li a .icon { display: flex; align-items: center; justify-content: center; width: 15px; @include padding-right(10px); opacity: 0.5; }
 #nav li a .icon span[data-icon] { font-size: 15px; color: #fff; }
 #nav li a .icon svg { width: 15px; max-height: 15px; @include svg-mask(#fff); }
 
