@@ -22,7 +22,7 @@ body {
 }
 
 /* header */
-#header { position: fixed; top: 0; @include left(0); width: 200px; height: 100vh; background: $headerBgColor; z-index: 100; }
+#header { position: fixed; top: 0; @include left(0); width: 200px; height: 100vh; overflow: auto; background: $headerBgColor; z-index: 100; }
 body.dev-mode #header { padding-top: 5px; }
 
 #header:after { @include clearafter; }
