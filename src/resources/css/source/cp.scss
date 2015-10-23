@@ -36,7 +36,7 @@ body {
 #container,
 #global-sidebar { transition: all .25s ease-in-out; -webkit-transition: all .25s ease-in-out; }
 
-#container { display: flex; flex-direction: column; position: relative; @include padding(0, 24px, 0, 244px); @include box-sizing(border-box); overflow: auto; }
+#container { display: flex; flex-direction: column; position: relative; @include padding(0, 24px, 0, 244px); @include box-sizing(border-box); height: 100vh; overflow: auto; }
 
 #main { flex-grow: 1; }
 #main.single-pane { display: flex; }
