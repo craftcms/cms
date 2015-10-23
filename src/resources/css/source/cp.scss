@@ -143,11 +143,11 @@ body.dev-mode #notifications-wrapper.fixed .notification { padding-top: 10px; }
 #notifications .notification.error { background: $submitcolor; }
 
 
-#global-sidebar .topbar { display: flex; border-bottom: 1px solid rgba(0,0,0,0.2); }
+#global-sidebar .topbar { display: flex; border-bottom: 1px solid rgba(0,0,0,0.2); background: rgba(0,0,0,0.1); }
 #global-sidebar .topbar h2 { order: 1; flex: 1; }
 #global-sidebar .topbar #header-actions { order: 2; }
 
-#container .topbar { margin: 0 -24px; padding: 0 24px; display: flex; border-bottom: 1px solid rgba(0,0,0,0.05); }
+#container .topbar { margin: 0 -24px; padding: 0 24px; display: flex; border-bottom: 1px solid rgba(0,0,0,0.05); background: rgba(0,0,0,0.03); }
 #container .topbar .show-nav { width: 24px; height: 24px; padding: 10px; display: block; line-height: 22px; color: $secondarySubmitColor; text-align: center;
 	@include margin-left(-24px);
 }
