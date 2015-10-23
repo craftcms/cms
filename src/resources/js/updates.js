@@ -148,7 +148,7 @@ Craft.UpdateInfo = Garnish.Base.extend(
 					{
 						Garnish.shake(this.licenseHud.$hud);
 					}
-				}, this);
+				}, this)
 			});
 		}
 		else
