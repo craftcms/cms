@@ -61,6 +61,11 @@ $elementBorderRadius: 3px;
 	animation-timing-function: $func;
 }
 
+@mixin backface-visibility($value) {
+	-webkit-backface-visibility: $value;
+	backface-visibility: $value;
+}
+
 @mixin box-shadow($params...) {
 	-webkit-box-shadow: $params;
 	-moz-box-shadow: $params;
