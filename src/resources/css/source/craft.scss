@@ -254,8 +254,8 @@ td.right { float: none; @include alignright; }
 .customize-sources-modal > .footer { position: absolute; bottom: 0; left: 0; width: 100%; }
 
 /* help footer */
-#help-footer { background: $lightBgColor; text-align: center; }
-#help-footer #help { font-size: 24px; }
+#help-footer { margin: 0 -24px; background: $lightBgColor; text-align: center; }
+#help-footer #help { display: inline-block; margin: 14px 0; font-size: 24px; }
 
 /* ----------------------------------------
 /*  Icon lists

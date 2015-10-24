@@ -307,15 +307,15 @@
 							{% endblock %}
 						</div>
 					</div>
-
-					{% if hasHelp %}
-						<div id="help-footer" class="footer">
-							<a id="help" class="help" title="{{ 'Help'|t }}" href="{{ docsUrl }}" target="_blank"></a>
-						</div>
-					{% endif %}
 				</div>
 			{% endif %}
 		</main>
+
+		{% if hasHelp %}
+			<div id="help-footer">
+				<a id="help" class="help" title="{{ 'Help'|t }}" href="{{ docsUrl }}" target="_blank"></a>
+			</div>
+		{% endif %}
 
 		<div id="footer">
 			<ul>
