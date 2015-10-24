@@ -1,12 +1,37 @@
 {% extends "_layouts/cp" %}
 {% import "_includes/forms" as forms %}
 
+{% set fullPageForm = true %}
+{% set saveShortcutRedirect = continueEditingUrl %}
+
 {% set groupHandle = group.handle %}
 
 
+{% block saveButton %}
+	<div class="btngroup">
+		<input type="submit" class="btn submit" value="{{ 'Save'|t }}">
+
+		<div class="btn submit menubtn"></div>
+		<div class="menu">
+			<ul>
+				<li><a class="formsubmit" data-redirect="{{ continueEditingUrl }}">
+					{{ "Save and continue editing"|t }}
+					{{ forms.optionShortcutLabel('S') }}
+				</a></li>
+				<li><a class="formsubmit" data-redirect="categories/{{ groupHandle }}/new?parentId={parent.id}">{{ "Save and add another"|t }}</a></li>
+
+				{% if category.id %}
+					<li><a class="formsubmit" data-param="categoryId" data-value="" data-redirect="{{ continueEditingUrl }}">{{ "Save as a new category"|t }}</a></li>
+				{% endif %}
+			</ul>
+		</div>
+	</div>
+{% endblock %}
+
+
 {% block main %}
-	<form id="category-form" method="post" accept-charset="UTF-8" data-saveshortcut data-saveshortcut-redirect="{{ continueEditingUrl }}" data-confirm-unload>
-		{{ getCsrfInput() }}
+		<input type="hidden" name="action" value="categories/saveCategory">
+		<input type="hidden" name="redirect" value="categories/{{ groupHandle }}">
 
 		<input type="hidden" name="groupId" value="{{ group.id }}">
 		{% if category.id %}<input type="hidden" name="categoryId" value="{{ category.id }}">{% endif %}
@@ -117,39 +142,6 @@
 					}, statusInput) }}
 
 				</div><!--/pane-->
-
-				{# Action buttons #}
-
-				<hr>
-
-				<input type="hidden" name="action" value="categories/saveCategory">
-				<input type="hidden" name="redirect" value="categories/{{ groupHandle }}">
-
-				<table class="inputs fullwidth">
-					<tr>
-						<td class="thin">
-							<div class="btngroup submit first">
-								<input type="submit" class="btn submit" value="{{ 'Save'|t }}">
-
-								<div class="btn submit menubtn"></div>
-								<div class="menu">
-									<ul>
-										<li><a class="formsubmit" data-redirect="{{ continueEditingUrl }}">
-											{{ "Save and continue editing"|t }}
-											{{ forms.optionShortcutLabel('S') }}
-										</a></li>
-										<li><a class="formsubmit" data-redirect="categories/{{ groupHandle }}/new?parentId={parent.id}">{{ "Save and add another"|t }}</a></li>
-
-										{% if category.id %}
-											<li><a class="formsubmit" data-param="categoryId" data-value="" data-redirect="{{ continueEditingUrl }}">{{ "Save as a new category"|t }}</a></li>
-										{% endif %}
-									</ul>
-								</div>
-							</div>
-						</td>
-						<td></td>
-					</tr>
-				</table>
 			</div><!--/item-->
 		</div><!--/grid-->
 	</form>
