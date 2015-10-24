@@ -254,7 +254,7 @@ td.right { float: none; @include alignright; }
 .customize-sources-modal > .footer { position: absolute; bottom: 0; left: 0; width: 100%; }
 
 /* help footer */
-#help-footer { margin: 0 -24px; background: $lightBgColor; text-align: center; }
+#help-footer { margin: 0 -24px; text-align: center; border-bottom: 1px solid $hairlineColor; }
 #help-footer #help { display: inline-block; margin: 14px 0; font-size: 24px; }
 
 /* ----------------------------------------
