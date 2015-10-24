@@ -294,7 +294,7 @@
 						{% include "_includes/tabs" %}
 					{% endif %}
 
-					<div id="content" class="content{% if hasSidebar %} has-sidebar{% endif %}{% if hasHelp %} has-help{% endif %}">
+					<div id="content" class="content{% if hasSidebar %} has-sidebar{% endif %}">
 						{% if hasSidebar %}
 							<div id="sidebar" class="sidebar">
 								{{ sidebar|raw }}
@@ -306,11 +306,13 @@
 								{{ content is defined ? content }}
 							{% endblock %}
 						</div>
-
-						{% if hasHelp %}
-							<a id="help" class="help" title="{{ 'Help'|t }}" href="{{ docsUrl }}" target="_blank"></a>
-						{% endif %}
 					</div>
+
+					{% if hasHelp %}
+						<div id="help-footer" class="footer">
+							<a id="help" class="help" title="{{ 'Help'|t }}" href="{{ docsUrl }}" target="_blank"></a>
+						</div>
+					{% endif %}
 				</div>
 			{% endif %}
 		</main>

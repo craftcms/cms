@@ -253,9 +253,9 @@ td.right { float: none; @include alignright; }
 
 .customize-sources-modal > .footer { position: absolute; bottom: 0; left: 0; width: 100%; }
 
-/* help */
-.content.has-help { padding-bottom: 60px; }
-.content.has-help .help { position: absolute; bottom: 17px; @include right(17px); font-size: 24px; }
+/* help footer */
+#help-footer { background: $lightBgColor; text-align: center; }
+#help-footer #help { font-size: 24px; }
 
 /* ----------------------------------------
 /*  Icon lists
