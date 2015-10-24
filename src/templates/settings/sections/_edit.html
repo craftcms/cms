@@ -89,11 +89,9 @@
 
 {% from _self import urlFormatInput, hasUrlsField, templateField %}
 
-{% set content %}
-
+{% block content %}
 	<input type="hidden" name="action" value="sections/saveSection">
 	<input type="hidden" name="redirect" value="settings/sections">
-	{{ getCsrfInput() }}
 
 	{% if section.id %}<input type="hidden" name="sectionId" value="{{ section.id }}">{% endif %}
 
@@ -262,8 +260,7 @@
 			checked: section.enableVersioning
 		}) }}
 	{% endif %}
-
-{% endset %}
+{% endblock %}
 
 
 {% set js %}

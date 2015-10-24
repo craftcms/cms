@@ -30,10 +30,9 @@
 {% endif %}
 
 
-{% set content %}
+{% block content %}
 	<input type="hidden" name="action" value="userSettings/saveGroup">
 	<input type="hidden" name="redirect" value="settings/users">
-	{{ getCsrfInput() }}
 
 	{% if not isNewGroup %}<input type="hidden" name="groupId" value="{{ group.id }}">{% endif %}
 
@@ -63,8 +62,7 @@
 	<h2>{{ "Permissions"|t }}</h2>
 
 	{% include "_includes/permissions" with { userOrGroup: (group is defined ? group : null) } only %}
-
-{% endset %}
+{% endblock %}
 
 
 {% if group is not defined or not group.handle %}

@@ -5,11 +5,9 @@
 
 {% import "_includes/forms" as forms %}
 
-{% set content %}
-
+{% block content %}
 	<input type="hidden" name="action" value="tags/saveTagGroup">
 	<input type="hidden" name="redirect" value="settings/tags">
-	{{ getCsrfInput() }}
 
 	{% if tagGroup.id %}<input type="hidden" name="tagGroupId" value="{{ tagGroup.id }}">{% endif %}
 
@@ -45,8 +43,7 @@
 			customizableTabs: false
 		} only %}
 	</div>
-
-{% endset %}
+{% endblock %}
 
 
 {% if not tagGroup.handle %}

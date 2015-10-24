@@ -17,11 +17,9 @@
 {% from _self import configWarning %}
 
 
-{% set content %}
-
+{% block content %}
 	<input type="hidden" name="action" value="systemSettings/saveGeneralSettings">
 	<input type="hidden" name="redirect" value="settings">
-	{{ getCsrfInput() }}
 
 	{{ forms.lightswitchField({
 		first: true,
@@ -87,5 +85,4 @@
 
 		<div class="clear"></div>
 	{% endif %}
-
-{% endset %}
+{% endblock %}

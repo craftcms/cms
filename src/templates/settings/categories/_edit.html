@@ -23,11 +23,9 @@
 {% import "_includes/forms" as forms %}
 {% from _self import urlFormatText %}
 
-{% set content %}
-
+{% block content %}
 	<input type="hidden" name="action" value="categories/saveGroup">
 	<input type="hidden" name="redirect" value="settings/categories">
-	{{ getCsrfInput() }}
 
 	{% if categoryGroup.id %}<input type="hidden" name="groupId" value="{{ categoryGroup.id }}">{% endif %}
 
@@ -130,8 +128,7 @@
 			fieldLayout: categoryGroup.getFieldLayout()
 		} only %}
 	</div>
-
-{% endset %}
+{% endblock %}
 
 
 {% if not categoryGroup.handle %}

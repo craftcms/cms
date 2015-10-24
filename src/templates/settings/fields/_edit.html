@@ -62,15 +62,13 @@
 {% endif %}
 
 
-{% set content %}
+{% block content %}
 
 	<input type="hidden" name="action" value="fields/saveField">
 	<input type="hidden" name="redirect" value="settings/fields/{groupId}">
 	{% if fieldId is defined %}
 		<input type="hidden" name="fieldId" value="{{ fieldId }}">
 	{% endif %}
-
-	{{ getCsrfInput() }}
 
 	{% set groupOptions = [] %}
 	{% for group in groups %}
@@ -156,7 +154,7 @@
 		</div>
 	{% endfor %}
 
-{% endset %}
+{% endblock %}
 
 
 {% if field is not defined or not field.handle %}
