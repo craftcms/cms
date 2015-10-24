@@ -287,7 +287,6 @@
 			{% else %}
 				{% set sidebar = sidebar is defined ? sidebar : block('sidebar')|trim %}
 				{% set hasSidebar = (sidebar is not empty) %}
-				{% set hasHelp = (docsUrl is defined and docsUrl is not empty) %}
 
 				<div class="pane">
 					{% if tabs is defined and tabs %}
@@ -311,7 +310,7 @@
 			{% endif %}
 		</main>
 
-		{% if hasHelp %}
+		{% if docsUrl is defined and docsUrl is not empty %}
 			<div id="help-footer">
 				<a id="help" class="help" title="{{ 'Help'|t }}" href="{{ docsUrl }}" target="_blank"></a>
 			</div>
