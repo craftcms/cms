@@ -1,10 +1,14 @@
 @charset "UTF-8";
 @import "shared";
 
+@mixin container-topbar-styles {
+	border-bottom: 1px solid rgba(0,0,0,0.05); background: rgba(0,0,0,0.03);
+}
+
 html { overflow-y: scroll; }
 
-#alerts { color: $errorcolor; text-align: center; background: $headerBgColor; }
-#alerts li { padding: 2px 30px; }
+#alerts { color: $errorcolor; text-align: center; }
+#alerts li { padding: 2px 24px; @include container-topbar-styles; }
 #alerts li:first-child { padding-top: 4px; }
 #alerts li:last-child { padding-bottom: 4px; }
 #alerts li:before { @include icon; @include margin(-1px, 3px, 0, 0); content: 'alert'; font-size: 16px; }
@@ -69,7 +73,7 @@ body {
 #global-sidebar .topbar #taskicon:hover .progressbar-inner { background: #fff; }
 
 /* container */
-#container { display: flex; flex-direction: column; position: relative; @include padding(0, 24px, 0, 244px); @include box-sizing(border-box); height: 100vh; overflow: auto; }
+#container { display: flex; flex-direction: column; position: relative; @include padding-left(220px); @include box-sizing(border-box); height: 100vh; overflow: auto; }
 
 body.mobile #container {
 	overflow-y: scroll; /* has to be scroll, not auto */
@@ -78,7 +82,7 @@ body.mobile #container {
 
 #main { flex-grow: 1; }
 #main.single-pane { display: flex; }
-#main.single-pane > .pane { display: flex; flex-direction: column; flex-grow: 1; margin: 0 -24px; border-radius: 0; }
+#main.single-pane > .pane { display: flex; flex-direction: column; flex-grow: 1; border-radius: 0; }
 #main.single-pane > .pane > .content { display: flex; flex-direction: column; }
 #main.single-pane > .pane > .content > .sidebar + .body { width: calc(100% - 0); }
 
@@ -151,7 +155,7 @@ body.mobile #container {
 #notifications .notification.notice { background: $noticecolor; }
 #notifications .notification.error { background: $submitcolor; }
 
-#container .topbar { margin: 0 -24px; padding: 0 24px; border-bottom: 1px solid rgba(0,0,0,0.05); background: rgba(0,0,0,0.03); }
+#container .topbar:not(:empty) { padding: 0 24px; @include container-topbar-styles; }
 #container .topbar .show-nav { width: 24px; height: 24px; padding: 10px; display: block; line-height: 22px; color: $secondarySubmitColor; text-align: center;
 	@include margin-left(-24px);
 }
@@ -160,7 +164,7 @@ body.mobile #container {
 
 
 /* page header */
-#page-header { display: flex; justify-content: space-between; position: relative; z-index: 1; padding: 20px 0; }
+#page-header { display: flex; justify-content: space-between; position: relative; z-index: 1; padding: 20px 24px; }
 #page-header #page-title { display: flex; }
 #page-header #page-title h1 { line-height: 1.3; margin: 0; }
 #page-header #page-title .select,

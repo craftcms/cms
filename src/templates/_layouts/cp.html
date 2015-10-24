@@ -112,19 +112,6 @@
 
 
 {% block body %}
-	{% if craft.cp.areAlertsCached() %}
-		{% set alerts = craft.cp.getAlerts() %}
-		{% if alerts %}
-			<ul id="alerts">
-				{% for alert in craft.cp.getAlerts() %}
-					<li>{{ alert|raw }}</li>
-				{% endfor %}
-			</ul>
-		{% endif %}
-	{% else %}
-		{% includeJs 'Craft.cp.fetchAlerts();' %}
-	{% endif %}
-
 	<header id="global-sidebar">
 		<div class="topbar">
 			<a class="site-name" href="{{ siteUrl }}" title="{{ 'Site Homepage'|t }}" target="_blank"><h2>{{ siteName|t }}</h2></a>
@@ -244,16 +231,31 @@
 			</div>
 		</div>
 
-		<div class="topbar">
-			{% if crumbs is defined and crumbs %}
-				<nav id="crumbs">
-					<ul>
-						{% for crumb in crumbs %}
-							<li><a href="{{ crumb.url }}">{{ crumb.label }}</a></li>
-						{% endfor %}
-					</ul>
-				</nav>
+		{% if craft.cp.areAlertsCached() %}
+			{% set alerts = craft.cp.getAlerts() %}
+			{% if alerts %}
+				<ul id="alerts">
+					{% for alert in craft.cp.getAlerts() %}
+						<li>{{ alert|raw }}</li>
+					{% endfor %}
+				</ul>
 			{% endif %}
+		{% else %}
+			{% includeJs 'Craft.cp.fetchAlerts();' %}
+		{% endif %}
+
+		<div class="topbar">
+			{%- spaceless %}
+				{% if crumbs is defined and crumbs %}
+					<nav id="crumbs">
+						<ul>
+							{% for crumb in crumbs %}
+								<li><a href="{{ crumb.url }}">{{ crumb.label }}</a></li>
+							{% endfor %}
+						</ul>
+					</nav>
+				{% endif %}
+			{% endspaceless -%}
 		</div>
 
 

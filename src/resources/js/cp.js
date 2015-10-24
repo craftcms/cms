@@ -520,19 +520,15 @@ Craft.CP = Garnish.Base.extend(
 	{
 		if (Garnish.isArray(alerts) && alerts.length)
 		{
-			this.$alerts = $('<ul id="alerts"/>').insertBefore($('#global-sidebar'));
+			this.$alerts = $('<ul id="alerts"/>').insertBefore(this.$containerTopbar);
 
 			for (var i = 0; i < alerts.length; i++)
 			{
 				$('<li>'+alerts[i]+'</li>').appendTo(this.$alerts);
 			}
 
-			var height = this.$alerts.height();
-
-			this.$alerts.height(0).velocity({ height: height }, 'fast', $.proxy(function()
-			{
-				this.$alerts.height('auto');
-			}, this));
+			var height = this.$alerts.outerHeight();
+			this.$alerts.css('margin-top', -height).velocity({ 'margin-top': 0 }, 'fast');
 
 			this.initAlerts();
 		}
