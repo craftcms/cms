@@ -50,13 +50,13 @@ class MatrixFieldType extends BaseFieldType
 		craft()->templates->includeJs('new Craft.MatrixConfigurator('.JsonHelper::encode($fieldTypeInfo).', "'.craft()->templates->getNamespace().'");');
 
 		craft()->templates->includeTranslations(
-			'What this block type will be called in the CP.',
-			'How you’ll refer to this block type in the templates.',
 			'Are you sure you want to delete this block type?',
+			'Are you sure you want to delete this field?',
+			'Field Type',
+			'How you’ll refer to this block type in the templates.',
 			'This field is required',
 			'This field is translatable',
-			'Field Type',
-			'Are you sure you want to delete this field?'
+			'What this block type will be called in the CP.'
 		);
 
 		$fieldTypeOptions = array();
@@ -292,7 +292,17 @@ class MatrixFieldType extends BaseFieldType
 			($settings->maxBlocks ? $settings->maxBlocks : 'null') .
 		');');
 
-		craft()->templates->includeTranslations('Disabled', 'Actions', 'Collapse', 'Expand', 'Disable', 'Enable', 'Add {type} above', 'Add a block');
+		craft()->templates->includeTranslations(
+			'Actions',
+			'Add a block',
+			'Add {type} above',
+			'Are you sure you want to delete the selected blocks?',
+			'Collapse',
+			'Disable',
+			'Disabled',
+			'Enable',
+			'Expand'
+		);
 
 		return $html;
 	}
