@@ -16,11 +16,17 @@ body {
 	overflow: hidden;
 }
 
-/* header */
+/* Shared sidebar/container styles */
+#container,
+#global-sidebar { transition: all .25s ease-in-out; -webkit-transition: all .25s ease-in-out; }
+
+.topbar { display: flex; align-items: stretch; }
+
+/* global sidebar */
 #global-sidebar { position: fixed; top: 0; @include left(0); width: 220px; height: 100vh; overflow: auto; background: $headerBgColor; z-index: 100; }
 #global-sidebar:after { @include clearafter; }
 
-#global-sidebar #devmode { position: absolute; top: 0; width: 100%; height: 5px; background: url(../images/dev-mode.svg) repeat-x 15px 0; cursor: help; }
+#global-sidebar #devmode { position: absolute; top: 0; width: 100%; height: 4px; background: url(../images/dev-mode.svg) repeat-x 15px 0; cursor: help; }
 
 #global-sidebar a { color: hsl($hue, 5%, 85%);
 	@include transition(color linear 100ms);
@@ -30,12 +36,39 @@ body {
 #global-sidebar a.active { color: #fff; text-decoration: none; background: $headerLinkHoverColor; border-color: rgba(0,0,0,0.4);  }
 #global-sidebar a:active { color: #fff; text-decoration: none; background: $headerLinkActiveColor; border-color: rgba(0,0,0,0.6); }
 
-#global-sidebar h2 { margin: 0; }
-#global-sidebar h2 a { display: block; padding: 14px; width: calc(100% - 28px); overflow: hidden; text-overflow: ellipsis;  white-space: nowrap;  word-wrap: normal; }
+#global-sidebar .topbar { border-bottom: 1px solid rgba(0,0,0,0.2); background: rgba(0,0,0,0.1); }
+#global-sidebar .topbar > a { display: flex; align-items: center; padding: 0 4px; }
 
-#container,
-#global-sidebar { transition: all .25s ease-in-out; -webkit-transition: all .25s ease-in-out; }
+#global-sidebar .topbar a.site-name { flex-grow: 1; @include padding-left(14px); }
+#global-sidebar .topbar a.site-name h2 { padding: 14px 0; }
 
+/*#global-sidebar .topbar a { display: block; padding: 5px 11px; line-height: 36px; }*/
+
+// #global-sidebar .topbar a.menubtn:after { @include margin-left(4px); }
+#global-sidebar .topbar a.updates { position: relative; color: $noticecolor; }
+#global-sidebar .topbar a.updates.critical { color: $submitcolor; }
+#global-sidebar .topbar a.updates:hover { color: #fff !important; }
+#global-sidebar .topbar a.updates > span { position: relative; }
+#global-sidebar .topbar a.updates > span:before { font-size: 22px; }
+#global-sidebar .topbar a.updates > span > span { display: block; position: absolute; left: 0; top: 0; width: 100%; text-align: center; color: $headerBgColor; font-weight: bold; font-size: 11px; line-height: 22px; }
+// #global-sidebar .topbar .settings:before,
+#global-sidebar .topbar a.myaccount { padding-right: 8px; }
+#global-sidebar .topbar a.myaccount:after { display: none; }
+#global-sidebar .topbar a.myaccount img { display: block; width: 30px; height: 30px; border-radius: 15px; @include box-shadow(0 0 0 1px $hairlineColorAlpha); }
+#global-sidebar .topbar .settings { @include padding-right(0); }
+#global-sidebar .topbar .settingsmenu { @include padding-left(0); }
+
+#global-sidebar .topbar #taskicon > span { display: block; position: relative; width: 18px; height: 18px;}
+#global-sidebar .topbar #taskicon > span > canvas { display: block; position: absolute; width: 18px; height: 18px; }
+#global-sidebar .topbar #taskicon > span > canvas#taskicon-hover { opacity: 0; @include transition(opacity linear 100ms); }
+#global-sidebar .topbar #taskicon:hover > span > canvas#taskicon-hover { opacity: 1; }
+
+#global-sidebar .topbar #taskicon .progressbar { position: static; margin: 8px 2px; width: auto; border-color: hsl($hue, 5%, 85%); @include transition(color linear 100ms); }
+#global-sidebar .topbar #taskicon .progressbar-inner { background: hsl($hue, 5%, 85%); @include transition(color linear 100ms); }
+#global-sidebar .topbar #taskicon:hover .progressbar { border-color: #fff; }
+#global-sidebar .topbar #taskicon:hover .progressbar-inner { background: #fff; }
+
+/* container */
 #container { display: flex; flex-direction: column; position: relative; @include padding(0, 24px, 0, 244px); @include box-sizing(border-box); height: 100vh; overflow: auto; }
 
 body.mobile #container {
@@ -65,32 +98,6 @@ body.mobile #container {
 	body.ltr:not(.showing-nav) #global-sidebar { @include transform(translate3d(-220px,0,0)); }
 	body.rtl:not(.showing-nav) #global-sidebar { @include transform(translate3d(220px,0,0)); }
 }
-
-#header-actions { height: 38px; @include margin-right(14px); }
-#header-actions > li { @include floatleft; }
-#header-actions a { display: block; padding: 5px 11px; line-height: 36px; }
-
-#header-actions a.menubtn:after { @include margin-left(4px); }
-#header-actions .updates a { position: relative; color: $noticecolor; }
-#header-actions .updates.critical a { color: $submitcolor; }
-#header-actions .updates a:hover { color: #fff !important; }
-#header-actions .updates a:before { font-size: 20px; width: 20px; }
-#header-actions .updates a span { display: block; position: absolute; @include left(7px); top: 1px; width: 20px; text-align: center; color: $headerBgColor; font-weight: bold; font-size: 11px; }
-#header-actions .settings:before,
-#header-actions .myaccount:before { font-size: 16px; }
-#header-actions .myaccount { @include margin-right(-14px); }
-#header-actions .settings { @include padding-right(0); }
-#header-actions .settingsmenu { @include padding-left(0); }
-
-#header-actions #taskicon { position: relative; padding: 5px 0 1px; width: 30px; height: 30px; }
-#header-actions #taskicon canvas { display: block; position: absolute; width: 30px; height: 30px; }
-#header-actions #taskicon canvas#taskicon-hover { opacity: 0; @include transition(opacity linear 100ms); }
-#header-actions #taskicon:hover canvas#taskicon-hover { opacity: 1; }
-
-#header-actions #taskicon .progressbar { position: static; margin: 8px 2px; width: auto; border-color: hsl($hue, 5%, 85%); @include transition(color linear 100ms); }
-#header-actions #taskicon .progressbar-inner { background: hsl($hue, 5%, 85%); @include transition(color linear 100ms); }
-#header-actions #taskicon:hover .progressbar { border-color: #fff; }
-#header-actions #taskicon:hover .progressbar-inner { background: #fff; }
 
 #tasks-hud { padding: 0; overflow: auto; }
 #tasks-hud .task { @include padding(14px, 138px, 14px, 24px); overflow: hidden; }
@@ -144,12 +151,7 @@ body.mobile #container {
 #notifications .notification.notice { background: $noticecolor; }
 #notifications .notification.error { background: $submitcolor; }
 
-
-#global-sidebar .topbar { display: flex; border-bottom: 1px solid rgba(0,0,0,0.2); background: rgba(0,0,0,0.1); }
-#global-sidebar .topbar h2 { order: 1; flex: 1; }
-#global-sidebar .topbar #header-actions { order: 2; }
-
-#container .topbar { margin: 0 -24px; padding: 0 24px; display: flex; border-bottom: 1px solid rgba(0,0,0,0.05); background: rgba(0,0,0,0.03); }
+#container .topbar { margin: 0 -24px; padding: 0 24px; border-bottom: 1px solid rgba(0,0,0,0.05); background: rgba(0,0,0,0.03); }
 #container .topbar .show-nav { width: 24px; height: 24px; padding: 10px; display: block; line-height: 22px; color: $secondarySubmitColor; text-align: center;
 	@include margin-left(-24px);
 }
@@ -428,6 +430,5 @@ $fldGuideColor: #f4f3fb;
 
 @media only screen and (max-width: 320px) {
 	#container { @include padding-left(10px); @include padding-right(10px); }
-	#header-actions { @include right(10px); }
 	#nav { @include margin-left(-10px); }
 }

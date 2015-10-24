@@ -11,7 +11,8 @@ Craft.CP = Garnish.Base.extend(
 	$container: null,
 	$alerts: null,
 	$globalSidebar: null,
-	$headerActionsList: null,
+	$globalSidebarTopbar: null,
+	$siteNameLink: null,
 	$siteName: null,
 	$nav: null,
 	$subnav: null,
@@ -73,8 +74,9 @@ Craft.CP = Garnish.Base.extend(
 		this.$globalSidebar = $('#global-sidebar');
 		this.$pageHeader = $('#page-header');
 		this.$containerTopbar = $('#container .topbar');
-		this.$headerActionsList = this.$globalSidebar.find('#header-actions');
-		this.$siteName = this.$globalSidebar.find('h2');
+		this.$globalSidebarTopbar = this.$globalSidebar.children('.topbar');
+		this.$siteNameLink = this.$globalSidebarTopbar.children('a.site-name');
+		this.$siteName = this.$siteNameLink.children('h2');
 		this.$nav = $('#nav');
 		this.$subnav = $('#subnav');
 		this.$sidebar = $('#sidebar');
@@ -619,7 +621,7 @@ Craft.CP = Garnish.Base.extend(
 	displayUpdateInfo: function(info)
 	{
 		// Remove the existing header badge, if any
-		this.$headerActionsList.children('li.updates').remove();
+		this.$globalSidebarTopbar.children('a.updates').remove();
 
 		if (info.total)
 		{
@@ -632,12 +634,12 @@ Craft.CP = Garnish.Base.extend(
 				var updateText = Craft.t('{num} updates available', { num: info.total });
 			}
 
-			// Header badge
-			$('<li class="updates'+(info.critical ? ' critical' : '')+'">' +
-				'<a data-icon="newstamp" href="'+Craft.getUrl('updates')+'" title="'+updateText+'">' +
+			// Topbar badge
+			$('<a class="updates'+(info.critical ? ' critical' : '')+'" href="'+Craft.getUrl('updates')+'" title="'+updateText+'">' +
+				'<span data-icon="newstamp">' +
 					'<span>'+info.total+'</span>' +
-				'</a>' +
-			'</li>').prependTo(this.$headerActionsList);
+				'</span>' +
+			'</span>').insertAfter(this.$siteNameLink);
 
 			// Footer link
 			$('#footer-updates').text(updateText);
@@ -768,7 +770,6 @@ Craft.cp = new Craft.CP();
  */
 var TaskProgressIcon = Garnish.Base.extend(
 {
-	$li: null,
 	$a: null,
 	hud: null,
 	completed: false,
@@ -800,15 +801,15 @@ var TaskProgressIcon = Garnish.Base.extend(
 
 	init: function()
 	{
-		this.$li = $('<li/>').prependTo(Craft.cp.$headerActionsList);
-		this.$a = $('<a id="taskicon"/>').appendTo(this.$li);
+		this.$a = $('<a id="taskicon"/>').insertAfter(Craft.cp.$siteNameLink);
+		this.$canvasContainer = $('<span/>').appendTo(this.$a);
 
 		this._canvasSupported = !!(document.createElement('canvas').getContext);
 
 		if (this._canvasSupported)
 		{
 			var m = (window.devicePixelRatio > 1 ? 2 : 1);
-			this._canvasSize = 30 * m;
+			this._canvasSize = 18 * m;
 			this._arcPos = this._canvasSize / 2;
 			this._arcRadius = 7 * m;
 			this._lineWidth = 3 * m;
@@ -826,7 +827,7 @@ var TaskProgressIcon = Garnish.Base.extend(
 		}
 		else
 		{
-			this._progressBar = new Craft.ProgressBar(this.$a);
+			this._progressBar = new Craft.ProgressBar(this.$canvasContainer);
 			this._progressBar.showProgressBar();
 		}
 
@@ -869,7 +870,7 @@ var TaskProgressIcon = Garnish.Base.extend(
 
 				this._animateArc(1, 1, $.proxy(function()
 				{
-					this.$li.remove();
+					this.$a.remove();
 					this.destroy();
 				}, this));
 			}, this));
@@ -945,7 +946,7 @@ var TaskProgressIcon = Garnish.Base.extend(
 
 	_createCanvas: function(id, color)
 	{
-		var $canvas = $('<canvas id="taskicon-'+id+'" width="'+this._canvasSize+'" height="'+this._canvasSize+'"/>').appendTo(this.$a),
+		var $canvas = $('<canvas id="taskicon-'+id+'" width="'+this._canvasSize+'" height="'+this._canvasSize+'"/>').appendTo(this.$canvasContainer),
 			ctx = $canvas[0].getContext('2d');
 
 		ctx.strokeStyle = color;
@@ -1019,7 +1020,10 @@ var TaskProgressHUD = Garnish.HUD.extend(
 		this.tasksById = {};
 		this.completedTasks = [];
 
-		this.base(this.icon.$a);
+		this.base(this.icon.$a, null, {
+			minBodyHeight: 0
+		});
+
 		this.$main.attr('id', 'tasks-hud');
 
 		// Use the known task as a starting point
