@@ -1359,7 +1359,7 @@ body.message .message-container .pane { top: 50%; margin-top: -33px !important; 
 .matrixblock.disabled { opacity: 1; }
 
 .matrixblock > .titlebar { margin: 0 -14px 14px; width: calc(100% + 28px); @include box-sizing(border-box); border-radius: 2px 2px 0 0; @include padding(6px, 70px, 6px, 33px); border-bottom: 1px solid $hairlineColor; background: hsl(212, 10%, 94%); color: $lighttextcolor; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; word-wrap: normal; cursor: default; }
-.matrixblock.collapsed > .titlebar { border-radius: 2px; }
+.matrixblock.collapsed > .titlebar { border-radius: 2px; border-bottom: none; }
 .matrixblock.disabled > .titlebar { @include padding-right(90px); }
 .matrixblock > .titlebar > .blocktype { display: inline; color: $mediumtextcolor; }
 .matrixblock > .titlebar > .preview { @include margin-left(7px); display: inline; opacity: 0;
