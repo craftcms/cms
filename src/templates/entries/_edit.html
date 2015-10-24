@@ -141,9 +141,7 @@
 			<input type="hidden" name="action" value="entryRevisions/saveDraft">
 			<input type="hidden" name="redirect" value="{{ baseCpEditUrl }}/drafts/{draftId}">
 
-			{% set extraPageHeaderHtml %}
-				<input type="submit" class="btn submit first" value="{{ 'Save as a draft'|t }}">
-			{% endset %}
+			<input type="submit" class="btn submit first" value="{{ 'Save as a draft'|t }}">
 		{% endif %}
 
 	{% endif %}
