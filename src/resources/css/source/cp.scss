@@ -81,6 +81,7 @@ body.mobile #container {
 }
 
 #main { flex-grow: 1; }
+#main:not(.single-pane) { padding: 0 24px; }
 #main.single-pane { display: flex; }
 #main.single-pane > .pane { display: flex; flex-direction: column; flex-grow: 1; border-radius: 0; }
 #main.single-pane > .pane > .content { display: flex; flex-direction: column; }
@@ -203,7 +204,7 @@ body.mobile #container {
 .grid > .item { display: none; padding: 7px; @include box-sizing(border-box); }
 
 /* footer */
-#footer { margin: 24px 0; text-align: center; font-size: 0; }
+#footer { margin: 24px 0; padding: 0 24px; text-align: center; font-size: 0; }
 #footer li { display: inline-block; font-size: 11px; color: $lighttextcolor; white-space: nowrap; }
 #footer li:not(:last-child):after { display: inline-block; margin: 0 7px; content: '•'; }
 #footer li a { color: $lighttextcolor; text-decoration: underline; }
