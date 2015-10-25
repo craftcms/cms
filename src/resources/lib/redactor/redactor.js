@@ -1,7 +1,7 @@
 /*
 	Redactor II
-	Version 1.0
-	Updated: October 11, 2015
+	Version 1.0.1
+	Updated: October 13, 2015
 
 	http://imperavi.com/redactor/
 
@@ -102,7 +102,7 @@
 
 	// Options
 	$.Redactor = Redactor;
-	$.Redactor.VERSION = '1.0';
+	$.Redactor.VERSION = '1.0.1';
 	$.Redactor.modules = ['air', 'autosave', 'block', 'browser', 'buffer', 'build', 'button', 'caret', 'clean', 'code', 'core', 'dropdown',
 						  'events', 'file', 'focus', 'image', 'indent', 'inline', 'insert', 'keydown', 'keyup',
 						  'lang', 'line', 'link', 'linkify', 'list', 'modal', 'observe', 'paragraphize', 'paste', 'placeholder',
@@ -1603,6 +1603,8 @@
 				},
 				load: function($toolbar)
 				{
+					this.button.buttons = [];
+
 					$.each(this.opts.buttons, $.proxy(function(i, btnName)
 					{
 						if (!this.toolbarsButtons[btnName])
@@ -1649,6 +1651,8 @@
 						$button.data('dropdown', $dropdown);
 						this.dropdown.build(btnName, $dropdown, btnObject.dropdown);
 					}
+
+					this.button.buttons.push($button);
 
 					return $button;
 				},
@@ -1753,6 +1757,10 @@
 						}
 					}
 
+				},
+				all: function()
+				{
+					return this.button.buttons;
 				},
 				get: function(key)
 				{
@@ -1893,6 +1901,20 @@
 					}
 
 					$btns.removeClass('redactor-act');
+				},
+				disableAll: function(key)
+				{
+					var $btns = this.button.toolbar().find('a.re-button');
+					if (typeof key !== 'undefined')
+					{
+						$btns = $btns.not('.re-' + key);
+					}
+
+					$btns.addClass('redactor-button-disabled');
+				},
+				enableAll: function()
+				{
+					this.button.toolbar().find('a.re-button').removeClass('redactor-button-disabled');
 				},
 				remove: function(key)
 				{
@@ -2711,6 +2733,10 @@
 				{
 					return this.$editor.attr('id');
 				},
+				element: function()
+				{
+					return this.$element;
+				},
 				editor: function()
 				{
 					return this.$editor;
@@ -2749,6 +2775,31 @@
 				},
 				callback: function(type, e, data)
 				{
+					var eventNamespace = 'redactor';
+					var returnValue = false;
+					var events = $._data(this.core.element()[0], 'events');
+
+					// on callback
+					if (typeof events !== 'undefined' && typeof events[type] !== 'undefined')
+					{
+						var len = events[type].length;
+						for (var i = 0; i < len; i++)
+						{
+							var namespace = events[type][i].namespace;
+							if (namespace === 'callback.' + eventNamespace)
+							{
+								var handler = events[type][i].handler;
+								var args = (typeof data === 'undefined') ? [e] : [e, data];
+								returnValue = (typeof args === 'undefined') ? handler.call(this, e) : handler.call(this, e, args);
+							}
+						}
+					}
+
+					if (returnValue)
+					{
+						return returnValue;
+					}
+
 					// no callback
 					if (typeof this.opts.callbacks[type] === 'undefined')
 					{
@@ -2756,29 +2807,7 @@
 					}
 
 					// callback
-					var eventNamespace = 'redactor';
 					var callback = this.opts.callbacks[type];
-
-					var returnValue = false;
-					var events = $._data(this.$element[0], 'events');
-
-					if (typeof events !== 'undefined' && typeof events[type] !== 'undefined')
-					{
-						$.each(events[type], $.proxy(function(key, value)
-						{
-							if (value.namespace === eventNamespace)
-							{
-								var data = (typeof data === 'undefined') ? [e] : [e, data];
-								returnValue = (typeof data === 'undefined') ? value.handler.call(this, e) : value.handler.call(this, e, data);
-							}
-
-						}, this));
-					}
-
-					if (returnValue)
-					{
-						return returnValue;
-					}
 
 					if ($.isFunction(callback))
 					{
@@ -4547,6 +4576,12 @@
 						this.keydown.onArrowDown();
 					}
 
+					// up
+					if (this.opts.enterKey && key === this.keyCode.UP)
+					{
+						this.keydown.onArrowUp();
+					}
+
 					// on enter
 					if (key === this.keyCode.ENTER && !e.shiftKey && !e.ctrlKey && !e.metaKey)
 					{
@@ -4779,6 +4814,19 @@
 						}
 					}
 				},
+				onArrowUp: function()
+				{
+					var tags = [this.keydown.blockquote, this.keydown.pre, this.keydown.figcaption];
+
+					for (var i = 0; i < tags.length; i++)
+					{
+						if (tags[i])
+						{
+							this.keydown.insertBeforeFirstElement(tags[i]);
+							return false;
+						}
+					}
+				},
 				insertAfterLastElement: function(element)
 				{
 					if (!this.utils.isEndOfElement())
@@ -4793,6 +4841,23 @@
 
 					var node = $(this.opts.emptyHtml);
 					$(element).after(node);
+					this.caret.start(node);
+
+				},
+				insertBeforeFirstElement: function(element)
+				{
+					if (!this.utils.isStartOfElement())
+					{
+						return;
+					}
+
+					if (this.$editor.contents().length > 1 && this.$editor.contents().first()[0] !== element)
+					{
+						return;
+					}
+
+					var node = $(this.opts.emptyHtml);
+					$(element).before(node);
 					this.caret.start(node);
 
 				},
@@ -5037,7 +5102,6 @@
 				insert: function()
 				{
 					this.buffer.set();
-
 					this.insert.html('<hr>');
 				}
 			};
@@ -6243,18 +6307,35 @@
 
 					// get text
 					var html = data.getData('text/html') || data.getData('text');
+					var pre = false;
+					if (this.opts.type !== 'pre' && !this.utils.isCurrentOrParent('pre'))
+					{
+						// save links
+						html = html.replace(/<a(.*?)href="(.*?)"(.*?[^>])>(.*?)<\/a>/gi, '###a href="$2"###$4###/a###');
 
-					// save links
-					html = html.replace(/<a(.*?)href="(.*?)"(.*?[^>])>(.*?)<\/a>/gi, '###a href="$2"###$4###/a###');
+						html = html.replace(/<!--[\s\S]*?-->/gi, '');
+						html = html.replace(/<style[\s\S]*?style>/gi, '');
+						html = html.replace(/<br\s?\/?>|<\/p>|<\/div>|<\/li>|<\/td>/gi, '\n');
+						html = html.replace(/<\/H[1-6]>/gi, '\n\n');
 
-					html = html.replace(/<!--[\s\S]*?-->/gi, '');
-					html = html.replace(/<style[\s\S]*?style>/gi, '');
-					html = html.replace(/<br\s?\/?>|<\/p>|<\/div>|<\/li>|<\/td>/gi, '\n');
-					html = html.replace(/<\/H[1-6]>/gi, '\n\n');
+						var tmp = document.createElement('div');
+						tmp.innerHTML = html;
+						html = $.trim(tmp.textContent || tmp.innerText);
+					}
+					else
+					{
+						pre = true;
 
-					var tmp = document.createElement('div');
-					tmp.innerHTML = html;
-					html = $.trim(tmp.textContent || tmp.innerText);
+						// pre clean
+						html = html.replace(/^<meta charset='(.*?)'>/i, '');
+
+						if (html.match(/^<pre style="(.*?)">/i))
+						{
+							html = html.replace(/^<pre style="(.*?)">/i, '');
+							html = html.replace(/<\/pre>$/i, '');
+						}
+
+					}
 
 					// clean
 					html = this.clean.onPaste(html);
@@ -6280,6 +6361,13 @@
 					}
 
 					this.rtePaste = false;
+
+					// clean pre empty paragraph at the end
+					if (pre)
+					{
+						var block = $(this.selection.block()).closest('pre', this.core.editor()[0]);
+						$(block).find('p').remove();
+					}
 
 				}
 			};
