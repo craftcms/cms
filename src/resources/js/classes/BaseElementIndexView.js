@@ -109,7 +109,7 @@ Craft.BaseElementIndexView = Garnish.Base.extend(
 		{
 			if (this.settings.context == 'index')
 			{
-				this.$scroller = Garnish.$win;
+				this.$scroller = Craft.cp.$container;
 			}
 			else
 			{
@@ -179,6 +179,17 @@ Craft.BaseElementIndexView = Garnish.Base.extend(
 		}
 
 		return ids;
+	},
+
+	selectElement: function($element)
+	{
+		if (!this.elementSelect)
+		{
+			throw 'This view is not selectable.';
+		}
+
+		this.elementSelect.selectItem($element, true);
+		return true;
 	},
 
 	selectElementById: function(id)
@@ -258,22 +269,11 @@ Craft.BaseElementIndexView = Garnish.Base.extend(
 		}
 
 		// Check if the user has reached the bottom of the scroll area
-		if (this.$scroller[0] == Garnish.$win[0])
-		{
-			var winHeight = Garnish.$win.innerHeight(),
-				winScrollTop = Garnish.$win.scrollTop(),
-				bodHeight = Garnish.$bod.height();
+		var containerScrollHeight = this.$scroller.prop('scrollHeight'),
+			containerScrollTop = this.$scroller.scrollTop(),
+			containerHeight = this.$scroller.outerHeight();
 
-			return (winHeight + winScrollTop >= bodHeight);
-		}
-		else
-		{
-			var containerScrollHeight = this.$scroller.prop('scrollHeight'),
-				containerScrollTop = this.$scroller.scrollTop(),
-				containerHeight = this.$scroller.outerHeight();
-
-			return (containerScrollHeight - containerScrollTop <= containerHeight + 15);
-		}
+		return (containerScrollHeight - containerScrollTop <= containerHeight + 15);
 	},
 
 	/**
@@ -315,9 +315,8 @@ Craft.BaseElementIndexView = Garnish.Base.extend(
 				this.setMorePending($newElements.length == this.settings.batchSize);
 
 				// Is there room to load more right now?
+				this.addListener(this.$scroller, 'scroll', 'maybeLoadMore');
 				this.maybeLoadMore();
-
-				this.elementIndex.onUpdateElements();
 			}
 
 		}, this));
@@ -334,6 +333,15 @@ Craft.BaseElementIndexView = Garnish.Base.extend(
 	appendElements: function($newElements)
 	{
 		$newElements.appendTo(this.$elementContainer);
+		this.onAppendElements($newElements);
+	},
+
+	onAppendElements: function($newElements)
+	{
+		this.settings.onAppendElements($newElements);
+		this.trigger('appendElements', {
+			newElements: $newElements
+		});
 	},
 
 	onSelectionChange: function()
@@ -384,6 +392,7 @@ Craft.BaseElementIndexView = Garnish.Base.extend(
 		selectable: false,
 		multiSelect: false,
 		checkboxMode: false,
-		onSelectionChange: $.noop,
+		onAppendElements: $.noop,
+		onSelectionChange: $.noop
 	},
 });

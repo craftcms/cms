@@ -2,8 +2,14 @@
 
 {% extends "_layouts/cp" %}
 {% set title = "Routes"|t %}
+
 {% includeCssResource "css/routes.css" %}
 {% includeJsResource "js/routes.js" %}
+
+
+{% set extraPageHeaderHtml %}
+	<div id="add-route-btn" class="btn submit add icon">{{ "New Route"|t }}</div>
+{% endset %}
 
 {% set crumbs = [
 	{ label: "Settings"|t, url: url('settings') }
@@ -49,10 +55,6 @@
 				<div class="template" dir="ltr">{{ route.template }}</div>
 			</div>
 		{% endfor %}
-	</div>
-
-	<div class="buttons">
-		<div id="add-route-btn" class="btn submit add icon">{{ "New Route"|t }}</div>
 	</div>
 {% endset %}
 

@@ -756,50 +756,17 @@ class PluginsService extends BaseApplicationComponent
 	 */
 	public function getPluginIconUrl($pluginHandle, $size = 100)
 	{
-		$pluginHandle = StringHelper::toLowerCase($pluginHandle);
-		$iconInfo = $this->getPluginIconInfo($pluginHandle);
+		$lcHandle = StringHelper::toLowerCase($pluginHandle);
+		$iconPath = craft()->path->getPluginsPath().$lcHandle.'/resources/icon.svg';
 
-		if ($iconInfo !== false)
+		if (IOHelper::fileExists($iconPath))
 		{
-			// Include the filename so the cached resource path is discarded if the filename changes
-			return UrlHelper::getResourceUrl('pluginicons/'.$pluginHandle.'/'.$size.'/'.$iconInfo['filename']);
+			return UrlHelper::getResourceUrl($pluginHandle.'/icon.svg');
 		}
 		else
 		{
 			return UrlHelper::getResourceUrl('images/default_plugin.svg');
 		}
-	}
-
-	/**
-	 * Returns info about a given plugin’s icon, if it has one
-	 *
-	 * @param string $pluginHandle The folder to look in
-	 *
-	 * @return array|false An array with 'path', 'filename', and 'extension' keys, or false if an icon couldn’t be found
-	 */
-	public function getPluginIconInfo($pluginHandle)
-	{
-		$pluginHandle = StringHelper::toLowerCase($pluginHandle);
-		$basePath = craft()->path->getPluginsPath().$pluginHandle.'/resources/';
-
-		$extensions = array('svg', 'png', 'jpg');
-
-		foreach ($extensions as $extension)
-		{
-			$filename = 'icon.'.$extension;
-			$path = $basePath.$filename;
-
-			if (IOHelper::fileExists($path))
-			{
-				return array(
-					'path' => $path,
-					'filename' => $filename,
-					'extension' => $extension
-				);
-			}
-		}
-
-		return false;
 	}
 
 	// Events

@@ -10,6 +10,8 @@
 	{ label: "Plugins"|t, url: url('settings/plugins') }
 ] %}
 
+{% set fullPageForm = true %}
+
 
 {% extends "_layouts/cp" %}
 {% set title = plugin.name %}
@@ -17,18 +19,11 @@
 
 
 {% block content %}
-	<form method="post" accept-charset="UTF-8" data-saveshortcut>
 		<input type="hidden" name="action" value="plugins/savePluginSettings">
 		<input type="hidden" name="pluginClass" value="{{ plugin.classHandle }}">
 		<input type="hidden" name="redirect" value="settings/plugins">
-		{{ getCsrfInput() }}
 
 		{% namespace 'settings' %}
 			{{ plugin.getSettingsHtml()|raw }}
 		{% endnamespace %}
-
-		<div class="buttons">
-			<input class="btn submit" type="submit" value="{{ 'Save'|t }}">
-		</div>
-	</form>
 {% endblock %}

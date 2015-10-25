@@ -91,7 +91,7 @@ body.rtl [data-icon-after=structure]:after { content: attr('structurertl'); }
 
 /* headings */
 @mixin h6-styles { margin: 14px 0 3px; font-size: 10px; line-height: 1.2; color: $lighttextcolor; text-transform: uppercase; font-weight: bold; }
-h1 { margin-bottom: 24px; font-family: HelveticaNeue-Light, HelveticaNeue, sans-serif; font-size: 30px; line-height: 1; color: $submitcolor; }
+h1 { margin-bottom: 24px; font-family: HelveticaNeue-Light, HelveticaNeue, sans-serif; font-size: 24px; line-height: 1; color: $submitcolor; }
 h2 { margin: 14px 0; font-size: 15px; font-weight: bold; line-height: 1.2; }
 h3 { margin: 14px 0; font-weight: bold; line-height: 1.2; }
 h4 { margin: 14px 0; font-weight: bold; line-height: 1.2; color: $mediumtextcolor; }
@@ -102,7 +102,7 @@ h1[data-icon]:before { @include margin(-8px, 10px, 0, 0) }
 h2[data-icon]:before { @include margin(-4px, 6px, 0, 0); font-size: 19px; }
 
 /* horizontal rule */
-hr { margin: 14px 0; border: none; border-top: 1px solid $hrcolor; height: 0; color: transparent; }
+hr { margin: 14px 0; border: none; border-top: 1px solid $hairlineColor; height: 0; color: transparent; }
 .pane hr { margin: 24px -24px; }
 
 /* paragraphs */
@@ -216,7 +216,7 @@ td.right { float: none; @include alignright; }
 
 .clearafter:after { @include clearafter; }
 
-.info { font-size: 0; display: inline-block; cursor: pointer; }
+.info { font-size: 0; vertical-align: top; display: inline-block; cursor: pointer; }
 .info:before { @include icon; content: 'info'; color: $lighttextcolor; font-size: 13px;}
 .info:hover:before { color: $linkcolor; }
 .info-hud { max-width: 250px; }
@@ -227,54 +227,6 @@ td.right { float: none; @include alignright; }
 
 .content { position: relative; }
 .content:after { @include clearafter; }
-
-/* sidebar */
-.content.has-sidebar:not(.hiding-sidebar) { @include margin-left(194px); }
-.content.has-sidebar:not(.hiding-sidebar) .show-sidebar { display: none; }
-
-.content.has-sidebar .show-sidebar { position: absolute; top: -24px; @include left(-24px);  color: $lighttextcolor;
-	@include transition(color linear 100ms);
-}
-.content.has-sidebar .show-sidebar:hover { color: $linkcolor; }
-.content.has-sidebar .show-sidebar:before { @include icon; width: 43px; line-height: 24px;
-	body.ltr & { content: 'menu rarr'; }
-	body.rtl & { content: 'menu larr'; }
-}
-.content.has-sidebar .show-sidebar.showing:before {
-	body.ltr & { content: 'menu larr'; }
-	body.rtl & { content: 'menu rarr'; }
-}
-
-.sidebar { position: absolute; @include margin(-24px, 0, 0, -218px, !important); padding: 24px; width: 170px; overflow: auto; }
-
-.sidebar .heading { position: relative; @include margin(14px, 0, 2px, -24px); padding: 0 24px; }
-.sidebar .heading:after { display: block; position: absolute; bottom: 7px; @include left(0); content: '.'; text-indent: -200px; overflow: hidden; width: 100%; height: 1px; border-top: 1px solid $hrcolor; }
-.sidebar .heading span { display: inline-block; position: relative; z-index: 1; padding: 0 5px; margin: 0 -5px; text-transform: uppercase; color: $lighttextcolor; font-size: 11px; font-weight: bold; background: #fff; }
-
-.sidebar nav { @include margin-left(-24px); @include padding-left(24px); width: 170px; overflow: auto; }
-.sidebar nav li { position: relative; }
-.sidebar nav li a { display: block; @include margin-left(-24px); padding: 4px 0; color: $textcolor; @include user-select(none); outline: none; }
-.sidebar nav li a:hover { text-decoration: none; color: $linkcolor; }
-
-.sidebar nav li .toggle { position: absolute; top: 3px; }
-.sidebar nav li ul { display: none; }
-.sidebar nav li.expanded > ul { display: block; }
-
-.sidebar nav li a.sel { @include border-radius(0, 2px, 2px, 0); background: $darkselcolor; cursor: default; }
-.sidebar nav li a.sel,
-.sidebar nav li a.sel + .toggle { color: #fff; }
-
-.sidebar nav > ul > li > a { @include padding-left(24px); }
-.sidebar nav > ul > li > ul > li > a { @include padding-left(44px); }
-.sidebar nav > ul > li > ul > li > ul > li > a { @include padding-left(64px); }
-.sidebar nav > ul > li > ul > li > ul > li > ul > li > a { @include padding-left(84px); }
-.sidebar nav > ul > li > ul > li > ul > li > ul > li > ul > li a { @include padding-left(104px); }
-
-.sidebar nav > ul > li > .toggle { @include left(-20px); }
-.sidebar nav > ul > li > ul > li > .toggle { @include left(0px); }
-.sidebar nav > ul > li > ul > li > ul > li > .toggle { @include left(20px); }
-.sidebar nav > ul > li > ul > li > ul > li > ul > li > .toggle { @include left(40px); }
-.sidebar nav > ul > li > ul > li > ul > li > ul > li > ul > li .toggle { @include left(60px); }
 
 /* Customize Sources */
 .sidebar .customize-sources { color: rgba(0,0,0,0.2); }
@@ -301,9 +253,9 @@ td.right { float: none; @include alignright; }
 
 .customize-sources-modal > .footer { position: absolute; bottom: 0; left: 0; width: 100%; }
 
-/* help */
-.content.has-help { padding-bottom: 60px; }
-.content.has-help .help { position: absolute; bottom: 17px; @include right(17px); font-size: 24px; }
+/* help footer */
+#help-footer { text-align: center; border-bottom: 1px solid $hairlineColor; background: $lightBgColor; }
+#help-footer #help { display: inline-block; margin: 14px 0; font-size: 24px; }
 
 /* ----------------------------------------
 /*  Icon lists
@@ -331,6 +283,10 @@ table.inputs td:not(:first-child) { @include padding-left(14px); }
 table.inputs :not(.btngroup) > .btn,
 table.inputs .btngroup { display: block; float: none; }
 
+div.flex { display: flex; align-items: center; align-content: stretch; }
+div.flex > .label { white-space: nowrap; }
+div.flex > *:not(:last-child) { @include margin-right(7px !important); }
+
 .buttons { position: relative; margin: 24px 0; min-height: 30px; }
 .buttons:before { @include clearafter; margin-bottom: -5px; }
 .buttons.right { @include margin-right(-5px); }
@@ -342,10 +298,7 @@ table.inputs .btngroup { display: block; float: none; }
 .buttons > .btn:first,
 .buttons > .btngroup:first { margin-top: 5px !important; }
 
-.btn,
-.btngroup { border-radius: 3px; }
-
-.btn { display: inline-block; padding: 6px 12px; border: none; text-align: center; white-space: nowrap; @include user-select(none); cursor: pointer; @include box-sizing(border-box);
+.btn { display: inline-block; border-radius: $btnBorderRadius; padding: 6px 12px; border: none; text-align: center; white-space: nowrap; @include user-select(none); cursor: pointer; @include box-sizing(border-box);
 	-webkit-appearance: none;
 }
 
@@ -358,16 +311,12 @@ table.inputs .btngroup { display: block; float: none; }
 .disabled,
 .disabled .btn { cursor: default; }
 
+.btn:not(.noborder) { color: $textcolor;
+	@include box-shadow(inset 0 0 0 1px $hairlineColorAlpha);
+}
+
 .btn:not(.submit):not(.noborder) { color: $textcolor;
 	@include linear-gradient(#fff, hsl($hue, 5%, 98%));
-}
-.btn:not(.noborder):not(.submit),
-.btngroup:not(.noborder):not(.submit) {
-	@include box-shadow(0 0 0 1px rgba(0,0,0,0.15), 0 1px 2px -1px rgba(0,0,0,0.1));
-}
-.btn.submit,
-.btngroup.submit {
-	@include box-shadow(0 1px 2px -1px rgba(0,0,0,0.1));
 }
 
 .btn:active { outline: none; }
@@ -378,10 +327,6 @@ table.inputs .btngroup { display: block; float: none; }
 .btn:not(.submit):not(.noborder):active,
 .btn:not(.submit):not(.noborder).active {
 	@include linear-gradient(hsl($hue, 5%, 90%), hsl($hue, 5%, 92%));
-}
-
-.btngroup .btn {
-	@include box-shadow(none !important);
 }
 
 .btn,
@@ -407,14 +352,15 @@ table.inputs .btngroup { display: block; float: none; }
 .btn.icon.small:before,
 .menubtn.small:after { font-size: 9px; }
 
+.btn.icon.add.loading { position: relative; }
 .btn.icon.add.loading:before { visibility: hidden; }
-.btn.icon.add.loading { background-image: url(../images/spinner.gif); background-repeat: no-repeat; background-position: 5px 50%; }
-.btn.icon.add.loading.submit { background-image: url(../images/spinner_submit.gif); }
-.secondary-buttons .btn.icon.add.loading.submit { background-image: url(../images/spinner_submit_secondary.gif); }
+.btn.icon.add.loading:after { position: absolute; content: '.'; font-size: 0; display: block; width: 24px; height: 100%; left: 5px; top: 0; background: url(../images/spinner.gif) no-repeat 0 50%; }
+.btn.icon.add.loading.submit:after { background-image: url(../images/spinner_submit.gif); }
+.secondary-buttons .btn.icon.add.loading.submit:after { background-image: url(../images/spinner_submit_secondary.gif); }
 
 /* button groups */
 .btngroup { display: inline-block; font-size: 0; white-space: nowrap; }
-.btngroup .btn { font-size: 13px; vertical-align: middle; @include box-shadow(none); }
+.btngroup .btn { font-size: 13px; vertical-align: middle; }
 body.ltr .btngroup .btn:not(:first-child) { border-top-left-radius: 0; border-bottom-left-radius: 0; }
 body.rtl .btngroup .btn:not(:first-child) { border-top-right-radius: 0; border-bottom-right-radius: 0; }
 body.ltr .btngroup .btn:not(:last-child) { border-top-right-radius: 0; border-bottom-right-radius: 0; }
@@ -426,9 +372,6 @@ body.rtl .btngroup .btn:not(:last-child) { border-top-left-radius: 0; border-bot
 .btngroup .btn.active { position: relative; z-index: 1; }
 
 .btngroup .btn.active { cursor: default; }
-
-.btngroup .btn:not(:first-child) { @include margin-left(-1px); @include border-left(1px solid rgba(0,0,0,0.1)); }
-.btngroup .btn:not(:last-child) { @include border-right(1px solid rgba(0,0,0,0.1)); }
 
 .btngroup.disabled .btn { cursor: default; }
 
@@ -445,7 +388,6 @@ body.rtl .btngroup .btn:not(:last-child) { border-top-left-radius: 0; border-bot
 /* menu buttons */
 .menubtn { @include user-select(none); }
 .menubtn:after { margin-top: -2px; content: '▼'; font-size: 0.8em; }
-.menubtn:not(.submit):not(.noborder):after { margin-top: -1px; }
 
 /* spinner */
 .spinner { display: inline-block; vertical-align: bottom; @include spinner; }
@@ -476,17 +418,17 @@ body.rtl .btngroup .btn:not(:last-child) { border-top-left-radius: 0; border-bot
 .btn.big + .spinner { height: 36px; }
 
 /* submit buttons */
-.btn.submit { color: #fff; background-color: $submitcolor; }
+.btn.submit { color: #fff; @include linear-gradient($submitcolor, #cc5643); }
 .btn.submit:not(.disabled):not(.inactive):hover,
-.btn.submit:not(.disabled):not(.inactive).hover { background-color: $submitHoverColor; }
+.btn.submit:not(.disabled):not(.inactive).hover { @include linear-gradient($submitHoverColor, #b34b3b); }
 .btn.submit:not(.disabled):not(.inactive):active,
-.btn.submit:not(.disabled):not(.inactive).active { background-color: $submitActiveColor; }
+.btn.submit:not(.disabled):not(.inactive).active { @include linear-gradient($submitActiveColor, #994032); }
 
-.secondary-buttons .btn.submit { background-color: $secondarySubmitColor; }
+.secondary-buttons .btn.submit { @include linear-gradient($secondarySubmitColor, #878f99); }
 .secondary-buttons .btn.submit:not(.disabled):not(.inactive):hover,
-.secondary-buttons .btn.submit:not(.disabled):not(.inactive).hover { background-color: $secondarySubmitHoverColor; }
+.secondary-buttons .btn.submit:not(.disabled):not(.inactive).hover { @include linear-gradient($secondarySubmitHoverColor, #697480); }
 .secondary-buttons .btn.submit:not(.disabled):not(.inactive):active,
-.secondary-buttons .btn.submit:not(.disabled):not(.inactive).active { background-color: $secondarySubmitActiveColor; }
+.secondary-buttons .btn.submit:not(.disabled):not(.inactive).active { @include linear-gradient($secondarySubmitActiveColor, #697380); }
 
 div.btn.submit { position: relative; overflow: hidden; }
 div.btn.submit input { position: absolute; left: 100%; }
@@ -588,9 +530,9 @@ table.data td:not(:first-child) { @include padding-left(14px); }
 table.data thead th,
 table.data thead td { padding-top: 4px; padding-bottom: 4px; width: auto; cursor: default; }
 table.data tbody th,
-table.data tbody td { padding-top: 7px; padding-bottom: 7px; border-bottom: 1px dotted $hrcolor; }
+table.data tbody td { padding-top: 7px; padding-bottom: 7px; border-bottom: 1px dotted $hairlineColor; }
 table.data tbody tr:first-child th,
-table.data tbody tr:first-child td { border-top: 1px dotted $hrcolor; }
+table.data tbody tr:first-child td { border-top: 1px dotted $hairlineColor; }
 table.data thead + tbody tr:first-child th,
 table.data thead + tbody tr:first-child td { border-top-style: solid; }
 table.data th { font-weight: bold; }
@@ -610,7 +552,7 @@ table.collapsed tbody td { display: block; border: none; padding: 0; @include al
 table.collapsed tbody th,
 table.collapsed tbody td { padding: 2px 0 !important; }
 table.collapsed thead { display: none; }
-table.collapsed tbody tr { padding: 6px 0; border-bottom: 1px dotted $hrcolor; }
+table.collapsed tbody tr { padding: 6px 0; border-bottom: 1px dotted $hairlineColor; }
 table.collapsed tbody [data-title] { @include margin-right(0); }
 table.collapsed tbody [data-title]:before { margin-right: 5px; content: attr(data-title) ":"; font-weight: bold; }
 table.collapsed tbody td:empty { display: none; }
@@ -648,7 +590,7 @@ table.collapsed tbody tr:last-child td:not(:last-child) { border-bottom: none; }
 .element.small.hasthumb { @include padding-left(40px !important); }
 .element.large.hasthumb { @include padding-left(0 !important); }
 
-.element.hasthumb .elementthumb { position: absolute; top: 0; @include left(0); border-radius: 3px; overflow: hidden; background: #fff;
+.element.hasthumb .elementthumb { position: absolute; top: 0; @include left(0); border-radius: $elementBorderRadius; overflow: hidden; background: #fff;
 	display: flex; display: -ms-flexbox;
 	justify-content: center; -ms-flex-pack: center;
 	align-items: center; -ms-flex-align: center; }
@@ -660,10 +602,10 @@ table.collapsed tbody tr:last-child td:not(:last-child) { border-bottom: none; }
 .element.large .label { display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; word-wrap: normal; }
 
 .element.sel,
-.sel .element { border-radius: 3px; background: $lightselcolor; cursor: default; }
+.sel .element { border-radius: $elementBorderRadius; background: $lightselcolor; cursor: default; }
 
 .element.hasthumb.sel .elementthumb:after,
-.sel .element.hasthumb .elementthumb:after { display: block; position: absolute; top: 0; left: 0; border-radius: 3px; width: 100%; height: 100%; content: '.'; font-size: 0; background: rgba(35,51,76,0.19); }
+.sel .element.hasthumb .elementthumb:after { display: block; position: absolute; top: 0; left: 0; border-radius: $elementBorderRadius; width: 100%; height: 100%; content: '.'; font-size: 0; background: rgba(35,51,76,0.19); }
 
 .element.removable .label,
 .element.loading .label { @include padding-right(20px); }
@@ -711,7 +653,7 @@ table.collapsed tbody tr:last-child td:not(:last-child) { border-bottom: none; }
 	body.ltr & { background-image: url(../images/branch.png); background-position: 0 0; }
 	body.rtl & { background-image: url(../images/branch_rtl.png); background-position: 100% 0; }
 }
-.structure ul li:not(:last-child):not(.last) { @include padding-left(37px); @include border-left(1px solid $hrcolor);
+.structure ul li:not(:last-child):not(.last) { @include padding-left(37px); @include border-left(1px solid $hairlineColor);
 	body.ltr & { background-position: -1px 0; }
 	body.rtl & { background-position: calc(100% + 1px) 0; }
 }
@@ -765,7 +707,7 @@ table.editable tbody tr td.action + td.action { @include border-left(none); @inc
 table.editable tbody textarea { display: block; width: 100%; border: none; padding: 7px 10px; background: #fff; overflow: hidden; }
 table.editable tbody textarea:focus { border: 1px solid rgba(0,0,0,0.15); padding: 6px 9px; outline: none; }
 
-table.editable + .btn.add { display: block; border-radius: 0 0 3px 3px; border: 1px dashed rgba(0,0,0,0.2); border-top: none; background: none;
+table.editable + .btn.add { display: block; border-radius: 0 0 $btnBorderRadius $btnBorderRadius; border: 1px dashed rgba(0,0,0,0.2); border-top: none; background: none;
 	@include box-shadow(none);
 }
 
@@ -866,13 +808,60 @@ ul.tree,
 /*  Panes, Modals and HUDs
 /* ----------------------------------------*/
 
-.pane { @include pane; position: relative; margin: 14px 0; padding: 24px; border-radius: 3px; word-wrap: break-word; @include box-sizing(border-box); overflow: hidden; }
+.pane { @include pane; position: relative; margin: 14px 0; padding: 24px; border-radius: $paneBorderRadius; word-wrap: break-word; @include box-sizing(border-box); overflow: hidden; }
+
+/* meta panes */
+.meta { padding: 0; overflow: visible; }
+.meta .field { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; margin: 0 !important; padding: 8px 24px; min-height: 30px;
+	@include box-shadow(0 0 2px hsla(205, 100%, 60%, 0), inset 0 0 0 1px hsla(205, 100%, 60%, 0));
+	@include box-shadow-transition(100ms);
+}
+.meta .field.has-focus { z-index: 1;
+	@include box-shadow(0 0 5px hsl(205, 100%, 60%));
+}
+.meta.pane > .field:first-child { border-top-left-radius: $paneBorderRadius; border-top-right-radius: $paneBorderRadius; }
+.meta.pane > .field:last-child { border-bottom-left-radius: $paneBorderRadius; border-bottom-right-radius: $paneBorderRadius; }
+.meta .field + .field { border-top: 1px solid $hairlineColor; }
+.meta .field + .field.has-focus { border-top: none; margin-top: 1px !important; }
+.meta .field > .heading { margin-bottom: 0; width: 86px; color: $mediumtextcolor; }
+.meta .field > .input { width: calc(100% - 100px); }
+
+.meta .field.has-errors { border: 1px solid $errorcolor; padding-left: 23px; padding-right: 23px; }
+.meta .field.has-errors + .field { border-top: none; }
+.meta .field ul.errors { margin: 8px -23px -8px; padding: 8px 23px; width: 100%; background: $lightBgColor; list-style-type: none;}
+
+.meta .field > .input .text { display: block; margin: -8px 0; padding: 14px 0; border-radius: 0; @include box-shadow(none); border: none !important; background: transparent; }
+
+.meta .field > .input .datewrapper:before,
+.meta .field > .input .timewrapper:before { left: 0; }
+.meta .field > .input .datewrapper .text,
+.meta .field > .input .timewrapper .text { @include padding-left(15px); }
+
+.meta .field > .input > .datetimewrapper .datewrapper,
+.meta .field > .input > .datetimewrapper .timewrapper { @include floatleft; }
+.meta .field > .input > .datetimewrapper .datewrapper { width: 55%; }
+.meta .field > .input > .datetimewrapper .timewrapper { width: 45%; }
+.meta .field > .input > .datewrapper,
+.meta .field > .input > .timewrapper { display: block; width: 100%; }
+
+@media screen and (-webkit-min-device-pixel-ratio: 0)
+{
+	.meta .field > .input .select { display: block; margin: -8px 0; width: 100%; border-radius: 0; @include box-shadow(none); background: none; }
+	.meta .field > .input .select select { @include padding(14px, 12px, 14px, 0); width: 100%; @include box-shadow(none); }
+	.meta .field > .input .select:after { right: 0; }
+	.meta .field > .input .select + .spinner { position: absolute; top: calc(50% - 15px); right: 0; }
+}
+
 .body { position: relative; }
 
 .modal,
 .hud,
-body #redactor-modal { z-index: 100; border-radius: 3px; background: #fff;
-	@include box-shadow(0 0 0 1px rgba(0,0,0,0.1), 0 10px 50px -10px rgba(0,0,0,0.25));
+body #redactor-modal { z-index: 100; }
+
+.modal,
+.hud .body,
+body #redactor-modal { border-radius: $paneBorderRadius; background: #fff;
+	@include box-shadow(0 25px 100px rgba(0,0,0,0.5));
 }
 
 .modal,
@@ -885,12 +874,12 @@ body #redactor-modal { z-index: 100; border-radius: 3px; background: #fff;
 .header,
 .footer { position: relative; z-index: 1; @include box-sizing(border-box); }
 
-.header { border-radius: 3px 3px 0 0; padding: 24px;
+.header { border-radius: $paneBorderRadius $paneBorderRadius 0 0; padding: 24px;
 	@include linear-gradient(#fff, hsl($hue, 8%, 98%));
 	@include box-shadow(0 2px 1px -2px rgba(0,0,0,0.2));
 }
 
-.footer { border-radius: 0 0 3px 3px; padding: 14px 24px;
+.footer { border-radius: 0 0 $paneBorderRadius $paneBorderRadius; padding: 14px 24px;
 	@include linear-gradient(hsl($hue, 8%, 93%), hsl($hue, 8%, 92%));
 	@include box-shadow(inset 0 2px 1px -2px rgba(0,0,0,0.2));
 }
@@ -898,13 +887,11 @@ body #redactor-modal { z-index: 100; border-radius: 3px; background: #fff;
 .header h1 { margin: 0; }
 
 .modal .body,
-.hud .body { padding: 24px; overflow: hidden; @include box-sizing(border-box); }
+.hud .main { padding: 24px; overflow: hidden; @include box-sizing(border-box); }
 .pane .header,
-.modal .body .header,
-.hud .body .header { margin: -24px -24px 24px; }
+.modal .body .header { margin: -24px -24px 24px; }
 .pane .footer,
-.modal .body .footer,
-.hud .body .footer { margin: 24px -24px -24px; }
+.modal .body .footer { margin: 24px -24px -24px; }
 
 .modal-shade,
 .hud-shade { z-index: 100; position: fixed; top: 0; left: 0; width: 100%; height: 100%; display: none; }
@@ -930,29 +917,26 @@ body #redactor-modal-overlay {
 .modal.alert .body:before { @include icon; @include margin(-6px, 0, 0, -58px); @include floatleft; content: 'alert'; font-size: 40px; color: $lighttextcolor; }
 
 .hud { position: absolute; display: none; top: 0; }
-.hud .tip { position: absolute; background: no-repeat 0 0; }
+.hud .tip { position: absolute; z-index: 101; background: no-repeat 0 0; }
 .hud .tip-left { @include left(-15px); width: 15px; height: 30px; background-image: url(../images/hudtip_left.png); }
 .hud .tip-top { top: -15px; width: 30px; height: 15px; background-image: url(../images/hudtip_top.png); }
 .hud .tip-right { @include right(-15px); width: 15px; height: 30px; background-image: url(../images/hudtip_right.png); }
 .hud .tip-bottom { bottom: -15px; width: 30px; height: 15px; background-image: url(../images/hudtip_bottom.png); }
 .hud.has-footer .tip-bottom { background-image: url(../images/hudtip_bottom_gray.png); }
 
-.hud ::-webkit-scrollbar { -webkit-appearance: none; }
-.hud ::-webkit-scrollbar:vertical { width: 11px; }
-.hud ::-webkit-scrollbar:horizontal { height: 11px; }
-.hud ::-webkit-scrollbar-thumb { border-radius: 8px; border: 2px solid transparent; background-color: rgba(0, 0, 0, .5); background-clip: content-box; }
-.hud ::-webkit-scrollbar-track { background-color: $lightBgColor; }
+.hud .header,
+.hud .footer { padding: 7px 24px; }
+
+.hud .body { overflow: hidden; }
+.hud .body ::-webkit-scrollbar { -webkit-appearance: none; }
+.hud .body ::-webkit-scrollbar:vertical { width: 11px; }
+.hud .body ::-webkit-scrollbar:horizontal { height: 11px; }
+.hud .body ::-webkit-scrollbar-thumb { border-radius: 8px; border: 2px solid transparent; background-color: rgba(0, 0, 0, .5); background-clip: content-box; }
+.hud .body ::-webkit-scrollbar-track { background-color: $lightBgColor; }
 
 /* element editor HUDs */
-.hud .elementeditor { padding: 0; }
-.hud .elementeditor .header,
-.hud .elementeditor .footer { margin: 0; padding: 7px 24px; }
+.hud .elementeditor { max-width: 600px; }
 .hud .elementeditor .header { text-align: center; }
-.hud .elementeditor .header .spinner { @include margin(-1px, -25px, -1px, 5px); }
-.hud .elementeditor > form > .fields { max-width: 400px; max-height: 300px; padding: 24px; overflow: auto; }
-.hud .elementeditor .footer .spinner { position: absolute; @include right(2px); margin: 0; }
-.hud .elementeditor .footer .buttons { margin: 0; }
-.hud .elementeditor .footer .buttons .btn { position: relative; }
 
 /* crop image modals */
 .image-chooser img { display: block; }
@@ -1008,11 +992,11 @@ body #redactor-modal-overlay {
 /*  Menus
 /* ----------------------------------------*/
 
-@mixin menu-styles { z-index: 100; margin-bottom: 10px; border-radius: 3px; padding: 4px 14px; background: #fff; @include user-select(none);
-	@include box-shadow(0 0 0 1px rgba(0,0,0,0.1), 0 5px 25px -5px rgba(0,0,0,0.25));
+@mixin menu-styles { z-index: 100; margin-bottom: 10px; border-radius: $btnBorderRadius; padding: 0 14px; overflow: hidden; background: #fff; @include user-select(none);
+	@include box-shadow(0 0 0 1px $hairlineColorAlpha, 0 5px 20px rgba(0,0,0,0.25));
 }
 
-@mixin menu-option-styles { margin: 0 -14px; padding: 3px 14px; color: $textcolor; text-decoration: none; white-space: nowrap; }
+@mixin menu-option-styles { margin: 0 -14px; padding: 6px 14px; color: $textcolor; text-decoration: none; white-space: nowrap; }
 @mixin menu-option-active-styles { color: $textcolor; background-color: $lightselcolor; }
 
 .menu,
@@ -1060,17 +1044,17 @@ body .redactor-dropdown a:hover { @include menu-option-active-styles; }
 /*  Fields
 /* ----------------------------------------*/
 
-.shadow-box { border-radius: 3px; border: 1px solid #ccc; overflow: hidden; width: 100%;
+.shadow-box { border-radius: $paneBorderRadius; border: 1px solid #ccc; overflow: hidden; width: 100%;
 	@include box-shadow(0 1px 5px -1px rgba(0, 0, 0, 0.1));
 }
 
-@mixin text-input-styles { border: none; border-radius: 2px;
-	@include box-shadow(0 0 2px hsla(205, 100%, 60%, 0), inset 0 0 0 1px rgba(0,0,0,0.1), inset 0 2px 4px rgba(0,0,0,0.1), inset 0 0 0 1px hsla(205, 100%, 60%, 0));
+@mixin text-input-styles { border: 1px solid $hairlineColor; border-radius: $btnBorderRadius;
+	@include box-shadow(0 0 5px hsla(205, 100%, 60%, 0));
 	@include box-shadow-transition(100ms);
 }
 
 @mixin text-input-focussed-styles { border-color: $focusglowcolor; outline: none;
-	@include box-shadow(0 0 2px hsl(205, 100%, 60%), inset 0 0 0 1px rgba(0,0,0,0.1), inset 0 2px 4px rgba(0,0,0,0.1), inset 0 0 0 1px hsla(205, 100%, 60%, 0.5));
+	@include box-shadow(0 0 5px hsl(205, 100%, 75%));
 }
 
 .text,
@@ -1098,7 +1082,9 @@ table.editable textarea { font-size: 13px; line-height: 16px; color: $textcolor;
 
 .field { position: relative; margin: 24px 0; }
 .field > .heading { margin-bottom: 4px; }
-.field > .heading > .locale { display: inline-block; border-radius: 3px; @include margin-left(3px); padding: 0 4px; font-size: 11px; color: $mediumtextcolor; background: $bgcolor; }
+.field > .heading > label { position: relative; }
+.field > .heading > label.required:after { position: absolute; top: 6px; @include left(-15px); }
+.field > .heading > .locale { display: inline-block; border-radius: $btnBorderRadius; @include margin-left(3px); padding: 0 4px; font-size: 11px; color: $mediumtextcolor; background: $bgcolor; }
 .field > .heading > .instructions { font-size: 11px; color: $mediumtextcolor; }
 .field > .warning { margin: 4px 0 0; font-size: 11px; }
 .field > .warning:before { @include margin(-2px, 2px, 0, 0); @include icon; content: 'alert'; }
@@ -1120,7 +1106,7 @@ input.checkbox + label:empty:after,
 div.checkbox:empty:after { content: '.'; font-size: 0; } /* fixes a RTL bug */
 input.checkbox + label:before,
 div.checkbox:before { display: block; position: absolute; top: 2px; @include left(0); width: 12px !important; height: 12px; content: '.'; font-size: 0; border-radius: 2px; background: #fff;
-	@include box-shadow(0 0 2px hsla(205, 100%, 60%, 0), inset 0 0 0 1px rgba(0,0,0,0.15), inset 0 1px 2px rgba(0,0,0,0.15), inset 0 0 0 1px hsla(205, 100%, 60%, 0));
+	@include box-shadow(0 0 2px hsla(205, 100%, 60%, 0), inset 0 0 0 1px rgba(0,0,0,0.15), inset 0 0 0 1px hsla(205, 100%, 60%, 0));
 }
 input.checkbox:disabled + label,
 div.checkbox.disabled:before,
@@ -1141,7 +1127,7 @@ div.checkbox.indeterminate:before { content: 'minus'; font-size: 7px; text-align
 
 input.checkbox:focus + label:before,
 :focus div.checkbox:before { outline: none;
-	@include box-shadow(0 0 2px hsl(205, 100%, 60%), inset 0 0 0 1px rgba(0,0,0,0.1), inset 0 1px 2px rgba(0,0,0,0.1), inset 0 0 0 1px hsla(205, 100%, 60%, 0.5));
+	@include box-shadow(0 0 2px hsl(205, 100%, 60%), inset 0 0 0 1px rgba(0,0,0,0.1), inset 0 0 0 1px hsla(205, 100%, 60%, 0.5));
 }
 input.checkbox:checked:focus + label:before,
 input.checkbox:indeterminate:focus + label:before,
@@ -1154,7 +1140,7 @@ input.checkbox:indeterminate:focus + label:before,
 .text,
 .textline,
 body .redactor-box:not(.redactor-box-fullscreen) .redactor-editor,
-body .redactor-box textarea { padding: 6px 7px; }
+body .redactor-box textarea { padding: 5px 7px; }
 
 .text { background: #fff; }
 .text input { margin: 0; padding: 0; border: none; outline: none; background: none; }
@@ -1189,10 +1175,10 @@ body .redactor-box textarea { padding: 6px 7px; }
 .timewrapper .text { @include padding-left(22px); width: 100%; }
 
 .datewrapper { width: 8em; }
-.datewrapper:before { top: 8px; @include left(7px); content: 'date'; }
+.datewrapper:before { top: calc(50% - 7px); @include left(7px); content: 'date'; }
 
 .timewrapper { width: 7em; }
-.timewrapper:before { top: 10px; @include left(7px); font-size: 11px; content: 'time'; }
+.timewrapper:before { top: calc(50% - 5px); @include left(7px); font-size: 11px; content: 'time'; }
 
 ::-webkit-input-placeholder { color: $lighttextcolor; }
 input:-ms-input-placeholder { color: $lighttextcolor; }
@@ -1231,8 +1217,8 @@ body .redactor-box:not(.redactor-box-fullscreen) .redactor-editor { background: 
 .redactor-editor ol { @include padding-left(2em !important); @include padding-right(0 !important); }
 body .redactor-editor ul { list-style-type: disc; }
 body .redactor-box textarea { border-top-left-radius: 0; border-top-right-radius: 0; @include box-sizing(border-box); }
-body #redactor-modal footer button:first-child { border-bottom-left-radius: 3px; }
-body #redactor-modal footer button:last-child { border-bottom-right-radius: 3px; }
+body #redactor-modal footer button:first-child { border-bottom-left-radius: $btnBorderRadius; }
+body #redactor-modal footer button:last-child { border-bottom-right-radius: $btnBorderRadius; }
 
 /**
  * Selects
@@ -1240,10 +1226,10 @@ body #redactor-modal footer button:last-child { border-bottom-right-radius: 3px;
  * Waiting on this bug to get fixed before Firefox gets our fancy selects:
  * https://bugzilla.mozilla.org/show_bug.cgi?id=649849
  */
-@mixin select-styles { position: relative; border-radius: 3px; white-space: nowrap; }
+@mixin select-styles { position: relative; border-radius: $btnBorderRadius; white-space: nowrap; }
 @mixin select-container-styles { display: inline-block; position: relative;
 	@include linear-gradient(#fff, hsl($hue, 5%, 98%));
-	@include box-shadow(inset 0 0 0 1px rgba(0,0,0,0.1), 0 1px 5px rgba(0,0,0,0.07));
+	@include box-shadow(inset 0 0 0 1px rgba(0,0,0,0.1), 0 0px 3px rgba(0,0,0,0.07));
 };
 @mixin select-arrow-styles { @include icon; position: absolute; z-index: 1; top: calc(50% - 5px); @include right(9px); font-size: 10px; content: '▼'; @include user-select(none); }
 @mixin select-input-styles { display: block; position: relative; border: 0; @include padding(7px, 22px, 7px, 10px); font-size: 13px; line-height: 16px; color: $textcolor; background: none;
@@ -1369,13 +1355,11 @@ body.message .message-container .pane { top: 50%; margin-top: -33px !important; 
 }
 
 /* blocks */
-.matrixblock { position: relative; margin-bottom: 10px; padding: 1px 14px 14px; border-radius: 3px; background: hsl(212, 10%, 98%); @include user-select(none); outline: none;
-	@include box-shadow(inset 0 0 0 1px rgba(0,0,0,0.1));
-}
+.matrixblock { position: relative; margin-bottom: 10px; padding: 0 14px 14px; border-radius: $paneBorderRadius; border: 1px solid $hairlineColor; background: $lightBgColor; @include user-select(none); outline: none; }
 .matrixblock.disabled { opacity: 1; }
 
-.matrixblock > .titlebar { margin: 0 -13px 14px; width: calc(100% + 26px); @include box-sizing(border-box); border-radius: 2px 2px 0 0; @include padding(6px, 70px, 6px, 33px); background: hsl(212, 10%, 94%); color: $lighttextcolor; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; word-wrap: normal; cursor: default; }
-.matrixblock.collapsed > .titlebar { border-radius: 2px; }
+.matrixblock > .titlebar { margin: 0 -14px 14px; width: calc(100% + 28px); @include box-sizing(border-box); border-radius: 2px 2px 0 0; @include padding(6px, 70px, 6px, 33px); border-bottom: 1px solid $hairlineColor; background: hsl(212, 10%, 94%); color: $lighttextcolor; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; word-wrap: normal; cursor: default; }
+.matrixblock.collapsed > .titlebar { border-radius: 2px; border-bottom: none; }
 .matrixblock.disabled > .titlebar { @include padding-right(90px); }
 .matrixblock > .titlebar > .blocktype { display: inline; color: $mediumtextcolor; }
 .matrixblock > .titlebar > .preview { @include margin-left(7px); display: inline; opacity: 0;
@@ -1428,9 +1412,9 @@ body.message .message-container .pane { top: 50%; margin-top: -33px !important; 
 	.spinner { background-image: url(../images/spinner_2x.gif); background-size: 20px; }
 	.spinner.big { background-image: url(../images/spinner_big_2x.gif); background-size: 48px; }
 
-	.btn.icon.add.loading { background-image: url(../images/spinner_2x.gif); background-size: 20px; }
-	.btn.icon.add.loading.submit { background-image: url(../images/spinner_submit_2x.gif); }
-	.secondary-buttons .btn.icon.add.loading.submit { background-image: url(../images/spinner_submit_secondary_2x.gif); }
+	.btn.icon.add.loading:after { background-image: url(../images/spinner_2x.gif); background-size: 20px; }
+	.btn.icon.add.loading.submit:after { background-image: url(../images/spinner_submit_2x.gif); }
+	.secondary-buttons .btn.icon.add.loading.submit:after { background-image: url(../images/spinner_submit_secondary_2x.gif); }
 
 	.sel .element.loading:after,
 	.element.loading.sel:after { background-image: url(../images/spinner_element_2x.gif); background-size: 20px; }

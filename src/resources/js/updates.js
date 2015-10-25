@@ -129,28 +129,26 @@ Craft.UpdateInfo = Garnish.Base.extend(
 
 		if (!this.licenseHud)
 		{
-			var $form = $('<form><p>'+Craft.t('Craft’s <a href="http://buildwithcraft.com/license" target="_blank">Terms and Conditions</a> have changed.')+'</p></form>'),
-				$label = $('<label> '+Craft.t('I agree.')+' &nbsp;</label>').appendTo($form),
+			var $hudBody = $('<div><p>'+Craft.t('Craft’s <a href="http://buildwithcraft.com/license" target="_blank">Terms and Conditions</a> have changed.')+'</p></div>'),
+				$label = $('<label> '+Craft.t('I agree.')+' &nbsp;</label>').appendTo($hudBody),
 				$checkbox = $('<input type="checkbox"/>').prependTo($label);
 
-			this.$licenseSubmitBtn = $('<input class="btn submit" type="submit"/>').appendTo($form);
+			this.$licenseSubmitBtn = $('<input class="btn submit" type="submit"/>').appendTo($hudBody);
 
-			this.licenseHud = new Garnish.HUD(originalEvent.currentTarget, $form);
-
-			this.addListener($form, 'submit', function(ev)
-			{
-				ev.preventDefault();
-
-				if ($checkbox.prop('checked'))
+			this.licenseHud = new Garnish.HUD(originalEvent.currentTarget, $hudBody, {
+				onSubmit: $.proxy(function()
 				{
-					this.licenseSubmitAction();
-					this.licenseHud.hide();
-					$checkbox.prop('checked', false);
-				}
-				else
-				{
-					Garnish.shake(this.licenseHud.$hud);
-				}
+					if ($checkbox.prop('checked'))
+					{
+						this.licenseSubmitAction();
+						this.licenseHud.hide();
+						$checkbox.prop('checked', false);
+					}
+					else
+					{
+						Garnish.shake(this.licenseHud.$hud);
+					}
+				}, this)
 			});
 		}
 		else

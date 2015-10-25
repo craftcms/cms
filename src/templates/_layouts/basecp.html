@@ -1,5 +1,10 @@
 {% extends "_layouts/base" %}
 
+{# Give the body a .mobile class for mobile devices #}
+{% if craft.request.isMobileBrowser(true) %}
+	{% set bodyClass = (bodyClass is defined and bodyClass ? bodyClass~' ' : '') ~ 'mobile' %}
+{% endif %}
+
 {# Figure out which Datepicker i18n script to load #}
 {%- switch craft.locale %}
 	{%- case 'en_gb' %}

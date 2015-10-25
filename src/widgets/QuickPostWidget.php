@@ -140,7 +140,7 @@ class QuickPostWidget extends BaseWidget
 		}
 		else
 		{
-			$entryTypeId = array_shift(array_keys($entryTypes));
+			$entryTypeId = ArrayHelper::getFirstKey($entryTypes);
 		}
 
 		$entryType = $entryTypes[$entryTypeId];

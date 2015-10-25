@@ -11,7 +11,6 @@
 {% set sources = craft.elementIndexes.getSources(elementTypeClass, 'index') %}
 {% set customizableSources = (sources is not empty and context == 'index' and currentUser.admin) %}
 
-
 {% block sidebar %}
 	{% if sources is not empty %}
 		<nav>
