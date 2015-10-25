@@ -36,6 +36,7 @@ Craft.RichTextInput = Garnish.Base.extend(
 		}
 
 		this.redactorConfig.imageUpload = true;
+		this.redactorConfig.fileUpload = true;
 
 		// Prevent a JS error when calling core.destroy() when opts.plugins == false
 		if (typeof this.redactorConfig.plugins !== typeof [])
