@@ -152,7 +152,7 @@ Craft.Pane = Garnish.Base.extend(
 	{
 		if (true || this.$pane.hasClass('showing-sidebar'))
 		{
-			this.setMinContentSizeForSidebar._minHeight = this.$sidebar.prop('scrollHeight') - 48;
+			this.setMinContentSizeForSidebar._minHeight = this.$sidebar.prop('scrollHeight');
 		}
 		else
 		{
@@ -193,7 +193,7 @@ Craft.Pane = Garnish.Base.extend(
 				contentBottomOffset = this.updateSidebarStyles._contentOffset + this.updateSidebarStyles._contentHeight;
 
 			var height = Math.min(maxViewportY, contentBottomOffset) - Math.max(this.updateSidebarStyles._scrollTop, this.updateSidebarStyles._contentOffset);
-			this.updateSidebarStyles._styles.height = height - 48;
+			this.updateSidebarStyles._styles.height = height;
 
 			this.$sidebar.css(this.updateSidebarStyles._styles);
 		}

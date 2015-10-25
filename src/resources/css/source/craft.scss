@@ -947,18 +947,12 @@ body #redactor-modal-overlay {
 .elementselectormodal .body .spinner.big { position: absolute; top: 50%; left: 50%; margin: -24px 0 0 -24px; }
 
 .elementselectormodal .body .content { height: calc(100% + 48px); }
-.elementselectormodal .body .sidebar { top: 24px; @include padding-right(0); @include border-right(1px solid #e5e5e5); height: calc(100% - 48px);; overflow: auto; }
-.elementselectormodal .body .sidebar nav li a.sel { border-radius: 0; }
+.elementselectormodal .body .sidebar { top: 24px; height: 100%; overflow: auto; }
 .elementselectormodal .body .main { margin: -24px; padding: 24px; height: calc(100% - 48px); overflow: auto; position: relative; }
 
-.elementselectormodal .body .main .elements .tableview { margin: 0 -24px; }
 .elementselectormodal .body .main .elements .tableview table .element { display: inline-block; }
 .elementselectormodal .body .main .elements .tableview table tr th,
 .elementselectormodal .body .main .elements .tableview table tr td { cursor: default;}
-.elementselectormodal .body .main .elements .tableview table tr th:first-child,
-.elementselectormodal .body .main .elements .tableview table tr td:first-child { @include padding-left(24px); }
-.elementselectormodal .body .main .elements .tableview table tr th:last-child,
-.elementselectormodal .body .main .elements .tableview table tr td:last-child { @include padding-right(24px); }
 .elementselectormodal .body .main .elements .tableview table tr:focus { outline: none; }
 .elementselectormodal .body .main .elements .tableview table tr.disabled { opacity: 1; color: #d4d4d4; }
 .elementselectormodal .body .main .elements .tableview table tr.disabled .element { opacity: 0.25; }
