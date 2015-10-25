@@ -207,48 +207,10 @@ class ElementsService extends BaseApplicationComponent
 
 		if ($query)
 		{
+			// If we're only interested in the IDs, drop everything else from the SELECT clause
 			if ($justIds)
 			{
 				$query->select('elements.id');
-			}
-
-			if ($criteria->fixedOrder)
-			{
-				$ids = ArrayHelper::stringToArray($criteria->id);
-
-				if (!$ids)
-				{
-					return array();
-				}
-
-				$query->order(craft()->db->getSchema()->orderByColumnValues('elements.id', $ids));
-			}
-			else if ($criteria->order && $criteria->order != 'score')
-			{
-				$order = $criteria->order;
-
-				if (is_array($fieldColumns))
-				{
-					// Add the field column prefixes
-					foreach ($fieldColumns as $column)
-					{
-						// Avoid matching fields named "asc" or "desc" in the string "column_name asc" or
-						// "column_name desc"
-						$order = preg_replace('/(?<!\w\s)\b'.$column['handle'].'\b/', $column['column'].'$1', $order);
-					}
-				}
-
-				$query->order($order);
-			}
-
-			if ($criteria->offset)
-			{
-				$query->offset($criteria->offset);
-			}
-
-			if ($criteria->limit)
-			{
-				$query->limit($criteria->limit);
 			}
 
 			$results = $query->queryAll();
@@ -386,14 +348,18 @@ class ElementsService extends BaseApplicationComponent
 
 		if ($query)
 		{
-			$elementIds = $this->_getElementIdsFromQuery($query);
+			// Remove the order, offset, limit, and any additional tables in the FROM clause
+			$query
+				->order('')
+				->offset(0)
+				->limit(-1)
+				->select('elements.id')
+				->from('elements elements');
 
-			if ($criteria->search)
-			{
-				$elementIds = craft()->search->filterElementIdsByQuery($elementIds, $criteria->search, false, $criteria->locale);
-			}
+			// Can't use COUNT() here because of complications with the GROUP BY clause.
+			$rows = $query->queryColumn();
 
-			return count($elementIds);
+			return count($rows);
 		}
 		else
 		{
@@ -959,6 +925,51 @@ class ElementsService extends BaseApplicationComponent
 			$query->andWhere(array('in', 'elements.id', $filteredElementIds));
 
 			$this->_searchResults = $searchResults;
+		}
+
+		// Order
+		// ---------------------------------------------------------------------
+
+		if ($criteria->fixedOrder)
+		{
+			$ids = ArrayHelper::stringToArray($criteria->id);
+
+			if (!$ids)
+			{
+				return array();
+			}
+
+			$query->order(craft()->db->getSchema()->orderByColumnValues('elements.id', $ids));
+		}
+		else if ($criteria->order && $criteria->order != 'score')
+		{
+			$order = $criteria->order;
+
+			if (is_array($fieldColumns))
+			{
+				// Add the field column prefixes
+				foreach ($fieldColumns as $column)
+				{
+					// Avoid matching fields named "asc" or "desc" in the string "column_name asc" or
+					// "column_name desc"
+					$order = preg_replace('/(?<!\w\s)\b'.$column['handle'].'\b/', $column['column'].'$1', $order);
+				}
+			}
+
+			$query->order($order);
+		}
+
+		// Offset and Limit
+		// ---------------------------------------------------------------------
+
+		if ($criteria->offset)
+		{
+			$query->offset($criteria->offset);
+		}
+
+		if ($criteria->limit)
+		{
+			$query->limit($criteria->limit);
 		}
 
 		return $query;
@@ -2068,8 +2079,7 @@ class ElementsService extends BaseApplicationComponent
 		// Get the matched element IDs, and then have the SearchService filter them.
 		$elementIdsQuery = craft()->db->createCommand()
 			->select('elements.id')
-			->from('elements elements')
-			->group('elements.id');
+			->from('elements elements');
 
 		$elementIdsQuery->setWhere($query->getWhere());
 		$elementIdsQuery->setJoin($query->getJoin());
