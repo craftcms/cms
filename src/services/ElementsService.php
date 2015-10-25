@@ -406,7 +406,24 @@ class ElementsService extends BaseApplicationComponent
 		// Set up the query
 		// ---------------------------------------------------------------------
 
-		$query = craft()->db->createCommand()
+		// Create the DbCommand object
+		$query = craft()->db->createCommand();
+
+		// Fire an 'onBeforeBuildElementsQuery' event
+		$event = new Event($this, array(
+			'criteria' => $criteria,
+			'query' => $query
+		));
+
+		$this->onBeforeBuildElementsQuery($event);
+
+		// Did any of the event handlers object to this query?
+		if (!$event->performAction)
+		{
+			return false;
+		}
+
+		$query
 			->select('elements.id, elements.type, elements.enabled, elements.archived, elements.dateCreated, elements.dateUpdated, elements_i18n.slug, elements_i18n.uri, elements_i18n.enabled AS localeEnabled')
 			->from('elements elements')
 			->join('elements_i18n elements_i18n', 'elements_i18n.elementId = elements.id')
@@ -971,6 +988,12 @@ class ElementsService extends BaseApplicationComponent
 		{
 			$query->limit($criteria->limit);
 		}
+
+		// Fire an 'onBuildElementsQuery' event
+		$this->onBuildElementsQuery(new Event($this, array(
+			'criteria' => $criteria,
+			'query' => $query
+		)));
 
 		return $query;
 	}
@@ -1979,6 +2002,30 @@ class ElementsService extends BaseApplicationComponent
 
 	// Events
 	// -------------------------------------------------------------------------
+
+	/**
+	 * Fires an 'onBeforeBuildElementsQuery' event.
+	 *
+	 * @param Event $event
+	 *
+	 * @return null
+	 */
+	public function onBeforeBuildElementsQuery(Event $event)
+	{
+		$this->raiseEvent('onBeforeBuildElementsQuery', $event);
+	}
+
+	/**
+	 * Fires an 'onBuildElementsQuery' event.
+	 *
+	 * @param Event $event
+	 *
+	 * @return null
+	 */
+	public function onBuildElementsQuery(Event $event)
+	{
+		$this->raiseEvent('onBuildElementsQuery', $event);
+	}
 
 	/**
 	 * Fires an 'onPopulateElement' event.
