@@ -1197,7 +1197,7 @@ body .redactor-toolbar,
 body .redactor-box textarea { z-index: auto !important; }
 body .redactor-box { margin-bottom: 0; }
 body .redactor-box.redactor-box-fullscreen { z-index: 100 !important; }
-body .redactor-toolbar { background: none; @include box-shadow(none); }
+body .redactor-toolbar { top: 0 !important; background: none; @include box-shadow(none); }
 body .redactor-toolbar.toolbar-fixed-box { @include pane; z-index: 1 !important; }
 body .redactor-toolbar.toolbar-fixed-box + .redactor-editor { padding-top: 32px; }
 body .redactor-toolbar li a { color: $textcolor; }
