@@ -177,6 +177,26 @@ class ArrayHelper
 	}
 
 	/**
+	 * Returns the first key in a given array.
+	 *
+	 * @param array $arr
+	 *
+	 * @return string|integer|null The first key, whether that is a number (if the array is numerically indexed) or a string, or null if $arr isn’t an array, or is empty.
+	 */
+	public static function getFirstKey($arr)
+	{
+		if (is_array($arr))
+		{
+			foreach ($arr as $key => $value)
+			{
+				return $key;
+			}
+		}
+
+		return null;
+	}
+
+	/**
 	 * Returns the first value in a given array.
 	 *
 	 * @param array $arr
@@ -185,17 +205,15 @@ class ArrayHelper
 	 */
 	public static function getFirstValue($arr)
 	{
-		if (count($arr))
+		if (is_array($arr))
 		{
-			if (isset($arr[0]))
+			foreach ($arr as $value)
 			{
-				return $arr[0];
-			}
-			else
-			{
-				return $arr[array_shift(array_keys($arr))];
+				return $value;
 			}
 		}
+
+		return null;
 	}
 
 	// Private Methods

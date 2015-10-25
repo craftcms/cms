@@ -634,7 +634,7 @@ class AssetTransformsService extends BaseApplicationComponent
 			$imageSource = $this->getLocalImageSource($fileModel);
 
 			craft()->images->loadImage($imageSource)
-				->scaleAndCrop($size, $size)
+				->scaleToFit($size)
 				->saveAs($thumbPath);
 
 			if (craft()->assetSources->populateSourceType($fileModel->getSource())->isRemote())

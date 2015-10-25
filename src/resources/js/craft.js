@@ -1,3 +1,6 @@
+// Configure Garnish
+Garnish.BaseDrag.$scrollContainer = $('#container');
+
 if (typeof Craft == 'undefined')
 {
 	Craft = {};
@@ -992,9 +995,6 @@ $.extend(Craft,
 		$('.pill', $container).pill();
 		$('.formsubmit', $container).formsubmit();
 		$('.menubtn', $container).menubtn();
-
-		// Make placeholders work for IE9, too.
-		$('input[type!=password], textarea', $container).placeholder();
 	},
 
 	_elementIndexClasses: {},
@@ -1140,7 +1140,6 @@ $.extend(Craft,
 			status:   $element.data('status'),
 			url:      $element.data('url'),
 			hasThumb: $element.hasClass('hasthumb'),
-			hasIcon:  $element.hasClass('hasicon'),
 			$element: $element
 		};
 
@@ -1173,28 +1172,14 @@ $.extend(Craft,
 			.addClass(size)
 			.removeClass(otherSize);
 
-		var hasThumb = $element.hasClass('hasthumb'),
-			hasIcon = hasThumb ? false : $element.hasClass('hasicon');
-
-		if (hasThumb || hasIcon)
+		if ($element.hasClass('hasthumb'))
 		{
-			var $oldImg, imgSize;
-
-			if (hasThumb)
-			{
-				$oldImg = $element.find('> .elementthumb > img');
+			var $oldImg = $element.find('> .elementthumb > img'),
 				imgSize = (size == 'small' ? '30' : '100');
-			}
-			else
-			{
-				$oldImg = $element.find('> .elementicon > img');
-				imgSize = (size == 'small' ? '20' : '90');
-			}
-
-			var $newImg = $('<img/>', {
-				sizes: imgSize+'px',
-				srcset: $oldImg.attr('srcset') || $oldImg.attr('data-pfsrcset')
-			});
+				$newImg = $('<img/>', {
+					sizes: imgSize+'px',
+					srcset: $oldImg.attr('srcset') || $oldImg.attr('data-pfsrcset')
+				});
 
 			$oldImg.replaceWith($newImg);
 
@@ -1295,6 +1280,7 @@ $.extend($.fn,
 
 			if ($container.data('item-selector')) settings.itemSelector = $container.data('item-selector');
 			if ($container.data('cols'))          settings.cols = parseInt($container.data('cols'));
+			if ($container.data('max-cols'))      settings.maxCols = parseInt($container.data('max-cols'));
 			if ($container.data('min-col-width')) settings.minColWidth = parseInt($container.data('min-col-width'));
 			if ($container.data('mode'))          settings.mode = $container.data('mode');
 			if ($container.data('fill-mode'))     settings.fillMode = $container.data('fill-mode');

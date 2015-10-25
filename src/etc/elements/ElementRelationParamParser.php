@@ -178,12 +178,18 @@ class ElementRelationParamParser
 
 		// Get the element IDs, wherever they are
 		$relElementIds = array();
+		$glue = 'or';
 
 		foreach (array('element', 'sourceElement', 'targetElement') as $elementParam)
 		{
 			if (isset($relCriteria[$elementParam]))
 			{
 				$elements = ArrayHelper::stringToArray($relCriteria[$elementParam]);
+
+				if (isset($elements[0]) && ($elements[0] == 'and' || $elements[0] == 'or'))
+				{
+					$glue = array_shift($elements);
+				}
 
 				foreach ($elements as $element)
 				{
@@ -217,6 +223,8 @@ class ElementRelationParamParser
 			{
 				$relCriteria['field'] = null;
 			}
+
+			array_unshift($relElementIds, $glue);
 
 			return $this->parseRelationParam(array('or',
 				array('sourceElement' => $relElementIds, 'field' => $relCriteria['field']),
@@ -407,7 +415,7 @@ class ElementRelationParamParser
 			}
 			else
 			{
-				array_unshift($conditions, 'or');
+				array_unshift($conditions, $glue);
 				return $conditions;
 			}
 		}

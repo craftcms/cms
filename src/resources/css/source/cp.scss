@@ -1,62 +1,113 @@
 @charset "UTF-8";
 @import "shared";
 
+@mixin container-topbar-styles {
+	border-bottom: 1px solid rgba(0,0,0,0.05); background: rgba(0,0,0,0.03);
+}
+
 html { overflow-y: scroll; }
 
-/* dev mode */
-#devmode { width: 100%; height: 5px; background: $headerBgColor url(../images/devmode.png) repeat-x 50% 0; cursor: help; }
-
-#alerts { color: $errorcolor; text-align: center; background: $headerBgColor; }
-#alerts li { padding: 2px 30px; }
+#alerts { color: $errorcolor; text-align: center; }
+#alerts li { padding: 2px 24px; @include container-topbar-styles; }
 #alerts li:first-child { padding-top: 4px; }
 #alerts li:last-child { padding-bottom: 4px; }
 #alerts li:before { @include icon; @include margin(-1px, 3px, 0, 0); content: 'alert'; font-size: 16px; }
 #alerts li a { color: $errorcolor; text-decoration: underline; white-space: nowrap; }
 
-.container { margin: 0 auto; padding: 0 14px; max-width: 1294px; @include box-sizing(border-box); }
+body {
+	height: 100vh;
+	width: 100vw;
+	overflow: hidden;
+}
 
-/* header */
-#header { position: relative; padding-top: 7px; max-height: 76px; overflow: hidden; background: $headerBgColor; }
-#header:after { @include clearafter; }
-#header .container { position: relative; }
-#header a { color: hsl($hue, 5%, 85%);
+/* Shared sidebar/container styles */
+#container,
+#global-sidebar { transition: all .25s ease-in-out; -webkit-transition: all .25s ease-in-out; }
+
+.topbar { display: flex; align-items: stretch; }
+
+/* global sidebar */
+#global-sidebar { position: fixed; top: 0; @include left(0); width: 220px; height: 100vh; overflow: auto; background: $headerBgColor; z-index: 100; }
+#global-sidebar:after { @include clearafter; }
+
+#global-sidebar #devmode { position: absolute; top: 0; width: 100%; height: 4px; background: url(../images/dev-mode.svg) repeat-x 15px 0; cursor: help; }
+
+#global-sidebar a { color: hsl($hue, 5%, 85%);
 	@include transition(color linear 100ms);
 }
-#header a:hover,
-#header a.active { color: #fff; text-decoration: none; }
 
-#header h2 { @include margin(0, 14px, 0, 0); @include floatleft; }
-#header h2 a { display: block; padding: 10px 0; width: calc(100% + 14px); overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+#global-sidebar a:hover,
+#global-sidebar a.active { color: #fff; text-decoration: none; background: $headerLinkHoverColor; border-color: rgba(0,0,0,0.4);  }
+#global-sidebar a:active { color: #fff; text-decoration: none; background: $headerLinkActiveColor; border-color: rgba(0,0,0,0.6); }
 
-#header-actions { @include floatright; height: 38px; }
-#header-actions > li { @include floatleft; }
-#header-actions a { display: block; padding: 0 7px; line-height: 36px; }
-#header-actions a.menubtn:after { @include margin-left(4px); }
-#header-actions .updates a { position: relative; color: $noticecolor; }
-#header-actions .updates.critical a { color: $submitcolor; }
-#header-actions .updates a:hover { color: #fff !important; }
-#header-actions .updates a:before { font-size: 20px; width: 20px; }
-#header-actions .updates a span { display: block; position: absolute; @include left(7px); top: 1px; width: 20px; text-align: center; color: $headerBgColor; font-weight: bold; font-size: 11px; }
-#header-actions .settings:before,
-#header-actions .myaccount:before { font-size: 16px; }
-#header-actions .myaccount { @include margin-right(-7px); }
-#header-actions .settings { @include padding-right(0); }
-#header-actions .settingsmenu { @include padding-left(0); }
+#global-sidebar .topbar { border-bottom: 1px solid rgba(0,0,0,0.2); background: rgba(0,0,0,0.1); }
+#global-sidebar .topbar > a { display: flex; align-items: center; padding: 0 4px; }
 
-#header-actions #taskicon { position: relative; padding: 5px 0 1px; width: 30px; height: 30px; }
-#header-actions #taskicon canvas { display: block; position: absolute; width: 30px; height: 30px; }
-#header-actions #taskicon canvas#taskicon-hover { opacity: 0; @include transition(opacity linear 100ms); }
-#header-actions #taskicon:hover canvas#taskicon-hover { opacity: 1; }
+#global-sidebar .topbar a.site-name { flex-grow: 1; @include padding-left(14px); }
+#global-sidebar .topbar a.site-name h2 { padding: 14px 0; }
 
-#header-actions #taskicon .progressbar { position: static; margin: 8px 2px; width: auto; border-color: hsl($hue, 5%, 85%); @include transition(color linear 100ms); }
-#header-actions #taskicon .progressbar-inner { background: hsl($hue, 5%, 85%); @include transition(color linear 100ms); }
-#header-actions #taskicon:hover .progressbar { border-color: #fff; }
-#header-actions #taskicon:hover .progressbar-inner { background: #fff; }
+/*#global-sidebar .topbar a { display: block; padding: 5px 11px; line-height: 36px; }*/
 
-#tasks-hud { padding: 0; max-height: 300px; overflow: auto; }
+// #global-sidebar .topbar a.menubtn:after { @include margin-left(4px); }
+#global-sidebar .topbar a.updates { position: relative; color: $noticecolor; }
+#global-sidebar .topbar a.updates.critical { color: $submitcolor; }
+#global-sidebar .topbar a.updates:hover { color: #fff !important; }
+#global-sidebar .topbar a.updates > span { position: relative; }
+#global-sidebar .topbar a.updates > span:before { font-size: 22px; }
+#global-sidebar .topbar a.updates > span > span { display: block; position: absolute; left: 0; top: 0; width: 100%; text-align: center; color: $headerBgColor; font-weight: bold; font-size: 11px; line-height: 22px; }
+// #global-sidebar .topbar .settings:before,
+#global-sidebar .topbar a.myaccount { padding-right: 8px; }
+#global-sidebar .topbar a.myaccount:after { display: none; }
+#global-sidebar .topbar a.myaccount img { display: block; width: 30px; height: 30px; border-radius: 15px; @include box-shadow(0 0 0 1px $hairlineColorAlpha); }
+#global-sidebar .topbar .settings { @include padding-right(0); }
+#global-sidebar .topbar .settingsmenu { @include padding-left(0); }
+
+#global-sidebar .topbar #taskicon > span { display: block; position: relative; width: 18px; height: 18px;}
+#global-sidebar .topbar #taskicon > span > canvas { display: block; position: absolute; width: 18px; height: 18px; }
+#global-sidebar .topbar #taskicon > span > canvas#taskicon-hover { opacity: 0; @include transition(opacity linear 100ms); }
+#global-sidebar .topbar #taskicon:hover > span > canvas#taskicon-hover { opacity: 1; }
+
+#global-sidebar .topbar #taskicon .progressbar { position: static; margin: 8px 2px; width: auto; border-color: hsl($hue, 5%, 85%); @include transition(color linear 100ms); }
+#global-sidebar .topbar #taskicon .progressbar-inner { background: hsl($hue, 5%, 85%); @include transition(color linear 100ms); }
+#global-sidebar .topbar #taskicon:hover .progressbar { border-color: #fff; }
+#global-sidebar .topbar #taskicon:hover .progressbar-inner { background: #fff; }
+
+/* container */
+#container { display: flex; flex-direction: column; position: relative; @include padding-left(220px); @include box-sizing(border-box); height: 100vh; overflow: auto; }
+
+body.mobile #container {
+	overflow-y: scroll; /* has to be scroll, not auto */
+	-webkit-overflow-scrolling: touch;
+}
+
+#main { flex-grow: 1; }
+#main:not(.single-pane) { padding: 0 24px; }
+#main.single-pane { display: flex; }
+#main.single-pane > .pane { display: flex; flex-direction: column; flex-grow: 1; border-radius: 0; }
+#main.single-pane > .pane > .content { display: flex; flex-direction: column; }
+#main.single-pane > .pane > .content > .sidebar + .body { width: calc(100% - 0); }
+
+@media only screen and (min-width: 1024px)
+{
+	#global-sidebar { display: block; }
+}
+
+@media only screen and (max-width: 1024px)
+{
+	body.ltr #container { width: calc(100% + 220px); @include transform(translate3d(-220px,0,0)); }
+	body.rtl #container { width: calc(100% + 220px); @include transform(translate3d(220px,0,0)); }
+
+	body.showing-nav #global-sidebar { display: block; }
+	body.showing-nav #container { @include transform(translate3d(0,0,0)); }
+
+	body.ltr:not(.showing-nav) #global-sidebar { @include transform(translate3d(-220px,0,0)); }
+	body.rtl:not(.showing-nav) #global-sidebar { @include transform(translate3d(220px,0,0)); }
+}
+
+#tasks-hud { padding: 0; overflow: auto; }
 #tasks-hud .task { @include padding(14px, 138px, 14px, 24px); overflow: hidden; }
 #tasks-hud .task:after { @include clearafter; }
-#tasks-hud .task + .task { border-top: 1px solid $hrcolor; }
+#tasks-hud .task + .task { border-top: 1px solid $hairlineColor; }
 #tasks-hud .task .task-description { position: relative; }
 #tasks-hud .task .task-description .indent { position: absolute; top: -1px; @include left(-24px); @include margin-left(0); }
 #tasks-hud .task .task-status { @include floatright; @include margin-right(-114px); width: 100px; color: $lighttextcolor; text-align: center; }
@@ -67,30 +118,26 @@ html { overflow-y: scroll; }
 #settingsmenu ul li a img { width: 16px; height: 16px; position: absolute; margin-left: -23px; margin-top: 1px; }
 #settingsmenu ul li a:before { @include margin(1px, 0, 0, -22px); font-size: 15px; }
 
-#nav { @include floatleft; @include margin-left(-5px); }
-#nav li { @include floatleft; height: 38px; }
-#nav li a { display: block; margin-top: 2px; padding: 4px 10px; line-height: 28px; }
-#nav li a.active { color: #fff; }
-#nav li a.sel { position: relative; z-index: 1; border-radius: 3px 3px 0 0; color: $textcolor; background: $bgcolor; }
+#nav { padding: 7px 0; }
+#nav li a { display: flex; align-items: center; margin: 0; padding: 10px 14px; min-height: 24px; @include box-sizing(border-box); border-left: 4px solid transparent; opacity: .8; }
+#nav li a.active { color: #fff; opacity: 1; }
+#nav li:not(.has-subnav) a.sel { color: #fff; background: $headerLinkActiveColor; border-color: $submitcolor; opacity: 1; }
+
 #nav li a:not(.sel) .badge { color: #333 !important; }
 #nav li a.menubtn { line-height: 26px; }
+#nav li.has-subnav { background: $headerLinkActiveColor; }
+#nav li ul li a { @include padding-left(60px); }
 
-#subnav-wrapper { border-bottom: 1px solid #ddd; max-height: 38px; overflow: hidden; }
-#subnav { @include floatleft; @include margin-left(-5px); }
-#subnav li { @include floatleft; height: 38px; }
-#subnav li a { display: block; margin-top: 2px; padding: 4px 10px; line-height: 28px; color: $textcolor; }
-#subnav li a:hover:not(.sel) { color: $linkcolor; text-decoration: none; }
-#subnav li a.active { color: #fff; }
-#subnav li a.sel { color: $lighttextcolor; }
-#subnav li a:not(.sel) .badge { color: #333 !important; }
-#subnav li a.menubtn { line-height: 26px; }
+#nav li a .icon { display: flex; align-items: center; justify-content: center; width: 15px; @include padding-right(10px); opacity: 0.5; }
+#nav li a .icon span[data-icon] { font-size: 15px; color: #fff; }
+#nav li a .icon svg { width: 15px; max-height: 15px; @include svg-mask(#fff); }
 
 /* HIDE */
 #customize-nav-btn span { display: none; }
 #overflow-nav #customize-nav-btn span { display: inline-block; }
 /* end HIDE */
 
-#header #nav li a .badge,
+#global-sidebar #nav li a .badge,
 #overflow-nav li a .badge { display: inline-block; position: relative; top: -6px; border-radius: 6px; padding: 0 3px; font-size: 10px; line-height: 12px; color: #fff; background: $submitcolor; }
 #overflow-nav li a:hover .badge { color: $headerBgColor; }
 
@@ -100,47 +147,56 @@ html { overflow-y: scroll; }
 /* end HIDE */
 
 /* notifications */
-#notifications-wrapper { position: absolute; z-index: 101; @include left(0); width: 100%; }
+#notifications-wrapper { position: fixed; z-index: 101; @include left(0); width: 100%; }
 #notifications-wrapper.fixed { position: fixed; top: 0; }
 #notifications { text-align: center; }
 #notifications .notification { display: inline-block; padding: 5px 10px; border-radius: 0 0 3px 3px; border-width: 0 1px 1px; color: #fff !important;
-	@include box-shadow(0 1px 3px rgba(0,0,0,0.35));
+	@include box-shadow(0 0 5px rgba(0,0,0,0.25));
 }
 #notifications .notification.notice { background: $noticecolor; }
 #notifications .notification.error { background: $submitcolor; }
 
-/* page header */
-#page-header { display: block; position: relative; z-index: 1; padding: 35px 0; overflow: hidden; }
-#page-header h1 { display: inline; line-height: 1; }
-#page-header #extra-headers { display: inline-block; position: relative; top: 5px; }
-#page-header #extra-headers > .select,
-#page-header #extra-headers > .menubtn,
-#page-header #extra-headers > .btn { display: block; @include margin-left(5px); @include floatleft; }
+#container .topbar:not(:empty) { padding: 0 24px; @include container-topbar-styles; }
+#container .topbar .show-nav { width: 24px; height: 24px; padding: 10px; display: block; line-height: 22px; color: $secondarySubmitColor; text-align: center;
+	@include margin-left(-24px);
+}
+#container .topbar .show-nav:before { @include icon; content: 'menu'; font-size: 16px; line-height: 0; }
 
-#crumbs { margin: -35px 0 10px; font-size: 0; }
+
+
+/* page header */
+#page-header { display: flex; justify-content: space-between; position: relative; z-index: 1; padding: 20px 24px; }
+#page-header #page-title { display: flex; }
+#page-header #page-title h1 { line-height: 1.3; margin: 0; }
+#page-header #page-title .select,
+#page-header #page-title .menubtn,
+#page-header #page-title .btn { display: block; @include margin-left(5px); @include floatleft; }
+#page-header #extra-headers { position: relative; }
+
+#crumbs { margin: 0; font-size: 0; }
 #crumbs:after { @include clearafter; }
 #crumbs li { display: inline-block; font-size: 13px; }
 #crumbs li:after { @include icon; margin: -1px 5px 0; font-size: 11px; color: $mediumtextcolor;
 	body.ltr & { content: 'rightangle'; }
 	body.rtl & { content: 'leftangle'; }
 }
-#crumbs li a { display: inline-block; padding: 10px 0; color: $mediumtextcolor; }
+#crumbs li a { display: inline-block; padding: 14px 0; color: $mediumtextcolor; }
 #crumbs li a:hover { color: $linkcolor; text-decoration: none; }
+
 
 /* tabs */
 .tabs:after { @include clearafter; }
 .tabs .tab { display: block; padding: 9px 10px; color: #777; white-space: nowrap; }
 .tabs .tab:hover { text-decoration: none; color: $linkcolor; }
-.tabs .tab.sel { border-radius: 3px 3px 0 0; color: $textcolor; cursor: default; }
+.tabs .tab.sel { color: #000; padding-bottom: 7px; border-bottom: 2px solid $linkcolor; cursor: default; }
 
-.pane > .tabs { margin: -24px -24px 24px; padding: 0 14px; border-radius: 3px 3px 0 0; font-size: 0; overflow: hidden;
+.pane > .tabs { margin: -24px -24px 24px; padding: 0 24px; font-size: 0; overflow: hidden;
 	@include linear-gradient(hsl($hue, 8%, 97%), hsl($hue, 8%, 96%));
 	@include box-shadow(inset 0 -1px 0 rgba(0,0,0,0.05));
 }
 .pane > .tabs li { display: inline-block; font-size: 13px; }
 .pane > .tabs li a { color: #555; }
 .pane > .tabs li a:not(.sel):hover { color: $linkcolor; }
-.pane > .tabs li .tab.sel { @include pane; }
 
 /* grids */
 .grid { position: relative; margin: 23px -7px; }
@@ -148,13 +204,13 @@ html { overflow-y: scroll; }
 .grid > .item { display: none; padding: 7px; @include box-sizing(border-box); }
 
 /* footer */
-#footer { margin: 24px 0; text-align: center; font-size: 0; }
+#footer { margin: 24px 0; padding: 0 24px; text-align: center; font-size: 0; }
 #footer li { display: inline-block; font-size: 11px; color: $lighttextcolor; white-space: nowrap; }
 #footer li:not(:last-child):after { display: inline-block; margin: 0 7px; content: '•'; }
 #footer li a { color: $lighttextcolor; text-decoration: underline; }
 #footer li a:hover { color: $mediumtextcolor; }
 #footer #upgradepromo { margin-top: 14px; }
-#footer #upgradepromo a { display: inline-block; border-radius: 5px; padding: 14px; border: 2px solid $hrcolor; font-size: 15px; color: $mediumtextcolor; }
+#footer #upgradepromo a { display: inline-block; border-radius: 5px; padding: 14px; border: 2px solid $hairlineColor; font-size: 15px; color: $mediumtextcolor; }
 #footer #upgradepromo a .go { color: $linkcolor; }
 #footer #upgradepromo a .go:after { @include padding-left(5px); }
 #footer #upgradepromo a:hover { text-decoration: none; }
@@ -309,6 +365,60 @@ $fldGuideColor: #f4f3fb;
 .lp-draghandle { position: absolute; z-index: 3; top: 0; margin-left: -3px; width: 6px; height: 100%; cursor: col-resize; }
 
 
+/* Sidebar */
+
+.show-sidebar { background: #fafafa; border-bottom: 1px solid #eee; display: block; position: relative; top: -24px; margin: 0 -24px; padding: 14px 24px; color: $secondarySubmitColor; z-index: 11; }
+.show-sidebar:hover { text-decoration: none; background: #fcfcfc; }
+.show-sidebar:after { @include icon; font-size: 16px; width: 43px; line-height: 24px; content: '▼'; @include floatright; margin-top: -3px; @include margin-right(-24px); }
+
+.sidebar { position: absolute; width: 170px; @include margin(-24px, 0, 24px, -24px, !important); padding: 24px; overflow: auto; background: $lightBgColor; }
+
+@media only screen and (max-width: 768px) {
+
+	.sidebar { width: 100%; height: auto; min-height: auto; z-index: 10; border-bottom: 1px solid #eee; background: #fff;
+		@include box-shadow(0 0 32px 0 rgba(0,0,0,0.05));
+	}
+
+	.sidebar .btngroup { float: none !important; }
+	.sidebar .btngroup .btn { display: inline-block; }
+
+	#content:not(.showing-sidebar) .sidebar { display: none; }
+}
+
+@media only screen and (min-width: 769px) {
+	.content.has-sidebar:not(.hiding-sidebar) { @include margin-left(218px); }
+	.sidebar { @include margin(-24px, 0, 24px, -242px, !important); }
+}
+
+.sidebar .heading { position: relative; @include margin(14px, 0, 2px, -24px); padding: 0 24px; }
+.sidebar .heading span { display: inline-block; position: relative; z-index: 1; padding: 0 5px; margin: 0 -5px; text-transform: uppercase; color: $lighttextcolor; font-size: 11px; font-weight: bold; }
+
+.sidebar nav { @include margin-left(-24px); @include padding-left(24px); overflow: auto; }
+.sidebar nav li { position: relative; }
+.sidebar nav li a { display: block; @include margin-left(-24px); padding: 7px 0; color: $textcolor; @include user-select(none); outline: none; }
+.sidebar nav li a:hover { text-decoration: none; color: $textcolor; background: $sidebarLinkHoverBgColor; }
+
+.sidebar nav li .toggle { position: absolute; top: 6px; }
+.sidebar nav li ul { display: none; }
+.sidebar nav li.expanded > ul { display: block; }
+
+.sidebar nav li a.sel { @include border-radius(0, 2px, 2px, 0); background: $darkselcolor; cursor: default; }
+.sidebar nav li a.sel,
+.sidebar nav li a.sel + .toggle { color: #fff; }
+
+.sidebar nav > ul > li > a { @include padding-left(24px); }
+.sidebar nav > ul > li > ul > li > a { @include padding-left(44px); }
+.sidebar nav > ul > li > ul > li > ul > li > a { @include padding-left(64px); }
+.sidebar nav > ul > li > ul > li > ul > li > ul > li > a { @include padding-left(84px); }
+.sidebar nav > ul > li > ul > li > ul > li > ul > li > ul > li a { @include padding-left(104px); }
+
+.sidebar nav > ul > li > .toggle { @include left(-20px); }
+.sidebar nav > ul > li > ul > li > .toggle { @include left(0px); }
+.sidebar nav > ul > li > ul > li > ul > li > .toggle { @include left(20px); }
+.sidebar nav > ul > li > ul > li > ul > li > ul > li > .toggle { @include left(40px); }
+.sidebar nav > ul > li > ul > li > ul > li > ul > li > ul > li .toggle { @include left(60px); }
+
+
 /* retina */
 @media only screen and (-webkit-min-device-pixel-ratio: 1.5),
 	   only screen and (   -moz-min-device-pixel-ratio: 1.5),
@@ -316,7 +426,6 @@ $fldGuideColor: #f4f3fb;
 	   only screen and (        min-device-pixel-ratio: 1.5),
 	   only screen and (        min-resolution: 1.5dppx)
 {
-	#devmode { background-image: url(../images/devmode_2x.png); background-size: 40px; }
 	.fieldlayoutform { background-image: url(../images/fieldlayoutform-bg_2x.png); background-size: 30px 30px; }
 	#upgrademodal.loading { background-image: url(../images/spinner_big_2x.gif); background-size: 48px; }
 	#upgrademodal .logo.craftclient { background-image: url(../images/editions/craftclient_2x.png); }
@@ -325,7 +434,6 @@ $fldGuideColor: #f4f3fb;
 }
 
 @media only screen and (max-width: 320px) {
-	.container { @include padding-left(10px); @include padding-right(10px); }
-	#header-actions { @include right(10px); }
+	#container { @include padding-left(10px); @include padding-right(10px); }
 	#nav { @include margin-left(-10px); }
 }

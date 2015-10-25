@@ -850,7 +850,7 @@ return array(
 	'Select' => 'تحديد',
 	'Select a region first!' => 'اختر منطقة أولاً!',
 	'Select All' => 'اختر الجميع',
-	'Select Transform' => 'تحديد التحويل',
+	'Select transform' => 'تحديد التحويل',
 	'Selection Label' => 'عنوان الاختيار',
 	'Send' => 'إرسال',
 	'Send a message to Craft Support' => 'إرسال رسالة لفريق دعم Craft',

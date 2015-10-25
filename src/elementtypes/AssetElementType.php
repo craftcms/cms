@@ -197,7 +197,7 @@ class AssetElementType extends BaseElementType
 			'filename'     => Craft::t('Filename'),
 			'size'         => Craft::t('File Size'),
 			'dateModified' => Craft::t('File Modification Date'),
-			'dateCreated'  => Craft::t('Date Created'),
+			'dateCreated'  => Craft::t('Date Uploaded'),
 			'dateUpdated'  => Craft::t('Date Updated'),
 		);
 

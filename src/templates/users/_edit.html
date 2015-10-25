@@ -61,7 +61,7 @@
 
 
 {% block main %}
-	<div class="grid">
+	<div class="grid" data-max-cols="3">
 		<div class="item" data-position="left">
 			<form id="userform" class="pane" method="post" accept-charset="UTF-8" data-saveshortcut data-saveshortcut-redirect="{{ account.isCurrent() ? 'myaccount' : 'users/{id}' }}">
 				<input type="hidden" name="action" value="users/saveUser">

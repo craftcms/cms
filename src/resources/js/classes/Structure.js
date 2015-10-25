@@ -141,7 +141,7 @@ Craft.Structure = Garnish.Base.extend(
 
 		if (this.settings.newChildUrl)
 		{
-			var $addBtn = $('<a class="add icon" title="'+Craft.t('New Child')+'"></a>').appendTo($row);
+			var $addBtn = $('<a class="add icon" title="'+Craft.t('New child')+'"></a>').appendTo($row);
 			this.initNewChildMenus($addBtn);
 		}
 

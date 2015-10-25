@@ -852,7 +852,7 @@ return array(
 	'Select' => '選択',
 	'Select a region first!' => '先に地域を選択してください！',
 	'Select All' => 'すべてを選択',
-	'Select Transform' => '選択 変換',
+	'Select transform' => '選択 変換',
 	'Selection Label' => '選択ラベル',
 	'Send' => '送信',
 	'Send a message to Craft Support' => 'Craftのサポートにメッセージを送る',

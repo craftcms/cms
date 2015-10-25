@@ -21,6 +21,9 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 	$mainSpinner: null,
 	isIndexBusy: false,
 
+	$pageHeader: null,
+	$extraHeaders: null,
+
 	$sidebar: null,
 	showingSidebar: null,
 	sourceKey: null,
@@ -119,10 +122,19 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 		this.$viewModeBtnTd = this.$toolbarTableRow.find('.viewbtns:first');
 		this.$viewModeBtnContainer = $('<div class="btngroup fullwidth"/>').appendTo(this.$viewModeBtnTd);
 
+		this.$pageHeader = $('#page-header');
+		this.$extraHeaders = $('#extra-headers');
+
+		if(this.$extraHeaders.length == 0)
+		{
+			this.$extraHeaders = $('<div id="extra-headers"></div>').appendTo(this.$pageHeader);
+		}
+
 		// Keep the toolbar at the top of the window
 		if (this.settings.context == 'index' && !Garnish.isMobileBrowser(true))
 		{
-			this.addListener(Garnish.$win, 'scroll resize', 'updateFixedToolbar');
+			this.addListener(Garnish.$win, 'resize', 'updateFixedToolbar');
+			this.addListener(Craft.cp.$container, 'scroll', 'updateFixedToolbar');
 		}
 
 		// Initialize the sources
@@ -358,7 +370,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 			}
 		}
 
-		this.updateFixedToolbar._scrollTop = Garnish.$win.scrollTop();
+		this.updateFixedToolbar._scrollTop = Craft.cp.$container.scrollTop();
 
 		if (this.updateFixedToolbar._scrollTop > this.toolbarOffset - 7)
 		{
@@ -1180,6 +1192,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
 	getButtonContainer: function()
 	{
+		console.log('hello');
 		// Is there a predesignated place where buttons should go?
 		if (this.settings.buttonContainer)
 		{
@@ -1187,7 +1200,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 		}
 		else if (this.isShowingSidebar())
 		{
-			var $container = this.$sidebar.children('.buttons:first');
+			var $container = this.$extraHeaders.children('.buttons:first');
 
 			if ($container.length)
 			{
@@ -1195,7 +1208,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 			}
 			else
 			{
-				return $('<div class="buttons"/>').prependTo(this.$sidebar);
+				return $('<div class="buttons right"/>').appendTo(this.$extraHeaders);
 			}
 		}
 		else

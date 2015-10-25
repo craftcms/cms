@@ -74,6 +74,7 @@ class CraftTwigExtension extends \Twig_Extension
 			'filesize'           => new \Twig_Filter_Function('\Craft\craft()->formatter->formatSize'),
 			'filter'             => new \Twig_Filter_Function('array_filter'),
 			'group'              => new \Twig_Filter_Method($this, 'groupFilter'),
+			'hash'               => new \Twig_Filter_Function('\Craft\craft()->security->hashData'),
 			'indexOf'            => new \Twig_Filter_Method($this, 'indexOfFilter'),
 			'intersect'          => new \Twig_Filter_Function('array_intersect'),
 			'json_encode'        => new \Twig_Filter_Method($this, 'jsonEncodeFilter'),
@@ -255,7 +256,7 @@ class CraftTwigExtension extends \Twig_Extension
 			return strtr($str, $search);
 		}
 		// Is this a regular expression?
-		else if (preg_match('/^\/(.+)\/$/', $search))
+		else if (preg_match('/^\/.+\/[a-zA-Z]*$/', $search))
 		{
 			return preg_replace($search, $replace, $str);
 		}
@@ -488,8 +489,9 @@ class CraftTwigExtension extends \Twig_Extension
 		$globals['now'] = new DateTime(null, new \DateTimeZone(craft()->getTimeZone()));
 		$globals['loginUrl'] = UrlHelper::getUrl(craft()->config->getLoginPath());
 		$globals['logoutUrl'] = UrlHelper::getUrl(craft()->config->getLogoutPath());
+		$globals['isInstalled'] = craft()->isInstalled();
 
-		if (craft()->isInstalled() && !craft()->updates->isCraftDbMigrationNeeded())
+		if ($globals['isInstalled'] && !craft()->updates->isCraftDbMigrationNeeded())
 		{
 			$globals['siteName'] = craft()->getSiteName();
 			$globals['siteUrl'] = craft()->getSiteUrl();
