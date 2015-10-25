@@ -10,12 +10,8 @@
 
 {% set docsUrl = 'http://buildwithcraft.com/docs/users' %}
 
-{% block sidebar %}
-	{% if currentUser.can('registerUsers') %}
-		<div class="buttons">
-			<a class="btn submit add icon" href="{{ url('users/new') }}">{{ "New User"|t }}</a>
-		</div>
-	{% endif %}
-
-	{{ parent() }}
-{% endblock %}
+{% if currentUser.can('registerUsers') %}
+    {% set extraPageHeaderHtml %}
+        <a class="btn submit add icon" href="{{ url('users/new') }}">{{ "New User"|t }}</a>
+    {% endset %}
+{% endif %}
