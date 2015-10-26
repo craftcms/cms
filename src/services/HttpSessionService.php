@@ -64,12 +64,26 @@ class HttpSessionService extends \CHttpSession
 		parent::init();
 	}
 
-	// For consistency!
 	/**
-	 * @return bool
+	 * @return boolean Whether the session has started
 	 */
 	public function isStarted()
 	{
 		return $this->getIsStarted();
+	}
+
+	/**
+	 * @return boolean Whether the session has started
+	 */
+	public function getIsStarted()
+	{
+		if (function_exists('session_status'))
+		{
+			return (session_status() != PHP_SESSION_NONE);
+		}
+		else
+		{
+			return parent::getIsStarted();
+		}
 	}
 }
