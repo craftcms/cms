@@ -16,7 +16,7 @@
 {% endblock %}
 
 
-{% set sidebar %}
+{% block sidebar %}
 	<nav>
 		<ul>
 			{% for theGlobalSet in globalSets %}
@@ -24,7 +24,7 @@
 			{% endfor %}
 		</ul>
 	</nav>
-{% endset %}
+{% endblock %}
 
 
 {% block content %}

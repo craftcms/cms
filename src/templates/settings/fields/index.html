@@ -34,8 +34,7 @@
 {% endif %}
 
 
-{% set sidebar %}
-
+{% block sidebar %}
 	<nav>
 		<ul id="groups">
 			<li><a href="{{ url('settings/fields') }}"{% if groupId is not defined %} class="sel"{% endif %}>{{ "All Fields"|t }}</a></li>
@@ -58,7 +57,7 @@
 			</div>
 		{% endif %}
 	</div>
-{% endset %}
+{% endblock %}
 
 
 {% block content %}
