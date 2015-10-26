@@ -21,9 +21,6 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 	$mainSpinner: null,
 	isIndexBusy: false,
 
-	$pageHeader: null,
-	$extraHeaders: null,
-
 	$sidebar: null,
 	showingSidebar: null,
 	sourceKey: null,
@@ -121,14 +118,6 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 		this.$elements = this.$container.find('.elements:first');
 		this.$viewModeBtnTd = this.$toolbarTableRow.find('.viewbtns:first');
 		this.$viewModeBtnContainer = $('<div class="btngroup fullwidth"/>').appendTo(this.$viewModeBtnTd);
-
-		this.$pageHeader = $('#page-header');
-		this.$extraHeaders = $('#extra-headers');
-
-		if(this.$extraHeaders.length == 0)
-		{
-			this.$extraHeaders = $('<div id="extra-headers"></div>').appendTo(this.$pageHeader);
-		}
 
 		// Keep the toolbar at the top of the window
 		if (this.settings.context == 'index' && !Garnish.isMobileBrowser(true))
@@ -1197,22 +1186,24 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 		{
 			return $(this.settings.buttonContainer);
 		}
-		else if (this.isShowingSidebar())
-		{
-			var $container = this.$extraHeaders.children('.buttons:first');
-
-			if ($container.length)
-			{
-				return $container;
-			}
-			else
-			{
-				return $('<div class="buttons right"/>').appendTo(this.$extraHeaders);
-			}
-		}
 		else
 		{
-			return $('<td class="thin"/>').prependTo(this.$toolbarTableRow);
+			// Add it to the page header
+			var $container = $('#extra-headers > .buttons:first');
+
+			if (!$container.length)
+			{
+				var $extraHeadersContainer = $('#extra-headers');
+
+				if (!$extraHeadersContainer.length)
+				{
+					$extraHeadersContainer = $('<div id="extra-headers"/>').appendTo($('#page-header'));
+				}
+
+				$container = $('<div class="buttons secondary-buttons"/>').appendTo($extraHeadersContainer);
+			}
+
+			return $container;
 		}
 	},
 
