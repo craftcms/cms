@@ -1061,7 +1061,8 @@ body .redactor-box textarea,
 .text.focus,
 .text:focus,
 .border-box:focus,
-.border-box.focus { @include text-input-focussed-styles; }
+.border-box.focus,
+body .redactor-box.focus:not(.redactor-box-fullscreen) { @include text-input-focussed-styles; }
 
 input.text,
 textarea.text,

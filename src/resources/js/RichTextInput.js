@@ -111,6 +111,10 @@ Craft.RichTextInput = Garnish.Base.extend(
 		}
 
 		this.leaveFullscreetOnSaveShortcut();
+
+		this.redactor.core.editor()
+			.on('focus', $.proxy(this, 'onEditorFocus'))
+			.on('blur', $.proxy(this, 'onEditorBlur'));
 	},
 
 	customizeToolbar: function()
@@ -339,6 +343,16 @@ Craft.RichTextInput = Garnish.Base.extend(
 		{
 			this.categorySelectionModal.show();
 		}
+	},
+
+	onEditorFocus: function()
+	{
+		this.redactor.core.box().addClass('focus');
+	},
+
+	onEditorBlur: function()
+	{
+		this.redactor.core.box().removeClass('focus');
 	},
 
 	leaveFullscreetOnSaveShortcut: function()
