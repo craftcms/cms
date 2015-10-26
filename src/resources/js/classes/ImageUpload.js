@@ -288,8 +288,8 @@ Craft.ImageModal = Garnish.Modal.extend(
 	cancel: function()
 	{
 		this.hide();
-		this.areaSelect.setOptions({remove: true, hide: true, disable: true});
-		this.$container.empty();
+		this.$container.remove();
+		this.destroy();
 	},
 
 	saveImage: function()
@@ -320,10 +320,8 @@ Craft.ImageModal = Garnish.Modal.extend(
 			}
 
 			this.hide();
-			this.$container.empty();
-			this.areaSelect.setOptions({remove: true, hide: true, disable: true});
-
-
+			this.$container.remove();
+			this.destroy();
 		}, this));
 
 		this.areaSelect.setOptions({disable: true});
