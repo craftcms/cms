@@ -191,7 +191,7 @@ Craft.ui =
 
 			if (label)
 			{
-				$('<label/>', {
+				var $label = $('<label/>', {
 					'class': (config.required ? 'required' : null),
 					'for': config.id,
 					text: label
@@ -199,7 +199,7 @@ Craft.ui =
 
 				if (locale)
 				{
-					$('<span class="locale"/>').text(locale).appendTo($heading);
+					$('<span class="locale"/>').text(locale).appendTo($label);
 				}
 			}
 
