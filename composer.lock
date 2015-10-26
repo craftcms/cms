@@ -5,6 +5,7 @@
         "This file is @generated automatically"
     ],
     "hash": "f58a5398bb3e164ce6f82e425ea692a2",
+    "content-hash": "efc2d0b59d0042a8e5a5dc27bb55c46e",
     "packages": [
         {
             "name": "doctrine/instantiator",
@@ -206,7 +207,7 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/pixelandtonic/Imagine",
-                "reference": "0474472e4ef407f7669cc9a1310ee374035dd7de"
+                "reference": "ff78704accc506c6b3ac4903f6e022fdd12bef60"
             },
             "archive": {
                 "exclude": [
@@ -234,7 +235,7 @@
             "type": "library",
             "extra": {
                 "branch-alias": {
-                    "dev-develop": "0.5-dev"
+                    "dev-develop": "0.7-dev"
                 }
             },
             "autoload": {
@@ -260,7 +261,7 @@
                 "image manipulation",
                 "image processing"
             ],
-            "time": "2015-10-26 09:23:15"
+            "time": "2015-10-26 18:52:11"
         },
         {
             "name": "lsolesen/pel",
