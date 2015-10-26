@@ -51,6 +51,7 @@ class WidgetRecord extends BaseRecord
 		return array(
 			'type'      => array(AttributeType::ClassName, 'required' => true),
 			'sortOrder' => AttributeType::SortOrder,
+			'colspan' 	=> array(AttributeType::Number, 'column' => ColumnType::TinyInt, 'unsigned' => true),
 			'settings'  => AttributeType::Mixed,
 			'enabled'   => array(AttributeType::Bool, 'default' => true),
 		);

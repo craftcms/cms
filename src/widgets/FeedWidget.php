@@ -47,6 +47,26 @@ class FeedWidget extends BaseWidget
 	}
 
 	/**
+	 * @inheritDoc IWidget::getIconUrl()
+	 *
+	 * @return string
+	 */
+	public function getIconUrl()
+	{
+		return UrlHelper::getResourceUrl('images/widgets/feed_2x.png');
+	}
+
+	/**
+	 * @inheritDoc IWidget::getMaxColspan()
+	 *
+	 * @return int
+	 */
+	public function getMaxColspan()
+	{
+		return 2;
+	}
+
+	/**
 	 * @inheritDoc IWidget::getTitle()
 	 *
 	 * @return string

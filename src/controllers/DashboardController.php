@@ -46,7 +46,8 @@ class DashboardController extends BaseController
 
 			$variables['widgetTypes'][] = array(
 				'type' => $widgetType->getClassHandle(),
-				'colspan' => $widgetType->getColspan(),
+				'colspan' => 1,
+				'iconUrl' => $widgetType->getIconUrl(),
 				'name' => $widgetType->getName(),
 				'settingsHtml' => $settingsHtml,
 				'settingsJs' => $settingsJs,
@@ -156,6 +157,24 @@ class DashboardController extends BaseController
 
 		$widgetId = JsonHelper::decode(craft()->request->getRequiredPost('id'));
 		craft()->dashboard->deleteUserWidgetById($widgetId);
+
+		$this->returnJson(array('success' => true));
+	}
+
+	/**
+	 * Changes the colspan of a widget.
+	 *
+	 * @return null
+	 */
+	public function actionChangeWidgetColspan()
+	{
+		$this->requirePostRequest();
+		$this->requireAjaxRequest();
+
+		$widgetId = craft()->request->getRequiredPost('id');
+		$colspan = craft()->request->getRequiredPost('colspan');
+
+		craft()->dashboard->changeWidgetColspan($widgetId, $colspan);
 
 		$this->returnJson(array('success' => true));
 	}
@@ -475,8 +494,10 @@ class DashboardController extends BaseController
 		return array(
 			'id' => $widget->id,
 			'type' => $widgetType->getClassHandle(),
+			'iconUrl' => $widgetType->getIconUrl(),
 			'name' => $widgetType->getName(),
-			'colspan' => $widgetType->getColspan(),
+			'colspan' => ($widget->colspan > 1 ? $widget->colspan : 1),
+			'maxColspan' => $widgetType->getMaxColspan(),
 			'title' => $widgetType->getTitle(),
 			'bodyHtml' => $widgetBodyHtml,
 			'settingsHtml' => $settingsHtml,

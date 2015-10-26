@@ -13,5 +13,18 @@ namespace Craft;
  */
 class WidgetModel extends BaseComponentModel
 {
+    // Protected Methods
+    // =========================================================================
 
+    /**
+     * @inheritDoc BaseModel::defineAttributes()
+     *
+     * @return array
+     */
+    protected function defineAttributes()
+    {
+        return array_merge(parent::defineAttributes(), array(
+            'colspan' => AttributeType::Number,
+        ));
+    }
 }

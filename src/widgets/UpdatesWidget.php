@@ -53,6 +53,26 @@ class UpdatesWidget extends BaseWidget
 	}
 
 	/**
+	 * @inheritDoc IWidget::getIconUrl()
+	 *
+	 * @return string
+	 */
+	public function getIconUrl()
+	{
+		return UrlHelper::getResourceUrl('images/widgets/updates.svg');
+	}
+
+	/**
+	 * @inheritDoc IWidget::getMaxColspan()
+	 *
+	 * @return int
+	 */
+	public function getMaxColspan()
+	{
+		return 1;
+	}
+
+	/**
 	 * @inheritDoc IWidget::getBodyHtml()
 	 *
 	 * @return string|false
