@@ -5,6 +5,7 @@
         "This file is @generated automatically"
     ],
     "hash": "b8d988c4df1d79b522f3810ae2246573",
+    "content-hash": "717a6ff9c94492734fd24a470696a091",
     "packages": [
         {
             "name": "aws/aws-sdk-php",
@@ -930,7 +931,7 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/pixelandtonic/Imagine",
-                "reference": "0474472e4ef407f7669cc9a1310ee374035dd7de"
+                "reference": "ff78704accc506c6b3ac4903f6e022fdd12bef60"
             },
             "archive": {
                 "exclude": [
@@ -958,7 +959,7 @@
             "type": "library",
             "extra": {
                 "branch-alias": {
-                    "dev-develop": "0.5-dev"
+                    "dev-develop": "0.7-dev"
                 }
             },
             "autoload": {
@@ -984,7 +985,7 @@
                 "image manipulation",
                 "image processing"
             ],
-            "time": "2015-10-26 09:23:15"
+            "time": "2015-10-26 18:52:11"
         },
         {
             "name": "league/flysystem",
