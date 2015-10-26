@@ -167,7 +167,7 @@ Craft.Dashboard = Garnish.Base.extend(
                 sortable: true,
                 reorderAction: 'dashboard/reorderUserWidgets',
                 deleteAction: 'dashboard/deleteUserWidget',
-                onAfterReorderObjects: $.proxy(function(ids)
+                onReorderObjects: $.proxy(function(ids)
                 {
                     var lastWidget;
 
