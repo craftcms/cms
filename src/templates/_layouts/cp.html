@@ -111,6 +111,15 @@
 {% endif %}
 
 
+{% set tabs = (tabs is defined ? tabs : null) %}
+{% if tabs %}
+	{% set selectedTab = selectedTab is defined ? selectedTab : tabs|keys|first %}
+	{% if title != tabs[selectedTab].label %}
+		{% set title = title~' - '~tabs[selectedTab].label %}
+	{% endif %}
+{% endif %}
+
+
 {% block body %}
 	<header id="global-sidebar">
 		<div class="topbar">
@@ -291,7 +300,7 @@
 				{% set hasSidebar = (sidebar is not empty) %}
 
 				<div class="pane">
-					{% if tabs is defined and tabs %}
+					{% if tabs %}
 						{% include "_includes/tabs" %}
 					{% endif %}
 
