@@ -20,6 +20,7 @@
 		{{ getCsrfInput() }}
 
 		{{ forms.checkboxField({
+			first: true,
 			label: "Verify email addresses?"|t,
 			instructions: "Should new email addresses be verified before getting saved to user accounts? (This also affects new user registration.)"|t,
 			name: 'requireEmailVerification',
