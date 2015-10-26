@@ -14,7 +14,7 @@
 {% set plugins = craft.plugins.getPlugins(false) %}
 
 
-{% set content %}
+{% block content %}
 	{% if plugins|length %}
 		<table id="plugins" class="data fullwidth collapsible">
 			<thead>
@@ -95,4 +95,4 @@
 	{% else %}
 		<p>{{ "There are no available plugins."|t }}
 	{% endif %}
-{% endset %}
+{% endblock %}

@@ -4,8 +4,7 @@
 {% includeCssResource 'css/settings.css' %}
 {% includeJsResource 'js/settings.js' %}
 
-{% set content %}
-
+{% block content %}
 	{% for category, items in craft.cp.settings(80) %}
 		<h2>{{ category }}</h2>
 
@@ -35,4 +34,4 @@
 			{% includeJs 'new Craft.Tool("'~tool.getClassHandle()~'", '~tool.getOptionsHtml()|json_encode~', "'~tool.getButtonLabel()~'");' %}
 		{% endfor %}
 	</ul>
-{% endset %}
+{% endblock %}

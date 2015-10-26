@@ -12,7 +12,7 @@
 {% set docsUrl = 'http://buildwithcraft.com/docs/categories' %}
 
 
-{% set content %}
+{% block content %}
 	<div id="nocategorygroups"{% if categoryGroups|length %} class="hidden"{% endif %}>
 		<p>{{ "No category groups exist yet."|t }}</p>
 	</div>
@@ -37,8 +37,7 @@
 			</tbody>
 		</table>
 	{% endif %}
-
-{% endset %}
+{% endblock %}
 
 
 {% set js %}

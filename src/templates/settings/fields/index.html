@@ -61,8 +61,7 @@
 {% endset %}
 
 
-{% set content %}
-
+{% block content %}
 	<p id="nofields"{% if fields %} class="hidden"{% endif %}>
 		{% if groupId is defined %}
 			{{ "This group doesn’t have any fields yet."|t }}
@@ -109,8 +108,7 @@
 			<a href="{{ newFieldUrl }}" class="submit btn add icon">{{ "New Field"|t }}</a>
 		</div>
 	{% endif %}
-
-{% endset %}
+{% endblock %}
 
 
 {% set js %}

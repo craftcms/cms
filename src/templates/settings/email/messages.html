@@ -16,7 +16,7 @@
 	"Message saved."
 %}
 
-{% set content %}
+{% block content %}
 	<div id="messages">
 		{% for message in craft.emailMessages.getAllMessages %}
 			<h2>{{ (message.key~'_heading')|t }}</h2>
@@ -26,4 +26,4 @@
 			</div>
 		{% endfor %}
 	</div>
-{% endset %}
+{% endblock %}

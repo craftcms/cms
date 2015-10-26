@@ -23,7 +23,7 @@
 {% endif %}
 
 
-{% set content %}
+{% block content %}
 		<input type="hidden" name="action" value="assetTransforms/saveTransform">
 		<input type="hidden" name="redirect" value="settings/assets/transforms">
 
@@ -148,7 +148,7 @@
             options: formatOptions,
             translatable: true
         }) }}
-{% endset %}
+{% endblock %}
 
 
 {% set js %}

@@ -4,7 +4,7 @@
 {% set docsUrl = 'http://buildwithcraft.com/docs/assets' %}
 
 
-{% set content %}
+{% block content %}
 	<p id="nosources"{% if sources|length %} class="hidden"{% endif %}>
 		{{ "No sources exist yet."|t }}
 	</p>
@@ -35,7 +35,7 @@
 	<div class="buttons">
 		<a class="btn submit add icon" href="{{ url('settings/assets/sources/new') }}">{{ "New Source"|t }}</a>
 	</div>
-{% endset %}
+{% endblock %}
 
 
 {% set js %}

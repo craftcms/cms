@@ -17,7 +17,7 @@
 {% set globalSets = craft.globals.getAllSets() %}
 
 
-{% set content %}
+{% block content %}
 	<div class="field">
 		<p id="nosets"{% if globalSets %} class="hidden"{% endif %}>
 			{{ "No global sets exist yet."|t }}
@@ -42,7 +42,7 @@
 			</table>
 		{% endif %}
 	</div>
-{% endset %}
+{% endblock %}
 
 
 {% set js %}

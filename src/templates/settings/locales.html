@@ -28,7 +28,7 @@
 ] %}
 
 
-{% set content %}
+{% block content %}
 	<form method="post" accept-charset="UTF-8">
 		<input type="hidden" name="action" value="languageSettings/save">
 		<input type="hidden" name="redirect" value="settings">
@@ -62,7 +62,7 @@
 			</div>
 		</div>
 	</form>
-{% endset %}
+{% endblock %}
 
 {% set js %}
 	new Craft.Locales(

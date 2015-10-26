@@ -27,7 +27,7 @@
 {% endset %}
 
 
-{% set content %}
+{% block content %}
 	<form method="post" accept-charset="UTF-8" data-saveshortcut data-confirm-unload>
 		<input type="hidden" name="action" value="globals/saveContent">
 		<input type="hidden" name="setId" value="{{ globalSet.id }}">
@@ -48,4 +48,4 @@
 			{{ "This global set doesn’t have any fields assigned to it in its field layout."|t }}
 		{% endif %}
 	</form>
-{% endset %}
+{% endblock %}

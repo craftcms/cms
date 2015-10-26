@@ -14,7 +14,7 @@
 {% endif %}
 
 
-{% set content %}
+{% block content %}
 	<form id="settings-form" method="post" class="centered" accept-charset="UTF-8" data-saveshortcut>
 		<input type="hidden" name="action" value="userSettings/saveUserSettings">
 		{{ getCsrfInput() }}
@@ -53,4 +53,4 @@
 			<input type="submit" class="btn submit" value="{{ 'Save'|t }}">
 		</div>
 	</form>
-{% endset %}
+{% endblock %}

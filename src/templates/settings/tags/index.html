@@ -12,7 +12,7 @@
 {% set docsUrl = 'http://buildwithcraft.com/docs/tags' %}
 
 
-{% set content %}
+{% block content %}
 	<div id="notaggroups"{% if tagGroups|length %} class="hidden"{% endif %}>
 		<p>{{ "No tag groups exist yet."|t }}</p>
 	</div>
@@ -35,8 +35,7 @@
 			</tbody>
 		</table>
 	{% endif %}
-
-{% endset %}
+{% endblock %}
 
 
 {% set js %}

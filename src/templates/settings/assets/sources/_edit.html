@@ -6,7 +6,7 @@
 {% import "_includes/forms" as forms %}
 
 
-{% set content %}
+{% block content %}
 		<input type="hidden" name="action" value="assetSources/saveSource">
 		<input type="hidden" name="redirect" value="settings/assets">
 		{% if not isNewSource %}<input type="hidden" name="sourceId" value="{{ source.id }}">{% endif %}
@@ -76,7 +76,7 @@
 				tab: 'fieldlayout'
 			} only %}
 		</div>
-{% endset %}
+{% endblock %}
 
 
 {% if source is not defined or not source.handle %}

@@ -4,7 +4,7 @@
 {% set docsUrl = 'http://buildwithcraft.com/docs/image-transforms' %}
 
 
-{% set content %}
+{% block content %}
 <p id="notransforms"{% if transforms|length %} class="hidden"{% endif %}>
 	{{ "No Asset transforms exist yet."|t }}
 </p>
@@ -41,7 +41,7 @@
 <div class="buttons">
 	<a class="btn submit add icon" href="{{ url('settings/assets/transforms/new') }}">{{ "New Transform"|t }}</a>
 </div>
-{% endset %}
+{% endblock %}
 
 {% set js %}
 	new Craft.AdminTable({

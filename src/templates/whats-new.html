@@ -7,7 +7,7 @@
 
 {% set url = 'http://buildwithcraft.com/updates/2.4' %}
 
-{% set content %}
+{% block content %}
 	<header>
 		<h1>{{ title }}</h1>
 	</header>
@@ -26,4 +26,4 @@
 
 	<h1>And More!</h1>
 	<p>There are over 60 additions and improvements in total. Check out the <a href="{{ url }}">release notes</a> for a complete list of all that’s changed!</p>
-{% endset %}
+{% endblock %}
