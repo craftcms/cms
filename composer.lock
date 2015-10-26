@@ -4,8 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "247b7112e412b905f1a9de6af038bae6",
-    "content-hash": "6e0a4c6c29b7d74f184c36914b0607ba",
+    "hash": "f58a5398bb3e164ce6f82e425ea692a2",
     "packages": [
         {
             "name": "doctrine/instantiator",
@@ -203,11 +202,11 @@
         },
         {
             "name": "imagine/imagine",
-            "version": "0.6.3",
+            "version": "0.6.4",
             "source": {
                 "type": "git",
                 "url": "https://github.com/pixelandtonic/Imagine",
-                "reference": "bb551b2a187bc39b14101d3ed47fa45130acd6d1"
+                "reference": "0474472e4ef407f7669cc9a1310ee374035dd7de"
             },
             "archive": {
                 "exclude": [
@@ -235,7 +234,7 @@
             "type": "library",
             "extra": {
                 "branch-alias": {
-                    "dev-develop": "0.7-dev"
+                    "dev-develop": "0.5-dev"
                 }
             },
             "autoload": {
@@ -261,7 +260,7 @@
                 "image manipulation",
                 "image processing"
             ],
-            "time": "2015-09-20 00:39:12"
+            "time": "2015-10-26 09:23:15"
         },
         {
             "name": "lsolesen/pel",
