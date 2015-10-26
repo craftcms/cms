@@ -40,7 +40,7 @@
 
 
 {% if section.type != 'single' %}
-	{% set js %}
+	{% includejs %}
 		new Craft.AdminTable({
 			tableSelector: '#entrytypes',
 			deleteAction: 'sections/deleteEntryType',
@@ -49,6 +49,5 @@
 			reorderAction: 'sections/reorderEntryTypes',
 			confirmDeleteMessage: '{{ "Are you sure you want to delete “{name}” and all entries that use it?"|t }}',
 		});
-	{% endset %}
-	{% includeJs js %}
+	{% endincludejs %}
 {% endif %}

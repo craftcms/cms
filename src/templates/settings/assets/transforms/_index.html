@@ -43,12 +43,11 @@
 </div>
 {% endblock %}
 
-{% set js %}
+{% includejs %}
 	new Craft.AdminTable({
 		tableSelector: '#transforms',
 		noObjectsSelector: '#notransforms',
 		sortable: false,
 		deleteAction: 'assetTransforms/deleteTransform'
 	});
-{% endset %}
-{% includeJs js %}
+{% endincludejs %}

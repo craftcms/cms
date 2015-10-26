@@ -263,7 +263,7 @@
 {% endblock %}
 
 
-{% set js %}
+{% includejs %}
 	{% if not section.handle %}new Craft.HandleGenerator('#name', '#handle');{% endif %}
 
 	{% for locale in craft.i18n.getSiteLocales() %}
@@ -279,5 +279,4 @@
 		new Craft.EntryUrlFormatGenerator('#name', '#channel-template',   { suffix: '/_entry' });
 		new Craft.EntryUrlFormatGenerator('#name', '#structure-template', { suffix: '/_entry' });
 	{% endif %}
-{% endset %}
-{% includeJs js %}
+{% endincludejs %}

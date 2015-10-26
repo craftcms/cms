@@ -113,12 +113,11 @@
 {% endblock %}
 
 
-{% set js %}
+{% includejs %}
 	new Craft.AdminTable({
 		tableSelector: '#fields',
 		noObjectsSelector: '#nofields',
 		deleteAction: 'fields/deleteField'
 	});
-{% endset %}
-{% includeJs js %}
+{% endincludejs %}
 

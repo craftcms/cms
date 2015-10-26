@@ -47,7 +47,7 @@
 {% endblock %}
 
 
-{% set js %}
+{% includejs %}
 	var adminTable = new Craft.AdminTable({
 		tableSelector: '#sets',
 		noObjectsSelector: '#nosets',
@@ -61,5 +61,4 @@
 			}
 		}
 	});
-{% endset %}
-{% includeJs js %}
+{% endincludejs %}
