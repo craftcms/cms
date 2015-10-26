@@ -220,6 +220,7 @@ class AssetsController extends BaseController
 			}
 			else
 			{
+				IOHelper::deleteFile($fileLocation, true);
 				throw new Exception(Craft::t('Something went wrong with the replace operation.'));
 			}
 		}
