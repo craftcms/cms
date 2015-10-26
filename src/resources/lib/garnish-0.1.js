@@ -3157,13 +3157,13 @@ Garnish.HUD = Garnish.Base.extend({
 		if ($header.length)
 		{
 			this.$header = $header.insertBefore(this.$mainContainer);
-			this.$hud.removeClass('has-header');
+			this.$hud.addClass('has-header');
 		}
 
 		if ($footer.length)
 		{
 			this.$footer = $footer.insertAfter(this.$mainContainer);
-			this.$hud.removeClass('has-footer');
+			this.$hud.addClass('has-footer');
 		}
 
 		this.updateSizeAndPosition();

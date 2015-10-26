@@ -954,6 +954,7 @@ body #redactor-modal-overlay {
 .elementselectormodal .body .main .elements .tableview table .element { display: inline-block; }
 .elementselectormodal .body .main .elements .tableview table tr th,
 .elementselectormodal .body .main .elements .tableview table tr td { cursor: default;}
+.elementselectormodal .body .main .elements .tableview table tr td:first-child { @include padding-left(7px); }
 .elementselectormodal .body .main .elements .tableview table tr:focus { outline: none; }
 .elementselectormodal .body .main .elements .tableview table tr.disabled { opacity: 1; color: #d4d4d4; }
 .elementselectormodal .body .main .elements .tableview table tr.disabled .element { opacity: 0.25; }
