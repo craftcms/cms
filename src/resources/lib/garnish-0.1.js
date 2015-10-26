@@ -182,6 +182,8 @@ Garnish.ltr = !Garnish.rtl;
 
 Garnish = $.extend(Garnish, {
 
+	$scrollContainer: Garnish.$win,
+
 	// Key code constants
 	DELETE_KEY:  8,
 	SHIFT_KEY:  16,
@@ -302,6 +304,22 @@ Garnish = $.extend(Garnish, {
 	isTextNode: function(elem)
 	{
 		return (elem.nodeType == Garnish.TEXT_NODE);
+	},
+
+	/**
+	 * Returns the offset of an element within the scroll container, whether that's the window or something else
+	 */
+	getOffset: function(elem)
+	{
+		this.getOffset._offset = $(elem).offset();
+
+		if (Garnish.$scrollContainer[0] != Garnish.$win[0])
+		{
+			this.getOffset._offset.top += Garnish.$scrollContainer.scrollTop();
+			this.getOffset._offset.left += Garnish.$scrollContainer.scrollLeft();
+		}
+
+		return this.getOffset._offset;
 	},
 
 	/**
@@ -1557,10 +1575,10 @@ Garnish.BaseDrag = Garnish.Base.extend({
 	 */
 	_scrollWindow: function()
 	{
-		this._.scrollPos = Garnish.BaseDrag.$scrollContainer[this.scrollProperty]();
-		Garnish.BaseDrag.$scrollContainer[this.scrollProperty](this._.scrollPos + this.scrollDist);
+		this._.scrollPos = Garnish.$scrollContainer[this.scrollProperty]();
+		Garnish.$scrollContainer[this.scrollProperty](this._.scrollPos + this.scrollDist);
 
-		this['mouse'+this.scrollAxis] -= this._.scrollPos - Garnish.BaseDrag.$scrollContainer[this.scrollProperty]();
+		this['mouse'+this.scrollAxis] -= this._.scrollPos - Garnish.$scrollContainer[this.scrollProperty]();
 		this['realMouse'+this.scrollAxis] = this['mouse'+this.scrollAxis];
 
 		this.drag();
@@ -1600,7 +1618,6 @@ Garnish.BaseDrag = Garnish.Base.extend({
 {
 	minMouseDist: 1,
 	windowScrollTargetSize: 25,
-	$scrollContainer: $(window),
 
 	defaults: {
 		handle: null,
@@ -3095,6 +3112,11 @@ Garnish.HUD = Garnish.Base.extend({
 		this.addListener(this.$shade, 'click', 'hide');
 		this.addListener(Garnish.$win, 'resize', 'updateSizeAndPosition');
 
+		if (!this.$fixedTriggerParent && Garnish.$scrollContainer[0] != Garnish.$win[0])
+		{
+			this.addListener(Garnish.$scrollContainer, 'scroll', 'updateSizeAndPosition');
+		}
+
 		if (this.settings.closeBtn)
 		{
 			this.addListener(this.settings.closeBtn, 'activate', 'hide');
@@ -3171,7 +3193,7 @@ Garnish.HUD = Garnish.Base.extend({
 		}
 
 		// Prevent the browser from jumping
-		this.$hud.css('top', Garnish.$win.scrollTop());
+		this.$hud.css('top', Garnish.$scrollContainer.scrollTop());
 
 		// Move it to the end of <body> so it gets the highest sub-z-index
 		this.$shade.appendTo(Garnish.$bod);
@@ -3209,6 +3231,9 @@ Garnish.HUD = Garnish.Base.extend({
 			triggerOffset,
 			windowScrollLeft,
 			windowScrollTop,
+			scrollContainerTriggerOffset,
+			scrollContainerScrollLeft,
+			scrollContainerScrollTop,
 			hudBodyWidth,
 			hudBodyHeight;
 
@@ -3232,12 +3257,26 @@ Garnish.HUD = Garnish.Base.extend({
 			triggerOffset.left -= windowScrollLeft;
 			triggerOffset.top -= windowScrollTop;
 
+			scrollContainerTriggerOffset = triggerOffset;
+
 			windowScrollLeft = 0;
 			windowScrollTop = 0;
+			scrollContainerScrollLeft = 0;
+			scrollContainerScrollTop = 0;
+		}
+		else
+		{
+			scrollContainerTriggerOffset = Garnish.getOffset(this.$trigger);
+
+			scrollContainerScrollLeft = Garnish.$scrollContainer.scrollLeft();
+			scrollContainerScrollTop = Garnish.$scrollContainer.scrollTop();
 		}
 
 		triggerOffset.right = triggerOffset.left + triggerWidth;
 		triggerOffset.bottom = triggerOffset.top + triggerHeight;
+
+		scrollContainerTriggerOffset.right = scrollContainerTriggerOffset.left + triggerWidth;
+		scrollContainerTriggerOffset.bottom = scrollContainerTriggerOffset.top + triggerHeight;
 
 		// Get the HUD dimensions
 		this.$hud.css({
@@ -3258,10 +3297,10 @@ Garnish.HUD = Garnish.Base.extend({
 
 		// Find the actual available top/right/bottom/left clearances
 		var clearances = {
-			bottom: windowHeight + windowScrollTop - triggerOffset.bottom,
-			top:    triggerOffset.top - windowScrollTop,
-			right:  windowWidth + windowScrollLeft - triggerOffset.right,
-			left:   triggerOffset.left - windowScrollLeft
+			bottom: windowHeight + scrollContainerScrollTop - scrollContainerTriggerOffset.bottom,
+			top:    scrollContainerTriggerOffset.top - scrollContainerScrollTop,
+			right:  windowWidth + scrollContainerScrollLeft - scrollContainerTriggerOffset.right,
+			left:   scrollContainerTriggerOffset.left - scrollContainerScrollLeft
 		};
 
 		// Find the first position that has enough room
