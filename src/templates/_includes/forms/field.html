@@ -12,10 +12,10 @@
 			{% if label %}
 				<label{% if required is defined and required %} class="required"{% endif %}{% if id %} for="{{ id }}"{% endif %}>
 					{{- label|raw -}}
+					{%- if locale -%}
+						<span class="locale">{{ locale }}</span>
+					{%- endif -%}
 				</label>
-				{% if locale %}
-					<span class="locale">{{ locale }}</span>
-				{% endif %}
 			{% endif %}
 			{% if instructions %}
 				<div class="instructions">{{ instructions|md }}</div>

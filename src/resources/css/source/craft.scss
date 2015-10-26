@@ -172,7 +172,7 @@ strong, b, i em { font-weight: bold; font-family: sans-serif; }
 .smalltext { font-size: 11px; }
 input.checkbox + label.smalltext { padding-top: 2px; }
 
-.required:after { content: '*'; @include margin(-2px, 0, 0, 2px); font-size: 7px; color: $errorcolor; }
+.required:after { content: '*'; @include margin(-2px, 0, 0, 7px); font-size: 7px; color: $errorcolor; }
 
 .scrollpane { overflow: auto; }
 
@@ -824,6 +824,7 @@ ul.tree,
 .meta .field + .field { border-top: 1px solid $hairlineColor; }
 .meta .field + .field.has-focus { border-top: none; margin-top: 1px !important; }
 .meta .field > .heading { margin-bottom: 0; width: 86px; color: $mediumtextcolor; }
+.meta .field > .heading > label.required:after { position: absolute; top: 6px; @include left(-13px); @include margin-left(0); }
 .meta .field > .input { width: calc(100% - 100px); }
 
 .meta .field.has-errors { border: 1px solid $errorcolor; padding-left: 23px; padding-right: 23px; }
@@ -1077,8 +1078,7 @@ table.editable textarea { font-size: 13px; line-height: 16px; color: $textcolor;
 .field { position: relative; margin: 24px 0; }
 .field > .heading { margin-bottom: 4px; }
 .field > .heading > label { position: relative; }
-.field > .heading > label.required:after { position: absolute; top: 6px; @include left(-15px); }
-.field > .heading > .locale { display: inline-block; border-radius: $btnBorderRadius; @include margin-left(3px); padding: 0 4px; font-size: 11px; color: $mediumtextcolor; background: $bgcolor; }
+.field > .heading > label > .locale { display: inline-block; border-radius: $btnBorderRadius; @include margin-left(7px); padding: 0 4px; font-size: 11px; color: $mediumtextcolor; background: $bgcolor; }
 .field > .heading > .instructions { font-size: 11px; color: $mediumtextcolor; }
 .field > .warning { margin: 4px 0 0; font-size: 11px; }
 .field > .warning:before { @include margin(-2px, 2px, 0, 0); @include icon; content: 'alert'; }
