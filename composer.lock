@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "59d6e319f53f2a32e22a3c3fb6a3bc86",
+    "hash": "f58a5398bb3e164ce6f82e425ea692a2",
     "packages": [
         {
             "name": "doctrine/instantiator",
@@ -202,7 +202,7 @@
         },
         {
             "name": "imagine/imagine",
-            "version": "dev-develop",
+            "version": "0.6.4",
             "source": {
                 "type": "git",
                 "url": "https://github.com/pixelandtonic/Imagine",
@@ -1665,9 +1665,7 @@
     "packages-dev": [],
     "aliases": [],
     "minimum-stability": "stable",
-    "stability-flags": {
-        "imagine/imagine": 20
-    },
+    "stability-flags": [],
     "prefer-stable": false,
     "prefer-lowest": false,
     "platform": [],
