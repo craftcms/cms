@@ -34,17 +34,16 @@
 		</table>
 	{% endif %}
 
-	<div class="buttons">
-		<a href="{{ url('settings/users/groups/new') }}" class="btn submit add icon">{{ "New Group"|t }}</a>
+	<div class="buttons secondary-buttons">
+		<a href="{{ url('settings/users/groups/new') }}" class="btn submit add icon">{{ "New user group"|t }}</a>
 	</div>
 {% endblock %}
 
 
-{% set js %}
+{% includejs %}
 	new Craft.AdminTable({
 		tableSelector: '#groups',
 		noObjectsSelector: '#nogroups',
 		deleteAction: 'userSettings/deleteGroup'
 	});
-{% endset %}
-{% includeJs js %}
+{% endincludejs %}

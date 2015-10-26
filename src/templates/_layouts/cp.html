@@ -88,12 +88,12 @@
 
 {% set task = craft.tasks.getRunningTask() %}
 {% if task %}
-	{% includeJs 'Craft.cp.setRunningTaskInfo('~task.getInfo()|json_encode|raw~');' %}
-	{% includeJs 'Craft.cp.trackTaskProgress();' %}
+	{% includejs 'Craft.cp.setRunningTaskInfo('~task.getInfo()|json_encode|raw~');' %}
+	{% includejs 'Craft.cp.trackTaskProgress();' %}
 {% elseif craft.tasks.areTasksPending() %}
-	{% includeJs 'Craft.cp.runPendingTasks();' %}
+	{% includejs 'Craft.cp.runPendingTasks();' %}
 {% elseif craft.tasks.haveTasksFailed() %}
-	{% includeJs 'Craft.cp.setRunningTaskInfo({ status: "error" });' %}
+	{% includejs 'Craft.cp.setRunningTaskInfo({ status: "error" });' %}
 {% endif %}
 
 
@@ -132,7 +132,7 @@
 						</a>
 					{% endif %}
 				{% else %}
-					{% includeJs 'Craft.cp.checkForUpdates();' %}
+					{% includejs 'Craft.cp.checkForUpdates();' %}
 				{% endif %}
 			{% endif %}
 
@@ -241,7 +241,7 @@
 				</ul>
 			{% endif %}
 		{% else %}
-			{% includeJs 'Craft.cp.fetchAlerts();' %}
+			{% includejs 'Craft.cp.fetchAlerts();' %}
 		{% endif %}
 
 		<div class="topbar">

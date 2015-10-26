@@ -6,7 +6,7 @@
 
 {% block content %}
 	<p id="nosources"{% if sources|length %} class="hidden"{% endif %}>
-		{{ "No sources exist yet."|t }}
+		{{ "No asset sources exist yet."|t }}
 	</p>
 
 	{% if sources|length %}
@@ -32,13 +32,13 @@
 		</table>
 	{% endif %}
 
-	<div class="buttons">
-		<a class="btn submit add icon" href="{{ url('settings/assets/sources/new') }}">{{ "New Source"|t }}</a>
+	<div class="buttons secondary-buttons">
+		<a class="btn submit add icon" href="{{ url('settings/assets/sources/new') }}">{{ "New asset source"|t }}</a>
 	</div>
 {% endblock %}
 
 
-{% set js %}
+{% includejs %}
 	var adminTable = new Craft.AdminTable({
 		tableSelector: '#sources',
 		noObjectsSelector: '#nosources',
@@ -54,5 +54,4 @@
 			}
 		}
 	});
-{% endset %}
-{% includeJs js %}
+{% endincludejs %}

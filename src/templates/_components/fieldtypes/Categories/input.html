@@ -22,7 +22,7 @@
 </div>
 
 {% if jsClass is defined %}
-	{% set js %}
+	{% includejs %}
 		new {{ jsClass }}({
 			id: "{{ id   | namespaceInputId   | e('js') }}",
 			name: "{{ name | namespaceInputName | e('js') }}",
@@ -34,7 +34,5 @@
 			modalStorageKey: "{{ storageKey|e('js') }}",
 			selectionLabel: "{{ selectionLabel|e('js') }}"
 		});
-	{% endset %}
-
-	{% includeJs js %}
+	{% endincludejs %}
 {% endif %}

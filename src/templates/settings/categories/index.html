@@ -2,7 +2,9 @@
 {% set title = "Category Groups"|t %}
 
 {% set extraPageHeaderHtml %}
-	<a href="{{ url('settings/categories/new') }}" class="btn submit add icon">{{ "New Category Group"|t }}</a>
+	<div class="buttons secondary-buttons">
+		<a href="{{ url('settings/categories/new') }}" class="btn submit add icon">{{ "New category group"|t }}</a>
+	</div>
 {% endset %}
 
 {% set crumbs = [
@@ -40,12 +42,11 @@
 {% endblock %}
 
 
-{% set js %}
+{% includejs %}
 	new Craft.AdminTable({
 		tableSelector: '#categorygroups',
 		noObjectsSelector: '#nocategorygroups',
 		deleteAction: 'categories/deleteCategoryGroup',
 		confirmDeleteMessage: '{{ "Are you sure you want to delete “{name}” and all its categories?"|t }}',
 	});
-{% endset %}
-{% includeJs js %}
+{% endincludejs %}

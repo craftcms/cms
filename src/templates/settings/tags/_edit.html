@@ -47,8 +47,7 @@
 
 
 {% if not tagGroup.handle %}
-	{% set js %}
+	{% includejs %}
 		new Craft.HandleGenerator('#name', '#handle');
-	{% endset %}
-	{% includeJs js %}
+	{% endincludejs %}
 {% endif %}

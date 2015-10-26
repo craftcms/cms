@@ -6,7 +6,7 @@
 
 {% block content %}
 <p id="notransforms"{% if transforms|length %} class="hidden"{% endif %}>
-	{{ "No Asset transforms exist yet."|t }}
+	{{ "No image transforms exist yet."|t }}
 </p>
 
 {% if transforms|length %}
@@ -38,17 +38,16 @@
 	</table>
 {% endif %}
 
-<div class="buttons">
-	<a class="btn submit add icon" href="{{ url('settings/assets/transforms/new') }}">{{ "New Transform"|t }}</a>
+<div class="buttons secondary-buttons">
+	<a class="btn submit add icon" href="{{ url('settings/assets/transforms/new') }}">{{ "New image transform"|t }}</a>
 </div>
 {% endblock %}
 
-{% set js %}
+{% includejs %}
 	new Craft.AdminTable({
 		tableSelector: '#transforms',
 		noObjectsSelector: '#notransforms',
 		sortable: false,
 		deleteAction: 'assetTransforms/deleteTransform'
 	});
-{% endset %}
-{% includeJs js %}
+{% endincludejs %}
