@@ -573,7 +573,7 @@ Craft.Widget = Garnish.Base.extend(
                 {
                     if (textStatus == 'success' && response.success)
                     {
-                        // success
+                        Craft.cp.displayNotice(Craft.t('Widget saved.'));
                     }
                     else
                     {
