@@ -759,13 +759,9 @@ class AssetTransforms extends Component
 
             $image->scaleToFit($maxCachedImageSize,
                 $maxCachedImageSize)->saveAs($destination);
-
-            if ($source != $destination) {
-                Io::deleteFile($source);
-            }
         } else {
             if ($source != $destination) {
-                Io::move($source, $destination);
+                Io::copyFile($source, $destination);
             }
         }
     }
