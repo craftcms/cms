@@ -1192,7 +1192,6 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
 	getButtonContainer: function()
 	{
-		console.log('hello');
 		// Is there a predesignated place where buttons should go?
 		if (this.settings.buttonContainer)
 		{
