@@ -152,6 +152,7 @@ Craft.Dashboard = Garnish.Base.extend(
 
             this.widgetManager = new Garnish.HUD(this.$widgetManagerBtn, $form, {
                 hudClass: 'hud widgetmanagerhud',
+                minBodyWidth: 400,
                 onShow: $.proxy(function() {
                     this.$widgetManagerBtn.addClass('active');
                 }, this),
