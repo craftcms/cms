@@ -239,6 +239,15 @@ Craft.CP = Garnish.Base.extend(
 		}
 	},
 
+	updateSidebarMenuLabel: function()
+	{
+		Garnish.$win.trigger('resize');
+
+		var $selectedLink = $('a.sel:first', this.$sidebar);
+
+		this.selectedItemLabel = $selectedLink.html();
+	},
+
 	/**
 	 * Handles stuff that should happen when the window is resized.
 	 */
