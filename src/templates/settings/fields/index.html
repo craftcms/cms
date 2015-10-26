@@ -34,6 +34,16 @@
 {% endif %}
 
 
+{% set extraPageHeaderHtml %}
+	{% if groups %}
+		<div class="buttons secondary-buttons">
+			{% set newFieldUrl = url('settings/fields/new', (groupId is defined ? { groupId: groupId } : null)) %}
+			<a href="{{ newFieldUrl }}" class="submit btn add icon">{{ "New field"|t }}</a>
+		</div>
+	{% endif %}
+{% endset %}
+
+
 {% block sidebar %}
 	<nav>
 		<ul id="groups">
@@ -45,7 +55,7 @@
 	</nav>
 
 	<div class="buttons">
-		<div id="newgroupbtn" class="btn add icon">{{ "New Group"|t }}</div>
+		<div id="newgroupbtn" class="btn add icon">{{ "New group"|t }}</div>
 
 		{% if groupId is defined %}
 			<div id="groupsettingsbtn" class="btn settings icon menubtn" title="{{ 'Settings' }}"></div>
@@ -99,13 +109,6 @@
 				{% endfor %}
 			</tbody>
 		</table>
-	{% endif %}
-
-	{% if groups %}
-		<div class="buttons">
-			{% set newFieldUrl = url('settings/fields/new', (groupId is defined ? { groupId: groupId } : null)) %}
-			<a href="{{ newFieldUrl }}" class="submit btn add icon">{{ "New Field"|t }}</a>
-		</div>
 	{% endif %}
 {% endblock %}
 

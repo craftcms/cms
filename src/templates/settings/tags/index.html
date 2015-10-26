@@ -2,7 +2,9 @@
 {% set title = "Tag Groups"|t %}
 
 {% set extraPageHeaderHtml %}
-	<a href="{{ url('settings/tags/new') }}" class="btn submit add icon">{{ "New Tag Group"|t }}</a>
+	<div class="buttons secondary-buttons">
+		<a href="{{ url('settings/tags/new') }}" class="btn submit add icon">{{ "New tag group"|t }}</a>
+	</div>
 {% endset %}
 
 {% set crumbs = [

@@ -4,7 +4,9 @@
 {% set title = "Globals"|t %}
 
 {% set extraPageHeaderHtml %}
-	<a href="{{ url('settings/globals/new') }}" class="btn submit add icon">{{ "New Global Set"|t }}</a>
+	<div class="buttons secondary-buttons">
+		<a href="{{ url('settings/globals/new') }}" class="btn submit add icon">{{ "New global set"|t }}</a>
+	</div>
 {% endset %}
 
 {% set crumbs = [
