@@ -62,3 +62,8 @@
 .colspan-picker a:hover { border-right: 1px solid #999!important; }
 .colspan-picker a.is-highlighted { border: 1px solid #999; border-left: medium none; border-right: medium none; height: 15px; margin-top: 0; margin-bottom: 0 }
 .colspan-picker a.is-highlighted.last { border-right: medium none }
+
+
+@media only screen and (max-width: 673px) {
+    .widgetmanagerhud td.col-colspan-picker { display: none; }
+}
