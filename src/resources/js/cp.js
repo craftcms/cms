@@ -345,12 +345,19 @@ Craft.CP = Garnish.Base.extend(
 
 		this.selectedItemLabel = $link.html();
 
-		this.$sidebarBtn.html(this.selectedItemLabel);
+		if (this.$sidebarBtn)
+		{
+			this.$sidebarBtn.html(this.selectedItemLabel);
+		}
 	},
 
 	hideSidebarToggle: function()
 	{
-		this.$sidebarBtn.remove();
+		if (this.$sidebarBtn)
+		{
+			this.$sidebarBtn.remove();
+		}
+
 		this.showingSidebarToggle = false;
 	},
 
