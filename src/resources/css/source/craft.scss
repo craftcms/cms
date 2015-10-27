@@ -1090,7 +1090,7 @@ table.editable textarea { font-size: 13px; line-height: 16px; color: $textcolor;
 .field > .heading { margin-bottom: 4px; }
 .field > .heading > label { position: relative; }
 .field > .heading > label > .locale { display: inline-block; border-radius: $btnBorderRadius; @include margin-left(7px); padding: 0 4px; font-size: 11px; color: $mediumtextcolor; background: $bgcolor; }
-.field > .heading > .instructions { font-size: 11px; color: $mediumtextcolor; }
+.field > .heading > .instructions { margin-top: 4px; font-size: 11px; line-height: 1.4; color: $mediumtextcolor; }
 .field > .warning { margin: 4px 0 0; font-size: 11px; }
 .field > .warning:before { @include margin(-2px, 2px, 0, 0); @include icon; content: 'alert'; }
 
