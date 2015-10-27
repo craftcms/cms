@@ -94,6 +94,6 @@ abstract class BaseWidget extends BaseSavableComponentType implements IWidget
 		    return $this->getColspan();
 		}
 
-		return 4;
+		return null;
 	}
 }
