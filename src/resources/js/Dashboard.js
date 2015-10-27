@@ -17,6 +17,7 @@ Craft.Dashboard = Garnish.Base.extend(
     $grid: null,
     $widgetManagerBtn: null,
 
+    grid: null,
     widgets: null,
     widgetManager: null,
     widgetAdminTable: null,
@@ -33,6 +34,7 @@ Craft.Dashboard = Garnish.Base.extend(
 
         Garnish.$doc.ready($.proxy(function() {
             this.$grid = $('#main > .grid');
+            this.grid = this.$grid.data('grid');
             $('#newwidgetmenubtn').data('menubtn').menu.on('optionselect', $.proxy(this, 'handleNewWidgetOptionSelect'));
         }, this));
     },
@@ -87,18 +89,17 @@ Craft.Dashboard = Garnish.Base.extend(
 
         // Append the new widget after the last one
         // (can't simply append it to the grid container, since that will place it after the resize listener object)
-        var grid = this.$grid.data('grid');
 
-        if (grid.$items.length)
+        if (this.grid.$items.length)
         {
-            $gridItem.insertAfter(grid.$items.last());
+            $gridItem.insertAfter(this.grid.$items.last());
         }
         else
         {
-            $gridItem.prependTo(grid.$container);
+            $gridItem.prependTo(this.grid.$container);
         }
 
-        grid.addItems($gridItem);
+        this.grid.addItems($gridItem);
         Garnish.scrollContainerToElement($gridItem);
 
         $container.removeClass('scaleout');
@@ -186,7 +187,7 @@ Craft.Dashboard = Garnish.Base.extend(
                         lastWidget = widget;
                     }
 
-                    this.$grid.data('grid').resetItemOrder();
+                    this.grid.resetItemOrder();
 
                 }, this),
                 onDeleteObject: $.proxy(function(id)
@@ -212,7 +213,6 @@ Craft.Widget = Garnish.Base.extend(
 {
     $container: null,
     $gridItem: null,
-    $grid: null,
 
     $front: null,
     $settingsBtn: null,
@@ -233,7 +233,6 @@ Craft.Widget = Garnish.Base.extend(
     {
         this.$container = $(container);
         this.$gridItem = this.$container.parent();
-        this.$grid = $('#main > .grid');
 
         this.$container.data('widget', this);
 
@@ -412,7 +411,7 @@ Craft.Widget = Garnish.Base.extend(
         if (response.info.colspan != this.$gridItem.data('colspan'))
         {
             this.$gridItem.data('colspan', response.info.colspan);
-            this.$grid.data('grid').refreshCols(true);
+            window.dashboard.grid.refreshCols(true);
             Garnish.scrollContainerToElement(this.$gridItem);
         }
 
@@ -561,7 +560,7 @@ Craft.Widget = Garnish.Base.extend(
                 var colspan = $(ev.currentTarget).data('colspan');
 
                 this.$gridItem.data('colspan', colspan);
-                this.$grid.data('grid').refreshCols(true);
+                window.dashboard.grid.refreshCols(true);
 
                 var data = {
                     id: id,
@@ -601,7 +600,7 @@ Craft.Widget = Garnish.Base.extend(
         this.base();
 
         setTimeout($.proxy(function() {
-            this.$grid.data('grid').removeItems(this.$gridItem);
+            window.dashboard.grid.removeItems(this.$gridItem);
             this.$gridItem.remove();
         }, this), 200);
     }
