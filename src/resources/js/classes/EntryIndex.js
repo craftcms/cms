@@ -82,6 +82,7 @@ Craft.EntryIndex = Craft.BaseElementIndex.extend(
 				if (this.publishableSections[i].handle == selectedSourceHandle)
 				{
 					selectedSection = this.publishableSections[i];
+					break;
 				}
 			}
 

@@ -68,6 +68,7 @@ Craft.CategoryIndex = Craft.BaseElementIndex.extend(
 				if (this.editableGroups[i].handle == selectedSourceHandle)
 				{
 					selectedGroup = this.editableGroups[i];
+					break;
 				}
 			}
 
