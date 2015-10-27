@@ -4,7 +4,6 @@
 {% set title = "Updates"|t %}
 {% includeCssResource "css/updates.css" %}
 {% includeJsResource "js/updates.js" %}
-{% includejs 'new Craft.UpdateInfo();' %}
 {% includeTranslations
 	"You’ve got updates!",
 	"You’re all up-to-date!",
@@ -23,6 +22,10 @@
 	"Fixed",
 	"Download"
 %}
+
+
+{% block pageHeader %}
+{% endblock %}
 
 
 {% block main %}
