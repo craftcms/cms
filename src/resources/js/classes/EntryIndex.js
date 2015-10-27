@@ -64,6 +64,8 @@ Craft.EntryIndex = Craft.BaseElementIndex.extend(
 		}
 
 		// Update the New Entry button
+		// ---------------------------------------------------------------------
+
 		if (this.publishableSections.length)
 		{
 			// Remove the old button, if there is one
@@ -146,6 +148,8 @@ Craft.EntryIndex = Craft.BaseElementIndex.extend(
 		}
 
 		// Update the URL if we're on the Entries index
+		// ---------------------------------------------------------------------
+
 		if (this.settings.context == 'index' && typeof history != typeof undefined)
 		{
 			var uri = 'entries';

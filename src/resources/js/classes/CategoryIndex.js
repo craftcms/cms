@@ -50,9 +50,8 @@ Craft.CategoryIndex = Craft.BaseElementIndex.extend(
 		var selectedSourceHandle = this.$source.data('handle');
 
 		// Update the New Category button
-		//this.$newCategoryBtn.attr('href', Craft.getUrl('categories/'+handle+'/new'));
+		// ---------------------------------------------------------------------
 
-		// Update the New Category button
 		if (this.editableGroups.length)
 		{
 			// Remove the old button, if there is one
@@ -135,6 +134,8 @@ Craft.CategoryIndex = Craft.BaseElementIndex.extend(
 		}
 
 		// Update the URL if we're on the Categories index
+		// ---------------------------------------------------------------------
+
 		if (this.settings.context == 'index' && typeof history != typeof undefined)
 		{
 			var uri = 'categories';
