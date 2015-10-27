@@ -409,6 +409,8 @@ Craft.Grid = Garnish.Base.extend(
 			}
 		}
 
+		this.onRefreshCols();
+
 		delete this.refreshCols._;
 	},
 
@@ -517,6 +519,12 @@ Craft.Grid = Garnish.Base.extend(
 		}
 
 		delete this.onItemResize._;
+	},
+
+	onRefreshCols: function()
+	{
+		this.trigger('refreshCols');
+		this.settings.onRefreshCols();
 	}
 },
 {
@@ -528,7 +536,9 @@ Craft.Grid = Garnish.Base.extend(
 		mode: 'pct',
 		fillMode: 'top',
 		colClass: 'col',
-		snapToGrid: null
+		snapToGrid: null,
+
+		onRefreshCols: $.noop
 	}
 });
 
