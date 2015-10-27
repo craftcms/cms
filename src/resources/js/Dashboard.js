@@ -152,7 +152,6 @@ Craft.Dashboard = Garnish.Base.extend(
 
             this.widgetManager = new Garnish.HUD(this.$widgetManagerBtn, $form, {
                 hudClass: 'hud widgetmanagerhud',
-                minBodyWidth: 400,
                 onShow: $.proxy(function() {
                     this.$widgetManagerBtn.addClass('active');
                 }, this),
@@ -479,8 +478,8 @@ Craft.Widget = Garnish.Base.extend(
             '<tr data-id="'+id+'" data-name="'+title+'">' +
                 '<td><img class="widgetmanagerhud-img" src="'+iconUrl+'" /></td>' +
                 '<td>'+this.getManagerRowLabel()+'</td>' +
-                '<td class="col-colspan-picker thin"><div class="colspan-picker"></div></td>' +
-                '<td class="thin"><a class="move icon" title="'+Craft.t('Reorder')+'" role="button"></a></td>' +
+                '<td class="widgetmanagerhud-col-colspan-picker thin"><div class="colspan-picker"></div></td>' +
+                '<td class="widgetmanagerhud-col-move thin"><a class="move icon" title="'+Craft.t('Reorder')+'" role="button"></a></td>' +
                 '<td class="thin"><a class="delete icon" title="'+Craft.t('Delete')+'" role="button"></a></td>' +
             '</tr>'
         );
