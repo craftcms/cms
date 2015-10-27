@@ -28,7 +28,7 @@ class PluginUpdateModel extends BaseModel
 	{
 		if ($name == 'releases')
 		{
-			$value = PluginUpdateModel::populateModels($value);
+			$value = PluginNewReleaseModel::populateModels($value);
 		}
 
 		parent::setAttribute($name, $value);
