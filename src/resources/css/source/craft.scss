@@ -947,6 +947,7 @@ body #redactor-modal-overlay {
 /* element editor HUDs */
 .hud .elementeditor { max-width: 600px; }
 .hud .elementeditor .header { text-align: center; }
+.hud .elementeditor .main { padding: 0; }
 
 /* crop image modals */
 .image-chooser img { display: block; }
