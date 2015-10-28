@@ -78,7 +78,9 @@ body {
 #global-sidebar .bottombar a.myaccount { max-height: 32px; display: flex; flex-direction: row; position: relative; padding: 14px; }
 #global-sidebar .bottombar a.myaccount img { vertical-align: middle; @include margin-right(14px); border-radius: $elementBorderRadius; }
 #global-sidebar .bottombar a.myaccount span { flex: 1; line-height: 32px; }
-#global-sidebar .bottombar a.myaccount:after { margin: 12px; }
+#global-sidebar .bottombar a.myaccount:after { padding: 12px; content: '▲'; font-size: 0.6em; margin-top: 1px;
+	@include margin-right(-7px);
+}
 
 /* container */
 #container { display: flex; flex-direction: column; position: relative; @include padding-left(220px); @include box-sizing(border-box); height: 100vh; overflow: auto; }
