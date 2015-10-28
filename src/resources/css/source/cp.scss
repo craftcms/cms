@@ -49,6 +49,8 @@ body {
 #global-sidebar .photo-container { vertical-align: middle; width: 32px; height: 32px; }
 #global-sidebar .photo-container img { display: block; width: 100%; height: 100%; border-radius: $elementBorderRadius; @include box-shadow(0 0 0 1px $hairlineColorAlpha); }
 
+#global-sidebar .light { color: #717983; }
+
 
 #global-sidebar .topbar > a { display: flex; align-items: center; padding: 0 14px; }
 #global-sidebar .topbar > a:focus { background: none; }
@@ -78,7 +80,8 @@ body {
 #global-sidebar .bottombar #account-info { height: 60px; display: flex; align-items: center; position: relative; @include padding(0, 17px, 0, 7px); }
 #global-sidebar .bottombar #account-info:after { display: none; }
 #global-sidebar .bottombar #account-info > div { padding: 7px; }
-#global-sidebar .bottombar #account-info .username { flex-grow: 1; }
+#global-sidebar .bottombar #account-info .username { width: 108px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; line-height: 16px; }
+#global-sidebar .bottombar #account-info #account-menu-anchor { padding: 7px 0; width: 28px; text-align: center; }
 #global-sidebar .bottombar #account-info #account-menu-anchor:after { @include icon; content: '\25bd'; font-size: 24px; }
 
 /* container */

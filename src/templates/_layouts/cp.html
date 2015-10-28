@@ -217,7 +217,10 @@
 				<div id="user-photo" class="photo-container">
 					<img width="32" sizes="32px" srcset="{{ currentUser.getThumbUrl(32) }} 32w, {{ currentUser.getThumbUrl(64) }} 64w" alt="{{ currentUser.getName() }}">
 				</div>
-				<div class="username">{{ currentUser.name }}</div>
+				<div class="username">
+					{{ currentUser.name }}
+					{% if currentUser.admin %}<div class="light">{{ 'admin'|t }}</div>{% endif %}
+				</div>
 				<div id="account-menu-anchor"></div>
 			</a>
 			<div class="menu" data-align="left">
