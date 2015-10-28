@@ -3931,13 +3931,13 @@ Garnish.Menu = Garnish.Base.extend({
 
 		Garnish.escManager.unregister(this);
 
-		this.anchor('hide');
+		this.trigger('hide');
 	},
 
 	selectOption: function(ev)
 	{
 		this.settings.onOptionSelect(ev.currentTarget);
-		this.anchor('optionselect', { selectedOption: ev.currentTarget });
+		this.trigger('optionselect', { selectedOption: ev.currentTarget });
 		this.hide();
 	},
 
