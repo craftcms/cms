@@ -113,6 +113,11 @@
 
 {% block body %}
 	<header id="global-sidebar">
+
+		{% if currentUser.admin and craft.config.devMode %}
+			<div id="devmode" title="{{ '@@@appName@@@ is running in Dev Mode.'|t }}"></div>
+		{% endif %}
+
 		<div class="topbar">
 			<a class="site-name" href="{{ siteUrl }}" title="{{ 'Site Homepage'|t }}" target="_blank"><h2>{{ siteName|t }}</h2></a>
 
@@ -135,19 +140,6 @@
 					{% includejs 'Craft.cp.checkForUpdates();' %}
 				{% endif %}
 			{% endif %}
-
-			<a class="myaccount menubtn" title="{{ 'My Account'|t }}" role="button">
-				<img sizes="30px" srcset="{{ currentUser.getThumbUrl(30) }} 30w, {{ currentUser.getThumbUrl(60) }} 60w" alt="{{ currentUser.getName() }}">
-			</a>
-			<div class="menu" data-align="right">
-				<ul>
-					<li><a href="{{ url('myaccount') }}">{{ "My Account"|t }}</a></li>
-					{% if CraftEdition == CraftClient and currentUser.admin %}
-						<li><a href="{{ url('clientaccount') }}">{{ "Client’s Account"|t }}</a></li>
-					{% endif %}
-					<li><a href="{{ logoutUrl }}">{{ "Sign out"|t }}</a></li>
-				</ul>
-			</div>
 		</div>
 
 		<nav>
@@ -208,9 +200,22 @@
 			</ul>
 		</nav>
 
-		{% if currentUser.admin and craft.config.devMode %}
-			<div id="devmode" title="{{ '@@@appName@@@ is running in Dev Mode.'|t }}"></div>
-		{% endif %}
+		<div class="bottombar">
+			<a class="myaccount menubtn" title="{{ 'My Account'|t }}" role="button">
+				<img width="32" sizes="32px" srcset="{{ currentUser.getThumbUrl(32) }} 32w, {{ currentUser.getThumbUrl(64) }} 64w" alt="{{ currentUser.getName() }}">
+				{{ currentUser.name }}
+			</a>
+			<div class="menu" data-align="right">
+				<ul>
+					<li><a href="{{ url('myaccount') }}">{{ "My Account"|t }}</a></li>
+					{% if CraftEdition == CraftClient and currentUser.admin %}
+						<li><a href="{{ url('clientaccount') }}">{{ "Client’s Account"|t }}</a></li>
+					{% endif %}
+					<li><a href="{{ logoutUrl }}">{{ "Sign out"|t }}</a></li>
+				</ul>
+			</div>
+		</div>
+
 	</header>
 
 	{% if fullPageForm %}
