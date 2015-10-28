@@ -387,7 +387,7 @@ body.rtl .btngroup .btn:not(:last-child) { border-top-left-radius: 0; border-bot
 
 /* menu buttons */
 .menubtn { @include user-select(none); }
-.menubtn:after { margin-top: -2px; content: '▼'; font-size: 0.8em; }
+.menubtn:after { content: '▼'; }
 
 /* spinner */
 .spinner { display: inline-block; vertical-align: bottom; @include spinner; }

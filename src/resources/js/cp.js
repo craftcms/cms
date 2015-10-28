@@ -782,7 +782,10 @@ Craft.cp = new Craft.CP();
  */
 var TaskProgressIcon = Garnish.Base.extend(
 {
+	$li: null,
 	$a: null,
+	$label: null,
+
 	hud: null,
 	completed: false,
 	failMode: false,
@@ -813,8 +816,10 @@ var TaskProgressIcon = Garnish.Base.extend(
 
 	init: function()
 	{
-		this.$a = $('<a id="taskicon"/>').insertAfter(Craft.cp.$siteNameLink);
-		this.$canvasContainer = $('<span/>').appendTo(this.$a);
+		this.$li = $('<li/>').appendTo(Craft.cp.$nav);
+		this.$a = $('<a id="taskicon"/>').appendTo(this.$li);
+		this.$canvasContainer = $('<span class="icon"/>').appendTo(this.$a);
+		this.$label = $('<span class="label"></span>').appendTo(this.$a);
 
 		this._canvasSupported = !!(document.createElement('canvas').getContext);
 
@@ -849,6 +854,7 @@ var TaskProgressIcon = Garnish.Base.extend(
 	setDescription: function(description)
 	{
 		this.$a.attr('title', description);
+		this.$label.html(description);
 	},
 
 	setProgress: function(progress, animate)
