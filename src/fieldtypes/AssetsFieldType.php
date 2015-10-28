@@ -94,6 +94,29 @@ class AssetsFieldType extends BaseElementFieldType
 	}
 
 	/**
+	 * @inheritDoc IFieldType::getInputHtml()
+	 *
+	 * @param string $name
+	 * @param mixed  $criteria
+	 *
+	 * @return string
+	 */
+	public function getInputHtml($name, $criteria)
+	{
+		try
+		{
+			parent::getInputHtml($name, $criteria);
+		}
+		catch (InvalidSubpathException $e)
+		{
+			return '<p class="warning">' .
+				'<span data-icon="alert"></span> ' .
+				Craft::t('This field’s target subfolder path is invalid: {path}', array('path' => '<code>'.$this->getSettings()->singleUploadLocationSubpath.'</code>')) .
+				'</p>';
+		}
+	}
+
+	/**
 	 * @inheritDoc IFieldType::prepValueFromPost()
 	 *
 	 * @param mixed $value
