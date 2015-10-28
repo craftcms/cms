@@ -17,8 +17,8 @@
 #main .release { direction: ltr; }
 
 /* Keep this LTR since the actual release notes are only LTR */
-#main .release ul li { padding: 3px 0 3px 25px; }
-#main .release ul li:before { @include icon; float :left; margin: 1px 0 1px -23px; font-size: 16px; }
-#main .release ul li.added:before { content: 'wand'; color: $noticecolor; }
-#main .release ul li.improved:before { content: 'brush'; }
-#main .release ul li.fixed:before { content: 'screwdriver'; color: $submitcolor; }
+#main .release-notes ul li { padding: 3px 0 3px 25px; }
+#main .release-notes ul li:before { @include icon; float :left; margin: 1px 0 1px -23px; font-size: 16px; }
+#main .release-notes ul li.added:before { content: 'wand'; color: $noticecolor; }
+#main .release-notes ul li.improved:before { content: 'brush'; }
+#main .release-notes ul li.fixed:before { content: 'screwdriver'; color: $submitcolor; }

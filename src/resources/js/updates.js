@@ -199,7 +199,7 @@ var Update = Garnish.Base.extend(
 			}
 
 			$('<h3>'+heading+'</h3>').appendTo(this.$pane);
-			$('<div class="notes"/>').appendTo(this.$pane).html(release.notes);
+			$('<div class="release-notes"/>').appendTo(this.$pane).html(release.notes);
 		}
 	},
 
