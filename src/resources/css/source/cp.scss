@@ -74,11 +74,10 @@ body {
 #global-sidebar #taskicon:hover .progressbar { border-color: #fff; }
 #global-sidebar #taskicon:hover .progressbar-inner { background: #fff; }
 
-#global-sidebar .bottombar a.myaccount { max-height: 32px; display: flex; flex-direction: row; position: relative; padding: 14px; }
-#global-sidebar .bottombar a.myaccount span { flex: 1; line-height: 32px; }
-#global-sidebar .bottombar a.myaccount:after { padding: 12px; content: '▲'; font-size: 0.6em; margin-top: 1px;
-	@include margin-right(-7px);
-}
+#global-sidebar .bottombar #account-info { max-height: 32px; display: flex; align-items: center; position: relative; padding: 14px; }
+#global-sidebar .bottombar #account-info:after { display: none; }
+#global-sidebar .bottombar #account-info .username { flex-grow: 1; }
+#global-sidebar .bottombar #account-info #account-menu-anchor:after { @include icon; padding: 12px; content: '▲'; font-size: 0.6em; @include margin(1px, -7px, 0, 0); }
 
 /* container */
 #container { display: flex; flex-direction: column; position: relative; @include padding-left(220px); @include box-sizing(border-box); height: 100vh; overflow: auto; }

@@ -213,13 +213,14 @@
 		</nav>
 
 		<div class="bottombar">
-			<a class="myaccount menubtn" title="{{ 'My Account'|t }}" role="button">
+			<a id="account-info" class="menubtn" title="{{ 'My Account'|t }}" role="button" data-menu-anchor="#account-menu-anchor">
 				<div id="user-photo" class="photo-container">
 					<img width="32" sizes="32px" srcset="{{ currentUser.getThumbUrl(32) }} 32w, {{ currentUser.getThumbUrl(64) }} 64w" alt="{{ currentUser.getName() }}">
 				</div>
-				<span>{{ currentUser.name }}</span>
+				<div class="username">{{ currentUser.name }}</div>
+				<div id="account-menu-anchor"></div>
 			</a>
-			<div class="menu" data-align="right">
+			<div class="menu" data-align="left">
 				<ul>
 					<li><a href="{{ url('myaccount') }}">{{ "My Account"|t }}</a></li>
 					{% if CraftEdition == CraftClient and currentUser.admin %}

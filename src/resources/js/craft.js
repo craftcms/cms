@@ -1455,7 +1455,11 @@ $.extend($.fn,
 
 			if (!$btn.data('menubtn') && $btn.next().hasClass('menu'))
 			{
-				new Garnish.MenuBtn($btn);
+				var settings = {};
+
+				if ($btn.data('menu-anchor')) settings.menuAnchor = $btn.data('menu-anchor');
+
+				new Garnish.MenuBtn($btn, settings);
 			}
 		});
 	}
