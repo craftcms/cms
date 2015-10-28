@@ -10,8 +10,12 @@
 					{%- if source.defaultSort is defined %}{% set defaultSort = source.defaultSort %} data-default-sort="{{ defaultSort is iterable ? defaultSort|join(':') : defaultSort }}"{% endif %}
 					{%- if source.data is defined -%}
 						{% for dataKey, dataVal in source.data %} data-{{ dataKey }}="{{ dataVal }}"{% endfor %}
-					{%- endif -%}
-				>{{ source.label }}</a>
+					{%- endif %}>
+						{%- if source.status is defined and source.status -%}
+							<span class="status {{ source.status }}"></span>
+						{%- endif -%}
+						{{- source.label -}}
+				</a>
 				{% if source.nested is defined and source.nested is not empty %}
 					<div class="toggle"></div>
 					{% include "_elements/sources" with {
