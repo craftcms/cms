@@ -113,8 +113,25 @@
 
 {% block body %}
 	<header id="global-sidebar">
+
+		{% if currentUser.admin and craft.config.devMode %}
+			<div id="devmode" title="{{ '@@@appName@@@ is running in Dev Mode.'|t }}"></div>
+		{% endif %}
+
 		<div class="topbar">
-			<a class="site-name" href="{{ siteUrl }}" title="{{ 'Site Homepage'|t }}" target="_blank"><h2>{{ siteName|t }}</h2></a>
+
+			<a class="site-name" href="{{ siteUrl }}" title="{{ 'Site Homepage'|t }}" target="_blank">
+
+				{% if false and CraftEdition >= CraftClient %}
+					{% if craft.rebrand.isLogoUploaded %}
+						<div id="site-icon" class="photo-container">
+							<img src="{{ craft.rebrand.logo.url }}" alt="">
+						</div>
+					{% endif %}
+				{% endif %}
+
+				<h2>{{ siteName|t }}</h2>
+			</a>
 
 			{% if currentUser.can('performUpdates') %}
 				{% if craft.app.isUpdateInfoCached() %}
@@ -135,19 +152,6 @@
 					{% includejs 'Craft.cp.checkForUpdates();' %}
 				{% endif %}
 			{% endif %}
-
-			<a class="myaccount menubtn" title="{{ 'My Account'|t }}" role="button">
-				<img sizes="30px" srcset="{{ currentUser.getThumbUrl(30) }} 30w, {{ currentUser.getThumbUrl(60) }} 60w" alt="{{ currentUser.getName() }}">
-			</a>
-			<div class="menu" data-align="right">
-				<ul>
-					<li><a href="{{ url('myaccount') }}">{{ "My Account"|t }}</a></li>
-					{% if CraftEdition == CraftClient and currentUser.admin %}
-						<li><a href="{{ url('clientaccount') }}">{{ "Client’s Account"|t }}</a></li>
-					{% endif %}
-					<li><a href="{{ logoutUrl }}">{{ "Sign out"|t }}</a></li>
-				</ul>
-			</div>
 		</div>
 
 		<nav>
@@ -208,9 +212,28 @@
 			</ul>
 		</nav>
 
-		{% if currentUser.admin and craft.config.devMode %}
-			<div id="devmode" title="{{ '@@@appName@@@ is running in Dev Mode.'|t }}"></div>
-		{% endif %}
+		<div class="bottombar">
+			<a id="account-info" class="menubtn" title="{{ 'My Account'|t }}" role="button" data-menu-anchor="#account-menu-anchor">
+				<div id="user-photo" class="photo-container">
+					<img width="32" sizes="32px" srcset="{{ currentUser.getThumbUrl(32) }} 32w, {{ currentUser.getThumbUrl(64) }} 64w" alt="{{ currentUser.getName() }}">
+				</div>
+				<div class="username">
+					{{ currentUser.name }}
+					{% if currentUser.admin %}<div class="light">{{ 'admin'|t }}</div>{% endif %}
+				</div>
+				<div id="account-menu-anchor"></div>
+			</a>
+			<div class="menu" data-align="left">
+				<ul>
+					<li><a href="{{ url('myaccount') }}">{{ "My Account"|t }}</a></li>
+					{% if CraftEdition == CraftClient and currentUser.admin %}
+						<li><a href="{{ url('clientaccount') }}">{{ "Client’s Account"|t }}</a></li>
+					{% endif %}
+					<li><a href="{{ logoutUrl }}">{{ "Sign out"|t }}</a></li>
+				</ul>
+			</div>
+		</div>
+
 	</header>
 
 	{% if fullPageForm %}

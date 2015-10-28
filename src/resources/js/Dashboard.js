@@ -225,6 +225,9 @@ Craft.Widget = Garnish.Base.extend(
     $settingsSpinner: null,
     $settingsErrorList: null,
 
+    $colspanPicker: null,
+
+    totalCols: null,
     settingsHtml: null,
     initSettingsFn: null,
     showingSettings: false,
@@ -477,112 +480,148 @@ Craft.Widget = Garnish.Base.extend(
             '<tr data-id="'+id+'" data-name="'+title+'">' +
                 '<td><img class="widgetmanagerhud-img" src="'+iconUrl+'" /></td>' +
                 '<td>'+this.getManagerRowLabel()+'</td>' +
-                '<td class="widgetmanagerhud-col-colspan-picker thin"><div class="colspan-picker"></div></td>' +
+                '<td class="widgetmanagerhud-col-colspan-picker thin"></td>' +
                 '<td class="widgetmanagerhud-col-move thin"><a class="move icon" title="'+Craft.t('Reorder')+'" role="button"></a></td>' +
                 '<td class="thin"><a class="delete icon" title="'+Craft.t('Delete')+'" role="button"></a></td>' +
             '</tr>'
         );
 
-        $colspanPicker = $('.colspan-picker', $row);
-
-        this.addListener($colspanPicker, 'mouseover', function(ev) {
-            $(ev.currentTarget).addClass('is-hovering');
-        });
-
-        this.addListener($colspanPicker, 'mouseout', function(ev) {
-            $(ev.currentTarget).removeClass('is-hovering');
-        });
-
-        if(!maxColspan)
-        {
-            maxColspan = 1;
-        }
-
-        if(maxColspan > 1)
-        {
-            for(i=1; i <= maxColspan; i++)
-            {
-                var cssClass = '';
-
-                if(i <= colspan)
-                {
-                    cssClass = 'active';
-                }
-
-                if(i == colspan)
-                {
-                    cssClass += ' last';
-                }
-
-                $('<a title="'+i+' Column" data-colspan="'+i+'" role="button" class="'+cssClass+'"></a>').appendTo($colspanPicker);
-            }
-
-            var $columns = $('a', $colspanPicker);
-
-            this.addListener($columns, 'mouseover', function(ev) {
-
-                $columns.removeClass('is-highlighted');
-
-                $.each($columns, function(k, column)
-                {
-                    if(k <= $(ev.currentTarget).index())
-                    {
-                        $(column).addClass('is-highlighted');
-                    }
-                });
-            });
-
-            this.addListener($columns, 'mouseout', function(ev) {
-                $columns.removeClass('is-highlighted');
-            });
-
-            this.addListener($columns, 'click', $.proxy(function(ev) {
-
-                var $column = $(ev.currentTarget);
-
-                $columns.removeClass('last');
-                $columns.removeClass('active');
-                $column.addClass('active');
-
-                $.each($columns, function(k, v) {
-
-                    if(k <= $column.index())
-                    {
-                        $(v).addClass('active');
-                    }
-
-                    if(k == $column.index())
-                    {
-                        $(v).addClass('last');
-                    }
-                });
-
-                var colspan = $(ev.currentTarget).data('colspan');
-
-                this.$gridItem.data('colspan', colspan);
-                window.dashboard.grid.refreshCols(true);
-
-                var data = {
-                    id: id,
-                    colspan:colspan
-                };
-
-                Craft.postActionRequest('dashboard/changeWidgetColspan', data, function(response, textStatus)
-                {
-                    if (textStatus == 'success' && response.success)
-                    {
-                        Craft.cp.displayNotice(Craft.t('Widget saved.'));
-                    }
-                    else
-                    {
-                        Craft.cp.displayError(Craft.t('Couldn’t change widget’s colspan.'));
-                    }
-                });
-
-            }, this));
-        }
+        window.dashboard.grid.on('refreshCols', $.proxy(this, 'onRefreshCols', $row, id, title, iconUrl, colspan, maxColspan));
+        window.dashboard.grid.trigger('refreshCols');
 
         return $row;
+    },
+
+    onRefreshCols: function($row, id, title, iconUrl, colspan, maxColspan)
+    {
+        if(window.dashboard.grid.totalCols != this.totalCols)
+        {
+            // column has changed
+
+            this.totalCols = window.dashboard.grid.totalCols;
+
+
+            // remove existing colspan picker
+
+            if(this.$colspanPicker)
+            {
+                this.$colspanPicker.remove();
+            }
+
+
+            // create colspan picker
+
+            this.$colspanPicker = $('<div class="colspan-picker"/>').appendTo($('.widgetmanagerhud-col-colspan-picker', $row));
+
+            this.addListener(this.$colspanPicker, 'mouseover', function(ev) {
+                $(ev.currentTarget).addClass('is-hovering');
+            });
+
+            this.addListener(this.$colspanPicker, 'mouseout', function(ev) {
+                $(ev.currentTarget).removeClass('is-hovering');
+            });
+
+            if(!maxColspan || maxColspan > this.totalCols)
+            {
+                if(this.totalCols <= 3)
+                {
+                    maxColspan = this.totalCols;
+                }
+                else
+                {
+                    maxColspan = 3;
+                }
+            }
+
+            if(colspan > this.totalCols)
+            {
+                colspan = this.totalCols;
+            }
+
+            if(maxColspan > 1)
+            {
+                for(i=1; i <= maxColspan; i++)
+                {
+                    var cssClass = '';
+
+                    if(i <= colspan)
+                    {
+                        cssClass = 'active';
+                    }
+
+                    if(i == colspan)
+                    {
+                        cssClass += ' last';
+                    }
+
+                    $('<a title="'+i+' Column" data-colspan="'+i+'" role="button" class="'+cssClass+'"></a>').appendTo(this.$colspanPicker);
+                }
+
+                var $columns = $('a', this.$colspanPicker);
+
+                this.addListener($columns, 'mouseover', function(ev) {
+
+                    $columns.removeClass('is-highlighted');
+
+                    $.each($columns, function(k, column)
+                    {
+                        if(k <= $(ev.currentTarget).index())
+                        {
+                            $(column).addClass('is-highlighted');
+                        }
+                    });
+                });
+
+                this.addListener($columns, 'mouseout', function(ev) {
+                    $columns.removeClass('is-highlighted');
+                });
+
+                this.addListener($columns, 'click', $.proxy(function(ev) {
+
+                    var $column = $(ev.currentTarget);
+
+                    $columns.removeClass('last');
+                    $columns.removeClass('active');
+                    $column.addClass('active');
+
+                    $.each($columns, function(k, v) {
+
+                        if(k <= $column.index())
+                        {
+                            $(v).addClass('active');
+                        }
+
+                        if(k == $column.index())
+                        {
+                            $(v).addClass('last');
+                        }
+                    });
+
+                    var colspan = $(ev.currentTarget).data('colspan');
+
+                    this.$gridItem.data('colspan', colspan);
+                    window.dashboard.grid.refreshCols(true);
+
+                    var data = {
+                        id: id,
+                        colspan:colspan
+                    };
+
+                    Craft.postActionRequest('dashboard/changeWidgetColspan', data, function(response, textStatus)
+                    {
+                        if (textStatus == 'success' && response.success)
+                        {
+                            Craft.cp.displayNotice(Craft.t('Widget saved.'));
+                        }
+                        else
+                        {
+                            Craft.cp.displayError(Craft.t('Couldn’t change widget’s colspan.'));
+                        }
+                    });
+
+                }, this));
+            }
+        }
     },
 
     getManagerRowLabel: function()
