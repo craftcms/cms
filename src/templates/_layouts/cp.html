@@ -124,7 +124,9 @@
 
 				{% if CraftEdition >= CraftClient %}
 					{% if craft.rebrand.isLogoUploaded %}
-						<img src="{{ craft.rebrand.logo.url }}" class="logo" />
+						<div id="site-icon" class="photo-container">
+							<img src="{{ craft.rebrand.logo.url }}" alt="">
+						</div>
 					{% endif %}
 				{% endif %}
 
@@ -212,7 +214,9 @@
 
 		<div class="bottombar">
 			<a class="myaccount menubtn" title="{{ 'My Account'|t }}" role="button">
-				<img width="32" sizes="32px" srcset="{{ currentUser.getThumbUrl(32) }} 32w, {{ currentUser.getThumbUrl(64) }} 64w" alt="{{ currentUser.getName() }}">
+				<div id="user-photo" class="photo-container">
+					<img width="32" sizes="32px" srcset="{{ currentUser.getThumbUrl(32) }} 32w, {{ currentUser.getThumbUrl(64) }} 64w" alt="{{ currentUser.getName() }}">
+				</div>
 				<span>{{ currentUser.name }}</span>
 			</a>
 			<div class="menu" data-align="right">
