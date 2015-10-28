@@ -50,7 +50,7 @@ body {
 #global-sidebar .topbar > a { display: flex; align-items: center; padding: 0 14px; }
 #global-sidebar .topbar > a:focus { background: none; }
 
-#global-sidebar .topbar .logo { max-width: 32px; max-height: 32px; background: red; border-radius: $elementBorderRadius; vertical-align: middle;
+#global-sidebar .topbar .logo { max-width: 32px; max-height: 32px; border-radius: $elementBorderRadius; vertical-align: middle;
 	@include margin-right(14px);
 }
 
