@@ -105,7 +105,7 @@ class AssetsFieldType extends BaseElementFieldType
 	{
 		try
 		{
-			parent::getInputHtml($name, $criteria);
+			return parent::getInputHtml($name, $criteria);
 		}
 		catch (InvalidSubpathException $e)
 		{
