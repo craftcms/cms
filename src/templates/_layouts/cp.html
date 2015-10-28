@@ -119,7 +119,15 @@
 		{% endif %}
 
 		<div class="topbar">
-			<a class="site-name" href="{{ siteUrl }}" title="{{ 'Site Homepage'|t }}" target="_blank"><h2>{{ siteName|t }}</h2></a>
+
+			<a class="site-name" href="{{ siteUrl }}" title="{{ 'Site Homepage'|t }}" target="_blank">
+
+				{% if CraftEdition >= CraftClient %}
+					<img src="{{ craft.rebrand.logo.url }}" class="logo" />
+				{% endif %}
+
+				<h2>{{ siteName|t }}</h2>
+			</a>
 
 			{% if currentUser.can('performUpdates') %}
 				{% if craft.app.isUpdateInfoCached() %}
@@ -203,7 +211,7 @@
 		<div class="bottombar">
 			<a class="myaccount menubtn" title="{{ 'My Account'|t }}" role="button">
 				<img width="32" sizes="32px" srcset="{{ currentUser.getThumbUrl(32) }} 32w, {{ currentUser.getThumbUrl(64) }} 64w" alt="{{ currentUser.getName() }}">
-				{{ currentUser.name }}
+				<span>{{ currentUser.name }}</span>
 			</a>
 			<div class="menu" data-align="right">
 				<ul>
