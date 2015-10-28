@@ -288,7 +288,7 @@ Release = Garnish.Base.extend(
 		}
 
 		$('<h3/>', {text: heading}).appendTo(this.$container);
-		$('<p/>', {'class': 'release-date light', text: Craft.t('Released on {date}', {date: Craft.formatDate(this.releaseInfo.date)})}).appendTo(this.$container);
+		$('<p/>', {'class': 'release-date light', text: Craft.t('Released on {date}', {date: Craft.formatDate(this.releaseInfo.localizedDate)})}).appendTo(this.$container);
 	},
 
 	createReleaseNotes: function()
