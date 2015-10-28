@@ -102,6 +102,7 @@ var Update = Garnish.Base.extend(
 	manualUpdateRequired: null,
 
 	$pane: null,
+	$paneHeader: null,
 	$downloadBtn: null,
 
 	licenseHud: null,
@@ -116,21 +117,25 @@ var Update = Garnish.Base.extend(
 		this.manualUpdateRequired = (!updatesPage.allowAutoUpdates || this.updateInfo.manualUpdateRequired);
 
 		this.createPane();
-		this.createDownloadButton();
 		this.createHeading();
+		this.createDownloadButton();
 		this.createReleaseList();
-
-		//this.$container.velocity('fadeIn', { duration: 'fast' });
 	},
 
 	createPane: function()
 	{
-		this.$pane = $('<div class="pane"/>').appendTo(Craft.cp.$main);
+		this.$pane = $('<div class="pane update"/>').appendTo(Craft.cp.$main);
+		this.$paneHeader = $('<div class="header"/>').appendTo(this.$pane);
+	},
+
+	createHeading: function()
+	{
+		$('<h2/>', {'class': 'left', text: this.displayName}).appendTo(this.$paneHeader);
 	},
 
 	createDownloadButton: function()
 	{
-		var $buttonContainer = $('<div class="buttons right"/>').appendTo(this.$pane);
+		var $buttonContainer = $('<div class="buttons right"/>').appendTo(this.$paneHeader);
 
 		// Is a manual update required?
 		if (this.manualUpdateRequired)
@@ -172,34 +177,11 @@ var Update = Garnish.Base.extend(
 		}
 	},
 
-	createHeading: function()
-	{
-		$('<h2/>', {
-			text: this.displayName
-		}).appendTo(this.$pane);
-	},
-
 	createReleaseList: function()
 	{
 		for (var i = 0; i < this.updateInfo.releases.length; i++)
 		{
-			$('<hr/>').appendTo(this.$pane);
-
-			var release = this.updateInfo.releases[i],
-				heading = this.displayName+' '+release.version;
-
-			if (release.build)
-			{
-				heading += '.'+release.build;
-			}
-
-			if (release.critical)
-			{
-				heading += ' <span class="critical">'+Craft.t('Critical')+'</span>'
-			}
-
-			$('<h3>'+heading+'</h3>').appendTo(this.$pane);
-			$('<div class="release-notes"/>').appendTo(this.$pane).html(release.notes);
+			new Release(this, this.updateInfo.releases[i]);
 		}
 	},
 
@@ -264,6 +246,91 @@ var Update = Garnish.Base.extend(
 	{
 		window.location.href = Craft.getUrl('updates/go/'+(this.isPlugin ? this.updateInfo.class.toLowerCase() : 'craft'));
 	}
+});
+
+
+Release = Garnish.Base.extend(
+{
+	update: null,
+	releaseInfo: null,
+
+	$container: null,
+	$releaseNotes: null,
+	$showMoreLink: null,
+
+	init: function(update, releaseInfo)
+	{
+		this.update = update;
+		this.releaseInfo = releaseInfo;
+
+		this.createContainer();
+		this.createHeading();
+		this.createReleaseNotes();
+	},
+
+	createContainer: function()
+	{
+		this.$container = $('<div class="release"/>').appendTo(this.update.$pane);
+	},
+
+	createHeading: function()
+	{
+		var heading = this.releaseInfo.version;
+
+		if (this.releaseInfo.build)
+		{
+			heading += '.'+this.releaseInfo.build;
+		}
+
+		if (this.releaseInfo.critical)
+		{
+			heading += ' <span class="critical">'+Craft.t('Critical')+'</span>'
+		}
+
+		$('<h3/>', {text: heading}).appendTo(this.$container);
+		$('<p/>', {'class': 'release-date light', text: Craft.t('Released on {date}', {date: Craft.formatDate(this.releaseInfo.date)})}).appendTo(this.$container);
+	},
+
+	createReleaseNotes: function()
+	{
+		this.$releaseNotes = $('<div class="release-notes"/>').appendTo(this.$container).html(this.releaseInfo.notes);
+
+		var totalNotes = this.$releaseNotes.children('ul').children().length;
+
+		if (totalNotes > Release.maxInitialReleaseNotes) {
+			this.$releaseNotes.addClass('fade-out');
+			this.$showMoreLink = $('<a/>', {'class': 'show-full-notes', text: Craft.t('Show more')}).appendTo(this.$container);
+			this.addListener(this.$showMoreLink, 'click', 'showMoreReleaseNotes');
+		}
+	},
+
+	showMoreReleaseNotes: function()
+	{
+		var collapsedHeight = this.$releaseNotes.height();
+		this.$releaseNotes.css('max-height', 'none');
+		var expandedHeight = this.$releaseNotes.height();
+		this.$releaseNotes
+			.height(collapsedHeight)
+			.velocity({height: expandedHeight}, {
+				duration: 'fast',
+				complete: $.proxy(function(){
+					this.$releaseNotes
+						.removeClass('fade-out')
+						.css('max-height', '');
+					this.$showMoreLink.remove();
+				}, this)
+			});
+
+		this.$showMoreLink.velocity({opacity: 0, 'margin-top': -18}, {
+			duration: 'fast',
+			complete: $.proxy(function(){
+				this.$showMoreLink.remove();
+			})
+		});
+	}
+},
+{
+	maxInitialReleaseNotes: 5
 });
 
 
