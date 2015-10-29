@@ -42,7 +42,8 @@
 
 /* New Widget Menu */
 .newwidgetmenu ul li a { position: relative; padding-left: 35px; }
-.newwidgetmenu ul li a img { position: absolute; top: 4px; left: 14px; width: 15px; }
+.newwidgetmenu ul li a .icon { position: absolute; top: 7px; left: 14px; width: 15px; }
+.newwidgetmenu ul li a .icon img { width: 15px; }
 
 /* New Widget Menu */
 .widgetmanagerhud { max-width: 400px; }

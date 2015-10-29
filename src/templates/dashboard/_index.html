@@ -10,7 +10,25 @@
             <div class="menu newwidgetmenu">
                 <ul>
                     {% for widgetType in widgetTypes %}
-                        <li><a data-type="{{ widgetType.type }}" data-colspan="{{ widgetType.colspan }}" data-settings-html="{{ widgetType.settingsHtml }}" data-settings-js="{{ widgetType.settingsJs }}"><img src="{% if widgetType.iconUrl %}{{ widgetType.iconUrl }}{% else %}{{ resourceUrl('images/widgets/default.svg') }}{% endif %}" /> {{ widgetType.name }}</a></li>
+                        <li>
+                            <a data-type="{{ widgetType.type }}" data-colspan="{{ widgetType.colspan }}" data-settings-html="{{ widgetType.settingsHtml }}" data-settings-js="{{ widgetType.settingsJs }}">
+
+                                <span class="icon">
+                                    {%- if widgetType.icon is defined -%}
+                                        <span data-icon="{{ widgetType.icon }}"></span>
+                                    {%- elseif widgetType.iconUrl is defined and widgetType.iconUrl -%}
+                                        <img src="{{ widgetType.iconUrl }}" />
+                                    {%- else -%}
+                                        <svg version="1.1" baseProfile="full" width="16" height="16" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
+                                            <circle cx="8" cy="8" r="8" fill="#8D95A1" fill-opacity="0.2"/>
+                                            <text x="8" y="12" font-size="10" font-family="sans-serif" font-weight="bold" text-anchor="middle" fill="#8D95A1">{{ widgetType.type[0:1]|upper }}</text>
+                                        </svg>
+                                    {%- endif -%}
+                                </span>
+
+                                {{ widgetType.name }}
+                            </a>
+                        </li>
                     {% endfor %}
                 </ul>
             </div>
