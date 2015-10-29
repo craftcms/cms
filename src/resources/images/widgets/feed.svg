@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg width="16px" height="16px" viewBox="0 0 16 16" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:sketch="http://www.bohemiancoding.com/sketch/ns">
+    <!-- Generator: Sketch 3.4 (15575) - http://www.bohemiancoding.com/sketch -->
+    <title>feed</title>
+    <desc>Created with Sketch.</desc>
+    <defs></defs>
+    <g id="UI-Kit" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd" sketch:type="MSPage">
+        <g id="feed" sketch:type="MSArtboardGroup" fill="#444444">
+            <path d="M2.08695652,16 C3.23955078,16 4.17391304,15.0656377 4.17391304,13.9130435 C4.17391304,12.7604492 3.23955078,11.826087 2.08695652,11.826087 C0.934362261,11.826087 0,12.7604492 0,13.9130435 C0,15.0656377 0.934362261,16 2.08695652,16 Z M2.66453526e-15,5.56521739 L2.66453526e-15,8.34782609 C4.21919996,8.34745487 7.65214298,11.7804742 7.65217391,16 L10.4347826,16 C10.4347826,10.2462067 5.75250539,5.56521739 2.66453526e-15,5.56521739 Z M1.77635684e-15,0 L1.77635684e-15,2.7826087 C7.28808201,2.78262887 13.2170584,8.71166534 13.2173913,16 L16,16 C15.999768,7.17766983 8.82258602,0 1.77635684e-15,0 Z" sketch:type="MSShapeGroup"></path>
+        </g>
+    </g>
+</svg>
