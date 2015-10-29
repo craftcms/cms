@@ -53,7 +53,7 @@ class FeedWidget extends BaseWidget
 	 */
 	public function getIconUrl()
 	{
-		return UrlHelper::getResourceUrl('images/widgets/feed_2x.png');
+		return UrlHelper::getResourceUrl('images/widgets/feed.svg');
 	}
 
 	/**
