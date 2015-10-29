@@ -60,6 +60,10 @@ Craft.CP = Garnish.Base.extend(
 	$upgradePromo: null,
 	upgradeModal: null,
 
+	checkingForUpdates: false,
+	forcingRefreshOnUpdatesCheck: false,
+	checkForUpdatesCallbacks: null,
+
 	init: function()
 	{
 		// Is this session going to expire?
@@ -618,16 +622,60 @@ Craft.CP = Garnish.Base.extend(
 		}
 	},
 
-	checkForUpdates: function()
+	checkForUpdates: function(forceRefresh, callback)
 	{
-		Craft.queueActionRequest('app/checkForUpdates', $.proxy(function(info)
+		// If forceRefresh == true, we're currently checking for updates, and not currently forcing a refresh,
+		// then just seta new callback that re-checks for updates when the current one is done.
+		if (this.checkingForUpdates && forceRefresh === true && !this.forcingRefreshOnUpdatesCheck)
 		{
-			this.displayUpdateInfo(info);
+			var realCallback = callback;
 
-			this.trigger('checkForUpdates', {
-				updateInfo: info
-			});
-		}, this));
+			callback = function() {
+				Craft.cp.checkForUpdates(true, realCallback);
+			};
+		}
+
+		// Callback function?
+		if (typeof callback == 'function')
+		{
+			if (!Garnish.isArray(this.checkForUpdatesCallbacks))
+			{
+				this.checkForUpdatesCallbacks = [];
+			}
+
+			this.checkForUpdatesCallbacks.push(callback);
+		}
+
+		if (!this.checkingForUpdates)
+		{
+			this.checkingForUpdates = true;
+			this.forcingRefreshOnUpdatesCheck = (forceRefresh === true);
+
+			var data = {
+				forceRefresh: (forceRefresh === true)
+			};
+
+			Craft.queueActionRequest('app/checkForUpdates', data, $.proxy(function(info)
+			{
+				this.displayUpdateInfo(info);
+				this.checkingForUpdates = false;
+
+				if (Garnish.isArray(this.checkForUpdatesCallbacks))
+				{
+					var callbacks = this.checkForUpdatesCallbacks;
+					this.checkForUpdatesCallbacks = null;
+
+					for (var i = 0; i < callbacks.length; i++)
+					{
+						callbacks[i](info);
+					}
+				}
+
+				this.trigger('checkForUpdates', {
+					updateInfo: info
+				});
+			}, this));
+		}
 	},
 
 	displayUpdateInfo: function(info)
