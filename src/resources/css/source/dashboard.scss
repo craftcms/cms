@@ -49,14 +49,14 @@
 /* New Widget Menu */
 .widgetmanagerhud { max-width: 400px; }
 .widgetmanagerhud .body { min-width: 400px; }
-.widgetmanagerhud .colspan-picker { width: 33px; height: 18px; }
-.widgetmanagerhud .colspan-picker:not(.is-hovering) a.active { border: 1px solid #999; background: #fff; border-left: medium none; border-right: medium none; height: 15px; margin-top: 0; margin-bottom: 0 }
-.widgetmanagerhud .colspan-picker:not(.is-hovering) a.active.last { border-right: 1px solid #999; }
-.widgetmanagerhud .colspan-picker a { border: 1px solid rgba(0, 0, 0, .15); border-left: medium none; background-image: none; width: 7px; height: 13px; margin-left: 0; display: block; float: left; margin-top: 1px; margin-bottom: 1px; box-sizing: border-box }
+.widgetmanagerhud .colspan-picker { height: 18px; white-space: nowrap; }
+.widgetmanagerhud .colspan-picker:not(.hover) a.active { border: 1px solid #999; background: #fff; border-left: medium none; border-right: medium none; height: 15px; margin-top: 0; margin-bottom: 0 }
+.widgetmanagerhud .colspan-picker:not(.hover) a.active.last { border-right: 1px solid #999; }
+.widgetmanagerhud .colspan-picker a { border: 1px solid rgba(0, 0, 0, .15); border-left: medium none; background-image: none; width: 7px; height: 13px; margin-left: 0; display: inline-block; margin-top: 1px; margin-bottom: 1px; box-sizing: border-box }
 .widgetmanagerhud .colspan-picker a:first-child { width: 8px; border-left: 1px solid #999!important }
 .widgetmanagerhud .colspan-picker a:hover { border-right: 1px solid #999!important; }
-.widgetmanagerhud .colspan-picker a.is-highlighted { border: 1px solid #999; border-left: medium none; border-right: medium none; height: 15px; margin-top: 0; margin-bottom: 0 }
-.widgetmanagerhud .colspan-picker a.is-highlighted.last { border-right: medium none }
+.widgetmanagerhud .colspan-picker a.highlight { border: 1px solid #999; border-left: medium none; border-right: medium none; height: 15px; margin-top: 0; margin-bottom: 0 }
+.widgetmanagerhud .colspan-picker a.highlight.last { border-right: medium none }
 
 .widgetmanagerhud-img { width: 15px; }
 

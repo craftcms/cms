@@ -49,6 +49,7 @@ class DashboardController extends BaseController
 			$widgetTypeInfo[$handle] = array(
 				'iconSvg' => $this->_getWidgetIconSvg($widgetType),
 				'name' => $widgetType->getName(),
+				'maxColspan' => $widgetType->getMaxColspan(),
 				'settingsHtml' => (string) $settingsHtml,
 				'settingsJs' => (string) $settingsJs,
 				'selectable' => true,
@@ -80,6 +81,7 @@ class DashboardController extends BaseController
 				$widgetTypeInfo[$info['type']] = array(
 					'iconSvg' => $this->_getWidgetIconSvg($widgetType),
 					'name' => $widgetType->getName(),
+					'maxColspan' => $widgetType->getMaxColspan(),
 					'selectable' => false,
 				);
 			}
@@ -103,7 +105,12 @@ class DashboardController extends BaseController
 		$templatesService->includeJsResource('js/Dashboard.js');
 		$templatesService->includeJs('window.dashboard = new Craft.Dashboard('.JsonHelper::encode($widgetTypeInfo).');');
 		$templatesService->includeJs($allWidgetJs);
-		$templatesService->includeTranslations('{type} Settings','Widget saved.', 'Couldn’t save widget.');
+		$templatesService->includeTranslations(
+			'{type} Settings',
+			'Widget saved.',
+			'Couldn’t save widget.',
+			'You don’t have any widgets yet.'
+		);
 
 		$variables['widgetTypes'] = $widgetTypeInfo;
 		$this->renderTemplate('dashboard/_index', $variables);
@@ -508,12 +515,20 @@ class DashboardController extends BaseController
 		$settingsHtml = $templatesService->namespaceInputs($widgetType->getSettingsHtml());
 		$settingsJs = $templatesService->clearJsBuffer(false);
 
+		// Get the colspan (limited to the widget type's max allowed colspan)
+		$colspan = ($widget->colspan ?: 1);
+
+		if (($maxColspan = $widgetType->getMaxColspan()) && $colspan > $maxColspan)
+		{
+			$colspan = $maxColspan;
+		}
+
 		$templatesService->setNamespace($namespace);
 
 		return array(
 			'id' => $widget->id,
 			'type' => $widgetType->getClassHandle(),
-			'colspan' => ($widget->colspan > 1 ? $widget->colspan : 1),
+			'colspan' => $colspan,
 			'title' => $widgetType->getTitle(),
 			'name' => $widgetType->getName(),
 			'bodyHtml' => $widgetBodyHtml,

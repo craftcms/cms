@@ -207,7 +207,8 @@ body.mobile #container {
 .pane > .tabs li a:not(.sel):hover { color: $linkcolor; }
 
 /* grids */
-.grid { position: relative; margin: 23px -7px; }
+.grid { position: relative; margin: -7px; }
+.grid + .grid { margin-top: 17px; }
 .grid:after { @include clearafter; }
 .grid > .item { display: none; padding: 7px; @include box-sizing(border-box); }
 
