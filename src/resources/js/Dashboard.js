@@ -140,15 +140,16 @@ Craft.Dashboard = Garnish.Base.extend(
 
             for (var i = 0; i < $widgets.length; i++)
             {
-                var $widget = $widgets.eq(i);
+                var $widget = $widgets.eq(i),
+                    widget = $widget.data('widget');
 
                 // Make sure it's actually saved
-                if (!$widget.data('id'))
+                if (!widget.id)
                 {
                     continue;
                 }
 
-                this.widgets[$widget.data('id')].getManagerRow().appendTo($tbody);
+                widget.getManagerRow().appendTo($tbody);
             }
 
             this.widgetManager = new Garnish.HUD(this.$widgetManagerBtn, $form, {
@@ -227,6 +228,9 @@ Craft.Widget = Garnish.Base.extend(
 
     $colspanPicker: null,
 
+    id: null,
+    type: null,
+
     totalCols: null,
     settingsHtml: null,
     initSettingsFn: null,
@@ -237,11 +241,17 @@ Craft.Widget = Garnish.Base.extend(
         this.$container = $(container);
         this.$gridItem = this.$container.parent();
 
+        // Store a reference to this object on the container element
         this.$container.data('widget', this);
 
-        if (this.$container.data('id'))
+        // Do a little introspection
+        this.id = this.$container.data('id');
+        this.type = this.$container.data('type');
+
+        if (this.id)
         {
-            window.dashboard.widgets[this.$container.data('id')] = this;
+            // Store a reference to this object on the main Dashboard object
+            window.dashboard.widgets[this.id] = this;
         }
 
         this.$front = this.$container.children('.front');
@@ -381,18 +391,20 @@ Craft.Widget = Garnish.Base.extend(
         // Is this a new widget?
         if (this.$container.hasClass('new'))
         {
+            // Discover ourself
+            this.id = response.info.id;
+
             this.$container
-                .attr('id', 'widget'+response.info.id)
-                .data('id', response.info.id)
-                .data('name', response.info.name)
+                .attr('id', 'widget'+this.id)
                 .removeClass('new loading-new');
 
             if (this.$settingsForm)
             {
-                this.$settingsForm.prepend('<input type="hidden" name="widgetId" value="'+response.info.id+'"/>')
+                this.$settingsForm.prepend('<input type="hidden" name="widgetId" value="'+this.id+'"/>')
             }
 
-            window.dashboard.widgets[response.info.id] = this;
+            // Store a reference to this object on the main Dashboard object, now that the widget actually exists
+            window.dashboard.widgets[this.id] = this;
 
             if (window.dashboard.widgetAdminTable)
             {
@@ -403,7 +415,7 @@ Craft.Widget = Garnish.Base.extend(
         {
             if (window.dashboard.widgetAdminTable)
             {
-                window.dashboard.widgetAdminTable.$tbody.children('[data-id="'+this.$container.data('id')+'"]:first').children('td:nth-child(2)').html(this.getManagerRowLabel());
+                window.dashboard.widgetAdminTable.$tbody.children('[data-id="'+this.id+'"]:first').children('td:nth-child(2)').html(this.getManagerRowLabel());
             }
         }
 
@@ -429,7 +441,7 @@ Craft.Widget = Garnish.Base.extend(
 
     cancelSettings: function()
     {
-        if (this.$container.data('id'))
+        if (this.id)
         {
             this.hideSettings();
         }
@@ -465,15 +477,13 @@ Craft.Widget = Garnish.Base.extend(
 
     getManagerRow: function()
     {
-        var id = this.$container.data('id'),
-            type = this.$container.data('type'),
-            title = this.$container.data('title'),
+        var title = this.$container.data('title'),
             colspan = this.$container.data('colspan');
-            iconSvg = window.dashboard.widgetTypes[type].iconSvg,
-            maxColspan = window.dashboard.widgetTypes[type].maxColspan;
+            iconSvg = window.dashboard.widgetTypes[this.type].iconSvg,
+            maxColspan = window.dashboard.widgetTypes[this.type].maxColspan;
 
         var $row = $(
-            '<tr data-id="'+id+'" data-name="'+title+'">' +
+            '<tr data-id="'+this.id+'" data-name="'+title+'">' +
                 '<td class="widgetmanagerhud-icon">'+iconSvg+'</td>' +
                 '<td>'+this.getManagerRowLabel()+'</td>' +
                 '<td class="widgetmanagerhud-col-colspan-picker thin"></td>' +
@@ -482,13 +492,13 @@ Craft.Widget = Garnish.Base.extend(
             '</tr>'
         );
 
-        window.dashboard.grid.on('refreshCols', $.proxy(this, 'onRefreshCols', $row, id, title, colspan, maxColspan));
+        window.dashboard.grid.on('refreshCols', $.proxy(this, 'onRefreshCols', $row, title, colspan, maxColspan));
         window.dashboard.grid.trigger('refreshCols');
 
         return $row;
     },
 
-    onRefreshCols: function($row, id, title, colspan, maxColspan)
+    onRefreshCols: function($row, title, colspan, maxColspan)
     {
         if(window.dashboard.grid.totalCols != this.totalCols)
         {
@@ -599,7 +609,7 @@ Craft.Widget = Garnish.Base.extend(
                     window.dashboard.grid.refreshCols(true);
 
                     var data = {
-                        id: id,
+                        id: this.id,
                         colspan:colspan
                     };
 
@@ -623,14 +633,14 @@ Craft.Widget = Garnish.Base.extend(
     getManagerRowLabel: function()
     {
         var title = this.$container.data('title'),
-            name = this.$container.data('name');
+            typeName = window.dashboard.widgetTypes[this.type].name;
 
-        return title+(title != name ? ' <span class="light">('+name+')</span>' : '')
+        return title+(title != typeName ? ' <span class="light">('+typeName+')</span>' : '')
     },
 
     destroy: function()
     {
-        delete window.dashboard.widgets[this.$container.data('id')];
+        delete window.dashboard.widgets[this.id];
         this.$container.addClass('scaleout');
         this.base();
 
