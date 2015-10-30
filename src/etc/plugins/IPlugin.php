@@ -24,6 +24,15 @@ interface IPlugin extends ISavableComponentType
 	public function getVersion();
 
 	/**
+	 * Returns the plugin’s scehma version number.
+	 *
+	 * Changing the scehma version number tells Craft that there are new migration files that need to be run.
+	 *
+	 * @return string|null The plugin’s version number, or null if it doesn’t need one
+	 */
+	public function getSchemaVersion();
+
+	/**
 	 * Returns the plugin’s description.
 	 *
 	 * @return string|null The plugin’s description.
