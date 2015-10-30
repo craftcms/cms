@@ -390,7 +390,7 @@ $fldGuideColor: #f4f3fb;
 
 .sidebar nav { @include margin-left(-24px); @include padding-left(24px); overflow: auto; }
 .sidebar nav li { position: relative; }
-.sidebar nav li a { display: block; @include margin-left(-24px); padding: 7px 0; color: $textcolor; @include user-select(none); outline: none; }
+.sidebar nav li a { display: block; @include margin-left(-24px); padding: 9px 0; color: $textcolor; @include user-select(none); outline: none; }
 .sidebar nav li a:hover { text-decoration: none; color: $textcolor; background: $sidebarLinkHoverBgColor; }
 
 .sidebar nav li .toggle { position: absolute; top: 6px; }
