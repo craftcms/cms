@@ -81,7 +81,7 @@ Craft.Dashboard = Garnish.Base.extend(
                         '<form class="pane">' +
                             '<input type="hidden" name="type" value="'+type+'"/>' +
                             '<input type="hidden" name="settingsNamespace" value="'+settingsNamespace+'"/>' +
-                            '<h2>'+Craft.t('{type} Settings', { type: Craft.escapeHtml($option.text()) })+'</h2>' +
+                            '<h2>'+Craft.t('{type} Settings', { type: Craft.escapeHtml($option.data('name')) })+'</h2>' +
                             '<div class="settings"/>' +
                             '<hr/>' +
                             '<div class="buttons clearafter">' +
