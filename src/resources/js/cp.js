@@ -272,7 +272,7 @@ Craft.CP = Garnish.Base.extend(
 
 	updateResponsiveNav: function()
 	{
-		if(this.onWindowResize._cpWidth < 1224)
+		if(this.onWindowResize._cpWidth <= 992)
 		{
 			if (!this.showingNavToggle)
 			{

@@ -99,7 +99,7 @@ body.mobile #container {
 #main.single-pane > .pane > .content { display: flex; flex-direction: column; }
 #main.single-pane > .pane > .content > .sidebar + .body { width: calc(100% - 0); }
 
-@media only screen and (max-width: 1224px)
+@media only screen and (max-width: 992px)
 {
 	body.ltr #container { width: calc(100% + 220px); @include transform(translate3d(-220px,0,0)); }
 	body.rtl #container { width: calc(100% + 220px); @include transform(translate3d(220px,0,0)); }
