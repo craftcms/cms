@@ -41,9 +41,10 @@
 .recententries .body { overflow: hidden; }
 
 /* New Widget Menu */
-.newwidgetmenu ul li a { position: relative; padding-left: 36px; }
-.newwidgetmenu ul li a .icon { position: absolute; top: 8px; left: 14px; width: 13px; }
-.newwidgetmenu ul li a .icon img { width: 13px; }
+.newwidgetmenu ul li a { position: relative; padding-left: 40px; }
+.newwidgetmenu ul li a .icon { position: absolute; top: 8px; left: 14px; width: 16px; }
+.newwidgetmenu ul li a .icon svg,
+.widgetmanagerhud-icon svg { width: 16px; height: 16px; @include svg-mask($mediumtextcolor); }
 
 /* New Widget Menu */
 .widgetmanagerhud { max-width: 400px; }

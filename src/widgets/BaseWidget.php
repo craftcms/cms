@@ -62,11 +62,11 @@ abstract class BaseWidget extends BaseSavableComponentType implements IWidget
 	}
 
 	/**
-	 * @inheritDoc IWidget::getIconUrl()
+	 * @inheritDoc IWidget::getIconPath()
 	 *
 	 * @return string
 	 */
-	public function getIconUrl()
+	public function getIconPath()
 	{
 	}
 

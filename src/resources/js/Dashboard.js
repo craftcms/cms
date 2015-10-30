@@ -17,19 +17,20 @@ Craft.Dashboard = Garnish.Base.extend(
     $grid: null,
     $widgetManagerBtn: null,
 
+    widgetTypes: null,
     grid: null,
     widgets: null,
     widgetManager: null,
     widgetAdminTable: null,
     widgetSettingsModal: null,
 
-    init: function()
+    init: function(widgetTypes)
     {
+        this.widgetTypes = widgetTypes;
         this.widgets = {};
 
         this.$widgetManagerBtn = $('#widgetManagerBtn');
 
-        this.addListener(this.$newWidgetMenuItems, 'click', 'newWidget');
         this.addListener(this.$widgetManagerBtn, 'click', 'showWidgetManager');
 
         Garnish.$doc.ready($.proxy(function() {
@@ -43,13 +44,12 @@ Craft.Dashboard = Garnish.Base.extend(
     {
         var $option = $(e.selectedOption),
             type = $option.data('type'),
-            colspan = $option.data('colspan'),
             settingsNamespace = 'newwidget'+Math.floor(Math.random()*1000000000)+'-settings',
-            settingsHtml = $option.data('settings-html').replace(/__NAMESPACE__/g, settingsNamespace),
-            settingsJs = $option.data('settings-js').replace(/__NAMESPACE__/g, settingsNamespace),
-            $gridItem = $('<div class="item" data-colspan="'+colspan+'" style="display: block">'),
+            settingsHtml = this.widgetTypes[type].settingsHtml.replace(/__NAMESPACE__/g, settingsNamespace),
+            settingsJs = this.widgetTypes[type].settingsJs.replace(/__NAMESPACE__/g, settingsNamespace),
+            $gridItem = $('<div class="item" data-colspan="1" style="display: block">'),
             $container = $(
-                '<div class="widget new loading-new scaleout '+type.toLowerCase()+'">' +
+                '<div class="widget new loading-new scaleout '+type.toLowerCase()+'" data-type="'+type+'" data-colspan="1">' +
                     '<div class="front">' +
                         '<div class="pane">' +
                             '<div class="spinner body-loading"/>' +
@@ -466,19 +466,15 @@ Craft.Widget = Garnish.Base.extend(
     getManagerRow: function()
     {
         var id = this.$container.data('id'),
+            type = this.$container.data('type'),
             title = this.$container.data('title'),
-            iconUrl = this.$container.data('icon-url'),
             colspan = this.$container.data('colspan');
-            maxColspan = this.$container.data('max-colspan');
-
-        if(!iconUrl)
-        {
-            iconUrl = Craft.getResourceUrl('images/widgets/default.svg');
-        }
+            iconSvg = window.dashboard.widgetTypes[type].iconSvg,
+            maxColspan = window.dashboard.widgetTypes[type].maxColspan;
 
         var $row = $(
             '<tr data-id="'+id+'" data-name="'+title+'">' +
-                '<td><img class="widgetmanagerhud-img" src="'+iconUrl+'" /></td>' +
+                '<td class="widgetmanagerhud-icon">'+iconSvg+'</td>' +
                 '<td>'+this.getManagerRowLabel()+'</td>' +
                 '<td class="widgetmanagerhud-col-colspan-picker thin"></td>' +
                 '<td class="widgetmanagerhud-col-move thin"><a class="move icon" title="'+Craft.t('Reorder')+'" role="button"></a></td>' +
@@ -486,13 +482,13 @@ Craft.Widget = Garnish.Base.extend(
             '</tr>'
         );
 
-        window.dashboard.grid.on('refreshCols', $.proxy(this, 'onRefreshCols', $row, id, title, iconUrl, colspan, maxColspan));
+        window.dashboard.grid.on('refreshCols', $.proxy(this, 'onRefreshCols', $row, id, title, colspan, maxColspan));
         window.dashboard.grid.trigger('refreshCols');
 
         return $row;
     },
 
-    onRefreshCols: function($row, id, title, iconUrl, colspan, maxColspan)
+    onRefreshCols: function($row, id, title, colspan, maxColspan)
     {
         if(window.dashboard.grid.totalCols != this.totalCols)
         {
@@ -644,7 +640,5 @@ Craft.Widget = Garnish.Base.extend(
         }, this), 200);
     }
 });
-
-window.dashboard = new Craft.Dashboard();
 
 })(jQuery)
