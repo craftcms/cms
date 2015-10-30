@@ -422,7 +422,7 @@ body > .sidebar li { width: auto !important; }
 
 	.content.has-sidebar:not(.hiding-sidebar) { @include margin-left(0); }
 
-	.sidebar { width: 100vw; height: auto; min-height: auto; z-index: 10; border-bottom: 1px solid #eee; background: #fff; }
+	.sidebar { width: 100vw; height: auto !important; min-height: auto; z-index: 10; border-bottom: 1px solid #eee; background: #fff; }
 	.sidebar { @include margin(-24px, 0, 24px, -24px); @include box-shadow(0 0 32px 0 rgba(0,0,0,0.05)); }
 
 	.sidebar .btngroup { float: none !important; }
