@@ -194,9 +194,9 @@ body.mobile #container {
 
 /* tabs */
 .tabs:after { @include clearafter; }
-.tabs .tab { display: block; padding: 9px 24px; color: #777; white-space: nowrap; }
+.tabs .tab { display: block; padding: 10px 24px; color: #777; white-space: nowrap; }
 .tabs .tab:hover { text-decoration: none; color: $linkcolor; }
-.tabs .tab.sel { color: #000; padding-bottom: 9px; cursor: default; }
+.tabs .tab.sel { color: #000; padding-bottom: 10px; cursor: default; }
 .tabs .tab.sel { @include pane; }
 
 .pane > .tabs { margin: -24px -24px 24px; padding: 0 0; font-size: 0; overflow: hidden;
