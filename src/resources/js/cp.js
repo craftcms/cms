@@ -352,6 +352,8 @@ Craft.CP = Garnish.Base.extend(
 		if (this.$sidebarBtn)
 		{
 			this.$sidebarBtn.html(this.selectedItemLabel);
+
+			this.toggleSidebar();
 		}
 	},
 

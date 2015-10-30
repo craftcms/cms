@@ -1002,7 +1002,7 @@ body #redactor-modal-overlay {
 	@include box-shadow(0 0 0 1px $hairlineColorAlpha, 0 5px 20px rgba(0,0,0,0.25));
 }
 
-@mixin menu-option-styles { margin: 0 -14px; padding: 7px 14px; color: $textcolor; text-decoration: none; white-space: nowrap; }
+@mixin menu-option-styles { margin: 0 -14px; padding: 10px 14px; color: $textcolor; text-decoration: none; white-space: nowrap; }
 @mixin menu-option-active-styles { color: $textcolor; background-color: $lightselcolor; }
 
 .menu,
