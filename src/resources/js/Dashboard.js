@@ -133,6 +133,7 @@ Craft.Dashboard = Garnish.Base.extend(
             {
                 if (textStatus == 'success' && response.success)
                 {
+                    $container.removeClass('loading');
                     widget.update(response);
                 }
                 else
