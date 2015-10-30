@@ -11,7 +11,7 @@
                 <ul>
                     {% for type, info in widgetTypes if info.selectable %}
                         <li>
-                            <a data-type="{{ type }}">
+                            <a data-type="{{ type }}" data-name="{{ info.name }}">
                                 <span class="icon">{{ info.iconSvg|raw }}</span>
                                 {{ info.name }}
                             </a>

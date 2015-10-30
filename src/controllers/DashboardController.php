@@ -106,6 +106,8 @@ class DashboardController extends BaseController
 		$templatesService->includeJs('window.dashboard = new Craft.Dashboard('.JsonHelper::encode($widgetTypeInfo).');');
 		$templatesService->includeJs($allWidgetJs);
 		$templatesService->includeTranslations(
+			'1 column',
+			'{num} columns',
 			'{type} Settings',
 			'Widget saved.',
 			'Couldn’t save widget.',
