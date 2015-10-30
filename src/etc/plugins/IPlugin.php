@@ -45,6 +45,13 @@ interface IPlugin extends ISavableComponentType
 	public function getDeveloperUrl();
 
 	/**
+	 * Returns the plugin documentation’s URL.
+	 *
+	 * @return string The plugin documentation’s URL.
+	 */
+	public function getDocumentationUrl();
+
+	/**
 	 * Returns the locale ID that identifies what language the plugin was written in.
 	 *
 	 * @return string The plugin’s source language.
