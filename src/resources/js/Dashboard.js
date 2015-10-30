@@ -230,6 +230,7 @@ Craft.Widget = Garnish.Base.extend(
 
     id: null,
     type: null,
+    title: null,
 
     totalCols: null,
     settingsHtml: null,
@@ -247,6 +248,7 @@ Craft.Widget = Garnish.Base.extend(
         // Do a little introspection
         this.id = this.$container.data('id');
         this.type = this.$container.data('type');
+        this.title = this.$container.data('title');
 
         if (this.id)
         {
@@ -386,7 +388,7 @@ Craft.Widget = Garnish.Base.extend(
 
     update: function(response)
     {
-        this.$container.data('title', response.info.title);
+        this.title = response.info.title;
 
         // Is this a new widget?
         if (this.$container.hasClass('new'))
@@ -419,7 +421,7 @@ Craft.Widget = Garnish.Base.extend(
             }
         }
 
-        this.$title.text(response.info.title);
+        this.$title.text(this.title);
         this.$bodyContainer.html(response.info.bodyHtml);
 
         // New colspan?
@@ -477,13 +479,12 @@ Craft.Widget = Garnish.Base.extend(
 
     getManagerRow: function()
     {
-        var title = this.$container.data('title'),
-            colspan = this.$container.data('colspan');
+        var colspan = this.$container.data('colspan');
             iconSvg = window.dashboard.widgetTypes[this.type].iconSvg,
             maxColspan = window.dashboard.widgetTypes[this.type].maxColspan;
 
         var $row = $(
-            '<tr data-id="'+this.id+'" data-name="'+title+'">' +
+            '<tr data-id="'+this.id+'" data-name="'+this.title+'">' +
                 '<td class="widgetmanagerhud-icon">'+iconSvg+'</td>' +
                 '<td>'+this.getManagerRowLabel()+'</td>' +
                 '<td class="widgetmanagerhud-col-colspan-picker thin"></td>' +
@@ -492,13 +493,13 @@ Craft.Widget = Garnish.Base.extend(
             '</tr>'
         );
 
-        window.dashboard.grid.on('refreshCols', $.proxy(this, 'onRefreshCols', $row, title, colspan, maxColspan));
+        window.dashboard.grid.on('refreshCols', $.proxy(this, 'onRefreshCols', $row, colspan, maxColspan));
         window.dashboard.grid.trigger('refreshCols');
 
         return $row;
     },
 
-    onRefreshCols: function($row, title, colspan, maxColspan)
+    onRefreshCols: function($row, colspan, maxColspan)
     {
         if(window.dashboard.grid.totalCols != this.totalCols)
         {
@@ -632,10 +633,9 @@ Craft.Widget = Garnish.Base.extend(
 
     getManagerRowLabel: function()
     {
-        var title = this.$container.data('title'),
-            typeName = window.dashboard.widgetTypes[this.type].name;
+        var typeName = window.dashboard.widgetTypes[this.type].name;
 
-        return title+(title != typeName ? ' <span class="light">('+typeName+')</span>' : '')
+        return this.title+(this.title != typeName ? ' <span class="light">('+typeName+')</span>' : '')
     },
 
     destroy: function()
