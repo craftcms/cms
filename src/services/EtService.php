@@ -86,11 +86,31 @@ class EtService extends BaseApplicationComponent
 	}
 
 	/**
-	 * @return \Craft\EtModel|null
+	 * @param $handle
+	 *
+	 * @return EtModel|null
+	 * @throws EtException
+	 * @throws \Exception
 	 */
-	public function getUpdateFileInfo()
+	public function getUpdateFileInfo($handle)
 	{
 		$et = new Et(static::GetUpdateFileInfo);
+
+		if ($handle !== 'craft')
+		{
+			$et->setHandle($handle);
+			$plugin = craft()->plugins->getPlugin($handle);
+
+			if ($plugin)
+			{
+				$pluginUpdateModel = new PluginUpdateModel();
+				$pluginUpdateModel->class = $plugin->getClassHandle();
+				$pluginUpdateModel->localVersion = $plugin->getVersion();
+
+				$et->setData($pluginUpdateModel);
+			}
+		}
+
 		$etResponse = $et->phoneHome();
 
 		if ($etResponse)
@@ -102,10 +122,11 @@ class EtService extends BaseApplicationComponent
 	/**
 	 * @param string $downloadPath
 	 * @param string $md5
+	 * @param string $handle
 	 *
 	 * @return bool
 	 */
-	public function downloadUpdate($downloadPath, $md5)
+	public function downloadUpdate($downloadPath, $md5, $handle)
 	{
 		if (IOHelper::folderExists($downloadPath))
 		{
@@ -115,7 +136,35 @@ class EtService extends BaseApplicationComponent
 		$updateModel = craft()->updates->getUpdates();
 		$buildVersion = $updateModel->app->latestVersion.'.'.$updateModel->app->latestBuild;
 
-		$path = 'http://download.buildwithcraft.com/craft/'.$updateModel->app->latestVersion.'/'.$buildVersion.'/Patch/'.$updateModel->app->localBuild.'/'.$md5.'.zip';
+		if ($handle == 'craft')
+		{
+			$path = 'http://download.buildwithcraft.com/craft/'.$updateModel->app->latestVersion.'/'.$buildVersion.'/Patch/'.($handle == 'craft' ? $updateModel->app->localBuild : $updateModel->app->localVersion.'.'.$updateModel->app->localBuild).'/'.$md5.'.zip';
+		}
+		else
+		{
+			$localVersion = null;
+			$localBuild = null;
+			$latestVersion = null;
+			$latestBuild = null;
+
+			foreach ($updateModel->plugins as $plugin)
+			{
+				if (strtolower($plugin->class) == $handle)
+				{
+					$parts = explode('.', $plugin->localVersion);
+					$localVersion = $parts[0].'.'.$parts[1];
+					$localBuild = $parts[2];
+
+					$parts = explode('.', $plugin->latestVersion);
+					$latestVersion = $parts[0].'.'.$parts[1];
+					$latestBuild = $parts[2];
+
+					break;
+				}
+			}
+
+			$path = 'http://download.buildwithcraft.com/plugins/'.$handle.'/'.$latestVersion.'/'.$latestVersion.'.'.$latestBuild.'/Patch/'.$localVersion.'.'.$localBuild.'/'.$md5.'.zip';
+		}
 
 		$et = new Et($path, 240);
 		$et->setDestinationFileName($downloadPath);

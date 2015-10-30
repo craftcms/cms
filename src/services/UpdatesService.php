@@ -292,7 +292,7 @@ class UpdatesService extends BaseApplicationComponent
 			{
 				$updateModel = $this->getUpdates();
 				Craft::log('Updating from '.$updateModel->app->localVersion.'.'.$updateModel->app->localBuild.' to '.$updateModel->app->latestVersion.'.'.$updateModel->app->latestBuild.'.', LogLevel::Info, true);
-				$result = $updater->getUpdateFileInfo();
+				$result = $updater->getUpdateFileInfo($handle);
 
 			}
 
@@ -309,17 +309,18 @@ class UpdatesService extends BaseApplicationComponent
 
 	/**
 	 * @param string $md5
+	 * @param string $handle
 	 *
 	 * @return array
 	 */
-	public function processUpdateDownload($md5)
+	public function processUpdateDownload($md5, $handle)
 	{
 		Craft::log('Starting to process the update download.', LogLevel::Info, true);
 
 		try
 		{
 			$updater = new Updater();
-			$result = $updater->processDownload($md5);
+			$result = $updater->processDownload($md5, $handle);
 			$result['success'] = true;
 
 			Craft::log('Finished processing the update download.', LogLevel::Info, true);
@@ -333,17 +334,18 @@ class UpdatesService extends BaseApplicationComponent
 
 	/**
 	 * @param string $uid
+	 * @param string $handle
 	 *
 	 * @return array
 	 */
-	public function backupFiles($uid)
+	public function backupFiles($uid, $handle)
 	{
 		Craft::log('Starting to backup files that need to be updated.', LogLevel::Info, true);
 
 		try
 		{
 			$updater = new Updater();
-			$updater->backupFiles($uid);
+			$updater->backupFiles($uid, $handle);
 
 			Craft::log('Finished backing up files.', LogLevel::Info, true);
 			return array('success' => true);
@@ -356,17 +358,18 @@ class UpdatesService extends BaseApplicationComponent
 
 	/**
 	 * @param string $uid
+	 * @param string handle
 	 *
 	 * @return array
 	 */
-	public function updateFiles($uid)
+	public function updateFiles($uid, $handle)
 	{
 		Craft::log('Starting to update files.', LogLevel::Info, true);
 
 		try
 		{
 			$updater = new Updater();
-			$updater->updateFiles($uid);
+			$updater->updateFiles($uid, $handle);
 
 			Craft::log('Finished updating files.', LogLevel::Info, true);
 			return array('success' => true);
@@ -485,11 +488,12 @@ class UpdatesService extends BaseApplicationComponent
 
 	/**
 	 * @param string $uid
+	 * @param string $handle
 	 * @param bool   $dbBackupPath
 	 *
 	 * @return array
 	 */
-	public function rollbackUpdate($uid, $dbBackupPath = false)
+	public function rollbackUpdate($uid, $handle, $dbBackupPath = false)
 	{
 		try
 		{
@@ -511,7 +515,7 @@ class UpdatesService extends BaseApplicationComponent
 			if ($uid !== false)
 			{
 				Craft::log('Rolling back any file changes.', LogLevel::Info, true);
-				$manifestData = UpdateHelper::getManifestData(UpdateHelper::getUnzipFolderFromUID($uid));
+				$manifestData = UpdateHelper::getManifestData(UpdateHelper::getUnzipFolderFromUID($uid), $handle);
 
 				if ($manifestData)
 				{

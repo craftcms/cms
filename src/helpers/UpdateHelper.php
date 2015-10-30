@@ -234,18 +234,19 @@ class UpdateHelper
 	 * Returns the relevant lines from the update manifest file starting with the current local version/build.
 	 *
 	 * @param $manifestDataPath
+	 * @param $handle
 	 *
 	 * @throws Exception
 	 * @return array
 	 */
-	public static function getManifestData($manifestDataPath)
+	public static function getManifestData($manifestDataPath, $handle)
 	{
 		if (static::$_manifestData == null)
 		{
-			if (IOHelper::fileExists($manifestDataPath.'/craft_manifest'))
+			if (IOHelper::fileExists($manifestDataPath.'/'.$handle.'_manifest'))
 			{
 				// get manifest file
-				$manifestFileData = IOHelper::getFileContents($manifestDataPath.'/craft_manifest', true);
+				$manifestFileData = IOHelper::getFileContents($manifestDataPath.'/'.$handle.'_manifest', true);
 
 				if ($manifestFileData === false)
 				{
@@ -261,10 +262,28 @@ class UpdateHelper
 				$manifestData = array_map('trim', $manifestFileData);
 				$updateModel = craft()->updates->getUpdates();
 
+				$localVersion = null;
+
+				if ($handle == 'craft')
+				{
+					$localVersion = $updateModel->app->localVersion.'.'.$updateModel->app->localVersion;
+				}
+				else
+				{
+					foreach ($updateModel->plugins as $plugin)
+					{
+						if (strtolower($plugin->class) == $handle)
+						{
+							$localVersion = $plugin->localVersion;
+							break;
+						}
+					}
+				}
+
 				// Only use the manifest data starting from the local version
 				for ($counter = 0; $counter < count($manifestData); $counter++)
 				{
-					if (mb_strpos($manifestData[$counter], '##'.$updateModel->app->localVersion.'.'.$updateModel->app->localBuild) !== false)
+					if (mb_strpos($manifestData[$counter], '##'.$localVersion) !== false)
 					{
 						break;
 					}
