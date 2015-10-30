@@ -409,7 +409,7 @@ return array(
 	 *
 	 * @see http://www.php.net/manual/en/dateinterval.construct.php
 	 */
-	'purgePendingUsersDuration' => 'P3M',
+	'purgePendingUsersDuration' => false,
 
 	/**
 	 * The amount of time Craft will remember a username and pre-populate it on the CP login page.
