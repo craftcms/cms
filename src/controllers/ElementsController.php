@@ -223,7 +223,7 @@ class ElementsController extends BaseElementsController
 		}
 
 		// Make sure it's editable
-		if (!$element->isEditable())
+		if (!ElementHelper::isElementEditable($element))
 		{
 			throw new HttpException(403);
 		}
