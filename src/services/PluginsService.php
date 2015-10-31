@@ -393,13 +393,13 @@ class PluginsService extends BaseApplicationComponent
 			try
 			{
 				// Add the plugins as a record to the database.
-				craft()->db->createCommand()->insert('plugins', [
+				craft()->db->createCommand()->insert('plugins', array(
 					'class'         => $plugin->getClassHandle(),
 					'version'       => $plugin->getVersion(),
 					'schemaVersion' => $plugin->getSchemaVersion(),
 					'enabled'       => true,
 					'installDate'   => DateTimeHelper::currentTimeForDb(),
-				]);
+				));
 
 				$plugin->isInstalled = true;
 				$plugin->isEnabled = true;
