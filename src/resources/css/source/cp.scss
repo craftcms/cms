@@ -137,6 +137,7 @@ body.mobile #container {
 
 #nav li a .icon { display: flex; align-items: center; justify-content: center; width: 16px; @include margin-right(10px); opacity: 0.5; }
 #nav li a .icon span[data-icon] { font-size: 16px; color: #fff; }
+#nav li a .icon span[data-icon]::before { display: block; }
 #nav li a .icon svg { width: 16px; max-height: 16px; @include svg-mask(#fff); }
 #nav li:not(.has-subnav) a.sel  .icon { opacity: 1; }
 
