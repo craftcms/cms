@@ -116,7 +116,7 @@ class UpdateHelper
 					$tempPath = $rowData[0];
 				}
 
-				$destFile = IOHelper::normalizePathSeparators($handle == 'craft' ? craft()->path->getAppPath() : craft()->path->getPluginsPath().$handle.'/'.$tempPath);
+				$destFile = IOHelper::normalizePathSeparators($handle == 'craft' ? craft()->path->getAppPath() : craft()->path->getPluginsPath().$handle).'/'.$tempPath;
 				$sourceFile = IOHelper::getRealPath(IOHelper::normalizePathSeparators($sourceTempFolder.($handle == 'craft' ? '/app/' : '/').$tempPath));
 
 				switch (trim($rowData[1]))
