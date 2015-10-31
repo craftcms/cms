@@ -387,46 +387,47 @@ class PluginsService extends BaseApplicationComponent
 
 		$lcPluginHandle = mb_strtolower($plugin->getClassHandle());
 
-		$plugin->onBeforeInstall();
-
-		$transaction = craft()->db->getCurrentTransaction() === null ? craft()->db->beginTransaction() : null;
-		try
+		if ($plugin->onBeforeInstall())
 		{
-			// Add the plugins as a record to the database.
-			craft()->db->createCommand()->insert('plugins', array(
-				'class'         => $plugin->getClassHandle(),
-				'version'       => $plugin->getVersion(),
-				'schemaVersion' => $plugin->getSchemaVersion(),
-				'enabled'       => true,
-				'installDate'   => DateTimeHelper::currentTimeForDb(),
-			));
-
-			$plugin->isInstalled = true;
-			$plugin->isEnabled = true;
-			$this->_enabledPlugins[$lcPluginHandle] = $plugin;
-
-			$this->_savePluginMigrations(craft()->db->getLastInsertID(), $plugin->getClassHandle());
-			$this->_autoloadPluginClasses($plugin);
-			$plugin->createTables();
-
-			if ($transaction !== null)
+			$transaction = craft()->db->getCurrentTransaction() === null ? craft()->db->beginTransaction() : null;
+			try
 			{
-				$transaction->commit();
+				// Add the plugins as a record to the database.
+				craft()->db->createCommand()->insert('plugins', [
+					'class'         => $plugin->getClassHandle(),
+					'version'       => $plugin->getVersion(),
+					'schemaVersion' => $plugin->getSchemaVersion(),
+					'enabled'       => true,
+					'installDate'   => DateTimeHelper::currentTimeForDb(),
+				]);
+
+				$plugin->isInstalled = true;
+				$plugin->isEnabled = true;
+				$this->_enabledPlugins[$lcPluginHandle] = $plugin;
+
+				$this->_savePluginMigrations(craft()->db->getLastInsertID(), $plugin->getClassHandle());
+				$this->_autoloadPluginClasses($plugin);
+				$plugin->createTables();
+
+				if ($transaction !== null)
+				{
+					$transaction->commit();
+				}
 			}
-		}
-		catch (\Exception $e)
-		{
-			if ($transaction !== null)
+			catch (\Exception $e)
 			{
-				$transaction->rollback();
+				if ($transaction !== null)
+				{
+					$transaction->rollback();
+				}
+
+				throw $e;
 			}
 
-			throw $e;
+			$plugin->onAfterInstall();
+
+			return true;
 		}
-
-		$plugin->onAfterInstall();
-
-		return true;
 	}
 
 	/**
