@@ -122,7 +122,8 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 		// Keep the toolbar at the top of the window
 		if (this.settings.context == 'index' && !Garnish.isMobileBrowser(true))
 		{
-			this.addListener(Garnish.$win, 'scroll resize', 'updateFixedToolbar');
+			this.addListener(Garnish.$win, 'resize', 'updateFixedToolbar');
+			this.addListener(Craft.cp.$container, 'scroll', 'updateFixedToolbar');
 		}
 
 		// Initialize the sources
@@ -149,7 +150,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 		// Customize button
 		if (this.$customizeSourcesBtn.length)
 		{
-			this.addListener(this.$customizeSourcesBtn, 'click', 'openCustomizeSourcesModal');
+			this.addListener(this.$customizeSourcesBtn, 'click', 'createCustomizeSourcesModal');
 		}
 
 		// Initialize the status menu
@@ -358,7 +359,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 			}
 		}
 
-		this.updateFixedToolbar._scrollTop = Garnish.$win.scrollTop();
+		this.updateFixedToolbar._scrollTop = Craft.cp.$container.scrollTop();
 
 		if (this.updateFixedToolbar._scrollTop > this.toolbarOffset - 7)
 		{
@@ -510,6 +511,19 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
 		// Store it in localStorage too
 		Craft.setLocalStorage(this.sourceStatesStorageKey, this.sourceStates);
+	},
+
+	storeSortAttributeAndDirection: function()
+	{
+		var attr = this.getSelectedSortAttribute();
+
+		if (attr != 'score')
+		{
+			this.setSelecetedSourceState({
+				order: attr,
+				sort: this.getSelectedSortDirection()
+			});
+		}
 	},
 
 	/**
@@ -822,6 +836,8 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 		{
 			this.sourceSelect.selectItem($source);
 		}
+
+		Craft.cp.updateSidebarMenuLabel();
 
 		if (this.searching)
 		{
@@ -1172,22 +1188,24 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 		{
 			return $(this.settings.buttonContainer);
 		}
-		else if (this.isShowingSidebar())
-		{
-			var $container = this.$sidebar.children('.buttons:first');
-
-			if ($container.length)
-			{
-				return $container;
-			}
-			else
-			{
-				return $('<div class="buttons"/>').prependTo(this.$sidebar);
-			}
-		}
 		else
 		{
-			return $('<td class="thin"/>').prependTo(this.$toolbarTableRow);
+			// Add it to the page header
+			var $container = $('#extra-headers > .buttons:first');
+
+			if (!$container.length)
+			{
+				var $extraHeadersContainer = $('#extra-headers');
+
+				if (!$extraHeadersContainer.length)
+				{
+					$extraHeadersContainer = $('<div id="extra-headers"/>').appendTo($('#page-header'));
+				}
+
+				$container = $('<div class="buttons secondary-buttons"/>').appendTo($extraHeadersContainer);
+			}
+
+			return $container;
 		}
 	},
 
@@ -1203,16 +1221,17 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 		this.isIndexBusy = false;
 	},
 
-	openCustomizeSourcesModal: function()
+	createCustomizeSourcesModal: function()
 	{
 		// Recreate it each time
-		if (this.customizeSourcesModal)
-		{
-			this.customizeSourcesModal.destroy();
-			delete this.customizeSourcesModal;
-		}
+		var modal = new Craft.CustomizeSourcesModal(this, {
+			onHide: function() {
+				modal.destroy();
+				delete modal;
+			}
+		});
 
-		this.customizeSourcesModal = new Craft.CustomizeSourcesModal(this);
+		return modal;
 	},
 
 	disable: function()
@@ -1379,17 +1398,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 			this.setSortDirection($option.data('dir'));
 		}
 
-		// Save it to localStorage (unless we're sorting by score)
-		var attr = this.getSelectedSortAttribute();
-
-		if (attr != 'score')
-		{
-			this.setSelecetedSourceState({
-				order: attr,
-				sort: this.getSelectedSortDirection()
-			});
-		}
-
+		this.storeSortAttributeAndDirection();
 		this.updateElements();
 	},
 
@@ -1456,8 +1465,6 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 	{
 		$source.parent('li').addClass('expanded');
 
-		this.$sidebar.trigger('resize');
-
 		var $childSources = this._getChildSources($source);
 		this._initSources($childSources);
 	},
@@ -1465,8 +1472,6 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 	_collapseSource: function($source)
 	{
 		$source.parent('li').removeClass('expanded');
-
-		this.$sidebar.trigger('resize');
 
 		var $childSources = this._getChildSources($source);
 		this._deinitSources($childSources);
@@ -1545,6 +1550,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 		this.$elements.html(response.html);
 		Craft.appendHeadHtml(response.headHtml);
 		Craft.appendFootHtml(response.footHtml);
+		picturefill();
 
 		// Create the view
 		// -------------------------------------------------------------

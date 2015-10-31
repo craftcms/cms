@@ -373,8 +373,16 @@ class SectionsService extends BaseApplicationComponent
 			$section->addError('localeErrors', Craft::t('At least one locale must be selected for the section.'));
 		}
 
+		$firstSectionLocale = null;
+
 		foreach ($sectionLocales as $localeId => $sectionLocale)
 		{
+			// Is this the first one?
+			if ($firstSectionLocale === null)
+			{
+				$firstSectionLocale = $sectionLocale;
+			}
+
 			if ($section->type == SectionType::Single)
 			{
 				$errorKey = 'urlFormat-'.$localeId;
@@ -662,6 +670,7 @@ class SectionsService extends BaseApplicationComponent
 							{
 								// Create it, baby
 								$singleEntry = new EntryModel();
+								$singleEntry->locale = $firstSectionLocale->locale;
 								$singleEntry->sectionId = $section->id;
 								$singleEntry->typeId = $entryTypeId;
 								$singleEntry->getContent()->title = $section->name;
@@ -677,7 +686,7 @@ class SectionsService extends BaseApplicationComponent
 							{
 								// Add all of the entries to the structure
 								$criteria = craft()->elements->getCriteria(ElementType::Entry);
-								$criteria->locale = array_shift(array_keys($oldSectionLocales));
+								$criteria->locale = ArrayHelper::getFirstKey($oldSectionLocales);
 								$criteria->sectionId = $section->id;
 								$criteria->status = null;
 								$criteria->localeEnabled = null;

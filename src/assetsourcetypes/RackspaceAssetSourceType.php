@@ -352,10 +352,23 @@ class RackspaceAssetSourceType extends BaseAssetSourceType
 	}
 
 	/**
+	 * @inheritDoc BaseAssetSourceType::fileExists()
+	 *
+	 * @param string $parentPath  Parent path
+	 * @param string $filename    The name of the file.
+	 *
+	 * @return boolean
+	 */
+	public function fileExists($parentPath, $fileName)
+	{
+		return (bool) $this->_getObjectInfo(rtrim($this->_getPathPrefix().$parentPath, '/').'/'.$fileName);
+	}
+
+	/**
 	 * @inheritDoc BaseAssetSourceType::folderExists()
 	 *
-	 * @param AssetFolderModel $parentPath
-	 * @param string           $folderName
+	 * @param string $parentPath  Parent path
+	 * @param string $folderName
 	 *
 	 * @return boolean
 	 */
@@ -524,7 +537,7 @@ class RackspaceAssetSourceType extends BaseAssetSourceType
 		$originatingSourceType = craft()->assetSources->getSourceTypeById($file->sourceId);
 		$originatingSettings = $originatingSourceType->getSettings();
 
-		$sourceUri = $this->_prepareRequestURI($originatingSettings->container, $originatingSettings->subfolder.$sourceFolder->path.$file->filename);
+		$sourceUri = $this->_prepareRequestURI($originatingSettings->container, $this->_getPathPrefix($originatingSourceType).$sourceFolder->path.$file->filename);
 		$targetUri = $this->_prepareRequestURI($this->getSettings()->container, $newServerPath);
 
 		$this->_copyFile($sourceUri, $targetUri);
@@ -554,9 +567,9 @@ class RackspaceAssetSourceType extends BaseAssetSourceType
 
 					// Since Rackspace needs it's paths prepared, we deviate a little from the usual pattern.
 					$sourceTransformPath = $file->getFolder()->path.craft()->assetTransforms->getTransformSubpath($file, $index);
-					$sourceTransformPath = $this->_prepareRequestURI($originatingSettings->container, $originatingSettings->subfolder.$sourceTransformPath);
+					$sourceTransformPath = $this->_prepareRequestURI($originatingSettings->container, $this->_getPathPrefix($originatingSourceType).$sourceTransformPath);
 
-					$targetTransformPath = $targetFolder->path.craft()->assetTransforms->getTransformSubpath($destination, $destinationIndex);
+					$targetTransformPath = $this->_getPathPrefix().$targetFolder->path.craft()->assetTransforms->getTransformSubpath($destination, $destinationIndex);
 					$targetTransformPath = $this->_prepareRequestURI($this->getSettings()->container, $targetTransformPath);
 
 					$this->_copyFile($sourceTransformPath, $targetTransformPath);

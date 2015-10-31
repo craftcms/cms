@@ -724,7 +724,7 @@ class HttpRequestService extends \CHttpRequest
 
 		if (empty($options['mimeType']))
 		{
-			if (($options['mimeType'] = \CFileHelper::getMimeTypeByExtension($fileName)) === null)
+			if (($options['mimeType'] = FileHelper::getMimeTypeByExtension($fileName)) === null)
 			{
 				$options['mimeType'] = 'text/plain';
 			}
@@ -1219,6 +1219,12 @@ class HttpRequestService extends \CHttpRequest
 
 		// Close the session.
 		craft()->session->close();
+
+		// In case we're running on php-fpm (https://secure.php.net/manual/en/book.fpm.php)
+		if (function_exists("fastcgi_finish_request"))
+		{
+			fastcgi_finish_request();
+		}
 	}
 
 	/**

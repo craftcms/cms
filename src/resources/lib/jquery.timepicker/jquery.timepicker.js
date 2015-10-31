@@ -1,5 +1,5 @@
 /*!
- * jquery-timepicker v1.7.0 - A jQuery timepicker plugin inspired by Google Calendar. It supports both mouse and keyboard navigation.
+ * jquery-timepicker v1.8.2 - A jQuery timepicker plugin inspired by Google Calendar. It supports both mouse and keyboard navigation.
  * Copyright (c) 2015 Jon Thornton - http://jonthornton.github.com/jquery-timepicker/
  * License: MIT
  */
@@ -60,7 +60,11 @@
 					_render(self);
 				} else {
 					self.prop('autocomplete', 'off');
-					self.on('click.timepicker focus.timepicker', methods.show);
+					if (settings.showOn) {
+						for (i in settings.showOn) {
+							self.on(settings.showOn[i]+'.timepicker', methods.show);
+						}
+					}
 					self.on('change.timepicker', _formatValue);
 					self.on('keydown.timepicker', _keydownhandler);
 					self.on('keyup.timepicker', _keyuphandler);
@@ -79,10 +83,6 @@
 			var settings = self.data('timepicker-settings');
 
 			if (e) {
-				if (!settings.showOnFocus) {
-					return true;
-				}
-
 				e.preventDefault();
 			}
 
@@ -170,6 +170,15 @@
 				list.scrollTop(topOffset);
 			} else {
 				list.scrollTop(0);
+			}
+
+			// prevent scroll propagation
+			if(settings.stopScrollPropagation) {
+				$(document).on('wheel.ui-timepicker', '.ui-timepicker-wrapper', function(e){
+					e.preventDefault();
+					var currentScroll = $(this).scrollTop();
+					$(this).scrollTop(currentScroll + e.originalEvent.deltaY);
+				});
 			}
 
 			// attach close handlers
@@ -370,6 +379,10 @@
 
 		if ($.type(settings.timeFormat) === "string" && settings.timeFormat.match(/[gh]/)) {
 			settings._twelveHourTime = true;
+		}
+
+		if (settings.showOnFocus === false && settings.showOn.indexOf('focus') != -1) {
+			settings.showOn.splice(settings.showOn.indexOf('focus'), 1);
 		}
 
 		if (settings.disableTimeRanges.length > 0) {
@@ -1109,7 +1122,7 @@
 		var timeInt = hours*3600 + minutes*60 + seconds;
 
 		// if no am/pm provided, intelligently guess based on the scrollDefault
-		if (!ampm && settings && settings._twelveHourTime && settings.scrollDefault) {
+		if (hour < 12 && !ampm && settings && settings._twelveHourTime && settings.scrollDefault) {
 			var delta = timeInt - settings.scrollDefault();
 			if (delta < 0 && delta >= _ONE_DAY / -2) {
 				timeInt = (timeInt + (_ONE_DAY / 2)) % _ONE_DAY;
@@ -1146,6 +1159,7 @@
 		step: 30,
 		showDuration: false,
 		showOnFocus: true,
+		showOn: ['click', 'focus'],
 		timeFormat: 'g:ia',
 		scrollDefault: null,
 		selectOnBlur: false,
@@ -1175,6 +1189,7 @@
 		closeOnWindowScroll: false,
 		typeaheadHighlight: true,
 		noneOption: false,
-		show2400: false
+		show2400: false,
+		stopScrollPropagation: false
 	};
 }));

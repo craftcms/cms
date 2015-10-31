@@ -24,9 +24,18 @@ interface IPlugin extends ISavableComponentType
 	public function getVersion();
 
 	/**
-	 * Returns the plugin's description.
+	 * Returns the plugin’s scehma version number.
 	 *
-	 * @return string The plugin's description.
+	 * Changing the scehma version number tells Craft that there are new migration files that need to be run.
+	 *
+	 * @return string|null The plugin’s version number, or null if it doesn’t need one
+	 */
+	public function getSchemaVersion();
+
+	/**
+	 * Returns the plugin’s description.
+	 *
+	 * @return string|null The plugin’s description.
 	 */
 	public function getDescription();
 
@@ -43,6 +52,13 @@ interface IPlugin extends ISavableComponentType
 	 * @return string The plugin developer’s URL.
 	 */
 	public function getDeveloperUrl();
+
+	/**
+	 * Returns the plugin documentation’s URL.
+	 *
+	 * @return string The plugin documentation’s URL.
+	 */
+	public function getDocumentationUrl();
 
 	/**
 	 * Returns the locale ID that identifies what language the plugin was written in.
@@ -83,14 +99,14 @@ interface IPlugin extends ISavableComponentType
 	/**
 	 * Creates any tables defined by the plugin’s records.
 	 *
-	 * @return null
+	 * @return void
 	 */
 	public function createTables();
 
 	/**
-	 * Drops any tables defined by the plugin's records.
+	 * Drops any tables defined by the plugin’s records.
 	 *
-	 * @return null
+	 * @return void
 	 */
 	public function dropTables();
 
@@ -99,28 +115,28 @@ interface IPlugin extends ISavableComponentType
 	 *
 	 * @param string|null $scenario The scenario to initialize the records with.
 	 *
-	 * @return array
+	 * @return BaseRecord[]
 	 */
 	public function getRecords($scenario = null);
 
 	/**
 	 * Performs any actions that should occur before the plugin is installed.
 	 *
-	 * @return null
+	 * @return void
 	 */
 	public function onBeforeInstall();
 
 	/**
 	 * Performs any actions that should occur after the plugin is installed.
 	 *
-	 * @return null
+	 * @return void
 	 */
 	public function onAfterInstall();
 
 	/**
 	 * Performs any actions that should occur before the plugin is uninstalled.
 	 *
-	 * @return null
+	 * @return void
 	 */
 	public function onBeforeUninstall();
 }

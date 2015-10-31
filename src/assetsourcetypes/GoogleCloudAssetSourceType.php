@@ -325,9 +325,23 @@ class GoogleCloudAssetSourceType extends BaseAssetSourceType
 	}
 
 	/**
+	 * @inheritDoc BaseAssetSourceType::fileExists()
+	 *
+	 * @param string $parentPath  Parent path
+	 * @param string $filename    The name of the file.
+	 *
+	 * @return boolean
+	 */
+	public function fileExists($parentPath, $fileName)
+	{
+		$this->_prepareForRequests();
+		return (bool) $this->_googleCloud->getObjectInfo($this->getSettings()->bucket, rtrim($this->_getPathPrefix().$parentPath, '/').'/'.$fileName);
+	}
+
+	/**
 	 * @inheritDoc BaseAssetSourceType::folderExists()
 	 *
-	 * @param string $parentPath
+	 * @param string $parentPath  Parent path
 	 * @param string $folderName
 	 *
 	 * @return boolean
@@ -546,8 +560,8 @@ class GoogleCloudAssetSourceType extends BaseAssetSourceType
 						craft()->assetTransforms->storeTransformIndexData($destinationIndex);
 					}
 
-					$from = $file->getFolder()->path.craft()->assetTransforms->getTransformSubpath($file, $index);
-					$to   = $targetFolder->path.craft()->assetTransforms->getTransformSubpath($destination, $destinationIndex);
+					$from = $this->_getPathPrefix($originatingSettings).$file->getFolder()->path.craft()->assetTransforms->getTransformSubpath($file, $index);
+					$to   = $this->_getPathPrefix().$targetFolder->path.craft()->assetTransforms->getTransformSubpath($destination, $destinationIndex);
 
 					$this->copySourceFile($from, $to);
 					$this->deleteSourceFile($from);

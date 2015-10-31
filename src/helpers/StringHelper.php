@@ -542,7 +542,7 @@ class StringHelper
 	}
 
 	/**
-	 * Kebab-cases a string.
+	 * kebab-cases a string.
 	 *
 	 * @param string $string The string
 	 * @param string $glue The string used to glue the words together (default is a hyphen)
@@ -550,26 +550,78 @@ class StringHelper
 	 * @param boolean $removePunctuation Whether punctuation marks should be removed (default is true)
 	 *
 	 * @return string
+	 *
+	 * @see toCamelCase()
+	 * @see toPascalCase()
+	 * @see toSnakeCase()
 	 */
 	public static function toKebabCase($string, $glue = '-', $lower = true, $removePunctuation = true)
 	{
-		if ($removePunctuation)
-		{
-			$string = str_replace(array('.', '_', '-'), ' ', $string);
-		}
-
-		// Remove inner-word punctuation.
-		$string = preg_replace('/[\'"‘’“”\[\]\(\)\{\}:]/u', '', $string);
-
-		// Split on the words and then glue it back together
-		$words = self::splitOnWords($string);
+		$words = self::_prepStringForCasing($string, $lower, $removePunctuation);
 		$string = implode($glue, $words);
 
-		if ($lower)
+		return $string;
+	}
+
+	/**
+	 * camelCases a string.
+	 *
+	 * @param string $string The string
+	 *
+	 * @return string
+	 *
+	 * @see toKebabCase()
+	 * @see toPascalCase()
+	 * @see toSnakeCase()
+	 */
+	public static function toCamelCase($string)
+	{
+		$words = self::_prepStringForCasing($string);
+
+		if (!$words)
 		{
-			// Make it lowercase
-			$string = self::toLowerCase($string);
+			return '';
 		}
+
+		$string = array_shift($words).implode('', array_map(array(get_called_class(), 'uppercaseFirst'), $words));
+
+		return $string;
+	}
+
+	/**
+	 * PascalCases a string.
+	 *
+	 * @param string $string The string
+	 *
+	 * @return string
+	 *
+	 * @see toKebabCase()
+	 * @see toCamelCase()
+	 * @see toSnakeCase()
+	 */
+	public static function toPascalCase($string)
+	{
+		$words = self::_prepStringForCasing($string);
+		$string = implode('', array_map(array(get_called_class(), 'uppercaseFirst'), $words));
+
+		return $string;
+	}
+
+	/**
+	 * snake_cases a string.
+	 *
+	 * @param string $string The string
+	 *
+	 * @return string
+	 *
+	 * @see toKebabCase()
+	 * @see toCamelCase()
+	 * @see toPascalCase()
+	 */
+	public static function toSnakeCase($string)
+	{
+		$words = self::_prepStringForCasing($string);
+		$string = implode('_', $words);
 
 		return $string;
 	}
@@ -654,5 +706,39 @@ class StringHelper
 	private static function _chr($int)
 	{
 		return html_entity_decode("&#{$int};", ENT_QUOTES, static::UTF8);
+	}
+
+	/**
+	 * Prepares a string for casing routines.
+	 *
+	 * @param string $string The string
+	 * @param
+	 * @param boolean $removePunctuation Whether punctuation marks should be removed (default is true)
+	 *
+	 * @return array The prepped words in the string
+	 *
+	 * @see toKebabCase()
+	 * @see toCamelCase()
+	 * @see toPascalCase()
+	 * @see toSnakeCase()
+	 */
+	private static function _prepStringForCasing($string, $lower = true, $removePunctuation = true)
+	{
+		if ($lower)
+		{
+			// Make it lowercase
+			$string = self::toLowerCase($string);
+		}
+
+		if ($removePunctuation)
+		{
+			$string = str_replace(array('.', '_', '-'), ' ', $string);
+		}
+
+		// Remove inner-word punctuation.
+		$string = preg_replace('/[\'"‘’“”\[\]\(\)\{\}:]/u', '', $string);
+
+		// Split on the words and return
+		return self::splitOnWords($string);
 	}
 }

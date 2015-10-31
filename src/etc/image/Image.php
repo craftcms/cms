@@ -64,28 +64,13 @@ class Image extends BaseImage
 	 */
 	public function __construct()
 	{
-		$extension = mb_strtolower(craft()->config->get('imageDriver'));
-
-		// If it's explicitly set, take their word for it.
-		if ($extension === 'gd')
+		if (craft()->images->isGd())
 		{
 			$this->_instance = new \Imagine\Gd\Imagine();
 		}
-		else if ($extension === 'imagick')
-		{
-			$this->_instance = new \Imagine\Imagick\Imagine();
-		}
 		else
 		{
-			// Let's try to auto-detect.
-			if (craft()->images->isGd())
-			{
-				$this->_instance = new \Imagine\Gd\Imagine();
-			}
-			else
-			{
-				$this->_instance = new \Imagine\Imagick\Imagine();
-			}
+			$this->_instance = new \Imagine\Imagick\Imagine();
 		}
 
 		$this->_quality = craft()->config->get('defaultImageQuality');
@@ -351,7 +336,7 @@ class Image extends BaseImage
 		}
 		else
 		{
-			if (craft()->images->isImagick() && craft()->config->get('optimizeImageFilesize'))
+			if (craft()->images->isImagick())
 			{
 				$this->_image->smartResize(new \Imagine\Image\Box($targetWidth, $targetHeight), false, $this->_quality);
 			}

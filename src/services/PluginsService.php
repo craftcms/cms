@@ -95,8 +95,10 @@ class PluginsService extends BaseApplicationComponent
 				$this->_loadingPlugins = true;
 
 				// Find all of the enabled plugins
+				// TODO: swap the SELECT statements after next breakpoint
 				$rows = craft()->db->createCommand()
-					->select('id, class, version, settings, installDate')
+					//->select('id, class, version, schemaVersion, settings, installDate')
+					->select('*')
 					->from('plugins')
 					->where('enabled=1')
 					->queryAll();
@@ -126,6 +128,17 @@ class PluginsService extends BaseApplicationComponent
 
 						$plugin->isInstalled = true;
 						$plugin->isEnabled = true;
+
+						// Has the plugin's version number changed, but not its schema version?
+						if ($this->hasPluginVersionNumberChanged($plugin) && !$this->doesPluginRequireDatabaseUpdate($plugin))
+						{
+							// Update our record of the plugin's version number
+							craft()->db->createCommand()->update(
+								'plugins',
+								array('schemaVersion' => $plugin->getSchemaVersion()),
+								array('id = :id', array(':id' => $row['id']))
+							);
+						}
 					}
 				}
 
@@ -381,10 +394,11 @@ class PluginsService extends BaseApplicationComponent
 		{
 			// Add the plugins as a record to the database.
 			craft()->db->createCommand()->insert('plugins', array(
-				'class'       => $plugin->getClassHandle(),
-				'version'     => $plugin->version,
-				'enabled'     => true,
-				'installDate' => DateTimeHelper::currentTimeForDb(),
+				'class'         => $plugin->getClassHandle(),
+				'version'       => $plugin->getVersion(),
+				'schemaVersion' => $plugin->getSchemaVersion(),
+				'enabled'       => true,
+				'installDate'   => DateTimeHelper::currentTimeForDb(),
 			));
 
 			$plugin->isInstalled = true;
@@ -629,11 +643,33 @@ class PluginsService extends BaseApplicationComponent
 	}
 
 	/**
-	 * Returns whether the given plugin’s local version number is greater than the record we have in the database.
+	 * Returns whether the given plugin’s version number has changed from what we have recorded in the database.
 	 *
 	 * @param BasePlugin $plugin The plugin.
 	 *
-	 * @return bool Whether the plugin’s local version number is greater than the record we have in the database.
+	 * @return bool Whether the plugin’s version number has changed from what we have recorded in the database
+	 */
+	public function hasPluginVersionNumberChanged(BasePlugin $plugin)
+	{
+		$storedPluginInfo = $this->getPluginInfo($plugin);
+
+		if ($storedPluginInfo)
+		{
+			if ($plugin->getVersion() != $storedPluginInfo['version'])
+			{
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	/**
+	 * Returns whether the given plugin’s local schema version is greater than the record we have in the database.
+	 *
+	 * @param BasePlugin $plugin The plugin.
+	 *
+	 * @return bool Whether the plugin’s local schema version is greater than the record we have in the database.
 	 */
 	public function doesPluginRequireDatabaseUpdate(BasePlugin $plugin)
 	{
@@ -641,7 +677,11 @@ class PluginsService extends BaseApplicationComponent
 
 		if ($storedPluginInfo)
 		{
-			if (version_compare($plugin->getVersion(), $storedPluginInfo['version'], '>'))
+			$localSchemaVersion = $plugin->getSchemaVersion();
+			$storedSchemaVersion = isset($storedPluginInfo['schemaVersion']) ? $storedPluginInfo['schemaVersion'] : null;
+
+			// One/both could be null so start with seeing if they're not equal
+			if ($localSchemaVersion != $storedSchemaVersion && !empty($localSchemaVersion) && version_compare($localSchemaVersion, $storedSchemaVersion, '>'))
 			{
 				return true;
 			}
@@ -743,6 +783,29 @@ class PluginsService extends BaseApplicationComponent
 		else
 		{
 			return false;
+		}
+	}
+
+	/**
+	 * Returns a given plugin’s icon URL.
+	 *
+	 * @param string $pluginHandle The plugin’s class handle
+	 * @param int    $size         The size of the icon
+	 *
+	 * @return string
+	 */
+	public function getPluginIconUrl($pluginHandle, $size = 100)
+	{
+		$lcHandle = StringHelper::toLowerCase($pluginHandle);
+		$iconPath = craft()->path->getPluginsPath().$lcHandle.'/resources/icon.svg';
+
+		if (IOHelper::fileExists($iconPath))
+		{
+			return UrlHelper::getResourceUrl($pluginHandle.'/icon.svg');
+		}
+		else
+		{
+			return UrlHelper::getResourceUrl('images/default_plugin.svg');
 		}
 	}
 

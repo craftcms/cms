@@ -850,7 +850,7 @@ return array(
 	'Select' => '선택하기',
 	'Select a region first!' => '지역을 먼저 선택하십시오!',
 	'Select All' => '전체 선택',
-	'Select Transform' => '변환 선택하기',
+	'Select transform' => '변환 선택하기',
 	'Selection Label' => '선정 라벨',
 	'Send' => '보내기',
 	'Send a message to Craft Support' => 'Craft 고객지원에 메시지 보내기',

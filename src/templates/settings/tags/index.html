@@ -1,6 +1,12 @@
 {% extends "_layouts/cp" %}
 {% set title = "Tag Groups"|t %}
 
+{% set extraPageHeaderHtml %}
+	<div class="buttons secondary-buttons right">
+		<a href="{{ url('settings/tags/new') }}" class="btn submit add icon">{{ "New tag group"|t }}</a>
+	</div>
+{% endset %}
+
 {% set crumbs = [
 	{ label: "Settings"|t, url: url('settings') }
 ] %}
@@ -8,7 +14,7 @@
 {% set docsUrl = 'http://buildwithcraft.com/docs/tags' %}
 
 
-{% set content %}
+{% block content %}
 	<div id="notaggroups"{% if tagGroups|length %} class="hidden"{% endif %}>
 		<p>{{ "No tag groups exist yet."|t }}</p>
 	</div>
@@ -31,19 +37,14 @@
 			</tbody>
 		</table>
 	{% endif %}
-
-	<div class="buttons">
-		<a href="{{ url('settings/tags/new') }}" class="btn submit add icon">{{ "New Tag Group"|t }}</a>
-	</div>
-{% endset %}
+{% endblock %}
 
 
-{% set js %}
+{% includejs %}
 	new Craft.AdminTable({
 		tableSelector: '#taggroups',
 		noObjectsSelector: '#notaggroups',
 		deleteAction: 'tags/deleteTagGroup',
 		confirmDeleteMessage: '{{ "Are you sure you want to delete “{name}” and all its tags?"|t }}',
 	});
-{% endset %}
-{% includeJs js %}
+{% endincludejs %}

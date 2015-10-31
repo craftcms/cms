@@ -46,4 +46,17 @@ class PluginsVariable
 		$plugins = craft()->plugins->getPlugins($enabledOnly);
 		return PluginVariable::populateVariables($plugins);
 	}
+
+	/**
+	 * Returns a given plugin’s icon URL.
+	 *
+	 * @param string $pluginHandle The plugin’s class handle
+	 * @param int    $size         The size of the icon
+	 *
+	 * @return string
+	 */
+	public function getPluginIconUrl($pluginHandle, $size = 100)
+	{
+		return craft()->plugins->getPluginIconUrl($pluginHandle, $size);
+	}
 }

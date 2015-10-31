@@ -24,13 +24,6 @@ abstract class BaseElementFieldType extends BaseFieldType implements IPreviewabl
 	protected $elementType;
 
 	/**
-	 * The JS class that should be initialized for the input.
-	 *
-	 * @var string|null $inputJsClass
-	 */
-	protected $inputJsClass;
-
-	/**
 	 * Whether to allow multiple source selection in the settings.
 	 *
 	 * @var bool $allowMultipleSources
@@ -45,11 +38,25 @@ abstract class BaseElementFieldType extends BaseFieldType implements IPreviewabl
 	protected $allowLimit = true;
 
 	/**
+	 * Whether to allow the “Large Thumbnails” view mode.
+	 *
+	 * @var bool $allowLargeThumbsView
+	 */
+	protected $allowLargeThumbsView = false;
+
+	/**
 	 * Template to use for field rendering.
 	 *
 	 * @var string
 	 */
 	protected $inputTemplate = '_includes/forms/elementSelect';
+
+	/**
+	 * The JS class that should be initialized for the input.
+	 *
+	 * @var string|null $inputJsClass
+	 */
+	protected $inputJsClass;
 
 	/**
 	 * Whether the elements have a custom sort order.
@@ -93,23 +100,15 @@ abstract class BaseElementFieldType extends BaseFieldType implements IPreviewabl
 	 */
 	public function getSettingsHtml()
 	{
-		$sources = array();
-
-		foreach ($this->getElementType()->getSources() as $key => $source)
-		{
-			if (!isset($source['heading']))
-			{
-				$sources[] = array('label' => $source['label'], 'value' => $key);
-			}
-		}
-
 		return craft()->templates->render('_components/fieldtypes/elementfieldsettings', array(
-			'allowMultipleSources' => $this->allowMultipleSources,
-			'allowLimit'           => $this->allowLimit,
-			'sources'              => $sources,
-			'targetLocaleField'    => $this->getTargetLocaleFieldHtml(),
-			'settings'             => $this->getSettings(),
-			'type'                 => $this->getName()
+			'allowMultipleSources'  => $this->allowMultipleSources,
+			'allowLimit'            => $this->allowLimit,
+			'sources'               => $this->getSourceOptions(),
+			'targetLocaleFieldHtml' => $this->getTargetLocaleFieldHtml(),
+			'viewModeFieldHtml'     => $this->getViewModeFieldHtml(),
+			'settings'              => $this->getSettings(),
+			'defaultSelectionLabel' => $this->getAddButtonLabel(),
+			'type'                  => $this->getName()
 		));
 	}
 
@@ -207,6 +206,37 @@ abstract class BaseElementFieldType extends BaseFieldType implements IPreviewabl
 		}
 
 		return $criteria;
+	}
+
+	/**
+	 * @inheritDoc IFieldType::modifyElementsQuery()
+	 *
+	 * @param DbCommand $query
+	 * @param mixed     $value
+	 *
+	 * @return null|false
+	 */
+	public function modifyElementsQuery(DbCommand $query, $value)
+	{
+		if ($value == 'not :empty:')
+		{
+			$value = ':notempty:';
+		}
+
+		if ($value == ':notempty:' || $value == ':empty:')
+		{
+			$alias = 'relations_'.$this->model->handle;
+			$operator = ($value == ':notempty:' ? '!=' : '=');
+
+			$query->andWhere(
+				"(select count({$alias}.id) from {{relations}} {$alias} where {$alias}.sourceId = elements.id and {$alias}.fieldId = :fieldId) {$operator} 0",
+				array(':fieldId' => $this->model->id)
+			);
+		}
+		else if ($value !== null)
+		{
+			return false;
+		}
 	}
 
 	/**
@@ -410,7 +440,8 @@ abstract class BaseElementFieldType extends BaseFieldType implements IPreviewabl
 			'criteria'           => $selectionCriteria,
 			'sourceElementId'    => (isset($this->element->id) ? $this->element->id : null),
 			'limit'              => ($this->allowLimit ? $settings->limit : null),
-			'selectionLabel'     => Craft::t($this->getSettings()->selectionLabel),
+			'viewMode'           => $this->getViewMode(),
+			'selectionLabel'     => ($settings->selectionLabel ? Craft::t($settings->selectionLabel) : $this->getAddButtonLabel())
 		);
 	}
 
@@ -468,6 +499,42 @@ abstract class BaseElementFieldType extends BaseFieldType implements IPreviewabl
 	}
 
 	/**
+	 * Normalizes the available sources into select input options.
+	 *
+	 * @param array $sources The available sources.
+	 *
+	 * @return array
+	 */
+	protected function getSourceOptions()
+	{
+		$options = array();
+		$optionNames = array();
+
+		foreach ($this->getAvailableSources() as $source)
+		{
+			// Make sure it's not a heading
+			if (!isset($source['heading']))
+			{
+				$options[] = array('label' => $source['label'], 'value' => $source['key']);
+				$optionNames[] = $source['label'];
+			}
+		}
+
+		// Sort alphabetically
+		array_multisort($options, $optionNames, SORT_NATURAL);
+
+		return $options;
+	}
+
+	/**
+	 * Returns the sources that should be available to choose from within the field's settings
+	 */
+	protected function getAvailableSources()
+	{
+		return craft()->elementIndexes->getSources($this->elementType, 'modal');
+	}
+
+	/**
 	 * Returns the HTML for the Target Locale setting.
 	 *
 	 * @return string|null
@@ -499,6 +566,78 @@ abstract class BaseElementFieldType extends BaseFieldType implements IPreviewabl
 	}
 
 	/**
+	 * Returns the HTML for the View Mode setting.
+	 *
+	 * @return string|null
+	 */
+	protected function getViewModeFieldHtml()
+	{
+		$supportedViewModes = $this->getSupportedViewModes();
+
+		if (!$supportedViewModes || count($supportedViewModes) == 1)
+		{
+			return null;
+		}
+
+		$viewModeOptions = array();
+
+		foreach ($supportedViewModes as $key => $label)
+		{
+			$viewModeOptions[] = array('label' => $label, 'value' => $key);
+		}
+
+		return craft()->templates->renderMacro('_includes/forms', 'selectField', array(
+			array(
+				'label' => Craft::t('View Mode'),
+				'instructions' => Craft::t('Choose how the field should look for authors.'),
+				'id' => 'viewMode',
+				'name' => 'viewMode',
+				'options' => $viewModeOptions,
+				'value' => $this->getSettings()->viewMode
+			)
+		));
+	}
+
+	/**
+	 * Returns the field’s supported view modes.
+	 *
+	 * @return array|null
+	 */
+	protected function getSupportedViewModes()
+	{
+		$viewModes = array(
+			'list' => Craft::t('List'),
+		);
+
+		if ($this->allowLargeThumbsView)
+		{
+			$viewModes['large'] = Craft::t('Large Thumbnails');
+		}
+
+		return $viewModes;
+	}
+
+	/**
+	 * Returns the field’s current view mode.
+	 *
+	 * @return string
+	 */
+	protected function getViewMode()
+	{
+		$supportedViewModes = $this->getSupportedViewModes();
+		$viewMode = $this->getSettings()->viewMode;
+
+		if ($viewMode && isset($supportedViewModes[$viewMode]))
+		{
+			return $viewMode;
+		}
+		else
+		{
+			return 'list';
+		}
+	}
+
+	/**
 	 * @inheritDoc BaseSavableComponentType::defineSettings()
 	 *
 	 * @return array
@@ -521,7 +660,8 @@ abstract class BaseElementFieldType extends BaseFieldType implements IPreviewabl
 			$settings['limit'] = array(AttributeType::Number, 'min' => 0);
 		}
 
-		$settings['selectionLabel'] = array(AttributeType::String, 'default' => $this->getAddButtonLabel());
+		$settings['selectionLabel'] = AttributeType::String;
+		$settings['viewMode'] = AttributeType::String;
 
 		return $settings;
 	}

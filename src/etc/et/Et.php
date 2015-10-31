@@ -159,6 +159,14 @@ class Et
 	}
 
 	/**
+	 * @param $handle
+	 */
+	public function setHandle($handle)
+	{
+		$this->_model->handle = $handle;
+	}
+
+	/**
 	 * @throws EtException|\Exception
 	 * @return EtModel|null
 	 */

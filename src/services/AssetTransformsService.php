@@ -317,12 +317,17 @@ class AssetTransformsService extends BaseApplicationComponent
 			$this->storeTransformIndexData($index);
 
 			// Generate the transform
-			$this->generateTransform($index);
-
-			// Update the index
-			$index->inProgress = 0;
-			$index->fileExists = 1;
-			$this->storeTransformIndexData($index);
+			if ($this->generateTransform($index))
+			{
+				// Update the index
+				$index->inProgress = 0;
+				$index->fileExists = 1;
+				$this->storeTransformIndexData($index);
+			}
+			else
+			{
+				throw new Exception(Craft::t('Failed to save the transform.'));
+			}
 		}
 
 		return $this->getUrlForTransformByIndexId($index->id);
@@ -412,6 +417,8 @@ class AssetTransformsService extends BaseApplicationComponent
 		{
 			$this->_createTransformForFile($file, $index);
 		}
+
+		return $source->fileExists($file->getFolder()->path.$this->getTransformSubfolder($file, $index), $this->getTransformFilename($file, $index));
 	}
 
 	/**
@@ -610,6 +617,7 @@ class AssetTransformsService extends BaseApplicationComponent
 	 * @param $fileModel
 	 * @param $size
 	 *
+	 * @throws Exception
 	 * @return bool|string
 	 */
 	public function getThumbServerPath(AssetFileModel $fileModel, $size)
@@ -626,7 +634,7 @@ class AssetTransformsService extends BaseApplicationComponent
 			$imageSource = $this->getLocalImageSource($fileModel);
 
 			craft()->images->loadImage($imageSource)
-				->scaleAndCrop($size, $size)
+				->scaleToFit($size)
 				->saveAs($thumbPath);
 
 			if (craft()->assetSources->populateSourceType($fileModel->getSource())->isRemote())
@@ -745,18 +753,10 @@ class AssetTransformsService extends BaseApplicationComponent
 			}
 
 			$image->scaleToFit($maxCachedImageSize, $maxCachedImageSize)->saveAs($destination);
-
-			if ($localCopy != $destination)
-			{
-				IOHelper::deleteFile($localCopy);
-			}
 		}
 		else
 		{
-			if ($localCopy != $destination)
-			{
-				IOHelper::move($localCopy, $destination);
-			}
+			IOHelper::copyFile($localCopy, $destination);
 		}
 	}
 

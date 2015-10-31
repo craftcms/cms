@@ -6,14 +6,10 @@ Craft.Pane = Garnish.Base.extend(
 	$pane: null,
 	$content: null,
 	$sidebar: null,
-	$sidebarBtn: null,
 
 	tabs: null,
 	selectedTab: null,
 	hasSidebar: null,
-	showingSidebar: null,
-	peekingSidebar: null,
-	fixedSidebar: null,
 
 	init: function(pane)
 	{
@@ -70,7 +66,27 @@ Craft.Pane = Garnish.Base.extend(
 			}
 		}
 
+		if (this.$pane.hasClass('meta'))
+		{
+			var $inputs = Garnish.findInputs(this.$pane);
+			this.addListener($inputs, 'focus', 'focusMetaField');
+			this.addListener($inputs, 'blur', 'blurMetaField');
+		}
+
 		this.initContent();
+	},
+
+	focusMetaField: function(ev)
+	{
+		$(ev.currentTarget).closest('.field')
+			.removeClass('has-errors')
+			.addClass('has-focus');
+	},
+
+	blurMetaField: function(ev)
+	{
+		$(ev.currentTarget).closest('.field')
+			.removeClass('has-focus');
 	},
 
 	/**
@@ -91,15 +107,7 @@ Craft.Pane = Garnish.Base.extend(
 
 			if ($target.hasClass('content'))
 			{
-				if (this.hasSidebar)
-				{
-					this.removeListener(this.$content, 'resize');
-					this.removeListener(this.$sidebar, 'resize');
-					this.removeListener(Garnish.$win, 'scroll resize');
-				}
-
 				this.$content = $target;
-				this.initContent();
 			}
 
 			Garnish.$win.trigger('resize');
@@ -126,109 +134,25 @@ Craft.Pane = Garnish.Base.extend(
 		{
 			this.$sidebar = this.$content.children('.sidebar');
 
-			this.showingSidebar = true;
-			this.updateResponsiveSidebar();
 			this.addListener(this.$content, 'resize', function()
 			{
-				this.updateResponsiveSidebar();
 				this.updateSidebarStyles();
 			});
 
 			this.addListener(this.$sidebar, 'resize', 'setMinContentSizeForSidebar');
 			this.setMinContentSizeForSidebar();
 
-			this.addListener(Garnish.$win, 'scroll resize', 'updateSidebarStyles');
+			this.addListener(Garnish.$win, 'resize', 'updateSidebarStyles');
+			this.addListener(Craft.cp.$container, 'scroll', 'updateSidebarStyles');
 			this.updateSidebarStyles();
 		}
 	},
 
-	updateResponsiveSidebar: function()
-	{
-		if (this.$content.width() + parseInt(this.$content.css('margin-'+Craft.left)) < Craft.Pane.minContentWidthForSidebar)
-		{
-			if (this.showingSidebar)
-			{
-				this.hideSidebar();
-			}
-		}
-		else
-		{
-			if (!this.showingSidebar)
-			{
-				this.showSidebar();
-			}
-		}
-	},
-
-	showSidebar: function()
-	{
-		this.$content.removeClass('hiding-sidebar');
-		this.$sidebarBtn.remove();
-		this.showingSidebar = true;
-		this.updateSidebarStyles();
-		this.setMinContentSizeForSidebar();
-
-		if (this.peekingSidebar)
-		{
-			this.stopPeeking();
-		}
-	},
-
-	hideSidebar: function()
-	{
-		this.$content.addClass('hiding-sidebar');
-
-		this.$sidebarBtn = $('<a class="show-sidebar" title="'+Craft.t('Show sidebar')+'"></a>').appendTo(this.$content);
-		this.addListener(this.$sidebarBtn, 'click', 'togglePeekingSidebar');
-
-		this.showingSidebar = false;
-		this.setMinContentSizeForSidebar();
-	},
-
-	togglePeekingSidebar: function()
-	{
-		if (this.peekingSidebar)
-		{
-			this.stopPeeking();
-		}
-		else
-		{
-			this.startPeeking();
-		}
-
-		this.setMinContentSizeForSidebar();
-	},
-
-	startPeeking: function()
-	{
-		this.$content.animateLeft(194, 'fast');
-		this.$sidebarBtn.addClass('showing').attr('title', Craft.t('Hide sidebar'));
-		this.peekingSidebar = true;
-		this.updateSidebarStyles();
-
-		this.addListener(this.$sidebar, 'click', $.proxy(function(ev)
-		{
-			if (ev.target.nodeName == 'A')
-			{
-				this.togglePeekingSidebar();
-			}
-		}, this))
-	},
-
-	stopPeeking: function()
-	{
-		this.$content.animateLeft(0, 'fast');
-		this.$sidebarBtn.removeClass('showing').attr('title', Craft.t('Show sidebar'));
-		this.peekingSidebar = false;
-
-		this.removeListener(this.$sidebar, 'click');
-	},
-
 	setMinContentSizeForSidebar: function()
 	{
-		if (this.showingSidebar || this.peekingSidebar)
+		if (true || this.$pane.hasClass('showing-sidebar'))
 		{
-			this.setMinContentSizeForSidebar._minHeight = this.$sidebar.prop('scrollHeight') - 48;
+			this.setMinContentSizeForSidebar._minHeight = this.$sidebar.prop('scrollHeight');
 		}
 		else
 		{
@@ -240,17 +164,19 @@ Craft.Pane = Garnish.Base.extend(
 
 	updateSidebarStyles: function()
 	{
-		if (this.showingSidebar || this.peekingSidebar)
+		if (true || this.$pane.hasClass('showing-sidebar'))
 		{
 			this.updateSidebarStyles._styles = {};
 
-			this.updateSidebarStyles._scrollTop = Garnish.$win.scrollTop();
-			this.updateSidebarStyles._contentOffset = this.$content.offset().top;
-			this.updateSidebarStyles._contentHeight = this.$content.height() - 24;
+			this.updateSidebarStyles._scrollTop = Craft.cp.$container.scrollTop();
 			this.updateSidebarStyles._windowHeight = Garnish.$win.height();
+			this.updateSidebarStyles._paneOffset = this.updateSidebarStyles._scrollTop + this.$pane.offset().top;
+			this.updateSidebarStyles._contentScrollTop = this.$content.offset().top - 24;
+			this.updateSidebarStyles._contentOffset = this.updateSidebarStyles._scrollTop + this.updateSidebarStyles._contentScrollTop;
+			this.updateSidebarStyles._contentHeight = this.$pane.outerHeight() - (this.updateSidebarStyles._contentOffset - this.updateSidebarStyles._paneOffset);
 
 			// Have we scrolled passed the top of the content div?
-			if (this.updateSidebarStyles._scrollTop > this.updateSidebarStyles._contentOffset - 24)
+			if (this.updateSidebarStyles._contentScrollTop < 0)
 			{
 				// Set the top position to the difference
 				this.updateSidebarStyles._styles.position = 'fixed';
@@ -263,10 +189,11 @@ Craft.Pane = Garnish.Base.extend(
 			}
 
 			// Now figure out how tall the sidebar can be
-			this.updateSidebarStyles._styles.maxHeight = Math.min(
-				this.updateSidebarStyles._contentHeight - (this.updateSidebarStyles._scrollTop - this.updateSidebarStyles._contentOffset),
-				this.updateSidebarStyles._windowHeight - 48
-			);
+			var maxViewportY = this.updateSidebarStyles._scrollTop + this.updateSidebarStyles._windowHeight,
+				contentBottomOffset = this.updateSidebarStyles._contentOffset + this.updateSidebarStyles._contentHeight;
+
+			var height = Math.min(maxViewportY, contentBottomOffset) - Math.max(this.updateSidebarStyles._scrollTop, this.updateSidebarStyles._contentOffset);
+			this.updateSidebarStyles._styles.height = height;
 
 			this.$sidebar.css(this.updateSidebarStyles._styles);
 		}
@@ -277,7 +204,4 @@ Craft.Pane = Garnish.Base.extend(
 		this.base();
 		this.$pane.data('pane', null);
 	}
-},
-{
-	minContentWidthForSidebar: 514 // 320 + 194
 });

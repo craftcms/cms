@@ -152,7 +152,7 @@ Craft.StructureTableSorter = Garnish.DragSort.extend({
 			var $helperCell = $($helperCells[i]);
 
 			// Skip the checkbox cell
-			if (Garnish.hasAttr($helperCell, 'data-checkboxcell'))
+			if ($helperCell.hasClass('checkbox-cell'))
 			{
 				$helperCell.remove();
 				continue;
@@ -265,7 +265,7 @@ Craft.StructureTableSorter = Garnish.DragSort.extend({
 				var $draggee = $(this.$draggee[i]),
 					oldLevel = $draggee.data('level'),
 					newLevel = oldLevel + levelDiff,
-					padding = Craft.StructureTableSorter.BASE_PADDING + (this.tableView.elementIndex.actions ? 14 : 0) + this._getLevelIndent(newLevel);
+					padding = Craft.StructureTableSorter.BASE_PADDING + (this.tableView.elementIndex.actions ? 7 : 0) + this._getLevelIndent(newLevel);
 
 				$draggee.data('level', newLevel);
 				$draggee.find('.element').data('level', newLevel);

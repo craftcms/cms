@@ -67,6 +67,16 @@ class PluginVariable extends BaseComponentTypeVariable
 	}
 
 	/**
+	 * Returns the plugin documentation's URL.
+	 *
+	 * @return string
+	 */
+	public function getDocumentationUrl()
+	{
+		return $this->component->getDocumentationUrl();
+	}
+
+	/**
 	 * Returns the URL to the plugin's settings in the CP.
 	 *
 	 * @return string|null
@@ -84,7 +94,7 @@ class PluginVariable extends BaseComponentTypeVariable
 
 		if (!$url)
 		{
-			$url = 'settings/plugins/'.mb_strtolower($this->component->getClassHandle());
+			$url = 'settings/plugins/'.StringHelper::toLowerCase($this->component->getClassHandle());
 		}
 
 		return UrlHelper::getCpUrl($url);
@@ -98,16 +108,6 @@ class PluginVariable extends BaseComponentTypeVariable
 	public function isInstalled()
 	{
 		return $this->component->isInstalled;
-	}
-
-	/**
-	 * Returns the plugin's icon URL.
-	 *
-	 * @return bool
-	 */
-	public function getIconUrl($size = 72)
-	{
-		return $this->component->getIconUrl($size);
 	}
 
 	/**

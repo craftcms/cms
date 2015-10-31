@@ -8,8 +8,10 @@
 {% set crumbs = [
 	{ label: "Settings"|t, url: url('settings') },
 	{ label: "Assets"|t, url: url('settings/assets') },
-	{ label: "Transforms"|t, url: url('settings/assets/transforms') }
+	{ label: "Image Transforms"|t, url: url('settings/assets/transforms') }
 ] %}
+
+{% set fullPageForm = true %}
 
 {% set isNewTransform = (transform is not defined or not transform.id) %}
 
@@ -21,11 +23,9 @@
 {% endif %}
 
 
-{% set content %}
-	<form method="post" accept-charset="UTF-8" data-saveshortcut>
+{% block content %}
 		<input type="hidden" name="action" value="assetTransforms/saveTransform">
 		<input type="hidden" name="redirect" value="settings/assets/transforms">
-		{{ getCsrfInput() }}
 
 		{% if not isNewTransform %}<input type="hidden" name="transformId" value="{{ transform.id }}">{% endif %}
 
@@ -148,16 +148,10 @@
             options: formatOptions,
             translatable: true
         }) }}
+{% endblock %}
 
 
-        <div class="buttons">
-			<input type="submit" class="btn submit" value="{{ 'Save'|t }}">
-		</div>
-	</form>
-{% endset %}
-
-
-{% set js %}
+{% includejs %}
 	{% if transform is not defined or not transform.handle %}new Craft.HandleGenerator('#name', '#handle');{% endif %}
 
 	$('#mode input').change(function()
@@ -171,5 +165,4 @@
 			$('#position-container').addClass('hidden');
 		}
 	})
-{% endset %}
-{% includeJs js %}
+{% endincludejs %}

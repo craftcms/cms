@@ -3,6 +3,12 @@
 {% extends "_layouts/cp" %}
 {% set title = "Globals"|t %}
 
+{% set extraPageHeaderHtml %}
+	<div class="buttons secondary-buttons right">
+		<a href="{{ url('settings/globals/new') }}" class="btn submit add icon">{{ "New global set"|t }}</a>
+	</div>
+{% endset %}
+
 {% set crumbs = [
 	{ label: "Settings"|t, url: url('settings') }
 ] %}
@@ -13,7 +19,7 @@
 {% set globalSets = craft.globals.getAllSets() %}
 
 
-{% set content %}
+{% block content %}
 	<div class="field">
 		<p id="nosets"{% if globalSets %} class="hidden"{% endif %}>
 			{{ "No global sets exist yet."|t }}
@@ -37,15 +43,11 @@
 				</tbody>
 			</table>
 		{% endif %}
-
-		<div class="buttons">
-			<a href="{{ url('settings/globals/new') }}" class="btn submit add icon">{{ "New Global Set"|t }}</a>
-		</div>
 	</div>
-{% endset %}
+{% endblock %}
 
 
-{% set js %}
+{% includejs %}
 	var adminTable = new Craft.AdminTable({
 		tableSelector: '#sets',
 		noObjectsSelector: '#nosets',
@@ -59,5 +61,4 @@
 			}
 		}
 	});
-{% endset %}
-{% includeJs js %}
+{% endincludejs %}

@@ -206,7 +206,7 @@ class MatrixService extends BaseApplicationComponent
 				}
 			}
 
-			if ($field->hasErrors())
+			if ($field->hasErrors() || $field->hasSettingErrors())
 			{
 				$blockType->hasFieldErrors = true;
 				$validates = false;
@@ -724,7 +724,23 @@ class MatrixService extends BaseApplicationComponent
 	}
 
 	/**
-	 * Saves a block.
+	 * Saves a new or existing Matrix block.
+	 *
+	 * ```php
+	 * $block = new MatrixBlockModel();
+	 * $block->fieldId = 5;
+	 * $block->ownerId = 100;
+	 * $block->ownerLocale = 'en_us';
+	 * $block->typeId = 2;
+	 * $block->sortOrder = 10;
+	 *
+	 * $block->setContentFromPost(array(
+	 *     'fieldHandle' => 'value',
+	 *     // ...
+	 * ));
+	 *
+	 * $success = craft()->matrix->saveBlock($block);
+	 * ```
 	 *
 	 * @param MatrixBlockModel $block    The Matrix block.
 	 * @param bool             $validate Whether the block should be validated before being saved.

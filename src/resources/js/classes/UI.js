@@ -15,6 +15,7 @@ Craft.ui =
 			autocomplete: (typeof config.autocomplete === typeof undefined || !config.autocomplete ? 'off' : null),
 			disabled: this.getDisabledValue(config.disabled),
 			readonly: config.readonly,
+			title: config.title,
 			placeholder: config.placeholder
 		});
 
@@ -190,7 +191,7 @@ Craft.ui =
 
 			if (label)
 			{
-				$('<label/>', {
+				var $label = $('<label/>', {
 					'class': (config.required ? 'required' : null),
 					'for': config.id,
 					text: label
@@ -198,7 +199,7 @@ Craft.ui =
 
 				if (locale)
 				{
-					$('<span class="locale"/>').text(locale).appendTo($heading);
+					$('<span class="locale"/>').text(locale).appendTo($label);
 				}
 			}
 
@@ -223,6 +224,26 @@ Craft.ui =
 		return $field;
 	},
 
+	createErrorList: function(errors)
+	{
+		var $list = $('<ul class="errors"/>');
+
+		if (errors)
+		{
+			this.addErrorsToList($list, errors);
+		}
+
+		return $list;
+	},
+
+	addErrorsToList: function($list, errors)
+	{
+		for (var i = 0; i < errors.length; i++)
+		{
+			$('<li/>').text(errors[i]).appendTo($list);
+		}
+	},
+
 	addErrorsToField: function($field, errors)
 	{
 		if (!errors)
@@ -230,25 +251,24 @@ Craft.ui =
 			return;
 		}
 
+		$field.addClass('has-errors');
 		$field.children('.input').addClass('errors');
 
-		var $errors = $field.children('.errors');
+		var $errors = $field.children('ul.errors');
 
 		if (!$errors.length)
 		{
-			$errors = $('<ul class="errors"/>').appendTo($field);
+			$errors = this.createErrorList().appendTo($field);
 		}
 
-		for (var i = 0; i < errors.length; i++)
-		{
-			$('<li/>').text(errors[i]).appendTo($errors);
-		}
+		this.addErrorsToList($errors, errors);
 	},
 
 	clearErrorsFromField: function($field)
 	{
+		$field.removeClass('has-errors');
 		$field.children('.input').removeClass('errors');
-		$field.children('.errors').remove();
+		$field.children('ul.errors').remove();
 	},
 
 	getAutofocusValue: function(autofocus)

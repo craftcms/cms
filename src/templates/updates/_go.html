@@ -19,7 +19,6 @@
 {% endblock %}
 
 
-{% set js %}
+{% includejs %}
 	new Craft.Updater('{{ handle }}', {{ craft.request.getSegment(1) == 'manualupdate' ? 1 : 0 }});
-{% endset %}
-{% includeJs js %}
+{% endincludejs %}

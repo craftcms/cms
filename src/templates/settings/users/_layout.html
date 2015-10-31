@@ -2,14 +2,22 @@
 {% requireAdmin %}
 
 {% extends "_layouts/cp" %}
-{% set title="Users"|t %}
+{% set title = "User Settings"|t %}
 
 {% set crumbs = [
 	{ label: "Settings"|t, url: url('settings') }
 ] %}
 
-{% set tabs = {
+{% set navItems = {
 	groups: { label: "User Groups"|t, url: url('settings/users') },
 	fields: { label: "Fields"|t, url: url('settings/users/fields') },
 	settings: { label: "Settings"|t, url: url('settings/users/settings') }
 } %}
+
+{% set docTitle = navItems[selectedNavItem].label~' - '~title %}
+
+{% block sidebar %}
+	<nav>
+		{% include "_includes/nav" with { items: navItems, selectedItem: selectedNavItem } only %}
+	</nav>
+{% endblock %}

@@ -850,7 +850,7 @@ return array(
 	'Select' => 'Выбрать',
 	'Select a region first!' => 'Сначала выберите регион!',
 	'Select All' => 'Выбрать все',
-	'Select Transform' => 'Выбрать преобразование',
+	'Select transform' => 'Выбрать преобразование',
 	'Selection Label' => 'Метка выбора',
 	'Send' => 'Отправить',
 	'Send a message to Craft Support' => 'Отправить сообщение в службу поддержки Craft',

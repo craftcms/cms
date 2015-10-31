@@ -1,3 +1,5 @@
+{% extends "_components/fieldtypes/elementfieldsettings" %}
+
 {% import "_includes/forms" as forms %}
 
 {% macro uploadLocationInput(name, settings, sourceOptions) %}
@@ -27,97 +29,87 @@
 
 {% from _self import uploadLocationInput %}
 
-{{ forms.checkboxField({
-	label: "Restrict uploads to a single folder?"|t,
-	id: 'useSingleFolder-toggle',
-	name: 'useSingleFolder',
-	class: 'use-single-folder-cb',
-	value: 1,
-	checked: settings.useSingleFolder,
-	toggle: 'single-folder-settings',
-	reverseToggle: 'multi-folder-settings'
-}) }}
 
-{% set uploadLocationNote = "Note that the subfolder path can contain variables like <code>{slug}</code> or <code>{author.username}</code>."|t %}
-{% if isMatrix %}
-	{% set uploadLocationNote = uploadLocationNote|replace({
-		'{slug}': '{owner.slug}',
-		'{author.username}': '{owner.author.username}'
-	}) %}
-{% endif %}
-
-<div id="multi-folder-settings"{% if settings.useSingleFolder %} class="hidden"{% endif %}>
-	{% if folderOptions %}
-		{{ forms.checkboxSelectField({
-			label: "Sources"|t,
-			instructions: "Which sources do you want to select {type} from?"|t({ type: type|lower }),
-			id: 'sources',
-			name: 'sources',
-			options: folderOptions,
-			values: settings.sources
-		})}}
-	{% else %}
-		{{ forms.field({
-			label: "Sources"|t
-		}, '<p class="error">' ~ "No sources exist yet."|t ~ '</p>') }}
-	{% endif %}
-
-
-	{{ forms.field({
-		label: "Default Upload Location"|t,
-		instructions: "Where should files be uploaded when they are dragged directly onto the field, or uploaded from the front end?"|t ~' '~ uploadLocationNote,
-		errors: settings.getErrors('defaultUploadLocationSubpath')
-	}, uploadLocationInput('defaultUploadLocation', settings, sourceOptions)) }}
-</div>
-
-<div id="single-folder-settings"{% if not settings.useSingleFolder %} class="hidden"{% endif %}>
-	{{ forms.field({
-		label: "Upload Location"|t,
-		instructions: uploadLocationNote,
-		errors: settings.getErrors('singleUploadLocationSubpath')
-	}, uploadLocationInput('singleUploadLocation', settings, sourceOptions)) }}
-</div>
-
-{{ forms.checkboxField({
-	label: "Restrict allowed file types?"|t,
-	class: 'restrictFiles',
-	id: 'restrictFiles',
-	name: 'restrictFiles',
-	value: 1,
-	checked: settings.restrictFiles,
-	toggle: 'restrict-allowed-types'
-}) }}
-
-<div id="restrict-allowed-types"{% if not settings.restrictFiles %} class="hidden indent"{% endif %}>
-	{% for option in fileKindOptions %}
+{% block fieldSettings %}
+	{% block uploadLocationFields %}
 		{{ forms.checkboxField({
-			label: option.label,
-			id: 'allowedKinds-'~option.value,
-			name: 'allowedKinds[]',
-			value: option.value,
-			checked: (option.value in settings.allowedKinds)
+			label: "Restrict uploads to a single folder?"|t,
+			id: 'useSingleFolder-toggle',
+			name: 'useSingleFolder',
+			class: 'use-single-folder-cb',
+			value: 1,
+			checked: settings.useSingleFolder,
+			toggle: 'single-folder-settings',
+			reverseToggle: 'multi-folder-settings'
 		}) }}
-	{% endfor %}
-</div>
 
-{{ targetLocaleField }}
+		{% set uploadLocationNote = "Note that the subfolder path can contain variables like <code>{slug}</code> or <code>{author.username}</code>."|t %}
+		{% if isMatrix %}
+			{% set uploadLocationNote = uploadLocationNote|replace({
+				'{slug}': '{owner.slug}',
+				'{author.username}': '{owner.author.username}'
+			}) %}
+		{% endif %}
 
-{{ forms.textField({
-	label: "Limit"|t,
-	instructions: "Limit the number of selectable {type}."|t({ type: type|lower }),
-	id: 'limit',
-	name: 'limit',
-	value: settings.limit,
-	size: 2,
-	errors: settings.getErrors('limit')
-}) }}
+		<div id="multi-folder-settings"{% if settings.useSingleFolder %} class="hidden"{% endif %}>
+			{% if folderOptions %}
+				{{ forms.checkboxSelectField({
+					label: "Sources"|t,
+					instructions: "Which sources do you want to select {type} from?"|t({ type: type|lower }),
+					id: 'sources',
+					name: 'sources',
+					options: folderOptions,
+					values: settings.sources
+				})}}
+			{% else %}
+				{{ forms.field({
+					label: "Sources"|t
+				}, '<p class="error">' ~ "No sources exist yet."|t ~ '</p>') }}
+			{% endif %}
 
-{{ forms.textField({
-	label: "Selection Label"|t,
-	instructions: "Enter the text you want to appear on the {type} selection input."|t({ type: type|lower }),
-	id: 'selectionLabel',
-	name: 'selectionLabel',
-	value: settings.selectionLabel,
-	size: 25,
-	errors: settings.getErrors('selectionLabel')
-}) }}
+
+			{{ forms.field({
+				label: "Default Upload Location"|t,
+				instructions: "Where should files be uploaded when they are dragged directly onto the field, or uploaded from the front end?"|t ~' '~ uploadLocationNote,
+				errors: settings.getErrors('defaultUploadLocationSubpath')
+			}, uploadLocationInput('defaultUploadLocation', settings, sourceOptions)) }}
+		</div>
+
+		<div id="single-folder-settings"{% if not settings.useSingleFolder %} class="hidden"{% endif %}>
+			{{ forms.field({
+				label: "Upload Location"|t,
+				instructions: uploadLocationNote,
+				errors: settings.getErrors('singleUploadLocationSubpath')
+			}, uploadLocationInput('singleUploadLocation', settings, sourceOptions)) }}
+		</div>
+	{% endblock %}
+
+	{% block fileTypesField %}
+		{{ forms.checkboxField({
+			label: "Restrict allowed file types?"|t,
+			class: 'restrictFiles',
+			id: 'restrictFiles',
+			name: 'restrictFiles',
+			value: 1,
+			checked: settings.restrictFiles,
+			toggle: 'restrict-allowed-types'
+		}) }}
+
+		<div id="restrict-allowed-types"{% if not settings.restrictFiles %} class="hidden indent"{% endif %}>
+			{% for option in fileKindOptions %}
+				{{ forms.checkboxField({
+					label: option.label,
+					id: 'allowedKinds-'~option.value,
+					name: 'allowedKinds[]',
+					value: option.value,
+					checked: (option.value in settings.allowedKinds)
+				}) }}
+			{% endfor %}
+		</div>
+	{% endblock %}
+
+	{{ block('targetLocaleField') }}
+	{{ block('limitField') }}
+	{{ block('viewModeField') }}
+	{{ block('selectionLabelField') }}
+{% endblock %}

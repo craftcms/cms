@@ -45,7 +45,7 @@ return array(
 	/**
 	 * A list of file extensions that Craft will allow when a user is uploading files.
 	 */
-	'allowedFileExtensions' => '7z,aiff,asf,avi,bmp,csv,doc,docx,fla,flv,gif,gz,gzip,htm,html,jpeg,jpg,js,mid,mov,mp3,mp4,m4a,m4v,mpc,mpeg,mpg,ods,odt,ogg,ogv,pdf,png,potx,pps,ppsm,ppsx,ppt,pptm,pptx,ppz,pxd,qt,ram,rar,rm,rmi,rmvb,rtf,sdc,sitd,svg,swf,sxc,sxw,tar,tgz,tif,tiff,txt,vsd,wav,webm,wma,wmv,xls,xlsx,zip',
+	'allowedFileExtensions' => '7z,aiff,asf,avi,bmp,csv,doc,docx,fla,flv,gif,gz,gzip,htm,html,jpeg,jpg,js,mid,mov,mp3,mp4,m4a,m4v,mpc,mpeg,mpg,ods,odt,ogg,ogv,pdf,png,potx,pps,ppsm,ppsx,ppt,pptm,pptx,ppz,pxd,qt,ram,rar,rm,rmi,rmvb,rtf,sdc,sitd,svg,swf,sxc,sxw,tar,tgz,tif,tiff,txt,vob,vsd,wav,webm,wma,wmv,xls,xlsx,zip',
 
 	/**
 	 * Whether or not to allow uppercase letters in the slug. Defaults to false.
@@ -345,12 +345,6 @@ return array(
 	 */
 	'omitScriptNameInUrls' => 'auto',
 
-    /**
-     * If set to true and Imagick is used, Craft will take advantage of Imagick's advanced options to reduce the final
-     * image size without losing quality significantly.
-     */
-    'optimizeImageFilesize' => true,
-
 	/**
 	 * Determines whether Craft should override PHP’s session storage location to your craft/storage/ folder.
 	 *
@@ -415,7 +409,7 @@ return array(
 	 *
 	 * @see http://www.php.net/manual/en/dateinterval.construct.php
 	 */
-	'purgePendingUsersDuration' => 'P3M',
+	'purgePendingUsersDuration' => false,
 
 	/**
 	 * The amount of time Craft will remember a username and pre-populate it on the CP login page.

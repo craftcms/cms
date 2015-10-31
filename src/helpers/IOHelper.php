@@ -346,8 +346,8 @@ class IOHelper
 	}
 
 	/**
-	 * If the path points to a real file, we call {@link \CFileHelper::getMimeType}, otherwise
-	 * {@link \CFileHelper::getMimeTypeByExtension}
+	 * If the path points to a real file, we call {@link FileHelper::getMimeType()}, otherwise
+	 * {@link FileHelper::getMimeTypeByExtension()}
 	 *
 	 * @param string $path The path to test.
 	 *
@@ -357,16 +357,16 @@ class IOHelper
 	{
 		if (@file_exists($path))
 		{
-			return \CFileHelper::getMimeType($path);
+			return FileHelper::getMimeType($path);
 		}
 		else
 		{
-			return \CFileHelper::getMimeTypeByExtension($path);
+			return FileHelper::getMimeTypeByExtension($path);
 		}
 	}
 
 	/**
-	 * A wrapper for {@link \CFileHelper::getMimeTypeByExtension}.
+	 * A wrapper for {@link FileHelper::getMimeTypeByExtension()}.
 	 *
 	 * @param  string $path The path to test.
 	 *
@@ -374,7 +374,7 @@ class IOHelper
 	 */
 	public static function getMimeTypeByExtension($path)
 	{
-		return  \CFileHelper::getMimeTypeByExtension($path);
+		return FileHelper::getMimeTypeByExtension($path);
 	}
 
 	/**
@@ -1503,7 +1503,7 @@ class IOHelper
 	 * @param bool   $onlyAscii Whether to only allow ASCII characters in the filename.
 	 * @param string $separator The separator to use for any whitespace. Defaults to '-'.
 	 *
-	 * @return mixed
+	 * @return string The cleansed filename.
 	 */
 	public static function cleanFilename($fileName, $onlyAscii = false, $separator = '-')
 	{
@@ -1526,6 +1526,27 @@ class IOHelper
 		$fileName = ($onlyAscii) ? StringHelper::asciiString($fileName) : $fileName;
 
 		return $fileName;
+	}
+
+	/**
+	 * Cleans a path.
+	 *
+	 * @param string $path      The path to clean.
+	 * @param bool   $onlyAscii Whether to only allow ASCII characters in the path.
+	 * @param string $separator The separator to use for any whitespace. Defaults to '-'.
+	 *
+	 * @return string The cleansed path.
+	 */
+	public static function cleanPath($path, $onlyAscii = false, $separator = '-')
+	{
+		$segments = explode('/', $path);
+
+		foreach ($segments as &$segment)
+		{
+			$segment = self::cleanFilename($segment, $onlyAscii, $separator);
+		}
+
+		return implode('/', $segments);
 	}
 
 	/**
@@ -1863,7 +1884,7 @@ class IOHelper
 				'php'         => array('label' => Craft::t('PHP'),         'extensions' => array('php')),
 				'powerpoint'  => array('label' => Craft::t('PowerPoint'),  'extensions' => array('pps','ppsm','ppsx','ppt','pptm','pptx','potx')),
 				'text'        => array('label' => Craft::t('Text'),        'extensions' => array('txt','text')),
-				'video'       => array('label' => Craft::t('Video'),       'extensions' => array('avchd','asf','asx','avi','flv','fla','mov','m4v','mng','mpeg','mpg','m1s','mp2v','m2v','m2s','mp4','mkv','qt','flv','mp4','ogg','ogv','rm','wmv','webm')),
+				'video'       => array('label' => Craft::t('Video'),       'extensions' => array('avchd','asf','asx','avi','flv','fla','mov','m4v','mng','mpeg','mpg','m1s','mp2v','m2v','m2s','mp4','mkv','qt','flv','mp4','ogg','ogv','rm','wmv','webm','vob')),
 				'word'        => array('label' => Craft::t('Word'),        'extensions' => array('doc','docx','dot','docm','dotm')),
 				'xml'         => array('label' => Craft::t('XML'),         'extensions' => array('xml')),
 			);

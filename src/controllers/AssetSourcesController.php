@@ -96,7 +96,7 @@ class AssetSourcesController extends BaseController
 		$variables['crumbs'] = array(
 			array('label' => Craft::t('Settings'), 'url' => UrlHelper::getUrl('settings')),
 			array('label' => Craft::t('Assets'),   'url' => UrlHelper::getUrl('settings/assets')),
-			array('label' => Craft::t('Sources'),  'url' => UrlHelper::getUrl('settings/assets')),
+			array('label' => Craft::t('Asset Sources'),  'url' => UrlHelper::getUrl('settings/assets')),
 		);
 
 		$variables['tabs'] = array(

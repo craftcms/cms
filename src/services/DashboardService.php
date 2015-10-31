@@ -233,6 +233,27 @@ class DashboardService extends BaseApplicationComponent
 		return true;
 	}
 
+
+	/**
+	 * Changes the colspan of a widget.
+	 *
+	 * @param int $widgetId
+	 * @param int $colspan
+	 *
+	 * @throws \Exception
+	 * @return bool
+	 */
+	public function changeWidgetColspan($widgetId, $colspan)
+	{
+		$widgetRecord = $this->_getUserWidgetRecordById($widgetId);
+		$widgetRecord->colspan = $colspan;
+		$widgetRecord->save();
+
+		return true;
+	}
+
+
+
 	// Private Methods
 	// =========================================================================
 

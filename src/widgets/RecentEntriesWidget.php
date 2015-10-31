@@ -92,6 +92,16 @@ class RecentEntriesWidget extends BaseWidget
 	}
 
 	/**
+	 * @inheritDoc IWidget::getIconPath()
+	 *
+	 * @return string
+	 */
+	public function getIconPath()
+	{
+		return craft()->path->getResourcesPath().'images/widgets/recent-entries.svg';
+	}
+
+	/**
 	 * @inheritDoc IWidget::getBodyHtml()
 	 *
 	 * @return string|false

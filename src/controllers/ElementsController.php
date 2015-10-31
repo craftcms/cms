@@ -49,11 +49,13 @@ class ElementsController extends BaseElementsController
 			$sources = $elementType->getSources($context);
 		}
 
+		$source = ArrayHelper::getFirstValue($sources);
+
 		$this->renderTemplate('_elements/modalbody', array(
 			'context'     => $context,
 			'elementType' => $elementType,
 			'sources'     => $sources,
-			'showSidebar' => (count($sources) > 1 || ($sources && !empty($sources[array_shift(array_keys($sources))]['nested'])))
+			'showSidebar' => (count($sources) > 1 || ($sources && !empty($source['nested'])))
 		));
 	}
 
@@ -221,7 +223,7 @@ class ElementsController extends BaseElementsController
 		}
 
 		// Make sure it's editable
-		if (!$element->isEditable())
+		if (!ElementHelper::isElementEditable($element))
 		{
 			throw new HttpException(403);
 		}
@@ -288,7 +290,7 @@ class ElementsController extends BaseElementsController
 			$response['html'] .= '<input type="hidden" name="locale" value="'.$element->locale.'">';
 		}
 
-		$response['html'] .= '<div>' .
+		$response['html'] .= '<div class="meta">' .
 			craft()->templates->namespaceInputs($elementType->getEditorHtml($element)) .
 			'</div>';
 

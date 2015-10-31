@@ -19,6 +19,8 @@ class TemplatesService extends BaseApplicationComponent
 	// Properties
 	// =========================================================================
 
+	private static $_elementThumbSizes = array(30, 60, 100, 200);
+
 	/**
 	 * @var
 	 */
@@ -969,6 +971,11 @@ class TemplatesService extends BaseApplicationComponent
 	 */
 	public function namespaceInputs($html, $namespace = null, $otherAttributes = true)
 	{
+		if (!is_string($html) || $html === '')
+		{
+			return '';
+		}
+
 		if ($namespace === null)
 		{
 			$namespace = $this->getNamespace();
@@ -1360,46 +1367,56 @@ class TemplatesService extends BaseApplicationComponent
 			$context['context'] = 'index';
 		}
 
-		if (!isset($context['viewMode']))
+		// How big is the element going to be?
+		if (isset($context['size']) && ($context['size'] == 'small' || $context['size'] == 'large'))
 		{
-			$context['viewMode'] = 'table';
+			$elementSize = $context['size'];
 		}
-
-		$thumbClass = 'elementthumb'.$context['element']->id;
-		$iconClass = 'elementicon'.$context['element']->id;
-
-		if ($context['viewMode'] == 'thumbs')
+		else if (isset($context['viewMode']) && $context['viewMode'] == 'thumbs')
 		{
-			$thumbSize = 100;
-			$iconSize = 90;
-			$thumbSelectorPrefix = '.thumbsview ';
+			$elementSize = 'large';
 		}
 		else
 		{
-			$thumbSize = 30;
-			$iconSize = 20;
-			$thumbSelectorPrefix = '';
+			$elementSize = 'small';
 		}
 
-		$thumbUrl = $context['element']->getThumbUrl($thumbSize);
+		// Create the thumb/icon image, if there is one
+		// ---------------------------------------------------------------------
+
+		$thumbUrl = $context['element']->getThumbUrl(self::$_elementThumbSizes[0]);
 
 		if ($thumbUrl)
 		{
-			$this->includeCss($thumbSelectorPrefix.'.'.$thumbClass." { background-image: url('".$thumbUrl."'); }");
-			$this->includeHiResCss($thumbSelectorPrefix.'.'.$thumbClass." { background-image: url('".$context['element']->getThumbUrl($thumbSize * 2)."'); background-size: ".$thumbSize.'px; }');
+			$srcsets = array();
+
+			foreach (self::$_elementThumbSizes as $i => $size)
+			{
+				if ($i == 0)
+				{
+					$srcset = $thumbUrl;
+				}
+				else
+				{
+					$srcset = $context['element']->getThumbUrl($size);
+				}
+
+				$srcsets[] = $srcset.' '.$size.'w';
+			}
+
+			$imgHtml = '<div class="elementthumb">'.
+				'<img '.
+				'sizes="'.($elementSize == 'small' ? self::$_elementThumbSizes[0] : self::$_elementThumbSizes[2]).'px" '.
+				'srcset="'.implode(', ', $srcsets).'" '.
+				'alt="">'.
+				'</div> ';
 		}
 		else
 		{
-			$iconUrl = $context['element']->getIconUrl($iconSize);
-
-			if ($iconUrl)
-			{
-				$this->includeCss($thumbSelectorPrefix.'.'.$iconClass." { background-image: url('".$iconUrl."'); }");
-				$this->includeHiResCss($thumbSelectorPrefix.'.'.$iconClass." { background-image: url('".$context['element']->getIconUrl($iconSize * 2)."); background-size: ".$iconSize.'px; }');
-			}
+			$imgHtml = '';
 		}
 
-		$html = '<div class="element';
+		$html = '<div class="element '.$elementSize;
 
 		if ($context['context'] == 'field')
 		{
@@ -1409,10 +1426,6 @@ class TemplatesService extends BaseApplicationComponent
 		if ($thumbUrl)
 		{
 			$html .= ' hasthumb';
-		}
-		else if ($iconUrl)
-		{
-			$html .= ' hasicon';
 		}
 
 		$label = $context['element'];
@@ -1439,15 +1452,7 @@ class TemplatesService extends BaseApplicationComponent
 			$html .= '<a class="delete icon" title="'.Craft::t('Remove').'"></a> ';
 		}
 
-		if ($thumbUrl)
-		{
-			$html .= '<div class="elementthumb '.$thumbClass.'"></div> ';
-		}
-		else if ($iconUrl)
-		{
-			$html .= '<div class="elementicon '.$iconClass.'"></div> ';
-		}
-
+		$html .= $imgHtml;
 		$html .= '<div class="label">';
 
 		if (isset($context['elementType']))

@@ -73,7 +73,7 @@ EOT;
 	protected function defineParams()
 	{
 		return array(
-			'label'       => array(AttributeType::String, 'default' => Craft::t('New Child')),
+			'label'       => array(AttributeType::String, 'default' => Craft::t('New child')),
 			'maxLevels'   => AttributeType::Number,
 			'newChildUrl' => AttributeType::String,
 		);

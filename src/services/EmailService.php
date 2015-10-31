@@ -329,22 +329,7 @@ class EmailService extends BaseApplicationComponent
 					}
 			}
 
-			$testToEmail = craft()->config->get('testToEmailAddress');
-
-			// If they have the test email config var set to a non-empty string use it instead of the supplied email.
-			if (is_string($testToEmail) && $testToEmail !== '')
-			{
-				$email->addAddress($testToEmail, 'Test Email');
-			}
-			// If they have the test email config var set to a non-empty array use the values instead of the supplied email.
-			else if (is_array($testToEmail) && count($testToEmail) > 0)
-			{
-				foreach ($testToEmail as $testEmail)
-				{
-					$email->addAddress($testEmail, 'Test Email');
-				}
-			}
-			else
+			if (!$this->_processTestToEmail($email, 'Address'))
 			{
 				$email->addAddress($user->email, $user->getFullName());
 			}
@@ -361,14 +346,17 @@ class EmailService extends BaseApplicationComponent
 			// Add any BCC's
 			if (!empty($emailModel->bcc))
 			{
-				foreach ($emailModel->bcc as $bcc)
+				if (!$this->_processTestToEmail($email, 'BCC'))
 				{
-					if (!empty($bcc['email']))
+					foreach ($emailModel->bcc as $bcc)
 					{
-						$bccEmail = $bcc['email'];
+						if (!empty($bcc['email']))
+						{
+							$bccEmail = $bcc['email'];
 
-						$bccName = !empty($bcc['name']) ? $bcc['name'] : '';
-						$email->addBCC($bccEmail, $bccName);
+							$bccName = !empty($bcc['name']) ? $bcc['name'] : '';
+							$email->addBCC($bccEmail, $bccName);
+						}
 					}
 				}
 			}
@@ -376,14 +364,17 @@ class EmailService extends BaseApplicationComponent
 			// Add any CC's
 			if (!empty($emailModel->cc))
 			{
-				foreach ($emailModel->cc as $cc)
+				if (!$this->_processTestToEmail($email, 'CC'))
 				{
-					if (!empty($cc['email']))
+					foreach ($emailModel->cc as $cc)
 					{
-						$ccEmail = $cc['email'];
+						if (!empty($cc['email']))
+						{
+							$ccEmail = $cc['email'];
 
-						$ccName = !empty($cc['name']) ? $cc['name'] : '';
-						$email->addCC($ccEmail, $ccName);
+							$ccName = !empty($cc['name']) ? $cc['name'] : '';
+							$email->addCC($ccEmail, $ccName);
+						}
 					}
 				}
 			}
@@ -447,6 +438,7 @@ class EmailService extends BaseApplicationComponent
 			}
 
 			$success = true;
+			Craft::log('Successfully sent email with subject: '.$email->Subject, LogLevel::Info);
 		}
 		else
 		{
@@ -517,5 +509,36 @@ class EmailService extends BaseApplicationComponent
 		$email->Host = $emailSettings['host'];
 		$email->Port = $emailSettings['port'];
 		$email->Timeout = $emailSettings['timeout'];
+	}
+
+	/**
+	 * @param $email
+	 * @param $method
+	 *
+	 * @return bool
+	 */
+	private function _processTestToEmail($email, $method)
+	{
+		$testToEmail = craft()->config->get('testToEmailAddress');
+		$method = 'add'.$method;
+
+		// If they have the test email config var set to a non-empty string use it instead of the supplied email.
+		if (is_string($testToEmail) && $testToEmail !== '')
+		{
+			$email->$method($testToEmail, 'Test Email');
+			return true;
+		}
+		// If they have the test email config var set to a non-empty array use the values instead of the supplied email.
+		else if (is_array($testToEmail) && count($testToEmail) > 0)
+		{
+			foreach ($testToEmail as $testEmail)
+			{
+				$email->$method($testEmail, 'Test Email');
+			}
+
+			return true;
+		}
+
+		return false;
 	}
 }

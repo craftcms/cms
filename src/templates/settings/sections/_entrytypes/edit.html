@@ -1,97 +1,89 @@
 {% extends "_layouts/cp" %}
+{% set fullPageForm = true %}
 
 {% import "_includes/forms" as forms %}
 
 
-{% set content %}
-	<form method="post" accept-charset="UTF-8" data-saveshortcut>
-		<input type="hidden" name="action" value="sections/saveEntryType">
-		{{ getCsrfInput() }}
+{% block content %}
+	<input type="hidden" name="action" value="sections/saveEntryType">
 
-		{% if section.type == 'single' %}
-			<input type="hidden" name="redirect" value="settings/sections">
-		{% else %}
-			<input type="hidden" name="redirect" value="settings/sections/{{ section.id }}/entrytypes">
-		{% endif %}
-		<input type="hidden" name="sectionId" value="{{ section.id }}">
-		{% if entryType.id %}<input type="hidden" name="entryTypeId" value="{{ entryType.id }}">{% endif %}
+	{% if section.type == 'single' %}
+		<input type="hidden" name="redirect" value="settings/sections">
+	{% else %}
+		<input type="hidden" name="redirect" value="settings/sections/{{ section.id }}/entrytypes">
+	{% endif %}
+	<input type="hidden" name="sectionId" value="{{ section.id }}">
+	{% if entryType.id %}<input type="hidden" name="entryTypeId" value="{{ entryType.id }}">{% endif %}
 
-		{% if section.type != 'single' %}
-			{{ forms.textField({
-				first: true,
-				label: "Name"|t,
-				instructions: "What this entry type will be called in the CP."|t,
-				id: 'name',
-				name: 'name',
-				value: entryType.name,
-				errors: entryType.getErrors('name'),
-				autofocus: true,
-				required: true
-			}) }}
-
-			{{ forms.textField({
-				label: "Handle"|t,
-				instructions: "How you’ll refer to this entry type in the templates."|t,
-				id: 'handle',
-				class: 'code',
-				name: 'handle',
-				value: entryType.handle,
-				errors: entryType.getErrors('handle'),
-				required: true
-			}) }}
-
-			<hr>
-
-		{% endif %}
-
-		{{ forms.checkboxField({
-			first: (section.type == 'single'),
-			label: "Show the Title field?"|t,
-			name: 'hasTitleField',
-			toggle: 'titleLabel-container',
-			reverseToggle: 'titleFormat-container',
-			checked: entryType.hasTitleField
+	{% if section.type != 'single' %}
+		{{ forms.textField({
+			first: true,
+			label: "Name"|t,
+			instructions: "What this entry type will be called in the CP."|t,
+			id: 'name',
+			name: 'name',
+			value: entryType.name,
+			errors: entryType.getErrors('name'),
+			autofocus: true,
+			required: true
 		}) }}
 
-		<div id="titleLabel-container"{% if not entryType.hasTitleField %} class="hidden"{% endif %}>
-			{{ forms.textField({
-				label: "Title Field Label"|t,
-				instructions: "What do you want the Title field to be called?"|t,
-				id: 'titleLabel',
-				name: 'titleLabel',
-				value: entryType.titleLabel,
-				errors: entryType.getErrors('titleLabel'),
-				required: true
-			}) }}
-		</div>
-
-		<div id="titleFormat-container"{% if entryType.hasTitleField %} class="hidden"{% endif %}>
-			{{ forms.textField({
-				label: "Title Format"|t,
-				instructions: "What the auto-generated entry titles should look like. You can include tags that output entry properties, such as {ex}."|t({ ex: '<code>{myCustomField}</code>' }),
-				id: 'titleFormat',
-				name: 'titleFormat',
-				value: entryType.titleFormat,
-				errors: entryType.getErrors('titleFormat'),
-				required: true
-			}) }}
-		</div>
+		{{ forms.textField({
+			label: "Handle"|t,
+			instructions: "How you’ll refer to this entry type in the templates."|t,
+			id: 'handle',
+			class: 'code',
+			name: 'handle',
+			value: entryType.handle,
+			errors: entryType.getErrors('handle'),
+			required: true
+		}) }}
 
 		<hr>
 
-		{% include "_includes/fieldlayoutdesigner" with {
-			fieldLayout: entryType.getFieldLayout(),
-		} only %}
+	{% endif %}
 
-		<hr>
+	{{ forms.checkboxField({
+		first: (section.type == 'single'),
+		label: "Show the Title field?"|t,
+		name: 'hasTitleField',
+		toggle: 'titleLabel-container',
+		reverseToggle: 'titleFormat-container',
+		checked: entryType.hasTitleField
+	}) }}
 
-		<div class="buttons">
-			<input type="submit" class="btn submit" value="{{ 'Save'|t }}">
-		</div>
-	</form>
-{% endset %}
+	<div id="titleLabel-container"{% if not entryType.hasTitleField %} class="hidden"{% endif %}>
+		{{ forms.textField({
+			label: "Title Field Label"|t,
+			instructions: "What do you want the Title field to be called?"|t,
+			id: 'titleLabel',
+			name: 'titleLabel',
+			value: entryType.titleLabel,
+			errors: entryType.getErrors('titleLabel'),
+			required: true
+		}) }}
+	</div>
+
+	<div id="titleFormat-container"{% if entryType.hasTitleField %} class="hidden"{% endif %}>
+		{{ forms.textField({
+			label: "Title Format"|t,
+			instructions: "What the auto-generated entry titles should look like. You can include tags that output entry properties, such as {ex}."|t({ ex: '<code>{myCustomField}</code>' }),
+			id: 'titleFormat',
+			name: 'titleFormat',
+			value: entryType.titleFormat,
+			errors: entryType.getErrors('titleFormat'),
+			required: true
+		}) }}
+	</div>
+
+	<hr>
+
+	{% include "_includes/fieldlayoutdesigner" with {
+		fieldLayout: entryType.getFieldLayout(),
+	} only %}
+{% endblock %}
 
 
 {% if not entryType.handle %}
-	{% includeJs "new Craft.HandleGenerator('#name', '#handle');" %}
+	{% includejs "new Craft.HandleGenerator('#name', '#handle');" %}
 {% endif %}

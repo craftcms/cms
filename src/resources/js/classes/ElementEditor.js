@@ -104,11 +104,11 @@ Craft.ElementEditor = Garnish.Base.extend(
 
 			if (response.locales)
 			{
-				var $localesContainer = $('<div class="header"/>'),
-					$localeSelectContainer = $('<div class="select"/>').appendTo($localesContainer);
+				var $header = $('<div class="header"/>'),
+					$localeSelectContainer = $('<div class="select"/>').appendTo($header);
 
 				this.$localeSelect = $('<select/>').appendTo($localeSelectContainer);
-				this.$localeSpinner = $('<div class="spinner hidden"/>').appendTo($localesContainer);
+				this.$localeSpinner = $('<div class="spinner hidden"/>').appendTo($header);
 
 				for (var i = 0; i < response.locales.length; i++)
 				{
@@ -118,21 +118,19 @@ Craft.ElementEditor = Garnish.Base.extend(
 
 				this.addListener(this.$localeSelect, 'change', 'switchLocale');
 
-				$hudContents = $hudContents.add($localesContainer);
+				$hudContents = $hudContents.add($header);
 			}
 
-			this.$form = $('<form/>');
+			this.$form = $('<div/>');
 			this.$fieldsContainer = $('<div class="fields"/>').appendTo(this.$form);
 
 			this.updateForm(response);
 
-			var $buttonsOuterContainer = $('<div class="footer"/>').appendTo(this.$form);
-
-			this.$spinner = $('<div class="spinner hidden"/>').appendTo($buttonsOuterContainer);
-
-			var $buttonsContainer = $('<div class="buttons right"/>').appendTo($buttonsOuterContainer);
+			var $footer = $('<div class="footer"/>').appendTo(this.$form),
+				$buttonsContainer = $('<div class="buttons right"/>').appendTo($footer);
 			this.$cancelBtn = $('<div class="btn">'+Craft.t('Cancel')+'</div>').appendTo($buttonsContainer);
 			this.$saveBtn = $('<input class="btn submit" type="submit" value="'+Craft.t('Save')+'"/>').appendTo($buttonsContainer);
+			this.$spinner = $('<div class="spinner hidden"/>').appendTo($buttonsContainer);
 
 			$hudContents = $hudContents.add(this.$form);
 
@@ -144,7 +142,8 @@ Craft.ElementEditor = Garnish.Base.extend(
 					bodyClass: 'body elementeditor',
 					closeOtherHUDs: false,
 					onShow: $.proxy(this, 'onShowHud'),
-					onHide: $.proxy(this, 'onHideHud')
+					onHide: $.proxy(this, 'onHideHud'),
+					onSubmit: $.proxy(this, 'saveElement')
 				});
 
 				this.hud.$hud.data('elementEditor', this);
@@ -161,7 +160,6 @@ Craft.ElementEditor = Garnish.Base.extend(
 			// Focus on the first text input
 			$hudContents.find('.text:first').focus();
 
-			this.addListener(this.$form, 'submit', 'saveElement');
 			this.addListener(this.$cancelBtn, 'click', function() {
 				this.hud.hide()
 			});
@@ -212,13 +210,11 @@ Craft.ElementEditor = Garnish.Base.extend(
 		}, this));
 	},
 
-	saveElement: function(ev)
+	saveElement: function()
 	{
-		ev.preventDefault();
-
 		this.$spinner.removeClass('hidden');
 
-		var data = $.param(this.getBaseData())+'&'+this.$form.serialize();
+		var data = $.param(this.getBaseData())+'&'+this.hud.$body.serialize();
 		Craft.postActionRequest('elements/saveElement', data, $.proxy(function(response, textStatus)
 		{
 			this.$spinner.addClass('hidden');

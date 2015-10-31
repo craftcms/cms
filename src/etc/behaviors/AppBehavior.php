@@ -293,15 +293,14 @@ class AppBehavior extends BaseBehavior
 		// Only admins can upgrade Craft
 		if (craft()->userSession->isAdmin())
 		{
-			// If they're running on a testable domain, go for it
-			if ($this->canTestEditions())
-			{
-				return true;
-			}
-
-			// Base this off of what they're actually licensed to use, not what's currently running
+			// Are they either *using* or *licensed to use* something < Craft Pro?
+			$activeEdition = $this->getEdition();
 			$licensedEdition = $this->getLicensedEdition();
-			return ($licensedEdition !== null && $licensedEdition < Craft::Pro);
+
+			return (
+				($activeEdition < Craft::Pro) ||
+				($licensedEdition !== null && $licensedEdition < Craft::Pro)
+			);
 		}
 		else
 		{
@@ -759,10 +758,16 @@ class AppBehavior extends BaseBehavior
 						}
 					}
 
-					// If they've set a default CP language, use it here.
+					// Is there a default CP languge?
 					if ($defaultCpLanguage = craft()->config->get('defaultCpLanguage'))
 					{
-						return $defaultCpLanguage;
+						// Make sure it's one of the site locales
+						$defaultCpLanguage = StringHelper::toLowerCase($defaultCpLanguage);
+
+						if (in_array($defaultCpLanguage, $siteLocaleIds))
+						{
+							return $defaultCpLanguage;
+						}
 					}
 
 					// Otherwise check if the browser's preferred language matches any of the site locales

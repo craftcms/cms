@@ -83,14 +83,24 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 	abstract public function getLocalCopy(AssetFileModel $file);
 
 	/**
-	 * Return true if a physical folder exists.
+	 * Return true if a physical file exists.
 	 *
-	 * @param AssetFolderModel $parentFolder The assetFolderModel that has the folder to check if it exists.
-	 * @param string           $folderName   The name of the folder to check if it exists.
+	 * @param string $parentPath  Parent path
+	 * @param string $filename    The name of the file.
 	 *
 	 * @return boolean
 	 */
-	abstract public function folderExists($parentFolder, $folderName);
+	abstract public function fileExists($parentPath, $filename);
+
+	/**
+	 * Return true if a physical folder exists.
+	 *
+	 * @param string $parentPath  Parent path
+	 * @param string $folderName  The name of the folder to check if it exists.
+	 *
+	 * @return boolean
+	 */
+	abstract public function folderExists($parentPath, $folderName);
 
 	/**
 	 * Return the source's base URL.
@@ -158,19 +168,19 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 	 *
 	 * @param string           $localFilePath    The local file path of the file to insert.
 	 * @param AssetFolderModel $folder           The assetFolderModel where the file should be uploaded to.
-	 * @param string           $fileName         The name of the file to insert.
+	 * @param string           $filename         The name of the file to insert.
 	 * @param bool             $preventConflicts If set to true, will ensure that a conflict is not encountered by
 	 *                                           checking the file name prior insertion.
 	 *
 	 * @return AssetOperationResponseModel
 	 */
-	public function insertFileByPath($localFilePath, AssetFolderModel $folder, $fileName, $preventConflicts = false)
+	public function insertFileByPath($localFilePath, AssetFolderModel $folder, $filename, $preventConflicts = false)
 	{
 		// Fire an 'onBeforeUploadAsset' event
 		$event = new Event($this, array(
 			'path'     => $localFilePath,
 			'folder'   => $folder,
-			'filename' => $fileName
+			'filename' => $filename
 		));
 
 		craft()->assets->onBeforeUploadAsset($event);
@@ -186,19 +196,28 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 				craft()->images->cleanImage($localFilePath);
 			}
 
+			$mobileUpload = false;
+
+			if (IOHelper::getFileName($filename, false) == "image" && craft()->request->isMobileBrowser(true))
+			{
+				$mobileUpload = true;
+				$date = DateTimeHelper::currentUTCDateTime();
+				$filename = "image_".$date->format('Ymd_His').".".IOHelper::getExtension($filename);
+			}
+
 			if ($preventConflicts)
 			{
-				$newFileName = $this->getNameReplacement($folder, $fileName);
+				$newFileName = $this->getNameReplacement($folder, $filename);
 				$response = $this->insertFileInFolder($folder, $localFilePath, $newFileName);
 			}
 			else
 			{
-				$response = $this->insertFileInFolder($folder, $localFilePath, $fileName);
+				$response = $this->insertFileInFolder($folder, $localFilePath, $filename);
 
 				// Naming conflict. create a new file and ask the user what to do with it
 				if ($response->isConflict())
 				{
-					$newFileName = $this->getNameReplacement($folder, $fileName);
+					$newFileName = $this->getNameReplacement($folder, $filename);
 					$conflictResponse = $response;
 					$response = $this->insertFileInFolder($folder, $localFilePath, $newFileName);
 				}
@@ -206,12 +225,16 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 
 			if ($response->isSuccess())
 			{
-				$filename = IOHelper::getFileName($response->getDataItem('filePath'));
 
 				$fileModel = new AssetFileModel();
+
+				$fileModel->getContent()->title = $fileModel->generateAttributeLabel(IOHelper::getFileName($filename, false));
+
+				$filename = IOHelper::getFileName($response->getDataItem('filePath'));
+				$fileModel->filename = IOHelper::getFileName($filename);
+
 				$fileModel->sourceId = $this->model->id;
 				$fileModel->folderId = $folder->id;
-				$fileModel->filename = IOHelper::getFileName($filename);
 				$fileModel->kind = IOHelper::getFileKind(IOHelper::getExtension($filename));
 				$fileModel->size = filesize($localFilePath);
 				$fileModel->dateModified = IOHelper::getLastTimeModified($localFilePath);
@@ -222,6 +245,11 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 
 					$fileModel->width = $width;
 					$fileModel->height = $height;
+				}
+
+				if ($mobileUpload)
+				{
+					$fileModel->getContent()->title = Craft::t('Mobile Upload');
 				}
 
 				craft()->assets->storeFile($fileModel);
@@ -556,7 +584,7 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 
 		// If folder exists in DB or physically, bail out
 		if (craft()->assets->findFolder(array('parentId' => $parentFolder->id, 'name' => $folderName))
-			|| $this->folderExists($parentFolder, $folderName))
+			|| $this->folderExists($parentFolder->path, $folderName))
 		{
 			throw new Exception(Craft::t('A folder already exists with that name!'));
 		}
@@ -601,7 +629,7 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 		}
 
 		// Allow this for changing the case
-		if (!(StringHelper::toLowerCase($newName) == StringHelper::toLowerCase($folder->name)) && $this->folderExists($parentFolder, $newName))
+		if (!(StringHelper::toLowerCase($newName) == StringHelper::toLowerCase($folder->name)) && $this->folderExists($parentFolder->path, $newName))
 		{
 			throw new Exception(Craft::t('Folder “{folder}” already exists there.', array('folder' => $newName)));
 		}
@@ -655,7 +683,7 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 
 		$removeFromTree = '';
 
-		if ($this->folderExists($newParentFolder, $folder->name))
+		if ($this->folderExists($newParentFolder->path, $folder->name))
 		{
 			if ($overwriteTarget)
 			{

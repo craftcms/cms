@@ -850,7 +850,7 @@ Om du inte hade väntat dig det här meddelandet behöver du inte göra någonti
 	'Select' => 'Välj',
 	'Select a region first!' => 'Välj ett område först!',
 	'Select All' => 'Markera alla',
-	'Select Transform' => 'Välj förändra',
+	'Select transform' => 'Välj förändra',
 	'Selection Label' => 'Selection Label',
 	'Send' => 'Sänd',
 	'Send a message to Craft Support' => 'Skicka ett meddelande till supporten för Craft',

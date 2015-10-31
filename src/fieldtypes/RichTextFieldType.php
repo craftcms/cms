@@ -246,13 +246,7 @@ class RichTextFieldType extends BaseFieldType
 
 		if ($postContentSize > $maxDbColumnSize)
 		{
-			// Give ourselves 10% wiggle room.
-			$maxDbColumnSize = ceil($maxDbColumnSize * 0.9);
-
-			if ($postContentSize > $maxDbColumnSize)
-			{
-				return Craft::t('{attribute} is too long.', array('attribute' => Craft::t($this->model->name)));
-			}
+			return Craft::t('{attribute} is too long.', array('attribute' => Craft::t($this->model->name)));
 		}
 
 		return true;
@@ -396,6 +390,7 @@ class RichTextFieldType extends BaseFieldType
 		//craft()->templates->includeJsResource('lib/redactor/redactor'.(craft()->config->get('useCompressedJs') ? '.min' : '').'.js');
 
 		$this->_maybeIncludeRedactorPlugin($configJs, 'fullscreen', false);
+		$this->_maybeIncludeRedactorPlugin($configJs, 'source', false);
 		$this->_maybeIncludeRedactorPlugin($configJs, 'table', false);
 		$this->_maybeIncludeRedactorPlugin($configJs, 'video', false);
 		$this->_maybeIncludeRedactorPlugin($configJs, 'pagebreak', true);

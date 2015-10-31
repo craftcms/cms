@@ -19,7 +19,7 @@ class SvgImage extends BaseImage
 
 	const SVG_WIDTH_RE = '/(<svg[^>]*\swidth=")([\d\.]+)([a-z]*)"/si';
 	const SVG_HEIGHT_RE = '/(<svg[^>]*\sheight=")([\d\.]+)([a-z]*)"/si';
-	const SVG_VIEWBOX_RE = '/(<svg[^>]*\sviewBox=")(\d+(?:,|\s)\d+(?:,|\s)(\d+)(?:,|\s)(\d+))"/si';
+	const SVG_VIEWBOX_RE = '/(<svg[^>]*\sviewBox=")([\d\.]+(?:,|\s)[\d\.]+(?:,|\s)([\d\.]+)(?:,|\s)([\d\.]+))"/si';
 	const SVG_ASPECT_RE = '/(<svg[^>]*\spreserveAspectRatio=")([a-z]+\s[a-z]+)"/si';
 	const SVG_TAG_RE = '/<svg/si';
 

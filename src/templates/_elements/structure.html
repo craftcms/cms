@@ -18,7 +18,7 @@
 						{% endif %}
 
 						{% if newChildUrl %}
-							<a class="add icon" title="{{ 'New Child'|t }}"></a>
+							<a class="add icon" title="{{ 'New child'|t }}"></a>
 						{% endif %}
 					{% endblock %}
 				{% endspaceless -%}
@@ -35,19 +35,16 @@
 
 {# Hide "Add child" menu buttons beyond the max level #}
 {% if structure.maxLevels %}
-	{% set css %}
+	{% includecss %}
 		#{{ id }}{% for i in 2 .. structure.maxLevels if structure.maxLevels >= 2 %} ul{% endfor %} .add { display: none; }
-	{% endset %}
-
-	{% includeCss css %}
+	{% endincludecss %}
 {% endif %}
 
-{% set js %}
+{% includejs first %}
 	new Craft.Structure({{ structure.id }}, '#{{ id|namespaceInputId }}', {
 		storageKey:  {{ (storageKey is defined ? storageKey|json_encode : '"Structure.'~structure.id~'"')|raw }},
 		sortable:    {{ sortable ? 'true' : 'false' }},
 		newChildUrl: {{ newChildUrl ? newChildUrl|json_encode|raw : 'null' }},
 		maxLevels:   {{ structure.maxLevels ?: 'null' }}
 	});
-{% endset %}
-{% includeJs js first %}
+{% endincludejs %}

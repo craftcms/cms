@@ -4,14 +4,14 @@
 {% set structureEditable = structureEditable is defined ? structureEditable : false -%}
 
 {% if structure -%}
-	{% set basePadding = 20 + (context == 'index' ? (showCheckboxes ? 14 : 0) + (structureEditable ? 14 : 0) : 24) %}
+	{% set basePadding = (context == 'index' ? 20 + (showCheckboxes ? 7 : 0) + (structureEditable ? 14 : 0) : 7) %}
 	{% set padding = craft.i18n.getLocaleData().getOrientation() == 'ltr' ? 'left' : 'right' -%}
 {% endif -%}
 
 {% for element in elements %}
 	<tr data-id="{{ element.id }}"{% if structure %} data-level="{{ element.level }}" data-descendants="{{ element.getTotalDescendants() }}"{% endif %}{% if element.id in disabledElementIds %} class="disabled"{% endif %}>
 		{% if showCheckboxes %}
-			<td class="thin" data-checkboxcell><div class="checkbox" title="{{ 'Select'|t }}"></div></td>
+			<td class="thin checkbox-cell"><div class="checkbox" title="{{ 'Select'|t }}"></div></td>
 		{% endif %}
 		{% for attribute in attributes %}
 			{% if loop.first %}

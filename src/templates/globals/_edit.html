@@ -1,9 +1,10 @@
 {% extends "_layouts/cp" %}
 {% set title = "Globals"|t %}
 
+{% block pageTitle %}
+	{{ parent() }}
 
-{% if craft.isLocalized() %}
-	{% set extraPageHeaderHtml %}
+	{% if craft.isLocalized() %}
 		<div class="select">
 			<select onchange="document.location.href='{{ url('globals/{locale}/'~globalSetHandle) }}'.replace('{locale}', this.value);">
 				{% for locale in craft.i18n.getEditableLocales() %}
@@ -11,11 +12,11 @@
 				{% endfor %}
 			</select>
 		</div>
-	{% endset %}
-{% endif %}
+	{% endif %}
+{% endblock %}
 
 
-{% set sidebar %}
+{% block sidebar %}
 	<nav>
 		<ul>
 			{% for theGlobalSet in globalSets %}
@@ -23,15 +24,14 @@
 			{% endfor %}
 		</ul>
 	</nav>
-{% endset %}
+{% endblock %}
 
 
-{% set content %}
+{% block content %}
 	<form method="post" accept-charset="UTF-8" data-saveshortcut data-confirm-unload>
 		<input type="hidden" name="action" value="globals/saveContent">
 		<input type="hidden" name="setId" value="{{ globalSet.id }}">
 		<input type="hidden" name="locale" value="{{ localeId }}">
-		{{ getCsrfInput() }}
 
 		{% if globalSet.getFieldLayout().getFields() | length %}
 			<div>
@@ -48,4 +48,4 @@
 			{{ "This global set doesn’t have any fields assigned to it in its field layout."|t }}
 		{% endif %}
 	</form>
-{% endset %}
+{% endblock %}

@@ -1,32 +1,38 @@
-{%- set allLabel = (allLabel is defined ? allLabel : "All"|t) %}
-{%- set allValue = (allValue is defined ? allValue : '*') %}
 {%- set options = (options is defined ? options : []) %}
 {%- set values = (values is defined ? values : []) -%}
-{%- set allChecked = (values is empty or values == allValue) %}
+
+{%- set showAllOption  = (showAllOption is defined ? showAllOption : true) %}
+{%- if showAllOption %}
+	{%- set allLabel = (allLabel is defined ? allLabel : "All"|t) %}
+	{%- set allValue = (allValue is defined ? allValue : '*') %}
+	{%- set allChecked = (values is empty or values == allValue) %}
+{%- endif %}
 
 <div class="checkbox-select{% if class is defined %} {{ class }}{% endif %}">
-	<div>
-		{% include "_includes/forms/checkbox" with {
-			id:        (id is defined ? id : null),
-			class:     'all',
-			label:     '<b>' ~ (allLabel is defined ? allLabel : "All"|t) ~ '</b>',
-			name:      (name is defined ? name : null),
-			value:     allValue,
-			checked:   allChecked,
-			autofocus: (autofocus is defined and autofocus and not craft.request.isMobileBrowser(true))
-		} only %}
-	</div>
+	{%- if showAllOption %}
+		<div>
+			{% include "_includes/forms/checkbox" with {
+				id:        (id is defined ? id : null),
+				class:     'all',
+				label:     '<b>' ~ allLabel ~ '</b>',
+				name:      (name is defined ? name : null),
+				value:     allValue,
+				checked:   allChecked,
+				autofocus: (autofocus is defined and autofocus and not craft.request.isMobileBrowser(true))
+			} only %}
+		</div>
+	{%- endif %}
 	{%- for key, option in options %}
 		{%- set optionLabel = (option.label is defined ? option.label : option) %}
 		{%- set optionValue = (option.value is defined ? option.value : key) -%}
-		{% if optionValue != allValue %}
+		{% if not showAllOption or optionValue != allValue %}
 			<div>
 				{% include "_includes/forms/checkbox" with {
 					label:    optionLabel,
 					name:     (name is defined ? name~'[]' : null),
 					value:    optionValue,
-					checked:  (allChecked or optionValue in values),
-					disabled: allChecked
+					checked:  ((showAllOption and allChecked) or optionValue in values),
+					disabled: (showAllOption and allChecked)
 				} only %}
 			</div>
 		{% endif %}

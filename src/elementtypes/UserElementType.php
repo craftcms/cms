@@ -80,15 +80,29 @@ class UserElementType extends BaseElementType
 
 		if (craft()->getEdition() == Craft::Pro)
 		{
-			foreach (craft()->userGroups->getAllGroups() as $group)
-			{
-				$key = 'group:'.$group->id;
+			// Admin source
+			$sources['admins'] = array(
+				'label' => Craft::t('Admins'),
+				'criteria' => array('admin' => true),
+				'hasThumbs' => true
+			);
 
-				$sources[$key] = array(
-					'label'     => Craft::t($group->name),
-					'criteria'  => array('groupId' => $group->id),
-					'hasThumbs' => true
-				);
+			$groups = craft()->userGroups->getAllGroups();
+
+			if ($groups)
+			{
+				$sources[] = array('heading' => Craft::t('Groups'));
+
+				foreach ($groups as $group)
+				{
+					$key = 'group:'.$group->id;
+
+					$sources[$key] = array(
+						'label'     => Craft::t($group->name),
+						'criteria'  => array('groupId' => $group->id),
+						'hasThumbs' => true
+					);
+				}
 			}
 		}
 

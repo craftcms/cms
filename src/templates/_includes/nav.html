@@ -1,0 +1,10 @@
+<nav>
+	<ul>
+		{% for itemId, item in items %}
+			{% if item %}
+				{% set itemIsSelected = ((selectedItem is not defined and loop.first) or (selectedItem is defined and selectedItem == itemId)) -%}
+				<li><a{% if itemIsSelected %} class="sel"{% endif %} href="{{ item.url }}">{{ item.label }}</a></li>
+			{% endif %}
+		{% endfor %}
+	</ul>
+</nav>

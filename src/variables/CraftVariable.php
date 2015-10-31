@@ -184,14 +184,6 @@ class CraftVariable
 	}
 
 	/**
-	 * @return DashboardVariable
-	 */
-	public function dashboard()
-	{
-		return new DashboardVariable();
-	}
-
-	/**
 	 * @return DeprecatorVariable
 	 */
 	public function deprecator()

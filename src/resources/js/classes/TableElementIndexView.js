@@ -4,6 +4,7 @@
 Craft.TableElementIndexView = Craft.BaseElementIndexView.extend(
 {
 	$table: null,
+	$selectedSortHeader: null,
 
 	structureTableSort: null,
 
@@ -22,6 +23,9 @@ Craft.TableElementIndexView = Craft.BaseElementIndexView.extend(
 		// Make the table collapsible for mobile devices
 		Craft.cp.$collapsibleTables = Craft.cp.$collapsibleTables.add(this.$table);
 		Craft.cp.updateResponsiveTables();
+
+		// Set the sort header
+		this.initTableHeaders();
 
 		// Create the Structure Table Sorter
 		if (
@@ -54,6 +58,41 @@ Craft.TableElementIndexView = Craft.BaseElementIndexView.extend(
 					}
 				}
 			});
+		}
+	},
+
+	initTableHeaders: function()
+	{
+		var selectedSortAttr = this.elementIndex.getSelectedSortAttribute(),
+			$tableHeaders = this.$table.children('thead').children().children('[data-attribute]');
+
+		for (var i = 0; i < $tableHeaders.length; i++)
+		{
+			var $header = $tableHeaders.eq(i),
+				attr = $header.attr('data-attribute');
+
+			// Is this the selected sort attribute?
+			if (attr == selectedSortAttr)
+			{
+				this.$selectedSortHeader = $header;
+				var selectedSortDir = this.elementIndex.getSelectedSortDirection();
+
+				$header
+					.addClass('ordered '+selectedSortDir)
+					.click($.proxy(this, '_handleSelectedSortHeaderClick'));
+			}
+			else
+			{
+				// Is this attribute sortable?
+				var $sortAttribute = this.elementIndex.getSortAttributeOption(attr);
+
+				if ($sortAttribute.length)
+				{
+					$header
+						.addClass('orderable')
+						.click($.proxy(this, '_handleUnselectedSortHeaderClick'));
+				}
+			}
 		}
 	},
 
@@ -292,8 +331,6 @@ Craft.TableElementIndexView = Craft.BaseElementIndexView.extend(
 
 						// Is there room to load more right now?
 						this.maybeLoadMore();
-
-						this.elementIndex.onUpdateElements();
 					}
 
 				}, this));
@@ -320,4 +357,51 @@ Craft.TableElementIndexView = Craft.BaseElementIndexView.extend(
 			this.structureTableSort.draggingLastElements
 		);
 	},
+
+	_handleSelectedSortHeaderClick: function(ev)
+	{
+		var $header = $(ev.currentTarget);
+
+		if ($header.hasClass('loading'))
+		{
+			return;
+		}
+
+		// Reverse the sort direction
+		var selectedSortDir = this.elementIndex.getSelectedSortDirection(),
+			newSortDir = (selectedSortDir == 'asc' ? 'desc' : 'asc');
+
+		this.elementIndex.setSortDirection(newSortDir);
+		this._handleSortHeaderClick(ev, $header);
+	},
+
+	_handleUnselectedSortHeaderClick: function(ev)
+	{
+		var $header = $(ev.currentTarget);
+
+		if ($header.hasClass('loading'))
+		{
+			return;
+		}
+
+		var attr = $header.attr('data-attribute');
+
+		this.elementIndex.setSortAttribute(attr);
+		this._handleSortHeaderClick(ev, $header);
+	},
+
+	_handleSortHeaderClick: function(ev, $header)
+	{
+		if (this.$selectedSortHeader)
+		{
+			this.$selectedSortHeader.removeClass('ordered asc desc');
+		}
+
+		$header.removeClass('orderable').addClass('ordered loading');
+		this.elementIndex.storeSortAttributeAndDirection();
+		this.elementIndex.updateElements();
+
+		// No need for two spinners
+		this.elementIndex.setIndexAvailable();
+	}
 });

@@ -202,7 +202,7 @@ abstract class BaseElementType extends BaseComponentType implements IElementType
 
 			if ($sortableAttributes)
 			{
-				$order = (!empty($viewState['order']) && isset($sortableAttributes[$viewState['order']])) ? $viewState['order'] : array_shift(array_keys($sortableAttributes));
+				$order = (!empty($viewState['order']) && isset($sortableAttributes[$viewState['order']])) ? $viewState['order'] : ArrayHelper::getFirstKey($sortableAttributes);
 				$sort  = (!empty($viewState['sort']) && in_array($viewState['sort'], array('asc', 'desc'))) ? $viewState['sort'] : 'asc';
 
 				// Combine them, accounting for the possibility that $order could contain multiple values,

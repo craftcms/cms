@@ -23,6 +23,11 @@ class ElementsService extends BaseApplicationComponent
 	 */
 	private $_placeholderElements;
 
+	/**
+	 * @var array
+	 */
+	private $_searchResults;
+
 	// Public Methods
 	// =========================================================================
 
@@ -64,7 +69,7 @@ class ElementsService extends BaseApplicationComponent
 	 * If no element type is provided, the method will first have to run a DB query to determine what type of element
 	 * the $elementId is, so you should definitely pass it if it’s known.
 	 *
-	 * The element’s status will not be a factor when usisng this method.
+	 * The element’s status will not be a factor when using this method.
 	 *
 	 * @param int    $elementId   The element’s ID.
 	 * @param null   $elementType The element type’s class handle.
@@ -202,48 +207,10 @@ class ElementsService extends BaseApplicationComponent
 
 		if ($query)
 		{
+			// If we're only interested in the IDs, drop everything else from the SELECT clause
 			if ($justIds)
 			{
 				$query->select('elements.id');
-			}
-
-			if ($criteria->fixedOrder)
-			{
-				$ids = ArrayHelper::stringToArray($criteria->id);
-
-				if (!$ids)
-				{
-					return array();
-				}
-
-				$query->order(craft()->db->getSchema()->orderByColumnValues('elements.id', $ids));
-			}
-			else if ($criteria->order && $criteria->order != 'score')
-			{
-				$order = $criteria->order;
-
-				if (is_array($fieldColumns))
-				{
-					// Add the field column prefixes
-					foreach ($fieldColumns as $column)
-					{
-						// Avoid matching fields named "asc" or "desc" in the string "column_name asc" or
-						// "column_name desc"
-						$order = preg_replace('/(?<!\w\s)\b'.$column['handle'].'\b/', $column['column'].'$1', $order);
-					}
-				}
-
-				$query->order($order);
-			}
-
-			if ($criteria->offset)
-			{
-				$query->offset($criteria->offset);
-			}
-
-			if ($criteria->limit)
-			{
-				$query->limit($criteria->limit);
 			}
 
 			$results = $query->queryAll();
@@ -310,6 +277,13 @@ class ElementsService extends BaseApplicationComponent
 							}
 
 							$result['locale'] = $locale;
+
+							// Should we set a search score on the element?
+							if (isset($this->_searchResults[$result['id']]))
+							{
+								$result['searchScore'] = $this->_searchResults[$result['id']];
+							}
+
 							$element = $elementType->populateElementModel($result);
 
 							// Was an element returned?
@@ -374,14 +348,18 @@ class ElementsService extends BaseApplicationComponent
 
 		if ($query)
 		{
-			$elementIds = $this->_getElementIdsFromQuery($query);
+			// Remove the order, offset, limit, and any additional tables in the FROM clause
+			$query
+				->order('')
+				->offset(0)
+				->limit(-1)
+				->select('elements.id')
+				->from('elements elements');
 
-			if ($criteria->search)
-			{
-				$elementIds = craft()->search->filterElementIdsByQuery($elementIds, $criteria->search, false, $criteria->locale);
-			}
+			// Can't use COUNT() here because of complications with the GROUP BY clause.
+			$rows = $query->queryColumn();
 
-			return count($elementIds);
+			return count($rows);
 		}
 		else
 		{
@@ -428,7 +406,24 @@ class ElementsService extends BaseApplicationComponent
 		// Set up the query
 		// ---------------------------------------------------------------------
 
-		$query = craft()->db->createCommand()
+		// Create the DbCommand object
+		$query = craft()->db->createCommand();
+
+		// Fire an 'onBeforeBuildElementsQuery' event
+		$event = new Event($this, array(
+			'criteria' => $criteria,
+			'query' => $query
+		));
+
+		$this->onBeforeBuildElementsQuery($event);
+
+		// Did any of the event handlers object to this query?
+		if (!$event->performAction)
+		{
+			return false;
+		}
+
+		$query
 			->select('elements.id, elements.type, elements.enabled, elements.archived, elements.dateCreated, elements.dateUpdated, elements_i18n.slug, elements_i18n.uri, elements_i18n.enabled AS localeEnabled')
 			->from('elements elements')
 			->join('elements_i18n elements_i18n', 'elements_i18n.elementId = elements.id')
@@ -923,26 +918,82 @@ class ElementsService extends BaseApplicationComponent
 		// Search
 		// ---------------------------------------------------------------------
 
+		$this->_searchResults = null;
+
 		if ($criteria->search)
 		{
 			$elementIds = $this->_getElementIdsFromQuery($query);
-			$scoredSearchResults = ($criteria->order == 'score');
-			$filteredElementIds = craft()->search->filterElementIdsByQuery($elementIds, $criteria->search, $scoredSearchResults, $criteria->locale);
+			$searchResults = craft()->search->filterElementIdsByQuery($elementIds, $criteria->search, true, $criteria->locale, true);
 
 			// No results?
-			if (!$filteredElementIds)
+			if (!$searchResults)
 			{
-				return array();
+				return false;
 			}
 
-			$query->andWhere(array('in', 'elements.id', $filteredElementIds));
+			$filteredElementIds = array_keys($searchResults);
 
-			if ($scoredSearchResults)
+			if ($criteria->order == 'score')
 			{
 				// Order the elements in the exact order that SearchService returned them in
 				$query->order(craft()->db->getSchema()->orderByColumnValues('elements.id', $filteredElementIds));
 			}
+
+			$query->andWhere(array('in', 'elements.id', $filteredElementIds));
+
+			$this->_searchResults = $searchResults;
 		}
+
+		// Order
+		// ---------------------------------------------------------------------
+
+		if ($criteria->fixedOrder)
+		{
+			$ids = ArrayHelper::stringToArray($criteria->id);
+
+			if (!$ids)
+			{
+				return array();
+			}
+
+			$query->order(craft()->db->getSchema()->orderByColumnValues('elements.id', $ids));
+		}
+		else if ($criteria->order && $criteria->order != 'score')
+		{
+			$order = $criteria->order;
+
+			if (is_array($fieldColumns))
+			{
+				// Add the field column prefixes
+				foreach ($fieldColumns as $column)
+				{
+					// Avoid matching fields named "asc" or "desc" in the string "column_name asc" or
+					// "column_name desc"
+					$order = preg_replace('/(?<!\w\s)\b'.$column['handle'].'\b/', $column['column'].'$1', $order);
+				}
+			}
+
+			$query->order($order);
+		}
+
+		// Offset and Limit
+		// ---------------------------------------------------------------------
+
+		if ($criteria->offset)
+		{
+			$query->offset($criteria->offset);
+		}
+
+		if ($criteria->limit)
+		{
+			$query->limit($criteria->limit);
+		}
+
+		// Fire an 'onBuildElementsQuery' event
+		$this->onBuildElementsQuery(new Event($this, array(
+			'criteria' => $criteria,
+			'query' => $query
+		)));
 
 		return $query;
 	}
@@ -1869,6 +1920,7 @@ class ElementsService extends BaseApplicationComponent
 							{
 								$criteria = craft()->elements->getCriteria($elementTypeHandle);
 								$criteria->status = null;
+								$criteria->limit = null;
 								$criteria->$thing = array_keys($refTagsByThing);
 								$elements = $criteria->find();
 
@@ -1952,6 +2004,30 @@ class ElementsService extends BaseApplicationComponent
 	// -------------------------------------------------------------------------
 
 	/**
+	 * Fires an 'onBeforeBuildElementsQuery' event.
+	 *
+	 * @param Event $event
+	 *
+	 * @return null
+	 */
+	public function onBeforeBuildElementsQuery(Event $event)
+	{
+		$this->raiseEvent('onBeforeBuildElementsQuery', $event);
+	}
+
+	/**
+	 * Fires an 'onBuildElementsQuery' event.
+	 *
+	 * @param Event $event
+	 *
+	 * @return null
+	 */
+	public function onBuildElementsQuery(Event $event)
+	{
+		$this->raiseEvent('onBuildElementsQuery', $event);
+	}
+
+	/**
 	 * Fires an 'onPopulateElement' event.
 	 *
 	 * @param Event $event
@@ -2011,6 +2087,30 @@ class ElementsService extends BaseApplicationComponent
 		$this->raiseEvent('onSaveElement', $event);
 	}
 
+	/**
+	 * Fires an 'onBeforePerformAction' event.
+	 *
+	 * @param Event $event
+	 *
+	 * @return null
+	 */
+	public function onBeforePerformAction(Event $event)
+	{
+		$this->raiseEvent('onBeforePerformAction', $event);
+	}
+
+	/**
+	 * Fires an 'onPerformAction' event.
+	 *
+	 * @param Event $event
+	 *
+	 * @return null
+	 */
+	public function onPerformAction(Event $event)
+	{
+		$this->raiseEvent('onPerformAction', $event);
+	}
+
 	// Private Methods
 	// =========================================================================
 
@@ -2026,8 +2126,7 @@ class ElementsService extends BaseApplicationComponent
 		// Get the matched element IDs, and then have the SearchService filter them.
 		$elementIdsQuery = craft()->db->createCommand()
 			->select('elements.id')
-			->from('elements elements')
-			->group('elements.id');
+			->from('elements elements');
 
 		$elementIdsQuery->setWhere($query->getWhere());
 		$elementIdsQuery->setJoin($query->getJoin());

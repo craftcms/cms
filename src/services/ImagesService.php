@@ -1,6 +1,10 @@
 <?php
 namespace Craft;
 
+use lsolesen\pel\PelJpeg;
+use lsolesen\pel\PelTag;
+use lsolesen\pel\PelDataWindow;
+
 /**
  * Service for image operations.
  *
@@ -30,7 +34,7 @@ class ImagesService extends BaseApplicationComponent
 	{
 		if ($this->_isGd === null)
 		{
-			if (craft()->config->get('imageDriver') == 'gd')
+			if (strtolower(craft()->config->get('imageDriver')) == 'gd')
 			{
 				$this->_isGd = true;
 			}
@@ -101,7 +105,6 @@ class ImagesService extends BaseApplicationComponent
 			$image->loadImage($path);
 		}
 
-
 		return $image;
 	}
 
@@ -168,18 +171,26 @@ class ImagesService extends BaseApplicationComponent
 	 */
 	public function cleanImage($filePath)
 	{
+		$cleanedByRotation = false;
+		$cleanedByStripping = false;
+
 		try
 		{
 			if (craft()->config->get('rotateImagesOnUploadByExifData'))
 			{
-				$this->rotateImageByExifData($filePath);
+				$cleanedByRotation = $this->rotateImageByExifData($filePath);
 			}
-
-			$this->stripOrientationFromExifData($filePath);
+			$cleanedByStripping = $this->stripOrientationFromExifData($filePath);
 		}
 		catch (\Exception $e)
 		{
 			Craft::log('Tried to rotate or strip EXIF data from image and failed: '.$e->getMessage(), LogLevel::Error);
+		}
+
+		// Image has already been cleaned if it had exif/orientation data
+		if ($cleanedByRotation || $cleanedByStripping)
+		{
+			return true;
 		}
 
 		return $this->loadImage($filePath)->saveAs($filePath, true);
@@ -190,18 +201,18 @@ class ImagesService extends BaseApplicationComponent
 	 *
 	 * @param string $filePath
 	 *
-	 * @return null
+	 * @return bool
 	 */
 	public function rotateImageByExifData($filePath)
 	{
 		if (!ImageHelper::canHaveExifData($filePath))
 		{
-			return null;
+			return false;
 		}
 
 		$exif = $this->getExifData($filePath);
 
-		$degrees = 0;
+		$degrees = false;
 
 		if (!empty($exif['ifd0.Orientation']))
 		{
@@ -225,8 +236,12 @@ class ImagesService extends BaseApplicationComponent
 			}
 		}
 
-		$image = $this->loadImage($filePath)->rotate($degrees);
+		if ($degrees === false)
+		{
+			return false;
+		}
 
+		$image = $this->loadImage($filePath)->rotate($degrees);
 		return $image->saveAs($filePath);
 	}
 
@@ -263,12 +278,12 @@ class ImagesService extends BaseApplicationComponent
 			return null;
 		}
 
-		$data = new \PelDataWindow(IOHelper::getFileContents($filePath));
+		$data = new PelDataWindow(IOHelper::getFileContents($filePath));
 
 		// Is this a valid JPEG?
-		if (\PelJpeg::isValid($data))
+		if (PelJpeg::isValid($data))
 		{
-			$jpeg = $file = new \PelJpeg();
+			$jpeg = $file = new PelJpeg();
 			$jpeg->load($data);
 			$exif = $jpeg->getExif();
 
@@ -278,15 +293,13 @@ class ImagesService extends BaseApplicationComponent
 				$ifd0 = $tiff->getIfd();
 
 				// Delete the Orientation entry and re-save the file
-				$ifd0->offsetUnset(\PelTag::ORIENTATION);
+				$ifd0->offsetUnset(PelTag::ORIENTATION);
 				$file->saveFile($filePath);
-			}
 
-			return true;
+				return true;
+			}
 		}
-		else
-		{
-			return false;
-		}
+
+		return false;
 	}
 }

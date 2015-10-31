@@ -2,214 +2,244 @@
 
 {% includeCssResource "css/cp.css" first %}
 {% includeTranslations
-	"week",
-	"weeks",
+	"(blank)",
+	"1 update available",
+	"Actions",
+	"An unknown error occurred.",
+	"Any changes will be lost if you leave this page.",
+	"Are you sure you want to delete “{name}”?",
+	"Are you sure you want to transfer your license to this domain?",
+	"Cancel",
+	"Choose a user",
+	"Close",
+	"Continue",
+	"Couldn’t delete “{name}”.",
+	"Couldn’t save new order.",
+	"Create",
 	"day",
 	"days",
-	"hour",
-	"hours",
-	"minute",
-	"minutes",
-	"second",
-	"seconds",
-	"Log out now",
-	"Keep me logged in",
-	"Your session will expire in {time}.",
-	"Your session has ended.",
-	"Enter your password to log back in.",
-	"Password",
-	"Login",
-	"Pending",
-	"Failed",
-	"Failed task",
-	"Options",
-	"Try again",
-	"Show sidebar",
-	"Hide sidebar",
-	"1 update available",
-	"{num} updates available",
-	"More",
-	"Attempted to get the height of a modal whose container has not been set.",
-	"Attempted to get the width of a modal whose container has not been set.",
-	"Attempted to position a modal whose container has not been set.",
-	"Attempted to position a modal whose container has not been set.",
-	"Are you sure you want to transfer your license to this domain?",
-	"License transferred.",
-	"An unknown error occurred.",
-	"Cancel",
-	"Close",
-	"Create",
-	"Done",
-	"Delete",
-	"Handle",
-	"Instructions",
-	"Name",
-	"Move",
-	"New Child",
-	"Remove",
-	"Reorder",
-	"Save",
-	"Settings",
-	"Select",
-	"New order saved.",
-	"New position saved.",
-	"Couldn’t save new order.",
-	"Are you sure you want to delete “{name}”?",
-	"“{name}” deleted.",
-	"Couldn’t delete “{name}”.",
-	"Show/hide children",
-	"New child",
-	"New entry",
-	"New {section} entry",
-	"New category",
-	"New {group} category",
-	"Upload failed for {filename}",
-	"{ctrl}C to copy.",
-	"Search in subfolders",
-	"New subfolder",
-	"Rename folder",
 	"Delete folder",
-	"Enter the name of the folder",
-	"Really delete folder “{folder}”?",
-	"Upload files",
-	"Select Transform",
-	"Actions",
-	"Continue",
-	"Cancel",
-	"Any changes will be lost if you leave this page.",
-	"What do you want to do with their content?",
-	"Transfer it to:",
-	"Choose a user",
 	"Delete it",
 	"Delete user",
 	"Delete users",
-	"(blank)",
-	"Are you sure you want to delete the selected blocks?"
+	"Delete",
+	"Display as thumbnails",
+	"Display in a table",
+	"Done",
+	"Enter the name of the folder",
+	"Enter your password to log back in.",
+	"Failed task",
+	"Failed",
+	"Handle",
+	"Hide sidebar",
+	"hour",
+	"hours",
+	"Instructions",
+	"Keep me logged in",
+	"License transferred.",
+	"Log out now",
+	"Login",
+	"minute",
+	"minutes",
+	"More",
+	"Move",
+	"Name",
+	"New category",
+	"New child",
+	"New entry",
+	"New order saved.",
+	"New position saved.",
+	"New subfolder",
+	"New {group} category",
+	"New {section} entry",
+	"Options",
+	"Password",
+	"Pending",
+	"Really delete folder “{folder}”?",
+	"Remove",
+	"Rename folder",
+	"Reorder",
+	"Save",
+	"Score",
+	"Search in subfolders",
+	"second",
+	"seconds",
+	"Select transform",
+	"Select",
+	"Settings",
+	"Show sidebar",
+	"Show/hide children",
+	"Sort by {attribute}",
+	"Structure",
+	"Transfer it to:",
+	"Try again",
+	"Upload failed for {filename}",
+	"Upload files",
+	"week",
+	"weeks",
+	"What do you want to do with their content?",
+	"Your session has ended.",
+	"Your session will expire in {time}.",
+	"{ctrl}C to copy.",
+	"{num} updates available",
+	"“{name}” deleted."
 %}
 
+
+{% set task = craft.tasks.getRunningTask() %}
+{% if task %}
+	{% includejs 'Craft.cp.setRunningTaskInfo('~task.getInfo()|json_encode|raw~');' %}
+	{% includejs 'Craft.cp.trackTaskProgress();' %}
+{% elseif craft.tasks.areTasksPending() %}
+	{% includejs 'Craft.cp.runPendingTasks();' %}
+{% elseif craft.tasks.haveTasksFailed() %}
+	{% includejs 'Craft.cp.setRunningTaskInfo({ status: "error" });' %}
+{% endif %}
+
+
 {% set forceConfirmUnload = craft.session.hasFlash('error') %}
+{% set fullPageForm = (fullPageForm is defined and fullPageForm) %}
+
+{% if fullPageForm and extraPageHeaderHtml is not defined %}
+	{% set extraPageHeaderHtml %}
+		{%- spaceless %}
+			{% block saveButton %}
+				<input type="submit" class="btn submit" value="{{ 'Save'|t }}">
+			{% endblock %}
+		{% endspaceless -%}
+	{% endset %}
+{% endif %}
 
 
 {% block body %}
-	{% if currentUser.admin and craft.config.devMode %}
-		<div id="devmode" title="{{ '@@@appName@@@ is running in Dev Mode.'|t }}"></div>
-	{% endif %}
+	<header id="global-sidebar">
 
-	{% if craft.cp.areAlertsCached() %}
-		{% set alerts = craft.cp.getAlerts() %}
-		{% if alerts %}
-			<ul id="alerts">
-				{% for alert in craft.cp.getAlerts() %}
-					<li>{{ alert|raw }}</li>
-				{% endfor %}
-			</ul>
+		{% if currentUser.admin and craft.config.devMode %}
+			<div id="devmode" title="{{ '@@@appName@@@ is running in Dev Mode.'|t }}"></div>
 		{% endif %}
-	{% else %}
-		{% includeJs 'Craft.cp.fetchAlerts();' %}
-	{% endif %}
 
-	<header id="header">
-		<div class="container">
-			<ul id="header-actions">
-				{% set task = craft.tasks.getRunningTask() %}
-				{% if task %}
-					{% includeJs 'Craft.cp.setRunningTaskInfo('~task.getInfo()|json_encode|raw~');' %}
-					{% includeJs 'Craft.cp.trackTaskProgress();' %}
-				{% elseif craft.tasks.areTasksPending() %}
-					{% includeJs 'Craft.cp.runPendingTasks();' %}
-				{% elseif craft.tasks.haveTasksFailed() %}
-					{% includeJs 'Craft.cp.setRunningTaskInfo({ status: "error" });' %}
-				{% endif %}
+		<div class="topbar">
 
-				{% if currentUser.can('performUpdates') %}
-					{% if craft.app.isUpdateInfoCached() %}
-						{% set totalUpdates = craft.app.getTotalAvailableUpdates() %}
-						{% if totalUpdates %}
-							{% if totalUpdates == 1 %}
-								{% set updateText = "1 update available"|t %}
-							{% else %}
-								{% set updateText = "{num} updates available"|t({ num: totalUpdates }) %}
-							{% endif %}
-							<li class="updates{% if craft.app.isCriticalUpdateAvailable() %} critical{% endif %}">
-								<a data-icon="newstamp" href="{{ url('updates') }}" title="{{ updateText }}">
-									<span>{{ totalUpdates }}</span>
-								</a>
-							</li>
-						{% endif %}
-					{% else %}
-						{% includeJs 'Craft.cp.checkForUpdates();' %}
+			<a class="site-name" href="{{ siteUrl }}" title="{{ 'Site Homepage'|t }}" target="_blank">
+
+				{% if false and CraftEdition >= CraftClient %}
+					{% if craft.rebrand.isLogoUploaded %}
+						<div id="site-icon" class="photo-container">
+							<img src="{{ craft.rebrand.logo.url }}" alt="">
+						</div>
 					{% endif %}
 				{% endif %}
 
-				{% if currentUser.admin %}
-					<li>
-						<a class="settings" data-icon="settings" href="{{ url('settings') }}" title="{{ 'Settings'|t }}"></a>
-					</li>
-					<li>
-						<a class="settingsmenu menubtn" title="{{ 'Settings'|t }}"></a>
-						<div id="settingsmenu" class="menu" data-align="right">
-							{% for category, items in craft.cp.settings() %}
-								<h6>{{ category }}</h6>
-								<ul class="padded">
-									{% for handle, item in items %}
-										<li>
-											<a href="{% if item.url is defined %}{{ url(item.url) }}{% else %}{{ url('settings/'~handle) }}{% endif %}" {% if item.icon is defined %}data-icon="{{ item.icon }}"{% endif %}>
+				<h2>{{ siteName|t }}</h2>
+			</a>
 
-												{% if item.iconUrl is defined %}
-													<img src="{{ item.iconUrl }}" />
-												{% endif %}
-
-												{{ item.label }}
-											</a>
-										</li>
-									{% endfor %}
-								</ul>
-							{% endfor %}
-						</div>
-					</li>
+			{% if currentUser.can('performUpdates') %}
+				{% if craft.app.isUpdateInfoCached() %}
+					{% set totalUpdates = craft.app.getTotalAvailableUpdates() %}
+					{% if totalUpdates %}
+						{% if totalUpdates == 1 %}
+							{% set updateText = "1 update available"|t %}
+						{% else %}
+							{% set updateText = "{num} updates available"|t({ num: totalUpdates }) %}
+						{% endif %}
+						<a class="updates{% if craft.app.isCriticalUpdateAvailable() %} critical{% endif %}" href="{{ url('updates') }}" title="{{ updateText }}">
+							<span data-icon="newstamp">
+								<span>{{ totalUpdates }}</span>
+							</span>
+						</a>
+					{% endif %}
+				{% else %}
+					{% includejs 'Craft.cp.checkForUpdates();' %}
 				{% endif %}
-
-				<li>
-					<a data-icon="user" class="myaccount menubtn" title="{{ 'My Account'|t }}" role="button"></a>
-					<div class="menu" data-align="right">
-						<ul>
-							<li><a href="{{ url('myaccount') }}">{{ "My Account"|t }}</a></li>
-							{% if CraftEdition == CraftClient and currentUser.admin %}
-								<li><a href="{{ url('clientaccount') }}">{{ "Client’s Account"|t }}</a></li>
-							{% endif %}
-							<li><a href="{{ logoutUrl }}">{{ "Sign out"|t }}</a></li>
-						</ul>
-					</div>
-				</li>
-			</ul>
-
-			<h2><a href="{{ siteUrl }}" title="{{ 'Site Homepage'|t }}" target="_blank">{{ siteName|t }}</a></h2>
-
-			<nav>
-				<ul id="nav">
-					{% for handle, item in craft.cp.nav() %}
-						<li id="nav-{{ handle }}">
-							<a{% if item.sel %} class="sel"{% endif %} href="{{ item.url }}">
-								{{- item.label -}}
-								{%- if item.badge is defined and item.badge -%}
-									<span class="badge">{{ item.badge }}</span>
-								{%- endif -%}
-							</a>
-						</li>
-					{% endfor %}
-					<!-- HIDE -->
-					<li id="customize-nav-btn"><a class="settings icon" title="{{ 'Customize…'|t }}"><span>{{ "Customize…"|t }}</span></a></li>
-					<!-- end HIDE -->
-				</ul>
-			</nav>
+			{% endif %}
 		</div>
+
+		<nav>
+			<ul id="nav">
+
+				{% for handle, item in craft.cp.nav() %}
+
+					{% set hasSubnav = (subnav is defined and subnav) %}
+
+					<li id="nav-{{ handle }}"{% if item.sel and hasSubnav %} class="has-subnav"{% endif %}>
+						<a{% if item.sel %} class="sel"{% endif %} href="{{ item.url }}">
+							<span class="icon">
+								{%- if item.icon is defined -%}
+									<span data-icon="{{ item.icon }}"></span>
+								{%- elseif item.iconSvg is defined and item.iconSvg -%}
+									{{ item.iconSvg|raw }}
+								{%- else -%}
+									{% include "_includes/defaulticon.svg" with { label: item.label } %}
+								{%- endif -%}
+							</span>
+
+							<span class="label">
+								{{- item.label -}}
+							</span>
+
+							{%- if item.badge is defined and item.badge -%}
+								<span class="badge">{{ item.badge }}</span>
+							{%- endif -%}
+						</a>
+
+						{% if item.sel and hasSubnav  %}
+				            <ul class="subnav">
+				                {% for itemId, item in subnav %}
+				                    {% set itemIsSelected = (
+				                        (selectedSubnavItem is defined and selectedSubnavItem == itemId) or
+				                        (selectedSubnavItem is not defined and loop.first)
+				                    ) -%}
+
+				                    <li>
+				                    	<a href="{{ url(item.url) }}"{% if itemIsSelected %} class="sel"{% endif %}>{{ item.label }}</a>
+				                    </li>
+
+				                {% endfor %}
+				            </ul>
+						{% endif %}
+
+					</li>
+				{% endfor %}
+
+				{#
+				<!-- HIDE -->
+				<li id="customize-nav-btn"><a class="settings icon" title="{{ 'Customize…'|t }}"><span>{{ "Customize…"|t }}</span></a></li>
+				<!-- end HIDE -->
+				#}
+			</ul>
+		</nav>
+
+		<div class="bottombar">
+			<a id="account-info" class="menubtn" title="{{ 'My Account'|t }}" role="button" data-menu-anchor="#account-menu-anchor">
+				<div id="user-photo" class="photo-container">
+					<img width="32" sizes="32px" srcset="{{ currentUser.getThumbUrl(32) }} 32w, {{ currentUser.getThumbUrl(64) }} 64w" alt="{{ currentUser.getName() }}">
+				</div>
+				<div class="username">
+					{{ currentUser.name }}
+					{% if currentUser.admin %}<div class="light">{{ 'admin'|t }}</div>{% endif %}
+				</div>
+				<div id="account-menu-anchor"></div>
+			</a>
+			<div class="menu" data-align="left">
+				<ul>
+					<li><a href="{{ url('myaccount') }}">{{ "My Account"|t }}</a></li>
+					{% if CraftEdition == CraftClient and currentUser.admin %}
+						<li><a href="{{ url('clientaccount') }}">{{ "Client’s Account"|t }}</a></li>
+					{% endif %}
+					<li><a href="{{ logoutUrl }}">{{ "Sign out"|t }}</a></li>
+				</ul>
+			</div>
+		</div>
+
 	</header>
 
-	{% if subnav is defined and subnav %}
-		{% include "_includes/subnav" %}
+	{% if fullPageForm %}
+		<form id="container" method="post" accept-charset="UTF-8" data-saveshortcut{% if saveShortcutRedirect is defined %} data-saveshortcut-redirect="{{ saveShortcutRedirect }}"{% endif %} data-confirm-unload>
+			{{ getCsrfInput() }}
+	{% else %}
+		<div id="container">
 	{% endif %}
 
-	<div class="container">
 		<div id="notifications-wrapper">
 			<div id="notifications">
 				{% for type in ['notice', 'error'] %}
@@ -221,8 +251,21 @@
 			</div>
 		</div>
 
-		<header id="page-header">
-			{% block pageHeader %}
+		{% if craft.cp.areAlertsCached() %}
+			{% set alerts = craft.cp.getAlerts() %}
+			{% if alerts %}
+				<ul id="alerts">
+					{% for alert in craft.cp.getAlerts() %}
+						<li>{{ alert|raw }}</li>
+					{% endfor %}
+				</ul>
+			{% endif %}
+		{% else %}
+			{% includejs 'Craft.cp.fetchAlerts();' %}
+		{% endif %}
+
+		<div class="topbar">
+			{%- spaceless %}
 				{% if crumbs is defined and crumbs %}
 					<nav id="crumbs">
 						<ul>
@@ -232,56 +275,68 @@
 						</ul>
 					</nav>
 				{% endif %}
+			{% endspaceless -%}
+		</div>
 
-				{% if title is defined and title %}
-					<h1>{{ title }}</h1>
-				{% endif %}
+
+		<header id="page-header">
+			{% block pageHeader %}
+
+				<div id="page-title">
+					{% block pageTitle %}
+						{% if title is defined and title %}
+							<h1>{{ title }}</h1>
+						{% endif %}
+					{% endblock %}
+				</div>
 
 				{% if extraPageHeaderHtml is defined %}
 					<div id="extra-headers">
-						{{ extraPageHeaderHtml }}
+						{{ extraPageHeaderHtml|raw }}
 					</div>
 				{% endif %}
 
-				<div class="clear"></div>
 			{% endblock %}
 		</header>
 
-		<main id="main" role="main">
-			{% block main %}
+		{# Is the template defining its own layout? #}
+		{% set main = block('main')|trim %}
+		{% set hasCustomLayout = (main is not empty) %}
+
+		<main id="main" role="main"{% if not hasCustomLayout %} class="single-pane"{% endif %}>
+			{% if hasCustomLayout %}
+				{{ main|raw }}
+			{% else %}
 				{% set sidebar = sidebar is defined ? sidebar : block('sidebar')|trim %}
 				{% set hasSidebar = (sidebar is not empty) %}
-				{% set hasHelp = (docsUrl is defined and docsUrl is not empty) %}
 
-				<div class="grid">
-					<div class="item">
-						<div class="pane">
-							{% if tabs is defined and tabs %}
-								{% include "_includes/tabs" %}
-							{% endif %}
+				<div class="pane">
+					{% if tabs is defined and tabs %}
+						{% include "_includes/tabs" %}
+					{% endif %}
 
-							<div id="content" class="content{% if hasSidebar %} has-sidebar{% endif %}{% if hasHelp %} has-help{% endif %}">
-								{% if hasSidebar %}
-									<div id="sidebar" class="sidebar">
-										{{ sidebar|raw }}
-									</div>
-								{% endif %}
-
-								<div class="body">
-									{% block content %}
-										{{ content is defined ? content }}
-									{% endblock %}
-								</div>
-
-								{% if hasHelp %}
-									<a id="help" class="help" title="{{ 'Help'|t }}" href="{{ docsUrl }}" target="_blank"></a>
-								{% endif %}
+					<div id="content" class="content{% if hasSidebar %} has-sidebar{% endif %}">
+						{% if hasSidebar %}
+							<div id="sidebar" class="sidebar">
+								{{ sidebar|raw }}
 							</div>
+						{% endif %}
+
+						<div class="body">
+							{% block content %}
+								{{ content is defined ? content }}
+							{% endblock %}
 						</div>
 					</div>
 				</div>
-			{% endblock %}
+			{% endif %}
 		</main>
+
+		{% if docsUrl is defined and docsUrl is not empty %}
+			<div id="help-footer">
+				<a id="help" class="help" title="{{ 'Help'|t }}" href="{{ docsUrl }}" target="_blank"></a>
+			</div>
+		{% endif %}
 
 		<div id="footer">
 			<ul>
@@ -297,7 +352,12 @@
 				<p id="upgradepromo"><a>{{ "Upgrade Craft to take your site to the next level."|t }} <span class="go nowrap">{{ "Show me"|t }}</span></a></p>
 			{% endif %}
 		</div>
-	</div>
+
+	{% if not fullPageForm %}
+		</div>
+	{% else %}
+		</form>
+	{% endif %}
 
 	{% if craft.app.hasWrongEdition() %}
 		<div id="wrongedition-modal" class="modal fitted hidden">

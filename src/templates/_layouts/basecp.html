@@ -1,5 +1,10 @@
 {% extends "_layouts/base" %}
 
+{# Give the body a .mobile class for mobile devices #}
+{% if craft.request.isMobileBrowser(true) %}
+	{% set bodyClass = (bodyClass is defined and bodyClass ? bodyClass~' ' : '') ~ 'mobile' %}
+{% endif %}
+
 {# Figure out which Datepicker i18n script to load #}
 {%- switch craft.locale %}
 	{%- case 'en_gb' %}
@@ -23,9 +28,11 @@
 {%- includeJsResource "js/cp.js" first -%}
 {%- includeJsResource "js/craft.js" first -%}
 {%- includeJsResource 'lib/garnish-0.1'~(useCompressedJs ? '.min')~'.js' first %}
+{%- includeJsResource 'lib/picturefill-3.0.0-rc1'~(useCompressedJs ? '.min')~'.js' first %}
 {%- includeJsResource 'lib/fileupload/jquery.fileupload.js' first %}
 {%- includeJsResource 'lib/fileupload/jquery.ui.widget.js' first %}
-{%- includeJsResource 'lib/jquery.placeholder.js' first %}
+{%- includeJsResource 'lib/selectize/selectize'~(useCompressedJs ? '.min')~'.js' first %}
+{%- includeCssResource 'lib/selectize/selectize.css' %}
 {%- includeJsResource 'lib/velocity'~(useCompressedJs ? '.min')~'.js' first %}
 {%- includeJsResource 'lib/jquery-ui'~(useCompressedJs ? '.min')~'.js' first %}
 {%- includeJsResource 'lib/jquery-2.1.4'~(useCompressedJs ? '.min')~'.js' first %}
@@ -45,6 +52,7 @@
 	</noscript>
 
 	<script type="text/javascript">
+		// Create the Craft object
 		window.Craft = {
 			siteUid:               "{{ craft.app.getSiteUid()|e('js') }}",
 			baseUrl:               "{{ url()|e('js') }}",
@@ -62,6 +70,7 @@
 			orientation:           "{{ orientation|e('js') }}",
 			left:                  "{{ orientation == 'ltr' ? 'left' : 'right' }}",
 			right:                 "{{ orientation == 'ltr' ? 'right' : 'left' }}",
+			datepickerFormat:      "{{ craft.i18n.getDatepickerJsFormat()|e('js') }}",
 			username:              {{ currentUser is defined and currentUser ? ('"'~currentUser.username|e('js')~'"')|raw : 'null' }},
 			authTimeout:           {{ craft.request.getFirstSegment() not in ['updates', 'manualupdate'] ? craft.session.getAuthTimeout() : 0 }},
 			Personal:              {{ CraftPersonal }},
@@ -81,7 +90,7 @@
 			limitAutoSlugsToAscii: {{ craft.config.limitAutoSlugsToAscii ? 'true' : 'false' }},
 			fileKinds:             {{ craft.app.getFileKinds()|json_encode|raw }},
 			publishableSections: [
-				{% if currentUser is defined and currentUser %}
+				{% if isInstalled and currentUser is defined and currentUser %}
 					{% for section in craft.sections.getEditableSections() %}
 						{% if section.type != 'single' and currentUser.can('createEntries:'~section.id) %}
 							{id: {{ section.id }}, name: "{{ section.name|e('js') }}", handle: "{{ section.handle|e('js') }}", type: "{{ section.type }}"}{% if not loop.last %},{% endif %}
@@ -90,10 +99,15 @@
 				{% endif %}
 			],
 			editableCategoryGroups: [
-				{% for group in craft.categoryGroups.getEditableGroups() %}
-					{id: {{ group.id }}, name: "{{ group.name|e('js') }}", handle: "{{ group.handle|e('js') }}"}{% if not loop.last %},{% endif %}
-				{% endfor %}
+				{% if isInstalled %}
+					{% for group in craft.categoryGroups.getEditableGroups() %}
+						{id: {{ group.id }}, name: "{{ group.name|e('js') }}", handle: "{{ group.handle|e('js') }}"}{% if not loop.last %},{% endif %}
+					{% endfor %}
+				{% endif %}
 			]
 		};
+
+		// Picture element HTML5 shiv
+		document.createElement('picture');
 	</script>
 {% endblock %}

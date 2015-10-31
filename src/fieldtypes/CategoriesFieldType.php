@@ -31,18 +31,18 @@ class CategoriesFieldType extends BaseElementFieldType
 	protected $allowMultipleSources = false;
 
 	/**
-	 * The JS class that should be initialized for the input.
-	 *
-	 * @var string|null $inputJsClass
-	 */
-	protected $inputJsClass = 'Craft.CategorySelectInput';
-
-	/**
 	 * Template to use for field rendering
 	 *
 	 * @var string
 	 */
 	protected $inputTemplate = '_components/fieldtypes/Categories/input';
+
+	/**
+	 * The JS class that should be initialized for the input.
+	 *
+	 * @var string|null $inputJsClass
+	 */
+	protected $inputJsClass = 'Craft.CategorySelectInput';
 
 	/**
 	 * Whether the elements have a custom sort order.

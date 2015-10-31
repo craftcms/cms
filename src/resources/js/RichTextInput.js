@@ -36,25 +36,33 @@ Craft.RichTextInput = Garnish.Base.extend(
 		}
 
 		this.redactorConfig.imageUpload = true;
+		this.redactorConfig.fileUpload = true;
 
-		var that = this,
-			originalInitCallback = redactorConfig.initCallback;
-
-		this.redactorConfig.initCallback = function(ev, data)
+		// Prevent a JS error when calling core.destroy() when opts.plugins == false
+		if (typeof this.redactorConfig.plugins !== typeof [])
 		{
-			that.redactor = this;
-			that.onRedactorInit();
+			this.redactorConfig.plugins = [];
+		}
 
-			// Did the config have its own callback?
-			if ($.isFunction(originalInitCallback))
-			{
-				return originalInitCallback.call(this, ev, data);
-			}
-			else
-			{
-				return data;
-			}
+		var callbacks = {
+			init: Craft.RichTextInput.handleRedactorInit
 		};
+
+		if (typeof this.redactorConfig.callbacks == typeof [])
+		{
+			// Merge them together
+			for (var i in callbacks)
+			{
+				if (typeof this.redactorConfig.callbacks[i] != typeof undefined)
+				{
+					this.redactorConfig.callbacks[i] = this.mergeCallbacks(callbacks[i], this.redactorConfig.callbacks[i]);
+				}
+			}
+		}
+		else
+		{
+			this.redactorConfig.callbacks = callbacks;
+		}
 
 		// Initialize Redactor
 		this.$textarea = $('#'+this.id);
@@ -76,14 +84,25 @@ Craft.RichTextInput = Garnish.Base.extend(
 		}
 	},
 
-	initRedactor: function()
+	mergeCallbacks: function(callback1, callback2)
 	{
-		this.$textarea.redactor(this.redactorConfig);
-		this.redactor = this.$textarea.data('redactor');
+		return function() {
+			callback1.apply(this, arguments);
+			callback2.apply(this, arguments);
+		}
 	},
 
-	onRedactorInit: function()
+	initRedactor: function()
 	{
+		Craft.RichTextInput.currentInstance = this;
+		this.$textarea.redactor(this.redactorConfig);
+		delete Craft.RichTextInput.currentInstance;
+	},
+
+	onInitRedactor: function(redactor)
+	{
+		this.redactor = redactor;
+
 		// Only customize the toolbar if there is one,
 		// otherwise we get a JS error due to redactor.$toolbar being undefined
 		if (this.redactor.opts.toolbar)
@@ -92,191 +111,248 @@ Craft.RichTextInput = Garnish.Base.extend(
 		}
 
 		this.leaveFullscreetOnSaveShortcut();
+
+		this.redactor.core.editor()
+			.on('focus', $.proxy(this, 'onEditorFocus'))
+			.on('blur', $.proxy(this, 'onEditorBlur'));
 	},
 
 	customizeToolbar: function()
 	{
-		var $imageBtn = this.replaceRedactorButton('image', Craft.t('Insert image')),
-			$linkBtn = this.replaceRedactorButton('link', Craft.t('Link'));
-
-		if ($imageBtn)
+		// Override the Image and File buttons?
+		if (this.assetSources.length)
 		{
-			this.redactor.button.addCallback($imageBtn, $.proxy(function()
+			var $imageBtn = this.replaceRedactorButton('image', this.redactor.lang.get('image')),
+				$fileBtn = this.replaceRedactorButton('file', this.redactor.lang.get('file'));
+
+			if ($imageBtn)
 			{
-				this.redactor.selection.save();
+				this.redactor.button.addCallback($imageBtn, $.proxy(this, 'onImageButtonClick'));
+			}
 
-				if (typeof this.assetSelectionModal == 'undefined')
+			if ($fileBtn)
+			{
+				this.redactor.button.addCallback($fileBtn, $.proxy(this, 'onFileButtonClick'));
+			}
+		}
+		else
+		{
+			// Image and File buttons aren't supported
+			this.redactor.button.remove('image');
+			this.redactor.button.remove('file');
+		}
+
+		// Override the Link button?
+		if (this.entrySources.length || this.categorySources.length)
+		{
+			var $linkBtn = this.replaceRedactorButton('link', this.redactor.lang.get('link'));
+
+			if ($linkBtn)
+			{
+				var dropdownOptions = {};
+
+				if (this.entrySources.length)
 				{
-					this.assetSelectionModal = Craft.createElementSelectorModal('Asset', {
-						storageKey: 'RichTextFieldType.ChooseImage',
-						multiSelect: true,
-						criteria: { locale: this.elementLocale, kind: 'image' },
-						onSelect: $.proxy(function(assets, transform)
-						{
-							if (assets.length)
-							{
-								this.redactor.selection.restore();
-								for (var i = 0; i < assets.length; i++)
-								{
-									var asset = assets[i],
-										url   = asset.url+'#asset:'+asset.id;
+					dropdownOptions.link_entry = {
+						title: Craft.t('Link to an entry'),
+						func: $.proxy(this, 'onLinkToEntryButtonClick')
+					};
+				};
 
-									if (transform)
-									{
-										url += ':'+transform;
-									}
+				if (this.categorySources.length)
+				{
+					dropdownOptions.link_category = {
+						title: Craft.t('Link to a category'),
+						func: $.proxy(this, 'onLinkToCategoryButtonClick')
+					};
+				}
 
-									this.redactor.insert.node($('<img src="'+url+'" />')[0]);
-									this.redactor.code.sync();
-								}
-								this.redactor.observe.images();
-								this.redactor.dropdown.hideAll();
+				// Add the default Link options
+				$.extend(dropdownOptions, {
+					link:
+					{
+						title: this.redactor.lang.get('link-insert'),
+						func: 'link.show',
+						observe: {
+							element: 'a',
+							in: {
+								title: this.redactor.lang.get('link-edit'),
+							},
+							out: {
+								title: this.redactor.lang.get('link-insert')
 							}
-						}, this),
-						closeOtherModals: false,
-						canSelectImageTransforms: true
-					});
-				}
-				else
-				{
-					this.assetSelectionModal.show();
-				}
-			}, this));
-		}
+						}
+					},
+					unlink:
+					{
+						title: this.redactor.lang.get('unlink'),
+						func: 'link.unlink',
+						observe: {
+							element: 'a',
+							out: {
+								attr: {
+									'class': 'redactor-dropdown-link-inactive',
+									'aria-disabled': true
+								}
+							}
+						}
+					}
+				});
 
-		if ($linkBtn)
+				this.redactor.button.addDropdown($linkBtn, dropdownOptions);
+			}
+		}
+	},
+
+	onImageButtonClick: function()
+	{
+		this.redactor.selection.save();
+
+		if (typeof this.assetSelectionModal == 'undefined')
 		{
-			var dropdownOptions = {};
-
-			if (this.entrySources.length)
-			{
-				dropdownOptions.link_entry = {
-					title: Craft.t('Link to an entry'),
-					func: $.proxy(function()
+			this.assetSelectionModal = Craft.createElementSelectorModal('Asset', {
+				storageKey: 'RichTextFieldType.ChooseImage',
+				multiSelect: true,
+				criteria: { locale: this.elementLocale, kind: 'image' },
+				onSelect: $.proxy(function(assets, transform)
+				{
+					if (assets.length)
 					{
-						this.redactor.selection.save();
-
-						if (typeof this.entrySelectionModal == 'undefined')
+						this.redactor.selection.restore();
+						for (var i = 0; i < assets.length; i++)
 						{
-							this.entrySelectionModal = Craft.createElementSelectorModal('Entry', {
-								storageKey: 'RichTextFieldType.LinkToEntry',
-								sources: this.entrySources,
-								criteria: { locale: this.elementLocale },
-								onSelect: $.proxy(function(entries)
-								{
-									if (entries.length)
-									{
-										this.redactor.selection.restore();
-										var entry     = entries[0],
-											url       = entry.url+'#entry:'+entry.id,
-											selection = this.redactor.selection.getText(),
-											title = selection.length > 0 ? selection : entry.label;
-										this.redactor.insert.node($('<a href="'+url+'">'+title+'</a>')[0]);
-										this.redactor.code.sync();
-									}
-									this.redactor.dropdown.hideAll();
-								}, this),
-								closeOtherModals: false
-							});
+							var asset = assets[i],
+								url   = asset.url+'#asset:'+asset.id;
+
+							if (transform)
+							{
+								url += ':'+transform;
+							}
+
+							this.redactor.insert.node($('<img src="'+url+'" />')[0]);
+							this.redactor.code.sync();
 						}
-						else
-						{
-							this.entrySelectionModal.show();
-						}
-					}, this)
-				};
-			};
-
-			if (this.categorySources.length)
-			{
-				dropdownOptions.link_category = {
-					title: Craft.t('Link to a category'),
-					func: $.proxy(function()
-					{
-						this.redactor.selection.save();
-
-						if (typeof this.categorySelectionModal == 'undefined')
-						{
-							this.categorySelectionModal = Craft.createElementSelectorModal('Category', {
-								storageKey: 'RichTextFieldType.LinkToCategory',
-								sources: this.categorySources,
-								criteria: { locale: this.elementLocale },
-								onSelect: $.proxy(function(categories)
-								{
-									if (categories.length)
-									{
-										this.redactor.selection.restore();
-										var category  = categories[0],
-											url       = category.url+'#category:'+category.id,
-											selection = this.redactor.selection.getText(),
-											title = selection.length > 0 ? selection : category.label;
-										this.redactor.insert.node($('<a href="'+url+'">'+title+'</a>')[0]);
-										this.redactor.code.sync();
-									}
-									this.redactor.dropdown.hideAll();
-								}, this),
-								closeOtherModals: false
-							});
-						}
-						else
-						{
-							this.categorySelectionModal.show();
-						}
-					}, this)
-				};
-			}
-
-			if (this.assetSources.length)
-			{
-				dropdownOptions.link_asset = {
-					title: Craft.t('Link to an asset'),
-					func: $.proxy(function()
-					{
-						this.redactor.selection.save();
-
-						if (typeof this.assetLinkSelectionModal == 'undefined')
-						{
-							this.assetLinkSelectionModal = Craft.createElementSelectorModal('Asset', {
-								storageKey: 'RichTextFieldType.LinkToAsset',
-								criteria: { locale: this.elementLocale },
-								onSelect: $.proxy(function(assets)
-								{
-									if (assets.length)
-									{
-										this.redactor.selection.restore();
-										var asset     = assets[0],
-											url       = asset.url+'#asset:'+asset.id,
-											selection = this.redactor.selection.getText(),
-											title     = selection.length > 0 ? selection : asset.label;
-										this.redactor.insert.node($('<a href="'+url+'">'+title+'</a>')[0]);
-										this.redactor.code.sync();
-									}
-									this.redactor.dropdown.hideAll();
-								}, this),
-								closeOtherModals: false,
-								canSelectImageTransforms: true
-							});
-						}
-						else
-						{
-							this.assetLinkSelectionModal.show();
-						}
-					}, this)
-				}
-			}
-
-			dropdownOptions.link = {
-				title: Craft.t('Insert link'),
-				func:  'link.show'
-			};
-
-			dropdownOptions.unlink = {
-				title: Craft.t('Unlink'),
-				func:  'link.unlink'
-			}
-
-			this.redactor.button.addDropdown($linkBtn, dropdownOptions);
+						this.redactor.observe.images();
+						this.redactor.dropdown.hideAll();
+					}
+				}, this),
+				closeOtherModals: false,
+				canSelectImageTransforms: true
+			});
 		}
+		else
+		{
+			this.assetSelectionModal.show();
+		}
+	},
+
+	onFileButtonClick: function()
+	{
+		this.redactor.selection.save();
+
+		if (typeof this.assetLinkSelectionModal == 'undefined')
+		{
+			this.assetLinkSelectionModal = Craft.createElementSelectorModal('Asset', {
+				storageKey: 'RichTextFieldType.LinkToAsset',
+				criteria: { locale: this.elementLocale },
+				onSelect: $.proxy(function(assets)
+				{
+					if (assets.length)
+					{
+						this.redactor.selection.restore();
+						var asset     = assets[0],
+							url       = asset.url+'#asset:'+asset.id,
+							selection = this.redactor.selection.text(),
+							title     = selection.length > 0 ? selection : asset.label;
+						this.redactor.insert.node($('<a href="'+url+'">'+title+'</a>')[0]);
+						this.redactor.code.sync();
+					}
+					this.redactor.dropdown.hideAll();
+				}, this),
+				closeOtherModals: false,
+				canSelectImageTransforms: true
+			});
+		}
+		else
+		{
+			this.assetLinkSelectionModal.show();
+		}
+	},
+
+	onLinkToEntryButtonClick: function()
+	{
+		this.redactor.selection.save();
+
+		if (typeof this.entrySelectionModal == 'undefined')
+		{
+			this.entrySelectionModal = Craft.createElementSelectorModal('Entry', {
+				storageKey: 'RichTextFieldType.LinkToEntry',
+				sources: this.entrySources,
+				criteria: { locale: this.elementLocale },
+				onSelect: $.proxy(function(entries)
+				{
+					if (entries.length)
+					{
+						this.redactor.selection.restore();
+						var entry     = entries[0],
+							url       = entry.url+'#entry:'+entry.id,
+							selection = this.redactor.selection.text(),
+							title = selection.length > 0 ? selection : entry.label;
+						this.redactor.insert.node($('<a href="'+url+'">'+title+'</a>')[0]);
+						this.redactor.code.sync();
+					}
+					this.redactor.dropdown.hideAll();
+				}, this),
+				closeOtherModals: false
+			});
+		}
+		else
+		{
+			this.entrySelectionModal.show();
+		}
+	},
+
+	onLinkToCategoryButtonClick: function()
+	{
+		this.redactor.selection.save();
+
+		if (typeof this.categorySelectionModal == 'undefined')
+		{
+			this.categorySelectionModal = Craft.createElementSelectorModal('Category', {
+				storageKey: 'RichTextFieldType.LinkToCategory',
+				sources: this.categorySources,
+				criteria: { locale: this.elementLocale },
+				onSelect: $.proxy(function(categories)
+				{
+					if (categories.length)
+					{
+						this.redactor.selection.restore();
+						var category  = categories[0],
+							url       = category.url+'#category:'+category.id,
+							selection = this.redactor.selection.text(),
+							title = selection.length > 0 ? selection : category.label;
+						this.redactor.insert.node($('<a href="'+url+'">'+title+'</a>')[0]);
+						this.redactor.code.sync();
+					}
+					this.redactor.dropdown.hideAll();
+				}, this),
+				closeOtherModals: false
+			});
+		}
+		else
+		{
+			this.categorySelectionModal.show();
+		}
+	},
+
+	onEditorFocus: function()
+	{
+		this.redactor.core.box().addClass('focus');
+	},
+
+	onEditorBlur: function()
+	{
+		this.redactor.core.box().removeClass('focus');
 	},
 
 	leaveFullscreetOnSaveShortcut: function()
@@ -318,6 +394,14 @@ Craft.RichTextInput = Garnish.Base.extend(
 		this.redactor.button.remove(placeholderKey);
 
 		return $btn;
+	}
+},
+{
+	handleRedactorInit: function()
+	{
+		// `this` is the current Redactor instance.
+		// `Craft.RichTextInput.currentInstance` is the current RichTextInput instance
+		Craft.RichTextInput.currentInstance.onInitRedactor(this);
 	}
 });
 
