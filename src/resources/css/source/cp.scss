@@ -377,9 +377,9 @@ $fldGuideColor: #f4f3fb;
 
 /* Sidebar */
 
-.show-sidebar { background: #fafafa; border-bottom: 1px solid #eee; display: block; position: relative; top: -24px; margin: 0 -24px; padding: 14px 24px; color: $secondarySubmitColor; z-index: 11; }
+.show-sidebar { background: #fafafa; border-bottom: 1px solid #eee; display: block; position: relative; top: -24px; margin: 0 -24px; padding: 14px 24px; color: $secondarySubmitColor; z-index: 11; line-height: 21px; }
 .show-sidebar:hover { text-decoration: none; background: #fcfcfc; }
-.show-sidebar:after { @include icon; font-size: 16px; width: 43px; line-height: 24px; content: '▼'; @include floatright; margin-top: -3px; @include margin-right(-24px); }
+.show-sidebar:after { @include icon; font-size: 16px; width: 43px; line-height: 20px; content: '▼'; position: relative; top: 1px; @include floatright; @include margin-right(-24px); }
 
 .sidebar { position: absolute; width: 220px; padding: 24px; overflow: auto; background: $lightBgColor; @include box-sizing(border-box); }
 .sidebar { @include margin(-24px, 0, 24px, -242px); }
