@@ -84,6 +84,7 @@ body .redactor-box-fullscreen {
   padding: 0;
   max-width: 600px;
   min-width: 200px;
+  border-radius: 4px;
 }
 .redactor-air li a {
   color: rgba(255, 255, 255, 0.75);
@@ -122,10 +123,6 @@ body .redactor-box-fullscreen {
   content: "";
   display: table;
   clear: both;
-}
-.redactor-toolbar.redactor-toolbar-overflow {
-  overflow-y: auto;
-  white-space: nowrap;
 }
 .redactor-toolbar.redactor-toolbar-external {
   z-index: 999;
@@ -289,11 +286,22 @@ body .redactor-box-fullscreen {
   font-family: Arial, 'Helvetica Neue', Helvetica, Tahoma, sans-serif;
   box-shadow: 0 50px 150px rgba(0, 0, 0, 0.6);
 }
+@media (max-width: 768px) {
+  #redactor-modal {
+    font-size: 16px !important;
+  }
+}
 #redactor-modal header {
   padding: 64px 80px 2px 80px;
   font-size: 14px;
   text-transform: uppercase;
   font-weight: bold;
+}
+@media (max-width: 768px) {
+  #redactor-modal header {
+    padding: 24px;
+    padding-bottom: 0;
+  }
 }
 #redactor-modal p {
   margin-bottom: 16px;
@@ -304,6 +312,11 @@ body .redactor-box-fullscreen {
 }
 #redactor-modal .modal-section {
   padding: 30px 80px 80px 80px;
+}
+@media (max-width: 768px) {
+  #redactor-modal .modal-section {
+    padding: 24px;
+  }
 }
 #redactor-modal .desc {
   color: rgba(0, 0, 0, 0.45);
@@ -347,6 +360,15 @@ body .redactor-box-fullscreen {
   font-family: Arial, 'Helvetica Neue', Helvetica, Tahoma, sans-serif;
   -moz-transition: border 0.3s ease-in;
   transition: border 0.3s ease-in;
+}
+@media (max-width: 768px) {
+  #redactor-modal input[type="text"],
+  #redactor-modal input[type="password"],
+  #redactor-modal input[type="email"],
+  #redactor-modal input[type="url"],
+  #redactor-modal textarea {
+    font-size: 16px;
+  }
 }
 #redactor-modal input[type="text"]:focus,
 #redactor-modal input[type="password"]:focus,
@@ -679,7 +701,12 @@ body .redactor-box-fullscreen {
   font-family: Arial, 'Helvetica Neue', Helvetica, Tahoma, sans-serif;
   font-size: 15px;
   line-height: 24px;
-  color: #222222;
+  color: #222;
+}
+@media (max-width: 768px) {
+  .redactor-editor {
+    font-size: 16px;
+  }
 }
 .redactor-editor a {
   color: #256bc9;
@@ -696,7 +723,7 @@ body .redactor-box-fullscreen {
 .redactor-editor h6 {
   font-family: Arial, 'Helvetica Neue', Helvetica, Tahoma, sans-serif;
   font-weight: bold;
-  color: #000000;
+  color: #000;
   text-rendering: optimizeLegibility;
   margin: 0;
   padding: 0;
@@ -818,7 +845,7 @@ body .redactor-box-fullscreen {
 }
 .redactor-editor abbr[title],
 .redactor-editor dfn[title] {
-  border-bottom: 1px dotted #222222;
+  border-bottom: 1px dotted #222;
   cursor: help;
 }
 .redactor-editor strong,
