@@ -51,7 +51,8 @@ class PluginUpdateModel extends BaseModel
 		$attributes['status']                  = AttributeType::Bool;
 		$attributes['displayName']             = AttributeType::String;
 		$attributes['criticalUpdateAvailable'] = AttributeType::Bool;
-		$attributes['releases']                = AttributeType::Mixed;;
+		$attributes['manualDownloadEndpoint']  = AttributeType::String;
+		$attributes['releases']                = AttributeType::Mixed;
 
 		return $attributes;
 	}
