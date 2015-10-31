@@ -36,7 +36,7 @@
 
 {% set extraPageHeaderHtml %}
 	{% if groups %}
-		<div class="buttons secondary-buttons">
+		<div class="buttons secondary-buttons right">
 			{% set newFieldUrl = url('settings/fields/new', (groupId is defined ? { groupId: groupId } : null)) %}
 			<a href="{{ newFieldUrl }}" class="submit btn add icon">{{ "New field"|t }}</a>
 		</div>

@@ -9,7 +9,7 @@
 
 
 {% set extraPageHeaderHtml %}
-	<div id="newsectioncontainer" class="buttons secondary-buttons{% if CraftEdition == CraftPersonal and sections|length >= maxSections %} hidden{% endif %}">
+	<div id="newsectioncontainer" class="buttons secondary-buttons right{% if CraftEdition == CraftPersonal and sections|length >= maxSections %} hidden{% endif %}">
 		<a href="{{ url('settings/sections/new') }}" class="btn submit add icon">{{ "New section"|t }}</a>
 	</div>
 {% endset %}
