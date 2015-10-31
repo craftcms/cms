@@ -336,6 +336,10 @@ Craft.CP = Garnish.Base.extend(
 
 	showSidebarToggle: function()
 	{
+		var $selectedLink = $('a.sel:first', this.$sidebar);
+
+		this.selectedItemLabel = $selectedLink.html();
+
 		this.$sidebarBtn = $('<a class="show-sidebar" title="'+Craft.t('Show sidebar')+'">'+this.selectedItemLabel+'</a>').prependTo(this.$content);
 
 		this.addListener(this.$sidebarBtn, 'click', 'toggleSidebar');
