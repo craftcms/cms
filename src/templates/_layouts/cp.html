@@ -169,7 +169,7 @@
 								{%- elseif item.iconSvg is defined and item.iconSvg -%}
 									{{ item.iconSvg|raw }}
 								{%- else -%}
-									{% include "_includes/defaulticon.svg" %}
+									{% include "_includes/defaulticon.svg" with { label: item.label } %}
 								{%- endif -%}
 							</span>
 
