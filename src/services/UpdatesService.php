@@ -200,7 +200,8 @@ class UpdatesService extends BaseApplicationComponent
 	public function setNewPluginInfo(BasePlugin $plugin)
 	{
 		$affectedRows = craft()->db->createCommand()->update('plugins', array(
-			'version' => $plugin->getVersion()
+			'version' => $plugin->getVersion(),
+			'schemaVersion' => $plugin->getSchemaVersion()
 		), array(
 			'class' => $plugin->getClassHandle()
 		));

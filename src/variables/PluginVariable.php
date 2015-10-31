@@ -67,6 +67,16 @@ class PluginVariable extends BaseComponentTypeVariable
 	}
 
 	/**
+	 * Returns the plugin documentation's URL.
+	 *
+	 * @return string
+	 */
+	public function getDocumentationUrl()
+	{
+		return $this->component->getDocumentationUrl();
+	}
+
+	/**
 	 * Returns the URL to the plugin's settings in the CP.
 	 *
 	 * @return string|null

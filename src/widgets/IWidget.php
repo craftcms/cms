@@ -24,11 +24,11 @@ interface IWidget extends ISavableComponentType
 	public function getTitle();
 
 	/**
-	 * Returns the widget’s icon URL.
+	 * Returns the path to the widget’s SVG icon.
 	 *
-	 * @return string The widget’s icon URL.
+	 * @return string The path to the widget’s SVG icon
 	 */
-	public function getIconUrl();
+	public function getIconPath();
 
 	/**
 	 * Returns the widget's body HTML.

@@ -281,7 +281,7 @@ class UsersController extends BaseController
 	 */
 	public function actionSetPassword()
 	{
-		// Have they just submitted a password, or are we just displaying teh page?
+		// Have they just submitted a password, or are we just displaying the page?
 		if (!craft()->request->isPostRequest())
 		{
 			if ($info = $this->_processTokenRequest())
@@ -1079,7 +1079,7 @@ class UsersController extends BaseController
 
 				list ($width, $height) = ImageHelper::getImageSize($folderPath.$fileName);
 
-			
+
                 if (IOHelper::getExtension($fileName) != 'svg')
                 {
     				craft()->images->cleanImage($folderPath.$fileName);

@@ -9,8 +9,13 @@
             <div id="newwidgetmenubtn" class="btn submit menubtn add icon">{{ 'New widget'|t }}</div>
             <div class="menu newwidgetmenu">
                 <ul>
-                    {% for widgetType in widgetTypes %}
-                        <li><a data-type="{{ widgetType.type }}" data-colspan="{{ widgetType.colspan }}" data-settings-html="{{ widgetType.settingsHtml }}" data-settings-js="{{ widgetType.settingsJs }}"><img src="{% if widgetType.iconUrl %}{{ widgetType.iconUrl }}{% else %}{{ resourceUrl('images/widgets/default.svg') }}{% endif %}" /> {{ widgetType.name }}</a></li>
+                    {% for type, info in widgetTypes if info.selectable %}
+                        <li>
+                            <a data-type="{{ type }}" data-name="{{ info.name }}">
+                                <span class="icon">{{ info.iconSvg|raw }}</span>
+                                {{ info.name }}
+                            </a>
+                        </li>
                     {% endfor %}
                 </ul>
             </div>
@@ -22,18 +27,16 @@
 
 
 {% block main %}
-    <div class="grid">
-        {% if currentUser.admin and craft.deprecator.getTotalLogs() %}
-            <div class="item" data-colspan="4">
-                <div class="pane">
-                    <p id="deprecationnotice" data-icon="alert">{{ 'New deprecation errors have been logged. Please take a minute to <a class="go" href="{url}">review them</a>'|t({ url: url('utils/deprecationerrors') })|raw }}</p>
-                </div>
-            </div>
-        {% endif %}
+    {% if currentUser.admin and craft.deprecator.getTotalLogs() %}
+        <div class="pane">
+            <p id="deprecationnotice" data-icon="alert">{{ 'New deprecation errors have been logged. Please take a minute to <a class="go" href="{url}">review them</a>'|t({ url: url('utils/deprecationerrors') })|raw }}</p>
+        </div>
+    {% endif %}
 
+    <div class="grid">
         {% for widget in widgets %}
             <div class="item" data-colspan="{{ widget.colspan }}">
-                <div id="widget{{ widget.id }}" class="widget {{ widget.type|lower }}" data-id="{{ widget.id }}" data-name="{{ widget.name }}" data-title="{{ widget.title }}" data-icon-url="{{ widget.iconUrl }}" data-colspan="{{ widget.colspan }}" data-max-colspan="{{ widget.maxColspan }}">
+                <div id="widget{{ widget.id }}" class="widget {{ widget.type|lower }}" data-id="{{ widget.id }}" data-type="{{ widget.type }}" data-title="{{ widget.title }}">
                     <div class="front">
                         <div class="pane">
                             <div class="spinner body-loading"></div>

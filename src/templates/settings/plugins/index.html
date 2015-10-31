@@ -19,9 +19,10 @@
 		<table id="plugins" class="data fullwidth collapsible">
 			<thead>
 				<th scope="col">{{ "Plugin"|t }}</th>
-				<th class="thin"></th>
 				<th scope="col">{{ "Developer"|t }}</th>
+				<th scope="col">{{ "Documentation"|t }}</th>
 				<th scope="col">{{ "Status"|t }}</th>
+				<th class="thin"></th>
 				<td class="thin"></td>
 			</thead>
 			<tbody>
@@ -33,6 +34,7 @@
 					{% set isEnabled = plugin.isEnabled() -%}
 					{% set settingsUrl = isEnabled ? plugin.getSettingsUrl() -%}
 					{% set developerUrl = plugin.getDeveloperUrl() -%}
+					{% set documentationUrl = plugin.getDocumentationUrl() -%}
 
 					<tr data-name="{{ name }}">
 						<th data-title="{{ 'Name'|t }}">
@@ -52,12 +54,14 @@
 								{% endif %}
 							</div>
 						</th>
+						<td data-title="{{ 'Developer'|t }}"><a{% if developerUrl %} href="{{ developerUrl }}" target="_blank"{% endif %}>{{ plugin.getDeveloper() }}</a></td>
 						<td>
-							{% if settingsUrl %}
-								<a href="{{ settingsUrl }}" title="{{ "{name} Settings"|t({ name:plugin.name }) }}" data-icon="settings"></a>
+							{% if documentationUrl %}
+								<a href="{{ documentationUrl }}" title="{{ "{name} Documentation"|t({ name:plugin.name }) }}" target="_blank">{{ "View Documentation"|t }}</a>
+							{% else %}
+							    <span class="light">—</span>
 							{% endif %}
 						</td>
-						<td data-title="{{ 'Developer'|t }}"><a{% if developerUrl %} href="{{ developerUrl }}" target="_blank"{% endif %}>{{ plugin.getDeveloper() }}</a></td>
 						<td data-title="{{ 'Status'|t }}">
 							{% if isInstalled %}
 								<form method="post" accept-charset="UTF-8">
@@ -74,6 +78,11 @@
 								</form>
 							{% else %}
 								<span class="status"></span> <span class="light">{{ "Not installed"|t }}</span>
+							{% endif %}
+						</td>
+						<td>
+							{% if settingsUrl %}
+								<a href="{{ settingsUrl }}" title="{{ "{name} Settings"|t({ name:plugin.name }) }}" data-icon="settings"></a>
 							{% endif %}
 						</td>
 						<td class="thin rightalign nowrap">
