@@ -431,7 +431,11 @@ class UpdatesService extends BaseApplicationComponent
 			}
 			else
 			{
+				// Make sure plugins are loaded.
+				craft()->plugins->loadPlugins();
+
 				$plugin = craft()->plugins->getPlugin($handle);
+
 				if ($plugin)
 				{
 					Craft::log('The plugin "'.$plugin->getName().'" wants to update the database.', LogLevel::Info, true);
@@ -519,7 +523,7 @@ class UpdatesService extends BaseApplicationComponent
 
 				if ($manifestData)
 				{
-					UpdateHelper::rollBackFileChanges($manifestData);
+					UpdateHelper::rollBackFileChanges($manifestData, $handle);
 				}
 
 				Craft::log('Done rolling back any file changes.', LogLevel::Info, true);

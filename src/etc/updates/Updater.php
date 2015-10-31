@@ -164,7 +164,7 @@ class Updater
 
 		// Update the files.
 		Craft::log('Performing file update.', LogLevel::Info, true);
-		if (!UpdateHelper::doFileUpdate(UpdateHelper::getManifestData($unzipFolder, $handle), $unzipFolder))
+		if (!UpdateHelper::doFileUpdate(UpdateHelper::getManifestData($unzipFolder, $handle), $unzipFolder, $handle))
 		{
 			throw new Exception(Craft::t('There was a problem updating your files.'));
 		}
@@ -267,10 +267,10 @@ class Updater
 	 */
 	private function _cleanTempFiles($unzipFolder, $handle)
 	{
-		$appPath = craft()->path->getAppPath();
+		$path = ($handle == 'craft' ? craft()->path->getAppPath() : craft()->path->getPluginsPath().$handle.'/');
 
 		// Get rid of all the .bak files/folders.
-		$filesToDelete = IOHelper::getFolderContents($appPath, true, ".*\.bak$");
+		$filesToDelete = IOHelper::getFolderContents($path, true, ".*\.bak$");
 
 		// Now delete any files/folders that were marked for deletion in the manifest file.
 		$manifestData = UpdateHelper::getManifestData($unzipFolder, $handle);
@@ -297,7 +297,7 @@ class Updater
 						$tempFilePath = $rowData[0];
 					}
 
-					$filesToDelete[] = $appPath.$tempFilePath;
+					$filesToDelete[] = $path.$tempFilePath;
 				}
 			}
 
@@ -391,7 +391,7 @@ class Updater
 			}
 
 			$rowData = explode(';', $row);
-			$filePath = IOHelper::normalizePathSeparators(craft()->path->getAppPath().$rowData[0]);
+			$filePath = IOHelper::normalizePathSeparators($handle == 'craft' ? craft()->path->getAppPath() : craft()->path->getPluginsPath().$handle.'/'.$rowData[0]);
 
 			if (UpdateHelper::isManifestLineAFolder($filePath))
 			{
@@ -449,7 +449,7 @@ class Updater
 				}
 
 				$rowData = explode(';', $row);
-				$filePath = IOHelper::normalizePathSeparators(craft()->path->getAppPath().$rowData[0]);
+				$filePath = IOHelper::normalizePathSeparators($handle == 'craft' ? craft()->path->getAppPath() : craft()->path->getPluginsPath().$handle.'/'.$rowData[0]);
 
 				// It's a folder
 				if (UpdateHelper::isManifestLineAFolder($filePath))
@@ -477,7 +477,7 @@ class Updater
 		catch (\Exception $e)
 		{
 			Craft::log('Error updating files: '.$e->getMessage(), LogLevel::Error);
-			UpdateHelper::rollBackFileChanges($manifestData);
+			UpdateHelper::rollBackFileChanges($manifestData, $handle);
 			return false;
 		}
 

@@ -225,6 +225,8 @@ class UpdateController extends BaseController
 		$data = craft()->request->getRequiredPost('data');
 
 		$return = craft()->updates->processUpdateDownload($data['md5'], $data['handle']);
+		$return['handle'] = $data['handle'];
+
 		if (!$return['success'])
 		{
 			$this->returnJson(array('alive' => true, 'errorDetails' => $return['message'], 'finished' => true));
@@ -256,6 +258,8 @@ class UpdateController extends BaseController
 		$data = craft()->request->getRequiredPost('data');
 
 		$return = craft()->updates->backupFiles($data['uid'], $data['handle']);
+		$return['handle'] = $data['handle'];
+
 		if (!$return['success'])
 		{
 			$this->returnJson(array('alive' => true, 'errorDetails' => $return['message'], 'finished' => true));
@@ -285,6 +289,8 @@ class UpdateController extends BaseController
 		$data = craft()->request->getRequiredPost('data');
 
 		$return = craft()->updates->updateFiles($data['uid'], $data['handle']);
+		$return['handle'] = $data['handle'];
+
 		if (!$return['success'])
 		{
 			$this->returnJson(array('alive' => true, 'errorDetails' => $return['message'], 'nextStatus' => Craft::t('An error was encountered. Rolling back…'), 'nextAction' => 'update/rollback'));
@@ -354,6 +360,8 @@ class UpdateController extends BaseController
 			$return = craft()->updates->updateDatabase($handle);
 		}
 
+		$return['handle'] = $data['handle'];
+
 		if (!$return['success'])
 		{
 			$this->returnJson(array('alive' => true, 'errorDetails' => $return['message'], 'nextStatus' => Craft::t('An error was encountered. Rolling back…'), 'nextAction' => 'update/rollback'));
@@ -392,14 +400,14 @@ class UpdateController extends BaseController
 		// Grab the old version from the manifest data before we nuke it.
 		$manifestData = UpdateHelper::getManifestData(UpdateHelper::getUnzipFolderFromUID($uid), $data['handle']);
 
-		if ($manifestData)
+		if ($manifestData && $handle == 'craft')
 		{
 			$oldVersion = UpdateHelper::getLocalVersionFromManifest($manifestData);
 		}
 
 		craft()->updates->updateCleanUp($uid, $handle);
 
-		if ($oldVersion && version_compare($oldVersion, craft()->getVersion(), '<'))
+		if ($handle == 'craft' && $oldVersion && version_compare($oldVersion, craft()->getVersion(), '<'))
 		{
 			$returnUrl = UrlHelper::getUrl('whats-new');
 		}

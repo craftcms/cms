@@ -26,10 +26,11 @@ class UpdateHelper
 
 	/**
 	 * @param $manifestData
+	 * @param $handle
 	 *
 	 * @return null
 	 */
-	public static function rollBackFileChanges($manifestData)
+	public static function rollBackFileChanges($manifestData, $handle)
 	{
 		foreach ($manifestData as $row)
 		{
@@ -44,7 +45,7 @@ class UpdateHelper
 			}
 
 			$rowData = explode(';', $row);
-			$file = IOHelper::normalizePathSeparators(craft()->path->getAppPath().$rowData[0]);
+			$file = IOHelper::normalizePathSeparators($handle == 'craft' ? craft()->path->getAppPath() : craft()->path->getPluginsPath().$handle.'/'.$rowData[0]);
 
 			// It's a folder
 			if (static::isManifestLineAFolder($file))
@@ -87,10 +88,11 @@ class UpdateHelper
 	/**
 	 * @param $manifestData
 	 * @param $sourceTempFolder
+	 * @param $handle
 	 *
 	 * @return bool
 	 */
-	public static function doFileUpdate($manifestData, $sourceTempFolder)
+	public static function doFileUpdate($manifestData, $sourceTempFolder, $handle)
 	{
 		try
 		{
@@ -114,8 +116,8 @@ class UpdateHelper
 					$tempPath = $rowData[0];
 				}
 
-				$destFile = IOHelper::normalizePathSeparators(craft()->path->getAppPath().$tempPath);
-				$sourceFile = IOHelper::getRealPath(IOHelper::normalizePathSeparators($sourceTempFolder.'/app/'.$tempPath));
+				$destFile = IOHelper::normalizePathSeparators($handle == 'craft' ? craft()->path->getAppPath() : craft()->path->getPluginsPath().$handle.'/'.$tempPath);
+				$sourceFile = IOHelper::getRealPath(IOHelper::normalizePathSeparators($sourceTempFolder.($handle == 'craft' ? '/app/' : '/').$tempPath));
 
 				switch (trim($rowData[1]))
 				{
@@ -150,7 +152,7 @@ class UpdateHelper
 		catch (\Exception $e)
 		{
 			Craft::log('Error updating files: '.$e->getMessage(), LogLevel::Error);
-			UpdateHelper::rollBackFileChanges($manifestData);
+			UpdateHelper::rollBackFileChanges($manifestData, $handle);
 			return false;
 		}
 
