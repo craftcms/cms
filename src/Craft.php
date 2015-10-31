@@ -29,7 +29,7 @@ class Craft extends \Yii
 	// =========================================================================
 
 	/**
-	 * Determines if Craft is installed by checking if the info table exists.
+	 * Determines if Craft is installed by checking if the info table exists in the database.
 	 *
 	 * @deprecated Deprecated in 1.3. Use {@link AppBehavior::isInstalled() `craft()->isInstalled()`} instead.
 	 * @return bool
