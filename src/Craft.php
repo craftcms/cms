@@ -177,7 +177,7 @@ class Craft extends \Yii
 	}
 
 	/**
-	 * Returns whether the system is in maintenance mode.
+	 * Returns whether the system is in maintenance mode or not.
 	 *
 	 * @deprecated Deprecated in 1.3. Use {@link AppBehavior::isInMaintenanceMode() `craft()->isInMaintenanceMode()`} instead.
 	 * @return bool
