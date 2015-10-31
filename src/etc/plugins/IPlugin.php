@@ -56,7 +56,7 @@ interface IPlugin extends ISavableComponentType
 	/**
 	 * Returns the plugin documentation’s URL.
 	 *
-	 * @return string The plugin documentation’s URL.
+	 * @return string|null The plugin documentation’s URL.
 	 */
 	public function getDocumentationUrl();
 

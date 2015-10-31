@@ -55,7 +55,7 @@
 							</div>
 						</th>
 						<td data-title="{{ 'Developer'|t }}"><a{% if developerUrl %} href="{{ developerUrl }}" target="_blank"{% endif %}>{{ plugin.getDeveloper() }}</a></td>
-						<td>
+						<td data-title="{{ 'Documentation'|t }}">
 							{% if documentationUrl %}
 								<a href="{{ documentationUrl }}" title="{{ "{name} Documentation"|t({ name:plugin.name }) }}" target="_blank">{{ "View Documentation"|t }}</a>
 							{% else %}
