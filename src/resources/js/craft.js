@@ -1412,7 +1412,7 @@ $.extend($.fn,
 			// Is this a menu item?
 			if ($btn.data('menu'))
 			{
-				var $form = $btn.data('menu').$trigger.closest('form');
+				var $form = $btn.data('menu').$anchor.closest('form');
 			}
 			else
 			{
