@@ -268,7 +268,7 @@ class UpdateHelper
 
 				if ($handle == 'craft')
 				{
-					$localVersion = $updateModel->app->localVersion.'.'.$updateModel->app->localVersion;
+					$localVersion = $updateModel->app->localVersion.'.'.$updateModel->app->localBuild;
 				}
 				else
 				{
