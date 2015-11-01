@@ -387,7 +387,7 @@ class PluginsService extends BaseApplicationComponent
 
 		$lcPluginHandle = mb_strtolower($plugin->getClassHandle());
 
-		if ($plugin->onBeforeInstall())
+		if ($plugin->onBeforeInstall() !== false)
 		{
 			$transaction = craft()->db->getCurrentTransaction() === null ? craft()->db->beginTransaction() : null;
 			try
