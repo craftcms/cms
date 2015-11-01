@@ -86,6 +86,10 @@ body {
 
 /* container */
 #container { display: flex; flex-direction: column; position: relative; @include padding-left(220px); @include box-sizing(border-box); height: 100vh; overflow: auto; }
+#container > .topbar,
+#container > #page-header,
+#container > #main,
+#conatiner > #footer { min-height: -webkit-min-content; min-height: -moz-min-content; }
 
 body.mobile #container {
 	overflow-y: scroll; /* has to be scroll, not auto */
@@ -210,6 +214,8 @@ body.mobile #container {
 
 /* grids */
 .grid { position: relative; margin: -7px; }
+.grid:first-child { margin-top: -7px !important; }
+.grid:last-child { margin-bottom: -7px !important; }
 .grid + .grid { margin-top: 17px; }
 .grid:after { @include clearafter; }
 .grid > .item { display: none; padding: 7px; @include box-sizing(border-box); }
