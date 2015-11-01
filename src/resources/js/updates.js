@@ -124,7 +124,7 @@ var Update = Garnish.Base.extend(
 
 	createHeading: function()
 	{
-		$('<h2/>', {'class': 'left', text: this.displayName}).appendTo(this.$paneHeader);
+		$('<h1/>', {'class': 'left', text: this.displayName}).appendTo(this.$paneHeader);
 	},
 
 	createDownloadButton: function()
@@ -281,7 +281,7 @@ Release = Garnish.Base.extend(
 			heading += ' <span class="critical">'+Craft.t('Critical')+'</span>'
 		}
 
-		$('<h3/>', {html: heading}).appendTo(this.$container);
+		$('<h2/>', {html: heading}).appendTo(this.$container);
 		$('<p/>', {'class': 'release-date light', text: Craft.t('Released on {date}', {date: this.releaseInfo.localizedDate})}).appendTo(this.$container);
 	},
 
