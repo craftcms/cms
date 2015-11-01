@@ -53,7 +53,7 @@ class PluginUpdateModel extends BaseModel
 		$attributes['manualUpdateRequired']    = AttributeType::Bool;
 		$attributes['manualDownloadEndpoint']  = AttributeType::String;
 		$attributes['releases']                = AttributeType::Mixed;
-		$attributes['status']                  = array(AttributeType::Enum, 'values' => array(PluginUpdateStatus::UpToDate, PluginUpdateStatus::UpdatesAvailable, PluginUpdateStatus::Unknown), 'default' => PluginUpdateStatus::Unknown);
+		$attributes['status']                  = array(AttributeType::Enum, 'values' => array(PluginUpdateStatus::UpToDate, PluginUpdateStatus::UpdateAvailable, PluginUpdateStatus::Unknown, PluginUpdateStatus::Deleted), 'default' => PluginUpdateStatus::Unknown);
 
 		return $attributes;
 	}

@@ -51,7 +51,7 @@ class UpdatesService extends BaseApplicationComponent
 	{
 		foreach ($plugins as $plugin)
 		{
-			if ($plugin->status == PluginVersionUpdateStatus::UpdateAvailable && count($plugin->releases) > 0)
+			if ($plugin->status == PluginUpdateStatus::UpdateAvailable && count($plugin->releases) > 0)
 			{
 				foreach ($plugin->releases as $release)
 				{
@@ -103,7 +103,7 @@ class UpdatesService extends BaseApplicationComponent
 				{
 					foreach ($updateModel->plugins as $plugin)
 					{
-						if ($plugin->status == PluginVersionUpdateStatus::UpdateAvailable)
+						if ($plugin->status == PluginUpdateStatus::UpdateAvailable)
 						{
 							if (isset($plugin->releases) && count($plugin->releases) > 0)
 							{
@@ -467,7 +467,7 @@ class UpdatesService extends BaseApplicationComponent
 				$pluginUpdateModel->manualDownloadEndpoint = $latestRelease->manualDownloadEndpoint;
 				$pluginUpdateModel->manualUpdateRequired = true;
 				$pluginUpdateModel->releases = $releaseModels;
-				$pluginUpdateModel->status = PluginUpdateStatus::UpdatesAvailable;
+				$pluginUpdateModel->status = PluginUpdateStatus::UpdateAvailable;
 			}
 			else
 			{

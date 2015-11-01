@@ -2,21 +2,25 @@
 namespace Craft;
 
 /**
- * The PluginUpdateStatus class is an abstract class that defines all of the possible plugin update statuses.
+ * The PluginUpdateStatus class is an abstract class that defines the different plugin version update status
+ * states available in Craft.
+ *
+ * This class is a poor man's version of an enum, since PHP does not have support for native enumerations.
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement
  * @see       http://buildwithcraft.com
  * @package   craft.app.enums
- * @since     2.5
+ * @since     1.0
  */
 abstract class PluginUpdateStatus extends BaseEnum
 {
 	// Constants
 	// =========================================================================
 
-	const UpToDate         = 'uptodate';
-	const UpdatesAvailable = 'updatesavailable';
-	const Unknown          = 'unknown';
+	const UpToDate        = 'UpToDate';
+	const UpdateAvailable = 'UpdateAvailable';
+	const Deleted         = 'Deleted';
+	const Unknown         = 'Unknown';
 }
