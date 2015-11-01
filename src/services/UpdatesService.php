@@ -123,7 +123,20 @@ class UpdatesService extends BaseApplicationComponent
 	 */
 	public function isCriticalUpdateAvailable()
 	{
-		return (!empty($this->_updateModel->app->criticalUpdateAvailable));
+		if (!empty($this->_updateModel->app->criticalUpdateAvailable))
+		{
+			return true;
+		}
+
+		foreach ($this->_updateModel->plugins as $pluginUpdateModel)
+		{
+			if ($pluginUpdateModel->criticalUpdateAvailable)
+			{
+				return true;
+			}
+		}
+
+		return false;
 	}
 
 	/**
