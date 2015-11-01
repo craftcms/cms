@@ -96,6 +96,16 @@ abstract class BasePlugin extends BaseSavableComponentType implements IPlugin
 	}
 
 	/**
+	 * @inheritDoc IPlugin::getReleaseFeedUrl()
+	 *
+	 * @return string|null
+	 */
+	public function getReleaseFeedUrl()
+	{
+		return null;
+	}
+
+	/**
 	 * @inheritDoc IPlugin::getSourceLanguage()
 	 *
 	 * @return string

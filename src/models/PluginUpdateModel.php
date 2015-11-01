@@ -48,11 +48,12 @@ class PluginUpdateModel extends BaseModel
 		$attributes['localVersion']            = AttributeType::String;
 		$attributes['latestVersion']           = AttributeType::String;
 		$attributes['latestDate']              = AttributeType::DateTime;
-		$attributes['status']                  = AttributeType::Bool;
 		$attributes['displayName']             = AttributeType::String;
 		$attributes['criticalUpdateAvailable'] = AttributeType::Bool;
+		$attributes['manualUpdateRequired']    = AttributeType::Bool;
 		$attributes['manualDownloadEndpoint']  = AttributeType::String;
 		$attributes['releases']                = AttributeType::Mixed;
+		$attributes['status']                  = array(AttributeType::Enum, 'values' => array(PluginUpdateStatus::UpToDate, PluginUpdateStatus::UpdatesAvailable, PluginUpdateStatus::Unknown), 'default' => PluginUpdateStatus::Unknown);
 
 		return $attributes;
 	}

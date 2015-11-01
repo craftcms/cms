@@ -45,7 +45,7 @@ class UpdateModel extends BaseModel
 	protected function defineAttributes()
 	{
 		$attributes['app']      = array(AttributeType::Mixed, 'model' => 'AppUpdateModel');
-		$attributes['plugins']  = AttributeType::Mixed;
+		$attributes['plugins']  = array(AttributeType::Mixed, 'default' => array());
 		$attributes['errors']   = AttributeType::Mixed;
 
 		return $attributes;
