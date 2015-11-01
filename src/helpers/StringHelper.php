@@ -398,6 +398,27 @@ class StringHelper
 	}
 
 	/**
+	 * Runs a string through Markdown, but remoes any paragraph tags that get removed
+	 *
+	 * @param string $str
+	 *
+	 * @return string
+	 */
+	public static function parseMarkdownLine($str)
+	{
+		// Prevent line breaks from getting treated as paragraphs
+		$str = preg_replace('/[\r\n]/', '  $0', $str);
+
+		// Parse with Markdown
+		$str = self::parseMarkdown($str);
+
+		// Return without the <p> and </p>
+		$str = trim(str_replace(array('<p>', '</p>'), '', $str));
+
+		return $str;
+	}
+
+	/**
 	 * Attempts to convert a string to UTF-8 and clean any non-valid UTF-8 characters.
 	 *
 	 * @param      $string
