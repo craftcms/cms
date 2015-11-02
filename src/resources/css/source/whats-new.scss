@@ -1,19 +1,21 @@
 @charset "UTF-8";
 @import "shared";
 
-#page-header { padding: 12px 0; }
+#page-header { display: none; }
 
 #content h1,
-#content p { margin: 45px auto !important; max-width: 750px; text-align: center; }
+#content p { margin: 48px auto !important; max-width: 750px; text-align: center; }
 
 #content h1 + p { margin-top: -25px !important; }
 
 #content h1 { color: $textcolor; }
 #content p { font-size: 17px; line-height: 1.4; }
 
-#content img,
-#content #video-wrapper { display: block; margin: 45px auto; border-radius: 4px 0 0 4px; @include box-shadow(0 0 50px rgba(0,0,0,0.25)); }
-#content img { max-width: 870px; }
+#content .screenshot,
+#content #video-wrapper { display: block; margin: 48px auto; }
+#content .screenshot { position: relative; max-width: 100%; width: 1000px; }
+#content .screenshot:after { display: block; position: absolute; top: 0; left: 0; border-radius: $paneBorderRadius; width: 100%; height: 100%; content: '.'; font-size: 0; @include box-shadow(inset 0 0 0 1px $hairlineColorAlpha); }
+#content .screenshot img { display: block; width: 100%; height: auto; border-radius: $paneBorderRadius; }
 #content #video-wrapper { max-width: 1040px; }
 
 #content header h1 { font-size: 40px; color: $errorcolor; }
