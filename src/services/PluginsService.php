@@ -374,46 +374,45 @@ class PluginsService extends BaseApplicationComponent
 
 		$lcPluginHandle = mb_strtolower($plugin->getClassHandle());
 
-		if ($plugin->onBeforeInstall())
+		$plugin->onBeforeInstall();
+
+		$transaction = craft()->db->getCurrentTransaction() === null ? craft()->db->beginTransaction() : null;
+		try
 		{
-			$transaction = craft()->db->getCurrentTransaction() === null ? craft()->db->beginTransaction() : null;
-			try
+			// Add the plugins as a record to the database.
+			craft()->db->createCommand()->insert('plugins', array(
+				'class'       => $plugin->getClassHandle(),
+				'version'     => $plugin->version,
+				'enabled'     => true,
+				'installDate' => DateTimeHelper::currentTimeForDb(),
+			));
+
+			$plugin->isInstalled = true;
+			$plugin->isEnabled = true;
+			$this->_enabledPlugins[$lcPluginHandle] = $plugin;
+
+			$this->_savePluginMigrations(craft()->db->getLastInsertID(), $plugin->getClassHandle());
+			$this->_autoloadPluginClasses($plugin);
+			$plugin->createTables();
+
+			if ($transaction !== null)
 			{
-				// Add the plugins as a record to the database.
-				craft()->db->createCommand()->insert('plugins', [
-					'class'       => $plugin->getClassHandle(),
-					'version'     => $plugin->version,
-					'enabled'     => true,
-					'installDate' => DateTimeHelper::currentTimeForDb(),
-				]);
-
-				$plugin->isInstalled = true;
-				$plugin->isEnabled = true;
-				$this->_enabledPlugins[$lcPluginHandle] = $plugin;
-
-				$this->_savePluginMigrations(craft()->db->getLastInsertID(), $plugin->getClassHandle());
-				$this->_autoloadPluginClasses($plugin);
-				$plugin->createTables();
-
-				if ($transaction !== null)
-				{
-					$transaction->commit();
-				}
+				$transaction->commit();
 			}
-			catch (\Exception $e)
-			{
-				if ($transaction !== null)
-				{
-					$transaction->rollback();
-				}
-
-				throw $e;
-			}
-
-			$plugin->onAfterInstall();
-
-			return true;
 		}
+		catch (\Exception $e)
+		{
+			if ($transaction !== null)
+			{
+				$transaction->rollback();
+			}
+
+			throw $e;
+		}
+
+		$plugin->onAfterInstall();
+
+		return true;
 	}
 
 	/**
