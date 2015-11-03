@@ -8,23 +8,19 @@
 #main #status { margin: 20px auto 250px; text-align: center; font-size: 16px; line-height: 20px; color: #666; }
 
 
-
-#main h2.heading { @include floatleft; margin: 0; padding: 6px 0; }
-#main .buttons { @include floatright; margin: 0; }
-#main hr { clear: both; margin: 30px -30px; }
 #main .critical { @include margin-left(5px); border-radius: 2px; padding: 2px 5px; font-weight: normal; color: #fff; background: #d6301a; }
 
 #main .release { direction: ltr; }
 
 /* Keep this LTR since the actual release notes are only LTR */
 #main .update .header { display: flex; align-items: center; margin: -24px -24px 24px; padding: 24px; }
-#main .update .header h2 { flex-grow: 1; margin: 0; }
+#main .update .header h1 { flex-grow: 1; margin: 0; }
 #main .update .header .buttons { margin: 0; }
 
-#main .update .release h3 { margin-bottom: 0; }
+#main .update .release h2 { margin-bottom: 0; }
 #main .update .release + .release { margin-top: 24px; }
 #main .update .release .release-date { margin-top: 4px; }
-#main .update .release .release-notes { position: relative; }
+#main .update .release .release-notes { position: relative; direction: ltr; }
 #main .update .release .release-notes.fade-out { max-height: 120px; overflow: hidden; }
 #main .update .release .release-notes.fade-out:after { display: block; position: absolute; left: 0; bottom: 0; content: '.'; font-size: 0; width: 100%; height: 48px; @include linear-gradient(top, rgba(255,255,255,0), #fff); }
 #main .update .release .release-notes ul li { @include padding(3px, 0, 3px, 24px); }

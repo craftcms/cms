@@ -228,7 +228,7 @@ class Craft extends \Yii
 	}
 
 	/**
-	 * Updates the info row.
+	 * Updates the info row with new information.
 	 *
 	 * @param InfoModel $info The InfoModel that you want to save.
 	 *
@@ -405,7 +405,7 @@ class Craft extends \Yii
 	 */
 	public static function log($msg, $level = LogLevel::Info, $force = false, $category = 'application', $plugin = null)
 	{
-		if ((YII_DEBUG && YII_TRACE_LEVEL > 0 && $level !== LogLevel::Profile) || $force)
+		if (YII_DEBUG && YII_TRACE_LEVEL > 0 && $level !== LogLevel::Profile)
 		{
 			$traces = debug_backtrace();
 			$count = 0;

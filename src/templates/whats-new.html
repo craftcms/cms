@@ -1,29 +1,35 @@
 {% extends "_layouts/cp" %}
-{% set title = "What’s new in Craft 2.4" %}
+{% set title = "What’s new in Craft 2.5" %}
 {% set bodyClass = 'whats-new' %}
 {% includeCssResource "css/whats-new.css" %}
 
 {% block pageHeader %}{% endblock %}
 
-{% set url = 'http://buildwithcraft.com/updates/2.4' %}
+{% set url = 'http://buildwithcraft.com/updates/2.5?beta=1' %}
 
 {% block content %}
 	<header>
 		<h1>{{ title }}</h1>
 	</header>
 
-	<h1>Customizable Selection Buttons</h1>
-	<p>Assets, Categories, Entries, Tags, and Users fields now make it possible to customize their selection button/input labels.</p>
-	<img src="{{ resourceUrl('images/whats-new/selection-labels.png') }}" alt="An Edit Entry page with three relational fields with customized selection inputs.">
+	<h1>Brand new Dashboard</h1>
+	<p>Create new Dashboard widgets, change their settings, reorder them, resize them, and delete them, all from the new Dashboard.</p>
+	<div class="screenshot">
+		<img src="{{ resourceUrl('images/whats-new/new-dashboard.png') }}" alt="The new Dashboard" width="2428" height="1520">
+	</div>
 
-	<h1>Redesigned User Permissions</h1>
-	<p>Each section of user permissions now has a “Select All” button which will immediately select all of the permissions in that group.</p>
-	<img src="{{ resourceUrl('images/whats-new/permissions.png') }}" alt="A user permissions selection list.">
+	<h1>Customizable element indexes</h1>
+	<p>Arrange your element index sources in a way that makes sense for your content, and choose relevant table columns for each source.</p>
+	<div class="screenshot">
+		<img src="{{ resourceUrl('images/whats-new/customized-entry-index.png') }}" alt="A user permissions selection list." width="2428" height="1520">
+	</div>
 
-	<h1>Two New Languages</h1>
-	<p>The Control Panel has been translated into two new languages: Czech and Slovak. That brings the grand total up to <a href="http://buildwithcraft.com/help/cp-languages">18 supported languages!</a></p>
-	<img src="{{ resourceUrl('images/whats-new/slovak.png') }}" alt="The Settings page translated into Slovak">
+	<h1>Inline element creation</h1>
+	<p>Create new entries and categories right from their relational fields, without leaving the page.</p>
+	<div class="screenshot">
+		<img src="{{ resourceUrl('images/whats-new/inline-entry-creation.png') }}" alt="The Settings page translated into Slovak" width="2428" height="1520">
+	</div>
 
-	<h1>And More!</h1>
-	<p>There are over 60 additions and improvements in total. Check out the <a href="{{ url }}">release notes</a> for a complete list of all that’s changed!</p>
+	<h1>And more!</h1>
+	<p>Craft 2.5 packs over 120 additions and improvements. Find out about all the changes from the <a href="{{ url }}">release notes</a>.</p>
 {% endblock %}

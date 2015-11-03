@@ -57,16 +57,6 @@ class FeedWidget extends BaseWidget
 	}
 
 	/**
-	 * @inheritDoc IWidget::getMaxColspan()
-	 *
-	 * @return int
-	 */
-	public function getMaxColspan()
-	{
-		return 2;
-	}
-
-	/**
 	 * @inheritDoc IWidget::getTitle()
 	 *
 	 * @return string

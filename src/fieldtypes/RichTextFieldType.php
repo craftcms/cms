@@ -221,6 +221,9 @@ class RichTextFieldType extends BaseFieldType
 			return $matches[1].$matches[2].'{'.$matches[3].':'.$matches[4].(!empty($matches[5]) ? $matches[5] : ':url').'}'.$matches[2];
 		}, $value);
 
+		// Encode any 4-byte UTF-8 characters.
+		$value = StringHelper::encodeMb4($value);
+
 		return $value;
 	}
 
