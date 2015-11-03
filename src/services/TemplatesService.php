@@ -246,7 +246,7 @@ class TemplatesService extends BaseApplicationComponent
 		$result = call_user_func_array(array($twigTemplate, 'get'.$macro), $args);
 		$this->_renderingTemplate = $lastRenderingTemplate;
 
-		return $result;
+		return (string) $result;
 	}
 
 	/**
