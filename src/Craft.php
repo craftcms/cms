@@ -228,7 +228,7 @@ class Craft extends \Yii
 	}
 
 	/**
-	 * Updates the info row.
+	 * Updates the info row with new information.
 	 *
 	 * @param InfoModel $info The InfoModel that you want to save.
 	 *
