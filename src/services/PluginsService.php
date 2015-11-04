@@ -136,7 +136,8 @@ class PluginsService extends BaseApplicationComponent
 							craft()->db->createCommand()->update(
 								'plugins',
 								array('schemaVersion' => $plugin->getSchemaVersion()),
-								array('id = :id', array(':id' => $row['id']))
+								'id = :id',
+								array(':id' => $row['id'])
 							);
 						}
 					}
