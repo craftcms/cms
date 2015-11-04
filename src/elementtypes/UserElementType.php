@@ -571,6 +571,7 @@ class UserElementType extends BaseElementType
 		$html = craft()->templates->render('users/_accountfields', array(
 			'account'      => $element,
 			'isNewAccount' => false,
+			'meta'         => true,
 		));
 
 		$html .= parent::getEditorHtml($element);
