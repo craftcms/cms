@@ -373,6 +373,7 @@ class EntryElementType extends BaseElementType
 			'postDate'    => array('label' => Craft::t('Post Date')),
 			'expiryDate'  => array('label' => Craft::t('Expiry Date')),
 			'link'        => array('label' => Craft::t('Link'), 'icon' => 'world'),
+			'id'          => array('label' => Craft::t('ID')),
 			'dateCreated' => array('label' => Craft::t('Date Created')),
 			'dateUpdated' => array('label' => Craft::t('Date Updated')),
 		);

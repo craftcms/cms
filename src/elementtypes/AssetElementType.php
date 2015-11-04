@@ -222,6 +222,7 @@ class AssetElementType extends BaseElementType
 			'imageSize'    => array('label' => Craft::t('Image Size')),
 			'width'        => array('label' => Craft::t('Image Width')),
 			'height'       => array('label' => Craft::t('Image Height')),
+			'id'           => array('label' => Craft::t('ID')),
 			'dateModified' => array('label' => Craft::t('File Modified Date')),
 			'dateCreated'  => array('label' => Craft::t('Date Created')),
 			'dateUpdated'  => array('label' => Craft::t('Date Updated')),

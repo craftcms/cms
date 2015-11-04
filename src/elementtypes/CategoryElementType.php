@@ -211,6 +211,7 @@ class CategoryElementType extends BaseElementType
 			'title'       => array('label' => Craft::t('Title')),
 			'uri'         => array('label' => Craft::t('URI')),
 			'link'        => array('label' => Craft::t('Link'), 'icon' => 'world'),
+			'id'          => array('label' => Craft::t('ID')),
 			'dateCreated' => array('label' => Craft::t('Date Created')),
 			'dateUpdated' => array('label' => Craft::t('Date Updated')),
 		);
