@@ -135,6 +135,34 @@ abstract class BaseOptionsFieldType extends BaseFieldType implements IPreviewabl
 	}
 
 	/**
+	 * @inheritDoc IPreviewableFieldType::getTableAttributeHtml()
+	 *
+	 * @param mixed $value
+	 *
+	 * @return string
+	 */
+	public function getTableAttributeHtml($value)
+	{
+		if ($this->multi)
+		{
+			/** @var MultiOptionsFieldData $value */
+			$labels = array();
+
+			foreach ($value as $option)
+			{
+				$labels[] = $option->label;
+			}
+
+			return implode(', ', $labels);
+		}
+		else
+		{
+			/** @var SingleOptionFieldData $value */
+			return $value->value;
+		}
+	}
+
+	/**
 	 * @inheritDoc IFieldType::prepValue()
 	 *
 	 * @param mixed $value
