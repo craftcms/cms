@@ -384,7 +384,12 @@ class EntryElementType extends BaseElementType
 		}
 
 		// Allow plugins to modify the attributes
-		craft()->plugins->call('modifyEntryTableAttributes', array(&$attributes));
+		$pluginAttributes = craft()->plugins->call('defineAdditionalEntryTableAttributes', array(), true);
+
+		foreach ($pluginAttributes as $thisPluginAttributes)
+		{
+			$attributes = array_merge($attributes, $thisPluginAttributes);
+		}
 
 		return $attributes;
 	}

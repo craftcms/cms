@@ -243,7 +243,12 @@ class UserElementType extends BaseElementType
 		$attributes['dateUpdated'] = array('label' => Craft::t('Date Updated'));
 
 		// Allow plugins to modify the attributes
-		craft()->plugins->call('modifyUserTableAttributes', array(&$attributes));
+		$pluginAttributes = craft()->plugins->call('defineAdditionalUserTableAttributes', array(), true);
+
+		foreach ($pluginAttributes as $thisPluginAttributes)
+		{
+			$attributes = array_merge($attributes, $thisPluginAttributes);
+		}
 
 		return $attributes;
 	}

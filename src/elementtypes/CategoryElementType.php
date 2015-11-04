@@ -216,7 +216,12 @@ class CategoryElementType extends BaseElementType
 		);
 
 		// Allow plugins to modify the attributes
-		craft()->plugins->call('modifyCategoryTableAttributes', array(&$attributes));
+		$pluginAttributes = craft()->plugins->call('defineAdditionalCategoryTableAttributes', array(), true);
+
+		foreach ($pluginAttributes as $thisPluginAttributes)
+		{
+			$attributes = array_merge($attributes, $thisPluginAttributes);
+		}
 
 		return $attributes;
 	}

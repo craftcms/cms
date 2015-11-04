@@ -228,7 +228,12 @@ class AssetElementType extends BaseElementType
 		);
 
 		// Allow plugins to modify the attributes
-		craft()->plugins->call('modifyAssetTableAttributes', array(&$attributes));
+		$pluginAttributes = craft()->plugins->call('defineAdditionalAssetTableAttributes', array(), true);
+
+		foreach ($pluginAttributes as $thisPluginAttributes)
+		{
+			$attributes = array_merge($attributes, $thisPluginAttributes);
+		}
 
 		return $attributes;
 	}
