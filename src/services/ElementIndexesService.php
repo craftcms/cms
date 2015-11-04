@@ -201,7 +201,7 @@ class ElementIndexesService extends BaseApplicationComponent
 			// Append any remaining sources to the end of the list
 			if ($indexedBaseSources)
 			{
-				$sources[] = array('heading' => null);
+				$sources[] = array('heading' => '');
 
 				foreach ($indexedBaseSources as $source)
 				{
