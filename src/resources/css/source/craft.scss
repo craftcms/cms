@@ -769,7 +769,20 @@ $elementThumbPadding: 30 + $elementInnerSpacing;
 .elements .thumbsview li { position: relative; @include floatleft; @include margin(14px, 0, 0, 14px); outline: none; }
 
 .elements .thumbsview li.has-checkbox .checkbox { position: absolute; top: 106px; @include left(4px); }
-.elements .thumbsview li.has-checkbox .element .label { @include padding-left(20px); }
+
+$checkboxPadding: 20px;
+.elements .thumbsview li.has-checkbox .element.large.hasthumb {
+	&:not(.hasstatus) {
+		@include padding-left($checkboxPadding);
+	}
+	&.hasstatus {
+		@include padding-left($checkboxPadding + $elementStatusPadding);
+
+		.status {
+			@include left($checkboxPadding);
+		}
+	}
+}
 
 .thumbviewhelper { margin: -7px; padding: 7px; }
 .thumbviewhelper .thumbsview,
