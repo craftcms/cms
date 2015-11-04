@@ -42,7 +42,7 @@ class DashboardController extends BaseController
 		{
 			$templatesService->startJsBuffer();
 			$settingsHtml = $templatesService->namespaceInputs($widgetType->getSettingsHtml());
-			$settingsJs = $templatesService->clearJsBuffer();
+			$settingsJs = $templatesService->clearJsBuffer(false);
 
 			$handle = $widgetType->getClassHandle();
 
