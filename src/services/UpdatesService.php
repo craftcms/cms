@@ -470,7 +470,7 @@ class UpdatesService extends BaseApplicationComponent
 			if ($releaseModels)
 			{
 				// Sort release models by timestamp
-				array_multisort($releaseModels, $releaseTimestamps, SORT_DESC);
+				array_multisort($releaseTimestamps, SORT_DESC, $releaseModels);
 				$latestRelease = $releaseModels[0];
 
 				$pluginUpdateModel->displayName = $plugin->getName();
