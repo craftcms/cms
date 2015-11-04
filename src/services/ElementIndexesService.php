@@ -205,7 +205,7 @@ class ElementIndexesService extends BaseApplicationComponent
 
 				foreach ($indexedBaseSources as $source)
 				{
-					$source[] = $source;
+					$sources[] = $source;
 				}
 			}
 		}
