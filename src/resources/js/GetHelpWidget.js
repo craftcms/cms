@@ -33,6 +33,7 @@
 			this.$error = this.$widget.find('.error:first');
 			this.$form = this.$widget.find('form:first');
 			this.$form.prepend('<input type="hidden" name="widgetId" value="' + this.widgetId + '" />');
+			this.$form.prepend(Craft.getCsrfInput());
 
 			this.addListener(this.$sendBtn, 'activate', 'sendMessage');
 		},
