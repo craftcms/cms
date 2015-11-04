@@ -1367,6 +1367,15 @@ class TemplatesService extends BaseApplicationComponent
 			$context['context'] = 'index';
 		}
 
+		if (isset($context['elementType']))
+		{
+			$elementType = $context['elementType'];
+		}
+		else
+		{
+			$elementType = craft()->elements->getElementType($context['element']->getElementType());
+		}
+
 		// How big is the element going to be?
 		if (isset($context['size']) && ($context['size'] == 'small' || $context['size'] == 'large'))
 		{
@@ -1423,6 +1432,11 @@ class TemplatesService extends BaseApplicationComponent
 			$html .= ' removable';
 		}
 
+		if ($elementType->hasStatuses())
+		{
+			$html .= ' hasstatus';
+		}
+
 		if ($thumbUrl)
 		{
 			$html .= ' hasthumb';
@@ -1452,22 +1466,13 @@ class TemplatesService extends BaseApplicationComponent
 			$html .= '<a class="delete icon" title="'.Craft::t('Remove').'"></a> ';
 		}
 
-		$html .= $imgHtml;
-		$html .= '<div class="label">';
-
-		if (isset($context['elementType']))
-		{
-			$elementType = $context['elementType'];
-		}
-		else
-		{
-			$elementType = craft()->elements->getElementType($context['element']->getElementType());
-		}
-
 		if ($elementType->hasStatuses())
 		{
 			$html .= '<span class="status '.$context['element']->getStatus().'"></span>';
 		}
+
+		$html .= $imgHtml;
+		$html .= '<div class="label">';
 
 		$html .= '<span class="title">';
 

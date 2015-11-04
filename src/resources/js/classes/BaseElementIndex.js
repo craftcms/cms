@@ -1202,7 +1202,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 					$extraHeadersContainer = $('<div id="extra-headers"/>').appendTo($('#page-header'));
 				}
 
-				$container = $('<div class="buttons secondary-buttons"/>').appendTo($extraHeadersContainer);
+				$container = $('<div class="buttons right"/>').appendTo($extraHeadersContainer);
 			}
 
 			return $container;

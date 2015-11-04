@@ -237,13 +237,19 @@ class UserElementType extends BaseElementType
 			$attributes['preferredLocale'] = array('label' => Craft::t('Preferred Locale'));
 		}
 
-		$attributes['dateCreated'] = array('label' => Craft::t('Join Date'));
+		$attributes['id']            = array('label' => Craft::t('ID'));
+		$attributes['dateCreated']   = array('label' => Craft::t('Join Date'));
 		$attributes['lastLoginDate'] = array('label' => Craft::t('Last Login'));
-		$attributes['dateCreated'] = array('label' => Craft::t('Date Created'));
-		$attributes['dateUpdated'] = array('label' => Craft::t('Date Updated'));
+		$attributes['dateCreated']   = array('label' => Craft::t('Date Created'));
+		$attributes['dateUpdated']   = array('label' => Craft::t('Date Updated'));
 
 		// Allow plugins to modify the attributes
-		craft()->plugins->call('modifyUserTableAttributes', array(&$attributes));
+		$pluginAttributes = craft()->plugins->call('defineAdditionalUserTableAttributes', array(), true);
+
+		foreach ($pluginAttributes as $thisPluginAttributes)
+		{
+			$attributes = array_merge($attributes, $thisPluginAttributes);
+		}
 
 		return $attributes;
 	}
@@ -565,6 +571,7 @@ class UserElementType extends BaseElementType
 		$html = craft()->templates->render('users/_accountfields', array(
 			'account'      => $element,
 			'isNewAccount' => false,
+			'meta'         => true,
 		));
 
 		$html .= parent::getEditorHtml($element);

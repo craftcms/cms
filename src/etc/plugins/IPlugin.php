@@ -24,9 +24,9 @@ interface IPlugin extends ISavableComponentType
 	public function getVersion();
 
 	/**
-	 * Returns the plugin’s scehma version number.
+	 * Returns the plugin’s schema version number.
 	 *
-	 * Changing the scehma version number tells Craft that there are new migration files that need to be run.
+	 * Changing the schema version number tells Craft that there are new migration files that need to be run.
 	 *
 	 * @return string|null The plugin’s version number, or null if it doesn’t need one
 	 */
@@ -104,7 +104,7 @@ interface IPlugin extends ISavableComponentType
 	 * - `notes` can either be a string (with each release note separated by a newline character), or an array.
 	 * - Release note lines that begin with `#` will be treated as headings.
 	 * - Release note lines that begin with `[Added]`, `[Improved]`, or `[Fixed]` will be given `added`, `improved`,
-	 *   and `fixed` classes whithin the Updates page.
+	 *   and `fixed` classes within the Updates page.
 	 * - Release note lines can contain Markdown code, but not HTML.
 	 * - Releases can contain a `critical` attribute which can be set to `true` if the release is critical.
 	 *

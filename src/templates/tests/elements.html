@@ -1,0 +1,32 @@
+{% extends "_layouts/cp" %}
+{% set title = "Element Tests" %}
+
+{% macro elements(element) %}
+	{% if element %}
+		<tr>
+			<td>
+				{% include "_elements/element" with {
+					size: 'small',
+				} %}
+			</td>
+		</tr>
+		<tr>
+			<td>
+				{% include "_elements/element" with {
+					size: 'large',
+				} %}
+			</td>
+		</tr>
+	{% endif %}
+{% endmacro %}
+
+{% from _self import elements as elements %}
+
+
+{% block content %}
+	<table class="data fullwidth">
+		{{ elements(currentUser) }}
+		{{ elements(craft.assets.first()) }}
+		{{ elements(craft.entries.first() )}}
+	</table>
+{% endblock %}

@@ -311,180 +311,188 @@ class UpdatesService extends BaseApplicationComponent
 				continue;
 			}
 
-			// Fetch it
-			$client = new \Guzzle\Http\Client();
-			$client->setUserAgent($userAgent, true);
-
-			$options = array(
-				'timeout'         => 5,
-				'connect_timeout' => 2,
-				'allow_redirects' => true,
-				'verify' => false
-			);
-
-			$request = $client->get($feedUrl, null, $options);
-
-			// Potentially long-running request, so close session to prevent session blocking on subsequent requests.
-			craft()->session->close();
-
-			$response = $request->send();
-
-			if (!$response->isSuccessful())
+			try
 			{
-				Craft::log('Error in calling '.$feedUrl.'. Response: '.$response->getBody(), LogLevel::Warning);
-				continue;
-			}
+				// Fetch it
+				$client = new \Guzzle\Http\Client();
+				$client->setUserAgent($userAgent, true);
 
-			$responseBody = $response->getBody();
-			$releases = JsonHelper::decode($responseBody);
+				$options = [
+					'timeout'         => 5,
+					'connect_timeout' => 2,
+					'allow_redirects' => true,
+					'verify'          => false
+				];
 
-			if (!$releases)
-			{
-				Craft::log('The “'.$plugin->getName()."” plugin release feed didn’t come back as valid JSON:\n".$responseBody, LogLevel::Warning);
-				continue;
-			}
+				$request = $client->get($feedUrl, null, $options);
 
-			$releaseModels = array();
-			$releaseTimestamps = array();
+				// Potentially long-running request, so close session to prevent session blocking on subsequent requests.
+				craft()->session->close();
 
-			foreach ($releases as $release)
-			{
-				// Validate ite info
-				$errors = array();
+				$response = $request->send();
 
-				// Any missing required attributes?
-				$missingAttributes = array();
-				foreach (array('version', 'downloadUrl', 'date', 'notes') as $attribute)
+				if (!$response->isSuccessful())
 				{
-					if (empty($release[$attribute]))
-					{
-						$missingAttributes[] = $attribute;
-					}
-				}
-				if ($missingAttributes)
-				{
-					$errors[] = 'Missing required attributes ('.implode(', ', $missingAttributes).')';
-				}
-
-				// Invalid URL?
-				if (strncmp($release['downloadUrl'], 'https://', 8) !== 0)
-				{
-					$errors[] = 'Download URL doesn’t begin with https:// ('.$release['downloadUrl'].')';
-				}
-
-				// Invalid date?
-				$date = DateTime::createFromString($release['date']);
-				if (!$date)
-				{
-					$errors[] = 'Invalid date ('.$release['date'].')';
-				}
-
-				// Validation complete. Were there any errors?
-				if ($errors)
-				{
-					Craft::log('A “'.$plugin->getName()."” release was skipped because it is invalid:\n - ".implode("\n - ", $errors), LogLevel::Warning);
+					Craft::log('Error in calling '.$feedUrl.'. Response: '.$response->getBody(), LogLevel::Warning);
 					continue;
 				}
 
-				// All good! Let's make sure it's a pending update
-				if (!version_compare($release['version'], $plugin->getVersion(), '>'))
+				$responseBody = $response->getBody();
+				$releases = JsonHelper::decode($responseBody);
+
+				if (!$releases)
 				{
+					Craft::log('The “'.$plugin->getName()."” plugin release feed didn’t come back as valid JSON:\n".$responseBody, LogLevel::Warning);
 					continue;
 				}
 
-				// Create the release note HTML
-				if (!is_array($release['notes']))
+				$releaseModels = [];
+				$releaseTimestamps = [];
+
+				foreach ($releases as $release)
 				{
-					$release['notes'] = array_filter(preg_split('/[\r\n]+/', $release['notes']));
-				}
+					// Validate ite info
+					$errors = [];
 
-				$notes = '';
-				$inList = false;
-
-				foreach ($release['notes'] as $line)
-				{
-					// Escape any HTML
-					$line = htmlspecialchars($line, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
-
-					// Is this a heading?
-					if (preg_match('/^#\s+(.+)/', $line, $match))
+					// Any missing required attributes?
+					$missingAttributes = [];
+					foreach (['version', 'downloadUrl', 'date', 'notes'] as $attribute)
 					{
-						if ($inList)
+						if (empty($release[$attribute]))
 						{
-							$notes .= "</ul>\n";
-							$inList = false;
+							$missingAttributes[] = $attribute;
 						}
-
-						$notes .= '<h3>'.$match[1]."</h3>\n";
 					}
-					else
+					if ($missingAttributes)
 					{
-						if (!$inList)
-						{
-							$notes .= "<ul>\n";
-							$inList = true;
-						}
+						$errors[] = 'Missing required attributes ('.implode(', ', $missingAttributes).')';
+					}
 
-						if (preg_match('/^\[(\w+)\]\s+(.+)/', $line, $match))
+					// Invalid URL?
+					if (strncmp($release['downloadUrl'], 'https://', 8) !== 0)
+					{
+						$errors[] = 'Download URL doesn’t begin with https:// ('.$release['downloadUrl'].')';
+					}
+
+					// Invalid date?
+					$date = DateTime::createFromString($release['date']);
+					if (!$date)
+					{
+						$errors[] = 'Invalid date ('.$release['date'].')';
+					}
+
+					// Validation complete. Were there any errors?
+					if ($errors)
+					{
+						Craft::log('A “'.$plugin->getName()."” release was skipped because it is invalid:\n - ".implode("\n - ", $errors), LogLevel::Warning);
+						continue;
+					}
+
+					// All good! Let's make sure it's a pending update
+					if (!version_compare($release['version'], $plugin->getVersion(), '>'))
+					{
+						continue;
+					}
+
+					// Create the release note HTML
+					if (!is_array($release['notes']))
+					{
+						$release['notes'] = array_filter(preg_split('/[\r\n]+/', $release['notes']));
+					}
+
+					$notes = '';
+					$inList = false;
+
+					foreach ($release['notes'] as $line)
+					{
+						// Escape any HTML
+						$line = htmlspecialchars($line, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
+
+						// Is this a heading?
+						if (preg_match('/^#\s+(.+)/', $line, $match))
 						{
-							$class = strtolower($match[1]);
-							$line = $match[2];
+							if ($inList)
+							{
+								$notes .= "</ul>\n";
+								$inList = false;
+							}
+
+							$notes .= '<h3>'.$match[1]."</h3>\n";
 						}
 						else
 						{
-							$class = null;
+							if (!$inList)
+							{
+								$notes .= "<ul>\n";
+								$inList = true;
+							}
+
+							if (preg_match('/^\[(\w+)\]\s+(.+)/', $line, $match))
+							{
+								$class = strtolower($match[1]);
+								$line = $match[2];
+							}
+							else
+							{
+								$class = null;
+							}
+
+							// Parse Markdown code
+							$line = StringHelper::parseMarkdownLine($line);
+
+							$notes .= '<li'.($class ? ' class="'.$class.'"' : '').'>'.$line."</li>\n";
 						}
+					}
 
-						// Parse Markdown code
-						$line = StringHelper::parseMarkdownLine($line);
+					if ($inList)
+					{
+						$notes .= "</ul>\n";
+					}
 
-						$notes .= '<li'.($class ? ' class="'.$class.'"' : '').'>'.$line."</li>\n";
+					$critical = !empty($release['critical']);
+
+					// Populate the release model
+					$releaseModel = new PluginNewReleaseModel();
+					$releaseModel->version = $release['version'];
+					$releaseModel->date = $date;
+					$releaseModel->localizedDate = $date->localeDate();
+					$releaseModel->notes = $notes;
+					$releaseModel->critical = $critical;
+					$releaseModel->manualDownloadEndpoint = $release['downloadUrl'];
+
+					$releaseModels[] = $releaseModel;
+					$releaseTimestamps[] = $date->getTimestamp();
+
+					if ($critical)
+					{
+						$pluginUpdateModel->criticalUpdateAvailable = true;
 					}
 				}
 
-				if ($inList)
+				if ($releaseModels)
 				{
-					$notes .= "</ul>\n";
+					// Sort release models by timestamp
+					array_multisort($releaseTimestamps, SORT_DESC, $releaseModels);
+					$latestRelease = $releaseModels[0];
+
+					$pluginUpdateModel->displayName = $plugin->getName();
+					$pluginUpdateModel->localVersion = $plugin->getVersion();
+					$pluginUpdateModel->latestDate = $latestRelease->date;
+					$pluginUpdateModel->latestVersion = $latestRelease->version;
+					$pluginUpdateModel->manualDownloadEndpoint = $latestRelease->manualDownloadEndpoint;
+					$pluginUpdateModel->manualUpdateRequired = true;
+					$pluginUpdateModel->releases = $releaseModels;
+					$pluginUpdateModel->status = PluginUpdateStatus::UpdateAvailable;
 				}
-
-				$critical = !empty($release['critical']);
-
-				// Populate the release model
-				$releaseModel = new PluginNewReleaseModel();
-				$releaseModel->version = $release['version'];
-				$releaseModel->date = $date;
-				$releaseModel->localizedDate = $date->localeDate();
-				$releaseModel->notes = $notes;
-				$releaseModel->critical = $critical;
-				$releaseModel->manualDownloadEndpoint = $release['downloadUrl'];
-
-				$releaseModels[] = $releaseModel;
-				$releaseTimestamps[] = $date->getTimestamp();
-
-				if ($critical)
+				else
 				{
-					$pluginUpdateModel->criticalUpdateAvailable = true;
+					$pluginUpdateModel->status = PluginUpdateStatus::UpToDate;
 				}
 			}
-
-			if ($releaseModels)
+			catch (\Exception $e)
 			{
-				// Sort release models by timestamp
-				array_multisort($releaseModels, $releaseTimestamps, SORT_DESC);
-				$latestRelease = $releaseModels[0];
-
-				$pluginUpdateModel->displayName = $plugin->getName();
-				$pluginUpdateModel->localVersion = $plugin->getVersion();
-				$pluginUpdateModel->latestDate = $latestRelease->date;
-				$pluginUpdateModel->latestVersion = $latestRelease->version;
-				$pluginUpdateModel->manualDownloadEndpoint = $latestRelease->manualDownloadEndpoint;
-				$pluginUpdateModel->manualUpdateRequired = true;
-				$pluginUpdateModel->releases = $releaseModels;
-				$pluginUpdateModel->status = PluginUpdateStatus::UpdateAvailable;
-			}
-			else
-			{
-				$pluginUpdateModel->status = PluginUpdateStatus::UpToDate;
+				Craft::log('There was a problem getting the update feed for “'.$plugin->getName().'”, so it was skipped: '.$e->getMessage(), LogLevel::Error);
+				continue;
 			}
 		}
 	}

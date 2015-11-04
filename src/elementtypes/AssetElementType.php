@@ -222,13 +222,19 @@ class AssetElementType extends BaseElementType
 			'imageSize'    => array('label' => Craft::t('Image Size')),
 			'width'        => array('label' => Craft::t('Image Width')),
 			'height'       => array('label' => Craft::t('Image Height')),
+			'id'           => array('label' => Craft::t('ID')),
 			'dateModified' => array('label' => Craft::t('File Modified Date')),
 			'dateCreated'  => array('label' => Craft::t('Date Created')),
 			'dateUpdated'  => array('label' => Craft::t('Date Updated')),
 		);
 
 		// Allow plugins to modify the attributes
-		craft()->plugins->call('modifyAssetTableAttributes', array(&$attributes));
+		$pluginAttributes = craft()->plugins->call('defineAdditionalAssetTableAttributes', array(), true);
+
+		foreach ($pluginAttributes as $thisPluginAttributes)
+		{
+			$attributes = array_merge($attributes, $thisPluginAttributes);
+		}
 
 		return $attributes;
 	}

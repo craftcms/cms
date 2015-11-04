@@ -4,6 +4,7 @@
 Craft.CustomizeSourcesModal = Garnish.Modal.extend(
 {
 	elementIndex: null,
+	$elementIndexSourcesContainer: null,
 
 	$sidebar: null,
 	$sourcesContainer: null,
@@ -32,6 +33,7 @@ Craft.CustomizeSourcesModal = Garnish.Modal.extend(
 		});
 
 		this.elementIndex = elementIndex;
+		this.$elementIndexSourcesContainer = this.elementIndex.$sidebar.children('nav').children('ul');
 
 		var $container = $('<form class="modal customize-sources-modal"/>').appendTo(Garnish.$bod);
 
@@ -172,11 +174,10 @@ Craft.CustomizeSourcesModal = Garnish.Modal.extend(
 				// Have any changes been made to the source list?
 				if (this.updateSourcesOnSave)
 				{
-					var $sourcesContainer = this.elementIndex.$sidebar.children('nav').children('ul');
-
-					if ($sourcesContainer.length)
+					if (this.$elementIndexSourcesContainer.length)
 					{
-						var $lastSource;
+						var $lastSource,
+							$pendingHeading;
 
 						for (var i = 0; i < this.sourceSort.$items.length; i++)
 						{
@@ -189,16 +190,22 @@ Craft.CustomizeSourcesModal = Garnish.Modal.extend(
 								continue;
 							}
 
-							if (!$lastSource)
+							if (source.isHeading())
 							{
-								$indexSource.prependTo($sourcesContainer);
+								$pendingHeading = $indexSource;
 							}
 							else
 							{
-								$indexSource.insertAfter($lastSource);
-							}
+								if ($pendingHeading)
+								{
+									this.appendSource($pendingHeading, $lastSource);
+									$lastSource = $pendingHeading;
+									$pendingHeading = null;
+								}
 
-							$lastSource = $indexSource;
+								this.appendSource($indexSource, $lastSource);
+								$lastSource = $indexSource;
+							}
 						}
 
 						// Remove any additional sources (most likely just old headings)
@@ -227,6 +234,18 @@ Craft.CustomizeSourcesModal = Garnish.Modal.extend(
 				Craft.cp.displayError(error);
 			}
 		}, this));
+	},
+
+	appendSource: function($source, $lastSource)
+	{
+		if (!$lastSource)
+		{
+			$source.prependTo(this.$elementIndexSourcesContainer);
+		}
+		else
+		{
+			$source.insertAfter($lastSource);
+		}
 	},
 
 	destroy: function()
@@ -263,6 +282,11 @@ Craft.CustomizeSourcesModal.BaseSource = Garnish.Base.extend(
 		this.$item.data('source', this);
 
 		this.addListener(this.$item, 'click', 'select');
+	},
+
+	isHeading: function()
+	{
+		return false;
 	},
 
 	isSelected: function()
@@ -418,6 +442,11 @@ Craft.CustomizeSourcesModal.Heading = Craft.CustomizeSourcesModal.BaseSource.ext
 	$labelField: null,
 	$labelInput: null,
 	$deleteBtn: null,
+
+	isHeading: function()
+	{
+		return true;
+	},
 
 	select: function()
 	{

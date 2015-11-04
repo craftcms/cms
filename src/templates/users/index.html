@@ -12,7 +12,7 @@
 
 {% if currentUser.can('registerUsers') %}
     {% set extraPageHeaderHtml %}
-    	<div class="buttons secondary-buttons right">
+    	<div class="buttons right">
         	<a class="btn submit add icon" href="{{ url('users/new') }}">{{ "New user"|t }}</a>
         </div>
     {% endset %}
