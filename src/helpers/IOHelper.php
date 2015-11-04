@@ -1864,7 +1864,7 @@ class IOHelper
 	 *
 	 * @return void
 	 */
-	private function _buildFileKinds()
+	private static function _buildFileKinds()
 	{
 		if (!isset(self::$_fileKinds))
 		{
