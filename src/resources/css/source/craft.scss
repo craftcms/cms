@@ -1377,7 +1377,7 @@ body.message .message-container .pane { top: 50%; margin-top: -33px !important; 
 .matrixblock > .actions > .status.off { display: none; }
 .matrixblock.disabled > .actions > .status.off { display: inline-block; @include floatleft; @include margin(4px, 10px, 0, 0); }
 .matrixblock > .actions { position: absolute; z-index: 1; top: 6px; @include right(5px); cursor: default; }
-.matrixblock > .actions a { padding: 0; @include margin-right(2px); width: 15px; height: 20px; text-align: center; color: rgba(0,0,0,0.2) }
+.matrixblock > .actions a { padding: 0; @include margin-right(2px); width: 15px; height: 20px; text-align: center; color: rgba(0,0,0,0.25) }
 .matrixblock > .actions a:hover { width: 15px; height: 20px; text-align: center; color: $linkcolor; }
 .matrixblock > .actions a.settings:after { @include margin-left(3px); }
 .matrixblock > .fields > .field { margin: 15px 0; }
