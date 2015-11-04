@@ -135,7 +135,7 @@ class PluginsService extends BaseApplicationComponent
 							// Update our record of the plugin's version number
 							craft()->db->createCommand()->update(
 								'plugins',
-								array('schemaVersion' => $plugin->getSchemaVersion()),
+								array('version' => $plugin->getVersion()),
 								'id = :id',
 								array(':id' => $row['id'])
 							);
