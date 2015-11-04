@@ -22,6 +22,8 @@
 		{
 			this.widgetId = widgetId;
 
+			Craft.GetHelpWidget.widgets[this.widgetId] = this;
+
 			this.$widget = $('#widget'+widgetId);
 			this.$message = this.$widget.find('.message:first');
 			this.$fromEmail = this.$widget.find('.fromEmail:first');
@@ -96,6 +98,9 @@
 
 			this.$iframe.html('');
 		}
+	},
+	{
+		widgets: {}
 	});
 
 
