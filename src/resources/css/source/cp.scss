@@ -36,6 +36,9 @@ body {
 #global-sidebar a { color: hsl($hue, 5%, 85%);
 	@include transition(color linear 100ms);
 }
+#global-sidebar a .icon {
+	@include transition(opacity linear 100ms);
+}
 
 #global-sidebar a:hover,
 #global-sidebar a.active,
