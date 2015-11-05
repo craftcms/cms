@@ -317,12 +317,12 @@ class UpdatesService extends BaseApplicationComponent
 				$client = new \Guzzle\Http\Client();
 				$client->setUserAgent($userAgent, true);
 
-				$options = [
+				$options = array(
 					'timeout'         => 5,
 					'connect_timeout' => 2,
 					'allow_redirects' => true,
 					'verify'          => false
-				];
+				);
 
 				$request = $client->get($feedUrl, null, $options);
 
