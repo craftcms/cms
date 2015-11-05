@@ -4,7 +4,7 @@
 {% set multiple  = (entryTypes|length > 1) %}
 
 
-{% set extraPageHeadersHtml %}
+{% set extraPageHeaderHtml %}
 	{% if section.type != 'single' %}
 		<div class="buttons">
 			<a href="{{ url('settings/sections/' ~ section.id ~ '/entrytypes/new') }}" class="btn submit add icon">{{ "New entry type"|t }}</a>
