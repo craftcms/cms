@@ -558,7 +558,7 @@ class UserSessionService extends \CWebUser
 	 * Logs a user in for solely by their user ID.
 	 *
 	 * This method doesn’t have any sort of credential verification, so use it at your own peril.
-     *
+	 *
 	 * @param int  $userId            The user ID of the person to log in.
 	 * @param bool $rememberMe        Whether the user should be remembered.
 	 * @param bool $setUsernameCookie Whether to set the username cookie or not.
@@ -791,6 +791,11 @@ class UserSessionService extends \CWebUser
 			case UserIdentity::ERROR_NO_CP_OFFLINE_ACCESS:
 			{
 				$error = Craft::t('You cannot access the CP while the system is offline with that account.');
+				break;
+			}
+			case UserIdentity::ERROR_NO_SITE_OFFLINE_ACCESS:
+			{
+				$error = Craft::t('You cannot access the site while the system is offline with that account.');
 				break;
 			}
 			case UserIdentity::ERROR_PENDING_VERIFICATION:
@@ -1476,11 +1481,11 @@ class UserSessionService extends \CWebUser
 	private function _findSessionToken($loginName, $uid)
 	{
 		$result = craft()->db->createCommand()
-		    ->select('s.token, s.userId')
-		    ->from('sessions s')
-		    ->join('users u', 's.userId = u.id')
-		    ->where('(u.username=:username OR u.email=:email) AND s.uid=:uid', array(':username' => $loginName, ':email' => $loginName, 'uid' => $uid))
-		    ->queryRow();
+			->select('s.token, s.userId')
+			->from('sessions s')
+			->join('users u', 's.userId = u.id')
+			->where('(u.username=:username OR u.email=:email) AND s.uid=:uid', array(':username' => $loginName, ':email' => $loginName, 'uid' => $uid))
+			->queryRow();
 
 		if (is_array($result) && count($result) > 0)
 		{
@@ -1529,10 +1534,10 @@ class UserSessionService extends \CWebUser
 			if ($id)
 			{
 				$userRow = craft()->db->createCommand()
-				    ->select('*')
-				    ->from('users')
-				    ->where('id=:id', array(':id' => $id))
-				    ->queryRow();
+					->select('*')
+					->from('users')
+					->where('id=:id', array(':id' => $id))
+					->queryRow();
 
 				if ($userRow)
 				{

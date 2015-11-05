@@ -24,6 +24,7 @@ class UserIdentity extends \CUserIdentity
 	const ERROR_NO_CP_ACCESS            = 54;
 	const ERROR_NO_CP_OFFLINE_ACCESS    = 55;
 	const ERROR_PENDING_VERIFICATION    = 56;
+	const ERROR_NO_SITE_OFFLINE_ACCESS  = 57;
 
 	// Properties
 	// =========================================================================
@@ -161,6 +162,10 @@ class UserIdentity extends \CUserIdentity
 					else if (craft()->request->isCpRequest() && !craft()->isSystemOn() && !$user->can('accessCpWhenSystemIsOff'))
 					{
 						$this->errorCode = static::ERROR_NO_CP_OFFLINE_ACCESS;
+					}
+					else if (craft()->request->isSiteRequest() && !craft()->isSystemOn() && !$user->can('accessSiteWhenSystemIsOff'))
+					{
+						$this->errorCode = static::ERROR_NO_SITE_OFFLINE_ACCESS;
 					}
 					else
 					{
