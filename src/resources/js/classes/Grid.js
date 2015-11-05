@@ -43,15 +43,14 @@ Craft.Grid = Garnish.Base.extend(
 			this.sizeUnit = 'px';
 		}
 
-		this.$items = this.$container.children(this.settings.itemSelector);
-		this.setItems();
-		this.refreshCols(true, false);
-
-		// Adjust them when the container is resized
+		// Set the refreshCols() proxy that container resizes will trigger
 		this.handleContainerHeightProxy = $.proxy(function() {
 			this.refreshCols(false, true);
 		}, this);
-		this.addListener(this.$container, 'resize', this.handleContainerHeightProxy);
+
+		this.$items = this.$container.children(this.settings.itemSelector);
+		this.setItems();
+		this.refreshCols(true, false);
 
 		Garnish.$doc.ready($.proxy(function() {
 			this.refreshCols(false, false);
