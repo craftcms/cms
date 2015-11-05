@@ -1053,7 +1053,7 @@ $.extend(jQuery.event.special, {
 				return false;
 			}
 
-			getErd().uninstall(this);
+			getErd().removeListener(this, triggerResizeEvent);
 		}
 	}
 });
