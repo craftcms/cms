@@ -92,6 +92,7 @@ body {
 #container > .topbar,
 #container > #page-header,
 #container > #main,
+#container > #help-footer,
 #conatiner > #footer { min-height: -webkit-min-content; min-height: -moz-min-content; }
 
 body.mobile #container {
@@ -224,7 +225,7 @@ body.mobile #container {
 .grid > .item { display: none; padding: 7px; @include box-sizing(border-box); }
 
 /* footer */
-#footer { margin: 24px 0; padding: 0 24px; text-align: center; font-size: 0; }
+#footer { padding: 24px; text-align: center; font-size: 0; }
 #footer li { display: inline-block; font-size: 11px; color: $lighttextcolor; white-space: nowrap; }
 #footer li:not(:last-child):after { display: inline-block; margin: 0 7px; content: '•'; }
 #footer li a { color: $lighttextcolor; text-decoration: underline; }
