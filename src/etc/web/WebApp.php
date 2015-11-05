@@ -988,7 +988,10 @@ class WebApp extends \CWebApplication
 
 			// Special case because we hide the cpTrigger in emails.
 			$this->request->getPath() === craft()->config->get('actionTrigger').'/users/setpassword' ||
-			$this->request->getPath() === craft()->config->get('actionTrigger').'/users/verifyemail'
+			$this->request->getPath() === craft()->config->get('actionTrigger').'/users/verifyemail' ||
+			// Special case because this might be a request with a user that has "Access the site when the system is off"
+			// permissions and is in the process of logging in while the system is off.
+			$this->request->getPost('action') === 'users/login'
 		)
 		{
 			if ($this->userSession->checkPermission('accessCpWhenSystemIsOff'))
