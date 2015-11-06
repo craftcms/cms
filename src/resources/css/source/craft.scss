@@ -971,8 +971,10 @@ ul.tree,
 .meta > .field + .field { border-top: 1px solid $hairlineColor; }
 .meta > .field + .field.has-focus { border-top: none; margin-top: 1px !important; }
 
-.meta.pane > .data:first-child { padding-top: 16px; }
-.meta.pane > .data:last-child { padding-bottom: 16px; }
+.meta.pane > .data:first-child,
+.meta.pane > .data.first { padding-top: 16px; }
+.meta.pane > .data:last-child,
+.meta.pane > .data.last { padding-bottom: 16px; }
 
 .meta > .field > .heading,
 .meta > .data > .heading { margin-bottom: 0; color: $mediumtextcolor; }
