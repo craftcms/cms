@@ -286,6 +286,7 @@ table.inputs .btngroup { display: block; float: none; }
 div.flex { @include display-flex; @include align-items(center); align-content: stretch; }
 div.flex > .label { white-space: nowrap; }
 div.flex > *:not(:last-child) { @include margin-right(7px !important); }
+div.flex > .flex-grow { @include flex-grow(1); }
 
 .buttons { position: relative; margin: 24px 0; min-height: 30px; }
 .buttons:before { @include clearafter; margin-bottom: -5px; }
@@ -953,8 +954,12 @@ ul.tree,
 .pane { @include pane; position: relative; margin: 14px 0; padding: 24px; border-radius: $paneBorderRadius; word-wrap: break-word; @include box-sizing(border-box); overflow: hidden; }
 
 /* meta panes */
-.meta { padding: 0; overflow: visible; }
-.meta > .field { @include display-flex; @include justify-content(space-between); @include align-items(center); @include flex-wrap(wrap); margin: 0 !important; padding: 8px 24px; min-height: 30px;
+.meta.pane { padding: 0; overflow: visible; }
+.meta > .field,
+.meta > .data { @include display-flex; @include justify-content(space-between); @include align-items(center); @include flex-wrap(wrap); margin: 0 !important; padding-top: 8px; padding-bottom: 8px; }
+.meta.pane > .field,
+.meta.pane > .data { padding-left: 24px; padding-right: 24px; }
+.meta > .field { min-height: 30px;
 	@include box-shadow(0 0 2px hsla(205, 100%, 60%, 0), inset 0 0 0 1px hsla(205, 100%, 60%, 0));
 	@include box-shadow-transition(100ms);
 }
@@ -965,9 +970,17 @@ ul.tree,
 .meta.pane > .field:last-child { border-bottom-left-radius: $paneBorderRadius; border-bottom-right-radius: $paneBorderRadius; }
 .meta > .field + .field { border-top: 1px solid $hairlineColor; }
 .meta > .field + .field.has-focus { border-top: none; margin-top: 1px !important; }
-.meta > .field > .heading { margin-bottom: 0; width: 86px; color: $mediumtextcolor; }
+
+.meta.pane > .data:first-child { padding-top: 16px; }
+.meta.pane > .data:last-child { padding-bottom: 16px; }
+
+.meta > .field > .heading,
+.meta > .data > .heading { margin-bottom: 0; color: $mediumtextcolor; }
+.meta > .field > .heading { width: 86px; }
+.meta > .data > .heading { width: calc(50% - 14px); }
 .meta > .field > .heading > label.required:after { position: absolute; top: 6px; @include left(-13px); @include margin-left(0); }
 .meta > .field > .input { width: calc(100% - 100px); }
+.meta > .data > .value { width: 50%; }
 
 .meta > .field.has-errors { border: 1px solid $errorcolor; padding-left: 23px; padding-right: 23px; }
 .meta > .field.has-errors + .field { border-top: none; }
