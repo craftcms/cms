@@ -733,6 +733,8 @@ $elementThumbPadding: 30 + $elementInnerSpacing;
 	}
 
 	&.loading {
+		@include padding-right($baseElementSidePadding + 24);
+
 		&:after {
 			content: '.';
 			font-size: 0;
@@ -761,8 +763,6 @@ $elementThumbPadding: 30 + $elementInnerSpacing;
 .elements .tableview .move { display: block; position: absolute; top: 9px; @include margin-left(-14px); font-size: 11px; text-decoration: none; }
 .elements .tableview .toggle { display: block; position: absolute; top: 9px; @include margin-left(-20px); }
 .elements .tableview .move + .toggle { @include margin-left(-34px); }
-.elements .tableview td .element:first-child { padding-left: 0; padding-right: 0; }
-.elements .tableview td .element.loading:first-child .label { @include padding-right(26px); }
 
 /* thumbs views */
 .elements .thumbsview { @include margin(-14px, 0, 0, -14px); }
