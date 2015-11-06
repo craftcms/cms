@@ -331,15 +331,7 @@
 						</div>
 					{% endif %}
 				</form>
-
-				{% if currentUser.admin and not account.isCurrent() %}
-					<form method="post" accept-charset="UTF-8">
-						<input type="hidden" name="action" value="users/impersonate">
-						{{ hiddenInputs }}
-						<input type="submit" class="btn big fullwidth" value="{{ 'Login as {user}'|t({ user: account.username }) }}">
-					</form>
-				{% endif %}
-			</div><!--/item-->
+			</div>
 		{% endif %}
 	</div>
 {% endblock %}
