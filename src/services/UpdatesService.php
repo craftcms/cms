@@ -242,7 +242,9 @@ class UpdatesService extends BaseApplicationComponent
 			'class' => $plugin->getClassHandle()
 		));
 
-		return (bool) $affectedRows;
+		$success = (bool) $affectedRows;
+
+		return $success;
 	}
 
 	/**
