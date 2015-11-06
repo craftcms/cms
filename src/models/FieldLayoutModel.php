@@ -62,7 +62,7 @@ class FieldLayoutModel extends BaseModel
 		{
 			if ($this->id)
 			{
-				$this->_fields = craft()->fields->getLayoutFieldsById($this->id);
+				$this->_fields = craft()->fields->getOrderedLayoutFieldsById($this->id);
 			}
 			else
 			{
