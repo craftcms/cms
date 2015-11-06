@@ -954,11 +954,11 @@ ul.tree,
 .pane { @include pane; position: relative; margin: 14px 0; padding: 24px; border-radius: $paneBorderRadius; word-wrap: break-word; @include box-sizing(border-box); overflow: hidden; }
 
 /* meta panes */
-.meta.pane { padding: 0; overflow: visible; }
+.meta { padding: 0; overflow: visible; }
 .meta > .field,
 .meta > .data { @include display-flex; @include justify-content(space-between); @include align-items(center); @include flex-wrap(wrap); margin: 0 !important; padding-top: 8px; padding-bottom: 8px; }
-.meta.pane > .field,
-.meta.pane > .data { padding-left: 24px; padding-right: 24px; }
+.meta > .field,
+.meta > .data { padding-left: 24px; padding-right: 24px; }
 .meta > .field { min-height: 30px;
 	@include box-shadow(0 0 2px hsla(205, 100%, 60%, 0), inset 0 0 0 1px hsla(205, 100%, 60%, 0));
 	@include box-shadow-transition(100ms);
@@ -966,15 +966,15 @@ ul.tree,
 .meta > .field.has-focus { z-index: 1;
 	@include box-shadow(0 0 5px hsl(205, 100%, 60%));
 }
-.meta.pane > .field:first-child { border-top-left-radius: $paneBorderRadius; border-top-right-radius: $paneBorderRadius; }
-.meta.pane > .field:last-child { border-bottom-left-radius: $paneBorderRadius; border-bottom-right-radius: $paneBorderRadius; }
+.meta > .field:first-child { border-top-left-radius: $paneBorderRadius; border-top-right-radius: $paneBorderRadius; }
+.meta > .field:last-child { border-bottom-left-radius: $paneBorderRadius; border-bottom-right-radius: $paneBorderRadius; }
 .meta > .field + .field { border-top: 1px solid $hairlineColor; }
 .meta > .field + .field.has-focus { border-top: none; margin-top: 1px !important; }
 
-.meta.pane > .data:first-child,
-.meta.pane > .data.first { padding-top: 16px; }
-.meta.pane > .data:last-child,
-.meta.pane > .data.last { padding-bottom: 16px; }
+.meta > .data:first-child,
+.meta > .data.first { padding-top: 16px; }
+.meta > .data:last-child,
+.meta > .data.last { padding-bottom: 16px; }
 
 .meta > .field > .heading,
 .meta > .data > .heading { margin-bottom: 0; color: $mediumtextcolor; }
