@@ -37,6 +37,61 @@ $btnBorderRadius: 3px;
 $paneBorderRadius: 4px;
 $elementBorderRadius: 3px;
 
+/* Flexbox stuff */
+
+@mixin display-flex {
+	display: flex;
+	display: -ms-flexbox;
+}
+
+@mixin flex-direction($value...) {
+	flex-direction: $value;
+	-ms-flex-direction: $value;
+}
+
+@mixin align-items($value) {
+	align-items: $value;
+
+	@if $value == flex-start {
+		-ms-flex-align: start;
+	} @else if $value == flex-end {
+		-ms-flex-align: end;
+	} @else {
+		-ms-flex-align: $value;
+	}
+}
+
+@mixin justify-content($value) {
+	justify-content: $value;
+
+	@if $value == flex-start {
+		-ms-flex-pack: start;
+	} @else if $value == flex-end {
+		-ms-flex-pack: end;
+	} @else if $value == space-between {
+		-ms-flex-align: justify;
+	} @else if $value == center {
+		-ms-flex-align: center;
+	}
+}
+
+@mixin flex-wrap($value) {
+	flex-wrap: $value;
+
+	@if $value == nowrap {
+		-ms-flex-wrap: none;
+	} @else {
+		-ms-flex-wrap: $value;
+	}
+}
+
+@mixin flex-grow($value) {
+	flex-grow: $value;
+	-ms-flex: $value;
+}
+
+/* Other */
+
 @mixin animation-iteration-count($count) {
 	-webkit-animation-iteration-count: $count;
 	-moz-animation-iteration-count: $count;

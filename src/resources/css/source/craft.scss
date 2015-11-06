@@ -283,7 +283,7 @@ table.inputs td:not(:first-child) { @include padding-left(14px); }
 table.inputs :not(.btngroup) > .btn,
 table.inputs .btngroup { display: block; float: none; }
 
-div.flex { display: flex; align-items: center; align-content: stretch; }
+div.flex { @include display-flex; @include align-items(center); align-content: stretch; }
 div.flex > .label { white-space: nowrap; }
 div.flex > *:not(:last-child) { @include margin-right(7px !important); }
 
@@ -688,11 +688,10 @@ $elementThumbPadding: 30 + $elementInnerSpacing;
 			border-radius: $elementBorderRadius;
 			overflow: hidden;
 			background: #fff;
-			display: flex;
-			display: -ms-flexbox;
-			justify-content: center;
+			@include display-flex;
+			@include justify-content(center);
 			-ms-flex-pack: center;
-			align-items: center;
+			@include align-items(center);
 			-ms-flex-align: center;
 			width: 100px;
 			height: 100px;
@@ -955,7 +954,7 @@ ul.tree,
 
 /* meta panes */
 .meta { padding: 0; overflow: visible; }
-.meta > .field { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; margin: 0 !important; padding: 8px 24px; min-height: 30px;
+.meta > .field { @include display-flex; @include justify-content(space-between); @include align-items(center); @include flex-wrap(wrap); margin: 0 !important; padding: 8px 24px; min-height: 30px;
 	@include box-shadow(0 0 2px hsla(205, 100%, 60%, 0), inset 0 0 0 1px hsla(205, 100%, 60%, 0));
 	@include box-shadow-transition(100ms);
 }
