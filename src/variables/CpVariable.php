@@ -83,7 +83,10 @@ class CpVariable
 			}
 		}
 
-		$nav['settings'] = array('label' => Craft::t('Settings'), 'icon' => 'settings');
+		if (craft()->userSession->isAdmin())
+		{
+			$nav['settings'] = array('label' => Craft::t('Settings'), 'icon' => 'settings');
+		}
 
 		// Allow plugins to modify the nav
 		craft()->plugins->call('modifyCpNav', array(&$nav));
