@@ -495,12 +495,21 @@ Craft.CP = Garnish.Base.extend(
 			notificationDuration *= 2;
 		}
 
-		$('<div class="notification '+type+'">'+message+'</div>')
-			.appendTo(this.$notificationContainer)
+		var $notification = $('<div class="notification '+type+'">'+message+'</div>')
+			.appendTo(this.$notificationContainer);
+
+		var fadedMargin = -($notification.outerWidth()/2)+'px';
+
+		$notification
 			.hide()
-			.velocity('fadeIn', { display: 'inline-block', duration: 'fast' })
+			.css({ opacity: 0, 'margin-left': fadedMargin, 'margin-right': fadedMargin })
+			.velocity({ opacity: 1, 'margin-left': '2px', 'margin-right': '2px' }, { display: 'inline-block', duration: 'fast' })
 			.delay(notificationDuration)
-			.velocity('fadeOut');
+			.velocity({ opacity: 0, 'margin-left': fadedMargin, 'margin-right': fadedMargin }, {
+				complete: function() {
+					$notification.remove();
+				}
+			});
 
 		this.trigger('displayNotification', {
 			notificationType: type,
