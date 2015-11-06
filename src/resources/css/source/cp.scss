@@ -5,7 +5,8 @@
 	border-bottom: 1px solid rgba(0,0,0,0.05); background: rgba(0,0,0,0.03);
 }
 
-html { overflow-y: scroll; }
+html,
+body { overflow: hidden; }
 
 #alerts { color: $errorcolor; text-align: center; }
 #alerts li { padding: 2px 24px; @include container-topbar-styles; }
@@ -14,11 +15,7 @@ html { overflow-y: scroll; }
 #alerts li:before { @include icon; @include margin(-1px, 3px, 0, 0); content: 'alert'; font-size: 16px; }
 #alerts li a { color: $errorcolor; text-decoration: underline; white-space: nowrap; }
 
-body {
-	height: 100vh;
-	width: 100vw;
-	overflow: hidden;
-}
+body { height: 100vh; width: 100vw; }
 
 /* Shared sidebar/container styles */
 #container,
@@ -88,7 +85,7 @@ body {
 #global-sidebar .bottombar #account-info #account-menu-anchor:after { @include icon; content: '\25bd'; font-size: 24px; }
 
 /* container */
-#container { @include display-flex; @include flex-direction(column); position: relative; @include padding-left(220px); @include box-sizing(border-box); height: 100vh; overflow: auto; }
+#container { @include display-flex; @include flex-direction(column); position: relative; @include padding-left(220px); @include box-sizing(border-box); height: 100vh; width: 100vw; max-width: 100%; overflow: auto; }
 #container > .topbar,
 #container > #page-header,
 #container > #main,
