@@ -227,8 +227,7 @@ var Update = Garnish.Base.extend(
 
 	downloadThat: function()
 	{
-		var src = this.updateInfo.manualDownloadEndpoint;
-		$('<iframe/>', { src: src }).appendTo(Garnish.$bod).hide();
+		window.location.href = this.updateInfo.manualDownloadEndpoint;
 	},
 
 	autoUpdateThat: function()
