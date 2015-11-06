@@ -86,6 +86,7 @@ body { height: 100vh; width: 100vw; }
 
 /* container */
 #container { @include display-flex; @include flex-direction(column); position: relative; @include padding-left(220px); @include box-sizing(border-box); height: 100vh; width: 100vw; max-width: 100%; overflow: auto; }
+
 #container > .topbar,
 #container > #page-header,
 #container > #main,
@@ -106,6 +107,7 @@ body.mobile #container {
 
 @media only screen and (max-width: 992px)
 {
+	#container { max-width: none; }
 	body.ltr #container { width: calc(100% + 220px); @include transform(translate3d(-220px,0,0)); }
 	body.rtl #container { width: calc(100% + 220px); @include transform(translate3d(220px,0,0)); }
 
