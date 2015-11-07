@@ -13,8 +13,8 @@
 #main .release { direction: ltr; }
 
 /* Keep this LTR since the actual release notes are only LTR */
-#main .update .header { display: flex; align-items: center; margin: -24px -24px 24px; padding: 24px; }
-#main .update .header h1 { flex-grow: 1; margin: 0; }
+#main .update .header { @include display-flex; @include align-items(center); margin: -24px -24px 24px; padding: 24px; }
+#main .update .header h1 { @include flex-grow(1); margin: 0; }
 #main .update .header .buttons { margin: 0; }
 
 #main .update .release h2 { margin-bottom: 0; }

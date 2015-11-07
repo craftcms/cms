@@ -242,7 +242,9 @@ class UpdatesService extends BaseApplicationComponent
 			'class' => $plugin->getClassHandle()
 		));
 
-		return (bool) $affectedRows;
+		$success = (bool) $affectedRows;
+
+		return $success;
 	}
 
 	/**
@@ -317,12 +319,12 @@ class UpdatesService extends BaseApplicationComponent
 				$client = new \Guzzle\Http\Client();
 				$client->setUserAgent($userAgent, true);
 
-				$options = [
+				$options = array(
 					'timeout'         => 5,
 					'connect_timeout' => 2,
 					'allow_redirects' => true,
 					'verify'          => false
-				];
+				);
 
 				$request = $client->get($feedUrl, null, $options);
 
@@ -549,7 +551,32 @@ class UpdatesService extends BaseApplicationComponent
 			if (!$manual)
 			{
 				$updateModel = $this->getUpdates();
-				Craft::log('Updating from '.$updateModel->app->localVersion.'.'.$updateModel->app->localBuild.' to '.$updateModel->app->latestVersion.'.'.$updateModel->app->latestBuild.'.', LogLevel::Info, true);
+
+				if ($handle == 'craft')
+				{
+					Craft::log('Updating from '.$updateModel->app->localVersion.'.'.$updateModel->app->localBuild.' to '.$updateModel->app->latestVersion.'.'.$updateModel->app->latestBuild.'.', LogLevel::Info, true);
+				}
+				else
+				{
+					$latestVersion = null;
+					$localVersion = null;
+					$class = null;
+
+					foreach ($updateModel->plugins as $pluginUpdateModel)
+					{
+						if (strtolower($pluginUpdateModel->class) === $handle)
+						{
+							$latestVersion = $pluginUpdateModel->latestVersion;
+							$localVersion = $pluginUpdateModel->localVersion;
+							$class = $pluginUpdateModel->class;
+
+							break;
+						}
+					}
+
+					Craft::log('Updating plugin "'.$class.'" from '.$localVersion.' to '.$latestVersion.'.', LogLevel::Info, true);
+				}
+
 				$result = $updater->getUpdateFileInfo($handle);
 
 			}
