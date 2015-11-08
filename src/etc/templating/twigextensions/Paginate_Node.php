@@ -33,10 +33,6 @@ class Paginate_Node extends \Twig_Node
 			->subcompile($this->getNode('elementsTarget'))
 			->raw(') = \Craft\TemplateHelper::paginateCriteria(')
 			->subcompile($this->getNode('criteria'))
-			->raw(");\n")
-			->subcompile($this->getNode('body'), false)
-			->write('unset($context[\'paginate\'], ')
-			->subcompile($this->getNode('elementsTarget'))
 			->raw(");\n");
 	}
 }

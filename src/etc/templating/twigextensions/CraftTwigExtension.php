@@ -52,6 +52,8 @@ class CraftTwigExtension extends \Twig_Extension
 			new RequireLogin_TokenParser(),
 			new RequirePermission_TokenParser(),
 			new Switch_TokenParser(),
+
+			new DeprecatedTag_TokenParser('endpaginate'),
 		);
 	}
 
