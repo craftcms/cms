@@ -910,8 +910,16 @@ class UsersController extends BaseController
 
 		// Validate and save!
 		// ---------------------------------------------------------------------
+		$imageValidates = true;
+		$userPhoto = UploadedFile::getInstanceByName('userPhoto');
 
-		if (craft()->users->saveUser($user))
+		if ($userPhoto && !ImageHelper::isImageManipulatable($userPhoto->getExtensionName()))
+		{
+			$imageValidates = false;
+			$user->addError('userPhoto', Craft::t("The user photo provided is not an image."));
+		}
+
+		if ($imageValidates && craft()->users->saveUser($user))
 		{
 			// Is this the current user, and did their username just change?
 			if ($isCurrentUser && $user->username !== $oldUsername)
