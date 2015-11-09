@@ -527,6 +527,7 @@ class UsersController extends BaseController
 		// ---------------------------------------------------------------------
 
 		$statusActions = array();
+		$loginActions = array();
 		$sketchyActions = array();
 
 		if (craft()->getEdition() >= Craft::Client && !$variables['isNewAccount'])
@@ -589,6 +590,11 @@ class UsersController extends BaseController
 
 			if (!$variables['account']->isCurrent())
 			{
+				if (craft()->userSession->isAdmin())
+				{
+					$loginActions[] = array('action' => 'users/impersonate', 'label' => Craft::t('Login as {user}', array('user' => $variables['account']->getName())));
+				}
+
 				if (craft()->userSession->checkPermission('administrateUsers') && $variables['account']->getStatus() != UserStatus::Suspended)
 				{
 					$sketchyActions[] = array('action' => 'users/suspendUser', 'label' => Craft::t('Suspend'));
@@ -614,6 +620,11 @@ class UsersController extends BaseController
 		if ($pluginActions)
 		{
 			$variables['actions'] = array_merge($variables['actions'], array_values($pluginActions));
+		}
+
+		if ($loginActions)
+		{
+			array_push($variables['actions'], $loginActions);
 		}
 
 		if ($sketchyActions)

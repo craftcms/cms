@@ -286,6 +286,7 @@ table.inputs .btngroup { display: block; float: none; }
 div.flex { @include display-flex; @include align-items(center); align-content: stretch; }
 div.flex > .label { white-space: nowrap; }
 div.flex > *:not(:last-child) { @include margin-right(7px !important); }
+div.flex > .flex-grow { @include flex-grow(1); }
 
 .buttons { position: relative; margin: 24px 0; min-height: 30px; }
 .buttons:before { @include clearafter; margin-bottom: -5px; }
@@ -732,6 +733,8 @@ $elementThumbPadding: 30 + $elementInnerSpacing;
 	}
 
 	&.loading {
+		@include padding-right($baseElementSidePadding + 24);
+
 		&:after {
 			content: '.';
 			font-size: 0;
@@ -760,8 +763,6 @@ $elementThumbPadding: 30 + $elementInnerSpacing;
 .elements .tableview .move { display: block; position: absolute; top: 9px; @include margin-left(-14px); font-size: 11px; text-decoration: none; }
 .elements .tableview .toggle { display: block; position: absolute; top: 9px; @include margin-left(-20px); }
 .elements .tableview .move + .toggle { @include margin-left(-34px); }
-.elements .tableview td .element:first-child { padding-left: 0; padding-right: 0; }
-.elements .tableview td .element.loading:first-child .label { @include padding-right(26px); }
 
 /* thumbs views */
 .elements .thumbsview { @include margin(-14px, 0, 0, -14px); }
@@ -954,20 +955,34 @@ ul.tree,
 
 /* meta panes */
 .meta { padding: 0; overflow: visible; }
-.meta > .field { @include display-flex; @include justify-content(space-between); @include align-items(center); @include flex-wrap(wrap); margin: 0 !important; padding: 8px 24px; min-height: 30px;
+.meta > .field,
+.meta > .data { @include display-flex; @include justify-content(space-between); @include align-items(center); @include flex-wrap(wrap); margin: 0 !important; padding-top: 8px; padding-bottom: 8px; }
+.meta > .field,
+.meta > .data { padding-left: 24px; padding-right: 24px; }
+.meta > .field { min-height: 30px;
 	@include box-shadow(0 0 2px hsla(205, 100%, 60%, 0), inset 0 0 0 1px hsla(205, 100%, 60%, 0));
 	@include box-shadow-transition(100ms);
 }
 .meta > .field.has-focus { z-index: 1;
 	@include box-shadow(0 0 5px hsl(205, 100%, 60%));
 }
-.meta.pane > .field:first-child { border-top-left-radius: $paneBorderRadius; border-top-right-radius: $paneBorderRadius; }
-.meta.pane > .field:last-child { border-bottom-left-radius: $paneBorderRadius; border-bottom-right-radius: $paneBorderRadius; }
+.meta > .field:first-child { border-top-left-radius: $paneBorderRadius; border-top-right-radius: $paneBorderRadius; }
+.meta > .field:last-child { border-bottom-left-radius: $paneBorderRadius; border-bottom-right-radius: $paneBorderRadius; }
 .meta > .field + .field { border-top: 1px solid $hairlineColor; }
 .meta > .field + .field.has-focus { border-top: none; margin-top: 1px !important; }
-.meta > .field > .heading { margin-bottom: 0; width: 86px; color: $mediumtextcolor; }
+
+.meta > .data:first-child,
+.meta > .data.first { padding-top: 16px; }
+.meta > .data:last-child,
+.meta > .data.last { padding-bottom: 16px; }
+
+.meta > .field > .heading,
+.meta > .data > .heading { margin-bottom: 0; color: $mediumtextcolor; }
+.meta > .field > .heading { width: 86px; }
+.meta > .data > .heading { width: calc(50% - 14px); }
 .meta > .field > .heading > label.required:after { position: absolute; top: 6px; @include left(-13px); @include margin-left(0); }
 .meta > .field > .input { width: calc(100% - 100px); }
+.meta > .data > .value { width: 50%; }
 
 .meta > .field.has-errors { border: 1px solid $errorcolor; padding-left: 23px; padding-right: 23px; }
 .meta > .field.has-errors + .field { border-top: none; }

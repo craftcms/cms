@@ -778,7 +778,7 @@ class FieldsService extends BaseApplicationComponent
 	}
 
 	/**
-	 * Returns a layout's tabs by its ID.
+	 * Returns a layout's fields by its ID.
 	 *
 	 * @param int $layoutId
 	 *
@@ -786,8 +786,23 @@ class FieldsService extends BaseApplicationComponent
 	 */
 	public function getLayoutFieldsById($layoutId)
 	{
-		$results = $this->_createLayoutFieldQuery()
-			->where('layoutId = :layoutId', array(':layoutId' => $layoutId))
+		$results = $this->_createLayoutFieldQuery($layoutId)->queryAll();
+
+		return FieldLayoutFieldModel::populateModels($results);
+	}
+
+	/**
+	 * Returns a layout's fields by its ID, in the layout-defined sort order.
+	 *
+	 * @param int $layoutId
+	 *
+	 * @return array
+	 */
+	public function getOrderedLayoutFieldsById($layoutId)
+	{
+		$results = $this->_createLayoutFieldQuery($layoutId)
+			->join('fieldlayouttabs fieldlayouttabs', 'fieldlayouttabs.id = fieldlayoutfields.tabId')
+			->order('fieldlayouttabs.sortOrder, fieldlayoutfields.sortOrder')
 			->queryAll();
 
 		return FieldLayoutFieldModel::populateModels($results);
@@ -1039,14 +1054,16 @@ class FieldsService extends BaseApplicationComponent
 	/**
 	 * Returns a DbCommand object prepped for retrieving layout fields.
 	 *
+	 * @param int $layoutId
+	 *
 	 * @return DbCommand
 	 */
-	private function _createLayoutFieldQuery()
+	private function _createLayoutFieldQuery($layoutId)
 	{
 		return craft()->db->createCommand()
-			->select('id, layoutId, tabId, fieldId, required, sortOrder')
-			->from('fieldlayoutfields')
-			->order('sortOrder');
+			->select('fieldlayoutfields.id, fieldlayoutfields.layoutId, fieldlayoutfields.tabId, fieldlayoutfields.fieldId, fieldlayoutfields.required, fieldlayoutfields.sortOrder')
+			->from('fieldlayoutfields fieldlayoutfields')
+			->where('fieldlayoutfields.layoutId = :layoutId', array(':layoutId' => $layoutId));
 	}
 
 	/**
