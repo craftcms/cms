@@ -1446,6 +1446,8 @@ body .selectize-dropdown { border: none; }
 /* menu styles */
 body .selectize-dropdown { @include menu-styles; margin-top: 1px; padding: 0; }
 body .selectize-dropdown-content { padding: 3px 14px; }
+body .selectize-dropdown-content > div[data-value="new"]:before { @include icon; content: '+'; margin-right: 5px; }
+body .selectize-dropdown-content > div[data-value="new"]:after { content: '…'; }
 body .selectize-dropdown [data-selectable],
 body .selectize-dropdown .optgroup-header { @include menu-option-styles; }
 body .selectize-dropdown .optgroup-header { @include h6-styles; margin: 0; padding: 4px 0; }
