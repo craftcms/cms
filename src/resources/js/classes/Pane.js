@@ -143,7 +143,8 @@ Craft.Pane = Garnish.Base.extend(
 			this.setMinContentSizeForSidebar();
 
 			this.addListener(Garnish.$win, 'resize', 'updateSidebarStyles');
-			this.addListener(Craft.cp.$container, 'scroll', 'updateSidebarStyles');
+			this.addListener(Garnish.$win, 'scroll', 'updateSidebarStyles');
+
 			this.updateSidebarStyles();
 		}
 	},
@@ -168,7 +169,7 @@ Craft.Pane = Garnish.Base.extend(
 		{
 			this.updateSidebarStyles._styles = {};
 
-			this.updateSidebarStyles._scrollTop = Craft.cp.$container.scrollTop();
+			this.updateSidebarStyles._scrollTop = Garnish.$bod.scrollTop();
 			this.updateSidebarStyles._windowHeight = Garnish.$win.height();
 			this.updateSidebarStyles._paneOffset = this.updateSidebarStyles._scrollTop + this.$pane.offset().top;
 			this.updateSidebarStyles._contentScrollTop = this.$content.offset().top - 24;
@@ -176,7 +177,7 @@ Craft.Pane = Garnish.Base.extend(
 			this.updateSidebarStyles._contentHeight = this.$pane.outerHeight() - (this.updateSidebarStyles._contentOffset - this.updateSidebarStyles._paneOffset);
 
 			// Have we scrolled passed the top of the content div?
-			if (this.updateSidebarStyles._contentScrollTop < 0)
+			if (this.updateSidebarStyles._scrollTop > this.updateSidebarStyles._contentScrollTop)
 			{
 				// Set the top position to the difference
 				this.updateSidebarStyles._styles.position = 'fixed';
