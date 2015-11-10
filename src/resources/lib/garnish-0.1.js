@@ -729,6 +729,28 @@ Garnish = $.extend(Garnish, {
 				$sourceInputs.eq(i).val()
 			);
 		}
+	},
+
+	/**
+	 * Returns whether the "Ctrl" key is pressed (or ⌘ if this is a Mac) for a given keyboard event
+	 *
+	 * @param ev The keyboard event
+	 *
+	 * @return boolean Whether the "Ctrl" key is pressed
+	 */
+	isCtrlKeyPressed: function(ev)
+	{
+		if (window.navigator.platform.match(/Mac/))
+		{
+			// metaKey maps to ⌘ on Macs
+			return ev.metaKey;
+		}
+		else
+		{
+			// Both altKey and ctrlKey == true on some Windows keyboards when the right-hand ALT key is pressed
+			// so just be safe and make sure altKey == false
+			return (ev.ctrlKey && !ev.altKey);
+		}
 	}
 });
 
@@ -3977,7 +3999,7 @@ Garnish.MenuBtn = Garnish.Base.extend({
 
 	onMouseDown: function(ev)
 	{
-		if (ev.which != Garnish.PRIMARY_CLICK || ev.metaKey)
+		if (ev.which != Garnish.PRIMARY_CLICK || Garnish.isCtrlKeyPressed(ev))
 		{
 			return;
 		}
@@ -6059,7 +6081,7 @@ Garnish.Select = Garnish.Base.extend({
 			return;
 		}
 
-		var metaKey = (ev.metaKey || ev.ctrlKey);
+		var ctrlKey = Garnish.isCtrlKeyPressed(ev);
 
 		if (!this.settings.checkboxMode || !this.$focusable.length)
 		{
@@ -6096,7 +6118,7 @@ Garnish.Select = Garnish.Base.extend({
 				}
 				else
 				{
-					if (metaKey)
+					if (ctrlKey)
 					{
 						var $item = this.getFurthestItemToTheLeft(anchor);
 					}
@@ -6127,7 +6149,7 @@ Garnish.Select = Garnish.Base.extend({
 				}
 				else
 				{
-					if (metaKey)
+					if (ctrlKey)
 					{
 						var $item = this.getFurthestItemToTheRight(anchor);
 					}
@@ -6159,7 +6181,7 @@ Garnish.Select = Garnish.Base.extend({
 				}
 				else
 				{
-					if (metaKey)
+					if (ctrlKey)
 					{
 						var $item = this.getFurthestItemAbove(anchor);
 					}
@@ -6196,7 +6218,7 @@ Garnish.Select = Garnish.Base.extend({
 				}
 				else
 				{
-					if (metaKey)
+					if (ctrlKey)
 					{
 						var $item = this.getFurthestItemBelow(anchor);
 					}
@@ -6216,7 +6238,7 @@ Garnish.Select = Garnish.Base.extend({
 
 			case Garnish.SPACE_KEY:
 			{
-				if (!metaKey)
+				if (!ctrlKey)
 				{
 					ev.preventDefault();
 
@@ -6238,7 +6260,7 @@ Garnish.Select = Garnish.Base.extend({
 
 			case Garnish.A_KEY:
 			{
-				if (metaKey)
+				if (ctrlKey)
 				{
 					ev.preventDefault();
 					this.selectAll();
@@ -6297,7 +6319,7 @@ Garnish.Select = Garnish.Base.extend({
 
 	_actAsCheckbox: function(ev)
 	{
-		if (ev.metaKey || ev.ctrlKey)
+		if (Garnish.isCtrlKeyPressed(ev))
 		{
 			return !this.settings.checkboxMode;
 		}

@@ -161,7 +161,7 @@ Craft.CP = Garnish.Base.extend(
 		{
 			this.addListener(Garnish.$doc, 'keydown', function(ev)
 			{
-				if ((ev.metaKey || ev.ctrlKey) && ev.keyCode == Garnish.S_KEY)
+				if (Garnish.isCtrlKeyPressed(ev) && ev.keyCode == Garnish.S_KEY)
 				{
 					ev.preventDefault();
 
