@@ -398,6 +398,13 @@ return array(
 	'sendPoweredByHeader' => true,
 
 	/**
+	 * Whether the embedded Image Color Profile (ICC) should be preserved when manipulating images.
+	 *
+	 * Setting this to true results in a slightly increased filesize and more accurate colors, if a color profile was embedded on image export.
+	 */
+	'preserveImageColorProfiles' => false,
+
+	/**
 	 * The template path segment prefix that should be used to identify "private" templates -- templates that aren't
 	 * directly accessible via a matching URL.
 	 */
