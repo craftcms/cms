@@ -208,9 +208,14 @@ class ResourcesService extends BaseApplicationComponent
 					return $this->_getIconPath($segs[1]);
 				}
 
-				case 'logo':
+				case 'rebrand':
 				{
-					return craft()->path->getStoragePath().implode('/', $segs);
+					if (!in_array($segs[1], array('logo', 'icon')))
+					{
+						return false;
+					}
+
+					return craft()->path->getRebrandPath().$segs[1]."/".$segs[2];
 				}
 
 				case 'transforms':

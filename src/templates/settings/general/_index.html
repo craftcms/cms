@@ -76,12 +76,20 @@
 		{% includeCssResource "css/rebrand.css" %}
 
 		{% set logoInput %}
-			{% include 'settings/general/_logo' %}
+			{% include 'settings/general/_images/logo' %}
+		{% endset %}
+		{% set iconInput %}
+			{% include 'settings/general/_images/icon' %}
 		{% endset %}
 
 		{{ forms.field({
 			label: "Logo"|t
 		}, logoInput) }}
+
+		{{ forms.field({
+			label: "Site icon"|t
+		}, iconInput) }}
+
 
 		<div class="clear"></div>
 	{% endif %}
