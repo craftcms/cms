@@ -1,5 +1,5 @@
 /*!
- * element-resize-detector 1.0.2
+ * element-resize-detector 1.0.3
  * https://github.com/wnr/element-resize-detector
  * Licensed under MIT
  */
@@ -464,7 +464,14 @@ module.exports = function(options) {
         }
 
         options = options || {};
-        var debug = options.debug;
+
+        function debug() {
+            if (options.debug) {
+                var args = Array.prototype.slice.call(arguments);
+                args.unshift(idHandler.get(element), "Scroll: ");
+                reporter.log.apply(null, args);
+            }
+        }
 
         function isStyleResolved() {
             function isPxValue(length) {
@@ -506,15 +513,15 @@ module.exports = function(options) {
                 getState(element).listeners = [];
             }
 
-            debug && reporter.log(idHandler.get(element), "Scroll: Installing scroll elements...");
+            debug("Installing scroll elements...");
 
             storeStartSize();
             initListeners();
 
-            debug && reporter.log(idHandler.get(element), "Scroll: Element start size", getState(element).startSizeStyle);
+            debug("Element start size", getState(element).startSizeStyle);
 
             function storeStyle() {
-                debug && reporter.log(idHandler.get(element), "Scroll: storeStyle invoked.");
+                debug("storeStyle invoked.");
 
                 // Style is to be retrieved in the first level (before mutating the DOM) so that a forced layout is avoided later.
                 var style = getStyle();
@@ -522,7 +529,7 @@ module.exports = function(options) {
             }
 
             function mutateDom() {
-                debug && reporter.log(idHandler.get(element), "Scroll: mutateDom invoked.");
+                debug("mutateDom invoked.");
 
                 var style = getState(element).style;
 
@@ -565,7 +572,7 @@ module.exports = function(options) {
 
                 var scrollbarWidth          = scrollbarSizes.width;
                 var scrollbarHeight         = scrollbarSizes.height;
-                var containerStyle          = getContainerCssText(-1, -1, -scrollbarHeight, -scrollbarWidth);
+                var containerStyle          = getContainerCssText(-(1 + scrollbarWidth), -(1 + scrollbarHeight), -scrollbarHeight, -scrollbarWidth);
                 var shrinkExpandstyle       = getContainerCssText(0, 0, -scrollbarHeight, -scrollbarWidth);
                 var shrinkExpandChildStyle  = "position: absolute; left: 0; top: 0;";
 
@@ -595,11 +602,23 @@ module.exports = function(options) {
                         var width           = parseSize(elementStyle.width);
                         var height          = parseSize(elementStyle.height);
 
+                        debug("Storing current size", width, height);
+
                         // Store the size of the element sync here, so that multiple scroll events may be ignored in the event listeners.
                         // Otherwise the if-check in handleScroll is useless.
                         storeCurrentSize(element, width, height);
 
                         batchProcessor.add(function updateDetectorElements() {
+                            if (options.debug) {
+                                var style = getComputedStyle(element);
+                                var w = parseSize(style.width);
+                                var h = parseSize(style.height);
+
+                                if (w !== width || h !== height) {
+                                    reporter.warn(idHandler.get(element), "Scroll: Size changed before updating detector elements.");
+                                }
+                            }
+
                             updateChildSizes(element, width, height);
                         });
 
@@ -609,13 +628,16 @@ module.exports = function(options) {
                                 listener(element);
                             });
                         });
-                    };
+                    }
+
+                    debug("Scroll detected.");
 
                     var style = getComputedStyle(element);
                     var width = parseSize(style.width);
                     var height = parseSize(style.height);
 
                     if (width !== element.lastWidth || height !== element.lastHeight) {
+                        debug("Element size changed.");
                         changed();
                     }
                 }
@@ -632,7 +654,7 @@ module.exports = function(options) {
             }
 
             function finalizeDomMutation() {
-                debug && reporter.log(idHandler.get(element), "Scroll: finalizeDomMutation invoked.");
+                debug("finalizeDomMutation invoked.");
 
                 var style = getState(element).style;
                 storeCurrentSize(element, style.width, style.height);
@@ -656,24 +678,24 @@ module.exports = function(options) {
             }
         }
 
-        debug && reporter.log(idHandler.get(element), "Scroll: Making detectable...");
+        debug("Making detectable...");
 
         // Only install the strategy if the style has been resolved (this does not always mean that the element is attached).
         if (isStyleResolved()) {
-            debug && reporter.log(idHandler.get(element), "Scroll: Style resolved");
+            debug("Style resolved");
             install();
         } else {
-            debug && reporter.log(idHandler.get(element), "Scroll: Style not resolved");
-            debug && reporter.log(idHandler.get(element), "Scroll: Polling for style resolution...");
+            debug("Style not resolved");
+            debug("Polling for style resolution...");
 
             // Need to perform polling in order to detect when the element has been attached to the DOM.
             var timeout = setInterval(function () {
                 if (isStyleResolved()) {
-                    debug && reporter.log(idHandler.get(element), "Scroll: Poll. Style resolved.");
+                    debug("Poll. Style resolved.");
                     install();
                     clearTimeout(timeout);
                 } else {
-                    debug && reporter.log(idHandler.get(element), "Scroll: Poll. Style not resolved.");
+                    debug("Poll. Style not resolved.");
                 }
             }, 50);
         }
@@ -691,18 +713,34 @@ module.exports = function(options) {
         return getState(element).element.childNodes[1];
     }
 
-    function getExpandSize(size) {
-        return size + 10;
+    function getWidthOffset() {
+        return 2 * scrollbarSizes.width + 1;
     }
 
-    function getShrinkSize(size) {
-        return size * 2;
+    function getHeightOffset() {
+        return 2 * scrollbarSizes.height + 1;
+    }
+
+    function getExpandWidth(width) {
+        return width + 10 + getWidthOffset();
+    }
+
+    function getExpandHeight(height) {
+        return height + 10 + getHeightOffset();
+    }
+
+    function getShrinkWidth(width) {
+        return width * 2 + getWidthOffset();
+    }
+
+    function getShrinkHeight(height) {
+        return height * 2 + getHeightOffset();
     }
 
     function updateChildSizes(element, width, height) {
         var expandChild             = getExpandChildElement(element);
-        var expandWidth             = getExpandSize(width);
-        var expandHeight            = getExpandSize(height);
+        var expandWidth             = getExpandWidth(width);
+        var expandHeight            = getExpandHeight(height);
         expandChild.style.width     = expandWidth + "px";
         expandChild.style.height    = expandHeight + "px";
     }
@@ -715,10 +753,10 @@ module.exports = function(options) {
     function positionScrollbars(element, width, height) {
         var expand          = getExpandElement(element);
         var shrink          = getShrinkElement(element);
-        var expandWidth     = getExpandSize(width);
-        var expandHeight    = getExpandSize(height);
-        var shrinkWidth     = getShrinkSize(width);
-        var shrinkHeight    = getShrinkSize(height);
+        var expandWidth     = getExpandWidth(width);
+        var expandHeight    = getExpandHeight(height);
+        var shrinkWidth     = getShrinkWidth(width);
+        var shrinkHeight    = getShrinkHeight(height);
         expand.scrollLeft   = expandWidth;
         expand.scrollTop    = expandHeight;
         shrink.scrollLeft   = shrinkWidth;
@@ -838,6 +876,7 @@ var scrollStrategyMaker     = require("./detection-strategy/scroll.js");
  * @property {reporter} reporter    A custom reporter that handles reporting logs, warnings and errors.
                                     If not provided, a default id handler will be used.
                                     If set to false, then nothing will be reported.
+ * @property {boolean} debug        If set to true, the the system will report debug messages as default for the listenTo method.
  */
 
 /**
@@ -875,6 +914,7 @@ module.exports = function(options) {
     //Options to be used as default for the listenTo function.
     var globalOptions = {};
     globalOptions.callOnAdd     = !!getOption(options, "callOnAdd", true);
+    globalOptions.debug         = !!getOption(options, "debug", false);
 
     var eventListenerHandler    = listenerHandlerMaker(idHandler);
     var elementUtils            = elementUtilsMaker({
@@ -983,7 +1023,7 @@ module.exports = function(options) {
 
         var callOnAdd = getOption(options, "callOnAdd", globalOptions.callOnAdd);
         var onReadyCallback = getOption(options, "onReady", function noop() {});
-        var debug = getOption(options, "debug", false);
+        var debug = getOption(options, "debug", globalOptions.debug);
 
         forEach(elements, function attachListenerToElement(element) {
             var id = idHandler.get(element);
