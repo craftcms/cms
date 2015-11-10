@@ -234,7 +234,7 @@ Craft.Uploader = Garnish.Base.extend(
 		{
 			var allowedKind = this.allowedKinds[i];
 
-			if (typeof Craft.fileKinds[allowedKinds] !== typeof undefined)
+			if (typeof Craft.fileKinds[allowedKind] !== typeof undefined)
 			{
 				for (var j = 0; j < Craft.fileKinds[allowedKind].extensions.length; j++)
 				{
