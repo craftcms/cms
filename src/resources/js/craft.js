@@ -1,6 +1,3 @@
-// Configure Garnish
-Garnish.$scrollContainer = $('#container');
-
 // Configure Datepicker
 $.datepicker.setDefaults(Craft.datepickerOptions);
 
