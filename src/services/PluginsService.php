@@ -803,7 +803,7 @@ class PluginsService extends BaseApplicationComponent
 
 		if (IOHelper::fileExists($iconPath))
 		{
-			return UrlHelper::getResourceUrl($pluginHandle.'/icon.svg');
+			return UrlHelper::getResourceUrl($lcHandle.'/icon.svg');
 		}
 		else
 		{
