@@ -154,7 +154,7 @@ Craft.LivePreview = Garnish.Base.extend(
 			this.$editor = $('<div class="lp-editor"></div>').appendTo(Garnish.$bod)
 			this.$iframeContainer = $('<div class="lp-iframe-container" />').appendTo(Garnish.$bod);
 			this.$iframe = $('<iframe class="lp-iframe" frameborder="0" />').appendTo(this.$iframeContainer);
-			this.$dragHandle = $('<div class="lp-draghandle"></div>').appendTo(Garnish.$bod);
+			this.$dragHandle = $('<div class="lp-draghandle"></div>').appendTo(this.$editor);
 
 			var $header = $('<header class="header"></header>').appendTo(this.$editor),
 				$closeBtn = $('<div class="btn">'+Craft.t('Done')+'</div>').appendTo($header),
@@ -325,7 +325,6 @@ Craft.LivePreview = Garnish.Base.extend(
 	updateWidths: function()
 	{
 		this.$editor.css('width', this.editorWidthInPx+'px');
-		this.$dragHandle.css(Craft.left, this.editorWidthInPx+'px');
 		this.$iframeContainer.width(this.getIframeWidth());
 	},
 
@@ -451,7 +450,7 @@ Craft.LivePreview = Garnish.Base.extend(
 },
 {
 	defaultEditorWidth: .33,
-	minEditorWidthInPx: 200,
+	minEditorWidthInPx: 320,
 
 	defaults: {
 		trigger: '.livepreviewbtn',

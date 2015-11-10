@@ -378,11 +378,10 @@ $fldGuideColor: #f4f3fb;
 .lp-editor header .btn { @include floatright; }
 .lp-editor header h1 { margin: 0; font-size: 25px; line-height: 30px; color: #333; }
 .lp-editor > .field:last-child { margin-bottom: 24px !important; }
+.lp-editor > .lp-draghandle { position: absolute; z-index: 100; top: 0; @include right(0); width: 4px; height: 100%; cursor: col-resize; background: $textcolor; }
 
 .lp-iframe-container { z-index: 2; }
 .lp-iframe { width: 100%; height: 100%; }
-
-.lp-draghandle { position: absolute; z-index: 3; top: 0; margin-left: -3px; width: 6px; height: 100%; cursor: col-resize; }
 
 
 /* Sidebar */
