@@ -2,10 +2,16 @@
 
 	function refreshImage($target, response) {
 		if (typeof response.html != "undefined") {
+			// Destroy the old ImageUpload object
+			$target.parent().data('imageUpload').destroy();
+			$target.parent().data('imageUpload', null);
+
+			// Update the input HTML
 			$target.replaceWith(response.html);
+
+			// Initialize a new ImageUpload object
 			initImageUpload();
 		}
-
 	};
 
 	function initImageUpload()
@@ -14,11 +20,9 @@
 
 		for (var i = 0; i < $images.length; i++)
 		{
-			var $element = $($images.get(i)),
+			var $element = $images.eq(i),
 				imageType = $element.data('type'),
 				$htmlTarget = $element.find('.cp-image-wrapper');
-
-				$element.data('imageUpload', null);
 
 			var settings = {
 				modalClass: "cp-image-modal",
@@ -53,9 +57,7 @@
 			settings.postParameters = {type: imageType};
 
 			$element.data('imageUpload', new Craft.ImageUpload(settings));
-
 		}
-
 	}
 
 	initImageUpload();

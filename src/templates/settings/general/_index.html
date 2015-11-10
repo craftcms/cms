@@ -75,21 +75,13 @@
 		{% includeCssResource "lib/imgareaselect/imgareaselect-animated.css" %}
 		{% includeCssResource "css/rebrand.css" %}
 
-		{% set logoInput %}
-			{% include 'settings/general/_images/logo' %}
-		{% endset %}
-		{% set iconInput %}
-			{% include 'settings/general/_images/icon' %}
-		{% endset %}
+		{{ forms.field({
+			label: "Login Page Logo"|t
+		}, include('settings/general/_images/logo')) }}
 
 		{{ forms.field({
-			label: "Logo"|t
-		}, logoInput) }}
-
-		{{ forms.field({
-			label: "Site icon"|t
-		}, iconInput) }}
-
+			label: "Site Icon"|t
+		}, include('settings/general/_images/icon')) }}
 
 		<div class="clear"></div>
 	{% endif %}

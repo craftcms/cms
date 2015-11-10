@@ -32,6 +32,14 @@ Craft.ImageUpload = Garnish.Base.extend(
 	{
 		this.setSettings(settings, Craft.ImageUpload.defaults);
 		this._imageHandler = new Craft.ImageHandler(settings);
+	},
+
+	destroy: function()
+	{
+		this._imageHandler.destroy();
+		delete this._imageHandler;
+
+		this.base();
 	}
 },
 {
@@ -84,10 +92,8 @@ Craft.ImageHandler = Garnish.Base.extend(
 	{
 		this.setSettings(settings);
 
-		var _this = this;
-
 		var element = settings.uploadButton;
-		var $uploadInput = $('<input type="file" name="image-upload" id="image-upload" />').hide().insertBefore(element);
+		var $uploadInput = $('<input type="file" name="image-upload"/>').hide().insertBefore(element);
 
 		this.progressBar = new Craft.ProgressBar($('<div class="progress-shade"></div>').insertBefore(element));
 		this.progressBar.$progressBar.css({
@@ -143,7 +149,7 @@ Craft.ImageHandler = Garnish.Base.extend(
 								cropAction:     settings.cropAction
 							});
 
-							this.modal.imageHandler = _this;
+							this.modal.imageHandler = this;
 						}
 						else
 						{
@@ -181,25 +187,26 @@ Craft.ImageHandler = Garnish.Base.extend(
 		this.uploader = new Craft.Uploader(element, options);
 
 
-		$(settings.deleteButton).click(function()
+		this.addListener($(settings.deleteButton), 'click', function(ev)
 		{
 			if (confirm(settings.deleteMessage))
 			{
-				$(this).parent().append('<div class="blocking-modal"></div>');
+				$(ev.currentTarget).parent().append('<div class="blocking-modal"></div>');
 				Craft.postActionRequest(settings.deleteAction, settings.postParameters, $.proxy(function(response, textStatus)
 				{
 					if (textStatus == 'success')
 					{
-						_this.onImageDelete.apply(_this, [response]);
+						this.onImageDelete(response);
 					}
 
 				}, this));
 
 			}
 		});
-		$(settings.uploadButton).on('click', function(event)
+
+		this.addListener($(settings.uploadButton), 'click', function(ev)
 		{
-			$(this).siblings('input[type=file]').click();
+			$(ev.currentTarget).siblings('input[type=file]').click();
 		});
 
 	},
@@ -212,6 +219,26 @@ Craft.ImageHandler = Garnish.Base.extend(
 	onImageDelete: function(data)
 	{
 		this.settings.onImageDelete.apply(this, [data]);
+	},
+
+	destroy: function()
+	{
+		this.progressBar.destroy();
+		delete this.progressBar;
+
+		if (this.modal)
+		{
+			this.modal.destroy();
+			delete this.modal;
+		}
+
+		if (this.uploader)
+		{
+			this.uploader.destroy();
+			delete this.uploader;
+		}
+
+		this.base();
 	}
 });
 
