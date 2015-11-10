@@ -195,7 +195,7 @@ class Et
 					'allow_redirects' => $this->getAllowRedirects(),
 				);
 
-				$request = $client->post($this->_endpoint, $options);
+				$request = $client->post($this->_endpoint, null, null, $options);
 				$request->setBody($data, 'application/json');
 
 				// Potentially long-running request, so close session to prevent session blocking on subsequent requests.
