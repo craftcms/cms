@@ -1459,9 +1459,12 @@ body .selectize-dropdown .active { @include menu-option-active-styles; }
 .ui-datepicker-prev { @include floatleft; }
 .ui-datepicker-next { @include floatright; }
 .ui-datepicker-title { text-align: center; }
-.ui-datepicker-calendar thead { display: none; }
+.ui-datepicker-calendar th,
 .ui-datepicker-calendar td { padding: 2px; }
-.ui-datepicker-calendar td a { display: block; border-radius: 2px; width: 26px; line-height: 26px; text-align: center; color: #808080; }
+.ui-datepicker-calendar th span,
+.ui-datepicker-calendar td a { display: block; width: 26px; line-height: 26px; text-align: center; color: $textcolor; }
+.ui-datepicker-calendar th span { color: $mediumtextcolor; font-weight: normal; }
+.ui-datepicker-calendar td a { border-radius: 2px; }
 .ui-datepicker-calendar td a:hover { background: $lightselcolor; text-decoration: none; }
 .ui-datepicker-calendar td a.ui-state-active { background: $darkselcolor; color: #fff; cursor: default; }
 .ui-datepicker-calendar td.ui-datepicker-today a { border-radius: 13px;
