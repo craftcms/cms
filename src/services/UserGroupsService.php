@@ -128,25 +128,46 @@ class UserGroupsService extends BaseApplicationComponent
 	 */
 	public function assignUserToGroups($userId, $groupIds = null)
 	{
-		craft()->db->createCommand()
-			->delete('usergroups_users', array('userId' => $userId));
-
-		if ($groupIds)
+		// Make sure $groupIds is an array
+		if (!is_array($groupIds))
 		{
-			if (!is_array($groupIds))
-			{
-				$groupIds = array($groupIds);
-			}
-
-			foreach ($groupIds as $groupId)
-			{
-				$values[] = array($groupId, $userId);
-			}
-
-			craft()->db->createCommand()->insertAll('usergroups_users', array('groupId', 'userId'), $values);
+			$groupIds = $groupIds ? array($groupIds) : array();
 		}
 
-		return true;
+		// Fire an 'onBeforeAssignUserToGroups' event
+		$event = new Event($this, array(
+			'userId'   => $userId,
+			'groupIds' => $groupIds
+		));
+
+		$this->onBeforeAssignUserToGroups($event);
+
+		if ($event->performAction)
+		{
+			// Delete their existing groups
+			craft()->db->createCommand()->delete('usergroups_users', array('userId' => $userId));
+
+			if ($groupIds)
+			{
+				// Add the new ones
+				foreach ($groupIds as $groupId)
+				{
+					$values[] = array($groupId, $userId);
+				}
+
+				craft()->db->createCommand()->insertAll('usergroups_users', array('groupId', 'userId'), $values);
+			}
+
+			// Fire an 'onAssignUserToGroups' event
+			$this->onAssignUserToGroups(new Event($this, array(
+				'userId'   => $userId,
+				'groupIds' => $groupIds
+			)));
+
+			return true;
+		}
+
+		return false;
 	}
 
 	/**
@@ -208,6 +229,30 @@ class UserGroupsService extends BaseApplicationComponent
 
 	// Events
 	// -------------------------------------------------------------------------
+
+	/**
+	 * Fires an 'onBeforeAssignUserToGroups' event.
+	 *
+	 * @param Event $event
+	 *
+	 * @return null
+	 */
+	public function onBeforeAssignUserToGroups(Event $event)
+	{
+		$this->raiseEvent('onBeforeAssignUserToGroups', $event);
+	}
+
+	/**
+	 * Fires an 'onAssignUserToGroups' event.
+	 *
+	 * @param Event $event
+	 *
+	 * @return null
+	 */
+	public function onAssignUserToGroups(Event $event)
+	{
+		$this->raiseEvent('onAssignUserToGroups', $event);
+	}
 
 	/**
 	 * Fires an 'onBeforeAssignUserToDefaultGroup' event.
