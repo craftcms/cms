@@ -192,6 +192,21 @@ return array(
 	'defaultTokenDuration' => 'P1D',
 
 	/**
+	 * The default day that new users should have set as their “Week Start Day”.
+	 *
+	 * This should be set to an integer from `0` to `6` where:
+	 *
+	 * - `0` represents Sunday
+	 * - `1` represents Monday
+	 * - `2` represents Tuesday
+	 * - `3` represents Wednesday
+	 * - `4` represents Thursday
+	 * - `5` represents Friday
+	 * - `6` represents Saturday
+	 */
+	'defaultWeekStartDay' => 0,
+
+	/**
 	 * Determines whether the system is in Dev Mode or not.
 	 */
 	'devMode' => false,

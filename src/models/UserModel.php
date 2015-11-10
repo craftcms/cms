@@ -468,7 +468,7 @@ class UserModel extends BaseElementModel
 			'email'                      => array(AttributeType::Email, 'required' => !$requireUsername),
 			'password'                   => AttributeType::String,
 			'preferredLocale'            => AttributeType::Locale,
-			'weekStartDay'               => array(AttributeType::Number, 'default' => 0),
+			'weekStartDay'               => array(AttributeType::Number, 'default' => craft()->config->get('defaultWeekStartDay')),
 			'admin'                      => AttributeType::Bool,
 			'client'                     => AttributeType::Bool,
 			'locked'                     => AttributeType::Bool,
