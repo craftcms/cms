@@ -142,6 +142,9 @@ Craft.Grid = Garnish.Base.extend(
 
 		this.totalCols = this.refreshCols._.totalCols;
 
+		// Temporarily stop listening to container resizes
+		this.removeListener(this.$container, 'resize');
+
 		if (this.settings.fillMode == 'grid')
 		{
 			this.refreshCols._.itemIndex = 0;
@@ -412,6 +415,9 @@ Craft.Grid = Garnish.Base.extend(
 		this.onRefreshCols();
 
 		delete this.refreshCols._;
+
+		// Resume container resize listening
+		this.addListener(this.$container, 'resize', this.handleContainerHeightProxy);
 	},
 
 	getItemWidth: function(colspan)
@@ -490,9 +496,7 @@ Craft.Grid = Garnish.Base.extend(
 		}
 
 		// Set the container height
-		this.removeListener(this.$container, 'resize');
 		this.$container.height(Math.max.apply(null, this.positionItems._.colHeights));
-		this.addListener(this.$container, 'resize', this.handleContainerHeightProxy);
 
 		delete this.positionItems._;
 	},
