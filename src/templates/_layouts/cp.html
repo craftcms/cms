@@ -122,10 +122,10 @@
 
 			<a class="site-name" href="{{ siteUrl }}" title="{{ 'Site Homepage'|t }}" target="_blank">
 
-				{% if false and CraftEdition >= CraftClient %}
-					{% if craft.rebrand.isLogoUploaded %}
+				{% if CraftEdition >= CraftClient %}
+					{% if craft.rebrand.isIconUploaded %}
 						<div id="site-icon" class="photo-container">
-							<img src="{{ craft.rebrand.logo.url }}" alt="">
+							<img src="{{ craft.rebrand.icon.url }}" alt="">
 						</div>
 					{% endif %}
 				{% endif %}
