@@ -1,11 +1,10 @@
 // Configure Garnish
 Garnish.$scrollContainer = $('#container');
 
-if (typeof Craft == 'undefined')
-{
-	Craft = {};
-}
+// Configure Datepicker
+$.datepicker.setDefaults(Craft.datepickerOptions);
 
+// Set all the standard Craft.* stuff
 $.extend(Craft,
 {
 	navHeight: 48,
@@ -56,7 +55,7 @@ $.extend(Craft,
 			date = new Date(date);
 		}
 
-		return $.datepicker.formatDate(Craft.datepickerFormat, date);
+		return $.datepicker.formatDate(Craft.datepickerOptions.dateFormat, date);
 	},
 
 	/**

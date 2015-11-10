@@ -5,6 +5,8 @@
 	{% set bodyClass = (bodyClass is defined and bodyClass ? bodyClass~' ' : '') ~ 'mobile' %}
 {% endif %}
 
+{% set localeData = craft.i18n.getLocaleData() %}
+
 {# Figure out which Datepicker i18n script to load #}
 {%- switch craft.locale %}
 	{%- case 'en_gb' %}
@@ -12,7 +14,7 @@
 	{%- case 'fr_ca' %}
 		{%- set datepickerLocale = 'fr-CA' %}
 	{%- default %}
-		{%- set language = craft.i18n.getLocaleData().getLanguageID(craft.locale) %}
+		{%- set language = localeData.getLanguageID(craft.locale) %}
 		{%- if language in ['ar', 'de', 'fr', 'it', 'ja', 'nb', 'nl', 'nn', 'no'] %}
 			{%- set datepickerLocale = language %}
 		{%- endif %}
@@ -41,7 +43,7 @@
 
 {%- includeTranslations "Show", "Hide" %}
 
-{% set orientation = craft.i18n.getLocaleData().getOrientation() %}
+{% set orientation = localeData.getOrientation() %}
 
 {% block foot %}
 	<noscript>
@@ -71,7 +73,6 @@
 			orientation:           "{{ orientation|e('js') }}",
 			left:                  "{{ orientation == 'ltr' ? 'left' : 'right' }}",
 			right:                 "{{ orientation == 'ltr' ? 'right' : 'left' }}",
-			datepickerFormat:      "{{ craft.i18n.getDatepickerJsFormat()|e('js') }}",
 			username:              {{ currentUser is defined and currentUser ? ('"'~currentUser.username|e('js')~'"')|raw : 'null' }},
 			authTimeout:           {{ craft.request.getFirstSegment() not in ['updates', 'manualupdate'] ? craft.session.getAuthTimeout() : 0 }},
 			Personal:              {{ CraftPersonal }},
@@ -90,6 +91,18 @@
 			slugWordSeparator:     "{{ craft.config.slugWordSeparator|e('js') }}",
 			limitAutoSlugsToAscii: {{ craft.config.limitAutoSlugsToAscii ? 'true' : 'false' }},
 			fileKinds:             {{ craft.app.getFileKinds()|json_encode|raw }},
+			datepickerOptions: {
+				constrainInput: false,
+				dateFormat: "{{ craft.i18n.getDatepickerJsFormat()|e('js') }}",
+				prevText: '{{ "Prev"|t|e('js') }}',
+				nextText: '{{ "Next"|t|e('js') }}',
+				firstDay: {{ currentUser.weekStartDay }},
+				dayNames: {{ localeData.getWeekDayNames('wide', true)|json_encode|raw }},
+				dayNamesShort: {{ localeData.getWeekDayNames('abbreviated', true)|json_encode|raw }},
+				dayNamesMin: {{ localeData.getWeekDayNames('narrow', true)|json_encode|raw }},
+				monthNames: {{ localeData.getMonthNames('wide', true)|values|json_encode|raw }},
+				monthNamesShort: {{ localeData.getMonthNames('abbreviated', true)|values|json_encode|raw }}
+			},
 			publishableSections: [
 				{% if isInstalled and currentUser is defined and currentUser %}
 					{% for section in craft.sections.getEditableSections() %}

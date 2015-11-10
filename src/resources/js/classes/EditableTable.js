@@ -268,7 +268,7 @@ Craft.EditableTable.Row = Garnish.Base.extend(
 	{
 		var keyCode = ev.keyCode ? ev.keyCode : ev.charCode;
 
-		if (!ev.metaKey && !ev.ctrlKey && (
+		if (!Garnish.isCtrlKeyPressed(ev) (
 			(keyCode == Garnish.RETURN_KEY) ||
 			(ev.data.type == 'number' && !Craft.inArray(keyCode, Craft.EditableTable.Row.numericKeyCodes))
 		))
