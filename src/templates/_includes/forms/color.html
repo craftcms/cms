@@ -9,6 +9,6 @@
 	{%- if autofocus is defined and autofocus and not craft.request.isMobileBrowser(true) %} autofocus{% endif %}
 	{%- if disabled is defined and disabled %} disabled {% endif %}>
 
-{%- includeJsResource "lib/colorpicker/js/colorpicker.js" -%}
-{%- includeCssResource "lib/colorpicker/css/colorpicker.css" -%}
-{%- includeJs 'new Craft.ColorPicker("'~(id|namespaceInputId)~'");' %}
+{%- includejsresource "lib/colorpicker/js/colorpicker.js" -%}
+{%- includecssresource "lib/colorpicker/css/colorpicker.css" -%}
+{%- includejs 'new Craft.ColorPicker("'~(id|namespaceInputId)~'");' %}
