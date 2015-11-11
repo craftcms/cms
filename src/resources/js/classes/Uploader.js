@@ -39,7 +39,7 @@ Craft.Uploader = Garnish.Base.extend(
 
 		settings.autoUpload = false;
 
-		this.uploader = $element.fileupload(settings);
+		this.uploader = this.$element.fileupload(settings);
 		for (var event in events)
 		{
 			this.uploader.on(event, events[event]);
@@ -243,6 +243,12 @@ Craft.Uploader = Garnish.Base.extend(
 				}
 			}
 		}
+	},
+
+	destroy: function ()
+	{
+		this.$element.fileupload('destroy');
+		this.base();
 	}
 },
 
