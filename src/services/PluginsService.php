@@ -129,8 +129,8 @@ class PluginsService extends BaseApplicationComponent
 						$plugin->isInstalled = true;
 						$plugin->isEnabled = true;
 
-						// Has the plugin's version number changed, but not its schema version?
-						if ($this->hasPluginVersionNumberChanged($plugin) && !$this->doesPluginRequireDatabaseUpdate($plugin))
+						// If we're not updating, check if the plugin's version number changed, but not its schema version.
+						if (!craft()->isInMaintenanceMode() && $this->hasPluginVersionNumberChanged($plugin) && !$this->doesPluginRequireDatabaseUpdate($plugin))
 						{
 							// Update our record of the plugin's version number
 							craft()->db->createCommand()->update(
