@@ -57,7 +57,7 @@ class DeprecatedTag_TokenParser extends \Twig_TokenParser
 		$stream->expect(\Twig_Token::BLOCK_END_TYPE);
 
 		$filename = $stream->getFilename();
-		craft()->deprecator->log("{% {$this->_tag} %}", "The {% {$this->_tag} %} tag is no longer necessary. You can remove it from your ‘{$filename}’ template on line {$lineno}");
+		craft()->deprecator->log("{% {$this->_tag} %}", "The {% {$this->_tag} %} tag is no longer necessary. You can remove it from your ‘{$filename}’ template on line {$lineno}.");
 
 		return new \Twig_Node(array(), array(), $lineno, $this->_tag);
 	}
