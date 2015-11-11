@@ -24,7 +24,7 @@ Craft.UpgradeModal = Garnish.Modal.extend(
 	$ccCvcInput: null,
 	submittingPurchase: false,
 
-	stripePublicKey
+	stripePublicKey: null,
 	editions: null,
 	edition: null,
 
