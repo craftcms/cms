@@ -23,23 +23,23 @@
 {# Load scripts in reverse order #}
 
 {%- if datepickerLocale is defined %}
-	{%- includeJsResource 'lib/datepicker-i18n/datepicker-'~datepickerLocale~'.js' first %}
+	{%- includejsresource 'lib/datepicker-i18n/datepicker-'~datepickerLocale~'.js' first %}
 {%- endif %}
 
 {%- set useCompressedJs = craft.config.useCompressedJs %}
-{%- includeJsResource "js/cp.js" first -%}
-{%- includeJsResource "js/craft.js" first -%}
-{%- includeJsResource 'lib/garnish-0.1'~(useCompressedJs ? '.min')~'.js' first %}
-{%- includeJsResource 'lib/element-resize-detector'~(useCompressedJs ? '.min')~'.js' first %}
-{%- includeJsResource 'lib/picturefill'~(useCompressedJs ? '.min')~'.js' first %}
-{%- includeJsResource 'lib/fileupload/jquery.fileupload.js' first %}
-{%- includeJsResource 'lib/fileupload/jquery.ui.widget.js' first %}
-{%- includeJsResource 'lib/selectize/selectize'~(useCompressedJs ? '.min')~'.js' first %}
-{%- includeCssResource 'lib/selectize/selectize.css' %}
-{%- includeJsResource 'lib/velocity'~(useCompressedJs ? '.min')~'.js' first %}
-{%- includeJsResource 'lib/jquery-ui'~(useCompressedJs ? '.min')~'.js' first %}
-{%- includeJsResource 'lib/jquery-2.1.4'~(useCompressedJs ? '.min')~'.js' first %}
-{%- includeJsResource 'lib/xregexp-all'~(useCompressedJs ? '-min')~'.js' first %}
+{%- includejsresource "js/cp.js" first -%}
+{%- includejsresource "js/craft.js" first -%}
+{%- includejsresource 'lib/garnish-0.1'~(useCompressedJs ? '.min')~'.js' first %}
+{%- includejsresource 'lib/element-resize-detector'~(useCompressedJs ? '.min')~'.js' first %}
+{%- includejsresource 'lib/picturefill'~(useCompressedJs ? '.min')~'.js' first %}
+{%- includejsresource 'lib/fileupload/jquery.fileupload.js' first %}
+{%- includejsresource 'lib/fileupload/jquery.ui.widget.js' first %}
+{%- includejsresource 'lib/selectize/selectize'~(useCompressedJs ? '.min')~'.js' first %}
+{%- includecssresource 'lib/selectize/selectize.css' %}
+{%- includejsresource 'lib/velocity'~(useCompressedJs ? '.min')~'.js' first %}
+{%- includejsresource 'lib/jquery-ui'~(useCompressedJs ? '.min')~'.js' first %}
+{%- includejsresource 'lib/jquery-2.1.4'~(useCompressedJs ? '.min')~'.js' first %}
+{%- includejsresource 'lib/xregexp-all'~(useCompressedJs ? '-min')~'.js' first %}
 
 {%- includeTranslations "Show", "Hide" %}
 
