@@ -756,7 +756,10 @@ class AssetTransformsService extends BaseApplicationComponent
 		}
 		else
 		{
-			IOHelper::copyFile($localCopy, $destination);
+			if ($localCopy != $destination)
+			{
+				IOHelper::copyFile($localCopy, $destination);
+			}
 		}
 	}
 
