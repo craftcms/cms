@@ -343,7 +343,7 @@
 				<li>@@@appName@@@ {{ craft.app.getEditionName()}} {{ craft.app.getVersion() }}.{{ craft.app.getBuild() }}</li>
 				<li>{{ "Released on"|t }} {{ craft.app.releaseDate.localeDate }}</li>
 				{% if currentUser.can('performUpdates') %}
-					<li><a id="footer-updates" href="{{ url('updates') }}">{{ craft.app.isUpdateInfoCached() and totalUpdates ? updateText : "Check for updates"|t }}</a></li>
+					<li><a id="footer-updates" href="{{ url('updates') }}">{{ craft.app.isUpdateInfoCached() and totalUpdates is defined and totalUpdates ? updateText : "Check for updates"|t }}</a></li>
 				{% endif %}
 				<li>{{ "Copyright"|t }} {{ now.year}} Pixel &amp; Tonic, Inc. {{ "All rights reserved."|t }}</li>
 			</ul>
