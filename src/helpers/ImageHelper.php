@@ -44,11 +44,11 @@ class ImageHelper
 
 		if (empty($targetHeight))
 		{
-			$targetHeight = round($targetWidth / $factor);
+			$targetHeight = ceil($targetWidth / $factor);
 		}
 		else if (empty($targetWidth))
 		{
-			$targetWidth = round($targetHeight * $factor);
+			$targetWidth = ceil($targetHeight * $factor);
 		}
 
 		return array($targetWidth, $targetHeight);
