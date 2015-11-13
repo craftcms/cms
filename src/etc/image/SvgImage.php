@@ -253,8 +253,8 @@ class SvgImage extends BaseImage
 	 * @param string  $targetPath
 	 * @param boolean $autoQuality
 	 *
-	 * @throws \Imagine\Exception\RuntimeException
 	 * @return null
+	 * @throws Exception
 	 */
 	public function saveAs($targetPath, $autoQuality = false)
 	{
