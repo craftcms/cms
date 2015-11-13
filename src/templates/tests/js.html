@@ -1,8 +1,8 @@
 {% extends "_layouts/basecp" %}
 {% set title = "Tests" %}
-{% includeCssResource "lib/qunit/qunit-1.18.0.css" %}
-{% includeJsResource "lib/qunit/qunit-1.18.0.js" %}
-{% includeJsResource "js/tests.js" %}
+{% includecssresource "lib/qunit/qunit-1.20.0.css" %}
+{% includejsresource "lib/qunit/qunit-1.20.0.js" %}
+{% includejsresource "js/tests.js" %}
 
 {% block body %}
 	<div id="body">
@@ -11,4 +11,4 @@
 	</div>
 {% endblock %}
 
-{% includeCss "#body { max-width: 800px; margin: 50px auto; }" %}
+{% includecss "#body { max-width: 800px; margin: 50px auto; }" %}

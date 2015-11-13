@@ -29,7 +29,7 @@ class Craft extends \Yii
 	// =========================================================================
 
 	/**
-	 * Determines if Craft is installed by checking if the info table exists.
+	 * Determines if Craft is installed by checking if the info table exists in the database.
 	 *
 	 * @deprecated Deprecated in 1.3. Use {@link AppBehavior::isInstalled() `craft()->isInstalled()`} instead.
 	 * @return bool
@@ -177,7 +177,7 @@ class Craft extends \Yii
 	}
 
 	/**
-	 * Returns whether the system is in maintenance mode.
+	 * Returns whether the system is in maintenance mode or not.
 	 *
 	 * @deprecated Deprecated in 1.3. Use {@link AppBehavior::isInMaintenanceMode() `craft()->isInMaintenanceMode()`} instead.
 	 * @return bool
@@ -228,7 +228,7 @@ class Craft extends \Yii
 	}
 
 	/**
-	 * Updates the info row.
+	 * Updates the info row with new information.
 	 *
 	 * @param InfoModel $info The InfoModel that you want to save.
 	 *
@@ -405,7 +405,7 @@ class Craft extends \Yii
 	 */
 	public static function log($msg, $level = LogLevel::Info, $force = false, $category = 'application', $plugin = null)
 	{
-		if ((YII_DEBUG && YII_TRACE_LEVEL > 0 && $level !== LogLevel::Profile) || $force)
+		if (YII_DEBUG && YII_TRACE_LEVEL > 0 && $level !== LogLevel::Profile)
 		{
 			$traces = debug_backtrace();
 			$count = 0;

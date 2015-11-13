@@ -202,6 +202,20 @@ Craft.ElementEditor = Garnish.Base.extend(
 
 		this.$fieldsContainer.html(response.html);
 
+		// Swap any instruction text with info icons
+		var $instructions = this.$fieldsContainer.find('> .meta > .field > .heading > .instructions');
+
+		for (var i = 0; i < $instructions.length; i++)
+		{
+
+			$instructions.eq(i)
+				.replaceWith($('<span/>', {
+					'class': 'info',
+					'html': $instructions.eq(i).children().html()
+				}))
+				.infoicon();
+		}
+
 		Garnish.requestAnimationFrame($.proxy(function()
 		{
 			Craft.appendHeadHtml(response.headHtml);

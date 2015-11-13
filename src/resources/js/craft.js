@@ -1,8 +1,7 @@
-if (typeof Craft == 'undefined')
-{
-	Craft = {};
-}
+// Configure Datepicker
+$.datepicker.setDefaults(Craft.datepickerOptions);
 
+// Set all the standard Craft.* stuff
 $.extend(Craft,
 {
 	navHeight: 48,
@@ -44,6 +43,16 @@ $.extend(Craft,
 		}
 
 		return message;
+	},
+
+	formatDate: function(date)
+	{
+		if (typeof date != 'object')
+		{
+			date = new Date(date);
+		}
+
+		return $.datepicker.formatDate(Craft.datepickerOptions.dateFormat, date);
 	},
 
 	/**
@@ -1277,6 +1286,7 @@ $.extend($.fn,
 
 			if ($container.data('item-selector')) settings.itemSelector = $container.data('item-selector');
 			if ($container.data('cols'))          settings.cols = parseInt($container.data('cols'));
+			if ($container.data('max-cols'))      settings.maxCols = parseInt($container.data('max-cols'));
 			if ($container.data('min-col-width')) settings.minColWidth = parseInt($container.data('min-col-width'));
 			if ($container.data('mode'))          settings.mode = $container.data('mode');
 			if ($container.data('fill-mode'))     settings.fillMode = $container.data('fill-mode');
@@ -1408,7 +1418,7 @@ $.extend($.fn,
 			// Is this a menu item?
 			if ($btn.data('menu'))
 			{
-				var $form = $btn.data('menu').$trigger.closest('form');
+				var $form = $btn.data('menu').$anchor.closest('form');
 			}
 			else
 			{
@@ -1451,7 +1461,11 @@ $.extend($.fn,
 
 			if (!$btn.data('menubtn') && $btn.next().hasClass('menu'))
 			{
-				new Garnish.MenuBtn($btn);
+				var settings = {};
+
+				if ($btn.data('menu-anchor')) settings.menuAnchor = $btn.data('menu-anchor');
+
+				new Garnish.MenuBtn($btn, settings);
 			}
 		});
 	}

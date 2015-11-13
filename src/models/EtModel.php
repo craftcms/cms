@@ -88,6 +88,9 @@ class EtModel extends BaseModel
 		// Any additional server info to include.
 		$attributes['serverInfo'] = AttributeType::Mixed;
 
+		// The context of the request. Either 'craft' or a plugin handle.
+		$attributes['handle'] = array(AttributeType::String, 'default' => 'craft', 'required' => true);
+
 		return $attributes;
 	}
 }

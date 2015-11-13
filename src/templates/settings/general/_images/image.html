@@ -1,0 +1,19 @@
+{% requireEdition CraftClient %}
+
+<div class="cp-image" data-type="{{ imageType }}">
+	<div class="cp-current-image"
+		{% if craft.rebrand.isImageUploaded(imageType) -%}
+			{% set image = craft.rebrand.getImageVariable(imageType) %}
+			 style="background-image: url('{{ image.url }}'); width: {{ image.width }}px; height: {{ image.height }}px;"
+		{%- endif %}>
+	</div>
+
+	<div class="cp-image-controls">
+		{% if craft.rebrand.isImageUploaded(imageType) %}
+			<div class="btn upload">{{ "Change " ~ imageTypeDefinite |t }}</div>
+			<div class="btn delete">{{ "Delete " ~ imageTypeDefinite |t }}</div>
+		{% else %}
+			<div class="btn upload">{{ "Upload " ~ imageTypeIndefinite |t }}</div>
+		{% endif %}
+	</div>
+</div>

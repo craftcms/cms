@@ -16,7 +16,7 @@ var EmailSettingsForm = Garnish.Base.extend(
 
 	init: function()
 	{
-		this.$form = $('#settings-form');
+		this.$form = $('#container');
 		this.$protocolField = $('#protocol-field');
 		this.$protocolSelect = $('#protocol');
 		this.$hiddenFields = $('#hidden-fields');

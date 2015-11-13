@@ -14,194 +14,217 @@
  */
 Craft.Dashboard = Garnish.Base.extend(
 {
-	$grid: null,
-	$widgetManagerBtn: null,
+    $grid: null,
+    $widgetManagerBtn: null,
 
-	widgets: null,
-	widgetManager: null,
-	widgetAdminTable: null,
-	widgetSettingsModal: null,
+    widgetTypes: null,
+    grid: null,
+    widgets: null,
+    widgetManager: null,
+    widgetAdminTable: null,
+    widgetSettingsModal: null,
 
-	init: function()
-	{
-		this.widgets = {};
+    init: function(widgetTypes)
+    {
+        this.widgetTypes = widgetTypes;
+        this.widgets = {};
 
-		this.$widgetManagerBtn = $('#widgetManagerBtn');
+        this.$widgetManagerBtn = $('#widgetManagerBtn');
 
-		this.addListener(this.$newWidgetMenuItems, 'click', 'newWidget');
-		this.addListener(this.$widgetManagerBtn, 'click', 'showWidgetManager');
+        this.addListener(this.$widgetManagerBtn, 'click', 'showWidgetManager');
 
-		Garnish.$doc.ready($.proxy(function() {
-			this.$grid = $('#main > .grid');
-			$('#newwidgetmenubtn').data('menubtn').menu.on('optionselect', $.proxy(this, 'handleNewWidgetOptionSelect'));
-		}, this));
-	},
+        Garnish.$doc.ready($.proxy(function() {
+            this.$grid = $('#main > .grid');
+            this.grid = this.$grid.data('grid');
+            $('#newwidgetmenubtn').data('menubtn').menu.on('optionselect', $.proxy(this, 'handleNewWidgetOptionSelect'));
+        }, this));
+    },
 
-	handleNewWidgetOptionSelect: function(e)
-	{
-		var $option = $(e.selectedOption),
-			type = $option.data('type'),
-			colspan = $option.data('colspan'),
-			settingsNamespace = 'newwidget'+Math.floor(Math.random()*1000000000)+'-settings',
-			settingsHtml = $option.data('settings-html').replace(/__NAMESPACE__/g, settingsNamespace),
-			settingsJs = $option.data('settings-js').replace(/__NAMESPACE__/g, settingsNamespace),
-			$gridItem = $('<div class="item" data-colspan="'+colspan+'" style="display: block">'),
-			$container = $(
-				'<div class="widget new loading-new scaleout '+type.toLowerCase()+'">' +
-					'<div class="front">' +
-						'<div class="pane">' +
-							'<div class="spinner body-loading"/>' +
-							'<div class="settings icon hidden"/>' +
-							'<h2/>' +
-							'<div class="body"/>' +
-						'</div>' +
-					'</div>' +
-					'<div class="back">' +
-						'<form class="pane">' +
-							'<input type="hidden" name="type" value="'+type+'"/>' +
-							'<input type="hidden" name="settingsNamespace" value="'+settingsNamespace+'"/>' +
-							'<h2>'+Craft.t('{type} Settings', { type: Craft.escapeHtml($option.text()) })+'</h2>' +
-							'<div class="settings"/>' +
-							'<hr/>' +
-							'<div class="buttons clearafter">' +
-								'<input type="submit" class="btn submit" value="'+Craft.t('Save')+'"/>' +
-								'<div class="btn" role="button">'+Craft.t('Cancel')+'</div>' +
-								'<div class="spinner hidden"/>' +
-							'</div>' +
-						'</form>' +
-					'</div>' +
-				'</div>').appendTo($gridItem);
+    getTypeInfo: function(type, property, defaultValue)
+    {
+        if (property)
+        {
+            if (typeof this.widgetTypes[type][property] == typeof undefined)
+            {
+                return defaultValue;
+            }
+            else
+            {
+                return this.widgetTypes[type][property];
+            }
+        }
+        else
+        {
+            return this.widgetTypes[type];
+        }
+    },
 
-		if (settingsHtml)
-		{
-			$container.addClass('flipped');
-		}
-		else
-		{
-			$container.addClass('loading');
-		}
+    handleNewWidgetOptionSelect: function(e)
+    {
+        var $option = $(e.selectedOption),
+            type = $option.data('type'),
+            settingsNamespace = 'newwidget'+Math.floor(Math.random()*1000000000)+'-settings',
+            settingsHtml = this.getTypeInfo(type, 'settingsHtml', '').replace(/__NAMESPACE__/g, settingsNamespace),
+            settingsJs = this.getTypeInfo(type, 'settingsJs', '').replace(/__NAMESPACE__/g, settingsNamespace),
+            $gridItem = $('<div class="item" data-colspan="1" style="display: block">'),
+            $container = $(
+                '<div class="widget new loading-new scaleout '+type.toLowerCase()+'" data-type="'+type+'">' +
+                    '<div class="front">' +
+                        '<div class="pane">' +
+                            '<div class="spinner body-loading"/>' +
+                            '<div class="settings icon hidden"/>' +
+                            '<h2/>' +
+                            '<div class="body"/>' +
+                        '</div>' +
+                    '</div>' +
+                    '<div class="back">' +
+                        '<form class="pane">' +
+                            '<input type="hidden" name="type" value="'+type+'"/>' +
+                            '<input type="hidden" name="settingsNamespace" value="'+settingsNamespace+'"/>' +
+                            '<h2>'+Craft.t('{type} Settings', { type: Craft.escapeHtml($option.data('name')) })+'</h2>' +
+                            '<div class="settings"/>' +
+                            '<hr/>' +
+                            '<div class="buttons clearafter">' +
+                                '<input type="submit" class="btn submit" value="'+Craft.t('Save')+'"/>' +
+                                '<div class="btn" role="button">'+Craft.t('Cancel')+'</div>' +
+                                '<div class="spinner hidden"/>' +
+                            '</div>' +
+                        '</form>' +
+                    '</div>' +
+                '</div>').appendTo($gridItem);
 
-		var widget = new Craft.Widget($container, settingsHtml.replace(/__NAMESPACE__/g, settingsNamespace), function() {
-			eval(settingsJs)
-		});
+        if (settingsHtml)
+        {
+            $container.addClass('flipped');
+        }
+        else
+        {
+            $container.addClass('loading');
+        }
 
-		// Append the new widget after the last one
-		// (can't simply append it to the grid container, since that will place it after the resize listener object)
-		var grid = this.$grid.data('grid');
+        var widget = new Craft.Widget($container, settingsHtml.replace(/__NAMESPACE__/g, settingsNamespace), function() {
+            eval(settingsJs)
+        });
 
-		if (grid.$items.length)
-		{
-			$gridItem.insertAfter(grid.$items.last());
-		}
-		else
-		{
-			$gridItem.prependTo(grid.$container);
-		}
+        // Append the new widget after the last one
+        // (can't simply append it to the grid container, since that will place it after the resize listener object)
 
-		grid.addItems($gridItem);
-		Garnish.scrollContainerToElement($gridItem);
+        if (this.grid.$items.length)
+        {
+            $gridItem.insertAfter(this.grid.$items.last());
+        }
+        else
+        {
+            $gridItem.prependTo(this.grid.$container);
+        }
 
-		$container.removeClass('scaleout');
+        this.grid.addItems($gridItem);
+        Garnish.scrollContainerToElement($gridItem);
 
-		if (!settingsHtml)
-		{
-			var data = {
-				type: type
-			};
+        $container.removeClass('scaleout');
 
-			Craft.postActionRequest('dashboard/createWidget', data, function(response, textStatus)
-			{
-				if (textStatus == 'success' && response.success)
-				{
-					widget.update(response);
-				}
-				else
-				{
-					widget.destroy();
-				}
-			});
-		}
-	},
+        if (!settingsHtml)
+        {
+            var data = {
+                type: type
+            };
 
-	showWidgetManager: function()
-	{
-		if (!this.widgetManager)
-		{
-			var $widgets = this.$grid.find('> .item > .widget'),
-				$form = $(
-					'<form method="post" accept-charset="UTF-8">' +
-						'<input type="hidden" name="action" value="widgets/saveWidget"/>' +
-					'</form>'
-				).appendTo(Garnish.$bod),
-				$noWidgets = $('<p id="nowidgets"'+($widgets.length ? ' class="hidden"' : '')+'>'+Craft.t('You don’t have any widgets yet.')+'</p>').appendTo($form),
-				$table = $('<table class="data'+(!$widgets.length ? ' hidden' : '')+'"/>').appendTo($form),
-				$tbody = $('<tbody/>').appendTo($table);
+            Craft.postActionRequest('dashboard/createWidget', data, function(response, textStatus)
+            {
+                if (textStatus == 'success' && response.success)
+                {
+                    $container.removeClass('loading');
+                    widget.update(response);
+                }
+                else
+                {
+                    widget.destroy();
+                }
+            });
+        }
+    },
 
-			for (var i = 0; i < $widgets.length; i++)
-			{
-				var $widget = $widgets.eq(i);
+    showWidgetManager: function()
+    {
+        if (!this.widgetManager)
+        {
+            var $widgets = this.$grid.find('> .item > .widget'),
+                $form = $(
+                    '<form method="post" accept-charset="UTF-8">' +
+                        '<input type="hidden" name="action" value="widgets/saveWidget"/>' +
+                    '</form>'
+                ).appendTo(Garnish.$bod),
+                $noWidgets = $('<p id="nowidgets"'+($widgets.length ? ' class="hidden"' : '')+'>'+Craft.t('You don’t have any widgets yet.')+'</p>').appendTo($form),
+                $table = $('<table class="data'+(!$widgets.length ? ' hidden' : '')+'"/>').appendTo($form),
+                $tbody = $('<tbody/>').appendTo($table);
 
-				// Make sure it's actually saved
-				if (!$widget.data('id'))
-				{
-					continue;
-				}
+            for (var i = 0; i < $widgets.length; i++)
+            {
+                var $widget = $widgets.eq(i),
+                    widget = $widget.data('widget');
 
-				this.widgets[$widget.data('id')].getManagerRow().appendTo($tbody);
-			}
+                // Make sure it's actually saved
+                if (!widget.id)
+                {
+                    continue;
+                }
 
-			this.widgetManager = new Garnish.HUD(this.$widgetManagerBtn, $form, {
-				hudClass: 'hud widgetmanagerhud',
-				onShow: $.proxy(function() {
-					this.$widgetManagerBtn.addClass('active');
-				}, this),
-				onHide: $.proxy(function() {
-					this.$widgetManagerBtn.removeClass('active');
-				}, this)
-			});
+                widget.getManagerRow().appendTo($tbody);
+            }
 
-			this.widgetAdminTable = new Craft.AdminTable({
-				tableSelector: $table,
-				noObjectsSelector: $noWidgets,
-				sortable: true,
-				reorderAction: 'dashboard/reorderUserWidgets',
-				deleteAction: 'dashboard/deleteUserWidget',
-				onReorderObjects: $.proxy(function(ids)
-				{
-					var lastWidget;
+            this.widgetManager = new Garnish.HUD(this.$widgetManagerBtn, $form, {
+                minBodyHeight: 0,
+                hudClass: 'hud widgetmanagerhud',
+                onShow: $.proxy(function() {
+                    this.$widgetManagerBtn.addClass('active');
+                }, this),
+                onHide: $.proxy(function() {
+                    this.$widgetManagerBtn.removeClass('active');
+                }, this)
+            });
 
-					for (var i = 0; i < ids.length; i++)
-					{
-						var widget = this.widgets[ids[i]];
+            this.widgetAdminTable = new Craft.AdminTable({
+                tableSelector: $table,
+                noObjectsSelector: $noWidgets,
+                sortable: true,
+                reorderAction: 'dashboard/reorderUserWidgets',
+                deleteAction: 'dashboard/deleteUserWidget',
+                onReorderObjects: $.proxy(function(ids)
+                {
+                    var lastWidget;
 
-						if (!lastWidget)
-						{
-							widget.$gridItem.prependTo(this.$grid);
-						}
-						else
-						{
-							widget.$gridItem.insertAfter(lastWidget.$gridItem);
-						}
+                    for (var i = 0; i < ids.length; i++)
+                    {
+                        var widget = this.widgets[ids[i]];
 
-						lastWidget = widget;
-					}
+                        if (!lastWidget)
+                        {
+                            widget.$gridItem.prependTo(this.$grid);
+                        }
+                        else
+                        {
+                            widget.$gridItem.insertAfter(lastWidget.$gridItem);
+                        }
 
-					this.$grid.data('grid').resetItemOrder();
+                        lastWidget = widget;
+                    }
 
-				}, this),
-				onDeleteObject: $.proxy(function(id)
-				{
-					var widget = this.widgets[id];
+                    this.grid.resetItemOrder();
 
-					widget.destroy();
-				}, this)
-			});
-		}
-		else
-		{
-			this.widgetManager.show();
-		}
-	}
+                }, this),
+                onDeleteObject: $.proxy(function(id)
+                {
+                    var widget = this.widgets[id];
+
+                    widget.destroy();
+                }, this)
+            });
+        }
+        else
+        {
+            this.widgetManager.show();
+        }
+    }
 });
 
 
@@ -210,293 +233,455 @@ Craft.Dashboard = Garnish.Base.extend(
  */
 Craft.Widget = Garnish.Base.extend(
 {
-	$container: null,
-	$gridItem: null,
-	$grid: null,
+    $container: null,
+    $gridItem: null,
 
-	$front: null,
-	$settingsBtn: null,
-	$title: null,
-	$bodyContainer: null,
+    $front: null,
+    $settingsBtn: null,
+    $title: null,
+    $bodyContainer: null,
 
-	$back: null,
-	$settingsForm: null,
-	$settingsContainer: null,
-	$settingsSpinner: null,
-	$settingsErrorList: null,
+    $back: null,
+    $settingsForm: null,
+    $settingsContainer: null,
+    $settingsSpinner: null,
+    $settingsErrorList: null,
 
-	settingsHtml: null,
-	initSettingsFn: null,
-	showingSettings: false,
+    id: null,
+    type: null,
+    title: null,
 
-	init: function(container, settingsHtml, initSettingsFn)
-	{
-		this.$container = $(container);
-		this.$gridItem = this.$container.parent();
-		this.$grid = $('#main > .grid');
+    totalCols: null,
+    settingsHtml: null,
+    initSettingsFn: null,
+    showingSettings: false,
 
-		this.$container.data('widget', this);
+    colspanPicker: null,
 
-		if (this.$container.data('id'))
-		{
-			window.dashboard.widgets[this.$container.data('id')] = this;
-		}
+    init: function(container, settingsHtml, initSettingsFn)
+    {
+        this.$container = $(container);
+        this.$gridItem = this.$container.parent();
 
-		this.$front = this.$container.children('.front');
-		this.$settingsBtn = this.$front.find('> .pane > .icon.settings');
-		this.$title = this.$front.find('> .pane > h2');
-		this.$bodyContainer = this.$front.find('> .pane > .body');
+        // Store a reference to this object on the container element
+        this.$container.data('widget', this);
 
-		this.setSettingsHtml(settingsHtml, initSettingsFn);
+        // Do a little introspection
+        this.id = this.$container.data('id');
+        this.type = this.$container.data('type');
+        this.title = this.$container.data('title');
 
-		if (!this.$container.hasClass('flipped'))
-		{
-			this.onShowFront();
-		}
-		else
-		{
-			this.initBackUi();
-			this.refreshSettings();
-			this.onShowBack();
-		}
+        if (this.id)
+        {
+            // Store a reference to this object on the main Dashboard object
+            window.dashboard.widgets[this.id] = this;
+        }
 
-		this.addListener(this.$settingsBtn, 'click', 'showSettings');
-	},
+        this.$front = this.$container.children('.front');
+        this.$settingsBtn = this.$front.find('> .pane > .icon.settings');
+        this.$title = this.$front.find('> .pane > h2');
+        this.$bodyContainer = this.$front.find('> .pane > .body');
 
-	initBackUi: function()
-	{
-		this.$back = this.$container.children('.back');
-		this.$settingsForm = this.$back.children('form');
-		this.$settingsContainer = this.$settingsForm.children('.settings');
-		var $btnsContainer = this.$settingsForm.children('.buttons');
-		this.$settingsSpinner = $btnsContainer.children('.spinner');
+        this.setSettingsHtml(settingsHtml, initSettingsFn);
 
-		this.addListener($btnsContainer.children('.btn:nth-child(2)'), 'click', 'cancelSettings');
-		this.addListener(this.$settingsForm, 'submit', 'saveSettings');
-	},
+        if (!this.$container.hasClass('flipped'))
+        {
+            this.onShowFront();
+        }
+        else
+        {
+            this.initBackUi();
+            this.refreshSettings();
+            this.onShowBack();
+        }
 
-	setSettingsHtml: function(settingsHtml, initSettingsFn)
-	{
-		this.settingsHtml = settingsHtml;
-		this.initSettingsFn = initSettingsFn;
+        this.addListener(this.$settingsBtn, 'click', 'showSettings');
+    },
 
-		if (this.settingsHtml)
-		{
-			this.$settingsBtn.removeClass('hidden');
-		}
-		else
-		{
-			this.$settingsBtn.addClass('hidden');
-		}
-	},
+    initBackUi: function()
+    {
+        this.$back = this.$container.children('.back');
+        this.$settingsForm = this.$back.children('form');
+        this.$settingsContainer = this.$settingsForm.children('.settings');
+        var $btnsContainer = this.$settingsForm.children('.buttons');
+        this.$settingsSpinner = $btnsContainer.children('.spinner');
 
-	refreshSettings: function()
-	{
-		this.$settingsContainer.html(this.settingsHtml);
-		Craft.initUiElements(this.$settingsContainer);
-		this.initSettingsFn();
-	},
+        this.addListener($btnsContainer.children('.btn:nth-child(2)'), 'click', 'cancelSettings');
+        this.addListener(this.$settingsForm, 'submit', 'saveSettings');
+    },
 
-	showSettings: function()
-	{
-		if (!this.$back)
-		{
-			this.initBackUi();
-		}
+    getColspan: function()
+    {
+        return this.$gridItem.data('colspan');
+    },
 
-		// Refresh the settings every time
-		this.refreshSettings();
+    setColspan: function(colspan)
+    {
+        this.$gridItem.data('colspan', colspan);
+        window.dashboard.grid.refreshCols(true);
+    },
 
-		this.$container
-			.addClass('flipped')
-			.velocity({ height: this.$back.height() }, {
-				complete: $.proxy(this, 'onShowBack')
-			});
-	},
+    getTypeInfo: function(property, defaultValue)
+    {
+        return window.dashboard.getTypeInfo(this.type, property, defaultValue);
+    },
 
-	hideSettings: function()
-	{
-		this.$container
-			.removeClass('flipped')
-			.velocity({ height: this.$front.height() }, {
-				complete: $.proxy(this, 'onShowFront')
-			});
-	},
+    setSettingsHtml: function(settingsHtml, initSettingsFn)
+    {
+        this.settingsHtml = settingsHtml;
+        this.initSettingsFn = initSettingsFn;
 
-	saveSettings: function(e)
-	{
-		e.preventDefault();
-		this.$settingsSpinner.removeClass('hidden');
+        if (this.settingsHtml)
+        {
+            this.$settingsBtn.removeClass('hidden');
+        }
+        else
+        {
+            this.$settingsBtn.addClass('hidden');
+        }
+    },
 
-		var action = this.$container.hasClass('new') ? 'dashboard/createWidget' : 'dashboard/saveWidgetSettings',
-			data = this.$settingsForm.serialize();
+    refreshSettings: function()
+    {
+        this.$settingsContainer.html(this.settingsHtml);
+        Craft.initUiElements(this.$settingsContainer);
+        this.initSettingsFn();
+    },
 
-		Craft.postActionRequest(action, data, $.proxy(function(response, textStatus)
-		{
-			this.$settingsSpinner.addClass('hidden');
+    showSettings: function()
+    {
+        if (!this.$back)
+        {
+            this.initBackUi();
+        }
 
-			if (textStatus == 'success')
-			{
-				if (this.$settingsErrorList)
-				{
-					this.$settingsErrorList.remove();
-					this.$settingsErrorList = null;
-				}
+        // Refresh the settings every time
+        this.refreshSettings();
 
-				if (response.success)
-				{
-					Craft.cp.displayNotice(Craft.t('Widget saved.'));
+        this.$container
+            .addClass('flipped')
+            .velocity({ height: this.$back.height() }, {
+                complete: $.proxy(this, 'onShowBack')
+            });
+    },
 
-					// Make sure the widget is still allowed to be shown, just in case
-					if (!response.info)
-					{
-						this.destroy();
-					}
-					else
-					{
-						this.update(response);
-						this.hideSettings();
-					}
-				}
-				else
-				{
-					Craft.cp.displayError(Craft.t('Couldn’t save widget.'));
+    hideSettings: function()
+    {
+        this.$container
+            .removeClass('flipped')
+            .velocity({ height: this.$front.height() }, {
+                complete: $.proxy(this, 'onShowFront')
+            });
+    },
 
-					if (response.errors)
-					{
-						this.$settingsErrorList = Craft.ui.createErrorList(response.errors)
-							.insertAfter(this.$settingsContainer);
-					}
-				}
-			}
-		}, this));
-	},
+    saveSettings: function(e)
+    {
+        e.preventDefault();
+        this.$settingsSpinner.removeClass('hidden');
 
-	update: function(response)
-	{
-		this.$container.data('title', response.info.title);
+        var action = this.$container.hasClass('new') ? 'dashboard/createWidget' : 'dashboard/saveWidgetSettings',
+            data = this.$settingsForm.serialize();
 
-		// Is this a new widget?
-		if (this.$container.hasClass('new'))
-		{
-			this.$container
-				.attr('id', 'widget'+response.info.id)
-				.data('id', response.info.id)
-				.data('name', response.info.name)
-				.removeClass('new loading-new');
+        Craft.postActionRequest(action, data, $.proxy(function(response, textStatus)
+        {
+            this.$settingsSpinner.addClass('hidden');
 
-			if (this.$settingsForm)
-			{
-				this.$settingsForm.prepend('<input type="hidden" name="widgetId" value="'+response.info.id+'"/>')
-			}
+            if (textStatus == 'success')
+            {
+                if (this.$settingsErrorList)
+                {
+                    this.$settingsErrorList.remove();
+                    this.$settingsErrorList = null;
+                }
 
-			window.dashboard.widgets[response.info.id] = this;
+                if (response.success)
+                {
+                    Craft.cp.displayNotice(Craft.t('Widget saved.'));
 
-			if (window.dashboard.widgetAdminTable)
-			{
-				window.dashboard.widgetAdminTable.addRow(this.getManagerRow());
-			}
-		}
-		else
-		{
-			if (window.dashboard.widgetAdminTable)
-			{
-				window.dashboard.widgetAdminTable.$tbody.children('[data-id="'+this.$container.data('id')+'"]:first').children('td:nth-child(2)').html(this.getManagerRowLabel());
-			}
-		}
+                    // Make sure the widget is still allowed to be shown, just in case
+                    if (!response.info)
+                    {
+                        this.destroy();
+                    }
+                    else
+                    {
+                        this.update(response);
+                        this.hideSettings();
+                    }
+                }
+                else
+                {
+                    Craft.cp.displayError(Craft.t('Couldn’t save widget.'));
 
-		this.$title.text(response.info.title);
-		this.$bodyContainer.html(response.info.bodyHtml);
+                    if (response.errors)
+                    {
+                        this.$settingsErrorList = Craft.ui.createErrorList(response.errors)
+                            .insertAfter(this.$settingsContainer);
+                    }
+                }
+            }
+        }, this));
+    },
 
-		// New colspan?
-		if (response.info.colspan != this.$gridItem.data('colspan'))
-		{
-			this.$gridItem.data('colspan', response.info.colspan);
-			this.$grid.data('grid').refreshCols(true);
-			Garnish.scrollContainerToElement(this.$gridItem);
-		}
+    update: function(response)
+    {
+        this.title = response.info.title;
 
-		Craft.initUiElements(this.$bodyContainer);
-		Craft.appendHeadHtml(response.headHtml);
-		Craft.appendFootHtml(response.footHtml);
+        // Is this a new widget?
+        if (this.$container.hasClass('new'))
+        {
+            // Discover ourself
+            this.id = response.info.id;
 
-		this.setSettingsHtml(response.info.settingsHtml, function() {
-			eval(response.info.settingsJs);
-		});
-	},
+            this.$container
+                .attr('id', 'widget'+this.id)
+                .removeClass('new loading-new');
 
-	cancelSettings: function()
-	{
-		if (this.$container.data('id'))
-		{
-			this.hideSettings();
-		}
-		else
-		{
-			this.destroy();
-		}
-	},
+            if (this.$settingsForm)
+            {
+                this.$settingsForm.prepend('<input type="hidden" name="widgetId" value="'+this.id+'"/>')
+            }
 
-	onShowFront: function()
-	{
-		this.showingSettings = false;
-		this.removeListener(this.$back, 'resize');
-		this.addListener(this.$front, 'resize', 'updateContainerHeight');
-	},
+            // Store a reference to this object on the main Dashboard object, now that the widget actually exists
+            window.dashboard.widgets[this.id] = this;
 
-	onShowBack: function()
-	{
-		this.showingSettings = true;
-		this.removeListener(this.$front, 'resize');
-		this.addListener(this.$back, 'resize', 'updateContainerHeight');
+            if (window.dashboard.widgetAdminTable)
+            {
+                window.dashboard.widgetAdminTable.addRow(this.getManagerRow());
+            }
+        }
+        else
+        {
+            if (window.dashboard.widgetAdminTable)
+            {
+                window.dashboard.widgetAdminTable.$tbody.children('[data-id="'+this.id+'"]:first').children('td:nth-child(2)').html(this.getManagerRowLabel());
+            }
+        }
 
-		// Focus on the first input
-		setTimeout($.proxy(function() {
-			this.$settingsForm.find(':focusable:first').focus();
-		}, this), 1);
-	},
+        this.$title.text(this.title);
+        this.$bodyContainer.html(response.info.bodyHtml);
 
-	updateContainerHeight: function()
-	{
-		this.$container.height((this.showingSettings ? this.$back : this.$front).height());
-	},
+        // New colspan?
+        if (response.info.colspan != this.getColspan())
+        {
+            this.setColspan(response.info.colspan);
+            Garnish.scrollContainerToElement(this.$gridItem);
+        }
 
-	getManagerRow: function()
-	{
-		var id = this.$container.data('id'),
-			title = this.$container.data('title');
+        Craft.initUiElements(this.$bodyContainer);
+        Craft.appendHeadHtml(response.headHtml);
+        Craft.appendFootHtml(response.footHtml);
 
-		return $(
-			'<tr data-id="'+id+'" data-name="'+title+'">' +
-				'<td>'+this.getManagerRowLabel()+'</td>' +
-				'<td class="thin"><a class="move icon" title="'+Craft.t('Reorder')+'" role="button"></a></td>' +
-				'<td class="thin"><a class="delete icon" title="'+Craft.t('Delete')+'" role="button"></a></td>' +
-			'</tr>'
-		);
-	},
+        this.setSettingsHtml(response.info.settingsHtml, function() {
+            eval(response.info.settingsJs);
+        });
+    },
 
-	getManagerRowLabel: function()
-	{
-		var title = this.$container.data('title'),
-			name = this.$container.data('name');
+    cancelSettings: function()
+    {
+        if (this.id)
+        {
+            this.hideSettings();
+        }
+        else
+        {
+            this.destroy();
+        }
+    },
 
-		return title+(title != name ? ' <span class="light">('+name+')</span>' : '')
-	},
+    onShowFront: function()
+    {
+        this.showingSettings = false;
+        this.removeListener(this.$back, 'resize');
+        this.addListener(this.$front, 'resize', 'updateContainerHeight');
+    },
 
-	destroy: function()
-	{
-		delete window.dashboard.widgets[this.$container.data('id')];
-		this.$container.addClass('scaleout');
-		this.$grid.data('grid').removeItems(this.$gridItem);
+    onShowBack: function()
+    {
+        this.showingSettings = true;
+        this.removeListener(this.$front, 'resize');
+        this.addListener(this.$back, 'resize', 'updateContainerHeight');
 
-		setTimeout($.proxy(function() {
-			this.$gridItem.remove();
-		}, this), 200);
+        // Focus on the first input
+        setTimeout($.proxy(function() {
+            this.$settingsForm.find(':focusable:first').focus();
+        }, this), 1);
+    },
 
-		this.base();
-	}
+    updateContainerHeight: function()
+    {
+        this.$container.height((this.showingSettings ? this.$back : this.$front).height());
+    },
+
+    getManagerRow: function()
+    {
+        var $row = $(
+            '<tr data-id="'+this.id+'" data-name="'+this.title+'">' +
+                '<td class="widgetmanagerhud-icon">'+this.getTypeInfo('iconSvg')+'</td>' +
+                '<td>'+this.getManagerRowLabel()+'</td>' +
+                '<td class="widgetmanagerhud-col-colspan-picker thin"></td>' +
+                '<td class="widgetmanagerhud-col-move thin"><a class="move icon" title="'+Craft.t('Reorder')+'" role="button"></a></td>' +
+                '<td class="thin"><a class="delete icon" title="'+Craft.t('Delete')+'" role="button"></a></td>' +
+            '</tr>'
+        );
+
+        // Initialize the colspan picker
+        this.colspanPicker = new Craft.WidgetColspanPicker(this, $row.find('> td.widgetmanagerhud-col-colspan-picker'));
+
+        return $row;
+    },
+
+    getManagerRowLabel: function()
+    {
+        var typeName = this.getTypeInfo('name');
+
+        return this.title+(this.title != typeName ? ' <span class="light">('+typeName+')</span>' : '')
+    },
+
+    destroy: function()
+    {
+        delete window.dashboard.widgets[this.id];
+        this.$container.addClass('scaleout');
+        this.base();
+
+        setTimeout($.proxy(function() {
+            window.dashboard.grid.removeItems(this.$gridItem);
+            this.$gridItem.remove();
+        }, this), 200);
+    }
 });
 
-window.dashboard = new Craft.Dashboard();
+
+/**
+ * Widget colspan picker class
+ */
+Craft.WidgetColspanPicker = Garnish.Base.extend(
+{
+    widget: null,
+    maxColspan: null,
+
+    $container: null,
+    $colspanButtons: null,
+
+    totalGridCols: null,
+
+    init: function(widget, $td)
+    {
+        this.widget = widget;
+        this.$container = $('<div class="colspan-picker"/>').appendTo($td);
+        this.maxColspan = this.widget.getTypeInfo('maxColspan');
+
+        this.totalGridCols = window.dashboard.grid.totalCols;
+        this.createColspanButtons();
+
+        window.dashboard.grid.on('refreshCols', $.proxy(this, 'handleGridRefresh'));
+
+        this.addListener(this.$container, 'mouseover', function(ev) {
+            $(ev.currentTarget).addClass('hover');
+        });
+
+        this.addListener(this.$container, 'mouseout', function(ev) {
+            $(ev.currentTarget).removeClass('hover');
+        });
+    },
+
+    handleGridRefresh: function()
+    {
+        // Have the number of columns changed?
+        if (this.totalGridCols != (this.totalGridCols = window.dashboard.grid.totalCols))
+        {
+            // Remove the current buttons
+            if (this.$colspanButtons)
+            {
+                this.$colspanButtons.remove();
+            }
+
+            // Recreate them
+            this.createColspanButtons();
+        }
+    },
+
+    createColspanButtons: function()
+    {
+        // Figure out what the current max colspan and widget colspan are.
+        var currentMaxColspan = this.maxColspan ? Math.min(this.maxColspan, this.totalGridCols) : this.totalGridCols,
+            currentColspan = Math.min(this.widget.getColspan(), currentMaxColspan);
+
+        // Create the buttons
+        for (var i = 1; i <= currentMaxColspan; i++)
+        {
+            var cssClass = '';
+
+            if (i <= currentColspan)
+            {
+                cssClass = 'active';
+            }
+
+            if (i == currentColspan)
+            {
+                cssClass += (cssClass ? ' ' : '')+'last';
+            }
+
+            $('<a/>', {
+                title: (i == 1 ? Craft.t('1 column') : Craft.t('{num} columns', {num: i})),
+                role: 'button',
+                'class': cssClass,
+                data: {colspan: i}
+            }).appendTo(this.$container);
+        }
+
+        // Add listeners
+        this.$colspanButtons = this.$container.children();
+
+        this.addListener(this.$colspanButtons, 'mouseover', function(ev)
+        {
+            var $button = $(ev.currentTarget);
+            $button.add($button.prevAll()).addClass('highlight');
+            $button.nextAll().removeClass('highlight');
+        });
+
+        this.addListener(this.$colspanButtons, 'mouseout', function(ev)
+        {
+            this.$colspanButtons.removeClass('highlight');
+        });
+
+        this.addListener(this.$colspanButtons, 'click', $.proxy(function(ev)
+        {
+            this.setWidgetColspan($.data(ev.currentTarget, 'colspan'));
+        }, this));
+    },
+
+    setWidgetColspan: function(newColspan)
+    {
+        // Update the button .active and .last classes
+        this.$colspanButtons.removeClass('last active');
+        var $activeButton = this.$colspanButtons.eq(newColspan-1);
+        $activeButton.add($activeButton.prevAll()).addClass('active');
+        $activeButton.addClass('last');
+
+        // Update the widget and grid
+        this.widget.setColspan(newColspan);
+        window.dashboard.grid.refreshCols(true);
+
+        // Save the change
+        var data = {
+            id: this.widget.id,
+            colspan: newColspan
+        };
+
+        Craft.postActionRequest('dashboard/changeWidgetColspan', data, function(response, textStatus)
+        {
+            if (textStatus == 'success' && response.success)
+            {
+                Craft.cp.displayNotice(Craft.t('Widget saved.'));
+            }
+            else
+            {
+                Craft.cp.displayError(Craft.t('Couldn’t save widget.'));
+            }
+        });
+    }
+});
+
 
 })(jQuery)

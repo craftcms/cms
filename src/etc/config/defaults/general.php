@@ -192,6 +192,21 @@ return array(
 	'defaultTokenDuration' => 'P1D',
 
 	/**
+	 * The default day that new users should have set as their “Week Start Day”.
+	 *
+	 * This should be set to an integer from `0` to `6` where:
+	 *
+	 * - `0` represents Sunday
+	 * - `1` represents Monday
+	 * - `2` represents Tuesday
+	 * - `3` represents Wednesday
+	 * - `4` represents Thursday
+	 * - `5` represents Friday
+	 * - `6` represents Saturday
+	 */
+	'defaultWeekStartDay' => 0,
+
+	/**
 	 * Determines whether the system is in Dev Mode or not.
 	 */
 	'devMode' => false,
@@ -398,6 +413,13 @@ return array(
 	'sendPoweredByHeader' => true,
 
 	/**
+	 * Whether the embedded Image Color Profile (ICC) should be preserved when manipulating images.
+	 *
+	 * Setting this to true results in a slightly increased filesize and more accurate colors, if a color profile was embedded on image export.
+	 */
+	'preserveImageColorProfiles' => false,
+
+	/**
 	 * The template path segment prefix that should be used to identify "private" templates -- templates that aren't
 	 * directly accessible via a matching URL.
 	 */
@@ -409,7 +431,7 @@ return array(
 	 *
 	 * @see http://www.php.net/manual/en/dateinterval.construct.php
 	 */
-	'purgePendingUsersDuration' => 'P3M',
+	'purgePendingUsersDuration' => false,
 
 	/**
 	 * The amount of time Craft will remember a username and pre-populate it on the CP login page.

@@ -1,6 +1,5 @@
 {% extends "_layouts/cp" %}
 {% set title = "Sections"|t %}
-{% set fitted = true %}
 
 {% set crumbs = [
 	{ label: "Settings"|t, url: url('settings') }
@@ -9,7 +8,14 @@
 {% set docsUrl = 'http://buildwithcraft.com/docs/sections-and-entries#sections' %}
 
 
-{% set content %}
+{% set extraPageHeaderHtml %}
+	<div id="newsectioncontainer" class="buttons right{% if CraftEdition == CraftPersonal and sections|length >= maxSections %} hidden{% endif %}">
+		<a href="{{ url('settings/sections/new') }}" class="btn submit add icon">{{ "New section"|t }}</a>
+	</div>
+{% endset %}
+
+
+{% block content %}
 	<div id="nosections"{% if sections %} class="hidden"{% endif %}>
 		<p>{{ "No sections exist yet."|t }}</p>
 	</div>
@@ -59,14 +65,10 @@
 			</tbody>
 		</table>
 	{% endif %}
-
-	<div id="newsectioncontainer" class="buttons{% if CraftEdition == CraftPersonal and sections|length >= maxSections %} hidden{% endif %}">
-		<a href="{{ url('settings/sections/new') }}" class="btn submit add icon">{{ "New Section"|t }}</a>
-	</div>
-{% endset %}
+{% endblock %}
 
 
-{% set js %}
+{% includejs %}
 	var adminTable = new Craft.AdminTable({
 		tableSelector: '#sections',
 		noObjectsSelector: '#nosections',
@@ -83,5 +85,4 @@
 			}
 		}
 	});
-{% endset %}
-{% includeJs js %}
+{% endincludejs %}

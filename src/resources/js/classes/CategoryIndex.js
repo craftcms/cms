@@ -50,9 +50,8 @@ Craft.CategoryIndex = Craft.BaseElementIndex.extend(
 		var selectedSourceHandle = this.$source.data('handle');
 
 		// Update the New Category button
-		//this.$newCategoryBtn.attr('href', Craft.getUrl('categories/'+handle+'/new'));
+		// ---------------------------------------------------------------------
 
-		// Update the New Category button
 		if (this.editableGroups.length)
 		{
 			// Remove the old button, if there is one
@@ -64,11 +63,15 @@ Craft.CategoryIndex = Craft.BaseElementIndex.extend(
 			// Determine if they are viewing a group that they have permission to create categories in
 			var selectedGroup;
 
-			for (var i = 0; i < this.editableGroups.length; i++)
+			if (selectedSourceHandle)
 			{
-				if (this.editableGroups[i].handle == selectedSourceHandle)
+				for (var i = 0; i < this.editableGroups.length; i++)
 				{
-					selectedGroup = this.editableGroups[i];
+					if (this.editableGroups[i].handle == selectedSourceHandle)
+					{
+						selectedGroup = this.editableGroups[i];
+						break;
+					}
 				}
 			}
 
@@ -107,7 +110,7 @@ Craft.CategoryIndex = Craft.BaseElementIndex.extend(
 
 				for (var i = 0; i < this.editableGroups.length; i++)
 				{
-					group = this.editableGroups[i];
+					var group = this.editableGroups[i];
 
 					if (this.settings.context == 'index' || group != selectedGroup)
 					{
@@ -135,6 +138,8 @@ Craft.CategoryIndex = Craft.BaseElementIndex.extend(
 		}
 
 		// Update the URL if we're on the Categories index
+		// ---------------------------------------------------------------------
+
 		if (this.settings.context == 'index' && typeof history != typeof undefined)
 		{
 			var uri = 'categories';
@@ -161,7 +166,6 @@ Craft.CategoryIndex = Craft.BaseElementIndex.extend(
 			return 'data-id="'+group.id+'"';
 		}
 	},
-
 
 	_openCreateCategoryModal: function(groupId)
 	{

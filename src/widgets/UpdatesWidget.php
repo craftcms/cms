@@ -53,6 +53,16 @@ class UpdatesWidget extends BaseWidget
 	}
 
 	/**
+	 * @inheritDoc IWidget::getIconPath()
+	 *
+	 * @return string
+	 */
+	public function getIconPath()
+	{
+		return craft()->path->getResourcesPath().'images/widgets/updates.svg';
+	}
+
+	/**
 	 * @inheritDoc IWidget::getBodyHtml()
 	 *
 	 * @return string|false

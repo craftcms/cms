@@ -8,13 +8,16 @@ Craft.CP = Garnish.Base.extend(
 {
 	authManager: null,
 
+	$container: null,
 	$alerts: null,
-	$header: null,
-	$headerActionsList: null,
+	$globalSidebar: null,
+	$globalSidebarTopbar: null,
+	$siteNameLink: null,
 	$siteName: null,
 	$nav: null,
 	$subnav: null,
 	$pageHeader: null,
+	$containerTopbar: null,
 
 	$overflowNavMenuItem: null,
 	$overflowNavMenuBtn: null,
@@ -57,6 +60,10 @@ Craft.CP = Garnish.Base.extend(
 	$upgradePromo: null,
 	upgradeModal: null,
 
+	checkingForUpdates: false,
+	forcingRefreshOnUpdatesCheck: false,
+	checkForUpdatesCallbacks: null,
+
 	init: function()
 	{
 		// Is this session going to expire?
@@ -66,11 +73,14 @@ Craft.CP = Garnish.Base.extend(
 		}
 
 		// Find all the key elements
+		this.$container = $('#container');
 		this.$alerts = $('#alerts');
-		this.$header = $('#header');
+		this.$globalSidebar = $('#global-sidebar');
 		this.$pageHeader = $('#page-header');
-		this.$headerActionsList = this.$header.find('#header-actions');
-		this.$siteName = this.$header.find('h2');
+		this.$containerTopbar = $('#container .topbar');
+		this.$globalSidebarTopbar = this.$globalSidebar.children('.topbar');
+		this.$siteNameLink = this.$globalSidebarTopbar.children('a.site-name');
+		this.$siteName = this.$siteNameLink.children('h2');
 		this.$nav = $('#nav');
 		this.$subnav = $('#subnav');
 		this.$sidebar = $('#sidebar');
@@ -80,10 +90,6 @@ Craft.CP = Garnish.Base.extend(
 		this.$content = $('#content');
 		this.$collapsibleTables = $('table.collapsible');
 		this.$upgradePromo = $('#upgradepromo > a');
-
-		// Keep the site name contained
-		this.onActionItemListResize();
-		this.addListener(this.$headerActionsList, 'resize', 'onActionItemListResize');
 
 		// Find all the nav items
 		this.navItems = [];
@@ -125,7 +131,7 @@ Craft.CP = Garnish.Base.extend(
 		this.addListener(this.$sidebarLinks, 'click', 'selectSidebarItem');
 
 
-		this.addListener(Garnish.$win, 'scroll', 'updateFixedNotifications');
+		this.addListener(this.$container, 'scroll', 'updateFixedNotifications');
 		this.updateFixedNotifications();
 
 		Garnish.$doc.ready($.proxy(function()
@@ -155,7 +161,7 @@ Craft.CP = Garnish.Base.extend(
 		{
 			this.addListener(Garnish.$doc, 'keydown', function(ev)
 			{
-				if ((ev.metaKey || ev.ctrlKey) && ev.keyCode == Garnish.S_KEY)
+				if (Garnish.isCtrlKeyPressed(ev) && ev.keyCode == Garnish.S_KEY)
 				{
 					ev.preventDefault();
 
@@ -237,6 +243,15 @@ Craft.CP = Garnish.Base.extend(
 		}
 	},
 
+	updateSidebarMenuLabel: function()
+	{
+		Garnish.$win.trigger('resize');
+
+		var $selectedLink = $('a.sel:first', this.$sidebar);
+
+		this.selectedItemLabel = $selectedLink.html();
+	},
+
 	/**
 	 * Handles stuff that should happen when the window is resized.
 	 */
@@ -255,14 +270,9 @@ Craft.CP = Garnish.Base.extend(
 		this.updateResponsiveTables();
 	},
 
-	onActionItemListResize: function()
-	{
-		this.$siteName.css('max-width', 'calc(100% - '+(this.$headerActionsList.width()+14)+'px)');
-	},
-
 	updateResponsiveNav: function()
 	{
-		if(this.onWindowResize._cpWidth < 1024)
+		if(this.onWindowResize._cpWidth <= 992)
 		{
 			if (!this.showingNavToggle)
 			{
@@ -280,7 +290,7 @@ Craft.CP = Garnish.Base.extend(
 
 	showNavToggle: function()
 	{
-		this.$navBtn = $('<a class="show-nav" title="'+Craft.t('Show nav')+'"></a>').prependTo(this.$pageHeader);
+		this.$navBtn = $('<a class="show-nav" title="'+Craft.t('Show nav')+'"></a>').prependTo(this.$containerTopbar);
 
 		this.addListener(this.$navBtn, 'click', 'toggleNav');
 
@@ -326,6 +336,10 @@ Craft.CP = Garnish.Base.extend(
 
 	showSidebarToggle: function()
 	{
+		var $selectedLink = $('a.sel:first', this.$sidebar);
+
+		this.selectedItemLabel = $selectedLink.html();
+
 		this.$sidebarBtn = $('<a class="show-sidebar" title="'+Craft.t('Show sidebar')+'">'+this.selectedItemLabel+'</a>').prependTo(this.$content);
 
 		this.addListener(this.$sidebarBtn, 'click', 'toggleSidebar');
@@ -339,12 +353,21 @@ Craft.CP = Garnish.Base.extend(
 
 		this.selectedItemLabel = $link.html();
 
-		this.$sidebarBtn.html(this.selectedItemLabel);
+		if (this.$sidebarBtn)
+		{
+			this.$sidebarBtn.html(this.selectedItemLabel);
+
+			this.toggleSidebar();
+		}
 	},
 
 	hideSidebarToggle: function()
 	{
-		this.$sidebarBtn.remove();
+		if (this.$sidebarBtn)
+		{
+			this.$sidebarBtn.remove();
+		}
+
 		this.showingSidebarToggle = false;
 	},
 
@@ -437,9 +460,9 @@ Craft.CP = Garnish.Base.extend(
 
 	updateFixedNotifications: function()
 	{
-		this.updateFixedNotifications._headerHeight = this.$header.height();
+		this.updateFixedNotifications._headerHeight = this.$globalSidebar.height();
 
-		if (Garnish.$win.scrollTop() > this.updateFixedNotifications._headerHeight)
+		if (this.$container.scrollTop() > this.updateFixedNotifications._headerHeight)
 		{
 			if (!this.fixedNotifications)
 			{
@@ -472,12 +495,21 @@ Craft.CP = Garnish.Base.extend(
 			notificationDuration *= 2;
 		}
 
-		$('<div class="notification '+type+'">'+message+'</div>')
-			.appendTo(this.$notificationContainer)
+		var $notification = $('<div class="notification '+type+'">'+message+'</div>')
+			.appendTo(this.$notificationContainer);
+
+		var fadedMargin = -($notification.outerWidth()/2)+'px';
+
+		$notification
 			.hide()
-			.velocity('fadeIn', { display: 'inline-block', duration: 'fast' })
+			.css({ opacity: 0, 'margin-left': fadedMargin, 'margin-right': fadedMargin })
+			.velocity({ opacity: 1, 'margin-left': '2px', 'margin-right': '2px' }, { display: 'inline-block', duration: 'fast' })
 			.delay(notificationDuration)
-			.velocity('fadeOut');
+			.velocity({ opacity: 0, 'margin-left': fadedMargin, 'margin-right': fadedMargin }, {
+				complete: function() {
+					$notification.remove();
+				}
+			});
 
 		this.trigger('displayNotification', {
 			notificationType: type,
@@ -523,19 +555,15 @@ Craft.CP = Garnish.Base.extend(
 	{
 		if (Garnish.isArray(alerts) && alerts.length)
 		{
-			this.$alerts = $('<ul id="alerts"/>').insertBefore($('#header'));
+			this.$alerts = $('<ul id="alerts"/>').insertBefore(this.$containerTopbar);
 
 			for (var i = 0; i < alerts.length; i++)
 			{
 				$('<li>'+alerts[i]+'</li>').appendTo(this.$alerts);
 			}
 
-			var height = this.$alerts.height();
-
-			this.$alerts.height(0).velocity({ height: height }, 'fast', $.proxy(function()
-			{
-				this.$alerts.height('auto');
-			}, this));
+			var height = this.$alerts.outerHeight();
+			this.$alerts.css('margin-top', -height).velocity({ 'margin-top': 0 }, 'fast');
 
 			this.initAlerts();
 		}
@@ -565,7 +593,7 @@ Craft.CP = Garnish.Base.extend(
 							}
 							else
 							{
-								Craft.cp.displayError(response.error);
+								this.displayError(response.error);
 							}
 						}
 
@@ -599,7 +627,7 @@ Craft.CP = Garnish.Base.extend(
 						}
 						else
 						{
-							Craft.cp.displayError(response.error);
+							this.displayError(response.error);
 						}
 					}
 
@@ -609,22 +637,66 @@ Craft.CP = Garnish.Base.extend(
 		}
 	},
 
-	checkForUpdates: function()
+	checkForUpdates: function(forceRefresh, callback)
 	{
-		Craft.queueActionRequest('app/checkForUpdates', $.proxy(function(info)
+		// If forceRefresh == true, we're currently checking for updates, and not currently forcing a refresh,
+		// then just seta new callback that re-checks for updates when the current one is done.
+		if (this.checkingForUpdates && forceRefresh === true && !this.forcingRefreshOnUpdatesCheck)
 		{
-			this.displayUpdateInfo(info);
+			var realCallback = callback;
 
-			this.trigger('checkForUpdates', {
-				updateInfo: info
-			});
-		}, this));
+			callback = function() {
+				Craft.cp.checkForUpdates(true, realCallback);
+			};
+		}
+
+		// Callback function?
+		if (typeof callback == 'function')
+		{
+			if (!Garnish.isArray(this.checkForUpdatesCallbacks))
+			{
+				this.checkForUpdatesCallbacks = [];
+			}
+
+			this.checkForUpdatesCallbacks.push(callback);
+		}
+
+		if (!this.checkingForUpdates)
+		{
+			this.checkingForUpdates = true;
+			this.forcingRefreshOnUpdatesCheck = (forceRefresh === true);
+
+			var data = {
+				forceRefresh: (forceRefresh === true)
+			};
+
+			Craft.queueActionRequest('app/checkForUpdates', data, $.proxy(function(info)
+			{
+				this.displayUpdateInfo(info);
+				this.checkingForUpdates = false;
+
+				if (Garnish.isArray(this.checkForUpdatesCallbacks))
+				{
+					var callbacks = this.checkForUpdatesCallbacks;
+					this.checkForUpdatesCallbacks = null;
+
+					for (var i = 0; i < callbacks.length; i++)
+					{
+						callbacks[i](info);
+					}
+				}
+
+				this.trigger('checkForUpdates', {
+					updateInfo: info
+				});
+			}, this));
+		}
 	},
 
 	displayUpdateInfo: function(info)
 	{
 		// Remove the existing header badge, if any
-		this.$headerActionsList.children('li.updates').remove();
+		this.$globalSidebarTopbar.children('a.updates').remove();
 
 		if (info.total)
 		{
@@ -637,12 +709,12 @@ Craft.CP = Garnish.Base.extend(
 				var updateText = Craft.t('{num} updates available', { num: info.total });
 			}
 
-			// Header badge
-			$('<li class="updates'+(info.critical ? ' critical' : '')+'">' +
-				'<a data-icon="newstamp" href="'+Craft.getUrl('updates')+'" title="'+updateText+'">' +
+			// Topbar badge
+			$('<a class="updates'+(info.critical ? ' critical' : '')+'" href="'+Craft.getUrl('updates')+'" title="'+updateText+'">' +
+				'<span data-icon="newstamp">' +
 					'<span>'+info.total+'</span>' +
-				'</a>' +
-			'</li>').prependTo(this.$headerActionsList);
+				'</span>' +
+			'</span>').insertAfter(this.$siteNameLink);
 
 			// Footer link
 			$('#footer-updates').text(updateText);
@@ -775,6 +847,8 @@ var TaskProgressIcon = Garnish.Base.extend(
 {
 	$li: null,
 	$a: null,
+	$label: null,
+
 	hud: null,
 	completed: false,
 	failMode: false,
@@ -805,15 +879,17 @@ var TaskProgressIcon = Garnish.Base.extend(
 
 	init: function()
 	{
-		this.$li = $('<li/>').prependTo(Craft.cp.$headerActionsList);
+		this.$li = $('<li/>').appendTo(Craft.cp.$nav);
 		this.$a = $('<a id="taskicon"/>').appendTo(this.$li);
+		this.$canvasContainer = $('<span class="icon"/>').appendTo(this.$a);
+		this.$label = $('<span class="label"></span>').appendTo(this.$a);
 
 		this._canvasSupported = !!(document.createElement('canvas').getContext);
 
 		if (this._canvasSupported)
 		{
 			var m = (window.devicePixelRatio > 1 ? 2 : 1);
-			this._canvasSize = 30 * m;
+			this._canvasSize = 18 * m;
 			this._arcPos = this._canvasSize / 2;
 			this._arcRadius = 7 * m;
 			this._lineWidth = 3 * m;
@@ -831,7 +907,7 @@ var TaskProgressIcon = Garnish.Base.extend(
 		}
 		else
 		{
-			this._progressBar = new Craft.ProgressBar(this.$a);
+			this._progressBar = new Craft.ProgressBar(this.$canvasContainer);
 			this._progressBar.showProgressBar();
 		}
 
@@ -841,6 +917,7 @@ var TaskProgressIcon = Garnish.Base.extend(
 	setDescription: function(description)
 	{
 		this.$a.attr('title', description);
+		this.$label.html(description);
 	},
 
 	setProgress: function(progress, animate)
@@ -874,7 +951,7 @@ var TaskProgressIcon = Garnish.Base.extend(
 
 				this._animateArc(1, 1, $.proxy(function()
 				{
-					this.$li.remove();
+					this.$a.remove();
 					this.destroy();
 				}, this));
 			}, this));
@@ -950,7 +1027,7 @@ var TaskProgressIcon = Garnish.Base.extend(
 
 	_createCanvas: function(id, color)
 	{
-		var $canvas = $('<canvas id="taskicon-'+id+'" width="'+this._canvasSize+'" height="'+this._canvasSize+'"/>').appendTo(this.$a),
+		var $canvas = $('<canvas id="taskicon-'+id+'" width="'+this._canvasSize+'" height="'+this._canvasSize+'"/>').appendTo(this.$canvasContainer),
 			ctx = $canvas[0].getContext('2d');
 
 		ctx.strokeStyle = color;
@@ -1024,7 +1101,10 @@ var TaskProgressHUD = Garnish.HUD.extend(
 		this.tasksById = {};
 		this.completedTasks = [];
 
-		this.base(this.icon.$a);
+		this.base(this.icon.$a, null, {
+			minBodyHeight: 0
+		});
+
 		this.$main.attr('id', 'tasks-hud');
 
 		// Use the known task as a starting point

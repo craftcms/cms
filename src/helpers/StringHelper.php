@@ -353,7 +353,7 @@ class StringHelper
 		$str = str_replace(array('&nbsp;', '&#160;', '&#xa0;') , ' ', $str);
 
 		// Get rid of entities
-		$str = html_entity_decode($str, ENT_QUOTES, static::UTF8);
+		$str = preg_replace("/&#?[a-z0-9]{2,8};/i", "", $str);
 
 		// Remove punctuation and diacritics
 		$str = strtr($str, static::_getCharMap());
@@ -398,6 +398,27 @@ class StringHelper
 	}
 
 	/**
+	 * Runs a string through Markdown, but remoes any paragraph tags that get removed
+	 *
+	 * @param string $str
+	 *
+	 * @return string
+	 */
+	public static function parseMarkdownLine($str)
+	{
+		// Prevent line breaks from getting treated as paragraphs
+		$str = preg_replace('/[\r\n]/', '  $0', $str);
+
+		// Parse with Markdown
+		$str = self::parseMarkdown($str);
+
+		// Return without the <p> and </p>
+		$str = trim(str_replace(array('<p>', '</p>'), '', $str));
+
+		return $str;
+	}
+
+	/**
 	 * Attempts to convert a string to UTF-8 and clean any non-valid UTF-8 characters.
 	 *
 	 * @param      $string
@@ -432,6 +453,41 @@ class StringHelper
 		{
 			$encoding = static::getEncoding($string);
 			$string = mb_convert_encoding($string, 'utf-8', $encoding);
+		}
+
+		return $string;
+	}
+
+	/**
+	 * HTML-encodes any 4-byte UTF-8 characters.
+	 *
+	 * @param string $string The string
+	 *
+	 * @return string The string with converted 4-byte UTF-8 characters
+	 *
+	 * @see http://stackoverflow.com/a/16496730/1688568
+	 */
+	public static function encodeMb4($string)
+	{
+		// Does this string have any 4+ byte Unicode chars?
+		if (max(array_map('ord', str_split($string))) >= 240)
+		{
+			$string = preg_replace_callback('/./u', function(array $match)
+			{
+				if (strlen($match[0]) >= 4)
+				{
+					// (Logic pulled from WP's wp_encode_emoji() function)
+					// UTF-32's hex encoding is the same as HTML's hex encoding.
+					// So, by converting from UTF-8 to UTF-32, we magically
+					// get the correct hex encoding.
+					$unpacked = unpack('H*', mb_convert_encoding($match[0], 'UTF-32', 'UTF-8'));
+					return isset($unpacked[1]) ? '&#x'.ltrim($unpacked[1], '0').';' : '';
+				}
+				else
+				{
+					return $match[0];
+				}
+			}, $string);
 		}
 
 		return $string;

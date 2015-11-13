@@ -43,14 +43,14 @@ Craft.Grid = Garnish.Base.extend(
 			this.sizeUnit = 'px';
 		}
 
+		// Set the refreshCols() proxy that container resizes will trigger
+		this.handleContainerHeightProxy = $.proxy(function() {
+			this.refreshCols(false, true);
+		}, this);
+
 		this.$items = this.$container.children(this.settings.itemSelector);
 		this.setItems();
 		this.refreshCols(true, false);
-
-		// Adjust them when the container is resized
-		this.addListener(this.$container, 'resize', function() {
-			this.refreshCols(false, true);
-		});
 
 		Garnish.$doc.ready($.proxy(function() {
 			this.refreshCols(false, false);
@@ -121,6 +121,11 @@ Craft.Grid = Garnish.Base.extend(
 		else
 		{
 			this.refreshCols._.totalCols = Math.floor(this.$container.width() / this.settings.minColWidth);
+
+			if (this.settings.maxCols && this.refreshCols._.totalCols > this.settings.maxCols)
+			{
+				this.refreshCols._.totalCols = this.settings.maxCols;
+			}
 		}
 
 		if (this.refreshCols._.totalCols == 0)
@@ -136,6 +141,9 @@ Craft.Grid = Garnish.Base.extend(
 		}
 
 		this.totalCols = this.refreshCols._.totalCols;
+
+		// Temporarily stop listening to container resizes
+		this.removeListener(this.$container, 'resize');
 
 		if (this.settings.fillMode == 'grid')
 		{
@@ -404,7 +412,12 @@ Craft.Grid = Garnish.Base.extend(
 			}
 		}
 
+		this.onRefreshCols();
+
 		delete this.refreshCols._;
+
+		// Resume container resize listening
+		this.addListener(this.$container, 'resize', this.handleContainerHeightProxy);
 	},
 
 	getItemWidth: function(colspan)
@@ -483,9 +496,7 @@ Craft.Grid = Garnish.Base.extend(
 		}
 
 		// Set the container height
-		this.removeListener(this.$container, 'height');
 		this.$container.height(Math.max.apply(null, this.positionItems._.colHeights));
-		this.addListener(this.$container, 'height', 'refreshCols');
 
 		delete this.positionItems._;
 	},
@@ -512,17 +523,26 @@ Craft.Grid = Garnish.Base.extend(
 		}
 
 		delete this.onItemResize._;
+	},
+
+	onRefreshCols: function()
+	{
+		this.trigger('refreshCols');
+		this.settings.onRefreshCols();
 	}
 },
 {
 	defaults: {
 		itemSelector: '.item',
 		cols: null,
+		maxCols: null,
 		minColWidth: 320,
 		mode: 'pct',
 		fillMode: 'top',
 		colClass: 'col',
-		snapToGrid: null
+		snapToGrid: null,
+
+		onRefreshCols: $.noop
 	}
 });
 

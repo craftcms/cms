@@ -21,12 +21,12 @@ class RebrandVariable
 	/**
 	 * @var
 	 */
-	private $_logoPath;
+	private $_paths = array();
 
 	/**
 	 * @var
 	 */
-	private $_logoVariable;
+	private $_imageVariables = array();
 
 	// Public Methods
 	// =========================================================================
@@ -38,56 +38,122 @@ class RebrandVariable
 	 */
 	public function isLogoUploaded()
 	{
-		return ($this->_getLogoPath() !== false);
+		return $this->isImageUploaded('logo');
 	}
 
 	/**
-	 * Returns the logo variable, or false if a logo hasn't been uploaded.
+	 * Returns whether a custom site icon has been uploaded.
 	 *
-	 * @return LogoVariable
+	 * @return bool
+	 */
+	public function isIconUploaded()
+	{
+		return $this->isImageUploaded('icon');
+	}
+
+	/**
+	 * Return whether the specified type of image has been uploaded for the site.
+	 *
+	 * @param string $type 'logo' or 'icon'.
+	 *
+	 * @return bool
+	 */
+	public function isImageUploaded($type)
+	{
+		return in_array($type, array('logo', 'icon')) && ($this->_getImagePath($type) !== false);
+	}
+
+	/**
+	 * Returns the logo's Image variable, or null if a logo hasn't been uploaded.
+	 *
+	 * @return ImageVariable|null
 	 */
 	public function getLogo()
 	{
-		if (!isset($this->_logoVariable))
-		{
-			$logoPath = $this->_getLogoPath();
+		return $this->getImageVariable('logo');
+	}
 
-			if ($logoPath !== false)
+	/**
+	 * Returns the icons variable, or null if a site icon hasn't been uploaded.
+	 *
+	 * @return ImageVariable|null
+	 */
+	public function getIcon()
+	{
+		return $this->getImageVariable('icon');
+	}
+
+	/**
+	 * Get the ImageVariable for type.
+	 *
+	 * @param $type
+	 *
+	 * @return ImageVariable|null
+	 */
+	public function getImageVariable($type)
+	{
+		if (!in_array($type, array('logo', 'icon')))
+		{
+			return null;
+		}
+
+		if (!isset($this->_imageVariables[$type]))
+		{
+			$path = $this->_getImagePath($type);
+
+			if ($path !== false)
 			{
-				$this->_logoVariable = new LogoVariable($logoPath);
+				$url = $this->_getImageUrl($path, $type);
+				$this->_imageVariables[$type] = new ImageVariable($path, $url);
 			}
 			else
 			{
-				$this->_logoVariable = false;
+				$this->_imageVariables[$type] = false;
 			}
 		}
 
-		return $this->_logoVariable;
+		return $this->_imageVariables[$type] ?: null;
 	}
 
-	// Public Methods
+	// Private Methods
 	// =========================================================================
 
 	/**
-	 * Returns the path to the logo, or false if a logo hasn't been uploaded.
+	 * Returns the path to a rebrand image by type or false if it hasn't ben uploaded.
+	 *
+	 * @param string $type logo or image.
 	 *
 	 * @return string
 	 */
-	private function _getLogoPath()
+	private function _getImagePath($type)
 	{
-		if (!isset($this->_logoPath))
+		if (!isset($this->_paths[$type]))
 		{
-			$files = IOHelper::getFolderContents(craft()->path->getStoragePath().'logo/', false);
+			$files = IOHelper::getFolderContents(craft()->path->getRebrandPath().$type.'/', false);
+
 			if (!empty($files))
 			{
-				$this->_logoPath = $files[0];
+				$this->_paths[$type] = $files[0];
 			}
 			else
 			{
-				$this->_logoPath = false;
+				$this->_paths[$type] = false;
 			}
 		}
 
-		return $this->_logoPath;
+		return $this->_paths[$type];
+	}
+
+	/**
+	 * Returns the URL to a rebrand image.
+	 *
+	 * @param $path
+	 * @param $type
+	 *
+	 * @return string
+	 */
+	private function _getImageUrl($path, $type)
+	{
+		return UrlHelper::getResourceUrl('rebrand/'.$type.'/'.IOHelper::getFileName($path));
 	}
 }

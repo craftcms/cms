@@ -12,17 +12,8 @@
 	{%- include "_includes/forms/text" with { autocomplete: false, size: 10, value: (value ? value.localeDate() : '') } -%}
 </div>
 
-{%- set js %}
-
-	var $datePicker = $('#{{ id|namespaceInputId|e('js') }}');
-	$datePicker.datepicker({
-		constrainInput: false,
-		dateFormat: '{{ craft.i18n.datepickerJsFormat }}',
-		defaultDate: new Date({% if value %}{{ value.year }}, {{ value.month-1 }}, {{ value.day }}{% endif %}),
-		prevText:   '{{ "Prev"|t|e('js') }}',
-		nextText:   '{{ "Next"|t|e('js') }}',
-		firstDay:   {{ currentUser.weekStartDay }},
+{%- includejs %}
+	$('#{{ id|namespaceInputId|e('js') }}').datepicker({
+		defaultDate: new Date({% if value %}{{ value.year }}, {{ value.month-1 }}, {{ value.day }}{% endif %})
 	});
-
-{%- endset %}
-{%- includeJs js %}
+{%- endincludejs %}

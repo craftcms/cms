@@ -91,6 +91,16 @@ class QuickPostWidget extends BaseWidget
 	}
 
 	/**
+	 * @inheritDoc IWidget::getIconPath()
+	 *
+	 * @return string
+	 */
+	public function getIconPath()
+	{
+		return craft()->path->getResourcesPath().'images/widgets/quick-post.svg';
+	}
+
+	/**
 	 * @inheritDoc IWidget::getTitle()
 	 *
 	 * @return string

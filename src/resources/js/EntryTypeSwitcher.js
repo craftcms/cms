@@ -3,14 +3,12 @@
 
 Craft.EntryTypeSwitcher = Garnish.Base.extend(
 {
-	$form: null,
 	$typeSelect: null,
 	$spinner: null,
 	$fields: null,
 
 	init: function()
 	{
-		this.$form = $('#entry-form');
 		this.$typeSelect = $('#entryType');
 		this.$spinner = $('<div class="spinner hidden"/>').insertAfter(this.$typeSelect.parent());
 		this.$fields = $('#fields');
@@ -22,7 +20,7 @@ Craft.EntryTypeSwitcher = Garnish.Base.extend(
 	{
 		this.$spinner.removeClass('hidden');
 
-		Craft.postActionRequest('entries/switchEntryType', this.$form.serialize(), $.proxy(function(response, textStatus) {
+		Craft.postActionRequest('entries/switchEntryType', Craft.cp.$container.serialize(), $.proxy(function(response, textStatus) {
 			this.$spinner.addClass('hidden');
 
 			if (textStatus == 'success')

@@ -223,7 +223,7 @@ class ElementsController extends BaseElementsController
 		}
 
 		// Make sure it's editable
-		if (!$element->isEditable())
+		if (!ElementHelper::isElementEditable($element))
 		{
 			throw new HttpException(403);
 		}
@@ -290,7 +290,7 @@ class ElementsController extends BaseElementsController
 			$response['html'] .= '<input type="hidden" name="locale" value="'.$element->locale.'">';
 		}
 
-		$response['html'] .= '<div>' .
+		$response['html'] .= '<div class="meta">' .
 			craft()->templates->namespaceInputs($elementType->getEditorHtml($element)) .
 			'</div>';
 

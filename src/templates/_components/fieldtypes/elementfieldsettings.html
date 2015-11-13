@@ -30,7 +30,7 @@
 	{% endblock %}
 
 	{% block targetLocaleField %}
-		{{ targetLocaleFieldHtml }}
+		{{ targetLocaleFieldHtml|raw }}
 	{% endblock %}
 
 	{% block limitField %}
@@ -48,7 +48,7 @@
 	{% endblock %}
 
 	{% block viewModeField %}
-		{{ viewModeFieldHtml }}
+		{{ viewModeFieldHtml|raw }}
 	{% endblock %}
 
 	{% block selectionLabelField %}

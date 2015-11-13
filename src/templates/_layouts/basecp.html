@@ -1,5 +1,12 @@
 {% extends "_layouts/base" %}
 
+{# Give the body a .mobile class for mobile devices #}
+{% if craft.request.isMobileBrowser(true) %}
+	{% set bodyClass = (bodyClass is defined and bodyClass ? bodyClass~' ' : '') ~ 'mobile' %}
+{% endif %}
+
+{% set localeData = craft.i18n.getLocaleData() %}
+
 {# Figure out which Datepicker i18n script to load #}
 {%- switch craft.locale %}
 	{%- case 'en_gb' %}
@@ -7,7 +14,7 @@
 	{%- case 'fr_ca' %}
 		{%- set datepickerLocale = 'fr-CA' %}
 	{%- default %}
-		{%- set language = craft.i18n.getLocaleData().getLanguageID(craft.locale) %}
+		{%- set language = localeData.getLanguageID(craft.locale) %}
 		{%- if language in ['ar', 'de', 'fr', 'it', 'ja', 'nb', 'nl', 'nn', 'no'] %}
 			{%- set datepickerLocale = language %}
 		{%- endif %}
@@ -16,28 +23,27 @@
 {# Load scripts in reverse order #}
 
 {%- if datepickerLocale is defined %}
-	{%- includeJsResource 'lib/datepicker-i18n/datepicker-'~datepickerLocale~'.js' first %}
+	{%- includejsresource 'lib/datepicker-i18n/datepicker-'~datepickerLocale~'.js' first %}
 {%- endif %}
 
 {%- set useCompressedJs = craft.config.useCompressedJs %}
-{%- includeJsResource "js/cp.js" first -%}
-{%- includeJsResource "js/craft.js" first -%}
-{%- includeJsResource 'lib/garnish-0.1'~(useCompressedJs ? '.min')~'.js' first %}
-{%- includeJsResource 'lib/picturefill-3.0.0-rc1'~(useCompressedJs ? '.min')~'.js' first %}
-{%- includeJsResource 'lib/fileupload/jquery.fileupload.js' first %}
-{%- includeJsResource 'lib/fileupload/jquery.ui.widget.js' first %}
-{%- includeJsResource 'lib/selectize/selectize'~(useCompressedJs ? '.min')~'.js' first %}
-{%- includeCssResource 'lib/selectize/selectize.css' %}
-{%- includeJsResource 'lib/velocity'~(useCompressedJs ? '.min')~'.js' first %}
-{%- includeJsResource 'lib/jquery-ui'~(useCompressedJs ? '.min')~'.js' first %}
-{%- includeJsResource 'lib/jquery-2.1.4'~(useCompressedJs ? '.min')~'.js' first %}
-{%- includeJsResource 'lib/xregexp-all'~(useCompressedJs ? '-min')~'.js' first %}
-{%- includeJsResource 'lib/chartist/chartist'~(useCompressedJs ? '.min')~'.js' first %}
-{%- includeCssResource 'lib/chartist/chartist.min.css' %}
+{%- includejsresource "js/cp.js" first -%}
+{%- includejsresource "js/craft.js" first -%}
+{%- includejsresource 'lib/garnish-0.1'~(useCompressedJs ? '.min')~'.js' first %}
+{%- includejsresource 'lib/element-resize-detector'~(useCompressedJs ? '.min')~'.js' first %}
+{%- includejsresource 'lib/picturefill'~(useCompressedJs ? '.min')~'.js' first %}
+{%- includejsresource 'lib/fileupload/jquery.fileupload.js' first %}
+{%- includejsresource 'lib/fileupload/jquery.ui.widget.js' first %}
+{%- includejsresource 'lib/selectize/selectize'~(useCompressedJs ? '.min')~'.js' first %}
+{%- includecssresource 'lib/selectize/selectize.css' %}
+{%- includejsresource 'lib/velocity'~(useCompressedJs ? '.min')~'.js' first %}
+{%- includejsresource 'lib/jquery-ui'~(useCompressedJs ? '.min')~'.js' first %}
+{%- includejsresource 'lib/jquery-2.1.4'~(useCompressedJs ? '.min')~'.js' first %}
+{%- includejsresource 'lib/xregexp-all'~(useCompressedJs ? '-min')~'.js' first %}
 
 {%- includeTranslations "Show", "Hide" %}
 
-{% set orientation = craft.i18n.getLocaleData().getOrientation() %}
+{% set orientation = localeData.getOrientation() %}
 
 {% block foot %}
 	<noscript>
@@ -85,6 +91,18 @@
 			slugWordSeparator:     "{{ craft.config.slugWordSeparator|e('js') }}",
 			limitAutoSlugsToAscii: {{ craft.config.limitAutoSlugsToAscii ? 'true' : 'false' }},
 			fileKinds:             {{ craft.app.getFileKinds()|json_encode|raw }},
+			datepickerOptions: {
+				constrainInput: false,
+				dateFormat: "{{ craft.i18n.getDatepickerJsFormat()|e('js') }}",
+				prevText: '{{ "Prev"|t|e('js') }}',
+				nextText: '{{ "Next"|t|e('js') }}',
+				firstDay: {{ currentUser is defined and currentUser ? currentUser.weekStartDay : craft.config.defaultWeekStartDay }},
+				dayNames: {{ localeData.getWeekDayNames('wide', true)|json_encode|raw }},
+				dayNamesShort: {{ localeData.getWeekDayNames('abbreviated', true)|json_encode|raw }},
+				dayNamesMin: {{ localeData.getWeekDayNames('narrow', true)|json_encode|raw }},
+				monthNames: {{ localeData.getMonthNames('wide', true)|values|json_encode|raw }},
+				monthNamesShort: {{ localeData.getMonthNames('abbreviated', true)|values|json_encode|raw }}
+			},
 			publishableSections: [
 				{% if isInstalled and currentUser is defined and currentUser %}
 					{% for section in craft.sections.getEditableSections() %}

@@ -1,12 +1,10 @@
 {% extends "_layouts/cp" %}
 {% set title = "Settings"|t %}
-{% set fitted = true %}
 
-{% includeCssResource 'css/settings.css' %}
-{% includeJsResource 'js/settings.js' %}
+{% includecssresource 'css/settings.css' %}
+{% includejsresource 'js/settings.js' %}
 
-{% set content %}
-
+{% block content %}
 	{% for category, items in craft.cp.settings(80) %}
 		<h2>{{ category }}</h2>
 
@@ -33,7 +31,7 @@
 	<ul class="icons">
 		{% for tool in tools %}
 			<li><a id="tool-{{ tool.getClassHandle() }}" data-icon="{{ tool.getIconValue() }}">{{ tool.getName() }}</a></li>
-			{% includeJs 'new Craft.Tool("'~tool.getClassHandle()~'", '~tool.getOptionsHtml()|json_encode~', "'~tool.getButtonLabel()~'");' %}
+			{% includejs 'new Craft.Tool("'~tool.getClassHandle()~'", '~tool.getOptionsHtml()|json_encode~', "'~tool.getButtonLabel()~'");' %}
 		{% endfor %}
 	</ul>
-{% endset %}
+{% endblock %}

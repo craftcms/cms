@@ -64,6 +64,8 @@ Craft.EntryIndex = Craft.BaseElementIndex.extend(
 		}
 
 		// Update the New Entry button
+		// ---------------------------------------------------------------------
+
 		if (this.publishableSections.length)
 		{
 			// Remove the old button, if there is one
@@ -75,11 +77,15 @@ Craft.EntryIndex = Craft.BaseElementIndex.extend(
 			// Determine if they are viewing a section that they have permission to create entries in
 			var selectedSection;
 
-			for (var i = 0; i < this.publishableSections.length; i++)
+			if (selectedSourceHandle)
 			{
-				if (this.publishableSections[i].handle == selectedSourceHandle)
+				for (var i = 0; i < this.publishableSections.length; i++)
 				{
-					selectedSection = this.publishableSections[i];
+					if (this.publishableSections[i].handle == selectedSourceHandle)
+					{
+						selectedSection = this.publishableSections[i];
+						break;
+					}
 				}
 			}
 
@@ -118,7 +124,7 @@ Craft.EntryIndex = Craft.BaseElementIndex.extend(
 
 				for (var i = 0; i < this.publishableSections.length; i++)
 				{
-					section = this.publishableSections[i];
+					var section = this.publishableSections[i];
 
 					if (this.settings.context == 'index' || section != selectedSection)
 					{
@@ -146,6 +152,8 @@ Craft.EntryIndex = Craft.BaseElementIndex.extend(
 		}
 
 		// Update the URL if we're on the Entries index
+		// ---------------------------------------------------------------------
+
 		if (this.settings.context == 'index' && typeof history != typeof undefined)
 		{
 			var uri = 'entries';

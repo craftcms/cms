@@ -502,38 +502,8 @@ class FieldsService extends BaseApplicationComponent
 				$fieldRecord = $this->_getFieldRecord($field);
 				$isNewField = $fieldRecord->isNewRecord();
 
-				$fieldRecord->groupId      = $field->groupId;
-				$fieldRecord->name         = $field->name;
-				$fieldRecord->handle       = $field->handle;
-				$fieldRecord->context      = $field->context;
-				$fieldRecord->instructions = $field->instructions;
-				$fieldRecord->translatable = $field->translatable;
-				$fieldRecord->type         = $field->type;
-
 				// Get the field type
 				$fieldType = $field->getFieldType();
-
-				// Give the field type a chance to prep the settings from post
-				$preppedSettings = $fieldType->prepSettings($field->settings);
-
-				// Set the prepped settings on the FieldRecord, FieldModel, and the field type
-				$fieldRecord->settings = $field->settings = $preppedSettings;
-				$fieldType->setSettings($preppedSettings);
-
-				if ($fieldRecord->settings instanceof BaseModel)
-				{
-					// Call getAttributes() without passing 'true' so the __model__ isn't saved
-					$fieldRecord->settings = $fieldRecord->settings->getAttributes();
-				}
-
-				$fieldType->onBeforeSave();
-				$fieldRecord->save(false);
-
-				// Now that we have a field ID, save it on the model
-				if ($isNewField)
-				{
-					$field->id = $fieldRecord->id;
-				}
 
 				// Create/alter the content table column
 				$columnType = $fieldType->defineContentAttribute();
@@ -572,6 +542,36 @@ class FieldsService extends BaseApplicationComponent
 							craft()->db->createCommand()->dropColumn($contentTable, $oldColumnName);
 						}
 					}
+				}
+
+				$fieldRecord->groupId      = $field->groupId;
+				$fieldRecord->name         = $field->name;
+				$fieldRecord->handle       = $field->handle;
+				$fieldRecord->context      = $field->context;
+				$fieldRecord->instructions = $field->instructions;
+				$fieldRecord->translatable = $field->translatable;
+				$fieldRecord->type         = $field->type;
+
+				// Give the field type a chance to prep the settings from post
+				$preppedSettings = $fieldType->prepSettings($field->settings);
+
+				// Set the prepped settings on the FieldRecord, FieldModel, and the field type
+				$fieldRecord->settings = $field->settings = $preppedSettings;
+				$fieldType->setSettings($preppedSettings);
+
+				if ($fieldRecord->settings instanceof BaseModel)
+				{
+					// Call getAttributes() without passing 'true' so the __model__ isn't saved
+					$fieldRecord->settings = $fieldRecord->settings->getAttributes();
+				}
+
+				$fieldType->onBeforeSave();
+				$fieldRecord->save(false);
+
+				// Now that we have a field ID, save it on the model
+				if ($isNewField)
+				{
+					$field->id = $fieldRecord->id;
 				}
 
 				if (!$isNewField)
@@ -778,7 +778,7 @@ class FieldsService extends BaseApplicationComponent
 	}
 
 	/**
-	 * Returns a layout's tabs by its ID.
+	 * Returns a layout's fields by its ID.
 	 *
 	 * @param int $layoutId
 	 *
@@ -786,8 +786,23 @@ class FieldsService extends BaseApplicationComponent
 	 */
 	public function getLayoutFieldsById($layoutId)
 	{
-		$results = $this->_createLayoutFieldQuery()
-			->where('layoutId = :layoutId', array(':layoutId' => $layoutId))
+		$results = $this->_createLayoutFieldQuery($layoutId)->queryAll();
+
+		return FieldLayoutFieldModel::populateModels($results);
+	}
+
+	/**
+	 * Returns a layout's fields by its ID, in the layout-defined sort order.
+	 *
+	 * @param int $layoutId
+	 *
+	 * @return array
+	 */
+	public function getOrderedLayoutFieldsById($layoutId)
+	{
+		$results = $this->_createLayoutFieldQuery($layoutId)
+			->join('fieldlayouttabs fieldlayouttabs', 'fieldlayouttabs.id = fieldlayoutfields.tabId')
+			->order('fieldlayouttabs.sortOrder, fieldlayoutfields.sortOrder')
 			->queryAll();
 
 		return FieldLayoutFieldModel::populateModels($results);
@@ -1039,14 +1054,16 @@ class FieldsService extends BaseApplicationComponent
 	/**
 	 * Returns a DbCommand object prepped for retrieving layout fields.
 	 *
+	 * @param int $layoutId
+	 *
 	 * @return DbCommand
 	 */
-	private function _createLayoutFieldQuery()
+	private function _createLayoutFieldQuery($layoutId)
 	{
 		return craft()->db->createCommand()
-			->select('id, layoutId, tabId, fieldId, required, sortOrder')
-			->from('fieldlayoutfields')
-			->order('sortOrder');
+			->select('fieldlayoutfields.id, fieldlayoutfields.layoutId, fieldlayoutfields.tabId, fieldlayoutfields.fieldId, fieldlayoutfields.required, fieldlayoutfields.sortOrder')
+			->from('fieldlayoutfields fieldlayoutfields')
+			->where('fieldlayoutfields.layoutId = :layoutId', array(':layoutId' => $layoutId));
 	}
 
 	/**

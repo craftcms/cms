@@ -18,6 +18,13 @@ craft()->requireEdition(Craft::Client);
  */
 class RebrandController extends BaseController
 {
+	/**
+	 * Allowed types of site images.
+	 *
+	 * @var array
+	 */
+	private $_allowedTypes = array('logo', 'icon');
+
 	// Public Methods
 	// =========================================================================
 
@@ -26,26 +33,37 @@ class RebrandController extends BaseController
 	 *
 	 * @return null
 	 */
-	public function actionUploadLogo()
+	public function actionUploadSiteImage()
 	{
 		$this->requireAjaxRequest();
 		$this->requireAdmin();
+		$type = craft()->request->getRequiredPost('type');
+
+		if (!in_array($type, $this->_allowedTypes))
+		{
+			$this->returnErrorJson(Craft::t('That is not an accepted site image type.'));
+		}
 
 		// Upload the file and drop it in the temporary folder
-		$file = $_FILES['image-upload'];
+		$file = UploadedFile::getInstanceByName('image-upload');
 
 		try
 		{
 			// Make sure a file was uploaded
-			if (!empty($file['name']) && !empty($file['size'])  )
+			if ($file)
 			{
+				$fileName = AssetsHelper::cleanAssetName($file->getName());
+
+				if (!ImageHelper::isImageManipulatable($file->getExtensionName()))
+				{
+					throw new Exception(Craft::t('The uploaded file is not an image.'));
+				}
+
 				$folderPath = craft()->path->getTempUploadsPath();
 				IOHelper::ensureFolderExists($folderPath);
 				IOHelper::clearFolder($folderPath, true);
 
-				$fileName = AssetsHelper::cleanAssetName($file['name']);
-
-				move_uploaded_file($file['tmp_name'], $folderPath.$fileName);
+				move_uploaded_file($file->getTempName(), $folderPath.$fileName);
 
 				// Test if we will be able to perform image actions on this image
 				if (!craft()->images->checkMemoryForImage($folderPath.$fileName))
@@ -103,10 +121,16 @@ class RebrandController extends BaseController
 	 *
 	 * @return null
 	 */
-	public function actionCropLogo()
+	public function actionCropSiteImage()
 	{
 		$this->requireAjaxRequest();
 		$this->requireAdmin();
+		$type = craft()->request->getRequiredPost('type');
+
+		if (!in_array($type, $this->_allowedTypes))
+		{
+			$this->returnErrorJson(Craft::t('That is not a legal site image type.'));
+		}
 
 		try
 		{
@@ -123,7 +147,7 @@ class RebrandController extends BaseController
 
 			if (IOHelper::fileExists($imagePath) && craft()->images->checkMemoryForImage($imagePath))
 			{
-				$targetPath = craft()->path->getStoragePath().'logo/';
+				$targetPath = craft()->path->getRebrandPath().$type.'/';
 
 				IOHelper::ensureFolderExists($targetPath);
                 IOHelper::clearFolder($targetPath);
@@ -136,7 +160,7 @@ class RebrandController extends BaseController
 
 				IOHelper::deleteFile($imagePath);
 
-				$html = craft()->templates->render('settings/general/_logo');
+				$html = craft()->templates->render('settings/general/_images/'.$type);
 				$this->returnJson(array('html' => $html));
 			}
 
@@ -155,13 +179,20 @@ class RebrandController extends BaseController
 	 *
 	 * @return null
 	 */
-	public function actionDeleteLogo()
+	public function actionDeleteSiteImage()
 	{
 		$this->requireAdmin();
-		IOHelper::clearFolder(craft()->path->getStoragePath().'logo/');
+		$type = craft()->request->getRequiredPost('type');
 
-		$html = craft()->templates->render('settings/general/_logo');
+		if (!in_array($type, $this->_allowedTypes))
+		{
+			$this->returnErrorJson(Craft::t('That is not a legal site image type.'));
+		}
+
+		IOHelper::clearFolder(craft()->path->getRebrandPath().$type.'/');
+
+		$html = craft()->templates->render('settings/general/_images/'.$type);
+
 		$this->returnJson(array('html' => $html));
-
 	}
 }

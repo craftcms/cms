@@ -1,6 +1,11 @@
 {% extends "_layouts/cp" %}
 {% set title = "Category Groups"|t %}
-{% set fitted = true %}
+
+{% set extraPageHeaderHtml %}
+	<div class="buttons right">
+		<a href="{{ url('settings/categories/new') }}" class="btn submit add icon">{{ "New category group"|t }}</a>
+	</div>
+{% endset %}
 
 {% set crumbs = [
 	{ label: "Settings"|t, url: url('settings') }
@@ -9,7 +14,7 @@
 {% set docsUrl = 'http://buildwithcraft.com/docs/categories' %}
 
 
-{% set content %}
+{% block content %}
 	<div id="nocategorygroups"{% if categoryGroups|length %} class="hidden"{% endif %}>
 		<p>{{ "No category groups exist yet."|t }}</p>
 	</div>
@@ -34,19 +39,14 @@
 			</tbody>
 		</table>
 	{% endif %}
-
-	<div class="buttons">
-		<a href="{{ url('settings/categories/new') }}" class="btn submit add icon">{{ "New Category Group"|t }}</a>
-	</div>
-{% endset %}
+{% endblock %}
 
 
-{% set js %}
+{% includejs %}
 	new Craft.AdminTable({
 		tableSelector: '#categorygroups',
 		noObjectsSelector: '#nocategorygroups',
 		deleteAction: 'categories/deleteCategoryGroup',
 		confirmDeleteMessage: '{{ "Are you sure you want to delete “{name}” and all its categories?"|t }}',
 	});
-{% endset %}
-{% includeJs js %}
+{% endincludejs %}

@@ -753,17 +753,12 @@ class AssetTransformsService extends BaseApplicationComponent
 			}
 
 			$image->scaleToFit($maxCachedImageSize, $maxCachedImageSize)->saveAs($destination);
-
-			if ($localCopy != $destination)
-			{
-				IOHelper::deleteFile($localCopy);
-			}
 		}
 		else
 		{
 			if ($localCopy != $destination)
 			{
-				IOHelper::move($localCopy, $destination);
+				IOHelper::copyFile($localCopy, $destination);
 			}
 		}
 	}

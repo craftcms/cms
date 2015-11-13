@@ -1,53 +1,69 @@
 (function($) {
 
-	var ImageUpload = null;
-
-	var settings = {
-		modalClass: "logo-modal",
-
-		uploadAction: 'rebrand/uploadLogo',
-
-		deleteMessage: Craft.t('Are you sure you want to delete the logo?'),
-		deleteAction: 'rebrand/deleteLogo',
-
-		cropAction: 'rebrand/cropLogo',
-
-		areaToolOptions:
-		{
-			aspectRatio: "",
-			initialRectangle: {
-				mode: "auto"
-			}
-		},
-
-		onImageSave: function(response)
-		{
-			refreshImage(response);
-		},
-
-		onImageDelete: function(response)
-		{
-			refreshImage(response);
-		}
-
-	};
-
-	function refreshImage(response) {
-		if (typeof response.html != "undefined") {
-			$('.cp-logo').replaceWith(response.html);
-			initImageUpload();
-		}
-
-	}
-
-	function initImageUpload()
+	function refreshImage($target, response)
 	{
-		// These change dynamically after each HTML overwrite, so we can't have them in the initial settings array.
-		settings.uploadButton = $('.logo-controls .upload-logo');
-		settings.deleteButton = $('.logo-controls .delete-logo');
-		ImageUpload = new Craft.ImageUpload(settings);
+		if (typeof response.html != "undefined")
+		{
+			$html = $(response.html);
+
+			// Switch out the old image uploader and HTML with the new stuff.
+			unsetImageUpload($target);
+			$target.replaceWith($html);
+			initImageUpload($html);
+		}
 	}
 
-	initImageUpload();
+	function initImageUpload($target)
+	{
+			var imageType = $target.data('type'),
+				settings = {
+				modalClass: "cp-image-modal",
+				uploadAction: 'rebrand/uploadSiteImage',
+
+				deleteMessage: Craft.t('Are you sure you want to delete the uploaded image?'),
+				deleteAction: 'rebrand/deleteSiteImage',
+
+				cropAction: 'rebrand/cropSiteImage',
+
+				areaToolOptions: {
+					aspectRatio: "",
+					initialRectangle: {
+						mode: "auto"
+					}
+				}
+			};
+
+			settings.onImageSave = $.proxy(function(response)
+			{
+				refreshImage($(this), response);
+			}, $target);
+
+			settings.onImageDelete = $.proxy(function(response, reference)
+			{
+				refreshImage($(this), response);
+			}, $target);
+
+			settings.uploadButton = $target.find('.upload');
+			settings.deleteButton = $target.find('.delete');
+			settings.postParameters = {type: imageType};
+
+		$target.data('imageUpload', new Craft.ImageUpload(settings));
+	}
+
+	function unsetImageUpload($target)
+	{
+		if (typeof $target.data('imageUpload') == "object") {
+			// Destroy the old ImageUpload object
+			$target.data('imageUpload').destroy();
+			$target.data('imageUpload', null);
+		}
+	}
+
+	var $images = $('.cp-image');
+
+	for (var i = 0; i < $images.length; i++)
+	{
+		initImageUpload($images.eq(i));
+	}
 
 })(jQuery);

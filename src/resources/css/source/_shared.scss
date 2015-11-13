@@ -3,17 +3,18 @@ $hue: 212;
 $headerBgColor: hsl($hue, 20%, 25%);
 $subnavBgColor: hsl($hue, 20%, 30%);
 $bgcolor: hsl($hue, 10%, 93%);
-$lightBgColor: #f8f8f8;
+$lightBgColor: #fafafa;
 
 $headerLinkHoverColor: rgba(0,0,0,0.1);
 $headerLinkActiveColor: rgba(0,0,0,0.2);
-$sidebarHoverLinkBackgroundColor: hsl($hue, 20%, 95%);
+$sidebarLinkHoverBgColor: hsl($hue, 20%, 95%);
 
 $textcolor: hsl($hue, 20%, 20%);
 $mediumtextcolor: hsl($hue, 10%, 60%);
 $lighttextcolor: hsl($hue, 10%, 75%);
 $linkcolor: hsl($hue, 90%, 50%);
-$hrcolor: hsla($hue, 10%, 50%, 0.15);
+$hairlineColor: hsl($hue, 10%, 90%);
+$hairlineColorAlpha: hsla(240, 100%, 4%, 0.1);
 $blurglowcolor: hsla($hue, 70%, 70%, 0);
 $focusglowcolor: hsl($hue, 70%, 70%);
 $lightselcolor: hsl($hue, 10%, 85%);
@@ -33,8 +34,63 @@ $successcolor: #00b007;
 $noticecolor: #5286d9;
 
 $btnBorderRadius: 3px;
-$paneBorderRadius: 3px;
+$paneBorderRadius: 4px;
 $elementBorderRadius: 3px;
+
+/* Flexbox stuff */
+
+@mixin display-flex {
+	display: flex;
+	display: -ms-flexbox;
+}
+
+@mixin flex-direction($value...) {
+	flex-direction: $value;
+	-ms-flex-direction: $value;
+}
+
+@mixin align-items($value) {
+	align-items: $value;
+
+	@if $value == flex-start {
+		-ms-flex-align: start;
+	} @else if $value == flex-end {
+		-ms-flex-align: end;
+	} @else {
+		-ms-flex-align: $value;
+	}
+}
+
+@mixin justify-content($value) {
+	justify-content: $value;
+
+	@if $value == flex-start {
+		-ms-flex-pack: start;
+	} @else if $value == flex-end {
+		-ms-flex-pack: end;
+	} @else if $value == space-between {
+		-ms-flex-align: justify;
+	} @else if $value == center {
+		-ms-flex-align: center;
+	}
+}
+
+@mixin flex-wrap($value) {
+	flex-wrap: $value;
+
+	@if $value == nowrap {
+		-ms-flex-wrap: none;
+	} @else {
+		-ms-flex-wrap: $value;
+	}
+}
+
+@mixin flex-grow($value) {
+	flex-grow: $value;
+	-ms-flex: $value;
+}
+
+/* Other */
 
 @mixin animation-iteration-count($count) {
 	-webkit-animation-iteration-count: $count;
@@ -58,6 +114,11 @@ $elementBorderRadius: 3px;
 	-webkit-animation-timing-function: $func;
 	-moz-animation-timing-function: $func;
 	animation-timing-function: $func;
+}
+
+@mixin backface-visibility($value) {
+	-webkit-backface-visibility: $value;
+	backface-visibility: $value;
 }
 
 @mixin box-shadow($params...) {
@@ -91,6 +152,10 @@ $elementBorderRadius: 3px;
 	background-image: -ms-radial-gradient($params);
 	background-image: -o-radial-gradient($params);
 	background-image: radial-gradient($params);
+}
+
+@mixin svg-mask($color) {
+	rect, circle, ellipse, line, polyline, polygon, path, text { fill: $color; stroke-width: 0; }
 }
 
 @mixin transform($params...) {
@@ -162,7 +227,7 @@ $elementBorderRadius: 3px;
 
 @mixin pane {
 	background: #fff;
-	@include box-shadow(0 0 0 1px rgba(0,0,0,0.05));
+	@include box-shadow(0 0 0 1px $hairlineColor);
 }
 
 @mixin spinner {

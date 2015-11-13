@@ -122,7 +122,7 @@ class AppController extends BaseController
 			craft()->userSession->requireAdmin();
 		}
 
-		$etResponse = craft()->et->fetchEditionInfo();
+		$etResponse = craft()->et->fetchUpgradeInfo();
 
 		if (!$etResponse)
 		{
@@ -143,7 +143,7 @@ class AppController extends BaseController
 
 		$editions = array();
 
-		foreach ($etResponse->data as $edition => $info)
+		foreach ($etResponse->data->editions as $edition => $info)
 		{
 			$editions[$edition]['price']          = $info['price'];
 			$editions[$edition]['formattedPrice'] = craft()->numberFormatter->formatCurrency($info['price'], 'USD', true);
@@ -172,7 +172,8 @@ class AppController extends BaseController
 			'editions'        => $editions,
 			'licensedEdition' => $etResponse->licensedEdition,
 			'canTestEditions' => $canTestEditions,
-			'modalHtml'       => $modalHtml
+			'modalHtml'       => $modalHtml,
+			'stripePublicKey' => $etResponse->data->stripePublicKey,
 		));
 	}
 

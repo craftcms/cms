@@ -122,7 +122,8 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 		// Keep the toolbar at the top of the window
 		if (this.settings.context == 'index' && !Garnish.isMobileBrowser(true))
 		{
-			this.addListener(Garnish.$win, 'scroll resize', 'updateFixedToolbar');
+			this.addListener(Garnish.$win, 'resize', 'updateFixedToolbar');
+			this.addListener(Craft.cp.$container, 'scroll', 'updateFixedToolbar');
 		}
 
 		// Initialize the sources
@@ -358,7 +359,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 			}
 		}
 
-		this.updateFixedToolbar._scrollTop = Garnish.$win.scrollTop();
+		this.updateFixedToolbar._scrollTop = Craft.cp.$container.scrollTop();
 
 		if (this.updateFixedToolbar._scrollTop > this.toolbarOffset - 7)
 		{
@@ -730,12 +731,12 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
 	getSelectedElements: function()
 	{
-		return this.view.getSelectedElements();
+		return this.view ? this.view.getSelectedElements() : $();
 	},
 
 	getSelectedElementIds: function()
 	{
-		return this.view.getSelectedElementIds();
+		return this.view ? this.view.getSelectedElementIds() : [];
 	},
 
 	getSortAttributeOption: function(attr)
@@ -835,6 +836,8 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 		{
 			this.sourceSelect.selectItem($source);
 		}
+
+		Craft.cp.updateSidebarMenuLabel();
 
 		if (this.searching)
 		{
@@ -1185,22 +1188,24 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 		{
 			return $(this.settings.buttonContainer);
 		}
-		else if (this.isShowingSidebar())
-		{
-			var $container = this.$sidebar.children('.buttons:first');
-
-			if ($container.length)
-			{
-				return $container;
-			}
-			else
-			{
-				return $('<div class="buttons"/>').prependTo(this.$sidebar);
-			}
-		}
 		else
 		{
-			return $('<td class="thin"/>').prependTo(this.$toolbarTableRow);
+			// Add it to the page header
+			var $container = $('#extra-headers > .buttons:first');
+
+			if (!$container.length)
+			{
+				var $extraHeadersContainer = $('#extra-headers');
+
+				if (!$extraHeadersContainer.length)
+				{
+					$extraHeadersContainer = $('<div id="extra-headers"/>').appendTo($('#page-header'));
+				}
+
+				$container = $('<div class="buttons right"/>').appendTo($extraHeadersContainer);
+			}
+
+			return $container;
 		}
 	},
 
@@ -1231,7 +1236,10 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
 	disable: function()
 	{
-		this.sourceSelect.disable();
+		if (this.sourceSelect)
+		{
+			this.sourceSelect.disable();
+		}
 
 		if (this.view)
 		{
@@ -1243,7 +1251,10 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
 	enable: function()
 	{
-		this.sourceSelect.enable();
+		if (this.sourceSelect)
+		{
+			this.sourceSelect.enable();
+		}
 
 		if (this.view)
 		{

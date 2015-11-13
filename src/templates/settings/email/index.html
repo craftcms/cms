@@ -6,14 +6,16 @@
 	{ label: "Settings"|t, url: url('settings') }
 ] %}
 
+{% set fullPageForm = true %}
+
 {% if CraftEdition >= CraftClient %}
-	{% set selectedTab = 'settings' %}
+	{% set selectedNavItem = 'settings' %}
 {% else %}
 	{% set title = "Email Settings"|t %}
 {% endif %}
 
 {% import "_includes/forms" as forms %}
-{% includeJsResource "js/email_settings.js" %}
+{% includejsresource "js/email_settings.js" %}
 {% includeTranslations
 	"Email sent successfully! Check your inbox.",
 	"An unknown error occurred."
@@ -28,12 +30,9 @@
 {% endif %}
 
 
-{% set content %}
-	<form id="settings-form" method="post" class="centered" accept-charset="UTF-8" data-saveshortcut>
+{% block content %}
 		<input type="hidden" name="action" value="systemSettings/saveEmailSettings">
 		<input type="hidden" name="redirect" value="settings">
-
-		{{ getCsrfInput() }}
 
 		{{ forms.textField({
 			first: true,
@@ -168,9 +167,7 @@
 		<hr>
 
 		<div class="buttons">
-			<input class="btn submit" type="submit" value="{{ 'Save'|t }}">
 			<div id="test" class="btn">{{ "Test"|t }}</div>
 			<div id="test-spinner" class="spinner hidden"></div>
 		</div>
-	</form>
-{% endset %}
+{% endblock %}

@@ -35,6 +35,7 @@ class ModelHelper
 		AttributeType::SortOrder  => array('column' => ColumnType::TinyInt),
 		AttributeType::Template   => array('maxLength' => 500, 'column' => ColumnType::Varchar),
 		AttributeType::Url        => array('maxLength' => 255, 'column' => ColumnType::Varchar),
+		AttributeType::UrlFormat  => array('column' => ColumnType::Text),
 	);
 
 	/**

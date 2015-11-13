@@ -182,6 +182,8 @@ Garnish.ltr = !Garnish.rtl;
 
 Garnish = $.extend(Garnish, {
 
+	$scrollContainer: Garnish.$win,
+
 	// Key code constants
 	DELETE_KEY:  8,
 	SHIFT_KEY:  16,
@@ -302,6 +304,22 @@ Garnish = $.extend(Garnish, {
 	isTextNode: function(elem)
 	{
 		return (elem.nodeType == Garnish.TEXT_NODE);
+	},
+
+	/**
+	 * Returns the offset of an element within the scroll container, whether that's the window or something else
+	 */
+	getOffset: function(elem)
+	{
+		this.getOffset._offset = $(elem).offset();
+
+		if (Garnish.$scrollContainer[0] != Garnish.$win[0])
+		{
+			this.getOffset._offset.top += Garnish.$scrollContainer.scrollTop();
+			this.getOffset._offset.left += Garnish.$scrollContainer.scrollLeft();
+		}
+
+		return this.getOffset._offset;
 	},
 
 	/**
@@ -711,6 +729,28 @@ Garnish = $.extend(Garnish, {
 				$sourceInputs.eq(i).val()
 			);
 		}
+	},
+
+	/**
+	 * Returns whether the "Ctrl" key is pressed (or ⌘ if this is a Mac) for a given keyboard event
+	 *
+	 * @param ev The keyboard event
+	 *
+	 * @return boolean Whether the "Ctrl" key is pressed
+	 */
+	isCtrlKeyPressed: function(ev)
+	{
+		if (window.navigator.platform.match(/Mac/))
+		{
+			// metaKey maps to ⌘ on Macs
+			return ev.metaKey;
+		}
+		else
+		{
+			// Both altKey and ctrlKey == true on some Windows keyboards when the right-hand ALT key is pressed
+			// so just be safe and make sure altKey == false
+			return (ev.ctrlKey && !ev.altKey);
+		}
 	}
 });
 
@@ -926,7 +966,26 @@ Garnish.Base = Base.extend({
 	}
 });
 
-// Register our custom jQuery events
+// Custom events
+// -----------------------------------------------------------------------------
+
+var erd;
+
+function getErd()
+{
+	if (typeof erd == typeof undefined)
+	{
+		erd = elementResizeDetectorMaker();
+	}
+
+	return erd;
+}
+
+function triggerResizeEvent(elem) {
+	$(elem).trigger('resize');
+};
+
+// Work them into jQuery's event system
 $.extend(jQuery.event.special, {
 	activate: {
 		setup: function(data, namespaces, eventHandle) {
@@ -1009,99 +1068,26 @@ $.extend(jQuery.event.special, {
 			}
 
 			$('> :last-child', this).addClass('last');
-			addResizeListener(this, triggerResizeEvent);
+			getErd().listenTo(this, triggerResizeEvent)
 		},
 		teardown: function() {
 			if (this == window) {
 				return false;
 			}
 
-			removeResizeListener(this, triggerResizeEvent);
+			getErd().removeListener(this, triggerResizeEvent);
 		}
 	}
 });
 
-window.triggerResizeEvent = function(e) {
-	$(this).trigger('resize', e);
-};
-
+// Give them their own element collection chaining methods
 jQuery.each(['activate','textchange','resize'], function(i, name) {
-	// Handle event binding
 	jQuery.fn[name] = function(data, fn) {
 		return arguments.length > 0 ?
 			this.on(name, null, data, fn) :
 			this.trigger(name);
 	};
 });
-
-// Cross-Browser, Event-based, Element Resize Detection script
-// source: http://www.backalleycoder.com/2013/03/18/cross-browser-event-based-element-resize-detection/ - thanks Daniel!
-// =============================================================================
-
-(function(){
-  var attachEvent = document.attachEvent;
-  var isIE = navigator.userAgent.match(/Trident/);
-  var requestFrame = (function(){
-    var raf = window.requestAnimationFrame || window.mozRequestAnimationFrame || window.webkitRequestAnimationFrame ||
-        function(fn){ return window.setTimeout(fn, 20); };
-    return function(fn){ return raf(fn); };
-  })();
-
-  var cancelFrame = (function(){
-    var cancel = window.cancelAnimationFrame || window.mozCancelAnimationFrame || window.webkitCancelAnimationFrame ||
-           window.clearTimeout;
-    return function(id){ return cancel(id); };
-  })();
-
-  function resizeListener(e){
-    var win = e.target || e.srcElement;
-    if (win.__resizeRAF__) cancelFrame(win.__resizeRAF__);
-    win.__resizeRAF__ = requestFrame(function(){
-      var trigger = win.__resizeTrigger__;
-      trigger.__resizeListeners__.forEach(function(fn){
-        fn.call(trigger, e);
-      });
-    });
-  }
-
-  function objectLoad(e){
-    this.contentDocument.defaultView.__resizeTrigger__ = this.__resizeElement__;
-    this.contentDocument.defaultView.addEventListener('resize', resizeListener);
-  }
-
-  window.addResizeListener = function(element, fn){
-    if (!element.__resizeListeners__ || !element.__resizeTrigger__) {
-      element.__resizeListeners__ = [];
-      if (attachEvent) {
-        element.__resizeTrigger__ = element;
-        element.attachEvent('onresize', resizeListener);
-      }
-      else {
-        if (getComputedStyle(element).position == 'static') element.style.position = 'relative';
-        var obj = element.__resizeTrigger__ = document.createElement('object');
-        obj.setAttribute('style', 'display: block; position: absolute; top: 0; left: 0; height: 100%; width: 100%; overflow: hidden; pointer-events: none; z-index: -1;');
-        obj.__resizeElement__ = element;
-        obj.onload = objectLoad;
-        obj.type = 'text/html';
-        if (isIE) element.appendChild(obj);
-        obj.data = 'about:blank';
-        if (!isIE) element.appendChild(obj);
-      }
-    }
-    element.__resizeListeners__.push(fn);
-  };
-
-  window.removeResizeListener = function(element, fn){
-    element.__resizeListeners__.splice(element.__resizeListeners__.indexOf(fn), 1);
-    if (!element.__resizeListeners__.length) {
-      if (attachEvent) element.detachEvent('onresize', resizeListener);
-      else {
-        element.__resizeTrigger__.contentDocument.defaultView.removeEventListener('resize', resizeListener);
-        element.__resizeTrigger__ = !element.removeChild(element.__resizeTrigger__);
-      }
-    }
-  }
-})();
 
 
 /**
@@ -1557,10 +1543,10 @@ Garnish.BaseDrag = Garnish.Base.extend({
 	 */
 	_scrollWindow: function()
 	{
-		this._.scrollPos = Garnish.$win[this.scrollProperty]();
-		Garnish.$win[this.scrollProperty](this._.scrollPos + this.scrollDist);
+		this._.scrollPos = Garnish.$scrollContainer[this.scrollProperty]();
+		Garnish.$scrollContainer[this.scrollProperty](this._.scrollPos + this.scrollDist);
 
-		this['mouse'+this.scrollAxis] -= this._.scrollPos - Garnish.$win[this.scrollProperty]();
+		this['mouse'+this.scrollAxis] -= this._.scrollPos - Garnish.$scrollContainer[this.scrollProperty]();
 		this['realMouse'+this.scrollAxis] = this['mouse'+this.scrollAxis];
 
 		this.drag();
@@ -3092,7 +3078,11 @@ Garnish.HUD = Garnish.Base.extend({
 
 		this.addListener(this.$body, 'submit', '_handleSubmit');
 		this.addListener(this.$shade, 'click', 'hide');
-		this.addListener(Garnish.$win, 'resize', 'updateSizeAndPosition');
+
+		if (!this.$fixedTriggerParent && Garnish.$scrollContainer[0] != Garnish.$win[0])
+		{
+			this.addListener(Garnish.$scrollContainer, 'scroll', 'updateSizeAndPosition');
+		}
 
 		if (this.settings.closeBtn)
 		{
@@ -3134,13 +3124,13 @@ Garnish.HUD = Garnish.Base.extend({
 		if ($header.length)
 		{
 			this.$header = $header.insertBefore(this.$mainContainer);
-			this.$hud.removeClass('has-header');
+			this.$hud.addClass('has-header');
 		}
 
 		if ($footer.length)
 		{
 			this.$footer = $footer.insertAfter(this.$mainContainer);
-			this.$hud.removeClass('has-footer');
+			this.$hud.addClass('has-footer');
 		}
 
 		this.updateSizeAndPosition();
@@ -3170,7 +3160,7 @@ Garnish.HUD = Garnish.Base.extend({
 		}
 
 		// Prevent the browser from jumping
-		this.$hud.css('top', Garnish.$win.scrollTop());
+		this.$hud.css('top', Garnish.$scrollContainer.scrollTop());
 
 		// Move it to the end of <body> so it gets the highest sub-z-index
 		this.$shade.appendTo(Garnish.$bod);
@@ -3190,6 +3180,8 @@ Garnish.HUD = Garnish.Base.extend({
 
 		// Reposition one last time just in case
 		Garnish.requestAnimationFrame($.proxy(this, 'updateSizeAndPosition'));
+
+		this.enable();
 	},
 
 	onShow: function()
@@ -3208,6 +3200,9 @@ Garnish.HUD = Garnish.Base.extend({
 			triggerOffset,
 			windowScrollLeft,
 			windowScrollTop,
+			scrollContainerTriggerOffset,
+			scrollContainerScrollLeft,
+			scrollContainerScrollTop,
 			hudBodyWidth,
 			hudBodyHeight;
 
@@ -3231,12 +3226,26 @@ Garnish.HUD = Garnish.Base.extend({
 			triggerOffset.left -= windowScrollLeft;
 			triggerOffset.top -= windowScrollTop;
 
+			scrollContainerTriggerOffset = triggerOffset;
+
 			windowScrollLeft = 0;
 			windowScrollTop = 0;
+			scrollContainerScrollLeft = 0;
+			scrollContainerScrollTop = 0;
+		}
+		else
+		{
+			scrollContainerTriggerOffset = Garnish.getOffset(this.$trigger);
+
+			scrollContainerScrollLeft = Garnish.$scrollContainer.scrollLeft();
+			scrollContainerScrollTop = Garnish.$scrollContainer.scrollTop();
 		}
 
 		triggerOffset.right = triggerOffset.left + triggerWidth;
 		triggerOffset.bottom = triggerOffset.top + triggerHeight;
+
+		scrollContainerTriggerOffset.right = scrollContainerTriggerOffset.left + triggerWidth;
+		scrollContainerTriggerOffset.bottom = scrollContainerTriggerOffset.top + triggerHeight;
 
 		// Get the HUD dimensions
 		this.$hud.css({
@@ -3257,10 +3266,10 @@ Garnish.HUD = Garnish.Base.extend({
 
 		// Find the actual available top/right/bottom/left clearances
 		var clearances = {
-			bottom: windowHeight + windowScrollTop - triggerOffset.bottom,
-			top:    triggerOffset.top - windowScrollTop,
-			right:  windowWidth + windowScrollLeft - triggerOffset.right,
-			left:   triggerOffset.left - windowScrollLeft
+			bottom: windowHeight + scrollContainerScrollTop - scrollContainerTriggerOffset.bottom,
+			top:    scrollContainerTriggerOffset.top - scrollContainerScrollTop,
+			right:  windowWidth + scrollContainerScrollLeft - scrollContainerTriggerOffset.right,
+			left:   scrollContainerTriggerOffset.left - scrollContainerScrollLeft
 		};
 
 		// Find the first position that has enough room
@@ -3441,7 +3450,9 @@ Garnish.HUD = Garnish.Base.extend({
 			}
 		}
 
-		this.addListener(this.$main, 'resize', 'updateSizeAndPosition');
+		Garnish.requestAnimationFrame($.proxy(function() {
+			this.addListener(this.$main, 'resize', 'updateSizeAndPosition');
+		}, this));
 	},
 
 	/**
@@ -3449,6 +3460,8 @@ Garnish.HUD = Garnish.Base.extend({
 	 */
 	hide: function()
 	{
+		this.disable();
+
 		this.$hud.hide();
 		this.$shade.hide();
 		this.showing = false;
@@ -3737,18 +3750,18 @@ Garnish.Menu = Garnish.Base.extend({
 
 	$container: null,
 	$options: null,
-	$trigger: null,
+	$anchor: null,
 
 	_windowWidth: null,
 	_windowHeight: null,
 	_windowScrollLeft: null,
 	_windowScrollTop: null,
 
-	_triggerOffset: null,
-	_triggerWidth: null,
-	_triggerHeight: null,
-	_triggerOffsetRight: null,
-	_triggerOffsetBottom: null,
+	_anchorOffset: null,
+	_anchorWidth: null,
+	_anchorHeight: null,
+	_anchorOffsetRight: null,
+	_anchorOffsetBottom: null,
 
 	_menuWidth: null,
 	_menuHeight: null,
@@ -3764,9 +3777,16 @@ Garnish.Menu = Garnish.Base.extend({
 		this.$options = $();
 		this.addOptions(this.$container.find('a'));
 
+		// Deprecated
 		if (this.settings.attachToElement)
 		{
-			this.$trigger = $(this.settings.attachToElement);
+			this.settings.anchor = this.settings.attachToElement;
+			Garnish.log('The \'attachToElement\' setting is deprecated. Use \'anchor\' instead.');
+		}
+
+		if (this.settings.anchor)
+		{
+			this.$anchor = $(this.settings.anchor);
 		}
 
 		// Prevent clicking on the container from hiding the menu
@@ -3783,36 +3803,36 @@ Garnish.Menu = Garnish.Base.extend({
 		this.addListener($options, 'click', 'selectOption');
 	},
 
-	setPositionRelativeToTrigger: function()
+	setPositionRelativeToAnchor: function()
 	{
 		this._windowWidth = Garnish.$win.width();
 		this._windowHeight = Garnish.$win.height();
 		this._windowScrollLeft = Garnish.$win.scrollLeft();
 		this._windowScrollTop = Garnish.$win.scrollTop();
 
-		this._triggerOffset = this.$trigger.offset();
-		this._triggerWidth = this.$trigger.outerWidth();
-		this._triggerHeight = this.$trigger.outerHeight();
-		this._triggerOffsetRight = this._triggerOffset.left + this._triggerHeight;
-		this._triggerOffsetBottom = this._triggerOffset.top + this._triggerHeight;
+		this._anchorOffset = this.$anchor.offset();
+		this._anchorWidth = this.$anchor.outerWidth();
+		this._anchorHeight = this.$anchor.outerHeight();
+		this._anchorOffsetRight = this._anchorOffset.left + this._anchorHeight;
+		this._anchorOffsetBottom = this._anchorOffset.top + this._anchorHeight;
 
 		this.$container.css('minWidth', 0);
-		this.$container.css('minWidth', this._triggerWidth - (this.$container.outerWidth() - this.$container.width()));
+		this.$container.css('minWidth', this._anchorWidth - (this.$container.outerWidth() - this.$container.width()));
 
 		this._menuWidth = this.$container.outerWidth();
 		this._menuHeight = this.$container.outerHeight();
 
-		// Is there room for the menu below the trigger?
-		var topClearance = this._triggerOffset.top - this._windowScrollTop,
-			bottomClearance = this._windowHeight + this._windowScrollTop - this._triggerOffsetBottom;
+		// Is there room for the menu below the anchor?
+		var topClearance = this._anchorOffset.top - this._windowScrollTop,
+			bottomClearance = this._windowHeight + this._windowScrollTop - this._anchorOffsetBottom;
 
 		if (bottomClearance >= this._menuHeight || bottomClearance >= topClearance)
 		{
-			this.$container.css('top', this._triggerOffsetBottom);
+			this.$container.css('top', this._anchorOffsetBottom);
 		}
 		else
 		{
-			this.$container.css('top', this._triggerOffset.top - this._menuHeight);
+			this.$container.css('top', this._anchorOffset.top - this._menuHeight);
 		}
 
 		// Figure out how we're aliging it
@@ -3830,8 +3850,8 @@ Garnish.Menu = Garnish.Base.extend({
 		else
 		{
 			// Figure out which options are actually possible
-			var rightClearance = this._windowWidth + this._windowScrollLeft - (this._triggerOffset.left + this._menuWidth),
-				leftClearance = this._triggerOffsetRight - this._menuWidth;
+			var rightClearance = this._windowWidth + this._windowScrollLeft - (this._anchorOffset.left + this._menuWidth),
+				leftClearance = this._anchorOffsetRight - this._menuWidth;
 
 			if (align == 'right' && leftClearance >= 0 || rightClearance < 0)
 			{
@@ -3847,11 +3867,11 @@ Garnish.Menu = Garnish.Base.extend({
 		delete this._windowHeight;
 		delete this._windowScrollLeft;
 		delete this._windowScrollTop;
-		delete this._triggerOffset;
-		delete this._triggerWidth;
-		delete this._triggerHeight;
-		delete this._triggerOffsetRight;
-		delete this._triggerOffsetBottom;
+		delete this._anchorOffset;
+		delete this._anchorWidth;
+		delete this._anchorHeight;
+		delete this._anchorOffsetRight;
+		delete this._anchorOffsetBottom;
 		delete this._menuWidth;
 		delete this._menuHeight;
 	},
@@ -3861,9 +3881,9 @@ Garnish.Menu = Garnish.Base.extend({
 		// Move the menu to the end of the DOM
 		this.$container.appendTo(Garnish.$bod)
 
-		if (this.$trigger)
+		if (this.$anchor)
 		{
-			this.setPositionRelativeToTrigger();
+			this.setPositionRelativeToAnchor();
 		}
 
 		this.$container.velocity('stop');
@@ -3897,7 +3917,7 @@ Garnish.Menu = Garnish.Base.extend({
 	_alignLeft: function()
 	{
 		this.$container.css({
-			left: this._triggerOffset.left,
+			left: this._anchorOffset.left,
 			right: 'auto'
 		});
 	},
@@ -3905,14 +3925,14 @@ Garnish.Menu = Garnish.Base.extend({
 	_alignRight: function()
 	{
 		this.$container.css({
-			right: this._windowWidth - (this._triggerOffset.left + this._triggerWidth),
+			right: this._windowWidth - (this._anchorOffset.left + this._anchorWidth),
 			left: 'auto'
 		});
 	},
 
 	_alignCenter: function()
 	{
-		var left = Math.round((this._triggerOffset.left + this._triggerWidth / 2) - (this._menuWidth / 2));
+		var left = Math.round((this._anchorOffset.left + this._anchorWidth / 2) - (this._menuWidth / 2));
 
 		if (left < 0)
 		{
@@ -3925,7 +3945,7 @@ Garnish.Menu = Garnish.Base.extend({
 },
 {
 	defaults: {
-		attachToElement: null,
+		anchor: null,
 		onOptionSelect: $.noop
 	}
 });
@@ -3967,7 +3987,7 @@ Garnish.MenuBtn = Garnish.Base.extend({
 		this.setSettings(settings, Garnish.MenuBtn.defaults);
 
 		this.menu = new Garnish.Menu($menu, {
-			attachToElement: this.$btn,
+			anchor: (this.settings.menuAnchor || this.$btn),
 			onOptionSelect: $.proxy(this, 'onOptionSelect')
 		});
 
@@ -3979,7 +3999,7 @@ Garnish.MenuBtn = Garnish.Base.extend({
 
 	onMouseDown: function(ev)
 	{
-		if (ev.which != Garnish.PRIMARY_CLICK || ev.metaKey)
+		if (ev.which != Garnish.PRIMARY_CLICK || Garnish.isCtrlKeyPressed(ev))
 		{
 			return;
 		}
@@ -4052,6 +4072,7 @@ Garnish.MenuBtn = Garnish.Base.extend({
 },
 {
 	defaults: {
+		menuAnchor: null,
 		onOptionSelect: $.noop
 	}
 });
@@ -4615,6 +4636,8 @@ Garnish.Modal = Garnish.Base.extend({
 			this.addListener(Garnish.$win, 'resize', 'updateSizeAndPosition');
 		}
 
+		this.enable();
+
 		if (this.settings.hideOnEsc)
 		{
 			Garnish.escManager.register(this, 'hide');
@@ -4646,6 +4669,8 @@ Garnish.Modal = Garnish.Base.extend({
 
 	hide: function(ev)
 	{
+		this.disable();
+
 		if (ev)
 		{
 			ev.stopPropagation();
@@ -6056,7 +6081,7 @@ Garnish.Select = Garnish.Base.extend({
 			return;
 		}
 
-		var metaKey = (ev.metaKey || ev.ctrlKey);
+		var ctrlKey = Garnish.isCtrlKeyPressed(ev);
 
 		if (!this.settings.checkboxMode || !this.$focusable.length)
 		{
@@ -6093,7 +6118,7 @@ Garnish.Select = Garnish.Base.extend({
 				}
 				else
 				{
-					if (metaKey)
+					if (ctrlKey)
 					{
 						var $item = this.getFurthestItemToTheLeft(anchor);
 					}
@@ -6124,7 +6149,7 @@ Garnish.Select = Garnish.Base.extend({
 				}
 				else
 				{
-					if (metaKey)
+					if (ctrlKey)
 					{
 						var $item = this.getFurthestItemToTheRight(anchor);
 					}
@@ -6156,7 +6181,7 @@ Garnish.Select = Garnish.Base.extend({
 				}
 				else
 				{
-					if (metaKey)
+					if (ctrlKey)
 					{
 						var $item = this.getFurthestItemAbove(anchor);
 					}
@@ -6193,7 +6218,7 @@ Garnish.Select = Garnish.Base.extend({
 				}
 				else
 				{
-					if (metaKey)
+					if (ctrlKey)
 					{
 						var $item = this.getFurthestItemBelow(anchor);
 					}
@@ -6213,7 +6238,7 @@ Garnish.Select = Garnish.Base.extend({
 
 			case Garnish.SPACE_KEY:
 			{
-				if (!metaKey)
+				if (!ctrlKey)
 				{
 					ev.preventDefault();
 
@@ -6235,7 +6260,7 @@ Garnish.Select = Garnish.Base.extend({
 
 			case Garnish.A_KEY:
 			{
-				if (metaKey)
+				if (ctrlKey)
 				{
 					ev.preventDefault();
 					this.selectAll();
@@ -6294,7 +6319,7 @@ Garnish.Select = Garnish.Base.extend({
 
 	_actAsCheckbox: function(ev)
 	{
-		if (ev.metaKey || ev.ctrlKey)
+		if (Garnish.isCtrlKeyPressed(ev))
 		{
 			return !this.settings.checkboxMode;
 		}

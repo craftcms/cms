@@ -5,10 +5,11 @@ Craft.Pane = Garnish.Base.extend(
 {
 	$pane: null,
 	$content: null,
+	$sidebar: null,
 
-	isSettingsPane: null,
 	tabs: null,
 	selectedTab: null,
+	hasSidebar: null,
 
 	init: function(pane)
 	{
@@ -23,7 +24,6 @@ Craft.Pane = Garnish.Base.extend(
 
 		this.$pane.data('pane', this);
 
-		this.isSettingsPane = this.$pane.hasClass('settings-pane');
 		this.$content = this.$pane.find('.content:not(.hidden):first');
 
 		// Initialize the tabs
@@ -66,24 +66,27 @@ Craft.Pane = Garnish.Base.extend(
 			}
 		}
 
-		if (this.isSettingsPane)
+		if (this.$pane.hasClass('meta'))
 		{
 			var $inputs = Garnish.findInputs(this.$pane);
-			this.addListener($inputs, 'focus', 'focusField');
-			this.addListener($inputs, 'blur', 'blurField');
+			this.addListener($inputs, 'focus', 'focusMetaField');
+			this.addListener($inputs, 'blur', 'blurMetaField');
 		}
 
-		// this.initContent();
+		this.initContent();
 	},
 
-	focusField: function(ev)
+	focusMetaField: function(ev)
 	{
-		$(ev.currentTarget).closest('.field').addClass('has-focus');
+		$(ev.currentTarget).closest('.field')
+			.removeClass('has-errors')
+			.addClass('has-focus');
 	},
 
-	blurField: function(ev)
+	blurMetaField: function(ev)
 	{
-		$(ev.currentTarget).closest('.field').removeClass('has-focus');
+		$(ev.currentTarget).closest('.field')
+			.removeClass('has-focus');
 	},
 
 	/**
@@ -121,6 +124,74 @@ Craft.Pane = Garnish.Base.extend(
 			this.tabs[this.selectedTab].$tab.removeClass('sel');
 			this.tabs[this.selectedTab].$target.addClass('hidden');
 		}
+	},
+
+	initContent: function()
+	{
+		this.hasSidebar = this.$content.hasClass('has-sidebar');
+
+		if (this.hasSidebar)
+		{
+			this.$sidebar = this.$content.children('.sidebar');
+
+			this.addListener(this.$content, 'resize', function()
+			{
+				this.updateSidebarStyles();
+			});
+
+			this.addListener(this.$sidebar, 'resize', 'setMinContentSizeForSidebar');
+			this.setMinContentSizeForSidebar();
+
+			this.addListener(Garnish.$win, 'resize', 'updateSidebarStyles');
+			this.addListener(Garnish.$win, 'scroll', 'updateSidebarStyles');
+
+			this.updateSidebarStyles();
+		}
+	},
+
+	setMinContentSizeForSidebar: function()
+	{
+		if (true || this.$pane.hasClass('showing-sidebar'))
+		{
+			this.setMinContentSizeForSidebar._minHeight = this.$sidebar.prop('scrollHeight');
+		}
+		else
+		{
+			this.setMinContentSizeForSidebar._minHeight = 0;
+		}
+
+		this.$content.css('min-height', this.setMinContentSizeForSidebar._minHeight);
+	},
+
+	updateSidebarStyles: function()
+	{
+		this.updateSidebarStyles._styles = {};
+
+		this.updateSidebarStyles._scrollTop = Garnish.$win.scrollTop();
+		this.updateSidebarStyles._paneOffset = this.$pane.offset().top;
+		this.updateSidebarStyles._paneHeight = this.$pane.outerHeight();
+		this.updateSidebarStyles._windowHeight = Garnish.$win.height();
+
+		// Have we scrolled passed the top of the pane?
+		if (this.updateSidebarStyles._scrollTop > this.updateSidebarStyles._paneOffset)
+		{
+			// Set the top position to the difference
+			this.updateSidebarStyles._styles.position = 'fixed';
+			this.updateSidebarStyles._styles.top = '24px';
+		}
+		else
+		{
+			this.updateSidebarStyles._styles.position = 'absolute';
+			this.updateSidebarStyles._styles.top = 'auto';
+		}
+
+		// Now figure out how tall the sidebar can be
+		this.updateSidebarStyles._styles.height = Math.min(
+			this.updateSidebarStyles._paneHeight - (this.updateSidebarStyles._scrollTop - this.updateSidebarStyles._paneOffset),
+			this.updateSidebarStyles._windowHeight
+		);
+
+		this.$sidebar.css(this.updateSidebarStyles._styles);
 	},
 
 	destroy: function()

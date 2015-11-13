@@ -322,6 +322,10 @@ class EntriesController extends BaseEntriesController
 			($variables['entry']->authorId != $currentUser->id && $currentUser->can('deletePeerEntries'.$variables['permissionSuffix']))
 		);
 
+		// Full page form variables
+		$variables['fullPageForm'] = true;
+		$variables['saveShortcutRedirect'] = $variables['continueEditingUrl'];
+
 		// Include translations
 		craft()->templates->includeTranslations('Live Preview');
 

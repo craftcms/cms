@@ -23,7 +23,7 @@ class CpVariable
 	 */
 	public function nav($iconSize = 32)
 	{
-		$nav['dashboard'] = array('label' => Craft::t('Dashboard'), 'icon' => 'home');
+		$nav['dashboard'] = array('label' => Craft::t('Dashboard'), 'icon' => 'gauge');
 
 		if (craft()->sections->getTotalEditableSections())
 		{
@@ -64,12 +64,28 @@ class CpVariable
 				if (craft()->userSession->checkPermission('accessPlugin-'.$pluginHandle))
 				{
 					$lcHandle = StringHelper::toLowerCase($pluginHandle);
+					$iconPath = craft()->path->getPluginsPath().$lcHandle.'/resources/icon-mask.svg';
+
+					if (IOHelper::fileExists($iconPath))
+					{
+						$iconSvg = IOHelper::getFileContents($iconPath);
+					}
+					else
+					{
+						$iconSvg = false;
+					}
+
 					$nav[$lcHandle] = array(
 						'label' => $plugin->getName(),
-						'iconUrl' => craft()->plugins->getPluginIconUrl($pluginHandle, $iconSize)
+						'iconSvg' => $iconSvg
 					);
 				}
 			}
+		}
+
+		if (craft()->userSession->isAdmin())
+		{
+			$nav['settings'] = array('label' => Craft::t('Settings'), 'icon' => 'settings');
 		}
 
 		// Allow plugins to modify the nav

@@ -63,7 +63,7 @@
 }) }}
 
 {{ forms.textField({
-	label: "URL Prefix "|t,
+	label: "URL Prefix"|t,
 	instructions: "If you have set up a CNAME record pointing to this bucket, you can enter it here. Otherwise leave this setting alone."|t,
 	id: 'urlPrefix',
 	class: 'ltr',
@@ -103,7 +103,8 @@
 {% endset %}
 
 {{ forms.field({
-	label: "Cache Duration "|t,
+	label: "Cache Duration"|t,
+	instructions: "The Cache-Control duration that assets should be uploaded to the cloud with.",
 	id: 'cacheDuration',
 }, cacheInput) }}
 <input type="hidden" name="location" class="s3-bucket-location" value="{{ settings.location }}">

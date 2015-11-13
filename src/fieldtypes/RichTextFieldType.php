@@ -221,6 +221,9 @@ class RichTextFieldType extends BaseFieldType
 			return $matches[1].$matches[2].'{'.$matches[3].':'.$matches[4].(!empty($matches[5]) ? $matches[5] : ':url').'}'.$matches[2];
 		}, $value);
 
+		// Encode any 4-byte UTF-8 characters.
+		$value = StringHelper::encodeMb4($value);
+
 		return $value;
 	}
 
@@ -246,13 +249,7 @@ class RichTextFieldType extends BaseFieldType
 
 		if ($postContentSize > $maxDbColumnSize)
 		{
-			// Give ourselves 10% wiggle room.
-			$maxDbColumnSize = ceil($maxDbColumnSize * 0.9);
-
-			if ($postContentSize > $maxDbColumnSize)
-			{
-				return Craft::t('{attribute} is too long.', array('attribute' => Craft::t($this->model->name)));
-			}
+			return Craft::t('{attribute} is too long.', array('attribute' => Craft::t($this->model->name)));
 		}
 
 		return true;
@@ -396,6 +393,7 @@ class RichTextFieldType extends BaseFieldType
 		//craft()->templates->includeJsResource('lib/redactor/redactor'.(craft()->config->get('useCompressedJs') ? '.min' : '').'.js');
 
 		$this->_maybeIncludeRedactorPlugin($configJs, 'fullscreen', false);
+		$this->_maybeIncludeRedactorPlugin($configJs, 'source', false);
 		$this->_maybeIncludeRedactorPlugin($configJs, 'table', false);
 		$this->_maybeIncludeRedactorPlugin($configJs, 'video', false);
 		$this->_maybeIncludeRedactorPlugin($configJs, 'pagebreak', true);

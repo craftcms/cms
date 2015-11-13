@@ -208,25 +208,14 @@ class ResourcesService extends BaseApplicationComponent
 					return $this->_getIconPath($segs[1]);
 				}
 
-				case 'pluginicons':
+				case 'rebrand':
 				{
-					if (empty($segs[1]) || empty($segs[2]) || empty($segs[3]))
+					if (!in_array($segs[1], array('logo', 'icon')))
 					{
 						return false;
 					}
 
-					$pluginHandle = $segs[1];
-					$size = $segs[2];
-					$filename = $segs[3];
-
-					$iconPath = $this->_getPluginIconPath($pluginHandle, $filename, $size);
-
-					return $iconPath;
-				}
-
-				case 'logo':
-				{
-					return craft()->path->getStoragePath().implode('/', $segs);
+					return craft()->path->getRebrandPath().$segs[1]."/".$segs[2];
 				}
 
 				case 'transforms':
@@ -428,61 +417,6 @@ class ResourcesService extends BaseApplicationComponent
 
 		// Return the normalized CSS URL declaration
 		return $match[1].$url.$match[4];
-	}
-
-	/**
-	 * Get plugin icon path for a size. The original icon path is returned for SVG files which don't get resized.
-	 *
-	 * @param string $pluginHandle
-	 * @param $filename
-	 * @param $size
-	 *
-	 * @return string|false
-	 */
-	private function _getPluginIconPath($pluginHandle, $filename, $size)
-	{
-		if (!is_numeric($size) && $size != "original")
-		{
-			return false;
-		}
-
-		$pluginHandle = StringHelper::toLowerCase($pluginHandle);
-		$iconInfo = craft()->plugins->getPluginIconInfo($pluginHandle);
-
-		if ($iconInfo === false || $iconInfo['filename'] !== $filename)
-		{
-			return false;
-		}
-
-		if ($iconInfo['extension'] == 'svg' || $size == 'original')
-		{
-			return $iconInfo['path'];
-		}
-		else
-		{
-			$pluginIconsPath = craft()->path->getPluginIconsPath().$pluginHandle.'/';
-			$sizedIconFolder = $pluginIconsPath.$size.'/';
-			$sizedIconPath = $sizedIconFolder.$filename;
-
-			// If the photo doesn't exist at this size, create it.
-			if (!IOHelper::fileExists($sizedIconPath))
-			{
-				IOHelper::ensureFolderExists($sizedIconFolder);
-
-				if (IOHelper::isWritable($sizedIconFolder))
-				{
-					craft()->images->loadImage($iconInfo['path'])
-						->resize($size)
-						->saveAs($sizedIconPath);
-				}
-				else
-				{
-					Craft::log('Tried to write to target folder and could not: '.$sizedIconFolder, LogLevel::Error);
-				}
-			}
-
-			return $sizedIconPath;
-		}
 	}
 
 	/**

@@ -13,7 +13,7 @@
 }
 .widget.scaleout { opacity: 0; @include transform(scale(0.5)); }
 .widget > .front,
-.widget > .back { backface-visibility: hidden; @include transition(600ms); }
+.widget > .back { @include backface-visibility(hidden); @include transition(600ms); }
 .widget > .back { position: absolute; top: 0; left: 0; width: 100%; }
 .widget:not(.flipped) > .front { @include transform(rotateY(0deg)); }
 .widget:not(.flipped) > .back { @include transform(rotateY(-180deg)); }
@@ -40,9 +40,30 @@
 /* Recent Entries widget */
 .recententries .body { overflow: hidden; }
 
-/* New Dashboard */
+/* New Widget Menu */
+.newwidgetmenu ul li a { position: relative; padding-left: 40px; }
+.newwidgetmenu ul li a .icon { position: absolute; top: 8px; left: 14px; width: 16px; }
+.newwidgetmenu ul li a .icon svg,
+.widgetmanagerhud-icon svg { width: 16px; height: 16px; @include svg-mask($mediumtextcolor); }
 
+/* New Widget Menu */
+.widgetmanagerhud { max-width: 400px; }
+.widgetmanagerhud .body { min-width: 400px; }
+.widgetmanagerhud .colspan-picker { height: 18px; white-space: nowrap; }
+.widgetmanagerhud .colspan-picker:not(.hover) a.active { border: 1px solid #999; background: #fff; border-left: medium none; border-right: medium none; height: 15px; margin-top: 0; margin-bottom: 0 }
+.widgetmanagerhud .colspan-picker:not(.hover) a.active.last { border-right: 1px solid #999; }
+.widgetmanagerhud .colspan-picker a { border: 1px solid rgba(0, 0, 0, .15); border-left: medium none; background-image: none; width: 7px; height: 13px; margin-left: 0; display: inline-block; margin-top: 1px; margin-bottom: 1px; box-sizing: border-box }
+.widgetmanagerhud .colspan-picker a:first-child { width: 8px; border-left: 1px solid #999!important }
+.widgetmanagerhud .colspan-picker a:hover { border-right: 1px solid #999!important; }
+.widgetmanagerhud .colspan-picker a.highlight { border: 1px solid #999; border-left: medium none; border-right: medium none; height: 15px; margin-top: 0; margin-bottom: 0 }
+.widgetmanagerhud .colspan-picker a.highlight.last { border-right: medium none }
 
-#extra-headers { @include floatright; }
+.widgetmanagerhud-img { width: 15px; }
 
-.widgetmanagerhud .body { width: 400px; }
+@media only screen and (max-width: 673px) {
+
+    .widgetmanagerhud { max-width: 300px; }
+    .widgetmanagerhud .body { min-width: 300px; }
+    .widgetmanagerhud .widgetmanagerhud-col-colspan-picker { display: none; }
+    .widgetmanagerhud .widgetmanagerhud-col-move { display: none; }
+}

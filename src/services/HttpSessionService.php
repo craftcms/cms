@@ -45,17 +45,24 @@ class HttpSessionService extends \CHttpSession
 		$configVal = craft()->config->get('overridePhpSessionLocation');
 
 		// If it's set to true, override the PHP save session path.
-		if (is_bool($configVal) && $configVal === true)
+		if ($configVal === true)
 		{
 			$this->setSavePath(craft()->path->getSessionPath());
 		}
-		// Else if it's not false, then it must be 'auto', so let's attempt to check if we're on a distributed cache
-		// system
-		else if ($configVal !== false)
+		else if (is_string($configVal))
 		{
-			if (mb_strpos($this->getSavePath(), 'tcp://') === false)
+			// If it's set to "auto", let's attempt to check if we're on a distributed cache system
+			if ($configVal == 'auto')
 			{
-				$this->setSavePath(craft()->path->getSessionPath());
+				if (mb_strpos($this->getSavePath(), 'tcp://') === false)
+				{
+					$this->setSavePath(craft()->path->getSessionPath());
+				}
+			}
+			// Otherwise it's a custom save path
+			else if (is_string($configVal))
+			{
+				$this->setSavePath($configVal);
 			}
 		}
 
@@ -64,12 +71,37 @@ class HttpSessionService extends \CHttpSession
 		parent::init();
 	}
 
-	// For consistency!
 	/**
-	 * @return bool
+	 * @inheritDoc \CHttpSession::setSavePath()
+	 *
+	 * @param string $value
+	 */
+	public function setSavePath($value)
+	{
+		// Don't make sure $value is a valid directory path, becasue it might be for a dsitributed cache system
+		session_save_path($value);
+	}
+
+	/**
+	 * @return boolean Whether the session has started
 	 */
 	public function isStarted()
 	{
 		return $this->getIsStarted();
+	}
+
+	/**
+	 * @return boolean Whether the session has started
+	 */
+	public function getIsStarted()
+	{
+		if (function_exists('session_status'))
+		{
+			return (session_status() != PHP_SESSION_NONE);
+		}
+		else
+		{
+			return parent::getIsStarted();
+		}
 	}
 }

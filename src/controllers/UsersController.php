@@ -281,7 +281,7 @@ class UsersController extends BaseController
 	 */
 	public function actionSetPassword()
 	{
-		// Have they just submitted a password, or are we just displaying teh page?
+		// Have they just submitted a password, or are we just displaying the page?
 		if (!craft()->request->isPostRequest())
 		{
 			if ($info = $this->_processTokenRequest())
@@ -527,6 +527,7 @@ class UsersController extends BaseController
 		// ---------------------------------------------------------------------
 
 		$statusActions = array();
+		$loginActions = array();
 		$sketchyActions = array();
 
 		if (craft()->getEdition() >= Craft::Client && !$variables['isNewAccount'])
@@ -589,6 +590,11 @@ class UsersController extends BaseController
 
 			if (!$variables['account']->isCurrent())
 			{
+				if (craft()->userSession->isAdmin())
+				{
+					$loginActions[] = array('action' => 'users/impersonate', 'label' => Craft::t('Login as {user}', array('user' => $variables['account']->getName())));
+				}
+
 				if (craft()->userSession->checkPermission('administrateUsers') && $variables['account']->getStatus() != UserStatus::Suspended)
 				{
 					$sketchyActions[] = array('action' => 'users/suspendUser', 'label' => Craft::t('Suspend'));
@@ -614,6 +620,11 @@ class UsersController extends BaseController
 		if ($pluginActions)
 		{
 			$variables['actions'] = array_merge($variables['actions'], array_values($pluginActions));
+		}
+
+		if ($loginActions)
+		{
+			array_push($variables['actions'], $loginActions);
 		}
 
 		if ($sketchyActions)
@@ -910,8 +921,16 @@ class UsersController extends BaseController
 
 		// Validate and save!
 		// ---------------------------------------------------------------------
+		$imageValidates = true;
+		$userPhoto = UploadedFile::getInstanceByName('userPhoto');
 
-		if (craft()->users->saveUser($user))
+		if ($userPhoto && !ImageHelper::isImageManipulatable($userPhoto->getExtensionName()))
+		{
+			$imageValidates = false;
+			$user->addError('userPhoto', Craft::t("The user photo provided is not an image."));
+		}
+
+		if ($imageValidates && craft()->users->saveUser($user))
 		{
 			// Is this the current user, and did their username just change?
 			if ($isCurrentUser && $user->username !== $oldUsername)
@@ -1051,13 +1070,20 @@ class UsersController extends BaseController
 		}
 
 		// Upload the file and drop it in the temporary folder
-		$file = $_FILES['image-upload'];
+		$file = UploadedFile::getInstanceByName('image-upload');
 
 		try
 		{
 			// Make sure a file was uploaded
-			if (!empty($file['name']) && !empty($file['size'])  )
+			if ($file)
 			{
+				$fileName = AssetsHelper::cleanAssetName($file->getName());
+
+				if (!ImageHelper::isImageManipulatable($file->getExtensionName()))
+				{
+					throw new Exception(Craft::t('The uploaded file is not an image.'));
+				}
+
 				$user = craft()->users->getUserById($userId);
 				$userName = AssetsHelper::cleanAssetName($user->username, false);
 
@@ -1066,9 +1092,8 @@ class UsersController extends BaseController
 				IOHelper::clearFolder($folderPath);
 
 				IOHelper::ensureFolderExists($folderPath);
-				$fileName = AssetsHelper::cleanAssetName($file['name']);
 
-				move_uploaded_file($file['tmp_name'], $folderPath.$fileName);
+				move_uploaded_file($file->getTempName(), $folderPath.$fileName);
 
 				// Test if we will be able to perform image actions on this image
 				if (!craft()->images->checkMemoryForImage($folderPath.$fileName))
@@ -1079,7 +1104,7 @@ class UsersController extends BaseController
 
 				list ($width, $height) = ImageHelper::getImageSize($folderPath.$fileName);
 
-			
+
                 if (IOHelper::getExtension($fileName) != 'svg')
                 {
     				craft()->images->cleanImage($folderPath.$fileName);
@@ -1116,7 +1141,7 @@ class UsersController extends BaseController
 		}
 		catch (Exception $exception)
 		{
-			Craft::log('There was an error uploading the photo: '.$exception->getMessage(), LogLevel::Error);
+			$this->returnErrorJson($exception->getMessage());
 		}
 
 		$this->returnErrorJson(Craft::t('There was an error uploading your photo.'));

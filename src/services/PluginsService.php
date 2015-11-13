@@ -95,8 +95,10 @@ class PluginsService extends BaseApplicationComponent
 				$this->_loadingPlugins = true;
 
 				// Find all of the enabled plugins
+				// TODO: swap the SELECT statements after next breakpoint
 				$rows = craft()->db->createCommand()
-					->select('id, class, version, settings, installDate')
+					//->select('id, class, version, schemaVersion, settings, installDate')
+					->select('*')
 					->from('plugins')
 					->where('enabled=1')
 					->queryAll();
@@ -126,6 +128,18 @@ class PluginsService extends BaseApplicationComponent
 
 						$plugin->isInstalled = true;
 						$plugin->isEnabled = true;
+
+						// If we're not updating, check if the plugin's version number changed, but not its schema version.
+						if (!craft()->isInMaintenanceMode() && $this->hasPluginVersionNumberChanged($plugin) && !$this->doesPluginRequireDatabaseUpdate($plugin))
+						{
+							// Update our record of the plugin's version number
+							craft()->db->createCommand()->update(
+								'plugins',
+								array('version' => $plugin->getVersion()),
+								'id = :id',
+								array(':id' => $row['id'])
+							);
+						}
 					}
 				}
 
@@ -374,45 +388,47 @@ class PluginsService extends BaseApplicationComponent
 
 		$lcPluginHandle = mb_strtolower($plugin->getClassHandle());
 
-		$plugin->onBeforeInstall();
-
-		$transaction = craft()->db->getCurrentTransaction() === null ? craft()->db->beginTransaction() : null;
-		try
+		if ($plugin->onBeforeInstall() !== false)
 		{
-			// Add the plugins as a record to the database.
-			craft()->db->createCommand()->insert('plugins', array(
-				'class'       => $plugin->getClassHandle(),
-				'version'     => $plugin->version,
-				'enabled'     => true,
-				'installDate' => DateTimeHelper::currentTimeForDb(),
-			));
-
-			$plugin->isInstalled = true;
-			$plugin->isEnabled = true;
-			$this->_enabledPlugins[$lcPluginHandle] = $plugin;
-
-			$this->_savePluginMigrations(craft()->db->getLastInsertID(), $plugin->getClassHandle());
-			$this->_autoloadPluginClasses($plugin);
-			$plugin->createTables();
-
-			if ($transaction !== null)
+			$transaction = craft()->db->getCurrentTransaction() === null ? craft()->db->beginTransaction() : null;
+			try
 			{
-				$transaction->commit();
+				// Add the plugins as a record to the database.
+				craft()->db->createCommand()->insert('plugins', array(
+					'class'         => $plugin->getClassHandle(),
+					'version'       => $plugin->getVersion(),
+					'schemaVersion' => $plugin->getSchemaVersion(),
+					'enabled'       => true,
+					'installDate'   => DateTimeHelper::currentTimeForDb(),
+				));
+
+				$plugin->isInstalled = true;
+				$plugin->isEnabled = true;
+				$this->_enabledPlugins[$lcPluginHandle] = $plugin;
+
+				$this->_savePluginMigrations(craft()->db->getLastInsertID(), $plugin->getClassHandle());
+				$this->_autoloadPluginClasses($plugin);
+				$plugin->createTables();
+
+				if ($transaction !== null)
+				{
+					$transaction->commit();
+				}
 			}
-		}
-		catch (\Exception $e)
-		{
-			if ($transaction !== null)
+			catch (\Exception $e)
 			{
-				$transaction->rollback();
+				if ($transaction !== null)
+				{
+					$transaction->rollback();
+				}
+
+				throw $e;
 			}
 
-			throw $e;
+			$plugin->onAfterInstall();
+
+			return true;
 		}
-
-		$plugin->onAfterInstall();
-
-		return true;
 	}
 
 	/**
@@ -629,11 +645,33 @@ class PluginsService extends BaseApplicationComponent
 	}
 
 	/**
-	 * Returns whether the given plugin’s local version number is greater than the record we have in the database.
+	 * Returns whether the given plugin’s version number has changed from what we have recorded in the database.
 	 *
 	 * @param BasePlugin $plugin The plugin.
 	 *
-	 * @return bool Whether the plugin’s local version number is greater than the record we have in the database.
+	 * @return bool Whether the plugin’s version number has changed from what we have recorded in the database
+	 */
+	public function hasPluginVersionNumberChanged(BasePlugin $plugin)
+	{
+		$storedPluginInfo = $this->getPluginInfo($plugin);
+
+		if ($storedPluginInfo)
+		{
+			if ($plugin->getVersion() != $storedPluginInfo['version'])
+			{
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	/**
+	 * Returns whether the given plugin’s local schema version is greater than the record we have in the database.
+	 *
+	 * @param BasePlugin $plugin The plugin.
+	 *
+	 * @return bool Whether the plugin’s local schema version is greater than the record we have in the database.
 	 */
 	public function doesPluginRequireDatabaseUpdate(BasePlugin $plugin)
 	{
@@ -641,7 +679,11 @@ class PluginsService extends BaseApplicationComponent
 
 		if ($storedPluginInfo)
 		{
-			if (version_compare($plugin->getVersion(), $storedPluginInfo['version'], '>'))
+			$localSchemaVersion = $plugin->getSchemaVersion();
+			$storedSchemaVersion = isset($storedPluginInfo['schemaVersion']) ? $storedPluginInfo['schemaVersion'] : null;
+
+			// One/both could be null so start with seeing if they're not equal
+			if ($localSchemaVersion != $storedSchemaVersion && !empty($localSchemaVersion) && version_compare($localSchemaVersion, $storedSchemaVersion, '>'))
 			{
 				return true;
 			}
@@ -756,50 +798,17 @@ class PluginsService extends BaseApplicationComponent
 	 */
 	public function getPluginIconUrl($pluginHandle, $size = 100)
 	{
-		$pluginHandle = StringHelper::toLowerCase($pluginHandle);
-		$iconInfo = $this->getPluginIconInfo($pluginHandle);
+		$lcHandle = StringHelper::toLowerCase($pluginHandle);
+		$iconPath = craft()->path->getPluginsPath().$lcHandle.'/resources/icon.svg';
 
-		if ($iconInfo !== false)
+		if (IOHelper::fileExists($iconPath))
 		{
-			// Include the filename so the cached resource path is discarded if the filename changes
-			return UrlHelper::getResourceUrl('pluginicons/'.$pluginHandle.'/'.$size.'/'.$iconInfo['filename']);
+			return UrlHelper::getResourceUrl($lcHandle.'/icon.svg');
 		}
 		else
 		{
 			return UrlHelper::getResourceUrl('images/default_plugin.svg');
 		}
-	}
-
-	/**
-	 * Returns info about a given plugin’s icon, if it has one
-	 *
-	 * @param string $pluginHandle The folder to look in
-	 *
-	 * @return array|false An array with 'path', 'filename', and 'extension' keys, or false if an icon couldn’t be found
-	 */
-	public function getPluginIconInfo($pluginHandle)
-	{
-		$pluginHandle = StringHelper::toLowerCase($pluginHandle);
-		$basePath = craft()->path->getPluginsPath().$pluginHandle.'/resources/';
-
-		$extensions = array('svg', 'png', 'jpg');
-
-		foreach ($extensions as $extension)
-		{
-			$filename = 'icon.'.$extension;
-			$path = $basePath.$filename;
-
-			if (IOHelper::fileExists($path))
-			{
-				return array(
-					'path' => $path,
-					'filename' => $filename,
-					'extension' => $extension
-				);
-			}
-		}
-
-		return false;
 	}
 
 	// Events

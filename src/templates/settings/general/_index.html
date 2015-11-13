@@ -1,7 +1,7 @@
 {% extends "_layouts/cp" %}
 {% import "_includes/forms" as forms %}
 {% set title = "General Settings"|t %}
-{% set fitted = true %}
+{% set fullPageForm = true %}
 
 {% set crumbs = [
 	{ label: "Settings"|t, url: url('settings') }
@@ -17,56 +17,49 @@
 {% from _self import configWarning %}
 
 
-{% set content %}
-	<form method="post" accept-charset="UTF-8" data-saveshortcut>
-		<input type="hidden" name="action" value="systemSettings/saveGeneralSettings">
-		<input type="hidden" name="redirect" value="settings">
-		{{ getCsrfInput() }}
+{% block content %}
+	<input type="hidden" name="action" value="systemSettings/saveGeneralSettings">
+	<input type="hidden" name="redirect" value="settings">
 
-		{{ forms.lightswitchField({
-			first: true,
-			label: "System Status"|t,
-			warning: (craft.config.isSystemOn is sameas(true) ? configWarning('isSystemOn')),
-			id: 'on',
-			name: 'on',
-			on: info.on
-		}) }}
+	{{ forms.lightswitchField({
+		first: true,
+		label: "System Status"|t,
+		warning: (craft.config.isSystemOn is sameas(true) ? configWarning('isSystemOn')),
+		id: 'on',
+		name: 'on',
+		on: info.on
+	}) }}
 
-		{{ forms.textField({
-			label: "Site Name"|t,
-			warning: (craft.config.siteName ? configWarning('siteName')),
-			id: 'siteName',
-			name: 'siteName',
-			value: info.siteName,
-			autofocus: true,
-			required: true,
-			errors: info.getErrors('siteName')
-		}) }}
+	{{ forms.textField({
+		label: "Site Name"|t,
+		warning: (craft.config.siteName ? configWarning('siteName')),
+		id: 'siteName',
+		name: 'siteName',
+		value: info.siteName,
+		autofocus: true,
+		required: true,
+		errors: info.getErrors('siteName')
+	}) }}
 
-		{{ forms.textField({
-			label: "Site URL"|t,
-			warning: (craft.config.siteUrl ? configWarning('siteUrl')),
-			id: 'siteUrl',
-			class: 'ltr',
-			name: 'siteUrl',
-			value: info.siteUrl,
-			required: true,
-			errors: info.getErrors('siteUrl')
-		}) }}
+	{{ forms.textField({
+		label: "Site URL"|t,
+		warning: (craft.config.siteUrl ? configWarning('siteUrl')),
+		id: 'siteUrl',
+		class: 'ltr',
+		name: 'siteUrl',
+		value: info.siteUrl,
+		required: true,
+		errors: info.getErrors('siteUrl')
+	}) }}
 
-		{{ forms.selectField({
-			label: "Timezone"|t,
-			warning: (craft.config.timezone ? configWarning('timezone')),
-			id: 'timezone',
-			name: 'timezone',
-			value: info.timezone,
-			options: timezoneOptions
-		}) }}
-
-		<div class="buttons">
-			<input class="btn submit" type="submit" value="{{ 'Save'|t }}">
-		</div>
-	</form>
+	{{ forms.selectField({
+		label: "Timezone"|t,
+		warning: (craft.config.timezone ? configWarning('timezone')),
+		id: 'timezone',
+		name: 'timezone',
+		value: info.timezone,
+		options: timezoneOptions
+	}) }}
 
 	{% if CraftEdition >= CraftClient %}
 		<hr>
@@ -75,22 +68,21 @@
 			"Are you sure you want to delete the logo?"
 		%}
 
-		{% includeJsResource "lib/fileupload/jquery.ui.widget.js" %}
-		{% includeJsResource "lib/fileupload/jquery.fileupload.js" %}
-		{% includeJsResource "lib/imgareaselect/jquery.imgareaselect.pack.js" %}
-		{% includeJsResource "js/rebrand.js" %}
-		{% includeCssResource "lib/imgareaselect/imgareaselect-animated.css" %}
-		{% includeCssResource "css/rebrand.css" %}
-
-		{% set logoInput %}
-			{% include 'settings/general/_logo' %}
-		{% endset %}
+		{% includejsresource "lib/fileupload/jquery.ui.widget.js" %}
+		{% includejsresource "lib/fileupload/jquery.fileupload.js" %}
+		{% includejsresource "lib/imgareaselect/jquery.imgareaselect.pack.js" %}
+		{% includejsresource "js/rebrand.js" %}
+		{% includecssresource "lib/imgareaselect/imgareaselect-animated.css" %}
+		{% includecssresource "css/rebrand.css" %}
 
 		{{ forms.field({
-			label: "Logo"|t
-		}, logoInput) }}
+			label: "Login Page Logo"|t
+		}, include('settings/general/_images/logo')) }}
+
+		{{ forms.field({
+			label: "Site Icon"|t
+		}, include('settings/general/_images/icon')) }}
 
 		<div class="clear"></div>
 	{% endif %}
-
-{% endset %}
+{% endblock %}

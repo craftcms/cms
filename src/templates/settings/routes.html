@@ -2,9 +2,16 @@
 
 {% extends "_layouts/cp" %}
 {% set title = "Routes"|t %}
-{% set fitted = true %}
-{% includeCssResource "css/routes.css" %}
-{% includeJsResource "js/routes.js" %}
+
+{% includecssresource "css/routes.css" %}
+{% includejsresource "js/routes.js" %}
+
+
+{% set extraPageHeaderHtml %}
+	<div class="buttons right">
+		<div id="add-route-btn" class="btn submit add icon">{{ "New route"|t }}</div>
+	</div>
+{% endset %}
 
 {% set crumbs = [
 	{ label: "Settings"|t, url: url('settings') }
@@ -31,7 +38,7 @@
 {% set routes = craft.routes.getDbRoutes() %}
 
 
-{% set content %}
+{% block content %}
 	<p id="noroutes"{% if routes %} class="hidden"{% endif %}>
 		{{ "No routes exist yet."|t }}
 	</p>
@@ -51,14 +58,10 @@
 			</div>
 		{% endfor %}
 	</div>
-
-	<div class="buttons">
-		<div id="add-route-btn" class="btn submit add icon">{{ "New Route"|t }}</div>
-	</div>
-{% endset %}
+{% endblock %}
 
 
-{% set js %}
+{% includejs %}
 	Craft.routes.tokens = {
 		{% for name, pattern in tokens %}
 			{% if not loop.first %},{% endif %}
@@ -69,5 +72,4 @@
 	{% if craft.isLocalized() %}
 		Craft.routes.locales = {{ craft.i18n.getSiteLocaleIds()|json_encode|raw }};
 	{% endif %}
-{% endset %}
-{% includeJs js %}
+{% endincludejs %}

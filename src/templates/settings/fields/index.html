@@ -2,11 +2,10 @@
 
 {% extends "_layouts/cp" %}
 {% set title = "Fields"|t %}
-{% set fitted = true %}
 
 {% set docsUrl = 'http://buildwithcraft.com/docs/fields' %}
 
-{% includeJsResource "js/fields.js" %}
+{% includejsresource "js/fields.js" %}
 
 {% includeTranslations
 	"What do you want to name your group?",
@@ -35,8 +34,17 @@
 {% endif %}
 
 
-{% set sidebar %}
+{% set extraPageHeaderHtml %}
+	{% if groups %}
+		<div class="buttons right">
+			{% set newFieldUrl = url('settings/fields/new', (groupId is defined ? { groupId: groupId } : null)) %}
+			<a href="{{ newFieldUrl }}" class="submit btn add icon">{{ "New field"|t }}</a>
+		</div>
+	{% endif %}
+{% endset %}
 
+
+{% block sidebar %}
 	<nav>
 		<ul id="groups">
 			<li><a href="{{ url('settings/fields') }}"{% if groupId is not defined %} class="sel"{% endif %}>{{ "All Fields"|t }}</a></li>
@@ -47,7 +55,7 @@
 	</nav>
 
 	<div class="buttons">
-		<div id="newgroupbtn" class="btn add icon">{{ "New Group"|t }}</div>
+		<div id="newgroupbtn" class="btn add icon">{{ "New group"|t }}</div>
 
 		{% if groupId is defined %}
 			<div id="groupsettingsbtn" class="btn settings icon menubtn" title="{{ 'Settings' }}"></div>
@@ -59,11 +67,10 @@
 			</div>
 		{% endif %}
 	</div>
-{% endset %}
+{% endblock %}
 
 
-{% set content %}
-
+{% block content %}
 	<p id="nofields"{% if fields %} class="hidden"{% endif %}>
 		{% if groupId is defined %}
 			{{ "This group doesn’t have any fields yet."|t }}
@@ -103,23 +110,14 @@
 			</tbody>
 		</table>
 	{% endif %}
-
-	{% if groups %}
-		<div class="buttons">
-			{% set newFieldUrl = url('settings/fields/new', (groupId is defined ? { groupId: groupId } : null)) %}
-			<a href="{{ newFieldUrl }}" class="submit btn add icon">{{ "New Field"|t }}</a>
-		</div>
-	{% endif %}
-
-{% endset %}
+{% endblock %}
 
 
-{% set js %}
+{% includejs %}
 	new Craft.AdminTable({
 		tableSelector: '#fields',
 		noObjectsSelector: '#nofields',
 		deleteAction: 'fields/deleteField'
 	});
-{% endset %}
-{% includeJs js %}
+{% endincludejs %}
 

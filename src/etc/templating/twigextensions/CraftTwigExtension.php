@@ -52,6 +52,8 @@ class CraftTwigExtension extends \Twig_Extension
 			new RequireLogin_TokenParser(),
 			new RequirePermission_TokenParser(),
 			new Switch_TokenParser(),
+
+			new DeprecatedTag_TokenParser('endpaginate'),
 		);
 	}
 
@@ -97,6 +99,7 @@ class CraftTwigExtension extends \Twig_Extension
 			't'                  => $translateFilter,
 			'ucfirst'            => new \Twig_Filter_Method($this, 'ucfirstFilter'),
 			'ucwords'            => new \Twig_Filter_Function('ucwords'),
+			'values'             => new \Twig_Filter_Function('array_values'),
 			'without'            => new \Twig_Filter_Method($this, 'withoutFilter'),
 		);
 	}

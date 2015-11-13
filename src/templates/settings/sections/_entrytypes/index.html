@@ -1,10 +1,19 @@
 {% extends "_layouts/cp" %}
-{% set fitted = true %}
 
 {% set entryTypes = section.getEntryTypes() %}
 {% set multiple  = (entryTypes|length > 1) %}
 
-{% set content %}
+
+{% set extraPageHeaderHtml %}
+	{% if section.type != 'single' %}
+		<div class="buttons">
+			<a href="{{ url('settings/sections/' ~ section.id ~ '/entrytypes/new') }}" class="btn submit add icon">{{ "New entry type"|t }}</a>
+		</div>
+	{% endif %}
+{% endset %}
+
+
+{% block content %}
 	<table id="entrytypes" class="data fullwidth collapsible">
 		<thead>
 			<th scope="col">{{ "Name"|t }}</th>
@@ -27,17 +36,11 @@
 			{% endfor %}
 		</tbody>
 	</table>
-
-	{% if section.type != 'single' %}
-		<div class="buttons">
-			<a href="{{ url('settings/sections/' ~ section.id ~ '/entrytypes/new') }}" class="btn submit add icon">{{ "New Entry Type"|t }}</a>
-		</div>
-	{% endif %}
-{% endset %}
+{% endblock %}
 
 
 {% if section.type != 'single' %}
-	{% set js %}
+	{% includejs %}
 		new Craft.AdminTable({
 			tableSelector: '#entrytypes',
 			deleteAction: 'sections/deleteEntryType',
@@ -46,6 +49,5 @@
 			reorderAction: 'sections/reorderEntryTypes',
 			confirmDeleteMessage: '{{ "Are you sure you want to delete “{name}” and all entries that use it?"|t }}',
 		});
-	{% endset %}
-	{% includeJs js %}
+	{% endincludejs %}
 {% endif %}

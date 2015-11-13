@@ -104,6 +104,29 @@ class AssetsFieldType extends BaseElementFieldType
 	}
 
 	/**
+	 * @inheritDoc IFieldType::getInputHtml()
+	 *
+	 * @param string $name
+	 * @param mixed  $criteria
+	 *
+	 * @return string
+	 */
+	public function getInputHtml($name, $criteria)
+	{
+		try
+		{
+			return parent::getInputHtml($name, $criteria);
+		}
+		catch (InvalidSubpathException $e)
+		{
+			return '<p class="warning">' .
+				'<span data-icon="alert"></span> ' .
+				Craft::t('This field’s target subfolder path is invalid: {path}', array('path' => '<code>'.$this->getSettings()->singleUploadLocationSubpath.'</code>')) .
+				'</p>';
+		}
+	}
+
+	/**
 	 * @inheritDoc IFieldType::prepValueFromPost()
 	 *
 	 * @param mixed $value
@@ -209,12 +232,18 @@ class AssetsFieldType extends BaseElementFieldType
 		}
 
 		// If we got here either there are no restrictions or all files are valid so let's turn them into Assets
+		// Unless there are no files at all.
+		if (empty($value) && empty($dataFiles) && empty($uploadedFiles))
+		{
+			return array();
+		}
+
 		$fileIds = array();
 
-		$targetFolderId = $this->_determineUploadFolderId($settings);
-
-		if (!empty($targetFolderId))
+		if (!empty($dataFiles) || !empty($uploadedFiles))
 		{
+			$targetFolderId = $this->_determineUploadFolderId($settings);
+
 			foreach ($dataFiles as $file)
 			{
 				$tempPath = AssetsHelper::getTempFilePath($file['filename']);
@@ -232,20 +261,15 @@ class AssetsFieldType extends BaseElementFieldType
 				$fileIds[] = $response->getDataItem('fileId');
 				IOHelper::deleteFile($tempPath, true);
 			}
-
-			if (is_array($value) && is_array($fileIds))
-			{
-				$fileIds = array_merge($value, $fileIds);
-			}
-
-			// Make it look like the actual POST data contained these file IDs as well,
-			// so they make it into entry draft/version data
-			$this->element->setRawPostContent($this->model->handle, $fileIds);
-
-			return $fileIds;
 		}
 
-		return parent::prepValueFromPost($value);
+		$fileIds = array_merge($value, $fileIds);
+
+		// Make it look like the actual POST data contained these file IDs as well,
+		// so they make it into entry draft/version data
+		$this->element->setRawPostContent($this->model->handle, $fileIds);
+
+		return $fileIds;
 	}
 
 	/**

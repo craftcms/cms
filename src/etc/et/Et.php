@@ -159,6 +159,14 @@ class Et
 	}
 
 	/**
+	 * @param $handle
+	 */
+	public function setHandle($handle)
+	{
+		$this->_model->handle = $handle;
+	}
+
+	/**
 	 * @throws EtException|\Exception
 	 * @return EtModel|null
 	 */
@@ -187,7 +195,7 @@ class Et
 					'allow_redirects' => $this->getAllowRedirects(),
 				);
 
-				$request = $client->post($this->_endpoint, $options);
+				$request = $client->post($this->_endpoint, null, null, $options);
 				$request->setBody($data, 'application/json');
 
 				// Potentially long-running request, so close session to prevent session blocking on subsequent requests.
