@@ -64,6 +64,10 @@ class Et
 		$this->_timeout = $timeout;
 		$this->_connectTimeout = $connectTimeout;
 
+		// There can be a race condition after an update from older Craft versions where they lose session
+		// and another call to elliott is made during cleanup.
+		$userEmail = craft()->userSession->getUser() ? craft()->userSession->getUser()->email : '';
+
 		$this->_model = new EtModel(array(
 			'licenseKey'        => $this->_getLicenseKey(),
 			'requestUrl'        => craft()->request->getHostInfo().craft()->request->getUrl(),
@@ -73,7 +77,7 @@ class Et
 			'localBuild'        => CRAFT_BUILD,
 			'localVersion'      => CRAFT_VERSION,
 			'localEdition'      => craft()->getEdition(),
-			'userEmail'         => craft()->userSession->getUser()->email,
+			'userEmail'         => $userEmail,
 			'track'             => CRAFT_TRACK,
 			'showBeta'          => craft()->config->get('showBetaUpdates'),
 			'serverInfo'        => array(
