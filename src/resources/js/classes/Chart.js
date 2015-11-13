@@ -14,8 +14,15 @@ Craft.charts.LineChart = Garnish.Base.extend({
     {
         this.$element = $('#'+element);
 
-        this.chart = new Chartist.Line('#'+element, data, this.defaultOptions(), this.defaultResponsiveOptions());
+        this.chart = new Chartist.Line('#'+element, data, Craft.charts.chartist.defaultOptions(), Craft.charts.chartist.defaultResponsiveOptions());
     },
+});
+
+
+/**
+* Chartist Options
+*/
+Craft.charts.chartist = {
 
     defaultOptions: function()
     {
@@ -103,4 +110,4 @@ Craft.charts.LineChart = Garnish.Base.extend({
             }]
         ];
     }
-});
+};
