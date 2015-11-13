@@ -348,17 +348,17 @@ class UpdatesService extends BaseApplicationComponent
 					continue;
 				}
 
-				$releaseModels = [];
-				$releaseTimestamps = [];
+				$releaseModels = array();
+				$releaseTimestamps = array();
 
 				foreach ($releases as $release)
 				{
 					// Validate ite info
-					$errors = [];
+					$errors = array();
 
 					// Any missing required attributes?
-					$missingAttributes = [];
-					foreach (['version', 'downloadUrl', 'date', 'notes'] as $attribute)
+					$missingAttributes = array();
+					foreach (array('version', 'downloadUrl', 'date', 'notes') as $attribute)
 					{
 						if (empty($release[$attribute]))
 						{
@@ -643,7 +643,7 @@ class UpdatesService extends BaseApplicationComponent
 
 	/**
 	 * @param string $uid
-	 * @param string handle
+	 * @param string $handle
 	 *
 	 * @return array
 	 */
