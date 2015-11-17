@@ -24,7 +24,14 @@
 				this.source.$textarea = $('<textarea />');
 				this.source.$textarea.css(style).hide();
 
-				this.core.box().append(this.source.$textarea);
+				if (this.opts.type === 'textarea')
+				{
+					this.core.box().append(this.source.$textarea);
+				}
+				else
+				{
+					this.core.box().after(this.source.$textarea);
+				}
 
 				this.core.element().on('destroy.callback.redactor', $.proxy(function()
 				{
@@ -43,9 +50,12 @@
 
 				var code = this.source.$textarea.val();
 
+				code = this.paragraphize.load(code);
+
 				this.code.start(code);
 				this.button.enableAll();
 				this.core.editor().show().focus();
+				this.code.sync();
 			},
 			show: function()
 			{
