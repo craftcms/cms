@@ -1155,7 +1155,7 @@ body #redactor-modal-overlay {
 /*  Menus
 /* ----------------------------------------*/
 
-@mixin menu-styles { z-index: 100; margin-bottom: 10px; border-radius: $btnBorderRadius; padding: 0 14px; overflow: hidden; background: #fff; @include user-select(none);
+@mixin menu-styles { z-index: 100; margin-bottom: 10px; border-radius: $btnBorderRadius; padding: 0 14px; overflow: auto; background: #fff; @include user-select(none);
 	@include box-shadow(0 0 0 1px $hairlineColorAlpha, 0 5px 20px rgba(0,0,0,0.25));
 }
 
