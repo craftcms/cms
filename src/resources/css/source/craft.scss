@@ -1375,6 +1375,7 @@ body .redactor-toolbar li a:active,
 body .redactor-toolbar li a.redactor-act { background-color: $darkselcolor; color: #fff; }
 body .redactor-toolbar li:first-child a { border-top-left-radius: 2px; }
 body .redactor-dropdown { z-index: 100; }
+body .redactor-dropdown li { border-bottom: none; background: none; }
 body .redactor-box:not(.redactor-box-fullscreen) .redactor-editor { background: none; border: none; border-top: 1px solid rgba(0,0,0,0.05); }
 .redactor-editor ul,
 .redactor-editor ol { @include padding-left(2em !important); @include padding-right(0 !important); }
