@@ -111,6 +111,9 @@ Craft.Pane = Garnish.Base.extend(
 			}
 
 			Garnish.$win.trigger('resize');
+
+			// Fixes Redactor fixed toolbars on previously hidden panes
+			Garnish.$doc.trigger('scroll');
 		}
 	},
 
