@@ -7,16 +7,17 @@ RedactorPlugins.pagebreak = function()
 		{
 			var $btn = this.button.add('pagebreak', 'Insert Page Break');
 			this.button.addCallback($btn, this.pagebreak.insertPageBreak);
+			this.button.setIcon($btn, '<i class="icon"></i>');
 		},
 
 		insertPageBreak: function()
 		{
 			var $pagebreakNode = $('<hr class="redactor_pagebreak" style="display:none" unselectable="on" contenteditable="false" />'),
-				$currentNode = $(this.selection.getCurrent());
+				$currentNode = $(this.selection.current());
 
-			if ($currentNode.length && !$currentNode.is('div.redactor_editor'))
+			if ($currentNode.length && $.contains(this.$editor.get(0), $currentNode.get(0)))
 			{
-				// Find the closest element to div.redactor_editor
+				// Find the closest element to div.redactor-editor
 				while ($currentNode.parent().length && !$currentNode.parent().is('div.redactor-editor'))
 				{
 					$currentNode = $currentNode.parent();
