@@ -36,5 +36,9 @@
 		}
 	});
 
+	{% if value and value.format is defined %}
+		$timePicker.timepicker('setTime', {{ value|date('G') }}*3600 + {{ value|date('i') }}*60 + {{ value|date('s') }});
+	{% endif %}
+
 {%- endset %}
 {%- includeJs js %}
