@@ -157,7 +157,7 @@ class UrlHelper
 	 *
 	 * @return string
 	 */
-	public static function getUrl($path = '', $params = null, $protocol = '', $mustShowScriptName = false)
+	public static function getUrl($path = '', $params = null, $protocol = null, $mustShowScriptName = false)
 	{
 		// Return $path if it appears to be an absolute URL.
 		if (static::isFullUrl($path))
@@ -188,7 +188,7 @@ class UrlHelper
 		}
 
 		// Send all resources over SSL if this request is loaded over SSL.
-		if ($protocol === '' && craft()->request->isSecureConnection())
+		if (!$protocol && craft()->request->isSecureConnection())
 		{
 			$protocol = 'https';
 		}
@@ -205,7 +205,7 @@ class UrlHelper
 	 *
 	 * @return string
 	 */
-	public static function getCpUrl($path = '', $params = null, $protocol = '')
+	public static function getCpUrl($path = '', $params = null, $protocol = null)
 	{
 		$path = trim($path, '/');
 		$path = craft()->config->get('cpTrigger').($path ? '/'.$path : '');
@@ -222,7 +222,7 @@ class UrlHelper
 	 *
 	 * @return string
 	 */
-	public static function getSiteUrl($path = '', $params = null, $protocol = '')
+	public static function getSiteUrl($path = '', $params = null, $protocol = null)
 	{
 		$path = trim($path, '/');
 		return static::_getUrl($path, $params, $protocol, false, false);
@@ -238,7 +238,7 @@ class UrlHelper
 	 *
 	 * @return string
 	 */
-	public static function getResourceUrl($path = '', $params = null, $protocol = '')
+	public static function getResourceUrl($path = '', $params = null, $protocol = null)
 	{
 		$path = trim($path, '/');
 
@@ -291,7 +291,7 @@ class UrlHelper
 	 *
 	 * @return array|string
 	 */
-	public static function getActionUrl($path = '', $params = null, $protocol = '')
+	public static function getActionUrl($path = '', $params = null, $protocol = null)
 	{
 		$path = craft()->config->get('actionTrigger').'/'.trim($path, '/');
 
@@ -374,7 +374,7 @@ class UrlHelper
 			else
 			{
 				// Figure it out for ourselves, then
-				$baseUrl = craft()->request->getHostInfo($protocol);
+				$baseUrl = craft()->request->getHostInfo($protocol ?: '');
 
 				if ($showScriptName)
 				{
