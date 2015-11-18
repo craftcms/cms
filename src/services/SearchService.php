@@ -117,7 +117,14 @@ class SearchService extends BaseApplicationComponent
 	{
 		if (is_string($query))
 		{
-			$query = new SearchQuery($query);
+			$query = new SearchQuery($query, craft()->config->get('defaultSearchTermOptions'));
+		}
+		else if (is_array($query))
+		{
+			$options = $query;
+			$query = $options['query'];
+			unset($options['query']);
+			$query = new SearchQuery($query, $options);
 		}
 
 		// Get tokens for query

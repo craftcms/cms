@@ -180,6 +180,25 @@ return array(
 	'defaultImageQuality' => 82,
 
 	/**
+	 * The default options that should be applied to each search term.
+	 *
+	 * Options include:
+	 *
+	 * - `attribute` – The attribute that the term should apply to (e.g. 'title'), if any
+	 * - `exact` – Whether the term must be an exact match (only applies if `attribute` is set)
+	 * - `exclude` – Whether search results should *exclude* records with this term
+	 * - `subLeft` – Whether to include keywords that contain the term, with additional characters before it
+	 * - `subRight` – Whether to include keywords that contain the term, with additional characters after it
+	 */
+	'defaultSearchTermOptions' => array(
+		'attribute' => null,
+		'exact' => false,
+		'exclude' => false,
+		'subLeft' => false,
+		'subRight' => false,
+	),
+
+	/**
 	 * The template file extensions Craft will look for when matching a template path to a file on the front end.
 	 */
 	'defaultTemplateExtensions' => array('html', 'twig'),
