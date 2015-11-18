@@ -219,13 +219,34 @@ class UrlHelper
 	 * @param string $path
 	 * @param array|string|null $params
 	 * @param string|null $protocol
+	 * @param string|null $localeId
 	 *
 	 * @return string
 	 */
-	public static function getSiteUrl($path = '', $params = null, $protocol = null)
+	public static function getSiteUrl($path = '', $params = null, $protocol = null, $localeId = null)
 	{
+		$useLocaleSiteUrl = (
+			$localeId !== null &&
+			($localeId != craft()->language) &&
+			($localeSiteUrl = craft()->config->getLocalized('siteUrl', $localeId))
+		);
+
+		if ($useLocaleSiteUrl)
+		{
+			// Temporarily set Craft to use this element's locale's site URL
+			$siteUrl = craft()->getSiteUrl();
+			craft()->setSiteUrl($localeSiteUrl);
+		}
+
 		$path = trim($path, '/');
-		return static::_getUrl($path, $params, $protocol, false, false);
+		$url = static::_getUrl($path, $params, $protocol, false, false);
+
+		if ($useLocaleSiteUrl)
+		{
+			craft()->setSiteUrl($siteUrl);
+		}
+
+		return $url;
 	}
 
 	/**
