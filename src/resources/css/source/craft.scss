@@ -1236,7 +1236,8 @@ textarea.text,
 .text input,
 .text textarea,
 .textline,
-table.editable textarea { font-size: 13px; line-height: 16px; color: $textcolor; min-height: 30px; @include box-sizing(border-box);
+table.editable textarea,
+body .redactor-editor { font-size: 13px; line-height: 16px; color: $textcolor; min-height: 30px; @include box-sizing(border-box);
 	-webkit-appearance: none;
 }
 
@@ -1375,7 +1376,7 @@ body .redactor-toolbar li a.redactor-act { background-color: $darkselcolor; colo
 body .redactor-toolbar li:first-child a { border-top-left-radius: 2px; }
 body .redactor-dropdown { z-index: 100; }
 body .redactor-dropdown li { border-bottom: none; background: none; }
-body .redactor-box:not(.redactor-box-fullscreen) .redactor-editor { background: none; border: none; border-top: 1px solid rgba(0,0,0,0.05); }
+body .redactor-box:not(.redactor-box-fullscreen) .redactor-editor { background: none; border: none; border-top: 1px solid $hairlineColor; }
 .redactor-editor ul,
 .redactor-editor ol { @include padding-left(2em !important); @include padding-right(0 !important); }
 body .redactor-editor ul { list-style-type: disc; }
