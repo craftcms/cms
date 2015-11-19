@@ -56,13 +56,17 @@ class Et
 	 *
 	 * @return Et
 	 */
-	public function __construct($endpoint, $timeout = 30, $connectTimeout = 2)
+	public function __construct($endpoint, $timeout = 30, $connectTimeout = 30)
 	{
 		$endpoint .= craft()->config->get('endpointSuffix');
 
 		$this->_endpoint = $endpoint;
 		$this->_timeout = $timeout;
 		$this->_connectTimeout = $connectTimeout;
+
+		// There can be a race condition after an update from older Craft versions where they lose session
+		// and another call to elliott is made during cleanup.
+		$userEmail = craft()->userSession->getUser() ? craft()->userSession->getUser()->email : '';
 
 		$this->_model = new EtModel(array(
 			'licenseKey'        => $this->_getLicenseKey(),
@@ -73,7 +77,7 @@ class Et
 			'localBuild'        => CRAFT_BUILD,
 			'localVersion'      => CRAFT_VERSION,
 			'localEdition'      => craft()->getEdition(),
-			'userEmail'         => craft()->userSession->getUser()->email,
+			'userEmail'         => $userEmail,
 			'track'             => CRAFT_TRACK,
 			'showBeta'          => craft()->config->get('showBetaUpdates'),
 			'serverInfo'        => array(

@@ -267,7 +267,6 @@ Craft.RichTextInput = Garnish.Base.extend(
 						this.redactor.insert.node($('<a href="'+url+'">'+title+'</a>')[0]);
 						this.redactor.code.sync();
 					}
-					this.redactor.dropdown.hideAll();
 				}, this),
 				closeOtherModals: false,
 				canSelectImageTransforms: true
@@ -301,7 +300,6 @@ Craft.RichTextInput = Garnish.Base.extend(
 						this.redactor.insert.node($('<a href="'+url+'">'+title+'</a>')[0]);
 						this.redactor.code.sync();
 					}
-					this.redactor.dropdown.hideAll();
 				}, this),
 				closeOtherModals: false
 			});
@@ -334,7 +332,6 @@ Craft.RichTextInput = Garnish.Base.extend(
 						this.redactor.insert.node($('<a href="'+url+'">'+title+'</a>')[0]);
 						this.redactor.code.sync();
 					}
-					this.redactor.dropdown.hideAll();
 				}, this),
 				closeOtherModals: false
 			});

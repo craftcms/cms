@@ -230,7 +230,10 @@ class EtService extends BaseApplicationComponent
 		$et = new Et(static::GetUpgradeInfo);
 		$etResponse = $et->phoneHome();
 
-		$etResponse->data = new UpgradeInfoModel($etResponse->data);
+		if ($etResponse)
+		{
+			$etResponse->data = new UpgradeInfoModel($etResponse->data);
+		}
 
 		return $etResponse;
 	}

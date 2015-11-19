@@ -24,6 +24,11 @@ class SearchQuery
 	/**
 	 * @var array
 	 */
+	private $_termOptions;
+
+	/**
+	 * @var array
+	 */
 	private $_tokens;
 
 	// Public Methods
@@ -33,12 +38,14 @@ class SearchQuery
 	 * Constructor
 	 *
 	 * @param string $query
+	 * @param array $termOptions
 	 *
 	 * @return SearchQuery
 	 */
-	public function __construct($query)
+	public function __construct($query, $termOptions = array())
 	{
 		$this->_query = $query;
+		$this->_termOptions = $termOptions;
 		$this->_tokens = array();
 		$this->_parse();
 	}
@@ -105,9 +112,16 @@ class SearchQuery
 
 			$term = new SearchQueryTerm();
 
-			// Is this an exclude term?
-			if ($term->exclude = (StringHelper::getCharAt($token, 0) == '-'))
+			// Set the default options
+			foreach ($this->_termOptions as $option => $value)
 			{
+				$term->$option = $value;
+			}
+
+			// Is this an exclude term?
+			if (StringHelper::getCharAt($token, 0) == '-')
+			{
+				$term->exclude = true;
 				$token = mb_substr($token, 1);
 			}
 
@@ -115,8 +129,12 @@ class SearchQuery
 			if (preg_match('/^(\w+)(::?)(.+)$/', $token, $match))
 			{
 				$term->attribute = $match[1];
-				$term->exact     = ($match[2] == '::');
 				$token = $match[3];
+
+				if ($match[2] == '::')
+				{
+					$term->exact = true;
+				}
 			}
 
 			// Does it start with a quote?
@@ -134,13 +152,15 @@ class SearchQuery
 			}
 
 			// Include sub-word matches?
-			if ($term->subLeft = ($token && StringHelper::getCharAt($token, 0) == '*'))
+			if ($token && StringHelper::getCharAt($token, 0) == '*')
 			{
+				$term->subLeft = true;
 				$token = mb_substr($token, 1);
 			}
 
-			if ($term->subRight = ($token && substr($token, -1) == '*'))
+			if ($token && substr($token, -1) == '*')
 			{
+				$term->subRight = true;
 				$token = mb_substr($token, 0, -1);
 			}
 

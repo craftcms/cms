@@ -523,6 +523,40 @@ class AssetElementType extends BaseElementType
 		return $success;
 	}
 
+	// Protected Methods
+	// =========================================================================
+
+	/**
+	 * @inheritDoc BaseElementType::getTableAttributesForSource()
+	 *
+	 * @param string $sourceKey
+	 *
+	 * @return array
+	 */
+	protected function getTableAttributesForSource($sourceKey)
+	{
+		// Make sure it's a folder
+		if (strncmp($sourceKey, 'folder:', 7) === 0)
+		{
+			$folder = craft()->assets->getFolderById(substr($sourceKey, 7));
+
+			// Is it a nested folder?
+			if ($folder && $folder->parentId)
+			{
+				// Get the root folder in that source
+				$rootFolder = craft()->assets->getRootFolderBySourceId($folder->sourceId);
+
+				if ($rootFolder)
+				{
+					// Use the root folder's source key
+					$sourceKey = 'folder:'.$rootFolder->id;
+				}
+			}
+		}
+
+		return parent::getTableAttributesForSource($sourceKey);
+	}
+
 	// Private Methods
 	// =========================================================================
 
