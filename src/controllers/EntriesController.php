@@ -127,11 +127,19 @@ class EntriesController extends BaseEntriesController
 
 			if ($parentId === null && $variables['entry']->id)
 			{
-				$parentIds = $variables['entry']->getAncestors(1)->status(null)->localeEnabled(null)->ids();
-
-				if ($parentIds)
+				// Is it already set on the model (e.g. if we're loading a draft)?
+				if ($variables['entry']->parentId)
 				{
-					$parentId = $parentIds[0];
+					$parentId = $variables['entry']->parentId;
+				}
+				else
+				{
+					$parentIds = $variables['entry']->getAncestors(1)->status(null)->localeEnabled(null)->ids();
+
+					if ($parentIds)
+					{
+						$parentId = $parentIds[0];
+					}
 				}
 			}
 
