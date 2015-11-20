@@ -235,6 +235,9 @@ class TemplateCacheService extends BaseApplicationComponent
 			return;
 		}
 
+		// Encode any 4-byte UTF-8 characters
+		$body = StringHelper::encodeMb4($body);
+
 		// Figure out the expiration date
 		if ($duration)
 		{
