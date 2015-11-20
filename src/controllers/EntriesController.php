@@ -84,7 +84,6 @@ class EntriesController extends BaseEntriesController
 		// ---------------------------------------------------------------------
 
 		if (
-			craft()->getEdition() >= Craft::Client &&
 			$variables['section']->type == SectionType::Structure &&
 			$variables['section']->maxLevels != 1
 		)
@@ -176,26 +175,23 @@ class EntriesController extends BaseEntriesController
 		// ---------------------------------------------------------------------
 
 		// Page title w/ revision label
-		if (craft()->getEdition() >= Craft::Client)
+		switch ($variables['entry']->getClassHandle())
 		{
-			switch ($variables['entry']->getClassHandle())
+			case 'EntryDraft':
 			{
-				case 'EntryDraft':
-				{
-					$variables['revisionLabel'] = $variables['entry']->name;
-					break;
-				}
+				$variables['revisionLabel'] = $variables['entry']->name;
+				break;
+			}
 
-				case 'EntryVersion':
-				{
-					$variables['revisionLabel'] = Craft::t('Version {num}', array('num' => $variables['entry']->num));
-					break;
-				}
+			case 'EntryVersion':
+			{
+				$variables['revisionLabel'] = Craft::t('Version {num}', array('num' => $variables['entry']->num));
+				break;
+			}
 
-				default:
-				{
-					$variables['revisionLabel'] = Craft::t('Current');
-				}
+			default:
+			{
+				$variables['revisionLabel'] = Craft::t('Current');
 			}
 		}
 
@@ -207,7 +203,7 @@ class EntriesController extends BaseEntriesController
 		{
 			$variables['docTitle'] = $variables['title'] = $variables['entry']->title;
 
-			if (craft()->getEdition() >= Craft::Client && $variables['entry']->getClassHandle() != 'Entry')
+			if ($variables['entry']->getClassHandle() != 'Entry')
 			{
 				$variables['docTitle'] .= ' ('.$variables['revisionLabel'].')';
 			}
@@ -764,7 +760,7 @@ class EntriesController extends BaseEntriesController
 				{
 					$variables['entry'] = craft()->entries->getEntryById($variables['entryId'], $variables['localeId']);
 
-					if ($variables['entry'] && craft()->getEdition() == Craft::Pro)
+					if ($variables['entry'])
 					{
 						$versions = craft()->entryRevisions->getVersionsByEntryId($variables['entryId'], $variables['localeId'], 1, true);
 

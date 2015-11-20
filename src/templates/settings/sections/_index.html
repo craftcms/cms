@@ -9,7 +9,7 @@
 
 
 {% set extraPageHeaderHtml %}
-	<div id="newsectioncontainer" class="buttons right{% if CraftEdition == CraftPersonal and sections|length >= maxSections %} hidden{% endif %}">
+	<div id="newsectioncontainer" class="buttons right">
 		<a href="{{ url('settings/sections/new') }}" class="btn submit add icon">{{ "New section"|t }}</a>
 	</div>
 {% endset %}
@@ -75,7 +75,6 @@
 		newObjectBtnSelector: '#newsectioncontainer',
 		deleteAction: 'sections/deleteSection',
 		confirmDeleteMessage: '{{ "Are you sure you want to delete “{name}” and all its entries?"|t }}',
-		{% if CraftEdition == CraftPersonal %}maxObjects: {{ maxSections }},{% endif %}
 		onDeleteObject: function()
 		{
 			// Hide the Entries tab if that was the last one

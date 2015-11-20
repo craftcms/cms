@@ -225,10 +225,7 @@ class CraftVariable
 	 */
 	public function entryRevisions()
 	{
-		if (craft()->getEdition() >= Craft::Client)
-		{
-			return new EntryRevisionsVariable();
-		}
+		return new EntryRevisionsVariable();
 	}
 
 	/**

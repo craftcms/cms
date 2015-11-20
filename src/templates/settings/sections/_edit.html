@@ -178,32 +178,28 @@
 
 	<hr>
 
-	{% if canBeSingle %}
-		<div id="type-single"{% if section.type != 'single' %} class="hidden"{% endif %}>
+	<div id="type-single"{% if section.type != 'single' %} class="hidden"{% endif %}>
+		{% if canBeHomepage %}
+			{{ forms.checkboxField({
+				label: "This is for the homepage"|t,
+				id: 'single-homepage',
+				name: 'types[single][homepage]',
+				checked: section.isHomepage(),
+				reverseToggle: 'single-uri-container'
+			}) }}
+		{% endif %}
 
-			{% if canBeHomepage %}
-				{{ forms.checkboxField({
-					label: "This is for the homepage"|t,
-					id: 'single-homepage',
-					name: 'types[single][homepage]',
-					checked: section.isHomepage(),
-					reverseToggle: 'single-uri-container'
-				}) }}
-			{% endif %}
-
-			<div id="single-uri-container"{% if section.isHomepage() %} class="hidden"{% endif %}>
-				{{ forms.field({
-					label: "URI"|t,
-					instructions: "What the entry URI should be."|t,
-					required: true,
-					errors: section.getErrors('urlFormat')
-				}, urlFormatInput('single', brandNewSection, section)) }}
-			</div>
-
-			{{ templateField('single', section) }}
-
+		<div id="single-uri-container"{% if section.isHomepage() %} class="hidden"{% endif %}>
+			{{ forms.field({
+				label: "URI"|t,
+				instructions: "What the entry URI should be."|t,
+				required: true,
+				errors: section.getErrors('urlFormat')
+			}, urlFormatInput('single', brandNewSection, section)) }}
 		</div>
-	{% endif %}
+
+		{{ templateField('single', section) }}
+	</div>
 
 	{% set urlFormatParams = {
 		label: "Entry URL Format"|t,
@@ -212,54 +208,44 @@
 		errors: section.getErrors('urlFormat')
 	} %}
 
-	{% if canBeChannel %}
-		<div id="type-channel"{% if section.type != 'channel' %} class="hidden"{% endif %}>
+	<div id="type-channel"{% if section.type != 'channel' %} class="hidden"{% endif %}>
+		{{ hasUrlsField('channel', section) }}
 
-			{{ hasUrlsField('channel', section) }}
+		<div id="channel-url-settings" class="nested-fields{% if not section.hasUrls %} hidden{% endif %}">
+			{{ forms.field(urlFormatParams, urlFormatInput('channel', brandNewSection, section)) }}
 
-			<div id="channel-url-settings" class="nested-fields{% if not section.hasUrls %} hidden{% endif %}">
-				{{ forms.field(urlFormatParams, urlFormatInput('channel', brandNewSection, section)) }}
-
-				{{ templateField('channel', section) }}
-			</div>
-
+			{{ templateField('channel', section) }}
 		</div>
-	{% endif %}
+	</div>
 
-	{% if canBeStructure %}
-		<div id="type-structure"{% if section.type != 'structure' %} class="hidden"{% endif %}>
+	<div id="type-structure"{% if section.type != 'structure' %} class="hidden"{% endif %}>
+		{{ hasUrlsField('structure', section) }}
 
-			{{ hasUrlsField('structure', section) }}
+		<div id="structure-url-settings" class="nested-fields{% if not section.hasUrls %} hidden{% endif %}">
+			{{ forms.field(urlFormatParams, urlFormatInput('structure', brandNewSection, section)) }}
 
-			<div id="structure-url-settings" class="nested-fields{% if not section.hasUrls %} hidden{% endif %}">
-				{{ forms.field(urlFormatParams, urlFormatInput('structure', brandNewSection, section)) }}
-
-				{{ templateField('structure', section) }}
-			</div>
-
-			{{ forms.textField({
-				label: "Max Levels"|t,
-				instructions: "The maximum number of levels this section can have. Leave blank if you don’t care."|t,
-				id: 'structure-maxLevels',
-				name: 'types[structure][maxLevels]',
-				value: section.maxLevels,
-				size: 5,
-				errors: section.getErrors('maxLevels')
-			}) }}
-
+			{{ templateField('structure', section) }}
 		</div>
-	{% endif %}
+
+		{{ forms.textField({
+			label: "Max Levels"|t,
+			instructions: "The maximum number of levels this section can have. Leave blank if you don’t care."|t,
+			id: 'structure-maxLevels',
+			name: 'types[structure][maxLevels]',
+			value: section.maxLevels,
+			size: 5,
+			errors: section.getErrors('maxLevels')
+		}) }}
+	</div>
 
 	<hr>
 
-	{% if CraftEdition >= CraftClient %}
-		{{ forms.checkboxField({
-			label: "Enable versioning for entries in this section?"|t,
-			id: 'enableVersioning',
-			name: 'enableVersioning',
-			checked: section.enableVersioning
-		}) }}
-	{% endif %}
+	{{ forms.checkboxField({
+		label: "Enable versioning for entries in this section?"|t,
+		id: 'enableVersioning',
+		name: 'enableVersioning',
+		checked: section.enableVersioning
+	}) }}
 {% endblock %}
 
 

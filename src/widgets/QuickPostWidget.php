@@ -107,14 +107,11 @@ class QuickPostWidget extends BaseWidget
 	 */
 	public function getTitle()
 	{
-		if (craft()->getEdition() >= Craft::Client)
-		{
-			$section = $this->_getSection();
+		$section = $this->_getSection();
 
-			if ($section)
-			{
-				return Craft::t('Post a new {section} entry', array('section' => Craft::t($section->name)));
-			}
+		if ($section)
+		{
+			return Craft::t('Post a new {section} entry', array('section' => Craft::t($section->name)));
 		}
 
 		return $this->getName();

@@ -1,8 +1,6 @@
 <?php
 namespace Craft;
 
-craft()->requireEdition(Craft::Client);
-
 /**
  * The EntryRevisionsController class is a controller that handles various entry version and draft related tasks such as
  * retrieving, saving, deleting, publishing and reverting entry drafts and versions.
