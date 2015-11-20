@@ -122,11 +122,13 @@ class TemplateCacheService extends BaseApplicationComponent
 			$params[':path'] = $this->_getPath();
 		}
 
-		return craft()->db->createCommand()
+		$cachedBody = craft()->db->createCommand()
 			->select('body')
 			->from(static::$_templateCachesTable)
 			->where($conditions, $params)
 			->queryScalar();
+
+		return ($cachedBody !== false ? $cachedBody : null);
 	}
 
 	/**
