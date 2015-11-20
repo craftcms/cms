@@ -759,7 +759,7 @@ $elementThumbPadding: 30 + $elementInnerSpacing;
 .elements .tableview td.checkbox-cell + td,
 .elements .tableview td.checkbox-cell + th { @include padding-left(7px); }
 .elements .tableview tr.sel td:not(.checkbox-cell) { background: $lightselcolor; }
-.elements .tableview .move { display: block; position: absolute; top: 9px; @include margin-left(-14px); font-size: 11px; text-decoration: none; }
+.elements .tableview .move { display: block; position: absolute; top: calc(50% - 9px); @include margin-left(-14px); font-size: 11px; text-decoration: none; }
 .elements .tableview .toggle { display: block; position: absolute; top: 9px; @include margin-left(-20px); }
 .elements .tableview .move + .toggle { @include margin-left(-34px); }
 
