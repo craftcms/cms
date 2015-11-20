@@ -365,6 +365,10 @@ Craft.LivePreview = Garnish.Base.extend(
 				url: this.previewUrl,
 				method: 'POST',
 				data: $.extend({}, postData, this.basePostData),
+				xhrFields: {
+				   withCredentials: true
+				},
+				crossDomain: true,
 				success: this._handleSuccessProxy,
 				error: this._handleErrorProxy
 			});
