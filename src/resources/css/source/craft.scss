@@ -1523,10 +1523,10 @@ body.message .message-container .pane { top: 50%; margin-top: -33px !important; 
 }
 
 /* blocks */
-.matrixblock { position: relative; margin-bottom: 10px; padding: 0 14px 14px; border-radius: $paneBorderRadius; border: 1px solid $hairlineColor; background: $lightBgColor; @include user-select(none); outline: none; }
+.matrixblock { position: relative; margin-bottom: 10px; padding: 0 14px 14px; border-radius: $paneBorderRadius; border: 1px solid $hairlineColor; background: $lightBgColor; outline: none; }
 .matrixblock.disabled { opacity: 1; }
 
-.matrixblock > .titlebar { margin: 0 -14px 14px; width: calc(100% + 28px); @include box-sizing(border-box); border-radius: 2px 2px 0 0; @include padding(6px, 70px, 6px, 33px); border-bottom: 1px solid $hairlineColor; background: hsl(212, 10%, 94%); color: $lighttextcolor; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; word-wrap: normal; cursor: default; }
+.matrixblock > .titlebar { margin: 0 -14px 14px; width: calc(100% + 28px); @include box-sizing(border-box); border-radius: 2px 2px 0 0; @include padding(6px, 70px, 6px, 33px); border-bottom: 1px solid $hairlineColor; background: hsl(212, 10%, 94%); color: $lighttextcolor; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; word-wrap: normal; cursor: default; @include user-select(none); }
 .matrixblock.collapsed > .titlebar { border-radius: 2px; border-bottom: none; }
 .matrixblock.disabled > .titlebar { @include padding-right(90px); }
 .matrixblock > .titlebar > .blocktype { display: inline; color: $mediumtextcolor; }
@@ -1543,7 +1543,6 @@ body.message .message-container .pane { top: 50%; margin-top: -33px !important; 
 .matrixblock > .actions a:hover { width: 15px; height: 20px; text-align: center; color: $linkcolor; }
 .matrixblock > .actions a.settings:after { @include margin-left(3px); }
 .matrixblock > .fields > .field { margin: 15px 0; }
-.matrixblock > .fields > .field > .input { @include user-select(text); }
 .matrix > .buttons { margin-top: 0; height: 30px; }
 
 /* categories */
