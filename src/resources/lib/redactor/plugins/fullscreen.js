@@ -27,7 +27,6 @@
 				this.button.setActive('fullscreen');
 				this.fullscreen.isOpen = true;
 
-
 				if (!this.opts.fullscreen)
 				{
 					this.selection.save();
@@ -62,9 +61,10 @@
 
 				this.$fullscreenPlaceholder.insertAfter(this.$box);
 
-				this.$box.appendTo(document.body);
+				this.core.box().appendTo(document.body);
+				this.core.box().addClass('redactor-box-fullscreen');
 
-				this.$box.addClass('redactor-box-fullscreen');
+				$('body').addClass('redactor-body-fullscreen');
 				$('body, html').css('overflow', 'hidden');
 
 				this.fullscreen.resize();
@@ -77,8 +77,6 @@
 				this.toolbar.observeScrollDisable();
 				$(window).on('resize.redactor-plugin-fullscreen', $.proxy(this.fullscreen.resize, this));
 				$(document).scrollTop(0, 0);
-
-				this.observe.load();
 
 				var self = this;
 				setTimeout(function()
@@ -97,15 +95,16 @@
 				$(window).off('resize.redactor-plugin-fullscreen');
 				$('body, html').css('overflow', '');
 
-				this.$box.insertBefore(this.$fullscreenPlaceholder);
+				this.core.box().insertBefore(this.$fullscreenPlaceholder);
 				this.$fullscreenPlaceholder.remove();
 
-				this.$box.removeClass('redactor-box-fullscreen').css({ width: 'auto', height: 'auto' });
+				this.core.box().removeClass('redactor-box-fullscreen').css({ width: 'auto', height: 'auto' });
+				this.core.box().removeClass('redactor-box-fullscreen');
 
 				if (this.opts.toolbarExternal)
 				{
-					this.$box.css('top', this.fullscreen.boxcss.top);
-					this.$toolbar.css({
+					this.core.box().css('top', this.fullscreen.boxcss.top);
+					this.core.toolbar().css({
 						'width': this.fullscreen.toolcss.width,
 						'top': this.fullscreen.toolcss.top,
 						'position': this.fullscreen.toolcss.position
@@ -124,7 +123,6 @@
 
 				this.core.editor().css('height', 'auto');
 				this.selection.restore();
-				this.observe.load();
 			},
 			toggle: function()
 			{
@@ -141,17 +139,17 @@
 				var padding = parseInt(this.core.editor().css('padding-top')) + parseInt(this.core.editor().css('padding-bottom'));
 				var height = $(window).height() - toolbarHeight - padding;
 
-				this.$box.width($(window).width()).height(height);
+				this.core.box().width($(window).width()).height(height);
 
 				if (this.opts.toolbarExternal)
 				{
-					this.$toolbar.css({
+					this.core.toolbar().css({
 						'top': '0px',
 						'position': 'absolute',
 						'width': '100%'
 					});
 
-					this.$box.css('top', toolbarHeight + 'px');
+					this.core.box().css('top', toolbarHeight + 'px');
 				}
 
 				this.core.editor().height(height);

@@ -276,7 +276,7 @@
 					return;
 				}
 
-				var $current = $(this.selection.getCurrent());
+				var $current = $(this.selection.current());
 
 				this.buffer.set();
 
@@ -287,7 +287,7 @@
 					var $focus_td = $focus_tr.children('td, th').first();
 					if ($focus_td.length)
 					{
-						$focus_td.prepend(this.selection.getMarker());
+						$focus_td.prepend(this.selection.marker());
 					}
 				}
 
@@ -304,7 +304,7 @@
 
 				this.buffer.set();
 
-				var $current = $(this.selection.getCurrent());
+				var $current = $(this.selection.current());
 				var $current_td = $current.closest('td, th');
 				var index = $current_td[0].cellIndex;
 
@@ -314,7 +314,7 @@
 					var focusIndex = index - 1 < 0 ? index + 1 : index - 1;
 					if (i === 0)
 					{
-						$elem.find('td, th').eq(focusIndex).prepend(this.selection.getMarker());
+						$elem.find('td, th').eq(focusIndex).prepend(this.selection.marker());
 					}
 
 					$elem.find('td, th').eq(index).remove();
@@ -396,7 +396,7 @@
 
 				this.buffer.set();
 
-				var $current = $(this.selection.getCurrent());
+				var $current = $(this.selection.current());
 				var $current_tr = $current.closest('tr');
 				var new_tr = $current_tr.clone();
 
@@ -430,7 +430,7 @@
 				}
 
 				var index = 0;
-				var current = $(this.selection.getCurrent());
+				var current = $(this.selection.current());
 
 				this.buffer.set();
 

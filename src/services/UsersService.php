@@ -524,7 +524,12 @@ class UsersService extends BaseApplicationComponent
 		{
 			// We want to hide the CP trigger if they don't have access to the CP.
 			$path = craft()->config->get('actionTrigger').'/users/verifyemail';
-			$url = UrlHelper::getSiteUrl($path, array('code' => $unhashedVerificationCode, 'id' => $userRecord->uid), craft()->request->isSecureConnection() ? 'https' : 'http');
+			$params = array(
+				'code' => $unhashedVerificationCode,
+				'id' => $userRecord->uid
+			);
+			$protocol = craft()->request->isSecureConnection() ? 'https' : 'http';
+			$url = UrlHelper::getSiteUrl($path, $params, $protocol, $user->preferredLocale);
 		}
 
 		return $url;
@@ -556,7 +561,7 @@ class UsersService extends BaseApplicationComponent
 		}
 		else
 		{
-			return UrlHelper::getSiteUrl($path, $params, $scheme);
+			return UrlHelper::getSiteUrl($path, $params, $scheme, $user->preferredLocale);
 		}
 	}
 

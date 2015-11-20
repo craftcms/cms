@@ -231,6 +231,19 @@ class ElementRelationParamParser
 				array('targetElement' => $relElementIds, 'field' => $relCriteria['field'])
 			), $query);
 		}
+		// Do we need to check for *all* of the element IDs?
+		else if ($glue == 'and')
+		{
+			// Srpead it across multiple relation sub-params
+			$newRelatedToParam = array('and');
+
+			foreach ($relElementIds as $elementId)
+			{
+				$newRelatedToParam[] = array($elementParam => array($elementId));
+			}
+
+			return $this->parseRelationParam($newRelatedToParam, $query);
+		}
 
 		$conditions = array();
 		$normalFieldIds = array();
@@ -415,7 +428,7 @@ class ElementRelationParamParser
 			}
 			else
 			{
-				array_unshift($conditions, $glue);
+				array_unshift($conditions, 'or');
 				return $conditions;
 			}
 		}

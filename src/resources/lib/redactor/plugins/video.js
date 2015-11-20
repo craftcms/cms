@@ -15,8 +15,14 @@
 			{
 				return String()
 				+ '<div class="modal-section" id="redactor-modal-video-insert">'
-					+ '<label>' + this.lang.get('video-html-code') + '</label>'
-					+ '<textarea id="redactor-insert-video-area" style="height: 160px;"></textarea>'
+					+ '<section>'
+						+ '<label>' + this.lang.get('video-html-code') + '</label>'
+						+ '<textarea id="redactor-insert-video-area" style="height: 160px;"></textarea>'
+					+ '</section>'
+					+ '<section>'
+						+ '<button id="redactor-modal-button-action">Insert</button>'
+						+ '<button id="redactor-modal-button-cancel">Cancel</button>'
+					+ '</section>'
 				+ '</div>';
 			},
 			init: function()
@@ -29,11 +35,9 @@
 				this.modal.addTemplate('video', this.video.getTemplate());
 
 				this.modal.load('video', this.lang.get('video'), 700);
-				this.modal.createCancelButton();
 
 				// action button
-				this.modal.createActionButton(this.lang.get('insert')).on('click', this.video.insert);
-
+				this.modal.getActionButton().text(this.lang.get('insert')).on('click', this.video.insert);
 				this.modal.show();
 
 				$('#redactor-insert-video-area').focus();

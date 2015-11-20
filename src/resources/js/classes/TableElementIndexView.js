@@ -311,10 +311,10 @@ Craft.TableElementIndexView = Craft.BaseElementIndexView.extend(
 
 						$spinnerRow.replaceWith($newElements);
 
-						if (this.actions || this.settings.selectable)
+						if (this.elementIndex.actions || this.settings.selectable)
 						{
 							this.elementSelect.addItems($newElements.filter(':not(.disabled)'));
-							this.updateActionTriggers();
+							this.elementIndex.updateActionTriggers();
 						}
 
 						if (this.structureTableSort)

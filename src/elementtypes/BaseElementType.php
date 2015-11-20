@@ -222,7 +222,7 @@ abstract class BaseElementType extends BaseComponentType implements IElementType
 			case 'table':
 			{
 				// Get the table columns
-				$variables['attributes'] = craft()->elementIndexes->getTableAttributes($this->getClassHandle(), $sourceKey);
+				$variables['attributes'] = $this->getTableAttributesForSource($sourceKey);
 
 				break;
 			}
@@ -572,6 +572,21 @@ abstract class BaseElementType extends BaseComponentType implements IElementType
 	 */
 	public function onAfterMoveElementInStructure(BaseElementModel $element, $structureId)
 	{
+	}
+
+	// Protected Methods
+	// =========================================================================
+
+	/**
+	 * Returns the attributes that should be shown for the given source.
+	 *
+	 * @param string $sourceKey The source key
+	 *
+	 * @return array The attributes that should be shown for the given source
+	 */
+	protected function getTableAttributesForSource($sourceKey)
+	{
+		return craft()->elementIndexes->getTableAttributes($this->getClassHandle(), $sourceKey);
 	}
 
 	// Private Methods

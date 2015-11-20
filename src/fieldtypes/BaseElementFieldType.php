@@ -177,7 +177,7 @@ abstract class BaseElementFieldType extends BaseFieldType implements IPreviewabl
 
 			if ($this->sortable)
 			{
-				$criteria->order = 'sortOrder';
+				$criteria->order = 'sources1.sortOrder';
 			}
 
 			if (!$this->allowMultipleSources && $this->getSettings()->source)
