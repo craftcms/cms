@@ -759,7 +759,7 @@ $elementThumbPadding: 30 + $elementInnerSpacing;
 .elements .tableview td.checkbox-cell + td,
 .elements .tableview td.checkbox-cell + th { @include padding-left(7px); }
 .elements .tableview tr.sel td:not(.checkbox-cell) { background: $lightselcolor; }
-.elements .tableview .move { display: block; position: absolute; top: 9px; @include margin-left(-14px); font-size: 11px; text-decoration: none; }
+.elements .tableview .move { display: block; position: absolute; top: calc(50% - 9px); @include margin-left(-14px); font-size: 11px; text-decoration: none; }
 .elements .tableview .toggle { display: block; position: absolute; top: 9px; @include margin-left(-20px); }
 .elements .tableview .move + .toggle { @include margin-left(-34px); }
 
@@ -1302,7 +1302,6 @@ input.checkbox:indeterminate:focus + label:before,
 
 .text,
 .textline,
-body .redactor-box:not(.redactor-box-fullscreen) .redactor-editor,
 body .redactor-box textarea { padding: 5px 7px; }
 
 .text { background: #fff; }
@@ -1376,7 +1375,7 @@ body .redactor-toolbar li a.redactor-act { background-color: $darkselcolor; colo
 body .redactor-toolbar li:first-child a { border-top-left-radius: 2px; }
 body .redactor-dropdown { z-index: 100; }
 body .redactor-dropdown li { border-bottom: none; background: none; }
-body .redactor-box:not(.redactor-box-fullscreen) .redactor-editor { background: none; border: none; border-top: 1px solid $hairlineColor; }
+body .redactor-box:not(.redactor-box-fullscreen) .redactor-editor { background: none; border: none; border-top: 1px solid $hairlineColor; padding: 12px; }
 .redactor-editor ul,
 .redactor-editor ol { @include padding-left(2em !important); @include padding-right(0 !important); }
 body .redactor-editor ul { list-style-type: disc; }
@@ -1524,10 +1523,10 @@ body.message .message-container .pane { top: 50%; margin-top: -33px !important; 
 }
 
 /* blocks */
-.matrixblock { position: relative; margin-bottom: 10px; padding: 0 14px 14px; border-radius: $paneBorderRadius; border: 1px solid $hairlineColor; background: $lightBgColor; @include user-select(none); outline: none; }
+.matrixblock { position: relative; margin-bottom: 10px; padding: 0 14px 14px; border-radius: $paneBorderRadius; border: 1px solid $hairlineColor; background: $lightBgColor; outline: none; }
 .matrixblock.disabled { opacity: 1; }
 
-.matrixblock > .titlebar { margin: 0 -14px 14px; width: calc(100% + 28px); @include box-sizing(border-box); border-radius: 2px 2px 0 0; @include padding(6px, 70px, 6px, 33px); border-bottom: 1px solid $hairlineColor; background: hsl(212, 10%, 94%); color: $lighttextcolor; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; word-wrap: normal; cursor: default; }
+.matrixblock > .titlebar { margin: 0 -14px 14px; width: calc(100% + 28px); @include box-sizing(border-box); border-radius: 2px 2px 0 0; @include padding(6px, 70px, 6px, 33px); border-bottom: 1px solid $hairlineColor; background: hsl(212, 10%, 94%); color: $lighttextcolor; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; word-wrap: normal; cursor: default; @include user-select(none); }
 .matrixblock.collapsed > .titlebar { border-radius: 2px; border-bottom: none; }
 .matrixblock.disabled > .titlebar { @include padding-right(90px); }
 .matrixblock > .titlebar > .blocktype { display: inline; color: $mediumtextcolor; }
@@ -1544,7 +1543,6 @@ body.message .message-container .pane { top: 50%; margin-top: -33px !important; 
 .matrixblock > .actions a:hover { width: 15px; height: 20px; text-align: center; color: $linkcolor; }
 .matrixblock > .actions a.settings:after { @include margin-left(3px); }
 .matrixblock > .fields > .field { margin: 15px 0; }
-.matrixblock > .fields > .field > .input { @include user-select(text); }
 .matrix > .buttons { margin-top: 0; height: 30px; }
 
 /* categories */
