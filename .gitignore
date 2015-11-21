@@ -10,5 +10,4 @@ Source/.idea/*
 Build/*
 Source/craft/app/resources/css/*.css
 *.sass-cache
-
 Source/craft/app/vendor/
