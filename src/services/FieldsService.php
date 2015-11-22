@@ -827,12 +827,12 @@ class FieldsService extends BaseApplicationComponent
 	/**
 	 * Assembles a field layout.
 	 *
-	 * @param array      $postedFieldLayout
-	 * @param array|null $requiredFields
+	 * @param array $postedFieldLayout
+	 * @param array $requiredFields
 	 *
 	 * @return FieldLayoutModel
 	 */
-	public function assembleLayout($postedFieldLayout, $requiredFields)
+	public function assembleLayout($postedFieldLayout, $requiredFields = array())
 	{
 		$tabs = array();
 		$fields = array();
