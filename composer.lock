@@ -4,8 +4,8 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "4c660845f636c234d63df1ea5796f79d",
-    "content-hash": "778a09f671615daf835cdd82b8a8a883",
+    "hash": "be208b214453a4fe2622efcdf85195aa",
+    "content-hash": "d43720093439fe3c1804ae1b806a092b",
     "packages": [
         {
             "name": "guzzle/guzzle",
@@ -379,17 +379,11 @@
         },
         {
             "name": "twig/twig",
-            "version": "v1.23.0",
+            "version": "1.23.2",
             "source": {
                 "type": "git",
-                "url": "https://github.com/twigphp/Twig.git",
-                "reference": "5868cd822fd6cf626d5f805439575f9c323cee2a"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/twigphp/Twig/zipball/5868cd822fd6cf626d5f805439575f9c323cee2a",
-                "reference": "5868cd822fd6cf626d5f805439575f9c323cee2a",
-                "shasum": ""
+                "url": "https://github.com/pixelandtonic/Twig",
+                "reference": "f017c197ed2f21a3aa06004384def6f11bb7712b"
             },
             "require": {
                 "php": ">=5.2.7"
@@ -409,7 +403,6 @@
                     "Twig_": "lib/"
                 }
             },
-            "notification-url": "https://packagist.org/downloads/",
             "license": [
                 "BSD-3-Clause"
             ],
@@ -421,14 +414,14 @@
                     "role": "Lead Developer"
                 },
                 {
-                    "name": "Armin Ronacher",
-                    "email": "armin.ronacher@active-4.com",
-                    "role": "Project Founder"
-                },
-                {
                     "name": "Twig Team",
                     "homepage": "http://twig.sensiolabs.org/contributors",
                     "role": "Contributors"
+                },
+                {
+                    "name": "Armin Ronacher",
+                    "email": "armin.ronacher@active-4.com",
+                    "role": "Project Founder"
                 }
             ],
             "description": "Twig, the flexible, fast, and secure template language for PHP",
@@ -436,7 +429,10 @@
             "keywords": [
                 "templating"
             ],
-            "time": "2015-10-29 23:29:01"
+            "support": {
+                "forum": "https://groups.google.com/forum/#!forum/twig-users"
+            },
+            "time": "2015-11-22 01:29:58"
         }
     ],
     "packages-dev": [
