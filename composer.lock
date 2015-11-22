@@ -4,22 +4,16 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "be208b214453a4fe2622efcdf85195aa",
-    "content-hash": "d43720093439fe3c1804ae1b806a092b",
+    "hash": "3339dc00ecd8d584061c1a4d05dc391c",
+    "content-hash": "9a9437c453bfc21cc01cdfdc1a8bc37e",
     "packages": [
         {
             "name": "guzzle/guzzle",
-            "version": "v3.9.3",
+            "version": "3.9.4",
             "source": {
                 "type": "git",
-                "url": "https://github.com/guzzle/guzzle3.git",
-                "reference": "0645b70d953bc1c067bbc8d5bc53194706b628d9"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/guzzle/guzzle3/zipball/0645b70d953bc1c067bbc8d5bc53194706b628d9",
-                "reference": "0645b70d953bc1c067bbc8d5bc53194706b628d9",
-                "shasum": ""
+                "url": "https://github.com/pixelandtonic/guzzle3",
+                "reference": "7e751c158f08818806bc24946f2db0a69e7d1305"
             },
             "require": {
                 "ext-curl": "*",
@@ -74,7 +68,11 @@
                     "Guzzle\\Tests": "tests/"
                 }
             },
-            "notification-url": "https://packagist.org/downloads/",
+            "scripts": {
+                "test": [
+                    "phpunit"
+                ]
+            },
             "license": [
                 "MIT"
             ],
@@ -92,23 +90,23 @@
             "description": "PHP HTTP client. This library is deprecated in favor of https://packagist.org/packages/guzzlehttp/guzzle",
             "homepage": "http://guzzlephp.org/",
             "keywords": [
+                "HTTP client",
                 "client",
                 "curl",
                 "framework",
                 "http",
-                "http client",
                 "rest",
                 "web service"
             ],
-            "time": "2015-03-18 18:23:50"
+            "time": "2015-11-22 02:29:59"
         },
         {
             "name": "imagine/imagine",
-            "version": "0.6.5",
+            "version": "0.6.6",
             "source": {
                 "type": "git",
                 "url": "https://github.com/pixelandtonic/Imagine",
-                "reference": "514286ed0a8686eb49b07f2aab7ad71792eaae54"
+                "reference": "b2f57160ccaa2ee7d636346bcbe181a374cb81c8"
             },
             "archive": {
                 "exclude": [
@@ -162,21 +160,15 @@
                 "image manipulation",
                 "image processing"
             ],
-            "time": "2015-11-12 23:07:18"
+            "time": "2015-11-22 03:08:34"
         },
         {
             "name": "lsolesen/pel",
-            "version": "0.9.3",
+            "version": "0.9.4",
             "source": {
                 "type": "git",
-                "url": "https://github.com/lsolesen/pel.git",
-                "reference": "64a8fbb42a37c808dbb54bec3dc51a0ccbca3fc0"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/lsolesen/pel/zipball/64a8fbb42a37c808dbb54bec3dc51a0ccbca3fc0",
-                "reference": "64a8fbb42a37c808dbb54bec3dc51a0ccbca3fc0",
-                "shasum": ""
+                "url": "https://github.com/pixelandtonic/pel",
+                "reference": "ba4a204f3f10425ab1e2ba9b48923e8fe49eb418"
             },
             "require": {
                 "php": ">=5.0.0"
@@ -190,7 +182,6 @@
                     "lsolesen\\pel\\": "src/"
                 }
             },
-            "notification-url": "https://packagist.org/downloads/",
             "authors": [
                 {
                     "name": "Lars Olesen",
@@ -204,21 +195,15 @@
             "keywords": [
                 "template"
             ],
-            "time": "2015-08-08 15:22:22"
+            "time": "2015-11-22 03:22:48"
         },
         {
             "name": "phpmailer/phpmailer",
-            "version": "v5.2.13",
+            "version": "5.2.15",
             "source": {
                 "type": "git",
-                "url": "https://github.com/PHPMailer/PHPMailer.git",
-                "reference": "45df3a88f7f46071e10d0b600f228d19f95911b3"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/PHPMailer/PHPMailer/zipball/45df3a88f7f46071e10d0b600f228d19f95911b3",
-                "reference": "45df3a88f7f46071e10d0b600f228d19f95911b3",
-                "shasum": ""
+                "url": "https://github.com/pixelandtonic/PHPMailer",
+                "reference": "6806100d6fb909784d987df0667390b3b8c57414"
             },
             "require": {
                 "php": ">=5.0.0"
@@ -228,7 +213,8 @@
                 "phpunit/phpunit": "4.7.*"
             },
             "suggest": {
-                "league/oauth2-client": "Needed for Gmail's XOAUTH2 authentication system"
+                "league/oauth2-client": "Needed for XOAUTH2 authentication",
+                "league/oauth2-google": "Needed for Gmail XOAUTH2"
             },
             "type": "library",
             "autoload": {
@@ -242,18 +228,17 @@
                     "extras/ntlm_sasl_client.php"
                 ]
             },
-            "notification-url": "https://packagist.org/downloads/",
             "license": [
                 "LGPL-2.1"
             ],
             "authors": [
                 {
-                    "name": "Jim Jagielski",
-                    "email": "jimjag@gmail.com"
-                },
-                {
                     "name": "Marcus Bointon",
                     "email": "phpmailer@synchromedia.co.uk"
+                },
+                {
+                    "name": "Jim Jagielski",
+                    "email": "jimjag@gmail.com"
                 },
                 {
                     "name": "Andy Prevost",
@@ -264,21 +249,15 @@
                 }
             ],
             "description": "PHPMailer is a full-featured email creation and transfer class for PHP",
-            "time": "2015-09-14 09:18:12"
+            "time": "2015-11-22 02:58:38"
         },
         {
             "name": "simplepie/simplepie",
-            "version": "1.3.1",
+            "version": "1.3.2",
             "source": {
                 "type": "git",
-                "url": "https://github.com/simplepie/simplepie.git",
-                "reference": "ce53709778bc1e2e4deda1651b66e5081398d5cc"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/simplepie/simplepie/zipball/ce53709778bc1e2e4deda1651b66e5081398d5cc",
-                "reference": "ce53709778bc1e2e4deda1651b66e5081398d5cc",
-                "shasum": ""
+                "url": "https://github.com/pixelandtonic/simplepie",
+                "reference": "e77b9e86081a5a7dcf5bba1e8c52069aca01ffec"
             },
             "require": {
                 "php": ">=5.2.0"
@@ -289,7 +268,6 @@
                     "SimplePie": "library"
                 }
             },
-            "notification-url": "https://packagist.org/downloads/",
             "license": [
                 "BSD-3-Clause"
             ],
@@ -318,7 +296,7 @@
                 "feeds",
                 "rss"
             ],
-            "time": "2012-10-30 17:54:03"
+            "time": "2015-11-22 02:51:00"
         },
         {
             "name": "symfony/event-dispatcher",
