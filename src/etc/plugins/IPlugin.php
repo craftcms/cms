@@ -66,7 +66,7 @@ interface IPlugin extends ISavableComponentType
 	 * If the plugin wants to have its updates included in the Updates page, it should provide a JSON feed in the
 	 * following format:
 	 *
-	 * ```json
+	 * ```javascript
 	 * [
 	 *     {
 	 *         "version": "0.9.0",
