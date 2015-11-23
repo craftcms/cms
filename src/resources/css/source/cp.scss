@@ -455,8 +455,3 @@ body > .sidebar li { width: auto !important; }
 	#upgrademodal .logo.craftpro { background-image: url(../images/editions/craftpro_2x.png); }
 	#upgrademodal-success .message { background-image: url(../images/success_2x.png); background-size: 48px; }
 }
-
-@media only screen and (max-width: 320px) {
-	#container { @include padding-left(10px); @include padding-right(10px); }
-	#nav { @include margin-left(-10px); }
-}
