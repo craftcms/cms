@@ -309,6 +309,12 @@ class Updater
 					{
 						Craft::log('Deleting file: '.$fileToDelete, LogLevel::Info, true);
 						IOHelper::deleteFile($fileToDelete, true);
+
+						// If that was the last file in this folder, nuke the folder.
+						if (IOHelper::isFolderEmpty(IOHelper::getFolderName($fileToDelete)))
+						{
+							IOHelper::deleteFolder(IOHelper::getFolderName($fileToDelete));
+						}
 					}
 				}
 				else

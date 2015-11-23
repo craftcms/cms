@@ -207,7 +207,7 @@ class WebApp extends \CWebApplication
 		// Check if the app path has changed.  If so, run the requirements check again.
 		$this->_processRequirementsCheck();
 
-		// Makes sure that the uploaded files are compatible with the current DB schema
+		// Makes sure that the uploaded files are compatible with the current database schema
 		if (!$this->updates->isSchemaVersionCompatible())
 		{
 			if ($this->request->isCpRequest())
