@@ -6,8 +6,8 @@ namespace Craft;
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
- * @license   http://buildwithcraft.com/license Craft License Agreement
- * @see       http://buildwithcraft.com
+ * @license   http://craftcms.com/license Craft License Agreement
+ * @see       http://craftcms.com
  * @package   craft.app.etc.requirements
  * @since     1.0
  */
@@ -92,7 +92,7 @@ class RequirementsChecker extends \CComponent
 	 */
 	private function _calculateServerInfo()
 	{
-		$info[] = '<a href="http://buildwithcraft.com/">@@@appName@@@</a> ' .
+		$info[] = '<a href="http://craftcms.com/">@@@appName@@@</a> ' .
 			Craft::t('{version} build {build}', array(
 				'version' => CRAFT_VERSION,
 				'build'   => CRAFT_BUILD

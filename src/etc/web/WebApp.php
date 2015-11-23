@@ -54,8 +54,8 @@ namespace Craft;
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
- * @license   http://buildwithcraft.com/license Craft License Agreement
- * @see       http://buildwithcraft.com
+ * @license   http://craftcms.com/license Craft License Agreement
+ * @see       http://craftcms.com
  * @package   craft.app.etc.web
  * @since     1.0
  */
@@ -214,7 +214,7 @@ class WebApp extends \CWebApplication
 			{
 				$version = $this->getVersion();
 				$build = $this->getBuild();
-				$url = "http://download.buildwithcraft.com/craft/{$version}/{$version}.{$build}/Craft-{$version}.{$build}.zip";
+				$url = "http://download.craftcms.com/craft/{$version}/{$version}.{$build}/Craft-{$version}.{$build}.zip";
 
 				throw new HttpException(200, Craft::t('@@@appName@@@ does not support backtracking to this version. Please upload @@@appName@@@ {url} or later.', array(
 					'url' => '['.$build.']('.$url.')',

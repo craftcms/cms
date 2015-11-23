@@ -6,8 +6,8 @@ namespace Craft;
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
- * @license   http://buildwithcraft.com/license Craft License Agreement
- * @see       http://buildwithcraft.com
+ * @license   http://craftcms.com/license Craft License Agreement
+ * @see       http://craftcms.com
  * @package   craft.app.etc.db.schemas
  * @since     1.0
  */
@@ -260,7 +260,7 @@ class MysqlSchema extends \CMysqlSchema
 	{
 		$sql = 'UPDATE '.$this->quoteTableName($table).' SET '.$this->quoteColumnName($column).' = REPLACE('.$this->quoteColumnName($column).',  :find, :replace)';
 		$params = array(':find' => (string) $find, ':replace' => (string) $replace);
-		
+
 		return array('query' => $sql, 'params' => $params);
 	}
 

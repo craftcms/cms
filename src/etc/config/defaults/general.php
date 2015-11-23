@@ -241,13 +241,13 @@ return array(
 	/**
 	 * Whether to enable Craft's template `{% cache %}` tag on a global basis.
 	 *
-	 * @see http://buildwithcraft.com/docs/templating/cache
+	 * @see http://craftcms.com/docs/templating/cache
 	 */
 	'enableTemplateCaching' => true,
 
 	/**
 	 * Any environment-specific variables that should be swapped out in URL and Path settings.
-	 * See http://buildwithcraft.com/docs/multi-environment-configs#environment-specific-variables for a full explanation
+	 * See http://craftcms.com/docs/multi-environment-configs#environment-specific-variables for a full explanation
 	 * of this setting.
 	 */
 	'environmentVariables' => array(),

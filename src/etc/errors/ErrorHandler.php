@@ -33,8 +33,8 @@ namespace Craft;
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
- * @license   http://buildwithcraft.com/license Craft License Agreement
- * @see       http://buildwithcraft.com
+ * @license   http://craftcms.com/license Craft License Agreement
+ * @see       http://craftcms.com
  * @package   craft.app.etc.errors
  * @since     1.0
  */
@@ -290,7 +290,7 @@ class ErrorHandler extends \CErrorHandler
 	{
 		if (YII_DEBUG)
 		{
-			$version = '<a href="http://buildwithcraft.com/">Craft</a> '.CRAFT_VERSION.'.'.CRAFT_BUILD;
+			$version = '<a href="http://craftcms.com/">Craft</a> '.CRAFT_VERSION.'.'.CRAFT_BUILD;
 
 			if (isset($_SERVER['SERVER_SOFTWARE']))
 			{

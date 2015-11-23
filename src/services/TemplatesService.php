@@ -9,8 +9,8 @@ namespace Craft;
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
- * @license   http://buildwithcraft.com/license Craft License Agreement
- * @see       http://buildwithcraft.com
+ * @license   http://craftcms.com/license Craft License Agreement
+ * @see       http://craftcms.com
  * @package   craft.app.services
  * @since     1.0
  */
@@ -678,7 +678,7 @@ class TemplatesService extends BaseApplicationComponent
 
 	/**
 	 * Returns the HTML for the CSRF hidden input token.  Used for when the config setting
-	 * [enableCsrfValidation](http://buildwithcraft.com/docs/config-settings#enableCsrfValidation) is set to true.
+	 * [enableCsrfValidation](http://craftcms.com/docs/config-settings#enableCsrfValidation) is set to true.
 	 *
 	 * @return string If 'enabledCsrfProtection' is enabled, the HTML for the hidden input, otherwise an empty string.
 	 */
@@ -769,8 +769,8 @@ class TemplatesService extends BaseApplicationComponent
 	 * - TemplateName/index.twig
 	 *
 	 * If this is a front-end request, the actual list of file extensions and index filenames are configurable via the
-	 * [defaultTemplateExtensions](http://buildwithcraft.com/docs/config-settings#defaultTemplateExtensions) and
-	 * [indexTemplateFilenames](http://buildwithcraft.com/docs/config-settings#indexTemplateFilenames) config settings.
+	 * [defaultTemplateExtensions](http://craftcms.com/docs/config-settings#defaultTemplateExtensions) and
+	 * [indexTemplateFilenames](http://craftcms.com/docs/config-settings#indexTemplateFilenames) config settings.
 	 *
 	 * For example if you set the following in config/general.php:
 	 *

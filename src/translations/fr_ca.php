@@ -280,7 +280,7 @@ Si vous n’attendiez pas ce courriel, veuillez l’ignorer. ',
 	'Craft Update' => 'Mise à jour de Craft',
 	'Craft was unable to install this update :(' => 'Craft n’a pas pu installer cette mise à jour :(',
 	'Craft {edition} is required to perform this action.' => 'Craft {edition} est nécessaire pour effectuer cette action.',
-	'Craft’s <a href="http://buildwithcraft.com/license" target="_blank">Terms and Conditions</a> have changed.' => '<a href="http://buildwithcraft.com/license" target="_blank">Les Conditions générales</a> de Craft ont changé.',
+	'Craft’s <a href="http://craftcms.com/license" target="_blank">Terms and Conditions</a> have changed.' => '<a href="http://craftcms.com/license" target="_blank">Les Conditions générales</a> de Craft ont changé.',
 	'Create' => 'Créer',
 	'Create a new asset source' => 'Créer un nouvel emplacement de ressources',
 	'Create a new category' => 'Créez une nouvelle catégorie',
@@ -1173,11 +1173,11 @@ Voici les paramètres que vous avez utilisés :
 	'Utilities' => 'Utilitaires',
 	'Value' => 'Valeur',
 	'Verify email addresses?' => 'Vérifier les adresses de courriel?',
-	'verify_new_email_body' => 'Hé {{user.friendlyName}}, 
+	'verify_new_email_body' => 'Hé {{user.friendlyName}},
 
-veuillez vérifier votre nouvelle adresse de courriel en cliquant sur ce lien : 
+veuillez vérifier votre nouvelle adresse de courriel en cliquant sur ce lien :
 
-{{link}} 
+{{link}}
 
 Si vous n’attendiez pas ce courriel, veuillez l’ignorer.
 ',
@@ -1245,7 +1245,7 @@ Si vous n’attendiez pas ce courriel, veuillez l’ignorer.
 	'You cannot access the CP with that account.' => 'Vous ne pouvez pas accéder au Panneau de Contrôle avec ce compte.',
 	'You cannot access the site while the system is offline with that account.' => 'Vous ne pouvez pas accéder le site pendant que le système n\'est pas connecté avec ce compte',
 	'You can’t add any more {type} sections.' => 'Vous ne pouvez plus ajouter de {type} de sections.',
-	'You don’t have any <a href="http://buildwithcraft.com/docs/rich-text-fields#redactor-configs" target="_blank">Redactor configs</a> yet.' => 'Vous n’avez pas encore de <a href="http://buildwithcraft.com/docs/rich-text-fields#redactor-configs" target="_blank">configurations Redactor</a>.',
+	'You don’t have any <a href="http://craftcms.com/docs/rich-text-fields#redactor-configs" target="_blank">Redactor configs</a> yet.' => 'Vous n’avez pas encore de <a href="http://craftcms.com/docs/rich-text-fields#redactor-configs" target="_blank">configurations Redactor</a>.',
 	'You don’t have any widgets yet.' => 'Vous n’avez pas encore de widgets.',
 	'You don’t have the proper credentials to access this page.' => 'Vous ne disposez pas des droits appropriés pour accéder à cette page.',
 	'You don’t have the required permissions for this operation.' => 'Vous n’avez pas les autorisations requises pour cette opération.',
