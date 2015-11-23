@@ -5,7 +5,6 @@
 	border-bottom: 1px solid rgba(0,0,0,0.05); background: rgba(0,0,0,0.03);
 }
 
-html,
 body { overflow-x: hidden; }
 
 #alerts { color: $errorcolor; text-align: center; }
@@ -86,7 +85,7 @@ body { overflow-x: hidden; }
 
 /* container */
 
-#container { @include display-flex; @include flex-direction(column); position: relative; @include padding-left(220px); @include box-sizing(border-box); }
+#container { display: block; @include flex-direction(column); position: relative; @include padding-left(220px); @include box-sizing(border-box); }
 #container > .topbar,
 #container > #page-header,
 #container > #main,
