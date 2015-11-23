@@ -111,7 +111,7 @@ body.mobile #container {
 	body.ltr #container { width: calc(100% + 220px); @include transform(translate3d(-220px,0,0)); }
 	body.rtl #container { width: calc(100% + 220px); @include transform(translate3d(220px,0,0)); }
 
-	body.showing-nav #global-sidebar { display: block; }
+	body.showing-nav #global-sidebar { @include display-flex; }
 	body.showing-nav #container { @include transform(translate3d(0,0,0)); }
 
 	body.ltr:not(.showing-nav) #global-sidebar { @include transform(translate3d(-220px,0,0)); }
