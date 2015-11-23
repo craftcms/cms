@@ -360,7 +360,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
 		this.updateFixedToolbar._scrollTop = Garnish.$win.scrollTop();
 
-		if (this.updateFixedToolbar._scrollTop > this.toolbarOffset - 7)
+		if (Garnish.$win.width() > 992 && this.updateFixedToolbar._scrollTop > this.toolbarOffset - 7)
 		{
 			if (!this.$toolbar.hasClass('fixed'))
 			{

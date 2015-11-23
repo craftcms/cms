@@ -176,7 +176,7 @@ Craft.Pane = Garnish.Base.extend(
 		this.updateSidebarStyles._windowHeight = Garnish.$win.height();
 
 		// Have we scrolled passed the top of the pane?
-		if (this.updateSidebarStyles._scrollTop > this.updateSidebarStyles._paneOffset)
+		if (Garnish.$win.width() > 992 && this.updateSidebarStyles._scrollTop > this.updateSidebarStyles._paneOffset)
 		{
 			// Set the top position to the difference
 			this.updateSidebarStyles._styles.position = 'fixed';
