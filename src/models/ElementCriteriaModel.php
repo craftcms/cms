@@ -171,7 +171,7 @@ class ElementCriteriaModel extends BaseModel implements \Countable
 	/**
 	 * Sets an attribute's value.
 	 *
-	 * In addition, will clears the cached values when a new attribute is set.
+	 * In addition, clears the cached values when a new attribute is set.
 	 *
 	 * @param string $name
 	 * @param mixed  $value
