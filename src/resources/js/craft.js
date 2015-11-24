@@ -1,6 +1,3 @@
-// Configure Datepicker
-$.datepicker.setDefaults(Craft.datepickerOptions);
-
 // Set all the standard Craft.* stuff
 $.extend(Craft,
 {
