@@ -997,7 +997,7 @@ ul.tree,
 .meta > .field > .input > .datewrapper:before,
 .meta > .field > .input > .timewrapper:before,
 .meta > .field > .input > .datetimewrapper > .datewrapper:before,
-.meta > .field > .input > .datetimewrapper > .timewrapper:before { left: 0; }
+.meta > .field > .input > .datetimewrapper > .timewrapper:before { @include left(0); }
 .meta > .field > .input > .datewrapper > .text,
 .meta > .field > .input > .timewrapper > .text,
 .meta > .field > .input > .datetimewrapper > .datewrapper > .text,
