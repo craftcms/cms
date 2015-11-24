@@ -78,7 +78,12 @@ body.rtl [data-icon-after=structure]:after { content: attr('structurertl'); }
 
 .help:before { content: 'help'; color: #9d2dcc; }
 .livepreviewbtn:before { content: 'view'; }
-.sharebtn:before { content: 'share'; }
+.sharebtn:before {
+	body.ltr & { content: 'share'; }
+	body.rtl & { content: 'shareleft'; }
+}
+
+
 
 /* nav */
 .nav { display: block; }
