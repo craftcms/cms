@@ -41,8 +41,8 @@
 .recententries .body { overflow: hidden; }
 
 /* New Widget Menu */
-.newwidgetmenu ul li a { position: relative; padding-left: 40px; }
-.newwidgetmenu ul li a .icon { position: absolute; top: 8px; left: 14px; width: 16px; }
+.newwidgetmenu ul li a { position: relative; @include padding-left(40px); }
+.newwidgetmenu ul li a .icon { position: absolute; top: 8px; @include left(14px); width: 16px; }
 .newwidgetmenu ul li a .icon svg,
 .widgetmanagerhud-icon svg { width: 16px; height: 16px; @include svg-mask($mediumtextcolor); }
 
