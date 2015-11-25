@@ -332,18 +332,21 @@ Craft.CP = Garnish.Base.extend(
 
 	updateResponsiveSidebar: function()
 	{
-		if(this.onWindowResize._cpWidth < 769)
+		if(this.$sidebar.length > 0)
 		{
-			if (!this.showingSidebarToggle)
+			if(this.onWindowResize._cpWidth < 769)
 			{
-				this.showSidebarToggle();
+				if (!this.showingSidebarToggle)
+				{
+					this.showSidebarToggle();
+				}
 			}
-		}
-		else
-		{
-			if (this.showingSidebarToggle)
+			else
 			{
-				this.hideSidebarToggle();
+				if (this.showingSidebarToggle)
+				{
+					this.hideSidebarToggle();
+				}
 			}
 		}
 	},
