@@ -52,6 +52,7 @@ class PluginRecord extends BaseRecord
 			'class'         => array(AttributeType::ClassName, 'required' => true),
 			'version'       => array('maxLength' => 15, 'column' => ColumnType::Varchar, 'required' => true),
 			'schemaVersion' => array('maxLength' => 15, 'column' => ColumnType::Varchar),
+			'licenseKey'    => array(AttributeType::String, 'column' => ColumnType::Char, 'length' => 24),
 			'enabled'       => AttributeType::Bool,
 			'settings'      => AttributeType::Mixed,
 			'installDate'   => array(AttributeType::DateTime, 'required' => true),

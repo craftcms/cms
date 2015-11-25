@@ -70,6 +70,7 @@ class Et
 
 		$this->_model = new EtModel(array(
 			'licenseKey'        => $this->_getLicenseKey(),
+			'pluginLicenseKeys' => $this->_getPluginLicenseKeys(),
 			'requestUrl'        => craft()->request->getHostInfo().craft()->request->getUrl(),
 			'requestIp'         => craft()->request->getIpAddress(),
 			'requestTime'       => DateTimeHelper::currentTimeStamp(),
@@ -316,6 +317,23 @@ class Et
 		}
 
 		return null;
+	}
+
+	/**
+	 * @return array
+	 */
+	private function _getPluginLicenseKeys()
+	{
+		$pluginLicenseKeys = array();
+		$pluginsService = craft()->plugins;
+
+		foreach ($pluginsService->getPlugins() as $plugin)
+		{
+			$info = $pluginsService->getPluginInfo($plugin);
+			$pluginLicenseKeys[$plugin->getClassHandle()] = $info['licenseKey'];
+		}
+
+		return $pluginLicenseKeys;
 	}
 
 	/**
