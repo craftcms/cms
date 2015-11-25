@@ -49,6 +49,9 @@ class EtModel extends BaseModel
 		// Whether Craft is running for a domain that's eligible to be used in Edition Test Mode
 		$attributes['editionTestableDomain'] = AttributeType::Bool;
 
+		// The plugins' license key statuses.  Set by the server response.
+		$attributes['pluginLicenseKeyStatuses'] = AttributeType::Mixed;
+
 		// Extra arbitrary data to send to the server.
 		$attributes['data'] = AttributeType::Mixed;
 
