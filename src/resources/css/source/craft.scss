@@ -981,7 +981,7 @@ ul.tree,
 .meta > .data.last { padding-bottom: 16px; }
 
 .meta > .field > .heading,
-.meta > .data > .heading { margin-bottom: 0; color: $mediumtextcolor; }
+.meta > .data > .heading { margin-bottom: 0; color: $mediumtextcolor; line-height: 18px; }
 .meta > .field > .heading { width: 86px; }
 .meta > .data > .heading { width: calc(50% - 14px); }
 .meta > .field > .heading > label.required:after { position: absolute; top: 6px; @include left(-13px); @include margin-left(0); }
