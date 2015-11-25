@@ -240,10 +240,11 @@ class Et
 							$this->_setLicenseKey($etModel->licenseKey);
 						}
 
-						// Cache the license key status and which edition it has
+						// Cache the Craft/plugin license key statuses, and which edition Craft is licensed for
 						craft()->cache->set('licenseKeyStatus', $etModel->licenseKeyStatus);
 						craft()->cache->set('licensedEdition', $etModel->licensedEdition);
 						craft()->cache->set('editionTestableDomain@'.craft()->request->getHostName(), $etModel->editionTestableDomain ? 1 : 0);
+						craft()->cache->set('pluginLicenseKeyStatuses', $etModel->pluginLicenseKeyStatuses);
 
 						if ($etModel->licenseKeyStatus == LicenseKeyStatus::MismatchedDomain)
 						{
