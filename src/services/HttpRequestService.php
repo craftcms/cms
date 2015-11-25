@@ -1117,26 +1117,11 @@ class HttpRequestService extends \CHttpRequest
 	 */
 	public function getQueryStringWithoutPath()
 	{
-		// Get the full querystring.
-		$queryString = $this->getQueryString();
+		$queryData = $this->getQuery();
 
-		$parts = explode('&', $queryString);
+		unset($queryData[craft()->urlManager->pathParam]);
 
-		if (count($parts) == 1)
-		{
-			return '';
-		}
-
-		foreach ($parts as $key => $part)
-		{
-			if (mb_strpos($part, craft()->urlManager->pathParam.'=') === 0)
-			{
-				unset($parts[$key]);
-				break;
-			}
-		}
-
-		return implode('&', $parts);
+		return http_build_query($queryData);
 	}
 
 	/**

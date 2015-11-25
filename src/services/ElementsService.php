@@ -973,16 +973,25 @@ class ElementsService extends BaseApplicationComponent
 		else if ($criteria->order && $criteria->order != 'score')
 		{
 			$order = $criteria->order;
+			$orderColumnMap = array();
 
 			if (is_array($fieldColumns))
 			{
 				// Add the field column prefixes
 				foreach ($fieldColumns as $column)
 				{
-					// Avoid matching fields named "asc" or "desc" in the string "column_name asc" or
-					// "column_name desc"
-					$order = preg_replace('/(?<!\w\s)\b'.$column['handle'].'\b/', $column['column'].'$1', $order);
+					$orderColumnMap[$column['handle']] = $column['column'];
 				}
+			}
+
+			// Prevent “1052 Column 'id' in order clause is ambiguous” MySQL error
+			$orderColumnMap['id'] = 'elements.id';
+
+			foreach ($orderColumnMap as $orderValue => $columnName)
+			{
+				// Avoid matching fields named "asc" or "desc" in the string "column_name asc" or
+				// "column_name desc"
+				$order = preg_replace('/(?<!\w\s)\b'.$orderValue.'\b/', $columnName.'$1', $order);
 			}
 
 			$query->order($order);

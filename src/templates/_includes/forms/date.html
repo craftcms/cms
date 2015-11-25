@@ -13,7 +13,7 @@
 </div>
 
 {%- includejs %}
-	$('#{{ id|namespaceInputId|e('js') }}').datepicker({
+	$('#{{ id|namespaceInputId|e('js') }}').datepicker($.extend({
 		defaultDate: new Date({% if value %}{{ value.year }}, {{ value.month-1 }}, {{ value.day }}{% endif %})
-	});
+	}, Craft.datepickerOptions));
 {%- endincludejs %}
