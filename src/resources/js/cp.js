@@ -263,6 +263,10 @@ Craft.CP = Garnish.Base.extend(
 		// Get the new window width
 		this.onWindowResize._cpWidth = Math.min(Garnish.$win.width(), Craft.CP.maxWidth);
 
+
+		// Update the responsive global sidebar
+		this.updateResponsiveGlobalSidebar();
+
 		// Update the responsive nav
 		this.updateResponsiveNav();
 
@@ -275,7 +279,9 @@ Craft.CP = Garnish.Base.extend(
 
 	updateResponsiveGlobalSidebar: function()
 	{
-		this.$globalSidebar.height(window.innerHeight);
+		var newHeight = window.innerHeight;
+
+		this.$globalSidebar.height(newHeight);
 	},
 
 	updateResponsiveNav: function()
