@@ -21,7 +21,7 @@
 .route .template:before { @include icon; @include margin(0, 5px, 0, 0); content: 'template'; }
 
 .modal.route-settings { width: 500px; }
-.modal.route-settings .body { height: calc(100% - 136px); overflow: auto; }
+.modal.route-settings .body { height: calc(100% - 130px); overflow: auto; }
 .modal.route-settings .body .url { width: auto; padding-top: 0; padding-bottom: 0; cursor: text; }
 .modal.route-settings .body .url .token { cursor: default; }
 
