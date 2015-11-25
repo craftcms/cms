@@ -91,6 +91,9 @@ Craft.CP = Garnish.Base.extend(
 		this.$collapsibleTables = $('table.collapsible');
 		this.$upgradePromo = $('#upgradepromo > a');
 
+		// global sidebar
+		this.addListener(Garnish.$win, 'touchend', 'updateResponsiveGlobalSidebar');
+
 		// Find all the nav items
 		this.navItems = [];
 		this.totalNavWidth = Craft.CP.baseNavWidth;
@@ -268,6 +271,11 @@ Craft.CP = Garnish.Base.extend(
 
 		// Update any responsive tables
 		this.updateResponsiveTables();
+	},
+
+	updateResponsiveGlobalSidebar: function()
+	{
+		this.$globalSidebar.height(window.innerHeight);
 	},
 
 	updateResponsiveNav: function()
