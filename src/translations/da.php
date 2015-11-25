@@ -29,12 +29,12 @@ return array(
 	'Account locked. Try again in {time}.' => 'Brugerkonto låst. Prøv igen om {time}.',
 	'Account Status' => 'Kontostatus',
 	'Account suspended.' => 'Brugerkonto suspenderet.',
-	'account_activation_body' => 'Hey {{user.friendlyName}}, 
- 
-Tak fordu du oprette en konto med {{siteName}}! Aktiver din konto ved at klikke på følgende link: 
- 
- {{link}} 
- 
+	'account_activation_body' => 'Hey {{user.friendlyName}},
+
+Tak fordu du oprette en konto med {{siteName}}! Aktiver din konto ved at klikke på følgende link:
+
+ {{link}}
+
  Hvis du ikke forventede denne e-mail, bare ignorere den.',
 	'account_activation_heading' => 'Når nogen opretter en bruger:',
 	'account_activation_subject' => 'Aktiver din bruger',
@@ -280,7 +280,7 @@ Tak fordu du oprette en konto med {{siteName}}! Aktiver din konto ved at klikke 
 	'Craft Update' => 'Craft Opdatering',
 	'Craft was unable to install this update :(' => 'Craft kunne ikke installere denne opdatering :(',
 	'Craft {edition} is required to perform this action.' => 'Craft {edition} er krævet, for at kunne gennemføre denne handling.',
-	'Craft’s <a href="http://buildwithcraft.com/license" target="_blank">Terms and Conditions</a> have changed.' => 'Craft\'s <a href="http://buildwithcraft.com/license" target="_blank"> vilkår og betingelser </a> har ændret sig.',
+	'Craft’s <a href="http://craftcms.com/license" target="_blank">Terms and Conditions</a> have changed.' => 'Craft\'s <a href="http://craftcms.com/license" target="_blank"> vilkår og betingelser </a> har ændret sig.',
 	'Create' => 'Opret',
 	'Create a new asset source' => 'Opret en ny fil kilde',
 	'Create a new category' => 'Opret en ny Kategori',
@@ -1172,12 +1172,12 @@ Her er indstillingerne du har brugt:
 	'Utilities' => 'Hjælpeværktøjer',
 	'Value' => 'Værdi',
 	'Verify email addresses?' => 'Verificer email adresse?',
-	'verify_new_email_body' => 'Hey {{user.friendlyName}}, 
- 
- Bekræft din nye e-mailadresse ved at klikke på dette link: 
- 
- {{link}} 
- 
+	'verify_new_email_body' => 'Hey {{user.friendlyName}},
+
+ Bekræft din nye e-mailadresse ved at klikke på dette link:
+
+ {{link}}
+
  Hvis du ikke forventede denne e-mail, bare ignorere den.',
 	'verify_new_email_heading' => 'Når nogen ændrer deres e-mailadresse:',
 	'verify_new_email_subject' => 'Bekræft din nye e-mailadresse',
@@ -1243,7 +1243,7 @@ Her er indstillingerne du har brugt:
 	'You cannot access the CP with that account.' => 'Du har ikke adgang CPen med den konto.',
 	'You cannot access the site while the system is offline with that account.' => 'Du kan ikke få adgang til siden mens systemet er offline med den konto.',
 	'You can’t add any more {type} sections.' => 'Du kan ikke tilføje flere {type} sektioner.',
-	'You don’t have any <a href="http://buildwithcraft.com/docs/rich-text-fields#redactor-configs" target="_blank">Redactor configs</a> yet.' => 'Du har ingen <a href="http://buildwithcraft.com/docs/rich-text-fields#redactor-configs" target="_blank">Redactor configs</a> endnu.',
+	'You don’t have any <a href="http://craftcms.com/docs/rich-text-fields#redactor-configs" target="_blank">Redactor configs</a> yet.' => 'Du har ingen <a href="http://craftcms.com/docs/rich-text-fields#redactor-configs" target="_blank">Redactor configs</a> endnu.',
 	'You don’t have any widgets yet.' => 'Du har ikke nogen widgets endnu.',
 	'You don’t have the proper credentials to access this page.' => 'Den bruger du er logget ind med, har ikke adgang til at se denne side.',
 	'You don’t have the required permissions for this operation.' => 'Du har ikke de krævede tilladelser til at udføre denne handling.',

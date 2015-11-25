@@ -6,8 +6,8 @@ namespace Craft;
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
- * @license   http://buildwithcraft.com/license Craft License Agreement
- * @see       http://buildwithcraft.com
+ * @license   http://craftcms.com/license Craft License Agreement
+ * @see       http://craftcms.com
  * @package   craft.app.models
  * @since     1.0
  */
@@ -507,7 +507,7 @@ abstract class BaseElementModel extends BaseModel
 			in_array($this->elementType, array(ElementType::Asset, ElementType::GlobalSet, ElementType::Tag, ElementType::User))
 		)
 		{
-			craft()->deprecator->log('BaseElementModel::getChildren()_for_relations', 'Calling getChildren() to fetch an element’s target relations has been deprecated. Use the <a href="http://buildwithcraft.com/docs/relations#the-relatedTo-param">relatedTo</a> param instead.');
+			craft()->deprecator->log('BaseElementModel::getChildren()_for_relations', 'Calling getChildren() to fetch an element’s target relations has been deprecated. Use the <a href="http://craftcms.com/docs/relations#the-relatedTo-param">relatedTo</a> param instead.');
 			return $this->_getRelChildren($field);
 		}
 		else
@@ -1025,14 +1025,14 @@ abstract class BaseElementModel extends BaseModel
 	 *
 	 * @param mixed $field
 	 *
-	 * @deprecated Deprecated in 1.3. Use the [relatedTo](http://buildwithcraft.com/docs/relations#the-relatedTo-param)
+	 * @deprecated Deprecated in 1.3. Use the [relatedTo](http://craftcms.com/docs/relations#the-relatedTo-param)
 	 *             param instead.
 	 *
 	 * @return ElementCriteriaModel
 	 */
 	public function getParents($field = null)
 	{
-		craft()->deprecator->log('BaseElementModel::getParents()', 'Calling getParents() to fetch an element’s source relations has been deprecated. Use the <a href="http://buildwithcraft.com/docs/relations#the-relatedTo-param">relatedTo</a> param instead.');
+		craft()->deprecator->log('BaseElementModel::getParents()', 'Calling getParents() to fetch an element’s source relations has been deprecated. Use the <a href="http://craftcms.com/docs/relations#the-relatedTo-param">relatedTo</a> param instead.');
 
 		$criteria = craft()->elements->getCriteria($this->elementType);
 		$criteria->parentOf    = $this;

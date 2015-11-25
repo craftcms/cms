@@ -50,6 +50,8 @@ $cpRoutes['dashboard']                                               			  = arra
 $cpRoutes['entries/(?P<sectionHandle>{handle})']                                  = 'entries';
 $cpRoutes['entries/(?P<sectionHandle>{handle})/new']                              = array('action' => 'entries/editEntry');
 $cpRoutes['entries/(?P<sectionHandle>{handle})/(?P<entryId>\d+)(?:-{slug})?']     = array('action' => 'entries/editEntry');
+$cpRoutes['entries/(?P<sectionHandle>{handle})/(?P<entryId>\d+)(?:-{slug}?)?/drafts/(?P<draftId>\d+)']    = array('action' => 'entries/editEntry');
+$cpRoutes['entries/(?P<sectionHandle>{handle})/(?P<entryId>\d+)(?:-{slug})?/versions/(?P<versionId>\d+)'] = array('action' => 'entries/editEntry');
 
 $cpRoutes['globals/(?P<globalSetHandle>{handle})']                                = array('action' => 'globals/editContent');
 
@@ -108,8 +110,6 @@ $cpRoutes['myaccount'] = array('action' => 'users/editUser', 'params' => array('
 
 // Client routes
 $cpRoutes['editionRoutes'][1]['clientaccount']                                                                                = array('action' => 'users/editUser', 'params' => array('account' => 'client'));
-$cpRoutes['editionRoutes'][1]['entries/(?P<sectionHandle>{handle})/(?P<entryId>\d+)(?:-{slug}?)?/drafts/(?P<draftId>\d+)']    = array('action' => 'entries/editEntry');
-$cpRoutes['editionRoutes'][1]['entries/(?P<sectionHandle>{handle})/(?P<entryId>\d+)(?:-{slug})?/versions/(?P<versionId>\d+)'] = array('action' => 'entries/editEntry');
 
 // Pro routes
 $cpRoutes['editionRoutes'][2]['clientaccount']                                                                                = false;
@@ -141,6 +141,7 @@ $components['email']['class']                = 'Craft\EmailService';
 $components['elementIndexes']['class']       = 'Craft\ElementIndexesService';
 $components['elements']['class']             = 'Craft\ElementsService';
 $components['entries']['class']              = 'Craft\EntriesService';
+$components['entryRevisions']['class']       = 'Craft\EntryRevisionsService';
 $components['et']['class']                   = 'Craft\EtService';
 $components['feeds']['class']                = 'Craft\FeedsService';
 $components['fields']['class']               = 'Craft\FieldsService';
@@ -157,14 +158,7 @@ $components['resources'] = array(
 );
 $components['routes']['class']               = 'Craft\RoutesService';
 $components['search']['class']               = 'Craft\SearchService';
-$components['sections'] = array(
-	'class' => 'Craft\SectionsService',
-	'typeLimits' => array(
-		'single'    => 5,
-		'channel'   => 1,
-		'structure' => 0
-	)
-);
+$components['sections']['class']             = 'Craft\SectionsService';
 $components['security']['class']             = 'Craft\SecurityService';
 $components['structures']['class']           = 'Craft\StructuresService';
 $components['systemSettings'] = array(
@@ -216,7 +210,6 @@ $components['plugins'] = array(
 
 // Craft Client components
 $components['editionComponents'][1]['emailMessages']['class']   = 'Craft\EmailMessagesService';
-$components['editionComponents'][1]['entryRevisions']['class']  = 'Craft\EntryRevisionsService';
 
 // Craft Pro components
 $components['editionComponents'][2]['userGroups']['class']      = 'Craft\UserGroupsService';

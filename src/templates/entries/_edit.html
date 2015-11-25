@@ -3,7 +3,7 @@
 
 {% block pageTitle %}
 	{{ parent() }}
-	{% if entry.id and CraftEdition >= CraftClient %}
+	{% if entry.id %}
 		{% include "entries/_revisions" %}
 	{% endif %}
 {% endblock %}
@@ -124,9 +124,7 @@
 						<li><a class="formsubmit" data-redirect="entries/{{ sectionHandle }}/new{% if nextEntryParams %}?{{ nextEntryParams|join('&') }}{% endif %}">{{ "Save and add another"|t }}</a></li>
 					{% endif %}
 
-					{% if CraftEdition >= CraftClient %}
-						<li><a class="formsubmit" data-action="entryRevisions/saveDraft" data-redirect="{{ baseCpEditUrl }}/drafts/{draftId}">{{ 'Save as a draft'|t }}</a></li>
-					{% endif %}
+					<li><a class="formsubmit" data-action="entryRevisions/saveDraft" data-redirect="{{ baseCpEditUrl }}/drafts/{draftId}">{{ 'Save as a draft'|t }}</a></li>
 
 					{% if not isSingle and entry.id %}
 						<li><a class="formsubmit" data-param="entryId" data-value="" data-redirect="{{ continueEditingUrl }}">{{ "Save as a new entry"|t }}</a></li>
@@ -137,12 +135,10 @@
 
 	{% else %}
 
-		{% if CraftEdition >= CraftClient %}
-			<input type="hidden" name="action" value="entryRevisions/saveDraft">
-			<input type="hidden" name="redirect" value="{{ baseCpEditUrl }}/drafts/{draftId}">
+		<input type="hidden" name="action" value="entryRevisions/saveDraft">
+		<input type="hidden" name="redirect" value="{{ baseCpEditUrl }}/drafts/{draftId}">
 
-			<input type="submit" class="btn submit first" value="{{ 'Save as a draft'|t }}">
-		{% endif %}
+		<input type="submit" class="btn submit first" value="{{ 'Save as a draft'|t }}">
 
 	{% endif %}
 {% endblock %}
@@ -316,7 +312,6 @@
 
 				{% if (
 					not isDraft and not isVersion and canSave and
-					CraftEdition >= CraftClient and
 					section.enableVersioning
 				) %}
 					<hr>

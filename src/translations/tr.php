@@ -280,7 +280,7 @@ Bu epostayı neden aldığınızı bilmiyorsanız, kaale almayınız.',
 	'Craft Update' => 'Craft Güncellemesi',
 	'Craft was unable to install this update :(' => 'Craft güncellemeyi yükleyemedi :(',
 	'Craft {edition} is required to perform this action.' => 'Bu hareketi gerçekleştirebilmek için Craft {edition} gereklidir.',
-	'Craft’s <a href="http://buildwithcraft.com/license" target="_blank">Terms and Conditions</a> have changed.' => 'Craft\'ın <a href="http://buildwithcraft.com/license" target="_blank">Kayıt ve Şartları</a> değişti.',
+	'Craft’s <a href="http://craftcms.com/license" target="_blank">Terms and Conditions</a> have changed.' => 'Craft\'ın <a href="http://craftcms.com/license" target="_blank">Kayıt ve Şartları</a> değişti.',
 	'Create' => 'Yarat',
 	'Create a new asset source' => 'Yeni dosya kaynağı oluştur',
 	'Create a new category' => 'Yeni bir kategori oluştur',
@@ -969,7 +969,7 @@ Tebrikler! Craft eposta göndermeyi başardı.
 
 Gerkli ayarlar şu şekilde:
 
-{% for key, setting in settings %}{{ key }}: {{ setting }}⏎ 
+{% for key, setting in settings %}{{ key }}: {{ setting }}⏎
 
 {% endfor %}',
 	'test_email_heading' => 'Eposta ayarlarınızı test ederken:',
@@ -1243,7 +1243,7 @@ Bu epostayı beklemiyorduysanız, görmezden gelin.',
 	'You cannot access the CP with that account.' => 'Bu hesapla DP\'e giriş yapamazsınız.',
 	'You cannot access the site while the system is offline with that account.' => 'Sistem o hesapla çevrim dışıyken siteye erişemezsiniz.',
 	'You can’t add any more {type} sections.' => 'Daha fazla {type} bölümü ekleyemezsiniz.',
-	'You don’t have any <a href="http://buildwithcraft.com/docs/rich-text-fields#redactor-configs" target="_blank">Redactor configs</a> yet.' => 'Daha hiç <a href="http://buildwithcraft.com/docs/rich-text-fields#redactor-configs" target="_blank">Redactor ayarları</a> yok.',
+	'You don’t have any <a href="http://craftcms.com/docs/rich-text-fields#redactor-configs" target="_blank">Redactor configs</a> yet.' => 'Daha hiç <a href="http://craftcms.com/docs/rich-text-fields#redactor-configs" target="_blank">Redactor ayarları</a> yok.',
 	'You don’t have any widgets yet.' => 'Daha hiçbir bileşen yok.',
 	'You don’t have the proper credentials to access this page.' => 'Bu sayfaya giriş yapmak için uygun kimlik bilgilerine sahip değilsiniz.',
 	'You don’t have the required permissions for this operation.' => 'Bu operasyon için gerekli izinlere sahip değilsiniz.',

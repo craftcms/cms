@@ -6,8 +6,8 @@ namespace Craft;
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
- * @license   http://buildwithcraft.com/license Craft License Agreement
- * @see       http://buildwithcraft.com
+ * @license   http://craftcms.com/license Craft License Agreement
+ * @see       http://craftcms.com
  * @package   craft.app.widgets
  * @since     1.0
  */
@@ -53,20 +53,17 @@ class RecentEntriesWidget extends BaseWidget
 	 */
 	public function getTitle()
 	{
-		if (craft()->getEdition() >= Craft::Client)
+		$sectionId = $this->getSettings()->section;
+
+		if (is_numeric($sectionId))
 		{
-			$sectionId = $this->getSettings()->section;
+			$section = craft()->sections->getSectionById($sectionId);
 
-			if (is_numeric($sectionId))
+			if ($section)
 			{
-				$section = craft()->sections->getSectionById($sectionId);
-
-				if ($section)
-				{
-					$title = Craft::t('Recent {section} Entries', array(
-						'section' => Craft::t($section->name)
-					));
-				}
+				$title = Craft::t('Recent {section} Entries', array(
+					'section' => Craft::t($section->name)
+				));
 			}
 		}
 
@@ -110,14 +107,11 @@ class RecentEntriesWidget extends BaseWidget
 	{
 		$params = array();
 
-		if (craft()->getEdition() >= Craft::Client)
-		{
-			$sectionId = $this->getSettings()->section;
+		$sectionId = $this->getSettings()->section;
 
-			if (is_numeric($sectionId))
-			{
-				$params['sectionId'] = (int)$sectionId;
-			}
+		if (is_numeric($sectionId))
+		{
+			$params['sectionId'] = (int)$sectionId;
 		}
 
 		$js = 'new Craft.RecentEntriesWidget('.$this->model->id.', '.JsonHelper::encode($params).');';
