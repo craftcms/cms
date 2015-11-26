@@ -8,7 +8,7 @@
  * deleteAction       - delete image at this location (in form of "controller/action")
  * cropAction         - crop image at this (in form of "controller/action")
  * areaToolOptions    - object with some options for the area tool selector
- *   aspectRatio      - aspect ration to enforce in form of "width:height". If empty, then select area is freeform
+ *   aspectRatio      - decimal aspect ratio of width/height
  *   initialRectangle - object with options for the initial rectangle
  *     mode           - if set to auto, then the part selected will be the maximum size in the middle of image
  *     x1             - top left x coordinate of th rectangle, if the mode is not set to auto
@@ -58,9 +58,11 @@ Craft.ImageUpload = Garnish.Base.extend(
 
 		cropAction:"",
 
+		constraint: 500,
+
 		areaToolOptions:
 		{
-			aspectRatio: "1:1",
+			aspectRatio: "1",
 			initialRectangle: {
 				mode: "auto",
 				x1: 0,
@@ -172,9 +174,9 @@ Craft.ImageHandler = Garnish.Base.extend(
 						{
 							Craft.ImageUpload.$modalContainerDiv.find('img').load($.proxy(function()
 							{
-								var profileTool = new Craft.ImageAreaTool(settings.areaToolOptions);
-								profileTool.showArea(this.modal);
-								this.modal.cropAreaTool = profileTool;
+								var areaTool = new Craft.ImageAreaTool(settings.areaToolOptions, this.modal);
+								areaTool.showArea();
+								this.modal.cropAreaTool = areaTool;
 							}, this));
 						}, this), 1);
 					}
@@ -256,14 +258,10 @@ Craft.ImageModal = Garnish.Modal.extend(
 	$cancelBtn: null,
 
 	areaSelect: null,
-	factor: null,
 	source: null,
 	_postParameters: null,
 	_cropAction: "",
 	imageHandler: null,
-	originalWidth: 0,
-	originalHeight: 0,
-	constraint: 0,
 	cropAreaTool: null,
 
 
@@ -273,43 +271,6 @@ Craft.ImageModal = Garnish.Modal.extend(
 		this.base($container, settings);
 		this._postParameters = settings.postParameters;
 		this._cropAction = settings.cropAction;
-		this.addListener(this.$container, 'resize', $.proxy(this, '_onResize'));
-		this.addListener(Garnish.$bod, 'resize', $.proxy(this, '_onResize'));
-	},
-
-	_onResize: function ()
-	{
-		var $img = this.$container.find('img'),
-			leftDistance = parseInt(this.$container.css('left'), 10),
-			topDistance = parseInt(this.$container.css('top'), 10);
-
-		var quotient = this.originalWidth / this.originalHeight,
-			leftAvailable = leftDistance - 10,
-			topAvailable = topDistance - 10;
-
-		if (leftAvailable / quotient > topAvailable)
-		{
-			newWidth = this.$container.width() + (topAvailable * quotient);
-		}
-		else
-		{
-			newWidth = this.$container.width() + leftAvailable;
-		}
-
-		// Set the size so that the image always fits into a constraint x constraint box
-		newWidth = Math.min(newWidth, this.constraint, this.constraint * quotient, this.originalWidth);
-		this.$container.width(newWidth);
-
-		var factor = newWidth / this.originalWidth,
-			newHeight = this.originalHeight * factor;
-
-		$img.height(newHeight).width(newWidth);
-		this.factor = factor;
-
-		if (this.cropAreaTool && typeof $img.imgAreaSelect({instance: true}) != "undefined")
-		{
-			$img.imgAreaSelect({instance: true}).update();
-		}
 	},
 
 	bindButtons: function()
@@ -327,12 +288,13 @@ Craft.ImageModal = Garnish.Modal.extend(
 
 	saveImage: function()
 	{
-		var selection = this.areaSelect.getSelection();
+		var selection = this.areaSelect.tellSelect();
+
 		var params = {
-			x1: Math.round(selection.x1 / this.factor),
-			x2: Math.round(selection.x2 / this.factor),
-			y1: Math.round(selection.y1 / this.factor),
-			y2: Math.round(selection.y2 / this.factor),
+			x1: selection.x,
+			y1: selection.y,
+			x2: selection.x2,
+			y2: selection.y2,
 			source: this.source
 		};
 
@@ -369,73 +331,79 @@ Craft.ImageModal = Garnish.Modal.extend(
 
 Craft.ImageAreaTool = Garnish.Base.extend(
 {
-	$container: null,
+	api:             null,
+	$container:      null,
+	containingModal: null,
 
-	init: function(settings)
+	init: function(settings, containingModal)
 	{
 		this.$container = Craft.ImageUpload.$modalContainerDiv;
 		this.setSettings(settings);
+		this.containingModal = containingModal;
 	},
 
-	showArea: function(referenceObject)
+	showArea: function()
 	{
 		var $target = this.$container.find('img');
 
-
-		var areaOptions = {
+		var cropperOptions = {
 			aspectRatio: this.settings.aspectRatio,
-			maxWidth: $target.width(),
-			maxHeight: $target.height(),
-			instance: true,
-			resizable: true,
-			show: true,
-			persistent: true,
-			handles: true,
-			parent: $target.parent(),
-			classPrefix: 'imgareaselect'
+			maxSize: [$target.width(), $target.height()],
+			bgColor: 'none'
 		};
 
-		var areaSelect = $target.imgAreaSelect(areaOptions);
 
-		var x1 = this.settings.initialRectangle.x1;
-		var x2 = this.settings.initialRectangle.x2;
-		var y1 = this.settings.initialRectangle.y1;
-		var y2 = this.settings.initialRectangle.y2;
-
-		if (this.settings.initialRectangle.mode == "auto")
+		var initCropper = $.proxy(function (api)
 		{
-			var proportions = this.settings.aspectRatio.split(":");
-			var rectangleWidth = 0;
-			var rectangleHeight = 0;
+			this.api = api;
 
+			var x1 = this.settings.initialRectangle.x1;
+			var x2 = this.settings.initialRectangle.x2;
+			var y1 = this.settings.initialRectangle.y1;
+			var y2 = this.settings.initialRectangle.y2;
 
-			// [0] - width proportion, [1] - height proportion
-			if (proportions[0] > proportions[1])
+			if (this.settings.initialRectangle.mode == "auto")
 			{
-				rectangleWidth = $target.width();
-				rectangleHeight = rectangleWidth * proportions[1] / proportions[0];
-			} else if (proportions[0] > proportions[1])
-			{
-				rectangleHeight = $target.height();
-				rectangleWidth = rectangleHeight * proportions[0] / proportions[1];
-			} else {
-				rectangleHeight = rectangleWidth = Math.min($target.width(), $target.height());
+				var rectangleWidth = 0;
+				var rectangleHeight = 0;
+
+				if (this.settings.aspectRatio == "")
+				{
+					rectangleWidth = $target.width();
+					rectangleHeight = $target.height();
+				}
+				else if (this.settings.aspectRatio > 1)
+				{
+					rectangleWidth = $target.width();
+					rectangleHeight = rectangleWidth / this.settings.aspectRatio;
+				}
+				else if (this.settings.aspectRatio < 1)
+				{
+					rectangleHeight = $target.height();
+					rectangleWidth = rectangleHeight * this.settings.aspectRatio;
+				}
+				else
+				{
+					rectangleHeight = rectangleWidth = Math.min($target.width(), $target.height());
+				}
+
+				x1 = Math.round(($target.width() - rectangleWidth) / 2);
+				y1 = Math.round(($target.height() - rectangleHeight) / 2);
+				x2 = x1 + rectangleWidth;
+				y2 = y1 + rectangleHeight;
+
 			}
-			x1 = Math.round(($target.width() - rectangleWidth) / 2);
-			y1 = Math.round(($target.height() - rectangleHeight) / 2);
-			x2 = x1 + rectangleWidth;
-			y2 = y1 + rectangleHeight;
+			this.api.setSelect([x1, y1, x2, y2]);
 
-		}
-		areaSelect.setSelection(x1, y1, x2, y2);
-		areaSelect.update();
+			this.containingModal.areaSelect = this.api;
+			this.containingModal.source = $target.attr('src').split('/').pop();
+			this.containingModal.updateSizeAndPosition();
 
-		referenceObject.areaSelect = areaSelect;
-		referenceObject.factor = $target.data('factor');
-		referenceObject.originalHeight = $target.attr('height') / referenceObject.factor;
-		referenceObject.originalWidth = $target.attr('width') / referenceObject.factor;
-		referenceObject.constraint = $target.data('constraint');
-		referenceObject.source = $target.attr('src').split('/').pop();
-		referenceObject.updateSizeAndPosition();
+		}, this);
+
+		$target.Jcrop(cropperOptions, function ()
+		{
+			initCropper(this);
+		});
 	}
 });
