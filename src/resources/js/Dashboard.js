@@ -164,7 +164,7 @@ Craft.Dashboard = Garnish.Base.extend(
                     widget = $widget.data('widget');
 
                 // Make sure it's actually saved
-                if (!widget.id)
+                if (!widget || !widget.id)
                 {
                     continue;
                 }

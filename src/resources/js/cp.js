@@ -263,6 +263,10 @@ Craft.CP = Garnish.Base.extend(
 		// Get the new window width
 		this.onWindowResize._cpWidth = Math.min(Garnish.$win.width(), Craft.CP.maxWidth);
 
+
+		// Update the responsive global sidebar
+		this.updateResponsiveGlobalSidebar();
+
 		// Update the responsive nav
 		this.updateResponsiveNav();
 
@@ -275,7 +279,9 @@ Craft.CP = Garnish.Base.extend(
 
 	updateResponsiveGlobalSidebar: function()
 	{
-		this.$globalSidebar.height(window.innerHeight);
+		var newHeight = window.innerHeight;
+
+		this.$globalSidebar.height(newHeight);
 	},
 
 	updateResponsiveNav: function()
@@ -326,18 +332,21 @@ Craft.CP = Garnish.Base.extend(
 
 	updateResponsiveSidebar: function()
 	{
-		if(this.onWindowResize._cpWidth < 769)
+		if(this.$sidebar.length > 0)
 		{
-			if (!this.showingSidebarToggle)
+			if(this.onWindowResize._cpWidth < 769)
 			{
-				this.showSidebarToggle();
+				if (!this.showingSidebarToggle)
+				{
+					this.showSidebarToggle();
+				}
 			}
-		}
-		else
-		{
-			if (this.showingSidebarToggle)
+			else
 			{
-				this.hideSidebarToggle();
+				if (this.showingSidebarToggle)
+				{
+					this.hideSidebarToggle();
+				}
 			}
 		}
 	},

@@ -39,19 +39,21 @@
 					<tr data-name="{{ name }}">
 						<th data-title="{{ 'Name'|t }}">
 
-							<div class="icon">
-								<img src="{{ craft.plugins.getPluginIconUrl(classHandle, 72) }}" width="36" height="36">
-							</div>
-
-							<div class="infos">
-								<div class="name">
-									{{ name }}
-									<span class="light">{{ plugin.getVersion() }}</span>
+							<div class="plugin-infos">
+								<div class="icon">
+									<img src="{{ craft.plugins.getPluginIconUrl(classHandle, 72) }}" width="36" height="36">
 								</div>
 
-								{% if description %}
-									<div class="description">{{ description }}</div>
-								{% endif %}
+								<div class="details">
+									<div class="name">
+										{{ name }}
+										<span class="light">{{ plugin.getVersion() }}</span>
+									</div>
+
+									{% if description %}
+										<div class="description">{{ description }}</div>
+									{% endif %}
+								</div>
 							</div>
 						</th>
 						<td data-title="{{ 'Developer'|t }}"><a{% if developerUrl %} href="{{ developerUrl }}" target="_blank"{% endif %}>{{ plugin.getDeveloper() }}</a></td>
