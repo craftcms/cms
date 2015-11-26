@@ -391,7 +391,7 @@ $fldGuideColor: #f4f3fb;
 .show-sidebar:after { @include icon; font-size: 16px; width: 43px; line-height: 20px; content: '▼'; @include floatright; @include margin-right(-24px); }
 
 .sidebar { position: absolute; width: 220px; padding: 24px; overflow: auto; background: $lightBgColor; @include box-sizing(border-box); }
-.sidebar { @include margin(-24px, 0, 24px, -242px); }
+.sidebar { @include margin(-24px, 0, -24px, -242px); }
 
 .content.has-sidebar:not(.hiding-sidebar) { @include margin-left(218px); }
 
