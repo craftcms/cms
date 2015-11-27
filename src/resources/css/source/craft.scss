@@ -1319,8 +1319,9 @@ body .redactor-box textarea { padding: 5px 7px; }
 .text.error { border: 1px solid $errorcolor !important; }
 
 .texticon { position: relative; cursor: text; min-width: 130px; }
-.texticon:before { position: absolute; top: 9px; @include left(9px); color: $lighttextcolor; }
-.texticon .text { @include padding-left(26px); }
+.texticon.icon:before { position: absolute; top: 9px; @include left(9px); color: $lighttextcolor; }
+.texticon.icon .text { @include padding-left(26px); }
+.texticon.clearable .text { @include padding-right(22px); }
 .texticon .clear { position: absolute; top: 6px; @include right(9px); color: $lighttextcolor; cursor: pointer; }
 .texticon .clear:hover { color: $mediumtextcolor; }
 .texticon .clear:before { @include icon; content: 'close'; }
