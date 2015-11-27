@@ -323,25 +323,6 @@ class EtService extends BaseApplicationComponent
 	}
 
 	/**
-	 * Returns the license key status of a given plugin, or false if it's unknown.
-	 *
-	 * @return string|false
-	 */
-	public function getPluginLicenseKeyStatus($pluginHandle)
-	{
-		$pluginLicenseKeyStatuses = craft()->cache->get('pluginLicenseKeyStatuses');
-
-		if (is_array($pluginLicenseKeyStatuses) && isset($pluginLicenseKeyStatuses[$pluginHandle]))
-		{
-			return $pluginLicenseKeyStatuses[$pluginHandle];
-		}
-		else
-		{
-			return false;
-		}
-	}
-
-	/**
 	 * Creates a new EtModel with provided JSON, and returns it if it's valid.
 	 *
 	 * @param array $attributes

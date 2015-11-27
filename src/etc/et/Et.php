@@ -245,11 +245,15 @@ class Et
 						craft()->cache->set('licenseKeyStatus', $etModel->licenseKeyStatus);
 						craft()->cache->set('licensedEdition', $etModel->licensedEdition);
 						craft()->cache->set('editionTestableDomain@'.craft()->request->getHostName(), $etModel->editionTestableDomain ? 1 : 0);
-						craft()->cache->set('pluginLicenseKeyStatuses', $etModel->pluginLicenseKeyStatuses);
 
-						if ($etModel->licenseKeyStatus == LicenseKeyStatus::MismatchedDomain)
+						if ($etModel->licenseKeyStatus == LicenseKeyStatus::Mismatched)
 						{
 							craft()->cache->set('licensedDomain', $etModel->licensedDomain);
+						}
+
+						foreach ($etModel->pluginLicenseKeyStatuses as $pluginHandle => $licenseKeyStatus)
+						{
+							craft()->plugins->setPluginLicenseKeyStatus($pluginHandle, $licenseKeyStatus);
 						}
 
 						return $etModel;
@@ -329,8 +333,8 @@ class Et
 
 		foreach ($pluginsService->getPlugins() as $plugin)
 		{
-			$info = $pluginsService->getPluginInfo($plugin);
-			$pluginLicenseKeys[$plugin->getClassHandle()] = $info['licenseKey'];
+			$pluginHandle = $plugin->getClassHandle();
+			$pluginLicenseKeys[$pluginHandle] = $pluginsService->getPluginLicenseKey($pluginHandle);
 		}
 
 		return $pluginLicenseKeys;

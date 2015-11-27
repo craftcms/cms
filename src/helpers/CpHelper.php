@@ -53,7 +53,7 @@ class CpHelper
 			// Domain mismatch?
 			$licenseKeyStatus = craft()->et->getLicenseKeyStatus();
 
-			if ($licenseKeyStatus == LicenseKeyStatus::MismatchedDomain)
+			if ($licenseKeyStatus == LicenseKeyStatus::Mismatched)
 			{
 				$licensedDomain = craft()->et->getLicensedDomain();
 				$licenseKeyPath = craft()->path->getLicenseKeyPath();

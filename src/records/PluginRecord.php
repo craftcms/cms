@@ -49,13 +49,14 @@ class PluginRecord extends BaseRecord
 	protected function defineAttributes()
 	{
 		return array(
-			'class'         => array(AttributeType::ClassName, 'required' => true),
-			'version'       => array('maxLength' => 15, 'column' => ColumnType::Varchar, 'required' => true),
+			'class' => array(AttributeType::ClassName, 'required' => true),
+			'version' => array('maxLength' => 15, 'column' => ColumnType::Varchar, 'required' => true),
 			'schemaVersion' => array('maxLength' => 15, 'column' => ColumnType::Varchar),
-			'licenseKey'    => array(AttributeType::String, 'column' => ColumnType::Char, 'length' => 24),
-			'enabled'       => AttributeType::Bool,
-			'settings'      => AttributeType::Mixed,
-			'installDate'   => array(AttributeType::DateTime, 'required' => true),
+			'licenseKey' => array(AttributeType::String, 'column' => ColumnType::Char, 'length' => 24),
+			'licenseKeyStatus' => array(AttributeType::Enum, 'values' => array('valid', 'invalid', 'mismatched', 'unknown'), 'default' => 'unknown', 'required' => true),
+			'enabled' => AttributeType::Bool,
+			'settings' => AttributeType::Mixed,
+			'installDate' => array(AttributeType::DateTime, 'required' => true),
 		);
 	}
 }
