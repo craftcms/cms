@@ -279,9 +279,9 @@ Craft.CP = Garnish.Base.extend(
 
 	updateResponsiveGlobalSidebar: function()
 	{
-		var newHeight = window.innerHeight;
+		var globalSidebarHeight = window.innerHeight;
 
-		this.$globalSidebar.height(newHeight);
+		this.$globalSidebar.height(globalSidebarHeight);
 	},
 
 	updateResponsiveNav: function()

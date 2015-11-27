@@ -4,8 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "f12380110c438f494a26a3dbab13d55e",
-    "content-hash": "9a9437c453bfc21cc01cdfdc1a8bc37e",
+    "hash": "c7fc09925214c8a73c6aec3518a0d079",
     "packages": [
         {
             "name": "guzzle/guzzle",
@@ -102,11 +101,11 @@
         },
         {
             "name": "imagine/imagine",
-            "version": "0.6.6",
+            "version": "0.6.7",
             "source": {
                 "type": "git",
                 "url": "https://github.com/pixelandtonic/Imagine",
-                "reference": "b2f57160ccaa2ee7d636346bcbe181a374cb81c8"
+                "reference": "8bdbfe6310430cb770a2df77ee951f2fb4738db1"
             },
             "archive": {
                 "exclude": [
@@ -160,7 +159,7 @@
                 "image manipulation",
                 "image processing"
             ],
-            "time": "2015-11-22 03:08:34"
+            "time": "2015-11-27 08:55:24"
         },
         {
             "name": "lsolesen/pel",
@@ -364,7 +363,7 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/pixelandtonic/Twig",
-                "reference": "d584e6df2daa0745d53a130b8f3d7627438117d7"
+                "reference": "f017c197ed2f21a3aa06004384def6f11bb7712b"
             },
             "require": {
                 "php": ">=5.2.7"
@@ -413,7 +412,7 @@
             "support": {
                 "forum": "https://groups.google.com/forum/#!forum/twig-users"
             },
-            "time": "2015-11-22 02:19:18"
+            "time": "2015-11-22 01:29:58"
         }
     ],
     "packages-dev": [
