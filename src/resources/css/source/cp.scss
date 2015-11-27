@@ -5,6 +5,7 @@
 	border-bottom: 1px solid rgba(0,0,0,0.05); background: rgba(0,0,0,0.03);
 }
 
+html,
 body { overflow-x: hidden; }
 
 #alerts { color: $errorcolor; text-align: center; }
@@ -18,7 +19,10 @@ body { overflow-x: hidden; }
 
 /* Shared sidebar/container styles */
 #container,
-#global-sidebar { transition: all .25s ease-in-out; -webkit-transition: all .25s ease-in-out; }
+#global-sidebar { transition: all .25s ease-in-out; -webkit-transition: all .25s ease-in-out;
+	overflow-y: scroll; /* has to be scroll, not auto */
+	-webkit-overflow-scrolling: touch;
+}
 
 .topbar { @include display-flex; @include align-items(stretch); }
 
@@ -54,6 +58,7 @@ body { overflow-x: hidden; }
 #global-sidebar .topbar > a { @include display-flex; @include align-items(center); padding: 0 14px; }
 #global-sidebar .topbar > a:focus { background: none; }
 
+#global-sidebar .topbar { min-height: -webkit-min-content; min-height: -moz-min-content; }
 #global-sidebar .topbar a.site-name { @include flex-grow(1); padding: 14px; }
 #global-sidebar .topbar a.site-name .photo-container { margin-right: 14px; }
 #global-sidebar .topbar a.site-name h2 { padding: 0; margin: 0; }
@@ -85,7 +90,7 @@ body { overflow-x: hidden; }
 
 /* container */
 
-#container { display: block; @include flex-direction(column); position: relative; @include padding-left(220px); @include box-sizing(border-box); }
+#container { overflow: auto; display: block; @include flex-direction(column); position: relative; @include padding-left(220px); @include box-sizing(border-box); }
 #container > .topbar,
 #container > #page-header,
 #container > #main,
