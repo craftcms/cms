@@ -5,6 +5,7 @@
         "This file is @generated automatically"
     ],
     "hash": "c7fc09925214c8a73c6aec3518a0d079",
+    "content-hash": "beb8497d286f117e1525b5d62e68369a",
     "packages": [
         {
             "name": "guzzle/guzzle",
@@ -363,7 +364,7 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/pixelandtonic/Twig",
-                "reference": "f017c197ed2f21a3aa06004384def6f11bb7712b"
+                "reference": "d584e6df2daa0745d53a130b8f3d7627438117d7"
             },
             "require": {
                 "php": ">=5.2.7"
@@ -412,7 +413,7 @@
             "support": {
                 "forum": "https://groups.google.com/forum/#!forum/twig-users"
             },
-            "time": "2015-11-22 01:29:58"
+            "time": "2015-11-22 02:19:18"
         }
     ],
     "packages-dev": [
