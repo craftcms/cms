@@ -991,7 +991,7 @@ class ElementsService extends BaseApplicationComponent
 			{
 				// Avoid matching fields named "asc" or "desc" in the string "column_name asc" or
 				// "column_name desc"
-				$order = preg_replace('/(?<!\w\s\.)\b'.$orderValue.'\b/', $columnName.'$1', $order);
+				$order = preg_replace('/(?<!\w\s|\.)\b'.$orderValue.'\b/', $columnName.'$1', $order);
 			}
 
 			$query->order($order);
