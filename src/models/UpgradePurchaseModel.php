@@ -24,10 +24,19 @@ class UpgradePurchaseModel extends BaseModel
 	protected function defineAttributes()
 	{
 		return array(
-			'ccTokenId'     => array(AttributeType::String, 'required' => true),
-			'edition'       => array(AttributeType::Number, 'required' => true),
-			'expectedPrice' => array(AttributeType::Number, 'required' => true),
-			'success'       => AttributeType::Bool,
+			'ccTokenId'        => array(AttributeType::String, 'required' => true),
+			'edition'          => array(AttributeType::Number, 'required' => true),
+			'expectedPrice'    => array(AttributeType::Number, 'required' => true),
+			'name'             => array(AttributeType::String),
+			'businessName'     => AttributeType::String,
+			'businessAddress1' => AttributeType::String,
+			'businessAddress2' => AttributeType::String,
+			'businessCity'     => AttributeType::String,
+			'businessState'    => AttributeType::String,
+			'businessZip'      => AttributeType::String,
+			'businessTaxId'    => AttributeType::String,
+			'purchaseNotes'    => AttributeType::String,
+			'success'          => AttributeType::Bool,
 		);
 	}
 }

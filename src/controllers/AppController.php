@@ -194,9 +194,18 @@ class AppController extends BaseController
 		}
 
 		$model = new UpgradePurchaseModel(array(
-			'ccTokenId'     => craft()->request->getRequiredPost('ccTokenId'),
-			'edition'       => craft()->request->getRequiredPost('edition'),
-			'expectedPrice' => craft()->request->getRequiredPost('expectedPrice'),
+			'ccTokenId'        => craft()->request->getRequiredPost('ccTokenId'),
+			'edition'          => craft()->request->getRequiredPost('edition'),
+			'expectedPrice'    => craft()->request->getRequiredPost('expectedPrice'),
+			'name'             => craft()->request->getRequiredPost('name'),
+			'businessName'     => craft()->request->getPost('businessName'),
+			'businessAddress1' => craft()->request->getPost('businessAddress1'),
+			'businessAddress2' => craft()->request->getPost('businessAddress2'),
+			'businessCity'     => craft()->request->getPost('businessCity'),
+			'businessState'    => craft()->request->getPost('businessState'),
+			'businessZip'      => craft()->request->getPost('businessZip'),
+			'businessTaxId'    => craft()->request->getPost('businessTaxId'),
+			'purchaseNotes'    => craft()->request->getPost('purchaseNotes'),
 		));
 
 		if (craft()->et->purchaseUpgrade($model))

@@ -22,6 +22,14 @@ Craft.UpgradeModal = Garnish.Modal.extend(
 	$ccMonthInput: null,
 	$ccYearInput: null,
 	$ccCvcInput: null,
+	$businessNameInput: null,
+	$businessAddress1Input: null,
+	$businessAddress2Input: null,
+	$businessCityInput: null,
+	$businessStateInput: null,
+	$businessZipInput: null,
+	$businessTaxIdInput: null,
+	$purchaseNotesInput: null,
 	submittingPurchase: false,
 
 	stripePublicKey: null,
@@ -53,17 +61,25 @@ Craft.UpgradeModal = Garnish.Modal.extend(
 					this.$checkoutScreen    = this.$container.children('#upgrademodal-checkout');
 					this.$successScreen     = this.$container.children('#upgrademodal-success');
 
-					this.$checkoutLogo      = this.$checkoutScreen.find('.logo:first');
-					this.$checkoutPrice     = this.$checkoutScreen.find('.price:first');
-					this.$checkoutForm      = this.$checkoutScreen.find('form:first');
-					this.$checkoutSubmitBtn = this.$checkoutForm.find('.submit:first');
-					this.$checkoutSpinner   = this.$checkoutForm.find('.spinner:first');
-					this.$ccNameInput       = this.$checkoutForm.find('#cc-name');
-					this.$ccNumInput        = this.$checkoutForm.find('#cc-num');
-					this.$ccMonthInput      = this.$checkoutForm.find('#cc-month');
-					this.$ccYearInput       = this.$checkoutForm.find('#cc-year');
-					this.$ccCvcInput        = this.$checkoutForm.find('#cc-cvc');
-					this.$checkoutSecure    = this.$checkoutScreen.find('.secure:first');
+					this.$checkoutLogo           = this.$checkoutScreen.find('.logo:first');
+					this.$checkoutPrice          = this.$checkoutScreen.find('.price:first');
+					this.$checkoutForm           = this.$checkoutScreen.find('form:first');
+					this.$checkoutSubmitBtn      = this.$checkoutForm.find('.submit:first');
+					this.$checkoutSpinner        = this.$checkoutForm.find('.spinner:first');
+					this.$ccNameInput            = this.$checkoutForm.find('#cc-name');
+					this.$ccNumInput             = this.$checkoutForm.find('#cc-num');
+					this.$ccMonthInput           = this.$checkoutForm.find('#cc-month');
+					this.$ccYearInput            = this.$checkoutForm.find('#cc-year');
+					this.$ccCvcInput             = this.$checkoutForm.find('#cc-cvc');
+					this.$businessNameInput      = this.$checkoutForm.find('#business-name');
+					this.$businessAddress1Input  = this.$checkoutForm.find('#business-address1');
+					this.$businessAddress2Input  = this.$checkoutForm.find('#business-address2');
+					this.$businessCityInput      = this.$checkoutForm.find('#business-city');
+					this.$businessStateInput     = this.$checkoutForm.find('#business-state');
+					this.$businessZipInput       = this.$checkoutForm.find('#business-zip');
+					this.$businessTaxIdInput     = this.$checkoutForm.find('#business-taxid');
+					this.$purchaseNotesInput     = this.$checkoutForm.find('#purchase-notes');
+					this.$checkoutSecure         = this.$checkoutScreen.find('.secure:first');
 
 					var $buyBtns = this.$compareScreen.find('.buybtn');
 					this.addListener($buyBtns, 'click', 'onBuyBtnClick');
@@ -197,10 +213,10 @@ Craft.UpgradeModal = Garnish.Modal.extend(
 		// Get the CC data
 		var ccData = {
 			name:      this.$ccNameInput.val(),
-		    number:    this.$ccNumInput.val(),
-		    exp_month: this.$ccMonthInput.val(),
-		    exp_year:  this.$ccYearInput.val(),
-		    cvc:       this.$ccCvcInput.val()
+			number:    this.$ccNumInput.val(),
+			exp_month: this.$ccMonthInput.val(),
+			exp_year:  this.$ccYearInput.val(),
+			cvc:       this.$ccCvcInput.val()
 		};
 
 		// Validate it
@@ -246,9 +262,18 @@ Craft.UpgradeModal = Garnish.Modal.extend(
 				{
 					// Pass the token along to Elliott to charge the card
 					var data = {
-						ccTokenId:     response.id,
-						edition:       this.edition,
-						expectedPrice: (this.editions[this.edition].salePrice ? this.editions[this.edition].salePrice : this.editions[this.edition].price)
+						ccTokenId:            response.id,
+						edition:              this.edition,
+						expectedPrice:        (this.editions[this.edition].salePrice ? this.editions[this.edition].salePrice : this.editions[this.edition].price),
+						name:                 ccData.name,
+						businessName:         this.$businessNameInput.val(),
+						businessAddress1:     this.$businessAddress1Input.val(),
+						businessAddress2:     this.$businessAddress2Input.val(),
+						businessCity:         this.$businessCityInput.val(),
+						businessState:        this.$businessStateInput.val(),
+						businessZip:          this.$businessZipInput.val(),
+						businessTaxId:        this.$businessTaxIdInput.val(),
+						purchaseNotes:        this.$purchaseNotesInput.val()
 					};
 
 					Craft.postActionRequest('app/purchaseUpgrade', data, $.proxy(this, 'onPurchaseUpgrade'));
@@ -351,10 +376,18 @@ Craft.UpgradeModal = Garnish.Modal.extend(
 	clearCheckoutForm: function()
 	{
 		this.$ccNameInput.val('');
-	    this.$ccNumInput.val('');
-	    this.$ccMonthInput.val('');
-	    this.$ccYearInput.val('');
-	    this.$ccCvcInput.val('');
+		this.$ccNumInput.val('');
+		this.$ccMonthInput.val('');
+		this.$ccYearInput.val('');
+		this.$ccCvcInput.val('');
+		this.$businessNameInput.val('');
+		this.$businessAddress1Input.val('');
+		this.$businessAddress2Input.val('');
+		this.$businessCityInput.val('');
+		this.$businessStateInput.val('');
+		this.$businessZipInput.val('');
+		this.$businessTaxIdInput.val('');
+		this.$purchaseNotesInput.val('');
 	},
 
 	clearCheckoutFormInABit: function()
