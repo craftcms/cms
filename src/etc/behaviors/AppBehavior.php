@@ -894,7 +894,7 @@ class AppBehavior extends BaseBehavior
 		}
 		else
 		{
-			return 'mysql:host='.craft()->config->get('server', ConfigFile::Db.';dbname=').craft()->config->get('database', ConfigFile::Db).';port='.craft()->config->get('port', ConfigFile::Db).';';
+			return 'mysql:host='.craft()->config->get('server', ConfigFile::Db).';dbname='.craft()->config->get('database', ConfigFile::Db).';port='.craft()->config->get('port', ConfigFile::Db).';';
 		}
 	}
 
