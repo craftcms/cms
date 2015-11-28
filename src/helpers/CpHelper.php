@@ -78,6 +78,13 @@ class CpHelper
 			}
 		}
 
+		$allPluginAlerts = craft()->plugins->call('getCpAlerts', array($path, $fetch), true);
+
+		foreach ($allPluginAlerts as $pluginAlerts)
+		{
+			$alerts = array_merge($alerts, $pluginAlerts);
+		}
+
 		return $alerts;
 	}
 }
