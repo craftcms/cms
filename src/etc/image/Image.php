@@ -166,6 +166,7 @@ class Image extends BaseImage
 
 		if ($this->_isAnimatedGif)
 		{
+			$this->_image->layers()->coalesce();
 
 			// Create a new image instance to avoid object references messing up our dimensions.
 			$newSize = new \Imagine\Image\Box($width, $height);
@@ -320,6 +321,7 @@ class Image extends BaseImage
 
 		if ($this->_isAnimatedGif)
 		{
+			$this->_image->layers()->coalesce();
 
 			// Create a new image instance to avoid object references messing up our dimensions.
 			$newSize = new \Imagine\Image\Box($targetWidth, $targetHeight);

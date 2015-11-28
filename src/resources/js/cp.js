@@ -91,6 +91,9 @@ Craft.CP = Garnish.Base.extend(
 		this.$collapsibleTables = $('table.collapsible');
 		this.$upgradePromo = $('#upgradepromo > a');
 
+		// global sidebar
+		this.addListener(Garnish.$win, 'touchend', 'updateResponsiveGlobalSidebar');
+
 		// Find all the nav items
 		this.navItems = [];
 		this.totalNavWidth = Craft.CP.baseNavWidth;
@@ -260,6 +263,10 @@ Craft.CP = Garnish.Base.extend(
 		// Get the new window width
 		this.onWindowResize._cpWidth = Math.min(Garnish.$win.width(), Craft.CP.maxWidth);
 
+
+		// Update the responsive global sidebar
+		this.updateResponsiveGlobalSidebar();
+
 		// Update the responsive nav
 		this.updateResponsiveNav();
 
@@ -268,6 +275,13 @@ Craft.CP = Garnish.Base.extend(
 
 		// Update any responsive tables
 		this.updateResponsiveTables();
+	},
+
+	updateResponsiveGlobalSidebar: function()
+	{
+		var globalSidebarHeight = window.innerHeight;
+
+		this.$globalSidebar.height(globalSidebarHeight);
 	},
 
 	updateResponsiveNav: function()
@@ -318,18 +332,21 @@ Craft.CP = Garnish.Base.extend(
 
 	updateResponsiveSidebar: function()
 	{
-		if(this.onWindowResize._cpWidth < 769)
+		if(this.$sidebar.length > 0)
 		{
-			if (!this.showingSidebarToggle)
+			if(this.onWindowResize._cpWidth < 769)
 			{
-				this.showSidebarToggle();
+				if (!this.showingSidebarToggle)
+				{
+					this.showSidebarToggle();
+				}
 			}
-		}
-		else
-		{
-			if (this.showingSidebarToggle)
+			else
 			{
-				this.hideSidebarToggle();
+				if (this.showingSidebarToggle)
+				{
+					this.hideSidebarToggle();
+				}
 			}
 		}
 	},

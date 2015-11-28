@@ -1102,35 +1102,21 @@ class UsersController extends BaseController
 					$this->returnErrorJson(Craft::t('The uploaded image is too large'));
 				}
 
+				craft()->images->
+					loadImage($folderPath.$fileName)->
+					scaleToFit(500, 500, false)->
+					saveAs($folderPath.$fileName);
+
 				list ($width, $height) = ImageHelper::getImageSize($folderPath.$fileName);
-
-
-                if (IOHelper::getExtension($fileName) != 'svg')
-                {
-    				craft()->images->cleanImage($folderPath.$fileName);
-                }
-                else
-                {
-                    craft()->images->
-                        loadImage($folderPath.$fileName)->
-                        saveAs($folderPath.$fileName);
-				}
-
-				$constraint = 500;
 
 				// If the file is in the format badscript.php.gif perhaps.
 				if ($width && $height)
 				{
-					// Never scale up the images, so make the scaling factor always <= 1
-					$factor = min($constraint / $width, $constraint / $height, 1);
-
 					$html = craft()->templates->render('_components/tools/cropper_modal',
 						array(
 							'imageUrl' => UrlHelper::getResourceUrl('userphotos/temp/'.$userName.'/'.$fileName),
-							'width' => round($width * $factor),
-							'height' => round($height * $factor),
-							'factor' => $factor,
-							'constraint' => $constraint,
+							'width' => $width,
+							'height' => $height,
 							'fileName' => $fileName
 						)
 					);

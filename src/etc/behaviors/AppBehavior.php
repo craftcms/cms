@@ -890,11 +890,11 @@ class AppBehavior extends BaseBehavior
 
 		if (!empty($unixSocket))
 		{
-			return strtolower('mysql:unix_socket='.$unixSocket.';dbname=').craft()->config->get('database', ConfigFile::Db).';';
+			return 'mysql:unix_socket='.$unixSocket.';dbname='.craft()->config->get('database', ConfigFile::Db).';';
 		}
 		else
 		{
-			return strtolower('mysql:host='.craft()->config->get('server', ConfigFile::Db).';dbname=').craft()->config->get('database', ConfigFile::Db).strtolower(';port='.craft()->config->get('port', ConfigFile::Db).';');
+			return 'mysql:host='.craft()->config->get('server', ConfigFile::Db).';dbname='.craft()->config->get('database', ConfigFile::Db).';port='.craft()->config->get('port', ConfigFile::Db).';';
 		}
 	}
 

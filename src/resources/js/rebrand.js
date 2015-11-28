@@ -25,6 +25,8 @@
 
 				cropAction: 'rebrand/cropSiteImage',
 
+				constraint: 300,
+
 				areaToolOptions: {
 					aspectRatio: "",
 					initialRectangle: {
@@ -38,7 +40,7 @@
 				refreshImage($(this), response);
 			}, $target);
 
-			settings.onImageDelete = $.proxy(function(response, reference)
+			settings.onImageDelete = $.proxy(function(response)
 			{
 				refreshImage($(this), response);
 			}, $target);

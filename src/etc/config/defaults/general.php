@@ -434,7 +434,8 @@ return array(
 	/**
 	 * Whether the embedded Image Color Profile (ICC) should be preserved when manipulating images.
 	 *
-	 * Setting this to true results in a slightly increased filesize and more accurate colors, if a color profile was embedded on image export.
+	 * Setting this to true results in a slightly increased filesize and more accurate colors,
+	 * if a color profile was embedded on image export. This will only have effect if Imagick is in use.
 	 */
 	'preserveImageColorProfiles' => false,
 
