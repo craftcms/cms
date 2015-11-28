@@ -22,6 +22,9 @@ class EtService extends BaseApplicationComponent
 	const GetUpgradeInfo    = '@@@elliottEndpointUrl@@@actions/elliott/app/getUpgradeInfo';
 	const PurchaseUpgrade   = '@@@elliottEndpointUrl@@@actions/elliott/app/purchaseUpgrade';
 	const GetUpdateFileInfo = '@@@elliottEndpointUrl@@@actions/elliott/app/getUpdateFileInfo';
+	const RegisterPlugin    = '@@@elliottEndpointUrl@@@actions/elliott/plugins/registerPlugin';
+	const UnregisterPlugin  = '@@@elliottEndpointUrl@@@actions/elliott/plugins/unregisterPlugin';
+	const TransferPlugin    = '@@@elliottEndpointUrl@@@actions/elliott/plugins/transferPlugin';
 
 	// Public Methods
 	// =========================================================================
@@ -299,6 +302,66 @@ class EtService extends BaseApplicationComponent
 		}
 
 		return false;
+	}
+
+	/**
+	 * Registers a given plugin with the current Craft license.
+	 *
+	 * @string $pluginHandle The plugin handle that should be registered
+	 *
+	 * @return EtModel
+	 */
+	public function registerPlugin($pluginHandle)
+	{
+		$et = new Et(static::RegisterPlugin);
+		$et->setData(array(
+			'pluginHandle' => $pluginHandle
+		));
+		$etResponse = $et->phoneHome();
+
+		return $etResponse;
+	}
+
+	/**
+	 * Transfers a given plugin to the current Craft license.
+	 *
+	 * @string $pluginHandle The plugin handle that should be transferred
+	 *
+	 * @return EtModel
+	 */
+	public function transferPlugin($pluginHandle)
+	{
+		$et = new Et(static::TransferPlugin);
+		$et->setData(array(
+			'pluginHandle' => $pluginHandle
+		));
+		$etResponse = $et->phoneHome();
+
+		return $etResponse;
+	}
+
+	/**
+	 * Unregisters a given plugin from the current Craft license.
+	 *
+	 * @string $pluginHandle The plugin handle that should be unregistered
+	 *
+	 * @return EtModel
+	 */
+	public function unregisterPlugin($pluginHandle)
+	{
+		$et = new Et(static::UnregisterPlugin);
+		$et->setData(array(
+			'pluginHandle' => $pluginHandle
+		));
+		$etResponse = $et->phoneHome();
+
+		if (!empty($etResponse->data['success']))
+		{
+			// Remove our record of the license key
+			craft()->plugins->setPluginLicenseKey($pluginHandle, null);
+		}
+
+		return $etResponse;
 	}
 
 	/**
