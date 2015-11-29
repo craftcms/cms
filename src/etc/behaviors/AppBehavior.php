@@ -184,7 +184,7 @@ class AppBehavior extends BaseBehavior
 	 */
 	public function getEdition()
 	{
-		return $this->getInfo('edition');
+		return (int) $this->getInfo('edition');
 	}
 
 	/**
@@ -208,7 +208,7 @@ class AppBehavior extends BaseBehavior
 
 		if ($licensedEdition !== false)
 		{
-			return $licensedEdition;
+			return (int) $licensedEdition;
 		}
 	}
 
