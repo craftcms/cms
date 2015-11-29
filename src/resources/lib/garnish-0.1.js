@@ -1057,6 +1057,26 @@ $.extend(jQuery.event.special, {
 		},
 		teardown: function() {
 			$(this).off('.garnish-textchange');
+		},
+		handle: function(ev, data) {
+			var el = this;
+			var args = arguments;
+			var delay = data && typeof data.delay != typeof undefined ? data.delay : (ev.data && typeof ev.data.delay != typeof undefined ? ev.data.delay : null);
+			var handleObj = ev.handleObj;
+			var targetData = $.data(ev.target);
+
+			// Was this event configured with a delay?
+			if (delay) {
+				if (targetData.delayTimeout) {
+					clearTimeout(targetData.delayTimeout);
+				}
+
+				targetData.delayTimeout = setTimeout(function() {
+					handleObj.handler.apply(el, args);
+				}, delay);
+			} else {
+				return handleObj.handler.apply(el, args);
+			}
 		}
 	},
 
