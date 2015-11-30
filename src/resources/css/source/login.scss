@@ -9,8 +9,10 @@ html, body { height: 100%; }
 #login-form .field { margin: 0; }
 #login-form .btn { display: block; }
 
+#login-form .text:focus { position: relative; z-index: 1; }
+
 #loginName-field .text { padding: 14px 16px; border-top-left-radius: 5px; border-top-right-radius: 5px; border-bottom-left-radius: 0; border-bottom-right-radius: 0; }
-#password-field .text { padding: 14px 5em 14px 16px; border-top: 0; border-top-left-radius: 0; border-top-right-radius: 0; border-bottom-left-radius: 5px; border-bottom-right-radius: 5px; }
+#password-field .text { margin-top: -1px; padding: 14px 5em 14px 16px; border-top-left-radius: 0; border-top-right-radius: 0; border-bottom-left-radius: 5px; border-bottom-right-radius: 5px; }
 #password-field .passwordwrapper .password-toggle { top: 14px; @include right(14px); }
 #rememberMe-field { padding-top: 24px; }
 
