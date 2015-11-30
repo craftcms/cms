@@ -200,6 +200,12 @@ Craft.UpgradeModal = Garnish.Modal.extend(
 
 	onHide: function()
 	{
+		if (this.initializedCheckoutForm)
+		{
+			this.$businessCountryInput[0].selectize.blur();
+			this.$businessStateInput[0].selectize.blur();
+		}
+
 		this.clearCheckoutFormInABit();
 		this.base();
 	},
