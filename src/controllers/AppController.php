@@ -242,6 +242,7 @@ class AppController extends BaseController
 			'edition'          => craft()->request->getRequiredPost('edition'),
 			'expectedPrice'    => craft()->request->getRequiredPost('expectedPrice'),
 			'name'             => craft()->request->getRequiredPost('name'),
+			'email'            => craft()->request->getRequiredPost('email'),
 			'businessName'     => craft()->request->getPost('businessName'),
 			'businessAddress1' => craft()->request->getPost('businessAddress1'),
 			'businessAddress2' => craft()->request->getPost('businessAddress2'),
