@@ -25,7 +25,7 @@ html, body { height: 100%; }
 #login-form #ssl-icon + #submit { @include padding-left(2em); }
 #login-form #submit { display:block; width: auto; float: none; padding: 14px 16px; height: auto; width: 100%; }
 
-#spinner { display: inline-block; float: none; margin-top: 24px; }
+#spinner { position: absolute; top: 58px; left: 50%; margin-left: -12px; }
 
 p.error { text-align: center; }
 
