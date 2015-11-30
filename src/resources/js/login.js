@@ -201,7 +201,7 @@ var LoginForm = Garnish.Base.extend(
 			error = Craft.t('An unknown error occurred.');
 		}
 
-		this.$error = $('<p class="error" style="display:none">'+error+'</p>').appendTo(this.$form);
+		this.$error = $('<p class="error" style="display:none">'+error+'</p>').insertAfter($('.buttons', this.$form));
 		this.$error.velocity('fadeIn');
 	},
 
