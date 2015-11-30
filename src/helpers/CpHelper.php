@@ -76,7 +76,7 @@ class CpHelper
 				// Can they actually do something about it?
 				if ($user->admin)
 				{
-					$action = '<a class="domain-mismatch">'.Craft::t('Transfer it to this domain?').'</a>';
+					$action = '<a class="go domain-mismatch">'.Craft::t('Transfer it to this domain').'</a>';
 				}
 				else
 				{
