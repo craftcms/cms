@@ -28,7 +28,7 @@ class UpgradePurchaseModel extends BaseModel
 			'expMonth'         => array(AttributeType::Number, 'required' => true),
 			'expYear'          => array(AttributeType::Number, 'required' => true),
 			'edition'          => array(AttributeType::Number, 'required' => true),
-			'expectedPrice'    => array(AttributeType::Number, 'required' => true),
+			'expectedPrice'    => array(AttributeType::Number, 'decimals' => 4, 'required' => true),
 			'name'             => array(AttributeType::String, 'required' => true),
 			'email'            => array(AttributeType::Email, 'required' => true),
 			'businessName'     => AttributeType::String,
