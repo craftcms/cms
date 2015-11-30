@@ -1,35 +1,20 @@
 {% extends "_layouts/cp" %}
-{% set title = "What’s new in Craft 2.5" %}
+{% set title = "Thanks for updating to Craft 2.5" %}
 {% set bodyClass = 'whats-new' %}
-{% includecssresource "css/whats-new.css" %}
+{% includeCssResource "css/whats-new.css" %}
 
 {% block pageHeader %}{% endblock %}
 
-{% set url = 'http://craftcms.com/updates/2.5?beta=1' %}
+{% set url = 'http://buildwithcraft.com/updates/2.5' %}
+{% set vimeoVideoId = '147139440' %}
 
 {% block content %}
 	<header>
 		<h1>{{ title }}</h1>
+		<p>Craft 2.5 packs <a href="{{ url }}">over 170 new features and improvements</a> focused on improving the Author Experience.<br>We hope you like it!</p>
 	</header>
 
-	<h1>Brand new Dashboard</h1>
-	<p>Create new Dashboard widgets, change their settings, reorder them, resize them, and delete them, all from the new Dashboard.</p>
-	<div class="screenshot">
-		<img src="{{ resourceUrl('images/whats-new/new-dashboard.png') }}" alt="The new Dashboard" width="2428" height="1520">
+	<div id="video-wrapper">
+		<iframe id="video" class="video" data-vimeo-id="{{ vimeoVideoId }}" src="//player.vimeo.com/video/{{ vimeoVideoId }}" width="870" height="489" frameborder="0" webkitallowfullscreen mozallowfullscreen allowfullscreen></iframe>
 	</div>
-
-	<h1>Customizable element indexes</h1>
-	<p>Arrange your element index sources in a way that makes sense for your content, and choose relevant table columns for each source.</p>
-	<div class="screenshot">
-		<img src="{{ resourceUrl('images/whats-new/customized-entry-index.png') }}" alt="A user permissions selection list." width="2428" height="1520">
-	</div>
-
-	<h1>Inline element creation</h1>
-	<p>Create new entries and categories right from their relational fields, without leaving the page.</p>
-	<div class="screenshot">
-		<img src="{{ resourceUrl('images/whats-new/inline-entry-creation.png') }}" alt="The Settings page translated into Slovak" width="2428" height="1520">
-	</div>
-
-	<h1>And more!</h1>
-	<p>Craft 2.5 packs over 120 additions and improvements. Find out about all the changes from the <a href="{{ url }}">release notes</a>.</p>
 {% endblock %}
