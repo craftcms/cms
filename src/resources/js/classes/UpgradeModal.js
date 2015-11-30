@@ -139,7 +139,7 @@ Craft.UpgradeModal = Garnish.Modal.extend(
 		this.$businessCountryInput[0].selectize.addOption(this.countries);
 		this.$businessCountryInput[0].selectize.refreshOptions(false);
 
-		this.$businessStateInput.selectize({ valueField: 'abbr', labelField: 'name', searchField: ['name', 'abbr'], dropdownParent: 'body', inputClass: 'selectize-input text' });
+		this.$businessStateInput.selectize({ valueField: 'abbr', labelField: 'name', searchField: ['name', 'abbr'], dropdownParent: 'body', inputClass: 'selectize-input text', create: true });
 		this.$businessStateInput[0].selectize.addOption(this.states);
 		this.$businessStateInput[0].selectize.refreshOptions(false);
 
