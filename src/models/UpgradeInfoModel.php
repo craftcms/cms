@@ -26,6 +26,8 @@ class UpgradeInfoModel extends BaseModel
 		return array(
 			'editions'        => array(AttributeType::Mixed, 'required' => true),
 			'stripePublicKey' => array(AttributeType::String, 'required' => true),
+			'countries'       => AttributeType::Mixed,
+			'states'          => AttributeType::Mixed,
 		);
 	}
 }

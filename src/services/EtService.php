@@ -20,6 +20,7 @@ class EtService extends BaseApplicationComponent
 	const CheckForUpdates   = '@@@elliottEndpointUrl@@@actions/elliott/app/checkForUpdates';
 	const TransferLicense   = '@@@elliottEndpointUrl@@@actions/elliott/app/transferLicenseToCurrentDomain';
 	const GetUpgradeInfo    = '@@@elliottEndpointUrl@@@actions/elliott/app/getUpgradeInfo';
+	const GetCouponPrice    = '@@@elliottEndpointUrl@@@actions/elliott/app/getCouponPrice';
 	const PurchaseUpgrade   = '@@@elliottEndpointUrl@@@actions/elliott/app/purchaseUpgrade';
 	const GetUpdateFileInfo = '@@@elliottEndpointUrl@@@actions/elliott/app/getUpdateFileInfo';
 	const RegisterPlugin    = '@@@elliottEndpointUrl@@@actions/elliott/plugins/registerPlugin';
@@ -237,6 +238,20 @@ class EtService extends BaseApplicationComponent
 		{
 			$etResponse->data = new UpgradeInfoModel($etResponse->data);
 		}
+
+		return $etResponse;
+	}
+
+	/**
+	 * Fetches the price of an upgrade with a coupon applied to it.
+	 *
+	 * @return EtModel|null
+	 */
+	public function fetchCouponPrice($edition, $couponCode)
+	{
+		$et = new Et(static::GetCouponPrice);
+		$et->setData(array('edition' => $edition, 'couponCode' => $couponCode));
+		$etResponse = $et->phoneHome();
 
 		return $etResponse;
 	}

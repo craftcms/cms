@@ -272,10 +272,15 @@ body.mobile #container {
 #upgrademodal-compare table tbody tr.buybtns td { padding-top: 30px; border-bottom: none; }
 
 #upgrademodal-checkout { background: $lightBgColor; }
-#upgrademodal-checkout .pane { max-width: 350px; margin: 0 auto !important; }
-#upgrademodal-checkout .pane .header .price { text-align: center; font-size: 15px; }
-#upgrademodal-checkout .pane .footer .buttons .spinner { position: absolute; top: 0; @include right(-24px); margin: 0; }
-#upgrademodal-checkout .icon.secure:before { @include margin-right(5px); }
+#upgrademodal-checkout form { max-width: 350px; margin: 0 auto !important; padding-bottom: 10px; }
+#upgrademodal-checkout form .field { margin: 14px 0; }
+#upgrademodal-checkout form p.icon.secure { margin-top: 24px; }
+#upgrademodal-checkout form p.icon.secure:before { @include margin-right(5px); }
+#upgrademodal-checkout .buttons > .left,
+#upgrademodal-checkout .buttons > .right { margin-top: 5px; }
+#upgrademodal-checkout #pay-button { @include floatleft; @include margin-right(5px); }
+#upgrademodal-checkout #pay-spinner { margin: 0; }
+#upgrademodal-checkout .spinner#coupon-spinner { position: absolute; top: 0; margin-top: 0; @include right(-24px); }
 
 #upgrademodal-success .message { display: block; position: absolute; top: 50%; left: 0; width: 100%; margin-top: -71px; padding-top: 62px; text-align: center; background: url(../images/success.png) no-repeat 50% 0; }
 #upgrademodal-success .message p { margin-bottom: 24px; font-size: 15px; line-height: 1.4; }

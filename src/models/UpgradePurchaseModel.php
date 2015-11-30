@@ -25,17 +25,22 @@ class UpgradePurchaseModel extends BaseModel
 	{
 		return array(
 			'ccTokenId'        => array(AttributeType::String, 'required' => true),
+			'expMonth'         => AttributeType::Number,
+			'expYear'          => AttributeType::Number,
 			'edition'          => array(AttributeType::Number, 'required' => true),
 			'expectedPrice'    => array(AttributeType::Number, 'required' => true),
 			'name'             => array(AttributeType::String),
+			'email'            => AttributeType::Email,
 			'businessName'     => AttributeType::String,
 			'businessAddress1' => AttributeType::String,
 			'businessAddress2' => AttributeType::String,
 			'businessCity'     => AttributeType::String,
 			'businessState'    => AttributeType::String,
+			'businessCountry'  => AttributeType::String,
 			'businessZip'      => AttributeType::String,
 			'businessTaxId'    => AttributeType::String,
 			'purchaseNotes'    => AttributeType::String,
+			'couponCode'       => AttributeType::String,
 			'success'          => AttributeType::Bool,
 		);
 	}
