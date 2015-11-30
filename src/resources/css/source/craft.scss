@@ -271,7 +271,7 @@ ul.icons:after { @include clearafter; }
 ul.icons li { @include floatleft; margin: 0 0 10px; }
 ul.icons li.break { clear: both; }
 ul.icons li a { display: block; position: relative; padding: 60px 5px 10px; width: 110px; text-align: center; color: $textcolor; border-radius: 4px; border: 1px solid #fff; }
-ul.icons li a img { width: 40px; height: 40px; position: absolute; top: 12px; left: 35px; }
+ul.icons li a img { width: 40px; height: 40px; position: absolute; top: 12px; }
 ul.icons li a:before { display: block; position: absolute; top: 0; @include left(0); width: 100%; font-size: 40px; line-height: 60px; }
 ul.icons li a:hover { text-decoration: none; background-color: #f9f9f9; border-color: #f2f2f2; }
 
