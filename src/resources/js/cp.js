@@ -390,22 +390,24 @@ Craft.CP = Garnish.Base.extend(
 
 	toggleSidebar: function()
 	{
-		this.$content.filter('.has-sidebar').toggleClass('showing-sidebar');
+		var $contentWithSidebar = this.$content.filter('.has-sidebar');
 
-		if(this.$content.filter('.has-sidebar').hasClass('showing-sidebar'))
+		$contentWithSidebar.toggleClass('showing-sidebar');
+
+		if($contentWithSidebar.hasClass('showing-sidebar'))
 		{
 			var sidebarHeight = $('nav', this.$sidebar).height();
 
-			if(this.$content.height() < sidebarHeight)
+			if($contentWithSidebar.height() <= sidebarHeight)
 			{
 				var newContentHeight = sidebarHeight + 48;
-				this.$content.css('height', newContentHeight+'px');
+				$contentWithSidebar.css('height', newContentHeight+'px');
 			}
 		}
 		else
 		{
-			this.$content.css('min-height', 0);
-			this.$content.css('height', 'auto');
+			$contentWithSidebar.css('min-height', 0);
+			$contentWithSidebar.css('height', 'auto');
 		}
 	},
 
