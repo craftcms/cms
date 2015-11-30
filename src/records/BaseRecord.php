@@ -391,21 +391,13 @@ abstract class BaseRecord extends \CActiveRecord
 	 */
 	public function dropForeignKeys()
 	{
-		$table = $this->getTableName();
+		$tableName = $this->getTableName();
 
 		// Does the table exist?
-		if (craft()->db->tableExists($table, true))
+		if (craft()->db->tableExists($tableName, true))
 		{
-			foreach ($this->getBelongsToRelations() as $name => $config)
-			{
-				// Make sure the record's table exists
-				$otherRecord = new $config[1];
-
-				if (craft()->db->tableExists($otherRecord->getTableName()))
-				{
-					craft()->db->createCommand()->dropForeignKey($table, $config[2]);
-				}
-			}
+			$table = MigrationHelper::getTable($tableName);
+			MigrationHelper::dropAllForeignKeysOnTable($table);
 		}
 	}
 
