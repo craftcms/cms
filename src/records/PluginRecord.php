@@ -6,8 +6,8 @@ namespace Craft;
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
- * @license   http://buildwithcraft.com/license Craft License Agreement
- * @see       http://buildwithcraft.com
+ * @license   http://craftcms.com/license Craft License Agreement
+ * @see       http://craftcms.com
  * @package   craft.app.records
  * @since     1.0
  */
@@ -49,12 +49,14 @@ class PluginRecord extends BaseRecord
 	protected function defineAttributes()
 	{
 		return array(
-			'class'         => array(AttributeType::ClassName, 'required' => true),
-			'version'       => array('maxLength' => 15, 'column' => ColumnType::Varchar, 'required' => true),
+			'class' => array(AttributeType::ClassName, 'required' => true),
+			'version' => array('maxLength' => 15, 'column' => ColumnType::Varchar, 'required' => true),
 			'schemaVersion' => array('maxLength' => 15, 'column' => ColumnType::Varchar),
-			'enabled'       => AttributeType::Bool,
-			'settings'      => AttributeType::Mixed,
-			'installDate'   => array(AttributeType::DateTime, 'required' => true),
+			'licenseKey' => array(AttributeType::String, 'column' => ColumnType::Char, 'length' => 24),
+			'licenseKeyStatus' => array(AttributeType::Enum, 'values' => array('valid', 'invalid', 'mismatched', 'unknown'), 'default' => 'unknown', 'required' => true),
+			'enabled' => AttributeType::Bool,
+			'settings' => AttributeType::Mixed,
+			'installDate' => array(AttributeType::DateTime, 'required' => true),
 		);
 	}
 }

@@ -11,8 +11,8 @@ namespace Craft;
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
- * @license   http://buildwithcraft.com/license Craft License Agreement
- * @see       http://buildwithcraft.com
+ * @license   http://craftcms.com/license Craft License Agreement
+ * @see       http://craftcms.com
  * @package   craft.app.controllers
  * @since     1.0
  */
@@ -168,6 +168,7 @@ class UpdateController extends BaseController
 		$this->requireAjaxRequest();
 
 		$data = craft()->request->getRequiredPost('data');
+		$handle = $this->_getFixedHandle($data);
 
 		$manual = false;
 		if (!$this->_isManualUpdate($data))
@@ -185,7 +186,7 @@ class UpdateController extends BaseController
 			$manual = true;
 		}
 
-		$return = craft()->updates->prepareUpdate($manual, $data['handle']);
+		$return = craft()->updates->prepareUpdate($manual, $handle);
 
 		if (!$return['success'])
 		{
@@ -223,9 +224,10 @@ class UpdateController extends BaseController
 		}
 
 		$data = craft()->request->getRequiredPost('data');
+		$handle = $this->_getFixedHandle($data);
 
-		$return = craft()->updates->processUpdateDownload($data['md5'], $data['handle']);
-		$return['handle'] = $data['handle'];
+		$return = craft()->updates->processUpdateDownload($data['md5'], $handle);
+		$return['handle'] = $handle;
 
 		if (!$return['success'])
 		{
@@ -256,9 +258,10 @@ class UpdateController extends BaseController
 		}
 
 		$data = craft()->request->getRequiredPost('data');
+		$handle = $this->_getFixedHandle($data);
 
-		$return = craft()->updates->backupFiles($data['uid'], $data['handle']);
-		$return['handle'] = $data['handle'];
+		$return = craft()->updates->backupFiles($data['uid'], $handle);
+		$return['handle'] = $handle;
 
 		if (!$return['success'])
 		{
@@ -287,9 +290,10 @@ class UpdateController extends BaseController
 		}
 
 		$data = craft()->request->getRequiredPost('data');
+		$handle = $this->_getFixedHandle($data);
 
-		$return = craft()->updates->updateFiles($data['uid'], $data['handle']);
-		$return['handle'] = $data['handle'];
+		$return = craft()->updates->updateFiles($data['uid'], $handle);
+		$return['handle'] = $handle;
 
 		if (!$return['success'])
 		{
@@ -360,7 +364,7 @@ class UpdateController extends BaseController
 			$return = craft()->updates->updateDatabase($handle);
 		}
 
-		$return['handle'] = $data['handle'];
+		$return['handle'] = $handle;
 
 		if (!$return['success'])
 		{
@@ -398,7 +402,7 @@ class UpdateController extends BaseController
 		$oldVersion = false;
 
 		// Grab the old version from the manifest data before we nuke it.
-		$manifestData = UpdateHelper::getManifestData(UpdateHelper::getUnzipFolderFromUID($uid), $data['handle']);
+		$manifestData = UpdateHelper::getManifestData(UpdateHelper::getUnzipFolderFromUID($uid), $handle);
 
 		if ($manifestData && $handle == 'craft')
 		{
@@ -431,6 +435,7 @@ class UpdateController extends BaseController
 		$this->requireAjaxRequest();
 
 		$data = craft()->request->getRequiredPost('data');
+		$handle = $this->_getFixedHandle($data);
 
 		if ($this->_isManualUpdate($data))
 		{
@@ -443,11 +448,11 @@ class UpdateController extends BaseController
 
 		if (isset($data['dbBackupPath']))
 		{
-			$return = craft()->updates->rollbackUpdate($uid, $data['handle'], $data['dbBackupPath']);
+			$return = craft()->updates->rollbackUpdate($uid, $handle, $data['dbBackupPath']);
 		}
 		else
 		{
-			$return = craft()->updates->rollbackUpdate($uid, $data['handle']);
+			$return = craft()->updates->rollbackUpdate($uid, $handle);
 		}
 
 		if (!$return['success'])

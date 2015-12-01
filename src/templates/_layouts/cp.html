@@ -9,6 +9,7 @@
 	"Any changes will be lost if you leave this page.",
 	"Are you sure you want to delete “{name}”?",
 	"Are you sure you want to transfer your license to this domain?",
+	"Buy {name}",
 	"Cancel",
 	"Choose a user",
 	"Choose which table columns should be visible for this source, and in which order.",
@@ -58,6 +59,7 @@
 	"New {section} entry",
 	"Options",
 	"Password",
+	"Pay {price}",
 	"Pending",
 	"Really delete folder “{folder}”?",
 	"Remove",
@@ -355,7 +357,7 @@
 				<li>{{ "Copyright"|t }} {{ now.year}} Pixel &amp; Tonic, Inc. {{ "All rights reserved."|t }}</li>
 			</ul>
 
-			{% if (CraftEdition == CraftPersonal or craft.request.getPath == 'settings') and craft.app.canUpgradeEdition() %}
+			{% if (CraftEdition == CraftPersonal or craft.app.getLicensedEdition() is sameas(CraftPersonal) or craft.request.getPath == 'settings') and craft.app.canUpgradeEdition() %}
 				<p id="upgradepromo"><a>{{ "Upgrade Craft to take your site to the next level."|t }} <span class="go nowrap">{{ "Show me"|t }}</span></a></p>
 			{% endif %}
 		</div>
@@ -364,22 +366,5 @@
 		</div>
 	{% else %}
 		</form>
-	{% endif %}
-
-	{% if craft.app.hasWrongEdition() %}
-		<div id="wrongedition-modal" class="modal fitted hidden">
-			<div class="body">
-				<p>{{ "You’re running Craft {edition} with a Craft {licensedEdition} license."|t({ edition: craft.app.getEditionName(), licensedEdition: craft.app.getLicensedEditionName() }) }}</p>
-				<p>{{ "What would you like to do?"|t }}</p>
-				<div class="buttons">
-					<div class="btngroup">
-						<div id="wrongedition-switchbtn" class="btn">{{ "Switch to Craft {edition}"|t({ edition: craft.app.getLicensedEditionName() }) }}</div>
-						{% if craft.app.getEdition() > craft.app.getLicensedEdition() %}
-							<div id="wrongedition-upgradebtn" class="btn">{{ "Upgrade your license"|t }}</div>
-						{% endif %}
-					</div>
-				</div>
-			</div>
-		</div>
 	{% endif %}
 {% endblock %}

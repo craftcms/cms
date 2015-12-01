@@ -271,7 +271,7 @@ ul.icons:after { @include clearafter; }
 ul.icons li { @include floatleft; margin: 0 0 10px; }
 ul.icons li.break { clear: both; }
 ul.icons li a { display: block; position: relative; padding: 60px 5px 10px; width: 110px; text-align: center; color: $textcolor; border-radius: 4px; border: 1px solid #fff; }
-ul.icons li a img { width: 40px; height: 40px; position: absolute; top: 12px; }
+ul.icons li a img { width: 40px; height: 40px; position: absolute; top: 12px; left: calc(50% - 20px); }
 ul.icons li a:before { display: block; position: absolute; top: 0; @include left(0); width: 100%; font-size: 40px; line-height: 60px; }
 ul.icons li a:hover { text-decoration: none; background-color: #f9f9f9; border-color: #f2f2f2; }
 
@@ -1233,27 +1233,47 @@ body .redactor-dropdown a:hover { @include menu-option-active-styles; }
 	@include box-shadow(0 0 5px hsl(205, 100%, 75%));
 }
 
-.text,
+.text:not(.selectize-text),
 body .redactor-box,
 body .redactor-box textarea,
 .border-box,
-.matrix-configurator > .field > .input { @include text-input-styles; }
+.matrix-configurator > .field > .input,
+.selectize-text > .selectize-control > .selectize-input { @include text-input-styles; }
 
 .text.focus,
 .text:focus,
 .border-box:focus,
 .border-box.focus,
-body .redactor-box.focus:not(.redactor-box-fullscreen) { @include text-input-focussed-styles; }
+body .redactor-box.focus:not(.redactor-box-fullscreen),
+.selectize-text > .selectize-control > .selectize-input.focus { @include text-input-focussed-styles; }
 
 input.text,
 textarea.text,
-.text input,
-.text textarea,
+.text > input,
+.text > textarea,
 .textline,
 table.editable textarea,
-body .redactor-editor { font-size: 13px; line-height: 16px; color: $textcolor; min-height: 30px; @include box-sizing(border-box);
+body .redactor-editor,
+.selectize-text > .selectize-control > .selectize-input { font-size: 13px; line-height: 16px; color: $textcolor; min-height: 30px; @include box-sizing(border-box);
 	-webkit-appearance: none;
 }
+
+.selectize-text > .selectize-control > .selectize-input { line-height: 18px; }
+
+.multitext .multitextrow .text { border-radius: 0; float: left; @include box-sizing(border-box); }
+.multitext .multitextrow .text.error { position: relative; z-index: 1; }
+.multitext .multitextrow .text:focus,
+.multitext .multitextrow .selectize-text > .selectize-control > .selectize-input.focus { position: relative; z-index: 2; }
+.multitext .multitextrow:after { @include clearafter; }
+.multitext .multitextrow:first-child .text:first-child { @include border-top-left-radius($btnBorderRadius); }
+.multitext .multitextrow:first-child .text:last-child { @include border-top-right-radius($btnBorderRadius); }
+.multitext .multitextrow:last-child .text:first-child { @include border-bottom-left-radius($btnBorderRadius); }
+.multitext .multitextrow:last-child .text:last-child { @include border-bottom-right-radius($btnBorderRadius); }
+.multitext .multitextrow:not(:first-child) .text { margin-top: -1px; }
+.multitext .multitextrow .text:not(:first-child) { @include margin-left(-1px); }
+.multitext .multitextrow .text:first-child:nth-last-child(1) { width: 100%; }
+.multitext .multitextrow .text:first-child:nth-last-child(2) { width: 50%; }
+.multitext .multitextrow .text:first-child:nth-last-child(2) ~ .text { width: calc(50% + 1px); }
 
 .chars-left { position: relative; @include floatright; @include margin(-24px, 7px, 0, 0); color: $lighttextcolor; }
 .chars-left.negative-chars-left { color: $errorcolor; }
@@ -1314,9 +1334,10 @@ input.checkbox:indeterminate:focus + label:before,
 
 .checkboxfield:not(.has-instructions) + .checkboxfield:not(.has-instructions) { margin-top: -22px; }
 
-.text,
+.text:not(.selectize-text),
 .textline,
-body .redactor-box textarea { padding: 5px 7px; }
+body .redactor-box textarea,
+.selectize-text > .selectize-control > .selectize-input { padding: 5px 7px; }
 
 .text { background: #fff; }
 .text input { margin: 0; padding: 0; border: none; outline: none; background: none; }
@@ -1328,8 +1349,9 @@ body .redactor-box textarea { padding: 5px 7px; }
 .text.error { border: 1px solid $errorcolor !important; }
 
 .texticon { position: relative; cursor: text; min-width: 130px; }
-.texticon:before { position: absolute; top: 9px; @include left(9px); color: $lighttextcolor; }
-.texticon .text { @include padding-left(26px); }
+.texticon.icon:before { position: absolute; top: 9px; @include left(9px); color: $lighttextcolor; }
+.texticon.icon .text { @include padding-left(26px); }
+.texticon.clearable .text { @include padding-right(22px); }
 .texticon .clear { position: absolute; top: 6px; @include right(9px); color: $lighttextcolor; cursor: pointer; }
 .texticon .clear:hover { color: $mediumtextcolor; }
 .texticon .clear:before { @include icon; content: 'close'; }
@@ -1356,12 +1378,14 @@ body .redactor-box textarea { padding: 5px 7px; }
 .timewrapper { width: 7em; }
 .timewrapper:before { top: calc(50% - 5px); @include left(7px); font-size: 11px; content: 'time'; }
 
-::-webkit-input-placeholder { color: $lighttextcolor; }
-input:-ms-input-placeholder { color: $lighttextcolor; }
-::-ms-input-placeholder { color: $lighttextcolor; }
-:-moz-placeholder { color: $lighttextcolor; }
-::-moz-placeholder { color: $lighttextcolor; }
-::placeholder { color: $lighttextcolor; }
+@mixin placeholder-styles { color: $lighttextcolor; }
+
+::-webkit-input-placeholder { @include placeholder-styles; }
+input:-ms-input-placeholder { @include placeholder-styles; }
+::-ms-input-placeholder { @include placeholder-styles; }
+:-moz-placeholder { @include placeholder-styles; }
+::-moz-placeholder { @include placeholder-styles; }
+::placeholder { @include placeholder-styles; }
 
 .textline { border: none; border-bottom: 1px dashed hsl($hue, 11%, 85%); padding-left: 0; padding-right: 0; color: hsl($hue, 11%, 50%); background: none; }
 .textline:focus { outline: none; border-bottom-color: hsl($hue, 11%, 70%) }

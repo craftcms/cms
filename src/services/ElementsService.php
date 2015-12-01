@@ -8,8 +8,8 @@ namespace Craft;
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
- * @license   http://buildwithcraft.com/license Craft License Agreement
- * @see       http://buildwithcraft.com
+ * @license   http://craftcms.com/license Craft License Agreement
+ * @see       http://craftcms.com
  * @package   craft.app.services
  * @since     1.0
  */
@@ -1870,7 +1870,7 @@ class ElementsService extends BaseApplicationComponent
 	// -------------------------------------------------------------------------
 
 	/**
-	 * Parses a string for element [reference tags](http://buildwithcraft.com/docs/reference-tags).
+	 * Parses a string for element [reference tags](http://craftcms.com/docs/reference-tags).
 	 *
 	 * @param string $str The string to parse.
 	 *

@@ -6,8 +6,8 @@ namespace Craft;
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
- * @license   http://buildwithcraft.com/license Craft License Agreement
- * @see       http://buildwithcraft.com
+ * @license   http://craftcms.com/license Craft License Agreement
+ * @see       http://craftcms.com
  * @package   craft.app.services
  * @since     1.0
  */
@@ -20,8 +20,12 @@ class EtService extends BaseApplicationComponent
 	const CheckForUpdates   = '@@@elliottEndpointUrl@@@actions/elliott/app/checkForUpdates';
 	const TransferLicense   = '@@@elliottEndpointUrl@@@actions/elliott/app/transferLicenseToCurrentDomain';
 	const GetUpgradeInfo    = '@@@elliottEndpointUrl@@@actions/elliott/app/getUpgradeInfo';
+	const GetCouponPrice    = '@@@elliottEndpointUrl@@@actions/elliott/app/getCouponPrice';
 	const PurchaseUpgrade   = '@@@elliottEndpointUrl@@@actions/elliott/app/purchaseUpgrade';
 	const GetUpdateFileInfo = '@@@elliottEndpointUrl@@@actions/elliott/app/getUpdateFileInfo';
+	const RegisterPlugin    = '@@@elliottEndpointUrl@@@actions/elliott/plugins/registerPlugin';
+	const UnregisterPlugin  = '@@@elliottEndpointUrl@@@actions/elliott/plugins/unregisterPlugin';
+	const TransferPlugin    = '@@@elliottEndpointUrl@@@actions/elliott/plugins/transferPlugin';
 
 	// Public Methods
 	// =========================================================================
@@ -138,7 +142,7 @@ class EtService extends BaseApplicationComponent
 
 		if ($handle == 'craft')
 		{
-			$path = 'http://download.buildwithcraft.com/craft/'.$updateModel->app->latestVersion.'/'.$buildVersion.'/Patch/'.($handle == 'craft' ? $updateModel->app->localBuild : $updateModel->app->localVersion.'.'.$updateModel->app->localBuild).'/'.$md5.'.zip';
+			$path = 'http://download.craftcms.com/craft/'.$updateModel->app->latestVersion.'/'.$buildVersion.'/Patch/'.($handle == 'craft' ? $updateModel->app->localBuild : $updateModel->app->localVersion.'.'.$updateModel->app->localBuild).'/'.$md5.'.zip';
 		}
 		else
 		{
@@ -163,7 +167,7 @@ class EtService extends BaseApplicationComponent
 				}
 			}
 
-			$path = 'http://download.buildwithcraft.com/plugins/'.$handle.'/'.$latestVersion.'/'.$latestVersion.'.'.$latestBuild.'/Patch/'.$localVersion.'.'.$localBuild.'/'.$md5.'.zip';
+			$path = 'http://download.craftcms.com/plugins/'.$handle.'/'.$latestVersion.'/'.$latestVersion.'.'.$latestBuild.'/Patch/'.$localVersion.'.'.$localBuild.'/'.$md5.'.zip';
 		}
 
 		$et = new Et($path, 240);
@@ -239,6 +243,20 @@ class EtService extends BaseApplicationComponent
 	}
 
 	/**
+	 * Fetches the price of an upgrade with a coupon applied to it.
+	 *
+	 * @return EtModel|null
+	 */
+	public function fetchCouponPrice($edition, $couponCode)
+	{
+		$et = new Et(static::GetCouponPrice);
+		$et->setData(array('edition' => $edition, 'couponCode' => $couponCode));
+		$etResponse = $et->phoneHome();
+
+		return $etResponse;
+	}
+
+	/**
 	 * Attempts to purchase an edition upgrade.
 	 *
 	 * @param UpgradePurchaseModel $model
@@ -299,6 +317,66 @@ class EtService extends BaseApplicationComponent
 		}
 
 		return false;
+	}
+
+	/**
+	 * Registers a given plugin with the current Craft license.
+	 *
+	 * @string $pluginHandle The plugin handle that should be registered
+	 *
+	 * @return EtModel
+	 */
+	public function registerPlugin($pluginHandle)
+	{
+		$et = new Et(static::RegisterPlugin);
+		$et->setData(array(
+			'pluginHandle' => $pluginHandle
+		));
+		$etResponse = $et->phoneHome();
+
+		return $etResponse;
+	}
+
+	/**
+	 * Transfers a given plugin to the current Craft license.
+	 *
+	 * @string $pluginHandle The plugin handle that should be transferred
+	 *
+	 * @return EtModel
+	 */
+	public function transferPlugin($pluginHandle)
+	{
+		$et = new Et(static::TransferPlugin);
+		$et->setData(array(
+			'pluginHandle' => $pluginHandle
+		));
+		$etResponse = $et->phoneHome();
+
+		return $etResponse;
+	}
+
+	/**
+	 * Unregisters a given plugin from the current Craft license.
+	 *
+	 * @string $pluginHandle The plugin handle that should be unregistered
+	 *
+	 * @return EtModel
+	 */
+	public function unregisterPlugin($pluginHandle)
+	{
+		$et = new Et(static::UnregisterPlugin);
+		$et->setData(array(
+			'pluginHandle' => $pluginHandle
+		));
+		$etResponse = $et->phoneHome();
+
+		if (!empty($etResponse->data['success']))
+		{
+			// Remove our record of the license key
+			craft()->plugins->setPluginLicenseKey($pluginHandle, null);
+		}
+
+		return $etResponse;
 	}
 
 	/**

@@ -49,30 +49,6 @@
 		</thead>
 		<tbody>
 			<tr>
-				<th class="group" colspan="3" data-icon="section">{{ "Content Publishing"|t }}</th>
-			</tr>
-			<tr>
-				<th class="feature" scope="row">{{ "Unlimited Singles and Channels"|t }}</th>
-				<td><span data-icon="check"></span></td>
-				<td><span data-icon="check"></span></td>
-			</tr>
-			<tr>
-				<th class="feature" scope="row">{{ "Structure sections"|t }}</th>
-				<td><span data-icon="check"></span></td>
-				<td><span data-icon="check"></span></td>
-			</tr>
-			<tr>
-				<th class="feature" scope="row">{{ "Entry versioning"|t }}</th>
-				<td><span data-icon="check"></span></td>
-				<td><span data-icon="check"></span></td>
-			</tr>
-			<tr>
-				<th class="feature" scope="row">{{ "Entry drafts"|t }}</th>
-				<td><span data-icon="check"></span></td>
-				<td><span data-icon="check"></span></td>
-			</tr>
-
-			<tr>
 				<th class="group" colspan="3" data-icon="users">{{ "User Accounts"|t }}</th>
 			</tr>
 			<tr>
@@ -166,85 +142,138 @@
 	<h1 class="logo"></h1>
 
 	<form class="pane">
-
 		{{ getCsrfInput() }}
 
-		<div class="header">
-			<p class="price"></p>
+		{{ forms.textField({
+			first: true,
+			placeholder: "Name"|t,
+			id: 'customer-name'
+		}) }}
+
+		{{ forms.textField({
+			placeholder: "Email"|t,
+			id: 'customer-email',
+			value: currentUser.email
+		}) }}
+
+		{% set ccInputs %}
+			<div class="multitext">
+				<div class="multitextrow">
+					{{ forms.text({
+						id: 'cc-num',
+						type: 'tel',
+						placeholder: "Card number"|t,
+						autocomplete: false
+					}) }}
+				</div>
+				<div class="multitextrow">
+					{{ forms.text({
+						id: 'cc-exp',
+						type: 'tel',
+						placeholder: "MM"|t~' / '~"YY"|t
+					}) }}
+					{{ forms.text({
+						id: 'cc-cvc',
+						type: 'tel',
+						placeholder: "CVC"|t
+					}) }}
+				</div>
+			</div>
+		{% endset %}
+
+		{{ forms.field({
+			fieldId: 'cc-inputs'
+		}, ccInputs) }}
+
+		<a class="fieldtoggle" data-target="upgrademodal-checkout-more">{{ "Show additional fields for invoice"|t }}</a>
+
+		<div id="upgrademodal-checkout-more" class="hidden">
+			{% set bizInputs %}
+				<div class="multitext">
+					<div class="multitextrow">
+						{{ forms.text({
+							id: 'business-name',
+							placeholder: "Business name"|t
+						}) }}
+					</div>
+					<div class="multitextrow">
+						{{ forms.text({
+							id: 'business-taxid',
+							placeholder: "Business tax ID"|t
+						}) }}
+					</div>
+				</div>
+			{% endset %}
+
+			{{ forms.field({
+				fieldId: 'business-inputs'
+			}, bizInputs) }}
+
+			{% set addressInputs %}
+				<div class="multitext">
+					<div class="multitextrow">
+						{{ forms.text({
+							id: 'business-address1',
+							placeholder: "Address line 1"|t
+						}) }}
+					</div>
+					<div class="multitextrow">
+						{{ forms.text({
+							id: 'business-address2',
+							placeholder: "Address line 2"|t
+						}) }}
+					</div>
+					<div class="multitextrow">
+						<div class="text selectize-text">
+							<select id="business-country" placeholder="{{ 'Country'|t }}"><option value=""></option></select>
+						</div>
+						<div class="text selectize-text">
+							<select id="business-state" placeholder="{{ 'State/province'|t }}"></select>
+						</div>
+					</div>
+					<div class="multitextrow">
+						{{ forms.text({
+							id: 'business-city',
+							placeholder: "City/town"|t
+						}) }}
+						{{ forms.text({
+							id: 'business-zip',
+							placeholder: "Zip/postal"|t
+						}) }}
+					</div>
+				</div>
+			{% endset %}
+
+			{{ forms.field({
+				fieldId: 'address-inputs'
+			}, addressInputs) }}
+
+			{{ forms.textareaField({
+				id: 'purchase-notes',
+				placeholder: "Notes"|t,
+				rows: 2
+			}) }}
 		</div>
 
-		{{ forms.textField({
-			label: "Name on the card"|t,
-			id: 'cc-name'
-		}) }}
+		<div class="buttons">
+			<div class="left">
+				<input id="pay-button" type="submit" class="btn submit" value="Pay">
+				<div id="pay-spinner" class="spinner hidden"></div>
+			</div>
 
-		{{ forms.textField({
-			label: "Credit card number"|t,
-			id: 'cc-num',
-			autocomplete: false
-		}) }}
-
-		<table class="inputs fullwidth">
-			<tbody>
-				<tr>
-					<td class="cc-month">
-						{% set monthInput %}
-							<div class="select fullwidth">
-								<select id="cc-month">
-									{% set localeData = craft.i18n.getLocaleData() %}
-									{% for month in 1..12 %}
-										{% set month2 = "%02d"|format(month) %}
-										<option value="{{ month2 }}">{{ month2 }} - {{ localeData.getMonthName(month) }}</option>
-									{% endfor %}
-								</select>
-							</div>
-						{% endset %}
-
-						{{ forms.field({
-							label: "Expiration month"|t,
-							id: 'cc-month'
-						}, monthInput) }}
-					</td>
-
-					<td class="thin cc-year">
-						{% set yearInput %}
-							<div class="select fullwidth">
-								<select id="cc-year">
-									{% for year in now.year .. now.year+10 %}
-										<option value="{{ year }}">{{ year }}</option>
-									{% endfor %}
-								</select>
-							</div>
-						{% endset %}
-
-						{{ forms.field({
-							label: "Exp. year"|t,
-							id: 'cc-year'
-						}, yearInput) }}
-					</td>
-
-					<td class="thin cc-cvc">
-						{{ forms.textField({
-							label: "CVC"|t,
-							id: 'cc-cvc',
-							size: 5,
-							autocomplete: false
-						}) }}
-					</td>
-				</tr>
-			</tbody>
-		</table>
-
-		<div class="footer">
-			<div class="buttons right">
-				<div id="upgrademodal-cancelcheckout" class="btn">{{ "Cancel"|t }}</div>
-				<input type="submit" class="btn submit" value="{{ 'Purchase'|t }}">
-				<div class="spinner hidden"></div>
+			<div class="right">
+				{{ forms.text({
+					id: 'coupon-input',
+					class: 'code',
+					placeholder: "COUPON"|t,
+					size: 12
+				}) }}
+				<div id="coupon-spinner" class="spinner hidden"></div>
 			</div>
 		</div>
-	</form>
 
-	<p class="secure icon light centeralign">{{ "Your payment is safe and secure with {stripe}."|t({ stripe: '<a href="https://stripe.com/" target="_blank">Stripe</a>' })|raw }}
+		<p class="secure icon light">{{ "Your payment is safe and secure with {stripe}."|t({ stripe: '<a href="https://stripe.com/" target="_blank">Stripe</a>' })|raw }}
+	</form>
 </div>
 
 

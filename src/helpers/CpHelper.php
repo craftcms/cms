@@ -6,8 +6,8 @@ namespace Craft;
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
- * @license   http://buildwithcraft.com/license Craft License Agreement
- * @see       http://buildwithcraft.com
+ * @license   http://craftcms.com/license Craft License Agreement
+ * @see       http://craftcms.com
  * @package   craft.app.helpers
  * @since     1.0
  */
@@ -32,6 +32,15 @@ class CpHelper
 			return $alerts;
 		}
 
+		if (craft()->hasWrongEdition())
+		{
+			$alerts[] = Craft::t('You’re running Craft {edition} with a Craft {licensedEdition} license.', array(
+					'edition' => craft()->getEditionName(),
+					'licensedEdition' => craft()->getLicensedEditionName()
+				)) .
+				' <a class="go edition-resolution">'.Craft::t('Resolve').'</a>';
+		}
+
 		if (craft()->updates->isUpdateInfoCached() || $fetch)
 		{
 			// Fetch the updates regardless of whether we're on the Updates page or not, because the other alerts are
@@ -53,7 +62,7 @@ class CpHelper
 			// Domain mismatch?
 			$licenseKeyStatus = craft()->et->getLicenseKeyStatus();
 
-			if ($licenseKeyStatus == LicenseKeyStatus::MismatchedDomain)
+			if ($licenseKeyStatus == LicenseKeyStatus::Mismatched)
 			{
 				$licensedDomain = craft()->et->getLicensedDomain();
 				$licenseKeyPath = craft()->path->getLicenseKeyPath();
@@ -67,7 +76,7 @@ class CpHelper
 				// Can they actually do something about it?
 				if ($user->admin)
 				{
-					$action = '<a class="domain-mismatch">'.Craft::t('Transfer it to this domain?').'</a>';
+					$action = '<a class="go domain-mismatch">'.Craft::t('Transfer it to this domain').'</a>';
 				}
 				else
 				{

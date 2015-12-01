@@ -104,7 +104,7 @@ Craft.Updater = Garnish.Base.extend(
 				'<p><strong class="code">'+Craft.t('Status:')+'</strong> '+Craft.escapeHtml(jqXHR.statusText)+'</p>' +
 				'<p><strong class="code">'+Craft.t('Response:')+'</strong> '+Craft.escapeHtml(jqXHR.responseText)+'</p>' +
 			'</div>' +
-			'<a class="btn submit big" href="mailto:support@buildwithcraft.com' +
+			'<a class="btn submit big" href="mailto:support@craftcms.com' +
 				'?subject='+encodeURIComponent('Craft update failure') +
 				'&body='+encodeURIComponent(
 					'Describe what happened here.\n\n' +

@@ -6,8 +6,8 @@ namespace Craft;
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
- * @license   http://buildwithcraft.com/license Craft License Agreement
- * @see       http://buildwithcraft.com
+ * @license   http://craftcms.com/license Craft License Agreement
+ * @see       http://craftcms.com
  * @package   craft.app.services
  * @since     1.0
  */
@@ -72,13 +72,13 @@ class HttpSessionService extends \CHttpSession
 	}
 
 	/**
-	 * @inheritDoc \CHttpSession::setSavePath()
+	 * Sets the path to save PHP session files.
 	 *
-	 * @param string $value
+	 * @param string $value The session save path.
 	 */
 	public function setSavePath($value)
 	{
-		// Don't make sure $value is a valid directory path, becasue it might be for a dsitributed cache system
+		// Don't make sure $value is a valid directory path, because it might be for a distributed cache system
 		session_save_path($value);
 	}
 

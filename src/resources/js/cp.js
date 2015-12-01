@@ -670,6 +670,14 @@ Craft.CP = Garnish.Base.extend(
 
 			}, this));
 		}
+
+		// Is there an edition resolution link?
+		var $editionResolutionLink = this.$alerts.find('.edition-resolution:first');
+
+		if ($editionResolutionLink.length)
+		{
+			this.addListener($editionResolutionLink, 'click', 'showUpgradeModal');
+		}
 	},
 
 	checkForUpdates: function(forceRefresh, callback)

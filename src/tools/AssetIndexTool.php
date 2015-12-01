@@ -6,8 +6,8 @@ namespace Craft;
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
- * @license   http://buildwithcraft.com/license Craft License Agreement
- * @see       http://buildwithcraft.com
+ * @license   http://craftcms.com/license Craft License Agreement
+ * @see       http://craftcms.com
  * @package   craft.app.tools
  * @since     1.0
  */
@@ -90,7 +90,7 @@ class AssetIndexTool extends BaseTool
 			$grandTotal = 0;
 
 			$filesToIndex = false;
-			
+
 			foreach ($sourceIds as $sourceId)
 			{
 				// Get the indexing list

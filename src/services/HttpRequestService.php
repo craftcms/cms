@@ -8,8 +8,8 @@ namespace Craft;
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
- * @license   http://buildwithcraft.com/license Craft License Agreement
- * @see       http://buildwithcraft.com
+ * @license   http://craftcms.com/license Craft License Agreement
+ * @see       http://craftcms.com
  * @package   craft.app.services
  * @since     1.0
  */
@@ -201,8 +201,8 @@ class HttpRequestService extends \CHttpRequest
 	/**
 	 * Returns the request’s Craft path.
 	 *
-	 * Note that the path will not include the [CP trigger](http://buildwithcraft.com/docs/config-settings#cpTrigger)
-	 * if it’s a CP request, or the [page trigger](http://buildwithcraft.com/docs/config-settings#pageTrigger) or page
+	 * Note that the path will not include the [CP trigger](http://craftcms.com/docs/config-settings#cpTrigger)
+	 * if it’s a CP request, or the [page trigger](http://craftcms.com/docs/config-settings#pageTrigger) or page
 	 * number if it’s a paginated request.
 	 *
 	 * @return string The Craft path.
@@ -215,8 +215,8 @@ class HttpRequestService extends \CHttpRequest
 	/**
 	 * Returns an array of the Craft path’s segments.
 	 *
-	 * Note that the segments will not include the [CP trigger](http://buildwithcraft.com/docs/config-settings#cpTrigger)
-	 * if it’s a CP request, or the [page trigger](http://buildwithcraft.com/docs/config-settings#pageTrigger) or page
+	 * Note that the segments will not include the [CP trigger](http://craftcms.com/docs/config-settings#cpTrigger)
+	 * if it’s a CP request, or the [page trigger](http://craftcms.com/docs/config-settings#pageTrigger) or page
 	 * number if it’s a paginated request.
 	 *
 	 * @return array The Craft path’s segments.
@@ -274,7 +274,7 @@ class HttpRequestService extends \CHttpRequest
 	 * Returns whether the current request should be routed to the Control Panel.
 	 *
 	 * The result depends on whether the first segment in the URI matches the
-	 * [CP trigger](http://buildwithcraft.com/docs/config-settings#cpTrigger).
+	 * [CP trigger](http://craftcms.com/docs/config-settings#cpTrigger).
 	 *
 	 * Note that even if this function returns `true`, the request will not necessarily route to the Control Panel.
 	 * It could instead route to a resource, for example.
@@ -302,7 +302,7 @@ class HttpRequestService extends \CHttpRequest
 	 * Returns whether the current request should be routed to a resource.
 	 *
 	 * The result depends on whether the first segment in the Craft path matches the
-	 * [resource trigger](http://buildwithcraft.com/docs/config-settings#resourceTrigger).
+	 * [resource trigger](http://craftcms.com/docs/config-settings#resourceTrigger).
 	 *
 	 * @return bool Whether the current request should be routed to a resource.
 	 */
@@ -319,7 +319,7 @@ class HttpRequestService extends \CHttpRequest
 	 * There are several ways that this method could return `true`:
 	 *
 	 * - If the first segment in the Craft path matches the
-	 *   [action trigger](http://buildwithcraft.com/docs/config-settings#actionTrigger)
+	 *   [action trigger](http://craftcms.com/docs/config-settings#actionTrigger)
 	 * - If there is an 'action' param in either the POST data or query string
 	 * - If the Craft path matches the Login path, the Logout path, or the Set Password path
 	 *
@@ -1125,7 +1125,7 @@ class HttpRequestService extends \CHttpRequest
 	}
 
 	/**
-	 * Returns the path Craft should use to route this request, including the [CP trigger](http://buildwithcraft.com/docs/config-settings#cpTrigger) if it is in there.
+	 * Returns the path Craft should use to route this request, including the [CP trigger](http://craftcms.com/docs/config-settings#cpTrigger) if it is in there.
 	 *
 	 * @return string The path.
 	 */
