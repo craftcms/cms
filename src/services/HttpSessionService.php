@@ -72,9 +72,9 @@ class HttpSessionService extends \CHttpSession
 	}
 
 	/**
-	 * @inheritDoc \CHttpSession::setSavePath()
+	 * Sets the path to save PHP session files.
 	 *
-	 * @param string $value
+	 * @param string $value The session save path.
 	 */
 	public function setSavePath($value)
 	{
