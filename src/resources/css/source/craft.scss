@@ -1378,7 +1378,7 @@ body .redactor-box textarea,
 .timewrapper { width: 7em; }
 .timewrapper:before { top: calc(50% - 5px); @include left(7px); font-size: 11px; content: 'time'; }
 
-@mixin placeholder-styles { font-family: sans-serif; font-size: 1em; color: $lighttextcolor; }
+@mixin placeholder-styles { color: $lighttextcolor; }
 
 ::-webkit-input-placeholder { @include placeholder-styles; }
 input:-ms-input-placeholder { @include placeholder-styles; }
