@@ -301,7 +301,7 @@ class Updater
 				}
 
 				// In case we did the whole app folder
-				if ((mb_substr($rowData[0], 1) == '*'))
+				if ($rowData[0][0] == '*')
 				{
 					$filesToDelete[] = rtrim(IOHelper::normalizePathSeparators($path), '/').'.bak/';
 				}
