@@ -360,7 +360,7 @@ class UpdateController extends BaseController
 			$return = craft()->updates->updateDatabase($handle);
 		}
 
-		$return['handle'] = $data['handle'];
+		$return['handle'] = $handle;
 
 		if (!$return['success'])
 		{
