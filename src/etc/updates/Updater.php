@@ -299,6 +299,12 @@ class Updater
 
 					$filesToDelete[] = $path.$tempFilePath;
 				}
+
+				// In case we did the whole app folder
+				if ((mb_substr($rowData[0], 1) == '*'))
+				{
+					$filesToDelete[] = rtrim(IOHelper::normalizePathSeparators($path), '/').'.bak/';
+				}
 			}
 
 			foreach ($filesToDelete as $fileToDelete)
@@ -330,12 +336,6 @@ class Updater
 					}
 				}
 			}
-		}
-
-		// In case we did the whole app folder
-		if ((mb_substr($rowData[0], 1) == '*'))
-		{
-			$filesToDelete[] = rtrim(IOHelper::normalizePathSeparators($path), '/').'.bak/';
 		}
 
 		// Clear the temp folder.
