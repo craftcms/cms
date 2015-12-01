@@ -444,31 +444,26 @@ class GoogleCloudAssetSourceType extends BaseAssetSourceType
 	 *
 	 * @return mixed
 	 */
-	protected function getNameReplacement(AssetFolderModel $folder, $fileName)
+	protected function getNameReplacementInFolder(AssetFolderModel $folder, $fileName)
 	{
+		$prefix = $this->_getPathPrefix().$folder->path;
 		$this->_prepareForRequests();
-		$fileList = $this->_googleCloud->getBucket($this->getSettings()->bucket, $this->_getPathPrefix().$folder->path);
+		$fileList = $this->_googleCloud->getBucket($this->getSettings()->bucket, $prefix);
 
-		$fileList = array_flip(array_map('mb_strtolower', array_keys($fileList)));
-
-		// Double-check
-		if (!isset($fileList[mb_strtolower($this->_getPathPrefix().$folder->path.$fileName)]))
+		foreach ($fileList as &$file)
 		{
-			return $fileName;
+			$file = preg_replace('/^'.preg_quote($prefix, '/').'/', '', $file['name']);
 		}
 
-		$fileNameParts = explode(".", $fileName);
-		$extension = array_pop($fileNameParts);
+		// Drop all the paths that have subfolders.
+		$fileList = array_filter($fileList,
+			function ($file)
+			{
+				return !(strpos($file, '/') !== false || empty($file));
+			}
+		);
 
-		$fileNameStart = join(".", $fileNameParts).'_';
-		$index = 1;
-
-		while (isset($fileList[mb_strtolower($this->_getPathPrefix().$folder->path.$fileNameStart.$index.'.'.$extension)]))
-		{
-			$index++;
-		}
-
-		return $fileNameStart.$index.'.'.$extension;
+		return AssetsHelper::getFilenameReplacement($fileList, $fileName);
 	}
 
 	/**

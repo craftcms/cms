@@ -207,7 +207,7 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 
 			if ($preventConflicts)
 			{
-				$newFileName = $this->getNameReplacement($folder, $filename);
+				$newFileName = $this->getNameReplacementInFolder($folder, $filename);
 				$response = $this->insertFileInFolder($folder, $localFilePath, $newFileName);
 			}
 			else
@@ -217,7 +217,7 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 				// Naming conflict. create a new file and ask the user what to do with it
 				if ($response->isConflict())
 				{
-					$newFileName = $this->getNameReplacement($folder, $filename);
+					$newFileName = $this->getNameReplacementInFolder($folder, $filename);
 					$conflictResponse = $response;
 					$response = $this->insertFileInFolder($folder, $localFilePath, $newFileName);
 				}
@@ -315,7 +315,7 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 
 				case AssetConflictResolution::KeepBoth:
 				{
-					$filename = $this->getNameReplacement($folder, $filename);
+					$filename = $this->getNameReplacementInFolder($folder, $filename);
 					break;
 				}
 			}
@@ -392,7 +392,7 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 
 				case AssetConflictResolution::KeepBoth:
 				{
-					$filename = $this->getNameReplacement($targetFolder, $filename);
+					$filename = $this->getNameReplacementInFolder($targetFolder, $filename);
 					break;
 				}
 			}
@@ -472,7 +472,7 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 
 		if (empty($filenameToUse))
 		{
-			$replaceWith->filename = $this->getNameReplacement($folder, $replaceWith->filename);
+			$replaceWith->filename = $this->getNameReplacementInFolder($folder, $replaceWith->filename);
 			craft()->assets->storeFile($replaceWith);
 		}
 		else
@@ -605,9 +605,9 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 		$response = new AssetOperationResponseModel();
 
 		return $response->setSuccess()
-			->setDataItem('folderId', $folderId)
-			->setDataItem('parentId', $parentFolder->id)
-			->setDataItem('folderName', $folderName);
+				->setDataItem('folderId', $folderId)
+				->setDataItem('parentId', $parentFolder->id)
+				->setDataItem('folderName', $folderName);
 	}
 
 	/**
@@ -839,7 +839,7 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 	 *
 	 * @return mixed
 	 */
-	abstract protected function getNameReplacement(AssetFolderModel $folder, $fileName);
+	abstract protected function getNameReplacementInFolder(AssetFolderModel $folder, $fileName);
 
 	/**
 	 * Delete just the file inside of a source for an Assets File.

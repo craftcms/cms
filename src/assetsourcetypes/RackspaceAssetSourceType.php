@@ -388,35 +388,25 @@ class RackspaceAssetSourceType extends BaseAssetSourceType
 	 *
 	 * @return string
 	 */
-	protected function getNameReplacement(AssetFolderModel $folder, $fileName)
+	protected function getNameReplacementInFolder(AssetFolderModel $folder, $fileName)
 	{
 		$prefix = $this->_getPathPrefix().$folder->path;
-		$files = $this->_getFileList($prefix);
-		$fileList = array();
+		$fileList = $this->_getFileList($prefix);
 
-		foreach ($files as $file)
+		foreach ($fileList as &$file)
 		{
-			$fileList[mb_strtolower($file->name)] = true;
+			$file = preg_replace('/^'.preg_quote($prefix, '/').'/', '', $file->name);
 		}
 
-		// Double-check
-		if (!isset($fileList[mb_strtolower($fileName)]))
-		{
-			return $fileName;
-		}
+		// Drop all the paths that have subfolders.
+		$fileList = array_filter($fileList,
+			function ($file)
+			{
+				return !(strpos($file, '/') !== false || empty($file));
+			}
+		);
 
-		$fileNameParts = explode(".", $fileName);
-		$extension = array_pop($fileNameParts);
-
-		$fileNameStart = join(".", $fileNameParts).'_';
-		$index = 1;
-
-		while ( isset($fileList[mb_strtolower($prefix.$fileNameStart.$index.'.'.$extension)]))
-		{
-			$index++;
-		}
-
-		return $fileNameStart.$index.'.'.$extension;
+		return AssetsHelper::getFilenameReplacement($fileList, $fileName);
 	}
 
 	/**
