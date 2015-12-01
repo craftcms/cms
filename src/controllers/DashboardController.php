@@ -129,7 +129,6 @@ class DashboardController extends BaseController
 		$this->requireAjaxRequest();
 
 		$request = craft()->request;
-		$dashboardService = craft()->dashboard;
 
 		$type = $request->getRequiredPost('type');
 		$settingsNamespace = $request->getPost('settingsNamespace');
