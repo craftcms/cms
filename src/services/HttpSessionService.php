@@ -78,7 +78,7 @@ class HttpSessionService extends \CHttpSession
 	 */
 	public function setSavePath($value)
 	{
-		// Don't make sure $value is a valid directory path, becasue it might be for a dsitributed cache system
+		// Don't make sure $value is a valid directory path, because it might be for a distributed cache system
 		session_save_path($value);
 	}
 
