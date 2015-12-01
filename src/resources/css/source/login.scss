@@ -11,8 +11,12 @@ html, body { height: 100%; }
 
 #login-form .text:focus { position: relative; z-index: 1; }
 
-#loginName-field .text { padding: 14px 16px; border-top-left-radius: 5px; border-top-right-radius: 5px; border-bottom-left-radius: 0; border-bottom-right-radius: 0; }
-#password-field .text { margin-top: -1px; padding: 14px 5em 14px 16px; border-top-left-radius: 0; border-top-right-radius: 0; border-bottom-left-radius: 5px; border-bottom-right-radius: 5px; }
+
+#loginName { padding: 14px 16px; border-top-left-radius: 5px; border-top-right-radius: 5px; border-bottom-left-radius: 0; border-bottom-right-radius: 0; }
+#login-form.reset-password #loginName { border-bottom-left-radius: 5px; border-bottom-right-radius: 5px; }
+
+#password { margin-top: -1px; padding: 14px 5em 14px 16px; border-top-left-radius: 0; border-top-right-radius: 0; border-bottom-left-radius: 5px; border-bottom-right-radius: 5px; }
+
 #password-field .passwordwrapper .password-toggle { top: 14px; @include right(14px); }
 #rememberMe-field { padding-top: 24px; }
 
@@ -24,6 +28,7 @@ html, body { height: 100%; }
 #login-form #ssl-icon.disabled { opacity: 0.75; cursor: default; }
 #login-form #ssl-icon + #submit { @include padding-left(2em); }
 #login-form #submit { display:block; width: auto; float: none; padding: 14px 16px; height: auto; width: 100%; }
+#login-form #submit.reset-password { margin-top: 24px; }
 
 #spinner { position: absolute; top: 58px; left: 50%; margin-left: -12px; }
 
