@@ -130,6 +130,8 @@ Craft.CP = Garnish.Base.extend(
 
 		// sidebar
 
+		this.addListener($('ul', this.$sidebar), 'resize', 'updateResponsiveSidebar');
+
 		this.$sidebarLinks = $('nav a', this.$sidebar);
 		this.addListener(this.$sidebarLinks, 'click', 'selectSidebarItem');
 
@@ -394,6 +396,12 @@ Craft.CP = Garnish.Base.extend(
 
 		$contentWithSidebar.toggleClass('showing-sidebar');
 
+		this.updateResponsiveContent();
+	},
+	updateResponsiveContent: function()
+	{
+		var $contentWithSidebar = this.$content.filter('.has-sidebar');
+
 		if($contentWithSidebar.hasClass('showing-sidebar'))
 		{
 			var sidebarHeight = $('nav', this.$sidebar).height();
@@ -410,7 +418,6 @@ Craft.CP = Garnish.Base.extend(
 			$contentWithSidebar.css('height', 'auto');
 		}
 	},
-
 	updateResponsiveTables: function()
 	{
 		for (this.updateResponsiveTables._i = 0; this.updateResponsiveTables._i < this.$collapsibleTables.length; this.updateResponsiveTables._i++)
