@@ -291,8 +291,8 @@ class DashboardService extends BaseApplicationComponent
 		$widget = new WidgetModel();
 		$widget->type = 'Feed';
 		$widget->settings = array(
-			'url'   => 'http://feeds.feedburner.com/blogandtonic',
-			'title' => 'Blog & Tonic'
+			'url'   => 'https://craftcms.com/news.rss',
+			'title' => 'Craft News'
 		);
 
 		$this->saveUserWidget($widget);
