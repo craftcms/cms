@@ -32,20 +32,20 @@ class CpHelper
 			return $alerts;
 		}
 
-		if (craft()->hasWrongEdition())
-		{
-			$alerts[] = Craft::t('You’re running Craft {edition} with a Craft {licensedEdition} license.', array(
-					'edition' => craft()->getEditionName(),
-					'licensedEdition' => craft()->getLicensedEditionName()
-				)) .
-				' <a class="go edition-resolution">'.Craft::t('Resolve').'</a>';
-		}
-
 		if (craft()->updates->isUpdateInfoCached() || $fetch)
 		{
 			// Fetch the updates regardless of whether we're on the Updates page or not, because the other alerts are
 			// relying on cached Elliott info
 			$updateModel = craft()->updates->getUpdates();
+
+			if (craft()->hasWrongEdition())
+			{
+				$alerts[] = Craft::t('You’re running Craft {edition} with a Craft {licensedEdition} license.', array(
+						'edition' => craft()->getEditionName(),
+						'licensedEdition' => craft()->getLicensedEditionName()
+					)) .
+					' <a class="go edition-resolution">'.Craft::t('Resolve').'</a>';
+			}
 
 			if ($path != 'updates' && $user->can('performUpdates'))
 			{
