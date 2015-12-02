@@ -501,9 +501,8 @@ abstract class BaseElementFieldType extends BaseFieldType implements IPreviewabl
 	/**
 	 * Normalizes the available sources into select input options.
 	 *
-	 * @param array $sources The available sources.
-	 *
 	 * @return array
+	 *
 	 */
 	protected function getSourceOptions()
 	{
@@ -520,8 +519,17 @@ abstract class BaseElementFieldType extends BaseFieldType implements IPreviewabl
 			}
 		}
 
-		// Sort alphabetically
-		array_multisort($options, $optionNames, SORT_NATURAL);
+		// TODO: Remove this check for Craft 3.
+		if (PHP_VERSION_ID < 50400)
+		{
+			// Sort alphabetically
+			array_multisort($options, $optionNames);
+		}
+		else
+		{
+			// Sort alphabetically
+			array_multisort($options, SORT_NATURAL | SORT_FLAG_CASE, $optionNames);
+		}
 
 		return $options;
 	}
