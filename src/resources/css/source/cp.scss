@@ -187,13 +187,27 @@ body.mobile #container {
 
 
 /* page header */
-#page-header { @include display-flex; @include justify-content(space-between); position: relative; z-index: 1; padding: 20px 24px; }
-#page-header #page-title { @include display-flex; @include flex-grow(1); }
+#page-header { position: relative; z-index: 1; padding: 20px 24px; }
 #page-header #page-title h1 { line-height: 1.3; margin: 0; }
 #page-header #page-title .select,
 #page-header #page-title .menubtn,
-#page-header #page-title .btn { display: block; @include margin-left(5px); @include floatleft; }
 #page-header #extra-headers { position: relative; }
+
+@media only screen and (min-width: 341px) {
+	#page-header { @include display-flex; @include justify-content(space-between); }
+	#page-header #page-title { @include flex-grow(1); }
+	#page-header #page-title h1 { @include floatleft; }
+	#page-header #page-title .btn { display: block; @include margin-left(5px); @include floatleft; }
+}
+
+@media only screen and (max-width: 340px) {
+	#page-header #page-title h1 { float: none; }
+	// #page-header #page-title .btn { margin: 7px 0; }
+	#page-header #extra-headers { margin-top: 7px; }
+	#page-header #extra-headers .buttons { float: none; }
+	#page-header #extra-headers .buttons:after { @include clearafter; }
+}
+
 
 #crumbs { margin: 0; font-size: 0; }
 #crumbs:after { @include clearafter; }
