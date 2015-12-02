@@ -1493,7 +1493,7 @@ body .selectize-dropdown .optgroup-header { @include h6-styles; margin: 0; paddi
 body .selectize-dropdown .active { @include menu-option-active-styles; }
 
 /* datepicker */
-.ui-datepicker { position: fixed; top: -300px; @include margin-left(1px); -padding: 10px; width: 210px; height: 210px; }
+.ui-datepicker { position: fixed; top: -300px; @include margin-left(1px); -padding: 10px; width: 210px; height: 240px; }
 .ui-datepicker-header { padding: 8px 8px 4px; }
 .ui-datepicker-prev { @include floatleft; }
 .ui-datepicker-next { @include floatright; }

@@ -381,7 +381,7 @@ class RackspaceAssetSourceType extends BaseAssetSourceType
 	// =========================================================================
 
 	/**
-	 * @inheritDoc BaseAssetSourceType::getNameReplacement()
+	 * @inheritDoc BaseAssetSourceType::getNameReplacementInFolder()
 	 *
 	 * @param AssetFolderModel $folder
 	 * @param string           $fileName
