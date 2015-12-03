@@ -523,12 +523,12 @@ abstract class BaseElementFieldType extends BaseFieldType implements IPreviewabl
 		if (PHP_VERSION_ID < 50400)
 		{
 			// Sort alphabetically
-			array_multisort($options, $optionNames);
+			array_multisort($optionNames, $options);
 		}
 		else
 		{
 			// Sort alphabetically
-			array_multisort($options, SORT_NATURAL | SORT_FLAG_CASE, $optionNames);
+			array_multisort($optionNames, SORT_NATURAL | SORT_FLAG_CASE, $options);
 		}
 
 		return $options;
