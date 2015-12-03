@@ -394,8 +394,9 @@ $fldGuideColor: #f4f3fb;
 .lp-editor { padding: 0 24px; overflow: auto; @include box-shadow(0 0 0 1px rgba(0,0,0,0.1));
 	@include box-sizing(border-box);
 }
-.lp-editor header { margin: 0 -24px 24px; padding: 14px 24px 13px; }
-.lp-editor header .btn { @include floatright; }
+.lp-editor header { margin: 0 -24px 24px; padding: 14px 24px 13px; background: rgba(0, 0, 0, 0.03); }
+.lp-editor header .btn { @include floatleft; }
+.lp-editor header .btn.submit { @include floatright; }
 .lp-editor header h1 { margin: 0; font-size: 25px; line-height: 30px; color: #333; }
 .lp-editor > .field:last-child { margin-bottom: 24px !important; }
 
