@@ -400,7 +400,7 @@ $fldGuideColor: #f4f3fb;
 .lp-editor header h1 { margin: 0; font-size: 25px; line-height: 30px; color: #333; }
 .lp-editor > .field:last-child { margin-bottom: 24px !important; }
 
-.lp-draghandle { position: absolute; top: 0; @include right(-4px); width: 4px; height: 100%; cursor: col-resize; background: $textcolor; }
+.lp-draghandle { position: absolute; top: 0; @include right(-4px); width: 4px; height: 100%; cursor: col-resize; }
 
 
 /* Sidebar */
