@@ -223,6 +223,7 @@ Craft.LivePreview = Garnish.Base.extend(
 
 	save: function()
 	{
+		Craft.cp.submitPrimaryForm();
 	},
 
 	handleWindowResize: function()
