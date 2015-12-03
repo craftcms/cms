@@ -72,7 +72,7 @@ abstract class BasePlugin extends BaseSavableComponentType implements IPlugin
 	 */
 	public function getSchemaVersion()
 	{
-		return null;
+		return '0.0.0';
 	}
 
 	/**
