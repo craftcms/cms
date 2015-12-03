@@ -238,6 +238,11 @@ class AssetsFieldType extends BaseElementFieldType
 			return array();
 		}
 
+		if (empty($value))
+		{
+			$value = array();
+		}
+
 		$fileIds = array();
 
 		if (!empty($dataFiles) || !empty($uploadedFiles))
