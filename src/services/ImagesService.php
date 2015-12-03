@@ -278,6 +278,15 @@ class ImagesService extends BaseApplicationComponent
 			return null;
 		}
 
+		// Quick and dirty, if possible
+		if ($this->isImagick() && method_exists('Imagick', 'setImageProperty'))
+		{
+			$image = new \Imagick($filePath);
+			$image->setImageOrientation(\Imagick::ORIENTATION_UNDEFINED);
+			$image->writeImages($filePath, true);
+			return true;
+		}
+
 		$data = new PelDataWindow(IOHelper::getFileContents($filePath));
 
 		// Is this a valid JPEG?
