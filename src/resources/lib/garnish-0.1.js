@@ -3846,7 +3846,7 @@ Garnish.Menu = Garnish.Base.extend({
 		var topClearance = this._anchorOffset.top - this._windowScrollTop,
 			bottomClearance = this._windowHeight + this._windowScrollTop - this._anchorOffsetBottom;
 
-		if (bottomClearance >= this._menuHeight || bottomClearance >= topClearance)
+		if (bottomClearance >= this._menuHeight || bottomClearance >= topClearance || topClearance < this._menuHeight)
 		{
 			this.$container.css('top', this._anchorOffsetBottom);
 		}

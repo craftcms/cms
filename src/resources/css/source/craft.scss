@@ -1511,7 +1511,7 @@ body .selectize-dropdown .active { @include menu-option-active-styles; }
 }
 
 /* timepicker */
-.ui-timepicker-wrapper { z-index: 1; }
+.ui-timepicker-wrapper { z-index: 100; }
 .ui-timepicker-list { @include margin-left(1px); overflow-y: auto; width: 8em; height: 210px; z-index: 100; }
 .ui-timepicker-list li { @include padding(2px, 0, 2px, 21px); white-space: nowrap; cursor: pointer; }
 .ui-timepicker-list li:hover { background: $lightselcolor; }
