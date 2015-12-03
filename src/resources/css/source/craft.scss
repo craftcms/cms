@@ -1084,7 +1084,7 @@ body #redactor-modal-overlay {
 	opacity: 1;
 }
 
-.modal-shade.dark { background: rgba(0,0,0,0.75); }
+.modal-shade.dark { background: rgba(0,0,0,0.75) !important; }
 
 .modal { position: fixed; width: 66%; height: 66%; min-width: 600px; min-height: 400px; overflow: hidden; }
 .modal.fitted { width: auto; height: auto; min-width: 0; min-height: 0; }
