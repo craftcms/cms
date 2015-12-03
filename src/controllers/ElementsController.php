@@ -46,7 +46,7 @@ class ElementsController extends BaseElementsController
 		}
 		else
 		{
-			$sources = $elementType->getSources($context);
+			$sources = craft()->elementIndexes->getSources($elementType->getClassHandle(), $context);
 		}
 
 		$source = ArrayHelper::getFirstValue($sources);
