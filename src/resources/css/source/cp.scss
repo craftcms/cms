@@ -105,11 +105,11 @@ body.mobile #container {
 }
 
 #main { @include flex-grow(1); }
-#main:not(.single-pane) { padding: 0 24px; }
-#main.single-pane { @include display-flex; }
-#main.single-pane > .pane { @include display-flex; @include flex-direction(column); @include flex-grow(1); border-radius: 0; }
-#main.single-pane > .pane > .content { @include display-flex; @include flex-direction(column); }
-#main.single-pane > .pane > .content > .sidebar + .body { width: calc(100% - 0); }
+#main:not(.single-pane) .padded { padding: 0 24px; }
+#main.single-pane .padded { @include display-flex; }
+#main.single-pane .padded > .pane { @include display-flex; @include flex-direction(column); @include flex-grow(1); border-radius: 0; }
+#main.single-pane .padded > .pane > .content { @include display-flex; @include flex-direction(column); }
+#main.single-pane .padded > .pane > .content > .sidebar + .body { width: calc(100% - 0); }
 
 @media only screen and (max-width: 992px)
 {
