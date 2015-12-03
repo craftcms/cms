@@ -100,20 +100,27 @@ class DateFieldType extends BaseFieldType implements IPreviewableFieldType
 
 		$input = '';
 
-		// In case nothing is selected, default to the date.
-		if (!$this->getSettings()->showDate && !$this->getSettings()->showTime)
+		$showTime = $this->getSettings()->showTime;
+		$showDate = (!$showTime || $this->getSettings()->showDate);
+
+		if ($showDate && $showTime)
 		{
-			$this->getSettings()->showDate = true;
+			$input .= '<div class="datetimewrapper">';
 		}
 
-		if ($this->getSettings()->showDate)
+		if ($showDate)
 		{
 			$input .= craft()->templates->render('_includes/forms/date', $variables);
 		}
 
-		if ($this->getSettings()->showTime)
+		if ($showTime)
 		{
 			$input .= ' '.craft()->templates->render('_includes/forms/time', $variables);
+		}
+
+		if ($showDate && $showTime)
+		{
+			$input .= '</div>';
 		}
 
 		return $input;
