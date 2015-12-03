@@ -848,7 +848,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 		return sourceKey.split(':')[1];
 	},
 
-	onStartSearching: function()
+	startSearching: function()
 	{
 		// Does this source have subfolders?
 		if (this.$source.siblings('ul').length)
@@ -887,7 +887,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 		this.base();
 	},
 
-	onStopSearching: function()
+	stopSearching: function()
 	{
 		if (this.showingIncludeSubfoldersCheckbox)
 		{
@@ -904,7 +904,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 		this.base();
 	},
 
-	getElementParams: function()
+	getViewParams: function()
 	{
 		var data = this.base();
 
