@@ -233,7 +233,6 @@ Craft.RichTextInput = Garnish.Base.extend(
 							this.redactor.code.sync();
 						}
 						this.redactor.observe.images();
-						this.redactor.dropdown.hideAll();
 					}
 				}, this),
 				closeOtherModals: false,
