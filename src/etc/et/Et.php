@@ -251,9 +251,12 @@ class Et
 							craft()->cache->set('licensedDomain', $etModel->licensedDomain);
 						}
 
-						foreach ($etModel->pluginLicenseKeyStatuses as $pluginHandle => $licenseKeyStatus)
+						if (is_array($etModel->pluginLicenseKeyStatuses))
 						{
-							craft()->plugins->setPluginLicenseKeyStatus($pluginHandle, $licenseKeyStatus);
+							foreach ($etModel->pluginLicenseKeyStatuses as $pluginHandle => $licenseKeyStatus)
+							{
+								craft()->plugins->setPluginLicenseKeyStatus($pluginHandle, $licenseKeyStatus);
+							}
 						}
 
 						return $etModel;
