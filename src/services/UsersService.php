@@ -584,7 +584,8 @@ class UsersService extends BaseApplicationComponent
 		IOHelper::ensureFolderExists($userPhotoFolder);
 		IOHelper::ensureFolderExists($targetFolder);
 
-		$targetPath = $targetFolder.AssetsHelper::cleanAssetName($fileName);
+		$fileName = AssetsHelper::cleanAssetName($fileName);
+		$targetPath = $targetFolder.$fileName;
 
 		$result = $image->saveAs($targetPath);
 
