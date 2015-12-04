@@ -26,7 +26,7 @@ Craft.Dashboard = Garnish.Base.extend(
         this.addListener(this.$widgetManagerBtn, 'click', 'showWidgetManager');
 
         Garnish.$doc.ready($.proxy(function() {
-            this.$grid = $('#main > .grid');
+            this.$grid = $('#main > .padded > .grid');
             this.grid = this.$grid.data('grid');
             $('#newwidgetmenubtn').data('menubtn').menu.on('optionselect', $.proxy(this, 'handleNewWidgetOptionSelect'));
         }, this));
