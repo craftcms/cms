@@ -174,7 +174,7 @@ interface IPlugin extends ISavableComponentType
 	/**
 	 * Performs any actions that should occur before the plugin is installed.
 	 *
-	 * @return void
+	 * @return void|false Return `false` to abort plugin installation
 	 */
 	public function onBeforeInstall();
 
