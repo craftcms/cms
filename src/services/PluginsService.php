@@ -679,11 +679,25 @@ class PluginsService extends BaseApplicationComponent
 
 		if ($storedPluginInfo)
 		{
-			$localSchemaVersion = $plugin->getSchemaVersion();
-			$storedSchemaVersion = isset($storedPluginInfo['schemaVersion']) ? $storedPluginInfo['schemaVersion'] : null;
+			$localVersion = $plugin->getSchemaVersion();
+
+			// If the schema version is empty, use the main plugin version
+			if (empty($localVersion))
+			{
+				$localVersion = $plugin->getVersion();
+				$storedVersion = $storedPluginInfo['version'];
+			}
+			else
+			{
+				// TODO: Remove this isset() stuff after the next breakpoint
+				$storedVersion = isset($storedPluginInfo['schemaVersion']) ? $storedPluginInfo['schemaVersion'] : null;
+			}
 
 			// One/both could be null so start with seeing if they're not equal
-			if ($localSchemaVersion != $storedSchemaVersion && !empty($localSchemaVersion) && version_compare($localSchemaVersion, $storedSchemaVersion, '>'))
+			if (
+				$localVersion != $storedVersion &&
+				(empty($storedVersion) || version_compare($localVersion, $storedVersion, '>'))
+			)
 			{
 				return true;
 			}
