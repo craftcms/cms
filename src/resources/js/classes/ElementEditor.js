@@ -155,6 +155,7 @@ Craft.ElementEditor = Garnish.Base.extend(
 			else
 			{
 				this.hud.updateBody($hudContents);
+				this.hud.updateSizeAndPosition();
 			}
 
 			// Focus on the first text input

@@ -6,8 +6,8 @@ namespace Craft;
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
- * @license   http://buildwithcraft.com/license Craft License Agreement
- * @see       http://buildwithcraft.com
+ * @license   http://craftcms.com/license Craft License Agreement
+ * @see       http://craftcms.com
  * @package   craft.app.widgets
  * @since     1.0
  */
@@ -107,14 +107,11 @@ class QuickPostWidget extends BaseWidget
 	 */
 	public function getTitle()
 	{
-		if (craft()->getEdition() >= Craft::Client)
-		{
-			$section = $this->_getSection();
+		$section = $this->_getSection();
 
-			if ($section)
-			{
-				return Craft::t('Post a new {section} entry', array('section' => Craft::t($section->name)));
-			}
+		if ($section)
+		{
+			return Craft::t('Post a new {section} entry', array('section' => Craft::t($section->name)));
 		}
 
 		return $this->getName();

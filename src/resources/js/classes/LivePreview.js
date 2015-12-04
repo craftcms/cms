@@ -159,8 +159,8 @@ Craft.LivePreview = Garnish.Base.extend(
 			this.$dragHandle = $('<div class="lp-draghandle"/>').appendTo(this.$editorContainer);
 
 			var $header = $('<header class="header"></header>').appendTo(this.$editor),
-				$closeBtn = $('<div class="btn">'+Craft.t('Done')+'</div>').appendTo($header),
-				$heading = $('<h1>'+Craft.t('Live Preview')+'</h1>').appendTo($header);
+				$closeBtn = $('<div class="btn">'+Craft.t('Close Live Preview')+'</div>').appendTo($header),
+				$saveBtn = $('<div class="btn submit">'+Craft.t('Save')+'</div>').appendTo($header);
 
 			this.dragger = new Garnish.BaseDrag(this.$dragHandle, {
 				axis:          Garnish.X_AXIS,
@@ -170,6 +170,7 @@ Craft.LivePreview = Garnish.Base.extend(
 			});
 
 			this.addListener($closeBtn, 'click', 'exit');
+			this.addListener($saveBtn, 'click', 'save');
 		}
 
 		// Set the sizes
@@ -218,6 +219,11 @@ Craft.LivePreview = Garnish.Base.extend(
 
 		this.inPreviewMode = true;
 		this.trigger('enter');
+	},
+
+	save: function()
+	{
+		Craft.cp.submitPrimaryForm();
 	},
 
 	handleWindowResize: function()
@@ -365,6 +371,10 @@ Craft.LivePreview = Garnish.Base.extend(
 				url: this.previewUrl,
 				method: 'POST',
 				data: $.extend({}, postData, this.basePostData),
+				xhrFields: {
+				   withCredentials: true
+				},
+				crossDomain: true,
 				success: this._handleSuccessProxy,
 				error: this._handleErrorProxy
 			});

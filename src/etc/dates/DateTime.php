@@ -6,8 +6,8 @@ namespace Craft;
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
- * @license   http://buildwithcraft.com/license Craft License Agreement
- * @see       http://buildwithcraft.com
+ * @license   http://craftcms.com/license Craft License Agreement
+ * @see       http://craftcms.com
  * @package   craft.app.etc.dates
  * @since     1.0
  */
@@ -146,12 +146,29 @@ class DateTime extends \DateTime
 
 			if (!empty($dt['time']))
 			{
+				$timePickerPhpFormat = $dateFormatter->getTimepickerPhpFormat();
+
 				// Replace the localized "AM" and "PM"
 				$localeData = craft()->i18n->getLocaleData();
-				$dt['time'] = str_replace(array($localeData->getAMName(), $localeData->getPMName()), array('AM', 'PM'), $dt['time']);
+
+				if (preg_match('/(.*)('.preg_quote($localeData->getAMName(), '/').'|'.preg_quote($localeData->getPMName(), '/').')(.*)/u', $dt['time'], $matches))
+				{
+					$dt['time'] = $matches[1].$matches[3];
+
+					if ($matches[2] == $localeData->getAMName())
+					{
+						$dt['time'] .= 'AM';
+					}
+					else
+					{
+						$dt['time'] .= 'PM';
+					}
+
+					$timePickerPhpFormat = str_replace('A', '', $timePickerPhpFormat).'A';
+				}
 
 				$date .= ' '.$dt['time'];
-				$format .= ' '.$dateFormatter->getTimepickerPhpFormat();
+				$format .= ' '.$timePickerPhpFormat;
 			}
 		}
 		else

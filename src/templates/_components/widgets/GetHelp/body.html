@@ -3,7 +3,7 @@
 <form method="post" accept-charset="UTF-8" enctype="multipart/form-data">
 	{% set fromEmail = getHelp is defined ? getHelp.fromEmail : currentUser.email %}
 
-	{% if fromEmail == "support@pixelandtonic.com" or fromEmail == "support@buildwithcraft.com" %}
+	{% if fromEmail == "support@pixelandtonic.com" or fromEmail == "support@craftcms.com" %}
 		{% set fromEmail = "" %}
 	{% endif %}
 
@@ -59,6 +59,6 @@
 		<div class="spinner hidden"></div>
 	</div>
 
-	{% set email %}<a href="mailto:support@buildwithcraft.com">support@buildwithcraft.com</a>{% endset %}
+	{% set email %}<a href="mailto:support@craftcms.com">support@craftcms.com</a>{% endset %}
 	<p class="error hidden">{{ "Couldn’t send your message. Please email it to {email} instead."|t({ email: email })|raw }}</p>
 </form>

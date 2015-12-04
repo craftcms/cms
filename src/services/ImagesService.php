@@ -10,8 +10,8 @@ use lsolesen\pel\PelDataWindow;
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
- * @license   http://buildwithcraft.com/license Craft License Agreement
- * @see       http://buildwithcraft.com
+ * @license   http://craftcms.com/license Craft License Agreement
+ * @see       http://craftcms.com
  * @package   craft.app.services
  * @since     1.0
  */
@@ -113,7 +113,7 @@ class ImagesService extends BaseApplicationComponent
 	 *
 	 * The code was adapted from http://www.php.net/manual/en/function.imagecreatefromjpeg.php#64155. It will first
 	 * attempt to do it with available memory. If that fails, Craft will bump the memory to amount defined by the
-	 * [phpMaxMemoryLimit](http://buildwithcraft.com/docs/config-settings#phpMaxMemoryLimit) config setting, then try again.
+	 * [phpMaxMemoryLimit](http://craftcms.com/docs/config-settings#phpMaxMemoryLimit) config setting, then try again.
 	 *
 	 * @param string $filePath The path to the image file.
 	 * @param bool   $toTheMax If set to true, will set the PHP memory to the config setting phpMaxMemoryLimit.
@@ -276,6 +276,15 @@ class ImagesService extends BaseApplicationComponent
 		if (!ImageHelper::canHaveExifData($filePath))
 		{
 			return null;
+		}
+
+		// Quick and dirty, if possible
+		if ($this->isImagick() && method_exists('Imagick', 'setImageProperty'))
+		{
+			$image = new \Imagick($filePath);
+			$image->setImageOrientation(\Imagick::ORIENTATION_UNDEFINED);
+			$image->writeImages($filePath, true);
+			return true;
 		}
 
 		$data = new PelDataWindow(IOHelper::getFileContents($filePath));

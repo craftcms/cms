@@ -1,9 +1,13 @@
 @charset "UTF-8";
 @import "shared";
 
-#plugins .icon {  display: inline-block; vertical-align: middle; margin-right: 12px; }
-#plugins .icon a {  display: block; line-height: 0; }
-#plugins .icon img {  width: 36px; }
-#plugins .infos { display: inline-block; vertical-align: middle; }
-#plugins .infos .name .light {  margin-left: 6px; }
-#plugins .infos .description { font-weight: normal; }
+
+#plugins .plugin-infos { display: table; }
+#plugins .plugin-infos .icon,
+#plugins .plugin-infos .details { display: table-cell; }
+#plugins .plugin-infos .icon { vertical-align: top; padding-right: 12px; }
+#plugins .plugin-infos .icon a {  display: block; line-height: 0; }
+#plugins .plugin-infos .icon img {  width: 36px; }
+#plugins .plugin-infos .details { vertical-align: middle; }
+#plugins .plugin-infos .details .name .light {  margin-left: 6px; }
+#plugins .plugin-infos .details .description { font-weight: normal; }

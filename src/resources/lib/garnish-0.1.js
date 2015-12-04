@@ -1057,6 +1057,26 @@ $.extend(jQuery.event.special, {
 		},
 		teardown: function() {
 			$(this).off('.garnish-textchange');
+		},
+		handle: function(ev, data) {
+			var el = this;
+			var args = arguments;
+			var delay = data && typeof data.delay != typeof undefined ? data.delay : (ev.data && typeof ev.data.delay != typeof undefined ? ev.data.delay : null);
+			var handleObj = ev.handleObj;
+			var targetData = $.data(ev.target);
+
+			// Was this event configured with a delay?
+			if (delay) {
+				if (targetData.delayTimeout) {
+					clearTimeout(targetData.delayTimeout);
+				}
+
+				targetData.delayTimeout = setTimeout(function() {
+					handleObj.handler.apply(el, args);
+				}, delay);
+			} else {
+				return handleObj.handler.apply(el, args);
+			}
 		}
 	},
 
@@ -3132,8 +3152,6 @@ Garnish.HUD = Garnish.Base.extend({
 			this.$footer = $footer.insertAfter(this.$mainContainer);
 			this.$hud.addClass('has-footer');
 		}
-
-		this.updateSizeAndPosition();
 	},
 
 	/**
@@ -3523,7 +3541,7 @@ Garnish.HUD = Garnish.Base.extend({
 		windowSpacing: 10,
 		tipWidth: 30,
 		minBodyWidth: 200,
-		minBodyHeight: 200,
+		minBodyHeight: 0,
 		onShow: $.noop,
 		onHide: $.noop,
 		onSubmit: $.noop,
@@ -3826,7 +3844,7 @@ Garnish.Menu = Garnish.Base.extend({
 		var topClearance = this._anchorOffset.top - this._windowScrollTop,
 			bottomClearance = this._windowHeight + this._windowScrollTop - this._anchorOffsetBottom;
 
-		if (bottomClearance >= this._menuHeight || bottomClearance >= topClearance)
+		if (bottomClearance >= this._menuHeight || bottomClearance >= topClearance || topClearance < this._menuHeight)
 		{
 			this.$container.css('top', this._anchorOffsetBottom);
 		}

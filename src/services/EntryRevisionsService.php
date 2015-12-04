@@ -1,15 +1,13 @@
 <?php
 namespace Craft;
 
-craft()->requireEdition(Craft::Client);
-
 /**
  * Class EntryRevisionsService
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
- * @license   http://buildwithcraft.com/license Craft License Agreement
- * @see       http://buildwithcraft.com
+ * @license   http://craftcms.com/license Craft License Agreement
+ * @see       http://craftcms.com
  * @package   craft.app.services
  * @since     1.0
  */
@@ -565,6 +563,7 @@ class EntryRevisionsService extends BaseApplicationComponent
 			'postDate'   => ($revision->postDate   ? $revision->postDate->getTimestamp()   : null),
 			'expiryDate' => ($revision->expiryDate ? $revision->expiryDate->getTimestamp() : null),
 			'enabled'    => $revision->enabled,
+			'parentId'   => $revision->parentId,
 			'fields'     => array(),
 		);
 

@@ -109,7 +109,7 @@ Craft.BaseElementIndexView = Garnish.Base.extend(
 		{
 			if (this.settings.context == 'index')
 			{
-				this.$scroller = Craft.cp.$container;
+				this.$scroller = Garnish.$win;
 			}
 			else
 			{
@@ -269,11 +269,23 @@ Craft.BaseElementIndexView = Garnish.Base.extend(
 		}
 
 		// Check if the user has reached the bottom of the scroll area
-		var containerScrollHeight = this.$scroller.prop('scrollHeight'),
-			containerScrollTop = this.$scroller.scrollTop(),
-			containerHeight = this.$scroller.outerHeight();
+		if (this.$scroller[0] == Garnish.$win[0])
+		{
+			var winHeight = Garnish.$win.innerHeight(),
+				winScrollTop = Garnish.$win.scrollTop(),
+				containerOffset = this.$container.offset().top,
+				containerHeight = this.$container.height();
 
-		return (containerScrollHeight - containerScrollTop <= containerHeight + 15);
+			return (winHeight + winScrollTop >= containerOffset + containerHeight);
+		}
+		else
+		{
+			var containerScrollHeight = this.$scroller.prop('scrollHeight'),
+				containerScrollTop = this.$scroller.scrollTop(),
+				containerHeight = this.$scroller.outerHeight();
+
+			return (containerScrollHeight - containerScrollTop <= containerHeight + 15);
+		}
 	},
 
 	/**

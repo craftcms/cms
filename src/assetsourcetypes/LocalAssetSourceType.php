@@ -7,8 +7,8 @@ namespace Craft;
  *
  * @author     Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright  Copyright (c) 2014, Pixel & Tonic, Inc.
- * @license    http://buildwithcraft.com/license Craft License Agreement
- * @see        http://buildwithcraft.com
+ * @license    http://craftcms.com/license Craft License Agreement
+ * @see        http://craftcms.com
  * @package    craft.app.assetsourcetypes
  * @since      1.0
  * @deprecated This class will be removed in Craft 3.0.
@@ -357,42 +357,23 @@ class LocalAssetSourceType extends BaseAssetSourceType
 	}
 
 	/**
-	 * @inheritDoc BaseAssetSourceType::getNameReplacement()
+	 * @inheritDoc BaseAssetSourceType::getNameReplacementInFolder()
 	 *
 	 * @param AssetFolderModel $folder
 	 * @param string           $fileName
 	 *
 	 * @return string
 	 */
-	protected function getNameReplacement(AssetFolderModel $folder, $fileName)
+	protected function getNameReplacementInFolder(AssetFolderModel $folder, $fileName)
 	{
 		$fileList = IOHelper::getFolderContents($this->getSourceFileSystemPath().$folder->path, false);
-		$existingFiles = array();
 
-		foreach ($fileList as $file)
+		foreach ($fileList as &$file)
 		{
-			$existingFiles[mb_strtolower(IOHelper::getFileName($file))] = true;
+			$file = IOHelper::getFileName($file);
 		}
 
-		// Double-check
-		if (!isset($existingFiles[mb_strtolower($fileName)]))
-		{
-			return $fileName;
-		}
-
-		$fileParts = explode(".", $fileName);
-		$extension = array_pop($fileParts);
-		$fileName = join(".", $fileParts);
-
-		for ($i = 1; $i <= 50; $i++)
-		{
-			if (!isset($existingFiles[mb_strtolower($fileName.'_'.$i.'.'.$extension)]))
-			{
-				return $fileName.'_'.$i.'.'.$extension;
-			}
-		}
-
-		return false;
+		return AssetsHelper::getFilenameReplacement($fileList, $fileName);
 	}
 
 	/**

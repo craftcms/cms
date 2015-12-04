@@ -6,8 +6,8 @@ namespace Craft;
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
- * @license   http://buildwithcraft.com/license Craft License Agreement
- * @see       http://buildwithcraft.com
+ * @license   http://craftcms.com/license Craft License Agreement
+ * @see       http://craftcms.com
  * @package   craft.app.fieldtypes
  * @since     1.0
  */
@@ -177,7 +177,7 @@ abstract class BaseElementFieldType extends BaseFieldType implements IPreviewabl
 
 			if ($this->sortable)
 			{
-				$criteria->order = 'sortOrder';
+				$criteria->order = 'sources1.sortOrder';
 			}
 
 			if (!$this->allowMultipleSources && $this->getSettings()->source)
@@ -501,9 +501,8 @@ abstract class BaseElementFieldType extends BaseFieldType implements IPreviewabl
 	/**
 	 * Normalizes the available sources into select input options.
 	 *
-	 * @param array $sources The available sources.
-	 *
 	 * @return array
+	 *
 	 */
 	protected function getSourceOptions()
 	{
@@ -520,8 +519,17 @@ abstract class BaseElementFieldType extends BaseFieldType implements IPreviewabl
 			}
 		}
 
-		// Sort alphabetically
-		array_multisort($options, $optionNames, SORT_NATURAL);
+		// TODO: Remove this check for Craft 3.
+		if (PHP_VERSION_ID < 50400)
+		{
+			// Sort alphabetically
+			array_multisort($optionNames, $options);
+		}
+		else
+		{
+			// Sort alphabetically
+			array_multisort($optionNames, SORT_NATURAL | SORT_FLAG_CASE, $options);
+		}
 
 		return $options;
 	}

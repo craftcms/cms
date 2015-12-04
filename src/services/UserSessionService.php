@@ -9,8 +9,8 @@ namespace Craft;
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
- * @license   http://buildwithcraft.com/license Craft License Agreement
- * @see       http://buildwithcraft.com
+ * @license   http://craftcms.com/license Craft License Agreement
+ * @see       http://craftcms.com
  * @package   craft.app.services
  * @since     1.0
  */
@@ -509,9 +509,9 @@ class UserSessionService extends \CWebUser
 	 * Logs a user in.
 	 *
 	 * If $rememberMe is set to `true`, the user will be logged in for the duration specified by the
-	 * [rememberedUserSessionDuration](http://buildwithcraft.com/docs/config-settings#rememberedUserSessionDuration)
+	 * [rememberedUserSessionDuration](http://craftcms.com/docs/config-settings#rememberedUserSessionDuration)
 	 * config setting. Otherwise it will last for the duration specified by the
-	 * [userSessionDuration](http://buildwithcraft.com/docs/config-settings#userSessionDuration)
+	 * [userSessionDuration](http://craftcms.com/docs/config-settings#userSessionDuration)
 	 * config setting.
 	 *
 	 * @param string $username   The user’s username.
@@ -1208,7 +1208,7 @@ class UserSessionService extends \CWebUser
 	 * Updates the authentication status according to {@link authTimeout}.
 	 *
 	 * Based on the parts of {@link \CWebUser::updateAuthStatus()} that are relevant to Craft, but this version also
-	 * enforces the [requireUserAgentAndIpForSession](http://buildwithcraft.com/docs/config-settings#requireUserAgentAndIpForSession)
+	 * enforces the [requireUserAgentAndIpForSession](http://craftcms.com/docs/config-settings#requireUserAgentAndIpForSession)
 	 * config setting, and it won't update the timeout state if the 'dontExtendSession' param is set.
 	 *
 	 * @return null
@@ -1254,8 +1254,8 @@ class UserSessionService extends \CWebUser
 	 * Renews the user’s identity cookie.
 	 *
 	 * This function extends the identity cookie's expiration time based on either the
-	 * [userSessionDuration](http://buildwithcraft.com/docs/config-settings#userSessionDuration) or
-	 * [rememberedUserSessionDuration](http://buildwithcraft.com/docs/config-settings#rememberedUserSessionDuration)
+	 * [userSessionDuration](http://craftcms.com/docs/config-settings#userSessionDuration) or
+	 * [rememberedUserSessionDuration](http://craftcms.com/docs/config-settings#rememberedUserSessionDuration)
 	 * config setting, depending on whether Remember Me was checked when they logged in.
 	 *
 	 * @return null

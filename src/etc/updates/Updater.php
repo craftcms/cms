@@ -6,8 +6,8 @@ namespace Craft;
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
- * @license   http://buildwithcraft.com/license Craft License Agreement
- * @see       http://buildwithcraft.com
+ * @license   http://craftcms.com/license Craft License Agreement
+ * @see       http://craftcms.com
  * @package   craft.app.etc.updates
  * @since     1.0
  */
@@ -299,6 +299,12 @@ class Updater
 
 					$filesToDelete[] = $path.$tempFilePath;
 				}
+
+				// In case we did the whole app folder
+				if ($rowData[0][0] == '*')
+				{
+					$filesToDelete[] = rtrim(IOHelper::normalizePathSeparators($path), '/').'.bak/';
+				}
 			}
 
 			foreach ($filesToDelete as $fileToDelete)
@@ -309,6 +315,12 @@ class Updater
 					{
 						Craft::log('Deleting file: '.$fileToDelete, LogLevel::Info, true);
 						IOHelper::deleteFile($fileToDelete, true);
+
+						// If that was the last file in this folder, nuke the folder.
+						if (IOHelper::isFolderEmpty(IOHelper::getFolderName($fileToDelete)))
+						{
+							IOHelper::deleteFolder(IOHelper::getFolderName($fileToDelete));
+						}
 					}
 				}
 				else
@@ -504,7 +516,7 @@ class Updater
 		// Make sure we can write to craft/app/requirements
 		if (!IOHelper::isWritable(craft()->path->getAppPath().'etc/requirements/'))
 		{
-			throw new Exception(StringHelper::parseMarkdown(Craft::t('@@@appName@@@ needs to be able to write to your craft/app/etc/requirements folder and cannot. Please check your [permissions]({url}).', array('url' => 'http://buildwithcraft.com/docs/updating#one-click-updating'))));
+			throw new Exception(StringHelper::parseMarkdown(Craft::t('@@@appName@@@ needs to be able to write to your craft/app/etc/requirements folder and cannot. Please check your [permissions]({url}).', array('url' => 'http://craftcms.com/docs/updating#one-click-updating'))));
 		}
 
 		$tempFileName = StringHelper::UUID().'.php';

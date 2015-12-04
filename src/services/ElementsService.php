@@ -8,8 +8,8 @@ namespace Craft;
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
- * @license   http://buildwithcraft.com/license Craft License Agreement
- * @see       http://buildwithcraft.com
+ * @license   http://craftcms.com/license Craft License Agreement
+ * @see       http://craftcms.com
  * @package   craft.app.services
  * @since     1.0
  */
@@ -203,16 +203,10 @@ class ElementsService extends BaseApplicationComponent
 	public function findElements($criteria = null, $justIds = false)
 	{
 		$elements = array();
-		$query = $this->buildElementsQuery($criteria, $contentTable, $fieldColumns);
+		$query = $this->buildElementsQuery($criteria, $contentTable, $fieldColumns, $justIds);
 
 		if ($query)
 		{
-			// If we're only interested in the IDs, drop everything else from the SELECT clause
-			if ($justIds)
-			{
-				$query->select('elements.id');
-			}
-
 			$results = $query->queryAll();
 
 			if ($results)
@@ -379,11 +373,13 @@ class ElementsService extends BaseApplicationComponent
 	 *                                            will actually get defined by buildElementsQuery(), and is passed by
 	 *                                            reference so whatever’s calling the method will have access to its
 	 *                                            value.)
+	 * @param bool                 $justIds       Whether the method should only return an array of the IDs of the
+	 *                                            matched elements. Defaults to `false`.
 	 *
 	 * @return DbCommand|false The DbCommand object, or `false` if the method was able to determine ahead of time that
 	 *                         there’s no chance any elements are going to be found with the given parameters.
 	 */
-	public function buildElementsQuery(&$criteria = null, &$contentTable = null, &$fieldColumns = null)
+	public function buildElementsQuery(&$criteria = null, &$contentTable = null, &$fieldColumns = null, $justIds = false)
 	{
 		if (!($criteria instanceof ElementCriteriaModel))
 		{
@@ -412,6 +408,7 @@ class ElementsService extends BaseApplicationComponent
 		// Fire an 'onBeforeBuildElementsQuery' event
 		$event = new Event($this, array(
 			'criteria' => $criteria,
+			'justIds' => $justIds,
 			'query' => $query
 		));
 
@@ -423,8 +420,16 @@ class ElementsService extends BaseApplicationComponent
 			return false;
 		}
 
+		if ($justIds)
+		{
+			$query->select('elements.id');
+		}
+		else
+		{
+			$query->select('elements.id, elements.type, elements.enabled, elements.archived, elements.dateCreated, elements.dateUpdated, elements_i18n.slug, elements_i18n.uri, elements_i18n.enabled AS localeEnabled');
+		}
+
 		$query
-			->select('elements.id, elements.type, elements.enabled, elements.archived, elements.dateCreated, elements.dateUpdated, elements_i18n.slug, elements_i18n.uri, elements_i18n.enabled AS localeEnabled')
 			->from('elements elements')
 			->join('elements_i18n elements_i18n', 'elements_i18n.elementId = elements.id')
 			->where('elements_i18n.locale = :locale', array(':locale' => $criteria->locale))
@@ -451,7 +456,11 @@ class ElementsService extends BaseApplicationComponent
 					$contentCols .= ', content.'.$column['column'];
 				}
 
-				$query->addSelect($contentCols);
+				if (!$justIds)
+				{
+					$query->addSelect($contentCols);
+				}
+
 				$query->join($contentTable.' content', 'content.elementId = elements.id');
 				$query->andWhere('content.locale = :locale');
 			}
@@ -602,7 +611,7 @@ class ElementsService extends BaseApplicationComponent
 
 			// If there's only one relation criteria and it's specifically for grabbing target elements, allow the query
 			// to order by the relation sort order
-			if ($relationParamParser->isRelationFieldQuery())
+			if (!$justIds && $relationParamParser->isRelationFieldQuery())
 			{
 				$query->addSelect('sources1.sortOrder');
 			}
@@ -669,7 +678,10 @@ class ElementsService extends BaseApplicationComponent
 
 		if ($query->isJoined('structureelements'))
 		{
-			$query->addSelect('structureelements.root, structureelements.lft, structureelements.rgt, structureelements.level');
+			if (!$justIds)
+			{
+				$query->addSelect('structureelements.root, structureelements.lft, structureelements.rgt, structureelements.level');
+			}
 
 			if ($criteria->ancestorOf)
 			{
@@ -961,16 +973,25 @@ class ElementsService extends BaseApplicationComponent
 		else if ($criteria->order && $criteria->order != 'score')
 		{
 			$order = $criteria->order;
+			$orderColumnMap = array();
 
 			if (is_array($fieldColumns))
 			{
 				// Add the field column prefixes
 				foreach ($fieldColumns as $column)
 				{
-					// Avoid matching fields named "asc" or "desc" in the string "column_name asc" or
-					// "column_name desc"
-					$order = preg_replace('/(?<!\w\s)\b'.$column['handle'].'\b/', $column['column'].'$1', $order);
+					$orderColumnMap[$column['handle']] = $column['column'];
 				}
+			}
+
+			// Prevent “1052 Column 'id' in order clause is ambiguous” MySQL error
+			$orderColumnMap['id'] = 'elements.id';
+
+			foreach ($orderColumnMap as $orderValue => $columnName)
+			{
+				// Avoid matching fields named "asc" or "desc" in the string "column_name asc" or
+				// "column_name desc"
+				$order = preg_replace('/(?<!\w\s|\.)\b'.$orderValue.'\b/', $columnName.'$1', $order);
 			}
 
 			$query->order($order);
@@ -992,6 +1013,7 @@ class ElementsService extends BaseApplicationComponent
 		// Fire an 'onBuildElementsQuery' event
 		$this->onBuildElementsQuery(new Event($this, array(
 			'criteria' => $criteria,
+			'justIds' => $justIds,
 			'query' => $query
 		)));
 
@@ -1848,7 +1870,7 @@ class ElementsService extends BaseApplicationComponent
 	// -------------------------------------------------------------------------
 
 	/**
-	 * Parses a string for element [reference tags](http://buildwithcraft.com/docs/reference-tags).
+	 * Parses a string for element [reference tags](http://craftcms.com/docs/reference-tags).
 	 *
 	 * @param string $str The string to parse.
 	 *

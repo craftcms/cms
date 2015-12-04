@@ -4,9 +4,419 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "53ee1b7c0a4eeae2582770029ba78e57",
-    "content-hash": "69ee5be993062f0eff7c06efe331144e",
+    "hash": "c7fc09925214c8a73c6aec3518a0d079",
+    "content-hash": "beb8497d286f117e1525b5d62e68369a",
     "packages": [
+        {
+            "name": "guzzle/guzzle",
+            "version": "3.9.4",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/pixelandtonic/guzzle3",
+                "reference": "7e751c158f08818806bc24946f2db0a69e7d1305"
+            },
+            "require": {
+                "ext-curl": "*",
+                "php": ">=5.3.3",
+                "symfony/event-dispatcher": "~2.1"
+            },
+            "replace": {
+                "guzzle/batch": "self.version",
+                "guzzle/cache": "self.version",
+                "guzzle/common": "self.version",
+                "guzzle/http": "self.version",
+                "guzzle/inflection": "self.version",
+                "guzzle/iterator": "self.version",
+                "guzzle/log": "self.version",
+                "guzzle/parser": "self.version",
+                "guzzle/plugin": "self.version",
+                "guzzle/plugin-async": "self.version",
+                "guzzle/plugin-backoff": "self.version",
+                "guzzle/plugin-cache": "self.version",
+                "guzzle/plugin-cookie": "self.version",
+                "guzzle/plugin-curlauth": "self.version",
+                "guzzle/plugin-error-response": "self.version",
+                "guzzle/plugin-history": "self.version",
+                "guzzle/plugin-log": "self.version",
+                "guzzle/plugin-md5": "self.version",
+                "guzzle/plugin-mock": "self.version",
+                "guzzle/plugin-oauth": "self.version",
+                "guzzle/service": "self.version",
+                "guzzle/stream": "self.version"
+            },
+            "require-dev": {
+                "doctrine/cache": "~1.3",
+                "monolog/monolog": "~1.0",
+                "phpunit/phpunit": "3.7.*",
+                "psr/log": "~1.0",
+                "symfony/class-loader": "~2.1",
+                "zendframework/zend-cache": "2.*,<2.3",
+                "zendframework/zend-log": "2.*,<2.3"
+            },
+            "suggest": {
+                "guzzlehttp/guzzle": "Guzzle 5 has moved to a new package name. The package you have installed, Guzzle 3, is deprecated."
+            },
+            "type": "library",
+            "extra": {
+                "branch-alias": {
+                    "dev-master": "3.9-dev"
+                }
+            },
+            "autoload": {
+                "psr-0": {
+                    "Guzzle": "src/",
+                    "Guzzle\\Tests": "tests/"
+                }
+            },
+            "scripts": {
+                "test": [
+                    "phpunit"
+                ]
+            },
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Michael Dowling",
+                    "email": "mtdowling@gmail.com",
+                    "homepage": "https://github.com/mtdowling"
+                },
+                {
+                    "name": "Guzzle Community",
+                    "homepage": "https://github.com/guzzle/guzzle/contributors"
+                }
+            ],
+            "description": "PHP HTTP client. This library is deprecated in favor of https://packagist.org/packages/guzzlehttp/guzzle",
+            "homepage": "http://guzzlephp.org/",
+            "keywords": [
+                "HTTP client",
+                "client",
+                "curl",
+                "framework",
+                "http",
+                "rest",
+                "web service"
+            ],
+            "time": "2015-11-22 02:29:59"
+        },
+        {
+            "name": "imagine/imagine",
+            "version": "0.6.7",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/pixelandtonic/Imagine",
+                "reference": "8bdbfe6310430cb770a2df77ee951f2fb4738db1"
+            },
+            "archive": {
+                "exclude": [
+                    "/.*",
+                    "/tests",
+                    "/vendor",
+                    "/bin",
+                    "docs/_build",
+                    "Imagine-*.tgz",
+                    "imagine-*.phar",
+                    "composer.phar"
+                ]
+            },
+            "require": {
+                "php": ">=5.3.2"
+            },
+            "require-dev": {
+                "sami/sami": "dev-master"
+            },
+            "suggest": {
+                "ext-gd": "to use the GD implementation",
+                "ext-gmagick": "to use the Gmagick implementation",
+                "ext-imagick": "to use the Imagick implementation"
+            },
+            "type": "library",
+            "extra": {
+                "branch-alias": {
+                    "dev-develop": "0.7-dev"
+                }
+            },
+            "autoload": {
+                "psr-0": {
+                    "Imagine": "lib/"
+                }
+            },
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Bulat Shakirzyanov",
+                    "email": "mallluhuct@gmail.com",
+                    "homepage": "http://avalanche123.com"
+                }
+            ],
+            "description": "Image processing for PHP 5.3",
+            "homepage": "http://imagine.readthedocs.org/",
+            "keywords": [
+                "drawing",
+                "graphics",
+                "image manipulation",
+                "image processing"
+            ],
+            "time": "2015-11-27 08:55:24"
+        },
+        {
+            "name": "lsolesen/pel",
+            "version": "0.9.4",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/pixelandtonic/pel",
+                "reference": "ba4a204f3f10425ab1e2ba9b48923e8fe49eb418"
+            },
+            "require": {
+                "php": ">=5.0.0"
+            },
+            "require-dev": {
+                "lastcraft/simpletest": ">=1.1"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "lsolesen\\pel\\": "src/"
+                }
+            },
+            "authors": [
+                {
+                    "name": "Lars Olesen",
+                    "email": "lars@intraface.dk",
+                    "homepage": "http://intraface.dk",
+                    "role": "Developer"
+                }
+            ],
+            "description": "PHP Exif Library. A library for reading and writing Exif headers in JPEG and TIFF images using PHP.",
+            "homepage": "http://lsolesen.github.com/pel/",
+            "keywords": [
+                "template"
+            ],
+            "time": "2015-11-22 03:22:48"
+        },
+        {
+            "name": "phpmailer/phpmailer",
+            "version": "5.2.15",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/pixelandtonic/PHPMailer",
+                "reference": "6806100d6fb909784d987df0667390b3b8c57414"
+            },
+            "require": {
+                "php": ">=5.0.0"
+            },
+            "require-dev": {
+                "phpdocumentor/phpdocumentor": "*",
+                "phpunit/phpunit": "4.7.*"
+            },
+            "suggest": {
+                "league/oauth2-client": "Needed for XOAUTH2 authentication",
+                "league/oauth2-google": "Needed for Gmail XOAUTH2"
+            },
+            "type": "library",
+            "autoload": {
+                "classmap": [
+                    "class.phpmailer.php",
+                    "class.phpmaileroauth.php",
+                    "class.phpmaileroauthgoogle.php",
+                    "class.smtp.php",
+                    "class.pop3.php",
+                    "extras/EasyPeasyICS.php",
+                    "extras/ntlm_sasl_client.php"
+                ]
+            },
+            "license": [
+                "LGPL-2.1"
+            ],
+            "authors": [
+                {
+                    "name": "Marcus Bointon",
+                    "email": "phpmailer@synchromedia.co.uk"
+                },
+                {
+                    "name": "Jim Jagielski",
+                    "email": "jimjag@gmail.com"
+                },
+                {
+                    "name": "Andy Prevost",
+                    "email": "codeworxtech@users.sourceforge.net"
+                },
+                {
+                    "name": "Brent R. Matzelle"
+                }
+            ],
+            "description": "PHPMailer is a full-featured email creation and transfer class for PHP",
+            "time": "2015-11-22 02:58:38"
+        },
+        {
+            "name": "simplepie/simplepie",
+            "version": "1.3.2",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/pixelandtonic/simplepie",
+                "reference": "e77b9e86081a5a7dcf5bba1e8c52069aca01ffec"
+            },
+            "require": {
+                "php": ">=5.2.0"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-0": {
+                    "SimplePie": "library"
+                }
+            },
+            "license": [
+                "BSD-3-Clause"
+            ],
+            "authors": [
+                {
+                    "name": "Ryan Parman",
+                    "homepage": "http://ryanparman.com/",
+                    "role": "Creator, alumnus developer"
+                },
+                {
+                    "name": "Geoffrey Sneddon",
+                    "homepage": "http://gsnedders.com/",
+                    "role": "Alumnus developer"
+                },
+                {
+                    "name": "Ryan McCue",
+                    "email": "me@ryanmccue.info",
+                    "homepage": "http://ryanmccue.info/",
+                    "role": "Developer"
+                }
+            ],
+            "description": "A simple Atom/RSS parsing library for PHP",
+            "homepage": "http://simplepie.org/",
+            "keywords": [
+                "atom",
+                "feeds",
+                "rss"
+            ],
+            "time": "2015-11-22 02:51:00"
+        },
+        {
+            "name": "symfony/event-dispatcher",
+            "version": "v2.7.7",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/symfony/event-dispatcher.git",
+                "reference": "7e2f9c31645680026c2372edf66f863fc7757af5"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/symfony/event-dispatcher/zipball/7e2f9c31645680026c2372edf66f863fc7757af5",
+                "reference": "7e2f9c31645680026c2372edf66f863fc7757af5",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=5.3.9"
+            },
+            "require-dev": {
+                "psr/log": "~1.0",
+                "symfony/config": "~2.0,>=2.0.5",
+                "symfony/dependency-injection": "~2.6",
+                "symfony/expression-language": "~2.6",
+                "symfony/stopwatch": "~2.3"
+            },
+            "suggest": {
+                "symfony/dependency-injection": "",
+                "symfony/http-kernel": ""
+            },
+            "type": "library",
+            "extra": {
+                "branch-alias": {
+                    "dev-master": "2.7-dev"
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Symfony\\Component\\EventDispatcher\\": ""
+                },
+                "exclude-from-classmap": [
+                    "/Tests/"
+                ]
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Fabien Potencier",
+                    "email": "fabien@symfony.com"
+                },
+                {
+                    "name": "Symfony Community",
+                    "homepage": "https://symfony.com/contributors"
+                }
+            ],
+            "description": "Symfony EventDispatcher Component",
+            "homepage": "https://symfony.com",
+            "time": "2015-10-30 20:10:21"
+        },
+        {
+            "name": "twig/twig",
+            "version": "1.23.2",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/pixelandtonic/Twig",
+                "reference": "d584e6df2daa0745d53a130b8f3d7627438117d7"
+            },
+            "require": {
+                "php": ">=5.2.7"
+            },
+            "require-dev": {
+                "symfony/debug": "~2.7",
+                "symfony/phpunit-bridge": "~2.7"
+            },
+            "type": "library",
+            "extra": {
+                "branch-alias": {
+                    "dev-master": "1.23-dev"
+                }
+            },
+            "autoload": {
+                "psr-0": {
+                    "Twig_": "lib/"
+                }
+            },
+            "license": [
+                "BSD-3-Clause"
+            ],
+            "authors": [
+                {
+                    "name": "Fabien Potencier",
+                    "email": "fabien@symfony.com",
+                    "homepage": "http://fabien.potencier.org",
+                    "role": "Lead Developer"
+                },
+                {
+                    "name": "Twig Team",
+                    "homepage": "http://twig.sensiolabs.org/contributors",
+                    "role": "Contributors"
+                },
+                {
+                    "name": "Armin Ronacher",
+                    "email": "armin.ronacher@active-4.com",
+                    "role": "Project Founder"
+                }
+            ],
+            "description": "Twig, the flexible, fast, and secure template language for PHP",
+            "homepage": "http://twig.sensiolabs.org",
+            "keywords": [
+                "templating"
+            ],
+            "support": {
+                "forum": "https://groups.google.com/forum/#!forum/twig-users"
+            },
+            "time": "2015-11-22 02:19:18"
+        }
+    ],
+    "packages-dev": [
         {
             "name": "doctrine/instantiator",
             "version": "1.0.5",
@@ -62,101 +472,6 @@
             "time": "2015-06-14 21:17:01"
         },
         {
-            "name": "guzzle/guzzle",
-            "version": "v3.9.3",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/guzzle/guzzle3.git",
-                "reference": "0645b70d953bc1c067bbc8d5bc53194706b628d9"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/guzzle/guzzle3/zipball/0645b70d953bc1c067bbc8d5bc53194706b628d9",
-                "reference": "0645b70d953bc1c067bbc8d5bc53194706b628d9",
-                "shasum": ""
-            },
-            "require": {
-                "ext-curl": "*",
-                "php": ">=5.3.3",
-                "symfony/event-dispatcher": "~2.1"
-            },
-            "replace": {
-                "guzzle/batch": "self.version",
-                "guzzle/cache": "self.version",
-                "guzzle/common": "self.version",
-                "guzzle/http": "self.version",
-                "guzzle/inflection": "self.version",
-                "guzzle/iterator": "self.version",
-                "guzzle/log": "self.version",
-                "guzzle/parser": "self.version",
-                "guzzle/plugin": "self.version",
-                "guzzle/plugin-async": "self.version",
-                "guzzle/plugin-backoff": "self.version",
-                "guzzle/plugin-cache": "self.version",
-                "guzzle/plugin-cookie": "self.version",
-                "guzzle/plugin-curlauth": "self.version",
-                "guzzle/plugin-error-response": "self.version",
-                "guzzle/plugin-history": "self.version",
-                "guzzle/plugin-log": "self.version",
-                "guzzle/plugin-md5": "self.version",
-                "guzzle/plugin-mock": "self.version",
-                "guzzle/plugin-oauth": "self.version",
-                "guzzle/service": "self.version",
-                "guzzle/stream": "self.version"
-            },
-            "require-dev": {
-                "doctrine/cache": "~1.3",
-                "monolog/monolog": "~1.0",
-                "phpunit/phpunit": "3.7.*",
-                "psr/log": "~1.0",
-                "symfony/class-loader": "~2.1",
-                "zendframework/zend-cache": "2.*,<2.3",
-                "zendframework/zend-log": "2.*,<2.3"
-            },
-            "suggest": {
-                "guzzlehttp/guzzle": "Guzzle 5 has moved to a new package name. The package you have installed, Guzzle 3, is deprecated."
-            },
-            "type": "library",
-            "extra": {
-                "branch-alias": {
-                    "dev-master": "3.9-dev"
-                }
-            },
-            "autoload": {
-                "psr-0": {
-                    "Guzzle": "src/",
-                    "Guzzle\\Tests": "tests/"
-                }
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "MIT"
-            ],
-            "authors": [
-                {
-                    "name": "Michael Dowling",
-                    "email": "mtdowling@gmail.com",
-                    "homepage": "https://github.com/mtdowling"
-                },
-                {
-                    "name": "Guzzle Community",
-                    "homepage": "https://github.com/guzzle/guzzle/contributors"
-                }
-            ],
-            "description": "PHP HTTP client. This library is deprecated in favor of https://packagist.org/packages/guzzlehttp/guzzle",
-            "homepage": "http://guzzlephp.org/",
-            "keywords": [
-                "client",
-                "curl",
-                "framework",
-                "http",
-                "http client",
-                "rest",
-                "web service"
-            ],
-            "time": "2015-03-18 18:23:50"
-        },
-        {
             "name": "hamcrest/hamcrest-php",
             "version": "v1.2.2",
             "source": {
@@ -200,110 +515,6 @@
                 "test"
             ],
             "time": "2015-05-11 14:41:42"
-        },
-        {
-            "name": "imagine/imagine",
-            "version": "0.6.5",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/pixelandtonic/Imagine",
-                "reference": "514286ed0a8686eb49b07f2aab7ad71792eaae54"
-            },
-            "archive": {
-                "exclude": [
-                    "/.*",
-                    "/tests",
-                    "/vendor",
-                    "/bin",
-                    "docs/_build",
-                    "Imagine-*.tgz",
-                    "imagine-*.phar",
-                    "composer.phar"
-                ]
-            },
-            "require": {
-                "php": ">=5.3.2"
-            },
-            "require-dev": {
-                "sami/sami": "dev-master"
-            },
-            "suggest": {
-                "ext-gd": "to use the GD implementation",
-                "ext-gmagick": "to use the Gmagick implementation",
-                "ext-imagick": "to use the Imagick implementation"
-            },
-            "type": "library",
-            "extra": {
-                "branch-alias": {
-                    "dev-develop": "0.7-dev"
-                }
-            },
-            "autoload": {
-                "psr-0": {
-                    "Imagine": "lib/"
-                }
-            },
-            "license": [
-                "MIT"
-            ],
-            "authors": [
-                {
-                    "name": "Bulat Shakirzyanov",
-                    "email": "mallluhuct@gmail.com",
-                    "homepage": "http://avalanche123.com"
-                }
-            ],
-            "description": "Image processing for PHP 5.3",
-            "homepage": "http://imagine.readthedocs.org/",
-            "keywords": [
-                "drawing",
-                "graphics",
-                "image manipulation",
-                "image processing"
-            ],
-            "time": "2015-11-12 23:07:18"
-        },
-        {
-            "name": "lsolesen/pel",
-            "version": "0.9.3",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/lsolesen/pel.git",
-                "reference": "64a8fbb42a37c808dbb54bec3dc51a0ccbca3fc0"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/lsolesen/pel/zipball/64a8fbb42a37c808dbb54bec3dc51a0ccbca3fc0",
-                "reference": "64a8fbb42a37c808dbb54bec3dc51a0ccbca3fc0",
-                "shasum": ""
-            },
-            "require": {
-                "php": ">=5.0.0"
-            },
-            "require-dev": {
-                "lastcraft/simpletest": ">=1.1"
-            },
-            "type": "library",
-            "autoload": {
-                "psr-4": {
-                    "lsolesen\\pel\\": "src/"
-                }
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "authors": [
-                {
-                    "name": "Lars Olesen",
-                    "email": "lars@intraface.dk",
-                    "homepage": "http://intraface.dk",
-                    "role": "Developer"
-                }
-            ],
-            "description": "PHP Exif Library. A library for reading and writing Exif headers in JPEG and TIFF images using PHP.",
-            "homepage": "http://lsolesen.github.com/pel/",
-            "keywords": [
-                "template"
-            ],
-            "time": "2015-08-08 15:22:22"
         },
         {
             "name": "mockery/mockery",
@@ -418,66 +629,6 @@
                 }
             ],
             "time": "2015-02-03 12:10:50"
-        },
-        {
-            "name": "phpmailer/phpmailer",
-            "version": "v5.2.13",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/PHPMailer/PHPMailer.git",
-                "reference": "45df3a88f7f46071e10d0b600f228d19f95911b3"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/PHPMailer/PHPMailer/zipball/45df3a88f7f46071e10d0b600f228d19f95911b3",
-                "reference": "45df3a88f7f46071e10d0b600f228d19f95911b3",
-                "shasum": ""
-            },
-            "require": {
-                "php": ">=5.0.0"
-            },
-            "require-dev": {
-                "phpdocumentor/phpdocumentor": "*",
-                "phpunit/phpunit": "4.7.*"
-            },
-            "suggest": {
-                "league/oauth2-client": "Needed for Gmail's XOAUTH2 authentication system"
-            },
-            "type": "library",
-            "autoload": {
-                "classmap": [
-                    "class.phpmailer.php",
-                    "class.phpmaileroauth.php",
-                    "class.phpmaileroauthgoogle.php",
-                    "class.smtp.php",
-                    "class.pop3.php",
-                    "extras/EasyPeasyICS.php",
-                    "extras/ntlm_sasl_client.php"
-                ]
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "LGPL-2.1"
-            ],
-            "authors": [
-                {
-                    "name": "Jim Jagielski",
-                    "email": "jimjag@gmail.com"
-                },
-                {
-                    "name": "Marcus Bointon",
-                    "email": "phpmailer@synchromedia.co.uk"
-                },
-                {
-                    "name": "Andy Prevost",
-                    "email": "codeworxtech@users.sourceforge.net"
-                },
-                {
-                    "name": "Brent R. Matzelle"
-                }
-            ],
-            "description": "PHPMailer is a full-featured email creation and transfer class for PHP",
-            "time": "2015-09-14 09:18:12"
         },
         {
             "name": "phpspec/prophecy",
@@ -1279,128 +1430,17 @@
             "time": "2015-06-21 13:59:46"
         },
         {
-            "name": "simplepie/simplepie",
-            "version": "1.3.1",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/simplepie/simplepie.git",
-                "reference": "ce53709778bc1e2e4deda1651b66e5081398d5cc"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/simplepie/simplepie/zipball/ce53709778bc1e2e4deda1651b66e5081398d5cc",
-                "reference": "ce53709778bc1e2e4deda1651b66e5081398d5cc",
-                "shasum": ""
-            },
-            "require": {
-                "php": ">=5.2.0"
-            },
-            "type": "library",
-            "autoload": {
-                "psr-0": {
-                    "SimplePie": "library"
-                }
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "BSD-3-Clause"
-            ],
-            "authors": [
-                {
-                    "name": "Ryan Parman",
-                    "homepage": "http://ryanparman.com/",
-                    "role": "Creator, alumnus developer"
-                },
-                {
-                    "name": "Geoffrey Sneddon",
-                    "homepage": "http://gsnedders.com/",
-                    "role": "Alumnus developer"
-                },
-                {
-                    "name": "Ryan McCue",
-                    "email": "me@ryanmccue.info",
-                    "homepage": "http://ryanmccue.info/",
-                    "role": "Developer"
-                }
-            ],
-            "description": "A simple Atom/RSS parsing library for PHP",
-            "homepage": "http://simplepie.org/",
-            "keywords": [
-                "atom",
-                "feeds",
-                "rss"
-            ],
-            "time": "2012-10-30 17:54:03"
-        },
-        {
-            "name": "symfony/event-dispatcher",
-            "version": "v2.7.6",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/symfony/event-dispatcher.git",
-                "reference": "87a5db5ea887763fa3a31a5471b512ff1596d9b8"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/symfony/event-dispatcher/zipball/87a5db5ea887763fa3a31a5471b512ff1596d9b8",
-                "reference": "87a5db5ea887763fa3a31a5471b512ff1596d9b8",
-                "shasum": ""
-            },
-            "require": {
-                "php": ">=5.3.9"
-            },
-            "require-dev": {
-                "psr/log": "~1.0",
-                "symfony/config": "~2.0,>=2.0.5",
-                "symfony/dependency-injection": "~2.6",
-                "symfony/expression-language": "~2.6",
-                "symfony/stopwatch": "~2.3"
-            },
-            "suggest": {
-                "symfony/dependency-injection": "",
-                "symfony/http-kernel": ""
-            },
-            "type": "library",
-            "extra": {
-                "branch-alias": {
-                    "dev-master": "2.7-dev"
-                }
-            },
-            "autoload": {
-                "psr-4": {
-                    "Symfony\\Component\\EventDispatcher\\": ""
-                }
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "MIT"
-            ],
-            "authors": [
-                {
-                    "name": "Fabien Potencier",
-                    "email": "fabien@symfony.com"
-                },
-                {
-                    "name": "Symfony Community",
-                    "homepage": "https://symfony.com/contributors"
-                }
-            ],
-            "description": "Symfony EventDispatcher Component",
-            "homepage": "https://symfony.com",
-            "time": "2015-10-11 09:39:48"
-        },
-        {
             "name": "symfony/yaml",
-            "version": "v2.7.6",
+            "version": "v2.7.7",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/yaml.git",
-                "reference": "eca9019c88fbe250164affd107bc8057771f3f4d"
+                "reference": "4cfcd7a9fceba662b3c036b7d9a91f6197af046c"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/yaml/zipball/eca9019c88fbe250164affd107bc8057771f3f4d",
-                "reference": "eca9019c88fbe250164affd107bc8057771f3f4d",
+                "url": "https://api.github.com/repos/symfony/yaml/zipball/4cfcd7a9fceba662b3c036b7d9a91f6197af046c",
+                "reference": "4cfcd7a9fceba662b3c036b7d9a91f6197af046c",
                 "shasum": ""
             },
             "require": {
@@ -1415,7 +1455,10 @@
             "autoload": {
                 "psr-4": {
                     "Symfony\\Component\\Yaml\\": ""
-                }
+                },
+                "exclude-from-classmap": [
+                    "/Tests/"
+                ]
             },
             "notification-url": "https://packagist.org/downloads/",
             "license": [
@@ -1433,71 +1476,9 @@
             ],
             "description": "Symfony Yaml Component",
             "homepage": "https://symfony.com",
-            "time": "2015-10-11 09:39:48"
-        },
-        {
-            "name": "twig/twig",
-            "version": "v1.23.0",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/twigphp/Twig.git",
-                "reference": "5868cd822fd6cf626d5f805439575f9c323cee2a"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/twigphp/Twig/zipball/5868cd822fd6cf626d5f805439575f9c323cee2a",
-                "reference": "5868cd822fd6cf626d5f805439575f9c323cee2a",
-                "shasum": ""
-            },
-            "require": {
-                "php": ">=5.2.7"
-            },
-            "require-dev": {
-                "symfony/debug": "~2.7",
-                "symfony/phpunit-bridge": "~2.7"
-            },
-            "type": "library",
-            "extra": {
-                "branch-alias": {
-                    "dev-master": "1.23-dev"
-                }
-            },
-            "autoload": {
-                "psr-0": {
-                    "Twig_": "lib/"
-                }
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "BSD-3-Clause"
-            ],
-            "authors": [
-                {
-                    "name": "Fabien Potencier",
-                    "email": "fabien@symfony.com",
-                    "homepage": "http://fabien.potencier.org",
-                    "role": "Lead Developer"
-                },
-                {
-                    "name": "Armin Ronacher",
-                    "email": "armin.ronacher@active-4.com",
-                    "role": "Project Founder"
-                },
-                {
-                    "name": "Twig Team",
-                    "homepage": "http://twig.sensiolabs.org/contributors",
-                    "role": "Contributors"
-                }
-            ],
-            "description": "Twig, the flexible, fast, and secure template language for PHP",
-            "homepage": "http://twig.sensiolabs.org",
-            "keywords": [
-                "templating"
-            ],
-            "time": "2015-10-29 23:29:01"
+            "time": "2015-11-18 13:41:01"
         }
     ],
-    "packages-dev": [],
     "aliases": [],
     "minimum-stability": "stable",
     "stability-flags": [],

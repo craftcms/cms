@@ -8,18 +8,23 @@
 html,
 body { overflow-x: hidden; }
 
-#alerts { color: $errorcolor; text-align: center; }
-#alerts li { padding: 2px 24px; @include container-topbar-styles; }
-#alerts li:first-child { padding-top: 4px; }
-#alerts li:last-child { padding-bottom: 4px; }
+#alerts { background: $errorcolor; padding: 9px 0; text-align: center; border-bottom: 1px solid rgba(0,0,0,0.05); color: #fff; }
+#alerts li { padding: 4px 24px; }
 #alerts li:before { @include icon; @include margin(-1px, 3px, 0, 0); content: 'alert'; font-size: 16px; }
-#alerts li a { color: $errorcolor; text-decoration: underline; white-space: nowrap; }
-
+#alerts li a { color: #fff; text-decoration: underline; }
+#alerts li a.go { text-decoration: none; white-space: nowrap; border: 1px solid rgba(255,255,255,0.5); border-radius: $btnBorderRadius; padding: 3px 5px; margin: 0 2px; }
+#alerts li a.go:after { color: #fff; }
+#alerts li a.go:hover { border-color: #fff;
+	@include transition(border-color linear 100ms);
+}
 
 
 /* Shared sidebar/container styles */
 #container,
-#global-sidebar { transition: all .25s ease-in-out; -webkit-transition: all .25s ease-in-out; }
+#global-sidebar { transition: all .25s ease-in-out; -webkit-transition: all .25s ease-in-out;
+	overflow-y: scroll; /* has to be scroll, not auto */
+	-webkit-overflow-scrolling: touch;
+}
 
 .topbar { @include display-flex; @include align-items(stretch); }
 
@@ -55,6 +60,7 @@ body { overflow-x: hidden; }
 #global-sidebar .topbar > a { @include display-flex; @include align-items(center); padding: 0 14px; }
 #global-sidebar .topbar > a:focus { background: none; }
 
+#global-sidebar .topbar { min-height: -webkit-min-content; min-height: -moz-min-content; }
 #global-sidebar .topbar a.site-name { @include flex-grow(1); padding: 14px; }
 #global-sidebar .topbar a.site-name .photo-container { margin-right: 14px; }
 #global-sidebar .topbar a.site-name h2 { padding: 0; margin: 0; }
@@ -86,7 +92,7 @@ body { overflow-x: hidden; }
 
 /* container */
 
-#container { @include display-flex; @include flex-direction(column); position: relative; @include padding-left(220px); @include box-sizing(border-box); }
+#container { overflow: auto; display: block; @include flex-direction(column); position: relative; @include padding-left(220px); @include box-sizing(border-box); }
 #container > .topbar,
 #container > #page-header,
 #container > #main,
@@ -99,11 +105,11 @@ body.mobile #container {
 }
 
 #main { @include flex-grow(1); }
-#main:not(.single-pane) { padding: 0 24px; }
-#main.single-pane { @include display-flex; }
-#main.single-pane > .pane { @include display-flex; @include flex-direction(column); @include flex-grow(1); border-radius: 0; }
-#main.single-pane > .pane > .content { @include display-flex; @include flex-direction(column); }
-#main.single-pane > .pane > .content > .sidebar + .body { width: calc(100% - 0); }
+#main:not(.single-pane) .padded { padding: 0 24px; }
+#main.single-pane .padded { @include display-flex; }
+#main.single-pane .padded > .pane { @include display-flex; @include flex-direction(column); @include flex-grow(1); border-radius: 0; }
+#main.single-pane .padded > .pane > .content { @include display-flex; @include flex-direction(column); }
+#main.single-pane .padded > .pane > .content > .sidebar + .body { width: calc(100% - 0); }
 
 @media only screen and (max-width: 992px)
 {
@@ -111,7 +117,7 @@ body.mobile #container {
 	body.ltr #container { width: calc(100% + 220px); @include transform(translate3d(-220px,0,0)); }
 	body.rtl #container { width: calc(100% + 220px); @include transform(translate3d(220px,0,0)); }
 
-	body.showing-nav #global-sidebar { display: block; }
+	body.showing-nav #global-sidebar { @include display-flex; }
 	body.showing-nav #container { @include transform(translate3d(0,0,0)); }
 
 	body.ltr:not(.showing-nav) #global-sidebar { @include transform(translate3d(-220px,0,0)); }
@@ -182,12 +188,18 @@ body.mobile #container {
 
 /* page header */
 #page-header { @include display-flex; @include justify-content(space-between); position: relative; z-index: 1; padding: 20px 24px; }
-#page-header #page-title { @include display-flex; @include flex-grow(1); }
-#page-header #page-title h1 { line-height: 1.3; margin: 0; }
-#page-header #page-title .select,
-#page-header #page-title .menubtn,
-#page-header #page-title .btn { display: block; @include margin-left(5px); @include floatleft; }
-#page-header #extra-headers { position: relative; }
+
+#page-header #page-title { @include flex-grow(1); color: $submitcolor; }
+#page-header #page-title { overflow: hidden; text-overflow: ellipsis;  }
+#page-header #page-title h1 { line-height: 1.3; margin: 0; display: inline; white-space: nowrap; }
+
+#page-header #extra-headers { flex-shrink: 0; }
+#page-header #extra-headers:after { @include clearafter; }
+
+#page-header #extra-headers .buttons { @include display-flex; }
+#page-header #extra-headers .buttons > .btngroup { margin-top: 0; float: none; display: inline-block; }
+#page-header #extra-headers .buttons > .btngroup .btn { display: inline-block; }
+#page-header #extra-headers .buttons > .btn { float: none; display: inline-block; margin-top: 0; }
 
 #crumbs { margin: 0; font-size: 0; }
 #crumbs:after { @include clearafter; }
@@ -267,11 +279,16 @@ body.mobile #container {
 #upgrademodal-compare table tbody td { text-align: center; }
 #upgrademodal-compare table tbody tr.buybtns td { padding-top: 30px; border-bottom: none; }
 
-#upgrademodal-checkout { background: $bgcolor; }
-#upgrademodal-checkout .pane { max-width: 350px; margin: 0 auto !important; }
-#upgrademodal-checkout .pane .header .price { text-align: center; font-size: 15px; }
-#upgrademodal-checkout .pane .footer .buttons .spinner { position: absolute; top: 0; @include right(-24px); margin: 0; }
-#upgrademodal-checkout .icon.secure:before { @include margin-right(5px); }
+#upgrademodal-checkout { background: $lightBgColor; }
+#upgrademodal-checkout form { max-width: 350px; margin: 0 auto !important; padding-bottom: 10px; }
+#upgrademodal-checkout form .field { margin: 14px 0; }
+#upgrademodal-checkout form p.icon.secure { margin-top: 24px; }
+#upgrademodal-checkout form p.icon.secure:before { @include margin-right(5px); }
+#upgrademodal-checkout .buttons > .left,
+#upgrademodal-checkout .buttons > .right { margin-top: 5px; }
+#upgrademodal-checkout #pay-button { @include floatleft; @include margin-right(5px); }
+#upgrademodal-checkout #pay-spinner { margin: 0; }
+#upgrademodal-checkout .spinner#coupon-spinner { position: absolute; top: 0; margin-top: 0; @include right(-24px); }
 
 #upgrademodal-success .message { display: block; position: absolute; top: 50%; left: 0; width: 100%; margin-top: -71px; padding-top: 62px; text-align: center; background: url(../images/success.png) no-repeat 50% 0; }
 #upgrademodal-success .message p { margin-bottom: 24px; font-size: 15px; line-height: 1.4; }
@@ -377,12 +394,13 @@ $fldGuideColor: #f4f3fb;
 .lp-editor { padding: 0 24px; overflow: auto; @include box-shadow(0 0 0 1px rgba(0,0,0,0.1));
 	@include box-sizing(border-box);
 }
-.lp-editor header { margin: 0 -24px 24px; padding: 14px 24px 13px; }
-.lp-editor header .btn { @include floatright; }
+.lp-editor header { margin: 0 -24px 24px; padding: 14px 24px 13px; background: rgba(0, 0, 0, 0.03); }
+.lp-editor header .btn { @include floatleft; }
+.lp-editor header .btn.submit { @include floatright; }
 .lp-editor header h1 { margin: 0; font-size: 25px; line-height: 30px; color: #333; }
 .lp-editor > .field:last-child { margin-bottom: 24px !important; }
 
-.lp-draghandle { position: absolute; top: 0; @include right(-4px); width: 4px; height: 100%; cursor: col-resize; background: $textcolor; }
+.lp-draghandle { position: absolute; top: 0; @include right(-4px); width: 4px; height: 100%; cursor: col-resize; }
 
 
 /* Sidebar */
@@ -392,7 +410,7 @@ $fldGuideColor: #f4f3fb;
 .show-sidebar:after { @include icon; font-size: 16px; width: 43px; line-height: 20px; content: '▼'; @include floatright; @include margin-right(-24px); }
 
 .sidebar { position: absolute; width: 220px; padding: 24px; overflow: auto; background: $lightBgColor; @include box-sizing(border-box); }
-.sidebar { @include margin(-24px, 0, 24px, -242px); }
+.sidebar { @include margin(-24px, 0, -24px, -242px); }
 
 .content.has-sidebar:not(.hiding-sidebar) { @include margin-left(218px); }
 
@@ -401,14 +419,14 @@ $fldGuideColor: #f4f3fb;
 
 .sidebar nav { @include margin-left(-24px); @include padding-left(24px); overflow: auto; }
 .sidebar nav li { position: relative; }
-.sidebar nav li a { display: block; @include margin-left(-24px); padding: 9px 0; color: $textcolor; @include user-select(none); outline: none; }
+.sidebar nav li a { display: block; @include margin-left(-24px); padding: 9px 0; @include border-radius(0, 2px, 2px, 0); color: $textcolor; @include user-select(none); outline: none; }
 .sidebar nav li a:hover { text-decoration: none; color: $textcolor; background: $sidebarLinkHoverBgColor; }
 
 .sidebar nav li .toggle { position: absolute; top: 6px; }
 .sidebar nav li ul { display: none; }
 .sidebar nav li.expanded > ul { display: block; }
 
-.sidebar nav li a.sel { @include border-radius(0, 2px, 2px, 0); background: $darkselcolor; cursor: default; }
+.sidebar nav li a.sel { background: $darkselcolor; cursor: default; }
 .sidebar nav li a.sel,
 .sidebar nav li a.sel + .toggle { color: #fff; }
 
@@ -454,9 +472,4 @@ body > .sidebar li { width: auto !important; }
 	#upgrademodal .logo.craftclient { background-image: url(../images/editions/craftclient_2x.png); }
 	#upgrademodal .logo.craftpro { background-image: url(../images/editions/craftpro_2x.png); }
 	#upgrademodal-success .message { background-image: url(../images/success_2x.png); background-size: 48px; }
-}
-
-@media only screen and (max-width: 320px) {
-	#container { @include padding-left(10px); @include padding-right(10px); }
-	#nav { @include margin-left(-10px); }
 }

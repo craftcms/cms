@@ -156,7 +156,7 @@ Craft.Pane = Garnish.Base.extend(
 	{
 		if (true || this.$pane.hasClass('showing-sidebar'))
 		{
-			this.setMinContentSizeForSidebar._minHeight = this.$sidebar.prop('scrollHeight');
+			this.setMinContentSizeForSidebar._minHeight = this.$sidebar.prop('scrollHeight') - 48;
 		}
 		else
 		{
@@ -176,7 +176,7 @@ Craft.Pane = Garnish.Base.extend(
 		this.updateSidebarStyles._windowHeight = Garnish.$win.height();
 
 		// Have we scrolled passed the top of the pane?
-		if (this.updateSidebarStyles._scrollTop > this.updateSidebarStyles._paneOffset)
+		if (Garnish.$win.width() > 992 && this.updateSidebarStyles._scrollTop > this.updateSidebarStyles._paneOffset)
 		{
 			// Set the top position to the difference
 			this.updateSidebarStyles._styles.position = 'fixed';
@@ -189,10 +189,19 @@ Craft.Pane = Garnish.Base.extend(
 		}
 
 		// Now figure out how tall the sidebar can be
-		this.updateSidebarStyles._styles.height = Math.min(
+		this.updateSidebarStyles._styles.maxHeight = Math.min(
 			this.updateSidebarStyles._paneHeight - (this.updateSidebarStyles._scrollTop - this.updateSidebarStyles._paneOffset),
 			this.updateSidebarStyles._windowHeight
 		);
+
+		if(this.updateSidebarStyles._paneHeight > this.updateSidebarStyles._windowHeight)
+		{
+			this.updateSidebarStyles._styles.height = this.updateSidebarStyles._styles.maxHeight;
+		}
+		else
+		{
+			this.updateSidebarStyles._styles.height = this.updateSidebarStyles._paneHeight;
+		}
 
 		this.$sidebar.css(this.updateSidebarStyles._styles);
 	},

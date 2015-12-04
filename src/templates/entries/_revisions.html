@@ -1,5 +1,3 @@
-{% requireEdition CraftClient %}
-
 {% set drafts = craft.entryRevisions.getEditableDraftsByEntryId(entry.id, entry.locale) %}
 {% set baseUrl = 'entries/'~entry.getSection().handle~'/'~entry.id~(entry.slug ? '-'~entry.slug)~'/' %}
 

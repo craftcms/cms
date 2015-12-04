@@ -6,8 +6,8 @@ namespace Craft;
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
- * @license   http://buildwithcraft.com/license Craft License Agreement
- * @see       http://buildwithcraft.com
+ * @license   http://craftcms.com/license Craft License Agreement
+ * @see       http://craftcms.com
  * @package   craft.app.etc.image
  * @since     2.5
  */
@@ -166,6 +166,7 @@ class Image extends BaseImage
 
 		if ($this->_isAnimatedGif)
 		{
+			$this->_image->layers()->coalesce();
 
 			// Create a new image instance to avoid object references messing up our dimensions.
 			$newSize = new \Imagine\Image\Box($width, $height);
@@ -320,6 +321,7 @@ class Image extends BaseImage
 
 		if ($this->_isAnimatedGif)
 		{
+			$this->_image->layers()->coalesce();
 
 			// Create a new image instance to avoid object references messing up our dimensions.
 			$newSize = new \Imagine\Image\Box($targetWidth, $targetHeight);

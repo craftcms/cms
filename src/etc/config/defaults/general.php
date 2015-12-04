@@ -241,13 +241,13 @@ return array(
 	/**
 	 * Whether to enable Craft's template `{% cache %}` tag on a global basis.
 	 *
-	 * @see http://buildwithcraft.com/docs/templating/cache
+	 * @see http://craftcms.com/docs/templating/cache
 	 */
 	'enableTemplateCaching' => true,
 
 	/**
 	 * Any environment-specific variables that should be swapped out in URL and Path settings.
-	 * See http://buildwithcraft.com/docs/multi-environment-configs#environment-specific-variables for a full explanation
+	 * See http://craftcms.com/docs/multi-environment-configs#environment-specific-variables for a full explanation
 	 * of this setting.
 	 */
 	'environmentVariables' => array(),
@@ -434,7 +434,8 @@ return array(
 	/**
 	 * Whether the embedded Image Color Profile (ICC) should be preserved when manipulating images.
 	 *
-	 * Setting this to true results in a slightly increased filesize and more accurate colors, if a color profile was embedded on image export.
+	 * Setting this to true results in a slightly increased filesize and more accurate colors,
+	 * if a color profile was embedded on image export. This will only have effect if Imagick is in use.
 	 */
 	'preserveImageColorProfiles' => false,
 

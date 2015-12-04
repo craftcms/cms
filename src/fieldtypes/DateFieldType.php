@@ -6,8 +6,8 @@ namespace Craft;
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
- * @license   http://buildwithcraft.com/license Craft License Agreement
- * @see       http://buildwithcraft.com
+ * @license   http://craftcms.com/license Craft License Agreement
+ * @see       http://craftcms.com
  * @package   craft.app.fieldtypes
  * @since     1.0
  */
@@ -100,20 +100,27 @@ class DateFieldType extends BaseFieldType implements IPreviewableFieldType
 
 		$input = '';
 
-		// In case nothing is selected, default to the date.
-		if (!$this->getSettings()->showDate && !$this->getSettings()->showTime)
+		$showTime = $this->getSettings()->showTime;
+		$showDate = (!$showTime || $this->getSettings()->showDate);
+
+		if ($showDate && $showTime)
 		{
-			$this->getSettings()->showDate = true;
+			$input .= '<div class="datetimewrapper">';
 		}
 
-		if ($this->getSettings()->showDate)
+		if ($showDate)
 		{
 			$input .= craft()->templates->render('_includes/forms/date', $variables);
 		}
 
-		if ($this->getSettings()->showTime)
+		if ($showTime)
 		{
 			$input .= ' '.craft()->templates->render('_includes/forms/time', $variables);
+		}
+
+		if ($showDate && $showTime)
+		{
+			$input .= '</div>';
 		}
 
 		return $input;

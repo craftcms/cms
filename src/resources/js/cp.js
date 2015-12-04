@@ -34,6 +34,7 @@ Craft.CP = Garnish.Base.extend(
 	$main: null,
 	$content: null,
 	$collapsibleTables: null,
+	$primaryForm: null,
 
 	navItems: null,
 	totalNavItems: null,
@@ -91,6 +92,9 @@ Craft.CP = Garnish.Base.extend(
 		this.$collapsibleTables = $('table.collapsible');
 		this.$upgradePromo = $('#upgradepromo > a');
 
+		// global sidebar
+		this.addListener(Garnish.$win, 'touchend', 'updateResponsiveGlobalSidebar');
+
 		// Find all the nav items
 		this.navItems = [];
 		this.totalNavWidth = Craft.CP.baseNavWidth;
@@ -127,6 +131,8 @@ Craft.CP = Garnish.Base.extend(
 
 		// sidebar
 
+		this.addListener($('ul', this.$sidebar), 'resize', 'updateResponsiveSidebar');
+
 		this.$sidebarLinks = $('nav a', this.$sidebar);
 		this.addListener(this.$sidebarLinks, 'click', 'selectSidebarItem');
 
@@ -154,27 +160,27 @@ Craft.CP = Garnish.Base.extend(
 			this.initAlerts();
 		}
 
-		// Listen for save shortcuts in primary forms
-		var $primaryForm = $('form[data-saveshortcut]:first');
+		// Does this page have a primary form?
+		if (this.$container.prop('nodeName') == 'FORM')
+		{
+			this.$primaryForm = this.$container;
+		}
+		else
+		{
+			this.$primaryForm = $('form[data-saveshortcut]:first');
+		}
 
-		if ($primaryForm.length == 1)
+		// Does the primary form support the save shortcut?
+		if (this.$primaryForm.length && Garnish.hasAttr(this.$primaryForm, 'data-saveshortcut'))
 		{
 			this.addListener(Garnish.$doc, 'keydown', function(ev)
 			{
 				if (Garnish.isCtrlKeyPressed(ev) && ev.keyCode == Garnish.S_KEY)
 				{
 					ev.preventDefault();
-
-					// Give other stuff on the page a chance to prepare
-					this.trigger('beforeSaveShortcut');
-
-					if ($primaryForm.data('saveshortcut-redirect'))
-					{
-						$('<input type="hidden" name="redirect" value="'+$primaryForm.data('saveshortcut-redirect')+'"/>').appendTo($primaryForm);
-					}
-
-					$primaryForm.submit();
+					this.submitPrimaryForm();
 				}
+
 				return true;
 			});
 		}
@@ -243,6 +249,19 @@ Craft.CP = Garnish.Base.extend(
 		}
 	},
 
+	submitPrimaryForm: function()
+	{
+		// Give other stuff on the page a chance to prepare
+		this.trigger('beforeSaveShortcut');
+
+		if (this.$primaryForm.data('saveshortcut-redirect'))
+		{
+			$('<input type="hidden" name="redirect" value="'+this.$primaryForm.data('saveshortcut-redirect')+'"/>').appendTo(this.$primaryForm);
+		}
+
+		this.$primaryForm.submit();
+	},
+
 	updateSidebarMenuLabel: function()
 	{
 		Garnish.$win.trigger('resize');
@@ -260,6 +279,10 @@ Craft.CP = Garnish.Base.extend(
 		// Get the new window width
 		this.onWindowResize._cpWidth = Math.min(Garnish.$win.width(), Craft.CP.maxWidth);
 
+
+		// Update the responsive global sidebar
+		this.updateResponsiveGlobalSidebar();
+
 		// Update the responsive nav
 		this.updateResponsiveNav();
 
@@ -268,6 +291,13 @@ Craft.CP = Garnish.Base.extend(
 
 		// Update any responsive tables
 		this.updateResponsiveTables();
+	},
+
+	updateResponsiveGlobalSidebar: function()
+	{
+		var globalSidebarHeight = window.innerHeight;
+
+		this.$globalSidebar.height(globalSidebarHeight);
 	},
 
 	updateResponsiveNav: function()
@@ -318,18 +348,21 @@ Craft.CP = Garnish.Base.extend(
 
 	updateResponsiveSidebar: function()
 	{
-		if(this.onWindowResize._cpWidth < 769)
+		if(this.$sidebar.length > 0)
 		{
-			if (!this.showingSidebarToggle)
+			if(this.onWindowResize._cpWidth < 769)
 			{
-				this.showSidebarToggle();
+				if (!this.showingSidebarToggle)
+				{
+					this.showSidebarToggle();
+				}
 			}
-		}
-		else
-		{
-			if (this.showingSidebarToggle)
+			else
 			{
-				this.hideSidebarToggle();
+				if (this.showingSidebarToggle)
+				{
+					this.hideSidebarToggle();
+				}
 			}
 		}
 	},
@@ -373,9 +406,32 @@ Craft.CP = Garnish.Base.extend(
 
 	toggleSidebar: function()
 	{
-		$('.content.has-sidebar').toggleClass('showing-sidebar');
-	},
+		var $contentWithSidebar = this.$content.filter('.has-sidebar');
 
+		$contentWithSidebar.toggleClass('showing-sidebar');
+
+		this.updateResponsiveContent();
+	},
+	updateResponsiveContent: function()
+	{
+		var $contentWithSidebar = this.$content.filter('.has-sidebar');
+
+		if($contentWithSidebar.hasClass('showing-sidebar'))
+		{
+			var sidebarHeight = $('nav', this.$sidebar).height();
+
+			if($contentWithSidebar.height() <= sidebarHeight)
+			{
+				var newContentHeight = sidebarHeight + 48;
+				$contentWithSidebar.css('height', newContentHeight+'px');
+			}
+		}
+		else
+		{
+			$contentWithSidebar.css('min-height', 0);
+			$contentWithSidebar.css('height', 'auto');
+		}
+	},
 	updateResponsiveTables: function()
 	{
 		for (this.updateResponsiveTables._i = 0; this.updateResponsiveTables._i < this.$collapsibleTables.length; this.updateResponsiveTables._i++)
@@ -634,6 +690,14 @@ Craft.CP = Garnish.Base.extend(
 				}, this));
 
 			}, this));
+		}
+
+		// Is there an edition resolution link?
+		var $editionResolutionLink = this.$alerts.find('.edition-resolution:first');
+
+		if ($editionResolutionLink.length)
+		{
+			this.addListener($editionResolutionLink, 'click', 'showUpgradeModal');
 		}
 	},
 
@@ -1101,9 +1165,7 @@ var TaskProgressHUD = Garnish.HUD.extend(
 		this.tasksById = {};
 		this.completedTasks = [];
 
-		this.base(this.icon.$a, null, {
-			minBodyHeight: 0
-		});
+		this.base(this.icon.$a);
 
 		this.$main.attr('id', 'tasks-hud');
 

@@ -8,8 +8,8 @@ namespace Craft;
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
- * @license   http://buildwithcraft.com/license Craft License Agreement
- * @see       http://buildwithcraft.com
+ * @license   http://craftcms.com/license Craft License Agreement
+ * @see       http://craftcms.com
  * @package   craft.app.controllers
  * @since     2.5
  */
@@ -52,7 +52,7 @@ class ElementIndexSettingsController extends BaseElementsController
 
 		foreach (craft()->elementIndexes->getAvailableTableAttributes($elementTypeClass) as $key => $labelInfo)
 		{
-			$availableTableAttributes[] = array($key, $labelInfo['label']);
+			$availableTableAttributes[] = array($key, Craft::t($labelInfo['label']));
 		}
 
 		$this->returnJson(array(

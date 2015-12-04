@@ -8,8 +8,8 @@ craft()->requireEdition(Craft::Pro);
  *
  * @author     Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright  Copyright (c) 2014, Pixel & Tonic, Inc.
- * @license    http://buildwithcraft.com/license Craft License Agreement
- * @see        http://buildwithcraft.com
+ * @license    http://craftcms.com/license Craft License Agreement
+ * @see        http://craftcms.com
  * @package    craft.app.assetsourcetypes
  * @since      1.0
  * @deprecated This class will be removed in Craft 3.0.
@@ -381,42 +381,32 @@ class RackspaceAssetSourceType extends BaseAssetSourceType
 	// =========================================================================
 
 	/**
-	 * @inheritDoc BaseAssetSourceType::getNameReplacement()
+	 * @inheritDoc BaseAssetSourceType::getNameReplacementInFolder()
 	 *
 	 * @param AssetFolderModel $folder
 	 * @param string           $fileName
 	 *
 	 * @return string
 	 */
-	protected function getNameReplacement(AssetFolderModel $folder, $fileName)
+	protected function getNameReplacementInFolder(AssetFolderModel $folder, $fileName)
 	{
 		$prefix = $this->_getPathPrefix().$folder->path;
-		$files = $this->_getFileList($prefix);
-		$fileList = array();
+		$fileList = $this->_getFileList($prefix);
 
-		foreach ($files as $file)
+		foreach ($fileList as &$file)
 		{
-			$fileList[mb_strtolower($file->name)] = true;
+			$file = preg_replace('/^'.preg_quote($prefix, '/').'/', '', $file->name);
 		}
 
-		// Double-check
-		if (!isset($fileList[mb_strtolower($fileName)]))
-		{
-			return $fileName;
-		}
+		// Drop all the paths that have subfolders.
+		$fileList = array_filter($fileList,
+			function ($file)
+			{
+				return !(strpos($file, '/') !== false || empty($file));
+			}
+		);
 
-		$fileNameParts = explode(".", $fileName);
-		$extension = array_pop($fileNameParts);
-
-		$fileNameStart = join(".", $fileNameParts).'_';
-		$index = 1;
-
-		while ( isset($fileList[mb_strtolower($prefix.$fileNameStart.$index.'.'.$extension)]))
-		{
-			$index++;
-		}
-
-		return $fileNameStart.$index.'.'.$extension;
+		return AssetsHelper::getFilenameReplacement($fileList, $fileName);
 	}
 
 	/**

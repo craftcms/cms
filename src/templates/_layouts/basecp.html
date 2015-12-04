@@ -68,6 +68,7 @@
 			scriptName:            "{{ craft.request.getScriptName()|e('js') }}",
 			omitScriptNameInUrls:  {{ craft.config.omitScriptNameInUrls() ? 'true' : 'false' }},
 			usePathInfo:           {{ craft.config.usePathInfo() ? 'true' : 'false' }},
+			useCompressedJs:       {{ useCompressedJs ? 'true' : 'false' }},
 			resourceTrigger:       "{{ craft.config.getResourceTrigger()|e('js') }}",
 			actionTrigger:         "{{ craft.config.actionTrigger|e('js') }}",
 			path:                  "{{ craft.request.getPath()|e('js') }}",

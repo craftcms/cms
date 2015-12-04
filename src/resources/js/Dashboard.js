@@ -1,11 +1,3 @@
-/**
- * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
- * @license   http://buildwithcraft.com/license Craft License Agreement
- * @see       http://buildwithcraft.com
- * @package   craft.app.resources
- */
-
 (function($) {
 
 
@@ -164,7 +156,7 @@ Craft.Dashboard = Garnish.Base.extend(
                     widget = $widget.data('widget');
 
                 // Make sure it's actually saved
-                if (!widget.id)
+                if (!widget || !widget.id)
                 {
                     continue;
                 }
@@ -173,7 +165,6 @@ Craft.Dashboard = Garnish.Base.extend(
             }
 
             this.widgetManager = new Garnish.HUD(this.$widgetManagerBtn, $form, {
-                minBodyHeight: 0,
                 hudClass: 'hud widgetmanagerhud',
                 onShow: $.proxy(function() {
                     this.$widgetManagerBtn.addClass('active');

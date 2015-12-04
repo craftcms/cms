@@ -12,8 +12,8 @@ namespace Craft;
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
- * @license   http://buildwithcraft.com/license Craft License Agreement
- * @see       http://buildwithcraft.com
+ * @license   http://craftcms.com/license Craft License Agreement
+ * @see       http://craftcms.com
  * @package   craft.app.controllers
  * @since     1.0
  */
@@ -655,39 +655,36 @@ class UsersController extends BaseController
 			$variables['title'] = Craft::t("Register a new user");
 		}
 
-		// Show tabs if they have Craft Pro
 		// ---------------------------------------------------------------------
+		$variables['selectedTab'] = 'account';
 
-		if (craft()->getEdition() == Craft::Pro)
-		{
-			$variables['selectedTab'] = 'account';
-
-			$variables['tabs'] = array(
+		$variables['tabs'] = array(
 				'account' => array(
-					'label' => Craft::t('Account'),
-					'url'   => '#account',
+						'label' => Craft::t('Account'),
+						'url'   => '#account',
 				)
-			);
+		);
 
-			// No need to show the Profile tab if it's a new user (can't have an avatar yet) and there's no user fields.
-			if (!$variables['isNewAccount'] || $variables['account']->getFieldLayout()->getFields())
-			{
-				$variables['tabs']['profile'] = array(
+		// No need to show the Profile tab if it's a new user (can't have an avatar yet) and there's no user fields.
+		if (!$variables['isNewAccount'] || (craft()->getEdition() == Craft::Pro && $variables['account']->getFieldLayout()->getFields()))
+		{
+			$variables['tabs']['profile'] = array(
 					'label' => Craft::t('Profile'),
 					'url'   => '#profile',
-				);
-			}
+			);
+		}
 
-			// If they can assign user groups and permissions, show the Permissions tab
-			if (craft()->userSession->getUser()->can('assignUserPermissions'))
-			{
-				$variables['tabs']['perms'] = array(
+		// Show the permission tab for the users that can change them on Craft Pro editions.
+		if (craft()->getEdition() == Craft::Pro && craft()->userSession->getUser()->can('assignUserPermissions'))
+		{
+			$variables['tabs']['perms'] = array(
 					'label' => Craft::t('Permissions'),
 					'url'   => '#perms',
-				);
-			}
+			);
 		}
-		else
+
+		// Just one tab looks awkward, so just don't show them at all then.
+		if (count($variables['tabs']) == 1)
 		{
 			$variables['tabs'] = array();
 		}
@@ -1102,35 +1099,21 @@ class UsersController extends BaseController
 					$this->returnErrorJson(Craft::t('The uploaded image is too large'));
 				}
 
+				craft()->images->
+					loadImage($folderPath.$fileName)->
+					scaleToFit(500, 500, false)->
+					saveAs($folderPath.$fileName);
+
 				list ($width, $height) = ImageHelper::getImageSize($folderPath.$fileName);
-
-
-                if (IOHelper::getExtension($fileName) != 'svg')
-                {
-    				craft()->images->cleanImage($folderPath.$fileName);
-                }
-                else
-                {
-                    craft()->images->
-                        loadImage($folderPath.$fileName)->
-                        saveAs($folderPath.$fileName);
-				}
-
-				$constraint = 500;
 
 				// If the file is in the format badscript.php.gif perhaps.
 				if ($width && $height)
 				{
-					// Never scale up the images, so make the scaling factor always <= 1
-					$factor = min($constraint / $width, $constraint / $height, 1);
-
 					$html = craft()->templates->render('_components/tools/cropper_modal',
 						array(
 							'imageUrl' => UrlHelper::getResourceUrl('userphotos/temp/'.$userName.'/'.$fileName),
-							'width' => round($width * $factor),
-							'height' => round($height * $factor),
-							'factor' => $factor,
-							'constraint' => $constraint,
+							'width' => $width,
+							'height' => $height,
 							'fileName' => $fileName
 						)
 					);

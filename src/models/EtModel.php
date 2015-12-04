@@ -6,8 +6,8 @@ namespace Craft;
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
- * @license   http://buildwithcraft.com/license Craft License Agreement
- * @see       http://buildwithcraft.com
+ * @license   http://craftcms.com/license Craft License Agreement
+ * @see       http://craftcms.com
  * @package   craft.app.models
  * @since     1.0
  */
@@ -48,6 +48,12 @@ class EtModel extends BaseModel
 
 		// Whether Craft is running for a domain that's eligible to be used in Edition Test Mode
 		$attributes['editionTestableDomain'] = AttributeType::Bool;
+
+		// The installed plugin license keys.
+		$attributes['pluginLicenseKeys'] = AttributeType::Mixed;
+
+		// The plugins' license key statuses.  Set by the server response.
+		$attributes['pluginLicenseKeyStatuses'] = AttributeType::Mixed;
 
 		// Extra arbitrary data to send to the server.
 		$attributes['data'] = AttributeType::Mixed;

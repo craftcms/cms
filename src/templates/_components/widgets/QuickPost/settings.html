@@ -1,27 +1,22 @@
 {% import "_includes/forms" as forms %}
 
 {% if sections %}
-	{% if CraftEdition >= CraftClient %}
-		{% set sectionOptions = [] %}
-		{% for section in sections %}
-			{% set sectionOptions = sectionOptions|merge([{ label: section.name|t, value: section.id }]) %}
-		{% endfor %}
-		{{ forms.selectField({
-			label: "Section"|t,
-			instructions: "Which section do you want to publish entries to?"|t,
-			id: 'section',
-			name: 'section',
-			options: sectionOptions,
-			value: settings.section,
-			toggle: true,
-			targetPrefix: 'section'
-		}) }}
+	{% set sectionOptions = [] %}
+	{% for section in sections %}
+		{% set sectionOptions = sectionOptions|merge([{ label: section.name|t, value: section.id }]) %}
+	{% endfor %}
+	{{ forms.selectField({
+		label: "Section"|t,
+		instructions: "Which section do you want to publish entries to?"|t,
+		id: 'section',
+		name: 'section',
+		options: sectionOptions,
+		value: settings.section,
+		toggle: true,
+		targetPrefix: 'section'
+	}) }}
 
-		{% set selectedSectionId = settings.section %}
-	{% else %}
-		{% set selectedSectionId = sections[0].id %}
-		<input type="hidden" name="section" value="{{ selectedSectionId }}">
-	{% endif %}
+	{% set selectedSectionId = settings.section %}
 
 	{% for section in sections %}
 		{% set showSection = ((not selectedSectionId and loop.first) or selectedSectionId == section.id) %}

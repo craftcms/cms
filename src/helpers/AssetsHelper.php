@@ -6,8 +6,8 @@ namespace Craft;
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
- * @license   http://buildwithcraft.com/license Craft License Agreement
- * @see       http://buildwithcraft.com
+ * @license   http://craftcms.com/license Craft License Agreement
+ * @see       http://craftcms.com
  * @package   craft.app.helpers
  * @since     1.0
  */
@@ -96,7 +96,6 @@ class AssetsHelper
 			$extension =  '';
 		}
 
-
 		$separator = craft()->config->get('filenameWordSeparator');
 
 		if (!is_string($separator))
@@ -112,5 +111,76 @@ class AssetsHelper
 		}
 
 		return $baseName.$extension;
+	}
+
+	/**
+	 * Return a filename replacement for a filename in a list of files. The file
+	 * list typically represents a folder's contents.
+	 *
+	 * @param array $fileList
+	 * @param       $originalFilename
+	 *
+	 * @throws Exception When a replacement cannot be found.
+	 * @return string $filename
+	 */
+	public static function getFilenameReplacement(array $fileList, $originalFilename)
+	{
+		foreach ($fileList as &$file)
+		{
+			$file = StringHelper::toLowerCase($file);
+		}
+
+		$fileList = array_flip($fileList);
+
+		// Shorthand.
+		$canUse = function ($filenameToTest) use ($fileList)
+		{
+			return !isset($fileList[StringHelper::toLowerCase($filenameToTest)]);
+		};
+
+		if ($canUse($originalFilename))
+		{
+			return $originalFilename;
+		}
+
+		$extension = IOHelper::getExtension($originalFilename);
+		$filename = IOHelper::getFileName($originalFilename, false);
+
+		// If the file already ends with something that looks like a timestamp, use that instead.
+		if (preg_match('/.*_([0-9]{6}_[0-9]{6})$/', $filename, $matches))
+		{
+			$base = $filename;
+		}
+		else
+		{
+			$timestamp = DateTimeHelper::currentUTCDateTime()->format("ymd_His");
+			$base = $filename.'_'.$timestamp;
+		}
+
+		$newFilename = $base.'.'.$extension;
+
+		if ($canUse($newFilename))
+		{
+			return $newFilename;
+		}
+
+		$increment = 0;
+
+		while (++$increment)
+		{
+			$newFilename = $base.'_'.$increment.'.'.$extension;
+
+			if ($canUse($newFilename))
+			{
+				break;
+			}
+
+			if ($increment == 50)
+			{
+				throw new Exception(Craft::t("A suitable replacement name cannot be found for “{filename}”", array('filename' => $originalFilename)));
+			}
+		}
+
+		return $newFilename;
 	}
 }

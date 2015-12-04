@@ -272,6 +272,26 @@ $elementBorderRadius: 3px;
 	body.rtl & { border-radius: $tr $tl $bl $br; }
 }
 
+@mixin border-top-left-radius($params...) {
+	body.ltr & { border-top-left-radius: $params; }
+	body.rtl & { border-top-right-radius: $params; }
+}
+
+@mixin border-top-right-radius($params...) {
+	body.ltr & { border-top-right-radius: $params; }
+	body.rtl & { border-top-left-radius: $params; }
+}
+
+@mixin border-bottom-left-radius($params...) {
+	body.ltr & { border-bottom-left-radius: $params; }
+	body.rtl & { border-bottom-right-radius: $params; }
+}
+
+@mixin border-bottom-right-radius($params...) {
+	body.ltr & { border-bottom-right-radius: $params; }
+	body.rtl & { border-bottom-left-radius: $params; }
+}
+
 @mixin floatleft {
 	body.ltr & { float: left; }
 	body.rtl & { float: right; }
