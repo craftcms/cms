@@ -1165,7 +1165,7 @@ var TaskProgressHUD = Garnish.HUD.extend(
 		this.tasksById = {};
 		this.completedTasks = [];
 
-		this.base(this.icon.$a, null);
+		this.base(this.icon.$a);
 
 		this.$main.attr('id', 'tasks-hud');
 
