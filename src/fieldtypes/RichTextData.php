@@ -58,6 +58,16 @@ class RichTextData extends \Twig_Markup
 	}
 
 	/**
+	 * Returns the parsed content, with reference tags returned as HTML links.
+	 *
+	 * @return string
+	 */
+	public function getParsedContent()
+	{
+		return $this->content;
+	}
+
+	/**
 	 * Returns an array of the individual page contents.
 	 *
 	 * @return array
