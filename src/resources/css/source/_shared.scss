@@ -40,18 +40,25 @@ $elementBorderRadius: 3px;
 /* Flexbox stuff */
 
 @mixin display-flex {
-	display: flex;
+	display: -webkit-box;
+	display: -moz-box;
 	display: -ms-flexbox;
+	display: -webkit-flex;
+	display: flex;
 }
 
-@mixin flex-direction($value...) {
-	flex-direction: $value;
+@mixin flex-direction($value) {
+	@if $value == column {
+		-webkit-box-orient: vertical;
+	} @else {
+		-webkit-box-orient: horizontal;
+	}
+
 	-ms-flex-direction: $value;
+	flex-direction: $value;
 }
 
 @mixin align-items($value) {
-	align-items: $value;
-
 	@if $value == flex-start {
 		-ms-flex-align: start;
 	} @else if $value == flex-end {
@@ -59,11 +66,11 @@ $elementBorderRadius: 3px;
 	} @else {
 		-ms-flex-align: $value;
 	}
+
+	align-items: $value;
 }
 
 @mixin justify-content($value) {
-	justify-content: $value;
-
 	@if $value == flex-start {
 		-ms-flex-pack: start;
 	} @else if $value == flex-end {
@@ -73,16 +80,18 @@ $elementBorderRadius: 3px;
 	} @else if $value == center {
 		-ms-flex-align: center;
 	}
+
+	justify-content: $value;
 }
 
 @mixin flex-wrap($value) {
-	flex-wrap: $value;
-
 	@if $value == nowrap {
 		-ms-flex-wrap: none;
 	} @else {
 		-ms-flex-wrap: $value;
 	}
+
+	flex-wrap: $value;
 }
 
 @mixin flex-grow($value) {
