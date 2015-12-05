@@ -631,6 +631,7 @@ class MatrixFieldType extends BaseFieldType
 			if ($this->element)
 			{
 				$block->setOwner($this->element);
+				$block->locale = $this->element->locale;
 			}
 
 			$fieldLayoutFields = $blockType->getFieldLayout()->getFields();
