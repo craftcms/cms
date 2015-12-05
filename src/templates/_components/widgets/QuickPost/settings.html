@@ -43,8 +43,9 @@
 			{% endif %}
 
 			{% set fieldsInput %}
-				{% for entryType in section.getEntryTypes() %}
-					{% set showEntryType = (((not showSection or not settings.entryType) and loop.first) or settings.entryType == entryType.id) %}
+				{% set entryTypes = section.getEntryTypes() %}
+				{% for entryType in entryTypes %}
+					{% set showEntryType = (((not showSection or not settings.entryType) and loop.first) or settings.entryType == entryType.id or entryTypes|length == 1) %}
 					<div id="section{{ section.id }}-type{{ entryType.id }}"{% if not showEntryType %} class="hidden"{% endif %}>
 						{% for field in entryType.getFieldLayout().getFields() %}
 							<div>

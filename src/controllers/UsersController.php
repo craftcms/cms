@@ -1627,7 +1627,7 @@ class UsersController extends BaseController
 			$verticalMargin = ($imageHeight - $dimension) / 2;
 			$image->crop($horizontalMargin, $imageWidth - $horizontalMargin, $verticalMargin, $imageHeight - $verticalMargin);
 
-			craft()->users->saveUserPhoto($userPhoto->getName(), $image, $user);
+			craft()->users->saveUserPhoto(AssetsHelper::cleanAssetName($userPhoto->getName()), $image, $user);
 
 			IOHelper::deleteFile($userPhoto->getTempName());
 		}
