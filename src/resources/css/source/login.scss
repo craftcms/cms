@@ -10,6 +10,7 @@ html, body { height: 100%; }
 #login-form .btn { display: block; }
 
 #login-form .text:focus { position: relative; z-index: 1; }
+.passwordwrapper .password-toggle { z-index: 1; }
 
 
 #loginName { padding: 14px 16px; border-top-left-radius: 4px; border-top-right-radius: 4px; border-bottom-left-radius: 0; border-bottom-right-radius: 0; }
