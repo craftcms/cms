@@ -44,6 +44,47 @@ Craft.RichTextInput = Garnish.Base.extend(
 			this.redactorConfig.plugins = [];
 		}
 
+		// Redactor I config setting normalization
+		if (this.redactorConfig.buttons)
+		{
+			var index;
+
+			// buttons.html => plugins.source
+			if ((index = $.inArray('html', this.redactorConfig.buttons)) !== -1)
+			{
+				this.redactorConfig.buttons.splice(index, 1);
+				this.redactorConfig.plugins.unshift('source');
+			}
+
+			// buttons.formatting => buttons.format
+			if ((index = $.inArray('formatting', this.redactorConfig.buttons)) !== -1)
+			{
+				this.redactorConfig.buttons.splice(index, 1, 'format');
+			}
+
+			// buttons.unorderedlist/orderedlist/undent/indent => buttons.lists
+			var oldListButtons = ['unorderedlist', 'orderedlist', 'undent', 'indent'],
+				lowestListButtonIndex;
+
+			for (var i = 0; i < oldListButtons.length; i++)
+			{
+				if ((index = $.inArray(oldListButtons[i], this.redactorConfig.buttons)) !== -1)
+				{
+					this.redactorConfig.buttons.splice(index, 1);
+
+					if (typeof lowestListButtonIndex == typeof undefined || index < lowestListButtonIndex)
+					{
+						lowestListButtonIndex = index;
+					}
+				}
+			}
+
+			if (typeof lowestListButtonIndex != typeof undefined)
+			{
+				this.redactorConfig.buttons.splice(lowestListButtonIndex, 0, 'lists');
+			}
+		}
+
 		var callbacks = {
 			init: Craft.RichTextInput.handleRedactorInit
 		};

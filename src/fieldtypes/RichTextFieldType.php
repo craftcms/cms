@@ -393,7 +393,7 @@ class RichTextFieldType extends BaseFieldType
 		//craft()->templates->includeJsResource('lib/redactor/redactor'.(craft()->config->get('useCompressedJs') ? '.min' : '').'.js');
 
 		$this->_maybeIncludeRedactorPlugin($configJs, 'fullscreen', false);
-		$this->_maybeIncludeRedactorPlugin($configJs, 'source', false);
+		$this->_maybeIncludeRedactorPlugin($configJs, 'source|html', false);
 		$this->_maybeIncludeRedactorPlugin($configJs, 'table', false);
 		$this->_maybeIncludeRedactorPlugin($configJs, 'video', false);
 		$this->_maybeIncludeRedactorPlugin($configJs, 'pagebreak', true);
@@ -434,8 +434,13 @@ class RichTextFieldType extends BaseFieldType
 	 */
 	private function _maybeIncludeRedactorPlugin($configJs, $plugin, $includeCss)
 	{
-		if (preg_match('/([\'"])'.$plugin.'\1/', $configJs))
+		if (preg_match('/([\'"])(?:'.$plugin.')\1/', $configJs))
 		{
+			if (($pipe = strpos($plugin, '|')) !== false)
+			{
+				$plugin = substr($plugin, 0, $pipe);
+			}
+
 			if ($includeCss)
 			{
 				craft()->templates->includeCssResource('lib/redactor/plugins/'.$plugin.'.css');
