@@ -282,12 +282,13 @@ class AppController extends BaseController
 		$this->requireAjaxRequest();
 		craft()->userSession->requireAdmin();
 
-		if (!craft()->canTestEditions())
+		$edition = craft()->request->getRequiredPost('edition');
+
+		if ($edition != 0 && !craft()->canTestEditions())
 		{
 			throw new Exception('Tried to test an edition, but Craft isn\'t allowed to do that.');
 		}
 
-		$edition = craft()->request->getRequiredPost('edition');
 		craft()->setEdition($edition);
 
 		$this->returnJson(array(
