@@ -31,6 +31,7 @@ use craft\app\errors\ModelValidationException;
 use craft\app\events\AssetEvent;
 use craft\app\events\ReplaceAssetEvent;
 use craft\app\helpers\Assets as AssetsHelper;
+use craft\app\helpers\DateTimeHelper;
 use craft\app\helpers\Db;
 use craft\app\helpers\Image;
 use craft\app\helpers\Io;
@@ -935,14 +936,14 @@ class Assets extends Component
     /**
      * Find a replacement for a filename
      *
-     * @param string $filename
-     * @param VolumeFolderModel $folder
+     * @param string $originalFilename the original filename for which to find a replacement.
+     * @param VolumeFolderModel $folder THe folder in which to find the replacement
      *
      * @throws AssetLogicException
      * @return string
      */
     public function getNameReplacementInFolder(
-        $filename,
+        $originalFilename,
         VolumeFolderModel $folder
     ) {
         $volume = $folder->getVolume();
@@ -959,25 +960,60 @@ class Assets extends Component
             }
         }
 
-        // See if we can use the original filename
-        if (!isset($existingFiles[StringHelper::toLowerCase($filename)])) {
-            return $filename;
+        // Shorthand.
+        $canUse = function ($filenameToTest) use ($existingFiles)
+        {
+            return !isset($existingFiles[StringHelper::toLowerCase($filenameToTest)]);
+        };
+
+        if ($canUse($originalFilename))
+        {
+            return $originalFilename;
         }
 
+        $extension = IO::getExtension($originalFilename);
+        $filename = IO::getFileName($originalFilename, false);
 
-        $filenameParts = explode(".", $filename);
-        $extension = array_pop($filenameParts);
 
-        for ($i = 1; $i <= 50; $i++) {
-            $proposedFilename = join(".", $filenameParts).'_'.$i.'.'.$extension;
-            if (!isset($existingFiles[StringHelper::toLowerCase($proposedFilename)])) {
-                return $proposedFilename;
+        // If the file already ends with something that looks like a timestamp, use that instead.
+        if (preg_match('/.*_([0-9]{6}_[0-9]{6})$/', $filename, $matches))
+        {
+            $base = $filename;
+        }
+        else
+        {
+            $timestamp = DateTimeHelper::currentUTCDateTime()->format("ymd_His");
+            $base = $filename.'_'.$timestamp;
+        }
+
+        $newFilename = $base.'.'.$extension;
+
+        if ($canUse($newFilename))
+        {
+            return $newFilename;
+        }
+
+        $increment = 0;
+
+        while (++$increment)
+        {
+            $newFilename = $base.'_'.$increment.'.'.$extension;
+
+            if ($canUse($newFilename))
+            {
+                break;
+            }
+
+            if ($increment == 50)
+            {
+                throw new AssetLogicException(Craft::t('app',
+                    'Could not find a suitable replacement filename for “{filename}”.',
+                    ['filename' => $filename]));
+
             }
         }
 
-        throw new AssetLogicException(Craft::t('app',
-            'Could not find a suitable replacement filename for “{filename}”.',
-            ['filename' => $filename]));
+        return $newFilename;
     }
 
     /**

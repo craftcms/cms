@@ -138,25 +138,11 @@ class AssetsController extends Controller
                     }
 
                     $filename = Assets::prepareAssetName($uploadedFile->name);
-                    $mobileUpload = false;
-
-                    if (Io::getFileName($filename,
-                            false) == "image" && Craft::$app->getRequest()->getIsMobileBrowser(true)
-                    ) {
-                        $mobileUpload = true;
-                        $date = DateTimeHelper::currentUTCDateTime();
-                        $filename = "image_".$date->format('Ymd_His').".".Io::getExtension($filename);
-
-                    }
 
                     $asset = new Asset();
 
-                    if ($mobileUpload) {
-                        $asset->title = Craft::t('app', 'Mobile Upload');
-                    } else {
-                        $asset->title = $asset->generateAttributeLabel(Io::getFilename($filename,
+                    $asset->title = $asset->generateAttributeLabel(Io::getFilename($filename,
                             false));
-                    }
 
                     $asset->newFilePath = $pathOnServer;
                     $asset->filename = $filename;
