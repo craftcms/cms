@@ -1,113 +1,139 @@
-/**
-* Craft Chart
-*/
+// Craft charts
 
 Craft.charts = {};
 
-Craft.charts.LineChart = Garnish.Base.extend({
-
-    $element: null,
-
+Craft.charts.Area = Garnish.Base.extend(
+{
     chart: null,
+    graph: null,
+    dataUrl: null,
 
-    init: function(element, data)
+    margin: 40,
+    width: null,
+    height: null,
+
+    x: { axis: null, scale: null },
+    y: { axis: null, scale: null },
+
+    $chart: null,
+
+    init: function(chart, params)
     {
-        this.$element = $('#'+element);
+        this.$chart = d3.select(chart);
 
-        this.chart = new Chartist.Line('#'+element, data, Craft.charts.chartist.defaultOptions(), Craft.charts.chartist.defaultResponsiveOptions());
-    },
-});
+        this.dataUrl = params.dataUrl;
+
+        this.width = parseInt(this.$chart.style("width")) - this.margin * 2,
+        this.height = parseInt(this.$chart.style("height")) - this.margin * 2;
+
+        this.initScale();
+        this.initAxis();
+        this.initChart();
+        this.initData();
 
 
-/**
-* Chartist Options
-*/
-Craft.charts.chartist = {
+        d3.select(window).on('resize', $.proxy(function() {
+            this.resize();
+        }, this));
 
-    defaultOptions: function()
-    {
-        return {
-            height: 180,
-            chartPadding:
-            {
-                top: 15,
-                right: 0,
-                bottom: -25,
-                left: -40
-            },
-            axisX: {
-                showGrid: false,
-                offset: 30,
-                labelOffset:
-                {
-                    x: 0,
-                    y: -20
-                },
-            },
-            axisY:
-            {
-                offset: 40,
-                showLabel: true,
-                labelOffset:
-                {
-                    x: 40,
-                    y: 0
-                },
-            },
-            showArea: true,
-            fullWidth: true,
-            series:
-            {
-                'series-1':
-                {
-                    lineSmooth: Chartist.Interpolation.none(),
-                    showPoint: true
-                }
-            }
-        };
+        setTimeout($.proxy(function() {
+            this.resize();
+        }, this), 100);
     },
 
-    defaultResponsiveOptions: function()
+    initScale: function()
     {
-        return [
-            ['screen and (min-width: 641px)', {
-                showPoint: false,
-                axisX:
-                {
-                    labelInterpolationFnc: function(value, i)
-                    {
-                        // Will return Mon, Tue, Wed etc. on medium screens
+        this.x.scale = d3.time.scale()
+            .range([0, this.width]);
 
-                        if(i % 5)
-                        {
-                            return;
-                        }
-                        else
-                        {
-                            return value;
-                        }
-                    }
-                }
-            }],
+        this.y.scale = d3.scale.linear()
+            .range([this.height, 0]);
+    },
 
-            ['screen and (max-width: 640px)', {
-                showLine: false,
-                axisX:
-                {
-                    labelInterpolationFnc: function(value, i)
-                    {
-                        // Will return M, T, W etc. on small screens
-                        if(i % 10)
-                        {
-                            return;
-                        }
-                        else
-                        {
-                            return value;
-                        }
-                    }
-                }
-            }]
-        ];
+    initAxis: function()
+    {
+        this.x.axis = d3.svg.axis()
+            .scale(this.x.scale)
+            .orient("bottom").tickFormat(d3.time.format("%d/%m"));
+
+        this.y.axis = d3.svg.axis()
+            .scale(this.y.scale)
+            .orient("left");
+    },
+
+    initChart: function()
+    {
+        // area
+        this.chart = d3.svg.area()
+            .x($.proxy(function(d) { return this.x.scale(d.date); }, this))
+            .y0(this.height)
+            .y1($.proxy(function(d) { return this.y.scale(d.close); }, this));
+
+        // append graph to chart element
+        this.graph = this.$chart
+                .attr("width", this.width + this.margin * 2)
+                .attr("height", this.height + this.margin * 2)
+            .append("g")
+                .attr("transform", "translate(" + this.margin + "," + this.margin + ")");
+    },
+
+    initData: function()
+    {
+        d3.json(this.dataUrl, $.proxy(function(error, data)
+        {
+            if (error) throw error;
+
+            data.forEach(function(d) {
+                d.date = d3.time.format("%d-%b-%y").parse(d.date);
+                d.close = +d.close;
+            });
+
+            this.x.scale.domain(d3.extent(data, function(d) { return d.date; }));
+            this.y.scale.domain([0, d3.max(data, function(d) { return d.close; })]);
+
+            this.graph.append("path")
+                .datum(data)
+                .attr("class", "area")
+                .attr("d", this.chart);
+
+            this.graph.append("g")
+                .attr("class", "x axis")
+                .attr("transform", "translate(0," + this.height + ")")
+                .call(this.x.axis);
+
+            this.graph.append("g")
+                    .attr("class", "y axis")
+                    .call(this.y.axis)
+                .append("text")
+                    .attr("transform", "rotate(-90)")
+                    .attr("y", 0)
+                    .attr("dy", ".71em")
+                    .style("text-anchor", "start")
+                    .text("Total");
+        }, this));
+    },
+
+    resize: function()
+    {
+        this.width = parseInt(this.$chart.style("width")) - this.margin * 2,
+        this.height = parseInt(this.$chart.style("height")) - this.margin * 2;
+
+        this.x.axis.ticks(Math.max(this.width/150, 3));
+
+        // Update the range of the scale with new width/height
+        this.x.scale.range([0, this.width]);
+        this.y.scale.range([this.height, 0]);
+
+        // Update the axis with the new scale
+        this.graph.select('.x.axis')
+            .attr("transform", "translate(0," + this.height + ")")
+            .call(this.x.axis);
+
+        this.graph.select('.y.axis')
+            .call(this.y.axis);
+
+        // Force D3 to recalculate and update the area
+        this.graph.selectAll('.area')
+            .attr("d", this.chart);
     }
-};
+});
