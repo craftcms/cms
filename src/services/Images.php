@@ -15,6 +15,9 @@ use craft\app\helpers\StringHelper;
 use craft\app\image\Raster;
 use craft\app\image\Svg;
 use craft\app\base\Image;
+use lsolesen\pel\PelDataWindow;
+use lsolesen\pel\PelJpeg;
+use lsolesen\pel\PelTag;
 use yii\base\Component;
 
 /**
@@ -263,11 +266,11 @@ class Images extends Component
             return null;
         }
 
-        $data = new \PelDataWindow(Io::getFileContents($filePath));
+        $data = new PelDataWindow(Io::getFileContents($filePath));
 
         // Is this a valid JPEG?
-        if (\PelJpeg::isValid($data)) {
-            $jpeg = $file = new \PelJpeg();
+        if (PelJpeg::isValid($data)) {
+            $jpeg = $file = new PelJpeg();
             $jpeg->load($data);
             $exif = $jpeg->getExif();
 
@@ -276,7 +279,7 @@ class Images extends Component
                 $ifd0 = $tiff->getIfd();
 
                 // Delete the Orientation entry and re-save the file
-                $ifd0->offsetUnset(\PelTag::ORIENTATION);
+                $ifd0->offsetUnset(PelTag::ORIENTATION);
                 $file->saveFile($filePath);
 
                 return true;
