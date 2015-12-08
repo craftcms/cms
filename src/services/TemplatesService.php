@@ -1478,11 +1478,12 @@ class TemplatesService extends BaseApplicationComponent
 
 		if ($context['context'] == 'index' && ($cpEditUrl = $context['element']->getCpEditUrl()))
 		{
-			$html .= HtmlHelper::encodeParams('<a href="{cpEditUrl}">{label}</a>', array('cpEditUrl' => $cpEditUrl, 'label' => $label));
+			$cpEditUrl = HtmlHelper::encode($cpEditUrl);
+			$html .= "<a href=\"{$cpEditUrl}\">{$label}</a>";
 		}
 		else
 		{
-			$html .= HtmlHelper::encode($label);
+			$html .= $label;
 		}
 
 		$html .= '</span></div></div>';
