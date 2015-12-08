@@ -6,9 +6,9 @@ Craft.charts.Area = Garnish.Base.extend(
 {
     chart: null,
     graph: null,
-    dataUrl: null,
+    data: null,
 
-    margin: 40,
+    margin: 30,
     width: null,
     height: null,
 
@@ -17,20 +17,16 @@ Craft.charts.Area = Garnish.Base.extend(
 
     $chart: null,
 
-    init: function(chart, params)
+    init: function(chart, params, data)
     {
         this.$chart = d3.select(chart);
-
-        this.dataUrl = params.dataUrl;
 
         this.width = parseInt(this.$chart.style("width")) - this.margin * 2,
         this.height = parseInt(this.$chart.style("height")) - this.margin * 2;
 
-        this.initScale();
-        this.initAxis();
         this.initChart();
-        this.initData();
 
+        this.loadData(data);
 
         d3.select(window).on('resize', $.proxy(function() {
             this.resize();
@@ -39,6 +35,61 @@ Craft.charts.Area = Garnish.Base.extend(
         setTimeout($.proxy(function() {
             this.resize();
         }, this), 100);
+    },
+
+    initChart: function()
+    {
+        this.initScale();
+        this.initAxis();
+
+        // area
+        this.chart = d3.svg.area()
+            .x($.proxy(function(d) { return this.x.scale(d.date); }, this))
+            .y0(this.height)
+            .y1($.proxy(function(d) { return this.y.scale(d.close); }, this));
+
+        // append graph to chart element
+        this.graph = this.$chart
+                .attr("width", this.width + this.margin * 2)
+                .attr("height", this.height + this.margin * 2)
+            .append("g")
+                .attr("transform", "translate(" + this.margin + "," + this.margin + ")");
+    },
+
+    loadData: function(data)
+    {
+        this.data = data;
+
+        // format data
+
+        this.data.forEach(function(d) {
+            d.date = d3.time.format("%d-%b-%y").parse(d.date);
+            d.close = +d.close;
+        });
+
+        this.render();
+    },
+
+    render: function()
+    {
+        // draw chart
+
+        this.x.scale.domain(d3.extent(this.data, function(d) { return d.date; }));
+        this.y.scale.domain([0, d3.max(this.data, function(d) { return d.close; })]);
+
+        this.graph.append("path")
+            .datum(this.data)
+            .attr("class", "area")
+            .attr("d", this.chart);
+
+        this.graph.append("g")
+            .attr("class", "x axis")
+            .attr("transform", "translate(0," + this.height + ")")
+            .call(this.x.axis);
+
+        this.graph.append("g")
+                .attr("class", "y axis")
+                .call(this.y.axis);
     },
 
     initScale: function()
@@ -58,59 +109,7 @@ Craft.charts.Area = Garnish.Base.extend(
 
         this.y.axis = d3.svg.axis()
             .scale(this.y.scale)
-            .orient("left");
-    },
-
-    initChart: function()
-    {
-        // area
-        this.chart = d3.svg.area()
-            .x($.proxy(function(d) { return this.x.scale(d.date); }, this))
-            .y0(this.height)
-            .y1($.proxy(function(d) { return this.y.scale(d.close); }, this));
-
-        // append graph to chart element
-        this.graph = this.$chart
-                .attr("width", this.width + this.margin * 2)
-                .attr("height", this.height + this.margin * 2)
-            .append("g")
-                .attr("transform", "translate(" + this.margin + "," + this.margin + ")");
-    },
-
-    initData: function()
-    {
-        d3.json(this.dataUrl, $.proxy(function(error, data)
-        {
-            if (error) throw error;
-
-            data.forEach(function(d) {
-                d.date = d3.time.format("%d-%b-%y").parse(d.date);
-                d.close = +d.close;
-            });
-
-            this.x.scale.domain(d3.extent(data, function(d) { return d.date; }));
-            this.y.scale.domain([0, d3.max(data, function(d) { return d.close; })]);
-
-            this.graph.append("path")
-                .datum(data)
-                .attr("class", "area")
-                .attr("d", this.chart);
-
-            this.graph.append("g")
-                .attr("class", "x axis")
-                .attr("transform", "translate(0," + this.height + ")")
-                .call(this.x.axis);
-
-            this.graph.append("g")
-                    .attr("class", "y axis")
-                    .call(this.y.axis)
-                .append("text")
-                    .attr("transform", "rotate(-90)")
-                    .attr("y", 0)
-                    .attr("dy", ".71em")
-                    .style("text-anchor", "start")
-                    .text("Total");
-        }, this));
+            .orient("right");
     },
 
     resize: function()
@@ -118,7 +117,10 @@ Craft.charts.Area = Garnish.Base.extend(
         this.width = parseInt(this.$chart.style("width")) - this.margin * 2,
         this.height = parseInt(this.$chart.style("height")) - this.margin * 2;
 
+
+        // ticks
         this.x.axis.ticks(Math.max(this.width/150, 3));
+        this.y.axis.ticks(this.height / 50);
 
         // Update the range of the scale with new width/height
         this.x.scale.range([0, this.width]);
