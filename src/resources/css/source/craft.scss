@@ -1643,3 +1643,5 @@ body.message .message-container .pane { top: 50%; margin-top: -33px !important; 
 	.hud .tip-bottom { background-image: url(../images/hudtip_bottom_2x.png); background-size: 30px 15px; }
 	.hud.has-footer .tip-bottom { background-image: url(../images/hudtip_bottom_gray_2x.png); }
 }
+
+@import "charts";
