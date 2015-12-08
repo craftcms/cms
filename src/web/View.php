@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      http://buildwithcraft.com/
+ * @link      http://craftcms.com/
  * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
- * @license   http://buildwithcraft.com/license
+ * @license   http://craftcms.com/license
  */
 
 namespace craft\app\web;
@@ -384,8 +384,8 @@ class View extends \yii\web\View
      * - TemplateName/index.twig
      *
      * If this is a front-end request, the actual list of file extensions and index filenames are configurable via the
-     * [defaultTemplateExtensions](http://buildwithcraft.com/docs/config-settings#defaultTemplateExtensions) and
-     * [indexTemplateFilenames](http://buildwithcraft.com/docs/config-settings#indexTemplateFilenames) config settings.
+     * [defaultTemplateExtensions](http://craftcms.com/docs/config-settings#defaultTemplateExtensions) and
+     * [indexTemplateFilenames](http://craftcms.com/docs/config-settings#indexTemplateFilenames) config settings.
      *
      * For example if you set the following in config/general.php:
      *
@@ -716,7 +716,7 @@ class View extends \yii\web\View
 
     /**
      * Returns the HTML for the CSRF hidden input token.  Used for when the config setting
-     * [enableCsrfValidation](http://buildwithcraft.com/docs/config-settings#enableCsrfValidation) is set to true.
+     * [enableCsrfValidation](http://craftcms.com/docs/config-settings#enableCsrfValidation) is set to true.
      *
      * @return string If 'enabledCsrfProtection' is enabled, the HTML for the hidden input, otherwise an empty string.
      */

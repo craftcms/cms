@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      http://buildwithcraft.com/
+ * @link      http://craftcms.com/
  * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
- * @license   http://buildwithcraft.com/license
+ * @license   http://craftcms.com/license
  */
 
 namespace craft\app\updates;
@@ -453,7 +453,7 @@ class Updater
 
         // Make sure we can write to craft/app/requirements
         if (!Io::isWritable(Craft::$app->getPath()->getAppPath().'/requirements')) {
-            throw new Exception(Markdown::process(Craft::t('app', 'Craft needs to be able to write to your craft/app/requirements folder and cannot. Please check your [permissions]({url}).', ['url' => 'http://buildwithcraft.com/docs/updating#one-click-updating'])));
+            throw new Exception(Markdown::process(Craft::t('app', 'Craft needs to be able to write to your craft/app/requirements folder and cannot. Please check your [permissions]({url}).', ['url' => 'http://craftcms.com/docs/updating#one-click-updating'])));
         }
 
         $tempFilename = StringHelper::UUID().'.php';

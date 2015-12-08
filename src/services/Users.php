@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      http://buildwithcraft.com/
+ * @link      http://craftcms.com/
  * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
- * @license   http://buildwithcraft.com/license
+ * @license   http://craftcms.com/license
  */
 
 namespace craft\app\services;
@@ -232,7 +232,7 @@ class Users extends Component
      * Returns whether a verification code is valid for the given user.
      *
      * This method first checks if the code has expired past the
-     * [verificationCodeDuration](http://buildwithcraft.com/docs/config-settings#verificationCodeDuration) config
+     * [verificationCodeDuration](http://craftcms.com/docs/config-settings#verificationCodeDuration) config
      * setting. If it is still valid, then, the checks the validity of the contents of the code.
      *
      * @param User   $user The user to check the code for.
@@ -1186,7 +1186,7 @@ class Users extends Component
      * Deletes any pending users that have shown zero sense of urgency and are just taking up space.
      *
      * This method will check the
-     * [purgePendingUsersDuration](http://buildwithcraft.com/docs/config-settings#purgePendingUsersDuration) config
+     * [purgePendingUsersDuration](http://craftcms.com/docs/config-settings#purgePendingUsersDuration) config
      * setting, and if it is set to a valid duration, it will delete any user accounts that were created that duration
      * ago, and have still not activated their account.
      *

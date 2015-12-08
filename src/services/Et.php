@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      http://buildwithcraft.com/
+ * @link      http://craftcms.com/
  * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
- * @license   http://buildwithcraft.com/license
+ * @license   http://craftcms.com/license
  */
 
 namespace craft\app\services;
@@ -32,12 +32,12 @@ class Et extends Component
     // Constants
     // =========================================================================
 
-    const Ping = 'https://elliott.buildwithcraft.com/actions/elliott/app/ping';
-    const CheckForUpdates = 'https://elliott.buildwithcraft.com/actions/elliott/app/checkForUpdates';
-    const TransferLicense = 'https://elliott.buildwithcraft.com/actions/elliott/app/transferLicenseToCurrentDomain';
-    const GetEditionInfo = 'https://elliott.buildwithcraft.com/actions/elliott/app/getEditionInfo';
-    const PurchaseUpgrade = 'https://elliott.buildwithcraft.com/actions/elliott/app/purchaseUpgrade';
-    const GetUpdateFileInfo = 'https://elliott.buildwithcraft.com/actions/elliott/app/getUpdateFileInfo';
+    const Ping = 'https://elliott.craftcms.com/actions/elliott/app/ping';
+    const CheckForUpdates = 'https://elliott.craftcms.com/actions/elliott/app/checkForUpdates';
+    const TransferLicense = 'https://elliott.craftcms.com/actions/elliott/app/transferLicenseToCurrentDomain';
+    const GetEditionInfo = 'https://elliott.craftcms.com/actions/elliott/app/getEditionInfo';
+    const PurchaseUpgrade = 'https://elliott.craftcms.com/actions/elliott/app/purchaseUpgrade';
+    const GetUpdateFileInfo = 'https://elliott.craftcms.com/actions/elliott/app/getUpdateFileInfo';
 
     // Public Methods
     // =========================================================================
@@ -135,7 +135,7 @@ class Et extends Component
         $updateModel = Craft::$app->getUpdates()->getUpdates();
         $buildVersion = $updateModel->app->latestVersion.'.'.$updateModel->app->latestBuild;
 
-        $path = 'http://download.buildwithcraft.com/craft/'.$updateModel->app->latestVersion.'/'.$buildVersion.'/Patch/'.$updateModel->app->localBuild.'/'.$md5.'.zip';
+        $path = 'http://download.craftcms.com/craft/'.$updateModel->app->latestVersion.'/'.$buildVersion.'/Patch/'.$updateModel->app->localBuild.'/'.$md5.'.zip';
 
         $et = new \craft\app\et\Et($path, 240);
         $et->setDestinationFilename($downloadPath);

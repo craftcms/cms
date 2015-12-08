@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      http://buildwithcraft.com/
+ * @link      http://craftcms.com/
  * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
- * @license   http://buildwithcraft.com/license
+ * @license   http://craftcms.com/license
  */
 
 namespace craft\app\web;
@@ -160,7 +160,7 @@ class Application extends \yii\web\Application
             if ($request->getIsCpRequest()) {
                 $version = $this->getInfo('version');
                 $build = $this->getInfo('build');
-                $url = "http://download.buildwithcraft.com/craft/{$version}/{$version}.{$build}/Craft-{$version}.{$build}.zip";
+                $url = "http://download.craftcms.com/craft/{$version}/{$version}.{$build}/Craft-{$version}.{$build}.zip";
 
                 throw new HttpException(200, Craft::t('app', 'Craft does not support backtracking to this version. Please upload Craft {url} or later.',
                     [
