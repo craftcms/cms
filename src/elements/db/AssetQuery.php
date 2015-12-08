@@ -310,7 +310,7 @@ class AssetQuery extends ElementQuery
             if ($this->includeSubfolders) {
                 $folders = Craft::$app->getAssets()->getAllDescendantFolders(
                     Craft::$app->getAssets()->getFolderById($this->folderId));
-                $this->subQuery->andWhere(Db::parseParam('assetfiles.folderId', array_keys($folders), $this->subQuery->params));
+                $this->subQuery->andWhere(Db::parseParam('assets.folderId', array_keys($folders), $this->subQuery->params));
             } else {
                 $this->subQuery->andWhere(Db::parseParam('assets.folderId', $this->folderId, $this->subQuery->params));
             }
