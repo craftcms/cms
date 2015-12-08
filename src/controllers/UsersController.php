@@ -1532,7 +1532,7 @@ class UsersController extends Controller
             $verticalMargin = ($imageHeight - $dimension) / 2;
             $image->crop($horizontalMargin, $imageWidth - $horizontalMargin, $verticalMargin, $imageHeight - $verticalMargin);
 
-            Craft::$app->getUsers()->saveUserPhoto($userPhoto->name, $image, $user);
+            Craft::$app->getUsers()->saveUserPhoto(Assets::prepareAssetName($userPhoto->name), $image, $user);
 
             Io::deleteFile($userPhoto->tempName);
         }

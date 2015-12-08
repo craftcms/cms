@@ -629,8 +629,8 @@ class Users extends Component
         Io::ensureFolderExists($userPhotoFolder);
         Io::ensureFolderExists($targetFolder);
 
-        $targetPath = $targetFolder.'/'.AssetsHelper::prepareAssetName($filename,
-                false);
+        $filename = AssetsHelper::prepareAssetName($filename);
+        $targetPath = $targetFolder.'/'.$filename;
 
         $result = $image->saveAs($targetPath);
 
