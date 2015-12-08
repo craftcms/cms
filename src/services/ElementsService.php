@@ -338,7 +338,7 @@ class ElementsService extends BaseApplicationComponent
 	 */
 	public function getTotalElements($criteria = null)
 	{
-		$query = $this->buildElementsQuery($criteria);
+		$query = $this->buildElementsQuery($criteria, $contentTable, $fieldColumns, true);
 
 		if ($query)
 		{
@@ -347,7 +347,6 @@ class ElementsService extends BaseApplicationComponent
 				->order('')
 				->offset(0)
 				->limit(-1)
-				->select('elements.id')
 				->from('elements elements');
 
 			// Can't use COUNT() here because of complications with the GROUP BY clause.

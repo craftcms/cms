@@ -1442,7 +1442,7 @@ class TemplatesService extends BaseApplicationComponent
 			$html .= ' hasthumb';
 		}
 
-		$label = $context['element'];
+		$label = HtmlHelper::encode($context['element']);
 
 		$html .= '" data-id="'.$context['element']->id.'" data-locale="'.$context['element']->locale.'" data-status="'.$context['element']->getStatus().'" data-label="'.$label.'" data-url="'.$context['element']->getUrl().'"';
 

@@ -1,12 +1,12 @@
 {% macro buybtn(edition, info, licensedEdition, canTestEditions) %}
 	{%- spaceless %}
-		{# is it already installed? #}
+		{# Is it already installed? #}
 		{% if edition == CraftEdition  %}
 			<div class="installed">{{ "Installed"|t }}</div><br>
 		{% endif %}
 
 		<div class="btngroup">
-			{# is it elligible to be purchased? #}
+			{# Show the "Buy" button if this edition is greater than the licensed edition #}
 			{% if edition > licensedEdition %}
 				<div class="btn buybtn" data-edition="{{ edition }}">
 					{% if info.salePrice %}
@@ -17,13 +17,14 @@
 				</div>
 			{% endif %}
 
-			{# if the domain is allowed to test editions, show an uninstall/test button #}
-			{% if canTestEditions %}
-				{% if edition == CraftEdition %}
-					<div class="btn test" data-edition="0">{{ "Uninstall"|t }}</div>
-				{% else %}
-					<div class="btn test" data-edition="{{ edition }}">{{ "Test"|t }}</div>
-				{% endif %}
+			{# Show the "Test" button if they're on a testable domain, this is not the current edition, and is greater than the licensed edition #}
+			{% if canTestEditions and edition != CraftEdition and edition > licensedEdition %}
+				<div class="btn test" data-edition="{{ edition }}">{{ "Test"|t }}</div>
+			{% endif %}
+
+			{# Show the "Uninstall" button if this is the currently-installed edition, but is not licensed #}
+			{% if edition == CraftEdition and edition > licensedEdition %}
+				<div class="btn test" data-edition="0">{{ "Uninstall"|t }}</div>
 			{% endif %}
 		</div>
 	{% endspaceless -%}
