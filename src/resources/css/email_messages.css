@@ -17,3 +17,5 @@ body.rtl .message:hover:after { left: 15px; }
 .modal.message-settings .header .right { top: 12px; }
 
 .modal.message-settings .body { height: calc(100% - 136px); overflow: auto; }
+
+/*# sourceMappingURL=email_messages.css.map */

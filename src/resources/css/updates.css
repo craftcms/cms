@@ -33,3 +33,5 @@ body.rtl #main .critical { margin-right: 5px; }
 #main .release ul li.improved:before { content: 'brush'; }
 
 #main .release ul li.fixed:before { content: 'screwdriver'; color: #da5a47; }
+
+/*# sourceMappingURL=updates.css.map */
