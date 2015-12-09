@@ -211,8 +211,12 @@ class Resources extends Component
                     return $iconPath;
                 }
 
-                case 'logo': {
-                    return Craft::$app->getPath()->getStoragePath().'/'.implode('/', $segs);
+                case 'rebrand': {
+                    if (!in_array($segs[1], array('logo', 'icon'))) {
+                        return false;
+                    }
+
+                    return Craft::$app->getPath()->getRebrandPath().'/'.$segs[1]."/".$segs[2];
                 }
 
                 case 'transforms': {

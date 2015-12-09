@@ -120,6 +120,18 @@ class Path extends Component
     }
 
     /**
+     * Returns the path to the craft/storage/rebrand/ folder.
+     *
+     * @return string
+     */
+    public function getRebrandPath()
+    {
+        $path = $this->getStoragePath().'/rebrand';
+        IO::ensureFolderExists($path);
+        return $path;
+    }
+
+    /**
      * Returns the path to the craft/app/vendor/ folder.
      *
      * @return string The path to the craft/app/vendor/ folder.

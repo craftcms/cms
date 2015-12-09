@@ -14,12 +14,14 @@ use craft\app\helpers\Image;
 use craft\app\helpers\Io;
 use craft\app\helpers\Url;
 use craft\app\web\Controller;
+use craft\app\web\Response;
+use craft\app\web\UploadedFile;
 
 Craft::$app->requireEdition(Craft::Client);
 
 /**
  * The RebrandController class is a controller that handles various control panel re-branding tasks such as uploading,
- * cropping and delete custom logos for displaying on the login page.
+ * cropping and deleting site logos and icons.
  *
  * Note that all actions in the controller require an authenticated Craft session via [[Controller::allowAnonymous]].
  *
@@ -28,145 +30,170 @@ Craft::$app->requireEdition(Craft::Client);
  */
 class RebrandController extends Controller
 {
+    /**
+     * Allowed types of site images.
+     *
+     * @var array
+     */
+    private $_allowedTypes = array('logo', 'icon');
+
     // Public Methods
     // =========================================================================
 
     /**
      * Upload a logo for the admin panel.
      *
-     * @return mixed
+     * @return Response
      */
-    public function actionUploadLogo()
+    public function actionUploadSiteImage()
     {
         $this->requireAjaxRequest();
         $this->requireAdmin();
+        $type = Craft::$app->getRequest()->getRequiredBodyParam('type');
 
-        // TODO stop accessing $_FILES array.
+        if (!in_array($type, $this->_allowedTypes)) {
+            return $this->asErrorJson(Craft::t('app',
+                'That is not an accepted site image type.'));
+        }
+
         // Upload the file and drop it in the temporary folder
-        $file = $_FILES['image-upload'];
+        $file = UploadedFile::getInstanceByName('image-upload');
 
         try {
             // Make sure a file was uploaded
-            if (!empty($file['name']) && !empty($file['size'])) {
+            if ($file) {
+                $filename = Assets::prepareAssetName($file->name);
+
+                if (!Image::isImageManipulatable($file->getExtension())) {
+                    throw new Exception(Craft::t('app',
+                        'The uploaded file is not an image.'));
+                }
+
                 $folderPath = Craft::$app->getPath()->getTempUploadsPath();
                 Io::ensureFolderExists($folderPath);
                 Io::clearFolder($folderPath, true);
 
-                $filename = Assets::prepareAssetName($file['name']);
+                $fileDestination = $folderPath.'/'.$filename;
+                
+                move_uploaded_file($file->tempName, $fileDestination);
 
-                move_uploaded_file($file['tmp_name'], $folderPath.'/'.$filename);
+                $imageService = Craft::$app->getImages();
 
                 // Test if we will be able to perform image actions on this image
-                if (!Craft::$app->getImages()->checkMemoryForImage($folderPath.'/'.$filename)) {
-                    Io::deleteFile($folderPath.'/'.$filename);
-
-                    return $this->asErrorJson(Craft::t('app', 'The uploaded image is too large'));
+                if (!$imageService->checkMemoryForImage($fileDestination)) {
+                    Io::deleteFile($fileDestination);
+                    return $this->asErrorJson(Craft::t('app',
+                        'The uploaded image is too large'));
                 }
 
-                list ($width, $height) = Image::getImageSize($folderPath.'/'.$filename);
+                $imageService->loadImage($fileDestination)->
+                scaleToFit(500, 500, false)->
+                saveAs($fileDestination);
 
-                if (Io::getExtension($filename) != 'svg') {
-                    Craft::$app->getImages()->cleanImage($folderPath.'/'.$filename);
-                } else {
-                    // Resave svg files as png
-                    $newFilename = preg_replace('/\.svg$/i', '.png', $filename);
+                list ($width, $height) = Image::getImageSize($fileDestination);
 
-                    Craft::$app->getImages()
-                        ->loadImage($folderPath.'/'.$filename, $width, $height)
-                        ->saveAs($folderPath.'/'.$newFilename);
-
-                    Io::deleteFile($folderPath.'/'.$filename);
-                    $filename = $newFilename;
-                }
-
-                $constraint = 500;
-
-                // If the file is in the format bad-script.php.gif perhaps.
+                // If the file is in the format badscript.php.gif perhaps.
                 if ($width && $height) {
-                    // Never scale up the images, so make the scaling factor always <= 1
-                    $factor = min($constraint / $width, $constraint / $height, 1);
-
                     $html = Craft::$app->getView()->renderTemplate('_components/tools/cropper_modal',
-                        [
+                        array(
                             'imageUrl' => Url::getResourceUrl('tempuploads/'.$filename),
-                            'width' => round($width * $factor),
-                            'height' => round($height * $factor),
-                            'factor' => $factor,
-                            'constraint' => $constraint,
-                            'fileName' => $filename
-                        ]
+                            'width' => $width,
+                            'height' => $height,
+                            'filename' => $filename
+                        )
                     );
 
-                    return $this->asJson(['html' => $html]);
+                    return $this->asJson(array('html' => $html));
                 }
             }
         } catch (Exception $exception) {
             return $this->asErrorJson($exception->getMessage());
         }
 
-        return $this->asErrorJson(Craft::t('app', 'There was an error uploading your photo'));
+        return $this->asErrorJson(Craft::t('app',
+            'There was an error uploading your photo'));
     }
 
     /**
      * Crop user photo.
      *
-     * @return mixed
+     * @return Response
      */
-    public function actionCropLogo()
+    public function actionCropSiteImage()
     {
         $this->requireAjaxRequest();
         $this->requireAdmin();
 
+        $requestService = Craft::$app->getRequest();
+
+        $type = $requestService->getRequiredBodyParam('type');
+
+        if (!in_array($type, $this->_allowedTypes)) {
+            $this->asErrorJson(Craft::t('app',
+                'That is not a legal site image type.'));
+        }
+
         try {
-            $x1 = Craft::$app->getRequest()->getRequiredBodyParam('x1');
-            $x2 = Craft::$app->getRequest()->getRequiredBodyParam('x2');
-            $y1 = Craft::$app->getRequest()->getRequiredBodyParam('y1');
-            $y2 = Craft::$app->getRequest()->getRequiredBodyParam('y2');
-            $source = Craft::$app->getRequest()->getRequiredBodyParam('source');
+            $x1 = $requestService->getRequiredBodyParam('x1');
+            $x2 = $requestService->getRequiredBodyParam('x2');
+            $y1 = $requestService->getRequiredBodyParam('y1');
+            $y2 = $requestService->getRequiredBodyParam('y2');
+            $source = $requestService->getRequiredBodyParam('source');
 
-            // Strip off any query string info, if any.
+            // Strip off any querystring info, if any.
             $source = Url::stripQueryString($source);
+            
+            $pathService = Craft::$app->getPath();
+            $imageService = Craft::$app->getImages();
+            
+            $imagePath = $pathService->getTempUploadsPath().'/'.$source;
 
-            $imagePath = Craft::$app->getPath()->getTempUploadsPath().'/'.$source;
-
-            if (Io::fileExists($imagePath) && Craft::$app->getImages()->checkMemoryForImage($imagePath)) {
-                $targetPath = Craft::$app->getPath()->getStoragePath().'/logo';
+            if (Io::fileExists($imagePath) && $imageService->checkMemoryForImage($imagePath)) {
+                $targetPath = $pathService->getRebrandPath().'/'.$type.'/';
 
                 Io::ensureFolderExists($targetPath);
                 Io::clearFolder($targetPath);
 
-                Craft::$app->getImages()
-                    ->loadImage($imagePath, 300, 300)
+                $imageService
+                    ->loadImage($imagePath)
                     ->crop($x1, $x2, $y1, $y2)
                     ->scaleToFit(300, 300, false)
-                    ->saveAs($targetPath.'/'.$source);
+                    ->saveAs($targetPath.$source);
 
                 Io::deleteFile($imagePath);
 
-                $html = Craft::$app->getView()->renderTemplate('settings/general/_logo');
-
-                return $this->asJson(['html' => $html]);
+                $html = Craft::$app->getView()->renderTemplate('settings/general/_images/'.$type);
+                return $this->asJson(array('html' => $html));
             }
+
             Io::deleteFile($imagePath);
         } catch (Exception $exception) {
             return $this->asErrorJson($exception->getMessage());
         }
 
-        return $this->asErrorJson(Craft::t('app', 'Something went wrong when processing the logo.'));
+        return $this->asErrorJson(Craft::t('app',
+            'Something went wrong when processing the logo.'));
     }
 
     /**
      * Delete logo.
      *
-     * @return mixed
+     * @return Response
      */
-    public function actionDeleteLogo()
+    public function actionDeleteSiteImage()
     {
         $this->requireAdmin();
-        Io::clearFolder(Craft::$app->getPath()->getStoragePath().'/logo');
+        $type = Craft::$app->getRequest()->getRequiredBodyParam('type');
 
-        $html = Craft::$app->getView()->renderTemplate('settings/general/_logo');
+        if (!in_array($type, $this->_allowedTypes)) {
+            $this->asErrorJson(Craft::t('app',
+                'That is not a legal site image type.'));
+        }
 
-        return $this->asJson(['html' => $html]);
+        Io::clearFolder(Craft::$app->getPath()->getRebrandPath().$type.'/');
+
+        $html = Craft::$app->getView()->renderTemplate('settings/general/_images/'.$type);
+
+        return $this->asJson(array('html' => $html));
     }
 }
