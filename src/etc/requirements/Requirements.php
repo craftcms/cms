@@ -474,7 +474,7 @@ class IconvRequirement extends Requirement
 	// =========================================================================
 
 	/**
-	 * @return PhpVersionRequirement
+	 * @return IconvRequirement
 	 */
 	public function __construct()
 	{
