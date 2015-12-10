@@ -1,6 +1,6 @@
 <?php
 /**
- * The base class for all asset source types.  Any asset source type must extend this class.
+ * The base class for all asset Volumes.  Any Volume type must extend this class.
  *
  * @author     Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright  Copyright (c) 2014, Pixel & Tonic, Inc.
@@ -141,6 +141,9 @@ abstract class Volume extends SavableComponent implements VolumeInterface
     // Public Methods
     // =========================================================================
 
+    /**
+     * @inheritdoc
+     */
     public function getFileList($directory)
     {
         return $this->getFilesystem()->listContents($directory, true);
@@ -171,22 +174,6 @@ abstract class Volume extends SavableComponent implements VolumeInterface
     /**
      * @inheritdoc
      */
-    public function createOrUpdateFile($path, $contents)
-    {
-        return $this->getFilesystem()->put($path, $contents);
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getFileContents($path)
-    {
-        return $this->getFilesystem()->read($path);
-    }
-
-    /**
-     * @inheritdoc
-     */
     public function fileExists($path)
     {
         return $this->getFilesystem()->has($path);
@@ -197,7 +184,8 @@ abstract class Volume extends SavableComponent implements VolumeInterface
      */
     public function folderExists($path)
     {
-        return $this->getFilesystem()->has($path);
+        return $this->getAdapter()->has(rtrim($path,
+                '/').($this->foldersHaveTrailingSlashes ? '/' : ''));
     }
 
     /**
@@ -208,19 +196,10 @@ abstract class Volume extends SavableComponent implements VolumeInterface
         try {
             return $this->getFilesystem()->delete($path);
         } catch (FileNotFoundException $exception) {
+            // Make a note of it, but otherwise - mission accomplished!
             Craft::info($exception->getMessage());
-
-            // No file - no problem.
             return true;
         }
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getContentsAndDeleteFile($path)
-    {
-        return $this->getFilesystem()->readAndDelete($path);
     }
 
     /**
@@ -250,21 +229,11 @@ abstract class Volume extends SavableComponent implements VolumeInterface
     /**
      * @inheritdoc
      */
-    public function getSize($path)
-    {
-        return $this->getFilesystem()->getSize($path);
-    }
-
-    /**
-     * @inheritdoc
-     */
     public function createDir($path)
     {
-        if ($this->getAdapter()->has(rtrim($path,
-                '/').($this->foldersHaveTrailingSlashes ? '/' : ''))
-        ) {
-            throw new VolumeFolderExistsException(Craft::t('app',
-                "Folder “{folder}” already exists on the source!",
+        if ($this->folderExists($path)) {
+            throw new VolumeObjectExistsException(Craft::t('app',
+                "Folder “{folder}” already exists on the volume!",
                 array('folder' => $path)));
         }
 
@@ -289,7 +258,14 @@ abstract class Volume extends SavableComponent implements VolumeInterface
      */
     public function renameDir($path, $newName)
     {
-        $fileList = $this->getAdapter()->listContents($path, true);
+        if (!$this->folderExists($path)) {
+            throw new VolumeObjectNotFoundException(Craft::t('app',
+                "Folder “{folder}” cannot be found on the volume.",
+                array('folder' => $path)));
+        }
+
+        // Get the list of dir contents
+        $fileList = $this->getFileList($path);
         $directoryList = [];
 
         $parts = explode("/", $path);
@@ -301,6 +277,7 @@ abstract class Volume extends SavableComponent implements VolumeInterface
 
         $pattern = '/^'.preg_quote($path, '/').'/';
 
+        // Rename every file and build a list of directories
         foreach ($fileList as $object) {
             if ($object['type'] != 'dir') {
                 $objectPath = preg_replace($pattern, $newPath, $object['path']);
@@ -310,18 +287,14 @@ abstract class Volume extends SavableComponent implements VolumeInterface
             }
         }
 
+        // The files are moved, but the directories remain. Delete them.
         foreach ($directoryList as $path) {
             $this->deleteDir($path);
         }
     }
 
     /**
-     * Save a file from the source's uriPath to a local target path.
-     *
-     * @param $uriPath
-     * @param $targetPath
-     *
-     * @return integer $bytes amount of bytes copied
+     * @inheritdoc
      */
     public function saveFileLocally($uriPath, $targetPath)
     {
