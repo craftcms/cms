@@ -280,7 +280,10 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 						// Push prompt into prompt array
 						if (response.prompt)
 						{
-							promptData = this._fileConflictTemplate;
+							var promptData = {
+								message: this._fileConflictTemplate.message,
+								choices: this._fileConflictTemplate.choices
+							};
 							promptData.message = Craft.t(promptData.message, {file: response.filename});
 							response.prompt = promptData;
 
@@ -510,7 +513,11 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 						// Push prompt into prompt array
 						if (data.prompt)
 						{
-							promptData = this._folderConflictTemplate;
+							var promptData = {
+								message: this._folderConflictTemplate.message,
+								choices: this._folderConflictTemplate.choices
+							};
+
 							promptData.message = Craft.t(promptData.message, {folder: data.foldername});
 							data.prompt = promptData;
 
@@ -834,7 +841,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 
 		this._currentUploaderSettings = options;
 
-		this.uploader = new Craft.Uploader (this.$uploadButton, options);
+		this.uploader = new Craft.Uploader(this.$uploadButton, options);
 
 		this.$uploadButton.on('click', $.proxy(function()
 		{
@@ -983,7 +990,10 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 			// If there is a prompt, add it to the queue
 			if (response.prompt)
 			{
-				promptData = this._fileConflictTemplate;
+				var promptData = {
+					message: this._fileConflictTemplate.message,
+					choices: this._fileConflictTemplate.choices
+				};
 				promptData.message = Craft.t(promptData.message, {file: response.filename});
 				response.prompt = promptData;
 
