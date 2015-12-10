@@ -7,6 +7,10 @@
 {%- set values = (values is defined ? values : []) -%}
 {%- set hasOptgroups = false -%}
 
+{% if name is defined and name %}
+	<input type="hidden" name="{{ name }}" value="">
+{% endif -%}
+
 <div class="{{ class }}">
 	<select multiple
 		{%- if id is defined %} id="{{ id }}"{% endif %}
