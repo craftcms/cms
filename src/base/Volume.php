@@ -250,22 +250,6 @@ abstract class Volume extends SavableComponent implements VolumeInterface
     /**
      * @inheritdoc
      */
-    public function getMimeType($path)
-    {
-        return $this->getFilesystem()->getMimetype($path);
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getTimestamp($path)
-    {
-        return $this->getAdapter()->getTimestamp($path);
-    }
-
-    /**
-     * @inheritdoc
-     */
     public function getSize($path)
     {
         return $this->getFilesystem()->getSize($path);

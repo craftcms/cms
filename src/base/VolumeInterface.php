@@ -123,57 +123,33 @@ interface VolumeInterface extends SavableComponentInterface
      * Deletes a file, and returns its former contents.
      *
      * @param string $path The path of the file, relative to the source’s root.
-     *
-     * @throws FileNotFoundException
-     *
+     **
      * @return string The contents of the file.
+     * @throws FileNotFoundException
      */
     public function getContentsAndDeleteFile($path);
 
     /**
      * Renames a file.
      *
-     * @param string $path    The old path of the file, relative to the source’s root.
+     * @param string $path The old path of the file, relative to the source’s root.
      * @param string $newPath The new path of the file, relative to the source’s root.
-     *
-     * @throws FileExistsException
-     * @throws FileNotFoundException
-     *
+     **
      * @return boolean Whether the operation was successful.
+     * @throws FileExistsException if a file with such a name exists already.
+     * @throws FileNotFoundException if the file to be renamed cannot be found.
      */
     public function renameFile($path, $newPath);
 
     /**
      * Copies a file.
      *
-     * @param string $path    The path of the file, relative to the source’s root.
+     * @param string $path The path of the file, relative to the source’s root.
      * @param string $newPath The path of the new file, relative to the source’s root.
      *
      * @return boolean Whether the operation was successful.
      */
     public function copyFile($path, $newPath);
-
-    /**
-     * Returns a file’s MIME type.
-     *
-     * @param string $path The path of the file, relative to the source’s root.
-     *
-     * @throws FileNotFoundException
-     *
-     * @return string|false The file’s MIME type, or `false` if it could not be determined.
-     */
-    public function getMimeType($path);
-
-    /**
-     * Returns a file’s timestamp.
-     *
-     * @param string $path The path of the file, relative to the source’s root.
-     *
-     * @throws FileNotFoundException
-     *
-     * @return string|false The file’s timestamp, or `false` if it could not be determined.
-     */
-    public function getTimestamp($path);
 
     /**
      * Returns a file’s size.
@@ -189,8 +165,8 @@ interface VolumeInterface extends SavableComponentInterface
      *
      * @param string $path The path of the directory, relative to the source’s root.
      *
-     * @throws VolumeFolderExistsException
      * @return boolean Whether the operation was successful.
+     * @throws VolumeFolderExistsException if a directory with such name already exists.
      */
     public function createDir($path);
 
