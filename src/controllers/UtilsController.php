@@ -288,7 +288,18 @@ class UtilsController extends BaseController
 									$logEntryModel->session = $this->_cleanUpArray(array_slice($rowContents, $sessionStart, $serverStart - $sessionStart - 3));
 								}
 
-								$logEntryModel->server = $this->_cleanUpArray(array_slice($rowContents, $serverStart, $profileStart - $serverStart - 1));
+								// Build out the $_SERVER array. Not exactly sure when this should end so just scan through the lines until the array has been closed.
+								$serverArray = [];
+								for ($line = $serverStart; isset($rowContents[$line]); $line++)
+								{
+									if (strncmp($rowContents[$line], ')', 1) === 0)
+									{
+										break;
+									}
+
+									$serverArray[] = $rowContents[$line];
+								}
+								$logEntryModel->server = $this->_cleanUpArray($serverArray);
 
 								// We can't just grab the profile info, we need to do some extra processing on it.
 								$tempProfile = array_slice($rowContents, $profileStart);
