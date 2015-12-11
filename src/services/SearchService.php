@@ -392,18 +392,18 @@ class SearchService extends BaseApplicationComponent
 		}
 
 		// Account for substrings
-		if ($term->subLeft)
-		{
-			$keywords = $keywords.' ';
-		}
-
-		if ($term->subRight)
+		if (!$term->subLeft)
 		{
 			$keywords = ' '.$keywords;
 		}
 
+		if (!$term->subRight)
+		{
+			$keywords = $keywords.' ';
+		}
+
 		// Get haystack and safe word count
-		$haystack  = $this->_removePadding($row['keywords'], true);
+		$haystack  = $row['keywords'];
 		$wordCount = count(array_filter(explode(' ', $haystack)));
 
 		// Get number of matches
