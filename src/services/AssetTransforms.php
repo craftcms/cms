@@ -870,8 +870,10 @@ class AssetTransforms extends Component
      *
      * @return string
      */
-    public function getTransformSubpath(Asset $asset, AssetTransformIndex $index)
-    {
+    public function getTransformSubpath(
+        Asset $asset,
+        AssetTransformIndex $index
+    ) {
         return $this->getTransformSubfolder($asset,
             $index).'/'.$this->getTransformFilename($asset, $index);
     }
@@ -906,7 +908,8 @@ class AssetTransforms extends Component
 
         foreach ($thumbFolders as $folder) {
             if (is_dir($folder)) {
-                Io::deleteFile($folder.'/'.$asset->id.'.'.$this->_getThumbExtension($asset), true);
+                Io::deleteFile($folder.'/'.$asset->id.'.'.$this->_getThumbExtension($asset),
+                    true);
             }
         }
     }
@@ -1090,6 +1093,12 @@ class AssetTransforms extends Component
             }
 
             default: {
+                if (!preg_match('/(top|center|bottom)-(left|center|right)/',
+                    $transform->position)
+                ) {
+                    $transform->position = 'center-center';
+                }
+
                 $image->scaleAndCrop($transform->width, $transform->height,
                     true, $transform->position);
                 break;
