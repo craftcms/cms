@@ -293,9 +293,10 @@ class Assets extends Component
         // Now that we have an ID, store the source
         if (!$volume->isLocal() && $asset->kind == 'image' && !empty($asset->newFilePath)) {
             // Store the local source for now and set it up for deleting, if needed
-            Craft::$app->getAssetTransforms()->storeLocalSource($asset->newFilePath,
+            $assetTransforms = Craft::$app->getAssetTransforms();
+            $assetTransforms->storeLocalSource($asset->newFilePath,
                 $asset->getImageTransformSourcePath());
-            Craft::$app->getAssetTransforms()->queueSourceForDeletingIfNecessary($asset->getImageTransformSourcePath());
+            $assetTransforms->queueSourceForDeletingIfNecessary($asset->getImageTransformSourcePath());
         }
     }
 
@@ -910,19 +911,21 @@ class Assets extends Component
         }
 
         // Get the transform index model
-        $index = Craft::$app->getAssetTransforms()->getTransformIndex($asset,
+        $assetTransforms = Craft::$app->getAssetTransforms();
+        $index = $assetTransforms->getTransformIndex($asset,
             $transform);
 
         // Does the file actually exist?
         if ($index->fileExists) {
-            return Craft::$app->getAssetTransforms()->getUrlForTransformByTransformIndex($index);
+            return $assetTransforms->getUrlForTransformByTransformIndex($index);
         } else {
             if (Craft::$app->getConfig()->get('generateTransformsBeforePageLoad')) {
-                return Craft::$app->getAssetTransforms()->ensureTransformUrlByIndexModel($index);
+                return $assetTransforms->ensureTransformUrlByIndexModel($index);
             } else {
                 // Queue up a new Generate Pending Transforms task, if there isn't one already
-                if (!Craft::$app->getTasks()->areTasksPending('GeneratePendingTransforms')) {
-                    Craft::$app->getTasks()->createTask('GeneratePendingTransforms');
+                $tasks = Craft::$app->getTasks();
+                if (!$tasks->areTasksPending('GeneratePendingTransforms')) {
+                    $tasks->createTask('GeneratePendingTransforms');
                 }
 
                 // Return the temporary transform URL
@@ -1283,20 +1286,21 @@ class Assets extends Component
         $toPath = $targetFolder->path.$filename;
 
         // Move inside the source.
+        $assetTransforms = Craft::$app->getAssetTransforms();
         if ($asset->volumeId == $targetFolder->volumeId) {
             if ($fromPath == $toPath) {
                 return;
             }
 
             $sourceVolume->renameFile($fromPath, $toPath);
-            $transformIndexes = Craft::$app->getAssetTransforms()->getAllCreatedTransformsForAsset($asset);
+            $transformIndexes = $assetTransforms->getAllCreatedTransformsForAsset($asset);
 
             // Move the transforms
             foreach ($transformIndexes as $transformIndex) {
                 /**
                  * @var AssetTransformIndex $transformIndex
                  */
-                $fromTransformPath = Craft::$app->getAssetTransforms()->getTransformSubpath($asset,
+                $fromTransformPath = $assetTransforms->getTransformSubpath($asset,
                     $transformIndex);
                 $toTransformPath = $fromTransformPath;
 
@@ -1317,10 +1321,10 @@ class Assets extends Component
                     $sourceVolume->renameFile($baseFrom.$fromTransformPath,
                         $baseTo.$toTransformPath);
                     $transformIndex->filename = $filename;
-                    Craft::$app->getAssetTransforms()->storeTransformIndexData($transformIndex);
+                    $assetTransforms->storeTransformIndexData($transformIndex);
                 } catch (VolumeObjectNotFoundException $exception) {
                     // No biggie, just delete the transform index as well then
-                    Craft::$app->getAssetTransforms()->deleteTransformIndex($transformIndex->id);
+                    $assetTransforms->deleteTransformIndex($transformIndex->id);
                 }
             }
         } // Move between sources
@@ -1344,7 +1348,7 @@ class Assets extends Component
             }
 
             // Nuke the transforms
-            Craft::$app->getAssetTransforms()->deleteAllTransformData($asset);
+            $assetTransforms->deleteAllTransformData($asset);
         }
     }
 

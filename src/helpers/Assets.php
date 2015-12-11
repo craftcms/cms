@@ -103,13 +103,14 @@ class Assets
         }
 
 
-        $separator = Craft::$app->getConfig()->get('filenameWordSeparator');
+        $config = Craft::$app->getConfig();
+        $separator = $config->get('filenameWordSeparator');
 
         if (!is_string($separator)) {
             $separator = null;
         }
 
-        $baseName = Io::cleanFilename($baseName, Craft::$app->getConfig()->get('convertFilenamesToAscii'), $separator);
+        $baseName = Io::cleanFilename($baseName, $config->get('convertFilenamesToAscii'), $separator);
 
         if ($isFilename && empty($baseName)) {
             $baseName = '-';
@@ -130,7 +131,8 @@ class Assets
     public static function mirrorFolderStructure(
         VolumeFolder $sourceParentFolder, VolumeFolder $destinationFolder, $targetTreeMap = array()
     ) {
-        $sourceTree = Craft::$app->getAssets()->getAllDescendantFolders($sourceParentFolder);
+        $assets = Craft::$app->getAssets();
+        $sourceTree = $assets->getAllDescendantFolders($sourceParentFolder);
         $previousParent = $sourceParentFolder->getParent();
         $sourcePrefixLength = strlen($previousParent->path);
         $folderIdChanges = [];
@@ -151,7 +153,7 @@ class Assets
                 // Any and all parent folders should be already mirrored
                 $folder->parentId = (isset($folderIdChanges[$sourceFolder->parentId]) ? $folderIdChanges[$sourceFolder->parentId] : $destinationFolder->id);
 
-                Craft::$app->getAssets()->createFolder($folder);
+                $assets->createFolder($folder);
 
                 $folderIdChanges[$sourceFolder->id] = $folder->id;
             }

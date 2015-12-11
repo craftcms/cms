@@ -488,13 +488,14 @@ class AssetTransforms extends Component
             ], [], false)
         );
 
+        $dbConnection = Craft::$app->getDb();
         if (!empty($index->id)) {
-            Craft::$app->getDb()->createCommand()->update('{{%assettransformindex}}',
+            $dbConnection->createCommand()->update('{{%assettransformindex}}',
                 $values, 'id = :id', [':id' => $index->id])->execute();
         } else {
-            Craft::$app->getDb()->createCommand()->insert('{{%assettransformindex}}',
+            $dbConnection->createCommand()->insert('{{%assettransformindex}}',
                 $values)->execute();
-            $index->id = Craft::$app->getDb()->getLastInsertID();
+            $index->id = $dbConnection->getLastInsertID();
         }
 
         return $index;
@@ -784,7 +785,8 @@ class AssetTransforms extends Component
 
                 // The only reasonable way to check for transparency is with Imagick. If Imagick is not present, then
                 // we fallback to jpg
-                if (Craft::$app->getImages()->isGd() || !method_exists('Imagick',
+                $images = Craft::$app->getImages();
+                if ($images->isGd() || !method_exists('Imagick',
                         'getImageAlphaChannel')
                 ) {
                     return 'jpg';
@@ -795,7 +797,7 @@ class AssetTransforms extends Component
                 $path = Io::getTempFilePath($asset->getExtension());
                 $localCopy = $volume->saveFileLocally($asset->getUri(), $path);
 
-                $image = Craft::$app->getImages()->loadImage($localCopy);
+                $image = $images->loadImage($localCopy);
 
                 if ($image->isTransparent()) {
                     $format = 'png';
@@ -1064,11 +1066,12 @@ class AssetTransforms extends Component
         $imageSource = $asset->getTransformSource();
         $quality = $transform->quality ? $transform->quality : Craft::$app->getConfig()->get('defaultImageQuality');
 
+        $images = Craft::$app->getImages();
         if (StringHelper::toLowerCase($asset->getExtension()) == 'svg' && $index->detectedFormat != 'svg') {
-            $image = Craft::$app->getImages()->loadImage($imageSource, true,
+            $image = $images->loadImage($imageSource, true,
                 max($transform->width, $transform->height));
         } else {
-            $image = Craft::$app->getImages()->loadImage($imageSource);
+            $image = $images->loadImage($imageSource);
         }
 
         if ($image instanceof Raster) {

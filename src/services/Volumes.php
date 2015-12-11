@@ -296,8 +296,9 @@ class Volumes extends Component
                 $volumeRecord->settings = $volume->settings;
                 $volumeRecord->fieldLayoutId = $volume->fieldLayoutId;
 
+                $fields = Craft::$app->getFields();
                 if (!$isNewVolume) {
-                    Craft::$app->getFields()->deleteLayoutById($volumeRecord->fieldLayoutId);
+                    $fields->deleteLayoutById($volumeRecord->fieldLayoutId);
                 } else {
                     // Set the sort order
                     $maxSortOrder = (new Query())
@@ -310,7 +311,7 @@ class Volumes extends Component
 
                 // Save the new one
                 $fieldLayout = $volume->getFieldLayout();
-                Craft::$app->getFields()->saveLayout($fieldLayout);
+                $fields->saveLayout($fieldLayout);
 
                 // Update the volume record/model with the new layout ID
                 $volume->fieldLayoutId = $fieldLayout->id;
@@ -324,14 +325,15 @@ class Volumes extends Component
                     $volume->id = $volumeRecord->id;
                 } else {
                     // Update the top folder's name with the volume's new name
-                    $topFolder = Craft::$app->getAssets()->findFolder([
+                    $assets = Craft::$app->getAssets();
+                    $topFolder = $assets->findFolder([
                         'volumeId' => $volume->id,
                         'parentId' => ':empty:'
                     ]);
 
                     if ($topFolder !== null && $topFolder->name != $volume->name) {
                         $topFolder->name = $volume->name;
-                        Craft::$app->getAssets()->storeFolderRecord($topFolder);
+                        $assets->storeFolderRecord($topFolder);
                     }
                 }
 
@@ -425,7 +427,8 @@ class Volumes extends Component
             return false;
         }
 
-        $transaction = Craft::$app->getDb()->beginTransaction();
+        $dbConnection = Craft::$app->getDb();
+        $transaction = $dbConnection->beginTransaction();
         try {
             // Grab the asset file ids so we can clean the elements table.
             $assetFileIds = (new Query())
@@ -437,7 +440,7 @@ class Volumes extends Component
             Craft::$app->getElements()->deleteElementById($assetFileIds);
 
             // Nuke the asset volume.
-            $affectedRows = Craft::$app->getDb()->createCommand()->delete('{{%volumes}}',
+            $affectedRows = $dbConnection->createCommand()->delete('{{%volumes}}',
                 ['id' => $volumeId])->execute();
 
             $transaction->commit();
