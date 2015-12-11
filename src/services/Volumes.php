@@ -430,14 +430,14 @@ class Volumes extends Component
         $dbConnection = Craft::$app->getDb();
         $transaction = $dbConnection->beginTransaction();
         try {
-            // Grab the asset file ids so we can clean the elements table.
-            $assetFileIds = (new Query())
+            // Grab the Asset ids so we can clean the elements table.
+            $assetIds = (new Query())
                 ->select('id')
                 ->from('{{%assets}}')
                 ->where(['volumeId' => $volumeId])
                 ->column();
 
-            Craft::$app->getElements()->deleteElementById($assetFileIds);
+            Craft::$app->getElements()->deleteElementById($assetIds);
 
             // Nuke the asset volume.
             $affectedRows = $dbConnection->createCommand()->delete('{{%volumes}}',

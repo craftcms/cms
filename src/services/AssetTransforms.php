@@ -227,10 +227,10 @@ class AssetTransforms extends Component
         $query = (new Query())
             ->select('ti.*')
             ->from('{{%assettransformindex}} ti')
-            ->where('ti.volumeId = :volumeId AND ti.fileId = :fileId AND ti.location = :location',
+            ->where('ti.volumeId = :volumeId AND ti.assetId = :assetId AND ti.location = :location',
                 [
                     ':volumeId' => $asset->volumeId,
-                    ':fileId' => $asset->id,
+                    ':assetId' => $asset->id,
                     ':location' => $transformLocation
                 ]);
 
@@ -265,7 +265,7 @@ class AssetTransforms extends Component
         // Create a new record
         $time = new DateTime();
         $data = [
-            'fileId' => $asset->id,
+            'assetId' => $asset->id,
             'format' => $transform->format,
             'volumeId' => $asset->volumeId,
             'dateIndexed' => Db::prepareDateForDb($time),
@@ -362,7 +362,7 @@ class AssetTransforms extends Component
 
         $index->transform = $transform;
 
-        $asset = Craft::$app->getAssets()->getAssetById($index->fileId);
+        $asset = Craft::$app->getAssets()->getAssetById($index->assetId);
         $volume = $asset->getVolume();
         $index->detectedFormat = !empty($index->format) ? $index->format : $this->detectAutoTransformFormat($asset);
 
@@ -386,7 +386,7 @@ class AssetTransforms extends Component
             $results = (new Query())
                 ->select('*')
                 ->from('{{%assettransformindex}}')
-                ->where('fileId = :fileId', [':fileId' => $asset->id])
+                ->where('assetId = :assetId', [':assetId' => $asset->id])
                 ->andWhere(['in', 'location', $possibleLocations])
                 ->andWhere('id <> :indexId', [':indexId' => $index->id])
                 ->andWhere('fileExists = 1')
@@ -477,7 +477,7 @@ class AssetTransforms extends Component
     {
         $values = Db::prepareValuesForDb(
             $index->toArray([
-                'fileId',
+                'assetId',
                 'filename',
                 'format',
                 'location',
@@ -541,21 +541,21 @@ class AssetTransforms extends Component
     /**
      * Get a transform index model by a row id.
      *
-     * @param integer $fileId
+     * @param integer $assetId
      * @param string $transformHandle
      *
      * @return AssetTransformIndex|null
      */
-    public function getTransformIndexModelByFileIdAndHandle(
-        $fileId,
+    public function getTransformIndexModelByAssetIdAndHandle(
+        $assetId,
         $transformHandle
     ) {
         // Check if an entry exists already
         $entry = (new Query())
             ->select('ti.*')
             ->from('{{%assettransformindex}} ti')
-            ->where('ti.fileId = :id AND ti.location = :location',
-                [':id' => $fileId, ':location' => '_'.$transformHandle])
+            ->where('ti.assetId = :assetId AND ti.location = :location',
+                [':assetId' => $assetId, ':location' => '_'.$transformHandle])
             ->one();
 
         if ($entry) {
@@ -589,7 +589,7 @@ class AssetTransforms extends Component
     public function getUrlForTransformByTransformIndex(
         AssetTransformIndex $transformIndexModel
     ) {
-        $asset = Craft::$app->getAssets()->getAssetById($transformIndexModel->fileId);
+        $asset = Craft::$app->getAssets()->getAssetById($transformIndexModel->assetId);
         $volume = $asset->getVolume();
         $baseUrl = $volume->getRootUrl();
         $appendix = AssetsHelper::getUrlAppendix($volume, $asset);
@@ -599,16 +599,16 @@ class AssetTransforms extends Component
     }
 
     /**
-     * Delete transform records by a file id.
+     * Delete transform records by an Asset id
      *
-     * @param integer $fileId
+     * @param integer $assetId
      *
      * @return void
      */
-    public function deleteTransformIndexDataByAssetId($fileId)
+    public function deleteTransformIndexDataByAssetId($assetId)
     {
         Craft::$app->getDb()->createCommand()->delete('{{%assettransformindex}}',
-            'fileId = :fileId', [':fileId' => $fileId])->execute();
+            'assetId = :assetId', [':assetId' => $assetId])->execute();
     }
 
     /**
@@ -625,7 +625,7 @@ class AssetTransforms extends Component
     }
 
     /**
-     * Get a thumb server path by file model and size.
+     * Get a thumb server path by Asset model and size.
      *
      * @param Asset $asset
      * @param       $size
@@ -662,7 +662,7 @@ class AssetTransforms extends Component
      * @param Asset $asset
      *
      * @throws VolumeObjectNotFoundException If the file cannot be found.
-     * @throws VolumeException               If there was a file downloading the remote file.
+     * @throws VolumeException               If there was an error downloading the remote file.
      * @return mixed
      */
     public function getLocalImageSource(Asset $asset)
@@ -912,7 +912,7 @@ class AssetTransforms extends Component
     }
 
     /**
-     * Delete created transforms for a file.
+     * Delete created transforms for an Asset.
      *
      * @param Asset $asset
      */
@@ -940,7 +940,7 @@ class AssetTransforms extends Component
         $transforms = (new Query())
             ->select('*')
             ->from('{{%assettransformindex}}')
-            ->where('fileId = :fileId', [':fileId' => $asset->id])
+            ->where('assetId = :assetId', [':assetId' => $asset->id])
             ->all();
 
         foreach ($transforms as $key => $value) {
