@@ -9,7 +9,7 @@ use craft\app\helpers\Io;
 /**
  * The class name is the UTC timestamp in the format of mYYMMDD_HHMMSS_migrationName
  */
-class m151110_000000_move_logo extends Migration
+class m151209_000000_move_logo extends Migration
 {
 	/**
 	 * @inheritdoc
@@ -25,7 +25,7 @@ class m151110_000000_move_logo extends Migration
 	 */
 	public function safeDown()
 	{
-		echo "m151110_000000_move_logo cannot be reverted.\n";
+		echo "m151209_000000_move_logo cannot be reverted.\n";
 		return false;
 	}
 }
