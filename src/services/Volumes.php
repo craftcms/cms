@@ -471,7 +471,7 @@ class Volumes extends Component
      *
      * @param integer $volumeId
      *
-     * @throws VolumeException
+     * @throws VolumeException If the Volume does not exist.
      * @return AssetVolumeRecord
      */
     private function _getVolumeRecordById($volumeId = null)

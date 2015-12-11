@@ -3,8 +3,6 @@ namespace craft\app\base;
 
 use craft\app\errors\VolumeObjectExistsException;
 use craft\app\errors\VolumeObjectNotFoundException;
-use League\Flysystem\FileExistsException;
-use League\Flysystem\FileNotFoundException;
 
 /**
  * VolumeInterface defines the common interface to be implemented by volume classes.
@@ -63,8 +61,8 @@ interface VolumeInterface extends SavableComponentInterface
      * @param resource $stream The stream to file
      * @param array $config Additional config options to pass to the adapter.
      *
-     * @return boolean Whether the operation was successful.
      * @throws VolumeObjectExistsException if a file already exists at the path on the Volume.
+     * @return boolean Whether the operation was successful.
      */
     public function createFileByStream($path, $stream, $config = []);
 
@@ -102,9 +100,9 @@ interface VolumeInterface extends SavableComponentInterface
      * @param string $path The old path of the file, relative to the source’s root.
      * @param string $newPath The new path of the file, relative to the source’s root.
      *
-     * @return boolean Whether the operation was successful.
      * @throws VolumeObjectExistsException if a file with such a name exists already.
      * @throws VolumeObjectNotFoundException if the file to be renamed cannot be found.
+     * @return boolean Whether the operation was successful.
      */
     public function renameFile($path, $newPath);
 
@@ -124,8 +122,8 @@ interface VolumeInterface extends SavableComponentInterface
      *
      * @param string $path The path of the directory, relative to the source’s root.
      *
-     * @return boolean Whether the operation was successful.
      * @throws VolumeObjectExistsException if a directory with such name already exists.
+     * @return boolean Whether the operation was successful.
      */
     public function createDir($path);
 
@@ -144,9 +142,9 @@ interface VolumeInterface extends SavableComponentInterface
      * @param string $path The path of the directory, relative to the source’s root.
      * @param string $newPath The new path of the directory, relative to the source’s root.
      *
-     * @return boolean Whether the operation was successful.
      * @throws VolumeObjectExistsException if a directory with such name already exists.
      * @throws VolumeObjectNotFoundException if a directory with such name already exists.
+     * @return boolean Whether the operation was successful.
      */
     public function renameDir($path, $newName);
 

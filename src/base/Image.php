@@ -2,6 +2,7 @@
 namespace craft\app\base;
 
 use craft\app\errors\Exception;
+use craft\app\errors\ImageException;
 use craft\app\helpers\Image as ImageHelper;
 
 /**
@@ -37,7 +38,7 @@ abstract class Image
 	 *
 	 * @param string $path
 	 *
-	 * @throws Exception
+	 * @throws ImageException If the file cannot be loaded
 	 * @return Image
 	 */
 	abstract public function loadImage($path);
@@ -92,6 +93,7 @@ abstract class Image
 	 *
 	 * @param string $targetPath
 	 *
+	 * @throws ImageException If the image cannot be saved.
 	 * @return null
 	 */
 	abstract public function saveAs($targetPath, $autoQuality = false);
@@ -111,8 +113,6 @@ abstract class Image
 	 *
 	 * @param int|string $width
 	 * @param int|string $height
-	 *
-	 * @throws Exception
 	 */
 	protected function normalizeDimensions(&$width, &$height = null)
 	{

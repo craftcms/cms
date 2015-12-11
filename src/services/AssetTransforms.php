@@ -25,7 +25,7 @@ use craft\app\errors\AssetTransformException;
 use craft\app\errors\VolumeObjectNotFoundException;
 use craft\app\errors\VolumeException;
 use craft\app\errors\AssetLogicException;
-use craft\app\errors\ModelValidationException;
+use craft\app\errors\ValidationException;
 use Exception;
 use yii\base\Application;
 use yii\base\Component;
@@ -138,8 +138,8 @@ class AssetTransforms extends Component
      *
      * @param AssetTransformModel $transform
      *
-     * @throws AssetTransformException
-     * @throws ModelValidationException
+     * @throws AssetTransformException If attempting to update a non-existing transform.
+     * @throws ValidationException     If the validation failed.
      * @return boolean
      */
     public function saveTransform(AssetTransformModel $transform)
@@ -187,7 +187,7 @@ class AssetTransforms extends Component
             return true;
         } else {
             $transform->addErrors($transformRecord->getErrors());
-            $exception = new ModelValidationException(Craft::t('app',
+            $exception = new ValidationException(Craft::t('app',
                 'There were errors while saving the Asset Transform.'));
             $exception->setModel($transform);
 
@@ -200,7 +200,6 @@ class AssetTransforms extends Component
      *
      * @param integer $transformId
      *
-     * @throws \Exception
      * @return boolean
      */
     public function deleteTransform($transformId)
@@ -283,7 +282,7 @@ class AssetTransforms extends Component
      *
      * @param AssetTransformIndex $index
      *
-     * @throws Exception
+     * @throws AssetTransformException If there was an error generating the transform.
      * @return string
      */
     public function ensureTransformUrlByIndexModel(AssetTransformIndex $index)
@@ -435,7 +434,7 @@ class AssetTransforms extends Component
      *
      * @param mixed $transform
      *
-     * @throws AssetTransformException
+     * @throws AssetTransformException If the transform cannot be found by the handle.
      * @return AssetTransformModel|null
      */
     public function normalizeTransform($transform)
@@ -661,7 +660,8 @@ class AssetTransforms extends Component
      *
      * @param Asset $asset
      *
-     * @throws VolumeException
+     * @throws VolumeObjectNotFoundException If the file cannot be found.
+     * @throws VolumeException               If there was a file downloading the remote file.
      * @return mixed
      */
     public function getLocalImageSource(Asset $asset)
@@ -771,8 +771,8 @@ class AssetTransforms extends Component
      *
      * @param Asset $asset
      *
+     * @throws AssetLogicException If attempting to detect an image format for a non-image.
      * @return mixed|string
-     * @throws AssetLogicException
      */
     public function detectAutoTransformFormat(Asset $asset)
     {
@@ -1025,7 +1025,7 @@ class AssetTransforms extends Component
      * @param Asset $asset
      * @param AssetTransformIndex $index
      *
-     * @throws AssetTransformException if the AssetTransformIndex cannot be determined to have a transform
+     * @throws AssetTransformException If a transform index has an invalid transform assigned.
      * @return void
      */
     private function _createTransformForAsset(

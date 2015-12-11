@@ -18,16 +18,14 @@ use craft\app\errors\AssetConflictException;
 use craft\app\errors\AssetDisallowedExtensionException;
 use craft\app\errors\AssetLogicException;
 use craft\app\errors\AssetMissingException;
-use craft\app\errors\EventException;
 use craft\app\errors\UploadFailedException;
 use craft\app\errors\VolumeException;
 use craft\app\errors\VolumeObjectExistsException;
 use craft\app\errors\VolumeObjectNotFoundException;
-use craft\app\errors\VolumeFolderExistsException;
 use craft\app\errors\ElementSaveException;
 use craft\app\errors\Exception;
 use craft\app\errors\FileException;
-use craft\app\errors\ModelValidationException;
+use craft\app\errors\ValidationException;
 use craft\app\events\AssetEvent;
 use craft\app\events\ReplaceAssetEvent;
 use craft\app\helpers\Assets as AssetsHelper;
@@ -194,7 +192,7 @@ class Assets extends Component
      * @throws AssetDisallowedExtensionException If the file extension is not allowed.
      * @throws FileException                     If there was a problem with the actual file.
      * @throws AssetConflictException            If a file with such name already exists.
-     * @throws AssetLogicException               If something violates Asset's logic (e.g. Asset outside of a folder).
+     * @throws AssetLogicException               If it's a new Asset and there's no file or there's no folder id set.
      * @throws VolumeObjectExistsException       If the file actually exists on the volume, but on in the index.
      * @throws UploadFailedException             If for some reason it's not possible to write the file to the final location
      * @return void
@@ -366,9 +364,9 @@ class Assets extends Component
      * @param $filename
      *
      *
-     * @throws EventException
-     * @throws FileException
-     * @throws AssetLogicException
+     * @throws ActionCancelledException If something prevented the Asset replacement via Event.
+     * @throws FileException            If there was a problem with the actual file.
+     * @throws AssetLogicException      If the Asset to be replaced cannot be found.
      * @return void
      */
     public function replaceAssetFile($assetId, $pathOnServer, $filename)
@@ -394,7 +392,7 @@ class Assets extends Component
 
         // Is the event preventing this from happening?
         if (!$event->isValid) {
-            throw new EventException(Craft::t('app',
+            throw new ActionCancelledException(Craft::t('app',
                 'Something prevented the Asset file from being replaced.'));
         }
 
@@ -512,8 +510,8 @@ class Assets extends Component
      * @param string $newFilename
      *
      * @throws AssetDisallowedExtensionException If the extension is not allowed.
-     * @throws AssetConflictException            If a file with such a name already exists/
-     * @throws AssetLogicException               If something violates Asset's logic (e.g. Asset outside of a folder).
+     * @throws AssetConflictException            If a file with such a name already exists.
+     * @throws AssetLogicException               If the Volume is missing.
      * @return void
      */
     public function renameAsset(Asset $asset, $newFilename)
@@ -560,8 +558,8 @@ class Assets extends Component
      * @param VolumeFolderModel $folder
      *
      * @throws AssetConflictException           If a folder already exists with such a name.
-     * @throws AssetLogicException              If something violates Asset's logic (e.g. Asset outside of a folder).
-     * @throws VolumeFolderExistsException      If the file actually exists on the volume, but on in the index.
+     * @throws AssetLogicException              If the parent folder is missing.
+     * @throws VolumeObjectExistsException      If the file actually exists on the volume, but on in the index.
      * @return void
      */
     public function createFolder(VolumeFolderModel $folder)
@@ -587,10 +585,10 @@ class Assets extends Component
 
         $volume = $parent->getVolume();
 
-        // Explicitly re-throw VolumeFolderExistsException
+        // Explicitly re-throw VolumeObjectExistsException
         try {
             $volume->createDir(rtrim($folder->path, '/'));
-        } catch (VolumeFolderExistsException $exception) {
+        } catch (VolumeObjectExistsException $exception) {
             // Rethrow exception unless this is a temporary Volume.
             if (!is_null($folder->volumeId)) {
                 throw $exception;
@@ -939,7 +937,7 @@ class Assets extends Component
      * @param string $originalFilename the original filename for which to find a replacement.
      * @param VolumeFolderModel $folder THe folder in which to find the replacement
      *
-     * @throws AssetLogicException
+     * @throws AssetLogicException If a suitable filename replacement cannot be found.
      * @return string
      */
     public function getNameReplacementInFolder(
@@ -961,13 +959,11 @@ class Assets extends Component
         }
 
         // Shorthand.
-        $canUse = function ($filenameToTest) use ($existingFiles)
-        {
+        $canUse = function ($filenameToTest) use ($existingFiles) {
             return !isset($existingFiles[StringHelper::toLowerCase($filenameToTest)]);
         };
 
-        if ($canUse($originalFilename))
-        {
+        if ($canUse($originalFilename)) {
             return $originalFilename;
         }
 
@@ -976,36 +972,29 @@ class Assets extends Component
 
 
         // If the file already ends with something that looks like a timestamp, use that instead.
-        if (preg_match('/.*_([0-9]{6}_[0-9]{6})$/', $filename, $matches))
-        {
+        if (preg_match('/.*_([0-9]{6}_[0-9]{6})$/', $filename, $matches)) {
             $base = $filename;
-        }
-        else
-        {
+        } else {
             $timestamp = DateTimeHelper::currentUTCDateTime()->format("ymd_His");
             $base = $filename.'_'.$timestamp;
         }
 
         $newFilename = $base.'.'.$extension;
 
-        if ($canUse($newFilename))
-        {
+        if ($canUse($newFilename)) {
             return $newFilename;
         }
 
         $increment = 0;
 
-        while (++$increment)
-        {
+        while (++$increment) {
             $newFilename = $base.'_'.$increment.'.'.$extension;
 
-            if ($canUse($newFilename))
-            {
+            if ($canUse($newFilename)) {
                 break;
             }
 
-            if ($increment == 50)
-            {
+            if ($increment == 50) {
                 throw new AssetLogicException(Craft::t('app',
                     'Could not find a suitable replacement filename for “{filename}”.',
                     ['filename' => $filename]));
@@ -1098,6 +1087,7 @@ class Assets extends Component
      */
     public function checkPermissionByFolderIds($folderIds, $permission)
     {
+        // TODO permissions.
         if (!is_array($folderIds)) {
             $folderIds = [$folderIds];
         }
@@ -1128,6 +1118,7 @@ class Assets extends Component
      */
     public function checkPermissionByFileIds($fileIds, $permission)
     {
+        // TODO permissions.
         if (!is_array($fileIds)) {
             $fileIds = [$fileIds];
         }
@@ -1226,7 +1217,6 @@ class Assets extends Component
      *
      * @param User $userModel
      *
-     * @throws Exception
      * @return VolumeFolderModel|null
      */
     public function getUserFolder(User $userModel = null)
@@ -1278,7 +1268,7 @@ class Assets extends Component
      * @param VolumeFolderModel $targetFolder
      * @param string $newFilename new filename to use
      *
-     * @throws FileException
+     * @throws FileException If there was a problem with the actual file.
      * @return void
      */
     private function _moveAssetToFolder(
@@ -1495,7 +1485,11 @@ class Assets extends Component
      *
      * @param Asset $asset
      *
-     * @throws \Exception
+     * @throws AssetMissingException    If attempting to update a non-existing Asset.
+     * @throws ValidationException      If the validation failed.
+     * @throws ElementSaveException     If the element failed to save.
+     * @throws ActionCancelledException If something prevented the Asset replacement via Event
+     * @throws \Exception               If something else went wrong.
      * @return boolean
      */
     private function _storeAssetRecord(Asset $asset)
@@ -1527,7 +1521,7 @@ class Assets extends Component
         $asset->addErrors($assetRecord->getErrors());
 
         if ($asset->hasErrors()) {
-            $exception = new ModelValidationException(
+            $exception = new ValidationException(
                 Craft::t('app',
                     'Saving the Asset failed with the following errors: {errors}',
                     ['errors' => join(', ', $asset->getAllErrors())])
@@ -1586,7 +1580,6 @@ class Assets extends Component
             $transaction->commit();
         } catch (\Exception $e) {
             $transaction->rollback();
-
             throw $e;
         }
     }

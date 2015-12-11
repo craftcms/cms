@@ -10,7 +10,7 @@ namespace craft\app\errors;
 use craft\app\base\Model;
 
 /**
- * Class ModelValidationException
+ * Class ValidationException
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
@@ -19,7 +19,7 @@ use craft\app\base\Model;
  * @package   craft.app.exceptions
  * @since     3.0
  */
-class ModelValidationException extends ModelException
+class ValidationException extends Exception
 {
 
     /**

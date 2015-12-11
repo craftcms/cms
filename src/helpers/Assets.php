@@ -167,6 +167,7 @@ class Assets
      * @param array $assets List of assets
      * @param array $folderIdChanges A map of folder id changes
      * @param bool  $merge If set to true, files will be merged in folders
+     *
      * @return array
      */
     public static function getFileTransferList($assets, $folderIdChanges, $merge = false)
@@ -201,7 +202,7 @@ class Assets
 
     /**
      * Get a list of available periods for Cache duration settings.
-     * .
+     *
      * @return array
      */
     public static function getPeriodList()

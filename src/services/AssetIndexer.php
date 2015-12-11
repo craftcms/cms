@@ -355,7 +355,7 @@ class AssetIndexer extends Component
      * @param         $path
      * @param boolean $checkIfExists
      *
-     * @throws \craft\app\errors\VolumeObjectNotFoundException
+     * @throws VolumeObjectNotFoundException If the file to be indexed cannot be found.
      * @return boolean|Asset
      */
     public function indexFile(Volume $volume, $path, $checkIfExists = true)

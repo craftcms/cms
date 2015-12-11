@@ -4,6 +4,7 @@ namespace craft\app\image;
 use Craft;
 use craft\app\base\Image;
 use craft\app\errors\Exception;
+use craft\app\errors\ImageException;
 use craft\app\helpers\Image as ImageHelper;
 use craft\app\helpers\Io;
 
@@ -80,13 +81,13 @@ class Svg extends Image
      *
      * @param string $path
      *
-     * @throws Exception
+     * @throws ImageException If the file cannot be found.
      * @return Image
      */
     public function loadImage($path)
     {
         if (!Io::fileExists($path)) {
-            throw new Exception(Craft::t('app',
+            throw new ImageException(Craft::t('app',
                 'No file exists at the path “{path}”', array('path' => $path)));
         }
 
@@ -270,7 +271,7 @@ class Svg extends Image
      * @param string $targetPath
      * @param boolean $autoQuality
      *
-     * @throws \Imagine\Exception\RuntimeException
+     * @throws ImageException If attempting to save
      * @return null
      */
     public function saveAs($targetPath, $autoQuality = false)
@@ -278,8 +279,8 @@ class Svg extends Image
         if (Io::getExtension($targetPath) == 'svg') {
             Io::writeToFile($targetPath, $this->_svgContent);
         } else {
-            throw new Exception(Craft::t('app',
-                'Manipulated SVG image rasterizing is unreliable. Please see ImagesService::loadImage()'));
+            throw new ImageException(Craft::t('app',
+                'Manipulated SVG image rasterizing is unreliable. See \craft\app\services\Images::loadImage()'));
         }
 
         return true;

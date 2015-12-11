@@ -85,7 +85,6 @@ class Images extends Component
      * @param bool   $rasterize whether or not the image will be rasterized if it's an SVG
      * @param int    $svgSize   The size SVG should be scaled up to, if rasterized
      *
-     * @throws \Exception
      * @return Image
      */
     public function loadImage($path, $rasterize = false, $svgSize = 1000)
