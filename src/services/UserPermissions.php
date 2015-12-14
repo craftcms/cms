@@ -156,7 +156,7 @@ class UserPermissions extends Component
             $permissions[Craft::t('app', 'Categories')] = $this->_getCategoryGroupPermissions($categoryGroups);
         }
 
-        // Asset sources
+        // Volumes
         // ---------------------------------------------------------------------
 
         $volumes = Craft::$app->getVolumes()->getAllVolumes();
@@ -491,16 +491,16 @@ class UserPermissions extends Component
         $suffix = ':'.$sourceId;
 
         return [
-            "viewAssetSource{$suffix}" => [
+            "viewVolume{$suffix}" => [
                 'label' => Craft::t('app', 'View source'),
                 'nested' => [
-                    "uploadToAssetSource{$suffix}" => [
+                    "uploadToVolume{$suffix}" => [
                         'label' => Craft::t('app', 'Upload files'),
                     ],
-                    "createSubfoldersInAssetSource{$suffix}" => [
+                    "createSubfoldersInVolume{$suffix}" => [
                         'label' => Craft::t('app', 'Create subfolders'),
                     ],
-                    "removeFromAssetSource{$suffix}" => [
+                    "removeFromVolume{$suffix}" => [
                         'label' => Craft::t('app', 'Remove files'),
                     ]
                 ]
