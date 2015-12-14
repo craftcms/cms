@@ -339,7 +339,7 @@ class UserPermissions extends Component
 
             // Add the new user permissions
             Craft::$app->getDb()->createCommand()->batchInsert(
-                'userpermissions_users',
+                '{{%userpermissions_users}}',
                 ['permissionId', 'userId'],
                 $userPermissionVals
             )->execute();
