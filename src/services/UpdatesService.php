@@ -358,6 +358,7 @@ class UpdatesService extends BaseApplicationComponent
 
 					// Any missing required attributes?
 					$missingAttributes = array();
+
 					foreach (array('version', 'downloadUrl', 'date', 'notes') as $attribute)
 					{
 						if (empty($release[$attribute]))
@@ -365,22 +366,31 @@ class UpdatesService extends BaseApplicationComponent
 							$missingAttributes[] = $attribute;
 						}
 					}
+
 					if ($missingAttributes)
 					{
 						$errors[] = 'Missing required attributes ('.implode(', ', $missingAttributes).')';
 					}
 
-					// Invalid URL?
-					if (strncmp($release['downloadUrl'], 'https://', 8) !== 0)
+					// downloadUrl could be missing.
+					if (!empty($release['downloadUrl']))
 					{
-						$errors[] = 'Download URL doesn’t begin with https:// ('.$release['downloadUrl'].')';
+						// Invalid URL?
+						if (strncmp($release['downloadUrl'], 'https://', 8) !== 0)
+						{
+							$errors[] = 'Download URL doesn’t begin with https:// ('.$release['downloadUrl'].')';
+						}
 					}
 
-					// Invalid date?
-					$date = DateTime::createFromString($release['date']);
-					if (!$date)
+					// release date could be missing.
+					if (!empty($release['date']))
 					{
-						$errors[] = 'Invalid date ('.$release['date'].')';
+						// Invalid date?
+						$date = DateTime::createFromString($release['date']);
+						if (!$date)
+						{
+							$errors[] = 'Invalid date ('.$release['date'].')';
+						}
 					}
 
 					// Validation complete. Were there any errors?
