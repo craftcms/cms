@@ -963,7 +963,7 @@ ul.tree,
 /*  Panes, Modals and HUDs
 /* ----------------------------------------*/
 
-.pane { @include pane; position: relative; margin: 14px 0; padding: 24px; border-radius: $paneBorderRadius; word-wrap: break-word; @include box-sizing(border-box); overflow: hidden; }
+.pane { @include pane; position: relative; margin: 14px 0; padding: 24px; border-radius: $paneBorderRadius; word-wrap: break-word; @include box-sizing(border-box); }
 
 /* meta panes */
 .meta { padding: 0; overflow: visible; }
