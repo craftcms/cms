@@ -22,6 +22,11 @@
 				<div class="btn test" data-edition="{{ edition }}">{{ "Test"|t }}</div>
 			{% endif %}
 
+			{# Show the "Install" button if they’re licensed to use this edition but not currently on it #}
+			{% if edition == licensedEdition and edition != CraftEdition %}
+				<div class="btn test" data-edition="{{ edition }}">{{ "Install"|t }}</div>
+			{% endif %}
+
 			{# Show the "Uninstall" button if this is the currently-installed edition, but is not licensed #}
 			{% if edition == CraftEdition and edition > licensedEdition %}
 				<div class="btn test" data-edition="0">{{ "Uninstall"|t }}</div>
