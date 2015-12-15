@@ -624,7 +624,7 @@ class Assets extends BaseRelationField
      */
     private function _determineUploadFolderId($element)
     {
-        // If there's no dynamic tags in the set path, or if the element has already been saved, we con use the real
+        // If there's no dynamic tags in the set path, or if the element has already been saved, we can use the real
         // folder
         if (!empty($element->id)
             || (!empty($this->useSingleFolder) && !StringHelper::contains($this->singleUploadLocationSubpath,

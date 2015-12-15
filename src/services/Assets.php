@@ -360,7 +360,7 @@ class Assets extends Component
      *
      * Replace an Asset's file by it's id, a local file and the filename to use.
      *
-     * @param $assetId
+     * @param Asset $existingAsset
      * @param $pathOnServer
      * @param $filename
      *
@@ -370,21 +370,14 @@ class Assets extends Component
      * @throws AssetLogicException      If the Asset to be replaced cannot be found.
      * @return void
      */
-    public function replaceAssetFile($assetId, $pathOnServer, $filename)
+    public function replaceAssetFile(Asset $asset, $pathOnServer, $filename)
     {
-        $existingAsset = $this->getAssetById($assetId);
-
-        if (!$existingAsset) {
-            throw new AssetLogicException(Craft::t('app',
-                'The asset to be replaced cannot be found.'));
-        }
-
         if (Io::getFileKind(Io::getExtension($pathOnServer)) == 'image') {
             Image::cleanImageByPath($pathOnServer);
         }
 
         $event = new ReplaceAssetEvent([
-            'asset' => $existingAsset,
+            'asset' => $asset,
             'replaceWith' => $pathOnServer,
             'filename' => $filename
         ]);
@@ -397,15 +390,11 @@ class Assets extends Component
                 'Something prevented the Asset file from being replaced.'));
         }
 
-        // TODO check event
-
-        $existingAsset = $this->getAssetById($assetId);
-
-        $volume = $existingAsset->getVolume();
+        $volume = $asset->getVolume();
 
         // Clear all thumb and transform data
-        if (Image::isImageManipulatable($existingAsset->getExtension())) {
-            Craft::$app->getAssetTransforms()->deleteAllTransformData($existingAsset);
+        if (Image::isImageManipulatable($asset->getExtension())) {
+            Craft::$app->getAssetTransforms()->deleteAllTransformData($asset);
         }
 
         // Open the stream for, uhh, streaming
@@ -418,47 +407,47 @@ class Assets extends Component
         }
 
         // Re-use the same filename
-        if (StringHelper::toLowerCase($existingAsset->filename) == StringHelper::toLowerCase($filename)) {
+        if (StringHelper::toLowerCase($asset->filename) == StringHelper::toLowerCase($filename)) {
             // The case is changing in the filename
-            if ($existingAsset->filename != $filename) {
+            if ($asset->filename != $filename) {
                 // Delete old, change the name, upload the new
-                $volume->deleteFile($existingAsset->getUri());
-                $existingAsset->filename = $filename;
-                $volume->createFileByStream($existingAsset->getUri(), $stream);
+                $volume->deleteFile($asset->getUri());
+                $asset->filename = $filename;
+                $volume->createFileByStream($asset->getUri(), $stream);
             } else {
-                $volume->updateFileByStream($existingAsset->getUri(), $stream);
+                $volume->updateFileByStream($asset->getUri(), $stream);
             }
         } else {
             // Get an available name to avoid conflicts and upload the file
             $filename = $this->getNameReplacementInFolder($filename,
-                $existingAsset->getFolder());
+                $asset->getFolder());
 
             // Delete old, change the name, upload the new
-            $volume->deleteFile($existingAsset->getUri());
-            $existingAsset->filename = $filename;
-            $volume->createFileByStream($existingAsset->getUri(), $stream);
+            $volume->deleteFile($asset->getUri());
+            $asset->filename = $filename;
+            $volume->createFileByStream($asset->getUri(), $stream);
 
-            $existingAsset->kind = Io::getFileKind(Io::getExtension($filename));
+            $asset->kind = Io::getFileKind(Io::getExtension($filename));
         }
 
         if (is_resource($stream)) {
             fclose($stream);
         }
 
-        if ($existingAsset->kind == "image") {
-            list ($existingAsset->width, $existingAsset->height) = Image::getImageSize($pathOnServer);
+        if ($asset->kind == "image") {
+            list ($asset->width, $asset->height) = Image::getImageSize($pathOnServer);
         } else {
-            $existingAsset->width = null;
-            $existingAsset->height = null;
+            $asset->width = null;
+            $asset->height = null;
         }
 
-        $existingAsset->size = Io::getFileSize($pathOnServer);
-        $existingAsset->dateModified = Io::getLastTimeModified($pathOnServer);
+        $asset->size = Io::getFileSize($pathOnServer);
+        $asset->dateModified = Io::getLastTimeModified($pathOnServer);
 
-        $this->saveAsset($existingAsset);
+        $this->saveAsset($asset);
 
         $event = new ReplaceAssetEvent([
-            'asset' => $existingAsset,
+            'asset' => $asset,
             'filename' => $filename
         ]);
         $this->trigger(static::EVENT_AFTER_REPLACE_ASSET, $event);

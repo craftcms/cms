@@ -494,14 +494,14 @@ class UserPermissions extends Component
             "viewVolume{$suffix}" => [
                 'label' => Craft::t('app', 'View source'),
                 'nested' => [
-                    "uploadToVolume{$suffix}" => [
+                    "saveAssetInVolume{$suffix}" => [
                         'label' => Craft::t('app', 'Upload files'),
                     ],
-                    "createSubfoldersInVolume{$suffix}" => [
+                    "createFoldersInVolume{$suffix}" => [
                         'label' => Craft::t('app', 'Create subfolders'),
                     ],
-                    "removeFromVolume{$suffix}" => [
-                        'label' => Craft::t('app', 'Remove files'),
+                    "deleteFilesAndFoldersInVolume{$suffix}" => [
+                        'label' => Craft::t('app', 'Remove files and folders'),
                     ]
                 ]
             ]
