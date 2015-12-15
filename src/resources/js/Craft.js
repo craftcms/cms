@@ -1,4 +1,4 @@
-/*! Craft 3.0.0 - 2015-12-10 */
+/*! Craft 3.0.0 - 2015-12-15 */
 (function($){
 
 if (typeof window.Craft == 'undefined')
@@ -6155,7 +6155,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 			this.responseArray = [];
 		}
 
-		Craft.postActionRequest('assets/move-file', parameterArray[parameterIndex], $.proxy(function(data, textStatus)
+		Craft.postActionRequest('assets/move-asset', parameterArray[parameterIndex], $.proxy(function(data, textStatus)
 		{
 			this.progressBar.incrementProcessedItemCount(1);
 			this.progressBar.updateProgressBar();
