@@ -391,7 +391,7 @@ class DbBackup
 				// Data!
 				IOHelper::writeToFile($this->_filePath, PHP_EOL . '--' . PHP_EOL . '-- Data for table `' . $tableName . '`' . PHP_EOL . '--' . PHP_EOL . PHP_EOL, true, true);
 
-				$batchSize = 50;
+				$batchSize = 100;
 
 				// Going to grab the data in batches.
 				$totalBatches = ceil($totalRows / $batchSize);
