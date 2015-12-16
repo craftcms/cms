@@ -140,8 +140,8 @@ class DbBackup
 		foreach ($statements as $key => $statement)
 		{
 			Craft::log('Executing SQL statement: '.$statement);
-			$command = craft()->db->createCommand($statement);
-			$command->execute();
+			$statement = craft()->db->getPdoInstance()->prepare($statement);
+			$statement->execute();
 		}
 
 		// Re-enable.
