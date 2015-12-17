@@ -112,7 +112,7 @@ class HelpSpotAPI {
 	var $errors				= '';	// Current error message string
 
 	/*** Constructor ***/
-	function HelpSpotAPI($params=array()) {
+	function __construct($params=array()) {
 		// Vars
 		$return 						= true;
 
@@ -614,7 +614,7 @@ class HelpSpotApiCacheEngine {
 	var $errors					= '';								// Current error message string
 
 	/*** Constructor ***/
-	function HelpSpotApiCacheEngine($params=array()) {
+	function __construct($params=array()) {
 		$this->errors = '';											// Default - clean error string
 	}
 
@@ -821,8 +821,8 @@ class HS_XML{
 	var $stack;    #a stack of the most recent parent at each nesting level
 	var $last_opened_tag; #keeps track of the last tag opened.
 
-	function HS_XML(){
-		$this->parser = &xml_parser_create();
+	function __construct(){
+		$this->parser = xml_parser_create();
 		xml_parser_set_option($this->parser, XML_OPTION_CASE_FOLDING, false);
 		xml_set_object($this->parser, $this);
 		xml_set_element_handler($this->parser, 'open','close');
