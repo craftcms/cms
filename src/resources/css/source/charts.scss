@@ -1,27 +1,37 @@
+/* Chart */
 
-.chart {
-    width: 100%;
-    height: 250px;
-    background: #fafafa;
-    margin: 0 0px 7px 0px;
-    border: 1px solid #eee;
-    /*width: calc(100% + 48px);*/
-}
+.chart { height: 220px; margin: 0 0px 14px 0px; }
 
+.chart svg { width: 100%; height: 100%; }
 
 .chart .axis path,
-.chart .axis line {
-    fill: none;
-    stroke: #aaa;
-    shape-rendering: crispEdges;
+.chart .axis line { fill: none; stroke: #aaa; shape-rendering: crispEdges; }
+.chart .axis text { fill: RGBA(0, 0, 0, .6); }
+
+.chart .line .tick { stroke: RGBA(0, 0, 0, .08); stroke-opacity: 0.7; shape-rendering: crispEdges; /* stroke-dasharray: 2; */ }
+.chart .line path { stroke-width: 0; }
+
+.chart.area .area { stroke: RGBA(0, 138, 202, 1); fill: RGBA(0, 138, 202, .3); stroke-width: 1px; }
+.chart.area circle { fill: RGBA(0, 138, 202, 1); }
+
+.chart.column .bar { fill: RGBA(0, 138, 202, .6); }
+/*.chart.column .bar:hover { fill: RGBA(0, 138, 202, .8); cursor: pointer; }*/
+
+
+.tooltip {
+    width: 200px;
+    padding: 14px;
+    height: 60px;
+    background: #fff;
+    position: absolute;
+    z-index: 1000000;
+    margin-left: 20px;
+
+    -webkit-box-shadow: 0 0 5px 0 rgba(0,0,0,.5);
+    box-shadow: 0 0 5px 0 rgba(0,0,0,.5);
 }
 
-.chart .axis text {
-    fill: RGBA(0, 0, 0, .5);
-}
 
-.chart .area {
-    stroke: RGBA(0, 138, 202, 1);
-    fill: RGBA(0, 138, 202, .3);
-    stroke-width: 1px;
-}
+/* Date Range Picker */
+
+.ui-datepicker-calendar td.date-range-selected a { background: hsl(212, 10%, 50%) !important; color: #fff; }
