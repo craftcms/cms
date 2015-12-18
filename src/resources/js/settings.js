@@ -6,7 +6,6 @@ Craft.Tool = Garnish.Base.extend(
 	$trigger: null,
 	$form: null,
 	$innerProgressBar: null,
-	$innerProgressBar: null,
 
 	toolClass: null,
 	optionsHtml: null,

@@ -265,6 +265,9 @@ class EmailService extends BaseApplicationComponent
 		// Is the event giving us the go-ahead?
 		if ($event->performAction)
 		{
+			// In case a plugin changed any variables in onBeforeSendEmail
+			$variables = $event->params['variables'];
+
 			$email = new \PHPMailer(true);
 
 			// Default the charset to UTF-8

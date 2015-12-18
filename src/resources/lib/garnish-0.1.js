@@ -5934,12 +5934,16 @@ Garnish.Select = Garnish.Base.extend({
 		if (this.first !== null)
 		{
 			this.first = this.getItemIndex(this.$first);
-			this.last = this.getItemIndex(this.$last);
 			this.setFocusableItem(this.$first);
 		}
 		else if (this.$items.length)
 		{
 			this.setFocusableItem($(this.$items[0]));
+		}
+
+		if (this.last !== null)
+		{
+			this.last = this.getItemIndex(this.$last);
 		}
 	},
 

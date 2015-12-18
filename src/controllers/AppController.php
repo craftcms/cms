@@ -283,8 +283,15 @@ class AppController extends BaseController
 		craft()->userSession->requireAdmin();
 
 		$edition = craft()->request->getRequiredPost('edition');
+		$licensedEdition = craft()->getLicensedEdition();
 
-		if ($edition != 0 && !craft()->canTestEditions())
+		if ($licensedEdition === null)
+		{
+			$licensedEdition = 0;
+		}
+
+		// If this is actually an upgrade, make sure that they are allowed to test edition upgrades
+		if ($edition > $licensedEdition && !craft()->canTestEditions())
 		{
 			throw new Exception('Tried to test an edition, but Craft isn\'t allowed to do that.');
 		}

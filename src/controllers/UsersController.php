@@ -689,22 +689,25 @@ class UsersController extends BaseController
 			$variables['tabs'] = array();
 		}
 
-		// Ugly.  But Users don't have a real fieldlayout/tabs.
-		$accountFields = array('username', 'firstName', 'lastName', 'email', 'password', 'newPassword', 'currentPassword', 'passwordResetRequired', 'preferredLocale');
-
-		if (craft()->getEdition() == Craft::Pro && $variables['account']->hasErrors())
+		if (!empty($variables['tabs']))
 		{
-			$errors = $variables['account']->getErrors();
+			// Ugly.  But Users don't have a real fieldlayout/tabs.
+			$accountFields = array('username', 'firstName', 'lastName', 'email', 'password', 'newPassword', 'currentPassword', 'passwordResetRequired', 'preferredLocale');
 
-			foreach ($errors as $attribute => $error)
+			if (craft()->getEdition() == Craft::Pro && $variables['account']->hasErrors())
 			{
-				if (in_array($attribute, $accountFields))
+				$errors = $variables['account']->getErrors();
+
+				foreach ($errors as $attribute => $error)
 				{
-					$variables['tabs']['account']['class'] = 'error';
-				}
-				else if (isset($variables['tabs']['profile']))
-				{
-					$variables['tabs']['profile']['class'] = 'error';
+					if (in_array($attribute, $accountFields))
+					{
+						$variables['tabs']['account']['class'] = 'error';
+					}
+					else if (isset($variables['tabs']['profile']))
+					{
+						$variables['tabs']['profile']['class'] = 'error';
+					}
 				}
 			}
 		}
