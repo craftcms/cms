@@ -11,7 +11,7 @@
 .chart .line .tick { stroke: RGBA(0, 0, 0, .08); stroke-opacity: 0.7; shape-rendering: crispEdges; /* stroke-dasharray: 2; */ }
 .chart .line path { stroke-width: 0; }
 
-.chart.area .area { stroke: RGBA(0, 138, 202, 1); fill: RGBA(0, 138, 202, .3); stroke-width: 1px; }
+.chart.area .area { stroke: RGBA(0, 138, 202, 1); fill: RGBA(0, 138, 202, .3); stroke-width: 3px; }
 .chart.area circle { fill: RGBA(0, 138, 202, 1); }
 
 .chart.column .bar { fill: RGBA(0, 138, 202, .6); }
@@ -19,9 +19,7 @@
 
 
 .tooltip {
-    width: 200px;
-    padding: 14px;
-    height: 60px;
+    padding: 7px;
     background: #fff;
     position: absolute;
     z-index: 1000000;

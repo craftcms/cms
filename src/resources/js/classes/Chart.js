@@ -144,7 +144,7 @@ Craft.charts.Area = Craft.charts.BaseChart.extend(
 
     enablePlots: true,
 
-    xLines: false,
+    xLines: true,
     yLines: true,
 
     draw: function(data)
@@ -196,11 +196,9 @@ Craft.charts.Area = Craft.charts.BaseChart.extend(
         this.y.domain([0, d3.max(this.data, function(d) { return d.close; })]);
 
 
-        /* Initialize tooltip */
-        tip = d3.tip().attr('class', 'd3-tip').html(function(d) { return d.close; });
-
-        /* Invoke the tip in the context of your visualization */
-        this.svg.call(tip)
+        // Tip
+        tip = d3.tip().attr('class', 'd3-tip').html(function(d) { return d.close; }); // Initialize tooltip
+        this.svg.call(tip); // Invoke the tip in the context of your visualization
 
         // Draw chart
         this.svg.append("path")
@@ -222,7 +220,16 @@ Craft.charts.Area = Craft.charts.BaseChart.extend(
             .call(this.yAxis);
 
 
-        // Plots
+        this.drawLines();
+        this.drawPlots();
+
+
+        this.shadowFilter();
+    },
+
+    drawPlots: function()
+    {
+        var formatTime = d3.time.format("%d-%b-%y");
 
         if(this.enablePlots)
         {
@@ -234,7 +241,7 @@ Craft.charts.Area = Craft.charts.BaseChart.extend(
             this.svg.selectAll("dot")
                 .data(this.data)
             .enter().append("circle")
-                .attr("r", 5)
+                .attr("r", 4)
                 .attr("cx", $.proxy(function(d) { return this.x(d.date); }, this))
                 .attr("cy", $.proxy(function(d) { return this.y(d.close); }, this))
                 .on("mouseover", function(d)
@@ -244,7 +251,7 @@ Craft.charts.Area = Craft.charts.BaseChart.extend(
                     div.transition()
                         .duration(200)
                         .style("opacity", 1);
-                    div.html(d.date + "<br/>"  + d.close)
+                    div.html(formatTime(d.date) + "<br/>"  + d.close)
                         .style("left", (d3.event.pageX) + "px")
                         .style("top", (d3.event.pageY - 28) + "px");
                     })
@@ -257,10 +264,10 @@ Craft.charts.Area = Craft.charts.BaseChart.extend(
                         .style("opacity", 0);
                 });
         }
+    },
 
-
-        // Lines
-
+    drawLines: function()
+    {
         if(this.xLines)
         {
             this.xLineAxis = d3.svg.axis()
@@ -292,9 +299,6 @@ Craft.charts.Area = Craft.charts.BaseChart.extend(
                     .tickFormat("")
                 );
         }
-
-
-        this.shadowFilter();
     },
 
     shadowFilter: function()
