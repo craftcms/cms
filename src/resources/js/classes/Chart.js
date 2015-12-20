@@ -196,17 +196,11 @@ Craft.charts.Area = Craft.charts.BaseChart.extend(
         this.y.domain([0, d3.max(this.data, function(d) { return d.close; })]);
 
 
-        // Tip
-        tip = d3.tip().attr('class', 'd3-tip').html(function(d) { return d.close; }); // Initialize tooltip
-        this.svg.call(tip); // Invoke the tip in the context of your visualization
-
         // Draw chart
         this.svg.append("path")
             .datum(this.data)
             .attr("class", "area")
-            .attr("d", this.area)
-            .on('mouseover', tip.show)
-            .on('mouseout', tip.hide);
+            .attr("d", this.area);
 
         // Draw the X axis
         this.svg.append("g")
@@ -223,7 +217,6 @@ Craft.charts.Area = Craft.charts.BaseChart.extend(
         this.drawLines();
         this.drawPlots();
 
-
         this.shadowFilter();
     },
 
@@ -233,7 +226,9 @@ Craft.charts.Area = Craft.charts.BaseChart.extend(
 
         if(this.enablePlots)
         {
-            var div = d3.select("body").append("div")
+            // Define 'div' for tooltips
+            var divTip = d3.select("body")
+                .append("div")
                 .attr("class", "tooltip")
                 .style("opacity", 0);
 
@@ -241,17 +236,17 @@ Craft.charts.Area = Craft.charts.BaseChart.extend(
             this.svg.selectAll("dot")
                 .data(this.data)
             .enter().append("circle")
-                .attr("r", 4)
+                .attr("r", 6)
                 .attr("cx", $.proxy(function(d) { return this.x(d.date); }, this))
                 .attr("cy", $.proxy(function(d) { return this.y(d.close); }, this))
                 .on("mouseover", function(d)
                 {
                     d3.select(this).style("filter", "url(#drop-shadow)");
 
-                    div.transition()
+                    divTip.transition()
                         .duration(200)
                         .style("opacity", 1);
-                    div.html(formatTime(d.date) + "<br/>"  + d.close)
+                    divTip.html(formatTime(d.date) + "<br/>"  + d.close)
                         .style("left", (d3.event.pageX) + "px")
                         .style("top", (d3.event.pageY - 28) + "px");
                     })
@@ -259,7 +254,7 @@ Craft.charts.Area = Craft.charts.BaseChart.extend(
                 {
                     d3.select(this).style("filter", "");
 
-                    div.transition()
+                    divTip.transition()
                         .duration(500)
                         .style("opacity", 0);
                 });
