@@ -139,13 +139,15 @@ Craft.charts.Column = Craft.charts.BaseChart.extend(
  */
 Craft.charts.Area = Craft.charts.BaseChart.extend(
 {
+    $tip: null,
+
     margin: { top: 10, right: 0, bottom: 0, left: 0 },
     chartClass: 'chart area',
 
     enablePlots: true,
-
-    xLines: true,
-    yLines: true,
+    enableXLines: true,
+    enableYLines: true,
+    enableTips: true,
 
     draw: function(data)
     {
@@ -226,44 +228,56 @@ Craft.charts.Area = Craft.charts.BaseChart.extend(
 
         if(this.enablePlots)
         {
-            // Define 'div' for tooltips
-            var divTip = d3.select("body")
-                .append("div")
-                .attr("class", "tooltip")
-                .style("opacity", 0);
-
             // Draw the plots
             this.svg.selectAll("dot")
                 .data(this.data)
             .enter().append("circle")
                 .attr("r", 6)
                 .attr("cx", $.proxy(function(d) { return this.x(d.date); }, this))
-                .attr("cy", $.proxy(function(d) { return this.y(d.close); }, this))
-                .on("mouseover", function(d)
-                {
-                    d3.select(this).style("filter", "url(#drop-shadow)");
+                .attr("cy", $.proxy(function(d) { return this.y(d.close); }, this));
 
-                    divTip.transition()
-                        .duration(200)
-                        .style("opacity", 1);
-                    divTip.html(formatTime(d.date) + "<br/>"  + d.close)
-                        .style("left", (d3.event.pageX) + "px")
-                        .style("top", (d3.event.pageY - 28) + "px");
-                    })
-                .on("mouseout", function(d)
+                if(this.enableTips)
                 {
-                    d3.select(this).style("filter", "");
-
-                    divTip.transition()
-                        .duration(500)
+                    // Define 'div' for tooltips
+                    var $tip = d3.select("body")
+                        .append("div")
+                        .attr("class", "tooltip")
                         .style("opacity", 0);
-                });
+
+                    // Show tip when hovering plots
+                    this.svg.selectAll("circle")
+                        //     .data(this.data)
+                        // .enter().append("rect")
+
+                        .on("mouseover", function(d)
+                        {
+                            d3.select(this).style("filter", "url(#drop-shadow)");
+
+                            $tip.transition()
+                                .duration(200)
+                                .style("opacity", 1);
+                            $tip.html(formatTime(d.date) + "<br/>"  + d.close)
+                                .style("left", (d3.event.pageX) + "px")
+                                .style("top", (d3.event.pageY - 28) + "px");
+                            })
+                        .on("mouseout", function(d)
+                        {
+                            d3.select(this).style("filter", "");
+
+                            $tip.transition()
+                                .duration(500)
+                                .style("opacity", 0);
+                        });
+
+
+                }
+
         }
     },
 
     drawLines: function()
     {
-        if(this.xLines)
+        if(this.enableXLines)
         {
             this.xLineAxis = d3.svg.axis()
                 .scale(this.x)
@@ -279,7 +293,7 @@ Craft.charts.Area = Craft.charts.BaseChart.extend(
                 );
         }
 
-        if(this.yLines)
+        if(this.enableYLines)
         {
 
             this.yLineAxis = d3.svg.axis()
