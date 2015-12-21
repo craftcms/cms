@@ -51,7 +51,7 @@ class TokensService extends BaseApplicationComponent
 		if ($usageLimit)
 		{
 			$tokenRecord->usageCount = 0;
-			$usageLimit->usageLimit = $usageLimit;
+			$tokenRecord->usageLimit = $usageLimit;
 		}
 
 		$tokenRecord->expiryDate = $expiryDate;
