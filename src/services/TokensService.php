@@ -129,7 +129,7 @@ class TokensService extends BaseApplicationComponent
 	public function incrementTokenUsageCountById($tokenId)
 	{
 		$affectedRows = craft()->db->createCommand()->update('tokens', array(
-			'usageCount' => 'usageCount + 1'
+			'usageCount' => 'usageCount' + 1
 		), array(
 			'id' => $tokenId
 		));
