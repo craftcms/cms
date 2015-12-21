@@ -289,7 +289,7 @@ class UtilsController extends BaseController
 								}
 
 								// Build out the $_SERVER array. Not exactly sure when this should end so just scan through the lines until the array has been closed.
-								$serverArray = [];
+								$serverArray = array();
 								for ($line = $serverStart; isset($rowContents[$line]); $line++)
 								{
 									if (strncmp($rowContents[$line], ')', 1) === 0)
