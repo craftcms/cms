@@ -94,6 +94,7 @@ class CraftTwigExtension extends \Twig_Extension
 			'pascal'             => new \Twig_Filter_Method($this, 'pascalFilter'),
 			'percentage'         => new \Twig_Filter_Function('\Craft\craft()->numberFormatter->formatPercentage'),
 			'replace'            => new \Twig_Filter_Method($this, 'replaceFilter'),
+			'serialize'          => new \Twig_Filter_Function('serialize'),
 			'snake'              => new \Twig_Filter_Method($this, 'snakeFilter'),
 			'translate'          => $translateFilter,
 			't'                  => $translateFilter,
