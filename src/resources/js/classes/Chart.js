@@ -56,8 +56,12 @@ Craft.charts.BaseChart = Garnish.Base.extend(
  */
 Craft.charts.Column = Craft.charts.BaseChart.extend(
 {
+    $tip: null,
+
     margin: { top: 0, right: 0, bottom: 30, left: 0 },
     chartClass: 'chart column',
+
+    enableTips: true,
 
     draw: function(data)
     {
@@ -114,12 +118,6 @@ Craft.charts.Column = Craft.charts.BaseChart.extend(
                 .attr("y", 6)
                 .attr("dy", ".71em");
 
-        /* Initialize tooltip */
-        tip = d3.tip().attr('class', 'd3-tip').html(function(d) { return d.close; });
-
-        /* Invoke the tip in the context of your visualization */
-        this.svg.call(tip)
-
         this.svg.selectAll(".bar")
                 .data(this.data)
             .enter().append("rect")
@@ -127,10 +125,38 @@ Craft.charts.Column = Craft.charts.BaseChart.extend(
                 .attr("x", $.proxy(function(d) { return this.x(d.date); }, this))
                 .attr("width", this.x.rangeBand())
                 .attr("y", $.proxy(function(d) { return this.y(d.close); }, this))
-                .attr("height", $.proxy(function(d) { return this.height - this.y(d.close); }, this))
-                .on('mouseover', tip.show)
-                .on('mouseout', tip.hide);
+                .attr("height", $.proxy(function(d) { return this.height - this.y(d.close); }, this));
 
+        if(this.enableTips)
+        {
+            var formatTime = d3.time.format("%d-%b-%y");
+
+            // Define 'div' for tooltips
+            var $tip = d3.select("body")
+                .append("div")
+                .attr("class", "tooltip")
+                .style("opacity", 0);
+
+            // Show tip when hovering plots
+            this.svg.selectAll(".bar")
+                .on("mouseover", function(d)
+                {
+                    $tip.transition()
+                        .duration(200)
+                        .style("opacity", 1);
+                    $tip.html(formatTime(d.date) + "<br/>"  + d.close)
+                        .style("left", (d3.event.pageX) + "px")
+                        .style("top", (d3.event.pageY - 28) + "px");
+                    })
+                .on("mouseout", function(d)
+                {
+                    d3.select(this).style("filter", "");
+
+                    $tip.transition()
+                        .duration(500)
+                        .style("opacity", .5);
+                });
+        }
     }
 });
 
