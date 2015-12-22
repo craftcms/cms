@@ -28,6 +28,9 @@ Craft.charts.BaseChart = Garnish.Base.extend(
     xTickFormat: function(d) { var format = d3.time.format("%d/%m"); return format(d); },
     yTickFormat: function(d) { return "$" + d; },
 
+    tipFormat: "%d-%b-%y",
+    dataFormat: "%d-%b-%y",
+
     init: function(container)
     {
         this.$container = container;
@@ -48,6 +51,20 @@ Craft.charts.BaseChart = Garnish.Base.extend(
             this.draw();
         }
     },
+
+    parseData: function(data)
+    {
+        if(typeof(data) != 'undefined')
+        {
+            this.data = data;
+
+            this.data.forEach($.proxy(function(d)
+            {
+                d.date = d3.time.format(this.dataFormat).parse(d.date);
+                d.close = +d.close;
+            }, this));
+        }
+    }
 });
 
 
@@ -65,16 +82,7 @@ Craft.charts.Column = Craft.charts.BaseChart.extend(
 
     draw: function(data)
     {
-
-        if(typeof(data) != 'undefined')
-        {
-            this.data = data;
-
-            this.data.forEach(function(d) {
-                d.date = d3.time.format("%d-%b-%y").parse(d.date);
-                d.close = +d.close;
-            });
-        }
+        this.parseData(data);
 
         this.$chart.html('');
 
@@ -177,15 +185,7 @@ Craft.charts.Area = Craft.charts.BaseChart.extend(
 
     draw: function(data)
     {
-        if(typeof(data) != 'undefined')
-        {
-            this.data = data;
-
-            this.data.forEach(function(d) {
-                d.date = d3.time.format("%d-%b-%y").parse(d.date);
-                d.close = +d.close;
-            });
-        }
+        this.parseData(data);
 
         this.$chart.html('');
 
@@ -250,7 +250,7 @@ Craft.charts.Area = Craft.charts.BaseChart.extend(
 
     drawPlots: function()
     {
-        var formatTime = d3.time.format("%d-%b-%y");
+        var formatTime = d3.time.format(this.tipFormat);
 
         if(this.enablePlots)
         {
