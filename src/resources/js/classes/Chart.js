@@ -272,9 +272,6 @@ Craft.charts.Area = Craft.charts.BaseChart.extend(
 
                     // Show tip when hovering plots
                     this.svg.selectAll("circle")
-                        //     .data(this.data)
-                        // .enter().append("rect")
-
                         .on("mouseover", function(d)
                         {
                             d3.select(this).style("filter", "url(#drop-shadow)");
@@ -294,8 +291,6 @@ Craft.charts.Area = Craft.charts.BaseChart.extend(
                                 .duration(500)
                                 .style("opacity", 0);
                         });
-
-
                 }
 
         }
