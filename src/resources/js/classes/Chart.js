@@ -12,7 +12,6 @@ Craft.charts.Tip = Garnish.Base.extend(
 
     init: function()
     {
-        // Define 'div' for tooltips
         this.$tip = d3.select("body")
             .append("div")
             .attr("class", "tooltip")
@@ -21,8 +20,6 @@ Craft.charts.Tip = Garnish.Base.extend(
 
     show: function(d)
     {
-        // d3.select(this).style("filter", "url(#drop-shadow)"); // show #drop-shadow filter
-
         var formatTime = d3.time.format(this.tipFormat);
 
         this.$tip.transition()
@@ -35,8 +32,6 @@ Craft.charts.Tip = Garnish.Base.extend(
 
     hide: function()
     {
-        // d3.select(this).style("filter", ""); // hide filter
-
         this.$tip.transition()
             .duration(500)
             .style("opacity", 0);
@@ -275,7 +270,7 @@ Craft.charts.Area = Craft.charts.BaseChart.extend(
             this.svg.selectAll("dot")
                 .data(this.data)
             .enter().append("circle")
-                .attr("r", 6)
+                .attr("r", 5)
                 .attr("cx", $.proxy(function(d) { return this.x(d.date); }, this))
                 .attr("cy", $.proxy(function(d) { return this.y(d.close); }, this));
 
@@ -286,10 +281,20 @@ Craft.charts.Area = Craft.charts.BaseChart.extend(
                         this.tip = new Craft.charts.Tip();
                     }
 
+                    var tip = this.tip;
+
                     // Show tip when hovering plots
                     this.svg.selectAll("circle")
-                        .on("mouseover", $.proxy(this.tip, 'show'))
-                        .on("mouseout", $.proxy(this.tip, 'hide'));
+                        .on("mouseover", function(d)
+                        {
+                            d3.select(this).style("filter", "url(#drop-shadow)"); // show #drop-shadow filter
+                            tip.show(d);
+                        })
+                        .on("mouseout", function()
+                        {
+                            d3.select(this).style("filter", ""); // hide filter
+                            tip.hide();
+                        });
                 }
         }
     },
