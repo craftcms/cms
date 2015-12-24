@@ -262,7 +262,6 @@ class EmailService extends BaseApplicationComponent
 			throw new Exception(Craft::t('Could not determine how to send the email.  Check your email settings.'));
 		}
 
-
 		// Fire an 'onBeforeSendEmail' event
 		$event = new Event($this, array(
 			'user' => $user,
@@ -458,25 +457,19 @@ class EmailService extends BaseApplicationComponent
 				throw new Exception(Craft::t('Email error: {error}', array('error' => $email->ErrorInfo)));
 			}
 
-			$success = true;
 			Craft::log('Successfully sent email with subject: '.$email->Subject, LogLevel::Info);
-		}
-		else
-		{
-			$success = false;
-		}
 
-		if ($success)
-		{
 			// Fire an 'onSendEmail' event
 			$this->onSendEmail(new Event($this, array(
 				'user' => $user,
 				'emailModel' => $emailModel,
 				'variables'	 => $variables
 			)));
+
+			return true;
 		}
 
-		return $success;
+		return false;
 	}
 
 	/**
