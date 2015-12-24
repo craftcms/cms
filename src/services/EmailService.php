@@ -231,6 +231,16 @@ class EmailService extends BaseApplicationComponent
 		$this->raiseEvent('onSendEmail', $event);
 	}
 
+	/**
+	 * Fires an 'onSendEmailError' event.
+	 *
+	 * @param Event $event
+	 */
+	public function onSendEmailError(Event $event)
+	{
+		$this->raiseEvent('onSendEmailError', $event);
+	}
+
 	// Private Methods
 	// =========================================================================
 
@@ -437,6 +447,14 @@ class EmailService extends BaseApplicationComponent
 
 			if (!$email->Send())
 			{
+				// Fire an 'onSendEmailError' event
+				$this->onSendEmailError(new Event($this, array(
+					'user' => $user,
+					'emailModel' => $emailModel,
+					'variables'	 => $variables,
+					'error' => $email->ErrorInfo
+				)));
+
 				throw new Exception(Craft::t('Email error: {error}', array('error' => $email->ErrorInfo)));
 			}
 
