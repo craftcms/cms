@@ -228,7 +228,12 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 
 				$fileModel = new AssetFileModel();
 
-				$fileModel->getContent()->title = $fileModel->generateAttributeLabel(IOHelper::getFileName($filename, false));
+				$title = $fileModel->generateAttributeLabel(IOHelper::getFileName($filename, false));
+
+				// If there were double spaces, it's because the filename had a space followed by a
+				// capital letter. We convert the space to a dash, but Yii thinks it's a new "word"
+				// and adds another space.
+				$fileModel->getContent()->title = str_replace('  ', ' ', $title);
 
 				$filename = IOHelper::getFileName($response->getDataItem('filePath'));
 				$fileModel->filename = IOHelper::getFileName($filename);

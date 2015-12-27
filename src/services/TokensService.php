@@ -51,7 +51,7 @@ class TokensService extends BaseApplicationComponent
 		if ($usageLimit)
 		{
 			$tokenRecord->usageCount = 0;
-			$usageLimit->usageLimit = $usageLimit;
+			$tokenRecord->usageLimit = $usageLimit;
 		}
 
 		$tokenRecord->expiryDate = $expiryDate;
@@ -128,8 +128,14 @@ class TokensService extends BaseApplicationComponent
 	 */
 	public function incrementTokenUsageCountById($tokenId)
 	{
+		$currentUsageCount = craft()->db->createCommand()
+			->select('usageCount')
+			->from('tokens')
+			->where(array('id' => $tokenId))
+			->queryScalar();
+
 		$affectedRows = craft()->db->createCommand()->update('tokens', array(
-			'usageCount' => 'usageCount + 1'
+			'usageCount' => $currentUsageCount + 1
 		), array(
 			'id' => $tokenId
 		));

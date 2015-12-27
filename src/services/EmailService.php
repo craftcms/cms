@@ -231,6 +231,16 @@ class EmailService extends BaseApplicationComponent
 		$this->raiseEvent('onSendEmail', $event);
 	}
 
+	/**
+	 * Fires an 'onSendEmailError' event.
+	 *
+	 * @param Event $event
+	 */
+	public function onSendEmailError(Event $event)
+	{
+		$this->raiseEvent('onSendEmailError', $event);
+	}
+
 	// Private Methods
 	// =========================================================================
 
@@ -251,7 +261,6 @@ class EmailService extends BaseApplicationComponent
 		{
 			throw new Exception(Craft::t('Could not determine how to send the email.  Check your email settings.'));
 		}
-
 
 		// Fire an 'onBeforeSendEmail' event
 		$event = new Event($this, array(
@@ -437,28 +446,30 @@ class EmailService extends BaseApplicationComponent
 
 			if (!$email->Send())
 			{
+				// Fire an 'onSendEmailError' event
+				$this->onSendEmailError(new Event($this, array(
+					'user' => $user,
+					'emailModel' => $emailModel,
+					'variables'	 => $variables,
+					'error' => $email->ErrorInfo
+				)));
+
 				throw new Exception(Craft::t('Email error: {error}', array('error' => $email->ErrorInfo)));
 			}
 
-			$success = true;
 			Craft::log('Successfully sent email with subject: '.$email->Subject, LogLevel::Info);
-		}
-		else
-		{
-			$success = false;
-		}
 
-		if ($success)
-		{
 			// Fire an 'onSendEmail' event
 			$this->onSendEmail(new Event($this, array(
 				'user' => $user,
 				'emailModel' => $emailModel,
 				'variables'	 => $variables
 			)));
+
+			return true;
 		}
 
-		return $success;
+		return false;
 	}
 
 	/**
