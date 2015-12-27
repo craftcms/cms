@@ -4,6 +4,9 @@
 
 Craft.charts = {};
 
+/**
+ * Class Craft.charts.Tip
+ */
 Craft.charts.Tip = Garnish.Base.extend(
 {
     $tip: null,
@@ -18,14 +21,23 @@ Craft.charts.Tip = Garnish.Base.extend(
             .style("opacity", 0);
     },
 
-    show: function(d)
+    getContent: function(d)
     {
         var formatTime = d3.time.format(this.tipFormat);
 
+        var html = formatTime(d.date)
+                        + '<br />'
+                        + '€'+ d.close;
+
+        return html;
+    },
+
+    show: function(d)
+    {
         this.$tip.transition()
             .duration(200)
             .style("opacity", 1);
-        this.$tip.html(formatTime(d.date) + "<br/>"  + d.close)
+        this.$tip.html(this.getContent(d))
             .style("left", (d3.event.pageX) + "px")
             .style("top", (d3.event.pageY - 28) + "px");
     },
@@ -58,8 +70,8 @@ Craft.charts.BaseChart = Garnish.Base.extend(
     yAxis: null,
     svg: null,
 
-    xTickFormat: function(d) { var format = d3.time.format("%d/%m"); return format(d); },
-    yTickFormat: function(d) { return "$" + d; },
+    xTickFormat: function(d) { var format = d3.time.format("%d / %m"); return format(d); },
+    yTickFormat: function(d) { return "€" + d; },
 
     dataFormat: "%d-%b-%y",
 
