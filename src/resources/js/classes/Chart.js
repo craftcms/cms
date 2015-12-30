@@ -12,18 +12,6 @@ Craft.charts.Tip = Garnish.Base.extend(
     $tip: null,
 
     tipFormat: "%d-%b-%y",
-    tipContentFormat: function(d)
-    {
-        this.settings.tipContentFormat(d);
-
-        var formatTime = d3.time.format(this.tipFormat);
-
-        var html = formatTime(d.date)
-                        + '<br />'
-                        + '€'+ d.close;
-
-        return html;
-    },
 
     init: function(settings)
     {
@@ -38,6 +26,17 @@ Craft.charts.Tip = Garnish.Base.extend(
             .append("div")
             .attr("class", "tooltip")
             .style("opacity", 0);
+    },
+
+    tipContentFormat: function(d)
+    {
+        var formatTime = d3.time.format(this.tipFormat);
+
+        var html = formatTime(d.date)
+                        + '<br />'
+                        + '€'+ d.close;
+
+        return html;
     },
 
     getContent: function(d)
