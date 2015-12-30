@@ -12,9 +12,28 @@ Craft.charts.Tip = Garnish.Base.extend(
     $tip: null,
 
     tipFormat: "%d-%b-%y",
-
-    init: function()
+    tipContentFormat: function(d)
     {
+        this.settings.tipContentFormat(d);
+
+        var formatTime = d3.time.format(this.tipFormat);
+
+        var html = formatTime(d.date)
+                        + '<br />'
+                        + '€'+ d.close;
+
+        return html;
+    },
+
+    init: function(settings)
+    {
+        this.setSettings(settings);
+
+        if(this.settings.tipContentFormat)
+        {
+            this.tipContentFormat = this.settings.tipContentFormat;
+        }
+
         this.$tip = d3.select("body")
             .append("div")
             .attr("class", "tooltip")
@@ -23,13 +42,7 @@ Craft.charts.Tip = Garnish.Base.extend(
 
     getContent: function(d)
     {
-        var formatTime = d3.time.format(this.tipFormat);
-
-        var html = formatTime(d.date)
-                        + '<br />'
-                        + '€'+ d.close;
-
-        return html;
+        return this.tipContentFormat(d);
     },
 
     show: function(d)
@@ -75,9 +88,16 @@ Craft.charts.BaseChart = Garnish.Base.extend(
 
     dataFormat: "%d-%b-%y",
 
-    init: function(container)
+    init: function(container, settings)
     {
         this.$container = container;
+        this.setSettings(settings);
+
+        if(this.settings.yTickFormat)
+        {
+            this.yTickFormat = this.settings.yTickFormat;
+        }
+
         this.$chart = $('<div class="'+this.chartClass+'" />').appendTo(this.$container);
 
         d3.select(window).on('resize', $.proxy(function() {
@@ -290,7 +310,9 @@ Craft.charts.Area = Craft.charts.BaseChart.extend(
                 {
                     if(!this.tip)
                     {
-                        this.tip = new Craft.charts.Tip();
+                        this.tip = new Craft.charts.Tip({
+                            tipContentFormat: this.settings.tipContentFormat
+                        });
                     }
 
                     var tip = this.tip;
