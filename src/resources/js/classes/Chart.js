@@ -11,11 +11,16 @@ Craft.charts.Tip = Garnish.Base.extend(
 {
     $tip: null,
 
-    tipFormat: "%d-%b-%y",
+    locale: null,
 
     init: function(settings)
     {
         this.setSettings(settings);
+
+        if(this.settings.locale)
+        {
+            this.locale = this.settings.locale;
+        }
 
         if(this.settings.tipContentFormat)
         {
@@ -28,20 +33,19 @@ Craft.charts.Tip = Garnish.Base.extend(
             .style("opacity", 0);
     },
 
-    tipContentFormat: function(d)
+    tipContentFormat: function(locale, d)
     {
-        var formatTime = d3.time.format(this.tipFormat);
+        var formatTime = locale.timeFormat("%x");
+        var formatNumber = locale.numberFormat("n");
 
-        var html = formatTime(d.date)
-                        + '<br />'
-                        + '€'+ d.close;
-
-        return html;
+        return formatTime(d.date)
+                    + '<br />'
+                    + formatNumber(d.close);
     },
 
     getContent: function(d)
     {
-        return this.tipContentFormat(d);
+        return this.tipContentFormat(this.locale, d);
     },
 
     show: function(d)
@@ -82,13 +86,14 @@ Craft.charts.BaseChart = Garnish.Base.extend(
     yAxis: null,
     svg: null,
 
-    xTickFormat: function(d) { var format = d3.time.format("%d / %m"); return format(d); },
-    yTickFormat: function(d) { return "€" + d; },
-
     dataFormat: "%d-%b-%y",
+
+    locale: null,
 
     init: function(container, settings)
     {
+        this.locale = this.locale_frFR();
+
         this.$container = container;
         this.setSettings(settings);
 
@@ -97,12 +102,27 @@ Craft.charts.BaseChart = Garnish.Base.extend(
             this.yTickFormat = this.settings.yTickFormat;
         }
 
+        if(this.settings.xTickFormat)
+        {
+            this.xTickFormat = this.settings.xTickFormat;
+        }
+
         this.$chart = $('<div class="'+this.chartClass+'" />').appendTo(this.$container);
 
         d3.select(window).on('resize', $.proxy(function() {
             this.resize();
         }, this));
 
+    },
+
+    xTickFormat: function(locale)
+    {
+        return locale.timeFormat("%x");
+    },
+
+    yTickFormat: function(locale)
+    {
+        return locale.numberFormat("n");
     },
 
     resize: function()
@@ -127,6 +147,41 @@ Craft.charts.BaseChart = Garnish.Base.extend(
                 d.close = +d.close;
             }, this));
         }
+    },
+
+    locale_frFR: function() {
+        return d3.locale({
+            decimal: ",",
+            thousands: ".",
+            grouping: [3],
+            currency: ["", " €"],
+            dateTime: "%A, le %e %B %Y, %X",
+            date: "%d/%m/%Y",
+            time: "%H:%M:%S",
+            periods: ["AM", "PM"], // unused
+            days: ["dimanche", "lundi", "mardi", "mercredi", "jeudi", "vendredi", "samedi"],
+            shortDays: ["dim.", "lun.", "mar.", "mer.", "jeu.", "ven.", "sam."],
+            months: ["janvier", "février", "mars", "avril", "mai", "juin", "juillet", "août", "septembre", "octobre", "novembre", "décembre"],
+            shortMonths: ["janv.", "févr.", "mars", "avr.", "mai", "juin", "juil.", "août", "sept.", "oct.", "nov.", "déc."]
+        });
+    },
+
+    locale_enUS: function()
+    {
+        return d3.locale({
+            decimal: ".",
+            thousands: ",",
+            grouping: [3],
+            currency: ["$", ""],
+            dateTime: "%a %b %e %X %Y",
+            date: "%m/%d/%Y",
+            time: "%H:%M:%S",
+            periods: ["AM", "PM"],
+            days: ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"],
+            shortDays: ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"],
+            months: ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"],
+            shortMonths: ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
+        });
     }
 });
 
@@ -243,13 +298,13 @@ Craft.charts.Area = Craft.charts.BaseChart.extend(
         this.xAxis = d3.svg.axis()
             .scale(this.x)
             .orient("top")
-            .tickFormat(this.xTickFormat)
+            .tickFormat(this.xTickFormat(this.locale))
             .ticks(Math.max(this.width/150, 3));
 
         this.yAxis = d3.svg.axis()
             .scale(this.y)
             .orient("right")
-            .tickFormat(this.yTickFormat)
+            .tickFormat(this.yTickFormat(this.locale))
             .ticks(this.height / 50);
 
         // area
@@ -310,6 +365,7 @@ Craft.charts.Area = Craft.charts.BaseChart.extend(
                     if(!this.tip)
                     {
                         this.tip = new Craft.charts.Tip({
+                            locale: this.locale,
                             tipContentFormat: this.settings.tipContentFormat
                         });
                     }
