@@ -11,7 +11,7 @@
 		<ul class="icons">
 			{% for handle, item in items %}
 				<li>
-					<a href="{% if item.url is defined %}{{ url(item.url) }}{% else %}{{ url('settings/'~handle) }}{% endif %}" {% if item.icon is defined %}data-icon="{{ item.icon }}"{% endif %}>
+					<a href="{% if item.url is defined %}{{ url(item.url) }}{% else %}{{ url('settings/'~handle) }}{% endif %}"{% if item.icon is defined %} data-icon="{{ item.icon }}"{% endif %} title="{{ item.label }}">
 
 						{% if item.iconUrl is defined %}
 							<img src="{{ item.iconUrl }}" />
@@ -30,7 +30,7 @@
 
 	<ul class="icons">
 		{% for tool in tools %}
-			<li><a id="tool-{{ tool.getClassHandle() }}" data-icon="{{ tool.getIconValue() }}">{{ tool.getName() }}</a></li>
+			<li><a id="tool-{{ tool.getClassHandle() }}" data-icon="{{ tool.getIconValue() }}" title="{{ tool.getName() }}">{{ tool.getName() }}</a></li>
 			{% includejs 'new Craft.Tool("'~tool.getClassHandle()~'", '~tool.getOptionsHtml()|json_encode~', "'~tool.getButtonLabel()~'");' %}
 		{% endfor %}
 	</ul>
