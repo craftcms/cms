@@ -24,7 +24,7 @@ class PasswordModel extends BaseModel
 	protected function defineAttributes()
 	{
 		return array(
-			'password' => array(AttributeType::String, 'minLength' => 6, 'maxLength' => 160, 'required' => true)
+			'password' => array(AttributeType::String, 'label' => 'Password', 'minLength' => 6, 'maxLength' => 160, 'required' => true)
 		);
 	}
 }
