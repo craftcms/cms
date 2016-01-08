@@ -431,7 +431,7 @@ class DbBackup
 						}
 
 						// Nuke that last comma and add a ;
-						$insertStatement = mb_substr($insertStatement, 0, -2).';';
+						$insertStatement = mb_substr($insertStatement, 0, -mb_strlen(PHP_EOL) -1).';';
 
 						IOHelper::writeToFile($this->_filePath, $insertStatement . PHP_EOL, true, true);
 					}
