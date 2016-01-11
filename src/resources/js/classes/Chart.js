@@ -2,7 +2,35 @@
  * Craft Charts
  */
 
-Craft.charts = {};
+Craft.charts = {
+
+    /**
+     * arrayToDataTable
+     */
+    arrayToDataTable: function(twoDArray)
+    {
+
+        var data = {
+            columns: [],
+            rows: []
+        };
+
+        $.each(twoDArray, function(k, v) {
+            if(k == 0)
+            {
+                data.columns = v;
+            }
+            else
+            {
+                data.rows.push(v);
+            }
+        });
+
+        var dataTable = new Craft.charts.DataTable(data);
+
+        return dataTable;
+    }
+};
 
 /**
  * Class Craft.charts.Tip
