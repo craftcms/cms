@@ -33,6 +33,29 @@ Craft.charts = {
 };
 
 /**
+ * Class Craft.charts.DataTable
+ */
+Craft.charts.DataTable = Garnish.Base.extend(
+{
+    columns: null,
+    rows: null,
+
+    init: function(data)
+    {
+        // parse data
+
+        this.columns = data.columns;
+        this.rows = data.rows;
+
+        this.rows.forEach($.proxy(function(d)
+        {
+            d[0].value = d3.time.format("%d-%b-%y").parse(d[0].value);
+            d[1].value = +d[1].value;
+        }, this));
+    }
+});
+
+/**
  * Class Craft.charts.Tip
  */
 Craft.charts.Tip = Garnish.Base.extend(
