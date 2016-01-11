@@ -237,7 +237,7 @@ td.right { float: none; @include alignright; }
 .sidebar .customize-sources { color: rgba(0,0,0,0.2); }
 .sidebar .customize-sources:hover { color: $linkcolor; }
 
-.customize-sources-modal { padding-left: 200px; }
+.customize-sources-modal { @include padding-left(200px); }
 .customize-sources-modal > .spinner { position: absolute; top: calc(50% - 44px); left: calc(50% - 12px); }
 .customize-sources-modal > .cs-sidebar { position: absolute; top: 0; @include left(0); margin: 0; padding: 10px 0; border: none; width: 200px; height: calc(100% - 78px); background: $lightBgColor; overflow: auto;
 	@include box-shadow(inset -1px 0 0 rgba(0,0,0,0.06));
@@ -266,10 +266,9 @@ td.right { float: none; @include alignright; }
 /*  Icon lists
 /* ----------------------------------------*/
 
-ul.icons { margin-top: 20px; }
+ul.icons { margin-top: 20px; @include display-flex; @include flex-wrap(wrap); }
 ul.icons:after { @include clearafter; }
-ul.icons li { @include floatleft; margin: 0 0 10px; }
-ul.icons li.break { clear: both; }
+ul.icons li { margin: 0 0 10px; }
 ul.icons li a { display: block; position: relative; padding: 60px 5px 10px; width: 110px; text-align: center; color: $textcolor; border-radius: 4px; border: 1px solid #fff; }
 ul.icons li a img { width: 40px; height: 40px; position: absolute; top: 12px; left: calc(50% - 20px); }
 ul.icons li a:before { display: block; position: absolute; top: 0; @include left(0); width: 100%; font-size: 40px; line-height: 60px; }
@@ -1098,7 +1097,7 @@ body #redactor-modal-overlay {
 
 .hud { position: absolute; display: none; top: 0; }
 .hud .tip { position: absolute; z-index: 101; background: no-repeat 0 0; }
-.hud .tip-left { @include left(-15px); width: 15px; height: 30px; background-image: url(../images/hudtip_left.png); }
+.hud .tip-left { left: -15px; width: 15px; height: 30px; background-image: url(../images/hudtip_left.png); }
 .hud .tip-top { top: -15px; width: 30px; height: 15px; background-image: url(../images/hudtip_top.png); }
 .hud .tip-right { @include right(-15px); width: 15px; height: 30px; background-image: url(../images/hudtip_right.png); }
 .hud .tip-bottom { bottom: -15px; width: 30px; height: 15px; background-image: url(../images/hudtip_bottom.png); }
@@ -1194,6 +1193,7 @@ body .redactor-dropdown a { @include menu-option-styles; }
 .menu:not(:hover) ul li a:not(.sel):not(.disabled).hover,
 .menu:not(:hover) ul li a:not(.sel):not(.disabled).hover .light,
 body .redactor-dropdown a:hover { @include menu-option-active-styles; }
+body .redactor-dropdown a:hover span { color: $textcolor !important; }
 .menu ul li a.sel { cursor: default; }
 .menu ul li a .shortcut { @include floatright; @include margin-left(14px); color: $mediumtextcolor; }
 .menu hr { margin: 5px -14px; }
@@ -1414,7 +1414,7 @@ body .redactor-toolbar li a.redactor-act { background-color: $darkselcolor; colo
 body .redactor-toolbar li:first-child a { border-top-left-radius: 2px; }
 body .redactor-dropdown { z-index: 100; }
 body .redactor-dropdown li { border-bottom: none; background: none; }
-body .redactor-box:not(.redactor-box-fullscreen) .redactor-editor { background: none; border: none; border-top: 1px solid $hairlineColor; padding: 12px; }
+body .redactor-box:not(.redactor-box-fullscreen) .redactor-editor { background: none; border: none; border-top: 1px solid $hairlineColor; padding: 12px; font-size: 15px; line-height: 1.4; }
 .redactor-editor ul,
 .redactor-editor ol { @include padding-left(2em !important); @include padding-right(0 !important); }
 body .redactor-editor ul { list-style-type: disc; }

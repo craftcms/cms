@@ -173,7 +173,7 @@
 					return;
 				}
 
-				this.placeholder.remove();
+				this.placeholder.hide();
 
 				var rows = 2;
 				var columns = 3;
@@ -192,7 +192,7 @@
 						// set the focus to the first td
 						if (i === 0 && z === 0)
 						{
-							$column.append(this.selection.marker());
+							$column.append(this.marker.get());
 						}
 
 						$($row).append($column);
@@ -256,11 +256,11 @@
 				var $next = $table.next();
 				if (!this.opts.linebreaks && $next.length !== 0)
 				{
-					this.caret.setStart($next);
+					this.caret.start($next);
 				}
 				else
 				{
-					this.caret.setAfter($table);
+					this.caret.after($table);
 				}
 
 
@@ -287,7 +287,7 @@
 					var $focus_td = $focus_tr.children('td, th').first();
 					if ($focus_td.length)
 					{
-						$focus_td.prepend(this.selection.marker());
+						$focus_td.prepend(this.marker.get());
 					}
 				}
 
@@ -314,7 +314,7 @@
 					var focusIndex = index - 1 < 0 ? index + 1 : index - 1;
 					if (i === 0)
 					{
-						$elem.find('td, th').eq(focusIndex).prepend(this.selection.marker());
+						$elem.find('td, th').eq(focusIndex).prepend(this.marker.get());
 					}
 
 					$elem.find('td, th').eq(index).remove();

@@ -430,8 +430,8 @@ class DbBackup
 							$insertStatement .= ' ('.implode(', ', $row).'),'.PHP_EOL;
 						}
 
-						// Nuke that last command and add a ;
-						$insertStatement[strlen($insertStatement) - 2] = ';';
+						// Nuke that last comma and add a ;
+						$insertStatement = mb_substr($insertStatement, 0, -mb_strlen(PHP_EOL) -1).';';
 
 						IOHelper::writeToFile($this->_filePath, $insertStatement . PHP_EOL, true, true);
 					}

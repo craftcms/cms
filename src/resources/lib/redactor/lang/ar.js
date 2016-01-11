@@ -13,7 +13,7 @@
     "italic-abbr": "I",
     "deleted-abbr": "S",
     "underline-abbr": "U",
-    "lists": "قائمة",
+    "lists": "قوائم",
     "link-insert": "إدراج رابط",
     "link-edit": "تحرير الرابط",
     "link-in-new-tab": "فتح الرابط في تبويب جديد",
@@ -23,9 +23,9 @@
     "insert": "إدراج",
     "save": "حفظ",
     "delete": "حذف",
-    "text": "نص",
+    "text": "النص",
     "edit": "تحرير",
-    "title": "عنوان",
+    "title": "العنوان",
     "paragraph": "نص عادي",
     "quote": "اقتباس",
     "code": "كود",
@@ -44,7 +44,7 @@
     "horizontalrule": "خط أفقي",
     "upload-label": "أسقط الملف هنا أو ",
     "accessibility-help-label": "محرر النص الغني",
-    "caption": "Caption"
+    "caption": "الشرح"
 };
 
 })(jQuery);

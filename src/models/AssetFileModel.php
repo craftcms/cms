@@ -454,15 +454,17 @@ class AssetFileModel extends BaseElementModel
 		if (!$transform->width || !$transform->height)
 		{
 			// Fill in the blank
-			list($dimensions['width'], $dimensions['height']) = ImageHelper::calculateMissingDimension($dimensions['width'], $dimensions['height'], $this->_getWidth(), $this->_getHeight());
+			$dimensionArray = ImageHelper::calculateMissingDimension($dimensions['width'], $dimensions['height'], $this->_getWidth(), $this->_getHeight());
+			$dimensions['width'] = (int)$dimensionArray[0];
+			$dimensions['height'] = (int)$dimensionArray[1];
 		}
 
 		// Special case for 'fit' since that's the only one whose dimensions vary from the transform dimensions
 		if ($transform->mode == 'fit')
 		{
 			$factor = max($this->_getWidth() / $dimensions['width'], $this->_getHeight() / $dimensions['height']);
-			$dimensions['width']  = round($this->_getWidth() / $factor);
-			$dimensions['height'] = round($this->_getHeight() / $factor);
+			$dimensions['width']  = (int)round($this->_getWidth() / $factor);
+			$dimensions['height'] = (int)round($this->_getHeight() / $factor);
 		}
 
 		return $dimensions[$dimension];
