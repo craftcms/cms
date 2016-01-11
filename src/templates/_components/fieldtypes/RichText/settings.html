@@ -52,3 +52,13 @@
 	id: 'columnType',
 	warning: (existing ? "Changing this may result in data loss."|t),
 }, columnType) }}
+
+{{ forms.checkboxSelectField({
+	id: 'availableAssetSources',
+	name: 'availableAssetSources',
+	label: 'Available Asset Sources'|t,
+	instructions: 'The Asset Sources that should be available for Image selection.'|t,
+	options: assetSourceOptions,
+	value: 1,
+	values: settings.availableAssetSources,
+}) }}

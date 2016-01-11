@@ -62,9 +62,16 @@ class RichTextFieldType extends BaseFieldType
 			'mediumtext' => Craft::t('MediumText (stores about 4GB)')
 		);
 
+		$sourceOptions = array();
+		foreach (craft()->assetSources->getAllSources() as $source)
+		{
+			$sourceOptions[] = array('label' => $source->name, 'value' => $source->id);
+		}
+
 		return craft()->templates->render('_components/fieldtypes/RichText/settings', array(
 			'settings' => $this->getSettings(),
 			'configOptions' => $configOptions,
+			'assetSourceOptions' => $sourceOptions,
 			'columns' => $columns,
 			'existing' => !empty($this->model->id),
 		));
@@ -282,6 +289,7 @@ class RichTextFieldType extends BaseFieldType
 			'cleanupHtml' => array(AttributeType::Bool, 'default' => true),
 			'purifyHtml'  => array(AttributeType::Bool, 'default' => false),
 			'columnType'  => array(AttributeType::String),
+			'availableAssetSources' => AttributeType::Mixed,
 		);
 	}
 
@@ -346,11 +354,18 @@ class RichTextFieldType extends BaseFieldType
 	private function _getAssetSources()
 	{
 		$sources = array();
-		$assetSourceIds = craft()->assetSources->getAllSourceIds();
+		$settings = $this->getSettings();
+		$assetSourceIds = isset($settings->availableAssetSources) ? $settings->availableAssetSources : craft()->assetSources->getAllSourceIds();
 
-		foreach ($assetSourceIds as $assetSourceId)
+		$folders = craft()->assets->findFolders(array(
+			'sourceId' => $assetSourceIds,
+			'parentId' => ':empty:'
+		));
+
+		foreach ($folders as $folder)
 		{
-			$sources[] = 'asset:'.$assetSourceId;
+
+			$sources[] = 'folder:'.$folder->id;
 		}
 
 		return $sources;

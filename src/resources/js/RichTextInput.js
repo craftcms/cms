@@ -263,6 +263,7 @@ Craft.RichTextInput = Garnish.Base.extend(
 			this.assetSelectionModal = Craft.createElementSelectorModal('Asset', {
 				storageKey: 'RichTextFieldType.ChooseImage',
 				multiSelect: true,
+				sources: this.assetSources,
 				criteria: { locale: this.elementLocale, kind: 'image' },
 				onSelect: $.proxy(function(assets, transform)
 				{
