@@ -1097,7 +1097,7 @@ body #redactor-modal-overlay {
 
 .hud { position: absolute; display: none; top: 0; }
 .hud .tip { position: absolute; z-index: 101; background: no-repeat 0 0; }
-.hud .tip-left { @include left(-15px); width: 15px; height: 30px; background-image: url(../images/hudtip_left.png); }
+.hud .tip-left { left: -15px; width: 15px; height: 30px; background-image: url(../images/hudtip_left.png); }
 .hud .tip-top { top: -15px; width: 30px; height: 15px; background-image: url(../images/hudtip_top.png); }
 .hud .tip-right { @include right(-15px); width: 15px; height: 30px; background-image: url(../images/hudtip_right.png); }
 .hud .tip-bottom { bottom: -15px; width: 30px; height: 15px; background-image: url(../images/hudtip_bottom.png); }
