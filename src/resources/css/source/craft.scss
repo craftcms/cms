@@ -1193,6 +1193,7 @@ body .redactor-dropdown a { @include menu-option-styles; }
 .menu:not(:hover) ul li a:not(.sel):not(.disabled).hover,
 .menu:not(:hover) ul li a:not(.sel):not(.disabled).hover .light,
 body .redactor-dropdown a:hover { @include menu-option-active-styles; }
+body .redactor-dropdown a:hover span { color: $textcolor !important; }
 .menu ul li a.sel { cursor: default; }
 .menu ul li a .shortcut { @include floatright; @include margin-left(14px); color: $mediumtextcolor; }
 .menu hr { margin: 5px -14px; }
