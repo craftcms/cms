@@ -171,11 +171,7 @@ Craft.charts.BaseChart = Garnish.Base.extend(
     resize: function()
     {
         // only redraw if data is set
-
-        if(this.dataTable.rows)
-        {
-            this.draw();
-        }
+        this.draw(this.dataTable, this.settings);
     },
 
     locale_frFR: function() {
