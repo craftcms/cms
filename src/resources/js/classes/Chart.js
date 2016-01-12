@@ -193,13 +193,11 @@ Craft.charts.Area = Craft.charts.BaseChart.extend(
     xTicks: function()
     {
         return 3;
-        return Math.max(this.width/150, 3);
     },
 
     yTicks: function()
     {
         return 2;
-        return this.height / 60;
     },
 
     draw: function(dataTable, settings)
