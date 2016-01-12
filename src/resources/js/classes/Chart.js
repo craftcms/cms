@@ -62,11 +62,9 @@ Craft.charts.Tip = Garnish.Base.extend(
 {
     $tip: null,
 
-    locale: null,
-
     init: function(settings)
     {
-        this.setSettings(settings, Craft.charts.Tip.defauts);
+        this.setSettings(settings, Craft.charts.Tip.defaults);
 
         this.$tip = d3.select("body")
             .append("div")
