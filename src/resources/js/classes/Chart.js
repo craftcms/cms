@@ -337,6 +337,7 @@ Craft.charts.Area = Craft.charts.BaseChart.extend(
 
         return formatTime(d[0].value)
                     + '<br />'
+                    + this.dataTable.columns[1].label+': '
                     + formatNumber(d[1].value);
     },
 
