@@ -486,12 +486,12 @@ Craft.charts.Column = Craft.charts.BaseChart.extend(
             .scale(this.x)
             // .tickValues(this.x.domain().filter(function(d, i) { return !(i % 2); }))
             .orient("bottom")
-            .tickFormat(this.xTickFormat);
+            .tickFormat(this.xTickFormat(this.locale));
 
         this.yAxis = d3.svg.axis()
             .scale(this.y)
             .orient("right")
-            .tickFormat(this.yTickFormat)
+            .tickFormat(this.yTickFormat(this.locale))
             .ticks(this.height / 50);
 
         this.svg = d3.select(this.$chart.get(0)).append("svg")
@@ -526,7 +526,9 @@ Craft.charts.Column = Craft.charts.BaseChart.extend(
         {
             if(!this.tip)
             {
-                this.tip = new Craft.charts.Tip();
+                this.tip = new Craft.charts.Tip({
+                    locale: this.locale,
+                });
             }
 
             // Show tip when hovering plots
