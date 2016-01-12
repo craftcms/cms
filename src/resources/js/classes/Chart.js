@@ -2,35 +2,7 @@
  * Craft Charts
  */
 
-Craft.charts = {
-
-    /**
-     * arrayToDataTable
-     */
-    arrayToDataTable: function(twoDArray)
-    {
-
-        var data = {
-            columns: [],
-            rows: []
-        };
-
-        $.each(twoDArray, function(k, v) {
-            if(k == 0)
-            {
-                data.columns = v;
-            }
-            else
-            {
-                data.rows.push(v);
-            }
-        });
-
-        var dataTable = new Craft.charts.DataTable(data);
-
-        return dataTable;
-    }
-};
+Craft.charts = {};
 
 /**
  * Class Craft.charts.DataTable
@@ -305,7 +277,7 @@ Craft.charts.Area = Craft.charts.BaseChart.extend(
         this.drawPlots();
 
         // Apply shadow filter
-        this.shadowFilter();
+        Craft.charts.utils.applyShadowFilter('drop-shadow', this.svg);
     },
 
     drawPlots: function()
@@ -403,46 +375,6 @@ Craft.charts.Area = Craft.charts.BaseChart.extend(
                 );
         }
     },
-
-    shadowFilter: function()
-    {
-        // filters go in defs element
-        var defs = this.svg.append("defs");
-
-        // create filter with id #drop-shadow
-        // height=130% so that the shadow is not clipped
-        var filter = defs.append("filter")
-            .attr("id", "drop-shadow")
-            .attr("width", "200%")
-            .attr("height", "200%")
-            .attr("x", "-50%")
-            .attr("y", "-50%");
-
-        // SourceAlpha refers to opacity of graphic that this filter will be applied to
-        // convolve that with a Gaussian with standard deviation 3 and store result
-        // in blur
-        filter.append("feGaussianBlur")
-            .attr("in", "SourceAlpha")
-            .attr("stdDeviation", 1)
-            .attr("result", "blur");
-
-        // translate output of Gaussian blur to the right and downwards with 2px
-        // store result in offsetBlur
-        filter.append("feOffset")
-            .attr("in", "blur")
-            .attr("dx", 0)
-            .attr("dy", 0)
-            .attr("result", "offsetBlur");
-
-        // overlay original SourceGraphic over translated blurred opacity by using
-        // feMerge filter. Order of specifying inputs is important!
-        var feMerge = filter.append("feMerge");
-
-        feMerge.append("feMergeNode")
-            .attr("in", "offsetBlur")
-        feMerge.append("feMergeNode")
-            .attr("in", "SourceGraphic");
-    }
 },
 {
     defaults: {
@@ -536,3 +468,75 @@ Craft.charts.Column = Craft.charts.BaseChart.extend(
         }
     }
 });
+
+/**
+ * Class Craft.charts.Utils
+ */
+Craft.charts.utils = {
+    /**
+     * arrayToDataTable
+     */
+    arrayToDataTable: function(twoDArray)
+    {
+
+        var data = {
+            columns: [],
+            rows: []
+        };
+
+        $.each(twoDArray, function(k, v) {
+            if(k == 0)
+            {
+                data.columns = v;
+            }
+            else
+            {
+                data.rows.push(v);
+            }
+        });
+
+        var dataTable = new Craft.charts.DataTable(data);
+
+        return dataTable;
+    },
+
+    applyShadowFilter: function(id, svg)
+    {
+        // filters go in defs element
+        var defs = svg.append("defs");
+
+        // create filter with id #{id}
+        // height=130% so that the shadow is not clipped
+        var filter = defs.append("filter")
+            .attr("id", id)
+            .attr("width", "200%")
+            .attr("height", "200%")
+            .attr("x", "-50%")
+            .attr("y", "-50%");
+
+        // SourceAlpha refers to opacity of graphic that this filter will be applied to
+        // convolve that with a Gaussian with standard deviation 3 and store result
+        // in blur
+        filter.append("feGaussianBlur")
+            .attr("in", "SourceAlpha")
+            .attr("stdDeviation", 1)
+            .attr("result", "blur");
+
+        // translate output of Gaussian blur to the right and downwards with 2px
+        // store result in offsetBlur
+        filter.append("feOffset")
+            .attr("in", "blur")
+            .attr("dx", 0)
+            .attr("dy", 0)
+            .attr("result", "offsetBlur");
+
+        // overlay original SourceGraphic over translated blurred opacity by using
+        // feMerge filter. Order of specifying inputs is important!
+        var feMerge = filter.append("feMerge");
+
+        feMerge.append("feMergeNode")
+            .attr("in", "offsetBlur")
+        feMerge.append("feMergeNode")
+            .attr("in", "SourceGraphic");
+    }
+};
