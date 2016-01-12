@@ -274,6 +274,9 @@ Craft.charts.Area = Craft.charts.BaseChart.extend(
         // Draw plots
         this.drawPlots();
 
+        // Draw tip triggers
+        this.drawTipTriggers();
+
         // Apply shadow filter
         Craft.charts.utils.applyShadowFilter('drop-shadow', this.svg);
     },
@@ -286,35 +289,50 @@ Craft.charts.Area = Craft.charts.BaseChart.extend(
             this.svg.selectAll("dot")
                 .data(this.dataTable.rows)
             .enter().append("circle")
+                .attr("class", "plot")
                 .attr("r", 5)
                 .attr("cx", $.proxy(function(d) { return this.x(d[0].value); }, this))
                 .attr("cy", $.proxy(function(d) { return this.y(d[1].value); }, this));
+        }
+    },
 
-                if(this.settings.enableTips)
+    drawTipTriggers: function()
+    {
+        if(this.settings.enableTips)
+        {
+            // Draw the plots
+            this.svg.selectAll("dot")
+                .data(this.dataTable.rows)
+            .enter().append("circle")
+                .attr("class", "tip-trigger")
+                .attr("r", 10)
+                .attr("cx", $.proxy(function(d) { return this.x(d[0].value); }, this))
+                .attr("cy", $.proxy(function(d) { return this.y(d[1].value); }, this));
+
+            // Instantiate tip
+
+            if(!this.tip)
+            {
+                this.tip = new Craft.charts.Tip({
+                    locale: this.locale,
+                    tipContentFormat: $.proxy(this, 'tipContentFormat')
+                });
+            }
+
+            var tip = this.tip;
+
+            // Show tip when hovering tip trigger
+            this.svg.selectAll("circle")
+                .on("mouseover", function(d)
                 {
-                    if(!this.tip)
-                    {
-                        this.tip = new Craft.charts.Tip({
-                            locale: this.locale,
-                            tipContentFormat: $.proxy(this, 'tipContentFormat')
-                        });
-                    }
-
-                    var tip = this.tip;
-
-                    // Show tip when hovering plots
-                    this.svg.selectAll("circle")
-                        .on("mouseover", function(d)
-                        {
-                            d3.select(this).style("filter", "url(#drop-shadow)"); // show #drop-shadow filter
-                            tip.show(d);
-                        })
-                        .on("mouseout", function()
-                        {
-                            d3.select(this).style("filter", ""); // hide filter
-                            tip.hide();
-                        });
-                }
+                    d3.select(this).style("filter", "url(#drop-shadow)"); // show #drop-shadow filter
+                    tip.show(d);
+                })
+                .on("mouseout", function()
+                {
+                    d3.select(this).style("filter", ""); // hide filter
+                    tip.hide();
+                });
         }
     },
 
@@ -377,7 +395,7 @@ Craft.charts.Area = Craft.charts.BaseChart.extend(
 },
 {
     defaults: {
-        enablePlots: true,
+        enablePlots: false,
         enableXLines: false,
         enableYLines: true,
         enableTips: true,
