@@ -815,12 +815,15 @@ class MatrixService extends BaseApplicationComponent
 			$blockIds = array($blockIds);
 		}
 
-		// Tell the browser to forget about these
-		craft()->userSession->addJsResourceFlash('js/MatrixInput.js');
-
-		foreach ($blockIds as $blockId)
+		if (!craft()->isConsole())
 		{
-			craft()->userSession->addJsFlash('Craft.MatrixInput.forgetCollapsedBlockId('.$blockId.');');
+			// Tell the browser to forget about these
+			craft()->userSession->addJsResourceFlash('js/MatrixInput.js');
+
+			foreach ($blockIds as $blockId)
+			{
+				craft()->userSession->addJsFlash('Craft.MatrixInput.forgetCollapsedBlockId('.$blockId.');');
+			}
 		}
 
 		// Pass this along to ElementsService for the heavy lifting
@@ -919,7 +922,7 @@ class MatrixService extends BaseApplicationComponent
 		}
 
 		// Tell the browser to collapse any new block IDs
-		if ($collapsedBlockIds)
+		if (!craft()->isConsole() && $collapsedBlockIds)
 		{
 			craft()->userSession->addJsResourceFlash('js/MatrixInput.js');
 
