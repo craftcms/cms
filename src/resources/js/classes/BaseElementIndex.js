@@ -603,6 +603,10 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 			return;
 		}
 
+		// Hard-code the min toolbar height in case it was taller than the actions toolbar
+		// (prevents the elements from jumping if this ends up being a double-click)
+		this.$toolbar.css('min-height', this.$toolbar.height());
+
 		// Hide any toolbar inputs
 		this.$toolbarTableRow.children().not(this.$selectAllContainer).addClass('hidden');
 
@@ -694,6 +698,9 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 		this._$triggers.detach();
 
 		this.$toolbarTableRow.children().not(this.$selectAllContainer).removeClass('hidden');
+
+		// Unset the min toolbar height
+		this.$toolbar.css('min-height', '');
 
 		this.showingActionTriggers = false;
 	},
