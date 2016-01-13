@@ -601,6 +601,11 @@ class SectionsService extends BaseApplicationComponent
 
 							if (!$isNewSection)
 							{
+								// Re-save the entrytype name in case the single's name changed.
+								$entryType = $this->getEntryTypeById($entryTypeId);
+								$entryType->name = $section->name;
+								$this->saveEntryType($entryType);
+
 								// Make sure there's only one entry in this section
 								$entryIds = craft()->db->createCommand()
 									->select('id')

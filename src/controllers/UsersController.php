@@ -1795,13 +1795,13 @@ class UsersController extends BaseController
 		{
 			$postCpLoginRedirect = craft()->config->get('postCpLoginRedirect');
 			$url = UrlHelper::getCpUrl($postCpLoginRedirect);
+			$this->redirect($url);
 		}
 		else
 		{
 			$activateAccountSuccessPath = craft()->config->getLocalized('activateAccountSuccessPath');
 			$url = UrlHelper::getSiteUrl($activateAccountSuccessPath);
+			$this->redirectToPostedUrl($user, $url);
 		}
-
-		$this->redirect($url);
 	}
 }

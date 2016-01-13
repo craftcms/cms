@@ -171,9 +171,9 @@ class RichTextFieldType extends BaseFieldType
 		if (strpos($value, '{') !== false)
 		{
 			// Preserve the ref tags with hashes {type:id:url} => {type:id:url}#type:id
-			$value = preg_replace_callback('/(href=|src=)([\'"])(\{(\w+\:\d+\:'.HandleValidator::$handlePattern.')\})\2/', function($matches)
+			$value = preg_replace_callback('/(href=|src=)([\'"])(\{(\w+\:\d+\:'.HandleValidator::$handlePattern.')\})(#[^\'"#]+)?\2/', function($matches)
 			{
-				return $matches[1].$matches[2].$matches[3].'#'.$matches[4].$matches[2];
+				return $matches[1].$matches[2].$matches[3].(!empty($matches[5]) ? $matches[5] : '').'#'.$matches[4].$matches[2];
 			}, $value);
 
 			// Now parse 'em
@@ -233,9 +233,9 @@ class RichTextFieldType extends BaseFieldType
 		}
 
 		// Find any element URLs and swap them with ref tags
-		$value = preg_replace_callback('/(href=|src=)([\'"])[^\'"]+?#(\w+):(\d+)(:'.HandleValidator::$handlePattern.')?\2/', function($matches)
+		$value = preg_replace_callback('/(href=|src=)([\'"])[^\'"#]+?(#[^\'"#]+)?#(\w+):(\d+)(:'.HandleValidator::$handlePattern.')?\2/', function($matches)
 		{
-			return $matches[1].$matches[2].'{'.$matches[3].':'.$matches[4].(!empty($matches[5]) ? $matches[5] : ':url').'}'.$matches[2];
+			return $matches[1].$matches[2].'{'.$matches[4].':'.$matches[5].(!empty($matches[6]) ? $matches[6] : ':url').'}'.(!empty($matches[3]) ? $matches[3] : '').$matches[2];
 		}, $value);
 
 		// Encode any 4-byte UTF-8 characters.
