@@ -360,7 +360,7 @@ Craft.charts.Area = Craft.charts.BaseChart.extend(
 },
 {
     defaults: {
-        enablePlots: false,
+        enablePlots: true,
         enableXLines: false,
         enableYLines: true,
         enableTips: true,
