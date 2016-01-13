@@ -107,8 +107,6 @@ Craft.charts.BaseChart = Garnish.Base.extend(
 
     init: function(container)
     {
-        this.locale = window['d3_locale'];
-
         this.$container = container;
 
         this.$chart = $('<div class="'+this.chartClass+'" />').appendTo(this.$container);
@@ -167,14 +165,26 @@ Craft.charts.Area = Craft.charts.BaseChart.extend(
 
     draw: function(dataTable, settings)
     {
+        var localeDefinition = window['d3_locale'];
+
+        // set settings
+        this.setSettings(settings, Craft.charts.Area.defaults);
+
+        if(this.settings.currency)
+        {
+            localeDefinition.currency = this.settings.currency;
+        }
+
+        this.locale = d3.locale(localeDefinition);
+
+
+
         // reset chart element's HTML
         this.$chart.html('');
 
         // set data table
         this.dataTable = dataTable;
 
-        // set settings
-        this.setSettings(settings, Craft.charts.Area.defaults);
 
         // chart dimensions
         this.width = this.$chart.width() - this.margin.left - this.margin.right;
@@ -373,6 +383,8 @@ Craft.charts.Area = Craft.charts.BaseChart.extend(
 Craft.charts.Column = Craft.charts.BaseChart.extend(
 {
     tip: null,
+
+    currency: null,
 
     margin: { top: 0, right: 0, bottom: 30, left: 0 },
     chartClass: 'chart column',
