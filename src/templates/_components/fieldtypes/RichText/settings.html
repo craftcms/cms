@@ -53,6 +53,8 @@
 	warning: (existing ? "Changing this may result in data loss."|t),
 }, columnType) }}
 
+<hr />
+
 {{ forms.checkboxSelectField({
 	id: 'availableAssetSources',
 	name: 'availableAssetSources',
@@ -61,4 +63,14 @@
 	options: assetSourceOptions,
 	value: 1,
 	values: settings.availableAssetSources,
+}) }}
+
+{{ forms.checkboxSelectField({
+	id: 'availableTransforms',
+	name: 'availableTransforms',
+	label: 'Available Transforms'|t,
+	instructions: 'The Transforms that should be available for Image selection.'|t,
+	options: transformOptions,
+	value: 1,
+	values: settings.availableTransforms,
 }) }}

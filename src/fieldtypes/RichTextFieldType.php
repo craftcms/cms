@@ -68,10 +68,17 @@ class RichTextFieldType extends BaseFieldType
 			$sourceOptions[] = array('label' => $source->name, 'value' => $source->id);
 		}
 
+		$transformOptions = array();
+		foreach (craft()->assetTransforms->getAllTransforms() as $transform)
+		{
+			$transformOptions[] = array('label' => $transform->name, 'value' => $transform->id );
+		}
+
 		return craft()->templates->render('_components/fieldtypes/RichText/settings', array(
 			'settings' => $this->getSettings(),
 			'configOptions' => $configOptions,
 			'assetSourceOptions' => $sourceOptions,
+			'transformOptions' => $transformOptions,
 			'columns' => $columns,
 			'existing' => !empty($this->model->id),
 		));
@@ -142,16 +149,19 @@ class RichTextFieldType extends BaseFieldType
 			$orientation = 'Craft.orientation';
 		}
 
-		craft()->templates->includeJs('new Craft.RichTextInput(' .
-			'"'.craft()->templates->namespaceInputId($id).'", ' .
-			JsonHelper::encode($this->_getSectionSources()).', ' .
-			JsonHelper::encode($this->_getCategorySources()).', ' .
-			JsonHelper::encode($this->_getAssetSources()).', ' .
-			'"'.$localeId.'", ' .
-			$orientation.', ' .
-			$configJs.', ' .
-			'"'.static::$_redactorLang.'"' .
-		');');
+		$settings = array(
+			'id'              => craft()->templates->namespaceInputId($id),
+			'entrySources'    => $this->_getSectionSources(),
+			'categorySources' => $this->_getCategorySources(),
+			'assetSources'    => $this->_getAssetSources(),
+			'transforms'      => $this->_getTransforms(),
+			'elementLocale'   => $localeId,
+			'direction'       => $orientation,
+			'redactorConfig'  => JsonHelper::decode($configJs),
+			'redactorLang'    => static::$_redactorLang,
+		);
+
+		craft()->templates->includeJs('new Craft.RichTextInput('.JsonHelper::encode($settings).');');
 
 		if ($value instanceof RichTextData)
 		{
@@ -285,11 +295,12 @@ class RichTextFieldType extends BaseFieldType
 	protected function defineSettings()
 	{
 		return array(
-			'configFile'  => AttributeType::String,
-			'cleanupHtml' => array(AttributeType::Bool, 'default' => true),
-			'purifyHtml'  => array(AttributeType::Bool, 'default' => false),
-			'columnType'  => array(AttributeType::String),
+			'configFile'            => AttributeType::String,
+			'cleanupHtml'           => array(AttributeType::Bool, 'default' => true),
+			'purifyHtml'            => array(AttributeType::Bool, 'default' => false),
+			'columnType'            => array(AttributeType::String),
 			'availableAssetSources' => AttributeType::Mixed,
+			'availableTransforms'   => AttributeType::Mixed,
 		);
 	}
 
@@ -349,6 +360,8 @@ class RichTextFieldType extends BaseFieldType
 	}
 
 	/**
+	 * Get available Asset sources.
+	 *
 	 * @return array
 	 */
 	private function _getAssetSources()
@@ -369,6 +382,31 @@ class RichTextFieldType extends BaseFieldType
 		}
 
 		return $sources;
+	}
+
+	/**
+	 * Get available Transforms.
+	 *
+	 * @return array
+	 */
+	private function _getTransforms()
+	{
+		$transforms = craft()->assetTransforms->getAllTransforms('id');
+		$settings = $this->getSettings();
+
+		$transformIds = array_flip(!empty($settings->availableTransforms) && is_array($settings->availableTransforms)? $settings->availableTransforms : array());
+		if (!empty($transformIds))
+		{
+			$transforms = array_intersect_key($transforms, $transformIds);
+		}
+
+		$transformList = array();
+		foreach ($transforms as $transform)
+		{
+			$transformList[] = (object) array('handle' => HtmlHelper::encode($transform->handle), 'name' => HtmlHelper::encode($transform->name));
+		}
+
+		return $transformList;
 	}
 
 	/**
