@@ -216,7 +216,7 @@ class RichTextFieldType extends BaseFieldType
 		}
 
 		// Find any element URLs and swap them with ref tags
-		$value = preg_replace_callback('/(href=|src=)([\'"])[^\'"#]+?(#[^\'"#]+)?#(\w+):(\d+)(:'.HandleValidator::$handlePattern.')?\2/', function($matches)
+		$value = preg_replace_callback('/(href=|src=)([\'"])[^\'"#]+?(#[^\'"#]+)?(?:#|%23)(\w+):(\d+)(:'.HandleValidator::$handlePattern.')?\2/', function($matches)
 		{
 			return $matches[1].$matches[2].'{'.$matches[4].':'.$matches[5].(!empty($matches[6]) ? $matches[6] : ':url').'}'.(!empty($matches[3]) ? $matches[3] : '').$matches[2];
 		}, $value);
