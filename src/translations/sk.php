@@ -968,7 +968,7 @@ Ak si tento email neočakával, proste ho ignoruj.',
 	'Tell us about your problems.' => 'Povedzte nám o svojich problémoch.',
 	'Temp files' => 'Dočasné súbory',
 	'Template caches' => 'Cache šablón',
-	'Template Error' => 'Chyba  Šablóny',
+	'Template Error' => 'Chyba Šablóny',
 	'Test' => 'Test',
 	'test_email_body' => 'Ahoj {{user.friendlyName}},
 

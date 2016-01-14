@@ -123,6 +123,12 @@ class WebApp extends \CWebApplication
 		// Attach our own custom Logger
 		Craft::setLogger(new Logger());
 
+		// If there is a custom appId set, apply it here.
+		if ($appId = $this->config->get('appId'))
+		{
+			$this->setId($appId);
+		}
+
 		// Initialize Cache, HttpRequestService and LogRouter right away (order is important)
 		$this->getComponent('cache');
 		$this->getComponent('request');
@@ -133,12 +139,6 @@ class WebApp extends \CWebApplication
 
 		// Set our own custom runtime path.
 		$this->setRuntimePath($this->path->getRuntimePath());
-
-		// If there is a custom appId set, apply it here.
-		if ($appId = $this->config->get('appId'))
-		{
-			$this->setId($appId);
-		}
 
 		// Set the edition components
 		$this->_setEditionComponents();

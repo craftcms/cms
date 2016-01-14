@@ -333,7 +333,7 @@ class UtilsController extends BaseController
 							}
 
 							// And save the log entry.
-							$logEntries[] = $logEntryModel;
+							array_unshift($logEntries, $logEntryModel);
 						}
 
 						if ($logEntries)
