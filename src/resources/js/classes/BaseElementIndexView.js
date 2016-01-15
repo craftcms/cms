@@ -337,7 +337,7 @@ Craft.BaseElementIndexView = Garnish.Base.extend(
 	getLoadMoreParams: function()
 	{
 		// Use the same params that were passed when initializing this view
-		var params = $.extend({}, this.settings.params);
+		var params = $.extend(true, {}, this.settings.params);
 		params.criteria.offset = this.getTotalVisible();
 		return params;
 	},

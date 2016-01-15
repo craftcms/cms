@@ -16,23 +16,50 @@ Craft.RichTextInput = Garnish.Base.extend(
 	$textarea: null,
 	redactor: null,
 
-	init: function(id, entrySources, categorySources, assetSources, elementLocale, direction, redactorConfig, redactorLang)
+	init: function(settings)
 	{
-		this.id = id;
-		this.entrySources = entrySources;
-		this.categorySources = categorySources;
-		this.assetSources = assetSources;
-		this.elementLocale = elementLocale;
-		this.redactorConfig = redactorConfig;
+		// Normalize the settings and set them
+		// ---------------------------------------------------------------------
+
+		// Are they still passing in a bunch of arguments?
+		if (!$.isPlainObject(settings))
+		{
+			// Loop through all of the old arguments and apply them to the settings
+			var normalizedSettings = {},
+					args = ['id', 'entrySources', 'categorySources', 'assetSources', 'elementLocale', 'direction', 'redactorConfig', 'redactorLang'];
+
+			for (var i = 0; i < args.length; i++)
+			{
+				if (typeof arguments[i] != typeof undefined)
+				{
+					normalizedSettings[args[i]] = arguments[i];
+				}
+				else
+				{
+					break;
+				}
+			}
+
+			settings.transforms = [];
+			settings = normalizedSettings;
+		}
+
+		this.id = settings.id;
+		this.entrySources = settings.entrySources;
+		this.categorySources = settings.categorySources;
+		this.assetSources = settings.assetSources;
+		this.transforms = settings.transforms;
+		this.elementLocale = settings.elementLocale;
+		this.redactorConfig = settings.redactorConfig;
 
 		if (!this.redactorConfig.lang)
 		{
-			this.redactorConfig.lang = redactorLang;
+			this.redactorConfig.lang = settings.redactorLang;
 		}
 
 		if (!this.redactorConfig.direction)
 		{
-			this.redactorConfig.direction = direction;
+			this.redactorConfig.direction = settings.direction;
 		}
 
 		this.redactorConfig.imageUpload = true;
@@ -263,6 +290,7 @@ Craft.RichTextInput = Garnish.Base.extend(
 			this.assetSelectionModal = Craft.createElementSelectorModal('Asset', {
 				storageKey: 'RichTextFieldType.ChooseImage',
 				multiSelect: true,
+				sources: this.assetSources,
 				criteria: { locale: this.elementLocale, kind: 'image' },
 				onSelect: $.proxy(function(assets, transform)
 				{
@@ -286,7 +314,7 @@ Craft.RichTextInput = Garnish.Base.extend(
 					}
 				}, this),
 				closeOtherModals: false,
-				canSelectImageTransforms: true
+				transforms: this.transforms
 			});
 		}
 		else
@@ -318,7 +346,7 @@ Craft.RichTextInput = Garnish.Base.extend(
 					}
 				}, this),
 				closeOtherModals: false,
-				canSelectImageTransforms: true
+				transforms: this.transforms
 			});
 		}
 		else

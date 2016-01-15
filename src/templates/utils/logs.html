@@ -42,7 +42,7 @@
 
 			{% else %}
 
-				<h2>{{ logEntry.dateTime.localeDate() ~ ' ' ~ logEntry.dateTime.localeTime() }}</h2>
+				<h2>{{ logEntry.dateTime.format('Y-m-d H:i:s') }}</h2>
 
 				<table class="data fullwidth">
 					<tr>

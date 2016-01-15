@@ -247,7 +247,7 @@ class ElementIndexesService extends BaseApplicationComponent
 			// Mix in custom fields
 			foreach ($this->getAvailableTableFields($elementTypeClass) as $field)
 			{
-				$attributes['field:'.$field->id] = array('label' => $field->name);
+				$attributes['field:'.$field->id] = array('label' => Craft::t($field->name));
 			}
 		}
 

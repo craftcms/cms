@@ -1167,7 +1167,8 @@ class TemplatesService extends BaseApplicationComponent
 		{
 			$this->_twigOptions = array(
 				'base_template_class' => 'Craft\BaseTemplate',
-				'cache'               => craft()->path->getCompiledTemplatesPath(),
+				// See: https://github.com/twigphp/Twig/issues/1951
+				'cache'               => rtrim(craft()->path->getCompiledTemplatesPath(), '/'),
 				'auto_reload'         => true,
 			);
 

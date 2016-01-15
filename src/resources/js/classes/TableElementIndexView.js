@@ -265,8 +265,8 @@ Craft.TableElementIndexView = Craft.BaseElementIndexView.extend(
 				// Add a temporary row
 				var $spinnerRow = this._createSpinnerRowAfter($row);
 
-				// Update the elements
-				var params = $.extend({}, this.settings.params);
+				// Load the nested elements
+				var params = $.extend(true, {}, this.settings.params);
 				params.criteria.descendantOf = id;
 
 				Craft.postActionRequest('elementIndex/getMoreElements', params, $.proxy(function(response, textStatus)

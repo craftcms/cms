@@ -40,7 +40,16 @@
 				this.modal.getActionButton().text(this.lang.get('insert')).on('click', this.video.insert);
 				this.modal.show();
 
-				$('#redactor-insert-video-area').focus();
+				// focus
+				if (this.detect.isDesktop())
+				{
+					setTimeout(function()
+					{
+						$('#redactor-insert-video-area').focus();
+
+					}, 1);
+				}
+
 
 			},
 			insert: function()
@@ -51,9 +60,11 @@
 				{
 					data = this.clean.stripTags(data);
 
+					this.opts.videoContainerClass = (typeof this.opts.videoContainerClass === 'undefined') ? 'video-container' : this.opts.videoContainerClass;
+
 					// parse if it is link on youtube & vimeo
-					var iframeStart = '<iframe style="width: 500px; height: 281px;" src="',
-						iframeEnd = '" frameborder="0" allowfullscreen></iframe>';
+					var iframeStart = '<div class="' + this.opts.videoContainerClass + '"><iframe style="width: 500px; height: 281px;" src="',
+						iframeEnd = '" frameborder="0" allowfullscreen></iframe></div>';
 
 					if (data.match(this.video.reUrlYoutube))
 					{
@@ -66,7 +77,7 @@
 				}
 
 				this.modal.close();
-				this.placeholder.remove();
+				this.placeholder.hide();
 
 				// buffer
 				this.buffer.set();
