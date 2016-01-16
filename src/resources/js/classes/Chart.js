@@ -292,8 +292,6 @@ Craft.charts.Area = Craft.charts.BaseChart.extend(
         // Draw tip triggers
         this.drawTipTriggers();
 
-        // Apply shadow filter
-        Craft.charts.utils.applyShadowFilter('drop-shadow', this.svg);
         this.svg.append("path")
             .datum(this.dataTable.rows)
             .attr("class", "line")
@@ -353,6 +351,9 @@ Craft.charts.Area = Craft.charts.BaseChart.extend(
                     tip.hide();
                 });
         }
+
+        // Apply shadow filter
+        Craft.charts.utils.applyShadowFilter('drop-shadow', this.svg);
     },
 
     tipContentFormat: function(locale, d)
