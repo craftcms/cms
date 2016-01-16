@@ -251,6 +251,10 @@ Craft.charts.Area = Craft.charts.BaseChart.extend(
             .y0(this.height)
             .y1($.proxy(function(d) { return this.y(d[1].value); }, this));
 
+        this.line = d3.svg.line()
+            .x($.proxy(function(d) { return this.x(d[0].value); }, this))
+            .y($.proxy(function(d) { return this.y(d[1].value); }, this));
+
         // Append graph to chart element
         this.svg = d3.select(this.$chart.get(0)).append("svg")
                 .attr("width", this.width + (this.margin.left + this.margin.right))
@@ -290,6 +294,10 @@ Craft.charts.Area = Craft.charts.BaseChart.extend(
 
         // Apply shadow filter
         Craft.charts.utils.applyShadowFilter('drop-shadow', this.svg);
+        this.svg.append("path")
+            .datum(this.dataTable.rows)
+            .attr("class", "line")
+            .attr("d", this.line);
     },
 
     drawPlots: function()

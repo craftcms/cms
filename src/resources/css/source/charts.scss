@@ -11,11 +11,12 @@
 .chart .legend-line .tick { stroke: RGBA(0, 0, 0, .08); stroke-opacity: 0.7; shape-rendering: crispEdges; /* stroke-dasharray: 2; */ }
 .chart .legend-line path { stroke-width: 0; }
 
-.chart.area .area { stroke: RGBA(0, 138, 202, 1); fill: RGBA(0, 138, 202, .3); stroke-width: 3px; }
+.chart.area .area { stroke: RGBA(0, 138, 202, 1); fill: RGBA(0, 138, 202, .3); stroke-width: 0; }
 .chart.area circle.plot { fill: RGBA(0, 138, 202, 1); }
 .chart.area circle.tip-trigger { fill: RGBA(0, 138, 202, 0); }
 .chart.area circle.tip-trigger:hover { fill: RGBA(0, 138, 202, 0.1); }
 .chart.area circle:hover { cursor: default; }
+.chart.area .line { fill: none; stroke: RGBA(0, 138, 202, 1); stroke-width: 3px; }
 
 .chart.column .bar { fill: RGBA(0, 138, 202, .6); }
 /*.chart.column .bar:hover { fill: RGBA(0, 138, 202, .8); cursor: pointer; }*/
