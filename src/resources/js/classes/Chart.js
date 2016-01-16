@@ -163,12 +163,42 @@ Craft.charts.Area = Craft.charts.BaseChart.extend(
         return 2;
     },
 
+    yTickValues: function()
+    {
+        return [this.yAxisMaxValue() / 2, this.yAxisMaxValue()];
+    },
+
+    yAxisMaxValue: function()
+    {
+        var maxValue = d3.max(this.dataTable.rows, function(d) { return d[1].value; });
+        return Math.ceil(maxValue / Math.pow(10, maxValue.toString().length -1)) * Math.pow(10, maxValue.toString().length - 1);
+    },
+
+    xDomain: function()
+    {
+        return d3.extent(this.dataTable.rows, function(d) { return d[0].value; });
+    },
+
+    yDomain: function()
+    {
+        var yDomainMax = $.proxy(function()
+        {
+            // make y max higher than max point
+            return this.yAxisMaxValue();
+
+        }, this);
+
+        return [0, yDomainMax()];
+    },
+
     draw: function(dataTable, settings)
     {
         var localeDefinition = window['d3_locale'];
 
         // set settings
         this.setSettings(settings, Craft.charts.Area.defaults);
+
+        // locale & currency
 
         if(this.settings.currency)
         {
@@ -177,14 +207,11 @@ Craft.charts.Area = Craft.charts.BaseChart.extend(
 
         this.locale = d3.locale(localeDefinition);
 
-
-
         // reset chart element's HTML
         this.$chart.html('');
 
         // set data table
         this.dataTable = dataTable;
-
 
         // chart dimensions
         this.width = this.$chart.width() - this.margin.left - this.margin.right;
@@ -202,11 +229,13 @@ Craft.charts.Area = Craft.charts.BaseChart.extend(
             .tickFormat(this.xTickFormat(this.locale))
             .ticks(this.xTicks());
 
+
         // Y axis
         this.yAxis = d3.svg.axis()
             .scale(this.y)
             .orient("right")
             .tickFormat(this.yTickFormat(this.locale))
+            .tickValues(this.yTickValues())
             .ticks(this.yTicks());
 
         // Area
@@ -222,8 +251,8 @@ Craft.charts.Area = Craft.charts.BaseChart.extend(
             .append("g")
                 .attr("transform", "translate(" + this.margin.left + "," + this.margin.top + ")");
 
-        this.x.domain(d3.extent(this.dataTable.rows, function(d) { return d[0].value; }));
-        this.y.domain([0, d3.max(this.dataTable.rows, function(d) { return d[1].value; })]);
+        this.x.domain(this.xDomain());
+        this.y.domain(this.yDomain());
 
 
         // Draw chart
@@ -352,7 +381,6 @@ Craft.charts.Area = Craft.charts.BaseChart.extend(
 
         if(this.settings.enableYLines)
         {
-
             this.yLineAxis = d3.svg.axis()
                 .scale(this.y)
                 .orient("left");
@@ -363,6 +391,7 @@ Craft.charts.Area = Craft.charts.BaseChart.extend(
                 .call(this.yLineAxis
                     .tickSize(-this.width, 0, 0)
                     .tickFormat("")
+                    .tickValues(this.yTickValues())
                     .ticks(this.yTicks())
                 );
         }
