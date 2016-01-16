@@ -413,6 +413,90 @@ Craft.charts.Area = Craft.charts.BaseChart.extend(
     }
 });
 
+
+
+/**
+ * Class Craft.charts.Pie
+ */
+Craft.charts.Pie = Craft.charts.BaseChart.extend(
+{
+    width: null,
+    height: null,
+    radius: null,
+
+    draw: function(dataTable, settings)
+    {
+        this.base(dataTable, settings);
+
+        svg = d3.select(this.$chart.get(0)).append("svg").append("g");
+
+        svg.append("g").attr("class", "slices");
+        // svg.append("g").attr("class", "labels");
+
+        this.width = this.$chart.width() - this.margin.left - this.margin.right;
+        this.height = this.$chart.height() - this.margin.top - this.margin.bottom;
+        this.radius = Math.min(this.width, this.height) / 2;
+
+        var pie = d3.layout.pie()
+            .sort(null)
+            .value(function(d) {
+                return d.value;
+            });
+
+        var arc = d3.svg.arc().outerRadius(this.radius * 0.8).innerRadius(this.radius * 0.4);
+
+        var outerArc = d3.svg.arc().innerRadius(this.radius * 0.9).outerRadius(this.radius * 0.9);
+
+        svg.attr("transform", "translate(" + this.width / 2 + "," + this.height / 2 + ")");
+
+        var key = function(d){ return d.data.label; };
+
+        var color = d3.scale.ordinal()
+            .domain(["Lorem ipsum", "dolor sit", "amet", "consectetur", "adipisicing", "elit", "sed", "do", "eiusmod", "tempor", "incididunt"])
+            .range(["#98abc5", "#8a89a6", "#7b6888", "#6b486b", "#a05d56", "#d0743c", "#ff8c00"]);
+
+
+        change(randomData());
+
+        function randomData()
+        {
+            var labels = color.domain();
+            return labels.map(function(label){
+                return { label: label, value: Math.random() }
+            });
+        }
+
+        function change(data)
+        {
+
+            /* ------- PIE SLICES -------*/
+            var slice = svg.select(".slices").selectAll("path.slice")
+                .data(pie(data), key);
+
+            slice.enter()
+                .insert("path")
+                .style("fill", function(d) { return color(d.data.label); })
+                .attr("class", "slice");
+
+            slice
+                .transition().duration(1000)
+                .attrTween("d", function(d) {
+                    this._current = this._current || d;
+                    var interpolate = d3.interpolate(this._current, d);
+                    this._current = interpolate(0);
+                    return function(t) {
+                        return arc(interpolate(t));
+                    };
+                })
+
+            slice.exit()
+                .remove();
+        };
+
+    }
+});
+
+
 /**
  * Class Craft.charts.Column
  */
