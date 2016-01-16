@@ -119,8 +119,6 @@ Craft.charts.BaseChart = Garnish.Base.extend(
 
     draw: function(dataTable, settings)
     {
-        console.log('Craft.charts.BaseChart.draw()', dataTable, settings);
-
         var localeDefinition = window['d3_locale'];
 
         // set settings
@@ -148,7 +146,16 @@ Craft.charts.BaseChart = Garnish.Base.extend(
 
     xTickFormat: function(locale)
     {
-        return locale.timeFormat("%x");
+        switch(this.settings.dataScale)
+        {
+            case 'month':
+                return locale.timeFormat("%B %Y");
+                break;
+
+            default:
+                return locale.timeFormat("%e %b");
+                // return locale.timeFormat("%x");
+        }
     },
 
     yTickFormat: function(locale)
@@ -162,7 +169,6 @@ Craft.charts.BaseChart = Garnish.Base.extend(
             default:
                 return locale.numberFormat("n");
         }
-
     },
 
     resize: function()
@@ -179,7 +185,7 @@ Craft.charts.Area = Craft.charts.BaseChart.extend(
 {
     tip: null,
 
-    margin: { top: 10, right: 0, bottom: 0, left: 0 },
+    margin: { top: 10, right: 0, bottom: 20, left: 0 },
     chartClass: 'chart area',
 
     xTicks: function()
@@ -224,26 +230,19 @@ Craft.charts.Area = Craft.charts.BaseChart.extend(
     {
         this.base(dataTable, settings);
 
-        // x & y
+        // X scale
         this.x = d3.time.scale().range([0, this.width]);
+
+        // Y scale
         this.y = d3.scale.linear().range([this.height, 0]);
 
 
         // X axis
-        this.xAxis = d3.svg.axis()
-            .scale(this.x)
-            .orient("top")
-            .tickFormat(this.xTickFormat(this.locale))
-            .ticks(this.xTicks());
-
+        this.xAxis = d3.svg.axis().scale(this.x).orient("bottom").tickFormat(this.xTickFormat(this.locale))
+        .ticks(this.xTicks());
 
         // Y axis
-        this.yAxis = d3.svg.axis()
-            .scale(this.y)
-            .orient("right")
-            .tickFormat(this.yTickFormat(this.locale))
-            .tickValues(this.yTickValues())
-            .ticks(this.yTicks());
+        this.yAxis = d3.svg.axis().scale(this.y).orient("right").tickFormat(this.yTickFormat(this.locale)).tickValues(this.yTickValues()).ticks(this.yTicks());
 
         // Area
         this.area = d3.svg.area()
@@ -271,6 +270,7 @@ Craft.charts.Area = Craft.charts.BaseChart.extend(
             .datum(this.dataTable.rows)
             .attr("class", "area")
             .attr("d", this.area);
+
 
         // Draw the X axis
         this.svg.append("g")
@@ -358,7 +358,14 @@ Craft.charts.Area = Craft.charts.BaseChart.extend(
 
     tipContentFormat: function(locale, d)
     {
-        var formatTime = locale.timeFormat("%x");
+        switch(this.settings.dataScale)
+        {
+            case 'month':
+                var formatTime = locale.timeFormat("%B %Y");
+                break;
+            default:
+                var formatTime = locale.timeFormat("%x");
+        }
 
 
         switch(this.dataTable.columns[1].dataType)
