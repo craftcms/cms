@@ -280,7 +280,7 @@ Craft.charts.Area = Craft.charts.BaseChart.extend(
             .call(this.yAxis);
 
         // Draw lines
-        this.drawLines();
+        this.drawLegendLines();
 
         // Draw plots
         this.drawPlots();
@@ -368,7 +368,7 @@ Craft.charts.Area = Craft.charts.BaseChart.extend(
                     + formatNumber(d[1].value);
     },
 
-    drawLines: function()
+    drawLegendLines: function()
     {
         if(this.settings.enableXLines)
         {
@@ -378,7 +378,7 @@ Craft.charts.Area = Craft.charts.BaseChart.extend(
 
             // draw x lines
             this.svg.append("g")
-                .attr("class", "x line")
+                .attr("class", "x legend-line")
                 .attr("transform", "translate(0," + this.height + ")")
                 .call(this.xLineAxis
                     .tickSize(-this.height, 0, 0)
@@ -394,7 +394,7 @@ Craft.charts.Area = Craft.charts.BaseChart.extend(
 
             // draw y lines
             this.svg.append("g")
-                .attr("class", "y line")
+                .attr("class", "y legend-line")
                 .call(this.yLineAxis
                     .tickSize(-this.width, 0, 0)
                     .tickFormat("")
