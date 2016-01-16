@@ -117,6 +117,35 @@ Craft.charts.BaseChart = Garnish.Base.extend(
 
     },
 
+    draw: function(dataTable, settings)
+    {
+        console.log('Craft.charts.BaseChart.draw()', dataTable, settings);
+
+        var localeDefinition = window['d3_locale'];
+
+        // set settings
+        this.setSettings(settings, Craft.charts.Area.defaults);
+
+        // locale & currency
+
+        if(this.settings.currency)
+        {
+            localeDefinition.currency = this.settings.currency;
+        }
+
+        this.locale = d3.locale(localeDefinition);
+
+        // reset chart element's HTML
+        this.$chart.html('');
+
+        // set data table
+        this.dataTable = dataTable;
+
+        // chart dimensions
+        this.width = this.$chart.width() - this.margin.left - this.margin.right;
+        this.height = this.$chart.height() - this.margin.top - this.margin.bottom;
+    },
+
     xTickFormat: function(locale)
     {
         return locale.timeFormat("%x");
@@ -193,29 +222,7 @@ Craft.charts.Area = Craft.charts.BaseChart.extend(
 
     draw: function(dataTable, settings)
     {
-        var localeDefinition = window['d3_locale'];
-
-        // set settings
-        this.setSettings(settings, Craft.charts.Area.defaults);
-
-        // locale & currency
-
-        if(this.settings.currency)
-        {
-            localeDefinition.currency = this.settings.currency;
-        }
-
-        this.locale = d3.locale(localeDefinition);
-
-        // reset chart element's HTML
-        this.$chart.html('');
-
-        // set data table
-        this.dataTable = dataTable;
-
-        // chart dimensions
-        this.width = this.$chart.width() - this.margin.left - this.margin.right;
-        this.height = this.$chart.height() - this.margin.top - this.margin.bottom;
+        this.base(dataTable, settings);
 
         // x & y
         this.x = d3.time.scale().range([0, this.width]);
@@ -420,14 +427,9 @@ Craft.charts.Column = Craft.charts.BaseChart.extend(
 
     enableTips: true,
 
-    draw: function(dataTable)
+    draw: function(dataTable, settings)
     {
-        this.dataTable = dataTable;
-
-        this.$chart.html('');
-
-        this.width = this.$chart.width() - this.margin.left - this.margin.right;
-        this.height = this.$chart.height() - this.margin.top - this.margin.bottom;
+        this.base(dataTable, settings);
 
         this.x = d3.scale.ordinal().rangeRoundBands([0, this.width], .05);
         this.y = d3.scale.linear().range([this.height, 0]);
