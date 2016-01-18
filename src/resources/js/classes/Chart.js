@@ -170,6 +170,10 @@ Craft.charts.BaseChart = Garnish.Base.extend(
                 return locale.numberFormat(".2%");
                 break;
 
+            case 'time':
+                return Craft.charts.utils.getDuration;
+                break;
+
             default:
                 return locale.numberFormat("n");
         }
@@ -383,6 +387,10 @@ Craft.charts.Area = Craft.charts.BaseChart.extend(
 
             case 'percent':
                 var formatNumber = locale.numberFormat(".2%");
+                break;
+
+            case 'time':
+                var formatNumber = Craft.charts.utils.getDuration;
                 break;
 
             default:
