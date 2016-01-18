@@ -457,17 +457,6 @@ Craft.charts.Pie = Craft.charts.BaseChart.extend(
     {
         this.base(dataTable, settings);
 
-        var data = [
-            {
-                label: "New Visitors",
-                value: 50,
-            },
-            {
-                label: "Returning Visitors",
-                value: 180,
-            },
-        ];
-
         this.radius = Math.min(this.width, this.height) / 2;
 
         this.arc = d3.svg.arc()
@@ -479,7 +468,7 @@ Craft.charts.Pie = Craft.charts.BaseChart.extend(
         this.pie = d3.layout.pie()
             .sort(null)
             .value(function(d) {
-                return d.value;
+                return d[1].value;
             });
 
         this.svg = d3.select(this.$chart.get(0)).append("svg")
@@ -487,13 +476,13 @@ Craft.charts.Pie = Craft.charts.BaseChart.extend(
                 .attr("transform", "translate(" + this.width / 2 + "," + this.height / 2 + ")");
 
         var g = this.svg.selectAll('.arc')
-                .data(this.pie(data))
+                .data(this.pie(this.dataTable.rows))
             .enter().append('g')
                 .attr('class', 'arc');
 
         g.append('path')
             .attr('d', this.arc)
-            .style('fill', $.proxy(function(d) { return this.color(d.data.label); }, this))
+            .style('fill', $.proxy(function(d) { return this.color(d.data[0].label); }, this))
 
 
 
@@ -513,9 +502,7 @@ Craft.charts.Pie = Craft.charts.BaseChart.extend(
 
     tipContentFormat: function(locale, d)
     {
-        // console.log('tipContentFormat', locale, d);
-
-        return d.data.label+": "+d.data.value;
+        return d.data[0].label+": "+d.data[1].value;
     }
 });
 
