@@ -492,6 +492,28 @@ Craft.charts.Pie = Craft.charts.BaseChart.extend(
         g.append('path')
             .attr('d', this.arc)
             .style('fill', $.proxy(function(d) { return this.color(d.data.label); }, this))
+
+
+
+        if(!this.tip)
+        {
+            this.tip = new Craft.charts.Tip({
+                locale: this.locale,
+                tipContentFormat: $.proxy(this, 'tipContentFormat')
+            });
+        }
+
+        // Show tip when hovering plots
+        this.svg.selectAll(".arc")
+            .on("mouseover", $.proxy(this.tip, 'show'))
+            .on("mouseout", $.proxy(this.tip, 'hide'));
+    },
+
+    tipContentFormat: function(locale, d)
+    {
+        // console.log('tipContentFormat', locale, d);
+
+        return d.data.label+": "+d.data.value;
     }
 });
 
