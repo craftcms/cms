@@ -378,24 +378,7 @@ Craft.charts.Area = Craft.charts.BaseChart.extend(
                 var formatTime = locale.timeFormat("%x");
         }
 
-
-        switch(this.dataTable.columns[1].dataType)
-        {
-            case 'currency':
-                var formatNumber = locale.numberFormat("$");
-                break;
-
-            case 'percent':
-                var formatNumber = locale.numberFormat(".2%");
-                break;
-
-            case 'time':
-                var formatNumber = Craft.charts.utils.getDuration;
-                break;
-
-            default:
-                var formatNumber = locale.numberFormat("n");
-        }
+        var formatNumber = this.yTickFormat(locale);
 
         return formatTime(d[0].value)
                     + '<br />'
