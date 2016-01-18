@@ -21,6 +21,13 @@
 .chart.column .bar { fill: RGBA(0, 138, 202, .6); }
 /*.chart.column .bar:hover { fill: RGBA(0, 138, 202, .8); cursor: pointer; }*/
 
+.chart.pie .arc path {
+    opacity: .9;
+}
+
+.chart.pie .arc path:hover {
+    opacity: 1;
+}
 
 .tooltip {
     padding: 7px;

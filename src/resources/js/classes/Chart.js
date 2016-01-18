@@ -447,6 +447,8 @@ Craft.charts.Area = Craft.charts.BaseChart.extend(
  */
 Craft.charts.Pie = Craft.charts.BaseChart.extend(
 {
+    chartClass: 'chart pie',
+
     radius: null,
     color: null,
     pie: null,
