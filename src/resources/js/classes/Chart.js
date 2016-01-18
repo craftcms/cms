@@ -276,6 +276,23 @@ Craft.charts.Area = Craft.charts.BaseChart.extend(
             .attr("d", this.area);
 
 
+
+
+        // Draw legend lines
+        this.drawLegendLines();
+
+        // Draw plots
+        this.drawPlots();
+
+        // Draw tip triggers
+        this.drawTipTriggers();
+
+        // Draw line
+        this.svg.append("path")
+            .datum(this.dataTable.rows)
+            .attr("class", "line")
+            .attr("d", this.line);
+
         // Draw the X axis
         this.svg.append("g")
             .attr("class", "x axis")
@@ -286,20 +303,6 @@ Craft.charts.Area = Craft.charts.BaseChart.extend(
         this.svg.append("g")
             .attr("class", "y axis")
             .call(this.yAxis);
-
-        // Draw lines
-        this.drawLegendLines();
-
-        // Draw plots
-        this.drawPlots();
-
-        // Draw tip triggers
-        this.drawTipTriggers();
-
-        this.svg.append("path")
-            .datum(this.dataTable.rows)
-            .attr("class", "line")
-            .attr("d", this.line);
     },
 
     drawPlots: function()
