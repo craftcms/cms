@@ -284,9 +284,6 @@ Craft.charts.Area = Craft.charts.BaseChart.extend(
         // Draw plots
         this.drawPlots();
 
-        // Draw tip triggers
-        this.drawTipTriggers();
-
         // Draw line
         this.svg.append("path")
             .datum(this.dataTable.rows)
@@ -303,6 +300,9 @@ Craft.charts.Area = Craft.charts.BaseChart.extend(
         this.svg.append("g")
             .attr("class", "y axis")
             .call(this.yAxis);
+
+        // Draw tip triggers
+        this.drawTipTriggers();
     },
 
     drawPlots: function()
@@ -346,7 +346,7 @@ Craft.charts.Area = Craft.charts.BaseChart.extend(
             var tip = this.tip;
 
             // Show tip when hovering tip trigger
-            this.svg.selectAll("circle")
+            this.svg.selectAll("circle.tip-trigger")
                 .on("mouseover", function(d)
                 {
                     d3.select(this).style("filter", "url(#drop-shadow)"); // show #drop-shadow filter
