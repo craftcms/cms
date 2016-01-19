@@ -386,6 +386,7 @@ class GoogleCloudAssetSourceType extends BaseAssetSourceType
 			'keyId'      => array(AttributeType::String, 'required' => true),
 			'secret'     => array(AttributeType::String, 'required' => true),
 			'bucket'     => array(AttributeType::String, 'required' => true),
+			'publicURLs' => array(AttributeType::Bool,   'default' => true),
 			'urlPrefix'  => array(AttributeType::String, 'required' => true),
 			'subfolder'  => array(AttributeType::String, 'default' => ''),
 			'expires'    => array(AttributeType::String, 'default' => ''),

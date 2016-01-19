@@ -384,8 +384,9 @@ class LocalAssetSourceType extends BaseAssetSourceType
 	protected function defineSettings()
 	{
 		return array(
-			'path' => array(AttributeType::String, 'required' => true),
-			'url'  => array(AttributeType::String, 'required' => true, 'label' => 'URL'),
+			'path'       => array(AttributeType::String, 'required' => true),
+			'publicURLs' => array(AttributeType::Bool,   'default' => true),
+			'url'        => array(AttributeType::String, 'required' => true, 'label' => 'URL'),
 		);
 	}
 
