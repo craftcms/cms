@@ -31,6 +31,11 @@ class AssetFileModel extends BaseElementModel
 	 */
 	private $_transformSource = '';
 
+	/**
+	 * @var BaseAssetSourceType
+	 */
+	private $_sourceType = null;
+
 	// Public Methods
 	// =========================================================================
 
@@ -199,9 +204,9 @@ class AssetFileModel extends BaseElementModel
 	 */
 	public function getImg()
 	{
-		if ($this->kind == 'image')
+		if ($this->kind == 'image' && $this->getHasUrls())
 		{
-			$img = '<img src="'.$this->url.'" width="'.$this->getWidth().'" height="'.$this->getHeight().'" alt="'.HtmlHelper::encode($this->title).'" />';
+			$img = '<img src="'.$this->getUrl().'" width="'.$this->getWidth().'" height="'.$this->getHeight().'" alt="'.HtmlHelper::encode($this->title).'" />';
 			return TemplateHelper::getRaw($img);
 		}
 	}
@@ -244,6 +249,11 @@ class AssetFileModel extends BaseElementModel
 	 */
 	public function getUrl($transform = null)
 	{
+		if (!$this->getHasUrls())
+		{
+			return false;
+		}
+
 		if ($transform === null && isset($this->_transform))
 		{
 			$transform = $this->_transform;
@@ -280,6 +290,7 @@ class AssetFileModel extends BaseElementModel
 	 */
 	public function hasThumb()
 	{
+
 		if ($this->kind == 'image')
 		{
 			if ($this->_getHeight() && $this->_getWidth())
@@ -348,6 +359,21 @@ class AssetFileModel extends BaseElementModel
 		}
 
 		return $this->_getDimension('width', $transform);
+	}
+
+	/**
+	 * Return whether the Asset has a URL.
+	 *
+	 * @return bool
+	 */
+	public function getHasUrls()
+	{
+		if (!$this->_sourceType)
+		{
+			$this->_sourceType = craft()->assetSources->populateSourceType($this->getSource());
+		}
+
+		return $this->_sourceType->getHasUrls();
 	}
 
 	// Protected Methods

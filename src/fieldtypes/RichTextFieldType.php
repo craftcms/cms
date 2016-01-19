@@ -65,7 +65,10 @@ class RichTextFieldType extends BaseFieldType
 		$sourceOptions = array();
 		foreach (craft()->assetSources->getAllSources() as $source)
 		{
-			$sourceOptions[] = array('label' => $source->name, 'value' => $source->id);
+			if ($source->getSourceType()->getHasUrls())
+			{
+				$sourceOptions[] = array('label' => $source->name, 'value' => $source->id);
+			}
 		}
 
 		$transformOptions = array();
