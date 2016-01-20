@@ -16,14 +16,34 @@ Craft.charts.DataTable = Garnish.Base.extend(
     {
         // parse data
 
-        this.columns = data.columns;
-        this.rows = data.rows;
+        columns = data.columns;
+        rows = data.rows;
 
-        this.rows.forEach($.proxy(function(d)
+        rows.forEach($.proxy(function(d)
         {
-            d[0].value = d3.time.format("%d-%b-%y").parse(d[0].value);
-            d[1].value = +d[1].value;
+            $.each(d, function(cellIndex, cell)
+            {
+                var column = columns[cellIndex];
+
+                switch(column.type)
+                {
+                    case 'date':
+                        d[cellIndex].value = d3.time.format("%d-%b-%y").parse(d[cellIndex].value);
+                    break;
+
+                    case 'number':
+                        d[cellIndex].value = +d[cellIndex].value;
+                        break;
+
+                    default:
+                        // do nothing
+                }
+            });
+
         }, this));
+
+        this.columns = columns;
+        this.rows = rows;
     }
 });
 
