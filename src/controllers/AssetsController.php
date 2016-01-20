@@ -421,6 +421,48 @@ class AssetsController extends BaseController
 		craft()->end();
 	}
 
+	/**
+	 * Download an Asset.
+	 *
+	 * @throws HttpException
+	 */
+	public function actionDownloadAsset()
+	{
+		$this->requireLogin();
+		$this->requirePostRequest();
+
+		$assetId = craft()->request->getRequiredPost('assetId');
+
+		try
+		{
+			craft()->assets->checkPermissionByFileIds($assetId, 'viewAssetSource');
+		}
+		catch (Exception $e)
+		{
+			$this->returnErrorJson($e->getMessage());
+		}
+
+		$asset = craft()->assets->getFileById($assetId);
+
+		if (!$asset)
+		{
+			throw new HttpException(404);
+		}
+
+		$source = craft()->assetSources->populateSourceType($asset->getSource());
+
+		$localPath = $source->getLocalCopy($asset);
+		$fileName = $asset->filename;
+
+		header("Content-Type: ".IOHelper::getMimeType($localPath));
+		header("Content-Disposition: attachment; filename=$fileName");
+		header("Content-Length: " . filesize($localPath));
+		readfile($localPath);
+
+		IOHelper::deleteFile($localPath);
+		craft()->end();
+	}
+
 	// Private Methods
 	// =========================================================================
 
