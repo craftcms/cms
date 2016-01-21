@@ -983,20 +983,26 @@ class SectionsService extends BaseApplicationComponent
 				// Is the event giving us the go-ahead?
 				if ($event->performAction)
 				{
-					if (!$isNewEntryType && $oldEntryType->fieldLayoutId)
+					// Is there a new field layout?
+					$fieldLayout = $entryType->getFieldLayout();
+
+					if (!$fieldLayout->id)
 					{
-						// Drop the old field layout
-						craft()->fields->deleteLayoutById($oldEntryType->fieldLayoutId);
+						// Delete the old one
+						if (!$isNewEntryType && $oldEntryType->fieldLayoutId)
+						{
+							craft()->fields->deleteLayoutById($oldEntryType->fieldLayoutId);
+						}
+
+						// Save the new one
+						craft()->fields->saveLayout($fieldLayout);
+
+						// Update the entry type record/model with the new layout ID
+						$entryType->fieldLayoutId = $fieldLayout->id;
+						$entryTypeRecord->fieldLayoutId = $fieldLayout->id;
 					}
 
-					// Save the new one
-					$fieldLayout = $entryType->getFieldLayout();
-					craft()->fields->saveLayout($fieldLayout);
-
-					// Update the entry type record/model with the new layout ID
-					$entryType->fieldLayoutId = $fieldLayout->id;
-					$entryTypeRecord->fieldLayoutId = $fieldLayout->id;
-
+					// Save the entry type
 					$entryTypeRecord->save(false);
 
 					// Now that we have an entry type ID, save it on the model
