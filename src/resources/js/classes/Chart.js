@@ -127,7 +127,6 @@ Craft.charts.BaseChart = Garnish.Base.extend(
         d3.select(window).on('resize', $.proxy(function() {
             this.resize();
         }, this));
-
     },
 
     draw: function(dataTable, settings, settingsDefaults)
@@ -278,8 +277,8 @@ Craft.charts.Area = Craft.charts.BaseChart.extend(
             .attr("class", "area")
             .attr("d", this.area);
 
-        // Draw legend lines
-        this.drawLegendLines();
+        // Draw grid lines
+        this.drawGridlines();
 
         // Draw plots
         this.drawPlots();
@@ -305,9 +304,9 @@ Craft.charts.Area = Craft.charts.BaseChart.extend(
         this.drawTipTriggers();
     },
 
-    drawLegendLines: function()
+    drawGridlines: function()
     {
-        if(this.settings.enableXLegendLines)
+        if(this.settings.xAxisGridlines)
         {
             this.xLineAxis = d3.svg.axis()
                 .scale(this.x)
@@ -315,7 +314,7 @@ Craft.charts.Area = Craft.charts.BaseChart.extend(
 
             // draw x lines
             this.svg.append("g")
-                .attr("class", "x legend-line")
+                .attr("class", "x grid-line")
                 .attr("transform", "translate(0," + this.height + ")")
                 .call(this.xLineAxis
                     .tickSize(-this.height, 0, 0)
@@ -323,7 +322,7 @@ Craft.charts.Area = Craft.charts.BaseChart.extend(
                 );
         }
 
-        if(this.settings.enableYLegendLines)
+        if(this.settings.yAxisGridlines)
         {
             this.yLineAxis = d3.svg.axis()
                 .scale(this.y)
@@ -331,7 +330,7 @@ Craft.charts.Area = Craft.charts.BaseChart.extend(
 
             // draw y lines
             this.svg.append("g")
-                .attr("class", "y legend-line")
+                .attr("class", "y grid-line")
                 .call(this.yLineAxis
                     .tickSize(-this.width, 0, 0)
                     .tickFormat("")
@@ -461,9 +460,9 @@ Craft.charts.Area = Craft.charts.BaseChart.extend(
         chartClass: 'area',
         enablePlots: true,
         enableTips: true,
-        enableXLegendLines: false,
-        enableYLegendLines: true,
         margin: { top: 10, right: 0, bottom: 20, left: 0 },
+        xAxisGridlines: false,
+        yAxisGridlines: true,
     }
 });
 
@@ -487,8 +486,8 @@ Craft.charts.Column = Craft.charts.BaseChart.extend(
         this.xAxis = d3.svg.axis()
             .scale(this.x)
             // .tickValues(this.x.domain().filter(function(d, i) { return !(i % 2); }))
-            .orient("bottom")
-            .tickFormat(this.xTickFormat(this.locale));
+            .orient("bottom");
+            // .tickFormat(this.xTickFormat(this.locale));
 
         this.yAxis = d3.svg.axis()
             .scale(this.y)

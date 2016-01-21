@@ -8,8 +8,8 @@
 .chart .axis line { fill: none; stroke: #aaa; shape-rendering: crispEdges; }
 .chart .axis text { fill: RGBA(0, 0, 0, .6); }
 
-.chart .legend-line .tick { stroke: RGBA(0, 0, 0, .08); stroke-opacity: 0.7; shape-rendering: crispEdges; /* stroke-dasharray: 2; */ }
-.chart .legend-line path { stroke-width: 0; }
+.chart .grid-line .tick { stroke: RGBA(0, 0, 0, .08); stroke-opacity: 0.7; shape-rendering: crispEdges; /* stroke-dasharray: 2; */ }
+.chart .grid-line path { stroke-width: 0; }
 
 .chart.area .area { stroke: RGBA(0, 138, 202, 1); fill: RGBA(0, 138, 202, .3); stroke-width: 0; }
 .chart.area circle.plot { fill: RGBA(0, 138, 202, 1); }
