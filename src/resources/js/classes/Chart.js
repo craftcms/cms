@@ -194,7 +194,7 @@ Craft.charts.BaseChart = Garnish.Base.extend(
 
     yTickFormat: function(locale)
     {
-        switch(this.dataTable.columns[1].dataType)
+        switch(this.dataTable.columns[1].type)
         {
             case 'currency':
                 return locale.numberFormat("$");
