@@ -193,19 +193,24 @@ class TagsService extends BaseApplicationComponent
 			$transaction = craft()->db->getCurrentTransaction() === null ? craft()->db->beginTransaction() : null;
 			try
 			{
-				if (!$isNewTagGroup && $oldTagGroup->fieldLayoutId)
-				{
-					// Drop the old field layout
-					craft()->fields->deleteLayoutById($oldTagGroup->fieldLayoutId);
-				}
-
-				// Save the new one
+				// Is there a new field layout?
 				$fieldLayout = $tagGroup->getFieldLayout();
-				craft()->fields->saveLayout($fieldLayout);
 
-				// Update the tag group record/model with the new layout ID
-				$tagGroup->fieldLayoutId = $fieldLayout->id;
-				$tagGroupRecord->fieldLayoutId = $fieldLayout->id;
+				if (!$fieldLayout->id)
+				{
+					// Delete the old one
+					if (!$isNewTagGroup && $oldTagGroup->fieldLayoutId)
+					{
+						craft()->fields->deleteLayoutById($oldTagGroup->fieldLayoutId);
+					}
+
+					// Save the new one
+					craft()->fields->saveLayout($fieldLayout);
+
+					// Update the tag group record/model with the new layout ID
+					$tagGroup->fieldLayoutId = $fieldLayout->id;
+					$tagGroupRecord->fieldLayoutId = $fieldLayout->id;
+				}
 
 				// Save it!
 				$tagGroupRecord->save(false);

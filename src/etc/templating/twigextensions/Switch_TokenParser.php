@@ -67,10 +67,7 @@ class Switch_TokenParser extends \Twig_TokenParser
 					$expr = $this->parser->getExpressionParser()->parseExpression();
 					$stream->expect(\Twig_Token::BLOCK_END_TYPE);
 					$body = $this->parser->subparse(array($this, 'decideIfFork'));
-					$cases[] = array(
-						'expr' => $expr,
-						'body' => $body
-					);
+					$cases[] = new \Twig_Node(array('expr' => $expr, 'body' => $body));
 					break;
 				}
 				case 'default':

@@ -601,10 +601,13 @@ class SectionsService extends BaseApplicationComponent
 
 							if (!$isNewSection)
 							{
-								// Re-save the entrytype name in case the single's name changed.
-								$entryType = $this->getEntryTypeById($entryTypeId);
-								$entryType->name = $section->name;
-								$this->saveEntryType($entryType);
+								// Re-save the entrytype name if the section name just changed
+								if (!$isNewSection && $oldSection->name != $section->name)
+								{
+									$entryType = $this->getEntryTypeById($entryTypeId);
+									$entryType->name = $section->name;
+									$this->saveEntryType($entryType);
+								}
 
 								// Make sure there's only one entry in this section
 								$entryIds = craft()->db->createCommand()
@@ -983,20 +986,26 @@ class SectionsService extends BaseApplicationComponent
 				// Is the event giving us the go-ahead?
 				if ($event->performAction)
 				{
-					if (!$isNewEntryType && $oldEntryType->fieldLayoutId)
+					// Is there a new field layout?
+					$fieldLayout = $entryType->getFieldLayout();
+
+					if (!$fieldLayout->id)
 					{
-						// Drop the old field layout
-						craft()->fields->deleteLayoutById($oldEntryType->fieldLayoutId);
+						// Delete the old one
+						if (!$isNewEntryType && $oldEntryType->fieldLayoutId)
+						{
+							craft()->fields->deleteLayoutById($oldEntryType->fieldLayoutId);
+						}
+
+						// Save the new one
+						craft()->fields->saveLayout($fieldLayout);
+
+						// Update the entry type record/model with the new layout ID
+						$entryType->fieldLayoutId = $fieldLayout->id;
+						$entryTypeRecord->fieldLayoutId = $fieldLayout->id;
 					}
 
-					// Save the new one
-					$fieldLayout = $entryType->getFieldLayout();
-					craft()->fields->saveLayout($fieldLayout);
-
-					// Update the entry type record/model with the new layout ID
-					$entryType->fieldLayoutId = $fieldLayout->id;
-					$entryTypeRecord->fieldLayoutId = $fieldLayout->id;
-
+					// Save the entry type
 					$entryTypeRecord->save(false);
 
 					// Now that we have an entry type ID, save it on the model
