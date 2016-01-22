@@ -404,16 +404,26 @@ class MatrixService extends BaseApplicationComponent
 
 			$this->deleteBlockById($blockIds);
 
-			// Now delete the block type fields
+			// Set the new contentTable
+			$originalContentTable = craft()->content->contentTable;
+			$matrixField = craft()->fields->getFieldById($blockType->fieldId);
+			$newContentTable = $this->getContentTableName($matrixField);
+			craft()->content->contentTable = $newContentTable;
+
+			// Set the new fieldColumnPrefix
 			$originalFieldColumnPrefix = craft()->content->fieldColumnPrefix;
 			craft()->content->fieldColumnPrefix = 'field_'.$blockType->handle.'_';
 
+
+			// Now delete the block type fields
 			foreach ($blockType->getFields() as $field)
 			{
 				craft()->fields->deleteField($field);
 			}
 
+			// Restore the contentTable and the fieldColumnPrefix to original values.
 			craft()->content->fieldColumnPrefix = $originalFieldColumnPrefix;
+			craft()->content->contentTable = $newContentTable;
 
 			// Delete the field layout
 			craft()->fields->deleteLayoutById($blockType->fieldLayoutId);

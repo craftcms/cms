@@ -16,14 +16,6 @@ namespace Craft;
 
 class Switch_Node extends \Twig_Node
 {
-	// Properties
-	// =========================================================================
-
-	/**
-	 * @var \Twig_NodeInterface
-	 */
-	private $_cases;
-
 	// Public Methods
 	// =========================================================================
 
@@ -38,9 +30,7 @@ class Switch_Node extends \Twig_Node
 	 */
 	public function __construct(\Twig_NodeInterface $value, \Twig_NodeInterface $cases, \Twig_NodeInterface $default = null, $lineno, $tag = null)
 	{
-		$this->_cases = $cases;
-
-		parent::__construct(array('value' => $value, 'default' => $default), array(), $lineno, $tag);
+		parent::__construct(array('value' => $value, 'cases' => $cases, 'default' => $default), array(), $lineno, $tag);
 	}
 
 	/**
@@ -59,15 +49,15 @@ class Switch_Node extends \Twig_Node
 			->raw(") {\n")
 			->indent();
 
-		foreach ($this->_cases as $case)
+		foreach ($this->getNode('cases') as $case)
 		{
 			$compiler
 				->write('case ')
-				->subcompile($case['expr'])
+				->subcompile($case->getNode('expr'))
 				->raw(":\n")
 				->write("{\n")
 				->indent()
-				->subcompile($case['body'])
+				->subcompile($case->getNode('body'))
 				->write("break;\n")
 				->outdent()
 				->write("}\n");

@@ -120,6 +120,23 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 	}
 
 	/**
+	 * Return whether the source has URLs.
+	 *
+	 * @return bool
+	 */
+	public function getHasUrls()
+	{
+		$settings = $this->getSettings();
+
+		if (!empty($settings->publicURLs))
+		{
+			return $settings->publicURLs;
+		}
+
+		return false;
+	}
+
+	/**
 	 * Upload a file.
 	 *
 	 * @param AssetFolderModel $folder The assetFolderModel where the file should be uploaded to.

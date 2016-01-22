@@ -90,14 +90,23 @@
 	placeholder: "path/to/subfolder"|t
 }) }}
 
-{{ forms.textField({
-	label: "URL Prefix"|t,
-	instructions: "If you have set up a CNAME record pointing to this container, you can enter it here. Otherwise leave this setting alone."|t,
-	id: 'urlPrefix',
-	class: 'ltr',
-	name: 'urlPrefix',
-	value: settings.urlPrefix,
-	errors: settings.getErrors('url_prefix'),
-	required: true,
-	class: 'rackspace-url-prefix'
+{{ forms.lightswitchField({
+	label: "Assets in this source have public URLs"|t,
+	name: 'publicURLs',
+	on:   settings.publicURLs,
+	toggle: "url-field"
 }) }}
+
+<div id="url-field" class="{% if not settings.publicURLs %}hidden{% endif %}">
+	{{ forms.textField({
+		label: "URL Prefix"|t,
+		instructions: "If you have set up a CNAME record pointing to this container, you can enter it here. Otherwise leave this setting alone."|t,
+		id: 'urlPrefix',
+		class: 'ltr',
+		name: 'urlPrefix',
+		value: settings.urlPrefix,
+		errors: settings.getErrors('url_prefix'),
+		required: true,
+		class: 'rackspace-url-prefix'
+	}) }}
+</div>

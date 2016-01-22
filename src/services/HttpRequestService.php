@@ -830,7 +830,7 @@ class HttpRequestService extends \CHttpRequest
 			HeaderHelper::setLength($length);
 		}
 
-		$content = mb_substr($content, $contentStart, $length);
+		$content = mb_substr($content, $contentStart, $length, '8bit');
 
 		if ($terminate)
 		{

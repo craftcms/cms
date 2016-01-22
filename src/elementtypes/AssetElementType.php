@@ -128,6 +128,9 @@ class AssetElementType extends BaseElementType
 			));
 			$actions[] = $viewAction;
 
+			// Download
+			$actions[] = 'DownloadFile';
+
 			// Edit
 			$editAction = craft()->elements->getAction('Edit');
 			$editAction->setParams(array(
