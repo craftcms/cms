@@ -522,6 +522,13 @@ Craft.charts.Column = Craft.charts.BaseChart.extend(
                 .attr("transform", "translate(" + this.settings.margin.left + "," + this.settings.margin.top + ")");
 
 
+        this.drawChart();
+        this.drawAxes();
+        this.drawTipTriggers();
+    },
+
+    drawChart: function()
+    {
         // Draw bars
         this.svg.selectAll(".bar")
                 .data(this.dataTable.rows)
@@ -531,9 +538,6 @@ Craft.charts.Column = Craft.charts.BaseChart.extend(
                 .attr("width", this.x.rangeBand())
                 .attr("y", $.proxy(function(d) { return this.y(d[1].value); }, this))
                 .attr("height", $.proxy(function(d) { return this.height - this.y(d[1].value); }, this));
-
-        this.drawAxes();
-        this.drawTipTriggers();
     },
 
     drawAxes: function()
