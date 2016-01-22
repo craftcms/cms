@@ -263,11 +263,6 @@ Craft.charts.Area = Craft.charts.BaseChart.extend(
         this.y.domain(this.yDomain());
 
 
-        // Draw chart's area
-        this.svg.append("path")
-            .datum(this.dataTable.rows)
-            .attr("class", "area")
-            .attr("d", this.area);
 
         // Draw grid lines
         this.drawGridlines();
@@ -275,17 +270,30 @@ Craft.charts.Area = Craft.charts.BaseChart.extend(
         // Draw plots
         this.drawPlots();
 
-        // Draw chart'sline
-        this.svg.append("path")
-            .datum(this.dataTable.rows)
-            .attr("class", "line")
-            .attr("d", this.line);
+        // Draw Chart
+        this.drawChart();
 
         // Draw axes and ticks
         this.drawAxes();
 
         // Draw tip triggers
         this.drawTipTriggers();
+    },
+
+    drawChart: function()
+    {
+        // Draw chart's area
+        this.svg.append("path")
+            .datum(this.dataTable.rows)
+            .attr("class", "area")
+            .attr("d", this.area);
+
+
+        // Draw chart'sline
+        this.svg.append("path")
+            .datum(this.dataTable.rows)
+            .attr("class", "line")
+            .attr("d", this.line);
     },
 
     drawAxes: function()
