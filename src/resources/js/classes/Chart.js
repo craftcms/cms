@@ -313,6 +313,18 @@ Craft.charts.Area = Craft.charts.BaseChart.extend(
         this.svg.append("g")
             .attr("class", "y axis")
             .call(this.yAxis);
+
+        // White border for ticks' text
+        $('.tick', this.$chart).each(function(tickKey, tick)
+        {
+            var $tickText = $('text', tick);
+
+            var $clone = $tickText.clone();
+            $clone.appendTo(tick);
+
+            $tickText.attr('stroke', '#ffffff');
+            $tickText.attr('stroke-width', 3);
+        })
     },
 
     drawGridlines: function()
