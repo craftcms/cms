@@ -621,7 +621,7 @@ Craft.charts.Pie = Craft.charts.BaseChart.extend(
 
         g.append('path')
             .attr('d', this.arc)
-            .style('fill', $.proxy(function(d) { return this.color(d.data[0].label); }, this))
+            .style('fill', $.proxy(function(d) { return this.color(d.data[0].value); }, this))
 
 
         if(this.settings.enableTips)
@@ -643,7 +643,7 @@ Craft.charts.Pie = Craft.charts.BaseChart.extend(
 
     tipContentFormat: function(locale, d)
     {
-        return d.data[0].label+": "+d.data[1].value;
+        return d.data[0].value+": "+d.data[1].value;
     }
 },
 {
