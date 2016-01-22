@@ -108,7 +108,7 @@
 				{% if isInstalled and currentUser is defined and currentUser %}
 					{% for section in craft.sections.getEditableSections() %}
 						{% if section.type != 'single' and currentUser.can('createEntries:'~section.id) %}
-							{id: {{ section.id }}, name: "{{ section.name|e('js') }}", handle: "{{ section.handle|e('js') }}", type: "{{ section.type }}"}{% if not loop.last %},{% endif %}
+							{id: {{ section.id }}, name: "{{ section.name|t|e('js') }}", handle: "{{ section.handle|e('js') }}", type: "{{ section.type }}"}{% if not loop.last %},{% endif %}
 						{% endif %}
 					{% endfor %}
 				{% endif %}
@@ -116,7 +116,7 @@
 			editableCategoryGroups: [
 				{% if isInstalled %}
 					{% for group in craft.categoryGroups.getEditableGroups() %}
-						{id: {{ group.id }}, name: "{{ group.name|e('js') }}", handle: "{{ group.handle|e('js') }}"}{% if not loop.last %},{% endif %}
+						{id: {{ group.id }}, name: "{{ group.name|t|e('js') }}", handle: "{{ group.handle|e('js') }}"}{% if not loop.last %},{% endif %}
 					{% endfor %}
 				{% endif %}
 			]
