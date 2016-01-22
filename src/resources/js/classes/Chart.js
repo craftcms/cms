@@ -275,7 +275,7 @@ Craft.charts.Area = Craft.charts.BaseChart.extend(
         this.y.domain(this.yDomain());
 
 
-        // Draw chart
+        // Draw chart's area
         this.svg.append("path")
             .datum(this.dataTable.rows)
             .attr("class", "area")
@@ -287,11 +287,21 @@ Craft.charts.Area = Craft.charts.BaseChart.extend(
         // Draw plots
         this.drawPlots();
 
-        // Draw line
+        // Draw chart'sline
         this.svg.append("path")
             .datum(this.dataTable.rows)
             .attr("class", "line")
             .attr("d", this.line);
+
+        // Draw axes and ticks
+        this.drawAxes();
+
+        // Draw tip triggers
+        this.drawTipTriggers();
+    },
+
+    drawAxes: function()
+    {
 
         // Draw the X axis
         this.svg.append("g")
@@ -303,9 +313,6 @@ Craft.charts.Area = Craft.charts.BaseChart.extend(
         this.svg.append("g")
             .attr("class", "y axis")
             .call(this.yAxis);
-
-        // Draw tip triggers
-        this.drawTipTriggers();
     },
 
     drawGridlines: function()
@@ -487,37 +494,29 @@ Craft.charts.Column = Craft.charts.BaseChart.extend(
         this.x.domain(this.dataTable.rows.map(function(d) { return d[0].value; }));
         this.y.domain([0, d3.max(this.dataTable.rows, function(d) { return d[1].value; })]);
 
+        // X axis
         this.xAxis = d3.svg.axis()
             .scale(this.x)
             // .tickValues(this.x.domain().filter(function(d, i) { return !(i % 2); }))
             .orient("bottom");
             // .tickFormat(this.xTickFormat(this.locale));
 
+        // Y axis
         this.yAxis = d3.svg.axis()
             .scale(this.y)
             .orient("right")
             .tickFormat(this.yTickFormat(this.locale))
             .ticks(this.height / 50);
 
+        // Append graph to chart element
         this.svg = d3.select(this.$chart.get(0)).append("svg")
                 .attr("width", this.width + this.settings.margin.left + this.settings.margin.right)
                 .attr("height", this.height + this.settings.margin.top + this.settings.margin.bottom)
             .append("g")
                 .attr("transform", "translate(" + this.settings.margin.left + "," + this.settings.margin.top + ")");
 
-        this.svg.append("g")
-            .attr("class", "x axis")
-            .attr("transform", "translate(0," + this.height + ")")
-            .call(this.xAxis);
 
-        this.svg.append("g")
-                .attr("class", "y axis")
-                .call(this.yAxis)
-            .append("text")
-                .attr("transform", "rotate(-90)")
-                .attr("y", 6)
-                .attr("dy", ".71em");
-
+        // Draw bars
         this.svg.selectAll(".bar")
                 .data(this.dataTable.rows)
             .enter().append("rect")
@@ -527,6 +526,23 @@ Craft.charts.Column = Craft.charts.BaseChart.extend(
                 .attr("y", $.proxy(function(d) { return this.y(d[1].value); }, this))
                 .attr("height", $.proxy(function(d) { return this.height - this.y(d[1].value); }, this));
 
+
+        // Draw the X axis
+        this.svg.append("g")
+            .attr("class", "x axis")
+            .attr("transform", "translate(0," + this.height + ")")
+            .call(this.xAxis);
+
+        // Draw the Y axis
+        this.svg.append("g")
+                .attr("class", "y axis")
+                .call(this.yAxis)
+            .append("text")
+                .attr("transform", "rotate(-90)")
+                .attr("y", 6)
+                .attr("dy", ".71em");
+
+        // Tips
         if(this.settings.enableTips)
         {
             if(!this.tip)
@@ -541,7 +557,7 @@ Craft.charts.Column = Craft.charts.BaseChart.extend(
                 .on("mouseover", $.proxy(this.tip, 'show'))
                 .on("mouseout", $.proxy(this.tip, 'hide'));
         }
-    }
+    },
 },
 {
     defaults: {
