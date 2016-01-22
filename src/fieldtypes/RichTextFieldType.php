@@ -421,6 +421,29 @@ class RichTextFieldType extends BaseFieldType
 				}
 			}
 		}
+
+		$customTranslations = array(
+			'fullscreen' => Craft::t('Fullscreen'),
+			'insert-page-break' => Craft::t('Insert Page Break'),
+			'table' => Craft::t('Table'),
+			'insert-table' => Craft::t('Insert table'),
+			'insert-row-above' => Craft::t('Insert row above'),
+			'insert-row-below' => Craft::t('Insert row below'),
+			'insert-column-left' => Craft::t('Insert column left'),
+			'insert-column-right' => Craft::t('Insert column right'),
+			'add-head' => Craft::t('Add head'),
+			'delete-head' => Craft::t('Delete head'),
+			'delete-column' => Craft::t('Delete column'),
+			'delete-row' => Craft::t('Delete row'),
+			'delete-table' => Craft::t('Delete table'),
+			'video' => Craft::t('Video'),
+			'video-html-code' => Craft::t('Video Embed Code or Youtube/Vimeo Link'),
+		);
+
+		craft()->templates->includeJs(
+			'$.extend($.Redactor.opts.langs["'.static::$_redactorLang.'"], ' .
+			JsonHelper::encode($customTranslations) .
+			');');
 	}
 
 	/**
