@@ -93,14 +93,10 @@ Craft.charts.Tip = Garnish.Base.extend(
 {
     defaults: {
         locale: null,
+
         tipContentFormat: function(locale, d)
         {
-            var formatTime = locale.timeFormat("%x");
-            var formatNumber = locale.numberFormat("n");
-
-            return formatTime(d[0].value)
-                        + '<br />'
-                        + formatNumber(d[1].value);
+            return d[0].value+": "+d[1].value;
         }
     }
 });
