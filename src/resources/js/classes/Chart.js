@@ -31,6 +31,10 @@ Craft.charts.DataTable = Garnish.Base.extend(
                         d[cellIndex].value = d3.time.format("%d-%b-%y").parse(d[cellIndex].value);
                     break;
 
+                    case 'percent':
+                    d[cellIndex].value = d[cellIndex].value / 100;
+                    break;
+
                     case 'number':
                         d[cellIndex].value = +d[cellIndex].value;
                         break;
