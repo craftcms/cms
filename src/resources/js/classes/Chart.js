@@ -242,14 +242,6 @@ Craft.charts.Area = Craft.charts.BaseChart.extend(
         // Y scale
         this.y = d3.scale.linear().range([this.height, 0]);
 
-
-        // X axis
-        this.xAxis = d3.svg.axis().scale(this.x).orient("bottom").tickFormat(this.xTickFormat(this.locale))
-        .ticks(this.xTicks());
-
-        // Y axis
-        this.yAxis = d3.svg.axis().scale(this.y).orient("right").tickFormat(this.yTickFormat(this.locale)).tickValues(this.yTickValues()).ticks(this.yTicks());
-
         // Area
         this.area = d3.svg.area()
             .x($.proxy(function(d) { return this.x(d[0].value); }, this))
@@ -298,6 +290,12 @@ Craft.charts.Area = Craft.charts.BaseChart.extend(
 
     drawAxes: function()
     {
+        // X axis
+        this.xAxis = d3.svg.axis().scale(this.x).orient("bottom").tickFormat(this.xTickFormat(this.locale))
+        .ticks(this.xTicks());
+
+        // Y axis
+        this.yAxis = d3.svg.axis().scale(this.y).orient("right").tickFormat(this.yTickFormat(this.locale)).tickValues(this.yTickValues()).ticks(this.yTicks());
 
         // Draw the X axis
         this.svg.append("g")
