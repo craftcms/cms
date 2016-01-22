@@ -449,7 +449,13 @@ Craft.charts.Area = Craft.charts.BaseChart.extend(
     yAxisMaxValue: function()
     {
         var maxValue = d3.max(this.dataTable.rows, function(d) { return d[1].value; });
-        return Math.ceil(maxValue / Math.pow(10, maxValue.toString().length -1)) * Math.pow(10, maxValue.toString().length - 1);
+        maxValue = maxValue * 100;
+        maxValue = Math.round(maxValue);
+
+        var pow = Math.pow(10, maxValue.toString().length - 1);
+        var yAxisMaxValue = (Math.ceil(maxValue / pow) * pow) / 100;
+
+        return yAxisMaxValue;
     },
 
     yDomain: function()
