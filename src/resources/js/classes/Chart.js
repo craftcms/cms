@@ -641,6 +641,11 @@ Craft.charts.Pie = Craft.charts.BaseChart.extend(
             .style('fill', $.proxy(function(d) { return this.color(d.data[0].value); }, this))
 
 
+        this.drawTipTriggers();
+    },
+
+    drawTipTriggers: function()
+    {
         if(this.settings.enableTips)
         {
             if(!this.tip)
