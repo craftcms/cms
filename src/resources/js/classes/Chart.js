@@ -508,20 +508,6 @@ Craft.charts.Column = Craft.charts.BaseChart.extend(
         this.x.domain(this.dataTable.rows.map(function(d) { return d[0].value; }));
         this.y.domain([0, d3.max(this.dataTable.rows, function(d) { return d[1].value; })]);
 
-        // X axis
-        this.xAxis = d3.svg.axis()
-            .scale(this.x)
-            // .tickValues(this.x.domain().filter(function(d, i) { return !(i % 2); }))
-            .orient("bottom");
-            // .tickFormat(this.xTickFormat(this.locale));
-
-        // Y axis
-        this.yAxis = d3.svg.axis()
-            .scale(this.y)
-            .orient("right")
-            .tickFormat(this.yTickFormat(this.locale))
-            .ticks(this.height / 50);
-
         // Append graph to chart element
         this.svg = d3.select(this.$chart.get(0)).append("svg")
                 .attr("width", this.width + this.settings.margin.left + this.settings.margin.right)
@@ -540,6 +526,25 @@ Craft.charts.Column = Craft.charts.BaseChart.extend(
                 .attr("y", $.proxy(function(d) { return this.y(d[1].value); }, this))
                 .attr("height", $.proxy(function(d) { return this.height - this.y(d[1].value); }, this));
 
+        this.drawAxes();
+        this.drawTipTriggers();
+    },
+
+    drawAxes: function()
+    {
+        // X axis
+        this.xAxis = d3.svg.axis()
+            .scale(this.x)
+            // .tickValues(this.x.domain().filter(function(d, i) { return !(i % 2); }))
+            .orient("bottom");
+            // .tickFormat(this.xTickFormat(this.locale));
+
+        // Y axis
+        this.yAxis = d3.svg.axis()
+            .scale(this.y)
+            .orient("right")
+            .tickFormat(this.yTickFormat(this.locale))
+            .ticks(this.height / 50);
 
         // Draw the X axis
         this.svg.append("g")
@@ -555,8 +560,10 @@ Craft.charts.Column = Craft.charts.BaseChart.extend(
                 .attr("transform", "rotate(-90)")
                 .attr("y", 6)
                 .attr("dy", ".71em");
+    },
 
-        // Tips
+    drawTipTriggers: function()
+    {
         if(this.settings.enableTips)
         {
             if(!this.tip)
@@ -571,7 +578,7 @@ Craft.charts.Column = Craft.charts.BaseChart.extend(
                 .on("mouseover", $.proxy(this.tip, 'show'))
                 .on("mouseout", $.proxy(this.tip, 'hide'));
         }
-    },
+    }
 },
 {
     defaults: {
