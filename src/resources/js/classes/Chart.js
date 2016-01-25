@@ -631,6 +631,12 @@ Craft.charts.Pie = Craft.charts.BaseChart.extend(
             .append("g")
                 .attr("transform", "translate(" + this.width / 2 + "," + this.height / 2 + ")");
 
+        this.drawChart();
+        this.drawTipTriggers();
+    },
+
+    drawChart: function()
+    {
         var g = this.svg.selectAll('.arc')
                 .data(this.pie(this.dataTable.rows))
             .enter().append('g')
@@ -640,8 +646,6 @@ Craft.charts.Pie = Craft.charts.BaseChart.extend(
             .attr('d', this.arc)
             .style('fill', $.proxy(function(d) { return this.color(d.data[0].value); }, this))
 
-
-        this.drawTipTriggers();
     },
 
     drawTipTriggers: function()
