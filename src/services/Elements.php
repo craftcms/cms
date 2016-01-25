@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      http://buildwithcraft.com/
+ * @link      http://craftcms.com/
  * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
- * @license   http://buildwithcraft.com/license
+ * @license   http://craftcms.com/license
  */
 
 namespace craft\app\services;
@@ -926,7 +926,7 @@ class Elements extends Component
     }
 
     /**
-     * Parses a string for element [reference tags](http://buildwithcraft.com/docs/reference-tags).
+     * Parses a string for element [reference tags](http://craftcms.com/docs/reference-tags).
      *
      * @param string $str The string to parse.
      *

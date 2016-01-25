@@ -21,3 +21,5 @@ body.rtl #locales li.sel:before { margin: 3px -16px 0 0 ; }
 #locales li a:hover { color: #0d78f2; cursor: pointer; }
 
 #settings .select, #settings .select select { width: 100%; }
+
+/*# sourceMappingURL=category.css.map */

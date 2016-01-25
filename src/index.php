@@ -2,9 +2,9 @@
 /**
  * Craft web bootstrap file.
  *
- * @link      http://buildwithcraft.com/
+ * @link      http://craftcms.com/
  * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
- * @license   http://buildwithcraft.com/license
+ * @license   http://craftcms.com/license
  */
 
 // Make sure this is PHP 5.4 or later

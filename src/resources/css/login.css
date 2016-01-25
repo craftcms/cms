@@ -34,3 +34,5 @@ body.ltr .modal.email-sent .body:before { left: 24px; }
 body.rtl .modal.email-sent .body:before { right: 24px; }
 
 @media only screen and (-webkit-min-device-pixel-ratio: 1.5), only screen and (-moz-min-device-pixel-ratio: 1.5), only screen and (-o-min-device-pixel-ratio: 3 / 2), only screen and (min-device-pixel-ratio: 1.5), only screen and (min-resolution: 1.5dppx) { #login-form { background-image: url(../images/craft_2x.png); background-size: 202px; } }
+
+/*# sourceMappingURL=login.css.map */

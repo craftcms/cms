@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      http://buildwithcraft.com/
+ * @link      http://craftcms.com/
  * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
- * @license   http://buildwithcraft.com/license
+ * @license   http://craftcms.com/license
  */
 
 namespace craft\app\mail;
@@ -49,7 +49,7 @@ class Mailer extends \yii\swiftmailer\Mailer
      * Craft has four predefined email keys: account_activation, verify_new_email, forgot_password, and test_email.
      *
      * Plugins can register additional email keys using the
-     * [registerEmailMessages](http://buildwithcraft.com/docs/plugins/hooks-reference#registerEmailMessages) hook, and
+     * [registerEmailMessages](http://craftcms.com/docs/plugins/hooks-reference#registerEmailMessages) hook, and
      * by providing the corresponding language strings.
      *
      * ```php

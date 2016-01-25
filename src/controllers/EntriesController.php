@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      http://buildwithcraft.com/
+ * @link      http://craftcms.com/
  * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
- * @license   http://buildwithcraft.com/license
+ * @license   http://craftcms.com/license
  */
 
 namespace craft\app\controllers;
@@ -343,9 +343,9 @@ class EntriesController extends BaseEntriesController
         $this->requireAjaxRequest();
 
         $entry = $this->_getEntryModel();
-        $this->enforceEditEntryPermissions($entry);
+        $this->enforceEditEntryssions($entry);
         $this->_populateEntryModel($entry);
-
+        Permi
         $variables['sectionId'] = $entry->sectionId;
         $variables['entry'] = $entry;
         $variables['showEntryTypes'] = true;

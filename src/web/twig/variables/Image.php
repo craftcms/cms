@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      http://buildwithcraft.com/
+ * @link      http://craftcms.com/
  * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
- * @license   http://buildwithcraft.com/license
+ * @license   http://craftcms.com/license
  */
 
 namespace craft\app\web\twig\variables;
@@ -26,6 +26,11 @@ class Image
     protected $path;
 
     /**
+     * @var string
+     */
+    protected $url;
+
+    /**
      * @var
      */
     protected $size;
@@ -40,9 +45,10 @@ class Image
      *
      * @return Image
      */
-    public function __construct($path)
+    public function __construct($path, $url = "")
     {
         $this->path = $path;
+        $this->url = $url;
     }
 
     /**
@@ -82,5 +88,15 @@ class Image
         $size = $this->getSize();
 
         return $size[1];
+    }
+
+    /**
+     * Returns the image's URL.
+     *
+     * @return string
+     */
+    public function getUrl()
+    {
+        return $this->url;
     }
 }

@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      http://buildwithcraft.com/
+ * @link      http://craftcms.com/
  * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
- * @license   http://buildwithcraft.com/license
+ * @license   http://craftcms.com/license
  */
 
 namespace craft\app\tools;
@@ -82,9 +82,7 @@ class AssetIndex extends Tool
 
             $missingFolders = [];
             $skippedFiles = [];
-
             $grandTotal = 0;
-            $filesToIndex = false;
 
             foreach ($sourceIds as $sourceId) {
                 // Get the indexing list
@@ -114,103 +112,81 @@ class AssetIndex extends Tool
                             'process' => 1
                         ]
                     ];
-
-                    $filesToIndex = true;
                 }
 
                 $batches[] = $batch;
             }
 
-            if (!$filesToIndex) {
-                $batches[] = [
-                    [
-                        'params' => [
-                            'process' => 1,
-                            'noFiles' => 1,
-                            'sessionId' => $sessionId,
-                        ]
+            $batches[] = [
+                [
+                    'params' => [
+                        'overview' => true,
+                        'sessionId' => $sessionId,
                     ]
-                ];
-            }
+                ]
+            ];
 
             Craft::$app->getSession()->set('assetsSourcesBeingIndexed', $sourceIds);
             Craft::$app->getSession()->set('assetsMissingFolders', $missingFolders);
-            Craft::$app->getSession()->set('assetsTotalSourcesToIndex', count($sourceIds));
             Craft::$app->getSession()->set('assetsSkippedFiles', $skippedFiles);
-            Craft::$app->getSession()->set('assetsTotalSourcesIndexed', 0);
 
             return [
                 'batches' => $batches,
                 'total' => $grandTotal
             ];
         } else if (!empty($params['process'])) {
-            if (empty($params['noFiles'])) {
-                // Index the file
-                Craft::$app->getAssetIndexer()->processIndexForVolume($params['sessionId'], $params['offset'], $params['sourceId']);
+            // Index the file
+            Craft::$app->getAssetIndexer()->processIndexForVolume($params['sessionId'],
+                $params['offset'], $params['sourceId']);
+
+            return [
+                'success' => true
+            ];
+        } else if (!empty($params['overview'])) {
+            $sourceIds = Craft::$app->getSession()->get('assetsSourcesBeingIndexed', []);
+            $missingFiles = Craft::$app->getAssetIndexer()->getMissingFiles($sourceIds, $params['sessionId']);
+            $missingFolders = Craft::$app->getSession()->get('assetsMissingFolders', []);
+            $skippedFiles = Craft::$app->getSession()->get('assetsSkippedFiles', []);
+
+            $responseArray = [];
+
+            if (!empty($missingFiles) || !empty($missingFolders) || !empty($skippedFiles)) {
+                $responseArray['confirm'] = Craft::$app->getView()->renderTemplate('assets/_missing_items',
+                    [
+                        'missingFiles' => $missingFiles,
+                        'missingFolders' => $missingFolders,
+                        'skippedFiles' => $skippedFiles
+                    ]);
+                $responseArray['params'] = ['finish' => 1];
             }
 
-            // More files to index.
-            if (empty($params['noFiles']) && ++$params['offset'] < $params['total']) {
-                return [
-                    'success' => true
-                ];
+            // Clean up stale indexing data (all sessions that have all recordIds set)
+            $sessionsInProgress = (new Query())
+                ->select('sessionId')
+                ->from('{{%assetindexdata}}')
+                ->where('recordId IS NULL')
+                ->groupBy('sessionId')
+                ->scalar();
+
+            if (empty($sessionsInProgress)) {
+                Craft::$app->getDb()->createCommand()->delete('{{%assetindexdata}}')->execute();
             } else {
-                // Increment the amount of sources indexed
-                Craft::$app->getSession()->set('assetsTotalSourcesIndexed', Craft::$app->getSession()->get('assetsTotalSourcesIndexed', 0) + 1);
-
-                // Is this the last source to finish up?
-                if (Craft::$app->getSession()->get('assetsTotalSourcesToIndex',
-                        0) <= Craft::$app->getSession()->get('assetsTotalSourcesIndexed',
-                        0)
-                ) {
-                    $sourceIds = Craft::$app->getSession()->get('assetsSourcesBeingIndexed',
-                        []);
-                    $missingFiles = Craft::$app->getAssetIndexer()->getMissingFiles($sourceIds, $params['sessionId']);
-                    $missingFolders = Craft::$app->getSession()->get('assetsMissingFolders',
-                        []);
-                    $skippedFiles = Craft::$app->getSession()->get('assetsSkippedFiles',
-                        []);
-
-                    $responseArray = [];
-
-                    if (!empty($missingFiles) || !empty($missingFolders) || !empty($skippedFiles)) {
-                        $responseArray['confirm'] = Craft::$app->getView()->renderTemplate('assets/_missing_items',
-                            [
-                                'missingFiles' => $missingFiles,
-                                'missingFolders' => $missingFolders,
-                                'skippedFiles' => $skippedFiles
-                            ]);
-                        $responseArray['params'] = ['finish' => 1];
-                    }
-                    // Clean up stale indexing data (all sessions that have all recordIds set)
-                    $sessionsInProgress = (new Query())
-                        ->select('sessionId')
-                        ->from('{{%assetindexdata}}')
-                        ->where('recordId IS NULL')
-                        ->groupBy('sessionId')
-                        ->scalar();
-
-                    if (empty($sessionsInProgress)) {
-                        Craft::$app->getDb()->createCommand()->delete('{{%assetindexdata}}')->execute();
-                    } else {
-                        Craft::$app->getDb()->createCommand()->delete('{{%assetindexdata}}',
-                            [
-                                'not in',
-                                'sessionId',
-                                $sessionsInProgress
-                            ])->execute();
-                    }
-
-                    // Generate the HTML for missing files and folders
-                    return [
-                        'batches' => [
-                            [
-                                $responseArray
-                            ]
-                        ]
-                    ];
-                }
+                Craft::$app->getDb()->createCommand()->delete('{{%assetindexdata}}',
+                    [
+                        'not in',
+                        'sessionId',
+                        $sessionsInProgress
+                    ])->execute();
             }
+
+            return [
+                'batches' => [
+                    [
+                        $responseArray
+                    ]
+                ]
+            ];
+
         } else if (!empty($params['finish'])) {
             if (!empty($params['deleteFile']) && is_array($params['deleteFile'])) {
                 Craft::$app->getDb()->createCommand()->delete('assettransformindex', array('in', 'fileId', $params['deleteFile']));

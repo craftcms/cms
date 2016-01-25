@@ -1,9 +1,9 @@
 <?php
 
 /**
- * @link      http://buildwithcraft.com/
+ * @link      http://craftcms.com/
  * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
- * @license   http://buildwithcraft.com/license
+ * @license   http://craftcms.com/license
  */
 
 namespace craft\app\services;
@@ -156,7 +156,7 @@ class UserPermissions extends Component
             $permissions[Craft::t('app', 'Categories')] = $this->_getCategoryGroupPermissions($categoryGroups);
         }
 
-        // Asset sources
+        // Volumes
         // ---------------------------------------------------------------------
 
         $volumes = Craft::$app->getVolumes()->getAllVolumes();
@@ -339,7 +339,7 @@ class UserPermissions extends Component
 
             // Add the new user permissions
             Craft::$app->getDb()->createCommand()->batchInsert(
-                'userpermissions_users',
+                '{{%userpermissions_users}}',
                 ['permissionId', 'userId'],
                 $userPermissionVals
             )->execute();
@@ -491,17 +491,17 @@ class UserPermissions extends Component
         $suffix = ':'.$sourceId;
 
         return [
-            "viewAssetSource{$suffix}" => [
+            "viewVolume{$suffix}" => [
                 'label' => Craft::t('app', 'View source'),
                 'nested' => [
-                    "uploadToAssetSource{$suffix}" => [
+                    "saveAssetInVolume{$suffix}" => [
                         'label' => Craft::t('app', 'Upload files'),
                     ],
-                    "createSubfoldersInAssetSource{$suffix}" => [
+                    "createFoldersInVolume{$suffix}" => [
                         'label' => Craft::t('app', 'Create subfolders'),
                     ],
-                    "removeFromAssetSource{$suffix}" => [
-                        'label' => Craft::t('app', 'Remove files'),
+                    "deleteFilesAndFoldersInVolume{$suffix}" => [
+                        'label' => Craft::t('app', 'Remove files and folders'),
                     ]
                 ]
             ]

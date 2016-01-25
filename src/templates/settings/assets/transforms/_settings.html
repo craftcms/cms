@@ -1,6 +1,6 @@
 {% extends "_layouts/cp" %}
 
-{% set docsUrl = 'http://buildwithcraft.com/docs/image-transforms' %}
+{% set docsUrl = 'http://craftcms.com/docs/image-transforms' %}
 
 {% import "_includes/forms" as forms %}
 
@@ -77,7 +77,7 @@
 
 		<div id="position-container"{% if transform is defined and transform.mode != 'crop' %} class="hidden"{% endif %}>
 			{{ forms.selectField({
-				label: "Crop Position"|t('app'),
+				label: "Default Focal Point"|t('app'),
 				id: 'position',
 				name: 'position',
 				options: {

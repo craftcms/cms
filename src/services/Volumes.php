@@ -22,8 +22,8 @@ use yii\base\Component;
  *
  * @author     Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright  Copyright (c) 2014, Pixel & Tonic, Inc.
- * @license    http://buildwithcraft.com/license Craft License Agreement
- * @see        http://buildwithcraft.com
+ * @license    http://craftcms.com/license Craft License Agreement
+ * @see        http://craftcms.com
  * @package    craft.app.services
  * @since      3.0
  */
@@ -129,7 +129,7 @@ class Volumes extends Component
             $this->_viewableVolumeIds = [];
 
             foreach ($this->getAllVolumeIds() as $volumeId) {
-                if (Craft::$app->user->checkPermission('viewAssetVolume:'.$volumeId)) {
+                if (Craft::$app->user->checkPermission('viewVolume:'.$volumeId)) {
                     $this->_viewableVolumeIds[] = $volumeId;
                 }
             }
@@ -151,7 +151,7 @@ class Volumes extends Component
             $this->_viewableVolumes = [];
 
             foreach ($this->getAllVolumes() as $volume) {
-                if (Craft::$app->user->checkPermission('viewAssetVolume:'.$volume->id)) {
+                if (Craft::$app->user->checkPermission('viewVolume:'.$volume->id)) {
                     $this->_viewableVolumes[] = $volume;
                 }
             }
@@ -296,8 +296,9 @@ class Volumes extends Component
                 $volumeRecord->settings = $volume->settings;
                 $volumeRecord->fieldLayoutId = $volume->fieldLayoutId;
 
+                $fields = Craft::$app->getFields();
                 if (!$isNewVolume) {
-                    Craft::$app->getFields()->deleteLayoutById($volumeRecord->fieldLayoutId);
+                    $fields->deleteLayoutById($volumeRecord->fieldLayoutId);
                 } else {
                     // Set the sort order
                     $maxSortOrder = (new Query())
@@ -310,7 +311,7 @@ class Volumes extends Component
 
                 // Save the new one
                 $fieldLayout = $volume->getFieldLayout();
-                Craft::$app->getFields()->saveLayout($fieldLayout);
+                $fields->saveLayout($fieldLayout);
 
                 // Update the volume record/model with the new layout ID
                 $volume->fieldLayoutId = $fieldLayout->id;
@@ -324,14 +325,15 @@ class Volumes extends Component
                     $volume->id = $volumeRecord->id;
                 } else {
                     // Update the top folder's name with the volume's new name
-                    $topFolder = Craft::$app->getAssets()->findFolder([
+                    $assets = Craft::$app->getAssets();
+                    $topFolder = $assets->findFolder([
                         'volumeId' => $volume->id,
                         'parentId' => ':empty:'
                     ]);
 
                     if ($topFolder !== null && $topFolder->name != $volume->name) {
                         $topFolder->name = $volume->name;
-                        Craft::$app->getAssets()->storeFolderRecord($topFolder);
+                        $assets->storeFolderRecord($topFolder);
                     }
                 }
 
@@ -344,7 +346,7 @@ class Volumes extends Component
                 }
 
                 if (isset($this->_viewableVolumeIds)) {
-                    if (Craft::$app->user->checkPermission('viewAssetVolume:'.$volume->id)) {
+                    if (Craft::$app->user->checkPermission('viewVolume:'.$volume->id)) {
                         $this->_viewableVolumeIds[] = $volume->id;
                     }
                 }
@@ -425,19 +427,20 @@ class Volumes extends Component
             return false;
         }
 
-        $transaction = Craft::$app->getDb()->beginTransaction();
+        $dbConnection = Craft::$app->getDb();
+        $transaction = $dbConnection->beginTransaction();
         try {
-            // Grab the asset file ids so we can clean the elements table.
-            $assetFileIds = (new Query())
+            // Grab the Asset ids so we can clean the elements table.
+            $assetIds = (new Query())
                 ->select('id')
                 ->from('{{%assets}}')
                 ->where(['volumeId' => $volumeId])
                 ->column();
 
-            Craft::$app->getElements()->deleteElementById($assetFileIds);
+            Craft::$app->getElements()->deleteElementById($assetIds);
 
             // Nuke the asset volume.
-            $affectedRows = Craft::$app->getDb()->createCommand()->delete('{{%volumes}}',
+            $affectedRows = $dbConnection->createCommand()->delete('{{%volumes}}',
                 ['id' => $volumeId])->execute();
 
             $transaction->commit();
@@ -471,7 +474,7 @@ class Volumes extends Component
      *
      * @param integer $volumeId
      *
-     * @throws VolumeException
+     * @throws VolumeException If the Volume does not exist.
      * @return AssetVolumeRecord
      */
     private function _getVolumeRecordById($volumeId = null)

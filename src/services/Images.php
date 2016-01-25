@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      http://buildwithcraft.com/
+ * @link      http://craftcms.com/
  * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
- * @license   http://buildwithcraft.com/license
+ * @license   http://craftcms.com/license
  */
 
 namespace craft\app\services;
@@ -15,6 +15,9 @@ use craft\app\helpers\StringHelper;
 use craft\app\image\Raster;
 use craft\app\image\Svg;
 use craft\app\base\Image;
+use lsolesen\pel\PelDataWindow;
+use lsolesen\pel\PelJpeg;
+use lsolesen\pel\PelTag;
 use yii\base\Component;
 
 /**
@@ -82,7 +85,6 @@ class Images extends Component
      * @param bool   $rasterize whether or not the image will be rasterized if it's an SVG
      * @param int    $svgSize   The size SVG should be scaled up to, if rasterized
      *
-     * @throws \Exception
      * @return Image
      */
     public function loadImage($path, $rasterize = false, $svgSize = 1000)
@@ -115,7 +117,7 @@ class Images extends Component
      *
      * The code was adapted from http://www.php.net/manual/en/function.imagecreatefromjpeg.php#64155. It will first
      * attempt to do it with available memory. If that fails, Craft will bump the memory to amount defined by the
-     * [phpMaxMemoryLimit](http://buildwithcraft.com/docs/config-settings#phpMaxMemoryLimit) config setting, then try again.
+     * [phpMaxMemoryLimit](http://craftcms.com/docs/config-settings#phpMaxMemoryLimit) config setting, then try again.
      *
      * @param string  $filePath The path to the image file.
      * @param boolean $toTheMax If set to true, will set the PHP memory to the config setting phpMaxMemoryLimit.
@@ -263,11 +265,20 @@ class Images extends Component
             return null;
         }
 
-        $data = new \PelDataWindow(Io::getFileContents($filePath));
+        // Quick and dirty, if possible
+        if ($this->isImagick() && method_exists('Imagick', 'setImageProperty'))
+        {
+            $image = new \Imagick($filePath);
+            $image->setImageOrientation(\Imagick::ORIENTATION_UNDEFINED);
+            $image->writeImages($filePath, true);
+            return true;
+        }
+
+        $data = new PelDataWindow(Io::getFileContents($filePath));
 
         // Is this a valid JPEG?
-        if (\PelJpeg::isValid($data)) {
-            $jpeg = $file = new \PelJpeg();
+        if (PelJpeg::isValid($data)) {
+            $jpeg = $file = new PelJpeg();
             $jpeg->load($data);
             $exif = $jpeg->getExif();
 
@@ -276,7 +287,7 @@ class Images extends Component
                 $ifd0 = $tiff->getIfd();
 
                 // Delete the Orientation entry and re-save the file
-                $ifd0->offsetUnset(\PelTag::ORIENTATION);
+                $ifd0->offsetUnset(PelTag::ORIENTATION);
                 $file->saveFile($filePath);
 
                 return true;

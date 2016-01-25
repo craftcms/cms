@@ -21,8 +21,8 @@ use yii\base\Component;
  *
  * @author     Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright  Copyright (c) 2014, Pixel & Tonic, Inc.
- * @license    http://buildwithcraft.com/license Craft License Agreement
- * @see        http://buildwithcraft.com
+ * @license    http://craftcms.com/license Craft License Agreement
+ * @see        http://craftcms.com
  * @package    craft.app.services
  * @since      3.0
  */
@@ -120,8 +120,9 @@ class AssetIndexer extends Component
             $indexedFolderIds[$this->ensureTopFolder($volume)] = true;
 
             // Ensure folders are in the DB
+            $assets = Craft::$app->getAssets();
             foreach ($bucketFolders as $fullPath => $nothing) {
-                $folderId = Craft::$app->getAssets()->ensureFolderByFullPathAndVolumeId(
+                $folderId = $assets->ensureFolderByFullPathAndVolumeId(
                     rtrim(
                         $fullPath,
                         '/'
@@ -133,7 +134,7 @@ class AssetIndexer extends Component
 
             $missingFolders = array();
 
-            $allFolders = Craft::$app->getAssets()->findFolders(
+            $allFolders = $assets->findFolders(
                 array(
                     'volumeId' => $volumeId
                 )
@@ -195,10 +196,11 @@ class AssetIndexer extends Component
                         $volume->saveFileLocally($uriPath, $targetPath);
 
                         // Store the local source for now and set it up for deleting, if needed
-                        Craft::$app->getAssetTransforms()->storeLocalSource(
+                        $assetTransforms = Craft::$app->getAssetTransforms();
+                        $assetTransforms->storeLocalSource(
                             $targetPath
                         );
-                        Craft::$app->getAssetTransforms()->queueSourceForDeletingIfNecessary($targetPath);
+                        $assetTransforms->queueSourceForDeletingIfNecessary($targetPath);
                     }
 
                     clearstatcache();
@@ -355,7 +357,7 @@ class AssetIndexer extends Component
      * @param         $path
      * @param boolean $checkIfExists
      *
-     * @throws \craft\app\errors\VolumeObjectNotFoundException
+     * @throws VolumeObjectNotFoundException If the file to be indexed cannot be found.
      * @return boolean|Asset
      */
     public function indexFile(Volume $volume, $path, $checkIfExists = true)
@@ -398,7 +400,8 @@ class AssetIndexer extends Component
                 $parentId = false;
             }
 
-            $parentFolder = Craft::$app->getAssets()->findFolder(
+            $assets = Craft::$app->getAssets();
+            $parentFolder = $assets->findFolder(
                 array(
                     'volumeId' => $volume->id,
                     'path' => $searchFullPath,
@@ -412,7 +415,7 @@ class AssetIndexer extends Component
 
             $folderId = $parentFolder->id;
 
-            $assetModel = Craft::$app->getAssets()->findAsset(
+            $assetModel = $assets->findAsset(
                 array(
                     'folderId' => $folderId,
                     'filename' => $filename
@@ -426,7 +429,7 @@ class AssetIndexer extends Component
                 $assetModel->filename = $filename;
                 $assetModel->kind = Io::getFileKind($extension);
                 $assetModel->indexInProgress = true;
-                Craft::$app->getAssets()->saveAsset($assetModel);
+                $assets->saveAsset($assetModel);
             }
 
             return $assetModel;

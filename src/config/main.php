@@ -22,7 +22,7 @@ $config['build'] = '1';
 $config['schemaVersion'] = '3.0.4';
 $config['releaseDate'] = '1429092000';
 $config['minBuildRequired'] = '0';
-$config['minBuildUrl'] = 'http://buildwithcraft.com/';
+$config['minBuildUrl'] = 'http://craftcms.com/';
 $config['track'] = 'stable';
 /* end HIDE */
 return $config;

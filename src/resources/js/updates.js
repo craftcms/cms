@@ -132,7 +132,7 @@ Craft.UpdateInfo = Garnish.Base.extend(
 
 		if (!this.licenseHud)
 		{
-			var $form = $('<form><p>'+Craft.t('Craft’s <a href="http://buildwithcraft.com/license" target="_blank">Terms and Conditions</a> have changed.')+'</p></form>'),
+			var $form = $('<form><p>'+Craft.t('Craft’s <a href="http://craftcms.com/license" target="_blank">Terms and Conditions</a> have changed.')+'</p></form>'),
 				$label = $('<label> '+Craft.t('I agree.')+' &nbsp;</label>').appendTo($form),
 				$checkbox = $('<input type="checkbox"/>').prependTo($label);
 

@@ -15,7 +15,7 @@
 
 		areaToolOptions:
 		{
-			aspectRatio: "1:1",
+			aspectRatio: "1",
 			initialRectangle: {
 				mode: "auto"
 			}
@@ -28,16 +28,15 @@
 
 		onImageDelete: function(response)
 		{
-		   refreshImage(response);
+			refreshImage(response);
 		}
 	};
 
 	function refreshImage(response) {
 		if (typeof response.html != "undefined") {
 			$('.user-photo').replaceWith(response.html);
-			var newImage = $('.user-photo>.current-photo').css('background-image').replace(/^url\(/, '').replace(/\)$/, '');
+			$('#user-photo > img').replaceWith($('#current-photo > img').clone());
 
-			$('#account-menu').find('img').attr('src', newImage);
 			initImageUpload();
 		}
 

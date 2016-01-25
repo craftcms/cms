@@ -13,3 +13,5 @@ body.rtl #graphic { margin: -48px -24px 0 0 ; }
 
 @media only screen and (-webkit-min-device-pixel-ratio: 1.5), only screen and (-moz-min-device-pixel-ratio: 1.5), only screen and (-o-min-device-pixel-ratio: 3 / 2), only screen and (min-device-pixel-ratio: 1.5), only screen and (min-resolution: 1.5dppx) { #graphic.error { background-image: url(../images/error_2x.png); background-size: 48px; }
   #graphic.success { background-image: url(../images/success_2x.png); background-size: 48px; } }
+
+/*# sourceMappingURL=update.css.map */

@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      http://buildwithcraft.com/
+ * @link      http://craftcms.com/
  * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
- * @license   http://buildwithcraft.com/license
+ * @license   http://craftcms.com/license
  */
 
 namespace craft\app\controllers;
@@ -87,15 +87,16 @@ class AssetTransformsController extends Controller
         $this->requirePostRequest();
 
         $transform = new AssetTransform();
-        $transform->id = Craft::$app->getRequest()->getBodyParam('transformId');
-        $transform->name = Craft::$app->getRequest()->getBodyParam('name');
-        $transform->handle = Craft::$app->getRequest()->getBodyParam('handle');
-        $transform->width = Craft::$app->getRequest()->getBodyParam('width');
-        $transform->height = Craft::$app->getRequest()->getBodyParam('height');
-        $transform->mode = Craft::$app->getRequest()->getBodyParam('mode');
-        $transform->position = Craft::$app->getRequest()->getBodyParam('position');
-        $transform->quality = Craft::$app->getRequest()->getBodyParam('quality');
-        $transform->format = Craft::$app->getRequest()->getBodyParam('format');
+        $request = Craft::$app->getRequest();
+        $transform->id = $request->getBodyParam('transformId');
+        $transform->name = $request->getBodyParam('name');
+        $transform->handle = $request->getBodyParam('handle');
+        $transform->width = $request->getBodyParam('width');
+        $transform->height = $request->getBodyParam('height');
+        $transform->mode = $request->getBodyParam('mode');
+        $transform->position = $request->getBodyParam('position');
+        $transform->quality = $request->getBodyParam('quality');
+        $transform->format = $request->getBodyParam('format');
 
         if (empty($transform->format)) {
             $transform->format = null;
@@ -103,31 +104,32 @@ class AssetTransformsController extends Controller
 
         $errors = false;
 
+        $session = Craft::$app->getSession();
         if (empty($transform->width) && empty($transform->height)) {
-            Craft::$app->getSession()->setError(Craft::t('app', 'You must set at least one of the dimensions.'));
+            $session->setError(Craft::t('app', 'You must set at least one of the dimensions.'));
             $errors = true;
         }
 
         if (!empty($transform->quality) && (!is_numeric($transform->quality) || $transform->quality > 100 || $transform->quality < 1)) {
-            Craft::$app->getSession()->setError(Craft::t('app', 'Quality must be a number between 1 and 100 (included).'));
+            $session->setError(Craft::t('app', 'Quality must be a number between 1 and 100 (included).'));
             $errors = true;
         }
 
         if (!empty($transform->format) && !in_array($transform->format,
                 Image::getWebSafeFormats())
         ) {
-            Craft::$app->getSession()->setError(Craft::t('app', 'That is not an allowed format.'));
+            $session->setError(Craft::t('app', 'That is not an allowed format.'));
             $errors = true;
         }
 
         if (!$errors) {
             // Did it save?
             if (Craft::$app->getAssetTransforms()->saveTransform($transform)) {
-                Craft::$app->getSession()->setNotice(Craft::t('app', 'Transform saved.'));
+                $session->setNotice(Craft::t('app', 'Transform saved.'));
 
                 return $this->redirectToPostedUrl($transform);
             } else {
-                Craft::$app->getSession()->setError(Craft::t('app', 'Couldn’t save source.'));
+                $session->setError(Craft::t('app', 'Couldn’t save source.'));
             }
         }
 

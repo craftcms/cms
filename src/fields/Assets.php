@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      http://buildwithcraft.com/
+ * @link      http://craftcms.com/
  * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
- * @license   http://buildwithcraft.com/license
+ * @license   http://craftcms.com/license
  */
 
 namespace craft\app\fields;
@@ -624,7 +624,7 @@ class Assets extends BaseRelationField
      */
     private function _determineUploadFolderId($element)
     {
-        // If there's no dynamic tags in the set path, or if the element has already been saved, we con use the real
+        // If there's no dynamic tags in the set path, or if the element has already been saved, we can use the real
         // folder
         if (!empty($element->id)
             || (!empty($this->useSingleFolder) && !StringHelper::contains($this->singleUploadLocationSubpath,

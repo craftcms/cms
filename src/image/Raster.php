@@ -4,6 +4,7 @@ namespace craft\app\image;
 use Craft;
 use craft\app\base\Image;
 use craft\app\errors\Exception;
+use craft\app\errors\ImageException;
 use craft\app\helpers\Image as ImageHelper;
 use craft\app\helpers\Io;
 use craft\app\helpers\StringHelper;
@@ -13,8 +14,8 @@ use craft\app\helpers\StringHelper;
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
- * @license   http://buildwithcraft.com/license Craft License Agreement
- * @see       http://buildwithcraft.com
+ * @license   http://craftcms.com/license Craft License Agreement
+ * @see       http://craftcms.com
  * @package   craft.app.etc.io
  * @since     3.0
  */
@@ -124,7 +125,7 @@ class Raster extends Image
      *
      * @param string $path
      *
-     * @throws Exception
+     * @throws ImageException
      * @return Image
      */
     public function loadImage($path)
@@ -132,12 +133,12 @@ class Raster extends Image
         $imageService = Craft::$app->getImages();
 
         if (!Io::fileExists($path)) {
-            throw new Exception(Craft::t('app',
+            throw new ImageException(Craft::t('app',
                 'No file exists at the path “{path}”', array('path' => $path)));
         }
 
         if (!$imageService->checkMemoryForImage($path)) {
-            throw new Exception(Craft::t('app',
+            throw new ImageException(Craft::t('app',
                 'Not enough memory available to perform this image operation.'));
         }
 
@@ -146,7 +147,7 @@ class Raster extends Image
         try {
             $this->_image = $this->_instance->open($path);
         } catch (\Exception $exception) {
-            throw new Exception(Craft::t('app',
+            throw new ImageException(Craft::t('app',
                 'The file “{path}” does not appear to be an image.',
                 array('path' => $path)));
         }
@@ -387,7 +388,7 @@ class Raster extends Image
      *
      * @param string $targetPath
      *
-     * @throws \Imagine\Exception\RuntimeException
+     * @throws ImageException If Imagine threw an exception.
      * @return null
      */
     public function saveAs($targetPath, $autoQuality = false)
@@ -398,16 +399,21 @@ class Raster extends Image
         $targetPath = Io::getFolderName($targetPath).Io::getFileName($targetPath,
                 false).'.'.Io::getExtension($targetPath);
 
-        if ($autoQuality && in_array($extension, array('jpeg', 'jpg', 'png'))) {
-            clearstatcache();
-            $originalSize = Io::getFileSize($this->_imageSourcePath);
-            $tempFile = $this->_autoGuessImageQuality($targetPath,
-                $originalSize, $extension, 0, 200);
-            Io::move($tempFile, $targetPath, true);
-        } else {
-            $this->_image->save($targetPath, $options);
+        try {
+            if ($autoQuality && in_array($extension,
+                    array('jpeg', 'jpg', 'png'))
+            ) {
+                clearstatcache();
+                $originalSize = Io::getFileSize($this->_imageSourcePath);
+                $tempFile = $this->_autoGuessImageQuality($targetPath,
+                    $originalSize, $extension, 0, 200);
+                Io::move($tempFile, $targetPath, true);
+            } else {
+                $this->_image->save($targetPath, $options);
+            }
+        } catch (\Imagine\Exception\RuntimeException $e) {
+            throw new ImageException(Craft::t('app', 'Failed to save the image.'), $e->getCode(), $e);
         }
-
         return true;
     }
 
@@ -416,6 +422,7 @@ class Raster extends Image
      *
      * @param $svgContent
      *
+     * @throws ImageException If the SVG string cannot be loaded.
      * @return Image
      */
     public function loadFromSVG($svgContent)
@@ -423,9 +430,14 @@ class Raster extends Image
         try {
             $this->_image = $this->_instance->load($svgContent);
         } catch (\Imagine\Exception\RuntimeException $e) {
-            // Invalid SVG. Maybe it's missing its DTD?
-            $svgContent = '<?xml version="1.0" encoding="UTF-8" standalone="no"?>'.$svgContent;
-            $this->_image = $this->_instance->load($svgContent);
+            try
+            {
+                // Invalid SVG. Maybe it's missing its DTD?
+                $svgContent = '<?xml version="1.0" encoding="UTF-8" standalone="no"?>'.$svgContent;
+                $this->_image = $this->_instance->load($svgContent);
+            } catch (\Imagine\Exception\RuntimeException $e) {
+                throw new ImageException(Craft::t('app', 'Failed to load the SVG string.'), $e->getCode(), $e);
+            }
         }
 
         return $this;
@@ -438,7 +450,7 @@ class Raster extends Image
      */
     public function isTransparent()
     {
-        if (Cradt::$app->getImages()->isImagick() && method_exists("Imagick",
+        if (Craft::$app->getImages()->isImagick() && method_exists("Imagick",
                 "getImageAlphaChannel")
         ) {
             return $this->_image->getImagick()->getImageAlphaChannel();
@@ -494,13 +506,13 @@ class Raster extends Image
      * @param $text
      * @param int $angle
      *
-     * @throws Exception
+     * @throws ImageException If attempting to create text box with no font properties et.
      * @return \Imagine\Image\BoxInterface
      */
     public function getTextBox($text, $angle = 0)
     {
         if (empty($this->_font)) {
-            throw new Exception(Craft::t('app',
+            throw new ImageException(Craft::t('app',
                 'No font properties have been set. Call Raster::setFontProperties() first.'));
         }
 
@@ -515,14 +527,14 @@ class Raster extends Image
      * @param     $y
      * @param int $angle
      *
+     * @throws ImageException If attempting to create text box with no font properties et.
      * @return null
-     * @throws Exception
      */
     public function writeText($text, $x, $y, $angle = 0)
     {
 
         if (empty($this->_font)) {
-            throw new Exception(Craft::t('app',
+            throw new ImageException(Craft::t('app',
                 'No font properties have been set. Call ImageHelper::setFontProperties() first.'));
         }
 

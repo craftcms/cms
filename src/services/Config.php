@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      http://buildwithcraft.com/
+ * @link      http://craftcms.com/
  * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
- * @license   http://buildwithcraft.com/license
+ * @license   http://craftcms.com/license
  */
 
 namespace craft\app\services;
@@ -21,7 +21,7 @@ use GuzzleHttp\Exception\RequestException;
 use yii\base\Component;
 
 /**
- * The Config service provides APIs for retrieving the values of Craft’s [config settings](http://buildwithcraft.com/docs/config-settings),
+ * The Config service provides APIs for retrieving the values of Craft’s [config settings](http://craftcms.com/docs/config-settings),
  * as well as the values of any plugins’ config settings.
  *
  * An instance of the Config service is globally accessible in Craft via [[Application::config `Craft::$app->getConfig()`]].
@@ -60,11 +60,11 @@ class Config extends Component
     /**
      * Returns a config setting value by its name.
      *
-     * If the config file is set up as a [multi-environment config](http://buildwithcraft.com/docs/multi-environment-configs),
+     * If the config file is set up as a [multi-environment config](http://craftcms.com/docs/multi-environment-configs),
      * only values from config arrays that match the current request’s environment will be checked and returned.
      *
      * By default, `get()` will check craft/config/general.php, and fall back on the default values specified in
-     * craft/app/config/defaults/general.php. See [Craft’s documentation](http://buildwithcraft.com/docs/config-settings)
+     * craft/app/config/defaults/general.php. See [Craft’s documentation](http://craftcms.com/docs/config-settings)
      * for a full list of config settings that Craft will check for within that file.
      *
      * ```php
@@ -97,7 +97,7 @@ class Config extends Component
      * Overrides the value of a config setting to a given value.
      *
      * By default, `set()` will update the config array that came from craft/config/general.php.
-     * See [Craft’s documentation](http://buildwithcraft.com/docs/config-settings)
+     * See [Craft’s documentation](http://craftcms.com/docs/config-settings)
      * for a full list of config settings that Craft will check for within that file.
      *
      * ```php
@@ -132,12 +132,12 @@ class Config extends Component
      *
      * This function is used for Craft’s “localizable” config settings:
      *
-     * - [siteUrl](http://buildwithcraft.com/docs/config-settings#siteUrl)
-     * - [invalidUserTokenPath](http://buildwithcraft.com/docs/config-settings#invalidUserTokenPath)
-     * - [loginPath](http://buildwithcraft.com/docs/config-settings#loginPath)
-     * - [logoutPath](http://buildwithcraft.com/docs/config-settings#logoutPath)
-     * - [setPasswordPath](http://buildwithcraft.com/docs/config-settings#setPasswordPath)
-     * - [setPasswordSuccessPath](http://buildwithcraft.com/docs/config-settings#setPasswordSuccessPath)
+     * - [siteUrl](http://craftcms.com/docs/config-settings#siteUrl)
+     * - [invalidUserTokenPath](http://craftcms.com/docs/config-settings#invalidUserTokenPath)
+     * - [loginPath](http://craftcms.com/docs/config-settings#loginPath)
+     * - [logoutPath](http://craftcms.com/docs/config-settings#logoutPath)
+     * - [setPasswordPath](http://craftcms.com/docs/config-settings#setPasswordPath)
+     * - [setPasswordSuccessPath](http://craftcms.com/docs/config-settings#setPasswordSuccessPath)
      *
      * @param string $item     The name of the config setting.
      * @param string $localeId The locale ID to return. Defaults to
@@ -171,11 +171,11 @@ class Config extends Component
     /**
      * Returns whether a config setting value exists, by a given name.
      *
-     * If the config file is set up as a [multi-environment config](http://buildwithcraft.com/docs/multi-environment-configs),
+     * If the config file is set up as a [multi-environment config](http://craftcms.com/docs/multi-environment-configs),
      * only values from config arrays that match the current request’s environment will be checked.
      *
      * By default, `exists()` will check craft/config/general.php, and fall back on the default values specified in
-     * craft/app/config/defaults/general.php. See [Craft’s documentation](http://buildwithcraft.com/docs/config-settings)
+     * craft/app/config/defaults/general.php. See [Craft’s documentation](http://craftcms.com/docs/config-settings)
      * for a full list of config settings that Craft will check for within that file.
      *
      * If you want to get the config setting from a different config file (e.g. config/myplugin.php), you can specify
@@ -220,7 +220,7 @@ class Config extends Component
     }
 
     /**
-     * Returns the value of the [cacheDuration](http://buildwithcraft.com/docs/config-settings#cacheDuration) config setting,
+     * Returns the value of the [cacheDuration](http://craftcms.com/docs/config-settings#cacheDuration) config setting,
      * normalized into seconds.
      *
      * The actual value of the cacheDuration config setting is supposed to be set using the
@@ -250,12 +250,12 @@ class Config extends Component
 
     /**
      * Returns whether generated URLs should omit “index.php”, taking the
-     * [omitScriptNameInUrls](http://buildwithcraft.com/docs/config-settings#omitScriptNameInUrls) config setting value
+     * [omitScriptNameInUrls](http://craftcms.com/docs/config-settings#omitScriptNameInUrls) config setting value
      * into account.
      *
      * If the omitScriptNameInUrls config setting is set to `true` or `false`, then its value will be returned directly.
      * Otherwise, `omitScriptNameInUrls()` will try to determine whether the server is set up to support index.php
-     * redirection. (See [this help article](http://buildwithcraft.com/help/remove-index.php) for instructions.)
+     * redirection. (See [this help article](http://craftcms.com/help/remove-index.php) for instructions.)
      *
      * It does that by creating a dummy request to the site URL with the URI “/testScriptNameRedirect”. If the index.php
      * redirect is in place, that request should be sent to Craft’s index.php file, which will detect that this is an
@@ -263,7 +263,7 @@ class Config extends Component
      * (i.e. an Apache-styled 404 error), then Craft assumes the index.php redirect is not in fact in place.
      *
      * Results of the redirect test request will be cached for the amount of time specified by the
-     * [cacheDuration](http://buildwithcraft.com/docs/config-settings#cacheDuration) config setting.
+     * [cacheDuration](http://craftcms.com/docs/config-settings#cacheDuration) config setting.
      *
      * @return boolean Whether generated URLs should omit “index.php”.
      */
@@ -320,7 +320,7 @@ class Config extends Component
 
     /**
      * Returns whether generated URLs should be formatted using PATH_INFO, taking the
-     * [usePathInfo](http://buildwithcraft.com/docs/config-settings#usePathInfo) config setting value into account.
+     * [usePathInfo](http://craftcms.com/docs/config-settings#usePathInfo) config setting value into account.
      *
      * This method will usually only be called in the event that [[omitScriptNameInUrls()]] returns `false`
      * (so “index.php” _should_ be included), and it determines what follows “index.php” in the URL.
@@ -331,7 +331,7 @@ class Config extends Component
      *
      * If the usePathInfo config setting is set to `true` or `false`, then its value will be returned directly.
      * Otherwise, `usePathInfo()` will try to determine whether the server is set up to support PATH_INFO.
-     * (See http://buildwithcraft.com/help/enable-path-info for instructions.)
+     * (See http://craftcms.com/help/enable-path-info for instructions.)
      *
      * It does that by creating a dummy request to the site URL with the URI “/index.php/testPathInfo”. If the server
      * supports it, that request should be sent to Craft’s index.php file, which will detect that this is an
@@ -339,7 +339,7 @@ class Config extends Component
      * (i.e. an Apache-styled 404 error), then Craft assumes the server is not set up to support PATH_INFO.
      *
      * Results of the PATH_INFO test request will be cached for the amount of time specified by the
-     * [cacheDuration](http://buildwithcraft.com/docs/config-settings#cacheDuration) config setting.
+     * [cacheDuration](http://craftcms.com/docs/config-settings#cacheDuration) config setting.
      *
      * @return boolean Whether generaletd URLs should be formatted using PATH_INFO.
      */
@@ -398,7 +398,7 @@ class Config extends Component
 
     /**
      * Sets PHP’s memory limit to the maximum specified by the
-     * [phpMaxMemoryLimit](http://buildwithcraft.com/docs/config-settings#phpMaxMemoryLimit) config setting, and gives
+     * [phpMaxMemoryLimit](http://craftcms.com/docs/config-settings#phpMaxMemoryLimit) config setting, and gives
      * the script an unlimited amount of time to execute.
      *
      * @return void
@@ -421,8 +421,8 @@ class Config extends Component
      * expire when the HTTP session expires.
      *
      * You can choose whether the
-     * [rememberedUserSessionDuration](http://buildwithcraft.com/docs/config-settings#rememberedUserSessionDuration)
-     * or [userSessionDuration](http://buildwithcraft.com/docs/config-settings#userSessionDuration) config setting
+     * [rememberedUserSessionDuration](http://craftcms.com/docs/config-settings#rememberedUserSessionDuration)
+     * or [userSessionDuration](http://craftcms.com/docs/config-settings#userSessionDuration) config setting
      * should be used with the $remembered param. If rememberedUserSessionDuration’s value is empty (disabling the
      * feature) then userSessionDuration will be used regardless of $remembered.
      *
@@ -452,7 +452,7 @@ class Config extends Component
     /**
      * Returns the user login path based on the type of the current request.
      *
-     * If it’s a front-end request, the [loginPath](http://buildwithcraft.com/docs/config-settings#loginPath) config
+     * If it’s a front-end request, the [loginPath](http://craftcms.com/docs/config-settings#loginPath) config
      * setting value will be returned. Otherwise the path specified in [[getCpLoginPath()]] will be returned.
      *
      * @return string The login path.
@@ -471,7 +471,7 @@ class Config extends Component
     /**
      * Returns the user logout path based on the type of the current request.
      *
-     * If it’s a front-end request, the [logoutPath](http://buildwithcraft.com/docs/config-settings#logoutPath) config
+     * If it’s a front-end request, the [logoutPath](http://craftcms.com/docs/config-settings#logoutPath) config
      * setting value will be returned. Otherwise the path specified in [[getCpLogoutPath()]] will be returned.
      *
      * @return string The logout path.
@@ -576,10 +576,10 @@ class Config extends Component
     }
 
     /**
-     * Parses a string for any [environment variables](http://buildwithcraft.com/docs/multi-environment-configs#environment-specific-variables).
+     * Parses a string for any [environment variables](http://craftcms.com/docs/multi-environment-configs#environment-specific-variables).
      *
      * This method simply loops through all of the elements in the
-     * [environmentVariables](http://buildwithcraft.com/docs/config-settings#environmentVariables) config setting’s
+     * [environmentVariables](http://craftcms.com/docs/config-settings#environmentVariables) config setting’s
      * value, and replaces any {tag}s in the string that have matching keys with their corresponding values.
      *
      * @param string $str The string that should be parsed for environment variables.
@@ -598,7 +598,7 @@ class Config extends Component
     /**
      * Returns the Resource Request trigger word based on the type of the current request.
      *
-     * If it’s a front-end request, the [resourceTrigger](http://buildwithcraft.com/docs/config-settings#resourceTrigger)
+     * If it’s a front-end request, the [resourceTrigger](http://craftcms.com/docs/config-settings#resourceTrigger)
      * config setting value will be returned. Otherwise `'resources'` will be returned.
      *
      * @return string The Resource Request trigger word.

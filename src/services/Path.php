@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      http://buildwithcraft.com/
+ * @link      http://craftcms.com/
  * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
- * @license   http://buildwithcraft.com/license
+ * @license   http://craftcms.com/license
  */
 
 namespace craft\app\services;
@@ -117,6 +117,18 @@ class Path extends Component
         }
 
         return $this->_storagePath;
+    }
+
+    /**
+     * Returns the path to the craft/storage/rebrand/ folder.
+     *
+     * @return string
+     */
+    public function getRebrandPath()
+    {
+        $path = $this->getStoragePath().'/rebrand';
+        IO::ensureFolderExists($path);
+        return $path;
     }
 
     /**

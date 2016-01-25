@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      http://buildwithcraft.com/
+ * @link      http://craftcms.com/
  * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
- * @license   http://buildwithcraft.com/license
+ * @license   http://craftcms.com/license
  */
 
 namespace craft\app\helpers;
@@ -103,13 +103,14 @@ class Assets
         }
 
 
-        $separator = Craft::$app->getConfig()->get('filenameWordSeparator');
+        $config = Craft::$app->getConfig();
+        $separator = $config->get('filenameWordSeparator');
 
         if (!is_string($separator)) {
             $separator = null;
         }
 
-        $baseName = Io::cleanFilename($baseName, Craft::$app->getConfig()->get('convertFilenamesToAscii'), $separator);
+        $baseName = Io::cleanFilename($baseName, $config->get('convertFilenamesToAscii'), $separator);
 
         if ($isFilename && empty($baseName)) {
             $baseName = '-';
@@ -130,7 +131,8 @@ class Assets
     public static function mirrorFolderStructure(
         VolumeFolder $sourceParentFolder, VolumeFolder $destinationFolder, $targetTreeMap = array()
     ) {
-        $sourceTree = Craft::$app->getAssets()->getAllDescendantFolders($sourceParentFolder);
+        $assets = Craft::$app->getAssets();
+        $sourceTree = $assets->getAllDescendantFolders($sourceParentFolder);
         $previousParent = $sourceParentFolder->getParent();
         $sourcePrefixLength = strlen($previousParent->path);
         $folderIdChanges = [];
@@ -151,7 +153,7 @@ class Assets
                 // Any and all parent folders should be already mirrored
                 $folder->parentId = (isset($folderIdChanges[$sourceFolder->parentId]) ? $folderIdChanges[$sourceFolder->parentId] : $destinationFolder->id);
 
-                Craft::$app->getAssets()->createFolder($folder);
+                $assets->createFolder($folder);
 
                 $folderIdChanges[$sourceFolder->id] = $folder->id;
             }
@@ -167,6 +169,7 @@ class Assets
      * @param array $assets List of assets
      * @param array $folderIdChanges A map of folder id changes
      * @param bool  $merge If set to true, files will be merged in folders
+     *
      * @return array
      */
     public static function getFileTransferList($assets, $folderIdChanges, $merge = false)
@@ -201,7 +204,7 @@ class Assets
 
     /**
      * Get a list of available periods for Cache duration settings.
-     * .
+     *
      * @return array
      */
     public static function getPeriodList()

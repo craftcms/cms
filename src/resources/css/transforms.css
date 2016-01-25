@@ -15,3 +15,5 @@ body.rtl #mode label { float: right; }
   #mode label#mode-crop { background-image: url(../images/transforms/crop_2x.jpg); }
   #mode label#mode-fit { background-image: url(../images/transforms/fit_2x.jpg); }
   #mode label#mode-stretch { background-image: url(../images/transforms/stretch_2x.jpg); } }
+
+/*# sourceMappingURL=transforms.css.map */

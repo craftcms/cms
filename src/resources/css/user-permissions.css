@@ -21,8 +21,8 @@
 
 body.ltr .user-permissions h3 { padding-right: 0.5em; }
 body.rtl .user-permissions h3 { padding-left: 0.5em; }
-body.ltr .user-permissions h3 { border-right: 1px solid #eeeeee; }
-body.rtl .user-permissions h3 { border-left: 1px solid #eeeeee; }
+body.ltr .user-permissions h3 { border-right: 1px solid #eee; }
+body.rtl .user-permissions h3 { border-left: 1px solid #eee; }
 body.ltr .user-permissions h3 { margin-right: 0.5em; }
 body.rtl .user-permissions h3 { margin-left: 0.5em; }
 
@@ -39,3 +39,5 @@ body.rtl .user-permissions ul ul ul li .checkbox + label { padding-right: 55px; 
 
 body.ltr .user-permissions ul ul li:before { left: 20px; }
 body.rtl .user-permissions ul ul li:before { right: 20px; }
+
+/*# sourceMappingURL=user-permissions.css.map */

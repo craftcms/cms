@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      http://buildwithcraft.com/
+ * @link      http://craftcms.com/
  * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
- * @license   http://buildwithcraft.com/license
+ * @license   http://craftcms.com/license
  */
 
 namespace craft\app\elements\db;
@@ -310,7 +310,7 @@ class AssetQuery extends ElementQuery
             if ($this->includeSubfolders) {
                 $folders = Craft::$app->getAssets()->getAllDescendantFolders(
                     Craft::$app->getAssets()->getFolderById($this->folderId));
-                $this->subQuery->andWhere(Db::parseParam('assetfiles.folderId', array_keys($folders), $this->subQuery->params));
+                $this->subQuery->andWhere(Db::parseParam('assets.folderId', array_keys($folders), $this->subQuery->params));
             } else {
                 $this->subQuery->andWhere(Db::parseParam('assets.folderId', $this->folderId, $this->subQuery->params));
             }
