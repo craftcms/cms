@@ -227,7 +227,10 @@ class DateTimeHelper
     }
 
     /**
-     * Determines whether the given value is an ISO-8601 date string, as formatted by [DateTime::ISO8601](http://php.net/manual/en/class.datetime.php#datetime.constants.iso8601).
+     * Determines whether the given value is an ISO-8601-formatted date, as formatted by either
+     * [DateTime::ATOM](http://php.net/manual/en/class.datetime.php#datetime.constants.atom) or
+     * [DateTime::ISO8601](http://php.net/manual/en/class.datetime.php#datetime.constants.iso8601) (with or without
+     * the colon between the hours and minutes of the timezone).
      *
      * @param mixed $value The value
      *
@@ -235,9 +238,7 @@ class DateTimeHelper
      */
     public static function isIso8601($value)
     {
-        if (is_string($value) && preg_match('/^\d\d\d\d-\d\d-\d\dT\d\d:\d\d:\d\d[\+\-]\d\d\d\d$/',
-                $value)
-        ) {
+        if (is_string($value) && preg_match('/^\d\d\d\d-\d\d-\d\dT\d\d:\d\d:\d\d[\+\-]\d\d\:?\d\d$/', $value)) {
             return true;
         } else {
             return false;
