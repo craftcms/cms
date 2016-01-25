@@ -345,8 +345,6 @@ class Plugins extends Component
 
             throw $e;
         }
-
-        return true;
     }
 
     /**
@@ -426,6 +424,8 @@ class Plugins extends Component
                 }
             }
         }
+
+        return null;
     }
 
     /**
