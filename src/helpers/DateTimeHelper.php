@@ -257,7 +257,7 @@ class DateTimeHelper
         $date = self::toDateTime($date);
 
         if ($date !== false) {
-            return $date->format(\DateTime::ISO8601);
+            return $date->format(\DateTime::ATOM);
         } else {
             return false;
         }
