@@ -12,6 +12,7 @@ use craft\app\db\Migration;
 use craft\app\db\MigrationManager;
 use craft\app\events\Event;
 use craft\app\helpers\Io;
+use craft\app\web\Controller;
 use yii\base\Module;
 
 /**
@@ -210,7 +211,10 @@ class Plugin extends Module implements PluginInterface
      */
     public function getSettingsResponse()
     {
-        return Craft::$app->controller->renderTemplate('settings/plugins/_settings',
+        /* @var Controller $controller */
+        $controller = Craft::$app->controller;
+
+        return $controller->renderTemplate('settings/plugins/_settings',
             [
                 'plugin' => $this,
                 'settingsHtml' => $this->getSettingsHtml()
