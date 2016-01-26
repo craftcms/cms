@@ -1378,8 +1378,6 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 
 					$targetFolder.parent().remove();
 					this._cleanUpTree($parentFolder);
-
-					this.$sidebar.trigger('resize');
 				}
 
 				if (textStatus == 'success' && data.error)
@@ -1470,8 +1468,6 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 		{
 			$parentFolder.siblings('ul').append($subfolder);
 		}
-
-		this.$sidebar.trigger('resize');
 	},
 
 	_cleanUpTree: function($parentFolder)
