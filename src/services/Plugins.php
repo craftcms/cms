@@ -602,6 +602,25 @@ class Plugins extends Component
         return $info;
     }
 
+    /**
+     * Returns the path to a given plugin’s icon.
+     *
+     * @param string $handle The plugin’s class handle
+     *
+     * @return string The given plugin’s icon path
+     */
+    public function getPluginIconPath($handle)
+    {
+        $plugin = $this->getPlugin($handle);
+        $iconPath = $plugin->getIconPath();
+
+        if ($iconPath) {
+            return $iconPath;
+        } else {
+            return Craft::$app->getPath()->getResourcesPath().'/images/default_plugin.svg';
+        }
+    }
+
     // Private Methods
     // =========================================================================
 

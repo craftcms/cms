@@ -38,9 +38,16 @@ interface PluginInterface
     public function getHandle();
 
     /**
+     * Returns the path to the plugin’s icon, if it has one.
+     *
+     * @return string|null The path to the plugin’s icon, or null if it doesn’t have one
+     */
+    public function getIconPath();
+
+    /**
      * Installs the plugin.
      *
-     * @return boolean|null Return `false` to indicate the installation failed.
+     * @return void|false Return `false` to indicate the installation failed.
      * All other return values mean the installation was successful.
      */
     public function install();
@@ -50,7 +57,7 @@ interface PluginInterface
      *
      * @param string $fromVersion The previously installed version of the plugin.
      *
-     * @return boolean|null Return `false` to indicate the update failed.
+     * @return void|false Return `false` to indicate the update failed.
      * All other return values mean the update was successful.
      */
     public function update($fromVersion);
@@ -58,7 +65,7 @@ interface PluginInterface
     /**
      * Uninstalls the plugin.
      *
-     * @return boolean|null Return `false` to indicate the uninstallation failed.
+     * @return void|false Return `false` to indicate the uninstallation failed.
      * All other return values mean the uninstallation was successful.
      */
     public function uninstall();
