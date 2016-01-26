@@ -309,7 +309,9 @@ class UsersController extends Controller
                     Craft::$app->getUsers()->activateUser($userToProcess);
 
                     // Treat this as an activation request
-                    $this->_onAfterActivateUser($userToProcess);
+                    if (($response = $this->_onAfterActivateUser($userToProcess)) !== null) {
+                        return $response;
+                    }
                 }
 
                 // Can they access the CP?
@@ -354,7 +356,9 @@ class UsersController extends Controller
 
             if ($userIsPending) {
                 // They were just activated, so treat this as an activation request
-                $this->_onAfterActivateUser($userToProcess);
+                if (($response = $this->_onAfterActivateUser($userToProcess)) !== null) {
+                    return $response;
+                }
             }
 
             // Redirect to the site/CP root
@@ -924,9 +928,12 @@ class UsersController extends Controller
                 $user->email = $originalEmail;
             }
 
-            // Is this public registration, and is the user going to be activated automatically?
-            if ($thisIsPublicRegistration && $user->getStatus() == User::STATUS_ACTIVE) {
-                $this->_onAfterActivateUser($user);
+            // Is this public registration, and was the user going to be activated automatically?
+            $publicActivation = $thisIsPublicRegistration && $user->status == User::STATUS_ACTIVE;
+
+            if ($publicActivation) {
+                // Maybe automatically log them in
+                $this->_maybeLoginUserAfterAccountActivation($user);
             }
 
             if (Craft::$app->getRequest()->getIsAjax()) {
@@ -938,7 +945,12 @@ class UsersController extends Controller
                 Craft::$app->getSession()->setNotice(Craft::t('app',
                     'User saved.'));
 
-                return $this->redirectToPostedUrl($user);
+                // Is this public registration, and is the user going to be activated automatically?
+                if ($publicActivation) {
+                    return $this->_redirectUserAfterAccountActivation($user);
+                } else {
+                    return $this->redirectToPostedUrl($user);
+                }
             }
         } else {
             if (Craft::$app->getRequest()->getIsAjax()) {
@@ -1665,6 +1677,8 @@ class UsersController extends Controller
     /**
      * @param User $user
      *
+     * @return Response|null
+     *
      * @throws HttpException
      */
     private function _processInvalidToken($user)
@@ -1700,16 +1714,46 @@ class UsersController extends Controller
     /**
      * Takes over after a user has been activated.
      *
-     * @param User $user
+     * @param User $user The user that was just activated
      *
-     * @return \yii\web\Response
+     * @return Response|null
      */
     private function _onAfterActivateUser(User $user)
     {
-        if (Craft::$app->getConfig()->get('autoLoginAfterAccountActivation')) {
-            Craft::$app->getUser()->login($user);
+        $this->_maybeLoginUserAfterAccountActivation($user);
+
+        if (!Craft::$app->getRequest()->getIsAjax()) {
+            return $this->_redirectUserAfterAccountActivation($user);
         }
 
+        return null;
+    }
+
+    /**
+     * Possibly log a user in right after they were activate, if Craft is configured to do so.
+     *
+     * @param User $user The user that was just activated
+     *
+     * @return bool Whether the user was just logged in
+     */
+    private function _maybeLoginUserAfterAccountActivation(User $user)
+    {
+        if (Craft::$app->getConfig()->get('autoLoginAfterAccountActivation') === true) {
+            return Craft::$app->getUser()->login($user);
+        } else {
+            return false;
+        }
+    }
+
+    /**
+     * Redirect the browser after a user’s account has been activated.
+     *
+     * @param User $user The user that was just activated
+     *
+     * @return Response
+     */
+    private function _redirectUserAfterAccountActivation(User $user)
+    {
         // Can they access the CP?
         if ($user->can('accessCp')) {
             $postCpLoginRedirect = Craft::$app->getConfig()->get('postCpLoginRedirect');
