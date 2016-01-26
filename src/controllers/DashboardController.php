@@ -347,6 +347,14 @@ class DashboardController extends Controller
                     // Bump the default timeout because of the attachment.
                     $hsParams['callTimeout'] = 120;
                 }
+
+                // Grab the license.key file.
+                $licenseKeyPath = Craft::$app->getPath()->getLicenseKeyPath();
+                if (Io::fileExists($licenseKeyPath)) {
+                    $requestParams['File2_sFilename'] = 'license.key';
+                    $requestParams['File2_sFileMimeType'] = 'text/plain';
+                    $requestParams['File2_bFileBody'] = base64_encode(Io::getFileContents($licenseKeyPath));
+                }
             } catch (\Exception $e) {
                 Craft::warning('Tried to attach debug logs to a support request and something went horribly wrong: '.$e->getMessage(), __METHOD__);
 
