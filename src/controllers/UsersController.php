@@ -926,11 +926,7 @@ class UsersController extends Controller
 
             // Is this public registration, and is the user going to be activated automatically?
             if ($thisIsPublicRegistration && $user->getStatus() == User::STATUS_ACTIVE) {
-                // Do we need to auto-login?
-                if (Craft::$app->getConfig()->get('autoLoginAfterAccountActivation') === true) {
-                    Craft::$app->getUser()->loginByUserId($user->id, false,
-                        true);
-                }
+                $this->_onAfterActivateUser($user);
             }
 
             if (Craft::$app->getRequest()->getIsAjax()) {
@@ -1705,15 +1701,13 @@ class UsersController extends Controller
      * Takes over after a user has been activated.
      *
      * @param User $user
+     *
+     * @return \yii\web\Response
      */
     private function _onAfterActivateUser(User $user)
     {
-        // Should we log them in?
-        $loggedIn = false;
-
         if (Craft::$app->getConfig()->get('autoLoginAfterAccountActivation')) {
-            $loggedIn = Craft::$app->getUser()->loginByUserId($user->id, false,
-                true);
+            Craft::$app->getUser()->login($user);
         }
 
         // Can they access the CP?
