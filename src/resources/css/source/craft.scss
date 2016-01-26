@@ -1164,6 +1164,17 @@ body #redactor-modal-overlay {
 .deleteusermodal .elementselect { @include margin-left(10px); display: inline-block; vertical-align: middle; }
 .deleteusermodal .buttons .spinner { @include floatright; @include margin-right(-20px); @include margin-left(-4px); }
 
+
+/* date range hud */
+
+.daterange-hud { padding: 0; }
+.daterange-hud .daterange-items ul li a.sel { color: $textcolor; }
+.daterange-hud .daterange-items ul li a[data-icon]:before,
+.daterange-hud .daterange-items ul li a.icon:before,
+.daterange-hud .daterange-items ul li a.sel:before { @include floatleft; @include margin(3px, 0, 0, -17px); font-size: 11px; color: #000 !important; opacity: .4; }
+.daterange-hud .daterange-items ul li a.sel:not([data-icon]):before { content: 'check'; @include icon; }
+
+
 /* ----------------------------------------
 /*  Menus
 /* ----------------------------------------*/
@@ -1215,7 +1226,6 @@ body .redactor-dropdown a:hover span { color: $textcolor !important; }
 .tagmenu ul li a:before { @include floatleft; @include margin(3px, 0, 0, -18px); }
 
 /* selectize */
-
 
 /* ----------------------------------------
 /*  Fields
