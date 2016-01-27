@@ -3,7 +3,7 @@
  * Craft web bootstrap file.
  *
  * @link      http://craftcms.com/
- * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
+ * @copyright Copyright (c) Pixel & Tonic, Inc.
  * @license   http://craftcms.com/license
  */
 
