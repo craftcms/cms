@@ -5,19 +5,47 @@
 Craft.DateRangePicker = Garnish.Base.extend(
 {
     hud: null,
+    preset: null,
+
+    presets: {
+        d7 : {
+            label: 'Last 7 days',
+            startDate: '-7 days'
+        },
+        d30: {
+            label: 'Last 30 days',
+            startDate: '-30 days'
+        },
+        lastweek: {
+            label: 'Last Week',
+            startDate: '-14 days',
+            endDate: '-7 days',
+        },
+        lastmonth: {
+            label: 'Last Month',
+            startDate: '-60 days',
+            endDate: '-30 days',
+        },
+
+        customrange: {
+            label: 'Custom Range',
+        }
+    },
 
     init: function(container, options)
     {
         this.$container = container;
         this.options = options;
 
-        this.startDate = options.startDate;
-        this.endDate = options.endDate;
+        this.preset = options.preset;
+
+        this.startDate = this.presets[this.preset].startDate;
+        this.endDate = this.presets[this.preset].endDate;
 
         this.$dateRangeWrapper = $('<div class="datewrapper"></div>');
         this.$dateRangeWrapper.appendTo(this.$container);
 
-        var dateRangeValue = (this.startDate.getMonth() + 1)+'/'+this.startDate.getDate()+'/'+this.startDate.getFullYear()+'-'+(this.endDate.getMonth() + 1)+'/'+this.endDate.getDate()+'/'+this.endDate.getFullYear();
+        var dateRangeValue = this.presets[this.preset].label;
 
         this.$dateRange = $('<input type="text" class="text" size="20" autocomplete="off" value="'+dateRangeValue+'" />');
         this.$dateRange.appendTo(this.$dateRangeWrapper);
@@ -29,39 +57,30 @@ Craft.DateRangePicker = Garnish.Base.extend(
     {
         if (!this.hud)
         {
-            var $hudBody = $('<div class="daterange-hud"></div>');
+            var $hudBody = $('<div></div>');
 
-            // Presets
 
-            var menu = [
-                'Last 7 days',
-                'Last 30 days',
-                'Last 90 days',
-                'Last Week',
-                'Last Month',
-            ];
+            // presets
 
             var $presets = $('<div class="daterange-items" />').appendTo($hudBody);
             var $presetsUl = $('<ul />').appendTo($presets);
 
-            $.each(menu, function(key, item)
+            $.each(this.presets, function(key, item)
             {
-                $('<li><a class="item" data-preset="'+key+'">'+item+'</a></li>').appendTo($presetsUl);
+                if(key != 'customrange')
+                {
+                    $('<li><a class="item" data-value="'+key+'" data-label="'+item.label+'" data-start-date="'+item.startDate+'" data-end-date="'+item.endDate+'">'+item.label+'</a></li>').appendTo($presetsUl);
+                }
             });
 
 
-
-
-            // HR
-
-            $('<hr />').appendTo($hudBody);
-
-
-            // Custom Range
+            // custom range
 
             var $customRange = $('<div class="daterange-items" />').appendTo($hudBody);
+            var $customRangeUl = $('<ul />').appendTo($customRange);
 
-            $('<ul><li><a class="item">Custom Range</a></li></ul>').appendTo($customRange);
+            var customRangeItem = this.presets.customrange;
+            $('<li><a class="item" data-value="customrange" data-label="'+customRangeItem.label+'">'+customRangeItem.label+'</a></li>').appendTo($customRangeUl);
 
             var $startDateWrapper = $('<div class="datewrapper"></div>').appendTo($customRange);
             var $startDateInput = $('<input type="text" class="text" size="20" autocomplete="off" value="" />').appendTo($startDateWrapper);
@@ -76,22 +95,70 @@ Craft.DateRangePicker = Garnish.Base.extend(
 
             var $items = $('a.item', $hudBody);
 
-            this.addListener($items, 'click', function(ev)
+            this.addListener($items, 'click', $.proxy(function(ev)
             {
                 $items.removeClass('sel');
 
-                $(ev.currentTarget).addClass('sel');
-            });
+                var $item = $(ev.currentTarget);
+                var label = $item.data('label');
 
+                if($item.data('value') != 'customrange')
+                {
+                    var startDate = ($item.data('start-date') != 'undefined' ? $item.data('start-date') : null);
+                    var endDate = ($item.data('end-date') != 'undefined' ? $item.data('end-date') : null);
+                }
+                else
+                {
+                    var startDate = $startDateInput.val();
+                    var endDate = $endDateInput.val();
+                }
 
+                $item.addClass('sel');
+
+                this.$dateRange.val(label);
+
+                this.hud.hide();
+
+                this.onAfterSelect(startDate, endDate);
+
+            }, this));
+
+            if(this.preset)
+            {
+                $.each($items, $.proxy(function(key, item) {
+                    var $item = $(item);
+                    var itemValue = $item.data('value');
+                    var label = $item.data('label');
+                    var startDate = ($item.data('start-date') != 'undefined' ? $item.data('start-date') : null);
+                    var endDate = ($item.data('end-date') != 'undefined' ? $item.data('end-date') : null);
+
+                    if(this.preset == itemValue)
+                    {
+                        $item.addClass('sel');
+
+                        this.$dateRange.val(label);
+
+                        this.onAfterSelect(startDate, endDate);
+                    }
+                }, this));
+            }
 
             this.hud = new Garnish.HUD(this.$dateRange, $hudBody, {
+                hudClass: 'hud daterange-hud',
                 onSubmit: $.proxy(this, 'save')
             });
         }
         else
         {
             this.hud.show();
+        }
+    },
+
+    onAfterSelect: function(startDate, endDate)
+    {
+        if(typeof(this.options.onAfterSelect) == 'function')
+        {
+            this.options.onAfterSelect(startDate, endDate);
         }
     }
 });

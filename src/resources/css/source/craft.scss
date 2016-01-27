@@ -1167,7 +1167,12 @@ body #redactor-modal-overlay {
 
 /* date range hud */
 
-.daterange-hud { padding: 0; }
+.daterange-hud .main { padding: 24px 24px; }
+.daterange-hud .daterange-items ul { padding: 0 14px; }
+.daterange-hud .daterange-items:first-child ul { margin-top: -24px; }
+.daterange-hud .daterange-items ul li a { display: block; margin: 0 -38px; padding: 10px 14px; color: $textcolor; text-decoration: none; white-space: nowrap; }
+.daterange-hud .daterange-items ul li a { @include padding-left(24px); }
+.daterange-hud .daterange-items ul li a:hover { @include padding-left(24px); color: $textcolor; background-color: $lightselcolor; }
 .daterange-hud .daterange-items ul li a.sel { color: $textcolor; }
 .daterange-hud .daterange-items ul li a[data-icon]:before,
 .daterange-hud .daterange-items ul li a.icon:before,
