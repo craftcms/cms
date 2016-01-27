@@ -1,6 +1,6 @@
 # Craft Source
 
-Craft is a CMS by Pixel & Tonic, built for people who like to take their time and do things right. You can read more about Craft at [buildwithcraft.com](http://buildwithcraft.com).
+Craft is a CMS by Pixel & Tonic, built for people who like to take their time and do things right. You can read more about Craft at [craftcms.com](https://craftcms.com).
 
 This repo contains the source code, resources, a custom build script and other utilities.
 
