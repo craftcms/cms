@@ -1,0 +1,173 @@
+{% extends "_layouts/cp" %}
+{% import "_includes/forms" as forms %}
+
+{% set title = "Charts" %}
+
+{% block content %}
+
+    <div id="chart-designer">
+        {{ forms.selectField({
+            label: "Chart Type"|t,
+            class: 'chart-type',
+            name: 'chartType',
+            options: {
+                'Area': 'Area',
+                'Column': 'Column',
+                'Pie': 'Pie',
+            },
+        }) }}
+
+        <div class="buttons">
+            <input type="button" class="submit btn" value="Load Chart"> <div class="spinner hidden"></div>
+        </div>
+
+        <div class="chart-container"></div>
+    </div>
+{% endblock %}
+
+{% includejs %}
+
+    Craft.ChartDesigner = Garnish.Base.extend(
+    {
+        init: function(containerSelector)
+        {
+            this.$container = $(containerSelector);
+            this.$chartTypeSelect = $('.chart-type select', this.$container);
+            this.$chartContainer = $('.chart-container', this.$container);
+            this.$submitBtn = $('.submit', this.$container);
+            this.$spinner = $('.spinner', this.$container);
+
+            this.addListener(this.$submitBtn, 'click', 'refreshChart');
+        },
+
+        refreshChart: function()
+        {
+            this.$spinner.removeClass('hidden');
+
+            var chartType = this.$chartTypeSelect.val();
+            var startDate = null;
+            var endDate = null;
+
+            if(chartType)
+            {
+                this.$chartContainer.html('');
+
+                var chart = new Craft.charts[chartType](this.$chartContainer);
+
+                var data = this.getRandomData(chartType, startDate, endDate);
+
+                var dataTable = new Craft.charts.DataTable(data);
+
+                chart.draw(dataTable);
+            }
+
+            this.$spinner.addClass('hidden');
+        },
+
+        getRandomData: function(chartType, startDate, endDate)
+        {
+            return this['get'+chartType+'RandomData'](chartType, startDate, endDate);
+        },
+
+        getAreaRandomData: function(chartType, startDate, endDate)
+        {
+            var days = 30;
+
+            var columns = [
+                { id: "ga:date", label: "Date", type: "date" },
+                { id: "ga:users", label: "Users", type: "integer" },
+            ];
+
+            var rows = [
+            ];
+
+            for (var i = 1; i <= days; i++)
+            {
+                var randomInt = this.randomInt(0, 1000);
+
+                rows.push([
+                    {
+                        label: i+"-Jan-16",
+                        value: i+"-Jan-16",
+                    },
+                    {
+                        label: randomInt,
+                        value: randomInt
+                    }
+                ]);
+            }
+
+            var data = {
+                columns: columns,
+                rows: rows
+            };
+
+            return data;
+        },
+
+        randomInt: function(min, max)
+        {
+            return Math.floor(Math.random() * (max - min)) + min;
+        },
+
+        getPieRandomData: function()
+        {
+            return this.getColumnRandomData();
+        },
+
+        getColumnRandomData: function()
+        {
+            return data = {
+                columns: [
+                    { id: "ga:browser", label: "Browser", type: "string" },
+                    { id: "ga:users", label: "Users", type: "integer" },
+                ],
+                rows: [
+                    [
+                        {
+                            label: "Chrome",
+                            value: "Chrome",
+                        },
+                        {
+                            label: "66",
+                            value: 66
+                        }
+                    ],
+                    [
+                        {
+                            label: "Safari",
+                            value: "Safari",
+                        },
+                        {
+                            label: "47",
+                            value: 47
+                        }
+                    ],
+                    [
+                        {
+                            label: "Firefox",
+                            value: "Firefox",
+                        },
+                        {
+                            label: "23",
+                            value: 23
+                        }
+                    ],
+                    [
+                        {
+                            label: "Internet Explorer",
+                            value: "Internet Explorer",
+                        },
+                        {
+                            label: "16",
+                            value: 16
+                        }
+                    ],
+                ]
+            };
+        }
+    });
+
+    new Craft.ChartDesigner('#chart-designer');
+{% endincludejs %}
+
