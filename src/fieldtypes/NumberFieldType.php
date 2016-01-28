@@ -96,16 +96,12 @@ class NumberFieldType extends BaseFieldType implements IPreviewableFieldType
 	// =========================================================================
 
 	/**
-	 * @inheritDoc BaseSavableComponentType::defineSettings()
+	 * @inheritDoc BaseSavableComponentType::getSettingsModel()
 	 *
-	 * @return array
+	 * @return BaseModel
 	 */
-	protected function defineSettings()
+	protected function getSettingsModel()
 	{
-		return array(
-			'min'      => array(AttributeType::Number, 'default' => 0),
-			'max'      => array(AttributeType::Number, 'compare' => '>= min'),
-			'decimals' => array(AttributeType::Number, 'default' => 0),
-		);
+		return new NumberFieldTypeSettingsModel();
 	}
 }

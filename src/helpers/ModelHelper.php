@@ -375,7 +375,7 @@ class ModelHelper
 		}
 
 		// If this is a BaseRecord instance, catch any unique/required indexes. We don't validate required BELONGS_TO
-		// relations because they mightnot get set until after validation.
+		// relations because they might not get set until after validation.
 		if ($model instanceof BaseRecord)
 		{
 			foreach ($model->defineIndexes() as $config)
