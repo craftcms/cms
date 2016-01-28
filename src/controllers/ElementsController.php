@@ -171,7 +171,7 @@ class ElementsController extends BaseElementsController
 	private function _getEditorElement()
 	{
 		$elementId = craft()->request->getPost('elementId');
-		$localeId = craft()->request->getPost('locale');
+		$localeId = craft()->request->getPost('locale', craft()->language);
 
 		// Determine the element type
 		$elementTypeClass = craft()->request->getPost('elementType');
@@ -209,13 +209,49 @@ class ElementsController extends BaseElementsController
 			throw new HttpException(404);
 		}
 
-		// Populate it with any posted attributse
-		$attributes = craft()->request->getPost('attributes', array());
-
-		if ($localeId)
+		// Make sure the user is allowed to edit this locale
+		if (craft()->isLocalized() && $elementType->isLocalized() && !craft()->userSession->checkPermission('editLocale:'.$element->locale))
 		{
-			$attributes['locale'] = $localeId;
+			// Find the first locale the user does have permission to edit
+			$elementLocaleIds = array();
+			$newLocaleId = null;
+
+			foreach ($element->getLocales() as $key => $value)
+			{
+				$elementLocaleIds[] = (is_numeric($key) && is_string($value)) ? $value : $key;
+			}
+
+			foreach (craft()->i18n->getSiteLocaleIds() as $siteLocaleId)
+			{
+				if (in_array($siteLocaleId, $elementLocaleIds) && craft()->userSession->checkPermission('editLocale:'.$siteLocaleId))
+				{
+					$newLocaleId = $siteLocaleId;
+					break;
+				}
+			}
+
+			if ($newLocaleId === null)
+			{
+				// Couldn't find an editable locale supported by the element
+				throw new HttpException(403);
+			}
+
+			// Apply the new locale
+			$localeId = $newLocaleId;
+
+			if ($elementId !== null)
+			{
+				$element = craft()->elements->getElementById($elementId, $elementTypeClass, $localeId);
+			}
+			else
+			{
+				$element->locale = $localeId;
+			}
 		}
+
+		// Populate it with any posted attributes
+		$attributes = craft()->request->getPost('attributes', array());
+		$attributes['locale'] = $localeId;
 
 		if ($attributes)
 		{
@@ -223,7 +259,8 @@ class ElementsController extends BaseElementsController
 		}
 
 		// Make sure it's editable
-		if (!ElementHelper::isElementEditable($element))
+		// (ElementHelper::isElementEditable() is overkill here since we've already verified the user can edit the element's locale)
+		if (!$element->isEditable())
 		{
 			throw new HttpException(403);
 		}
