@@ -422,15 +422,14 @@ trait ApplicationTrait
         /** @var $this \craft\app\web\Application|\craft\app\console\Application */
         // Only admins can upgrade Craft
         if ($this->getUser()->getIsAdmin()) {
-            // If they're running on a testable domain, go for it
-            if ($this->canTestEditions()) {
-                return true;
-            }
-
-            // Base this off of what they're actually licensed to use, not what's currently running
+            // Are they either *using* or *licensed to use* something < Craft Pro?
+            $activeEdition = $this->getEdition();
             $licensedEdition = $this->getLicensedEdition();
 
-            return ($licensedEdition !== null && $licensedEdition < Craft::Pro);
+            return (
+                ($activeEdition < Craft::Pro) ||
+                ($licensedEdition !== null && $licensedEdition < Craft::Pro)
+            );
         } else {
             return false;
         }
