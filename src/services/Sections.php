@@ -409,7 +409,14 @@ class Sections extends Component
             $section->addError('localeErrors', Craft::t('app', 'At least one locale must be selected for the section.'));
         }
 
+        $firstSectionLocale = null;
+
         foreach ($sectionLocales as $localeId => $sectionLocale) {
+            // Is this the first one?
+            if ($firstSectionLocale === null) {
+                $firstSectionLocale = $sectionLocale;
+            }
+
             if ($section->type == Section::TYPE_SINGLE) {
                 $errorKey = 'urlFormat-'.$localeId;
 
@@ -680,6 +687,7 @@ class Sections extends Component
                             if (!$singleEntryId) {
                                 // Create it, baby
                                 $singleEntry = new Entry();
+                                $singleEntry->locale = $firstSectionLocale->locale;
                                 $singleEntry->sectionId = $section->id;
                                 $singleEntry->typeId = $entryTypeId;
                                 $singleEntry->title = $section->name;
