@@ -834,8 +834,8 @@ class DateTimeHelper
                 array_combine($sourceLocale->getMonthNames(Locale::FORMAT_MEDIUM), $targetLocale->getMonthNames(Locale::FORMAT_MEDIUM)),
                 array_combine($sourceLocale->getWeekDayNames(Locale::FORMAT_MEDIUM), $targetLocale->getWeekDayNames(Locale::FORMAT_MEDIUM)),
                 [
-                    'AM' => $amName,
-                    'PM' => $pmName,
+                    'AM' => StringHelper::toUpperCase($amName),
+                    'PM' => StringHelper::toUpperCase($pmName),
                     'am' => StringHelper::toLowerCase($amName),
                     'pm' => StringHelper::toLowerCase($pmName)
                 ]
