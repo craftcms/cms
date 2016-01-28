@@ -1472,7 +1472,8 @@ class Io
                     'ogv',
                     'rm',
                     'wmv',
-                    'webm'
+                    'webm',
+                    'vob',
                 ]
             ],
             'word' => [
