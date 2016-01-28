@@ -134,6 +134,11 @@ class Response extends \yii\web\Response
 
         // Close the session.
         Craft::$app->getSession()->close();
+
+        // In case we're running on php-fpm (https://secure.php.net/manual/en/book.fpm.php)
+        if (function_exists('fastcgi_finish_request')) {
+            fastcgi_finish_request();
+        }
     }
 
     // Private Methods
