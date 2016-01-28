@@ -122,7 +122,11 @@ class AppController extends Controller
     public function actionGetUpgradeModal()
     {
         $this->requireAjaxRequest();
-        $this->requireAdmin();
+
+        // Make it so Craft Client accounts can perform the upgrade.
+        if (Craft::$app->getEdition() == Craft::Pro) {
+            $this->requireAdmin();
+        }
 
         $etResponse = Craft::$app->getEt()->fetchEditionInfo();
 
@@ -181,7 +185,11 @@ class AppController extends Controller
     {
         $this->requirePostRequest();
         $this->requireAjaxRequest();
-        $this->requireAdmin();
+
+        // Make it so Craft Client accounts can perform the upgrade.
+        if (Craft::$app->getEdition() == Craft::Pro) {
+            $this->requireAdmin();
+        }
 
         $model = new UpgradePurchaseModel([
             'ccTokenId' => Craft::$app->getRequest()->getRequiredBodyParam('ccTokenId'),
