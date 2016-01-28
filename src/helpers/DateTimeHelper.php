@@ -172,7 +172,7 @@ class DateTimeHelper
                     $format .= 'e';
                     $date .= $defaultTimeZone;
                 }
-            } else if (preg_match('/^\d{10}$/', $date)) {
+            } else if (self::isValidTimeStamp((int) $date)) {
                 $format = 'U';
             } else {
                 return false;
