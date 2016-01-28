@@ -79,18 +79,22 @@ var CP = Garnish.Base.extend(
 			this.totalNavWidth += width;
 		}
 
-		this.addListener(Garnish.$win, 'resize', 'onWindowResize');
-		this.onWindowResize();
-
 		this.addListener(Garnish.$win, 'scroll', 'updateFixedNotifications');
 		this.updateFixedNotifications();
 
-		// Fade the notification out in two seconds
-		var $errorNotifications = this.$notificationContainer.children('.error'),
-			$otherNotifications = this.$notificationContainer.children(':not(.error)');
+		Garnish.$doc.ready($.proxy(function()
+		{
+			// Set up the window resize listener
+			this.addListener(Garnish.$win, 'resize', 'onWindowResize');
+			this.onWindowResize();
 
-		$errorNotifications.delay(CP.notificationDuration * 2).velocity('fadeOut');
-		$otherNotifications.delay(CP.notificationDuration).velocity('fadeOut');
+			// Fade the notification out two seconds after page load
+			var $errorNotifications = this.$notificationContainer.children('.error'),
+				$otherNotifications = this.$notificationContainer.children(':not(.error)');
+
+			$errorNotifications.delay(Craft.CP.notificationDuration * 2).velocity('fadeOut');
+			$otherNotifications.delay(Craft.CP.notificationDuration).velocity('fadeOut');
+		}, this));
 
 		// Alerts
 		if (this.$alerts.length)
