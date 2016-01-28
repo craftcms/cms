@@ -452,13 +452,8 @@ class AssetsController extends BaseController
 		$source = craft()->assetSources->populateSourceType($asset->getSource());
 
 		$localPath = $source->getLocalCopy($asset);
-		$fileName = $asset->filename;
 
-		header("Content-Type: ".IOHelper::getMimeType($localPath));
-		header("Content-Disposition: attachment; filename=$fileName");
-		header("Content-Length: " . filesize($localPath));
-		readfile($localPath);
-
+		craft()->request->sendFile($localPath, IOHelper::getFileContents($localPath), array('filename' => $asset->filename), false);
 		IOHelper::deleteFile($localPath);
 		craft()->end();
 	}
