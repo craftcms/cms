@@ -212,9 +212,14 @@ trait ApplicationTrait
                         Craft::error('Tried to determine the user’s preferred locale, but got this exception: '.$e->getMessage(), __METHOD__);
                     }
 
-                    // If they've set a default CP language, use it here.
+                    // Is there a default CP languge?
                     if ($defaultCpLanguage = Craft::$app->getConfig()->get('defaultCpLanguage')) {
-                        return $defaultCpLanguage;
+                        // Make sure it's one of the site locales
+                        $defaultCpLanguage = StringHelper::toLowerCase($defaultCpLanguage);
+
+                        if (in_array($defaultCpLanguage, $siteLocaleIds)) {
+                            return $defaultCpLanguage;
+                        }
                     }
 
                     // Otherwise check if the browser's preferred language matches any of the site locales
