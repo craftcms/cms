@@ -44,11 +44,16 @@ class DownloadFileElementAction extends BaseElementAction
 			$('<form method="post" target="_blank" action="">' +
 			'<input type="hidden" name="action" value="assets/downloadAsset" />' +
 			'<input type="hidden" name="assetId" value="' + \$selectedItems.data('id') + '" />' +
+			'<input type="hidden" name="{csrfName}" value="{csrfValue}" />' +
 			'</form>').submit();
+
 		}
 	});
 })();
 EOT;
+
+		$js = str_replace("{csrfName}", craft()->config->get('csrfTokenName'), $js);
+		$js = str_replace("{csrfValue}", craft()->request->getCsrfToken(), $js);
 
 		craft()->templates->includeJs($js);
 	}
