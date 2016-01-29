@@ -701,7 +701,7 @@ class Sections extends Component
                             if (!$isNewSection && $isNewStructure) {
                                 // Add all of the entries to the structure
                                 $query = Entry::find()
-                                    ->locale(ArrayHelper::getFirstValue(array_keys($oldSectionLocales)))
+                                    ->locale(ArrayHelper::getFirstKey($oldSectionLocales))
                                     ->sectionId($section->id)
                                     ->status(null)
                                     ->localeEnabled(false)
