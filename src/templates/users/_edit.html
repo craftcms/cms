@@ -336,3 +336,13 @@
 		{% endif %}
 	</div>
 {% endblock %}
+
+{% includejs %}
+	{% if account.isCurrent() %}
+		var changeSidebarPicture = true;
+	{% else %}
+		var changeSidebarPicture = false;
+	{% endif %}
+{% endincludejs %}
+
+

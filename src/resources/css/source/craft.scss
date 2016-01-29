@@ -470,7 +470,7 @@ div.btn.submit input { position: absolute; left: 100%; }
 .color:not(.disabled):not(.static).active .colorpreview {
 	@include linear-gradient(rgba(0,0,0,0), rgba(0,0,0,0.1));
 }
-.colorpicker { z-index: 100; }
+.colorpicker { z-index: 101; }
 .colorhex { display: inline-block; margin-left: 5px; vertical-align: middle; color: $mediumtextcolor; }
 
 /* switch */

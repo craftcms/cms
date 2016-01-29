@@ -35,8 +35,10 @@
 	function refreshImage(response) {
 		if (typeof response.html != "undefined") {
 			$('.user-photo').replaceWith(response.html);
-			$('#user-photo > img').replaceWith($('#current-photo > img').clone());
-
+			if (typeof changeSidebarPicture != "undefined" && changeSidebarPicture)
+			{
+				$('#user-photo > img').replaceWith($('#current-photo > img').clone());
+			}
 			initImageUpload();
 		}
 

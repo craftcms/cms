@@ -206,14 +206,16 @@ class UtilsController extends BaseController
 							$rowContents = explode("\n", $message);
 
 							// Find a few new markers
+							$filesStart = array_search('$_FILES=array (', $rowContents);
 							$cookieStart = array_search('$_COOKIE=array (', $rowContents);
 							$sessionStart = array_search('$_SESSION=array (', $rowContents);
 							$serverStart = array_search('$_SERVER=array (', $rowContents);
 							$postStart = array_search('$_POST=array (', $rowContents);
 
 							// If we found any of these, we know this is a devMode log.
-							if ($cookieStart || $sessionStart || $serverStart || $postStart)
+							if ($filesStart || $cookieStart || $sessionStart || $serverStart || $postStart)
 							{
+								$filesStart = $filesStart ? $filesStart + 1 : $filesStart;
 								$cookieStart = $cookieStart ? $cookieStart + 1 : $cookieStart;
 								$sessionStart = $sessionStart ? $sessionStart + 1 : $sessionStart;
 								$serverStart = $serverStart ? $serverStart + 1 : $serverStart;
@@ -221,20 +223,27 @@ class UtilsController extends BaseController
 
 								if (!$postStart)
 								{
-									if (!$cookieStart)
+									if (!$filesStart)
 									{
-										if (!$sessionStart)
+										if (!$cookieStart)
 										{
-											$start = $serverStart;
+											if (!$sessionStart)
+											{
+												$start = $serverStart;
+											}
+											else
+											{
+												$start = $sessionStart;
+											}
 										}
 										else
 										{
-											$start = $sessionStart;
+											$start = $cookieStart;
 										}
 									}
 									else
 									{
-										$start = $cookieStart;
+										$start = $filesStart;
 									}
 								}
 								else

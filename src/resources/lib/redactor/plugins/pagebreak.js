@@ -3,9 +3,14 @@ if (!RedactorPlugins) var RedactorPlugins = {};
 RedactorPlugins.pagebreak = function()
 {
 	return {
+		langs: {
+			en: {
+				"insert-page-break": "Insert Page Break"
+			}
+		},
 		init: function()
 		{
-			var $btn = this.button.add('pagebreak', 'Insert Page Break');
+			var $btn = this.button.add('pagebreak', this.lang.get('insert-page-break'));
 			this.button.addCallback($btn, this.pagebreak.insertPageBreak);
 			this.button.setIcon($btn, '<i class="icon"></i>');
 		},
