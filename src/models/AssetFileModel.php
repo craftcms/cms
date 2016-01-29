@@ -225,7 +225,7 @@ class AssetFileModel extends BaseElementModel
 	/**
 	 * Sets the transform.
 	 *
-	 * @param mixed $transform
+	 * @param string|array|null $transform The transform that should be applied, if any. Can either be the handle of a named transform, or an array that defines the transform settings.
 	 *
 	 * @return AssetFileModel
 	 */
@@ -238,7 +238,7 @@ class AssetFileModel extends BaseElementModel
 	/**
 	 * Returns the URL to the file.
 	 *
-	 * @param string|null $transform
+	 * @param string|array|null $transform The transform that should be applied, if any. Can either be the handle of a named transform, or an array that defines the transform settings.
 	 *
 	 * @return mixed
 	 */
@@ -318,7 +318,7 @@ class AssetFileModel extends BaseElementModel
 	/**
 	 * Get image height.
 	 *
-	 * @param string|null $transform The optional transform handle for which to get thumbnail.
+	 * @param string|array|null $transform The transform that should be applied, if any. Can either be the handle of a named transform, or an array that defines the transform settings.
 	 *
 	 * @return bool|float|mixed
 	 */
