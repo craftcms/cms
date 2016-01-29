@@ -174,7 +174,7 @@ class Assets extends BaseRelationField
      */
     public function beforeElementSave(ElementInterface $element)
     {
-
+        /** @var Element $element */
         $incomingFiles = [];
 
         /** @var AssetQuery $newValue */

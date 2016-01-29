@@ -1200,7 +1200,7 @@ class Assets extends Component
      *
      * @param VolumeFolderModel $folder
      *
-     * @return boolean
+     * @return void
      */
     public function storeFolderRecord(VolumeFolderModel $folder)
     {
