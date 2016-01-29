@@ -14,6 +14,7 @@ use craft\app\errors\Exception;
 use craft\app\helpers\App;
 use craft\app\helpers\Cp;
 use craft\app\helpers\DateTimeHelper;
+use craft\app\models\UpgradeInfo;
 use craft\app\models\UpgradePurchase as UpgradePurchaseModel;
 use craft\app\web\Controller;
 
@@ -128,7 +129,7 @@ class AppController extends Controller
             $this->requireAdmin();
         }
 
-        $etResponse = Craft::$app->getEt()->fetchEditionInfo();
+        $etResponse = Craft::$app->getEt()->fetchUpgradeInfo();
 
         if (!$etResponse) {
             return $this->asErrorJson(Craft::t('app', 'Craft is unable to fetch edition info at this time.'));
@@ -147,7 +148,10 @@ class AppController extends Controller
         $editions = [];
         $formatter = Craft::$app->getFormatter();
 
-        foreach ($etResponse->data as $edition => $info) {
+        /** @var UpgradeInfo $upgradeInfo */
+        $upgradeInfo = $etResponse->data;
+
+        foreach ($upgradeInfo->editions as $edition => $info) {
             $editions[$edition]['price'] = $info['price'];
             $editions[$edition]['formattedPrice'] = $formatter->asCurrency($info['price'], 'USD', [], [], true);
 
@@ -172,7 +176,8 @@ class AppController extends Controller
             'editions' => $editions,
             'licensedEdition' => $etResponse->licensedEdition,
             'canTestEditions' => $canTestEditions,
-            'modalHtml' => $modalHtml
+            'modalHtml' => $modalHtml,
+            'stripePublicKey' => $upgradeInfo->stripePublicKey,
         ]);
     }
 

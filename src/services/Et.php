@@ -16,6 +16,7 @@ use craft\app\models\Et as EtModel;
 use craft\app\models\PluginNewRelease;
 use craft\app\models\PluginUpdate;
 use craft\app\models\Update as UpdateModel;
+use craft\app\models\UpgradeInfo;
 use craft\app\models\UpgradePurchase as UpgradePurchaseModel;
 use yii\base\Component;
 
@@ -35,7 +36,7 @@ class Et extends Component
     const Ping = 'https://elliott.craftcms.com/actions/elliott/app/ping';
     const CheckForUpdates = 'https://elliott.craftcms.com/actions/elliott/app/checkForUpdates';
     const TransferLicense = 'https://elliott.craftcms.com/actions/elliott/app/transferLicenseToCurrentDomain';
-    const GetEditionInfo = 'https://elliott.craftcms.com/actions/elliott/app/getEditionInfo';
+    const GetUpgradeInfo    = 'https://elliott.craftcms.com/actions/elliott/app/getUpgradeInfo';
     const PurchaseUpgrade = 'https://elliott.craftcms.com/actions/elliott/app/purchaseUpgrade';
     const GetUpdateFileInfo = 'https://elliott.craftcms.com/actions/elliott/app/getUpdateFileInfo';
 
@@ -186,10 +187,12 @@ class Et extends Component
      *
      * @return EtModel|null
      */
-    public function fetchEditionInfo()
+    public function fetchUpgradeInfo()
     {
-        $et = new \craft\app\et\Et(static::GetEditionInfo);
+        $et = new \craft\app\et\Et(static::GetUpgradeInfo);
         $etResponse = $et->phoneHome();
+
+        $etResponse->data = new UpgradeInfo($etResponse->data);
 
         return $etResponse;
     }
