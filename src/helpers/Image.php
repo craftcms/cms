@@ -47,11 +47,9 @@ class Image
         $factor = $sourceWidth / $sourceHeight;
 
         if (empty($targetHeight)) {
-            $targetHeight = round($targetWidth / $factor);
-        } else {
-            if (empty($targetWidth)) {
-                $targetWidth = round($targetHeight * $factor);
-            }
+            $targetHeight = ceil($targetWidth / $factor);
+        } else if (empty($targetWidth)) {
+            $targetWidth = ceil($targetHeight * $factor);
         }
 
         return [$targetWidth, $targetHeight];
