@@ -726,11 +726,37 @@ Craft.charts.utils = {
         $.each(twoDArray, function(k, v) {
             if(k == 0)
             {
-                data.columns = v;
+                // first row is column definition
+
+                data.columns = [];
+
+                $.each(v, function(k2, v2) {
+
+                    // guess column type from first row
+                    var columnType = typeof(twoDArray[(k + 1)][k2]);
+
+                    var column = {
+                        name: v2,
+                        type: columnType,
+                    };
+
+                    data.columns.push(column);
+                });
             }
             else
             {
-                data.rows.push(v);
+                var row = [];
+
+                $.each(v, function(k2, v2) {
+                    var cell = {
+                        label: v2,
+                        value: v2,
+                    };
+
+                    row.push(cell);
+                });
+
+                data.rows.push(row);
             }
         });
 
