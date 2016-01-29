@@ -856,7 +856,15 @@ class UsersController extends Controller
         // Validate and save!
         // ---------------------------------------------------------------------
 
-        if (Craft::$app->getUsers()->saveUser($user)) {
+        $imageValidates = true;
+        $userPhoto = UploadedFile::getInstanceByName('userPhoto');
+
+        if ($userPhoto && !Image::isImageManipulatable($userPhoto->getExtension())) {
+            $imageValidates = false;
+            $user->addError('userPhoto', Craft::t('The user photo provided is not an image.'));
+        }
+
+        if ($imageValidates && Craft::$app->getUsers()->saveUser($user)) {
             // Save their preferences too
             $preferences = [
                 'locale' => Craft::$app->getRequest()->getBodyParam('preferredLocale',
