@@ -102,6 +102,8 @@ Craft.DateRangePicker = Garnish.Base.extend(
                 var $item = $(ev.currentTarget);
                 var label = $item.data('label');
 
+                var value = $item.data('value');
+
                 if($item.data('value') != 'customrange')
                 {
                     var startDate = ($item.data('start-date') != 'undefined' ? $item.data('start-date') : null);
@@ -119,7 +121,7 @@ Craft.DateRangePicker = Garnish.Base.extend(
 
                 this.hud.hide();
 
-                this.onAfterSelect(startDate, endDate);
+                this.onAfterSelect(value, startDate, endDate);
 
             }, this));
 
@@ -127,18 +129,18 @@ Craft.DateRangePicker = Garnish.Base.extend(
             {
                 $.each($items, $.proxy(function(key, item) {
                     var $item = $(item);
-                    var itemValue = $item.data('value');
+                    var value = $item.data('value');
                     var label = $item.data('label');
                     var startDate = ($item.data('start-date') != 'undefined' ? $item.data('start-date') : null);
                     var endDate = ($item.data('end-date') != 'undefined' ? $item.data('end-date') : null);
 
-                    if(this.preset == itemValue)
+                    if(this.preset == value)
                     {
                         $item.addClass('sel');
 
                         this.$dateRange.val(label);
 
-                        this.onAfterSelect(startDate, endDate);
+                        this.onAfterSelect(value, startDate, endDate);
                     }
                 }, this));
             }
@@ -154,11 +156,11 @@ Craft.DateRangePicker = Garnish.Base.extend(
         }
     },
 
-    onAfterSelect: function(startDate, endDate)
+    onAfterSelect: function(value, startDate, endDate)
     {
         if(typeof(this.options.onAfterSelect) == 'function')
         {
-            this.options.onAfterSelect(startDate, endDate);
+            this.options.onAfterSelect(value, startDate, endDate);
         }
     }
 });
