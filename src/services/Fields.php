@@ -497,22 +497,6 @@ class Fields extends Component
                 $fieldRecord = $this->_getFieldRecord($field);
                 $isNewField = $fieldRecord->getIsNewRecord();
 
-                $fieldRecord->groupId = $field->groupId;
-                $fieldRecord->name = $field->name;
-                $fieldRecord->handle = $field->handle;
-                $fieldRecord->context = $field->context;
-                $fieldRecord->instructions = $field->instructions;
-                $fieldRecord->translatable = $field->translatable;
-                $fieldRecord->type = $field->getType();
-                $fieldRecord->settings = $field->getSettings();
-
-                $fieldRecord->save(false);
-
-                // Now that we have a field ID, save it on the model
-                if ($isNewField) {
-                    $field->id = $fieldRecord->id;
-                }
-
                 // Create/alter the content table column
                 $contentTable = Craft::$app->getContent()->contentTable;
                 $oldColumnName = $this->oldFieldColumnPrefix.$fieldRecord->getOldHandle();
@@ -542,7 +526,21 @@ class Fields extends Component
                     }
                 }
 
-                if (!$isNewField) {
+                $fieldRecord->groupId = $field->groupId;
+                $fieldRecord->name = $field->name;
+                $fieldRecord->handle = $field->handle;
+                $fieldRecord->context = $field->context;
+                $fieldRecord->instructions = $field->instructions;
+                $fieldRecord->translatable = $field->translatable;
+                $fieldRecord->type = $field->getType();
+                $fieldRecord->settings = $field->getSettings();
+
+                $fieldRecord->save(false);
+
+                // Now that we have a field ID, save it on the model
+                if ($isNewField) {
+                    $field->id = $fieldRecord->id;
+                } else {
                     // Save the old field handle on the model in case the field type needs to do something with it.
                     $field->oldHandle = $fieldRecord->getOldHandle();
 
