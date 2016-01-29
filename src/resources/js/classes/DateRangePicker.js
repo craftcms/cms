@@ -5,7 +5,7 @@
 Craft.DateRangePicker = Garnish.Base.extend(
 {
     hud: null,
-    preset: null,
+    value: null,
 
     presets: {
         d7 : {
@@ -35,17 +35,18 @@ Craft.DateRangePicker = Garnish.Base.extend(
     init: function(container, options)
     {
         this.$container = container;
+
         this.options = options;
 
-        this.preset = options.preset;
+        this.value = options.value;
 
-        this.startDate = this.presets[this.preset].startDate;
-        this.endDate = this.presets[this.preset].endDate;
+        this.startDate = this.presets[this.value].startDate;
+        this.endDate = this.presets[this.value].endDate;
 
         this.$dateRangeWrapper = $('<div class="datewrapper"></div>');
         this.$dateRangeWrapper.appendTo(this.$container);
 
-        var dateRangeValue = this.presets[this.preset].label;
+        var dateRangeValue = this.presets[this.value].label;
 
         this.$dateRange = $('<input type="text" class="text" size="20" autocomplete="off" value="'+dateRangeValue+'" />');
         this.$dateRange.appendTo(this.$dateRangeWrapper);
@@ -93,48 +94,23 @@ Craft.DateRangePicker = Garnish.Base.extend(
 
             // items
 
-            var $items = $('a.item', $hudBody);
+            this.$items = $('a.item', $hudBody);
 
-            this.addListener($items, 'click', $.proxy(function(ev)
+            this.addListener(this.$items, 'click', 'selectItem');
+
+
+            // default value
+
+            if(this.value)
             {
-                $items.removeClass('sel');
-
-                var $item = $(ev.currentTarget);
-                var label = $item.data('label');
-
-                var value = $item.data('value');
-
-                if($item.data('value') != 'customrange')
-                {
-                    var startDate = ($item.data('start-date') != 'undefined' ? $item.data('start-date') : null);
-                    var endDate = ($item.data('end-date') != 'undefined' ? $item.data('end-date') : null);
-                }
-                else
-                {
-                    var startDate = $startDateInput.val();
-                    var endDate = $endDateInput.val();
-                }
-
-                $item.addClass('sel');
-
-                this.$dateRange.val(label);
-
-                this.hud.hide();
-
-                this.onAfterSelect(value, startDate, endDate);
-
-            }, this));
-
-            if(this.preset)
-            {
-                $.each($items, $.proxy(function(key, item) {
+                $.each(this.$items, $.proxy(function(key, item) {
                     var $item = $(item);
                     var value = $item.data('value');
                     var label = $item.data('label');
                     var startDate = ($item.data('start-date') != 'undefined' ? $item.data('start-date') : null);
                     var endDate = ($item.data('end-date') != 'undefined' ? $item.data('end-date') : null);
 
-                    if(this.preset == value)
+                    if(this.value == value)
                     {
                         $item.addClass('sel');
 
@@ -145,6 +121,9 @@ Craft.DateRangePicker = Garnish.Base.extend(
                 }, this));
             }
 
+
+            // instiantiate hud
+
             this.hud = new Garnish.HUD(this.$dateRange, $hudBody, {
                 hudClass: 'hud daterange-hud',
                 onSubmit: $.proxy(this, 'save')
@@ -154,6 +133,35 @@ Craft.DateRangePicker = Garnish.Base.extend(
         {
             this.hud.show();
         }
+    },
+
+    selectItem: function(ev)
+    {
+        this.$items.removeClass('sel');
+
+        var $item = $(ev.currentTarget);
+
+        var label = $item.data('label');
+        var value = $item.data('value');
+        var startDate = $item.data('start-date');
+        var endDate = $item.data('end-date');
+
+        if(value == 'customrange')
+        {
+            startDate = $startDateInput.val();
+            endDate = $endDateInput.val();
+        }
+
+        startDate = (startDate != 'undefined' ? startDate : null);
+        endDate = (endDate != 'undefined' ? endDate : null);
+
+        $item.addClass('sel');
+
+        this.$dateRange.val(label);
+
+        this.hud.hide();
+
+        this.onAfterSelect(value, startDate, endDate);
     },
 
     onAfterSelect: function(value, startDate, endDate)

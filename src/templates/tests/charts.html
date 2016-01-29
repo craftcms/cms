@@ -43,7 +43,7 @@
     var $dateRangeStatus = $('#date-range-status');
 
     var dataRange = new Craft.DateRangePicker(this.$dateRangeContainer, {
-        preset: 'd7',
+        value: 'd7',
         onAfterSelect: function(value, startDate, endDate)
         {
             $dateRangeStatus.html('');
