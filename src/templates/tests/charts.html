@@ -5,6 +5,18 @@
 
 {% block content %}
 
+    <h2>{{ "Date Range Picker"|t }}</h2>
+
+    <div id="date-range"></div>
+
+    <div id="date-range-status">
+
+    </div>
+
+    <hr>
+
+    <h2>{{ "Chart Designer"|t }}</h2>
+
     <div id="chart-designer">
         {{ forms.selectField({
             label: "Chart Type"|t,
@@ -26,6 +38,22 @@
 {% endblock %}
 
 {% includejs %}
+
+    var $dateRangeContainer = $('#date-range');
+    var $dateRangeStatus = $('#date-range-status');
+
+    var dataRange = new Craft.DateRangePicker(this.$dateRangeContainer, {
+        preset: 'd7',
+        onAfterSelect: function(value, startDate, endDate)
+        {
+            $dateRangeStatus.html('');
+
+            var $statusUl = $('<ul />').appendTo($dateRangeStatus);
+            $('<li>value: '+value+'</li>').appendTo($statusUl);
+            $('<li>startDate: '+startDate+'</li>').appendTo($statusUl);
+            $('<li>endDate:'+endDate+'</li>').appendTo($statusUl);
+        }
+    });
 
     Craft.ChartDesigner = Garnish.Base.extend(
     {
