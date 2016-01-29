@@ -604,6 +604,7 @@ class Fields extends Component
      */
     public function deleteField(FieldInterface $field)
     {
+        /** @var Field $field */
         if (!$field->beforeDelete()) {
             return false;
         }
@@ -965,26 +966,6 @@ class Fields extends Component
     }
 
     /**
-     * Returns a Query object prepped for retrieving layout fields.
-     *
-     * @return Query
-     */
-    private function _createLayoutFieldQuery()
-    {
-        return (new Query())
-            ->select([
-                'id',
-                'layoutId',
-                'tabId',
-                'fieldId',
-                'required',
-                'sortOrder'
-            ])
-            ->from('{{%fieldlayoutfields}}')
-            ->orderBy('sortOrder');
-    }
-
-    /**
      * Returns a Query object prepped for retrieving layout tabs.
      *
      * @return Query
@@ -1030,6 +1011,7 @@ class Fields extends Component
      */
     private function _getFieldRecord(FieldInterface $field)
     {
+        /** @var Field $field */
         if (!$field->isNew()) {
             $fieldId = $field->id;
 
