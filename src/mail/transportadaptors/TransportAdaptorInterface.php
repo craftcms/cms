@@ -7,7 +7,7 @@ use craft\app\base\SavableComponentInterface;
  * TransportAdaptorInterface defines the common interface to be implemented by SwiftMailer transport adaptor classes.
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
+ * @copyright Copyright (c) Pixel & Tonic, Inc.
  * @license   http://craftcms.com/license Craft License Agreement
  * @see       http://craftcms.com
  * @package   craft.app.base
