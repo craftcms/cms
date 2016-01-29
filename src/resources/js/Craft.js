@@ -1,4 +1,4 @@
-/*! Craft 3.0.0 - 2015-12-15 */
+/*! Craft 3.0.0 - 2016-01-29 */
 (function($){
 
 if (typeof window.Craft == 'undefined')
@@ -3186,8 +3186,6 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 	{
 		$source.parent('li').addClass('expanded');
 
-		this.$sidebar.trigger('resize');
-
 		var $childSources = this._getChildSources($source);
 		this._initSources($childSources);
 	},
@@ -3195,8 +3193,6 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 	_collapseSource: function($source)
 	{
 		$source.parent('li').removeClass('expanded');
-
-		this.$sidebar.trigger('resize');
 
 		var $childSources = this._getChildSources($source);
 		this._deinitSources($childSources);
@@ -6782,8 +6778,6 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 
 					$targetFolder.parent().remove();
 					this._cleanUpTree($parentFolder);
-
-					this.$sidebar.trigger('resize');
 				}
 
 				if (textStatus == 'success' && data.error)
@@ -6874,8 +6868,6 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 		{
 			$parentFolder.siblings('ul').append($subfolder);
 		}
-
-		this.$sidebar.trigger('resize');
 	},
 
 	_cleanUpTree: function($parentFolder)
@@ -7810,7 +7802,7 @@ Craft.AuthManager = Garnish.Base.extend(
 /**
  * CP class
  */
-var CP = Garnish.Base.extend(
+Craft.CP = Garnish.Base.extend(
 {
 	authManager: null,
 
@@ -7864,7 +7856,7 @@ var CP = Garnish.Base.extend(
 		this.$notificationContainer = $('#notifications');
 		this.$main = $('#main');
 		this.$content = $('#content');
-		this.$collapsibleTables = this.$content.find('table.collapsible');
+		this.$collapsibleTables = $('table.collapsible');
 		this.$upgradePromo = $('#upgradepromo > a');
 
 		// Keep the site name contained
@@ -7873,7 +7865,7 @@ var CP = Garnish.Base.extend(
 
 		// Find all the nav items
 		this.navItems = [];
-		this.totalNavWidth = CP.baseNavWidth;
+		this.totalNavWidth = Craft.CP.baseNavWidth;
 
 		var $navItems = this.$nav.children();
 		this.totalNavItems = $navItems.length;
@@ -7888,18 +7880,22 @@ var CP = Garnish.Base.extend(
 			this.totalNavWidth += width;
 		}
 
-		this.addListener(Garnish.$win, 'resize', 'onWindowResize');
-		this.onWindowResize();
-
 		this.addListener(Garnish.$win, 'scroll', 'updateFixedNotifications');
 		this.updateFixedNotifications();
 
-		// Fade the notification out in two seconds
-		var $errorNotifications = this.$notificationContainer.children('.error'),
-			$otherNotifications = this.$notificationContainer.children(':not(.error)');
+		Garnish.$doc.ready($.proxy(function()
+		{
+			// Set up the window resize listener
+			this.addListener(Garnish.$win, 'resize', 'onWindowResize');
+			this.onWindowResize();
 
-		$errorNotifications.delay(CP.notificationDuration * 2).velocity('fadeOut');
-		$otherNotifications.delay(CP.notificationDuration).velocity('fadeOut');
+			// Fade the notification out two seconds after page load
+			var $errorNotifications = this.$notificationContainer.children('.error'),
+				$otherNotifications = this.$notificationContainer.children(':not(.error)');
+
+			$errorNotifications.delay(Craft.CP.notificationDuration * 2).velocity('fadeOut');
+			$otherNotifications.delay(Craft.CP.notificationDuration).velocity('fadeOut');
+		}, this));
 
 		// Alerts
 		if (this.$alerts.length)
@@ -8002,7 +7998,7 @@ var CP = Garnish.Base.extend(
 	onWindowResize: function()
 	{
 		// Get the new window width
-		this.onWindowResize._cpWidth = Math.min(Garnish.$win.width(), CP.maxWidth);
+		this.onWindowResize._cpWidth = Math.min(Garnish.$win.width(), Craft.CP.maxWidth);
 
 		// Update the responsive nav
 		this.updateResponsiveNav();
@@ -8042,19 +8038,19 @@ var CP = Garnish.Base.extend(
 			}
 
 			// Is the nav too tall?
-			if (this.$nav.height() > CP.navHeight)
+			if (this.$nav.height() > Craft.CP.navHeight)
 			{
 				// Move items to the overflow menu until the nav is back to its normal height
 				do
 				{
 					this.addLastVisibleNavItemToOverflowMenu();
 				}
-				while ((this.$nav.height() > CP.navHeight) && (this.visibleNavItems > 0));
+				while ((this.$nav.height() > Craft.CP.navHeight) && (this.visibleNavItems > 0));
 			}
 			else
 			{
 				// See if we can fit any more nav items in the main menu
-				while ((this.$nav.height() == CP.navHeight) && (this.visibleNavItems < this.totalNavItems))
+				while ((this.$nav.height() == Craft.CP.navHeight) && (this.visibleNavItems < this.totalNavItems))
 				{
 					this.addFirstOverflowNavItemToMainMenu();
 				}
@@ -8083,54 +8079,39 @@ var CP = Garnish.Base.extend(
 
 	updateResponsiveTables: function()
 	{
-		if (!Garnish.isMobileBrowser())
-		{
-			return;
-		}
-
-		this.updateResponsiveTables._contentWidth = this.$content.width();
-
-		for (this.updateResponsiveTables._i = 0; this.updateResponsiveTables._i < this.$collapsibleTables.length; this.updateResponsiveTables._i++)
-		{
-			this.updateResponsiveTables._$table = $(this.$collapsibleTables[this.updateResponsiveTables._i]);
+		for (this.updateResponsiveTables._i = 0; this.updateResponsiveTables._i < this.$collapsibleTables.length; this.updateResponsiveTables._i++) {
+			this.updateResponsiveTables._$table = this.$collapsibleTables.eq(this.updateResponsiveTables._i);
+			this.updateResponsiveTables._containerWidth = this.updateResponsiveTables._$table.parent().width();
 			this.updateResponsiveTables._check = false;
 
-			if (typeof this.updateResponsiveTables._lastContentWidth != 'undefined')
-			{
-				this.updateResponsiveTables._isLinear = this.updateResponsiveTables._$table.hasClass('collapsed');
+			// Is this the first time we've checked this table?
+			if (typeof this.updateResponsiveTables._$table.data('lastContainerWidth') === typeof undefined) {
+				this.updateResponsiveTables._check = true;
+			}
+			else {
+				this.updateResponsiveTables._isCollapsed = this.updateResponsiveTables._$table.hasClass('collapsed');
 
 				// Getting wider?
-				if (this.updateResponsiveTables._contentWidth > this.updateResponsiveTables._lastContentWidth)
-				{
-					if (this.updateResponsiveTables._isLinear)
-					{
+				if (this.updateResponsiveTables._containerWidth > this.updateResponsiveTables._$table.data('lastContainerWidth')) {
+					if (this.updateResponsiveTables._isCollapsed) {
 						this.updateResponsiveTables._$table.removeClass('collapsed');
 						this.updateResponsiveTables._check = true;
 					}
 				}
-				else
-				{
-					if (!this.updateResponsiveTables._isLinear)
-					{
-						this.updateResponsiveTables._check = true;
-					}
+				else if (!this.updateResponsiveTables._isCollapsed) {
+					this.updateResponsiveTables._check = true;
 				}
 			}
-			else
-			{
-				this.updateResponsiveTables._check = true;
-			}
 
-			if (this.updateResponsiveTables._check)
-			{
-				if (this.updateResponsiveTables._$table.width() > this.updateResponsiveTables._contentWidth)
-				{
+			if (this.updateResponsiveTables._check) {
+				if (this.updateResponsiveTables._$table.width() > this.updateResponsiveTables._containerWidth) {
 					this.updateResponsiveTables._$table.addClass('collapsed');
 				}
 			}
-		}
 
-		this.updateResponsiveTables._lastContentWidth = this.updateResponsiveTables._contentWidth;
+			// Remember the container width for next time
+			this.updateResponsiveTables._$table.data('lastContainerWidth', this.updateResponsiveTables._containerWidth);
+		}
 	},
 
 	/**
@@ -8181,7 +8162,7 @@ var CP = Garnish.Base.extend(
 	 */
 	displayNotification: function(type, message)
 	{
-		var notificationDuration = CP.notificationDuration;
+		var notificationDuration = Craft.CP.notificationDuration;
 
 		if (type == 'error')
 		{
@@ -8414,7 +8395,7 @@ var CP = Garnish.Base.extend(
 					}
 				}
 			}, this));
-		}, this), (typeof delay != typeof undefined ? delay : 1000));
+		}, this), (typeof delay != typeof undefined ? delay : Craft.CP.taskTrackerUpdateInterval));
 	},
 
 	stopTrackingTaskProgress: function()
@@ -8475,10 +8456,13 @@ var CP = Garnish.Base.extend(
 	maxWidth: 1051, //1024,
 	navHeight: 38,
 	baseNavWidth: 30,
-	notificationDuration: 2000
+	notificationDuration: 2000,
+
+	taskTrackerUpdateInterval: 1000,
+	taskTrackerHudUpdateInterval: 500
 });
 
-Craft.cp = new CP();
+Craft.cp = new Craft.CP();
 
 
 /**
@@ -8860,7 +8844,7 @@ var TaskProgressHUD = Garnish.HUD.extend(
 
 			if (anyTasksRunning)
 			{
-				this.updateTasksTimeout = setTimeout($.proxy(this, 'updateTasks'), 500);
+				this.updateTasksTimeout = setTimeout($.proxy(this, 'updateTasks'), Craft.CP.taskTrackerHudUpdateInterval);
 			}
 			else
 			{
@@ -11269,11 +11253,7 @@ Craft.Grid = Garnish.Base.extend(
 
 		// Adjust them when the container is resized
 		this.addListener(this.$container, 'resize', 'refreshCols');
-
-		// Trigger a window resize event in case anything needs to adjust itself, now that the items are layed out.
-		Garnish.requestAnimationFrame(function() {
-			Garnish.$win.trigger('resize');
-		});
+		Garnish.$doc.ready($.proxy(this, 'refreshCols'));
 	},
 
 	addItems: function(items)
@@ -11799,6 +11779,7 @@ Craft.Grid.LayoutGenerator = Garnish.Base.extend(
 	}
 
 });
+
 /**
  * Handle Generator
  */
@@ -12881,6 +12862,10 @@ Craft.LivePreview = Garnish.Base.extend(
 				url: this.previewUrl,
 				method: 'POST',
 				data: $.extend({}, postData, this.basePostData),
+				xhrFields: {
+					withCredentials: true
+				},
+				crossDomain: true,
 				success: this._handleSuccessProxy,
 				error: this._handleErrorProxy
 			});
@@ -15346,6 +15331,7 @@ Craft.UpgradeModal = Garnish.Modal.extend(
 	$ccCvcInput: null,
 	submittingPurchase: false,
 
+	stripePublicKey: null,
 	editions: null,
 	edition: null,
 
@@ -15365,6 +15351,7 @@ Craft.UpgradeModal = Garnish.Modal.extend(
 			{
 				if (response.success)
 				{
+					this.stripePublicKey = response.stripePublicKey;
 					this.editions = response.editions;
 
 					this.$container.append(response.modalHtml);
@@ -15561,7 +15548,7 @@ Craft.UpgradeModal = Garnish.Modal.extend(
 			this.$checkoutSubmitBtn.addClass('active');
 			this.$checkoutSpinner.removeClass('hidden');
 
-			Stripe.setPublishableKey(Craft.UpgradeModal.stripeApiKey);
+			Stripe.setPublishableKey(this.stripePublicKey);
 			Stripe.createToken(ccData, $.proxy(function(status, response)
 			{
 				if (!response.error)
@@ -15689,7 +15676,6 @@ Craft.UpgradeModal = Garnish.Modal.extend(
 	}
 },
 {
-	stripeApiKey: '@@@stripePublishableKey@@@',
 	clearCheckoutFormTimeoutDuration: 30000 // 1000 x 60 x 5
 });
 
