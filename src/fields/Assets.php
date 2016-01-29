@@ -306,7 +306,7 @@ class Assets extends BaseRelationField
 
         if (is_array($value) && count($value)) {
             if ($this->useSingleFolder) {
-                $targetFolder = $this->_resolveSourcePathToFolder(
+                $targetFolder = $this->_resolveVolumePathToFolder(
                     $this->singleUploadLocationSource,
                     $this->singleUploadLocationSubpath,
                     $element
@@ -335,7 +335,7 @@ class Assets extends BaseRelationField
 
                 // If we have some files to move, make sure the folder exists.
                 if (!empty($assetsToMove)) {
-                    $targetFolder = $this->_resolveSourcePathToFolder(
+                    $targetFolder = $this->_resolveVolumePathToFolder(
                         $this->defaultUploadLocationSource,
                         $this->defaultUploadLocationSubpath,
                         $element
@@ -508,7 +508,7 @@ class Assets extends BaseRelationField
      * @throws Exception
      * @return VolumeFolder
      */
-    private function _resolveSourcePathToFolder($volumeId, $subpath, $element)
+    private function _resolveVolumePathToFolder($volumeId, $subpath, $element)
     {
         $folder = Craft::$app->getAssets()->findFolder([
             'volumeId' => $volumeId,
@@ -634,13 +634,13 @@ class Assets extends BaseRelationField
         ) {
             // Use the appropriate settings for folder determination
             if (empty($this->useSingleFolder)) {
-                $folder = $this->_resolveSourcePathToFolder(
+                $folder = $this->_resolveVolumePathToFolder(
                     $this->defaultUploadLocationSource,
                     $this->defaultUploadLocationSubpath,
                     $element
                 );
             } else {
-                $folder = $this->_resolveSourcePathToFolder(
+                $folder = $this->_resolveVolumePathToFolder(
                     $this->singleUploadLocationSource,
                     $this->singleUploadLocationSubpath,
                     $element
