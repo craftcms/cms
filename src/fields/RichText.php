@@ -192,12 +192,7 @@ class RichText extends Field
         $maxDbColumnSize = ceil($maxDbColumnSize * 0.9);
 
         if ($postContentSize > $maxDbColumnSize) {
-            // Give ourselves 10% wiggle room.
-            $maxDbColumnSize = ceil($maxDbColumnSize * 0.9);
-
-            if ($postContentSize > $maxDbColumnSize) {
-                $errors[] = Craft::t('app', '{attribute} is too long.');
-            }
+            $errors[] = Craft::t('app', '{attribute} is too long.');
         }
 
         return $errors;
