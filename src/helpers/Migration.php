@@ -115,8 +115,8 @@ class Migration
         $fks = static::findForeignKeysTo($oldName);
 
         foreach ($fks as $fk) {
-            // Ignore if the FK is coming from this very table, since dropAllForeignKeysOnTable() will take care of that
-            if ($fk->table->name === $oldName) {
+            // Skip if this FK is from *and* to this table
+            if ($fk->table->name == $oldName) {
                 continue;
             }
 
@@ -140,17 +140,20 @@ class Migration
         static::$_tables[$newName]->name = $newName;
         unset(static::$_tables[$oldName]);
 
+        // Restore FKs to this table
         foreach ($fks as $fk) {
+            // Update the FK ref table name
             $fk->fk->refTable = $newName;
 
-            // Ignore if the FK is coming from this very table, since restoreAllForeignKeysOnTable() already took care of that
-            if ($fk->table->name === $newName) {
+            // Skip if this FK is from *and* to this table
+            if ($fk->table->name == $newName) {
                 continue;
             }
 
             static::restoreForeignKey($fk->fk, $migration);
         }
 
+        // Restore this table's indexes and FKs
         static::restoreAllIndexesOnTable($table, $migration);
         static::restoreAllForeignKeysOnTable($table, $migration);
     }
