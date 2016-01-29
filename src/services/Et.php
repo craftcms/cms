@@ -192,7 +192,9 @@ class Et extends Component
         $et = new \craft\app\et\Et(static::GetUpgradeInfo);
         $etResponse = $et->phoneHome();
 
-        $etResponse->data = new UpgradeInfo($etResponse->data);
+        if ($etResponse) {
+            $etResponse->data = new UpgradeInfo($etResponse->data);
+        }
 
         return $etResponse;
     }
