@@ -7,6 +7,7 @@
 
 namespace craft\app\io;
 
+use craft\app\dates\DateTime;
 use craft\app\helpers\Io;
 
 /**
@@ -74,7 +75,7 @@ abstract class BaseIO
     // =========================================================================
 
     /**
-     * @return mixed
+     * @return string
      */
     public function getRealPath()
     {
@@ -86,7 +87,7 @@ abstract class BaseIO
     }
 
     /**
-     * @return mixed
+     * @return boolean
      */
     public function isReadable()
     {
@@ -98,7 +99,7 @@ abstract class BaseIO
     }
 
     /**
-     * @return mixed
+     * @return boolean
      */
     public function isWritable()
     {
@@ -110,11 +111,11 @@ abstract class BaseIO
     }
 
     /**
-     * @return mixed
+     * @return string|integer|false
      */
     public function getOwner()
     {
-        if (!$this->_owner) {
+        if (!isset($this->_owner)) {
             $this->_owner = Io::getOwner($this->getRealPath());
         }
 
@@ -122,11 +123,11 @@ abstract class BaseIO
     }
 
     /**
-     * @return mixed
+     * @return string|integer|false
      */
     public function getGroup()
     {
-        if (!$this->_group) {
+        if (!isset($this->_group)) {
             $this->_group = Io::getGroup($this->getRealPath());
         }
 
@@ -134,11 +135,11 @@ abstract class BaseIO
     }
 
     /**
-     * @return mixed
+     * @return string|false
      */
     public function getPermissions()
     {
-        if (!$this->_permissions) {
+        if (!isset($this->_permissions)) {
             $this->_permissions = Io::getPermissions($this->getRealPath());
         }
 
@@ -146,11 +147,11 @@ abstract class BaseIO
     }
 
     /**
-     * @return mixed
+     * @return DateTime|false
      */
     public function getLastTimeModified()
     {
-        if (!$this->_lastTimeModified) {
+        if (!isset($this->_lastTimeModified)) {
             $this->_lastTimeModified = Io::getLastTimeModified($this->getRealPath());
         }
 
@@ -158,7 +159,7 @@ abstract class BaseIO
     }
 
     /**
-     * @param $owner
+     * @param string $owner
      *
      * @return boolean
      */
@@ -172,7 +173,7 @@ abstract class BaseIO
     }
 
     /**
-     * @param $group
+     * @param string $group
      *
      * @return boolean
      */
@@ -186,7 +187,7 @@ abstract class BaseIO
     }
 
     /**
-     * @param $permissions
+     * @param integer $permissions
      *
      * @return boolean
      */
