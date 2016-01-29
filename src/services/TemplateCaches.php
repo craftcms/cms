@@ -22,14 +22,14 @@ use craft\app\tasks\DeleteStaleTemplateCaches;
 use yii\base\Component;
 
 /**
- * Class TemplateCache service.
+ * Class TemplateCaches service.
  *
- * An instance of the TemplateCache service is globally accessible in Craft via [[Application::templateCache `Craft::$app->getTemplateCache()`]].
+ * An instance of the TemplateCaches service is globally accessible in Craft via [[Application::templateCaches `Craft::$app->getTemplateCaches()`]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
-class TemplateCache extends Component
+class TemplateCaches extends Component
 {
     // Properties
     // =========================================================================

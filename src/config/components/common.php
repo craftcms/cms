@@ -29,7 +29,7 @@ return [
     'structures' => 'craft\app\services\Structures',
     'tags' => 'craft\app\services\Tags',
     'tasks' => 'craft\app\services\Tasks',
-    'templateCache' => 'craft\app\services\TemplateCache',
+    'templateCaches' => 'craft\app\services\TemplateCaches',
     'tokens' => 'craft\app\services\Tokens',
     'updates' => 'craft\app\services\Updates',
     'users' => 'craft\app\services\Users',

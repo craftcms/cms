@@ -55,7 +55,7 @@ class ResaveElements extends Task
         $class = $this->elementType;
 
         // Let's save ourselves some trouble and just clear all the caches for this element class
-        Craft::$app->getTemplateCache()->deleteCachesByElementType($class);
+        Craft::$app->getTemplateCaches()->deleteCachesByElementType($class);
 
         // Now find the affected element IDs
         $query = $class::find()

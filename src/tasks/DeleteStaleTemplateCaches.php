@@ -126,7 +126,7 @@ class DeleteStaleTemplateCaches extends Task
             $query = @unserialize(base64_decode($row['query']));
             if ($query === false || array_intersect($query->ids(), $this->elementId)) {
                 // Delete this cache
-                Craft::$app->getTemplateCache()->deleteCacheById($row['cacheId']);
+                Craft::$app->getTemplateCaches()->deleteCacheById($row['cacheId']);
                 $this->_deletedCacheIds[] = $row['cacheId'];
                 $this->_totalDeletedCriteriaRows++;
             }

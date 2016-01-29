@@ -482,7 +482,7 @@ class I18N extends \yii\i18n\I18N
 
                         if ($entryIds) {
                             // Delete their template caches
-                            Craft::$app->getTemplateCache()->deleteCachesByElementId($entryIds);
+                            Craft::$app->getTemplateCaches()->deleteCachesByElementId($entryIds);
 
                             // Update the entry tables
                             Craft::$app->getDb()->createCommand()->update(

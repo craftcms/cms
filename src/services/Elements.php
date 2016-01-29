@@ -517,7 +517,7 @@ class Elements extends Component
 
                         // Finally, delete any caches involving this element. (Even do this for new elements, since they
                         // might pop up in a cached criteria.)
-                        Craft::$app->getTemplateCache()->deleteCachesByElement($element);
+                        Craft::$app->getTemplateCaches()->deleteCachesByElement($element);
                     }
                 }
             } else {
@@ -587,7 +587,7 @@ class Elements extends Component
         ])->execute();
 
         // Delete any caches involving this element
-        Craft::$app->getTemplateCache()->deleteCachesByElement($element);
+        Craft::$app->getTemplateCaches()->deleteCachesByElement($element);
 
         if ($updateOtherLocales) {
             $this->updateElementSlugAndUriInOtherLocales($element);
@@ -829,7 +829,7 @@ class Elements extends Component
 
             // Delete the caches before they drop their elementId relations (passing `false` because there's no chance
             // this element is suddenly going to show up in a new query)
-            Craft::$app->getTemplateCache()->deleteCachesByElementId($elementIds, false);
+            Craft::$app->getTemplateCaches()->deleteCachesByElementId($elementIds, false);
 
             // Now delete the rows in the elements table
             if (count($elementIds) == 1) {

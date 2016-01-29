@@ -140,7 +140,7 @@ class ClearCaches extends Tool
         if ($params['caches'] == '*' || in_array('templateCaches',
                 $params['caches'])
         ) {
-            Craft::$app->getTemplateCache()->deleteAllCaches();
+            Craft::$app->getTemplateCaches()->deleteAllCaches();
         }
 
         if ($params['caches'] == '*' || in_array('assetTransformIndex',

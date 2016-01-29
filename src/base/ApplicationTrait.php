@@ -69,7 +69,7 @@ use yii\log\Logger;
  * @property \craft\app\services\SystemSettings   $systemSettings   The system settings service
  * @property \craft\app\services\Tags             $tags             The tags service
  * @property \craft\app\services\Tasks            $tasks            The tasks service
- * @property \craft\app\services\TemplateCache    $templateCache    The template cache service
+ * @property \craft\app\services\TemplateCaches   $templateCaches   The template caches service
  * @property \craft\app\services\Tokens           $tokens           The tokens service
  * @property \craft\app\services\Updates          $updates          The updates service
  * @property \craft\app\services\UserGroups       $userGroups       The user groups service
@@ -1108,12 +1108,12 @@ trait ApplicationTrait
     /**
      * Returns the template cache service.
      *
-     * @return \craft\app\services\TemplateCache The template cache service
+     * @return \craft\app\services\TemplateCaches The template caches service
      */
-    public function getTemplateCache()
+    public function getTemplateCaches()
     {
         /** @var $this \craft\app\web\Application|\craft\app\console\Application */
-        return $this->get('templateCache');
+        return $this->get('templateCaches');
     }
 
     /**

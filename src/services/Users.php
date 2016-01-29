@@ -1045,7 +1045,7 @@ class Users extends Component
                 // Should we transfer the content to a new user?
                 if ($transferContentTo) {
                     // Delete the template caches for any entries authored by this user
-                    Craft::$app->getTemplateCache()->deleteCachesByElementId($entryIds);
+                    Craft::$app->getTemplateCaches()->deleteCachesByElementId($entryIds);
 
                     // Update the entry/version/draft tables to point to the new user
                     $userRefs = [

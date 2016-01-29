@@ -108,7 +108,7 @@ class SetStatus extends ElementAction
         }
 
         // Clear their template caches
-        Craft::$app->getTemplateCache()->deleteCachesByElementId($elementIds);
+        Craft::$app->getTemplateCaches()->deleteCachesByElementId($elementIds);
 
         // Fire an 'afterSetStatus' event
         $this->trigger(static::EVENT_AFTER_SET_STATUS, new SetStatusEvent([
