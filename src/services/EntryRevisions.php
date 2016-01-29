@@ -452,7 +452,7 @@ class EntryRevisions extends Component
             'postDate' => ($revision->postDate ? $revision->postDate->getTimestamp() : null),
             'expiryDate' => ($revision->expiryDate ? $revision->expiryDate->getTimestamp() : null),
             'enabled' => $revision->enabled,
-            'parentId'   => $revision->newParentId,
+            'newParentId'   => $revision->newParentId,
             'fields' => [],
         ];
 
