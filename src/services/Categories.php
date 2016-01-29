@@ -916,6 +916,7 @@ class Categories extends Component
             ->ancestorOf($category)
             ->ancestorDist(1)
             ->status(null)
+            ->locale($category->locale)
             ->localeEnabled(null)
             ->select('id')
             ->scalar();
