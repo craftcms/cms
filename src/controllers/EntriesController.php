@@ -142,10 +142,15 @@ class EntriesController extends BaseEntriesController
             $parentId = Craft::$app->getRequest()->getParam('parentId');
 
             if ($parentId === null && $entry->id) {
-                $parentIds = $entry->getAncestors(1)->status(null)->localeEnabled(false)->ids();
+                // Is it already set on the model (e.g. if we're loading a draft)?
+                if ($entry->newParentId) {
+                    $parentId = $entry->newParentId;
+                } else {
+                    $parentIds = $entry->getAncestors(1)->status(null)->localeEnabled(null)->ids();
 
-                if ($parentIds) {
-                    $parentId = $parentIds[0];
+                    if ($parentIds) {
+                        $parentId = $parentIds[0];
+                    }
                 }
             }
 
