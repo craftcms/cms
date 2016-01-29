@@ -412,6 +412,7 @@ class Entries extends Component
             ->ancestorOf($entry)
             ->ancestorDist(1)
             ->status(null)
+            ->locale($entry->locale)
             ->localeEnabled(false)
             ->select('id')
             ->scalar();
