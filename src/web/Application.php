@@ -667,7 +667,10 @@ class Application extends \yii\web\Application
 
             // Special case because we hide the cpTrigger in emails.
             $request->getPathInfo() === $actionTrigger.'/users/set-password' ||
-            $request->getPathInfo() === $actionTrigger.'/users/verify-email'
+            $request->getPathInfo() === $actionTrigger.'/users/verify-email' ||
+            // Special case because this might be a request with a user that has "Access the site when the system is off"
+            // permissions and is in the process of logging in while the system is off.
+            $request->getBodyParam('action') === 'users/login'
         ) {
             if ($this->getUser()->checkPermission('accessCpWhenSystemIsOff')) {
                 return true;
