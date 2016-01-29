@@ -1593,6 +1593,26 @@ class Io
     }
 
     /**
+     * Cleans a path.
+     *
+     * @param string $path      The path to clean
+     * @param bool   $onlyAscii Whether to only allow ASCII characters in the path
+     * @param string $separator The separator to use for any whitespace (defaults to '-')
+     *
+     * @return string The cleansed path
+     */
+    public static function cleanPath($path, $onlyAscii = false, $separator = '-')
+    {
+        $segments = explode('/', $path);
+
+        foreach ($segments as &$segment) {
+            $segment = self::cleanFilename($segment, $onlyAscii, $separator);
+        }
+
+        return implode('/', $segments);
+    }
+
+    /**
      * Will set the access and modification times of the given file to the given
      * time, or the current time if it is not supplied.
      *
