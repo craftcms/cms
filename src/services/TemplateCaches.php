@@ -143,11 +143,13 @@ class TemplateCaches extends Component
             $params[':path'] = $this->_getPath();
         }
 
-        return (new Query())
+        $cachedBody = (new Query())
             ->select('body')
             ->from(static::$_templateCachesTable)
             ->where($conditions, $params)
             ->scalar();
+
+        return ($cachedBody !== false ? $cachedBody : null);
     }
 
     /**

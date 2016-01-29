@@ -82,7 +82,7 @@ class CacheNode extends \Twig_Node
             ->write("\$cacheBody{$n} = null;\n")
             ->outdent()
             ->write("}\n")
-            ->write("if (empty(\$cacheBody{$n})) {\n")
+            ->write("if (\$cacheBody{$n} === null) {\n")
             ->indent()
             ->write("if (!\$ignoreCache{$n}) {\n")
             ->indent()
