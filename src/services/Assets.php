@@ -857,6 +857,21 @@ class Assets extends Component
     }
 
     /**
+     * Returns the root folder for a given volume ID.
+     *
+     * @param integer $volumeId The volume ID
+     *
+     * @return VolumeFolder|null The root folder in that volume, or null if the volume doesn’t exist
+     */
+    public function getRootFolderByVolumeId($volumeId)
+    {
+        return $this->findFolder([
+            'volumeId' => $volumeId,
+            'parentId' => ':empty:'
+        ]);
+    }
+
+    /**
      * Gets the total number of folders that match a given criteria.
      *
      * @param mixed $criteria
