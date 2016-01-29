@@ -6,39 +6,16 @@ Craft.DateRangePicker = Garnish.Base.extend(
 {
     hud: null,
     value: null,
-
-    presets: {
-        d7 : {
-            label: 'Last 7 days',
-            startDate: '-7 days'
-        },
-        d30: {
-            label: 'Last 30 days',
-            startDate: '-30 days'
-        },
-        lastweek: {
-            label: 'Last Week',
-            startDate: '-14 days',
-            endDate: '-7 days',
-        },
-        lastmonth: {
-            label: 'Last Month',
-            startDate: '-60 days',
-            endDate: '-30 days',
-        },
-
-        customrange: {
-            label: 'Custom Range',
-        }
-    },
+    presets: null,
 
     init: function(container, settings)
     {
         this.$container = container;
 
-        this.settings = settings;
+        this.setSettings(settings, Craft.DateRangePicker.defaults);
 
-        this.value = settings.value;
+        this.value = this.settings.value;
+        this.presets = this.settings.presets;
 
         this.startDate = this.presets[this.value].startDate;
         this.endDate = this.presets[this.value].endDate;
@@ -92,7 +69,7 @@ Craft.DateRangePicker = Garnish.Base.extend(
             $endDateInput.datepicker();
 
 
-            // items
+            // initialize items
 
             this.$items = $('a.item', $hudBody);
 
@@ -166,10 +143,37 @@ Craft.DateRangePicker = Garnish.Base.extend(
 
     onAfterSelect: function(value, startDate, endDate)
     {
-        if(typeof(this.settings.onAfterSelect) == 'function')
-        {
-            this.settings.onAfterSelect(value, startDate, endDate);
-        }
+        this.settings.onAfterSelect(value, startDate, endDate);
+    }
+},
+{
+    defaults: {
+        value: null,
+        presets: {
+            d7 : {
+                label: 'Last 7 days',
+                startDate: '-7 days'
+            },
+            d30: {
+                label: 'Last 30 days',
+                startDate: '-30 days'
+            },
+            lastweek: {
+                label: 'Last Week',
+                startDate: '-14 days',
+                endDate: '-7 days',
+            },
+            lastmonth: {
+                label: 'Last Month',
+                startDate: '-60 days',
+                endDate: '-30 days',
+            },
+
+            customrange: {
+                label: 'Custom Range',
+            }
+        },
+        onAfterSelect: $.noop
     }
 });
 
