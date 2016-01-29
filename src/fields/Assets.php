@@ -15,6 +15,8 @@ use craft\app\elements\db\AssetQuery;
 use craft\app\elements\db\ElementQuery;
 use craft\app\errors\AssetConflictException;
 use craft\app\errors\Exception;
+use craft\app\errors\InvalidSubpathException;
+use craft\app\errors\VolumeObjectNotFoundException;
 use craft\app\helpers\Assets as AssetsHelper;
 use craft\app\helpers\Io;
 use craft\app\helpers\StringHelper;
@@ -505,89 +507,102 @@ class Assets extends BaseRelationField
      * @param string $subpath
      * @param ElementInterface|Element $element
      *
-     * @throws Exception
+     * @throws VolumeObjectNotFoundException if the volume doesn’t exist
+     * @throws InvalidSubpathException if the subpath cannot be parsed in full
      * @return VolumeFolder
      */
     private function _resolveVolumePathToFolder($volumeId, $subpath, $element)
     {
-        $folder = Craft::$app->getAssets()->findFolder([
-            'volumeId' => $volumeId,
-            'parentId' => ':empty:'
-        ]);
+        // Are we looking for a subfolder?
+        $subpath = is_string($subpath) ? trim($subpath, '/') : '';
 
-        // Do we have the folder?
-        if (empty($folder)) {
-            throw new Exception (Craft::t('app',
-                'Cannot find the target folder.'));
-        }
+        if (strlen($subpath) === 0) {
+            // Get the root folder in the source
+            $folder = Craft::$app->getAssets()->getRootFolderByVolumeId($volumeId);
 
-        // Prepare the path by parsing tokens and normalizing slashes.
-        $subpath = trim($subpath, '/');
-        $subpath = Craft::$app->getView()->renderObjectTemplate($subpath,
-            $element);
-        $pathParts = explode('/', $subpath);
-
-        foreach ($pathParts as &$part) {
-            $part = Io::cleanFilename($part,
-                Craft::$app->getConfig()->get('convertFilenamesToAscii'));
-        }
-
-        $subpath = join('/', $pathParts);
-
-        if (StringHelper::length($subpath)) {
-            $subpath = $subpath.'/';
-        }
-
-        // Let's see if the folder already exists.
-        if (empty($subpath)) {
-            $existingFolder = $folder;
-        } else {
-            $folderCriteria = [
-                'volumeId' => $volumeId,
-                'path' => $folder->path.$subpath
-            ];
-            $existingFolder = Craft::$app->getAssets()->findFolder($folderCriteria);
-        }
-
-
-        // No dice, go over each folder in the path and create it if it's missing.
-        if (!$existingFolder) {
-            $parts = explode('/', $subpath);
-
-            // Now make sure that every folder in the path exists.
-            $currentFolder = $folder;
-
-            foreach ($parts as $part) {
-                if (empty($part)) {
-                    continue;
-                }
-
-                $folderCriteria = [
-                    'parentId' => $currentFolder->id,
-                    'name' => $part
-                ];
-                $existingFolder = Craft::$app->getAssets()->findFolder($folderCriteria);
-
-                if (!$existingFolder) {
-                    $folder = new VolumeFolder([
-                        'parentId' => $currentFolder->id,
-                        'name' => $part,
-                        'path' => $currentFolder->path.$part.'/',
-                        'volumeId' => $volumeId,
-                    ]);
-
-                    Craft::$app->getAssets()->createFolder($folder);
-                    $folderId = $folder->id;
-                    $existingFolder = Craft::$app->getAssets()->getFolderById($folderId);
-                }
-
-                $currentFolder = $existingFolder;
+            // Make sure the root folder actually exists
+            if (!$folder) {
+                throw new VolumeObjectNotFoundException('Cannot find the target folder.');
             }
         } else {
-            $currentFolder = $existingFolder;
+            // Prepare the path by parsing tokens and normalizing slashes.
+            try {
+                $renderedSubpath = Craft::$app->getView()->renderObjectTemplate($subpath, $element);
+            } catch (\Exception $e) {
+                throw new InvalidSubpathException($subpath);
+            }
+
+            // Did any of the tokens return null?
+            if (
+                strlen($renderedSubpath) === 0 ||
+                trim($renderedSubpath, '/') != $renderedSubpath ||
+                strpos($renderedSubpath, '//') !== false
+            ) {
+                throw new InvalidSubpathException($subpath);
+            }
+
+            $subpath = Io::cleanPath($renderedSubpath, Craft::$app->getConfig()->get('convertFilenamesToAscii'));
+
+            $folder = Craft::$app->getAssets()->findFolder([
+                'volumeId' => $volumeId,
+                'path'     => $subpath.'/'
+            ]);
+
+            // Ensure that the folder exists
+            if (!$folder) {
+                // Start at the root, and, go over each folder in the path and create it if it's missing.
+                $parentFolder = Craft::$app->getAssets()->getRootFolderByVolumeId($volumeId);
+
+                // Make sure the root folder actually exists
+                if (!$parentFolder) {
+                    throw new VolumeObjectNotFoundException('Cannot find the target folder.');
+                }
+
+                $segments = explode('/', $subpath);
+                foreach ($segments as $segment) {
+                    $folder = Craft::$app->getAssets()->findFolder([
+                        'parentId' => $parentFolder->id,
+                        'name' => $segment
+                    ]);
+
+                    // Create it if it doesn't exist
+                    if (!$folder) {
+                        $folder = $this->_createSubfolder($parentFolder, $segment);
+                    }
+
+                    // In case there's another segment after this...
+                    $parentFolder = $folder;
+                }
+            }
         }
 
-        return $currentFolder;
+        return $folder;
+    }
+
+    /**
+     * Create a subfolder within a folder with the given name.
+     *
+     * @param VolumeFolder $currentFolder
+     * @param string       $folderName
+     *
+     * @return VolumeFolder The new subfolder
+     */
+    private function _createSubfolder($currentFolder, $folderName)
+    {
+        $newFolder = new VolumeFolder();
+        $newFolder->parentId = $currentFolder->id;
+        $newFolder->name = $folderName;
+        $newFolder->volumeId = $currentFolder->volumeId;
+        $newFolder->path = trim($currentFolder->path.'/'.$folderName, '/').'/';
+
+        try {
+            Craft::$app->getAssets()->createFolder($newFolder);
+        } catch (AssetConflictException $e) {
+            // If folder doesn't exist in DB, but we can't create it, it probably exists on the server.
+            Craft::$app->getAssets()->storeFolderRecord($newFolder);
+        }
+
+        return $newFolder;
     }
 
     /**
@@ -627,10 +642,8 @@ class Assets extends BaseRelationField
         // If there's no dynamic tags in the set path, or if the element has already been saved, we can use the real
         // folder
         if (!empty($element->id)
-            || (!empty($this->useSingleFolder) && !StringHelper::contains($this->singleUploadLocationSubpath,
-                    '{'))
-            || (empty($this->useSingleFolder) && !StringHelper::contains($this->defaultUploadLocationSubpath,
-                    '{'))
+            || (!empty($this->useSingleFolder) && !StringHelper::contains($this->singleUploadLocationSubpath, '{'))
+            || (empty($this->useSingleFolder) && !StringHelper::contains($this->defaultUploadLocationSubpath, '{'))
         ) {
             // Use the appropriate settings for folder determination
             if (empty($this->useSingleFolder)) {
