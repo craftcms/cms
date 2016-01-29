@@ -142,15 +142,13 @@ class ArrayHelper extends \yii\helpers\ArrayHelper
      */
     public static function getFirstValue($arr)
     {
-        if (count($arr)) {
-            if (isset($arr[0])) {
-                return $arr[0];
-            } else {
-                $keys = array_keys($arr);
-
-                return $arr[$keys[0]];
+        if (is_array($arr)) {
+            foreach ($arr as $value) {
+                return $value;
             }
         }
+
+        return null;
     }
 
     // Private Methods

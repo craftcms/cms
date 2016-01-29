@@ -236,7 +236,7 @@ abstract class Element extends Component implements ElementInterface
             $sortableAttributes = static::defineSortableAttributes();
 
             if ($sortableAttributes) {
-                $order = (!empty($viewState['order']) && isset($sortableAttributes[$viewState['order']])) ? $viewState['order'] : array_shift(array_keys($sortableAttributes));
+                $order = (!empty($viewState['order']) && isset($sortableAttributes[$viewState['order']])) ? $viewState['order'] : ArrayHelper::getFirstKey($sortableAttributes);
                 $sort = (!empty($viewState['sort']) && in_array($viewState['sort'],
                         ['asc', 'desc'])) ? $viewState['sort'] : 'asc';
 
