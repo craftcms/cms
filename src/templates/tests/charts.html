@@ -7,7 +7,9 @@
 
     <h2>{{ "Date Range Picker"|t }}</h2>
 
-    <div id="date-range"></div>
+    <div class="datewrapper">
+        {%- include "_includes/forms/text" with { autocomplete: false, id: 'date-range' } -%}
+    </div>
 
     <div id="date-range-status">
 
@@ -39,10 +41,10 @@
 
 {% includejs %}
 
-    var $dateRangeContainer = $('#date-range');
+    var $dateRangeInput = $('#date-range');
     var $dateRangeStatus = $('#date-range-status');
 
-    var dataRange = new Craft.DateRangePicker(this.$dateRangeContainer, {
+    var dataRange = new Craft.DateRangePicker(this.$dateRangeInput, {
         value: 'd7',
         onAfterSelect: function(value, startDate, endDate)
         {

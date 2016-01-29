@@ -8,9 +8,12 @@ Craft.DateRangePicker = Garnish.Base.extend(
     value: null,
     presets: null,
 
-    init: function(container, settings)
+    $startDateInput: null,
+    $endDateInput: null,
+
+    init: function(input, settings)
     {
-        this.$container = container;
+        this.$input = input;
 
         this.setSettings(settings, Craft.DateRangePicker.defaults);
 
@@ -20,15 +23,10 @@ Craft.DateRangePicker = Garnish.Base.extend(
         this.startDate = this.presets[this.value].startDate;
         this.endDate = this.presets[this.value].endDate;
 
-        this.$dateRangeWrapper = $('<div class="datewrapper"></div>');
-        this.$dateRangeWrapper.appendTo(this.$container);
-
         var dateRangeValue = this.presets[this.value].label;
+        this.$input.val(dateRangeValue);
 
-        this.$dateRange = $('<input type="text" class="text" size="20" autocomplete="off" value="'+dateRangeValue+'" />');
-        this.$dateRange.appendTo(this.$dateRangeWrapper);
-
-        this.addListener(this.$dateRange, 'focus', 'showHud');
+        this.addListener(this.$input, 'focus', 'showHud');
     },
 
     showHud: function()
@@ -61,12 +59,12 @@ Craft.DateRangePicker = Garnish.Base.extend(
             $('<li><a class="item" data-value="customrange" data-label="'+customRangeItem.label+'">'+customRangeItem.label+'</a></li>').appendTo($customRangeUl);
 
             var $startDateWrapper = $('<div class="datewrapper"></div>').appendTo($customRange);
-            var $startDateInput = $('<input type="text" class="text" size="20" autocomplete="off" value="" />').appendTo($startDateWrapper);
-            $startDateInput.datepicker();
+            this.$startDateInput = $('<input type="text" class="text" size="20" autocomplete="off" value="" />').appendTo($startDateWrapper);
+            this.$startDateInput.datepicker();
 
             var $endDateWrapper = $('<div class="datewrapper"></div>').appendTo($customRange);
-            var $endDateInput = $('<input type="text" class="text" size="20" autocomplete="off" value="" />').appendTo($endDateWrapper);
-            $endDateInput.datepicker();
+            this.$endDateInput = $('<input type="text" class="text" size="20" autocomplete="off" value="" />').appendTo($endDateWrapper);
+            this.$endDateInput.datepicker();
 
 
             // initialize items
@@ -91,7 +89,7 @@ Craft.DateRangePicker = Garnish.Base.extend(
                     {
                         $item.addClass('sel');
 
-                        this.$dateRange.val(label);
+                        this.$input.val(label);
 
                         this.onAfterSelect(value, startDate, endDate);
                     }
@@ -101,7 +99,7 @@ Craft.DateRangePicker = Garnish.Base.extend(
 
             // instiantiate hud
 
-            this.hud = new Garnish.HUD(this.$dateRange, $hudBody, {
+            this.hud = new Garnish.HUD(this.$input, $hudBody, {
                 hudClass: 'hud daterange-hud',
                 onSubmit: $.proxy(this, 'save')
             });
@@ -125,8 +123,8 @@ Craft.DateRangePicker = Garnish.Base.extend(
 
         if(value == 'customrange')
         {
-            startDate = $startDateInput.val();
-            endDate = $endDateInput.val();
+            startDate = this.$startDateInput.val();
+            endDate = this.$endDateInput.val();
         }
 
         startDate = (startDate != 'undefined' ? startDate : null);
@@ -134,7 +132,7 @@ Craft.DateRangePicker = Garnish.Base.extend(
 
         $item.addClass('sel');
 
-        this.$dateRange.val(label);
+        this.$input.val(label);
 
         this.hud.hide();
 
