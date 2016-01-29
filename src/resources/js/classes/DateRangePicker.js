@@ -32,13 +32,13 @@ Craft.DateRangePicker = Garnish.Base.extend(
         }
     },
 
-    init: function(container, options)
+    init: function(container, settings)
     {
         this.$container = container;
 
-        this.options = options;
+        this.settings = settings;
 
-        this.value = options.value;
+        this.value = settings.value;
 
         this.startDate = this.presets[this.value].startDate;
         this.endDate = this.presets[this.value].endDate;
@@ -166,9 +166,9 @@ Craft.DateRangePicker = Garnish.Base.extend(
 
     onAfterSelect: function(value, startDate, endDate)
     {
-        if(typeof(this.options.onAfterSelect) == 'function')
+        if(typeof(this.settings.onAfterSelect) == 'function')
         {
-            this.options.onAfterSelect(value, startDate, endDate);
+            this.settings.onAfterSelect(value, startDate, endDate);
         }
     }
 });
