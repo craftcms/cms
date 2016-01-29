@@ -199,7 +199,7 @@ class Et
                     // Potentially long-running request, so close session to prevent session blocking on subsequent requests.
                     Craft::$app->getSession()->close();
 
-                    $response = $client->post($this->_endpoint,
+                    $response = $client->post($this->_endpoint, null, null,
                         ['json' => ArrayHelper::toArray($this->_model)]);
 
                     if ($response->getStatusCode() == 200) {
