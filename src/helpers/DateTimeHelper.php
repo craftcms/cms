@@ -111,14 +111,22 @@ class DateTimeHelper
             }
 
             if (!empty($dt['time'])) {
+                $timePickerPhpFormat = FormatConverter::convertDateIcuToPhp('short', 'time', $locale->id);
                 // Replace the localized "AM" and "PM"
-                $dt['time'] = str_replace([
-                    $locale->getAMName(),
-                    $locale->getPMName()
-                ], ['AM', 'PM'], $dt['time']);
+                if (preg_match('/(.*)('.preg_quote($locale->getAMName(), '/').'|'.preg_quote($locale->getPMName(), '/').')(.*)/u', $dt['time'], $matches)) {
+                    $dt['time'] = $matches[1].$matches[3];
+
+                    if ($matches[2] == $locale->getAMName()) {
+                        $dt['time'] .= 'AM';
+                    } else {
+                        $dt['time'] .= 'PM';
+                    }
+
+                    $timePickerPhpFormat = str_replace('A', '', $timePickerPhpFormat).'A';
+                }
 
                 $date .= ' '.$dt['time'];
-                $format .= ' '.FormatConverter::convertDateIcuToPhp('short', 'time', $locale->id);
+                $format .= ' '.$timePickerPhpFormat;
             }
 
             // Add the timezone
