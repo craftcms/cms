@@ -57,6 +57,7 @@ class User extends Element implements IdentityInterface
     const AUTH_ACCOUNT_SUSPENDED = 'account_suspended';
     const AUTH_NO_CP_ACCESS = 'no_cp_access';
     const AUTH_NO_CP_OFFLINE_ACCESS = 'no_cp_offline_access';
+    const AUTH_NO_SITE_OFFLINE_ACCESS = 'no_site_offline_access';
     const AUTH_USERNAME_INVALID = 'username_invalid';
 
     const IMPERSONATE_KEY = 'Craft.UserSessionService.prevImpersonateUserId';
@@ -723,17 +724,25 @@ class User extends Element implements IdentityInterface
 
                 $request = Craft::$app->getRequest();
 
-                if (!$request->getIsConsoleRequest() && $request->getIsCpRequest()) {
-                    if (!$this->can('accessCp')) {
-                        $this->authError = self::AUTH_NO_CP_ACCESS;
+                if (!$request->getIsConsoleRequest()) {
+                    if ($request->getIsCpRequest()) {
+                        if (!$this->can('accessCp')) {
+                            $this->authError = self::AUTH_NO_CP_ACCESS;
 
-                        return false;
-                    }
+                            return false;
+                        }
 
-                    if (!Craft::$app->isSystemOn() && !$this->can('accessCpWhenSystemIsOff')) {
-                        $this->authError = self::AUTH_NO_CP_OFFLINE_ACCESS;
+                        if (!Craft::$app->isSystemOn() && !$this->can('accessCpWhenSystemIsOff')) {
+                            $this->authError = self::AUTH_NO_CP_OFFLINE_ACCESS;
 
-                        return false;
+                            return false;
+                        }
+                    } else {
+                        if (!Craft::$app->isSystemOn() && !$this->can('accessSiteWhenSystemIsOff')) {
+                            $this->authError = self::AUTH_NO_SITE_OFFLINE_ACCESS;
+
+                            return false;
+                        }
                     }
                 }
 

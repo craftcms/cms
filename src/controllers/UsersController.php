@@ -1427,6 +1427,11 @@ class UsersController extends Controller
                     'You cannot access the CP while the system is offline with that account.');
                 break;
             }
+            case User::AUTH_NO_SITE_OFFLINE_ACCESS: {
+                $message = Craft::t('app',
+                    'You cannot access the site while the system is offline with that account.');
+                break;
+            }
             default: {
                 if (Craft::$app->getConfig()->get('useEmailAsUsername')) {
                     $message = Craft::t('app', 'Invalid email or password.');

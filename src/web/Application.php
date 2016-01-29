@@ -670,7 +670,7 @@ class Application extends \yii\web\Application
             $request->getPathInfo() === $actionTrigger.'/users/verify-email' ||
             // Special case because this might be a request with a user that has "Access the site when the system is off"
             // permissions and is in the process of logging in while the system is off.
-            $request->getBodyParam('action') === 'users/login'
+            $request->getActionSegments() == ['users', 'login']
         ) {
             if ($this->getUser()->checkPermission('accessCpWhenSystemIsOff')) {
                 return true;
