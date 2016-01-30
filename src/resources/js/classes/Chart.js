@@ -508,7 +508,7 @@ Craft.charts.Column = Craft.charts.BaseChart.extend(
     {
         this.base(dataTable, settings, Craft.charts.Column.defaults);
 
-        this.x = d3.scale.ordinal().rangeRoundBands([0, this.width], .05);
+        this.x = d3.scale.ordinal().rangeRoundBands([0, this.width], .2);
         this.y = d3.scale.linear().range([this.height, 0]);
 
         this.x.domain(this.dataTable.rows.map(function(d) { return d[0].value; }));
