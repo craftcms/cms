@@ -1,0 +1,128 @@
+{% extends "tests/charts/_layout" %}
+{% import "_includes/forms" as forms %}
+
+
+{% macro chartDocs(class, title, settings) %}
+
+    <table class="data">
+        <thead>
+            <tr>
+                <th>Setting</th>
+                <th>Default Value</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for setting, defaultValue in settings %}
+                <tr>
+                    <th>{{ setting }}</th>
+                    <td>{{ defaultValue }}</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+{% endmacro %}
+
+{% from _self import chartDocs %}
+
+
+{% includecss %}
+
+.chart-container {
+    border: 1px solid #eee;
+    width: 300px;
+    margin-bottom: 24px;
+    padding: 20px;
+}
+
+
+
+{% endincludecss %}
+
+
+{% set selectedTab = 'docs' %}
+
+{% block content %}
+
+
+    <div class="chart-doc">
+
+        <h2>Area</h2>
+
+        {{ chartDocs('area', 'Area Options', {
+            chartClass: "'area'",
+            enablePlots: "true",
+            enableTips: "true",
+            margin: "{ top: 10, right: 0, bottom: 20, left: 0 }",
+            xAxisGridlines: "false",
+            yAxisGridlines: "true",
+        }) }}
+
+    </div>
+
+    <hr>
+
+    <div class="chart-doc">
+        <h2>Column</h2>
+
+        <div id="column" class="chart-container"></div>
+
+        {% includejs %}
+
+            var dataTable = Craft.charts.utils.arrayToDataTable([
+                ['Task',     'Hours per Day'],
+                ['Work',     11],
+                ['Eat',      2],
+                ['Commute',  2],
+                ['Watch TV', 2],
+                ['Sleep',    7]
+            ]);
+
+            var $chart = $('#column');
+
+            var chart = new Craft.charts.Column($chart);
+            chart.draw(dataTable);
+
+        {% endincludejs %}
+
+        {{ chartDocs('column', 'Column Options', {
+            chartClass: "'column'",
+            enableTips: "true",
+            margin: "{ top: 0, right: 0, bottom: 30, left: 0 }",
+        }) }}
+    </div>
+
+    <hr>
+
+    <div class="chart-doc">
+
+        <h2>Pie</h2>
+
+        <div id="pie" class="chart-container"></div>
+
+        {% includejs %}
+
+            var dataTable = Craft.charts.utils.arrayToDataTable([
+                ['Task',     'Hours per Day'],
+                ['Work',     11],
+                ['Eat',      2],
+                ['Commute',  2],
+                ['Watch TV', 2],
+                ['Sleep',    7]
+            ]);
+
+            var $chart = $('#pie');
+
+            var chart = new Craft.charts.Pie($chart);
+            chart.draw(dataTable);
+
+        {% endincludejs %}
+
+        {{ chartDocs('pie', 'Pie Options', {
+            chartClass: "'pie'",
+            enableTips: "true",
+            margin: "{ top: 0, right: 0, bottom: 0, left: 0 }",
+        }) }}
+    </div>
+
+{% endblock %}
