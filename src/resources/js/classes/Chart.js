@@ -616,8 +616,8 @@ Craft.charts.Pie = Craft.charts.BaseChart.extend(
         this.radius = Math.min(this.width, this.height) / 2;
 
         this.arc = d3.svg.arc()
-            .outerRadius(this.radius * 0.8)
-            .innerRadius(this.radius * 0.4);
+            .outerRadius(this.radius * 1)
+            .innerRadius(this.radius * 0.5);
 
         this.color = d3.scale.ordinal().range(["#3063CF", "#DE3800", "#FF9A00", "#009802", "#9B009B"]);
 
