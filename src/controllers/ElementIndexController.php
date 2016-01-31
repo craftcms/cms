@@ -13,7 +13,7 @@ use craft\app\base\ElementActionInterface;
 use craft\app\elements\db\ElementQueryInterface;
 use craft\app\base\ElementInterface;
 use craft\app\errors\HttpException;
-use craft\app\web\Response;
+use yii\web\Response;
 
 /**
  * The ElementIndexController class is a controller that handles various element index related actions.

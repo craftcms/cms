@@ -11,6 +11,7 @@ use Craft;
 use craft\app\errors\HttpException;
 use craft\app\models\RebrandEmail as RebrandEmailModel;
 use craft\app\web\Controller;
+use yii\web\Response;
 
 Craft::$app->requireEdition(Craft::Client);
 
@@ -41,7 +42,7 @@ class EmailMessagesController extends Controller
     /**
      * Saves an email message.
      *
-     * @return void
+     * @return Response
      */
     public function actionSaveMessage()
     {

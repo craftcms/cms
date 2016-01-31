@@ -20,8 +20,8 @@ use craft\app\helpers\Io;
 use craft\app\elements\Asset;
 use craft\app\models\VolumeFolder;
 use craft\app\web\Controller;
-use craft\app\web\Response;
 use craft\app\web\UploadedFile;
+use yii\web\Response;
 
 /**
  * The AssetsController class is a controller that handles various actions related to asset tasks, such as uploading
@@ -641,10 +641,7 @@ class AssetsController extends Controller
      *
      * @return void
      */
-    private function _requirePermissionByFolder(
-        $permissionName,
-        VolumeFolder $folder
-    ) {
+    private function _requirePermissionByFolder($permissionName, VolumeFolder $folder) {
         $this->_requirePermissionByVolumeId($permissionName, $folder->volumeId);
     }
 

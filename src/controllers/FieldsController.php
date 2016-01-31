@@ -16,6 +16,7 @@ use craft\app\web\twig\variables\ComponentInfo;
 use craft\app\web\Controller;
 use yii\base\Exception;
 use yii\web\HttpException;
+use yii\web\Response;
 
 /**
  * The FieldsController class is a controller that handles various field and field group related tasks such as saving
@@ -47,7 +48,7 @@ class FieldsController extends Controller
     /**
      * Saves a field group.
      *
-     * @return void
+     * @return Response
      */
     public function actionSaveGroup()
     {
@@ -79,7 +80,7 @@ class FieldsController extends Controller
     /**
      * Deletes a field group.
      *
-     * @return void
+     * @return Response
      */
     public function actionDeleteGroup()
     {
@@ -215,7 +216,7 @@ class FieldsController extends Controller
     /**
      * Saves a field.
      *
-     * @return void
+     * @return Response|null
      * @throws Exception
      */
     public function actionSaveField()
@@ -249,12 +250,14 @@ class FieldsController extends Controller
         Craft::$app->getUrlManager()->setRouteParams([
             'field' => $field
         ]);
+
+        return null;
     }
 
     /**
      * Deletes a field.
      *
-     * @return void
+     * @return Response
      */
     public function actionDeleteField()
     {

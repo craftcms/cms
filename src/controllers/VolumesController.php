@@ -14,7 +14,7 @@ use craft\app\errors\HttpException;
 use craft\app\helpers\Json;
 use craft\app\helpers\Url;
 use craft\app\web\Controller;
-use craft\app\web\Response;
+use yii\web\Response;
 
 /**
  * The VolumeController class is a controller that handles various actions related to asset volumes, such as

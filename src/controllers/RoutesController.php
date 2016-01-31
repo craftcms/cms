@@ -10,6 +10,7 @@ namespace craft\app\controllers;
 use Craft;
 use craft\app\errors\HttpException;
 use craft\app\web\Controller;
+use yii\web\Response;
 
 /**
  * The RoutesController class is a controller that handles various route related tasks such as saving, deleting and
@@ -38,7 +39,7 @@ class RoutesController extends Controller
     /**
      * Saves a new or existing route.
      *
-     * @return void
+     * @return Response
      */
     public function actionSaveRoute()
     {
@@ -70,7 +71,7 @@ class RoutesController extends Controller
     /**
      * Deletes a route.
      *
-     * @return void
+     * @return Response
      */
     public function actionDeleteRoute()
     {
@@ -85,7 +86,7 @@ class RoutesController extends Controller
     /**
      * Updates the route order.
      *
-     * @return void
+     * @return Response
      */
     public function actionUpdateRouteOrder()
     {

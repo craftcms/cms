@@ -11,6 +11,7 @@ use Craft;
 use craft\app\errors\HttpException;
 use craft\app\helpers\Json;
 use craft\app\web\Controller;
+use yii\web\Response;
 
 Craft::$app->requireEdition(Craft::Pro);
 
@@ -41,7 +42,7 @@ class LocalizationController extends Controller
     /**
      * Adds a new a locale.
      *
-     * @return void
+     * @return Response
      */
     public function actionAddLocale()
     {
@@ -57,7 +58,7 @@ class LocalizationController extends Controller
     /**
      * Saves the new locale order.
      *
-     * @return void
+     * @return Response
      */
     public function actionReorderLocales()
     {
@@ -73,7 +74,7 @@ class LocalizationController extends Controller
     /**
      * Deletes a locale.
      *
-     * @return void
+     * @return Response
      */
     public function actionDeleteLocale()
     {

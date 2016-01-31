@@ -13,6 +13,7 @@ use craft\app\errors\HttpException;
 use craft\app\helpers\Component;
 use craft\app\helpers\Io;
 use craft\app\web\Controller;
+use yii\web\Response;
 
 /**
  * The ToolsController class is a controller that handles various tools related tasks such as trigger tool actions.
@@ -43,7 +44,7 @@ class ToolsController extends Controller
     /**
      * Performs a tool's action.
      *
-     * @return void
+     * @return Response
      */
     public function actionPerformAction()
     {

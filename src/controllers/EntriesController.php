@@ -19,6 +19,7 @@ use craft\app\elements\Entry;
 use craft\app\models\EntryDraft;
 use craft\app\models\EntryVersion;
 use craft\app\models\Section;
+use yii\web\Response;
 
 /**
  * The EntriesController class is a controller that handles various entry related tasks such as retrieving, saving,
@@ -340,7 +341,7 @@ class EntriesController extends BaseEntriesController
     /**
      * Switches between two entry types.
      *
-     * @return void
+     * @return Response
      */
     public function actionSwitchEntryType()
     {
@@ -350,7 +351,7 @@ class EntriesController extends BaseEntriesController
         $entry = $this->_getEntryModel();
         $this->enforceEditEntryssions($entry);
         $this->_populateEntryModel($entry);
-        Permi
+
         $variables['sectionId'] = $entry->sectionId;
         $variables['entry'] = $entry;
         $variables['showEntryTypes'] = true;
@@ -373,7 +374,7 @@ class EntriesController extends BaseEntriesController
      * Previews an entry.
      *
      * @throws HttpException
-     * @return void
+     * @return string
      */
     public function actionPreviewEntry()
     {
@@ -400,13 +401,13 @@ class EntriesController extends BaseEntriesController
             $this->_populateEntryModel($entry);
         }
 
-        $this->_showEntry($entry);
+        return $this->_showEntry($entry);
     }
 
     /**
      * Saves an entry.
      *
-     * @return void
+     * @return Response|null
      */
     public function actionSaveEntry()
     {
@@ -480,6 +481,8 @@ class EntriesController extends BaseEntriesController
                 ]);
             }
         }
+
+        return null;
     }
 
     /**
@@ -488,7 +491,7 @@ class EntriesController extends BaseEntriesController
      * @throws Exception
      * @throws HttpException
      * @throws \Exception
-     * @return void
+     * @return Response|null
      */
     public function actionDeleteEntry()
     {
@@ -530,6 +533,8 @@ class EntriesController extends BaseEntriesController
                 ]);
             }
         }
+
+        return null;
     }
 
     /**
@@ -541,7 +546,7 @@ class EntriesController extends BaseEntriesController
      * @param mixed $versionId
      *
      * @throws HttpException
-     * @return void
+     * @return Response
      */
     public function actionShareEntry($entryId = null, $locale = null, $draftId = null, $versionId = null)
     {
@@ -600,7 +605,7 @@ class EntriesController extends BaseEntriesController
      * @param mixed $versionId
      *
      * @throws HttpException
-     * @return void
+     * @return Response
      */
     public function actionViewSharedEntry($entryId = null, $locale = null, $draftId = null, $versionId = null)
     {
@@ -618,7 +623,7 @@ class EntriesController extends BaseEntriesController
             throw new HttpException(404);
         }
 
-        $this->_showEntry($entry);
+        return $this->_showEntry($entry);
     }
 
     // Private Methods

@@ -12,6 +12,7 @@ use craft\app\base\PluginInterface;
 use craft\app\errors\Exception;
 use craft\app\errors\HttpException;
 use craft\app\web\Controller;
+use yii\web\Response;
 
 /**
  * The PluginsController class is a controller that handles various plugin related tasks such installing, uninstalling,
@@ -40,7 +41,7 @@ class PluginsController extends Controller
     /**
      * Installs a plugin.
      *
-     * @return void
+     * @return Response
      */
     public function actionInstallPlugin()
     {
@@ -59,7 +60,7 @@ class PluginsController extends Controller
     /**
      * Uninstalls a plugin.
      *
-     * @return void
+     * @return Response
      */
     public function actionUninstallPlugin()
     {
@@ -78,7 +79,7 @@ class PluginsController extends Controller
     /**
      * Enables a plugin.
      *
-     * @return void
+     * @return Response
      */
     public function actionEnablePlugin()
     {
@@ -97,7 +98,7 @@ class PluginsController extends Controller
     /**
      * Disables a plugin.
      *
-     * @return void
+     * @return Response
      */
     public function actionDisablePlugin()
     {

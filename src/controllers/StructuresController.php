@@ -13,6 +13,7 @@ use craft\app\errors\Exception;
 use craft\app\errors\HttpException;
 use craft\app\models\Structure as StructureModel;
 use craft\app\web\Controller;
+use yii\web\Response;
 
 /**
  * The StructuresController class is a controller that handles structure related tasks such as moving an element within
@@ -79,7 +80,7 @@ class StructuresController extends Controller
     /**
      * Returns the descendant level delta for a given element.
      *
-     * @return void
+     * @return Response
      */
     public function actionGetElementLevelDelta()
     {
@@ -93,7 +94,7 @@ class StructuresController extends Controller
     /**
      * Moves an element within a structure.
      *
-     * @return void
+     * @return Response
      */
     public function actionMoveElement()
     {

@@ -19,8 +19,8 @@ use craft\app\helpers\Url;
 use craft\app\elements\User;
 use craft\app\services\Users;
 use craft\app\web\Controller;
-use craft\app\web\Response;
 use craft\app\web\UploadedFile;
+use yii\web\Response;
 
 /**
  * The UsersController class is a controller that handles various user account related tasks such as logging-in,
@@ -133,7 +133,7 @@ class UsersController extends Controller
     /**
      * Returns how many seconds are left in the current user session.
      *
-     * @return void
+     * @return Response
      */
     public function actionGetRemainingSessionTime()
     {
@@ -147,7 +147,7 @@ class UsersController extends Controller
     }
 
     /**
-     * @return void
+     * @return Response
      */
     public function actionLogout()
     {
@@ -167,7 +167,7 @@ class UsersController extends Controller
      * Sends a password reset email.
      *
      * @throws HttpException
-     * @return void
+     * @return Response|null
      */
     public function actionSendPasswordResetEmail()
     {
@@ -227,6 +227,8 @@ class UsersController extends Controller
                 'loginName' => isset($loginName) ? $loginName : null,
             ]);
         }
+
+        return null;
     }
 
     /**
@@ -344,7 +346,7 @@ class UsersController extends Controller
     /**
      * Verifies that a user has access to an email address.
      *
-     * @return void
+     * @return Response|null
      */
     public function actionVerifyEmail()
     {
@@ -366,12 +368,14 @@ class UsersController extends Controller
 
             return $this->redirect($url);
         }
+
+        return null;
     }
 
     /**
      * Manually activates a user account.  Only admins have access.
      *
-     * @return void
+     * @return Response
      */
     public function actionActivateUser()
     {
@@ -1223,7 +1227,7 @@ class UsersController extends Controller
      * Suspends a user.
      *
      * @throws HttpException
-     * @return void
+     * @return Response
      */
     public function actionSuspendUser()
     {
@@ -1308,7 +1312,7 @@ class UsersController extends Controller
      * Unsuspends a user.
      *
      * @throws HttpException
-     * @return void
+     * @return Response
      */
     public function actionUnsuspendUser()
     {
@@ -1341,7 +1345,7 @@ class UsersController extends Controller
     /**
      * Saves the asset field layout.
      *
-     * @return void
+     * @return Response|null
      */
     public function actionSaveFieldLayout()
     {
@@ -1362,6 +1366,8 @@ class UsersController extends Controller
             Craft::$app->getSession()->setError(Craft::t('app',
                 'Couldn’t save user fields.'));
         }
+
+        return null;
     }
 
     /**

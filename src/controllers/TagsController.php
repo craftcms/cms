@@ -16,6 +16,7 @@ use craft\app\helpers\Url;
 use craft\app\elements\Tag;
 use craft\app\models\TagGroup;
 use craft\app\web\Controller;
+use yii\web\Response;
 
 /**
  * The TagsController class is a controller that handles various tag and tag group related tasks such as displaying,
@@ -114,7 +115,7 @@ class TagsController extends Controller
     /**
      * Save a tag group.
      *
-     * @return void
+     * @return Response|null
      */
     public function actionSaveTagGroup()
     {
@@ -140,18 +141,20 @@ class TagsController extends Controller
             return $this->redirectToPostedUrl($tagGroup);
         } else {
             Craft::$app->getSession()->setError(Craft::t('app', 'Couldn’t save the tag group.'));
-        }
 
-        // Send the tag group back to the template
-        Craft::$app->getUrlManager()->setRoute([
-            'tagGroup' => $tagGroup
-        ]);
+            // Send the tag group back to the template
+            Craft::$app->getUrlManager()->setRoute([
+                'tagGroup' => $tagGroup
+            ]);
+
+            return null;
+        }
     }
 
     /**
      * Deletes a tag group.
      *
-     * @return void
+     * @return Response
      */
     public function actionDeleteTagGroup()
     {
@@ -169,7 +172,7 @@ class TagsController extends Controller
     /**
      * Searches for tags.
      *
-     * @return void
+     * @return Response
      */
     public function actionSearchForTags()
     {
@@ -222,7 +225,7 @@ class TagsController extends Controller
     /**
      * Creates a new tag.
      *
-     * @return void
+     * @return Response
      */
     public function actionCreateTag()
     {

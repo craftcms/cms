@@ -29,9 +29,9 @@ use craft\app\tools\ClearCaches;
 use craft\app\tools\DbBackup;
 use craft\app\tools\FindAndReplace;
 use craft\app\tools\SearchIndex;
-use craft\app\web\Response;
 use craft\app\web\twig\variables\ToolInfo;
 use craft\app\web\Controller;
+use yii\web\Response;
 
 /**
  * The SystemSettingsController class is a controller that handles various control panel settings related tasks such as
@@ -139,7 +139,7 @@ class SystemSettingsController extends Controller
     /**
      * Saves the general settings.
      *
-     * @return void
+     * @return Response|null
      */
     public function actionSaveGeneralSettings()
     {
@@ -154,7 +154,8 @@ class SystemSettingsController extends Controller
 
         if (Craft::$app->saveInfo($info)) {
             Craft::$app->getSession()->setNotice(Craft::t('app', 'General settings saved.'));
-            $this->redirectToPostedUrl();
+
+            return $this->redirectToPostedUrl();
         } else {
             Craft::$app->getSession()->setError(Craft::t('app', 'Couldn’t save general settings.'));
 
@@ -163,6 +164,8 @@ class SystemSettingsController extends Controller
                 'info' => $info
             ]);
         }
+
+        return null;
     }
 
     /**
@@ -171,7 +174,7 @@ class SystemSettingsController extends Controller
      * @param MailSettings|null         $settings The posted email settings, if there were any validation errors
      * @param TransportAdaptorInterface $adaptor  The transport adaptor, if there were any validation errors
      *
-*@return Response
+     * @return Response
      */
     public function actionEditEmailSettings(MailSettings $settings = null, TransportAdaptorInterface $adaptor = null)
     {
@@ -267,7 +270,7 @@ class SystemSettingsController extends Controller
     /**
      * Tests the email settings.
      *
-     * @return void
+     * @return null
      */
     public function actionTestEmailSettings()
     {
@@ -322,6 +325,8 @@ class SystemSettingsController extends Controller
             'settings' => $settings,
             'adaptor' => $adaptor
         ]);
+
+        return null;
     }
 
     /**

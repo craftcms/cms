@@ -133,7 +133,7 @@ class TemplatesController extends Controller
      * Renders an error template.
      *
      * @throws \Exception
-     * @return void
+     * @return string
      */
     public function actionRenderError()
     {

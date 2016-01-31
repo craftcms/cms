@@ -17,6 +17,7 @@ use craft\app\elements\Category;
 use craft\app\models\CategoryGroup;
 use craft\app\models\CategoryGroupLocale as CategoryGroupLocaleModel;
 use craft\app\web\Controller;
+use yii\web\Response;
 
 /**
  * The CategoriesController class is a controller that handles various actions related to categories and category
@@ -117,7 +118,7 @@ class CategoriesController extends Controller
     /**
      * Save a category group.
      *
-     * @return void
+     * @return Response|null
      */
     public function actionSaveGroup()
     {
@@ -165,12 +166,14 @@ class CategoriesController extends Controller
         Craft::$app->getUrlManager()->setRouteParams([
             'categoryGroup' => $group
         ]);
+
+        return null;
     }
 
     /**
      * Deletes a category group.
      *
-     * @return void
+     * @return Response
      */
     public function actionDeleteCategoryGroup()
     {
@@ -367,7 +370,7 @@ class CategoriesController extends Controller
      * Previews a category.
      *
      * @throws HttpException
-     * @return void
+     * @return string
      */
     public function actionPreviewCategory()
     {
@@ -377,13 +380,13 @@ class CategoriesController extends Controller
         $this->_enforceEditCategoryPermissions($category);
         $this->_populateCategoryModel($category);
 
-        $this->_showCategory($category);
+        return $this->_showCategory($category);
     }
 
     /**
      * Saves an category.
      *
-     * @return void
+     * @return Response|null
      */
     public function actionSaveCategory()
     {
@@ -432,13 +435,15 @@ class CategoriesController extends Controller
                 ]);
             }
         }
+
+        return null;
     }
 
     /**
      * Deletes a category.
      *
      * @throws Exception
-     * @return void
+     * @return Response|null
      */
     public function actionDeleteCategory()
     {
@@ -475,6 +480,8 @@ class CategoriesController extends Controller
                 ]);
             }
         }
+
+        return null;
     }
 
     /**
@@ -484,7 +491,7 @@ class CategoriesController extends Controller
      * @param mixed $locale
      *
      * @throws HttpException
-     * @return void
+     * @return Response
      */
     public function actionShareCategory($categoryId, $locale = null)
     {
@@ -523,7 +530,7 @@ class CategoriesController extends Controller
      * @param mixed $locale
      *
      * @throws HttpException
-     * @return void
+     * @return string
      */
     public function actionViewSharedCategory($categoryId, $locale = null)
     {
@@ -535,7 +542,7 @@ class CategoriesController extends Controller
             throw new HttpException(404);
         }
 
-        $this->_showCategory($category);
+        return $this->_showCategory($category);
     }
 
     // Private Methods

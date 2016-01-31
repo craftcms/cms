@@ -11,6 +11,7 @@ use Craft;
 use craft\app\errors\HttpException;
 use craft\app\models\UserGroup as UserGroupModel;
 use craft\app\web\Controller;
+use yii\web\Response;
 
 Craft::$app->requireEdition(Craft::Pro);
 
@@ -41,7 +42,7 @@ class UserSettingsController extends Controller
     /**
      * Saves a user group.
      *
-     * @return void
+     * @return Response|null
      */
     public function actionSaveGroup()
     {
@@ -70,12 +71,14 @@ class UserSettingsController extends Controller
         Craft::$app->getUrlManager()->setRouteParams([
             'group' => $group
         ]);
+
+        return null;
     }
 
     /**
      * Deletes a user group.
      *
-     * @return void
+     * @return Response
      */
     public function actionDeleteGroup()
     {
@@ -92,7 +95,7 @@ class UserSettingsController extends Controller
     /**
      * Saves the system user settings.
      *
-     * @return void
+     * @return Response|null
      */
     public function actionSaveUserSettings()
     {
@@ -115,5 +118,7 @@ class UserSettingsController extends Controller
                 'settings' => $settings
             ]);
         }
+
+        return null;
     }
 }

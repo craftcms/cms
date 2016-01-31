@@ -21,6 +21,7 @@ use craft\app\models\GetHelp as GetHelpModel;
 use craft\app\web\twig\variables\ComponentInfo;
 use craft\app\web\Controller;
 use craft\app\web\UploadedFile;
+use yii\web\Response;
 
 /**
  * The DashboardController class is a controller that handles various dashboard related actions including managing
@@ -114,7 +115,7 @@ class DashboardController extends Controller
     /**
      * Saves a widget.
      *
-     * @return void
+     * @return Response|null
      */
     public function actionSaveWidget()
     {
@@ -144,12 +145,14 @@ class DashboardController extends Controller
         Craft::$app->getUrlManager()->setRouteParams([
             'widget' => $widget
         ]);
+
+        return null;
     }
 
     /**
      * Deletes a widget.
      *
-     * @return void
+     * @return Response
      */
     public function actionDeleteWidget()
     {
@@ -165,7 +168,7 @@ class DashboardController extends Controller
     /**
      * Reorders widgets.
      *
-     * @return void
+     * @return Response
      */
     public function actionReorderWidgets()
     {
@@ -181,7 +184,7 @@ class DashboardController extends Controller
     /**
      * Returns the items for the Feed widget.
      *
-     * @return void
+     * @return Response
      */
     public function actionGetFeedItems()
     {
@@ -208,7 +211,7 @@ class DashboardController extends Controller
     /**
      * Creates a new support ticket for the GetHelp widget.
      *
-     * @return void
+     * @return string
      */
     public function actionSendSupportRequest()
     {

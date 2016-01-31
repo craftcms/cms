@@ -14,8 +14,8 @@ use craft\app\helpers\Image;
 use craft\app\helpers\Io;
 use craft\app\helpers\Url;
 use craft\app\web\Controller;
-use craft\app\web\Response;
 use craft\app\web\UploadedFile;
+use yii\web\Response;
 
 Craft::$app->requireEdition(Craft::Client);
 
@@ -74,7 +74,7 @@ class RebrandController extends Controller
                 Io::clearFolder($folderPath, true);
 
                 $fileDestination = $folderPath.'/'.$filename;
-                
+
                 move_uploaded_file($file->tempName, $fileDestination);
 
                 $imageService = Craft::$app->getImages();
@@ -142,10 +142,10 @@ class RebrandController extends Controller
 
             // Strip off any querystring info, if any.
             $source = Url::stripQueryString($source);
-            
+
             $pathService = Craft::$app->getPath();
             $imageService = Craft::$app->getImages();
-            
+
             $imagePath = $pathService->getTempUploadsPath().'/'.$source;
 
             if (Io::fileExists($imagePath) && $imageService->checkMemoryForImage($imagePath)) {

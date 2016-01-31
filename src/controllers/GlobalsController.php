@@ -12,6 +12,7 @@ use craft\app\errors\Exception;
 use craft\app\errors\HttpException;
 use craft\app\elements\GlobalSet;
 use craft\app\web\Controller;
+use yii\web\Response;
 
 /**
  * The GlobalsController class is a controller that handles various global and global set related tasks such as saving,
@@ -77,7 +78,7 @@ class GlobalsController extends Controller
     /**
      * Deletes a global set.
      *
-     * @return void
+     * @return Response
      */
     public function actionDeleteSet()
     {
@@ -157,7 +158,7 @@ class GlobalsController extends Controller
      * Saves a global set's content.
      *
      * @throws Exception
-     * @return void
+     * @return Response|null
      */
     public function actionSaveContent()
     {
@@ -193,5 +194,7 @@ class GlobalsController extends Controller
         Craft::$app->getUrlManager()->setRouteParams([
             'globalSet' => $globalSet,
         ]);
+
+        return null;
     }
 }

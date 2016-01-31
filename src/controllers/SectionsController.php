@@ -17,6 +17,7 @@ use craft\app\models\EntryType;
 use craft\app\models\Section;
 use craft\app\models\SectionLocale;
 use craft\app\web\Controller;
+use yii\web\Response;
 
 /**
  * The SectionsController class is a controller that handles various section and entry type related tasks such as
@@ -156,7 +157,7 @@ class SectionsController extends Controller
     /**
      * Saves a section.
      *
-     * @return void
+     * @return Response|null
      */
     public function actionSaveSection()
     {
@@ -220,12 +221,14 @@ class SectionsController extends Controller
         Craft::$app->getUrlManager()->setRouteParams([
             'section' => $section
         ]);
+
+        return null;
     }
 
     /**
      * Deletes a section.
      *
-     * @return void
+     * @return Response
      */
     public function actionDeleteSection()
     {
@@ -356,7 +359,7 @@ class SectionsController extends Controller
      * @throws Exception
      * @throws HttpException
      * @throws \Exception
-     * @return void
+     * @return Response|null
      */
     public function actionSaveEntryType()
     {
@@ -400,12 +403,14 @@ class SectionsController extends Controller
         Craft::$app->getUrlManager()->setRouteParams([
             'entryType' => $entryType
         ]);
+
+        return null;
     }
 
     /**
      * Reorders entry types.
      *
-     * @return void
+     * @return Response
      */
     public function actionReorderEntryTypes()
     {
@@ -421,7 +426,7 @@ class SectionsController extends Controller
     /**
      * Deletes an entry type.
      *
-     * @return void
+     * @return Response
      */
     public function actionDeleteEntryType()
     {

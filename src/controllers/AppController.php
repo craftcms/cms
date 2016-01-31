@@ -17,6 +17,7 @@ use craft\app\helpers\DateTimeHelper;
 use craft\app\models\UpgradeInfo;
 use craft\app\models\UpgradePurchase as UpgradePurchaseModel;
 use craft\app\web\Controller;
+use yii\web\Response;
 
 /**
  * The AppController class is a controller that handles various actions for Craft updates, control panel requests,
@@ -35,7 +36,7 @@ class AppController extends Controller
     /**
      * Returns update info.
      *
-     * @return void
+     * @return Response
      */
     public function actionCheckForUpdates()
     {
@@ -53,7 +54,7 @@ class AppController extends Controller
     /**
      * Loads any CP alerts.
      *
-     * @return void
+     * @return Response
      */
     public function actionGetCpAlerts()
     {
@@ -71,7 +72,7 @@ class AppController extends Controller
     /**
      * Shuns a CP alert for 24 hours.
      *
-     * @return void
+     * @return Response
      */
     public function actionShunCpAlert()
     {
@@ -96,7 +97,7 @@ class AppController extends Controller
     /**
      * Transfers the Craft license to the current domain.
      *
-     * @return void
+     * @return Response
      */
     public function actionTransferLicenseToCurrentDomain()
     {
@@ -118,7 +119,7 @@ class AppController extends Controller
     /**
      * Returns the edition upgrade modal.
      *
-     * @return void
+     * @return Response
      */
     public function actionGetUpgradeModal()
     {
@@ -184,7 +185,7 @@ class AppController extends Controller
     /**
      * Passes along a given CC token to Elliott to purchase a Craft edition.
      *
-     * @return void
+     * @return Response
      */
     public function actionPurchaseUpgrade()
     {
@@ -218,7 +219,7 @@ class AppController extends Controller
      * Tries a Craft edition on for size.
      *
      * @throws Exception
-     * @return void
+     * @return Response
      */
     public function actionTestUpgrade()
     {
@@ -241,7 +242,7 @@ class AppController extends Controller
     /**
      * Switches Craft to the edition it's licensed for.
      *
-     * @return void
+     * @return Response
      */
     public function actionSwitchToLicensedEdition()
     {

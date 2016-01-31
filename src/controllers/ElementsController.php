@@ -14,6 +14,7 @@ use craft\app\errors\HttpException;
 use craft\app\helpers\ArrayHelper;
 use craft\app\helpers\Element;
 use craft\app\helpers\StringHelper;
+use yii\web\Response;
 
 /**
  * The ElementsController class is a controller that handles various element related actions including retrieving and
@@ -140,7 +141,7 @@ class ElementsController extends BaseElementsController
     /**
      * Returns the HTML for a Categories field input, based on a given list of selected category IDs.
      *
-     * @return void
+     * @return Response
      */
     public function actionGetCategoriesInputHtml()
     {

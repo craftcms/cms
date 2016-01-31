@@ -15,6 +15,7 @@ use craft\app\helpers\ArrayHelper;
 use craft\app\helpers\Update;
 use craft\app\helpers\Url;
 use craft\app\web\Controller;
+use yii\web\Response;
 
 /**
  * The UpdateController class is a controller that handles various update related tasks such as checking for available
@@ -52,7 +53,7 @@ class UpdateController extends Controller
     /**
      * Returns the available updates.
      *
-     * @return void
+     * @return Response
      */
     public function actionGetAvailableUpdates()
     {
@@ -81,7 +82,7 @@ class UpdateController extends Controller
     /**
      * Returns the update info JSON.
      *
-     * @return void
+     * @return Response
      */
     public function actionGetUpdates()
     {
@@ -168,7 +169,7 @@ class UpdateController extends Controller
     /**
      * Called during both a manual and auto-update.
      *
-     * @return void
+     * @return Response
      */
     public function actionPrepare()
     {
@@ -225,7 +226,7 @@ class UpdateController extends Controller
     /**
      * Called during an auto-update.
      *
-     * @return void
+     * @return Response
      */
     public function actionProcessDownload()
     {
@@ -267,7 +268,7 @@ class UpdateController extends Controller
     /**
      * Called during an auto-update.
      *
-     * @return void
+     * @return Response
      */
     public function actionBackupFiles()
     {
@@ -307,7 +308,7 @@ class UpdateController extends Controller
     /**
      * Called during an auto-update.
      *
-     * @return void
+     * @return Response
      */
     public function actionUpdateFiles()
     {
@@ -348,7 +349,7 @@ class UpdateController extends Controller
     /**
      * Called during both a manual and auto-update.
      *
-     * @return void
+     * @return Response
      */
     public function actionBackupDatabase()
     {
@@ -394,7 +395,7 @@ class UpdateController extends Controller
     /**
      * Called during both a manual and auto-update.
      *
-     * @return void
+     * @return Response
      */
     public function actionUpdateDatabase()
     {
@@ -433,7 +434,7 @@ class UpdateController extends Controller
      *
      * Called during both a manual and auto-update.
      *
-     * @return void
+     * @return Response
      */
     public function actionCleanUp()
     {
@@ -480,7 +481,7 @@ class UpdateController extends Controller
      * Can be called during both a manual and auto-update.
      *
      * @throws Exception
-     * @return void
+     * @return Response
      */
     public function actionRollback()
     {

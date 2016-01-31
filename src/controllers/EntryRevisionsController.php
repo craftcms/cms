@@ -12,6 +12,7 @@ use craft\app\errors\Exception;
 use craft\app\helpers\DateTimeHelper;
 use craft\app\models\EntryDraft as EntryDraftModel;
 use craft\app\models\Section;
+use yii\web\Response;
 
 Craft::$app->requireEdition(Craft::Client);
 
@@ -33,7 +34,7 @@ class EntryRevisionsController extends BaseEntriesController
      * Saves a draft, or creates a new one.
      *
      * @throws Exception
-     * @return void
+     * @return Response|null
      */
     public function actionSaveDraft()
     {
@@ -91,13 +92,15 @@ class EntryRevisionsController extends BaseEntriesController
                 'entry' => $draft
             ]);
         }
+
+        return null;
     }
 
     /**
      * Renames a draft.
      *
      * @throws Exception
-     * @return void
+     * @return Response
      */
     public function actionUpdateDraftMeta()
     {
@@ -132,7 +135,7 @@ class EntryRevisionsController extends BaseEntriesController
      * Deletes a draft.
      *
      * @throws Exception
-     * @return void
+     * @return Response
      */
     public function actionDeleteDraft()
     {
@@ -158,7 +161,7 @@ class EntryRevisionsController extends BaseEntriesController
      * Publish a draft.
      *
      * @throws Exception
-     * @return void
+     * @return Response|null
      */
     public function actionPublishDraft()
     {
@@ -223,13 +226,15 @@ class EntryRevisionsController extends BaseEntriesController
                 'entry' => $draft
             ]);
         }
+
+        return null;
     }
 
     /**
      * Reverts an entry to a version.
      *
      * @throws Exception
-     * @return void
+     * @return Response|null
      */
     public function actionRevertEntryToVersion()
     {
@@ -280,6 +285,8 @@ class EntryRevisionsController extends BaseEntriesController
                 'entry' => $version
             ]);
         }
+
+        return null;
     }
 
     // Private Methods

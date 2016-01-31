@@ -63,7 +63,7 @@ class TasksController extends Controller
     /**
      * Returns the completion percentage for the running task.
      *
-     * @return void
+     * @return Response|null
      */
     public function actionGetRunningTaskInfo()
     {
@@ -87,12 +87,14 @@ class TasksController extends Controller
         }
 
         Craft::$app->end();
+
+        return null;
     }
 
     /**
      * Re-runs a failed task.
      *
-     * @return void
+     * @return Response|null
      */
     public function actionRerunTask()
     {
@@ -115,6 +117,8 @@ class TasksController extends Controller
         }
 
         Craft::$app->end();
+
+        return null;
     }
 
     /**
@@ -137,7 +141,7 @@ class TasksController extends Controller
     /**
      * Returns info about all the tasks.
      *
-     * @return void
+     * @return Response
      */
     public function actionGetTaskInfo()
     {
