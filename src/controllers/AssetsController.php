@@ -563,7 +563,6 @@ class AssetsController extends Controller
     /**
      * Generate a transform.
      *
-     * @throws HttpException
      * @return Response The response object.
      */
     public function actionGenerateTransform()
@@ -586,11 +585,7 @@ class AssetsController extends Controller
             $transformIndexModel = $assetTransforms->getTransformIndexModelById($transformId);
         }
 
-        try {
-            $url = $assetTransforms->ensureTransformUrlByIndexModel($transformIndexModel);
-        } catch (Exception $exception) {
-            throw new HttpException(404, $exception->getMessage());
-        }
+        $url = $assetTransforms->ensureTransformUrlByIndexModel($transformIndexModel);
 
         if ($returnUrl) {
             return $this->asJson(['url' => $url]);
