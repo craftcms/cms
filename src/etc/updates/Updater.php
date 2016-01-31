@@ -403,7 +403,7 @@ class Updater
 			}
 
 			$rowData = explode(';', $row);
-			$filePath = IOHelper::normalizePathSeparators($handle == 'craft' ? craft()->path->getAppPath() : craft()->path->getPluginsPath().$handle.'/'.$rowData[0]);
+			$filePath = IOHelper::normalizePathSeparators(($handle == 'craft' ? craft()->path->getAppPath() : craft()->path->getPluginsPath().$handle.'/').$rowData[0]);
 
 			if (UpdateHelper::isManifestLineAFolder($filePath))
 			{
@@ -461,7 +461,7 @@ class Updater
 				}
 
 				$rowData = explode(';', $row);
-				$filePath = IOHelper::normalizePathSeparators($handle == 'craft' ? craft()->path->getAppPath() : craft()->path->getPluginsPath().$handle.'/'.$rowData[0]);
+				$filePath = IOHelper::normalizePathSeparators(($handle == 'craft' ? craft()->path->getAppPath() : craft()->path->getPluginsPath().$handle.'/').$rowData[0]);
 
 				// It's a folder
 				if (UpdateHelper::isManifestLineAFolder($filePath))
