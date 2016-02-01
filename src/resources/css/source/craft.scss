@@ -1178,6 +1178,9 @@ body #redactor-modal-overlay {
 .daterange-hud .daterange-items ul li a.icon:before,
 .daterange-hud .daterange-items ul li a.sel:before { @include floatleft; @include margin(3px, 0, 0, -17px); font-size: 11px; color: #000 !important; opacity: .4; }
 .daterange-hud .daterange-items ul li a.sel:not([data-icon]):before { content: 'check'; @include icon; }
+.daterange-hud .daterange-fields { margin: 0 -7px;}
+.daterange-hud .daterange-fields .datewrapper { margin: 0 7px;}
+.daterange-hud .buttons { margin-top: 14px; }
 
 
 /* ----------------------------------------
