@@ -217,6 +217,21 @@ Craft.charts.BaseChart = Garnish.Base.extend(
         // only redraw if data is set
         this.draw(this.dataTable, this.settings);
     },
+
+    onAfterDrawAxes: function()
+    {
+        // White border for ticks' text
+        $('.tick', this.$chart).each(function(tickKey, tick)
+        {
+            var $tickText = $('text', tick);
+
+            var $clone = $tickText.clone();
+            $clone.appendTo(tick);
+
+            $tickText.attr('stroke', '#ffffff');
+            $tickText.attr('stroke-width', 3);
+        });
+    }
 },
 {
     defaults: {
@@ -316,17 +331,7 @@ Craft.charts.Area = Craft.charts.BaseChart.extend(
             .attr("class", "y axis")
             .call(this.yAxis);
 
-        // White border for ticks' text
-        $('.tick', this.$chart).each(function(tickKey, tick)
-        {
-            var $tickText = $('text', tick);
-
-            var $clone = $tickText.clone();
-            $clone.appendTo(tick);
-
-            $tickText.attr('stroke', '#ffffff');
-            $tickText.attr('stroke-width', 3);
-        })
+        this.onAfterDrawAxes();
     },
 
     drawGridlines: function()
@@ -570,6 +575,8 @@ Craft.charts.Column = Craft.charts.BaseChart.extend(
                 .attr("transform", "rotate(-90)")
                 .attr("y", 6)
                 .attr("dy", ".71em");
+
+        this.onAfterDrawAxes();
     },
 
     drawTipTriggers: function()
