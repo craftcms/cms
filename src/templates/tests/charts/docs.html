@@ -32,10 +32,8 @@
     border: 1px solid #eee;
     width: 300px;
     margin-bottom: 24px;
-    padding: 20px;
+    padding: 0px;
 }
-
-
 
 {% endincludecss %}
 
@@ -48,6 +46,32 @@
     <div class="chart-doc">
 
         <h2>Area</h2>
+
+        <div id="area" class="chart-container"></div>
+
+        {% includejs %}
+
+            var dataTable = new Craft.charts.DataTable({
+                columns: [
+                    { label: 'Date', type: 'date' },
+                    { label: 'Users', type: 'currency' }
+                ],
+
+                rows: [
+                    [{ value: '23-Jan-16' }, { value: 5 }],
+                    [{ value: '24-Jan-16' }, { value: 15 }],
+                    [{ value: '25-Jan-16' }, { value: 10 }],
+                    [{ value: '26-Jan-16' }, { value: 13 }],
+                ]
+            });
+
+
+            var $chart = $('#area');
+
+            var chart = new Craft.charts.Area($chart);
+            chart.draw(dataTable);
+
+        {% endincludejs %}
 
         {{ chartDocs('area', 'Area Options', {
             chartClass: "'area'",
