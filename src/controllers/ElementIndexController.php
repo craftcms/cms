@@ -10,6 +10,7 @@ namespace craft\app\controllers;
 use Craft;
 use craft\app\base\ElementAction;
 use craft\app\base\ElementActionInterface;
+use craft\app\elements\db\ElementQuery;
 use craft\app\elements\db\ElementQueryInterface;
 use craft\app\base\ElementInterface;
 use craft\app\errors\HttpException;
@@ -181,10 +182,11 @@ class ElementIndexController extends BaseElementsController
         }
 
         // Perform the action
+        /** @var ElementQuery $actionCriteria */
         $actionCriteria = clone $this->_elementQuery;
         $actionCriteria->offset = 0;
         $actionCriteria->limit = null;
-        $actionCriteria->order = null;
+        $actionCriteria->orderBy = null;
         $actionCriteria->positionedAfter = null;
         $actionCriteria->positionedBefore = null;
         $actionCriteria->id = $elementIds;
