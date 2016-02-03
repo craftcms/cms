@@ -28,15 +28,15 @@ Craft.charts.DataTable = Garnish.Base.extend(
                 switch(column.type)
                 {
                     case 'date':
-                        d[cellIndex].value = d3.time.format("%d-%b-%y").parse(d[cellIndex].value);
+                        d[cellIndex] = d3.time.format("%d-%b-%y").parse(d[cellIndex]);
                     break;
 
                     case 'percent':
-                    d[cellIndex].value = d[cellIndex].value / 100;
+                    d[cellIndex] = d[cellIndex] / 100;
                     break;
 
                     case 'number':
-                        d[cellIndex].value = +d[cellIndex].value;
+                        d[cellIndex] = +d[cellIndex];
                         break;
 
                     default:
@@ -96,7 +96,7 @@ Craft.charts.Tip = Garnish.Base.extend(
 
         tipContentFormat: function(locale, d)
         {
-            return d[0].value+": "+d[1].value;
+            return d[0]+": "+d[1];
         }
     }
 });
@@ -259,13 +259,13 @@ Craft.charts.Area = Craft.charts.BaseChart.extend(
 
         // Area
         this.area = d3.svg.area()
-            .x($.proxy(function(d) { return this.x(d[0].value); }, this))
+            .x($.proxy(function(d) { return this.x(d[0]); }, this))
             .y0(this.height)
-            .y1($.proxy(function(d) { return this.y(d[1].value); }, this));
+            .y1($.proxy(function(d) { return this.y(d[1]); }, this));
 
         this.line = d3.svg.line()
-            .x($.proxy(function(d) { return this.x(d[0].value); }, this))
-            .y($.proxy(function(d) { return this.y(d[1].value); }, this));
+            .x($.proxy(function(d) { return this.x(d[0]); }, this))
+            .y($.proxy(function(d) { return this.y(d[1]); }, this));
 
         // Append graph to chart element
         this.svg = d3.select(this.$chart.get(0)).append("svg")
@@ -380,8 +380,8 @@ Craft.charts.Area = Craft.charts.BaseChart.extend(
             .enter().append("circle")
                 .attr("class", "plot")
                 .attr("r", 5)
-                .attr("cx", $.proxy(function(d) { return this.x(d[0].value); }, this))
-                .attr("cy", $.proxy(function(d) { return this.y(d[1].value); }, this));
+                .attr("cx", $.proxy(function(d) { return this.x(d[0]); }, this))
+                .attr("cy", $.proxy(function(d) { return this.y(d[1]); }, this));
         }
     },
 
@@ -395,8 +395,8 @@ Craft.charts.Area = Craft.charts.BaseChart.extend(
             .enter().append("circle")
                 .attr("class", "tip-trigger")
                 .attr("r", 10)
-                .attr("cx", $.proxy(function(d) { return this.x(d[0].value); }, this))
-                .attr("cy", $.proxy(function(d) { return this.y(d[1].value); }, this));
+                .attr("cx", $.proxy(function(d) { return this.x(d[0]); }, this))
+                .attr("cy", $.proxy(function(d) { return this.y(d[1]); }, this));
 
             // Instantiate tip
 
@@ -441,15 +441,15 @@ Craft.charts.Area = Craft.charts.BaseChart.extend(
 
         var formatNumber = this.yTickFormat(locale);
 
-        return formatTime(d[0].value)
+        return formatTime(d[0])
                     + '<br />'
                     + this.dataTable.columns[1].label+': '
-                    + formatNumber(d[1].value);
+                    + formatNumber(d[1]);
     },
 
     xDomain: function()
     {
-        return d3.extent(this.dataTable.rows, function(d) { return d[0].value; });
+        return d3.extent(this.dataTable.rows, function(d) { return d[0]; });
     },
 
     xTicks: function()
@@ -459,7 +459,7 @@ Craft.charts.Area = Craft.charts.BaseChart.extend(
 
     yAxisMaxValue: function()
     {
-        var maxValue = d3.max(this.dataTable.rows, function(d) { return d[1].value; });
+        var maxValue = d3.max(this.dataTable.rows, function(d) { return d[1]; });
         maxValue = maxValue * 100;
         maxValue = Math.round(maxValue);
 
@@ -516,8 +516,8 @@ Craft.charts.Column = Craft.charts.BaseChart.extend(
         this.x = d3.scale.ordinal().rangeRoundBands([0, this.width], .2);
         this.y = d3.scale.linear().range([this.height, 0]);
 
-        this.x.domain(this.dataTable.rows.map(function(d) { return d[0].value; }));
-        this.y.domain([0, d3.max(this.dataTable.rows, function(d) { return d[1].value; })]);
+        this.x.domain(this.dataTable.rows.map(function(d) { return d[0]; }));
+        this.y.domain([0, d3.max(this.dataTable.rows, function(d) { return d[1]; })]);
 
         // Append graph to chart element
         this.svg = d3.select(this.$chart.get(0)).append("svg")
@@ -539,10 +539,10 @@ Craft.charts.Column = Craft.charts.BaseChart.extend(
                 .data(this.dataTable.rows)
             .enter().append("rect")
                 .attr("class", "bar")
-                .attr("x", $.proxy(function(d) { return this.x(d[0].value); }, this))
+                .attr("x", $.proxy(function(d) { return this.x(d[0]); }, this))
                 .attr("width", this.x.rangeBand())
-                .attr("y", $.proxy(function(d) { return this.y(d[1].value); }, this))
-                .attr("height", $.proxy(function(d) { return this.height - this.y(d[1].value); }, this));
+                .attr("y", $.proxy(function(d) { return this.y(d[1]); }, this))
+                .attr("height", $.proxy(function(d) { return this.height - this.y(d[1]); }, this));
     },
 
     drawAxes: function()
@@ -631,7 +631,7 @@ Craft.charts.Pie = Craft.charts.BaseChart.extend(
         this.pie = d3.layout.pie()
             .sort(null)
             .value(function(d) {
-                return d[1].value;
+                return d[1];
             });
 
         this.svg = d3.select(this.$chart.get(0)).append("svg")
@@ -651,7 +651,7 @@ Craft.charts.Pie = Craft.charts.BaseChart.extend(
 
         g.append('path')
             .attr('d', this.arc)
-            .style('fill', $.proxy(function(d) { return this.color(d.data[0].value); }, this))
+            .style('fill', $.proxy(function(d) { return this.color(d.data[0]); }, this))
 
     },
 
@@ -676,7 +676,7 @@ Craft.charts.Pie = Craft.charts.BaseChart.extend(
 
     tipContentFormat: function(locale, d)
     {
-        return d.data[0].value+": "+d.data[1].value;
+        return d.data[0]+": "+d.data[1];
     }
 },
 {
@@ -755,10 +755,7 @@ Craft.charts.utils = {
                 var row = [];
 
                 $.each(v, function(k2, v2) {
-                    var cell = {
-                        label: v2,
-                        value: v2,
-                    };
+                    var cell = v2;
 
                     row.push(cell);
                 });

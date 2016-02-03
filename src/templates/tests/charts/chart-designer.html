@@ -87,14 +87,7 @@
                 var randomInt = this.randomInt(0, 1000);
 
                 rows.push([
-                    {
-                        label: i+"-Jan-16",
-                        value: i+"-Jan-16",
-                    },
-                    {
-                        label: randomInt,
-                        value: randomInt
-                    }
+                    i+"-Jan-16", randomInt
                 ]);
             }
 
@@ -124,46 +117,10 @@
                     { id: "ga:users", label: "Users", type: "integer" },
                 ],
                 rows: [
-                    [
-                        {
-                            label: "Chrome",
-                            value: "Chrome",
-                        },
-                        {
-                            label: "66",
-                            value: 66
-                        }
-                    ],
-                    [
-                        {
-                            label: "Safari",
-                            value: "Safari",
-                        },
-                        {
-                            label: "47",
-                            value: 47
-                        }
-                    ],
-                    [
-                        {
-                            label: "Firefox",
-                            value: "Firefox",
-                        },
-                        {
-                            label: "23",
-                            value: 23
-                        }
-                    ],
-                    [
-                        {
-                            label: "Internet Explorer",
-                            value: "Internet Explorer",
-                        },
-                        {
-                            label: "16",
-                            value: 16
-                        }
-                    ],
+                    ["Chrome", "66"],
+                    ["Safari", "47"],
+                    ["Firefox", "23"],
+                    ["Internet Explorer", "16"],
                 ]
             };
         }
