@@ -81,7 +81,7 @@ class AssetsController extends Controller
                         'folderId' => $assetToReplaceWith->folderId
                     ]);
 
-                    if ($assetToReplace) {
+                    if (!$assetToReplace) {
                         throw new BadRequestHttpException('Asset to be replaced cannot be found');
                     }
 
