@@ -8,12 +8,13 @@
 namespace craft\app\controllers;
 
 use Craft;
-use craft\app\errors\Exception;
-use craft\app\errors\HttpException;
 use craft\app\helpers\App;
 use craft\app\helpers\Template;
 use craft\app\web\Controller;
 use ErrorException;
+use yii\web\HttpException;
+use yii\web\NotFoundHttpException;
+use yii\web\ServerErrorHttpException;
 
 /**
  * The TemplatesController class is a controller that handles various template rendering related tasks for both the
@@ -44,7 +45,7 @@ class TemplatesController extends Controller
      * @param array $variables
      *
      * @return string The rendering result
-     * @throws HttpException
+     * @throws NotFoundHttpException if the requested template cannot be found
      */
     public function actionRender($template, array $variables = [])
     {
@@ -52,7 +53,7 @@ class TemplatesController extends Controller
         if (Craft::$app->getView()->doesTemplateExist($template)) {
             return $this->renderTemplate($template, $variables);
         } else {
-            throw new HttpException(404);
+            throw new NotFoundHttpException('Template not found');
         }
     }
 
@@ -97,7 +98,7 @@ class TemplatesController extends Controller
 
     /**
      * @return string The rendering result
-     * @throws Exception if it's an Ajax request and the server doesn’t meet Craft’s requirements
+     * @throws ServerErrorHttpException if it's an Ajax request and the server doesn’t meet Craft’s requirements
      */
     public function actionRequirementsCheck()
     {
@@ -118,7 +119,7 @@ class TemplatesController extends Controller
                     }
                 }
 
-                throw new Exception(Craft::t('app', 'The update can’t be installed :( {message}', ['message' => $message]));
+                throw new ServerErrorHttpException(Craft::t('app', 'The update can’t be installed :( {message}', ['message' => $message]));
             } else {
                 return $this->renderTemplate('_special/cantrun',
                     ['reqCheck' => $reqCheck]);
@@ -132,7 +133,6 @@ class TemplatesController extends Controller
     /**
      * Renders an error template.
      *
-     * @throws \Exception
      * @return string
      */
     public function actionRenderError()
@@ -141,7 +141,7 @@ class TemplatesController extends Controller
         $errorHandler = Craft::$app->getErrorHandler();
         $exception = $errorHandler->exception;
 
-        if ($exception instanceof \yii\web\HttpException && $exception->statusCode) {
+        if ($exception instanceof HttpException && $exception->statusCode) {
             $statusCode = (string)$exception->statusCode;
         } else {
             $statusCode = '500';

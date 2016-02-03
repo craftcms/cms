@@ -9,9 +9,9 @@ namespace craft\app\web;
 
 use Craft;
 use craft\app\base\RequestTrait;
-use craft\app\errors\HttpException;
 use craft\app\helpers\StringHelper;
 use yii\base\InvalidConfigException;
+use yii\web\BadRequestHttpException;
 
 /**
  * @inheritdoc
@@ -509,7 +509,7 @@ class Request extends \yii\web\Request
      * @param string $name The parameter name.
      *
      * @return mixed The parameter value
-     * @throws HttpException
+     * @throws BadRequestHttpException if the request does not have the body param
      * @see getBodyParam()
      */
     public function getRequiredBodyParam($name)
@@ -520,8 +520,7 @@ class Request extends \yii\web\Request
             return $value;
         }
 
-        throw new HttpException(400, Craft::t('app', 'Body param “{name}” doesn’t exist.',
-            ['name' => $name]));
+        throw new BadRequestHttpException('Request missing required body param');
     }
 
     /**
@@ -569,7 +568,7 @@ class Request extends \yii\web\Request
      * @param string $name The GET parameter name.
      *
      * @return mixed The GET parameter value.
-     * @throws HttpException
+     * @throws BadRequestHttpException if the request does not have the query param
      * @see getQueryParam()
      */
     public function getRequiredQueryParam($name)
@@ -580,8 +579,7 @@ class Request extends \yii\web\Request
             return $value;
         }
 
-        throw new HttpException(400, Craft::t('app', 'GET param “{name}” doesn’t exist.',
-            ['name' => $name]));
+        throw new BadRequestHttpException('Request missing required query param');
     }
 
     /**
@@ -616,7 +614,7 @@ class Request extends \yii\web\Request
      * @param string $name The parameter name.
      *
      * @return mixed The parameter value.
-     * @throws HttpException
+     * @throws BadRequestHttpException if the request does not have the param
      * @see getQueryParam()
      * @see getBodyParam()
      */
@@ -628,8 +626,7 @@ class Request extends \yii\web\Request
             return $value;
         }
 
-        throw new HttpException(400, Craft::t('app', 'Param “{name}” doesn’t exist.',
-            ['name' => $name]));
+        throw new BadRequestHttpException('Request missing required param');
     }
 
     /**
@@ -842,8 +839,7 @@ class Request extends \yii\web\Request
      *
      * @param $token
      *
-     * @return bool
-     * @throws \CException
+     * @return boolean
      */
     protected function csrfTokenValidForCurrentUser($token)
     {

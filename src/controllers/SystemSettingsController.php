@@ -9,7 +9,6 @@ namespace craft\app\controllers;
 
 use Craft;
 use craft\app\dates\DateTime;
-use craft\app\errors\HttpException;
 use craft\app\errors\InvalidComponentException;
 use craft\app\helpers\Component;
 use craft\app\helpers\Template;
@@ -31,6 +30,7 @@ use craft\app\tools\FindAndReplace;
 use craft\app\tools\SearchIndex;
 use craft\app\web\twig\variables\ToolInfo;
 use craft\app\web\Controller;
+use yii\web\NotFoundHttpException;
 use yii\web\Response;
 
 /**
@@ -49,7 +49,6 @@ class SystemSettingsController extends Controller
 
     /**
      * @inheritdoc
-     * @throws HttpException if the user isn’t an admin
      */
     public function init()
     {
@@ -336,7 +335,7 @@ class SystemSettingsController extends Controller
      * @param GlobalSet $globalSet   The global set being edited, if there were any validation errors.
      *
      * @return string The rendering result
-     * @throws HttpException
+     * @throws NotFoundHttpException if the requested global set cannot be found
      */
     public function actionEditGlobalSet($globalSetId = null, GlobalSet $globalSet = null)
     {
@@ -345,7 +344,7 @@ class SystemSettingsController extends Controller
                 $globalSet = Craft::$app->getGlobals()->getSetById($globalSetId);
 
                 if (!$globalSet) {
-                    throw new HttpException(404);
+                    throw new NotFoundHttpException('Global set not found');
                 }
             } else {
                 $globalSet = new GlobalSet();

@@ -8,10 +8,10 @@
 namespace craft\app\controllers;
 
 use Craft;
-use craft\app\errors\HttpException;
 use craft\app\helpers\Image;
 use craft\app\models\AssetTransform;
 use craft\app\web\Controller;
+use yii\web\NotFoundHttpException;
 
 /**
  * The AssetTransformsController class is a controller that handles various actions related to asset transformations,
@@ -29,7 +29,6 @@ class AssetTransformsController extends Controller
 
     /**
      * @inheritdoc
-     * @throws HttpException if the user isn’t an admin
      */
     public function init()
     {
@@ -57,7 +56,7 @@ class AssetTransformsController extends Controller
      * @param AssetTransform $transform       The transform being edited, if there were any validation errors.
      *
      * @return string The rendering result
-     * @throws HttpException
+     * @throws NotFoundHttpException if the requested transform cannot be found
      */
     public function actionEditTransform($transformHandle = null, AssetTransform $transform = null)
     {
@@ -66,7 +65,7 @@ class AssetTransformsController extends Controller
                 $transform = Craft::$app->getAssetTransforms()->getTransformByHandle($transformHandle);
 
                 if (!$transform) {
-                    throw new HttpException(404);
+                    throw new NotFoundHttpException('Transform not found');
                 }
             } else {
                 $transform = new AssetTransform();

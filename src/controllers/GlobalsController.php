@@ -8,10 +8,10 @@
 namespace craft\app\controllers;
 
 use Craft;
-use craft\app\errors\Exception;
-use craft\app\errors\HttpException;
 use craft\app\elements\GlobalSet;
 use craft\app\web\Controller;
+use yii\web\ForbiddenHttpException;
+use yii\web\NotFoundHttpException;
 use yii\web\Response;
 
 /**
@@ -31,8 +31,7 @@ class GlobalsController extends Controller
     /**
      * Saves a global set.
      *
-     * @throws HttpException if this isn’t a post request or an admin isn’t logged in
-     * @throws Exception if the given ‘setId’ param is invalid
+     * @throws NotFoundHttpException if the requested global set cannot be found
      */
     public function actionSaveSet()
     {
@@ -45,7 +44,7 @@ class GlobalsController extends Controller
             $globalSet = Craft::$app->getGlobals()->getSetById($globalSetId);
 
             if (!$globalSet) {
-                throw new Exception(Craft::t('app', 'No global set exists with the ID “{id}”.', ['id' => $globalSetId]));
+                throw new NotFoundHttpException('Global set not found');
             }
         } else {
             $globalSet = new GlobalSet();
@@ -101,7 +100,7 @@ class GlobalsController extends Controller
      * @param GlobalSet $globalSet       The global set being edited, if there were any validation errors.
      *
      * @return string The rendering result
-     * @throws HttpException
+     * @throws ForbiddenHttpException if the user is not permitted to edit the global set
      */
     public function actionEditContent($globalSetHandle, $localeId = null, GlobalSet $globalSet = null)
     {
@@ -112,7 +111,7 @@ class GlobalsController extends Controller
         if ($localeId) {
             // Make sure the user has permission to edit that locale
             if (!in_array($localeId, $editableLocaleIds)) {
-                throw new HttpException(404);
+                throw new ForbiddenHttpException('User not permitted to edit content in any locales');
             }
         } else {
             // Are they allowed to edit the current app locale?
@@ -138,7 +137,7 @@ class GlobalsController extends Controller
         }
 
         if (!$editableGlobalSets || !isset($editableGlobalSets[$globalSetHandle])) {
-            throw new HttpException(404);
+            throw new ForbiddenHttpException('User not permitted to edit global set');
         }
 
         if ($globalSet === null) {
@@ -157,8 +156,8 @@ class GlobalsController extends Controller
     /**
      * Saves a global set's content.
      *
-     * @throws Exception
      * @return Response|null
+     * @throws NotFoundHttpException if the requested global set cannot be found
      */
     public function actionSaveContent()
     {
@@ -177,7 +176,7 @@ class GlobalsController extends Controller
         $globalSet = Craft::$app->getGlobals()->getSetById($globalSetId, $localeId);
 
         if (!$globalSet) {
-            throw new Exception(Craft::t('app', 'No global set exists with the ID “{id}”.', ['id' => $globalSetId]));
+            throw new NotFoundHttpException('Global set not found');
         }
 
         $globalSet->setFieldValuesFromPost('fields');

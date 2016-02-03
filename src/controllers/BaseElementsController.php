@@ -10,9 +10,9 @@ namespace craft\app\controllers;
 use Craft;
 use craft\app\base\ElementInterface;
 use craft\app\errors\Exception;
-use craft\app\errors\HttpException;
 use craft\app\services\Elements;
 use craft\app\web\Controller;
+use yii\web\ForbiddenHttpException;
 
 /**
  * The BaseElementsController class provides some common methods for [[ElementsController]] and [[ElementIndexController]].
@@ -30,8 +30,8 @@ abstract class BaseElementsController extends Controller
     /**
      * Initializes the application component.
      *
-     * @throws HttpException
      * @return void
+     * @throws ForbiddenHttpException if this is not a Control Panel request
      */
     public function init()
     {
@@ -40,7 +40,7 @@ abstract class BaseElementsController extends Controller
 
         // Element controllers are only available to the Control Panel
         if (!Craft::$app->getRequest()->getIsCpRequest()) {
-            throw new HttpException(403);
+            throw new ForbiddenHttpException('Action only available from the Control Panel');
         }
     }
 

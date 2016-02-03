@@ -8,7 +8,6 @@
 namespace craft\app\controllers;
 
 use Craft;
-use craft\app\errors\HttpException;
 use craft\app\helpers\Db;
 use craft\app\helpers\Search;
 use craft\app\helpers\StringHelper;
@@ -16,6 +15,7 @@ use craft\app\helpers\Url;
 use craft\app\elements\Tag;
 use craft\app\models\TagGroup;
 use craft\app\web\Controller;
+use yii\web\NotFoundHttpException;
 use yii\web\Response;
 
 /**
@@ -55,7 +55,7 @@ class TagsController extends Controller
      * @param TagGroup $tagGroup   The tag group being edited, if there were any validation errors.
      *
      * @return string The rendering result
-     * @throws HttpException
+     * @throws NotFoundHttpException if the requested tag group cannot be found
      */
     public function actionEditTagGroup($tagGroupId = null, TagGroup $tagGroup = null)
     {
@@ -66,7 +66,7 @@ class TagsController extends Controller
                 $tagGroup = Craft::$app->getTags()->getTagGroupById($tagGroupId);
 
                 if (!$tagGroup) {
-                    throw new HttpException(404);
+                    throw new NotFoundHttpException('Tag group not found');
                 }
             }
 

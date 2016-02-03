@@ -9,13 +9,13 @@ namespace craft\app\web;
 
 use Craft;
 use craft\app\base\ApplicationTrait;
-use craft\app\errors\HttpException;
 use craft\app\helpers\Header;
 use craft\app\helpers\Json;
 use craft\app\helpers\StringHelper;
 use craft\app\helpers\Url;
 use yii\base\InvalidRouteException;
 use yii\web\ForbiddenHttpException;
+use yii\web\HttpException;
 use yii\web\NotFoundHttpException;
 use yii\web\Response;
 
@@ -434,8 +434,9 @@ class Application extends \yii\web\Application
      *
      * @param Request $request
      *
-     * @return Response|null
+     * @return null|Response
      * @throws NotFoundHttpException
+     * @throws ServiceUnavailableHttpException
      * @throws \yii\base\ExitException
      */
     private function _processInstallRequest($request)

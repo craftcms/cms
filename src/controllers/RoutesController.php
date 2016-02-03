@@ -8,7 +8,6 @@
 namespace craft\app\controllers;
 
 use Craft;
-use craft\app\errors\HttpException;
 use craft\app\web\Controller;
 use yii\web\Response;
 
@@ -28,7 +27,6 @@ class RoutesController extends Controller
 
     /**
      * @inheritdoc
-     * @throws HttpException if the user isn’t an admin
      */
     public function init()
     {

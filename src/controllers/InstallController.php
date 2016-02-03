@@ -8,12 +8,12 @@
 namespace craft\app\controllers;
 
 use Craft;
-use craft\app\errors\HttpException;
 use craft\app\migrations\Install;
 use craft\app\models\AccountSettings as AccountSettingsModel;
 use craft\app\models\SiteSettings as SiteSettingsModel;
 use craft\app\web\Controller;
 use yii\base\Response;
+use yii\web\BadRequestHttpException;
 
 /**
  * The InstallController class is a controller that directs all installation related tasks such as creating the database
@@ -39,13 +39,13 @@ class InstallController extends Controller
 
     /**
      * @inheritdoc
-     * @throws HttpException if Craft is already installed
+     * @throws BadRequestHttpException if Craft is already installed
      */
     public function init()
     {
         // Return a 404 if Craft is already installed
         if (!Craft::$app->getConfig()->get('devMode') && Craft::$app->isInstalled()) {
-            throw new HttpException(404);
+            throw new BadRequestHttpException('Craft CMS is already installed');
         }
     }
 

@@ -13,7 +13,8 @@ use craft\app\base\ElementActionInterface;
 use craft\app\elements\db\ElementQuery;
 use craft\app\elements\db\ElementQueryInterface;
 use craft\app\base\ElementInterface;
-use craft\app\errors\HttpException;
+use yii\web\BadRequestHttpException;
+use yii\web\ForbiddenHttpException;
 use yii\web\Response;
 
 /**
@@ -140,7 +141,7 @@ class ElementIndexController extends BaseElementsController
      * Performs an action on one or more selected elements.
      *
      * @return Response
-     * @throws HttpException
+     * @throws BadRequestHttpException if the requested element action is not supported by the element type, or its parameters didn’t validate
      */
     public function actionPerformAction()
     {
@@ -164,7 +165,7 @@ class ElementIndexController extends BaseElementsController
         }
 
         if (!isset($action)) {
-            throw new HttpException(400);
+            throw new BadRequestHttpException('Element action is not supported by the element type');
         }
 
         // Check for any params in the post data
@@ -178,7 +179,7 @@ class ElementIndexController extends BaseElementsController
 
         // Make sure the action validates
         if (!$action->validate()) {
-            throw new HttpException(400);
+            throw new BadRequestHttpException('Element action params did not validate');
         }
 
         // Perform the action
@@ -216,8 +217,8 @@ class ElementIndexController extends BaseElementsController
     /**
      * Returns the selected source info.
      *
-     * @throws HttpException
      * @return array|null
+     * @throws ForbiddenHttpException if the user is not permitted to access the requested source
      */
     private function _getSource()
     {
@@ -227,7 +228,7 @@ class ElementIndexController extends BaseElementsController
 
             if (!$source) {
                 // That wasn't a valid source, or the user doesn't have access to it in this context
-                throw new HttpException(404);
+                throw new ForbiddenHttpException('User not permitted to access this source');
             }
 
             return $source;

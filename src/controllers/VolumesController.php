@@ -10,10 +10,11 @@ namespace craft\app\controllers;
 use Craft;
 use craft\app\base\Volume;
 use craft\app\elements\Asset;
-use craft\app\errors\HttpException;
 use craft\app\helpers\Json;
 use craft\app\helpers\Url;
 use craft\app\web\Controller;
+use Exception;
+use yii\web\NotFoundHttpException;
 use yii\web\Response;
 
 /**
@@ -32,7 +33,6 @@ class VolumesController extends Controller
 
     /**
      * @inheritdoc
-     * @throws HttpException if the user isn’t an admin
      */
     public function init()
     {
@@ -59,7 +59,7 @@ class VolumesController extends Controller
      * @param Volume  $volume   The volume being edited, if there were any validation errors.
      *
      * @return string The rendering result
-     * @throws HttpException
+     * @throws NotFoundHttpException if the requested volume cannot be found
      */
     public function actionEditVolume($volumeId = null, Volume $volume = null)
     {
@@ -71,7 +71,7 @@ class VolumesController extends Controller
                 $volume = $volumes->getVolumeById($volumeId);
 
                 if (!$volume) {
-                    throw new HttpException(404, "No volume exists with the ID '$volumeId'.");
+                    throw new NotFoundHttpException('Volume not found');
                 }
             } else {
                 $volume = $volumes->createVolume('craft\app\volumes\Local');
@@ -256,7 +256,7 @@ class VolumesController extends Controller
             ), $params);
 
             return $this->asJson($result);
-        } catch (\Exception $exception) {
+        } catch (Exception $exception) {
             return $this->asErrorJson($exception->getMessage());
         }
     }

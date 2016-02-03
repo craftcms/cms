@@ -14,9 +14,9 @@ use craft\app\helpers\Url;
 use craft\app\models\FieldGroup as FieldGroupModel;
 use craft\app\web\twig\variables\ComponentInfo;
 use craft\app\web\Controller;
-use yii\base\Exception;
-use yii\web\HttpException;
+use yii\web\NotFoundHttpException;
 use yii\web\Response;
+use yii\web\ServerErrorHttpException;
 
 /**
  * The FieldsController class is a controller that handles various field and field group related tasks such as saving
@@ -34,7 +34,6 @@ class FieldsController extends Controller
 
     /**
      * @inheritdoc
-     * @throws HttpException if the user isn’t an admin
      */
     public function init()
     {
@@ -108,8 +107,8 @@ class FieldsController extends Controller
      * @param integer              $groupId The default group ID that the field should be saved in
      *
      * @return string The rendering result
-     * @throws HttpException if there are no field groups, or the requested field doesn’t exist
-     * @throws Exception if the field’s group doesn’t exist
+     * @throws NotFoundHttpException if the requested field/field group cannot be found
+     * @throws ServerErrorHttpException if no field groups exist
      */
     public function actionEditField($fieldId = null, FieldInterface $field = null, $groupId = null)
     {
@@ -122,7 +121,7 @@ class FieldsController extends Controller
             $field = Craft::$app->getFields()->getFieldById($fieldId);
 
             if ($field === null) {
-                throw new HttpException(404, "No field exists with the ID '$fieldId'.");
+                throw new NotFoundHttpException('Field not found');
             }
         }
 
@@ -153,7 +152,7 @@ class FieldsController extends Controller
         $allGroups = Craft::$app->getFields()->getAllGroups();
 
         if (empty($allGroups)) {
-            throw new HttpException(404, 'No field groups exist.');
+            throw new ServerErrorHttpException('No field groups exist');
         }
 
         if ($groupId === null) {
@@ -163,7 +162,7 @@ class FieldsController extends Controller
         $fieldGroup = Craft::$app->getFields()->getGroupById($groupId);
 
         if ($fieldGroup === null) {
-            throw new Exception("No field group exists with the ID '$groupId'.");
+            throw new NotFoundHttpException('Field group not found');
         }
 
         $groupOptions = [];
@@ -217,7 +216,6 @@ class FieldsController extends Controller
      * Saves a field.
      *
      * @return Response|null
-     * @throws Exception
      */
     public function actionSaveField()
     {

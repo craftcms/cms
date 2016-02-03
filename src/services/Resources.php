@@ -9,15 +9,17 @@ namespace craft\app\services;
 
 use Craft;
 use craft\app\dates\DateTime;
-use craft\app\errors\Exception;
-use craft\app\errors\HttpException;
 use craft\app\helpers\Assets as AssetsHelper;
 use craft\app\helpers\Io;
 use craft\app\helpers\Path as PathHelper;
 use craft\app\helpers\StringHelper;
 use craft\app\helpers\Url;
+use Exception;
 use yii\base\Component;
 use yii\helpers\FileHelper;
+use yii\web\ForbiddenHttpException;
+use yii\web\NotFoundHttpException;
+use yii\web\ServerErrorHttpException;
 
 /**
  * Class Resources service.
@@ -83,8 +85,9 @@ class Resources extends Component
      *
      * @param string $path
      *
-     * @throws HttpException
      * @return string
+     * @throws NotFoundHttpException if the requested image transform cannot be found
+     * @throws ServerErrorHttpException if reasons
      */
     public function getResourcePath($path)
     {
@@ -229,12 +232,12 @@ class Resources extends Component
                         }
 
                         if (empty($transformIndexModel)) {
-                            throw new HttpException(404);
+                            throw new NotFoundHttpException('Image transform not found');
                         }
 
                         $url = Craft::$app->getAssetTransforms()->ensureTransformUrlByIndexModel($transformIndexModel);
                     } catch (Exception $exception) {
-                        throw new HttpException(404, $exception->getMessage());
+                        throw new ServerErrorHttpException($exception->getMessage());
                     }
 
                     Craft::$app->getResponse()->redirect($url);
@@ -277,13 +280,14 @@ class Resources extends Component
      *
      * @param string $path
      *
-     * @throws HttpException
      * @return void
+     * @throws ForbiddenHttpException if the requested resource path is not contained within the allowed directories
+     * @throws NotFoundHttpException if the requested resource cannot be found
      */
     public function sendResource($path)
     {
         if (PathHelper::ensurePathIsContained($path) === false) {
-            throw new HttpException(404);
+            throw new ForbiddenHttpException('Resource path not contained within allowed directories');
         }
 
         $cachedPath = $this->getCachedResourcePath($path);
@@ -305,7 +309,7 @@ class Resources extends Component
         }
 
         if ($realPath === false || !Io::fileExists($realPath)) {
-            throw new HttpException(404);
+            throw new NotFoundHttpException('Resource not found');
         }
 
         // If there is a timestamp and HTTP_IF_MODIFIED_SINCE exists, check the timestamp against requested file's last

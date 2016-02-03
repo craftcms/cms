@@ -8,11 +8,12 @@
 namespace craft\app\web;
 
 use Craft;
-use craft\app\errors\HttpException;
 use craft\app\helpers\Header;
 use craft\app\helpers\Io;
 use craft\app\helpers\Url;
 use yii\base\InvalidParamException;
+use yii\web\BadRequestHttpException;
+use yii\web\ForbiddenHttpException;
 
 /**
  * Controller is a base class that all controllers in Craft extend.
@@ -117,8 +118,8 @@ abstract class Controller extends \yii\web\Controller
     /**
      * Throws a 403 error if the current user is not an admin.
      *
-     * @throws HttpException
      * @return void
+     * @throws ForbiddenHttpException if the current user is not an admin
      */
     public function requireAdmin()
     {
@@ -127,7 +128,7 @@ abstract class Controller extends \yii\web\Controller
 
         // Make sure they're an admin
         if (!Craft::$app->getUser()->getIsAdmin()) {
-            throw new HttpException(403, Craft::t('app', 'This action may only be performed by admins.'));
+            throw new ForbiddenHttpException('User is not permitted to perform this action');
         }
     }
 
@@ -136,13 +137,13 @@ abstract class Controller extends \yii\web\Controller
      *
      * @param string $permissionName The name of the permission.
      *
-     * @throws HttpException
      * @return void
+     * @throws ForbiddenHttpException if the current user doesn’t have the required permission
      */
     public function requirePermission($permissionName)
     {
         if (!Craft::$app->getUser()->checkPermission($permissionName)) {
-            throw new HttpException(403);
+            throw new ForbiddenHttpException('User is not permitted to perform this action');
         }
     }
 
@@ -151,52 +152,52 @@ abstract class Controller extends \yii\web\Controller
      *
      * @param string $action The name of the action to check.
      *
-     * @throws HttpException
      * @return void
+     * @throws ForbiddenHttpException if the current user is not authorized
      */
     public function requireAuthorization($action)
     {
         if (!Craft::$app->getSession()->checkAuthorization($action)) {
-            throw new HttpException(403);
+            throw new ForbiddenHttpException('User is not authorized to perform this action');
         }
     }
 
     /**
      * Throws a 400 error if this isn’t a POST request
      *
-     * @throws HttpException
      * @return void
+     * @throws BadRequestHttpException if the request is not a post request
      */
     public function requirePostRequest()
     {
         if (!Craft::$app->getRequest()->getIsPost()) {
-            throw new HttpException(400);
+            throw new BadRequestHttpException('Post request required');
         }
     }
 
     /**
      * Throws a 400 error if this isn’t an Ajax request.
      *
-     * @throws HttpException
      * @return void
+     * @throws BadRequestHttpException if the request is not an ajax request
      */
     public function requireAjaxRequest()
     {
         if (!Craft::$app->getRequest()->getIsAjax()) {
-            throw new HttpException(400);
+            throw new BadRequestHttpException('Ajax request required');
         }
     }
 
     /**
      * Throws a 400 error if the current request doesn’t have a valid token.
      *
-     * @throws HttpException
      * @return void
+     * @throws BadRequestHttpException if the request does not have a valid token
      */
     public function requireToken()
     {
         if (!Craft::$app->getRequest()->getQueryParam(Craft::$app->getConfig()->get('tokenParam'))) {
-            throw new HttpException(400);
+            throw new BadRequestHttpException('Valid token required');
         }
     }
 

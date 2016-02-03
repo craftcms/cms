@@ -9,7 +9,6 @@ namespace craft\app\controllers;
 
 use Craft;
 use craft\app\base\ToolInterface;
-use craft\app\errors\HttpException;
 use craft\app\helpers\Component;
 use craft\app\helpers\Io;
 use craft\app\web\Controller;
@@ -30,7 +29,6 @@ class ToolsController extends Controller
 
     /**
      * @inheritdoc
-     * @throws HttpException if the user isn’t an admin
      */
     public function init()
     {

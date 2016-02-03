@@ -9,9 +9,8 @@ namespace craft\app\controllers;
 
 use Craft;
 use craft\app\base\PluginInterface;
-use craft\app\errors\Exception;
-use craft\app\errors\HttpException;
 use craft\app\web\Controller;
+use yii\web\NotFoundHttpException;
 use yii\web\Response;
 
 /**
@@ -30,7 +29,6 @@ class PluginsController extends Controller
 
     /**
      * @inheritdoc
-     * @throws HttpException if the user isn’t an admin
      */
     public function init()
     {
@@ -120,8 +118,8 @@ class PluginsController extends Controller
      * @param string                      $pluginHandle The plugin’s handle
      * @param PluginInterface|Plugin|null $plugin       The plugin, if there were validation errors
      *
-     * @throws HttpException if the requested plugin doesn’t exist or doesn’t have settings
      * @return string The plugin page HTML
+     * @throws NotFoundHttpException if the requested plugin cannot be found
      */
     public function actionEditPluginSettings($pluginHandle, PluginInterface $plugin = null)
     {
@@ -129,7 +127,7 @@ class PluginsController extends Controller
             $plugin = Craft::$app->getPlugins()->getPlugin($pluginHandle);
 
             if ($plugin === null) {
-                throw new HttpException(404);
+                throw new NotFoundHttpException('Plugin not found');
             }
         }
 
@@ -139,7 +137,8 @@ class PluginsController extends Controller
     /**
      * Saves a plugin’s settings.
      *
-     * @throws Exception
+     * @return void
+     * @throws NotFoundHttpException if the requested plugin cannot be found
      */
     public function actionSavePluginSettings()
     {
@@ -149,7 +148,7 @@ class PluginsController extends Controller
         $plugin = Craft::$app->getPlugins()->getPlugin($pluginHandle);
 
         if ($plugin === null) {
-            throw new Exception(Craft::t('app', 'No plugin exists with the class “{class}”', ['class' => $pluginHandle]));
+            throw new NotFoundHttpException('Plugin not found');
         }
 
         if (Craft::$app->getPlugins()->savePluginSettings($plugin, $settings)) {

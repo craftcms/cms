@@ -8,8 +8,6 @@
 namespace craft\app\controllers;
 
 use Craft;
-use craft\app\errors\Exception;
-use craft\app\errors\HttpException;
 use craft\app\events\UserEvent;
 use craft\app\helpers\Assets;
 use craft\app\helpers\Image;
@@ -20,6 +18,11 @@ use craft\app\elements\User;
 use craft\app\services\Users;
 use craft\app\web\Controller;
 use craft\app\web\UploadedFile;
+use Exception;
+use yii\web\BadRequestHttpException;
+use yii\web\ForbiddenHttpException;
+use yii\web\HttpException;
+use yii\web\NotFoundHttpException;
 use yii\web\Response;
 
 /**
@@ -166,8 +169,8 @@ class UsersController extends Controller
     /**
      * Sends a password reset email.
      *
-     * @throws HttpException
      * @return Response|null
+     * @throws NotFoundHttpException if the requested user cannot be found
      */
     public function actionSendPasswordResetEmail()
     {
@@ -183,7 +186,7 @@ class UsersController extends Controller
                 $user = Craft::$app->getUsers()->getUserById($userId);
 
                 if (!$user) {
-                    throw new HttpException(404);
+                    throw new NotFoundHttpException('User not found');
                 }
             }
         }
@@ -234,15 +237,15 @@ class UsersController extends Controller
     /**
      * Generates a new verification code for a given user, and returns its URL.
      *
-     * @throws HttpException|Exception
      * @return void
+     * @throws BadRequestHttpException if the existing password submitted with the request is invalid
      */
     public function actionGetPasswordResetUrl()
     {
         $this->requireAdmin();
 
         if (!$this->_verifyExistingPassword()) {
-            throw new HttpException(403);
+            throw new BadRequestHttpException('Existing password verification failed');
         }
 
         $userId = Craft::$app->getRequest()->getRequiredParam('userId');
@@ -260,7 +263,6 @@ class UsersController extends Controller
      * Sets a user's password once they've verified they have access to their email.
      *
      * @return string The rendering result
-     * @throws HttpException|Exception
      */
     public function actionSetPassword()
     {
@@ -407,7 +409,7 @@ class UsersController extends Controller
      * @param User $user The user being edited, if there were any validation errors.
      *
      * @return string The rendering result
-     * @throws HttpException
+     * @throws NotFoundHttpException if the requested user cannot be found
      */
     public function actionEditUser($userId = null, User $user = null)
     {
@@ -441,7 +443,7 @@ class UsersController extends Controller
                         $user = Craft::$app->getUsers()->getUserById($userId);
 
                         if (!$user) {
-                            throw new HttpException(404);
+                            throw new NotFoundHttpException('User not found');
                         }
                     }
                 }
@@ -451,7 +453,7 @@ class UsersController extends Controller
                     $user = new User();
                 } else {
                     // Nada.
-                    throw new HttpException(404);
+                    throw new NotFoundHttpException('User not found');
                 }
             }
         }
@@ -690,8 +692,10 @@ class UsersController extends Controller
      *
      * This action behaves the same regardless of whether it was requested from the Control Panel or the front-end site.
      *
-     * @throws HttpException|Exception
      * @return Response
+     * @throws NotFoundHttpException if the requested user cannot be found
+     * @throws BadRequestHttpException if attempting to create a client account, and one already exists
+     * @throws ForbiddenHttpException if attempting public registration but public registration is not allowed
      */
     public function actionSaveUser()
     {
@@ -718,8 +722,7 @@ class UsersController extends Controller
                 ->one();
 
             if (!$user) {
-                throw new Exception(Craft::t('app',
-                    'No user exists with the ID “{id}”.', ['id' => $userId]));
+                throw new NotFoundHttpException('User not found');
             }
 
             if (!$user->isCurrent()) {
@@ -733,8 +736,7 @@ class UsersController extends Controller
 
                 // Make sure there's no Client user yet
                 if (Craft::$app->getUsers()->getClient()) {
-                    throw new Exception(Craft::t('app',
-                        'A client account already exists.'));
+                    throw new BadRequestHttpException('A client account already exists');
                 }
 
                 $user = new User();
@@ -752,7 +754,7 @@ class UsersController extends Controller
                     if (!Craft::$app->getSystemSettings()->getSetting('users',
                         'allowPublicRegistration')
                     ) {
-                        throw new HttpException(403);
+                        throw new ForbiddenHttpException('Public registration is not allowed');
                     }
 
                     $thisIsPublicRegistration = true;
@@ -984,6 +986,7 @@ class UsersController extends Controller
      * Upload a user photo.
      *
      * @return Response
+     * @throws BadRequestHttpException if the uploaded file is not an image
      */
     public function actionUploadUserPhoto()
     {
@@ -1005,8 +1008,7 @@ class UsersController extends Controller
                 $filename = Assets::prepareAssetName($file->name);
 
                 if (!Image::isImageManipulatable($file->getExtension())) {
-                    throw new Exception(Craft::t('app',
-                        'The uploaded file is not an image.'));
+                    throw new BadRequestHttpException('The uploaded file is not an image');
                 }
 
                 $user = Craft::$app->getUsers()->getUserById($userId);
@@ -1151,8 +1153,7 @@ class UsersController extends Controller
      * Sends a new activation email to a user.
      *
      * @return Response
-     * @throws Exception
-     * @throws HttpException
+     * @throws BadRequestHttpException if the user is not pending
      */
     public function actionSendActivationEmail()
     {
@@ -1172,9 +1173,7 @@ class UsersController extends Controller
 
         // Only allow activation emails to be send to pending users.
         if ($user->getStatus() !== User::STATUS_PENDING) {
-            throw new Exception(Craft::t('app',
-                'Invalid account status for user ID “{id}”.',
-                ['id' => $userId]));
+            throw new BadRequestHttpException('Activation emails can only be sent to pending users');
         }
 
         Craft::$app->getUsers()->sendActivationEmail($user);
@@ -1192,8 +1191,8 @@ class UsersController extends Controller
     /**
      * Unlocks a user, bypassing the cooldown phase.
      *
-     * @throws HttpException
      * @return Response
+     * @throws ForbiddenHttpException if a non-admin is attempting to unlock an admin
      */
     public function actionUnlockUser()
     {
@@ -1212,7 +1211,7 @@ class UsersController extends Controller
         $currentUser = Craft::$app->getUser()->getIdentity();
 
         if ($user->admin && !$currentUser->admin) {
-            throw new HttpException(403);
+            throw new ForbiddenHttpException('Only admins can unlock other admins');
         }
 
         Craft::$app->getUsers()->unlockUser($user);
@@ -1226,8 +1225,8 @@ class UsersController extends Controller
     /**
      * Suspends a user.
      *
-     * @throws HttpException
      * @return Response
+     * @throws ForbiddenHttpException if a non-admin is attempting to suspend an admin
      */
     public function actionSuspendUser()
     {
@@ -1246,7 +1245,7 @@ class UsersController extends Controller
         $currentUser = Craft::$app->getUser()->getIdentity();
 
         if ($user->admin && !$currentUser->admin) {
-            throw new HttpException(403);
+            throw new ForbiddenHttpException('Only admins can suspend other admins');
         }
 
         Craft::$app->getUsers()->suspendUser($user);
@@ -1311,8 +1310,8 @@ class UsersController extends Controller
     /**
      * Unsuspends a user.
      *
-     * @throws HttpException
      * @return Response
+     * @throws ForbiddenHttpException if a non-admin is attempting to unsuspend an admin
      */
     public function actionUnsuspendUser()
     {
@@ -1331,7 +1330,7 @@ class UsersController extends Controller
         $currentUser = Craft::$app->getUser()->getIdentity();
 
         if ($user->admin && !$currentUser->admin) {
-            throw new HttpException(403);
+            throw new ForbiddenHttpException('Only admins can unsuspend other admins');
         }
 
         Craft::$app->getUsers()->unsuspendUser($user);
@@ -1553,13 +1552,12 @@ class UsersController extends Controller
      *
      * @param integer $userId
      *
-     * @throws Exception
      * @return void
+     * @throws NotFoundHttpException
      */
     private function _noUserExists($userId)
     {
-        throw new Exception(Craft::t('app',
-            'No user exists with the ID “{id}”.', ['id' => $userId]));
+        throw new NotFoundHttpException('User not found');
     }
 
     /**
@@ -1647,7 +1645,6 @@ class UsersController extends Controller
 
     /**
      * @return array
-     * @throws HttpException
      */
     private function _processTokenRequest()
     {
@@ -1697,8 +1694,7 @@ class UsersController extends Controller
      * @param User $user
      *
      * @return Response|null
-     *
-     * @throws HttpException
+     * @throws HttpException if the verification code is invalid
      */
     private function _processInvalidToken($user)
     {

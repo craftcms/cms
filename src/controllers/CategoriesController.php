@@ -10,14 +10,16 @@ namespace craft\app\controllers;
 use Craft;
 use craft\app\base\Element;
 use craft\app\errors\Exception;
-use craft\app\errors\HttpException;
 use craft\app\helpers\Json;
 use craft\app\helpers\Url;
 use craft\app\elements\Category;
 use craft\app\models\CategoryGroup;
 use craft\app\models\CategoryGroupLocale as CategoryGroupLocaleModel;
 use craft\app\web\Controller;
+use yii\web\ForbiddenHttpException;
+use yii\web\NotFoundHttpException;
 use yii\web\Response;
+use yii\web\ServerErrorHttpException;
 
 /**
  * The CategoriesController class is a controller that handles various actions related to categories and category
@@ -59,7 +61,7 @@ class CategoriesController extends Controller
      * @param CategoryGroup $categoryGroup The category group being edited, if there were any validation errors.
      *
      * @return string The rendering result
-     * @throws HttpException
+     * @throws NotFoundHttpException if the requested category group cannot be found
      */
     public function actionEditCategoryGroup($groupId = null, CategoryGroup $categoryGroup = null)
     {
@@ -84,7 +86,7 @@ class CategoriesController extends Controller
                 $categoryGroup = Craft::$app->getCategories()->getGroupById($groupId);
 
                 if (!$categoryGroup) {
-                    throw new HttpException(404);
+                    throw new NotFoundHttpException('Category group not found');
                 }
             }
 
@@ -197,14 +199,14 @@ class CategoriesController extends Controller
      * @param string $groupHandle The category group’s handle.
      *
      * @return string The rendering result
-     * @throws HttpException
+     * @throws ForbiddenHttpException if the user is not permitted to edit categories
      */
     public function actionCategoryIndex($groupHandle = null)
     {
         $groups = Craft::$app->getCategories()->getEditableGroups();
 
         if (!$groups) {
-            throw new HttpException(404);
+            throw new ForbiddenHttpException('User not permitted to edit categories');
         }
 
         return $this->renderTemplate('categories/_index', [
@@ -222,7 +224,6 @@ class CategoriesController extends Controller
      * @param Category $category    The category being edited, if there were any validation errors.
      *
      * @return string The rendering result
-     * @throws HttpException
      */
     public function actionEditCategory($groupHandle, $categoryId = null, $localeId = null, Category $category = null)
     {
@@ -369,7 +370,6 @@ class CategoriesController extends Controller
     /**
      * Previews a category.
      *
-     * @throws HttpException
      * @return string
      */
     public function actionPreviewCategory()
@@ -490,15 +490,16 @@ class CategoriesController extends Controller
      * @param mixed $categoryId
      * @param mixed $locale
      *
-     * @throws HttpException
      * @return Response
+     * @throws NotFoundHttpException if the requested category cannot be found
+     * @throws ServerErrorHttpException if the category group is not configured properly
      */
     public function actionShareCategory($categoryId, $locale = null)
     {
         $category = Craft::$app->getCategories()->getCategoryById($categoryId, $locale);
 
         if (!$category) {
-            throw new HttpException(404);
+            throw new NotFoundHttpException('Category not found');
         }
 
         // Make sure they have permission to be viewing this category
@@ -506,7 +507,7 @@ class CategoriesController extends Controller
 
         // Make sure the category actually can be viewed
         if (!Craft::$app->getCategories()->isGroupTemplateValid($category->getGroup())) {
-            throw new HttpException(404);
+            throw new ServerErrorHttpException('Category group not configured properly');
         }
 
         // Create the token and redirect to the category URL with the token in place
@@ -529,8 +530,8 @@ class CategoriesController extends Controller
      * @param mixed $categoryId
      * @param mixed $locale
      *
-     * @throws HttpException
      * @return string
+     * @throws NotFoundHttpException if the requested category cannot be found
      */
     public function actionViewSharedCategory($categoryId, $locale = null)
     {
@@ -539,7 +540,7 @@ class CategoriesController extends Controller
         $category = Craft::$app->getCategories()->getCategoryById($categoryId, $locale);
 
         if (!$category) {
-            throw new HttpException(404);
+            throw new NotFoundHttpException('Category not found');
         }
 
         return $this->_showCategory($category);
@@ -553,8 +554,9 @@ class CategoriesController extends Controller
      *
      * @param array &$variables
      *
-     * @throws HttpException|Exception
      * @return void
+     * @throws NotFoundHttpException if the requested category group or category cannot be found
+     * @throws ForbiddenHttpException if the user is not permitted to edit content in the requested locale
      */
     private function _prepEditCategoryVariables(&$variables)
     {
@@ -568,7 +570,7 @@ class CategoriesController extends Controller
         }
 
         if (empty($variables['group'])) {
-            throw new HttpException(404);
+            throw new NotFoundHttpException('Category group not found');
         }
 
         // Get the locale
@@ -577,7 +579,7 @@ class CategoriesController extends Controller
         $variables['localeIds'] = Craft::$app->getI18n()->getEditableLocaleIds();
 
         if (!$variables['localeIds']) {
-            throw new HttpException(403, Craft::t('app', 'Your account doesn’t have permission to edit any of this site’s locales.'));
+            throw new ForbiddenHttpException('User not permitted to edit content in any locales');
         }
 
         if (empty($variables['localeId'])) {
@@ -589,7 +591,7 @@ class CategoriesController extends Controller
         } else {
             // Make sure they were requesting a valid locale
             if (!in_array($variables['localeId'], $variables['localeIds'])) {
-                throw new HttpException(404);
+                throw new ForbiddenHttpException('User not permitted to edit content in this locale');
             }
         }
 
@@ -601,7 +603,7 @@ class CategoriesController extends Controller
                 $variables['category'] = Craft::$app->getCategories()->getCategoryById($variables['categoryId'], $variables['localeId']);
 
                 if (!$variables['category']) {
-                    throw new HttpException(404);
+                    throw new NotFoundHttpException('Category not found');
                 }
             } else {
                 $variables['category'] = new Category();
@@ -721,15 +723,14 @@ class CategoriesController extends Controller
      * @param Category $category
      *
      * @return string The rendering result
-     * @throws HttpException
+     * @throws ServerErrorHttpException if the category is missing its category group
      */
     private function _showCategory(Category $category)
     {
         $group = $category->getGroup();
 
         if (!$group) {
-            Craft::error('Attempting to preview a category that doesn’t have a group.', __METHOD__);
-            throw new HttpException(404);
+            throw new ServerErrorHttpException('Category is missing its category group');
         }
 
         Craft::$app->language = $category->locale;

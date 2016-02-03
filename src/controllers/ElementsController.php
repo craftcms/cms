@@ -10,10 +10,11 @@ namespace craft\app\controllers;
 use Craft;
 use craft\app\base\ElementInterface;
 use craft\app\elements\Category;
-use craft\app\errors\HttpException;
 use craft\app\helpers\ArrayHelper;
 use craft\app\helpers\Element;
 use craft\app\helpers\StringHelper;
+use yii\web\ForbiddenHttpException;
+use yii\web\NotFoundHttpException;
 use yii\web\Response;
 
 /**
@@ -74,7 +75,8 @@ class ElementsController extends BaseElementsController
      * Returns the HTML for an element editor HUD.
      *
      * @return Response
-     * @throws HttpException
+     * @throws NotFoundHttpException if the requested element cannot be found
+     * @throws ForbiddenHttpException if the user is not permitted to edit the requested element
      */
     public function actionGetEditorHtml()
     {
@@ -83,8 +85,12 @@ class ElementsController extends BaseElementsController
         $elementType = Craft::$app->getElements()->getElementTypeById($elementId);
         $element = Craft::$app->getElements()->getElementById($elementId, $elementType, $localeId);
 
-        if (!$element || !$element->getIsEditable()) {
-            throw new HttpException(403);
+        if (!$element) {
+            throw new NotFoundHttpException('Element could not be found');
+        }
+
+        if (!$element->getIsEditable()) {
+            throw new ForbiddenHttpException('User is not permitted to edit this element');
         }
 
         $includeLocales = (bool)Craft::$app->getRequest()->getBodyParam('includeLocales', false);
@@ -96,7 +102,8 @@ class ElementsController extends BaseElementsController
      * Saves an element.
      *
      * @return Response
-     * @throws HttpException
+     * @throws NotFoundHttpException if the requested element cannot be found
+     * @throws ForbiddenHttpException if the user is not permitted to edit the requested element
      */
     public function actionSaveElement()
     {
@@ -105,8 +112,12 @@ class ElementsController extends BaseElementsController
         $elementType = Craft::$app->getElements()->getElementTypeById($elementId);
         $element = Craft::$app->getElements()->getElementById($elementId, $elementType, $localeId);
 
-        if (!Element::isElementEditable($element) || !$element) {
-            throw new HttpException(403);
+        if (!$element) {
+            throw new NotFoundHttpException('Element could not be found');
+        }
+
+        if (!Element::isElementEditable($element)) {
+            throw new ForbiddenHttpException('User is not permitted to edit this element');
         }
 
         $namespace = Craft::$app->getRequest()->getRequiredBodyParam('namespace');
@@ -186,14 +197,14 @@ class ElementsController extends BaseElementsController
      * @param boolean          $includeLocales
      *
      * @return Response
-     * @throws HttpException
+     * @throws ForbiddenHttpException if the user is not permitted to edit content in any of the locales supported by this element
      */
     private function _getEditorHtmlResponse(ElementInterface $element, $includeLocales)
     {
         $localeIds = Element::getEditableLocaleIdsForElement($element);
 
         if (!$localeIds) {
-            throw new HttpException(403);
+            throw new ForbiddenHttpException('User not permitted to edit content in any of the locales supported by this element');
         }
 
         if ($includeLocales) {

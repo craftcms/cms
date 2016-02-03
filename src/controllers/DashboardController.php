@@ -11,7 +11,6 @@ use Craft;
 use craft\app\base\Widget;
 use craft\app\base\WidgetInterface;
 use craft\app\dates\DateTime;
-use craft\app\errors\HttpException;
 use craft\app\helpers\Io;
 use craft\app\helpers\Json;
 use craft\app\helpers\StringHelper;
@@ -21,6 +20,7 @@ use craft\app\models\GetHelp as GetHelpModel;
 use craft\app\web\twig\variables\ComponentInfo;
 use craft\app\web\Controller;
 use craft\app\web\UploadedFile;
+use yii\web\NotFoundHttpException;
 use yii\web\Response;
 
 /**
@@ -44,7 +44,7 @@ class DashboardController extends Controller
      * @param WidgetInterface|Widget $widget   The widget being edited, if there were any validation errors
      *
      * @return string The rendering result
-     * @throws HttpException if the requested widget doesn’t exist
+     * @throws NotFoundHttpException if the requested widget cannot be found
      */
     public function actionEditWidget($widgetId = null, WidgetInterface $widget = null)
     {
@@ -55,7 +55,7 @@ class DashboardController extends Controller
             $widget = Craft::$app->getDashboard()->getWidgetById($widgetId);
 
             if ($widget === null) {
-                throw new HttpException(404, "No widget exists with the ID '$widgetId'.");
+                throw new NotFoundHttpException('Widget not found');
             }
         }
 

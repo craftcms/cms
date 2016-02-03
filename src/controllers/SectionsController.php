@@ -9,14 +9,14 @@ namespace craft\app\controllers;
 
 use Craft;
 use craft\app\elements\Entry;
-use craft\app\errors\Exception;
-use craft\app\errors\HttpException;
 use craft\app\helpers\Json;
 use craft\app\helpers\Url;
 use craft\app\models\EntryType;
 use craft\app\models\Section;
 use craft\app\models\SectionLocale;
 use craft\app\web\Controller;
+use yii\web\BadRequestHttpException;
+use yii\web\NotFoundHttpException;
 use yii\web\Response;
 
 /**
@@ -35,7 +35,6 @@ class SectionsController extends Controller
 
     /**
      * @inheritdoc
-     * @throws HttpException if the user isn’t an admin
      */
     public function init()
     {
@@ -73,7 +72,8 @@ class SectionsController extends Controller
      * @param Section $section   The section being edited, if there were any validation errors.
      *
      * @return string The rendering result
-     * @throws HttpException|Exception
+     * @throws NotFoundHttpException if the requested section cannot be found
+     * @throws BadRequestHttpException if attempting to do something not allowed by the current Craft edition
      */
     public function actionEditSection($sectionId = null, Section $section = null)
     {
@@ -87,7 +87,7 @@ class SectionsController extends Controller
                 $section = Craft::$app->getSections()->getSectionById($sectionId);
 
                 if (!$section) {
-                    throw new HttpException(404);
+                    throw new NotFoundHttpException('Section not found');
                 }
             }
 
@@ -121,7 +121,7 @@ class SectionsController extends Controller
         }
 
         if (!$typeOptions) {
-            throw new Exception(Craft::t('app', 'Craft Client or Pro Edition is required to create any additional sections.'));
+            throw new BadRequestHttpException('Craft Client or Pro Edition is required to create any additional sections');
         }
 
         if (!$section->type) {
@@ -250,14 +250,14 @@ class SectionsController extends Controller
      * @param integer $sectionId The ID of the section whose entry types we’re listing
      *
      * @return string The rendering result
-     * @throws HttpException
+     * @throws NotFoundHttpException if the requested section cannot be found
      */
     public function actionEntryTypesIndex($sectionId)
     {
         $section = Craft::$app->getSections()->getSectionById($sectionId);
 
         if ($section === null) {
-            throw new HttpException(404, "No section exists with the ID '$sectionId'");
+            throw new NotFoundHttpException('Section not found');
         }
 
         $crumbs = [
@@ -294,22 +294,27 @@ class SectionsController extends Controller
      * @param EntryType $entryType   The entry type being edited, if there were any validation errors.
      *
      * @return string The rendering result
-     * @throws HttpException
+     * @throws NotFoundHttpException if the requested section/entry type cannot be found
+     * @throws BadRequestHttpException if the requested entry type does not belong to the requested section
      */
     public function actionEditEntryType($sectionId, $entryTypeId = null, EntryType $entryType = null)
     {
         $section = Craft::$app->getSections()->getSectionById($sectionId);
 
         if (!$section) {
-            throw new HttpException(404);
+            throw new NotFoundHttpException('Section not found');
         }
 
         if ($entryTypeId !== null) {
             if ($entryType === null) {
                 $entryType = Craft::$app->getSections()->getEntryTypeById($entryTypeId);
 
-                if (!$entryType || $entryType->sectionId != $section->id) {
-                    throw new HttpException(404);
+                if (!$entryType) {
+                    throw new NotFoundHttpException('Entry type not found');
+                }
+
+                if ($entryType->sectionId != $section->id) {
+                    throw new BadRequestHttpException('Entry type does not belong to the requested section');
                 }
             }
 
@@ -356,10 +361,8 @@ class SectionsController extends Controller
     /**
      * Saves an entry type.
      *
-     * @throws Exception
-     * @throws HttpException
-     * @throws \Exception
      * @return Response|null
+     * @throws NotFoundHttpException if the requested entry type cannot be found
      */
     public function actionSaveEntryType()
     {
@@ -371,7 +374,7 @@ class SectionsController extends Controller
             $entryType = Craft::$app->getSections()->getEntryTypeById($entryTypeId);
 
             if (!$entryType) {
-                throw new Exception(Craft::t('app', 'No entry type exists with the ID “{id}”.', ['id' => $entryTypeId]));
+                throw new NotFoundHttpException('Entry type not found');
             }
         } else {
             $entryType = new EntryType();

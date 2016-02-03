@@ -10,8 +10,6 @@ namespace craft\app\controllers;
 use Craft;
 use craft\app\dates\DateTime;
 use craft\app\elements\User;
-use craft\app\errors\Exception;
-use craft\app\errors\HttpException;
 use craft\app\helpers\DateTimeHelper;
 use craft\app\helpers\Json;
 use craft\app\helpers\Url;
@@ -19,7 +17,10 @@ use craft\app\elements\Entry;
 use craft\app\models\EntryDraft;
 use craft\app\models\EntryVersion;
 use craft\app\models\Section;
+use yii\web\ForbiddenHttpException;
+use yii\web\NotFoundHttpException;
 use yii\web\Response;
+use yii\web\ServerErrorHttpException;
 
 /**
  * The EntriesController class is a controller that handles various entry related tasks such as retrieving, saving,
@@ -55,7 +56,6 @@ class EntriesController extends BaseEntriesController
      * @param Entry   $entry         The entry being edited, if there were any validation errors.
      *
      * @return string The rendering result
-     * @throws HttpException
      */
     public function actionEditEntry($sectionHandle, $entryId = null, $draftId = null, $versionId = null, $localeId = null, Entry $entry = null)
     {
@@ -363,6 +363,7 @@ class EntriesController extends BaseEntriesController
             Craft::$app->getView()->renderTemplate('entries/_fields', $variables);
 
         $view = Craft::$app->getView();
+
         return $this->asJson([
             'paneHtml' => $paneHtml,
             'headHtml' => $view->getHeadHtml(),
@@ -373,8 +374,8 @@ class EntriesController extends BaseEntriesController
     /**
      * Previews an entry.
      *
-     * @throws HttpException
      * @return string
+     * @throws NotFoundHttpException if the requested entry version cannot be found
      */
     public function actionPreviewEntry()
     {
@@ -387,7 +388,7 @@ class EntriesController extends BaseEntriesController
             $entry = Craft::$app->getEntryRevisions()->getVersionById($versionId);
 
             if (!$entry) {
-                throw new HttpException(404);
+                throw new NotFoundHttpException('Entry version not found');
             }
 
             $this->enforceEditEntryPermissions($entry);
@@ -488,10 +489,8 @@ class EntriesController extends BaseEntriesController
     /**
      * Deletes an entry.
      *
-     * @throws Exception
-     * @throws HttpException
-     * @throws \Exception
      * @return Response|null
+     * @throws NotFoundHttpException if the requested entry cannot be found
      */
     public function actionDeleteEntry()
     {
@@ -502,7 +501,7 @@ class EntriesController extends BaseEntriesController
         $entry = Craft::$app->getEntries()->getEntryById($entryId, $localeId);
 
         if (!$entry) {
-            throw new Exception(Craft::t('app', 'No entry exists with the ID “{id}”.', ['id' => $entryId]));
+            throw new NotFoundHttpException('Entry not found');
         }
 
         $currentUser = Craft::$app->getUser()->getIdentity();
@@ -545,8 +544,9 @@ class EntriesController extends BaseEntriesController
      * @param mixed $draftId
      * @param mixed $versionId
      *
-     * @throws HttpException
      * @return Response
+     * @throws NotFoundHttpException if the requested entry/revision cannot be found
+     * @throws ServerErrorHttpException if the section is not configured properly
      */
     public function actionShareEntry($entryId = null, $locale = null, $draftId = null, $versionId = null)
     {
@@ -554,7 +554,7 @@ class EntriesController extends BaseEntriesController
             $entry = Craft::$app->getEntries()->getEntryById($entryId, $locale);
 
             if (!$entry) {
-                throw new HttpException(404);
+                throw new NotFoundHttpException('Entry not found');
             }
 
             $params = ['entryId' => $entryId, 'locale' => $entry->locale];
@@ -562,7 +562,7 @@ class EntriesController extends BaseEntriesController
             $entry = Craft::$app->getEntryRevisions()->getDraftById($draftId);
 
             if (!$entry) {
-                throw new HttpException(404);
+                throw new NotFoundHttpException('Entry draft not found');
             }
 
             $params = ['draftId' => $draftId];
@@ -570,12 +570,12 @@ class EntriesController extends BaseEntriesController
             $entry = Craft::$app->getEntryRevisions()->getVersionById($versionId);
 
             if (!$entry) {
-                throw new HttpException(404);
+                throw new NotFoundHttpException('Entry version not found');
             }
 
             $params = ['versionId' => $versionId];
         } else {
-            throw new HttpException(404);
+            throw new NotFoundHttpException('Entry not found');
         }
 
         // Make sure they have permission to be viewing this entry
@@ -583,7 +583,7 @@ class EntriesController extends BaseEntriesController
 
         // Make sure the entry actually can be viewed
         if (!Craft::$app->getSections()->isSectionTemplateValid($entry->getSection())) {
-            throw new HttpException(404);
+            throw new ServerErrorHttpException('Section not configured properly');
         }
 
         // Create the token and redirect to the entry URL with the token in place
@@ -604,8 +604,8 @@ class EntriesController extends BaseEntriesController
      * @param mixed $draftId
      * @param mixed $versionId
      *
-     * @throws HttpException
      * @return Response
+     * @throws NotFoundHttpException if the requested category cannot be found
      */
     public function actionViewSharedEntry($entryId = null, $locale = null, $draftId = null, $versionId = null)
     {
@@ -620,7 +620,7 @@ class EntriesController extends BaseEntriesController
         }
 
         if (empty($entry)) {
-            throw new HttpException(404);
+            throw new NotFoundHttpException('Entry not found');
         }
 
         return $this->_showEntry($entry);
@@ -634,8 +634,10 @@ class EntriesController extends BaseEntriesController
      *
      * @param array &$variables
      *
-     * @throws HttpException|Exception
      * @return void
+     * @throws NotFoundHttpException if the requested section or entry cannot be found
+     * @throws ForbiddenHttpException if the user is not permitted to edit content in the requested locale
+     * @throws ServerErrorHttpException if the entry is missing its entry types
      */
     private function _prepEditEntryVariables(&$variables)
     {
@@ -649,7 +651,7 @@ class EntriesController extends BaseEntriesController
         }
 
         if (empty($variables['section'])) {
-            throw new HttpException(404);
+            throw new NotFoundHttpException('Section not found');
         }
 
         // Get the locale
@@ -665,7 +667,7 @@ class EntriesController extends BaseEntriesController
         }
 
         if (!$variables['localeIds']) {
-            throw new HttpException(403, Craft::t('app', 'Your account doesn’t have permission to edit any of this section’s locales.'));
+            throw new ForbiddenHttpException('User not permitted to edit content in any locales supported by this section');
         }
 
         if (empty($variables['localeId'])) {
@@ -677,7 +679,7 @@ class EntriesController extends BaseEntriesController
         } else {
             // Make sure they were requesting a valid locale
             if (!in_array($variables['localeId'], $variables['localeIds'])) {
-                throw new HttpException(404);
+                throw new ForbiddenHttpException('User not permitted to edit content in this locale');
             }
         }
 
@@ -703,7 +705,7 @@ class EntriesController extends BaseEntriesController
                 }
 
                 if (!$variables['entry']) {
-                    throw new HttpException(404);
+                    throw new NotFoundHttpException('Entry not found');
                 }
             } else {
                 $variables['entry'] = new Entry();
@@ -740,7 +742,7 @@ class EntriesController extends BaseEntriesController
         $variables['entryType'] = $variables['entry']->getType();
 
         if (!$variables['entryType']) {
-            throw new Exception(Craft::t('app', 'No entry types are available for this entry.'));
+            throw new ServerErrorHttpException('Entry is missing its entry types');
         }
 
         // Define the content tabs
@@ -772,8 +774,8 @@ class EntriesController extends BaseEntriesController
     /**
      * Fetches or creates an Entry.
      *
-     * @throws Exception
      * @return Entry
+     * @throws NotFoundHttpException if the requested entry cannot be found
      */
     private function _getEntryModel()
     {
@@ -784,7 +786,7 @@ class EntriesController extends BaseEntriesController
             $entry = Craft::$app->getEntries()->getEntryById($entryId, $localeId);
 
             if (!$entry) {
-                throw new Exception(Craft::t('app', 'No entry exists with the ID “{id}”.', ['id' => $entryId]));
+                throw new NotFoundHttpException('Entry not found');
             }
         } else {
             $entry = new Entry();
@@ -848,7 +850,7 @@ class EntriesController extends BaseEntriesController
      * @param Entry $entry
      *
      * @return string The rendering result
-     * @throws HttpException
+     * @throws ServerErrorHttpException if the entry is missing its section or entry type
      */
     private function _showEntry(Entry $entry)
     {
@@ -856,8 +858,7 @@ class EntriesController extends BaseEntriesController
         $type = $entry->getType();
 
         if (!$section || !$type) {
-            Craft::error('Attempting to preview an entry that doesn’t have a section/type.', __METHOD__);
-            throw new HttpException(404);
+            throw new ServerErrorHttpException('Entry is missing its section or entry type');
         }
 
         Craft::$app->language = $entry->locale;

@@ -8,7 +8,6 @@
 namespace craft\app\controllers;
 
 use Craft;
-use craft\app\errors\HttpException;
 use craft\app\models\RebrandEmail as RebrandEmailModel;
 use craft\app\web\Controller;
 use yii\web\Response;
@@ -31,7 +30,6 @@ class EmailMessagesController extends Controller
 
     /**
      * @inheritdoc
-     * @throws HttpException if the user isn’t an admin
      */
     public function init()
     {
