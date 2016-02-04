@@ -109,7 +109,7 @@ Craft.charts.BaseChart = Garnish.Base.extend(
     $container: null,
     $chart: null,
 
-    chartBaseClass: 'chart',
+    chartBaseClass: 'cp-chart',
     dataTable: null,
     height: null,
     locale: null,
