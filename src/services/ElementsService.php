@@ -1130,29 +1130,6 @@ class ElementsService extends BaseApplicationComponent
 			}
 		}
 
-		// Get the element record
-		if (!$isNewElement)
-		{
-			$elementRecord = ElementRecord::model()->findByAttributes(array(
-				'id'   => $element->id,
-				'type' => $element->getElementType()
-			));
-
-			if (!$elementRecord)
-			{
-				throw new Exception(Craft::t('No element exists with the ID “{id}”.', array('id' => $element->id)));
-			}
-		}
-		else
-		{
-			$elementRecord = new ElementRecord();
-			$elementRecord->type = $element->getElementType();
-		}
-
-		// Set the attributes
-		$elementRecord->enabled = (bool) $element->enabled;
-		$elementRecord->archived = (bool) $element->archived;
-
 		$transaction = craft()->db->getCurrentTransaction() === null ? craft()->db->beginTransaction() : null;
 
 		try
@@ -1168,7 +1145,30 @@ class ElementsService extends BaseApplicationComponent
 			// Is the event giving us the go-ahead?
 			if ($event->performAction)
 			{
-				// Save the element record first
+				// Get the element record
+				if (!$isNewElement)
+				{
+					$elementRecord = ElementRecord::model()->findByAttributes(array(
+						'id'   => $element->id,
+						'type' => $element->getElementType()
+					));
+
+					if (!$elementRecord)
+					{
+						throw new Exception(Craft::t('No element exists with the ID “{id}”.', array('id' => $element->id)));
+					}
+				}
+				else
+				{
+					$elementRecord = new ElementRecord();
+					$elementRecord->type = $element->getElementType();
+				}
+
+				// Set the attributes
+				$elementRecord->enabled = (bool) $element->enabled;
+				$elementRecord->archived = (bool) $element->archived;
+
+				// Save the element record
 				$success = $elementRecord->save(false);
 
 				if ($success)
