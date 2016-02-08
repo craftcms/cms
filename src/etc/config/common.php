@@ -151,6 +151,7 @@ $components['images']['class']               = 'Craft\ImagesService';
 $components['matrix']['class']               = 'Craft\MatrixService';
 $components['migrations']['class']           = 'Craft\MigrationsService';
 $components['path']['class']                 = 'Craft\PathService';
+$components['reports']['class']            = 'Craft\ReportsService';
 $components['relations']['class']            = 'Craft\RelationsService';
 $components['resources'] = array(
 	'class'     => 'Craft\ResourcesService',
