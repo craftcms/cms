@@ -13,10 +13,10 @@ use craft\app\base\ElementInterface;
 use craft\app\base\Field;
 use craft\app\base\FieldInterface;
 use craft\app\db\Query;
-use craft\app\errors\Exception;
 use craft\app\events\ElementEvent;
 use craft\app\models\FieldLayout as FieldLayoutModel;
 use yii\base\Component;
+use yii\base\Exception;
 
 /**
  * Class Content service.
@@ -136,14 +136,14 @@ class Content extends Component
      * @param boolean                  $updateOtherLocales Whether any non-translatable fields' values should be copied to the
      *                                                     element's other locales.
      *
-     * @throws Exception
      * @return boolean Whether the content was saved successfully. If it wasn't, any validation errors will be saved on the
      *              element and its content model.
+     * @throws Exception if $element has not been saved yet
      */
     public function saveContent(ElementInterface $element, $validate = true, $updateOtherLocales = true)
     {
         if (!$element->id) {
-            throw new Exception(Craft::t('app', 'Cannot save the content of an unsaved element.'));
+            throw new Exception('Cannot save the content of an unsaved element.');
         }
 
         $originalContentTable = $this->contentTable;

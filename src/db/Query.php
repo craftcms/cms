@@ -7,8 +7,8 @@
 
 namespace craft\app\db;
 
-use craft\app\errors\Exception;
 use craft\app\helpers\ArrayHelper;
+use yii\base\Exception;
 
 /**
  * Class Query
@@ -100,7 +100,7 @@ class Query extends \yii\db\Query
                 $columns = array_keys($rows[0]);
 
                 if (count($columns) < 2) {
-                    throw new Exception('Less than two columns were selected.');
+                    throw new Exception('Less than two columns were selected');
                 }
 
                 $rows = ArrayHelper::map($rows, $columns[0], $columns[1]);

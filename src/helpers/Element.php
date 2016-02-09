@@ -10,7 +10,7 @@ namespace craft\app\helpers;
 use Craft;
 use craft\app\base\ElementInterface;
 use craft\app\db\Query;
-use craft\app\errors\Exception;
+use craft\app\errors\OperationAbortedException;
 
 /**
  * Class Element
@@ -73,8 +73,6 @@ class Element
      * Sets the URI on an element using a given URL format, tweaking its slug if necessary to ensure it's unique.
      *
      * @param ElementInterface $element
-     *
-     * @throws Exception
      */
     public static function setUniqueUri(ElementInterface $element)
     {
@@ -143,7 +141,7 @@ class Element
                     continue;
                 } else {
                     // We're screwed, blow things up.
-                    throw new Exception(Craft::t('app', 'The maximum length of a URI is 255 characters.'));
+                    throw new OperationAbortedException('Could not find a unique URI for this element');
                 }
             }
 
@@ -165,7 +163,7 @@ class Element
             }
         }
 
-        throw new Exception(Craft::t('app', 'Could not find a unique URI for this element.'));
+        throw new OperationAbortedException('Could not find a unique URI for this element');
     }
 
     /**

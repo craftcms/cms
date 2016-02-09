@@ -8,13 +8,15 @@
 namespace craft\app\services;
 
 use Craft;
-use craft\app\errors\Exception;
+use craft\app\errors\EntryNotFoundException;
+use craft\app\errors\SectionNotFoundException;
 use craft\app\events\EntryEvent;
 use craft\app\helpers\DateTimeHelper;
 use craft\app\elements\Entry;
 use craft\app\models\Section;
 use craft\app\records\Entry as EntryRecord;
 use yii\base\Component;
+use yii\base\Exception;
 
 /**
  * The Entries service provides APIs for managing entries in Craft.
@@ -99,8 +101,10 @@ class Entries extends Component
      * @param Entry $entry The entry to be saved.
      *
      * @return boolean
-     * @throws Exception
-     * @throws \Exception
+     * @throws EntryNotFoundException if $entry->newParentId or $entry->id is invalid
+     * @throws SectionNotFoundException if $entry->sectionId is invalid
+     * @throws Exception if $entry->locale is set to a locale that its section doesn’t support
+     * @throws \Exception if reasons
      */
     public function saveEntry(Entry $entry)
     {
@@ -113,7 +117,7 @@ class Entries extends Component
                 $parentEntry = $this->getEntryById($entry->newParentId, $entry->locale);
 
                 if (!$parentEntry) {
-                    throw new Exception(Craft::t('app', 'No entry exists with the ID “{id}”.', ['id' => $entry->newParentId]));
+                    throw new EntryNotFoundException("No entry exists with the ID '{$entry->newParentId}'");
                 }
             } else {
                 $parentEntry = null;
@@ -127,7 +131,7 @@ class Entries extends Component
             $entryRecord = EntryRecord::findOne($entry->id);
 
             if (!$entryRecord) {
-                throw new Exception(Craft::t('app', 'No entry exists with the ID “{id}”.', ['id' => $entry->id]));
+                throw new EntryNotFoundException("No entry exists with the ID '{$entry->id}'");
             }
         } else {
             $entryRecord = new EntryRecord();
@@ -137,14 +141,14 @@ class Entries extends Component
         $section = Craft::$app->getSections()->getSectionById($entry->sectionId);
 
         if (!$section) {
-            throw new Exception(Craft::t('app', 'No section exists with the ID “{id}”.', ['id' => $entry->sectionId]));
+            throw new SectionNotFoundException("No section exists with the ID '{$entry->sectionId}'");
         }
 
         // Verify that the section is available in this locale
         $sectionLocales = $section->getLocales();
 
         if (!isset($sectionLocales[$entry->locale])) {
-            throw new Exception(Craft::t('app', 'The section “{section}” is not enabled for the locale {locale}', ['section' => $section->name, 'locale' => $entry->locale]));
+            throw new Exception("The section '{$section->name}' is not enabled for the locale '{$entry->locale}'");
         }
 
         // Set the entry data
@@ -272,8 +276,8 @@ class Entries extends Component
      *
      * @param Entry|Entry[] $entries An entry, or an array of entries, to be deleted.
      *
-     * @throws \Exception
      * @return boolean Whether the entry deletion was successful.
+     * @throws \Exception if reasons
      */
     public function deleteEntry($entries)
     {

@@ -9,8 +9,8 @@ namespace craft\app\services;
 
 use Craft;
 use craft\app\db\Query;
-use craft\app\errors\Exception;
 use craft\app\elements\User;
+use craft\app\errors\UserGroupNotFoundException;
 use craft\app\models\UserGroup as UserGroupModel;
 use craft\app\records\UserGroup as UserGroupRecord;
 use yii\base\Component;
@@ -266,11 +266,11 @@ class UserGroups extends Component
      *
      * @param integer $groupId
      *
-     * @throws Exception
      * @return void
+     * @throws UserGroupNotFoundException
      */
     private function _noGroupExists($groupId)
     {
-        throw new Exception(Craft::t('app', 'No group exists with the ID “{id}”.', ['id' => $groupId]));
+        throw new UserGroupNotFoundException("No group exists with the ID '{$groupId}'");
     }
 }

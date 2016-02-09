@@ -8,9 +8,9 @@
 namespace craft\app\services;
 
 use Craft;
-use craft\app\errors\Exception;
 use craft\app\helpers\Io;
 use craft\app\helpers\StringHelper;
+use yii\base\Exception;
 use yii\base\InvalidParamException;
 
 /**
@@ -59,7 +59,6 @@ class Security extends \yii\base\Security
      * @param boolean $validateHash If you want to validate the just generated hash. Will throw an exception if
      *                              validation fails.
      *
-     * @throws Exception
      * @return string The hash.
      */
     public function hashPassword($password, $validateHash = false)
@@ -82,8 +81,8 @@ class Security extends \yii\base\Security
      *
      * Note that if this key ever changes, any data that was encrypted with it will not be accessible.
      *
-     * @throws Exception
      * @return mixed|string The validation key.
+     * @throws Exception if the validation key could not be written
      */
     public function getValidationKey()
     {
@@ -97,7 +96,7 @@ class Security extends \yii\base\Security
             return StringHelper::trim(Io::getFileContents($validationKeyPath));
         } else {
             if (!Io::isWritable($validationKeyPath)) {
-                throw new Exception(Craft::t('app', 'Tried to write the validation key to {validationKeyPath}, but could not.', ['validationKeyPath' => $validationKeyPath]));
+                throw new Exception("Tried to write the validation key to {$validationKeyPath}, but could not.");
             }
 
             $key = $this->generateRandomString();
@@ -106,7 +105,7 @@ class Security extends \yii\base\Security
                 return $key;
             }
 
-            throw new Exception(Craft::t('app', 'Tried to write the validation key to {validationKeyPath}, but could not.', ['validationKeyPath' => $validationKeyPath]));
+            throw new Exception("Tried to write the validation key to {$validationKeyPath}, but could not.");
         }
     }
 }

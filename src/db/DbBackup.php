@@ -9,10 +9,10 @@ namespace craft\app\db;
 
 use Craft;
 use craft\app\enums\ConfigCategory;
-use craft\app\errors\Exception;
 use craft\app\helpers\DateTimeHelper;
 use craft\app\helpers\Io;
 use craft\app\helpers\StringHelper;
+use yii\base\Exception;
 
 /**
  * This class provides methods for backing up and restore Craft databases.
@@ -121,13 +121,13 @@ class DbBackup
      *
      * @param string $filePath The file path of the database backup to restore.
      *
-     * @throws Exception
      * @return void
+     * @throws Exception if $filePath doesn’t exist
      */
     public function restore($filePath)
     {
         if (!Io::fileExists($filePath)) {
-            throw new Exception(Craft::t('app', 'Could not find the SQL file to restore: {filePath}', ['filePath' => $filePath]));
+            throw new Exception("Could not find the SQL file to restore: {$filePath}");
         }
 
         $this->_nukeDb();

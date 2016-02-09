@@ -12,11 +12,11 @@ use craft\app\base\BasePlugin;
 use craft\app\base\Plugin;
 use craft\app\base\PluginInterface;
 use craft\app\enums\PatchManifestFileAction;
-use craft\app\errors\Exception;
 use craft\app\helpers\Io;
 use craft\app\helpers\StringHelper;
 use craft\app\helpers\Update;
 use craft\app\io\Zip;
+use yii\base\Exception;
 use yii\helpers\Markdown;
 
 /**
@@ -39,8 +39,8 @@ class Updater
     }
 
     /**
-     * @throws Exception
      * @return void
+     * @throws Exception
      */
     public function getLatestUpdateInfo()
     {
@@ -51,6 +51,7 @@ class Updater
         }
 
         if ($updateModel->app->releases == null) {
+            // TODO: Replace with a meaningful exception class and translate the response message elsewhere
             throw new Exception(Craft::t('app', 'Craft is already up to date.'));
         }
     }
@@ -68,8 +69,8 @@ class Updater
     /**
      * @param string $md5
      *
-     * @throws Exception
      * @return array
+     * @throws Exception
      */
     public function processDownload($md5)
     {
@@ -83,6 +84,7 @@ class Updater
         ) {
             $downloadFilePath = $tempPath.'/'.$filename;
         } else {
+            // TODO: Replace with a meaningful exception class and translate the response message elsewhere
             throw new Exception(Craft::t('app', 'There was a problem downloading the package.'));
         }
 
@@ -91,6 +93,7 @@ class Updater
         // Validate the downloaded update against ET.
         Craft::info('Validating downloaded update.', __METHOD__);
         if (!$this->_validateUpdate($downloadFilePath, $md5)) {
+            // TODO: Replace with a meaningful exception class and translate the response message elsewhere
             throw new Exception(Craft::t('app', 'There was a problem validating the downloaded package.'));
         }
 
@@ -99,6 +102,7 @@ class Updater
         $unzipFolder = Craft::$app->getPath()->getTempPath().'/'.$uid;
 
         if (!$this->_unpackPackage($downloadFilePath, $unzipFolder)) {
+            // TODO: Replace with a meaningful exception class and translate the response message elsewhere
             throw new Exception(Craft::t('app', 'There was a problem unpacking the downloaded package.'));
         }
 
@@ -106,6 +110,7 @@ class Updater
         $errors = $this->_validateNewRequirements($unzipFolder);
 
         if (!empty($errors)) {
+            // TODO: Replace with a meaningful exception class and translate the response message elsewhere
             throw new Exception(Markdown::process(Craft::t('app',
                     'Your server does not meet the following minimum requirements for Craft to run:')."\n\n".$this->_markdownList($errors)));
         }
@@ -115,6 +120,7 @@ class Updater
         $writableErrors = $this->_validateManifestPathsWritable($unzipFolder);
 
         if (count($writableErrors) > 0) {
+            // TODO: Replace with a meaningful exception class and translate the response message elsewhere
             throw new Exception(Markdown::process(Craft::t('app',
                     'Craft needs to be able to write to the following paths, but can’t:')."\n\n".$this->_markdownList($writableErrors)));
         }
@@ -135,6 +141,7 @@ class Updater
         // Backup any files about to be updated.
         Craft::info('Backing up files that are about to be updated.', __METHOD__);
         if (!$this->_backupFiles($unzipFolder)) {
+            // TODO: Replace with a meaningful exception class and translate the response message elsewhere
             throw new Exception(Craft::t('app', 'There was a problem backing up your files for the update.'));
         }
     }
@@ -156,6 +163,7 @@ class Updater
         // Update the files.
         Craft::info('Performing file update.', __METHOD__);
         if (!Update::doFileUpdate(Update::getManifestData($unzipFolder), $unzipFolder)) {
+            // TODO: Replace with a meaningful exception class and translate the response message elsewhere
             throw new Exception(Craft::t('app', 'There was a problem updating your files.'));
         }
     }
@@ -168,6 +176,7 @@ class Updater
     {
         Craft::info('Starting to backup database.', __METHOD__);
         if (($dbBackupPath = Craft::$app->getDb()->backup()) === false) {
+            // TODO: Replace with a meaningful exception class and translate the response message elsewhere
             throw new Exception(Craft::t('app', 'There was a problem backing up your database.'));
         } else {
             return Io::getFilename($dbBackupPath, false);
@@ -192,6 +201,7 @@ class Updater
         }
 
         if ($result === false) {
+            // TODO: Replace with a meaningful exception class and translate the response message elsewhere
             throw new Exception(Craft::t('app', 'There was a problem updating your database.'));
         }
 
@@ -201,10 +211,12 @@ class Updater
             Craft::info('Settings new Craft release info in craft_info table.', __METHOD__);
 
             if (!Craft::$app->getUpdates()->updateCraftVersionInfo()) {
+                // TODO: Replace with a meaningful exception class and translate the response message elsewhere
                 throw new Exception(Craft::t('app', 'The update was performed successfully, but there was a problem setting the new info in the database info table.'));
             }
         } else {
             if (!Craft::$app->getUpdates()->setNewPluginInfo($plugin)) {
+                // TODO: Replace with a meaningful exception class and translate the response message elsewhere
                 throw new Exception(Craft::t('app', 'The update was performed successfully, but there was a problem setting the new info in the plugins table.'));
             }
         }
@@ -225,6 +237,7 @@ class Updater
         // Clear the updates cache.
         Craft::info('Clearing the update cache.', __METHOD__);
         if (!Craft::$app->getUpdates()->flushUpdateInfoFromCache()) {
+            // TODO: Replace with a meaningful exception class and translate the response message elsewhere
             throw new Exception(Craft::t('app', 'The update was performed successfully, but there was a problem invalidating the update cache.'));
         }
 
@@ -426,6 +439,7 @@ class Updater
                 }
             }
         } catch (\Exception $e) {
+            // TODO: Replace with a meaningful exception class and translate the response message elsewhere
             Craft::error('Error updating files: '.$e->getMessage(), __METHOD__);
             Update::rollBackFileChanges($manifestData);
 
@@ -448,11 +462,13 @@ class Updater
         $errors = [];
 
         if (!Io::fileExists($requirementsFile)) {
+            // TODO: Replace with a meaningful exception class and translate the response message elsewhere
             throw new Exception(Craft::t('app', 'The requirements file is required and it does not exist at {path}.', ['path' => $requirementsFile]));
         }
 
         // Make sure we can write to craft/app/requirements
         if (!Io::isWritable(Craft::$app->getPath()->getAppPath().'/requirements')) {
+            // TODO: Replace with a meaningful exception class and translate the response message elsewhere
             throw new Exception(Markdown::process(Craft::t('app', 'Craft needs to be able to write to your craft/app/requirements folder and cannot. Please check your [permissions]({url}).', ['url' => 'http://craftcms.com/docs/updating#one-click-updating'])));
         }
 

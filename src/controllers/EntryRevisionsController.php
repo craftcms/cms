@@ -8,11 +8,12 @@
 namespace craft\app\controllers;
 
 use Craft;
-use craft\app\errors\Exception;
 use craft\app\helpers\DateTimeHelper;
 use craft\app\models\EntryDraft as EntryDraftModel;
 use craft\app\models\Section;
+use yii\web\NotFoundHttpException;
 use yii\web\Response;
+use yii\web\ServerErrorHttpException;
 
 Craft::$app->requireEdition(Craft::Client);
 
@@ -33,8 +34,8 @@ class EntryRevisionsController extends BaseEntriesController
     /**
      * Saves a draft, or creates a new one.
      *
-     * @throws Exception
      * @return Response|null
+     * @throws NotFoundHttpException if the requested entry draft cannot be found
      */
     public function actionSaveDraft()
     {
@@ -46,7 +47,7 @@ class EntryRevisionsController extends BaseEntriesController
             $draft = Craft::$app->getEntryRevisions()->getDraftById($draftId);
 
             if (!$draft) {
-                throw new Exception(Craft::t('app', 'No draft exists with the ID “{id}”.', ['id' => $draftId]));
+                throw new NotFoundHttpException('Entry draft not found');
             }
         } else {
             $draft = new EntryDraftModel();
@@ -99,8 +100,8 @@ class EntryRevisionsController extends BaseEntriesController
     /**
      * Renames a draft.
      *
-     * @throws Exception
      * @return Response
+     * @throws NotFoundHttpException if the requested entry draft cannot be found
      */
     public function actionUpdateDraftMeta()
     {
@@ -113,7 +114,7 @@ class EntryRevisionsController extends BaseEntriesController
         $draft = Craft::$app->getEntryRevisions()->getDraftById($draftId);
 
         if (!$draft) {
-            throw new Exception(Craft::t('app', 'No draft exists with the ID “{id}”.', ['id' => $draftId]));
+            throw new NotFoundHttpException('Entry draft not found');
         }
 
         if ($draft->creatorId != Craft::$app->getUser()->getIdentity()->id) {
@@ -134,8 +135,8 @@ class EntryRevisionsController extends BaseEntriesController
     /**
      * Deletes a draft.
      *
-     * @throws Exception
      * @return Response
+     * @throws NotFoundHttpException if the requested entry draft cannot be found
      */
     public function actionDeleteDraft()
     {
@@ -145,7 +146,7 @@ class EntryRevisionsController extends BaseEntriesController
         $draft = Craft::$app->getEntryRevisions()->getDraftById($draftId);
 
         if (!$draft) {
-            throw new Exception(Craft::t('app', 'No draft exists with the ID “{id}”.', ['id' => $draftId]));
+            throw new NotFoundHttpException('Entry draft not found');
         }
 
         if ($draft->creatorId != Craft::$app->getUser()->getIdentity()->id) {
@@ -160,8 +161,9 @@ class EntryRevisionsController extends BaseEntriesController
     /**
      * Publish a draft.
      *
-     * @throws Exception
      * @return Response|null
+     * @throws NotFoundHttpException if the requested entry draft cannot be found
+     * @throws ServerErrorHttpException if the entry draft is missing its entry
      */
     public function actionPublishDraft()
     {
@@ -172,14 +174,14 @@ class EntryRevisionsController extends BaseEntriesController
         $userId = Craft::$app->getUser()->getIdentity()->id;
 
         if (!$draft) {
-            throw new Exception(Craft::t('app', 'No draft exists with the ID “{id}”.', ['id' => $draftId]));
+            throw new NotFoundHttpException('Entry draft not found');
         }
 
         // Permission enforcement
         $entry = Craft::$app->getEntries()->getEntryById($draft->id, $draft->locale);
 
         if (!$entry) {
-            throw new Exception(Craft::t('app', 'No entry exists with the ID “{id}”.', ['id' => $draft->id]));
+            throw new ServerErrorHttpException('Entry draft is missing its entry');
         }
 
         $this->enforceEditEntryPermissions($entry);
@@ -233,8 +235,9 @@ class EntryRevisionsController extends BaseEntriesController
     /**
      * Reverts an entry to a version.
      *
-     * @throws Exception
      * @return Response|null
+     * @throws NotFoundHttpException if the requested entry version cannot be found
+     * @throws ServerErrorHttpException if the entry version is missing its entry
      */
     public function actionRevertEntryToVersion()
     {
@@ -244,14 +247,14 @@ class EntryRevisionsController extends BaseEntriesController
         $version = Craft::$app->getEntryRevisions()->getVersionById($versionId);
 
         if (!$version) {
-            throw new Exception(Craft::t('app', 'No version exists with the ID “{id}”.', ['id' => $versionId]));
+            throw new NotFoundHttpException('Entry version not found');
         }
 
         // Permission enforcement
         $entry = Craft::$app->getEntries()->getEntryById($version->id, $version->locale);
 
         if (!$entry) {
-            throw new Exception(Craft::t('app', 'No entry exists with the ID “{id}”.', ['id' => $version->id]));
+            throw new ServerErrorHttpException('Entry version is missing its entry');
         }
 
         $this->enforceEditEntryPermissions($entry);

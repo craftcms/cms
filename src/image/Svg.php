@@ -3,7 +3,6 @@ namespace craft\app\image;
 
 use Craft;
 use craft\app\base\Image;
-use craft\app\errors\Exception;
 use craft\app\errors\ImageException;
 use craft\app\helpers\Image as ImageHelper;
 use craft\app\helpers\Io;

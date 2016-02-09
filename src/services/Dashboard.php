@@ -9,8 +9,8 @@ namespace craft\app\services;
 
 use Craft;
 use craft\app\base\WidgetInterface;
-use craft\app\errors\Exception;
 use craft\app\errors\InvalidComponentException;
+use craft\app\errors\WidgetNotFoundException;
 use craft\app\helpers\Component as ComponentHelper;
 use craft\app\records\Widget as WidgetRecord;
 use craft\app\base\Widget;
@@ -165,7 +165,7 @@ class Dashboard extends Component
      * @param boolean                $validate Whether the widget should be validated first
      *
      * @return boolean Whether the widget was saved successfully
-     * @throws \Exception
+     * @throws \Exception if reasons
      */
     public function saveWidget(WidgetInterface $widget, $validate = true)
     {
@@ -229,7 +229,7 @@ class Dashboard extends Component
      * @param integer[] $widgetIds The widget IDs
      *
      * @return boolean Whether the widgets were reordered successfully
-     * @throws \Exception
+     * @throws \Exception if reasons
      */
     public function reorderWidgets($widgetIds)
     {
@@ -316,12 +316,12 @@ class Dashboard extends Component
      *
      * @param integer $widgetId
      *
-     * @throws Exception
      * @return void
+     * @throws WidgetNotFoundException
      */
     private function _noWidgetExists($widgetId)
     {
-        throw new Exception(Craft::t('app', 'No widget exists with the ID “{id}”.', ['id' => $widgetId]));
+        throw new WidgetNotFoundException("No widget exists with the ID '{$widgetId}'");
     }
 
     /**

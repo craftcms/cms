@@ -19,5 +19,4 @@ namespace craft\app\errors;
  */
 class VolumeObjectNotFoundException extends VolumeException
 {
-
 }

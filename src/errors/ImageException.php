@@ -7,6 +7,8 @@
 
 namespace craft\app\errors;
 
+use yii\base\Exception;
+
 /**
  * Class ImageException
  *
@@ -19,5 +21,4 @@ namespace craft\app\errors;
  */
 class ImageException extends Exception
 {
-
 }

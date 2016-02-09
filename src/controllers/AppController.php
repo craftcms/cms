@@ -10,13 +10,13 @@ namespace craft\app\controllers;
 use Craft;
 use craft\app\dates\DateInterval;
 use craft\app\enums\LicenseKeyStatus;
-use craft\app\errors\Exception;
 use craft\app\helpers\App;
 use craft\app\helpers\Cp;
 use craft\app\helpers\DateTimeHelper;
 use craft\app\models\UpgradeInfo;
 use craft\app\models\UpgradePurchase as UpgradePurchaseModel;
 use craft\app\web\Controller;
+use yii\web\BadRequestHttpException;
 use yii\web\Response;
 
 /**
@@ -218,8 +218,8 @@ class AppController extends Controller
     /**
      * Tries a Craft edition on for size.
      *
-     * @throws Exception
      * @return Response
+     * @throws BadRequestHttpException if Craft isn’t allowed to test edition upgrades
      */
     public function actionTestUpgrade()
     {
@@ -228,7 +228,7 @@ class AppController extends Controller
         $this->requireAdmin();
 
         if (!Craft::$app->canTestEditions()) {
-            throw new Exception('Tried to test an edition, but Craft isn\'t allowed to do that.');
+            throw new BadRequestHttpException('Craft is not permitted to test edition upgrades from this server');
         }
 
         $edition = Craft::$app->getRequest()->getRequiredBodyParam('edition');

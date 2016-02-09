@@ -9,7 +9,6 @@ namespace craft\app\controllers;
 
 use Craft;
 use craft\app\base\Element;
-use craft\app\errors\Exception;
 use craft\app\helpers\Json;
 use craft\app\helpers\Url;
 use craft\app\elements\Category;
@@ -442,8 +441,8 @@ class CategoriesController extends Controller
     /**
      * Deletes a category.
      *
-     * @throws Exception
      * @return Response|null
+     * @throws NotFoundHttpException if the requested category cannot be found
      */
     public function actionDeleteCategory()
     {
@@ -453,7 +452,7 @@ class CategoriesController extends Controller
         $category = Craft::$app->getCategories()->getCategoryById($categoryId);
 
         if (!$category) {
-            throw new Exception(Craft::t('app', 'No category exists with the ID “{id}”.', ['id' => $categoryId]));
+            throw new NotFoundHttpException('Category not found');
         }
 
         // Make sure they have permission to do this
@@ -645,8 +644,8 @@ class CategoriesController extends Controller
     /**
      * Fetches or creates a Category.
      *
-     * @throws Exception
      * @return Category
+     * @throws NotFoundHttpException if the requested category cannot be found
      */
     private function _getCategoryModel()
     {
@@ -657,7 +656,7 @@ class CategoriesController extends Controller
             $category = Craft::$app->getCategories()->getCategoryById($categoryId, $localeId);
 
             if (!$category) {
-                throw new Exception(Craft::t('app', 'No category exists with the ID “{id}”.', ['id' => $categoryId]));
+                throw new NotFoundHttpException('Category not found');
             }
         } else {
             $category = new Category();

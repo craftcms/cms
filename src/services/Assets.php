@@ -23,7 +23,6 @@ use craft\app\errors\VolumeException;
 use craft\app\errors\VolumeObjectExistsException;
 use craft\app\errors\VolumeObjectNotFoundException;
 use craft\app\errors\ElementSaveException;
-use craft\app\errors\Exception;
 use craft\app\errors\FileException;
 use craft\app\errors\ValidationException;
 use craft\app\events\AssetEvent;
@@ -43,6 +42,7 @@ use craft\app\records\Asset as AssetRecord;
 use craft\app\records\VolumeFolder as VolumeFolderRecord;
 use craft\app\volumes\Temp;
 use yii\base\Component;
+use yii\base\Exception;
 
 /**
  * Class Assets service.
@@ -1078,7 +1078,7 @@ class Assets extends Component
             $this->checkPermissionByFolderIds($folderId, $action);
 
             return true;
-        } catch (Exception $exception) {
+        } catch (\Exception $exception) {
             return false;
         }
     }
@@ -1089,8 +1089,8 @@ class Assets extends Component
      * @param $folderIds
      * @param $permission
      *
-     * @throws Exception
      * @return void
+     * @throws Exception if reasons
      */
     public function checkPermissionByFolderIds($folderIds, $permission)
     {
@@ -1103,11 +1103,13 @@ class Assets extends Component
             $folderModel = $this->getFolderById($folderId);
 
             if (!$folderModel) {
+                // TODO: Replace with a meaningful exception class and translate the response message elsewhere
                 throw new Exception(Craft::t('app',
                     'That folder does not seem to exist anymore. Re-index the Assets volume and try again.'));
             }
 
             if (!Craft::$app->user->checkPermission($permission.':'.$folderModel->volumeId)) {
+                // TODO: Replace with a meaningful exception class and translate the response message elsewhere
                 throw new Exception(Craft::t('app',
                     'You don’t have the required permissions for this operation.'));
             }
@@ -1120,8 +1122,8 @@ class Assets extends Component
      * @param $fileIds
      * @param $permission
      *
-     * @throws Exception
      * @return void
+     * @throws Exception if reasons
      */
     public function checkPermissionByFileIds($fileIds, $permission)
     {
@@ -1134,11 +1136,13 @@ class Assets extends Component
             $file = $this->getAssetById($fileId);
 
             if (!$file) {
+                // TODO: Replace with a meaningful exception class and translate the response message elsewhere
                 throw new Exception(Craft::t('app',
                     'That file does not seem to exist anymore. Re-index the Assets volume and try again.'));
             }
 
             if (!Craft::$app->user->checkPermission($permission.':'.$file->volumeId)) {
+                // TODO: Replace with a meaningful exception class and translate the response message elsewhere
                 throw new Exception(Craft::t('app',
                     'You don’t have the required permissions for this operation.'));
             }
@@ -1493,11 +1497,11 @@ class Assets extends Component
      *
      * @param Asset $asset
      *
-     * @throws AssetMissingException    If attempting to update a non-existing Asset.
-     * @throws ValidationException      If the validation failed.
-     * @throws ElementSaveException     If the element failed to save.
-     * @throws ActionCancelledException If something prevented the Asset replacement via Event
-     * @throws \Exception               If something else went wrong.
+     * @throws AssetMissingException    if attempting to update a non-existing Asset.
+     * @throws ValidationException      if the validation failed.
+     * @throws ElementSaveException     if the element failed to save.
+     * @throws ActionCancelledException if something prevented the Asset replacement via Event
+     * @throws \Exception               if reasons
      * @return boolean
      */
     private function _storeAssetRecord(Asset $asset)

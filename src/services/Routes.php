@@ -9,10 +9,9 @@ namespace craft\app\services;
 
 use Craft;
 use craft\app\db\Query;
-use craft\app\errors\Exception;
+use craft\app\errors\RouteNotFoundException;
 use craft\app\helpers\Io;
 use craft\app\helpers\Json;
-use craft\app\helpers\StringHelper;
 use craft\app\records\Route as RouteRecord;
 use yii\base\Component;
 
@@ -102,8 +101,8 @@ class Routes extends Component
      * @param integer|null $routeId  The route ID, if editing an existing route.
      * @param string|null  $locale
      *
-     * @throws Exception
      * @return RouteRecord
+     * @throws RouteNotFoundException if $routeId is invalid
      */
     public function saveRoute($urlParts, $template, $routeId = null, $locale = null)
     {
@@ -111,7 +110,7 @@ class Routes extends Component
             $routeRecord = RouteRecord::findOne($routeId);
 
             if (!$routeRecord) {
-                throw new Exception(Craft::t('app', 'No route exists with the ID “{id}”.', ['id' => $routeId]));
+                throw new RouteNotFoundException("No route exists with the ID '{$routeId}'");
             }
         } else {
             $routeRecord = new RouteRecord();

@@ -9,7 +9,7 @@ namespace craft\app\services;
 
 use Craft;
 use craft\app\db\Query;
-use craft\app\errors\Exception;
+use craft\app\errors\GlobalSetNotFoundException;
 use craft\app\events\GlobalSetEvent;
 use craft\app\elements\GlobalSet;
 use craft\app\records\GlobalSet as GlobalSetRecord;
@@ -244,8 +244,8 @@ class Globals extends Component
      * @param GlobalSet $globalSet
      *
      * @return boolean
-     * @throws Exception
-     * @throws \Exception
+     * @throws GlobalSetNotFoundException if $globalSet->id is invalid
+     * @throws \Exception if reasons
      */
     public function saveSet(GlobalSet $globalSet)
     {
@@ -255,7 +255,7 @@ class Globals extends Component
             $globalSetRecord = GlobalSetRecord::findOne($globalSet->id);
 
             if (!$globalSetRecord) {
-                throw new Exception(Craft::t('app', 'No global set exists with the ID “{id}”.', ['id' => $globalSet->id]));
+                throw new GlobalSetNotFoundException("No global set exists with the ID '{$globalSet->id}'");
             }
 
             $oldSet = GlobalSet::create($globalSetRecord);
@@ -313,8 +313,8 @@ class Globals extends Component
      *
      * @param integer $setId
      *
-     * @throws \Exception
-     * @return boolean
+     * @return boolean Whether the global set was deleted successfully
+     * @throws \Exception if reasons
      */
     public function deleteSetById($setId)
     {
@@ -352,8 +352,8 @@ class Globals extends Component
      *
      * @param GlobalSet $globalSet
      *
-     * @throws \Exception
-     * @return boolean
+     * @return boolean Whether the global set’s content was saved successfully
+     * @throws \Exception if reasons
      */
     public function saveContent(GlobalSet $globalSet)
     {

@@ -14,7 +14,6 @@ use craft\app\elements\Asset;
 use craft\app\elements\db\AssetQuery;
 use craft\app\elements\db\ElementQuery;
 use craft\app\errors\AssetConflictException;
-use craft\app\errors\Exception;
 use craft\app\errors\InvalidSubpathException;
 use craft\app\errors\VolumeObjectNotFoundException;
 use craft\app\helpers\Assets as AssetsHelper;
@@ -651,7 +650,6 @@ class Assets extends BaseRelationField
      *
      * @param ElementInterface|Element|null $element
      *
-     * @throws Exception
      * @return mixed|null
      */
     private function _determineUploadFolderId($element)

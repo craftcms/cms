@@ -8,7 +8,7 @@
 namespace craft\app\errors;
 
 /**
- * Class AssetDisallowedExtesionException
+ * Class AssetDisallowedExtensionException
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) Pixel & Tonic, Inc.
@@ -19,5 +19,4 @@ namespace craft\app\errors;
  */
 class AssetDisallowedExtensionException extends AssetException
 {
-
 }

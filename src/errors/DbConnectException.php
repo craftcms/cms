@@ -7,6 +7,8 @@
 
 namespace craft\app\errors;
 
+use yii\base\Exception;
+
 /**
  * Class DbConnectException
  *
@@ -15,5 +17,4 @@ namespace craft\app\errors;
  */
 class DbConnectException extends Exception
 {
-
 }

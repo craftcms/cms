@@ -7,6 +7,8 @@
 
 namespace craft\app\errors;
 
+use yii\base\Exception;
+
 /**
  * Class EtException
  *

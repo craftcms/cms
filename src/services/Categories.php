@@ -9,7 +9,8 @@ namespace craft\app\services;
 
 use Craft;
 use craft\app\db\Query;
-use craft\app\errors\Exception;
+use craft\app\errors\CategoryGroupNotFoundException;
+use craft\app\errors\CategoryNotFoundException;
 use craft\app\events\CategoryEvent;
 use craft\app\elements\Category;
 use craft\app\events\CategoryGroupEvent;
@@ -287,9 +288,9 @@ class Categories extends Component
      *
      * @param CategoryGroup $group
      *
-     * @return boolean
-     * @throws Exception
-     * @throws \Exception
+     * @return boolean Whether the category group was saved successfully
+     * @throws CategoryGroupNotFoundException if $group has an invalid ID
+     * @throws \Exception if reasons
      */
     public function saveGroup(CategoryGroup $group)
     {
@@ -297,7 +298,8 @@ class Categories extends Component
             $groupRecord = CategoryGroupRecord::findOne($group->id);
 
             if (!$groupRecord) {
-                throw new Exception(Craft::t('app', 'No category group exists with the ID “{id}”.', ['id' => $group->id]));
+
+                throw new CategoryGroupNotFoundException("No category group exists with the ID '{$group->id}'");
             }
 
             $oldCategoryGroup = CategoryGroup::create($groupRecord);
@@ -309,7 +311,7 @@ class Categories extends Component
 
         $groupRecord->name = $group->name;
         $groupRecord->handle = $group->handle;
-        $groupRecord->hasUrls = (bool) $group->hasUrls;
+        $groupRecord->hasUrls = (bool)$group->hasUrls;
 
         if ($group->hasUrls) {
             $groupRecord->template = $group->template;
@@ -521,8 +523,8 @@ class Categories extends Component
      *
      * @param integer $groupId
      *
-     * @throws \Exception
-     * @return boolean
+     * @return boolean Whether the category group was deleted successfully
+     * @throws \Exception if reasons
      */
     public function deleteGroupById($groupId)
     {
@@ -638,8 +640,9 @@ class Categories extends Component
      *
      * @param Category $category
      *
-     * @throws Exception|\Exception
-     * @return boolean
+     * @return boolean Whether the category was saved successfully
+     * @throws CategoryNotFoundException if $category has an invalid $id or invalid $newParentID
+     * @throws \Exception if reasons
      */
     public function saveCategory(Category $category)
     {
@@ -652,7 +655,7 @@ class Categories extends Component
                 $parentCategory = $this->getCategoryById($category->newParentId, $category->locale);
 
                 if (!$parentCategory) {
-                    throw new Exception(Craft::t('app', 'No category exists with the ID “{id}”.', ['id' => $category->newParentId]));
+                    throw new CategoryNotFoundException("No category exists with the ID '{$category->newParentId}'");
                 }
             } else {
                 $parentCategory = null;
@@ -666,7 +669,7 @@ class Categories extends Component
             $categoryRecord = CategoryRecord::findOne($category->id);
 
             if (!$categoryRecord) {
-                throw new Exception(Craft::t('app', 'No category exists with the ID “{id}”.', ['id' => $category->id]));
+                throw new CategoryNotFoundException("No category exists with the ID '{$category->id}'");
             }
         } else {
             $categoryRecord = new CategoryRecord();
@@ -749,8 +752,8 @@ class Categories extends Component
      *
      * @param Category|Category[] $categories
      *
-     * @throws \Exception
-     * @return boolean
+     * @return boolean Whether the category was deleted successfully
+     * @throws \Exception if reasons
      */
     public function deleteCategory($categories)
     {

@@ -10,7 +10,6 @@ namespace craft\app\controllers;
 use Craft;
 use craft\app\errors\AssetConflictException;
 use craft\app\errors\AssetLogicException;
-use craft\app\errors\Exception;
 use craft\app\errors\AssetException;
 use craft\app\errors\UploadFailedException;
 use craft\app\fields\Assets as AssetsField;
@@ -232,7 +231,7 @@ class AssetsController extends Controller
 
             $assets->replaceAssetFile($asset, $pathOnServer,
                 $fileName);
-        } catch (Exception $exception) {
+        } catch (\Exception $exception) {
             return $this->asErrorJson($exception->getMessage());
         }
 

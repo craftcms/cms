@@ -10,13 +10,13 @@ namespace craft\app\et;
 use Craft;
 use craft\app\enums\LicenseKeyStatus;
 use craft\app\errors\EtException;
-use craft\app\errors\Exception;
 use craft\app\helpers\ArrayHelper;
 use craft\app\helpers\DateTimeHelper;
 use craft\app\helpers\Io;
 use craft\app\models\Et as EtModel;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\RequestException;
+use yii\base\Exception;
 
 /**
  * Class Et
@@ -328,7 +328,7 @@ class Et
             throw new EtException('Craft needs to be able to write to your “craft/config” folder and it can’t.', 10001);
         }
 
-        throw new Exception(Craft::t('app', 'Cannot overwrite an existing valid license.key file.'));
+        throw new Exception('Cannot overwrite an existing valid license.key file.');
     }
 
     /**

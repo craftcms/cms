@@ -19,7 +19,7 @@ use craft\app\elements\GlobalSet;
 use craft\app\elements\MatrixBlock;
 use craft\app\elements\Tag;
 use craft\app\elements\User;
-use craft\app\errors\Exception;
+use craft\app\errors\ElementNotFoundException;
 use craft\app\events\DeleteElementsEvent;
 use craft\app\events\ElementEvent;
 use craft\app\events\MergeElementsEvent;
@@ -32,6 +32,7 @@ use craft\app\records\StructureElement as StructureElementRecord;
 use craft\app\tasks\FindAndReplace;
 use craft\app\tasks\UpdateElementSlugsAndUris;
 use yii\base\Component;
+use yii\base\Exception;
 
 /**
  * The Elements service provides APIs for managing elements.
@@ -275,8 +276,10 @@ class Elements extends Component
      * @param boolean|null             $validateContent Whether the element's content should be validated. If left 'null', it
      *                                                  will depend on whether the element is enabled or not.
      *
-     * @throws Exception|\Exception
      * @return boolean
+     * @throws ElementNotFoundException if $element has an invalid $id
+     * @throws Exception if the $element doesn’t have any locales
+     * @throws \Exception if reasons
      */
     public function saveElement(ElementInterface $element, $validateContent = null)
     {
@@ -313,7 +316,7 @@ class Elements extends Component
             ]);
 
             if (!$elementRecord) {
-                throw new Exception(Craft::t('app', 'No element exists with the ID “{id}”.', ['id' => $element->id]));
+                throw new ElementNotFoundException("No element exists with the ID '{$element->id}'");
             }
         } else {
             $elementRecord = new ElementRecord();
@@ -675,8 +678,8 @@ class Elements extends Component
      * @param integer $mergedElementId     The ID of the element that is going away.
      * @param integer $prevailingElementId The ID of the element that is sticking around.
      *
-     * @throws \Exception
      * @return boolean Whether the elements were merged successfully.
+     * @throws \Exception if reasons
      */
     public function mergeElementsByIds($mergedElementId, $prevailingElementId)
     {
@@ -784,8 +787,8 @@ class Elements extends Component
      *
      * @param integer|array $elementIds The element’s ID, or an array of elements’ IDs.
      *
-     * @throws \Exception
      * @return boolean Whether the element(s) were deleted successfully.
+     * @throws \Exception
      */
     public function deleteElementById($elementIds)
     {

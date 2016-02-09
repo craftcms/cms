@@ -10,7 +10,8 @@ namespace craft\app\services;
 use Craft;
 use craft\app\db\Query;
 use craft\app\elements\Entry;
-use craft\app\errors\Exception;
+use craft\app\errors\EntryTypeNotFoundException;
+use craft\app\errors\SectionNotFoundException;
 use craft\app\events\EntryTypeEvent;
 use craft\app\events\SectionEvent;
 use craft\app\helpers\ArrayHelper;
@@ -354,8 +355,8 @@ class Sections extends Component
      * @param Section $section
      *
      * @return boolean
-     * @throws Exception
-     * @throws \Exception
+     * @throws SectionNotFoundException if $section->id is invalid
+     * @throws \Exception if reasons
      */
     public function saveSection(Section $section)
     {
@@ -366,7 +367,7 @@ class Sections extends Component
                 ->one();
 
             if (!$sectionRecord) {
-                throw new Exception(Craft::t('app', 'No section exists with the ID “{id}”.', ['id' => $section->id]));
+                throw new SectionNotFoundException("No section exists with the ID '{$section->id}'");
             }
 
             $oldSection = Section::create($sectionRecord);
@@ -771,8 +772,8 @@ class Sections extends Component
      *
      * @param integer $sectionId
      *
-     * @throws \Exception
-     * @return boolean
+     * @return boolean Whether the section was deleted successfully
+     * @throws \Exception if reasons
      */
     public function deleteSectionById($sectionId)
     {
@@ -943,8 +944,9 @@ class Sections extends Component
      *
      * @param EntryType $entryType
      *
-     * @throws \Exception
-     * @return boolean
+     * @return boolean Whether the entry type was saved successfully
+     * @throws EntryTypeNotFound if $entryType->id is invalid
+     * @throws \Exception if reasons
      */
     public function saveEntryType(EntryType $entryType)
     {
@@ -952,7 +954,7 @@ class Sections extends Component
             $entryTypeRecord = EntryTypeRecord::findOne($entryType->id);
 
             if (!$entryTypeRecord) {
-                throw new Exception(Craft::t('app', 'No entry type exists with the ID “{id}”.', ['id' => $entryType->id]));
+                throw new EntryTypeNotFoundException("No entry type exists with the ID '{$entryType->id}'");
             }
 
             $isNewEntryType = false;
@@ -1041,8 +1043,8 @@ class Sections extends Component
      *
      * @param array $entryTypeIds
      *
-     * @throws \Exception
-     * @return boolean
+     * @return boolean Whether the entry types were reordered successfully
+     * @throws \Exception if reasons
      */
     public function reorderEntryTypes($entryTypeIds)
     {
@@ -1070,8 +1072,8 @@ class Sections extends Component
      *
      * @param integer|array $entryTypeId
      *
-     * @throws \Exception
-     * @return boolean
+     * @return boolean Whether the entry type was deleted successfully
+     * @throws \Exception if reasons
      */
     public function deleteEntryTypeById($entryTypeId)
     {

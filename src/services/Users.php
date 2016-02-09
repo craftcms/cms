@@ -11,7 +11,7 @@ use Craft;
 use craft\app\dates\DateInterval;
 use craft\app\dates\DateTime;
 use craft\app\db\Query;
-use craft\app\errors\Exception;
+use craft\app\errors\UserNotFoundException;
 use craft\app\events\DeleteUserEvent;
 use craft\app\events\UserEvent;
 use craft\app\helpers\Assets as AssetsHelper;
@@ -320,9 +320,9 @@ class Users extends Component
      *
      * @param User $user The user to be saved.
      *
-     * @return boolean
-     * @throws Exception
-     * @throws \Exception
+     * @return boolean Whether the user was saved successfully
+     * @throws UserNotFoundException
+     * @throws \Exception if reasons
      */
     public function saveUser(User $user)
     {
@@ -332,7 +332,7 @@ class Users extends Component
             $userRecord = $this->_getUserRecordById($user->id);
 
             if (!$userRecord) {
-                throw new Exception(Craft::t('app', 'No user exists with the ID “{id}”.', ['id' => $user->id]));
+                throw new UserNotFoundException("No user exists with the ID '{$user->id}'");
             }
 
             $oldUsername = $userRecord->username;
@@ -617,7 +617,6 @@ class Users extends Component
      * @param Image  $image    The image.
      * @param User   $user     The user.
      *
-     * @throws \Exception
      * @return boolean Whether the photo was saved successfully.
      */
     public function saveUserPhoto($filename, Image $image, User $user)
@@ -697,7 +696,6 @@ class Users extends Component
      * @param User $user
      *
      * @return boolean
-     * @throws Exception
      */
     public function updateUserLoginInfo(User $user)
     {
@@ -760,8 +758,8 @@ class Users extends Component
      *
      * @param User $user The user.
      *
-     * @throws \Exception
      * @return boolean Whether the user was activated successfully.
+     * @throws \Exception if reasons
      */
     public function activateUser(User $user)
     {
@@ -852,8 +850,8 @@ class Users extends Component
      *
      * @param User $user The user.
      *
-     * @throws \Exception
      * @return boolean Whether the user was unlocked successfully.
+     * @throws \Exception if reasons
      */
     public function unlockUser(User $user)
     {
@@ -908,8 +906,8 @@ class Users extends Component
      *
      * @param User $user The user.
      *
-     * @throws \Exception
      * @return boolean Whether the user was suspended successfully.
+     * @throws \Exception if reasons
      */
     public function suspendUser(User $user)
     {
@@ -960,8 +958,8 @@ class Users extends Component
      *
      * @param User $user The user.
      *
-     * @throws \Exception
      * @return boolean Whether the user was unsuspended successfully.
+     * @throws \Exception if reasons
      */
     public function unsuspendUser(User $user)
     {
@@ -1013,8 +1011,8 @@ class Users extends Component
      * @param User      $user              The user to be deleted.
      * @param User|null $transferContentTo The user who should take over the deleted user’s content.
      *
-     * @throws \Exception
      * @return boolean Whether the user was deleted successfully.
+     * @throws \Exception if reasons
      */
     public function deleteUser(User $user, User $transferContentTo = null)
     {
@@ -1226,15 +1224,15 @@ class Users extends Component
      *
      * @param integer $userId
      *
-     * @throws Exception
      * @return UserRecord
+     * @throws UserNotFoundException if $userId is invalid
      */
     private function _getUserRecordById($userId)
     {
         $userRecord = UserRecord::findOne($userId);
 
         if (!$userRecord) {
-            throw new Exception(Craft::t('app', 'No user exists with the ID “{id}”.', ['id' => $userId]));
+            throw new UserNotFoundException("No user exists with the ID '{$userId}'");
         }
 
         return $userRecord;

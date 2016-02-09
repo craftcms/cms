@@ -1,7 +1,6 @@
 <?php
 namespace craft\app\base;
 
-use craft\app\errors\Exception;
 use craft\app\errors\ImageException;
 use craft\app\helpers\Image as ImageHelper;
 

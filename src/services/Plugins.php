@@ -11,12 +11,12 @@ use Craft;
 use craft\app\base\Plugin;
 use craft\app\base\PluginInterface;
 use craft\app\db\Query;
-use craft\app\errors\Exception;
 use craft\app\helpers\DateTimeHelper;
 use craft\app\helpers\Db;
 use craft\app\helpers\Io;
 use craft\app\helpers\Json;
 use yii\base\Component;
+use yii\base\Exception;
 use yii\base\InvalidParamException;
 
 /**
@@ -237,8 +237,9 @@ class Plugins extends Component
      *
      * @param string $handle The plugin’s handle.
      *
-     * @throws Exception|\Exception
      * @return boolean Whether the plugin was installed successfully.
+     * @throws Exception if the plugin doesn’t exist
+     * @throws \Exception if reasons
      */
     public function installPlugin($handle)
     {
@@ -296,7 +297,8 @@ class Plugins extends Component
      * @param string $handle The plugin’s handle.
      *
      * @return boolean Whether the plugin was uninstalled successfully
-     * @throws Exception|\Exception
+     * @throws Exception if the plugin doesn’t exist
+     * @throws \Exception if reasons
      */
     public function uninstallPlugin($handle)
     {
@@ -655,8 +657,8 @@ class Plugins extends Component
      *
      * @param string $handle
      *
-     * @throws Exception
      * @return void
+     * @throws Exception
      */
     private function _noPluginExists($handle)
     {

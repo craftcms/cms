@@ -14,7 +14,6 @@ use craft\app\db\MigrationManager;
 use craft\app\db\Query;
 use craft\app\enums\ConfigCategory;
 use craft\app\errors\DbConnectException;
-use craft\app\errors\Exception;
 use craft\app\events\EditionChangeEvent;
 use craft\app\helpers\App;
 use craft\app\helpers\DateTimeHelper;
@@ -27,7 +26,10 @@ use craft\app\mail\Mailer;
 use craft\app\models\Info;
 use craft\app\web\Application as WebApplication;
 use yii\base\InvalidConfigException;
+use yii\db\Exception;
 use yii\log\Logger;
+use yii\web\BadRequestHttpException;
+use yii\web\ServerErrorHttpException;
 
 /**
  * ApplicationTrait
@@ -400,7 +402,8 @@ trait ApplicationTrait
      * @param integer $edition  The Craft edition to require.
      * @param boolean $orBetter If true, makes $edition the minimum edition required.
      *
-     * @throws Exception
+     * @return void
+     * @throws BadRequestHttpException if attempting to do something not allowed by the current Craft edition
      */
     public function requireEdition($edition, $orBetter = true)
     {
@@ -409,10 +412,8 @@ trait ApplicationTrait
             $installedEdition = $this->getEdition();
 
             if (($orBetter && $installedEdition < $edition) || (!$orBetter && $installedEdition !== $edition)) {
-                throw new Exception(Craft::t('app', 'Craft {edition} is required to perform this action.',
-                    [
-                        'edition' => App::getEditionName($edition)
-                    ]));
+                $editionName = App::getEditionName($edition);
+                throw new BadRequestHttpException("Craft {$editionName} is required for this");
             }
         }
     }
@@ -592,8 +593,8 @@ trait ApplicationTrait
      *
      * @param string|null $attribute
      *
-     * @throws Exception
      * @return Info|string
+     * @throws ServerErrorHttpException if the info table is missing its row
      */
     public function getInfo($attribute = null)
     {
@@ -605,7 +606,8 @@ trait ApplicationTrait
                     ->one();
 
                 if (!$row) {
-                    throw new Exception(Craft::t('app', 'Craft appears to be installed but the info table is empty.'));
+                    $tableName = $this->getDb()->getSchema()->getRawTableName('{{%info}}');
+                    throw new ServerErrorHttpException("The {$tableName} table is missing its row");
                 }
 
                 // TODO: Remove this after the next breakpoint
@@ -1319,7 +1321,7 @@ trait ApplicationTrait
             $db = Craft::createObject($config);
             $db->open();
         } // Most likely missing PDO in general or the specific database PDO driver.
-        catch (\yii\db\Exception $e) {
+        catch (Exception $e) {
             Craft::error($e->getMessage(), __METHOD__);
 
             // TODO: Multi-db driver check.

@@ -12,7 +12,8 @@ use craft\app\base\Element;
 use craft\app\base\ElementInterface;
 use craft\app\db\Query;
 use craft\app\elements\db\MatrixBlockQuery;
-use craft\app\errors\Exception;
+use craft\app\errors\MatrixBlockNotFoundException;
+use craft\app\errors\MatrixBlockTypeNotFoundException;
 use craft\app\fields\Matrix as MatrixField;
 use craft\app\helpers\Html;
 use craft\app\helpers\Migration;
@@ -24,6 +25,7 @@ use craft\app\models\MatrixBlockType as MatrixBlockTypeModel;
 use craft\app\records\MatrixBlock as MatrixBlockRecord;
 use craft\app\records\MatrixBlockType as MatrixBlockTypeRecord;
 use yii\base\Component;
+use yii\base\Exception;
 
 /**
  * The Matrix service provides APIs for managing Matrix fields.
@@ -232,8 +234,8 @@ class Matrix extends Component
      *                                        Defaults to `true`.
      *
      * @return boolean
-     * @throws Exception
-     * @throws \Exception
+     * @throws Exception if an error occurs when saving the block type
+     * @throws \Exception if reasons
      */
     public function saveBlockType(MatrixBlockTypeModel $blockType, $validate = true)
     {
@@ -313,7 +315,7 @@ class Matrix extends Component
                     }
 
                     if (!$fieldsService->saveField($field, false)) {
-                        throw new Exception(Craft::t('app', 'An error occurred while saving this Matrix block type.'));
+                        throw new Exception('An error occurred while saving this Matrix block type.');
                     }
 
                     $field->required = $field->required;
@@ -369,8 +371,8 @@ class Matrix extends Component
      *
      * @param MatrixBlockTypeModel $blockType The block type.
      *
-     * @throws \Exception
      * @return boolean Whether the block type was deleted successfully.
+     * @throws \Exception if reasons
      */
     public function deleteBlockType(MatrixBlockTypeModel $blockType)
     {
@@ -467,8 +469,8 @@ class Matrix extends Component
      * @param MatrixField $matrixField The Matrix field
      * @param boolean     $validate    Whether the settings should be validated before being saved.
      *
-     * @throws \Exception
      * @return boolean Whether the settings saved successfully.
+     * @throws \Exception if reasons
      */
     public function saveSettings(MatrixField $matrixField, $validate = true)
     {
@@ -542,8 +544,8 @@ class Matrix extends Component
      *
      * @param MatrixField $matrixField The Matrix field.
      *
-     * @throws \Exception
      * @return boolean Whether the field was deleted successfully.
+     * @throws \Exception if reasons
      */
     public function deleteMatrixField(MatrixField $matrixField)
     {
@@ -657,8 +659,8 @@ class Matrix extends Component
      * @param boolean     $validate Whether the block should be validated before being saved.
      *                              Defaults to `true`.
      *
-     * @throws \Exception
      * @return boolean Whether the block was saved successfully.
+     * @throws \Exception if reasons
      */
     public function saveBlock(MatrixBlock $block, $validate = true)
     {
@@ -729,8 +731,8 @@ class Matrix extends Component
      * @param MatrixField              $field The Matrix field
      * @param ElementInterface|Element $owner The element the field is associated with
      *
-     * @throws \Exception
      * @return boolean Whether the field was saved successfully.
+     * @throws \Exception if reasons
      */
     public function saveField(MatrixField $field, ElementInterface $owner)
     {
@@ -867,25 +869,21 @@ class Matrix extends Component
      *
      * @param MatrixBlockTypeModel $blockType
      *
-     * @throws Exception
      * @return MatrixBlockTypeRecord
+     * @throws MatrixBlockTypeNotFoundException if $blockType->id is invalid
      */
     private function _getBlockTypeRecord(MatrixBlockTypeModel $blockType)
     {
         if (!$blockType->isNew()) {
-            $blockTypeId = $blockType->id;
+            if (!isset($this->_blockTypeRecordsById) || !array_key_exists($blockType->id, $this->_blockTypeRecordsById)) {
+                $this->_blockTypeRecordsById[$blockType->id] = MatrixBlockTypeRecord::findOne($blockType->id);
 
-            if (!isset($this->_blockTypeRecordsById) || !array_key_exists($blockTypeId,
-                    $this->_blockTypeRecordsById)
-            ) {
-                $this->_blockTypeRecordsById[$blockTypeId] = MatrixBlockTypeRecord::findOne($blockTypeId);
-
-                if (!$this->_blockTypeRecordsById[$blockTypeId]) {
-                    throw new Exception(Craft::t('app', 'No block type exists with the ID “{id}”.', ['id' => $blockTypeId]));
+                if (!$this->_blockTypeRecordsById[$blockType->id]) {
+                    throw new MatrixBlockTypeNotFoundException("No block type exists with the ID '{$blockType->id}'");
                 }
             }
 
-            return $this->_blockTypeRecordsById[$blockTypeId];
+            return $this->_blockTypeRecordsById[$blockType->id];
         } else {
             return new MatrixBlockTypeRecord();
         }
@@ -896,28 +894,24 @@ class Matrix extends Component
      *
      * @param MatrixBlock $block
      *
-     * @throws Exception
      * @return MatrixBlockRecord
+     * @throws MatrixBlockNotFoundException if $block->id is invalid
      */
     private function _getBlockRecord(MatrixBlock $block)
     {
-        $blockId = $block->id;
-
-        if ($blockId) {
-            if (!isset($this->_blockRecordsById) || !array_key_exists($blockId,
-                    $this->_blockRecordsById)
-            ) {
-                $this->_blockRecordsById[$blockId] = MatrixBlockRecord::find()
-                    ->where(['id' => $blockId])
+        if ($block->id) {
+            if (!isset($this->_blockRecordsById) || !array_key_exists($block->id, $this->_blockRecordsById)) {
+                $this->_blockRecordsById[$block->id] = MatrixBlockRecord::find()
+                    ->where(['id' => $block->id])
                     ->with('element')
                     ->one();
 
-                if (!$this->_blockRecordsById[$blockId]) {
-                    throw new Exception(Craft::t('app', 'No block exists with the ID “{id}”.', ['id' => $blockId]));
+                if (!$this->_blockRecordsById[$block->id]) {
+                    throw new MatrixBlockNotFoundException("No Matrix block exists with the ID '{$block->id}'");
                 }
             }
 
-            return $this->_blockRecordsById[$blockId];
+            return $this->_blockRecordsById[$block->id];
         } else {
             return new MatrixBlockRecord();
         }

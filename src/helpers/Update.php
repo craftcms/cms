@@ -10,7 +10,7 @@ namespace craft\app\helpers;
 use Craft;
 use craft\app\db\DbBackup;
 use craft\app\enums\PatchManifestFileAction;
-use craft\app\errors\Exception;
+use yii\base\Exception;
 
 /**
  * Class Update
@@ -220,8 +220,8 @@ class Update
      *
      * @param $manifestDataPath
      *
-     * @throws Exception
      * @return array
+     * @throws Exception if there was a problem reading the update manifest data
      */
     public static function getManifestData($manifestDataPath)
     {
@@ -231,7 +231,7 @@ class Update
                 $manifestFileData = Io::getFileContents($manifestDataPath.'/craft_manifest', true);
 
                 if ($manifestFileData === false) {
-                    throw new Exception(Craft::t('app', 'There was a problem reading the update manifest data.'));
+                    throw new Exception('There was a problem reading the update manifest data');
                 }
 
                 // Remove any trailing empty newlines

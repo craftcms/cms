@@ -11,7 +11,8 @@ use Craft;
 use craft\app\base\Field;
 use craft\app\base\FieldInterface;
 use craft\app\db\Query;
-use craft\app\errors\Exception;
+use craft\app\errors\FieldGroupNotFoundException;
+use craft\app\errors\FieldNotFoundException;
 use craft\app\errors\InvalidComponentException;
 use craft\app\events\FieldLayoutEvent;
 use craft\app\fields\Assets as AssetsField;
@@ -485,7 +486,7 @@ class Fields extends Component
      * @param boolean              $validate Whether the field should be validated first
      *
      * @return boolean Whether the field was saved successfully
-     * @throws \Exception
+     * @throws \Exception if reasons
      */
     public function saveField(FieldInterface $field, $validate = true)
     {
@@ -600,7 +601,7 @@ class Fields extends Component
      * @param FieldInterface $field The field
      *
      * @return boolean Whether the field was deleted successfully
-     * @throws \Exception
+     * @throws \Exception if reasons
      */
     public function deleteField(FieldInterface $field)
     {
@@ -984,7 +985,7 @@ class Fields extends Component
      * @param FieldGroupModel $group
      *
      * @return FieldGroupRecord
-     * @throws Exception
+     * @throws FieldGroupNotFoundException if $group->id is invalid
      */
     private function _getGroupRecord(FieldGroupModel $group)
     {
@@ -992,7 +993,7 @@ class Fields extends Component
             $groupRecord = FieldGroupRecord::findOne($group->id);
 
             if (!$groupRecord) {
-                throw new Exception(Craft::t('app', 'No field group exists with the ID “{id}”.', ['id' => $group->id]));
+                throw new FieldGroupNotFoundException("No field group exists with the ID '{$group->id}'");
             }
         } else {
             $groupRecord = new FieldGroupRecord();
@@ -1007,25 +1008,23 @@ class Fields extends Component
      * @param FieldInterface $field
      *
      * @return FieldRecord
-     * @throws Exception
+     * @throws FieldNotFoundException if $field->id is invalid
      */
     private function _getFieldRecord(FieldInterface $field)
     {
         /** @var Field $field */
         if (!$field->isNew()) {
-            $fieldId = $field->id;
-
-            if (!isset($this->_fieldRecordsById) || !array_key_exists($fieldId,
+            if (!isset($this->_fieldRecordsById) || !array_key_exists($field->id,
                     $this->_fieldRecordsById)
             ) {
-                $this->_fieldRecordsById[$fieldId] = FieldRecord::findOne($fieldId);
+                $this->_fieldRecordsById[$field->id] = FieldRecord::findOne($field->id);
 
-                if (!$this->_fieldRecordsById[$fieldId]) {
-                    throw new Exception(Craft::t('app', 'No field exists with the ID “{id}”.', ['id' => $fieldId]));
+                if (!$this->_fieldRecordsById[$field->id]) {
+                    throw new FieldNotFoundException("No field exists with the ID '{$field->id}'");
                 }
             }
 
-            return $this->_fieldRecordsById[$fieldId];
+            return $this->_fieldRecordsById[$field->id];
         } else {
             return new FieldRecord();
         }

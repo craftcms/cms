@@ -10,12 +10,12 @@ namespace craft\app\controllers;
 use Craft;
 use craft\app\enums\PluginVersionUpdateStatus;
 use craft\app\errors\EtException;
-use craft\app\errors\Exception;
 use craft\app\helpers\ArrayHelper;
 use craft\app\helpers\Update;
 use craft\app\helpers\Url;
 use craft\app\web\Controller;
 use yii\web\Response;
+use yii\web\ServerErrorHttpException;
 
 /**
  * The UpdateController class is a controller that handles various update related tasks such as checking for available
@@ -480,8 +480,8 @@ class UpdateController extends Controller
     /**
      * Can be called during both a manual and auto-update.
      *
-     * @throws Exception
      * @return Response
+     * @throws ServerErrorHttpException if reasons
      */
     public function actionRollback()
     {
@@ -504,7 +504,7 @@ class UpdateController extends Controller
 
         if (!$return['success']) {
             // Let the JS handle the exception response.
-            throw new Exception($return['message']);
+            throw new ServerErrorHttpException($return['message']);
         }
 
         return $this->asJson([

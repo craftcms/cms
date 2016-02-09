@@ -12,7 +12,6 @@ use craft\app\base\Plugin;
 use craft\app\base\PluginInterface;
 use craft\app\enums\PluginVersionUpdateStatus;
 use craft\app\enums\VersionUpdateStatus;
-use craft\app\errors\Exception;
 use craft\app\events\Event;
 use craft\app\events\UpdateEvent;
 use craft\app\helpers\Io;
@@ -22,6 +21,7 @@ use craft\app\models\PluginUpdate as PluginUpdateModel;
 use craft\app\models\Update as UpdateModel;
 use craft\app\updates\Updater;
 use yii\base\Component;
+use yii\base\Exception;
 
 /**
  * Class Updates service.
@@ -439,7 +439,7 @@ class Updates extends Component
                     Craft::info('The plugin, '.$plugin->name.' is done updating the database.', __METHOD__);
                 } else {
                     Craft::error('Cannot find a plugin with the handle '.$handle.' or it is not enabled, therefore it cannot update the database.', __METHOD__);
-                    throw new Exception(Craft::t('app', 'Cannot find an enabled plugin with the handle {handle}.', ['handle' => $handle]));
+                    throw new Exception("Cannot find an enabled plugin with the handle '{$handle}'");
                 }
             }
 

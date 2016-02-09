@@ -9,7 +9,7 @@ namespace craft\app\services;
 
 use Craft;
 use craft\app\db\Query;
-use craft\app\errors\Exception;
+use craft\app\errors\EntryDraftNotFoundException;
 use craft\app\events\DraftEvent;
 use craft\app\events\EntryEvent;
 use craft\app\helpers\ArrayHelper;
@@ -241,9 +241,8 @@ class EntryRevisions extends Component
      *
      * @param EntryDraft $draft
      *
-     * @return boolean
-     * @throws \Exception
-     * @throws \yii\db\Exception
+     * @return boolean Whether the draft was deleted successfully
+     * @throws \Exception if reasons
      */
     public function deleteDraft(EntryDraft $draft)
     {
@@ -413,8 +412,8 @@ class EntryRevisions extends Component
      *
      * @param EntryDraft $draft
      *
-     * @throws Exception
      * @return EntryDraftRecord
+     * @throws EntryDraftNotFoundException if $draft->draftId is invalid
      */
     private function _getDraftRecord(EntryDraft $draft)
     {
@@ -422,7 +421,7 @@ class EntryRevisions extends Component
             $draftRecord = EntryDraftRecord::findOne($draft->draftId);
 
             if (!$draftRecord) {
-                throw new Exception(Craft::t('app', 'No draft exists with the ID “{id}”.', ['id' => $draft->draftId]));
+                throw new EntryDraftNotFoundException("No draft exists with the ID '{$draft->draftId}'");
             }
         } else {
             $draftRecord = new EntryDraftRecord();

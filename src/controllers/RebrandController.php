@@ -8,7 +8,6 @@
 namespace craft\app\controllers;
 
 use Craft;
-use craft\app\errors\Exception;
 use craft\app\helpers\Assets;
 use craft\app\helpers\Image;
 use craft\app\helpers\Io;
@@ -65,8 +64,7 @@ class RebrandController extends Controller
                 $filename = Assets::prepareAssetName($file->name);
 
                 if (!Image::isImageManipulatable($file->getExtension())) {
-                    throw new Exception(Craft::t('app',
-                        'The uploaded file is not an image.'));
+                    throw new BadRequestHttpException('The uploaded file is not an image');
                 }
 
                 $folderPath = Craft::$app->getPath()->getTempUploadsPath();
@@ -106,8 +104,8 @@ class RebrandController extends Controller
                     return $this->asJson(array('html' => $html));
                 }
             }
-        } catch (Exception $exception) {
-            return $this->asErrorJson($exception->getMessage());
+        } catch (BadRequestHttpException $exception) {
+            return $this->asErrorJson(Craft::t('app', 'The uploaded file is not an image.'));
         }
 
         return $this->asErrorJson(Craft::t('app',
@@ -167,7 +165,7 @@ class RebrandController extends Controller
             }
 
             Io::deleteFile($imagePath);
-        } catch (Exception $exception) {
+        } catch (\Exception $exception) {
             return $this->asErrorJson($exception->getMessage());
         }
 

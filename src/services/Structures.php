@@ -9,7 +9,7 @@ namespace craft\app\services;
 
 use Craft;
 use craft\app\base\ElementInterface;
-use craft\app\errors\Exception;
+use craft\app\errors\StructureNotFoundException;
 use craft\app\events\MoveElementEvent;
 use craft\app\models\Structure as StructureModel;
 use craft\app\records\Structure as StructureRecord;
@@ -76,8 +76,8 @@ class Structures extends Component
      *
      * @param StructureModel $structure
      *
-     * @throws Exception
-     * @return boolean
+     * @return boolean Whether the structure was saved successfully
+     * @throws StructureNotFoundException if $structure->id is invalid
      */
     public function saveStructure(StructureModel $structure)
     {
@@ -85,7 +85,7 @@ class Structures extends Component
             $structureRecord = StructureRecord::findOne($structure->id);
 
             if (!$structureRecord) {
-                throw new Exception(Craft::t('app', 'No structure exists with the ID “{id}”.', ['id' => $structure->id]));
+                throw new StructureNotFoundException("No structure exists with the ID '{$structure->id}'");
             }
         } else {
             $structureRecord = new StructureRecord();
@@ -311,8 +311,8 @@ class Structures extends Component
      * @param  string                 $action
      * @param  string                 $mode
      *
-     * @throws \Exception
-     * @return boolean
+     * @return boolean Whether it was done
+     * @throws \Exception if reasons
      */
     private function _doIt($structureId, ElementInterface $element, StructureElementRecord $targetElementRecord, $action, $mode)
     {

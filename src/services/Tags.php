@@ -9,7 +9,8 @@ namespace craft\app\services;
 
 use Craft;
 use craft\app\db\Query;
-use craft\app\errors\Exception;
+use craft\app\errors\TagGroupNotFoundException;
+use craft\app\errors\TagNotFoundException;
 use craft\app\events\TagEvent;
 use craft\app\elements\Tag;
 use craft\app\models\TagGroup as TagGroupModel;
@@ -181,9 +182,9 @@ class Tags extends Component
      *
      * @param TagGroupModel $tagGroup
      *
-     * @return boolean
-     * @throws Exception
-     * @throws \Exception
+     * @return boolean Whether the tag group was saved successfully
+     * @throws TagGroupNotFoundException if $tagGroup->id is invalid
+     * @throws \Exception if reasons
      */
     public function saveTagGroup(TagGroupModel $tagGroup)
     {
@@ -191,7 +192,7 @@ class Tags extends Component
             $tagGroupRecord = TagGroupRecord::findOne($tagGroup->id);
 
             if (!$tagGroupRecord) {
-                throw new Exception(Craft::t('app', 'No tag group exists with the ID “{id}”.', ['id' => $tagGroup->id]));
+                throw new TagGroupNotFoundException("No tag group exists with the ID '{$tagGroup->id}'");
             }
 
             $oldTagGroup = TagGroupModel::create($tagGroupRecord);
@@ -252,8 +253,8 @@ class Tags extends Component
      *
      * @param integer $tagGroupId
      *
-     * @throws \Exception
-     * @return boolean
+     * @return boolean Whether the tag group was deleted successfully
+     * @throws \Exception if reasons
      */
     public function deleteTagGroupById($tagGroupId)
     {
@@ -317,8 +318,9 @@ class Tags extends Component
      *
      * @param Tag $tag
      *
-     * @throws Exception|\Exception
-     * @return boolean
+     * @return boolean Whether the tag was saved successfully
+     * @throws TagNotFoundException if $tag->id is invalid
+     * @throws \Exception if reasons
      */
     public function saveTag(Tag $tag)
     {
@@ -329,7 +331,7 @@ class Tags extends Component
             $tagRecord = TagRecord::findOne($tag->id);
 
             if (!$tagRecord) {
-                throw new Exception(Craft::t('app', 'No tag exists with the ID “{id}”.', ['id' => $tag->id]));
+                throw new TagNotFoundException("No tag exists with the ID '{$tag->id}'");
             }
         } else {
             $tagRecord = new TagRecord();

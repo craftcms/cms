@@ -8,6 +8,7 @@
 namespace craft\app\errors;
 
 use craft\app\base\Model;
+use yii\base\Exception;
 
 /**
  * Class ValidationException
