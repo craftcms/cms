@@ -42,25 +42,17 @@ class ReportsService extends BaseApplicationComponent
     {
         $total = 0;
 
+	    $query = craft()->db->createCommand()
+		    ->select('DATE_FORMAT(dateCreated, "%d-%b-%y") as date, COUNT(*) as totalUsers')
+		    ->from('users')
+		    ->group('YEAR(dateCreated), MONTH(dateCreated), DAY(dateCreated)');
+
         if($userGroupId)
         {
-            $results = craft()->db->createCommand()
-                ->select('DATE_FORMAT(u.dateCreated, "%d-%b-%y") as date, COUNT(*) as totalUsers')
-                ->from('users u')
-                ->join('usergroups_users userGroupUser', 'u.id=userGroupUser.userId')
-                ->where('userGroupUser.groupId='.$userGroupId)
-                ->group('YEAR(u.dateCreated), MONTH(u.dateCreated), DAY(u.dateCreated)')
-                ->queryAll();
+	        $query->where('userGroupUser.groupId='.$userGroupId);
         }
-        else
-        {
 
-            $results = craft()->db->createCommand()
-                ->select('DATE_FORMAT(dateCreated, "%d-%b-%y") as date, COUNT(*) as totalUsers')
-                ->from('users')
-                ->group('YEAR(dateCreated), MONTH(dateCreated), DAY(dateCreated)')
-                ->queryAll();
-        }
+	    $results = $query->queryAll();
 
         $reportDataTable = $this->getNewUsersReportDataTable($startDate, $endDate, $results);
         $scale = $this->getScale($startDate, $endDate);
