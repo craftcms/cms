@@ -43,12 +43,13 @@ class ReportsService extends BaseApplicationComponent
         $total = 0;
 
 	    $query = craft()->db->createCommand()
-		    ->select('DATE_FORMAT(dateCreated, "%d-%b-%y") as date, COUNT(*) as totalUsers')
+		    ->select('DATE_FORMAT(users.dateCreated, "%d-%b-%y") as date, COUNT(*) as totalUsers')
 		    ->from('users')
-		    ->group('YEAR(dateCreated), MONTH(dateCreated), DAY(dateCreated)');
+		    ->group('YEAR(users.dateCreated), MONTH(users.dateCreated), DAY(users.dateCreated)');
 
         if($userGroupId)
         {
+	        $query->join('usergroups_users userGroupUser', 'users.id=userGroupUser.userId');
 	        $query->where('userGroupUser.groupId='.$userGroupId);
         }
 
