@@ -135,12 +135,12 @@ Craft.charts.BaseChart = Garnish.Base.extend(
 
         // set settings
 
-        if(!settingsDefaults)
-        {
-            settingsDefaults = Craft.charts.BaseChart.defaults;
-        }
+        this.setSettings(settings, Craft.charts.BaseChart.defaults);
 
-        this.setSettings(settings, settingsDefaults);
+        if(settingsDefaults)
+        {
+            this.setSettings(settings, settingsDefaults);
+        }
 
         // locale & currency
 
