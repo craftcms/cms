@@ -11,16 +11,4 @@
 .cp-chart .grid-line .tick { stroke: RGBA(0, 0, 0, .08); stroke-opacity: 0.7; shape-rendering: crispEdges; }
 .cp-chart .grid-line path { stroke-width: 0; }
 
-.cp-chart.area .area { stroke: RGBA(0, 138, 202, 1); fill: RGBA(0, 138, 202, .3); stroke-width: 0; }
-.cp-chart.area circle.plot { fill: RGBA(0, 138, 202, 1); }
-.cp-chart.area circle.tip-trigger { fill: RGBA(0, 138, 202, 0); }
-.cp-chart.area circle.tip-trigger:hover { fill: RGBA(0, 138, 202, 0.1); }
-.cp-chart.area circle:hover { cursor: default; }
-.cp-chart.area .line { fill: none; stroke: RGBA(0, 138, 202, 1); stroke-width: 3px; }
-
-.cp-chart.column .bar { fill: RGBA(0, 138, 202, .6); }
-
-.cp-chart.pie .arc path { opacity: .9; }
-.cp-chart.pie .arc path:hover { opacity: 1; }
-
 .tooltip { padding: 7px; background: #fff; position: absolute; z-index: 1000000; margin-left: 20px; @include box-shadow(0 0 5px 0 rgba(0,0,0,.5)); }

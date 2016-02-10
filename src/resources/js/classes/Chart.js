@@ -237,6 +237,7 @@ Craft.charts.BaseChart = Garnish.Base.extend(
     defaults: {
         margin: { top: 0, right: 0, bottom: 0, left: 0 },
         chartClass: null,
+        colors: ["#0594D1", "#DE3800", "#FF9A00", "#009802", "#9B009B"]
     }
 });
 
@@ -300,14 +301,21 @@ Craft.charts.Area = Craft.charts.BaseChart.extend(
         // Draw chart's area
         this.svg.append("path")
             .datum(this.dataTable.rows)
-            .attr("class", "area")
+            .style({
+                'fill': this.settings.colors[0],
+                'fill-opacity': '0.3'
+            })
             .attr("d", this.area);
 
 
         // Draw chart'sline
         this.svg.append("path")
             .datum(this.dataTable.rows)
-            .attr("class", "line")
+            .style({
+                'fill': 'none',
+                'stroke': this.settings.colors[0],
+                'stroke-width': '3px',
+            })
             .attr("d", this.line);
     },
 
@@ -378,6 +386,9 @@ Craft.charts.Area = Craft.charts.BaseChart.extend(
             this.svg.selectAll("dot")
                 .data(this.dataTable.rows)
             .enter().append("circle")
+                .style({
+                    'fill': this.settings.colors[0],
+                })
                 .attr("class", "plot")
                 .attr("r", 5)
                 .attr("cx", $.proxy(function(d) { return this.x(d[0]); }, this))
@@ -389,15 +400,6 @@ Craft.charts.Area = Craft.charts.BaseChart.extend(
     {
         if(this.settings.enableTips)
         {
-            // Draw the plots
-            this.svg.selectAll("dot")
-                .data(this.dataTable.rows)
-            .enter().append("circle")
-                .attr("class", "tip-trigger")
-                .attr("r", 10)
-                .attr("cx", $.proxy(function(d) { return this.x(d[0]); }, this))
-                .attr("cy", $.proxy(function(d) { return this.y(d[1]); }, this));
-
             // Instantiate tip
 
             if(!this.tip)
@@ -410,16 +412,36 @@ Craft.charts.Area = Craft.charts.BaseChart.extend(
 
             var tip = this.tip;
 
-            // Show tip when hovering tip trigger
-            this.svg.selectAll("circle.tip-trigger")
+
+            // Draw the plot triggers
+
+            this.svg.selectAll("dot")
+                .data(this.dataTable.rows)
+            .enter().append("circle")
+                .attr("class", "tip-trigger")
+                .style({
+                    'fill': this.settings.colors[0],
+                    'fill-opacity': '0'
+                })
+                .attr("r", 10)
+                .attr("cx", $.proxy(function(d) { return this.x(d[0]); }, this))
+                .attr("cy", $.proxy(function(d) { return this.y(d[1]); }, this))
                 .on("mouseover", function(d)
                 {
-                    d3.select(this).style("filter", "url(#drop-shadow)"); // show #drop-shadow filter
+                    d3.select(this).style({
+                        "fill-opacity": "0.3",
+                        "filter": "url(#drop-shadow)"
+                    });
+
                     tip.show(d);
                 })
                 .on("mouseout", function()
                 {
-                    d3.select(this).style("filter", ""); // hide filter
+                    d3.select(this).style({
+                        "fill-opacity": "0",
+                        "filter": "url(#drop-shadow)"
+                    });
+
                     tip.hide();
                 });
         }
@@ -539,6 +561,10 @@ Craft.charts.Column = Craft.charts.BaseChart.extend(
                 .data(this.dataTable.rows)
             .enter().append("rect")
                 .attr("class", "bar")
+                .style({
+                    'fill': this.settings.colors[0],
+                    'fill-opacity': '1'
+                })
                 .attr("x", $.proxy(function(d) { return this.x(d[0]); }, this))
                 .attr("width", this.x.rangeBand())
                 .attr("y", $.proxy(function(d) { return this.y(d[1]); }, this))
@@ -605,7 +631,6 @@ Craft.charts.Column = Craft.charts.BaseChart.extend(
     }
 });
 
-
 /**
  * Class Craft.charts.Pie
  */
@@ -626,7 +651,7 @@ Craft.charts.Pie = Craft.charts.BaseChart.extend(
             .outerRadius(this.radius * 1)
             .innerRadius(this.radius * 0.5);
 
-        this.color = d3.scale.ordinal().range(["#3063CF", "#DE3800", "#FF9A00", "#009802", "#9B009B"]);
+        this.color = d3.scale.ordinal().range(this.settings.colors);
 
         this.pie = d3.layout.pie()
             .sort(null)
@@ -639,7 +664,6 @@ Craft.charts.Pie = Craft.charts.BaseChart.extend(
                 .attr("transform", "translate(" + this.width / 2 + "," + this.height / 2 + ")");
 
         this.drawChart();
-        this.drawTipTriggers();
     },
 
     drawChart: function()
@@ -647,30 +671,48 @@ Craft.charts.Pie = Craft.charts.BaseChart.extend(
         var g = this.svg.selectAll('.arc')
                 .data(this.pie(this.dataTable.rows))
             .enter().append('g')
-                .attr('class', 'arc');
+                .attr('class', 'arc')
+                .on("mouseover", $.proxy(this.onTipTriggerMouseOver, null, this))
+                .on("mouseout", $.proxy(this.onTipTriggerMouseOut, null, this));
 
         g.append('path')
             .attr('d', this.arc)
-            .style('fill', $.proxy(function(d) { return this.color(d.data[0]); }, this))
+            .style('fill', $.proxy(function(d) { return this.color(d.data[0]); }, this));
 
     },
 
-    drawTipTriggers: function()
+    onTipTriggerMouseOver: function(context, d)
     {
-        if(this.settings.enableTips)
+        if(context.settings.enableTips)
         {
-            if(!this.tip)
+            if(!context.tip)
             {
-                this.tip = new Craft.charts.Tip({
-                    locale: this.locale,
-                    tipContentFormat: $.proxy(this, 'tipContentFormat')
+                context.tip = new Craft.charts.Tip({
+                    locale: context.locale,
+                    tipContentFormat: $.proxy(context, 'tipContentFormat')
                 });
             }
+        }
 
-            // Show tip when hovering arc
-            this.svg.selectAll(".arc")
-                .on("mouseover", $.proxy(this.tip, 'show'))
-                .on("mouseout", $.proxy(this.tip, 'hide'));
+        d3.select(this).style({
+            "fill-opacity": "0.5",
+        });
+
+        if(context.settings.enableTips)
+        {
+            context.tip.show(d);
+        }
+    },
+
+    onTipTriggerMouseOut: function(context)
+    {
+        d3.select(this).style({
+            "fill-opacity": "1",
+        });
+
+        if(context.settings.enableTips && context.tip)
+        {
+            context.tip.hide();
         }
     },
 
