@@ -202,128 +202,155 @@ class ElementsService extends BaseApplicationComponent
 	 */
 	public function findElements($criteria = null, $justIds = false)
 	{
-		$elements = array();
+		// Create an element query based on this criteria
 		$query = $this->buildElementsQuery($criteria, $contentTable, $fieldColumns, $justIds);
 
-		if ($query)
+		if (!$query)
 		{
-			$results = $query->queryAll();
-
-			if ($results)
-			{
-				if ($justIds)
-				{
-					foreach ($results as $result)
-					{
-						$elements[] = $result['id'];
-					}
-				}
-				else
-				{
-					$locale = $criteria->locale;
-					$elementType = $criteria->getElementType();
-					$indexBy = $criteria->indexBy;
-					$lastElement = null;
-
-					foreach ($results as $result)
-					{
-						// Do we have a placeholder for this elmeent?
-						if (isset($this->_placeholderElements[$result['id']][$locale]))
-						{
-							$element = $this->_placeholderElements[$result['id']][$locale];
-						}
-						else
-						{
-							// Make a copy to pass to the onPopulateElement event
-							$originalResult = array_merge($result);
-
-							if ($contentTable)
-							{
-								// Separate the content values from the main element attributes
-								$content = array(
-									'id'        => (isset($result['contentId']) ? $result['contentId'] : null),
-									'elementId' => $result['id'],
-									'locale'    => $locale,
-									'title'     => (isset($result['title']) ? $result['title'] : null)
-								);
-
-								unset($result['title']);
-
-								if ($fieldColumns)
-								{
-									foreach ($fieldColumns as $column)
-									{
-										// Account for results where multiple fields have the same handle, but from
-										// different columns e.g. two Matrix block types that each have a field with the
-										// same handle
-
-										$colName = $column['column'];
-										$fieldHandle = $column['handle'];
-
-										if (!isset($content[$fieldHandle]) || (empty($content[$fieldHandle]) && !empty($result[$colName])))
-										{
-											$content[$fieldHandle] = $result[$colName];
-										}
-
-										unset($result[$colName]);
-									}
-								}
-							}
-
-							$result['locale'] = $locale;
-
-							// Should we set a search score on the element?
-							if (isset($this->_searchResults[$result['id']]))
-							{
-								$result['searchScore'] = $this->_searchResults[$result['id']];
-							}
-
-							$element = $elementType->populateElementModel($result);
-
-							// Was an element returned?
-							if (!$element || !($element instanceof BaseElementModel))
-							{
-								continue;
-							}
-
-							if ($contentTable)
-							{
-								$element->setContent($content);
-							}
-
-							// Fire an 'onPopulateElement' event
-							$this->onPopulateElement(new Event($this, array(
-								'element' => $element,
-								'result'  => $originalResult
-							)));
-						}
-
-						if ($indexBy)
-						{
-							$elements[$element->$indexBy] = $element;
-						}
-						else
-						{
-							$elements[] = $element;
-						}
-
-						if ($lastElement)
-						{
-							$lastElement->setNext($element);
-							$element->setPrev($lastElement);
-						}
-						else
-						{
-							$element->setPrev(false);
-						}
-
-						$lastElement = $element;
-					}
-
-					$lastElement->setNext(false);
-				}
-			}
+			// Something decided that executing the query is pointless
+			return array();
 		}
+
+		$results = $query->queryAll();
+
+		if (!$results)
+		{
+			return array();
+		}
+
+		// Do they just care about the IDs?
+		if ($justIds)
+		{
+			$ids = array();
+
+			foreach ($results as $result)
+			{
+				$ids[] = $result['id'];
+			}
+
+			return $ids;
+		}
+		else
+		{
+			return $this->populateElements($results, $criteria, $contentTable, $fieldColumns, $justIds);
+		}
+	}
+
+	/**
+	 * Populates element models from a given element query's result set.
+	 *
+	 * @param array                $results      The result set of an element query
+	 * @param ElementCriteriaModel $criteria     The element criteria model
+	 * @param string               $contentTable The content table that was joined in by buildElementsQuery()
+	 * @param array                $fieldColumns Info about the content field columns being selected
+	 *
+	 * @return BaseElementModel[] The populated element models.
+	 */
+	public function populateElements($results, ElementCriteriaModel $criteria, $contentTable, $fieldColumns)
+	{
+		$elements = array();
+
+		$locale = $criteria->locale;
+		$elementType = $criteria->getElementType();
+		$indexBy = $criteria->indexBy;
+		$lastElement = null;
+
+		foreach ($results as $result)
+		{
+			// Do we have a placeholder for this element?
+			if (isset($this->_placeholderElements[$result['id']][$locale]))
+			{
+				$element = $this->_placeholderElements[$result['id']][$locale];
+			}
+			else
+			{
+				// Make a copy to pass to the onPopulateElement event
+				$originalResult = array_merge($result);
+
+				if ($contentTable)
+				{
+					// Separate the content values from the main element attributes
+					$content = array(
+						'id'        => (isset($result['contentId']) ? $result['contentId'] : null),
+						'elementId' => $result['id'],
+						'locale'    => $locale,
+						'title'     => (isset($result['title']) ? $result['title'] : null)
+					);
+
+					unset($result['title']);
+
+					if ($fieldColumns)
+					{
+						foreach ($fieldColumns as $column)
+						{
+							// Account for results where multiple fields have the same handle, but from
+							// different columns e.g. two Matrix block types that each have a field with the
+							// same handle
+
+							$colName = $column['column'];
+							$fieldHandle = $column['handle'];
+
+							if (!isset($content[$fieldHandle]) || (empty($content[$fieldHandle]) && !empty($result[$colName])))
+							{
+								$content[$fieldHandle] = $result[$colName];
+							}
+
+							unset($result[$colName]);
+						}
+					}
+				}
+
+				$result['locale'] = $locale;
+
+				// Should we set a search score on the element?
+				if (isset($this->_searchResults[$result['id']]))
+				{
+					$result['searchScore'] = $this->_searchResults[$result['id']];
+				}
+
+				$element = $elementType->populateElementModel($result);
+
+				// Was an element returned?
+				if (!$element || !($element instanceof BaseElementModel))
+				{
+					continue;
+				}
+
+				if ($contentTable)
+				{
+					$element->setContent($content);
+				}
+
+				// Fire an 'onPopulateElement' event
+				$this->onPopulateElement(new Event($this, array(
+					'element' => $element,
+					'result'  => $originalResult
+				)));
+			}
+
+			if ($indexBy)
+			{
+				$elements[$element->$indexBy] = $element;
+			}
+			else
+			{
+				$elements[] = $element;
+			}
+
+			if ($lastElement)
+			{
+				$lastElement->setNext($element);
+				$element->setPrev($lastElement);
+			}
+			else
+			{
+				$element->setPrev(false);
+			}
+
+			$lastElement = $element;
+		}
+
+		$lastElement->setNext(false);
 
 		return $elements;
 	}
@@ -1130,6 +1157,29 @@ class ElementsService extends BaseApplicationComponent
 			}
 		}
 
+		// Get the element record
+		if (!$isNewElement)
+		{
+			$elementRecord = ElementRecord::model()->findByAttributes(array(
+				'id'   => $element->id,
+				'type' => $element->getElementType()
+			));
+
+			if (!$elementRecord)
+			{
+				throw new Exception(Craft::t('No element exists with the ID “{id}”.', array('id' => $element->id)));
+			}
+		}
+		else
+		{
+			$elementRecord = new ElementRecord();
+			$elementRecord->type = $element->getElementType();
+		}
+
+		// Set the attributes
+		$elementRecord->enabled = (bool) $element->enabled;
+		$elementRecord->archived = (bool) $element->archived;
+
 		$transaction = craft()->db->getCurrentTransaction() === null ? craft()->db->beginTransaction() : null;
 
 		try
@@ -1145,30 +1195,7 @@ class ElementsService extends BaseApplicationComponent
 			// Is the event giving us the go-ahead?
 			if ($event->performAction)
 			{
-				// Get the element record
-				if (!$isNewElement)
-				{
-					$elementRecord = ElementRecord::model()->findByAttributes(array(
-						'id'   => $element->id,
-						'type' => $element->getElementType()
-					));
-
-					if (!$elementRecord)
-					{
-						throw new Exception(Craft::t('No element exists with the ID “{id}”.', array('id' => $element->id)));
-					}
-				}
-				else
-				{
-					$elementRecord = new ElementRecord();
-					$elementRecord->type = $element->getElementType();
-				}
-
-				// Set the attributes
-				$elementRecord->enabled = (bool) $element->enabled;
-				$elementRecord->archived = (bool) $element->archived;
-
-				// Save the element record
+				// Save the element record first
 				$success = $elementRecord->save(false);
 
 				if ($success)
