@@ -6,6 +6,12 @@
 
 .cp-chart .axis path,
 .cp-chart .axis line { fill: none; stroke: #aaa; shape-rendering: crispEdges; }
+
+
+.cp-chart .ticks-axis path,
+.cp-chart .ticks-axis line { fill: none; stroke: none; shape-rendering: crispEdges; }
+
+
 .cp-chart .axis text { fill: RGBA(0, 0, 0, .6); }
 
 .cp-chart .grid-line .tick { stroke: RGBA(0, 0, 0, .08); stroke-opacity: 0.7; shape-rendering: crispEdges; }

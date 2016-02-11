@@ -279,20 +279,12 @@ Craft.charts.Area = Craft.charts.BaseChart.extend(
         this.y.domain(this.yDomain());
 
 
-
-        // Draw grid lines
+        // Draw chart's elements
         this.drawGridlines();
-
-        // Draw plots
-        this.drawPlots();
-
-        // Draw Chart
-        this.drawChart();
-
-        // Draw axes and ticks
         this.drawAxes();
-
-        // Draw tip triggers
+        this.drawPlots();
+        this.drawChart();
+        this.drawTicks();
         this.drawTipTriggers();
     },
 
@@ -307,7 +299,6 @@ Craft.charts.Area = Craft.charts.BaseChart.extend(
             })
             .attr("d", this.area);
 
-
         // Draw chart'sline
         this.svg.append("path")
             .datum(this.dataTable.rows)
@@ -321,22 +312,39 @@ Craft.charts.Area = Craft.charts.BaseChart.extend(
 
     drawAxes: function()
     {
-        // X axis
-        this.xAxis = d3.svg.axis().scale(this.x).orient("bottom").tickFormat(this.xTickFormat(this.locale))
-        .ticks(this.xTicks());
+        this.xAxis = d3.svg.axis().scale(this.x).orient("bottom").ticks(0);
+        this.yAxis = d3.svg.axis().scale(this.y).orient("right").ticks(0);
 
-        // Y axis
-        this.yAxis = d3.svg.axis().scale(this.y).orient("right").tickFormat(this.yTickFormat(this.locale)).tickValues(this.yTickValues()).ticks(this.yTicks());
-
-        // Draw the X axis
         this.svg.append("g")
             .attr("class", "x axis")
             .attr("transform", "translate(0," + this.height + ")")
             .call(this.xAxis);
 
-        // Draw the Y axis
         this.svg.append("g")
             .attr("class", "y axis")
+            .call(this.yAxis);
+
+        // this.onAfterDrawAxes();
+    },
+
+    drawTicks: function()
+    {
+        this.xAxis = d3.svg.axis().scale(this.x).orient("bottom")
+            .tickFormat(this.xTickFormat(this.locale))
+            .ticks(this.xTicks());
+
+        this.yAxis = d3.svg.axis().scale(this.y).orient("right")
+            .tickFormat(this.yTickFormat(this.locale))
+            .tickValues(this.yTickValues())
+            .ticks(this.yTicks());
+
+        this.svg.append("g")
+            .attr("class", "x ticks-axis")
+            .attr("transform", "translate(0," + this.height + ")")
+            .call(this.xAxis);
+
+        this.svg.append("g")
+            .attr("class", "y ticks-axis")
             .call(this.yAxis);
 
         this.onAfterDrawAxes();
@@ -382,7 +390,6 @@ Craft.charts.Area = Craft.charts.BaseChart.extend(
     {
         if(this.settings.enablePlots)
         {
-            // Draw the plots
             this.svg.selectAll("dot")
                 .data(this.dataTable.rows)
             .enter().append("circle")
