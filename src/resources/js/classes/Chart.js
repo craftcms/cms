@@ -525,7 +525,7 @@ Craft.charts.Area = Craft.charts.BaseChart.extend(
         chartClass: 'area',
         enablePlots: true,
         enableTips: true,
-        margin: { top: 10, right: 0, bottom: 20, left: 0 },
+        margin: { top: 30, right: 30, bottom: 30, left: 30 },
         xAxisGridlines: false,
         yAxisGridlines: true,
     }
@@ -632,7 +632,7 @@ Craft.charts.Column = Craft.charts.BaseChart.extend(
 },
 {
     defaults: {
-        margin: { top: 0, right: 0, bottom: 30, left: 0 },
+        margin: { top: 30, right: 30, bottom: 30, left: 30 },
         chartClass: 'column',
         enableTips: true,
     }

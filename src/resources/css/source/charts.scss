@@ -1,7 +1,7 @@
 @charset "UTF-8";
 @import "shared";
 
-.cp-chart { height: 220px; margin: 0; }
+.cp-chart { margin: 0; height: 100%; }
 .cp-chart svg { width: 100%; height: 100%; }
 
 .cp-chart .axis path,
