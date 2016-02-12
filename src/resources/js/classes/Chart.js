@@ -351,10 +351,6 @@ Craft.charts.Area = Craft.charts.BaseChart.extend(
             .tickFormat(this.xTickFormat(this.locale))
             .ticks(this.xTicks());
 
-        this.yAxis = d3.svg.axis().scale(this.y).orient("right")
-            .tickFormat(this.yTickFormat(this.locale))
-            .tickValues(this.yTickValues())
-            .ticks(this.yTicks());
 
         this.svg.append("g")
             .attr("class", "x ticks-axis")
@@ -364,14 +360,26 @@ Craft.charts.Area = Craft.charts.BaseChart.extend(
 
         if(this.chartDirection == 'rtl')
         {
+            this.yAxis = d3.svg.axis().scale(this.y).orient("left")
+                .tickFormat(this.yTickFormat(this.locale))
+                .tickValues(this.yTickValues())
+                .ticks(this.yTicks());
+
             this.svg.append("g")
                 .attr("class", "y ticks-axis")
                 .attr("transform", "translate(" + this.width + ",0)")
                 .style(this.settings.ticksStyles)
                 .call(this.yAxis);
+
+            this.svg.selectAll('.y.ticks-axis text').style('text-anchor', 'start');
         }
         else
         {
+            this.yAxis = d3.svg.axis().scale(this.y).orient("right")
+                .tickFormat(this.yTickFormat(this.locale))
+                .tickValues(this.yTickValues())
+                .ticks(this.yTicks());
+
             this.svg.append("g")
                 .attr("class", "y ticks-axis")
                 .style(this.settings.ticksStyles)
