@@ -319,16 +319,30 @@ Craft.charts.Area = Craft.charts.BaseChart.extend(
     drawAxes: function()
     {
         this.xAxis = d3.svg.axis().scale(this.x).orient("bottom").ticks(0);
-        this.yAxis = d3.svg.axis().scale(this.y).orient("right").ticks(0);
 
         this.svg.append("g")
             .attr("class", "x axis")
             .attr("transform", "translate(0," + this.height + ")")
             .call(this.xAxis);
 
-        this.svg.append("g")
-            .attr("class", "y axis")
-            .call(this.yAxis);
+
+        if(this.chartDirection == 'rtl')
+        {
+            this.yAxis = d3.svg.axis().scale(this.y).orient("left").ticks(0);
+
+            this.svg.append("g")
+                .attr("class", "y axis")
+                .attr("transform", "translate(" + this.width + ",0)")
+                .call(this.yAxis);
+        }
+        else
+        {
+            this.yAxis = d3.svg.axis().scale(this.y).orient("right").ticks(0);
+
+            this.svg.append("g")
+                .attr("class", "y axis")
+                .call(this.yAxis);
+        }
     },
 
     drawTicks: function()
@@ -348,10 +362,21 @@ Craft.charts.Area = Craft.charts.BaseChart.extend(
             .style(this.settings.ticksStyles)
             .call(this.xAxis);
 
-        this.svg.append("g")
-            .attr("class", "y ticks-axis")
-            .style(this.settings.ticksStyles)
-            .call(this.yAxis);
+        if(this.chartDirection == 'rtl')
+        {
+            this.svg.append("g")
+                .attr("class", "y ticks-axis")
+                .attr("transform", "translate(" + this.width + ",0)")
+                .style(this.settings.ticksStyles)
+                .call(this.yAxis);
+        }
+        else
+        {
+            this.svg.append("g")
+                .attr("class", "y ticks-axis")
+                .style(this.settings.ticksStyles)
+                .call(this.yAxis);
+        }
 
         this.onAfterDrawTicks();
     },
