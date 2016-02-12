@@ -220,7 +220,7 @@ Craft.charts.BaseChart = Garnish.Base.extend(
         this.draw(this.dataTable, this.settings);
     },
 
-    onAfterDrawAxes: function()
+    onAfterDrawTicks: function()
     {
         // White border for ticks' text
         $('.tick', this.$chart).each(function(tickKey, tick)
@@ -325,8 +325,6 @@ Craft.charts.Area = Craft.charts.BaseChart.extend(
         this.svg.append("g")
             .attr("class", "y axis")
             .call(this.yAxis);
-
-        // this.onAfterDrawAxes();
     },
 
     drawTicks: function()
@@ -349,7 +347,7 @@ Craft.charts.Area = Craft.charts.BaseChart.extend(
             .attr("class", "y ticks-axis")
             .call(this.yAxis);
 
-        this.onAfterDrawAxes();
+        this.onAfterDrawTicks();
     },
 
     drawGridlines: function()
@@ -438,8 +436,7 @@ Craft.charts.Area = Craft.charts.BaseChart.extend(
                 .on("mouseover", function(d)
                 {
                     d3.select(this).style({
-                        "fill-opacity": "0.3",
-                        "filter": "url(#drop-shadow)"
+                        "fill-opacity": "0.3"
                     });
 
                     tip.show(d);
@@ -447,8 +444,7 @@ Craft.charts.Area = Craft.charts.BaseChart.extend(
                 .on("mouseout", function()
                 {
                     d3.select(this).style({
-                        "fill-opacity": "0",
-                        "filter": "url(#drop-shadow)"
+                        "fill-opacity": "0"
                     });
 
                     tip.hide();
@@ -621,7 +617,7 @@ Craft.charts.Column = Craft.charts.BaseChart.extend(
                 .attr("y", 6)
                 .attr("dy", ".71em");
 
-        this.onAfterDrawAxes();
+        this.onAfterDrawTicks();
     },
 
     drawTipTriggers: function()
