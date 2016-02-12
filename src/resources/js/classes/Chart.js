@@ -237,9 +237,13 @@ Craft.charts.BaseChart = Garnish.Base.extend(
 },
 {
     defaults: {
-        margin: { top: 0, right: 0, bottom: 0, left: 0 },
+        margin: { top: 30, right: 30, bottom: 30, left: 30 },
         chartClass: null,
-        colors: ["#0594D1", "#DE3800", "#FF9A00", "#009802", "#9B009B"]
+        colors: ["#0594D1", "#DE3800", "#FF9A00", "#009802", "#9B009B"],
+        ticksStyles: {
+            'fill': '#555',
+            'font-size': '11px'
+        }
     }
 });
 
@@ -341,10 +345,12 @@ Craft.charts.Area = Craft.charts.BaseChart.extend(
         this.svg.append("g")
             .attr("class", "x ticks-axis")
             .attr("transform", "translate(0," + this.height + ")")
+            .style(this.settings.ticksStyles)
             .call(this.xAxis);
 
         this.svg.append("g")
             .attr("class", "y ticks-axis")
+            .style(this.settings.ticksStyles)
             .call(this.yAxis);
 
         this.onAfterDrawTicks();
@@ -533,7 +539,6 @@ Craft.charts.Area = Craft.charts.BaseChart.extend(
         chartClass: 'area',
         enablePlots: true,
         enableTips: true,
-        margin: { top: 30, right: 30, bottom: 30, left: 30 },
         xAxisGridlines: false,
         yAxisGridlines: true,
     }
@@ -566,6 +571,7 @@ Craft.charts.Column = Craft.charts.BaseChart.extend(
 
         this.drawChart();
         this.drawAxes();
+        this.drawTicks();
         this.drawTipTriggers();
     },
 
@@ -588,29 +594,38 @@ Craft.charts.Column = Craft.charts.BaseChart.extend(
 
     drawAxes: function()
     {
-        // X axis
-        this.xAxis = d3.svg.axis()
-            .scale(this.x)
-            // .tickValues(this.x.domain().filter(function(d, i) { return !(i % 2); }))
-            .orient("bottom");
-            // .tickFormat(this.xTickFormat(this.locale));
+        this.xAxis = d3.svg.axis().scale(this.x).orient("bottom").tickValues([]);
+        this.yAxis = d3.svg.axis().scale(this.y).orient("right").ticks(0);
 
-        // Y axis
-        this.yAxis = d3.svg.axis()
-            .scale(this.y)
-            .orient("right")
-            .tickFormat(this.yTickFormat(this.locale))
-            .ticks(this.height / 50);
-
-        // Draw the X axis
         this.svg.append("g")
             .attr("class", "x axis")
             .attr("transform", "translate(0," + this.height + ")")
             .call(this.xAxis);
 
-        // Draw the Y axis
         this.svg.append("g")
                 .attr("class", "y axis")
+                .call(this.yAxis)
+            .append("text")
+                .attr("transform", "rotate(-90)")
+                .attr("y", 6)
+                .attr("dy", ".71em");
+    },
+
+
+    drawTicks: function()
+    {
+        this.xAxis = d3.svg.axis().scale(this.x).orient("bottom");
+        this.yAxis = d3.svg.axis().scale(this.y).orient("right").tickFormat(this.yTickFormat(this.locale)).ticks(this.height / 50);
+
+        this.svg.append("g")
+            .attr("class", "x ticks-axis")
+            .style(this.settings.ticksStyles)
+            .attr("transform", "translate(0," + this.height + ")")
+            .call(this.xAxis);
+
+        this.svg.append("g")
+                .attr("class", "y ticks-axis")
+                .style(this.settings.ticksStyles)
                 .call(this.yAxis)
             .append("text")
                 .attr("transform", "rotate(-90)")
@@ -640,7 +655,6 @@ Craft.charts.Column = Craft.charts.BaseChart.extend(
 },
 {
     defaults: {
-        margin: { top: 30, right: 30, bottom: 30, left: 30 },
         chartClass: 'column',
         enableTips: true,
     }
