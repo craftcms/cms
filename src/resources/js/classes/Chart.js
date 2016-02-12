@@ -237,7 +237,7 @@ Craft.charts.BaseChart = Garnish.Base.extend(
 },
 {
     defaults: {
-        margin: { top: 30, right: 30, bottom: 30, left: 30 },
+        margin: { top: 24, right: 24, bottom: 24, left: 24 },
         chartClass: null,
         colors: ["#0594D1", "#DE3800", "#FF9A00", "#009802", "#9B009B"],
         ticksStyles: {
