@@ -2,7 +2,7 @@
 {% import "_includes/forms" as forms %}
 
 
-{% macro chartDocs(class, title, settings) %}
+{% macro chartDocs(settings) %}
 
     <table class="data">
         <thead>
@@ -44,6 +44,20 @@
 {% block content %}
 
 
+    <h2>Base Chart</h2>
+
+    {{ chartDocs({
+        margin: '{ top: 30, right: 30, bottom: 30, left: 30 }',
+        chartClass: 'null',
+        colors: '["#0594D1", "#DE3800", "#FF9A00", "#009802", "#9B009B"]',
+        ticksStyles: "{
+            'fill': '#555',
+            'font-size': '11px'
+        }"
+    }) }}
+
+    <hr>
+
     <div class="chart-doc">
 
         <h2>Area</h2>
@@ -74,15 +88,13 @@
 
         {% endincludejs %}
 
-        {{ chartDocs('area', 'Area Options', {
+        {{ chartDocs({
             chartClass: "'area'",
             dataScale: "'day'",
             enablePlots: "true",
             enableTips: "true",
-            margin: "{ top: 10, right: 0, bottom: 20, left: 0 }",
             xAxisGridlines: "false",
             yAxisGridlines: "true",
-            colors: "default colors",
         }) }}
 
     </div>
@@ -112,11 +124,9 @@
 
         {% endincludejs %}
 
-        {{ chartDocs('column', 'Column Options', {
+        {{ chartDocs({
             chartClass: "'column'",
             enableTips: "true",
-            margin: "{ top: 0, right: 0, bottom: 30, left: 0 }",
-            colors: "default colors",
         }) }}
     </div>
 
@@ -146,11 +156,10 @@
 
         {% endincludejs %}
 
-        {{ chartDocs('pie', 'Pie Options', {
+        {{ chartDocs({
             chartClass: "'pie'",
             enableTips: "true",
             margin: "{ top: 0, right: 0, bottom: 0, left: 0 }",
-            colors: "default colors",
         }) }}
     </div>
 
