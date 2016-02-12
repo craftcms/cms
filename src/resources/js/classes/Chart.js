@@ -113,6 +113,7 @@ Craft.charts.BaseChart = Garnish.Base.extend(
     dataTable: null,
     height: null,
     locale: null,
+    chartDirection: null,
     svg: null,
     width: null,
     x: null,
@@ -149,6 +150,7 @@ Craft.charts.BaseChart = Garnish.Base.extend(
             localeDefinition.currency = this.settings.currency;
         }
 
+        this.chartDirection = localeDefinition.direction;
         this.locale = d3.locale(localeDefinition);
 
         // reset chart element's HTML
@@ -478,7 +480,17 @@ Craft.charts.Area = Craft.charts.BaseChart.extend(
 
     xDomain: function()
     {
-        return d3.extent(this.dataTable.rows, function(d) { return d[0]; });
+        var min = d3.min(this.dataTable.rows, function(d) { return d[0]; });
+        var max = d3.max(this.dataTable.rows, function(d) { return d[0]; });
+
+        if(this.chartDirection == 'rtl')
+        {
+            return [max, min];
+        }
+        else
+        {
+            return [min, max];
+        }
     },
 
     xTicks: function()
