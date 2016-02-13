@@ -352,7 +352,154 @@ class ElementsService extends BaseApplicationComponent
 
 		$lastElement->setNext(false);
 
+		// Should we eager-load some elements onto these?
+		if ($criteria->with)
+		{
+			$this->eagerLoadElements($elementType, $elements, $criteria->with);
+		}
+
 		return $elements;
+	}
+
+	/**
+	 * Eager-loads additional elements onto a given set of elements.
+	 *
+	 * @param BaseElementType    $elementType The root element type
+	 * @param BaseElementModel[] $elements    The root element models that should be updated with the eager-loaded elements
+	 * @param string|array       $with        Dot-delimited paths of the elements that should be eager-loaded into the root elements
+	 *
+	 * @return void
+	 */
+	public function eagerLoadElements(BaseElementType $elementType, $elements, $with)
+	{
+		// Bail if there aren't even any elements
+		if (!$elements)
+		{
+			return;
+		}
+
+		// Normalize the paths and find any custom path criterias
+		$with = ArrayHelper::stringToArray($with);
+		$paths = array();
+		$pathCriterias = array();
+
+		foreach ($with as $path)
+		{
+			// Using the array syntax?
+			// ['foo.bar'] or ['foo.bar', criteria]
+			if (is_array($path))
+			{
+				if (!empty($path[1]))
+				{
+					$pathCriterias[$path[0]] = $path[1];
+				}
+
+				$paths[] = $path[0];
+			}
+			else
+			{
+				$paths[] = $path;
+			}
+		}
+
+		// Load 'em up!
+		$elementsByPath = array('__root__' => $elements);
+		$elementTypesByPath = array('__root__' => $elementType->getClassHandle());
+
+		foreach ($paths as $path)
+		{
+			$pathSegments = explode('.', $path);
+			$sourcePath = '__root__';
+
+			foreach ($pathSegments as $segment)
+			{
+				$targetPath = $sourcePath.'.'.$segment;
+
+				// Make sure we haven't already eager-loaded this target path
+				if (!isset($elementsByPath[$targetPath]))
+				{
+					// Guilty until proven innocent
+					$elementsByPath[$targetPath] = $targetElements = $targetElementsById = $targetElementIdsBySourceIds = false;
+
+					// Get the eager-loading map from the source element type
+					$sourceElementType = $this->getElementType($elementTypesByPath[$sourcePath]);
+					$map = $sourceElementType->getEagerLoadingMap($elementsByPath[$sourcePath], $segment);
+
+					if ($map && !empty($map['map']))
+					{
+						// Remember the element type in case there are more segments after this
+						$elementTypesByPath[$targetPath] = $map['elementType'];
+
+						// Loop through the map to find:
+						// - unique target element IDs
+						// - target element IDs indexed by source element IDs
+						$uniqueTargetElementIds = array();
+						$targetElementIdsBySourceIds = array();
+
+						foreach ($map['map'] as $mapping)
+						{
+							$uniqueTargetElementIds[] = $mapping['target'];
+							$targetElementIdsBySourceIds[$mapping['source']][] = $mapping['target'];
+						}
+
+						$uniqueTargetElementIds = array_unique($uniqueTargetElementIds);
+
+						// Get the target elements
+						$customParams = array_merge(
+							(isset($map['criteria']) ? $map['criteria'] : array()),
+							(isset($pathCriterias[$targetPath]) ? $pathCriterias[$targetPath] : array())
+						);
+						$criteria = $this->getCriteria($map['elementType'], $customParams);
+						$criteria->id = $uniqueTargetElementIds;
+						$criteria->limit = null;
+						$targetElements = $this->findElements($criteria);
+
+						if ($targetElements)
+						{
+							// Success! Store those elements on $elementsByPath FFR
+							$elementsByPath[$targetPath] = $targetElements;
+
+							// Index the target elements by their IDs
+							$targetElementsById = array();
+
+							foreach ($targetElements as $targetElement)
+							{
+								$targetElementsById[$targetElement->id] = $targetElement;
+							}
+						}
+					}
+
+					// Tell the source elements about their eager-loaded elements (or lack thereof, as the case may be)
+					foreach ($elementsByPath[$sourcePath] as $sourceElement)
+					{
+						$sourceElementId = $sourceElement->id;
+						$targetElementsForSource = array();
+
+						if (isset($targetElementIdsBySourceIds[$sourceElementId]))
+						{
+							foreach ($targetElementIdsBySourceIds[$sourceElementId] as $targetElementId)
+							{
+								if (isset($targetElementsById[$targetElementId]))
+								{
+									$targetElementsForSource[] = $targetElementsById[$targetElementId];
+								}
+							}
+						}
+
+						$sourceElement->setEagerLoadedElements($segment, $targetElementsForSource);
+					}
+				}
+
+				if (!$elementsByPath[$targetPath])
+				{
+					// Dead end - stop wasting time on this path
+					break;
+				}
+
+				// Update the source path
+				$sourcePath = $targetPath;
+			}
+		}
 	}
 
 	/**
