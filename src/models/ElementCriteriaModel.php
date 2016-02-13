@@ -458,7 +458,7 @@ class ElementCriteriaModel extends BaseModel implements \Countable
 			'status'           => array(AttributeType::String, 'default' => BaseElementModel::ENABLED),
 			'title'            => AttributeType::String,
 			'uri'              => AttributeType::String,
-			'kind'             => AttributeType::Mixed,
+			'with'             => AttributeType::Mixed,
 
 			// TODO: Deprecated
 			'childField'       => AttributeType::String,

@@ -580,6 +580,20 @@ class AssetTransformsService extends BaseApplicationComponent
 	public function getUrlForTransformByTransformIndex(AssetTransformIndexModel $transformIndexModel)
 	{
 		$file = craft()->assets->getFileById($transformIndexModel->fileId);
+
+		return $this->getUrlForTransformByAssetAndTransformIndex($file, $transformIndexModel);
+	}
+
+	/**
+	 * Get the URL for transform for the given asset, by the given transform index model
+	 *
+	 * @param AssetFileModel           $file
+	 * @param AssetTransformIndexModel $transformIndexModel
+	 *
+	 * @return string
+	 */
+	public function getUrlForTransformByAssetAndTransformIndex(AssetFileModel $file, AssetTransformIndexModel $transformIndexModel)
+	{
 		$sourceType = craft()->assetSources->getSourceTypeById($file->sourceId);
 		$baseUrl = $sourceType->getBaseUrl();
 		$appendix = AssetsHelper::getUrlAppendix($sourceType, $file);

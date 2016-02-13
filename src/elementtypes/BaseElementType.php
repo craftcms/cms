@@ -502,6 +502,33 @@ abstract class BaseElementType extends BaseComponentType implements IElementType
 	}
 
 	/**
+	 * @inheritDoc IElementType::getEagerLoadingMap()
+	 *
+	 * @param BaseElementModel[]  $sourceElements
+	 * @param string $handle
+	 *
+	 * @return array|false
+	 */
+	public function getEagerLoadingMap($sourceElements, $handle)
+	{
+		// Is $handle a custom field handle?
+		// (Leave it up to the extended class to set the field context, if it shouldn't be 'global')
+		$field = craft()->fields->getFieldByHandle($handle);
+
+		if ($field)
+		{
+			$fieldType = $field->getFieldType();
+
+			if ($fieldType && $fieldType instanceof IEagerLoadingFieldType)
+			{
+				return $fieldType->getEagerLoadingMap($sourceElements);
+			}
+		}
+
+		return false;
+	}
+
+	/**
 	 * @inheritDoc IElementType::getEditorHtml()
 	 *
 	 * @param BaseElementModel $element
