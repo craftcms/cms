@@ -44,6 +44,11 @@ class FieldsService extends BaseApplicationComponent
 	/**
 	 * @var
 	 */
+	private $_allFieldHandlesByContext;
+
+	/**
+	 * @var
+	 */
 	private $_allFieldsInContext;
 
 	/**
@@ -344,23 +349,58 @@ class FieldsService extends BaseApplicationComponent
 
 		if (!isset($this->_fieldsByContextAndHandle[$context]) || !array_key_exists($handle, $this->_fieldsByContextAndHandle[$context]))
 		{
-			$result = $this->_createFieldQuery()
-				->where(array('and', 'f.handle = :handle', 'f.context = :context'), array(':handle' => $handle, ':context' => $context))
-				->queryRow();
+			// Guilty until proven innocent
+			$this->_fieldsByContextAndHandle[$context][$handle] = null;
 
-			if ($result)
+			if ($this->doesFieldWithHandleExist($handle, $context))
 			{
-				$field = $this->_populateField($result);
-				$this->_fieldsById[$field->id] = $field;
-				$this->_fieldsByContextAndHandle[$context][$field->handle] = $field;
-			}
-			else
-			{
-				$this->_fieldsByContextAndHandle[$context][$handle] = null;
+				$result = $this->_createFieldQuery()
+					->where(array('and', 'f.handle = :handle', 'f.context = :context'), array(':handle' => $handle, ':context' => $context))
+					->queryRow();
+
+				if ($result)
+				{
+					$field = $this->_populateField($result);
+					$this->_fieldsById[$field->id] = $field;
+					$this->_fieldsByContextAndHandle[$context][$field->handle] = $field;
+				}
 			}
 		}
 
 		return $this->_fieldsByContextAndHandle[$context][$handle];
+	}
+
+	/**
+	 * Returns whether a field exists with a given handle and context.
+	 *
+	 * @param string $handle The field handle
+	 * @param string|null $context The field context (defauts to ContentService::$fieldContext)
+	 *
+	 * @return bool Whether a field with that handle exists
+	 */
+	public function doesFieldWithHandleExist($handle, $context = null)
+	{
+		if ($context === null)
+		{
+			$context = craft()->content->fieldContext;
+		}
+
+		if (!isset($this->_allFieldHandlesByContext))
+		{
+			$this->_allFieldHandlesByContext = array();
+
+			$results = craft()->db->createCommand()
+				->select('handle,context')
+				->from('fields')
+				->queryAll();
+
+			foreach ($results as $result)
+			{
+				$this->_allFieldHandlesByContext[$result['context']][] = $result['handle'];
+			}
+		}
+
+		return (isset($this->_allFieldHandlesByContext[$context]) && in_array($handle, $this->_allFieldHandlesByContext[$context]));
 	}
 
 	/**
@@ -580,11 +620,26 @@ class FieldsService extends BaseApplicationComponent
 					$field->oldHandle = $fieldRecord->getOldHandle();
 
 					unset($this->_fieldsByContextAndHandle[$field->context][$field->oldHandle]);
+
+					if (
+						isset($this->_allFieldHandlesByContext[$field->context]) &&
+						$field->oldHandle != $field->handle &&
+						($oldHandleIndex = array_search($field->oldHandle, $this->_allFieldHandlesByContext[$field->context])) !== false
+					)
+					{
+						array_splice($this->_allFieldHandlesByContext[$field->context], $oldHandleIndex, 1);
+					}
 				}
 
 				// Cache it
 				$this->_fieldsById[$field->id] = $field;
 				$this->_fieldsByContextAndHandle[$field->context][$field->handle] = $field;
+
+				if (isset($this->_allFieldHandlesByContext))
+				{
+					$this->_allFieldHandlesByContext[$field->context][] = $field->handle;
+				}
+
 				unset($this->_allFieldsInContext[$field->context]);
 				unset($this->_fieldsWithContent[$field->context]);
 
