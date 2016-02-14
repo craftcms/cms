@@ -364,6 +364,11 @@ class ElementsService extends BaseApplicationComponent
 			'criteria' => $criteria
 		)));
 
+		// Fire the criteria's 'onPopulateElements' event
+		$criteria->onPopulateElements(new Event($criteria, array(
+			'elements' => $elements
+		)));
+
 		return $elements;
 	}
 

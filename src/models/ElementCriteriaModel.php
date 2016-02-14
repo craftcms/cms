@@ -401,6 +401,21 @@ class ElementCriteriaModel extends BaseModel implements \Countable
 		}
 	}
 
+	// Events
+	// -------------------------------------------------------------------------
+
+	/**
+	 * Fires an 'onPopulateElements' event.
+	 *
+	 * @param Event $event
+	 *
+	 * @return null
+	 */
+	public function onPopulateElements(Event $event)
+	{
+		$this->raiseEvent('onPopulateElements', $event);
+	}
+
 	// Deprecated Methods
 	// -------------------------------------------------------------------------
 
