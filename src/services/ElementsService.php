@@ -358,6 +358,12 @@ class ElementsService extends BaseApplicationComponent
 			$this->eagerLoadElements($elementType, $elements, $criteria->with);
 		}
 
+		// Fire an 'onPopulateElements' event
+		$this->onPopulateElements(new Event($this, array(
+			'elements' => $elements,
+			'criteria' => $criteria
+		)));
+
 		return $elements;
 	}
 
@@ -2232,6 +2238,18 @@ class ElementsService extends BaseApplicationComponent
 	public function onPopulateElement(Event $event)
 	{
 		$this->raiseEvent('onPopulateElement', $event);
+	}
+
+	/**
+	 * Fires an 'onPopulateElements' event.
+	 *
+	 * @param Event $event
+	 *
+	 * @return null
+	 */
+	public function onPopulateElements(Event $event)
+	{
+		$this->raiseEvent('onPopulateElements', $event);
 	}
 
 	/**
