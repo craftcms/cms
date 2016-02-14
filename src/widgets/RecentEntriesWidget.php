@@ -176,13 +176,20 @@ class RecentEntriesWidget extends BaseWidget
 			return array();
 		}
 
+		$limit = $this->getSettings()->limit;
+
+		if (!$limit)
+		{
+			$limit = 100;
+		}
+
 		$criteria = craft()->elements->getCriteria(ElementType::Entry);
 		$criteria->status = null;
 		$criteria->localeEnabled = null;
 		$criteria->locale = $targetLocale;
 		$criteria->sectionId = $targetSectionId;
 		$criteria->editable = true;
-		$criteria->limit = $this->getSettings()->limit;
+		$criteria->limit = $limit;
 		$criteria->order = 'elements.dateCreated desc';
 
 		return $criteria->find();
