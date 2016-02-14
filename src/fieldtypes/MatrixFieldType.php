@@ -11,7 +11,7 @@ namespace Craft;
  * @package   craft.app.fieldtypes
  * @since     1.3
  */
-class MatrixFieldType extends BaseFieldType
+class MatrixFieldType extends BaseFieldType implements IEagerLoadingFieldType
 {
 	// Public Methods
 	// =========================================================================
@@ -546,6 +546,40 @@ class MatrixFieldType extends BaseFieldType
 		{
 			return '<p class="light">'.Craft::t('No blocks.').'</p>';
 		}
+	}
+
+	/**
+	 * @inheritDoc IEagerLoadingFieldType::getEagerLoadingMap()
+	 *
+	 * @param BaseElementModel[]  $sourceElements
+	 *
+	 * @return array|false
+	 */
+	public function getEagerLoadingMap($sourceElements)
+	{
+		// Get the source element IDs
+		$sourceElementIds = array();
+
+		foreach ($sourceElements as $sourceElement)
+		{
+			$sourceElementIds[] = $sourceElement->id;
+		}
+
+		// Return any relation data on these elements, defined with this field
+		$map = craft()->db->createCommand()
+			->select('ownerId as source, id as target')
+			->from('matrixblocks')
+			->where(
+				array('and', 'fieldId=:fieldId', array('in', 'ownerId', $sourceElementIds)),
+				array(':fieldId' => $this->model->id)
+			)
+			->queryAll();
+
+		return array(
+			'elementType' => 'MatrixBlock',
+			'map' => $map,
+			'criteria' => ['fieldId' => $this->model->id]
+		);
 	}
 
 	// Protected Methods

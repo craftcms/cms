@@ -26,6 +26,11 @@ class MatrixBlockModel extends BaseElementModel
 	 */
 	private $_owner;
 
+	/**
+	 * @var
+	 */
+	private $_eagerLoadedBlockTypeElements;
+
 	// Public Methods
 	// =========================================================================
 
@@ -162,6 +167,66 @@ class MatrixBlockModel extends BaseElementModel
 	public function getFieldContext()
 	{
 		return 'matrixBlockType:'.$this->typeId;
+	}
+
+	/**
+	 * @inheritDoc BaseElementModel::hasEagerLoadedElements()
+	 *
+	 * @param string $handle
+	 *
+	 * @return bool
+	 */
+	public function hasEagerLoadedElements($handle)
+	{
+		// See if we have this stored with a block type-specific handle
+		$blockTypeHandle = $this->getType()->handle.':'.$handle;
+
+		if (isset($this->_eagerLoadedBlockTypeElements[$blockTypeHandle]))
+		{
+			return true;
+		}
+
+		return parent::hasEagerLoadedElements($handle);
+	}
+
+	/**
+	 * @inheritDoc BaseElementModel::getEagerLoadedElements()
+	 *
+	 * @param string $handle
+	 *
+	 * @return BaseElementModel[]|null
+	 */
+	public function getEagerLoadedElements($handle)
+	{
+		// See if we have this stored with a block type-specific handle
+		$blockTypeHandle = $this->getType()->handle.':'.$handle;
+
+		if (isset($this->_eagerLoadedBlockTypeElements[$blockTypeHandle]))
+		{
+			return $this->_eagerLoadedBlockTypeElements[$blockTypeHandle];
+		}
+
+		return parent::getEagerLoadedElements($handle);
+	}
+
+	/**
+	 * @inheritDoc BaseElementModel::setEagerLoadedElements()
+	 *
+	 * @param string             $handle
+	 * @param BaseElementModel[] $elements
+	 */
+	public function setEagerLoadedElements($handle, $elements)
+	{
+		// See if this was eager-loaded with a block type-specific handle
+		$blockTypeHandlePrefix = $this->getType()->handle.':';
+		if (strncmp($handle, $blockTypeHandlePrefix, strlen($blockTypeHandlePrefix)) === 0)
+		{
+			$this->_eagerLoadedBlockTypeElements[$handle] = $elements;
+		}
+		else
+		{
+			parent::setEagerLoadedElements($handle, $elements);
+		}
 	}
 
 	// Protected Methods

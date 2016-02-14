@@ -434,6 +434,22 @@ interface IElementType extends IComponentType
 	public function populateElementModel($row);
 
 	/**
+	 * Returns an array that maps source-to-target element IDs based on the given sub-property handle.
+	 *
+	 * This method aids in the eager-loading of elements when performing an element query. The returned array should
+	 * contain two sub-keys:
+	 *
+	 * - `elementType` – indicating the type of sub-elements to eager-load (the element type class handle)
+	 * - `map` – an array of element ID mappings, where each element is a sub-array with `source` and `target` keys.
+	 *
+	 * @param BaseElementModel[] $sourceElements An array of the source elements
+	 * @param string $handle     The property handle used to identify which target elements should be included in the map
+	 *
+	 * @return array|false The eager-loading element ID mappings, or false if no mappings exist
+	 */
+	public function getEagerLoadingMap($sourceElements, $handle);
+
+	/**
 	 * Returns the HTML for an editor HUD for the given element.
 	 *
 	 * @param BaseElementModel $element The element being edited.

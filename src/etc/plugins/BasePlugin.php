@@ -41,7 +41,7 @@ abstract class BasePlugin extends BaseSavableComponentType implements IPlugin
 	 * plugins to be able to write to their own log files at `craft/storage/runtime/logs/pluginHandle.log` using
 	 * `PluginHandle::log()` syntax.
 	 *
-	 * @param        $msg   The message to be logged.
+	 * @param string $msg   The message to be logged.
 	 * @param string $level The level of the message (e.g. LogLevel::Trace', LogLevel::Info, LogLevel::Warning or
 	 *                      LogLevel::Error).
 	 * @param bool   $force Whether to force the message to be logged regardless of the level or category.
