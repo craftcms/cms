@@ -391,7 +391,7 @@ class ElementsService extends BaseApplicationComponent
 			{
 				if (!empty($path[1]))
 				{
-					$pathCriterias[$path[0]] = $path[1];
+					$pathCriterias['__root__.'.$path[0]] = $path[1];
 				}
 
 				$paths[] = $path[0];
