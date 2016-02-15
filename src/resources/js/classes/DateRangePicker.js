@@ -19,16 +19,46 @@ Craft.DateRangePicker = Garnish.Base.extend(
 
         this.setSettings(settings, Craft.DateRangePicker.defaults);
 
+        if(this.settings.customRangeStartDate)
+        {
+            this.customRangeStartDate = new Date(this.settings.customRangeStartDate);
+        }
+
+        if(this.settings.customRangeEndDate)
+        {
+            this.customRangeEndDate = new Date(this.settings.customRangeEndDate);
+        }
+
         this.value = this.settings.value;
         this.presets = this.settings.presets;
 
-        this.startDate = this.presets[this.value].startDate;
-        this.endDate = this.presets[this.value].endDate;
+
+        if(this.value == 'customrange')
+        {
+            this.startDate = this.customRangeStartDate;
+            this.endDate = this.customRangeEndDate;
+        }
+        else
+        {
+            this.startDate = this.presets[this.value].startDate;
+            this.endDate = this.presets[this.value].endDate;
+        }
+
 
         var dateRangeValue = this.presets[this.value].label;
         this.$input.val(dateRangeValue);
 
         this.addListener(this.$input, 'focus', 'showHud');
+    },
+
+    getStartDate: function()
+    {
+        return this.startDate;
+    },
+
+    getEndDate: function()
+    {
+        return this.endDate;
     },
 
     showHud: function()
@@ -113,9 +143,12 @@ Craft.DateRangePicker = Garnish.Base.extend(
 
         // custom range startDate
 
-        var date = new Date();
-        date = date.getTime() - (60 * 60 * 24 * 7 * 1000);
-        this.customRangeStartDate = new Date(date);
+        if(!this.customRangeStartDate)
+        {
+            var date = new Date();
+            date = date.getTime() - (60 * 60 * 24 * 7 * 1000);
+            this.customRangeStartDate = new Date(date);
+        }
 
         this.$startDateInput = $('<input type="text" value="'+Craft.formatDate(this.customRangeStartDate)+'" class="text" size="20" autocomplete="off" value="" />').appendTo($startDateWrapper);
         this.$startDateInput.datepicker($.extend({
@@ -143,7 +176,12 @@ Craft.DateRangePicker = Garnish.Base.extend(
         }, Craft.datepickerOptions));
 
         // custom range endDate
-        this.customRangeEndDate = new Date();
+
+        if(!this.customRangeEndDate)
+        {
+            this.customRangeEndDate = new Date();
+        }
+
         this.$endDateInput = $('<input type="text" value="'+Craft.formatDate(this.customRangeEndDate)+'" class="text" size="20" autocomplete="off" value="" />').appendTo($endDateWrapper);
         this.$endDateInput.datepicker($.extend({
             onClose: $.proxy(function(dateText, inst)
@@ -195,7 +233,6 @@ Craft.DateRangePicker = Garnish.Base.extend(
 
             this.startDate = this.customRangeStartDate;
             this.endDate = this.customRangeEndDate;
-
         }
 
         this.startDate = (this.startDate != 'undefined' ? this.startDate : null);
@@ -209,7 +246,7 @@ Craft.DateRangePicker = Garnish.Base.extend(
 
         this.hideCustomRangeApplyButton();
 
-        this.onAfterSelect(value, this.startDate, this.endDate);
+        this.onAfterSelect(value, this.startDate, this.endDate, this.customRangeStartDate, this.customRangeEndDate);
     },
 
     hideCustomRangeApplyButton: function()
@@ -242,9 +279,9 @@ Craft.DateRangePicker = Garnish.Base.extend(
         this._selectItem($item);
     },
 
-    onAfterSelect: function(value, startDate, endDate)
+    onAfterSelect: function(value, startDate, endDate, customRangeStartDate, customRangeEndDate)
     {
-        this.settings.onAfterSelect(value, startDate, endDate);
+        this.settings.onAfterSelect(value, startDate, endDate, customRangeStartDate, customRangeEndDate);
     }
 },
 {
@@ -274,6 +311,8 @@ Craft.DateRangePicker = Garnish.Base.extend(
                 label: 'Custom Range',
             }
         },
+        customRangeStartDate: null,
+        customRangeEndDate: null,
         onAfterSelect: $.noop
     }
 });
