@@ -1,4 +1,5 @@
 {%- includecssresource "css/craft.css" first -%}
+{%- includeCssResource 'lib/c3/c3.css' first -%}
 
 {% set siteName = craft.app.getSiteName() -%}
 {% set docTitle = docTitle is defined ? docTitle : title|striptags -%}

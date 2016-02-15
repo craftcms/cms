@@ -18,3 +18,31 @@
 .cp-chart .grid-line path { stroke-width: 0; }
 
 .tooltip { padding: 7px; background: #fff; position: absolute; z-index: 1000000; margin-left: 20px; @include box-shadow(0 0 5px 0 rgba(0,0,0,.5)); }
+
+
+/* C3 customization */
+
+.chart.c3 svg { width: 100%; }
+
+.c3-chart-line path { stroke-width: 3px; }
+
+.c3-chart-line .c3-circle { r: 4px; }
+
+.c3 path.c3-area { stroke: none; }
+
+.c3 path, .c3 line { fill: none; stroke: #888; }
+
+.c3-tooltip { border: 1px solid #ccc; }
+.c3-tooltip tr { border: 0; }
+.c3-tooltip th { background: #fff; color: #000; }
+.c3-tooltip td { border: 0; }
+
+.c3-xgrid-focus line { stroke-opacity: 0.3; }
+
+.c3 .c3-axis-y path { visibility: hidden; }
+.c3 .c3-axis-y .tick { margin-left: -29px; }
+.c3 .c3-axis-y .tick line { display: none; }
+.c3 .c3-axis-y .tick line { display: none; }
+.c3 .tick text { fill: #888; }
+
+.c3-xgrid, .c3-ygrid { stroke-dasharray: 0 0; opacity: 0.1; }

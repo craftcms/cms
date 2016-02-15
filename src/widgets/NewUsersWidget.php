@@ -38,8 +38,11 @@ class NewUsersWidget extends BaseWidget
         $groupId = $settings->userGroupId;
         $userGroup = craft()->userGroups->getGroupById($groupId);
 
+        $options = $settings->getAttributes();
+        $options['orientation'] = craft()->locale->getOrientation();
+
         craft()->templates->includeJsResource('js/NewUsersWidget.js');
-        craft()->templates->includeJs('new Craft.NewUsersWidget('.$this->model->id.', '.JsonHelper::encode($settings).');');
+        craft()->templates->includeJs('new Craft.NewUsersWidget('.$this->model->id.', '.JsonHelper::encode($options).');');
 
 
         return craft()->templates->render('_components/widgets/NewUsers/body', array(

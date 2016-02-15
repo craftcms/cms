@@ -43,7 +43,7 @@ class ReportsService extends BaseApplicationComponent
         $total = 0;
 
 	    $query = craft()->db->createCommand()
-		    ->select('DATE_FORMAT(users.dateCreated, "%d-%b-%y") as date, COUNT(*) as totalUsers')
+		    ->select('DATE_FORMAT(users.dateCreated, "%Y-%m-%d") as date, COUNT(*) as totalUsers')
 		    ->from('users users')
 		    ->group('YEAR(users.dateCreated), MONTH(users.dateCreated), DAY(users.dateCreated)');
 
@@ -58,13 +58,14 @@ class ReportsService extends BaseApplicationComponent
         $reportDataTable = $this->getNewUsersReportDataTable($startDate, $endDate, $results);
         $scale = $this->getScale($startDate, $endDate);
 
-        foreach($reportDataTable['rows'] as $row)
+        foreach($reportDataTable as $row)
         {
             $total = $total + $row[1];
         }
 
         $response = array(
-            'reportDataTable' => $reportDataTable,
+            'report' => $reportDataTable,
+            'orientation' => craft()->locale->getOrientation(),
             'scale' => $scale,
             'total' => $total,
         );
@@ -80,6 +81,63 @@ class ReportsService extends BaseApplicationComponent
      * @return array
      */
     private function getNewUsersReportDataTable($startDate, $endDate, $results)
+    {
+        $scale = $this->getScale($startDate, $endDate);
+
+        // columns
+
+        $columns = [
+            ['type' => 'date', 'label' => 'Date'],
+            ['type' => 'number','label' => 'Users'],
+        ];
+
+
+        // fill data table rows from results and set a total of zero users when no result is found for that date
+
+        $rows = [];
+
+        $cursorCurrent = new DateTime($startDate);
+
+        while($cursorCurrent->getTimestamp() < $endDate->getTimestamp())
+        {
+            $cursorStart = new DateTime($cursorCurrent);
+            $cursorCurrent->modify('+1 '.$scale);
+            $cursorEnd = $cursorCurrent;
+
+            $row = [
+                strftime("%Y-%m-%d", $cursorStart->getTimestamp()), // date
+                0 // totalUsers
+            ];
+
+            foreach($results as $result)
+            {
+                if($result['date'] == strftime("%Y-%m-%d", $cursorStart->getTimestamp()))
+                {
+                    $row = [
+                        $result['date'], // date
+                        $result['totalUsers'] // totalUsers
+                    ];
+                }
+            }
+
+            $rows[] = $row;
+        }
+
+        $chartColumns = [];
+        $chartRows = [];
+
+        foreach($columns as $column)
+        {
+            $chartColumns[] = $column['label'];
+        }
+
+        $chartRows = [$chartColumns];
+        $chartRows = array_merge($chartRows, array_reverse($rows));
+
+        return $chartRows;
+    }
+
+    private function getNewUsersReportDataTableOld($startDate, $endDate, $results)
     {
         $scale = $this->getScale($startDate, $endDate);
 

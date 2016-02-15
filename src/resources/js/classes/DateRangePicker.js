@@ -51,7 +51,7 @@ Craft.DateRangePicker = Garnish.Base.extend(
 
                 this.$input.val(label);
 
-                this.onAfterSelect(value, startDate, endDate);
+                // this.onAfterSelect(value, startDate, endDate);
             }
         }
         else
@@ -84,7 +84,6 @@ Craft.DateRangePicker = Garnish.Base.extend(
             hudClass: 'hud daterange-hud',
             onSubmit: $.proxy(this, 'save')
         });
-
     },
 
     createPresets: function()

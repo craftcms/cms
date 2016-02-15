@@ -4,913 +4,139 @@
 
 Craft.charts = {};
 
-/**
- * Class Craft.charts.DataTable
- */
-Craft.charts.DataTable = Garnish.Base.extend(
-{
-    columns: null,
-    rows: null,
-
-    init: function(data)
-    {
-        // parse data
-
-        columns = data.columns;
-        rows = data.rows;
-
-        rows.forEach($.proxy(function(d)
-        {
-            $.each(d, function(cellIndex, cell)
-            {
-                var column = columns[cellIndex];
-
-                switch(column.type)
-                {
-                    case 'date':
-                        d[cellIndex] = d3.time.format("%d-%b-%y").parse(d[cellIndex]);
-                    break;
-
-                    case 'percent':
-                    d[cellIndex] = d[cellIndex] / 100;
-                    break;
-
-                    case 'number':
-                        d[cellIndex] = +d[cellIndex];
-                        break;
-
-                    default:
-                        // do nothing
-                }
-            });
-
-        }, this));
-
-        this.columns = columns;
-        this.rows = rows;
-    }
-});
 
 /**
- * Class Craft.charts.Tip
+ * Class Craft.charts.Chart
  */
-Craft.charts.Tip = Garnish.Base.extend(
+Craft.charts.Chart = Garnish.Base.extend(
 {
-    $tip: null,
+    _chart: null,
 
-    init: function(settings)
+    init: function(options, defaultOptions)
     {
-        this.setSettings(settings, Craft.charts.Tip.defaults);
-
-        this.$tip = d3.select("body")
-            .append("div")
-            .attr("class", "tooltip")
-            .style("opacity", 0);
-    },
-
-    tipContentFormat: function(d)
-    {
-        return this.settings.tipContentFormat(this.settings.locale, d);
-    },
-
-    show: function(d)
-    {
-        this.$tip.transition()
-            .duration(200)
-            .style("opacity", 1);
-        this.$tip.html(this.tipContentFormat(d))
-            .style("left", (d3.event.pageX) + "px")
-            .style("top", (d3.event.pageY - 28) + "px");
-    },
-
-    hide: function()
-    {
-        this.$tip.transition()
-            .duration(500)
-            .style("opacity", 0);
-    }
-},
-{
-    defaults: {
-        locale: null,
-
-        tipContentFormat: function(locale, d)
-        {
-            return d[0]+": "+d[1];
-        }
-    }
-});
-
-/**
- * Class Craft.charts.BaseChart
- */
-Craft.charts.BaseChart = Garnish.Base.extend(
-{
-    $container: null,
-    $chart: null,
-
-    chartBaseClass: 'cp-chart',
-    dataTable: null,
-    height: null,
-    locale: null,
-    chartDirection: null,
-    svg: null,
-    width: null,
-    x: null,
-    xAxis: null,
-    y: null,
-    yAxis: null,
-
-    init: function(container)
-    {
-        this.$container = container;
-
-        d3.select(window).on('resize', $.proxy(function() {
-            this.resize();
-        }, this));
-    },
-
-    draw: function(dataTable, settings, settingsDefaults)
-    {
-        var localeDefinition = window['d3_locale'];
-
-        // set settings
-
-        this.setSettings(settings, Craft.charts.BaseChart.defaults);
-
-        if(settingsDefaults)
-        {
-            this.setSettings(settings, settingsDefaults);
-        }
-
-        // locale & currency
-
-        if(this.settings.currency)
-        {
-            localeDefinition.currency = this.settings.currency;
-        }
-
-        this.chartDirection = localeDefinition.direction;
-        this.locale = d3.locale(localeDefinition);
-
-        // reset chart element's HTML
-
-        if(this.$chart)
-        {
-            this.$chart.remove();
-        }
-
-        // chart class
-
-        var className = this.chartBaseClass;
-
-        if(this.settings.chartClass)
-        {
-            className += ' '+this.settings.chartClass;
-        }
-
-        this.$chart = $('<div class="'+className+'" />').appendTo(this.$container);
-
-        // set data table
-        this.dataTable = dataTable;
-
-        // chart dimensions
-        this.width = this.$chart.width() - this.settings.margin.left - this.settings.margin.right;
-        this.height = this.$chart.height() - this.settings.margin.top - this.settings.margin.bottom;
-    },
-
-    xTickFormat: function(locale)
-    {
-        switch(this.settings.dataScale)
-        {
-            case 'month':
-                return locale.timeFormat("%B %Y");
-                break;
-
-            default:
-                return locale.timeFormat("%e %b");
-                // return locale.timeFormat("%x");
-        }
-    },
-
-    yTickFormat: function(locale)
-    {
-        switch(this.dataTable.columns[1].type)
-        {
-            case 'currency':
-                return locale.numberFormat("$");
-                break;
-
-            case 'percent':
-                return locale.numberFormat(".2%");
-                break;
-
-            case 'time':
-                return Craft.charts.utils.getDuration;
-                break;
-
-            default:
-                return locale.numberFormat("n");
-        }
-    },
-
-    resize: function()
-    {
-        // only redraw if data is set
-        this.draw(this.dataTable, this.settings);
-    },
-
-    onAfterDrawTicks: function()
-    {
-        // White border for ticks' text
-        $('.tick', this.$chart).each(function(tickKey, tick)
-        {
-            var $tickText = $('text', tick);
-
-            var $clone = $tickText.clone();
-            $clone.appendTo(tick);
-
-            $tickText.attr('stroke', '#ffffff');
-            $tickText.attr('stroke-width', 3);
-        });
-    }
-},
-{
-    defaults: {
-        margin: { top: 25, right: 25, bottom: 25, left: 25 },
-        chartClass: null,
-        colors: ["#0594D1", "#DE3800", "#FF9A00", "#009802", "#9B009B"],
-        ticksStyles: {
-            'fill': '#555',
-            'font-size': '11px'
-        }
-    }
-});
-
-/**
- * Class Craft.charts.Area
- */
-Craft.charts.Area = Craft.charts.BaseChart.extend(
-{
-    tip: null,
-
-    draw: function(dataTable, settings)
-    {
-        this.base(dataTable, settings, Craft.charts.Area.defaults);
-
-        // X scale
-        this.x = d3.time.scale().range([0, this.width]);
-
-        // Y scale
-        this.y = d3.scale.linear().range([this.height, 0]);
-
-        // Area
-        this.area = d3.svg.area()
-            .x($.proxy(function(d) { return this.x(d[0]); }, this))
-            .y0(this.height)
-            .y1($.proxy(function(d) { return this.y(d[1]); }, this));
-
-        this.line = d3.svg.line()
-            .x($.proxy(function(d) { return this.x(d[0]); }, this))
-            .y($.proxy(function(d) { return this.y(d[1]); }, this));
-
-        // Append graph to chart element
-        this.svg = d3.select(this.$chart.get(0)).append("svg")
-                .attr("width", this.width + (this.settings.margin.left + this.settings.margin.right))
-                .attr("height", this.height + (this.settings.margin.top + this.settings.margin.bottom))
-            .append("g")
-                .attr("transform", "translate(" + this.settings.margin.left + "," + this.settings.margin.top + ")");
-
-        this.x.domain(this.xDomain());
-        this.y.domain(this.yDomain());
-
-
-        // Draw chart's elements
-        this.drawGridlines();
-        this.drawAxes();
-        this.drawPlots();
-        this.drawChart();
-        this.drawTicks();
-        this.drawTipTriggers();
-    },
-
-    drawChart: function()
-    {
-        // Draw chart's area
-        this.svg.append("path")
-            .datum(this.dataTable.rows)
-            .style({
-                'fill': this.settings.colors[0],
-                'fill-opacity': '0.3'
-            })
-            .attr("d", this.area);
-
-        // Draw chart'sline
-        this.svg.append("path")
-            .datum(this.dataTable.rows)
-            .style({
-                'fill': 'none',
-                'stroke': this.settings.colors[0],
-                'stroke-width': '3px',
-            })
-            .attr("d", this.line);
-    },
-
-    drawAxes: function()
-    {
-        this.xAxis = d3.svg.axis().scale(this.x).orient("bottom").ticks(0);
-
-        this.svg.append("g")
-            .attr("class", "x axis")
-            .attr("transform", "translate(0," + this.height + ")")
-            .call(this.xAxis);
-
-
-        if(this.chartDirection == 'rtl')
-        {
-            this.yAxis = d3.svg.axis().scale(this.y).orient("left").ticks(0);
-
-            this.svg.append("g")
-                .attr("class", "y axis")
-                .attr("transform", "translate(" + this.width + ",0)")
-                .call(this.yAxis);
-        }
-        else
-        {
-            this.yAxis = d3.svg.axis().scale(this.y).orient("right").ticks(0);
-
-            this.svg.append("g")
-                .attr("class", "y axis")
-                .call(this.yAxis);
-        }
-    },
-
-    drawTicks: function()
-    {
-        this.xAxis = d3.svg.axis().scale(this.x).orient("bottom")
-            .tickFormat(this.xTickFormat(this.locale))
-            .ticks(this.xTicks());
-
-
-        this.svg.append("g")
-            .attr("class", "x ticks-axis")
-            .attr("transform", "translate(0," + this.height + ")")
-            .style(this.settings.ticksStyles)
-            .call(this.xAxis);
-
-        if(this.chartDirection == 'rtl')
-        {
-            this.yAxis = d3.svg.axis().scale(this.y).orient("left")
-                .tickFormat(this.yTickFormat(this.locale))
-                .tickValues(this.yTickValues())
-                .ticks(this.yTicks());
-
-            this.svg.append("g")
-                .attr("class", "y ticks-axis")
-                .attr("transform", "translate(" + this.width + ",0)")
-                .style(this.settings.ticksStyles)
-                .call(this.yAxis);
-
-            this.svg.selectAll('.y.ticks-axis text').style('text-anchor', 'start');
-        }
-        else
-        {
-            this.yAxis = d3.svg.axis().scale(this.y).orient("right")
-                .tickFormat(this.yTickFormat(this.locale))
-                .tickValues(this.yTickValues())
-                .ticks(this.yTicks());
-
-            this.svg.append("g")
-                .attr("class", "y ticks-axis")
-                .style(this.settings.ticksStyles)
-                .call(this.yAxis);
-        }
-
-        this.onAfterDrawTicks();
-    },
-
-    drawGridlines: function()
-    {
-        if(this.settings.xAxisGridlines)
-        {
-            this.xLineAxis = d3.svg.axis()
-                .scale(this.x)
-                .orient("bottom");
-
-            // draw x lines
-            this.svg.append("g")
-                .attr("class", "x grid-line")
-                .attr("transform", "translate(0," + this.height + ")")
-                .call(this.xLineAxis
-                    .tickSize(-this.height, 0, 0)
-                    .tickFormat("")
-                );
-        }
-
-        if(this.settings.yAxisGridlines)
-        {
-            this.yLineAxis = d3.svg.axis()
-                .scale(this.y)
-                .orient("left");
-
-            // draw y lines
-            this.svg.append("g")
-                .attr("class", "y grid-line")
-                .call(this.yLineAxis
-                    .tickSize(-this.width, 0, 0)
-                    .tickFormat("")
-                    .tickValues(this.yTickValues())
-                    .ticks(this.yTicks())
-                );
-        }
-    },
-
-    drawPlots: function()
-    {
-        if(this.settings.enablePlots)
-        {
-            this.svg.selectAll("dot")
-                .data(this.dataTable.rows)
-            .enter().append("circle")
-                .style({
-                    'fill': this.settings.colors[0],
-                })
-                .attr("class", "plot")
-                .attr("r", 5)
-                .attr("cx", $.proxy(function(d) { return this.x(d[0]); }, this))
-                .attr("cy", $.proxy(function(d) { return this.y(d[1]); }, this));
-        }
-    },
-
-    drawTipTriggers: function()
-    {
-        if(this.settings.enableTips)
-        {
-            // Instantiate tip
-
-            if(!this.tip)
-            {
-                this.tip = new Craft.charts.Tip({
-                    locale: this.locale,
-                    tipContentFormat: $.proxy(this, 'tipContentFormat')
-                });
-            }
-
-            var tip = this.tip;
-
-
-            // Draw the plot triggers
-
-            this.svg.selectAll("dot")
-                .data(this.dataTable.rows)
-            .enter().append("circle")
-                .attr("class", "tip-trigger")
-                .style({
-                    'fill': this.settings.colors[0],
-                    'fill-opacity': '0'
-                })
-                .attr("r", 10)
-                .attr("cx", $.proxy(function(d) { return this.x(d[0]); }, this))
-                .attr("cy", $.proxy(function(d) { return this.y(d[1]); }, this))
-                .on("mouseover", function(d)
-                {
-                    d3.select(this).style({
-                        "fill-opacity": "0.3"
-                    });
-
-                    tip.show(d);
-                })
-                .on("mouseout", function()
-                {
-                    d3.select(this).style({
-                        "fill-opacity": "0"
-                    });
-
-                    tip.hide();
-                });
-        }
-
-        // Apply shadow filter
-        Craft.charts.utils.applyShadowFilter('drop-shadow', this.svg);
-    },
-
-    tipContentFormat: function(locale, d)
-    {
-        switch(this.settings.dataScale)
-        {
-            case 'month':
-                var formatTime = locale.timeFormat("%B %Y");
-                break;
-            default:
-                var formatTime = locale.timeFormat("%x");
-        }
-
-        var formatNumber = this.yTickFormat(locale);
-
-        return formatTime(d[0])
-                    + '<br />'
-                    + this.dataTable.columns[1].label+': '
-                    + formatNumber(d[1]);
-    },
-
-    xDomain: function()
-    {
-        var min = d3.min(this.dataTable.rows, function(d) { return d[0]; });
-        var max = d3.max(this.dataTable.rows, function(d) { return d[0]; });
-
-        if(this.chartDirection == 'rtl')
-        {
-            return [max, min];
-        }
-        else
-        {
-            return [min, max];
-        }
-    },
-
-    xTicks: function()
-    {
-        return 3;
-    },
-
-    yAxisMaxValue: function()
-    {
-        var maxValue = d3.max(this.dataTable.rows, function(d) { return d[1]; });
-        maxValue = maxValue * 100;
-        maxValue = Math.round(maxValue);
-
-        var pow = Math.pow(10, maxValue.toString().length - 1);
-        var yAxisMaxValue = (Math.ceil(maxValue / pow) * pow) / 100;
-
-        return yAxisMaxValue;
-    },
-
-    yDomain: function()
-    {
-        var yDomainMax = $.proxy(function()
-        {
-            // make y max higher than max point
-            return this.yAxisMaxValue();
-
-        }, this);
-
-        return [0, yDomainMax()];
-    },
-
-    yTicks: function()
-    {
-        return 2;
-    },
-
-    yTickValues: function()
-    {
-        return [this.yAxisMaxValue() / 2, this.yAxisMaxValue()];
-    },
-},
-{
-    defaults: {
-        chartClass: 'area',
-        enablePlots: true,
-        enableTips: true,
-        xAxisGridlines: false,
-        yAxisGridlines: true,
-    }
-});
-
-/**
- * Class Craft.charts.Column
- */
-Craft.charts.Column = Craft.charts.BaseChart.extend(
-{
-    tip: null,
-
-    draw: function(dataTable, settings)
-    {
-        this.base(dataTable, settings, Craft.charts.Column.defaults);
-
-        this.x = d3.scale.ordinal().rangeRoundBands([0, this.width], .2);
-        this.y = d3.scale.linear().range([this.height, 0]);
-
-        this.x.domain(this.dataTable.rows.map(function(d) { return d[0]; }));
-        this.y.domain([0, d3.max(this.dataTable.rows, function(d) { return d[1]; })]);
-
-        // Append graph to chart element
-        this.svg = d3.select(this.$chart.get(0)).append("svg")
-                .attr("width", this.width + this.settings.margin.left + this.settings.margin.right)
-                .attr("height", this.height + this.settings.margin.top + this.settings.margin.bottom)
-            .append("g")
-                .attr("transform", "translate(" + this.settings.margin.left + "," + this.settings.margin.top + ")");
-
-
-        this.drawChart();
-        this.drawAxes();
-        this.drawTicks();
-        this.drawTipTriggers();
-    },
-
-    drawChart: function()
-    {
-        // Draw bars
-        this.svg.selectAll(".bar")
-                .data(this.dataTable.rows)
-            .enter().append("rect")
-                .attr("class", "bar")
-                .style({
-                    'fill': this.settings.colors[0],
-                    'fill-opacity': '1'
-                })
-                .attr("x", $.proxy(function(d) { return this.x(d[0]); }, this))
-                .attr("width", this.x.rangeBand())
-                .attr("y", $.proxy(function(d) { return this.y(d[1]); }, this))
-                .attr("height", $.proxy(function(d) { return this.height - this.y(d[1]); }, this));
-    },
-
-    drawAxes: function()
-    {
-        this.xAxis = d3.svg.axis().scale(this.x).orient("bottom").tickValues([]);
-        this.yAxis = d3.svg.axis().scale(this.y).orient("right").ticks(0);
-
-        this.svg.append("g")
-            .attr("class", "x axis")
-            .attr("transform", "translate(0," + this.height + ")")
-            .call(this.xAxis);
-
-        this.svg.append("g")
-                .attr("class", "y axis")
-                .call(this.yAxis)
-            .append("text")
-                .attr("transform", "rotate(-90)")
-                .attr("y", 6)
-                .attr("dy", ".71em");
-    },
-
-
-    drawTicks: function()
-    {
-        this.xAxis = d3.svg.axis().scale(this.x).orient("bottom");
-        this.yAxis = d3.svg.axis().scale(this.y).orient("right").tickFormat(this.yTickFormat(this.locale)).ticks(this.height / 50);
-
-        this.svg.append("g")
-            .attr("class", "x ticks-axis")
-            .style(this.settings.ticksStyles)
-            .attr("transform", "translate(0," + this.height + ")")
-            .call(this.xAxis);
-
-        this.svg.append("g")
-                .attr("class", "y ticks-axis")
-                .style(this.settings.ticksStyles)
-                .call(this.yAxis)
-            .append("text")
-                .attr("transform", "rotate(-90)")
-                .attr("y", 6)
-                .attr("dy", ".71em");
-
-        this.onAfterDrawTicks();
-    },
-
-    drawTipTriggers: function()
-    {
-        if(this.settings.enableTips)
-        {
-            if(!this.tip)
-            {
-                this.tip = new Craft.charts.Tip({
-                    locale: this.locale,
-                });
-            }
-
-            // Show tip when hovering plots
-            this.svg.selectAll(".bar")
-                .on("mouseover", $.proxy(this.tip, 'show'))
-                .on("mouseout", $.proxy(this.tip, 'hide'));
-        }
-    }
-},
-{
-    defaults: {
-        chartClass: 'column',
-        enableTips: true,
-    }
-});
-
-/**
- * Class Craft.charts.Pie
- */
-Craft.charts.Pie = Craft.charts.BaseChart.extend(
-{
-    color: null,
-    pie: null,
-    radius: null,
-    tip: null,
-
-    draw: function(dataTable, settings)
-    {
-        this.base(dataTable, settings, Craft.charts.Pie.defaults);
-
-        this.radius = Math.min(this.width, this.height) / 2;
-
-        this.arc = d3.svg.arc()
-            .outerRadius(this.radius * 1)
-            .innerRadius(this.radius * 0.5);
-
-        this.color = d3.scale.ordinal().range(this.settings.colors);
-
-        this.pie = d3.layout.pie()
-            .sort(null)
-            .value(function(d) {
-                return d[1];
-            });
-
-        this.svg = d3.select(this.$chart.get(0)).append("svg")
-            .append("g")
-                .attr("transform", "translate(" + this.width / 2 + "," + this.height / 2 + ")");
-
-        this.drawChart();
-    },
-
-    drawChart: function()
-    {
-        var g = this.svg.selectAll('.arc')
-                .data(this.pie(this.dataTable.rows))
-            .enter().append('g')
-                .attr('class', 'arc')
-                .on("mouseover", $.proxy(this.onTipTriggerMouseOver, null, this))
-                .on("mouseout", $.proxy(this.onTipTriggerMouseOut, null, this));
-
-        g.append('path')
-            .attr('d', this.arc)
-            .style('fill', $.proxy(function(d) { return this.color(d.data[0]); }, this));
-
-    },
-
-    onTipTriggerMouseOver: function(context, d)
-    {
-        if(context.settings.enableTips)
-        {
-            if(!context.tip)
-            {
-                context.tip = new Craft.charts.Tip({
-                    locale: context.locale,
-                    tipContentFormat: $.proxy(context, 'tipContentFormat')
-                });
-            }
-        }
-
-        d3.select(this).style({
-            "fill-opacity": "0.5",
-        });
-
-        if(context.settings.enableTips)
-        {
-            context.tip.show(d);
-        }
-    },
-
-    onTipTriggerMouseOut: function(context)
-    {
-        d3.select(this).style({
-            "fill-opacity": "1",
-        });
-
-        if(context.settings.enableTips && context.tip)
-        {
-            context.tip.hide();
-        }
-    },
-
-    tipContentFormat: function(locale, d)
-    {
-        return d.data[0]+": "+d.data[1];
-    }
-},
-{
-    defaults: {
-        chartClass: 'pie',
-        enableTips: true,
-        margin: { top: 0, right: 0, bottom: 0, left: 0 },
-    }
-});
-
-/**
- * Class Craft.charts.Utils
- */
-Craft.charts.utils = {
-
-    getDuration: function(value)
-    {
-        var sec_num = parseInt(value, 10);
-        var hours   = Math.floor(sec_num / 3600);
-        var minutes = Math.floor((sec_num - (hours * 3600)) / 60);
-        var seconds = sec_num - (hours * 3600) - (minutes * 60);
-
-        if (hours < 10)
-        {
-            hours = "0"+hours;
-        }
-
-        if (minutes < 10)
-        {
-            minutes = "0"+minutes;
-        }
-
-        if (seconds < 10)
-        {
-            seconds = "0"+seconds;
-        }
-
-        var time = hours+':'+minutes+':'+seconds;
-
-        return time;
-    },
-
-    /**
-     * arrayToDataTable
-     */
-    arrayToDataTable: function(twoDArray)
-    {
-
-        var data = {
-            columns: [],
-            rows: []
+        var baseOptions = {
+            orientation: 'ltr',
         };
 
-        $.each(twoDArray, function(k, v) {
-            if(k == 0)
-            {
-                // first row is column definition
+        var c3Options = $.extend(true, baseOptions, defaultOptions);
 
-                data.columns = [];
+        c3Options = $.extend(true, c3Options, options);
 
-                $.each(v, function(k2, v2) {
+        if(c3Options.orientation == 'rtl')
+        {
+            var additionalOptions = {
+                axis: {
+                    y: {
+                        inverted: true
+                    }
+                }
+            };
 
-                    // guess column type from first row
-                    var columnType = typeof(twoDArray[(k + 1)][k2]);
+            c3Options = $.extend(true, c3Options, additionalOptions);
+        }
 
-                    var column = {
-                        name: v2,
-                        type: columnType,
-                    };
-
-                    data.columns.push(column);
-                });
-            }
-            else
-            {
-                var row = [];
-
-                $.each(v, function(k2, v2) {
-                    var cell = v2;
-
-                    row.push(cell);
-                });
-
-                data.rows.push(row);
-            }
-        });
-
-        var dataTable = new Craft.charts.DataTable(data);
-
-        return dataTable;
+        this._chart = c3.generate(c3Options);
     },
 
-    applyShadowFilter: function(id, svg)
+    load: function(targets, args)
     {
-        // filters go in defs element
-        var defs = svg.append("defs");
+        return this._chart.load(targets, args);
+    },
 
-        // create filter with id #{id}
-        // height=130% so that the shadow is not clipped
-        var filter = defs.append("filter")
-            .attr("id", id)
-            .attr("width", "200%")
-            .attr("height", "200%")
-            .attr("x", "-50%")
-            .attr("y", "-50%");
+    resize: function(size)
+    {
+        return this._chart.resize(size);
+    }
+});
 
-        // SourceAlpha refers to opacity of graphic that this filter will be applied to
-        // convolve that with a Gaussian with standard deviation 3 and store result
-        // in blur
-        filter.append("feGaussianBlur")
-            .attr("in", "SourceAlpha")
-            .attr("stdDeviation", 1)
-            .attr("result", "blur");
 
-        // translate output of Gaussian blur to the right and downwards with 2px
-        // store result in offsetBlur
-        filter.append("feOffset")
-            .attr("in", "blur")
-            .attr("dx", 0)
-            .attr("dy", 0)
-            .attr("result", "offsetBlur");
+/**
+ * Class Craft.charts.getLocale
+ */
+Craft.charts.getLocale = function(options)
+{
+    var localeDefinition = window['d3_locale'];
 
-        // overlay original SourceGraphic over translated blurred opacity by using
-        // feMerge filter. Order of specifying inputs is important!
-        var feMerge = filter.append("feMerge");
+    if(options)
+    {
+        localeDefinition = $.extend(true, localeDefinition, options);
+    }
 
-        feMerge.append("feMergeNode")
-            .attr("in", "offsetBlur")
-        feMerge.append("feMergeNode")
-            .attr("in", "SourceGraphic");
+    return d3.locale(localeDefinition);
+}
+
+
+/**
+ * Class Craft.charts.getDateFormatFromScale
+ */
+Craft.charts.getDateFormatFromScale = function(scale)
+{
+    var locale = Craft.charts.getLocale();
+
+    switch(scale)
+    {
+        case 'month':
+            return locale.timeFormat("%B %Y");
+            break;
+        default:
+            return locale.timeFormat("%e %b");
+    }
+}
+
+
+/**
+ * Class Craft.charts.getCurrencyFormat
+ */
+Craft.charts.getCurrencyFormat = function(format)
+{
+    var locale = Craft.charts.getLocale({
+        currency: format
+    });
+
+    return locale.numberFormat("$");
+}
+
+
+/**
+ * Class Craft.charts.defaults
+ */
+Craft.charts.defaults = {
+    area: {
+        color: {
+            pattern: ["#0594D1", "#DE3800", "#FF9A00", "#009802", "#9B009B"],
+        },
+        transition: {
+            duration: null
+        },
+        grid: {
+            focus: {
+                show: true
+            }
+        },
+        data: {
+            x: 'Date',
+            type: 'area',
+        },
+        axis: {
+            x: {
+                type: 'timeseries',
+                tick: {
+                    culling: {
+                        max: 5
+                    },
+                }
+            },
+            y: {
+                inner: false,
+                tick: {
+                    count: 3
+                }
+            }
+        },
+        grid: {
+            y: {
+                show: true
+            }
+        }
     }
 };
-
