@@ -2,38 +2,19 @@
 {% import "_includes/forms" as forms %}
 
 
-{% macro chartDocs(settings) %}
-
-    <table class="data">
-        <thead>
-            <tr>
-                <th>Setting</th>
-                <th>Default Value</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for setting, defaultValue in settings %}
-                <tr>
-                    <th>{{ setting }}</th>
-                    <td>{{ defaultValue }}</td>
-                </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-
-{% endmacro %}
-
-{% from _self import chartDocs %}
-
-
 {% includecss %}
 
 .chart-container {
-    border: 1px solid #eee;
     width: 400px;
     height: 300px;
     margin-bottom: 24px;
-    padding: 0px;
+}
+
+.chartdoc {
+    width: 50%;
+    display: inline-block;
+    padding: 50px;
+    box-sizing: border-box;
 }
 
 {% endincludecss %}
@@ -43,124 +24,122 @@
 
 {% block content %}
 
+    {% spaceless %}
 
-    <h2>Base Chart</h2>
+        <div class="chartdoc">
+            <h2>Area</h2>
 
-    {{ chartDocs({
-        margin: '{ top: 30, right: 30, bottom: 30, left: 30 }',
-        chartClass: 'null',
-        colors: '["#0594D1", "#DE3800", "#FF9A00", "#009802", "#9B009B"]',
-        ticksStyles: "{
-            'fill': '#555',
-            'font-size': '11px'
-        }"
-    }) }}
+            <div id="area" class="chart-container"></div>
 
-    <hr>
+            {% includejs %}
 
-    <div class="chart-doc">
+                var rows = [
+                    ['Date', 'Users', 'Returning'],
+                    ['2016-01-23', 5, 2],
+                    ['2016-01-24', 15, 4],
+                    ['2016-01-25', 10, 5],
+                    ['2016-01-26', 13, 7],
+                ];
+                var $chart = $('#area');
 
-        <h2>Area</h2>
-
-        <div id="area" class="chart-container"></div>
-
-        {% includejs %}
-
-            var dataTable = new Craft.charts.DataTable({
-                columns: [
-                    { label: 'Date', type: 'date' },
-                    { label: 'Users', type: 'currency' }
-                ],
-
-                rows: [
-                    ['23-Jan-16' , 5],
-                    ['24-Jan-16' , 15],
-                    ['25-Jan-16' , 10],
-                    ['26-Jan-16' , 13],
-                ]
-            });
+                var chart = new Craft.charts.Chart({
+                    bindto: this.$chart.get(0),
+                    data: {
+                        rows: rows,
+                        type: 'area',
+                    },
+                }, Craft.charts.defaults.area);
 
 
-            var $chart = $('#area');
+            {% endincludejs %}
+        </div>
 
-            var chart = new Craft.charts.Area($chart);
-            chart.draw(dataTable);
+        <div class="chartdoc">
+            <h2>Pie</h2>
 
-        {% endincludejs %}
+            <div id="pie" class="chart-container"></div>
 
-        {{ chartDocs({
-            chartClass: "'area'",
-            dataScale: "'day'",
-            enablePlots: "true",
-            enableTips: "true",
-            xAxisGridlines: "false",
-            yAxisGridlines: "true",
-        }) }}
+            {% includejs %}
 
-    </div>
+                var columns = [
+                    ['Task',     'Hours per Day'],
+                    ['Work',     11],
+                    ['Eat',      2],
+                    ['Commute',  2],
+                    ['Watch TV', 2],
+                    ['Sleep',    7]
+                ];
+                var $chart = $('#pie');
 
-    <hr>
+                var chart = new Craft.charts.Chart({
+                    bindto: this.$chart.get(0),
+                    data: {
+                        columns: columns,
+                        type: 'pie',
+                    },
+                });
 
-    <div class="chart-doc">
-        <h2>Column</h2>
+            {% endincludejs %}
 
-        <div id="column" class="chart-container"></div>
+        </div>
 
-        {% includejs %}
 
-            var dataTable = Craft.charts.utils.arrayToDataTable([
-                ['Task',     'Hours per Day'],
-                ['Work',     11],
-                ['Eat',      2],
-                ['Commute',  2],
-                ['Watch TV', 2],
-                ['Sleep',    7]
-            ]);
+        <div class="chartdoc">
 
-            var $chart = $('#column');
+            <h2>Donut</h2>
 
-            var chart = new Craft.charts.Column($chart);
-            chart.draw(dataTable);
+            <div id="donut" class="chart-container"></div>
 
-        {% endincludejs %}
+            {% includejs %}
 
-        {{ chartDocs({
-            chartClass: "'column'",
-            enableTips: "true",
-        }) }}
-    </div>
+                var columns = [
+                    ['Task',     'Hours per Day'],
+                    ['Work',     11],
+                    ['Eat',      2],
+                    ['Commute',  2],
+                    ['Watch TV', 2],
+                    ['Sleep',    7]
+                ];
+                var $chart = $('#donut');
 
-    <hr>
+                var chart = new Craft.charts.Chart({
+                    bindto: this.$chart.get(0),
+                    data: {
+                        columns: columns,
+                        type: 'donut',
+                    },
+                });
 
-    <div class="chart-doc">
+            {% endincludejs %}
+        </div>
 
-        <h2>Pie</h2>
+        <div class="chartdoc">
 
-        <div id="pie" class="chart-container"></div>
+            <h2>Bar</h2>
 
-        {% includejs %}
+            <div id="bar" class="chart-container"></div>
 
-            var dataTable = Craft.charts.utils.arrayToDataTable([
-                ['Task',     'Hours per Day'],
-                ['Work',     11],
-                ['Eat',      2],
-                ['Commute',  2],
-                ['Watch TV', 2],
-                ['Sleep',    7]
-            ]);
+            {% includejs %}
 
-            var $chart = $('#pie');
+                var columns = [
+                    ['data1', 30, 200, 100, 400, 150, 250],
+                    ['data2', 130, 100, 140, 200, 150, 50]
+                ];
 
-            var chart = new Craft.charts.Pie($chart);
-            chart.draw(dataTable);
+                var $chart = $('#bar');
 
-        {% endincludejs %}
+                var chart = new Craft.charts.Chart({
+                    bindto: this.$chart.get(0),
+                    data: {
+                        columns: columns,
+                        type: 'bar'
+                    }
+                });
 
-        {{ chartDocs({
-            chartClass: "'pie'",
-            enableTips: "true",
-            margin: "{ top: 0, right: 0, bottom: 0, left: 0 }",
-        }) }}
-    </div>
+            {% endincludejs %}
+
+        </div>
+
+    {% endspaceless %}
 
 {% endblock %}
