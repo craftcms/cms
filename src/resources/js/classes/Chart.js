@@ -14,13 +14,17 @@ Craft.charts.Chart = Garnish.Base.extend(
 
     init: function(options, defaultOptions)
     {
-        var baseOptions = {
+        var baseChartOptions = {
             orientation: 'ltr',
+            color: {
+                pattern: ["#0594D1", "#DE3800", "#FF9A00", "#009802", "#9B009B"],
+            },
         };
 
-        var c3Options = $.extend(true, baseOptions, defaultOptions);
+        var c3Options = baseChartOptions;
 
-        c3Options = $.extend(true, c3Options, options);
+        $.extend(true, c3Options, defaultOptions);
+        $.extend(true, c3Options, options);
 
         if(c3Options.orientation == 'rtl')
         {
@@ -32,7 +36,7 @@ Craft.charts.Chart = Garnish.Base.extend(
                 }
             };
 
-            c3Options = $.extend(true, c3Options, additionalOptions);
+            $.extend(true, c3Options, additionalOptions);
         }
 
         this._chart = c3.generate(c3Options);
@@ -47,6 +51,10 @@ Craft.charts.Chart = Garnish.Base.extend(
     {
         return this._chart.resize(size);
     }
+}, {
+    defaults: {
+
+    }
 });
 
 
@@ -59,7 +67,7 @@ Craft.charts.getLocale = function(options)
 
     if(options)
     {
-        localeDefinition = $.extend(true, localeDefinition, options);
+        $.extend(true, localeDefinition, options);
     }
 
     return d3.locale(localeDefinition);
@@ -102,9 +110,6 @@ Craft.charts.getCurrencyFormat = function(format)
  */
 Craft.charts.defaults = {
     area: {
-        color: {
-            pattern: ["#0594D1", "#DE3800", "#FF9A00", "#009802", "#9B009B"],
-        },
         transition: {
             duration: null
         },
@@ -114,7 +119,6 @@ Craft.charts.defaults = {
             }
         },
         data: {
-            x: 'Date',
             type: 'area',
         },
         axis: {
