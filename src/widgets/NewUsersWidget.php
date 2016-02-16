@@ -62,6 +62,16 @@ class NewUsersWidget extends BaseWidget
         ));
     }
 
+	/**
+	 * @inheritDoc IWidget::getIconPath()
+	 *
+	 * @return string
+	 */
+	public function getIconPath()
+	{
+		return craft()->path->getResourcesPath().'images/widgets/new-users.svg';
+	}
+
     // Protected Methods
     // =========================================================================
 
