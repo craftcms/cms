@@ -37,6 +37,7 @@ Craft.NewUsersWidget = Garnish.Base.extend(
                     bindto: this.$chartContainer.get(0),
                     data: {
                         rows: response.report,
+                        x: response.report[0][0]
                     },
                     axis: {
                         x: {
