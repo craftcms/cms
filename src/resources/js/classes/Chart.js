@@ -19,6 +19,12 @@ Craft.charts.Chart = Garnish.Base.extend(
             color: {
                 pattern: ["#0594D1", "#DE3800", "#FF9A00", "#009802", "#9B009B"],
             },
+
+            axis: {
+                y: {
+                    inner: true
+                }
+            }
         };
 
         var c3Options = baseChartOptions;
@@ -131,7 +137,6 @@ Craft.charts.defaults = {
                 }
             },
             y: {
-                inner: false,
                 tick: {
                     count: 3
                 }
