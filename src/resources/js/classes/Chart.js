@@ -46,11 +46,29 @@ Craft.charts.Chart = Garnish.Base.extend(
         }
 
         this._chart = c3.generate(c3Options);
+
+        this.onAfterGenerateChart();
     },
 
     load: function(targets, args)
     {
         return this._chart.load(targets, args);
+    },
+
+    onAfterGenerateChart: function()
+    {
+        // White border for Y ticks' text
+
+        $('.c3-axis-y .tick', $(this._chart.element)).each(function(tickKey, tick)
+        {
+            var $tickText = $('text', tick);
+
+            var $clone = $tickText.clone();
+            $clone.appendTo(tick);
+
+            $tickText.css('stroke', '#ffffff');
+            $tickText.css('stroke-width', 3);
+        });
     },
 
     resize: function(size)
