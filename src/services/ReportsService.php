@@ -21,12 +21,12 @@ class ReportsService extends BaseApplicationComponent
      */
     public function getDateRanges()
     {
-        $dateRanges = [
-            'd7' => ['label' => Craft::t('Last 7 days'), 'startDate' => '-7 days', 'endDate' => null],
-            'd30' => ['label' => Craft::t('Last 30 days'), 'startDate' => '-30 days', 'endDate' => null],
-            'lastweek' => ['label' => Craft::t('Last Week'), 'startDate' => '-2 weeks', 'endDate' => '-1 week'],
-            'lastmonth' => ['label' => Craft::t('Last Month'), 'startDate' => '-2 months', 'endDate' => '-1 month'],
-        ];
+        $dateRanges = array(
+	        'd7' => array('label' => Craft::t('Last 7 days'), 'startDate' => '-7 days', 'endDate' => null),
+	        'd30' => array('label' => Craft::t('Last 30 days'), 'startDate' => '-30 days', 'endDate' => null),
+	        'lastweek' => array('label' => Craft::t('Last Week'), 'startDate' => '-2 weeks', 'endDate' => '-1 week'),
+	        'lastmonth' => array('label' => Craft::t('Last Month'), 'startDate' => '-2 months', 'endDate' => '-1 month'),
+        );
 
         return $dateRanges;
     }
@@ -86,15 +86,15 @@ class ReportsService extends BaseApplicationComponent
 
         // columns
 
-        $columns = [
-            ['type' => 'date', 'label' => 'Date'],
-            ['type' => 'number','label' => 'Users'],
-        ];
+        $columns = array(
+	        array('type' => 'date', 'label' => 'Date'),
+	        array('type' => 'number','label' => 'Users'),
+        );
 
 
         // fill data table rows from results and set a total of zero users when no result is found for that date
 
-        $rows = [];
+        $rows = array();
 
         $cursorCurrent = new DateTime($startDate);
 
@@ -104,86 +104,37 @@ class ReportsService extends BaseApplicationComponent
             $cursorCurrent->modify('+1 '.$scale);
             $cursorEnd = $cursorCurrent;
 
-            $row = [
-                strftime("%Y-%m-%d", $cursorStart->getTimestamp()), // date
-                0 // totalUsers
-            ];
+            $row = array(
+	            strftime("%Y-%m-%d", $cursorStart->getTimestamp()), // date
+	            0 // totalUsers
+	        );
 
             foreach($results as $result)
             {
                 if($result['date'] == strftime("%Y-%m-%d", $cursorStart->getTimestamp()))
                 {
-                    $row = [
+                    $row = array(
                         $result['date'], // date
                         $result['totalUsers'] // totalUsers
-                    ];
+                    );
                 }
             }
 
             $rows[] = $row;
         }
 
-        $chartColumns = [];
-        $chartRows = [];
+        $chartColumns = array();
+        $chartRows = array();
 
         foreach($columns as $column)
         {
             $chartColumns[] = $column['label'];
         }
 
-        $chartRows = [$chartColumns];
+        $chartRows = array($chartColumns);
         $chartRows = array_merge($chartRows, array_reverse($rows));
 
         return $chartRows;
-    }
-
-    private function getNewUsersReportDataTableOld($startDate, $endDate, $results)
-    {
-        $scale = $this->getScale($startDate, $endDate);
-
-        // columns
-
-        $columns = [
-            ['type' => 'date', 'label' => 'Date'],
-            ['type' => 'number','label' => 'Users'],
-        ];
-
-
-        // fill data table rows from results and set a total of zero users when no result is found for that date
-
-        $rows = [];
-
-        $cursorCurrent = new DateTime($startDate);
-
-        while($cursorCurrent->getTimestamp() < $endDate->getTimestamp())
-        {
-            $cursorStart = new DateTime($cursorCurrent);
-            $cursorCurrent->modify('+1 '.$scale);
-            $cursorEnd = $cursorCurrent;
-
-            $row = [
-                strftime("%e-%b-%y", $cursorStart->getTimestamp()), // date
-                0 // totalUsers
-            ];
-
-            foreach($results as $result)
-            {
-                if($result['date'] == strftime("%e-%b-%y", $cursorStart->getTimestamp()))
-                {
-                    $row = [
-                        $result['date'], // date
-                        $result['totalUsers'] // totalUsers
-                    ];
-                }
-            }
-
-            $rows[] = $row;
-        }
-
-        return [
-            'columns' => $columns,
-            'rows' => $rows
-        ];
     }
 
     /**
