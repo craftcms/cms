@@ -47,7 +47,7 @@ Craft.charts.Chart = Garnish.Base.extend(
     {
         // White border for Y ticks' text
 
-        $('.c3-axis-y .tick', $(this._chart.element)).each(function(tickKey, tick)
+        $('.c3-axis-y .tick, .c3-axis-y2 .tick', $(this._chart.element)).each(function(tickKey, tick)
         {
             var $tickText = $('text', tick);
 
