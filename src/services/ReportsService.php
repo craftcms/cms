@@ -87,8 +87,8 @@ class ReportsService extends BaseApplicationComponent
         // columns
 
         $columns = array(
-	        array('type' => 'date', 'label' => 'Date'),
-	        array('type' => 'number','label' => 'Users'),
+	        array('type' => 'date', 'label' => Craft::t('Date')),
+	        array('type' => 'number','label' => Craft::t('Users')),
         );
 
 

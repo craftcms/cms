@@ -80,8 +80,6 @@ Craft.DateRangePicker = Garnish.Base.extend(
                 $item.addClass('sel');
 
                 this.$input.val(label);
-
-                // this.onAfterSelect(value, startDate, endDate);
             }
         }
         else
@@ -228,9 +226,6 @@ Craft.DateRangePicker = Garnish.Base.extend(
         }
         else
         {
-            // this.startDate = this.$startDateInput.val();
-            // this.endDate = this.$endDateInput.val();
-
             this.startDate = this.customRangeStartDate;
             this.endDate = this.customRangeEndDate;
         }
@@ -262,7 +257,7 @@ Craft.DateRangePicker = Garnish.Base.extend(
         if(!this.$applyBtn)
         {
             var $buttons = $('<div class="buttons" />').appendTo(this.$hudBody);
-            this.$applyBtn = $('<input type="button" class="btn" value="Apply" />').appendTo($buttons);
+            this.$applyBtn = $('<input type="button" class="btn" value="'+Craft.t('Apply')+'" />').appendTo($buttons);
 
             this.addListener(this.$applyBtn, 'click', 'applyCustomRange')
         }
@@ -289,26 +284,26 @@ Craft.DateRangePicker = Garnish.Base.extend(
         value: null,
         presets: {
             d7 : {
-                label: 'Last 7 days',
+                label: Craft.t('Last 7 days'),
                 startDate: '-7 days'
             },
             d30: {
-                label: 'Last 30 days',
+                label: Craft.t('Last 30 days'),
                 startDate: '-30 days'
             },
             lastweek: {
-                label: 'Last Week',
+                label: Craft.t('Last Week'),
                 startDate: '-14 days',
                 endDate: '-7 days',
             },
             lastmonth: {
-                label: 'Last Month',
+                label: Craft.t('Last Month'),
                 startDate: '-60 days',
                 endDate: '-30 days',
             },
 
             customrange: {
-                label: 'Custom Range',
+                label: Craft.t('Custom Range'),
             }
         },
         customRangeStartDate: null,
