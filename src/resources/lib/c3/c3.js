@@ -137,8 +137,8 @@
         $$.defocusedTargetIds = [];
 
         $$.xOrient = config.axis_rotated ? "left" : "bottom";
-        $$.yOrient = config.axis_rotated ? (config.axis_y_inner ? "top" : "bottom") : (config.axis_y_inner ? "right" : "left");
-        $$.y2Orient = config.axis_rotated ? (config.axis_y2_inner ? "bottom" : "top") : (config.axis_y2_inner ? "left" : "right");
+        $$.yOrient = config.axis_rotated ? (config.axis_y_inner ? "top" : "bottom") : (config.axis_y_inner ? (config.orientation == 'rtl' ? "left" : "right") : (config.orientation == 'rtl' ? "right" : "left"));
+        $$.y2Orient = config.axis_rotated ? (config.axis_y2_inner ? "bottom" : "top") : (config.axis_y2_inner ? (config.orientation == 'rtl' ? "right" : "left") : (config.orientation == 'rtl' ? "left" : "right"));
         $$.subXOrient = config.axis_rotated ? "left" : "bottom";
 
         $$.isLegendRight = config.legend_position === 'right';
@@ -770,10 +770,10 @@
             x = 0;
             y = config.axis_rotated ? 0 : $$.height;
         } else if (target === 'y') {
-            x = 0;
+            x = (config.orientation == 'rtl' ? (config.axis_rotated ? 0 : $$.width) : 0);
             y = config.axis_rotated ? $$.height : 0;
         } else if (target === 'y2') {
-            x = config.axis_rotated ? 0 : $$.width;
+            x = (config.orientation == 'rtl' ? (config.axis_rotated ? 0 : $$.width) : 0);
             y = config.axis_rotated ? 1 : 0;
         } else if (target === 'subx') {
             x = 0;
@@ -1015,6 +1015,7 @@
     c3_chart_internal_fn.getDefaultConfig = function () {
         var config = {
             bindto: '#chart',
+            orientation: 'ltr',
             size_width: undefined,
             size_height: undefined,
             padding_left: undefined,
@@ -1268,7 +1269,14 @@
             scale[key] = _scale[key];
         }
         scale.orgDomain = function () {
-            return _scale.domain();
+            if($$.config.orientation == 'rtl')
+            {
+                return _scale.domain().reverse();
+            }
+            else
+            {
+                return _scale.domain();
+            }
         };
         // define custom domain() for categorized axis
         if ($$.isCategorized()) {
@@ -1277,7 +1285,7 @@
                     domain = this.orgDomain();
                     return [domain[0], domain[1] + 1];
                 }
-                _scale.domain(domain);
+                _scale.domain(domain.reverse());
                 return scale;
             };
         }
@@ -4224,14 +4232,17 @@
         return tickValues;
     };
     Axis.prototype.getYAxis = function getYAxis(scale, orient, tickFormat, tickValues, withOuterTick, withoutTransition) {
-        var axisParams = {
-            withOuterTick: withOuterTick,
-            withoutTransition: withoutTransition,
-        },
-            $$ = this.owner,
+        var $$ = this.owner,
             d3 = $$.d3,
-            config = $$.config,
+            config = $$.config;
+
+        var axisParams = {
+                withOuterTick: withOuterTick,
+                withoutTransition: withoutTransition,
+                orientation: config.orientation,
+            },
             axis = c3_axis(d3, axisParams).scale(scale).orient(orient).tickFormat(tickFormat);
+
         if ($$.isTimeSeriesY()) {
             axis.ticks(d3.time[config.axis_y_tick_time_value], config.axis_y_tick_time_interval);
         } else {
@@ -6912,7 +6923,7 @@
                         textEnter.attr("x", -tickLength);
                         lineUpdate.attr("x2", -innerTickSize).attr("y1", tickY).attr("y2", tickY);
                         textUpdate.attr("x", -tickLength).attr("y", tickOffset);
-                        text.style("text-anchor", "end");
+                        text.style("text-anchor", (params.orientation == 'rtl' ? 'start' : 'end'));
                         tspan.attr('x', -tickLength).attr("dy", tspanDy);
                         pathUpdate.attr("d", "M" + -outerTickSize + "," + range[0] + "H0V" + range[1] + "H" + -outerTickSize);
                         break;
@@ -6924,7 +6935,7 @@
                         textEnter.attr("x", tickLength);
                         lineUpdate.attr("x2", innerTickSize).attr("y2", 0);
                         textUpdate.attr("x", tickLength).attr("y", 0);
-                        text.style("text-anchor", "start");
+                        text.style("text-anchor", (params.orientation == 'rtl' ? 'end' : 'start'));
                         tspan.attr('x', tickLength).attr("dy", tspanDy);
                         pathUpdate.attr("d", "M" + outerTickSize + "," + range[0] + "H0V" + range[1] + "H" + outerTickSize);
                         break;
