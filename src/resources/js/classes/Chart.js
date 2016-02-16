@@ -32,18 +32,6 @@ Craft.charts.Chart = Garnish.Base.extend(
         $.extend(true, c3Options, defaultOptions);
         $.extend(true, c3Options, options);
 
-        if(c3Options.orientation == 'rtl')
-        {
-            var additionalOptions = {
-                axis: {
-                    y: {
-                        inverted: true
-                    }
-                }
-            };
-
-            $.extend(true, c3Options, additionalOptions);
-        }
 
         this._chart = c3.generate(c3Options);
 

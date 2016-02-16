@@ -46,3 +46,6 @@
 .c3 .tick text { fill: #888; }
 
 .c3-xgrid, .c3-ygrid { stroke-dasharray: 0 0; opacity: 0.1; }
+.c3-legend-item {
+  direction: ltr;
+}

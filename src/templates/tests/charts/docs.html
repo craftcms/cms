@@ -44,6 +44,7 @@
 
                 var chart = new Craft.charts.Chart({
                     bindto: this.$chart.get(0),
+					orientation: '{{ craft.i18n.getLocaleData().getOrientation() }}',
                     data: {
                         rows: rows,
                         type: 'area',
@@ -74,6 +75,7 @@
 
                 var chart = new Craft.charts.Chart({
                     bindto: this.$chart.get(0),
+					orientation: '{{ craft.i18n.getLocaleData().getOrientation() }}',
                     data: {
                         columns: columns,
                         type: 'pie',
@@ -105,6 +107,7 @@
 
                 var chart = new Craft.charts.Chart({
                     bindto: this.$chart.get(0),
+					orientation: '{{ craft.i18n.getLocaleData().getOrientation() }}',
                     data: {
                         columns: columns,
                         type: 'donut',
@@ -131,6 +134,7 @@
 
                 var chart = new Craft.charts.Chart({
                     bindto: this.$chart.get(0),
+					orientation: '{{ craft.i18n.getLocaleData().getOrientation() }}',
                     data: {
                         columns: columns,
                         type: 'bar'
