@@ -127,6 +127,9 @@ Craft.charts.defaults = {
         },
         grid: {
             focus: {
+                show: false
+            },
+            y: {
                 show: true
             }
         },
@@ -146,11 +149,6 @@ Craft.charts.defaults = {
                 tick: {
                     count: 3
                 }
-            }
-        },
-        grid: {
-            y: {
-                show: true
             }
         }
     }
