@@ -118,6 +118,10 @@ class WebApp extends \CWebApplication
 		if ($validationKey = $this->config->get('validationKey'))
 		{
 			$this->security->setValidationKey($validationKey);
+
+			// Make sure any instances of Yii's CSecurityManager class are using the custom validation
+			// key as well
+			$this->getComponent('securityManager')->setValidationKey($validationKey);
 		}
 
 		// Attach our own custom Logger

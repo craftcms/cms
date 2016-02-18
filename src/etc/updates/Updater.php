@@ -25,25 +25,6 @@ class Updater
 	}
 
 	/**
-	 * @throws Exception
-	 * @return null
-	 */
-	public function getLatestUpdateInfo()
-	{
-		$updateModel = craft()->updates->getUpdates(true);
-
-		if (!empty($updateModel->errors))
-		{
-			throw new Exception(implode(',', $updateModel->errors));
-		}
-
-		if ($updateModel->app->releases == null)
-		{
-			throw new Exception(Craft::t('@@@appName@@@ is already up to date.'));
-		}
-	}
-
-	/**
 	 * @param $handle
 	 *
 	 * @return array
