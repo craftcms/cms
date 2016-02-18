@@ -14,7 +14,7 @@ Craft.charts.Chart = Garnish.Base.extend(
 
     init: function(options, defaultOptions)
     {
-        var baseChartOptions = {
+        var _options = {
             orientation: 'ltr',
             color: {
                 pattern: ["#0594D1", "#DE3800", "#FF9A00", "#009802", "#9B009B"],
@@ -26,14 +26,12 @@ Craft.charts.Chart = Garnish.Base.extend(
                 }
             }
         };
-
-        var c3Options = baseChartOptions;
-
-        $.extend(true, c3Options, defaultOptions);
-        $.extend(true, c3Options, options);
+        
+        $.extend(true, _options, defaultOptions);
+        $.extend(true, _options, options);
 
 
-        this._chart = c3.generate(c3Options);
+        this._chart = c3.generate(_options);
 
         this.onAfterGenerateChart();
     },
