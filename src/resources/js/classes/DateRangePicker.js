@@ -13,9 +13,9 @@ Craft.DateRangePicker = Garnish.Base.extend(
     $startDateInput: null,
     $endDateInput: null,
 
-    init: function(input, settings)
+    init: function(trigger, settings)
     {
-        this.$input = input;
+        this.$trigger = trigger;
 
         this.setSettings(settings, Craft.DateRangePicker.defaults);
 
@@ -46,9 +46,9 @@ Craft.DateRangePicker = Garnish.Base.extend(
 
 
         var dateRangeValue = this.presets[this.value].label;
-        this.$input.val(dateRangeValue);
+        this.$trigger.data('value', dateRangeValue);
 
-        this.addListener(this.$input, 'focus', 'showHud');
+        this.addListener(this.$trigger, 'click', 'showHud');
     },
 
     getStartDate: function()
@@ -63,6 +63,8 @@ Craft.DateRangePicker = Garnish.Base.extend(
 
     showHud: function()
     {
+        this.$trigger.addClass('active');
+
         if (!this.hud)
         {
             this.createHud();
@@ -79,7 +81,7 @@ Craft.DateRangePicker = Garnish.Base.extend(
 
                 $item.addClass('sel');
 
-                this.$input.val(label);
+                this.$trigger.data('value', label);
             }
         }
         else
@@ -105,12 +107,18 @@ Craft.DateRangePicker = Garnish.Base.extend(
 
         this.addListener(this.$items, 'click', 'selectItem');
 
-
         // instiantiate hud
-
-        this.hud = new Garnish.HUD(this.$input, this.$hudBody, {
+        this.hud = new Garnish.HUD(this.$trigger, this.$hudBody, {
             hudClass: 'hud daterange-hud',
-            onSubmit: $.proxy(this, 'save')
+            onSubmit: $.proxy(this, 'save'),
+            onShow: $.proxy(function()
+            {
+                this.$trigger.addClass('active');
+            }, this),
+            onHide: $.proxy(function()
+            {
+                this.$trigger.removeClass('active');
+            }, this)
         });
     },
 
@@ -235,7 +243,7 @@ Craft.DateRangePicker = Garnish.Base.extend(
 
         $item.addClass('sel');
 
-        this.$input.val(label);
+        this.$trigger.data('value', label);
 
         this.hud.hide();
 
