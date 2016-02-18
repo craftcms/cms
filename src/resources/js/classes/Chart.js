@@ -161,9 +161,9 @@ Craft.charts.defaults = {
 
                 if((position.top + tHeight) > elementHeight)
                 {
-                    position.top = position - tHeight;
+                    position.top = position.top - tHeight;
                 }
-
+                
                 return position;
             }
         }
