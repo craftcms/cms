@@ -26,7 +26,7 @@ Craft.charts.Chart = Garnish.Base.extend(
                 }
             }
         };
-        
+
         $.extend(true, _options, defaultOptions);
         $.extend(true, _options, options);
 
@@ -147,6 +147,24 @@ Craft.charts.defaults = {
                 tick: {
                     count: 3
                 }
+            }
+        },
+
+        tooltip: {
+            position: function (dataToShow, tWidth, tHeight, element)
+            {
+                var $$ = this,
+                    position = c3.chart.internal.fn.tooltipPosition.apply(this, arguments),
+                    elementHeight = element.getAttribute('height');
+
+                position.top = $$.y(dataToShow[0].value);
+
+                if((position.top + tHeight) > elementHeight)
+                {
+                    position.top = position - tHeight;
+                }
+
+                return position;
             }
         }
     }
