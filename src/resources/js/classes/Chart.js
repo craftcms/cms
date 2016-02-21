@@ -19,8 +19,13 @@ Craft.charts.Chart = Garnish.Base.extend(
             color: {
                 pattern: ["#0594D1", "#DE3800", "#FF9A00", "#009802", "#9B009B"],
             },
-
             axis: {
+                x: {
+                    padding: {
+                        left: 0,
+                        right: 0,
+                    }
+                },
                 y: {
                     inner: true
                 }
