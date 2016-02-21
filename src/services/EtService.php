@@ -142,7 +142,7 @@ class EtService extends BaseApplicationComponent
 
 		if ($handle == 'craft')
 		{
-			$path = 'http://download.craftcms.com/craft/'.$updateModel->app->latestVersion.'/'.$buildVersion.'/Patch/'.($handle == 'craft' ? $updateModel->app->localBuild : $updateModel->app->localVersion.'.'.$updateModel->app->localBuild).'/'.$md5.'.zip';
+			$path = 'https://download.craftcdn.com/craft/'.$updateModel->app->latestVersion.'/'.$buildVersion.'/Patch/'.($handle == 'craft' ? $updateModel->app->localBuild : $updateModel->app->localVersion.'.'.$updateModel->app->localBuild).'/'.$md5.'.zip';
 		}
 		else
 		{
@@ -167,7 +167,7 @@ class EtService extends BaseApplicationComponent
 				}
 			}
 
-			$path = 'http://download.craftcms.com/plugins/'.$handle.'/'.$latestVersion.'/'.$latestVersion.'.'.$latestBuild.'/Patch/'.$localVersion.'.'.$localBuild.'/'.$md5.'.zip';
+			$path = 'https://download.craftcdn.com/plugins/'.$handle.'/'.$latestVersion.'/'.$latestVersion.'.'.$latestBuild.'/Patch/'.$localVersion.'.'.$localBuild.'/'.$md5.'.zip';
 		}
 
 		$et = new Et($path, 240);
