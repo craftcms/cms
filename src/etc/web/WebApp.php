@@ -118,6 +118,10 @@ class WebApp extends \CWebApplication
 		if ($validationKey = $this->config->get('validationKey'))
 		{
 			$this->security->setValidationKey($validationKey);
+
+			// Make sure any instances of Yii's CSecurityManager class are using the custom validation
+			// key as well
+			$this->getComponent('securityManager')->setValidationKey($validationKey);
 		}
 
 		// Attach our own custom Logger
@@ -214,7 +218,7 @@ class WebApp extends \CWebApplication
 			{
 				$version = $this->getVersion();
 				$build = $this->getBuild();
-				$url = "http://download.craftcms.com/craft/{$version}/{$version}.{$build}/Craft-{$version}.{$build}.zip";
+				$url = "https://download.craftcdn.com/craft/{$version}/{$version}.{$build}/Craft-{$version}.{$build}.zip";
 
 				throw new HttpException(200, Craft::t('@@@appName@@@ does not support backtracking to this version. Please upload @@@appName@@@ {url} or later.', array(
 					'url' => '['.$build.']('.$url.')',

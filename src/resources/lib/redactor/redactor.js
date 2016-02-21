@@ -1,7 +1,7 @@
 /*
 	Redactor II
-	Version 1.2.1
-	Updated: January 20, 2015
+	Version 1.2.2
+	Updated: February 18, 2015
 
 	http://imperavi.com/redactor/
 
@@ -101,7 +101,7 @@
 
 	// Options
 	$.Redactor = Redactor;
-	$.Redactor.VERSION = '1.2.1';
+	$.Redactor.VERSION = '1.2.2';
 	$.Redactor.modules = ['air', 'autosave', 'block', 'buffer', 'build', 'button', 'caret', 'clean', 'code', 'core', 'detect', 'dropdown',
 						  'events', 'file', 'focus', 'image', 'indent', 'inline', 'insert', 'keydown', 'keyup',
 						  'lang', 'line', 'link', 'linkify', 'list', 'marker', 'modal', 'observe', 'offset', 'paragraphize', 'paste', 'placeholder',
@@ -142,7 +142,7 @@
 		pastePlainText: false,
 		pasteImages: true,
 		pasteLinks: true,
-		pasteBlockTags: ['h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'table', 'tbody', 'thead', 'tfoot', 'th', 'tr', 'td', 'ul', 'ol', 'li', 'blockquote', 'pre'],
+		pasteBlockTags: ['h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'table', 'tbody', 'thead', 'tfoot', 'th', 'tr', 'td', 'ul', 'ol', 'li', 'blockquote', 'pre', 'figure', 'figcaption'],
 		pasteInlineTags: ['strong', 'b', 'u', 'em', 'i', 'code', 'del', 'ins', 'samp', 'kbd', 'sup', 'sub', 'mark', 'var', 'cite', 'small'],
 
 		preClass: false, // string
@@ -191,7 +191,7 @@
 		formatting: ['p', 'blockquote', 'pre', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6'],
 		formattingAdd: false,
 
-		buttons: ['format', 'bold', 'italic', 'deleted', 'lists', 'image', 'file', 'link', 'horizontalrule'], // + 'underline'
+		buttons: ['format', 'bold', 'italic', 'deleted', 'lists', 'image', 'file', 'link', 'horizontalrule', 'ol', 'ul', 'indent', 'outdent'], // + 'underline', 'ol', 'ul', 'indent', 'outdent'
 
 		buttonsHide: [],
 		buttonsHideOnMobile: [],
@@ -268,6 +268,9 @@
 				"horizontalrule": "Line",
 				"upload-label": "Drop file here or ",
 				"caption": "Caption",
+
+				"bulletslist": "Bullets",
+				"numberslist": "Numbers",
 
 				"accessibility-help-label": "Rich text editor"
 			}
@@ -1570,6 +1573,26 @@
 								}
 							}
 						},
+						ul:
+						{
+							title: '&bull; ' + this.lang.get('bulletslist'),
+							func: 'list.toggle'
+						},
+						ol:
+						{
+							title: '1. ' + this.lang.get('numberslist'),
+							func: 'list.toggle'
+						},
+						outdent:
+						{
+							title: this.lang.get('outdent'),
+							func: 'indent.decrease'
+						},
+						indent:
+						{
+							title: this.lang.get('indent'),
+							func: 'indent.increase'
+						},
 						image:
 						{
 							title: this.lang.get('image'),
@@ -1681,12 +1704,13 @@
 						return;
 					}
 
-					var $button = $('<a href="javascript:void(null);" class="re-button re-' + btnName + '" rel="' + btnName + '" />').html(btnObject.title);
+					var $button = $('<a href="javascript:void(null);" class="re-button re-' + btnName + '" title="' + btnObject.title + '" rel="' + btnName + '" />').html(btnObject.title);
 					$button.attr({ 'role': 'button', 'aria-label': btnObject.title, 'tabindex': '-1' });
 
 					if (typeof btnObject.label !== 'undefined')
 					{
 						$button.attr('aria-label', btnObject.label);
+						$button.attr('title', btnObject.label);
 					}
 
 					// click
@@ -2341,9 +2365,9 @@
 						'strike': 'del'
 					};
 
-					$div.find('b, i, strike').replaceWith(function()
+					$div.find('b, i, strike').each(function(i,s)
 					{
-						return self.utils.replaceToTag(this, replacement[this.tagName.toLowerCase()]);
+						self.utils.replaceToTag(s, replacement[s.tagName.toLowerCase()]);
 					});
 
 					html = $div.html();
@@ -3388,6 +3412,18 @@
 				buildItem: function(btnName, btnObject)
 				{
 					var $itemContainer = $('<li />');
+					if (typeof btnObject.classname !== 'undefined')
+					{
+    					$itemContainer.addClass(btnObject.classname);
+					}
+
+					if (btnName.search(/^divider/i) !== -1)
+					{
+    					$itemContainer.addClass('redactor-dropdown-divider');
+
+    					return $itemContainer;
+					}
+
 					var $item = $('<a href="#" class="redactor-dropdown-' + btnName + '" role="button" />');
 					var $itemSpan = $('<span />').html(btnObject.title);
 
@@ -4683,28 +4719,29 @@
 
 					this.inline.formatConvert(tag);
 
-					this.selection.save();
+                    document.execCommand('strikethrough');
 
-					document.execCommand('strikethrough');
+                    this.selection.save();
 
+                    var converted = true;
 					var $formatted = this.core.editor().find('strike');
 					$formatted.each(function(i,s)
 					{
 						var $oldEl = $(s);
-						var newEl = document.createElement(tag);
-
 						if (!$oldEl.hasClass('redactor-inline-converted'))
 						{
-							newEl = self.inline.setAttr(newEl, attr, value, type);
+                            converted = false;
 						}
 
-						var $newEl = $(newEl);
-
-						$oldEl.replaceWith($newEl.html($oldEl.contents()));
+                        var $newEl = self.utils.replaceToTag($oldEl, tag);
+                        if (!converted)
+                        {
+                            $newEl = self.inline.setAttr($newEl[0], attr, value, type);
+                        }
 
 					});
 
-					// restore del tag
+                    // restore del tag
 					if (tag !== 'del')
 					{
 						this.core.editor().find('inline').each(function(i,s)
@@ -4793,12 +4830,12 @@
 					// convert tag
 					this.core.editor().find(tag).each(function()
 					{
-						var $el = $(this);
-						$el.replaceWith($('<strike />').addClass('redactor-inline-converted').html($el.contents()));
-
+						var $el = self.utils.replaceToTag(this, 'strike');
+						$el.addClass('redactor-inline-converted');
 					});
 
 					this.selection.restore();
+
 				},
 				insertBreakpoint: function(inline, currentTag)
 				{
@@ -5603,7 +5640,7 @@
 						this.code.syncFire = false;
 						this.keydown.removeEmptyLists();
 
-						this.core.editor().find('*[style]').not('#redactor-image-box, #redactor-image-editter').removeAttr('style');
+						this.core.editor().find('*[style]').not('img, #redactor-image-box, #redactor-image-editter').removeAttr('style');
 
 						this.keydown.formatEmpty(e);
 						this.code.syncFire = true;
@@ -6105,6 +6142,22 @@
 						return false;
 					}
 
+                    // replace a prev figure to paragraph if caret is before image
+                    if (key === this.keyCode.ENTER)
+                    {
+                        if (this.keyup.block && this.keyup.block.tagName === 'FIGURE')
+                        {
+                            var $prev = $(this.keyup.block).prev();
+                            if ($prev.length !== 0 && $prev[0].tagName === 'FIGURE')
+                            {
+                                var $newTag = this.utils.replaceToTag($prev, 'p');
+                                this.caret.start($newTag);
+                                return;
+                            }
+                        }
+                    }
+
+
 					// replace figure to paragraph
 					if (key === this.keyCode.BACKSPACE || key === this.keyCode.DELETE)
 					{
@@ -6417,18 +6470,20 @@
 				isUrl: function(url)
 				{
 					var pattern = '((xn--)?[\\W\\w\\D\\d]+(-[\\W\\w\\D\\d]+)*\\.)+[\\W\\w]{2,}';
+
 					var re1 = new RegExp('^(http|ftp|https)://' + pattern, 'i');
 					var re2 = new RegExp('^' + pattern, 'i');
 					var re3 = new RegExp('\.(html|php)$', 'i');
 					var re4 = new RegExp('^/', 'i');
+					var re5 = new RegExp('^tel:(.*?)', 'i');
 
-					// ad protocol
+					// add protocol
 					if (url.search(re1) === -1 && url.search(re2) !== -1)
 					{
 						url = 'http://' + url;
 					}
 
-					if (url.search(re1) !== -1 || url.search(re3) !== -1 || url.search(re4) !== -1)
+					if (url.search(re1) !== -1 || url.search(re3) !== -1 || url.search(re4) !== -1 || url.search(re5) !== -1)
 					{
 						return url;
 					}
@@ -6747,9 +6802,10 @@
 						return;
 					}
 
+					cmd = (cmd === 'ol') ? 'orderedlist' : 'unorderedlist';
+
 					var tag = (cmd === 'orderedlist') ? 'OL' : 'UL';
 					var $list = $(this.selection.current()).parentsUntil('.redactor-in', 'ul, ol').first();
-
 
 					this.placeholder.hide();
 					this.buffer.set();
@@ -6894,6 +6950,7 @@
 					{
 						this.marker.insertNode(range, this.marker.get(2), false);
 					}
+
 				},
 				remove: function()
 				{
@@ -6914,7 +6971,6 @@
 					try {
 						range.collapse(collapse);
 						range.insertNode(node);
-
 					}
 					catch (e)
 					{
