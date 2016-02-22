@@ -31,7 +31,7 @@ Craft.EditableTable = Garnish.Base.extend(
 
 	initIfVisible: function()
 	{
-		if (this.$table.height())
+		if (this.$table.height() > 0)
 		{
 			this.removeListener(Garnish.$win, 'resize');
 
