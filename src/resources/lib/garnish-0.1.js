@@ -4910,6 +4910,7 @@ Garnish.NiceText = Garnish.Base.extend({
 	showingHint: false,
 	val: null,
 	inputBoxSizing: 'content-box',
+	width: null,
 	height: null,
 	minHeight: null,
 	initialized: false,
@@ -4949,10 +4950,14 @@ Garnish.NiceText = Garnish.Base.extend({
 
 		if (this.autoHeight)
 		{
-			this.minHeight = this.getHeightForValue('');
-			this.updateHeight();
-
-			this.addListener(Garnish.$win, 'resize', 'updateHeight');
+			if (this.$input.height())
+			{
+				this.initAutoHeight();
+			}
+			else
+			{
+				this.addListener(Garnish.$win, 'resize', 'initAutoHeightIfVisible');
+			}
 		}
 
 		if (this.settings.hint)
@@ -4990,6 +4995,25 @@ Garnish.NiceText = Garnish.Base.extend({
 		this.addListener(this.$input, 'textchange', 'onTextChange');
 
 		this.initialized = true;
+	},
+
+	initAutoHeight: function()
+	{
+		this.minHeight = this.getHeightForValue('');
+		this.updateHeight();
+
+		// Update height when the window resizes
+		this.width = this.$input.width();
+		this.addListener(Garnish.$win, 'resize', 'updateHeightIfWidthChanged');
+	},
+
+	initAutoHeightIfVisible: function()
+	{
+		if (this.$input.height())
+		{
+			this.removeListener(Garnish.$win, 'resize');
+			this.initAutoHeight();
+		}
 	},
 
 	getVal: function()
@@ -5149,6 +5173,14 @@ Garnish.NiceText = Garnish.Base.extend({
 			{
 				this.onHeightChange();
 			}
+		}
+	},
+
+	updateHeightIfWidthChanged: function()
+	{
+		if (this.width !== (this.width = this.$input.width()) && this.width)
+		{
+			this.updateHeight();
 		}
 	},
 
