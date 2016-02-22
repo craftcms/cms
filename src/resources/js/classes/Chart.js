@@ -110,13 +110,13 @@ Craft.charts.getDateFormatFromScale = function(scale)
 /**
  * Class Craft.charts.getCurrencyFormat
  */
-Craft.charts.getCurrencyFormat = function(format)
+Craft.charts.getCurrencyFormat = function(currencyFormat, numberFormat)
 {
     var locale = Craft.charts.getLocale({
-        currency: format
+        currency: currencyFormat
     });
 
-    return locale.numberFormat("$");
+    return locale.numberFormat("$"+numberFormat);
 }
 
 
