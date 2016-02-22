@@ -78,7 +78,7 @@ Craft.CategoryIndex = Craft.BaseElementIndex.extend(
 			this.$newCategoryBtnGroup = $('<div class="btngroup submit"/>');
 			var $menuBtn;
 
-			// If they are, show a primany "New category" button, and a dropdown of the other groups (if any).
+			// If they are, show a primary "New category" button, and a dropdown of the other groups (if any).
 			// Otherwise only show a menu button
 			if (selectedGroup)
 			{
