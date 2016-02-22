@@ -3,7 +3,6 @@
 {%- set class = [
 	'text',
 	(class is defined and class ? class : null),
-	(placeholder is defined and placeholder ? 'nicetext' : null),
 	(type is defined and type == 'password' ? 'password' : null),
 	(disabled is defined and disabled ? 'disabled' : null),
 	(size is defined and size ? null : 'fullwidth')
