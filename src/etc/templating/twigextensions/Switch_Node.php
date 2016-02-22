@@ -51,6 +51,13 @@ class Switch_Node extends \Twig_Node
 
 		foreach ($this->getNode('cases') as $case)
 		{
+			// The 'body' node may have been removed by Twig if it was an empty text node in a sub-template,
+			// outside of any blocks
+			if (!$case->hasNode('body'))
+			{
+				continue;
+			}
+
 			$compiler
 				->write('case ')
 				->subcompile($case->getNode('expr'))
