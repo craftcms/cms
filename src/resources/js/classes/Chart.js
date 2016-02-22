@@ -125,6 +125,9 @@ Craft.charts.getCurrencyFormat = function(currencyFormat, numberFormat)
  */
 Craft.charts.defaults = {
     area: {
+        legend: {
+            show: false
+        },
         transition: {
             duration: null
         },
