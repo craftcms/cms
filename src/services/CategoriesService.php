@@ -269,6 +269,12 @@ class CategoriesService extends BaseApplicationComponent
 			$isNewCategoryGroup = true;
 		}
 
+		// If they've set maxLevels to 0 (don't ask why), then pretend like there are none.
+		if ($group->maxLevels == 0)
+		{
+			$group->maxLevels = null;
+		}
+
 		$groupRecord->name    = $group->name;
 		$groupRecord->handle  = $group->handle;
 		$groupRecord->hasUrls = $group->hasUrls;

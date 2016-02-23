@@ -658,6 +658,8 @@ $elementThumbPadding: 30 + $elementInnerSpacing;
 		}
 		&.hasthumb {
 			.elementthumb {
+				@include display-flex;
+				@include align-items(center);
 				position: absolute;
 				top: calc(50% - 15px);
 				width: 30px;

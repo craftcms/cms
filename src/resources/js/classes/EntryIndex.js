@@ -92,7 +92,7 @@ Craft.EntryIndex = Craft.BaseElementIndex.extend(
 			this.$newEntryBtnGroup = $('<div class="btngroup submit"/>');
 			var $menuBtn;
 
-			// If they are, show a primany "New entry" button, and a dropdown of the other sections (if any).
+			// If they are, show a primary "New entry" button, and a dropdown of the other sections (if any).
 			// Otherwise only show a menu button
 			if (selectedSection)
 			{
