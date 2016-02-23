@@ -27,7 +27,7 @@ Craft.charts.Chart = Garnish.Base.extend(
                     }
                 },
                 y: {
-                    inner: true
+                    inner: false
                 }
             }
         };
