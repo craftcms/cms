@@ -23,6 +23,13 @@ Craft.EditableTable = Garnish.Base.extend(
 		this.$table = $('#'+id);
 		this.$tbody = this.$table.children('tbody');
 
+		this.removeListener(Garnish.$win, 'resize');
+
+		this.sorter = new Craft.DataTableSorter(this.$table, {
+			helperClass: 'editabletablesorthelper',
+			copyDraggeeInputValuesToHelper: true
+		});
+
 		if (!this.initIfVisible())
 		{
 			this.addListener(Garnish.$win, 'resize', 'initIfVisible');
@@ -33,13 +40,6 @@ Craft.EditableTable = Garnish.Base.extend(
 	{
 		if (this.$table.height() > 0)
 		{
-			this.removeListener(Garnish.$win, 'resize');
-
-			this.sorter = new Craft.DataTableSorter(this.$table, {
-				helperClass: 'editabletablesorthelper',
-				copyDraggeeInputValuesToHelper: true
-			});
-
 			var $rows = this.$tbody.children();
 
 			for (var i = 0; i < $rows.length; i++)
