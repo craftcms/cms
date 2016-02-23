@@ -146,6 +146,7 @@ Craft.charts.defaults = {
             x: {
                 type: 'timeseries',
                 tick: {
+                    outer: false,
                     culling: {
                         max: 5
                     },
