@@ -10,7 +10,7 @@ namespace craft\app\errors;
 use yii\base\UserException;
 
 /**
- * Class FileException
+ * Class UnpackPackageException
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) Pixel & Tonic, Inc.
@@ -19,6 +19,7 @@ use yii\base\UserException;
  * @package   craft.app.exceptions
  * @since     3.0
  */
-class FileException extends UserException
+class UnpackPackageException extends UserException
 {
+
 }

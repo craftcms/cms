@@ -12,6 +12,8 @@ use craft\app\base\Plugin;
 use craft\app\base\PluginInterface;
 use craft\app\enums\PluginVersionUpdateStatus;
 use craft\app\enums\VersionUpdateStatus;
+use craft\app\errors\DownloadPackageException;
+use craft\app\errors\ValidatePackageException;
 use craft\app\events\Event;
 use craft\app\events\UpdateEvent;
 use craft\app\helpers\Io;
@@ -22,6 +24,7 @@ use craft\app\models\Update as UpdateModel;
 use craft\app\updates\Updater;
 use yii\base\Component;
 use yii\base\Exception;
+use yii\base\UserException;
 
 /**
  * Class Updates service.
@@ -342,8 +345,12 @@ class Updates extends Component
             Craft::info('Finished processing the update download.', __METHOD__);
 
             return $result;
-        } catch (\Exception $e) {
+        }
+        catch (UserException $e) {
             return ['success' => false, 'message' => $e->getMessage()];
+        }
+        catch (\Exception $e) {
+            return ['success' => false, 'message' => Craft::t('app', 'There was a problem during the update.')];
         }
     }
 

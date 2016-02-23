@@ -247,6 +247,7 @@ class UpdateController extends Controller
         $data = Craft::$app->getRequest()->getRequiredBodyParam('data');
 
         $return = Craft::$app->getUpdates()->processUpdateDownload($data['md5']);
+
         if (!$return['success']) {
             return $this->asJson([
                 'alive' => true,

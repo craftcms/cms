@@ -12,6 +12,13 @@ use craft\app\base\BasePlugin;
 use craft\app\base\Plugin;
 use craft\app\base\PluginInterface;
 use craft\app\enums\PatchManifestFileAction;
+use craft\app\errors\DbBackupException;
+use craft\app\errors\DbUpdateException;
+use craft\app\errors\DownloadPackageException;
+use craft\app\errors\DownloadValidatePackageException;
+use craft\app\errors\FilePermissionsException;
+use craft\app\errors\MinimumRequirementException;
+use craft\app\errors\UnpackPackageException;
 use craft\app\helpers\Io;
 use craft\app\helpers\StringHelper;
 use craft\app\helpers\Update;
@@ -52,7 +59,11 @@ class Updater
      * @param string $md5
      *
      * @return array
+     * @throws DownloadPackageException
      * @throws Exception
+     * @throws MinimumRequirementException
+     * @throws UnpackPackageException
+     * @throws ValidatePackageException
      */
     public function processDownload($md5)
     {
@@ -61,22 +72,19 @@ class Updater
 
         // Download the package from ET.
         Craft::info('Downloading patch file to '.$tempPath, __METHOD__);
-        if (($filename = Craft::$app->getEt()->downloadUpdate($tempPath,
-                $md5)) !== false
-        ) {
+        if (($filename = Craft::$app->getEt()->downloadUpdate($tempPath, $md5)) !== false) {
             $downloadFilePath = $tempPath.'/'.$filename;
         } else {
-            // TODO: Replace with a meaningful exception class and translate the response message elsewhere
-            throw new Exception(Craft::t('app', 'There was a problem downloading the package.'));
+            throw new DownloadPackageException(Craft::t('app', 'There was a problem downloading the package.'));
         }
 
         $uid = StringHelper::UUID();
 
         // Validate the downloaded update against ET.
         Craft::info('Validating downloaded update.', __METHOD__);
+
         if (!$this->_validateUpdate($downloadFilePath, $md5)) {
-            // TODO: Replace with a meaningful exception class and translate the response message elsewhere
-            throw new Exception(Craft::t('app', 'There was a problem validating the downloaded package.'));
+            throw new ValidatePackageException(Craft::t('app', 'There was a problem validating the downloaded package.'));
         }
 
         // Unpack the downloaded package.
@@ -84,16 +92,14 @@ class Updater
         $unzipFolder = Craft::$app->getPath()->getTempPath().'/'.$uid;
 
         if (!$this->_unpackPackage($downloadFilePath, $unzipFolder)) {
-            // TODO: Replace with a meaningful exception class and translate the response message elsewhere
-            throw new Exception(Craft::t('app', 'There was a problem unpacking the downloaded package.'));
+            throw new UnpackPackageException(Craft::t('app', 'There was a problem unpacking the downloaded package.'));
         }
 
         Craft::info('Validating any new requirements from the patch file.');
         $errors = $this->_validateNewRequirements($unzipFolder);
 
         if (!empty($errors)) {
-            // TODO: Replace with a meaningful exception class and translate the response message elsewhere
-            throw new Exception(Markdown::process(Craft::t('app',
+            throw new MinimumRequirementException(Markdown::process(Craft::t('app',
                     'Your server does not meet the following minimum requirements for Craft to run:')."\n\n".$this->_markdownList($errors)));
         }
 
@@ -102,8 +108,7 @@ class Updater
         $writableErrors = $this->_validateManifestPathsWritable($unzipFolder);
 
         if (count($writableErrors) > 0) {
-            // TODO: Replace with a meaningful exception class and translate the response message elsewhere
-            throw new Exception(Markdown::process(Craft::t('app',
+            throw new FilePermissionsException(Markdown::process(Craft::t('app',
                     'Craft needs to be able to write to the following paths, but can’t:')."\n\n".$this->_markdownList($writableErrors)));
         }
 
@@ -113,8 +118,7 @@ class Updater
     /**
      * @param $uid
      *
-     * @throws Exception
-     * @return void
+     * @throws FileException
      */
     public function backupFiles($uid)
     {
@@ -123,8 +127,7 @@ class Updater
         // Backup any files about to be updated.
         Craft::info('Backing up files that are about to be updated.', __METHOD__);
         if (!$this->_backupFiles($unzipFolder)) {
-            // TODO: Replace with a meaningful exception class and translate the response message elsewhere
-            throw new Exception(Craft::t('app', 'There was a problem backing up your files for the update.'));
+            throw new FileException(Craft::t('app', 'There was a problem backing up your files for the update.'));
         }
     }
 
@@ -145,8 +148,7 @@ class Updater
         // Update the files.
         Craft::info('Performing file update.', __METHOD__);
         if (!Update::doFileUpdate(Update::getManifestData($unzipFolder), $unzipFolder)) {
-            // TODO: Replace with a meaningful exception class and translate the response message elsewhere
-            throw new Exception(Craft::t('app', 'There was a problem updating your files.'));
+            throw new FileException(Craft::t('app', 'There was a problem updating your files.'));
         }
     }
 
@@ -158,8 +160,7 @@ class Updater
     {
         Craft::info('Starting to backup database.', __METHOD__);
         if (($dbBackupPath = Craft::$app->getDb()->backup()) === false) {
-            // TODO: Replace with a meaningful exception class and translate the response message elsewhere
-            throw new Exception(Craft::t('app', 'There was a problem backing up your database.'));
+            throw new DbBackupException(Craft::t('app', 'There was a problem backing up your database.'));
         } else {
             return Io::getFilename($dbBackupPath, false);
         }
@@ -168,8 +169,8 @@ class Updater
     /**
      * @param PluginInterface|Plugin $plugin
      *
+     * @throws DbUpdateException
      * @throws Exception
-     * @return void
      */
     public function updateDatabase(PluginInterface $plugin = null)
     {
@@ -183,8 +184,7 @@ class Updater
         }
 
         if ($result === false) {
-            // TODO: Replace with a meaningful exception class and translate the response message elsewhere
-            throw new Exception(Craft::t('app', 'There was a problem updating your database.'));
+            throw new DbUpdateException(Craft::t('app', 'There was a problem updating your database.'));
         }
 
         // If plugin is null we're looking at Craft.
@@ -193,13 +193,11 @@ class Updater
             Craft::info('Settings new Craft release info in craft_info table.', __METHOD__);
 
             if (!Craft::$app->getUpdates()->updateCraftVersionInfo()) {
-                // TODO: Replace with a meaningful exception class and translate the response message elsewhere
-                throw new Exception(Craft::t('app', 'The update was performed successfully, but there was a problem setting the new info in the database info table.'));
+                throw new DbUpdateExceptionException(Craft::t('app', 'The update was performed successfully, but there was a problem setting the new info in the database info table.'));
             }
         } else {
             if (!Craft::$app->getUpdates()->setNewPluginInfo($plugin)) {
-                // TODO: Replace with a meaningful exception class and translate the response message elsewhere
-                throw new Exception(Craft::t('app', 'The update was performed successfully, but there was a problem setting the new info in the plugins table.'));
+                throw new DbUpdateExceptionException(Craft::t('app', 'The update was performed successfully, but there was a problem setting the new info in the plugins table.'));
             }
         }
 
@@ -211,16 +209,15 @@ class Updater
     /**
      * @param $uid
      *
-     * @throws Exception
-     * @return boolean
+     * @return bool
+     * @throws InvalidateCacheException
      */
     public function cleanUp($uid)
     {
         // Clear the updates cache.
         Craft::info('Clearing the update cache.', __METHOD__);
         if (!Craft::$app->getUpdates()->flushUpdateInfoFromCache()) {
-            // TODO: Replace with a meaningful exception class and translate the response message elsewhere
-            throw new Exception(Craft::t('app', 'The update was performed successfully, but there was a problem invalidating the update cache.'));
+            throw new InvalidateCacheException(Craft::t('app', 'The update was performed successfully, but there was a problem invalidating the update cache.'));
         }
 
         // If uid !== false, then it's an auto-update.
@@ -421,7 +418,6 @@ class Updater
                 }
             }
         } catch (\Exception $e) {
-            // TODO: Replace with a meaningful exception class and translate the response message elsewhere
             Craft::error('Error updating files: '.$e->getMessage(), __METHOD__);
             Update::rollBackFileChanges($manifestData);
 
@@ -444,14 +440,12 @@ class Updater
         $errors = [];
 
         if (!Io::fileExists($requirementsFile)) {
-            // TODO: Replace with a meaningful exception class and translate the response message elsewhere
-            throw new Exception(Craft::t('app', 'The requirements file is required and it does not exist at {path}.', ['path' => $requirementsFile]));
+            throw new MissingFileException(Craft::t('app', 'The requirements file is required and it does not exist at {path}.', ['path' => $requirementsFile]));
         }
 
         // Make sure we can write to craft/app/requirements
         if (!Io::isWritable(Craft::$app->getPath()->getAppPath().'/requirements')) {
-            // TODO: Replace with a meaningful exception class and translate the response message elsewhere
-            throw new Exception(Markdown::process(Craft::t('app', 'Craft needs to be able to write to your craft/app/requirements folder and cannot. Please check your [permissions]({url}).', ['url' => 'http://craftcms.com/docs/updating#one-click-updating'])));
+            throw new FilePermissionsException(Markdown::process(Craft::t('app', 'Craft needs to be able to write to your craft/app/requirements folder and cannot. Please check your [permissions]({url}).', ['url' => 'http://craftcms.com/docs/updating#one-click-updating'])));
         }
 
         $tempFilename = StringHelper::UUID().'.php';
