@@ -13,6 +13,13 @@
 	<title>{{ docTitle ~ (docTitle and siteName ? ' - ') ~ siteName }}</title>
 	{{ getHeadHtml() }}
 	<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+	<link rel="apple-touch-icon" sizes="76x76" href="{{ resourceUrl("images/touch-icons/ipad_1x.png") }}">
+	<link rel="apple-touch-icon" sizes="120x120" href="{{ resourceUrl("images/touch-icons/iphone_2x.png") }}">
+	<link rel="apple-touch-icon" sizes="152x152" href="{{ resourceUrl("images/touch-icons/ipad_2x.png") }}">
+	<link rel="apple-touch-icon" sizes="167x167" href="{{ resourceUrl("images/touch-icons/ipad-pro_2x.png") }}">
+	<link rel="apple-touch-icon" sizes="180x180" href="{{ resourceUrl("images/touch-icons/iphone_3x.png") }}">
+
 	<script type="text/javascript">
 		// Fix for Firefox autofocus CSS bug
 		// See: http://stackoverflow.com/questions/18943276/html-5-autofocus-messes-up-css-loading/18945951#18945951
