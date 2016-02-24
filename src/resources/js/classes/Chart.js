@@ -146,6 +146,9 @@ Craft.charts.defaults = {
                 }
             },
             y: {
+                padding: {
+                    top: 0
+                },
                 tick: {
                     count: 3
                 }
