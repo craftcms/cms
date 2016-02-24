@@ -40,6 +40,8 @@ Craft.EditableTable = Garnish.Base.extend(
 	{
 		if (this.$table.height() > 0)
 		{
+			this.removeListener(Garnish.$win, 'resize');
+
 			var $rows = this.$tbody.children();
 
 			for (var i = 0; i < $rows.length; i++)
