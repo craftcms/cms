@@ -5386,8 +5386,7 @@ Garnish.Select = Garnish.Base.extend({
 	$items: null,
 	$selectedItems: null,
 
-	mousedownX: null,
-	mousedownY: null,
+	mousedownTarget: null,
 	mouseUpTimeout: null,
 	callbackFrame: null,
 
@@ -6061,8 +6060,7 @@ Garnish.Select = Garnish.Base.extend({
 			return;
 		}
 
-		this.mousedownX = ev.pageX;
-		this.mousedownY = ev.pageY;
+		this.mousedownTarget = ev.currentTarget;
 
 		var $item = $($.data(ev.currentTarget, 'select-item'));
 
@@ -6100,7 +6098,7 @@ Garnish.Select = Garnish.Base.extend({
 		if (
 			!this._actAsCheckbox(ev) &&
 			!ev.shiftKey &&
-			Garnish.getDist(this.mousedownX, this.mousedownY, ev.pageX, ev.pageY) < 1
+			ev.currentTarget == this.mousedownTarget
 		)
 		{
 			// If this is already selected, wait a moment to see if this is a double click before making any rash decisions
