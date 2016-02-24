@@ -20,12 +20,6 @@ Craft.charts.Chart = Garnish.Base.extend(
                 pattern: ["#0594D1", "#DE3800", "#FF9A00", "#009802", "#9B009B"],
             },
             axis: {
-                x: {
-                    padding: {
-                        left: 0,
-                        right: 0,
-                    }
-                },
                 y: {
                     inner: false
                 }
@@ -34,7 +28,6 @@ Craft.charts.Chart = Garnish.Base.extend(
 
         $.extend(true, _options, defaultOptions);
         $.extend(true, _options, options);
-
 
         this._chart = c3.generate(_options);
 
