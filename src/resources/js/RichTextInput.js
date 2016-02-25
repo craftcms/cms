@@ -18,32 +18,6 @@ Craft.RichTextInput = Garnish.Base.extend(
 
 	init: function(settings)
 	{
-		// Normalize the settings and set them
-		// ---------------------------------------------------------------------
-
-		// Are they still passing in a bunch of arguments?
-		if (!$.isPlainObject(settings))
-		{
-			// Loop through all of the old arguments and apply them to the settings
-			var normalizedSettings = {},
-					args = ['id', 'entrySources', 'categorySources', 'assetSources', 'elementLocale', 'direction', 'redactorConfig', 'redactorLang'];
-
-			for (var i = 0; i < args.length; i++)
-			{
-				if (typeof arguments[i] != typeof undefined)
-				{
-					normalizedSettings[args[i]] = arguments[i];
-				}
-				else
-				{
-					break;
-				}
-			}
-
-			settings.transforms = [];
-			settings = normalizedSettings;
-		}
-
 		this.id = settings.id;
 		this.entrySources = settings.entrySources;
 		this.categorySources = settings.categorySources;
