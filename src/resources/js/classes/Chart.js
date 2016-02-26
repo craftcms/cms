@@ -56,11 +56,13 @@ Craft.charts.Tip = Garnish.Base.extend(
 {
     $tip: null,
 
-    init: function(settings)
+    init: function($container, settings)
     {
         this.setSettings(settings, Craft.charts.Tip.defaults);
 
-        this.$tip = $('<div class="tooltip"></div>').appendTo(this.settings.chart.$container);
+        this.$container = $container;
+
+        this.$tip = $('<div class="tooltip"></div>').appendTo(this.$container);
 
         this.hide();
     },
@@ -103,32 +105,22 @@ Craft.charts.Tip = Garnish.Base.extend(
         this.$tip.html(this.tipContentFormat(d));
         this.$tip.css("display", 'block');
 
-        var offset = 24;
+        var position = this.settings.getPosition(this.$tip, d);
 
-        if(this.settings.chart.settings.orientation != 'rtl')
-        {
-            var left = (this.settings.chart.x(d[0]) + this.settings.chart.settings.chartMargin.left + offset);
-        }
-        else
-        {
-            var left = (this.settings.chart.x(d[0]) - this.$tip.outerWidth() - offset);
-        }
-
-        var top = (this.settings.chart.y(d[1]) - this.$tip.height() / 2);
-
-        this.$tip.css("left", left + "px");
-        this.$tip.css("top", top + "px");
+        this.$tip.css("left", position.left + "px");
+        this.$tip.css("top", position.top + "px");
     },
 
     hide: function()
     {
         this.$tip.css("display", 'none');
-    }
+    },
 },
 {
     defaults: {
         locale: null,
         tipContentFormat: null, // $.noop ?
+        getPosition: null, // $.noop ?
     }
 });
 
@@ -552,11 +544,12 @@ Craft.charts.Area = Craft.charts.BaseChart.extend(
         {
             if(!this.tip)
             {
-                this.tip = new Craft.charts.Tip({
+                this.tip = new Craft.charts.Tip(this.$container, {
                     chart: this,
                     locale: this.locale,
                     yTickFormat: this.yTickFormat(this.locale),
-                    tipContentFormat: $.proxy(this, 'tipContentFormat')
+                    tipContentFormat: $.proxy(this, 'tipContentFormat'),
+                    getPosition: $.proxy(this, 'getTipPosition')
                 });
             }
 
@@ -589,28 +582,26 @@ Craft.charts.Area = Craft.charts.BaseChart.extend(
         Craft.charts.utils.applyShadowFilter('drop-shadow', this.svg);
     },
 
-    // tipContentFormat: function(locale, d)
-    // {
-    //     switch(this.settings.dataScale)
-    //     {
-    //         case 'month':
-    //             var formatTime = locale.timeFormat("%B %Y");
-    //             break;
-    //         default:
-    //             var formatTime = locale.timeFormat("%x");
-    //     }
+    getTipPosition: function($tip, d)
+    {
+        var offset = 24;
 
-    //     var formatNumber = this.yTickFormat(locale);
+        var top = (this.y(d[1]) - $tip.height() / 2);
 
-    //     var $content = $('<div />');
-    //     var $xValue = $('<div class="x-value" />').appendTo($content);
-    //     var $yValue = $('<div class="y-value" />').appendTo($content);
+        if(this.settings.orientation != 'rtl')
+        {
+            var left = (this.x(d[0]) + this.settings.chartMargin.left + offset);
+        }
+        else
+        {
+            var left = (this.x(d[0]) - $tip.outerWidth() - offset);
+        }
 
-    //     $xValue.html(formatTime(d[0]));
-    //     $yValue.html(formatNumber(d[1]));
-
-    //     return $content.get(0);
-    // },
+        return {
+            top: top,
+            left: left,
+        };
+    },
 
     xDomain: function()
     {
@@ -673,29 +664,6 @@ Craft.charts.Area = Craft.charts.BaseChart.extend(
         }
     }
 });
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 /**
  * Class Craft.charts.Utils
