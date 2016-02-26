@@ -33,25 +33,19 @@ Craft.NewUsersWidget = Garnish.Base.extend(
         {
             if(textStatus == 'success' && typeof(response.error) == 'undefined')
             {
-                this.chart = new Craft.charts.Chart({
-                    bindto: this.$chartContainer.get(0),
-                    data: {
-                        rows: response.report,
-                        x: response.report[0][0]
-                    },
-                    axis: {
-                        x: {
-                            tick: {
-                                format: Craft.charts.getDateFormatFromScale(response.scale),
-                            }
-                        }
-                    },
-                    'orientation': this.settings.orientation,
-                }, Craft.charts.defaults.area);
+                // Create chart
+                this.chart = new Craft.charts.Area(this.$chartContainer);
 
-                this.chart.load({
-                    rows: response.report
-                });
+                var chartDataTable = new Craft.charts.DataTable(response.report);
+                // var chartDataTable = Craft.charts.utils.arrayToDataTable(response.report);
+
+                var chartSettings = {
+                    orientation: response.orientation,
+                    dataScale: response.scale,
+                    numberFormats: response.numberFormats,
+                };
+
+                this.chart.draw(chartDataTable, chartSettings);
 
                 // Resize chart when grid is refreshed
                 window.dashboard.grid.on('refreshCols', $.proxy(this, 'handleGridRefresh'));

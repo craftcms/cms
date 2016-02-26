@@ -58,19 +58,90 @@ class ReportsService extends BaseApplicationComponent
         $reportDataTable = $this->getNewUsersReportDataTable($startDate, $endDate, $results);
         $scale = $this->getScale($startDate, $endDate);
 
-        foreach($reportDataTable as $row)
+        foreach($reportDataTable['rows'] as $row)
         {
             $total = $total + $row[1];
         }
 
         $response = array(
-            'report' => $reportDataTable,
+            'numberFormats' => $this->getNumberFormats(),
             'orientation' => craft()->locale->getOrientation(),
+            'report' => $reportDataTable,
             'scale' => $scale,
             'total' => $total,
         );
 
         return $response;
+    }
+
+    public function getNumberFormats()
+    {
+        return array(
+            'decimalFormat' => $this->getDecimalFormat(),
+            'percentFormat' => $this->getPercentFormat(),
+            'currencyFormat' => $this->getCurrencyFormat(),
+        );
+    }
+
+    public function getDecimalFormat()
+    {
+        $format = craft()->locale->getDecimalFormat();
+
+        $yiiToD3Formats = array(
+            '#,##,##0.###' => ',.3f',
+            '#,##0.###' => ',.3f',
+            '#0.######' => '.6f',
+            '#0.###;#0.###-' => '.3f',
+            '0 mil' => ',.3f',
+        );
+
+        if(isset($yiiToD3Formats[$format]))
+        {
+            return $yiiToD3Formats[$format];
+        }
+    }
+
+    public function getPercentFormat()
+    {
+        $format = craft()->locale->getPercentFormat();
+
+        $yiiToD3Formats = array(
+            '#,##,##0%' => ',.2%',
+            '#,##0%' => ',.2%',
+            '#,##0 %' => ',.2%',
+            '#0%' => ',.0%',
+            '%#,##0' => ',.2%',
+        );
+
+        if(isset($yiiToD3Formats[$format]))
+        {
+            return $yiiToD3Formats[$format];
+        }
+    }
+
+    public function getCurrencyFormat()
+    {
+        $format = craft()->locale->getCurrencyFormat();
+
+        $yiiToD3Formats = array(
+
+            '#,##0.00 ¤' => '$,.2f',
+            '#,##0.00 ¤;(#,##0.00 ¤)' => '$,.2f',
+            '¤#,##0.00' => '$,.2f',
+            '¤#,##0.00;(¤#,##0.00)' => '$,.2f',
+            '¤#,##0.00;¤-#,##0.00' => '$,.2f',
+            '¤#0.00' => '$.2f',
+            '¤ #,##,##0.00' => '$,.2f',
+            '¤ #,##0.00' => '$,.2f',
+            '¤ #,##0.00;¤-#,##0.00' => '$,.2f',
+            '¤ #0.00' => '$.2f',
+            '¤ #0.00;¤ #0.00-' => '$.2f',
+        );
+
+        if(isset($yiiToD3Formats[$format]))
+        {
+            return $yiiToD3Formats[$format];
+        }
     }
 
     /**
@@ -123,18 +194,10 @@ class ReportsService extends BaseApplicationComponent
             $rows[] = $row;
         }
 
-        $chartColumns = array();
-        $chartRows = array();
-
-        foreach($columns as $column)
-        {
-            $chartColumns[] = $column['label'];
-        }
-
-        $chartRows = array($chartColumns);
-        $chartRows = array_merge($chartRows, array_reverse($rows));
-
-        return $chartRows;
+        return array(
+            'columns' => $columns,
+            'rows' => $rows
+        );
     }
 
     /**
