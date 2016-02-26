@@ -78,23 +78,12 @@ Craft.charts.Tip = Garnish.Base.extend(
         }
         else
         {
-            switch(this.settings.dataScale)
-            {
-                case 'month':
-                    var formatTime = locale.timeFormat("%B %Y");
-                    break;
-                default:
-                    var formatTime = locale.timeFormat("%x");
-            }
-
-            var formatNumber = this.settings.yTickFormat;
-
             var $content = $('<div />');
             var $xValue = $('<div class="x-value" />').appendTo($content);
             var $yValue = $('<div class="y-value" />').appendTo($content);
 
-            $xValue.html(formatTime(d[0]));
-            $yValue.html(formatNumber(d[1]));
+            $xValue.html(this.settings.xTickFormat(d[0]));
+            $yValue.html(this.settings.yTickFormat(d[1]));
 
             return $content.get(0);
         }
@@ -215,11 +204,10 @@ Craft.charts.BaseChart = Garnish.Base.extend(
         switch(this.settings.dataScale)
         {
             case 'month':
-                return locale.timeFormat("%B %Y");
+                return locale.timeFormat(this.settings.formats.shortDateFormats.month);
                 break;
-
             default:
-                return locale.timeFormat("%e %b");
+                return locale.timeFormat(this.settings.formats.shortDateFormats.day);
         }
     },
 
@@ -228,11 +216,11 @@ Craft.charts.BaseChart = Garnish.Base.extend(
         switch(this.dataTable.columns[1].type)
         {
             case 'currency':
-                return locale.numberFormat(this.settings.numberFormats.currencyFormat);
+                return locale.numberFormat(this.settings.formats.currencyFormat);
                 break;
 
             case 'percent':
-                return locale.numberFormat(this.settings.numberFormats.percentFormat);
+                return locale.numberFormat(this.settings.formats.percentFormat);
                 break;
 
             case 'time':
@@ -547,6 +535,7 @@ Craft.charts.Area = Craft.charts.BaseChart.extend(
                 this.tip = new Craft.charts.Tip(this.$container, {
                     chart: this,
                     locale: this.locale,
+                    xTickFormat: this.xTickFormat(this.locale),
                     yTickFormat: this.yTickFormat(this.locale),
                     tipContentFormat: $.proxy(this, 'tipContentFormat'),
                     getPosition: $.proxy(this, 'getTipPosition')

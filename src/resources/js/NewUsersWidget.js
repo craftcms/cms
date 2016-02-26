@@ -42,7 +42,7 @@ Craft.NewUsersWidget = Garnish.Base.extend(
                 var chartSettings = {
                     orientation: response.orientation,
                     dataScale: response.scale,
-                    numberFormats: response.numberFormats,
+                    formats: response.formats,
                 };
 
                 this.chart.draw(chartDataTable, chartSettings);

@@ -64,7 +64,7 @@ class ReportsService extends BaseApplicationComponent
         }
 
         $response = array(
-            'numberFormats' => $this->getNumberFormats(),
+            'formats' => $this->getFormats(),
             'orientation' => craft()->locale->getOrientation(),
             'report' => $reportDataTable,
             'scale' => $scale,
@@ -74,13 +74,71 @@ class ReportsService extends BaseApplicationComponent
         return $response;
     }
 
-    public function getNumberFormats()
+    public function getFormats()
     {
         return array(
+            'shortDateFormats' => $this->getShortDateFormats(),
             'decimalFormat' => $this->getDecimalFormat(),
             'percentFormat' => $this->getPercentFormat(),
             'currencyFormat' => $this->getCurrencyFormat(),
         );
+    }
+
+    public function getShortDateFormats()
+    {
+        // yii short formats to shorter formats
+
+        $format = craft()->locale->getDateFormat('short');
+
+        $removals = array(
+            'day' => array('y'),
+            'month' => array('d'),
+            'year' => array('d', 'm'),
+        );
+
+        $shortDateFormats = array();
+
+        foreach($removals as $unit => $chars)
+        {
+            $shortDateFormats[$unit] = $format;
+
+            foreach($chars as $char)
+            {
+                $shortDateFormats[$unit] = preg_replace("/(^[{$char}]+\W+|\W+[{$char}]+)/i", '', $shortDateFormats[$unit]);
+            }
+        }
+
+
+        // yii formats to d3 formats
+
+        $yiiToD3Formats = array(
+            'day' => array('dd' => '%d','d' => '%d'),
+            'month' => array('MM' => '%m','M' => '%m'),
+            'year' => array('yyyy' => '%Y','yy' => '%y','y' => '%y')
+        );
+
+        foreach($shortDateFormats as $unit => $format)
+        {
+            foreach($yiiToD3Formats as $_unit => $_formats)
+            {
+                foreach($_formats as $yiiFormat => $d3Format)
+                {
+                    $pattern = "/({$yiiFormat})/i";
+
+                    preg_match($pattern, $shortDateFormats[$unit], $matches);
+
+                    if(count($matches) > 0)
+                    {
+                        $shortDateFormats[$unit] = preg_replace($pattern, $d3Format, $shortDateFormats[$unit]);
+
+                        break;
+                    }
+
+                }
+            }
+        }
+
+        return $shortDateFormats;
     }
 
     public function getDecimalFormat()
