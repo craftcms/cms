@@ -3,6 +3,8 @@
  */
 Craft.EditableTable = Garnish.Base.extend(
 {
+	initialized: false,
+
 	id: null,
 	baseName: null,
 	columns: null,
@@ -23,37 +25,53 @@ Craft.EditableTable = Garnish.Base.extend(
 		this.$table = $('#'+id);
 		this.$tbody = this.$table.children('tbody');
 
-		this.removeListener(Garnish.$win, 'resize');
-
 		this.sorter = new Craft.DataTableSorter(this.$table, {
 			helperClass: 'editabletablesorthelper',
 			copyDraggeeInputValuesToHelper: true
 		});
 
-		if (!this.initIfVisible())
+		if (this.isVisible())
 		{
-			this.addListener(Garnish.$win, 'resize', 'initIfVisible');
+			this.initialize();
+		}
+		else
+		{
+			this.addListener(Garnish.$win, 'resize', 'initializeIfVisible');
 		}
 	},
 
-	initIfVisible: function()
+	isVisible: function()
 	{
-		if (this.$table.height() > 0)
+		return (this.$table.height() > 0);
+	},
+
+	initialize: function()
+	{
+		if (this.initialized)
 		{
-			var $rows = this.$tbody.children();
-
-			for (var i = 0; i < $rows.length; i++)
-			{
-				new Craft.EditableTable.Row(this, $rows[i]);
-			}
-
-			this.$addRowBtn = this.$table.next('.add');
-			this.addListener(this.$addRowBtn, 'activate', 'addRow');
-
-			return true;
+			return;
 		}
 
-		return false;
+		this.initialized = true;
+		this.removeListener(Garnish.$win, 'resize');
+
+		var $rows = this.$tbody.children();
+
+		for (var i = 0; i < $rows.length; i++)
+		{
+			new Craft.EditableTable.Row(this, $rows[i]);
+		}
+
+		this.$addRowBtn = this.$table.next('.add');
+		this.addListener(this.$addRowBtn, 'activate', 'addRow');
+	},
+
+	initializeIfVisible: function()
+	{
+		if (this.isVisible())
+		{
+			this.initialize();
+		}
 	},
 
 	addRow: function()

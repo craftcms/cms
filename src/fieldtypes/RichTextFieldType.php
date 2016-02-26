@@ -154,9 +154,8 @@ class RichTextFieldType extends BaseFieldType
 
 		$settings = array(
 			'id'              => craft()->templates->namespaceInputId($id),
-			'entrySources'    => $this->_getSectionSources(),
-			'categorySources' => $this->_getCategorySources(),
-			'assetSources'    => $this->_getAssetSources(),
+			'linkOptions'     => $this->_getLinkOptions(),
+			'assetSources'    => $this->_getAssetSources($this->getSettings()->availableAssetSources),
 			'transforms'      => $this->_getTransforms(),
 			'elementLocale'   => $localeId,
 			'direction'       => $orientation,
@@ -311,6 +310,65 @@ class RichTextFieldType extends BaseFieldType
 	// =========================================================================
 
 	/**
+	 * Returns the link options available to the field.
+	 *
+	 * Each link option is represented by an array with the following keys:
+	 *
+	 * - `optionTitle` (required) – the user-facing option title that appears in the Link dropdown menu
+	 * - `elementType` (required) – the element type class that the option should be linking to
+	 * - `sources` (optional) – the sources that the user should be able to select elements from
+	 * - `criteria` (optional) – any specific element criteria parameters that should limit which elements the user can select
+	 * - `storageKey` (optional) – the localStorage key that should be used to store the element selector modal state (defaults to RichTextFieldType.LinkTo[ElementType])
+	 *
+	 * @return array
+	 */
+	private function _getLinkOptions()
+	{
+		$linkOptions = array();
+
+		$sectionSources = $this->_getSectionSources();
+		$categorySources = $this->_getCategorySources();
+		$assetSources = $this->_getAssetSources();
+
+		if ($sectionSources)
+		{
+			$linkOptions[] = array(
+				'optionTitle' => Craft::t('Link to an entry'),
+				'elementType' => 'Entry',
+				'sources' => $sectionSources,
+			);
+		}
+
+		if ($categorySources)
+		{
+			$linkOptions[] = array(
+				'optionTitle' => Craft::t('Link to a category'),
+				'elementType' => 'Category',
+				'sources' => $categorySources,
+			);
+		}
+
+		if ($assetSources)
+		{
+			$linkOptions[] = array(
+				'optionTitle' => Craft::t('Link to an asset'),
+				'elementType' => 'Asset',
+				'sources' => $assetSources,
+			);
+		}
+
+		// Give plugins a chance to add their own
+		$allPluginLinkOptions = craft()->plugins->call('addRichTextLinkOptions', array(), true);
+
+		foreach ($allPluginLinkOptions as $pluginLinkOptions)
+		{
+			$linkOptions = array_merge($linkOptions, $pluginLinkOptions);
+		}
+
+		return $linkOptions;
+	}
+
+	/**
 	 * Get available section sources.
 	 *
 	 * @return array
@@ -365,13 +423,18 @@ class RichTextFieldType extends BaseFieldType
 	/**
 	 * Get available Asset sources.
 	 *
+	 * @param array|null $assetSourceIds The available asset source IDs (default is all of them)
+	 *
 	 * @return array
 	 */
-	private function _getAssetSources()
+	private function _getAssetSources($assetSourceIds = null)
 	{
 		$sources = array();
-		$settings = $this->getSettings();
-		$assetSourceIds = isset($settings->availableAssetSources) ? $settings->availableAssetSources : craft()->assetSources->getAllSourceIds();
+
+		if (!$assetSourceIds)
+		{
+			$assetSourceIds = craft()->assetSources->getAllSourceIds();
+		}
 
 		$folders = craft()->assets->findFolders(array(
 			'sourceId' => $assetSourceIds,
@@ -380,7 +443,6 @@ class RichTextFieldType extends BaseFieldType
 
 		foreach ($folders as $folder)
 		{
-
 			$sources[] = 'folder:'.$folder->id;
 		}
 
