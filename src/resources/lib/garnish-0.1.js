@@ -4899,7 +4899,6 @@ Garnish.Modal = Garnish.Base.extend({
  * Nice Text
  */
 Garnish.NiceText = Garnish.Base.extend({
-
 	$input: null,
 	$hint: null,
 	$stage: null,
@@ -4920,96 +4919,110 @@ Garnish.NiceText = Garnish.Base.extend({
 		this.$input = $(input);
 		this.settings = $.extend({}, Garnish.NiceText.defaults, settings);
 
-		if (!this.initIfVisible())
+		if (this.isVisible())
 		{
-			this.addListener(Garnish.$win, 'resize', 'initIfVisible');
+			this.initialize();
+		}
+		else
+		{
+			this.addListener(Garnish.$win, 'resize', 'initializeIfVisible');
 		}
 	},
 
-	initIfVisible: function()
+	isVisible: function()
 	{
-		if (this.$input.height() > 0)
+		return (this.$input.height() > 0);
+	},
+
+	initialize: function()
+	{
+		if (this.initialized)
 		{
-			this.removeListener(Garnish.$win, 'resize');
-
-			this.maxLength = this.$input.attr('maxlength');
-
-			if (this.maxLength)
-			{
-				this.maxLength = parseInt(this.maxLength);
-			}
-
-			if (this.maxLength && (this.settings.showCharsLeft || Garnish.hasAttr(this.$input, 'data-show-chars-left')))
-			{
-				this.showCharsLeft = true;
-
-				// Remove the maxlength attribute
-				this.$input.removeAttr('maxlength');
-			}
-
-			// Is this already a transparent text input?
-			if (this.$input.data('nicetext'))
-			{
-				Garnish.log('Double-instantiating a transparent text input on an element');
-				this.$input.data('nicetext').destroy();
-			}
-
-			this.$input.data('nicetext', this);
-
-			this.getVal();
-
-			this.autoHeight = (this.settings.autoHeight && this.$input.prop('nodeName') == 'TEXTAREA');
-
-			if (this.autoHeight)
-			{
-				this.minHeight = this.getHeightForValue('');
-				this.updateHeight();
-
-				// Update height when the window resizes
-				this.width = this.$input.width();
-				this.addListener(Garnish.$win, 'resize', 'updateHeightIfWidthChanged');
-			}
-
-			if (this.settings.hint)
-			{
-				this.$hintContainer = $('<div class="texthint-container"/>').insertBefore(this.$input);
-				this.$hint = $('<div class="texthint">'+this.settings.hint+'</div>').appendTo(this.$hintContainer);
-				this.$hint.css({
-					top:  (parseInt(this.$input.css('borderTopWidth'))  + parseInt(this.$input.css('paddingTop'))),
-					left: (parseInt(this.$input.css('borderLeftWidth')) + parseInt(this.$input.css('paddingLeft')) + 1)
-				});
-				Garnish.copyTextStyles(this.$input, this.$hint);
-
-				if (this.val)
-				{
-					this.$hint.hide();
-				}
-				else
-				{
-					this.showingHint = true;
-				}
-
-				// Focus the input when clicking on the hint
-				this.addListener(this.$hint, 'mousedown', function(ev) {
-					ev.preventDefault();
-					this.$input.focus();
-				});
-			}
-
-			if (this.showCharsLeft)
-			{
-				this.$charsLeft = $('<div class="'+this.settings.charsLeftClass+'"/>').insertAfter(this.$input);
-				this.updateCharsLeft();
-			}
-
-			this.addListener(this.$input, 'textchange', 'onTextChange');
-
-			this.initialized = true;
-
-			return true;
+			return;
 		}
 
-		return false;
+		this.initialized = true;
+		this.removeListener(Garnish.$win, 'resize');
+
+		this.maxLength = this.$input.attr('maxlength');
+
+		if (this.maxLength)
+		{
+			this.maxLength = parseInt(this.maxLength);
+		}
+
+		if (this.maxLength && (this.settings.showCharsLeft || Garnish.hasAttr(this.$input, 'data-show-chars-left')))
+		{
+			this.showCharsLeft = true;
+
+			// Remove the maxlength attribute
+			this.$input.removeAttr('maxlength');
+		}
+
+		// Is this already a transparent text input?
+		if (this.$input.data('nicetext'))
+		{
+			Garnish.log('Double-instantiating a transparent text input on an element');
+			this.$input.data('nicetext').destroy();
+		}
+
+		this.$input.data('nicetext', this);
+
+		this.getVal();
+
+		this.autoHeight = (this.settings.autoHeight && this.$input.prop('nodeName') == 'TEXTAREA');
+
+		if (this.autoHeight)
+		{
+			this.minHeight = this.getHeightForValue('');
+			this.updateHeight();
+
+			// Update height when the window resizes
+			this.width = this.$input.width();
+			this.addListener(Garnish.$win, 'resize', 'updateHeightIfWidthChanged');
+		}
+
+		if (this.settings.hint)
+		{
+			this.$hintContainer = $('<div class="texthint-container"/>').insertBefore(this.$input);
+			this.$hint = $('<div class="texthint">'+this.settings.hint+'</div>').appendTo(this.$hintContainer);
+			this.$hint.css({
+				top:  (parseInt(this.$input.css('borderTopWidth'))  + parseInt(this.$input.css('paddingTop'))),
+				left: (parseInt(this.$input.css('borderLeftWidth')) + parseInt(this.$input.css('paddingLeft')) + 1)
+			});
+			Garnish.copyTextStyles(this.$input, this.$hint);
+
+			if (this.val)
+			{
+				this.$hint.hide();
+			}
+			else
+			{
+				this.showingHint = true;
+			}
+
+			// Focus the input when clicking on the hint
+			this.addListener(this.$hint, 'mousedown', function(ev) {
+				ev.preventDefault();
+				this.$input.focus();
+			});
+		}
+
+		if (this.showCharsLeft)
+		{
+			this.$charsLeft = $('<div class="'+this.settings.charsLeftClass+'"/>').insertAfter(this.$input);
+			this.updateCharsLeft();
+		}
+
+		this.addListener(this.$input, 'textchange', 'onTextChange');
+	},
+
+	initializeIfVisible: function()
+	{
+		if (this.isVisible())
+		{
+			this.initialize();
+		}
 	},
 
 	getVal: function()
@@ -5386,8 +5399,7 @@ Garnish.Select = Garnish.Base.extend({
 	$items: null,
 	$selectedItems: null,
 
-	mousedownX: null,
-	mousedownY: null,
+	mousedownTarget: null,
 	mouseUpTimeout: null,
 	callbackFrame: null,
 
@@ -6061,8 +6073,7 @@ Garnish.Select = Garnish.Base.extend({
 			return;
 		}
 
-		this.mousedownX = ev.pageX;
-		this.mousedownY = ev.pageY;
+		this.mousedownTarget = ev.currentTarget;
 
 		var $item = $($.data(ev.currentTarget, 'select-item'));
 
@@ -6100,7 +6111,7 @@ Garnish.Select = Garnish.Base.extend({
 		if (
 			!this._actAsCheckbox(ev) &&
 			!ev.shiftKey &&
-			Garnish.getDist(this.mousedownX, this.mousedownY, ev.pageX, ev.pageY) < 1
+			ev.currentTarget == this.mousedownTarget
 		)
 		{
 			// If this is already selected, wait a moment to see if this is a double click before making any rash decisions

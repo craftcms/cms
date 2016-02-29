@@ -191,7 +191,7 @@
 		formatting: ['p', 'blockquote', 'pre', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6'],
 		formattingAdd: false,
 
-		buttons: ['format', 'bold', 'italic', 'deleted', 'lists', 'image', 'file', 'link', 'horizontalrule', 'ol', 'ul', 'indent', 'outdent'], // + 'underline', 'ol', 'ul', 'indent', 'outdent'
+		buttons: ['format', 'bold', 'italic', 'deleted', 'lists', 'image', 'file', 'link', 'horizontalrule'], // + 'underline', 'ol', 'ul', 'indent', 'outdent'
 
 		buttonsHide: [],
 		buttonsHideOnMobile: [],
@@ -6802,9 +6802,9 @@
 						return;
 					}
 
-					cmd = (cmd === 'ol') ? 'orderedlist' : 'unorderedlist';
+					var tag = (cmd === 'orderedlist' || cmd === 'ol') ? 'OL' : 'UL';
+					cmd = (tag === 'OL') ? 'orderedlist' : 'unorderedlist'
 
-					var tag = (cmd === 'orderedlist') ? 'OL' : 'UL';
 					var $list = $(this.selection.current()).parentsUntil('.redactor-in', 'ul, ol').first();
 
 					this.placeholder.hide();
