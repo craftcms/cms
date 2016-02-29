@@ -800,7 +800,18 @@ class EntriesController extends BaseEntriesController
 						}
 					}
 				}
-
+				else
+				{
+					// Set the default entry status based on the section's settings
+					foreach ($variables['section']->getLocales() as $locale)
+					{
+						if (!$locale->enabledByDefault)
+						{
+							$variables['entry']->enabled = false;
+						}
+						break;
+					}
+				}
 			}
 		}
 
