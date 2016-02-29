@@ -203,9 +203,14 @@ Craft.charts.BaseChart = Garnish.Base.extend(
     {
         switch(this.settings.dataScale)
         {
+            case 'year':
+                return locale.timeFormat(this.settings.formats.shortDateFormats.year);
+                break;
+
             case 'month':
                 return locale.timeFormat(this.settings.formats.shortDateFormats.month);
                 break;
+
             default:
                 return locale.timeFormat(this.settings.formats.shortDateFormats.day);
         }
