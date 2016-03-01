@@ -44,9 +44,17 @@ class NewUsersWidget extends BaseWidget
         craft()->templates->includeJsResource('js/NewUsersWidget.js');
         craft()->templates->includeJs('new Craft.NewUsersWidget('.$this->model->id.', '.JsonHelper::encode($options).');');
 
+        $dateRange = false;
+        $dateRanges = craft()->charts->getDateRanges();
+
+        if(isset($dateRanges[$settings->dateRange]))
+        {
+            $dateRange = $dateRanges[$settings->dateRange];
+        }
 
         return craft()->templates->render('_components/widgets/NewUsers/body', array(
-            'userGroup' => $userGroup
+            'userGroup' => $userGroup,
+            'dateRange' => $dateRange
         ));
     }
 

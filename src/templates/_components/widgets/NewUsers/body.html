@@ -1,5 +1,13 @@
-{% if userGroup %}
-    <p class="group light">{{ userGroup.name }}</p>
+{% if userGroup or dateRange %}
+    <p class="infos light">
+        {% if userGroup %}
+            <span class="group">{{ userGroup.name }}</span>
+        {% endif %}
+
+        {% if dateRange %}
+            <span class="dateRange">{{ dateRange.label }}</span>
+        {% endif %}
+    </p>
 {% endif %}
 
 <div class="chart"></div>
