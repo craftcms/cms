@@ -17,6 +17,8 @@ class ChartsService extends BaseApplicationComponent
     // =========================================================================
 
     /**
+     * Returns the predefined date ranges with their startDate and endDate.
+     *
      * @return array
      */
     public function getDateRanges()
@@ -32,6 +34,8 @@ class ChartsService extends BaseApplicationComponent
     }
 
     /**
+     * Returns a new users chart report based on a start date, end date, and an optional group ID
+     *
      * @param string $startDate
      * @param string $endDate
      * @param int|null $userGroupId
@@ -74,6 +78,11 @@ class ChartsService extends BaseApplicationComponent
         return $response;
     }
 
+    /**
+     * Returns short date, decimal, percent and currency D3 formats based on Craft's locale settings
+     *
+     * @return array
+     */
     public function getFormats()
     {
         return array(
@@ -84,10 +93,13 @@ class ChartsService extends BaseApplicationComponent
         );
     }
 
+    /**
+     * Returns D3 short date formats based on Yii's short date format
+     *
+     * @return array
+     */
     public function getShortDateFormats()
     {
-        // yii short formats to shorter formats
-
         $format = craft()->locale->getDateFormat('short');
 
         $removals = array(
@@ -141,6 +153,11 @@ class ChartsService extends BaseApplicationComponent
         return $shortDateFormats;
     }
 
+    /**
+     * Returns D3 decimal format based on Yii's decimal format
+     *
+     * @return array
+     */
     public function getDecimalFormat()
     {
         $format = craft()->locale->getDecimalFormat();
@@ -159,6 +176,11 @@ class ChartsService extends BaseApplicationComponent
         }
     }
 
+    /**
+     * Returns D3 percent format based on Yii's percent format
+     *
+     * @return array
+     */
     public function getPercentFormat()
     {
         $format = craft()->locale->getPercentFormat();
@@ -177,6 +199,11 @@ class ChartsService extends BaseApplicationComponent
         }
     }
 
+    /**
+     * Returns D3 currency format based on Yii's currency format
+     *
+     * @return array
+     */
     public function getCurrencyFormat()
     {
         $format = craft()->locale->getCurrencyFormat();
@@ -203,11 +230,13 @@ class ChartsService extends BaseApplicationComponent
     }
 
     /**
+     * Returns new users report as a data table
+     *
      * @param string $startDate
      * @param string $endDate
      * @param array $results
      *
-     * @return array
+     * @return array Returns an array of columns and rows
      */
     private function getNewUsersReportDataTable($startDate, $endDate, $results)
     {
@@ -259,10 +288,12 @@ class ChartsService extends BaseApplicationComponent
     }
 
     /**
+     * Get scale based on start date and end date.
+     *
      * @param string $startDate
      * @param string $endDate
      *
-     * @return string
+     * @return string Can return `day`, `month`, or `year`
      */
     public function getScale($startDate, $endDate)
     {
