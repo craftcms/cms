@@ -316,4 +316,34 @@ class ChartsService extends BaseApplicationComponent
 
         return $scale;
     }
+
+
+    /**
+     * Returns scale date format based on scale
+     *
+     * @param string $scale
+     *
+     * @return string
+     */
+    public function getScaleDateFormat($scale)
+    {
+        switch ($scale)
+        {
+            case 'year':
+                return "%Y-01-01";
+                break;
+            case 'month':
+
+                return "%Y-%m-01";
+                break;
+
+            case 'day':
+                return "%Y-%m-%d";
+                break;
+
+            case 'hour':
+                return "%Y-%m-%d %H:00:00";
+                break;
+        }
+    }
 }
