@@ -5,6 +5,8 @@ Craft.NewUsersWidget = Garnish.Base.extend(
 {
     settings: null,
     data: null,
+    startDate: null,
+    endDate: null,
 
     $widget: null,
     $body: null,
@@ -15,16 +17,36 @@ Craft.NewUsersWidget = Garnish.Base.extend(
 
         this.$widget = $('#widget'+widgetId);
         this.$body = this.$widget.find('.body:first');
-
-        // Add the chart to the body
         this.$chartContainer = $('.chart', this.$widget);
-
-        // Error
         this.$error = $('<div class="error"/>').prependTo(this.$body);
+
+        var dateRange = this.settings.dateRange;
+
+        switch(dateRange)
+        {
+            case 'd7':
+                this.startDate = this.getDateByDays('7');
+            break;
+
+            case 'd30':
+                this.startDate = this.getDateByDays('30');
+            break;
+
+            case 'lastweek':
+                this.startDate = this.getDateByDays('14');
+                this.endDate = this.getDateByDays('7');
+            break;
+
+            case 'lastmonth':
+                this.startDate = this.getDateByDays('60');
+                this.endDate = this.getDateByDays('30');
+            break;
+        }
 
         // Request orders report
         var requestData = {
-            dateRange: this.settings.dateRange,
+            startDate: this.startDate,
+            endDate: this.endDate,
             userGroupId: this.settings.userGroupId,
             elementType: 'Commerce_Order'
         };
@@ -70,6 +92,13 @@ Craft.NewUsersWidget = Garnish.Base.extend(
         this.$widget.data('widget').on('destroy', $.proxy(this, 'destroy'));
 
         Craft.NewUsersWidget.instances.push(this);
+    },
+
+    getDateByDays: function(days)
+    {
+        var date = new Date();
+        date = date.getTime() - (60 * 60 * 24 * days * 1000);
+        return new Date(date);
     },
 
     handleGridRefresh: function()
