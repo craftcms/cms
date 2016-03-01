@@ -2,7 +2,7 @@
 namespace Craft;
 
 /**
- * Reports Controller
+ * Charts Controller
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
@@ -11,7 +11,7 @@ namespace Craft;
  * @package   craft.app.controllers
  * @since     1.0
  */
-class ReportsController extends BaseController
+class ChartsController extends BaseController
 {
     // Public Methods
     // =========================================================================
@@ -29,7 +29,7 @@ class ReportsController extends BaseController
         $startDate = false;
         $endDate = false;
 
-        $dateRanges = craft()->reports->getDateRanges();
+        $dateRanges = craft()->charts->getDateRanges();
 
         if(!empty($dateRanges[$dateRange]))
         {
@@ -41,7 +41,7 @@ class ReportsController extends BaseController
         $endDate = new DateTime($endDate);
         $endDate->modify('+1 day');
 
-        $revenueReport = craft()->reports->getNewUsersReport($startDate, $endDate, $userGroupId);
+        $revenueReport = craft()->charts->getNewUsersReport($startDate, $endDate, $userGroupId);
 
         $this->returnJson($revenueReport);
     }

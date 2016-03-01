@@ -2,7 +2,7 @@
 namespace Craft;
 
 /**
- * Reports Service
+ * Charts Service
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
@@ -11,7 +11,7 @@ namespace Craft;
  * @package   craft.app.services
  * @since     1.0
  */
-class ReportsService extends BaseApplicationComponent
+class ChartsService extends BaseApplicationComponent
 {
     // Public Methods
     // =========================================================================

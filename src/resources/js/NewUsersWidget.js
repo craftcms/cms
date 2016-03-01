@@ -29,7 +29,7 @@ Craft.NewUsersWidget = Garnish.Base.extend(
             elementType: 'Commerce_Order'
         };
 
-        Craft.postActionRequest('reports/getNewUsersReport', requestData, $.proxy(function(response, textStatus)
+        Craft.postActionRequest('charts/getNewUsersReport', requestData, $.proxy(function(response, textStatus)
         {
             if(textStatus == 'success' && typeof(response.error) == 'undefined')
             {
