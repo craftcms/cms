@@ -23,19 +23,9 @@ class ChartsController extends BaseController
      */
     public function actionGetNewUsersReport()
     {
-        $dateRange = craft()->request->getParam('dateRange');
         $userGroupId = craft()->request->getParam('userGroupId');
-
-        $startDate = false;
-        $endDate = false;
-
-        $dateRanges = craft()->charts->getDateRanges();
-
-        if(!empty($dateRanges[$dateRange]))
-        {
-            $startDate = $dateRanges[$dateRange]['startDate'];
-            $endDate = $dateRanges[$dateRange]['endDate'];
-        }
+        $startDate = craft()->request->getParam('startDate');
+        $endDate = craft()->request->getParam('endDate');
 
         $startDate = new DateTime($startDate);
         $endDate = new DateTime($endDate);
