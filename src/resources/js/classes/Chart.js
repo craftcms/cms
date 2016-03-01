@@ -599,6 +599,13 @@ Craft.charts.Area = Craft.charts.BaseChart.extend(
             var left = (this.x(d[0]) - $tip.outerWidth() - offset);
         }
 
+        var calcLeft = (this.$container.offset().left + left + $tip.outerWidth());
+
+        if(calcLeft > Garnish.$win.width())
+        {
+            left = Garnish.$win.width() - (this.$container.offset().left + $tip.outerWidth() + offset * 2);
+        }
+
         return {
             top: top,
             left: left,
