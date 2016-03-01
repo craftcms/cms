@@ -126,7 +126,7 @@
 					<tr>
 						<td></td>
 						<th scope="col">{{ "Locale"|t }}</th>
-						<th scope="col">{{ "Default Status"|t }}</th>
+						<th scope="col">{{ "Default Entry Status"|t }}</th>
 					</tr>
 				</thead>
 				<tbody>
@@ -172,13 +172,13 @@
 		options: typeOptions,
 		value: section.type,
 		toggle: true,
-		targetPrefix: 'type-',
+		targetPrefix: '.type-',
 		errors: section.getErrors('type')
 	}) }}
 
 	<hr>
 
-	<div id="type-single"{% if section.type != 'single' %} class="hidden"{% endif %}>
+	<div class="type-single {% if section.type != 'single' %}hidden{% endif %}">
 		{% if canBeHomepage %}
 			{{ forms.checkboxField({
 				label: "This is for the homepage"|t,
@@ -208,7 +208,7 @@
 		errors: section.getErrors('urlFormat')
 	} %}
 
-	<div id="type-channel"{% if section.type != 'channel' %} class="hidden"{% endif %}>
+	<div class="type-channel {% if section.type != 'channel' %}hidden{% endif %}">
 		{{ hasUrlsField('channel', section) }}
 
 		<div id="channel-url-settings" class="nested-fields{% if not section.hasUrls %} hidden{% endif %}">
@@ -218,7 +218,7 @@
 		</div>
 	</div>
 
-	<div id="type-structure"{% if section.type != 'structure' %} class="hidden"{% endif %}>
+	<div class="type-structure {% if section.type != 'structure' %}hidden{% endif %}">
 		{{ hasUrlsField('structure', section) }}
 
 		<div id="structure-url-settings" class="nested-fields{% if not section.hasUrls %} hidden{% endif %}">
@@ -239,6 +239,20 @@
 	</div>
 
 	<hr>
+
+	{% if not craft.isLocalized() %}
+		<div class="type-channel type-structure {% if section.type == 'single' %}hidden{% endif %}">
+			{% set locale = craft.i18n.getPrimarySiteLocale() %}
+			{% set value = (section.type != 'single' and section.locales[locale.id] is defined ? section.locales[locale.id].enabledByDefault : true) %}
+
+			{{ forms.lightswitchField({
+				label: "Default Entry Status"|t,
+				id: 'defaultEntryStatus',
+				name: 'defaultLocaleStatuses['~locale.id~']',
+				on: value
+			}) }}
+		</div>
+	{% endif %}
 
 	{{ forms.checkboxField({
 		label: "Enable versioning for entries in this section?"|t,
