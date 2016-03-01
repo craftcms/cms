@@ -29,6 +29,10 @@ Craft.charts.DataTable = Garnish.Base.extend(
                         d[cellIndex] = d3.time.format("%Y-%m-%d").parse(d[cellIndex]);
                     break;
 
+                    case 'datetime':
+                        d[cellIndex] = d3.time.format("%Y-%m-%d %H:00:00").parse(d[cellIndex]);
+                    break;
+
                     case 'percent':
                     d[cellIndex] = d[cellIndex] / 100;
                     break;
@@ -209,6 +213,10 @@ Craft.charts.BaseChart = Garnish.Base.extend(
 
             case 'month':
                 return locale.timeFormat(this.settings.formats.shortDateFormats.month);
+                break;
+
+            case 'hour':
+                return locale.timeFormat(this.settings.formats.shortDateFormats.month+" %H:00:00");
                 break;
 
             default:
