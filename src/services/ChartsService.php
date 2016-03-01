@@ -293,7 +293,7 @@ class ChartsService extends BaseApplicationComponent
      * @param string $startDate
      * @param string $endDate
      *
-     * @return string Can return `day`, `month`, or `year`
+     * @return string Can return `hour`, `day`, `month`, or `year`
      */
     public function getScale($startDate, $endDate)
     {
@@ -301,7 +301,7 @@ class ChartsService extends BaseApplicationComponent
 
         $numberOfDays = floor(($endDate->getTimestamp() - $startDate->getTimestamp()) / (60*60*24));
 
-        if ($numberOfDays > 360)
+        if ($numberOfDays > (360 * 2))
         {
             $scale = 'year';
         }
@@ -309,9 +309,13 @@ class ChartsService extends BaseApplicationComponent
         {
             $scale = 'month';
         }
-        else
+        elseif($numberOfDays > 2)
         {
             $scale = 'day';
+        }
+        else
+        {
+            $scale = 'hour';
         }
 
         return $scale;
