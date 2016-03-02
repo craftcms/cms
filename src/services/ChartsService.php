@@ -17,23 +17,6 @@ class ChartsService extends BaseApplicationComponent
     // =========================================================================
 
     /**
-     * Returns the predefined date ranges with their startDate and endDate.
-     *
-     * @return array
-     */
-    public function getDateRanges()
-    {
-        $dateRanges = array(
-	        'd7' => array('label' => Craft::t('Last 7 days'), 'startDate' => '-7 days', 'endDate' => null),
-	        'd30' => array('label' => Craft::t('Last 30 days'), 'startDate' => '-30 days', 'endDate' => null),
-	        'lastweek' => array('label' => Craft::t('Last Week'), 'startDate' => '-2 weeks', 'endDate' => '-1 week'),
-	        'lastmonth' => array('label' => Craft::t('Last Month'), 'startDate' => '-2 months', 'endDate' => '-1 month'),
-        );
-
-        return $dateRanges;
-    }
-
-    /**
      * Returns a new users chart report based on a start date, end date, and an optional group ID
      *
      * @param string $startDate
@@ -44,38 +27,85 @@ class ChartsService extends BaseApplicationComponent
      */
     public function getNewUsersReport($startDate, $endDate, $userGroupId = null)
     {
+        $dataTable = $this->getNewUsersDataTable($startDate, $endDate, $userGroupId);
+
         $total = 0;
 
-	    $query = craft()->db->createCommand()
-		    ->select('DATE_FORMAT(users.dateCreated, "%Y-%m-%d") as date, COUNT(*) as totalUsers')
-		    ->from('users users')
-		    ->group('YEAR(users.dateCreated), MONTH(users.dateCreated), DAY(users.dateCreated)');
-
-        if($userGroupId)
-        {
-	        $query->join('usergroups_users userGroupUser', 'users.id=userGroupUser.userId');
-	        $query->where('userGroupUser.groupId='.$userGroupId);
-        }
-
-	    $results = $query->queryAll();
-
-        $reportDataTable = $this->getNewUsersReportDataTable($startDate, $endDate, $results);
-        $scale = $this->getScale($startDate, $endDate);
-
-        foreach($reportDataTable['rows'] as $row)
+        foreach($dataTable['rows'] as $row)
         {
             $total = $total + $row[1];
         }
 
-        $response = array(
+        return array(
             'formats' => $this->getFormats(),
             'orientation' => craft()->locale->getOrientation(),
-            'report' => $reportDataTable,
-            'scale' => $scale,
+            'report' => $dataTable,
+            'scale' => $this->getScale($startDate, $endDate),
             'total' => $total,
         );
+    }
 
-        return $response;
+    /**
+     * Return the scale based on start date and end date.
+     *
+     * @param string $startDate
+     * @param string $endDate
+     *
+     * @return string Can return `hour`, `day`, `month`, or `year`
+     */
+    public function getScale($startDate, $endDate)
+    {
+        // auto scale
+
+        $numberOfDays = floor(($endDate->getTimestamp() - $startDate->getTimestamp()) / (60*60*24));
+
+        if ($numberOfDays > (360 * 2))
+        {
+            $scale = 'year';
+        }
+        elseif($numberOfDays > 60)
+        {
+            $scale = 'month';
+        }
+        elseif($numberOfDays > 2)
+        {
+            $scale = 'day';
+        }
+        else
+        {
+            $scale = 'hour';
+        }
+
+        return $scale;
+    }
+
+    /**
+     * Returns the scale date format based on scale
+     *
+     * @param string $scale
+     *
+     * @return string
+     */
+    public function getScaleDateFormat($scale)
+    {
+        switch ($scale)
+        {
+            case 'year':
+                return "%Y-01-01";
+                break;
+            case 'month':
+
+                return "%Y-%m-01";
+                break;
+
+            case 'day':
+                return "%Y-%m-%d";
+                break;
+
+            case 'hour':
+                return "%Y-%m-%d %H:00:00";
+                break;
+        }
     }
 
     /**
@@ -230,6 +260,26 @@ class ChartsService extends BaseApplicationComponent
     }
 
     /**
+     * Returns the predefined date ranges with their startDate and endDate.
+     *
+     * @return array
+     */
+    public function getDateRanges()
+    {
+        $dateRanges = array(
+            'd7' => array('label' => Craft::t('Last 7 days'), 'startDate' => '-7 days', 'endDate' => null),
+            'd30' => array('label' => Craft::t('Last 30 days'), 'startDate' => '-30 days', 'endDate' => null),
+            'lastweek' => array('label' => Craft::t('Last Week'), 'startDate' => '-2 weeks', 'endDate' => '-1 week'),
+            'lastmonth' => array('label' => Craft::t('Last Month'), 'startDate' => '-2 months', 'endDate' => '-1 month'),
+        );
+
+        return $dateRanges;
+    }
+
+    // Private Methods
+    // =========================================================================
+
+    /**
      * Returns new users report as a data table
      *
      * @param string $startDate
@@ -238,10 +288,35 @@ class ChartsService extends BaseApplicationComponent
      *
      * @return array Returns an array of columns and rows
      */
-    private function getNewUsersReportDataTable($startDate, $endDate, $results)
+    private function getNewUsersDataTable($startDate, $endDate, $userGroupId)
     {
-        $scale = $this->getScale($startDate, $endDate);
+        $query = craft()->db->createCommand()
+            ->select('DATE_FORMAT(users.dateCreated, "%Y-%m-%d") as date, COUNT(*) as totalUsers')
+            ->from('users users')
+            ->group('YEAR(users.dateCreated), MONTH(users.dateCreated), DAY(users.dateCreated)');
 
+        if($userGroupId)
+        {
+            $query->join('usergroups_users userGroupUser', 'users.id=userGroupUser.userId');
+            $query->where('userGroupUser.groupId='.$userGroupId);
+        }
+
+        $results = $query->queryAll();
+
+        return $this->parseResultsToDataTable($startDate, $endDate, $results);
+    }
+
+    /**
+     * Returns new users report as a data table
+     *
+     * @param string $startDate
+     * @param string $endDate
+     * @param array $results
+     *
+     * @return array Returns an array of columns and rows
+     */
+    private function parseResultsToDataTable($startDate, $endDate, $results)
+    {
         // columns
 
         $columns = array(
@@ -251,6 +326,8 @@ class ChartsService extends BaseApplicationComponent
 
 
         // fill data table rows from results and set a total of zero users when no result is found for that date
+
+        $scale = $this->getScale($startDate, $endDate);
 
         $rows = array();
 
@@ -285,69 +362,5 @@ class ChartsService extends BaseApplicationComponent
             'columns' => $columns,
             'rows' => $rows
         );
-    }
-
-    /**
-     * Get scale based on start date and end date.
-     *
-     * @param string $startDate
-     * @param string $endDate
-     *
-     * @return string Can return `hour`, `day`, `month`, or `year`
-     */
-    public function getScale($startDate, $endDate)
-    {
-        // auto scale
-
-        $numberOfDays = floor(($endDate->getTimestamp() - $startDate->getTimestamp()) / (60*60*24));
-
-        if ($numberOfDays > (360 * 2))
-        {
-            $scale = 'year';
-        }
-        elseif($numberOfDays > 60)
-        {
-            $scale = 'month';
-        }
-        elseif($numberOfDays > 2)
-        {
-            $scale = 'day';
-        }
-        else
-        {
-            $scale = 'hour';
-        }
-
-        return $scale;
-    }
-
-
-    /**
-     * Returns scale date format based on scale
-     *
-     * @param string $scale
-     *
-     * @return string
-     */
-    public function getScaleDateFormat($scale)
-    {
-        switch ($scale)
-        {
-            case 'year':
-                return "%Y-01-01";
-                break;
-            case 'month':
-
-                return "%Y-%m-01";
-                break;
-
-            case 'day':
-                return "%Y-%m-%d";
-                break;
-
-            case 'hour':
-                return "%Y-%m-%d %H:00:00";
-                break;
-        }
     }
 }
