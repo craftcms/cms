@@ -46,7 +46,7 @@ class ChartsService extends BaseApplicationComponent
     }
 
     /**
-     * Return the scale based on start date and end date.
+     * Return the scale based on the start date and the end date.
      *
      * @param string $startDate
      * @param string $endDate
@@ -80,7 +80,7 @@ class ChartsService extends BaseApplicationComponent
     }
 
     /**
-     * Returns the scale date format based on scale
+     * Returns the scale date format based on the scale
      *
      * @param string $scale
      *
@@ -109,7 +109,7 @@ class ChartsService extends BaseApplicationComponent
     }
 
     /**
-     * Returns short date, decimal, percent and currency D3 formats based on Craft's locale settings
+     * Returns the short date, decimal, percent and currency D3 formats based on Craft's locale settings
      *
      * @return array
      */
@@ -124,7 +124,7 @@ class ChartsService extends BaseApplicationComponent
     }
 
     /**
-     * Returns D3 short date formats based on Yii's short date format
+     * Returns the D3 short date formats based on Yii's short date format
      *
      * @return array
      */
@@ -184,7 +184,7 @@ class ChartsService extends BaseApplicationComponent
     }
 
     /**
-     * Returns D3 decimal format based on Yii's decimal format
+     * Returns the D3 decimal format based on Yii's decimal format
      *
      * @return array
      */
@@ -207,7 +207,7 @@ class ChartsService extends BaseApplicationComponent
     }
 
     /**
-     * Returns D3 percent format based on Yii's percent format
+     * Returns the D3 percent format based on Yii's percent format
      *
      * @return array
      */
@@ -230,7 +230,7 @@ class ChartsService extends BaseApplicationComponent
     }
 
     /**
-     * Returns D3 currency format based on Yii's currency format
+     * Returns the D3 currency format based on Yii's currency format
      *
      * @return array
      */
@@ -260,7 +260,7 @@ class ChartsService extends BaseApplicationComponent
     }
 
     /**
-     * Returns the predefined date ranges with their startDate and endDate.
+     * Returns the predefined date ranges with their label, start date and end date.
      *
      * @return array
      */
@@ -284,9 +284,9 @@ class ChartsService extends BaseApplicationComponent
      *
      * @param string $startDate
      * @param string $endDate
-     * @param array $results
+     * @param int|null $userGroupId
      *
-     * @return array Returns an array of columns and rows
+     * @return array Returns a data table (array of columns and rows)
      */
     private function getNewUsersDataTable($startDate, $endDate, $userGroupId)
     {
@@ -307,7 +307,7 @@ class ChartsService extends BaseApplicationComponent
     }
 
     /**
-     * Returns new users report as a data table
+     * Parses database results, fills blanks (dates where row value is zero), and then returns a data table
      *
      * @param string $startDate
      * @param string $endDate
@@ -317,8 +317,6 @@ class ChartsService extends BaseApplicationComponent
      */
     private function parseResultsToDataTable($startDate, $endDate, $results)
     {
-        // columns
-
         $columns = array(
 	        array('type' => 'date', 'label' => Craft::t('Date')),
 	        array('type' => 'number','label' => Craft::t('Users')),
