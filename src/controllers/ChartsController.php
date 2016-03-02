@@ -27,8 +27,10 @@ class ChartsController extends BaseController
         $startDate = craft()->request->getParam('startDate');
         $endDate = craft()->request->getParam('endDate');
 
-        $startDate = new DateTime($startDate);
-        $endDate = new DateTime($endDate);
+        $timezone = new \DateTimeZone(craft()->timezone);
+
+        $startDate = new DateTime($startDate, $timezone);
+        $endDate = new DateTime($endDate, $timezone);
         $endDate->modify('+1 day');
 
         $revenueReport = craft()->charts->getNewUsersReport($startDate, $endDate, $userGroupId);
