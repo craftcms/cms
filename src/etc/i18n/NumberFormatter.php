@@ -81,12 +81,12 @@ class NumberFormatter extends \CNumberFormatter
 	 */
 	public function formatCurrency($value, $currency, $stripZeroCents = false)
 	{
-		$result = parent::formatCurrency($value, $currency);
+		$result = parent::formatCurrency($value, Craft::t($currency));
 
 		if ($stripZeroCents)
 		{
 			$decimal = $this->_locale->getNumberSymbol('decimal');
-			$result = preg_replace('/\\'.$decimal.'0*$/', '', $result);
+			$result = preg_replace('/\\'.$decimal.'0{1,}/', '', $result);
 		}
 
 		return $result;

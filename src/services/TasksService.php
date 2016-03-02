@@ -138,7 +138,7 @@ class TasksService extends BaseApplicationComponent
 		if (!headers_sent())
 		{
 			// Close the client connection
-			craft()->request->close();
+			craft()->request->close('1');
 
 			// Run any pending tasks
 			$this->runPendingTasks();

@@ -56,7 +56,7 @@ class TasksController extends BaseController
 				// Attempt to close the connection if this is an Ajax request
 				if (craft()->request->isAjaxRequest())
 				{
-					craft()->request->close();
+					craft()->request->close('1');
 				}
 
 				// Start running tasks
