@@ -142,6 +142,19 @@
 					}, statusInput) }}
 
 				</div><!--/pane-->
+
+				{% if category.id %}
+					<div class="pane lightpane meta">
+						<div class="data">
+							<h5 class="heading">{{ "Date Created"|t }}</h5>
+							<div class="value">{{ category.dateCreated.localeDate() }} {{ category.dateCreated.localeTime() }}</div>
+						</div>
+						<div class="data">
+							<h5 class="heading">{{ "Date Updated"|t }}</h5>
+							<div class="value">{{ category.dateUpdated.localeDate() }} {{ category.dateUpdated.localeTime() }}</div>
+						</div>
+					</div>
+				{% endif %}
 			</div><!--/item-->
 		</div><!--/grid-->
 	</form>
