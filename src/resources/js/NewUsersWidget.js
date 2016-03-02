@@ -48,7 +48,6 @@ Craft.NewUsersWidget = Garnish.Base.extend(
             startDate: this.startDate,
             endDate: this.endDate,
             userGroupId: this.settings.userGroupId,
-            elementType: 'Commerce_Order'
         };
 
         Craft.postActionRequest('charts/getNewUsersReport', requestData, $.proxy(function(response, textStatus)
@@ -59,7 +58,6 @@ Craft.NewUsersWidget = Garnish.Base.extend(
                 this.chart = new Craft.charts.Area(this.$chartContainer);
 
                 var chartDataTable = new Craft.charts.DataTable(response.report);
-                // var chartDataTable = Craft.charts.utils.arrayToDataTable(response.report);
 
                 var chartSettings = {
                     orientation: response.orientation,
