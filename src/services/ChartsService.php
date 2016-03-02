@@ -293,7 +293,7 @@ class ChartsService extends BaseApplicationComponent
         $query = craft()->db->createCommand()
             ->select('DATE_FORMAT(users.dateCreated, "%Y-%m-%d") as date, COUNT(*) as totalUsers')
             ->from('users users')
-            ->where(array('and', 'users.dateCreated > :startDate', 'users.dateCreated < :endDate'), array(':startDate' => $startDate->mySqlDateTime(), ':endDate' => $endDate->mySqlDateTime()));
+            ->where(array('and', 'users.dateCreated > :startDate', 'users.dateCreated < :endDate'), array(':startDate' => $startDate->mySqlDateTime(), ':endDate' => $endDate->mySqlDateTime()))
             ->group('YEAR(users.dateCreated), MONTH(users.dateCreated), DAY(users.dateCreated)');
 
         if($userGroupId)
