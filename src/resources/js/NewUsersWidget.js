@@ -57,7 +57,7 @@ Craft.NewUsersWidget = Garnish.Base.extend(
                 // Create chart
                 this.chart = new Craft.charts.Area(this.$chartContainer);
 
-                var chartDataTable = new Craft.charts.DataTable(response.report);
+                var chartDataTable = new Craft.charts.DataTable(response.dataTable);
 
                 var chartSettings = {
                     orientation: response.orientation,

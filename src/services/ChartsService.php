@@ -37,11 +37,12 @@ class ChartsService extends BaseApplicationComponent
         }
 
         return array(
+            'dataTable' => $dataTable,
+            'total' => $total,
+
             'formats' => $this->getFormats(),
             'orientation' => craft()->locale->getOrientation(),
-            'report' => $dataTable,
             'scale' => $this->getScale($startDate, $endDate),
-            'total' => $total,
         );
     }
 
