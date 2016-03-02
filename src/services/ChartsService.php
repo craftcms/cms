@@ -25,7 +25,7 @@ class ChartsService extends BaseApplicationComponent
      *
      * @return array
      */
-    public function getNewUsersReport($startDate, $endDate, $userGroupId = null)
+    public function getNewUsersReport(DateTime $startDate, DateTime $endDate, $userGroupId = null)
     {
         $dataTable = $this->getNewUsersDataTable($startDate, $endDate, $userGroupId);
 
@@ -53,7 +53,7 @@ class ChartsService extends BaseApplicationComponent
      *
      * @return string Can return `hour`, `day`, `month`, or `year`
      */
-    public function getScale($startDate, $endDate)
+    public function getScale(DateTime $startDate, DateTime $endDate)
     {
         // auto scale
 
@@ -288,7 +288,7 @@ class ChartsService extends BaseApplicationComponent
      *
      * @return array Returns a data table (array of columns and rows)
      */
-    private function getNewUsersDataTable($startDate, $endDate, $userGroupId)
+    private function getNewUsersDataTable(DateTime $startDate, DateTime $endDate, $userGroupId)
     {
         $query = craft()->db->createCommand()
             ->select('DATE_FORMAT(users.dateCreated, "%Y-%m-%d") as date, COUNT(*) as totalUsers')
