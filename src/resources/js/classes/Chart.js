@@ -546,16 +546,22 @@ Craft.charts.Area = Craft.charts.BaseChart.extend(
     {
         if(this.settings.enableTips)
         {
+            var tipSettings = {
+                chart: this,
+                locale: this.locale,
+                xTickFormat: this.xTickFormat(this.locale),
+                yTickFormat: this.yTickFormat(this.locale),
+                tipContentFormat: $.proxy(this, 'tipContentFormat'),
+                getPosition: $.proxy(this, 'getTipPosition')
+            };
+
             if(!this.tip)
             {
-                this.tip = new Craft.charts.Tip(this.$container, {
-                    chart: this,
-                    locale: this.locale,
-                    xTickFormat: this.xTickFormat(this.locale),
-                    yTickFormat: this.yTickFormat(this.locale),
-                    tipContentFormat: $.proxy(this, 'tipContentFormat'),
-                    getPosition: $.proxy(this, 'getTipPosition')
-                });
+                this.tip = new Craft.charts.Tip(this.$container, tipSettings);
+            }
+            else
+            {
+                this.tip.setSettings(tipSettings);
             }
 
             this.svg.append('g')
@@ -799,4 +805,3 @@ Craft.charts.utils = {
             .attr("in", "SourceGraphic");
     }
 };
-
