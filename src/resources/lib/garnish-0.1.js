@@ -799,7 +799,7 @@ Garnish.Base = Base.extend({
 
 			this._eventHandlers.push({
 				type: ev[0],
-				namepsace: ev[1],
+				namespace: ev[1],
 				data: data,
 				handler: handler
 			});
