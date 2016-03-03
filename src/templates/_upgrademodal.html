@@ -1,51 +1,79 @@
+{% macro statusBadge(edition, licensedEdition) %}
+	{% if edition == CraftEdition %}
+		{% if edition == licensedEdition %}
+			<div class="license-status installed" data-icon="check">{{ "Installed"|t }}</div>
+		{% else %}
+			<div class="license-status installed" data-icon="check">{{ "Installed as a trial"|t }}</div>
+		{% endif %}
+	{% elseif edition == licensedEdition %}
+		<div class="license-status licensed" data-icon="check">{{ "Licensed"|t }}</div>
+	{% endif %}
+{% endmacro %}
+
+{% macro price(edition, info) %}
+	{% if info.salePrice %}
+		<span class="listedprice">{{ info.formattedPrice }}</span> {{ info.formattedSalePrice }}
+	{% else %}
+		{{ info.formattedPrice }}
+	{% endif %}
+{% endmacro %}
+
 {% macro buybtn(edition, info, licensedEdition, canTestEditions) %}
 	{%- spaceless %}
-		{# Is it already installed? #}
-		{% if edition == CraftEdition  %}
-			<div class="installed">{{ "Installed"|t }}</div><br>
-		{% endif %}
-
 		<div class="btngroup">
 			{# Show the "Buy" button if this edition is greater than the licensed edition #}
 			{% if edition > licensedEdition %}
-				<div class="btn buybtn" data-edition="{{ edition }}">
-					{% if info.salePrice %}
-						<span class="listedprice">{{ info.formattedPrice }}</span> {{ info.formattedSalePrice }}
-					{% else %}
-						{{ info.formattedPrice }}
-					{% endif %}
-				</div>
+				<div class="btn buybtn submit" data-edition="{{ edition }}">{{ "Buy now"|t }}</div>
 			{% endif %}
 
-			{# Show the "Test" button if they're on a testable domain, this is not the current edition, and is greater than the licensed edition #}
+			{# Show the "Try" button if they're on a testable domain, this is not the current edition, and is greater than the licensed edition #}
 			{% if canTestEditions and edition != CraftEdition and edition > licensedEdition %}
-				<div class="btn test" data-edition="{{ edition }}">{{ "Test"|t }}</div>
+				<div class="btn test" data-edition="{{ edition }}">{{ "Try for free"|t }}</div>
 			{% endif %}
 
-			{# Show the "Install" button if they’re licensed to use this edition but not currently on it #}
+			{# Show the "Reinstall" button if they’re licensed to use this edition but not currently on it #}
 			{% if edition == licensedEdition and edition != CraftEdition %}
-				<div class="btn test" data-edition="{{ edition }}">{{ "Install"|t }}</div>
+				<div class="btn test" data-edition="{{ edition }}">{{ "Reinstall"|t }}</div>
 			{% endif %}
 
-			{# Show the "Uninstall" button if this is the currently-installed edition, but is not licensed #}
-			{% if edition == CraftEdition and edition > licensedEdition %}
+			{# Show the "Uninstall" button if this is the currently-installed edition, but they are only licensed to use Craft Personal #}
+			{# (Not necessary to show if the licensed edition is Client/Pro as they will have their own "Install" button) #}
+			{% if edition == CraftEdition and licensedEdition == CraftPersonal %}
 				<div class="btn test" data-edition="0">{{ "Uninstall"|t }}</div>
 			{% endif %}
 		</div>
 	{% endspaceless -%}
 {% endmacro %}
 
-{% from _self import buybtn %}
+{% from _self import statusBadge, price, buybtn %}
 {% import "_includes/forms" as forms %}
 
 
 <div id="upgrademodal-compare" class="body">
 	<table class="data fullwidth">
 		<thead>
-			<tr>
+			<tr class="logos">
 				<td></td>
-				<th scope="col"><h1 class="logo craftclient">Craft Client</h1></th>
-				<th scope="col"><h1 class="logo craftpro">Craft Pro</h1></th>
+				<th scope="col">
+					<h1 class="logo">Client</h1>
+					<p>{{ "For sites built for clients with only one content manager."|t }}</p>
+				</th>
+				<th scope="col">
+					<h1 class="logo">Pro</h1>
+					<p>{{ "For everything else."|t }}</p>
+				</th>
+			</tr>
+			{% if CraftEdition > CraftPersonal or licensedEdition > CraftPersonal %}
+				<tr class="license-statuses">
+					<td></td>
+					<td>{{ statusBadge(CraftClient, licensedEdition) }}</td>
+					<td>{{ statusBadge(CraftPro, licensedEdition) }}</td>
+				</tr>
+			{% endif %}
+			<tr class="price">
+				<th scope="row" class="feature">One-Time Price</th>
+				<td>{{ price(CraftClient, editions[CraftClient]) }}</td>
+				<td>{{ price(CraftPro, editions[CraftPro]) }}</td>
 			</tr>
 			<tr class="buybtns">
 				<td></td>
@@ -145,7 +173,9 @@
 
 
 <div id="upgrademodal-checkout" class="body hidden">
-	<h1 class="logo"></h1>
+	<div class="logowrapper">
+		<h1 class="logo"></h1>
+	</div>
 
 	<form class="pane">
 		{{ getCsrfInput() }}
