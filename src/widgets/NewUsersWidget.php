@@ -27,6 +27,17 @@ class NewUsersWidget extends BaseWidget
     }
 
     /**
+     * @inheritDoc IComponentType::isSelectable()
+     *
+     * @return bool
+     */
+    public function isSelectable()
+    {
+        // This widget is only available for Craft Pro
+        return (craft()->getEdition() == Craft::Pro);
+    }
+
+    /**
      * @inheritDoc IWidget::getBodyHtml()
      *
      * @return string|false
