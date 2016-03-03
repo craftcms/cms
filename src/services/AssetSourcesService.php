@@ -30,7 +30,17 @@ class AssetSourcesService extends BaseApplicationComponent
 	/**
 	 * @var
 	 */
+	private $_publicSourceIds;
+
+	/**
+	 * @var
+	 */
 	private $_viewableSources;
+
+	/**
+	 * @var
+	 */
+	private $_publicSources;
 
 	/**
 	 * @var
@@ -154,6 +164,32 @@ class AssetSourcesService extends BaseApplicationComponent
 	}
 
 	/**
+	 * Returns all source IDs that have public URLs.
+	 *
+	 * @return array
+	 */
+	public function getPublicSourceIds()
+	{
+
+		if (!isset($this->_publicSourceIds)) {
+			$this->_publicSourceIds = array();
+
+			/**
+			 * @var AssetSourceModel $source
+			 */
+			foreach ($this->getAllSources() as $source) {
+				$settings = $source->settings;
+
+				if (!empty($settings['publicURLs'])) {
+					$this->_publicSourceIds[] = $source->id;
+				}
+			}
+		}
+
+		return $this->_publicSourceIds;
+	}
+
+	/**
 	 * Returns all sources that are viewable by the current user.
 	 *
 	 * @param string|null $indexBy
@@ -184,6 +220,49 @@ class AssetSourcesService extends BaseApplicationComponent
 			$sources = array();
 
 			foreach ($this->_viewableSources as $source)
+			{
+				$sources[$source->$indexBy] = $source;
+			}
+
+			return $sources;
+		}
+	}
+
+	/**
+	 * Returns all sources that have public URLs.
+	 *
+	 * @return array
+	 */
+	public function getPublicSources($indexBy = null)
+	{
+
+		if (!isset($this->_publicSources))
+		{
+			$this->_publicSources = array();
+
+			/**
+			 * @var AssetSourceModel $source
+			 */
+			foreach ($this->getAllSources() as $source)
+			{
+				$settings = $source->settings;
+
+				if (!empty($settings['publicURLs'])) {
+					$this->_publicSources[] = $source;
+				}
+
+			}
+		}
+
+		if (!$indexBy)
+		{
+			return $this->_publicSources;
+		}
+		else
+		{
+			$sources = array();
+
+			foreach ($this->_publicSources as $source)
 			{
 				$sources[$source->$indexBy] = $source;
 			}
