@@ -17,8 +17,8 @@ Craft.NewUsersWidget = Garnish.Base.extend(
 
         this.$widget = $('#widget'+widgetId);
         this.$body = this.$widget.find('.body:first');
-        this.$chartContainer = $('.chart', this.$widget);
-        this.$error = $('<div class="error"/>').prependTo(this.$body);
+        this.$chartContainer = $('<div class="chart hidden"></div>').appendTo(this.$body);
+        this.$error = $('<div class="error"/>').appendTo(this.$body);
 
         var dateRange = this.settings.dateRange;
 
@@ -54,6 +54,8 @@ Craft.NewUsersWidget = Garnish.Base.extend(
         {
             if(textStatus == 'success' && typeof(response.error) == 'undefined')
             {
+                this.$chartContainer.removeClass('hidden');
+                
                 // Create chart
                 this.chart = new Craft.charts.Area(this.$chartContainer);
 
