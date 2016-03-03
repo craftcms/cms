@@ -331,11 +331,22 @@ class ChartsService extends BaseApplicationComponent
 
         $rows = array();
 
-        $cursorCurrent = new DateTime($startDate);
+        $timezone = new \DateTimeZone(craft()->timezone);
+
+        switch($scale)
+        {
+            case 'month':
+            $cursorCurrent = new DateTime($startDate, $timezone);
+            $cursorCurrent = new DateTime($cursorCurrent->format('Y-m-01'), $timezone);
+            break;
+
+            default:
+            $cursorCurrent = new DateTime($startDate, $timezone);
+        }
 
         while($cursorCurrent->getTimestamp() < $endDate->getTimestamp())
         {
-            $cursorStart = new DateTime($cursorCurrent);
+            $cursorStart = new DateTime($cursorCurrent, $timezone);
             $cursorCurrent->modify('+1 '.$scale);
             $cursorEnd = $cursorCurrent;
 
