@@ -263,10 +263,10 @@ class ChartsService extends BaseApplicationComponent
             ->where(array('and', 'users.dateCreated > :startDate', 'users.dateCreated < :endDate'), array(':startDate' => $startDate->mySqlDateTime(), ':endDate' => $endDate->mySqlDateTime()))
             ->group('YEAR(users.dateCreated), MONTH(users.dateCreated), DAY(users.dateCreated)');
 
-        if($userGroupId)
+        if ($userGroupId)
         {
-            $query->join('usergroups_users userGroupUser', 'users.id=userGroupUser.userId');
-            $query->where('userGroupUser.groupId='.$userGroupId);
+            $query->join('usergroups_users userGroupUsers', 'userGroupUsers.userId = users.id');
+            $query->andWhere('userGroupUsers.groupId = :userGroupId', array(':userGroupId' => $userGroupId));
         }
 
         $results = $query->queryAll();
