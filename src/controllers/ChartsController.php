@@ -23,14 +23,12 @@ class ChartsController extends BaseController
      */
     public function actionGetNewUsersReport()
     {
-        $userGroupId = craft()->request->getParam('userGroupId');
-        $startDate = craft()->request->getParam('startDate');
-        $endDate = craft()->request->getParam('endDate');
+        $userGroupId = craft()->request->getRequiredPost('userGroupId');
+        $startDateParam = craft()->request->getRequiredPost('startDate');
+        $endDateParam = craft()->request->getRequiredPost('endDate');
 
-        $timezone = new \DateTimeZone(craft()->timezone);
-
-        $startDate = new DateTime($startDate, $timezone);
-        $endDate = new DateTime($endDate, $timezone);
+        $startDate = DateTime::createFromString($startDateParam, craft()->timezone);
+        $endDate = DateTime::createFromString($endDateParam, craft()->timezone);
         $endDate->modify('+1 day');
 
         $revenueReport = craft()->charts->getNewUsersReport($startDate, $endDate, $userGroupId);
