@@ -255,7 +255,7 @@ class ChartsService extends BaseApplicationComponent
      *
      * @return array Returns a data table (array of columns and rows)
      */
-    private function getNewUsersDataTable(DateTime $startDate, DateTime $endDate, $userGroupId)
+    private function getNewUsersDataTable(DateTime $startDate, DateTime $endDate, $userGroupId = null)
     {
         $query = craft()->db->createCommand()
             ->select('DATE_FORMAT(users.dateCreated, "%Y-%m-%d") as date, COUNT(*) as totalUsers')
