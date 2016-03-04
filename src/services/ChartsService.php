@@ -335,6 +335,11 @@ class ChartsService extends BaseApplicationComponent
 
         switch($scale)
         {
+            case 'year':
+            $cursorCurrent = new DateTime($startDate, $timezone);
+            $cursorCurrent = new DateTime($cursorCurrent->format('Y-01-01'), $timezone);
+            break;
+            
             case 'month':
             $cursorCurrent = new DateTime($startDate, $timezone);
             $cursorCurrent = new DateTime($cursorCurrent->format('Y-m-01'), $timezone);
