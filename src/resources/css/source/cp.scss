@@ -238,6 +238,19 @@ body.mobile #container {
 
 /* footer */
 #footer { padding: 24px; text-align: center; font-size: 0; }
+#footer #edition-logo { margin: 0 auto 14px; border: 1px solid $lighttextcolor; border-radius: 3px; display: inline-block; height: 23px; cursor: default; @include transition(border-color linear 100ms); }
+#footer #edition-logo > .edition-name,
+#footer #edition-logo > .edition-trial { display: inline-block; padding: 8px 8px 7px; font-size: 12px; line-height: 8px; font-weight: 500; }
+#footer #edition-logo > .edition-name { color: $mediumtextcolor; letter-spacing: 2.2px; padding-right: 5.8px; text-transform: uppercase; @include transition(color linear 100ms); }
+#footer #edition-logo > .edition-trial { display: inline-block; position: relative; margin-left: 5px; padding-left: 5px; background: $lighttextcolor; color: $bgcolor; border-radius: 0 1px 1px 0; letter-spacing: 1px; padding-right: 7px; text-transform: lowercase; @include transition(background linear 100ms); }
+#footer #edition-logo > .edition-trial:before { display: block; position: absolute; top: 0; left: -10px; content: '.'; font-size: 0; width: 0; height: 0; border-width: 0 10px 23px 0; border-style: solid; border-color: transparent $lighttextcolor transparent transparent; @include transition(border-color linear 100ms); }
+#footer #edition-logo.hot { cursor: pointer; }
+#footer #edition-logo.hot + .settings { display: inline-block; position: relative; top: -1px; width: 13px; margin: 0 -18px 0 6px; font-size: 13px; color: hsla($hue, 10%, 75%, 0.5); @include transition(color linear 100ms); }
+#footer #edition-logo.hot:hover { border-color: $linkcolor; }
+#footer #edition-logo.hot:hover > .edition-name { color: $linkcolor; }
+#footer #edition-logo.hot:hover > .edition-trial { background: $linkcolor; }
+#footer #edition-logo.hot:hover > .edition-trial:before { border-color: transparent $linkcolor transparent transparent; }
+#footer #edition-logo.hot:hover + .settings { color: $linkcolor; }
 #footer li { display: inline-block; font-size: 11px; color: $lighttextcolor; white-space: nowrap; }
 #footer li:not(:last-child):after { display: inline-block; margin: 0 7px; content: '•'; }
 #footer li a { color: $lighttextcolor; text-decoration: underline; }
@@ -255,7 +268,7 @@ body.mobile #container {
 #upgrademodal.loading { background-image: url(../images/spinner_big.gif); background-repeat: no-repeat; background-position: 50% 50%; }
 #upgrademodal .body { position: absolute; top: 0; left: 0; width: 100%; height: 100%; overflow: auto; }
 
-#upgrademodal .logo { margin: 0 auto 24px; font-weight: 500; font-size: 18px; color: $submitcolor; letter-spacing: 3.3px; line-height: 14px; border: 1px solid $submitcolor; border-radius: 3px; padding: 10px; text-transform: uppercase; display: inline-block; }
+#upgrademodal .logo { margin: 0 auto 24px; font-weight: 500; font-size: 18px; color: $submitcolor; letter-spacing: 3.3px; line-height: 14px; border: 1px solid $submitcolor; border-radius: 3px; padding: 10px 6.7px 9px 10px; text-transform: uppercase; display: inline-block; }
 
 #upgrademodal-compare table th,
 #upgrademodal-compare table td { width: 33.33%; }
