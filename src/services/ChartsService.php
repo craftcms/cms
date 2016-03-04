@@ -42,7 +42,7 @@ class ChartsService extends BaseApplicationComponent
 
             'formats' => $this->getFormats(),
             'orientation' => craft()->locale->getOrientation(),
-            'scale' => ChartHelper::getDateChartScale($startDate, $endDate),
+            'scale' => 'day',
         );
     }
 
@@ -238,7 +238,7 @@ class ChartsService extends BaseApplicationComponent
             $query->where('userGroupUsers.groupId = :userGroupId', array(':userGroupId' => $userGroupId));
         }
 
-        return ChartHelper::generateDateChartFromQuery($query, $startDate, $endDate, 'users.dateCreated', array(
+        return ChartHelper::getRunChartDataFromQuery($query, $startDate, $endDate, 'users.dateCreated', array(
             'intervalUnit' => 'day',
             'valueLabel' => Craft::t('New Users'),
         ));

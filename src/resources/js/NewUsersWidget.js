@@ -26,10 +26,12 @@ Craft.NewUsersWidget = Garnish.Base.extend(
         {
             case 'd7':
                 this.startDate = this.getDateByDays('7');
+                this.endDate = new Date();
             break;
 
             case 'd30':
                 this.startDate = this.getDateByDays('30');
+                this.endDate = new Date();
             break;
 
             case 'lastweek':
@@ -45,8 +47,8 @@ Craft.NewUsersWidget = Garnish.Base.extend(
 
         // Request orders report
         var requestData = {
-            startDate: this.startDate,
-            endDate: this.endDate,
+            startDate: Craft.NewUsersWidget.getDateValue(this.startDate),
+            endDate: Craft.NewUsersWidget.getDateValue(this.endDate),
             userGroupId: this.settings.userGroupId,
         };
 
@@ -111,7 +113,12 @@ Craft.NewUsersWidget = Garnish.Base.extend(
         this.base();
     }
 }, {
-    instances: []
+    instances: [],
+
+    getDateValue: function(date)
+    {
+        return date.getFullYear()+'-'+(date.getMonth()+1)+'-'+date.getDate();
+    }
 });
 
 
