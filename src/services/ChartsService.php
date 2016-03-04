@@ -42,42 +42,8 @@ class ChartsService extends BaseApplicationComponent
 
             'formats' => $this->getFormats(),
             'orientation' => craft()->locale->getOrientation(),
-            'scale' => $this->getScale($startDate, $endDate),
+            'scale' => ChartHelper::getDateChartScale($startDate, $endDate),
         );
-    }
-
-    /**
-     * Return the scale based on the start date and the end date.
-     *
-     * @param string $startDate
-     * @param string $endDate
-     *
-     * @return string Can return `hour`, `day`, `month`, or `year`
-     */
-    public function getScale(DateTime $startDate, DateTime $endDate)
-    {
-        // auto scale
-
-        $numberOfDays = floor(($endDate->getTimestamp() - $startDate->getTimestamp()) / (60*60*24));
-
-        if ($numberOfDays > (360 * 2))
-        {
-            $scale = 'year';
-        }
-        elseif($numberOfDays > 60)
-        {
-            $scale = 'month';
-        }
-        elseif($numberOfDays > 2)
-        {
-            $scale = 'day';
-        }
-        else
-        {
-            $scale = 'hour';
-        }
-
-        return $scale;
     }
 
     /**
@@ -327,7 +293,7 @@ class ChartsService extends BaseApplicationComponent
 
         // fill data table rows from results and set a total of zero users when no result is found for that date
 
-        $scale = $this->getScale($startDate, $endDate);
+        $scale = ChartHelper::getDateChartScale($startDate, $endDate);
 
         $rows = array();
 
