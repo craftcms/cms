@@ -55,7 +55,7 @@ Craft.NewUsersWidget = Garnish.Base.extend(
             if(textStatus == 'success' && typeof(response.error) == 'undefined')
             {
                 this.$chartContainer.removeClass('hidden');
-                
+
                 // Create chart
                 this.chart = new Craft.charts.Area(this.$chartContainer);
 
@@ -75,8 +75,7 @@ Craft.NewUsersWidget = Garnish.Base.extend(
             else
             {
                 // Error
-
-                var msg = 'An unknown error occured.';
+                var msg = Craft.t('An unknown error occurred.');
 
                 if(typeof(response) != 'undefined' && response && typeof(response.error) != 'undefined')
                 {
