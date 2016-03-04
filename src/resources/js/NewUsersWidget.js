@@ -52,7 +52,7 @@ Craft.NewUsersWidget = Garnish.Base.extend(
             userGroupId: this.settings.userGroupId,
         };
 
-        Craft.postActionRequest('charts/getNewUsersReport', requestData, $.proxy(function(response, textStatus)
+        Craft.postActionRequest('charts/getNewUsersData', requestData, $.proxy(function(response, textStatus)
         {
             if(textStatus == 'success' && typeof(response.error) == 'undefined')
             {

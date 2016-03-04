@@ -17,11 +17,11 @@ class ChartsController extends BaseController
     // =========================================================================
 
     /**
-     * Get Revenue Report
+     * Returns the data needed to display a New Users chart.
      *
-     * @return null
+     * @return void
      */
-    public function actionGetNewUsersReport()
+    public function actionGetNewUsersData()
     {
         $userGroupId = craft()->request->getRequiredPost('userGroupId');
         $startDateParam = craft()->request->getRequiredPost('startDate');
