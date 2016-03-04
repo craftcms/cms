@@ -38,8 +38,8 @@ class UrlFormatValidator extends \CValidator
 
 		if ($urlFormat)
 		{
-			// Remove any leading or trailing slashes
-			$urlFormat = trim($urlFormat, '/');
+			// Remove any leading or trailing spaces/slashes
+			$urlFormat = trim($urlFormat, '/ ');
 			$object->$attribute = $urlFormat;
 
 			if ($this->requireSlug)
