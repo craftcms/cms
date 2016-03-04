@@ -17,36 +17,6 @@ class ChartsService extends BaseApplicationComponent
     // =========================================================================
 
     /**
-     * Returns a new users chart report based on a start date, end date, and an optional group ID
-     *
-     * @param string $startDate
-     * @param string $endDate
-     * @param int|null $userGroupId
-     *
-     * @return array
-     */
-    public function getNewUsersReport(DateTime $startDate, DateTime $endDate, $userGroupId = null)
-    {
-        $dataTable = $this->getNewUsersDataTable($startDate, $endDate, $userGroupId);
-
-        $total = 0;
-
-        foreach($dataTable['rows'] as $row)
-        {
-            $total = $total + $row[1];
-        }
-
-        return array(
-            'dataTable' => $dataTable,
-            'total' => $total,
-
-            'formats' => $this->getFormats(),
-            'orientation' => craft()->locale->getOrientation(),
-            'scale' => 'day',
-        );
-    }
-
-    /**
      * Returns the short date, decimal, percent and currency D3 formats based on Craft's locale settings
      *
      * @return array
@@ -228,19 +198,6 @@ class ChartsService extends BaseApplicationComponent
      */
     private function getNewUsersDataTable(DateTime $startDate, DateTime $endDate, $userGroupId = null)
     {
-        $query = craft()->db->createCommand()
-            ->from('users users')
-            ->select('COUNT(*) as value');
 
-        if ($userGroupId)
-        {
-            $query->join('usergroups_users userGroupUsers', 'userGroupUsers.userId = users.id');
-            $query->where('userGroupUsers.groupId = :userGroupId', array(':userGroupId' => $userGroupId));
-        }
-
-        return ChartHelper::getRunChartDataFromQuery($query, $startDate, $endDate, 'users.dateCreated', array(
-            'intervalUnit' => 'day',
-            'valueLabel' => Craft::t('New Users'),
-        ));
     }
 }

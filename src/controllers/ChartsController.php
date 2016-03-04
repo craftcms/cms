@@ -31,8 +31,41 @@ class ChartsController extends BaseController
         $endDate = DateTime::createFromString($endDateParam, craft()->timezone);
         $endDate->modify('+1 day');
 
-        $revenueReport = craft()->charts->getNewUsersReport($startDate, $endDate, $userGroupId);
+        $intervalUnit = 'day';
 
-        $this->returnJson($revenueReport);
+        // Prep the query
+        $query = craft()->db->createCommand()
+            ->from('users users')
+            ->select('COUNT(*) as value');
+
+        if ($userGroupId)
+        {
+            $query->join('usergroups_users userGroupUsers', 'userGroupUsers.userId = users.id');
+            $query->where('userGroupUsers.groupId = :userGroupId', array(':userGroupId' => $userGroupId));
+        }
+
+        // Get the chart data table
+        $dataTable = ChartHelper::getRunChartDataFromQuery($query, $startDate, $endDate, 'users.dateCreated', array(
+            'intervalUnit' => $intervalUnit,
+            'valueLabel' => Craft::t('New Users'),
+        ));
+
+        // Get the total number of new users
+        $total = 0;
+
+        foreach($dataTable['rows'] as $row)
+        {
+            $total = $total + $row[1];
+        }
+
+        // Return everything
+        $this->returnJson(array(
+            'dataTable' => $dataTable,
+            'total' => $total,
+
+            'formats' => craft()->charts->getFormats(),
+            'orientation' => craft()->locale->getOrientation(),
+            'scale' => $intervalUnit,
+        ));
     }
 }
