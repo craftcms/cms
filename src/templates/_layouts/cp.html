@@ -351,9 +351,25 @@
 		{% endif %}
 
 		<div id="footer">
+			<div class="edition">
+				{%- spaceless %}
+					{% set canUpgradeEdition = craft.app.canUpgradeEdition() %}
+					{% set licensedEdition = craft.app.getLicensedEdition() %}
+					{% set isTrial = licensedEdition is not sameas(null) and licensedEdition is not sameas(CraftEdition) %}
+
+					<div id="edition-logo" {% if canUpgradeEdition %}class="hot" title="{{ 'Manage your Craft CMS edition'|t }}"{% endif %}>
+						<div class="edition-name">{{ craft.app.getEditionName() }}</div>
+						{% if isTrial %}
+							<div class="edition-trial">{{ "Trial"|t }}</div>
+						{% endif %}
+					</div>
+					{% if canUpgradeEdition %}
+						<div class="icon settings"></div>
+					{% endif %}
+				{% endspaceless -%}
+			</div>
 			<ul>
-				<li>@@@appName@@@ {{ craft.app.getEditionName()}} {{ craft.app.getVersion() }}.{{ craft.app.getBuild() }}</li>
-				<li>{{ craft.app.releaseDate.localeDate }}</li>
+				<li>@@@appName@@@ {{ craft.app.getVersion() }}.{{ craft.app.getBuild() }}</li>
 				<li>© Pixel &amp; Tonic</li>
 				{% if currentUser.can('performUpdates') %}
 					<li><a id="footer-updates" href="{{ url('updates') }}">{{ craft.app.isUpdateInfoCached() and totalUpdates is defined and totalUpdates ? updateText : "Check for updates"|t }}</a></li>
@@ -362,10 +378,6 @@
 					<li><a href="{{ url('utils/serverinfo') }}">{{ "Server Info"|t }}</a></li>
 				{% endif %}
 			</ul>
-
-			{% if (CraftEdition == CraftPersonal or craft.app.getLicensedEdition() is sameas(CraftPersonal) or craft.request.getPath == 'settings') and craft.app.canUpgradeEdition() %}
-				<p id="upgradepromo"><a>{{ "Upgrade Craft to take your site to the next level."|t }} <span class="go nowrap">{{ "Show me"|t }}</span></a></p>
-			{% endif %}
 		</div>
 
 	{% if not fullPageForm %}
