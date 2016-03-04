@@ -56,7 +56,7 @@ class NewUsersWidget extends BaseWidget
         craft()->templates->includeJs('new Craft.NewUsersWidget('.$this->model->id.', '.JsonHelper::encode($options).');');
 
         $dateRange = false;
-        $dateRanges = craft()->charts->getDateRanges();
+        $dateRanges = ChartHelper::getDateRanges();
 
         if(isset($dateRanges[$settings->dateRange]))
         {
