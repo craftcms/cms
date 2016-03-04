@@ -183,21 +183,4 @@ class ChartsService extends BaseApplicationComponent
 
         return $dateRanges;
     }
-
-    // Private Methods
-    // =========================================================================
-
-    /**
-     * Returns new users report as a data table
-     *
-     * @param string $startDate
-     * @param string $endDate
-     * @param int|null $userGroupId
-     *
-     * @return array Returns a data table (array of columns and rows)
-     */
-    private function getNewUsersDataTable(DateTime $startDate, DateTime $endDate, $userGroupId = null)
-    {
-
-    }
 }
