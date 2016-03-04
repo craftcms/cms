@@ -47,35 +47,6 @@ class ChartsService extends BaseApplicationComponent
     }
 
     /**
-     * Returns the scale date format based on the scale
-     *
-     * @param string $scale
-     *
-     * @return string
-     */
-    public function getScaleDateFormat($scale)
-    {
-        switch ($scale)
-        {
-            case 'year':
-                return "%Y-01-01";
-                break;
-            case 'month':
-
-                return "%Y-%m-01";
-                break;
-
-            case 'day':
-                return "%Y-%m-%d";
-                break;
-
-            case 'hour':
-                return "%Y-%m-%d %H:00:00";
-                break;
-        }
-    }
-
-    /**
      * Returns the short date, decimal, percent and currency D3 formats based on Craft's locale settings
      *
      * @return array
@@ -258,91 +229,18 @@ class ChartsService extends BaseApplicationComponent
     private function getNewUsersDataTable(DateTime $startDate, DateTime $endDate, $userGroupId = null)
     {
         $query = craft()->db->createCommand()
-            ->select('DATE_FORMAT(users.dateCreated, "%Y-%m-%d") as date, COUNT(*) as totalUsers')
             ->from('users users')
-            ->where(array('and', 'users.dateCreated > :startDate', 'users.dateCreated < :endDate'), array(':startDate' => $startDate->mySqlDateTime(), ':endDate' => $endDate->mySqlDateTime()))
-            ->group('YEAR(users.dateCreated), MONTH(users.dateCreated), DAY(users.dateCreated)');
+            ->select('COUNT(*) as value');
 
         if ($userGroupId)
         {
             $query->join('usergroups_users userGroupUsers', 'userGroupUsers.userId = users.id');
-            $query->andWhere('userGroupUsers.groupId = :userGroupId', array(':userGroupId' => $userGroupId));
+            $query->where('userGroupUsers.groupId = :userGroupId', array(':userGroupId' => $userGroupId));
         }
 
-        $results = $query->queryAll();
-
-        return $this->parseResultsToDataTable($startDate, $endDate, $results);
-    }
-
-    /**
-     * Parses database results, fills blanks (dates where row value is zero), and then returns a data table
-     *
-     * @param string $startDate
-     * @param string $endDate
-     * @param array $results
-     *
-     * @return array Returns an array of columns and rows
-     */
-    private function parseResultsToDataTable($startDate, $endDate, $results)
-    {
-        $columns = array(
-	        array('type' => 'date', 'label' => Craft::t('Date')),
-	        array('type' => 'number','label' => Craft::t('Users')),
-        );
-
-
-        // fill data table rows from results and set a total of zero users when no result is found for that date
-
-        $scale = ChartHelper::getDateChartScale($startDate, $endDate);
-
-        $rows = array();
-
-        $timezone = new \DateTimeZone(craft()->timezone);
-
-        switch($scale)
-        {
-            case 'year':
-            $cursorCurrent = new DateTime($startDate, $timezone);
-            $cursorCurrent = new DateTime($cursorCurrent->format('Y-01-01'), $timezone);
-            break;
-            
-            case 'month':
-            $cursorCurrent = new DateTime($startDate, $timezone);
-            $cursorCurrent = new DateTime($cursorCurrent->format('Y-m-01'), $timezone);
-            break;
-
-            default:
-            $cursorCurrent = new DateTime($startDate, $timezone);
-        }
-
-        while($cursorCurrent->getTimestamp() < $endDate->getTimestamp())
-        {
-            $cursorStart = new DateTime($cursorCurrent, $timezone);
-            $cursorCurrent->modify('+1 '.$scale);
-            $cursorEnd = $cursorCurrent;
-
-            $row = array(
-	            strftime("%Y-%m-%d", $cursorStart->getTimestamp()), // date
-	            0 // totalUsers
-	        );
-
-            foreach($results as $result)
-            {
-                if($result['date'] == strftime("%Y-%m-%d", $cursorStart->getTimestamp()))
-                {
-                    $row = array(
-                        $result['date'], // date
-                        $result['totalUsers'] // totalUsers
-                    );
-                }
-            }
-
-            $rows[] = $row;
-        }
-
-        return array(
-            'columns' => $columns,
-            'rows' => $rows
-        );
+        return ChartHelper::generateDateChartFromQuery($query, $startDate, $endDate, 'users.dateCreated', array(
+            'intervalUnit' => 'day',
+            'valueLabel' => Craft::t('New Users'),
+        ));
     }
 }
