@@ -81,7 +81,7 @@ class NumberFormatter extends \CNumberFormatter
 	 */
 	public function formatCurrency($value, $currency, $stripZeroCents = false)
 	{
-		$result = parent::formatCurrency($value, Craft::t($currency));
+		$result = parent::formatCurrency($value, $currency);
 
 		if ($stripZeroCents)
 		{
