@@ -38,6 +38,26 @@ class NewUsersWidget extends BaseWidget
     }
 
     /**
+     * @inheritDoc IWidget::getTitle()
+     *
+     * @return string
+     */
+    public function getTitle()
+    {
+        if ($userGroupId = $this->getSettings()->userGroupId)
+        {
+            $userGroup = craft()->userGroups->getGroupById($userGroupId);
+
+            if ($userGroup)
+            {
+                return Craft::t('New Users').' – '.Craft::t($userGroup->name);
+            }
+        }
+
+        return parent::getTitle();
+    }
+
+    /**
      * @inheritDoc IWidget::getBodyHtml()
      *
      * @return string|false
@@ -63,10 +83,7 @@ class NewUsersWidget extends BaseWidget
             $dateRange = $dateRanges[$settings->dateRange];
         }
 
-        return craft()->templates->render('_components/widgets/NewUsers/body', array(
-            'userGroup' => $userGroup,
-            'dateRange' => $dateRange
-        ));
+        return '<div></div>';
     }
 
     /**
