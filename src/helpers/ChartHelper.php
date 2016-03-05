@@ -106,7 +106,7 @@ class ChartHelper
 			->queryAll();
 
 		// Assembe the data
-		$rows = [];
+		$rows = array();
 
 		$endTimestamp = $endDate->getTimestamp();
 
