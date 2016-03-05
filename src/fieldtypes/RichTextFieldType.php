@@ -63,12 +63,9 @@ class RichTextFieldType extends BaseFieldType
 		);
 
 		$sourceOptions = array();
-		foreach (craft()->assetSources->getAllSources() as $source)
+		foreach (craft()->assetSources->getPublicSources() as $source)
 		{
-			if ($source->getSourceType()->getHasUrls())
-			{
-				$sourceOptions[] = array('label' => $source->name, 'value' => $source->id);
-			}
+			$sourceOptions[] = array('label' => $source->name, 'value' => $source->id);
 		}
 
 		$transformOptions = array();
@@ -433,7 +430,7 @@ class RichTextFieldType extends BaseFieldType
 
 		if (!$assetSourceIds)
 		{
-			$assetSourceIds = craft()->assetSources->getAllSourceIds();
+			$assetSourceIds = craft()->assetSources->getPublicSourceIds();
 		}
 
 		$folders = craft()->assets->findFolders(array(
