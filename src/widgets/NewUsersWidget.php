@@ -64,6 +64,11 @@ class NewUsersWidget extends BaseWidget
      */
     public function getBodyHtml()
     {
+        if (craft()->getEdition() != Craft::Pro)
+        {
+            return false;
+        }
+
         $settings = $this->getSettings();
 
         $groupId = $settings->userGroupId;
