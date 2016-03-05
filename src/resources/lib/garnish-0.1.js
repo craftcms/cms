@@ -799,7 +799,7 @@ Garnish.Base = Base.extend({
 
 			this._eventHandlers.push({
 				type: ev[0],
-				namespace: ev[1],
+				namepsace: ev[1],
 				data: data,
 				handler: handler
 			});
@@ -4899,6 +4899,7 @@ Garnish.Modal = Garnish.Base.extend({
  * Nice Text
  */
 Garnish.NiceText = Garnish.Base.extend({
+
 	$input: null,
 	$hint: null,
 	$stage: null,
