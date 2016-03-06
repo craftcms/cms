@@ -4,7 +4,8 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "4042710fc03eb2bc85c2937b00f62ae1",
+    "hash": "8178a7074beb45939457da65d3d7e92b",
+    "content-hash": "24bf0996a6176c7950caf349ae35059b",
     "packages": [
         {
             "name": "guzzle/guzzle",
@@ -396,11 +397,11 @@
         },
         {
             "name": "twig/twig",
-            "version": "1.23.2",
+            "version": "1.24.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/pixelandtonic/Twig",
-                "reference": "d584e6df2daa0745d53a130b8f3d7627438117d7"
+                "reference": "fa5387397a27db8284d2cb7ba97f69b296a85015"
             },
             "require": {
                 "php": ">=5.2.7"
@@ -412,7 +413,7 @@
             "type": "library",
             "extra": {
                 "branch-alias": {
-                    "dev-master": "1.23-dev"
+                    "dev-master": "1.24-dev"
                 }
             },
             "autoload": {
@@ -449,7 +450,7 @@
             "support": {
                 "forum": "https://groups.google.com/forum/#!forum/twig-users"
             },
-            "time": "2015-11-22 02:19:18"
+            "time": "2016-03-06 03:36:05"
         }
     ],
     "packages-dev": [
