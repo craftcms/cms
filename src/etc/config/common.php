@@ -211,10 +211,10 @@ $components['plugins'] = array(
 
 // Craft Client components
 $components['editionComponents'][1]['emailMessages']['class']   = 'Craft\EmailMessagesService';
+$components['editionComponents'][1]['userPermissions']['class'] = 'Craft\UserPermissionsService';
 
 // Craft Pro components
 $components['editionComponents'][2]['userGroups']['class']      = 'Craft\UserGroupsService';
-$components['editionComponents'][2]['userPermissions']['class'] = 'Craft\UserPermissionsService';
 
 $components['messages']['class'] = 'Craft\PhpMessageSource';
 $components['coreMessages']['class'] = 'Craft\PhpMessageSource';

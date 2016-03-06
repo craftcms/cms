@@ -1,7 +1,7 @@
 <?php
 namespace Craft;
 
-craft()->requireEdition(Craft::Pro);
+craft()->requireEdition(Craft::Client);
 
 /**
  * Class UserPermissionsService
@@ -73,30 +73,33 @@ class UserPermissionsService extends BaseApplicationComponent
 		// Users
 		// ---------------------------------------------------------------------
 
-		$permissions[Craft::t('Users')] = array(
-			'editUsers' => array(
-				'label' => Craft::t('Edit users'),
-				'nested' => array(
-					'registerUsers' => array(
-						'label' => Craft::t('Register users')
-					),
-					'assignUserPermissions' => array(
-						'label' => Craft::t('Assign user groups and permissions')
-					),
-					'administrateUsers' => array(
-						'label' => Craft::t('Administrate users'),
-						'nested' => array(
-							'changeUserEmails' => array(
-								'label' => Craft::t('Change users’ emails')
-							)
-						)
-					)
-				),
-			),
-			'deleteUsers' => array(
-				'label' => Craft::t('Delete users')
-			),
-		);
+		if (craft()->getEdition() == Craft::Pro)
+		{
+			$permissions[Craft::t('Users')] = [
+				'editUsers' => [
+					'label' => Craft::t('Edit users'),
+					'nested' => [
+						'registerUsers' => [
+							'label' => Craft::t('Register users')
+						],
+						'assignUserPermissions' => [
+							'label' => Craft::t('Assign user groups and permissions')
+						],
+						'administrateUsers' => [
+							'label' => Craft::t('Administrate users'),
+							'nested' => [
+								'changeUserEmails' => [
+									'label' => Craft::t('Change users’ emails')
+								]
+							]
+						]
+					],
+				],
+				'deleteUsers' => [
+					'label' => Craft::t('Delete users')
+				],
+			];
+		}
 
 		// Locales
 		// ---------------------------------------------------------------------

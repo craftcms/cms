@@ -292,9 +292,9 @@ class UserModel extends BaseElementModel
 	 */
 	public function can($permission)
 	{
-		if (craft()->getEdition() == Craft::Pro)
+		if (craft()->getEdition() >= Craft::Client)
 		{
-			if ($this->admin || $this->client)
+			if ($this->admin)
 			{
 				return true;
 			}

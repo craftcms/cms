@@ -505,6 +505,13 @@ class UsersController extends BaseController
 				throw new HttpException(404);
 			}
 		}
+		else
+		{
+			if ($account !== null && $account == 'client')
+			{
+				$isClientAccount = true;
+			}
+		}
 
 		$variables['isNewAccount'] = !$variables['account']->id;
 
@@ -674,8 +681,14 @@ class UsersController extends BaseController
 			);
 		}
 
-		// Show the permission tab for the users that can change them on Craft Pro editions.
-		if (craft()->getEdition() == Craft::Pro && craft()->userSession->getUser()->can('assignUserPermissions'))
+
+
+		// Show the permission tab for the users that can change them on Craft Client+ editions (unless
+		// you're on Client and you're the admin account. No need to show since we always need an admin on Client)
+		if (
+			(craft()->getEdition() >= Craft::Client && craft()->userSession->getUser()->can('assignUserPermissions')) &&
+			(craft()->getEdition() == Craft::Client && $isClientAccount)
+		)
 		{
 			$variables['tabs']['perms'] = array(
 					'label' => Craft::t('Permissions'),
@@ -694,7 +707,7 @@ class UsersController extends BaseController
 			// Ugly.  But Users don't have a real fieldlayout/tabs.
 			$accountFields = array('username', 'firstName', 'lastName', 'email', 'password', 'newPassword', 'currentPassword', 'passwordResetRequired', 'preferredLocale');
 
-			if (craft()->getEdition() == Craft::Pro && $variables['account']->hasErrors())
+			if (craft()->getEdition() >= Craft::Client && $variables['account']->hasErrors())
 			{
 				$errors = $variables['account']->getErrors();
 
@@ -1643,30 +1656,38 @@ class UsersController extends BaseController
 	 */
 	private function _processUserGroupsPermissions(UserModel $user)
 	{
-		// Save any user groups
-		if (craft()->getEdition() == Craft::Pro && craft()->userSession->checkPermission('assignUserPermissions'))
+		// Make sure there are assignUserPermissions
+		if (craft()->userSession->checkPermission('assignUserPermissions'))
 		{
-			// Save any user groups
-			$groupIds = craft()->request->getPost('groups');
-
-			if ($groupIds !== null)
+			// Only Craft Pro has user groups
+			if (craft()->getEdition() == Craft::Pro)
 			{
-				craft()->userGroups->assignUserToGroups($user->id, $groupIds);
+				// Save any user groups
+				$groupIds = craft()->request->getPost('groups');
+
+				if ($groupIds !== null)
+				{
+					craft()->userGroups->assignUserToGroups($user->id, $groupIds);
+				}
 			}
 
-			// Save any user permissions
-			if ($user->admin)
+			// Craft Client+ has user permissions.
+			if (craft()->getEdition() >= Craft::Client)
 			{
-				$permissions = array();
-			}
-			else
-			{
-				$permissions = craft()->request->getPost('permissions');
-			}
+				// Save any user permissions
+				if ($user->admin)
+				{
+					$permissions = array();
+				}
+				else
+				{
+					$permissions = craft()->request->getPost('permissions');
+				}
 
-			if ($permissions !== null)
-			{
-				craft()->userPermissions->saveUserPermissions($user->id, $permissions);
+				if ($permissions !== null)
+				{
+					craft()->userPermissions->saveUserPermissions($user->id, $permissions);
+				}
 			}
 		}
 	}
