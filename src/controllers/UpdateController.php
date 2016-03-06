@@ -411,7 +411,8 @@ class UpdateController extends BaseController
 
 		craft()->updates->updateCleanUp($uid, $handle);
 
-		if ($handle == 'craft' && $oldVersion && version_compare($oldVersion, craft()->getVersion(), '<'))
+		// New major Craft CMS version?
+		if ($handle == 'craft' && $oldVersion && AppHelper::getMajorVersion($oldVersion) < AppHelper::getMajorVersion(craft()->getVersion()))
 		{
 			$returnUrl = UrlHelper::getUrl('whats-new');
 		}
