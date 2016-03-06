@@ -537,13 +537,13 @@ var MatrixBlock = Garnish.Base.extend(
 		if (animate)
 		{
 			this.$fieldsContainer.velocity('fadeOut', { duration: 'fast' });
-			this.$container.velocity({ height: 17 }, 'fast');
+			this.$container.velocity({ height: 16 }, 'fast');
 		}
 		else
 		{
 			this.$previewContainer.show();
 			this.$fieldsContainer.hide();
-			this.$container.css({ height: 17 });
+			this.$container.css({ height: 16 });
 		}
 
 		setTimeout($.proxy(function() {
