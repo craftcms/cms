@@ -31,7 +31,7 @@ body { overflow-x: hidden; }
 /* global sidebar */
 #global-sidebar { @include display-flex; @include flex-direction(column); position: fixed; top: 0; @include left(0); width: 220px; height: 100vh; background: $headerBgColor; z-index: 100; overflow: auto; }
 
-#global-sidebar nav { @include flex-grow(1); }
+#global-sidebar nav { @include flex-grow(1); -ms-flex-preferred-size: auto; }
 
 #global-sidebar #devmode { width: 100%; height: 4px; background: url(../images/dev-mode.svg) repeat-x 15px 0; cursor: help; }
 
