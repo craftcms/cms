@@ -222,8 +222,8 @@ class ChartHelper
 		// yii formats to d3 formats
 
 		$yiiToD3Formats = array(
-			'day' => array('dd' => '%d','d' => '%d'),
-			'month' => array('MM' => '%m','M' => '%m'),
+			'day' => array('dd' => '%-d','d' => '%-d'),
+			'month' => array('MM' => '%-m','M' => '%-m'),
 			'year' => array('yyyy' => '%Y','yy' => '%y','y' => '%y')
 		);
 
