@@ -195,62 +195,63 @@ class ChartHelper
      *
      * @return array
      */
-    public static function getShortDateFormats()
-    {
-        $format = craft()->locale->getDateFormat('short');
+	public static function getShortDateFormats()
+	{
+		$format = craft()->locale->getDateFormat('short');
 
-        $removals = array(
-            'day' => array('y'),
-            'month' => array('d'),
-            'year' => array('d', 'm'),
-        );
+		// Some of these are RTL versions
+		$removals = array(
+			'day' => array('y'),
+			'month' => array('d', 'd‏'),
+			'year' => array('d', 'd‏', 'm', 'M‏'),
+		);
 
-        $shortDateFormats = array();
+		$shortDateFormats = array();
 
-        foreach($removals as $unit => $chars)
-        {
-            $shortDateFormats[$unit] = $format;
+		foreach($removals as $unit => $chars)
+		{
+			$shortDateFormats[$unit] = $format;
 
-            foreach($chars as $char)
-            {
-                $shortDateFormats[$unit] = preg_replace("/(^[{$char}]+\W+|\W+[{$char}]+)/i", '', $shortDateFormats[$unit]);
-            }
-        }
+			foreach($chars as $char)
+			{
+				$shortDateFormats[$unit] = preg_replace("/(^[{$char}]+\W+|\W+[{$char}]+)/iu", '', $shortDateFormats[$unit]);
+			}
+		}
 
 
-        // yii formats to d3 formats
+		// yii formats to d3 formats
 
-        $yiiToD3Formats = array(
-            'day' => array('dd' => '%d','d' => '%d'),
-            'month' => array('MM' => '%m','M' => '%m'),
-            'year' => array('yyyy' => '%Y','yy' => '%y','y' => '%y')
-        );
+		$yiiToD3Formats = array(
+			'day' => array('dd' => '%-d','d' => '%-d'),
+			'month' => array('MM' => '%-m','M' => '%-m'),
+			'year' => array('yyyy' => '%Y','yy' => '%y','y' => '%y')
+		);
 
-        foreach($shortDateFormats as $unit => $format)
-        {
-            foreach($yiiToD3Formats as $_unit => $_formats)
-            {
-                foreach($_formats as $yiiFormat => $d3Format)
-                {
-                    $pattern = "/({$yiiFormat})/i";
+		foreach($shortDateFormats as $unit => $format)
+		{
+			foreach($yiiToD3Formats as $_unit => $_formats)
+			{
+				foreach($_formats as $yiiFormat => $d3Format)
+				{
+					$pattern = "/({$yiiFormat})/i";
 
-                    preg_match($pattern, $shortDateFormats[$unit], $matches);
+					preg_match($pattern, $shortDateFormats[$unit], $matches);
 
-                    if(count($matches) > 0)
-                    {
-                        $shortDateFormats[$unit] = preg_replace($pattern, $d3Format, $shortDateFormats[$unit]);
+					if(count($matches) > 0)
+					{
+						$shortDateFormats[$unit] = preg_replace($pattern, $d3Format, $shortDateFormats[$unit]);
 
-                        break;
-                    }
+						break;
+					}
 
-                }
-            }
-        }
+				}
+			}
+		}
 
-        return $shortDateFormats;
-    }
+		return $shortDateFormats;
+	}
 
-    /**
+	/**
      * Returns the D3 decimal format based on Yii's decimal format
      *
      * @return array

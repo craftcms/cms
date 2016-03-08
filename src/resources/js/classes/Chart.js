@@ -200,10 +200,8 @@ Craft.charts.BaseChart = Garnish.Base.extend(
         this.initChartElement();
 
         this.orientation = this.settings.orientation;
-        this.dataTable = dataTable;
 
-        this.width = this.$chart.width() - this.settings.margin.left - this.settings.margin.right - this.settings.chartMargin.left - this.settings.chartMargin.right;
-        this.height = this.$chart.height() - this.settings.margin.top - this.settings.margin.bottom;
+        this.dataTable = dataTable;
     },
 
     xTickFormat: function(locale)
@@ -288,55 +286,101 @@ Craft.charts.Area = Craft.charts.BaseChart.extend(
 {
     tip: null,
 
+    paddedX: null,
+    paddedY: null,
+
     draw: function(dataTable, settings)
     {
         this.base(dataTable, settings, Craft.charts.Area.defaults);
 
-        // X & Y Scales
+        if(this.tip)
+        {
+            this.tip = null;
+        }
 
+        this.width = this.$chart.width() - this.settings.margin.left - this.settings.margin.right;
+        this.height = this.$chart.height() - this.settings.margin.top - this.settings.margin.bottom;
+
+        // X & Y Scales & Domains
         this.x = d3.time.scale().range([0, this.width]);
         this.y = d3.scale.linear().range([this.height, 0]);
-
-        // Area
-        this.area = d3.svg.area()
-            .x($.proxy(function(d) { return this.x(d[0]); }, this))
-            .y0(this.height)
-            .y1($.proxy(function(d) { return this.y(d[1]); }, this));
-
-        // Line
-        this.line = d3.svg.line()
-            .x($.proxy(function(d) { return this.x(d[0]); }, this))
-            .y($.proxy(function(d) { return this.y(d[1]); }, this));
-
-        // Append graph to chart element
-        var svgWidth = this.width + (this.settings.margin.left + this.settings.margin.right);
-        var svgHeight = this.height + (this.settings.margin.top + this.settings.margin.bottom);
-        var translateX = (this.settings.orientation != 'rtl' ? (this.settings.margin.left + this.settings.chartMargin.left) : (this.settings.margin.right + this.settings.chartMargin.right));
-        var translateY = this.settings.margin.top;
-
-        this.svg = d3.select(this.$chart.get(0)).append("svg")
-                .attr("width", svgWidth)
-                .attr("height", svgHeight)
-            .append("g")
-                .attr("transform", "translate(" + translateX + "," + translateY + ")");
-
-        // Domains
         this.x.domain(this.xDomain());
         this.y.domain(this.yDomain());
 
+        // Append SVG to chart element
 
-        // Draw
+        var svg = {
+            width: this.width + (this.settings.margin.left + this.settings.margin.right),
+            height: this.height + (this.settings.margin.top + this.settings.margin.bottom),
+            translateX: (this.orientation != 'rtl' ? (this.settings.margin.left) : (this.settings.margin.right)),
+            translateY: this.settings.margin.top
+        };
+
+        this.svg = d3.select(this.$chart.get(0)).append("svg")
+                .attr("width", svg.width)
+                .attr("height", svg.height)
+            .append("g")
+                .attr("transform", "translate(" + svg.translateX + "," + svg.translateY + ")");
+
+        // Draw elements
         this.drawGridlines();
+        this.drawYTicks();
+
+
+        // Draw padded elements
+        var chartMargin = this.getChartMargin();
+        this.paddedX = d3.time.scale().range([chartMargin.left, (this.width - chartMargin.right)]);
+        this.paddedY = d3.scale.linear().range([this.height, 0]);
+        this.paddedX.domain(this.xDomain());
+        this.paddedY.domain(this.yDomain());
+
+        this.drawXTicks();
+        this.onAfterDrawTicks();
         this.drawAxes();
-        this.drawPlots();
         this.drawChart();
-        this.drawTicks();
+        this.drawPlots();
         this.drawTipTriggers();
+    },
+
+    getChartMargin: function()
+    {
+        var left = 0;
+        var right = 0;
+
+
+        // calculate left based on widest Y tick's width
+
+        var yTickMaxWidth = 0;
+
+        $('.y .tick text:last', this.$chart).each(function(tickKey, tick)
+        {
+            var tickWidth = $(tick).get(0).getBoundingClientRect().width;
+
+            if(tickWidth > yTickMaxWidth)
+            {
+                yTickMaxWidth = tickWidth;
+            }
+        });
+
+        left = yTickMaxWidth + 14;
+
+        return {
+            left: (this.orientation != 'rtl' ? left : right),
+            right: (this.orientation != 'rtl' ? right : left)
+        };
     },
 
     drawChart: function()
     {
+        var x = this.paddedX;
+        var y = this.paddedY;
+
         // Line
+
+        var line = d3.svg.line()
+            .x(function(d) { return x(d[0]); })
+            .y(function(d) { return y(d[1]); });
+
         this.svg
             .append("g")
                 .attr("class", "chart-line")
@@ -347,7 +391,13 @@ Craft.charts.Area = Craft.charts.BaseChart.extend(
                     'stroke': this.settings.colors[0],
                     'stroke-width': '3px',
                 })
-                .attr("d", this.line);
+                .attr("d", line);
+
+        // Area
+        var area = d3.svg.area()
+            .x(function(d) { return x(d[0]); })
+            .y0(this.height)
+            .y1(function(d) { return y(d[1]); });
 
         // Area
         this.svg
@@ -359,19 +409,17 @@ Craft.charts.Area = Craft.charts.BaseChart.extend(
                     'fill': this.settings.colors[0],
                     'fill-opacity': '0.3'
                 })
-                .attr("d", this.area);
+                .attr("d", area);
     },
 
     drawAxes: function()
     {
-        var xMin = 0;
-        var xMax = (this.width + this.settings.chartMargin.left + this.settings.chartMargin.right);
-
-        var x = d3.time.scale().range([xMin, xMax]);
+        var x = d3.time.scale().range([0, this.width]);
+        var y = this.y;
 
         var xAxis = d3.svg.axis().scale(x).orient("bottom").ticks(0).outerTickSize(0);
 
-        var xTranslateX = - (this.settings.orientation != 'rtl' ? this.settings.chartMargin.left : this.settings.chartMargin.right);
+        var xTranslateX = - 0;
         var xTranslateY = this.height;
 
         this.svg.append("g")
@@ -379,14 +427,16 @@ Craft.charts.Area = Craft.charts.BaseChart.extend(
             .attr("transform", "translate("+ xTranslateX +"," + xTranslateY + ")")
             .call(xAxis);
 
+        var chartMargin = this.getChartMargin();
+
         if(this.settings.axis.y.show)
         {
             if(this.orientation == 'rtl')
             {
-                var yTranslateX = this.width;
+                var yTranslateX = this.width - chartMargin.right;
                 var yTranslateY = 0;
 
-                var yAxis = d3.svg.axis().scale(this.y).orient("left").ticks(0);
+                var yAxis = d3.svg.axis().scale(y).orient("left").ticks(0);
 
                 this.svg.append("g")
                     .attr("class", "y axis")
@@ -395,10 +445,10 @@ Craft.charts.Area = Craft.charts.BaseChart.extend(
             }
             else
             {
-                var yTranslateX = - (this.settings.chartMargin.left);
+                var yTranslateX = chartMargin.left;
                 var yTranslateY = 0;
 
-                var yAxis = d3.svg.axis().scale(this.y).orient("right").ticks(0);
+                var yAxis = d3.svg.axis().scale(y).orient("right").ticks(0);
 
                 this.svg.append("g")
                     .attr("class", "y axis")
@@ -408,26 +458,18 @@ Craft.charts.Area = Craft.charts.BaseChart.extend(
         }
     },
 
-    drawTicks: function()
+    drawYTicks: function()
     {
-        var xAxis = d3.svg.axis().scale(this.x).orient("bottom")
-            .tickFormat(this.xTickFormat(this.locale))
-            .ticks(this.xTicks());
-
-        this.svg.append("g")
-            .attr("class", "x ticks-axis")
-            .attr("transform", "translate(0," + this.height + ")")
-            .style(this.settings.ticksStyles)
-            .call(xAxis);
+        var y = this.y;
 
         if(this.orientation == 'rtl')
         {
-            var yAxis = d3.svg.axis().scale(this.y).orient("left")
+            var yAxis = d3.svg.axis().scale(y).orient("left")
                 .tickFormat(this.yTickFormat(this.locale))
                 .tickValues(this.yTickValues())
                 .ticks(this.yTicks());
 
-            var translateX = this.width + this.settings.chartMargin.left + 10;
+            var translateX = this.width + 10;
             var translateY = 0;
 
             this.svg.append("g")
@@ -442,12 +484,12 @@ Craft.charts.Area = Craft.charts.BaseChart.extend(
         }
         else
         {
-            var yAxis = d3.svg.axis().scale(this.y).orient("right")
+            var yAxis = d3.svg.axis().scale(y).orient("right")
                 .tickFormat(this.yTickFormat(this.locale))
                 .tickValues(this.yTickValues())
                 .ticks(this.yTicks());
 
-            var translateX = - (this.settings.chartMargin.left + 10);
+            var translateX = - (10);
             var translateY = 0;
 
             this.svg.append("g")
@@ -456,15 +498,31 @@ Craft.charts.Area = Craft.charts.BaseChart.extend(
                 .style(this.settings.ticksStyles)
                 .call(yAxis);
         }
+    },
 
-        this.onAfterDrawTicks();
+    drawXTicks: function()
+    {
+        var x = this.paddedX;
+
+        var xAxis = d3.svg.axis().scale(x).orient("bottom")
+            .tickFormat(this.xTickFormat(this.locale))
+            .ticks(this.xTicks());
+
+        this.svg.append("g")
+            .attr("class", "x ticks-axis")
+            .attr("transform", "translate(0," + this.height + ")")
+            .style(this.settings.ticksStyles)
+            .call(xAxis);
     },
 
     drawGridlines: function()
     {
+        var x = this.x;
+        var y = this.y;
+
         if(this.settings.xAxisGridlines)
         {
-            var xLineAxis = d3.svg.axis().scale(this.x).orient("bottom");
+            var xLineAxis = d3.svg.axis().scale(x).orient("bottom");
 
             // draw x lines
             this.svg.append("g")
@@ -478,12 +536,12 @@ Craft.charts.Area = Craft.charts.BaseChart.extend(
 
         if(this.settings.yAxisGridlines)
         {
-            var yLineAxis = d3.svg.axis().scale(this.y).orient("left");
+            var yLineAxis = d3.svg.axis().scale(y).orient("left");
 
-            var translateX = (this.settings.orientation != 'rtl' ? this.settings.chartMargin.left : this.settings.chartMargin.right);
+            var translateX = 0;
             var translateY = 0;
 
-            var innerTickSize = - (this.width + this.settings.chartMargin.left + this.settings.chartMargin.right);
+            var innerTickSize = - (this.width);
             var outerTickSize = 0;
 
             this.svg.append("g")
@@ -500,6 +558,9 @@ Craft.charts.Area = Craft.charts.BaseChart.extend(
 
     drawPlots: function()
     {
+        var x = this.paddedX;
+        var y = this.paddedY;
+
         if(this.settings.enablePlots)
         {
             this.svg.append('g')
@@ -513,8 +574,8 @@ Craft.charts.Area = Craft.charts.BaseChart.extend(
                     })
                     .attr("class", $.proxy(function(d, index) { return 'plot plot-'+index; }, this))
                     .attr("r", 4)
-                    .attr("cx", $.proxy(function(d) { return this.x(d[0]); }, this))
-                    .attr("cy", $.proxy(function(d) { return this.y(d[1]); }, this));
+                    .attr("cx", $.proxy(function(d) { return x(d[0]); }, this))
+                    .attr("cy", $.proxy(function(d) { return y(d[1]); }, this));
         }
     },
 
@@ -535,8 +596,10 @@ Craft.charts.Area = Craft.charts.BaseChart.extend(
 
     xAxisTickInterval: function()
     {
+        var chartMargin = this.getChartMargin()
+
         var outerTickSize = 6;
-        var length = this.svg.select('.x path.domain').node().getTotalLength() - this.settings.chartMargin.left - this.settings.chartMargin.right - outerTickSize * 2;
+        var length = this.svg.select('.x path.domain').node().getTotalLength() - chartMargin.left - chartMargin.right - outerTickSize * 2;
         var interval = length / (this.dataTable.rows.length - 1);
 
         return interval;
@@ -544,6 +607,8 @@ Craft.charts.Area = Craft.charts.BaseChart.extend(
 
     drawTipTriggers: function()
     {
+        var x = this.paddedX;
+
         if(this.settings.enableTips)
         {
             var tipSettings = {
@@ -557,7 +622,7 @@ Craft.charts.Area = Craft.charts.BaseChart.extend(
 
             if(!this.tip)
             {
-                this.tip = new Craft.charts.Tip(this.$container, tipSettings);
+                this.tip = new Craft.charts.Tip(this.$chart, tipSettings);
             }
             else
             {
@@ -576,7 +641,7 @@ Craft.charts.Area = Craft.charts.BaseChart.extend(
                 })
                 .attr("width", this.getTipTriggerWidth())
                 .attr("height", this.height)
-                .attr("x", $.proxy(function(d) { return this.x(d[0]) - this.getTipTriggerWidth() / 2; }, this))
+                .attr("x", $.proxy(function(d) { return x(d[0]) - this.getTipTriggerWidth() / 2; }, this))
                 .on("mouseover", $.proxy(function(d, index)
                 {
                     this.expandPlot(index);
@@ -595,24 +660,34 @@ Craft.charts.Area = Craft.charts.BaseChart.extend(
 
     getTipPosition: function($tip, d)
     {
+        var x = this.paddedX;
+        var y = this.paddedY;
+
+        var chartMargin = this.getChartMargin()
+
         var offset = 24;
+        var top = (y(d[1]) - $tip.height() / 2);
 
-        var top = (this.y(d[1]) - $tip.height() / 2);
-
-        if(this.settings.orientation != 'rtl')
+        if(this.orientation != 'rtl')
         {
-            var left = (this.x(d[0]) + this.settings.chartMargin.left + offset);
+            var left = (x(d[0]) + this.settings.margin.left + offset);
+
+            var calcLeft = (this.$chart.offset().left + left + $tip.width());
+            var maxLeft = this.$chart.offset().left + this.$chart.width() - offset;
+
+            if(calcLeft > maxLeft)
+            {
+                left = x(d[0]) - ($tip.width() + offset);
+            }
         }
         else
         {
-            var left = (this.x(d[0]) - $tip.outerWidth() - offset);
+            var left = (x(d[0]) - ($tip.width() + this.settings.margin.left + offset));
         }
 
-        var calcLeft = (this.$container.offset().left + left + $tip.outerWidth());
-
-        if(calcLeft > Garnish.$win.width())
+        if(left < 0)
         {
-            left = Garnish.$win.width() - (this.$container.offset().left + $tip.outerWidth() + offset * 2);
+            left = (x(d[0]) + this.settings.margin.left + offset);
         }
 
         return {
@@ -669,7 +744,6 @@ Craft.charts.Area = Craft.charts.BaseChart.extend(
 },
 {
     defaults: {
-        chartMargin: { top: 0, right: 0, bottom: 0, left: 100 },
         chartClass: 'area',
         enablePlots: true,
         enableTips: true,
