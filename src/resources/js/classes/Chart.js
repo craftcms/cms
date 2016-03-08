@@ -354,7 +354,7 @@ Craft.charts.Area = Craft.charts.BaseChart.extend(
 
         $('.y .tick text:last', this.$chart).each(function(tickKey, tick)
         {
-            var tickWidth = $(tick).outerWidth();
+            var tickWidth = $(tick).get(0).getBoundingClientRect().width;
 
             if(tickWidth > yTickMaxWidth)
             {
