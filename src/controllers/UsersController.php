@@ -449,6 +449,7 @@ class UsersController extends BaseController
 		// Determine which user account we're editing
 		// ---------------------------------------------------------------------
 
+		$craftEdition = craft()->getEdition();
 		$isClientAccount = false;
 
 		// This will be set if there was a validation error.
@@ -494,7 +495,7 @@ class UsersController extends BaseController
 					throw new HttpException(404);
 				}
 			}
-			else if (craft()->getEdition() == Craft::Pro)
+			else if ($craftEdition == Craft::Pro)
 			{
 				// Registering a new user
 				$variables['account'] = new UserModel();
@@ -503,6 +504,13 @@ class UsersController extends BaseController
 			{
 				// Nada.
 				throw new HttpException(404);
+			}
+		}
+		else
+		{
+			if ($account == 'client')
+			{
+				$isClientAccount = true;
 			}
 		}
 
@@ -530,7 +538,7 @@ class UsersController extends BaseController
 		$loginActions = array();
 		$sketchyActions = array();
 
-		if (craft()->getEdition() >= Craft::Client && !$variables['isNewAccount'])
+		if ($craftEdition >= Craft::Client && !$variables['isNewAccount'])
 		{
 			switch ($variables['account']->getStatus())
 			{
@@ -666,7 +674,7 @@ class UsersController extends BaseController
 		);
 
 		// No need to show the Profile tab if it's a new user (can't have an avatar yet) and there's no user fields.
-		if (!$variables['isNewAccount'] || (craft()->getEdition() == Craft::Pro && $variables['account']->getFieldLayout()->getFields()))
+		if (!$variables['isNewAccount'] || ($craftEdition == Craft::Pro && $variables['account']->getFieldLayout()->getFields()))
 		{
 			$variables['tabs']['profile'] = array(
 					'label' => Craft::t('Profile'),
@@ -674,8 +682,14 @@ class UsersController extends BaseController
 			);
 		}
 
-		// Show the permission tab for the users that can change them on Craft Pro editions.
-		if (craft()->getEdition() == Craft::Pro && craft()->userSession->getUser()->can('assignUserPermissions'))
+
+
+		// Show the permission tab for the users that can change them on Craft Client+ editions (unless
+		// you're on Client and you're the admin account. No need to show since we always need an admin on Client)
+		if (
+			($craftEdition == Craft::Pro && craft()->userSession->getUser()->can('assignUserPermissions')) ||
+			($craftEdition == Craft::Client && $isClientAccount && craft()->userSession->isAdmin())
+		)
 		{
 			$variables['tabs']['perms'] = array(
 					'label' => Craft::t('Permissions'),
@@ -688,19 +702,17 @@ class UsersController extends BaseController
 		{
 			$variables['tabs'] = array();
 		}
-
-		if (!empty($variables['tabs']))
+		else
 		{
-			// Ugly.  But Users don't have a real fieldlayout/tabs.
-			$accountFields = array('username', 'firstName', 'lastName', 'email', 'password', 'newPassword', 'currentPassword', 'passwordResetRequired', 'preferredLocale');
-
-			if (craft()->getEdition() == Craft::Pro && $variables['account']->hasErrors())
+			if ($variables['account']->hasErrors())
 			{
+				// Add the 'error' class to any tabs that have errors
 				$errors = $variables['account']->getErrors();
+				$accountFields = array('username', 'firstName', 'lastName', 'email', 'password', 'newPassword', 'currentPassword', 'passwordResetRequired', 'preferredLocale');
 
 				foreach ($errors as $attribute => $error)
 				{
-					if (in_array($attribute, $accountFields))
+					if (isset($variables['tabs']['account']) && in_array($attribute, $accountFields))
 					{
 						$variables['tabs']['account']['class'] = 'error';
 					}
@@ -747,6 +759,7 @@ class UsersController extends BaseController
 	{
 		$this->requirePostRequest();
 
+		$craftEdition = craft()->getEdition();
 		$currentUser = craft()->userSession->getUser();
 		$requireEmailVerification = craft()->systemSettings->getSetting('users', 'requireEmailVerification');
 
@@ -773,7 +786,7 @@ class UsersController extends BaseController
 				craft()->userSession->requirePermission('editUsers');
 			}
 		}
-		else if (craft()->getEdition() == Craft::Client)
+		else if ($craftEdition == Craft::Client)
 		{
 			// Make sure they're logged in
 			craft()->userSession->requireAdmin();
@@ -914,7 +927,7 @@ class UsersController extends BaseController
 		}
 
 		// If this is Craft Pro, grab any profile content from post
-		if (craft()->getEdition() == Craft::Pro)
+		if ($craftEdition == Craft::Pro)
 		{
 			$user->setContentFromPost('fields');
 		}
@@ -1643,30 +1656,38 @@ class UsersController extends BaseController
 	 */
 	private function _processUserGroupsPermissions(UserModel $user)
 	{
-		// Save any user groups
-		if (craft()->getEdition() == Craft::Pro && craft()->userSession->checkPermission('assignUserPermissions'))
+		// Make sure there are assignUserPermissions
+		if (craft()->userSession->checkPermission('assignUserPermissions'))
 		{
-			// Save any user groups
-			$groupIds = craft()->request->getPost('groups');
-
-			if ($groupIds !== null)
+			// Only Craft Pro has user groups
+			if (craft()->getEdition() == Craft::Pro)
 			{
-				craft()->userGroups->assignUserToGroups($user->id, $groupIds);
+				// Save any user groups
+				$groupIds = craft()->request->getPost('groups');
+
+				if ($groupIds !== null)
+				{
+					craft()->userGroups->assignUserToGroups($user->id, $groupIds);
+				}
 			}
 
-			// Save any user permissions
-			if ($user->admin)
+			// Craft Client+ has user permissions.
+			if (craft()->getEdition() >= Craft::Client)
 			{
-				$permissions = array();
-			}
-			else
-			{
-				$permissions = craft()->request->getPost('permissions');
-			}
+				// Save any user permissions
+				if ($user->admin)
+				{
+					$permissions = array();
+				}
+				else
+				{
+					$permissions = craft()->request->getPost('permissions');
+				}
 
-			if ($permissions !== null)
-			{
-				craft()->userPermissions->saveUserPermissions($user->id, $permissions);
+				if ($permissions !== null)
+				{
+					craft()->userPermissions->saveUserPermissions($user->id, $permissions);
+				}
 			}
 		}
 	}
@@ -1795,13 +1816,13 @@ class UsersController extends BaseController
 		{
 			$postCpLoginRedirect = craft()->config->get('postCpLoginRedirect');
 			$url = UrlHelper::getCpUrl($postCpLoginRedirect);
+			$this->redirect($url);
 		}
 		else
 		{
 			$activateAccountSuccessPath = craft()->config->getLocalized('activateAccountSuccessPath');
 			$url = UrlHelper::getSiteUrl($activateAccountSuccessPath);
+			$this->redirectToPostedUrl($user, $url);
 		}
-
-		$this->redirect($url);
 	}
 }

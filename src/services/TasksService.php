@@ -138,7 +138,7 @@ class TasksService extends BaseApplicationComponent
 		if (!headers_sent())
 		{
 			// Close the client connection
-			craft()->request->close();
+			craft()->request->close('1');
 
 			// Run any pending tasks
 			$this->runPendingTasks();
@@ -572,11 +572,12 @@ class TasksService extends BaseApplicationComponent
  		{
  			$this->closeAndRun();
  		}
- 		// Is this a site request and are we responding with HTML or XHTML?
+ 		// Is this a non-AJAX site request and are we responding with HTML or XHTML?
  		// (CP requests don't need to be told to run pending tasks)
  		else if (
  			craft()->request->isSiteRequest() &&
- 			in_array(HeaderHelper::getMimeType(), array('text/html', 'application/xhtml+xml'))
+ 			in_array(HeaderHelper::getMimeType(), array('text/html', 'application/xhtml+xml')) &&
+			!craft()->request->isAjaxRequest()
  		)
  		{
  			// Just output JS that tells the browser to fire an Ajax request to kick off task running

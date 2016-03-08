@@ -4899,6 +4899,7 @@ Garnish.Modal = Garnish.Base.extend({
  * Nice Text
  */
 Garnish.NiceText = Garnish.Base.extend({
+
 	$input: null,
 	$hint: null,
 	$stage: null,

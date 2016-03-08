@@ -298,10 +298,22 @@
 
 					</div><!--/pane-->
 
-					{% if entry.revisionNotes %}
-						<div class="pane">
-							<h6>{{ "Version Notes"|t }}</h6>
-							<p class="light">{{ entry.revisionNotes }}</p>
+					{% if entry.id %}
+						<div class="pane lightpane meta">
+							<div class="data">
+								<h5 class="heading">{{ "Date Created"|t }}</h5>
+								<div class="value">{{ entry.dateCreated.localeDate() }} {{ entry.dateCreated.localeTime() }}</div>
+							</div>
+							<div class="data">
+								<h5 class="heading">{{ "Date Updated"|t }}</h5>
+								<div class="value">{{ entry.dateUpdated.localeDate() }} {{ entry.dateUpdated.localeTime() }}</div>
+							</div>
+							{% if entry.revisionNotes %}
+								<div class="data">
+									<h5 class="heading">{{ "Version Notes"|t }}</h6>
+									<div class="value">{{ entry.revisionNotes }}</div>
+								</div>
+							{% endif %}
 						</div>
 					{% endif %}
 

@@ -658,6 +658,8 @@ $elementThumbPadding: 30 + $elementInnerSpacing;
 		}
 		&.hasthumb {
 			.elementthumb {
+				@include display-flex;
+				@include align-items(center);
 				position: absolute;
 				top: calc(50% - 15px);
 				width: 30px;
@@ -963,6 +965,7 @@ ul.tree,
 /* ----------------------------------------*/
 
 .pane { @include pane; position: relative; margin: 14px 0; padding: 24px; border-radius: $paneBorderRadius; word-wrap: break-word; @include box-sizing(border-box); }
+.pane.lightpane { background-color: #f4f5f6; }
 
 /* meta panes */
 .meta { padding: 0; overflow: visible; }
@@ -1164,6 +1167,26 @@ body #redactor-modal-overlay {
 .deleteusermodal .elementselect { @include margin-left(10px); display: inline-block; vertical-align: middle; }
 .deleteusermodal .buttons .spinner { @include floatright; @include margin-right(-20px); @include margin-left(-4px); }
 
+
+/* date range hud */
+
+.daterange-hud .main { padding: 24px 24px; }
+.daterange-hud .daterange-items ul { padding: 0 14px; }
+.daterange-hud .daterange-items:first-child ul { margin-top: -24px; }
+.daterange-hud .daterange-items ul li a { display: block; margin: 0 -38px; padding: 10px 14px; color: $textcolor; text-decoration: none; white-space: nowrap; }
+.daterange-hud .daterange-items ul li a { @include padding-left(24px); }
+.daterange-hud .daterange-items ul li a:hover { @include padding-left(24px); color: $textcolor; background-color: $lightselcolor; }
+.daterange-hud .daterange-items ul li a.sel { color: $textcolor; }
+.daterange-hud .daterange-items ul li a[data-icon]:before,
+.daterange-hud .daterange-items ul li a.icon:before,
+.daterange-hud .daterange-items ul li a.sel:before { @include floatleft; @include margin(3px, 0, 0, -17px); font-size: 11px; color: #000 !important; opacity: .4; }
+.daterange-hud .daterange-items ul li a.sel:not([data-icon]):before { content: 'check'; @include icon; }
+.daterange-hud .daterange-fields { margin: 0 -7px;}
+.daterange-hud .daterange-fields .datewrapper { margin: 0 7px;}
+.daterange-hud .buttons { margin-top: 14px; }
+.daterange-hud hr { margin: 0 -24px; }
+
+
 /* ----------------------------------------
 /*  Menus
 /* ----------------------------------------*/
@@ -1215,7 +1238,6 @@ body .redactor-dropdown a:hover span { color: $textcolor !important; }
 .tagmenu ul li a:before { @include floatleft; @include margin(3px, 0, 0, -18px); }
 
 /* selectize */
-
 
 /* ----------------------------------------
 /*  Fields
@@ -1281,7 +1303,7 @@ body .redactor-editor,
 
 .field { position: relative; margin: 24px 0; }
 .field > .heading { margin-bottom: 4px; }
-.field > .heading > label { position: relative; }
+.field > .heading > label { position: relative; font-weight: bold; color: $mediumdarktextcolor; }
 .field > .heading > label > .locale { display: inline-block; border-radius: $btnBorderRadius; @include margin-left(7px); padding: 0 4px; font-size: 11px; color: $mediumtextcolor; background: $bgcolor; }
 .field > .heading > .instructions { margin-top: 4px; font-size: 11px; line-height: 1.4; color: $mediumtextcolor; }
 .field > .warning { margin: 4px 0 0; font-size: 11px; }
@@ -1644,3 +1666,5 @@ body.message .message-container .pane { top: 50%; margin-top: -33px !important; 
 	.hud .tip-bottom { background-image: url(../images/hudtip_bottom_2x.png); background-size: 30px 15px; }
 	.hud.has-footer .tip-bottom { background-image: url(../images/hudtip_bottom_gray_2x.png); }
 }
+
+@import "charts";

@@ -1,0 +1,150 @@
+{% extends "tests/charts/_layout" %}
+{% import "_includes/forms" as forms %}
+
+
+{% includecss %}
+
+.chart-container {
+    width: 400px;
+    height: 300px;
+    margin-bottom: 24px;
+}
+
+.chartdoc {
+    width: 50%;
+    display: inline-block;
+    padding: 50px;
+    box-sizing: border-box;
+}
+
+{% endincludecss %}
+
+
+{% set selectedTab = 'docs' %}
+
+{% block content %}
+
+    {% spaceless %}
+
+        <div class="chartdoc">
+            <h2>Area</h2>
+
+            <div id="area" class="chart-container"></div>
+
+            {% includejs %}
+
+                var rows = [
+                    ['Date', 'Users', 'Returning'],
+                    ['2016-01-23', 5, 2],
+                    ['2016-01-24', 15, 4],
+                    ['2016-01-25', 10, 5],
+                    ['2016-01-26', 13, 7],
+                ];
+                var $chart = $('#area');
+
+                var chart = new Craft.charts.Chart({
+                    bindto: this.$chart.get(0),
+					orientation: '{{ craft.i18n.getLocaleData().getOrientation() }}',
+                    data: {
+                        rows: rows,
+                        type: 'area',
+                        x: 'Date',
+                    },
+                }, Craft.charts.defaults.area);
+
+
+            {% endincludejs %}
+        </div>
+
+        <div class="chartdoc">
+            <h2>Pie</h2>
+
+            <div id="pie" class="chart-container"></div>
+
+            {% includejs %}
+
+                var columns = [
+                    ['Task',     'Hours per Day'],
+                    ['Work',     11],
+                    ['Eat',      2],
+                    ['Commute',  2],
+                    ['Watch TV', 2],
+                    ['Sleep',    7]
+                ];
+                var $chart = $('#pie');
+
+                var chart = new Craft.charts.Chart({
+                    bindto: this.$chart.get(0),
+					orientation: '{{ craft.i18n.getLocaleData().getOrientation() }}',
+                    data: {
+                        columns: columns,
+                        type: 'pie',
+                    },
+                });
+
+            {% endincludejs %}
+
+        </div>
+
+
+        <div class="chartdoc">
+
+            <h2>Donut</h2>
+
+            <div id="donut" class="chart-container"></div>
+
+            {% includejs %}
+
+                var columns = [
+                    ['Task',     'Hours per Day'],
+                    ['Work',     11],
+                    ['Eat',      2],
+                    ['Commute',  2],
+                    ['Watch TV', 2],
+                    ['Sleep',    7]
+                ];
+                var $chart = $('#donut');
+
+                var chart = new Craft.charts.Chart({
+                    bindto: this.$chart.get(0),
+					orientation: '{{ craft.i18n.getLocaleData().getOrientation() }}',
+                    data: {
+                        columns: columns,
+                        type: 'donut',
+                    },
+                });
+
+            {% endincludejs %}
+        </div>
+
+        <div class="chartdoc">
+
+            <h2>Bar</h2>
+
+            <div id="bar" class="chart-container"></div>
+
+            {% includejs %}
+
+                var columns = [
+                    ['data1', 30, 200, 100, 400, 150, 250],
+                    ['data2', 130, 100, 140, 200, 150, 50]
+                ];
+
+                var $chart = $('#bar');
+
+                var chart = new Craft.charts.Chart({
+                    bindto: this.$chart.get(0),
+					orientation: '{{ craft.i18n.getLocaleData().getOrientation() }}',
+                    data: {
+                        columns: columns,
+                        type: 'bar'
+                    }
+                });
+
+            {% endincludejs %}
+
+        </div>
+
+    {% endspaceless %}
+
+{% endblock %}

@@ -31,7 +31,7 @@ body { overflow-x: hidden; }
 /* global sidebar */
 #global-sidebar { @include display-flex; @include flex-direction(column); position: fixed; top: 0; @include left(0); width: 220px; height: 100vh; background: $headerBgColor; z-index: 100; overflow: auto; }
 
-#global-sidebar nav { @include flex-grow(1); }
+#global-sidebar nav { @include flex-grow(1); -ms-flex-preferred-size: auto; }
 
 #global-sidebar #devmode { width: 100%; height: 4px; background: url(../images/dev-mode.svg) repeat-x 15px 0; cursor: help; }
 
@@ -62,7 +62,7 @@ body { overflow-x: hidden; }
 
 #global-sidebar .topbar { min-height: -webkit-min-content; min-height: -moz-min-content; }
 #global-sidebar .topbar a.site-name { @include flex-grow(1); padding: 14px; }
-#global-sidebar .topbar a.site-name .photo-container { margin-right: 14px; flex-shrink: 0; }
+#global-sidebar .topbar a.site-name .photo-container { @include margin-right(14px); flex-shrink: 0; }
 #global-sidebar .topbar a.site-name h2 { padding: 0; margin: 0; }
 #global-sidebar .topbar a.updates { position: relative; color: $noticecolor; }
 #global-sidebar .topbar a.updates.critical { color: $submitcolor; }
@@ -238,6 +238,19 @@ body.mobile #container {
 
 /* footer */
 #footer { padding: 24px; text-align: center; font-size: 0; }
+#footer #edition-logo { margin: 0 auto 14px; border: 1px solid $lighttextcolor; border-radius: 3px; display: inline-block; height: 23px; cursor: default; @include transition(border-color linear 100ms); }
+#footer #edition-logo > .edition-name,
+#footer #edition-logo > .edition-trial { display: inline-block; padding: 8px 8px 7px; font-size: 12px; line-height: 8px; font-weight: 500; }
+#footer #edition-logo > .edition-name { color: $mediumtextcolor; letter-spacing: 2.2px; padding-right: 5.8px; text-transform: uppercase; @include transition(color linear 100ms); }
+#footer #edition-logo > .edition-trial { display: inline-block; position: relative; margin-left: 5px; padding-left: 5px; background: $lighttextcolor; color: $bgcolor; border-radius: 0 1px 1px 0; letter-spacing: 1px; padding-right: 7px; text-transform: lowercase; @include transition(background linear 100ms); }
+#footer #edition-logo > .edition-trial:before { display: block; position: absolute; top: 0; left: -10px; content: '.'; font-size: 0; width: 0; height: 0; border-width: 0 10px 23px 0; border-style: solid; border-color: transparent $lighttextcolor transparent transparent; @include transition(border-color linear 100ms); }
+#footer #edition-logo.hot { cursor: pointer; }
+#footer #edition-logo.hot + .settings { display: inline-block; position: relative; top: -1px; width: 13px; margin: 0 -18px 0 6px; font-size: 13px; color: hsla($hue, 10%, 75%, 0.5); @include transition(color linear 100ms); }
+#footer #edition-logo.hot:hover { border-color: $linkcolor; }
+#footer #edition-logo.hot:hover > .edition-name { color: $linkcolor; }
+#footer #edition-logo.hot:hover > .edition-trial { background: $linkcolor; }
+#footer #edition-logo.hot:hover > .edition-trial:before { border-color: transparent $linkcolor transparent transparent; }
+#footer #edition-logo.hot:hover + .settings { color: $linkcolor; }
 #footer li { display: inline-block; font-size: 11px; color: $lighttextcolor; white-space: nowrap; }
 #footer li:not(:last-child):after { display: inline-block; margin: 0 7px; content: '•'; }
 #footer li a { color: $lighttextcolor; text-decoration: underline; }
@@ -255,32 +268,38 @@ body.mobile #container {
 #upgrademodal.loading { background-image: url(../images/spinner_big.gif); background-repeat: no-repeat; background-position: 50% 50%; }
 #upgrademodal .body { position: absolute; top: 0; left: 0; width: 100%; height: 100%; overflow: auto; }
 
-#upgrademodal .logo { margin: 0 auto 24px; max-width: 160px; height: 40px; font-size: 0; background: no-repeat 50% 50%; background-size: 100%; }
-#upgrademodal .logo.craftclient { background-image: url(../images/editions/craftclient.png); }
-#upgrademodal .logo.craftpro { background-image: url(../images/editions/craftpro.png); }
+#upgrademodal .logo { margin: 0 auto 24px; font-weight: 500; font-size: 18px; color: $submitcolor; letter-spacing: 3.3px; line-height: 14px; border: 1px solid $submitcolor; border-radius: 3px; padding: 10px 6.7px 9px 10px; text-transform: uppercase; display: inline-block; }
 
-#upgrademodal .body tr.buybtns td { vertical-align: bottom; text-align: center; }
-#upgrademodal .body tr.buybtns .installed { display: inline-block; border-radius: 3px; padding: 6px 12px; color: $successcolor;
-	@include box-shadow(0 0 0 1px $successcolor);
-}
-#upgrademodal .body tr.buybtns td .btngroup { display: inline-block; }
-#upgrademodal .body tr.buybtns .installed + br + .btngroup { margin-top: 10px; }
-#upgrademodal .body .listedprice { @include margin-right(10px); text-decoration: line-through; color: $lighttextcolor; }
-
-#upgrademodal-compare table thead th { text-align: center; }
+#upgrademodal-compare table th,
+#upgrademodal-compare table td { width: 33.33%; }
+#upgrademodal-compare table th.feature { font-weight: normal; color: $mediumtextcolor; }
 #upgrademodal-compare table thead th { font-size: 13px; line-height: 18px; font-weight: normal; }
-#upgrademodal-compare table thead th .logo { margin-bottom: 14px; }
+#upgrademodal-compare table thead tr.logos th { padding-bottom: 14px; }
+#upgrademodal-compare table thead tr.logos th .logo { margin-bottom: 0; }
+#upgrademodal-compare table thead tr.logos th p { white-space: normal; max-width: 250px; }
+#upgrademodal-compare table thead tr.license-statuses td { padding-top: 0; padding-bottom: 14px; }
+#upgrademodal-compare table thead tr.license-statuses td .license-status:before { border: 1px solid; border-radius: 9px; width: 17px; height: 17px; line-height: 17px; margin-right: 5px; }
+#upgrademodal-compare table thead tr.license-statuses td .installed { color: $successcolor; }
+#upgrademodal-compare table thead tr.license-statuses td .licensed { color: $noticecolor; }
+#upgrademodal-compare table thead tr.license-statuses td .installed:before { border-color: $successcolor; }
+#upgrademodal-compare table thead tr.license-statuses td .licensed:before { border-color: $noticecolor; }
+#upgrademodal-compare table thead tr.price th,
+#upgrademodal-compare table thead tr.price td { position: relative; padding-top: 14px; }
+#upgrademodal-compare table thead tr.price td .listedprice { @include margin-right(5px); text-decoration: line-through; color: $lighttextcolor; }
+#upgrademodal-compare table thead tr.price th:before,
+#upgrademodal-compare table thead tr.price td:before { position: absolute; top: 0; display: block; width: 24px; height: 1px; content: '.'; font-size: 0; background: $hairlineColor; }
+#upgrademodal-compare table thead tr.price th:before { @include left(0); }
+#upgrademodal-compare table thead tr.price td:before { @include left(14px); }
 #upgrademodal-compare table tbody th,
 #upgrademodal-compare table tbody td { width: 33.33%; }
 #upgrademodal-compare table tbody tr:first-child th,
 #upgrademodal-compare table tbody tr:first-child td { border-top: none; }
 #upgrademodal-compare table tbody th.group { padding-top: 30px; border-bottom-style: solid; color: $mediumtextcolor; }
-#upgrademodal-compare table tbody th.group:before { margin-top: -2px; width: 24px; @include alignleft; font-size: 17px; }
-#upgrademodal-compare table tbody th.feature { font-weight: normal; color: $mediumtextcolor; }
-#upgrademodal-compare table tbody td { text-align: center; }
-#upgrademodal-compare table tbody tr.buybtns td { padding-top: 30px; border-bottom: none; }
+#upgrademodal-compare table tbody th.group:before { margin-top: -2px; width: 24px; font-size: 17px; }
+#upgrademodal-compare table tbody tr.buybtns td { padding-top: 14px; border-bottom: none; }
 
 #upgrademodal-checkout { background: $lightBgColor; }
+#upgrademodal-checkout .logowrapper { text-align: center; }
 #upgrademodal-checkout form { max-width: 350px; margin: 0 auto !important; padding-bottom: 10px; }
 #upgrademodal-checkout form .field { margin: 14px 0; }
 #upgrademodal-checkout form p.icon.secure { margin-top: 24px; }
@@ -293,9 +312,6 @@ body.mobile #container {
 
 #upgrademodal-success .message { display: block; position: absolute; top: 50%; left: 0; width: 100%; margin-top: -71px; padding-top: 62px; text-align: center; background: url(../images/success.png) no-repeat 50% 0; }
 #upgrademodal-success .message p { margin-bottom: 24px; font-size: 15px; line-height: 1.4; }
-
-#wrongedition-modal { text-align: center; }
-#wrongedition-modal .btngroup { float: none; }
 
 /* field layout forms */
 
@@ -470,7 +486,5 @@ body > .sidebar li { width: auto !important; }
 {
 	.fieldlayoutform { background-image: url(../images/fieldlayoutform-bg_2x.png); background-size: 30px 30px; }
 	#upgrademodal.loading { background-image: url(../images/spinner_big_2x.gif); background-size: 48px; }
-	#upgrademodal .logo.craftclient { background-image: url(../images/editions/craftclient_2x.png); }
-	#upgrademodal .logo.craftpro { background-image: url(../images/editions/craftpro_2x.png); }
 	#upgrademodal-success .message { background-image: url(../images/success_2x.png); background-size: 48px; }
 }

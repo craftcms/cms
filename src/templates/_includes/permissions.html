@@ -1,4 +1,4 @@
-{% requireEdition CraftPro %}
+{% requireEdition CraftClient %}
 
 {% includeTranslations
     "Select All",
@@ -10,16 +10,27 @@
 
 {% macro permissionList(context, permissions, id, disabled) %}
 	{% from "_includes/forms" import checkbox %}
+
 	<ul{% if id %} id="{{ id|replace(':', '-') }}"{% endif %}>
 		{% for permissionName, props in permissions %}
 			{% set isInGroupPermissions = (context.groupPermissions is defined and permissionName|lower in context.groupPermissions) %}
-			{% set checked = (isInGroupPermissions
-				? true
-				: (context.userOrGroup is not empty
-					? (context.userOrGroup.hasErrors
-						? (permissionName in craft.request.getPost('permissions', []))
-						: context.userOrGroup.can(permissionName))
-					: false)) %}
+
+			{% if (isInGroupPermissions) %}
+				{% set checked = true %}
+			{% else %}
+				{% if context.userOrGroup is not empty %}
+					{% if context.userOrGroup.hasErrors %}
+						{% set checked = permissionName in craft.request.getPost('permissions', []) %}
+					{% elseif CraftEdition == CraftClient and not context.userOrGroup.id %}
+						{% set checked = true %}
+					{% else %}
+						{% set checked = context.userOrGroup.can(permissionName) %}
+					{% endif %}
+				{% else %}
+					{% set checked = false %}
+				{% endif %}
+			{% endif %}
+
 			{% set hasNestedPermissions = props.nested is defined and props.nested is not empty %}
 			<li>
 				{{ checkbox({
@@ -29,6 +40,7 @@
 					checked: checked,
 					disabled: disabled or isInGroupPermissions,
 				}) }}
+
 				{% if hasNestedPermissions %}
 					{{ _self.permissionList(context, props.nested, permissionName~'-nested', not checked) }}
 				{% endif %}

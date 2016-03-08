@@ -128,6 +128,9 @@ class AssetElementType extends BaseElementType
 			));
 			$actions[] = $viewAction;
 
+			// Download
+			$actions[] = 'DownloadFile';
+
 			// Edit
 			$editAction = craft()->elements->getAction('Edit');
 			$editAction->setParams(array(
@@ -340,6 +343,7 @@ class AssetElementType extends BaseElementType
 			'source'            => AttributeType::Handle,
 			'sourceId'          => AttributeType::Number,
 			'width'             => AttributeType::Number,
+			'withTransforms'    => AttributeType::Mixed,
 		);
 	}
 
@@ -417,6 +421,31 @@ class AssetElementType extends BaseElementType
 		{
 			$query->andWhere(DbHelper::parseParam('assetfiles.size', $criteria->size, $query->params));
 		}
+
+		// Clear out existing onPopulateElements handlers
+		$criteria->detachEventHandler('onPopulateElements', array($this, 'eagerLoadTransforms'));
+
+		// Are we eager-loading any transforms?
+		if ($criteria->withTransforms)
+		{
+			$criteria->attachEventHandler('onPopulateElements', array($this, 'eagerLoadTransforms'));
+		}
+	}
+
+	/**
+	 * Eager-loads image transforms requested by an element criteria model.
+	 *
+	 * @param Event $event
+	 *
+	 * @return void
+	 */
+	public function eagerLoadTransforms(Event $event)
+	{
+		/** @var ElementCriteriaModel $criteria */
+		$criteria = $event->sender;
+		$transforms = ArrayHelper::stringToArray($criteria->withTransforms);
+
+		craft()->assetTransforms->eagerLoadTransforms($event->params['elements'], $transforms);
 	}
 
 	/**

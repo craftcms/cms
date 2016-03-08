@@ -241,6 +241,11 @@ class ResourcesService extends BaseApplicationComponent
 					craft()->request->redirect($url, true, 302);
 					craft()->end();
 				}
+
+				case '404':
+				{
+					throw new HttpException(404);
+				}
 			}
 		}
 

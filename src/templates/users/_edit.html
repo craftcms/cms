@@ -211,38 +211,41 @@
 					</div>
 				{% endif %}
 
-				{% if CraftEdition == CraftPro and currentUser.can('assignUserPermissions') %}
+				{% if CraftEdition >= CraftClient and currentUser.can('assignUserPermissions') %}
 					<div id="perms" class="hidden">
-						<h2>{{ "User Groups"|t }}</h2>
 
-						{% set allGroups = craft.userGroups.getAllGroups() %}
-						{% set userGroups = account.getGroups('id') %}
+						{% if CraftEdition == CraftPro %}
+							<h2>{{ "User Groups"|t }}</h2>
 
-						<input type="hidden" name="groups" value="">
+							{% set allGroups = craft.userGroups.getAllGroups() %}
+							{% set userGroups = account.getGroups('id') %}
 
-						{% if allGroups %}
-							<ul>
-								{% for group in allGroups %}
-									<li>
-										{{ forms.checkbox({
-											label: group.name|t,
-											name: 'groups[]',
-											value: group.id,
-											checked: (group.id in userGroups|keys)
-										}) }}
-									</li>
-								{% endfor %}
-							</ul>
+							<input type="hidden" name="groups" value="">
 
-						{% else %}
-							<p>{{ "No user groups exist yet."|t }}</p>
+							{% if allGroups %}
+								<ul>
+									{% for group in allGroups %}
+										<li>
+											{{ forms.checkbox({
+												label: group.name|t,
+												name: 'groups[]',
+												value: group.id,
+												checked: (group.id in userGroups|keys)
+											}) }}
+										</li>
+									{% endfor %}
+								</ul>
+
+							{% else %}
+								<p>{{ "No user groups exist yet."|t }}</p>
+							{% endif %}
+
+							<hr>
 						{% endif %}
-
-						<hr>
 
 						<h2>{{ "Permissions"|t }}</h2>
 
-						{% if currentUser.admin %}
+						{% if currentUser.admin and CraftEdition == CraftPro %}
 							{{ forms.checkboxField({
 								label: '<strong>' ~ "Admin"|t ~ '</strong>',
 								name: 'admin',
@@ -269,7 +272,7 @@
 
 		{% if CraftEdition >= CraftClient and not isNewAccount %}
 			<div class="item" data-position="right">
-				<form class="pane meta" method="post" accept-charset="UTF-8">
+				<form class="pane lightpane meta" method="post" accept-charset="UTF-8">
 					{{ hiddenInputs }}
 					<div class="data first">
 						<h5 class="heading">{{ "Account Status"|t }}</h5>
@@ -336,3 +339,13 @@
 		{% endif %}
 	</div>
 {% endblock %}
+
+{% includejs %}
+	{% if account.isCurrent() %}
+		var changeSidebarPicture = true;
+	{% else %}
+		var changeSidebarPicture = false;
+	{% endif %}
+{% endincludejs %}
+
+

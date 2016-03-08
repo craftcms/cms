@@ -1,0 +1,47 @@
+{% extends "tests/charts/_layout" %}
+{% import "_includes/forms" as forms %}
+
+{% set selectedTab = 'dateRange' %}
+
+{% block content %}
+
+    <h2>{{ "Date Range Picker"|t }}</h2>
+
+    <div class="datewrapper">
+        {%- include "_includes/forms/text" with { autocomplete: false, id: 'date-range' } -%}
+    </div>
+
+    <div id="date-range-status">
+
+    </div>
+
+{% endblock %}
+
+{% includejs %}
+
+    var $dateRangeInput = $('#date-range');
+    var $dateRangeStatus = $('#date-range-status');
+
+    var updateStatus = function(value, startDate, endDate)
+    {
+        $dateRangeStatus.html('');
+
+        var $statusUl = $('<ul />').appendTo($dateRangeStatus);
+        $('<li>value: '+value+'</li>').appendTo($statusUl);
+        $('<li>startDate: '+startDate+'</li>').appendTo($statusUl);
+        $('<li>endDate:'+endDate+'</li>').appendTo($statusUl);
+    }
+
+    var dateRange = new Craft.DateRangePicker(this.$dateRangeInput, {
+        value: 'd7',
+        onAfterSelect: function(value, startDate, endDate)
+        {
+            updateStatus(value, startDate, endDate);
+        }
+    });
+
+    updateStatus(dateRange.value, dateRange.startDate, dateRange.endDate);
+
+
+{% endincludejs %}
+

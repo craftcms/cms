@@ -702,7 +702,7 @@ class HttpRequestService extends \CHttpRequest
 	 */
 	public function sendFile($path, $content, $options = array(), $terminate = true)
 	{
-		$fileName = IOHelper::getFileName($path, true);
+		$fileName = empty($options['filename']) ? IOHelper::getFileName($path, true) : $options['filename'];
 
 		// Clear the output buffer to prevent corrupt downloads. Need to check the OB status first, or else some PHP
 		// versions will throw an E_NOTICE since we have a custom error handler
@@ -830,7 +830,7 @@ class HttpRequestService extends \CHttpRequest
 			HeaderHelper::setLength($length);
 		}
 
-		$content = mb_substr($content, $contentStart, $length);
+		$content = mb_substr($content, $contentStart, $length, '8bit');
 
 		if ($terminate)
 		{

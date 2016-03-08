@@ -332,7 +332,7 @@ class WebApp extends \CWebApplication
 	 */
 	public function createController($route, $owner = null)
 	{
-		if (($route = trim($route, '/')) === '')
+		if ((array)$route === $route || ($route = trim($route, '/')) === '')
 		{
 			$route = $this->defaultController;
 		}

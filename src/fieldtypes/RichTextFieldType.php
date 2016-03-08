@@ -62,9 +62,23 @@ class RichTextFieldType extends BaseFieldType
 			'mediumtext' => Craft::t('MediumText (stores about 4GB)')
 		);
 
+		$sourceOptions = array();
+		foreach (craft()->assetSources->getPublicSources() as $source)
+		{
+			$sourceOptions[] = array('label' => $source->name, 'value' => $source->id);
+		}
+
+		$transformOptions = array();
+		foreach (craft()->assetTransforms->getAllTransforms() as $transform)
+		{
+			$transformOptions[] = array('label' => $transform->name, 'value' => $transform->id );
+		}
+
 		return craft()->templates->render('_components/fieldtypes/RichText/settings', array(
 			'settings' => $this->getSettings(),
 			'configOptions' => $configOptions,
+			'assetSourceOptions' => $sourceOptions,
+			'transformOptions' => $transformOptions,
 			'columns' => $columns,
 			'existing' => !empty($this->model->id),
 		));
@@ -135,16 +149,18 @@ class RichTextFieldType extends BaseFieldType
 			$orientation = 'Craft.orientation';
 		}
 
-		craft()->templates->includeJs('new Craft.RichTextInput(' .
-			'"'.craft()->templates->namespaceInputId($id).'", ' .
-			JsonHelper::encode($this->_getSectionSources()).', ' .
-			JsonHelper::encode($this->_getCategorySources()).', ' .
-			JsonHelper::encode($this->_getAssetSources()).', ' .
-			'"'.$localeId.'", ' .
-			$orientation.', ' .
-			$configJs.', ' .
-			'"'.static::$_redactorLang.'"' .
-		');');
+		$settings = array(
+			'id'              => craft()->templates->namespaceInputId($id),
+			'linkOptions'     => $this->_getLinkOptions(),
+			'assetSources'    => $this->_getAssetSources($this->getSettings()->availableAssetSources),
+			'transforms'      => $this->_getTransforms(),
+			'elementLocale'   => $localeId,
+			'direction'       => $orientation,
+			'redactorConfig'  => JsonHelper::decode($configJs),
+			'redactorLang'    => static::$_redactorLang,
+		);
+
+		craft()->templates->includeJs('new Craft.RichTextInput('.JsonHelper::encode($settings).');');
 
 		if ($value instanceof RichTextData)
 		{
@@ -278,15 +294,76 @@ class RichTextFieldType extends BaseFieldType
 	protected function defineSettings()
 	{
 		return array(
-			'configFile'  => AttributeType::String,
-			'cleanupHtml' => array(AttributeType::Bool, 'default' => true),
-			'purifyHtml'  => array(AttributeType::Bool, 'default' => false),
-			'columnType'  => array(AttributeType::String),
+			'configFile'            => AttributeType::String,
+			'cleanupHtml'           => array(AttributeType::Bool, 'default' => true),
+			'purifyHtml'            => array(AttributeType::Bool, 'default' => false),
+			'columnType'            => array(AttributeType::String),
+			'availableAssetSources' => AttributeType::Mixed,
+			'availableTransforms'   => AttributeType::Mixed,
 		);
 	}
 
 	// Private Methods
 	// =========================================================================
+
+	/**
+	 * Returns the link options available to the field.
+	 *
+	 * Each link option is represented by an array with the following keys:
+	 *
+	 * - `optionTitle` (required) – the user-facing option title that appears in the Link dropdown menu
+	 * - `elementType` (required) – the element type class that the option should be linking to
+	 * - `sources` (optional) – the sources that the user should be able to select elements from
+	 * - `criteria` (optional) – any specific element criteria parameters that should limit which elements the user can select
+	 * - `storageKey` (optional) – the localStorage key that should be used to store the element selector modal state (defaults to RichTextFieldType.LinkTo[ElementType])
+	 *
+	 * @return array
+	 */
+	private function _getLinkOptions()
+	{
+		$linkOptions = array();
+
+		$sectionSources = $this->_getSectionSources();
+		$categorySources = $this->_getCategorySources();
+		$assetSources = $this->_getAssetSources();
+
+		if ($sectionSources)
+		{
+			$linkOptions[] = array(
+				'optionTitle' => Craft::t('Link to an entry'),
+				'elementType' => 'Entry',
+				'sources' => $sectionSources,
+			);
+		}
+
+		if ($categorySources)
+		{
+			$linkOptions[] = array(
+				'optionTitle' => Craft::t('Link to a category'),
+				'elementType' => 'Category',
+				'sources' => $categorySources,
+			);
+		}
+
+		if ($assetSources)
+		{
+			$linkOptions[] = array(
+				'optionTitle' => Craft::t('Link to an asset'),
+				'elementType' => 'Asset',
+				'sources' => $assetSources,
+			);
+		}
+
+		// Give plugins a chance to add their own
+		$allPluginLinkOptions = craft()->plugins->call('addRichTextLinkOptions', array(), true);
+
+		foreach ($allPluginLinkOptions as $pluginLinkOptions)
+		{
+			$linkOptions = array_merge($linkOptions, $pluginLinkOptions);
+		}
+
+		return $linkOptions;
+	}
 
 	/**
 	 * Get available section sources.
@@ -341,19 +418,57 @@ class RichTextFieldType extends BaseFieldType
 	}
 
 	/**
+	 * Get available Asset sources.
+	 *
+	 * @param array|null $assetSourceIds The available asset source IDs (default is all of them)
+	 *
 	 * @return array
 	 */
-	private function _getAssetSources()
+	private function _getAssetSources($assetSourceIds = null)
 	{
 		$sources = array();
-		$assetSourceIds = craft()->assetSources->getAllSourceIds();
 
-		foreach ($assetSourceIds as $assetSourceId)
+		if (!$assetSourceIds)
 		{
-			$sources[] = 'asset:'.$assetSourceId;
+			$assetSourceIds = craft()->assetSources->getPublicSourceIds();
+		}
+
+		$folders = craft()->assets->findFolders(array(
+			'sourceId' => $assetSourceIds,
+			'parentId' => ':empty:'
+		));
+
+		foreach ($folders as $folder)
+		{
+			$sources[] = 'folder:'.$folder->id;
 		}
 
 		return $sources;
+	}
+
+	/**
+	 * Get available Transforms.
+	 *
+	 * @return array
+	 */
+	private function _getTransforms()
+	{
+		$transforms = craft()->assetTransforms->getAllTransforms('id');
+		$settings = $this->getSettings();
+
+		$transformIds = array_flip(!empty($settings->availableTransforms) && is_array($settings->availableTransforms)? $settings->availableTransforms : array());
+		if (!empty($transformIds))
+		{
+			$transforms = array_intersect_key($transforms, $transformIds);
+		}
+
+		$transformList = array();
+		foreach ($transforms as $transform)
+		{
+			$transformList[] = (object) array('handle' => HtmlHelper::encode($transform->handle), 'name' => HtmlHelper::encode($transform->name));
+		}
+
+		return $transformList;
 	}
 
 	/**

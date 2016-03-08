@@ -124,6 +124,7 @@ class SearchService extends BaseApplicationComponent
 			$options = $query;
 			$query = $options['query'];
 			unset($options['query']);
+			$options = array_merge(craft()->config->get('defaultSearchTermOptions'), $options);
 			$query = new SearchQuery($query, $options);
 		}
 

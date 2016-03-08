@@ -202,130 +202,315 @@ class ElementsService extends BaseApplicationComponent
 	 */
 	public function findElements($criteria = null, $justIds = false)
 	{
-		$elements = array();
+		// Create an element query based on this criteria
 		$query = $this->buildElementsQuery($criteria, $contentTable, $fieldColumns, $justIds);
 
-		if ($query)
+		if (!$query)
 		{
-			$results = $query->queryAll();
+			// Something decided that executing the query is pointless
+			return array();
+		}
 
-			if ($results)
+		$results = $query->queryAll();
+
+		if (!$results)
+		{
+			return array();
+		}
+
+		// Do they just care about the IDs?
+		if ($justIds)
+		{
+			$ids = array();
+
+			foreach ($results as $result)
 			{
-				if ($justIds)
+				$ids[] = $result['id'];
+			}
+
+			return $ids;
+		}
+		else
+		{
+			return $this->populateElements($results, $criteria, $contentTable, $fieldColumns, $justIds);
+		}
+	}
+
+	/**
+	 * Populates element models from a given element query's result set.
+	 *
+	 * @param array                $results      The result set of an element query
+	 * @param ElementCriteriaModel $criteria     The element criteria model
+	 * @param string               $contentTable The content table that was joined in by buildElementsQuery()
+	 * @param array                $fieldColumns Info about the content field columns being selected
+	 *
+	 * @return BaseElementModel[] The populated element models.
+	 */
+	public function populateElements($results, ElementCriteriaModel $criteria, $contentTable, $fieldColumns)
+	{
+		$elements = array();
+
+		$locale = $criteria->locale;
+		$elementType = $criteria->getElementType();
+		$indexBy = $criteria->indexBy;
+		$lastElement = null;
+
+		foreach ($results as $result)
+		{
+			// Do we have a placeholder for this element?
+			if (isset($this->_placeholderElements[$result['id']][$locale]))
+			{
+				$element = $this->_placeholderElements[$result['id']][$locale];
+			}
+			else
+			{
+				// Make a copy to pass to the onPopulateElement event
+				$originalResult = array_merge($result);
+
+				if ($contentTable)
 				{
-					foreach ($results as $result)
+					// Separate the content values from the main element attributes
+					$content = array(
+						'id'        => (isset($result['contentId']) ? $result['contentId'] : null),
+						'elementId' => $result['id'],
+						'locale'    => $locale,
+						'title'     => (isset($result['title']) ? $result['title'] : null)
+					);
+
+					unset($result['title']);
+
+					if ($fieldColumns)
 					{
-						$elements[] = $result['id'];
+						foreach ($fieldColumns as $column)
+						{
+							// Account for results where multiple fields have the same handle, but from
+							// different columns e.g. two Matrix block types that each have a field with the
+							// same handle
+
+							$colName = $column['column'];
+							$fieldHandle = $column['handle'];
+
+							if (!isset($content[$fieldHandle]) || (empty($content[$fieldHandle]) && !empty($result[$colName])))
+							{
+								$content[$fieldHandle] = $result[$colName];
+							}
+
+							unset($result[$colName]);
+						}
 					}
 				}
-				else
+
+				$result['locale'] = $locale;
+
+				// Should we set a search score on the element?
+				if (isset($this->_searchResults[$result['id']]))
 				{
-					$locale = $criteria->locale;
-					$elementType = $criteria->getElementType();
-					$indexBy = $criteria->indexBy;
-					$lastElement = null;
-
-					foreach ($results as $result)
-					{
-						// Do we have a placeholder for this elmeent?
-						if (isset($this->_placeholderElements[$result['id']][$locale]))
-						{
-							$element = $this->_placeholderElements[$result['id']][$locale];
-						}
-						else
-						{
-							// Make a copy to pass to the onPopulateElement event
-							$originalResult = array_merge($result);
-
-							if ($contentTable)
-							{
-								// Separate the content values from the main element attributes
-								$content = array(
-									'id'        => (isset($result['contentId']) ? $result['contentId'] : null),
-									'elementId' => $result['id'],
-									'locale'    => $locale,
-									'title'     => (isset($result['title']) ? $result['title'] : null)
-								);
-
-								unset($result['title']);
-
-								if ($fieldColumns)
-								{
-									foreach ($fieldColumns as $column)
-									{
-										// Account for results where multiple fields have the same handle, but from
-										// different columns e.g. two Matrix block types that each have a field with the
-										// same handle
-
-										$colName = $column['column'];
-										$fieldHandle = $column['handle'];
-
-										if (!isset($content[$fieldHandle]) || (empty($content[$fieldHandle]) && !empty($result[$colName])))
-										{
-											$content[$fieldHandle] = $result[$colName];
-										}
-
-										unset($result[$colName]);
-									}
-								}
-							}
-
-							$result['locale'] = $locale;
-
-							// Should we set a search score on the element?
-							if (isset($this->_searchResults[$result['id']]))
-							{
-								$result['searchScore'] = $this->_searchResults[$result['id']];
-							}
-
-							$element = $elementType->populateElementModel($result);
-
-							// Was an element returned?
-							if (!$element || !($element instanceof BaseElementModel))
-							{
-								continue;
-							}
-
-							if ($contentTable)
-							{
-								$element->setContent($content);
-							}
-
-							// Fire an 'onPopulateElement' event
-							$this->onPopulateElement(new Event($this, array(
-								'element' => $element,
-								'result'  => $originalResult
-							)));
-						}
-
-						if ($indexBy)
-						{
-							$elements[$element->$indexBy] = $element;
-						}
-						else
-						{
-							$elements[] = $element;
-						}
-
-						if ($lastElement)
-						{
-							$lastElement->setNext($element);
-							$element->setPrev($lastElement);
-						}
-						else
-						{
-							$element->setPrev(false);
-						}
-
-						$lastElement = $element;
-					}
-
-					$lastElement->setNext(false);
+					$result['searchScore'] = $this->_searchResults[$result['id']];
 				}
+
+				$element = $elementType->populateElementModel($result);
+
+				// Was an element returned?
+				if (!$element || !($element instanceof BaseElementModel))
+				{
+					continue;
+				}
+
+				if ($contentTable)
+				{
+					$element->setContent($content);
+				}
+
+				// Fire an 'onPopulateElement' event
+				$this->onPopulateElement(new Event($this, array(
+					'element' => $element,
+					'result'  => $originalResult
+				)));
+			}
+
+			if ($indexBy)
+			{
+				$elements[$element->$indexBy] = $element;
+			}
+			else
+			{
+				$elements[] = $element;
+			}
+
+			if ($lastElement)
+			{
+				$lastElement->setNext($element);
+				$element->setPrev($lastElement);
+			}
+			else
+			{
+				$element->setPrev(false);
+			}
+
+			$lastElement = $element;
+		}
+
+		$lastElement->setNext(false);
+
+		// Should we eager-load some elements onto these?
+		if ($criteria->with)
+		{
+			$this->eagerLoadElements($elementType, $elements, $criteria->with);
+		}
+
+		// Fire an 'onPopulateElements' event
+		$this->onPopulateElements(new Event($this, array(
+			'elements' => $elements,
+			'criteria' => $criteria
+		)));
+
+		// Fire the criteria's 'onPopulateElements' event
+		$criteria->onPopulateElements(new Event($criteria, array(
+			'elements' => $elements
+		)));
+
+		return $elements;
+	}
+
+	/**
+	 * Eager-loads additional elements onto a given set of elements.
+	 *
+	 * @param BaseElementType    $elementType The root element type
+	 * @param BaseElementModel[] $elements    The root element models that should be updated with the eager-loaded elements
+	 * @param string|array       $with        Dot-delimited paths of the elements that should be eager-loaded into the root elements
+	 *
+	 * @return void
+	 */
+	public function eagerLoadElements(BaseElementType $elementType, $elements, $with)
+	{
+		// Bail if there aren't even any elements
+		if (!$elements)
+		{
+			return;
+		}
+
+		// Normalize the paths and find any custom path criterias
+		$with = ArrayHelper::stringToArray($with);
+		$paths = array();
+		$pathCriterias = array();
+
+		foreach ($with as $path)
+		{
+			// Using the array syntax?
+			// ['foo.bar'] or ['foo.bar', criteria]
+			if (is_array($path))
+			{
+				if (!empty($path[1]))
+				{
+					$pathCriterias['__root__.'.$path[0]] = $path[1];
+				}
+
+				$paths[] = $path[0];
+			}
+			else
+			{
+				$paths[] = $path;
 			}
 		}
 
-		return $elements;
+		// Load 'em up!
+		$elementsByPath = array('__root__' => $elements);
+		$elementTypesByPath = array('__root__' => $elementType->getClassHandle());
+
+		foreach ($paths as $path)
+		{
+			$pathSegments = explode('.', $path);
+			$sourcePath = '__root__';
+
+			foreach ($pathSegments as $segment)
+			{
+				$targetPath = $sourcePath.'.'.$segment;
+
+				// Make sure we haven't already eager-loaded this target path
+				if (!isset($elementsByPath[$targetPath]))
+				{
+					// Guilty until proven innocent
+					$elementsByPath[$targetPath] = $targetElements = $targetElementsById = $targetElementIdsBySourceIds = false;
+
+					// Get the eager-loading map from the source element type
+					$sourceElementType = $this->getElementType($elementTypesByPath[$sourcePath]);
+					$map = $sourceElementType->getEagerLoadingMap($elementsByPath[$sourcePath], $segment);
+
+					if ($map && !empty($map['map']))
+					{
+						// Remember the element type in case there are more segments after this
+						$elementTypesByPath[$targetPath] = $map['elementType'];
+
+						// Loop through the map to find:
+						// - unique target element IDs
+						// - target element IDs indexed by source element IDs
+						$uniqueTargetElementIds = array();
+						$targetElementIdsBySourceIds = array();
+
+						foreach ($map['map'] as $mapping)
+						{
+							$uniqueTargetElementIds[] = $mapping['target'];
+							$targetElementIdsBySourceIds[$mapping['source']][] = $mapping['target'];
+						}
+
+						$uniqueTargetElementIds = array_unique($uniqueTargetElementIds);
+
+						// Get the target elements
+						$customParams = array_merge(
+							(isset($map['criteria']) ? $map['criteria'] : array()),
+							(isset($pathCriterias[$targetPath]) ? $pathCriterias[$targetPath] : array())
+						);
+						$criteria = $this->getCriteria($map['elementType'], $customParams);
+						$criteria->id = $uniqueTargetElementIds;
+						$criteria->limit = null;
+						$targetElements = $this->findElements($criteria);
+
+						if ($targetElements)
+						{
+							// Success! Store those elements on $elementsByPath FFR
+							$elementsByPath[$targetPath] = $targetElements;
+
+							// Index the target elements by their IDs
+							$targetElementsById = array();
+
+							foreach ($targetElements as $targetElement)
+							{
+								$targetElementsById[$targetElement->id] = $targetElement;
+							}
+						}
+					}
+
+					// Tell the source elements about their eager-loaded elements (or lack thereof, as the case may be)
+					foreach ($elementsByPath[$sourcePath] as $sourceElement)
+					{
+						$sourceElementId = $sourceElement->id;
+						$targetElementsForSource = array();
+
+						if (isset($targetElementIdsBySourceIds[$sourceElementId]))
+						{
+							foreach ($targetElementIdsBySourceIds[$sourceElementId] as $targetElementId)
+							{
+								if (isset($targetElementsById[$targetElementId]))
+								{
+									$targetElementsForSource[] = $targetElementsById[$targetElementId];
+								}
+							}
+						}
+
+						$sourceElement->setEagerLoadedElements($segment, $targetElementsForSource);
+					}
+				}
+
+				if (!$elementsByPath[$targetPath])
+				{
+					// Dead end - stop wasting time on this path
+					break;
+				}
+
+				// Update the source path
+				$sourcePath = $targetPath;
+			}
+		}
 	}
 
 	/**
@@ -1130,6 +1315,29 @@ class ElementsService extends BaseApplicationComponent
 			}
 		}
 
+		// Get the element record
+		if (!$isNewElement)
+		{
+			$elementRecord = ElementRecord::model()->findByAttributes(array(
+				'id'   => $element->id,
+				'type' => $element->getElementType()
+			));
+
+			if (!$elementRecord)
+			{
+				throw new Exception(Craft::t('No element exists with the ID “{id}”.', array('id' => $element->id)));
+			}
+		}
+		else
+		{
+			$elementRecord = new ElementRecord();
+			$elementRecord->type = $element->getElementType();
+		}
+
+		// Set the attributes
+		$elementRecord->enabled = (bool) $element->enabled;
+		$elementRecord->archived = (bool) $element->archived;
+
 		$transaction = craft()->db->getCurrentTransaction() === null ? craft()->db->beginTransaction() : null;
 
 		try
@@ -1145,30 +1353,7 @@ class ElementsService extends BaseApplicationComponent
 			// Is the event giving us the go-ahead?
 			if ($event->performAction)
 			{
-				// Get the element record
-				if (!$isNewElement)
-				{
-					$elementRecord = ElementRecord::model()->findByAttributes(array(
-						'id'   => $element->id,
-						'type' => $element->getElementType()
-					));
-
-					if (!$elementRecord)
-					{
-						throw new Exception(Craft::t('No element exists with the ID “{id}”.', array('id' => $element->id)));
-					}
-				}
-				else
-				{
-					$elementRecord = new ElementRecord();
-					$elementRecord->type = $element->getElementType();
-				}
-
-				// Set the attributes
-				$elementRecord->enabled = (bool) $element->enabled;
-				$elementRecord->archived = (bool) $element->archived;
-
-				// Save the element record
+				// Save the element record first
 				$success = $elementRecord->save(false);
 
 				if ($success)
@@ -2058,6 +2243,18 @@ class ElementsService extends BaseApplicationComponent
 	public function onPopulateElement(Event $event)
 	{
 		$this->raiseEvent('onPopulateElement', $event);
+	}
+
+	/**
+	 * Fires an 'onPopulateElements' event.
+	 *
+	 * @param Event $event
+	 *
+	 * @return null
+	 */
+	public function onPopulateElements(Event $event)
+	{
+		$this->raiseEvent('onPopulateElements', $event);
 	}
 
 	/**

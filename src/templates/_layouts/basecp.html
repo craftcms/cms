@@ -26,6 +26,44 @@
 	{%- includejsresource 'lib/datepicker-i18n/datepicker-'~datepickerLocale~'.js' first %}
 {%- endif %}
 
+
+{# Figure out which D3 i18n script to load #}
+
+{%- set d3Locales = {
+	'ca_es': 'ca-ES',
+	'de_ch': 'de-CH',
+	'de': 'de-DE',
+	'en_ca': 'en-CA',
+	'en_gb': 'en-GB',
+	'en': 'en-US',
+	'es': 'es-ES',
+	'fi': 'fi-FI',
+	'fr_ca': 'fr-CA',
+	'fr': 'fr-FR',
+	'he': 'he-IL',
+	'hu': 'hu-HU',
+	'it': 'it-IT',
+	'ja': 'ja-JP',
+	'ko': 'ko-KR',
+	'nl': 'nl-NL',
+	'pl': 'pl-PL',
+	'pt': 'pt-BR',
+	'ru': 'ru-RU',
+	'sv': 'sv-SE',
+	'zh': 'zh-CN',
+} %}
+
+{%- if d3Locales[craft.locale] is defined %}
+	{% set d3Locale = d3Locales[craft.locale] %}
+{%- elseif d3Locales[language] is defined %}
+	{% set d3Locale = d3Locales[language] %}
+{%- else %}
+	{% set d3Locale = 'en-US' %}
+{%- endif %}
+
+
+{%- includejsresource 'lib/d3-i18n/'~d3Locale~'.js' first %}
+
 {%- set useCompressedJs = craft.config.useCompressedJs %}
 {%- includejsresource "js/cp.js" first -%}
 {%- includejsresource "js/craft.js" first -%}
@@ -38,14 +76,17 @@
 {%- includecssresource 'lib/selectize/selectize.css' %}
 {%- includejsresource 'lib/velocity'~(useCompressedJs ? '.min')~'.js' first %}
 {%- includejsresource 'lib/jquery-ui'~(useCompressedJs ? '.min')~'.js' first %}
-{%- includejsresource 'lib/jquery-2.1.4'~(useCompressedJs ? '.min')~'.js' first %}
-{%- includejsresource 'lib/xregexp-all'~(useCompressedJs ? '-min')~'.js' first %}
+{%- includejsresource 'lib/jquery-2.2.1'~(useCompressedJs ? '.min')~'.js' first %}
+{%- includejsresource 'lib/xregexp-all.js' first %}
+
+{%- includeJsResource 'lib/d3/d3'~(useCompressedJs ? '.min')~'.js' first %}
 
 {%- includeTranslations "Show", "Hide" %}
 
 {% set orientation = localeData.getOrientation() %}
 
 {% block foot %}
+
 	<noscript>
 		<div class="message-container no-access">
 			<div class="pane notice">
