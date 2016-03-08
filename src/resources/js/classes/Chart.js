@@ -200,6 +200,7 @@ Craft.charts.BaseChart = Garnish.Base.extend(
         this.initChartElement();
 
         this.orientation = this.settings.orientation;
+
         this.dataTable = dataTable;
     },
 
@@ -291,6 +292,11 @@ Craft.charts.Area = Craft.charts.BaseChart.extend(
     draw: function(dataTable, settings)
     {
         this.base(dataTable, settings, Craft.charts.Area.defaults);
+
+        if(this.tip)
+        {
+            this.tip = null;
+        }
 
         this.width = this.$chart.width() - this.settings.margin.left - this.settings.margin.right;
         this.height = this.$chart.height() - this.settings.margin.top - this.settings.margin.bottom;
@@ -616,7 +622,7 @@ Craft.charts.Area = Craft.charts.BaseChart.extend(
 
             if(!this.tip)
             {
-                this.tip = new Craft.charts.Tip(this.$container, tipSettings);
+                this.tip = new Craft.charts.Tip(this.$chart, tipSettings);
             }
             else
             {
@@ -664,18 +670,24 @@ Craft.charts.Area = Craft.charts.BaseChart.extend(
 
         if(this.orientation != 'rtl')
         {
-            var left = (x(d[0]) + offset);
+            var left = (x(d[0]) + this.settings.margin.left + offset);
+
+            var calcLeft = (this.$chart.offset().left + left + $tip.width());
+            var maxLeft = this.$chart.offset().left + this.$chart.width() - offset;
+
+            if(calcLeft > maxLeft)
+            {
+                left = x(d[0]) - ($tip.width() + offset);
+            }
         }
         else
         {
-            var left = (x(d[0]) - $tip.outerWidth() - offset);
+            var left = (x(d[0]) - ($tip.width() + this.settings.margin.left + offset));
         }
 
-        var calcLeft = (this.$container.offset().left + left + $tip.outerWidth());
-
-        if(calcLeft > Garnish.$win.width())
+        if(left < 0)
         {
-            left = Garnish.$win.width() - (this.$container.offset().left + $tip.outerWidth() + offset * 2);
+            left = (x(d[0]) + this.settings.margin.left + offset);
         }
 
         return {
