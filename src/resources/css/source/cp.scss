@@ -242,14 +242,17 @@ body.mobile #container {
 #footer #edition-logo > .edition-name,
 #footer #edition-logo > .edition-trial { display: inline-block; padding: 8px 8px 7px; font-size: 12px; line-height: 8px; font-weight: 500; }
 #footer #edition-logo > .edition-name { color: $mediumtextcolor; letter-spacing: 2.2px; padding-right: 5.8px; text-transform: uppercase; @include transition(color linear 100ms); }
-#footer #edition-logo > .edition-trial { display: inline-block; position: relative; margin-left: 5px; padding-left: 5px; background: $lighttextcolor; color: $bgcolor; border-radius: 0 1px 1px 0; letter-spacing: 1px; padding-right: 7px; text-transform: lowercase; @include transition(background linear 100ms); }
-#footer #edition-logo > .edition-trial:before { display: block; position: absolute; top: 0; left: -10px; content: '.'; font-size: 0; width: 0; height: 0; border-width: 0 10px 23px 0; border-style: solid; border-color: transparent $lighttextcolor transparent transparent; @include transition(border-color linear 100ms); }
+#footer #edition-logo > .edition-trial { display: inline-block; position: relative; @include margin-left(5px); @include padding-left(5px); background: $lighttextcolor; color: $bgcolor; border-radius: 0 1px 1px 0; letter-spacing: 1px; @include padding-right(7px); text-transform: lowercase; @include transition(background linear 100ms); }
+#footer #edition-logo > .edition-trial:before { display: block; position: absolute; top: 0; content: '.'; font-size: 0; width: 0; height: 0; border-style: solid; @include transition(border-color linear 100ms); }
+body.ltr #footer #edition-logo > .edition-trial:before { left: -10px; border-width: 0 10px 23px 0; border-color: transparent $lighttextcolor transparent transparent; }
+body.rtl #footer #edition-logo > .edition-trial:before { right: -10px; border-width: 0 0 23px 10px; border-color: transparent transparent transparent $lighttextcolor; }
 #footer #edition-logo.hot { cursor: pointer; }
-#footer #edition-logo.hot + .settings { display: inline-block; position: relative; top: -1px; width: 13px; margin: 0 -18px 0 6px; font-size: 13px; color: hsla($hue, 10%, 75%, 0.5); @include transition(color linear 100ms); }
+#footer #edition-logo.hot + .settings { display: inline-block; position: relative; top: -1px; width: 13px; @include margin(0, -18px, 0, 6px); font-size: 13px; color: hsla($hue, 10%, 75%, 0.5); @include transition(color linear 100ms); }
 #footer #edition-logo.hot:hover { border-color: $linkcolor; }
 #footer #edition-logo.hot:hover > .edition-name { color: $linkcolor; }
 #footer #edition-logo.hot:hover > .edition-trial { background: $linkcolor; }
-#footer #edition-logo.hot:hover > .edition-trial:before { border-color: transparent $linkcolor transparent transparent; }
+body.ltr #footer #edition-logo.hot:hover > .edition-trial:before { border-color: transparent $linkcolor transparent transparent; }
+body.rtl #footer #edition-logo.hot:hover > .edition-trial:before { border-color: transparent transparent transparent $linkcolor; }
 #footer #edition-logo.hot:hover + .settings { color: $linkcolor; }
 #footer li { display: inline-block; font-size: 11px; color: $lighttextcolor; white-space: nowrap; }
 #footer li:not(:last-child):after { display: inline-block; margin: 0 7px; content: '•'; }
