@@ -390,7 +390,6 @@ class AssetFileModel extends BaseElementModel
 			'sourceId'		=> AttributeType::Number,
 			'folderId'		=> AttributeType::Number,
 			'filename'		=> AttributeType::String,
-			'originalName'	=> AttributeType::String,
 			'kind'			=> AttributeType::String,
 			'width'			=> AttributeType::Number,
 			'height'		=> AttributeType::Number,
