@@ -156,7 +156,7 @@ class RichTextFieldType extends BaseFieldType
 			'transforms'      => $this->_getTransforms(),
 			'elementLocale'   => $localeId,
 			'direction'       => $orientation,
-			'redactorConfig'  => JsonHelper::decode($configJs),
+			'redactorConfig'  => JsonHelper::decode(JsonHelper::removeComments($configJs)),
 			'redactorLang'    => static::$_redactorLang,
 		);
 
@@ -482,13 +482,6 @@ class RichTextFieldType extends BaseFieldType
 		{
 			$configPath = craft()->path->getConfigPath().'redactor/'.$this->getSettings()->configFile;
 			$json = IOHelper::getFileContents($configPath);
-
-			// Remove any comments from the JSON.
-			// Adapted from http://stackoverflow.com/a/31907095/684
-			$pattern = '/(?:(?:\/\*(?:[^*]|(?:\*+[^*\/]))*\*+\/)|(?:(?<!\:|\\\|\'|\")\/\/.*))/';
-
-			$json = preg_replace($pattern, '' , $json);
-			$json = trim($json, PHP_EOL);
 		}
 
 		if (empty($json))
