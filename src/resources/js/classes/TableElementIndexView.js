@@ -175,6 +175,20 @@ Craft.TableElementIndexView = Craft.BaseElementIndexView.extend(
 		Craft.cp.updateResponsiveTables();
 	},
 
+	createElementEditor: function($element)
+	{
+		new Craft.ElementEditor($element, {
+			params: {
+				includeTableAttributesForSource: this.elementIndex.sourceKey
+			},
+			onSaveElement: $.proxy(function(response) {
+				if (response.tableAttributes) {
+					this._updateTableAttributes($element, response.tableAttributes);
+				}
+			}, this)
+		});
+	},
+
 	destroy: function()
 	{
 		if (this.$table)
@@ -403,5 +417,15 @@ Craft.TableElementIndexView = Craft.BaseElementIndexView.extend(
 
 		// No need for two spinners
 		this.elementIndex.setIndexAvailable();
+	},
+
+	_updateTableAttributes: function($element, tableAttributes)
+	{
+		var $tr = $element.closest('tr');
+
+		for (var attr in tableAttributes)
+		{
+			$tr.children('td[data-attr="'+attr+'"]:first').html(tableAttributes[attr]);
+		}
 	}
 });
