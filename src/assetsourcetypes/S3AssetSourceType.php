@@ -554,7 +554,7 @@ class S3AssetSourceType extends BaseAssetSourceType
 
 		$this->_prepareForRequests($originatingSettings);
 
-		if (!$this->_s3->copyObject($sourceBucket, $this->_getPathPrefix($originatingSettings).$file->folderPath.$file->filename, $bucket, $newServerPath, $this->_getACL()))
+		if (!$this->_s3->copyObject($sourceBucket, $this->_getPathPrefix($originatingSettings).$file->getPath(), $bucket, $newServerPath, $this->_getACL()))
 		{
 			$response = new AssetOperationResponseModel();
 			return $response->setError(Craft::t("Could not save the file"));
@@ -798,7 +798,7 @@ class S3AssetSourceType extends BaseAssetSourceType
 	 */
 	private function _getS3Path(AssetFileModel $file, $settings = null)
 	{
-		return $this->_getPathPrefix($settings).$file->folderPath.$file->filename;
+		return $this->_getPathPrefix($settings).$file->getPath();
 	}
 
 	/**

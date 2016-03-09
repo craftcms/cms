@@ -53,7 +53,7 @@ Craft.ElementEditor = Garnish.Base.extend(
 
 	getBaseData: function()
 	{
-		var data = {};
+		var data = $.extend({}, this.settings.params);
 
 		if (this.settings.locale)
 		{
@@ -332,6 +332,7 @@ Craft.ElementEditor = Garnish.Base.extend(
 		elementType: null,
 		locale: null,
 		attributes: null,
+		params: null,
 
 		onShowHud: $.noop,
 		onHideHud: $.noop,

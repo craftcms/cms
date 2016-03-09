@@ -34,7 +34,7 @@ Craft.RichTextInput = Garnish.Base.extend(
 
 		if (!this.redactorConfig.direction)
 		{
-			this.redactorConfig.direction = settings.direction;
+			this.redactorConfig.direction = (settings.direction || Craft.orientation);
 		}
 
 		this.redactorConfig.imageUpload = true;

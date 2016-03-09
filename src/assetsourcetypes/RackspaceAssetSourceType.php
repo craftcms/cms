@@ -526,7 +526,7 @@ class RackspaceAssetSourceType extends BaseAssetSourceType
 		$originatingSourceType = craft()->assetSources->getSourceTypeById($file->sourceId);
 		$originatingSettings = $originatingSourceType->getSettings();
 
-		$sourceUri = $this->_prepareRequestURI($originatingSettings->container, $this->_getPathPrefix($originatingSettings).$file->folderPath.$file->filename);
+		$sourceUri = $this->_prepareRequestURI($originatingSettings->container, $this->_getPathPrefix($originatingSettings).$file->getPath());
 		$targetUri = $this->_prepareRequestURI($this->getSettings()->container, $newServerPath);
 
 		$this->_copyFile($sourceUri, $targetUri);
@@ -1267,6 +1267,6 @@ class RackspaceAssetSourceType extends BaseAssetSourceType
 	 */
 	private function _getRackspacePath(AssetFileModel $file)
 	{
-		return $this->_getPathPrefix().$file->folderPath.$file->filename;
+		return $this->_getPathPrefix().$file->getPath();
 	}
 }

@@ -459,8 +459,8 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 		if ($oldFile->kind == 'image')
 		{
 			craft()->assetTransforms->deleteAllTransformData($oldFile);
-			$this->deleteSourceFile($oldFile->folderPath.$oldFile->filename);
-			$this->purgeCachedSourceFile($oldFile->folderPath.$oldFile->filename);
+			$this->deleteSourceFile($oldFile->getPath());
+			$this->purgeCachedSourceFile($oldFile->getPath());
 
 			// For remote sources, fetch the source image and move it in the old ones place
 			if (!$this->isSourceLocal())
@@ -521,7 +521,7 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 		// Delete DB record and the file itself.
 		craft()->elements->deleteElementById($file->id);
 
-		$this->deleteSourceFile($file->folderPath.$file->filename);
+		$this->deleteSourceFile($file->getPath());
 
 		$response = new AssetOperationResponseModel();
 
@@ -543,7 +543,7 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 		// Delete DB record and the file itself.
 		craft()->elements->mergeElementsByIds($targetFile->id, $sourceFile->id);
 
-		$this->deleteSourceFile($targetFile->folderPath.$targetFile->filename);
+		$this->deleteSourceFile($targetFile->getPath());
 
 		$response = new AssetOperationResponseModel();
 
@@ -804,7 +804,7 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 	 */
 	public function finalizeTransfer(AssetFileModel $file)
 	{
-		$this->deleteSourceFile($file->folderPath.$file->filename);
+		$this->deleteSourceFile($file->getPath());
 	}
 
 	/**
