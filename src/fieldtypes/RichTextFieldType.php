@@ -151,7 +151,7 @@ class RichTextFieldType extends BaseFieldType
 
 		if (isset($this->model) && $this->model->translatable)
 		{
-			// Explicitly et the text direction
+			// Explicitly set the text direction
 			$locale = craft()->i18n->getLocaleData($localeId);
 			$settings['direction'] = $locale->getOrientation();
 		}
