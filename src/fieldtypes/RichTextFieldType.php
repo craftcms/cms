@@ -133,7 +133,7 @@ class RichTextFieldType extends BaseFieldType
 	 */
 	public function getInputHtml($name, $value)
 	{
-		$configJs = $this->_getConfigJs();
+		$configJs = $this->_getConfigJson();
 		$this->_includeFieldResources($configJs);
 
 		$id = craft()->templates->formatInputId($name);
@@ -156,7 +156,7 @@ class RichTextFieldType extends BaseFieldType
 			'transforms'      => $this->_getTransforms(),
 			'elementLocale'   => $localeId,
 			'direction'       => $orientation,
-			'redactorConfig'  => JsonHelper::decode($configJs),
+			'redactorConfig'  => JsonHelper::decode(JsonHelper::removeComments($configJs)),
 			'redactorLang'    => static::$_redactorLang,
 		);
 
@@ -472,24 +472,24 @@ class RichTextFieldType extends BaseFieldType
 	}
 
 	/**
-	 * Returns the Redactor config JS used by this field.
+	 * Returns the Redactor config JSON used by this field.
 	 *
 	 * @return string
 	 */
-	private function _getConfigJs()
+	private function _getConfigJson()
 	{
 		if ($this->getSettings()->configFile)
 		{
 			$configPath = craft()->path->getConfigPath().'redactor/'.$this->getSettings()->configFile;
-			$js = IOHelper::getFileContents($configPath);
+			$json = IOHelper::getFileContents($configPath);
 		}
 
-		if (empty($js))
+		if (empty($json))
 		{
-			$js = '{}';
+			$json = '{}';
 		}
 
-		return $js;
+		return $json;
 	}
 
 	/**

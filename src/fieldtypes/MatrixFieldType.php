@@ -578,7 +578,7 @@ class MatrixFieldType extends BaseFieldType implements IEagerLoadingFieldType
 		return array(
 			'elementType' => 'MatrixBlock',
 			'map' => $map,
-			'criteria' => ['fieldId' => $this->model->id]
+			'criteria' => array('fieldId' => $this->model->id)
 		);
 	}
 
