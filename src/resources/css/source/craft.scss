@@ -994,6 +994,7 @@ ul.tree,
 .meta > .data > .heading { margin-bottom: 0; color: $mediumtextcolor; line-height: 18px; }
 .meta > .field > .heading { width: 86px; }
 .meta > .data > .heading { width: calc(50% - 14px); }
+.meta > .field > .heading > label { font-weight: normal; }
 .meta > .field > .heading > label.required:after { position: absolute; top: 6px; @include left(-13px); @include margin-left(0); }
 .meta > .field > .input { width: calc(100% - 100px); }
 .meta > .data > .value { width: 50%; }
