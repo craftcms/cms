@@ -1353,8 +1353,7 @@ class AssetsService extends BaseApplicationComponent
 	{
 
 		$theNewFile = $this->getFileById($theNewFileId);
-		$folder = $theNewFile->getFolder();
-		$source = craft()->assetSources->getSourceTypeById($folder->sourceId);
+		$source = craft()->assetSources->getSourceTypeById($theNewFile->sourceId);
 
 		$fileId = null;
 
@@ -1364,7 +1363,7 @@ class AssetsService extends BaseApplicationComponent
 			{
 				// Replace the actual file
 				$targetFile = $this->findFile(array(
-					'folderId' => $folder->id,
+					'folderId' => $theNewFile->folderId,
 					'filename' => $fileName
 				));
 
@@ -1373,8 +1372,8 @@ class AssetsService extends BaseApplicationComponent
 				if (!$targetFile)
 				{
 					$targetFile = new AssetFileModel();
-					$targetFile->sourceId = $folder->sourceId;
-					$targetFile->folderId = $folder->id;
+					$targetFile->sourceId = $theNewFile->sourceId;
+					$targetFile->folderId = $theNewFile->folderId;
 					$targetFile->filename = $fileName;
 					$targetFile->kind = IOHelper::getFileKind(IOHelper::getExtension($fileName));
 					$this->storeFile($targetFile);
