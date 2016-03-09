@@ -75,30 +75,30 @@ class UserPermissionsService extends BaseApplicationComponent
 
 		if (craft()->getEdition() == Craft::Pro)
 		{
-			$permissions[Craft::t('Users')] = [
-				'editUsers' => [
+			$permissions[Craft::t('Users')] = array(
+				'editUsers' => array(
 					'label' => Craft::t('Edit users'),
-					'nested' => [
-						'registerUsers' => [
+					'nested' => array(
+						'registerUsers' => array(
 							'label' => Craft::t('Register users')
-						],
-						'assignUserPermissions' => [
+						),
+						'assignUserPermissions' => array(
 							'label' => Craft::t('Assign user groups and permissions')
-						],
-						'administrateUsers' => [
+						),
+						'administrateUsers' => array(
 							'label' => Craft::t('Administrate users'),
-							'nested' => [
-								'changeUserEmails' => [
+							'nested' => array(
+								'changeUserEmails' => array(
 									'label' => Craft::t('Change users’ emails')
-								]
-							]
-						]
-					],
-				],
-				'deleteUsers' => [
+								),
+							),
+						),
+					),
+				),
+				'deleteUsers' => array(
 					'label' => Craft::t('Delete users')
-				],
-			];
+				),
+			);
 		}
 
 		// Locales
