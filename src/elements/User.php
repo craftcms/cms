@@ -564,11 +564,7 @@ class User extends Element implements IdentityInterface
     public function __toString()
     {
         try {
-            if (Craft::$app->getConfig()->get('useEmailAsUsername')) {
-                return $this->email;
-            } else {
-                return $this->username;
-            }
+            return $this->getName();
         } catch (Exception $e) {
             ErrorHandler::convertExceptionToError($e);
         }
