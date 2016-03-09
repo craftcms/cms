@@ -358,8 +358,9 @@ class AssetElementType extends BaseElementType
 	public function modifyElementsQuery(DbCommand $query, ElementCriteriaModel $criteria)
 	{
 		$query
-			->addSelect('assetfiles.sourceId, assetfiles.folderId, assetfiles.filename, assetfiles.kind, assetfiles.width, assetfiles.height, assetfiles.size, assetfiles.dateModified')
-			->join('assetfiles assetfiles', 'assetfiles.id = elements.id');
+			->addSelect('assetfiles.sourceId, assetfiles.folderId, assetfiles.filename, assetfiles.kind, assetfiles.width, assetfiles.height, assetfiles.size, assetfiles.dateModified, assetfolders.path as folderPath')
+			->join('assetfiles assetfiles', 'assetfiles.id = elements.id')
+			->join('assetfolders assetfolders', 'assetfolders.id = assetfiles.folderId');
 
 		if (!empty($criteria->source))
 		{
