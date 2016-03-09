@@ -301,7 +301,7 @@ class RackspaceAssetSourceType extends BaseAssetSourceType
 	 */
 	public function putImageTransform(AssetFileModel $file, AssetTransformIndexModel $index, $sourceImage)
 	{
-		$targetFile = $this->_getPathPrefix().$file->getFolder()->path.craft()->assetTransforms->getTransformSubpath($file, $index);
+		$targetFile = $this->_getPathPrefix().$file->folderPath.craft()->assetTransforms->getTransformSubpath($file, $index);
 
 		try
 		{
@@ -522,13 +522,11 @@ class RackspaceAssetSourceType extends BaseAssetSourceType
 			return $response->setPrompt($this->getUserPromptOptions($fileName))->setDataItem('fileName', $fileName);
 		}
 
-		$sourceFolder = $file->getFolder();
-
 		// Get the originating source object.
 		$originatingSourceType = craft()->assetSources->getSourceTypeById($file->sourceId);
 		$originatingSettings = $originatingSourceType->getSettings();
 
-		$sourceUri = $this->_prepareRequestURI($originatingSettings->container, $this->_getPathPrefix($originatingSettings).$sourceFolder->path.$file->filename);
+		$sourceUri = $this->_prepareRequestURI($originatingSettings->container, $this->_getPathPrefix($originatingSettings).$file->getPath());
 		$targetUri = $this->_prepareRequestURI($this->getSettings()->container, $newServerPath);
 
 		$this->_copyFile($sourceUri, $targetUri);
@@ -557,7 +555,7 @@ class RackspaceAssetSourceType extends BaseAssetSourceType
 					}
 
 					// Since Rackspace needs it's paths prepared, we deviate a little from the usual pattern.
-					$sourceTransformPath = $file->getFolder()->path.craft()->assetTransforms->getTransformSubpath($file, $index);
+					$sourceTransformPath = $file->folderPath.craft()->assetTransforms->getTransformSubpath($file, $index);
 					$sourceTransformPath = $this->_prepareRequestURI($originatingSettings->container, $this->_getPathPrefix($originatingSettings).$sourceTransformPath);
 
 					$targetTransformPath = $this->_getPathPrefix().$targetFolder->path.craft()->assetTransforms->getTransformSubpath($destination, $destinationIndex);
@@ -565,7 +563,7 @@ class RackspaceAssetSourceType extends BaseAssetSourceType
 
 					$this->_copyFile($sourceTransformPath, $targetTransformPath);
 
-					$this->deleteSourceFile($file->getFolder()->path.craft()->assetTransforms->getTransformSubpath($file, $index));
+					$this->deleteSourceFile($file->folderPath.craft()->assetTransforms->getTransformSubpath($file, $index));
 				}
 			}
 			else
@@ -690,14 +688,13 @@ class RackspaceAssetSourceType extends BaseAssetSourceType
 	/**
 	 * Purge a file from Akamai CDN.
 	 *
-	 * @param AssetFolderModel $folder   The folder containing the file.
-	 * @param string           $filename The filename of the file.
+	 * @param string $filePath The location of the file in the source.
 	 *
 	 * @return null
 	 */
-	protected function purgeCachedSourceFile(AssetFolderModel $folder, $filename)
+	protected function purgeCachedSourceFile($filePath)
 	{
-		$uriPath = $this->_prepareRequestURI($this->getSettings()->container, $this->_getPathPrefix().$folder->path.$filename);
+		$uriPath = $this->_prepareRequestURI($this->getSettings()->container, $this->_getPathPrefix().$filePath);
 		$this->_purgeObject($uriPath);
 	}
 
@@ -1270,8 +1267,6 @@ class RackspaceAssetSourceType extends BaseAssetSourceType
 	 */
 	private function _getRackspacePath(AssetFileModel $file)
 	{
-		$folder = $file->getFolder();
-
-		return $this->_getPathPrefix().$folder->path.$file->filename;
+		return $this->_getPathPrefix().$file->getPath();
 	}
 }

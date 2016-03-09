@@ -285,8 +285,7 @@ class GoogleCloudAssetSourceType extends BaseAssetSourceType
 	 */
 	public function getTimeTransformModified(AssetFileModel $fileModel, $transformLocation)
 	{
-		$folder = $fileModel->getFolder();
-		$path = $this->_getPathPrefix().$folder->path.$transformLocation.'/'.$fileModel->filename;
+		$path = $this->_getPathPrefix().$fileModel->folderPath.$transformLocation.'/'.$fileModel->filename;
 		$this->_prepareForRequests();
 		$info = $this->_googleCloud->getObjectInfo($this->getSettings()->bucket, $path);
 
@@ -321,7 +320,7 @@ class GoogleCloudAssetSourceType extends BaseAssetSourceType
 	public function transformExists(AssetFileModel $file, $location)
 	{
 		$this->_prepareForRequests();
-		return (bool) @$this->_googleCloud->getObjectInfo($this->getSettings()->bucket, $this->_getPathPrefix().$file->getFolder()->path.$location.'/'.$file->filename);
+		return (bool) @$this->_googleCloud->getObjectInfo($this->getSettings()->bucket, $this->_getPathPrefix().$file->folderPath.$location.'/'.$file->filename);
 	}
 
 	/**
@@ -526,7 +525,7 @@ class GoogleCloudAssetSourceType extends BaseAssetSourceType
 
 		$this->_prepareForRequests($originatingSettings);
 
-		if (!$this->_googleCloud->copyObject($sourceBucket, $this->_getPathPrefix($originatingSettings).$file->getFolder()->path.$file->filename, $bucket, $newServerPath, $this->_getACL()))
+		if (!$this->_googleCloud->copyObject($sourceBucket, $this->_getPathPrefix($originatingSettings).$file->getPath(), $bucket, $newServerPath, $this->_getACL()))
 		{
 			$response = new AssetOperationResponseModel();
 			return $response->setError(Craft::t("Could not save the file"));
@@ -556,7 +555,7 @@ class GoogleCloudAssetSourceType extends BaseAssetSourceType
 						craft()->assetTransforms->storeTransformIndexData($destinationIndex);
 					}
 
-					$from = $this->_getPathPrefix($originatingSettings).$file->getFolder()->path.craft()->assetTransforms->getTransformSubpath($file, $index);
+					$from = $this->_getPathPrefix($originatingSettings).$file->folderPath.craft()->assetTransforms->getTransformSubpath($file, $index);
 					$to   = $this->_getPathPrefix().$targetFolder->path.craft()->assetTransforms->getTransformSubpath($destination, $destinationIndex);
 
 					$this->copySourceFile($from, $to);
@@ -652,7 +651,7 @@ class GoogleCloudAssetSourceType extends BaseAssetSourceType
 	public function putImageTransform(AssetFileModel $file, AssetTransformIndexModel $index, $sourceImage)
 	{
 		$this->_prepareForRequests();
-		$targetFile = $this->_getPathPrefix().$file->getFolder()->path.craft()->assetTransforms->getTransformSubpath($file, $index);
+		$targetFile = $this->_getPathPrefix().$file->folderPath.craft()->assetTransforms->getTransformSubpath($file, $index);
 
 		return $this->putObject($sourceImage, $this->getSettings()->bucket, $targetFile, $this->_getACL());
 	}
@@ -760,8 +759,7 @@ class GoogleCloudAssetSourceType extends BaseAssetSourceType
 	 */
 	private function _getGCPath(AssetFileModel $file, $settings = null)
 	{
-		$folder = $file->getFolder();
-		return $this->_getPathPrefix($settings).$folder->path.$file->filename;
+		return $this->_getPathPrefix($settings).$file->getPath();
 	}
 
 	/**

@@ -548,14 +548,14 @@ class AssetTransformsService extends BaseApplicationComponent
 		// If we have a match, copy the file.
 		if ($matchFound)
 		{
-			$source->copyTransform($file, $file->getFolder(), new AssetTransformIndexModel($matchFound), $index);
+			$source->copyTransform($file, $file->folderPath, new AssetTransformIndexModel($matchFound), $index);
 		}
 		else
 		{
 			$this->_createTransformForFile($file, $index);
 		}
 
-		return $source->fileExists($file->getFolder()->path.$this->getTransformSubfolder($file, $index), $this->getTransformFilename($file, $index));
+		return $source->fileExists($file->folderPath.$this->getTransformSubfolder($file, $index), $this->getTransformFilename($file, $index));
 	}
 
 	/**
@@ -735,7 +735,7 @@ class AssetTransformsService extends BaseApplicationComponent
 		$baseUrl = $sourceType->getBaseUrl();
 		$appendix = AssetsHelper::getUrlAppendix($sourceType, $file);
 
-		return $baseUrl . $file->getFolder()->path . $this->getTransformSubpath($file, $transformIndexModel) . $appendix;
+		return $baseUrl . $file->folderPath . $this->getTransformSubpath($file, $transformIndexModel) . $appendix;
 	}
 
 	/**

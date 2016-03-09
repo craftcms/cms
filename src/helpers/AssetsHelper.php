@@ -47,7 +47,7 @@ class AssetsHelper
 	public static function generateUrl(BaseAssetSourceType $sourceType, AssetFileModel $file)
 	{
 		$baseUrl = $sourceType->getBaseUrl();
-		$folderPath = $file->getFolder()->path;
+		$folderPath = $file->folderPath;
 		$fileName = $file->filename;
 		$appendix = static::getUrlAppendix($sourceType, $file);
 

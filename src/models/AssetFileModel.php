@@ -362,6 +362,16 @@ class AssetFileModel extends BaseElementModel
 	}
 
 	/**
+	 * Returns the path to the asset, relative to the root of its asset source.
+	 *
+	 * @return string
+	 */
+	public function getPath()
+	{
+		return $this->folderPath.$this->filename;
+	}
+
+	/**
 	 * Return whether the Asset has a URL.
 	 *
 	 * @return bool
@@ -390,7 +400,7 @@ class AssetFileModel extends BaseElementModel
 			'sourceId'		=> AttributeType::Number,
 			'folderId'		=> AttributeType::Number,
 			'filename'		=> AttributeType::String,
-			'originalName'	=> AttributeType::String,
+			'folderPath'	=> AttributeType::String,
 			'kind'			=> AttributeType::String,
 			'width'			=> AttributeType::Number,
 			'height'		=> AttributeType::Number,
