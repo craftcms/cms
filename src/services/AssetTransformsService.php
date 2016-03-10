@@ -814,7 +814,7 @@ class AssetTransformsService extends BaseApplicationComponent
 		{
 			if (!$sourceType->isRemote())
 			{
-				throw new Exception(Craft::t('Image “{file}” cannot be found.', array('file' => $file->filename)));
+				throw new Exception(Craft::t('Image “{file}” cannot be found.', array('file' => $imageSourcePath)));
 			}
 
 			// Delete it just in case it's a 0-byter

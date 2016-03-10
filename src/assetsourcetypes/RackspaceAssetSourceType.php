@@ -1155,7 +1155,7 @@ class RackspaceAssetSourceType extends BaseAssetSourceType
 	 */
 	private function _downloadFile($path, $targetFile)
 	{
-		$targetUri = $this->_prepareRequestURI($this->getSettings()->container.'/'.$this->_getPathPrefix().$path);
+		$targetUri = $this->_prepareRequestURI($this->getSettings()->container.'/'.$path);
 		$response = $this->_doAuthenticatedRequest(static::RACKSPACE_STORAGE_OPERATION, $targetUri);
 
 		IOHelper::writeToFile($targetFile, static::_extractRequestResponse($response));
