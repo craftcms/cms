@@ -1,0 +1,52 @@
+{% extends "tests/charts/_layout" %}
+{% import "_includes/forms" as forms %}
+
+{% set selectedTab = 'area' %}
+
+{% block content %}
+
+    {% spaceless %}
+
+        <div id="area" class="chart-container"></div>
+
+        {% includejs %}
+
+            var $chart = $('#area');
+
+            this.chart = new Craft.charts.Area(this.$chart);
+
+            var chartDataTable = new Craft.charts.DataTable({
+                columns: [
+                    { label: "Date", type: 'date' },
+                    { label: "New Users", type: 'number' },
+                ],
+                rows: [
+                    ['2016-01-23', 5],
+                    ['2016-01-24', 15],
+                    ['2016-01-25', 10],
+                    ['2016-01-26', 13],
+                ]
+            });
+
+            var chartSettings = {
+                formats: {
+                    shortDateFormats: {
+                        day:"%-m\/%-d",
+                        month:"%-m\/%y",
+                        year:"%y"
+                    },
+                    decimalFormat:",.3f",
+                    percentFormat:",.2%",
+                    currencyFormat:"$,.2f"
+                },
+                orientation:"ltr",
+                scale:"day"
+            };
+
+            this.chart.draw(chartDataTable, chartSettings);
+
+        {% endincludejs %}
+
+    {% endspaceless %}
+
+{% endblock %}
