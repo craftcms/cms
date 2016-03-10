@@ -21,7 +21,7 @@ Craft.SlugGenerator = Craft.BaseInputGenerator.extend(
 		}
 
 		// Get the "words". Split on anything that is not alphanumeric.
-		var words = Craft.filterArray(XRegExp.matchChain(sourceVal, [XRegExp('[\\p{L}\\p{N}]+')]));
+		var words = Craft.filterArray(XRegExp.matchChain(sourceVal, [XRegExp('[\\p{L}\\p{N}\\p{Thai}]+')]));
 
 		if (words.length)
 		{

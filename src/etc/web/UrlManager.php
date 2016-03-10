@@ -439,7 +439,7 @@ class UrlManager extends \CUrlManager
 
 			$this->_regexTokenPatterns = array(
 				'(?:[a-zA-Z][a-zA-Z0-9_]*)',
-				'(?:[\p{L}\p{N}'.preg_quote(implode($slugChars), '/').']+)',
+				'(?:[\p{L}\p{N}\p{Thai}'.preg_quote(implode($slugChars), '/').']+)',
 			);
 		}
 

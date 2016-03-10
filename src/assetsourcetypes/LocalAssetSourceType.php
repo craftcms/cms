@@ -217,7 +217,7 @@ class LocalAssetSourceType extends BaseAssetSourceType
 	 */
 	public function getImageSourcePath(AssetFileModel $file)
 	{
-		return $this->getSourceFileSystemPath().$file->folderPath.$file->filename;
+		return $this->getSourceFileSystemPath().$file->getPath();
 	}
 
 	/**
@@ -589,6 +589,6 @@ class LocalAssetSourceType extends BaseAssetSourceType
 	{
 		$fileSourceType = craft()->assetSources->getSourceTypeById($file->sourceId);
 
-		return $this->getSourceFileSystemPath($fileSourceType).$file->folderPath.$file->filename;
+		return $this->getSourceFileSystemPath($fileSourceType).$file->getPath();
 	}
 }

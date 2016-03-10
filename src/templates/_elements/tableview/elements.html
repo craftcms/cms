@@ -21,7 +21,7 @@
 					{%- include "_elements/element" -%}
 				</td>
 			{% else %}
-				<td data-title="{{ attribute[1].label }}">
+				<td data-title="{{ attribute[1].label }}" data-attr="{{ attribute[0] }}">
 					{{- elementType.getTableAttributeHtml(element, attribute[0])|raw -}}
 				</td>
 			{% endif %}

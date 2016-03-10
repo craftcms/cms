@@ -139,26 +139,22 @@ class RichTextFieldType extends BaseFieldType
 		$id = craft()->templates->formatInputId($name);
 		$localeId = (isset($this->element) ? $this->element->locale : craft()->language);
 
-		if (isset($this->model) && $this->model->translatable)
-		{
-			$locale = craft()->i18n->getLocaleData($localeId);
-			$orientation = '"'.$locale->getOrientation().'"';
-		}
-		else
-		{
-			$orientation = 'Craft.orientation';
-		}
-
 		$settings = array(
 			'id'              => craft()->templates->namespaceInputId($id),
 			'linkOptions'     => $this->_getLinkOptions(),
 			'assetSources'    => $this->_getAssetSources($this->getSettings()->availableAssetSources),
 			'transforms'      => $this->_getTransforms(),
 			'elementLocale'   => $localeId,
-			'direction'       => $orientation,
 			'redactorConfig'  => JsonHelper::decode(JsonHelper::removeComments($configJs)),
 			'redactorLang'    => static::$_redactorLang,
 		);
+
+		if (isset($this->model) && $this->model->translatable)
+		{
+			// Explicitly set the text direction
+			$locale = craft()->i18n->getLocaleData($localeId);
+			$settings['direction'] = $locale->getOrientation();
+		}
 
 		craft()->templates->includeJs('new Craft.RichTextInput('.JsonHelper::encode($settings).');');
 
