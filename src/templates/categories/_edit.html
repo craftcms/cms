@@ -7,36 +7,26 @@
 {% set groupHandle = group.handle %}
 
 
-{% set extraPageHeaderHtml %}
-	{%- spaceless %}
+{% block saveButton %}
+	<div class="btngroup">
+		<input type="submit" class="btn submit" value="{{ 'Save'|t }}">
 
-	<div class="buttons">
-		{% if showPreviewBtn %}
-			{% include "_includes/previewbtns" %}
-		{% endif %}
+		<div class="btn submit menubtn"></div>
+		<div class="menu">
+			<ul>
+				<li><a class="formsubmit" data-redirect="{{ continueEditingUrl }}">
+					{{ "Save and continue editing"|t }}
+					{{ forms.optionShortcutLabel('S') }}
+				</a></li>
+				<li><a class="formsubmit" data-redirect="categories/{{ groupHandle }}/new?parentId={parent.id}">{{ "Save and add another"|t }}</a></li>
 
-		<div class="btngroup">
-			<input type="submit" class="btn submit" value="{{ 'Save'|t }}">
-
-			<div class="btn submit menubtn"></div>
-			<div class="menu">
-				<ul>
-					<li><a class="formsubmit" data-redirect="{{ continueEditingUrl }}">
-						{{ "Save and continue editing"|t }}
-						{{ forms.optionShortcutLabel('S') }}
-					</a></li>
-					<li><a class="formsubmit" data-redirect="categories/{{ groupHandle }}/new?parentId={parent.id}">{{ "Save and add another"|t }}</a></li>
-
-					{% if category.id %}
-						<li><a class="formsubmit" data-param="categoryId" data-value="" data-redirect="{{ continueEditingUrl }}">{{ "Save as a new category"|t }}</a></li>
-					{% endif %}
-				</ul>
-			</div>
+				{% if category.id %}
+					<li><a class="formsubmit" data-param="categoryId" data-value="" data-redirect="{{ continueEditingUrl }}">{{ "Save as a new category"|t }}</a></li>
+				{% endif %}
+			</ul>
 		</div>
 	</div>
-
-	{% endspaceless -%}
-{% endset %}
+{% endblock %}
 
 
 {% block main %}
@@ -79,6 +69,10 @@
 			</div><!--/item-->
 
 			<div class="item" data-position="right">
+
+				{% if showPreviewBtn %}
+					{% include "_includes/previewbtns" %}
+				{% endif %}
 
 				{% if craft.isLocalized() %}
 					<ul id="locales" class="pane">
