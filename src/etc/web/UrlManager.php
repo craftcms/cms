@@ -437,9 +437,10 @@ class UrlManager extends \CUrlManager
 				$slugChars[] = $slugWordSeparator;
 			}
 
+			// Reference: http://www.regular-expressions.info/unicode.html
 			$this->_regexTokenPatterns = array(
 				'(?:[a-zA-Z][a-zA-Z0-9_]*)',
-				'(?:[\p{L}\p{N}\p{Thai}'.preg_quote(implode($slugChars), '/').']+)',
+				'(?:[\p{L}\p{N}\p{M}'.preg_quote(implode($slugChars), '/').']+)',
 			);
 		}
 
