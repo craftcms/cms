@@ -1,0 +1,29 @@
+<div class="chartdoc">
+
+    <h2>Donut</h2>
+
+    <div id="donut" class="chart-container"></div>
+
+    {% includejs %}
+
+        var columns = [
+            ['Task',     'Hours per Day'],
+            ['Work',     11],
+            ['Eat',      2],
+            ['Commute',  2],
+            ['Watch TV', 2],
+            ['Sleep',    7]
+        ];
+        var $chart = $('#donut');
+
+        var chart = new Craft.charts.Chart({
+            bindto: this.$chart.get(0),
+            orientation: '{{ craft.i18n.getLocaleData().getOrientation() }}',
+            data: {
+                columns: columns,
+                type: 'donut',
+            },
+        });
+
+    {% endincludejs %}
+</div>
