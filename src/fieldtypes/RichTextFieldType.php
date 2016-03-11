@@ -142,7 +142,7 @@ class RichTextFieldType extends BaseFieldType
 		$settings = array(
 			'id'              => craft()->templates->namespaceInputId($id),
 			'linkOptions'     => $this->_getLinkOptions(),
-			'assetSources'    => $this->_getAssetSources($this->getSettings()->availableAssetSources),
+			'assetSources'    => $this->_getAssetSources(),
 			'transforms'      => $this->_getTransforms(),
 			'elementLocale'   => $localeId,
 			'redactorConfig'  => JsonHelper::decode(JsonHelper::removeComments($configJs)),
@@ -406,13 +406,13 @@ class RichTextFieldType extends BaseFieldType
 	/**
 	 * Get available Asset sources.
 	 *
-	 * @param array|null $assetSourceIds The available asset source IDs (default is all of them)
-	 *
 	 * @return array
 	 */
-	private function _getAssetSources($assetSourceIds = null)
+	private function _getAssetSources()
 	{
 		$sources = array();
+
+		$assetSourceIds = $this->getSettings()->availableAssetSources;
 
 		if (!$assetSourceIds)
 		{
