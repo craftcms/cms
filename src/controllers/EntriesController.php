@@ -252,57 +252,70 @@ class EntriesController extends BaseEntriesController
 		}
 
 		// Enable Live Preview?
-		if (!craft()->request->isMobileBrowser(true) && craft()->sections->isSectionTemplateValid($variables['section']))
+		if (!craft()->request->isMobileBrowser(true))
 		{
-			craft()->templates->includeJs('Craft.LivePreview.init('.JsonHelper::encode(array(
-				'fields'        => '#title-field, #fields > div > div > .field',
-				'extraFields'   => '#settings',
-				'previewUrl'    => $variables['entry']->getUrl(),
-				'previewAction' => 'entries/previewEntry',
-				'previewParams' => array(
-				                       'sectionId' => $variables['section']->id,
-				                       'entryId'   => $variables['entry']->id,
-				                       'locale'    => $variables['entry']->locale,
-				                       'versionId' => ($variables['entry']->getClassHandle() == 'EntryVersion' ? $variables['entry']->versionId : null),
-				                   )
-			)).');');
+			craft()->templates->setTemplateMode(TemplateMode::Site);
 
-			$variables['showPreviewBtn'] = true;
-
-			// Should we show the Share button too?
-			if ($variables['entry']->id)
+			if (craft()->sections->isSectionTemplateValid($variables['section']))
 			{
-				$classHandle = $variables['entry']->getClassHandle();
+				craft()->templates->setTemplateMode(TemplateMode::CP);
 
-				// If we're looking at the live version of an entry, just use
-				// the entry's main URL as its share URL
-				if ($classHandle == 'Entry' && $variables['entry']->getStatus() == EntryModel::LIVE)
+				craft()->templates->includeJs('Craft.LivePreview.init('.JsonHelper::encode(array(
+						'fields' => '#title-field, #fields > div > div > .field',
+						'extraFields' => '#settings',
+						'previewUrl' => $variables['entry']->getUrl(),
+						'previewAction' => 'entries/previewEntry',
+						'previewParams' => array(
+						'sectionId' => $variables['section']->id,
+						'entryId' => $variables['entry']->id,
+						'locale' => $variables['entry']->locale,
+						'versionId' => ($variables['entry']->getClassHandle() == 'EntryVersion' ? $variables['entry']->versionId : null),
+					)
+				)).');');
+
+				$variables['showPreviewBtn'] = true;
+
+				// Should we show the Share button too?
+				if ($variables['entry']->id)
 				{
-					$variables['shareUrl'] = $variables['entry']->getUrl();
-				}
-				else
-				{
-					switch ($classHandle)
+					$classHandle = $variables['entry']->getClassHandle();
+
+					// If we're looking at the live version of an entry, just use
+					// the entry's main URL as its share URL
+					if ($classHandle == 'Entry' && $variables['entry']->getStatus() == EntryModel::LIVE)
 					{
-						case 'EntryDraft':
-						{
-							$shareParams = array('draftId' => $variables['entry']->draftId);
-							break;
-						}
-						case 'EntryVersion':
-						{
-							$shareParams = array('versionId' => $variables['entry']->versionId);
-							break;
-						}
-						default:
-						{
-							$shareParams = array('entryId' => $variables['entry']->id, 'locale' => $variables['entry']->locale);
-							break;
-						}
+						$variables['shareUrl'] = $variables['entry']->getUrl();
 					}
+					else
+					{
+						switch ($classHandle)
+						{
+							case 'EntryDraft':
+							{
+								$shareParams = array('draftId' => $variables['entry']->draftId);
+								break;
+							}
+							case 'EntryVersion':
+							{
+								$shareParams = array('versionId' => $variables['entry']->versionId);
+								break;
+							}
+							default:
+							{
+								$shareParams = array(
+									'entryId' => $variables['entry']->id,
+									'locale' => $variables['entry']->locale
+								);
+								break;
+							}
+						}
 
-					$variables['shareUrl'] = UrlHelper::getActionUrl('entries/shareEntry', $shareParams);
+						$variables['shareUrl'] = UrlHelper::getActionUrl('entries/shareEntry', $shareParams);
+					}
 				}
+
+				// Just to be sure.
+				craft()->templates->setTemplateMode(TemplateMode::CP);
 			}
 		}
 		else
