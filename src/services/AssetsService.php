@@ -282,15 +282,6 @@ class AssetsService extends BaseApplicationComponent
 		$folders = $this->findFolders(array('sourceId' => $allowedSourceIds, 'order' => 'path'));
 		$tree = $this->_getFolderTreeByFolders($folders);
 
-		$sort = array();
-
-		foreach ($tree as $topFolder)
-		{
-			$sort[] = craft()->assetSources->getSourceById($topFolder->sourceId)->sortOrder;
-		}
-
-		array_multisort($sort, $tree);
-
 		return $tree;
 	}
 
