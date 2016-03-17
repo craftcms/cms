@@ -313,15 +313,19 @@ class EntriesController extends BaseEntriesController
 						$variables['shareUrl'] = UrlHelper::getActionUrl('entries/shareEntry', $shareParams);
 					}
 				}
-
-				// Just to be sure.
-				craft()->templates->setTemplateMode(TemplateMode::CP);
+			}
+			else
+			{
+				$variables['showPreviewBtn'] = false;
 			}
 		}
 		else
 		{
 			$variables['showPreviewBtn'] = false;
 		}
+
+		// Just to be sure.
+		craft()->templates->setTemplateMode(TemplateMode::CP);
 
 		// Set the base CP edit URL
 
