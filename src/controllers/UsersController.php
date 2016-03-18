@@ -1568,7 +1568,7 @@ class UsersController extends BaseController
 		// If the user doesn't have CP access, see if a custom Set Password template exists
 		if (!$user->can('accessCp'))
 		{
-			craft()->templates->setTemplateMode(TemplateMode::Site);
+			craft()->path->setTemplatesPath(craft()->path->getSiteTemplatesPath());
 			$templatePath = craft()->config->getLocalized('setPasswordPath');
 
 			if (craft()->templates->doesTemplateExist($templatePath))
@@ -1579,7 +1579,7 @@ class UsersController extends BaseController
 		}
 
 		// Otherwise go with the CP's template
-		craft()->templates->setTemplateMode(TemplateMode::CP);
+		craft()->path->setTemplatesPath(craft()->path->getCpTemplatesPath());
 		$templatePath = craft()->config->getCpSetPasswordPath();
 		$this->renderTemplate($templatePath, $variables);
 	}
