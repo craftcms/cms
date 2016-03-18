@@ -1222,8 +1222,8 @@ class TemplatesService extends BaseApplicationComponent
 		{
 			if (craft()->request->isCpRequest())
 			{
-				$this->_defaultTemplateExtensions = array_unique(array_merge(array('html', 'twig'), craft()->config->get('defaultTemplateExtensions')));
-				$this->_indexTemplateFilenames = array_unique(array_merge(array('index'), craft()->config->get('indexTemplateFilenames')));
+				$this->_defaultTemplateExtensions = array('html', 'twig');
+				$this->_indexTemplateFilenames = array('index');
 			}
 			else
 			{
