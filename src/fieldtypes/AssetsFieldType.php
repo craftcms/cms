@@ -66,7 +66,7 @@ class AssetsFieldType extends BaseElementFieldType
 		$folderOptions = array();
 		$sourceOptions = array();
 
-		foreach ($this->getElementType()->getSources() as $key => $source)
+		foreach ($this->getElementType()->getSources('settings') as $key => $source)
 		{
 			if (!isset($source['heading']))
 			{

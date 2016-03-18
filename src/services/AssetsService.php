@@ -266,21 +266,50 @@ class AssetsService extends BaseApplicationComponent
 	}
 
 	/**
-	 * Get the folder tree for Assets by source ids
+	 * Get the folder tree for Assets by source ids, optionally filtered by additional criteria
 	 *
-	 * @param $allowedSourceIds
+	 * @param array $allowedSourceIds an array  of allowed source ids
+	 * @param array $additionalCriteria an array of additional criteria
 	 *
 	 * @return array
 	 */
-	public function getFolderTreeBySourceIds($allowedSourceIds)
+	public function getFolderTreeBySourceIds(array $allowedSourceIds, array $additionalCriteria = array())
 	{
 		if (empty($allowedSourceIds))
 		{
 			return array();
 		}
 
-		$folders = $this->findFolders(array('sourceId' => $allowedSourceIds, 'order' => 'path'));
-		$tree = $this->_getFolderTreeByFolders($folders);
+		static $sourceFolders = array();
+
+		$tree = array();
+
+		// Get the tree for each source
+		foreach ($allowedSourceIds as $sourceId)
+		{
+			// Add additional criteria but prevent overriding sourceId and order.
+			$criteria = array_merge($additionalCriteria, array('sourceId' => $sourceId, 'order' => 'path'));
+
+			$cacheKey = md5(json_encode($criteria));
+
+			// If this has not been yet fetched, fetch it.
+			if (empty($sourceFolders[$cacheKey]))
+			{
+				$folders = $this->findFolders($criteria);
+				$sourceFolders[$cacheKey] = reset($this->_getFolderTreeByFolders($folders));
+			}
+
+			$tree[$sourceId] = $sourceFolders[$cacheKey];
+		}
+
+		$sort = array();
+
+		foreach ($tree as $sourceId => $folders)
+		{
+			$sort[] = craft()->assetSources->getSourceById($sourceId)->sortOrder;
+		}
+
+		array_multisort($sort, $tree);
 
 		return $tree;
 	}
@@ -1234,15 +1263,6 @@ class AssetsService extends BaseApplicationComponent
 
 			$referenceStore[$folder->id] = $folder;
 		}
-
-		$sort = array();
-
-		foreach ($tree as $topFolder)
-		{
-			$sort[] = craft()->assetSources->getSourceById($topFolder->sourceId)->sortOrder;
-		}
-
-		array_multisort($sort, $tree);
 
 		return $tree;
 	}
