@@ -692,7 +692,8 @@ class StringHelper
 	public static function splitOnWords($string)
 	{
 		// Split on anything that is not alphanumeric, or a period, underscore, or hyphen.
-		preg_match_all('/[\p{L}\p{N}\p{Thai}\._-]+/u', $string, $matches);
+		// Reference: http://www.regular-expressions.info/unicode.html
+		preg_match_all('/[\p{L}\p{N}\p{M}\._-]+/u', $string, $matches);
 		return ArrayHelper::filterEmptyStringsFromArray($matches[0]);
 	}
 

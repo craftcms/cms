@@ -227,10 +227,11 @@ abstract class BaseElementFieldType extends BaseFieldType implements IPreviewabl
 		{
 			$alias = 'relations_'.$this->model->handle;
 			$operator = ($value == ':notempty:' ? '!=' : '=');
+			$paramHandle = ':fieldId'.StringHelper::randomString(8);
 
 			$query->andWhere(
-				"(select count({$alias}.id) from {{relations}} {$alias} where {$alias}.sourceId = elements.id and {$alias}.fieldId = :fieldId) {$operator} 0",
-				array(':fieldId' => $this->model->id)
+				"(select count({$alias}.id) from {{relations}} {$alias} where {$alias}.sourceId = elements.id and {$alias}.fieldId = {$paramHandle}) {$operator} 0",
+				array($paramHandle => $this->model->id)
 			);
 		}
 		else if ($value !== null)
