@@ -58,6 +58,16 @@ class AssetFolderModel extends BaseModel
 	}
 
 	/**
+	 * Manually set the child folders.
+	 *
+	 * @param array $children
+	 */
+	public function setChildren(array $children)
+	{
+		$this->_children = $children;
+	}
+
+	/**
 	 * @return AssetFolderModel|null
 	 */
 	public function getParent()

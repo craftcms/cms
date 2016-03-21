@@ -1246,13 +1246,19 @@ class AssetsService extends BaseApplicationComponent
 	 *
 	 * @return array
 	 */
-	private function _getFolderTreeByFolders($folders)
+	private function _getFolderTreeByFolders(array $folders)
 	{
 		$tree = array();
 		$referenceStore = array();
 
+		/**
+		 * @var AssetFolderModel $folder
+		 */
 		foreach ($folders as $folder)
 		{
+			// Since we'll be pre-loading the children, prevent getChildren() form triggering a query.
+			$folder->setChildren(array());
+
 			if ($folder->parentId && isset($referenceStore[$folder->parentId]))
 			{
 				$referenceStore[$folder->parentId]->addChild($folder);
