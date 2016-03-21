@@ -296,7 +296,8 @@ class AssetsService extends BaseApplicationComponent
 			if (empty($sourceFolders[$cacheKey]))
 			{
 				$folders = $this->findFolders($criteria);
-				$sourceFolders[$cacheKey] = reset($this->_getFolderTreeByFolders($folders));
+				$subTree = $this->_getFolderTreeByFolders($folders);
+				$sourceFolders[$cacheKey] = reset($subTree);
 			}
 
 			$tree[$sourceId] = $sourceFolders[$cacheKey];
