@@ -111,11 +111,6 @@ class TemplatesService extends BaseApplicationComponent
 	 */
 	private $_renderingTemplate;
 
-	/**
-	 * @var string
-	 */
-	private $_templateMode = 'site';
-
 	// Public Methods
 	// =========================================================================
 
@@ -636,7 +631,7 @@ class TemplatesService extends BaseApplicationComponent
 	 */
 	public function getFootHtml()
 	{
-		if (craft()->isInstalled() && $this->getTemplateMode() == TemplateMode::CP)
+		if (craft()->isInstalled() && craft()->request->isCpRequest())
 		{
 			// Include any JS/resource flashes
 			foreach (craft()->userSession->getJsResourceFlashes() as $path)
@@ -859,7 +854,7 @@ class TemplatesService extends BaseApplicationComponent
 		$basePaths = array();
 
 		// Should we be looking for a localized version of the template?
-		if ($this->getTemplateMode() == TemplateMode::Site && IOHelper::folderExists($templatesPath.craft()->language))
+		if (craft()->request->isSiteRequest() && IOHelper::folderExists($templatesPath.craft()->language))
 		{
 			$basePaths[] = $templatesPath.craft()->language.'/';
 		}
@@ -877,7 +872,7 @@ class TemplatesService extends BaseApplicationComponent
 		// Otherwise maybe it's a plugin template?
 
 		// Only attempt to match against a plugin's templates if this is a CP or action request.
-		if ($this->getTemplateMode() == TemplateMode::CP || craft()->request->isActionRequest())
+		if (craft()->request->isCpRequest() || craft()->request->isActionRequest())
 		{
 			// Sanitize
 			$name = craft()->request->decodePathInfo($name);
@@ -929,37 +924,6 @@ class TemplatesService extends BaseApplicationComponent
 	public function setNamespace($namespace)
 	{
 		$this->_namespace = $namespace;
-	}
-
-	/**
-	 * Sets the current template mode.
-	 *
-	 * @param $templateMode
-	 *
-	 * @return null
-	 */
-	public function setTemplateMode($templateMode)
-	{
-		$this->_templateMode = $templateMode;
-
-		if ($templateMode == TemplateMode::CP)
-		{
-			craft()->path->setTemplatesPath(craft()->path->getCpTemplatesPath());
-		}
-		else
-		{
-			craft()->path->setTemplatesPath(craft()->path->getSiteTemplatesPath());
-		}
-	}
-
-	/**
-	 * Gets the current template mode.
-	 *
-	 * @return string
-	 */
-	public function getTemplateMode()
-	{
-		return $this->_templateMode;
 	}
 
 	/**
@@ -1256,7 +1220,7 @@ class TemplatesService extends BaseApplicationComponent
 		// Set the defaultTemplateExtensions and indexTemplateFilenames vars
 		if (!isset($this->_defaultTemplateExtensions))
 		{
-			if ($this->getTemplateMode() == TemplateMode::CP)
+			if (craft()->request->isCpRequest())
 			{
 				$this->_defaultTemplateExtensions = array('html', 'twig');
 				$this->_indexTemplateFilenames = array('index');

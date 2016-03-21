@@ -252,80 +252,63 @@ class EntriesController extends BaseEntriesController
 		}
 
 		// Enable Live Preview?
-		if (!craft()->request->isMobileBrowser(true))
+		if (!craft()->request->isMobileBrowser(true) && craft()->sections->isSectionTemplateValid($variables['section']))
 		{
-			craft()->templates->setTemplateMode(TemplateMode::Site);
+			craft()->templates->includeJs('Craft.LivePreview.init('.JsonHelper::encode(array(
+				'fields'        => '#title-field, #fields > div > div > .field',
+				'extraFields'   => '#settings',
+				'previewUrl'    => $variables['entry']->getUrl(),
+				'previewAction' => 'entries/previewEntry',
+				'previewParams' => array(
+				                       'sectionId' => $variables['section']->id,
+				                       'entryId'   => $variables['entry']->id,
+				                       'locale'    => $variables['entry']->locale,
+				                       'versionId' => ($variables['entry']->getClassHandle() == 'EntryVersion' ? $variables['entry']->versionId : null),
+				                   )
+			)).');');
 
-			if (craft()->sections->isSectionTemplateValid($variables['section']))
+			$variables['showPreviewBtn'] = true;
+
+			// Should we show the Share button too?
+			if ($variables['entry']->id)
 			{
-				craft()->templates->setTemplateMode(TemplateMode::CP);
+				$classHandle = $variables['entry']->getClassHandle();
 
-				craft()->templates->includeJs('Craft.LivePreview.init('.JsonHelper::encode(array(
-						'fields' => '#title-field, #fields > div > div > .field',
-						'extraFields' => '#settings',
-						'previewUrl' => $variables['entry']->getUrl(),
-						'previewAction' => 'entries/previewEntry',
-						'previewParams' => array(
-						'sectionId' => $variables['section']->id,
-						'entryId' => $variables['entry']->id,
-						'locale' => $variables['entry']->locale,
-						'versionId' => ($variables['entry']->getClassHandle() == 'EntryVersion' ? $variables['entry']->versionId : null),
-					)
-				)).');');
-
-				$variables['showPreviewBtn'] = true;
-
-				// Should we show the Share button too?
-				if ($variables['entry']->id)
+				// If we're looking at the live version of an entry, just use
+				// the entry's main URL as its share URL
+				if ($classHandle == 'Entry' && $variables['entry']->getStatus() == EntryModel::LIVE)
 				{
-					$classHandle = $variables['entry']->getClassHandle();
-
-					// If we're looking at the live version of an entry, just use
-					// the entry's main URL as its share URL
-					if ($classHandle == 'Entry' && $variables['entry']->getStatus() == EntryModel::LIVE)
-					{
-						$variables['shareUrl'] = $variables['entry']->getUrl();
-					}
-					else
-					{
-						switch ($classHandle)
-						{
-							case 'EntryDraft':
-							{
-								$shareParams = array('draftId' => $variables['entry']->draftId);
-								break;
-							}
-							case 'EntryVersion':
-							{
-								$shareParams = array('versionId' => $variables['entry']->versionId);
-								break;
-							}
-							default:
-							{
-								$shareParams = array(
-									'entryId' => $variables['entry']->id,
-									'locale' => $variables['entry']->locale
-								);
-								break;
-							}
-						}
-
-						$variables['shareUrl'] = UrlHelper::getActionUrl('entries/shareEntry', $shareParams);
-					}
+					$variables['shareUrl'] = $variables['entry']->getUrl();
 				}
-			}
-			else
-			{
-				$variables['showPreviewBtn'] = false;
+				else
+				{
+					switch ($classHandle)
+					{
+						case 'EntryDraft':
+						{
+							$shareParams = array('draftId' => $variables['entry']->draftId);
+							break;
+						}
+						case 'EntryVersion':
+						{
+							$shareParams = array('versionId' => $variables['entry']->versionId);
+							break;
+						}
+						default:
+						{
+							$shareParams = array('entryId' => $variables['entry']->id, 'locale' => $variables['entry']->locale);
+							break;
+						}
+					}
+
+					$variables['shareUrl'] = UrlHelper::getActionUrl('entries/shareEntry', $shareParams);
+				}
 			}
 		}
 		else
 		{
 			$variables['showPreviewBtn'] = false;
 		}
-
-		// Just to be sure.
-		craft()->templates->setTemplateMode(TemplateMode::CP);
 
 		// Set the base CP edit URL
 
