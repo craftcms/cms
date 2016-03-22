@@ -4,8 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "8178a7074beb45939457da65d3d7e92b",
-    "content-hash": "24bf0996a6176c7950caf349ae35059b",
+    "hash": "3907e9ce3590940d91b979a28448b339",
     "packages": [
         {
             "name": "guzzle/guzzle",
@@ -102,11 +101,11 @@
         },
         {
             "name": "imagine/imagine",
-            "version": "0.6.9",
+            "version": "0.6.10",
             "source": {
                 "type": "git",
                 "url": "https://github.com/pixelandtonic/Imagine",
-                "reference": "ddfb537990e42b2dd3957e77a8f1807e5c04402e"
+                "reference": "53d08c26d70fa434fbda5f58ae7cc0b62142fd72"
             },
             "archive": {
                 "exclude": [
@@ -160,7 +159,7 @@
                 "image manipulation",
                 "image processing"
             ],
-            "time": "2016-02-29 14:22:54"
+            "time": "2016-03-22 09:28:26"
         },
         {
             "name": "lsolesen/pel",
