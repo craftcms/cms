@@ -691,13 +691,13 @@ class AssetsFieldType extends BaseElementFieldType
 		// Attempt to find the actual folder ID
 		try
 		{
-			$folderId = $this->_resolveSourcePathToFolderId($folderSourceId, $folderSubpath);
+			$folderId = $this->_resolveSourcePathToFolderId($folderSourceId, $folderSubpath, $createDynamicFolders);
 		}
 		catch (InvalidSubpathException $e)
 		{
 			// If this is a new element, the subpath probably just contained a token that returned null, like {id}
 			// so use the user's upload folder instead
-			if (empty($this->element->id))
+			if (empty($this->element->id) || !$createDynamicFolders)
 			{
 				$userModel = craft()->userSession->getUser();
 				$userFolder = craft()->assets->getUserFolder($userModel);
