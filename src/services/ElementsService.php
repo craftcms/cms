@@ -449,11 +449,13 @@ class ElementsService extends BaseApplicationComponent
 
 						foreach ($map['map'] as $mapping)
 						{
-							$uniqueTargetElementIds[] = $mapping['target'];
+							if (!in_array($mapping['target'], $uniqueTargetElementIds))
+							{
+								$uniqueTargetElementIds[] = $mapping['target'];
+							}
+
 							$targetElementIdsBySourceIds[$mapping['source']][] = $mapping['target'];
 						}
-
-						$uniqueTargetElementIds = array_unique($uniqueTargetElementIds);
 
 						// Get the target elements
 						$customParams = array_merge(
