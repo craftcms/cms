@@ -65,9 +65,8 @@ class AssetIndexDataRecord extends BaseRecord
 			'sourceId' 		=> array(AttributeType::Number, 'required' => true),
 			'offset'  		=> array(AttributeType::Number, 'required' => true),
 			'uri'  			=> array(ColumnType::Varchar, 'maxLength' => 255),
-			'size' 			=> array(AttributeType::Number),
+			'size' 			=> array(ColumnType::BigInt, 'unsigned' => true),
 			'recordId'		=> array(AttributeType::Number),
-
 		);
 	}
 }
