@@ -828,6 +828,19 @@ EOD;
 	 */
 	public function saveElement(BaseElementModel $element, $params)
 	{
+		// Make sure we have an author for this.
+		if (!$element->authorId)
+		{
+			if (!empty($params['author']))
+			{
+				$element->authorId = $params['author']->id;
+			}
+			else
+			{
+				$element->authorId = craft()->userSession->getUser()->id;
+			}
+		}
+
 		// Route this through EntriesService::saveEntry() so the proper entry events get fired.
 		return craft()->entries->saveEntry($element);
 	}
