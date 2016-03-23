@@ -833,7 +833,7 @@ EOD;
 		{
 			if (!empty($params['author']))
 			{
-				$element->authorId = $params['author']->id;
+				$element->authorId = $params['author'];
 			}
 			else
 			{
