@@ -243,6 +243,22 @@ class EntryModel extends BaseElementModel
 	}
 
 	/**
+	 * Sets some eager-loaded elements on a given handle.
+	 *
+	 * @param string             $handle   The handle to load the elements with in the future
+	 * @param BaseElementModel[] $elements The eager-loaded elements
+	 */
+	public function setEagerLoadedElements($handle, $elements)
+	{
+		if ($handle == 'author') {
+			$author = isset($elements[0]) ? $elements[0] : null;
+			$this->setAuthor($author);
+		} else {
+			parent::setEagerLoadedElements($handle, $elements);
+		}
+	}
+
+	/**
 	 * Returns the entry's level (formerly "depth").
 	 *
 	 * @deprecated Deprecated in 2.0. Use 'level' instead.
