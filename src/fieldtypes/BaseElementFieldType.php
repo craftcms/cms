@@ -396,6 +396,7 @@ abstract class BaseElementFieldType extends BaseFieldType implements IPreviewabl
 				array('and', 'fieldId=:fieldId', array('in', 'sourceId', $sourceElementIds)),
 				array(':fieldId' => $this->model->id)
 			)
+			->order('sortOrder')
 			->queryAll();
 
 		return array(
