@@ -28,6 +28,11 @@ class EntryModel extends BaseElementModel
 	 */
 	protected $elementType = ElementType::Entry;
 
+	/**
+	 * @var UserModel
+	 */
+	private $_author;
+
 	// Public Methods
 	// =========================================================================
 
@@ -148,10 +153,22 @@ class EntryModel extends BaseElementModel
 	 */
 	public function getAuthor()
 	{
-		if ($this->authorId)
+		if (!isset($this->_author) && $this->authorId)
 		{
-			return craft()->users->getUserById($this->authorId);
+			$this->_author = craft()->users->getUserById($this->authorId);
 		}
+
+		return $this->_author;
+	}
+
+	/**
+	 * Sets the entry's author.
+	 *
+	 * @param UserModel|null $author
+	 */
+	public function setAuthor(UserModel $author = null)
+	{
+		$this->_author = $author;
 	}
 
 	/**
