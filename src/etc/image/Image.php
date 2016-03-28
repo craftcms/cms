@@ -132,8 +132,8 @@ class Image extends BaseImage
 			throw new Exception(Craft::t('The file “{path}” does not appear to be an image.', array('path' => $path)));
 		}
 
-		// For Imagick, convert CMYK to RGB, save and re-open.
-		if (!craft()->images->isGd() && $this->_image->getImagick()->getImageColorspace() == \Imagick::COLORSPACE_CMYK)
+		// If we're using Imagick _and_ one that supports it, convert CMYK to RGB, save and re-open.
+		if (!craft()->images->isGd() && $this->_image->getImagick()->getImageColorspace() == \Imagick::COLORSPACE_CMYK && method_exists($this->_image->getImagick(), 'transformimagecolorspace'))
 		{
 			$this->_image->getImagick()->transformimagecolorspace(\Imagick::COLORSPACE_SRGB);
 			$this->_image->save();

@@ -28,6 +28,11 @@ class EntryModel extends BaseElementModel
 	 */
 	protected $elementType = ElementType::Entry;
 
+	/**
+	 * @var UserModel
+	 */
+	private $_author;
+
 	// Public Methods
 	// =========================================================================
 
@@ -148,10 +153,22 @@ class EntryModel extends BaseElementModel
 	 */
 	public function getAuthor()
 	{
-		if ($this->authorId)
+		if (!isset($this->_author) && $this->authorId)
 		{
-			return craft()->users->getUserById($this->authorId);
+			$this->_author = craft()->users->getUserById($this->authorId);
 		}
+
+		return $this->_author;
+	}
+
+	/**
+	 * Sets the entry's author.
+	 *
+	 * @param UserModel|null $author
+	 */
+	public function setAuthor(UserModel $author = null)
+	{
+		$this->_author = $author;
 	}
 
 	/**
@@ -222,6 +239,22 @@ class EntryModel extends BaseElementModel
 			}
 
 			return $url;
+		}
+	}
+
+	/**
+	 * Sets some eager-loaded elements on a given handle.
+	 *
+	 * @param string             $handle   The handle to load the elements with in the future
+	 * @param BaseElementModel[] $elements The eager-loaded elements
+	 */
+	public function setEagerLoadedElements($handle, $elements)
+	{
+		if ($handle == 'author') {
+			$author = isset($elements[0]) ? $elements[0] : null;
+			$this->setAuthor($author);
+		} else {
+			parent::setEagerLoadedElements($handle, $elements);
 		}
 	}
 

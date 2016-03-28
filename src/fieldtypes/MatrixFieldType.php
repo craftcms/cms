@@ -573,6 +573,7 @@ class MatrixFieldType extends BaseFieldType implements IEagerLoadingFieldType
 				array('and', 'fieldId=:fieldId', array('in', 'ownerId', $sourceElementIds)),
 				array(':fieldId' => $this->model->id)
 			)
+			->order('sortOrder')
 			->queryAll();
 
 		return array(

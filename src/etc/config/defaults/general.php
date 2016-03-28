@@ -482,7 +482,6 @@ return array(
 	 */
 	'requireUserAgentAndIpForSession' => true,
 
-
 	/**
 	 * The URI segment Craft should use for resource URLs on the front end.
 	 */
@@ -559,6 +558,12 @@ return array(
 	 * The character(s) that should be used to separate words in slugs.
 	 */
 	'slugWordSeparator' => '-',
+
+	/**
+	 * Controls whether or not to show or hide any Twig template runtime errors that occur on the site in the browser.
+	 * If it is set to `true`, the errors will still be logged to Craft’s log files.
+	 */
+	'suppressTemplateErrors' => false,
 
 	/**
 	 * Configures Craft to send all system emails to a single email address, or an array of email addresses for testing

@@ -760,6 +760,39 @@ class EntryElementType extends BaseElementType
 		return EntryModel::populateModel($row);
 	}
 
+    /**
+     * @inheritDoc IElementType::getEagerLoadingMap()
+     *
+     * @param BaseElementModel[]  $sourceElements
+     * @param string $handle
+     *
+     * @return array|false
+     */
+    public function getEagerLoadingMap($sourceElements, $handle)
+    {
+        if ($handle == 'author') {
+            // Get the source element IDs
+            $sourceElementIds = array();
+
+            foreach ($sourceElements as $sourceElement) {
+                $sourceElementIds[] = $sourceElement->id;
+            }
+
+            $map = craft()->db->createCommand()
+                ->select('id as source, authorId as target')
+                ->from('entries')
+                ->where(array('in', 'id', $sourceElementIds))
+                ->queryAll();
+
+            return array(
+                'elementType' => 'User',
+                'map' => $map
+            );
+        }
+
+        return parent::getEagerLoadingMap($sourceElements, $handle);
+    }
+
 	/**
 	 * @inheritDoc IElementType::getEditorHtml()
 	 *
@@ -828,6 +861,19 @@ EOD;
 	 */
 	public function saveElement(BaseElementModel $element, $params)
 	{
+		// Make sure we have an author for this.
+		if (!$element->authorId)
+		{
+			if (!empty($params['author']))
+			{
+				$element->authorId = $params['author'];
+			}
+			else
+			{
+				$element->authorId = craft()->userSession->getUser()->id;
+			}
+		}
+
 		// Route this through EntriesService::saveEntry() so the proper entry events get fired.
 		return craft()->entries->saveEntry($element);
 	}
@@ -880,6 +926,28 @@ EOD;
 		if ($section->type == SectionType::Structure && $section->structureId == $structureId)
 		{
 			craft()->elements->updateElementSlugAndUri($element, true, true, true);
+		}
+	}
+
+	/**
+	 * Preps the element criteria for a given table attribute
+	 *
+	 * @param ElementCriteriaModel $criteria
+	 * @param string               $attribute
+	 *
+	 * @return void
+	 */
+	protected function prepElementCriteriaForTableAttribute(ElementCriteriaModel $criteria, $attribute)
+	{
+		if ($attribute == 'author')
+		{
+			$with = $criteria->with ?: array();
+			$with[] = 'author';
+			$criteria->with = $with;
+		}
+		else
+		{
+			parent::prepElementCriteriaForTableAttribute($criteria, $attribute);
 		}
 	}
 }

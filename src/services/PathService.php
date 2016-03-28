@@ -15,14 +15,6 @@ namespace Craft;
  */
 class PathService extends BaseApplicationComponent
 {
-	// Properties
-	// =========================================================================
-
-	/**
-	 * @var
-	 */
-	private $_templatesPath;
-
 	// Public Methods
 	// =========================================================================
 
@@ -315,19 +307,8 @@ class PathService extends BaseApplicationComponent
 	 */
 	public function getTemplatesPath()
 	{
-		if (!isset($this->_templatesPath))
-		{
-			if (craft()->request->isCpRequest())
-			{
-				$this->_templatesPath = $this->getCpTemplatesPath();
-			}
-			else
-			{
-				$this->_templatesPath = $this->getSiteTemplatesPath();
-			}
-		}
-
-		return $this->_templatesPath;
+		craft()->deprecator->log('PathService::getTemplatesPath()', 'PathService::getTemplatesPath() has been deprecated. Use TemplatesService::getTemplatesPath() or TemplatesService::getTemplateMode() instead.');
+		return craft()->templates->getTemplatesPath($path);
 	}
 
 	/**
@@ -337,7 +318,8 @@ class PathService extends BaseApplicationComponent
 	 */
 	public function setTemplatesPath($path)
 	{
-		$this->_templatesPath = $path;
+		craft()->deprecator->log('PathService::setTemplatesPath()', 'PathService::setTemplatesPath() has been deprecated. Use TemplatesService::setTemplatesPath() or TemplatesService::setTemplateMode() instead.');
+		craft()->templates->setTemplatesPath($path);
 	}
 
 	/**

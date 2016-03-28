@@ -291,6 +291,7 @@ class EtService extends BaseApplicationComponent
 						case 'license_has_edition':  $error = Craft::t('Your Craft license already has this edition.'); break;
 						case 'price_mismatch':       $error = Craft::t('The cost of this edition just changed.'); break;
 						case 'unknown_error':        $error = Craft::t('An unknown error occurred.'); break;
+						case 'invalid_coupon_code':  $error = Craft::t('Invalid coupon code.'); break;
 
 						// Stripe errors
 						case 'incorrect_number':     $error = Craft::t('The card number is incorrect.'); break;
