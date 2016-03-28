@@ -308,7 +308,7 @@ class PathService extends BaseApplicationComponent
 	public function getTemplatesPath()
 	{
 		craft()->deprecator->log('PathService::getTemplatesPath()', 'PathService::getTemplatesPath() has been deprecated. Use TemplatesService::getTemplatesPath() or TemplatesService::getTemplateMode() instead.');
-		return craft()->templates->getTemplatesPath($path);
+		return craft()->templates->getTemplatesPath();
 	}
 
 	/**
