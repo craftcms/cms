@@ -69,7 +69,7 @@ class AssetFileRecord extends BaseRecord
 			'kind'			=> array('column' => ColumnType::Varchar, 'maxLength' => 50, 'required' => true, 'default' => 'unknown'),
 			'width'			=> array(AttributeType::Number, 'min' => 0, 'column' => ColumnType::Int),
 			'height'		=> array(AttributeType::Number, 'min' => 0, 'column' => ColumnType::Int),
-			'size'			=> array(AttributeType::Number, 'min' => 0, 'column' => ColumnType::Int),
+			'size'			=> array(AttributeType::Number, 'min' => 0, 'column' => ColumnType::BigInt),
 			'dateModified'	=> AttributeType::DateTime
 		);
 	}
