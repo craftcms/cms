@@ -603,15 +603,15 @@ class CategoriesService extends BaseApplicationComponent
 	{
 		if ($group->hasUrls)
 		{
-			// Set Craft to the site template path
-			$oldTemplatesPath = craft()->path->getTemplatesPath();
-			craft()->path->setTemplatesPath(craft()->path->getSiteTemplatesPath());
+			// Set Craft to the site template mode
+			$oldTemplateMode = craft()->templates->getTemplateMode();
+			craft()->templates->setTemplateMode(TemplateMode::Site);
 
 			// Does the template exist?
 			$templateExists = craft()->templates->doesTemplateExist($group->template);
 
-			// Restore the original template path
-			craft()->path->setTemplatesPath($oldTemplatesPath);
+			// Restore the original template mode
+			craft()->templates->setTemplateMode($oldTemplateMode);
 
 			if ($templateExists)
 			{

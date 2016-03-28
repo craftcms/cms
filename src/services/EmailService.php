@@ -116,7 +116,8 @@ class EmailService extends BaseApplicationComponent
 			$emailModel->body     = Craft::t($key.'_body', null, null, 'en_us');
 		}
 
-		$tempTemplatesPath = '';
+		$templatesService = craft()->templates;
+		$oldTemplateMode = $templatesService->getTemplateMode();
 
 		if (craft()->getEdition() >= Craft::Client)
 		{
@@ -125,14 +126,15 @@ class EmailService extends BaseApplicationComponent
 
 			if (!empty($settings['template']))
 			{
-				$tempTemplatesPath = craft()->path->getSiteTemplatesPath();
+				$templatesService->setTemplateMode(TemplateMode::Site);
 				$template = $settings['template'];
 			}
 		}
 
 		if (empty($template))
 		{
-			$tempTemplatesPath = craft()->path->getCpTemplatesPath();
+			// Default to the _special/email.html template
+			$templatesService->setTemplateMode(TemplateMode::CP);
 			$template = '_special/email';
 		}
 
@@ -147,18 +149,14 @@ class EmailService extends BaseApplicationComponent
 			$emailModel->htmlBody.
 			"{% endset %}\n";
 
-		// Temporarily swap the templates path
-		$originalTemplatesPath = craft()->path->getTemplatesPath();
-		craft()->path->setTemplatesPath($tempTemplatesPath);
-
 		// Tell the template which email key was being requested
 		$variables['emailKey'] = $key;
 
 		// Send the email
 		$return = $this->_sendEmail($user, $emailModel, $variables);
 
-		// Return to the original templates path
-		craft()->path->setTemplatesPath($originalTemplatesPath);
+		// Return to the original template mode
+		$templatesService->setTemplateMode($oldTemplateMode);
 
 		return $return;
 	}
