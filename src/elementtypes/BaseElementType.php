@@ -224,6 +224,12 @@ abstract class BaseElementType extends BaseComponentType implements IElementType
 				// Get the table columns
 				$variables['attributes'] = $this->getTableAttributesForSource($sourceKey);
 
+				// Give each attribute a chance to modify the criteria
+				foreach ($variables['attributes'] as $attribute)
+				{
+					$this->prepElementCriteriaForTableAttribute($criteria, $attribute[0]);
+				}
+
 				break;
 			}
 		}
@@ -367,7 +373,16 @@ abstract class BaseElementType extends BaseComponentType implements IElementType
 
 						if ($fieldType && $fieldType instanceof IPreviewableFieldType)
 						{
-							$value = $element->getFieldValue($field->handle);
+							// Was this field value eager-loaded?
+							if ($fieldType instanceof IEagerLoadingFieldType)
+							{
+								$value = $element->getEagerLoadedElements($field->handle);
+							}
+							else
+							{
+								$value = $element->getFieldValue($field->handle);
+							}
+
 							$fieldType->setElement($element);
 
 							return $fieldType->getTableAttributeHtml($value);
@@ -614,6 +629,36 @@ abstract class BaseElementType extends BaseComponentType implements IElementType
 	protected function getTableAttributesForSource($sourceKey)
 	{
 		return craft()->elementIndexes->getTableAttributes($this->getClassHandle(), $sourceKey);
+	}
+
+	/**
+	 * Preps the element criteria for a given table attribute
+	 *
+	 * @param ElementCriteriaModel $criteria
+	 * @param string               $attribute
+	 *
+	 * @return void
+	 */
+	protected function prepElementCriteriaForTableAttribute(ElementCriteriaModel $criteria, $attribute)
+	{
+		// Is this a custom field?
+		if (strncmp($attribute, 'field:', 6) === 0)
+		{
+			$fieldId = substr($attribute, 6);
+			$field = craft()->fields->getFieldById($fieldId);
+
+			if ($field)
+			{
+				$fieldType = $field->getFieldType();
+
+				if ($fieldType && $fieldType instanceof IEagerLoadingFieldType)
+				{
+					$with = $criteria->with ?: array();
+					$with[] = $field->handle;
+					$criteria->with = $with;
+				}
+			}
+		}
 	}
 
 	// Private Methods
