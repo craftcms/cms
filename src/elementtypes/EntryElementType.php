@@ -915,4 +915,26 @@ EOD;
 			craft()->elements->updateElementSlugAndUri($element, true, true, true);
 		}
 	}
+
+	/**
+	 * Preps the element criteria for a given table attribute
+	 *
+	 * @param ElementCriteriaModel $criteria
+	 * @param string               $attribute
+	 *
+	 * @return void
+	 */
+	protected function prepElementCriteriaForTableAttribute(ElementCriteriaModel $criteria, $attribute)
+	{
+		if ($attribute == 'author')
+		{
+			$with = $criteria->with ?: array();
+			$with[] = 'author';
+			$criteria->with = $with;
+		}
+		else
+		{
+			parent::prepElementCriteriaForTableAttribute($criteria, $attribute);
+		}
+	}
 }
