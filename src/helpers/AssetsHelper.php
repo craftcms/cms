@@ -103,6 +103,11 @@ class AssetsHelper
 			$separator = null;
 		}
 
+		$pluginModifiedAssetName = craft()->plugins->callFirst('modifyAssetName', array($baseName), true);
+
+		// Use the plugin-modified name, if anyone was up to the task.
+		$baseName = $pluginModifiedAssetName ?: $baseName;
+
 		$baseName = IOHelper::cleanFilename($baseName, craft()->config->get('convertFilenamesToAscii'), $separator);
 
 		if ($isFilename && empty($baseName))
