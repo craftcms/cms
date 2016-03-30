@@ -304,10 +304,11 @@ class PathService extends BaseApplicationComponent
 	 * CP or Site request.
 	 *
 	 * @return string The templates path.
+	 *
+	 * @deprecated Deprecated in 2.6.2778. Use TemplatesService::getTemplatesPath() or TemplatesService::getTemplateMode() instead.
 	 */
 	public function getTemplatesPath()
 	{
-		craft()->deprecator->log('PathService::getTemplatesPath()', 'PathService::getTemplatesPath() has been deprecated. Use TemplatesService::getTemplatesPath() or TemplatesService::getTemplateMode() instead.');
 		return craft()->templates->getTemplatesPath();
 	}
 
@@ -315,10 +316,11 @@ class PathService extends BaseApplicationComponent
 	 * Sets the current templates path.
 	 *
 	 * @param string $path The new templates path.
+	 *
+	 * @deprecated Deprecated in 2.6.2778. Use TemplatesService::setTemplatesPath() or TemplatesService::setTemplateMode() instead.
 	 */
 	public function setTemplatesPath($path)
 	{
-		craft()->deprecator->log('PathService::setTemplatesPath()', 'PathService::setTemplatesPath() has been deprecated. Use TemplatesService::setTemplatesPath() or TemplatesService::setTemplateMode() instead.');
 		craft()->templates->setTemplatesPath($path);
 	}
 
