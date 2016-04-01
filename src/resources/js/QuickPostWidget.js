@@ -123,10 +123,10 @@ Craft.QuickPostWidget = Garnish.Base.extend(
 				if (!widget.params.sectionId || widget.params.sectionId == this.params.sectionId)
 				{
 					widget.addEntry({
-						url:      response.cpEditUrl,
-						title:    response.title,
-						postDate: response.postDate,
-						username: response.author.username
+						url:         response.cpEditUrl,
+						title:       response.title,
+						dateCreated: response.dateCreated,
+						username:    response.author.username
 					});
 				}
 			}
