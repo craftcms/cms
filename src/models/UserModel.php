@@ -216,7 +216,7 @@ class UserModel extends BaseElementModel
 	{
 		$this->pending = false;
 		$this->archived = false;
-	}
+	}	
 
 	/**
 	 * Returns the URL to the user's photo.
@@ -229,7 +229,7 @@ class UserModel extends BaseElementModel
 	{
 		if ($this->photo)
 		{
-			$username = AssetsHelper::cleanAssetName($this->username, false);
+			$username = AssetsHelper::cleanAssetName($this->username, false, true);
 			return UrlHelper::getResourceUrl('userphotos/'.$username.'/'.$size.'/'.$this->photo);
 		}
 	}
