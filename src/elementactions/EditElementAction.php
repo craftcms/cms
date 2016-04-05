@@ -45,7 +45,7 @@ class EditElementAction extends BaseElementAction
 		},
 		activate: function(\$selectedItems)
 		{
-			new Craft.ElementEditor(\$selectedItems.find('.element'));
+			new Craft.ElementEditor(\$selectedItems.find('.element:first'));
 		}
 	});
 })();
