@@ -361,10 +361,19 @@ abstract class BaseElementFieldType extends BaseFieldType implements IPreviewabl
 	 */
 	public function getTableAttributeHtml($value)
 	{
-		if (isset($value[0]))
+		if ($value instanceof ElementCriteriaModel)
+		{
+			$element = $value->first();
+		}
+		else
+		{
+			$element = isset($value[0]) ? $value[0] : null;
+		}
+
+		if ($element)
 		{
 			return craft()->templates->render('_elements/element', array(
-				'element' => $value[0],
+				'element' => $element,
 			));
 		}
 	}

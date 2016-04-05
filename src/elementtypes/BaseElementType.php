@@ -374,7 +374,7 @@ abstract class BaseElementType extends BaseComponentType implements IElementType
 						if ($fieldType && $fieldType instanceof IPreviewableFieldType)
 						{
 							// Was this field value eager-loaded?
-							if ($fieldType instanceof IEagerLoadingFieldType)
+							if ($fieldType instanceof IEagerLoadingFieldType && $element->hasEagerLoadedElements($field->handle))
 							{
 								$value = $element->getEagerLoadedElements($field->handle);
 							}
