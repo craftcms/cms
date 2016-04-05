@@ -90,6 +90,12 @@ class DateTime extends \DateTime
 	 */
 	public static function createFromString($date, $timezone = null, $setToSystemTimeZone = true)
 	{
+		// Is this already a DateTime object?
+		if ($date instanceof \DateTime)
+		{
+			return $date;
+		}
+
 		// Was this a date/time-picker?
 		if (is_array($date) && (isset($date['date']) || isset($date['time'])))
 		{

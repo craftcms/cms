@@ -78,12 +78,14 @@ class AssetsHelper
 	 * Clean an Asset's filename.
 	 *
 	 * @param $name
-	 * @param bool $isFilename if set to true (default), will separate extension
-	 *                         and clean the filename separately.
+	 * @param bool $isFilename         if set to true (default), will separate extension
+	 *                                 and clean the filename separately.
+	 * @param bool $preventPluginHooks if set to true, will prevent plugins from modifying
+	 *                                 the asset name.
 	 *
 	 * @return mixed
 	 */
-	public static function cleanAssetName($name, $isFilename = true)
+	public static function cleanAssetName($name, $isFilename = true, $preventPluginModifications = false)
 	{
 		if ($isFilename)
 		{
@@ -101,6 +103,14 @@ class AssetsHelper
 		if (!is_string($separator))
 		{
 			$separator = null;
+		}
+
+		if (!$preventPluginModifications)
+		{
+			$pluginModifiedAssetName = craft()->plugins->callFirst('modifyAssetFilename', array($baseName), true);
+
+			// Use the plugin-modified name, if anyone was up to the task.
+			$baseName = $pluginModifiedAssetName ?: $baseName;
 		}
 
 		$baseName = IOHelper::cleanFilename($baseName, craft()->config->get('convertFilenamesToAscii'), $separator);

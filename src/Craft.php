@@ -342,7 +342,7 @@ class Craft extends \Yii
 		else
 		{
 			$file = $path.'.php';
-			static::_importFile($file);
+			static::_importFile(realpath($file));
 
 			if ($forceInclude)
 			{

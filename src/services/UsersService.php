@@ -337,8 +337,8 @@ class UsersService extends BaseApplicationComponent
 					if ($user->username != $oldUsername)
 					{
 						// Rename the user's photo directory
-						$cleanOldUsername = AssetsHelper::cleanAssetName($oldUsername, false);
-						$cleanUsername = AssetsHelper::cleanAssetName($user->username, false);
+						$cleanOldUsername = AssetsHelper::cleanAssetName($oldUsername, false, true);
+						$cleanUsername = AssetsHelper::cleanAssetName($user->username, false, true);
 						$oldFolder = craft()->path->getUserPhotosPath().$cleanOldUsername;
 						$newFolder = craft()->path->getUserPhotosPath().$cleanUsername;
 
@@ -579,7 +579,7 @@ class UsersService extends BaseApplicationComponent
 	 */
 	public function saveUserPhoto($fileName, BaseImage $image, UserModel $user)
 	{
-		$userName = AssetsHelper::cleanAssetName($user->username, false);
+		$userName = AssetsHelper::cleanAssetName($user->username, false, true);
 		$userPhotoFolder = craft()->path->getUserPhotosPath().$userName.'/';
 		$targetFolder = $userPhotoFolder.'original/';
 
@@ -828,8 +828,8 @@ class UsersService extends BaseApplicationComponent
 			{
 				$userRecord->username = $user->unverifiedEmail;
 
-				$oldProfilePhotoPath = craft()->path->getUserPhotosPath().AssetsHelper::cleanAssetName($oldEmail);
-				$newProfilePhotoPath = craft()->path->getUserPhotosPath().AssetsHelper::cleanAssetName($user->unverifiedEmail);
+				$oldProfilePhotoPath = craft()->path->getUserPhotosPath().AssetsHelper::cleanAssetName($oldEmail, false, true);
+				$newProfilePhotoPath = craft()->path->getUserPhotosPath().AssetsHelper::cleanAssetName($user->unverifiedEmail, false, true);
 
 				// Update the user profile photo folder name, if it exists.
 				if (IOHelper::folderExists($oldProfilePhotoPath))

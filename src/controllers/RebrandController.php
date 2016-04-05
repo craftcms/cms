@@ -52,7 +52,7 @@ class RebrandController extends BaseController
 			// Make sure a file was uploaded
 			if ($file)
 			{
-				$fileName = AssetsHelper::cleanAssetName($file->getName());
+				$fileName = AssetsHelper::cleanAssetName($file->getName(), true, true);
 
 				if (!ImageHelper::isImageManipulatable($file->getExtensionName()))
 				{

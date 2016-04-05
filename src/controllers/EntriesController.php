@@ -471,8 +471,10 @@ class EntriesController extends BaseEntriesController
 					unset($author['password']);
 				}
 
-				$return['author']    = $author;
-				$return['postDate']  = ($entry->postDate ? $entry->postDate->localeDate() : null);
+				$return['author']      = $author;
+				$return['dateCreated'] = DateTimeHelper::toIso8601($entry->dateCreated);
+				$return['dateUpdated'] = DateTimeHelper::toIso8601($entry->dateUpdated);
+				$return['postDate']    = ($entry->postDate ? DateTimeHelper::toIso8601($entry->postDate) : null);
 
 				$this->returnJson($return);
 			}
