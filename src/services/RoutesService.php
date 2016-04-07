@@ -118,6 +118,7 @@ class RoutesService extends BaseApplicationComponent
 		// Compile the URL parts into a regex pattern
 		$urlPattern = '';
 		$urlParts = array_filter($urlParts);
+		$subpatternNameCounts = array();
 
 		foreach ($urlParts as $part)
 		{
@@ -131,8 +132,23 @@ class RoutesService extends BaseApplicationComponent
 				// Is the name a valid handle?
 				if (preg_match('/^[a-zA-Z][a-zA-Z0-9_]*$/', $part[0]))
 				{
+					$subpatternName = $part[0];
+
+					// Make sure it's unique
+					if (isset($subpatternNameCounts[$subpatternName]))
+					{
+						$subpatternNameCounts[$subpatternName]++;
+
+						// Append the count to the end of the name
+						$subpatternName .= $subpatternNameCounts[$subpatternName];
+					}
+					else
+					{
+						$subpatternNameCounts[$subpatternName] = 1;
+					}
+
 					// Add the var as a named subpattern
-					$urlPattern .= '(?P<'.preg_quote($part[0]).'>'.$part[1].')';
+					$urlPattern .= '(?P<'.preg_quote($subpatternName).'>'.$part[1].')';
 				}
 				else
 				{
