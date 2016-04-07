@@ -13,6 +13,7 @@
 namespace craft\app\base;
 
 use Craft;
+use craft\app\behaviors\FieldLayoutTrait;
 use craft\app\errors\VolumeObjectExistsException;
 use craft\app\errors\VolumeObjectNotFoundException;
 use craft\app\errors\VolumeFolderExistsException;
@@ -29,6 +30,7 @@ abstract class Volume extends SavableComponent implements VolumeInterface
     // =========================================================================
 
     use VolumeTrait;
+    use FieldLayoutTrait;
 
     // Properties
     // =========================================================================

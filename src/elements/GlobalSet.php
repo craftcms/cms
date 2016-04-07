@@ -10,6 +10,7 @@ namespace craft\app\elements;
 use Craft;
 use craft\app\base\Element;
 use craft\app\behaviors\FieldLayoutBehavior;
+use craft\app\behaviors\FieldLayoutTrait;
 use craft\app\elements\db\GlobalSetQuery;
 use craft\app\helpers\Url;
 
@@ -21,6 +22,11 @@ use craft\app\helpers\Url;
  */
 class GlobalSet extends Element
 {
+    // Traits
+    // =========================================================================
+
+    use FieldLayoutTrait;
+
     // Static
     // =========================================================================
 

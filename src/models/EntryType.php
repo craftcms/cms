@@ -10,6 +10,7 @@ namespace craft\app\models;
 use Craft;
 use craft\app\base\ElementInterface;
 use craft\app\base\Model;
+use craft\app\behaviors\FieldLayoutTrait;
 use craft\app\helpers\Url;
 use craft\app\models\Section as SectionModel;
 
@@ -21,6 +22,11 @@ use craft\app\models\Section as SectionModel;
  */
 class EntryType extends Model
 {
+    // Traits
+    // =========================================================================
+
+    use FieldLayoutTrait;
+
     // Properties
     // =========================================================================
 

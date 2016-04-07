@@ -9,6 +9,7 @@ namespace craft\app\models;
 
 use Craft;
 use craft\app\base\Model;
+use craft\app\behaviors\FieldLayoutTrait;
 
 /**
  * TagGroup model.
@@ -18,6 +19,11 @@ use craft\app\base\Model;
  */
 class TagGroup extends Model
 {
+    // Traits
+    // =========================================================================
+
+    use FieldLayoutTrait;
+
     // Properties
     // =========================================================================
 
