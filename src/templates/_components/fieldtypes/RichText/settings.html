@@ -59,6 +59,7 @@
 {{ forms.checkboxField({
 	label: "Purify HTML?"|t,
 	instructions: 'Removes any potentially-malicious code on save, by running the submitted data through <a href="http://htmlpurifier.org/" target="_blank">HTML Purifier</a>.'|t,
+	warning: 'Disable this at your own risk!'|t,
 	id: 'purifyHtml',
 	name: 'purifyHtml',
 	checked: settings.purifyHtml
