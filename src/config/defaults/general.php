@@ -304,17 +304,6 @@ return [
      */
     'omitScriptNameInUrls' => 'auto',
     /**
-     * Determines whether Craft should override PHP’s session storage location to your craft/storage/ folder.
-     *
-     * When set to true, Craft will override the location; false will tell Craft to leave the location alone and let PHP
-     * store the session where it was configured to.
-     *
-     * When set to 'auto', Craft will check the default session location to see if it contains “://”, indicating that it
-     * might be stored with memcache or the like. If it does, Craft will leave it alone; otherwise Craft will override
-     * it.
-     */
-    'overridePhpSessionLocation' => false,
-    /**
      * If set to true and Imagick is used, Craft will take advantage of Imagick's advanced options to reduce the final
      * image size without losing quality significantly.
      */

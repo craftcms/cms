@@ -51,18 +51,6 @@ class Session extends \yii\web\Session
         // Set the default session cookie params
         $this->setCookieParams(Craft::getCookieConfig());
 
-        // Should we be overriding the save path?
-        $overridePhpSessionLocation = Craft::$app->getConfig()->get('overridePhpSessionLocation');
-
-        if (
-            $overridePhpSessionLocation === true ||
-            ($overridePhpSessionLocation === 'auto' && !StringHelper::contains($this->getSavePath(),
-                    'tcp://'))
-        ) {
-            $savePath = Craft::$app->getPath()->getSessionPath();
-            $this->setSavePath($savePath);
-        }
-
         parent::__construct($config);
     }
 
