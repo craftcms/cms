@@ -101,10 +101,10 @@ class Elements extends Component
      *
      * The element’s status will not be a factor when using this method.
      *
-     * @param integer $elementId   The element’s ID.
-     * @param null    $elementType The element class.
-     * @param string  $localeId    The locale to fetch the element in.
-     *                             Defaults to [[\craft\app\web\Application::language `Craft::$app->language`]].
+     * @param integer                      $elementId   The element’s ID.
+     * @param string|null|ElementInterface $elementType The element class.
+     * @param string|null                  $localeId    The locale to fetch the element in.
+     *                                                  Defaults to [[\craft\app\web\Application::language `Craft::$app->language`]].
      *
      * @return ElementInterface|Element|null The matching element, or `null`.
      */
@@ -438,7 +438,6 @@ class Elements extends Component
                                         }
                                         unset($fieldValues['id'], $fieldValues['elementId'], $fieldValues['locale'], $fieldValues['title']);
                                     }
-
                                 }
 
                                 if (!$fieldValues) {
