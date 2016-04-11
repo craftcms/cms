@@ -131,7 +131,7 @@ Craft.CP = Garnish.Base.extend(
 
 		// sidebar
 
-		this.addListener($('ul', this.$sidebar), 'resize', 'updateResponsiveSidebar');
+		this.addListener(this.$sidebar.find('nav ul'), 'resize', 'updateResponsiveSidebar');
 
 		this.$sidebarLinks = $('nav a', this.$sidebar);
 		this.addListener(this.$sidebarLinks, 'click', 'selectSidebarItem');

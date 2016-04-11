@@ -45,7 +45,22 @@ class EditElementAction extends BaseElementAction
 		},
 		activate: function(\$selectedItems)
 		{
-			new Craft.ElementEditor(\$selectedItems.find('.element'));
+			var \$element = \$selectedItems.find('.element:first');
+
+			if (Craft.elementIndex.viewMode == 'table') {
+				new Craft.ElementEditor(\$element, {
+					params: {
+						includeTableAttributesForSource: Craft.elementIndex.sourceKey
+					},
+					onSaveElement: $.proxy(function(response) {
+						if (response.tableAttributes) {
+							Craft.elementIndex.view._updateTableAttributes(\$element, response.tableAttributes);
+						}
+					}, this)
+				});
+			} else {
+				new Craft.ElementEditor(\$element);
+			}
 		}
 	});
 })();

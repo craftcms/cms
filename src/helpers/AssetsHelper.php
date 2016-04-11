@@ -107,7 +107,7 @@ class AssetsHelper
 
 		if (!$preventPluginModifications)
 		{
-			$pluginModifiedAssetName = craft()->plugins->callFirst('modifyAssetName', array($baseName), true);
+			$pluginModifiedAssetName = craft()->plugins->callFirst('modifyAssetFilename', array($baseName), true);
 
 			// Use the plugin-modified name, if anyone was up to the task.
 			$baseName = $pluginModifiedAssetName ?: $baseName;

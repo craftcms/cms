@@ -292,7 +292,7 @@ class RichTextFieldType extends BaseFieldType
 		return array(
 			'configFile'            => AttributeType::String,
 			'cleanupHtml'           => array(AttributeType::Bool, 'default' => true),
-			'purifyHtml'            => array(AttributeType::Bool, 'default' => false),
+			'purifyHtml'            => array(AttributeType::Bool, 'default' => true),
 			'columnType'            => array(AttributeType::String),
 			'availableAssetSources' => AttributeType::Mixed,
 			'availableTransforms'   => AttributeType::Mixed,
