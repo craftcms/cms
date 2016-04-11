@@ -2099,7 +2099,21 @@ class ElementsService extends BaseApplicationComponent
 			{
 				global $refTagsByElementType;
 
-				$elementTypeHandle = ucfirst($matches[1]);
+				if (strpos($matches[1], '_') === false)
+				{
+					$elementTypeHandle = ucfirst($matches[1]);
+				}
+				else
+				{
+					$parts = explode('_', $matches[1]);
+
+					$parts = array_map(function ($part) {
+						return ucfirst($part);
+					}, $parts);
+
+					$elementTypeHandle = implode('_', $parts);
+				}
+
 				$token = '{'.StringHelper::randomString(9).'}';
 
 				$refTagsByElementType[$elementTypeHandle][] = array('token' => $token, 'matches' => $matches);
