@@ -8,8 +8,8 @@
 		<table class="data fullwidth">
 			{% for key, value in data %}
 				<tr>
-					<th class="light" width="300">{{ key|raw }}</th>
-					<td style="word-break: break-word;">{{ value|nl2br|raw }}</td>
+					<th class="light" width="300">{{ key }}</th>
+					<td style="word-break: break-word;">{{ value|nl2br }}</td>
 				</tr>
 			{% endfor %}
 		</table>
@@ -69,11 +69,13 @@
 
 				{% if logEntry.profile %}
 					<h3>Profile</h3>
-					<ol>
+					<ul>
 						{% for step in logEntry.profile %}
-							<li>{{ step|join('<br>')|raw }}</li>
+							{% for logEntry in step %}
+								<li>{{ logEntry }}</li>
+							{% endfor %}
 						{% endfor %}
-					</ol>
+					</ul>
 				{% endif %}
 
 			{% endif %}
