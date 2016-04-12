@@ -1517,7 +1517,7 @@ class IOHelper
 
 		if (!is_null($separator))
 		{
-			$fileName = preg_replace('/(\s|'.preg_quote($separator).')+/', $separator, $fileName);
+			$fileName = preg_replace('/(\s|'.preg_quote($separator).')+/u', $separator, $fileName);
 		}
 
 		// Nuke any trailing or leading .-_
