@@ -24,6 +24,7 @@ class FieldRecord extends BaseRecord
 	protected $reservedHandleWords = array(
 		'archived',
 		'children',
+		'contentTable',
 		'dateCreated',
 		'dateUpdated',
 		'enabled',
@@ -33,25 +34,24 @@ class FieldRecord extends BaseRecord
 		'link',
 		'locale',
 		'localeEnabled',
-		'name', // global set-specific
+		'name',             // global set-specific
+		'next',
 		'parents',
-		'postDate', // entry-specific
+		'postDate',         // entry-specific
+		'prev',
+		'ref',
 		'rgt',
 		'root',
+		'searchScore',
 		'siblings',
+		'slug',
 		'sortOrder',
+		'status',
+		'title',
 		'uid',
 		'uri',
 		'url',
-		'username', // user-specific
-		'ref',
-		'status',
-		'title',
-		'searchScore',
-		'slug',
-		'prev',
-		'next',
-		'contentTable'
+		'username',         // user-specific
 	);
 
 	/**
