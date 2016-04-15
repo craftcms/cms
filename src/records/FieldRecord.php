@@ -23,6 +23,7 @@ class FieldRecord extends BaseRecord
 	 */
 	protected $reservedHandleWords = array(
 		'archived',
+		'attributeLabel',
 		'children',
 		'contentTable',
 		'dateCreated',
