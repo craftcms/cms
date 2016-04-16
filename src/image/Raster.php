@@ -73,7 +73,7 @@ class Raster extends Image
     {
         $config = Craft::$app->getConfig();
 
-        $extension = StringHelper::toLowerCase($config->get('imageDriver'));
+        $extension = strtolower($config->get('imageDriver'));
 
         // If it's explicitly set, take their word for it.
         if ($extension === 'gd') {
