@@ -8,18 +8,18 @@
 namespace craft\app\events;
 
 /**
- * Delete locale event class.
+ * Locale event class.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
-class DeleteLocaleEvent extends LocaleEvent
+class LocaleEvent extends Event
 {
     // Properties
     // =========================================================================
 
     /**
-     * @var string|null The locale ID that the old locale's exclusive content should be transferred to.
+     * @var string The locale ID
      */
-    public $transferContentTo;
+    public $localeId;
 }
