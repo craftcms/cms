@@ -127,7 +127,8 @@ class Path extends Component
     public function getRebrandPath()
     {
         $path = $this->getStoragePath().'/rebrand';
-        IO::ensureFolderExists($path);
+        Io::ensureFolderExists($path);
+
         return $path;
     }
 
