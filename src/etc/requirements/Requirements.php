@@ -138,6 +138,7 @@ class Requirements
 				Craft::t('@@@appName@@@ requires the <a href="http://www.php.net/manual/en/book.mbstring.php">Multibyte String extension</a> with <a href="http://php.net/manual/en/mbstring.overload.php">Function Overloading</a> disabled in order to run.')
 			),
 			new IconvRequirement(),
+			new WebRootExposedFolderRequirement(),
 		);
 	}
 
@@ -532,5 +533,147 @@ class IconvRequirement extends Requirement
 		{
 			return RequirementResult::Warning;
 		}
+	}
+}
+
+/**
+ * Attempts to determine if the craft folder is inside of web root.
+ *
+ * @package craft.app.etc.requirements
+ */
+class WebRootExposedFolderRequirement extends Requirement
+{
+	private $_webRootResults;
+
+	// Protected Methods
+	// =========================================================================
+
+	/**
+	 * @return WebRootExposedFolderRequirement
+	 */
+	public function __construct()
+	{
+		parent::__construct(
+			Craft::t('Craft exposed folder requirement'),
+			null,
+			false,
+			'<a href="http://craftcms.com">@@@appName@@@</a>'
+		);
+	}
+
+	/**
+	 * @return null
+	 */
+	public function getNotes()
+	{
+		if ($this->getResult() == RequirementResult::Warning)
+		{
+			$values = array_keys(array_intersect($this->_webRootResults, array(true)));
+
+			switch (count($values))
+			{
+				case 1:
+				{
+					return Craft::t('Your Craft {folder1} folder appears to be publicly accessible which is a security risk. You should strongly consider moving it above your web root or blocking access to it via .htaccess or web.config files', array('folder1' => $values[0]));
+				}
+				case 2:
+				{
+					return Craft::t('Your Craft {folder1} and {folder2} appear to be publicly accessible which is a security risk. You should strongly consider moving them above your web root or blocking access to them via .htaccess or web.config files.', array('folder1' => $values[0], 'folder2' => $values[1]));
+				}
+				case 3:
+				{
+					return Craft::t('Your Craft {folder1}, {folder2}, and {folder3} folders appear to be publicly accessible which is a security risk. You should strongly consider moving them above your web root or blocking access to them via .htaccess or web.config files.', array('folder1' => $values[0], 'folder2' => $values[1], 'folder3' => $values[2]));
+				}
+				case 4:
+				{
+					return Craft::t('Your Craft {folder1}, {folder2}, {folder3}, and {folder4} folders appear to be publicly accessible which is a security risk. You should strongly consider moving them above your web root or blocking access to them via .htaccess or web.config files.', array('folder1' => $values[0], 'folder2' => $values[1], 'folder3' => $values[2], 'folder4' => $values[3]));
+				}
+
+			}
+		}
+	}
+
+	// Protected Methods
+	// =========================================================================
+
+	/**
+	 * Calculates the result of this requirement.
+	 *
+	 * @return string
+	 */
+	protected function calculateResult()
+	{
+		// The paths to check.
+		$this->_webRootResults = array(
+			'storage' => craft()->path->getStoragePath(),
+			'plugins' => craft()->path->getPluginsPath(),
+			'config'  => craft()->path->getConfigPath(),
+			'app'     => craft()->path->getAppPath(),
+		);
+
+		foreach ($this->_webRootResults as $key => $path)
+		{
+			if ($realPath = realpath($path))
+			{
+				$this->_webRootResults[$key] = $this->_canConnectToTestUrl($realPath);
+			}
+		}
+
+		foreach ($this->_webRootResults as $result)
+		{
+			// We were able to connect to one of our exposed folder checks.
+			if ($result === true)
+			{
+				return RequirementResult::Warning;
+			}
+		}
+
+		return RequirementResult::Success;
+	}
+
+	/**
+	 * @param $pathToTest
+	 *
+	 * @return bool
+	 */
+	private function _canConnectToTestUrl($pathToTest)
+	{
+		$success = false;
+
+		// Write out our test file.
+		if (IOHelper::writeToFile($pathToTest.'/test.html', 'success'))
+		{
+			// Get the base path without hte script name.
+			$subBasePath = mb_substr(craft()->request->getScriptFile(), 0, -mb_strlen(craft()->request->getScriptName()));
+
+			// Strip the new base path from our path to test.
+			$subPathToTest = mb_substr($pathToTest, mb_strlen($subBasePath));
+
+			// See if we can connect.
+			try
+			{
+				$url = craft()->request->getHostInfo().'/'.$subPathToTest.'/test.html';
+				$client = new \Guzzle\Http\Client();
+				$response = $client->get($url, array(), array('connect_timeout' => 2, 'timeout' => 4))->send();
+
+				if ($response->isSuccessful() && $response->getStatusCode() == 200 && $response->getBody() == 'success')
+				{
+					Craft::log('Oh noes. Successfully connected to '.$url.' when testing for exposed folders in web root.', LogLevel::Warning);
+					$success = true;
+				}
+			}
+			catch (\Exception $e)
+			{
+				Craft::log('Tried to connect to '.$url.' when testing for exposed folders in web root and there was a problem: '.$e->getMessage(), LogLevel::Error);
+			}
+
+			IOHelper::deleteFile($pathToTest.'/test.html');
+		}
+		else
+		{
+			Craft::log('There was a problem writing to the test file when testing for exposed folders in web root.', LogLevel::Error);
+		}
+
+		return $success;
 	}
 }
