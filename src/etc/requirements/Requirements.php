@@ -625,7 +625,7 @@ class WebRootExposedFolderRequirement extends Requirement
 		{
 			if ($realPath = realpath($path))
 			{
-				$this->_webRootResults[$key] = $this->_canConnectToTestUrl($realPath);
+				$this->_webRootResults[$key] = $this->_isPathInsideWebRoot($realPath);
 			}
 		}
 
@@ -641,49 +641,26 @@ class WebRootExposedFolderRequirement extends Requirement
 		return RequirementResult::Success;
 	}
 
+	// Private Methods
+	// =========================================================================
+
 	/**
 	 * @param $pathToTest
 	 *
 	 * @return bool
 	 */
-	private function _canConnectToTestUrl($pathToTest)
+	private function _isPathInsideWebRoot($pathToTest)
 	{
-		$success = false;
+		$pathToTest = IOHelper::normalizePathSeparators($pathToTest);
 
-		// Write out our test file.
-		if (IOHelper::writeToFile($pathToTest.'/test.html', 'success'))
+		// Get the base path without the script name.
+		$subBasePath = IOHelper::normalizePathSeparators(mb_substr(craft()->request->getScriptFile(), 0, -mb_strlen(craft()->request->getScriptName())));
+
+		if (mb_strpos($pathToTest, $subBasePath) !== false)
 		{
-			// Get the base path without the script name.
-			$subBasePath = mb_substr(craft()->request->getScriptFile(), 0, -mb_strlen(craft()->request->getScriptName()));
-
-			// Strip the new base path from our path to test.
-			$subPathToTest = mb_substr($pathToTest, mb_strlen($subBasePath));
-
-			// See if we can connect.
-			try
-			{
-				$url = craft()->request->getHostInfo().'/'.$subPathToTest.'/test.html';
-				$client = new \Guzzle\Http\Client();
-				$response = $client->get($url, array(), array('connect_timeout' => 2, 'timeout' => 4))->send();
-
-				if ($response->isSuccessful() && $response->getStatusCode() == 200 && $response->getBody() == 'success')
-				{
-					Craft::log('Oh noes. Successfully connected to '.$url.' when testing for exposed folders in web root.', LogLevel::Warning);
-					$success = true;
-				}
-			}
-			catch (\Exception $e)
-			{
-				Craft::log('Tried to connect to '.$url.' when testing for exposed folders in web root and there was a problem: '.$e->getMessage(), LogLevel::Error);
-			}
-
-			IOHelper::deleteFile($pathToTest.'/test.html');
-		}
-		else
-		{
-			Craft::log('There was a problem writing to the test file when testing for exposed folders in web root.', LogLevel::Error);
+			return true;
 		}
 
-		return $success;
+		return false;
 	}
 }
