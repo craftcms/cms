@@ -571,7 +571,7 @@ class WebRootExposedFolderRequirement extends Requirement
 			$values = array_keys(array_intersect($this->_webRootResults, array(true)));
 			$folders = rtrim(implode(', ', $values), ', ');
 
-			return Craft::t('Your Craft folder(s) {folders} appears to be publicly accessible which is a security risk. You should strongly consider moving it/them above your web root or blocking access via .htaccess or web.config files.', array('folders' => $folders));
+			return Craft::t('Your Craft folder(s) {folders} appear to be in your public web root folder instead of above web root, which is what we recommend. If you leave them in web root, you will want to make sure their contents are not publicly exposed, which is a security risk.', array('folders' => $folders));
 		}
 	}
 
