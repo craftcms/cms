@@ -569,35 +569,9 @@ class WebRootExposedFolderRequirement extends Requirement
 		if ($this->getResult() == RequirementResult::Warning)
 		{
 			$values = array_keys(array_intersect($this->_webRootResults, array(true)));
+			$folders = rtrim(implode(', ', $values), ', ');
 
-			switch (count($values))
-			{
-				case 1:
-				{
-					return Craft::t('Your Craft {folder1} folder appears to be publicly accessible which is a security risk. You should strongly consider moving it above your web root or blocking access to it via .htaccess or web.config files', array('folder1' => $values[0]));
-				}
-				case 2:
-				{
-					return Craft::t('Your Craft {folder1} and {folder2} appear to be publicly accessible which is a security risk. You should strongly consider moving them above your web root or blocking access to them via .htaccess or web.config files.', array('folder1' => $values[0], 'folder2' => $values[1]));
-				}
-				case 3:
-				{
-					return Craft::t('Your Craft {folder1}, {folder2}, and {folder3} folders appear to be publicly accessible which is a security risk. You should strongly consider moving them above your web root or blocking access to them via .htaccess or web.config files.', array('folder1' => $values[0], 'folder2' => $values[1], 'folder3' => $values[2]));
-				}
-				case 4:
-				{
-					return Craft::t('Your Craft {folder1}, {folder2}, {folder3}, and {folder4} folders appear to be publicly accessible which is a security risk. You should strongly consider moving them above your web root or blocking access to them via .htaccess or web.config files.', array('folder1' => $values[0], 'folder2' => $values[1], 'folder3' => $values[2], 'folder4' => $values[3]));
-				}
-				case 5:
-				{
-					return Craft::t('Your Craft {folder1}, {folder2}, {folder3}, {folder4}, and {folder5} folders appear to be publicly accessible which is a security risk. You should strongly consider moving them above your web root or blocking access to them via .htaccess or web.config files.', array('folder1' => $values[0], 'folder2' => $values[1], 'folder3' => $values[2], 'folder4' => $values[3], 'folder5' => $values[6]));
-				}
-				case 6:
-				{
-					return Craft::t('Your Craft {folder1}, {folder2}, {folder3}, {folder4}, {folder5}, and {folder6} folders appear to be publicly accessible which is a security risk. You should strongly consider moving them above your web root or blocking access to them via .htaccess or web.config files.', array('folder1' => $values[0], 'folder2' => $values[1], 'folder3' => $values[2], 'folder4' => $values[3], 'folder5' => $values[4], 'folder6' => $values[5]));
-				}
-
-			}
+			return Craft::t('Your Craft folder(s) {folders} appears to be publicly accessible which is a security risk. You should strongly consider moving it/them above your web root or blocking access via .htaccess or web.config files.', array('folders' => $folders));
 		}
 	}
 
