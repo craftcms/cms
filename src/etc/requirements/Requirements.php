@@ -554,7 +554,7 @@ class WebRootExposedFolderRequirement extends Requirement
 	public function __construct()
 	{
 		parent::__construct(
-			Craft::t('Craft exposed folder requirement'),
+			Craft::t('Public exposed Craft folder(s)'),
 			null,
 			false,
 			'<a href="http://craftcms.com">@@@appName@@@</a>'
