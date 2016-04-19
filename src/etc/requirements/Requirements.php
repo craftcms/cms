@@ -588,6 +588,14 @@ class WebRootExposedFolderRequirement extends Requirement
 				{
 					return Craft::t('Your Craft {folder1}, {folder2}, {folder3}, and {folder4} folders appear to be publicly accessible which is a security risk. You should strongly consider moving them above your web root or blocking access to them via .htaccess or web.config files.', array('folder1' => $values[0], 'folder2' => $values[1], 'folder3' => $values[2], 'folder4' => $values[3]));
 				}
+				case 5:
+				{
+					return Craft::t('Your Craft {folder1}, {folder2}, {folder3}, {folder4}, and {folder5} folders appear to be publicly accessible which is a security risk. You should strongly consider moving them above your web root or blocking access to them via .htaccess or web.config files.', array('folder1' => $values[0], 'folder2' => $values[1], 'folder3' => $values[2], 'folder4' => $values[3], 'folder5' => $values[6]));
+				}
+				case 6:
+				{
+					return Craft::t('Your Craft {folder1}, {folder2}, {folder3}, {folder4}, {folder5}, and {folder6} folders appear to be publicly accessible which is a security risk. You should strongly consider moving them above your web root or blocking access to them via .htaccess or web.config files.', array('folder1' => $values[0], 'folder2' => $values[1], 'folder3' => $values[2], 'folder4' => $values[3], 'folder5' => $values[4], 'folder6' => $values[5]));
+				}
 
 			}
 		}
@@ -605,10 +613,12 @@ class WebRootExposedFolderRequirement extends Requirement
 	{
 		// The paths to check.
 		$this->_webRootResults = array(
-			'storage' => craft()->path->getStoragePath(),
-			'plugins' => craft()->path->getPluginsPath(),
-			'config'  => craft()->path->getConfigPath(),
-			'app'     => craft()->path->getAppPath(),
+			'storage'      => craft()->path->getStoragePath(),
+			'plugins'      => craft()->path->getPluginsPath(),
+			'config'       => craft()->path->getConfigPath(),
+			'app'          => craft()->path->getAppPath(),
+			'templates'    => craft()->path->getSiteTemplatesPath(),
+			'translations' => craft()->path->getSiteTranslationsPath(),
 		);
 
 		foreach ($this->_webRootResults as $key => $path)
@@ -643,7 +653,7 @@ class WebRootExposedFolderRequirement extends Requirement
 		// Write out our test file.
 		if (IOHelper::writeToFile($pathToTest.'/test.html', 'success'))
 		{
-			// Get the base path without hte script name.
+			// Get the base path without the script name.
 			$subBasePath = mb_substr(craft()->request->getScriptFile(), 0, -mb_strlen(craft()->request->getScriptName()));
 
 			// Strip the new base path from our path to test.
