@@ -1,7 +1,7 @@
 <ul>
 	{% for key, source in sources %}
 		{% if source.heading is defined %}
-			<li class="heading"><span>{{ source.heading }}</span></li>
+			<li class="heading"><span>{{ source.heading|t }}</span></li>
 		{% else %}
 			<li>
 				<a data-key="{{ source.key is defined ? source.key : key }}"

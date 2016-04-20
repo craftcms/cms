@@ -87,7 +87,14 @@ class CategoryModel extends BaseElementModel
 
 		if ($group)
 		{
-			return UrlHelper::getCpUrl('categories/'.$group->handle.'/'.$this->id.($this->slug ? '-'.$this->slug : ''));
+			$url = UrlHelper::getCpUrl('categories/'.$group->handle.'/'.$this->id.($this->slug ? '-'.$this->slug : ''));
+
+			if (craft()->isLocalized() && $this->locale != craft()->language)
+			{
+				$url .= '/'.$this->locale;
+			}
+
+			return $url;
 		}
 	}
 

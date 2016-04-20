@@ -390,8 +390,10 @@ class RackspaceAssetSourceType extends BaseAssetSourceType
 	 */
 	protected function getNameReplacementInFolder(AssetFolderModel $folder, $fileName)
 	{
+		$baseFileName = IOHelper::getFileName($fileName, false);
 		$prefix = $this->_getPathPrefix().$folder->path;
-		$fileList = $this->_getFileList($prefix);
+		
+		$fileList = $this->_getFileList($prefix.$baseFileName);
 
 		foreach ($fileList as &$file)
 		{
