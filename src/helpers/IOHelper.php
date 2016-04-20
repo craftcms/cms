@@ -1113,7 +1113,7 @@ class IOHelper
 
 				if (static::fileExists($item, $suppressErrors))
 				{
-					if ($suppressErrors ? !@copy($item, $itemDest) : copy($item, $itemDest))
+					if ($suppressErrors ? @copy($item, $itemDest) : copy($item, $itemDest))
 					{
 						Craft::log('Could not copy file from '.$item.' to '.$itemDest.'.', LogLevel::Error);
 					}
