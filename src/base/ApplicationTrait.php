@@ -892,7 +892,7 @@ trait ApplicationTrait
      *
      * @return \craft\app\services\Et The E.T. service
      */
-    public function getET()
+    public function getEt()
     {
         /** @var $this \craft\app\web\Application|\craft\app\console\Application */
         return $this->get('et');
