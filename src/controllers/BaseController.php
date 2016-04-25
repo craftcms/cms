@@ -278,13 +278,15 @@ abstract class BaseController extends \CController
 	/**
 	 * Responds to the request with JSON.
 	 *
-	 * @param array|null $var The array that should be JSON-encoded and returned to the browser.
+	 * @param array|null $var     The array that should be JSON-encoded and returned to the browser.
+	 * @param int|null   $expires The time (in seconds) the expires cache control header should be set to.
+	 *                            Defaults to null, which means no cache.
 	 *
 	 * @return null
 	 */
-	public function returnJson($var = array())
+	public function returnJson($var = array(), $expires = null)
 	{
-		JsonHelper::sendJsonHeaders();
+		JsonHelper::sendJsonHeaders($expires);
 
 		// Output it into a buffer, in case TasksService wants to close the connection prematurely
 		ob_start();

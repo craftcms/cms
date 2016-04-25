@@ -17,11 +17,22 @@ class JsonHelper extends \CJSON
 	// =========================================================================
 
 	/**
+	 * @param int|null $expires The time (in seconds) the expires cache control header should be set to.
+	 *                          Defaults to null, which means no cache.
+	 *
 	 * @return null
 	 */
-	public static function sendJsonHeaders()
+	public static function sendJsonHeaders($expires = null)
 	{
-		HeaderHelper::setNoCache();
+		if ($expires === null)
+		{
+			HeaderHelper::setNoCache();
+		}
+		else
+		{
+			HeaderHelper::setExpires($expires);
+		}
+
 		HeaderHelper::setContentTypeByExtension('json');
 	}
 

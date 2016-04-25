@@ -1113,7 +1113,7 @@ class IOHelper
 
 				if (static::fileExists($item, $suppressErrors))
 				{
-					if ($suppressErrors ? !@copy($item, $itemDest) : copy($item, $itemDest))
+					if ($suppressErrors ? @copy($item, $itemDest) : copy($item, $itemDest))
 					{
 						Craft::log('Could not copy file from '.$item.' to '.$itemDest.'.', LogLevel::Error);
 					}
@@ -1517,7 +1517,7 @@ class IOHelper
 
 		if (!is_null($separator))
 		{
-			$fileName = preg_replace('/(\s|'.preg_quote($separator).')+/', $separator, $fileName);
+			$fileName = preg_replace('/(\s|'.preg_quote($separator).')+/u', $separator, $fileName);
 		}
 
 		// Nuke any trailing or leading .-_

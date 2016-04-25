@@ -46,6 +46,7 @@ class ClearCachesTool extends BaseTool
 		$caches = $this->_getFolders();
 		$caches['assetTransformIndex'] = Craft::t('Asset transform index');
 		$caches['assetIndexingData'] = Craft::t('Asset indexing data');
+		$caches['assetTempUploads'] = Craft::t('Discarded Asset uploads');
 		$caches['templateCaches'] = Craft::t('Template caches');
 
 		return craft()->templates->render('_includes/forms/checkboxSelect', array(
@@ -131,6 +132,14 @@ class ClearCachesTool extends BaseTool
 		if ($params['caches'] == '*' || in_array('assetIndexingData', $params['caches']))
 		{
 			craft()->db->createCommand()->truncateTable('assetindexdata');
+		}
+
+		if ($params['caches'] == '*' || in_array('assetTempUploads', $params['caches']))
+		{
+			$params = array();
+			craft()->db->createCommand()->delete("assetfolders", DbHelper::parseParam('sourceId', ':empty:', $params));
+			craft()->db->createCommand()->delete("assetfiles", DbHelper::parseParam('sourceId', ':empty:', $params));
+			IOHelper::clearFolder(craft()->path->getAssetsTempSourcePath());
 		}
 	}
 

@@ -446,10 +446,12 @@ class GoogleCloudAssetSourceType extends BaseAssetSourceType
 	 */
 	protected function getNameReplacementInFolder(AssetFolderModel $folder, $fileName)
 	{
+		$baseFileName = IOHelper::getFileName($fileName, false);
 		$prefix = $this->_getPathPrefix().$folder->path;
-		$this->_prepareForRequests();
-		$fileList = $this->_googleCloud->getBucket($this->getSettings()->bucket, $prefix);
 
+		$this->_prepareForRequests();
+		$fileList = $this->_googleCloud->getBucket($this->getSettings()->bucket, $prefix.$baseFileName);
+		
 		foreach ($fileList as &$file)
 		{
 			$file = preg_replace('/^'.preg_quote($prefix, '/').'/', '', $file['name']);

@@ -92,7 +92,7 @@ body { overflow-x: hidden; }
 
 /* container */
 
-#container { overflow: auto; display: block; @include flex-direction(column); position: relative; @include padding-left(220px); @include box-sizing(border-box); }
+#container { overflow: auto; display: block; @include flex-direction(column); position: relative; @include box-sizing(border-box); }
 #container > .topbar,
 #container > #page-header,
 #container > #main,
@@ -111,17 +111,22 @@ body.mobile #container {
 #main.single-pane .padded > .pane > .content { @include display-flex; @include flex-direction(column); }
 #main.single-pane .padded > .pane > .content > .sidebar + .body { width: calc(100% - 0); }
 
+@media only screen and (min-width: 993px)
+{
+    #container { @include padding-left(220px); }
+}
+
 @media only screen and (max-width: 992px)
 {
-	#container { max-width: none; }
-	body.ltr #container { width: calc(100% + 220px); @include transform(translate3d(-220px,0,0)); }
-	body.rtl #container { width: calc(100% + 220px); @include transform(translate3d(220px,0,0)); }
+    #container { max-width: none; }
 
-	body.showing-nav #global-sidebar { @include display-flex; }
-	body.showing-nav #container { @include transform(translate3d(0,0,0)); }
+    body.showing-nav #global-sidebar { @include display-flex; }
 
-	body.ltr:not(.showing-nav) #global-sidebar { @include transform(translate3d(-220px,0,0)); }
-	body.rtl:not(.showing-nav) #global-sidebar { @include transform(translate3d(220px,0,0)); }
+    body.ltr.showing-nav #container { @include transform(translate(220px,0)); }
+    body.rtl.showing-nav #container { @include transform(translate(-220px,0)); }
+
+    body.ltr:not(.showing-nav) #global-sidebar { @include transform(translate(-220px,0)); }
+    body.rtl:not(.showing-nav) #global-sidebar { @include transform(translate(220px,0)); }
 }
 
 #tasks-hud { padding: 0; overflow: auto; }

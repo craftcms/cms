@@ -130,6 +130,15 @@ class UtilsController extends BaseController
 					$value = array_slice($row, 2);
 				}
 
+				if (
+					in_array($row[1], array('HTTP_COOKIE', 'Cookie', 'Set-Cookie', '_SERVER["HTTP_COOKIE"]')) ||
+					strpos($row[1], '_COOKIE[') !== false ||
+					strpos($row[1], '_REQUEST[') !== false
+				)
+				{
+					continue;
+				}
+
 				$phpInfo[$heading][$row[1]] = $value;
 			}
 		}
