@@ -200,7 +200,7 @@ class AssetElementType extends BaseElementType
 	/**
 	 * @inheritDoc IElementType::defineSortableAttributes()
 	 *
-	 * @retrun array
+	 * @return array
 	 */
 	public function defineSortableAttributes()
 	{

@@ -243,7 +243,7 @@ abstract class BaseElementType extends BaseComponentType implements IElementType
 	/**
 	 * @inheritDoc IElementType::defineSortableAttributes()
 	 *
-	 * @retrun array
+	 * @return array
 	 */
 	public function defineSortableAttributes()
 	{
