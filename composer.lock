@@ -4,21 +4,21 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "3bdde58facebef6f89d6f27c18cd2708",
-    "content-hash": "13bbb5a62092ccf6260b1809e3b0ca94",
+    "hash": "f3ac9ff5fadc0921d791b6ccffab2ac3",
+    "content-hash": "5a26c39330de2fc38419e7fcdc98022f",
     "packages": [
         {
             "name": "aws/aws-sdk-php",
-            "version": "2.8.28",
+            "version": "2.8.29",
             "source": {
                 "type": "git",
                 "url": "https://github.com/aws/aws-sdk-php.git",
-                "reference": "cdc2c4f55b7c89b9bfd9899c3116b369d2e6fe63"
+                "reference": "83b86d1bbbca452b00a1f0bbea6fcbb506c76650"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/aws/aws-sdk-php/zipball/cdc2c4f55b7c89b9bfd9899c3116b369d2e6fe63",
-                "reference": "cdc2c4f55b7c89b9bfd9899c3116b369d2e6fe63",
+                "url": "https://api.github.com/repos/aws/aws-sdk-php/zipball/83b86d1bbbca452b00a1f0bbea6fcbb506c76650",
+                "reference": "83b86d1bbbca452b00a1f0bbea6fcbb506c76650",
                 "shasum": ""
             },
             "require": {
@@ -68,7 +68,7 @@
                 "s3",
                 "sdk"
             ],
-            "time": "2016-04-05 23:38:03"
+            "time": "2016-04-11 17:00:10"
         },
         {
             "name": "bower-asset/bootstrap",
@@ -455,16 +455,16 @@
         },
         {
             "name": "ezyang/htmlpurifier",
-            "version": "v4.6.0",
+            "version": "v4.7.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/ezyang/htmlpurifier.git",
-                "reference": "6f389f0f25b90d0b495308efcfa073981177f0fd"
+                "reference": "ae1828d955112356f7677c465f94f7deb7d27a40"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/ezyang/htmlpurifier/zipball/6f389f0f25b90d0b495308efcfa073981177f0fd",
-                "reference": "6f389f0f25b90d0b495308efcfa073981177f0fd",
+                "url": "https://api.github.com/repos/ezyang/htmlpurifier/zipball/ae1828d955112356f7677c465f94f7deb7d27a40",
+                "reference": "ae1828d955112356f7677c465f94f7deb7d27a40",
                 "shasum": ""
             },
             "require": {
@@ -487,8 +487,7 @@
                 {
                     "name": "Edward Z. Yang",
                     "email": "admin@htmlpurifier.org",
-                    "homepage": "http://ezyang.com",
-                    "role": "Developer"
+                    "homepage": "http://ezyang.com"
                 }
             ],
             "description": "Standards compliant HTML filter written in PHP",
@@ -496,7 +495,7 @@
             "keywords": [
                 "html"
             ],
-            "time": "2013-11-30 08:25:19"
+            "time": "2015-08-05 01:03:42"
         },
         {
             "name": "guzzle/guzzle",
@@ -708,16 +707,16 @@
         },
         {
             "name": "guzzlehttp/psr7",
-            "version": "1.2.3",
+            "version": "1.3.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/guzzle/psr7.git",
-                "reference": "2e89629ff057ebb49492ba08e6995d3a6a80021b"
+                "reference": "31382fef2889136415751badebbd1cb022a4ed72"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/guzzle/psr7/zipball/2e89629ff057ebb49492ba08e6995d3a6a80021b",
-                "reference": "2e89629ff057ebb49492ba08e6995d3a6a80021b",
+                "url": "https://api.github.com/repos/guzzle/psr7/zipball/31382fef2889136415751badebbd1cb022a4ed72",
+                "reference": "31382fef2889136415751badebbd1cb022a4ed72",
                 "shasum": ""
             },
             "require": {
@@ -762,15 +761,15 @@
                 "stream",
                 "uri"
             ],
-            "time": "2016-02-18 21:54:00"
+            "time": "2016-04-13 19:56:01"
         },
         {
             "name": "imagine/imagine",
-            "version": "0.6.10",
+            "version": "0.6.11",
             "source": {
                 "type": "git",
                 "url": "https://github.com/pixelandtonic/Imagine",
-                "reference": "53d08c26d70fa434fbda5f58ae7cc0b62142fd72"
+                "reference": "0b8a850e16d29b603ab24889bc240ed9d8a0decf"
             },
             "archive": {
                 "exclude": [
@@ -824,20 +823,20 @@
                 "image manipulation",
                 "image processing"
             ],
-            "time": "2016-03-22 09:28:26"
+            "time": "2016-03-28 18:56:07"
         },
         {
             "name": "league/flysystem",
-            "version": "1.0.20",
+            "version": "1.0.22",
             "source": {
                 "type": "git",
                 "url": "https://github.com/thephpleague/flysystem.git",
-                "reference": "e87a786e3ae12a25cf78a71bb07b4b384bfaa83a"
+                "reference": "bd73a91703969a2d20ab4bfbf971d6c2cbe36612"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/thephpleague/flysystem/zipball/e87a786e3ae12a25cf78a71bb07b4b384bfaa83a",
-                "reference": "e87a786e3ae12a25cf78a71bb07b4b384bfaa83a",
+                "url": "https://api.github.com/repos/thephpleague/flysystem/zipball/bd73a91703969a2d20ab4bfbf971d6c2cbe36612",
+                "reference": "bd73a91703969a2d20ab4bfbf971d6c2cbe36612",
                 "shasum": ""
             },
             "require": {
@@ -907,7 +906,7 @@
                 "sftp",
                 "storage"
             ],
-            "time": "2016-03-14 21:54:11"
+            "time": "2016-04-28 06:53:12"
         },
         {
             "name": "league/flysystem-aws-s3-v2",
@@ -915,7 +914,13 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/thephpleague/flysystem-aws-s3-v2.git",
-                "reference": "80c7263ba411bfb28ab2d6284b40e5619a4bdf96"
+                "reference": "e464a35e34abed572c76b76aa2f278d178e141c6"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/thephpleague/flysystem-aws-s3-v2/zipball/e464a35e34abed572c76b76aa2f278d178e141c6",
+                "reference": "e464a35e34abed572c76b76aa2f278d178e141c6",
+                "shasum": ""
             },
             "require": {
                 "aws/aws-sdk-php": "~2.7",
@@ -937,6 +942,7 @@
                     "League\\Flysystem\\AwsS3v2\\": "src/"
                 }
             },
+            "notification-url": "https://packagist.org/downloads/",
             "license": [
                 "MIT"
             ],
@@ -947,20 +953,20 @@
                 }
             ],
             "description": "Flysystem adapter for AWS S3 SDK v2",
-            "time": "2015-10-06 19:50:14"
+            "time": "2015-10-15 15:55:48"
         },
         {
             "name": "league/flysystem-dropbox",
-            "version": "1.0.1",
+            "version": "1.0.4",
             "source": {
                 "type": "git",
                 "url": "https://github.com/thephpleague/flysystem-dropbox.git",
-                "reference": "4f35668411642e8f8513c58f4906e08dfc0a5a07"
+                "reference": "939f91ca00d0255d9b3aa313e191480d00f09382"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/thephpleague/flysystem-dropbox/zipball/4f35668411642e8f8513c58f4906e08dfc0a5a07",
-                "reference": "4f35668411642e8f8513c58f4906e08dfc0a5a07",
+                "url": "https://api.github.com/repos/thephpleague/flysystem-dropbox/zipball/939f91ca00d0255d9b3aa313e191480d00f09382",
+                "reference": "939f91ca00d0255d9b3aa313e191480d00f09382",
                 "shasum": ""
             },
             "require": {
@@ -993,7 +999,7 @@
                 }
             ],
             "description": "Flysystem adapter for Dropbox",
-            "time": "2015-12-19 13:50:27"
+            "time": "2016-04-25 18:51:39"
         },
         {
             "name": "league/flysystem-rackspace",
@@ -1090,17 +1096,11 @@
         },
         {
             "name": "lsolesen/pel",
-            "version": "0.9.3",
+            "version": "0.9.4",
             "source": {
                 "type": "git",
-                "url": "https://github.com/lsolesen/pel.git",
-                "reference": "64a8fbb42a37c808dbb54bec3dc51a0ccbca3fc0"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/lsolesen/pel/zipball/64a8fbb42a37c808dbb54bec3dc51a0ccbca3fc0",
-                "reference": "64a8fbb42a37c808dbb54bec3dc51a0ccbca3fc0",
-                "shasum": ""
+                "url": "https://github.com/pixelandtonic/pel",
+                "reference": "ba4a204f3f10425ab1e2ba9b48923e8fe49eb418"
             },
             "require": {
                 "php": ">=5.0.0"
@@ -1114,7 +1114,6 @@
                     "lsolesen\\pel\\": "src/"
                 }
             },
-            "notification-url": "https://packagist.org/downloads/",
             "authors": [
                 {
                     "name": "Lars Olesen",
@@ -1128,7 +1127,7 @@
             "keywords": [
                 "template"
             ],
-            "time": "2015-08-08 15:22:22"
+            "time": "2015-11-22 03:22:48"
         },
         {
             "name": "mikemccabe/json-patch-php",
@@ -1156,6 +1155,43 @@
             ],
             "description": "Produce and apply json-patch objects",
             "time": "2015-01-05 21:19:54"
+        },
+        {
+            "name": "pclzip/pclzip",
+            "version": "2.8.2",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/ivanlanin/pclzip.git",
+                "reference": "19dd1de9d3f5fc4d7d70175b4c344dee329f45fd"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/ivanlanin/pclzip/zipball/19dd1de9d3f5fc4d7d70175b4c344dee329f45fd",
+                "reference": "19dd1de9d3f5fc4d7d70175b4c344dee329f45fd",
+                "shasum": ""
+            },
+            "type": "library",
+            "autoload": {
+                "classmap": [
+                    "pclzip.lib.php"
+                ]
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "LGPL-2.1"
+            ],
+            "authors": [
+                {
+                    "name": "Vincent Blavet"
+                }
+            ],
+            "description": "A PHP library that offers compression and extraction functions for Zip formatted archives",
+            "homepage": "http://www.phpconcept.net/pclzip",
+            "keywords": [
+                "php",
+                "zip"
+            ],
+            "time": "2014-06-05 11:42:24"
         },
         {
             "name": "pixelandtonic/flysystem-google-cloud",
@@ -1332,17 +1368,11 @@
         },
         {
             "name": "simplepie/simplepie",
-            "version": "1.3.1",
+            "version": "1.3.3",
             "source": {
                 "type": "git",
-                "url": "https://github.com/simplepie/simplepie.git",
-                "reference": "ce53709778bc1e2e4deda1651b66e5081398d5cc"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/simplepie/simplepie/zipball/ce53709778bc1e2e4deda1651b66e5081398d5cc",
-                "reference": "ce53709778bc1e2e4deda1651b66e5081398d5cc",
-                "shasum": ""
+                "url": "https://github.com/pixelandtonic/simplepie",
+                "reference": "db8b6500fb72f0f9bed0751b33005cce1628d3ab"
             },
             "require": {
                 "php": ">=5.2.0"
@@ -1353,7 +1383,6 @@
                     "SimplePie": "library"
                 }
             },
-            "notification-url": "https://packagist.org/downloads/",
             "license": [
                 "BSD-3-Clause"
             ],
@@ -1382,7 +1411,7 @@
                 "feeds",
                 "rss"
             ],
-            "time": "2012-10-30 17:54:03"
+            "time": "2015-12-17 19:51:31"
         },
         {
             "name": "swiftmailer/swiftmailer",
@@ -1558,17 +1587,11 @@
         },
         {
             "name": "twig/twig",
-            "version": "v1.24.0",
+            "version": "1.24.1",
             "source": {
                 "type": "git",
-                "url": "https://github.com/twigphp/Twig.git",
-                "reference": "3e5aa30ebfbafd5951fb1b01e338e1800ce7e0e8"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/twigphp/Twig/zipball/3e5aa30ebfbafd5951fb1b01e338e1800ce7e0e8",
-                "reference": "3e5aa30ebfbafd5951fb1b01e338e1800ce7e0e8",
-                "shasum": ""
+                "url": "https://github.com/pixelandtonic/Twig",
+                "reference": "fa5387397a27db8284d2cb7ba97f69b296a85015"
             },
             "require": {
                 "php": ">=5.2.7"
@@ -1588,7 +1611,6 @@
                     "Twig_": "lib/"
                 }
             },
-            "notification-url": "https://packagist.org/downloads/",
             "license": [
                 "BSD-3-Clause"
             ],
@@ -1600,14 +1622,14 @@
                     "role": "Lead Developer"
                 },
                 {
-                    "name": "Armin Ronacher",
-                    "email": "armin.ronacher@active-4.com",
-                    "role": "Project Founder"
-                },
-                {
                     "name": "Twig Team",
                     "homepage": "http://twig.sensiolabs.org/contributors",
                     "role": "Contributors"
+                },
+                {
+                    "name": "Armin Ronacher",
+                    "email": "armin.ronacher@active-4.com",
+                    "role": "Project Founder"
                 }
             ],
             "description": "Twig, the flexible, fast, and secure template language for PHP",
@@ -1615,20 +1637,23 @@
             "keywords": [
                 "templating"
             ],
-            "time": "2016-01-25 21:22:18"
+            "support": {
+                "forum": "https://groups.google.com/forum/#!forum/twig-users"
+            },
+            "time": "2016-03-06 03:36:05"
         },
         {
             "name": "yiisoft/yii2",
-            "version": "2.0.7",
+            "version": "2.0.8",
             "source": {
                 "type": "git",
                 "url": "https://github.com/yiisoft/yii2-framework.git",
-                "reference": "f45651582cb853b4326730d9d187a0f7a44a45a3"
+                "reference": "53992b136b993e32ca7b6f399cf42b143f8685a6"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/yiisoft/yii2-framework/zipball/f45651582cb853b4326730d9d187a0f7a44a45a3",
-                "reference": "f45651582cb853b4326730d9d187a0f7a44a45a3",
+                "url": "https://api.github.com/repos/yiisoft/yii2-framework/zipball/53992b136b993e32ca7b6f399cf42b143f8685a6",
+                "reference": "53992b136b993e32ca7b6f399cf42b143f8685a6",
                 "shasum": ""
             },
             "require": {
@@ -1639,7 +1664,7 @@
                 "cebe/markdown": "~1.0.0 | ~1.1.0",
                 "ext-ctype": "*",
                 "ext-mbstring": "*",
-                "ezyang/htmlpurifier": "4.6.*",
+                "ezyang/htmlpurifier": "~4.6",
                 "lib-pcre": "*",
                 "php": ">=5.4.0",
                 "yiisoft/yii2-composer": "~2.0.4"
@@ -1709,7 +1734,7 @@
                 "framework",
                 "yii2"
             ],
-            "time": "2016-02-14 14:45:55"
+            "time": "2016-04-28 14:50:20"
         },
         {
             "name": "yiisoft/yii2-authclient",

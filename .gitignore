@@ -11,3 +11,6 @@ Build/*
 *.sass-cache
 node_modules/*
 Source/craft/app/vendor/
+!Source/craft/app/vendor/helpspot/*
+!Source/craft/app/vendor/pixelandtonic/*
+!Source/craft/app/vendor/pclzip/*
