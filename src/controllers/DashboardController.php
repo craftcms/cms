@@ -302,6 +302,8 @@ class DashboardController extends BaseController
 				$message .= "\nPlugins: ".implode(', ', $pluginNames);
 			}
 
+			$message .="\nDomain: ".craft()->request->getHostInfo();
+
 			$requestParamDefaults = array(
 				'sFirstName' => $user->getFriendlyName(),
 				'sLastName' => ($user->lastName ? $user->lastName : 'Doe'),
