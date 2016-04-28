@@ -45,7 +45,17 @@ class UpdateHelper
 			}
 
 			$rowData = explode(';', $row);
-			$file = IOHelper::normalizePathSeparators($handle == 'craft' ? craft()->path->getAppPath() : craft()->path->getPluginsPath().$handle.'/'.$rowData[0]);
+
+			if ($handle == 'craft')
+			{
+				$directory = craft()->path->getAppPath();
+			}
+			else
+			{
+				$directory = craft()->path->getPluginsPath().$handle.'/';
+			}
+
+			$file = IOHelper::normalizePathSeparators($directory.$rowData[0]);
 
 			// It's a folder
 			if (static::isManifestLineAFolder($file))
@@ -94,6 +104,17 @@ class UpdateHelper
 	 */
 	public static function doFileUpdate($manifestData, $sourceTempFolder, $handle)
 	{
+		if ($handle == 'craft')
+		{
+			$destDirectory = craft()->path->getAppPath();
+			$sourceFileDirectory = 'app/';
+		}
+		else
+		{
+			$destDirectory = craft()->path->getPluginsPath().$handle.'/';
+			$sourceFileDirectory = '';
+		}
+
 		try
 		{
 			foreach ($manifestData as $row)
@@ -116,8 +137,8 @@ class UpdateHelper
 					$tempPath = $rowData[0];
 				}
 
-				$destFile = IOHelper::normalizePathSeparators($handle == 'craft' ? craft()->path->getAppPath() : craft()->path->getPluginsPath().$handle).'/'.$tempPath;
-				$sourceFile = IOHelper::getRealPath(IOHelper::normalizePathSeparators($sourceTempFolder.($handle == 'craft' ? '/app/' : '/').$tempPath));
+				$destFile = IOHelper::normalizePathSeparators($destDirectory.$tempPath);
+				$sourceFile = IOHelper::getRealPath(IOHelper::normalizePathSeparators($sourceTempFolder.'/'.$sourceFileDirectory.$tempPath));
 
 				switch (trim($rowData[1]))
 				{
