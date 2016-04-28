@@ -35,6 +35,11 @@ class PhpMessageSource extends \CPhpMessageSource
 	 */
 	private $_messages = array();
 
+	/**
+	 * @var array
+	 */
+	private $_missingYiiTranslationFiles = array();
+
 	// Public Methods
 	// ------------------------------------------------------------------------
 
