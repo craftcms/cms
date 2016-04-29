@@ -4,8 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "1fa4a114b93262ba08eda4eb976e6f2d",
-    "content-hash": "e2b15c75eada1a7227a1de4f15345ac3",
+    "hash": "33468eb52dc1562b2f66ed33097a15b6",
     "packages": [
         {
             "name": "guzzle/guzzle",
@@ -102,11 +101,11 @@
         },
         {
             "name": "imagine/imagine",
-            "version": "0.6.11",
+            "version": "0.6.12",
             "source": {
                 "type": "git",
                 "url": "https://github.com/pixelandtonic/Imagine",
-                "reference": "0b8a850e16d29b603ab24889bc240ed9d8a0decf"
+                "reference": "a8fb58e59d317fa37d778f0dc54143c788853ac4"
             },
             "archive": {
                 "exclude": [
@@ -160,7 +159,7 @@
                 "image manipulation",
                 "image processing"
             ],
-            "time": "2016-03-28 18:56:07"
+            "time": "2016-04-29 13:03:07"
         },
         {
             "name": "lsolesen/pel",
@@ -1470,25 +1469,25 @@
         },
         {
             "name": "symfony/yaml",
-            "version": "v2.8.4",
+            "version": "v3.0.4",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/yaml.git",
-                "reference": "584e52cb8f788a887553ba82db6caacb1d6260bb"
+                "reference": "0047c8366744a16de7516622c5b7355336afae96"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/yaml/zipball/584e52cb8f788a887553ba82db6caacb1d6260bb",
-                "reference": "584e52cb8f788a887553ba82db6caacb1d6260bb",
+                "url": "https://api.github.com/repos/symfony/yaml/zipball/0047c8366744a16de7516622c5b7355336afae96",
+                "reference": "0047c8366744a16de7516622c5b7355336afae96",
                 "shasum": ""
             },
             "require": {
-                "php": ">=5.3.9"
+                "php": ">=5.5.9"
             },
             "type": "library",
             "extra": {
                 "branch-alias": {
-                    "dev-master": "2.8-dev"
+                    "dev-master": "3.0-dev"
                 }
             },
             "autoload": {
@@ -1515,7 +1514,7 @@
             ],
             "description": "Symfony Yaml Component",
             "homepage": "https://symfony.com",
-            "time": "2016-03-04 07:54:35"
+            "time": "2016-03-04 07:55:57"
         }
     ],
     "aliases": [],
