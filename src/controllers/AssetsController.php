@@ -16,6 +16,7 @@ use craft\app\fields\Assets as AssetsField;
 use craft\app\helpers\Assets;
 use craft\app\helpers\Io;
 use craft\app\elements\Asset;
+use craft\app\helpers\StringHelper;
 use craft\app\models\VolumeFolder;
 use craft\app\web\Controller;
 use craft\app\web\UploadedFile;
@@ -153,8 +154,7 @@ class AssetsController extends Controller
                     $filename = Assets::prepareAssetName($uploadedFile->name);
 
                     $asset = new Asset();
-                    $asset->title = $asset->generateAttributeLabel(Io::getFilename($filename,
-                        false));
+                    $asset->title = StringHelper::toTitleCase(Io::getFilename($filename, false));
                     $asset->newFilePath = $pathOnServer;
                     $asset->filename = $filename;
                     $asset->folderId = $folder->id;

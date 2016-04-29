@@ -1546,8 +1546,7 @@ class Assets extends Component
 
         if ($isNewAsset && !$asset->title) {
             // Give it a default title based on the file name
-            $asset->title = $asset->generateAttributeLabel(Io::getFilename($asset->filename,
-                false));
+            $asset->title = StringHelper::toTitleCase(Io::getFilename($asset->filename, false));
         }
 
         $transaction = Craft::$app->getDb()->beginTransaction();

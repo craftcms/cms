@@ -286,8 +286,7 @@ class Assets extends BaseRelationField
 
                 $folder = Craft::$app->getAssets()->getFolderById($targetFolderId);
                 $asset = new Asset();
-                $asset->title = $asset->generateAttributeLabel(Io::getFilename($file['filename'],
-                    false));
+                $asset->title = StringHelper::toTitleCase(Io::getFilename($file['filename'], false));
                 $asset->newFilePath = $tempPath;
                 $asset->filename = $file['filename'];
                 $asset->folderId = $targetFolderId;
