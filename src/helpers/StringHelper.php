@@ -700,7 +700,7 @@ class StringHelper
 	/**
 	 * Strips HTML tags out of a given string.
 	 *
-	 * @param $str The string.
+	 * @param string $str The string.
 	 *
 	 * @return string
 	 */

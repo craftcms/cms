@@ -71,7 +71,7 @@ class ElementTypeVariable extends BaseComponentTypeVariable
 	/**
 	 * Returns the attributes that elements can be sorted by.
 	 *
-	 * @retrun array
+	 * @return array
 	 */
 	public function defineSortableAttributes()
 	{

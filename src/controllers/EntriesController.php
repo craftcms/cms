@@ -462,16 +462,13 @@ class EntriesController extends BaseEntriesController
 				$return['success']   = true;
 				$return['id']        = $entry->id;
 				$return['title']     = $entry->title;
-				$return['cpEditUrl'] = $entry->getCpEditUrl();
 
-				$author = $entry->getAuthor()->getAttributes();
-
-				if (isset($author['password']))
+				if (craft()->request->isCpRequest())
 				{
-					unset($author['password']);
+					$return['cpEditUrl'] = $entry->getCpEditUrl();
 				}
 
-				$return['author']      = $author;
+				$return['authorUsername']      = $entry->getAuthor()->username;
 				$return['dateCreated'] = DateTimeHelper::toIso8601($entry->dateCreated);
 				$return['dateUpdated'] = DateTimeHelper::toIso8601($entry->dateUpdated);
 				$return['postDate']    = ($entry->postDate ? DateTimeHelper::toIso8601($entry->postDate) : null);

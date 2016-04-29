@@ -241,7 +241,6 @@ class IOHelper
 
 		if (static::folderExists($path, $suppressErrors))
 		{
-			$path = rtrim(str_replace('\\', '/', $path), '/').'/';
 			return static::isWritable($path.uniqid(mt_rand()).'.tmp', $suppressErrors);
 		}
 
@@ -451,13 +450,21 @@ class IOHelper
 	 */
 	public static function normalizePathSeparators($path)
 	{
-		// Don't normalize if it looks like the path starts on a network share.
+		// Special case for normalizing UNC network share paths.
 		if (isset($path[0]) && isset($path[1]))
 		{
-			if ($path[0] !== '\\' && $path[1] !== '\\')
+			if (($path[0] == '\\' && $path[1] == '\\') ||($path[0] == '/' && $path[1] == '/') )
 			{
+				$path = mb_substr($path, 2);
 				$path = str_replace('\\', '/', $path);
+
+				// Add the share back in
+				$path = '\\\\'.$path;
 			}
+		}
+		else
+		{
+			$path = str_replace('\\', '/', $path);
 		}
 
 		$path = str_replace('//', '/', $path);
@@ -1113,7 +1120,7 @@ class IOHelper
 
 				if (static::fileExists($item, $suppressErrors))
 				{
-					if ($suppressErrors ? !@copy($item, $itemDest) : copy($item, $itemDest))
+					if ($suppressErrors ? @copy($item, $itemDest) : copy($item, $itemDest))
 					{
 						Craft::log('Could not copy file from '.$item.' to '.$itemDest.'.', LogLevel::Error);
 					}

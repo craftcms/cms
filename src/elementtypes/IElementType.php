@@ -192,7 +192,7 @@ interface IElementType extends IComponentType
 	 * Note that this method will only get called once for the entire index; not each time that a new source is
 	 * selected.
 	 *
-	 * @retrun array The attributes that elements can be sorted by.
+	 * @return array The attributes that elements can be sorted by.
 	 */
 	public function defineSortableAttributes();
 

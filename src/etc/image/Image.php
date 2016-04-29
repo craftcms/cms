@@ -632,14 +632,7 @@ class Image extends BaseImage
 			case 'gif':
 			{
 				$options = array('animated' => $this->_isAnimatedGif);
-
-				if ($this->_isAnimatedGif)
-				{
-					// Imagine library does not provide this value and arbitrarily divides it by 10, when assigning,
-					// so we have to improvise a little
-					$options['animated.delay'] = $this->_image->getImagick()->getImageDelay() * 10;
-				}
-
+				
 				return $options;
 			}
 

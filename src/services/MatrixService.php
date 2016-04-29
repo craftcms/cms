@@ -423,7 +423,7 @@ class MatrixService extends BaseApplicationComponent
 
 			// Restore the contentTable and the fieldColumnPrefix to original values.
 			craft()->content->fieldColumnPrefix = $originalFieldColumnPrefix;
-			craft()->content->contentTable = $newContentTable;
+			craft()->content->contentTable = $originalContentTable;
 
 			// Delete the field layout
 			craft()->fields->deleteLayoutById($blockType->fieldLayoutId);

@@ -35,6 +35,11 @@ class PhpMessageSource extends \CPhpMessageSource
 	 */
 	private $_messages = array();
 
+	/**
+	 * @var array
+	 */
+	private $_missingYiiTranslationFiles = array();
+
 	// Public Methods
 	// ------------------------------------------------------------------------
 
@@ -62,7 +67,8 @@ class PhpMessageSource extends \CPhpMessageSource
 	{
 		if ($category !== 'craft')
 		{
-			$parentMessages = parent::loadMessages($category, $language);
+			// Modified version of parent::loadMessages()
+			$parentMessages = $this->_loadMessages($category, $language);
 
 			// See if there any craft/translations for Yii's system messages.
 			if (($filePath = IOHelper::fileExists(craft()->path->getSiteTranslationsPath().$language.'.php')) !== false)
@@ -184,5 +190,55 @@ class PhpMessageSource extends \CPhpMessageSource
 		$formattedFrameworkData['pm'] = StringHelper::toLowerCase($pmName);
 
 		return $formattedFrameworkData;
+	}
+
+	/**
+	 * A slightly modified version of CPhpMessageSource->loadMessages()
+	 *
+	 * @param $category
+	 * @param $language
+	 *
+	 * @return array|mixed
+	 */
+	private function _loadMessages($category, $language)
+	{
+		$messageFile = $this->getMessageFile($category, $language);
+
+		if ($this->cachingDuration > 0 && $this->cacheID !== false && ($cache = craft()->getComponent($this->cacheID)) !== null)
+		{
+			$key = self::CACHE_KEY_PREFIX.$messageFile;
+
+			if (($data = $cache->get($key)) !== false)
+			{
+				return unserialize($data);
+			}
+		}
+
+		if (!in_array($messageFile, $this->_missingYiiTranslationFiles))
+		{
+			if (IOHelper::fileExists($messageFile))
+			{
+				$messages = include($messageFile);
+
+				if (!is_array($messages))
+				{
+					$messages = array();
+				}
+
+				if (isset($cache))
+				{
+					$dependency = new \CFileCacheDependency($messageFile);
+					$cache->set($key, serialize($messages), $this->cachingDuration, $dependency);
+				}
+
+				return $messages;
+			}
+			else
+			{
+				$this->_missingYiiTranslationFiles[] = $messageFile;
+			}
+		}
+
+		return array();
 	}
 }

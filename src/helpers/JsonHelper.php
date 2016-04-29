@@ -17,11 +17,22 @@ class JsonHelper extends \CJSON
 	// =========================================================================
 
 	/**
-	 * @return null
+	 * Sets the Content-Type header to 'application/json' and the Expires, Cache-Control, and Pragma headers
+	 * to the appropriate vales so the client doesn’t cache the response.
+	 *
+	 * @return void
 	 */
 	public static function sendJsonHeaders()
 	{
+		self::setJsonContentTypeHeader();
 		HeaderHelper::setNoCache();
+	}
+
+	/**
+	 * Sets the Content-Type header to 'application/json'.
+	 */
+	public static function setJsonContentTypeHeader()
+	{
 		HeaderHelper::setContentTypeByExtension('json');
 	}
 
