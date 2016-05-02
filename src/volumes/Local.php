@@ -110,7 +110,7 @@ class Local extends Volume
      */
     public function renameDir($path, $newName)
     {
-        $newPath = IO::getParentFolderPath($path).$newName;
+        $newPath = Io::getParentFolderPath($path).$newName;
 
         try {
             return $this->getFilesystem()->rename($path, $newPath);

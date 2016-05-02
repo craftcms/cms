@@ -631,7 +631,7 @@ class Assets extends Component
         $volume->renameDir(rtrim($folder->path, '/'), $newName);
 
         $descendantFolders = $this->getAllDescendantFolders($folder);
-        $newFullPath = IO::getParentFolderPath($folder->path).$newName.'/';
+        $newFullPath = Io::getParentFolderPath($folder->path).$newName.'/';
 
         foreach ($descendantFolders as $descendantFolder) {
             $descendantFolder->path = preg_replace('#^'.$folder->path.'#',
@@ -974,8 +974,8 @@ class Assets extends Component
             return $originalFilename;
         }
 
-        $extension = IO::getExtension($originalFilename);
-        $filename = IO::getFileName($originalFilename, false);
+        $extension = Io::getExtension($originalFilename);
+        $filename = Io::getFilename($originalFilename, false);
 
 
         // If the file already ends with something that looks like a timestamp, use that instead.

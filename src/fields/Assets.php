@@ -258,7 +258,7 @@ class Assets extends BaseRelationField
 
         if (is_array($allowedExtensions)) {
             foreach ($incomingFiles as $file) {
-                $extension = StringHelper::toLowerCase(IO::getExtension($file['filename']));
+                $extension = StringHelper::toLowerCase(Io::getExtension($file['filename']));
 
                 if (!in_array($extension, $allowedExtensions)) {
                     $this->_failedFiles[] = $file['filename'];
@@ -281,7 +281,7 @@ class Assets extends BaseRelationField
                     move_uploaded_file($file['location'], $tempPath);
                 }
                 if ($file['type'] == 'data') {
-                    IO::writeToFile($tempPath, $file['data']);
+                    Io::writeToFile($tempPath, $file['data']);
                 }
 
                 $folder = Craft::$app->getAssets()->getFolderById($targetFolderId);
@@ -294,7 +294,7 @@ class Assets extends BaseRelationField
                 Craft::$app->getAssets()->saveAsset($asset);
 
                 $assetIds[] = $asset->id;
-                IO::deleteFile($tempPath, true);
+                Io::deleteFile($tempPath, true);
             }
 
             $assetIds = array_unique(array_merge($value, $assetIds));
