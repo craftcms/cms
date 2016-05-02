@@ -18,8 +18,8 @@
 
 {% block content %}
 	<div id="messages">
-		{% for message in craft.emailMessages.getAllMessages %}
-			<h2>{{ (message.key~'_heading')|t }}</h2>
+		{% for message in craft.emailMessages.getAllMessages() %}
+			<h2>{{ message.heading }}</h2>
 			<div class="pane message" data-key="{{ message.key }}">
 				<div class="subject">{{ message.subject }}</div>
 				<div class="body">{{ message.body|nl2br }}</div>
