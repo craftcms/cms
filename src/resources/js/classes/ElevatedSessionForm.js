@@ -20,10 +20,13 @@ Craft.ElevatedSessionForm = Garnish.Base.extend(
 			{
 				var $input = $($inputs[i]);
 
-				this.inputs.push({
-					input: $input,
-					val: Garnish.getInputPostVal($input)
-				});
+				if ($input.length)
+				{
+					this.inputs.push({
+						input: $input,
+						val: Garnish.getInputPostVal($input)
+					});
+				}
 			}
 		}
 
