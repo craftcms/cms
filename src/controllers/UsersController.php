@@ -140,6 +140,35 @@ class UsersController extends BaseController
 	}
 
 	/**
+	 * Returns how many seconds are left in the current elevated user session.
+	 *
+	 * @return null
+	 */
+	public function actionGetElevatedSessionTimeout()
+	{
+		$return = array(
+			'timeout' => craft()->userSession->getElevatedSessionTimeout()
+		);
+
+		$this->returnJson($return);
+	}
+
+	/**
+	 * Starts an elevated user session.
+	 *
+	 * @return null
+	 */
+	public function actionStartElevatedSession()
+	{
+		$password = craft()->request->getPost('password');
+		$success = craft()->userSession->startElevatedSession($password);
+
+		$this->returnJson(array(
+			'success' => $success
+		));
+	}
+
+	/**
 	 * @return null
 	 */
 	public function actionLogout()
@@ -256,7 +285,7 @@ class UsersController extends BaseController
 	{
 		$this->requireAdmin();
 
-		if (!$this->_verifyExistingPassword())
+		if (!$this->_verifyElevatedSession())
 		{
 			throw new HttpException(403);
 		}
@@ -887,7 +916,7 @@ class UsersController extends BaseController
 		// require the user's current password for additional security
 		if (!$isNewUser && (!empty($newEmail) || $user->newPassword))
 		{
-			if (!$this->_verifyExistingPassword())
+			if (!$this->_verifyElevatedSession())
 			{
 				Craft::log('Tried to change the email or password for userId: '.$user->id.', but the current password does not match what the user supplied.', LogLevel::Warning);
 				$user->addError('currentPassword', Craft::t('Incorrect current password.'));
@@ -1595,6 +1624,16 @@ class UsersController extends BaseController
 	private function _noUserExists($userId)
 	{
 		throw new Exception(Craft::t('No user exists with the ID “{id}”.', array('id' => $userId)));
+	}
+
+	/**
+	 * Verifies that the user has an elevated session, or that their current password was submitted with the request.
+	 *
+	 * @return bool
+	 */
+	private function _verifyElevatedSession()
+	{
+		return (craft()->userSession->hasElevatedSession() || $this->_verifyExistingPassword());
 	}
 
 	/**

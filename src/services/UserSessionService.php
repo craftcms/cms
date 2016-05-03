@@ -23,6 +23,7 @@ class UserSessionService extends \CWebUser
 	const FLASH_COUNTERS   = 'Craft.UserSessionService.flashcounters';
 	const AUTH_ACCESS_VAR  = '__auth_access';
 	const USER_IMPERSONATE_KEY = 'Craft.UserSessionService.prevImpersonateUserId';
+	const ELEVATED_SESSION_TIMEOUT_VAR = '__elevated_timeout';
 
 	// Properties
 	// =========================================================================
@@ -1154,6 +1155,74 @@ class UserSessionService extends \CWebUser
 		return parent::getFlashes($delete);
 	}
 
+	/**
+	 * Returns how many seconds are left in the current elevated user session.
+	 *
+	 * @return int The number of seconds left in the current elevated user session
+	 */
+	public function getElevatedSessionTimeout()
+	{
+		// Are they logged in?
+		if (!$this->getIsGuest())
+		{
+			$expires = $this->getState(static::ELEVATED_SESSION_TIMEOUT_VAR);
+
+			if ($expires !== null)
+			{
+				$currentTime = time();
+
+				if ($expires > $currentTime)
+				{
+					return $expires - $currentTime;
+				}
+			}
+		}
+
+		return 0;
+	}
+
+	/**
+	 * Returns whether the user current has an elevated session.
+	 *
+	 * @return bool Whether the user has an elevated session
+	 */
+	public function hasElevatedSession()
+	{
+		return ($this->getElevatedSessionTimeout() != 0);
+	}
+
+	/**
+	 * Starts an elevated user session for the current user.
+	 *
+	 * @param string $password the current user’s password
+	 *
+	 * @return bool Whether the password was valid, and the user session has been elevated
+	 */
+	public function startElevatedSession($password)
+	{
+		// Get the current user
+		$user = $this->getUser();
+
+		if (!$user)
+		{
+			return false;
+		}
+
+		// Validate the password
+		$passwordModel = new PasswordModel();
+		$passwordModel->password = $password;
+
+		if ($passwordModel->validate() && craft()->users->validatePassword($user->password, $password))
+		{
+			// Set the elevated session expiration date
+			$this->setState(self::ELEVATED_SESSION_TIMEOUT_VAR, time() + craft()->config->getElevatedSessionDuration());
+
+			return true;
+		}
+
+		return false;
+	}
+
 	// Events
 	// -------------------------------------------------------------------------
 
@@ -1392,6 +1461,9 @@ class UserSessionService extends \CWebUser
 		{
 			$this->setState(static::AUTH_TIMEOUT_VAR, time()+$this->authTimeout);
 		}
+
+		// Clear out the elevated session, if there is one
+		$this->setState(self::ELEVATED_SESSION_TIMEOUT_VAR, null);
 	}
 
 	/**
