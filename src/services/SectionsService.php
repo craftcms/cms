@@ -789,6 +789,28 @@ class SectionsService extends BaseApplicationComponent
 
 			try
 			{
+				// Nuke the field layouts first.
+				$entryTypeIds = array();
+				$entryTypes = $this->getEntryTypesBySectionId($sectionId);
+
+				foreach ($entryTypes as $entryType)
+				{
+					$entryTypeIds[] = $entryType->id;
+				}
+
+				// Delete the field layout(s)
+				 $query = craft()->db->createCommand()
+					->select('fieldLayoutId')
+					->from('entrytypes')
+					->where(array('in', 'id', $entryTypeIds));
+
+				$fieldLayoutIds = $query->queryColumn();
+
+				if ($fieldLayoutIds)
+				{
+					craft()->fields->deleteLayoutById($fieldLayoutIds);
+				}
+
 				// Grab the entry ids so we can clean the elements table.
 				$entryIds = craft()->db->createCommand()
 					->select('id')
