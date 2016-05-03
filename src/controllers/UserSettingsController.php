@@ -42,8 +42,22 @@ class UserSettingsController extends BaseController
 	{
 		$this->requirePostRequest();
 
-		$group = new UserGroupModel();
-		$group->id = craft()->request->getPost('groupId');
+		$groupId = craft()->request->getPost('groupId');
+
+		if ($groupId)
+		{
+			$group = craft()->userGroups->getGroupById($groupId);
+
+			if (!$group)
+			{
+				throw new Exception(Craft::t('No group exists with the ID “{id}”.', array('id' => $groupId)));
+			}
+		}
+		else
+		{
+			$group = new UserGroupModel();
+		}
+
 		$group->name = craft()->request->getPost('name');
 		$group->handle = craft()->request->getPost('handle');
 
