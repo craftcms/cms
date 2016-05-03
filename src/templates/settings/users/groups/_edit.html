@@ -62,10 +62,18 @@
 
 	<h2>{{ "Permissions"|t }}</h2>
 
-	{% include "_includes/permissions" with { userOrGroup: (group is defined ? group : null) } only %}
+	<div id="permissions">
+		{% include "_includes/permissions" with { userOrGroup: (group is defined ? group : null) } only %}
+	</div>
 {% endblock %}
 
 
-{% if group is not defined or not group.handle %}
-	{% includejs "new Craft.HandleGenerator('#name', '#handle');" %}
-{% endif %}
+{% includejs %}
+	{% if group is not defined or not group.handle %}
+		new Craft.HandleGenerator('#name', '#handle');
+	{% endif %}
+
+	new Craft.ElevatedSessionForm('#container', [
+		'#permissions input[type="checkbox"]:not(:checked)'
+	]);
+{% endincludejs %}
