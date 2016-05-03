@@ -186,7 +186,7 @@ abstract class BaseController extends \CController
 	{
 		if (!craft()->userSession->hasElevatedSession())
 		{
-			throw new HttpException(403, 'This action may only be performed with an elevated session.');
+			throw new HttpException(403, Craft::t('This action may only be performed with an elevated session.'));
 		}
 	}
 
