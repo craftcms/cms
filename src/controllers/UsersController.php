@@ -952,7 +952,18 @@ class UsersController extends BaseController
 		if ($currentUser && $currentUser->admin)
 		{
 			$user->passwordResetRequired = (bool) craft()->request->getPost('passwordResetRequired', $user->passwordResetRequired);
-			$user->admin                 = (bool) craft()->request->getPost('admin', $user->admin);
+
+			// Is their admin status changing?
+			if (($adminParam = craft()->request->getPost('admin', $user->admin)) != $user->admin)
+			{
+				// Making someone an admin requires an elevated session
+				if ($adminParam)
+				{
+					$this->requireElevatedSession();
+				}
+
+				$user->admin = $adminParam;
+			}
 		}
 
 		// If this is Craft Pro, grab any profile content from post

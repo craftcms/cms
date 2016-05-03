@@ -216,6 +216,7 @@
 							{{ forms.checkboxField({
 								label: '<strong>' ~ "Admin"|t ~ '</strong>',
 								name: 'admin',
+								id: 'admin',
 								checked: account.admin,
 								reverseToggle: 'permissions'
 							}) }}
@@ -316,6 +317,7 @@
 
 	new Craft.ElevatedSessionForm('#userform', [
 		'#email',
-		'#newPassword'
+		'#newPassword',
+		'#admin:not(:checked)'
 	]);
 {% endincludejs %}
