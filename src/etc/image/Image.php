@@ -121,7 +121,7 @@ class Image extends BaseImage
 			throw new Exception(Craft::t("Not enough memory available to perform this image operation."));
 		}
 
-		// Make sure the image says its an image
+		// Make sure the image says it's an image
 		$mimeType = FileHelper::getMimeTypeFromMagicBytes($path);
 
 		if (strncmp($mimeType, 'image/', 6) !== 0)

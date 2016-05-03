@@ -67,8 +67,8 @@ class FileHelper extends \CFileHelper
 	public static function getMimeTypeFromMagicBytes($file)
 	{
 		// Can't just use CFileHelper::getMimeType() here because that will fall back on mime_content_type() if it's available
-		$fileInfo = new \finfo(\FILEINFO_MIME);
-		$mimeType = $file_info->buffer(file_get_contents($file));
+		$fileInfo = new \finfo(\FILEINFO_MIME_TYPE);
+		$mimeType = $fileInfo->buffer(file_get_contents($file));
 
 		return $mimeType;
 	}
