@@ -1717,6 +1717,27 @@ class UsersController extends BaseController
 
 				if ($groupIds !== null)
 				{
+					if (is_array($groupIds))
+					{
+						// See if there are any new groups in here
+						$oldGroupIds = array();
+
+						foreach ($user->getGroups() as $group)
+						{
+							$oldGroupIds[] = $group->id;
+						}
+
+						foreach ($groupIds as $groupId)
+						{
+							if (!in_array($groupId, $oldGroupIds))
+							{
+								// Yep. This will require an elevated session
+								$this->requireElevatedSession();
+								break;
+							}
+						}
+					}
+
 					craft()->userGroups->assignUserToGroups($user->id, $groupIds);
 				}
 			}
@@ -1736,6 +1757,20 @@ class UsersController extends BaseController
 
 				if ($permissions !== null)
 				{
+					// See if there are any new permissions in here
+					if (is_array($permissions))
+					{
+						foreach ($permissions as $permission)
+						{
+							if (!$user->can($permission))
+							{
+								// Yep. This will require an elevated session
+								$this->requireElevatedSession();
+								break;
+							}
+						}
+					}
+
 					craft()->userPermissions->saveUserPermissions($user->id, $permissions);
 				}
 			}
