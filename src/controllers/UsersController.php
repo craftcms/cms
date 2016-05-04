@@ -108,15 +108,16 @@ class UsersController extends BaseController
 		$userId = craft()->request->getPost('userId');
 		$originalUserId = craft()->userSession->getId();
 
+		craft()->httpSession->add(UserSessionService::USER_IMPERSONATE_KEY, $originalUserId);
+
 		if (craft()->userSession->loginByUserId($userId))
 		{
 			craft()->userSession->setNotice(Craft::t('Logged in.'));
-			craft()->httpSession->add(UserSessionService::USER_IMPERSONATE_KEY, $originalUserId);
-
 			$this->_handleSuccessfulLogin(true);
 		}
 		else
 		{
+			craft()->httpSession->remove(UserSessionService::USER_IMPERSONATE_KEY);
 			craft()->userSession->setError(Craft::t('There was a problem impersonating this user.'));
 			Craft::log(craft()->userSession->getUser()->username.' tried to impersonate userId: '.$userId.' but something went wrong.', LogLevel::Error);
 		}
