@@ -135,6 +135,71 @@ abstract class BaseOptionsFieldType extends BaseFieldType implements IPreviewabl
 	}
 
 	/**
+	 * @inheritDoc IFieldType::validate()
+	 *
+	 * @param mixed $value
+	 *
+	 * @return true|string|array
+	 */
+	public function validate($value)
+	{
+		// If there is no value, we're good
+		if (!$value)
+		{
+			return true;
+		}
+
+		$valid = true;
+
+		// Get all of the acceptable values
+		$acceptableValues = array();
+
+		foreach ($this->getOptions() as $option)
+		{
+			$acceptableValues[] = $option['value'];
+		}
+
+		if ($this->multi)
+		{
+			// Make sure $value is actually an array
+			if (!is_array($value))
+			{
+				$valid = false;
+			}
+			else
+			{
+				// Make sure that each of the values are on the list
+				foreach ($value as $val)
+				{
+					if (!in_array($val, $acceptableValues))
+					{
+						$valid = false;
+						break;
+					}
+				}
+			}
+		}
+		else
+		{
+			// Make sure that the value is on the list
+			if (!in_array($value, $acceptableValues))
+			{
+				$valid = false;
+			}
+		}
+
+		if (!$valid)
+		{
+			return Craft::t('{attribute} is invalid.', array(
+				'attribute' => Craft::t($this->model->name)
+			));
+		}
+
+		// All good
+		return true;
+	}
+
+	/**
 	 * @inheritDoc IPreviewableFieldType::getTableAttributeHtml()
 	 *
 	 * @param mixed $value
