@@ -122,7 +122,7 @@ class Image extends BaseImage
 		}
 
 		// Make sure the image says it's an image
-		$mimeType = FileHelper::getMimeTypeFromMagicBytes($path);
+		$mimeType = FileHelper::getMimeType($path, null, false);
 
 		if ($mimeType && strncmp($mimeType, 'image/', 6) !== 0)
 		{
