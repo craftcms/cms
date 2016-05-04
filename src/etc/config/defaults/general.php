@@ -232,7 +232,6 @@ return array(
 
 	/**
 	 * The amount of time a user’s elevated session will last, which is required for some sensitive actions (e.g. user group/permission assignment).
-	 * Set to `false` to effectively disable and prompt for a password for all sensitive actions, every time.
 	 *
 	 * @see http://www.php.net/manual/en/dateinterval.construct.php
 	 */
