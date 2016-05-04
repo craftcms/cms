@@ -60,12 +60,17 @@ class FileHelper extends \CFileHelper
 	 *
 	 * @param string $file The file path
 	 *
-	 * @return string The file’s MIME type
+	 * @return string|null The file’s MIME type or null if finfo is not available.
 	 *
 	 * @see https://designshack.net/articles/php-articles/smart-file-type-detection-using-php/
 	 */
 	public static function getMimeTypeFromMagicBytes($file)
 	{
+		if (!class_exists('finfo'))
+		{
+			return;
+		}
+
 		// Can't just use CFileHelper::getMimeType() here because that will fall back on mime_content_type() if it's available
 		$fileInfo = new \finfo(\FILEINFO_MIME_TYPE);
 		$mimeType = $fileInfo->buffer(file_get_contents($file));

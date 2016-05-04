@@ -124,7 +124,7 @@ class Image extends BaseImage
 		// Make sure the image says it's an image
 		$mimeType = FileHelper::getMimeTypeFromMagicBytes($path);
 
-		if (strncmp($mimeType, 'image/', 6) !== 0)
+		if ($mimeType && strncmp($mimeType, 'image/', 6) !== 0)
 		{
 			throw new Exception(Craft::t('The file “{path}” does not appear to be an image.', array('path' => $path)));
 		}
