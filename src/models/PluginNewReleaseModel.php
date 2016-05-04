@@ -28,7 +28,7 @@ class PluginNewReleaseModel extends BaseModel
 		$attributes['localizedDate']          = AttributeType::String;
 		$attributes['notes']                  = AttributeType::String;
 		$attributes['critical']               = AttributeType::Bool;
-		$attributes['manualDownloadEndpoint'] = AttributeType::Bool;
+		$attributes['manualDownloadEndpoint'] = AttributeType::String;
 
 		return $attributes;
 	}

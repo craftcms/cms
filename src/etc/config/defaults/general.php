@@ -231,6 +231,13 @@ return array(
 	'devMode' => false,
 
 	/**
+	 * The amount of time a user’s elevated session will last, which is required for some sensitive actions (e.g. user group/permission assignment).
+	 *
+	 * @see http://www.php.net/manual/en/dateinterval.construct.php
+	 */
+	'elevatedSessionDuration' => 'PT5M',
+
+	/**
 	 * Whether to enable CSRF protection via hidden form inputs for all forms submitted via Craft. Defaults to false,
 	 * for now, for backwards compatibility, but will eventually default to true.
 	 *

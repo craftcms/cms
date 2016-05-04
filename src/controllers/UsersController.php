@@ -140,6 +140,35 @@ class UsersController extends BaseController
 	}
 
 	/**
+	 * Returns how many seconds are left in the current elevated user session.
+	 *
+	 * @return null
+	 */
+	public function actionGetElevatedSessionTimeout()
+	{
+		$return = array(
+			'timeout' => craft()->userSession->getElevatedSessionTimeout()
+		);
+
+		$this->returnJson($return);
+	}
+
+	/**
+	 * Starts an elevated user session.
+	 *
+	 * @return null
+	 */
+	public function actionStartElevatedSession()
+	{
+		$password = craft()->request->getPost('password');
+		$success = craft()->userSession->startElevatedSession($password);
+
+		$this->returnJson(array(
+			'success' => $success
+		));
+	}
+
+	/**
 	 * @return null
 	 */
 	public function actionLogout()
@@ -256,7 +285,7 @@ class UsersController extends BaseController
 	{
 		$this->requireAdmin();
 
-		if (!$this->_verifyExistingPassword())
+		if (!$this->_verifyElevatedSession())
 		{
 			throw new HttpException(403);
 		}
@@ -887,7 +916,7 @@ class UsersController extends BaseController
 		// require the user's current password for additional security
 		if (!$isNewUser && (!empty($newEmail) || $user->newPassword))
 		{
-			if (!$this->_verifyExistingPassword())
+			if (!$this->_verifyElevatedSession())
 			{
 				Craft::log('Tried to change the email or password for userId: '.$user->id.', but the current password does not match what the user supplied.', LogLevel::Warning);
 				$user->addError('currentPassword', Craft::t('Incorrect current password.'));
@@ -923,7 +952,18 @@ class UsersController extends BaseController
 		if ($currentUser && $currentUser->admin)
 		{
 			$user->passwordResetRequired = (bool) craft()->request->getPost('passwordResetRequired', $user->passwordResetRequired);
-			$user->admin                 = (bool) craft()->request->getPost('admin', $user->admin);
+
+			// Is their admin status changing?
+			if (($adminParam = craft()->request->getPost('admin', $user->admin)) != $user->admin)
+			{
+				// Making someone an admin requires an elevated session
+				if ($adminParam)
+				{
+					$this->requireElevatedSession();
+				}
+
+				$user->admin = $adminParam;
+			}
 		}
 
 		// If this is Craft Pro, grab any profile content from post
@@ -1598,6 +1638,16 @@ class UsersController extends BaseController
 	}
 
 	/**
+	 * Verifies that the user has an elevated session, or that their current password was submitted with the request.
+	 *
+	 * @return bool
+	 */
+	private function _verifyElevatedSession()
+	{
+		return (craft()->userSession->hasElevatedSession() || $this->_verifyExistingPassword());
+	}
+
+	/**
 	 * Verifies that the current user's password was submitted with the request.
 	 *
 	 * @return bool
@@ -1667,6 +1717,27 @@ class UsersController extends BaseController
 
 				if ($groupIds !== null)
 				{
+					if (is_array($groupIds))
+					{
+						// See if there are any new groups in here
+						$oldGroupIds = array();
+
+						foreach ($user->getGroups() as $group)
+						{
+							$oldGroupIds[] = $group->id;
+						}
+
+						foreach ($groupIds as $groupId)
+						{
+							if (!in_array($groupId, $oldGroupIds))
+							{
+								// Yep. This will require an elevated session
+								$this->requireElevatedSession();
+								break;
+							}
+						}
+					}
+
 					craft()->userGroups->assignUserToGroups($user->id, $groupIds);
 				}
 			}
@@ -1686,6 +1757,20 @@ class UsersController extends BaseController
 
 				if ($permissions !== null)
 				{
+					// See if there are any new permissions in here
+					if (is_array($permissions))
+					{
+						foreach ($permissions as $permission)
+						{
+							if (!$user->can($permission))
+							{
+								// Yep. This will require an elevated session
+								$this->requireElevatedSession();
+								break;
+							}
+						}
+					}
+
 					craft()->userPermissions->saveUserPermissions($user->id, $permissions);
 				}
 			}

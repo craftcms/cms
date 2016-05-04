@@ -121,7 +121,13 @@ class Image extends BaseImage
 			throw new Exception(Craft::t("Not enough memory available to perform this image operation."));
 		}
 
-		$extension = IOHelper::getExtension($path);
+		// Make sure the image says it's an image
+		$mimeType = FileHelper::getMimeType($path, null, false);
+
+		if ($mimeType !== null && strncmp($mimeType, 'image/', 6) !== 0)
+		{
+			throw new Exception(Craft::t('The file “{path}” does not appear to be an image.', array('path' => $path)));
+		}
 
 		try
 		{
@@ -140,8 +146,8 @@ class Image extends BaseImage
 			return craft()->images->loadImage($path);
 		}
 
-		$this->_extension = $extension;
 		$this->_imageSourcePath = $path;
+		$this->_extension = IOHelper::getExtension($path);
 
 		if ($this->_extension == 'gif')
 		{
@@ -632,7 +638,7 @@ class Image extends BaseImage
 			case 'gif':
 			{
 				$options = array('animated' => $this->_isAnimatedGif);
-				
+
 				return $options;
 			}
 

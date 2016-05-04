@@ -93,57 +93,24 @@
 
 					{% elseif account.isCurrent() or currentUser.admin or currentUser.can('changeUserEmails') %}
 
-						{% set emailInput %}
-							<table class="fullwidth inputs">
-								<tr>
-									<td>
-										{{ forms.text({
-											id: 'email',
-											name: 'email',
-											value: account.email,
-											required: true,
-											disabled: true
-										}) }}
-									</td>
-									<td class="thin">
-										<div id="emailLockBtn" class="btn lock" data-icon="secure" title="{{ 'Click to change the email address.'|t }}"></div>
-									</td>
-								</tr>
-							</table>
-
-							{{ forms.errorList(account.getErrors('email')) }}
-						{% endset %}
-
-						{{ forms.field({
+						{{ forms.textField({
 							label: "Email"|t,
 							instructions: (requireEmailVerification and not currentUser.admin ? 'New email addresses must be verified before taking effect.'|t),
 							id: 'email',
-						}, emailInput) }}
-
-						{% set newPasswordInput %}
-							<table class="fullwidth inputs">
-								<tr>
-									<td>
-										{{ forms.password({
-											id: 'newPassword',
-											name: 'newPassword',
-											disabled: true
-										}) }}
-									</td>
-									<td class="thin">
-										<div id="newPasswordLockBtn" class="btn lock" data-icon="secure" title="{{ 'Click to set a new password.'|t }}"></div>
-									</td>
-								</tr>
-							</table>
-
-							{{ forms.errorList(account.getErrors('newPassword')) }}
-						{% endset %}
+							name: 'email',
+							value: account.email,
+							required: true,
+							errors: account.getErrors('email')
+						}) }}
 
 						{% if account.isCurrent() %}
-							{{ forms.field({
+							{{ forms.textField({
 								label: "New Password"|t,
 								id: 'newPassword',
-							}, newPasswordInput) }}
+								name: 'newPassword',
+								type: 'password',
+								errors: account.getErrors('newPassword')
+							}) }}
 						{% endif %}
 
 						{% if currentUser.admin %}
@@ -220,25 +187,31 @@
 							{% set allGroups = craft.userGroups.getAllGroups() %}
 							{% set userGroups = account.getGroups('id') %}
 
-							<input type="hidden" name="groups" value="">
+							{% set userGroupsInput %}
+								<input type="hidden" name="groups" value="">
 
-							{% if allGroups %}
-								<ul>
-									{% for group in allGroups %}
-										<li>
-											{{ forms.checkbox({
-												label: group.name|t,
-												name: 'groups[]',
-												value: group.id,
-												checked: (group.id in userGroups|keys)
-											}) }}
-										</li>
-									{% endfor %}
-								</ul>
+								{% if allGroups %}
+									<ul>
+										{% for group in allGroups %}
+											<li>
+												{{ forms.checkbox({
+													label: group.name|t,
+													name: 'groups[]',
+													value: group.id,
+													checked: (group.id in userGroups|keys)
+												}) }}
+											</li>
+										{% endfor %}
+									</ul>
 
-							{% else %}
-								<p>{{ "No user groups exist yet."|t }}</p>
-							{% endif %}
+								{% else %}
+									<p>{{ "No user groups exist yet."|t }}</p>
+								{% endif %}
+							{% endset %}
+
+							{{ forms.field({
+								fieldId: 'user-groups'
+							}, userGroupsInput) }}
 
 							<hr>
 						{% endif %}
@@ -249,6 +222,7 @@
 							{{ forms.checkboxField({
 								label: '<strong>' ~ "Admin"|t ~ '</strong>',
 								name: 'admin',
+								id: 'admin',
 								checked: account.admin,
 								reverseToggle: 'permissions'
 							}) }}
@@ -346,6 +320,12 @@
 	{% else %}
 		var changeSidebarPicture = false;
 	{% endif %}
+
+	new Craft.ElevatedSessionForm('#userform', [
+		'#email',
+		'#newPassword',
+		'#admin:not(:checked)',
+		'#user-groups input[type="checkbox"]:not(:checked)',
+		'#permissions input[type="checkbox"]:not(:checked)'
+	]);
 {% endincludejs %}
-
-

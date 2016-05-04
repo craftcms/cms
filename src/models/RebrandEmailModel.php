@@ -31,6 +31,7 @@ class RebrandEmailModel extends BaseModel
 			'subject'  => AttributeType::String,
 			'body'     => AttributeType::String,
 			'htmlBody' => AttributeType::String,
+			'heading'  => AttributeType::String,
 		);
 	}
 }

@@ -1100,6 +1100,9 @@ body #redactor-modal-overlay {
 .modal.alert .body { @include padding-left(76px); }
 .modal.alert .body:before { @include icon; @include margin(-6px, 0, 0, -58px); @include floatleft; content: 'alert'; font-size: 40px; color: $lighttextcolor; }
 
+.modal.secure .body { @include padding-left(76px); }
+.modal.secure .body:before { @include icon; @include margin(-14px, 0, 0, -56px); @include floatleft; content: 'secure'; font-size: 58px; color: $lighttextcolor; }
+
 .hud { position: absolute; display: none; top: 0; }
 .hud .tip { position: absolute; z-index: 101; background: no-repeat 0 0; }
 .hud .tip-left { left: -15px; width: 15px; height: 30px; background-image: url(../images/hudtip_left.png); }
@@ -1157,12 +1160,15 @@ body #redactor-modal-overlay {
 .element-hud-form .buttons { position: relative; }
 
 
-/* logout warning/login modal */
+/* logout warning/login/elevated session modals */
 #logoutwarningmodal,
-#loginmodal { width: 500px; }
+#loginmodal,
+#elevatedsessionmodal { width: 500px; }
 
-#loginmodal .inputcontainer { position: relative; }
-#loginmodal .inputcontainer .spinner { position: absolute; top: 0; margin-top: 0; @include right(-24px); }
+#loginmodal .inputcontainer,
+#elevatedsessionmodal .inputcontainer { position: relative; }
+#loginmodal .inputcontainer .spinner,
+#elevatedsessionmodal .inputcontainer .spinner { position: absolute; top: 0; margin-top: 0; @include right(-24px); }
 
 /* delete user modal */
 .deleteusermodal .options label { display: inline-block; line-height: 30px; }

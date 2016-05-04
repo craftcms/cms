@@ -42,8 +42,22 @@ class UserSettingsController extends BaseController
 	{
 		$this->requirePostRequest();
 
-		$group = new UserGroupModel();
-		$group->id = craft()->request->getPost('groupId');
+		$groupId = craft()->request->getPost('groupId');
+
+		if ($groupId)
+		{
+			$group = craft()->userGroups->getGroupById($groupId);
+
+			if (!$group)
+			{
+				throw new Exception(Craft::t('No group exists with the ID “{id}”.', array('id' => $groupId)));
+			}
+		}
+		else
+		{
+			$group = new UserGroupModel();
+		}
+
 		$group->name = craft()->request->getPost('name');
 		$group->handle = craft()->request->getPost('handle');
 
@@ -52,6 +66,21 @@ class UserSettingsController extends BaseController
 		{
 			// Save the new permissions
 			$permissions = craft()->request->getPost('permissions', array());
+
+			// See if there are any new permissions in here
+			if ($groupId && is_array($permissions))
+			{
+				foreach ($permissions as $permission)
+				{
+					if (!$group->can($permission))
+					{
+						// Yep. This will require an elevated session
+						$this->requireElevatedSession();
+						break;
+					}
+				}
+			}
+
 			craft()->userPermissions->saveGroupPermissions($group->id, $permissions);
 
 			craft()->userSession->setNotice(Craft::t('Group saved.'));
