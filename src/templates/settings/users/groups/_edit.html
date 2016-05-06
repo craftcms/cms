@@ -73,7 +73,9 @@
 		new Craft.HandleGenerator('#name', '#handle');
 	{% endif %}
 
-	new Craft.ElevatedSessionForm('#container', [
-		'#permissions input[type="checkbox"]:not(:checked)'
-	]);
+	{% if not isNewGroup %}
+		new Craft.ElevatedSessionForm('#container', [
+			'#permissions input[type="checkbox"]:not(:checked)'
+		]);
+	{% endif %}
 {% endincludejs %}
