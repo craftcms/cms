@@ -37,7 +37,6 @@ Craft.ElevatedSessionForm = Garnish.Base.extend(
 
 	handleFormSubmit: function(ev)
 	{
-		console.log('handleFormSubmit()');
 		// Ignore if we're in the middle of getting the elevated session timeout
 		if (Craft.elevatedSessionManager.fetchingTimeout)
 		{
@@ -74,7 +73,6 @@ Craft.ElevatedSessionForm = Garnish.Base.extend(
 
 	submitForm: function()
 	{
-		console.log('submitForm()');
 		// Don't let handleFormSubmit() interrupt this time
 		this.disable();
 		this.$form.submit();
