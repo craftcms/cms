@@ -929,6 +929,9 @@ EOD;
 		}
 	}
 
+	// Protected methods
+	// =========================================================================
+
 	/**
 	 * Preps the element criteria for a given table attribute
 	 *

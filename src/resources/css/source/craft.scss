@@ -1339,7 +1339,7 @@ div.checkbox:before { display: block; position: absolute; top: 2px; @include lef
 }
 input.checkbox:disabled + label,
 div.checkbox.disabled:before,
-div.checkbox.disabled:before + label { opacity: 0.25; }
+div.checkbox.disabled + label { opacity: 0.25; }
 input.checkbox:checked + label:before,
 div.checkbox.checked:before,
 .sel div.checkbox:before,
