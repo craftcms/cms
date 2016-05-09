@@ -41,7 +41,7 @@ class RebrandController extends BaseController
 
 		if (!in_array($type, $this->_allowedTypes))
 		{
-			$this->returnErrorJson(Craft::t('That is not an accepted site image type.'));
+			$this->returnErrorJson('That is not an allowed image type.');
 		}
 
 		// Upload the file and drop it in the temporary folder
@@ -116,7 +116,7 @@ class RebrandController extends BaseController
 
 		if (!in_array($type, $this->_allowedTypes))
 		{
-			$this->returnErrorJson(Craft::t('That is not a legal site image type.'));
+			$this->returnErrorJson('That is not an allowed image type.');
 		}
 
 		try
@@ -173,7 +173,7 @@ class RebrandController extends BaseController
 
 		if (!in_array($type, $this->_allowedTypes))
 		{
-			$this->returnErrorJson(Craft::t('That is not a legal site image type.'));
+			$this->returnErrorJson('That is not an allowed image type.');
 		}
 
 		IOHelper::clearFolder(craft()->path->getRebrandPath().$type.'/');
