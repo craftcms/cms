@@ -218,7 +218,7 @@ abstract class BaseOptionsField extends Field
 
         foreach ($this->options as $option) {
             $translatedOptions[] = [
-                'label' => Craft::t('app', $option['label']),
+                'label' => Craft::t('site', $option['label']),
                 'value' => $option['value']
             ];
         }

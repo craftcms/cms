@@ -242,7 +242,7 @@ class Table extends Field
             // Translate the column headings
             foreach ($columns as &$column) {
                 if (!empty($column['heading'])) {
-                    $column['heading'] = Craft::t('app', $column['heading']);
+                    $column['heading'] = Craft::t('site', $column['heading']);
                 }
             }
 
