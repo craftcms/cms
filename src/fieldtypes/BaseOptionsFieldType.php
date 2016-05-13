@@ -171,7 +171,7 @@ abstract class BaseOptionsFieldType extends BaseFieldType implements IPreviewabl
 				// Make sure that each of the values are on the list
 				foreach ($value as $val)
 				{
-					if (!in_array($val, $acceptableValues))
+					if ($val !== '' && !in_array($val, $acceptableValues))
 					{
 						$valid = false;
 						break;
