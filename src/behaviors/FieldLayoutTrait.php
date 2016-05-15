@@ -9,6 +9,7 @@ namespace craft\app\behaviors;
 
 use craft\app\base\Element;
 use craft\app\base\ElementInterface;
+use craft\app\models\FieldLayout;
 
 /**
  * Field layout trait
