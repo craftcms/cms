@@ -196,7 +196,7 @@ class SystemSettingsController extends BaseController
 			}
 			catch (\Exception $e)
 			{
-				Craft::log($e->getMessage(), LogLevel::Error, false, 'emailSettingsTest');
+				craft()->errorHandler->logException(new EmailTestException($e->getMessage(), $e->getCode(), $e));
 			}
 		}
 
