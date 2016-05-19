@@ -97,7 +97,7 @@ class ErrorHandler extends \CErrorHandler
 		}
 
 		$message .= "\n---";
-		Craft::log($message, \CLogger::LEVEL_ERROR, $category);
+		Craft::log($message, \CLogger::LEVEL_ERROR, false, $category);
 	}
 
 	// Protected Methods
