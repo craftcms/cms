@@ -334,9 +334,9 @@ class EmailService extends BaseApplicationComponent
 				}
 
 				default:
-					{
+				{
 					$email->isMail();
-					}
+				}
 			}
 
 			if (!$this->_processTestToEmail($email, 'Address'))

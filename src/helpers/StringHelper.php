@@ -398,7 +398,7 @@ class StringHelper
 	}
 
 	/**
-	 * Runs a string through Markdown, but remoes any paragraph tags that get removed
+	 * Runs a string through Markdown, but removes any paragraph tags that get removed
 	 *
 	 * @param string $str
 	 *

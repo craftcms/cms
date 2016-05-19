@@ -160,7 +160,7 @@ class CraftVariable
 	}
 
 	/**
-	 * @return ElementsVariable
+	 * @return ElementIndexesVariable
 	 */
 	public function elementIndexes()
 	{

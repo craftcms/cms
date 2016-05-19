@@ -758,7 +758,7 @@ class AppBehavior extends BaseBehavior
 						}
 					}
 
-					// Is there a default CP languge?
+					// Is there a default CP language?
 					if ($defaultCpLanguage = craft()->config->get('defaultCpLanguage'))
 					{
 						// Make sure it's one of the site locales

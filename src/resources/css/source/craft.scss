@@ -608,8 +608,7 @@ $elementThumbPadding: 30 + $elementInnerSpacing;
 	outline: none !important;
 	@include user-select(none);
 
-	&.sel,
-	.sel & {
+	&.sel {
 		border-radius: $elementBorderRadius;
 		background: $lightselcolor;
 		cursor: default;

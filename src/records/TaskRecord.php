@@ -85,7 +85,7 @@ class TaskRecord extends BaseRecord
 			'status'        => array(AttributeType::Enum,      'values' => array(TaskStatus::Pending, TaskStatus::Error, TaskStatus::Running)),
 			'type'          => array(AttributeType::ClassName, 'required' => true),
 			'description'   => AttributeType::String,
-			'settings'      => AttributeType::Mixed,
+			'settings'      => array(AttributeType::Mixed, 'column' => ColumnType::MediumText),
 		);
 	}
 }

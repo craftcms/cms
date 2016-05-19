@@ -41,7 +41,7 @@ class DeprecatedTag_TokenParser extends \Twig_TokenParser
 	 *
 	 * @param \Twig_Token $token
 	 *
-	 * @return DeprecatedTag_Node
+	 * @return \Twig_Node
 	 */
 	public function parse(\Twig_Token $token)
 	{
