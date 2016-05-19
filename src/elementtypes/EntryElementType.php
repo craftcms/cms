@@ -815,7 +815,7 @@ class EntryElementType extends BaseElementType
 
 				foreach ($entryTypes as $entryType)
 				{
-					$entryTypeOptions[] = array('label' => Craft::t($entryType->name), 'value' => Craft::t($entryType->id));
+					$entryTypeOptions[] = array('label' => Craft::t($entryType->name), 'value' => $entryType->id);
 				}
 
 				$html .= craft()->templates->renderMacro('_includes/forms', 'selectField', array(
