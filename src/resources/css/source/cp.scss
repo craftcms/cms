@@ -129,6 +129,11 @@ body.mobile #container {
     body.rtl:not(.showing-nav) #global-sidebar { @include transform(translate(220px,0)); }
 }
 
+@media print
+{
+    #global-sidebar { display: none; }
+}
+
 #tasks-hud { padding: 0; overflow: auto; }
 #tasks-hud .task { @include padding(14px, 138px, 14px, 24px); overflow: hidden; }
 #tasks-hud .task:after { @include clearafter; }
