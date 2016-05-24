@@ -477,17 +477,12 @@ class UrlHelper
 					if ($name == '#')
 					{
 						$anchor = '#'.$value;
+						break;
 					}
-					else if ($value !== null && $value !== '')
-					{
-						$params[] = $name.'='.$value;
-					}
-
-					unset($params[$name]);
 				}
 			}
 
-			$params = implode('&', array_filter($params));
+			$params = http_build_query($params);
 		}
 		else
 		{
