@@ -77,7 +77,7 @@
 			},
 			setCaretOnHide: function(html)
 			{
-				this.source.start = this.source.$textarea.get(0).selectionStart;
+			    this.source.start = this.source.$textarea.get(0).selectionStart;
 				this.source.end = this.source.$textarea.get(0).selectionEnd;
 
 				// if selection starts from end
@@ -102,6 +102,7 @@
 					html = html.substr(0, this.source.end + markerLength) + this.marker.html(2) + html.substr(this.source.end + markerLength);
 				}
 
+
 				return html;
 
 			},
@@ -119,7 +120,7 @@
 				this.button.enableAll();
 				this.core.editor().show().focus();
 				this.selection.restore();
-				this.code.sync();
+				//this.code.sync();
 			},
 			show: function()
 			{
