@@ -986,6 +986,13 @@ class FieldsService extends BaseApplicationComponent
 
 		if (is_array($layoutId))
 		{
+			$layoutId = array_filter($layoutId);
+
+			if (empty($layoutId))
+			{
+				return false;
+			}
+
 			$affectedRows = craft()->db->createCommand()->delete('fieldlayouts', array('in', 'id', $layoutId));
 		}
 		else
