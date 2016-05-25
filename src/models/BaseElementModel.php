@@ -483,6 +483,12 @@ abstract class BaseElementModel extends BaseModel
 	 */
 	public function getDescendants($dist = null)
 	{
+		// Eager-loaded?
+		if ($this->hasEagerLoadedElements('descendants'))
+		{
+			return $this->getEagerLoadedElements('descendants');
+		}
+
 		if (!isset($this->_descendantsCriteria))
 		{
 			$this->_descendantsCriteria = craft()->elements->getCriteria($this->elementType);
@@ -510,6 +516,12 @@ abstract class BaseElementModel extends BaseModel
 	 */
 	public function getChildren($field = null)
 	{
+		// Eager-loaded?
+		if ($this->hasEagerLoadedElements('children'))
+		{
+			return $this->getEagerLoadedElements('children');
+		}
+
 		// TODO: deprecated
 		// Maintain support for the deprecated relationship-focussed getChildren() function for the element types that
 		// were around before Craft 1.3

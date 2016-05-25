@@ -526,6 +526,70 @@ abstract class BaseElementType extends BaseComponentType implements IElementType
 	 */
 	public function getEagerLoadingMap($sourceElements, $handle)
 	{
+		// Eager-loading descendants or direct children?
+		if ($handle == 'descendants' || $handle == 'children')
+		{
+			// Get the source element IDs
+			$sourceElementIds = array();
+
+			foreach ($sourceElements as $sourceElement)
+			{
+				$sourceElementIds[] = $sourceElement->id;
+			}
+
+			// Get the structure data for these elements
+			// @todo: case sql is MySQL-specific
+			$selectSql = 'structureId, elementId, lft, rgt';
+
+			if ($handle == 'children')
+			{
+				$selectSql .= ', level';
+			}
+
+			$structureData = craft()->db->createCommand()
+				->select($selectSql)
+				->from('structureelements')
+				->where(array('in', 'elementId', $sourceElementIds))
+				->queryAll();
+
+			$conditions = array('or');
+			$params = array();
+			$sourceSelectSql = '(CASE';
+
+			foreach ($structureData as $i => $elementStructureData)
+			{
+				$thisElementConditions = array('and', 'structureId=:structureId'.$i, 'lft>:lft'.$i, 'rgt<:rgt'.$i);
+
+				if ($handle == 'children')
+				{
+					$thisElementConditions[] = 'level=:level'.$i;
+					$params[':level'.$i] = $elementStructureData['level'] + 1;
+				}
+
+				$conditions[] = $thisElementConditions;
+				$sourceSelectSql .= " WHEN structureId=:structureId{$i} AND lft>:lft{$i} AND rgt<:rgt{$i} THEN :sourceId{$i}";
+				$params[':structureId'.$i] = $elementStructureData['structureId'];
+				$params[':lft'.$i] = $elementStructureData['lft'];
+				$params[':rgt'.$i] = $elementStructureData['rgt'];
+				$params[':sourceId'.$i] = $elementStructureData['elementId'];
+			}
+
+			$sourceSelectSql .= ' END) as source';
+
+			// Return any child elements
+			$map = craft()->db->createCommand()
+				->select($sourceSelectSql.', elementId as target')
+				->from('structureelements')
+				->where($conditions, $params)
+				->order('structureId, lft')
+				->queryAll();
+
+			return array(
+				'elementType' => $this->getClassHandle(),
+				'map' => $map
+			);
+		}
+
 		// Is $handle a custom field handle?
 		// (Leave it up to the extended class to set the field context, if it shouldn't be 'global')
 		$field = craft()->fields->getFieldByHandle($handle);
