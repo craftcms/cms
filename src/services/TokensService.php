@@ -128,9 +128,8 @@ class TokensService extends BaseApplicationComponent
 	 */
 	public function incrementTokenUsageCountById($tokenId)
 	{
-		// TODO: MySQL Specific
 		$affectedRows = craft()->db->createCommand()->update('tokens', array(
-				'usageCount' => new \CDbExpression('IF(usageCount IS NULL, 1, usageCount + 1)')
+				'usageCount' => new \CDbExpression('usageCount + 1')
 			),
 			array(
 				'id' => $tokenId
