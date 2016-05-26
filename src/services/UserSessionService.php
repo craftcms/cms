@@ -1590,7 +1590,15 @@ class UserSessionService extends \CWebUser
 
 				if (!$impersonate)
 				{
-					$query->andWhere('suspended=0 AND archived=0 AND locked=0');
+					// @todo Remove after next breakpoint release. 2615 is the first 2.3 release.
+					if (craft()->getBuild() < 2615)
+					{
+						$query->andWhere(array('or', 'status="active"', 'status="pending"'));
+					}
+					else
+					{
+						$query->andWhere(array('and', 'suspended=0', 'archived=0', 'locked=0'));
+					}
 				}
 
 				$userRow = $query->queryRow();

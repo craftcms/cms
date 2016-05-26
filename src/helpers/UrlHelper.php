@@ -470,24 +470,14 @@ class UrlHelper
 	{
 		if (is_array($params))
 		{
-			foreach ($params as $name => $value)
+			// See if there's an anchor
+			if (isset($params['#']))
 			{
-				if (!is_numeric($name))
-				{
-					if ($name == '#')
-					{
-						$anchor = '#'.$value;
-					}
-					else if ($value !== null && $value !== '')
-					{
-						$params[] = $name.'='.$value;
-					}
-
-					unset($params[$name]);
-				}
+				$anchor = '#'.$params['#'];
+				unset($params['#']);
 			}
 
-			$params = implode('&', array_filter($params));
+			$params = http_build_query($params);
 		}
 		else
 		{
