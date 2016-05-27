@@ -551,17 +551,21 @@ class ElementsService extends BaseApplicationComponent
 
 		if ($query)
 		{
-			// Remove the order, offset, limit, and any additional tables in the FROM clause
+			// Get the GROUP BY query part
+			$groupBy = $query->getGroup();
+
+			// Remove the order, group by, offset, limit, and any additional tables in the FROM clause
 			$query
 				->order('')
+				->group('')
 				->offset(0)
 				->limit(-1)
 				->from('elements elements');
 
-			// Can't use COUNT() here because of complications with the GROUP BY clause.
-			$rows = $query->queryColumn();
+			// Count the number of distinct columns based on the GROUP BY
+			$count = $query->count(sprintf('DISTINCT(%s)', $groupBy));
 
-			return count($rows);
+			return $count;
 		}
 		else
 		{
