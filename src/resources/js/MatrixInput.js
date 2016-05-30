@@ -189,11 +189,31 @@ Craft.MatrixInput = Garnish.Base.extend(
 		{
 			this.$addBlockBtnGroup.removeClass('disabled');
 			this.$addBlockMenuBtn.removeClass('disabled');
+
+			for (var i = 0; i < this.blockSelect.$items.length; i++)
+			{
+				var block = this.blockSelect.$items.eq(i).data('block');
+
+				if (block)
+				{
+					block.$actionMenu.find('a[data-action=add]').parent().removeClass('disabled');
+				}
+			}
 		}
 		else
 		{
 			this.$addBlockBtnGroup.addClass('disabled');
 			this.$addBlockMenuBtn.addClass('disabled');
+
+			for (var i = 0; i < this.blockSelect.$items.length; i++)
+			{
+				var block = this.blockSelect.$items.eq(i).data('block');
+
+				if (block)
+				{
+					block.$actionMenu.find('a[data-action=add]').parent().addClass('disabled');
+				}
+			}
 		}
 	},
 
