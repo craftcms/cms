@@ -131,7 +131,7 @@ body.mobile #container {
 
 @media print
 {
-    #global-sidebar { display: none; }
+	#container { @include padding-left(220px); }
 }
 
 #tasks-hud { padding: 0; overflow: auto; }
