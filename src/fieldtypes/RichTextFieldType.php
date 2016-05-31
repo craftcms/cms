@@ -230,7 +230,23 @@ class RichTextFieldType extends BaseFieldType
 		// Find any element URLs and swap them with ref tags
 		$value = preg_replace_callback('/(href=|src=)([\'"])[^\'"#]+?(#[^\'"#]+)?(?:#|%23)(\w+):(\d+)(:'.HandleValidator::$handlePattern.')?\2/', function($matches)
 		{
-			return $matches[1].$matches[2].'{'.$matches[4].':'.$matches[5].(!empty($matches[6]) ? $matches[6] : ':url').'}'.(!empty($matches[3]) ? $matches[3] : '').$matches[2];
+			$refTag = '{'.$matches[4].':'.$matches[5].(!empty($matches[6]) ? $matches[6] : ':url').'}';
+			$hash = (!empty($matches[3]) ? $matches[3] : '');
+
+			if ($hash)
+			{
+				// Make sure that the hash isn't actually part of the parsed URL
+				// (someone's Entry URL Format could be "#{slug}", etc.)
+				$url = craft()->elements->parseRefs($refTag);
+
+				if (mb_strpos($url, $hash) !== false)
+				{
+					$hash = '';
+				}
+			}
+
+
+			return $matches[1].$matches[2].$refTag.$hash.$matches[2];
 		}, $value);
 
 		// Encode any 4-byte UTF-8 characters.
