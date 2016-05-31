@@ -292,9 +292,20 @@ class CraftTwigExtension extends \Twig_Extension
 		{
 			foreach ($words[0] as $word)
 			{
+				$originalWord = $word;
+
+				if ($word === 'May')
+				{
+					if (strpos($format, 'F') !== false)
+					{
+						$word = 'May-W';
+					}
+				}
+
 				// Translate and swap out.
 				$translatedWord = Craft::t($word);
-				$value = str_replace($word, $translatedWord, $value);
+
+				$value = str_replace($originalWord, $translatedWord, $value);
 			}
 		}
 
