@@ -50,6 +50,7 @@ class DownloadFileElementAction extends BaseElementAction
 			
 			form.appendTo('body');
 			form.submit();
+			form.remove();
 		}
 	});
 })();
