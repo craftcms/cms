@@ -48,6 +48,12 @@ return array(
 	'allowedFileExtensions' => '7z,aiff,asf,avi,bmp,csv,doc,docx,fla,flv,gif,gz,gzip,htm,html,jpeg,jpg,js,mid,mov,mp3,mp4,m4a,m4v,mpc,mpeg,mpg,ods,odt,ogg,ogv,pdf,png,potx,pps,ppsm,ppsx,ppt,pptm,pptx,ppz,pxd,qt,ram,rar,rm,rmi,rmvb,rtf,sdc,sitd,svg,swf,sxc,sxw,tar,tgz,tif,tiff,txt,vob,vsd,wav,webm,wma,wmv,xls,xlsx,zip',
 
 	/**
+	 * If this is set to true, then a tag name of "Proteines" will also match a tag name of "Protéines". Otherwise,
+	 * they are treated as the same tag. Note that this 
+	 */
+	'allowSimilarTags' => false,
+
+	/**
 	 * Whether or not to allow uppercase letters in the slug. Defaults to false.
 	 */
 	'allowUppercaseInSlug' => false,

@@ -336,12 +336,13 @@ class StringHelper
 	/**
 	 * Normalizes search keywords.
 	 *
-	 * @param string $str    The dirty keywords.
-	 * @param array  $ignore Ignore words to strip out.
+	 * @param string $str            The dirty keywords.
+	 * @param array  $ignore         Ignore words to strip out.
+	 * @param bool   $processCharMap
 	 *
 	 * @return string The cleansed keywords.
 	 */
-	public static function normalizeKeywords($str, $ignore = array())
+	public static function normalizeKeywords($str, $ignore = array(), $processCharMap = true)
 	{
 		// Flatten
 		if (is_array($str)) $str = static::arrayToString($str, ' ');
@@ -355,8 +356,11 @@ class StringHelper
 		// Get rid of entities
 		$str = preg_replace("/&#?[a-z0-9]{2,8};/i", "", $str);
 
-		// Remove punctuation and diacritics
-		$str = strtr($str, static::_getCharMap());
+		if ($processCharMap)
+		{
+			// Remove punctuation and diacritics
+			$str = strtr($str, static::_getCharMap());
+		}
 
 		// Normalize to lowercase
 		$str = StringHelper::toLowerCase($str);
