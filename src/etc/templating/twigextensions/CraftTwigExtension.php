@@ -551,7 +551,10 @@ class CraftTwigExtension extends \Twig_Extension
 			$globals['logoutUrl'] = UrlHelper::getUrl(craft()->config->getLogoutPath());
 			$globals['isInstalled'] = $isInstalled;
 
-			$globals['currentUser'] = craft()->userSession->getUser();
+			if ($isInstalled)
+			{
+				$globals['currentUser'] = craft()->userSession->getUser();
+			}
 
 			// Keep 'user' around so long as it's not hurting anyone.
 			// Technically deprecated, though.
