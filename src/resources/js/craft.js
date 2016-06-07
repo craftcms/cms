@@ -1196,12 +1196,13 @@ $.extend(Craft,
 	 * Shows an element editor HUD.
 	 *
 	 * @param object $element
+	 * @param object settings
 	 */
-	showElementEditor: function($element)
+	showElementEditor: function($element, settings)
 	{
 		if (Garnish.hasAttr($element, 'data-editable') && !$element.hasClass('disabled') && !$element.hasClass('loading'))
 		{
-			new Craft.ElementEditor($element);
+			return new Craft.ElementEditor($element, settings);
 		}
 	}
 });

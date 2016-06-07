@@ -126,6 +126,8 @@ Craft.ElementEditor = Garnish.Base.extend(
 
 			this.updateForm(response);
 
+			this.onCreateForm(this.$form);
+
 			var $footer = $('<div class="footer"/>').appendTo(this.$form),
 				$buttonsContainer = $('<div class="buttons right"/>').appendTo($footer);
 			this.$cancelBtn = $('<div class="btn">'+Craft.t('Cancel')+'</div>').appendTo($buttonsContainer);
@@ -227,6 +229,19 @@ Craft.ElementEditor = Garnish.Base.extend(
 
 	saveElement: function()
 	{
+		var validators = this.settings.validators;
+
+		if ($.isArray(validators))
+		{
+			for (var i = 0; i < validators.length; i++)
+			{
+				if ($.isFunction(validators[i]) && !validators[i].call())
+				{
+					return false;
+				}
+			}
+		}
+
 		this.$spinner.removeClass('hidden');
 
 		var data = $.param(this.getBaseData())+'&'+this.hud.$body.serialize();
@@ -323,6 +338,11 @@ Craft.ElementEditor = Garnish.Base.extend(
 			response: response
 		});
 	},
+
+	onCreateForm: function ($form)
+	{
+		this.settings.onCreateForm($form);
+	}
 },
 {
 	defaults: {
@@ -338,6 +358,9 @@ Craft.ElementEditor = Garnish.Base.extend(
 		onHideHud: $.noop,
 		onBeginLoading: $.noop,
 		onEndLoading: $.noop,
-		onSaveElement: $.noop
+		onCreateForm: $.noop,
+		onSaveElement: $.noop,
+
+		validators: []
 	}
 });
