@@ -41,12 +41,16 @@ class DownloadFileElementAction extends BaseElementAction
 		batch: false,
 		activate: function(\$selectedItems)
 		{
-			$('<form method="post" target="_blank" action="">' +
+			var form = $('<form method="post" target="_blank" action="">' +
 			'<input type="hidden" name="action" value="assets/downloadAsset" />' +
 			'<input type="hidden" name="assetId" value="' + \$selectedItems.data('id') + '" />' +
 			'<input type="hidden" name="{csrfName}" value="{csrfValue}" />' +
-			'</form>').submit();
-
+			'<input type="submit" value="Submit" />' +
+			'</form>');
+			
+			form.appendTo('body');
+			form.submit();
+			form.remove();
 		}
 	});
 })();

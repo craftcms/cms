@@ -162,7 +162,7 @@ class ConsoleApp extends \CConsoleApplication
 
 		list($componentId, $eventName) = explode('.', $event, 2);
 
-		$component = $this->getComponent($componentId);
+		$component = $this->getComponent($componentId, false);
 
 		// Normalize the event name
 		if (strncmp($eventName, 'on', 2) !== 0)
@@ -170,7 +170,14 @@ class ConsoleApp extends \CConsoleApplication
 			$eventName = 'on'.ucfirst($eventName);
 		}
 
-		$component->$eventName = $handler;
+		if ($component)
+		{
+			$component->$eventName = $handler;
+		}
+		else
+		{
+			$this->_pendingEvents[$componentId][$eventName][] = $handler;
+		}
 	}
 
 	/**

@@ -133,7 +133,7 @@
 
 		<div class="topbar">
 
-			<a class="site-name" href="{{ siteUrl }}" title="{{ 'Site Homepage'|t }}" target="_blank">
+			<a class="site-name{% if CraftEdition >= CraftClient and craft.rebrand.isIconUploaded %} has-icon{% endif %}" href="{{ siteUrl }}" title="{{ 'Site Homepage'|t }}" target="_blank">
 
 				{% if CraftEdition >= CraftClient %}
 					{% if craft.rebrand.isIconUploaded %}

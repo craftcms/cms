@@ -281,7 +281,7 @@ abstract class BaseController extends \CController
 
 		if ($object)
 		{
-			$url = craft()->templates->renderObjectTemplate($url, $object);
+			$url = craft()->templates->renderObjectTemplate($url, $object, true);
 		}
 
 		$this->redirect($url);

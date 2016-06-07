@@ -166,7 +166,7 @@ class PhpMessageSource extends \CPhpMessageSource
 	 */
 	private function _processFrameworkData($localeId)
 	{
-		$wideMonthKeys = array('January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December');
+		$wideMonthKeys = array('January', 'February', 'March', 'April', 'May-W', 'June', 'July', 'August', 'September', 'October', 'November', 'December');
 		$abbreviatedMonthKeys = array('Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec');
 		$wideWeekdayNameKeys = array('Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday');
 		$abbreviatedWeekdayNameKeys = array('Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat');

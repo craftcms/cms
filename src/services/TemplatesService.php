@@ -153,7 +153,7 @@ class TemplatesService extends BaseApplicationComponent
 	 *
 	 * @return TwigEnvironment The Twig Environment instance.
 	 */
-	public function getTwig($loaderClass = null)
+	public function getTwig($loaderClass = null, $options = array())
 	{
 		if (!$loaderClass)
 		{
@@ -163,12 +163,12 @@ class TemplatesService extends BaseApplicationComponent
 		if (!isset($this->_twigs[$loaderClass]))
 		{
 			$loader = new $loaderClass();
-			$options = $this->_getTwigOptions();
+			$options = array_merge($this->_getTwigOptions(), $options);
 
 			$twig = new TwigEnvironment($loader, $options);
 
 			$twig->addExtension(new \Twig_Extension_StringLoader());
-			$twig->addExtension(new CraftTwigExtension());
+			$twig->addExtension(new CraftTwigExtension($twig));
 
 			if (craft()->config->get('devMode'))
 			{
@@ -297,10 +297,12 @@ class TemplatesService extends BaseApplicationComponent
 	 *
 	 * @param string $template The source template string.
 	 * @param mixed  $object   The object that should be passed into the template.
+	 * @param bool   $safeMode Whether to limit what's available to in the Twig context
+	 *                         in the interest of security.
 	 *
 	 * @return string The rendered template.
 	 */
-	public function renderObjectTemplate($template, $object)
+	public function renderObjectTemplate($template, $object, $safeMode = false)
 	{
 		// If there are no dynamic tags, just return the template
 		if (strpos($template, '{') === false)
@@ -309,7 +311,8 @@ class TemplatesService extends BaseApplicationComponent
 		}
 
 		// Get a Twig instance with the String template loader
-		$twig = $this->getTwig('Twig_Loader_String');
+		$twig = $this->getTwig('Twig_Loader_String', array('safe_mode' => $safeMode));
+
 
 		// Have we already parsed this template?
 		if (!isset($this->_objectTemplates[$template]))

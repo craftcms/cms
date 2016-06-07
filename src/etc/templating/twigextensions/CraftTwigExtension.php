@@ -13,8 +13,23 @@ namespace Craft;
  */
 class CraftTwigExtension extends \Twig_Extension
 {
+	/**
+	 * @var TwigEnvironment
+	 */
+	protected $environment;
+
 	// Public Methods
 	// =========================================================================
+
+	/**
+	 * CraftTwigExtension constructor.
+	 *
+	 * @param TwigEnvironment $environment
+	 */
+	public function __construct(TwigEnvironment $environment)
+	{
+		$this->environment = $environment;
+	}
 
 	/**
 	 * Returns the token parser instances to add to the existing list.
@@ -23,38 +38,47 @@ class CraftTwigExtension extends \Twig_Extension
 	 */
 	public function getTokenParsers()
 	{
-		return array(
-			new Cache_TokenParser(),
-			new Exit_TokenParser(),
-			new Header_TokenParser(),
-			new Hook_TokenParser(),
-			new IncludeResource_TokenParser('includeCss', true),
-			new IncludeResource_TokenParser('includecss', true),
-			new IncludeResource_TokenParser('includeCssFile'),
-			new IncludeResource_TokenParser('includecssfile'),
-			new IncludeResource_TokenParser('includeCssResource'),
-			new IncludeResource_TokenParser('includecssresource'),
-			new IncludeResource_TokenParser('includeHiResCss', true),
-			new IncludeResource_TokenParser('includehirescss', true),
-			new IncludeResource_TokenParser('includeJs', true),
-			new IncludeResource_TokenParser('includejs', true),
-			new IncludeResource_TokenParser('includeJsFile'),
-			new IncludeResource_TokenParser('includejsfile'),
-			new IncludeResource_TokenParser('includeJsResource'),
-			new IncludeResource_TokenParser('includejsresource'),
-			new IncludeTranslations_TokenParser(),
-			new Namespace_TokenParser(),
-			new Nav_TokenParser(),
-			new Paginate_TokenParser(),
-			new Redirect_TokenParser(),
-			new RequireAdmin_TokenParser(),
-			new RequireEdition_TokenParser(),
-			new RequireLogin_TokenParser(),
-			new RequirePermission_TokenParser(),
+		$tokenParsers = array(
 			new Switch_TokenParser(),
-
-			new DeprecatedTag_TokenParser('endpaginate'),
 		);
+
+		if (!$this->environment->isSafeMode())
+		{
+			$tokenParsers = array_merge($tokenParsers, array(
+				new Cache_TokenParser(),
+				new Exit_TokenParser(),
+				new Header_TokenParser(),
+				new Hook_TokenParser(),
+				new IncludeResource_TokenParser('includeCss', true),
+				new IncludeResource_TokenParser('includecss', true),
+				new IncludeResource_TokenParser('includeCssFile'),
+				new IncludeResource_TokenParser('includecssfile'),
+				new IncludeResource_TokenParser('includeCssResource'),
+				new IncludeResource_TokenParser('includecssresource'),
+				new IncludeResource_TokenParser('includeHiResCss', true),
+				new IncludeResource_TokenParser('includehirescss', true),
+				new IncludeResource_TokenParser('includeJs', true),
+				new IncludeResource_TokenParser('includejs', true),
+				new IncludeResource_TokenParser('includeJsFile'),
+				new IncludeResource_TokenParser('includejsfile'),
+				new IncludeResource_TokenParser('includeJsResource'),
+				new IncludeResource_TokenParser('includejsresource'),
+				new IncludeTranslations_TokenParser(),
+				new Namespace_TokenParser(),
+				new Nav_TokenParser(),
+				new Paginate_TokenParser(),
+				new Redirect_TokenParser(),
+				new RequireAdmin_TokenParser(),
+				new RequireEdition_TokenParser(),
+				new RequireLogin_TokenParser(),
+				new RequirePermission_TokenParser(),
+				new Switch_TokenParser(),
+
+				new DeprecatedTag_TokenParser('endpaginate'),
+			));
+		}
+
+		return $tokenParsers;
 	}
 
 	/**
@@ -292,9 +316,20 @@ class CraftTwigExtension extends \Twig_Extension
 		{
 			foreach ($words[0] as $word)
 			{
+				$originalWord = $word;
+
+				if ($word === 'May')
+				{
+					if (strpos($format, 'F') !== false)
+					{
+						$word = 'May-W';
+					}
+				}
+
 				// Translate and swap out.
 				$translatedWord = Craft::t($word);
-				$value = str_replace($word, $translatedWord, $value);
+
+				$value = str_replace($originalWord, $translatedWord, $value);
 			}
 		}
 
@@ -316,10 +351,11 @@ class CraftTwigExtension extends \Twig_Extension
 		$groups = array();
 
 		$template = '{'.$item.'}';
+		$safeMode = $this->environment->isSafeMode();
 
 		foreach ($arr as $key => $object)
 		{
-			$value = craft()->templates->renderObjectTemplate($template, $object);
+			$value = craft()->templates->renderObjectTemplate($template, $object, $safeMode);
 			$groups[$value][] = $object;
 		}
 
@@ -412,7 +448,7 @@ class CraftTwigExtension extends \Twig_Extension
 			'getTranslations'      => new \Twig_Function_Function('\Craft\craft()->templates->getTranslations'),
 			'max'                  => new \Twig_Function_Function('max'),
 			'min'                  => new \Twig_Function_Function('min'),
-			'renderObjectTemplate' => new \Twig_Function_Function('\Craft\craft()->templates->renderObjectTemplate'),
+			'renderObjectTemplate' => new \Twig_Function_Method($this, 'renderObjectTemplate'),
 			'round'                => new \Twig_Function_Function('round'),
 			'resourceUrl'          => new \Twig_Function_Function('\Craft\UrlHelper::getResourceUrl'),
 			'shuffle'              => new \Twig_Function_Method($this, 'shuffleFunction'),
@@ -455,6 +491,18 @@ class CraftTwigExtension extends \Twig_Extension
 	}
 
 	/**
+	 * @param $template
+	 * @param $object
+	 *
+	 * @return string
+	 */
+	public function renderObjectTemplate($template, $object)
+	{
+		$safeMode = $this->environment->isSafeMode();
+		return craft()->templates->renderObjectTemplate($template, $object, $safeMode);
+	}
+
+	/**
 	 * Shuffles an array.
 	 *
 	 * @param mixed $arr
@@ -484,26 +532,46 @@ class CraftTwigExtension extends \Twig_Extension
 	 */
 	public function getGlobals()
 	{
-		// Keep the 'blx' variable around for now
-		$craftVariable = new CraftVariable();
-		$globals['craft'] = $craftVariable;
-		$globals['blx']   = $craftVariable;
+		$safeMode = $this->environment->isSafeMode();
+		$isInstalled = craft()->isInstalled();
 
-		$globals['now'] = new DateTime(null, new \DateTimeZone(craft()->getTimeZone()));
-		$globals['loginUrl'] = UrlHelper::getUrl(craft()->config->getLoginPath());
-		$globals['logoutUrl'] = UrlHelper::getUrl(craft()->config->getLogoutPath());
-		$globals['isInstalled'] = craft()->isInstalled();
+		$globals = array(
+			'user' => null,
+			'currentUser' => null,
+		);
 
-		if ($globals['isInstalled'] && !craft()->updates->isCraftDbMigrationNeeded())
+		if (!$safeMode)
 		{
-			$globals['siteName'] = craft()->getSiteName();
-			$globals['siteUrl'] = craft()->getSiteUrl();
+			// Keep the 'blx' variable around for now
+			$craftVariable = new CraftVariable();
+			$globals['craft'] = $craftVariable;
+			$globals['blx'] = $craftVariable;
+
+			$globals['loginUrl'] = UrlHelper::getUrl(craft()->config->getLoginPath());
+			$globals['logoutUrl'] = UrlHelper::getUrl(craft()->config->getLogoutPath());
+			$globals['isInstalled'] = $isInstalled;
 
 			$globals['currentUser'] = craft()->userSession->getUser();
 
 			// Keep 'user' around so long as it's not hurting anyone.
 			// Technically deprecated, though.
 			$globals['user'] = $globals['currentUser'];
+
+			if (craft()->request->isCpRequest())
+			{
+				$globals['CraftEdition']  = craft()->getEdition();
+				$globals['CraftPersonal'] = Craft::Personal;
+				$globals['CraftClient']   = Craft::Client;
+				$globals['CraftPro']      = Craft::Pro;
+			}
+		}
+
+		$globals['now'] = new DateTime(null, new \DateTimeZone(craft()->getTimeZone()));
+
+		if ($isInstalled && !craft()->updates->isCraftDbMigrationNeeded())
+		{
+			$globals['siteName'] = craft()->getSiteName();
+			$globals['siteUrl'] = craft()->getSiteUrl();
 
 			if (craft()->request->isSiteRequest())
 			{
@@ -517,15 +585,6 @@ class CraftTwigExtension extends \Twig_Extension
 		{
 			$globals['siteName'] = null;
 			$globals['siteUrl'] = null;
-			$globals['user'] = null;
-		}
-
-		if (craft()->request->isCpRequest())
-		{
-			$globals['CraftEdition']  = craft()->getEdition();
-			$globals['CraftPersonal'] = Craft::Personal;
-			$globals['CraftClient']   = Craft::Client;
-			$globals['CraftPro']      = Craft::Pro;
 		}
 
 		return $globals;
