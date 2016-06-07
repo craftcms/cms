@@ -54,7 +54,7 @@ class FieldLayoutModel extends BaseModel
 	/**
 	 * Returns the layout’s fields.
 	 *
-	 * @return FieldModel[] The layout’s fields.
+	 * @return FieldLayoutFieldModel[] The layout’s fields.
 	 */
 	public function getFields()
 	{
