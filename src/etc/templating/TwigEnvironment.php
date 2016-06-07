@@ -13,8 +13,46 @@ namespace Craft;
  */
 class TwigEnvironment extends \Twig_Environment
 {
+	/**
+	 * @var
+	 */
+	protected $safeMode;
+
 	// Public Methods
 	// =========================================================================
+
+	/**
+	 * TwigEnvironment constructor.
+	 *
+	 * @param Twig_LoaderInterface $loader
+	 * @param array                $options\
+	 */
+	public function __construct(\Twig_LoaderInterface $loader, array $options)
+	{
+		$options = array_merge(array(
+			'safe_mode' => false,
+		), $options);
+
+		$this->safeMode = $options['safe_mode'];
+
+		parent::__construct($loader, $options);
+	}
+
+	/**
+	 * @return mixed
+	 */
+	public function isSafeMode()
+	{
+		return $this->safeMode;
+	}
+
+	/**
+	 * @param $safeMode
+	 */
+	public function setSafeMode($safeMode)
+	{
+		$this->safeMode = $safeMode;
+	}
 
 	public function loadTemplate($name, $index = null)
 	{
