@@ -419,6 +419,11 @@ class AssetSourcesService extends BaseApplicationComponent
 		$settingsValidate = $sourceType->getSettings()->validate();
 		$sourceErrors = $sourceType->getSourceErrors();
 
+		if ($processedSettings['publicURLs'] && !$processedSettings['url'])
+		{
+			$settingsValidate = false;
+			$source->addSettingErrors(array('url' => Craft::t('URL can be left blank only for private Asset sources.')));
+		}
 
 		if ($recordValidates && $settingsValidate && empty($sourceErrors))
 		{
