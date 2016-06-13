@@ -56,6 +56,12 @@ class ConsoleApp extends \CConsoleApplication
 		// Attach our own custom Logger
 		Craft::setLogger(new Logger());
 
+		// If there is a custom appId set, apply it here.
+		if ($appId = $this->config->get('appId'))
+		{
+			$this->setId($appId);
+		}
+
 		// Initialize Cache and LogRouter right away (order is important)
 		$this->getComponent('cache');
 		$this->getComponent('log');
