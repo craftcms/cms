@@ -562,8 +562,18 @@ class ElementsService extends BaseApplicationComponent
 				->limit(-1)
 				->from('elements elements');
 
+			$selectString = 'count(DISTINCT(%s))';
+
+			// preserve any existing select columns a plugin might have added (could be used in a conditional later)
+			$select = $query->getSelect();
+
+			if ($select)
+			{
+				$selectString .= ', %s';
+			}
+
 			// Count the number of distinct columns based on the GROUP BY
-			$count = $query->count(sprintf('DISTINCT(%s)', $groupBy));
+			$count = (int) $query->select(sprintf($selectString, $groupBy, $select))->queryScalar();
 
 			return $count;
 		}
