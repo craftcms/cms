@@ -393,6 +393,10 @@ class CraftTwigExtension extends \Twig_Extension
 				}
 			}
 		}
+		else
+		{
+			$index = null;
+		}
 
 		if ($index !== false)
 		{
