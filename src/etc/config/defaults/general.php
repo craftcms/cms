@@ -634,6 +634,15 @@ return array(
 	'useSecureCookies' => 'auto',
 
 	/**
+	 * Determines what protocol/schema Craft will use when generating tokenized URLs. If set to 'auto',
+	 * Craft will check the siteUrl and the protocol of the current request and if either of them are https
+	 * will use https in the tokenized URL. If not, will use http.
+	 * 
+	 * If set to `false`, the Craft will always use http. If set to `true`, then, Craft will always use `https`. 
+	 */
+	'useSslOnTokenizedUrls' => 'auto',
+
+	/**
 	 * The amount of time a user stays logged in.
 	 *
 	 * Set to false if you want users to stay logged in as long as their browser is open rather than a predetermined

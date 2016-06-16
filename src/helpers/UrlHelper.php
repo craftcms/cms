@@ -114,7 +114,7 @@ class UrlHelper
 	public static function getUrlWithToken($url, $token)
 	{
 		$url = static::getUrlWithProtocol($url, static::getProtocolForTokenizedUrl());
-		
+
 		return static::getUrlWithParams($url, array(
 			craft()->config->get('tokenParam') => $token
 		));
@@ -353,14 +353,31 @@ class UrlHelper
 	 */
 	public static function getProtocolForTokenizedUrl()
 	{
-		$scheme = parse_url(craft()->getSiteUrl(), PHP_URL_SCHEME);
-
-		if (($scheme && strtolower($scheme) == 'https') || craft()->request->isSecureConnection())
+		// If they've explicitly set `useSslOnTokenizedUrls` to true, use https.
+		if (craft()->config->get('useSslOnTokenizedUrls') === true)
 		{
 			return 'https';
 		}
+		// If they've explicitly set `useSslOnTokenizedUrls` to false, use http.
+		else if (craft()->config->get('useSslOnTokenizedUrls') === false)
+		{
+			return 'http';
+		}
+		else
+		{
+			// Let's auto-detect.
 
-		return 'http';
+			// If the siteUrl is https or the current request is https, use it.
+			$scheme = parse_url(craft()->getSiteUrl(), PHP_URL_SCHEME);
+
+			if (($scheme && strtolower($scheme) == 'https') || craft()->request->isSecureConnection())
+			{
+				return 'https';
+			}
+
+			// Lame ole' http.
+			return 'http';
+		}
 	}
 
 	// Private Methods
