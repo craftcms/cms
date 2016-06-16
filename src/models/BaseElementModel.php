@@ -252,14 +252,16 @@ abstract class BaseElementModel extends BaseModel
 	/**
 	 * Returns the element's full URL.
 	 *
+	 * @param null $protocol
+	 *
 	 * @return string
 	 */
-	public function getUrl()
+	public function getUrl($protocol = null)
 	{
 		if ($this->uri !== null)
 		{
 			$path = ($this->uri == '__home__') ? '' : $this->uri;
-			$url = UrlHelper::getSiteUrl($path, null, null, $this->locale);
+			$url = UrlHelper::getSiteUrl($path, null, $protocol, $this->locale);
 
 			return $url;
 		}

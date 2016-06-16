@@ -342,6 +342,25 @@ class UrlHelper
 		return $url;
 	}
 
+	/**
+	 * Returns what the protocol/schema part of the URL should be (http/https)
+	 * for any tokenized URLs in Craft (email verification links, password reset
+	 * urls, share entry URLs, etc.
+	 *
+	 * @return string
+	 */
+	public static function getProtocolForTokenizedUrl()
+	{
+		$scheme = parse_url(craft()->getSiteUrl(), PHP_URL_SCHEME);
+
+		if (($scheme && strtolower($scheme) == 'https') || craft()->request->isSecureConnection())
+		{
+			return 'https';
+		}
+
+		return 'http';
+	}
+
 	// Private Methods
 	// =========================================================================
 

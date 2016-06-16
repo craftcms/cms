@@ -528,9 +528,9 @@ class UsersService extends BaseApplicationComponent
 				'code' => $unhashedVerificationCode,
 				'id' => $userRecord->uid
 			);
-			$protocol = craft()->request->isSecureConnection() ? 'https' : 'http';
+
 			$locale = $user->preferredLocale ?: craft()->i18n->getPrimarySiteLocaleId();
-			$url = UrlHelper::getSiteUrl($path, $params, $protocol, $locale);
+			$url = UrlHelper::getSiteUrl($path, $params, UrlHelper::getProtocolForTokenizedUrl(), $locale);
 		}
 
 		return $url;
@@ -554,7 +554,8 @@ class UsersService extends BaseApplicationComponent
 			'code' => $unhashedVerificationCode,
 			'id' => $userRecord->uid
 		);
-		$scheme = craft()->request->isSecureConnection() ? 'https' : 'http';
+
+		$scheme = UrlHelper::getProtocolForTokenizedUrl();
 
 		if ($user->can('accessCp'))
 		{

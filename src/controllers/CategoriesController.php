@@ -499,7 +499,7 @@ class CategoriesController extends BaseController
 			'params' => array('categoryId' => $categoryId, 'locale' => $category->locale)
 		));
 
-		$url = UrlHelper::getUrlWithToken($category->getUrl(), $token);
+		$url = UrlHelper::getUrlWithToken($category->getUrl(UrlHelper::getProtocolForTokenizedUrl()), $token);
 		craft()->request->redirect($url);
 	}
 
