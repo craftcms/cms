@@ -113,6 +113,8 @@ class UrlHelper
 	 */
 	public static function getUrlWithToken($url, $token)
 	{
+		$url = static::getUrlWithProtocol($url, static::getProtocolForTokenizedUrl());
+		
 		return static::getUrlWithParams($url, array(
 			craft()->config->get('tokenParam') => $token
 		));
