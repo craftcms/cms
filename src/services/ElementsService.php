@@ -2119,13 +2119,9 @@ class ElementsService extends BaseApplicationComponent
 				}
 				else
 				{
-					$parts = explode('_', $matches[1]);
-
-					$parts = array_map(function ($part) {
-						return ucfirst($part);
-					}, $parts);
-
-					$elementTypeHandle = implode('_', $parts);
+					$elementTypeHandle = preg_replace_callback('/^\w|_\w/', function($matches) {
+						return strtoupper($matches[0]);
+					}, $matches[1]);
 				}
 
 				$token = '{'.StringHelper::randomString(9).'}';
