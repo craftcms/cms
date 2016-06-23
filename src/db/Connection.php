@@ -11,6 +11,7 @@ use Craft;
 use craft\app\db\mysql\QueryBuilder;
 use craft\app\events\DbBackupEvent;
 use craft\app\helpers\ArrayHelper;
+use craft\app\helpers\Db;
 use craft\app\helpers\StringHelper;
 
 /**
@@ -28,9 +29,18 @@ class Connection extends \yii\db\Connection
     // =========================================================================
 
     /**
+     * @event Event The event that is triggered before the backup is created.
+     *
+     * You may set [[Event::isValid]] to `false` to prevent the backup from being created.
+     */
+    const EVENT_BEFORE_CREATE_BACKUP = 'beforeCreateBackup';
+
+    /**
      * @event DbBackupEvent The event that is triggered after the DB backup is created.
      */
     const EVENT_AFTER_CREATE_BACKUP = 'afterCreateBackup';
+
+
 
     // Public Methods
     // =========================================================================
@@ -70,15 +80,24 @@ class Connection extends \yii\db\Connection
             $backup->setIgnoreDataTables($ignoreDataTables);
         }
 
-        if (($backupFile = $backup->run()) !== false) {
-            // Fire an 'afterCreateBackup' event
-            $this->trigger(static::EVENT_AFTER_CREATE_BACKUP,
-                new DbBackupEvent([
-                    'filePath' => $backupFile
-                ]));
+        $event = new DbBackupEvent();
+        $this->trigger(static::EVENT_BEFORE_CREATE_BACKUP,
+            $event
+        );
 
-            return $backupFile;
+        if ($event->isValid) {
+            if (($backupFile = $backup->run()) !== false) {
+                $event->filePath = $backupFile;
+
+                // Fire an 'afterCreateBackup' event
+                $this->trigger(static::EVENT_AFTER_CREATE_BACKUP,
+                    $event
+                );
+
+                return $backupFile;
+            }
         }
+
 
         return false;
     }
