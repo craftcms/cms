@@ -58,6 +58,16 @@ class Categories extends Component
     const EVENT_AFTER_DELETE_CATEGORY = 'afterDeleteCategory';
 
     /**
+     * @event CategoryGroupEvent The event that is triggered before a category group is saved.
+     */
+    const EVENT_BEFORE_SAVE_GROUP = 'beforeSaveGroup';
+
+    /**
+     * @event CategoryGroupEvent The event that is triggered after a category group is saved.
+     */
+    const EVENT_AFTER_SAVE_GROUP = 'afterSaveGroup';
+
+    /**
      * @event CategoryGroupEvent The event that is triggered before a category group is deleted.
      */
     const EVENT_BEFORE_DELETE_GROUP = 'beforeDeleteGroup';
@@ -350,7 +360,21 @@ class Categories extends Component
         $group->addErrors($groupRecord->getErrors());
 
         if (!$group->hasErrors()) {
+
+            // Fire a 'beforeSaveGroup' event
+            $event = new CategoryGroupEvent([
+                'categoryGroup' => $group
+            ]);
+
+            $this->trigger(static::EVENT_BEFORE_SAVE_GROUP, $event);
+
+            // Make sure the event is giving us the go ahead
+            if (!$event->isValid) {
+                return false;
+            }
+
             $transaction = Craft::$app->getDb()->beginTransaction();
+
             try {
                 // Create/update the structure
 
@@ -511,6 +535,12 @@ class Categories extends Component
 
                 throw $e;
             }
+
+            // Fire an 'afterSaveGroup' event
+            $this->trigger(static::EVENT_AFTER_SAVE_GROUP,
+                new CategoryEvent([
+                    'category' => $category
+                ]));
 
             return true;
         } else {
