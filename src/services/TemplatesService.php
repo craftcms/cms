@@ -179,13 +179,13 @@ class TemplatesService extends BaseApplicationComponent
 			$timezone = craft()->getTimeZone();
 			$twig->getExtension('core')->setTimezone($timezone);
 
-			// Give plugins a chance to add their own Twig extensions
-			$this->_addPluginTwigExtensions($twig);
-
 			// Set our custom parser to support "include" tags using the capture mode
 			$twig->setParser(new TwigParser($twig));
 
 			$this->_twigs[$loaderClass] = $twig;
+
+			// Give plugins a chance to add their own Twig extensions
+			$this->_addPluginTwigExtensions($twig);
 		}
 
 		return $this->_twigs[$loaderClass];

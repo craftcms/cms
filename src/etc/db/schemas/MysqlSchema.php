@@ -219,7 +219,10 @@ class MysqlSchema extends \CMysqlSchema
 			}
 		}
 
-		$cols[] = "\tPRIMARY KEY (".implode(', ', $primaryKeys).")";
+		if ($primaryKeys)
+		{
+			$cols[] = "\tPRIMARY KEY (".implode(', ', $primaryKeys).")";
+		}
 
 		$sql = "CREATE TABLE ".$this->quoteTableName($table)." (\n".implode(",\n", $cols)."\n)";
 
