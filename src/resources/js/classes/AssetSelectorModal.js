@@ -56,10 +56,11 @@ Craft.AssetSelectorModal = Craft.BaseElementSelectorModal.extend(
 		{
 			allowTransforms = true;
 
-				for (var i = 0; i < $selectedElements.length; i++)
+			for (var i = 0; i < $selectedElements.length; i++)
 			{
 				if (!$('.element.hasthumb:first', $selectedElements[i]).length)
 				{
+					allowTransforms = false;
 					break;
 				}
 			}
