@@ -226,7 +226,11 @@ class Locale extends Object
      */
     public function __construct($id, $config = [])
     {
-        $this->id = str_replace('_', '-', $id);
+        if (strpos($id, '_') !== false) {
+            $id = str_replace('_', '-', $id);
+        }
+
+        $this->id = $id;
 
         if (!Craft::$app->getI18n()->getIsIntlLoaded()) {
             // Load the locale data
