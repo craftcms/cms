@@ -42,7 +42,8 @@
         "league/flysystem-dropbox": "1.0.4",
         "league/flysystem-ziparchive": "1.0.2",
         "pixelandtonic/flysystem-google-cloud": "1.0",
-        "pclzip/pclzip": "2.8.2"
+        "pclzip/pclzip": "2.8.2",
+        "fxp/composer-asset-plugin": "~1.1.1"
     },
     "extra": {
         "asset-installer-paths": {
