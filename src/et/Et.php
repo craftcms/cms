@@ -194,9 +194,6 @@ class Et
             if (!Craft::$app->getCache()->get('etConnectFailure')) {
                 try {
                     $client = new Client([
-                        'headers' => [
-                            'User-Agent' => $this->_userAgent.' '.Client::getDefaultUserAgent()
-                        ],
                         'timeout' => $this->getTimeout(),
                         'connect_timeout' => $this->getConnectTimeout(),
                         'allow_redirects' => $this->getAllowRedirects(),
