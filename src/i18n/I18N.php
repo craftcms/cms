@@ -13,6 +13,7 @@ use craft\app\events\DeleteLocaleEvent;
 use craft\app\helpers\Io;
 use craft\app\tasks\ResaveAllElements;
 use ResourceBundle;
+use yii\base\InvalidParamException;
 
 /**
  * @inheritdoc
@@ -234,7 +235,12 @@ class I18N extends \yii\i18n\I18N
             $localeIds = $query->column();
 
             foreach ($localeIds as $localeId) {
-                $this->_siteLocales[] = new Locale($localeId);
+                try {
+                    $this->_siteLocales[] = new Locale($localeId);
+                } catch (InvalidParamException $e) {
+                    // Log it and then let it fall back to en-US
+                    Craft::warning('Could not instantiate site locale "'.$localeId.'". Exception: '.$e->getMessage());
+                }
             }
 
             if (empty($this->_siteLocales)) {
