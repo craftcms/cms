@@ -29,7 +29,7 @@
 			dataType:   'bucketList'
 		};
 
-		Craft.postActionRequest('volumes/loadVolumeTypeData', data, function(response, textStatus)
+		Craft.postActionRequest('volumes/load-volume-type-data', data, function(response, textStatus)
 		{
 			$s3RefreshBucketsBtn.removeClass('disabled');
 			$s3RefreshBucketsSpinner.addClass('hidden');
@@ -119,7 +119,7 @@
 
 		};
 
-		Craft.postActionRequest('volumes/loadVolumeTypeData', data, function(response, textStatus)
+		Craft.postActionRequest('volumes/load-volume-type-data', data, function(response, textStatus)
 		{
 			$rackspaceRefreshContainersBtn.removeClass('disabled');
 			$rackspaceRefreshContainersSpinner.addClass('hidden');
@@ -205,7 +205,7 @@
 			dataType:   'bucketList'
 		};
 
-		Craft.postActionRequest('volumes/loadVolumeTypeData', data, function(response, textStatus)
+		Craft.postActionRequest('volumes/load-volume-type-data', data, function(response, textStatus)
 		{
 			$googleRefreshBucketsBtn.removeClass('disabled');
 			$googleRefreshBucketsSpinner.addClass('hidden');
