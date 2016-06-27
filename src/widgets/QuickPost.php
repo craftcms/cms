@@ -12,7 +12,6 @@ use craft\app\base\Widget;
 use craft\app\helpers\ArrayHelper;
 use craft\app\helpers\Json;
 use craft\app\models\Section;
-use craft\app\web\View;
 
 /**
  * QuickPost represents a Quick Post dashboard widget.
@@ -173,22 +172,7 @@ class QuickPost extends Widget
                 'widget' => $this
             ]);
 
-        $lines = [];
         $fieldJs = Craft::$app->getView()->clearJsBuffer(false);
-
-        foreach ([
-                     View::POS_HEAD,
-                     View::POS_BEGIN,
-                     View::POS_END,
-                     View::POS_LOAD,
-                     View::POS_READY
-                 ] as $pos) {
-            if (!empty($fieldJs[$pos])) {
-                $lines[] = implode("\n", $fieldJs[$pos]);
-            }
-        }
-
-        $fieldJs = empty($lines) ? '' : implode("\n", $lines);
 
         Craft::$app->getView()->registerJs('new Craft.QuickPostWidget('.
             $this->id.', '.

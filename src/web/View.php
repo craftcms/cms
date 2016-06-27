@@ -607,9 +607,7 @@ class View extends \yii\web\View
      *
      * @param boolean $scriptTag Whether the Javascript code should be wrapped in a `<script>` tag. Defaults to `true`.
      *
-     * @return string|null|false Returns `false` if there isn’t an active Javascript buffer, `null` if there is an
-     *                           active buffer but no Javascript code was actually added to it, or a string of the
-     *                           included Javascript code if there was any.
+     * @return string|null|false The JS code that was included in the active JS buffer, or `false` if there isn’t one
      */
     public function clearJsBuffer($scriptTag = true)
     {
@@ -617,32 +615,29 @@ class View extends \yii\web\View
             return false;
         }
 
-        // Get the active queue
-        $js = $this->js;
+        // Combine the JS
+        $js = '';
+
+        foreach ([
+                     self::POS_HEAD,
+                     self::POS_BEGIN,
+                     self::POS_END,
+                     self::POS_LOAD,
+                     self::POS_READY
+                 ] as $pos) {
+            if (!empty($this->js[$pos])) {
+                $js .= implode("\n", $this->js[$pos])."\n";
+            }
+        }
 
         // Set the active queue to the last one
         $this->js = array_pop($this->_jsBuffers);
 
         if ($scriptTag === true && !empty($js)) {
-            $lines = [];
-
-            foreach ([
-                         self::POS_HEAD,
-                         self::POS_BEGIN,
-                         self::POS_END,
-                         self::POS_LOAD,
-                         self::POS_READY
-                     ] as $pos) {
-                if (!empty($js[$pos])) {
-                    $lines[] = Html::script(implode("\n", $js[$pos]),
-                        ['type' => 'text/javascript']);
-                }
-            }
-
-            return empty($lines) ? '' : implode("\n", $lines);
-        } else {
-            return $js;
+           return Html::script($js, ['type' => 'text/javascript']);
         }
+
+        return $js;
     }
 
     /**
