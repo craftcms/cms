@@ -193,18 +193,35 @@ class MysqlSchema extends \CMysqlSchema
 	public function createTable($table, $columns, $options = null, $engine = 'InnoDb')
 	{
 		$cols = array();
+		$primaryKeys = array();
+
 		$options = 'ENGINE='.$engine.' DEFAULT CHARSET='.craft()->config->get('charset', ConfigFile::Db).' COLLATE='.craft()->config->get('collation', ConfigFile::Db).($options ? ' '.$options : '');
 
 		foreach ($columns as $name => $type)
 		{
 			if (is_string($name))
 			{
-				$cols[] = "\t".$this->quoteColumnName($name).' '.$this->getColumnType($type);
+				$columnType = $this->getColumnType($type);
+
+				if ($type == ColumnType::PK || strpos($columnType, ' PRIMARY KEY') !== false)
+				{
+					$primaryKeys[] = $name;
+
+					// TODO: Probably MySQL specific, but no an issue in Craft 3 anyway.
+					$columnType = str_replace(' PRIMARY KEY', '', $columnType);
+				}
+
+				$cols[] = "\t".$this->quoteColumnName($name).' '.$columnType;
 			}
 			else
 			{
 				$cols[] = "\t".$type;
 			}
+		}
+
+		if ($primaryKeys)
+		{
+			$cols[] = "\tPRIMARY KEY (".implode(', ', $primaryKeys).")";
 		}
 
 		$sql = "CREATE TABLE ".$this->quoteTableName($table)." (\n".implode(",\n", $cols)."\n)";

@@ -386,7 +386,7 @@ class LocalAssetSourceType extends BaseAssetSourceType
 		return array(
 			'path'       => array(AttributeType::String, 'required' => true),
 			'publicURLs' => array(AttributeType::Bool,   'default' => true),
-			'url'        => array(AttributeType::String, 'required' => true, 'label' => 'URL'),
+			'url'        => array(AttributeType::String, 'label' => 'URL'),
 		);
 	}
 

@@ -165,7 +165,24 @@ class ElementCriteriaModel extends BaseModel implements \Countable
 	 */
 	public function count()
 	{
-		return count($this->find());
+		$total = $this->total();
+
+		if ($this->offset)
+		{
+			$total -= $this->offset;
+
+			if ($total < 0)
+			{
+				$total = 0;
+			}
+		}
+
+		if ($this->limit && $total > $this->limit)
+		{
+			$total = $this->limit;
+		}
+
+		return $total;
 	}
 
 	/**
