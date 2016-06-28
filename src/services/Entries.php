@@ -199,7 +199,7 @@ class Entries extends Component
 
                 // If it didn't work, rollback the transaction in case something changed in onBeforeSaveEntry
                 if (!$success) {
-                    $transaction->rollback();
+                    $transaction->rollBack();
 
                     // If "title" has an error, check if they've defined a custom title label.
                     if ($entry->getFirstError('title')) {
@@ -256,7 +256,7 @@ class Entries extends Component
             // in onBeforeSaveEntry
             $transaction->commit();
         } catch (\Exception $e) {
-            $transaction->rollback();
+            $transaction->rollBack();
 
             throw $e;
         }
@@ -327,7 +327,7 @@ class Entries extends Component
 
             $transaction->commit();
         } catch (\Exception $e) {
-            $transaction->rollback();
+            $transaction->rollBack();
 
             throw $e;
         }

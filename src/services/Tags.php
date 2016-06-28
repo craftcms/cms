@@ -237,7 +237,7 @@ class Tags extends Component
 
                 $transaction->commit();
             } catch (\Exception $e) {
-                $transaction->rollback();
+                $transaction->rollBack();
 
                 throw $e;
             }
@@ -291,7 +291,7 @@ class Tags extends Component
 
             return (bool)$affectedRows;
         } catch (\Exception $e) {
-            $transaction->rollback();
+            $transaction->rollBack();
 
             throw $e;
         }
@@ -362,7 +362,7 @@ class Tags extends Component
 
                 // If it didn't work, rollback the transaction in case something changed in onBeforeSaveTag
                 if (!$success) {
-                    $transaction->rollback();
+                    $transaction->rollBack();
 
                     return false;
                 }
@@ -381,7 +381,7 @@ class Tags extends Component
             // in onBeforeSaveTag
             $transaction->commit();
         } catch (\Exception $e) {
-            $transaction->rollback();
+            $transaction->rollBack();
 
             throw $e;
         }

@@ -749,7 +749,7 @@ class Sections extends Component
                 // in onBeforeSaveSection
                 $transaction->commit();
             } catch (\Exception $e) {
-                $transaction->rollback();
+                $transaction->rollBack();
 
                 throw $e;
             }
@@ -835,7 +835,7 @@ class Sections extends Component
 
             return true;
         } catch (\Exception $e) {
-            $transaction->rollback();
+            $transaction->rollBack();
 
             throw $e;
         }
@@ -1019,7 +1019,7 @@ class Sections extends Component
                 // in onBeforeSaveEntryType
                 $transaction->commit();
             } catch (\Exception $e) {
-                $transaction->rollback();
+                $transaction->rollBack();
 
                 throw $e;
             }
@@ -1059,7 +1059,7 @@ class Sections extends Component
 
             $transaction->commit();
         } catch (\Exception $e) {
-            $transaction->rollback();
+            $transaction->rollBack();
 
             throw $e;
         }
@@ -1128,7 +1128,7 @@ class Sections extends Component
 
             return (bool)$affectedRows;
         } catch (\Exception $e) {
-            $transaction->rollback();
+            $transaction->rollBack();
 
             throw $e;
         }

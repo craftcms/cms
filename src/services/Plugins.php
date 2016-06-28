@@ -285,7 +285,7 @@ class Plugins extends Component
                 return false;
             }
         } catch (\Exception $e) {
-            $transaction->rollback();
+            $transaction->rollBack();
 
             throw $e;
         }
@@ -343,7 +343,7 @@ class Plugins extends Component
                 return false;
             }
         } catch (\Exception $e) {
-            $transaction->rollback();
+            $transaction->rollBack();
 
             throw $e;
         }

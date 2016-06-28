@@ -643,7 +643,7 @@ class I18N extends \yii\i18n\I18N
 
                 // If it didn't work, rollback the transaction in case something changed in onBeforeDeleteLocale
                 if (!$success) {
-                    $transaction->rollback();
+                    $transaction->rollBack();
 
                     return false;
                 }
@@ -655,7 +655,7 @@ class I18N extends \yii\i18n\I18N
             // in case something changed in onBeforeDeleteLocale
             $transaction->commit();
         } catch (\Exception $e) {
-            $transaction->rollback();
+            $transaction->rollBack();
 
             throw $e;
         }

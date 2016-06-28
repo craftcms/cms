@@ -531,7 +531,7 @@ class Categories extends Component
 
                 $transaction->commit();
             } catch (\Exception $e) {
-                $transaction->rollback();
+                $transaction->rollBack();
 
                 throw $e;
             }
@@ -615,7 +615,7 @@ class Categories extends Component
 
             return true;
         } catch (\Exception $e) {
-            $transaction->rollback();
+            $transaction->rollBack();
 
             throw $e;
         }
@@ -730,7 +730,7 @@ class Categories extends Component
 
                 // If it didn't work, rollback the transaction in case something changed in onBeforeSaveCategory
                 if (!$success) {
-                    $transaction->rollback();
+                    $transaction->rollBack();
 
                     return false;
                 }
@@ -761,7 +761,7 @@ class Categories extends Component
             // in onBeforeSaveCategory
             $transaction->commit();
         } catch (\Exception $e) {
-            $transaction->rollback();
+            $transaction->rollBack();
 
             throw $e;
         }
@@ -801,7 +801,7 @@ class Categories extends Component
 
             $transaction->commit();
         } catch (\Exception $e) {
-            $transaction->rollback();
+            $transaction->rollBack();
 
             throw $e;
         }

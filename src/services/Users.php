@@ -390,7 +390,7 @@ class Users extends Component
 
                 // If it didn't work, rollback the transaction in case something changed in onBeforeSaveUser
                 if (!$success) {
-                    $transaction->rollback();
+                    $transaction->rollBack();
 
                     return false;
                 }
@@ -429,7 +429,7 @@ class Users extends Component
             // in onBeforeSaveUser
             $transaction->commit();
         } catch (\Exception $e) {
-            $transaction->rollback();
+            $transaction->rollBack();
 
             throw $e;
         }
@@ -794,7 +794,7 @@ class Users extends Component
             // in onBeforeActivateUser
             $transaction->commit();
         } catch (\Exception $e) {
-            $transaction->rollback();
+            $transaction->rollBack();
 
             throw $e;
         }
@@ -886,7 +886,7 @@ class Users extends Component
             // in onBeforeUnlockUser
             $transaction->commit();
         } catch (\Exception $e) {
-            $transaction->rollback();
+            $transaction->rollBack();
 
             throw $e;
         }
@@ -938,7 +938,7 @@ class Users extends Component
             // in onBeforeSuspendUser
             $transaction->commit();
         } catch (\Exception $e) {
-            $transaction->rollback();
+            $transaction->rollBack();
 
             throw $e;
         }
@@ -990,7 +990,7 @@ class Users extends Component
             // in onBeforeUnsuspendUser
             $transaction->commit();
         } catch (\Exception $e) {
-            $transaction->rollback();
+            $transaction->rollBack();
 
             throw $e;
         }
@@ -1069,7 +1069,7 @@ class Users extends Component
 
                 // If it didn't work, rollback the transaction in case something changed in onBeforeDeleteUser
                 if (!$success) {
-                    $transaction->rollback();
+                    $transaction->rollBack();
 
                     return false;
                 }
@@ -1081,7 +1081,7 @@ class Users extends Component
             // in case something changed in onBeforeDeleteUser
             $transaction->commit();
         } catch (\Exception $e) {
-            $transaction->rollback();
+            $transaction->rollBack();
 
             throw $e;
         }

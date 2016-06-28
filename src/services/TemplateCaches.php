@@ -328,7 +328,7 @@ class TemplateCaches extends Component
 
             $transaction->commit();
         } catch (\Exception $e) {
-            $transaction->rollback();
+            $transaction->rollBack();
 
             throw $e;
         }

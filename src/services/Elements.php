@@ -530,7 +530,7 @@ class Elements extends Component
             // in onBeforeSaveElement
             $transaction->commit();
         } catch (\Exception $e) {
-            $transaction->rollback();
+            $transaction->rollBack();
 
             throw $e;
         }
@@ -775,7 +775,7 @@ class Elements extends Component
 
             return $success;
         } catch (\Exception $e) {
-            $transaction->rollback();
+            $transaction->rollBack();
 
             throw $e;
         }
@@ -865,7 +865,7 @@ class Elements extends Component
 
             return (bool)$affectedRows;
         } catch (\Exception $e) {
-            $transaction->rollback();
+            $transaction->rollBack();
 
             throw $e;
         }

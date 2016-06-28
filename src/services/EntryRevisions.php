@@ -270,7 +270,7 @@ class EntryRevisions extends Component
             // in onBeforeDeleteDraft
             $transaction->commit();
         } catch (\Exception $e) {
-            $transaction->rollback();
+            $transaction->rollBack();
 
             throw $e;
         }

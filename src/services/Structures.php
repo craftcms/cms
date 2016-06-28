@@ -353,7 +353,7 @@ class Structures extends Component
 
                 // If it didn't work, rollback the transaction in case something changed in onBeforeMoveElement
                 if (!$success) {
-                    $transaction->rollback();
+                    $transaction->rollBack();
 
                     return false;
                 }
@@ -373,7 +373,7 @@ class Structures extends Component
             // in onBeforeMoveElement
             $transaction->commit();
         } catch (\Exception $e) {
-            $transaction->rollback();
+            $transaction->rollBack();
 
             throw $e;
         }

@@ -1565,7 +1565,7 @@ class Assets extends Component
 
                 // If it didn't work, rollback the transaction in case something changed in onBeforeSaveAsset
                 if (!$success) {
-                    $transaction->rollback();
+                    $transaction->rollBack();
 
                     throw new ElementSaveException(Craft::t('app',
                         'Failed to save the Asset Element'));
@@ -1590,7 +1590,7 @@ class Assets extends Component
             // in onBeforeSaveAsset
             $transaction->commit();
         } catch (\Exception $e) {
-            $transaction->rollback();
+            $transaction->rollBack();
             throw $e;
         }
     }

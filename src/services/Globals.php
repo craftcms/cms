@@ -299,7 +299,7 @@ class Globals extends Component
                     return true;
                 }
             } catch (\Exception $e) {
-                $transaction->rollback();
+                $transaction->rollBack();
 
                 throw $e;
             }
@@ -341,7 +341,7 @@ class Globals extends Component
 
             return (bool)$affectedRows;
         } catch (\Exception $e) {
-            $transaction->rollback();
+            $transaction->rollBack();
 
             throw $e;
         }
@@ -373,7 +373,7 @@ class Globals extends Component
 
                 // If it didn't work, rollback the transaction in case something changed in onBeforeSaveGlobalContent
                 if (!$success) {
-                    $transaction->rollback();
+                    $transaction->rollBack();
 
                     return false;
                 }
@@ -385,7 +385,7 @@ class Globals extends Component
             // in onBeforeSaveGlobalContent
             $transaction->commit();
         } catch (\Exception $e) {
-            $transaction->rollback();
+            $transaction->rollBack();
 
             throw $e;
         }

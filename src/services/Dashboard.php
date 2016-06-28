@@ -196,7 +196,7 @@ class Dashboard extends Component
 
                 return true;
             } catch (\Exception $e) {
-                $transaction->rollback();
+                $transaction->rollBack();
 
                 throw $e;
             }
@@ -244,7 +244,7 @@ class Dashboard extends Component
 
             $transaction->commit();
         } catch (\Exception $e) {
-            $transaction->rollback();
+            $transaction->rollBack();
 
             throw $e;
         }

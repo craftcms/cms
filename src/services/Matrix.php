@@ -355,7 +355,7 @@ class Matrix extends Component
 
                 $transaction->commit();
             } catch (\Exception $e) {
-                $transaction->rollback();
+                $transaction->rollBack();
 
                 throw $e;
             }
@@ -408,7 +408,7 @@ class Matrix extends Component
 
             return (bool)$affectedRows;
         } catch (\Exception $e) {
-            $transaction->rollback();
+            $transaction->rollBack();
 
             throw $e;
         }
@@ -530,7 +530,7 @@ class Matrix extends Component
 
                 return true;
             } catch (\Exception $e) {
-                $transaction->rollback();
+                $transaction->rollBack();
 
                 throw $e;
             }
@@ -571,7 +571,7 @@ class Matrix extends Component
 
             return true;
         } catch (\Exception $e) {
-            $transaction->rollback();
+            $transaction->rollBack();
 
             throw $e;
         }
@@ -688,7 +688,7 @@ class Matrix extends Component
                     return true;
                 }
             } catch (\Exception $e) {
-                $transaction->rollback();
+                $transaction->rollBack();
 
                 throw $e;
             }
@@ -792,7 +792,7 @@ class Matrix extends Component
 
             $transaction->commit();
         } catch (\Exception $e) {
-            $transaction->rollback();
+            $transaction->rollBack();
 
             throw $e;
         }

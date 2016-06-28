@@ -161,7 +161,7 @@ class Tasks extends Component
 
                 return true;
             } catch (\Exception $e) {
-                $transaction->rollback();
+                $transaction->rollBack();
 
                 throw $e;
             }
