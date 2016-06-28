@@ -40,28 +40,19 @@ class Connection extends \yii\db\Connection
      */
     const EVENT_AFTER_CREATE_BACKUP = 'afterCreateBackup';
 
-
-
-    // Public Methods
+    // Properties
     // =========================================================================
 
     /**
-     * Creates a command for execution.
-     *
-     * @param string $sql    the SQL statement to be executed
-     * @param array  $params the parameters to be bound to the SQL statement
-     *
-     * @return Command the DB command
+     * @var string the class used to create new database [[Command]] objects. If you want to extend the [[Command]] class,
+     * you may configure this property to use your extended version of the class.
+     * @see createCommand
+     * @since 2.0.7
      */
-    public function createCommand($sql = null, $params = [])
-    {
-        $command = new Command([
-            'db' => $this,
-            'sql' => $sql,
-        ]);
+    public $commandClass = 'craft\app\db\Command';
 
-        return $command->bindValues($params);
-    }
+    // Public Methods
+    // =========================================================================
 
     /**
      * Performs a database backup.
