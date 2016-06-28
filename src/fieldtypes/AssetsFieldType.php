@@ -454,15 +454,15 @@ class AssetsFieldType extends BaseElementFieldType
 	 */
 	protected function getInputSources()
 	{
-		// Look for the single folder setting
 		$settings = $this->getSettings();
+
+		// Authorize for the single folder and the default upload folder, whichever was chosen.
+		$folderId = $this->_determineUploadFolderId($settings, false);
+		craft()->userSession->authorize('uploadToAssetSource:'.$folderId);
 
 		if ($settings->useSingleFolder)
 		{
-			$folderId = $this->_determineUploadFolderId($settings, false);
-			craft()->userSession->authorize('uploadToAssetSource:'.$folderId);
 			$folderPath = 'folder:'.$folderId.':single';
-
 			return array($folderPath);
 		}
 
