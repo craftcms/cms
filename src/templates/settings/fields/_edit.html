@@ -1,100 +1,92 @@
 {% extends "_layouts/cp" %}
+{% set fullPageForm = true %}
 
 {% import "_includes/forms" as forms %}
 
 
-{% set content %}
-	<form method="post" accept-charset="UTF-8" data-saveshortcut>
-		{{ getCsrfInput() }}
-		<input type="hidden" name="action" value="fields/save-field">
-		<input type="hidden" name="redirect" value="settings/fields/{groupId}">
-		{% if fieldId is not empty %}
-			<input type="hidden" name="fieldId" value="{{ fieldId }}">
-		{% endif %}
+{% block content %}
+	<input type="hidden" name="action" value="fields/save-field">
+	<input type="hidden" name="redirect" value="settings/fields/{groupId}">
+	{% if fieldId is defined %}
+		<input type="hidden" name="fieldId" value="{{ fieldId }}">
+	{% endif %}
 
-		{{ forms.selectField({
-			first: true,
-			label: "Group"|t('app'),
-			instructions: "Which group should this field be displayed in?"|t('app'),
-			id: 'group',
-			name: 'group',
-			options: groupOptions,
-			value: groupId
+	{{ forms.selectField({
+		first: true,
+		label: "Group"|t('app'),
+		instructions: "Which group should this field be displayed in?"|t('app'),
+		id: 'group',
+		name: 'group',
+		options: groupOptions,
+		value: groupId
+	}) }}
+
+	{{ forms.textField({
+		label: "Name"|t('app'),
+		instructions: "What this field will be called in the CP."|t('app'),
+		id: 'name',
+		name: 'name',
+		value: (field is not empty ? field.name : null),
+		errors: (field is not empty ? field.getErrors('name') : null),
+		required: true,
+		translatable: true,
+		autofocus: true
+	}) }}
+
+	{{ forms.textField({
+		label: "Handle"|t('app'),
+		instructions: "How you’ll refer to this field in the templates."|t('app'),
+		id: 'handle',
+		class: 'code',
+		name: 'handle',
+		maxlength: 64,
+		value: (field is not empty ? field.handle : null),
+		errors: (field is not empty ? field.getErrors('handle') : null),
+		required: true,
+	}) }}
+
+	{{ forms.textareaField({
+		label: "Instructions"|t('app'),
+		instructions: "Helper text to guide the author."|t('app'),
+		id: 'instructions',
+		class: 'nicetext',
+		name: 'instructions',
+		value: (field is not empty ? field.instructions : null),
+		errors: (field is not empty ? field.getErrors('instructions') : null),
+		translatable: true
+	}) }}
+
+	{% if craft.isLocalized() %}
+		{{ forms.checkboxField({
+			label: "This field is translatable"|t('app'),
+			name: 'translatable',
+			checked: (field is not empty ? field.translatable : false)
 		}) }}
+	{% endif %}
 
-		{{ forms.textField({
-			label: "Name"|t('app'),
-			instructions: "What this field will be called in the CP."|t('app'),
-			id: 'name',
-			name: 'name',
-			value: (field is not empty ? field.name : null),
-			errors: (field is not empty ? field.getErrors('name') : null),
-			required: true,
-			translatable: true,
-			autofocus: true
-		}) }}
+	<hr>
 
-		{{ forms.textField({
-			label: "Handle"|t('app'),
-			instructions: "How you’ll refer to this field in the templates."|t('app'),
-			id: 'handle',
-			class: 'code',
-			name: 'handle',
-			maxlength: 64,
-			value: (field is not empty ? field.handle : null),
-			errors: (field is not empty ? field.getErrors('handle') : null),
-			required: true,
-		}) }}
+	{{ forms.selectField({
+		label: "Field Type"|t('app'),
+		instructions: "What type of field is this?"|t('app'),
+		warning: (fieldId is not empty ? "Changing this may result in data loss."|t('app')),
+		id: 'type',
+		name: 'type',
+		options: fieldTypeOptions,
+		value: field.getType(),
+		errors: (fieldTypeInfo.getIsInvalid() ? ["The field type “{type}” could not be found."|t('app', { type: field.getType() })] : null),
+		toggle: true
+	}) }}
 
-		{{ forms.textareaField({
-			label: "Instructions"|t('app'),
-			instructions: "Helper text to guide the author."|t('app'),
-			id: 'instructions',
-			class: 'nicetext',
-			name: 'instructions',
-			value: (field is not empty ? field.instructions : null),
-			errors: (field is not empty ? field.getErrors('instructions') : null),
-			translatable: true
-		}) }}
-
-		{% if craft.isLocalized() %}
-			{{ forms.checkboxField({
-				label: "This field is translatable"|t('app'),
-				name: 'translatable',
-				checked: (field is not empty ? field.translatable : false)
-			}) }}
-		{% endif %}
-
-		<hr>
-
-		{{ forms.selectField({
-			label: "Field Type"|t('app'),
-			instructions: "What type of field is this?"|t('app'),
-			warning: (fieldId is not empty ? "Changing this may result in data loss."|t('app')),
-			id: 'type',
-			name: 'type',
-			options: fieldTypeOptions,
-			value: field.getType(),
-			errors: (fieldTypeInfo.getIsInvalid() ? ["The field type “{type}” could not be found."|t('app', { type: field.getType() })] : null),
-			toggle: true
-		}) }}
-
-		{% for type in allFieldTypes %}
-			{% set isCurrent = (type == field.getType()) %}
-			<div id="{{ type|id }}"{% if not isCurrent %} class="hidden"{% endif %}>
-				{% namespace 'types['~type~']' %}
-                    {% set _field = isCurrent ? field : craft.fields.createField(type) %}
-                    {{ _field.getSettingsHtml()|raw }}
-				{% endnamespace %}
-			</div>
-		{% endfor %}
-
-		<hr>
-
-		<div class="buttons">
-			<input type="submit" class="btn submit" value="{{ 'Save'|t('app') }}">
+	{% for type in allFieldTypes %}
+		{% set isCurrent = (type == field.getType()) %}
+		<div id="{{ type|id }}"{% if not isCurrent %} class="hidden"{% endif %}>
+			{% namespace 'types['~type~']' %}
+				{% set _field = isCurrent ? field : craft.fields.createField(type) %}
+				{{ _field.getSettingsHtml()|raw }}
+			{% endnamespace %}
 		</div>
-	</form>
+	{% endfor %}
 {% endset %}
 
 

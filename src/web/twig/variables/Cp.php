@@ -8,6 +8,8 @@
 namespace craft\app\web\twig\variables;
 
 use craft\app\helpers\Cp as CpHelper;
+use craft\app\helpers\Io;
+use craft\app\helpers\StringHelper;
 use craft\app\helpers\Url;
 
 /**
@@ -24,14 +26,22 @@ class Cp
     /**
      * Get the sections of the CP.
      *
+     * @param integer $iconSize The icon size
+     *
      * @return array
      */
-    public function nav()
+    public function nav($iconSize = 32)
     {
-        $nav['dashboard'] = ['label' => \Craft::t('app', 'Dashboard')];
+        $nav['dashboard'] = [
+            'label' => \Craft::t('app', 'Dashboard'),
+            'icon' => 'gauge'
+        ];
 
         if (\Craft::$app->getSections()->getTotalEditableSections()) {
-            $nav['entries'] = ['label' => \Craft::t('app', 'Entries')];
+            $nav['entries'] = [
+                'label' => \Craft::t('app', 'Entries'),
+                'icon' => 'section'
+            ];
         }
 
         $globals = \Craft::$app->getGlobals()->getEditableSets();
@@ -39,20 +49,30 @@ class Cp
         if ($globals) {
             $nav['globals'] = [
                 'label' => \Craft::t('app', 'Globals'),
-                'url' => 'globals/'.$globals[0]->handle
+                'url' => 'globals/'.$globals[0]->handle,
+                'icon' => 'globe'
             ];
         }
 
         if (\Craft::$app->getCategories()->getEditableGroupIds()) {
-            $nav['categories'] = ['label' => \Craft::t('app', 'Categories')];
+            $nav['categories'] = [
+                'label' => \Craft::t('app', 'Categories'),
+                'icon' => 'categories'
+            ];
         }
 
-        if (\Craft::$app->getVolumes()->getTotalViewablevolumes()) {
-            $nav['assets'] = ['label' => \Craft::t('app', 'Assets')];
+        if (\Craft::$app->getVolumes()->getTotalViewableVolumes()) {
+            $nav['assets'] = [
+                'label' => \Craft::t('app', 'Assets'),
+                'icon' => 'assets'
+            ];
         }
 
         if (\Craft::$app->getEdition() == \Craft::Pro && \Craft::$app->getUser()->checkPermission('editUsers')) {
-            $nav['users'] = ['label' => \Craft::t('app', 'Users')];
+            $nav['users'] = [
+                'label' => \Craft::t('app', 'Users'),
+                'icon' => 'users'
+            ];
         }
 
         // Add any Plugin nav items
@@ -60,11 +80,31 @@ class Cp
 
         foreach ($plugins as $plugin) {
             if ($plugin::hasCpSection()) {
-                $handle = $plugin->getHandle();
-                if (\Craft::$app->getUser()->checkPermission('accessPlugin-'.$handle)) {
-                    $nav[$handle] = ['label' => $plugin->name];
+                $pluginHandle = $plugin->className();
+
+                if (\Craft::$app->getUser()->checkPermission('accessPlugin-'.$pluginHandle)) {
+                    $lcHandle = StringHelper::toLowerCase($pluginHandle);
+                    $iconPath = \Craft::$app->getPath()->getPluginsPath().'/'.$lcHandle.'/resources/icon-mask.svg';
+
+                    if (Io::fileExists($iconPath)) {
+                        $iconSvg = Io::getFileContents($iconPath);
+                    } else {
+                        $iconSvg = false;
+                    }
+
+                    $nav[$lcHandle] = [
+                        'label' => $plugin->name,
+                        'iconSvg' => $iconSvg
+                    ];
                 }
             }
+        }
+
+        if (\Craft::$app->getUser()->getIsAdmin()) {
+            $nav['settings'] = [
+                'label' => \Craft::t('app', 'Settings'),
+                'icon' => 'settings'
+            ];
         }
 
         // Allow plugins to modify the nav
@@ -160,6 +200,22 @@ class Cp
                 'icon' => 'language',
                 'label' => \Craft::t('app', 'Locales')
             ];
+        }
+
+        $label = \Craft::t('app', 'Plugins');
+
+        $pluginsService = \Craft::$app->getPlugins();
+
+        foreach ($pluginsService->getAllPlugins() as $plugin) {
+            if ($plugin->hasSettings) {
+                $pluginHandle = $plugin->getHandle();
+
+                $settings[$label][$pluginHandle] = [
+                    'url' => 'settings/plugins/'.StringHelper::toLowerCase($pluginHandle),
+                    'iconSvg' => $pluginsService->getPluginIconSvg($pluginHandle),
+                    'label' => $plugin->name
+                ];
+            }
         }
 
         return $settings;

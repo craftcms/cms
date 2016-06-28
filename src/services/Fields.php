@@ -8,6 +8,7 @@
 namespace craft\app\services;
 
 use Craft;
+use craft\app\base\ElementInterface;
 use craft\app\base\Field;
 use craft\app\base\FieldInterface;
 use craft\app\db\Query;
@@ -96,6 +97,11 @@ class Fields extends Component
      * @var
      */
     private $_fieldsById;
+
+    /**
+     * @var
+     */
+    private $_allFieldHandlesByContext;
 
     /**
      * @var
@@ -341,7 +347,7 @@ class Fields extends Component
 
         if (!empty($missingContexts)) {
             $rows = $this->_createFieldQuery()
-                ->where(['in', 'context', $missingContexts])
+                ->where(['in', 'fields.context', $missingContexts])
                 ->all();
 
             foreach ($rows as $row) {
@@ -403,7 +409,7 @@ class Fields extends Component
                 $this->_fieldsById)
         ) {
             $result = $this->_createFieldQuery()
-                ->where('id = :id', [':id' => $fieldId])
+                ->where('fields.id = :id', [':id' => $fieldId])
                 ->one();
 
             if ($result) {
@@ -430,24 +436,58 @@ class Fields extends Component
     {
         $context = Craft::$app->getContent()->fieldContext;
 
-        if (!isset($this->_fieldsByContextAndHandle[$context]) || !array_key_exists($handle,
-                $this->_fieldsByContextAndHandle[$context])
-        ) {
-            $result = $this->_createFieldQuery()
-                ->where(['and', 'handle = :handle', 'context = :context'],
-                    [':handle' => $handle, ':context' => $context])
-                ->one();
+        if (!isset($this->_fieldsByContextAndHandle[$context]) || !array_key_exists($handle, $this->_fieldsByContextAndHandle[$context])) {
+            // Guilty until proven innocent
+            $this->_fieldsByContextAndHandle[$context][$handle] = null;
 
-            if ($result) {
-                $field = $this->createField($result);
-                $this->_fieldsById[$field->id] = $field;
-                $this->_fieldsByContextAndHandle[$context][$field->handle] = $field;
-            } else {
-                $this->_fieldsByContextAndHandle[$context][$handle] = null;
+            if ($this->doesFieldWithHandleExist($handle, $context)) {
+                $result = $this->_createFieldQuery()
+                    ->where([
+                        'and',
+                        'fields.handle = :handle',
+                        'fields.context = :context'
+                    ], [':handle' => $handle, ':context' => $context])
+                    ->one();
+
+                if ($result) {
+                    $field = $this->createField($result);
+                    $this->_fieldsById[$field->id] = $field;
+                    $this->_fieldsByContextAndHandle[$context][$field->handle] = $field;
+                }
             }
         }
 
         return $this->_fieldsByContextAndHandle[$context][$handle];
+    }
+
+    /**
+     * Returns whether a field exists with a given handle and context.
+     *
+     * @param string      $handle  The field handle
+     * @param string|null $context The field context (defauts to ContentService::$fieldContext)
+     *
+     * @return boolean Whether a field with that handle exists
+     */
+    public function doesFieldWithHandleExist($handle, $context = null)
+    {
+        if ($context === null) {
+            $context = Craft::$app->getContent()->fieldContext;
+        }
+
+        if (!isset($this->_allFieldHandlesByContext)) {
+            $this->_allFieldHandlesByContext = [];
+
+            $results = (new Query())
+                ->select('handle,context')
+                ->from('{{%fields}}')
+                ->all();
+
+            foreach ($results as $result) {
+                $this->_allFieldHandlesByContext[$result['context']][] = $result['handle'];
+            }
+        }
+
+        return (isset($this->_allFieldHandlesByContext[$context]) && in_array($handle, $this->_allFieldHandlesByContext[$context]));
     }
 
     /**
@@ -461,7 +501,38 @@ class Fields extends Component
     public function getFieldsByGroupId($groupId, $indexBy = null)
     {
         $results = $this->_createFieldQuery()
-            ->where('groupId = :groupId', [':groupId' => $groupId])
+            ->where('fields.groupId = :groupId', [':groupId' => $groupId])
+            ->all();
+
+        $fields = [];
+
+        foreach ($results as $result) {
+            $field = $this->createField($result);
+
+            if ($indexBy) {
+                $fields[$field->$indexBy] = $field;
+            } else {
+                $fields[] = $field;
+            }
+        }
+
+        return $fields;
+    }
+
+    /**
+     * Returns all of the fields used by a given element type.
+     *
+     * @param ElementInterface|string $elementType
+     * @param string|null             $indexBy
+     *
+     * @return FieldInterface[]|Field[] The fields
+     */
+    public function getFieldsByElementType($elementType, $indexBy = null)
+    {
+        $results = $this->_createFieldQuery()
+            ->innerJoin('{{%fieldlayoutfields}} flf', 'flf.fieldId = fields.id')
+            ->innerJoin('{{%fieldlayouts}} fl', 'fl.id = flf.layoutId')
+            ->where(['fl.type' => $elementType])
             ->all();
 
         $fields = [];
@@ -546,11 +617,24 @@ class Fields extends Component
                     $field->oldHandle = $fieldRecord->getOldHandle();
 
                     unset($this->_fieldsByContextAndHandle[$field->context][$field->oldHandle]);
+
+                    if (
+                        isset($this->_allFieldHandlesByContext[$field->context]) &&
+                        $field->oldHandle != $field->handle &&
+                        ($oldHandleIndex = array_search($field->oldHandle, $this->_allFieldHandlesByContext[$field->context])) !== false
+                    ) {
+                        array_splice($this->_allFieldHandlesByContext[$field->context], $oldHandleIndex, 1);
+                    }
                 }
 
                 // Cache it
                 $this->_fieldsById[$field->id] = $field;
                 $this->_fieldsByContextAndHandle[$field->context][$field->handle] = $field;
+
+                if (isset($this->_allFieldHandlesByContext)) {
+                    $this->_allFieldHandlesByContext[$field->context][] = $field->handle;
+                }
+
                 unset($this->_allFieldsInContext[$field->context]);
                 unset($this->_fieldsWithContent[$field->context]);
 
@@ -759,12 +843,15 @@ class Fields extends Component
     /**
      * Assembles a field layout from post data.
      *
+     * @param string|null $namespace The namespace that the form data was posted in, if any
+     *
      * @return FieldLayoutModel The field layout
      */
-    public function assembleLayoutFromPost()
+    public function assembleLayoutFromPost($namespace = null)
     {
-        $postedFieldLayout = Craft::$app->getRequest()->getBodyParam('fieldLayout', []);
-        $requiredFields = Craft::$app->getRequest()->getBodyParam('requiredFields', []);
+        $paramPrefix = ($namespace ? rtrim($namespace, '.').'.' : '');
+        $postedFieldLayout = Craft::$app->getRequest()->getBodyParam($paramPrefix.'fieldLayout', []);
+        $requiredFields = Craft::$app->getRequest()->getBodyParam($paramPrefix.'requiredFields', []);
 
         return $this->assembleLayout($postedFieldLayout, $requiredFields);
     }
@@ -772,12 +859,12 @@ class Fields extends Component
     /**
      * Assembles a field layout.
      *
-     * @param array      $postedFieldLayout The post data for the field layout
-     * @param array|null $requiredFields    The field IDs that should be marked as required in the field layout
+     * @param array $postedFieldLayout The post data for the field layout
+     * @param array $requiredFields    The field IDs that should be marked as required in the field layout
      *
      * @return FieldLayoutModel The field layout
      */
-    public function assembleLayout($postedFieldLayout, $requiredFields)
+    public function assembleLayout($postedFieldLayout, $requiredFields = [])
     {
         $tabs = [];
         $fields = [];
@@ -870,8 +957,8 @@ class Fields extends Component
 
         // Fire an 'afterSaveFieldLayout' event
         $this->trigger(static::EVENT_AFTER_SAVE_FIELD_LAYOUT, new FieldLayoutEvent([
-                'layout' => $layout
-            ]));
+            'layout' => $layout
+        ]));
 
         return true;
     }

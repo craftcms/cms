@@ -62,10 +62,10 @@ Craft.AssetSelectorModal = Craft.BaseElementSelectorModal.extend(
 			return;
 		}
 
-		var $btnGroup = $('<div class="btngroup"/>').appendTo(this.$buttons);
+		var $btnGroup = $('<div class="btngroup"/>').appendTo(this.$primaryButtons);
 		this.$selectBtn.appendTo($btnGroup);
 
-		this.$selectTransformBtn = $('<div class="btn menubtn disabled">'+Craft.t('Select Transform')+'</div>').appendTo($btnGroup);
+		this.$selectTransformBtn = $('<div class="btn menubtn disabled">'+Craft.t('Select transform')+'</div>').appendTo($btnGroup);
 
 		var $menu = $('<div class="menu" data-align="right"></div>').insertAfter(this.$selectTransformBtn),
 			$menuList = $('<ul></ul>').appendTo($menu);
@@ -85,17 +85,17 @@ Craft.AssetSelectorModal = Craft.BaseElementSelectorModal.extend(
 
 	onSelectionChange: function(ev)
 	{
-		var allowTransforms,
-			MenuBtn;
+		var $selectedElements = this.elementIndex.getSelectedElements(),
+			allowTransforms = false,
+			MenuBtn = null;
 
-		if (this.elementIndex.elementSelect.totalSelected && this.settings.canSelectImageTransforms && Craft.AssetSelectorModal.transforms.length)
+		if ($selectedElements.length && this.settings.canSelectImageTransforms && Craft.AssetSelectorModal.transforms.length)
 		{
 			allowTransforms = true;
-			var $selectedItems = this.elementIndex.elementSelect.getSelectedItems();
 
-			for (var i = 0; i < $selectedItems.length; i++)
+			for (var i = 0; i < $selectedElements.length; i++)
 			{
-				if (!$('.element.hasthumb:first', $selectedItems[i]).length)
+				if (!$('.element.hasthumb:first', $selectedElements[i]).length)
 				{
 					allowTransforms = false;
 					break;
@@ -152,12 +152,12 @@ Craft.AssetSelectorModal = Craft.BaseElementSelectorModal.extend(
 			Craft.AssetSelectorModal.transformUrls[transform] = {};
 		}
 
-		var $selectedItems = this.elementIndex.elementSelect.getSelectedItems(),
+		var $selectedElements = this.elementIndex.getSelectedElements(),
 			imageIdsWithMissingUrls = [];
 
-		for (var i = 0; i < $selectedItems.length; i++)
+		for (var i = 0; i < $selectedElements.length; i++)
 		{
-			var $item = $($selectedItems[i]),
+			var $item = $($selectedElements[i]),
 				elementId = Craft.getElementInfo($item).id;
 
 			if (typeof Craft.AssetSelectorModal.transformUrls[transform][elementId] == 'undefined')
@@ -218,9 +218,9 @@ Craft.AssetSelectorModal = Craft.BaseElementSelectorModal.extend(
 		}, this));
 	},
 
-	getElementInfo: function($selectedItems)
+	getElementInfo: function($selectedElements)
 	{
-		var info = this.base($selectedItems);
+		var info = this.base($selectedElements);
 
 		if (this._selectedTransform)
 		{

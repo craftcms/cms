@@ -344,6 +344,8 @@ class Entry extends Element
             'uri' => Craft::t('app', 'URI'),
             'postDate' => Craft::t('app', 'Post Date'),
             'expiryDate' => Craft::t('app', 'Expiry Date'),
+            'elements.dateCreated' => Craft::t('app', 'Date Created'),
+            'elements.dateUpdated' => Craft::t('app', 'Date Updated'),
         ];
 
         // Allow plugins to modify the attributes
@@ -356,25 +358,56 @@ class Entry extends Element
     /**
      * @inheritdoc
      */
-    public static function defineTableAttributes($source = null)
+    public static function defineAvailableTableAttributes()
     {
         $attributes = [
-            'title' => Craft::t('app', 'Title'),
-            'uri' => Craft::t('app', 'URI'),
+            'title' => ['label' => Craft::t('app', 'Title')],
+            'section' => ['label' => Craft::t('app', 'Section')],
+            'type' => ['label' => Craft::t('app', 'Entry Type')],
+            'author' => ['label' => Craft::t('app', 'Author')],
+            'slug' => ['label' => Craft::t('app', 'Slug')],
+            'uri' => ['label' => Craft::t('app', 'URI')],
+            'postDate' => ['label' => Craft::t('app', 'Post Date')],
+            'expiryDate' => ['label' => Craft::t('app', 'Expiry Date')],
+            'link' => ['label' => Craft::t('app', 'Link'), 'icon' => 'world'],
+            'id' => ['label' => Craft::t('app', 'ID')],
+            'dateCreated' => ['label' => Craft::t('app', 'Date Created')],
+            'dateUpdated' => ['label' => Craft::t('app', 'Date Updated')],
         ];
 
-        if ($source == '*') {
-            $attributes['section'] = Craft::t('app', 'Section');
-        }
-
-        if ($source != 'singles') {
-            $attributes['postDate'] = Craft::t('app', 'Post Date');
-            $attributes['expiryDate'] = Craft::t('app', 'Expiry Date');
+        // Hide Author from Craft Personal/Client
+        if (Craft::$app->getEdition() != Craft::Pro) {
+            unset($attributes['author']);
         }
 
         // Allow plugins to modify the attributes
-        Craft::$app->getPlugins()->call('modifyEntryTableAttributes',
-            [&$attributes, $source]);
+        $pluginAttributes = Craft::$app->getPlugins()->call('defineAdditionalEntryTableAttributes', [], true);
+
+        foreach ($pluginAttributes as $thisPluginAttributes) {
+            $attributes = array_merge($attributes, $thisPluginAttributes);
+        }
+
+        return $attributes;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public static function getDefaultTableAttributes($source = null)
+    {
+        $attributes = [];
+
+        if ($source == '*') {
+            $attributes[] = 'section';
+        }
+
+        if ($source != 'singles') {
+            $attributes[] = 'postDate';
+            $attributes[] = 'expiryDate';
+        }
+
+        $attributes[] = 'author';
+        $attributes[] = 'link';
 
         return $attributes;
     }
@@ -394,8 +427,28 @@ class Entry extends Element
         }
 
         switch ($attribute) {
+            case 'author': {
+                $author = $element->getAuthor();
+
+                if ($author) {
+                    return Craft::$app->getView()->renderTemplate('_elements/element', [
+                        'element' => $author
+                    ]);
+                } else {
+                    return '';
+                }
+            }
+
             case 'section': {
-                return Craft::t('app', $element->getSection()->name);
+                $section = $element->getSection();
+
+                return ($section ? Craft::t('site', $section->name) : '');
+            }
+
+            case 'type': {
+                $entryType = $element->getType();
+
+                return ($entryType ? Craft::t('site', $entryType->name) : '');
             }
 
             default: {
@@ -453,13 +506,52 @@ class Entry extends Element
     public static function getEditorHtml(ElementInterface $element)
     {
         /** @var Entry $element */
+        $html = '';
+
+        // Show the Entry Type field?
+        if (!$element->id) {
+            $entryTypes = $element->getSection()->getEntryTypes();
+
+            if (count($entryTypes) > 1) {
+                $entryTypeOptions = [];
+
+                foreach ($entryTypes as $entryType) {
+                    $entryTypeOptions[] = [
+                        'label' => Craft::t('site', $entryType->name),
+                        'value' => $entryType->id
+                    ];
+                }
+
+                $html .= Craft::$app->getView()->renderTemplateMacro('_includes/forms', 'selectField', [
+                    [
+                        'label' => Craft::t('app', 'Entry Type'),
+                        'id' => 'entryType',
+                        'value' => $element->typeId,
+                        'options' => $entryTypeOptions,
+                    ]
+                ]);
+
+                $view = Craft::$app->getView();
+                $typeInputId = $view->namespaceInputId('entryType');
+                $js = <<<EOD
+$('#{$typeInputId}').on('change', function(ev) {
+	var \$typeInput = $(this),
+		editor = \$typeInput.closest('.hud').data('elementEditor');
+	if (editor) {
+		editor.setElementAttribute('typeId', \$typeInput.val());
+		editor.loadHud();
+	}
+});
+EOD;
+                $view->registerJs($js);
+            }
+        }
+
         if ($element->getType()->hasTitleField) {
-            $html = Craft::$app->getView()->renderTemplate('entries/_titlefield',
+            $html .= $view->renderTemplate('entries/_titlefield',
                 [
                     'entry' => $element
                 ]);
-        } else {
-            $html = '';
         }
 
         $html .= parent::getEditorHtml($element);

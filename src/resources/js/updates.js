@@ -1,17 +1,10 @@
 (function($) {
 
 
-Craft.UpdateInfo = Garnish.Base.extend(
+var UpdatesPage = Garnish.Base.extend(
 {
-	appUpdateInfo: null,
-
-	$container: null,
-	$downloadBtn: null,
-
-	licenseHud: null,
-	$licenseSubmitBtn: null,
-	licenseSubmitAction: null,
-
+	totalAvailableUpdates: 0,
+	criticalUpdateAvailable: false,
 	allowAutoUpdates: null,
 
 	init: function()
@@ -39,50 +32,108 @@ Craft.UpdateInfo = Garnish.Base.extend(
 			}
 			else
 			{
-				var info = {
-					total: (response.app && response.app.releases && response.app.releases.length ? 1 : 0),
-					critical: (response.app && response.criticalUpdateAvailable)
-				};
+				this.allowAutoUpdates = response.allowAutoUpdates;
 
-				if (!info.total)
-				{
+				// Craft CMS update?
+				if (response.app) {
+					this.processUpdate(response.app, false);
+				}
+
+				// Plugin updates?
+				if (response.plugins && response.plugins.length) {
+					for (var i = 0; i < response.plugins.length; i++) {
+						this.processUpdate(response.plugins[i], true);
+					}
+				}
+
+				if (this.totalAvailableUpdates) {
+					$graphic.remove();
+					$status.remove();
+
+					// Add the page title
+					var headingText;
+
+					if (this.totalAvailableUpdates == 1)
+					{
+						headingText = Craft.t('1 update available');
+					}
+					else
+					{
+						headingText = Craft.t('{num} updates available', { num: this.totalAvailableUpdates });
+					}
+
+					$('<div id="page-title"/>')
+						.appendTo(Craft.cp.$pageHeader)
+						.append($('<h1/>').text(headingText));
+
+				} else {
 					$graphic.addClass('success');
 					$status.text(Craft.t('You’re all up-to-date!'));
 				}
-				else
-				{
-					$graphic.velocity('fadeOut', { duration: 'fast' });
-					$status.fadeOut('fast', $.proxy(function()
-					{
-						$graphic.remove();
-						$status.remove();
-
-						this.appUpdateInfo = response.app;
-						this.allowAutoUpdates = response.allowAutoUpdates;
-
-						this.showAvailableUpdates();
-					}, this));
-				}
-
-				// Update the CP header badge
-				Craft.cp.displayUpdateInfo(info);
 			}
 		}, this));
 	},
 
-	showAvailableUpdates: function()
+	processUpdate: function(updateInfo, isPlugin)
 	{
-		this.$container = $('<div/>').appendTo(Craft.cp.$main).hide();
+		if (!updateInfo.releases || !updateInfo.releases.length)
+		{
+			return;
+		}
 
-		var $headerPane = $('<div class="pane clearafter"/>').appendTo(this.$container),
-			$heading = $('<h2 class="heading">'+Craft.t('You’ve got updates!')+'</h2>').appendTo($headerPane),
-			$buttonContainer = $('<div class="buttons"/>').appendTo($headerPane),
+		this.totalAvailableUpdates++;
+
+		var update = new Update(updateInfo, isPlugin);
+	}
+});
+
+
+var Update = Garnish.Base.extend(
+{
+	updateInfo: null,
+	isPlugin: null,
+	displayName: null,
+	manualUpdateRequired: null,
+
+	$pane: null,
+	$paneHeader: null,
+	$downloadBtn: null,
+
+	licenseHud: null,
+	$licenseSubmitBtn: null,
+	licenseSubmitAction: null,
+
+	init: function(updateInfo, isPlugin)
+	{
+		this.updateInfo = updateInfo;
+		this.isPlugin = isPlugin;
+		this.displayName = this.isPlugin ? this.updateInfo.displayName : 'Craft CMS';
+		this.manualUpdateRequired = (!updatesPage.allowAutoUpdates || this.updateInfo.manualUpdateRequired);
+
+		this.createPane();
+		this.createHeading();
+		this.createDownloadButton();
+		this.createReleaseList();
+	},
+
+	createPane: function()
+	{
+		this.$pane = $('<div class="pane update"/>').appendTo(Craft.cp.$main);
+		this.$paneHeader = $('<div class="header"/>').appendTo(this.$pane);
+	},
+
+	createHeading: function()
+	{
+		$('<h1/>', {'class': 'left', text: this.displayName}).appendTo(this.$paneHeader);
+	},
+
+	createDownloadButton: function()
+	{
+		var $buttonContainer = $('<div class="buttons right"/>').appendTo(this.$paneHeader),
 			$updateBtn;
 
 		// Is a manual update required?
-		var manualUpdateRequired = (!this.allowAutoUpdates || this.appUpdateInfo.manualUpdateRequired);
-
-		if (manualUpdateRequired)
+		if (this.manualUpdateRequired)
 		{
 			this.$downloadBtn = $('<div class="btn submit">'+Craft.t('Download')+'</div>').appendTo($buttonContainer);
 		}
@@ -103,11 +154,11 @@ Craft.UpdateInfo = Garnish.Base.extend(
 		}
 
 		// Has the license been updated?
-		if (this.appUpdateInfo.licenseUpdated)
+		if (this.updateInfo.licenseUpdated)
 		{
 			this.addListener(this.$downloadBtn, 'click', 'showLicenseForm');
 
-			if (!manualUpdateRequired)
+			if (!this.manualUpdateRequired)
 			{
 				this.addListener($updateBtn, 'click', 'showLicenseForm');
 			}
@@ -116,14 +167,19 @@ Craft.UpdateInfo = Garnish.Base.extend(
 		{
 			this.addListener(this.$downloadBtn, 'click', 'downloadThat');
 
-			if (!manualUpdateRequired)
+			if (!this.manualUpdateRequired)
 			{
 				this.addListener($updateBtn, 'click', 'autoUpdateThat');
 			}
 		}
+	},
 
-		this.showReleases(this.appUpdateInfo.releases, 'Craft');
-		this.$container.velocity('fadeIn', { duration: 'fast' });
+	createReleaseList: function()
+	{
+		for (var i = 0; i < this.updateInfo.releases.length; i++)
+		{
+			new Release(this, this.updateInfo.releases[i]);
+		}
 	},
 
 	showLicenseForm: function(originalEvent)
@@ -132,28 +188,26 @@ Craft.UpdateInfo = Garnish.Base.extend(
 
 		if (!this.licenseHud)
 		{
-			var $form = $('<form><p>'+Craft.t('Craft’s <a href="http://craftcms.com/license" target="_blank">Terms and Conditions</a> have changed.')+'</p></form>'),
-				$label = $('<label> '+Craft.t('I agree.')+' &nbsp;</label>').appendTo($form),
+			var $hudBody = $('<div><p>'+Craft.t('Craft’s <a href="http://craftcms.com/license" target="_blank">Terms and Conditions</a> have changed.')+'</p></div>'),
+				$label = $('<label> '+Craft.t('I agree.')+' &nbsp;</label>').appendTo($hudBody),
 				$checkbox = $('<input type="checkbox"/>').prependTo($label);
 
-			this.$licenseSubmitBtn = $('<input class="btn submit" type="submit"/>').appendTo($form);
+			this.$licenseSubmitBtn = $('<input class="btn submit" type="submit"/>').appendTo($hudBody);
 
-			this.licenseHud = new Garnish.HUD(originalEvent.currentTarget, $form);
-
-			this.addListener($form, 'submit', function(ev)
-			{
-				ev.preventDefault();
-
-				if ($checkbox.prop('checked'))
+			this.licenseHud = new Garnish.HUD(originalEvent.currentTarget, $hudBody, {
+				onSubmit: $.proxy(function()
 				{
-					this.licenseSubmitAction();
-					this.licenseHud.hide();
-					$checkbox.prop('checked', false);
-				}
-				else
-				{
-					Garnish.shake(this.licenseHud.$hud);
-				}
+					if ($checkbox.prop('checked'))
+					{
+						this.licenseSubmitAction();
+						this.licenseHud.hide();
+						$checkbox.prop('checked', false);
+					}
+					else
+					{
+						Garnish.shake(this.licenseHud.$hud);
+					}
+				}, this)
 			});
 		}
 		else
@@ -174,47 +228,105 @@ Craft.UpdateInfo = Garnish.Base.extend(
 		}
 	},
 
-	showReleases: function(releases, product)
-	{
-		for (var i = 0; i < releases.length; i++)
-		{
-			var $releasePane = $('<div class="pane release"/>').appendTo(this.$container),
-				release = releases[i],
-				heading = product+' '+release.version;
-
-			if (release.build)
-			{
-				heading += ' <span class="light">' +
-					Craft.t('build {build}', { build: release.build }) +
-					' • ' + Craft.formatDate(release.date) +
-					'</span>';
-			}
-
-			if (release.critical)
-			{
-				heading += ' <span class="critical">'+Craft.t('Critical')+'</span>';
-			}
-
-			$('<h2>'+heading+'</h2>').appendTo($releasePane);
-			$('<div class="notes"/>').appendTo($releasePane).html(release.notes);
-		}
-	},
-
 	downloadThat: function()
 	{
-		var src = this.appUpdateInfo.manualDownloadEndpoint;
-
-		if (window.location.protocol == 'https:') {
-			src = src.replace('http:', 'https:');
-		}
-
-		$('<iframe/>', { src: src }).appendTo(Garnish.$bod).hide();
+		window.location.href = this.updateInfo.manualDownloadEndpoint;
 	},
 
 	autoUpdateThat: function()
 	{
-		window.location.href = Craft.getUrl('updates/go/craft');
+		window.location.href = Craft.getUrl('updates/go/'+(this.isPlugin ? this.updateInfo.class.toLowerCase() : 'craft'));
 	}
 });
+
+
+Release = Garnish.Base.extend(
+{
+	update: null,
+	releaseInfo: null,
+
+	$container: null,
+	$releaseNotes: null,
+	$showMoreLink: null,
+
+	init: function(update, releaseInfo)
+	{
+		this.update = update;
+		this.releaseInfo = releaseInfo;
+
+		this.createContainer();
+		this.createHeading();
+		this.createReleaseNotes();
+	},
+
+	createContainer: function()
+	{
+		this.$container = $('<div class="release"/>').appendTo(this.update.$pane);
+	},
+
+	createHeading: function()
+	{
+		var heading = this.releaseInfo.version;
+
+		if (this.releaseInfo.build)
+		{
+			heading += '.' + this.releaseInfo.build;
+		}
+
+		if (this.releaseInfo.critical)
+		{
+			heading += ' <span class="critical">'+Craft.t('Critical')+'</span>';
+		}
+
+		$('<h2/>', {html: heading}).appendTo(this.$container);
+		$('<p/>', {'class': 'release-date light', text: Craft.t('Released on {date}', {date: Craft.formatDate(this.releaseInfo.date)})}).appendTo(this.$container);
+	},
+
+	createReleaseNotes: function()
+	{
+		this.$releaseNotes = $('<div class="release-notes"/>').appendTo(this.$container).html(this.releaseInfo.notes);
+
+		var totalNotes = this.$releaseNotes.children('ul').children().length;
+
+		if (totalNotes > Release.maxInitialReleaseNotes) {
+			this.$releaseNotes.addClass('fade-out');
+			this.$showMoreLink = $('<a/>', {'class': 'show-full-notes', text: Craft.t('Show more')}).appendTo(this.$container);
+			this.addListener(this.$showMoreLink, 'click', 'showMoreReleaseNotes');
+		}
+	},
+
+	showMoreReleaseNotes: function()
+	{
+		var collapsedHeight = this.$releaseNotes.height();
+		this.$releaseNotes.css('max-height', 'none');
+		var expandedHeight = this.$releaseNotes.height();
+		this.$releaseNotes
+			.height(collapsedHeight)
+			.velocity({height: expandedHeight}, {
+				duration: 'fast',
+				complete: $.proxy(function(){
+					this.$releaseNotes
+						.removeClass('fade-out')
+						.css('max-height', '');
+					this.$showMoreLink.remove();
+				}, this)
+			});
+
+		this.$showMoreLink.velocity({opacity: 0, 'margin-top': -18}, {
+			duration: 'fast',
+			complete: $.proxy(function(){
+				this.$showMoreLink.remove();
+			})
+		});
+	}
+},
+{
+	maxInitialReleaseNotes: 5
+});
+
+
+// Init the updates page!
+var updatesPage = new UpdatesPage();
+
 
 })(jQuery);

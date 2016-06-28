@@ -575,9 +575,13 @@ class Users extends Component
         } else {
             // We want to hide the CP trigger if they don't have access to the CP.
             $path = Craft::$app->getConfig()->get('actionTrigger').'/users/verifyemail';
-            $url = Url::getSiteUrl($path,
-                ['code' => $unhashedVerificationCode, 'id' => $userRecord->uid],
-                Craft::$app->getRequest()->getIsSecureConnection() ? 'https' : 'http');
+            $params = [
+                'code' => $unhashedVerificationCode,
+                'id' => $userRecord->uid
+            ];
+            $protocol = Craft::$app->getRequest()->getIsSecureConnection() ? 'https' : 'http';
+            $locale = $user->preferredLocale ?: Craft::$app->getI18n()->getPrimarySiteLocaleId();
+            $url = Url::getSiteUrl($path, $params, $protocol, $locale);
         }
 
         return $url;
@@ -606,7 +610,9 @@ class Users extends Component
         if ($user->can('accessCp')) {
             return Url::getCpUrl($path, $params, $scheme);
         } else {
-            return Url::getSiteUrl($path, $params, $scheme);
+            $locale = $user->preferredLocale ?: Craft::$app->getI18n()->getPrimarySiteLocaleId();
+
+            return Url::getSiteUrl($path, $params, $scheme, $locale);
         }
     }
 

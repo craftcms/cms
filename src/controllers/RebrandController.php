@@ -14,6 +14,7 @@ use craft\app\helpers\Io;
 use craft\app\helpers\Url;
 use craft\app\web\Controller;
 use craft\app\web\UploadedFile;
+use yii\web\BadRequestHttpException;
 use yii\web\Response;
 
 Craft::$app->requireEdition(Craft::Client);
@@ -34,13 +35,13 @@ class RebrandController extends Controller
      *
      * @var array
      */
-    private $_allowedTypes = array('logo', 'icon');
+    private $_allowedTypes = ['logo', 'icon'];
 
     // Public Methods
     // =========================================================================
 
     /**
-     * Upload a logo for the admin panel.
+     * Handles Control Panel logo and site icon uploads.
      *
      * @return Response
      */
@@ -51,8 +52,7 @@ class RebrandController extends Controller
         $type = Craft::$app->getRequest()->getRequiredBodyParam('type');
 
         if (!in_array($type, $this->_allowedTypes)) {
-            return $this->asErrorJson(Craft::t('app',
-                'That is not an accepted site image type.'));
+            return $this->asErrorJson(Craft::t('app', 'That is not an accepted site image type.'));
         }
 
         // Upload the file and drop it in the temporary folder
@@ -80,28 +80,30 @@ class RebrandController extends Controller
                 // Test if we will be able to perform image actions on this image
                 if (!$imageService->checkMemoryForImage($fileDestination)) {
                     Io::deleteFile($fileDestination);
+
                     return $this->asErrorJson(Craft::t('app',
                         'The uploaded image is too large'));
                 }
 
-                $imageService->loadImage($fileDestination)->
-                scaleToFit(500, 500, false)->
-                saveAs($fileDestination);
+                $imageService
+                    ->loadImage($fileDestination)
+                    ->scaleToFit(500, 500, false)
+                    ->saveAs($fileDestination);
 
                 list ($width, $height) = Image::getImageSize($fileDestination);
 
                 // If the file is in the format badscript.php.gif perhaps.
                 if ($width && $height) {
                     $html = Craft::$app->getView()->renderTemplate('_components/tools/cropper_modal',
-                        array(
+                        [
                             'imageUrl' => Url::getResourceUrl('tempuploads/'.$filename),
                             'width' => $width,
                             'height' => $height,
                             'filename' => $filename
-                        )
+                        ]
                     );
 
-                    return $this->asJson(array('html' => $html));
+                    return $this->asJson(['html' => $html]);
                 }
             }
         } catch (BadRequestHttpException $exception) {
@@ -113,7 +115,7 @@ class RebrandController extends Controller
     }
 
     /**
-     * Crop user photo.
+     * Crops Control Panel logo and site icon images.
      *
      * @return Response
      */
@@ -127,8 +129,7 @@ class RebrandController extends Controller
         $type = $requestService->getRequiredBodyParam('type');
 
         if (!in_array($type, $this->_allowedTypes)) {
-            $this->asErrorJson(Craft::t('app',
-                'That is not a legal site image type.'));
+            $this->asErrorJson(Craft::t('app', 'That is not a legal site image type.'));
         }
 
         try {
@@ -161,7 +162,8 @@ class RebrandController extends Controller
                 Io::deleteFile($imagePath);
 
                 $html = Craft::$app->getView()->renderTemplate('settings/general/_images/'.$type);
-                return $this->asJson(array('html' => $html));
+
+                return $this->asJson(['html' => $html]);
             }
 
             Io::deleteFile($imagePath);
@@ -174,7 +176,7 @@ class RebrandController extends Controller
     }
 
     /**
-     * Delete logo.
+     * Deletes Control Panel logo and site icon images.
      *
      * @return Response
      */
@@ -184,14 +186,13 @@ class RebrandController extends Controller
         $type = Craft::$app->getRequest()->getRequiredBodyParam('type');
 
         if (!in_array($type, $this->_allowedTypes)) {
-            $this->asErrorJson(Craft::t('app',
-                'That is not a legal site image type.'));
+            $this->asErrorJson(Craft::t('app', 'That is not a legal site image type.'));
         }
 
         Io::clearFolder(Craft::$app->getPath()->getRebrandPath().$type.'/');
 
         $html = Craft::$app->getView()->renderTemplate('settings/general/_images/'.$type);
 
-        return $this->asJson(array('html' => $html));
+        return $this->asJson(['html' => $html]);
     }
 }

@@ -1,3 +1,5 @@
+/* Flexbox stuff */
+/* Other */
 /* RTL stuff */
 span.draft { margin-top: -4px; display: inline-block; border: 2px solid #bbb; border-radius: 4px; padding: 0 4px; height: 16px; vertical-align: middle; font-size: 11px; line-height: 16px; text-transform: uppercase; font-weight: bold; color: #29323d; }
 
@@ -10,7 +12,7 @@ body.rtl #locales { padding: 0 24px 0 0; }
 body.ltr #locales li { padding: 7px 45px 7px 0; }
 body.rtl #locales li { padding: 7px 0 7px 45px; }
 
-#locales li + li { border-top: 1px solid rgba(115, 127, 140, 0.15); }
+#locales li + li { border-top: 1px solid #e3e5e8; }
 
 #locales li.sel { color: #8f98a3; cursor: default; }
 
@@ -31,7 +33,5 @@ body.rtl #locales li .lightswitch { left: 9px; }
 #locales li .status { display: block; position: absolute; top: 50%; margin: -5px 0 0; }
 body.ltr #locales li .status { right: 16px; }
 body.rtl #locales li .status { left: 16px; }
-
-#settings .select, #settings .select select { width: 100%; }
 
 /*# sourceMappingURL=entry.css.map */

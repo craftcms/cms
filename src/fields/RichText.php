@@ -135,13 +135,10 @@ class RichText extends Field
         $id = Craft::$app->getView()->formatInputId($this->handle);
         $localeId = ($element ? $element->locale : Craft::$app->language);
 
-        if (isset($this->model) && $this->model->translatable)
-        {
+        if (isset($this->model) && $this->model->translatable) {
             $locale = craft()->i18n->getLocaleData($localeId);
             $orientation = '"'.$locale->getOrientation().'"';
-        }
-        else
-        {
+        } else {
             $orientation = 'Craft.orientation';
         }
 
@@ -150,8 +147,8 @@ class RichText extends Field
             Json::encode($this->_getSectionSources()).', '.
             Json::encode($this->_getCategorySources()).', '.
             Json::encode($this->_getAssetSources()).', '.
-            '"'.$localeId.'", ' .
-            $orientation.', ' .
+            '"'.$localeId.'", '.
+            $orientation.', '.
             $configJs.', '.
             '"'.static::$_redactorLang.'"'.
             ');');
@@ -162,9 +159,9 @@ class RichText extends Field
 
         if (StringHelper::contains($value, '{')) {
             // Preserve the ref tags with hashes {type:id:url} => {type:id:url}#type:id
-            $value = preg_replace_callback('/(href=|src=)([\'"])(\{(\w+\:\d+\:'.Handle::$handlePattern.')\})\2/',
+            $value = preg_replace_callback('/(href=|src=)([\'"])(\{(\w+\:\d+\:'.Handle::$handlePattern.')\})(#[^\'"#]+)?\2/',
                 function ($matches) {
-                    return $matches[1].$matches[2].$matches[3].'#'.$matches[4].$matches[2];
+                    return $matches[1].$matches[2].$matches[3].(!empty($matches[5]) ? $matches[5] : '').'#'.$matches[4].$matches[2];
                 }, $value);
 
             // Now parse 'em
@@ -251,9 +248,15 @@ class RichText extends Field
         }
 
         // Find any element URLs and swap them with ref tags
-        $value = preg_replace_callback('/(href=|src=)([\'"])[^\'"]+?#(\w+):(\d+)(:'.Handle::$handlePattern.')?\2/', function ($matches) {
-                return $matches[1].$matches[2].'{'.$matches[3].':'.$matches[4].(!empty($matches[5]) ? $matches[5] : ':url').'}'.$matches[2];
-            }, $value);
+        $value = preg_replace_callback(
+            '/(href=|src=)([\'"])[^\'"#]+?(#[^\'"#]+)?(?:#|%23)(\w+):(\d+)(:'.Handle::$handlePattern.')?\2/',
+            function ($matches) {
+                return $matches[1].$matches[2].'{'.$matches[4].':'.$matches[5].(!empty($matches[6]) ? $matches[6] : ':url').'}'.(!empty($matches[3]) ? $matches[3] : '').$matches[2];
+            },
+            $value);
+
+        // Encode any 4-byte UTF-8 characters.
+        $value = StringHelper::encodeMb4($value);
 
         return $value;
     }
@@ -377,6 +380,7 @@ class RichText extends Field
         //Craft::$app->getView()->registerJsResource('lib/redactor/redactor'.(Craft::$app->getConfig()->get('useCompressedJs') ? '.min' : '').'.js');
 
         $this->_maybeIncludeRedactorPlugin($configJs, 'fullscreen', false);
+        $this->_maybeIncludeRedactorPlugin($configJs, 'source|html', false);
         $this->_maybeIncludeRedactorPlugin($configJs, 'table', false);
         $this->_maybeIncludeRedactorPlugin($configJs, 'video', false);
         $this->_maybeIncludeRedactorPlugin($configJs, 'pagebreak', true);
@@ -403,6 +407,29 @@ class RichText extends Field
                 $this->_includeRedactorLangFile($languageId);
             }
         }
+
+        $customTranslations = [
+            'fullscreen' => Craft::t('app', 'Fullscreen'),
+            'insert-page-break' => Craft::t('app', 'Insert Page Break'),
+            'table' => Craft::t('app', 'Table'),
+            'insert-table' => Craft::t('app', 'Insert table'),
+            'insert-row-above' => Craft::t('app', 'Insert row above'),
+            'insert-row-below' => Craft::t('app', 'Insert row below'),
+            'insert-column-left' => Craft::t('app', 'Insert column left'),
+            'insert-column-right' => Craft::t('app', 'Insert column right'),
+            'add-head' => Craft::t('app', 'Add head'),
+            'delete-head' => Craft::t('app', 'Delete head'),
+            'delete-column' => Craft::t('app', 'Delete column'),
+            'delete-row' => Craft::t('app', 'Delete row'),
+            'delete-table' => Craft::t('app', 'Delete table'),
+            'video' => Craft::t('app', 'Video'),
+            'video-html-code' => Craft::t('app', 'Video Embed Code or Youtube/Vimeo Link'),
+        ];
+
+        Craft::$app->getView()->registerJs(
+            '$.extend($.Redactor.opts.langs["'.static::$_redactorLang.'"], '.
+            Json::encode($customTranslations).
+            ');');
     }
 
     /**
@@ -416,7 +443,11 @@ class RichText extends Field
      */
     private function _maybeIncludeRedactorPlugin($configJs, $plugin, $includeCss)
     {
-        if (preg_match('/([\'"])'.$plugin.'\1/', $configJs)) {
+        if (preg_match('/([\'"])(?:'.$plugin.')\1/', $configJs)) {
+            if (($pipe = strpos($plugin, '|')) !== false) {
+                $plugin = substr($plugin, 0, $pipe);
+            }
+
             if ($includeCss) {
                 Craft::$app->getView()->registerCssResource('lib/redactor/plugins/'.$plugin.'.css');
             }

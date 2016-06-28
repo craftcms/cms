@@ -9,6 +9,7 @@ namespace craft\app\fields;
 
 use Craft;
 use craft\app\base\Field;
+use craft\app\base\PreviewableFieldInterface;
 use craft\app\helpers\Db;
 use craft\app\helpers\Localization;
 use craft\app\i18n\Locale;
@@ -19,7 +20,7 @@ use craft\app\i18n\Locale;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
-class Number extends Field
+class Number extends Field implements PreviewableFieldInterface
 {
     // Static
     // =========================================================================
@@ -67,6 +68,10 @@ class Number extends Field
             'compareAttribute' => 'min',
             'operator' => '>='
         ];
+
+        if (!$this->decimals) {
+            $rules[] = [['min', 'max'], 'integer'];
+        }
 
         return $rules;
     }

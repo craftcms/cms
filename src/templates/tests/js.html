@@ -1,15 +1,14 @@
 {% extends "_layouts/basecp" %}
 {% set title = "Tests" %}
+{% registercssresource "lib/qunit/qunit-1.20.0.css" %}
+{% registerjsresource "lib/qunit/qunit-1.20.0.js" %}
+{% registerjsresource "js/tests.js" %}
 
 {% block body %}
-	{% includeCssResource "lib/qunit/qunit-1.18.0.css" %}
-	{% includeJsResource "lib/qunit/qunit-1.18.0.js" %}
-	{% includeJsResource "js/tests.js" %}
-
-	<div id="body">
-		<div id="qunit"></div>
-		<div id="qunit-fixture"></div>
-	</div>
+    <div id="body">
+        <div id="qunit"></div>
+        <div id="qunit-fixture"></div>
+    </div>
 {% endblock %}
 
-{% includeCss "#body { max-width: 800px; margin: 50px auto; }" %}
+{% registercss "#body { max-width: 800px; margin: 50px auto; }" %}

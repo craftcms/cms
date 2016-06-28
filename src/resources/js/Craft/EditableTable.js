@@ -3,6 +3,8 @@
  */
 Craft.EditableTable = Garnish.Base.extend(
 {
+	initialized: false,
+
 	id: null,
 	baseName: null,
 	columns: null,
@@ -28,6 +30,31 @@ Craft.EditableTable = Garnish.Base.extend(
 			copyDraggeeInputValuesToHelper: true
 		});
 
+		if (this.isVisible())
+		{
+			this.initialize();
+		}
+		else
+		{
+			this.addListener(Garnish.$win, 'resize', 'initializeIfVisible');
+		}
+	},
+
+	isVisible: function()
+	{
+		return (this.$table.height() > 0);
+	},
+
+	initialize: function()
+	{
+		if (this.initialized)
+		{
+			return;
+		}
+
+		this.initialized = true;
+		this.removeListener(Garnish.$win, 'resize');
+
 		var $rows = this.$tbody.children();
 
 		for (var i = 0; i < $rows.length; i++)
@@ -37,6 +64,14 @@ Craft.EditableTable = Garnish.Base.extend(
 
 		this.$addRowBtn = this.$table.next('.add');
 		this.addListener(this.$addRowBtn, 'activate', 'addRow');
+	},
+
+	initializeIfVisible: function()
+	{
+		if (this.isVisible())
+		{
+			this.initialize();
+		}
 	},
 
 	addRow: function()
@@ -220,14 +255,7 @@ Craft.EditableTable.Row = Garnish.Base.extend(
 
 			if (col.autopopulate && typeof textareasByColId[col.autopopulate] != 'undefined' && !textareasByColId[colId].val())
 			{
-				if (col.autopopulate == 'handle')
-				{
-					new Craft.HandleGenerator(textareasByColId[colId], textareasByColId[col.autopopulate]);
-				}
-				else
-				{
-					new Craft.BaseInputGenerator(textareasByColId[colId], textareasByColId[col.autopopulate]);
-				}
+				new Craft.HandleGenerator(textareasByColId[colId], textareasByColId[col.autopopulate]);
 			}
 		}
 
@@ -275,7 +303,7 @@ Craft.EditableTable.Row = Garnish.Base.extend(
 	{
 		var keyCode = ev.keyCode ? ev.keyCode : ev.charCode;
 
-		if (!ev.metaKey && !ev.ctrlKey && (
+		if (!Garnish.isCtrlKeyPressed(ev) && (
 			(keyCode == Garnish.RETURN_KEY) ||
 			(ev.data.type == 'number' && !Craft.inArray(keyCode, Craft.EditableTable.Row.numericKeyCodes))
 		))

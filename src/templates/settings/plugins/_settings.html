@@ -5,6 +5,8 @@
 	{ label: "Plugins"|t('app'), url: url('settings/plugins') }
 ] %}
 
+{% set fullPageForm = true %}
+
 
 {% extends "_layouts/cp" %}
 {% set title = plugin.name %}
@@ -12,18 +14,11 @@
 
 
 {% block content %}
-	<form method="post" accept-charset="UTF-8" data-saveshortcut>
-		<input type="hidden" name="action" value="plugins/save-plugin-settings">
-		<input type="hidden" name="pluginHandle" value="{{ plugin.getHandle() }}">
-		<input type="hidden" name="redirect" value="settings/plugins">
-		{{ getCsrfInput() }}
+	<input type="hidden" name="action" value="plugins/save-plugin-settings">
+	<input type="hidden" name="pluginHandle" value="{{ plugin.getHandle() }}">
+	<input type="hidden" name="redirect" value="settings/plugins">
 
-		{% namespace 'settings' %}
-			{{ settingsHtml|raw }}
-		{% endnamespace %}
-
-		<div class="buttons">
-			<input class="btn submit" type="submit" value="{{ 'Save'|t('app') }}">
-		</div>
-	</form>
+	{% namespace 'settings' %}
+		{{ settingsHtml|raw }}
+	{% endnamespace %}
 {% endblock %}

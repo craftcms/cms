@@ -96,6 +96,11 @@ trait ElementTrait
     public $level;
 
     /**
+     * @var int The element’s search score, if the [[\craft\app\elements\db\ElementQuery::search]] parameter was used when querying for the element
+     */
+    public $searchScore;
+
+    /**
      * @var boolean Whether the element is still awaiting its custom field values
      */
     public $awaitingFieldValues = false;

@@ -16,6 +16,7 @@ use craft\app\helpers\StringHelper;
 use craft\app\helpers\Template;
 use craft\app\helpers\Url;
 use craft\app\web\twig\tokenparsers\CacheTokenParser;
+use craft\app\web\twig\tokenparsers\DeprecatedTagTokenParser;
 use craft\app\web\twig\tokenparsers\ExitTokenParser;
 use craft\app\web\twig\tokenparsers\HeaderTokenParser;
 use craft\app\web\twig\tokenparsers\HookTokenParser;
@@ -119,6 +120,8 @@ class Extension extends \Twig_Extension
             new RegisterResourceTokenParser('includejs', 'registerJs', false, true, true, false, 'registerjs'),
             new RegisterResourceTokenParser('includejsfile', 'registerJsFile', true, true, false, true, 'registerjsfile'),
             new RegisterResourceTokenParser('includejsresource', 'registerJsResource', false, true, false, true, 'registerjsresource'),
+
+            new DeprecatedTagTokenParser('endpaginate'),
         ];
     }
 
@@ -134,16 +137,19 @@ class Extension extends \Twig_Extension
         $markdownFilter = new \Twig_Filter_Method($this, 'markdownFilter');
 
         return [
+            'camel' => new \Twig_Filter_Method($this, 'camelFilter'),
             'currency' => new \Twig_Filter_Function('\Craft::$app->getFormatter()->asCurrency'),
             'date' => new \Twig_Filter_Method($this, 'dateFilter', ['needs_environment' => true]),
             'datetime' => new \Twig_Filter_Function('\Craft::$app->getFormatter()->asDateTime'),
             'filesize' => new \Twig_Filter_Function('\Craft::$app->getFormatter()->asShortSize'),
             'filter' => new \Twig_Filter_Function('array_filter'),
             'group' => new \Twig_Filter_Method($this, 'groupFilter'),
+            'hash' => new \Twig_Filter_Function('\Craft::$app->getSecurity()->hashData'),
             'id' => new \Twig_Filter_Function('\Craft::$app->getView()->formatInputId'),
             'indexOf' => new \Twig_Filter_Method($this, 'indexOfFilter'),
             'intersect' => new \Twig_Filter_Function('array_intersect'),
             'json_encode' => new \Twig_Filter_Method($this, 'jsonEncodeFilter'),
+            'kebab' => new \Twig_Filter_Method($this, 'kebabFilter'),
             'lcfirst' => new \Twig_Filter_Method($this, 'lcfirstFilter'),
             'literal' => new \Twig_Filter_Method($this, 'literalFilter'),
             'markdown' => $markdownFilter,
@@ -154,13 +160,15 @@ class Extension extends \Twig_Extension
             'namespaceInputId' => new \Twig_Filter_Function('\Craft::$app->getView()->namespaceInputId'),
             'number' => new \Twig_Filter_Function('\Craft::$app->getFormatter()->asDecimal'),
             'parseRefs' => new \Twig_Filter_Method($this, 'parseRefsFilter'),
+            'pascal' => new \Twig_Filter_Method($this, 'pascalFilter'),
             'percentage' => new \Twig_Filter_Function('\Craft::$app->getFormatter()->asPercent'),
             'replace' => new \Twig_Filter_Method($this, 'replaceFilter'),
+            'snake' => new \Twig_Filter_Method($this, 'snakeFilter'),
             'translate' => $translateFilter,
             't' => $translateFilter,
             'ucfirst' => new \Twig_Filter_Method($this, 'ucfirstFilter'),
             'ucwords' => new \Twig_Filter_Function('ucwords'),
-            'kebab' => new \Twig_Filter_Method($this, 'kebabFilter'),
+            'values' => new \Twig_Filter_Function('array_values'),
             'without' => new \Twig_Filter_Method($this, 'withoutFilter'),
         ];
     }
@@ -223,7 +231,7 @@ class Extension extends \Twig_Extension
     }
 
     /**
-     * Kebab-cases a string.
+     * kebab-cases a string.
      *
      * @param string  $string            The string
      * @param string  $glue              The string used to glue the words together (default is a hyphen)
@@ -236,6 +244,43 @@ class Extension extends \Twig_Extension
     {
         return StringHelper::toKebabCase($string, $glue, $lower, $removePunctuation);
     }
+
+    /**
+     * camelCases a string.
+     *
+     * @param string $string The string
+     *
+     * @return string
+     */
+    public function camelFilter($string)
+    {
+        return StringHelper::toCamelCase($string);
+    }
+
+    /**
+     * PascalCases a string.
+     *
+     * @param string $string The string
+     *
+     * @return string
+     */
+    public function pascalFilter($string)
+    {
+        return StringHelper::toPascalCase($string);
+    }
+
+    /**
+     * snake_cases a string.
+     *
+     * @param string $string The string
+     *
+     * @return string
+     */
+    public function snakeFilter($string)
+    {
+        return StringHelper::toSnakeCase($string);
+    }
+
 
     /**
      * This method will JSON encode a variable. We're overriding Twig's default implementation to set some stricter
@@ -251,7 +296,7 @@ class Extension extends \Twig_Extension
     public function jsonEncodeFilter($value, $options = null)
     {
         if ($options === null && (in_array(Header::getMimeType(),
-                array('text/html', 'application/xhtml+xml')))
+                ['text/html', 'application/xhtml+xml']))
         ) {
             $options = JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_QUOT;
         }
@@ -314,7 +359,7 @@ class Extension extends \Twig_Extension
         if (is_array($search) && $replace === null) {
             return strtr($str, $search);
         } // Is this a regular expression?
-        else if (preg_match('/^\/(.+)\/$/', $search)) {
+        else if (preg_match('/^\/.+\/[a-zA-Z]*$/', $search)) {
             return preg_replace($search, $replace, $str);
         } else {
             // Otherwise use str_replace
@@ -507,6 +552,7 @@ class Extension extends \Twig_Extension
         $globals['now'] = new DateTime(null, new \DateTimeZone(Craft::$app->getTimeZone()));
         $globals['loginUrl'] = Url::getUrl(Craft::$app->getConfig()->getLoginPath());
         $globals['logoutUrl'] = Url::getUrl(Craft::$app->getConfig()->getLogoutPath());
+        $globals['isInstalled'] = Craft::$app->isInstalled();
 
         $globals['POS_HEAD'] = View::POS_HEAD;
         $globals['POS_BEGIN'] = View::POS_BEGIN;
@@ -514,7 +560,7 @@ class Extension extends \Twig_Extension
         $globals['POS_READY'] = View::POS_READY;
         $globals['POS_LOAD'] = View::POS_LOAD;
 
-        if (Craft::$app->isInstalled() && !Craft::$app->getUpdates()->isCraftDbMigrationNeeded()) {
+        if ($globals['isInstalled'] && !Craft::$app->getUpdates()->isCraftDbMigrationNeeded()) {
             $globals['siteName'] = Craft::$app->getSiteName();
             $globals['siteUrl'] = Craft::$app->getSiteUrl();
 

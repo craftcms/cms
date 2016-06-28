@@ -53,15 +53,6 @@ class SectionsController extends Controller
     {
         $variables['sections'] = Craft::$app->getSections()->getAllSections();
 
-        // Can new sections be added?
-        if (Craft::$app->getEdition() == Craft::Personal) {
-            $variables['maxSections'] = 0;
-
-            foreach (Craft::$app->getSections()->typeLimits as $limit) {
-                $variables['maxSections'] += $limit;
-            }
-        }
-
         return $this->renderTemplate('settings/sections/_index', $variables);
     }
 
@@ -112,12 +103,7 @@ class SectionsController extends Controller
         // Craft::t('app', 'Channel') Craft::t('app', 'Structure') Craft::t('app', 'Single')
 
         foreach ($types as $type) {
-            $allowed = (($section->id && $section->type == $type) || Craft::$app->getSections()->canHaveMore($type));
-            $variables['canBe'.ucfirst($type)] = $allowed;
-
-            if ($allowed) {
-                $typeOptions[$type] = Craft::t('app', ucfirst($type));
-            }
+            $typeOptions[$type] = Craft::t('app', ucfirst($type));
         }
 
         if (!$typeOptions) {
@@ -125,11 +111,7 @@ class SectionsController extends Controller
         }
 
         if (!$section->type) {
-            if ($variables['canBeChannel']) {
-                $section->type = Section::TYPE_CHANNEL;
-            } else {
-                $section->type = Section::TYPE_SINGLE;
-            }
+            $section->type = Section::TYPE_CHANNEL;
         }
 
         $variables['section'] = $section;
@@ -137,7 +119,7 @@ class SectionsController extends Controller
 
         $variables['canBeHomepage'] = (
             ($section->id && $section->isHomepage()) ||
-            ($variables['canBeSingle'] && !Craft::$app->getSections()->doesHomepageExist())
+            (!Craft::$app->getSections()->doesHomepageExist())
         );
 
         $variables['crumbs'] = [

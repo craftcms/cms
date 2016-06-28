@@ -636,20 +636,12 @@ class Request extends \yii\web\Request
      */
     public function getQueryStringWithoutPath()
     {
-        // Get the full query string.
-        $queryString = $this->getQueryString();
+        $queryParams = $this->getQueryParams();
+        $pathParam = Craft::$app->getConfig()->get('pathParam');
 
-        $parts = explode('&', $queryString);
-        $pathAssignment = Craft::$app->getConfig()->get('pathParam').'=';
+        unset($queryParams[$pathParam]);
 
-        foreach ($parts as $key => $part) {
-            if (StringHelper::startsWith($part, $pathAssignment)) {
-                unset($parts[$key]);
-                break;
-            }
-        }
-
-        return implode('&', $parts);
+        return http_build_query($queryParams);
     }
 
     /**

@@ -245,7 +245,7 @@ class Entries extends Component
                 }
 
                 // Save a new version
-                if (Craft::$app->getEdition() >= Craft::Client && $section->enableVersioning) {
+                if ($section->enableVersioning) {
                     Craft::$app->getEntryRevisions()->saveVersion($entry);
                 }
             } else {

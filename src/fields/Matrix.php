@@ -12,6 +12,8 @@ use craft\app\base\Element;
 use craft\app\base\ElementInterface;
 use craft\app\base\Field;
 use craft\app\base\FieldInterface;
+use craft\app\elements\db\ElementQuery;
+use craft\app\elements\db\ElementQueryInterface;
 use craft\app\elements\db\MatrixBlockQuery;
 use craft\app\helpers\Json;
 use craft\app\helpers\StringHelper;
@@ -166,13 +168,13 @@ class Matrix extends Field
         );
 
         Craft::$app->getView()->includeTranslations(
-            'What this block type will be called in the CP.',
-            'How you’ll refer to this block type in the templates.',
             'Are you sure you want to delete this block type?',
+            'Are you sure you want to delete this field?',
+            'Field Type',
+            'How you’ll refer to this block type in the templates.',
             'This field is required',
             'This field is translatable',
-            'Field Type',
-            'Are you sure you want to delete this field?'
+            'What this block type will be called in the CP.'
         );
 
         $fieldTypeOptions = [];
@@ -247,6 +249,32 @@ class Matrix extends Field
     /**
      * @inheritdoc
      */
+    public function modifyElementsQuery(ElementQueryInterface $query, $value)
+    {
+        /** @var ElementQuery $query */
+        if ($value == 'not :empty:') {
+            $value = ':notempty:';
+        }
+
+        if ($value == ':notempty:' || $value == ':empty:') {
+            $alias = 'matrixblocks_'.$this->handle;
+            $operator = ($value == ':notempty:' ? '!=' : '=');
+
+            $query->subQuery->andWhere(
+                "(select count({$alias}.id) from {{matrixblocks}} {$alias} where {$alias}.ownerId = elements.id and {$alias}.fieldId = :fieldId) {$operator} 0",
+                [':fieldId' => $this->model->id]
+            );
+        } else if ($value !== null) {
+            return false;
+        }
+
+        return null;
+    }
+
+
+    /**
+     * @inheritdoc
+     */
     public function getInputHtml($value, $element)
     {
         $id = Craft::$app->getView()->formatInputId($this->handle);
@@ -263,7 +291,17 @@ class Matrix extends Field
             ($this->maxBlocks ? $this->maxBlocks : 'null').
             ');');
 
-        Craft::$app->getView()->includeTranslations('Disabled', 'Actions', 'Collapse', 'Expand', 'Disable', 'Enable', 'Add {type} above', 'Add a block');
+        Craft::$app->getView()->includeTranslations(
+            'Actions',
+            'Add a block',
+            'Add {type} above',
+            'Are you sure you want to delete the selected blocks?',
+            'Collapse',
+            'Disable',
+            'Disabled',
+            'Enable',
+            'Expand'
+        );
 
         if ($value instanceof MatrixBlockQuery) {
             $value
@@ -431,7 +469,7 @@ class Matrix extends Field
     }
 
     /**
-     * Returns info about each field type for the configurator.
+     * Returns info about each block type and their field types for the Matrix field input.
      *
      * @param ElementInterface|Element $element
      *
@@ -454,6 +492,7 @@ class Matrix extends Field
 
             if ($element) {
                 $block->setOwner($element);
+                $block->locale = $element->locale;
             }
 
             $fieldLayoutFields = $blockType->getFieldLayout()->getFields();

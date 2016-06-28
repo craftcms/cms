@@ -292,6 +292,11 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
      */
     private $_resultCriteria;
 
+    /**
+     * @var array
+     */
+    private $_searchScores;
+
     // Public Methods
     // =========================================================================
 
@@ -876,6 +881,15 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
     {
         if (empty($rows)) {
             return [];
+        }
+
+        // Should we set a search score on the elements?
+        if ($this->_searchScores !== null) {
+            foreach ($rows as $row) {
+                if (isset($this->_searchScores[$row['id']])) {
+                    $row['searchScore'] = $this->_searchScores[$row['id']];
+                }
+            }
         }
 
         $elements = $this->_createElements($rows);
@@ -1526,6 +1540,8 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
      */
     private function _applySearchParam($db)
     {
+        $this->_searchScores = null;
+
         if ($this->search) {
             // Get the element IDs
             $limit = $this->query->limit;
@@ -1535,30 +1551,29 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
             $this->query->offset = null;
 
             $elementIds = $this->query->column('elements.id');
-            $scoredSearchResults = ($this->orderBy === ['score' => SORT_ASC]);
-            $filteredElementIds = Craft::$app->getSearch()->filterElementIdsByQuery($elementIds, $this->search, $scoredSearchResults, $this->locale);
+            $searchResults = Craft::$app->getSearch()->filterElementIdsByQuery($elementIds, $this->search, true, $this->locale, true);
 
             $this->query->limit = $limit;
             $this->query->offset = $offset;
 
             // No results?
-            if (!$filteredElementIds) {
+            if (!$searchResults) {
                 throw new QueryAbortedException();
             }
 
-            $this->subQuery->andWhere([
-                'in',
-                'elements.id',
-                $filteredElementIds
-            ]);
+            $filteredElementIds = array_keys($searchResults);
 
-            if ($scoredSearchResults) {
+            if ($this->orderBy === ['score' => SORT_ASC]) {
                 // Order the elements in the exact order that the Search service returned them in
                 $orderBy = [
                     new FixedOrderExpression('elements.id', $filteredElementIds, $db)
                 ];
                 $this->query->orderBy($orderBy);
             }
+
+            $this->andWhere(['in', 'elements.id', $filteredElementIds]);
+
+            $this->_searchScores = $searchResults;
         }
     }
 
@@ -1585,16 +1600,24 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
             $orderBy = [new FixedOrderExpression('elements.id', $ids, $db)];
         } else if (!empty($this->orderBy) && $this->orderBy !== ['score' => SORT_ASC] && empty($this->query->orderBy)) {
             $orderBy = $this->orderBy;
+            $orderColumnMap = [];
 
             if (is_array($this->customFields)) {
                 // Add the field column prefixes
                 foreach ($this->customFields as $field) {
                     if ($field->hasContentColumn()) {
-                        // Avoid matching fields named "asc" or "desc" in the string "column_name asc" or
-                        // "column_name desc"
-                        $orderBy = preg_replace('/(?<!\w\s)\b'.$field->handle.'\b/', 'content.'.$this->_getFieldContentColumnName($field), $orderBy);
+                        $orderColumnMap[$field->handle] = 'content.'.$this->_getFieldContentColumnName($field);
                     }
                 }
+            }
+
+            // Prevent “1052 Column 'id' in order clause is ambiguous” MySQL error
+            $orderColumnMap['id'] = 'elements.id';
+
+            foreach ($orderColumnMap as $orderValue => $columnName) {
+                // Avoid matching fields named "asc" or "desc" in the string "column_name asc" or
+                // "column_name desc"
+                $orderBy = preg_replace('/(?<!\w\s|\.)\b'.$orderValue.'\b/', $columnName.'$1', $orderBy);
             }
         } else if ($this->structureId) {
             $orderBy = 'structureelements.lft';
@@ -1743,9 +1766,9 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
 
         // Fire an 'afterPopulateElement' event
         $this->trigger(static::EVENT_AFTER_POPULATE_ELEMENT, new PopulateElementEvent([
-                'element' => $element,
-                'row' => $row
-            ]));
+            'element' => $element,
+            'row' => $row
+        ]));
 
         return $element;
     }

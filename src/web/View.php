@@ -37,8 +37,13 @@ use yii\web\AssetBundle;
  */
 class View extends \yii\web\View
 {
-    // Public Methods
+    // Properties
     // =========================================================================
+
+    /**
+     * @var array The sizes that element thumbnails should be rendered in
+     */
+    private static $_elementThumbSizes = [30, 60, 100, 200];
 
     /**
      * @var
@@ -274,7 +279,7 @@ class View extends \yii\web\View
         $output = call_user_func_array([$twigTemplate, 'get'.$macro], $args);
         $this->_renderingTemplate = $renderingTemplate;
 
-        return $output;
+        return (string)$output;
     }
 
     /**
@@ -679,7 +684,7 @@ class View extends \yii\web\View
      * - JS code registered with [[registerJs()]] with the position set to [[POS_BEGIN]], [[POS_END]], [[POS_READY]], or [[POS_LOAD]]
      * - JS files registered with [[registerJsFile()]] with the position set to [[POS_BEGIN]] or [[POS_END]]
      *
-     * @param boolean $clear    Whether the content should be cleared from the queue (default is true)
+     * @param boolean $clear Whether the content should be cleared from the queue (default is true)
      *
      * @return string the rendered content
      */
@@ -691,7 +696,7 @@ class View extends \yii\web\View
         }
 
         // Get the rendered body begin+end HTML
-        $html = $this->renderBodyBeginHtml() .
+        $html = $this->renderBodyBeginHtml().
             $this->renderBodyEndHtml(true);
 
         // Clear out the queued up files
@@ -835,6 +840,10 @@ class View extends \yii\web\View
      */
     public function namespaceInputs($html, $namespace = null, $otherAttributes = true)
     {
+        if (!is_string($html) || $html === '') {
+            return '';
+        }
+
         if ($namespace === null) {
             $namespace = $this->getNamespace();
         }
@@ -1093,7 +1102,8 @@ class View extends \yii\web\View
         if (!isset($this->_twigOptions)) {
             $this->_twigOptions = [
                 'base_template_class' => '\\craft\\app\\web\\twig\\Template',
-                'cache' => Craft::$app->getPath()->getCompiledTemplatesPath(),
+                // See: https://github.com/twigphp/Twig/issues/1951
+                'cache' => rtrim(Craft::$app->getPath()->getCompiledTemplatesPath(), '/'),
                 'auto_reload' => true,
                 'charset' => Craft::$app->charset,
             ];
@@ -1216,12 +1226,12 @@ class View extends \yii\web\View
      *
      * @param array &$context
      *
-     * @return string
+     * @return string|null
      */
     private function _getCpElementHtml(&$context)
     {
         if (!isset($context['element'])) {
-            return;
+            return null;
         }
 
         /** @var ElementInterface|Element $element */
@@ -1231,51 +1241,58 @@ class View extends \yii\web\View
             $context['context'] = 'index';
         }
 
-        if (!isset($context['viewMode'])) {
-            $context['viewMode'] = 'table';
-        }
-
-        $thumbClass = 'elementthumb'.$element->id;
-        $iconClass = 'elementicon'.$element->id;
-
-        if ($context['viewMode'] == 'thumbs') {
-            $thumbSize = 100;
-            $iconSize = 90;
-            $thumbSelectorPrefix = '.thumbsview ';
+        // How big is the element going to be?
+        if (isset($context['size']) && ($context['size'] == 'small' || $context['size'] == 'large')) {
+            $elementSize = $context['size'];
+        } else if (isset($context['viewMode']) && $context['viewMode'] == 'thumbs') {
+            $elementSize = 'large';
         } else {
-            $thumbSize = 30;
-            $iconSize = 20;
-            $thumbSelectorPrefix = '';
+            $elementSize = 'small';
         }
 
-        $thumbUrl = $element->getThumbUrl($thumbSize);
-        $iconUrl = null;
+        // Create the thumb/icon image, if there is one
+        // ---------------------------------------------------------------------
+
+        $thumbUrl = $element->getThumbUrl(self::$_elementThumbSizes[0]);
 
         if ($thumbUrl) {
-            $this->registerCss($thumbSelectorPrefix.'.'.$thumbClass." { background-image: url('".$thumbUrl."'); }");
-            $this->registerHiResCss($thumbSelectorPrefix.'.'.$thumbClass." { background-image: url('".$element->getThumbUrl($thumbSize * 2)."'); background-size: ".$thumbSize.'px; }');
-        } else {
-            $iconUrl = $element->getIconUrl($iconSize);
+            $srcsets = [];
 
-            if ($iconUrl) {
-                $this->registerCss($thumbSelectorPrefix.'.'.$iconClass." { background-image: url('".$iconUrl."'); }");
-                $this->registerHiResCss($thumbSelectorPrefix.'.'.$iconClass." { background-image: url('".$element->getIconUrl($iconSize * 2)."); background-size: ".$iconSize.'px; }');
+            foreach (self::$_elementThumbSizes as $i => $size) {
+                if ($i == 0) {
+                    $srcset = $thumbUrl;
+                } else {
+                    $srcset = $element->getThumbUrl($size);
+                }
+
+                $srcsets[] = $srcset.' '.$size.'w';
             }
+
+            $imgHtml = '<div class="elementthumb">'.
+                '<img '.
+                'sizes="'.($elementSize == 'small' ? self::$_elementThumbSizes[0] : self::$_elementThumbSizes[2]).'px" '.
+                'srcset="'.implode(', ', $srcsets).'" '.
+                'alt="">'.
+                '</div> ';
+        } else {
+            $imgHtml = '';
         }
 
-        $html = '<div class="element';
+        $html = '<div class="element '.$elementSize;
 
         if ($context['context'] == 'field') {
             $html .= ' removable';
         }
 
-        if ($thumbUrl) {
-            $html .= ' hasthumb';
-        } else if ($iconUrl) {
-            $html .= ' hasicon';
+        if ($element->hasStatuses()) {
+            $html .= ' hasstatus';
         }
 
-        $label = (string)$element;
+        if ($thumbUrl) {
+            $html .= ' hasthumb';
+        }
+
+        $label = HtmlHelper::encode($element);
 
         $html .= '" data-id="'.$element->id.'" data-locale="'.$element->locale.'" data-status="'.$element->getStatus().'" data-label="'.$label.'" data-url="'.$element->getUrl().'"';
 
@@ -1297,28 +1314,20 @@ class View extends \yii\web\View
                     'Remove').'"></a> ';
         }
 
-        if ($thumbUrl) {
-            $html .= '<div class="elementthumb '.$thumbClass.'"></div> ';
-        } else if ($iconUrl) {
-            $html .= '<div class="elementicon '.$iconClass.'"></div> ';
+        if ($element->hasStatuses()) {
+            $html .= '<span class="status '.$context['element']->getStatus().'"></span>';
         }
 
+        $html .= $imgHtml;
         $html .= '<div class="label">';
-
-        if ($element::hasStatuses()) {
-            $html .= '<span class="status '.$element->getStatus().'"></span>';
-        }
 
         $html .= '<span class="title">';
 
         if ($context['context'] == 'index' && ($cpEditUrl = $element->getCpEditUrl())) {
-            $html .= HtmlHelper::encodeParams('<a href="{cpEditUrl}">{label}</a>',
-                [
-                    'cpEditUrl' => $cpEditUrl,
-                    'label' => $label
-                ]);
+            $cpEditUrl = HtmlHelper::encode($cpEditUrl);
+            $html .= "<a href=\"{$cpEditUrl}\">{$label}</a>";
         } else {
-            $html .= HtmlHelper::encode($label);
+            $html .= $label;
         }
 
         $html .= '</span></div></div>';

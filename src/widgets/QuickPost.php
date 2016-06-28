@@ -116,15 +116,20 @@ class QuickPost extends Widget
     /**
      * @inheritdoc
      */
+    public function getIconPath()
+    {
+        return Craft::$app->getPath()->getResourcesPath().'/images/widgets/quick-post.svg';
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function getTitle()
     {
-        if (Craft::$app->getEdition() >= Craft::Client) {
-            $section = $this->_getSection();
+        $section = $this->_getSection();
 
-            if ($section !== null) {
-                return Craft::t('app', 'Post a new {section} entry',
-                    ['section' => Craft::t('site', $section->name)]);
-            }
+        if ($section) {
+            return Craft::t('app', 'Post a new {section} entry', ['section' => Craft::t('site', $section->name)]);
         }
 
         return self::displayName();

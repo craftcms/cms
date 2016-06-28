@@ -140,7 +140,7 @@ class UsersController extends Controller
      */
     public function actionGetRemainingSessionTime()
     {
-        $return = array('timeout' => Craft::$app->getUser()->getRemainingSessionTime());
+        $return = ['timeout' => Craft::$app->getUser()->getRemainingSessionTime()];
 
         if (Craft::$app->getConfig()->get('enableCsrfProtection')) {
             $return['csrfTokenValue'] = Craft::$app->getRequest()->getCsrfToken();
@@ -406,7 +406,7 @@ class UsersController extends Controller
      * Edit a user account.
      *
      * @param integer|string $userId The user’s ID, if any, or a string that indicates the user to be edited ('current' or 'client').
-     * @param User $user The user being edited, if there were any validation errors.
+     * @param User           $user   The user being edited, if there were any validation errors.
      *
      * @return string The rendering result
      * @throws NotFoundHttpException if the requested user cannot be found
@@ -475,6 +475,7 @@ class UsersController extends Controller
         // ---------------------------------------------------------------------
 
         $statusActions = [];
+        $loginActions = [];
         $sketchyActions = [];
 
         if (Craft::$app->getEdition() >= Craft::Client && !$isNewAccount) {
@@ -548,6 +549,13 @@ class UsersController extends Controller
             }
 
             if (!$user->isCurrent()) {
+                if (Craft::$app->getUser()->getIsAdmin()) {
+                    $loginActions[] = [
+                        'action' => 'users/impersonate',
+                        'label' => Craft::t('app', 'Login as {user}', ['user' => $user->getName()])
+                    ];
+                }
+
                 if (Craft::$app->getUser()->checkPermission('administrateUsers') && $user->getStatus() != User::STATUS_SUSPENDED) {
                     $sketchyActions[] = [
                         'action' => 'users/suspend-user',
@@ -578,6 +586,10 @@ class UsersController extends Controller
             $actions = array_merge($actions, array_values($pluginActions));
         }
 
+        if ($loginActions) {
+            array_push($actions, $loginActions);
+        }
+
         if ($sketchyActions) {
             array_push($actions, $sketchyActions);
         }
@@ -605,7 +617,7 @@ class UsersController extends Controller
         $tabs = [
             'account' => [
                 'label' => Craft::t('app', 'Account'),
-                'url'   => '#account',
+                'url' => '#account',
             ]
         ];
 
@@ -617,39 +629,38 @@ class UsersController extends Controller
             ];
         }
 
-        // If they can assign user groups and permissions, show the Permissions tab
-        if (Craft::$app->getUser()->getIdentity()->can('assignUserPermissions')) {
+        // Show the permission tab for the users that can change them on Craft Pro editions.
+        if (Craft::$app->getEdition() == Craft::Pro && Craft::$app->getUser()->getIdentity()->can('assignUserPermissions')) {
             $tabs['perms'] = [
                 'label' => Craft::t('app', 'Permissions'),
                 'url' => '#perms',
             ];
         }
 
-        if (count($tabs) == 1)
-        {
+        // Just one tab looks awkward, so just don't show them at all then.
+        if (count($tabs) == 1) {
             $tabs = [];
         }
 
-        // Ugly.  But Users don't have a real fieldlayout/tabs.
-        $accountFields = [
-            'username',
-            'firstName',
-            'lastName',
-            'email',
-            'password',
-            'newPassword',
-            'currentPassword',
-            'passwordResetRequired'
-        ];
+        if (!empty($tabs)) {
+            if (Craft::$app->getEdition() == Craft::Pro && $user->hasErrors()) {
+                // Ugly.  But Users don't have a real fieldlayout/tabs.
+                $errors = $user->getErrors();
+                $accountFields = [
+                    'username',
+                    'firstName',
+                    'lastName',
+                    'email',
+                    'password',
+                    'newPassword',
+                    'currentPassword',
+                    'passwordResetRequired'
+                ];
 
-        if (Craft::$app->getEdition() == Craft::Pro && $user->hasErrors()) {
-            $errors = $user->getErrors();
-
-            foreach ($errors as $attribute => $error) {
-                if (in_array($attribute, $accountFields)) {
-                    $tabs['account']['class'] = 'error';
-                } else {
-                    if (isset($tabs['profile'])) {
+                foreach ($errors as $attribute => $error) {
+                    if (in_array($attribute, $accountFields)) {
+                        $tabs['account']['class'] = 'error';
+                    } else if (isset($tabs['profile'])) {
                         $tabs['profile']['class'] = 'error';
                     }
                 }
@@ -1024,16 +1035,17 @@ class UsersController extends Controller
                 // Test if we will be able to perform image actions on this image
                 if (!Craft::$app->getImages()->checkMemoryForImage($folderPath.'/'.$filename)) {
                     Io::deleteFile($folderPath.'/'.$filename);
+
                     return $this->asErrorJson(Craft::t('app',
                         'The uploaded image is too large'));
                 }
-
-                list ($width, $height) = Image::getImageSize($folderPath.'/'.$filename);
 
                 Craft::$app->getImages()
                     ->loadImage($folderPath.'/'.$filename)
                     ->scaleToFit(500, 500, false)
                     ->saveAs($folderPath.'/'.$filename);
+
+                list ($width, $height) = Image::getImageSize($folderPath.'/'.$filename);
 
                 // If the file is in the format badscript.php.gif perhaps.
                 if ($width && $height) {
@@ -1049,8 +1061,7 @@ class UsersController extends Controller
                 }
             }
         } catch (Exception $exception) {
-            Craft::error('There was an error uploading the photo: '.$exception->getMessage(),
-                __METHOD__);
+            Craft::error('There was an error uploading the photo: '.$exception->getMessage(), __METHOD__);
         }
 
         return $this->asErrorJson(Craft::t('app',
@@ -1392,7 +1403,7 @@ class UsersController extends Controller
      * Handles an invalid login attempt.
      *
      * @param string|null $authError
-     * @param User|null $user
+     * @param User|null   $user
      *
      * @return Response|null
      */
@@ -1520,7 +1531,7 @@ class UsersController extends Controller
     /**
      * Renders the Set Password template for a given user.
      *
-     * @param User $user
+     * @param User  $user
      * @param array $variables
      *
      * @return Response
@@ -1605,8 +1616,7 @@ class UsersController extends Controller
             $image->crop($horizontalMargin, $imageWidth - $horizontalMargin,
                 $verticalMargin, $imageHeight - $verticalMargin);
 
-            Craft::$app->getUsers()->saveUserPhoto(Assets::prepareAssetName($userPhoto->name),
-                $image, $user);
+            Craft::$app->getUsers()->saveUserPhoto(Assets::prepareAssetName($userPhoto->name), $image, $user);
 
             Io::deleteFile($userPhoto->tempName);
         }

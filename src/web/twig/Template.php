@@ -26,7 +26,7 @@ abstract class Template extends \Twig_Template
     /**
      * @inheritdoc
      */
-    public function display(array $context, array $blocks = array())
+    public function display(array $context, array $blocks = [])
     {
         $name = $this->getTemplateName();
         Craft::beginProfile($name, __METHOD__);
@@ -36,6 +36,29 @@ abstract class Template extends \Twig_Template
 
     // Protected Methods
     // =========================================================================
+
+    /**
+     * Displays the template.
+     *
+     * @param array $context
+     * @param array $blocks
+     *
+     * @throws \Twig_Error
+     * @throws \Twig_Error_Runtime
+     */
+    protected function displayWithErrorHandling(array $context, array $blocks = [])
+    {
+        try {
+            parent::displayWithErrorHandling($context, $blocks);
+        } catch (\Twig_Error_Runtime $e) {
+            if (Craft::$app->getConfig()->get('suppressTemplateErrors')) {
+                // Just log it and move on
+                Craft::$app->getErrorHandler()->logException($e);
+            } else {
+                throw $e;
+            }
+        }
+    }
 
     /**
      * Returns the attribute value for a given array/object.

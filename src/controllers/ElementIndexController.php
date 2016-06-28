@@ -13,6 +13,7 @@ use craft\app\base\ElementActionInterface;
 use craft\app\elements\db\ElementQuery;
 use craft\app\elements\db\ElementQueryInterface;
 use craft\app\base\ElementInterface;
+use craft\app\events\ElementActionEvent;
 use yii\web\BadRequestHttpException;
 use yii\web\ForbiddenHttpException;
 use yii\web\Response;
@@ -112,17 +113,10 @@ class ElementIndexController extends BaseElementsController
      */
     public function actionGetElements()
     {
-        // Get the action head/foot HTML before any more is added to it from the element HTML
-        $view = Craft::$app->getView();
-        if ($this->_context == 'index') {
-            $responseData['actions'] = $this->_getActionData();
-            $responseData['actionsHeadHtml'] = $view->getHeadHtml();
-            $responseData['actionsFootHtml'] = $view->getBodyHtml();
-        }
+        $includeActions = ($this->_context == 'index');
+        $responseData = $this->_getElementResponseData(true, $includeActions);
 
-        $responseData['html'] = $this->_getElementHtml(true);
-
-        return $this->_getResponse($responseData, true);
+        return $this->asJson($responseData);
     }
 
     /**
@@ -132,9 +126,9 @@ class ElementIndexController extends BaseElementsController
      */
     public function actionGetMoreElements()
     {
-        return $this->_getResponse([
-            'html' => $this->_getElementHtml(false),
-        ], true);
+        $responseData = $this->_getElementResponseData(false, false);
+
+        return $this->asJson($responseData);
     }
 
     /**
@@ -149,6 +143,7 @@ class ElementIndexController extends BaseElementsController
         $this->requireAjaxRequest();
 
         $requestService = Craft::$app->getRequest();
+        $elementsService = Craft::$app->getElements();
 
         $actionClass = $requestService->getRequiredBodyParam('elementAction');
         $elementIds = $requestService->getRequiredBodyParam('elementIds');
@@ -192,23 +187,42 @@ class ElementIndexController extends BaseElementsController
         $actionCriteria->positionedBefore = null;
         $actionCriteria->id = $elementIds;
 
-        $success = $action->performAction($actionCriteria);
+        // Fire a 'beforePerformAction' event
+        $event = new ElementActionEvent([
+            'action' => $action,
+            'criteria' => $actionCriteria
+        ]);
+
+        $elementsService->trigger($elementsService::EVENT_BEFORE_PERFORM_ACTION, $event);
+
+        if ($event->isValid) {
+            $success = $action->performAction($actionCriteria);
+            $message = $action->getMessage();
+
+            if ($success) {
+                // Fire an 'afterPerformAction' event
+                $elementsService->trigger($elementsService::EVENT_AFTER_PERFORM_ACTION, new ElementActionEvent([
+                    'action' => $action,
+                    'criteria' => $actionCriteria
+                ]));
+            }
+        } else {
+            $success = false;
+            $message = $event->message;
+        }
 
         // Respond
-        $response = [
+        $responseData = [
             'success' => $success,
-            'message' => $action->getMessage(),
+            'message' => $message,
         ];
 
         if ($success) {
             // Send a new set of elements
-            $response['html'] = $this->_getElementHtml(false);
-            $includeLoadMoreInfo = true;
-        } else {
-            $includeLoadMoreInfo = false;
+            $responseData = array_merge($responseData, $this->_getElementResponseData(true, true));
         }
 
-        return $this->_getResponse($response, $includeLoadMoreInfo);
+        return $this->asJson($responseData);
     }
 
     // Private Methods
@@ -259,20 +273,20 @@ class ElementIndexController extends BaseElementsController
     private function _getElementQuery()
     {
         $elementType = $this->_elementType;
+        $query = $elementType::find();
 
-        $query = $elementType::find()
-            ->configure(Craft::$app->getRequest()->getBodyParam('criteria'))
-            ->limit(50)
-            ->offset(Craft::$app->getRequest()->getParam('offset'))
-            ->search(Craft::$app->getRequest()->getParam('search'));
+        $request = Craft::$app->getRequest();
 
         // Does the source specify any criteria attributes?
         if (isset($this->_source['criteria'])) {
             $query->configure($this->_source['criteria']);
         }
 
+        // Override with the request's params
+        $query->configure($request->getBodyParam('criteria'));
+
         // Exclude descendants of the collapsed element IDs
-        $collapsedElementIds = Craft::$app->getRequest()->getParam('collapsedElementIds');
+        $collapsedElementIds = $request->getParam('collapsedElementIds');
 
         if ($collapsedElementIds) {
             // Get the actual elements
@@ -317,20 +331,31 @@ class ElementIndexController extends BaseElementsController
     }
 
     /**
-     * Returns the element HTML to be returned to the client.
+     * Returns the element data to be returned to the client.
      *
-     * @param boolean $includeContainer Whether the element container should be included in the HTML.
+     * @param boolean $includeContainer Whether the element container should be included in the response data
+     * @param boolean $includeActions   Whether info about the available actions should be included in the response data
      *
-     * @return string
+     * @return array
      */
-    private function _getElementHtml($includeContainer)
+    private function _getElementResponseData($includeContainer, $includeActions)
     {
-        $disabledElementIds = Craft::$app->getRequest()->getParam('disabledElementIds',
-            []);
+        $responseData = [];
+
+        $view = Craft::$app->getView();
+
+        // Get the action head/foot HTML before any more is added to it from the element HTML
+        if ($includeActions) {
+            $responseData['actions'] = $this->_getActionData();
+            $responseData['actionsHeadHtml'] = $view->getHeadHtml();
+            $responseData['actionsFootHtml'] = $view->getBodyHtml();
+        }
+
+        $disabledElementIds = Craft::$app->getRequest()->getParam('disabledElementIds', []);
         $showCheckboxes = !empty($this->_actions);
         $elementType = $this->_elementType;
 
-        return $elementType::getIndexHtml(
+        $responseData['html'] = $elementType::getIndexHtml(
             $this->_elementQuery,
             $disabledElementIds,
             $this->_viewState,
@@ -339,6 +364,11 @@ class ElementIndexController extends BaseElementsController
             $includeContainer,
             $showCheckboxes
         );
+
+        $responseData['headHtml'] = $view->getHeadHtml();
+        $responseData['footHtml'] = $view->getBodyHtml();
+
+        return $responseData;
     }
 
     /**
@@ -396,35 +426,5 @@ class ElementIndexController extends BaseElementsController
 
             return $actionData;
         }
-    }
-
-    /**
-     * Returns the request response.
-     *
-     * @param array   $responseData
-     * @param boolean $includeLoadMoreInfo
-     *
-     * @return Response
-     */
-    private function _getResponse($responseData, $includeLoadMoreInfo)
-    {
-        if ($includeLoadMoreInfo) {
-            $totalElementsInBatch = count($this->_elementQuery);
-            $responseData['totalVisible'] = $this->_elementQuery->offset + $totalElementsInBatch;
-
-            if ($this->_elementQuery->limit) {
-                // We'll risk a pointless additional Ajax request in the unlikely event that there are exactly a factor of
-                // 50 elements, rather than running two separate element queries
-                $responseData['more'] = ($totalElementsInBatch == $this->_elementQuery->limit);
-            } else {
-                $responseData['more'] = false;
-            }
-        }
-
-        $view = Craft::$app->getView();
-        $responseData['headHtml'] = $view->getHeadHtml();
-        $responseData['footHtml'] = $view->getBodyHtml();
-
-        return $this->asJson($responseData);
     }
 }

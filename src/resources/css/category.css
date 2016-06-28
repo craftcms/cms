@@ -1,3 +1,5 @@
+/* Flexbox stuff */
+/* Other */
 /* RTL stuff */
 body.ltr #locales { padding: 0 0 0 24px; }
 body.rtl #locales { padding: 0 24px 0 0; }
@@ -6,7 +8,7 @@ body.rtl #locales { padding: 0 24px 0 0; }
 body.ltr #locales li { padding: 7px 45px 7px 0; }
 body.rtl #locales li { padding: 7px 0 7px 45px; }
 
-#locales li + li { border-top: 1px solid rgba(115, 127, 140, 0.15); }
+#locales li + li { border-top: 1px solid #e3e5e8; }
 
 #locales li.sel { color: #8f98a3; cursor: default; }
 

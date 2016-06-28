@@ -1,12 +1,12 @@
 {% macro buybtn(edition, info, licensedEdition, canTestEditions) %}
 	{%- spaceless %}
-		{# is it already installed? #}
+		{# Is it already installed? #}
 		{% if edition == CraftEdition  %}
 			<div class="installed">{{ "Installed"|t('app') }}</div><br>
 		{% endif %}
 
 		<div class="btngroup">
-			{# is it elligible to be purchased? #}
+			{# Show the "Buy" button if this edition is greater than the licensed edition #}
 			{% if edition > licensedEdition %}
 				<div class="btn buybtn" data-edition="{{ edition }}">
 					{% if info.salePrice %}
@@ -17,13 +17,19 @@
 				</div>
 			{% endif %}
 
-			{# if the domain is allowed to test editions, show an uninstall/test button #}
-			{% if canTestEditions %}
-				{% if edition == CraftEdition %}
-					<div class="btn test" data-edition="0">{{ "Uninstall"|t('app') }}</div>
-				{% else %}
-					<div class="btn test" data-edition="{{ edition }}">{{ "Test"|t('app') }}</div>
-				{% endif %}
+			{# Show the "Test" button if they're on a testable domain, this is not the current edition, and is greater than the licensed edition #}
+			{% if canTestEditions and edition != CraftEdition and edition > licensedEdition %}
+				<div class="btn test" data-edition="{{ edition }}">{{ "Test"|t('app') }}</div>
+			{% endif %}
+
+			{# Show the "Install" button if they’re licensed to use this edition but not currently on it #}
+			{% if edition == licensedEdition and edition != CraftEdition %}
+				<div class="btn test" data-edition="{{ edition }}">{{ "Install"|t('app') }}</div>
+			{% endif %}
+
+			{# Show the "Uninstall" button if this is the currently-installed edition, but is not licensed #}
+			{% if edition == CraftEdition and edition > licensedEdition %}
+				<div class="btn test" data-edition="0">{{ "Uninstall"|t('app') }}</div>
 			{% endif %}
 		</div>
 	{% endspaceless -%}
@@ -36,127 +42,103 @@
 <div id="upgrademodal-compare" class="body">
 	<table class="data fullwidth">
 		<thead>
-			<tr>
-				<td></td>
-				<th scope="col"><h1 class="logo craftclient">Craft Client</h1></th>
-				<th scope="col"><h1 class="logo craftpro">Craft Pro</h1></th>
-			</tr>
-			<tr class="buybtns">
-				<td></td>
-				<td>{{ buybtn(CraftClient, editions[CraftClient], licensedEdition, canTestEditions) }}</td>
-				<td>{{ buybtn(CraftPro, editions[CraftPro], licensedEdition, canTestEditions) }}</td>
-			</tr>
+		<tr>
+			<td></td>
+			<th scope="col"><h1 class="logo craftclient">Craft Client</h1></th>
+			<th scope="col"><h1 class="logo craftpro">Craft Pro</h1></th>
+		</tr>
+		<tr class="buybtns">
+			<td></td>
+			<td>{{ buybtn(CraftClient, editions[CraftClient], licensedEdition, canTestEditions) }}</td>
+			<td>{{ buybtn(CraftPro, editions[CraftPro], licensedEdition, canTestEditions) }}</td>
+		</tr>
 		</thead>
 		<tbody>
-			<tr>
-				<th class="group" colspan="3" data-icon="section">{{ "Content Publishing"|t('app') }}</th>
-			</tr>
-			<tr>
-				<th class="feature" scope="row">{{ "Unlimited Singles and Channels"|t('app') }}</th>
-				<td><span data-icon="check"></span></td>
-				<td><span data-icon="check"></span></td>
-			</tr>
-			<tr>
-				<th class="feature" scope="row">{{ "Structure sections"|t('app') }}</th>
-				<td><span data-icon="check"></span></td>
-				<td><span data-icon="check"></span></td>
-			</tr>
-			<tr>
-				<th class="feature" scope="row">{{ "Entry versioning"|t('app') }}</th>
-				<td><span data-icon="check"></span></td>
-				<td><span data-icon="check"></span></td>
-			</tr>
-			<tr>
-				<th class="feature" scope="row">{{ "Entry drafts"|t('app') }}</th>
-				<td><span data-icon="check"></span></td>
-				<td><span data-icon="check"></span></td>
-			</tr>
+		<tr>
+			<th class="group" colspan="3" data-icon="users">{{ "User Accounts"|t('app') }}</th>
+		</tr>
+		<tr>
+			<th class="feature" scope="row">{{ "Additional user accounts"|t('app') }}</th>
+			<td>{{ "One “Client” account"|t('app') }}</td>
+			<td>{{ "Unlimited"|t('app') }}</td>
+		</tr>
+		<tr>
+			<th class="feature" scope="row">{{ "User groups"|t('app') }}</th>
+			<td></td>
+			<td><span data-icon="check"></span></td>
+		</tr>
+		<tr>
+			<th class="feature" scope="row">{{ "User permissions"|t('app') }}</th>
+			<td></td>
+			<td><span data-icon="check"></span></td>
+		</tr>
+		<tr>
+			<th class="feature" scope="row">{{ "Public user registration"|t('app') }}</th>
+			<td></td>
+			<td><span data-icon="check"></span></td>
+		</tr>
 
-			<tr>
-				<th class="group" colspan="3" data-icon="users">{{ "User Accounts"|t('app') }}</th>
-			</tr>
-			<tr>
-				<th class="feature" scope="row">{{ "Additional user accounts"|t('app') }}</th>
-				<td>{{ "One “Client” account"|t('app') }}</td>
-				<td>{{ "Unlimited"|t('app') }}</td>
-			</tr>
-			<tr>
-				<th class="feature" scope="row">{{ "User groups"|t('app') }}</th>
-				<td></td>
-				<td><span data-icon="check"></span></td>
-			</tr>
-			<tr>
-				<th class="feature" scope="row">{{ "User permissions"|t('app') }}</th>
-				<td></td>
-				<td><span data-icon="check"></span></td>
-			</tr>
-			<tr>
-				<th class="feature" scope="row">{{ "Public user registration"|t('app') }}</th>
-				<td></td>
-				<td><span data-icon="check"></span></td>
-			</tr>
+		<tr>
+			<th class="group" colspan="3" data-icon="brush">{{ "System Branding"|t('app') }}</th>
+		</tr>
+		<tr>
+			<th class="feature" scope="row">{{ "Custom login screen logo"|t('app') }}</th>
+			<td><span data-icon="check"></span></td>
+			<td><span data-icon="check"></span></td>
+		</tr>
+		<tr>
+			<th class="feature" scope="row">{{ "Custom HTML email template"|t('app') }}</th>
+			<td><span data-icon="check"></span></td>
+			<td><span data-icon="check"></span></td>
+		</tr>
+		<tr>
+			<th class="feature" scope="row">{{ "Custom email message wording"|t('app') }}</th>
+			<td><span data-icon="check"></span></td>
+			<td><span data-icon="check"></span></td>
+		</tr>
 
-			<tr>
-				<th class="group" colspan="3" data-icon="brush">{{ "System Branding"|t('app') }}</th>
-			</tr>
-			<tr>
-				<th class="feature" scope="row">{{ "Custom login screen logo"|t('app') }}</th>
-				<td><span data-icon="check"></span></td>
-				<td><span data-icon="check"></span></td>
-			</tr>
-			<tr>
-				<th class="feature" scope="row">{{ "Custom HTML email template"|t('app') }}</th>
-				<td><span data-icon="check"></span></td>
-				<td><span data-icon="check"></span></td>
-			</tr>
-			<tr>
-				<th class="feature" scope="row">{{ "Custom email message wording"|t('app') }}</th>
-				<td><span data-icon="check"></span></td>
-				<td><span data-icon="check"></span></td>
-			</tr>
+		<tr>
+			<th class="group" colspan="3" data-icon="assets">{{ "Assets"|t('app') }}</th>
+		</tr>
+		<tr>
+			<th class="feature" scope="row">{{ "Amazon S3 support"|t('app') }}</th>
+			<td></td>
+			<td><span data-icon="check"></span></td>
+		</tr>
+		<tr>
+			<th class="feature" scope="row">{{ "Rackspace Cloud Files support"|t('app') }}</th>
+			<td></td>
+			<td><span data-icon="check"></span></td>
+		</tr>
+		<tr>
+			<th class="feature" scope="row">{{ "Google Cloud Storage support"|t('app') }}</th>
+			<td></td>
+			<td><span data-icon="check"></span></td>
+		</tr>
 
-			<tr>
-				<th class="group" colspan="3" data-icon="assets">{{ "Assets"|t('app') }}</th>
-			</tr>
-			<tr>
-				<th class="feature" scope="row">{{ "Amazon S3 support"|t('app') }}</th>
-				<td></td>
-				<td><span data-icon="check"></span></td>
-			</tr>
-			<tr>
-				<th class="feature" scope="row">{{ "Rackspace Cloud Files support"|t('app') }}</th>
-				<td></td>
-				<td><span data-icon="check"></span></td>
-			</tr>
-			<tr>
-				<th class="feature" scope="row">{{ "Google Cloud Storage support"|t('app') }}</th>
-				<td></td>
-				<td><span data-icon="check"></span></td>
-			</tr>
-
-			<tr>
-				<th class="group" colspan="3" data-icon="language">{{ "Localization and Translation"|t('app') }}</th>
-			</tr>
-			<tr>
-				<th class="feature" scope="row">{{ "Section and entry locale targeting"|t('app') }}</th>
-				<td></td>
-				<td><span data-icon="check"></span></td>
-			</tr>
-			<tr>
-				<th class="feature" scope="row">{{ "Content translations"|t('app') }}</th>
-				<td></td>
-				<td><span data-icon="check"></span></td>
-			</tr>
-			<tr>
-				<th class="feature" scope="row">{{ "Locale-specific user permissions"|t('app') }}</th>
-				<td></td>
-				<td><span data-icon="check"></span></td>
-			</tr>
-			<tr class="buybtns">
-				<td></td>
-				<td>{{ buybtn(CraftClient, editions[CraftClient], licensedEdition, canTestEditions) }}</td>
-				<td>{{ buybtn(CraftPro, editions[CraftPro], licensedEdition, canTestEditions) }}</td>
-			</tr>
+		<tr>
+			<th class="group" colspan="3" data-icon="language">{{ "Localization and Translation"|t('app') }}</th>
+		</tr>
+		<tr>
+			<th class="feature" scope="row">{{ "Section and entry locale targeting"|t('app') }}</th>
+			<td></td>
+			<td><span data-icon="check"></span></td>
+		</tr>
+		<tr>
+			<th class="feature" scope="row">{{ "Content translations"|t('app') }}</th>
+			<td></td>
+			<td><span data-icon="check"></span></td>
+		</tr>
+		<tr>
+			<th class="feature" scope="row">{{ "Locale-specific user permissions"|t('app') }}</th>
+			<td></td>
+			<td><span data-icon="check"></span></td>
+		</tr>
+		<tr class="buybtns">
+			<td></td>
+			<td>{{ buybtn(CraftClient, editions[CraftClient], licensedEdition, canTestEditions) }}</td>
+			<td>{{ buybtn(CraftPro, editions[CraftPro], licensedEdition, canTestEditions) }}</td>
+		</tr>
 		</tbody>
 	</table>
 </div>
@@ -166,85 +148,138 @@
 	<h1 class="logo"></h1>
 
 	<form class="pane">
-
 		{{ getCsrfInput() }}
 
-		<div class="header">
-			<p class="price"></p>
+		{{ forms.textField({
+			first: true,
+			placeholder: "Name"|t('app'),
+			id: 'customer-name'
+		}) }}
+
+		{{ forms.textField({
+			placeholder: "Email"|t('app'),
+			id: 'customer-email',
+			value: currentUser.email
+		}) }}
+
+		{% set ccInputs %}
+			<div class="multitext">
+				<div class="multitextrow">
+					{{ forms.text({
+						id: 'cc-num',
+						type: 'tel',
+						placeholder: "Card number"|t('app'),
+						autocomplete: false
+					}) }}
+				</div>
+				<div class="multitextrow">
+					{{ forms.text({
+						id: 'cc-exp',
+						type: 'tel',
+						placeholder: "MM"|t('app')~' / '~"YY"|t('app')
+					}) }}
+					{{ forms.text({
+						id: 'cc-cvc',
+						type: 'tel',
+						placeholder: "CVC"|t('app')
+					}) }}
+				</div>
+			</div>
+		{% endset %}
+
+		{{ forms.field({
+			fieldId: 'cc-inputs'
+		}, ccInputs) }}
+
+		<a class="fieldtoggle" data-target="upgrademodal-checkout-more">{{ "Show additional fields for invoice"|t('app') }}</a>
+
+		<div id="upgrademodal-checkout-more" class="hidden">
+			{% set bizInputs %}
+				<div class="multitext">
+					<div class="multitextrow">
+						{{ forms.text({
+							id: 'business-name',
+							placeholder: "Business name"|t('app')
+						}) }}
+					</div>
+					<div class="multitextrow">
+						{{ forms.text({
+							id: 'business-taxid',
+							placeholder: "Business tax ID"|t('app')
+						}) }}
+					</div>
+				</div>
+			{% endset %}
+
+			{{ forms.field({
+				fieldId: 'business-inputs'
+			}, bizInputs) }}
+
+			{% set addressInputs %}
+				<div class="multitext">
+					<div class="multitextrow">
+						{{ forms.text({
+							id: 'business-address1',
+							placeholder: "Address line 1"|t('app')
+						}) }}
+					</div>
+					<div class="multitextrow">
+						{{ forms.text({
+							id: 'business-address2',
+							placeholder: "Address line 2"|t('app')
+						}) }}
+					</div>
+					<div class="multitextrow">
+						<div class="text selectize-text">
+							<select id="business-country" placeholder="{{ 'Country'|t('app') }}"><option value=""></option></select>
+						</div>
+						<div class="text selectize-text">
+							<select id="business-state" placeholder="{{ 'State/province'|t('app') }}"></select>
+						</div>
+					</div>
+					<div class="multitextrow">
+						{{ forms.text({
+							id: 'business-city',
+							placeholder: "City/town"|t('app')
+						}) }}
+						{{ forms.text({
+							id: 'business-zip',
+							placeholder: "Zip/postal"|t('app')
+						}) }}
+					</div>
+				</div>
+			{% endset %}
+
+			{{ forms.field({
+				fieldId: 'address-inputs'
+			}, addressInputs) }}
+
+			{{ forms.textareaField({
+				id: 'purchase-notes',
+				placeholder: "Notes"|t('app'),
+				rows: 2
+			}) }}
 		</div>
 
-		{{ forms.textField({
-			label: "Name on the card"|t('app'),
-			id: 'cc-name'
-		}) }}
+		<div class="buttons">
+			<div class="left">
+				<input id="pay-button" type="submit" class="btn submit" value="Pay">
+				<div id="pay-spinner" class="spinner hidden"></div>
+			</div>
 
-		{{ forms.textField({
-			label: "Credit card number"|t('app'),
-			id: 'cc-num',
-			autocomplete: false
-		}) }}
-
-		<table class="inputs fullwidth">
-			<tbody>
-				<tr>
-					<td class="cc-month">
-						{% set monthInput %}
-							<div class="select fullwidth">
-								<select id="cc-month">
-									{% set localeData = craft.i18n.getLocaleData() %}
-									{% for month in 1..12 %}
-										{% set month2 = "%02d"|format(month) %}
-										<option value="{{ month2 }}">{{ month2 }} - {{ localeData.getMonthName(month) }}</option>
-									{% endfor %}
-								</select>
-							</div>
-						{% endset %}
-
-						{{ forms.field({
-							label: "Expiration month"|t('app'),
-							id: 'cc-month'
-						}, monthInput) }}
-					</td>
-
-					<td class="thin cc-year">
-						{% set yearInput %}
-							<div class="select fullwidth">
-								<select id="cc-year">
-									{% for year in now.year .. now.year+10 %}
-										<option value="{{ year }}">{{ year }}</option>
-									{% endfor %}
-								</select>
-							</div>
-						{% endset %}
-
-						{{ forms.field({
-							label: "Exp. year"|t('app'),
-							id: 'cc-year'
-						}, yearInput) }}
-					</td>
-
-					<td class="thin cc-cvc">
-						{{ forms.textField({
-							label: "CVC"|t('app'),
-							id: 'cc-cvc',
-							size: 5,
-							autocomplete: false
-						}) }}
-					</td>
-				</tr>
-			</tbody>
-		</table>
-
-		<div class="footer">
-			<div class="buttons right">
-				<div id="upgrademodal-cancelcheckout" class="btn">{{ "Cancel"|t('app') }}</div>
-				<input type="submit" class="btn submit" value="{{ 'Purchase'|t('app') }}">
-				<div class="spinner hidden"></div>
+			<div class="right">
+				{{ forms.text({
+					id: 'coupon-input',
+					class: 'code',
+					placeholder: "COUPON"|t('app'),
+					size: 12
+				}) }}
+				<div id="coupon-spinner" class="spinner hidden"></div>
 			</div>
 		</div>
-	</form>
 
-	<p class="secure icon light centeralign">{{ "Your payment is safe and secure with {stripe}."|t('app', { stripe: '<a href="https://stripe.com/" target="_blank">Stripe</a>' })|raw }}
+		<p class="secure icon light">{{ "Your payment is safe and secure with {stripe}."|t('app')({ stripe: '<a href="https://stripe.com/" target="_blank">Stripe</a>' })|raw }}
+	</form>
 </div>
 
 

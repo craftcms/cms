@@ -98,6 +98,11 @@ Craft.TagSelectInput = Craft.BaseElementSelectInput.extend(
 	// No "add" button
 	getAddElementsBtn: $.noop,
 
+	getElementSortAxis: function()
+	{
+		return null;
+	},
+
 	searchForTags: function()
 	{
 		if (this.searchMenu)
@@ -184,7 +189,7 @@ Craft.TagSelectInput = Craft.BaseElementSelectInput.extend(
 			id = $option.data('id'),
 			title = $option.text();
 
-		var $element = $('<div class="element removable" data-id="'+id+'" data-editable/>').appendTo(this.$elementsContainer),
+		var $element = $('<div class="element small removable" data-id="'+id+'" data-editable/>').appendTo(this.$elementsContainer),
 			$input = $('<input type="hidden" name="'+this.settings.name+'[]" value="'+id+'"/>').appendTo($element);
 
 		$('<a class="delete icon" title="'+Craft.t('Remove')+'"></a>').appendTo($element);

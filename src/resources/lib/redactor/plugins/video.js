@@ -1,19 +1,29 @@
-if (!RedactorPlugins) var RedactorPlugins = {};
-
 (function($)
 {
-	RedactorPlugins.video = function()
+	$.Redactor.prototype.video = function()
 	{
 		return {
 			reUrlYoutube: /https?:\/\/(?:[0-9A-Z-]+\.)?(?:youtu\.be\/|youtube\.com\S*[^\w\-\s])([\w\-]{11})(?=[^\w\-]|$)(?![?=&+%\w.-]*(?:['"][^<>]*>|<\/a>))[?=&+%\w.-]*/ig,
 			reUrlVimeo: /https?:\/\/(www\.)?vimeo.com\/(\d+)($|\/)/,
+			langs: {
+				en: {
+					"video": "Video",
+					"video-html-code": "Video Embed Code or Youtube/Vimeo Link"
+				}
+			},
 			getTemplate: function()
 			{
 				return String()
-				+ '<section id="redactor-modal-video-insert">'
-					+ '<label>' + this.lang.get('video_html_code') + '</label>'
-					+ '<textarea id="redactor-insert-video-area" style="height: 160px;"></textarea>'
-				+ '</section>';
+				+ '<div class="modal-section" id="redactor-modal-video-insert">'
+					+ '<section>'
+						+ '<label>' + this.lang.get('video-html-code') + '</label>'
+						+ '<textarea id="redactor-insert-video-area" style="height: 160px;"></textarea>'
+					+ '</section>'
+					+ '<section>'
+						+ '<button id="redactor-modal-button-action">Insert</button>'
+						+ '<button id="redactor-modal-button-cancel">Cancel</button>'
+					+ '</section>'
+				+ '</div>';
 			},
 			init: function()
 			{
@@ -25,15 +35,21 @@ if (!RedactorPlugins) var RedactorPlugins = {};
 				this.modal.addTemplate('video', this.video.getTemplate());
 
 				this.modal.load('video', this.lang.get('video'), 700);
-				this.modal.createCancelButton();
 
-				var button = this.modal.createActionButton(this.lang.get('insert'));
-				button.on('click', this.video.insert);
-
-				this.selection.save();
+				// action button
+				this.modal.getActionButton().text(this.lang.get('insert')).on('click', this.video.insert);
 				this.modal.show();
 
-				$('#redactor-insert-video-area').focus();
+				// focus
+				if (this.detect.isDesktop())
+				{
+					setTimeout(function()
+					{
+						$('#redactor-insert-video-area').focus();
+
+					}, 1);
+				}
+
 
 			},
 			insert: function()
@@ -44,9 +60,11 @@ if (!RedactorPlugins) var RedactorPlugins = {};
 				{
 					data = this.clean.stripTags(data);
 
+					this.opts.videoContainerClass = (typeof this.opts.videoContainerClass === 'undefined') ? 'video-container' : this.opts.videoContainerClass;
+
 					// parse if it is link on youtube & vimeo
-					var iframeStart = '<iframe style="width: 500px; height: 281px;" src="',
-						iframeEnd = '" frameborder="0" allowfullscreen></iframe>';
+					var iframeStart = '<div class="' + this.opts.videoContainerClass + '"><iframe style="width: 500px; height: 281px;" src="',
+						iframeEnd = '" frameborder="0" allowfullscreen></iframe></div>';
 
 					if (data.match(this.video.reUrlYoutube))
 					{
@@ -58,18 +76,16 @@ if (!RedactorPlugins) var RedactorPlugins = {};
 					}
 				}
 
-				this.selection.restore();
 				this.modal.close();
+				this.placeholder.hide();
 
-				var current = this.selection.getBlock() || this.selection.getCurrent();
+				// buffer
+				this.buffer.set();
 
-				if (current) $(current).after(data);
-				else
-				{
-					this.insert.html(data);
-				}
+				// insert
+				this.air.collapsed();
+				this.insert.html(data);
 
-				this.code.sync();
 			}
 
 		};

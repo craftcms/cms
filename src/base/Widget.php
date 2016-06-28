@@ -68,16 +68,7 @@ abstract class Widget extends SavableComponent implements WidgetInterface
      */
     public function rules()
     {
-        $rules = [
-            [['userId'], 'required'],
-            [
-                ['userId'],
-                'number',
-                'min' => -2147483648,
-                'max' => 2147483647,
-                'integerOnly' => true
-            ],
-        ];
+        $rules = [];
 
         // Only validate the ID if it's not a new widget
         if ($this->id !== null && strncmp($this->id, 'new', 3) !== 0) {
@@ -126,9 +117,9 @@ abstract class Widget extends SavableComponent implements WidgetInterface
     /**
      * @inheritdoc
      */
-    public function getColspan()
+    public function getIconPath()
     {
-        return 1;
+        return null;
     }
 
     /**
@@ -144,8 +135,8 @@ abstract class Widget extends SavableComponent implements WidgetInterface
     /**
      * @inheritdoc
      */
-    public function getUser()
+    public function getMaxColspan()
     {
-        return Craft::$app->getUsers()->getUserById($this->userId);
+        return null;
     }
 }

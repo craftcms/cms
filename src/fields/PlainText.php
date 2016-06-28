@@ -9,6 +9,7 @@ namespace craft\app\fields;
 
 use Craft;
 use craft\app\base\Field;
+use craft\app\base\PreviewableFieldInterface;
 use craft\app\helpers\Db;
 use yii\db\Schema;
 
@@ -18,7 +19,7 @@ use yii\db\Schema;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
-class PlainText extends Field
+class PlainText extends Field implements PreviewableFieldInterface
 {
     // Static
     // =========================================================================

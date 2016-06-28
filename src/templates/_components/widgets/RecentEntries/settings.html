@@ -1,45 +1,43 @@
 {% import "_includes/forms" as forms %}
 
 
-{% if CraftEdition >= CraftClient %}
-	{% set sectionInput %}
-		<div class="select">
-			<select id="section" name="section">
-				<option value="*">{{ "All"|t('app') }}</option>
-				{% for section in craft.sections.getAllSections() %}
-					{% if section.type != 'single' %}
-						<option value="{{ section.id }}"{% if section.id == widget.section %} selected{% endif %}>{{ section.name|t('site') }}</option>
-					{% endif %}
-				{% endfor %}
-			</select>
-		</div>
-	{% endset %}
+{% set sectionInput %}
+	<div class="select">
+		<select id="section" name="section">
+			<option value="*">{{ "All"|t('app') }}</option>
+			{% for section in craft.sections.getAllSections() %}
+				{% if section.type != 'single' %}
+					<option value="{{ section.id }}"{% if section.id == widget.section %} selected{% endif %}>{{ section.name|t('site') }}</option>
+				{% endif %}
+			{% endfor %}
+		</select>
+	</div>
+{% endset %}
 
-	{{ forms.field({
-		label: "Section"|t('app'),
-		instructions: "Which section do you want to pull recent entries from?"|t('app'),
-		id: 'section',
-	}, sectionInput) }}
+{{ forms.field({
+	label: "Section"|t('app'),
+	instructions: "Which section do you want to pull recent entries from?"|t('app'),
+	id: 'section',
+}, sectionInput) }}
 
-	{% if craft.isLocalized() %}
-		{% set editableLocales = craft.i18n.getEditableLocales() %}
+{% if craft.isLocalized() %}
+	{% set editableLocales = craft.i18n.getEditableLocales() %}
 
-		{% if editableLocales|length > 1 %}
-			{% set localeInput %}
-				<div class="select">
-					<select id="locale" name="locale">
-						{% for locale in editableLocales %}
-							<option value="{{ locale.id }}"{% if locale.id == widget.locale %} selected{% endif %}>{{ locale.getDisplayName(craft.locale) }}</option>
-						{% endfor %}
-					</select>
-				</div>
-			{% endset %}
+	{% if editableLocales|length > 1 %}
+		{% set localeInput %}
+			<div class="select">
+				<select id="locale" name="locale">
+					{% for locale in editableLocales %}
+						<option value="{{ locale.id }}"{% if locale.id == widget.locale %} selected{% endif %}>{{ locale.getDisplayName(craft.locale) }}</option>
+					{% endfor %}
+				</select>
+			</div>
+		{% endset %}
 
-			{{ forms.field({
-				id: 'locale',
-				label: "Locale"|t('app')
-			}, localeInput) }}
-		{% endif %}
+		{{ forms.field({
+			id: 'locale',
+			label: "Locale"|t('app')
+		}, localeInput) }}
 	{% endif %}
 {% endif %}
 

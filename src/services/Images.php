@@ -46,7 +46,7 @@ class Images extends Component
     public function isGd()
     {
         if ($this->_isGd === null) {
-            if (Craft::$app->getConfig()->get('imageDriver') == 'gd') {
+            if (strtolower(Craft::$app->getConfig()->get('imageDriver')) == 'gd') {
                 $this->_isGd = true;
             } else if (extension_loaded('imagick')) {
                 // Taken from Imagick\Imagine() constructor.
@@ -81,29 +81,25 @@ class Images extends Component
     /**
      * Loads an image from a file system path.
      *
-     * @param string $path
-     * @param bool   $rasterize whether or not the image will be rasterized if it's an SVG
-     * @param int    $svgSize   The size SVG should be scaled up to, if rasterized
+     * @param string  $path
+     * @param boolean $rasterize Whether the image should be rasterized if it's an SVG
+     * @param integer $svgSize   The size SVG should be scaled up to, if rasterized
      *
      * @return Image
      */
     public function loadImage($path, $rasterize = false, $svgSize = 1000)
     {
-        if (StringHelper::toLowerCase(Io::getExtension($path)) == 'svg')
-        {
+        if (StringHelper::toLowerCase(Io::getExtension($path)) == 'svg') {
             $image = new Svg();
             $image->loadImage($path);
 
-            if ($rasterize)
-            {
+            if ($rasterize) {
                 $image->scaleToFit($svgSize, $svgSize);
                 $svgString = $image->getSvgString();
                 $image = new Raster();
                 $image->loadFromSVG($svgString);
             }
-        }
-        else
-        {
+        } else {
             $image = new Raster();
             $image->loadImage($path);
         }
@@ -126,8 +122,7 @@ class Images extends Component
      */
     public function checkMemoryForImage($filePath, $toTheMax = false)
     {
-        if (StringHelper::toLowerCase(Io::getExtension($filePath)) == 'svg')
-        {
+        if (StringHelper::toLowerCase(Io::getExtension($filePath)) == 'svg') {
             return true;
         }
 
@@ -266,11 +261,11 @@ class Images extends Component
         }
 
         // Quick and dirty, if possible
-        if ($this->isImagick() && method_exists('Imagick', 'setImageProperty'))
-        {
+        if ($this->isImagick() && method_exists('Imagick', 'setImageProperty')) {
             $image = new \Imagick($filePath);
             $image->setImageOrientation(\Imagick::ORIENTATION_UNDEFINED);
             $image->writeImages($filePath, true);
+
             return true;
         }
 

@@ -61,7 +61,7 @@ class Search
         $str = str_replace(['&nbsp;', '&#160;', '&#xa0;'], ' ', $str);
 
         // Get rid of entities
-        $str = html_entity_decode($str, ENT_QUOTES, StringHelper::UTF8);
+        $str = preg_replace("/&#?[a-z0-9]{2,8};/i", "", $str);
 
         // Remove punctuation and diacritics
         $str = strtr($str, static::_getCharMap());

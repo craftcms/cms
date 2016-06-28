@@ -25,6 +25,7 @@ class m150403_184729_type_columns extends Migration
             //'craft\app\volumes'  => ['{{%volumes}}'],
             'craft\app\elements' => [
                 '{{%elements}}',
+                '{{%elementindexsettings}}',
                 '{{%fieldlayouts}}',
                 '{{%templatecachecriteria}}'
             ],

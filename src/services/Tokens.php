@@ -63,7 +63,7 @@ class Tokens extends Component
 
         if ($usageLimit) {
             $tokenRecord->usageCount = 0;
-            $usageLimit->usageLimit = $usageLimit;
+            $tokenRecord->usageLimit = $usageLimit;
         }
 
         $tokenRecord->expiryDate = $expiryDate;
@@ -128,12 +128,17 @@ class Tokens extends Component
      */
     public function incrementTokenUsageCountById($tokenId)
     {
-        $affectedRows = Craft::$app->getDb()->createCommand()->update('{{%tokens}}',
-            [
-                'usageCount' => 'usageCount + 1'
-            ], [
-                'id' => $tokenId
-            ])->execute();
+        $currentUsageCount = (new Query())
+            ->select('usageCount')
+            ->from('{{%tokens}}')
+            ->where(['id' => $tokenId])
+            ->one();
+
+        $affectedRows = Craft::$app->getDb()->createCommand()->update(
+            '{{%tokens}}',
+            ['usageCount' => $currentUsageCount],
+            ['id' => $tokenId]
+        )->execute();
 
         return (bool)$affectedRows;
     }

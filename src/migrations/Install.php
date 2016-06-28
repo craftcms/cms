@@ -170,8 +170,8 @@ class Install extends InstallMigration
                     'folderId' => 'integer(11) NOT NULL',
                     'filename' => 'string(255) COLLATE utf8_unicode_ci NOT NULL',
                     'kind' => 'string(50) COLLATE utf8_unicode_ci NOT NULL DEFAULT \'unknown\'',
-                    'width' => 'smallint(6) unsigned DEFAULT NULL',
-                    'height' => 'smallint(6) unsigned DEFAULT NULL',
+                    'width' => 'integer(11) unsigned DEFAULT NULL',
+                    'height' => 'integer(11) unsigned DEFAULT NULL',
                     'size' => 'integer(11) unsigned DEFAULT NULL',
                     'dateModified' => 'datetime DEFAULT NULL',
                 ],
@@ -260,8 +260,8 @@ class Install extends InstallMigration
                 'columns' => [
                     'groupId' => 'integer(11) NOT NULL',
                     'locale' => 'char(12) COLLATE utf8_unicode_ci NOT NULL',
-                    'urlFormat' => 'string(255) COLLATE utf8_unicode_ci DEFAULT NULL',
-                    'nestedUrlFormat' => 'string(255) COLLATE utf8_unicode_ci DEFAULT NULL',
+                    'urlFormat' => 'text COLLATE utf8_unicode_ci DEFAULT NULL',
+                    'nestedUrlFormat' => 'text COLLATE utf8_unicode_ci DEFAULT NULL',
                 ],
                 'indexes' => [
                     ['groupId,locale', true],
@@ -310,6 +310,15 @@ class Install extends InstallMigration
                 ],
                 'indexes' => [
                     ['key,fingerprint', true],
+                ],
+            ],
+            '{{%elementindexsettings}}' => [
+                'columns' => [
+                    'type' => 'string(255) COLLATE utf8_unicode_ci NOT NULL',
+                    'settings' => 'text COLLATE utf8_unicode_ci',
+                ],
+                'indexes' => [
+                    ['type', true],
                 ],
             ],
             '{{%elements}}' => [
@@ -413,7 +422,7 @@ class Install extends InstallMigration
                     'hasTitleField' => 'smallint(1) NOT NULL DEFAULT \'1\'',
                     'titleLabel' => 'string(255) COLLATE utf8_unicode_ci DEFAULT NULL',
                     'titleFormat' => 'string(255) COLLATE utf8_unicode_ci DEFAULT NULL',
-                    'sortOrder' => 'smallint(4) DEFAULT NULL',
+                    'sortOrder' => 'smallint(4) unsigned DEFAULT NULL',
                 ],
                 'indexes' => [
                     ['name,sectionId', true],
@@ -469,7 +478,7 @@ class Install extends InstallMigration
                     'tabId' => 'integer(11) NOT NULL',
                     'fieldId' => 'integer(11) NOT NULL',
                     'required' => 'smallint(1) unsigned NOT NULL DEFAULT \'0\'',
-                    'sortOrder' => 'smallint(4) DEFAULT NULL',
+                    'sortOrder' => 'smallint(4) unsigned DEFAULT NULL',
                 ],
                 'indexes' => [
                     ['layoutId,fieldId', true],
@@ -495,7 +504,7 @@ class Install extends InstallMigration
                 'columns' => [
                     'layoutId' => 'integer(11) NOT NULL',
                     'name' => 'string(255) COLLATE utf8_unicode_ci NOT NULL',
-                    'sortOrder' => 'smallint(4) DEFAULT NULL',
+                    'sortOrder' => 'smallint(4) unsigned DEFAULT NULL',
                 ],
                 'indexes' => [
                     ['sortOrder', false],
@@ -566,7 +575,7 @@ class Install extends InstallMigration
             '{{%locales}}' => [
                 'columns' => [
                     'locale' => 'char(12) COLLATE utf8_unicode_ci NOT NULL',
-                    'sortOrder' => 'smallint(4) DEFAULT NULL',
+                    'sortOrder' => 'smallint(4) unsigned DEFAULT NULL',
                 ],
                 'addIdColumn' => false,
                 'primaryKey' => 'locale',
@@ -580,7 +589,7 @@ class Install extends InstallMigration
                     'ownerLocale' => 'char(12) COLLATE utf8_unicode_ci DEFAULT NULL',
                     'fieldId' => 'integer(11) NOT NULL',
                     'typeId' => 'integer(11) DEFAULT NULL',
-                    'sortOrder' => 'smallint(4) DEFAULT NULL',
+                    'sortOrder' => 'smallint(4) unsigned DEFAULT NULL',
                 ],
                 'indexes' => [
                     ['ownerId', false],
@@ -609,7 +618,7 @@ class Install extends InstallMigration
                     'fieldLayoutId' => 'integer(11) DEFAULT NULL',
                     'name' => 'string(255) COLLATE utf8_unicode_ci NOT NULL',
                     'handle' => 'string(255) COLLATE utf8_unicode_ci NOT NULL',
-                    'sortOrder' => 'smallint(4) DEFAULT NULL',
+                    'sortOrder' => 'smallint(4) unsigned DEFAULT NULL',
                 ],
                 'indexes' => [
                     ['name,fieldId', true],
@@ -646,7 +655,10 @@ class Install extends InstallMigration
             '{{%plugins}}' => [
                 'columns' => [
                     'handle' => 'string(150) COLLATE utf8_unicode_ci NOT NULL',
-                    'version' => 'char(15) COLLATE utf8_unicode_ci NOT NULL',
+                    'version' => 'varchar(15) COLLATE utf8_unicode_ci NOT NULL',
+                    'schemaVersion' => 'varchar(15) COLLATE utf8_unicode_ci',
+                    'licenseKey' => 'char(24) COLLATE utf8_unicode_ci',
+                    'licenseKeyStatus' => 'enum(\'valid\',\'invalid\',\'mismatched\',\'unknown\') COLLATE utf8_unicode_ci NOT NULL DEFAULT \'unknown\'',
                     'enabled' => 'smallint(1) unsigned NOT NULL DEFAULT \'0\'',
                     'settings' => 'text COLLATE utf8_unicode_ci',
                     'installDate' => 'datetime NOT NULL',
@@ -699,7 +711,7 @@ class Install extends InstallMigration
                     'urlParts' => 'string(255) COLLATE utf8_unicode_ci NOT NULL',
                     'urlPattern' => 'string(255) COLLATE utf8_unicode_ci NOT NULL',
                     'template' => 'string(255) COLLATE utf8_unicode_ci NOT NULL',
-                    'sortOrder' => 'smallint(4) DEFAULT NULL',
+                    'sortOrder' => 'smallint(4) unsigned DEFAULT NULL',
                 ],
                 'indexes' => [
                     ['urlPattern', true],
@@ -746,8 +758,8 @@ class Install extends InstallMigration
                     'sectionId' => 'integer(11) NOT NULL',
                     'locale' => 'char(12) COLLATE utf8_unicode_ci NOT NULL',
                     'enabledByDefault' => 'smallint(1) DEFAULT \'1\'',
-                    'urlFormat' => 'string(255) COLLATE utf8_unicode_ci DEFAULT NULL',
-                    'nestedUrlFormat' => 'string(255) COLLATE utf8_unicode_ci DEFAULT NULL',
+                    'urlFormat' => 'text COLLATE utf8_unicode_ci DEFAULT NULL',
+                    'nestedUrlFormat' => 'text COLLATE utf8_unicode_ci DEFAULT NULL',
                 ],
                 'indexes' => [
                     ['sectionId,locale', true],
@@ -1067,7 +1079,7 @@ class Install extends InstallMigration
                     'type' => 'string(255) COLLATE utf8_unicode_ci NOT NULL',
                     'url' => 'string(255) COLLATE utf8_unicode_ci DEFAULT NULL',
                     'settings' => 'text COLLATE utf8_unicode_ci',
-                    'sortOrder' => 'smallint(4) DEFAULT NULL',
+                    'sortOrder' => 'smallint(4) unsigned DEFAULT NULL',
                 ],
                 'indexes' => [
                     ['name', true],
@@ -1088,7 +1100,8 @@ class Install extends InstallMigration
                 'columns' => [
                     'userId' => 'integer(11) NOT NULL',
                     'type' => 'string(255) COLLATE utf8_unicode_ci NOT NULL',
-                    'sortOrder' => 'smallint(4) DEFAULT NULL',
+                    'sortOrder' => 'smallint(4) unsigned DEFAULT NULL',
+                    'colspan' => 'tinyint(1) unsigned DEFAULT NULL',
                     'settings' => 'text COLLATE utf8_unicode_ci',
                     'enabled' => 'smallint(1) DEFAULT \'1\'',
                 ],

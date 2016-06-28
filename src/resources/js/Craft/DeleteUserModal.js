@@ -1,3 +1,6 @@
+/**
+ * Delete User Modal
+ */
 Craft.DeleteUserModal = Garnish.Modal.extend(
 {
 	id: null,

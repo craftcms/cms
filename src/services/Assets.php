@@ -921,7 +921,8 @@ class Assets extends Component
 
         // Does the file actually exist?
         if ($index->fileExists) {
-            return $assetTransforms->getUrlForTransformByTransformIndex($index);
+            return $assetTransforms->getUrlForTransformByAssetAndTransformIndex($asset,
+                $index);
         } else {
             if (Craft::$app->getConfig()->get('generateTransformsBeforePageLoad')) {
                 return $assetTransforms->ensureTransformUrlByIndexModel($index);
@@ -1335,7 +1336,7 @@ class Assets extends Component
                     $assetTransforms->deleteTransformIndex($transformIndex->id);
                 }
             }
-        } // Move between sources
+        } // Move between volumes
         else {
             $localPath = Io::getTempFilePath($asset->getExtension());
             $sourceVolume->saveFileLocally($asset->getUri(), $localPath);

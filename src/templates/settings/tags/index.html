@@ -1,6 +1,12 @@
 {% extends "_layouts/cp" %}
 {% set title = "Tag Groups"|t('app') %}
 
+{% set extraPageHeaderHtml %}
+	<div class="buttons right">
+		<a href="{{ url('settings/tags/new') }}" class="btn submit add icon">{{ "New tag group"|t('app') }}</a>
+	</div>
+{% endset %}
+
 {% set crumbs = [
 	{ label: "Settings"|t('app'), url: url('settings') }
 ] %}
@@ -8,7 +14,7 @@
 {% set docsUrl = 'http://craftcms.com/docs/tags' %}
 
 
-{% set content %}
+{% block content %}
 	<div id="notaggroups"{% if tagGroups|length %} class="hidden"{% endif %}>
 		<p>{{ "No tag groups exist yet."|t('app') }}</p>
 	</div>
@@ -31,11 +37,7 @@
 			</tbody>
 		</table>
 	{% endif %}
-
-	<div class="buttons">
-		<a href="{{ url('settings/tags/new') }}" class="btn submit add icon">{{ "New Tag Group"|t('app') }}</a>
-	</div>
-{% endset %}
+{% endblock %}
 
 
 {% registerjs %}

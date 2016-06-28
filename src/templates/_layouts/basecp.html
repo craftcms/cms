@@ -1,8 +1,14 @@
 {% extends "_layouts/base" %}
 
-{%- includeTranslations "Show", "Hide" %}
+{# Give the body a .mobile class for mobile devices #}
+{% if craft.request.getIsMobileBrowser(true) %}
+	{% set bodyClass = (bodyClass is defined and bodyClass ? bodyClass~' ' : '') ~ 'mobile' %}
+{% endif %}
 
-{% set orientation = craft.i18n.getLocaleData().getOrientation() %}
+{% includeTranslations "Show", "Hide" %}
+
+{% set localeData = craft.i18n.getLocaleData() %}
+{% set orientation = localeData.getOrientation() %}
 
 {% block foot %}
 	<noscript>
@@ -14,6 +20,7 @@
 	</noscript>
 
 	{% registerjs at head %}
+		// Create the Craft object
 		window.Craft = {
 			siteUid:               "{{ craft.app.getSiteUid()|e('js') }}",
 			baseUrl:               "{{ url()|e('js') }}",
@@ -24,6 +31,7 @@
 			scriptName:            "{{ craft.request.getScriptName()|e('js') }}",
 			omitScriptNameInUrls:  {{ craft.config.omitScriptNameInUrls() ? 'true' : 'false' }},
 			usePathInfo:           {{ craft.config.usePathInfo() ? 'true' : 'false' }},
+			useCompressedJs:       {{ craft.config.useCompressedJs ? 'true' : 'false' }},
 			resourceTrigger:       "{{ craft.config.getResourceTrigger()|e('js') }}",
 			actionTrigger:         "{{ craft.config.actionTrigger|e('js') }}",
 			path:                  "{{ craft.request.getPath()|e('js') }}",
@@ -48,15 +56,39 @@
 			{% endif %}
 			runTasksAutomatically: {{ craft.config.runTasksAutomatically ? 'true' : 'false' }},
 			slugWordSeparator:     "{{ craft.config.slugWordSeparator|e('js') }}",
-			limitAutoSlugsToAscii: {{ craft.config.limitAutoSlugsToAscii ? 'true' : 'false' }}
+			limitAutoSlugsToAscii: {{ craft.config.limitAutoSlugsToAscii ? 'true' : 'false' }},
+			fileKinds:             {{ craft.app.getFileKinds()|json_encode|raw }},
+			datepickerOptions: {
+				constrainInput: false,
+				dateFormat: "{{ craft.i18n.getDatepickerJsFormat()|e('js') }}",
+				prevText: '{{ "Prev"|t|e('js') }}',
+				nextText: '{{ "Next"|t|e('js') }}',
+				firstDay: {{ currentUser.getPreference('weekStartDay') ?? craft.config.defaultWeekStartDay }},
+				dayNames: {{ localeData.getWeekDayNames('wide', true)|json_encode|raw }},
+				dayNamesShort: {{ localeData.getWeekDayNames('abbreviated', true)|json_encode|raw }},
+				dayNamesMin: {{ localeData.getWeekDayNames('narrow', true)|json_encode|raw }},
+				monthNames: {{ localeData.getMonthNames('wide', true)|values|json_encode|raw }},
+				monthNamesShort: {{ localeData.getMonthNames('abbreviated', true)|values|json_encode|raw }}
+			},
+			publishableSections: [
+				{% if isInstalled and currentUser is defined and currentUser %}
+					{% for section in craft.sections.getEditableSections() %}
+						{% if section.type != 'single' and currentUser.can('createEntries:'~section.id) %}
+							{id: {{ section.id }}, name: "{{ section.name|t|e('js') }}", handle: "{{ section.handle|e('js') }}", type: "{{ section.type }}"}{% if not loop.last %},{% endif %}
+						{% endif %}
+					{% endfor %}
+				{% endif %}
+			],
+			editableCategoryGroups: [
+				{% if isInstalled %}
+					{% for group in craft.categoryGroups.getEditableGroups() %}
+						{id: {{ group.id }}, name: "{{ group.name|t|e('js') }}", handle: "{{ group.handle|e('js') }}"}{% if not loop.last %},{% endif %}
+					{% endfor %}
+				{% endif %}
+			]
 		};
 
-		window.Craft.fileKinds = {};
-		{% for kind, info in craft.app.getFileKinds() %}
-			window.Craft.fileKinds.{{ kind }} = [];
-			{% for extension in info.extensions %}
-				window.Craft.fileKinds.{{ kind }}.push("{{ extension }}");
-			{% endfor %}
-		{% endfor %}
+		// Picture element HTML5 shiv
+		document.createElement('picture');
 	{% endregisterjs %}
 {% endblock %}

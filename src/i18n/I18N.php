@@ -10,6 +10,7 @@ namespace craft\app\i18n;
 use Craft;
 use craft\app\db\Query;
 use craft\app\events\DeleteLocaleEvent;
+use craft\app\events\LocaleEvent;
 use craft\app\helpers\Io;
 use craft\app\tasks\ResaveAllElements;
 use ResourceBundle;
@@ -25,6 +26,11 @@ class I18N extends \yii\i18n\I18N
 {
     // Constants
     // =========================================================================
+
+    /**
+     * @event LocaleEvent The event that is triggered after a locale is added.
+     */
+    const EVENT_AFTER_ADD_LOCALE = 'afterAddLocale';
 
     /**
      * @event DeleteLocaleEvent The event that is triggered before a locale is deleted.
@@ -383,6 +389,11 @@ class I18N extends \yii\i18n\I18N
                     $newCategoryLocales
                 )->execute();
             }
+
+            // Fire an 'afterAddLocale' event
+            $this->trigger(static::EVENT_AFTER_ADD_LOCALE, new LocaleEvent([
+                'localeId' => $localeId
+            ]));
 
             // Re-save all of the localizable elements
             if (!Craft::$app->getTasks()->areTasksPending(ResaveAllElements::className())) {

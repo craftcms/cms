@@ -25,383 +25,385 @@
  * Image Upload tool.
  */
 Craft.ImageUpload = Garnish.Base.extend(
-{
-	_imageHandler: null,
-
-	init: function(settings)
 	{
-		this.setSettings(settings, Craft.ImageUpload.defaults);
-		this._imageHandler = new Craft.ImageHandler(settings);
-	},
+		_imageHandler: null,
 
-	destroy: function()
-	{
-		this._imageHandler.destroy();
-		delete this._imageHandler;
-
-		this.base();
-	}
-},
-{
-	$modalContainerDiv: null,
-
-	defaults: {
-		postParameters: {},
-
-		modalClass: "",
-		uploadButton: {},
-		uploadAction: "",
-
-		deleteButton: {},
-		deleteMessage: "",
-		deleteAction: "",
-
-		cropAction:"",
-
-		areaToolOptions:
+		init: function(settings)
 		{
-			aspectRatio: "1",
-			initialRectangle: {
-				mode: "auto",
-				x1: 0,
-				x2: 0,
-				y1: 0,
-				y2: 0
-			}
+			this.setSettings(settings, Craft.ImageUpload.defaults);
+			this._imageHandler = new Craft.ImageHandler(settings);
 		},
 
-		onImageDelete: function(response)
+		destroy: function()
 		{
-			location.reload();
-		},
-		onImageSave: function(response)
-		{
-			location.reload();
+			this._imageHandler.destroy();
+			delete this._imageHandler;
+
+			this.base();
 		}
-	}
-});
+	},
+	{
+		$modalContainerDiv: null,
+
+		defaults: {
+			postParameters: {},
+
+			modalClass: "",
+			uploadButton: {},
+			uploadAction: "",
+
+			deleteButton: {},
+			deleteMessage: "",
+			deleteAction: "",
+
+			cropAction:"",
+
+			constraint: 500,
+
+			areaToolOptions:
+			{
+				aspectRatio: "1",
+				initialRectangle: {
+					mode: "auto",
+					x1: 0,
+					x2: 0,
+					y1: 0,
+					y2: 0
+				}
+			},
+
+			onImageDelete: function(response)
+			{
+				location.reload();
+			},
+			onImageSave: function(response)
+			{
+				location.reload();
+			}
+		}
+	});
 
 
 Craft.ImageHandler = Garnish.Base.extend(
-{
-	modal: null,
-	progressBar: null,
-	$container: null,
-
-	init: function(settings)
 	{
-		this.setSettings(settings);
+		modal: null,
+		progressBar: null,
+		$container: null,
 
-		var element = settings.uploadButton;
-		var $uploadInput = $('<input type="file" name="image-upload"/>').hide().insertBefore(element);
+		init: function(settings)
+		{
+			this.setSettings(settings);
 
-		this.progressBar = new Craft.ProgressBar($('<div class="progress-shade"></div>').insertBefore(element));
-		this.progressBar.$progressBar.css({
-			top: Math.round(element.outerHeight() / 2) - 6
-		});
+			var element = settings.uploadButton;
+			var $uploadInput = $('<input type="file" name="image-upload"/>').hide().insertBefore(element);
 
-		this.$container = element.parent();
+			this.progressBar = new Craft.ProgressBar($('<div class="progress-shade"></div>').insertBefore(element));
+			this.progressBar.$progressBar.css({
+				top: Math.round(element.outerHeight() / 2) - 6
+			});
 
-		var options = {
-			url: Craft.getActionUrl(this.settings.uploadAction),
-			fileInput: $uploadInput,
+			this.$container = element.parent();
 
-			element:    this.settings.uploadButton[0],
-			action:     Craft.actionUrl + '/' + this.settings.uploadAction,
-			formData:   typeof this.settings.postParameters === 'object' ? this.settings.postParameters : {},
-			events:     {
-				fileuploadstart: $.proxy(function()
-				{
-					this.$container.addClass('uploading');
-					this.progressBar.resetProgressBar();
-					this.progressBar.showProgressBar();
-				}, this),
-				fileuploadprogressall: $.proxy(function(data)
-				{
-					var progress = parseInt(data.loaded / data.total * 100, 10);
-					this.progressBar.setProgressPercentage(progress);
-				}, this),
-				fileuploaddone: $.proxy(function(event, data)
-				{
-					this.progressBar.hideProgressBar();
-					this.$container.removeClass('uploading');
+			var options = {
+				url: Craft.getActionUrl(this.settings.uploadAction),
+				fileInput: $uploadInput,
 
-					var response = data.result;
-
-					if (response.error)
+				element:    this.settings.uploadButton[0],
+				action:     Craft.actionUrl + '/' + this.settings.uploadAction,
+				formData:   typeof this.settings.postParameters === 'object' ? this.settings.postParameters : {},
+				events:     {
+					fileuploadstart: $.proxy(function()
 					{
-						alert(response.error);
-						return;
-					}
-
-					if (Craft.ImageUpload.$modalContainerDiv == null)
+						this.$container.addClass('uploading');
+						this.progressBar.resetProgressBar();
+						this.progressBar.showProgressBar();
+					}, this),
+					fileuploadprogressall: $.proxy(function(data)
 					{
-						Craft.ImageUpload.$modalContainerDiv = $('<div class="modal fitted"></div>').addClass(settings.modalClass).appendTo(Garnish.$bod);
-					}
-
-					if (response.fileName)
+						var progress = parseInt(data.loaded / data.total * 100, 10);
+						this.progressBar.setProgressPercentage(progress);
+					}, this),
+					fileuploaddone: $.proxy(function(event, data)
 					{
-						this.source = response.fileName;
-					}
+						this.progressBar.hideProgressBar();
+						this.$container.removeClass('uploading');
 
-					if (response.html)
-					{
-						Craft.ImageUpload.$modalContainerDiv.empty().append(response.html);
+						var response = data.result;
 
-						if (!this.modal)
+						if (response.error)
 						{
-							this.modal = new Craft.ImageModal(Craft.ImageUpload.$modalContainerDiv, {
-								postParameters: settings.postParameters,
-								cropAction:     settings.cropAction
-							});
-
-							this.modal.imageHandler = this;
-						}
-						else
-						{
-							this.modal.show();
+							alert(response.error);
+							return;
 						}
 
-						this.modal.bindButtons();
-						this.modal.addListener(this.modal.$saveBtn, 'click', 'saveImage');
-						this.modal.addListener(this.modal.$cancelBtn, 'click', 'cancel');
-
-						this.modal.removeListener(Garnish.Modal.$shade, 'click');
-
-						setTimeout($.proxy(function()
+						if (Craft.ImageUpload.$modalContainerDiv == null)
 						{
-							Craft.ImageUpload.$modalContainerDiv.find('img').load($.proxy(function()
+							Craft.ImageUpload.$modalContainerDiv = $('<div class="modal fitted"></div>').addClass(settings.modalClass).appendTo(Garnish.$bod);
+						}
+
+						if (response.fileName)
+						{
+							this.source = response.fileName;
+						}
+
+						if (response.html)
+						{
+							Craft.ImageUpload.$modalContainerDiv.empty().append(response.html);
+
+							if (!this.modal)
 							{
-								var areaTool = new Craft.ImageAreaTool(settings.areaToolOptions, this.modal);
-								areaTool.showArea();
-								this.modal.cropAreaTool = areaTool;
-							}, this));
-						}, this), 1);
-					}
-				}, this)
-			},
-			acceptFileTypes: /(jpg|jpeg|gif|png)/
-		};
+								this.modal = new Craft.ImageModal(Craft.ImageUpload.$modalContainerDiv, {
+									postParameters: settings.postParameters,
+									cropAction:     settings.cropAction
+								});
 
-		// If CSRF protection isn't enabled, these won't be defined.
-		if (typeof Craft.csrfTokenName !== 'undefined' && typeof Craft.csrfTokenValue !== 'undefined')
-		{
-			// Add the CSRF token
-			options.formData[Craft.csrfTokenName] = Craft.csrfTokenValue;
-		}
+								this.modal.imageHandler = this;
+							}
+							else
+							{
+								this.modal.show();
+							}
 
-		this.uploader = new Craft.Uploader(element, options);
+							this.modal.bindButtons();
+							this.modal.addListener(this.modal.$saveBtn, 'click', 'saveImage');
+							this.modal.addListener(this.modal.$cancelBtn, 'click', 'cancel');
 
+							this.modal.removeListener(Garnish.Modal.$shade, 'click');
 
-		this.addListener($(settings.deleteButton), 'click', function(ev)
-		{
-			if (confirm(settings.deleteMessage))
+							setTimeout($.proxy(function()
+							{
+								Craft.ImageUpload.$modalContainerDiv.find('img').load($.proxy(function()
+								{
+									var areaTool = new Craft.ImageAreaTool(settings.areaToolOptions, this.modal);
+									areaTool.showArea();
+									this.modal.cropAreaTool = areaTool;
+								}, this));
+							}, this), 1);
+						}
+					}, this)
+				},
+				acceptFileTypes: /(jpg|jpeg|gif|png)/
+			};
+
+			// If CSRF protection isn't enabled, these won't be defined.
+			if (typeof Craft.csrfTokenName !== 'undefined' && typeof Craft.csrfTokenValue !== 'undefined')
 			{
-				$(ev.currentTarget).parent().append('<div class="blocking-modal"></div>');
-				Craft.postActionRequest(settings.deleteAction, settings.postParameters, $.proxy(function(response, textStatus)
-				{
-					if (textStatus == 'success')
-					{
-						this.onImageDelete(response);
-					}
-
-				}, this));
-
+				// Add the CSRF token
+				options.formData[Craft.csrfTokenName] = Craft.csrfTokenValue;
 			}
-		});
 
-		this.addListener($(settings.uploadButton), 'click', function(ev)
+			this.uploader = new Craft.Uploader(element, options);
+
+
+			this.addListener($(settings.deleteButton), 'click', function(ev)
+			{
+				if (confirm(settings.deleteMessage))
+				{
+					$(ev.currentTarget).parent().append('<div class="blocking-modal"></div>');
+					Craft.postActionRequest(settings.deleteAction, settings.postParameters, $.proxy(function(response, textStatus)
+					{
+						if (textStatus == 'success')
+						{
+							this.onImageDelete(response);
+						}
+
+					}, this));
+
+				}
+			});
+
+			this.addListener($(settings.uploadButton), 'click', function(ev)
+			{
+				$(ev.currentTarget).siblings('input[type=file]').click();
+			});
+
+		},
+
+		onImageSave: function(data)
 		{
-			$(ev.currentTarget).siblings('input[type=file]').click();
-		});
+			this.settings.onImageSave.apply(this, [data]);
+		},
 
-	},
-
-	onImageSave: function(data)
-	{
-		this.settings.onImageSave.apply(this, [data]);
-	},
-
-	onImageDelete: function(data)
-	{
-		this.settings.onImageDelete.apply(this, [data]);
-	},
-
-	destroy: function()
-	{
-		this.progressBar.destroy();
-		delete this.progressBar;
-
-		if (this.modal)
+		onImageDelete: function(data)
 		{
-			this.modal.destroy();
-			delete this.modal;
+			this.settings.onImageDelete.apply(this, [data]);
+		},
+
+		destroy: function()
+		{
+			this.progressBar.destroy();
+			delete this.progressBar;
+
+			if (this.modal)
+			{
+				this.modal.destroy();
+				delete this.modal;
+			}
+
+			if (this.uploader)
+			{
+				this.uploader.destroy();
+				delete this.uploader;
+			}
+
+			this.base();
 		}
-
-		if (this.uploader)
-		{
-			this.uploader.destroy();
-			delete this.uploader;
-		}
-
-		this.base();
-	}
-});
+	});
 
 
 Craft.ImageModal = Garnish.Modal.extend(
-{
-	$container: null,
-	$saveBtn: null,
-	$cancelBtn: null,
-
-	areaSelect: null,
-	source: null,
-	_postParameters: null,
-	_cropAction: "",
-	imageHandler: null,
-	cropAreaTool: null,
-
-
-	init: function($container, settings)
 	{
-		this.cropAreaTool = null;
-		this.base($container, settings);
-		this._postParameters = settings.postParameters;
-		this._cropAction = settings.cropAction;
-	},
+		$container: null,
+		$saveBtn: null,
+		$cancelBtn: null,
 
-	bindButtons: function()
-	{
-		this.$saveBtn = this.$container.find('.submit:first');
-		this.$cancelBtn = this.$container.find('.cancel:first');
-	},
+		areaSelect: null,
+		source: null,
+		_postParameters: null,
+		_cropAction: "",
+		imageHandler: null,
+		cropAreaTool: null,
 
-	cancel: function()
-	{
-		this.hide();
-		this.$container.remove();
-		this.destroy();
-	},
 
-	saveImage: function()
-	{
-		var selection = this.areaSelect.tellSelect();
-
-		var params = {
-			x1: selection.x,
-			y1: selection.y,
-			x2: selection.x2,
-			y2: selection.y2,
-			source: this.source
-		};
-
-		params = $.extend(this._postParameters, params);
-
-		Craft.postActionRequest(this._cropAction, params, $.proxy(function(response, textStatus)
+		init: function($container, settings)
 		{
-			if (textStatus == 'success')
-			{
-				if (response.error)
-				{
-					Craft.cp.displayError(response.error);
-				}
-				else
-				{
-					this.imageHandler.onImageSave.apply(this.imageHandler, [response]);
-				}
-			}
+			this.cropAreaTool = null;
+			this.base($container, settings);
+			this._postParameters = settings.postParameters;
+			this._cropAction = settings.cropAction;
+		},
 
+		bindButtons: function()
+		{
+			this.$saveBtn = this.$container.find('.submit:first');
+			this.$cancelBtn = this.$container.find('.cancel:first');
+		},
+
+		cancel: function()
+		{
 			this.hide();
 			this.$container.remove();
 			this.destroy();
-		}, this));
+		},
 
-		this.areaSelect.setOptions({disable: true});
-		this.removeListener(this.$saveBtn, 'click');
-		this.removeListener(this.$cancelBtn, 'click');
+		saveImage: function()
+		{
+			var selection = this.areaSelect.tellSelect();
 
-		this.$container.find('.crop-image').fadeTo(50, 0.5);
-	}
+			var params = {
+				x1: selection.x,
+				y1: selection.y,
+				x2: selection.x2,
+				y2: selection.y2,
+				source: this.source
+			};
 
-});
+			params = $.extend(this._postParameters, params);
+
+			Craft.postActionRequest(this._cropAction, params, $.proxy(function(response, textStatus)
+			{
+				if (textStatus == 'success')
+				{
+					if (response.error)
+					{
+						Craft.cp.displayError(response.error);
+					}
+					else
+					{
+						this.imageHandler.onImageSave.apply(this.imageHandler, [response]);
+					}
+				}
+
+				this.hide();
+				this.$container.remove();
+				this.destroy();
+			}, this));
+
+			this.areaSelect.setOptions({disable: true});
+			this.removeListener(this.$saveBtn, 'click');
+			this.removeListener(this.$cancelBtn, 'click');
+
+			this.$container.find('.crop-image').fadeTo(50, 0.5);
+		}
+
+	});
 
 
 Craft.ImageAreaTool = Garnish.Base.extend(
-{
-	api:             null,
-	$container:      null,
-	containingModal: null,
-
-	init: function(settings, containingModal)
 	{
-		this.$container = Craft.ImageUpload.$modalContainerDiv;
-		this.setSettings(settings);
-		this.containingModal = containingModal;
-	},
+		api:             null,
+		$container:      null,
+		containingModal: null,
 
-	showArea: function()
-	{
-		var $target = this.$container.find('img');
-
-		var cropperOptions = {
-			aspectRatio: this.settings.aspectRatio,
-			maxSize: [$target.width(), $target.height()],
-			bgColor: 'none'
-		};
-
-
-		var initCropper = $.proxy(function (api)
+		init: function(settings, containingModal)
 		{
-			this.api = api;
+			this.$container = Craft.ImageUpload.$modalContainerDiv;
+			this.setSettings(settings);
+			this.containingModal = containingModal;
+		},
 
-			var x1 = this.settings.initialRectangle.x1;
-			var x2 = this.settings.initialRectangle.x2;
-			var y1 = this.settings.initialRectangle.y1;
-			var y2 = this.settings.initialRectangle.y2;
+		showArea: function()
+		{
+			var $target = this.$container.find('img');
 
-			if (this.settings.initialRectangle.mode == "auto")
+			var cropperOptions = {
+				aspectRatio: this.settings.aspectRatio,
+				maxSize: [$target.width(), $target.height()],
+				bgColor: 'none'
+			};
+
+
+			var initCropper = $.proxy(function (api)
 			{
-				var rectangleWidth = 0;
-				var rectangleHeight = 0;
+				this.api = api;
 
-				if (this.settings.aspectRatio == "")
+				var x1 = this.settings.initialRectangle.x1;
+				var x2 = this.settings.initialRectangle.x2;
+				var y1 = this.settings.initialRectangle.y1;
+				var y2 = this.settings.initialRectangle.y2;
+
+				if (this.settings.initialRectangle.mode == "auto")
 				{
-					rectangleWidth = $target.width();
-					rectangleHeight = $target.height();
+					var rectangleWidth = 0;
+					var rectangleHeight = 0;
+
+					if (this.settings.aspectRatio == "")
+					{
+						rectangleWidth = $target.width();
+						rectangleHeight = $target.height();
+					}
+					else if (this.settings.aspectRatio > 1)
+					{
+						rectangleWidth = $target.width();
+						rectangleHeight = rectangleWidth / this.settings.aspectRatio;
+					}
+					else if (this.settings.aspectRatio < 1)
+					{
+						rectangleHeight = $target.height();
+						rectangleWidth = rectangleHeight * this.settings.aspectRatio;
+					}
+					else
+					{
+						rectangleHeight = rectangleWidth = Math.min($target.width(), $target.height());
+					}
+
+					x1 = Math.round(($target.width() - rectangleWidth) / 2);
+					y1 = Math.round(($target.height() - rectangleHeight) / 2);
+					x2 = x1 + rectangleWidth;
+					y2 = y1 + rectangleHeight;
+
 				}
-				else if (this.settings.aspectRatio > 1)
-				{
-					rectangleWidth = $target.width();
-					rectangleHeight = rectangleWidth / this.settings.aspectRatio;
-				}
-				else if (this.settings.aspectRatio < 1)
-				{
-					rectangleHeight = $target.height();
-					rectangleWidth = rectangleHeight * this.settings.aspectRatio;
-				}
-				else
-				{
-					rectangleHeight = rectangleWidth = Math.min($target.width(), $target.height());
-				}
+				this.api.setSelect([x1, y1, x2, y2]);
 
-				x1 = Math.round(($target.width() - rectangleWidth) / 2);
-				y1 = Math.round(($target.height() - rectangleHeight) / 2);
-				x2 = x1 + rectangleWidth;
-				y2 = y1 + rectangleHeight;
+				this.containingModal.areaSelect = this.api;
+				this.containingModal.source = $target.attr('src').split('/').pop();
+				this.containingModal.updateSizeAndPosition();
 
-			}
-			this.api.setSelect([x1, y1, x2, y2]);
+			}, this);
 
-			this.containingModal.areaSelect = this.api;
-			this.containingModal.source = $target.attr('src').split('/').pop();
-			this.containingModal.updateSizeAndPosition();
-
-		}, this);
-
-		$target.Jcrop(cropperOptions, function ()
-		{
-			initCropper(this);
-		});
-	}
-});
+			$target.Jcrop(cropperOptions, function ()
+			{
+				initCropper(this);
+			});
+		}
+	});

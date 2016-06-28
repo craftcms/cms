@@ -32,6 +32,7 @@ class AppAsset extends AssetBundle
      */
     public $css = [
         'css/craft.css',
+        'lib/selectize/selectize.css',
     ];
 
     /**
@@ -63,14 +64,16 @@ class AppAsset extends AssetBundle
         ];
 
         if (isset($datepickerLanguage)) {
-            $this->js[] = "lib/datepicker-i18n/datepicker-$datepickerLanguage.js";
+            $this->js[] = "lib/datepicker-i18n/datepicker-{$datepickerLanguage}.js";
         }
 
         $this->js = array_merge($this->js, [
             'lib/velocity'.($useCompressedJs ? '.min' : '').'.js',
-            'lib/jquery.placeholder'.($useCompressedJs ? '.min' : '').'.js',
+            'lib/selectize/selectize'.($useCompressedJs ? '.min' : '').'.js',
             'lib/fileupload/jquery.ui.widget.js',
             'lib/fileupload/jquery.fileupload.js',
+            'lib/picturefill'.($useCompressedJs ? '.min' : '').'.js',
+            'lib/element-resize-detector'.($useCompressedJs ? '.min' : '').'.js',
             'lib/garnish-0.1'.($useCompressedJs ? '.min' : '').'.js',
             'js/'.($useCompressedJs ? 'compressed/' : '').'Craft.js',
         ]);

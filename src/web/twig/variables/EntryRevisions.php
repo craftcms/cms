@@ -10,8 +10,6 @@ namespace craft\app\web\twig\variables;
 use craft\app\models\EntryDraft as EntryDraftModel;
 use craft\app\models\EntryVersion as EntryVersionModel;
 
-\Craft::$app->requireEdition(\Craft::Client);
-
 /**
  * Class EntryRevisions variable.
  *

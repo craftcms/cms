@@ -6,8 +6,10 @@
 	{ label: "Settings"|t('app'), url: url('settings') }
 ] %}
 
+{% set fullPageForm = true %}
+
 {% if CraftEdition >= CraftClient %}
-	{% set selectedTab = 'settings' %}
+	{% set selectedNavItem = 'settings' %}
 {% else %}
 	{% set title = "Email Settings"|t('app') %}
 {% endif %}
@@ -29,11 +31,8 @@
 
 
 {% block content %}
-	<form id="settings-form" method="post" class="centered" accept-charset="UTF-8" data-saveshortcut>
 		<input type="hidden" name="action" value="system-settings/save-email-settings">
 		<input type="hidden" name="redirect" value="settings">
-
-		{{ getCsrfInput() }}
 
 		{{ forms.textField({
 			first: true,
@@ -93,8 +92,6 @@
 		<hr>
 
 		<div class="buttons">
-			<input class="btn submit" type="submit" value="{{ 'Save'|t('app') }}">
 			<div id="test" class="btn formsubmit" data-action="system-settings/test-email-settings">{{ "Test"|t('app') }}</div>
 		</div>
-	</form>
 {% endblock %}

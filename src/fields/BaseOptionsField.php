@@ -9,6 +9,7 @@ namespace craft\app\fields;
 
 use Craft;
 use craft\app\base\Field;
+use craft\app\base\PreviewableFieldInterface;
 use craft\app\fields\data\MultiOptionsFieldData;
 use craft\app\fields\data\OptionData;
 use craft\app\fields\data\SingleOptionFieldData;
@@ -22,7 +23,7 @@ use yii\db\Schema;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
-abstract class BaseOptionsField extends Field
+abstract class BaseOptionsField extends Field implements PreviewableFieldInterface
 {
     // Static
     // =========================================================================
@@ -195,6 +196,26 @@ abstract class BaseOptionsField extends Field
         $value->setOptions($options);
 
         return $value;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getTableAttributeHtml($value, $element)
+    {
+        if ($this->multi) {
+            /** @var MultiOptionsFieldData $value */
+            $labels = [];
+
+            foreach ($value as $option) {
+                $labels[] = $option->label;
+            }
+
+            return implode(', ', $labels);
+        } else {
+            /** @var SingleOptionFieldData $value */
+            return $value->value;
+        }
     }
 
     // Protected Methods

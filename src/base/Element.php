@@ -255,7 +255,7 @@ abstract class Element extends Component implements ElementInterface
         switch ($viewState['mode']) {
             case 'table': {
                 // Get the table columns
-                $variables['attributes'] = static::defineTableAttributes($sourceKey);
+                $variables['attributes'] = static::getTableAttributesForSource($sourceKey);
 
                 break;
             }
@@ -273,15 +273,32 @@ abstract class Element extends Component implements ElementInterface
      */
     public static function defineSortableAttributes()
     {
-        return static::defineTableAttributes();
+        $tableAttributes = Craft::$app->getElementIndexes()->getAvailableTableAttributes(static::className());
+        $sortableAttributes = [];
+
+        foreach ($tableAttributes as $key => $labelInfo) {
+            $sortableAttributes[$key] = $labelInfo['label'];
+        }
+
+        return $sortableAttributes;
     }
 
     /**
      * @inheritdoc
      */
-    public static function defineTableAttributes($source = null)
+    public static function defineAvailableTableAttributes()
     {
         return [];
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public static function getDefaultTableAttributes($source = null)
+    {
+        $availableTableAttributes = static::defineAvailableTableAttributes();
+
+        return array_keys($availableTableAttributes);
     }
 
     /**
@@ -291,6 +308,16 @@ abstract class Element extends Component implements ElementInterface
     {
         /** @var $this $element */
         switch ($attribute) {
+            case 'link': {
+                $url = $element->getUrl();
+
+                if ($url) {
+                    return '<a href="'.$url.'" target="_blank" data-icon="world" title="'.Craft::t('app', 'Visit webpage').'"></a>';
+                } else {
+                    return '';
+                }
+            }
+
             case 'uri': {
                 $url = $element->getUrl();
 
@@ -315,13 +342,29 @@ abstract class Element extends Component implements ElementInterface
                         $value = str_replace($find, $replace, $value);
                     }
 
-                    return '<a href="'.$url.'" target="_blank" class="go"><span dir="ltr">'.$value.'</span></a>';
+                    return '<a href="'.$url.'" target="_blank" class="go" title="'.Craft::t('app', 'Visit webpage').'"><span dir="ltr">'.$value.'</span></a>';
                 } else {
                     return '';
                 }
             }
 
             default: {
+                // Is this a custom field?
+                if (strncmp($attribute, 'field:', 6) === 0) {
+                    $fieldId = substr($attribute, 6);
+                    $field = Craft::$app->getFields()->getFieldById($fieldId);
+
+                    if ($field) {
+                        if ($field instanceof PreviewableFieldInterface) {
+                            $value = $element->getFieldValue($field->handle);
+
+                            return $field->getTableAttributeHtml($value, $element);
+                        }
+                    }
+
+                    return '';
+                }
+
                 $value = $element->$attribute;
 
                 if ($value instanceof DateTime) {
@@ -331,6 +374,18 @@ abstract class Element extends Component implements ElementInterface
                 return Html::encode($value);
             }
         }
+    }
+
+    /**
+     * Returns the attributes that should be shown for the given source.
+     *
+     * @param string $sourceKey The source key
+     *
+     * @return array The attributes that should be shown for the given source
+     */
+    protected static function getTableAttributesForSource($sourceKey)
+    {
+        return Craft::$app->getElementIndexes()->getTableAttributes(static::className(), $sourceKey);
     }
 
     // Methods for customizing the content table
@@ -660,27 +715,8 @@ abstract class Element extends Component implements ElementInterface
     public function getUrl()
     {
         if ($this->uri !== null) {
-            $useLocaleSiteUrl = (
-                ($this->locale != Craft::$app->language) &&
-                ($localeSiteUrl = Craft::$app->getConfig()->getLocalized('siteUrl', $this->locale))
-            );
-
-            if ($useLocaleSiteUrl) {
-                // Temporarily set Craft to use this element’s locale's site URL
-                $siteUrl = Craft::$app->getSiteUrl();
-                /** @noinspection PhpUndefinedVariableInspection */
-                Craft::$app->setSiteUrl($localeSiteUrl);
-            }
-
-            if ($this->uri == '__home__') {
-                $url = Url::getSiteUrl();
-            } else {
-                $url = Url::getSiteUrl($this->uri);
-            }
-
-            if ($useLocaleSiteUrl) {
-                Craft::$app->setSiteUrl($siteUrl);
-            }
+            $path = ($this->uri == '__home__') ? '' : $this->uri;
+            $url = Url::getSiteUrl($path, null, null, $this->locale);
 
             return $url;
         }
@@ -729,13 +765,7 @@ abstract class Element extends Component implements ElementInterface
      */
     public function getThumbUrl($size = null)
     {
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getIconUrl($size = null)
-    {
+        return null;
     }
 
     /**

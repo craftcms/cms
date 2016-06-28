@@ -1,0 +1,61 @@
+{% extends "_layouts/cp" %}
+{% set title = "Dashboard"|t('app') %}
+{% registerjsresource 'js/Dashboard.js' %}
+{% registercssresource "css/dashboard.css" %}
+
+{% set extraPageHeaderHtml %}
+	<div class="buttons secondary-buttons right">
+		<div class="newwidget btngroup">
+			<div id="newwidgetmenubtn" class="btn submit menubtn add icon">{{ 'New widget'|t('app') }}</div>
+			<div class="menu newwidgetmenu">
+				<ul>
+					{% for type, info in widgetTypes if info.selectable %}
+						<li>
+							<a data-type="{{ type }}" data-name="{{ info.name }}">
+								<span class="icon">{{ info.iconSvg|raw }}</span>
+								{{ info.name }}
+							</a>
+						</li>
+					{% endfor %}
+				</ul>
+			</div>
+		</div>
+
+		<div id="widgetManagerBtn" class="btn settings icon submit" title="{{ 'Settings'|t('app') }}"></div>
+	</div>
+{% endset %}
+
+
+{% block main %}
+	<div class="grid">
+		{% for widget in widgets %}
+			<div class="item" data-colspan="{{ widget.colspan }}">
+				<div id="widget{{ widget.id }}" class="widget {{ widget.type|lower }}" data-id="{{ widget.id }}" data-type="{{ widget.type }}" data-title="{{ widget.title }}">
+					<div class="front">
+						<div class="pane">
+							<div class="spinner body-loading"></div>
+							<div class="settings icon hidden"></div>
+							<h2>{{ widget.title }}</h2>
+							<div class="body">
+								{{ widget.bodyHtml|raw }}
+							</div>
+						</div>
+					</div>
+					<div class="back">
+						<form class="pane">
+							<input type="hidden" name="widgetId" value="{{ widget.id }}">
+							<h2>{{ "{type} Settings"|t('app', { type: widget.name }) }}</h2>
+							<div class="settings"></div>
+							<hr>
+							<div class="buttons clearafter">
+								<input type="submit" class="btn submit" value="{{ 'Save'|t('app') }}">
+								<div class="btn" role="button">{{ 'Cancel'|t('app') }}</div>
+								<div class="spinner hidden"></div>
+							</div>
+						</form>
+					</div>
+				</div>
+			</div>
+		{% endfor %}
+	</div>
+{% endblock %}

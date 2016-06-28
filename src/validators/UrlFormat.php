@@ -43,8 +43,8 @@ class UrlFormat extends Validator
         $urlFormat = $object->$attribute;
 
         if ($urlFormat) {
-            // Remove any leading or trailing slashes
-            $urlFormat = trim($urlFormat, '/');
+            // Remove any leading or trailing slashes/spaces
+            $urlFormat = trim($urlFormat, '/ ');
             $object->$attribute = $urlFormat;
 
             if ($this->requireSlug) {

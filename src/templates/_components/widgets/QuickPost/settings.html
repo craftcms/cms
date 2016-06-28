@@ -1,27 +1,22 @@
 {% import "_includes/forms" as forms %}
 
 {% if sections %}
-	{% if CraftEdition >= CraftClient %}
-		{% set sectionOptions = [] %}
-		{% for section in sections %}
-			{% set sectionOptions = sectionOptions|merge([{ label: section.name|t('site'), value: section.id }]) %}
-		{% endfor %}
-		{{ forms.selectField({
-			label: "Section"|t('app'),
-			instructions: "Which section do you want to publish entries to?"|t('app'),
-			id: 'section',
-			name: 'section',
-			options: sectionOptions,
-			value: widget.section,
-			toggle: true,
-			targetPrefix: 'section'
-		}) }}
+	{% set sectionOptions = [] %}
+	{% for section in sections %}
+		{% set sectionOptions = sectionOptions|merge([{ label: section.name|t('site'), value: section.id }]) %}
+	{% endfor %}
+	{{ forms.selectField({
+		label: "Section"|t('app'),
+		instructions: "Which section do you want to publish entries to?"|t('app'),
+		id: 'section',
+		name: 'section',
+		options: sectionOptions,
+		value: widget.section,
+		toggle: true,
+		targetPrefix: 'section'
+	}) }}
 
-		{% set selectedSectionId = widget.section %}
-	{% else %}
-		{% set selectedSectionId = sections[0].id %}
-		<input type="hidden" name="section" value="{{ selectedSectionId }}">
-	{% endif %}
+	{% set selectedSectionId = widget.section %}
 
 	{% for section in sections %}
 		{% set showSection = ((not selectedSectionId and loop.first) or selectedSectionId == section.id) %}
@@ -48,8 +43,9 @@
 			{% endif %}
 
 			{% set fieldsInput %}
-				{% for entryType in section.getEntryTypes() %}
-					{% set showEntryType = (((not showSection or not widget.entryType) and loop.first) or widget.entryType == entryType.id) %}
+				{% set entryTypes = section.getEntryTypes() %}
+				{% for entryType in entryTypes %}
+					{% set showEntryType = (((not showSection or not widget.entryType) and loop.first) or widget.entryType == entryType.id or entryTypes|length == 1) %}
 					<div id="section{{ section.id }}-type{{ entryType.id }}"{% if not showEntryType %} class="hidden"{% endif %}>
 						{% for field in entryType.getFieldLayout().getFields() %}
 							<div>

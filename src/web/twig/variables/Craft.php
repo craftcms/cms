@@ -24,10 +24,10 @@ use yii\di\ServiceLocator;
  *
  * @property App             $app
  * @property Config          $config
+ * @property ElementIndexes  $elementIndexes
  * @property Elements        $elements
  * @property CategoryGroups  $categoryGroups
  * @property Cp              $cp
- * @property Dashboard       $dashboard
  * @property Deprecator      $deprecator
  * @property Fields          $fields
  * @property Feeds           $feeds
@@ -64,10 +64,11 @@ class Craft extends ServiceLocator
         $config['components'] = [
             'app' => 'craft\app\web\twig\variables\App',
             'config' => 'craft\app\web\twig\variables\Config',
+            'elementIndexes' => 'craft\app\web\twig\variables\ElementIndexes',
             'elements' => 'craft\app\web\twig\variables\Elements',
+            'entryRevisions' => 'craft\app\web\twig\variables\EntryRevisions',
             'categoryGroups' => 'craft\app\web\twig\variables\CategoryGroups',
             'cp' => 'craft\app\web\twig\variables\Cp',
-            'dashboard' => 'craft\app\web\twig\variables\Dashboard',
             'deprecator' => 'craft\app\web\twig\variables\Deprecator',
             'fields' => 'craft\app\web\twig\variables\Fields',
             'feeds' => 'craft\app\web\twig\variables\Feeds',
@@ -94,7 +95,6 @@ class Craft extends ServiceLocator
             case \Craft::Client: {
                 $config['components'] = array_merge($config['components'], [
                     'emailMessages' => 'craft\app\web\twig\variables\EmailMessages',
-                    'entryRevisions' => 'craft\app\web\twig\variables\EntryRevisions',
                     'rebrand' => 'craft\app\web\twig\variables\Rebrand',
                 ]);
             }

@@ -18,7 +18,8 @@ Craft.InfoIcon = Garnish.Base.extend(
 		if (!this.hud)
 		{
 			this.hud = new Garnish.HUD(this.$icon, this.$icon.html(), {
-				hudClass: 'hud info-hud'
+				hudClass: 'hud info-hud',
+				closeOtherHUDs: false
 			});
 		}
 		else

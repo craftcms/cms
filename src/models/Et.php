@@ -48,6 +48,16 @@ class Et extends Model
     public $editionTestableDomain = false;
 
     /**
+     * @var array The installed plugin license keys
+     */
+    public $pluginLicenseKeys;
+
+    /**
+     * @var array The plugins' license key statuses. Set by the server response.
+     */
+    public $pluginLicenseKeyStatuses;
+
+    /**
      * @var array Data
      */
     public $data;
@@ -112,6 +122,11 @@ class Et extends Model
      */
     public $serverInfo;
 
+    /**
+     * @var string The context of the request. Either 'craft' or a plugin handle.
+     */
+    public $handle;
+
     // Public Methods
     // =========================================================================
 
@@ -131,6 +146,7 @@ class Et extends Model
                 'integerOnly' => true
             ],
             [['localVersion', 'localBuild', 'localEdition'], 'required'],
+            [['userEmail'], 'email'],
             [
                 [
                     'licenseKey',

@@ -40,6 +40,11 @@ class PluginNewRelease extends Model
      */
     public $critical = false;
 
+    /**
+     * @var string Manual Download Endpoint
+     */
+    public $manualDownloadEndpoint;
+
     // Public Methods
     // =========================================================================
 

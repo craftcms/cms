@@ -7,8 +7,14 @@
 
 {% set docsUrl = 'http://craftcms.com/docs/sections-and-entries#sections' %}
 
+{% set extraPageHeaderHtml %}
+	<div id="newsectioncontainer" class="buttons right">
+		<a href="{{ url('settings/sections/new') }}" class="btn submit add icon">{{ "New section"|t('app') }}</a>
+	</div>
+{% endset %}
 
-{% set content %}
+
+{% block content %}
 	<div id="nosections"{% if sections %} class="hidden"{% endif %}>
 		<p>{{ "No sections exist yet."|t('app') }}</p>
 	</div>
@@ -58,11 +64,7 @@
 			</tbody>
 		</table>
 	{% endif %}
-
-	<div id="newsectioncontainer" class="buttons{% if CraftEdition == CraftPersonal and sections|length >= maxSections %} hidden{% endif %}">
-		<a href="{{ url('settings/sections/new') }}" class="btn submit add icon">{{ "New Section"|t('app') }}</a>
-	</div>
-{% endset %}
+{% endblock %}
 
 
 {% registerjs %}
@@ -72,7 +74,6 @@
 		newItemBtnSelector: '#newsectioncontainer',
 		deleteAction: 'sections/delete-section',
 		confirmDeleteMessage: '{{ "Are you sure you want to delete “{name}” and all its entries?"|t('app') }}',
-		{% if CraftEdition == CraftPersonal %}maxItems: {{ maxSections }},{% endif %}
 		onDeleteItem: function()
 		{
 			// Hide the Entries tab if that was the last one

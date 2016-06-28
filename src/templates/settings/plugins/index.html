@@ -2,6 +2,7 @@
 
 {% extends "_layouts/cp" %}
 {% set title = "Plugins"|t('app') %}
+{% registercssresource "css/plugins.css" %}
 
 {% set crumbs = [
 	{ label: "Settings"|t('app'), url: url('settings') }
@@ -19,27 +20,41 @@
 			<thead>
 				<th scope="col">{{ "Plugin"|t('app') }}</th>
 				<th scope="col">{{ "Developer"|t('app') }}</th>
+				<th scope="col">{{ "Documentation"|t('app') }}</th>
 				<th scope="col">{{ "Status"|t('app') }}</th>
 				<td class="thin"></td>
+				<th class="thin"></th>
 			</thead>
 			<tbody>
 				{% for handle, config in info %}
 					<tr data-name="{{ config.name }}">
 						<th data-title="{{ 'Name'|t('app') }}">
-							{% if config.hasSettings %}
-								<a href="{{ url('settings/plugins/'~handle) }}">{{ config.name }}</a>
-							{% else %}
-								{{ config.name }}
-							{% endif %}
-							<span class="light">{{ config.version }}</span>
+							<div class="plugin-infos">
+								<div class="icon">{{ craft.plugins.getPluginIconSvg(classHandle)|raw }}</div>
+								<div class="details">
+									<div class="name">
+										{{ config.name }}
+										<span class="light">{{ config.version }}</span>
+									</div>
+									{% if config.description %}
+										<div class="description">{{ config.description }}</div>
+									{% endif %}
+								</div>
+							</div>
 						</th>
 						<td data-title="{{ 'Developer'|t('app') }}"><a{% if config.developerUrl %} href="{{ config.developerUrl }}" target="_blank"{% endif %}>{{ config.developer }}</a></td>
+						<td data-title="{{ 'Documentation'|t('app') }}">
+							{% if config.documentationUrl %}
+								<a href="{{ config.documentationUrl }}" title="{{ "{name} Documentation"|t('app', {name: config.name}) }}" target="_blank">{{ "View Documentation"|t('app') }}</a>
+							{% else %}
+								<span class="light">—</span>
+							{% endif %}
+						</td>
 						<td data-title="{{ 'Status'|t('app') }}">
 							{% if config.isInstalled %}
 								<form method="post" accept-charset="UTF-8">
 									<input type="hidden" name="pluginHandle" value="{{ handle }}">
 									{{ getCsrfInput() }}
-
 									{% if config.isEnabled %}
 										<span class="status on"></span> {{ "Enabled"|t('app') }} 
 										<input type="button" value="{{ 'Disable'|t('app') }}" class="btn small formsubmit" data-action="plugins/disable-plugin">
@@ -50,6 +65,11 @@
 								</form>
 							{% else %}
 								<span class="status"></span> <span class="light">{{ "Not installed"|t('app') }}</span>
+							{% endif %}
+						</td>
+						<td>
+							{% if config.hasSettings %}
+								<a href="{{ url('settings/plugins/'~handle) }}" title="{{ "{name} Settings"|t('app', {name: plugin.name}) }}" data-icon="settings"></a>
 							{% endif %}
 						</td>
 						<td class="thin rightalign nowrap">

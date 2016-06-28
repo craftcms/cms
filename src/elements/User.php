@@ -23,6 +23,7 @@ use craft\app\helpers\Assets;
 use craft\app\helpers\DateTimeHelper;
 use craft\app\helpers\Html;
 use craft\app\helpers\Url;
+use craft\app\i18n\Locale;
 use craft\app\models\UserGroup;
 use craft\app\records\Session as SessionRecord;
 use Exception;
@@ -130,20 +131,35 @@ class User extends Element implements IdentityInterface
         ];
 
         if (Craft::$app->getEdition() == Craft::Pro) {
-            foreach (Craft::$app->getUserGroups()->getAllGroups() as $group) {
-                $key = 'group:'.$group->id;
+            // Admin source
+            $sources['admins'] = [
+                'label' => Craft::t('app', 'Admins'),
+                'criteria' => ['admin' => true],
+                'hasThumbs' => true
+            ];
 
-                $sources[$key] = [
-                    'label' => Craft::t('site', $group->name),
-                    'criteria' => ['groupId' => $group->id],
-                    'hasThumbs' => true
-                ];
+            $groups = Craft::$app->getUserGroups()->getAllGroups();
+
+            if ($groups) {
+                $sources[] = ['heading' => Craft::t('app', 'Groups')];
+
+                foreach ($groups as $group) {
+                    $key = 'group:'.$group->id;
+
+                    $sources[$key] = [
+                        'label' => Craft::t('site', $group->name),
+                        'criteria' => ['groupId' => $group->id],
+                        'hasThumbs' => true
+                    ];
+                }
             }
         }
 
         // Allow plugins to modify the sources
-        Craft::$app->getPlugins()->call('modifyUserSources',
-            [&$sources, $context]);
+        Craft::$app->getPlugins()->call('modifyUserSources', [
+            &$sources,
+            $context
+        ]);
 
         return $sources;
     }
@@ -203,8 +219,9 @@ class User extends Element implements IdentityInterface
                 'email' => Craft::t('app', 'Email'),
                 'firstName' => Craft::t('app', 'First Name'),
                 'lastName' => Craft::t('app', 'Last Name'),
-                'dateCreated' => Craft::t('app', 'Join Date'),
                 'lastLoginDate' => Craft::t('app', 'Last Login'),
+                'elements.dateCreated' => Craft::t('app', 'Date Created'),
+                'elements.dateUpdated' => Craft::t('app', 'Date Updated'),
             ];
         } else {
             $attributes = [
@@ -212,8 +229,9 @@ class User extends Element implements IdentityInterface
                 'firstName' => Craft::t('app', 'First Name'),
                 'lastName' => Craft::t('app', 'Last Name'),
                 'email' => Craft::t('app', 'Email'),
-                'dateCreated' => Craft::t('app', 'Join Date'),
                 'lastLoginDate' => Craft::t('app', 'Last Login'),
+                'elements.dateCreated' => Craft::t('app', 'Date Created'),
+                'elements.dateUpdated' => Craft::t('app', 'Date Updated'),
             ];
         }
 
@@ -227,30 +245,54 @@ class User extends Element implements IdentityInterface
     /**
      * @inheritdoc
      */
-    public static function defineTableAttributes($source = null)
+    public static function defineAvailableTableAttributes()
     {
         if (Craft::$app->getConfig()->get('useEmailAsUsername')) {
+            // Start with Email and don't even give Username as an option
             $attributes = [
-                'email' => Craft::t('app', 'Email'),
-                'firstName' => Craft::t('app', 'First Name'),
-                'lastName' => Craft::t('app', 'Last Name'),
-                'dateCreated' => Craft::t('app', 'Join Date'),
-                'lastLoginDate' => Craft::t('app', 'Last Login'),
+                'email' => ['label' => Craft::t('app', 'Email')],
             ];
         } else {
             $attributes = [
-                'username' => Craft::t('app', 'Username'),
-                'firstName' => Craft::t('app', 'First Name'),
-                'lastName' => Craft::t('app', 'Last Name'),
-                'email' => Craft::t('app', 'Email'),
-                'dateCreated' => Craft::t('app', 'Join Date'),
-                'lastLoginDate' => Craft::t('app', 'Last Login'),
+                'username' => ['label' => Craft::t('app', 'Username')],
+                'email' => ['label' => Craft::t('app', 'Email')],
             ];
         }
 
+        $attributes['fullName'] = ['label' => Craft::t('app', 'Full Name')];
+        $attributes['firstName'] = ['label' => Craft::t('app', 'First Name')];
+        $attributes['lastName'] = ['label' => Craft::t('app', 'Last Name')];
+
+        if (Craft::$app->isLocalized()) {
+            $attributes['preferredLocale'] = ['label' => Craft::t('app', 'Preferred Locale')];
+        }
+
+        $attributes['id'] = ['label' => Craft::t('app', 'ID')];
+        $attributes['dateCreated'] = ['label' => Craft::t('app', 'Join Date')];
+        $attributes['lastLoginDate'] = ['label' => Craft::t('app', 'Last Login')];
+        $attributes['elements.dateCreated'] = ['label' => Craft::t('app', 'Date Created')];
+        $attributes['elements.dateUpdated'] = ['label' => Craft::t('app', 'Date Updated')];
+
         // Allow plugins to modify the attributes
-        Craft::$app->getPlugins()->call('modifyUserTableAttributes',
-            [&$attributes, $source]);
+        $pluginAttributes = Craft::$app->getPlugins()->call('defineAdditionalUserTableAttributes', [], true);
+
+        foreach ($pluginAttributes as $thisPluginAttributes) {
+            $attributes = array_merge($attributes, $thisPluginAttributes);
+        }
+
+        return $attributes;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public static function getDefaultTableAttributes($source = null)
+    {
+        if (Craft::$app->getConfig()->get('useEmailAsUsername')) {
+            $attributes = ['fullName', 'dateCreated', 'lastLoginDate'];
+        } else {
+            $attributes = ['fullName', 'email', 'dateCreated', 'lastLoginDate'];
+        }
 
         return $attributes;
     }
@@ -278,6 +320,18 @@ class User extends Element implements IdentityInterface
                         [
                             'email' => $email
                         ]);
+                } else {
+                    return '';
+                }
+            }
+
+            case 'preferredLocale': {
+                $localeId = $element->preferredLocale;
+
+                if ($localeId) {
+                    $locale = new Locale($localeId);
+
+                    return $locale->getDisplayName(Craft::$app->language);
                 } else {
                     return '';
                 }
@@ -326,6 +380,7 @@ class User extends Element implements IdentityInterface
         $html = Craft::$app->getView()->renderTemplate('users/_accountfields', [
             'account' => $element,
             'isNewAccount' => false,
+            'meta' => true,
         ]);
 
         $html .= parent::getEditorHtml($element);
@@ -917,8 +972,9 @@ class User extends Element implements IdentityInterface
     public function getThumbUrl($size = 100)
     {
         $url = $this->getPhotoUrl($size);
+
         if (!$url) {
-            $url = Url::getResourceUrl('defaultuserphoto/'.$size);
+            $url = Url::getResourceUrl('defaultuserphoto');
         }
 
         return $url;

@@ -1,8 +1,7 @@
-{% requireEdition CraftPro %}
-
-
 <div class="user-photo" data-user="{{ account.id }}">
-	<div class="current-photo" style="background-image: url('{{ account.photo ? account.photoUrl : resourceUrl('images/user.gif') }}');"></div>
+	<div id="current-photo">
+		<img width="100" height="100" sizes="100px" srcset="{{ account.getThumbUrl(100) }} 100w, {{ account.getThumbUrl(200) }} 200w" alt="">
+	</div>
 	<div class="user-photo-controls">
 		{% if account.photo %}
 			<div class="btn upload-photo">{{ "Change photo"|t('app') }}</div>

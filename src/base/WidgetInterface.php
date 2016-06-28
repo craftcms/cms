@@ -42,6 +42,13 @@ interface WidgetInterface extends SavableComponentInterface
     public function getTitle();
 
     /**
+     * Returns the path to the widget’s SVG icon.
+     *
+     * @return string|null The path to the widget’s SVG icon, if it has one
+     */
+    public function getIconPath();
+
+    /**
      * Returns the widget’s body HTML.
      *
      * @return string|false The widget’s body HTML, or `false` if the widget
@@ -50,16 +57,9 @@ interface WidgetInterface extends SavableComponentInterface
     public function getBodyHtml();
 
     /**
-     * Returns the widget’s colspan.
+     * Returns the widget’s maximum colspan.
      *
-     * @return integer The widget’s colspan.
+     * @return integer|null The widget’s maximum colspan, if it has one
      */
-    public function getColspan();
-
-    /**
-     * Returns user that owns the widget
-     *
-     * @return User the user that owns the widget
-     */
-    public function getUser();
+    public function getMaxColspan();
 }

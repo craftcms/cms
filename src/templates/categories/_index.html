@@ -4,14 +4,6 @@
 {% set showStatusMenu = false %}
 {% set showLocaleMenu = false %}
 
-{% block sidebar %}
-	<div class="buttons">
-		<a class="btn submit add icon" href="{{ url('categories/'~groups[0].handle~'/new') }}">{{ "New Category"|t('app') }}</a>
-	</div>
-
-	{{ parent() }}
-{% endblock %}
-
 
 {% if groupHandle is defined %}
 	{% registerjs %}

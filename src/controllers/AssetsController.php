@@ -154,7 +154,11 @@ class AssetsController extends Controller
                     $filename = Assets::prepareAssetName($uploadedFile->name);
 
                     $asset = new Asset();
-                    $asset->title = StringHelper::toTitleCase(Io::getFilename($filename, false));
+
+                    // Make sure there are no double spaces, if the filename had a space followed by a
+                    // capital letter because of Yii's "word" logic.
+                    $asset->title = str_replace('  ', ' ', StringHelper::toTitleCase(Io::getFilename($filename, false)));
+
                     $asset->newFilePath = $pathOnServer;
                     $asset->filename = $filename;
                     $asset->folderId = $folder->id;

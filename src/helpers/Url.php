@@ -152,7 +152,7 @@ class Url
      *
      * @return string
      */
-    public static function getUrl($path = '', $params = null, $protocol = '', $mustShowScriptName = false)
+    public static function getUrl($path = '', $params = null, $protocol = null, $mustShowScriptName = false)
     {
         // Return $path if it appears to be an absolute URL.
         if (static::isFullUrl($path)) {
@@ -179,7 +179,7 @@ class Url
         }
 
         // Send all resources over SSL if this request is loaded over SSL.
-        if ($protocol === '' && !$request->getIsConsoleRequest() && $request->getIsSecureConnection()) {
+        if (!$protocol && !$request->getIsConsoleRequest() && $request->getIsSecureConnection()) {
             $protocol = 'https';
         }
 
@@ -195,7 +195,7 @@ class Url
      *
      * @return string
      */
-    public static function getCpUrl($path = '', $params = null, $protocol = '')
+    public static function getCpUrl($path = '', $params = null, $protocol = null)
     {
         $path = trim($path, '/');
         $path = Craft::$app->getConfig()->get('cpTrigger').($path ? '/'.$path : '');
@@ -209,14 +209,32 @@ class Url
      * @param string            $path
      * @param array|string|null $params
      * @param string|null       $protocol
+     * @param string|null       $localeId
      *
      * @return string
      */
-    public static function getSiteUrl($path = '', $params = null, $protocol = '')
+    public static function getSiteUrl($path = '', $params = null, $protocol = null, $localeId = null)
     {
-        $path = trim($path, '/');
+        $useLocaleSiteUrl = (
+            $localeId !== null &&
+            ($localeId != Craft::$app->language) &&
+            ($localeSiteUrl = Craft::$app->getConfig()->getLocalized('siteUrl', $localeId))
+        );
 
-        return static::_getUrl($path, $params, $protocol, false, false);
+        if ($useLocaleSiteUrl) {
+            // Temporarily set Craft to use this element's locale's site URL
+            $siteUrl = Craft::$app->getSiteUrl();
+            Craft::$app->setSiteUrl($localeSiteUrl);
+        }
+
+        $path = trim($path, '/');
+        $url = static::_getUrl($path, $params, $protocol, false, false);
+
+        if ($useLocaleSiteUrl) {
+            Craft::$app->setSiteUrl($siteUrl);
+        }
+
+        return $url;
     }
 
     /**
@@ -229,7 +247,7 @@ class Url
      *
      * @return string
      */
-    public static function getResourceUrl($path = '', $params = null, $protocol = '')
+    public static function getResourceUrl($path = '', $params = null, $protocol = null)
     {
         $path = trim($path, '/');
 
@@ -275,7 +293,7 @@ class Url
      *
      * @return array|string
      */
-    public static function getActionUrl($path = '', $params = null, $protocol = '')
+    public static function getActionUrl($path = '', $params = null, $protocol = null)
     {
         $path = Craft::$app->getConfig()->get('actionTrigger').'/'.trim($path,
                 '/');
@@ -351,7 +369,7 @@ class Url
                 }
             } else {
                 // Figure it out for ourselves, then
-                $baseUrl = $request->getHostInfo($protocol);
+                $baseUrl = $request->getHostInfo($protocol ?: '');
 
                 if ($showScriptName) {
                     $baseUrl .= $request->getScriptUrl();

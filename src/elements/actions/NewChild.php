@@ -46,7 +46,7 @@ class NewChild extends ElementAction
     public function init()
     {
         if ($this->label === null) {
-            $this->label = Craft::t('app', 'New Child');
+            $this->label = Craft::t('app', 'New child');
         }
     }
 
@@ -83,9 +83,9 @@ class NewChild extends ElementAction
 		}
 	});
 
-	if (Craft.elementIndex.structureTableSort)
+	if (Craft.elementIndex.view.structureTableSort)
 	{
-		Craft.elementIndex.structureTableSort.on('positionChange', $.proxy(trigger, 'updateTrigger'));
+		Craft.elementIndex.view.structureTableSort.on('positionChange', $.proxy(trigger, 'updateTrigger'));
 	}
 })();
 EOT;

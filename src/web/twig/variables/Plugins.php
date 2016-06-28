@@ -27,4 +27,16 @@ class Plugins
     {
         return \Craft::$app->getPlugins()->getPluginInfo();
     }
+
+    /**
+     * Returns a plugin’s SVG icon.
+     *
+     * @param string $pluginHandle The plugin’s handle
+     *
+     * @return string The plugin’s SVG icon
+     */
+    public function getPluginIconSvg($pluginHandle)
+    {
+        return \Craft::$app->getPlugins()->getPluginIconSvg($pluginHandle);
+    }
 }

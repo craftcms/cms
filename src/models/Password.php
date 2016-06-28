@@ -7,6 +7,7 @@
 
 namespace craft\app\models;
 
+use Craft;
 use craft\app\base\Model;
 
 /**
@@ -38,6 +39,16 @@ class Password extends Model
             [['password'], 'string', 'min' => 6],
             [['password'], 'string', 'max' => 160],
             [['password'], 'safe', 'on' => 'search'],
+        ];
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function attributeLabels()
+    {
+        return [
+            'password' => Craft::t('app', 'Password'),
         ];
     }
 }

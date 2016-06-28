@@ -21,9 +21,8 @@ abstract class LicenseKeyStatus extends BaseEnum
     // Constants
     // =========================================================================
 
-    const Valid = 'Valid';
-    const Invalid = 'Invalid';
-    const Missing = 'Missing';
-    const Unverified = 'Unverified';
-    const MismatchedDomain = 'MismatchedDomain';
+    const Valid = 'valid';
+    const Invalid = 'invalid';
+    const Mismatched = 'mismatched';
+    const Unknown = 'unknown';
 }

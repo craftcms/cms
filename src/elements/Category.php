@@ -183,6 +183,8 @@ class Category extends Element
         $attributes = [
             'title' => Craft::t('app', 'Title'),
             'uri' => Craft::t('app', 'URI'),
+            'elements.dateCreated' => Craft::t('app', 'Date Created'),
+            'elements.dateUpdated' => Craft::t('app', 'Date Updated'),
         ];
 
         // Allow plugins to modify the attributes
@@ -195,16 +197,33 @@ class Category extends Element
     /**
      * @inheritdoc
      */
-    public static function defineTableAttributes($source = null)
+    public static function defineAvailableTableAttributes()
     {
         $attributes = [
-            'title' => Craft::t('app', 'Title'),
-            'uri' => Craft::t('app', 'URI'),
+            'title' => ['label' => Craft::t('app', 'Title')],
+            'uri' => ['label' => Craft::t('app', 'URI')],
+            'link' => ['label' => Craft::t('app', 'Link'), 'icon' => 'world'],
+            'id' => ['label' => Craft::t('app', 'ID')],
+            'dateCreated' => ['label' => Craft::t('app', 'Date Created')],
+            'dateUpdated' => ['label' => Craft::t('app', 'Date Updated')],
         ];
 
         // Allow plugins to modify the attributes
-        Craft::$app->getPlugins()->call('modifyCategoryTableAttributes',
-            [&$attributes, $source]);
+        $pluginAttributes = Craft::$app->getPlugins()->call('defineAdditionalCategoryTableAttributes', [], true);
+
+        foreach ($pluginAttributes as $thisPluginAttributes) {
+            $attributes = array_merge($attributes, $thisPluginAttributes);
+        }
+
+        return $attributes;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public static function getDefaultTableAttributes($source = null)
+    {
+        $attributes = ['link'];
 
         return $attributes;
     }

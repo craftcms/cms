@@ -1,8 +1,4 @@
-if (typeof window.Craft == 'undefined')
-{
-	window.Craft = {};
-}
-
+// Set all the standard Craft.* stuff
 $.extend(Craft,
 {
 	navHeight: 48,
@@ -491,6 +487,11 @@ $.extend(Craft,
 				if (typeof data !== 'object')
 				{
 					data = {};
+				}
+				else
+				{
+					// Don't modify the passed-in object
+					data = $.extend({}, data);
 				}
 
 				data[Craft.csrfTokenName] = Craft.csrfTokenValue;
@@ -1138,9 +1139,6 @@ $.extend(Craft,
 		$('.pill', $container).pill();
 		$('.formsubmit', $container).formsubmit();
 		$('.menubtn', $container).menubtn();
-
-		// Make placeholders work for IE9, too.
-		$('input[type!=password], textarea', $container).placeholder();
 	},
 
 	_elementIndexClasses: {},
@@ -1297,6 +1295,49 @@ $.extend(Craft,
 	},
 
 	/**
+	 * Changes an element to the requested size.
+	 *
+	 * @param element
+	 * @param size
+	 */
+	setElementSize: function(element, size)
+	{
+		var $element = $(element);
+
+		if (size != 'small' && size != 'large')
+		{
+			size = 'small';
+		}
+
+		if ($element.hasClass(size))
+		{
+			return;
+		}
+
+		var otherSize = (size == 'small' ? 'large' : 'small');
+
+		$element
+			.addClass(size)
+			.removeClass(otherSize);
+
+		if ($element.hasClass('hasthumb'))
+		{
+			var $oldImg = $element.find('> .elementthumb > img'),
+				imgSize = (size == 'small' ? '30' : '100');
+			$newImg = $('<img/>', {
+				sizes: imgSize+'px',
+				srcset: $oldImg.attr('srcset') || $oldImg.attr('data-pfsrcset')
+			});
+
+			$oldImg.replaceWith($newImg);
+
+			picturefill({
+				elements: [$newImg[0]]
+			});
+		}
+	},
+
+	/**
 	 * Shows an element editor HUD.
 	 *
 	 * @param object $element
@@ -1387,6 +1428,7 @@ $.extend($.fn,
 
 			if ($container.data('item-selector')) settings.itemSelector = $container.data('item-selector');
 			if ($container.data('cols'))          settings.cols = parseInt($container.data('cols'));
+			if ($container.data('max-cols'))      settings.maxCols = parseInt($container.data('max-cols'));
 			if ($container.data('min-col-width')) settings.minColWidth = parseInt($container.data('min-col-width'));
 			if ($container.data('mode'))          settings.mode = $container.data('mode');
 			if ($container.data('fill-mode'))     settings.fillMode = $container.data('fill-mode');
@@ -1534,7 +1576,7 @@ $.extend($.fn,
 			// Is this a menu item?
 			if ($btn.data('menu'))
 			{
-				$form = $btn.data('menu').$trigger.closest('form');
+				$form = $btn.data('menu').$anchor.closest('form');
 			}
 			else
 			{
@@ -1577,7 +1619,11 @@ $.extend($.fn,
 
 			if (!$btn.data('menubtn') && $btn.next().hasClass('menu'))
 			{
-				new Garnish.MenuBtn($btn);
+				var settings = {};
+
+				if ($btn.data('menu-anchor')) settings.menuAnchor = $btn.data('menu-anchor');
+
+				new Garnish.MenuBtn($btn, settings);
 			}
 		});
 	}

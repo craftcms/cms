@@ -1,8 +1,6 @@
 {% import "_includes/forms" as forms %}
 
 <form method="post" accept-charset="UTF-8" enctype="multipart/form-data">
-	{{ getCsrfInput() }}
-
 	{% set fromEmail = getHelp is defined ? getHelp.fromEmail : currentUser.email %}
 
 	{% if fromEmail == "support@pixelandtonic.com" or fromEmail == "support@craftcms.com" %}

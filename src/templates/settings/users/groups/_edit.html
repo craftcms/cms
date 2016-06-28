@@ -3,6 +3,7 @@
 
 {% extends "_layouts/cp" %}
 {% import "_includes/forms" as forms %}
+{% set fullPageForm = true %}
 
 {% set crumbs = [
 	{ label: "Settings"|t('app'), url: url('settings') },
@@ -29,46 +30,40 @@
 {% endif %}
 
 
-{% set content %}
-	<form method="post" accept-charset="UTF-8" data-saveshortcut>
-		<input type="hidden" name="action" value="user-settings/save-group">
-		<input type="hidden" name="redirect" value="settings/users">
-		{{ getCsrfInput() }}
+{% block content %}
+	<input type="hidden" name="action" value="user-settings/save-group">
+	<input type="hidden" name="redirect" value="settings/users">
 
-		{% if not isNewGroup %}<input type="hidden" name="groupId" value="{{ group.id }}">{% endif %}
+	{% if not isNewGroup %}<input type="hidden" name="groupId" value="{{ group.id }}">{% endif %}
 
-		{{ forms.textField({
-			first: true,
-			label: "Name"|t('app'),
-			id: 'name',
-			name: 'name',
-			value: (group is defined ? group.name : null),
-			errors: (group is defined ? group.getErrors('name') : null),
-			autofocus: true,
-			required: true,
-			translatable: true
-		}) }}
+	{{ forms.textField({
+		first: true,
+		label: "Name"|t('app'),
+		id: 'name',
+		name: 'name',
+		value: (group is defined ? group.name : null),
+		errors: (group is defined ? group.getErrors('name') : null),
+		autofocus: true,
+		required: true,
+		translatable: true
+	}) }}
 
-		{{ forms.textField({
-			label: "Handle"|t('app'),
-			id: 'handle',
-			name: 'handle',
-			value: (group is defined ? group.handle : null),
-			errors: (group is defined ? group.getErrors('handle') : null),
-			required: true
-		}) }}
+	{{ forms.textField({
+		label: "Handle"|t('app'),
+		id: 'handle',
+		name: 'handle',
+		class: 'code',
+		value: (group is defined ? group.handle : null),
+		errors: (group is defined ? group.getErrors('handle') : null),
+		required: true
+	}) }}
 
-		<hr>
+	<hr>
 
-		<h2>{{ "Permissions"|t('app') }}</h2>
+	<h2>{{ "Permissions"|t('app') }}</h2>
 
-		{% include "_includes/permissions" with { userOrGroup: (group is defined ? group : null) } only %}
-
-		<div class="buttons">
-			<input type="submit" class="btn submit" value="{{ 'Save'|t('app') }}">
-		</div>
-	</form>
-{% endset %}
+	{% include "_includes/permissions" with { userOrGroup: (group is defined ? group : null) } only %}
+{% endblock %}
 
 
 {% if group is not defined or not group.handle %}

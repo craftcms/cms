@@ -2,7 +2,7 @@
 {% requireAdmin %}
 
 {% extends "settings/users/_layout" %}
-{% set selectedTab = 'settings' %}
+{% set selectedNavItem = 'settings' %}
 
 {% set docsUrl = 'http://craftcms.com/docs/users' %}
 
@@ -14,12 +14,13 @@
 {% endif %}
 
 
-{% set content %}
+{% block content %}
 	<form id="settings-form" method="post" class="centered" accept-charset="UTF-8" data-saveshortcut>
 		<input type="hidden" name="action" value="user-settings/save-user-settings">
 		{{ getCsrfInput() }}
 
 		{{ forms.checkboxField({
+			first: true,
 			label: "Verify email addresses?"|t('app'),
 			instructions: "Should new email addresses be verified before getting saved to user accounts? (This also affects new user registration.)"|t('app'),
 			name: 'requireEmailVerification',
@@ -53,4 +54,4 @@
 			<input type="submit" class="btn submit" value="{{ 'Save'|t('app') }}">
 		</div>
 	</form>
-{% endset %}
+{% endblock %}

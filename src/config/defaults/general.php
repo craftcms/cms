@@ -160,7 +160,25 @@ return [
      * The quality level Craft will use when saving JPG and PNG files. Ranges from 0 (worst quality, smallest file) to
      * 100 (best quality, biggest file).
      */
-    'defaultImageQuality' => 75,
+    'defaultImageQuality' => 82,
+    /**
+     * The default options that should be applied to each search term.
+     *
+     * Options include:
+     *
+     * - `attribute` – The attribute that the term should apply to (e.g. 'title'), if any
+     * - `exact` – Whether the term must be an exact match (only applies if `attribute` is set)
+     * - `exclude` – Whether search results should *exclude* records with this term
+     * - `subLeft` – Whether to include keywords that contain the term, with additional characters before it
+     * - `subRight` – Whether to include keywords that contain the term, with additional characters after it
+     */
+    'defaultSearchTermOptions' => [
+        'attribute' => null,
+        'exact' => false,
+        'exclude' => false,
+        'subLeft' => false,
+        'subRight' => false,
+    ],
     /**
      * The template file extensions Craft will look for when matching a template path to a file on the front end.
      */
@@ -171,6 +189,20 @@ return [
      * @see http://www.php.net/manual/en/dateinterval.construct.php
      */
     'defaultTokenDuration' => 'P1D',
+    /**
+     * The default day that new users should have set as their “Week Start Day”.
+     *
+     * This should be set to an integer from `0` to `6` where:
+     *
+     * - `0` represents Sunday
+     * - `1` represents Monday
+     * - `2` represents Tuesday
+     * - `3` represents Wednesday
+     * - `4` represents Thursday
+     * - `5` represents Friday
+     * - `6` represents Saturday
+     */
+    'defaultWeekStartDay' => 0,
     /**
      * Determines whether the system is in Dev Mode or not.
      */
@@ -344,6 +376,13 @@ return [
      */
     'postLoginRedirect' => '',
     /**
+     * Whether the embedded Image Color Profile (ICC) should be preserved when manipulating images.
+     *
+     * Setting this to true results in a slightly increased filesize and more accurate colors,
+     * if a color profile was embedded on image export. This will only have effect if Imagick is in use.
+     */
+    'preserveImageColorProfiles' => false,
+    /**
      * The template path segment prefix that should be used to identify "private" templates -- templates that aren't
      * directly accessible via a matching URL.
      */
@@ -354,7 +393,7 @@ return [
      *
      * @see http://www.php.net/manual/en/dateinterval.construct.php
      */
-    'purgePendingUsersDuration' => 'P3M',
+    'purgePendingUsersDuration' => false,
     /**
      * The amount of time Craft will remember a username and pre-populate it on the CP login page.
      *
@@ -459,6 +498,11 @@ return [
      */
     'slugWordSeparator' => '-',
     /**
+     * Controls whether or not to show or hide any Twig template runtime errors that occur on the site in the browser.
+     * If it is set to `true`, the errors will still be logged to Craft’s log files.
+     */
+    'suppressTemplateErrors' => false,
+    /**
      * Configures Craft to send all system emails to a single email address, or an array of email addresses for testing
      * purposes.
      */
@@ -531,6 +575,15 @@ return [
      * Whether Craft should use XSendFile to serve files when possible.
      */
     'useXSendFile' => false,
+    /**
+     * If set, should be a private, random, cryptographically secure key that is used to generate HMAC
+     * in the SecurityService and is used for such things as verifying that cookies haven't been tampered with.
+     * If not set, a random one is generated for you. Ultimately saved in craft/storage/runtime/state/state.bin.
+     *
+     * If you're in a load-balanced web server environment and you're not utilizing sticky sessions, this value
+     * should be set to the same key across all web servers.
+     */
+    'validationKey' => null,
     /**
      * The amount of time a user verification code can be used before expiring.
      *

@@ -11,6 +11,7 @@ use Craft;
 use craft\app\base\ElementInterface;
 use craft\app\base\Field;
 use craft\app\base\Element;
+use craft\app\base\PreviewableFieldInterface;
 use craft\app\elements\db\ElementQuery;
 use craft\app\elements\db\ElementQueryInterface;
 use craft\app\helpers\StringHelper;
@@ -22,7 +23,7 @@ use craft\app\tasks\LocalizeRelations;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
-abstract class BaseRelationField extends Field
+abstract class BaseRelationField extends Field implements PreviewableFieldInterface
 {
     // Static
     // =========================================================================
@@ -73,6 +74,11 @@ abstract class BaseRelationField extends Field
     public $targetLocale;
 
     /**
+     * @var string The view mode
+     */
+    public $viewMode;
+
+    /**
      * @var integer The maximum number of relations this field can have (used if [[allowLimit]] is set to true)
      */
     public $limit;
@@ -81,11 +87,6 @@ abstract class BaseRelationField extends Field
      * @var string The label that should be used on the selection input
      */
     public $selectionLabel;
-
-    /**
-     * @var string|null The JS class that should be initialized for the input
-     */
-    protected $inputJsClass;
 
     /**
      * @var boolean Whether to allow multiple source selection in the settings
@@ -98,9 +99,19 @@ abstract class BaseRelationField extends Field
     protected $allowLimit = true;
 
     /**
+     * @var boolean Whether to allow the “Large Thumbnails” view mode
+     */
+    protected $allowLargeThumbsView = false;
+
+    /**
      * @var string Template to use for field rendering
      */
     protected $inputTemplate = '_includes/forms/elementSelect';
+
+    /**
+     * @var string|null The JS class that should be initialized for the input
+     */
+    protected $inputJsClass;
 
     /**
      * @var boolean Whether the elements have a custom sort order
@@ -124,6 +135,7 @@ abstract class BaseRelationField extends Field
         $attributes[] = 'sources';
         $attributes[] = 'source';
         $attributes[] = 'targetLocale';
+        $attributes[] = 'viewMode';
         $attributes[] = 'limit';
         $attributes[] = 'selectionLabel';
 
@@ -168,22 +180,13 @@ abstract class BaseRelationField extends Field
      */
     public function getSettingsHtml()
     {
-        $sources = [];
-
-        $class = static::elementType();
-
-        foreach ($class::getSources() as $key => $source) {
-            if (!isset($source['heading'])) {
-                $sources[] = ['label' => $source['label'], 'value' => $key];
-            }
-        }
-
         return Craft::$app->getView()->renderTemplate('_components/fieldtypes/elementfieldsettings',
             [
                 'allowMultipleSources' => $this->allowMultipleSources,
                 'allowLimit' => $this->allowLimit,
-                'sources' => $sources,
-                'targetLocaleField' => $this->getTargetLocaleFieldHtml(),
+                'sources' => $this->getSourceOptions(),
+                'targetLocaleFieldHtml' => $this->getTargetLocaleFieldHtml(),
+                'viewModeFieldHtml' => $this->getViewModeFieldHtml(),
                 'field' => $this,
                 'displayName' => static::displayName(),
                 'defaultSelectionLabel' => static::defaultSelectionLabel(),
@@ -195,11 +198,11 @@ abstract class BaseRelationField extends Field
      */
     public function validateValue($value, $element)
     {
+        /** @var ElementQuery $value */
         $errors = [];
 
         // Do we need to validate the number of selections?
         if ($this->required || ($this->allowLimit && $this->limit)) {
-            /** @var ElementQuery $value */
             $total = $value->count();
 
             if ($this->required && $total == 0) {
@@ -266,8 +269,34 @@ abstract class BaseRelationField extends Field
     /**
      * @inheritdoc
      */
+    public function modifyElementsQuery(ElementQueryInterface $query, $value)
+    {
+        /** @var ElementQuery $query */
+        if ($value == 'not :empty:') {
+            $value = ':notempty:';
+        }
+
+        if ($value == ':notempty:' || $value == ':empty:') {
+            $alias = 'relations_'.$this->handle;
+            $operator = ($value == ':notempty:' ? '!=' : '=');
+
+            $query->subQuery->andWhere(
+                "(select count({$alias}.id) from {{relations}} {$alias} where {$alias}.sourceId = elements.id and {$alias}.fieldId = :fieldId) {$operator} 0",
+                [':fieldId' => $this->id]
+            );
+        } else if ($value !== null) {
+            return false;
+        }
+
+        return null;
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function getInputHtml($value, $element)
     {
+        /** @var ElementQuery $value */
         $variables = $this->getInputTemplateVariables($value, $element);
 
         return Craft::$app->getView()->renderTemplate($this->inputTemplate, $variables);
@@ -278,6 +307,7 @@ abstract class BaseRelationField extends Field
      */
     public function getSearchKeywords($value, $element)
     {
+        /** @var ElementQuery $value */
         $titles = [];
 
         foreach ($value->all() as $element) {
@@ -308,6 +338,7 @@ abstract class BaseRelationField extends Field
      */
     public function getStaticHtml($value, $element)
     {
+        /** @var ElementQuery $value */
         if (count($value)) {
             $html = '<div class="elementselect"><div class="elements">';
 
@@ -324,6 +355,23 @@ abstract class BaseRelationField extends Field
         } else {
             return '<p class="light">'.Craft::t('app', 'Nothing selected.').'</p>';
         }
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getTableAttributeHtml($value, $element)
+    {
+        /** @var ElementQuery $value */
+        $element = $value->one();
+
+        if ($element) {
+            return Craft::$app->getView()->renderTemplate('_elements/element', [
+                'element' => $element,
+            ]);
+        }
+
+        return null;
     }
 
     // Protected Methods
@@ -365,6 +413,7 @@ abstract class BaseRelationField extends Field
             'criteria' => $selectionCriteria,
             'sourceElementId' => (!empty($element->id) ? $element->id : null),
             'limit' => ($this->allowLimit ? $this->limit : null),
+            'viewMode' => $this->getViewMode(),
             'selectionLabel' => ($this->selectionLabel ? Craft::t('site', $this->selectionLabel) : static::defaultSelectionLabel()),
         ];
     }
@@ -376,7 +425,9 @@ abstract class BaseRelationField extends Field
      *
      * @return array
      */
-    protected function getInputSources($element)
+    protected function getInputSources(
+        /** @noinspection PhpUnusedParameterInspection */
+        $element)
     {
         if ($this->allowMultipleSources) {
             $sources = $this->sources;
@@ -450,5 +501,110 @@ abstract class BaseRelationField extends Field
                     ]
                 ]);
         }
+
+        return null;
+    }
+
+    /**
+     * Normalizes the available sources into select input options.
+     *
+     * @return array
+     */
+    protected function getSourceOptions()
+    {
+        $options = [];
+        $optionNames = [];
+
+        foreach ($this->getAvailableSources() as $source) {
+            // Make sure it's not a heading
+            if (!isset($source['heading'])) {
+                $options[] = [
+                    'label' => $source['label'],
+                    'value' => $source['key']
+                ];
+                $optionNames[] = $source['label'];
+            }
+        }
+
+        // Sort alphabetically
+        array_multisort($optionNames, SORT_NATURAL | SORT_FLAG_CASE, $options);
+
+        return $options;
+    }
+
+    /**
+     * Returns the HTML for the View Mode setting.
+     *
+     * @return string|null
+     */
+    protected function getViewModeFieldHtml()
+    {
+        $supportedViewModes = $this->getSupportedViewModes();
+
+        if (!$supportedViewModes || count($supportedViewModes) == 1) {
+            return null;
+        }
+
+        $viewModeOptions = [];
+
+        foreach ($supportedViewModes as $key => $label) {
+            $viewModeOptions[] = ['label' => $label, 'value' => $key];
+        }
+
+        return Craft::$app->getView()->renderTemplateMacro('_includes/forms', 'selectField', [
+            [
+                'label' => Craft::t('app', 'View Mode'),
+                'instructions' => Craft::t('app', 'Choose how the field should look for authors.'),
+                'id' => 'viewMode',
+                'name' => 'viewMode',
+                'options' => $viewModeOptions,
+                'value' => $this->viewMode
+            ]
+        ]);
+    }
+
+    /**
+     * Returns the field’s supported view modes.
+     *
+     * @return array|null
+     */
+    protected function getSupportedViewModes()
+    {
+        $viewModes = [
+            'list' => Craft::t('app', 'List'),
+        ];
+
+        if ($this->allowLargeThumbsView) {
+            $viewModes['large'] = Craft::t('app', 'Large Thumbnails');
+        }
+
+        return $viewModes;
+    }
+
+    /**
+     * Returns the field’s current view mode.
+     *
+     * @return string
+     */
+    protected function getViewMode()
+    {
+        $supportedViewModes = $this->getSupportedViewModes();
+        $viewMode = $this->viewMode;
+
+        if ($viewMode && isset($supportedViewModes[$viewMode])) {
+            return $viewMode;
+        } else {
+            return 'list';
+        }
+    }
+
+    /**
+     * Returns the sources that should be available to choose from within the field's settings
+     *
+     * @return array
+     */
+    protected function getAvailableSources()
+    {
+        return Craft::$app->getElementIndexes()->getSources($this::elementType(), 'modal');
     }
 }

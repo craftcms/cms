@@ -42,6 +42,7 @@ class Image
      * Constructor
      *
      * @param string $path
+     * @param string $url
      *
      * @return Image
      */

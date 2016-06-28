@@ -9,6 +9,8 @@ namespace craft\app\fields;
 
 use Craft;
 use craft\app\base\Field;
+use craft\app\base\PreviewableFieldInterface;
+use craft\app\dates\DateTime;
 use craft\app\elements\db\ElementQuery;
 use craft\app\elements\db\ElementQueryInterface;
 use craft\app\helpers\DateTimeHelper;
@@ -21,7 +23,7 @@ use yii\db\Schema;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
-class Date extends Field
+class Date extends Field implements PreviewableFieldInterface
 {
     // Static
     // =========================================================================
@@ -172,6 +174,10 @@ class Date extends Field
 
         $input = '';
 
+        if ($this->showDate && $this->showTime) {
+            $input .= '<div class="datetimewrapper">';
+        }
+
         if ($this->showDate) {
             $input .= Craft::$app->getView()->renderTemplate('_includes/forms/date', $variables);
         }
@@ -180,7 +186,24 @@ class Date extends Field
             $input .= ' '.Craft::$app->getView()->renderTemplate('_includes/forms/time', $variables);
         }
 
+        if ($this->showDate && $this->showTime) {
+            $input .= '</div>';
+        }
+
         return $input;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getTableAttributeHtml($value, $element)
+    {
+        if ($value) {
+            /** @var DateTime $value */
+            return '<span title="'.$value->localeDate().' '.$value->localeTime().'">'.$value->uiTimestamp().'</span>';
+        } else {
+            return '';
+        }
     }
 
     /**

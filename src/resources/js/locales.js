@@ -196,7 +196,7 @@ Craft.Locales = Garnish.Base.extend(
 		{
 			if (!this.$resultsSheet)
 			{
-				this.$resultsSheet = $('<div id="addlocaleresults" class="menu" style="position: relative; margin: 0 1px;"/>').appendTo(this.$addLocaleField);
+				this.$resultsSheet = $('<div id="addlocaleresults" class="menu" style="position: relative;"/>').appendTo(this.$addLocaleField);
 				this.$resultsList = $('<ul/>').appendTo(this.$resultsSheet);
 
 				this.addListener(this.$resultsList, 'mousedown', 'addSelectedLocale');

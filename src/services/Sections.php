@@ -81,11 +81,6 @@ class Sections extends Component
     /**
      * @var
      */
-    public $typeLimits;
-
-    /**
-     * @var
-     */
     private $_allSectionIds;
 
     /**
@@ -167,20 +162,9 @@ class Sections extends Component
 
             $this->_sectionsById = [];
 
-            $typeCounts = [
-                Section::TYPE_SINGLE => 0,
-                Section::TYPE_CHANNEL => 0,
-                Section::TYPE_STRUCTURE => 0
-            ];
-
             foreach ($results as $result) {
-                $type = $result['type'];
-
-                if (Craft::$app->getEdition() >= Craft::Client || $typeCounts[$type] < $this->typeLimits[$type]) {
-                    $section = new Section($result);
-                    $this->_sectionsById[$section->id] = $section;
-                    $typeCounts[$type]++;
-                }
+                $section = new Section($result);
+                $this->_sectionsById[$section->id] = $section;
             }
 
             $this->_fetchedAllSections = true;
@@ -382,10 +366,6 @@ class Sections extends Component
         $sectionRecord->handle = $section->handle;
         $sectionRecord->type = $section->type;
         $sectionRecord->enableVersioning = $section->enableVersioning ? 1 : 0;
-
-        if (($isNewSection || $section->type != $oldSection->type) && !$this->canHaveMore($section->type)) {
-            $section->addError('type', Craft::t('app', 'You can’t add any more {type} sections.', ['type' => Craft::t('app', ucfirst($section->type))]));
-        }
 
         // Type-specific attributes
         if ($section->type == Section::TYPE_SINGLE) {
@@ -642,6 +622,13 @@ class Sections extends Component
                             $singleEntryId = null;
 
                             if (!$isNewSection) {
+                                // Re-save the entrytype name if the section name just changed
+                                if (!$isNewSection && $oldSection->name != $section->name) {
+                                    $entryType = $this->getEntryTypeById($entryTypeId);
+                                    $entryType->name = $section->name;
+                                    $this->saveEntryType($entryType);
+                                }
+
                                 // Make sure there's only one entry in this section
                                 $entryIds = (new Query())
                                     ->select('id')
@@ -987,19 +974,24 @@ class Sections extends Component
 
                 // Is the event giving us the go-ahead?
                 if ($event->isValid) {
-                    if (!$isNewEntryType && $oldEntryType->fieldLayoutId) {
-                        // Drop the old field layout
-                        Craft::$app->getFields()->deleteLayoutById($oldEntryType->fieldLayoutId);
+                    // Is there a new field layout?
+                    $fieldLayout = $entryType->getFieldLayout();
+
+                    if (!$fieldLayout->id) {
+                        // Delete the old one
+                        if (!$isNewEntryType && $oldEntryType->fieldLayoutId) {
+                            Craft::$app->getFields()->deleteLayoutById($oldEntryType->fieldLayoutId);
+                        }
+
+                        // Save the new one
+                        Craft::$app->getFields()->saveLayout($fieldLayout);
+
+                        // Update the entry type record/model with the new layout ID
+                        $entryType->fieldLayoutId = $fieldLayout->id;
+                        $entryTypeRecord->fieldLayoutId = $fieldLayout->id;
                     }
 
-                    // Save the new one
-                    $fieldLayout = $entryType->getFieldLayout();
-                    Craft::$app->getFields()->saveLayout($fieldLayout);
-
-                    // Update the entry type record/model with the new layout ID
-                    $entryType->fieldLayoutId = $fieldLayout->id;
-                    $entryTypeRecord->fieldLayoutId = $fieldLayout->id;
-
+                    // Save the entry type
                     $entryTypeRecord->save(false);
 
                     // Now that we have an entry type ID, save it on the model
@@ -1156,31 +1148,6 @@ class Sections extends Component
             ->innerJoin('{{%sections_i18n}} sections_i18n', 'sections_i18n.sectionId = sections.id')
             ->where($conditions, $params)
             ->exists();
-    }
-
-    /**
-     * Returns whether another section can be added of a given type.
-     *
-     * @param string $type
-     *
-     * @return boolean
-     */
-    public function canHaveMore($type)
-    {
-        if (Craft::$app->getEdition() >= Craft::Client) {
-            return true;
-        } else {
-            if (isset($this->typeLimits[$type])) {
-                $count = (new Query())
-                    ->from('{{%sections}}')
-                    ->where('type = :type', [':type' => $type])
-                    ->count('id');
-
-                return $count < $this->typeLimits[$type];
-            } else {
-                return false;
-            }
-        }
     }
 
     // Private Methods

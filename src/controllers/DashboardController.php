@@ -14,14 +14,13 @@ use craft\app\dates\DateTime;
 use craft\app\helpers\Io;
 use craft\app\helpers\Json;
 use craft\app\helpers\StringHelper;
-use craft\app\helpers\Url;
 use craft\app\io\Zip;
 use craft\app\models\GetHelp as GetHelpModel;
-use craft\app\web\twig\variables\ComponentInfo;
+use craft\app\web\Response;
 use craft\app\web\Controller;
 use craft\app\web\UploadedFile;
-use yii\web\NotFoundHttpException;
-use yii\web\Response;
+use yii\helpers\FileHelper;
+use yii\web\BadRequestHttpException;
 
 /**
  * The DashboardController class is a controller that handles various dashboard related actions including managing
@@ -38,115 +37,154 @@ class DashboardController extends Controller
     // =========================================================================
 
     /**
-     * Edits a widget.
+     * Dashboard index.
      *
-     * @param integer                $widgetId The widget’s ID, if editing an existing widget
-     * @param WidgetInterface|Widget $widget   The widget being edited, if there were any validation errors
-     *
-     * @return string The rendering result
-     * @throws NotFoundHttpException if the requested widget cannot be found
+     * @return string
      */
-    public function actionEditWidget($widgetId = null, WidgetInterface $widget = null)
+    public function actionIndex()
     {
-        // The widget
-        // ---------------------------------------------------------------------
+        $dashboardService = Craft::$app->getDashboard();
+        $view = Craft::$app->getView();
 
-        if ($widget === null && $widgetId !== null) {
-            $widget = Craft::$app->getDashboard()->getWidgetById($widgetId);
+        $namespace = $view->getNamespace();
 
-            if ($widget === null) {
-                throw new NotFoundHttpException('Widget not found');
+        // Assemble the list of available widget types
+        $widgetTypes = $dashboardService->getAllWidgetTypes();
+        $widgetTypeInfo = [];
+        $view->setNamespace('__NAMESPACE__');
+
+        foreach ($widgetTypes as $widgetType) {
+            $view->startJsBuffer();
+            $widget = $dashboardService->createWidget($widgetType);
+            $settingsHtml = $view->namespaceInputs($widget->getSettingsHtml());
+            $settingsJs = $view->clearJsBuffer(false);
+
+            $class = $widget->getType();
+
+            $widgetTypeInfo[$class] = [
+                'iconSvg' => $this->_getWidgetIconSvg($widget),
+                'name' => $widget->displayName(),
+                'maxColspan' => $widget->getMaxColspan(),
+                'settingsHtml' => (string)$settingsHtml,
+                'settingsJs' => (string)$settingsJs,
+                'selectable' => true,
+            ];
+        }
+
+        $view->setNamespace($namespace);
+
+        // Assemble the list of existing widgets
+        $variables['widgets'] = [];
+        $widgets = $dashboardService->getAllWidgets();
+        $allWidgetJs = '';
+
+        foreach ($widgets as $widget) {
+            $view->startJsBuffer();
+            $info = $this->_getWidgetInfo($widget);
+            $widgetJs = $view->clearJsBuffer(false);
+
+            if ($info === false) {
+                continue;
             }
-        }
 
-        if ($widget === null) {
-            $widget = Craft::$app->getDashboard()->createWidget('craft\app\widgets\Feed');
-        }
-
-        $widgetTypeInfo = new ComponentInfo($widget);
-
-        // Widget types
-        // ---------------------------------------------------------------------
-
-        $allWidgetTypes = Craft::$app->getDashboard()->getAllWidgetTypes();
-        $widgetTypeOptions = [];
-
-        foreach ($allWidgetTypes as $class) {
-            if ($class === $widget->getType() || $class::isSelectable()) {
-                $widgetTypeOptions[] = [
-                    'value' => $class,
-                    'label' => $class::displayName()
+            // If this widget type didn't come back in our getAllWidgetTypes() call, add it now
+            if (!isset($widgetTypeInfo[$info['type']])) {
+                $widgetTypeInfo[$info['type']] = [
+                    'iconSvg' => $this->_getWidgetIconSvg($widget),
+                    'name' => $widget->displayName(),
+                    'maxColspan' => $widget->getMaxColspan(),
+                    'selectable' => false,
                 ];
             }
+
+            $variables['widgets'][] = $info;
+
+            $allWidgetJs .= 'new Craft.Widget("#widget'.$widget->id.'", '.
+                Json::encode($info['settingsHtml']).', '.
+                'function(){'.$info['settingsJs'].'}'.
+                ");\n";
+
+            if ($widgetJs) {
+                // Allow any widget JS to execute *after* we've created the Craft.Widget instance
+                $allWidgetJs .= $widgetJs."\n";
+            }
         }
 
-        // Page setup + render
-        // ---------------------------------------------------------------------
+        // Include all the JS and CSS stuff
+        $view->registerCssResource('css/dashboard.css');
+        $view->registerJsResource('js/Dashboard.js');
+        $view->registerJs('window.dashboard = new Craft.Dashboard('.Json::encode($widgetTypeInfo).');');
+        $view->registerJs($allWidgetJs);
+        $view->includeTranslations(
+            '1 column',
+            '{num} columns',
+            '{type} Settings',
+            'Widget saved.',
+            'Couldn’t save widget.',
+            'You don’t have any widgets yet.'
+        );
 
-        $crumbs = [
-            [
-                'label' => Craft::t('app', 'Dashboard'),
-                'url' => Url::getUrl('dashboard')
-            ],
-            [
-                'label' => Craft::t('app', 'Settings'),
-                'url' => Url::getUrl('dashboard/settings')
-            ],
-        ];
+        $variables['widgetTypes'] = $widgetTypeInfo;
 
-        if ($widgetId !== null) {
-            $title = $widget->getTitle();
-        } else {
-            $title = Craft::t('app', 'Create a new widget');
-        }
-
-        return $this->renderTemplate('dashboard/settings/_widgetsettings', [
-            'widgetId' => $widgetId,
-            'widget' => $widget,
-            'widgetTypeInfo' => $widgetTypeInfo,
-            'widgetTypeOptions' => $widgetTypeOptions,
-            'allWidgetTypes' => $allWidgetTypes,
-            'crumbs' => $crumbs,
-            'title' => $title,
-            'docsUrl' => 'http://craftcms.com/docs/widgets#widget-layouts',
-        ]);
+        return $this->renderTemplate('dashboard/_index', $variables);
     }
 
     /**
-     * Saves a widget.
+     * Creates a new widget.
      *
-     * @return Response|null
+     * @return Response
      */
-    public function actionSaveWidget()
+    public function actionCreateWidget()
     {
         $this->requirePostRequest();
+        $this->requireAjaxRequest();
 
-        $dashboardService = Craft::$app->getDashboard();
         $request = Craft::$app->getRequest();
+        $dashboardService = Craft::$app->getDashboard();
+
         $type = $request->getRequiredBodyParam('type');
+        $settingsNamespace = $request->getBodyParam('settingsNamespace');
+
+        if ($settingsNamespace) {
+            $settings = $request->getBodyParam($settingsNamespace);
+        } else {
+            $settings = null;
+        }
 
         $widget = $dashboardService->createWidget([
             'type' => $type,
-            'id' => $request->getBodyParam('widgetId'),
-            'userId' => Craft::$app->getUser()->getIdentity()->id,
-            'settings' => $request->getBodyParam('types.'.$type),
+            'settings' => $settings,
         ]);
 
-        // Did it save?
-        if (Craft::$app->getDashboard()->saveWidget($widget)) {
-            Craft::$app->getSession()->setNotice(Craft::t('app', 'Widget saved.'));
+        return $this->_saveAndReturnWidget($widget);
+    }
 
-            return $this->redirectToPostedUrl();
-        } else {
-            Craft::$app->getSession()->setError(Craft::t('app', 'Couldn’t save widget.'));
+    /**
+     * Saves a widget’s settings.
+     *
+     * @return Response
+     *
+     * @throws BadRequestHttpException
+     */
+    public function actionSaveWidgetSettings()
+    {
+        $this->requirePostRequest();
+        $this->requireAjaxRequest();
+
+        $request = Craft::$app->getRequest();
+        $dashboardService = Craft::$app->getDashboard();
+
+        $widgetId = $request->getRequiredBodyParam('widgetId');
+        $widget = $dashboardService->getWidgetById($widgetId);
+
+        if (!$widget) {
+            throw new BadRequestHttpException();
         }
 
-        // Send the widget back to the template
-        Craft::$app->getUrlManager()->setRouteParams([
-            'widget' => $widget
-        ]);
+        $settings = $request->getBodyParam('widget'.$widget->id.'-settings');
+        $widget::populateModel($widget, $settings);
 
-        return null;
+        return $this->_saveAndReturnWidget($widget);
     }
 
     /**
@@ -154,7 +192,7 @@ class DashboardController extends Controller
      *
      * @return Response
      */
-    public function actionDeleteWidget()
+    public function actionDeleteUserWidget()
     {
         $this->requirePostRequest();
         $this->requireAjaxRequest();
@@ -166,11 +204,30 @@ class DashboardController extends Controller
     }
 
     /**
+     * Changes the colspan of a widget.
+     *
+     * @return Response
+     */
+    public function actionChangeWidgetColspan()
+    {
+        $this->requirePostRequest();
+        $this->requireAjaxRequest();
+
+        $request = Craft::$app->getRequest();
+        $widgetId = $request->getRequiredBodyParam('id');
+        $colspan = $request->getRequiredBodyParam('colspan');
+
+        Craft::$app->getDashboard()->changeWidgetColspan($widgetId, $colspan);
+
+        return $this->asJson(['success' => true]);
+    }
+
+    /**
      * Reorders widgets.
      *
      * @return Response
      */
-    public function actionReorderWidgets()
+    public function actionReorderUserWidgets()
     {
         $this->requirePostRequest();
         $this->requireAjaxRequest();
@@ -190,8 +247,9 @@ class DashboardController extends Controller
     {
         $this->requireAjaxRequest();
 
-        $url = Craft::$app->getRequest()->getRequiredParam('url');
-        $limit = Craft::$app->getRequest()->getParam('limit');
+        $request = Craft::$app->getRequest();
+        $url = $request->getRequiredParam('url');
+        $limit = $request->getParam('limit');
 
         $items = Craft::$app->getFeeds()->getFeedItems($url, $limit);
 
@@ -223,15 +281,19 @@ class DashboardController extends Controller
         $errors = [];
         $zipFile = null;
         $tempFolder = null;
-        $widgetId = Craft::$app->getRequest()->getBodyParam('widgetId');
+        $request = Craft::$app->getRequest();
+        $widgetId = $request->getBodyParam('widgetId');
+
+        $namespace = $request->getBodyParam('namespace');
+        $namespace = $namespace ? $namespace.'.' : '';
 
         $getHelpModel = new GetHelpModel();
-        $getHelpModel->fromEmail = Craft::$app->getRequest()->getBodyParam('fromEmail');
-        $getHelpModel->message = trim(Craft::$app->getRequest()->getBodyParam('message'));
-        $getHelpModel->attachLogs = (bool)Craft::$app->getRequest()->getBodyParam('attachLogs');
-        $getHelpModel->attachDbBackup = (bool)Craft::$app->getRequest()->getBodyParam('attachDbBackup');
-        $getHelpModel->attachTemplates = (bool)Craft::$app->getRequest()->getBodyParam('attachTemplates');
-        $getHelpModel->attachment = UploadedFile::getInstanceByName('attachAdditionalFile');
+        $getHelpModel->fromEmail = $request->getBodyParam($namespace.'fromEmail');
+        $getHelpModel->message = trim($request->getBodyParam($namespace.'message'));
+        $getHelpModel->attachLogs = (bool)$request->getBodyParam($namespace.'attachLogs');
+        $getHelpModel->attachDbBackup = (bool)$request->getBodyParam($namespace.'attachDbBackup');
+        $getHelpModel->attachTemplates = (bool)$request->getBodyParam($namespace.'attachTemplates');
+        $getHelpModel->attachment = UploadedFile::getInstanceByName($namespace.'attachAdditionalFile');
 
         if ($getHelpModel->validate()) {
             $user = Craft::$app->getUser()->getIdentity();
@@ -399,6 +461,107 @@ class DashboardController extends Controller
 
     // Private Methods
     // =========================================================================
+
+    /**
+     * Returns the info about a widget required to display its body and settings in the Dashboard.
+     *
+     * @param WidgetInterface|Widget $widget
+     *
+     * @return array|false
+     */
+    private function _getWidgetInfo(WidgetInterface $widget)
+    {
+        /** @var Widget $widget */
+        $view = Craft::$app->getView();
+        $namespace = $view->getNamespace();
+
+        // Get the body HTML
+        $widgetBodyHtml = $widget->getBodyHtml();
+
+        if (!$widgetBodyHtml) {
+            return false;
+        }
+
+        // Get the settings HTML + JS
+        $view->setNamespace('widget'.$widget->id.'-settings');
+        $view->startJsBuffer();
+        $settingsHtml = $view->namespaceInputs($widget->getSettingsHtml());
+        $settingsJs = $view->clearJsBuffer(false);
+
+        // Get the colspan (limited to the widget type's max allowed colspan)
+        $colspan = ($widget->colspan ?: 1);
+
+        if (($maxColspan = $widget->getMaxColspan()) && $colspan > $maxColspan) {
+            $colspan = $maxColspan;
+        }
+
+        $view->setNamespace($namespace);
+
+        return [
+            'id' => $widget->id,
+            'type' => $widget->className(),
+            'colspan' => $colspan,
+            'title' => $widget->getTitle(),
+            'name' => $widget->displayName(),
+            'bodyHtml' => $widgetBodyHtml,
+            'settingsHtml' => (string)$settingsHtml,
+            'settingsJs' => (string)$settingsJs,
+        ];
+    }
+
+    /**
+     * Returns a widget type’s SVG icon.
+     *
+     * @param WidgetInterface $widget
+     *
+     * @return string
+     */
+    private function _getWidgetIconSvg(WidgetInterface $widget)
+    {
+        $iconPath = $widget->getIconPath();
+
+        if ($iconPath && Io::fileExists($iconPath) && FileHelper::getMimeType($iconPath) == 'image/svg+xml') {
+            return Io::getFileContents($iconPath);
+        }
+
+        return Craft::$app->getView()->renderTemplate('_includes/defaulticon.svg', [
+            'label' => $widget->displayName()
+        ]);
+    }
+
+    /**
+     * Attempts to save a widget and responds with JSON.
+     *
+     * @param WidgetInterface|Widget $widget
+     *
+     * @return Response
+     */
+    private function _saveAndReturnWidget(WidgetInterface $widget)
+    {
+        $dashboardService = Craft::$app->getDashboard();
+
+        if ($dashboardService->saveWidget($widget)) {
+            $info = $this->_getWidgetInfo($widget);
+            $view = Craft::$app->getView();
+
+            return $this->asJson(array(
+                'success' => true,
+                'info' => $info,
+                'headHtml' => $view->getHeadHtml(),
+                'footHtml' => $view->getBodyHtml(),
+            ));
+        } else {
+            $errors = $widget->getAllErrors();
+
+            foreach ($widget->getErrors() as $attribute => $attributeErrors) {
+                $errors = array_merge($errors, $attributeErrors);
+            }
+
+            return $this->asJson(array(
+                'errors' => $errors
+            ));
+        }
+    }
 
     /**
      * @return string

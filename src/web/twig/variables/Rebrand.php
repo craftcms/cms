@@ -26,12 +26,12 @@ class Rebrand
     /**
      * @var
      */
-    private $_paths = array();
+    private $_paths = [];
 
     /**
      * @var
      */
-    private $_imageVariables = array();
+    private $_imageVariables = [];
 
     // Public Methods
     // =========================================================================
@@ -65,11 +65,11 @@ class Rebrand
      */
     public function isImageUploaded($type)
     {
-        return in_array($type, array('logo', 'icon')) && ($this->_getImagePath($type) !== false);
+        return in_array($type, ['logo', 'icon']) && ($this->_getImagePath($type) !== false);
     }
 
     /**
-     * Returns the logo's Image variable, or null if a logo hasn't been uploaded.
+     * Returns the logo'sw Image variable, or null if a logo hasn't been uploaded.
      *
      * @return Image|null
      */
@@ -97,22 +97,17 @@ class Rebrand
      */
     public function getImageVariable($type)
     {
-        if (!in_array($type, array('logo', 'icon')))
-        {
+        if (!in_array($type, ['logo', 'icon'])) {
             return null;
         }
 
-        if (!isset($this->_imageVariables[$type]))
-        {
+        if (!isset($this->_imageVariables[$type])) {
             $path = $this->_getImagePath($type);
 
-            if ($path !== false)
-            {
+            if ($path !== false) {
                 $url = $this->_getImageUrl($path, $type);
                 $this->_imageVariables[$type] = new Image($path, $url);
-            }
-            else
-            {
+            } else {
                 $this->_imageVariables[$type] = false;
             }
         }
@@ -132,16 +127,12 @@ class Rebrand
      */
     private function _getImagePath($type)
     {
-        if (!isset($this->_paths[$type]))
-        {
+        if (!isset($this->_paths[$type])) {
             $files = Io::getFolderContents(\Craft::$app->getPath()->getRebrandPath().'/'.$type.'/', false);
 
-            if (!empty($files))
-            {
+            if (!empty($files)) {
                 $this->_paths[$type] = $files[0];
-            }
-            else
-            {
+            } else {
                 $this->_paths[$type] = false;
             }
         }

@@ -9,8 +9,6 @@ namespace craft\app\models;
 
 use Craft;
 
-Craft::$app->requireEdition(Craft::Client);
-
 /**
  * Class EntryDraft model.
  *

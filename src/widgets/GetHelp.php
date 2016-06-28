@@ -52,6 +52,14 @@ class GetHelp extends Widget
     /**
      * @inheritdoc
      */
+    public function getIconPath()
+    {
+        return Craft::$app->getPath()->getResourcesPath().'/images/widgets/get-help.svg';
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function getTitle()
     {
         return Craft::t('app', 'Send a message to Craft Support');

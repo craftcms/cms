@@ -36,9 +36,13 @@ class Et extends Component
     const Ping = 'https://elliott.craftcms.com/actions/elliott/app/ping';
     const CheckForUpdates = 'https://elliott.craftcms.com/actions/elliott/app/checkForUpdates';
     const TransferLicense = 'https://elliott.craftcms.com/actions/elliott/app/transferLicenseToCurrentDomain';
-    const GetUpgradeInfo    = 'https://elliott.craftcms.com/actions/elliott/app/getUpgradeInfo';
+    const GetUpgradeInfo = 'https://elliott.craftcms.com/actions/elliott/app/getUpgradeInfo';
+    const GetCouponPrice = 'https://elliott.craftcms.com/actions/elliott/app/getCouponPrice';
     const PurchaseUpgrade = 'https://elliott.craftcms.com/actions/elliott/app/purchaseUpgrade';
     const GetUpdateFileInfo = 'https://elliott.craftcms.com/actions/elliott/app/getUpdateFileInfo';
+    const RegisterPlugin = 'https://elliott.craftcms.com/actions/elliott/plugins/registerPlugin';
+    const UnregisterPlugin = 'https://elliott.craftcms.com/actions/elliott/plugins/unregisterPlugin';
+    const TransferPlugin = 'https://elliott.craftcms.com/actions/elliott/plugins/transferPlugin';
 
     // Public Methods
     // =========================================================================
@@ -109,11 +113,27 @@ class Et extends Component
     }
 
     /**
+     * @param string $handle
+     *
      * @return EtModel|null
      */
-    public function getUpdateFileInfo()
+    public function getUpdateFileInfo($handle)
     {
         $et = new \craft\app\et\Et(static::GetUpdateFileInfo);
+
+        if ($handle !== 'craft') {
+            $et->setHandle($handle);
+            $plugin = Craft::$app->getPlugins()->getPlugin($handle);
+
+            if ($plugin) {
+                $pluginUpdateModel = new PluginUpdate();
+                $pluginUpdateModel->class = $plugin::className();
+                $pluginUpdateModel->localVersion = $plugin->version;
+
+                $et->setData($pluginUpdateModel);
+            }
+        }
+
         $etResponse = $et->phoneHome();
 
         if ($etResponse) {
@@ -124,10 +144,11 @@ class Et extends Component
     /**
      * @param string $downloadPath
      * @param string $md5
+     * @param string $handle
      *
      * @return boolean
      */
-    public function downloadUpdate($downloadPath, $md5)
+    public function downloadUpdate($downloadPath, $md5, $handle)
     {
         if (Io::folderExists($downloadPath)) {
             $downloadPath .= '/'.$md5.'.zip';
@@ -136,7 +157,30 @@ class Et extends Component
         $updateModel = Craft::$app->getUpdates()->getUpdates();
         $buildVersion = $updateModel->app->latestVersion.'.'.$updateModel->app->latestBuild;
 
-        $path = 'http://download.craftcms.com/craft/'.$updateModel->app->latestVersion.'/'.$buildVersion.'/Patch/'.$updateModel->app->localBuild.'/'.$md5.'.zip';
+        if ($handle == 'craft') {
+            $path = 'https://download.craftcdn.com/craft/'.$updateModel->app->latestVersion.'/'.$buildVersion.'/Patch/'.($handle == 'craft' ? $updateModel->app->localBuild : $updateModel->app->localVersion.'.'.$updateModel->app->localBuild).'/'.$md5.'.zip';
+        } else {
+            $localVersion = null;
+            $localBuild = null;
+            $latestVersion = null;
+            $latestBuild = null;
+
+            foreach ($updateModel->plugins as $plugin) {
+                if (strtolower($plugin->class) == $handle) {
+                    $parts = explode('.', $plugin->localVersion);
+                    $localVersion = $parts[0].'.'.$parts[1];
+                    $localBuild = $parts[2];
+
+                    $parts = explode('.', $plugin->latestVersion);
+                    $latestVersion = $parts[0].'.'.$parts[1];
+                    $latestBuild = $parts[2];
+
+                    break;
+                }
+            }
+
+            $path = 'https://download.craftcdn.com/plugins/'.$handle.'/'.$latestVersion.'/'.$latestVersion.'.'.$latestBuild.'/Patch/'.$localVersion.'.'.$localBuild.'/'.$md5.'.zip';
+        }
 
         $et = new \craft\app\et\Et($path, 240);
         $et->setDestinationFilename($downloadPath);
@@ -195,6 +239,20 @@ class Et extends Component
         if ($etResponse) {
             $etResponse->data = new UpgradeInfo($etResponse->data);
         }
+
+        return $etResponse;
+    }
+
+    /**
+     * Fetches the price of an upgrade with a coupon applied to it.
+     *
+     * @return EtModel|null
+     */
+    public function fetchCouponPrice($edition, $couponCode)
+    {
+        $et = new \craft\app\et\Et(static::GetCouponPrice);
+        $et->setData(array('edition' => $edition, 'couponCode' => $couponCode));
+        $etResponse = $et->phoneHome();
 
         return $etResponse;
     }
@@ -281,6 +339,66 @@ class Et extends Component
         }
 
         return false;
+    }
+
+    /**
+     * Registers a given plugin with the current Craft license.
+     *
+     * @string $pluginHandle The plugin handle that should be registered
+     *
+     * @return EtModel
+     */
+    public function registerPlugin($pluginHandle)
+    {
+        $et = new \craft\app\et\Et(static::RegisterPlugin);
+        $et->setData(array(
+            'pluginHandle' => $pluginHandle
+        ));
+        $etResponse = $et->phoneHome();
+
+        return $etResponse;
+    }
+
+    /**
+     * Transfers a given plugin to the current Craft license.
+     *
+     * @string $pluginHandle The plugin handle that should be transferred
+     *
+     * @return EtModel
+     */
+    public function transferPlugin($pluginHandle)
+    {
+        $et = new \craft\app\et\Et(static::TransferPlugin);
+        $et->setData(array(
+            'pluginHandle' => $pluginHandle
+        ));
+        $etResponse = $et->phoneHome();
+
+        return $etResponse;
+    }
+
+    /**
+     * Unregisters a given plugin from the current Craft license.
+     *
+     * @string $pluginHandle The plugin handle that should be unregistered
+     *
+     * @return EtModel
+     */
+    public function unregisterPlugin($pluginHandle)
+    {
+        $et = new \craft\app\et\Et(static::UnregisterPlugin);
+        $et->setData(array(
+            'pluginHandle' => $pluginHandle
+        ));
+        $etResponse = $et->phoneHome();
+
+        if (!empty($etResponse->data['success']))
+        {
+            // Remove our record of the license key
+            Craft::$app->getPlugins()->setPluginLicenseKey($pluginHandle, null);
+        }
+
+        return $etResponse;
     }
 
     /**

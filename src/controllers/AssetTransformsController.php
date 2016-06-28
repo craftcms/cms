@@ -114,6 +114,10 @@ class AssetTransformsController extends Controller
             $errors = true;
         }
 
+        if (empty($transform->quality)) {
+            $transform->quality = null;
+        }
+
         if (!empty($transform->format) && !in_array($transform->format,
                 Image::getWebSafeFormats())
         ) {

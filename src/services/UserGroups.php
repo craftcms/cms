@@ -11,6 +11,7 @@ use Craft;
 use craft\app\db\Query;
 use craft\app\elements\User;
 use craft\app\errors\UserGroupNotFoundException;
+use craft\app\events\AssignUserGroupsEvent;
 use craft\app\models\UserGroup as UserGroupModel;
 use craft\app\records\UserGroup as UserGroupRecord;
 use yii\base\Component;
@@ -27,6 +28,18 @@ Craft::$app->requireEdition(Craft::Pro);
  */
 class UserGroups extends Component
 {
+    /**
+     * @event AssignUserGroupEvent The event that is triggered before a user is assigned to some user groups.
+     *
+     * You may set [[AssignUserGroupEvent::isValid]] to `false` to prevent the user from getting assigned to the groups.
+     */
+    const EVENT_BEFORE_ASSIGN_USER_TO_GROUPS = 'beforeAssignUserToGroups';
+
+    /**
+     * @event AssignUserGroupEvent The event that is triggered after a user is assigned to some user groups.
+     */
+    const EVENT_AFTER_ASSIGN_USER_TO_GROUPS = 'afterAssignUserToGroups';
+
     /**
      * @event UserEvent The event that is triggered before a user is assigned to the default user group.
      *
@@ -161,23 +174,52 @@ class UserGroups extends Component
      */
     public function assignUserToGroups($userId, $groupIds = null)
     {
-        Craft::$app->getDb()->createCommand()->delete('{{%usergroups_users}}',
-            ['userId' => $userId])->execute();
-
-        if ($groupIds) {
-            if (!is_array($groupIds)) {
-                $groupIds = [$groupIds];
-            }
-
-            foreach ($groupIds as $groupId) {
-                $values[] = [$groupId, $userId];
-            }
-
-            Craft::$app->getDb()->createCommand()->batchInsert('{{%usergroups_users}}',
-                ['groupId', 'userId'], $values)->execute();
+        // Make sure $groupIds is an array
+        if (!is_array($groupIds)) {
+            $groupIds = $groupIds ? [$groupIds] : [];
         }
 
-        return true;
+        // Fire a 'beforeAssignUserToGroups' event
+        $event = new AssignUserGroupsEvent([
+            'userId' => $userId,
+            'groupIds' => $groupIds
+        ]);
+
+        $this->trigger(static::EVENT_BEFORE_ASSIGN_USER_TO_GROUPS, $event);
+
+        if ($event->isValid) {
+            // Delete their existing groups
+            Craft::$app->getDb()->createCommand()->delete(
+                '{{%usergroups_users}}',
+                ['userId' => $userId]
+            )->execute();
+
+            if ($groupIds) {
+                // Add the new ones
+                foreach ($groupIds as $groupId) {
+                    $values[] = [$groupId, $userId];
+                }
+
+                Craft::$app->getDb()->createCommand()->batchInsert(
+                    '{{%usergroups_users}}',
+                    [
+                        'groupId',
+                        'userId'
+                    ],
+                    $values
+                )->execute();
+            }
+
+            // Fire an 'afterAssignUserToGroups' event
+            $this->trigger(static::EVENT_AFTER_ASSIGN_USER_TO_GROUPS, new AssignUserGroupsEvent([
+                'userId' => $userId,
+                'groupIds' => $groupIds
+            ]));
+
+            return true;
+        }
+
+        return false;
     }
 
     /**

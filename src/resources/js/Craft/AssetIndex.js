@@ -124,7 +124,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 
 			filter: $.proxy(function()
 			{
-				return this.elementSelect.getSelectedItems();
+				return this.view.getSelectedElements();
 			}, this),
 
 			helper: $.proxy(function($file)
@@ -314,7 +314,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 							$('[data-id=' + originalFileIds[i] + ']').remove();
 						}
 
-						this.elementSelect.deselectAll();
+						this.view.deselectAllElements();
 						this._collapseExtraExpandedFolders(targetFolderId);
 
 						if (reloadIndex)
@@ -809,7 +809,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 	 *
 	 * @private
 	 */
-	onAfterHtmlInit: function()
+	afterInit: function()
 	{
 		if (!this.$uploadButton)
 		{
@@ -877,7 +877,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 		return sourceKey.split(':')[1];
 	},
 
-	onStartSearching: function()
+	startSearching: function()
 	{
 		// Does this source have subfolders?
 		if (this.$source.siblings('ul').length)
@@ -916,7 +916,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 		this.base();
 	},
 
-	onStopSearching: function()
+	stopSearching: function()
 	{
 		if (this.showingIncludeSubfoldersCheckbox)
 		{
@@ -933,7 +933,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 		this.base();
 	},
 
-	getControllerData: function()
+	getViewParams: function()
 	{
 		var data = this.base();
 
@@ -1004,7 +1004,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 		{
 			if (response.error)
 			{
-				alert(Craft.t('Upload failed for {filename}. The error message was: ”{error}“', { filename: filename, error: response.error }));
+				alert(Craft.t('Upload failed for {filename}. The error message was: “{error}”', { filename: fileName, error: response.error }));
 			}
 			else
 			{
@@ -1094,7 +1094,17 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 	 * Perform actions after updating elements
 	 * @private
 	 */
-	onUpdateElements: function(append, $newElements)
+	onUpdateElements: function()
+	{
+		this._onUpdateElements(false, this.view.getAllElements());
+		this.view.on('appendElements', $.proxy(function(ev) {
+			this._onUpdateElements(true, ev.newElements);
+		}, this));
+
+		this.base();
+	},
+
+	_onUpdateElements: function(append, $newElements)
 	{
 		if (this.settings.context == 'index')
 		{
@@ -1109,18 +1119,11 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 		// See if we have freshly uploaded files to add to selection
 		if (this._uploadedFileIds.length)
 		{
-			var $item = null;
-			for (var i = 0; i < this._uploadedFileIds.length; i++)
+			if (this.view.settings.selectable)
 			{
-				$item = this.$main.find('.element[data-id=' + this._uploadedFileIds[i] + ']:first').parent();
-				if (this.getSelectedSourceState('mode') == 'table')
+				for (var i = 0; i < this._uploadedFileIds.length; i++)
 				{
-					$item = $item.parent();
-				}
-
-				if (this.elementSelect)
-				{
-					this.elementSelect.selectItem($item);
+					this.view.selectElementById(this._uploadedFileIds[i]);
 				}
 			}
 
@@ -1158,7 +1161,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 				$element.appendTo($tbody);
 
 				// Copy the column widths
-				this._$firstRowCells = this.$elementContainer.children('tr:first').children();
+				this._$firstRowCells = this.view.$table.children('tbody').children('tr:first').children();
 				var $helperCells = $element.children();
 
 				for (var i = 0; i < $helperCells.length; i++)
@@ -1167,7 +1170,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 					var $helperCell = $($helperCells[i]);
 
 					// Skip the checkbox cell
-					if (Garnish.hasAttr($helperCell, 'data-checkboxcell'))
+					if ($helperCell.hasClass('checkbox-cell'))
 					{
 						$helperCell.remove();
 						$outerContainer.css('margin-'+Craft.left, 19); // 26 - 7

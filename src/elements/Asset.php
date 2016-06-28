@@ -223,8 +223,10 @@ class Asset extends Element
         $attributes = [
             'title' => Craft::t('app', 'Title'),
             'filename' => Craft::t('app', 'Filename'),
-            'size' => Craft::t('app', 'Size'),
-            'dateModified' => Craft::t('app', 'Date Modified'),
+            'size' => Craft::t('app', 'File Size'),
+            'dateModified' => Craft::t('app', 'File Modification Date'),
+            'elements.dateCreated' => Craft::t('app', 'Date Uploaded'),
+            'elements.dateUpdated' => Craft::t('app', 'Date Updated'),
         ];
 
         // Allow plugins to modify the attributes
@@ -239,20 +241,38 @@ class Asset extends Element
     /**
      * @inheritdoc
      */
-    public static function defineTableAttributes($source = null)
+    public static function defineAvailableTableAttributes()
     {
         $attributes = [
-            'title' => Craft::t('app', 'Title'),
-            'filename' => Craft::t('app', 'Filename'),
-            'size' => Craft::t('app', 'Size'),
-            'dateModified' => Craft::t('app', 'Date Modified'),
+            'title' => ['label' => Craft::t('app', 'Title')],
+            'filename' => ['label' => Craft::t('app', 'Filename')],
+            'size' => ['label' => Craft::t('app', 'File Size')],
+            'kind' => ['label' => Craft::t('app', 'File Kind')],
+            'imageSize' => ['label' => Craft::t('app', 'Image Size')],
+            'width' => ['label' => Craft::t('app', 'Image Width')],
+            'height' => ['label' => Craft::t('app', 'Image Height')],
+            'id' => ['label' => Craft::t('app', 'ID')],
+            'dateModified' => ['label' => Craft::t('app', 'File Modified Date')],
+            'dateCreated' => ['label' => Craft::t('app', 'Date Created')],
+            'dateUpdated' => ['label' => Craft::t('app', 'Date Updated')],
         ];
 
         // Allow plugins to modify the attributes
-        Craft::$app->getPlugins()->call(
-            'modifyAssetTableAttributes',
-            [&$attributes, $source]
-        );
+        $pluginAttributes = Craft::$app->getPlugins()->call('defineAdditionalAssetTableAttributes', [], true);
+
+        foreach ($pluginAttributes as $thisPluginAttributes) {
+            $attributes = array_merge($attributes, $thisPluginAttributes);
+        }
+
+        return $attributes;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public static function getDefaultTableAttributes($source = null)
+    {
+        $attributes = ['filename', 'size', 'dateModified'];
 
         return $attributes;
     }
@@ -284,6 +304,10 @@ class Asset extends Element
                 );
             }
 
+            case 'kind': {
+                return Io::getFileKindLabel($element->kind);
+            }
+
             case 'size': {
                 if ($element->size) {
                     return Craft::$app->getFormatter()->asShortSize(
@@ -292,6 +316,21 @@ class Asset extends Element
                 } else {
                     return '';
                 }
+            }
+
+            case 'imageSize': {
+                if (($width = $element->getWidth()) && ($height = $element->getHeight())) {
+                    return "{$width} × {$height}";
+                } else {
+                    return '';
+                }
+            }
+
+            case 'width':
+            case 'height': {
+                $size = $element->$attribute;
+
+                return ($size ? $size.'px' : '');
             }
 
             default: {
@@ -380,6 +419,35 @@ class Asset extends Element
         }
 
         return $success;
+    }
+
+    /**
+     * @inheritdoc
+     *
+     * @param string $sourceKey
+     *
+     * @return array
+     */
+    protected static function getTableAttributesForSource($sourceKey)
+    {
+        // Make sure it's a folder
+        if (strncmp($sourceKey, 'folder:', 7) === 0) {
+            $assetsService = Craft::$app->getAssets();
+            $folder = $assetsService->getFolderById(substr($sourceKey, 7));
+
+            // Is it a nested folder?
+            if ($folder && $folder->parentId) {
+                // Get the root folder in that source
+                $rootFolder = $assetsService->getRootFolderByVolumeId($folder->volumeId);
+
+                if ($rootFolder) {
+                    // Use the root folder's source key
+                    $sourceKey = 'folder:'.$rootFolder->id;
+                }
+            }
+        }
+
+        return parent::getTableAttributesForSource($sourceKey);
     }
 
     /**
@@ -723,7 +791,7 @@ class Asset extends Element
     /**
      * Sets the transform.
      *
-     * @param mixed $transform
+     * @param string|array|null $transform The transform that should be applied, if any. Can either be the handle of a named transform, or an array that defines the transform settings.
      *
      * @return Asset
      */
@@ -737,7 +805,7 @@ class Asset extends Element
     /**
      * Returns the URL to the file.
      *
-     * @param string|null $transform
+     * @param string|array|null $transform The transform that should be applied, if any. Can either be the handle of a named transform, or an array that defines the transform settings.
      *
      * @return mixed
      */
@@ -763,21 +831,7 @@ class Asset extends Element
                 ]
             );
         } else {
-            return false;
-        }
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getIconUrl($size = 125)
-    {
-        if ($this->hasThumb()) {
-            return false;
-        } else {
-            return Url::getResourceUrl(
-                'icons/'.$this->getExtension().'/'.$size
-            );
+            return Url::getResourceUrl('icons/'.$this->getExtension());
         }
     }
 
@@ -827,7 +881,7 @@ class Asset extends Element
     /**
      * Get image height.
      *
-     * @param string|null $transform The optional transform handle for which to get thumbnail.
+     * @param string|array|null $transform The transform that should be applied, if any. Can either be the handle of a named transform, or an array that defines the transform settings.
      *
      * @return boolean|float|mixed
      */
@@ -951,22 +1005,16 @@ class Asset extends Element
 
         if (!$transform->width || !$transform->height) {
             // Fill in the blank
-            list($dimensions['width'], $dimensions['height']) = Image::calculateMissingDimension(
-                $dimensions['width'],
-                $dimensions['height'],
-                $this->width,
-                $this->height
-            );
+            $dimensionArray = Image::calculateMissingDimension($dimensions['width'], $dimensions['height'], $this->width, $this->height);
+            $dimensions['width'] = (int)$dimensionArray[0];
+            $dimensions['height'] = (int)$dimensionArray[1];
         }
 
         // Special case for 'fit' since that's the only one whose dimensions vary from the transform dimensions
         if ($transform->mode == 'fit') {
-            $factor = max(
-                $this->width / $dimensions['width'],
-                $this->height / $dimensions['height']
-            );
-            $dimensions['width'] = round($this->width / $factor);
-            $dimensions['height'] = round($this->height / $factor);
+            $factor = max($this->width / $dimensions['width'], $this->height / $dimensions['height']);
+            $dimensions['width'] = (int)round($this->width / $factor);
+            $dimensions['height'] = (int)round($this->height / $factor);
         }
 
         return $dimensions[$dimension];

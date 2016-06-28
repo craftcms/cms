@@ -21,7 +21,7 @@ Craft.Uploader = Garnish.Base.extend(
 		this._totalFileCounter = 0;
 		this._validFileCounter = 0;
 
-		settings = $.extend({}, this.defaultSettings, settings);
+		settings = $.extend({}, Craft.Uploader.defaults, settings);
 
 		var events = settings.events;
 		delete settings.events;
@@ -39,7 +39,7 @@ Craft.Uploader = Garnish.Base.extend(
 
 		settings.autoUpload = false;
 
-		this.uploader = $element.fileupload(settings);
+		this.uploader = this.$element.fileupload(settings);
 		for (var event in events)
 		{
 			this.uploader.on(event, events[event]);
@@ -95,19 +95,9 @@ Craft.Uploader = Garnish.Base.extend(
 		{
 			if (!this._extensionList)
 			{
-				this._extensionList = [];
-
-				for (var i = 0; i < this.allowedKinds.length; i++)
-				{
-					var allowedKind = this.allowedKinds[i];
-
-					for (var j = 0; j < Craft.fileKinds[allowedKind].length; j++)
-					{
-						var ext = Craft.fileKinds[allowedKind][j];
-						this._extensionList.push(ext);
-					}
-				}
+				this._createExtensionList();
 			}
+
 			validateExtension = true;
 		}
 
@@ -242,7 +232,37 @@ Craft.Uploader = Garnish.Base.extend(
 		return bytes.toFixed(1)+' '+units[u];
 	},
 
-	defaultSettings: {
+	_createExtensionList: function()
+	{
+		this._extensionList = [];
+
+		for (var i = 0; i < this.allowedKinds.length; i++)
+		{
+			var allowedKind = this.allowedKinds[i];
+
+			if (typeof Craft.fileKinds[allowedKind] !== typeof undefined)
+			{
+				for (var j = 0; j < Craft.fileKinds[allowedKind].extensions.length; j++)
+				{
+					var ext = Craft.fileKinds[allowedKind].extensions[j];
+					this._extensionList.push(ext);
+				}
+			}
+		}
+	},
+
+	destroy: function ()
+	{
+		this.$element.fileupload('destroy');
+		this.base();
+	}
+},
+
+// Static Properties
+// =============================================================================
+
+{
+	defaults: {
 		dropZone: null,
 		pasteZone: null,
 		fileInput: null,

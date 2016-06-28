@@ -79,6 +79,18 @@ class Elements extends Component
      */
     const EVENT_AFTER_SAVE_ELEMENT = 'afterSaveElement';
 
+    /**
+     * @event ElementActionEvent The event that is triggered before an element action is performed.
+     *
+     * You may set [[ElementActionEvent::isValid]] to `false` to prevent the action from being performed.
+     */
+    const EVENT_BEFORE_PERFORM_ACTION = 'beforePerformAction';
+
+    /**
+     * @event ElementActionEvent The event that is triggered after an element action is performed.
+     */
+    const EVENT_AFTER_PERFORM_ACTION = 'afterPerformAction';
+
     // Properties
     // =========================================================================
 
@@ -308,25 +320,6 @@ class Elements extends Component
             }
         }
 
-        // Get the element record
-        if (!$isNewElement) {
-            $elementRecord = ElementRecord::findOne([
-                'id' => $element->id,
-                'type' => $element::className()
-            ]);
-
-            if (!$elementRecord) {
-                throw new ElementNotFoundException("No element exists with the ID '{$element->id}'");
-            }
-        } else {
-            $elementRecord = new ElementRecord();
-            $elementRecord->type = $element::className();
-        }
-
-        // Set the attributes
-        $elementRecord->enabled = (bool)$element->enabled;
-        $elementRecord->archived = (bool)$element->archived;
-
         $transaction = Craft::$app->getDb()->beginTransaction();
 
         try {
@@ -339,7 +332,26 @@ class Elements extends Component
 
             // Is the event giving us the go-ahead?
             if ($event->isValid) {
-                // Save the element record first
+                // Get the element record
+                if (!$isNewElement) {
+                    $elementRecord = ElementRecord::findOne([
+                        'id' => $element->id,
+                        'type' => $element::className()
+                    ]);
+
+                    if (!$elementRecord) {
+                        throw new ElementNotFoundException("No element exists with the ID '{$element->id}'");
+                    }
+                } else {
+                    $elementRecord = new ElementRecord();
+                    $elementRecord->type = $element::className();
+                }
+
+                // Set the attributes
+                $elementRecord->enabled = (bool)$element->enabled;
+                $elementRecord->archived = (bool)$element->archived;
+
+                // Save the element record
                 $success = $elementRecord->save(false);
 
                 if ($success) {
@@ -990,6 +1002,7 @@ class Elements extends Component
                             if ($refTagsByThing) {
                                 $elements = $elementType::find()
                                     ->status(null)
+                                    ->limit(null)
                                     ->$thing(array_keys($refTagsByThing))
                                     ->all();
 

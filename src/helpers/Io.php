@@ -22,6 +22,11 @@ use yii\helpers\FileHelper;
  */
 class Io
 {
+    // Properties
+    // =========================================================================
+
+    private static $_fileKinds;
+
     // Public Methods
     // =========================================================================
 
@@ -320,8 +325,8 @@ class Io
     }
 
     /**
-     * If the path points to a real file, we call [[FileHelper::getMimeType]], otherwise
-     * [[FileHelper::getMimeTypeByExtension]].
+     * If the path points to a real file, we call [[FileHelper::getMimeType()]], otherwise
+     * [[FileHelper::getMimeTypeByExtension()]].
      *
      * @param string $path The path to test
      *
@@ -1304,184 +1309,27 @@ class Io
      */
     public static function getFileKinds()
     {
-        return [
-            'access' => [
-                'label' => Craft::t('app', 'Access'),
-                'extensions' => [
-                    'adp',
-                    'accdb',
-                    'mdb',
-                    'accde',
-                    'accdt',
-                    'accdr'
-                ]
-            ],
-            'archive' => [
-                'label' => Craft::t('app', 'Archive'),
-                'extensions' => [
-                    'bz2',
-                    'tar',
-                    'gz',
-                    '7z',
-                    's7z',
-                    'dmg',
-                    'rar',
-                    'zip',
-                    'tgz',
-                    'zipx'
-                ]
-            ],
-            'audio' => [
-                'label' => Craft::t('app', 'Audio'),
-                'extensions' => [
-                    '3gp',
-                    'aac',
-                    'act',
-                    'aif',
-                    'aiff',
-                    'aifc',
-                    'alac',
-                    'amr',
-                    'au',
-                    'dct',
-                    'dss',
-                    'dvf',
-                    'flac',
-                    'gsm',
-                    'iklax',
-                    'ivs',
-                    'm4a',
-                    'm4p',
-                    'mmf',
-                    'mp3',
-                    'mpc',
-                    'msv',
-                    'oga',
-                    'ogg',
-                    'opus',
-                    'ra',
-                    'tta',
-                    'vox',
-                    'wav',
-                    'wma',
-                    'wv'
-                ]
-            ],
-            'excel' => [
-                'label' => Craft::t('app', 'Excel'),
-                'extensions' => ['xls', 'xlsx', 'xlsm', 'xltx', 'xltm']
-            ],
-            'flash' => [
-                'label' => Craft::t('app', 'Flash'),
-                'extensions' => ['fla', 'flv', 'swf', 'swt', 'swc']
-            ],
-            'html' => [
-                'label' => Craft::t('app', 'HTML'),
-                'extensions' => ['html', 'htm']
-            ],
-            'illustrator' => [
-                'label' => Craft::t('app', 'Illustrator'),
-                'extensions' => ['ai']
-            ],
-            'image' => [
-                'label' => Craft::t('app', 'Image'),
-                'extensions' => [
-                    'jfif',
-                    'jp2',
-                    'jpx',
-                    'jpg',
-                    'jpeg',
-                    'jpe',
-                    'tiff',
-                    'tif',
-                    'png',
-                    'gif',
-                    'bmp',
-                    'webp',
-                    'ppm',
-                    'pgm',
-                    'pnm',
-                    'pfm',
-                    'pam',
-                    'svg'
-                ]
-            ],
-            'javascript' => [
-                'label' => Craft::t('app', 'Javascript'),
-                'extensions' => ['js']
-            ],
-            'json' => [
-                'label' => Craft::t('app', 'JSON'),
-                'extensions' => ['json']
-            ],
-            'pdf' => [
-                'label' => Craft::t('app', 'PDF'),
-                'extensions' => ['pdf']
-            ],
-            'photoshop' => [
-                'label' => Craft::t('app', 'Photoshop'),
-                'extensions' => ['psd', 'psb']
-            ],
-            'php' => [
-                'label' => Craft::t('app', 'PHP'),
-                'extensions' => ['php']
-            ],
-            'powerpoint' => [
-                'label' => Craft::t('app', 'PowerPoint'),
-                'extensions' => [
-                    'pps',
-                    'ppsm',
-                    'ppsx',
-                    'ppt',
-                    'pptm',
-                    'pptx',
-                    'potx'
-                ]
-            ],
-            'text' => [
-                'label' => Craft::t('app', 'Text'),
-                'extensions' => ['txt', 'text']
-            ],
-            'video' => [
-                'label' => Craft::t('app', 'Video'),
-                'extensions' => [
-                    'avchd',
-                    'asf',
-                    'asx',
-                    'avi',
-                    'flv',
-                    'fla',
-                    'mov',
-                    'm4v',
-                    'mng',
-                    'mpeg',
-                    'mpg',
-                    'm1s',
-                    'mp2v',
-                    'm2v',
-                    'm2s',
-                    'mp4',
-                    'mkv',
-                    'qt',
-                    'flv',
-                    'mp4',
-                    'ogg',
-                    'ogv',
-                    'rm',
-                    'wmv',
-                    'webm',
-                    'vob',
-                ]
-            ],
-            'word' => [
-                'label' => Craft::t('app', 'Word'),
-                'extensions' => ['doc', 'docx', 'dot', 'docm', 'dotm']
-            ],
-            'xml' => [
-                'label' => Craft::t('app', 'XML'),
-                'extensions' => ['xml']
-            ],
-        ];
+        self::_buildFileKinds();
+
+        return self::$_fileKinds;
+    }
+
+    /**
+     * Returns the label of a given file kind.
+     *
+     * @param string $kind
+     *
+     * @return array
+     */
+    public static function getFileKindLabel($kind)
+    {
+        self::_buildFileKinds();
+
+        if (isset(self::$_fileKinds[$kind]['label'])) {
+            return self::$_fileKinds[$kind]['label'];
+        } else {
+            return null;
+        }
     }
 
     /**
@@ -1867,5 +1715,222 @@ class Io
         }
 
         return $passed;
+    }
+
+    /**
+     * Builds the internal file kinds array, if it hasn't been built already.
+     *
+     * @return void
+     */
+    private static function _buildFileKinds()
+    {
+        if (!isset(self::$_fileKinds)) {
+            self::$_fileKinds = [
+                'access' => [
+                    'label' => Craft::t('app', 'Access'),
+                    'extensions' => [
+                        'adp',
+                        'accdb',
+                        'mdb',
+                        'accde',
+                        'accdt',
+                        'accdr',
+                    ]
+                ],
+                'audio' => [
+                    'label' => Craft::t('app', 'Audio'),
+                    'extensions' => [
+                        '3gp',
+                        'aac',
+                        'act',
+                        'aif',
+                        'aiff',
+                        'aifc',
+                        'alac',
+                        'amr',
+                        'au',
+                        'dct',
+                        'dss',
+                        'dvf',
+                        'flac',
+                        'gsm',
+                        'iklax',
+                        'ivs',
+                        'm4a',
+                        'm4p',
+                        'mmf',
+                        'mp3',
+                        'mpc',
+                        'msv',
+                        'oga',
+                        'ogg',
+                        'opus',
+                        'ra',
+                        'tta',
+                        'vox',
+                        'wav',
+                        'wma',
+                        'wv',
+                    ]
+                ],
+                'compressed' => [
+                    'label' => Craft::t('app', 'Compressed'),
+                    'extensions' => [
+                        'bz2',
+                        'tar',
+                        'gz',
+                        '7z',
+                        's7z',
+                        'dmg',
+                        'rar',
+                        'zip',
+                        'tgz',
+                        'zipx',
+                    ]
+                ],
+                'excel' => [
+                    'label' => Craft::t('app', 'Excel'),
+                    'extensions' => [
+                        'xls',
+                        'xlsx',
+                        'xlsm',
+                        'xltx',
+                        'xltm',
+                    ]
+                ],
+                'flash' => [
+                    'label' => Craft::t('app', 'Flash'),
+                    'extensions' => [
+                        'fla',
+                        'flv',
+                        'swf',
+                        'swt',
+                        'swc',
+                    ]
+                ],
+                'html' => [
+                    'label' => Craft::t('app', 'HTML'),
+                    'extensions' => [
+                        'html',
+                        'htm',
+                    ]
+                ],
+                'illustrator' => [
+                    'label' => Craft::t('app', 'Illustrator'),
+                    'extensions' => [
+                        'ai',
+                    ]
+                ],
+                'image' => [
+                    'label' => Craft::t('app', 'Image'),
+                    'extensions' => [
+                        'jfif',
+                        'jp2',
+                        'jpx',
+                        'jpg',
+                        'jpeg',
+                        'jpe',
+                        'tiff',
+                        'tif',
+                        'png',
+                        'gif',
+                        'bmp',
+                        'webp',
+                        'ppm',
+                        'pgm',
+                        'pnm',
+                        'pfm',
+                        'pam',
+                        'svg',
+                    ]
+                ],
+                'javascript' => [
+                    'label' => Craft::t('app', 'Javascript'),
+                    'extensions' => [
+                        'js',
+                    ]
+                ],
+                'json' => [
+                    'label' => Craft::t('app', 'JSON'),
+                    'extensions' => [
+                        'json',
+                    ]
+                ],
+                'pdf' => ['label' => Craft::t('app', 'PDF'), 'extensions' => ['pdf']],
+                'photoshop' => [
+                    'label' => Craft::t('app', 'Photoshop'),
+                    'extensions' => [
+                        'psd',
+                        'psb',
+                    ]
+                ],
+                'php' => ['label' => Craft::t('app', 'PHP'), 'extensions' => ['php']],
+                'powerpoint' => [
+                    'label' => Craft::t('app', 'PowerPoint'),
+                    'extensions' => [
+                        'pps',
+                        'ppsm',
+                        'ppsx',
+                        'ppt',
+                        'pptm',
+                        'pptx',
+                        'potx',
+                    ]
+                ],
+                'text' => [
+                    'label' => Craft::t('app', 'Text'),
+                    'extensions' => [
+                        'txt',
+                        'text',
+                    ]
+                ],
+                'video' => [
+                    'label' => Craft::t('app', 'Video'),
+                    'extensions' => [
+                        'avchd',
+                        'asf',
+                        'asx',
+                        'avi',
+                        'flv',
+                        'fla',
+                        'mov',
+                        'm4v',
+                        'mng',
+                        'mpeg',
+                        'mpg',
+                        'm1s',
+                        'mp2v',
+                        'm2v',
+                        'm2s',
+                        'mp4',
+                        'mkv',
+                        'qt',
+                        'flv',
+                        'mp4',
+                        'ogg',
+                        'ogv',
+                        'rm',
+                        'wmv',
+                        'webm',
+                        'vob',
+                    ]
+                ],
+                'word' => [
+                    'label' => Craft::t('app', 'Word'),
+                    'extensions' => [
+                        'doc',
+                        'docx',
+                        'dot',
+                        'docm',
+                        'dotm',
+                    ]
+                ],
+                'xml' => ['label' => Craft::t('app', 'XML'),
+                    'extensions' => [
+                        'xml',
+                    ]
+                ],
+            ];
+        }
     }
 }

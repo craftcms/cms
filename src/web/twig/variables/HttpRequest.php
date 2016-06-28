@@ -22,6 +22,46 @@ class HttpRequest
     // =========================================================================
 
     /**
+     * Returns whether this is a GET request.
+     *
+     * @return bool Whether this is a GET request
+     */
+    public function isGet()
+    {
+        return \Craft::$app->getRequest()->getIsGet();
+    }
+
+    /**
+     * Returns whether this is a POST request.
+     *
+     * @return bool Whether this is a POST request
+     */
+    public function isPost()
+    {
+        return \Craft::$app->getRequest()->getIsPost();
+    }
+
+    /**
+     * Returns whether this is a DELETE request.
+     *
+     * @return bool Whether this is a DELETE request
+     */
+    public function isDelete()
+    {
+        return \Craft::$app->getRequest()->getIsDelete();
+    }
+
+    /**
+     * Returns whether this is a PUT request.
+     *
+     * @return bool Whether this is a PUT request
+     */
+    public function isPut()
+    {
+        return \Craft::$app->getRequest()->getIsPut();
+    }
+
+    /**
      * Returns whether this is an Ajax request.
      *
      * @return boolean

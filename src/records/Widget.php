@@ -17,6 +17,7 @@ use craft\app\db\ActiveRecord;
  * @property integer              $userId    User ID
  * @property string               $type      Type
  * @property string               $sortOrder Sort order
+ * @property integer              $colspan   Colspan
  * @property array                $settings  Settings
  * @property boolean              $enabled   Enabled
  * @property ActiveQueryInterface $user      User

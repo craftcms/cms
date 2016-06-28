@@ -8,7 +8,7 @@
 namespace craft\app\controllers;
 
 use Craft;
-use craft\app\enums\PluginVersionUpdateStatus;
+use craft\app\enums\PluginUpdateStatus;
 use craft\app\errors\EtException;
 use craft\app\helpers\ArrayHelper;
 use craft\app\helpers\Update;
@@ -114,7 +114,7 @@ class UpdateController extends Controller
                     // Plugins
                     if ($updateInfo->plugins !== null) {
                         foreach ($updateInfo->plugins as $plugin) {
-                            if ($plugin->status == PluginVersionUpdateStatus::UpdateAvailable && count($plugin->releases) > 0) {
+                            if ($plugin->status == PluginUpdateStatus::UpdateAvailable && count($plugin->releases) > 0) {
                                 $return[] = [
                                     'handle' => $plugin->class,
                                     'name' => $plugin->displayName,
@@ -143,7 +143,7 @@ class UpdateController extends Controller
                 // We assume it's a plugin handle.
                 default: {
                     if (!empty($updateInfo->plugins)) {
-                        if (isset($updateInfo->plugins[$handle]) && $updateInfo->plugins[$handle]->status == PluginVersionUpdateStatus::UpdateAvailable && count($updateInfo->plugins[$handle]->releases) > 0) {
+                        if (isset($updateInfo->plugins[$handle]) && $updateInfo->plugins[$handle]->status == PluginUpdateStatus::UpdateAvailable && count($updateInfo->plugins[$handle]->releases) > 0) {
                             $return[] = [
                                 'handle' => $updateInfo->plugins[$handle]->handle,
                                 'name' => $updateInfo->plugins[$handle]->displayName,
@@ -177,6 +177,7 @@ class UpdateController extends Controller
         $this->requireAjaxRequest();
 
         $data = Craft::$app->getRequest()->getRequiredBodyParam('data');
+        $handle = $this->_getFixedHandle($data);
 
         $manual = false;
         if (!$this->_isManualUpdate($data)) {
@@ -194,7 +195,7 @@ class UpdateController extends Controller
             $manual = true;
         }
 
-        $return = Craft::$app->getUpdates()->prepareUpdate($manual, $data['handle']);
+        $return = Craft::$app->getUpdates()->prepareUpdate($manual, $handle);
 
         if (!$return['success']) {
             return $this->asJson([
@@ -246,7 +247,9 @@ class UpdateController extends Controller
 
         $data = Craft::$app->getRequest()->getRequiredBodyParam('data');
 
-        $return = Craft::$app->getUpdates()->processUpdateDownload($data['md5']);
+        $handle = $this->_getFixedHandle($data);
+        $return = Craft::$app->getUpdates()->processUpdateDownload($data['md5'], $handle);
+        $return['handle'] = $handle;
 
         if (!$return['success']) {
             return $this->asJson([
@@ -288,8 +291,11 @@ class UpdateController extends Controller
         }
 
         $data = Craft::$app->getRequest()->getRequiredBodyParam('data');
+        $handle = $this->_getFixedHandle($data);
 
-        $return = Craft::$app->getUpdates()->backupFiles($data['uid']);
+        $return = Craft::$app->getUpdates()->backupFiles($data['uid'], $handle);
+        $return['handle'] = $handle;
+
         if (!$return['success']) {
             return $this->asJson([
                 'alive' => true,
@@ -328,8 +334,11 @@ class UpdateController extends Controller
         }
 
         $data = Craft::$app->getRequest()->getRequiredBodyParam('data');
+        $handle = $this->_getFixedHandle($data);
 
-        $return = Craft::$app->getUpdates()->updateFiles($data['uid']);
+        $return = Craft::$app->getUpdates()->updateFiles($data['uid'], $handle);
+        $return['handle'] = $handle;
+
         if (!$return['success']) {
             return $this->asJson([
                 'alive' => true,
@@ -413,6 +422,8 @@ class UpdateController extends Controller
             $return = Craft::$app->getUpdates()->updateDatabase($handle);
         }
 
+        $return['handle'] = $handle;
+
         if (!$return['success']) {
             return $this->asJson([
                 'alive' => true,
@@ -455,17 +466,15 @@ class UpdateController extends Controller
         $oldVersion = false;
 
         // Grab the old version from the manifest data before we nuke it.
-        $manifestData = Update::getManifestData(Update::getUnzipFolderFromUID($uid));
+        $manifestData = Update::getManifestData(Update::getUnzipFolderFromUID($uid), $handle);
 
-        if ($manifestData) {
+        if ($manifestData && $handle == 'craft') {
             $oldVersion = Update::getLocalVersionFromManifest($manifestData);
         }
 
         Craft::$app->getUpdates()->updateCleanUp($uid, $handle);
 
-        if ($oldVersion && version_compare($oldVersion, Craft::$app->version,
-                '<')
-        ) {
+        if ($handle == 'craft' && $oldVersion && version_compare($oldVersion, Craft::$app->version, '<')) {
             $returnUrl = Url::getUrl('whats-new');
         } else {
             $returnUrl = Craft::$app->getConfig()->get('postCpLoginRedirect');
@@ -490,6 +499,7 @@ class UpdateController extends Controller
         $this->requireAjaxRequest();
 
         $data = Craft::$app->getRequest()->getRequiredBodyParam('data');
+        $handle = $this->_getFixedHandle($data);
 
         if ($this->_isManualUpdate($data)) {
             $uid = false;
@@ -498,9 +508,9 @@ class UpdateController extends Controller
         }
 
         if (isset($data['dbBackupPath'])) {
-            $return = Craft::$app->getUpdates()->rollbackUpdate($uid, $data['dbBackupPath']);
+            $return = Craft::$app->getUpdates()->rollbackUpdate($uid, $handle, $data['dbBackupPath']);
         } else {
-            $return = Craft::$app->getUpdates()->rollbackUpdate($uid);
+            $return = Craft::$app->getUpdates()->rollbackUpdate($uid, $handle);
         }
 
         if (!$return['success']) {

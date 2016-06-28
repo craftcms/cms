@@ -3,7 +3,15 @@
 {% set entryTypes = section.getEntryTypes() %}
 {% set multiple  = (entryTypes|length > 1) %}
 
-{% set content %}
+{% set extraPageHeaderHtml %}
+	{% if section.type != 'single' %}
+		<div class="buttons">
+			<a href="{{ url('settings/sections/' ~ section.id ~ '/entrytypes/new') }}" class="btn submit add icon">{{ "New entry type"|t('app') }}</a>
+		</div>
+	{% endif %}
+{% endset %}
+
+{% block content %}
 	<table id="entrytypes" class="data fullwidth collapsible">
 		<thead>
 			<th scope="col">{{ "Name"|t('app') }}</th>
@@ -26,13 +34,7 @@
 			{% endfor %}
 		</tbody>
 	</table>
-
-	{% if section.type != 'single' %}
-		<div class="buttons">
-			<a href="{{ url('settings/sections/' ~ section.id ~ '/entrytypes/new') }}" class="btn submit add icon">{{ "New Entry Type"|t('app') }}</a>
-		</div>
-	{% endif %}
-{% endset %}
+{% endblock %}
 
 
 {% if section.type != 'single' %}

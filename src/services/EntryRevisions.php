@@ -22,8 +22,6 @@ use craft\app\records\EntryDraft as EntryDraftRecord;
 use craft\app\records\EntryVersion as EntryVersionRecord;
 use yii\base\Component;
 
-Craft::$app->requireEdition(Craft::Client);
-
 /**
  * Class EntryRevisions service.
  *

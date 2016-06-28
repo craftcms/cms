@@ -9,6 +9,7 @@ namespace craft\app\fields;
 
 use Craft;
 use craft\app\base\Field;
+use craft\app\base\PreviewableFieldInterface;
 use yii\db\Schema;
 
 /**
@@ -17,7 +18,7 @@ use yii\db\Schema;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
-class Lightswitch extends Field
+class Lightswitch extends Field implements PreviewableFieldInterface
 {
     // Static
     // =========================================================================
@@ -80,6 +81,18 @@ class Lightswitch extends Field
                 'name' => $this->handle,
                 'on' => (bool)$value,
             ]);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getTableAttributeHtml($value, $element)
+    {
+        if ($value) {
+            return '<div class="status enabled" title="'.Craft::t('app', 'Enabled').'"></div>';
+        } else {
+            return '<div class="status" title="'.Craft::t('app', 'Not enabled').'"></div>';
+        }
     }
 
     /**

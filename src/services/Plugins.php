@@ -11,6 +11,8 @@ use Craft;
 use craft\app\base\Plugin;
 use craft\app\base\PluginInterface;
 use craft\app\db\Query;
+use craft\app\enums\LicenseKeyStatus;
+use craft\app\errors\InvalidLicenseKeyException;
 use craft\app\helpers\DateTimeHelper;
 use craft\app\helpers\Db;
 use craft\app\helpers\Io;
@@ -18,6 +20,7 @@ use craft\app\helpers\Json;
 use yii\base\Component;
 use yii\base\Exception;
 use yii\base\InvalidParamException;
+use yii\helpers\FileHelper;
 
 /**
  * The Plugins service provides APIs for managing plugins.
@@ -89,6 +92,9 @@ class Plugins extends Component
                 'id',
                 'handle',
                 'version',
+                'schemaVersion',
+                'licenseKey',
+                'licenseKeyStatus',
                 'enabled',
                 'settings',
                 'installDate'
@@ -189,8 +195,12 @@ class Plugins extends Component
             $this->_noPluginExists($handle);
         }
 
-        Craft::$app->getDb()->createCommand()->update('{{%plugins}}',
-            ['enabled' => '1'], ['handle' => $handle])->execute();
+        Craft::$app->getDb()->createCommand()->update(
+            '{{%plugins}}',
+            ['enabled' => '1'],
+            ['handle' => $handle]
+        )->execute();
+
         $this->_installedPluginInfo[$handle]['enabled'] = true;
         $this->_registerPlugin($handle, $plugin);
 
@@ -224,8 +234,12 @@ class Plugins extends Component
             $this->_noPluginExists($handle);
         }
 
-        Craft::$app->getDb()->createCommand()->update('{{%plugins}}',
-            ['enabled' => '0'], ['handle' => $handle])->execute();
+        Craft::$app->getDb()->createCommand()->update(
+            '{{%plugins}}',
+            ['enabled' => '0'],
+            ['handle' => $handle]
+        )->execute();
+
         $this->_installedPluginInfo[$handle]['enabled'] = false;
         $this->_unregisterPlugin($handle);
 
@@ -261,6 +275,7 @@ class Plugins extends Component
             $info = [
                 'handle' => $handle,
                 'version' => $plugin->version,
+                'schemaVersion' => $plugin->schemaVersion,
                 'enabled' => true,
                 'installDate' => Db::prepareDateForDb(new \DateTime()),
             ];
@@ -325,10 +340,14 @@ class Plugins extends Component
             if ($plugin->uninstall() !== false) {
                 // Clean up the plugins and migrations tables
                 $id = $this->_installedPluginInfo[$handle]['id'];
-                Craft::$app->getDb()->createCommand()->delete('{{%plugins}}',
-                    ['id' => $id])->execute();
-                Craft::$app->getDb()->createCommand()->delete('{{%migrations}}',
-                    ['pluginId' => $id])->execute();
+                Craft::$app->getDb()->createCommand()->delete(
+                    '{{%plugins}}',
+                    ['id' => $id]
+                )->execute();
+                Craft::$app->getDb()->createCommand()->delete(
+                    '{{%migrations}}',
+                    ['pluginId' => $id]
+                )->execute();
 
                 // Let's commit to this.
                 $transaction->commit();
@@ -431,17 +450,59 @@ class Plugins extends Component
     }
 
     /**
-     * Returns whether the given plugin’s local version number is greater than the record we have in the database.
+     * Returns whether the given plugin’s version number has changed from what we have recorded in the database.
      *
      * @param PluginInterface|Plugin $plugin The plugin
      *
-     * @return boolean Whether the plugin’s local version number is greater than the record we have in the database
+     * @return boolean Whether the plugin’s version number has changed from what we have recorded in the database
+     */
+    public function hasPluginVersionNumberChanged(PluginInterface $plugin)
+    {
+        $this->loadPlugins();
+        $handle = $plugin->getHandle();
+
+        if (isset($this->_installedPluginInfo[$handle])) {
+            if ($plugin->version != $this->_installedPluginInfo[$handle]['version']) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Returns whether the given plugin’s local schema version is greater than the record we have in the database.
+     *
+     * @param PluginInterface|Plugin $plugin The plugin
+     *
+     * @return boolean Whether the plugin’s local schema version is greater than the record we have in the database
      */
     public function doesPluginRequireDatabaseUpdate(PluginInterface $plugin)
     {
         $this->loadPlugins();
+        $handle = $plugin->getHandle();
 
-        return version_compare($plugin->version, $this->_installedPluginInfo[$plugin->getHandle()]['version'], '>');
+        if (isset($this->_installedPluginInfo[$handle])) {
+            $localVersion = $plugin->schemaVersion;
+
+            // If the schema version is empty, use the main plugin version
+            if (empty($localVersion)) {
+                $localVersion = $plugin->version;
+                $storedVersion = $this->_installedPluginInfo[$handle]['version'];
+            } else {
+                $storedVersion = $this->_installedPluginInfo[$handle]['schemaVersion'];
+            }
+
+            // One/both could be null so start with seeing if they're not equal
+            if (
+                $localVersion != $storedVersion &&
+                (empty($storedVersion) || version_compare($localVersion, $storedVersion, '>'))
+            ) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**
@@ -500,6 +561,16 @@ class Plugins extends Component
 
         if (isset($row['id'])) {
             $this->_setPluginMigrator($plugin, $handle, $row['id']);
+        }
+
+        // If we're not updating, check if the plugin's version number changed, but not its schema version.
+        if (!Craft::$app->isInMaintenanceMode() && $this->hasPluginVersionNumberChanged($plugin) && !$this->doesPluginRequireDatabaseUpdate($plugin)) {
+            // Update our record of the plugin's version number
+            Craft::$app->getDb()->createCommand()->update(
+                '{{%plugins}}',
+                ['version' => $plugin->version],
+                ['id' => $row['id']]
+            )->execute();
         }
 
         return $plugin;
@@ -605,21 +676,152 @@ class Plugins extends Component
     }
 
     /**
-     * Returns the path to a given plugin’s icon.
+     * Returns a plugin’s SVG icon.
      *
      * @param string $handle The plugin’s class handle
      *
-     * @return string The given plugin’s icon path
+     * @return string The given plugin’s SVG icon
      */
-    public function getPluginIconPath($handle)
+    public function getPluginIconSvg($handle)
     {
         $plugin = $this->getPlugin($handle);
         $iconPath = $plugin->getIconPath();
 
-        if ($iconPath) {
-            return $iconPath;
+        if ($iconPath && Io::fileExists($iconPath) && FileHelper::getMimeType($iconPath) == 'image/svg+xml') {
+            return Io::getFileContents($iconPath);
         } else {
             return Craft::$app->getPath()->getResourcesPath().'/images/default_plugin.svg';
+        }
+    }
+
+    /**
+     * Returns the license key stored for a given plugin, if it was purchased through the Store.
+     *
+     * @param string $pluginHandle The plugin’s class handle
+     *
+     * @return string|null The plugin’s license key, or null if it isn’t known
+     */
+    public function getPluginLicenseKey($pluginHandle)
+    {
+        $plugin = $this->getPlugin($pluginHandle);
+
+        if (!$plugin) {
+            $this->_noPluginExists($pluginHandle);
+        }
+
+        if (isset($this->_installedPluginInfo[$pluginHandle]['licenseKey'])) {
+            return $this->_installedPluginInfo[$pluginHandle]['licenseKey'];
+        }
+
+        return null;
+    }
+
+    /**
+     * Sets a plugin’s license key.
+     *
+     * Note this should *not* be used to store license keys generated by third party stores.
+     *
+     * @param string      $pluginHandle The plugin’s class handle
+     * @param string|null $licenseKey   The plugin’s license key
+     *
+     * @return boolean Whether the license key was updated successfully
+     *
+     * @throws InvalidLicenseKeyException if $licenseKey is invalid
+     */
+    public function setPluginLicenseKey($pluginHandle, $licenseKey)
+    {
+        $plugin = $this->getPlugin($pluginHandle);
+
+        if (!$plugin) {
+            $this->_noPluginExists($pluginHandle);
+        }
+
+        // Validate the license key
+        if ($licenseKey) {
+            // Normalize to just uppercase numbers/letters
+            $normalizedLicenseKey = mb_strtoupper($licenseKey);
+            $normalizedLicenseKey = preg_replace('/[^A-Z0-9]/', '', $normalizedLicenseKey);
+
+            if (strlen($normalizedLicenseKey) != 24) {
+                // Invalid key
+                throw new InvalidLicenseKeyException($licenseKey);
+            }
+        } else {
+            $normalizedLicenseKey = null;
+        }
+
+        // Ignore the plugin handle they sent us in case its casing is wrong
+        $pluginHandle = $plugin->getHandle();
+
+        Craft::$app->getDb()->createCommand()->update(
+            '{{%plugins}}',
+            ['licenseKey' => $normalizedLicenseKey],
+            ['class' => $pluginHandle]
+        )->execute();
+
+        // Update our cache of it if the plugin is enabled
+        if (isset($this->_installedPluginInfo[$pluginHandle])) {
+            $this->_installedPluginInfo[$pluginHandle]['licenseKey'] = $normalizedLicenseKey;
+        }
+
+        // If we've cached the plugin's license key status, update the cache
+        if ($this->getPluginLicenseKeyStatus($pluginHandle) !== LicenseKeyStatus::Unknown) {
+            $this->setPluginLicenseKeyStatus($pluginHandle, LicenseKeyStatus::Unknown);
+        }
+
+        return true;
+    }
+
+    /**
+     * Returns the license key status of a given plugin.
+     *
+     * @param string $pluginHandle The plugin’s class handle
+     *
+     * @return string|false
+     */
+    public function getPluginLicenseKeyStatus($pluginHandle)
+    {
+        $plugin = $this->getPlugin($pluginHandle);
+
+        if (!$plugin) {
+            $this->_noPluginExists($pluginHandle);
+        }
+
+        if (isset($this->_installedPluginInfo[$pluginHandle]['licenseKeyStatus'])) {
+            return $this->_installedPluginInfo[$pluginHandle]['licenseKeyStatus'];
+        }
+
+        return LicenseKeyStatus::Unknown;
+    }
+
+    /**
+     * Sets the license key status for a given plugin.
+     *
+     * @param string      $pluginHandle     The plugin’s class handle
+     * @param string|null $licenseKeyStatus The plugin’s license key status
+     *
+     * @return void
+     */
+    public function setPluginLicenseKeyStatus($pluginHandle, $licenseKeyStatus)
+    {
+        $plugin = $this->getPlugin($pluginHandle);
+
+        if (!$plugin) {
+            $this->_noPluginExists($pluginHandle);
+        }
+
+        // Ignore the plugin handle they sent us in case its casing is wrong
+        $pluginHandle = $plugin->getHandle();
+
+        Craft::$app->getDb()->createCommand()->update(
+            '{{%plugins}}',
+            ['licenseKeyStatus' => $licenseKeyStatus],
+            ['class' => $pluginHandle]
+        )->execute();
+
+        // Update our cache of it if the plugin is enabled
+        if (isset($this->_installedPluginInfo[$pluginHandle])) {
+            $this->_installedPluginInfo[$pluginHandle]['licenseKeyStatus'] = $licenseKeyStatus;
         }
     }
 
@@ -679,7 +881,10 @@ class Plugins extends Component
                 'class' => 'craft\app\db\MigrationManager',
                 'migrationNamespace' => "craft\\plugins\\$handle\\migrations",
                 'migrationPath' => "@plugins/$handle/migrations",
-                'fixedColumnValues' => ['type' => 'plugin', 'pluginId' => $id],
+                'fixedColumnValues' => [
+                    'type' => 'plugin',
+                    'pluginId' => $id
+                ],
             ]
         ]);
     }

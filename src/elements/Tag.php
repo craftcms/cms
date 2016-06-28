@@ -88,16 +88,6 @@ class Tag extends Element
     /**
      * @inheritdoc
      */
-    public static function defineTableAttributes($source = null)
-    {
-        return [
-            'title' => Craft::t('app', 'Title'),
-        ];
-    }
-
-    /**
-     * @inheritdoc
-     */
     public static function getEditorHtml(ElementInterface $element)
     {
         /** @var Tag $element */

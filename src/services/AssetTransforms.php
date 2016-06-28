@@ -576,20 +576,22 @@ class AssetTransforms extends Component
     {
         $transformIndexModel = $this->getTransformIndexModelById($transformId);
 
-        return $this->getUrlForTransformByTransformIndex($transformIndexModel);
+        $asset = Craft::$app->getAssets()->getAssetById($transformIndexModel->assetId);
+        return $this->getUrlForTransformByAssetAndTransformIndex($asset,
+            $transformIndexModel);
     }
 
     /**
      * Get URL for Transform by the transform index model.
      *
+     * @param Asset $asset
      * @param AssetTransformIndex $transformIndexModel
-     *
      * @return string
      */
-    public function getUrlForTransformByTransformIndex(
+    public function getUrlForTransformByAssetAndTransformIndex(
+        Asset $asset,
         AssetTransformIndex $transformIndexModel
     ) {
-        $asset = Craft::$app->getAssets()->getAssetById($transformIndexModel->assetId);
         $volume = $asset->getVolume();
         $baseUrl = $volume->getRootUrl();
         $appendix = AssetsHelper::getUrlAppendix($volume, $asset);

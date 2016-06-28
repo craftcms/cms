@@ -251,6 +251,22 @@ class Dashboard extends Component
 
         return true;
     }
+    /**
+     * Changes the colspan of a widget.
+     *
+     * @param integer $widgetId
+     * @param integer $colspan
+     *
+     * @return boolean
+     */
+    public function changeWidgetColspan($widgetId, $colspan)
+    {
+        $widgetRecord = $this->_getUserWidgetRecordById($widgetId);
+        $widgetRecord->colspan = $colspan;
+        $widgetRecord->save();
+
+        return true;
+    }
 
     // Private Methods
     // =========================================================================
@@ -278,8 +294,8 @@ class Dashboard extends Component
         // Blog & Tonic feed widget
         $this->saveWidget($this->createWidget([
             'type' => FeedWidget::className(),
-            'url' => 'http://feeds.feedburner.com/blogandtonic',
-            'title' => 'Blog & Tonic'
+            'url' => 'https://craftcms.com/news.rss',
+            'title' => 'Craft News'
         ]));
     }
 

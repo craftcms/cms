@@ -153,14 +153,14 @@ class Application extends \yii\web\Application
             return $response;
         }
 
-        // Makes sure that the uploaded files are compatible with the current DB schema
+        // Makes sure that the uploaded files are compatible with the current database schema
         if (!$this->getUpdates()->isSchemaVersionCompatible()) {
             $this->_unregisterDebugModule();
 
             if ($request->getIsCpRequest()) {
                 $version = $this->getInfo('version');
                 $build = $this->getInfo('build');
-                $url = "http://download.craftcms.com/craft/{$version}/{$version}.{$build}/Craft-{$version}.{$build}.zip";
+                $url = "https://download.craftcdn.com/craft/{$version}/{$version}.{$build}/Craft-{$version}.{$build}.zip";
 
                 throw new HttpException(200, Craft::t('app', 'Craft does not support backtracking to this version. Please upload Craft {url} or later.',
                     [

@@ -31,11 +31,6 @@ use yii\web\ServerErrorHttpException;
  */
 class Resources extends Component
 {
-    // Constants
-    // =========================================================================
-
-    const DefaultUserphotoFilename = 'user.gif';
-
     // Properties
     // =========================================================================
 
@@ -146,27 +141,7 @@ class Resources extends Component
                 }
 
                 case 'defaultuserphoto': {
-                    if (!isset($segs[1]) || !is_numeric($segs[1])) {
-                        return null;
-                    }
-
-                    $size = $segs[1];
-                    $sourceFile = Craft::$app->getPath()->getResourcesPath().'/images/'.static::DefaultUserphotoFilename;
-                    $targetFolder = Craft::$app->getPath()->getUserPhotosPath().'/__default__';
-                    Io::ensureFolderExists($targetFolder);
-
-                    if (Io::isWritable($targetFolder)) {
-                        $targetFile = $targetFolder.'/'.$size.'.'.Io::getExtension($sourceFile);
-                        Craft::$app->getImages()->loadImage($sourceFile)
-                            ->resize($size)
-                            ->saveAs($targetFile);
-
-                        return $targetFile;
-                    } else {
-                        Craft::error('Tried to write to the target folder, but could not:'.$targetFolder, __METHOD__);
-                    }
-
-                    break;
+                    return Craft::$app->getPath()->getResourcesPath().'/images/user.svg';
                 }
 
                 case 'tempuploads': {
@@ -183,12 +158,13 @@ class Resources extends Component
 
                 case 'resized': {
                     if (empty($segs[1]) || empty($segs[2]) || !is_numeric($segs[1]) || !is_numeric($segs[2])) {
-                        return false;
+                        return $this->_getBrokenImageThumbPath();
                     }
 
                     $fileModel = Craft::$app->getAssets()->getAssetById($segs[1]);
+
                     if (empty($fileModel)) {
-                        return false;
+                        return $this->_getBrokenImageThumbPath();
                     }
 
                     $size = $segs[2];
@@ -196,26 +172,23 @@ class Resources extends Component
                     // Make sure plugins are loaded in case the asset lives in a plugin-supplied volume type
                     Craft::$app->getPlugins()->loadPlugins();
 
-                    return Craft::$app->getAssetTransforms()->getResizedAssetServerPath($fileModel, $size);
+                    try {
+                        return Craft::$app->getAssetTransforms()->getResizedAssetServerPath($fileModel, $size);
+                    } catch (\Exception $e) {
+                        return $this->_getBrokenImageThumbPath();
+                    }
                 }
 
                 case 'icons': {
-                    if (empty($segs[1]) || empty($segs[2]) || !is_numeric($segs[2]) || !preg_match('/^(?P<extension>[a-z_0-9]+)/i',
-                            $segs[1])
-                    ) {
+                    if (empty($segs[1]) || !preg_match('/^\w+/i', $segs[1])) {
                         return false;
                     }
 
-                    $ext = StringHelper::toLowerCase($segs[1]);
-                    $size = $segs[2];
-
-                    $iconPath = $this->_getIconPath($ext, $size);
-
-                    return $iconPath;
+                    return $this->_getIconPath($segs[1]);
                 }
 
                 case 'rebrand': {
-                    if (!in_array($segs[1], array('logo', 'icon'))) {
+                    if (!in_array($segs[1], ['logo', 'icon'])) {
                         return false;
                     }
 
@@ -406,92 +379,51 @@ class Resources extends Component
     }
 
     /**
-     * Get icon path for an extension and size
+     * Returns the icon path for a given extension
      *
      * @param $ext
-     * @param $size
      *
      * @return string
      */
-    private function _getIconPath($ext, $size)
+    private function _getIconPath($ext)
     {
-        if (mb_strlen($ext) > 4) {
-            $ext = '';
+        $pathService = Craft::$app->getPath();
+        $sourceIconPath = $pathService->getResourcesPath().'/images/file.svg';
+        $extLength = mb_strlen($ext);
+
+        if ($extLength > 5) {
+            // Too long; just use the blank file icon
+            return $sourceIconPath;
         }
 
-        $extAlias = [
-            'docx' => 'doc',
-            'xlsx' => 'xls',
-            'pptx' => 'ppt',
-            'jpeg' => 'jpg',
-            'html' => 'htm',
-        ];
+        // See if the icon already exists
+        $iconPath = $pathService->getAssetsIconsPath().'/'.StringHelper::toLowerCase($ext).'.svg';
 
-        if (isset($extAlias[$ext])) {
-            $ext = $extAlias[$ext];
+        if (Io::fileExists($iconPath)) {
+            return $iconPath;
         }
 
-        $sizeFolder = Craft::$app->getPath()->getAssetsIconsPath().'/'.$size;
+        // Create a new one
+        $svgContents = Io::getFileContents($sourceIconPath);
+        $textSize = ($extLength <= 3 ? '26' : ($extLength == 4 ? '22' : '18'));
+        $textNode = '<text x="50" y="73" text-anchor="middle" font-family="sans-serif" fill="#8F98A3" '.
+            'font-size="'.$textSize.'">'.
+            StringHelper::toUpperCase($ext).
+            '</text>';
+        $svgContents = str_replace('<!-- EXT -->', $textNode, $svgContents);
+        Io::writeToFile($iconPath, $svgContents);
 
-        // See if we have the icon already
-        $iconLocation = $sizeFolder.'/'.$ext.'.png';
+        return $iconPath;
+    }
 
-        if (Io::fileExists($iconLocation)) {
-            return $iconLocation;
-        }
-
-        // We are going to need that folder to exist.
-        Io::ensureFolderExists($sizeFolder);
-
-        // Determine the closest source size
-        $sourceSizes = [
-            ['size' => 40, 'extSize' => 7, 'extY' => 25],
-            ['size' => 350, 'extSize' => 60, 'extY' => 220],
-        ];
-
-        foreach ($sourceSizes as $sourceSize) {
-            if ($sourceSize['size'] >= $size) {
-                break;
-            }
-        }
-
-        $sourceFolder = Craft::$app->getPath()->getAssetsIconsPath().'/'.$sourceSize['size'];
-
-        // Do we have a source icon that we can resize?
-        $sourceIconLocation = $sourceFolder.'/'.$ext.'.png';
-
-        if (!Io::fileExists($sourceIconLocation)) {
-            $sourceFile = Craft::$app->getPath()->getAppPath().'/resources/images/fileicons/'.$sourceSize['size'].'.png';
-            $image = Craft::$app->getImages()->loadImage($sourceFile);
-
-            // Text placement.
-            if ($ext) {
-                $font = Craft::$app->getPath()->getResourcesPath().'/fonts/helveticaneue-webfont.ttf';
-
-                $image->setFontProperties($font, $sourceSize['extSize'], "#999");
-                $text = StringHelper::toUpperCase($ext);
-
-                $box = $image->getTextBox($text);
-                $width = $box->getWidth();
-
-                // place the text in the center-bottom-ish of the image
-                $x = ceil(($sourceSize['size'] - $width) / 2);
-                $y = $sourceSize['extY'];
-                $image->writeText($text, $x, $y);
-            }
-
-            // Make sure we have a folder to save to and save it.
-            Io::ensureFolderExists($sourceFolder);
-            $image->saveAs($sourceIconLocation);
-        }
-
-        if ($size != $sourceSize['size']) {
-            // Resize the source icon to fit this size.
-            Craft::$app->getImages()->loadImage($sourceIconLocation)
-                ->scaleAndCrop($size, $size)
-                ->saveAs($iconLocation);
-        }
-
-        return $iconLocation;
+    /**
+     * Returns the path to the broken image thumbnail.
+     *
+     * @return string
+     */
+    private function _getBrokenImageThumbPath()
+    {
+        //http_response_code(404);
+        return Craft::$app->getPath()->getResourcesPath().'/images/brokenimage.svg';
     }
 }

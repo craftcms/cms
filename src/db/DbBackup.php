@@ -52,14 +52,14 @@ class DbBackup
      *
      * @var array
      */
-    private $_ignoreDataTables = array(
+    private $_ignoreDataTables = [
         'assetindexdata',
         'assettransformindex',
         'sessions',
         'templatecaches',
         'templatecachequeries',
         'templatecacheelements'
-    );
+    ];
 
     // Public Methods
     // =========================================================================
@@ -105,7 +105,9 @@ class DbBackup
 
         $this->_processHeader();
 
-        foreach (Craft::$app->getDb()->getSchema()->getTableNames() as $tableName) {
+        $tableNames = Craft::$app->getDb()->getSchema()->getTableNames();
+
+        foreach ($tableNames as $tableName) {
             $this->_processResult($tableName);
         }
 
@@ -141,8 +143,8 @@ class DbBackup
 
         foreach ($statements as $key => $statement) {
             Craft::info('Executing SQL statement: '.$statement);
-            $command = Craft::$app->getDb()->createCommand($statement);
-            $command->execute();
+            $statement = Craft::$app->getDb()->getMasterPdo()->prepare($statement);
+            $statement->execute();
         }
     }
 
@@ -361,7 +363,7 @@ class DbBackup
                 // Data!
                 Io::writeToFile($this->_filePath, PHP_EOL.'--'.PHP_EOL.'-- Data for table `'.$tableName.'`'.PHP_EOL.'--'.PHP_EOL.PHP_EOL, true, true);
 
-                $batchSize = 1000;
+                $batchSize = 100;
 
                 // Going to grab the data in batches.
                 $totalBatches = ceil($totalRows / $batchSize);
@@ -378,22 +380,27 @@ class DbBackup
                             'quoteColumnName'
                         ], array_keys($rows[0]));
 
-                        foreach ($rows as $row) {
-                            $insertStatement = 'INSERT INTO '.Craft::$app->getDb()->quoteTableName($tableName).' ('.implode(', ',
-                                    $attrs).') VALUES';
+                        $insertStatement = 'INSERT INTO '.Craft::$app->getDb()->quoteTableName($tableName).' ('.implode(', ', $attrs).') VALUES'.PHP_EOL;
 
+                        foreach ($rows as $key => $row) {
                             // Process row
                             foreach ($row as $columnName => $value) {
                                 if ($value === null) {
-                                    $row[$columnName] = 'NULL';
+                                    $rows[$key][$columnName] = 'NULL';
                                 } else {
-                                    $row[$columnName] = Craft::$app->getDb()->getMasterPdo()->quote($value);
+                                    $rows[$key][$columnName] = Craft::$app->getDb()->getMasterPdo()->quote($value);
                                 }
                             }
-
-                            $insertStatement .= ' ('.implode(', ', $row).');';
-                            Io::writeToFile($this->_filePath, $insertStatement.PHP_EOL, true, true);
                         }
+
+                        foreach ($rows as $row) {
+                            $insertStatement .= ' ('.implode(', ', $row).'),'.PHP_EOL;
+                        }
+
+                        // Nuke that last comma and add a ;
+                        $insertStatement = mb_substr($insertStatement, 0, -mb_strlen(PHP_EOL) - 1).';';
+
+                        Io::writeToFile($this->_filePath, $insertStatement.PHP_EOL, true, true);
                     }
                 }
 

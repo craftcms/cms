@@ -44,6 +44,7 @@ use yii\web\ServerErrorHttpException;
  * @property \craft\app\services\Dashboard        $dashboard        The dashboard service
  * @property \craft\app\db\Connection             $db               The database connection component
  * @property \craft\app\services\Deprecator       $deprecator       The deprecator service
+ * @property \craft\app\services\ElementIndexes   $elementIndexes   The element indexes service
  * @property \craft\app\services\Elements         $elements         The elements service
  * @property \craft\app\services\EmailMessages    $emailMessages    The email messages service
  * @property \craft\app\services\Entries          $entries          The entries service
@@ -250,7 +251,7 @@ trait ApplicationTrait
     }
 
     /**
-     * Determines if Craft is installed by checking if the info table exists.
+     * Determines if Craft is installed by checking if the info table exists in the database.
      *
      * @return boolean
      */
@@ -312,7 +313,7 @@ trait ApplicationTrait
     public function getEdition()
     {
         /** @var $this \craft\app\web\Application|\craft\app\console\Application */
-        return $this->getInfo('edition');
+        return (int) $this->getInfo('edition');
     }
 
     /**
@@ -337,8 +338,10 @@ trait ApplicationTrait
         $licensedEdition = $this->getCache()->get('licensedEdition');
 
         if ($licensedEdition !== false) {
-            return $licensedEdition;
+            return (int) $licensedEdition;
         }
+
+        return null;
     }
 
     /**
@@ -841,6 +844,17 @@ trait ApplicationTrait
     {
         /** @var $this \craft\app\web\Application|\craft\app\console\Application */
         return $this->get('deprecator');
+    }
+
+    /**
+     * Returns the element indexes service.
+     *
+     * @return \craft\app\services\ElementIndexes The element indexes service
+     */
+    public function getElementIndexes()
+    {
+        /** @var $this \craft\app\web\Application|\craft\app\console\Application */
+        return $this->get('elementIndexes');
     }
 
     /**
@@ -1375,7 +1389,7 @@ trait ApplicationTrait
         /** @var $this \craft\app\web\Application|\craft\app\console\Application */
         $isConsoleRequest = $this->getRequest()->getIsConsoleRequest();
 
-        // Don't log getAuthTimeout requests
+        // Only log console requests and web requests that aren't getAuthTimeout requests
         if ($isConsoleRequest || $this->getUser()->enableSession) {
             $configService = Craft::$app->getConfig();
             $fileTarget = new FileTarget();

@@ -106,7 +106,6 @@ class EntriesController extends BaseEntriesController
         // ---------------------------------------------------------------------
 
         if (
-            Craft::$app->getEdition() >= Craft::Client &&
             $section->type == Section::TYPE_STRUCTURE &&
             $section->maxLevels != 1
         ) {
@@ -181,23 +180,21 @@ class EntriesController extends BaseEntriesController
         // ---------------------------------------------------------------------
 
         // Page title w/ revision label
-        if (Craft::$app->getEdition() >= Craft::Client) {
-            switch ($entry::className()) {
-                case EntryDraft::className(): {
-                    /** @var EntryDraft $entry */
-                    $variables['revisionLabel'] = $entry->name;
-                    break;
-                }
+        switch ($entry::className()) {
+            case EntryDraft::className(): {
+                /** @var EntryDraft $entry */
+                $variables['revisionLabel'] = $entry->name;
+                break;
+            }
 
-                case EntryVersion::className(): {
-                    /** @var EntryVersion $entry */
-                    $variables['revisionLabel'] = Craft::t('app', 'Version {num}', ['num' => $entry->num]);
-                    break;
-                }
+            case EntryVersion::className(): {
+                /** @var EntryVersion $entry */
+                $variables['revisionLabel'] = Craft::t('app', 'Version {num}', ['num' => $entry->num]);
+                break;
+            }
 
-                default: {
-                    $variables['revisionLabel'] = Craft::t('app', 'Current');
-                }
+            default: {
+                $variables['revisionLabel'] = Craft::t('app', 'Current');
             }
         }
 
@@ -206,7 +203,7 @@ class EntriesController extends BaseEntriesController
         } else {
             $variables['docTitle'] = $variables['title'] = $entry->title;
 
-            if (Craft::$app->getEdition() >= Craft::Client && $entry::className() != Entry::className()) {
+            if ($entry::className() != Entry::className()) {
                 $variables['docTitle'] .= ' ('.$variables['revisionLabel'].')';
             }
         }
@@ -328,6 +325,10 @@ class EntriesController extends BaseEntriesController
                 ($entry->authorId == $currentUser->id && $currentUser->can('deleteEntries'.$variables['permissionSuffix'])) ||
                 ($entry->authorId != $currentUser->id && $currentUser->can('deletePeerEntries'.$variables['permissionSuffix']))
             );
+
+        // Full page form variables
+        $variables['fullPageForm'] = true;
+        $variables['saveShortcutRedirect'] = $variables['continueEditingUrl'];
 
         // Include translations
         Craft::$app->getView()->includeTranslations('Live Preview');
@@ -695,7 +696,7 @@ class EntriesController extends BaseEntriesController
                 } else {
                     $variables['entry'] = Craft::$app->getEntries()->getEntryById($variables['entryId'], $variables['localeId']);
 
-                    if ($variables['entry'] && Craft::$app->getEdition() === Craft::Pro) {
+                    if ($variables['entry']) {
                         $versions = Craft::$app->getEntryRevisions()->getVersionsByEntryId($variables['entryId'], $variables['localeId'], 1, true);
 
                         if (isset($versions[0])) {

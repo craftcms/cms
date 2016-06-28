@@ -2,12 +2,12 @@
 {% requireAdmin %}
 
 {% extends "settings/users/_layout" %}
-{% set selectedTab = 'fields' %}
+{% set selectedNavItem = 'fields' %}
 
 {% set docsUrl = 'http://craftcms.com/docs/fields#field-layouts' %}
 
 
-{% set content %}
+{% block content %}
 	<form method="post" accept-charset="UTF-8" data-saveshortcut>
 		<input type="hidden" name="action" value="users/save-field-layout">
 		<input type="hidden" name="redirect" value="settings">
@@ -23,4 +23,4 @@
 			<input type="submit" class="btn submit" value="{{ 'Save'|t('app') }}">
 		</div>
 	</form>
-{% endset %}
+{% endblock %}

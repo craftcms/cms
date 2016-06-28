@@ -8,26 +8,33 @@
 {% set criteria = (criteria is defined and criteria ? criteria : null) -%}
 {% set sourceElementId = (sourceElementId is defined and sourceElementId ? sourceElementId : null) -%}
 {% set storageKey = (storageKey is defined and storageKey ? storageKey : null) -%}
+{% set viewMode = (viewMode is defined ? viewMode : 'list') %}
 
 <div id="{{ id }}" class="elementselect">
 	<div class="elements">
 		{% for element in elements %}
-			{% include "_elements/element" with { context: 'field' } %}
+			{% include "_elements/element" with {
+				context: 'field',
+				size: (viewMode == 'large' ? 'large' : 'small')
+			} %}
 		{% endfor %}
 	</div>
 
 	<div class="btn add icon dashed">{{ selectionLabel is defined ? selectionLabel : "Choose"|t('app') }}</div>
 </div>
 
+{% set jsSettings = {
+	id: id|namespaceInputId,
+	name: name|namespaceInputName,
+	elementType: elementType,
+	sources: sources,
+	criteria: criteria,
+	sourceElementId: sourceElementId,
+	viewMode: viewMode,
+	limit: limit,
+	modalStorageKey: storageKey
+} %}
+
 {% registerjs %}
-	new {{ jsClass }}(
-		"{{ id   | namespaceInputId   | e('js') }}",
-		"{{ name | namespaceInputName | e('js') }}",
-		"{{ elementType|e('js') }}",
-		{{ sources|json_encode|raw }},
-		{{ criteria|json_encode|raw }},
-		{{ sourceElementId ?: 'null' }},
-		{{ limit ?: 'null' }},
-		"{{ storageKey|e('js') }}"
-	);
+	new {{ jsClass }}({{ jsSettings|json_encode|raw }});
 {% endregisterjs %}

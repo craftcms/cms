@@ -41,6 +41,20 @@ class Cp
             // relying on cached Elliott info
             $updateModel = Craft::$app->getUpdates()->getUpdates();
 
+            // Get the license key status
+            $licenseKeyStatus = Craft::$app->getEt()->getLicenseKeyStatus();
+
+            // Invalid license?
+            if ($licenseKeyStatus == LicenseKeyStatus::Invalid) {
+                $alerts[] = Craft::t('app', 'Your license key is invalid.');
+            } else if (Craft::$app->hasWrongEdition()) {
+                $alerts[] = Craft::t('app', 'You’re running Craft {edition} with a Craft {licensedEdition} license.', [
+                        'edition' => Craft::$app->getEditionName(),
+                        'licensedEdition' => Craft::$app->getLicensedEditionName()
+                    ]).
+                    ' <a class="go edition-resolution">'.Craft::t('app', 'Resolve').'</a>';
+            }
+
             if ($path != 'updates' && $user->can('performUpdates')) {
                 if (!empty($updateModel->app->releases)) {
                     if (Craft::$app->getUpdates()->criticalCraftUpdateAvailable($updateModel->app->releases)) {
@@ -51,9 +65,7 @@ class Cp
             }
 
             // Domain mismatch?
-            $licenseKeyStatus = Craft::$app->getEt()->getLicenseKeyStatus();
-
-            if ($licenseKeyStatus == LicenseKeyStatus::MismatchedDomain) {
+            if ($licenseKeyStatus == LicenseKeyStatus::Mismatched) {
                 $licensedDomain = Craft::$app->getEt()->getLicensedDomain();
                 $licenseKeyPath = Craft::$app->getPath()->getLicenseKeyPath();
                 $licenseKeyFile = Io::getFolderName($licenseKeyPath,
@@ -67,14 +79,19 @@ class Cp
 
                 // Can they actually do something about it?
                 if ($user->admin) {
-                    $action = '<a class="domain-mismatch">'.Craft::t('app',
-                            'Transfer it to this domain?').'</a>';
+                    $action = '<a class="go domain-mismatch">'.Craft::t('app', 'Transfer it to this domain?').'</a>';
                 } else {
                     $action = Craft::t('app', 'Please notify one of your site’s admins.');
                 }
 
                 $alerts[] = $message.' '.$action;
             }
+        }
+
+        $allPluginAlerts = Craft::$app->getPlugins()->call('getCpAlerts', [$path, $fetch], true);
+
+        foreach ($allPluginAlerts as $pluginAlerts) {
+            $alerts = array_merge($alerts, $pluginAlerts);
         }
 
         return $alerts;

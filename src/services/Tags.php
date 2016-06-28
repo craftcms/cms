@@ -211,18 +211,21 @@ class Tags extends Component
         if (!$tagGroup->hasErrors()) {
             $transaction = Craft::$app->getDb()->beginTransaction();
             try {
-                if (!$isNewTagGroup && $oldTagGroup->fieldLayoutId) {
-                    // Drop the old field layout
-                    Craft::$app->getFields()->deleteLayoutById($oldTagGroup->fieldLayoutId);
-                }
-
-                // Save the new one
+                // Is there a new field layout?
                 $fieldLayout = $tagGroup->getFieldLayout();
-                Craft::$app->getFields()->saveLayout($fieldLayout);
+                if (!$fieldLayout->id) {
+                    // Delete the old one
+                    if (!$isNewTagGroup && $oldTagGroup->fieldLayoutId) {
+                        Craft::$app->getFields()->deleteLayoutById($oldTagGroup->fieldLayoutId);
+                    }
 
-                // Update the tag group record/model with the new layout ID
-                $tagGroup->fieldLayoutId = $fieldLayout->id;
-                $tagGroupRecord->fieldLayoutId = $fieldLayout->id;
+                    // Save the new one
+                    Craft::$app->getFields()->saveLayout($fieldLayout);
+
+                    // Update the tag group record/model with the new layout ID
+                    $tagGroup->fieldLayoutId = $fieldLayout->id;
+                    $tagGroupRecord->fieldLayoutId = $fieldLayout->id;
+                }
 
                 // Save it!
                 $tagGroupRecord->save(false);

@@ -21,12 +21,7 @@ trait WidgetTrait
     // =========================================================================
 
     /**
-     * @var integer The ID of the user that owns the widget
+     * @var integer The user’s chosen cospan for the widget
      */
-    public $userId;
-
-    /**
-     * @var integer The widget’s sort order
-     */
-    public $sortOrder;
+    public $colspan;
 }

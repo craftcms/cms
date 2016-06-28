@@ -16,6 +16,7 @@ use craft\app\elements\Category;
 use craft\app\events\CategoryGroupEvent;
 use craft\app\models\CategoryGroup;
 use craft\app\models\CategoryGroupLocale as CategoryGroupLocaleModel;
+use craft\app\models\FieldLayout;
 use craft\app\models\Structure as StructureModel;
 use craft\app\records\Category as CategoryRecord;
 use craft\app\records\CategoryGroup as CategoryGroupRecord;
@@ -312,11 +313,17 @@ class Categories extends Component
                 throw new CategoryGroupNotFoundException("No category group exists with the ID '{$group->id}'");
             }
 
+            /** @var CategoryGroup $oldCategoryGroup */
             $oldCategoryGroup = CategoryGroup::create($groupRecord);
             $isNewCategoryGroup = false;
         } else {
             $groupRecord = new CategoryGroupRecord();
             $isNewCategoryGroup = true;
+        }
+
+        // If they've set maxLevels to 0 (don't ask why), then pretend like there are none.
+        if ($group->maxLevels == 0) {
+            $group->maxLevels = null;
         }
 
         $groupRecord->name = $group->name;
@@ -381,6 +388,7 @@ class Categories extends Component
                 if ($isNewCategoryGroup) {
                     $structure = new StructureModel();
                 } else {
+                    /** @noinspection PhpUndefinedVariableInspection */
                     $structure = Craft::$app->getStructures()->getStructureById($oldCategoryGroup->structureId);
                 }
 
@@ -389,16 +397,24 @@ class Categories extends Component
                 $groupRecord->structureId = $structure->id;
                 $group->structureId = $structure->id;
 
-                // Create and set the field layout
-
-                if (!$isNewCategoryGroup && $oldCategoryGroup->fieldLayoutId) {
-                    Craft::$app->getFields()->deleteLayoutById($oldCategoryGroup->fieldLayoutId);
-                }
-
+                // Is there a new field layout?
+                /** @var FieldLayout $fieldLayout */
                 $fieldLayout = $group->getFieldLayout();
-                Craft::$app->getFields()->saveLayout($fieldLayout);
-                $groupRecord->fieldLayoutId = $fieldLayout->id;
-                $group->fieldLayoutId = $fieldLayout->id;
+
+                if (!$fieldLayout->id) {
+                    // Delete the old one
+                    /** @noinspection PhpUndefinedVariableInspection */
+                    if (!$isNewCategoryGroup && $oldCategoryGroup->fieldLayoutId) {
+                        Craft::$app->getFields()->deleteLayoutById($oldCategoryGroup->fieldLayoutId);
+                    }
+
+                    // Save the new one
+                    Craft::$app->getFields()->saveLayout($fieldLayout);
+
+                    // Update the category group record/model with the new layout ID
+                    $groupRecord->fieldLayoutId = $fieldLayout->id;
+                    $group->fieldLayoutId = $fieldLayout->id;
+                }
 
                 // Save the category group
                 $groupRecord->save(false);
@@ -464,7 +480,7 @@ class Categories extends Component
                 if (!$isNewCategoryGroup) {
                     // Drop any locales that are no longer being used, as well as the associated category/element
                     // locale rows
-
+                    /** @noinspection PhpUndefinedVariableInspection */
                     $droppedLocaleIds = array_diff(array_keys($oldLocales), array_keys($groupLocales));
 
                     if ($droppedLocaleIds) {
@@ -484,6 +500,7 @@ class Categories extends Component
                         ->ids();
 
                     // Should we be deleting
+                    /** @noinspection PhpUndefinedVariableInspection */
                     if ($categoryIds && $droppedLocaleIds) {
                         Craft::$app->getDb()->createCommand()->delete('{{%elements_i18n}}',
                             [
@@ -502,12 +519,14 @@ class Categories extends Component
                     // Are there any locales left?
                     if ($groupLocales) {
                         // Drop the old category URIs if the group no longer has URLs
+                        /** @noinspection PhpUndefinedVariableInspection */
                         if (!$group->hasUrls && $oldCategoryGroup->hasUrls) {
                             Craft::$app->getDb()->createCommand()->update('{{%elements_i18n}}',
                                 ['uri' => null],
                                 ['in', 'elementId', $categoryIds]
                             )->execute();
-                        } else if ($changedLocaleIds) {
+                        } else /** @noinspection PhpUndefinedVariableInspection */
+                            if ($changedLocaleIds) {
                             foreach ($categoryIds as $categoryId) {
                                 Craft::$app->getConfig()->maxPowerCaptain();
 
@@ -538,8 +557,8 @@ class Categories extends Component
 
             // Fire an 'afterSaveGroup' event
             $this->trigger(static::EVENT_AFTER_SAVE_GROUP,
-                new CategoryEvent([
-                    'category' => $category
+                new CategoryGroupEvent([
+                    'categoryGroup' => $group
                 ]));
 
             return true;

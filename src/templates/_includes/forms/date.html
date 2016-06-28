@@ -15,13 +15,7 @@
 </div>
 
 {%- registerjs %}
-	var $datePicker = $('#{{ id|namespaceInputId|e('js') }}');
-	$datePicker.datepicker({
-		constrainInput: false,
-		dateFormat:  Craft.datepickerFormat,
-		defaultDate: new Date({% if value %}{{ value.year }}, {{ value.month-1 }}, {{ value.day }}{% endif %}),
-		prevText:   '{{ "Prev"|t('app')|e('js') }}',
-		nextText:   '{{ "Next"|t('app')|e('js') }}',
-		firstDay:   {{ currentUser.getPreference('weekStartDay', 0) }},
-	});
+	$('#{{ id|namespaceInputId|e('js') }}').datepicker($.extend({
+	defaultDate: new Date({% if value %}{{ value.year }}, {{ value.month-1 }}, {{ value.day }}{% endif %})
+	}, Craft.datepickerOptions));
 {%- endregisterjs %}

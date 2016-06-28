@@ -3,7 +3,6 @@
 {%- set class = [
 	'text',
 	(class is defined and class ? class : null),
-	(placeholder is defined and placeholder ? 'nicetext' : null),
 	(type is defined and type == 'password' ? 'password' : null),
 	(disabled is defined and disabled ? 'disabled' : null),
 	(size is defined and size ? null : 'fullwidth')
@@ -26,5 +25,6 @@
 	{%- if autocomplete is not defined or not autocomplete %} autocomplete="off"{% endif %}
 	{%- if disabled is defined and disabled %} disabled {% endif %}
 	{%- if readonly is defined and readonly %} readonly {% endif %}
+	{%- if title is defined %} title="{{ title }}"{% endif %}
 	{%- if placeholder is defined %} placeholder="{{ placeholder }}"{% endif %}>
 {%- if type == 'password' %}</div>{% endif %}

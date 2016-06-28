@@ -84,6 +84,7 @@ class Et
 
         $this->_model = new EtModel([
             'licenseKey' => $this->_getLicenseKey(),
+            'pluginLicenseKeys' => $this->_getPluginLicenseKeys(),
             'requestUrl' => Craft::$app->getRequest()->getHostInfo().Craft::$app->getRequest()->getUrl(),
             'requestIp' => Craft::$app->getRequest()->getUserIP(),
             'requestTime' => DateTimeHelper::currentTimeStamp(),
@@ -95,12 +96,12 @@ class Et
             'userEmail' => Craft::$app->getUser()->getIdentity()->email,
             'track' => Craft::$app->track,
             'showBeta' => Craft::$app->getConfig()->get('showBetaUpdates'),
-            'serverInfo' => array(
+            'serverInfo' => [
                 'extensions' => get_loaded_extensions(),
                 'phpVersion' => PHP_VERSION,
                 'mySqlVersion' => Craft::$app->schemaVersion,
                 'proc' => function_exists('proc_open') ? 1 : 0,
-            ),
+            ],
         ]);
 
         $this->_userAgent = 'Craft/'.Craft::$app->version.'.'.Craft::$app->build;
@@ -178,6 +179,18 @@ class Et
     }
 
     /**
+     * Sets the handle ("craft" or a plugin handle) that is the subject for the request.
+     *
+     * @param $handle
+     *
+     * @return void
+     */
+    public function setHandle($handle)
+    {
+        $this->_model->handle = $handle;
+    }
+
+    /**
      * @throws EtException|\Exception
      * @return EtModel|null
      */
@@ -231,13 +244,19 @@ class Et
                                 $this->_setLicenseKey($etModel->licenseKey);
                             }
 
-                            // Cache the license key status and which edition it has
+                            // Cache the Craft/plugin license key statuses, and which edition Craft is licensed for
                             Craft::$app->getCache()->set('licenseKeyStatus', $etModel->licenseKeyStatus);
                             Craft::$app->getCache()->set('licensedEdition', $etModel->licensedEdition);
                             Craft::$app->getCache()->set('editionTestableDomain@'.Craft::$app->getRequest()->getHostName(), $etModel->editionTestableDomain ? 1 : 0);
 
-                            if ($etModel->licenseKeyStatus == LicenseKeyStatus::MismatchedDomain) {
+                            if ($etModel->licenseKeyStatus == LicenseKeyStatus::Mismatched) {
                                 Craft::$app->getCache()->set('licensedDomain', $etModel->licensedDomain);
+                            }
+
+                            if (is_array($etModel->pluginLicenseKeyStatuses)) {
+                                foreach ($etModel->pluginLicenseKeyStatuses as $pluginHandle => $licenseKeyStatus) {
+                                    Craft::$app->getPlugins()->setPluginLicenseKeyStatus($pluginHandle, $licenseKeyStatus);
+                                }
                             }
 
                             return $etModel;
@@ -296,6 +315,22 @@ class Et
         }
 
         return null;
+    }
+
+    /**
+     * @return array
+     */
+    private function _getPluginLicenseKeys()
+    {
+        $pluginLicenseKeys = [];
+        $pluginsService = Craft::$app->getPlugins();
+
+        foreach ($pluginsService->getAllPlugins() as $plugin) {
+            $pluginHandle = $plugin->getHandle();
+            $pluginLicenseKeys[$pluginHandle] = $pluginsService->getPluginLicenseKey($pluginHandle);
+        }
+
+        return $pluginLicenseKeys;
     }
 
     /**

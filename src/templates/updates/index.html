@@ -16,6 +16,8 @@
 	"Seriously, update.",
 	"Install",
 	"{app} update required",
+	"Released on {date}",
+	"Show more",
 	"Added",
 	"Improved",
 	"Fixed",
@@ -23,12 +25,13 @@
 %}
 
 
+{% block pageHeader %}
+{% endblock %}
+
+
 {% block main %}
 	{% registercssresource "css/updates.css" %}
 	{% registerjsresource "js/updates.js" %}
-	{% registerjs %}
-		new Craft.UpdateInfo();
-	{% endregisterjs %}
 
 	<div id="graphic" class="spinner big"></div>
 	<div id="status">{{ "Checking for updates…"|t('app') }}</div>

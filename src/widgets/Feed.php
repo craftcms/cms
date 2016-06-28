@@ -78,6 +78,14 @@ class Feed extends Widget
     /**
      * @inheritdoc
      */
+    public function getIconPath()
+    {
+        return Craft::$app->getPath()->getResourcesPath().'/images/widgets/feed.svg';
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function getTitle()
     {
         return $this->title;

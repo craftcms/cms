@@ -52,6 +52,14 @@ class Updates extends Widget
     /**
      * @inheritdoc
      */
+    public function getIconPath()
+    {
+        return Craft::$app->getPath()->getResourcesPath().'/images/widgets/updates.svg';
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function getBodyHtml()
     {
         // Make sure the user actually has permission to perform updates

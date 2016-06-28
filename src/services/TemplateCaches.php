@@ -262,6 +262,9 @@ class TemplateCaches extends Component
             return;
         }
 
+        // Encode any 4-byte UTF-8 characters
+        $body = StringHelper::encodeMb4($body);
+
         // Figure out the expiration date
         if ($duration) {
             $expiration = new DateTime($duration);

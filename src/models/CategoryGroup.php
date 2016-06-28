@@ -152,7 +152,7 @@ class CategoryGroup extends Model
     /**
      * Returns the category's locale models.
      *
-     * @return array
+     * @return CategoryGroupLocale[]
      */
     public function getLocales()
     {

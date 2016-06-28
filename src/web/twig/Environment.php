@@ -20,6 +20,25 @@ class Environment extends \Twig_Environment
     /**
      * @inheritdoc
      */
+    public function loadTemplate($name, $index = null)
+    {
+        try {
+            return parent::loadTemplate($name, $index);
+        } catch (\Twig_Error $e) {
+            if (Craft::$app->getConfig()->get('suppressTemplateErrors')) {
+                // Just log it and return an empty template
+                Craft::$app->getErrorHandler()->logException($e);
+
+                return Craft::$app->getView()->renderString('');
+            } else {
+                throw $e;
+            }
+        }
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function compileSource($source, $name = null)
     {
         Craft::beginProfile($name, __METHOD__);

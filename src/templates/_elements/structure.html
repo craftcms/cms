@@ -18,7 +18,7 @@
 						{% endif %}
 
 						{% if newChildUrl %}
-							<a class="add icon" title="{{ 'New Child'|t('app') }}"></a>
+							<a class="add icon" title="{{ 'New child'|t('app') }}"></a>
 						{% endif %}
 					{% endblock %}
 				{% endspaceless -%}
@@ -35,11 +35,9 @@
 
 {# Hide "Add child" menu buttons beyond the max level #}
 {% if structure.maxLevels %}
-	{% set css %}
+	{% registercss %}
 		#{{ id }}{% for i in 2 .. structure.maxLevels if structure.maxLevels >= 2 %} ul{% endfor %} .add { display: none; }
-	{% endset %}
-
-	{% includeCss css %}
+	{% endregistercss %}
 {% endif %}
 
 {% registerjs %}

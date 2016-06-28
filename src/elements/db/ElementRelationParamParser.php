@@ -78,7 +78,7 @@ class ElementRelationParamParser
         if (is_string($relatedTo)) {
             $relatedTo = ArrayHelper::toArray($relatedTo);
         } else if (!is_array($relatedTo)) {
-            $relatedTo = array($relatedTo);
+            $relatedTo = [$relatedTo];
         }
 
         if (isset($relatedTo['element']) || isset($relatedTo['sourceElement']) || isset($relatedTo['targetElement'])) {
@@ -168,14 +168,18 @@ class ElementRelationParamParser
 
         // Get the element IDs, wherever they are
         $relElementIds = [];
+        $glue = 'or';
 
-        foreach ([
-                     'element',
-                     'sourceElement',
-                     'targetElement'
-                 ] as $elementParam) {
+        $elementParams = ['element', 'sourceElement', 'targetElement'];
+        $elementParam = null;
+
+        foreach ($elementParams as $elementParam) {
             if (isset($relCriteria[$elementParam])) {
                 $elements = ArrayHelper::toArray($relCriteria[$elementParam]);
+
+                if (isset($elements[0]) && ($elements[0] == 'and' || $elements[0] == 'or')) {
+                    $glue = array_shift($elements);
+                }
 
                 foreach ($elements as $element) {
                     if (is_numeric($element)) {
@@ -201,6 +205,8 @@ class ElementRelationParamParser
                 $relCriteria['field'] = null;
             }
 
+            array_unshift($relElementIds, $glue);
+
             return $this->parseRelationParam([
                 'or',
                 [
@@ -212,6 +218,16 @@ class ElementRelationParamParser
                     'field' => $relCriteria['field']
                 ]
             ], $query);
+        } // Do we need to check for *all* of the element IDs?
+        else if ($glue == 'and') {
+            // Srpead it across multiple relation sub-params
+            $newRelatedToParam = ['and'];
+
+            foreach ($relElementIds as $elementId) {
+                $newRelatedToParam[] = [$elementParam => [$elementId]];
+            }
+
+            return $this->parseRelationParam($newRelatedToParam, $query);
         }
 
         $conditions = [];

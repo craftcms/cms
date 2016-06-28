@@ -42,25 +42,15 @@ class ErrorHandler extends \yii\web\ErrorHandler
             $exception = $previousException;
         }
 
-        // Do some logging
-        if ($exception instanceof HttpException) {
-            // If this is a 404 error, log to a special file
-            if ($exception->statusCode === 404) {
-                $logDispatcher = Craft::$app->getLog();
+        // If this is a 404 error, log to a special file
+        if ($exception instanceof HttpException && $exception->statusCode === 404) {
+            $logDispatcher = Craft::$app->getLog();
 
-                if (isset($logDispatcher->targets[0]) && $logDispatcher->targets[0] instanceof FileTarget) {
-                    /** @var FileTarget $logTarget */
-                    $logTarget = $logDispatcher->targets[0];
-                    $logTarget->logFile = Craft::getAlias('@storage/logs/web-404s.log');
-                }
+            if (isset($logDispatcher->targets[0]) && $logDispatcher->targets[0] instanceof FileTarget) {
+                /** @var FileTarget $logTarget */
+                $logTarget = $logDispatcher->targets[0];
+                $logTarget->logFile = Craft::getAlias('@storage/logs/web-404s.log');
             }
-
-            $status = $exception->statusCode ? $exception->statusCode : '';
-            Craft::warning(($status ? $status.' - ' : '').$exception->getMessage(), __METHOD__);
-        } else if ($exception instanceof \Twig_Error) {
-            Craft::error($exception->getRawMessage(), __METHOD__);
-        } else {
-            Craft::error($exception->getMessage(), __METHOD__);
         }
 
         // Log MySQL deadlocks
@@ -70,7 +60,7 @@ class ErrorHandler extends \yii\web\ErrorHandler
             $info = $data->read();
             $info = serialize($info);
 
-            Craft::error('Deadlock error, innodb status: '.$info, 'system.db.CDbCommand', __METHOD__);
+            Craft::error('Deadlock error, innodb status: '.$info, 'system.db.CDbCommand');
         }
 
         parent::handleException($exception);

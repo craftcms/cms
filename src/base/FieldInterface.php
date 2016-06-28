@@ -146,12 +146,14 @@ interface FieldInterface extends SavableComponentInterface
     public function getInputHtml($value, $element);
 
     /**
-     * Returns static HTML for the field's value.
+     * Returns a static (non-editable) version of the field’s input HTML.
+     *
+     * This function is called to output field values when viewing entry drafts.
      *
      * @param mixed                    $value   The field’s value
-     * @param ElementInterface|Element $element The element the field is associated with, if there is one
+     * @param ElementInterface|Element $element The element the field is associated with
      *
-     * @return string
+     * @return string The static version of the field’s input HTML
      */
     public function getStaticHtml($value, $element);
 

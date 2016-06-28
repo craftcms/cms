@@ -100,6 +100,11 @@ class Assets extends BaseRelationField
     /**
      * @inheritdoc
      */
+    protected $allowLargeThumbsView = true;
+
+    /**
+     * @inheritdoc
+     */
     protected $inputJsClass = 'Craft.AssetSelectInput';
 
     /**
@@ -157,9 +162,11 @@ class Assets extends BaseRelationField
 
         return Craft::$app->getView()->renderTemplate('_components/fieldtypes/Assets/settings',
             [
+                'allowLimit'            => $this->allowLimit,
                 'folderOptions' => $folderOptions,
                 'sourceOptions' => $sourceOptions,
-                'targetLocaleField' => $this->getTargetLocaleFieldHtml(),
+                'targetLocaleFieldHtml' => $this->getTargetLocaleFieldHtml(),
+                'viewModeFieldHtml'     => $this->getViewModeFieldHtml(),
                 'field' => $this,
                 'displayName' => self::displayName(),
                 'fileKindOptions' => $fileKindOptions,
@@ -399,20 +406,14 @@ class Assets extends BaseRelationField
             foreach ($value as $fileId) {
                 $file = Craft::$app->getAssets()->getAssetById($fileId);
 
-                if ($file && !in_array(mb_strtolower(Io::getExtension($file->filename)),
-                        $allowedExtensions)
-                ) {
-                    $errors[] = Craft::t('app',
-                        '"{filename}" is not allowed in this field.',
-                        ['filename' => $file->filename]);
+                if ($file && !in_array(mb_strtolower(Io::getExtension($file->filename)), $allowedExtensions)) {
+                    $errors[] = Craft::t('app', '"{filename}" is not allowed in this field.', ['filename' => $file->filename]);
                 }
             }
         }
 
         foreach ($this->_failedFiles as $file) {
-            $errors[] = Craft::t('app',
-                '"{filename}" is not allowed in this field.',
-                ['filename' => $file->name]);
+            $errors[] = Craft::t('app', '"{filename}" is not allowed in this field.', ['filename' => $file]);
         }
 
         return $errors;

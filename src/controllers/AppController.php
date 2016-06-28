@@ -179,7 +179,46 @@ class AppController extends Controller
             'canTestEditions' => $canTestEditions,
             'modalHtml' => $modalHtml,
             'stripePublicKey' => $upgradeInfo->stripePublicKey,
+            'countries' => $upgradeInfo->countries,
+            'states' => $upgradeInfo->states,
         ]);
+    }
+
+    /**
+     * Returns the price of an upgrade with a coupon applied to it.
+     *
+     * @return void
+     */
+    public function actionGetCouponPrice()
+    {
+        $this->requirePostRequest();
+        $this->requireAjaxRequest();
+
+        // Make it so Craft Client accounts can perform the upgrade.
+        if (Craft::$app->getEdition() == Craft::Pro) {
+            $this->requireAdmin();
+        }
+
+        $request = Craft::$app->getRequest();
+        $edition = $request->getRequiredBodyParam('edition');
+        $couponCode = $request->getRequiredBodyParam('couponCode');
+
+        $etResponse = Craft::$app->getEt()->fetchCouponPrice($edition, $couponCode);
+
+        if (!empty($etResponse->data['success'])) {
+            $couponPrice = $etResponse->data['couponPrice'];
+            $formattedCouponPrice = Craft::$app->getFormatter()->asCurrency($couponPrice, 'USD', [], [], true);
+
+            $this->asJson([
+                'success' => true,
+                'couponPrice' => $couponPrice,
+                'formattedCouponPrice' => $formattedCouponPrice
+            ]);
+        } else {
+            $this->asJson([
+                'success' => false
+            ]);
+        }
     }
 
     /**
@@ -197,10 +236,25 @@ class AppController extends Controller
             $this->requireAdmin();
         }
 
+        $request = Craft::$app->getRequest();
         $model = new UpgradePurchaseModel([
-            'ccTokenId' => Craft::$app->getRequest()->getRequiredBodyParam('ccTokenId'),
-            'edition' => Craft::$app->getRequest()->getRequiredBodyParam('edition'),
-            'expectedPrice' => Craft::$app->getRequest()->getRequiredBodyParam('expectedPrice'),
+            'ccTokenId' => $request->getRequiredBodyParam('ccTokenId'),
+            'expMonth' => $request->getRequiredBodyParam('expMonth'),
+            'expYear' => $request->getRequiredBodyParam('expYear'),
+            'edition' => $request->getRequiredBodyParam('edition'),
+            'expectedPrice' => $request->getRequiredBodyParam('expectedPrice'),
+            'name' => $request->getRequiredBodyParam('name'),
+            'email' => $request->getRequiredBodyParam('email'),
+            'businessName' => $request->getBodyParam('businessName'),
+            'businessAddress1' => $request->getBodyParam('businessAddress1'),
+            'businessAddress2' => $request->getBodyParam('businessAddress2'),
+            'businessCity' => $request->getBodyParam('businessCity'),
+            'businessState' => $request->getBodyParam('businessState'),
+            'businessCountry' => $request->getBodyParam('businessCountry'),
+            'businessZip' => $request->getBodyParam('businessZip'),
+            'businessTaxId' => $request->getBodyParam('businessTaxId'),
+            'purchaseNotes' => $request->getBodyParam('purchaseNotes'),
+            'couponCode' => $request->getBodyParam('couponCode'),
         ]);
 
         if (Craft::$app->getEt()->purchaseUpgrade($model)) {
@@ -227,11 +281,18 @@ class AppController extends Controller
         $this->requireAjaxRequest();
         $this->requireAdmin();
 
-        if (!Craft::$app->canTestEditions()) {
+        $edition = Craft::$app->getRequest()->getRequiredBodyParam('edition');
+        $licensedEdition = Craft::$app->getLicensedEdition();
+
+        if ($licensedEdition === null) {
+            $licensedEdition = 0;
+        }
+
+        // If this is actually an upgrade, make sure that they are allowed to test edition upgrades
+        if ($edition > $licensedEdition && !Craft::$app->canTestEditions()) {
             throw new BadRequestHttpException('Craft is not permitted to test edition upgrades from this server');
         }
 
-        $edition = Craft::$app->getRequest()->getRequiredBodyParam('edition');
         Craft::$app->setEdition($edition);
 
         return $this->asJson([

@@ -102,7 +102,6 @@ class Assets
             $extension = '';
         }
 
-
         $config = Craft::$app->getConfig();
         $separator = $config->get('filenameWordSeparator');
 
