@@ -353,13 +353,15 @@ class UrlHelper
 	 */
 	public static function getProtocolForTokenizedUrl()
 	{
+		$useSslOnTokenizedUrls = craft()->config->get('useSslOnTokenizedUrls');
+
 		// If they've explicitly set `useSslOnTokenizedUrls` to true, use https.
-		if (craft()->config->get('useSslOnTokenizedUrls') === true)
+		if ($useSslOnTokenizedUrls === true)
 		{
 			return 'https';
 		}
 		// If they've explicitly set `useSslOnTokenizedUrls` to false, use http.
-		else if (craft()->config->get('useSslOnTokenizedUrls') === false)
+		else if ($useSslOnTokenizedUrls === false)
 		{
 			return 'http';
 		}

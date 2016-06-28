@@ -11,8 +11,8 @@
 return array(
 	/**
 	 * @var boolean whether to use apcu or apc as the underlying caching extension.
-	 * If true {@link http://pecl.php.net/package/apcu apcu} will be used.
-	 * If false {@link http://pecl.php.net/package/apc apc}. will be used.
+	 * If true {@link http://pecl.php.net/package/apcu APCu} will be used.
+	 * If false {@link http://pecl.php.net/package/apc APC}. will be used.
 	 * Defaults to false.
 	 */
 	'useApcu' => false,
