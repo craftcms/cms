@@ -419,10 +419,15 @@ class AssetSourcesService extends BaseApplicationComponent
 		$settingsValidate = $sourceType->getSettings()->validate();
 		$sourceErrors = $sourceType->getSourceErrors();
 
-		if ($processedSettings['publicURLs'] && !$processedSettings['url'])
+		if ($processedSettings['publicURLs'])
 		{
-			$settingsValidate = false;
-			$source->addSettingErrors(array('url' => Craft::t('URL can be left blank only for private Asset sources.')));
+			$urlKey = $source->type == 'Local' ? 'url' : 'urlPrefix';
+
+			if (!$processedSettings[$urlKey])
+			{
+				$settingsValidate = false;
+				$source->addSettingErrors(array($urlKey => Craft::t('URL can be left blank only for private Asset sources.')));
+			}
 		}
 
 		if ($recordValidates && $settingsValidate && empty($sourceErrors))
@@ -497,18 +502,18 @@ class AssetSourcesService extends BaseApplicationComponent
 				throw $e;
 			}
 
-            if ($isNewSource && $this->_fetchedAllSources)
-            {
-                $this->_sourcesById[$source->id] = $source;
-            }
+			if ($isNewSource && $this->_fetchedAllSources)
+			{
+				$this->_sourcesById[$source->id] = $source;
+			}
 
-            if (isset($this->_viewableSourceIds))
-            {
-                if (craft()->userSession->checkPermission('viewAssetSource:'.$source->id))
-                {
-                    $this->_viewableSourceIds[] = $source->id;
-                }
-            }
+			if (isset($this->_viewableSourceIds))
+			{
+				if (craft()->userSession->checkPermission('viewAssetSource:'.$source->id))
+				{
+					$this->_viewableSourceIds[] = $source->id;
+				}
+			}
 
 			return true;
 		}
