@@ -573,6 +573,8 @@ class ElementsService extends BaseApplicationComponent
 
 			$masterQuery = craft()->db->createCommand();
 			$masterQuery->params = $query->params;
+
+			// TODO: potentially MySQL specific.
 			$masterQuery->from(sprintf('(%s) derivedElementsTable', $query->getText()));
 
 			$count = $masterQuery->count('derivedElementsTable.id');
