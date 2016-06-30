@@ -44,7 +44,7 @@ Craft.EntryDraftEditor = Garnish.Base.extend(
 			this.$notesInput = $('<textarea class="text fullwidth" id="draft-notes" rows="2"/>').appendTo($inputContainer).val(this.draftNotes);
 
 			// Add the button
-			var $footer = $('<div class="footer"/>').appendTo($hudBody),
+			var $footer = $('<div class="hud-footer"/>').appendTo($hudBody),
 				$buttonsContainer = $('<div class="buttons right"/>').appendTo($footer);
 			this.$saveBtn = $('<input type="submit" class="btn submit disabled" value="'+Craft.t('Save')+'"/>').appendTo($buttonsContainer);
 			this.$spinner = $('<div class="spinner hidden"/>').appendTo($buttonsContainer);
