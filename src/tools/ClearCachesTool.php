@@ -46,6 +46,7 @@ class ClearCachesTool extends BaseTool
 		$caches = $this->_getFolders();
 		$caches['assetTransformIndex'] = Craft::t('Asset transform index');
 		$caches['assetIndexingData'] = Craft::t('Asset indexing data');
+		$caches['assetTempUploads'] = Craft::t('Discarded Asset uploads');
 		$caches['templateCaches'] = Craft::t('Template caches');
 
 		return craft()->templates->render('_includes/forms/checkboxSelect', array(
@@ -132,6 +133,43 @@ class ClearCachesTool extends BaseTool
 		{
 			craft()->db->createCommand()->truncateTable('assetindexdata');
 		}
+
+		if ($params['caches'] == '*' || in_array('assetTempUploads', $params['caches']))
+		{
+			// Delete all temp uploads older than 24 hours.
+			$yesterday = new DateTime('@'.(time() - 86400));
+			$fileIds = craft()->db->createCommand()
+				->select('id')
+				->from('assetfiles')
+				->where(
+					array('and', 'sourceId is null', 'dateCreated < :yesterday'),
+					array(':yesterday' => $yesterday->mySqlDateTime())
+				)
+				->queryColumn();
+
+			craft()->assets->deleteFiles($fileIds);
+
+			// Get all temp field folders that don't have any files.
+			$folders = craft()->db->createCommand()
+				->select('fo.id, fo.path')
+				->from('assetfolders as fo')
+				->leftJoin('assetfiles as fi', 'fi.folderId = fo.id')
+				->where(array('and', 'fi.id is null', 'fo.sourceId is null', 'fo.name like "field_%"'))
+				->queryAll();
+
+			$basePath = craft()->path->getAssetsTempSourcePath();
+			foreach ($folders as $folder)
+			{
+				// The same physical folder may be used by multiple users, so check if it's empty.
+				if (IOHelper::isFolderEmpty($basePath.$folder['path']))
+				{
+					IOHelper::deleteFolder($basePath.$folder['path'], true);
+				}
+				// Delete the logical folder anyway.
+				craft()->assets->deleteFolderById($folder['id']);
+			}
+		}
+
 	}
 
 	// Private Methods
