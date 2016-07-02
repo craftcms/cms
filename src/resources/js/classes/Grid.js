@@ -21,7 +21,6 @@ Craft.Grid = Garnish.Base.extend(
 
 	_refreshingCols: false,
 	_refreshColsAfterRefresh: false,
-	_setItems: null,
 
 	init: function(container, settings)
 	{
