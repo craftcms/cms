@@ -111,6 +111,7 @@ Craft.Grid = Garnish.Base.extend(
 
 		if (!this.items.length)
 		{
+			this._refreshingCols = false;
 			return;
 		}
 
@@ -125,6 +126,7 @@ Craft.Grid = Garnish.Base.extend(
 		if (this.refreshCols._.scrollHeight == 0)
 		{
 			delete this.refreshCols._;
+			this._refreshingCols = false;
 			return;
 		}
 
@@ -151,6 +153,7 @@ Craft.Grid = Garnish.Base.extend(
 		if (force !== true && this.totalCols === this.refreshCols._.totalCols)
 		{
 			delete this.refreshCols._;
+			this._refreshingCols = false;
 			return;
 		}
 
