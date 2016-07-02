@@ -111,7 +111,7 @@ Craft.Grid = Garnish.Base.extend(
 
 		if (!this.items.length)
 		{
-			this._refreshingCols = false;
+			this.completeRefreshCols();
 			return;
 		}
 
@@ -125,8 +125,7 @@ Craft.Grid = Garnish.Base.extend(
 
 		if (this.refreshCols._.scrollHeight == 0)
 		{
-			delete this.refreshCols._;
-			this._refreshingCols = false;
+			this.completeRefreshCols();
 			return;
 		}
 
@@ -152,8 +151,7 @@ Craft.Grid = Garnish.Base.extend(
 		// Same number of columns as before?
 		if (force !== true && this.totalCols === this.refreshCols._.totalCols)
 		{
-			delete this.refreshCols._;
-			this._refreshingCols = false;
+			this.completeRefreshCols();
 			return;
 		}
 
@@ -426,20 +424,34 @@ Craft.Grid = Garnish.Base.extend(
 			}
 		}
 
-		this.onRefreshCols();
-
-		delete this.refreshCols._;
+		this.completeRefreshCols();
 
 		// Resume container resize listening
 		this.addListener(this.$container, 'resize', this.handleContainerHeightProxy);
+
+		this.onRefreshCols();
+	},
+
+	completeRefreshCols: function()
+	{
+		// Delete the internal variable object
+		if (typeof this.refreshCols._ != typeof undefined)
+		{
+			delete this.refreshCols._;
+		}
+
 		this._refreshingCols = false;
+
 		if (this._refreshColsAfterRefresh) {
 			force = this._forceRefreshColsAfterRefresh;
 			this._refreshColsAfterRefresh = false;
 			this._forceRefreshColsAfterRefresh = false;
-			this.refreshCols(force);
+
+			Garnish.requestAnimationFrame($.proxy(function() {
+				this.refreshCols(force);
+			}, this))
 		}
-	} ,
+	},
 
 	getItemWidth: function(colspan)
 	{
