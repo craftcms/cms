@@ -21,6 +21,7 @@ Craft.Grid = Garnish.Base.extend(
 
 	_refreshingCols: false,
 	_refreshColsAfterRefresh: false,
+	_forceRefreshColsAfterRefresh: false,
 
 	init: function(container, settings)
 	{
@@ -100,6 +101,9 @@ Craft.Grid = Garnish.Base.extend(
 	{
 		if (this._refreshingCols) {
 			this._refreshColsAfterRefresh = true;
+			if (force) {
+				this._forceRefreshColsAfterRefresh = true;
+			}
 			return;
 		}
 
@@ -427,8 +431,10 @@ Craft.Grid = Garnish.Base.extend(
 		this.addListener(this.$container, 'resize', this.handleContainerHeightProxy);
 		this._refreshingCols = false;
 		if (this._refreshColsAfterRefresh) {
+			force = this._forceRefreshColsAfterRefresh;
 			this._refreshColsAfterRefresh = false;
-			this.refreshCols();
+			this._forceRefreshColsAfterRefresh = false;
+			this.refreshCols(force);
 		}
 	} ,
 
