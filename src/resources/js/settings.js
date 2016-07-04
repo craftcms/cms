@@ -22,7 +22,7 @@ Craft.Tool = Garnish.Base.extend(
 		this.optionsHtml = optionsHtml;
 		this.buttonLabel = buttonLabel;
 
-		this.$trigger = $('#tool-'+triggerId);
+		this.$trigger = $('#'+triggerId);
 
 		this.addListener(this.$trigger, 'click', 'showHUD');
 	},
