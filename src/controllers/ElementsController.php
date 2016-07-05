@@ -279,7 +279,7 @@ class ElementsController extends BaseElementsController
         }
 
         // Populate it with any posted attributes
-        $attributes = $request->getPost('attributes', []);
+        $attributes = $request->getBodyParam('attributes', []);
         $attributes['locale'] = $localeId;
 
         if ($attributes) {
