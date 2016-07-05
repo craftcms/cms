@@ -507,6 +507,7 @@ class Entry extends Element
     {
         /** @var Entry $element */
         $html = '';
+        $view = Craft::$app->getView();
 
         // Show the Entry Type field?
         if (!$element->id) {
@@ -531,7 +532,6 @@ class Entry extends Element
                     ]
                 ]);
 
-                $view = Craft::$app->getView();
                 $typeInputId = $view->namespaceInputId('entryType');
                 $js = <<<EOD
 $('#{$typeInputId}').on('change', function(ev) {
