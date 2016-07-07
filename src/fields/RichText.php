@@ -132,7 +132,8 @@ class RichText extends Field
         $configJs = $this->_getConfigJs();
         $this->_includeFieldResources($configJs);
 
-        $id = Craft::$app->getView()->formatInputId($this->handle);
+        $view = Craft::$app->getView();
+        $id = $view->formatInputId($this->handle);
         $localeId = ($element ? $element->locale : Craft::$app->language);
 
         if (isset($this->model) && $this->model->translatable) {
@@ -142,8 +143,8 @@ class RichText extends Field
             $orientation = 'Craft.orientation';
         }
 
-        Craft::$app->getView()->registerJs('new Craft.RichTextInput('.
-            '"'.Craft::$app->getView()->namespaceInputId($id).'", '.
+        $view->registerJs('new Craft.RichTextInput('.
+            '"'.$view->namespaceInputId($id).'", '.
             Json::encode($this->_getSectionSources()).', '.
             Json::encode($this->_getCategorySources()).', '.
             Json::encode($this->_getAssetSources()).', '.
@@ -372,12 +373,13 @@ class RichText extends Field
      */
     private function _includeFieldResources($configJs)
     {
-        Craft::$app->getView()->registerCssResource('lib/redactor/redactor.css');
-        Craft::$app->getView()->registerCssResource('lib/redactor/plugins/pagebreak.css');
+        $view = Craft::$app->getView();
+        $view->registerCssResource('lib/redactor/redactor.css');
+        $view->registerCssResource('lib/redactor/plugins/pagebreak.css');
 
         // Gotta use the uncompressed Redactor JS until the compressed one gets our Live Preview menu fix
-        Craft::$app->getView()->registerJsResource('lib/redactor/redactor.js');
-        //Craft::$app->getView()->registerJsResource('lib/redactor/redactor'.(Craft::$app->getConfig()->get('useCompressedJs') ? '.min' : '').'.js');
+        $view->registerJsResource('lib/redactor/redactor.js');
+        //$view->registerJsResource('lib/redactor/redactor'.(Craft::$app->getConfig()->get('useCompressedJs') ? '.min' : '').'.js');
 
         $this->_maybeIncludeRedactorPlugin($configJs, 'fullscreen', false);
         $this->_maybeIncludeRedactorPlugin($configJs, 'source|html', false);
@@ -385,7 +387,7 @@ class RichText extends Field
         $this->_maybeIncludeRedactorPlugin($configJs, 'video', false);
         $this->_maybeIncludeRedactorPlugin($configJs, 'pagebreak', true);
 
-        Craft::$app->getView()->includeTranslations(
+        $view->includeTranslations(
             'Insert image',
             'Insert URL',
             'Choose image',
@@ -396,7 +398,7 @@ class RichText extends Field
             'Link to an asset',
             'Link to a category');
 
-        Craft::$app->getView()->registerJsResource('js/RichTextInput.js');
+        $view->registerJsResource('js/RichTextInput.js');
 
         // Check to see if the Redactor has been translated into the current locale
         if (Craft::$app->language != Craft::$app->sourceLanguage) {
@@ -426,7 +428,7 @@ class RichText extends Field
             'video-html-code' => Craft::t('app', 'Video Embed Code or Youtube/Vimeo Link'),
         ];
 
-        Craft::$app->getView()->registerJs(
+        $view->registerJs(
             '$.extend($.Redactor.opts.langs["'.static::$_redactorLang.'"], '.
             Json::encode($customTranslations).
             ');');
@@ -448,11 +450,12 @@ class RichText extends Field
                 $plugin = substr($plugin, 0, $pipe);
             }
 
+            $view = Craft::$app->getView();
             if ($includeCss) {
-                Craft::$app->getView()->registerCssResource('lib/redactor/plugins/'.$plugin.'.css');
+                $view->registerCssResource('lib/redactor/plugins/'.$plugin.'.css');
             }
 
-            Craft::$app->getView()->registerJsResource('lib/redactor/plugins/'.$plugin.'.js');
+            $view->registerJsResource('lib/redactor/plugins/'.$plugin.'.js');
         }
     }
 
