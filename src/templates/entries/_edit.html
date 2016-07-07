@@ -27,7 +27,7 @@
 {% block saveButton %}
 	{% if isDraft %}
 
-		<input type="hidden" name="action" value="entryRevisions/saveDraft">
+		<input type="hidden" name="action" value="entry-revisions/save-draft">
 		<input type="hidden" name="redirect" value="{{ baseCpEditUrl }}/drafts/{{ entry.draftId }}">
 		<input type="hidden" name="draftId" value="{{ entry.draftId }}">
 
@@ -87,7 +87,7 @@
 		(isSingle or entry.authorId == currentUser.id or currentUser.can('publishPeerEntries'~permissionSuffix))
 		%}
 
-			<input type="hidden" name="action" value="entryRevisions/revertEntryToVersion">
+			<input type="hidden" name="action" value="entry-revisions/revert-entry-to-version">
 			<input type="hidden" name="redirect" value="{{ entry.getCpEditUrl() }}">
 			<input type="hidden" name="versionId" value="{{ entry.versionId }}">
 
@@ -98,7 +98,7 @@
 
 	{% elseif canSave %}
 
-		<input type="hidden" name="action" value="entries/saveEntry">
+		<input type="hidden" name="action" value="entries/save-entry">
 		<input type="hidden" name="redirect" value="entries/{{ sectionHandle }}">
 
 		<div class="btngroup">
@@ -135,7 +135,7 @@
 
 	{% else %}
 
-		<input type="hidden" name="action" value="entryRevisions/saveDraft">
+		<input type="hidden" name="action" value="entry-revisions/save-draft">
 		<input type="hidden" name="redirect" value="{{ baseCpEditUrl }}/drafts/{draftId}">
 
 		<input type="submit" class="btn submit first" value="{{ 'Save as a draft'|t('app') }}">

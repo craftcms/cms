@@ -143,7 +143,7 @@ Craft.Dashboard = Garnish.Base.extend(
             var $widgets = this.$grid.find('> .item > .widget'),
                 $form = $(
                     '<form method="post" accept-charset="UTF-8">' +
-                        '<input type="hidden" name="action" value="widgets/saveWidget"/>' +
+                        '<input type="hidden" name="action" value="widgets/save-widget"/>' +
                     '</form>'
                 ).appendTo(Garnish.$bod),
                 $noWidgets = $('<p id="nowidgets"'+($widgets.length ? ' class="hidden"' : '')+'>'+Craft.t('You don’t have any widgets yet.')+'</p>').appendTo($form),

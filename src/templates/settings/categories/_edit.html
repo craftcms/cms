@@ -24,7 +24,7 @@
 {% from _self import urlFormatText %}
 
 {% block content %}
-	<input type="hidden" name="action" value="categories/saveGroup">
+	<input type="hidden" name="action" value="categories/save-group">
 	<input type="hidden" name="redirect" value="settings/categories">
 
 	{% if categoryGroup.id %}<input type="hidden" name="groupId" value="{{ categoryGroup.id }}">{% endif %}
