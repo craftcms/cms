@@ -188,7 +188,7 @@ class Install extends InstallMigration
             ],
             '{{%assettransformindex}}' => [
                 'columns' => [
-                    'fileId' => 'integer(11) NOT NULL',
+                    'assetId' => 'integer(11) NOT NULL',
                     'filename' => 'string(255) COLLATE utf8_unicode_ci DEFAULT NULL',
                     'format' => 'string(255) COLLATE utf8_unicode_ci DEFAULT NULL',
                     'location' => 'string(255) COLLATE utf8_unicode_ci NOT NULL',
