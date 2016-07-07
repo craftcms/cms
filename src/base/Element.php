@@ -1287,7 +1287,7 @@ abstract class Element extends Component implements ElementInterface
      * @param mixed   $criteria Refer to [[findOne()]] and [[findAll()]] for the explanation of this parameter
      * @param boolean $one      Whether this method is called by [[findOne()]] or [[findAll()]]
      *
-     * @return self|self[]
+     * @return $this|$this[]
      */
     protected static function findByCondition($criteria, $one)
     {

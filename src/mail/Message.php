@@ -46,7 +46,7 @@ class Message extends \yii\swiftmailer\Message
      * You may pass an array of addresses if this message is from multiple people.
      * You may also specify sender name in addition to email address using format:
      * `[email => name]`.
-     * @return static self reference.
+     * @return $this self reference
      */
     public function setFrom($from)
     {
@@ -61,7 +61,7 @@ class Message extends \yii\swiftmailer\Message
      * You may pass an array of addresses if multiple recipients should receive this message.
      * You may also specify receiver name in addition to email address using format:
      * `[email => name]`.
-     * @return static self reference.
+     * @return $this self reference
      */
     public function setTo($to)
     {
@@ -76,7 +76,7 @@ class Message extends \yii\swiftmailer\Message
      * You may pass an array of addresses if multiple recipients should receive this message.
      * You may also specify receiver name in addition to email address using format:
      * `[email => name]`.
-     * @return static self reference.
+     * @return $this self reference
      */
     public function setCc($cc)
     {
@@ -91,7 +91,7 @@ class Message extends \yii\swiftmailer\Message
      * You may pass an array of addresses if multiple recipients should receive this message.
      * You may also specify receiver name in addition to email address using format:
      * `[email => name]`.
-     * @return static self reference.
+     * @return $this self reference
      */
     public function setBcc($bcc)
     {

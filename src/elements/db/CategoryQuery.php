@@ -70,7 +70,7 @@ class CategoryQuery extends ElementQuery
      *
      * @param boolean $value The property value (defaults to true)
      *
-     * @return self The query object itself
+     * @return $this self reference
      */
     public function editable($value = true)
     {
@@ -84,7 +84,7 @@ class CategoryQuery extends ElementQuery
      *
      * @param string|string[]|CategoryGroup $value The property value
      *
-     * @return self The query object itself
+     * @return $this self reference
      */
     public function group($value)
     {
@@ -108,7 +108,7 @@ class CategoryQuery extends ElementQuery
      *
      * @param integer|integer[] $value The property value
      *
-     * @return self The query object itself
+     * @return $this self reference
      */
     public function groupId($value)
     {

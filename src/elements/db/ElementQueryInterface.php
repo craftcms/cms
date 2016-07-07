@@ -26,7 +26,7 @@ interface ElementQueryInterface extends QueryInterface
      *
      * @param array $criteria The criteria parameters to configure the element query with
      *
-     * @return self The query object itself
+     * @return $this self reference
      */
     public function configure($criteria);
 
@@ -35,7 +35,7 @@ interface ElementQueryInterface extends QueryInterface
      *
      * @param boolean $value The property value (defaults to true)
      *
-     * @return self The query object itself
+     * @return $this self reference
      */
     public function asArray($value = true);
 
@@ -44,7 +44,7 @@ interface ElementQueryInterface extends QueryInterface
      *
      * @param mixed $value The property value
      *
-     * @return self The query object itself
+     * @return $this self reference
      */
     public function id($value);
 
@@ -53,7 +53,7 @@ interface ElementQueryInterface extends QueryInterface
      *
      * @param boolean $value The property value (defaults to true)
      *
-     * @return self The query object itself
+     * @return $this self reference
      */
     public function fixedOrder($value = true);
 
@@ -62,7 +62,7 @@ interface ElementQueryInterface extends QueryInterface
      *
      * @param string|string[] $value The property value
      *
-     * @return self The query object itself
+     * @return $this self reference
      */
     public function status($value);
 
@@ -71,7 +71,7 @@ interface ElementQueryInterface extends QueryInterface
      *
      * @param boolean $value The property value (defaults to true)
      *
-     * @return self The query object itself
+     * @return $this self reference
      */
     public function archived($value = true);
 
@@ -80,7 +80,7 @@ interface ElementQueryInterface extends QueryInterface
      *
      * @param mixed $value The property value
      *
-     * @return self The query object itself
+     * @return $this self reference
      */
     public function dateCreated($value = true);
 
@@ -89,7 +89,7 @@ interface ElementQueryInterface extends QueryInterface
      *
      * @param mixed $value The property value
      *
-     * @return self The query object itself
+     * @return $this self reference
      */
     public function dateUpdated($value = true);
 
@@ -98,7 +98,7 @@ interface ElementQueryInterface extends QueryInterface
      *
      * @param string $value The property value
      *
-     * @return self The query object itself
+     * @return $this self reference
      */
     public function locale($value);
 
@@ -107,7 +107,7 @@ interface ElementQueryInterface extends QueryInterface
      *
      * @param mixed $value The property value (defaults to true)
      *
-     * @return self The query object itself
+     * @return $this self reference
      */
     public function localeEnabled($value = true);
 
@@ -116,7 +116,7 @@ interface ElementQueryInterface extends QueryInterface
      *
      * @param integer|array|ElementInterface $value The property value
      *
-     * @return self The query object itself
+     * @return $this self reference
      */
     public function relatedTo($value);
 
@@ -125,7 +125,7 @@ interface ElementQueryInterface extends QueryInterface
      *
      * @param string $value The property value
      *
-     * @return self The query object itself
+     * @return $this self reference
      */
     public function title($value);
 
@@ -134,7 +134,7 @@ interface ElementQueryInterface extends QueryInterface
      *
      * @param string $value The property value
      *
-     * @return self The query object itself
+     * @return $this self reference
      */
     public function slug($value);
 
@@ -143,7 +143,7 @@ interface ElementQueryInterface extends QueryInterface
      *
      * @param string $value The property value
      *
-     * @return self The query object itself
+     * @return $this self reference
      */
     public function uri($value);
 
@@ -152,7 +152,7 @@ interface ElementQueryInterface extends QueryInterface
      *
      * @param string $value The property value
      *
-     * @return self The query object itself
+     * @return $this self reference
      */
     public function search($value);
 
@@ -161,7 +161,7 @@ interface ElementQueryInterface extends QueryInterface
      *
      * @param string|string[] $value The property value
      *
-     * @return self The query object itself
+     * @return $this self reference
      */
     public function ref($value);
 
@@ -170,7 +170,7 @@ interface ElementQueryInterface extends QueryInterface
      *
      * @param integer $value The property value
      *
-     * @return self The query object itself
+     * @return $this self reference
      */
     public function structureId($value);
 
@@ -179,7 +179,7 @@ interface ElementQueryInterface extends QueryInterface
      *
      * @param integer $value The property value
      *
-     * @return self The query object itself
+     * @return $this self reference
      */
     public function level($value);
 
@@ -188,7 +188,7 @@ interface ElementQueryInterface extends QueryInterface
      *
      * @param integer|ElementInterface $value The property value
      *
-     * @return self The query object itself
+     * @return $this self reference
      */
     public function ancestorOf($value);
 
@@ -197,7 +197,7 @@ interface ElementQueryInterface extends QueryInterface
      *
      * @param integer $value The property value
      *
-     * @return self The query object itself
+     * @return $this self reference
      */
     public function ancestorDist($value);
 
@@ -206,7 +206,7 @@ interface ElementQueryInterface extends QueryInterface
      *
      * @param integer|ElementInterface $value The property value
      *
-     * @return self The query object itself
+     * @return $this self reference
      */
     public function descendantOf($value);
 
@@ -215,7 +215,7 @@ interface ElementQueryInterface extends QueryInterface
      *
      * @param integer $value The property value
      *
-     * @return self The query object itself
+     * @return $this self reference
      */
     public function descendantDist($value);
 
@@ -224,7 +224,7 @@ interface ElementQueryInterface extends QueryInterface
      *
      * @param integer|ElementInterface $value The property value
      *
-     * @return self The query object itself
+     * @return $this self reference
      */
     public function siblingOf($value);
 
@@ -233,7 +233,7 @@ interface ElementQueryInterface extends QueryInterface
      *
      * @param integer|ElementInterface $value The property value
      *
-     * @return self The query object itself
+     * @return $this self reference
      */
     public function prevSiblingOf($value);
 
@@ -242,7 +242,7 @@ interface ElementQueryInterface extends QueryInterface
      *
      * @param integer|ElementInterface $value The property value
      *
-     * @return self The query object itself
+     * @return $this self reference
      */
     public function nextSiblingOf($value);
 
@@ -251,7 +251,7 @@ interface ElementQueryInterface extends QueryInterface
      *
      * @param integer|ElementInterface $value The property value
      *
-     * @return self The query object itself
+     * @return $this self reference
      */
     public function positionedBefore($value);
 
@@ -260,7 +260,7 @@ interface ElementQueryInterface extends QueryInterface
      *
      * @param integer|ElementInterface $value The property value
      *
-     * @return self The query object itself
+     * @return $this self reference
      */
     public function positionedAfter($value);
 

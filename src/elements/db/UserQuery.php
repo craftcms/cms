@@ -118,7 +118,7 @@ class UserQuery extends ElementQuery
      *
      * @param boolean $value The property value (defaults to true)
      *
-     * @return self The query object itself
+     * @return $this self reference
      */
     public function admin($value = true)
     {
@@ -132,7 +132,7 @@ class UserQuery extends ElementQuery
      *
      * @param boolean $value The property value (defaults to true)
      *
-     * @return self The query object itself
+     * @return $this self reference
      */
     public function client($value = true)
     {
@@ -146,7 +146,7 @@ class UserQuery extends ElementQuery
      *
      * @param string|integer $value The property value
      *
-     * @return self The query object itself
+     * @return $this self reference
      */
     public function can($value)
     {
@@ -160,7 +160,7 @@ class UserQuery extends ElementQuery
      *
      * @param string|string[]|UserGroup $value The property value
      *
-     * @return self The query object itself
+     * @return $this self reference
      */
     public function group($value)
     {
@@ -183,7 +183,7 @@ class UserQuery extends ElementQuery
      *
      * @param integer|integer[] $value The property value
      *
-     * @return self The query object itself
+     * @return $this self reference
      */
     public function groupId($value)
     {
@@ -197,7 +197,7 @@ class UserQuery extends ElementQuery
      *
      * @param string|string[] $value The property value
      *
-     * @return self The query object itself
+     * @return $this self reference
      */
     public function email($value)
     {
@@ -211,7 +211,7 @@ class UserQuery extends ElementQuery
      *
      * @param string|string[] $value The property value
      *
-     * @return self The query object itself
+     * @return $this self reference
      */
     public function username($value)
     {
@@ -225,7 +225,7 @@ class UserQuery extends ElementQuery
      *
      * @param string|string[] $value The property value
      *
-     * @return self The query object itself
+     * @return $this self reference
      */
     public function firstName($value)
     {
@@ -239,7 +239,7 @@ class UserQuery extends ElementQuery
      *
      * @param string|string[] $value The property value
      *
-     * @return self The query object itself
+     * @return $this self reference
      */
     public function lastName($value)
     {
@@ -253,7 +253,7 @@ class UserQuery extends ElementQuery
      *
      * @param mixed $value The property value
      *
-     * @return self The query object itself
+     * @return $this self reference
      */
     public function lastLoginDate($value)
     {
@@ -267,7 +267,7 @@ class UserQuery extends ElementQuery
      *
      * @param boolean $value The property value (defaults to true)
      *
-     * @return self The query object itself
+     * @return $this self reference
      */
     public function withPassword($value = true)
     {

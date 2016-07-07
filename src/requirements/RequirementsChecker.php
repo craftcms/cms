@@ -60,7 +60,7 @@ class RequirementsChecker
      *                                   requirements. If a string, it is treated as the path of the file, which
      *                                   contains the requirements;
      *
-     * @return self The instance of the class.
+     * @return $this self reference
      */
     function check($requirements)
     {

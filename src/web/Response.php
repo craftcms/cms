@@ -26,7 +26,7 @@ class Response extends \yii\web\Response
     /**
      * Sets headers that will instruct the client to cache this response.
      *
-     * @return self The response object itself.
+     * @return $this self reference
      */
     public function setCacheHeaders()
     {
@@ -45,7 +45,7 @@ class Response extends \yii\web\Response
      *
      * @param string $path The file to read the last modified date from.
      *
-     * @return self The response object itself.
+     * @return $this self reference
      */
     public function setLastModifiedHeader($path)
     {
@@ -65,7 +65,7 @@ class Response extends \yii\web\Response
      * @param string $attachmentName
      * @param array  $options
      *
-     * @return self
+     * @return $this self reference
      */
     public function sendFile($filePath, $attachmentName = null, $options = [])
     {
@@ -81,7 +81,7 @@ class Response extends \yii\web\Response
      * @param string $attachmentName
      * @param array  $options
      *
-     * @return self
+     * @return $this self reference
      * @throws HttpException
      */
     public function sendContentAsFile($content, $attachmentName, $options = [])

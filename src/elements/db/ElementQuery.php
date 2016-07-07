@@ -1023,7 +1023,7 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
      *
      * @param string $value The property value
      *
-     * @return self The query object itself
+     * @return $this self reference
      * @deprecated in Craft 3.0. Use [[orderBy()]] instead.
      */
     public function order($value)

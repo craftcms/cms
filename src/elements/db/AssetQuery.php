@@ -102,7 +102,7 @@ class AssetQuery extends ElementQuery
      *
      * @param string|string[]|Volume $value The property value
      *
-     * @return self The query object itself
+     * @return $this self reference
      */
     public function volume($value)
     {
@@ -125,7 +125,7 @@ class AssetQuery extends ElementQuery
      *
      * @param string|string[]|Volume $value The property value
      *
-     * @return self The query object itself
+     * @return $this self reference
      * @deprecated since Craft 3.0. Use [[volume()]] instead.
      */
     public function source($value)
@@ -140,7 +140,7 @@ class AssetQuery extends ElementQuery
      *
      * @param integer|integer[] $value The property value
      *
-     * @return self The query object itself
+     * @return $this self reference
      */
     public function volumeId($value)
     {
@@ -154,7 +154,7 @@ class AssetQuery extends ElementQuery
      *
      * @param integer|integer[] $value The property value
      *
-     * @return self The query object itself
+     * @return $this self reference
      * @deprecated since Craft 3.0. Use [[volumeId()]] instead.
      */
     public function sourceId($value)
@@ -169,7 +169,7 @@ class AssetQuery extends ElementQuery
      *
      * @param integer|integer[] $value The property value
      *
-     * @return self The query object itself
+     * @return $this self reference
      */
     public function folderId($value)
     {
@@ -183,7 +183,7 @@ class AssetQuery extends ElementQuery
      *
      * @param string|string[] $value The property value
      *
-     * @return self The query object itself
+     * @return $this self reference
      */
     public function filename($value)
     {
@@ -197,7 +197,7 @@ class AssetQuery extends ElementQuery
      *
      * @param string|string[] $value The property value
      *
-     * @return self The query object itself
+     * @return $this self reference
      */
     public function kind($value)
     {
@@ -211,7 +211,7 @@ class AssetQuery extends ElementQuery
      *
      * @param integer|string $value The property value
      *
-     * @return self The query object itself
+     * @return $this self reference
      */
     public function width($value)
     {
@@ -225,7 +225,7 @@ class AssetQuery extends ElementQuery
      *
      * @param integer|string $value The property value
      *
-     * @return self The query object itself
+     * @return $this self reference
      */
     public function height($value)
     {
@@ -239,7 +239,7 @@ class AssetQuery extends ElementQuery
      *
      * @param integer|string $value The property value
      *
-     * @return self The query object itself
+     * @return $this self reference
      */
     public function size($value)
     {
@@ -253,7 +253,7 @@ class AssetQuery extends ElementQuery
      *
      * @param mixed $value The property value
      *
-     * @return self The query object itself
+     * @return $this self reference
      */
     public function dateModified($value)
     {
@@ -267,7 +267,7 @@ class AssetQuery extends ElementQuery
      *
      * @param boolean $value The property value (defaults to true)
      *
-     * @return self The query object itself
+     * @return $this self reference
      */
     public function includeSubfolders($value = true)
     {

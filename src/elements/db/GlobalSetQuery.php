@@ -55,7 +55,7 @@ class GlobalSetQuery extends ElementQuery
      *
      * @param boolean $value The property value (defaults to true)
      *
-     * @return self The query object itself
+     * @return $this self reference
      */
     public function editable($value = true)
     {
@@ -69,7 +69,7 @@ class GlobalSetQuery extends ElementQuery
      *
      * @param string|string[] $value The property value
      *
-     * @return self The query object itself
+     * @return $this self reference
      */
     public function handle($value)
     {
