@@ -124,6 +124,14 @@ class AssetsFieldType extends BaseElementFieldType
 				Craft::t('This field’s target subfolder path is invalid: {path}', array('path' => '<code>'.$this->getSettings()->singleUploadLocationSubpath.'</code>')) .
 				'</p>';
 		}
+		catch (InvalidSourceException $e)
+		{
+			$message = $this->getSettings()->useSingleFolder ? Craft::t('This field’s single upload location Assets Source is missing') : Craft::t('This field’s default upload location Assets Source is missing');
+			return '<p class="warning">' .
+			'<span data-icon="alert"></span> ' .
+			$message .
+			'</p>';
+		}
 	}
 
 	/**
@@ -520,19 +528,22 @@ class AssetsFieldType extends BaseElementFieldType
 	 */
 	private function _resolveSourcePathToFolderId($sourceId, $subpath, $createDynamicFolders = true)
 	{
+
+		// Get the root folder in the source
+		$rootFolder = craft()->assets->getRootFolderBySourceId($sourceId);
+
+		// Make sure the root folder actually exists
+		if (!$rootFolder)
+		{
+			throw new InvalidSourceException();
+		}
+
 		// Are we looking for a subfolder?
 		$subpath = is_string($subpath) ? trim($subpath, '/') : '';
 
 		if (strlen($subpath) === 0)
 		{
-			// Get the root folder in the source
-			$folder = craft()->assets->getRootFolderBySourceId($sourceId);
-
-			// Make sure the root folder actually exists
-			if (!$folder)
-			{
-				throw new Exception('Cannot find the target folder.');
-			}
+			$folder = $rootFolder;
 		}
 		else
 		{
@@ -572,13 +583,7 @@ class AssetsFieldType extends BaseElementFieldType
 				}
 
 				// Start at the root, and, go over each folder in the path and create it if it's missing.
-				$parentFolder = craft()->assets->getRootFolderBySourceId($sourceId);
-
-				// Make sure the root folder actually exists
-				if (!$parentFolder)
-				{
-					throw new Exception('Cannot find the target folder.');
-				}
+				$parentFolder = $rootFolder;
 
 				$segments = explode('/', $subpath);
 

@@ -551,29 +551,33 @@ class ElementsService extends BaseApplicationComponent
 
 		if ($query)
 		{
-			// Get the GROUP BY query part
-			$groupBy = $query->getGroup();
-
-			// Remove the order, group by, offset, limit, and any additional tables in the FROM clause
 			$query
 				->order('')
-				->group('')
 				->offset(0)
 				->limit(-1)
 				->from('elements elements');
 
-			$selectString = 'count(DISTINCT(%s))';
+			$elementsIdColumn = 'elements.id';
+			$selectedColumns = $query->getSelect();
+			$selectedElementsIdColumn = craft()->db->quoteColumnName($elementsIdColumn);
 
-			// preserve any existing select columns a plugin might have added (could be used in a conditional later)
-			$select = $query->getSelect();
-
-			if ($select)
+			// Check for quoted and quoted, because plugins.
+			if (
+				strpos($selectedColumns, $selectedElementsIdColumn) === false &&
+				strpos($selectedColumns, $elementsIdColumn === false)
+			)
 			{
-				$selectString .= ', %s';
+				// Make sure that elements.id is selected
+				$query->addSelect('elements.id');
 			}
 
-			// Count the number of distinct columns based on the GROUP BY
-			$count = (int) $query->select(sprintf($selectString, $groupBy, $select))->queryScalar();
+			$masterQuery = craft()->db->createCommand();
+			$masterQuery->params = $query->params;
+
+			// TODO: potentially MySQL specific.
+			$masterQuery->from(sprintf('(%s) derivedElementsTable', $query->getText()));
+
+			$count = $masterQuery->count('derivedElementsTable.id');
 
 			return $count;
 		}

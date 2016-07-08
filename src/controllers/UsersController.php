@@ -1381,10 +1381,15 @@ class UsersController extends BaseController
 			throw new HttpException(403);
 		}
 
-		craft()->users->suspendUser($user);
-
-		craft()->userSession->setNotice(Craft::t('User suspended.'));
-		$this->redirectToPostedUrl();
+		if (craft()->users->suspendUser($user))
+		{
+			craft()->userSession->setNotice(Craft::t('User suspended.'));
+			$this->redirectToPostedUrl();
+		}
+		else
+		{
+			craft()->userSession->setError(Craft::t('Couldn’t suspend user.'));
+		}
 	}
 
 	/**
@@ -1479,14 +1484,21 @@ class UsersController extends BaseController
 			throw new HttpException(403);
 		}
 
-		craft()->users->unsuspendUser($user);
+		if (craft()->users->unsuspendUser($user))
+		{
+			craft()->userSession->setNotice(Craft::t('User unsuspended.'));
+			$this->redirectToPostedUrl();
+		}
+		else
+		{
+			craft()->userSession->setNotice(Craft::t('Couldn’t unsuspended user.'));
+		}
 
-		craft()->userSession->setNotice(Craft::t('User unsuspended.'));
-		$this->redirectToPostedUrl();
+
 	}
 
 	/**
-	 * Saves the asset field layout.
+	 * Saves the user field layout.
 	 *
 	 * @return null
 	 */
