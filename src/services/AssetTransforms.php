@@ -204,8 +204,11 @@ class AssetTransforms extends Component
      */
     public function deleteTransform($transformId)
     {
-        Craft::$app->getDb()->createCommand()->delete('{{%assettransforms}}',
-            ['id' => $transformId]);
+        Craft::$app->getDb()->createCommand()
+            ->delete(
+                '{{%assettransforms}}',
+                ['id' => $transformId])
+            ->execute();
 
         return true;
     }
