@@ -23,13 +23,13 @@ use yii\web\Response;
  * Craft Web Application class
  *
  * @property Request                              $request          The request component
- * @property Response                             $response         The response component
+ * @property \craft\app\web\Response              $response         The response component
  * @property Session                              $session          The session component
  * @property UrlManager                           $urlManager       The URL manager for this application
  * @property User                                 $user             The user component
  *
  * @method Request                                getRequest()      Returns the request component.
- * @method Response                               getResponse()     Returns the response component.
+ * @method \craft\app\web\Response                getResponse()     Returns the response component.
  * @method Session                                getSession()      Returns the session component.
  * @method UrlManager                             getUrlManager()   Returns the URL manager for this application.
  * @method User                                   getUser()         Returns the user component.
