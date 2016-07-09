@@ -19,7 +19,7 @@ use craft\app\helpers\StringHelper;
  *
  * @property QueryBuilder $queryBuilder The query builder for the current DB connection.
  * @method QueryBuilder getQueryBuilder() Returns the query builder for the current DB connection.
- * @method Command createCommand() Creates a command for execution.
+ * @method Command createCommand($sql = null, $params = []) Creates a command for execution.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
