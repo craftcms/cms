@@ -19,6 +19,7 @@ use craft\app\helpers\StringHelper;
  *
  * @property QueryBuilder $queryBuilder The query builder for the current DB connection.
  * @method QueryBuilder getQueryBuilder() Returns the query builder for the current DB connection.
+ * @method Command createCommand() Creates a command for execution.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
@@ -46,7 +47,7 @@ class Connection extends \yii\db\Connection
     /**
      * @var string the class used to create new database [[Command]] objects. If you want to extend the [[Command]] class,
      * you may configure this property to use your extended version of the class.
-     * @see createCommand
+     * @see   createCommand
      * @since 2.0.7
      */
     public $commandClass = 'craft\app\db\Command';
