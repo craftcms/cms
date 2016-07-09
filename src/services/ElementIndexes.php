@@ -126,10 +126,12 @@ class ElementIndexes extends Component
             }
         }
 
-        $affectedRows = Craft::$app->getDb()->createCommand()->insertOrUpdate('elementindexsettings',
-            ['type' => $elementType],
-            ['settings' => Json::encode($settings)]
-        );
+        $affectedRows = Craft::$app->getDb()->createCommand()
+            ->insertOrUpdate(
+                '{{%elementindexsettings}}',
+                ['type' => $elementType],
+                ['settings' => Json::encode($settings)])
+            ->execute();
 
         if ($affectedRows) {
             $this->_indexSettings[$elementType] = $settings;
