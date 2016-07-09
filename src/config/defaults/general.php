@@ -134,7 +134,7 @@ return [
      * be used for the replacement and the value is an array of non-ASCII characters that the key maps to.
      *
      * For example:
-     *     'c'    => array('ç', 'ć', 'č', 'ĉ', 'ċ')
+     *     'c'    => ['ç', 'ć', 'č', 'ĉ', 'ċ']
      */
     'customAsciiCharMappings' => [],
     /**

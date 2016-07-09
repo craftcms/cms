@@ -373,7 +373,7 @@ class Deprecator extends Component
                     $strValue = '"'.$value.'"';
                 }
             } else if (is_array($value)) {
-                $strValue = 'array('.$this->_argsToString($value).')';
+                $strValue = '['.$this->_argsToString($value).']';
             } else if ($value === null) {
                 $strValue = 'null';
             } else if (is_resource($value)) {

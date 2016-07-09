@@ -127,9 +127,7 @@ class Assets
      *
      * @return array $folderIdChanges map of original folder id => new folder id
      */
-    public static function mirrorFolderStructure(
-        VolumeFolder $sourceParentFolder, VolumeFolder $destinationFolder, $targetTreeMap = array()
-    ) {
+    public static function mirrorFolderStructure(VolumeFolder $sourceParentFolder, VolumeFolder $destinationFolder, $targetTreeMap = []) {
         $assets = Craft::$app->getAssets();
         $sourceTree = $assets->getAllDescendantFolders($sourceParentFolder);
         $previousParent = $sourceParentFolder->getParent();

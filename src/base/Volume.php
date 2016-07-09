@@ -216,7 +216,7 @@ abstract class Volume extends SavableComponent implements VolumeInterface
         } catch (FileNotFoundException $exception) {
             throw new VolumeObjectNotFoundException(Craft::t('app',
                 'File was not found while attempting to rename {path}!',
-                array('path' => $path)));
+                ['path' => $path]));
         }
     }
 
@@ -236,7 +236,7 @@ abstract class Volume extends SavableComponent implements VolumeInterface
         if ($this->folderExists($path)) {
             throw new VolumeObjectExistsException(Craft::t('app',
                 "Folder “{folder}” already exists on the volume!",
-                array('folder' => $path)));
+                ['folder' => $path]));
         }
 
         return $this->getFilesystem()->createDir($path);
@@ -263,7 +263,7 @@ abstract class Volume extends SavableComponent implements VolumeInterface
         if (!$this->folderExists($path)) {
             throw new VolumeObjectNotFoundException(Craft::t('app',
                 "Folder “{folder}” cannot be found on the volume.",
-                array('folder' => $path)));
+                ['folder' => $path]));
         }
 
         // Get the list of dir contents

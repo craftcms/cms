@@ -544,12 +544,12 @@ class DashboardController extends Controller
             $info = $this->_getWidgetInfo($widget);
             $view = Craft::$app->getView();
 
-            return $this->asJson(array(
+            return $this->asJson([
                 'success' => true,
                 'info' => $info,
                 'headHtml' => $view->getHeadHtml(),
                 'footHtml' => $view->getBodyHtml(),
-            ));
+            ]);
         } else {
             $errors = $widget->getAllErrors();
 
@@ -557,9 +557,9 @@ class DashboardController extends Controller
                 $errors = array_merge($errors, $attributeErrors);
             }
 
-            return $this->asJson(array(
+            return $this->asJson([
                 'errors' => $errors
-            ));
+            ]);
         }
     }
 

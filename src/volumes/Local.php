@@ -117,7 +117,7 @@ class Local extends Volume
         } catch (FileExistsException $exception) {
             throw new VolumeObjectExistsException($exception->getMessage());
         } catch (FileNotFoundException $exception) {
-            throw new VolumeObjectNotFoundException(Craft::t('app', 'Folder was not found while attempting to rename {path}!', array('path' => $path)));
+            throw new VolumeObjectNotFoundException(Craft::t('app', 'Folder was not found while attempting to rename {path}!', ['path' => $path]));
         }
     }
 

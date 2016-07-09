@@ -36,11 +36,12 @@ class m151002_095935_volume_cache_settings extends Migration
             {
                 $settings['expires'] = $matches[1].' '.$matches[2];
 
-                Craft::$app->getDb()->createCommand()->update(
-                    '{{%volumes}}',
-                    array('settings' => Json::encode($settings)),
-                    array('id' => $volume['id'])
-                )->execute();
+                Craft::$app->getDb()->createCommand()
+                    ->update(
+                        '{{%volumes}}',
+                        ['settings' => Json::encode($settings)],
+                        ['id' => $volume['id']])
+                    ->execute();
             }
         }
     }

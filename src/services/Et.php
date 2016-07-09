@@ -251,7 +251,7 @@ class Et extends Component
     public function fetchCouponPrice($edition, $couponCode)
     {
         $et = new \craft\app\et\Et(static::GetCouponPrice);
-        $et->setData(array('edition' => $edition, 'couponCode' => $couponCode));
+        $et->setData(['edition' => $edition, 'couponCode' => $couponCode]);
         $etResponse = $et->phoneHome();
 
         return $etResponse;
@@ -351,9 +351,9 @@ class Et extends Component
     public function registerPlugin($pluginHandle)
     {
         $et = new \craft\app\et\Et(static::RegisterPlugin);
-        $et->setData(array(
+        $et->setData([
             'pluginHandle' => $pluginHandle
-        ));
+        ]);
         $etResponse = $et->phoneHome();
 
         return $etResponse;
@@ -369,9 +369,9 @@ class Et extends Component
     public function transferPlugin($pluginHandle)
     {
         $et = new \craft\app\et\Et(static::TransferPlugin);
-        $et->setData(array(
+        $et->setData([
             'pluginHandle' => $pluginHandle
-        ));
+        ]);
         $etResponse = $et->phoneHome();
 
         return $etResponse;
@@ -387,9 +387,9 @@ class Et extends Component
     public function unregisterPlugin($pluginHandle)
     {
         $et = new \craft\app\et\Et(static::UnregisterPlugin);
-        $et->setData(array(
+        $et->setData([
             'pluginHandle' => $pluginHandle
-        ));
+        ]);
         $etResponse = $et->phoneHome();
 
         if (!empty($etResponse->data['success']))

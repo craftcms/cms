@@ -87,7 +87,7 @@ class Svg extends Image
     {
         if (!Io::fileExists($path)) {
             throw new ImageException(Craft::t('app',
-                'No file exists at the path “{path}”', array('path' => $path)));
+                'No file exists at the path “{path}”', ['path' => $path]));
         }
 
         list($width, $height) = ImageHelper::getImageSize($path);
@@ -209,14 +209,14 @@ class Svg extends Image
             $cropPositions = join("-",
                 array_reverse(explode("-", $cropPositions)));
 
-            $value = "x".strtr($cropPositions, array(
+            $value = "x".strtr($cropPositions, [
                     'left' => 'Min',
                     'center' => 'Mid',
                     'right' => 'Max',
                     'top' => 'Min',
                     'bottom' => 'Max',
                     '-' => 'Y'
-                ))." slice";
+                ])." slice";
 
             // Add/modify aspect ratio information
             if (preg_match(static::SVG_ASPECT_RE, $this->_svgContent)) {

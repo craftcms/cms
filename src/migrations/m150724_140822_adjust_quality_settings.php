@@ -31,7 +31,7 @@ class m150724_140822_adjust_quality_settings extends Migration
 
             $closest = 0;
             $closestDistance = 100;
-            $qualityLevels = array(10, 30, 60, 82, 100);
+            $qualityLevels = [10, 30, 60, 82, 100];
 
             foreach ($qualityLevels as $qualityLevel) {
                 if (abs($quality - $qualityLevel) <= $closestDistance) {

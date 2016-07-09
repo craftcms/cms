@@ -24,10 +24,10 @@ class Html extends \yii\helpers\Html
      *
      * @return string The HTML string with the encoded variable values swapped in.
      */
-    public static function encodeParams($html, $variables = array())
+    public static function encodeParams($html, $variables = [])
     {
         // Normalize the param keys
-        $normalizedVariables = array();
+        $normalizedVariables = [];
 
         if (is_array($variables)) {
             foreach ($variables as $key => $value) {

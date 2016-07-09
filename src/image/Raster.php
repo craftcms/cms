@@ -133,7 +133,7 @@ class Raster extends Image
 
         if (!Io::fileExists($path)) {
             throw new ImageException(Craft::t('app',
-                'No file exists at the path “{path}”', array('path' => $path)));
+                'No file exists at the path “{path}”', ['path' => $path]));
         }
 
         if (!$imageService->checkMemoryForImage($path)) {
@@ -148,7 +148,7 @@ class Raster extends Image
         } catch (\Exception $exception) {
             throw new ImageException(Craft::t('app',
                 'The file “{path}” does not appear to be an image.',
-                array('path' => $path)));
+                ['path' => $path]));
         }
 
         $this->_extension = $extension;
@@ -399,9 +399,7 @@ class Raster extends Image
                 false).'.'.Io::getExtension($targetPath);
 
         try {
-            if ($autoQuality && in_array($extension,
-                    array('jpeg', 'jpg', 'png'))
-            ) {
+            if ($autoQuality && in_array($extension, ['jpeg', 'jpg', 'png'])) {
                 clearstatcache();
                 $originalSize = Io::getFileSize($this->_imageSourcePath);
                 $tempFile = $this->_autoGuessImageQuality($targetPath,
@@ -476,7 +474,7 @@ class Raster extends Image
         } catch (\Imagine\Exception\NotSupportedException $exception) {
             Craft::error($exception->getMessage());
 
-            return array();
+            return [];
         }
     }
 
@@ -631,11 +629,11 @@ class Raster extends Image
         switch ($extension) {
             case 'jpeg':
             case 'jpg': {
-                return array('jpeg_quality' => $quality, 'flatten' => true);
+                return ['jpeg_quality' => $quality, 'flatten' => true];
             }
 
             case 'gif': {
-                $options = array('animated' => $this->_isAnimatedGif);
+                $options = ['animated' => $this->_isAnimatedGif];
 
                 if ($this->_isAnimatedGif) {
                     // Imagine library does not provide this value and arbitrarily divides it by 10, when assigning,
@@ -660,10 +658,10 @@ class Raster extends Image
                     $normalizedQuality = 9;
                 }
 
-                $options = array(
+                $options = [
                     'png_compression_level' => $normalizedQuality,
                     'flatten' => false
-                );
+                ];
                 $pngInfo = ImageHelper::getPngImageInfo($this->_imageSourcePath);
 
                 // Even though a 2 channel PNG is valid (Grayscale with alpha channel), Imagick doesn't recognize it as
@@ -682,7 +680,7 @@ class Raster extends Image
             }
 
             default: {
-                return array();
+                return [];
             }
         }
     }

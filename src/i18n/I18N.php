@@ -736,7 +736,7 @@ class I18N extends \yii\i18n\I18N
                 // these elements that don't currently use the old primary locale
                 $deleteConditions = [
                     'and',
-                    array('in', 'elementId', $elementIds),
+                    ['in', 'elementId', $elementIds],
                     'locale != :locale'
                 ];
                 $deleteParams = [':locale' => $oldPrimaryLocaleId];

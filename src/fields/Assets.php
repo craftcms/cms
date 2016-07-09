@@ -228,11 +228,11 @@ class Assets extends BaseRelationField
                         $filename = 'Uploaded_file.'.reset($extensions);
                     }
 
-                    $incomingFiles[] = array(
+                    $incomingFiles[] = [
                         'filename' => $filename,
                         'data' => $data,
                         'type' => 'data'
-                    );
+                    ];
                 }
             }
         }
@@ -249,11 +249,11 @@ class Assets extends BaseRelationField
             $files = UploadedFile::getInstancesByName($contentPostLocation);
 
             foreach ($files as $file) {
-                $incomingFiles[] = array(
+                $incomingFiles[] = [
                     'filename' => $file->name,
                     'location' => $file->tempName,
                     'type' => 'upload'
-                );
+                ];
             }
         }
 
@@ -278,7 +278,7 @@ class Assets extends BaseRelationField
         }
 
         // If we got here either there are no restrictions or all files are valid so let's turn them into Assets
-        $assetIds = array();
+        $assetIds = [];
         $targetFolderId = $this->_determineUploadFolderId($element);
 
         if (!empty($targetFolderId)) {
@@ -343,7 +343,7 @@ class Assets extends BaseRelationField
                     }
                 }
             } else {
-                $assetIds = array();
+                $assetIds = [];
 
                 foreach ($value as $elementFile) {
                     $assetIds[] = $elementFile->id;

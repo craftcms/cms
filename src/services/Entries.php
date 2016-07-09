@@ -86,14 +86,14 @@ class Entries extends Component
      *
      * $entry->getContent()->title = "Hello World!";
      *
-     * $entry->setFieldValuesFromPost(array(
-     *     'body' => "<p>I can’t believe I literally just called this “Hello World!”.</p>",
-     * ));
+     * $entry->setFieldValuesFromPost(
+     *     [
+     *         'body' => "<p>I can’t believe I literally just called this “Hello World!”.</p>",
+     *     ]);
      *
      * $success = Craft::$app->getEntries()->saveEntry($entry);
      *
-     * if (!$success)
-     * {
+     * if (!$success) {
      *     Craft::error('Couldn’t save the entry "'.$entry->title.'"', __METHOD__);
      * }
      * ```

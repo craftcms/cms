@@ -99,14 +99,14 @@ class AssetIndexer extends Component
                     if ($file['type'] == 'dir') {
                         $bucketFolders[$file['path']] = true;
                     } else {
-                        $indexEntry = array(
+                        $indexEntry = [
                             'volumeId' => $volumeId,
                             'sessionId' => $sessionId,
                             'offset' => $offset++,
                             'uri' => $file['path'],
                             'size' => $file['size'],
                             'timestamp' => $file['timestamp']
-                        );
+                        ];
 
                         $this->storeIndexEntry($indexEntry);
                         $total++;
@@ -116,7 +116,7 @@ class AssetIndexer extends Component
                 }
             }
 
-            $indexedFolderIds = array();
+            $indexedFolderIds = [];
             $indexedFolderIds[$this->ensureTopFolder($volume)] = true;
 
             // Ensure folders are in the DB
@@ -132,13 +132,12 @@ class AssetIndexer extends Component
                 $indexedFolderIds[$folderId] = true;
             }
 
-            $missingFolders = array();
+            $missingFolders = [];
 
             $allFolders = $assets->findFolders(
-                array(
+                [
                     'volumeId' => $volumeId
-                )
-            );
+                ]);
 
             foreach ($allFolders as $folderModel) {
                 if (!isset($indexedFolderIds[$folderModel->id])) {
@@ -298,11 +297,12 @@ class AssetIndexer extends Component
      */
     public function updateIndexEntryRecordId($entryId, $recordId)
     {
-        Craft::$app->getDb()->createCommand()->update(
-            '{{%assetindexdata}}',
-            array('recordId' => $recordId),
-            array('id' => $entryId)
-        )->execute();
+        Craft::$app->getDb()->createCommand()
+            ->update(
+                '{{%assetindexdata}}',
+                ['recordId' => $recordId],
+                ['id' => $entryId])
+            ->execute();
     }
 
 
@@ -316,16 +316,19 @@ class AssetIndexer extends Component
      */
     public function getMissingFiles($volumeIds, $sessionId)
     {
-        $output = array();
+        $output = [];
 
         // Load the record IDs of the files that were indexed.
         $processedFiles = (new Query())
             ->select('recordId')
             ->from('{{%assetindexdata}}')
             ->where(
-                'sessionId = :sessionId AND recordId IS NOT NULL',
-                array(':sessionId' => $sessionId)
-            )
+                [
+                    'and',
+                    ['sessionId' => $sessionId],
+                    'recordId is not null'
+                ],
+                [':sessionId' => $sessionId])
             ->column();
 
         // Flip for faster lookup
@@ -338,7 +341,7 @@ class AssetIndexer extends Component
             ->from('{{%assets}} AS fi')
             ->innerJoin('{{%volumefolders}} AS fo', 'fi.folderId = fo.id')
             ->innerJoin('{{%volumes}} AS s', 's.id = fi.volumeId')
-            ->where(array('in', 'fi.volumeId', $volumeIds))
+            ->where(['in', 'fi.volumeId', $volumeIds])
             ->all();
 
         foreach ($fileEntries as $fileEntry) {
@@ -366,7 +369,7 @@ class AssetIndexer extends Component
             throw new VolumeObjectNotFoundException(Craft::t(
                 'app',
                 'File was not found while attempting to index {path}!',
-                array('path' => $path)
+                ['path' => $path]
             ));
         }
 
@@ -402,12 +405,11 @@ class AssetIndexer extends Component
 
             $assets = Craft::$app->getAssets();
             $parentFolder = $assets->findFolder(
-                array(
+                [
                     'volumeId' => $volume->id,
                     'path' => $searchFullPath,
                     'parentId' => $parentId
-                )
-            );
+                ]);
 
             if (empty($parentFolder)) {
                 return false;
@@ -416,11 +418,10 @@ class AssetIndexer extends Component
             $folderId = $parentFolder->id;
 
             $assetModel = $assets->findAsset(
-                array(
+                [
                     'folderId' => $folderId,
                     'filename' => $filename
-                )
-            );
+                ]);
 
             if (is_null($assetModel)) {
                 $assetModel = new Asset();

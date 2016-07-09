@@ -21,14 +21,14 @@ if (version_compare(PHP_VERSION, '4.3', '<')) {
  * ~~~php
  * require_once('path/to/RequirementsChecker.php');
  * $requirementsChecker = new RequirementsChecker();
- * $requirements = array(
- *     array(
+ * $requirements = [
+ *     [
  *         'name' => 'PHP Some Extension',
  *         'mandatory' => true,
  *         'condition' => extension_loaded('some_extension'),
  *         'memo' => 'PHP extension "some_extension" required',
- *     ),
- * );
+ *     ],
+ * ];
  *
  * $requirementsChecker->checkCraft()->check($requirements)->render();
  * ~~~
@@ -73,14 +73,14 @@ class RequirementsChecker
         }
 
         if (!isset($this->result) || !is_array($this->result)) {
-            $this->result = array(
-                'summary' => array(
+            $this->result = [
+                'summary' => [
                     'total' => 0,
                     'errors' => 0,
                     'warnings' => 0,
-                ),
-                'requirements' => array(),
-            );
+                ],
+                'requirements' => [],
+            ];
         }
 
         foreach ($requirements as $key => $rawRequirement) {
@@ -124,21 +124,21 @@ class RequirementsChecker
      * @return array|null check results in format:
      *
      * ```php
-     * array(
-     *     'summary' => array(
+     * [
+     *     'summary' => [
      *         'total' => total number of checks,
      *         'errors' => number of errors,
      *         'warnings' => number of warnings,
-     *     ),
-     *     'requirements' => array(
-     *         array(
+     *     ],
+     *     'requirements' => [
+     *         [
      *             ...
      *             'error' => is there an error,
      *             'warning' => is there a warning,
-     *         ),
-     *         ...
-     *     ),
-     * )
+     *         ],
+     *         // ...
+     *     ],
+     * ]
      * ```
      */
     function getResult()
@@ -430,7 +430,7 @@ class RequirementsChecker
 
         if (function_exists('iconv')) {
             // Let's see what happens.
-            set_error_handler(array($this, 'muteErrorHandler'));
+            set_error_handler([$this, 'muteErrorHandler']);
             $r = iconv('utf-8', 'ascii//IGNORE', "\xCE\xB1".str_repeat('a', 9000));
             restore_error_handler();
 
@@ -509,7 +509,7 @@ class RequirementsChecker
     {
         $oldValue = ini_get('memory_limit');
 
-        set_error_handler(array($this, 'muteErrorHandler'));
+        set_error_handler([$this, 'muteErrorHandler']);
         $result = ini_set('memory_limit', '442M');
         restore_error_handler();
 
@@ -530,7 +530,7 @@ class RequirementsChecker
         }
 
         // Resetting should work, but might as well be extra careful.
-        set_error_handler(array($this, 'muteErrorHandler'));
+        set_error_handler([$this, 'muteErrorHandler']);
         ini_set('memory_limit', $oldValue);
         restore_error_handler();
 

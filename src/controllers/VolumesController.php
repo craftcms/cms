@@ -250,10 +250,12 @@ class VolumesController extends Controller
         }
 
         try {
-            $result = call_user_func_array(array(
-                $volumeType,
-                'load'.ucfirst($dataType)
-            ), $params);
+            $result = call_user_func_array(
+                [
+                    $volumeType,
+                    'load'.ucfirst($dataType)
+                ],
+                $params);
 
             return $this->asJson($result);
         } catch (Exception $exception) {

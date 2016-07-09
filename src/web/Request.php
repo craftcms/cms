@@ -807,7 +807,7 @@ class Request extends \yii\web\Request
             // Normally using the session ID would be a better choice, but PHP's bananas session handling makes that difficult.
             $passwordHash = $currentUser->password;
             $userId = $currentUser->id;
-            $hashable = implode('|', array($nonce, $userId, $passwordHash));
+            $hashable = implode('|', [$nonce, $userId, $passwordHash]);
             $token = $nonce.'|'.Craft::$app->getSecurity()->hashData($hashable, $this->cookieValidationKey);
         }
         else
@@ -853,7 +853,7 @@ class Request extends \yii\web\Request
             // Check that this token is for the current user
             $passwordHash = $currentUser->password;
             $userId = $currentUser->id;
-            $hashable = implode('|', array($nonce, $userId, $passwordHash));
+            $hashable = implode('|', [$nonce, $userId, $passwordHash]);
             $expectedToken = $nonce.'|'.Craft::$app->getSecurity()->hashData($hashable, $this->cookieValidationKey);
 
             return Craft::$app->getSecurity()->compareString($expectedToken, $token);
