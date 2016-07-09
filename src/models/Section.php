@@ -156,7 +156,7 @@ class Section extends Model
     /**
      * Returns the section's locale models
      *
-     * @return array
+     * @return SectionLocale[]
      */
     public function getLocales()
     {
