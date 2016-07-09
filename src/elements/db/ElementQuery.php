@@ -950,14 +950,6 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
     /**
      * @inheritdoc
      */
-    public function nth($n, $db = null)
-    {
-        return parent::nth($n, $db);
-    }
-
-    /**
-     * @inheritdoc
-     */
     public function ids($db = null)
     {
         // TODO: Remove this in Craft 4
