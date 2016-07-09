@@ -258,15 +258,16 @@ class Entry extends Element
                     function (SetStatusEvent $event) {
                         if ($event->status == static::STATUS_ENABLED) {
                             // Set a Post Date as well
-                            Craft::$app->getDb()->createCommand()->update(
-                                '{{%entries}}',
-                                ['postDate' => Db::prepareDateForDb(new \DateTime())],
-                                [
-                                    'and',
-                                    ['in', 'id', $event->elementIds],
-                                    'postDate is null'
-                                ]
-                            )->execute();
+                            Craft::$app->getDb()->createCommand()
+                                ->update(
+                                    '{{%entries}}',
+                                    ['postDate' => Db::prepareDateForDb(new \DateTime())],
+                                    [
+                                        'and',
+                                        ['in', 'id', $event->elementIds],
+                                        'postDate is null'
+                                    ])
+                                ->execute();
                         }
                     });
                 $actions[] = $setStatusAction;

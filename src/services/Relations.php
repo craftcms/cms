@@ -67,7 +67,9 @@ class Relations extends Component
                 $oldRelationParams[':sourceLocale'] = $source->locale;
             }
 
-            Craft::$app->getDb()->createCommand()->delete('{{%relations}}', $oldRelationConditions, $oldRelationParams)->execute();
+            Craft::$app->getDb()->createCommand()
+                ->delete('{{%relations}}', $oldRelationConditions, $oldRelationParams)
+                ->execute();
 
             // Add the new ones
             if ($targetIds) {
@@ -96,7 +98,9 @@ class Relations extends Component
                     'targetId',
                     'sortOrder'
                 ];
-                Craft::$app->getDb()->createCommand()->batchInsert('{{%relations}}', $columns, $values)->execute();
+                Craft::$app->getDb()->createCommand()
+                    ->batchInsert('{{%relations}}', $columns, $values)
+                    ->execute();
             }
 
             $transaction->commit();

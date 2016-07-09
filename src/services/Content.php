@@ -176,10 +176,14 @@ class Content extends Component
             // Insert/update the DB row
             if ($element->contentId) {
                 // Update the existing row
-                Craft::$app->getDb()->createCommand()->update($this->contentTable, $values, ['id' => $element->contentId])->execute();
+                Craft::$app->getDb()->createCommand()
+                    ->update($this->contentTable, $values, ['id' => $element->contentId])
+                    ->execute();
             } else {
                 // Insert a new row and store its ID on the element
-                Craft::$app->getDb()->createCommand()->insert($this->contentTable, $values)->execute();
+                Craft::$app->getDb()->createCommand()
+                    ->insert($this->contentTable, $values)
+                    ->execute();
                 $element->contentId = Craft::$app->getDb()->getLastInsertID();
             }
 
@@ -296,7 +300,9 @@ class Content extends Component
                     $values[$column] = $sourceValues[$column];
                 }
 
-                Craft::$app->getDb()->createCommand()->update($this->contentTable, $values, ['id' => $values['id']])->execute();
+                Craft::$app->getDb()->createCommand()
+                    ->update($this->contentTable, $values, ['id' => $values['id']])
+                    ->execute();
             }
         }
     }

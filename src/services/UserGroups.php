@@ -189,25 +189,26 @@ class UserGroups extends Component
 
         if ($event->isValid) {
             // Delete their existing groups
-            Craft::$app->getDb()->createCommand()->delete(
-                '{{%usergroups_users}}',
-                ['userId' => $userId]
-            )->execute();
+            Craft::$app->getDb()->createCommand()
+                ->delete('{{%usergroups_users}}', ['userId' => $userId])
+                ->execute();
 
             if ($groupIds) {
                 // Add the new ones
+                $values = [];
                 foreach ($groupIds as $groupId) {
                     $values[] = [$groupId, $userId];
                 }
 
-                Craft::$app->getDb()->createCommand()->batchInsert(
-                    '{{%usergroups_users}}',
-                    [
-                        'groupId',
-                        'userId'
-                    ],
-                    $values
-                )->execute();
+                Craft::$app->getDb()->createCommand()
+                    ->batchInsert(
+                        '{{%usergroups_users}}',
+                        [
+                            'groupId',
+                            'userId'
+                        ],
+                        $values)
+                    ->execute();
             }
 
             // Fire an 'afterAssignUserToGroups' event
@@ -272,8 +273,9 @@ class UserGroups extends Component
      */
     public function deleteGroupById($groupId)
     {
-        Craft::$app->getDb()->createCommand()->delete('{{%usergroups}}',
-            ['id' => $groupId])->execute();
+        Craft::$app->getDb()->createCommand()
+            ->delete('{{%usergroups}}', ['id' => $groupId])
+            ->execute();
 
         return true;
     }

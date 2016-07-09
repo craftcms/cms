@@ -485,12 +485,13 @@ class Users extends Component
     {
         $preferences = $user->mergePreferences($preferences);
 
-        Craft::$app->getDb()->createCommand()->insertOrUpdate(
-            '{{%userpreferences}}',
-            ['userId' => $user->id],
-            ['preferences' => Json::encode($preferences)],
-            false
-        )->execute();
+        Craft::$app->getDb()->createCommand()
+            ->insertOrUpdate(
+                '{{%userpreferences}}',
+                ['userId' => $user->id],
+                ['preferences' => Json::encode($preferences)],
+                false)
+            ->execute();
     }
 
     /**
@@ -1059,11 +1060,16 @@ class Users extends Component
                     ];
 
                     foreach ($userRefs as $table => $column) {
-                        Craft::$app->getDb()->createCommand()->update($table, [
-                            $column => $transferContentTo->id
-                        ], [
-                            $column => $user->id
-                        ])->execute();
+                        Craft::$app->getDb()->createCommand()
+                            ->update(
+                                $table,
+                                [
+                                    $column => $transferContentTo->id
+                                ],
+                                [
+                                    $column => $user->id
+                                ])
+                            ->execute();
                     }
                 } else {
                     // Delete the entries
@@ -1115,13 +1121,17 @@ class Users extends Component
      */
     public function shunMessageForUser($userId, $message, $expiryDate = null)
     {
-        $affectedRows = Craft::$app->getDb()->createCommand()->insertOrUpdate('{{%shunnedmessages}}',
-            [
-                'userId' => $userId,
-                'message' => $message
-            ], [
-                'expiryDate' => Db::prepareDateForDb($expiryDate)
-            ])->execute();
+        $affectedRows = Craft::$app->getDb()->createCommand()
+            ->insertOrUpdate(
+                '{{%shunnedmessages}}',
+                [
+                    'userId' => $userId,
+                    'message' => $message
+                ],
+                [
+                    'expiryDate' => Db::prepareDateForDb($expiryDate)
+                ])
+            ->execute();
 
         return (bool)$affectedRows;
     }
@@ -1136,11 +1146,14 @@ class Users extends Component
      */
     public function unshunMessageForUser($userId, $message)
     {
-        $affectedRows = Craft::$app->getDb()->createCommand()->delete('{{%shunnedmessages}}',
-            [
-                'userId' => $userId,
-                'message' => $message
-            ])->execute();
+        $affectedRows = Craft::$app->getDb()->createCommand()
+            ->delete(
+                '{{%shunnedmessages}}',
+                [
+                    'userId' => $userId,
+                    'message' => $message
+                ])
+            ->execute();
 
         return (bool)$affectedRows;
     }
@@ -1213,8 +1226,9 @@ class Users extends Component
                 ], [':pastTime' => Db::prepareDateForDb($pastTime)])
                 ->column();
 
-            $affectedRows = Craft::$app->getDb()->createCommand()->delete('{{%elements}}',
-                ['in', 'id', $ids])->execute();
+            $affectedRows = Craft::$app->getDb()->createCommand()
+                ->delete('{{%elements}}', ['in', 'id', $ids])
+                ->execute();
 
             if ($affectedRows > 0) {
                 Craft::info('Just deleted '.$affectedRows.' pending users from the users table, because the were more than '.$duration.' old.', __METHOD__);

@@ -146,13 +146,17 @@ class ClearCaches extends Tool
         if ($params['caches'] == '*' || in_array('assetTransformIndex',
                 $params['caches'])
         ) {
-            Craft::$app->getDb()->createCommand()->truncateTable('{{%assettransformindex}}')->execute();
+            Craft::$app->getDb()->createCommand()
+                ->truncateTable('{{%assettransformindex}}')
+                ->execute();
         }
 
         if ($params['caches'] == '*' || in_array('assetIndexingData',
                 $params['caches'])
         ) {
-            Craft::$app->getDb()->createCommand()->truncateTable('{{%assetindexdata}}')->execute();
+            Craft::$app->getDb()->createCommand()
+                ->truncateTable('{{%assetindexdata}}')
+                ->execute();
         }
     }
 }

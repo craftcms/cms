@@ -162,8 +162,9 @@ class Routes extends Component
      */
     public function deleteRouteById($routeId)
     {
-        Craft::$app->getDb()->createCommand()->delete('{{%routes}}',
-            ['id' => $routeId])->execute();
+        Craft::$app->getDb()->createCommand()
+            ->delete('{{%routes}}', ['id' => $routeId])
+            ->execute();
 
         return true;
     }
@@ -181,7 +182,9 @@ class Routes extends Component
             $data = ['sortOrder' => $order + 1];
             $condition = ['id' => $routeId];
 
-            Craft::$app->getDb()->createCommand()->update('{{%routes}}', $data, $condition)->execute();
+            Craft::$app->getDb()->createCommand()
+                ->update('{{%routes}}', $data, $condition)
+                ->execute();
         }
     }
 

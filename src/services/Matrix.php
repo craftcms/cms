@@ -412,8 +412,9 @@ class Matrix extends Component
             Craft::$app->getFields()->deleteLayoutById($blockType->fieldLayoutId);
 
             // Finally delete the actual block type
-            $affectedRows = Craft::$app->getDb()->createCommand()->delete('{{%matrixblocktypes}}',
-                ['id' => $blockType->id])->execute();
+            $affectedRows = Craft::$app->getDb()->createCommand()
+                ->delete('{{%matrixblocktypes}}', ['id' => $blockType->id])
+                ->execute();
 
             $transaction->commit();
 
@@ -574,7 +575,9 @@ class Matrix extends Component
             }
 
             // Drop the content table
-            Craft::$app->getDb()->createCommand()->dropTable($contentTable)->execute();
+            Craft::$app->getDb()->createCommand()
+                ->dropTable($contentTable)
+                ->execute();
 
             Craft::$app->getContent()->contentTable = $originalContentTable;
 
@@ -956,14 +959,24 @@ class Matrix extends Component
     private function _createContentTable($name)
     {
         $db = Craft::$app->getDb();
-        $db->createCommand()->createTable($name, [
-            'elementId' => 'int NOT NULL',
-            'locale' => 'char(12) COLLATE utf8_unicode_ci NOT NULL'
-        ])->execute();
+        $db->createCommand()
+            ->createTable(
+                $name,
+                [
+                    'elementId' => 'int NOT NULL',
+                    'locale' => 'char(12) COLLATE utf8_unicode_ci NOT NULL'
+                ])
+            ->execute();
 
-        $db->createCommand()->createIndex($db->getIndexName($name, 'elementId,locale'), $name, 'elementId,locale', true)->execute();
-        $db->createCommand()->addForeignKey($db->getForeignKeyName($name, 'elementId'), $name, 'elementId', '{{%elements}}', 'id', 'CASCADE', null)->execute();
-        $db->createCommand()->addForeignKey($db->getForeignKeyName($name, 'locale'), $name, 'locale', '{{%locales}}', 'locale', 'CASCADE', 'CASCADE')->execute();
+        $db->createCommand()
+            ->createIndex($db->getIndexName($name, 'elementId,locale'), $name, 'elementId,locale', true)
+            ->execute();
+        $db->createCommand()
+            ->addForeignKey($db->getForeignKeyName($name, 'elementId'), $name, 'elementId', '{{%elements}}', 'id', 'CASCADE', null)
+            ->execute();
+        $db->createCommand()
+            ->addForeignKey($db->getForeignKeyName($name, 'locale'), $name, 'locale', '{{%locales}}', 'locale', 'CASCADE', 'CASCADE')
+            ->execute();
     }
 
     /**
@@ -1078,17 +1091,18 @@ class Matrix extends Component
                             }
                         }
 
-                        Craft::$app->getDb()->createCommand()->batchInsert(
-                            'relations',
-                            [
-                                'fieldId',
-                                'sourceId',
-                                'sourceLocale',
-                                'targetId',
-                                'sortOrder'
-                            ],
-                            $rows
-                        )->execute();
+                        Craft::$app->getDb()->createCommand()
+                            ->batchInsert(
+                                'relations',
+                                [
+                                    'fieldId',
+                                    'sourceId',
+                                    'sourceLocale',
+                                    'targetId',
+                                    'sortOrder'
+                                ],
+                                $rows)
+                            ->execute();
                     }
                 } else {
                     // Delete all of these blocks

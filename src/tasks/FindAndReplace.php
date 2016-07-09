@@ -105,7 +105,9 @@ class FindAndReplace extends Task
         // inadvertently nuke textual content in the database.
         if ($this->replace !== null) {
             if (isset($this->_textColumns[$step])) {
-                Craft::$app->getDb()->createCommand()->replace($this->_table, $this->_textColumns[$step], $this->find, $this->replace)->execute();
+                Craft::$app->getDb()->createCommand()
+                    ->replace($this->_table, $this->_textColumns[$step], $this->find, $this->replace)
+                    ->execute();
 
                 return true;
             } else {

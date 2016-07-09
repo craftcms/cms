@@ -651,9 +651,13 @@ trait ApplicationTrait
                     unset($attributes['fieldVersion']);
                 }
 
-                $this->getDb()->createCommand()->update('{{%info}}', $attributes)->execute();
+                $this->getDb()->createCommand()
+                    ->update('{{%info}}', $attributes)
+                    ->execute();
             } else {
-                $this->getDb()->createCommand()->insert('{{%info}}', $attributes)->execute();
+                $this->getDb()->createCommand()
+                    ->insert('{{%info}}', $attributes)
+                    ->execute();
 
                 // Set the new id
                 $info->id = $this->getDb()->getLastInsertID();

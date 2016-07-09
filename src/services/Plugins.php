@@ -195,11 +195,12 @@ class Plugins extends Component
             $this->_noPluginExists($handle);
         }
 
-        Craft::$app->getDb()->createCommand()->update(
-            '{{%plugins}}',
-            ['enabled' => '1'],
-            ['handle' => $handle]
-        )->execute();
+        Craft::$app->getDb()->createCommand()
+            ->update(
+                '{{%plugins}}',
+                ['enabled' => '1'],
+                ['handle' => $handle])
+            ->execute();
 
         $this->_installedPluginInfo[$handle]['enabled'] = true;
         $this->_registerPlugin($handle, $plugin);
@@ -234,11 +235,12 @@ class Plugins extends Component
             $this->_noPluginExists($handle);
         }
 
-        Craft::$app->getDb()->createCommand()->update(
-            '{{%plugins}}',
-            ['enabled' => '0'],
-            ['handle' => $handle]
-        )->execute();
+        Craft::$app->getDb()->createCommand()
+            ->update(
+                '{{%plugins}}',
+                ['enabled' => '0'],
+                ['handle' => $handle])
+            ->execute();
 
         $this->_installedPluginInfo[$handle]['enabled'] = false;
         $this->_unregisterPlugin($handle);
@@ -280,7 +282,9 @@ class Plugins extends Component
                 'installDate' => Db::prepareDateForDb(new \DateTime()),
             ];
 
-            Craft::$app->getDb()->createCommand()->insert('{{%plugins}}', $info)->execute();
+            Craft::$app->getDb()->createCommand()
+                ->insert('{{%plugins}}', $info)
+                ->execute();
 
             $info['installDate'] = DateTimeHelper::toDateTime($info['installDate']);
             $info['id'] = Craft::$app->getDb()->getLastInsertID();
@@ -340,14 +344,12 @@ class Plugins extends Component
             if ($plugin->uninstall() !== false) {
                 // Clean up the plugins and migrations tables
                 $id = $this->_installedPluginInfo[$handle]['id'];
-                Craft::$app->getDb()->createCommand()->delete(
-                    '{{%plugins}}',
-                    ['id' => $id]
-                )->execute();
-                Craft::$app->getDb()->createCommand()->delete(
-                    '{{%migrations}}',
-                    ['pluginId' => $id]
-                )->execute();
+                Craft::$app->getDb()->createCommand()
+                    ->delete('{{%plugins}}', ['id' => $id])
+                    ->execute();
+                Craft::$app->getDb()->createCommand()
+                    ->delete('{{%migrations}}', ['pluginId' => $id])
+                    ->execute();
 
                 // Let's commit to this.
                 $transaction->commit();
@@ -389,11 +391,12 @@ class Plugins extends Component
         // JSON-encode them and save the plugin row
         $settings = Json::encode($plugin->getSettings());
 
-        $affectedRows = Craft::$app->getDb()->createCommand()->update(
-            '{{%plugins}}',
-            ['settings' => $settings],
-            ['handle' => $plugin->getHandle()]
-        )->execute();
+        $affectedRows = Craft::$app->getDb()->createCommand()
+            ->update(
+                '{{%plugins}}',
+                ['settings' => $settings],
+                ['handle' => $plugin->getHandle()])
+            ->execute();
 
         return (bool)$affectedRows;
     }
@@ -566,11 +569,12 @@ class Plugins extends Component
         // If we're not updating, check if the plugin's version number changed, but not its schema version.
         if (!Craft::$app->isInMaintenanceMode() && $this->hasPluginVersionNumberChanged($plugin) && !$this->doesPluginRequireDatabaseUpdate($plugin)) {
             // Update our record of the plugin's version number
-            Craft::$app->getDb()->createCommand()->update(
-                '{{%plugins}}',
-                ['version' => $plugin->version],
-                ['id' => $row['id']]
-            )->execute();
+            Craft::$app->getDb()->createCommand()
+                ->update(
+                    '{{%plugins}}',
+                    ['version' => $plugin->version],
+                    ['id' => $row['id']])
+                ->execute();
         }
 
         return $plugin;
@@ -753,11 +757,12 @@ class Plugins extends Component
         // Ignore the plugin handle they sent us in case its casing is wrong
         $pluginHandle = $plugin->getHandle();
 
-        Craft::$app->getDb()->createCommand()->update(
-            '{{%plugins}}',
-            ['licenseKey' => $normalizedLicenseKey],
-            ['class' => $pluginHandle]
-        )->execute();
+        Craft::$app->getDb()->createCommand()
+            ->update(
+                '{{%plugins}}',
+                ['licenseKey' => $normalizedLicenseKey],
+                ['class' => $pluginHandle])
+            ->execute();
 
         // Update our cache of it if the plugin is enabled
         if (isset($this->_installedPluginInfo[$pluginHandle])) {
@@ -813,11 +818,12 @@ class Plugins extends Component
         // Ignore the plugin handle they sent us in case its casing is wrong
         $pluginHandle = $plugin->getHandle();
 
-        Craft::$app->getDb()->createCommand()->update(
-            '{{%plugins}}',
-            ['licenseKeyStatus' => $licenseKeyStatus],
-            ['class' => $pluginHandle]
-        )->execute();
+        Craft::$app->getDb()->createCommand()
+            ->update(
+                '{{%plugins}}',
+                ['licenseKeyStatus' => $licenseKeyStatus],
+                ['class' => $pluginHandle])
+            ->execute();
 
         // Update our cache of it if the plugin is enabled
         if (isset($this->_installedPluginInfo[$pluginHandle])) {

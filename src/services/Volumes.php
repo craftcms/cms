@@ -440,8 +440,9 @@ class Volumes extends Component
             Craft::$app->getElements()->deleteElementById($assetIds);
 
             // Nuke the asset volume.
-            $affectedRows = $dbConnection->createCommand()->delete('{{%volumes}}',
-                ['id' => $volumeId])->execute();
+            $affectedRows = $dbConnection->createCommand()
+                ->delete('{{%volumes}}', ['id' => $volumeId])
+                ->execute();
 
             $transaction->commit();
 

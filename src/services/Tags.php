@@ -287,8 +287,9 @@ class Tags extends Component
 
             Craft::$app->getElements()->deleteElementById($tagIds);
 
-            $affectedRows = Craft::$app->getDb()->createCommand()->delete('{{%taggroups}}',
-                ['id' => $tagGroupId])->execute();
+            $affectedRows = Craft::$app->getDb()->createCommand()
+                ->delete('{{%taggroups}}', ['id' => $tagGroupId])
+                ->execute();
 
             $transaction->commit();
 

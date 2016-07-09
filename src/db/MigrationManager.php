@@ -324,13 +324,14 @@ class MigrationManager extends Component
      */
     public function addMigrationHistory($name)
     {
-        Craft::$app->getDb()->createCommand()->insert(
-            $this->migrationTable,
-            array_merge($this->fixedColumnValues, [
-                'name' => $name,
-                'applyTime' => Db::prepareDateForDb(new \DateTime())
-            ])
-        )->execute();
+        Craft::$app->getDb()->createCommand()
+            ->insert(
+                $this->migrationTable,
+                array_merge($this->fixedColumnValues, [
+                    'name' => $name,
+                    'applyTime' => Db::prepareDateForDb(new \DateTime())
+                ]))
+            ->execute();
     }
 
     /**
@@ -340,12 +341,13 @@ class MigrationManager extends Component
      */
     public function removeMigrationHistory($name)
     {
-        Craft::$app->getDb()->createCommand()->delete(
-            $this->migrationTable,
-            array_merge($this->fixedColumnValues, [
-                'name' => $name
-            ])
-        )->execute();
+        Craft::$app->getDb()->createCommand()
+            ->delete(
+                $this->migrationTable,
+                array_merge($this->fixedColumnValues, [
+                    'name' => $name
+                ]))
+            ->execute();
     }
 
     /**

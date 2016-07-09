@@ -50,7 +50,9 @@ class SearchIndex extends Tool
     {
         if (!empty($params['start'])) {
             // Truncate the searchindex table
-            Craft::$app->getDb()->createCommand()->truncateTable('{{%searchindex}}')->execute();
+            Craft::$app->getDb()->createCommand()
+                ->truncateTable('{{%searchindex}}')
+                ->execute();
 
             // Get all the element IDs ever
             $elements = (new Query())

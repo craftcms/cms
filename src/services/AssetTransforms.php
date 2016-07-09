@@ -259,9 +259,12 @@ class AssetTransforms extends Component
                 return AssetTransformIndex::create($entry);
             } else {
                 // Delete the out-of-date record
-                Craft::$app->getDb()->createCommand()->delete('{{%assettransformindex}}',
-                    'id = :transformIndexId',
-                    [':transformIndexId' => $entry['id']]);
+                Craft::$app->getDb()->createCommand()
+                    ->delete(
+                        '{{%assettransformindex}}',
+                        'id = :transformIndexId',
+                        [':transformIndexId' => $entry['id']])
+                    ->execute();
             }
         }
 
@@ -493,11 +496,13 @@ class AssetTransforms extends Component
 
         $dbConnection = Craft::$app->getDb();
         if (!empty($index->id)) {
-            $dbConnection->createCommand()->update('{{%assettransformindex}}',
-                $values, 'id = :id', [':id' => $index->id])->execute();
+            $dbConnection->createCommand()
+                ->update('{{%assettransformindex}}', $values, ['id' => $index->id])
+                ->execute();
         } else {
-            $dbConnection->createCommand()->insert('{{%assettransformindex}}',
-                $values)->execute();
+            $dbConnection->createCommand()
+                ->insert('{{%assettransformindex}}', $values)
+                ->execute();
             $index->id = $dbConnection->getLastInsertID();
         }
 
@@ -612,8 +617,9 @@ class AssetTransforms extends Component
      */
     public function deleteTransformIndexDataByAssetId($assetId)
     {
-        Craft::$app->getDb()->createCommand()->delete('{{%assettransformindex}}',
-            'assetId = :assetId', [':assetId' => $assetId])->execute();
+        Craft::$app->getDb()->createCommand()
+            ->delete('{{%assettransformindex}}', ['assetId' => $assetId])
+            ->execute();
     }
 
     /**
@@ -625,8 +631,9 @@ class AssetTransforms extends Component
      */
     public function deleteTransformIndex($indexId)
     {
-        Craft::$app->getDb()->createCommand()->delete('{{%assettransformindex}}',
-            'id = :id', [':id' => $indexId])->execute();
+        Craft::$app->getDb()->createCommand()
+            ->delete('{{%assettransformindex}}', ['id' => $indexId])
+            ->execute();
     }
 
     /**

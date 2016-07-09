@@ -374,9 +374,12 @@ class Category extends Element
             }
 
             if ($newRelationValues) {
-                Craft::$app->getDb()->createCommand()->batchInsert('{{%relations}}',
-                    ['fieldId', 'sourceId', 'sourceLocale', 'targetId'],
-                    $newRelationValues)->execute();
+                Craft::$app->getDb()->createCommand()
+                    ->batchInsert(
+                        '{{%relations}}',
+                        ['fieldId', 'sourceId', 'sourceLocale', 'targetId'],
+                        $newRelationValues)
+                    ->execute();
             }
         }
     }

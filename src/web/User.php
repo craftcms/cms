@@ -319,11 +319,16 @@ class User extends \yii\web\User
             if (count($data) === 4 && isset($data[0], $data[1], $data[2], $data[3])) {
                 $authKey = $data[1];
 
-                Craft::$app->getDb()->createCommand()->delete('{{%sessions}}',
-                    ['and', 'userId=:userId', 'uid=:uid'], [
-                        'userId' => $identity->id,
-                        'token' => $authKey
-                    ])->execute();
+                // TODO: this can't be right (params don't match conditions)
+                Craft::$app->getDb()->createCommand()
+                    ->delete(
+                        '{{%sessions}}',
+                        ['and', 'userId=:userId', 'uid=:uid'],
+                        [
+                            'userId' => $identity->id,
+                            'token' => $authKey
+                        ])
+                    ->execute();
             }
         }
 
@@ -415,11 +420,13 @@ class User extends \yii\web\User
                     $tokenUid = $authData[1];
 
                     // Now update the associated session row's dateUpdated column
-                    Craft::$app->getDb()->createCommand()->update('{{%sessions}}',
-                        [],
-                        ['and', 'userId=:userId', 'uid=:uid'],
-                        [':userId' => $this->getId(), ':uid' => $tokenUid]
-                    )->execute();
+                    Craft::$app->getDb()->createCommand()
+                        ->update(
+                            '{{%sessions}}',
+                            [],
+                            ['and', 'userId=:userId', 'uid=:uid'],
+                            [':userId' => $this->getId(), ':uid' => $tokenUid])
+                        ->execute();
                 }
             }
         }
@@ -435,7 +442,9 @@ class User extends \yii\web\User
         $pastTime = $expire->sub($interval);
 
         Craft::$app->getDb()->createCommand()
-            ->delete('{{%sessions}}', 'dateUpdated < :pastTime',
+            ->delete(
+                '{{%sessions}}',
+                'dateUpdated < :pastTime',
                 ['pastTime' => Db::prepareDateForDb($pastTime)])
             ->execute();
     }

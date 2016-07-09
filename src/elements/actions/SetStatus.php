@@ -91,20 +91,22 @@ class SetStatus extends ElementAction
         $elementIds = $query->ids();
 
         // Update their statuses
-        Craft::$app->getDb()->createCommand()->update(
-            '{{%elements}}',
-            ['enabled' => $sqlNewStatus],
-            ['in', 'id', $elementIds]
-        )->execute();
+        Craft::$app->getDb()->createCommand()
+            ->update(
+                '{{%elements}}',
+                ['enabled' => $sqlNewStatus],
+                ['in', 'id', $elementIds])
+            ->execute();
 
         if ($this->status == Element::STATUS_ENABLED) {
             // Enable their locale as well
-            Craft::$app->getDb()->createCommand()->update(
-                '{{%elements_i18n}}',
-                ['enabled' => $sqlNewStatus],
-                ['and', ['in', 'elementId', $elementIds], 'locale = :locale'],
-                [':locale' => $query->locale]
-            )->execute();
+            Craft::$app->getDb()->createCommand()
+                ->update(
+                    '{{%elements_i18n}}',
+                    ['enabled' => $sqlNewStatus],
+                    ['and', ['in', 'elementId', $elementIds], 'locale = :locale'],
+                    [':locale' => $query->locale])
+                ->execute();
         }
 
         // Clear their template caches

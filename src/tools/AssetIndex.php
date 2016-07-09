@@ -169,14 +169,19 @@ class AssetIndex extends Tool
                 ->scalar();
 
             if (empty($sessionsInProgress)) {
-                Craft::$app->getDb()->createCommand()->delete('{{%assetindexdata}}')->execute();
+                Craft::$app->getDb()->createCommand()
+                    ->delete('{{%assetindexdata}}')
+                    ->execute();
             } else {
-                Craft::$app->getDb()->createCommand()->delete('{{%assetindexdata}}',
-                    [
-                        'not in',
-                        'sessionId',
-                        $sessionsInProgress
-                    ])->execute();
+                Craft::$app->getDb()->createCommand()
+                    ->delete(
+                        '{{%assetindexdata}}',
+                        [
+                            'not in',
+                            'sessionId',
+                            $sessionsInProgress
+                        ])
+                    ->execute();
             }
 
             return [

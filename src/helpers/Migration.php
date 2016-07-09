@@ -132,7 +132,9 @@ class Migration
         if ($migration !== null) {
             $migration->renameTable($oldName, $newName);
         } else {
-            Craft::$app->getDb()->createCommand()->renameTable($oldName, $newName)->execute();
+            Craft::$app->getDb()->createCommand()
+                ->renameTable($oldName, $newName)
+                ->execute();
         }
 
         // Update our internal records
@@ -206,7 +208,9 @@ class Migration
         if ($migration !== null) {
             $migration->renameColumn($tableName, $oldName, $newName);
         } else {
-            Craft::$app->getDb()->createCommand()->renameColumn($tableName, $oldName, $newName)->execute();
+            Craft::$app->getDb()->createCommand()
+                ->renameColumn($tableName, $oldName, $newName)
+                ->execute();
         }
 
         // Update the table records
@@ -268,8 +272,12 @@ class Migration
                 $migration->renameColumn($fk->table->name, $fk->column, $fk->column.'_old');
                 $migration->addColumnAfter($fk->table->name, $fk->column, $fk->columnType, $fk->column.'_old');
             } else {
-                $db->createCommand()->renameColumn($fk->table->name, $fk->column, $fk->column.'_old')->execute();
-                $db->createCommand()->addColumnAfter($fk->table->name, $fk->column, $fk->columnType, $fk->column.'_old')->execute();
+                $db->createCommand()
+                    ->renameColumn($fk->table->name, $fk->column, $fk->column.'_old')
+                    ->execute();
+                $db->createCommand()
+                    ->addColumnAfter($fk->table->name, $fk->column, $fk->columnType, $fk->column.'_old')
+                    ->execute();
             }
         }
 
@@ -278,8 +286,12 @@ class Migration
             $migration->renameColumn($tableName, 'id', 'id_old');
             $migration->addColumnAfter($tableName, 'id', static::$_idColumnType, 'id_old');
         } else {
-            $db->createCommand()->renameColumn($tableName, 'id', 'id_old')->execute();
-            $db->createCommand()->addColumnAfter($tableName, 'id', static::$_idColumnType, 'id_old')->execute();
+            $db->createCommand()
+                ->renameColumn($tableName, 'id', 'id_old')
+                ->execute();
+            $db->createCommand()
+                ->addColumnAfter($tableName, 'id', static::$_idColumnType, 'id_old')
+                ->execute();
         }
 
         // Get all of the rows
@@ -311,7 +323,9 @@ class Migration
             if ($migration !== null) {
                 $migration->insert('{{%elements}}', $columns);
             } else {
-                $db->createCommand()->insert('{{%elements}}', $columns)->execute();
+                $db->createCommand()
+                    ->insert('{{%elements}}', $columns)
+                    ->execute();
             }
 
             // Get the new element ID
@@ -324,7 +338,9 @@ class Migration
             if ($migration !== null) {
                 $migration->update($tableName, $columns, $conditions);
             } else {
-                $db->createCommand()->update($tableName, $columns, $conditions)->execute();
+                $db->createCommand()
+                    ->update($tableName, $columns, $conditions)
+                    ->execute();
             }
 
             // Update the other tables' new FK columns
@@ -335,7 +351,9 @@ class Migration
                 if ($migration !== null) {
                     $migration->update($fk->table->name, $columns, $conditions);
                 } else {
-                    $db->createCommand()->update($fk->table->name, $columns, $conditions)->execute();
+                    $db->createCommand()
+                        ->update($fk->table->name, $columns, $conditions)
+                        ->execute();
                 }
             }
 
@@ -357,7 +375,9 @@ class Migration
         if ($migration !== null) {
             $migration->batchInsert('{{%elements_i18n}}', $columns, $i18nValues);
         } else {
-            $db->createCommand()->batchInsert('{{%elements_i18n}}', $columns, $i18nValues)->execute();
+            $db->createCommand()
+                ->batchInsert('{{%elements_i18n}}', $columns, $i18nValues)
+                ->execute();
         }
 
         if ($hasContent) {
@@ -366,7 +386,9 @@ class Migration
             if ($migration !== null) {
                 $migration->batchInsert('{{%content}}', $columns, $contentValues);
             } else {
-                $db->createCommand()->batchInsert('{{%content}}', $columns, $contentValues)->execute();
+                $db->createCommand()
+                    ->batchInsert('{{%content}}', $columns, $contentValues)
+                    ->execute();
             }
         }
 
@@ -379,9 +401,15 @@ class Migration
             $migration->addPrimaryKey($pkName, $tableName, 'id');
             $migration->addForeignKey($fkName, $tableName, 'id', 'elements', 'id', 'CASCADE');
         } else {
-            $db->createCommand()->dropColumn($tableName, 'id_old')->execute();
-            $db->createCommand()->addPrimaryKey($pkName, $tableName, 'id')->execute();
-            $db->createCommand()->addForeignKey($fkName, $tableName, 'id', 'elements', 'id', 'CASCADE')->execute();
+            $db->createCommand()
+                ->dropColumn($tableName, 'id_old')
+                ->execute();
+            $db->createCommand()
+                ->addPrimaryKey($pkName, $tableName, 'id')
+                ->execute();
+            $db->createCommand()
+                ->addForeignKey($fkName, $tableName, 'id', 'elements', 'id', 'CASCADE')
+                ->execute();
         }
 
         // Now deal with the rest of the tables
@@ -390,7 +418,9 @@ class Migration
             if ($migration !== null) {
                 $migration->dropColumn($fk->table->name, $fk->column.'_old');
             } else {
-                $db->createCommand()->dropColumn($fk->table->name, $fk->column.'_old')->execute();
+                $db->createCommand()
+                    ->dropColumn($fk->table->name, $fk->column.'_old')
+                    ->execute();
             }
 
             // Restore its unique indexes and FKs
@@ -492,7 +522,9 @@ class Migration
         if ($migration !== null) {
             $migration->dropTable($tableName);
         } else {
-            Craft::$app->getDb()->createCommand()->dropTable($tableName)->execute();
+            Craft::$app->getDb()->createCommand()
+                ->dropTable($tableName)
+                ->execute();
         }
 
         // Remove from cache.
@@ -547,7 +579,9 @@ class Migration
         if ($migration !== null) {
             $migration->dropForeignKey($fk->name, $fk->table->name);
         } else {
-            Craft::$app->getDb()->createCommand()->dropForeignKey($fk->name, $fk->table->name)->execute();
+            Craft::$app->getDb()->createCommand()
+                ->dropForeignKey($fk->name, $fk->table->name)
+                ->execute();
         }
     }
 
@@ -596,7 +630,9 @@ class Migration
         if ($migration !== null) {
             $migration->dropIndex($index->name, $index->table->name);
         } else {
-            Craft::$app->getDb()->createCommand()->dropIndex($index->name, $index->table->name)->execute();
+            Craft::$app->getDb()->createCommand()
+                ->dropIndex($index->name, $index->table->name)
+                ->execute();
         }
     }
 
@@ -650,7 +686,9 @@ class Migration
         if ($migration !== null) {
             $migration->createIndex($indexName, $table, $columns, $index->unique);
         } else {
-            $db->createCommand()->createIndex($indexName, $table, $columns, $index->unique)->execute();
+            $db->createCommand()
+                ->createIndex($indexName, $table, $columns, $index->unique)
+                ->execute();
         }
 
         // Update our record of its name
@@ -690,7 +728,9 @@ class Migration
         if ($migration !== null) {
             $migration->addForeignKey($fkName, $table, $columns, $fk->refTable, $fk->refColumns, $fk->onDelete, $fk->onUpdate);
         } else {
-            $db->createCommand()->addForeignKey($fkName, $table, $columns, $fk->refTable, $fk->refColumns, $fk->onDelete, $fk->onUpdate)->execute();
+            $db->createCommand()
+                ->addForeignKey($fkName, $table, $columns, $fk->refTable, $fk->refColumns, $fk->onDelete, $fk->onUpdate)
+                ->execute();
         }
 
         // Update our record of its name

@@ -254,8 +254,9 @@ class Fields extends Component
             $this->deleteField($field);
         }
 
-        $affectedRows = Craft::$app->getDb()->createCommand()->delete('{{%fieldgroups}}',
-            ['id' => $groupId])->execute();
+        $affectedRows = Craft::$app->getDb()->createCommand()
+            ->delete('{{%fieldgroups}}', ['id' => $groupId])
+            ->execute();
 
         return (bool)$affectedRows;
     }
@@ -581,11 +582,17 @@ class Fields extends Component
                     Craft::$app->getDb()->schema->refresh();
 
                     if (Craft::$app->getDb()->columnExists($contentTable, $oldColumnName)) {
-                        Craft::$app->getDb()->createCommand()->alterColumn($contentTable, $oldColumnName, $columnType, $newColumnName)->execute();
+                        Craft::$app->getDb()->createCommand()
+                            ->alterColumn($contentTable, $oldColumnName, $columnType, $newColumnName)
+                            ->execute();
                     } else if (Craft::$app->getDb()->columnExists($contentTable, $newColumnName)) {
-                        Craft::$app->getDb()->createCommand()->alterColumn($contentTable, $newColumnName, $columnType)->execute();
+                        Craft::$app->getDb()->createCommand()
+                            ->alterColumn($contentTable, $newColumnName, $columnType)
+                            ->execute();
                     } else {
-                        Craft::$app->getDb()->createCommand()->addColumnBefore($contentTable, $newColumnName, $columnType, 'dateCreated')->execute();
+                        Craft::$app->getDb()->createCommand()
+                            ->addColumnBefore($contentTable, $newColumnName, $columnType, 'dateCreated')
+                            ->execute();
                     }
                 } else {
                     // Did the old field have a column we need to remove?
@@ -593,7 +600,9 @@ class Fields extends Component
                         if ($fieldRecord->getOldHandle() && Craft::$app->getDb()->columnExists($contentTable,
                                 $oldColumnName)
                         ) {
-                            Craft::$app->getDb()->createCommand()->dropColumn($contentTable, $oldColumnName)->execute();
+                            Craft::$app->getDb()->createCommand()
+                                ->dropColumn($contentTable, $oldColumnName)
+                                ->execute();
                         }
                     }
                 }
@@ -701,12 +710,15 @@ class Fields extends Component
             $fieldColumnPrefix = Craft::$app->getContent()->fieldColumnPrefix;
 
             if (Craft::$app->getDb()->columnExists($contentTable, $fieldColumnPrefix.$field->handle)) {
-                Craft::$app->getDb()->createCommand()->dropColumn($contentTable, $fieldColumnPrefix.$field->handle)->execute();
+                Craft::$app->getDb()->createCommand()
+                    ->dropColumn($contentTable, $fieldColumnPrefix.$field->handle)
+                    ->execute();
             }
 
             // Delete the row in fields
-            $affectedRows = Craft::$app->getDb()->createCommand()->delete('{{%fields}}',
-                ['id' => $field->id])->execute();
+            $affectedRows = Craft::$app->getDb()->createCommand()
+                ->delete('{{%fields}}', ['id' => $field->id])
+                ->execute();
 
             if ($affectedRows) {
                 $field->afterDelete();
@@ -977,11 +989,13 @@ class Fields extends Component
         }
 
         if (is_array($layoutId)) {
-            $affectedRows = Craft::$app->getDb()->createCommand()->delete('{{%fieldlayouts}}',
-                ['in', 'id', $layoutId])->execute();
+            $affectedRows = Craft::$app->getDb()->createCommand()
+                ->delete('{{%fieldlayouts}}', ['in', 'id', $layoutId])
+                ->execute();
         } else {
-            $affectedRows = Craft::$app->getDb()->createCommand()->delete('{{%fieldlayouts}}',
-                ['id' => $layoutId])->execute();
+            $affectedRows = Craft::$app->getDb()->createCommand()
+                ->delete('{{%fieldlayouts}}', ['id' => $layoutId])
+                ->execute();
         }
 
         return (bool)$affectedRows;
@@ -996,8 +1010,9 @@ class Fields extends Component
      */
     public function deleteLayoutsByType($type)
     {
-        $affectedRows = Craft::$app->getDb()->createCommand()->delete('{{%fieldlayouts}}',
-            ['type' => $type])->execute();
+        $affectedRows = Craft::$app->getDb()->createCommand()
+            ->delete('{{%fieldlayouts}}', ['type' => $type])
+            ->execute();
 
         return (bool)$affectedRows;
     }

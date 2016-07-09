@@ -253,10 +253,15 @@ class Search extends Component
         }
 
         // Insert/update the row in searchindex
-        Craft::$app->getDb()->createCommand()->insertOrUpdate('{{%searchindex}}', $keyColumns,
-            [
-                'keywords' => $cleanKeywords
-            ], false)->execute();
+        Craft::$app->getDb()->createCommand()
+            ->insertOrUpdate(
+                '{{%searchindex}}',
+                $keyColumns,
+                [
+                    'keywords' => $cleanKeywords
+                ],
+                false)
+            ->execute();
     }
 
     /**

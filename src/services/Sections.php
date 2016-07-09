@@ -524,14 +524,18 @@ class Sections extends Component
 
                             // Has anything changed?
                             if ($locale->enabledByDefault != $oldLocale->enabledByDefault || $locale->urlFormat != $oldLocale->urlFormat || $locale->nestedUrlFormat != $oldLocale->nestedUrlFormat) {
-                                Craft::$app->getDb()->createCommand()->update('{{%sections_i18n}}',
-                                    [
-                                        'enabledByDefault' => (int)$locale->enabledByDefault,
-                                        'urlFormat' => $locale->urlFormat,
-                                        'nestedUrlFormat' => $locale->nestedUrlFormat
-                                    ], [
-                                        'id' => $oldLocale->id
-                                    ])->execute();
+                                Craft::$app->getDb()->createCommand()
+                                    ->update(
+                                        '{{%sections_i18n}}',
+                                        [
+                                            'enabledByDefault' => (int)$locale->enabledByDefault,
+                                            'urlFormat' => $locale->urlFormat,
+                                            'nestedUrlFormat' => $locale->nestedUrlFormat
+                                        ],
+                                        [
+                                            'id' => $oldLocale->id
+                                        ])
+                                    ->execute();
                             }
                         } else {
                             $newLocaleData[] = [
@@ -545,16 +549,18 @@ class Sections extends Component
                     }
 
                     // Insert the new locales
-                    Craft::$app->getDb()->createCommand()->batchInsert('{{%sections_i18n}}',
-                        [
-                            'sectionId',
-                            'locale',
-                            'enabledByDefault',
-                            'urlFormat',
-                            'nestedUrlFormat'
-                        ],
-                        $newLocaleData
-                    )->execute();
+                    Craft::$app->getDb()->createCommand()
+                        ->batchInsert(
+                            '{{%sections_i18n}}',
+                            [
+                                'sectionId',
+                                'locale',
+                                'enabledByDefault',
+                                'urlFormat',
+                                'nestedUrlFormat'
+                            ],
+                            $newLocaleData)
+                        ->execute();
 
                     if (!$isNewSection) {
                         // Drop any locales that are no longer being used, as well as the associated entry/element locale
@@ -563,14 +569,16 @@ class Sections extends Component
                         $droppedLocaleIds = array_diff(array_keys($oldSectionLocales), array_keys($sectionLocales));
 
                         if ($droppedLocaleIds) {
-                            Craft::$app->getDb()->createCommand()->delete('{{%sections_i18n}}',
-                                [
-                                    'and',
-                                    'sectionId = :sectionId',
-                                    ['in', 'locale', $droppedLocaleIds]
-                                ],
-                                [':sectionId' => $section->id]
-                            )->execute();
+                            Craft::$app->getDb()->createCommand()
+                                ->delete(
+                                    '{{%sections_i18n}}',
+                                    [
+                                        'and',
+                                        'sectionId = :sectionId',
+                                        ['in', 'locale', $droppedLocaleIds]
+                                    ],
+                                    [':sectionId' => $section->id])
+                                ->execute();
                         }
                     }
 
@@ -647,23 +655,31 @@ class Sections extends Component
 
                                     // Make sure it's enabled and all that.
 
-                                    Craft::$app->getDb()->createCommand()->update('{{%elements}}',
-                                        [
-                                            'enabled' => 1,
-                                            'archived' => 0,
-                                        ], [
-                                            'id' => $singleEntryId
-                                        ])->execute();
+                                    Craft::$app->getDb()->createCommand()
+                                        ->update(
+                                            '{{%elements}}',
+                                            [
+                                                'enabled' => 1,
+                                                'archived' => 0,
+                                            ],
+                                            [
+                                                'id' => $singleEntryId
+                                            ])
+                                        ->execute();
 
-                                    Craft::$app->getDb()->createCommand()->update('{{%entries}}',
-                                        [
-                                            'typeId' => $entryTypeId,
-                                            'authorId' => null,
-                                            'postDate' => Db::prepareDateForDb(new \DateTime()),
-                                            'expiryDate' => null,
-                                        ], [
-                                            'id' => $singleEntryId
-                                        ])->execute();
+                                    Craft::$app->getDb()->createCommand()
+                                        ->update(
+                                            '{{%entries}}',
+                                            [
+                                                'typeId' => $entryTypeId,
+                                                'authorId' => null,
+                                                'postDate' => Db::prepareDateForDb(new \DateTime()),
+                                                'expiryDate' => null,
+                                            ],
+                                            [
+                                                'id' => $singleEntryId
+                                            ])
+                                        ->execute();
                                 }
 
                                 // Make sure there's only one entry type for this section
@@ -809,8 +825,9 @@ class Sections extends Component
             }
 
             // Delete the section.
-            Craft::$app->getDb()->createCommand()->delete('{{%sections}}',
-                ['id' => $sectionId])->execute();
+            Craft::$app->getDb()->createCommand()
+                ->delete('{{%sections}}', ['id' => $sectionId])
+                ->execute();
 
             $transaction->commit();
 
@@ -1109,11 +1126,13 @@ class Sections extends Component
 
             // Delete the entry type.
             if (is_array($entryTypeId)) {
-                $affectedRows = Craft::$app->getDb()->createCommand()->delete('{{%entrytypes}}',
-                    ['in', 'id', $entryTypeId])->execute();
+                $affectedRows = Craft::$app->getDb()->createCommand()
+                    ->delete('{{%entrytypes}}', ['in', 'id', $entryTypeId])
+                    ->execute();
             } else {
-                $affectedRows = Craft::$app->getDb()->createCommand()->delete('{{%entrytypes}}',
-                    ['id' => $entryTypeId])->execute();
+                $affectedRows = Craft::$app->getDb()->createCommand()
+                    ->delete('{{%entrytypes}}', ['id' => $entryTypeId])
+                    ->execute();
             }
 
             $transaction->commit();

@@ -66,12 +66,11 @@ class Install extends InstallMigration
 
         // Add the FULLTEXT index on searchindex.keywords
         // TODO: MySQL specific
-        $this->db->createCommand(
-            'CREATE FULLTEXT INDEX '.
+        $sql = 'CREATE FULLTEXT INDEX '.
             $this->db->quoteTableName($this->db->getIndexName('{{%searchindex}}', 'keywords')).' ON '.
             $this->db->quoteTableName('{{%searchindex}}').' '.
-            '('.$this->db->quoteColumnName('keywords').')'
-        )->execute();
+            '('.$this->db->quoteColumnName('keywords').')';
+        $this->db->createCommand($sql)->execute();
 
         // Add the site locale
         $this->insert(

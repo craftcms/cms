@@ -246,8 +246,9 @@ class UserPermissions extends Component
     public function saveGroupPermissions($groupId, $permissions)
     {
         // Delete any existing group permissions
-        Craft::$app->getDb()->createCommand()->delete('{{%userpermissions_usergroups}}',
-            ['groupId' => $groupId])->execute();
+        Craft::$app->getDb()->createCommand()
+            ->delete('{{%userpermissions_usergroups}}', ['groupId' => $groupId])
+            ->execute();
 
         $permissions = $this->_filterOrphanedPermissions($permissions);
 
@@ -260,11 +261,12 @@ class UserPermissions extends Component
             }
 
             // Add the new group permissions
-            Craft::$app->getDb()->createCommand()->batchInsert(
-                '{{%userpermissions_usergroups}}',
-                ['permissionId', 'groupId'],
-                $groupPermissionVals
-            )->execute();
+            Craft::$app->getDb()->createCommand()
+                ->batchInsert(
+                    '{{%userpermissions_usergroups}}',
+                    ['permissionId', 'groupId'],
+                    $groupPermissionVals)
+                ->execute();
         }
 
         return true;
@@ -322,8 +324,9 @@ class UserPermissions extends Component
     public function saveUserPermissions($userId, $permissions)
     {
         // Delete any existing user permissions
-        Craft::$app->getDb()->createCommand()->delete('{{%userpermissions_users}}',
-            ['userId' => $userId])->execute();
+        Craft::$app->getDb()->createCommand()
+            ->delete('{{%userpermissions_users}}', ['userId' => $userId])
+            ->execute();
 
         // Filter out any orphaned permissions
         $groupPermissions = $this->getGroupPermissionsByUserId($userId);
@@ -338,11 +341,12 @@ class UserPermissions extends Component
             }
 
             // Add the new user permissions
-            Craft::$app->getDb()->createCommand()->batchInsert(
-                '{{%userpermissions_users}}',
-                ['permissionId', 'userId'],
-                $userPermissionVals
-            )->execute();
+            Craft::$app->getDb()->createCommand()
+                ->batchInsert(
+                    '{{%userpermissions_users}}',
+                    ['permissionId', 'userId'],
+                    $userPermissionVals)
+                ->execute();
         }
 
         return true;

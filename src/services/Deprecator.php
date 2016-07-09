@@ -103,15 +103,22 @@ class Deprecator extends Component
                 ->scalar();
 
             if ($existingId === false) {
-                $db->createCommand()->insert(static::$_tableName,
-                    array_merge($values, [
-                        'key' => $log->key,
-                        'fingerprint' => $log->fingerprint
-                    ]))->execute();
+                $db->createCommand()
+                    ->insert(
+                        static::$_tableName,
+                        array_merge($values, [
+                            'key' => $log->key,
+                            'fingerprint' => $log->fingerprint
+                        ]))
+                    ->execute();
                 $log->id = $db->getLastInsertID();
             } else {
-                $db->createCommand()->update(static::$_tableName, $values,
-                    ['id' => $existingId])->execute();
+                $db->createCommand()
+                    ->update(
+                        static::$_tableName,
+                        $values,
+                        ['id' => $existingId])
+                    ->execute();
                 $log->id = $existingId;
             }
 
@@ -199,8 +206,9 @@ class Deprecator extends Component
      */
     public function deleteLogById($id)
     {
-        $affectedRows = Craft::$app->getDb()->createCommand()->delete(static::$_tableName,
-            ['id' => $id])->execute();
+        $affectedRows = Craft::$app->getDb()->createCommand()
+            ->delete(static::$_tableName, ['id' => $id])
+            ->execute();
 
         return (bool)$affectedRows;
     }
@@ -212,7 +220,9 @@ class Deprecator extends Component
      */
     public function deleteAllLogs()
     {
-        $affectedRows = Craft::$app->getDb()->createCommand()->delete(static::$_tableName)->execute();
+        $affectedRows = Craft::$app->getDb()->createCommand()
+            ->delete(static::$_tableName)
+            ->execute();
 
         return (bool)$affectedRows;
     }

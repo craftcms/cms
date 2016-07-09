@@ -505,24 +505,32 @@ class Elements extends Component
                         if (!$isNewElement) {
                             // Delete the rows that don't need to be there anymore
 
-                            Craft::$app->getDb()->createCommand()->delete('{{%elements_i18n}}',
-                                [
-                                    'and',
-                                    'elementId = :elementId',
-                                    ['not in', 'locale', $localeIds]
-                                ], [
-                                    ':elementId' => $element->id
-                                ])->execute();
-
-                            if ($element::hasContent()) {
-                                Craft::$app->getDb()->createCommand()->delete($element->getContentTable(),
+                            Craft::$app->getDb()->createCommand()
+                                ->delete(
+                                    '{{%elements_i18n}}',
                                     [
                                         'and',
                                         'elementId = :elementId',
                                         ['not in', 'locale', $localeIds]
-                                    ], [
+                                    ],
+                                    [
                                         ':elementId' => $element->id
-                                    ])->execute();
+                                    ])
+                                ->execute();
+
+                            if ($element::hasContent()) {
+                                Craft::$app->getDb()->createCommand()
+                                    ->delete(
+                                        $element->getContentTable(),
+                                        [
+                                            'and',
+                                            'elementId = :elementId',
+                                            ['not in', 'locale', $localeIds]
+                                        ],
+                                        [
+                                            ':elementId' => $element->id
+                                        ])
+                                    ->execute();
                             }
                         }
 
@@ -592,13 +600,18 @@ class Elements extends Component
 
         ElementHelper::setUniqueUri($element);
 
-        Craft::$app->getDb()->createCommand()->update('{{%elements_i18n}}', [
-            'slug' => $element->slug,
-            'uri' => $element->uri
-        ], [
-            'elementId' => $element->id,
-            'locale' => $element->locale
-        ])->execute();
+        Craft::$app->getDb()->createCommand()
+            ->update(
+                '{{%elements_i18n}}',
+                [
+                    'slug' => $element->slug,
+                    'uri' => $element->uri
+                ],
+                [
+                    'elementId' => $element->id,
+                    'locale' => $element->locale
+                ])
+            ->execute();
 
         // Delete any caches involving this element
         Craft::$app->getTemplateCaches()->deleteCachesByElement($element);
@@ -716,12 +729,16 @@ class Elements extends Component
                     ->exists();
 
                 if (!$persistingElementIsRelatedToo) {
-                    Craft::$app->getDb()->createCommand()->update('{{%relations}}',
-                        [
-                            'targetId' => $prevailingElementId
-                        ], [
-                            'id' => $relation['id']
-                        ])->execute();
+                    Craft::$app->getDb()->createCommand()
+                        ->update(
+                            '{{%relations}}',
+                            [
+                                'targetId' => $prevailingElementId
+                            ],
+                            [
+                                'id' => $relation['id']
+                            ])
+                        ->execute();
                 }
             }
 
@@ -743,12 +760,15 @@ class Elements extends Component
                     ->exists();
 
                 if (!$persistingElementIsInStructureToo) {
-                    Craft::$app->getDb()->createCommand()->update('{{%relations}}',
-                        [
-                            'elementId' => $prevailingElementId
-                        ], [
-                            'id' => $structureElement['id']
-                        ])->execute();
+                    Craft::$app->getDb()->createCommand()
+                        ->update('{{%relations}}',
+                            [
+                                'elementId' => $prevailingElementId
+                            ],
+                            [
+                                'id' => $structureElement['id']
+                            ])
+                        ->execute();
                 }
             }
 
@@ -868,10 +888,14 @@ class Elements extends Component
             }
 
             // Delete the elements table rows, which will cascade across all other InnoDB tables
-            $affectedRows = Craft::$app->getDb()->createCommand()->delete('{{%elements}}', $condition)->execute();
+            $affectedRows = Craft::$app->getDb()->createCommand()
+                ->delete('{{%elements}}', $condition)
+                ->execute();
 
             // The searchindex table is MyISAM, though
-            Craft::$app->getDb()->createCommand()->delete('{{%searchindex}}', $searchIndexCondition)->execute();
+            Craft::$app->getDb()->createCommand()
+                ->delete('{{%searchindex}}', $searchIndexCondition)
+                ->execute();
 
             $transaction->commit();
 
