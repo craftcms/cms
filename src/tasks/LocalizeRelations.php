@@ -72,25 +72,27 @@ class LocalizeRelations extends Task
             $this->_workingLocale = $this->_allLocales[0];
 
             // Update the existing one.
-            $db->createCommand()->update(
-                '{{%relations}}',
-                ['sourceLocale' => $this->_workingLocale],
-                ['id' => $this->_relations[$step]['id']]
-            )->execute();
+            $db->createCommand()
+                ->update(
+                    '{{%relations}}',
+                    ['sourceLocale' => $this->_workingLocale],
+                    ['id' => $this->_relations[$step]['id']])
+                ->execute();
 
             for ($counter = 1; $counter < count($this->_allLocales); $counter++) {
                 $this->_workingLocale = $this->_allLocales[$counter];
 
-                $db->createCommand()->insert(
-                    '{{%relations}}',
-                    [
-                        'fieldid' => $this->fieldId,
-                        'sourceId' => $this->_relations[$step]['sourceId'],
-                        'sourceLocale' => $this->_workingLocale,
-                        'targetId' => $this->_relations[$step]['targetId'],
-                        'sortOrder' => $this->_relations[$step]['sortOrder'],
-                    ]
-                );
+                $db->createCommand()
+                    ->insert(
+                        '{{%relations}}',
+                        [
+                            'fieldid' => $this->fieldId,
+                            'sourceId' => $this->_relations[$step]['sourceId'],
+                            'sourceLocale' => $this->_workingLocale,
+                            'targetId' => $this->_relations[$step]['targetId'],
+                            'sortOrder' => $this->_relations[$step]['sortOrder'],
+                        ])
+                    ->execute();
             }
 
             return true;
