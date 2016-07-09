@@ -306,7 +306,7 @@ abstract class Element extends Component implements ElementInterface
      */
     public static function getTableAttributeHtml(ElementInterface $element, $attribute)
     {
-        /** @var $this $element */
+        /** @var Element|ElementInterface $element */
         switch ($attribute) {
             case 'link': {
                 $url = $element->getUrl();
@@ -422,7 +422,7 @@ abstract class Element extends Component implements ElementInterface
      */
     public static function getEditorHtml(ElementInterface $element)
     {
-        /** @var $this $element */
+        /** @var Element|ElementInterface $element */
         $html = '';
 
         $fieldLayout = $element->getFieldLayout();
@@ -454,7 +454,7 @@ abstract class Element extends Component implements ElementInterface
      */
     public static function saveElement(ElementInterface $element, $params)
     {
-        /** @var $this $element */
+        /** @var Element|ElementInterface $element */
         return Craft::$app->getElements()->saveElement($element);
     }
 
@@ -995,7 +995,7 @@ abstract class Element extends Component implements ElementInterface
      */
     public function isAncestorOf(ElementInterface $element)
     {
-        /** @var $this $element */
+        /** @var Element|ElementInterface $element */
         return ($this->root == $element->root && $this->lft < $element->lft && $this->rgt > $element->rgt);
     }
 
@@ -1004,7 +1004,7 @@ abstract class Element extends Component implements ElementInterface
      */
     public function isDescendantOf(ElementInterface $element)
     {
-        /** @var $this $element */
+        /** @var Element|ElementInterface $element */
         return ($this->root == $element->root && $this->lft > $element->lft && $this->rgt < $element->rgt);
     }
 
@@ -1013,7 +1013,7 @@ abstract class Element extends Component implements ElementInterface
      */
     public function isParentOf(ElementInterface $element)
     {
-        /** @var $this $element */
+        /** @var Element|ElementInterface $element */
         return ($this->root == $element->root && $this->level == $element->level - 1 && $this->isAncestorOf($element));
     }
 
@@ -1022,7 +1022,7 @@ abstract class Element extends Component implements ElementInterface
      */
     public function isChildOf(ElementInterface $element)
     {
-        /** @var $this $element */
+        /** @var Element|ElementInterface $element */
         return ($this->root == $element->root && $this->level == $element->level + 1 && $this->isDescendantOf($element));
     }
 
@@ -1031,7 +1031,7 @@ abstract class Element extends Component implements ElementInterface
      */
     public function isSiblingOf(ElementInterface $element)
     {
-        /** @var $this $element */
+        /** @var Element|ElementInterface $element */
         if ($this->root == $element->root && $this->level && $this->level == $element->level) {
             if ($this->level == 1 || $this->isPrevSiblingOf($element) || $this->isNextSiblingOf($element)) {
                 return true;
@@ -1052,7 +1052,7 @@ abstract class Element extends Component implements ElementInterface
      */
     public function isPrevSiblingOf(ElementInterface $element)
     {
-        /** @var $this $element */
+        /** @var Element|ElementInterface $element */
         return ($this->root == $element->root && $this->level == $element->level && $this->rgt == $element->lft - 1);
     }
 
@@ -1061,7 +1061,7 @@ abstract class Element extends Component implements ElementInterface
      */
     public function isNextSiblingOf(ElementInterface $element)
     {
-        /** @var $this $element */
+        /** @var Element|ElementInterface $element */
         return ($this->root == $element->root && $this->level == $element->level && $this->lft == $element->rgt + 1);
     }
 
