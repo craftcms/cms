@@ -547,6 +547,7 @@ class ElementsService extends BaseApplicationComponent
 	 */
 	public function getTotalElements($criteria = null)
 	{
+		// TODO: Lots in here MySQL specific.
 		$query = $this->buildElementsQuery($criteria, $contentTable, $fieldColumns, true);
 
 		if ($query)
@@ -559,25 +560,27 @@ class ElementsService extends BaseApplicationComponent
 
 			$elementsIdColumn = 'elements.id';
 			$selectedColumns = $query->getSelect();
-			$selectedElementsIdColumn = craft()->db->quoteColumnName($elementsIdColumn);
 
-			// Check for quoted and quoted, because plugins.
-			if (
-				strpos($selectedColumns, $selectedElementsIdColumn) === false &&
-				strpos($selectedColumns, $elementsIdColumn === false)
-			)
+			// Normalize with no quotes. setSelect later will properly add them back in.
+			$selectedColumns = str_replace('`', '', $selectedColumns);
+
+			// Guarantee we select an elements.id column
+			if (strpos($selectedColumns, $elementsIdColumn) === false)
 			{
-				// Make sure that elements.id is selected
-				$query->addSelect('elements.id');
+				$selectedColumns = $elementsIdColumn.', '.$selectedColumns;
 			}
+
+			// Alias elements.id as elementsId
+			$selectedColumns = str_replace($elementsIdColumn, $elementsIdColumn.' AS elementsId', $selectedColumns);
+
+			$query->setSelect($selectedColumns);
 
 			$masterQuery = craft()->db->createCommand();
 			$masterQuery->params = $query->params;
 
-			// TODO: potentially MySQL specific.
 			$masterQuery->from(sprintf('(%s) derivedElementsTable', $query->getText()));
 
-			$count = $masterQuery->count('derivedElementsTable.id');
+			$count = $masterQuery->count('derivedElementsTable.elementsId');
 
 			return $count;
 		}
