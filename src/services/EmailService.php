@@ -301,7 +301,7 @@ class EmailService extends BaseApplicationComponent
 
 				case EmailerType::Pop:
 				{
-					$pop = new \Pop3();
+					$pop = new \POP3();
 
 					if (!isset($emailSettings['host']) || !isset($emailSettings['port']) || !isset($emailSettings['username']) || !isset($emailSettings['password']) ||
 						StringHelper::isNullOrEmpty($emailSettings['host']) || StringHelper::isNullOrEmpty($emailSettings['port']) || StringHelper::isNullOrEmpty($emailSettings['username']) || StringHelper::isNullOrEmpty($emailSettings['password'])
