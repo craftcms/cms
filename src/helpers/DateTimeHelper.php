@@ -104,7 +104,7 @@ class DateTimeHelper
 			{
 				$dt = new DateTime('@'.$timeStamp->getTimestamp());
 			}
-			else if (get_class($timeStamp) == 'Craft\DateTime')
+			else if ($timeStamp instanceof DateTime)
 			{
 				$dt = $timeStamp;
 			}
