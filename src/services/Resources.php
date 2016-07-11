@@ -205,7 +205,7 @@ class Resources extends Component
                         }
 
                         if (empty($transformIndexModel)) {
-                            throw new NotFoundHttpException('Image transform not found');
+                            throw new NotFoundHttpException(Craft::t('app', 'Image transform not found'));
                         }
 
                         $url = Craft::$app->getAssetTransforms()->ensureTransformUrlByIndexModel($transformIndexModel);
@@ -260,7 +260,7 @@ class Resources extends Component
     public function sendResource($path)
     {
         if (PathHelper::ensurePathIsContained($path) === false) {
-            throw new ForbiddenHttpException('Resource path not contained within allowed directories');
+            throw new ForbiddenHttpException(Craft::t('app', 'Resource path not contained within allowed directories'));
         }
 
         $cachedPath = $this->getCachedResourcePath($path);
@@ -282,7 +282,7 @@ class Resources extends Component
         }
 
         if ($realPath === false || !Io::fileExists($realPath)) {
-            throw new NotFoundHttpException('Resource not found');
+            throw new NotFoundHttpException(Craft::t('app', 'Resource not found'));
         }
 
         // If there is a timestamp and HTTP_IF_MODIFIED_SINCE exists, check the timestamp against requested file's last
