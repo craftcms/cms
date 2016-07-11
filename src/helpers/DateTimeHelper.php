@@ -100,7 +100,7 @@ class DateTimeHelper
 		if (!is_null($timeStamp))
 		{
 			// If it's a global DateTime, convert it to a Craft DateTime instance, else format will choke.
-			if (get_class($timeStamp) == 'DateTime')
+			if (is_object($timeStamp) && get_class($timeStamp) == 'DateTime')
 			{
 				$dt = new DateTime('@'.$timeStamp->getTimestamp());
 			}
