@@ -623,7 +623,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 		this.showingActionTriggers = true;
 	},
 
-	submitAction: function(actionHandle, actionParams)
+	submitAction: function(actionClass, actionParams)
 	{
 		// Make sure something's selected
 		var selectedElementIds = this.view.getSelectedElementIds(),
@@ -640,7 +640,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
 		for (var i = 0; i < this.actions.length; i++)
 		{
-			if (this.actions[i].handle == actionHandle)
+			if (this.actions[i].type == actionClass)
 			{
 				action = this.actions[i];
 				break;
@@ -656,7 +656,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 		var viewParams = this.getViewParams();
 
 		var params = $.extend(viewParams, actionParams, {
-			elementAction: actionHandle,
+			elementAction: actionClass,
 			elementIds: selectedElementIds
 		});
 
@@ -1345,10 +1345,10 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 			return;
 		}
 
-		var actionHandle = $form.data('action'),
+		var actionClass = $form.data('action'),
 			params = Garnish.getPostData($form);
 
-		this.submitAction(actionHandle, params);
+		this.submitAction(actionClass, params);
 	},
 
 	_handleMenuActionTriggerSubmit: function(ev)
@@ -1361,8 +1361,8 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 			return;
 		}
 
-		var actionHandle = $option.data('action');
-		this.submitAction(actionHandle);
+		var actionClass = $option.data('action');
+		this.submitAction(actionClass);
 	},
 
 	_handleStatusChange: function(ev)
@@ -1616,8 +1616,8 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
 			if (action.trigger)
 			{
-				var $form = $('<form id="'+action.handle+'-actiontrigger"/>')
-					.data('action', action.handle)
+				var $form = $('<form id="'+Craft.formatInputId(action.type)+'-actiontrigger"/>')
+					.data('action', action.type)
 					.append(action.trigger);
 
 				this.addListener($form, 'submit', '_handleActionTriggerSubmit');
@@ -1697,8 +1697,12 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
 			for (var i = 0; i < actions.length; i++)
 			{
-				var handle = actions[i].handle;
-				$('<li><a id="'+handle+'-actiontrigger" data-action="'+handle+'">'+actions[i].name+'</a></li>').appendTo($ul);
+				var actionClass = actions[i].type;
+				$('<li/>').append($('<a/>', {
+					id: Craft.formatInputId(actionClass) + '-actiontrigger',
+					'data-action': actionClass,
+					text: actions[i].name
+				})).appendTo($ul);
 			}
 
 			return $ul;
