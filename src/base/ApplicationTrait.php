@@ -185,7 +185,7 @@ trait ApplicationTrait
      */
     public function getTargetLanguage($useUserLanguage = true)
     {
-        /** @var $this \craft\app\web\Application|\craft\app\console\Application */
+        /** @var \craft\app\web\Application|\craft\app\console\Application $this */
         if ($this->isInstalled()) {
             // Will any locale validation be necessary here?
             $request = $this->getRequest();
@@ -257,7 +257,7 @@ trait ApplicationTrait
      */
     public function isInstalled()
     {
-        /** @var $this \craft\app\web\Application|\craft\app\console\Application */
+        /** @var \craft\app\web\Application|\craft\app\console\Application $this */
         if (!isset($this->_isInstalled)) {
             try {
                 // Initialize the DB connection
@@ -285,7 +285,7 @@ trait ApplicationTrait
      */
     public function setIsInstalled()
     {
-        /** @var $this \craft\app\web\Application|\craft\app\console\Application */
+        /** @var \craft\app\web\Application|\craft\app\console\Application $this */
         // If you say so!
         $this->_isInstalled = true;
     }
@@ -297,7 +297,7 @@ trait ApplicationTrait
      */
     public function isLocalized()
     {
-        /** @var $this \craft\app\web\Application|\craft\app\console\Application */
+        /** @var \craft\app\web\Application|\craft\app\console\Application $this */
         if (!isset($this->_isLocalized)) {
             $this->_isLocalized = ($this->getEdition() == Craft::Pro && count($this->getI18n()->getSiteLocales()) > 1);
         }
@@ -312,7 +312,7 @@ trait ApplicationTrait
      */
     public function getEdition()
     {
-        /** @var $this \craft\app\web\Application|\craft\app\console\Application */
+        /** @var \craft\app\web\Application|\craft\app\console\Application $this */
         return (int) $this->getInfo('edition');
     }
 
@@ -323,7 +323,7 @@ trait ApplicationTrait
      */
     public function getEditionName()
     {
-        /** @var $this \craft\app\web\Application|\craft\app\console\Application */
+        /** @var \craft\app\web\Application|\craft\app\console\Application $this */
         return App::getEditionName($this->getEdition());
     }
 
@@ -334,7 +334,7 @@ trait ApplicationTrait
      */
     public function getLicensedEdition()
     {
-        /** @var $this \craft\app\web\Application|\craft\app\console\Application */
+        /** @var \craft\app\web\Application|\craft\app\console\Application $this */
         $licensedEdition = $this->getCache()->get('licensedEdition');
 
         if ($licensedEdition !== false) {
@@ -351,7 +351,7 @@ trait ApplicationTrait
      */
     public function getLicensedEditionName()
     {
-        /** @var $this \craft\app\web\Application|\craft\app\console\Application */
+        /** @var \craft\app\web\Application|\craft\app\console\Application $this */
         $licensedEdition = $this->getLicensedEdition();
 
         if ($licensedEdition !== null) {
@@ -366,7 +366,7 @@ trait ApplicationTrait
      */
     public function hasWrongEdition()
     {
-        /** @var $this \craft\app\web\Application|\craft\app\console\Application */
+        /** @var \craft\app\web\Application|\craft\app\console\Application $this */
         $licensedEdition = $this->getLicensedEdition();
 
         return ($licensedEdition !== null && $licensedEdition != $this->getEdition() && !$this->canTestEditions());
@@ -381,7 +381,7 @@ trait ApplicationTrait
      */
     public function setEdition($edition)
     {
-        /** @var $this \craft\app\web\Application|\craft\app\console\Application */
+        /** @var \craft\app\web\Application|\craft\app\console\Application $this */
         $info = $this->getInfo();
         $oldEdition = $info->edition;
         $info->edition = $edition;
@@ -410,7 +410,7 @@ trait ApplicationTrait
      */
     public function requireEdition($edition, $orBetter = true)
     {
-        /** @var $this \craft\app\web\Application|\craft\app\console\Application */
+        /** @var \craft\app\web\Application|\craft\app\console\Application $this */
         if ($this->isInstalled()) {
             $installedEdition = $this->getEdition();
 
@@ -428,7 +428,7 @@ trait ApplicationTrait
      */
     public function canUpgradeEdition()
     {
-        /** @var $this \craft\app\web\Application|\craft\app\console\Application */
+        /** @var \craft\app\web\Application|\craft\app\console\Application $this */
         // Only admins can upgrade Craft
         if ($this->getUser()->getIsAdmin()) {
             // Are they either *using* or *licensed to use* something < Craft Pro?
@@ -451,7 +451,7 @@ trait ApplicationTrait
      */
     public function canTestEditions()
     {
-        /** @var $this \craft\app\web\Application|\craft\app\console\Application */
+        /** @var \craft\app\web\Application|\craft\app\console\Application $this */
         $request = $this->getRequest();
 
         return (!$request->getIsConsoleRequest() && $this->getCache()->get('editionTestableDomain@'.$request->getHostName()) == 1);
@@ -464,7 +464,7 @@ trait ApplicationTrait
      */
     public function getSiteName()
     {
-        /** @var $this \craft\app\web\Application|\craft\app\console\Application */
+        /** @var \craft\app\web\Application|\craft\app\console\Application $this */
         if (!isset($this->_siteName)) {
             // Start by checking the config
             $siteName = $this->getConfig()->getLocalized('siteName');
@@ -492,7 +492,7 @@ trait ApplicationTrait
      */
     public function getSiteUrl($protocol = null)
     {
-        /** @var $this \craft\app\web\Application|\craft\app\console\Application */
+        /** @var \craft\app\web\Application|\craft\app\console\Application $this */
         if (!isset($this->_siteUrl)) {
             // Start by checking the config
             $siteUrl = $this->getConfig()->getLocalized('siteUrl');
@@ -528,7 +528,7 @@ trait ApplicationTrait
      */
     public function setSiteUrl($siteUrl)
     {
-        /** @var $this \craft\app\web\Application|\craft\app\console\Application */
+        /** @var \craft\app\web\Application|\craft\app\console\Application $this */
         $this->_siteUrl = rtrim($siteUrl, '/').'/';
     }
 
@@ -539,7 +539,7 @@ trait ApplicationTrait
      */
     public function getSiteUid()
     {
-        /** @var $this \craft\app\web\Application|\craft\app\console\Application */
+        /** @var \craft\app\web\Application|\craft\app\console\Application $this */
         return $this->getInfo('uid');
     }
 
@@ -550,7 +550,7 @@ trait ApplicationTrait
      */
     public function isSystemOn()
     {
-        /** @var $this \craft\app\web\Application|\craft\app\console\Application */
+        /** @var \craft\app\web\Application|\craft\app\console\Application $this */
         if (is_bool($on = $this->getConfig()->get('isSystemOn'))) {
             return $on;
         }
@@ -565,7 +565,7 @@ trait ApplicationTrait
      */
     public function isInMaintenanceMode()
     {
-        /** @var $this \craft\app\web\Application|\craft\app\console\Application */
+        /** @var \craft\app\web\Application|\craft\app\console\Application $this */
         return (bool)$this->getInfo('maintenance');
     }
 
@@ -576,7 +576,7 @@ trait ApplicationTrait
      */
     public function enableMaintenanceMode()
     {
-        /** @var $this \craft\app\web\Application|\craft\app\console\Application */
+        /** @var \craft\app\web\Application|\craft\app\console\Application $this */
         return $this->_setMaintenanceMode(1);
     }
 
@@ -587,7 +587,7 @@ trait ApplicationTrait
      */
     public function disableMaintenanceMode()
     {
-        /** @var $this \craft\app\web\Application|\craft\app\console\Application */
+        /** @var \craft\app\web\Application|\craft\app\console\Application $this */
         return $this->_setMaintenanceMode(0);
     }
 
@@ -601,7 +601,7 @@ trait ApplicationTrait
      */
     public function getInfo($attribute = null)
     {
-        /** @var $this \craft\app\web\Application|\craft\app\console\Application */
+        /** @var \craft\app\web\Application|\craft\app\console\Application $this */
         if (!isset($this->_info)) {
             if ($this->isInstalled()) {
                 $row = (new Query())
@@ -641,7 +641,7 @@ trait ApplicationTrait
      */
     public function saveInfo(Info $info)
     {
-        /** @var $this \craft\app\web\Application|\craft\app\console\Application */
+        /** @var \craft\app\web\Application|\craft\app\console\Application $this */
         if ($info->validate()) {
             $attributes = Db::prepareValuesForDb($info);
 
@@ -691,7 +691,7 @@ trait ApplicationTrait
      */
     public function validateDbConfigFile()
     {
-        /** @var $this \craft\app\web\Application|\craft\app\console\Application */
+        /** @var \craft\app\web\Application|\craft\app\console\Application $this */
         if ($this->_isDbConfigValid === null) {
             $messages = [];
 
@@ -744,7 +744,7 @@ trait ApplicationTrait
      */
     public function getIsDbConnectionValid()
     {
-        /** @var $this \craft\app\web\Application|\craft\app\console\Application */
+        /** @var \craft\app\web\Application|\craft\app\console\Application $this */
         return $this->_isDbConnectionValid;
     }
 
@@ -755,7 +755,7 @@ trait ApplicationTrait
      */
     public function setIsDbConnectionValid($value)
     {
-        /** @var $this \craft\app\web\Application|\craft\app\console\Application */
+        /** @var \craft\app\web\Application|\craft\app\console\Application $this */
         $this->_isDbConnectionValid = $value;
     }
 
@@ -769,7 +769,7 @@ trait ApplicationTrait
      */
     public function getAssets()
     {
-        /** @var $this \craft\app\web\Application|\craft\app\console\Application */
+        /** @var \craft\app\web\Application|\craft\app\console\Application $this */
         return $this->get('assets');
     }
 
@@ -780,7 +780,7 @@ trait ApplicationTrait
      */
     public function getAssetIndexer()
     {
-        /** @var $this \craft\app\web\Application|\craft\app\console\Application */
+        /** @var \craft\app\web\Application|\craft\app\console\Application $this */
         return $this->get('assetIndexer');
     }
 
@@ -791,7 +791,7 @@ trait ApplicationTrait
      */
     public function getAssetTransforms()
     {
-        /** @var $this \craft\app\web\Application|\craft\app\console\Application */
+        /** @var \craft\app\web\Application|\craft\app\console\Application $this */
         return $this->get('assetTransforms');
     }
 
@@ -802,7 +802,7 @@ trait ApplicationTrait
      */
     public function getCategories()
     {
-        /** @var $this \craft\app\web\Application|\craft\app\console\Application */
+        /** @var \craft\app\web\Application|\craft\app\console\Application $this */
         return $this->get('categories');
     }
 
@@ -813,7 +813,7 @@ trait ApplicationTrait
      */
     public function getConfig()
     {
-        /** @var $this \craft\app\web\Application|\craft\app\console\Application */
+        /** @var \craft\app\web\Application|\craft\app\console\Application $this */
         return $this->get('config');
     }
 
@@ -824,7 +824,7 @@ trait ApplicationTrait
      */
     public function getContent()
     {
-        /** @var $this \craft\app\web\Application|\craft\app\console\Application */
+        /** @var \craft\app\web\Application|\craft\app\console\Application $this */
         return $this->get('content');
     }
 
@@ -835,7 +835,7 @@ trait ApplicationTrait
      */
     public function getDashboard()
     {
-        /** @var $this \craft\app\web\Application|\craft\app\console\Application */
+        /** @var \craft\app\web\Application|\craft\app\console\Application $this */
         return $this->get('dashboard');
     }
 
@@ -846,7 +846,7 @@ trait ApplicationTrait
      */
     public function getDeprecator()
     {
-        /** @var $this \craft\app\web\Application|\craft\app\console\Application */
+        /** @var \craft\app\web\Application|\craft\app\console\Application $this */
         return $this->get('deprecator');
     }
 
@@ -857,7 +857,7 @@ trait ApplicationTrait
      */
     public function getElementIndexes()
     {
-        /** @var $this \craft\app\web\Application|\craft\app\console\Application */
+        /** @var \craft\app\web\Application|\craft\app\console\Application $this */
         return $this->get('elementIndexes');
     }
 
@@ -868,7 +868,7 @@ trait ApplicationTrait
      */
     public function getElements()
     {
-        /** @var $this \craft\app\web\Application|\craft\app\console\Application */
+        /** @var \craft\app\web\Application|\craft\app\console\Application $this */
         return $this->get('elements');
     }
 
@@ -879,7 +879,7 @@ trait ApplicationTrait
      */
     public function getEmailMessages()
     {
-        /** @var $this \craft\app\web\Application|\craft\app\console\Application */
+        /** @var \craft\app\web\Application|\craft\app\console\Application $this */
         return $this->get('emailMessages');
     }
 
@@ -890,7 +890,7 @@ trait ApplicationTrait
      */
     public function getEntries()
     {
-        /** @var $this \craft\app\web\Application|\craft\app\console\Application */
+        /** @var \craft\app\web\Application|\craft\app\console\Application $this */
         return $this->get('entries');
     }
 
@@ -901,7 +901,7 @@ trait ApplicationTrait
      */
     public function getEntryRevisions()
     {
-        /** @var $this \craft\app\web\Application|\craft\app\console\Application */
+        /** @var \craft\app\web\Application|\craft\app\console\Application $this */
         return $this->get('entryRevisions');
     }
 
@@ -912,7 +912,7 @@ trait ApplicationTrait
      */
     public function getEt()
     {
-        /** @var $this \craft\app\web\Application|\craft\app\console\Application */
+        /** @var \craft\app\web\Application|\craft\app\console\Application $this */
         return $this->get('et');
     }
 
@@ -923,7 +923,7 @@ trait ApplicationTrait
      */
     public function getFeeds()
     {
-        /** @var $this \craft\app\web\Application|\craft\app\console\Application */
+        /** @var \craft\app\web\Application|\craft\app\console\Application $this */
         return $this->get('feeds');
     }
 
@@ -934,7 +934,7 @@ trait ApplicationTrait
      */
     public function getFields()
     {
-        /** @var $this \craft\app\web\Application|\craft\app\console\Application */
+        /** @var \craft\app\web\Application|\craft\app\console\Application $this */
         return $this->get('fields');
     }
 
@@ -945,7 +945,7 @@ trait ApplicationTrait
      */
     public function getGlobals()
     {
-        /** @var $this \craft\app\web\Application|\craft\app\console\Application */
+        /** @var \craft\app\web\Application|\craft\app\console\Application $this */
         return $this->get('globals');
     }
 
@@ -956,7 +956,7 @@ trait ApplicationTrait
      */
     public function getImages()
     {
-        /** @var $this \craft\app\web\Application|\craft\app\console\Application */
+        /** @var \craft\app\web\Application|\craft\app\console\Application $this */
         return $this->get('images');
     }
 
@@ -967,7 +967,7 @@ trait ApplicationTrait
      */
     public function getLocale()
     {
-        /** @var $this \craft\app\web\Application|\craft\app\console\Application */
+        /** @var \craft\app\web\Application|\craft\app\console\Application $this */
         return $this->get('locale');
     }
 
@@ -978,7 +978,7 @@ trait ApplicationTrait
      */
     public function getMailer()
     {
-        /** @var $this \craft\app\web\Application|\craft\app\console\Application */
+        /** @var \craft\app\web\Application|\craft\app\console\Application $this */
         return $this->get('mailer');
     }
 
@@ -989,7 +989,7 @@ trait ApplicationTrait
      */
     public function getMatrix()
     {
-        /** @var $this \craft\app\web\Application|\craft\app\console\Application */
+        /** @var \craft\app\web\Application|\craft\app\console\Application $this */
         return $this->get('matrix');
     }
 
@@ -1000,7 +1000,7 @@ trait ApplicationTrait
      */
     public function getMigrator()
     {
-        /** @var $this \craft\app\web\Application|\craft\app\console\Application */
+        /** @var \craft\app\web\Application|\craft\app\console\Application $this */
         return $this->get('migrator');
     }
 
@@ -1011,7 +1011,7 @@ trait ApplicationTrait
      */
     public function getPath()
     {
-        /** @var $this \craft\app\web\Application|\craft\app\console\Application */
+        /** @var \craft\app\web\Application|\craft\app\console\Application $this */
         return $this->get('path');
     }
 
@@ -1022,7 +1022,7 @@ trait ApplicationTrait
      */
     public function getPlugins()
     {
-        /** @var $this \craft\app\web\Application|\craft\app\console\Application */
+        /** @var \craft\app\web\Application|\craft\app\console\Application $this */
         return $this->get('plugins');
     }
 
@@ -1033,7 +1033,7 @@ trait ApplicationTrait
      */
     public function getRelations()
     {
-        /** @var $this \craft\app\web\Application|\craft\app\console\Application */
+        /** @var \craft\app\web\Application|\craft\app\console\Application $this */
         return $this->get('relations');
     }
 
@@ -1044,7 +1044,7 @@ trait ApplicationTrait
      */
     public function getResources()
     {
-        /** @var $this \craft\app\web\Application|\craft\app\console\Application */
+        /** @var \craft\app\web\Application|\craft\app\console\Application $this */
         return $this->get('resources');
     }
 
@@ -1055,7 +1055,7 @@ trait ApplicationTrait
      */
     public function getRoutes()
     {
-        /** @var $this \craft\app\web\Application|\craft\app\console\Application */
+        /** @var \craft\app\web\Application|\craft\app\console\Application $this */
         return $this->get('routes');
     }
 
@@ -1066,7 +1066,7 @@ trait ApplicationTrait
      */
     public function getSearch()
     {
-        /** @var $this \craft\app\web\Application|\craft\app\console\Application */
+        /** @var \craft\app\web\Application|\craft\app\console\Application $this */
         return $this->get('search');
     }
 
@@ -1077,7 +1077,7 @@ trait ApplicationTrait
      */
     public function getSections()
     {
-        /** @var $this \craft\app\web\Application|\craft\app\console\Application */
+        /** @var \craft\app\web\Application|\craft\app\console\Application $this */
         return $this->get('sections');
     }
 
@@ -1088,7 +1088,7 @@ trait ApplicationTrait
      */
     public function getStructures()
     {
-        /** @var $this \craft\app\web\Application|\craft\app\console\Application */
+        /** @var \craft\app\web\Application|\craft\app\console\Application $this */
         return $this->get('structures');
     }
 
@@ -1099,7 +1099,7 @@ trait ApplicationTrait
      */
     public function getSystemSettings()
     {
-        /** @var $this \craft\app\web\Application|\craft\app\console\Application */
+        /** @var \craft\app\web\Application|\craft\app\console\Application $this */
         return $this->get('systemSettings');
     }
 
@@ -1110,7 +1110,7 @@ trait ApplicationTrait
      */
     public function getTags()
     {
-        /** @var $this \craft\app\web\Application|\craft\app\console\Application */
+        /** @var \craft\app\web\Application|\craft\app\console\Application $this */
         return $this->get('tags');
     }
 
@@ -1121,7 +1121,7 @@ trait ApplicationTrait
      */
     public function getTasks()
     {
-        /** @var $this \craft\app\web\Application|\craft\app\console\Application */
+        /** @var \craft\app\web\Application|\craft\app\console\Application $this */
         return $this->get('tasks');
     }
 
@@ -1132,7 +1132,7 @@ trait ApplicationTrait
      */
     public function getTemplateCaches()
     {
-        /** @var $this \craft\app\web\Application|\craft\app\console\Application */
+        /** @var \craft\app\web\Application|\craft\app\console\Application $this */
         return $this->get('templateCaches');
     }
 
@@ -1143,7 +1143,7 @@ trait ApplicationTrait
      */
     public function getTokens()
     {
-        /** @var $this \craft\app\web\Application|\craft\app\console\Application */
+        /** @var \craft\app\web\Application|\craft\app\console\Application $this */
         return $this->get('tokens');
     }
 
@@ -1154,7 +1154,7 @@ trait ApplicationTrait
      */
     public function getUpdates()
     {
-        /** @var $this \craft\app\web\Application|\craft\app\console\Application */
+        /** @var \craft\app\web\Application|\craft\app\console\Application $this */
         return $this->get('updates');
     }
 
@@ -1165,7 +1165,7 @@ trait ApplicationTrait
      */
     public function getUserGroups()
     {
-        /** @var $this \craft\app\web\Application|\craft\app\console\Application */
+        /** @var \craft\app\web\Application|\craft\app\console\Application $this */
         return $this->get('userGroups');
     }
 
@@ -1176,7 +1176,7 @@ trait ApplicationTrait
      */
     public function getUserPermissions()
     {
-        /** @var $this \craft\app\web\Application|\craft\app\console\Application */
+        /** @var \craft\app\web\Application|\craft\app\console\Application $this */
         return $this->get('userPermissions');
     }
 
@@ -1187,7 +1187,7 @@ trait ApplicationTrait
      */
     public function getUsers()
     {
-        /** @var $this \craft\app\web\Application|\craft\app\console\Application */
+        /** @var \craft\app\web\Application|\craft\app\console\Application $this */
         return $this->get('users');
     }
 
@@ -1198,7 +1198,7 @@ trait ApplicationTrait
      */
     public function getVolumes()
     {
-        /** @var $this \craft\app\web\Application|\craft\app\console\Application */
+        /** @var \craft\app\web\Application|\craft\app\console\Application $this */
         return $this->get('volumes');
     }
 
@@ -1214,7 +1214,7 @@ trait ApplicationTrait
      */
     private function _getComponentDefinition($id)
     {
-        /** @var $this \craft\app\web\Application|\craft\app\console\Application */
+        /** @var \craft\app\web\Application|\craft\app\console\Application $this */
         switch ($id) {
             case 'assetManager':
                 return $this->_getAssetManagerDefinition();
@@ -1240,7 +1240,7 @@ trait ApplicationTrait
      */
     private function _getAssetManagerDefinition()
     {
-        /** @var $this \craft\app\web\Application|\craft\app\console\Application */
+        /** @var \craft\app\web\Application|\craft\app\console\Application $this */
         $configService = Craft::$app->getConfig();
 
         return [
@@ -1258,7 +1258,7 @@ trait ApplicationTrait
      */
     private function _getCacheDefinition()
     {
-        /** @var $this \craft\app\web\Application|\craft\app\console\Application */
+        /** @var \craft\app\web\Application|\craft\app\console\Application $this */
         $configService = Craft::$app->getConfig();
         $cacheMethod = $configService->get('cacheMethod');
 
@@ -1319,7 +1319,7 @@ trait ApplicationTrait
      */
     private function _getDbDefinition()
     {
-        /** @var $this \craft\app\web\Application|\craft\app\console\Application */
+        /** @var \craft\app\web\Application|\craft\app\console\Application $this */
         $configService = $this->getConfig();
 
         try {
@@ -1368,7 +1368,7 @@ trait ApplicationTrait
      */
     private function _getMailerDefinition()
     {
-        /** @var $this \craft\app\web\Application|\craft\app\console\Application */
+        /** @var \craft\app\web\Application|\craft\app\console\Application $this */
         return $this->getSystemSettings()->getSettings('mailer');
     }
 
@@ -1379,7 +1379,7 @@ trait ApplicationTrait
      */
     private function _getLocaleDefinition()
     {
-        /** @var $this \craft\app\web\Application|\craft\app\console\Application */
+        /** @var \craft\app\web\Application|\craft\app\console\Application $this */
         return new Locale($this->language);
     }
 
@@ -1390,7 +1390,7 @@ trait ApplicationTrait
      */
     private function _getLogDispatcherDefinition()
     {
-        /** @var $this \craft\app\web\Application|\craft\app\console\Application */
+        /** @var \craft\app\web\Application|\craft\app\console\Application $this */
         $isConsoleRequest = $this->getRequest()->getIsConsoleRequest();
 
         // Only log console requests and web requests that aren't getAuthTimeout requests
@@ -1430,7 +1430,7 @@ trait ApplicationTrait
      */
     private function _getNormalizedTablePrefix()
     {
-        /** @var $this \craft\app\web\Application|\craft\app\console\Application */
+        /** @var \craft\app\web\Application|\craft\app\console\Application $this */
         // Table prefixes cannot be longer than 5 characters
         $tablePrefix = rtrim($this->getConfig()->get('tablePrefix', ConfigCategory::Db), '_');
 
@@ -1452,7 +1452,7 @@ trait ApplicationTrait
      */
     private function _setLanguage()
     {
-        /** @var $this \craft\app\web\Application|\craft\app\console\Application */
+        /** @var \craft\app\web\Application|\craft\app\console\Application $this */
         // Defend against an infinite _setLanguage() loop
         if (!$this->_gettingLanguage) {
             $this->_gettingLanguage = true;
@@ -1473,7 +1473,7 @@ trait ApplicationTrait
      */
     private function _setTimeZone()
     {
-        /** @var $this \craft\app\web\Application|\craft\app\console\Application */
+        /** @var \craft\app\web\Application|\craft\app\console\Application $this */
         $timezone = $this->getConfig()->get('timezone');
 
         if (!$timezone) {
@@ -1494,7 +1494,7 @@ trait ApplicationTrait
      */
     private function _setMaintenanceMode($value)
     {
-        /** @var $this \craft\app\web\Application|\craft\app\console\Application */
+        /** @var \craft\app\web\Application|\craft\app\console\Application $this */
         $info = $this->getInfo();
         $info->maintenance = $value;
 
@@ -1508,7 +1508,7 @@ trait ApplicationTrait
      */
     private function _processConnectionString()
     {
-        /** @var $this \craft\app\web\Application|\craft\app\console\Application */
+        /** @var \craft\app\web\Application|\craft\app\console\Application $this */
         $unixSocket = $this->getConfig()->get('unixSocket', ConfigCategory::Db);
 
         if (!empty($unixSocket)) {
@@ -1528,7 +1528,7 @@ trait ApplicationTrait
      */
     private function _getFallbackLanguage()
     {
-        /** @var $this \craft\app\web\Application|\craft\app\console\Application */
+        /** @var \craft\app\web\Application|\craft\app\console\Application $this */
         // See if we have the CP translated in one of the user's browsers preferred language(s)
         $language = $this->getTranslatedBrowserLanguage();
 
@@ -1547,7 +1547,7 @@ trait ApplicationTrait
      */
     private function _setEditionComponents()
     {
-        /** @var $this \craft\app\web\Application|\craft\app\console\Application */
+        /** @var \craft\app\web\Application|\craft\app\console\Application $this */
         // Set the appropriate edition components
         $edition = $this->getEdition();
 
@@ -1569,7 +1569,7 @@ trait ApplicationTrait
      */
     private function _isCraftUpdating()
     {
-        /** @var $this \craft\app\web\Application|\craft\app\console\Application */
+        /** @var \craft\app\web\Application|\craft\app\console\Application $this */
         $request = $this->getRequest();
 
         if ($this->getUpdates()->isCraftDbMigrationNeeded() ||
