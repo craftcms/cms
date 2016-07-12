@@ -435,13 +435,13 @@ class Config extends Component
     public function getUserSessionDuration($remembered = false)
     {
         if ($remembered) {
-            $duration = Craft::$app->getConfig()->get('rememberedUserSessionDuration');
+            $duration = $this->get('rememberedUserSessionDuration');
         }
 
         // Even if $remembered = true, it's possible that they've disabled long-term user sessions
         // by setting rememberedUserSessionDuration = 0
         if (empty($duration)) {
-            $duration = Craft::$app->getConfig()->get('userSessionDuration');
+            $duration = $this->get('userSessionDuration');
         }
 
         if ($duration) {
