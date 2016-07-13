@@ -207,6 +207,9 @@ class Et
             if (!Craft::$app->getCache()->get('etConnectFailure')) {
                 try {
                     $client = new Client([
+                        'headers' => [
+                            'User-Agent' => $this->_userAgent.' '.\GuzzleHttp\default_user_agent()
+                        ],
                         'timeout' => $this->getTimeout(),
                         'connect_timeout' => $this->getConnectTimeout(),
                         'allow_redirects' => $this->getAllowRedirects(),
