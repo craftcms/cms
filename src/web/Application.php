@@ -129,7 +129,7 @@ class Application extends \yii\web\Application
 
         // Send the X-Powered-By header?
         if ($this->getConfig()->get('sendPoweredByHeader')) {
-            Header::setHeader(['X-Powered-By' => 'Craft CMS']);
+            Header::setHeader(['X-Powered-By' => $this->name]);
         } else {
             // In case PHP is already setting one
             Header::removeHeader('X-Powered-By');
