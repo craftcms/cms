@@ -197,7 +197,7 @@ class Install extends InstallMigration
                     'dateIndexed' => 'datetime DEFAULT NULL',
                 ],
                 'indexes' => [
-                    ['volumeId,fileId,location', false],
+                    ['volumeId,assetId,location', false],
                 ],
             ],
             '{{%assettransforms}}' => [
