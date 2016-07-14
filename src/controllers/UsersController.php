@@ -703,7 +703,7 @@ class UsersController extends Controller
      *
      * This action behaves the same regardless of whether it was requested from the Control Panel or the front-end site.
      *
-     * @return Response
+     * @return Response|void
      * @throws NotFoundHttpException if the requested user cannot be found
      * @throws BadRequestHttpException if attempting to create a client account, and one already exists
      * @throws ForbiddenHttpException if attempting public registration but public registration is not allowed
@@ -712,15 +712,15 @@ class UsersController extends Controller
     {
         $this->requirePostRequest();
 
+        $request = Craft::$app->getRequest();
         $userComponent = Craft::$app->getUser();
         $currentUser = $userComponent->getIdentity();
-        $requireEmailVerification = Craft::$app->getSystemSettings()->getSetting('users',
-            'requireEmailVerification');
+        $requireEmailVerification = Craft::$app->getSystemSettings()->getSetting('users', 'requireEmailVerification');
 
         // Get the user being edited
         // ---------------------------------------------------------------------
 
-        $userId = Craft::$app->getRequest()->getBodyParam('userId');
+        $userId = $request->getBodyParam('userId');
         $isNewUser = !$userId;
         $thisIsPublicRegistration = false;
 
@@ -789,7 +789,7 @@ class UsersController extends Controller
 
         // Are they allowed to set the email address?
         if ($isNewUser || $isCurrentUser || $currentUser->can('changeUserEmails')) {
-            $newEmail = Craft::$app->getRequest()->getBodyParam('email');
+            $newEmail = $request->getBodyParam('email');
 
             // Make sure it actually changed
             if ($newEmail && $newEmail == $user->email) {
@@ -798,7 +798,7 @@ class UsersController extends Controller
 
             if ($newEmail) {
                 // Does that email need to be verified?
-                if ($requireEmailVerification && (!$currentUser || !$currentUser->admin || Craft::$app->getRequest()->getBodyParam('sendVerificationEmail'))) {
+                if ($requireEmailVerification && (!$currentUser || !$currentUser->admin || $request->getBodyParam('sendVerificationEmail'))) {
                     // Save it as an unverified email for now
                     $user->unverifiedEmail = $newEmail;
                     $verifyNewEmail = true;
@@ -815,12 +815,11 @@ class UsersController extends Controller
 
         // Are they allowed to set a new password?
         if ($thisIsPublicRegistration) {
-            $user->newPassword = Craft::$app->getRequest()->getBodyParam('password',
-                '');
+            $user->newPassword = $request->getBodyParam('password', '');
         } else {
             if ($isCurrentUser) {
                 // If there was a newPassword input but it was empty, pretend it didn't exist
-                $user->newPassword = Craft::$app->getRequest()->getBodyParam('newPassword') ?: null;
+                $user->newPassword = $request->getBodyParam('newPassword') ?: null;
             }
         }
 
@@ -842,14 +841,12 @@ class UsersController extends Controller
         if (Craft::$app->getConfig()->get('useEmailAsUsername')) {
             $user->username = $user->email;
         } else {
-            $user->username = Craft::$app->getRequest()->getBodyParam('username',
+            $user->username = $request->getBodyParam('username',
                 ($user->username ? $user->username : $user->email));
         }
 
-        $user->firstName = Craft::$app->getRequest()->getBodyParam('firstName',
-            $user->firstName);
-        $user->lastName = Craft::$app->getRequest()->getBodyParam('lastName',
-            $user->lastName);
+        $user->firstName = $request->getBodyParam('firstName', $user->firstName);
+        $user->lastName = $request->getBodyParam('lastName', $user->lastName);
 
         // If email verification is required, then new users will be saved in a pending state,
         // even if an admin is doing this and opted to not send the verification email
@@ -859,10 +856,8 @@ class UsersController extends Controller
 
         // There are some things only admins can change
         if ($currentUser && $currentUser->admin) {
-            $user->passwordResetRequired = (bool)Craft::$app->getRequest()->getBodyParam('passwordResetRequired',
-                $user->passwordResetRequired);
-            $user->admin = (bool)Craft::$app->getRequest()->getBodyParam('admin',
-                $user->admin);
+            $user->passwordResetRequired = (bool)$request->getBodyParam('passwordResetRequired', $user->passwordResetRequired);
+            $user->admin = (bool)$request->getBodyParam('admin', $user->admin);
         }
 
         // If this is Craft Pro, grab any profile content from post
@@ -878,24 +873,20 @@ class UsersController extends Controller
 
         if ($userPhoto && !Image::isImageManipulatable($userPhoto->getExtension())) {
             $imageValidates = false;
-            $user->addError('userPhoto', Craft::t('The user photo provided is not an image.'));
+            $user->addError('userPhoto', Craft::t('app', 'The user photo provided is not an image.'));
         }
 
         if ($imageValidates && Craft::$app->getUsers()->saveUser($user)) {
             // Save their preferences too
             $preferences = [
-                'locale' => Craft::$app->getRequest()->getBodyParam('preferredLocale',
-                    $user->getPreference('locale')),
-                'weekStartDay' => Craft::$app->getRequest()->getBodyParam('weekStartDay',
-                    $user->getPreference('weekStartDay')),
+                'locale' => $request->getBodyParam('preferredLocale', $user->getPreference('locale')),
+                'weekStartDay' => $request->getBodyParam('weekStartDay', $user->getPreference('weekStartDay')),
             ];
 
             if ($user->admin) {
                 $preferences = array_merge($preferences, [
-                    'enableDebugToolbarForSite' => (bool)Craft::$app->getRequest()->getBodyParam('enableDebugToolbarForSite',
-                        $user->getPreference('enableDebugToolbarForSite')),
-                    'enableDebugToolbarForCp' => (bool)Craft::$app->getRequest()->getBodyParam('enableDebugToolbarForCp',
-                        $user->getPreference('enableDebugToolbarForCp')),
+                    'enableDebugToolbarForSite' => (bool)$request->getBodyParam('enableDebugToolbarForSite', $user->getPreference('enableDebugToolbarForSite')),
+                    'enableDebugToolbarForCp' => (bool)$request->getBodyParam('enableDebugToolbarForCp', $user->getPreference('enableDebugToolbarForCp')),
                 ]);
             }
 
@@ -961,14 +952,13 @@ class UsersController extends Controller
                 $this->_maybeLoginUserAfterAccountActivation($user);
             }
 
-            if (Craft::$app->getRequest()->getIsAjax()) {
+            if ($request->getIsAjax()) {
                 return $this->asJson([
                     'success' => true,
                     'id' => $user->id
                 ]);
             } else {
-                Craft::$app->getSession()->setNotice(Craft::t('app',
-                    'User saved.'));
+                Craft::$app->getSession()->setNotice(Craft::t('app', 'User saved.'));
 
                 // Is this public registration, and is the user going to be activated automatically?
                 if ($publicActivation) {
@@ -978,12 +968,10 @@ class UsersController extends Controller
                 }
             }
         } else {
-            if (Craft::$app->getRequest()->getIsAjax()) {
-                return $this->asErrorJson(Craft::t('app',
-                    'Couldn’t save user.'));
+            if ($request->getIsAjax()) {
+                return $this->asErrorJson(Craft::t('app', 'Couldn’t save user.'));
             } else {
-                Craft::$app->getSession()->setError(Craft::t('app',
-                    'Couldn’t save user.'));
+                Craft::$app->getSession()->setError(Craft::t('app', 'Couldn’t save user.'));
 
                 // Send the account back to the template
                 Craft::$app->getUrlManager()->setRouteParams([
