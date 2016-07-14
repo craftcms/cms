@@ -953,7 +953,7 @@ class Assets extends Component
         VolumeFolderModel $folder
     ) {
         $volume = $folder->getVolume();
-        $fileList = $volume->getFileList($folder->path);
+        $fileList = $volume->getFileList($folder->path, false);
 
         // Flip the array for faster lookup
         $existingFiles = [];

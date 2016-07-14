@@ -49,10 +49,11 @@ interface VolumeInterface extends SavableComponentInterface
      * List files.
      *
      * @param string $directory The path of the directory to list files of.
+     * @param boolean $recursive whether to fetch file list recursively
      *
      * @return array
      */
-    public function getFileList($directory);
+    public function getFileList($directory, $recursive = true);
 
     /**
      * Creates a file.

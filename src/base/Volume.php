@@ -146,9 +146,9 @@ abstract class Volume extends SavableComponent implements VolumeInterface
     /**
      * @inheritdoc
      */
-    public function getFileList($directory)
+    public function getFileList($directory, $recursive = true)
     {
-        return $this->getFilesystem()->listContents($directory, true);
+        return $this->getFilesystem()->listContents($directory, $recursive);
     }
 
     /**
