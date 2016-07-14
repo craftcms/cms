@@ -3,9 +3,9 @@
 $config = [
     'id' => 'Craft',
     'name' => 'Craft',
-    'version' => '@@@version@@@',
+    'version' => '3.0',
     'build' => '@@@build@@@',
-    'schemaVersion' => '@@@schemaVersion@@@',
+    'schemaVersion' => '3.0.4',
     'releaseDate' => '@@@releaseDate@@@',
     'minBuildRequired' => '@@@minBuildRequired@@@',
     'minBuildUrl' => '@@@minBuildUrl@@@',
@@ -17,9 +17,7 @@ $config = [
 
 /* HIDE */
 // Default version/build values for running Craft directly from the source
-$config['version'] = '3.0';
 $config['build'] = '1';
-$config['schemaVersion'] = '3.0.4';
 $config['releaseDate'] = '1429092000';
 $config['minBuildRequired'] = '0';
 $config['minBuildUrl'] = 'http://craftcms.com/';

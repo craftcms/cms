@@ -71,7 +71,7 @@ Craft has a custom build script that does the following:
 * Optionally runs any unit tests found in Source/craft/app/tests/
 * Copies all files from Source/ into a build directory
 * Deletes some unneeded files and folders from the build directory
-* Parses all Craft PHP files for a few tokens (e.g. “@@@version@@@”)
+* Parses all Craft PHP files for a few tokens (e.g. “@@@build@@@”)
 * Creates a list of all Craft classes that should be autoload-able, and saves it in craft/app/classes.php
 * Optionally copies the final craft/app/ folder to a destination of your choosing, and sets app/etc/console/yiic.php’s permissions to 777
 
