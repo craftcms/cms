@@ -1217,7 +1217,7 @@ class Io
      * @param string  $path           The path of the folder to delete
      * @param boolean $suppressErrors Whether to suppress any PHP Notices/Warnings/Errors (usually permissions related)
      *
-     * @return Whether the folder deletion was successful
+     * @return boolean Whether the folder deletion was successful
      */
     public static function deleteFolder($path, $suppressErrors = false)
     {
