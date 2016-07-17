@@ -21,7 +21,7 @@ Craft.Grid = Garnish.Base.extend(
 
 	_refreshingCols: false,
 	_refreshColsAfterRefresh: false,
-	_setItems: null,
+	_forceRefreshColsAfterRefresh: false,
 
 	init: function(container, settings)
 	{
@@ -101,6 +101,9 @@ Craft.Grid = Garnish.Base.extend(
 	{
 		if (this._refreshingCols) {
 			this._refreshColsAfterRefresh = true;
+			if (force) {
+				this._forceRefreshColsAfterRefresh = true;
+			}
 			return;
 		}
 
@@ -108,6 +111,7 @@ Craft.Grid = Garnish.Base.extend(
 
 		if (!this.items.length)
 		{
+			this.completeRefreshCols();
 			return;
 		}
 
@@ -121,7 +125,7 @@ Craft.Grid = Garnish.Base.extend(
 
 		if (this.refreshCols._.scrollHeight == 0)
 		{
-			delete this.refreshCols._;
+			this.completeRefreshCols();
 			return;
 		}
 
@@ -147,7 +151,7 @@ Craft.Grid = Garnish.Base.extend(
 		// Same number of columns as before?
 		if (force !== true && this.totalCols === this.refreshCols._.totalCols)
 		{
-			delete this.refreshCols._;
+			this.completeRefreshCols();
 			return;
 		}
 
@@ -420,18 +424,34 @@ Craft.Grid = Garnish.Base.extend(
 			}
 		}
 
-		this.onRefreshCols();
-
-		delete this.refreshCols._;
+		this.completeRefreshCols();
 
 		// Resume container resize listening
 		this.addListener(this.$container, 'resize', this.handleContainerHeightProxy);
-		this._refreshingCols = false;
-		if (this._refreshColsAfterRefresh) {
-			this._refreshColsAfterRefresh = false;
-			this.refreshCols();
+
+		this.onRefreshCols();
+	},
+
+	completeRefreshCols: function()
+	{
+		// Delete the internal variable object
+		if (typeof this.refreshCols._ != typeof undefined)
+		{
+			delete this.refreshCols._;
 		}
-	} ,
+
+		this._refreshingCols = false;
+
+		if (this._refreshColsAfterRefresh) {
+			force = this._forceRefreshColsAfterRefresh;
+			this._refreshColsAfterRefresh = false;
+			this._forceRefreshColsAfterRefresh = false;
+
+			Garnish.requestAnimationFrame($.proxy(function() {
+				this.refreshCols(force);
+			}, this))
+		}
+	},
 
 	getItemWidth: function(colspan)
 	{

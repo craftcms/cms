@@ -1,7 +1,7 @@
 /*
 	Redactor II
-	Version 1.2.4
-	Updated: May 21, 2015
+	Version 1.2.5
+	Updated: July 4, 2015
 
 	http://imperavi.com/redactor/
 
@@ -101,7 +101,7 @@
 
 	// Options
 	$.Redactor = Redactor;
-	$.Redactor.VERSION = '1.2.4';
+	$.Redactor.VERSION = '1.2.5';
 	$.Redactor.modules = ['air', 'autosave', 'block', 'buffer', 'build', 'button', 'caret', 'clean', 'code', 'core', 'detect', 'dropdown',
 						  'events', 'file', 'focus', 'image', 'indent', 'inline', 'insert', 'keydown', 'keyup',
 						  'lang', 'line', 'link', 'linkify', 'list', 'marker', 'modal', 'observe', 'offset', 'paragraphize', 'paste', 'placeholder',
@@ -143,7 +143,7 @@
 		pasteImages: true,
 		pasteLinks: true,
 		pasteBlockTags: ['pre', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'table', 'tbody', 'thead', 'tfoot', 'th', 'tr', 'td', 'ul', 'ol', 'li', 'blockquote', 'p', 'figure', 'figcaption'],
-		pasteInlineTags: ['br', 'strong', 'ins', 'code', 'del', 'samp', 'kbd', 'sup', 'sub', 'mark', 'var', 'cite', 'small', 'b', 'u', 'em', 'i'],
+		pasteInlineTags: ['br', 'strong', 'ins', 'code', 'del', 'span', 'samp', 'kbd', 'sup', 'sub', 'mark', 'var', 'cite', 'small', 'b', 'u', 'em', 'i'],
 
 		preClass: false, // string
 		preSpaces: 4, // or false
@@ -176,6 +176,7 @@
 		linkTooltip: true,
 		linkNofollow: false,
 		linkSize: 30,
+		pasteLinkTarget: false,
 
 		videoContainerClass: 'video-container',
 
@@ -191,12 +192,18 @@
 		formatting: ['p', 'blockquote', 'pre', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6'],
 		formattingAdd: false,
 
-		buttons: ['format', 'bold', 'italic', 'deleted', 'lists', 'image', 'file', 'link', 'horizontalrule'], // + 'underline', 'ol', 'ul', 'indent', 'outdent'
+		buttons: ['format', 'bold', 'italic', 'deleted', 'lists', 'image', 'file', 'link'], // + 'horizontalrule', 'underline', 'ol', 'ul', 'indent', 'outdent'
 
 		buttonsHide: [],
 		buttonsHideOnMobile: [],
 
 		script: true,
+		removeComments: true,
+		replaceTags: {
+			'b': 'strong',
+			'i': 'em',
+			'strike': 'del'
+		},
 
 		// shortcuts
 		shortcuts: {
@@ -1685,7 +1692,10 @@
 					$.each(buttons, $.proxy(function(i, s)
 					{
 						var index = this.opts.buttons.indexOf(s);
-						this.opts.buttons.splice(index, 1);
+						if (index !== -1)
+						{
+						    this.opts.buttons.splice(index, 1);
+						}
 
 					}, this));
 				},
@@ -1889,9 +1899,9 @@
 				},
 				add: function(key, title)
 				{
-					if (this.opts.toolbar === false)
+					if (this.button.isAdded(key) !== true)
 					{
-						return;
+						return $();
 					}
 
 					var btn = this.button.build(key, { title: title });
@@ -1902,9 +1912,9 @@
 				},
 				addFirst: function(key, title)
 				{
-					if (this.opts.toolbar === false)
+					if (this.button.isAdded(key) !== true)
 					{
-						return;
+						return $();
 					}
 
 					var btn = this.button.build(key, { title: title });
@@ -1915,9 +1925,9 @@
 				},
 				addAfter: function(afterkey, key, title)
 				{
-					if (this.opts.toolbar === false)
+					if (this.button.isAdded(key) !== true)
 					{
-						return;
+						return $();
 					}
 
 					var btn = this.button.build(key, { title: title });
@@ -1936,9 +1946,9 @@
 				},
 				addBefore: function(beforekey, key, title)
 				{
-					if (this.opts.toolbar === false)
+					if (this.button.isAdded(key) !== true)
 					{
-						return;
+						return $();
 					}
 
 					var btn = this.button.build(key, { title: title });
@@ -1954,6 +1964,16 @@
 					}
 
 					return btn;
+				},
+				isAdded: function(key)
+				{
+	                var index = this.opts.buttonsHideOnMobile.indexOf(key);
+                    if (this.opts.toolbar === false || (index !== -1 && this.detect.isMobile()))
+                    {
+					    return false;
+					}
+
+					return true;
 				},
 				setIcon: function($btn, icon)
 				{
@@ -2368,21 +2388,21 @@
 					// replace tags
 					var self = this;
 					var $div = $("<div/>").html($.parseHTML(html, document, true));
-					var replacement = {
-						'b': 'strong',
-						'i': 'em',
-						'strike': 'del'
-					};
 
-					$div.find('b, i, strike').each(function(i,s)
+					var replacement = this.opts.replaceTags;
+					if (replacement)
 					{
-						self.utils.replaceToTag(s, replacement[s.tagName.toLowerCase()]);
-					});
+                        var keys = Object.keys(this.opts.replaceTags);
+    					$div.find(keys.join(',')).each(function(i,s)
+    					{
+    						self.utils.replaceToTag(s, replacement[s.tagName.toLowerCase()]);
+    					});
+					}
 
 					html = $div.html();
 
 					// remove tags
-					var tags = ['font', 'html', 'head', 'link', 'body', 'meta', 'applet', 'span'];
+					var tags = ['font', 'html', 'head', 'link', 'body', 'meta', 'applet'];
 					if (!this.opts.script)
 					{
 						tags.push('script');
@@ -2391,7 +2411,10 @@
 					html = this.clean.stripTags(html, tags);
 
 					// remove html comments
-					html = html.replace(/<!--[\s\S]*?-->/gi, '');
+					if (this.opts.removeComments)
+					{
+					    html = html.replace(/<!--[\s\S]*?-->/gi, '');
+					}
 
 					// paragraphize
 					html = this.paragraphize.load(html);
@@ -2437,10 +2460,13 @@
 						$(this).contents().unwrap();
 					});
 
-					// remove span
-					$div.find('span').each(function()
+					// remove span without attributes
+				    $div.find('span').each(function()
 					{
-						$(this).contents().unwrap();
+    					if (this.attributes.length === 0)
+    					{
+						    $(this).contents().unwrap();
+						}
 					});
 
 					$div.find('.redactor-selection-marker, #redactor-insert-marker').remove();
@@ -2533,6 +2559,7 @@
 						html = this.clean.removeSpans(html);
 						html = this.clean.removeEmptyInlineTags(html);
 
+
 						if (data.encode === false)
 						{
 							html = html.replace(/&/g, '&amp;');
@@ -2558,6 +2585,7 @@
 					{
 						html = this.clean.encodeHtml(html);
 					}
+
 
 					if (data.paragraphize)
 					{
@@ -2702,15 +2730,31 @@
 				},
 				convertTags: function(html, data)
 				{
-					// links & images
+
+                    var $div = $('<div>').html(html);
+
+                    // remove iframe
+					$div.find('iframe').remove();
+
+					// link target & attrs
+					var $links = $div.find('a');
+					$links.removeAttr('style');
+					if (this.opts.pasteLinkTarget !== false)
+					{
+    					$links.attr('target', this.opts.pasteLinkTarget);
+					}
+
+					html = $div.html();
+
+                    // links & images
 					if (data.links && this.opts.pasteLinks)
 					{
-						html = html.replace(/<a(.*?)href="(.*?)"(.*?)>(.*?)<\/a>/gi, '###a href="$2"###$4###/a###');
+						html = html.replace(/<a(.*?)href="(.*?)"(.*?)>(.*?)<\/a>/gi, '###a$1href="$2"$3###$4###/a###');
 					}
 
 					if (data.images && this.opts.pasteImages)
 					{
-						html = html.replace(/<img src="(.*?)"(.*?[^>])>/gi, '###img src="$1"###');
+						html = html.replace(/<img(.*?)src="(.*?)"(.*?[^>])>/gi, '###img$1src="$2"$3###');
 					}
 
 					// plain text
@@ -2747,6 +2791,7 @@
 						}
 					}
 
+
 					return html;
 
 				},
@@ -2755,12 +2800,12 @@
 					// links & images
 					if (data.links && this.opts.pasteLinks)
 					{
-						html = html.replace(/###a href="(.*?)"###(.*?)###\/a###/gi, '<a href="$1">$2</a>');
+						html = html.replace(/###a(.*?)href="(.*?)"(.*?)###(.*?)###\/a###/gi, '<a$1href="$2"$3>$4</a>');
 					}
 
 					if (data.images && this.opts.pasteImages)
 					{
-						html = html.replace(/###img src="(.*?)"###/gi, '<img src="$1">');
+						html = html.replace(/###img(.*?)src="(.*?)"###/gi, '<img src="$2">');
 					}
 
 					// plain text
@@ -3801,7 +3846,7 @@
 						return;
 					}
 
-					if ($(e.target).closest('#' + this.core.id() + ', .redactor-toolbar, .redactor-dropdown, #redactor-modal-box').size() !== 0)
+					if ($(e.target).closest('#' + this.core.id() + ', .redactor-toolbar, .redactor-dropdown, #redactor-modal-box').length !== 0)
 					{
 						return;
 					}
@@ -4649,11 +4694,6 @@
 				{
 					tag = tag.toLowerCase();
 
-					if (tag === 'span')
-					{
-						return;
-					}
-
 					// Stop formatting pre
 					if (this.utils.isCurrentOrParent(['PRE']))
 					{
@@ -4674,44 +4714,230 @@
 					this.placeholder.hide();
 					this.buffer.set();
 
-					return (this.utils.isCollapsed()) ? this.inline.formatCollapsed(tag, attr, value, type) : this.inline.formatUncollapsed(tag, attr, value, type);
+					if (this.utils.isCollapsed())
+					{
+    					this.inline.formatCollapsed(tag, attr, value, type);
+    				}
+    				else
+    				{
+    					this.inline.formatUncollapsed(tag, attr, value, type);
+    				}
 				},
+				formatUncollapsed: function(tag, attr, value, type)
+				{
+    				var self = this;
+    				var inlines = this.inline.inlines();
+    				var current = this.selection.current();
+    				if (current)
+    				{
+    				    inlines.push(current);
+    				}
+
+    				this.selection.save();
+					// save del tag
+					if (tag !== 'del')
+					{
+						this.core.editor().find('del').each(function(i,s)
+						{
+							self.utils.replaceToTag(s, 'deline');
+						});
+					}
+					// save u tag
+					if (tag !== 'u')
+					{
+						this.core.editor().find('u').each(function(i,s)
+						{
+							self.utils.replaceToTag(s, 'inline');
+						});
+					}
+    				$.each(inlines, function()
+    				{
+        				var currentTag = this.tagName.toLowerCase();
+        				if (currentTag === tag)
+        				{
+                            var $el = self.utils.replaceToTag(this, 'strike');
+                            $el.addClass('redactor-converted');
+          				}
+    				});
+    				this.selection.restore();
+
+
+    				document.execCommand('strikethrough');
+
+    				var formatting = true;
+    				var parent = this.selection.parent();
+    				if (parent === false || parent.tagName !== 'STRIKE')
+    				{
+                        formatting = false;
+    				}
+
+
+                    this.selection.save();
+                    if (tag !== 'u')
+    				{
+        				this.core.editor().find('u').replaceWith(function()
+    					{
+    						return $(this).contents();
+    					});
+    				}
+    				this.core.editor().find('strike').each(function()
+    				{
+        				var $el = self.utils.replaceToTag(this, tag);
+        				if (formatting)
+        				{
+                            self.inline.setAttr($el, attr, value, type);
+                        }
+    				});
+                    this.core.editor().find('.redactor-converted').each(function()
+    				{
+        				var currentTag = this.tagName.toLowerCase();
+                        if (currentTag !== tag || formatting === false)
+                        {
+                            $(this).replaceWith(function()
+        					{
+        						return $(this).contents();
+        					});
+                        }
+                        $(this).removeClass('redactor-converted');
+    				});
+                    // restore del tag
+					if (tag !== 'del')
+					{
+						this.core.editor().find('deline').each(function(i,s)
+						{
+							self.utils.replaceToTag(s, 'del');
+						});
+					}
+                    // restore u tag
+					if (tag !== 'u')
+					{
+						this.core.editor().find('inline').each(function(i,s)
+						{
+							self.utils.replaceToTag(s, 'u');
+						});
+					}
+    				this.selection.restore();
+
+                },
+
+
+                inlines: function()
+                {
+        			var inlines = [];
+        			var nodes = this.inline.nodes();
+
+        			$.each(nodes, $.proxy(function(i,node)
+        			{
+        				if (this.utils.isInline(node))
+        				{
+        					inlines.push(node);
+        				}
+
+        			}, this));
+
+        			var inline = this.selection.inline();
+        			if (inline === false && inlines.length === 0)
+        			{
+        				return [];
+        			}
+        			else if (inline !== false && inlines.length === 0)
+        			{
+        				return [inline];
+        			}
+        			else
+        			{
+        				return inlines;
+        			}
+                },
+                nodes: function()
+                {
+                    var sel = document.getSelection();
+
+                    if (!sel.rangeCount || sel.isCollapsed || !sel.getRangeAt(0).commonAncestorContainer)
+                    {
+                        return [];
+                    }
+
+                    var range = sel.getRangeAt(0);
+
+                    if (range.commonAncestorContainer.nodeType === 3)
+                    {
+                        var toRet = [];
+                        var currNode = range.commonAncestorContainer;
+                        while (currNode.parentNode && currNode.parentNode.childNodes.length === 1)
+                        {
+                            toRet.push(currNode.parentNode);
+                            currNode = currNode.parentNode;
+                        }
+
+                        return toRet;
+                    }
+
+                    return [].filter.call(range.commonAncestorContainer.getElementsByTagName('*'), function (el)
+                    {
+                        return (typeof sel.containsNode === 'function') ? sel.containsNode(el, true) : true;
+                    });
+                },
+
+
 				formatCollapsed: function(tag, attr, value, type)
 				{
-					var inline = this.selection.inline();
-
-					if (inline)
+    				var inline = this.selection.inline();
+    				if (inline)
 					{
-						var currentTag = inline.tagName.toLowerCase();
-
-						if (currentTag === tag)
+                        var currentTag = inline.tagName.toLowerCase();
+                        if (currentTag === tag)
 						{
-							// empty & remove
+							// empty = remove
 							if (this.utils.isEmpty(inline.innerHTML))
 							{
 								this.caret.after(inline);
 								$(inline).remove();
 							}
-							// break & remove
+							// not empty = break
 							else
 							{
 								var $first = this.inline.insertBreakpoint(inline, currentTag);
-
 								this.caret.after($first);
 							}
 						}
+                        else if ($(inline).closest(tag).length === 0)
+                        {
+							this.inline.insertInline(tag, attr, value, type);
+						}
 						else
 						{
-							this.inline.formatSet(tag, attr, value, type);
+    						this.caret.start(inline);
 						}
-					}
-					else
-					{
-						this.inline.formatSet(tag, attr, value, type);
-					}
+    				}
+    				else
+    				{
+                        this.inline.insertInline(tag, attr, value, type);
+    				}
 
 				},
-				formatSet: function(tag, attr, value, type)
+                insertBreakpoint: function(inline, currentTag)
+				{
+					var breakpoint = document.createElement('span');
+					breakpoint.id = 'redactor-inline-breakpoint';
+					breakpoint = this.insert.node(breakpoint);
+
+					var end = this.utils.isEndOfElement(inline);
+					var code = this.utils.getOuterHtml(inline);
+					var endTag = (end) ? '' : '<' + currentTag + '>';
+
+					code = code.replace(/<span\sid="redactor-inline-breakpoint">​<\/span>/i, '</' + currentTag + '>' + endTag);
+					var $code = $(code);
+					$(inline).replaceWith($code);
+
+					if (endTag !== '')
+					{
+    					this.utils.cloneAttributes(inline, $code.last());
+					}
+
+					return $code.first();
+				},
+				insertInline: function(tag, attr, value, type)
 				{
 					var node = document.createElement(tag);
 					node = this.inline.setAttr(node, attr, value, type);
@@ -4719,17 +4945,157 @@
 					this.insert.node(node);
 					this.caret.start(node);
 				},
-				formatBreak: function(tag, attr, value, type, inline, currentTag)
+                setAttr: function(inline, attr, value, type)
 				{
-					var node = document.createElement(tag);
-					node = this.inline.setAttr(node, attr, value, type);
+					if (typeof attr === 'undefined')
+					{
+						return inline;
+					}
 
-					var $first = this.inline.insertBreakpoint(inline, currentTag);
-					$first.after(node);
+					var func = (typeof type === 'undefined') ? 'toggle' : type;
 
-					this.caret.start(node);
+					if (attr === 'class')
+					{
+						inline = this.inline[func + 'Class'](value, inline);
+					}
+					else
+					{
+						if (func === 'remove')
+						{
+							inline = this.inline[func + 'Attr'](attr, inline);
+						}
+						else if (func === 'removeAll')
+						{
+							inline = this.inline[func + 'Attr'](inline);
+						}
+						else
+						{
+							inline = this.inline[func + 'Attr'](attr, value, inline);
+						}
+					}
+
+					return inline;
 				},
-				formatUncollapsed: function(tag, attr, value, type)
+                getInlines: function(inline)
+				{
+					return (typeof inline === 'undefined') ? this.selection.inlines() : inline;
+				},
+				update: function(tag, attr, value, type)
+				{
+					var inlines = this.selection.inlines();
+					var result = [];
+					var self = this;
+
+					$.each(inlines, function(i,s)
+					{
+						if ($.isArray(tag))
+						{
+							if ($.inArray(s.tagName.toLowerCase(), tag) === -1)
+							{
+								return;
+							}
+						}
+						else
+						{
+							if (tag !== '*' && s.tagName.toLowerCase() !== tag)
+							{
+								return;
+							}
+						}
+
+						result.push(self.inline.setAttr(s, attr, value, type));
+
+					});
+
+					return result;
+
+				},
+				replaceClass: function(value, inline)
+				{
+					return $(this.inline.getInlines(inline)).removeAttr('class').addClass(value)[0];
+				},
+				toggleClass: function(value, inline)
+				{
+					return $(this.inline.getInlines(inline)).toggleClass(value)[0];
+				},
+				addClass: function(value, inline)
+				{
+					return $(this.inline.getInlines(inline)).addClass(value)[0];
+				},
+				removeClass: function(value, inline)
+				{
+					return $(this.inline.getInlines(inline)).removeClass(value)[0];
+				},
+				removeAllClass: function(inline)
+				{
+					return $(this.inline.getInlines(inline)).removeAttr('class')[0];
+				},
+				replaceAttr: function(inline, attr, value)
+				{
+					inline = this.inline.removeAttr(attr, this.inline.getInlines(inline));
+
+					return $(inline).attr(attr, value)[0];
+				},
+				toggleAttr: function(attr, value, inline)
+				{
+					inline = this.inline.getInlines(inline);
+
+					var self = this;
+					var returned = [];
+					$.each(inline, function(i,s)
+					{
+						var $el = $(s);
+						if ($el.attr(attr))
+						{
+							returned.push(self.inline.removeAttr(attr, s));
+						}
+						else
+						{
+							returned.push(self.inline.addAttr(attr, value, s));
+						}
+					});
+
+					return returned;
+
+				},
+				addAttr: function(attr, value, inline)
+				{
+					return $(this.inline.getInlines(inline)).attr(attr, value)[0];
+				},
+				removeAttr: function(attr, inline)
+				{
+					return $(this.inline.getInlines(inline)).removeAttr(attr)[0];
+				},
+				removeAllAttr: function(inline)
+				{
+					inline = this.inline.getInlines(inline);
+
+					var returned = [];
+					$.each(inline, function(i, s)
+					{
+						if (typeof s.attributes === 'undefined')
+						{
+							returned.push(s);
+						}
+
+						var $el = $(s);
+						var len = s.attributes.length;
+						for (var z = 0; z < len; z++)
+						{
+							$el.removeAttr(s.attributes[z].name);
+						}
+
+						returned.push($el[0]);
+					});
+
+					return returned;
+				},
+				removeFormat: function()
+				{
+					document.execCommand('removeFormat');
+				}
+	/*
+    			formatUncollapsed: function(tag, attr, value, type)
 				{
 					var self = this;
 
@@ -4853,175 +5219,10 @@
 					this.selection.restore();
 
 				},
-				insertBreakpoint: function(inline, currentTag)
-				{
-					var breakpoint = document.createElement('span');
-					breakpoint.id = 'redactor-inline-breakpoint';
 
-					breakpoint = this.insert.node(breakpoint);
 
-					var end = this.utils.isEndOfElement(inline);
-					var code = this.utils.getOuterHtml(inline);
 
-					var endTag = (end) ? '' : '<' + currentTag + '>';
-
-					code = code.replace(/<span(.*?[^>])id="redactor-inline-breakpoint">​<\/span>/i, '</' + currentTag + '>' + endTag);
-
-					var $code = $(code);
-					$(inline).replaceWith($code);
-
-					return $code.first();
-				},
-				setAttr: function(inline, attr, value, type)
-				{
-					if (typeof attr === 'undefined')
-					{
-						return inline;
-					}
-
-					var func = (typeof type === 'undefined') ? 'replace' : type;
-
-					if (attr === 'class')
-					{
-						inline = this.inline[func + 'Class'](value, inline);
-					}
-					else
-					{
-						if (func === 'remove')
-						{
-							inline = this.inline[func + 'Attr'](attr, inline);
-						}
-						else if (func === 'removeAll')
-						{
-							inline = this.inline[func + 'Attr'](inline);
-						}
-						else
-						{
-							inline = this.inline[func + 'Attr'](attr, value, inline);
-						}
-					}
-
-					return inline;
-
-				},
-				getInlines: function(inline)
-				{
-					return (typeof inline === 'undefined') ? this.selection.inlines() : inline;
-				},
-				update: function(tag, attr, value, type)
-				{
-					var inlines = this.selection.inlines();
-					var result = [];
-					var self = this;
-
-					$.each(inlines, function(i,s)
-					{
-						if ($.isArray(tag))
-						{
-							if ($.inArray(s.tagName.toLowerCase(), tag) === -1)
-							{
-								return;
-							}
-						}
-						else
-						{
-							if (tag !== '*' && s.tagName.toLowerCase() !== tag)
-							{
-								return;
-							}
-						}
-
-						result.push(self.inline.setAttr(s, attr, value, type));
-
-					});
-
-					return result;
-
-				},
-				replaceClass: function(value, inline)
-				{
-					return $(this.inline.getInlines(inline)).removeAttr('class').addClass(value)[0];
-				},
-				toggleClass: function(value, inline)
-				{
-					return $(this.inline.getInlines(inline)).toggleClass(value)[0];
-				},
-				addClass: function(value, inline)
-				{
-					return $(this.inline.getInlines(inline)).addClass(value)[0];
-				},
-				removeClass: function(value, inline)
-				{
-					return $(this.inline.getInlines(inline)).removeClass(value)[0];
-				},
-				removeAllClass: function(inline)
-				{
-					return $(this.inline.getInlines(inline)).removeAttr('class')[0];
-				},
-				replaceAttr: function(inline, attr, value)
-				{
-					inline = this.inline.removeAttr(attr, this.inline.getInlines(inline));
-
-					return $(inline).attr(attr, value)[0];
-				},
-				toggleAttr: function(attr, value, inline)
-				{
-					inline = this.inline.getInlines(inline);
-
-					var self = this;
-					var returned = [];
-					$.each(inline, function(i,s)
-					{
-						var $el = $(s);
-						if ($el.attr(attr))
-						{
-							returned.push(self.inline.removeAttr(attr, s));
-						}
-						else
-						{
-							returned.push(self.inline.addAttr(attr, value, s));
-						}
-					});
-
-					return returned;
-
-				},
-				addAttr: function(attr, value, inline)
-				{
-					return $(this.inline.getInlines(inline)).attr(attr, value)[0];
-				},
-				removeAttr: function(attr, inline)
-				{
-					return $(this.inline.getInlines(inline)).removeAttr(attr)[0];
-				},
-				removeAllAttr: function(inline)
-				{
-					inline = this.inline.getInlines(inline);
-
-					var returned = [];
-					$.each(inline, function(i, s)
-					{
-						if (typeof s.attributes === 'undefined')
-						{
-							returned.push(s);
-						}
-
-						var $el = $(s);
-						var len = s.attributes.length;
-						for (var z = 0; z < len; z++)
-						{
-							$el.removeAttr(s.attributes[z].name);
-						}
-
-						returned.push($el[0]);
-					});
-
-					return returned;
-				},
-				removeFormat: function()
-				{
-					document.execCommand('removeFormat');
-				}
+*/
 			};
 		},
 
@@ -5214,6 +5415,7 @@
 				raw: function(html)
 				{
 					this.placeholder.hide();
+					this.core.editor().focus();
 
 					var sel = this.selection.get();
 
@@ -7075,9 +7277,9 @@
 									+ '<label class="checkbox"><input type="checkbox" id="redactor-image-link-blank" aria-label="' + this.lang.get('link-in-new-tab') + '"> ' + this.lang.get('link-in-new-tab') + '</label>'
 								+ '</section>'
 								+ '<section>'
-									+ '<button id="redactor-modal-button-action">Insert</button>'
-									+ '<button id="redactor-modal-button-cancel">Cancel</button>'
-									+ '<button id="redactor-modal-button-delete" class="redactor-modal-button-offset">Delete</button>'
+									+ '<button id="redactor-modal-button-action">' + this.lang.get('insert') + '</button>'
+									+ '<button id="redactor-modal-button-cancel">' + this.lang.get('cancel') + '</button>'
+									+ '<button id="redactor-modal-button-delete" class="redactor-modal-button-offset">' + this.lang.get('delete') + '</button>'
 								+ '</section>'
 							+ '</div>'
 						+ '</div>',
@@ -7114,8 +7316,8 @@
 								+ '<label class="checkbox"><input type="checkbox" id="redactor-link-blank"> ' + this.lang.get('link-in-new-tab') + '</label>'
 							+ '</section>'
 							+ '<section>'
-								+ '<button id="redactor-modal-button-action">Insert</button>'
-								+ '<button id="redactor-modal-button-cancel">Cancel</button>'
+								+ '<button id="redactor-modal-button-action">' + this.lang.get('insert') + '</button>'
+								+ '<button id="redactor-modal-button-cancel">' + this.lang.get('cancel') + '</button>'
 							+ '</section>'
 						+ '</div>'
 					};
@@ -7547,7 +7749,7 @@
 							inValues = typeof observe.in !== 'undefined' ? observe.in : false,
 							outValues = typeof observe.out !== 'undefined' ? observe.out : false;
 
-						if (($current.closest(element).size() > 0 && isRedactor) || (element === 'a' && finded !== 0))
+						if (($current.closest(element).length > 0 && isRedactor) || (element === 'a' && finded !== 0))
 						{
 							this.observe.setDropdownProperties($item, inValues, outValues);
 						}
@@ -7638,9 +7840,17 @@
 						return;
 					}
 
-					this.core.editor().find('a').on('touchstart.redactor.' + this.uuid + ' click.redactor.' + this.uuid, $.proxy(this.observe.showTooltip, this));
-					this.core.editor().on('touchstart.redactor.' + this.uuid + ' click.redactor.' + this.uuid, $.proxy(this.observe.closeTooltip, this));
-					$(document).on('touchstart.redactor.' + this.uuid + ' click.redactor.' + this.uuid, $.proxy(this.observe.closeTooltip, this));
+					this.core.editor().find('a').each($.proxy(function(i, s)
+					{
+    					var $link = $(s);
+    					if ($link.data('cached') !== true)
+    					{
+        					$link.data('cached', true);
+        					$link.on('touchstart.redactor.' + this.uuid + ' click.redactor.' + this.uuid, $.proxy(this.observe.showTooltip, this));
+    					}
+
+					}, this));
+
 				},
 				getTooltipPosition: function($link)
 				{
@@ -7698,6 +7908,9 @@
 
 					$('.redactor-link-tooltip').remove();
 					$('body').append(tooltip);
+
+					this.core.editor().on('touchstart.redactor.' + this.uuid + ' click.redactor.' + this.uuid, $.proxy(this.observe.closeTooltip, this));
+					$(document).on('touchstart.redactor.' + this.uuid + ' click.redactor.' + this.uuid, $.proxy(this.observe.closeTooltip, this));
 				},
 				closeAllTooltip: function()
 				{
@@ -7719,6 +7932,9 @@
 					}
 
 					this.observe.closeAllTooltip();
+
+					this.core.editor().off('touchstart.redactor.' + this.uuid + ' click.redactor.' + this.uuid, $.proxy(this.observe.closeTooltip, this));
+					$(document).off('touchstart.redactor.' + this.uuid + ' click.redactor.' + this.uuid, $.proxy(this.observe.closeTooltip, this));
 				}
 
 			};
@@ -9860,9 +10076,23 @@
 					{
 						return data;
 					}
+					else if (typeof appendFields === 'object')
+					{
+    					$.each(appendFields, function(k, v)
+    					{
+    						if (v !== null && v.toString().indexOf('#') === 0)
+    						{
+        						v = $(v).val();
+                            }
+
+    						data.append(k, v);
+
+    					});
+
+    					return data;
+					}
 
 					var $fields = $(appendFields);
-
 					if ($fields.length === 0)
 					{
 						return data;

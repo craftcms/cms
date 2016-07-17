@@ -1103,6 +1103,16 @@ abstract class BaseElementModel extends BaseModel
 		$this->_eagerLoadedElements[$handle] = $elements;
 	}
 
+	/**
+	 * Returns whether the element’s content is "fresh" (unsaved and without validation errors).
+	 *
+	 * @return bool Whether the element’s content is fresh
+	 */
+	public function getHasFreshContent()
+	{
+		return (empty($this->getContent()->id) && !$this->hasErrors());
+	}
+
 	// Protected Methods
 	// =========================================================================
 

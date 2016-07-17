@@ -547,33 +547,40 @@ class ElementsService extends BaseApplicationComponent
 	 */
 	public function getTotalElements($criteria = null)
 	{
+		// TODO: Lots in here MySQL specific.
 		$query = $this->buildElementsQuery($criteria, $contentTable, $fieldColumns, true);
 
 		if ($query)
 		{
-			// Get the GROUP BY query part
-			$groupBy = $query->getGroup();
-
-			// Remove the order, group by, offset, limit, and any additional tables in the FROM clause
 			$query
 				->order('')
-				->group('')
 				->offset(0)
 				->limit(-1)
 				->from('elements elements');
 
-			$selectString = 'count(DISTINCT(%s))';
+			$elementsIdColumn = 'elements.id';
+			$selectedColumns = $query->getSelect();
 
-			// preserve any existing select columns a plugin might have added (could be used in a conditional later)
-			$select = $query->getSelect();
+			// Normalize with no quotes. setSelect later will properly add them back in.
+			$selectedColumns = str_replace('`', '', $selectedColumns);
 
-			if ($select)
+			// Guarantee we select an elements.id column
+			if (strpos($selectedColumns, $elementsIdColumn) === false)
 			{
-				$selectString .= ', %s';
+				$selectedColumns = $elementsIdColumn.', '.$selectedColumns;
 			}
 
-			// Count the number of distinct columns based on the GROUP BY
-			$count = (int) $query->select(sprintf($selectString, $groupBy, $select))->queryScalar();
+			// Alias elements.id as elementsId
+			$selectedColumns = str_replace($elementsIdColumn, $elementsIdColumn.' AS elementsId', $selectedColumns);
+
+			$query->setSelect($selectedColumns);
+
+			$masterQuery = craft()->db->createCommand();
+			$masterQuery->params = $query->params;
+
+			$masterQuery->from(sprintf('(%s) derivedElementsTable', $query->getText()));
+
+			$count = $masterQuery->count('derivedElementsTable.elementsId');
 
 			return $count;
 		}
@@ -2085,7 +2092,7 @@ class ElementsService extends BaseApplicationComponent
 	 *
 	 * @param string $class The element action class handle.
 	 *
-	 * @return IElementType|null The element action, or `null`.
+	 * @return IElementAction|null The element action, or `null`.
 	 */
 	public function getAction($class)
 	{

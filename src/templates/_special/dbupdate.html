@@ -5,7 +5,7 @@
 	{% set handle = craft.updates.getManualUpdateHandle() %}
 
 	{% if handle is null %}
-		{% set handle = '@@@appName@@@' %}
+		{% set handle = 'Craft' %}
 		{% set name = '@@@appName@@@' %}
 	{% endif %}
 

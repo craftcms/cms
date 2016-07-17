@@ -356,14 +356,14 @@ class StringHelper
 		// Get rid of entities
 		$str = preg_replace("/&#?[a-z0-9]{2,8};/i", "", $str);
 
+		// Normalize to lowercase
+		$str = StringHelper::toLowerCase($str);
+
 		if ($processCharMap)
 		{
 			// Remove punctuation and diacritics
 			$str = strtr($str, static::_getCharMap());
 		}
-
-		// Normalize to lowercase
-		$str = StringHelper::toLowerCase($str);
 
 		// Remove ignore-words?
 		if (is_array($ignore) && ! empty($ignore))

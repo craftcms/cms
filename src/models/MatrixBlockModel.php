@@ -229,6 +229,19 @@ class MatrixBlockModel extends BaseElementModel
 		}
 	}
 
+	/**
+	 * @inheritDoc BaseElementModel::getHasFreshContent()
+	 *
+	 * @return bool
+	 */
+	public function getHasFreshContent()
+	{
+		// Defer to the owner element
+		$owner = $this->getOwner();
+
+		return $owner ? $owner->getHasFreshContent() : false;
+	}
+
 	// Protected Methods
 	// =========================================================================
 
