@@ -5,7 +5,7 @@
 	<h2>{{ title }} :(</h2>
 
 	{% if reqCheck.result == 'failed' %}
-		<p>{{ "Your server doesn’t meet the following requirements to run Craft:"|t }}</p>
+		<p>{{ "Your server doesn’t meet the following requirements to run @@@appName@@@:"|t }}</p>
 
 		<ul class="bullets">
 			{% for req in reqCheck.requirements %}
