@@ -1681,7 +1681,7 @@ class Io
                 }
             }
         } else {
-            Craft::error('app', Craft::t('Unable to get folder contents for “{path}”.', ['path' => $path]), __METHOD__);
+            Craft::error('Unable to get folder contents for “'.$path.'”.', __METHOD__);
         }
 
         return $descendants;
