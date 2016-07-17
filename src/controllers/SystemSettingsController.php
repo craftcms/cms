@@ -284,6 +284,7 @@ class SystemSettingsController extends Controller
 
         if ($settingsIsValid && $adaptorIsValid) {
             $mailerConfig = $this->_getMailerConfig($settings, $adaptor);
+            /** @var Mailer $mailer */
             $mailer = Craft::createObject($mailerConfig);
 
             // Compose the settings list as HTML
