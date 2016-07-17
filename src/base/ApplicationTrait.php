@@ -1264,7 +1264,7 @@ trait ApplicationTrait
 
         switch ($cacheMethod) {
             case 'apc': {
-                return 'craft\app\cache\ApcCache';
+                return 'yii\caching\ApcCache';
             }
 
             case 'db': {
@@ -1287,22 +1287,22 @@ trait ApplicationTrait
 
             case 'memcache': {
                 return [
-                    'class' => 'craft\app\cache\MemCache',
+                    'class' => 'yii\caching\MemCache',
                     'servers' => $configService->get('servers', ConfigCategory::Memcache),
                     'useMemcached' => $configService->get('useMemcached', ConfigCategory::Memcache),
                 ];
             }
 
             case 'wincache': {
-                return 'craft\app\cache\WinCache';
+                return 'yii\caching\WinCache';
             }
 
             case 'xcache': {
-                return 'craft\app\cache\XCache';
+                return 'yii\caching\XCache';
             }
 
             case 'zenddata': {
-                return 'craft\app\cache\ZendDataCache';
+                return 'yii\caching\ZendDataCache';
             }
 
             default: {
