@@ -9,6 +9,7 @@ namespace craft\app\helpers;
 
 use Craft;
 use craft\app\i18n\Locale;
+use yii\i18n\MissingTranslationEvent;
 
 /**
  * Class Localization
@@ -59,11 +60,11 @@ class Localization
     /**
      * Looks for a missing translation string in Yii's core translations.
      *
-     * @param \CMissingTranslationEvent $event
+     * @param MissingTranslationEvent $event
      *
      * @return void
      */
-    public static function findMissingTranslation(\CMissingTranslationEvent $event)
+    public static function findMissingTranslation(MissingTranslationEvent $event)
     {
         // Look for translation file from most to least specific.  So nl_nl.php gets checked before nl.php, for example.
         $translationFiles = [];
