@@ -2092,7 +2092,7 @@ class ElementsService extends BaseApplicationComponent
 	 *
 	 * @param string $class The element action class handle.
 	 *
-	 * @return IElementType|null The element action, or `null`.
+	 * @return IElementAction|null The element action, or `null`.
 	 */
 	public function getAction($class)
 	{
