@@ -29,7 +29,7 @@ class UpdateElementSlugsAndUris extends Task
     public $elementId;
 
     /**
-     * @var string|Element|ElementInterface The type of elements to update.
+     * @var string|ElementInterface The type of elements to update.
      */
     public $elementType;
 
