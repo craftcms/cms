@@ -750,7 +750,7 @@ class I18N extends \yii\i18n\I18N
         $nonLocalizedElementTypes = [];
 
         foreach (Craft::$app->getElements()->getAllElementTypes() as $elementType) {
-            /** ElementInterface|Element $elementType */
+            /** Element $elementType */
             if (!$elementType::isLocalized()) {
                 $nonLocalizedElementTypes[] = $elementType::className();
             }

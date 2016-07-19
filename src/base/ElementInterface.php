@@ -64,9 +64,9 @@ interface ElementInterface extends ComponentInterface
     public static function hasStatuses();
 
     /**
-     * Creates an [[ElementQueryInterface|ElementQuery]] instance for query purpose.
+     * Creates an [[ElementQueryInterface]] instance for query purpose.
      *
-     * The returned [[ElementQueryInterface|ElementQuery]] instance can be further customized by calling
+     * The returned [[ElementQueryInterface]] instance can be further customized by calling
      * methods defined in [[ElementQueryInterface]] before `one()` or `all()` is called to return
      * populated [[ElementInterface]] instances. For example,
      *
