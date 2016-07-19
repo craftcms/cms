@@ -1760,6 +1760,7 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
 
             if ($this->customFields) {
                 foreach ($this->customFields as $field) {
+                    /** @var FieldInterface|Field $field */
                     if ($field->hasContentColumn()) {
                         // Account for results where multiple fields have the same handle, but from
                         // different columns e.g. two Matrix block types that each have a field with the
