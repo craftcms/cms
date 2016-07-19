@@ -49,6 +49,15 @@ interface ElementQueryInterface extends QueryInterface
     public function id($value);
 
     /**
+     * Sets the [[uid]] property.
+     *
+     * @param mixed $value The property value
+     *
+     * @return $this self reference
+     */
+    public function uid($value);
+
+    /**
      * Sets the [[fixedOrder]] property.
      *
      * @param boolean $value The property value (defaults to true)

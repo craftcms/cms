@@ -111,6 +111,11 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
     public $id;
 
     /**
+     * @var mixed The element UID(s). Prefix UIDs with "not " to exclude them.
+     */
+    public $uid;
+
+    /**
      * @var boolean Whether results should be returned in the order specified by [[id]].
      */
     public $fixedOrder;
@@ -509,6 +514,16 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
     /**
      * @inheritdoc
      */
+    public function uid($value)
+    {
+        $this->uid = $value;
+
+        return $this;
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function fixedOrder($value = true)
     {
         $this->fixedOrder = $value;
@@ -827,6 +842,10 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
 
         if ($this->id) {
             $this->subQuery->andWhere(Db::parseParam('elements.id', $this->id, $this->subQuery->params));
+        }
+
+        if ($this->uid) {
+            $this->subQuery->andWhere(Db::parseParam('elements.uid', $this->uid, $this->subQuery->params));
         }
 
         if ($this->archived) {
