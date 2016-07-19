@@ -121,7 +121,7 @@ class MatrixBlock extends Element
     public $collapsed = false;
 
     /**
-     * @var ElementInterface|Element The owner element
+     * @var ElementInterface The owner element
      */
     private $_owner;
 

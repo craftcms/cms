@@ -24,7 +24,7 @@ class FieldLayoutBehavior extends Behavior
     // =========================================================================
 
     /**
-     * @var ElementInterface|Element|string The element type that the field layout will be associated with
+     * @var ElementInterface|string The element type that the field layout will be associated with
      */
     public $elementType;
 
