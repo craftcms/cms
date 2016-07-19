@@ -1644,7 +1644,7 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
     /**
      * Returns a field’s corresponding content column name.
      *
-     * @param FieldInterface|Field $field
+     * @param FieldInterface $field
      *
      * @return string
      */

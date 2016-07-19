@@ -68,10 +68,10 @@ class Tasks extends Component
     /**
      * Saves a new task and queues it up to be run at the earliest opportunity.
      *
-     * @param TaskInterface|Task|array|string $task The task, the task’s class name, or its config, with a `type` value and optionally a `settings` value
+     * @param TaskInterface|array|string $task The task, the task’s class name, or its config, with a `type` value and optionally a `settings` value
      *
      * @throws \Exception
-     * @return TaskInterface|Task The task
+     * @return TaskInterface The task
      */
     public function queueTask($task)
     {
@@ -95,7 +95,7 @@ class Tasks extends Component
      *
      * @param mixed $config The task’s class name, or its config, with a `type` value and optionally a `settings` value
      *
-     * @return TaskInterface|Task The task
+     * @return TaskInterface The task
      */
     public function createTask($config)
     {
@@ -115,8 +115,8 @@ class Tasks extends Component
     /**
      * Saves a task.
      *
-     * @param TaskInterface|Task $task     The task to be saved
-     * @param boolean            $validate Whether the task should be validated first
+     * @param TaskInterface $task     The task to be saved
+     * @param boolean       $validate Whether the task should be validated first
      *
      * @return boolean Whether the task was saved successfully
      * @throws \Exception
@@ -190,7 +190,7 @@ class Tasks extends Component
      *
      * @param integer $taskId The task’s ID
      *
-     * @return TaskInterface|Task|null The task
+     * @return TaskInterface|null The task
      */
     public function rerunTaskById($taskId)
     {
@@ -240,7 +240,7 @@ class Tasks extends Component
     /**
      * Runs a given task.
      *
-     * @param TaskInterface|Task $task
+     * @param TaskInterface $task
      *
      * @return boolean
      */
@@ -305,8 +305,8 @@ class Tasks extends Component
     /**
      * Sets a task's status to "error" and logs it.
      *
-     * @param TaskInterface|Task $task  The task
-     * @param string|null        $error The error message
+     * @param TaskInterface $task  The task
+     * @param string|null   $error The error message
      *
      * @return void
      */
@@ -340,7 +340,7 @@ class Tasks extends Component
      *
      * @param integer $taskId The task’s ID
      *
-     * @return TaskInterface|Task|null The task, or null if it doesn’t exist
+     * @return TaskInterface|null The task, or null if it doesn’t exist
      */
     public function getTaskById($taskId)
     {
@@ -380,7 +380,7 @@ class Tasks extends Component
     /**
      * Returns the currently running task.
      *
-     * @return TaskInterface|Task|null The currently running task, or null if there isn’t one
+     * @return TaskInterface|null The currently running task, or null if there isn’t one
      */
     public function getRunningTask()
     {
@@ -529,7 +529,7 @@ class Tasks extends Component
      *
      * @param string|null $type The type of task to check for, if any
      *
-     * @return TaskInterface|Task|null The next pending task, if any
+     * @return TaskInterface|null The next pending task, if any
      */
     public function getNextPendingTask($type = null)
     {

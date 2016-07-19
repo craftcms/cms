@@ -455,7 +455,7 @@ class Assets extends BaseRelationField
     /**
      * Resolve source path for uploading for this field.
      *
-     * @param ElementInterface|Element|null $element
+     * @param ElementInterface|null $element
      *
      * @return mixed
      */
@@ -519,9 +519,9 @@ class Assets extends BaseRelationField
     /**
      * Resolve a source path to it's folder ID by the source path and the matched source beginning.
      *
-     * @param integer                  $volumeId
-     * @param string                   $subpath
-     * @param ElementInterface|Element $element
+     * @param integer          $volumeId
+     * @param string           $subpath
+     * @param ElementInterface $element
      *
      * @throws VolumeObjectNotFoundException if the volume doesn’t exist
      * @throws InvalidSubpathException if the subpath cannot be parsed in full
@@ -648,7 +648,7 @@ class Assets extends BaseRelationField
     /**
      * Determine an upload folder id by looking at the settings and whether Element this field belongs to is new or not.
      *
-     * @param ElementInterface|Element|null $element
+     * @param ElementInterface|null $element
      *
      * @return mixed|null
      */

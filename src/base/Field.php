@@ -248,8 +248,8 @@ abstract class Field extends SavableComponent implements FieldInterface
     /**
      * Returns the HTML that should be shown for this field in Table View.
      *
-     * @param mixed                    $value   The field’s value
-     * @param ElementInterface|Element $element The element the field is associated with
+     * @param mixed            $value   The field’s value
+     * @param ElementInterface $element The element the field is associated with
      *
      * @return string|null The HTML that should be shown for this field in Table View
      */
@@ -306,8 +306,8 @@ abstract class Field extends SavableComponent implements FieldInterface
     /**
      * Returns whether the given value should be considered "empty" for required-field validation purposes.
      *
-     * @param mixed                    $value   The field’s value
-     * @param ElementInterface|Element $element The element the field is associated with, if there is one
+     * @param mixed            $value   The field’s value
+     * @param ElementInterface $element The element the field is associated with, if there is one
      *
      * @return boolean Whether the value should be considered "empty"
      */
@@ -319,7 +319,7 @@ abstract class Field extends SavableComponent implements FieldInterface
     /**
      * Returns the location in POST that this field's content was pulled from.
      *
-     * @param ElementInterface|Element $element The element this field is associated with
+     * @param ElementInterface $element The element this field is associated with
      *
      * @return string|null
      */
@@ -339,7 +339,7 @@ abstract class Field extends SavableComponent implements FieldInterface
     /**
      * Returns this field’s value on a given element.
      *
-     * @param ElementInterface|Element $element The element
+     * @param ElementInterface $element The element
      *
      * @return mixed The field’s value
      */
@@ -351,8 +351,8 @@ abstract class Field extends SavableComponent implements FieldInterface
     /**
      * Updates this field’s value on a given element.
      *
-     * @param ElementInterface|Element $element The element
-     * @param mixed                    $value   The field’s new value
+     * @param ElementInterface $element The element
+     * @param mixed            $value   The field’s new value
      */
     protected function setElementValue(ElementInterface $element, $value)
     {
@@ -362,7 +362,7 @@ abstract class Field extends SavableComponent implements FieldInterface
     /**
      * Returns whether this is the first time the element's content has been edited.
      *
-     * @param ElementInterface|Element|null $element
+     * @param ElementInterface|null $element
      *
      * @return boolean
      */

@@ -137,9 +137,9 @@ interface FieldInterface extends SavableComponentInterface
      * The same principles also apply if you’re including your JavaScript code with
      * [[\craft\app\web\View::registerJs()]].
      *
-     * @param mixed                         $value   The field’s value. This will either be the [[prepareValue() prepared value]],
+     * @param mixed                 $value           The field’s value. This will either be the [[prepareValue() prepared value]],
      *                                               raw POST data (i.e. if there was a validation error), or null
-     * @param ElementInterface|Element|null $element The element the field is associated with, if there is one
+     * @param ElementInterface|null $element         The element the field is associated with, if there is one
      *
      * @return string The input HTML.
      */
@@ -150,8 +150,8 @@ interface FieldInterface extends SavableComponentInterface
      *
      * This function is called to output field values when viewing entry drafts.
      *
-     * @param mixed                    $value   The field’s value
-     * @param ElementInterface|Element $element The element the field is associated with
+     * @param mixed            $value   The field’s value
+     * @param ElementInterface $element The element the field is associated with
      *
      * @return string The static version of the field’s input HTML
      */
@@ -160,8 +160,8 @@ interface FieldInterface extends SavableComponentInterface
     /**
      * Validates the field’s value.
      *
-     * @param mixed                    $value   The field’s value
-     * @param ElementInterface|Element $element The element the field is associated with, if there is one
+     * @param mixed            $value   The field’s value
+     * @param ElementInterface $element The element the field is associated with, if there is one
      *
      * @return string|string[]|null The error message(s) if there are any validation errors, or null if everything checks out.
      *                              The messages can contain `{attribute}` and `{value}` tokens, which will be replaced with the
@@ -175,8 +175,8 @@ interface FieldInterface extends SavableComponentInterface
      * The keywords can be separated by commas and/or whitespace; it doesn’t really matter. [[\craft\app\services\Search]]
      * will be able to find the individual keywords in whatever string is returned, and normalize them for you.
      *
-     * @param mixed                    $value   The field’s value
-     * @param ElementInterface|Element $element The element the field is associated with, if there is one
+     * @param mixed            $value   The field’s value
+     * @param ElementInterface $element The element the field is associated with, if there is one
      *
      * @return string A string of search keywords.
      */
@@ -213,14 +213,14 @@ interface FieldInterface extends SavableComponentInterface
     /**
      * Performs any actions before an element is saved.
      *
-     * @param ElementInterface|Element $element The element that is about to be saved
+     * @param ElementInterface $element The element that is about to be saved
      */
     public function beforeElementSave(ElementInterface $element);
 
     /**
      * Performs any actions after the element has been saved.
      *
-     * @param ElementInterface|Element $element The element that was just saved
+     * @param ElementInterface $element The element that was just saved
      */
     public function afterElementSave(ElementInterface $element);
 
@@ -232,8 +232,8 @@ interface FieldInterface extends SavableComponentInterface
      * this method returns is what `entry.myFieldHandle` will likewise return, and what [[getInputHtml()]]’s and
      * [[prepareValueForDb()]]’s $value arguments will be set to.
      *
-     * @param mixed                         $value   The raw field value
-     * @param ElementInterface|Element|null $element The element the field is associated with, if there is one
+     * @param mixed                 $value   The raw field value
+     * @param ElementInterface|null $element The element the field is associated with, if there is one
      *
      * @return mixed The prepared field value
      */
@@ -244,8 +244,8 @@ interface FieldInterface extends SavableComponentInterface
      *
      * This method is called when the field’s value is about to be saved to the database.
      *
-     * @param mixed                         $value   The raw field value
-     * @param ElementInterface|Element|null $element The element the field is associated with, if there is one
+     * @param mixed                 $value   The raw field value
+     * @param ElementInterface|null $element The element the field is associated with, if there is one
      */
     public function prepareValueForDb($value, $element);
 

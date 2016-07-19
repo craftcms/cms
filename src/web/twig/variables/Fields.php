@@ -58,7 +58,7 @@ class Fields
      *
      * @param mixed $config The field’s class name, or its config, with a `type` value and optionally a `settings` value
      *
-     * @return FieldInterface|Field The field
+     * @return FieldInterface The field
      */
     public function createField($config)
     {
@@ -70,7 +70,7 @@ class Fields
      *
      * @param integer $fieldId The field’s ID
      *
-     * @return FieldInterface|Field|null The field, or null if it doesn’t exist
+     * @return FieldInterface|null The field, or null if it doesn’t exist
      */
     public function getFieldById($fieldId)
     {
@@ -82,7 +82,7 @@ class Fields
      *
      * @param string $handle The field’s handle
      *
-     * @return FieldInterface|Field|null The field, or null if it doesn’t exist
+     * @return FieldInterface|null The field, or null if it doesn’t exist
      */
     public function getFieldByHandle($handle)
     {
@@ -151,7 +151,7 @@ class Fields
     /**
      * Returns info about a field type.
      *
-     * @param string|FieldInterface|Field $field A field or field type
+     * @param string|FieldInterface $field A field or field type
      *
      * @return ComponentInfo Info about the field type
      */

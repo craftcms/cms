@@ -760,8 +760,8 @@ class Matrix extends Component
     /**
      * Saves a Matrix field.
      *
-     * @param MatrixField              $field The Matrix field
-     * @param ElementInterface|Element $owner The element the field is associated with
+     * @param MatrixField      $field The Matrix field
+     * @param ElementInterface $owner The element the field is associated with
      *
      * @return boolean Whether the field was saved successfully.
      * @throws \Exception if reasons

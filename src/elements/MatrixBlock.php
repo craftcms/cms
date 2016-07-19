@@ -227,7 +227,7 @@ class MatrixBlock extends Element
     /**
      * Returns the owner.
      *
-     * @return ElementInterface|Element|null
+     * @return ElementInterface|null
      */
     public function getOwner()
     {

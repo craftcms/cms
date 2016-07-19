@@ -228,9 +228,9 @@ class Table extends Field
     /**
      * Returns the field's input HTML.
      *
-     * @param mixed                         $value
-     * @param ElementInterface|Element|null $element
-     * @param boolean                       $static
+     * @param mixed                 $value
+     * @param ElementInterface|null $element
+     * @param boolean               $static
      *
      * @return string
      */

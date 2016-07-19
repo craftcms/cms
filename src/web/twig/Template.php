@@ -96,7 +96,7 @@ abstract class Template extends \Twig_Template
     /**
      * Includes this element in any active template caches.
      *
-     * @param ElementInterface|Element $element
+     * @param ElementInterface $element
      *
      * @return void
      */

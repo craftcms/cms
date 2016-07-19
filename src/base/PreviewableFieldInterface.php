@@ -22,8 +22,8 @@ interface PreviewableFieldInterface
     /**
      * Returns the HTML that should be shown for this field in Table View.
      *
-     * @param mixed                    $value   The field’s value
-     * @param ElementInterface|Element $element The element the field is associated with
+     * @param mixed            $value   The field’s value
+     * @param ElementInterface $element The element the field is associated with
      *
      * @return string|null The HTML that should be shown for this field in Table View
      */

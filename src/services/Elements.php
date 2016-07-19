@@ -118,7 +118,7 @@ class Elements extends Component
      * @param string|null                  $localeId    The locale to fetch the element in.
      *                                                  Defaults to [[\craft\app\web\Application::language `Craft::$app->language`]].
      *
-     * @return ElementInterface|Element|null The matching element, or `null`.
+     * @return ElementInterface|null The matching element, or `null`.
      */
     public function getElementById($elementId, $elementType = null, $localeId = null)
     {
@@ -150,7 +150,7 @@ class Elements extends Component
      *                                 Defaults to [[\craft\app\web\Application::language `Craft::$app->language`]].
      * @param boolean     $enabledOnly Whether to only look for an enabled element. Defaults to `false`.
      *
-     * @return ElementInterface|Element|null The matching element, or `null`.
+     * @return ElementInterface|null The matching element, or `null`.
      */
     public function getElementByUri($uri, $localeId = null, $enabledOnly = false)
     {
@@ -284,8 +284,8 @@ class Elements extends Component
      * saveElement() should be called only after the entry’s sectionId and typeId attributes had been validated to
      * ensure that they point to valid section and entry type IDs.
      *
-     * @param ElementInterface|Element $element         The element that is being saved
-     * @param boolean|null             $validateContent Whether the element's content should be validated. If left 'null', it
+     * @param ElementInterface $element                 The element that is being saved
+     * @param boolean|null     $validateContent         Whether the element's content should be validated. If left 'null', it
      *                                                  will depend on whether the element is enabled or not.
      *
      * @return boolean
@@ -576,10 +576,10 @@ class Elements extends Component
     /**
      * Updates an element’s slug and URI, along with any descendants.
      *
-     * @param ElementInterface|Element $element            The element to update.
-     * @param boolean                  $updateOtherLocales Whether the element’s other locales should also be updated.
-     * @param boolean                  $updateDescendants  Whether the element’s descendants should also be updated.
-     * @param boolean                  $asTask             Whether the element’s slug and URI should be updated via a background task.
+     * @param ElementInterface $element            The element to update.
+     * @param boolean          $updateOtherLocales Whether the element’s other locales should also be updated.
+     * @param boolean          $updateDescendants  Whether the element’s descendants should also be updated.
+     * @param boolean          $asTask             Whether the element’s slug and URI should be updated via a background task.
      *
      * @return void
      */
@@ -628,7 +628,7 @@ class Elements extends Component
     /**
      * Updates an element’s slug and URI, for any locales besides the given one.
      *
-     * @param ElementInterface|Element $element The element to update.
+     * @param ElementInterface $element The element to update.
      *
      * @return void
      */
@@ -653,9 +653,9 @@ class Elements extends Component
     /**
      * Updates an element’s descendants’ slugs and URIs.
      *
-     * @param ElementInterface|Element $element            The element whose descendants should be updated.
-     * @param boolean                  $updateOtherLocales Whether the element’s other locales should also be updated.
-     * @param boolean                  $asTask             Whether the descendants’ slugs and URIs should be updated via a background task.
+     * @param ElementInterface $element            The element whose descendants should be updated.
+     * @param boolean          $updateOtherLocales Whether the element’s other locales should also be updated.
+     * @param boolean          $asTask             Whether the descendants’ slugs and URIs should be updated via a background task.
      *
      * @return void
      */
@@ -937,7 +937,7 @@ class Elements extends Component
      *
      * @param mixed $config The element action’s class name, or its config, with a `type` value and optionally a `settings` value
      *
-     * @return ElementActionInterface|ElementAction The element action
+     * @return ElementActionInterface The element action
      */
     public function createAction($config)
     {
@@ -1079,7 +1079,7 @@ class Elements extends Component
      *
      * This is used by Live Preview and Sharing features.
      *
-     * @param ElementInterface|Element $element The element currently being edited by Live Preview.
+     * @param ElementInterface $element The element currently being edited by Live Preview.
      *
      * @see getPlaceholderElement()
      */
@@ -1099,7 +1099,7 @@ class Elements extends Component
      * @param integer $id     The element’s ID
      * @param string  $locale The element’s locale
      *
-     * @return ElementInterface|Element|null The placeholder element if one exists, or null.
+     * @return ElementInterface|null The placeholder element if one exists, or null.
      * @see setPlaceholderElement()
      */
     public function getPlaceholderElement($id, $locale)

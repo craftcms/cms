@@ -143,7 +143,7 @@ class Plugins extends Component
      *
      * @param string $handle The plugin’s handle
      *
-     * @return PluginInterface|Plugin|null The plugin, or null if it doesn’t exist
+     * @return PluginInterface|null The plugin, or null if it doesn’t exist
      */
     public function getPlugin($handle)
     {
@@ -373,8 +373,8 @@ class Plugins extends Component
     /**
      * Saves a plugin's settings.
      *
-     * @param PluginInterface|Plugin $plugin   The plugin.
-     * @param array                  $settings The plugin’s new settings.
+     * @param PluginInterface $plugin   The plugin.
+     * @param array           $settings The plugin’s new settings.
      *
      * @return boolean Whether the plugin’s settings were saved successfully.
      */
@@ -455,7 +455,7 @@ class Plugins extends Component
     /**
      * Returns whether the given plugin’s version number has changed from what we have recorded in the database.
      *
-     * @param PluginInterface|Plugin $plugin The plugin
+     * @param PluginInterface $plugin The plugin
      *
      * @return boolean Whether the plugin’s version number has changed from what we have recorded in the database
      */
@@ -476,7 +476,7 @@ class Plugins extends Component
     /**
      * Returns whether the given plugin’s local schema version is greater than the record we have in the database.
      *
-     * @param PluginInterface|Plugin $plugin The plugin
+     * @param PluginInterface $plugin The plugin
      *
      * @return boolean Whether the plugin’s local schema version is greater than the record we have in the database
      */
@@ -532,7 +532,7 @@ class Plugins extends Component
      * @param string $handle The plugin’s handle
      * @param array  $row    The plugin’s row in the plugins table, if any
      *
-     * @return PluginInterface|Plugin|null
+     * @return PluginInterface|null
      */
     public function createPlugin($handle, $row = null)
     {
@@ -839,8 +839,8 @@ class Plugins extends Component
      *
      * This should only be called for enabled plugins
      *
-     * @param string                 $handle The plugin’s handle
-     * @param PluginInterface|Plugin $plugin The plugin
+     * @param string          $handle The plugin’s handle
+     * @param PluginInterface $plugin The plugin
      */
     private function _registerPlugin($handle, PluginInterface $plugin)
     {
@@ -876,9 +876,9 @@ class Plugins extends Component
     /**
      * Sets the 'migrator' component on a plugin.
      *
-     * @param PluginInterface|Plugin $plugin The plugin
-     * @param string                 $handle The plugin’s handle
-     * @param integer                $id     The plugin’s ID
+     * @param PluginInterface $plugin The plugin
+     * @param string          $handle The plugin’s handle
+     * @param integer         $id     The plugin’s ID
      */
     private function _setPluginMigrator(PluginInterface $plugin, $handle, $id)
     {

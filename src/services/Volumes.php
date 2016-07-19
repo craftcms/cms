@@ -272,8 +272,8 @@ class Volumes extends Component
     /**
      * Saves an asset volume.
      *
-     * @param VolumeInterface|Volume $volume   the Volume to be saved.
-     * @param boolean                $validate Whether the volume should be validate first
+     * @param VolumeInterface $volume   the Volume to be saved.
+     * @param boolean         $validate Whether the volume should be validate first
      *
      * @return boolean Whether the field was saved successfully
      * @throws \Exception
@@ -396,7 +396,7 @@ class Volumes extends Component
      *
      * @param mixed $config The asset volume’s class name, or its config, with a `type` value and optionally a `settings` value
      *
-     * @return VolumeInterface|Volume The asset volume
+     * @return VolumeInterface The asset volume
      */
     public function createVolume($config)
     {

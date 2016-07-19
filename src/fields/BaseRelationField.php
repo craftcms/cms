@@ -381,7 +381,7 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
      * Returns an array of variables that should be passed to the input template.
      *
      * @param ElementQueryInterface|null $selectedElementsQuery
-     * @param ElementInterface|Element   $element
+     * @param ElementInterface           $element
      *
      * @return array
      */
@@ -421,7 +421,7 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
     /**
      * Returns an array of the source keys the field should be able to select elements from.
      *
-     * @param ElementInterface|Element|null $element
+     * @param ElementInterface|null $element
      *
      * @return array
      */
@@ -452,7 +452,7 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
     /**
      * Returns the locale that target elements should have.
      *
-     * @param ElementInterface|Element|null $element
+     * @param ElementInterface|null $element
      *
      * @return string
      */

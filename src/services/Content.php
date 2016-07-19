@@ -60,7 +60,7 @@ class Content extends Component
     /**
      * Returns the content row for a given element, with field column prefixes removed from the keys.
      *
-     * @param ElementInterface|Element $element The element whose content we're looking for.
+     * @param ElementInterface $element The element whose content we're looking for.
      *
      * @return array|null The element's content row values, or null if the row could not be found
      */
@@ -100,7 +100,7 @@ class Content extends Component
     /**
      * Populates a given element with its custom field values.
      *
-     * @param ElementInterface|Element $element The element for which we should create a new content model.
+     * @param ElementInterface $element The element for which we should create a new content model.
      *
      * @return void
      */
@@ -131,9 +131,9 @@ class Content extends Component
     /**
      * Saves an element's content.
      *
-     * @param ElementInterface|Element $element            The element whose content we're saving.
-     * @param boolean                  $validate           Whether the element's content should be validated first.
-     * @param boolean                  $updateOtherLocales Whether any non-translatable fields' values should be copied to the
+     * @param ElementInterface $element                    The element whose content we're saving.
+     * @param boolean          $validate                   Whether the element's content should be validated first.
+     * @param boolean          $updateOtherLocales         Whether any non-translatable fields' values should be copied to the
      *                                                     element's other locales.
      *
      * @return boolean Whether the content was saved successfully. If it wasn't, any validation errors will be saved on the
@@ -216,7 +216,7 @@ class Content extends Component
     /**
      * Validates some content with a given field layout.
      *
-     * @param ElementInterface|Element $element The element whose content should be validated.
+     * @param ElementInterface $element The element whose content should be validated.
      *
      * @return boolean Whether the element's content validates.
      */

@@ -471,7 +471,7 @@ class Matrix extends Field
     /**
      * Returns info about each block type and their field types for the Matrix field input.
      *
-     * @param ElementInterface|Element $element
+     * @param ElementInterface $element
      *
      * @return array
      */
@@ -532,8 +532,8 @@ class Matrix extends Field
     /**
      * Creates an array of blocks based on the given post data
      *
-     * @param mixed                         $value   The raw field value
-     * @param ElementInterface|Element|null $element The element the field is associated with, if there is one
+     * @param mixed                 $value   The raw field value
+     * @param ElementInterface|null $element The element the field is associated with, if there is one
      *
      * @return MatrixBlock[]
      */

@@ -159,8 +159,8 @@ class FindAndReplace extends Task
     /**
      * Checks whether the given field is saving data into a textual column, and saves it accordingly.
      *
-     * @param FieldInterface|Field $field
-     * @param string               $fieldColumnPrefix
+     * @param FieldInterface $field
+     * @param string         $fieldColumnPrefix
      *
      * @return boolean
      */

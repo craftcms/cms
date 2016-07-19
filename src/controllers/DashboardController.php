@@ -465,7 +465,7 @@ class DashboardController extends Controller
     /**
      * Returns the info about a widget required to display its body and settings in the Dashboard.
      *
-     * @param WidgetInterface|Widget $widget
+     * @param WidgetInterface $widget
      *
      * @return array|false
      */
@@ -532,7 +532,7 @@ class DashboardController extends Controller
     /**
      * Attempts to save a widget and responds with JSON.
      *
-     * @param WidgetInterface|Widget $widget
+     * @param WidgetInterface $widget
      *
      * @return Response
      */

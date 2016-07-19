@@ -304,7 +304,7 @@ class Fields extends Component
      *
      * @param mixed $config The field’s class name, or its config, with a `type` value and optionally a `settings` value
      *
-     * @return FieldInterface|Field The field
+     * @return FieldInterface The field
      */
     public function createField($config)
     {
@@ -402,7 +402,7 @@ class Fields extends Component
      *
      * @param integer $fieldId The field’s ID
      *
-     * @return FieldInterface|Field|null The field, or null if it doesn’t exist
+     * @return FieldInterface|null The field, or null if it doesn’t exist
      */
     public function getFieldById($fieldId)
     {
@@ -431,7 +431,7 @@ class Fields extends Component
      *
      * @param string $handle The field’s handle
      *
-     * @return FieldInterface|Field|null The field, or null if it doesn’t exist
+     * @return FieldInterface|null The field, or null if it doesn’t exist
      */
     public function getFieldByHandle($handle)
     {
@@ -554,8 +554,8 @@ class Fields extends Component
     /**
      * Saves a field.
      *
-     * @param FieldInterface|Field $field    The Field to be saved
-     * @param boolean              $validate Whether the field should be validated first
+     * @param FieldInterface $field    The Field to be saved
+     * @param boolean        $validate Whether the field should be validated first
      *
      * @return boolean Whether the field was saved successfully
      * @throws \Exception if reasons

@@ -115,8 +115,8 @@ class PluginsController extends Controller
     /**
      * Edits a plugin’s settings.
      *
-     * @param string                      $pluginHandle The plugin’s handle
-     * @param PluginInterface|Plugin|null $plugin       The plugin, if there were validation errors
+     * @param string               $pluginHandle The plugin’s handle
+     * @param PluginInterface|null $plugin       The plugin, if there were validation errors
      *
      * @return string The plugin page HTML
      * @throws NotFoundHttpException if the requested plugin cannot be found

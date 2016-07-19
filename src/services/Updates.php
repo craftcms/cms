@@ -235,7 +235,7 @@ class Updates extends Component
     }
 
     /**
-     * @param PluginInterface|Plugin $plugin
+     * @param PluginInterface $plugin
      *
      * @return boolean
      */

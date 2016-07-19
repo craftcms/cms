@@ -24,7 +24,7 @@ class Tasks
     /**
      * Returns the currently running task.
      *
-     * @return TaskInterface|Task|null The currently running task, or null if there isn’t one
+     * @return TaskInterface|null The currently running task, or null if there isn’t one
      */
     public function getRunningTask()
     {

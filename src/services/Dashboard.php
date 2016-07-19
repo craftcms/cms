@@ -70,7 +70,7 @@ class Dashboard extends Component
      *
      * @param mixed $config The widget’s class name, or its config, with a `type` value and optionally a `settings` value.
      *
-     * @return WidgetInterface|Widget
+     * @return WidgetInterface
      */
     public function createWidget($config)
     {
@@ -142,7 +142,7 @@ class Dashboard extends Component
      *
      * @param integer $id The widget’s ID
      *
-     * @return WidgetInterface|Widget|null The widget, or null if it doesn’t exist
+     * @return WidgetInterface|null The widget, or null if it doesn’t exist
      */
     public function getWidgetById($id)
     {
@@ -161,8 +161,8 @@ class Dashboard extends Component
     /**
      * Saves a widget for the current user.
      *
-     * @param WidgetInterface|Widget $widget   The widget to be saved
-     * @param boolean                $validate Whether the widget should be validated first
+     * @param WidgetInterface $widget   The widget to be saved
+     * @param boolean         $validate Whether the widget should be validated first
      *
      * @return boolean Whether the widget was saved successfully
      * @throws \Exception if reasons

@@ -96,7 +96,7 @@ abstract class Task extends SavableComponent implements TaskInterface
     /**
      * Creates and runs a subtask.
      *
-     * @param TaskInterface|Task|array|string $task The task, the task’s class name, or its config, with a `type` value and optionally a `settings` value
+     * @param TaskInterface|array|string $task The task, the task’s class name, or its config, with a `type` value and optionally a `settings` value
      *
      * @return boolean
      */

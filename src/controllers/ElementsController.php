@@ -298,8 +298,8 @@ class ElementsController extends BaseElementsController
     /**
      * Returns the editor HTML response for a given element.
      *
-     * @param ElementInterface|Element $element
-     * @param boolean                  $includeLocales
+     * @param ElementInterface $element
+     * @param boolean          $includeLocales
      *
      * @return Response
      * @throws ForbiddenHttpException if the user is not permitted to edit content in any of the locales supported by this element

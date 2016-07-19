@@ -107,7 +107,7 @@ interface ElementInterface extends ComponentInterface
      * }
      * ```
      *
-     * @return ElementQueryInterface|ElementQuery The newly created [[ElementQueryInterface|ElementQuery]] instance.
+     * @return ElementQueryInterface|ElementQuery The newly created [[ElementQueryInterface]] instance.
      */
     public static function find();
 
@@ -284,13 +284,13 @@ interface ElementInterface extends ComponentInterface
     /**
      * Returns the element index HTML.
      *
-     * @param ElementQueryInterface|ElementQuery $elementQuery
-     * @param integer[]|null                     $disabledElementIds
-     * @param array                              $viewState
-     * @param string|null                        $sourceKey
-     * @param string|null                        $context
-     * @param boolean                            $includeContainer
-     * @param boolean                            $showCheckboxes
+     * @param ElementQueryInterface $elementQuery
+     * @param integer[]|null        $disabledElementIds
+     * @param array                 $viewState
+     * @param string|null           $sourceKey
+     * @param string|null           $context
+     * @param boolean               $includeContainer
+     * @param boolean               $showCheckboxes
      *
      * @return string The element index HTML
      */
@@ -393,8 +393,8 @@ interface ElementInterface extends ComponentInterface
      * - If the attribute name is ‘dateCreated’ or ‘dateUpdated’, the date will be formatted according to the active
      *   locale.
      *
-     * @param ElementInterface|Element $element   The element.
-     * @param string                   $attribute The attribute name.
+     * @param ElementInterface $element   The element.
+     * @param string           $attribute The attribute name.
      *
      * @return string The HTML that should be shown for a given element’s attribute in Table View.
      */
@@ -411,7 +411,7 @@ interface ElementInterface extends ComponentInterface
      * “field_”, make sure you set the `columnPrefix` attribute on the [[\craft\app\base\Field]], so
      * [[\craft\app\services\Elements::buildElementsQuery()]] knows which column to select.
      *
-     * @param ElementQueryInterface|ElementQuery $query
+     * @param ElementQueryInterface $query
      *
      * @return FieldInterface[]|Field[] The fields that should take part in the upcoming elements query
      */
@@ -438,8 +438,8 @@ interface ElementInterface extends ComponentInterface
      * }
      * ```
      *
-     * @param ElementQueryInterface|ElementQuery $query  The database query
-     * @param string                             $status The custom status
+     * @param ElementQueryInterface $query  The database query
+     * @param string                $status The custom status
      *
      * @return string|false
      */
@@ -448,7 +448,7 @@ interface ElementInterface extends ComponentInterface
     /**
      * Returns the HTML for an editor HUD for the given element.
      *
-     * @param ElementInterface|Element $element The element being edited.
+     * @param ElementInterface $element The element being edited.
      *
      * @return string The HTML for the editor HUD
      */
@@ -460,8 +460,8 @@ interface ElementInterface extends ComponentInterface
      * This method will be called when an Element Editor’s Save button is clicked. It should just wrap your service’s
      * saveX() method.
      *
-     * @param ElementInterface|Element $element The element being saved
-     * @param array                    $params  Any element params found in the POST data
+     * @param ElementInterface $element The element being saved
+     * @param array            $params  Any element params found in the POST data
      *
      * @return boolean Whether the element was saved successfully
      */
@@ -470,7 +470,7 @@ interface ElementInterface extends ComponentInterface
     /**
      * Returns the route for a given element.
      *
-     * @param ElementInterface|Element The matched element.
+     * @param ElementInterface The matched element.
      *
      * @return mixed Can be false if no special action should be taken, a string if it should route to a template path,
      *               or an array that can specify a controller action path, params, etc.
@@ -480,8 +480,8 @@ interface ElementInterface extends ComponentInterface
     /**
      * Performs actions after an element has been moved within a structure.
      *
-     * @param ElementInterface|Element $element     The element that was moved.
-     * @param integer                  $structureId The ID of the structure that it moved within.
+     * @param ElementInterface $element     The element that was moved.
+     * @param integer          $structureId The ID of the structure that it moved within.
      *
      * @return void
      */
@@ -576,7 +576,7 @@ interface ElementInterface extends ComponentInterface
      *
      * @param mixed $criteria
      *
-     * @return ElementInterface|Element|null
+     * @return ElementInterface|null
      */
     public function getNext($criteria = false);
 
@@ -585,14 +585,14 @@ interface ElementInterface extends ComponentInterface
      *
      * @param mixed $criteria
      *
-     * @return ElementInterface|Element|null
+     * @return ElementInterface|null
      */
     public function getPrev($criteria = false);
 
     /**
      * Sets the default next element.
      *
-     * @param ElementInterface|Element|false $element
+     * @param ElementInterface|false $element
      *
      * @return void
      */
@@ -601,7 +601,7 @@ interface ElementInterface extends ComponentInterface
     /**
      * Sets the default previous element.
      *
-     * @param ElementInterface|Element|false $element
+     * @param ElementInterface|false $element
      *
      * return void
      */
@@ -610,14 +610,14 @@ interface ElementInterface extends ComponentInterface
     /**
      * Returns the element’s parent.
      *
-     * @return ElementInterface|Element|null
+     * @return ElementInterface|null
      */
     public function getParent();
 
     /**
      * Sets the element’s parent.
      *
-     * @param ElementInterface|Element|null $parent
+     * @param ElementInterface|null $parent
      *
      * @return void
      */
@@ -642,7 +642,7 @@ interface ElementInterface extends ComponentInterface
      *
      * @param integer|null $dist
      *
-     * @return ElementQueryInterface|ElementQuery
+     * @return ElementQueryInterface
      */
     public function getAncestors($dist = null);
 
@@ -651,35 +651,35 @@ interface ElementInterface extends ComponentInterface
      *
      * @param integer|null $dist
      *
-     * @return ElementQueryInterface|ElementQuery
+     * @return ElementQueryInterface
      */
     public function getDescendants($dist = null);
 
     /**
      * Returns the element’s children.
      *
-     * @return ElementQueryInterface|ElementQuery
+     * @return ElementQueryInterface
      */
     public function getChildren();
 
     /**
      * Returns all of the element’s siblings.
      *
-     * @return ElementQueryInterface|ElementQuery
+     * @return ElementQueryInterface
      */
     public function getSiblings();
 
     /**
      * Returns the element’s previous sibling.
      *
-     * @return ElementInterface|Element|null
+     * @return ElementInterface|null
      */
     public function getPrevSibling();
 
     /**
      * Returns the element’s next sibling.
      *
-     * @return ElementInterface|Element|null
+     * @return ElementInterface|null
      */
     public function getNextSibling();
 
@@ -700,7 +700,7 @@ interface ElementInterface extends ComponentInterface
     /**
      * Returns whether this element is an ancestor of another one.
      *
-     * @param ElementInterface|Element $element
+     * @param ElementInterface $element
      *
      * @return boolean
      */
@@ -709,7 +709,7 @@ interface ElementInterface extends ComponentInterface
     /**
      * Returns whether this element is a descendant of another one.
      *
-     * @param ElementInterface|Element $element
+     * @param ElementInterface $element
      *
      * @return boolean
      */
@@ -718,7 +718,7 @@ interface ElementInterface extends ComponentInterface
     /**
      * Returns whether this element is a direct parent of another one.
      *
-     * @param ElementInterface|Element $element
+     * @param ElementInterface $element
      *
      * @return boolean
      */
@@ -727,7 +727,7 @@ interface ElementInterface extends ComponentInterface
     /**
      * Returns whether this element is a direct child of another one.
      *
-     * @param ElementInterface|Element $element
+     * @param ElementInterface $element
      *
      * @return boolean
      */
@@ -736,7 +736,7 @@ interface ElementInterface extends ComponentInterface
     /**
      * Returns whether this element is a sibling of another one.
      *
-     * @param ElementInterface|Element $element
+     * @param ElementInterface $element
      *
      * @return boolean
      */
@@ -745,7 +745,7 @@ interface ElementInterface extends ComponentInterface
     /**
      * Returns whether this element is the direct previous sibling of another one.
      *
-     * @param ElementInterface|Element $element
+     * @param ElementInterface $element
      *
      * @return boolean
      */
@@ -754,7 +754,7 @@ interface ElementInterface extends ComponentInterface
     /**
      * Returns whether this element is the direct next sibling of another one.
      *
-     * @param ElementInterface|Element $element
+     * @param ElementInterface $element
      *
      * @return boolean
      */
