@@ -217,15 +217,11 @@ class Users extends Component
      */
     public function getUserByUid($uid)
     {
-        $userRecord = UserRecord::findOne([
-            'uid' => $uid
-        ]);
-
-        if ($userRecord) {
-            return User::create($userRecord);
-        }
-
-        return null;
+        return User::find()
+            ->uid($uid)
+            ->status(null)
+            ->localeEnabled(false)
+            ->one();
     }
 
     /**
@@ -571,14 +567,14 @@ class Users extends Component
 
         if ($user->can('accessCp')) {
             $url = Url::getActionUrl('users/verifyemail',
-                ['code' => $unhashedVerificationCode, 'id' => $userRecord->uid],
+                ['code' => $unhashedVerificationCode, 'id' => $user->uid],
                 Craft::$app->getRequest()->getIsSecureConnection() ? 'https' : 'http');
         } else {
             // We want to hide the CP trigger if they don't have access to the CP.
             $path = Craft::$app->getConfig()->get('actionTrigger').'/users/verifyemail';
             $params = [
                 'code' => $unhashedVerificationCode,
-                'id' => $userRecord->uid
+                'id' => $user->uid
             ];
             $protocol = Craft::$app->getRequest()->getIsSecureConnection() ? 'https' : 'http';
             $locale = $user->preferredLocale ?: Craft::$app->getI18n()->getPrimarySiteLocaleId();
@@ -601,10 +597,10 @@ class Users extends Component
         $unhashedVerificationCode = $this->_setVerificationCodeOnUserRecord($userRecord);
         $userRecord->save();
 
-        $path = Craft::$app->getConfig()->get('actionTrigger').'/users/setpassword';
+        $path = Craft::$app->getConfig()->get('actionTrigger').'/users/set-password';
         $params = [
             'code' => $unhashedVerificationCode,
-            'id' => $userRecord->uid
+            'id' => $user->uid
         ];
         $scheme = Craft::$app->getRequest()->getIsSecureConnection() ? 'https' : 'http';
 

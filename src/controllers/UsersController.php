@@ -1655,7 +1655,7 @@ class UsersController extends Controller
         $isCodeValid = false;
 
         $userToProcess = User::find()
-            ->id($id)
+            ->uid($id)
             ->status(null)
             ->withPassword()
             ->one();
