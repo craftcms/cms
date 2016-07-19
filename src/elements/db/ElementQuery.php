@@ -1745,7 +1745,7 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
             $row['structureId'] = $this->structureId;
         }
 
-        /** @var ElementInterface|Element $element */
+        /** @var Element $element */
         $element = $class::create($row);
 
         // Verify that an element was returned
@@ -1760,7 +1760,7 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
 
             if ($this->customFields) {
                 foreach ($this->customFields as $field) {
-                    /** @var FieldInterface|Field $field */
+                    /** @var Field $field */
                     if ($field->hasContentColumn()) {
                         // Account for results where multiple fields have the same handle, but from
                         // different columns e.g. two Matrix block types that each have a field with the

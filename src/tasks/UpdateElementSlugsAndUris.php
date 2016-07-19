@@ -96,7 +96,7 @@ class UpdateElementSlugsAndUris extends Task
 
         // Only go deeper if something just changed
         if ($this->updateDescendants && ($element->slug !== $oldSlug || $element->uri !== $oldUri)) {
-            /** @var Element|ElementInterface $elementType */
+            /** @var Element $elementType */
             $elementType = $this->elementType;
 
             $childIds = $elementType::find()

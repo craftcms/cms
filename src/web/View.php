@@ -1234,7 +1234,7 @@ class View extends \yii\web\View
             return null;
         }
 
-        /** @var ElementInterface|Element $element */
+        /** @var Element $element */
         $element = $context['element'];
 
         if (!isset($context['context'])) {

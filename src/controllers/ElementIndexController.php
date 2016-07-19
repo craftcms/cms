@@ -150,7 +150,7 @@ class ElementIndexController extends BaseElementsController
 
         // Find that action from the list of available actions for the source
         if ($this->_actions) {
-            /** @var ElementActionInterface|ElementAction $availableAction */
+            /** @var ElementAction $availableAction */
             foreach ($this->_actions as $availableAction) {
                 if ($actionClass == $availableAction::className()) {
                     $action = $availableAction;
@@ -413,7 +413,7 @@ class ElementIndexController extends BaseElementsController
         if ($this->_actions) {
             $actionData = [];
 
-            /** @var ElementActionInterface|ElementAction $action */
+            /** @var ElementAction $action */
             foreach ($this->_actions as $action) {
                 $actionData[] = [
                     'type' => $action::className(),

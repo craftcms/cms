@@ -71,7 +71,7 @@ EOT;
      */
     public function performAction(ElementQueryInterface $query)
     {
-        /** @var ElementQueryInterface|ElementQuery $query */
+        /** @var ElementQuery $query */
         // Get the users that aren't already suspended
         $query->status = [
             User::STATUS_ACTIVE,

@@ -80,7 +80,7 @@ class SetStatus extends ElementAction
      */
     public function performAction(ElementQueryInterface $query)
     {
-        /** @var ElementQueryInterface|ElementQuery $query */
+        /** @var ElementQuery $query */
         // Figure out which element IDs we need to update
         if ($this->status == Element::STATUS_ENABLED) {
             $sqlNewStatus = '1';

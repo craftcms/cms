@@ -554,7 +554,7 @@ class Plugins extends Component
         }
 
         // Create the plugin
-        /** @var PluginInterface|Plugin $plugin */
+        /** @var Plugin $plugin */
         $plugin = Craft::createObject($config, [$handle, Craft::$app]);
 
         // Set its settings
