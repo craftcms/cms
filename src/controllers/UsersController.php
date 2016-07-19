@@ -18,6 +18,7 @@ use craft\app\elements\User;
 use craft\app\services\Users;
 use craft\app\web\Controller;
 use craft\app\web\UploadedFile;
+use craft\app\web\View;
 use Exception;
 use yii\web\BadRequestHttpException;
 use yii\web\ForbiddenHttpException;
@@ -672,7 +673,7 @@ class UsersController extends Controller
 
         Craft::$app->getView()->registerCssResource('css/account.css');
         Craft::$app->getView()->registerJsResource('js/AccountSettingsForm.js');
-        Craft::$app->getView()->registerJs('new Craft.AccountSettingsForm('.Json::encode($user->id).', '.($user->isCurrent() ? 'true' : 'false').');');
+        Craft::$app->getView()->registerJs('new Craft.AccountSettingsForm('.Json::encode($user->id).', '.($user->isCurrent() ? 'true' : 'false').');', View::POS_END);
 
         Craft::$app->getView()->includeTranslations(
             'Please enter your current password.',
