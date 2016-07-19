@@ -843,7 +843,7 @@ class Elements extends Component
             // First delete any structure nodes with these elements, so NestedSetBehavior can do its thing. We need to
             // go one-by-one in case one of theme deletes the record of another in the process.
             foreach ($elementIds as $elementId) {
-                /* @var StructureElementRecord[] $records */
+                /** @var StructureElementRecord[] $records */
                 $records = StructureElementRecord::findAll([
                     'elementId' => $elementId
                 ]);

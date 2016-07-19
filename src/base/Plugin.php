@@ -216,7 +216,7 @@ class Plugin extends Module implements PluginInterface
      */
     public function getSettingsResponse()
     {
-        /* @var Controller $controller */
+        /** @var Controller $controller */
         $controller = Craft::$app->controller;
 
         return $controller->renderTemplate('settings/plugins/_settings',
