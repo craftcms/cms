@@ -789,6 +789,7 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
         } else {
             $this->query->addSelect([
                 'elements.id',
+                'elements.uid',
                 'elements.type',
                 'elements.enabled',
                 'elements.archived',

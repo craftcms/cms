@@ -26,6 +26,11 @@ trait ElementTrait
     public $id;
 
     /**
+     * @var string The element’s UID
+     */
+    public $uid;
+
+    /**
      * @var int The element’s content row ID
      */
     public $contentId;
