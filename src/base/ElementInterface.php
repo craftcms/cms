@@ -107,7 +107,7 @@ interface ElementInterface extends ComponentInterface
      * }
      * ```
      *
-     * @return ElementQueryInterface|ElementQuery The newly created [[ElementQueryInterface]] instance.
+     * @return ElementQueryInterface The newly created [[ElementQueryInterface]] instance.
      */
     public static function find();
 
