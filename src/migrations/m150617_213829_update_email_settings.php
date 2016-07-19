@@ -109,6 +109,7 @@ class m150617_213829_update_email_settings extends Migration
     public function safeDown()
     {
         echo "m150617_213829_update_email_settings cannot be reverted.\n";
+
         return false;
     }
 }

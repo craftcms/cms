@@ -13,8 +13,8 @@ use craft\app\base\ApplicationTrait;
 /**
  * Craft Console Application class
  *
- * @property Request                              $request          The request component
- * @property User                                 $user             The user component
+ * @property Request $request          The request component
+ * @property User    $user             The user component
  *
  * @method Request                                getRequest()      Returns the request component.
  * @method User                                   getUser()         Returns the user component.

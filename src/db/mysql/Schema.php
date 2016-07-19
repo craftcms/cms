@@ -82,13 +82,11 @@ class Schema extends \yii\db\mysql\Schema
     {
         try {
             parent::releaseSavepoint($name);
-        }
-        catch(Exception $e) {
+        } catch (Exception $e) {
             // Specifically look for a "SAVEPOINT does not exist" error.
             if ($e->getCode() == 42000 && isset($e->errorInfo[1]) && $e->errorInfo[1] == 1305) {
                 Craft::warning('Tried to release a savepoint, but it does not exist: '.$e->getMessage(), __METHOD__);
-            }
-            else {
+            } else {
                 throw $e;
             }
         }
@@ -105,13 +103,11 @@ class Schema extends \yii\db\mysql\Schema
     {
         try {
             parent::rollBackSavepoint($name);
-        }
-        catch(Exception $e) {
+        } catch (Exception $e) {
             // Specifically look for a "SAVEPOINT does not exist" error.
             if ($e->getCode() == 42000 && isset($e->errorInfo[1]) && $e->errorInfo[1] == 1305) {
                 Craft::warning('Tried to roll back a savepoint, but it does not exist: '.$e->getMessage(), __METHOD__);
-            }
-            else {
+            } else {
                 throw $e;
             }
         }

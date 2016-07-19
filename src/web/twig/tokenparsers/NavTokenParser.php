@@ -52,9 +52,15 @@ class NavTokenParser extends \Twig_TokenParser
             $stream->expect(\Twig_Token::BLOCK_END_TYPE);
 
             if ($nextValue == 'ifchildren') {
-                $indent = $this->parser->subparse([$this, 'decideChildrenFork'], true);
+                $indent = $this->parser->subparse([
+                    $this,
+                    'decideChildrenFork'
+                ], true);
                 $stream->expect(\Twig_Token::BLOCK_END_TYPE);
-                $outdent = $this->parser->subparse([$this, 'decideChildrenEnd'], true);
+                $outdent = $this->parser->subparse([
+                    $this,
+                    'decideChildrenEnd'
+                ], true);
                 $stream->expect(\Twig_Token::BLOCK_END_TYPE);
             }
 

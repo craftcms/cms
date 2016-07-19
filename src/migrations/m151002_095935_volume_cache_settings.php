@@ -32,8 +32,7 @@ class m151002_095935_volume_cache_settings extends Migration
         foreach ($volumes as $volume) {
             $settings = Json::decode($volume['settings']);
 
-            if (!empty($settings['expires']) && preg_match('/([0-9]+)([a-z]+)/', $settings['expires'], $matches))
-            {
+            if (!empty($settings['expires']) && preg_match('/([0-9]+)([a-z]+)/', $settings['expires'], $matches)) {
                 $settings['expires'] = $matches[1].' '.$matches[2];
 
                 Craft::$app->getDb()->createCommand()

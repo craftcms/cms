@@ -254,6 +254,7 @@ class SystemSettingsController extends Controller
             $systemSettingsService->saveSettings('mailer', $mailerConfig);
 
             Craft::$app->getSession()->setNotice(Craft::t('app', 'Email settings saved.'));
+
             return $this->redirectToPostedUrl();
         }
 

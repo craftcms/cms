@@ -77,6 +77,7 @@ class PhpMessageSource extends \yii\i18n\PhpMessageSource
         }
 
         $this->basePath = $basePath;
-        return (array) $messages;
+
+        return (array)$messages;
     }
 }

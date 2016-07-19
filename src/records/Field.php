@@ -46,7 +46,7 @@ class Field extends ActiveRecord
         'enabled',
         'id',
         'level',
-		'lft',
+        'lft',
         'link',
         'locale',
         'localeEnabled',

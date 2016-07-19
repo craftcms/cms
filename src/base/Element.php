@@ -654,15 +654,51 @@ abstract class Element extends Component implements ElementInterface
     public function rules()
     {
         $rules = [
-            [['id'], 'number', 'min' => -2147483648, 'max' => 2147483647, 'integerOnly' => true],
-            [['contentId'], 'number', 'min' => -2147483648, 'max' => 2147483647, 'integerOnly' => true],
+            [
+                ['id'],
+                'number',
+                'min' => -2147483648,
+                'max' => 2147483647,
+                'integerOnly' => true
+            ],
+            [
+                ['contentId'],
+                'number',
+                'min' => -2147483648,
+                'max' => 2147483647,
+                'integerOnly' => true
+            ],
             [['locale'], 'craft\\app\\validators\\Locale'],
             [['dateCreated'], 'craft\\app\\validators\\DateTime'],
             [['dateUpdated'], 'craft\\app\\validators\\DateTime'],
-            [['root'], 'number', 'min' => -2147483648, 'max' => 2147483647, 'integerOnly' => true],
-            [['lft'], 'number', 'min' => -2147483648, 'max' => 2147483647, 'integerOnly' => true],
-            [['rgt'], 'number', 'min' => -2147483648, 'max' => 2147483647, 'integerOnly' => true],
-            [['level'], 'number', 'min' => -2147483648, 'max' => 2147483647, 'integerOnly' => true],
+            [
+                ['root'],
+                'number',
+                'min' => -2147483648,
+                'max' => 2147483647,
+                'integerOnly' => true
+            ],
+            [
+                ['lft'],
+                'number',
+                'min' => -2147483648,
+                'max' => 2147483647,
+                'integerOnly' => true
+            ],
+            [
+                ['rgt'],
+                'number',
+                'min' => -2147483648,
+                'max' => 2147483647,
+                'integerOnly' => true
+            ],
+            [
+                ['level'],
+                'number',
+                'min' => -2147483648,
+                'max' => 2147483647,
+                'integerOnly' => true
+            ],
             [['title'], 'string', 'max' => 255],
         ];
 

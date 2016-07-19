@@ -146,6 +146,7 @@ class GlobalSet extends Element
     {
         /** @var FieldLayoutBehavior $behavior */
         $behavior = $this->getBehavior('fieldLayout');
+
         return $behavior->getFieldLayout();
     }
 

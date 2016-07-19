@@ -91,10 +91,14 @@ class Smtp extends BaseTransportAdaptor
     {
         return [
             [['host', 'port', 'timeout'], 'required'],
-            [['username', 'password'], 'required', 'when' => function($model) {
-                /** @var self $model */
-                return ($model->useAuthentication == true);
-            }],
+            [
+                ['username', 'password'],
+                'required',
+                'when' => function ($model) {
+                    /** @var self $model */
+                    return ($model->useAuthentication == true);
+                }
+            ],
             [['encryptionMethod'], 'in', 'range' => ['tls', 'ssl']],
             [['timeout'], 'number', 'integerOnly' => true],
         ];

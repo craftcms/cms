@@ -639,7 +639,7 @@ class View extends \yii\web\View
         $this->js = array_pop($this->_jsBuffers);
 
         if ($scriptTag === true && !empty($js)) {
-           return Html::script($js, ['type' => 'text/javascript']);
+            return Html::script($js, ['type' => 'text/javascript']);
         }
 
         return $js;

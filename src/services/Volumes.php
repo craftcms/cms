@@ -240,7 +240,7 @@ class Volumes extends Component
     {
         // Temporary volume?
         if (is_null($volumeId)) {
-            return  new Temp();
+            return new Temp();
         } else {
             // If we've already fetched all volumes we can save ourselves a trip to the DB for volume IDs that don't
             // exist
@@ -272,8 +272,8 @@ class Volumes extends Component
     /**
      * Saves an asset volume.
      *
-     * @param VolumeInterface|Volume $volume the Volume to be saved.
-     * @param boolean $validate Whether the volume should be validate first
+     * @param VolumeInterface|Volume $volume   the Volume to be saved.
+     * @param boolean                $validate Whether the volume should be validate first
      *
      * @return boolean Whether the field was saved successfully
      * @throws \Exception

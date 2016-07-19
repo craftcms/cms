@@ -297,6 +297,7 @@ class EntryRevisions extends Component
         if ($versionRecord) {
             $config = ArrayHelper::toArray($versionRecord, [], false);
             $config['data'] = Json::decode($config['data']);
+
             return EntryVersion::create($config);
         }
     }
@@ -449,7 +450,7 @@ class EntryRevisions extends Component
             'postDate' => ($revision->postDate ? $revision->postDate->getTimestamp() : null),
             'expiryDate' => ($revision->expiryDate ? $revision->expiryDate->getTimestamp() : null),
             'enabled' => $revision->enabled,
-            'newParentId'   => $revision->newParentId,
+            'newParentId' => $revision->newParentId,
             'fields' => [],
         ];
 

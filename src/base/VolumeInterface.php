@@ -48,7 +48,7 @@ interface VolumeInterface extends SavableComponentInterface
     /**
      * List files.
      *
-     * @param string $directory The path of the directory to list files of.
+     * @param string  $directory The path of the directory to list files of.
      * @param boolean $recursive whether to fetch file list recursively
      *
      * @return array
@@ -58,9 +58,9 @@ interface VolumeInterface extends SavableComponentInterface
     /**
      * Creates a file.
      *
-     * @param string $path The path of the file, relative to the source’s root.
+     * @param string   $path   The path of the file, relative to the source’s root.
      * @param resource $stream The stream to file
-     * @param array $config Additional config options to pass to the adapter.
+     * @param array    $config Additional config options to pass to the adapter.
      *
      * @throws VolumeObjectExistsException if a file already exists at the path on the Volume.
      * @return boolean Whether the operation was successful.
@@ -70,7 +70,7 @@ interface VolumeInterface extends SavableComponentInterface
     /**
      * Updates a file.
      *
-     * @param string $path The path of the file, relative to the source’s root.
+     * @param string $path   The path of the file, relative to the source’s root.
      * @param string $stream The new contents of the file as a stream.
      *
      * @return boolean Whether the operation was successful.
@@ -98,7 +98,7 @@ interface VolumeInterface extends SavableComponentInterface
     /**
      * Renames a file.
      *
-     * @param string $path The old path of the file, relative to the source’s root.
+     * @param string $path    The old path of the file, relative to the source’s root.
      * @param string $newPath The new path of the file, relative to the source’s root.
      *
      * @throws VolumeObjectExistsException if a file with such a name exists already.
@@ -110,7 +110,7 @@ interface VolumeInterface extends SavableComponentInterface
     /**
      * Copies a file.
      *
-     * @param string $path The path of the file, relative to the source’s root.
+     * @param string $path    The path of the file, relative to the source’s root.
      * @param string $newPath The path of the new file, relative to the source’s root.
      *
      * @return boolean Whether the operation was successful.
@@ -118,7 +118,7 @@ interface VolumeInterface extends SavableComponentInterface
     public function copyFile($path, $newPath);
 
     /**
-    /**
+     * /**
      * Creates a directory.
      *
      * @param string $path The path of the directory, relative to the source’s root.
@@ -140,7 +140,7 @@ interface VolumeInterface extends SavableComponentInterface
     /**
      * Renames a directory.
      *
-     * @param string $path The path of the directory, relative to the source’s root.
+     * @param string $path    The path of the directory, relative to the source’s root.
      * @param string $newPath The new path of the directory, relative to the source’s root.
      *
      * @throws VolumeObjectExistsException if a directory with such name already exists.

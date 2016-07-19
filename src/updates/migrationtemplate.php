@@ -27,27 +27,27 @@ use craft\app\helpers\Migration as MigrationHelper;
 use yii\db\Schema;
 
 /**
- * <?= $className ?> migration.
- */
+* <?= $className ?> migration.
+*/
 class <?= $className ?> extends Migration
 {
-    // Public Methods
-    // =========================================================================
+// Public Methods
+// =========================================================================
 
-    /**
-     * @inheritdoc
-     */
-    public function safeUp()
-    {
-        // Place migration code here...
-    }
+/**
+* @inheritdoc
+*/
+public function safeUp()
+{
+// Place migration code here...
+}
 
-    /**
-     * @inheritdoc
-     */
-    public function safeDown()
-    {
-        echo "<?= $className ?> cannot be reverted.\n";
-        return false;
-    }
+/**
+* @inheritdoc
+*/
+public function safeDown()
+{
+echo "<?= $className ?> cannot be reverted.\n";
+return false;
+}
 }

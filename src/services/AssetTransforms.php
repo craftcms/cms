@@ -216,7 +216,7 @@ class AssetTransforms extends Component
     /**
      * Get a transform index row. If it doesn't exist - create one.
      *
-     * @param Asset $asset
+     * @param Asset  $asset
      * @param string $transform
      *
      * @return AssetTransformIndex
@@ -550,14 +550,15 @@ class AssetTransforms extends Component
      * Get a transform index model by a row id.
      *
      * @param integer $assetId
-     * @param string $transformHandle
+     * @param string  $transformHandle
      *
      * @return AssetTransformIndex|null
      */
     public function getTransformIndexModelByAssetIdAndHandle(
         $assetId,
         $transformHandle
-    ) {
+    )
+    {
         // Check if an entry exists already
         $entry = (new Query())
             ->select('ti.*')
@@ -585,6 +586,7 @@ class AssetTransforms extends Component
         $transformIndexModel = $this->getTransformIndexModelById($transformId);
 
         $asset = Craft::$app->getAssets()->getAssetById($transformIndexModel->assetId);
+
         return $this->getUrlForTransformByAssetAndTransformIndex($asset,
             $transformIndexModel);
     }
@@ -592,14 +594,16 @@ class AssetTransforms extends Component
     /**
      * Get URL for Transform by the transform index model.
      *
-     * @param Asset $asset
+     * @param Asset               $asset
      * @param AssetTransformIndex $transformIndexModel
+     *
      * @return string
      */
     public function getUrlForTransformByAssetAndTransformIndex(
         Asset $asset,
         AssetTransformIndex $transformIndexModel
-    ) {
+    )
+    {
         $volume = $asset->getVolume();
         $baseUrl = $volume->getRootUrl();
         $appendix = AssetsHelper::getUrlAppendix($volume, $asset);
@@ -837,7 +841,7 @@ class AssetTransforms extends Component
     /**
      * Return a subfolder used by the Transform Index for the Asset.
      *
-     * @param Asset $asset
+     * @param Asset               $asset
      * @param AssetTransformIndex $index
      *
      * @return mixed|string
@@ -845,7 +849,8 @@ class AssetTransforms extends Component
     public function getTransformSubfolder(
         Asset $asset,
         AssetTransformIndex $index
-    ) {
+    )
+    {
         $path = $index->location;
 
         if (!empty($index->filename) && $index->filename != $asset->filename) {
@@ -858,7 +863,7 @@ class AssetTransforms extends Component
     /**
      * Return the filename used by the Transform Index for the Asset.
      *
-     * @param Asset $asset
+     * @param Asset               $asset
      * @param AssetTransformIndex $index
      *
      * @return mixed
@@ -866,7 +871,8 @@ class AssetTransforms extends Component
     public function getTransformFilename(
         Asset $asset,
         AssetTransformIndex $index
-    ) {
+    )
+    {
         if (empty($index->filename)) {
             return $asset->filename;
         } else {
@@ -877,7 +883,7 @@ class AssetTransforms extends Component
     /**
      * Get a transform subpath used by the Transform Index for the Asset.
      *
-     * @param Asset $asset
+     * @param Asset               $asset
      * @param AssetTransformIndex $index
      *
      * @return string
@@ -885,7 +891,8 @@ class AssetTransforms extends Component
     public function getTransformSubpath(
         Asset $asset,
         AssetTransformIndex $index
-    ) {
+    )
+    {
         return $this->getTransformSubfolder($asset,
             $index).'/'.$this->getTransformFilename($asset, $index);
     }
@@ -1016,7 +1023,8 @@ class AssetTransforms extends Component
      * @return string
      */
     private function _getNamedTransformFolderName(AssetTransformModel $transform
-    ) {
+    )
+    {
         return '_'.$transform->handle;
     }
 
@@ -1029,7 +1037,8 @@ class AssetTransforms extends Component
      */
     private function _getUnnamedTransformFolderName(
         AssetTransformModel $transform
-    ) {
+    )
+    {
         return '_'.($transform->width ? $transform->width : 'AUTO').'x'.($transform->height ? $transform->height : 'AUTO').
         '_'.($transform->mode).
         '_'.($transform->position).
@@ -1039,7 +1048,7 @@ class AssetTransforms extends Component
     /**
      * Create a transform for the Asset by the transform index.
      *
-     * @param Asset $asset
+     * @param Asset               $asset
      * @param AssetTransformIndex $index
      *
      * @throws AssetTransformException If a transform index has an invalid transform assigned.
@@ -1048,7 +1057,8 @@ class AssetTransforms extends Component
     private function _createTransformForAsset(
         Asset $asset,
         AssetTransformIndex $index
-    ) {
+    )
+    {
         if (!Image::isImageManipulatable(Io::getExtension($asset->filename))) {
             return;
         }

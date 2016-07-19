@@ -104,7 +104,11 @@ class SetStatus extends ElementAction
                 ->update(
                     '{{%elements_i18n}}',
                     ['enabled' => $sqlNewStatus],
-                    ['and', ['in', 'elementId', $elementIds], 'locale = :locale'],
+                    [
+                        'and',
+                        ['in', 'elementId', $elementIds],
+                        'locale = :locale'
+                    ],
                     [':locale' => $query->locale])
                 ->execute();
         }

@@ -17,14 +17,14 @@ namespace craft\app\enums;
  */
 abstract class PeriodType extends BaseEnum
 {
-	// Constants
-	// =========================================================================
+    // Constants
+    // =========================================================================
 
-	const Seconds = 'seconds';
-	const Minutes = 'minutes';
-	const Hours   = 'hours';
-	const Days    = 'days';
-	const Weeks   = 'weeks';
-	const Months  = 'months';
-	const Years   = 'years';
+    const Seconds = 'seconds';
+    const Minutes = 'minutes';
+    const Hours = 'hours';
+    const Days = 'days';
+    const Weeks = 'weeks';
+    const Months = 'months';
+    const Years = 'years';
 }

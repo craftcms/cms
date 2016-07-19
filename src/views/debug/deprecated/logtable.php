@@ -29,7 +29,9 @@ use craft\app\models\DeprecationError;
             <?php foreach ($logs as $log): ?>
                 <tr>
                     <td><?= $log->message ?></td>
-                    <td><?= $log->getOrigin() ?> – <a href="<?= $panel->getUrl().'&trace='.$log->id ?>">Stack Trace</a></td>
+                    <td><?= $log->getOrigin() ?> – <a
+                            href="<?= $panel->getUrl().'&trace='.$log->id ?>">Stack
+                            Trace</a></td>
                 </tr>
             <?php endforeach; ?>
             </tbody>

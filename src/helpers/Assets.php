@@ -127,7 +127,8 @@ class Assets
      *
      * @return array $folderIdChanges map of original folder id => new folder id
      */
-    public static function mirrorFolderStructure(VolumeFolder $sourceParentFolder, VolumeFolder $destinationFolder, $targetTreeMap = []) {
+    public static function mirrorFolderStructure(VolumeFolder $sourceParentFolder, VolumeFolder $destinationFolder, $targetTreeMap = [])
+    {
         $assets = Craft::$app->getAssets();
         $sourceTree = $assets->getAllDescendantFolders($sourceParentFolder);
         $previousParent = $sourceParentFolder->getParent();
@@ -163,9 +164,9 @@ class Assets
      * Create an Asset transfer list based on a list of Assets and an array of
      * changing folder ids.
      *
-     * @param array $assets List of assets
+     * @param array $assets          List of assets
      * @param array $folderIdChanges A map of folder id changes
-     * @param bool  $merge If set to true, files will be merged in folders
+     * @param bool  $merge           If set to true, files will be merged in folders
      *
      * @return array
      */
@@ -209,10 +210,10 @@ class Assets
         return [
             PeriodType::Seconds => Craft::t('app', 'Seconds'),
             PeriodType::Minutes => Craft::t('app', 'Minutes'),
-            PeriodType::Hours   => Craft::t('app', 'Hours'),
-            PeriodType::Days    => Craft::t('app', 'Days'),
-            PeriodType::Months  => Craft::t('app', 'Months'),
-            PeriodType::Years   => Craft::t('app', 'Years'),
+            PeriodType::Hours => Craft::t('app', 'Hours'),
+            PeriodType::Days => Craft::t('app', 'Days'),
+            PeriodType::Months => Craft::t('app', 'Months'),
+            PeriodType::Years => Craft::t('app', 'Years'),
         ];
     }
 }

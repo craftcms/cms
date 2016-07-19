@@ -23,11 +23,11 @@ class Svg extends Image
     // Constants
     // =========================================================================
 
-    const SVG_WIDTH_RE   = '/(<svg[^>]*\swidth=")([\d\.]+)([a-z]*)"/si';
-    const SVG_HEIGHT_RE  = '/(<svg[^>]*\sheight=")([\d\.]+)([a-z]*)"/si';
+    const SVG_WIDTH_RE = '/(<svg[^>]*\swidth=")([\d\.]+)([a-z]*)"/si';
+    const SVG_HEIGHT_RE = '/(<svg[^>]*\sheight=")([\d\.]+)([a-z]*)"/si';
     const SVG_VIEWBOX_RE = '/(<svg[^>]*\sviewBox=")(\d+(?:,|\s)\d+(?:,|\s)(\d+)(?:,|\s)(\d+))"/si';
-    const SVG_ASPECT_RE  = '/(<svg[^>]*\spreserveAspectRatio=")([a-z]+\s[a-z]+)"/si';
-    const SVG_TAG_RE     = '/<svg/si';
+    const SVG_ASPECT_RE = '/(<svg[^>]*\spreserveAspectRatio=")([a-z]+\s[a-z]+)"/si';
+    const SVG_TAG_RE = '/<svg/si';
 
     // Properties
     // =========================================================================
@@ -56,7 +56,6 @@ class Svg extends Image
     public function getWidth()
     {
         return $this->_width;
-
     }
 
     /**
@@ -160,9 +159,9 @@ class Svg extends Image
     /**
      * Scale the image to fit within the specified size.
      *
-     * @param int $targetWidth
+     * @param int      $targetWidth
      * @param int|null $targetHeight
-     * @param bool $scaleIfSmaller
+     * @param bool     $scaleIfSmaller
      *
      * @return Image
      */
@@ -170,7 +169,8 @@ class Svg extends Image
         $targetWidth,
         $targetHeight = null,
         $scaleIfSmaller = true
-    ) {
+    )
+    {
         $this->normalizeDimensions($targetWidth, $targetHeight);
 
         if ($scaleIfSmaller || $this->getWidth() > $targetWidth || $this->getHeight() > $targetHeight) {
@@ -186,10 +186,10 @@ class Svg extends Image
     /**
      * Scale and crop image to exactly fit the specified size.
      *
-     * @param int $targetWidth
+     * @param int      $targetWidth
      * @param int|null $targetHeight
-     * @param bool $scaleIfSmaller
-     * @param string $cropPositions
+     * @param bool     $scaleIfSmaller
+     * @param string   $cropPositions
      *
      * @return Image
      */
@@ -198,7 +198,8 @@ class Svg extends Image
         $targetHeight = null,
         $scaleIfSmaller = true,
         $cropPositions = 'center-center'
-    ) {
+    )
+    {
         $this->normalizeDimensions($targetWidth, $targetHeight);
 
         if ($scaleIfSmaller || $this->getWidth() > $targetWidth || $this->getHeight() > $targetHeight) {
@@ -235,7 +236,7 @@ class Svg extends Image
     /**
      * Re-sizes the image. If $height is not specified, it will default to $width, creating a square.
      *
-     * @param int $targetWidth
+     * @param int      $targetWidth
      * @param int|null $targetHeight
      *
      * @return Image
@@ -267,7 +268,7 @@ class Svg extends Image
     /**
      * Saves the image to the target path.
      *
-     * @param string $targetPath
+     * @param string  $targetPath
      * @param boolean $autoQuality
      *
      * @throws ImageException If attempting to save

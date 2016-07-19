@@ -11,34 +11,34 @@ use craft\app\db\Query;
  */
 class m151215_000000_rename_asset_permissions extends Migration
 {
-	/**
-	 * @inheritdoc
-	 */
-	public function safeUp()
-	{
-		// Update permissions
-		$permissions = (new Query())
-				->select('id, name')
-				->from('{{%userpermissions}}')
-				->where(['like', 'name', '%volume%', false])
-				->all();
+    /**
+     * @inheritdoc
+     */
+    public function safeUp()
+    {
+        // Update permissions
+        $permissions = (new Query())
+            ->select('id, name')
+            ->from('{{%userpermissions}}')
+            ->where(['like', 'name', '%volume%', false])
+            ->all();
 
-		foreach ($permissions as $permission) {
-			$newName = str_replace('uploadtovolume', 'saveassetinvolume', $permission['name']);
-			$newName = str_replace('createsubfoldersinvolume', 'createfoldersinvolume', $newName);
-			$newName = str_replace('removefromvolume', 'deletefilesandfoldersinvolume', $newName);
-			$this->update('{{%userpermissions}}', ['name' => $newName],
-					['id' => $permission['id']], [], false);
-		}
+        foreach ($permissions as $permission) {
+            $newName = str_replace('uploadtovolume', 'saveassetinvolume', $permission['name']);
+            $newName = str_replace('createsubfoldersinvolume', 'createfoldersinvolume', $newName);
+            $newName = str_replace('removefromvolume', 'deletefilesandfoldersinvolume', $newName);
+            $this->update('{{%userpermissions}}', ['name' => $newName],
+                ['id' => $permission['id']], [], false);
+        }
+    }
 
-	}
+    /**
+     * @inheritdoc
+     */
+    public function safeDown()
+    {
+        echo "m151215_000000_rename_asset_permissions cannot be reverted.\n";
 
-	/**
-	 * @inheritdoc
-	 */
-	public function safeDown()
-	{
-		echo "m151215_000000_rename_asset_permissions cannot be reverted.\n";
-		return false;
-	}
+        return false;
+    }
 }

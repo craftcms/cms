@@ -113,9 +113,9 @@ class Mailer extends \yii\swiftmailer\Mailer
             $originalTemplatesPath = Craft::$app->getPath()->getTemplatesPath();
             Craft::$app->getPath()->setTemplatesPath($tempTemplatesPath);
 
-            $htmlBodyTemplate = "{% extends '{$parentTemplate}' %}\n" .
-                "{% set body %}\n" .
-                Markdown::process($textBodyTemplate) .
+            $htmlBodyTemplate = "{% extends '{$parentTemplate}' %}\n".
+                "{% set body %}\n".
+                Markdown::process($textBodyTemplate).
                 "{% endset %}\n";
 
             $variables = $message->variables ?: [];

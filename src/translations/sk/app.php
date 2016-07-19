@@ -1,6 +1,6 @@
 <?php
 
-return array(
+return [
     '"{filename}" is not allowed in this field.' => '"{filename}" nie je v tomto poli povolený.',
     '$_SERVER does not have {messages}.' => '$ _SERVER nemá {messages}.',
     '$_SERVER Variable' => 'Premenná $ _SERVER',
@@ -1256,4 +1256,4 @@ Ak si tento email neočakával, jednoducho ho ignoruj.',
     '“{plugin}” can’t be disabled because it isn’t installed yet.' => '"{plugin}" nemôže byť zakázaný, pretože zatiaľ nie je nainštalovaný.',
     '“{plugin}” can’t be enabled because it isn’t installed yet.' => '"{plugin}" nemôže byť povolený, pretože zatiaľ nie je nainštalovaný.',
     '…Or use one of your field groups as a starting point:' => '...Alebo použiť niektorú zo skupín polí ako východiskový bod:',
-);
+];

@@ -200,6 +200,7 @@ abstract class Volume extends SavableComponent implements VolumeInterface
         } catch (FileNotFoundException $exception) {
             // Make a note of it, but otherwise - mission accomplished!
             Craft::info($exception->getMessage());
+
             return true;
         }
     }

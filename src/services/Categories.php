@@ -544,24 +544,24 @@ class Categories extends Component
                                 ->execute();
                         } else /** @noinspection PhpUndefinedVariableInspection */
                             if ($changedLocaleIds) {
-                            foreach ($categoryIds as $categoryId) {
-                                Craft::$app->getConfig()->maxPowerCaptain();
+                                foreach ($categoryIds as $categoryId) {
+                                    Craft::$app->getConfig()->maxPowerCaptain();
 
-                                // Loop through each of the changed locales and update all of the categories’ slugs and
-                                // URIs
-                                foreach ($changedLocaleIds as $localeId) {
-                                    $category = Category::find()
-                                        ->id($categoryId)
-                                        ->locale($localeId)
-                                        ->status(null)
-                                        ->one();
+                                    // Loop through each of the changed locales and update all of the categories’ slugs and
+                                    // URIs
+                                    foreach ($changedLocaleIds as $localeId) {
+                                        $category = Category::find()
+                                            ->id($categoryId)
+                                            ->locale($localeId)
+                                            ->status(null)
+                                            ->one();
 
-                                    if ($category) {
-                                        Craft::$app->getElements()->updateElementSlugAndUri($category, false, false);
+                                        if ($category) {
+                                            Craft::$app->getElements()->updateElementSlugAndUri($category, false, false);
+                                        }
                                     }
                                 }
                             }
-                        }
                     }
                 }
 

@@ -164,8 +164,7 @@ class GoogleCloud extends Volume
      */
     public function createFileByStream($path, $stream, $config = [])
     {
-        if (!empty($this->expires)  && DateTimeHelper::isValidIntervalString($this->expires))
-        {
+        if (!empty($this->expires) && DateTimeHelper::isValidIntervalString($this->expires)) {
             $expires = new DateTime();
             $now = new DateTime();
             $expires->modify('+'.$this->expires);

@@ -735,8 +735,10 @@ class Request extends \yii\web\Request
      * This token is a masked version of [[rawCsrfToken]] to prevent [BREACH attacks](http://breachattack.com/).
      * This token may be passed along via a hidden field of an HTML form or an HTTP header value
      * to support CSRF validation.
+     *
      * @param boolean $regenerate whether to regenerate CSRF token. When this parameter is true, each time
-     * this method is called, a new CSRF token will be generated and persisted (in session or cookie).
+     *                            this method is called, a new CSRF token will be generated and persisted (in session or cookie).
+     *
      * @return string the token used to perform CSRF validation.
      */
     public function getCsrfToken($regenerate = false)
@@ -752,7 +754,7 @@ class Request extends \yii\web\Request
             $chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_-.';
             $mask = substr(str_shuffle(str_repeat($chars, 5)), 0, static::CSRF_MASK_LENGTH);
             // The + sign may be decoded as blank space later, which will fail the validation
-            $this->_csrfToken = str_replace('+', '.', base64_encode($mask . $this->_xorTokens($token, $mask)));
+            $this->_csrfToken = str_replace('+', '.', base64_encode($mask.$this->_xorTokens($token, $mask)));
         }
 
         return $this->_csrfToken;
@@ -771,6 +773,7 @@ class Request extends \yii\web\Request
 
     /**
      * Generates  an unmasked random token used to perform CSRF validation.
+     *
      * @return string the random token for CSRF validation.
      */
     protected function generateCsrfToken()
@@ -778,30 +781,23 @@ class Request extends \yii\web\Request
         $existingToken = $this->loadCsrfToken();
 
         // They have an existing CSRF token.
-        if ($existingToken)
-        {
+        if ($existingToken) {
             // It's a CSRF token that came from an authenticated request.
-            if (strpos($existingToken, '|') !== false)
-            {
+            if (strpos($existingToken, '|') !== false) {
                 // Grab the existing nonce.
                 $parts = explode('|', $existingToken);
                 $nonce = $parts[0];
-            }
-            else
-            {
+            } else {
                 // It's a CSRF token from an unauthenticated request.
                 $nonce = $existingToken;
             }
-        }
-        else
-        {
+        } else {
             // No previous CSRF token, generate a new nonce.
-             $nonce = Craft::$app->getSecurity()->generateRandomString(40);
+            $nonce = Craft::$app->getSecurity()->generateRandomString(40);
         }
 
         // Authenticated users
-        if (Craft::$app->get('user', false) && ($currentUser = Craft::$app->getUser()->getIdentity()))
-        {
+        if (Craft::$app->get('user', false) && ($currentUser = Craft::$app->getUser()->getIdentity())) {
             // We mix the password into the token so that it will become invalid when the user changes their password.
             // The salt on the blowfish hash will be different even if they change their password to the same thing.
             // Normally using the session ID would be a better choice, but PHP's bananas session handling makes that difficult.
@@ -809,9 +805,7 @@ class Request extends \yii\web\Request
             $userId = $currentUser->id;
             $hashable = implode('|', [$nonce, $userId, $passwordHash]);
             $token = $nonce.'|'.Craft::$app->getSecurity()->hashData($hashable, $this->cookieValidationKey);
-        }
-        else
-        {
+        } else {
             // Unauthenticated users.
             $token = $nonce;
         }
@@ -857,8 +851,7 @@ class Request extends \yii\web\Request
             $expectedToken = $nonce.'|'.Craft::$app->getSecurity()->hashData($hashable, $this->cookieValidationKey);
 
             return Craft::$app->getSecurity()->compareString($expectedToken, $token);
-        }
-        else {
+        } else {
             // If they're logged out, any token is fine
             return true;
         }

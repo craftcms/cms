@@ -729,8 +729,8 @@ class Updates extends Component
     }
 
     /**
-     * @param string $uid
-     * @param string $handle
+     * @param string  $uid
+     * @param string  $handle
      * @param boolean $dbBackupPath
      *
      * @return array

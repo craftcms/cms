@@ -21,26 +21,26 @@ use yii\base\Exception;
  */
 class InvalidSubpathException extends Exception
 {
-	/**
-	 * @var string The invalid subpath
-	 */
-	public $subpath;
+    /**
+     * @var string The invalid subpath
+     */
+    public $subpath;
 
-	/**
-	 * Constructor.
-	 *
-	 * @param string  $subpath The invalid subpath
-	 * @param string  $message The error message
-	 * @param integer $code    The error code
-	 */
-	public function __construct($subpath, $message = null, $code = 0)
-	{
-		$this->subpath = $subpath;
+    /**
+     * Constructor.
+     *
+     * @param string  $subpath The invalid subpath
+     * @param string  $message The error message
+     * @param integer $code    The error code
+     */
+    public function __construct($subpath, $message = null, $code = 0)
+    {
+        $this->subpath = $subpath;
 
-		if ($message === null) {
-			$message = "Could not resolve the subpath “{$subpath}”.";
-		}
+        if ($message === null) {
+            $message = "Could not resolve the subpath “{$subpath}”.";
+        }
 
-		parent::__construct($message, $code);
-	}
+        parent::__construct($message, $code);
+    }
 }

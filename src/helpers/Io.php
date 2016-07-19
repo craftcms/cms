@@ -1856,7 +1856,10 @@ class Io
                         'json',
                     ]
                 ],
-                'pdf' => ['label' => Craft::t('app', 'PDF'), 'extensions' => ['pdf']],
+                'pdf' => [
+                    'label' => Craft::t('app', 'PDF'),
+                    'extensions' => ['pdf']
+                ],
                 'photoshop' => [
                     'label' => Craft::t('app', 'Photoshop'),
                     'extensions' => [
@@ -1864,7 +1867,10 @@ class Io
                         'psb',
                     ]
                 ],
-                'php' => ['label' => Craft::t('app', 'PHP'), 'extensions' => ['php']],
+                'php' => [
+                    'label' => Craft::t('app', 'PHP'),
+                    'extensions' => ['php']
+                ],
                 'powerpoint' => [
                     'label' => Craft::t('app', 'PowerPoint'),
                     'extensions' => [
@@ -1925,7 +1931,8 @@ class Io
                         'dotm',
                     ]
                 ],
-                'xml' => ['label' => Craft::t('app', 'XML'),
+                'xml' => [
+                    'label' => Craft::t('app', 'XML'),
                     'extensions' => [
                         'xml',
                     ]

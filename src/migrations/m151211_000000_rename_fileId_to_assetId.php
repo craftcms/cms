@@ -11,20 +11,21 @@ use craft\app\helpers\Io;
  */
 class m151211_000000_rename_fileId_to_assetId extends Migration
 {
-	/**
-	 * @inheritdoc
-	 */
-	public function safeUp()
-	{
-		$this->renameColumn('{{%assettransformindex}}', 'fileId', 'assetId');
-	}
+    /**
+     * @inheritdoc
+     */
+    public function safeUp()
+    {
+        $this->renameColumn('{{%assettransformindex}}', 'fileId', 'assetId');
+    }
 
-	/**
-	 * @inheritdoc
-	 */
-	public function safeDown()
-	{
-		echo "m151211_000000_rename_fileId_to_assetId cannot be reverted.\n";
-		return false;
-	}
+    /**
+     * @inheritdoc
+     */
+    public function safeDown()
+    {
+        echo "m151211_000000_rename_fileId_to_assetId cannot be reverted.\n";
+
+        return false;
+    }
 }

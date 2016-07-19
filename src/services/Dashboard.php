@@ -251,6 +251,7 @@ class Dashboard extends Component
 
         return true;
     }
+
     /**
      * Changes the colspan of a widget.
      *

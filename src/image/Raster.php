@@ -100,7 +100,6 @@ class Raster extends Image
     public function getWidth()
     {
         return $this->_image->getSize()->getWidth();
-
     }
 
     /**
@@ -206,9 +205,9 @@ class Raster extends Image
     /**
      * Scale the image to fit within the specified size.
      *
-     * @param int $targetWidth
+     * @param int      $targetWidth
      * @param int|null $targetHeight
-     * @param bool $scaleIfSmaller
+     * @param bool     $scaleIfSmaller
      *
      * @return Image
      */
@@ -216,7 +215,8 @@ class Raster extends Image
         $targetWidth,
         $targetHeight = null,
         $scaleIfSmaller = true
-    ) {
+    )
+    {
         $this->normalizeDimensions($targetWidth, $targetHeight);
 
         if ($scaleIfSmaller || $this->getWidth() > $targetWidth || $this->getHeight() > $targetHeight) {
@@ -232,10 +232,10 @@ class Raster extends Image
     /**
      * Scale and crop image to exactly fit the specified size.
      *
-     * @param int $targetWidth
+     * @param int      $targetWidth
      * @param int|null $targetHeight
-     * @param bool $scaleIfSmaller
-     * @param string $cropPositions
+     * @param bool     $scaleIfSmaller
+     * @param string   $cropPositions
      *
      * @return Image
      */
@@ -244,7 +244,8 @@ class Raster extends Image
         $targetHeight = null,
         $scaleIfSmaller = true,
         $cropPositions = 'center-center'
-    ) {
+    )
+    {
         $this->normalizeDimensions($targetWidth, $targetHeight);
 
         list($verticalPosition, $horizontalPosition) = explode("-",
@@ -319,7 +320,7 @@ class Raster extends Image
     /**
      * Re-sizes the image. If $height is not specified, it will default to $width, creating a square.
      *
-     * @param int $targetWidth
+     * @param int      $targetWidth
      * @param int|null $targetHeight
      *
      * @return Image
@@ -379,6 +380,7 @@ class Raster extends Image
     public function setQuality($quality)
     {
         $this->_quality = $quality;
+
         return $this;
     }
 
@@ -411,6 +413,7 @@ class Raster extends Image
         } catch (\Imagine\Exception\RuntimeException $e) {
             throw new ImageException(Craft::t('app', 'Failed to save the image.'), $e->getCode(), $e);
         }
+
         return true;
     }
 
@@ -427,8 +430,7 @@ class Raster extends Image
         try {
             $this->_image = $this->_instance->load($svgContent);
         } catch (\Imagine\Exception\RuntimeException $e) {
-            try
-            {
+            try {
                 // Invalid SVG. Maybe it's missing its DTD?
                 $svgContent = '<?xml version="1.0" encoding="UTF-8" standalone="no"?>'.$svgContent;
                 $this->_image = $this->_instance->load($svgContent);
@@ -500,7 +502,7 @@ class Raster extends Image
     /**
      * Get the bounding text box for a text string and an angle
      *
-     * @param $text
+     * @param     $text
      * @param int $angle
      *
      * @throws ImageException If attempting to create text box with no font properties et.
@@ -560,7 +562,8 @@ class Raster extends Image
         $minQuality,
         $maxQuality,
         $step = 0
-    ) {
+    )
+    {
         // Give ourselves some extra time.
         @set_time_limit(30);
 
@@ -590,6 +593,7 @@ class Raster extends Image
             // Generate one last time.
             $this->_image->save($tempFileName,
                 $this->_getSaveOptions($midQuality));
+
             return $tempFileName;
         }
 
@@ -617,7 +621,8 @@ class Raster extends Image
      * Get save options.
      *
      * @param int|null $quality
-     * @param string $extension
+     * @param string   $extension
+     *
      * @return array
      */
     private function _getSaveOptions($quality = null, $extension = null)

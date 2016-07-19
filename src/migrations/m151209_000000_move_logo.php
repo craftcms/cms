@@ -11,21 +11,22 @@ use craft\app\helpers\Io;
  */
 class m151209_000000_move_logo extends Migration
 {
-	/**
-	 * @inheritdoc
-	 */
-	public function safeUp()
-	{
-		$pathService = Craft::$app->getPath();
-		Io::rename($pathService->getStoragePath().'/logo', $pathService->getRebrandPath().'/logo', true);
-	}
+    /**
+     * @inheritdoc
+     */
+    public function safeUp()
+    {
+        $pathService = Craft::$app->getPath();
+        Io::rename($pathService->getStoragePath().'/logo', $pathService->getRebrandPath().'/logo', true);
+    }
 
-	/**
-	 * @inheritdoc
-	 */
-	public function safeDown()
-	{
-		echo "m151209_000000_move_logo cannot be reverted.\n";
-		return false;
-	}
+    /**
+     * @inheritdoc
+     */
+    public function safeDown()
+    {
+        echo "m151209_000000_move_logo cannot be reverted.\n";
+
+        return false;
+    }
 }

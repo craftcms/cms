@@ -80,11 +80,11 @@ class User extends \yii\web\User
     /**
      * Logs in a user by their ID
      *
-     * @param integer $userId The user’s ID
+     * @param integer $userId   The user’s ID
      * @param integer $duration The number of seconds that the user can remain in logged-in status.
-     * Defaults to 0, meaning login till the user closes the browser or the session is manually destroyed.
-     * If greater than 0 and [[enableAutoLogin]] is true, cookie-based login will be supported.
-     * Note that if [[enableSession]] is false, this parameter will be ignored.
+     *                          Defaults to 0, meaning login till the user closes the browser or the session is manually destroyed.
+     *                          If greater than 0 and [[enableAutoLogin]] is true, cookie-based login will be supported.
+     *                          Note that if [[enableSession]] is false, this parameter will be ignored.
      *
      * @return boolean Whether the user is logged in
      */

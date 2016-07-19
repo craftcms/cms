@@ -602,7 +602,11 @@ class I18N extends \yii\i18n\I18N
                                                 $tableName,
                                                 [
                                                     'and',
-                                                    ['in', 'elementId', $blockIds],
+                                                    [
+                                                        'in',
+                                                        'elementId',
+                                                        $blockIds
+                                                    ],
                                                     'locale = :transferContentTo'
                                                 ],
                                                 [':transferContentTo' => $transferContentTo])
@@ -614,7 +618,11 @@ class I18N extends \yii\i18n\I18N
                                                 ['locale' => $transferContentTo],
                                                 [
                                                     'and',
-                                                    ['in', 'elementId', $blockIds],
+                                                    [
+                                                        'in',
+                                                        'elementId',
+                                                        $blockIds
+                                                    ],
                                                     'locale = :localeId'
                                                 ],
                                                 [':localeId' => $localeId])
@@ -711,9 +719,14 @@ class I18N extends \yii\i18n\I18N
 
         if ($this->_shouldAddTranslationDebugOutput()) {
             switch ($category) {
-                case 'site': $char = '$'; break;
-                case 'app': $char = '@'; break;
-                default: $char = '%';
+                case 'site':
+                    $char = '$';
+                    break;
+                case 'app':
+                    $char = '@';
+                    break;
+                default:
+                    $char = '%';
             }
 
             $translation = $char.$translation.$char;
@@ -790,7 +803,7 @@ class I18N extends \yii\i18n\I18N
     private function _shouldAddTranslationDebugOutput()
     {
         if ($this->_translationDebugOutput === null) {
-            $this->_translationDebugOutput = (bool) Craft::$app->getConfig()->get('translationDebugOutput');
+            $this->_translationDebugOutput = (bool)Craft::$app->getConfig()->get('translationDebugOutput');
         }
 
         return $this->_translationDebugOutput;

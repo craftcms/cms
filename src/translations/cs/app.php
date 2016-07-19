@@ -1,6 +1,6 @@
 <?php
 
-return array(
+return [
     '"{filename}" is not allowed in this field.' => 'Pro toto pole není "{filename}" povolen.',
     '$_SERVER does not have {messages}.' => '$_SERVER neobsahuje {messages}',
     '$_SERVER Variable' => '$_SERVER Variable',
@@ -1256,4 +1256,4 @@ Pokud nevíte, o co se jedná, tuto zprávu  klidně ignorujte.',
     '“{plugin}” can’t be disabled because it isn’t installed yet.' => '"{plugin}" nelze deaktivovat, protože plugin zatím není nainstalován.',
     '“{plugin}” can’t be enabled because it isn’t installed yet.' => '"{plugin}" nelze aktivovat, neboť zatím není nainstalován.',
     '…Or use one of your field groups as a starting point:' => '... anebo pro začátek použijte jednu z Vašich skupin vstupních polí:',
-);
+];

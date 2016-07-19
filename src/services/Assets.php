@@ -108,7 +108,7 @@ class Assets extends Component
     /**
      * Returns all top-level files in a volume.
      *
-     * @param integer $volumeId
+     * @param integer     $volumeId
      * @param string|null $indexBy
      *
      * @return array
@@ -303,8 +303,8 @@ class Assets extends Component
     /**
      * Replaces an Asset with another.
      *
-     * @param Asset $assetToReplace
-     * @param Asset $assetToReplaceWith
+     * @param Asset   $assetToReplace
+     * @param Asset   $assetToReplaceWith
      * @param boolean $mergeAssets whether to replace content as well.
      *
      * @return void
@@ -313,7 +313,8 @@ class Assets extends Component
         Asset $assetToReplace,
         Asset $assetToReplaceWith,
         $mergeAssets = false
-    ) {
+    )
+    {
         $targetVolume = $assetToReplace->getVolume();
 
         // TODO purge cached files for remote Volumes.
@@ -361,8 +362,8 @@ class Assets extends Component
      * Replace an Asset's file by it's id, a local file and the filename to use.
      *
      * @param Asset $existingAsset
-     * @param $pathOnServer
-     * @param $filename
+     * @param       $pathOnServer
+     * @param       $filename
      *
      *
      * @throws ActionCancelledException If something prevented the Asset replacement via Event.
@@ -457,7 +458,7 @@ class Assets extends Component
      * Delete a list of files by an array of ids (or a single id).
      *
      * @param array|int $assetIds
-     * @param boolean $deleteFile Should the file be deleted along the record. Defaults to true.
+     * @param boolean   $deleteFile Should the file be deleted along the record. Defaults to true.
      *
      * @return void
      */
@@ -496,7 +497,7 @@ class Assets extends Component
     /**
      * Rename an Asset.
      *
-     * @param Asset $asset
+     * @param Asset  $asset
      * @param string $newFilename
      *
      * @throws AssetDisallowedExtensionException If the extension is not allowed.
@@ -651,7 +652,7 @@ class Assets extends Component
      * Deletes a folder by its ID.
      *
      * @param array|int $folderIds
-     * @param boolean $deleteFolder Should the folder be deleted along the record. Defaults to true.
+     * @param boolean   $deleteFolder Should the folder be deleted along the record. Defaults to true.
      *
      * @throws VolumeException If deleting a single folder and it cannot be deleted.
      * @return void
@@ -798,14 +799,15 @@ class Assets extends Component
      * Returns all of the folders that are descendants of a given folder.
      *
      * @param VolumeFolderModel $parentFolder
-     * @param string $orderBy
+     * @param string            $orderBy
      *
      * @return array
      */
     public function getAllDescendantFolders(
         VolumeFolderModel $parentFolder,
         $orderBy = "path"
-    ) {
+    )
+    {
         /**
          * @var $query Query
          */
@@ -900,7 +902,7 @@ class Assets extends Component
     /**
      * Get URL for a file.
      *
-     * @param Asset $asset
+     * @param Asset  $asset
      * @param string $transform
      *
      * @return string
@@ -942,8 +944,8 @@ class Assets extends Component
     /**
      * Find a replacement for a filename
      *
-     * @param string $originalFilename the original filename for which to find a replacement.
-     * @param VolumeFolderModel $folder THe folder in which to find the replacement
+     * @param string            $originalFilename the original filename for which to find a replacement.
+     * @param VolumeFolderModel $folder           THe folder in which to find the replacement
      *
      * @throws AssetLogicException If a suitable filename replacement cannot be found.
      * @return string
@@ -951,7 +953,8 @@ class Assets extends Component
     public function getNameReplacementInFolder(
         $originalFilename,
         VolumeFolderModel $folder
-    ) {
+    )
+    {
         $volume = $folder->getVolume();
         $fileList = $volume->getFileList($folder->path, false);
 
@@ -1006,7 +1009,6 @@ class Assets extends Component
                 throw new AssetLogicException(Craft::t('app',
                     'Could not find a suitable replacement filename for “{filename}”.',
                     ['filename' => $filename]));
-
             }
         }
 
@@ -1016,9 +1018,9 @@ class Assets extends Component
     /**
      * Move an Asset.
      *
-     * @param Asset $asset
-     * @param integer $folderId Id of the folder of the destination
-     * @param string $newFilename filename to use for the file at it's destination
+     * @param Asset   $asset
+     * @param integer $folderId    Id of the folder of the destination
+     * @param string  $newFilename filename to use for the file at it's destination
      *
      * @throws AssetDisallowedExtensionException If the extension is not allowed.
      * @throws AssetConflictException            If there is a conflict.
@@ -1276,9 +1278,9 @@ class Assets extends Component
     /**
      * Move an Asset's file to the specified folder.
      *
-     * @param Asset $asset
+     * @param Asset             $asset
      * @param VolumeFolderModel $targetFolder
-     * @param string $newFilename new filename to use
+     * @param string            $newFilename new filename to use
      *
      * @throws FileException If there was a problem with the actual file.
      * @return void
@@ -1287,7 +1289,8 @@ class Assets extends Component
         Asset $asset,
         VolumeFolderModel $targetFolder,
         $newFilename = ""
-    ) {
+    )
+    {
         $filename = $newFilename ?: $asset->filename;
 
         $sourceVolume = $asset->getVolume();
@@ -1436,7 +1439,7 @@ class Assets extends Component
     /**
      * Applies WHERE conditions to a DbCommand query for folders.
      *
-     * @param Query $query
+     * @param Query          $query
      * @param FolderCriteria $criteria
      *
      * @return void

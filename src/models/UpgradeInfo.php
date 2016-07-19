@@ -18,39 +18,42 @@ use craft\app\base\Model;
  */
 class UpgradeInfo extends Model
 {
-	// Properties
-	// =========================================================================
+    // Properties
+    // =========================================================================
 
-	/**
-	 * @var array Available editions
-	 */
-	public $editions;
+    /**
+     * @var array Available editions
+     */
+    public $editions;
 
-	/**
-	 * @var string The Stripe publishable key
-	 */
-	public $stripePublicKey;
+    /**
+     * @var string The Stripe publishable key
+     */
+    public $stripePublicKey;
 
-	/**
-	 * @var array Known countries
-	 */
-	public $countries;
+    /**
+     * @var array Known countries
+     */
+    public $countries;
 
-	/**
-	 * @var array Known states
-	 */
-	public $states;
+    /**
+     * @var array Known states
+     */
+    public $states;
 
-	// Properties
-	// =========================================================================
+    // Properties
+    // =========================================================================
 
-	/**
-	 * @inheritdoc
-	 */
-	public function rules()
-	{
-		return [
-			[['editions', 'stripePublicKey', 'countries', 'states'], 'required'],
-		];
-	}
+    /**
+     * @inheritdoc
+     */
+    public function rules()
+    {
+        return [
+            [
+                ['editions', 'stripePublicKey', 'countries', 'states'],
+                'required'
+            ],
+        ];
+    }
 }

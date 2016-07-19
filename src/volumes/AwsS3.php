@@ -30,9 +30,9 @@ class AwsS3 extends Volume
     // Constants
     // =========================================================================
 
-    const STORAGE_STANDARD           = "STANDARD";
+    const STORAGE_STANDARD = "STANDARD";
     const STORAGE_REDUCED_REDUNDANCY = "REDUCED_REDUNDANCY";
-    const STORAGE_STANDARD_IA        = "STANDARD_IA";
+    const STORAGE_STANDARD_IA = "STANDARD_IA";
 
     // Static
     // =========================================================================
@@ -212,17 +212,15 @@ class AwsS3 extends Volume
      */
     public function createFileByStream($path, $stream, $config = [])
     {
-        if (!empty($this->expires) && DateTimeHelper::isValidIntervalString($this->expires))
-            {
-                $expires = new DateTime();
-                $now = new DateTime();
-                $expires->modify('+'.$this->expires);
-                $diff = $expires->format('U') - $now->format('U');
-                $config['CacheControl'] = 'max-age='.$diff.', must-revalidate';
+        if (!empty($this->expires) && DateTimeHelper::isValidIntervalString($this->expires)) {
+            $expires = new DateTime();
+            $now = new DateTime();
+            $expires->modify('+'.$this->expires);
+            $diff = $expires->format('U') - $now->format('U');
+            $config['CacheControl'] = 'max-age='.$diff.', must-revalidate';
         }
 
-        if (!empty($this->storageClass))
-        {
+        if (!empty($this->storageClass)) {
             $config['StorageClass'] = $this->storageClass;
         }
 
@@ -234,8 +232,7 @@ class AwsS3 extends Volume
      */
     public function deleteFile($path)
     {
-        if (parent::deleteFile($path) && !empty($this->cfDistributionId))
-        {
+        if (parent::deleteFile($path) && !empty($this->cfDistributionId)) {
             // If there's a CloudFront distribution ID set, invalidate the path.
             $cfClient = $this->_getCloudFrontClient();
 
@@ -261,7 +258,7 @@ class AwsS3 extends Volume
      */
     public static function getStorageClasses()
     {
-        return[
+        return [
             static::STORAGE_STANDARD => 'Standard',
             static::STORAGE_REDUCED_REDUNDANCY => 'Reduced Redundancy Storage',
             static::STORAGE_STANDARD_IA => 'Infrequent Access Storage'
@@ -323,6 +320,7 @@ class AwsS3 extends Volume
     private function _getCloudFrontClient()
     {
         $config = $this->_getConfigArray();
+
         return CloudFrontClient::factory($config);
     }
 

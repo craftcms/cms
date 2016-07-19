@@ -43,6 +43,7 @@ class m150724_140822_adjust_quality_settings extends Migration
             $this->update('{{%assettransforms}}', ['quality' => $closest],
                 'id = :id', [':id' => $transform['id']]);
         }
+
         return true;
     }
 }

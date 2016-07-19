@@ -29,6 +29,7 @@ class m150815_133521_last_login_attempt_ip extends Migration
     public function safeDown()
     {
         echo "m150815_133521_last_login_attempt_ip cannot be reverted.\n";
+
         return false;
     }
 }

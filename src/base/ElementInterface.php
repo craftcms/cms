@@ -773,9 +773,9 @@ interface ElementInterface extends ComponentInterface
      * Returns the element’s custom field values.
      *
      * @param array $fieldHandles The list of field handles whose values need to be returned.
-     * Defaults to null, meaning all fields’ values will be returned.
-     * If it is an array, only the fields in the array will be returned.
-     * @param array $except The list of field handles whose values should NOT be returned.
+     *                            Defaults to null, meaning all fields’ values will be returned.
+     *                            If it is an array, only the fields in the array will be returned.
+     * @param array $except       The list of field handles whose values should NOT be returned.
      *
      * @return array The field values (handle => value)
      */

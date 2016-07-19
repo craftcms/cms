@@ -58,7 +58,10 @@ class ElementIndexSettingsController extends BaseElementsController
         $availableTableAttributes = [];
 
         foreach ($elementIndexesService->getAvailableTableAttributes($elementType) as $key => $labelInfo) {
-            $availableTableAttributes[] = [$key, Craft::t('site', $labelInfo['label'])];
+            $availableTableAttributes[] = [
+                $key,
+                Craft::t('site', $labelInfo['label'])
+            ];
         }
 
         return $this->asJson([

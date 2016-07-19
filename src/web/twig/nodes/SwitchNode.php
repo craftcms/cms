@@ -17,7 +17,6 @@ use Twig_Node;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
-
 class SwitchNode extends Twig_Node
 {
     // Public Methods

@@ -392,8 +392,7 @@ class Et extends Component
         ]);
         $etResponse = $et->phoneHome();
 
-        if (!empty($etResponse->data['success']))
-        {
+        if (!empty($etResponse->data['success'])) {
             // Remove our record of the license key
             Craft::$app->getPlugins()->setPluginLicenseKey($pluginHandle, null);
         }

@@ -50,7 +50,7 @@ class UrlFormat extends Validator
             if ($this->requireSlug) {
                 if (!Element::doesUrlFormatHaveSlugTag($urlFormat)) {
                     $this->addError($object, $attribute, Craft::t('app', '{attribute} must contain “{slug}”',
-                            ['attribute' => $object->attribute]));
+                        ['attribute' => $object->attribute]));
                 }
             }
         }

@@ -180,7 +180,7 @@ class DateTimeHelper
                     $format .= 'e';
                     $date .= $defaultTimeZone;
                 }
-            } else if (self::isValidTimeStamp((int) $date)) {
+            } else if (self::isValidTimeStamp((int)$date)) {
                 $format = 'U';
             } else {
                 return false;
@@ -206,6 +206,7 @@ class DateTimeHelper
      *  - A PHP time zone identifier (UTC, GMT, Atlantic/Azores)
      *
      * @param string $timeZone The time zone to be normalized
+     *
      * @return string|false The PHP time zone identifier, or `false` if it could not be determined
      */
     public static function normalizeTimeZone($timeZone)
@@ -292,9 +293,9 @@ class DateTimeHelper
     /**
      * Translates the words in a formatted date string to the application’s language.
      *
-     * @param string $str The formatted date string
+     * @param string $str      The formatted date string
      * @param string $language The language code (e.g. `en-US`, `en`). If this is null, the current
-     * [[\yii\base\Application::language|application language]] will be used.
+     *                         [[\yii\base\Application::language|application language]] will be used.
      *
      * @return The translated date string
      */
@@ -309,6 +310,7 @@ class DateTimeHelper
         }
 
         $translations = self::_getDateTranslations($language);
+
         return strtr($str, $translations);
     }
 

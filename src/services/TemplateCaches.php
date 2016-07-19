@@ -168,7 +168,10 @@ class TemplateCaches extends Component
 
         // Is this the first time we've started caching?
         if ($this->_cachedQueries === null) {
-            Event::on(ElementQuery::className(), ElementQuery::EVENT_AFTER_PREPARE, [$this, 'includeElementQueryInTemplateCaches']);
+            Event::on(ElementQuery::className(), ElementQuery::EVENT_AFTER_PREPARE, [
+                $this,
+                'includeElementQueryInTemplateCaches'
+            ]);
         }
 
         if (Craft::$app->getConfig()->get('cacheElementQueries')) {
@@ -206,7 +209,10 @@ class TemplateCaches extends Component
             $hash = md5($serialized);
 
             foreach (array_keys($this->_cachedQueries) as $cacheKey) {
-                $this->_cachedQueries[$cacheKey][$hash] = [$elementQuery->elementType, $serialized];
+                $this->_cachedQueries[$cacheKey][$hash] = [
+                    $elementQuery->elementType,
+                    $serialized
+                ];
             }
         }
     }
@@ -312,7 +318,11 @@ class TemplateCaches extends Component
                     ];
                 }
                 Craft::$app->getDb()->createCommand()
-                    ->batchInsert(static::$_templateCacheQueriesTable, ['cacheId', 'type', 'query'], $values, false)
+                    ->batchInsert(static::$_templateCacheQueriesTable, [
+                        'cacheId',
+                        'type',
+                        'query'
+                    ], $values, false)
                     ->execute();
                 unset($this->_cachedQueries[$key]);
             }

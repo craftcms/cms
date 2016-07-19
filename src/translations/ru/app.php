@@ -1,6 +1,6 @@
 <?php
 
-return array(
+return [
     '"{filename}" is not allowed in this field.' => '"{filename}" не допускается в этом поле.',
     '$_SERVER Variable' => 'Переменная $_SERVER',
     '$_SERVER does not have {messages}.' => '$_SERVER не имеет {messages}.',
@@ -1253,4 +1253,4 @@ return array(
     '“{plugin}” is already installed.' => 'Плагин “{plugin}” уже установлен.',
     '“{plugin}” is already uninstalled.' => 'Плагин “{plugin}” уже удален.',
     '…Or use one of your field groups as a starting point:' => '... или используйте одну из ваших групп полей в качестве отправной точки:',
-);
+];

@@ -34,52 +34,52 @@ use yii\web\ServerErrorHttpException;
 /**
  * ApplicationTrait
  *
- * @property \craft\app\web\AssetManager          $assetManager     The asset manager component
- * @property \craft\app\services\Assets           $assets           The assets service
- * @property \craft\app\services\AssetIndexer     $assetIndexing    The asset indexer service
- * @property \craft\app\services\AssetTransforms  $assetTransforms  The asset transforms service
- * @property \craft\app\services\Categories       $categories       The categories service
- * @property \craft\app\services\Config           $config           The config service
- * @property \craft\app\services\Content          $content          The content service
- * @property \craft\app\services\Dashboard        $dashboard        The dashboard service
- * @property \craft\app\db\Connection             $db               The database connection component
- * @property \craft\app\services\Deprecator       $deprecator       The deprecator service
- * @property \craft\app\services\ElementIndexes   $elementIndexes   The element indexes service
- * @property \craft\app\services\Elements         $elements         The elements service
- * @property \craft\app\services\EmailMessages    $emailMessages    The email messages service
- * @property \craft\app\services\Entries          $entries          The entries service
- * @property \craft\app\services\EntryRevisions   $entryRevisions   The entry revisions service
- * @property \craft\app\services\Et               $et               The E.T. service
- * @property \craft\app\services\Feeds            $feeds            The feeds service
- * @property \craft\app\services\Fields           $fields           The fields service
- * @property \craft\app\i18n\Formatter            $formatter        The formatter component
- * @property \craft\app\services\Globals          $globals          The globals service
- * @property \craft\app\i18n\I18N                 $i18n             The internationalization (i18n) component
- * @property \craft\app\services\Images           $images           The images service
- * @property \craft\app\i18n\Locale               $locale           The Locale object for the target language
- * @property \craft\app\mail\Mailer               $mailer           The mailer component
- * @property \craft\app\services\Matrix           $matrix           The matrix service
- * @property \craft\app\db\MigrationManager       $migrator         The application’s migration manager
- * @property \craft\app\services\Path             $path             The path service
- * @property \craft\app\services\Plugins          $plugins          The plugins service
- * @property \craft\app\services\Relations        $relations        The relations service
- * @property \craft\app\services\Resources        $resources        The resources service
- * @property \craft\app\services\Routes           $routes           The routes service
- * @property \craft\app\services\Search           $search           The search service
- * @property \craft\app\services\Security         $security         The security component
- * @property \craft\app\services\Sections         $sections         The sections service
- * @property \craft\app\services\Structures       $structures       The structures service
- * @property \craft\app\services\SystemSettings   $systemSettings   The system settings service
- * @property \craft\app\services\Tags             $tags             The tags service
- * @property \craft\app\services\Tasks            $tasks            The tasks service
- * @property \craft\app\services\TemplateCaches   $templateCaches   The template caches service
- * @property \craft\app\services\Tokens           $tokens           The tokens service
- * @property \craft\app\services\Updates          $updates          The updates service
- * @property \craft\app\services\UserGroups       $userGroups       The user groups service
- * @property \craft\app\services\UserPermissions  $userPermissions  The user permissions service
- * @property \craft\app\services\Users            $users            The users service
- * @property \craft\app\web\View                  $view             The view component
- * @property \craft\app\services\Volumes          $volumes          The volumes service
+ * @property \craft\app\web\AssetManager         $assetManager     The asset manager component
+ * @property \craft\app\services\Assets          $assets           The assets service
+ * @property \craft\app\services\AssetIndexer    $assetIndexing    The asset indexer service
+ * @property \craft\app\services\AssetTransforms $assetTransforms  The asset transforms service
+ * @property \craft\app\services\Categories      $categories       The categories service
+ * @property \craft\app\services\Config          $config           The config service
+ * @property \craft\app\services\Content         $content          The content service
+ * @property \craft\app\services\Dashboard       $dashboard        The dashboard service
+ * @property \craft\app\db\Connection            $db               The database connection component
+ * @property \craft\app\services\Deprecator      $deprecator       The deprecator service
+ * @property \craft\app\services\ElementIndexes  $elementIndexes   The element indexes service
+ * @property \craft\app\services\Elements        $elements         The elements service
+ * @property \craft\app\services\EmailMessages   $emailMessages    The email messages service
+ * @property \craft\app\services\Entries         $entries          The entries service
+ * @property \craft\app\services\EntryRevisions  $entryRevisions   The entry revisions service
+ * @property \craft\app\services\Et              $et               The E.T. service
+ * @property \craft\app\services\Feeds           $feeds            The feeds service
+ * @property \craft\app\services\Fields          $fields           The fields service
+ * @property \craft\app\i18n\Formatter           $formatter        The formatter component
+ * @property \craft\app\services\Globals         $globals          The globals service
+ * @property \craft\app\i18n\I18N                $i18n             The internationalization (i18n) component
+ * @property \craft\app\services\Images          $images           The images service
+ * @property \craft\app\i18n\Locale              $locale           The Locale object for the target language
+ * @property \craft\app\mail\Mailer              $mailer           The mailer component
+ * @property \craft\app\services\Matrix          $matrix           The matrix service
+ * @property \craft\app\db\MigrationManager      $migrator         The application’s migration manager
+ * @property \craft\app\services\Path            $path             The path service
+ * @property \craft\app\services\Plugins         $plugins          The plugins service
+ * @property \craft\app\services\Relations       $relations        The relations service
+ * @property \craft\app\services\Resources       $resources        The resources service
+ * @property \craft\app\services\Routes          $routes           The routes service
+ * @property \craft\app\services\Search          $search           The search service
+ * @property \craft\app\services\Security        $security         The security component
+ * @property \craft\app\services\Sections        $sections         The sections service
+ * @property \craft\app\services\Structures      $structures       The structures service
+ * @property \craft\app\services\SystemSettings  $systemSettings   The system settings service
+ * @property \craft\app\services\Tags            $tags             The tags service
+ * @property \craft\app\services\Tasks           $tasks            The tasks service
+ * @property \craft\app\services\TemplateCaches  $templateCaches   The template caches service
+ * @property \craft\app\services\Tokens          $tokens           The tokens service
+ * @property \craft\app\services\Updates         $updates          The updates service
+ * @property \craft\app\services\UserGroups      $userGroups       The user groups service
+ * @property \craft\app\services\UserPermissions $userPermissions  The user permissions service
+ * @property \craft\app\services\Users           $users            The users service
+ * @property \craft\app\web\View                 $view             The view component
+ * @property \craft\app\services\Volumes         $volumes          The volumes service
  *
  * @method \craft\app\web\AssetManager            getAssetManager() Returns the asset manager component.
  * @method \craft\app\db\Connection               getDb()           Returns the database connection component.
@@ -313,7 +313,7 @@ trait ApplicationTrait
     public function getEdition()
     {
         /** @var \craft\app\web\Application|\craft\app\console\Application $this */
-        return (int) $this->getInfo('edition');
+        return (int)$this->getInfo('edition');
     }
 
     /**
@@ -338,7 +338,7 @@ trait ApplicationTrait
         $licensedEdition = $this->getCache()->get('licensedEdition');
 
         if ($licensedEdition !== false) {
-            return (int) $licensedEdition;
+            return (int)$licensedEdition;
         }
 
         return null;

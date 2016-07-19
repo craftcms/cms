@@ -34,6 +34,7 @@ class m150721_124739_templatecachequeries extends Migration
     public function safeDown()
     {
         echo "m150721_124739_templatecachequeries cannot be reverted.\n";
+
         return false;
     }
 }

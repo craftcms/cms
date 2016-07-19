@@ -43,14 +43,16 @@ class Message extends \yii\swiftmailer\Message
      * @inheritdoc
      *
      * @param string|array|User|User[] $from The sender’s email address, or their user model(s).
-     * You may pass an array of addresses if this message is from multiple people.
-     * You may also specify sender name in addition to email address using format:
-     * `[email => name]`.
+     *                                       You may pass an array of addresses if this message is from multiple people.
+     *                                       You may also specify sender name in addition to email address using format:
+     *                                       `[email => name]`.
+     *
      * @return $this self reference
      */
     public function setFrom($from)
     {
         $from = $this->_normalizeEmails($from);
+
         return parent::setFrom($from);
     }
 
@@ -58,14 +60,16 @@ class Message extends \yii\swiftmailer\Message
      * @inheritdoc
      *
      * @param string|array|User|User[] $to The receiver’s email address, or their user model(s).
-     * You may pass an array of addresses if multiple recipients should receive this message.
-     * You may also specify receiver name in addition to email address using format:
-     * `[email => name]`.
+     *                                     You may pass an array of addresses if multiple recipients should receive this message.
+     *                                     You may also specify receiver name in addition to email address using format:
+     *                                     `[email => name]`.
+     *
      * @return $this self reference
      */
     public function setTo($to)
     {
         $to = $this->_normalizeEmails($to);
+
         return parent::setTo($to, true);
     }
 
@@ -73,14 +77,16 @@ class Message extends \yii\swiftmailer\Message
      * @inheritdoc
      *
      * @param string|array|User|User[] $cc The copied receiver’s email address, or their user model(s).
-     * You may pass an array of addresses if multiple recipients should receive this message.
-     * You may also specify receiver name in addition to email address using format:
-     * `[email => name]`.
+     *                                     You may pass an array of addresses if multiple recipients should receive this message.
+     *                                     You may also specify receiver name in addition to email address using format:
+     *                                     `[email => name]`.
+     *
      * @return $this self reference
      */
     public function setCc($cc)
     {
         $cc = $this->_normalizeEmails($cc);
+
         return parent::setCc($cc);
     }
 
@@ -88,14 +94,16 @@ class Message extends \yii\swiftmailer\Message
      * @inheritdoc
      *
      * @param string|array|User|User[] $bcc The hidden copied receiver’ email address, or their user model(s).
-     * You may pass an array of addresses if multiple recipients should receive this message.
-     * You may also specify receiver name in addition to email address using format:
-     * `[email => name]`.
+     *                                      You may pass an array of addresses if multiple recipients should receive this message.
+     *                                      You may also specify receiver name in addition to email address using format:
+     *                                      `[email => name]`.
+     *
      * @return $this self reference
      */
     public function setBcc($bcc)
     {
         $bcc = $this->_normalizeEmails($bcc);
+
         return parent::setBcc($bcc);
     }
 

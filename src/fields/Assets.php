@@ -162,11 +162,11 @@ class Assets extends BaseRelationField
 
         return Craft::$app->getView()->renderTemplate('_components/fieldtypes/Assets/settings',
             [
-                'allowLimit'            => $this->allowLimit,
+                'allowLimit' => $this->allowLimit,
                 'folderOptions' => $folderOptions,
                 'sourceOptions' => $sourceOptions,
                 'targetLocaleFieldHtml' => $this->getTargetLocaleFieldHtml(),
-                'viewModeFieldHtml'     => $this->getViewModeFieldHtml(),
+                'viewModeFieldHtml' => $this->getViewModeFieldHtml(),
                 'field' => $this,
                 'displayName' => self::displayName(),
                 'fileKindOptions' => $fileKindOptions,
@@ -183,12 +183,12 @@ class Assets extends BaseRelationField
         try {
             return parent::getInputHtml($value, $element);
         } catch (InvalidSubpathException $e) {
-            return '<p class="warning">' .
-                '<span data-icon="alert"></span> ' .
-                Craft::t('This field’s target subfolder path is invalid: {path}', [
-                    'path' => '<code>'.$this->singleUploadLocationSubpath.'</code>'
-                ]) .
-                '</p>';
+            return '<p class="warning">'.
+            '<span data-icon="alert"></span> '.
+            Craft::t('This field’s target subfolder path is invalid: {path}', [
+                'path' => '<code>'.$this->singleUploadLocationSubpath.'</code>'
+            ]).
+            '</p>';
         }
     }
 
@@ -519,8 +519,8 @@ class Assets extends BaseRelationField
     /**
      * Resolve a source path to it's folder ID by the source path and the matched source beginning.
      *
-     * @param integer $volumeId
-     * @param string $subpath
+     * @param integer                  $volumeId
+     * @param string                   $subpath
      * @param ElementInterface|Element $element
      *
      * @throws VolumeObjectNotFoundException if the volume doesn’t exist
@@ -561,7 +561,7 @@ class Assets extends BaseRelationField
 
             $folder = Craft::$app->getAssets()->findFolder([
                 'volumeId' => $volumeId,
-                'path'     => $subpath.'/'
+                'path' => $subpath.'/'
             ]);
 
             // Ensure that the folder exists

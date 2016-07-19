@@ -427,7 +427,8 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
      */
     protected function getInputSources(
         /** @noinspection PhpUnusedParameterInspection */
-        $element)
+        $element
+    )
     {
         if ($this->allowMultipleSources) {
             $sources = $this->sources;
