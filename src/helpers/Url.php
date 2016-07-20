@@ -114,6 +114,9 @@ class Url
      */
     public static function getUrlWithToken($url, $token)
     {
+        $protocol = static::getProtocolForTokenizedUrl();
+        $url = static::getUrlWithProtocol($url, $protocol);
+
         return static::getUrlWithParams($url, [
             Craft::$app->getConfig()->get('tokenParam') => $token
         ]);
@@ -322,6 +325,39 @@ class Url
         return $url;
     }
 
+    /**
+     * Returns what the protocol/schema part of the URL should be (http/https)
+     * for any tokenized URLs in Craft (email verification links, password reset
+     * urls, share entry URLs, etc.
+     *
+     * @return string
+     */
+    public static function getProtocolForTokenizedUrl()
+    {
+        $useSslOnTokenizedUrls = Craft::$app->getConfig()->get('useSslOnTokenizedUrls');
+
+        // If they've explicitly set `useSslOnTokenizedUrls` to true, use https.
+        if ($useSslOnTokenizedUrls === true) {
+            return 'https';
+        } // If they've explicitly set `useSslOnTokenizedUrls` to false, use http.
+        else if ($useSslOnTokenizedUrls === false) {
+            return 'http';
+        } else {
+            // Let's auto-detect.
+
+            // If the siteUrl is https or the current request is https, use it.
+            $scheme = parse_url(Craft::$app->getSiteUrl(), PHP_URL_SCHEME);
+
+            $request = Craft::$app->getRequest();
+            if (($scheme && strtolower($scheme) == 'https') || (!$request->getIsConsoleRequest() && $request->getIsSecureConnection())) {
+                return 'https';
+            }
+
+            // Lame ole' http.
+            return 'http';
+        }
+    }
+
     // Private Methods
     // =========================================================================
 
@@ -428,16 +464,17 @@ class Url
     private static function _normalizeParams($params, &$anchor = '')
     {
         if (is_array($params)) {
-            $anchor = isset($params['#']) ? '#'.$params['#'] : '';
-            unset($params['#']);
-
-            if (!empty($params)) {
-                return http_build_query($params);
-            } else {
-                return '';
+            // See if there's an anchor
+            if (isset($params['#'])) {
+                $anchor = '#'.$params['#'];
+                unset($params['#']);
             }
+
+            $params = http_build_query($params);
         } else {
-            return trim($params, '&?');
+            $params = trim($params, '&?');
         }
+
+        return $params;
     }
 }

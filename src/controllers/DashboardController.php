@@ -315,6 +315,8 @@ class DashboardController extends Controller
                 $message .= "\nPlugins: ".implode(', ', $pluginNames);
             }
 
+            $message .= "\nDomain: ".Craft::$app->getRequest()->getHostInfo();
+
             $requestParamDefaults = [
                 'sFirstName' => $user->getFriendlyName(),
                 'sLastName' => ($user->lastName ? $user->lastName : 'Doe'),

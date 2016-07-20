@@ -60,7 +60,7 @@ class Asset extends ActiveRecord
                 ['size'],
                 'number',
                 'min' => 0,
-                'max' => 4294967295,
+                'max' => 18446744073709551615,
                 'integerOnly' => true
             ],
             [['dateModified'], 'craft\\app\\validators\\DateTime'],

@@ -1,11 +1,11 @@
 <?php
 
 $config = [
-    'id' => 'Craft',
-    'name' => 'Craft',
+    'id' => 'CraftCMS',
+    'name' => 'Craft CMS',
     'version' => '3.0',
     'build' => '@@@build@@@',
-    'schemaVersion' => '3.0.4',
+    'schemaVersion' => '3.0.6',
     'releaseDate' => '@@@releaseDate@@@',
     'minBuildRequired' => '@@@minBuildRequired@@@',
     'minBuildUrl' => '@@@minBuildUrl@@@',

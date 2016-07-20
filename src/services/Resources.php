@@ -112,7 +112,7 @@ class Resources extends Component
                         }
 
                         $username = AssetsHelper::prepareAssetName($segs[1], false);
-                        $filename = AssetsHelper::prepareAssetName($segs[3]);
+                        $filename = AssetsHelper::prepareAssetName($segs[3], true, true);
 
                         $userPhotosPath = Craft::$app->getPath()->getUserPhotosPath().'/'.$username;
                         $sizedPhotoFolder = $userPhotosPath.'/'.$size;
@@ -217,6 +217,11 @@ class Resources extends Component
 
                     Craft::$app->getResponse()->redirect($url);
                     Craft::$app->end();
+                    break;
+                }
+
+                case '404': {
+                    throw new NotFoundHttpException(Craft::t('app', 'Resource not found'));
                 }
             }
         }

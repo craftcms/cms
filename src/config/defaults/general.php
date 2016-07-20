@@ -43,6 +43,11 @@ return [
      */
     'allowedFileExtensions' => '7z,aiff,asf,avi,bmp,csv,doc,docx,fla,flv,gif,gz,gzip,htm,html,jpeg,jpg,js,mid,mov,mp3,mp4,m4a,m4v,mpc,mpeg,mpg,ods,odt,ogg,ogv,pdf,png,potx,pps,ppsm,ppsx,ppt,pptm,pptx,ppz,pxd,qt,ram,rar,rm,rmi,rmvb,rtf,sdc,sitd,svg,swf,sxc,sxw,tar,tgz,tif,tiff,txt,vob,vsd,wav,webm,wma,wmv,xls,xlsx,zip',
     /**
+     * If this is set to true, then a tag name of "Proteines" will also match a tag name of "Protéines". Otherwise,
+     * they are treated as the same tag. Note that this
+     */
+    'allowSimilarTags' => false,
+    /**
      * Whether or not to allow uppercase letters in the slug. Defaults to false.
      */
     'allowUppercaseInSlug' => false,
@@ -215,6 +220,12 @@ return [
      */
     'enableCsrfCookie' => true,
     /**
+     * The amount of time a user’s elevated session will last, which is required for some sensitive actions (e.g. user group/permission assignment).
+     *
+     * @see http://www.php.net/manual/en/dateinterval.construct.php
+     */
+    'elevatedSessionDuration' => 'PT5M',
+    /**
      * Whether to enable CSRF protection via hidden form inputs for all forms submitted via Craft. Defaults to true.
      *
      * Also, see the 'csrfTokenName' config setting.
@@ -378,10 +389,10 @@ return [
     /**
      * Whether the embedded Image Color Profile (ICC) should be preserved when manipulating images.
      *
-     * Setting this to true results in a slightly increased filesize and more accurate colors,
-     * if a color profile was embedded on image export. This will only have effect if Imagick is in use.
+     * Setting this to false will reduce the image size a little bit, but on some Imagick versions can cause images to be saved with
+     * an incorrect gamma value, which causes the images to become very dark. This will only have effect if Imagick is in use.
      */
-    'preserveImageColorProfiles' => false,
+    'preserveImageColorProfiles' => true,
     /**
      * The template path segment prefix that should be used to identify "private" templates -- templates that aren't
      * directly accessible via a matching URL.
@@ -549,6 +560,14 @@ return [
      * will never automatically set the flag.
      */
     'useSecureCookies' => 'auto',
+    /**
+     * Determines what protocol/schema Craft will use when generating tokenized URLs. If set to 'auto',
+     * Craft will check the siteUrl and the protocol of the current request and if either of them are https
+     * will use https in the tokenized URL. If not, will use http.
+     *
+     * If set to `false`, the Craft will always use http. If set to `true`, then, Craft will always use `https`.
+     */
+    'useSslOnTokenizedUrls' => 'auto',
     /**
      * The amount of time a user stays logged in.
      *

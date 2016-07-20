@@ -55,7 +55,7 @@ Craft.CP = Garnish.Base.extend(
 	trackTaskProgressTimeout: null,
 	taskProgressIcon: null,
 
-	$upgradePromo: null,
+	$edition: null,
 	upgradeModal: null,
 
 	checkingForUpdates: false,
@@ -87,7 +87,7 @@ Craft.CP = Garnish.Base.extend(
 		this.$main = $('#main');
 		this.$content = $('#content');
 		this.$collapsibleTables = $('table.collapsible');
-		this.$upgradePromo = $('#upgradepromo > a');
+		this.$edition = $('#edition');
 
 		// global sidebar
 		this.addListener(Garnish.$win, 'touchend', 'updateResponsiveGlobalSidebar');
@@ -128,7 +128,7 @@ Craft.CP = Garnish.Base.extend(
 
 		// sidebar
 
-		this.addListener($('ul', this.$sidebar), 'resize', 'updateResponsiveSidebar');
+		this.addListener(this.$sidebar.find('nav ul'), 'resize', 'updateResponsiveSidebar');
 
 		this.$sidebarLinks = $('nav a', this.$sidebar);
 		this.addListener(this.$sidebarLinks, 'click', 'selectSidebarItem');
@@ -236,13 +236,9 @@ Craft.CP = Garnish.Base.extend(
 			}
 		}, this));
 
-		this.addListener(this.$upgradePromo, 'click', 'showUpgradeModal');
-
-		var $wrongEditionModalContainer = $('#wrongedition-modal');
-
-		if ($wrongEditionModalContainer.length)
+		if (this.$edition.hasClass('hot'))
 		{
-			new Craft.WrongEditionModal($wrongEditionModalContainer);
+			this.addListener(this.$edition, 'click', 'showUpgradeModal');
 		}
 	},
 
@@ -429,39 +425,53 @@ Craft.CP = Garnish.Base.extend(
 			$contentWithSidebar.css('height', 'auto');
 		}
 	},
+
 	updateResponsiveTables: function()
 	{
-		for (this.updateResponsiveTables._i = 0; this.updateResponsiveTables._i < this.$collapsibleTables.length; this.updateResponsiveTables._i++) {
+		for (this.updateResponsiveTables._i = 0; this.updateResponsiveTables._i < this.$collapsibleTables.length; this.updateResponsiveTables._i++)
+		{
 			this.updateResponsiveTables._$table = this.$collapsibleTables.eq(this.updateResponsiveTables._i);
 			this.updateResponsiveTables._containerWidth = this.updateResponsiveTables._$table.parent().width();
 			this.updateResponsiveTables._check = false;
 
-			// Is this the first time we've checked this table?
-			if (typeof this.updateResponsiveTables._$table.data('lastContainerWidth') === typeof undefined) {
-				this.updateResponsiveTables._check = true;
-			} else {
-				this.updateResponsiveTables._isCollapsed = this.updateResponsiveTables._$table.hasClass('collapsed');
-
-				// Getting wider?
-				if (this.updateResponsiveTables._containerWidth > this.updateResponsiveTables._$table.data('lastContainerWidth')) {
-					if (this.updateResponsiveTables._isCollapsed) {
-						this.updateResponsiveTables._$table.removeClass('collapsed');
-						this.updateResponsiveTables._check = true;
-					}
-				} else if (!this.updateResponsiveTables._isCollapsed) {
+			if(this.updateResponsiveTables._containerWidth > 0)
+			{
+				// Is this the first time we've checked this table?
+				if (typeof this.updateResponsiveTables._$table.data('lastContainerWidth') === typeof undefined)
+				{
 					this.updateResponsiveTables._check = true;
 				}
-			}
+				else
+				{
+					this.updateResponsiveTables._isCollapsed = this.updateResponsiveTables._$table.hasClass('collapsed');
 
-			// Are we checking the table width?
-			if (this.updateResponsiveTables._check) {
-				if (this.updateResponsiveTables._$table.width() > this.updateResponsiveTables._containerWidth) {
-					this.updateResponsiveTables._$table.addClass('collapsed');
+					// Getting wider?
+					if (this.updateResponsiveTables._containerWidth > this.updateResponsiveTables._$table.data('lastContainerWidth'))
+					{
+						if (this.updateResponsiveTables._isCollapsed)
+						{
+							this.updateResponsiveTables._$table.removeClass('collapsed');
+							this.updateResponsiveTables._check = true;
+						}
+					}
+					else if (!this.updateResponsiveTables._isCollapsed)
+					{
+						this.updateResponsiveTables._check = true;
+					}
 				}
-			}
 
-			// Remember the container width for next time
-			this.updateResponsiveTables._$table.data('lastContainerWidth', this.updateResponsiveTables._containerWidth);
+				// Are we checking the table width?
+				if (this.updateResponsiveTables._check)
+				{
+					if (this.updateResponsiveTables._$table.width() > this.updateResponsiveTables._containerWidth)
+					{
+						this.updateResponsiveTables._$table.addClass('collapsed');
+					}
+				}
+
+				// Remember the container width for next time
+				this.updateResponsiveTables._$table.data('lastContainerWidth', this.updateResponsiveTables._containerWidth);
+			}
 		}
 	},
 

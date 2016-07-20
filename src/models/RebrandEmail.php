@@ -48,6 +48,11 @@ class RebrandEmail extends Model
      */
     public $htmlBody;
 
+    /**
+     * @var string Heading
+     */
+    public $heading;
+
     // Public Methods
     // =========================================================================
 

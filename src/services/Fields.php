@@ -989,6 +989,12 @@ class Fields extends Component
         }
 
         if (is_array($layoutId)) {
+            $layoutId = array_filter($layoutId);
+
+            if (empty($layoutId)) {
+                return false;
+            }
+
             $affectedRows = Craft::$app->getDb()->createCommand()
                 ->delete('{{%fieldlayouts}}', ['in', 'id', $layoutId])
                 ->execute();

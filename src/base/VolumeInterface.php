@@ -72,10 +72,11 @@ interface VolumeInterface extends SavableComponentInterface
      *
      * @param string $path   The path of the file, relative to the source’s root.
      * @param string $stream The new contents of the file as a stream.
+     * @param array  $config Additional config options to pass to the adapter.
      *
      * @return boolean Whether the operation was successful.
      */
-    public function updateFileByStream($path, $stream);
+    public function updateFileByStream($path, $stream, $config = []);
 
     /**
      * Returns whether a file exists.

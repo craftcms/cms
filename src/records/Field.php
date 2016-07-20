@@ -40,7 +40,9 @@ class Field extends ActiveRecord
      */
     protected $reservedHandleWords = [
         'archived',
+        'attributeLabel',
         'children',
+        'contentTable',
         'dateCreated',
         'dateUpdated',
         'enabled',
@@ -52,26 +54,24 @@ class Field extends ActiveRecord
         'localeEnabled',
         'name', // global set-specific
         'next',
+        'next',
         'owner',
         'parents',
         'postDate', // entry-specific
+        'prev',
+        'ref',
         'rgt',
         'root',
-        'prev',
+        'searchScore',
         'siblings',
+        'slug',
         'sortOrder',
+        'status',
+        'title',
         'uid',
         'uri',
         'url',
         'username', // user-specific
-        'ref',
-        'slug',
-        'status',
-        'title',
-        'searchScore',
-        'prev',
-        'next',
-        'contentTable'
     ];
 
     /**

@@ -110,6 +110,16 @@ class VolumeFolder extends Model
     }
 
     /**
+     * Set the child folders.
+     *
+     * @param array $children
+     */
+    public function setChildren(array $children)
+    {
+        $this->_children = $children;
+    }
+
+    /**
      * Get this folder's children.
      *
      * @return array|null

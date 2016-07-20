@@ -11,6 +11,7 @@ use Craft;
 use craft\app\behaviors\ContentBehavior;
 use craft\app\behaviors\ContentTrait;
 use craft\app\dates\DateTime;
+use craft\app\db\Query;
 use craft\app\elements\db\ElementQuery;
 use craft\app\elements\db\ElementQueryInterface;
 use craft\app\events\Event;
@@ -257,6 +258,11 @@ abstract class Element extends Component implements ElementInterface
                 // Get the table columns
                 $variables['attributes'] = static::getTableAttributesForSource($sourceKey);
 
+                // Give each attribute a chance to modify the criteria
+                foreach ($variables['attributes'] as $attribute) {
+                    static::prepElementQueryForTableAttribute($elementQuery, $attribute[0]);
+                }
+
                 break;
             }
         }
@@ -350,13 +356,18 @@ abstract class Element extends Component implements ElementInterface
 
             default: {
                 // Is this a custom field?
-                if (strncmp($attribute, 'field:', 6) === 0) {
-                    $fieldId = substr($attribute, 6);
+                if (preg_match('/^field:(\d+)$/', $attribute, $matches)) {
+                    $fieldId = $matches[1];
                     $field = Craft::$app->getFields()->getFieldById($fieldId);
 
                     if ($field) {
                         if ($field instanceof PreviewableFieldInterface) {
-                            $value = $element->getFieldValue($field->handle);
+                            // Was this field value eager-loaded?
+                            if ($field instanceof EagerLoadingFieldInterface && $element->hasEagerLoadedElements($field->handle)) {
+                                $value = $element->getEagerLoadedElements($field->handle);
+                            } else {
+                                $value = $element->getFieldValue($field->handle);
+                            }
 
                             return $field->getTableAttributeHtml($value, $element);
                         }
@@ -413,6 +424,113 @@ abstract class Element extends Component implements ElementInterface
      */
     public static function getElementQueryStatusCondition(ElementQueryInterface $query, $status)
     {
+    }
+
+    /**
+     * @inheritdot
+     */
+    public static function getEagerLoadingMap($sourceElements, $handle)
+    {
+        // Eager-loading descendants or direct children?
+        if ($handle == 'descendants' || $handle == 'children') {
+            // Get the source element IDs
+            $sourceElementIds = [];
+
+            foreach ($sourceElements as $sourceElement) {
+                $sourceElementIds[] = $sourceElement->id;
+            }
+
+            // Get the structure data for these elements
+            // @todo: case sql is MySQL-specific
+            $selectSql = 'structureId, elementId, lft, rgt';
+
+            if ($handle == 'children') {
+                $selectSql .= ', level';
+            }
+
+            $structureData = (new Query())
+                ->select($selectSql)
+                ->from('{{%structureelements}}')
+                ->where(['in', 'elementId', $sourceElementIds])
+                ->all();
+
+            $conditions = ['or'];
+            $params = [];
+            $sourceSelectSql = '(CASE';
+
+            foreach ($structureData as $i => $elementStructureData) {
+                $thisElementConditions = [
+                    'and',
+                    'structureId=:structureId'.$i,
+                    'lft>:lft'.$i,
+                    'rgt<:rgt'.$i
+                ];
+
+                if ($handle == 'children') {
+                    $thisElementConditions[] = 'level=:level'.$i;
+                    $params[':level'.$i] = $elementStructureData['level'] + 1;
+                }
+
+                $conditions[] = $thisElementConditions;
+                $sourceSelectSql .= " WHEN structureId=:structureId{$i} AND lft>:lft{$i} AND rgt<:rgt{$i} THEN :sourceId{$i}";
+                $params[':structureId'.$i] = $elementStructureData['structureId'];
+                $params[':lft'.$i] = $elementStructureData['lft'];
+                $params[':rgt'.$i] = $elementStructureData['rgt'];
+                $params[':sourceId'.$i] = $elementStructureData['elementId'];
+            }
+
+            $sourceSelectSql .= ' END) as source';
+
+            // Return any child elements
+            $map = (new Query())
+                ->select($sourceSelectSql.', elementId as target')
+                ->from('structureelements')
+                ->where($conditions, $params)
+                ->orderBy('structureId, lft')
+                ->all();
+
+            return [
+                'elementType' => static::className(),
+                'map' => $map
+            ];
+        }
+
+        // Is $handle a custom field handle?
+        // (Leave it up to the extended class to set the field context, if it shouldn't be 'global')
+        $field = Craft::$app->getFields()->getFieldByHandle($handle);
+
+        if ($field) {
+            if ($field instanceof EagerLoadingFieldInterface) {
+                return $field->getEagerLoadingMap($sourceElements);
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Preps the element criteria for a given table attribute
+     *
+     * @param ElementQueryInterface $elementQuery
+     * @param string                $attribute
+     *
+     * @return void
+     */
+    protected static function prepElementQueryForTableAttribute(ElementQueryInterface $elementQuery, $attribute)
+    {
+        // Is this a custom field?
+        if (preg_match('/^field:(\d+)$/', $attribute, $matches)) {
+            $fieldId = $matches[1];
+            $field = Craft::$app->getFields()->getFieldById($fieldId);
+
+            if ($field) {
+                if ($field instanceof EagerLoadingFieldInterface) {
+                    $with = $elementQuery->with ?: [];
+                    $with[] = $field->handle;
+                    $elementQuery->with = $with;
+                }
+            }
+        }
     }
 
     // Element methods
@@ -533,6 +651,11 @@ abstract class Element extends Component implements ElementInterface
      */
     private $_nextSibling;
 
+    /**
+     * @var
+     */
+    private $_eagerLoadedElements;
+
     // Public Methods
     // =========================================================================
 
@@ -561,7 +684,7 @@ abstract class Element extends Component implements ElementInterface
      */
     public function __isset($name)
     {
-        if ($name == 'title' || parent::__isset($name) || $this->getFieldByHandle($name)) {
+        if ($name == 'title' || $this->hasEagerLoadedElements($name) || parent::__isset($name) || $this->getFieldByHandle($name)) {
             return true;
         } else {
             return false;
@@ -584,6 +707,11 @@ abstract class Element extends Component implements ElementInterface
      */
     public function __get($name)
     {
+        // Is $name a set of eager-loaded elements?
+        if ($this->hasEagerLoadedElements($name)) {
+            return $this->getEagerLoadedElements($name);
+        }
+
         // Give custom fields priority over other getters so we have a chance to prepare their values
         $field = $this->getFieldByHandle($name);
         if ($field !== null) {
@@ -946,6 +1074,11 @@ abstract class Element extends Component implements ElementInterface
      */
     public function getDescendants($dist = null)
     {
+        // Eager-loaded?
+        if ($this->hasEagerLoadedElements('descendants')) {
+            return $this->getEagerLoadedElements('descendants');
+        }
+
         return static::find()
             ->structureId($this->getStructureId())
             ->descendantOf($this)
@@ -958,6 +1091,11 @@ abstract class Element extends Component implements ElementInterface
      */
     public function getChildren()
     {
+        // Eager-loaded?
+        if ($this->hasEagerLoadedElements('children')) {
+            return $this->getEagerLoadedElements('children');
+        }
+
         return $this->getDescendants(1);
     }
 
@@ -1116,7 +1254,7 @@ abstract class Element extends Component implements ElementInterface
      */
     public function offsetExists($offset)
     {
-        if ($offset == 'title' || parent::offsetExists($offset) || $this->getFieldByHandle($offset)) {
+        if ($offset == 'title' || $this->hasEagerLoadedElements($offset) || parent::offsetExists($offset) || $this->getFieldByHandle($offset)) {
             return true;
         } else {
             return false;
@@ -1265,6 +1403,55 @@ abstract class Element extends Component implements ElementInterface
     public function getFieldContext()
     {
         return Craft::$app->getContent()->fieldContext;
+    }
+
+    /**
+     * Returns whether elements have been eager-loaded with a given handle.
+     *
+     * @param string $handle The handle of the eager-loaded elements
+     *
+     * @return boolean Whether elements have been eager-loaded with the given handle
+     */
+    public function hasEagerLoadedElements($handle)
+    {
+        return isset($this->_eagerLoadedElements[$handle]);
+    }
+
+    /**
+     * Returns some eager-loaded elements on a given handle.
+     *
+     * @param string $handle The handle of the eager-loaded elements
+     *
+     * @return ElementInterface[]|null The eager-loaded elements, or null
+     */
+    public function getEagerLoadedElements($handle)
+    {
+        if (isset($this->_eagerLoadedElements[$handle])) {
+            return $this->_eagerLoadedElements[$handle];
+        }
+
+        return null;
+    }
+
+    /**
+     * Sets some eager-loaded elements on a given handle.
+     *
+     * @param string             $handle   The handle to load the elements with in the future
+     * @param ElementInterface[] $elements The eager-loaded elements
+     *
+     * @return void
+     */
+    public function setEagerLoadedElements($handle, $elements)
+    {
+        $this->_eagerLoadedElements[$handle] = $elements;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getHasFreshContent()
+    {
+        return (!$this->contentId && !$this->hasErrors());
     }
 
     // Events

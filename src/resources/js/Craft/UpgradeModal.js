@@ -225,12 +225,12 @@ Craft.UpgradeModal = Garnish.Modal.extend(
 		{
 			case 1:
 			{
-				this.$checkoutLogo.attr('class', 'logo craftclient').text('Craft Client');
+				this.$checkoutLogo.attr('class', 'logo craftclient').text('Client');
 				break;
 			}
 			case 2:
 			{
-				this.$checkoutLogo.attr('class', 'logo craftpro').text('Craft Pro');
+				this.$checkoutLogo.attr('class', 'logo craftpro').text('Pro');
 				break;
 			}
 		}

@@ -609,7 +609,7 @@ $elementThumbPadding: 30 + $elementInnerSpacing;
     @include user-select(none);
 
     &.sel,
-    .sel & {
+    li.sel & {
         border-radius: $elementBorderRadius;
         background: $lightselcolor;
         cursor: default;
@@ -636,6 +636,7 @@ $elementThumbPadding: 30 + $elementInnerSpacing;
         max-width: 100%;
         max-height: 100%;
         background: url(../images/checkers.svg) 0 0;
+        flex-shrink: 0;
     }
 
     .label {
@@ -658,6 +659,9 @@ $elementThumbPadding: 30 + $elementInnerSpacing;
         }
         &.hasthumb {
             .elementthumb {
+                @include display-flex;
+                @include align-items(center);
+                @include justify-content(center);
                 position: absolute;
                 top: calc(50% - 15px);
                 width: 30px;
@@ -963,6 +967,7 @@ ul.tree,
 /* ----------------------------------------*/
 
 .pane { @include pane; position: relative; margin: 14px 0; padding: 24px; border-radius: $paneBorderRadius; word-wrap: break-word; @include box-sizing(border-box); }
+.pane.lightpane { background-color: #f4f5f6; }
 
 /* meta panes */
 .meta { padding: 0; overflow: visible; }
@@ -991,6 +996,7 @@ ul.tree,
 .meta > .data > .heading { margin-bottom: 0; color: $mediumtextcolor; line-height: 18px; }
 .meta > .field > .heading { width: 86px; }
 .meta > .data > .heading { width: calc(50% - 14px); }
+.meta > .field > .heading > label { font-weight: normal; }
 .meta > .field > .heading > label.required:after { position: absolute; top: 6px; @include left(-13px); @include margin-left(0); }
 .meta > .field > .input { width: calc(100% - 100px); }
 .meta > .data > .value { width: 50%; }
@@ -1047,23 +1053,30 @@ body #redactor-modal { border-radius: $paneBorderRadius; background: #fff;
 .hud { @include box-sizing(border-box); }
 
 .header:after,
+.hud-header:after,
 .footer:after,
+.hud-footer:after,
 .body:after { @include clearafter; }
 
 .header,
-.footer { position: relative; z-index: 1; @include box-sizing(border-box); }
+.hud-header,
+.footer,
+.hud-footer { position: relative; z-index: 1; @include box-sizing(border-box); }
 
-.header { border-radius: $paneBorderRadius $paneBorderRadius 0 0; padding: 24px;
+.header,
+.hud-header { border-radius: $paneBorderRadius $paneBorderRadius 0 0; padding: 24px;
     @include linear-gradient(#fff, hsl($hue, 8%, 98%));
     @include box-shadow(0 2px 1px -2px rgba(0,0,0,0.2));
 }
 
-.footer { border-radius: 0 0 $paneBorderRadius $paneBorderRadius; padding: 14px 24px;
+.footer,
+.hud-footer { border-radius: 0 0 $paneBorderRadius $paneBorderRadius; padding: 14px 24px;
     @include linear-gradient(hsl($hue, 8%, 93%), hsl($hue, 8%, 92%));
     @include box-shadow(inset 0 2px 1px -2px rgba(0,0,0,0.2));
 }
 
-.header h1 { margin: 0; }
+.header h1,
+.hud-header h1 { margin: 0; }
 
 .modal .body,
 .hud .main { padding: 24px; overflow: hidden; @include box-sizing(border-box); }
@@ -1095,6 +1108,9 @@ body #redactor-modal-overlay {
 .modal.alert .body { @include padding-left(76px); }
 .modal.alert .body:before { @include icon; @include margin(-6px, 0, 0, -58px); @include floatleft; content: 'alert'; font-size: 40px; color: $lighttextcolor; }
 
+.modal.secure .body { @include padding-left(76px); }
+.modal.secure .body:before { @include icon; @include margin(-14px, 0, 0, -56px); @include floatleft; content: 'secure'; font-size: 58px; color: $lighttextcolor; }
+
 .hud { position: absolute; display: none; top: 0; }
 .hud .tip { position: absolute; z-index: 101; background: no-repeat 0 0; }
 .hud .tip-left { left: -15px; width: 15px; height: 30px; background-image: url(../images/hudtip_left.png); }
@@ -1103,8 +1119,8 @@ body #redactor-modal-overlay {
 .hud .tip-bottom { bottom: -15px; width: 30px; height: 15px; background-image: url(../images/hudtip_bottom.png); }
 .hud.has-footer .tip-bottom { background-image: url(../images/hudtip_bottom_gray.png); }
 
-.hud .header,
-.hud .footer { padding: 7px 24px; }
+.hud .hud-header,
+.hud .hud-footer { padding: 7px 24px; }
 
 .hud .body { overflow: hidden; }
 .hud .body ::-webkit-scrollbar { -webkit-appearance: none; }
@@ -1115,7 +1131,7 @@ body #redactor-modal-overlay {
 
 /* element editor HUDs */
 .hud .elementeditor { max-width: 600px; }
-.hud .elementeditor .header { text-align: center; }
+.hud .elementeditor .hud-header { text-align: center; }
 .hud .elementeditor .main { padding: 0; }
 
 /* crop image modals */
@@ -1152,12 +1168,16 @@ body #redactor-modal-overlay {
 .element-hud-form .buttons { position: relative; }
 
 
-/* logout warning/login modal */
-#logoutwarningmodal,
-#loginmodal { width: 500px; }
 
-#loginmodal .inputcontainer { position: relative; }
-#loginmodal .inputcontainer .spinner { position: absolute; top: 0; margin-top: 0; @include right(-24px); }
+/* logout warning/login/elevated session modals */
+#logoutwarningmodal,
+#loginmodal,
+#elevatedsessionmodal { width: 500px; }
+
+#loginmodal .inputcontainer,
+#elevatedsessionmodal .inputcontainer { position: relative; }
+#loginmodal .inputcontainer .spinner,
+#elevatedsessionmodal .inputcontainer .spinner { position: absolute; top: 0; margin-top: 0; @include right(-24px); }
 
 /* delete user modal */
 .deleteusermodal .options label { display: inline-block; line-height: 30px; }
@@ -1281,11 +1301,12 @@ body .redactor-editor,
 
 .field { position: relative; margin: 24px 0; }
 .field > .heading { margin-bottom: 4px; }
-.field > .heading > label { position: relative; }
+.field > .heading > label { position: relative; font-weight: bold; color: $mediumdarktextcolor; }
 .field > .heading > label > .locale { display: inline-block; border-radius: $btnBorderRadius; @include margin-left(7px); padding: 0 4px; font-size: 11px; color: $mediumtextcolor; background: $bgcolor; }
 .field > .heading > .instructions { margin-top: 4px; font-size: 11px; line-height: 1.4; color: $mediumtextcolor; }
 .field > .warning { margin: 4px 0 0; font-size: 11px; }
 .field > .warning:before { @include margin(-2px, 2px, 0, 0); @include icon; content: 'alert'; }
+.field > .input:after { @include clearafter; }
 
 /* toggles and nested fields */
 .nested-fields { margin: -24px; padding: 24px 24px 0; overflow: hidden; }
@@ -1308,7 +1329,7 @@ div.checkbox:before { display: block; position: absolute; top: 2px; @include lef
 }
 input.checkbox:disabled + label,
 div.checkbox.disabled:before,
-div.checkbox.disabled:before + label { opacity: 0.25; }
+div.checkbox.disabled + label { opacity: 0.25; }
 input.checkbox:checked + label:before,
 div.checkbox.checked:before,
 .sel div.checkbox:before,

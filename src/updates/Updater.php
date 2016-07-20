@@ -108,7 +108,7 @@ class Updater
 
             if (!empty($errors)) {
                 throw new MinimumRequirementException(Markdown::process(Craft::t('app',
-                        'Your server does not meet the following minimum requirements for Craft to run:')."\n\n".$this->_markdownList($errors)));
+                        'Your server does not meet the following minimum requirements for Craft CMS to run:')."\n\n".$this->_markdownList($errors)));
             }
         }
 
@@ -118,7 +118,7 @@ class Updater
 
         if (count($writableErrors) > 0) {
             throw new FilePermissionsException(Markdown::process(Craft::t('app',
-                    'Craft needs to be able to write to the following paths, but can’t:')."\n\n".$this->_markdownList($writableErrors)));
+                    'Craft CMS needs to be able to write to the following paths, but can’t:')."\n\n".$this->_markdownList($writableErrors)));
         }
 
         return ['uid' => $uid];
@@ -201,7 +201,7 @@ class Updater
         // If plugin is null we're looking at Craft.
         if ($plugin === null) {
             // Setting new Craft info.
-            Craft::info('Settings new Craft release info in craft_info table.', __METHOD__);
+            Craft::info('Setting new Craft CMS release info in craft_info table.', __METHOD__);
 
             if (!Craft::$app->getUpdates()->updateCraftVersionInfo()) {
                 throw new DbUpdateException(Craft::t('app', 'The update was performed successfully, but there was a problem setting the new info in the database info table.'));
@@ -475,7 +475,7 @@ class Updater
 
         // Make sure we can write to craft/app/requirements
         if (!Io::isWritable(Craft::$app->getPath()->getAppPath().'/requirements')) {
-            throw new FilePermissionsException(Markdown::process(Craft::t('app', 'Craft needs to be able to write to your craft/app/requirements folder and cannot. Please check your [permissions]({url}).', ['url' => 'http://craftcms.com/docs/updating#one-click-updating'])));
+            throw new FilePermissionsException(Markdown::process(Craft::t('app', 'Craft CMS needs to be able to write to your craft/app/requirements folder and cannot. Please check your [permissions]({url}).', ['url' => 'http://craftcms.com/docs/updating#one-click-updating'])));
         }
 
         $tempFilename = StringHelper::UUID().'.php';

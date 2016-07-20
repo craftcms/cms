@@ -58,7 +58,7 @@ class Cp
             if ($path != 'updates' && $user->can('performUpdates')) {
                 if (!empty($updateModel->app->releases)) {
                     if (Craft::$app->getUpdates()->criticalCraftUpdateAvailable($updateModel->app->releases)) {
-                        $alerts[] = Craft::t('app', 'There’s a critical Craft update available.').
+                        $alerts[] = Craft::t('app', 'There’s a critical Craft CMS update available.').
                             ' <a class="go nowrap" href="'.Url::getUrl('updates').'">'.Craft::t('app', 'Go to Updates').'</a>';
                     }
                 }

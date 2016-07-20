@@ -458,6 +458,23 @@ class Config extends Component
     }
 
     /**
+     * Returns the configured elevated session duration in seconds.
+     *
+     * @return integer The elevated session duration in seconds.
+     */
+    public function getElevatedSessionDuration()
+    {
+        $duration = $this->get('elevatedSessionDuration');
+
+        if ($duration) {
+            return DateTimeHelper::timeFormatToSeconds($duration);
+        }
+
+        // Default to 5 minutes
+        return 300;
+    }
+
+    /**
      * Returns the user login path based on the type of the current request.
      *
      * If it’s a front-end request, the [loginPath](http://craftcms.com/docs/config-settings#loginPath) config

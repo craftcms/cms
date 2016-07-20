@@ -16,6 +16,7 @@ use craft\app\helpers\Db;
 use craft\app\helpers\Json;
 use craft\app\records\Token as TokenRecord;
 use yii\base\Component;
+use yii\db\Expression;
 
 /**
  * The Tokens service.
@@ -128,17 +129,15 @@ class Tokens extends Component
      */
     public function incrementTokenUsageCountById($tokenId)
     {
-        $currentUsageCount = (new Query())
-            ->select('usageCount')
-            ->from('{{%tokens}}')
-            ->where(['id' => $tokenId])
-            ->one();
-
         $affectedRows = Craft::$app->getDb()->createCommand()
             ->update(
                 '{{%tokens}}',
-                ['usageCount' => $currentUsageCount],
-                ['id' => $tokenId])
+                [
+                    'usageCount' => new Expression('usageCount + 1')
+                ],
+                [
+                    'id' => $tokenId
+                ])
             ->execute();
 
         return (bool)$affectedRows;

@@ -54,10 +54,14 @@ class SwitchNode extends Twig_Node
                 continue;
             }
 
+            foreach ($case->getNode('values') as $value) {
+                $compiler
+                    ->write('case ')
+                    ->subcompile($value)
+                    ->raw(":\n");
+            }
+
             $compiler
-                ->write('case ')
-                ->subcompile($case->getNode('expr'))
-                ->raw(":\n")
                 ->write("{\n")
                 ->indent()
                 ->subcompile($case->getNode('body'))

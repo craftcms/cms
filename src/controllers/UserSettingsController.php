@@ -10,6 +10,7 @@ namespace craft\app\controllers;
 use Craft;
 use craft\app\models\UserGroup as UserGroupModel;
 use craft\app\web\Controller;
+use yii\web\NotFoundHttpException;
 use yii\web\Response;
 
 Craft::$app->requireEdition(Craft::Pro);
@@ -40,22 +41,45 @@ class UserSettingsController extends Controller
     /**
      * Saves a user group.
      *
-     * @return Response|null
+     * @return Response|void
+     * @throws NotFoundHttpException if the requested user group cannot be found
      */
     public function actionSaveGroup()
     {
         $this->requirePostRequest();
 
-        $group = new UserGroupModel();
-        $group->id = Craft::$app->getRequest()->getBodyParam('groupId');
-        $group->name = Craft::$app->getRequest()->getBodyParam('name');
-        $group->handle = Craft::$app->getRequest()->getBodyParam('handle');
+        $request = Craft::$app->getRequest();
+        $groupId = $request->getBodyParam('groupId');
+
+        if ($groupId) {
+            $group = Craft::$app->getUserGroups()->getGroupById($groupId);
+
+            if (!$group) {
+                throw new NotFoundHttpException('User group not found');
+            }
+        } else {
+            $group = new UserGroupModel();
+        }
+
+        $group->name = $request->getBodyParam('name');
+        $group->handle = $request->getBodyParam('handle');
 
         // Did it save?
         if (Craft::$app->getUserGroups()->saveGroup($group)) {
             // Save the new permissions
-            $permissions = Craft::$app->getRequest()->getBodyParam('permissions',
-                []);
+            $permissions = $request->getBodyParam('permissions', []);
+
+            // See if there are any new permissions in here
+            if ($groupId && is_array($permissions)) {
+                foreach ($permissions as $permission) {
+                    if (!$group->can($permission)) {
+                        // Yep. This will require an elevated session
+                        $this->requireElevatedSession();
+                        break;
+                    }
+                }
+            }
+
             Craft::$app->getUserPermissions()->saveGroupPermissions($group->id, $permissions);
 
             Craft::$app->getSession()->setNotice(Craft::t('app', 'Group saved.'));

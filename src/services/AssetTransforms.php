@@ -58,6 +58,11 @@ class AssetTransforms extends Component
      */
     private $_sourcesToBeDeleted = [];
 
+    /**
+     * @var array
+     */
+    private $_eagerLoadedTransformIndexes;
+
     // Public Methods
     // =========================================================================
 
@@ -216,6 +221,102 @@ class AssetTransforms extends Component
     }
 
     /**
+     * Eager-loads transform indexes for a given set of file IDs.
+     *
+     * @param Asset[] $assets     The files to eager-load tranforms for
+     * @param array   $transforms The transform definitions to eager-load
+     *
+     * @return void
+     */
+    public function eagerLoadTransforms($assets, $transforms)
+    {
+        if (!$assets || !$transforms) {
+            return;
+        }
+
+        // Index the assets by ID
+        $assetsById = [];
+        foreach ($assets as $asset) {
+            $assetsById[$asset->id] = $asset;
+        }
+
+        // Get the index conditions
+        $transformsByFingerprint = [];
+        $indexConditions = [];
+
+        foreach ($transforms as $transform) {
+            $transform = $this->normalizeTransform($transform);
+            $location = $fingerprint = $this->_getTransformFolderName($transform);
+
+            $condition = ['and', ['location' => $location]];
+
+            if (is_null($transform->format)) {
+                $condition[] = 'format IS NULL';
+            } else {
+                $condition[] = ['format' => $transform->format];
+                $fingerprint .= ':'.$transform->format;
+            }
+
+            $indexConditions[] = $condition;
+            $transformsByFingerprint[$fingerprint] = $transform;
+        }
+
+        if (count($indexConditions) == 1) {
+            $indexConditions = $indexConditions[0];
+        } else {
+            array_unshift($indexConditions, 'or');
+        }
+
+        // Query for the indexes
+        $results = (new Query())
+            ->select('id, assetId, filename, format, location, volumeId, fileExists, inProgress, dateIndexed, dateCreated, dateUpdated')
+            ->from('{{%assettransformindex}}')
+            ->where([
+                'and',
+                ['in', 'assetId', array_keys($assetsById)],
+                $indexConditions
+            ])
+            ->all();
+
+        // Index the valid transform indexes by fingerprint, and capture the IDs of indexes that should be deleted
+        $resultsByFingerprint = [];
+        $invalidIndexIds = [];
+
+        foreach ($results as $result) {
+            // Get the transform's fingerprint
+            $transformFingerprint = $result['location'];
+
+            if ($result['format']) {
+                $transformFingerprint .= ':'.$result['format'];
+            }
+
+            // Is it still valid?
+            $transform = $transformsByFingerprint[$transformFingerprint];
+            $asset = $assetsById[$result['assetId']];
+
+            if ($this->validateTransformIndexResult($result, $transform, $asset)) {
+                $indexFingerprint = $result['assetId'].':'.$transformFingerprint;
+                $this->_eagerLoadedTransformIndexes[$indexFingerprint] = $result;
+            } else {
+                $invalidIndexIds[] = $result['id'];
+            }
+        }
+
+        // Delete any invalid indexes
+        if ($invalidIndexIds) {
+            Craft::$app->getDb()->createCommand()
+                ->delete(
+                    '{{%assettransformindex}}',
+                    [
+                        'in',
+                        'id',
+                        $invalidIndexIds
+                    ])
+                ->execute();
+        }
+    }
+
+    /**
      * Get a transform index row. If it doesn't exist - create one.
      *
      * @param Asset  $asset
@@ -227,6 +328,15 @@ class AssetTransforms extends Component
     {
         $transform = $this->normalizeTransform($transform);
         $transformLocation = $this->_getTransformFolderName($transform);
+
+        // Was it eager-loaded?
+        $fingerprint = $asset->id.':'.$transformLocation.(is_null($transform->format) ? '' : ':'.$transform->format);
+
+        if (isset($this->_eagerLoadedTransformIndexes[$fingerprint])) {
+            $entry = $this->_eagerLoadedTransformIndexes[$fingerprint];
+
+            return new AssetTransformIndex($entry);
+        }
 
         // Check if an entry exists already
         $query = (new Query())
@@ -250,14 +360,7 @@ class AssetTransforms extends Component
         $entry = $query->one();
 
         if ($entry) {
-            // If the file has been indexed after any changes impacting the transform, return the record
-            $indexedAfterFileModified = $entry['dateIndexed'] >= Db::prepareDateForDb($asset->dateModified);
-            $indexedAfterTransformParameterChange =
-                (!$transform->isNamedTransform()
-                    || ($transform->isNamedTransform()
-                        && $entry['dateIndexed'] >= Db::prepareDateForDb($transform->dimensionChangeTime)));
-
-            if ($indexedAfterFileModified && $indexedAfterTransformParameterChange) {
+            if ($this->validateTransformIndexResult($entry, $transform, $asset)) {
                 return AssetTransformIndex::create($entry);
             } else {
                 // Delete the out-of-date record
@@ -283,6 +386,30 @@ class AssetTransforms extends Component
         ];
 
         return $this->storeTransformIndexData(AssetTransformIndex::create($data));
+    }
+
+    /**
+     * Validates a transform index result to see if the index is still valid for a given file.
+     *
+     * @param array               $result
+     * @param AssetTransformModel $transform
+     * @param Asset               $asset
+     *
+     * @return bool Whether the index result is still valid
+     */
+    public function validateTransformIndexResult($result, AssetTransformModel $transform, Asset $asset)
+    {
+        $indexedAfterFileModified = $result['dateIndexed'] >= Db::prepareDateForDb($asset->dateModified);
+        $indexedAfterTransformParameterChange =
+            (!$transform->isNamedTransform()
+                || ($transform->isNamedTransform()
+                    && $result['dateIndexed'] >= Db::prepareDateForDb($transform->dimensionChangeTime)));
+
+        if ($indexedAfterFileModified && $indexedAfterTransformParameterChange) {
+            return true;
+        } else {
+            return false;
+        }
     }
 
     /**
@@ -693,7 +820,7 @@ class AssetTransforms extends Component
             if (!Io::fileExists($imageSourcePath) || Io::getFileSize($imageSourcePath) == 0) {
                 if ($volume->isLocal()) {
                     throw new VolumeObjectNotFoundException(Craft::t('Image “{file}” cannot be found.',
-                        ['file' => $asset->filename]));
+                        ['file' => $imageSourcePath]));
                 }
 
                 // Delete it just in case it's a 0-byter

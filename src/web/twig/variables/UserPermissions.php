@@ -7,7 +7,7 @@
 
 namespace craft\app\web\twig\variables;
 
-\Craft::$app->requireEdition(\Craft::Pro);
+\Craft::$app->requireEdition(\Craft::Client);
 
 /**
  * User permission functions.

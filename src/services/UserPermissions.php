@@ -14,7 +14,7 @@ use craft\app\models\Section;
 use craft\app\records\UserPermission as UserPermissionRecord;
 use yii\base\Component;
 
-Craft::$app->requireEdition(Craft::Pro);
+Craft::$app->requireEdition(Craft::Client);
 
 /**
  * Class UserPermissions service.
@@ -63,7 +63,7 @@ class UserPermissions extends Component
                         'label' => Craft::t('app', 'Access the CP when the system is off')
                     ],
                     'performUpdates' => [
-                        'label' => Craft::t('app', 'Perform Craft and plugin updates')
+                        'label' => Craft::t('app', 'Perform Craft CMS and plugin updates')
                     ],
                 ]
             ],
@@ -83,30 +83,32 @@ class UserPermissions extends Component
         // Users
         // ---------------------------------------------------------------------
 
-        $permissions[Craft::t('app', 'Users')] = [
-            'editUsers' => [
-                'label' => Craft::t('app', 'Edit users'),
-                'nested' => [
-                    'registerUsers' => [
-                        'label' => Craft::t('app', 'Register users')
-                    ],
-                    'assignUserPermissions' => [
-                        'label' => Craft::t('app', 'Assign user groups and permissions')
-                    ],
-                    'administrateUsers' => [
-                        'label' => Craft::t('app', 'Administrate users'),
-                        'nested' => [
-                            'changeUserEmails' => [
-                                'label' => Craft::t('app', 'Change users’ emails')
+        if (Craft::$app->getEdition() == Craft::Pro) {
+            $permissions[Craft::t('app', 'Users')] = [
+                'editUsers' => [
+                    'label' => Craft::t('app', 'Edit users'),
+                    'nested' => [
+                        'registerUsers' => [
+                            'label' => Craft::t('app', 'Register users')
+                        ],
+                        'assignUserPermissions' => [
+                            'label' => Craft::t('app', 'Assign user groups and permissions')
+                        ],
+                        'administrateUsers' => [
+                            'label' => Craft::t('app', 'Administrate users'),
+                            'nested' => [
+                                'changeUserEmails' => [
+                                    'label' => Craft::t('app', 'Change users’ emails')
+                                ]
                             ]
                         ]
-                    ]
+                    ],
                 ],
-            ],
-            'deleteUsers' => [
-                'label' => Craft::t('app', 'Delete users')
-            ],
-        ];
+                'deleteUsers' => [
+                    'label' => Craft::t('app', 'Delete users')
+                ],
+            ];
+        }
 
         // Locales
         // ---------------------------------------------------------------------

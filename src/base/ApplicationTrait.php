@@ -1268,7 +1268,10 @@ trait ApplicationTrait
 
         switch ($cacheMethod) {
             case 'apc': {
-                return 'yii\caching\ApcCache';
+                return [
+                    'class' => 'yii\caching\ApcCache',
+                    'useApcu' => $configService->get('useApcu', ConfigCategory::ApcCache),
+                ];
             }
 
             case 'db': {
@@ -1348,16 +1351,16 @@ trait ApplicationTrait
 
             // TODO: Multi-db driver check.
             if (!extension_loaded('pdo')) {
-                throw new DbConnectException(Craft::t('app', 'Craft requires the PDO extension to operate.'));
+                throw new DbConnectException(Craft::t('app', 'Craft CMS requires the PDO extension to operate.'));
             } else if (!extension_loaded('pdo_mysql')) {
-                throw new DbConnectException(Craft::t('app', 'Craft requires the PDO_MYSQL driver to operate.'));
+                throw new DbConnectException(Craft::t('app', 'Craft CMS requires the PDO_MYSQL driver to operate.'));
             } else {
                 Craft::error($e->getMessage(), __METHOD__);
-                throw new DbConnectException(Craft::t('app', 'Craft can’t connect to the database with the credentials in craft/config/db.php.'));
+                throw new DbConnectException(Craft::t('app', 'Craft CMS can’t connect to the database with the credentials in craft/config/db.php.'));
             }
         } catch (\Exception $e) {
             Craft::error($e->getMessage(), __METHOD__);
-            throw new DbConnectException(Craft::t('app', 'Craft can’t connect to the database with the credentials in craft/config/db.php.'));
+            throw new DbConnectException(Craft::t('app', 'Craft CMS can’t connect to the database with the credentials in craft/config/db.php.'));
         }
 
         $this->setIsDbConnectionValid(true);

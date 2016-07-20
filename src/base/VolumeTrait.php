@@ -29,7 +29,12 @@ trait VolumeTrait
     public $handle;
 
     /**
-     * @var string The source’s URL
+     * @var boolean Whether the volume has a public URL
+     */
+    public $hasUrls;
+
+    /**
+     * @var string The volume’s URL
      */
     public $url;
 

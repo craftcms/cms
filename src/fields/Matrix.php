@@ -8,10 +8,12 @@
 namespace craft\app\fields;
 
 use Craft;
+use craft\app\base\EagerLoadingFieldInterface;
 use craft\app\base\Element;
 use craft\app\base\ElementInterface;
 use craft\app\base\Field;
 use craft\app\base\FieldInterface;
+use craft\app\db\Query;
 use craft\app\elements\db\ElementQuery;
 use craft\app\elements\db\ElementQueryInterface;
 use craft\app\elements\db\MatrixBlockQuery;
@@ -26,7 +28,7 @@ use craft\app\models\MatrixBlockType;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
-class Matrix extends Field
+class Matrix extends Field implements EagerLoadingFieldInterface
 {
     // Static
     // =========================================================================
@@ -412,6 +414,39 @@ class Matrix extends Field
         } else {
             return '<p class="light">'.Craft::t('app', 'No blocks.').'</p>';
         }
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getEagerLoadingMap($sourceElements)
+    {
+        // Get the source element IDs
+        $sourceElementIds = [];
+
+        foreach ($sourceElements as $sourceElement) {
+            $sourceElementIds[] = $sourceElement->id;
+        }
+
+        // Return any relation data on these elements, defined with this field
+        $map = (new Query())
+            ->select('ownerId as source, id as target')
+            ->from('{{%matrixblocks}}')
+            ->where(
+                [
+                    'and',
+                    'fieldId=:fieldId',
+                    ['in', 'ownerId', $sourceElementIds]
+                ],
+                [':fieldId' => $this->model->id])
+            ->orderBy('sortOrder')
+            ->all();
+
+        return [
+            'elementType' => MatrixBlock::className(),
+            'map' => $map,
+            'criteria' => ['fieldId' => $this->id]
+        ];
     }
 
     // Protected Methods

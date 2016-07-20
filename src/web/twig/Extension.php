@@ -52,15 +52,24 @@ class Extension extends \Twig_Extension
      */
     protected $view;
 
+    /**
+     * @var Environment
+     */
+    protected $environment;
+
     // Public Methods
     // =========================================================================
 
     /**
-     * @inheritdoc
+     * Constructor
+     *
+     * @param View        $view
+     * @param Environment $environment
      */
-    public function __construct(View $view)
+    public function __construct(View $view, Environment $environment)
     {
         $this->view = $view;
+        $this->environment = $environment;
     }
 
     /**
@@ -80,49 +89,56 @@ class Extension extends \Twig_Extension
      */
     public function getTokenParsers()
     {
-        return [
-            new CacheTokenParser(),
-            new ExitTokenParser(),
-            new HeaderTokenParser(),
-            new HookTokenParser(),
-            new RegisterResourceTokenParser('registerassetbundle', 'registerAssetBundle', false, true, false, false),
-            new RegisterResourceTokenParser('registercss', 'registerCss', true, false, false, true),
-            new RegisterResourceTokenParser('registerhirescss', 'registerHiResCss', true, false, false, true),
-            new RegisterResourceTokenParser('registercssfile', 'registerCssFile', false, false, false, true),
-            new RegisterResourceTokenParser('registercssresource', 'registerCssResource', false, false, false, true),
-            new RegisterResourceTokenParser('registerjs', 'registerJs', true, true, true, false),
-            new RegisterResourceTokenParser('registerjsfile', 'registerJsFile', false, true, false, true),
-            new RegisterResourceTokenParser('registerjsresource', 'registerJsResource', false, true, false, true),
-            new IncludeTranslationsTokenParser(),
-            new NamespaceTokenParser(),
-            new NavTokenParser(),
-            new PaginateTokenParser(),
-            new RedirectTokenParser(),
-            new RequireAdminTokenParser(),
-            new RequireEditionTokenParser(),
-            new RequireLoginTokenParser(),
-            new RequirePermissionTokenParser(),
+        $tokenParsers = [
             new SwitchTokenParser(),
-
-            // Deprecated tags
-            new RegisterResourceTokenParser('includeCss', 'registerCss', false, false, false, true, 'registercss'),
-            new RegisterResourceTokenParser('includeHiResCss', 'registerHiResCss', true, false, false, true, 'registerhirescss'),
-            new RegisterResourceTokenParser('includeCssFile', 'registerCssFile', true, false, false, true, 'registercssfile'),
-            new RegisterResourceTokenParser('includeCssResource', 'registerCssResource', false, false, false, true, 'registercssresource'),
-            new RegisterResourceTokenParser('includeJs', 'registerJs', false, true, true, false, 'registerjs'),
-            new RegisterResourceTokenParser('includeJsFile', 'registerJsFile', true, true, false, true, 'registerjsfile'),
-            new RegisterResourceTokenParser('includeJsResource', 'registerJsResource', false, true, false, true, 'registerjsresource'),
-
-            new RegisterResourceTokenParser('includecss', 'registerCss', false, false, false, true, 'registercss'),
-            new RegisterResourceTokenParser('includehirescss', 'registerHiResCss', true, false, false, true, 'registerhirescss'),
-            new RegisterResourceTokenParser('includecssfile', 'registerCssFile', true, false, false, true, 'registercssfile'),
-            new RegisterResourceTokenParser('includecssresource', 'registerCssResource', false, false, false, true, 'registercssresource'),
-            new RegisterResourceTokenParser('includejs', 'registerJs', false, true, true, false, 'registerjs'),
-            new RegisterResourceTokenParser('includejsfile', 'registerJsFile', true, true, false, true, 'registerjsfile'),
-            new RegisterResourceTokenParser('includejsresource', 'registerJsResource', false, true, false, true, 'registerjsresource'),
-
-            new DeprecatedTagTokenParser('endpaginate'),
         ];
+
+        if (!$this->environment->isSafeMode()) {
+            $tokenParsers = array_merge($tokenParsers, [
+                new CacheTokenParser(),
+                new ExitTokenParser(),
+                new HeaderTokenParser(),
+                new HookTokenParser(),
+                new RegisterResourceTokenParser('registerassetbundle', 'registerAssetBundle', false, true, false, false),
+                new RegisterResourceTokenParser('registercss', 'registerCss', true, false, false, true),
+                new RegisterResourceTokenParser('registerhirescss', 'registerHiResCss', true, false, false, true),
+                new RegisterResourceTokenParser('registercssfile', 'registerCssFile', false, false, false, true),
+                new RegisterResourceTokenParser('registercssresource', 'registerCssResource', false, false, false, true),
+                new RegisterResourceTokenParser('registerjs', 'registerJs', true, true, true, false),
+                new RegisterResourceTokenParser('registerjsfile', 'registerJsFile', false, true, false, true),
+                new RegisterResourceTokenParser('registerjsresource', 'registerJsResource', false, true, false, true),
+                new IncludeTranslationsTokenParser(),
+                new NamespaceTokenParser(),
+                new NavTokenParser(),
+                new PaginateTokenParser(),
+                new RedirectTokenParser(),
+                new RequireAdminTokenParser(),
+                new RequireEditionTokenParser(),
+                new RequireLoginTokenParser(),
+                new RequirePermissionTokenParser(),
+
+                // Deprecated tags
+                new RegisterResourceTokenParser('includeCss', 'registerCss', false, false, false, true, 'registercss'),
+                new RegisterResourceTokenParser('includeHiResCss', 'registerHiResCss', true, false, false, true, 'registerhirescss'),
+                new RegisterResourceTokenParser('includeCssFile', 'registerCssFile', true, false, false, true, 'registercssfile'),
+                new RegisterResourceTokenParser('includeCssResource', 'registerCssResource', false, false, false, true, 'registercssresource'),
+                new RegisterResourceTokenParser('includeJs', 'registerJs', false, true, true, false, 'registerjs'),
+                new RegisterResourceTokenParser('includeJsFile', 'registerJsFile', true, true, false, true, 'registerjsfile'),
+                new RegisterResourceTokenParser('includeJsResource', 'registerJsResource', false, true, false, true, 'registerjsresource'),
+
+                new RegisterResourceTokenParser('includecss', 'registerCss', false, false, false, true, 'registercss'),
+                new RegisterResourceTokenParser('includehirescss', 'registerHiResCss', true, false, false, true, 'registerhirescss'),
+                new RegisterResourceTokenParser('includecssfile', 'registerCssFile', true, false, false, true, 'registercssfile'),
+                new RegisterResourceTokenParser('includecssresource', 'registerCssResource', false, false, false, true, 'registercssresource'),
+                new RegisterResourceTokenParser('includejs', 'registerJs', false, true, true, false, 'registerjs'),
+                new RegisterResourceTokenParser('includejsfile', 'registerJsFile', true, true, false, true, 'registerjsfile'),
+                new RegisterResourceTokenParser('includejsresource', 'registerJsResource', false, true, false, true, 'registerjsresource'),
+
+                new DeprecatedTagTokenParser('endpaginate'),
+            ]);
+        }
+
+        return $tokenParsers;
     }
 
     /**
@@ -403,9 +419,10 @@ class Extension extends \Twig_Extension
         $groups = [];
 
         $template = '{'.$item.'}';
+        $safeMode = $this->environment->isSafeMode();
 
         foreach ($arr as $key => $object) {
-            $value = Craft::$app->getView()->renderObjectTemplate($template, $object);
+            $value = Craft::$app->getView()->renderObjectTemplate($template, $object, $safeMode);
             $groups[$value][] = $object;
         }
 
@@ -487,7 +504,7 @@ class Extension extends \Twig_Extension
             'getTranslations' => new \Twig_Function_Function('\Craft::$app->getView()->getTranslations'),
             'max' => new \Twig_Function_Function('max'),
             'min' => new \Twig_Function_Function('min'),
-            'renderObjectTemplate' => new \Twig_Function_Function('\Craft::$app->getView()->renderObjectTemplate'),
+            'renderObjectTemplate' => new \Twig_Function_Method($this, 'renderObjectTemplate'),
             'round' => new \Twig_Function_Function('round'),
             'resourceUrl' => new \Twig_Function_Function('\\craft\\app\\helpers\\Url::getResourceUrl'),
             'shuffle' => new \Twig_Function_Method($this, 'shuffleFunction'),
@@ -518,6 +535,19 @@ class Extension extends \Twig_Extension
     }
 
     /**
+     * @param $template
+     * @param $object
+     *
+     * @return string
+     */
+    public function renderObjectTemplate($template, $object)
+    {
+        $safeMode = $this->environment->isSafeMode();
+
+        return Craft::$app->getView()->renderObjectTemplate($template, $object, $safeMode);
+    }
+
+    /**
      * Shuffles an array.
      *
      * @param mixed $arr
@@ -544,15 +574,42 @@ class Extension extends \Twig_Extension
      */
     public function getGlobals()
     {
-        // Keep the 'blx' variable around for now
-        $craftVariable = new CraftVariable();
-        $globals['craft'] = $craftVariable;
-        $globals['blx'] = $craftVariable;
+        $safeMode = $this->environment->isSafeMode();
+        $isInstalled = Craft::$app->isInstalled();
+        $request = Craft::$app->getRequest();
+
+        $globals = [
+            'user' => null,
+            'currentUser' => null,
+        ];
+
+        if (!$safeMode) {
+            // Keep the 'blx' variable around for now
+            $craftVariable = new CraftVariable();
+            $globals['craft'] = $craftVariable;
+            $globals['blx'] = $craftVariable;
+
+            $globals['loginUrl'] = Url::getUrl(Craft::$app->getConfig()->getLoginPath());
+            $globals['logoutUrl'] = Url::getUrl(Craft::$app->getConfig()->getLogoutPath());
+            $globals['isInstalled'] = $isInstalled;
+
+            if ($isInstalled) {
+                $globals['currentUser'] = Craft::$app->getUser()->getIdentity();
+            }
+
+            // Keep 'user' around so long as it's not hurting anyone.
+            // Technically deprecated, though.
+            $globals['user'] = $globals['currentUser'];
+
+            if (!$request->getIsConsoleRequest() && $request->getIsCpRequest()) {
+                $globals['CraftEdition'] = Craft::$app->getEdition();
+                $globals['CraftPersonal'] = Craft::Personal;
+                $globals['CraftClient'] = Craft::Client;
+                $globals['CraftPro'] = Craft::Pro;
+            }
+        }
 
         $globals['now'] = new DateTime(null, new \DateTimeZone(Craft::$app->getTimeZone()));
-        $globals['loginUrl'] = Url::getUrl(Craft::$app->getConfig()->getLoginPath());
-        $globals['logoutUrl'] = Url::getUrl(Craft::$app->getConfig()->getLogoutPath());
-        $globals['isInstalled'] = Craft::$app->isInstalled();
 
         $globals['POS_HEAD'] = View::POS_HEAD;
         $globals['POS_BEGIN'] = View::POS_BEGIN;
@@ -564,14 +621,6 @@ class Extension extends \Twig_Extension
             $globals['siteName'] = Craft::$app->getSiteName();
             $globals['siteUrl'] = Craft::$app->getSiteUrl();
 
-            $globals['currentUser'] = Craft::$app->getUser()->getIdentity();
-
-            // Keep 'user' around so long as it's not hurting anyone.
-            // Technically deprecated, though.
-            $globals['user'] = $globals['currentUser'];
-
-            $request = Craft::$app->getRequest();
-
             if (!$request->getIsConsoleRequest() && $request->getIsSiteRequest()) {
                 foreach (Craft::$app->getGlobals()->getAllSets() as $globalSet) {
                     $globals[$globalSet->handle] = $globalSet;
@@ -580,16 +629,6 @@ class Extension extends \Twig_Extension
         } else {
             $globals['siteName'] = null;
             $globals['siteUrl'] = null;
-            $globals['user'] = null;
-        }
-
-        $request = Craft::$app->getRequest();
-
-        if (!$request->getIsConsoleRequest() && $request->getIsCpRequest()) {
-            $globals['CraftEdition'] = Craft::$app->getEdition();
-            $globals['CraftPersonal'] = Craft::Personal;
-            $globals['CraftClient'] = Craft::Client;
-            $globals['CraftPro'] = Craft::Pro;
         }
 
         return $globals;

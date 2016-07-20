@@ -182,6 +182,11 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
     public $ref;
 
     /**
+     * @var mixed The eager-loading declaration
+     */
+    public $with;
+
+    /**
      * @inheritdoc
      */
     public $orderBy = 'elements.dateCreated desc';
@@ -647,6 +652,16 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
     public function ref($value)
     {
         $this->ref = $value;
+
+        return $this;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function with($value)
+    {
+        $this->with = $value;
 
         return $this;
     }
@@ -1714,6 +1729,11 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
             }
 
             $lastElement->setNext(false);
+
+            // Should we eager-load some elements onto these?
+            if ($this->with) {
+                Craft::$app->getElements()->eagerLoadElements($this->elementType, $elements, $this->with);
+            }
         }
 
         return $elements;

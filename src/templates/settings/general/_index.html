@@ -24,7 +24,7 @@
 	{{ forms.lightswitchField({
 		first: true,
 		label: "System Status"|t,
-		warning: (craft.config.isSystemOn is sameas(true) ? configWarning('isSystemOn')),
+		warning: (craft.config.isSystemOn is sameas(true) or craft.config.isSystemOn is sameas(false) ? configWarning('isSystemOn')),
 		id: 'on',
 		name: 'on',
 		on: info.on

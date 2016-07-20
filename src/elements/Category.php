@@ -477,7 +477,14 @@ class Category extends Element
         $group = $this->getGroup();
 
         if ($group) {
-            return Url::getCpUrl('categories/'.$group->handle.'/'.$this->id.($this->slug ? '-'.$this->slug : ''));
+            //return Url::getCpUrl('categories/'.$group->handle.'/'.$this->id.($this->slug ? '-'.$this->slug : ''));
+            $url = Url::getCpUrl('categories/'.$group->handle.'/'.$this->id.($this->slug ? '-'.$this->slug : ''));
+
+            if (Craft::$app->isLocalized() && $this->locale != Craft::$app->language) {
+                $url .= '/'.$this->locale;
+            }
+
+            return $url;
         }
 
         return null;

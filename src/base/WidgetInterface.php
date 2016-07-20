@@ -49,10 +49,11 @@ interface WidgetInterface extends SavableComponentInterface
     public function getIconPath();
 
     /**
-     * Returns the widget’s body HTML.
+     * Returns the widget's body HTML.
      *
      * @return string|false The widget’s body HTML, or `false` if the widget
-     *                      should not be visible.
+     *                      should not be visible. (If you don’t want the widget
+     *                      to be selectable in the first place, use {@link isSelectable()}.)
      */
     public function getBodyHtml();
 

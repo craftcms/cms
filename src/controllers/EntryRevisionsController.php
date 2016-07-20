@@ -60,6 +60,16 @@ class EntryRevisionsController extends BaseEntriesController
 
         $this->_setDraftAttributesFromPost($draft);
 
+        $fieldsLocation = Craft::$app->getRequest()->getParam('fieldsLocation', 'fields');
+        $draft->setFieldValuesFromPost($fieldsLocation);
+
+        $entryType = $draft->getType();
+
+        if (!$entryType->hasTitleField) {
+            $draft->title = Craft::$app->getView()->renderObjectTemplate($entryType->titleFormat, $draft);
+        }
+
+
         if (!$draft->id) {
             // Attempt to create a new entry
 
@@ -75,9 +85,6 @@ class EntryRevisionsController extends BaseEntriesController
                 $draft->addErrors($draft->getErrors());
             }
         }
-
-        $fieldsLocation = Craft::$app->getRequest()->getParam('fieldsLocation', 'fields');
-        $draft->setFieldValuesFromPost($fieldsLocation);
 
         if ($draft->id && Craft::$app->getEntryRevisions()->saveDraft($draft)) {
             Craft::$app->getSession()->setNotice(Craft::t('app', 'Draft saved.'));

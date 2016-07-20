@@ -87,12 +87,13 @@ class Assets
      * Clean an Asset's filename.
      *
      * @param         $name
-     * @param boolean $isFilename if set to true (default), will separate extension
-     *                            and clean the filename separately.
+     * @param boolean $isFilename                 if set to true (default), will separate extension
+     *                                            and clean the filename separately.
+     * @param boolean $preventPluginModifications if set to true, will prevent plugins from modify
      *
      * @return mixed
      */
-    public static function prepareAssetName($name, $isFilename = true)
+    public static function prepareAssetName($name, $isFilename = true, $preventPluginModifications = false)
     {
         if ($isFilename) {
             $baseName = Io::getFilename($name, false);
@@ -107,6 +108,13 @@ class Assets
 
         if (!is_string($separator)) {
             $separator = null;
+        }
+
+        if ($isFilename && !$preventPluginModifications) {
+            $pluginModifiedAssetName = Craft::$app->getPlugins()->callFirst('modifyAssetFilename', [$baseName], true);
+
+            // Use the plugin-modified name, if anyone was up to the task.
+            $baseName = $pluginModifiedAssetName ?: $baseName;
         }
 
         $baseName = Io::cleanFilename($baseName, $config->get('convertFilenamesToAscii'), $separator);
@@ -215,5 +223,24 @@ class Assets
             PeriodType::Months => Craft::t('app', 'Months'),
             PeriodType::Years => Craft::t('app', 'Years'),
         ];
+    }
+
+    /**
+     * Sorts a folder tree by Volume sort order.
+     *
+     * @param array &$tree array passed by reference of the sortable folders.
+     */
+    public static function sortFolderTree(&$tree)
+    {
+        $sort = [];
+
+        foreach ($tree as $topFolder) {
+            /**
+             * @var VolumeFolder $topFolder
+             */
+            $sort[] = $topFolder->getVolume()->sortOrder;
+        }
+
+        array_multisort($sort, $tree);
     }
 }

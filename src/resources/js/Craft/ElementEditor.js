@@ -18,11 +18,9 @@ Craft.ElementEditor = Garnish.Base.extend(
 
 	hud: null,
 
-	init: function($element, settings)
-	{
+	init: function ($element, settings) {
 		// Param mapping
-		if (typeof settings == typeof undefined && $.isPlainObject($element))
-		{
+		if (typeof settings == typeof undefined && $.isPlainObject($element)) {
 			// (settings)
 			settings = $element;
 			$element = null;
@@ -34,86 +32,70 @@ Craft.ElementEditor = Garnish.Base.extend(
 		this.loadHud();
 	},
 
-	setElementAttribute: function(name, value)
-	{
-		if (!this.settings.attributes)
-		{
+	setElementAttribute: function (name, value) {
+		if (!this.settings.attributes) {
 			this.settings.attributes = {};
 		}
 
-		if (value === null)
-		{
+		if (value === null) {
 			delete this.settings.attributes[name];
 		}
-		else
-		{
+		else {
 			this.settings.attributes[name] = value;
 		}
 	},
 
-	getBaseData: function()
-	{
-		var data = {};
+	getBaseData: function () {
+		var data = $.extend({}, this.settings.params);
 
-		if (this.settings.locale)
-		{
+		if (this.settings.locale) {
 			data.locale = this.settings.locale;
 		}
-		else if (this.$element && this.$element.data('locale'))
-		{
+		else if (this.$element && this.$element.data('locale')) {
 			data.locale = this.$element.data('locale');
 		}
 
-		if (this.settings.elementId)
-		{
+		if (this.settings.elementId) {
 			data.elementId = this.settings.elementId;
 		}
-		else if (this.$element && this.$element.data('id'))
-		{
+		else if (this.$element && this.$element.data('id')) {
 			data.elementId = this.$element.data('id');
 		}
 
-		if (this.settings.elementType)
-		{
+		if (this.settings.elementType) {
 			data.elementType = this.settings.elementType;
 		}
 
-		if (this.settings.attributes)
-		{
+		if (this.settings.attributes) {
 			data.attributes = this.settings.attributes;
 		}
 
 		return data;
 	},
 
-	loadHud: function()
-	{
+	loadHud: function () {
 		this.onBeginLoading();
 		var data = this.getBaseData();
 		data.includeLocales = this.settings.showLocaleSwitcher;
 		Craft.postActionRequest('elements/get-editor-html', data, $.proxy(this, 'showHud'));
 	},
 
-	showHud: function(response, textStatus)
-	{
+	showHud: function (response, textStatus) {
 		this.onEndLoading();
 
-		if (textStatus == 'success')
-		{
+		if (textStatus == 'success') {
 			var $hudContents = $();
 
-			if (response.locales)
-			{
+			if (response.locales) {
 				var $header = $('<div class="header"/>'),
 					$localeSelectContainer = $('<div class="select"/>').appendTo($header);
 
 				this.$localeSelect = $('<select/>').appendTo($localeSelectContainer);
 				this.$localeSpinner = $('<div class="spinner hidden"/>').appendTo($header);
 
-				for (var i = 0; i < response.locales.length; i++)
-				{
+				for (var i = 0; i < response.locales.length; i++) {
 					var locale = response.locales[i];
-					$('<option value="'+locale.id+'"'+(locale.id == response.locale ? ' selected="selected"' : '')+'>'+locale.name+'</option>').appendTo(this.$localeSelect);
+					$('<option value="' + locale.id + '"' + (locale.id == response.locale ? ' selected="selected"' : '') + '>' + locale.name + '</option>').appendTo(this.$localeSelect);
 				}
 
 				this.addListener(this.$localeSelect, 'change', 'switchLocale');
@@ -126,16 +108,17 @@ Craft.ElementEditor = Garnish.Base.extend(
 
 			this.updateForm(response);
 
+			this.onCreateForm(this.$form);
+
 			var $footer = $('<div class="footer"/>').appendTo(this.$form),
 				$buttonsContainer = $('<div class="buttons right"/>').appendTo($footer);
-			this.$cancelBtn = $('<div class="btn">'+Craft.t('Cancel')+'</div>').appendTo($buttonsContainer);
-			this.$saveBtn = $('<input class="btn submit" type="submit" value="'+Craft.t('Save')+'"/>').appendTo($buttonsContainer);
+			this.$cancelBtn = $('<div class="btn">' + Craft.t('Cancel') + '</div>').appendTo($buttonsContainer);
+			this.$saveBtn = $('<input class="btn submit" type="submit" value="' + Craft.t('Save') + '"/>').appendTo($buttonsContainer);
 			this.$spinner = $('<div class="spinner hidden"/>').appendTo($buttonsContainer);
 
 			$hudContents = $hudContents.add(this.$form);
 
-			if (!this.hud)
-			{
+			if (!this.hud) {
 				var hudTrigger = (this.settings.hudTrigger || this.$element);
 
 				this.hud = new Garnish.HUD(hudTrigger, $hudContents, {
@@ -148,12 +131,11 @@ Craft.ElementEditor = Garnish.Base.extend(
 
 				this.hud.$hud.data('elementEditor', this);
 
-				this.hud.on('hide', $.proxy(function() {
+				this.hud.on('hide', $.proxy(function () {
 					delete this.hud;
 				}, this));
 			}
-			else
-			{
+			else {
 				this.hud.updateBody($hudContents);
 				this.hud.updateSizeAndPosition();
 			}
@@ -161,18 +143,16 @@ Craft.ElementEditor = Garnish.Base.extend(
 			// Focus on the first text input
 			$hudContents.find('.text:first').focus();
 
-			this.addListener(this.$cancelBtn, 'click', function() {
+			this.addListener(this.$cancelBtn, 'click', function () {
 				this.hud.hide();
 			});
 		}
 	},
 
-	switchLocale: function()
-	{
+	switchLocale: function () {
 		var newLocale = this.$localeSelect.val();
 
-		if (newLocale == this.locale)
-		{
+		if (newLocale == this.locale) {
 			return;
 		}
 
@@ -182,23 +162,19 @@ Craft.ElementEditor = Garnish.Base.extend(
 		var data = this.getBaseData();
 		data.locale = newLocale;
 
-		Craft.postActionRequest('elements/get-editor-html', data, $.proxy(function(response, textStatus)
-		{
+		Craft.postActionRequest('elements/get-editor-html', data, $.proxy(function (response, textStatus) {
 			this.$localeSpinner.addClass('hidden');
 
-			if (textStatus == 'success')
-			{
+			if (textStatus == 'success') {
 				this.updateForm(response);
 			}
-			else
-			{
+			else {
 				this.$localeSelect.val(this.locale);
 			}
 		}, this));
 	},
 
-	updateForm: function(response)
-	{
+	updateForm: function (response) {
 		this.locale = response.locale;
 
 		this.$fieldsContainer.html(response.html);
@@ -206,8 +182,7 @@ Craft.ElementEditor = Garnish.Base.extend(
 		// Swap any instruction text with info icons
 		var $instructions = this.$fieldsContainer.find('> .meta > .field > .heading > .instructions');
 
-		for (var i = 0; i < $instructions.length; i++)
-		{
+		for (var i = 0; i < $instructions.length; i++) {
 
 			$instructions.eq(i)
 				.replaceWith($('<span/>', {
@@ -217,55 +192,55 @@ Craft.ElementEditor = Garnish.Base.extend(
 				.infoicon();
 		}
 
-		Garnish.requestAnimationFrame($.proxy(function()
-		{
+		Garnish.requestAnimationFrame($.proxy(function () {
 			Craft.appendHeadHtml(response.headHtml);
 			Craft.appendFootHtml(response.footHtml);
 			Craft.initUiElements(this.$fieldsContainer);
 		}, this));
 	},
 
-	saveElement: function()
-	{
+	saveElement: function () {
+		var validators = this.settings.validators;
+
+		if ($.isArray(validators)) {
+			for (var i = 0; i < validators.length; i++) {
+				if ($.isFunction(validators[i]) && !validators[i].call()) {
+					return false;
+				}
+			}
+		}
+
 		this.$spinner.removeClass('hidden');
 
-		var data = $.param(this.getBaseData())+'&'+this.hud.$body.serialize();
-		Craft.postActionRequest('elements/save-element', data, $.proxy(function(response, textStatus)
-		{
+		var data = $.param(this.getBaseData()) + '&' + this.hud.$body.serialize();
+		Craft.postActionRequest('elements/save-element', data, $.proxy(function (response, textStatus) {
 			this.$spinner.addClass('hidden');
 
-			if (textStatus == 'success')
-			{
-				if (textStatus == 'success' && response.success)
-				{
-					if (this.$element && this.locale == this.$element.data('locale'))
-					{
+			if (textStatus == 'success') {
+				if (textStatus == 'success' && response.success) {
+					if (this.$element && this.locale == this.$element.data('locale')) {
 						// Update the label
 						var $title = this.$element.find('.title'),
 							$a = $title.find('a');
 
-						if ($a.length && response.cpEditUrl)
-						{
+						if ($a.length && response.cpEditUrl) {
 							$a.attr('href', response.cpEditUrl);
 							$a.text(response.newTitle);
 						}
-						else
-						{
+						else {
 							$title.text(response.newTitle);
 						}
 					}
 
 					// Update Live Preview
-					if (typeof Craft.livePreview != 'undefined')
-					{
+					if (typeof Craft.livePreview != 'undefined') {
 						Craft.livePreview.updateIframe(true);
 					}
 
 					this.closeHud();
 					this.onSaveElement(response);
 				}
-				else
-				{
+				else {
 					this.updateForm(response);
 					Garnish.shake(this.hud.$hud);
 				}
@@ -273,8 +248,7 @@ Craft.ElementEditor = Garnish.Base.extend(
 		}, this));
 	},
 
-	closeHud: function()
-	{
+	closeHud: function () {
 		this.hud.hide();
 		delete this.hud;
 	},
@@ -282,22 +256,18 @@ Craft.ElementEditor = Garnish.Base.extend(
 	// Events
 	// -------------------------------------------------------------------------
 
-	onShowHud: function()
-	{
+	onShowHud: function () {
 		this.settings.onShowHud();
 		this.trigger('showHud');
 	},
 
-	onHideHud: function()
-	{
+	onHideHud: function () {
 		this.settings.onHideHud();
 		this.trigger('hideHud');
 	},
 
-	onBeginLoading: function()
-	{
-		if (this.$element)
-		{
+	onBeginLoading: function () {
+		if (this.$element) {
 			this.$element.addClass('loading');
 		}
 
@@ -305,10 +275,8 @@ Craft.ElementEditor = Garnish.Base.extend(
 		this.trigger('beginLoading');
 	},
 
-	onEndLoading: function()
-	{
-		if (this.$element)
-		{
+	onEndLoading: function () {
+		if (this.$element) {
 			this.$element.removeClass('loading');
 		}
 
@@ -316,13 +284,16 @@ Craft.ElementEditor = Garnish.Base.extend(
 		this.trigger('endLoading');
 	},
 
-	onSaveElement: function(response)
-	{
+	onSaveElement: function (response) {
 		this.settings.onSaveElement(response);
 		this.trigger('saveElement', {
 			response: response
 		});
 	},
+
+	onCreateForm: function ($form) {
+		this.settings.onCreateForm($form);
+	}
 },
 {
 	defaults: {
@@ -332,11 +303,15 @@ Craft.ElementEditor = Garnish.Base.extend(
 		elementType: null,
 		locale: null,
 		attributes: null,
+		params: null,
 
 		onShowHud: $.noop,
 		onHideHud: $.noop,
 		onBeginLoading: $.noop,
 		onEndLoading: $.noop,
-		onSaveElement: $.noop
+		onCreateForm: $.noop,
+		onSaveElement: $.noop,
+
+		validators: []
 	}
 });

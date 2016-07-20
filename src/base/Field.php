@@ -372,12 +372,11 @@ abstract class Field extends SavableComponent implements FieldInterface
     protected function isFresh($element)
     {
         if (!isset($this->_isFresh)) {
-            // If this is for a Matrix block, we're more interested in its owner
-            if (isset($element) && $element instanceof MatrixBlock) {
-                $element = $element->getOwner();
+            if ($element) {
+                $this->_isFresh = $element->getHasFreshContent();
+            } else {
+                $this->_isFresh = true;
             }
-
-            $this->_isFresh = (!$element || (!$element->contentId && !$element->hasErrors()));
         }
 
         return $this->_isFresh;

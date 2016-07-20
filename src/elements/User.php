@@ -1015,8 +1015,8 @@ class User extends Element implements IdentityInterface
      */
     public function can($permission)
     {
-        if (Craft::$app->getEdition() == Craft::Pro) {
-            if ($this->admin || $this->client) {
+        if (Craft::$app->getEdition() >= Craft::Client) {
+            if ($this->admin) {
                 return true;
             } else if ($this->id) {
                 return Craft::$app->getUserPermissions()->doesUserHavePermission($this->id, $permission);

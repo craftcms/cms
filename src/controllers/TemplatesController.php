@@ -65,9 +65,9 @@ class TemplatesController extends Controller
     public function actionOffline()
     {
         // If this is a site request, make sure the offline template exists
-        if (Craft::$app->getRequest()->getIsSiteRequest() && !Craft::$app->getView()->doesTemplateExist('offline')) {
-            // Set the Path service to use the CP templates path instead
-            Craft::$app->getPath()->setTemplatesPath(Craft::$app->getPath()->getCpTemplatesPath());
+        $view = Craft::$app->getView();
+        if (Craft::$app->getRequest()->getIsSiteRequest() && !$view->doesTemplateExist('offline')) {
+            $view->setTemplateMode($view::TEMPLATE_MODE_CP);
         }
 
         // Output the offline template
@@ -162,9 +162,10 @@ class TemplatesController extends Controller
         }
 
         if (!isset($template)) {
-            Craft::$app->getPath()->setTemplatesPath(Craft::$app->getPath()->getCpTemplatesPath());
+            $view = Craft::$app->getView();
+            $view->setTemplateMode($view::TEMPLATE_MODE_CP);
 
-            if (Craft::$app->getView()->doesTemplateExist($statusCode)) {
+            if ($view->doesTemplateExist($statusCode)) {
                 $template = $statusCode;
             } else {
                 $template = 'error';

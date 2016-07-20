@@ -77,6 +77,9 @@ class EmailMessages extends Component
                 $message->body = $this->_translateMessageString($key, 'body', $localeId);
             }
 
+            // Not possible to customize the heading
+            $message->heading = $this->_translateMessageString($key, 'heading', $localeId);
+
             $messages[] = $message;
         }
 

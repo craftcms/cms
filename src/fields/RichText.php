@@ -9,8 +9,10 @@ namespace craft\app\fields;
 
 use Craft;
 use craft\app\base\Field;
+use craft\app\base\Volume;
 use craft\app\fields\data\RichTextData;
 use craft\app\helpers\Db;
+use craft\app\helpers\Html;
 use craft\app\helpers\HtmlPurifier;
 use craft\app\helpers\Io;
 use craft\app\helpers\Json;
@@ -54,12 +56,22 @@ class RichText extends Field
     /**
      * @var boolean Whether the HTML should be purified on save
      */
-    public $purifyHtml = false;
+    public $purifyHtml = true;
 
     /**
      * @var string The type of database column the field should have in the content table
      */
     public $columnType = Schema::TYPE_TEXT;
+
+    /**
+     * @var array The volumes that should be available for Image selection
+     */
+    public $availableVolumes = [];
+
+    /**
+     * @var array The transforms available when selecting an image
+     */
+    public $availableTransforms = [];
 
     /**
      * @var string
@@ -87,6 +99,27 @@ class RichText extends Field
             }
         }
 
+        $volumeOptions = [];
+        /**
+         * @var $volume Volume
+         */
+        foreach (Craft::$app->getVolumes()->getPublicVolumes() as $volume) {
+            if ($volume->hasUrls) {
+                $volumeOptions[] = [
+                    'label' => $volume->name,
+                    'value' => $volume->id
+                ];
+            }
+        }
+
+        $transformOptions = [];
+        foreach (Craft::$app->getAssetTransforms()->getAllTransforms() as $transform) {
+            $transformOptions[] = [
+                'label' => $transform->name,
+                'value' => $transform->id
+            ];
+        }
+
         $columns = [
             'text' => Craft::t('app', 'Text (stores about 64K)'),
             'mediumtext' => Craft::t('app', 'MediumText (stores about 4GB)')
@@ -96,6 +129,8 @@ class RichText extends Field
             [
                 'field' => $this,
                 'configOptions' => $configOptions,
+                'volumeOptions' => $volumeOptions,
+                'transformOptions' => $transformOptions,
                 'columns' => $columns,
                 'existing' => !empty($this->id),
             ]);
@@ -129,30 +164,30 @@ class RichText extends Field
     public function getInputHtml($value, $element)
     {
         /** @var RichTextData|null $value */
-        $configJs = $this->_getConfigJs();
+        $configJs = $this->_getConfigJson();
         $this->_includeFieldResources($configJs);
 
         $view = Craft::$app->getView();
         $id = $view->formatInputId($this->handle);
         $localeId = ($element ? $element->locale : Craft::$app->language);
 
-        if (isset($this->model) && $this->model->translatable) {
-            $locale = craft()->i18n->getLocaleData($localeId);
-            $orientation = '"'.$locale->getOrientation().'"';
-        } else {
-            $orientation = 'Craft.orientation';
+        $settings = [
+            'id' => $view->namespaceInputId($id),
+            'linkOptions' => $this->_getLinkOptions(),
+            'volumes' => $this->_getVolumes(),
+            'transforms' => $this->_getTransforms(),
+            'elementLocale' => $localeId,
+            'redactorConfig' => Json::decode($configJs),
+            'redactorLang' => static::$_redactorLang,
+        ];
+
+        if ($this->translatable) {
+            // Explicitly set the text direction
+            $locale = Craft::$app->getI18n()->getLocaleById($localeId);
+            $settings['direction'] = $locale->getOrientation();
         }
 
-        $view->registerJs('new Craft.RichTextInput('.
-            '"'.$view->namespaceInputId($id).'", '.
-            Json::encode($this->_getSectionSources()).', '.
-            Json::encode($this->_getCategorySources()).', '.
-            Json::encode($this->_getAssetSources()).', '.
-            '"'.$localeId.'", '.
-            $orientation.', '.
-            $configJs.', '.
-            '"'.static::$_redactorLang.'"'.
-            ');');
+        $view->registerJs('new Craft.RichTextInput('.Json::encode($settings).');');
 
         if ($value instanceof RichTextData) {
             $value = $value->getRawContent();
@@ -252,7 +287,20 @@ class RichText extends Field
         $value = preg_replace_callback(
             '/(href=|src=)([\'"])[^\'"#]+?(#[^\'"#]+)?(?:#|%23)(\w+):(\d+)(:'.Handle::$handlePattern.')?\2/',
             function ($matches) {
-                return $matches[1].$matches[2].'{'.$matches[4].':'.$matches[5].(!empty($matches[6]) ? $matches[6] : ':url').'}'.(!empty($matches[3]) ? $matches[3] : '').$matches[2];
+                $refTag = '{'.$matches[4].':'.$matches[5].(!empty($matches[6]) ? $matches[6] : ':url').'}';
+                $hash = (!empty($matches[3]) ? $matches[3] : '');
+
+                if ($hash) {
+                    // Make sure that the hash isn't actually part of the parsed URL
+                    // (someone's Entry URL Format could be "#{slug}", etc.)
+                    $url = Craft::$app->getElements()->parseRefs($refTag);
+
+                    if (mb_strpos($url, $hash) !== false) {
+                        $hash = '';
+                    }
+                }
+
+                return $matches[1].$matches[2].$refTag.$hash.$matches[2];
             },
             $value);
 
@@ -284,6 +332,52 @@ class RichText extends Field
     // =========================================================================
 
     /**
+     * Returns the link options available to the field.
+     *
+     * Each link option is represented by an array with the following keys:
+     *
+     * - `optionTitle` (required) – the user-facing option title that appears in the Link dropdown menu
+     * - `elementType` (required) – the element type class that the option should be linking to
+     * - `sources` (optional) – the sources that the user should be able to select elements from
+     * - `criteria` (optional) – any specific element criteria parameters that should limit which elements the user can select
+     * - `storageKey` (optional) – the localStorage key that should be used to store the element selector modal state (defaults to RichTextFieldType.LinkTo[ElementType])
+     *
+     * @return array
+     */
+    private function _getLinkOptions()
+    {
+        $linkOptions = [];
+
+        $sectionSources = $this->_getSectionSources();
+        $categorySources = $this->_getCategorySources();
+
+        if ($sectionSources) {
+            $linkOptions[] = [
+                'optionTitle' => Craft::t('app', 'Link to an entry'),
+                'elementType' => 'Entry',
+                'sources' => $sectionSources,
+            ];
+        }
+
+        if ($categorySources) {
+            $linkOptions[] = [
+                'optionTitle' => Craft::t('app', 'Link to a category'),
+                'elementType' => 'Category',
+                'sources' => $categorySources,
+            ];
+        }
+
+        // Give plugins a chance to add their own
+        $allPluginLinkOptions = Craft::$app->getPlugins()->call('addRichTextLinkOptions', [], true);
+
+        foreach ($allPluginLinkOptions as $pluginLinkOptions) {
+            $linkOptions = array_merge($linkOptions, $pluginLinkOptions);
+        }
+
+        return $linkOptions;
+    }
+
+    /**
      * Returns the available section sources.
      *
      * @return array
@@ -297,8 +391,10 @@ class RichText extends Field
         foreach ($sections as $section) {
             if ($section->type == Section::TYPE_SINGLE) {
                 $showSingles = true;
-            } else if ($section->hasUrls) {
-                $sources[] = 'section:'.$section->id;
+            } else {
+                if ($section->hasUrls) {
+                    $sources[] = 'section:'.$section->id;
+                }
             }
         }
 
@@ -329,39 +425,75 @@ class RichText extends Field
     }
 
     /**
-     * Returns the available volume sources.
+     * Returns the available volumes.
      *
      * @return array
      */
-    private function _getAssetSources()
+    private function _getVolumes()
     {
-        $sources = [];
-        $volumeIds = Craft::$app->getVolumes()->getAllVolumeIds();
+        $volumes = [];
 
-        foreach ($volumeIds as $volumeId) {
-            $sources[] = 'volume:'.$volumeId;
+        $volumeIds = $this->availableVolumes;
+
+        if (!$volumeIds) {
+            // TODO: change to getPublicVolumeIds() when it exists
+            $volumeIds = Craft::$app->getVolumes()->getPublicVolumeIds();
         }
 
-        return $sources;
+        $folders = Craft::$app->getAssets()->findFolders([
+            'volumeId' => $volumeIds,
+            'parentId' => ':empty:'
+        ]);
+
+        foreach ($folders as $folder) {
+            $volumes[] = 'folder:'.$folder->id;
+        }
+
+        return $volumes;
     }
 
     /**
-     * Returns the Redactor config JS used by this field.
+     * Get available transforms.
+     *
+     * @return array
+     */
+    private function _getTransforms()
+    {
+        $transforms = Craft::$app->getAssetTransforms()->getAllTransforms('id');
+
+        $transformIds = array_flip(!empty($this->availableTransforms) && is_array($this->availableTransforms) ? $this->availableTransforms : []);
+        if (!empty($transformIds)) {
+            $transforms = array_intersect_key($transforms, $transformIds);
+        }
+
+        $transformList = [];
+        foreach ($transforms as $transform) {
+            $transformList[] = (object)[
+                'handle' => Html::encode($transform->handle),
+                'name' => Html::encode($transform->name)
+            ];
+        }
+
+        return $transformList;
+    }
+
+    /**
+     * Returns the Redactor config JSON used by this field.
      *
      * @return string
      */
-    private function _getConfigJs()
+    private function _getConfigJson()
     {
         if ($this->configFile) {
             $configPath = Craft::$app->getPath()->getConfigPath().'/redactor/'.$this->configFile;
-            $js = Io::getFileContents($configPath);
+            $json = Json::removeComments(Io::getFileContents($configPath));
         }
 
-        if (empty($js)) {
-            $js = '{}';
+        if (empty($json)) {
+            $json = '{}';
         }
 
-        return $js;
+        return $json;
     }
 
     /**

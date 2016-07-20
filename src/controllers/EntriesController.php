@@ -416,6 +416,7 @@ class EntriesController extends BaseEntriesController
         $this->requirePostRequest();
 
         $entry = $this->_getEntryModel();
+        $request = Craft::$app->getRequest();
 
         // Permission enforcement
         $this->enforceEditEntryPermissions($entry);
@@ -448,20 +449,19 @@ class EntriesController extends BaseEntriesController
 
         // Save the entry (finally!)
         if (Craft::$app->getEntries()->saveEntry($entry)) {
-            if (Craft::$app->getRequest()->getIsAjax()) {
+            if ($request->getIsAjax()) {
                 $return['success'] = true;
                 $return['id'] = $entry->id;
                 $return['title'] = $entry->title;
-                $return['cpEditUrl'] = $entry->getCpEditUrl();
 
-                $author = $entry->getAuthor()->getAttributes();
-
-                if (isset($author['password'])) {
-                    unset($author['password']);
+                if (!$request->getIsConsoleRequest() && $request->getIsCpRequest()) {
+                    $return['cpEditUrl'] = $entry->getCpEditUrl();
                 }
 
-                $return['author'] = $author;
-                $return['postDate'] = ($entry->postDate ? $entry->postDate->localeDate() : null);
+                $return['authorUsername'] = $entry->getAuthor()->username;
+                $return['dateCreated'] = DateTimeHelper::toIso8601($entry->dateCreated);
+                $return['dateUpdated'] = DateTimeHelper::toIso8601($entry->dateUpdated);
+                $return['postDate'] = ($entry->postDate ? DateTimeHelper::toIso8601($entry->postDate) : null);
 
                 return $this->asJson($return);
             } else {
@@ -470,7 +470,7 @@ class EntriesController extends BaseEntriesController
                 return $this->redirectToPostedUrl($entry);
             }
         } else {
-            if (Craft::$app->getRequest()->getIsAjax()) {
+            if ($request->getIsAjax()) {
                 return $this->asJson([
                     'errors' => $entry->getErrors(),
                 ]);
@@ -725,6 +725,14 @@ class EntriesController extends BaseEntriesController
                             $variables['entry']->localeEnabled = $locale->enabledByDefault;
                             break;
                         }
+                    }
+                } else {
+                    // Set the default entry status based on the section's settings
+                    foreach ($variables['section']->getLocales() as $locale) {
+                        if (!$locale->enabledByDefault) {
+                            $variables['entry']->enabled = false;
+                        }
+                        break;
                     }
                 }
             }

@@ -87,7 +87,7 @@ class RenameFile extends ElementAction
 							if (choice != 'cancel')
 							{
 								data.action = choice;
-								Craft.postActionRequest('assets/move-file', data, handleRename);
+								Craft.postActionRequest('assets/move-asset', data, handleRename);
 							}
 						});
 					}
@@ -107,7 +107,7 @@ class RenameFile extends ElementAction
 				}
 			};
 
-			Craft.postActionRequest('assets/move-file', data, handleRename);
+			Craft.postActionRequest('assets/move-asset', data, handleRename);
 		}
 	});
 })();

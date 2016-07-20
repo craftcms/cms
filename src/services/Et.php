@@ -300,6 +300,9 @@ class Et extends Component
                         case 'unknown_error':
                             $error = Craft::t('app', 'An unknown error occurred.');
                             break;
+                        case 'invalid_coupon_code':
+                            $error = Craft::t('app', 'Invalid coupon code.');
+                            break;
 
                         // Stripe errors
                         case 'incorrect_number':

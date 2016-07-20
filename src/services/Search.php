@@ -114,6 +114,7 @@ class Search extends Component
             $options = $query;
             $query = $options['query'];
             unset($options['query']);
+            $options = array_merge(Craft::$app->getConfig()->get('defaultSearchTermOptions'), $options);
             $query = new SearchQuery($query, $options);
         }
 

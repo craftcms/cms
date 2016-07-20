@@ -9,6 +9,7 @@ namespace craft\app\services;
 
 use Craft;
 use craft\app\base\Element;
+use craft\app\dates\DateTime;
 use craft\app\db\Query;
 use craft\app\base\ElementActionInterface;
 use craft\app\elements\Asset;
@@ -23,7 +24,9 @@ use craft\app\errors\ElementNotFoundException;
 use craft\app\events\DeleteElementsEvent;
 use craft\app\events\ElementEvent;
 use craft\app\events\MergeElementsEvent;
+use craft\app\helpers\ArrayHelper;
 use craft\app\helpers\Component as ComponentHelper;
+use craft\app\helpers\DateTimeHelper;
 use craft\app\helpers\Element as ElementHelper;
 use craft\app\helpers\StringHelper;
 use craft\app\records\Element as ElementRecord;
@@ -322,6 +325,25 @@ class Elements extends Component
             }
         }
 
+        // Get the element record
+        if (!$isNewElement) {
+            $elementRecord = ElementRecord::findOne([
+                'id' => $element->id,
+                'type' => $element::className()
+            ]);
+
+            if (!$elementRecord) {
+                throw new ElementNotFoundException("No element exists with the ID '{$element->id}'");
+            }
+        } else {
+            $elementRecord = new ElementRecord();
+            $elementRecord->type = $element::className();
+        }
+
+        // Set the attributes
+        $elementRecord->enabled = (bool)$element->enabled;
+        $elementRecord->archived = (bool)$element->archived;
+
         $transaction = Craft::$app->getDb()->beginTransaction();
 
         try {
@@ -334,29 +356,14 @@ class Elements extends Component
 
             // Is the event giving us the go-ahead?
             if ($event->isValid) {
-                // Get the element record
-                if (!$isNewElement) {
-                    $elementRecord = ElementRecord::findOne([
-                        'id' => $element->id,
-                        'type' => $element::className()
-                    ]);
-
-                    if (!$elementRecord) {
-                        throw new ElementNotFoundException("No element exists with the ID '{$element->id}'");
-                    }
-                } else {
-                    $elementRecord = new ElementRecord();
-                    $elementRecord->type = $element::className();
-                }
-
-                // Set the attributes
-                $elementRecord->enabled = (bool)$element->enabled;
-                $elementRecord->archived = (bool)$element->archived;
-
                 // Save the element record
                 $success = $elementRecord->save(false);
 
                 if ($success) {
+                    // Save the new dateCreated and dateUpdated dates on the model
+                    $element->dateCreated = DateTimeHelper::toDateTime($elementRecord->dateCreated);
+                    $element->dateUpdated = DateTimeHelper::toDateTime($elementRecord->dateUpdated);
+
                     if ($isNewElement) {
                         // Save the element ID on the element model, in case {id} is in the URL format
                         $element->id = $elementRecord->id;
@@ -984,7 +991,14 @@ class Elements extends Component
                 function ($matches) {
                     global $refTagsByElementHandle;
 
-                    $elementTypeHandle = ucfirst($matches[1]);
+                    if (strpos($matches[1], '_') === false) {
+                        $elementTypeHandle = ucfirst($matches[1]);
+                    } else {
+                        $elementTypeHandle = preg_replace_callback('/^\w|_\w/', function ($matches) {
+                            return strtoupper($matches[0]);
+                        }, $matches[1]);
+                    }
+
                     $token = '{'.StringHelper::randomString(9).'}';
 
                     $refTagsByElementHandle[$elementTypeHandle][] = [
@@ -1112,6 +1126,152 @@ class Elements extends Component
             return $this->_placeholderElements[$id][$locale];
         } else {
             return null;
+        }
+    }
+
+    /**
+     * Eager-loads additional elements onto a given set of elements.
+     *
+     * @param ElementInterface|string $elementType The root element type
+     * @param ElementInterface[]      $elements    The root element models that should be updated with the eager-loaded elements
+     * @param string|array            $with        Dot-delimited paths of the elements that should be eager-loaded into the root elements
+     *
+     * @return void
+     */
+    public function eagerLoadElements($elementType, $elements, $with)
+    {
+        // Bail if there aren't even any elements
+        if (!$elements) {
+            return;
+        }
+
+        // Normalize the paths and find any custom path criterias
+        $with = ArrayHelper::toArray($with);
+        $paths = [];
+        $pathCriterias = [];
+
+        foreach ($with as $path) {
+            // Using the array syntax?
+            // ['foo.bar'] or ['foo.bar', criteria]
+            if (is_array($path)) {
+                if (!empty($path[1])) {
+                    $pathCriterias['__root__.'.$path[0]] = $path[1];
+                }
+
+                $paths[] = $path[0];
+            } else {
+                $paths[] = $path;
+            }
+        }
+
+        // Load 'em up!
+        $elementsByPath = ['__root__' => $elements];
+        $elementTypesByPath = ['__root__' => $elementType::className()];
+
+        foreach ($paths as $path) {
+            $pathSegments = explode('.', $path);
+            $sourcePath = '__root__';
+
+            foreach ($pathSegments as $segment) {
+                $targetPath = $sourcePath.'.'.$segment;
+
+                // Figure out the path mapping wants a custom order
+                $useCustomOrder = !empty($pathCriterias[$targetPath]['order']);
+
+                // Make sure we haven't already eager-loaded this target path
+                if (!isset($elementsByPath[$targetPath])) {
+                    // Guilty until proven innocent
+                    $elementsByPath[$targetPath] = $targetElements = $targetElementsById = $targetElementIdsBySourceIds = false;
+
+                    // Get the eager-loading map from the source element type
+                    /** @var Element $sourceElementType */
+                    $sourceElementType = $elementTypesByPath[$sourcePath];
+                    $map = $sourceElementType::getEagerLoadingMap($elementsByPath[$sourcePath], $segment);
+
+                    if ($map && !empty($map['map'])) {
+                        // Remember the element type in case there are more segments after this
+                        $elementTypesByPath[$targetPath] = $map['elementType'];
+
+                        // Loop through the map to find:
+                        // - unique target element IDs
+                        // - target element IDs indexed by source element IDs
+                        $uniqueTargetElementIds = [];
+                        $targetElementIdsBySourceIds = [];
+
+                        foreach ($map['map'] as $mapping) {
+                            if (!in_array($mapping['target'], $uniqueTargetElementIds)) {
+                                $uniqueTargetElementIds[] = $mapping['target'];
+                            }
+
+                            $targetElementIdsBySourceIds[$mapping['source']][] = $mapping['target'];
+                        }
+
+                        // Get the target elements
+                        $customParams = array_merge(
+                        // Default to no order and limit, but allow the element type/path criteria to override
+                            ['orderBy' => null, 'limit' => null],
+                            (isset($map['criteria']) ? $map['criteria'] : []),
+                            (isset($pathCriterias[$targetPath]) ? $pathCriterias[$targetPath] : [])
+                        );
+                        /** @var Element $targetElementType */
+                        $targetElementType = $map['elementType'];
+                        $query = $targetElementType::find()
+                            ->configure($customParams);
+                        $query->id = $uniqueTargetElementIds;
+                        /** @var Element[] $targetElements */
+                        $targetElements = $query->all();
+
+                        if ($targetElements) {
+                            // Success! Store those elements on $elementsByPath FFR
+                            $elementsByPath[$targetPath] = $targetElements;
+
+                            // Index the target elements by their IDs if we are using the map-defined order
+                            if (!$useCustomOrder) {
+                                $targetElementsById = [];
+
+                                foreach ($targetElements as $targetElement) {
+                                    $targetElementsById[$targetElement->id] = $targetElement;
+                                }
+                            }
+                        }
+                    }
+
+                    // Tell the source elements about their eager-loaded elements (or lack thereof, as the case may be)
+                    foreach ($elementsByPath[$sourcePath] as $sourceElement) {
+                        /** @var Element $sourceElement */
+                        $sourceElementId = $sourceElement->id;
+                        $targetElementsForSource = [];
+
+                        if (isset($targetElementIdsBySourceIds[$sourceElementId])) {
+                            if ($useCustomOrder) {
+                                // Assign the elements in the order they were returned from the query
+                                foreach ($targetElements as $targetElement) {
+                                    if (in_array($targetElement->id, $targetElementIdsBySourceIds[$sourceElementId])) {
+                                        $targetElementsForSource[] = $targetElement;
+                                    }
+                                }
+                            } else {
+                                // Assign the elements in the order defined by the map
+                                foreach ($targetElementIdsBySourceIds[$sourceElementId] as $targetElementId) {
+                                    if (isset($targetElementsById[$targetElementId])) {
+                                        $targetElementsForSource[] = $targetElementsById[$targetElementId];
+                                    }
+                                }
+                            }
+                        }
+
+                        $sourceElement->setEagerLoadedElements($segment, $targetElementsForSource);
+                    }
+                }
+
+                if (!$elementsByPath[$targetPath]) {
+                    // Dead end - stop wasting time on this path
+                    break;
+                }
+
+                // Update the source path
+                $sourcePath = $targetPath;
+            }
         }
     }
 }

@@ -54,8 +54,8 @@ class AssetIndexData extends ActiveRecord
             [
                 ['size'],
                 'number',
-                'min' => -2147483648,
-                'max' => 2147483647,
+                'min' => 0,
+                'max' => 18446744073709551615,
                 'integerOnly' => true
             ],
             [['timestamp'], 'craft\\app\\validators\\DateTime'],

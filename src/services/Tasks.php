@@ -178,7 +178,9 @@ class Tasks extends Component
         // Make sure nothing has been output to the browser yet
         if (!headers_sent()) {
             // Close the client connection
-            Craft::$app->getResponse()->sendAndClose();
+            $response = Craft::$app->getResponse();
+            $response->content = '1';
+            $response->sendAndClose();
 
             // Run any pending tasks
             $this->runPendingTasks();
@@ -595,26 +597,32 @@ class Tasks extends Component
      */
     public function handleResponse()
     {
-        Craft::$app->getResponse()->off(Response::EVENT_AFTER_PREPARE,
-            [$this, 'handleResponse']);
+        $request = Craft::$app->getRequest();
+        $response = Craft::$app->getResponse();
+
+        $response->off(Response::EVENT_AFTER_PREPARE, [
+            $this,
+            'handleResponse'
+        ]);
 
         // Ignore if tasks are already running
         if ($this->isTaskRunning()) {
             return;
         }
 
-        $response = Craft::$app->getResponse();
-
         // Make sure nothing has been output to the browser yet, and there's no pending response body
         if (!headers_sent() && !ob_get_length() && $response->content === null) {
             $this->closeAndRun();
         }
-        // Is this a site request and are we responding with HTML or XHTML?
+        // Is this a non-AJAX site request and are we responding with HTML or XHTML?
         // (CP requests don't need to be told to run pending tasks)
         else if (
-            Craft::$app->getRequest()->getIsSiteRequest() &&
-            in_array(Header::getMimeType(),
-                ['text/html', 'application/xhtml+xml'])
+            $request->getIsSiteRequest() &&
+            !$request->getIsAjax() &&
+            in_array(Header::getMimeType(), [
+                'text/html',
+                'application/xhtml+xml'
+            ])
         ) {
             // Just output JS that tells the browser to fire an Ajax request to kick off task running
             $url = Json::encode(Url::getActionUrl('tasks/run-pending-tasks'));

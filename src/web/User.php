@@ -13,6 +13,7 @@ use craft\app\helpers\DateTimeHelper;
 use craft\app\elements\User as UserElement;
 use craft\app\helpers\Db;
 use craft\app\helpers\Url;
+use craft\app\models\Password;
 use yii\web\Cookie;
 use yii\web\IdentityInterface;
 
@@ -38,6 +39,11 @@ class User extends \yii\web\User
      * @see Cookie
      */
     public $usernameCookie;
+
+    /**
+     * @var string The session variable name used to store the value of the expiration timestamp of the elevated session state.
+     */
+    public $elevatedSessionTimeoutParam = '__elevated_timeout';
 
     // Public Methods
     // =========================================================================
@@ -213,6 +219,73 @@ class User extends \yii\web\User
         return ($user && $user->can($permissionName));
     }
 
+    /**
+     * Returns how many seconds are left in the current elevated user session.
+     *
+     * @return integer The number of seconds left in the current elevated user session
+     */
+    public function getElevatedSessionTimeout()
+    {
+        // Are they logged in?
+        if (!$this->getIsGuest()) {
+            $session = Craft::$app->getSession();
+            $expires = $session->get($this->elevatedSessionTimeoutParam);
+
+            if ($expires !== null) {
+                $currentTime = time();
+
+                if ($expires > $currentTime) {
+                    return $expires - $currentTime;
+                }
+            }
+        }
+
+        return 0;
+    }
+
+    /**
+     * Returns whether the user current has an elevated session.
+     *
+     * @return boolean Whether the user has an elevated session
+     */
+    public function hasElevatedSession()
+    {
+        return ($this->getElevatedSessionTimeout() != 0);
+    }
+
+    /**
+     * Starts an elevated user session for the current user.
+     *
+     * @param string $password the current user’s password
+     *
+     * @return boolean Whether the password was valid, and the user session has been elevated
+     */
+    public function startElevatedSession($password)
+    {
+        // Get the current user
+        $user = $this->getIdentity();
+
+        if (!$user) {
+            return false;
+        }
+
+        // Validate the password
+        $passwordModel = new Password();
+        $passwordModel->password = $password;
+
+        if ($passwordModel->validate() && Craft::$app->getSecurity()->validatePassword($password, $user->password)) {
+            // Set the elevated session expiration date
+            $session = Craft::$app->getSession();
+            $configService = Craft::$app->getConfig();
+            $timeout = time() + $configService->getElevatedSessionDuration();
+            $session->set($this->elevatedSessionTimeoutParam, $timeout);
+
+            return true;
+        }
+
+        return false;
+    }
+
     // Misc
     // -------------------------------------------------------------------------
 
@@ -275,6 +348,10 @@ class User extends \yii\web\User
 
         // Save the Debug preferences to the session
         $this->saveDebugPreferencesToSession();
+
+        // Clear out the elevated session, if there is one
+        $session = Craft::$app->getSession();
+        $session->remove($this->elevatedSessionTimeoutParam);
 
         parent::afterLogin($identity, $cookieBased, $duration);
     }

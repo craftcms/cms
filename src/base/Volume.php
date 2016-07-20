@@ -135,7 +135,12 @@ abstract class Volume extends SavableComponent implements VolumeInterface
             'safe',
             'on' => 'search'
         ];
-        $rules[] = [['name', 'handle', 'url'], 'required'];
+        $rules[] = [['name', 'handle'], 'required'];
+
+        // Require URLs for public Volumes.
+        if ($this->hasUrls) {
+            $rules[] = [['url'], 'required'];
+        }
 
         return $rules;
     }
@@ -157,7 +162,7 @@ abstract class Volume extends SavableComponent implements VolumeInterface
     public function createFileByStream($path, $stream, $config = [])
     {
         $config = array_merge($config,
-            ['visibility' => AdapterInterface::VISIBILITY_PUBLIC]);
+            ['visibility' => $this->getVisibilitySetting()]);
         try {
             return $this->getFilesystem()->writeStream($path, $stream, $config);
         } catch (FileExistsException $exception) {
@@ -168,9 +173,15 @@ abstract class Volume extends SavableComponent implements VolumeInterface
     /**
      * @inheritdoc
      */
-    public function updateFileByStream($path, $stream)
+    public function updateFileByStream($path, $stream, $config = [])
     {
-        return $this->getFilesystem()->updateStream($path, $stream);
+        $config = array_merge($config,
+            ['visibility' => $this->getVisibilitySetting()]);
+        try {
+            return $this->getFilesystem()->updateStream($path, $stream, $config);
+        } catch (FileNotFoundException $exception) {
+            throw new VolumeObjectNotFoundException($exception->getMessage());
+        }
     }
 
     /**
@@ -349,5 +360,15 @@ abstract class Volume extends SavableComponent implements VolumeInterface
         }
 
         return $this->_filesystem;
+    }
+
+    /**
+     * Returns the visibility setting for the Volume.
+     *
+     * @return string
+     */
+    protected function getVisibilitySetting()
+    {
+        return $this->hasUrls ? AdapterInterface::VISIBILITY_PUBLIC : AdapterInterface::VISIBILITY_PRIVATE;
     }
 }

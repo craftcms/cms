@@ -7,6 +7,7 @@ use craft\app\errors\ImageException;
 use craft\app\helpers\Image as ImageHelper;
 use craft\app\helpers\Io;
 use craft\app\helpers\StringHelper;
+use yii\helpers\FileHelper;
 
 /**
  * Raster class is used for raster image manipulations.
@@ -140,7 +141,12 @@ class Raster extends Image
                 'Not enough memory available to perform this image operation.'));
         }
 
-        $extension = Io::getExtension($path);
+        // Make sure the image says it's an image
+        $mimeType = FileHelper::getMimeType($path, null, false);
+
+        if ($mimeType !== null && strncmp($mimeType, 'image/', 6) !== 0) {
+            throw new ImageException(Craft::t('app', 'The file “{path}” does not appear to be an image.', ['path' => $path]));
+        }
 
         try {
             $this->_image = $this->_instance->open($path);
@@ -150,8 +156,20 @@ class Raster extends Image
                 ['path' => $path]));
         }
 
-        $this->_extension = $extension;
+        // For Imagick, convert CMYK to RGB, save and re-open.
+        if (!Craft::$app->getImages()->isGd()
+            && method_exists($this->_image->getImagick(), 'getImageColorspace')
+            && $this->_image->getImagick()->getImageColorspace() == \Imagick::COLORSPACE_CMYK
+            && method_exists($this->_image->getImagick(), 'transformImageColorspace')
+        ) {
+            $this->_image->getImagick()->transformImageColorspace(\Imagick::COLORSPACE_SRGB);
+            $this->_image->save();
+
+            return Craft::$app->getImages()->loadImage($path);
+        }
+
         $this->_imageSourcePath = $path;
+        $this->_extension = Io::getExtension($path);
 
         if ($this->_extension == 'gif') {
             if (!$imageService->isGd() && $this->_image->layers()) {
@@ -639,12 +657,6 @@ class Raster extends Image
 
             case 'gif': {
                 $options = ['animated' => $this->_isAnimatedGif];
-
-                if ($this->_isAnimatedGif) {
-                    // Imagine library does not provide this value and arbitrarily divides it by 10, when assigning,
-                    // so we have to improvise a little
-                    $options['animated.delay'] = $this->_image->getImagick()->getImageDelay() * 10;
-                }
 
                 return $options;
             }

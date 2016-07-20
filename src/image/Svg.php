@@ -28,6 +28,8 @@ class Svg extends Image
     const SVG_VIEWBOX_RE = '/(<svg[^>]*\sviewBox=")(\d+(?:,|\s)\d+(?:,|\s)(\d+)(?:,|\s)(\d+))"/si';
     const SVG_ASPECT_RE = '/(<svg[^>]*\spreserveAspectRatio=")([a-z]+\s[a-z]+)"/si';
     const SVG_TAG_RE = '/<svg/si';
+    const SVG_CLEANUP_WIDTH_RE = '/(<svg[^>]*\s)width="[\d\.]+%"/si';
+    const SVG_CLEANUP_HEIGHT_RE = '/(<svg[^>]*\s)height="[\d\.]+%"/si';
 
     // Properties
     // =========================================================================
@@ -245,18 +247,17 @@ class Svg extends Image
     {
         $this->normalizeDimensions($targetWidth, $targetHeight);
 
-        if (preg_match(static::SVG_WIDTH_RE,
-                $this->_svgContent) && preg_match(static::SVG_HEIGHT_RE,
-                $this->_svgContent)
+        if (preg_match(static::SVG_WIDTH_RE, $this->_svgContent) && preg_match(static::SVG_HEIGHT_RE, $this->_svgContent)
         ) {
-            $this->_svgContent = preg_replace(static::SVG_WIDTH_RE,
-                "\${1}{$targetWidth}px\"", $this->_svgContent);
-            $this->_svgContent = preg_replace(static::SVG_HEIGHT_RE,
-                "\${1}{$targetHeight}px\"", $this->_svgContent);
+            $this->_svgContent = preg_replace(static::SVG_WIDTH_RE, "\${1}{$targetWidth}px\"", $this->_svgContent);
+            $this->_svgContent = preg_replace(static::SVG_HEIGHT_RE, "\${1}{$targetHeight}px\"", $this->_svgContent);
         } else {
-            $this->_svgContent = preg_replace(static::SVG_TAG_RE,
-                "<svg width=\"{$targetWidth}px\" height=\"{$targetHeight}px\"",
-                $this->_svgContent);
+            // In case the root element has dimension attributes set with percentage,
+            // weed them out so we don't duplicate them.
+            $this->_svgContent = preg_replace(static::SVG_CLEANUP_WIDTH_RE, "\${1}", $this->_svgContent);
+            $this->_svgContent = preg_replace(static::SVG_CLEANUP_HEIGHT_RE, "\${1}", $this->_svgContent);
+
+            $this->_svgContent = preg_replace(static::SVG_TAG_RE, "<svg width=\"{$targetWidth}px\" height=\"{$targetHeight}px\"", $this->_svgContent);
         }
 
         $this->_width = $targetWidth;

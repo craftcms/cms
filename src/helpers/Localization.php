@@ -70,6 +70,7 @@ class Localization
         $translationFiles = [];
         $parts = explode('_', $event->language);
         $totalParts = count($parts);
+        $loadedAlready = false;
 
         for ($i = 1; $i <= $totalParts; $i++) {
             $translationFiles[] = implode('_', array_slice($parts, 0, $i));
@@ -79,15 +80,27 @@ class Localization
 
         // First see if we have any cached info.
         foreach ($translationFiles as $translationFile) {
+            $loadedAlready = false;
+
             // We've loaded the translation file already, just check for the translation.
             if (isset(static::$_translations[$translationFile])) {
+                $loadedAlready = true;
+
                 if (isset(static::$_translations[$translationFile][$event->message])) {
+                    // Found a match... grab it and go.
                     $event->message = static::$_translations[$translationFile][$event->message];
+
+                    return;
                 }
 
                 // No translation... just give up.
                 return;
             }
+        }
+
+        // We've checked through an already loaded message file and there was no match. Just give up.
+        if ($loadedAlready) {
+            return;
         }
 
         // No luck in cache, check the file system.
@@ -105,6 +118,8 @@ class Localization
 
                     return;
                 }
+            } else {
+                static::$_translations[$translationFile] = [];
             }
         }
     }

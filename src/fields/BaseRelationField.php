@@ -8,10 +8,12 @@
 namespace craft\app\fields;
 
 use Craft;
+use craft\app\base\EagerLoadingFieldInterface;
 use craft\app\base\ElementInterface;
 use craft\app\base\Field;
 use craft\app\base\Element;
 use craft\app\base\PreviewableFieldInterface;
+use craft\app\db\Query;
 use craft\app\elements\db\ElementQuery;
 use craft\app\elements\db\ElementQueryInterface;
 use craft\app\helpers\StringHelper;
@@ -23,7 +25,7 @@ use craft\app\tasks\LocalizeRelations;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
-abstract class BaseRelationField extends Field implements PreviewableFieldInterface
+abstract class BaseRelationField extends Field implements PreviewableFieldInterface, EagerLoadingFieldInterface
 {
     // Static
     // =========================================================================
@@ -279,10 +281,11 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
         if ($value == ':notempty:' || $value == ':empty:') {
             $alias = 'relations_'.$this->handle;
             $operator = ($value == ':notempty:' ? '!=' : '=');
+            $paramHandle = ':fieldId'.StringHelper::randomString(8);
 
             $query->subQuery->andWhere(
-                "(select count({$alias}.id) from {{relations}} {$alias} where {$alias}.sourceId = elements.id and {$alias}.fieldId = :fieldId) {$operator} 0",
-                [':fieldId' => $this->id]
+                "(select count({$alias}.id) from {{relations}} {$alias} where {$alias}.sourceId = elements.id and {$alias}.fieldId = {$paramHandle}) {$operator} 0",
+                [$paramHandle => $this->id]
             );
         } else if ($value !== null) {
             return false;
@@ -362,16 +365,51 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
      */
     public function getTableAttributeHtml($value, $element)
     {
-        /** @var ElementQuery $value */
-        $element = $value->one();
+        if ($value instanceof ElementQueryInterface) {
+            $element = $value->first();
+        } else {
+            $element = isset($value[0]) ? $value[0] : null;
+        }
 
         if ($element) {
             return Craft::$app->getView()->renderTemplate('_elements/element', [
-                'element' => $element,
+                'element' => $element
             ]);
         }
 
         return null;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getEagerLoadingMap($sourceElements)
+    {
+        // Get the source element IDs
+        $sourceElementIds = [];
+
+        foreach ($sourceElements as $sourceElement) {
+            $sourceElementIds[] = $sourceElement->id;
+        }
+
+        // Return any relation data on these elements, defined with this field
+        $map = (new Query())
+            ->select('sourceId as source, targetId as target')
+            ->from('{{%relations}}')
+            ->where(
+                [
+                    'and',
+                    'fieldId=:fieldId',
+                    ['in', 'sourceId', $sourceElementIds]
+                ],
+                [':fieldId' => $this->id])
+            ->orderBy('sortOrder')
+            ->all();
+
+        return [
+            'elementType' => static::elementType(),
+            'map' => $map
+        ];
     }
 
     // Protected Methods

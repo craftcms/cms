@@ -25,4 +25,5 @@ abstract class ConfigCategory extends BaseEnum
     const Db = 'db';
     const DbCache = 'dbcache';
     const Memcache = 'memcache';
+    const ApcCache = 'apc';
 }

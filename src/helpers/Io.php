@@ -104,7 +104,7 @@ class Io
      */
     public static function getFile($path, $suppressErrors = false)
     {
-        if (static::fileExists($path, $suppressErrors)) {
+        if (static::fileExists($path, false, $suppressErrors)) {
             return new File($path);
         }
 
@@ -121,7 +121,7 @@ class Io
      */
     public static function getFolder($path, $suppressErrors = false)
     {
-        if (static::folderExists($path, $suppressErrors)) {
+        if (static::folderExists($path, false, $suppressErrors)) {
             return new Folder($path);
         }
 
@@ -140,7 +140,7 @@ class Io
     {
         $path = static::normalizePathSeparators($path, $suppressErrors);
 
-        if (static::folderExists($path, $suppressErrors)) {
+        if (static::folderExists($path, false, $suppressErrors)) {
             $folders = $suppressErrors ? @glob($path.'*', GLOB_ONLYDIR) : glob($path.'*', GLOB_ONLYDIR);
 
             if ($folders) {
@@ -167,7 +167,7 @@ class Io
     {
         $path = static::normalizePathSeparators($path, $suppressErrors);
 
-        if (static::folderExists($path, $suppressErrors)) {
+        if (static::folderExists($path, false, $suppressErrors)) {
             return $suppressErrors ? @glob($path.'*.*') : glob($path.'*');
         }
 
@@ -230,14 +230,12 @@ class Io
     {
         $path = static::normalizePathSeparators($path);
 
-        if (static::folderExists($path, $suppressErrors)) {
-            $path = rtrim(str_replace('\\', '/', $path), '/').'/';
-
+        if (static::folderExists($path, false, $suppressErrors)) {
             return static::isWritable($path.uniqid(mt_rand()).'.tmp', $suppressErrors);
         }
 
         // Check tmp file for read/write capabilities
-        $rm = static::fileExists($path, $suppressErrors);
+        $rm = static::fileExists($path, false, $suppressErrors);
         $f = @fopen($path, 'a');
 
         if ($f === false) {
@@ -366,9 +364,7 @@ class Io
     {
         $path = static::normalizePathSeparators($path);
 
-        if (static::fileExists($path,
-                $suppressErrors) || static::folderExists($path, $suppressErrors)
-        ) {
+        if (static::fileExists($path, false, $suppressErrors) || static::folderExists($path, false, $suppressErrors)) {
             $timeStamp = $suppressErrors ? @filemtime($path) : filemtime($path);
 
             return new DateTime('@'.$timeStamp);
@@ -391,7 +387,7 @@ class Io
 
         $path = static::normalizePathSeparators($path);
 
-        if (static::fileExists($path, $suppressErrors)) {
+        if (static::fileExists($path, false, $suppressErrors)) {
             return sprintf("%u", $suppressErrors ? @filesize($path) : filesize($path));
         }
 
@@ -410,7 +406,7 @@ class Io
     {
         $path = static::normalizePathSeparators($path);
 
-        if (static::folderExists($path, $suppressErrors)) {
+        if (static::folderExists($path, false, $suppressErrors)) {
             return sprintf("%u", static::_folderSize($path, $suppressErrors));
         }
 
@@ -427,11 +423,17 @@ class Io
      */
     public static function normalizePathSeparators($path)
     {
-        // Don't normalize if it looks like the path starts on a network share.
+        // Special case for normalizing UNC network share paths.
         if (isset($path[0]) && isset($path[1])) {
-            if ($path[0] !== '\\' && $path[1] !== '\\') {
+            if (($path[0] == '\\' && $path[1] == '\\') || ($path[0] == '/' && $path[1] == '/')) {
+                $path = mb_substr($path, 2);
                 $path = str_replace('\\', '/', $path);
+
+                // Add the share back in
+                $path = '\\\\'.$path;
             }
+        } else {
+            $path = str_replace('\\', '/', $path);
         }
 
         $path = str_replace('//', '/', $path);
@@ -461,10 +463,7 @@ class Io
     {
         $path = static::normalizePathSeparators($path);
 
-        if ((static::fileExists($path,
-                $suppressErrors) && static::getFileSize($path,
-                $suppressErrors) == 0)
-        ) {
+        if ((static::fileExists($path, false, $suppressErrors) && static::getFileSize($path, $suppressErrors) == 0)) {
             return true;
         }
 
@@ -484,10 +483,7 @@ class Io
     {
         $path = static::normalizePathSeparators($path);
 
-        if ((static::folderExists($path,
-                $suppressErrors) && static::getFolderSize($path,
-                $suppressErrors) == 0)
-        ) {
+        if ((static::folderExists($path, false, $suppressErrors) && static::getFolderSize($path, $suppressErrors) == 0)) {
             return true;
         }
 
@@ -507,9 +503,7 @@ class Io
     {
         $path = static::normalizePathSeparators($path);
 
-        if (static::fileExists($path,
-                $suppressErrors) || static::folderExists($path, $suppressErrors)
-        ) {
+        if (static::fileExists($path, false, $suppressErrors) || static::folderExists($path, false, $suppressErrors)) {
             $owner = $suppressErrors ? @fileowner($path) : fileowner($path);
         } else {
             $owner = false;
@@ -537,9 +531,7 @@ class Io
     {
         $path = static::normalizePathSeparators($path);
 
-        if (static::fileExists($path,
-                $suppressErrors) || static::folderExists($path, $suppressErrors)
-        ) {
+        if (static::fileExists($path, false, $suppressErrors) || static::folderExists($path, false, $suppressErrors)) {
             $group = $suppressErrors ? @filegroup($path) : filegroup($path);
         } else {
             $group = false;
@@ -566,9 +558,7 @@ class Io
     {
         $path = static::normalizePathSeparators($path);
 
-        if (static::fileExists($path,
-                $suppressErrors) || static::folderExists($path, $suppressErrors)
-        ) {
+        if (static::fileExists($path, false, $suppressErrors) || static::folderExists($path, false, $suppressErrors)) {
             return mb_substr(sprintf('%o', $suppressErrors ? @fileperms($path) : fileperms($path)), -4);
         }
 
@@ -592,12 +582,8 @@ class Io
     {
         $path = static::normalizePathSeparators($path);
 
-        if (static::folderExists($path,
-                $suppressErrors) && static::isReadable($path, $suppressErrors)
-        ) {
-            if (($contents = static::_folderContents($path, $recursive, $filter,
-                    $includeHiddenFiles, $suppressErrors)) !== false
-            ) {
+        if (static::folderExists($path, false, $suppressErrors) && static::isReadable($path, $suppressErrors)) {
+            if (($contents = static::_folderContents($path, $recursive, $filter, $includeHiddenFiles, $suppressErrors)) !== false) {
                 return $contents;
             }
 
@@ -623,9 +609,7 @@ class Io
     {
         $path = static::normalizePathSeparators($path);
 
-        if (static::fileExists($path,
-                $suppressErrors) && static::isReadable($path, $suppressErrors)
-        ) {
+        if (static::fileExists($path, false, $suppressErrors) && static::isReadable($path, $suppressErrors)) {
             if ($array) {
                 if (($contents = $suppressErrors ? @file($path) : file($path)) !== false) {
                     return $contents;
@@ -659,10 +643,8 @@ class Io
     {
         $path = static::normalizePathSeparators($path);
 
-        if (!static::fileExists($path, $suppressErrors)) {
-            if (($handle = $suppressErrors ? @fopen($path, 'w') : fopen($path,
-                    'w')) === false
-            ) {
+        if (!static::fileExists($path, false, $suppressErrors)) {
+            if (($handle = $suppressErrors ? @fopen($path, 'w') : fopen($path, 'w')) === false) {
                 Craft::error('Tried to create a file at '.$path.', but could not.', __METHOD__);
 
                 return false;
@@ -695,7 +677,7 @@ class Io
 
         $path = static::normalizePathSeparators($path);
 
-        if (!static::folderExists($path, $suppressErrors)) {
+        if (!static::folderExists($path, false, $suppressErrors)) {
             $oldumask = $suppressErrors ? @umask(0) : umask(0);
 
             if ($suppressErrors ? !@mkdir($path, $permissions, true) : !mkdir($path, $permissions, true)) {
@@ -733,10 +715,10 @@ class Io
     {
         $path = static::normalizePathSeparators($path);
 
-        if (!static::fileExists($path, $suppressErrors) && $autoCreate) {
+        if (!static::fileExists($path, false, $suppressErrors) && $autoCreate) {
             $folderName = static::getFolderName($path, true, $suppressErrors);
 
-            if (!static::folderExists($folderName, $suppressErrors)) {
+            if (!static::folderExists($folderName, false, $suppressErrors)) {
                 if (!static::createFolder($folderName, $suppressErrors)) {
                     return false;
                 }
@@ -858,14 +840,10 @@ class Io
             return false;
         }
 
-        if (static::fileExists($path,
-                $suppressErrors) || static::folderExists($path, $suppressErrors)
-        ) {
+        if (static::fileExists($path, false, $suppressErrors) || static::folderExists($path, false, $suppressErrors)) {
             $success = $suppressErrors ? @chown($path, $owner) : chown($path, $owner);
 
-            if ($success && static::folderExists($path,
-                    $suppressErrors) && $recursive
-            ) {
+            if ($success && static::folderExists($path, false, $suppressErrors) && $recursive) {
                 $contents = static::getFolderContents($path, true, null, false, $suppressErrors);
 
                 foreach ($contents as $path) {
@@ -912,14 +890,10 @@ class Io
             return false;
         }
 
-        if (static::fileExists($path,
-                $suppressErrors) || static::folderExists($path, $suppressErrors)
-        ) {
+        if (static::fileExists($path, false, $suppressErrors) || static::folderExists($path, false, $suppressErrors)) {
             $success = $suppressErrors ? @chgrp($path, $group) : chgrp($path, $group);
 
-            if ($success && static::folderExists($path,
-                    $suppressErrors) && $recursive
-            ) {
+            if ($success && static::folderExists($path, false, $suppressErrors) && $recursive) {
                 $contents = static::getFolderContents($path, true, null, false, $suppressErrors);
 
                 foreach ($contents as $path) {
@@ -958,9 +932,7 @@ class Io
     {
         $path = static::normalizePathSeparators($path);
 
-        if (static::fileExists($path,
-                $suppressErrors) || static::folderExists($path, $suppressErrors)
-        ) {
+        if (static::fileExists($path, false, $suppressErrors) || static::folderExists($path, false, $suppressErrors)) {
             if ($suppressErrors ? @chmod($path, $permissions) : chmod($path, $permissions)) {
                 return true;
             }
@@ -986,10 +958,10 @@ class Io
     {
         $path = static::normalizePathSeparators($path);
 
-        if (static::fileExists($path, $suppressErrors)) {
+        if (static::fileExists($path, false, $suppressErrors)) {
             $destFolder = static::getFolderName($destination, true, $suppressErrors);
 
-            if (!static::folderExists($destFolder, $suppressErrors)) {
+            if (!static::folderExists($destFolder, false, $suppressErrors)) {
                 static::createFolder($destFolder, Craft::$app->getConfig()->get('defaultFolderPermissions'), $suppressErrors);
             }
 
@@ -1031,15 +1003,15 @@ class Io
 
                 $destFolder = static::getFolderName($itemDest, true, $suppressErrors);
 
-                if (!static::folderExists($destFolder, $suppressErrors)) {
+                if (!static::folderExists($destFolder, false, $suppressErrors)) {
                     static::createFolder($destFolder, Craft::$app->getConfig()->get('defaultFolderPermissions'), $suppressErrors);
                 }
 
-                if (static::fileExists($item, $suppressErrors)) {
-                    if ($suppressErrors ? !@copy($item, $itemDest) : copy($item, $itemDest)) {
+                if (static::fileExists($item, false, $suppressErrors)) {
+                    if ($suppressErrors ? @copy($item, $itemDest) : copy($item, $itemDest)) {
                         Craft::error('Could not copy file from '.$item.' to '.$itemDest.'.', __METHOD__);
                     }
-                } else if (static::folderExists($item, $suppressErrors)) {
+                } else if (static::folderExists($item, false, $suppressErrors)) {
                     if (!static::createFolder($itemDest, $suppressErrors)) {
                         Craft::error('Could not create destination folder '.$itemDest, __METHOD__);
                     }
@@ -1076,16 +1048,10 @@ class Io
     {
         $path = static::normalizePathSeparators($path);
 
-        if (static::fileExists($path,
-                $suppressErrors) || static::folderExists($path, $suppressErrors)
-        ) {
+        if (static::fileExists($path, false, $suppressErrors) || static::folderExists($path, false, $suppressErrors)) {
             // If we're renaming a file and there is no extension on the new name, default to the old extension
-            if (static::fileExists($path,
-                    $suppressErrors) && !static::getExtension($newName, null,
-                    $suppressErrors)
-            ) {
-                $newName .= '.'.static::getExtension($path, null,
-                        $suppressErrors);
+            if (static::fileExists($path, false, $suppressErrors) && !static::getExtension($newName, null, $suppressErrors)) {
+                $newName .= '.'.static::getExtension($path, null, $suppressErrors);
             }
 
             if (static::isWritable($path, $suppressErrors)) {
@@ -1130,7 +1096,7 @@ class Io
     {
         $path = static::normalizePathSeparators($path);
 
-        if (static::fileExists($path, $suppressErrors)) {
+        if (static::fileExists($path, false, $suppressErrors)) {
             if (static::isWritable($path, $suppressErrors)) {
                 static::writeToFile($path, '', false, $suppressErrors);
 
@@ -1157,16 +1123,16 @@ class Io
     {
         $path = static::normalizePathSeparators($path);
 
-        if (static::folderExists($path, $suppressErrors)) {
+        if (static::folderExists($path, false, $suppressErrors)) {
             $folderContents = static::getFolderContents($path, true, null, true, $suppressErrors);
 
             if ($folderContents) {
                 foreach ($folderContents as $item) {
                     $item = static::normalizePathSeparators($item);
 
-                    if (static::fileExists($item, $suppressErrors)) {
+                    if (static::fileExists($item, false, $suppressErrors)) {
                         static::deleteFile($item, $suppressErrors);
-                    } else if (static::folderExists($item, $suppressErrors)) {
+                    } else if (static::folderExists($item, false, $suppressErrors)) {
                         static::deleteFolder($item, $suppressErrors);
                     }
                 }
@@ -1194,7 +1160,7 @@ class Io
     {
         $path = static::normalizePathSeparators($path);
 
-        if (static::fileExists($path, $suppressErrors)) {
+        if (static::fileExists($path, false, $suppressErrors)) {
             if (static::isWritable($path, $suppressErrors)) {
                 if ($suppressErrors ? @unlink($path) : unlink($path)) {
                     return true;
@@ -1223,7 +1189,7 @@ class Io
     {
         $path = static::normalizePathSeparators($path);
 
-        if (static::folderExists($path, $suppressErrors)) {
+        if (static::folderExists($path, false, $suppressErrors)) {
             if (static::isWritable($path, $suppressErrors)) {
                 // Empty the folder contents first.
                 static::clearFolder($path, $suppressErrors);
@@ -1256,9 +1222,7 @@ class Io
     {
         $path = static::normalizePathSeparators($path);
 
-        if (static::fileExists($path,
-                $suppressErrors) && static::isReadable($path, $suppressErrors)
-        ) {
+        if (static::fileExists($path, false, $suppressErrors) && static::isReadable($path, $suppressErrors)) {
             return $suppressErrors ? @md5_file($path) : md5_file($path);
         } else {
             Craft::error('Could not calculate the MD5 for the file '.$path.' because the file does not exist.', __METHOD__);
@@ -1363,7 +1327,7 @@ class Io
      */
     public static function ensureFolderExists($folderPath, $suppressErrors = false)
     {
-        if (!Io::folderExists($folderPath, $suppressErrors)) {
+        if (!Io::folderExists($folderPath, false, $suppressErrors)) {
             Io::createFolder($folderPath, Craft::$app->getConfig()->get('defaultFolderPermissions'), $suppressErrors);
         }
     }
@@ -1426,7 +1390,7 @@ class Io
         $filename = str_replace($disallowedChars, '', strip_tags($filename));
 
         if (!is_null($separator)) {
-            $filename = preg_replace('/(\s|'.preg_quote($separator, '/').')+/', $separator, $filename);
+            $filename = preg_replace('/(\s|'.preg_quote($separator, '/').')+/u', $separator, $filename);
         }
 
         // Nuke any trailing or leading .-_
@@ -1621,7 +1585,7 @@ class Io
         foreach (static::getFolderContents($path, true, null, true, $suppressErrors) as $item) {
             $item = static::normalizePathSeparators($item);
 
-            if (static::fileExists($item, $suppressErrors)) {
+            if (static::fileExists($item, false, $suppressErrors)) {
                 $size += sprintf("%u", $suppressErrors ? @filesize($item) : filesize($item));
             }
         }
@@ -1667,16 +1631,14 @@ class Io
                 }
 
                 if (static::_filterPassed($contents[$key], $filter)) {
-                    if (static::fileExists($contents[$key], $suppressErrors)) {
+                    if (static::fileExists($contents[$key], false, $suppressErrors)) {
                         $descendants[] = static::normalizePathSeparators($contents[$key]);
-                    } else if (static::folderExists($contents[$key], $suppressErrors)) {
+                    } else if (static::folderExists($contents[$key], false, $suppressErrors)) {
                         $descendants[] = static::normalizePathSeparators($contents[$key]);
                     }
                 }
 
-                if (static::folderExists($contents[$key],
-                        $suppressErrors) && $recursive
-                ) {
+                if (static::folderExists($contents[$key], false, $suppressErrors) && $recursive) {
                     $descendants = array_merge($descendants, static::_folderContents($contents[$key], $recursive, $filter, $includeHiddenFiles, $suppressErrors));
                 }
             }

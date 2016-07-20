@@ -49,7 +49,9 @@ class TasksController extends Controller
             if ($task) {
                 // Attempt to close the connection if this is an Ajax request
                 if (Craft::$app->getRequest()->getIsAjax()) {
-                    Craft::$app->getResponse()->sendAndClose();
+                    $response = Craft::$app->getResponse();
+                    $response->content = '1';
+                    $response->sendAndClose();
                 }
 
                 // Start running tasks

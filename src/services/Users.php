@@ -576,7 +576,7 @@ class Users extends Component
                 'code' => $unhashedVerificationCode,
                 'id' => $user->uid
             ];
-            $protocol = Craft::$app->getRequest()->getIsSecureConnection() ? 'https' : 'http';
+            $protocol = Url::getProtocolForTokenizedUrl();
             $locale = $user->preferredLocale ?: Craft::$app->getI18n()->getPrimarySiteLocaleId();
             $url = Url::getSiteUrl($path, $params, $protocol, $locale);
         }
@@ -602,14 +602,14 @@ class Users extends Component
             'code' => $unhashedVerificationCode,
             'id' => $user->uid
         ];
-        $scheme = Craft::$app->getRequest()->getIsSecureConnection() ? 'https' : 'http';
+        $protocol = Url::getProtocolForTokenizedUrl();
 
         if ($user->can('accessCp')) {
-            return Url::getCpUrl($path, $params, $scheme);
+            return Url::getCpUrl($path, $params, $protocol);
         } else {
             $locale = $user->preferredLocale ?: Craft::$app->getI18n()->getPrimarySiteLocaleId();
 
-            return Url::getSiteUrl($path, $params, $scheme, $locale);
+            return Url::getSiteUrl($path, $params, $protocol, $locale);
         }
     }
 
@@ -829,8 +829,8 @@ class Users extends Component
                 $userRecord->username = $user->unverifiedEmail;
 
                 $userPhotosPath = Craft::$app->getPath()->getUserPhotosPath();
-                $oldProfilePhotoPath = $userPhotosPath.'/'.AssetsHelper::prepareAssetName($oldEmail);
-                $newProfilePhotoPath = $userPhotosPath.'/'.AssetsHelper::prepareAssetName($user->unverifiedEmail);
+                $oldProfilePhotoPath = $userPhotosPath.'/'.AssetsHelper::prepareAssetName($oldEmail, false);
+                $newProfilePhotoPath = $userPhotosPath.'/'.AssetsHelper::prepareAssetName($user->unverifiedEmail, false);
 
                 // Update the user profile photo folder name, if it exists.
                 if (Io::folderExists($oldProfilePhotoPath)) {

@@ -87,6 +87,43 @@ class MatrixBlock extends Element
         return $fields;
     }
 
+    /**
+     * @inheritdoc
+     */
+    public static function getEagerLoadingMap($sourceElements, $handle)
+    {
+        // $handle *must* be set as "blockTypeHandle:fieldHandle" so we know _which_ myRelationalField to resolve to
+        $handleParts = explode(':', $handle);
+
+        if (count($handleParts) != 2) {
+            return false;
+        }
+
+        list($blockTypeHandle, $fieldHandle) = $handleParts;
+
+        // Get the block type
+        $matrixFieldId = $sourceElements[0]->fieldId;
+        $blockTypes = Craft::$app->getMatrix()->getBlockTypesByFieldId($matrixFieldId, 'handle');
+
+        if (!isset($blockTypes[$blockTypeHandle])) {
+            // Not a valid block type handle (assuming all $sourceElements are blocks from the same Matrix field)
+            return false;
+        }
+
+        $blockType = $blockTypes[$blockTypeHandle];
+
+        // Set the field context
+        $contentService = Craft::$app->getContent();
+        $originalFieldContext = $contentService->fieldContext;
+        $contentService->fieldContext = 'matrixBlockType:'.$blockType->id;
+
+        $map = parent::getEagerLoadingMap($sourceElements, $fieldHandle);
+
+        $contentService->fieldContext = $originalFieldContext;
+
+        return $map;
+    }
+
     // Properties
     // =========================================================================
 
@@ -124,6 +161,11 @@ class MatrixBlock extends Element
      * @var ElementInterface The owner element
      */
     private $_owner;
+
+    /**
+     * @var
+     */
+    private $_eagerLoadedBlockTypeElements;
 
     // Public Methods
     // =========================================================================
@@ -284,6 +326,61 @@ class MatrixBlock extends Element
     public function getFieldContext()
     {
         return 'matrixBlockType:'.$this->typeId;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function hasEagerLoadedElements($handle)
+    {
+        // See if we have this stored with a block type-specific handle
+        $blockTypeHandle = $this->getType()->handle.':'.$handle;
+
+        if (isset($this->_eagerLoadedBlockTypeElements[$blockTypeHandle])) {
+            return true;
+        }
+
+        return parent::hasEagerLoadedElements($handle);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getEagerLoadedElements($handle)
+    {
+        // See if we have this stored with a block type-specific handle
+        $blockTypeHandle = $this->getType()->handle.':'.$handle;
+
+        if (isset($this->_eagerLoadedBlockTypeElements[$blockTypeHandle])) {
+            return $this->_eagerLoadedBlockTypeElements[$blockTypeHandle];
+        }
+
+        return parent::getEagerLoadedElements($handle);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function setEagerLoadedElements($handle, $elements)
+    {
+        // See if this was eager-loaded with a block type-specific handle
+        $blockTypeHandlePrefix = $this->getType()->handle.':';
+        if (strncmp($handle, $blockTypeHandlePrefix, strlen($blockTypeHandlePrefix)) === 0) {
+            $this->_eagerLoadedBlockTypeElements[$handle] = $elements;
+        } else {
+            parent::setEagerLoadedElements($handle, $elements);
+        }
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getHasFreshContent()
+    {
+        // Defer to the owner element
+        $owner = $this->getOwner();
+
+        return $owner ? $owner->getHasFreshContent() : false;
     }
 
     // Private Methods

@@ -10,6 +10,7 @@ namespace craft\app\controllers;
 use Craft;
 use craft\app\enums\PluginUpdateStatus;
 use craft\app\errors\EtException;
+use craft\app\helpers\App;
 use craft\app\helpers\ArrayHelper;
 use craft\app\helpers\Update;
 use craft\app\helpers\Url;
@@ -474,7 +475,8 @@ class UpdateController extends Controller
 
         Craft::$app->getUpdates()->updateCleanUp($uid, $handle);
 
-        if ($handle == 'craft' && $oldVersion && version_compare($oldVersion, Craft::$app->version, '<')) {
+        // New major Craft CMS version?
+        if ($handle == 'craft' && $oldVersion && App::getMajorVersion($oldVersion) < App::getMajorVersion(Craft::$app->version)) {
             $returnUrl = Url::getUrl('whats-new');
         } else {
             $returnUrl = Craft::$app->getConfig()->get('postCpLoginRedirect');

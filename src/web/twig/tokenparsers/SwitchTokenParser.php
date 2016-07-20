@@ -49,6 +49,7 @@ class SwitchTokenParser extends \Twig_TokenParser
 
         $stream->expect(\Twig_Token::BLOCK_START_TYPE);
 
+        $expressionParser = $this->parser->getExpressionParser();
         $cases = [];
         $default = null;
         $end = false;
@@ -58,11 +59,23 @@ class SwitchTokenParser extends \Twig_TokenParser
 
             switch ($next->getValue()) {
                 case 'case': {
-                    $expr = $this->parser->getExpressionParser()->parseExpression();
+                    $values = [];
+
+                    while (true) {
+                        $values[] = $expressionParser->parsePrimaryExpression();
+
+                        // Multiple allowed values?
+                        if ($stream->test(\Twig_Token::OPERATOR_TYPE, 'or')) {
+                            $stream->next();
+                        } else {
+                            break;
+                        }
+                    }
+
                     $stream->expect(\Twig_Token::BLOCK_END_TYPE);
                     $body = $this->parser->subparse([$this, 'decideIfFork']);
                     $cases[] = new Twig_Node([
-                        'expr' => $expr,
+                        'values' => new Twig_Node($values),
                         'body' => $body
                     ]);
                     break;

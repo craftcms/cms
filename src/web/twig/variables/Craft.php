@@ -89,13 +89,13 @@ class Craft extends ServiceLocator
             case \Craft::Pro: {
                 $config['components'] = array_merge($config['components'], [
                     'userGroups' => 'craft\app\web\twig\variables\UserGroups',
-                    'userPermissions' => 'craft\app\web\twig\variables\UserPermissions',
                 ]);
             }
             case \Craft::Client: {
                 $config['components'] = array_merge($config['components'], [
                     'emailMessages' => 'craft\app\web\twig\variables\EmailMessages',
                     'rebrand' => 'craft\app\web\twig\variables\Rebrand',
+                    'userPermissions' => 'craft\app\web\twig\variables\UserPermissions',
                 ]);
             }
         }

@@ -52,6 +52,11 @@ class DateTimeHelper
     public static function toDateTime($value, $assumeSystemTimeZone = false, $setToSystemTimeZone = true)
     {
         if ($value instanceof \DateTime) {
+            // Make sure it's a Craft DateTime object
+            if (!($value instanceof DateTime)) {
+                return new DateTime('@'.$value->getTimestamp());
+            }
+
             return $value;
         }
 

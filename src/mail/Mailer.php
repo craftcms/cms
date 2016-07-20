@@ -9,6 +9,8 @@ namespace craft\app\mail;
 
 use Craft;
 use craft\app\elements\User;
+use craft\app\errors\SendEmailException;
+use craft\app\events\SendEmailError;
 use yii\base\InvalidConfigException;
 use yii\helpers\Markdown;
 
@@ -22,6 +24,14 @@ use yii\helpers\Markdown;
  */
 class Mailer extends \yii\swiftmailer\Mailer
 {
+    // Constants
+    // =========================================================================
+
+    /**
+     * @event SendEmailErrorEvent The event that is triggered when there is an error sending an email.
+     */
+    const EVENT_SEND_EMAIL_ERROR = 'sendEmailError';
+
     // Properties
     // =========================================================================
 
@@ -94,24 +104,22 @@ class Mailer extends \yii\swiftmailer\Mailer
                 $textBodyTemplate = Craft::t('app', $message->key.'_body', null, 'en_us');
             }
 
-            $tempTemplatesPath = '';
+            $view = Craft::$app->getView();
+            $oldTemplateMode = $view->getTemplateMode();
 
             if (Craft::$app->getEdition() >= Craft::Client) {
                 // Is there a custom HTML template set?
                 if ($this->template !== null) {
-                    $tempTemplatesPath = Craft::$app->getPath()->getSiteTemplatesPath();
+                    $view->setTemplateMode($view::TEMPLATE_MODE_SITE);
                     $parentTemplate = $this->template;
                 }
             }
 
             if (empty($parentTemplate)) {
-                $tempTemplatesPath = Craft::$app->getPath()->getCpTemplatesPath();
+                // Default to the _special/email.html template
+                $view->setTemplateMode($view::TEMPLATE_MODE_CP);
                 $parentTemplate = '_special/email';
             }
-
-            // Temporarily swap the templates path
-            $originalTemplatesPath = Craft::$app->getPath()->getTemplatesPath();
-            Craft::$app->getPath()->setTemplatesPath($tempTemplatesPath);
 
             $htmlBodyTemplate = "{% extends '{$parentTemplate}' %}\n".
                 "{% set body %}\n".
@@ -134,8 +142,8 @@ class Mailer extends \yii\swiftmailer\Mailer
 
             Craft::$app->language = $language;
 
-            // Return to the original templates path
-            Craft::$app->getPath()->setTemplatesPath($originalTemplatesPath);
+            // Return to the original template mode
+            $view->setTemplateMode($oldTemplateMode);
         }
 
         // Set the default sender if there isn't one already
@@ -143,6 +151,31 @@ class Mailer extends \yii\swiftmailer\Mailer
             $message->setFrom($this->from);
         }
 
-        return parent::send($message);
+        $isSuccessful = null;
+
+        $event = new SendEmailError([
+            'user' => $message->getTo(),
+            'email' => $message,
+            'variables' => $message->variables,
+            'error' => 'Unknown',
+        ]);
+
+        try {
+            $isSuccessful = parent::send($message);
+        } catch (\Exception $e) {
+
+            $event->error = $e->getMessage();
+            $isSuccessful = false;
+        }
+
+        // Either an exception was thrown or parent::send() returned false.
+        if ($isSuccessful === false) {
+            // Fire a 'SendEmailError' event
+            $this->trigger(static::EVENT_SEND_EMAIL_ERROR, $event);
+
+            throw new SendEmailException(Craft::t('app', 'Email error: {error}', ['error' => $event->error]));
+        }
+
+        return $isSuccessful;
     }
 }

@@ -31,7 +31,7 @@ body { overflow-x: hidden; }
 /* global sidebar */
 #global-sidebar { @include display-flex; @include flex-direction(column); position: fixed; top: 0; @include left(0); width: 220px; height: 100vh; background: $headerBgColor; z-index: 100; overflow: auto; }
 
-#global-sidebar nav { @include flex-grow(1); }
+#global-sidebar nav { @include flex-grow(1); -ms-flex-preferred-size: auto; }
 
 #global-sidebar #devmode { width: 100%; height: 4px; background: url(../images/dev-mode.svg) repeat-x 15px 0; cursor: help; }
 
@@ -61,9 +61,9 @@ body { overflow-x: hidden; }
 #global-sidebar .topbar > a:focus { background: none; }
 
 #global-sidebar .topbar { min-height: -webkit-min-content; min-height: -moz-min-content; }
-#global-sidebar .topbar a.site-name { @include flex-grow(1); padding: 14px; }
-#global-sidebar .topbar a.site-name .photo-container { margin-right: 14px; flex-shrink: 0; }
-#global-sidebar .topbar a.site-name h2 { padding: 0; margin: 0; }
+#global-sidebar .topbar a.site-name { @include flex-grow(1); padding: 14px; min-width: 0; }
+#global-sidebar .topbar a.site-name .photo-container { @include margin-right(14px); flex-shrink: 0; }
+#global-sidebar .topbar a.site-name h2 { padding: 0; margin: 0; word-break: normal; word-wrap: break-word; min-width: 0; flex-basis: 100%; }
 #global-sidebar .topbar a.updates { position: relative; color: $noticecolor; }
 #global-sidebar .topbar a.updates.critical { color: $submitcolor; }
 #global-sidebar .topbar a.updates:hover { color: #fff !important; }
@@ -92,7 +92,7 @@ body { overflow-x: hidden; }
 
 /* container */
 
-#container { overflow: auto; display: block; @include flex-direction(column); position: relative; @include padding-left(220px); @include box-sizing(border-box); }
+#container { overflow: auto; display: block; @include flex-direction(column); position: relative; @include box-sizing(border-box); }
 #container > .topbar,
 #container > #page-header,
 #container > #main,
@@ -111,17 +111,27 @@ body.mobile #container {
 #main.single-pane .padded > .pane > .content { @include display-flex; @include flex-direction(column); }
 #main.single-pane .padded > .pane > .content > .sidebar + .body { width: calc(100% - 0); }
 
+@media only screen and (min-width: 993px)
+{
+	#container { @include padding-left(220px); }
+}
+
 @media only screen and (max-width: 992px)
 {
-	#container { max-width: none; }
-	body.ltr #container { width: calc(100% + 220px); @include transform(translate3d(-220px,0,0)); }
-	body.rtl #container { width: calc(100% + 220px); @include transform(translate3d(220px,0,0)); }
+  #container { max-width: none; }
 
-	body.showing-nav #global-sidebar { @include display-flex; }
-	body.showing-nav #container { @include transform(translate3d(0,0,0)); }
+  body.showing-nav #global-sidebar { @include display-flex; }
 
-	body.ltr:not(.showing-nav) #global-sidebar { @include transform(translate3d(-220px,0,0)); }
-	body.rtl:not(.showing-nav) #global-sidebar { @include transform(translate3d(220px,0,0)); }
+  body.ltr.showing-nav #container { @include transform(translate(220px,0)); }
+  body.rtl.showing-nav #container { @include transform(translate(-220px,0)); }
+
+  body.ltr:not(.showing-nav) #global-sidebar { @include transform(translate(-220px,0)); }
+  body.rtl:not(.showing-nav) #global-sidebar { @include transform(translate(220px,0)); }
+}
+
+@media print
+{
+	#container { @include padding-left(220px); }
 }
 
 #tasks-hud { padding: 0; overflow: auto; }
@@ -191,7 +201,7 @@ body.mobile #container {
 
 #page-header #page-title { @include flex-grow(1); color: $submitcolor; }
 #page-header #page-title { overflow: hidden; text-overflow: ellipsis;  }
-#page-header #page-title h1 { line-height: 1.3; margin: 0; display: inline; white-space: nowrap; }
+#page-header #page-title h1 { line-height: 1.3; margin: 0; display: inline; white-space: nowrap; @include margin-right(7px); }
 #page-header #page-title .btn { vertical-align: bottom; }
 
 #page-header #extra-headers { flex-shrink: 0; }
@@ -220,7 +230,7 @@ body.mobile #container {
 .tabs .tab.sel { color: #000; padding-bottom: 10px; cursor: default; }
 .tabs .tab.sel { @include pane; }
 
-.pane > .tabs { margin: -24px -24px 24px; padding: 0 0; font-size: 0; overflow: hidden;
+.pane > .tabs { margin: -24px -24px 24px; padding: 0 0; font-size: 0; border-radius: 4px 4px 0 0; overflow: hidden;
 	@include linear-gradient(hsl($hue, 8%, 97%), hsl($hue, 8%, 96%));
 	@include box-shadow(inset 0 -1px 0 rgba(0,0,0,0.05));
 }
@@ -238,6 +248,23 @@ body.mobile #container {
 
 /* footer */
 #footer { padding: 24px; text-align: center; font-size: 0; }
+#footer #edition { display: inline-block; margin: 0 auto 14px; }
+#footer #edition #edition-logo { border: 1px solid $lighttextcolor; border-radius: 3px; display: inline-block; height: 23px; cursor: default; @include transition(border-color linear 100ms); }
+#footer #edition #edition-logo > .edition-name,
+#footer #edition #edition-logo > .edition-trial { display: inline-block; padding: 8px 8px 7px; font-size: 12px; line-height: 8px; font-weight: 500; }
+#footer #edition #edition-logo > .edition-name { color: $mediumtextcolor; letter-spacing: 2.2px; padding-right: 5.8px; text-transform: uppercase; @include transition(color linear 100ms); }
+#footer #edition #edition-logo > .edition-trial { display: inline-block; position: relative; @include margin-left(5px); @include padding-left(5px); background: $lighttextcolor; color: $bgcolor; border-radius: 0 1px 1px 0; letter-spacing: 1px; @include padding-right(7px); text-transform: lowercase; @include transition(background linear 100ms); }
+#footer #edition #edition-logo > .edition-trial:before { display: block; position: absolute; top: 0; content: '.'; font-size: 0; width: 0; height: 0; border-style: solid; @include transition(border-color linear 100ms); }
+body.ltr #footer #edition #edition-logo > .edition-trial:before { left: -10px; border-width: 0 10px 23px 0; border-color: transparent $lighttextcolor transparent transparent; }
+body.rtl #footer #edition #edition-logo > .edition-trial:before { right: -10px; border-width: 0 0 23px 10px; border-color: transparent transparent transparent $lighttextcolor; }
+#footer #edition.hot #edition-logo { cursor: pointer; }
+#footer #edition.hot #edition-logo + .settings { cursor: pointer; display: inline-block; position: relative; top: -1px; width: 13px; @include margin(0, -18px, 0, 6px); font-size: 13px; color: hsla($hue, 10%, 75%, 0.5); @include transition(color linear 100ms); }
+#footer #edition.hot:hover #edition-logo { border-color: $linkcolor; }
+#footer #edition.hot:hover #edition-logo > .edition-name { color: $linkcolor; }
+#footer #edition.hot:hover #edition-logo > .edition-trial { background: $linkcolor; }
+body.ltr #footer #edition.hot:hover #edition-logo > .edition-trial:before { border-color: transparent $linkcolor transparent transparent; }
+body.rtl #footer #edition.hot:hover #edition-logo > .edition-trial:before { border-color: transparent transparent transparent $linkcolor; }
+#footer #edition.hot:hover #edition-logo + .settings { color: $linkcolor; }
 #footer li { display: inline-block; font-size: 11px; color: $lighttextcolor; white-space: nowrap; }
 #footer li:not(:last-child):after { display: inline-block; margin: 0 7px; content: '•'; }
 #footer li a { color: $lighttextcolor; text-decoration: underline; }
@@ -255,32 +282,38 @@ body.mobile #container {
 #upgrademodal.loading { background-image: url(../images/spinner_big.gif); background-repeat: no-repeat; background-position: 50% 50%; }
 #upgrademodal .body { position: absolute; top: 0; left: 0; width: 100%; height: 100%; overflow: auto; }
 
-#upgrademodal .logo { margin: 0 auto 24px; max-width: 160px; height: 40px; font-size: 0; background: no-repeat 50% 50%; background-size: 100%; }
-#upgrademodal .logo.craftclient { background-image: url(../images/editions/craftclient.png); }
-#upgrademodal .logo.craftpro { background-image: url(../images/editions/craftpro.png); }
+#upgrademodal .logo { margin: 0 auto 24px; font-weight: 500; font-size: 18px; color: $submitcolor; letter-spacing: 3.3px; line-height: 14px; border: 1px solid $submitcolor; border-radius: 3px; padding: 10px 6.7px 9px 10px; text-transform: uppercase; display: inline-block; }
 
-#upgrademodal .body tr.buybtns td { vertical-align: bottom; text-align: center; }
-#upgrademodal .body tr.buybtns .installed { display: inline-block; border-radius: 3px; padding: 6px 12px; color: $successcolor;
-	@include box-shadow(0 0 0 1px $successcolor);
-}
-#upgrademodal .body tr.buybtns td .btngroup { display: inline-block; }
-#upgrademodal .body tr.buybtns .installed + br + .btngroup { margin-top: 10px; }
-#upgrademodal .body .listedprice { @include margin-right(10px); text-decoration: line-through; color: $lighttextcolor; }
-
-#upgrademodal-compare table thead th { text-align: center; }
+#upgrademodal-compare table th,
+#upgrademodal-compare table td { width: 33.33%; }
+#upgrademodal-compare table th.feature { font-weight: normal; color: $mediumtextcolor; }
 #upgrademodal-compare table thead th { font-size: 13px; line-height: 18px; font-weight: normal; }
-#upgrademodal-compare table thead th .logo { margin-bottom: 14px; }
+#upgrademodal-compare table thead tr.logos th { padding-bottom: 14px; }
+#upgrademodal-compare table thead tr.logos th .logo { margin-bottom: 0; }
+#upgrademodal-compare table thead tr.logos th p { white-space: normal; max-width: 250px; }
+#upgrademodal-compare table thead tr.license-statuses td { padding-top: 0; padding-bottom: 14px; }
+#upgrademodal-compare table thead tr.license-statuses td .license-status:before { border: 1px solid; border-radius: 9px; width: 17px; height: 17px; line-height: 17px; margin-right: 5px; }
+#upgrademodal-compare table thead tr.license-statuses td .installed { color: $successcolor; }
+#upgrademodal-compare table thead tr.license-statuses td .licensed { color: $noticecolor; }
+#upgrademodal-compare table thead tr.license-statuses td .installed:before { border-color: $successcolor; }
+#upgrademodal-compare table thead tr.license-statuses td .licensed:before { border-color: $noticecolor; }
+#upgrademodal-compare table thead tr.price th,
+#upgrademodal-compare table thead tr.price td { position: relative; padding-top: 14px; }
+#upgrademodal-compare table thead tr.price td .listedprice { @include margin-right(5px); text-decoration: line-through; color: $lighttextcolor; }
+#upgrademodal-compare table thead tr.price th:before,
+#upgrademodal-compare table thead tr.price td:before { position: absolute; top: 0; display: block; width: 24px; height: 1px; content: '.'; font-size: 0; background: $hairlineColor; }
+#upgrademodal-compare table thead tr.price th:before { @include left(0); }
+#upgrademodal-compare table thead tr.price td:before { @include left(14px); }
 #upgrademodal-compare table tbody th,
 #upgrademodal-compare table tbody td { width: 33.33%; }
 #upgrademodal-compare table tbody tr:first-child th,
 #upgrademodal-compare table tbody tr:first-child td { border-top: none; }
 #upgrademodal-compare table tbody th.group { padding-top: 30px; border-bottom-style: solid; color: $mediumtextcolor; }
-#upgrademodal-compare table tbody th.group:before { margin-top: -2px; width: 24px; @include alignleft; font-size: 17px; }
-#upgrademodal-compare table tbody th.feature { font-weight: normal; color: $mediumtextcolor; }
-#upgrademodal-compare table tbody td { text-align: center; }
-#upgrademodal-compare table tbody tr.buybtns td { padding-top: 30px; border-bottom: none; }
+#upgrademodal-compare table tbody th.group:before { margin-top: -2px; width: 24px; font-size: 17px; }
+#upgrademodal-compare table tbody tr.buybtns td { padding-top: 14px; border-bottom: none; }
 
 #upgrademodal-checkout { background: $lightBgColor; }
+#upgrademodal-checkout .logowrapper { text-align: center; }
 #upgrademodal-checkout form { max-width: 350px; margin: 0 auto !important; padding-bottom: 10px; }
 #upgrademodal-checkout form .field { margin: 14px 0; }
 #upgrademodal-checkout form p.icon.secure { margin-top: 24px; }
@@ -293,9 +326,6 @@ body.mobile #container {
 
 #upgrademodal-success .message { display: block; position: absolute; top: 50%; left: 0; width: 100%; margin-top: -71px; padding-top: 62px; text-align: center; background: url(../images/success.png) no-repeat 50% 0; }
 #upgrademodal-success .message p { margin-bottom: 24px; font-size: 15px; line-height: 1.4; }
-
-#wrongedition-modal { text-align: center; }
-#wrongedition-modal .btngroup { float: none; }
 
 /* field layout forms */
 
@@ -470,7 +500,5 @@ body > .sidebar li { width: auto !important; }
 {
 	.fieldlayoutform { background-image: url(../images/fieldlayoutform-bg_2x.png); background-size: 30px 30px; }
 	#upgrademodal.loading { background-image: url(../images/spinner_big_2x.gif); background-size: 48px; }
-	#upgrademodal .logo.craftclient { background-image: url(../images/editions/craftclient_2x.png); }
-	#upgrademodal .logo.craftpro { background-image: url(../images/editions/craftpro_2x.png); }
 	#upgrademodal-success .message { background-image: url(../images/success_2x.png); background-size: 48px; }
 }

@@ -163,6 +163,19 @@ abstract class Controller extends \yii\web\Controller
     }
 
     /**
+     * Requires that the user has an elevated session.
+     *
+     * @return void
+     * @throws ForbiddenHttpException if the current user does not have an elevated session
+     */
+    public function requireElevatedSession()
+    {
+        if (!Craft::$app->getUser()->hasElevatedSession()) {
+            throw new ForbiddenHttpException(403, Craft::t('app', 'This action may only be performed with an elevated session.'));
+        }
+    }
+
+    /**
      * Throws a 400 error if this isn’t a POST request
      *
      * @return void
@@ -223,7 +236,7 @@ abstract class Controller extends \yii\web\Controller
         }
 
         if ($object) {
-            $url = Craft::$app->getView()->renderObjectTemplate($url, $object);
+            $url = Craft::$app->getView()->renderObjectTemplate($url, $object, true);
         }
 
         return $this->redirect($url);

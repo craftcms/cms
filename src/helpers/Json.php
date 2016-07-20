@@ -45,7 +45,37 @@ class Json extends \yii\helpers\Json
      */
     public static function sendJsonHeaders()
     {
+        self::setJsonContentTypeHeader();
         Header::setNoCache();
+    }
+
+    /**
+     * Sets the Content-Type header to 'application/json'.
+     *
+     * @return void
+     */
+    public static function setJsonContentTypeHeader()
+    {
         Header::setContentTypeByExtension('json');
+    }
+
+    /**
+     * Removes single-line, multi-line, //, /*, comments from JSON
+     * (since comments technically product invalid JSON).
+     *
+     * @param string $json
+     *
+     * @return string
+     */
+    public static function removeComments($json)
+    {
+        // Remove any comments from the JSON.
+        // Adapted from http://stackoverflow.com/a/31907095/684
+        $pattern = '/(?:(?:\/\*(?:[^*]|(?:\*+[^*\/]))*\*+\/)|(?:(?<!\:|\\\|\'|\")\/\/.*))/';
+
+        $json = preg_replace($pattern, '', $json);
+        $json = trim($json, PHP_EOL);
+
+        return $json;
     }
 }

@@ -217,7 +217,7 @@ interface ElementInterface extends ComponentInterface
      * - **`data`** – An array of `data-X` attributes that should be set on the source’s `<a>` tag in the source list’s,
      *   HTML, where each key is the name of the attribute (without the “data-” prefix), and each value is the value of
      *   the attribute. (Optional)
-     * - **`defaultSort` – A string identifying the sort attribute that should be selected by default, or an array where
+     * - **`defaultSort`** – A string identifying the sort attribute that should be selected by default, or an array where
      *   the first value identifies the sort attribute, and the second determines which direction to sort by. (Optional)
      * - **`hasThumbs`** – A boolean that defines whether this source supports Thumbs View. (Use your element’s
      *   [[getThumbUrl()]] method to define your elements’ thumb URL.) (Optional)
@@ -444,6 +444,22 @@ interface ElementInterface extends ComponentInterface
      * @return string|false
      */
     public static function getElementQueryStatusCondition(ElementQueryInterface $query, $status);
+
+    /**
+     * Returns an array that maps source-to-target element IDs based on the given sub-property handle.
+     *
+     * This method aids in the eager-loading of elements when performing an element query. The returned array should
+     * contain two sub-keys:
+     *
+     * - `elementType` – indicating the type of sub-elements to eager-load (the element type class handle)
+     * - `map` – an array of element ID mappings, where each element is a sub-array with `source` and `target` keys.
+     *
+     * @param ElementInterface[] $sourceElements An array of the source elements
+     * @param string             $handle         The property handle used to identify which target elements should be included in the map
+     *
+     * @return array|false The eager-loading element ID mappings, or false if no mappings exist
+     */
+    public static function getEagerLoadingMap($sourceElements, $handle);
 
     /**
      * Returns the HTML for an editor HUD for the given element.
@@ -861,6 +877,13 @@ interface ElementInterface extends ComponentInterface
      * @return string
      */
     public function getFieldContext();
+
+    /**
+     * Returns whether the element’s content is "fresh" (unsaved and without validation errors).
+     *
+     * @return bool Whether the element’s content is fresh
+     */
+    public function getHasFreshContent();
 
     // Events
     // -------------------------------------------------------------------------

@@ -182,6 +182,7 @@ class TagsController extends Controller
         $search = Craft::$app->getRequest()->getBodyParam('search');
         $tagGroupId = Craft::$app->getRequest()->getBodyParam('tagGroupId');
         $excludeIds = Craft::$app->getRequest()->getBodyParam('excludeIds', []);
+        $allowSimilarTags = Craft::$app->getConfig()->get('allowSimilarTags');
 
         $tags = Tag::find()
             ->groupId($tagGroupId)
@@ -194,7 +195,11 @@ class TagsController extends Controller
         $tagTitleLengths = [];
         $exactMatch = false;
 
-        $normalizedSearch = Search::normalizeKeywords($search);
+        if ($allowSimilarTags) {
+            $search = Search::normalizeKeywords($search, [], false);
+        } else {
+            $search = Search::normalizeKeywords($search);
+        }
 
         foreach ($tags as $tag) {
             $return[] = [
@@ -204,9 +209,13 @@ class TagsController extends Controller
 
             $tagTitleLengths[] = StringHelper::length($tag->title);
 
-            $normalizedTitle = Search::normalizeKeywords($tag->title);
+            if ($allowSimilarTags) {
+                $title = Search::normalizeKeywords($tag->title, [], false);
+            } else {
+                $title = Search::normalizeKeywords($tag->title);
+            }
 
-            if ($normalizedTitle == $normalizedSearch) {
+            if ($title == $search) {
                 $exactMatches[] = 1;
                 $exactMatch = true;
             } else {

@@ -48,11 +48,6 @@ class Path extends Component
     /**
      * @var
      */
-    private $_templatesPath;
-
-    /**
-     * @var
-     */
     private $_siteTranslationsPath;
 
     /**
@@ -354,37 +349,6 @@ class Path extends Component
         }
 
         return $this->_siteTranslationsPath;
-    }
-
-    /**
-     * Returns the current templates path, taking into account whether this is a
-     * CP or Site request.
-     *
-     * @return string The templates path.
-     */
-    public function getTemplatesPath()
-    {
-        if (!isset($this->_templatesPath)) {
-            $request = Craft::$app->getRequest();
-
-            if (!$request->getIsConsoleRequest() && $request->getIsCpRequest()) {
-                $this->_templatesPath = $this->getCpTemplatesPath();
-            } else {
-                $this->_templatesPath = $this->getSiteTemplatesPath();
-            }
-        }
-
-        return $this->_templatesPath;
-    }
-
-    /**
-     * Sets the current templates path.
-     *
-     * @param string $path The new templates path.
-     */
-    public function setTemplatesPath($path)
-    {
-        $this->_templatesPath = rtrim($path, '/\\');
     }
 
     /**

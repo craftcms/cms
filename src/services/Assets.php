@@ -18,6 +18,7 @@ use craft\app\errors\AssetConflictException;
 use craft\app\errors\AssetDisallowedExtensionException;
 use craft\app\errors\AssetLogicException;
 use craft\app\errors\AssetMissingException;
+use craft\app\errors\ImageException;
 use craft\app\errors\UploadFailedException;
 use craft\app\errors\VolumeException;
 use craft\app\errors\VolumeObjectExistsException;
@@ -32,6 +33,7 @@ use craft\app\helpers\DateTimeHelper;
 use craft\app\helpers\Db;
 use craft\app\helpers\Image;
 use craft\app\helpers\Io;
+use craft\app\helpers\Json;
 use craft\app\helpers\StringHelper;
 use craft\app\helpers\Url;
 use craft\app\models\AssetTransformIndex;
@@ -421,7 +423,7 @@ class Assets extends Component
         } else {
             // Get an available name to avoid conflicts and upload the file
             $filename = $this->getNameReplacementInFolder($filename,
-                $asset->getFolder());
+                $asset->folderId);
 
             // Delete old, change the name, upload the new
             $volume->deleteFile($asset->getUri());
@@ -680,28 +682,37 @@ class Assets extends Component
     /**
      * Get the folder tree for Assets by volume ids
      *
-     * @param $allowedVolumeIds
+     * @param array|int $allowedVolumeIds
+     * @param array     $additionalCriteria additional criteria for filtering the tree
      *
      * @return array
      */
-    public function getFolderTreeByVolumeIds($allowedVolumeIds)
+    public function getFolderTreeByVolumeIds($allowedVolumeIds, $additionalCriteria = [])
     {
-        $folders = $this->findFolders([
-            'volumeId' => $allowedVolumeIds,
-            'order' => 'path'
-        ]);
-        $tree = $this->_getFolderTreeByFolders($folders);
+        static $volumeFolders = [];
 
-        $sort = [];
+        $tree = [];
 
-        foreach ($tree as $topFolder) {
-            /**
-             * @var VolumeFolderModel $topFolder ;
-             */
-            $sort[] = $topFolder->getVolume()->sortOrder;
+        // Get the tree for each source
+        foreach ($allowedVolumeIds as $volumeId) {
+            // Add additional criteria but prevent overriding volumeId and order.
+            $criteria = array_merge($additionalCriteria, [
+                'volumeId' => $volumeId,
+                'order' => 'path'
+            ]);
+            $cacheKey = md5(Json::encode($criteria));
+
+            // If this has not been yet fetched, fetch it.
+            if (empty($volumeFolders[$cacheKey])) {
+                $folders = $this->findFolders($criteria);
+                $subtree = $this->_getFolderTreeByFolders($folders);
+                $volumeFolders[$cacheKey] = reset($subtree);
+            }
+
+            $tree[$volumeId] = $volumeFolders[$cacheKey];
         }
 
-        array_multisort($sort, $tree);
+        AssetsHelper::sortFolderTree($tree);
 
         return $tree;
     }
@@ -927,7 +938,14 @@ class Assets extends Component
                 $index);
         } else {
             if (Craft::$app->getConfig()->get('generateTransformsBeforePageLoad')) {
-                return $assetTransforms->ensureTransformUrlByIndexModel($index);
+                try {
+                    return $assetTransforms->ensureTransformUrlByIndexModel($index);
+                } catch (ImageException $exception) {
+                    Craft::warning($exception->getMessage());
+                    $assetTransforms->deleteTransformIndex($index->id);
+
+                    return Url::getResourceUrl('404');
+                }
             } else {
                 // Queue up a new Generate Pending Transforms task, if there isn't one already
                 $tasks = Craft::$app->getTasks();
@@ -944,17 +962,21 @@ class Assets extends Component
     /**
      * Find a replacement for a filename
      *
-     * @param string            $originalFilename the original filename for which to find a replacement.
-     * @param VolumeFolderModel $folder           THe folder in which to find the replacement
+     * @param string  $originalFilename the original filename for which to find a replacement.
+     * @param integer $folderId         THe folder in which to find the replacement
      *
      * @throws AssetLogicException If a suitable filename replacement cannot be found.
      * @return string
      */
     public function getNameReplacementInFolder(
         $originalFilename,
-        VolumeFolderModel $folder
+        $folderId
     )
     {
+        $folder = $this->getFolderById($folderId);
+        if (!$folder) {
+            throw new AssetLogicException();
+        }
         $volume = $folder->getVolume();
         $fileList = $volume->getFileList($folder->path, false);
 
@@ -1400,7 +1422,7 @@ class Assets extends Component
     /**
      * Return the folder tree form a list of folders.
      *
-     * @param $folders
+     * @param VolumeFolder[] $folders
      *
      * @return array
      */
@@ -1410,9 +1432,10 @@ class Assets extends Component
         $referenceStore = [];
 
         foreach ($folders as $folder) {
-            /**
-             * @var VolumeFolder $folder
-             */
+            // We'll be adding all of the children in this loop, anyway, so we set
+            // the children list to an empty array so that folders that have no children don't
+            // trigger any queries, when asked for children
+            $folder->setChildren([]);
             if ($folder->parentId && isset($referenceStore[$folder->parentId])) {
                 $referenceStore[$folder->parentId]->addChild($folder);
             } else {
@@ -1421,17 +1444,6 @@ class Assets extends Component
 
             $referenceStore[$folder->id] = $folder;
         }
-
-        $sort = [];
-
-        foreach ($tree as $topFolder) {
-            /**
-             * @var VolumeFolder $topFolder
-             */
-            $sort[] = $topFolder->getVolume()->sortOrder;
-        }
-
-        array_multisort($sort, $tree);
 
         return $tree;
     }

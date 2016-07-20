@@ -18,6 +18,7 @@ use craft\app\db\ActiveRecord;
  * @property string               $name          Name
  * @property string               $handle        Handle
  * @property string               $type          Type
+ * @property boolean              $hasUrls       Whether Volume has URLs
  * @property string               $url           URL
  * @property array                $settings      Settings
  * @property string               $sortOrder     Sort order
@@ -27,7 +28,9 @@ use craft\app\db\ActiveRecord;
  * @since  3.0
  */
 class Volume extends ActiveRecord
+
 {
+
     // Public Methods
     // =========================================================================
 
@@ -56,8 +59,9 @@ class Volume extends ActiveRecord
                 'integerOnly' => true
             ],
             [['name', 'handle'], 'unique'],
-            [['name', 'handle', 'type', 'url'], 'required'],
-            [['name', 'handle'], 'string', 'max' => 255],
+            [['name', 'handle', 'type'], 'required'],
+            [['hasUrls'], 'boolean'],
+            [['name', 'handle', 'url'], 'string', 'max' => 255],
             [['type'], 'string', 'max' => 150],
         ];
     }

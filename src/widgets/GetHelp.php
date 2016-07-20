@@ -62,7 +62,7 @@ class GetHelp extends Widget
      */
     public function getTitle()
     {
-        return Craft::t('app', 'Send a message to Craft Support');
+        return Craft::t('app', 'Send a message to Craft CMS Support');
     }
 
     /**

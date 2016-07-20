@@ -11,6 +11,7 @@ use Craft;
 use craft\app\base\Volume;
 use craft\app\db\Query;
 use craft\app\elements\Asset;
+use craft\app\helpers\ArrayHelper;
 use craft\app\helpers\Db;
 
 /**
@@ -77,6 +78,11 @@ class AssetQuery extends ElementQuery
      * @var boolean Whether the query should search the subfolders of [[folderId]].
      */
     public $includeSubfolders = false;
+
+    /**
+     * @var array The asset transform indexes that should be eager-loaded, if they exist
+     */
+    public $withTransforms;
 
     // Public Methods
     // =========================================================================
@@ -276,6 +282,37 @@ class AssetQuery extends ElementQuery
         return $this;
     }
 
+    /**
+     * Sets the [[withTransforms]] property.
+     *
+     * @param boolean $value The property value (defaults to true)
+     *
+     * @return self The query object itself
+     */
+    public function withTransforms($value)
+    {
+        $this->withTransforms = $value;
+
+        return $this;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function populate($rows)
+    {
+        $elements = parent::populate($rows);
+
+        // Eager-load transforms?
+        if (!$this->asArray && $this->withTransforms) {
+            $transforms = ArrayHelper::toArray($this->withTransforms);
+
+            Craft::$app->getAssetTransforms()->eagerLoadTransforms($elements, $transforms);
+        }
+
+        return $elements;
+    }
+
     // Protected Methods
     // =========================================================================
 
@@ -290,6 +327,7 @@ class AssetQuery extends ElementQuery
         }
 
         $this->joinElementTable('assets');
+        $this->query->innerJoin('{{%volumefolders}} volumeFolders', 'assets.folderId = volumeFolders.id');
 
         $this->query->select([
             'assets.volumeId',
@@ -300,6 +338,7 @@ class AssetQuery extends ElementQuery
             'assets.height',
             'assets.size',
             'assets.dateModified',
+            'volumeFolders.path AS folderPath'
         ]);
 
         if ($this->volumeId) {

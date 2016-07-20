@@ -335,8 +335,11 @@ Craft.Widget = Garnish.Base.extend(
     refreshSettings: function()
     {
         this.$settingsContainer.html(this.settingsHtml);
-        Craft.initUiElements(this.$settingsContainer);
-        this.initSettingsFn();
+
+        Garnish.requestAnimationFrame($.proxy(function() {
+            Craft.initUiElements(this.$settingsContainer);
+            this.initSettingsFn();
+        }, this));
     },
 
     showSettings: function()

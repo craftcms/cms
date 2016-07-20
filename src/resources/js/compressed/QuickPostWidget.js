@@ -2,7 +2,7 @@
 // Reset the widget
 var b=this.$formClone.clone();
 // Are there any Recent Entries widgets to notify?
-if(this.$form.replaceWith(b),this.initForm(b),"undefined"!=typeof Craft.RecentEntriesWidget)for(var c=0;c<Craft.RecentEntriesWidget.instances.length;c++){var d=Craft.RecentEntriesWidget.instances[c];d.params.sectionId&&d.params.sectionId!=this.params.sectionId||d.addEntry({url:a.cpEditUrl,title:a.title,postDate:a.postDate,username:a.author.username})}},gotoEntry:function(a){
+if(this.$form.replaceWith(b),this.initForm(b),"undefined"!=typeof Craft.RecentEntriesWidget)for(var c=0;c<Craft.RecentEntriesWidget.instances.length;c++){var d=Craft.RecentEntriesWidget.instances[c];d.params.sectionId&&d.params.sectionId!=this.params.sectionId||d.addEntry({url:a.cpEditUrl,title:a.title,dateCreated:a.dateCreated,username:a.authorUsername})}},gotoEntry:function(a){
 // Redirect to the entry's edit URL
 Craft.redirectTo(a.cpEditUrl)}})}(jQuery);
 //# sourceMappingURL=QuickPostWidget.js.map

@@ -112,19 +112,6 @@ class ElementsController extends BaseElementsController
      */
     public function actionSaveElement()
     {
-        /*$elementId = Craft::$app->getRequest()->getRequiredBodyParam('elementId');
-        $localeId = Craft::$app->getRequest()->getRequiredBodyParam('locale');
-        $elementType = Craft::$app->getElements()->getElementTypeById($elementId);
-        $element = Craft::$app->getElements()->getElementById($elementId, $elementType, $localeId);
-
-        if (!$element) {
-            throw new NotFoundHttpException('Element could not be found');
-        }
-
-        if (!ElementHelper::isElementEditable($element)) {
-            throw new ForbiddenHttpException('User is not permitted to edit this element');
-        }*/
-
         $element = $this->_getEditorElement();
         $namespace = Craft::$app->getRequest()->getRequiredBodyParam('namespace');
         $params = Craft::$app->getRequest()->getBodyParam($namespace);
@@ -145,13 +132,29 @@ class ElementsController extends BaseElementsController
 
         // Now save it
         if ($element::saveElement($element, $params)) {
-            return $this->asJson([
+            $response = $this->asJson([
                 'success' => true,
                 'id' => $element->id,
                 'locale' => $element->locale,
                 'newTitle' => (string)$element,
                 'cpEditUrl' => $element->getCpEditUrl(),
             ]);
+
+            // Should we be including table attributes too?
+            $sourceKey = Craft::$app->getRequest()->getBodyParam('includeTableAttributesForSource');
+
+            if ($sourceKey) {
+                $attributes = Craft::$app->getElementIndexes()->getTableAttributes($element->className(), $sourceKey);
+
+                // Drop the first one
+                array_shift($attributes);
+
+                foreach ($attributes as $attribute) {
+                    $response['tableAttributes'][$attribute[0]] = $element->getTableAttributeHtml($element, $attribute[0]);
+                }
+            }
+
+            return $response;
         } else {
             return $this->_getEditorHtmlResponse($element, false);
         }

@@ -26,6 +26,7 @@ use craft\app\web\twig\Parser;
 use craft\app\web\twig\StringTemplate;
 use craft\app\web\twig\Template;
 use craft\app\web\twig\TemplateLoader;
+use yii\base\Exception;
 use yii\helpers\Html;
 use yii\web\AssetBundle;
 
@@ -37,6 +38,19 @@ use yii\web\AssetBundle;
  */
 class View extends \yii\web\View
 {
+    // Constants
+    // =========================================================================
+
+    /**
+     * @const TEMPLATE_MODE_CP
+     */
+    const TEMPLATE_MODE_CP = 'cp';
+
+    /**
+     * @const TEMPLATE_MODE_SITE
+     */
+    const TEMPLATE_MODE_SITE = 'site';
+
     // Properties
     // =========================================================================
 
@@ -64,6 +78,16 @@ class View extends \yii\web\View
      * @var
      */
     private $_objectTemplates;
+
+    /**
+     * @var string
+     */
+    private $_templateMode;
+
+    /**
+     * @var string The root path to look for templates in
+     */
+    private $_templatesPath;
 
     /**
      * @var
@@ -119,6 +143,16 @@ class View extends \yii\web\View
     public function init()
     {
         parent::init();
+
+        // Set the initial template mode based on whether this is a CP or Site request
+        $request = Craft::$app->getRequest();
+        if (!$request->getIsConsoleRequest() && $request->getIsCpRequest()) {
+            $this->setTemplateMode(self::TEMPLATE_MODE_CP);
+        } else {
+            $this->setTemplateMode(self::TEMPLATE_MODE_SITE);
+        }
+
+        // Register the cp.elements.element hook
         $this->hook('cp.elements.element', [$this, '_getCpElementHtml']);
     }
 
@@ -128,15 +162,19 @@ class View extends \yii\web\View
      * @param string $loaderClass The name of the class that should be initialized as the Twig instance’s template
      *                            loader. If no class is passed in, [[TemplateLoader]] will be used.
      *
+     * @aram array $options Options to instantiate Twig with
+     *
      * @return Environment The Twig Environment instance.
      */
-    public function getTwig($loaderClass = null)
+    public function getTwig($loaderClass = null, $options = [])
     {
         if (!$loaderClass) {
             $loaderClass = 'craft\app\web\twig\TemplateLoader';
         }
 
-        if (!isset($this->_twigs[$loaderClass])) {
+        $cacheKey = $loaderClass.':'.md5(serialize($options));
+
+        if (!isset($this->_twigs[$cacheKey])) {
             /** @var $loader TemplateLoader */
             if ($loaderClass === 'craft\app\web\twig\TemplateLoader') {
                 $loader = new $loaderClass($this);
@@ -144,12 +182,12 @@ class View extends \yii\web\View
                 $loader = new $loaderClass();
             }
 
-            $options = $this->_getTwigOptions();
+            $options = array_merge($this->_getTwigOptions(), $options);
 
             $twig = new Environment($loader, $options);
 
             $twig->addExtension(new \Twig_Extension_StringLoader());
-            $twig->addExtension(new Extension($this));
+            $twig->addExtension(new Extension($this, $twig));
 
             if (Craft::$app->getConfig()->get('devMode')) {
                 $twig->addExtension(new \Twig_Extension_Debug());
@@ -161,16 +199,16 @@ class View extends \yii\web\View
             $timezone = Craft::$app->getTimeZone();
             $core->setTimezone($timezone);
 
-            // Give plugins a chance to add their own Twig extensions
-            $this->_addPluginTwigExtensions($twig);
-
             // Set our custom parser to support resource registration tags using the capture mode
             $twig->setParser(new Parser($twig));
 
-            $this->_twigs[$loaderClass] = $twig;
+            $this->_twigs[$cacheKey] = $twig;
+
+            // Give plugins a chance to add their own Twig extensions
+            $this->_addPluginTwigExtensions($twig);
         }
 
-        return $this->_twigs[$loaderClass];
+        return $this->_twigs[$cacheKey];
     }
 
     /**
@@ -198,8 +236,7 @@ class View extends \yii\web\View
                 $template = $this->resolveTemplate($this->_renderingTemplate);
 
                 if (!$template) {
-                    $template = rtrim(Craft::$app->getPath()->getTemplatesPath(),
-                            '/\\').'/'.$this->_renderingTemplate;
+                    $template = $this->_templatesPath.'/'.$this->_renderingTemplate;
                 }
             }
 
@@ -310,12 +347,14 @@ class View extends \yii\web\View
      * The template will be parsed for {variables} that are delimited by single braces, which will get replaced with
      * full Twig output tags, i.e. {{ object.variable }}. Regular Twig tags are also supported.
      *
-     * @param string $template The source template string.
-     * @param mixed  $object   The object that should be passed into the template.
+     * @param string  $template The source template string.
+     * @param mixed   $object   The object that should be passed into the template.
+     * @param boolean $safeMode Whether to limit what's available to in the Twig context
+     *                          in the interest of security.
      *
      * @return string The rendered template.
      */
-    public function renderObjectTemplate($template, $object)
+    public function renderObjectTemplate($template, $object, $safeMode = false)
     {
         // If there are no dynamic tags, just return the template
         if (!StringHelper::contains($template, '{')) {
@@ -323,14 +362,16 @@ class View extends \yii\web\View
         }
 
         // Get a Twig instance with the String template loader
-        $twig = $this->getTwig('Twig_Loader_String');
+        $twig = $this->getTwig('Twig_Loader_String', ['safe_mode' => $safeMode]);
 
         // Have we already parsed this template?
-        if (!isset($this->_objectTemplates[$template])) {
+        $cacheKey = $template.':'.($safeMode ? 'safe' : 'unsafe');
+
+        if (!isset($this->_objectTemplates[$cacheKey])) {
             // Replace shortcut "{var}"s with "{{object.var}}"s, without affecting normal Twig tags
             $formattedTemplate = preg_replace('/(?<![\{\%])\{(?![\{\%])/', '{{object.', $template);
             $formattedTemplate = preg_replace('/(?<![\}\%])\}(?![\}\%])/', '|raw}}', $formattedTemplate);
-            $this->_objectTemplates[$template] = $twig->loadTemplate($formattedTemplate);
+            $this->_objectTemplates[$cacheKey] = $twig->loadTemplate($formattedTemplate);
         }
 
         // Temporarily disable strict variables if it's enabled
@@ -344,7 +385,7 @@ class View extends \yii\web\View
         $lastRenderingTemplate = $this->_renderingTemplate;
         $this->_renderingTemplate = 'string:'.$template;
         /** @var Template $templateObj */
-        $templateObj = $this->_objectTemplates[$template];
+        $templateObj = $this->_objectTemplates[$cacheKey];
         $output = $templateObj->render([
             'object' => $object
         ]);
@@ -407,8 +448,8 @@ class View extends \yii\web\View
      * - TemplateName.htm
      * - TemplateName/default.htm
      *
-     * The actual directory that those files will be searched for is whatever [[\craft\app\services\Path::getTemplatesPath()]]
-     * returns (probably craft/templates/ if it’s a front-end site request, and craft/app/templates/ if it’s a Control
+     * The actual directory that those files will depend on the current [[setTemplateMode() template mode]]
+     * (probably craft/templates/ if it’s a front-end site request, and craft/app/templates/ if it’s a Control
      * Panel request).
      *
      * If this is a front-end site request, a folder named after the current locale ID will be checked first.
@@ -458,10 +499,7 @@ class View extends \yii\web\View
         // Normalize the template name
         $name = trim(preg_replace('#/{2,}#', '/', strtr($name, '\\', '/')), '/');
 
-        // Get the latest template base path
-        $templatesPath = rtrim(Craft::$app->getPath()->getTemplatesPath(), '/\\');
-
-        $key = $templatesPath.':'.$name;
+        $key = $this->_templatesPath.':'.$name;
 
         // Is this template path already cached?
         if (isset($this->_templatePaths[$key])) {
@@ -476,12 +514,14 @@ class View extends \yii\web\View
 
         // Should we be looking for a localized version of the template?
         $request = Craft::$app->getRequest();
-
-        if (!$request->getIsConsoleRequest() && $request->getIsSiteRequest() && Io::folderExists($templatesPath.'/'.Craft::$app->language)) {
-            $basePaths[] = $templatesPath.'/'.Craft::$app->language;
+        if (!$request->getIsConsoleRequest() && $request->getIsSiteRequest()) {
+            $localePath = $this->_templatesPath.'/'.Craft::$app->language;
+            if (Io::folderExists($localePath)) {
+                $basePaths[] = $localePath;
+            }
         }
 
-        $basePaths[] = $templatesPath;
+        $basePaths[] = $this->_templatesPath;
 
         foreach ($basePaths as $basePath) {
             if (($path = $this->_resolveTemplate($basePath, $name)) !== null) {
@@ -798,6 +838,79 @@ class View extends \yii\web\View
     }
 
     /**
+     * Returns the current template mode (either 'site' or 'cp').
+     *
+     * @return string Either 'site' or 'cp'.
+     */
+    public function getTemplateMode()
+    {
+        return $this->_templateMode;
+    }
+
+    /**
+     * Sets the current template mode.
+     *
+     * The template mode defines:
+     *
+     * - the base path that templates should be looked for in
+     * - the default template file extensions that should be automatically added when looking for templates
+     * - the "index" template filenames that sholud be checked when looking for templates
+     *
+     * @param string $templateMode Either 'site' or 'cp'
+     *
+     * @return void
+     * @throws Exception if $templateMode is invalid
+     */
+    public function setTemplateMode($templateMode)
+    {
+        // Validate
+        if (!in_array($templateMode, [
+            self::TEMPLATE_MODE_CP,
+            self::TEMPLATE_MODE_SITE
+        ])
+        ) {
+            throw new Exception('"'.$templateMode.'" is not a valid template mode');
+        }
+
+        // Set the new template mode
+        $this->_templateMode = $templateMode;
+
+        // Update everything
+        if ($templateMode == self::TEMPLATE_MODE_CP) {
+            $this->setTemplatesPath(Craft::$app->getPath()->getCpTemplatesPath());
+            $this->_defaultTemplateExtensions = ['html', 'twig'];
+            $this->_indexTemplateFilenames = ['index'];
+        } else {
+            $this->setTemplatesPath(Craft::$app->getPath()->getSiteTemplatesPath());
+            $configService = Craft::$app->getConfig();
+            $this->_defaultTemplateExtensions = $configService->get('defaultTemplateExtensions');
+            $this->_indexTemplateFilenames = $configService->get('indexTemplateFilenames');
+        }
+    }
+
+    /**
+     * Returns the base path that templates should be found in.
+     *
+     * @return string
+     */
+    public function getTemplatesPath()
+    {
+        return $this->_templatesPath;
+    }
+
+    /**
+     * Sets the base path that templates should be found in.
+     *
+     * @param string $templatesPath
+     *
+     * @return void
+     */
+    public function setTemplatesPath($templatesPath)
+    {
+        $this->_templatesPath = rtrim($templatesPath, '/\\');
+    }
+
+    /**
      * Renames HTML input names so they belong to a namespace.
      *
      * This method will go through the passed-in $html looking for `name=` attributes, and renaming their values such
@@ -1049,19 +1162,6 @@ class View extends \yii\web\View
         // Normalize the path and name
         $basePath = rtrim(Io::normalizePathSeparators($basePath), '/\\');
         $name = trim(Io::normalizePathSeparators($name), '/');
-
-        // Set the defaultTemplateExtensions and indexTemplateFilenames vars
-        if (!isset($this->_defaultTemplateExtensions)) {
-            $request = Craft::$app->getRequest();
-
-            if (!$request->getIsConsoleRequest() && $request->getIsCpRequest()) {
-                $this->_defaultTemplateExtensions = ['html', 'twig'];
-                $this->_indexTemplateFilenames = ['index'];
-            } else {
-                $this->_defaultTemplateExtensions = Craft::$app->getConfig()->get('defaultTemplateExtensions');
-                $this->_indexTemplateFilenames = Craft::$app->getConfig()->get('indexTemplateFilenames');
-            }
-        }
 
         // $name could be an empty string (e.g. to load the homepage template)
         if ($name) {

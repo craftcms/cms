@@ -4,8 +4,8 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "96953ca7e2fb04dafd5b29b28adb370c",
-    "content-hash": "1f3ce354d2441e7f77e4620dc5768181",
+    "hash": "ff789d68c5fc84d01252b95ee1d8a0f4",
+    "content-hash": "00848d45bd5686f0a70c45ca88805ce4",
     "packages": [
         {
             "name": "aws/aws-sdk-php",
@@ -819,11 +819,11 @@
         },
         {
             "name": "imagine/imagine",
-            "version": "0.6.11",
+            "version": "0.6.13",
             "source": {
                 "type": "git",
                 "url": "https://github.com/pixelandtonic/Imagine",
-                "reference": "0b8a850e16d29b603ab24889bc240ed9d8a0decf"
+                "reference": "321ce48efba858a932d1e5b9fd67e92249790925"
             },
             "archive": {
                 "exclude": [
@@ -877,7 +877,7 @@
                 "image manipulation",
                 "image processing"
             ],
-            "time": "2016-03-28 18:56:07"
+            "time": "2016-06-21 11:58:06"
         },
         {
             "name": "league/flysystem",

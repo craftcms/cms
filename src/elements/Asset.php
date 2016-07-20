@@ -13,6 +13,7 @@ use craft\app\base\ElementInterface;
 use craft\app\base\Volume;
 use craft\app\elements\actions\CopyReferenceTag;
 use craft\app\elements\actions\DeleteAssets;
+use craft\app\elements\actions\DownloadAssetFile;
 use craft\app\elements\actions\Edit;
 use craft\app\elements\actions\RenameFile;
 use craft\app\elements\actions\ReplaceFile;
@@ -94,9 +95,9 @@ class Asset extends Element
             $sourceIds = Craft::$app->getVolumes()->getAllVolumeIds();
         }
 
-        $tree = Craft::$app->getAssets()->getFolderTreeByVolumeIds($sourceIds);
-
-        $sources = static::_assembleSourceList($tree);
+        $additionalCriteria = $context == 'settings' ? ['parentId' => ':empty:'] : [];
+        $tree = Craft::$app->getAssets()->getFolderTreeByVolumeIds($sourceIds, $additionalCriteria);
+        $sources = static::_assembleSourceList($tree, $context != 'settings');
 
         // Allow plugins to modify the sources
         Craft::$app->getPlugins()->call(
@@ -136,13 +137,21 @@ class Asset extends Element
         if (preg_match('/^folder:(\d+)$/', $source, $matches)) {
             $folderId = $matches[1];
 
-            // View
-            $actions[] = Craft::$app->getElements()->createAction(
-                [
-                    'type' => View::className(),
-                    'label' => Craft::t('app', 'View asset'),
-                ]
-            );
+            $folder = Craft::$app->getAssets()->getFolderById($folderId);
+            $volume = $folder->getVolume();
+
+            // View for public URLs
+            if ($volume->hasUrls) {
+                $actions[] = Craft::$app->getElements()->createAction(
+                    [
+                        'type' => View::className(),
+                        'label' => Craft::t('app', 'View asset'),
+                    ]
+                );
+            }
+
+            // Download
+            $actions[] = DownloadAssetFile::className();
 
             // Edit
             $actions[] = Craft::$app->getElements()->createAction(
@@ -356,7 +365,8 @@ class Asset extends Element
                     'value' => $element->filename,
                     'errors' => $element->getErrors('filename'),
                     'first' => true,
-                    'required' => true
+                    'required' => true,
+                    'class' => 'renameHelper text'
                 ]
             ]
         );
@@ -401,7 +411,7 @@ class Asset extends Element
             // Rename the file
             try {
                 Craft::$app->getAssets()->renameAsset($element, $newFilename);
-            } catch (AssetConflictException $exception) {
+            } catch (Exception $exception) {
                 $element->addError('filename', $exception->getMessage());
 
                 return false;
@@ -520,14 +530,14 @@ class Asset extends Element
     public $folderId;
 
     /**
+     * @var string Folder path
+     */
+    public $folderPath;
+
+    /**
      * @var string Filename
      */
     public $filename;
-
-    /**
-     * @var string Original name
-     */
-    public $originalName;
 
     /**
      * @var string Kind
@@ -573,6 +583,11 @@ class Asset extends Element
      * @var string
      */
     private $_transformSource = '';
+
+    /**
+     * @var Volume
+     */
+    private $_volume = null;
 
     // Public Methods
     // =========================================================================
@@ -706,8 +721,8 @@ class Asset extends Element
         $rules[] = [
             ['size'],
             'number',
-            'min' => -2147483648,
-            'max' => 2147483647,
+            'min' => 0,
+            'max' => 18446744073709551615,
             'integerOnly' => true
         ];
         $rules[] = [['dateModified'], 'craft\\app\\validators\\DateTime'];
@@ -766,7 +781,7 @@ class Asset extends Element
      */
     public function getImg()
     {
-        if ($this->kind == 'image') {
+        if ($this->kind == 'image' && $this->getHasUrls()) {
             $img = '<img src="'.$this->getUrl().'" width="'.$this->getWidth().'" height="'.$this->getHeight().'" alt="'.Html::encode($this->title).'" />';
 
             return Template::getRaw($img);
@@ -788,7 +803,11 @@ class Asset extends Element
      */
     public function getVolume()
     {
-        return Craft::$app->getVolumes()->getVolumeById($this->volumeId);
+        if (is_null($this->_volume)) {
+            $this->_volume = Craft::$app->getVolumes()->getVolumeById($this->volumeId);
+        }
+
+        return $this->_volume;
     }
 
     /**
@@ -814,6 +833,19 @@ class Asset extends Element
      */
     public function getUrl($transform = null)
     {
+        if (!$this->getHasUrls()) {
+            return false;
+        }
+
+        if (is_array($transform)) {
+            if (isset($transform['width'])) {
+                $transform['width'] = round($transform['width']);
+            }
+            if (isset($transform['height'])) {
+                $transform['height'] = round($transform['height']);
+            }
+        }
+
         if ($transform === null && isset($this->_transform)) {
             $transform = $this->_transform;
         }
@@ -951,9 +983,7 @@ class Asset extends Element
      */
     public function getUri($filename = null)
     {
-        $folder = $this->getFolder();
-
-        return $folder->path.($filename ?: $this->filename);
+        return $this->folderPath.($filename ?: $this->filename);
     }
 
     /**
@@ -970,6 +1000,18 @@ class Asset extends Element
         } else {
             return Craft::$app->getPath()->getAssetsImageSourcePath().'/'.$this->id.'.'.$this->getExtension();
         }
+    }
+
+    /**
+     * Return whether the Asset has a URL.
+     *
+     * @return bool
+     */
+    public function getHasUrls()
+    {
+        $volume = $this->getVolume();
+
+        return $volume && $volume->hasUrls;
     }
 
     // Private Methods

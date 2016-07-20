@@ -58,6 +58,16 @@ class Volumes extends Component
     /**
      * @var
      */
+    private $_publicVolumeIds;
+
+    /**
+     * @var
+     */
+    private $_publicVolumes;
+
+    /**
+     * @var
+     */
     private $_volumesById;
 
     /**
@@ -74,7 +84,7 @@ class Volumes extends Component
     /**
      * Returns all available volume types.
      *
-     * @return Volume[] the available volume type classes
+     * @return array the available volume type classes
      */
     public function getAllVolumeTypes()
     {
@@ -143,7 +153,7 @@ class Volumes extends Component
      *
      * @param string|null $indexBy
      *
-     * @return array
+     * @return Volume[]
      */
     public function getViewableVolumes($indexBy = null)
     {
@@ -163,6 +173,59 @@ class Volumes extends Component
             $volumes = [];
 
             foreach ($this->_viewableVolumes as $volume) {
+                $volumes[$volume->$indexBy] = $volume;
+            }
+
+            return $volumes;
+        }
+    }
+
+    /**
+     * Returns all volume IDs that have public URLs.
+     *
+     * @return array
+     */
+    public function getPublicVolumeIds()
+    {
+        if (!isset($this->_publicVolumeIds)) {
+            $this->_publicVolumeIds = [];
+
+
+            foreach ($this->getAllVolumes() as $volume) {
+                if ($volume->hasUrls) {
+                    $this->_publicVolumeIds[] = $volume->id;
+                }
+            }
+        }
+
+        return $this->_publicVolumeIds;
+    }
+
+    /**
+     * Returns all volumes that have public URLs.
+     *
+     * @param string|null $indexBy
+     *
+     * @return Volume[]
+     */
+    public function getPublicVolumes($indexBy = null)
+    {
+        if (!isset($this->_publicVolumes)) {
+            $this->_publicVolumes = [];
+
+            foreach ($this->getAllVolumes() as $volume) {
+                if ($volume->hasUrls) {
+                    $this->_publicVolumes[] = $volume;
+                }
+            }
+        }
+
+        if (!$indexBy) {
+            return $this->_publicVolumes;
+        } else {
+            $volumes = [];
+
+            foreach ($this->_publicVolumes as $volume) {
                 $volumes[$volume->$indexBy] = $volume;
             }
 
@@ -195,7 +258,7 @@ class Volumes extends Component
      *
      * @param string|null $indexBy
      *
-     * @return array
+     * @return Volume[]
      */
     public function getAllVolumes($indexBy = null)
     {
@@ -242,8 +305,7 @@ class Volumes extends Component
         if (is_null($volumeId)) {
             return new Temp();
         } else {
-            // If we've already fetched all volumes we can save ourselves a trip to the DB for volume IDs that don't
-            // exist
+            // If we've already fetched all volumes, just use that.
             if (!$this->_fetchedAllVolumes &&
                 (!isset($this->_volumesById) || !array_key_exists($volumeId,
                         $this->_volumesById))
@@ -286,15 +348,20 @@ class Volumes extends Component
 
             try {
                 $volumeRecord = $this->_getVolumeRecordById($volume->id);
-
                 $isNewVolume = $volumeRecord->getIsNewRecord();
 
                 $volumeRecord->name = $volume->name;
                 $volumeRecord->handle = $volume->handle;
                 $volumeRecord->type = $volume->getType();
-                $volumeRecord->url = $volume->url;
+                $volumeRecord->hasUrls = $volume->hasUrls;
                 $volumeRecord->settings = $volume->settings;
                 $volumeRecord->fieldLayoutId = $volume->fieldLayoutId;
+
+                if ($volume->hasUrls) {
+                    $volumeRecord->url = $volume->url;
+                } else {
+                    $volumeRecord->url = null;
+                }
 
                 $fields = Craft::$app->getFields();
                 if (!$isNewVolume) {
@@ -465,7 +532,7 @@ class Volumes extends Component
     private function _createVolumeQuery()
     {
         return (new Query())
-            ->select('id, fieldLayoutId, name, handle, type, url, settings, sortOrder')
+            ->select('id, fieldLayoutId, name, handle, type, hasUrls, url, settings, sortOrder')
             ->from('{{%volumes}}')
             ->orderBy('sortOrder');
     }

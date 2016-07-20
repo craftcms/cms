@@ -33,6 +33,8 @@ use yii\web\Response;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
+// TODO: permission rework
+// TODO: All exceptions must be translatable.
 class AssetsController extends Controller
 {
     // Properties
@@ -170,7 +172,7 @@ class AssetsController extends Controller
                     } catch (AssetConflictException $exception) {
                         // Okay, get a replacement name and re-save Asset.
                         $replacementName = $assets->getNameReplacementInFolder($asset->filename,
-                            $folder);
+                            $folder->id);
                         $asset->filename = $replacementName;
 
                         $assets->saveAsset($asset);
@@ -405,9 +407,8 @@ class AssetsController extends Controller
                                 $asset, true);
                         } else {
                             if ($conflictResolution == 'keepBoth') {
-                                $targetFolder = $assets->getFolderById($folderId);
                                 $newFilename = $assets->getNameReplacementInFolder($asset->filename,
-                                    $targetFolder);
+                                    $folderId);
                                 $assets->moveAsset($asset,
                                     $folderId, $newFilename);
                             }
@@ -552,6 +553,39 @@ class AssetsController extends Controller
     }
 
     /**
+     * Download a file.
+     *
+     * @return Response
+     * @throws BadRequestHttpException if the file to download cannot be found.
+     */
+    public function actionDownloadAsset()
+    {
+        $this->requireLogin();
+        $this->requirePostRequest();
+
+        $assetId = Craft::$app->getRequest()->getRequiredBodyParam('assetId');
+        $assetService = Craft::$app->getAssets();
+
+        $asset = $assetService->getAssetById($assetId);
+        if (!$asset) {
+            throw new BadRequestHttpException(Craft::t('app', 'The Asset you\'re trying to download does not exist.'));
+        }
+
+        $this->_requirePermissionByAsset("viewAssetSource", $asset);
+
+        // All systems go, engage hyperdrive! (so PHP doesn't interrupt our stream)
+        Craft::$app->getConfig()->maxPowerCaptain();
+        $localPath = Io::getTempFilePath($asset->getExtension());
+
+        // TODO no reason for this not to be a method on Asset itself.
+        $asset->getVolume()->saveFileLocally($asset->getUri(), $localPath);
+
+        Craft::$app->getResponse()->sendFile($localPath, $asset->filename, false);
+        Io::deleteFile($localPath);
+        Craft::$app->end();
+    }
+
+    /**
      * Generate a transform.
      *
      * @return Response
@@ -559,7 +593,7 @@ class AssetsController extends Controller
     public function actionGenerateTransform()
     {
         $request = Craft::$app->getRequest();
-        $transformId = $request->getQuery('transformId');
+        $transformId = $request->getQueryParam('transformId');
         $returnUrl = (bool)$request->getBodyParam('returnUrl',
             false);
 
@@ -586,31 +620,10 @@ class AssetsController extends Controller
     }
 
     /**
-     * Get information about available transforms.
-     *
-     * @return Response
-     */
-    public function actionGetTransformInfo()
-    {
-        $this->requireAjaxRequest();
-        $transforms = Craft::$app->getAssetTransforms()->getAllTransforms();
-        $output = [];
-        foreach ($transforms as $transform) {
-            $output[] = (object)[
-                'id' => $transform->id,
-                'handle' => $transform->handle,
-                'name' => $transform->name
-            ];
-        }
-
-        return $this->asJson($output);
-    }
-
-    /**
      * Require an Assets permissions.
      *
      * @param string $permissionName Name of the permission to require.
-     * @param Asset  $assetId        Asset on the Volume on which to require the permission.
+     * @param Asset  $asset          Asset on the Volume on which to require the permission.
      *
      * @return void
      */

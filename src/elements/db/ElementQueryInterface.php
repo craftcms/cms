@@ -175,6 +175,15 @@ interface ElementQueryInterface extends QueryInterface
     public function ref($value);
 
     /**
+     * Sets the [[with]] property.
+     *
+     * @param string|string[] $value The property value
+     *
+     * @return self The query object itself
+     */
+    public function with($value);
+
+    /**
      * Sets the [[structureId]] property.
      *
      * @param integer $value The property value

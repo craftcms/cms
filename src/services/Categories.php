@@ -672,15 +672,16 @@ class Categories extends Component
     public function isGroupTemplateValid(CategoryGroup $group)
     {
         if ($group->hasUrls) {
-            // Set Craft to the site template path
-            $oldTemplatesPath = Craft::$app->getPath()->getTemplatesPath();
-            Craft::$app->getPath()->setTemplatesPath(Craft::$app->getPath()->getSiteTemplatesPath());
+            // Set Craft to the site template mode
+            $view = Craft::$app->getView();
+            $oldTemplateMode = $view->getTemplateMode();
+            $view->setTemplateMode($view::TEMPLATE_MODE_SITE);
 
             // Does the template exist?
             $templateExists = Craft::$app->getView()->doesTemplateExist($group->template);
 
-            // Restore the original template path
-            Craft::$app->getPath()->setTemplatesPath($oldTemplatesPath);
+            // Restore the original template mode
+            $view->setTemplateMode($oldTemplateMode);
 
             if ($templateExists) {
                 return true;

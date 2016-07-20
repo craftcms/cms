@@ -52,7 +52,7 @@ class RebrandController extends Controller
         $type = Craft::$app->getRequest()->getRequiredBodyParam('type');
 
         if (!in_array($type, $this->_allowedTypes)) {
-            return $this->asErrorJson(Craft::t('app', 'That is not an accepted site image type.'));
+            return $this->asErrorJson(Craft::t('app', 'That is not an allowed image type.'));
         }
 
         // Upload the file and drop it in the temporary folder
@@ -61,7 +61,7 @@ class RebrandController extends Controller
         try {
             // Make sure a file was uploaded
             if ($file) {
-                $filename = Assets::prepareAssetName($file->name);
+                $filename = Assets::prepareAssetName($file->name, true, true);
 
                 if (!Image::isImageManipulatable($file->getExtension())) {
                     throw new BadRequestHttpException('The uploaded file is not an image');
@@ -129,7 +129,7 @@ class RebrandController extends Controller
         $type = $requestService->getRequiredBodyParam('type');
 
         if (!in_array($type, $this->_allowedTypes)) {
-            $this->asErrorJson(Craft::t('app', 'That is not a legal site image type.'));
+            $this->asErrorJson(Craft::t('app', 'That is not an allowed image type.'));
         }
 
         try {
@@ -186,7 +186,7 @@ class RebrandController extends Controller
         $type = Craft::$app->getRequest()->getRequiredBodyParam('type');
 
         if (!in_array($type, $this->_allowedTypes)) {
-            $this->asErrorJson(Craft::t('app', 'That is not a legal site image type.'));
+            $this->asErrorJson(Craft::t('app', 'That is not an allowed image type.'));
         }
 
         Io::clearFolder(Craft::$app->getPath()->getRebrandPath().$type.'/');

@@ -1,12 +1,12 @@
 {% extends "_layouts/message" %}
-{% set title = "Update Craft"|t('app') %}
+{% set title = "Update Craft CMS"|t('app') %}
 
 {% block message %}
 	{% set handle = craft.updates.getManualUpdateHandle() %}
 
 	{% if handle is null %}
-		{% set handle = 'Craft' %}
-		{% set name = 'Craft' %}
+		{% set handle = 'craft' %}
+		{% set name = 'Craft CMS' %}
 	{% endif %}
 
 	{% set name = craft.updates.getManualUpdateDisplayName() %}

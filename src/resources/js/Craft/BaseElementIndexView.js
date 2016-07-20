@@ -98,7 +98,7 @@ Craft.BaseElementIndexView = Garnish.Base.extend(
 
                 if (Garnish.hasAttr($element, 'data-editable'))
                 {
-                    new Craft.ElementEditor($element);
+                    this.createElementEditor($element);
                 }
             });
         }
@@ -362,6 +362,11 @@ Craft.BaseElementIndexView = Garnish.Base.extend(
     {
         this.settings.onSelectionChange();
         this.trigger('selectionChange');
+    },
+
+    createElementEditor: function($element)
+    {
+        new Craft.ElementEditor($element);
     },
 
     disable: function()

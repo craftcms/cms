@@ -10,11 +10,13 @@ namespace craft\app\elements;
 use Craft;
 use craft\app\base\Element;
 use craft\app\base\ElementInterface;
+use craft\app\db\Query;
 use craft\app\elements\actions\Delete;
 use craft\app\elements\actions\Edit;
 use craft\app\elements\actions\NewChild;
 use craft\app\elements\actions\SetStatus;
 use craft\app\elements\actions\View;
+use craft\app\elements\db\ElementQuery;
 use craft\app\elements\db\ElementQueryInterface;
 use craft\app\elements\db\EntryQuery;
 use craft\app\events\SetStatusEvent;
@@ -506,6 +508,49 @@ class Entry extends Element
     /**
      * @inheritdoc
      */
+    public static function getEagerLoadingMap($sourceElements, $handle)
+    {
+        if ($handle == 'author') {
+            // Get the source element IDs
+            $sourceElementIds = [];
+
+            foreach ($sourceElements as $sourceElement) {
+                $sourceElementIds[] = $sourceElement->id;
+            }
+
+            $map = (new Query())
+                ->select('id as source, authorId as target')
+                ->from('{{%entries}}')
+                ->where(['in', 'id', $sourceElementIds])
+                ->all();
+
+            return [
+                'elementType' => User::className(),
+                'map' => $map
+            ];
+        }
+
+        return parent::getEagerLoadingMap($sourceElements, $handle);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    protected static function prepElementQueryForTableAttribute(ElementQueryInterface $elementQuery, $attribute)
+    {
+        /** @var ElementQuery $elementQuery */
+        if ($attribute == 'author') {
+            $with = $elementQuery->with ?: [];
+            $with[] = 'author';
+            $elementQuery->with = $with;
+        } else {
+            parent::prepElementQueryForTableAttribute($elementQuery, $attribute);
+        }
+    }
+
+    /**
+     * @inheritdoc
+     */
     public static function getEditorHtml(ElementInterface $element)
     {
         /** @var Entry $element */
@@ -570,6 +615,15 @@ EOD;
     public static function saveElement(ElementInterface $element, $params)
     {
         /** @var Entry $element */
+        // Make sure we have an author for this.
+        if (!$element->authorId) {
+            if (!empty($params['author'])) {
+                $element->authorId = $params['author'];
+            } else {
+                $element->authorId = Craft::$app->getUser()->getId();
+            }
+        }
+
         // Route this through \craft\app\services\Entries::saveEntry() so the proper entry events get fired.
         return Craft::$app->getEntries()->saveEntry($element);
     }
@@ -658,6 +712,11 @@ EOD;
      * @var string Revision notes
      */
     public $revisionNotes;
+
+    /**
+     * @var User
+     */
+    private $_author;
 
     // Public Methods
     // =========================================================================
@@ -821,11 +880,21 @@ EOD;
      */
     public function getAuthor()
     {
-        if ($this->authorId) {
-            return Craft::$app->getUsers()->getUserById($this->authorId);
+        if (!isset($this->_author) && $this->authorId) {
+            $this->_author = Craft::$app->getUsers()->getUserById($this->authorId);
         }
 
-        return null;
+        return $this->_author;
+    }
+
+    /**
+     * Sets the entry's author.
+     *
+     * @param User|null $author
+     */
+    public function setAuthor(User $author = null)
+    {
+        $this->_author = $author;
     }
 
     /**
@@ -885,6 +954,19 @@ EOD;
         }
 
         return null;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function setEagerLoadedElements($handle, $elements)
+    {
+        if ($handle == 'author') {
+            $author = isset($elements[0]) ? $elements[0] : null;
+            $this->setAuthor($author);
+        } else {
+            parent::setEagerLoadedElements($handle, $elements);
+        }
     }
 
     // Protected Methods

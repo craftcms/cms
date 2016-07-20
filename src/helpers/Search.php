@@ -42,12 +42,13 @@ class Search
     /**
      * Normalizes search keywords.
      *
-     * @param string $str    The dirty keywords.
-     * @param array  $ignore Ignore words to strip out.
+     * @param string  $str            The dirty keywords
+     * @param array   $ignore         Ignore words to strip out
+     * @param boolean $processCharMap Whether to remove punctuation and diacritics (default is true)
      *
      * @return string The cleansed keywords.
      */
-    public static function normalizeKeywords($str, $ignore = [])
+    public static function normalizeKeywords($str, $ignore = [], $processCharMap = true)
     {
         // Flatten
         if (is_array($str)) {
@@ -63,11 +64,13 @@ class Search
         // Get rid of entities
         $str = preg_replace("/&#?[a-z0-9]{2,8};/i", "", $str);
 
-        // Remove punctuation and diacritics
-        $str = strtr($str, static::_getCharMap());
-
         // Normalize to lowercase
         $str = StringHelper::toLowerCase($str);
+
+        if ($processCharMap) {
+            // Remove punctuation and diacritics
+            $str = strtr($str, static::_getCharMap());
+        }
 
         // Remove ignore-words?
         if (is_array($ignore) && !empty($ignore)) {
