@@ -40,7 +40,7 @@
         "league/flysystem-aws-s3-v3": "1.0.13",
         "league/flysystem-rackspace": "1.0.5",
         "league/flysystem-ziparchive": "1.0.2",
-        "flysystem-google-cloud": "1.0",
+        "pixelandtonic/flysystem-google-cloud": "1.0",
         "pclzip/pclzip": "2.8.2",
         "fxp/composer-asset-plugin": "1.2.0"
     },
