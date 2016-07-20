@@ -1912,7 +1912,5 @@ class UsersController extends Controller
         $url = Url::getSiteUrl($activateAccountSuccessPath);
 
         return $this->redirectToPostedUrl($url);
-
-        return null;
     }
 }

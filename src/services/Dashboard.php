@@ -200,8 +200,6 @@ class Dashboard extends Component
 
                 throw $e;
             }
-
-            return true;
         }
 
         return false;
