@@ -16,7 +16,7 @@ use craft\app\events\Event;
 use craft\app\events\UpdateEvent;
 use craft\app\helpers\DateTimeHelper;
 use craft\app\helpers\Io;
-use craft\app\helpers\Update;
+use craft\app\helpers\Update as UpdateHelper;
 use craft\app\models\AppUpdate;
 use craft\app\models\PluginNewRelease;
 use craft\app\models\PluginUpdate;
@@ -744,17 +744,17 @@ class Updates extends Component
 
             if ($dbBackupPath && Craft::$app->getConfig()->get('backupDbOnUpdate') && Craft::$app->getConfig()->get('restoreDbOnUpdateFailure')) {
                 Craft::info('Rolling back any database changes.', __METHOD__);
-                Update::rollBackDatabaseChanges($dbBackupPath);
+                UpdateHelper::rollBackDatabaseChanges($dbBackupPath);
                 Craft::info('Done rolling back any database changes.', __METHOD__);
             }
 
             // If uid !== false, it's an auto-update.
             if ($uid !== false) {
                 Craft::info('Rolling back any file changes.', __METHOD__);
-                $manifestData = Update::getManifestData(Update::getUnzipFolderFromUID($uid), $handle);
+                $manifestData = UpdateHelper::getManifestData(UpdateHelper::getUnzipFolderFromUID($uid), $handle);
 
                 if ($manifestData) {
-                    Update::rollBackFileChanges($manifestData, $handle);
+                    UpdateHelper::rollBackFileChanges($manifestData, $handle);
                 }
 
                 Craft::info('Done rolling back any file changes.', __METHOD__);
