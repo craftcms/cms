@@ -450,7 +450,7 @@ class Application extends \yii\web\Application
 
         // Are they requesting an installer template/action specifically?
         if ($isCpRequest && $request->getSegment(1) === 'install' && !$isInstalled) {
-            $action = $request->getSegment(2, 'index');
+            $action = $request->getSegment(2) ?: 'index';
 
             return $this->runAction('install/'.$action);
         }

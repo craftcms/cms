@@ -141,7 +141,8 @@ class Url
         }
 
         if (static::isRootRelativeUrl($url)) {
-            return Craft::$app->getRequest()->getHostInfo($protocol).$url;
+            // Prepend the current request's protocol and host name
+            $url = Craft::$app->getRequest()->getHostInfo().$url;
         }
 
         return preg_replace('/^https?:/', $protocol.':', $url);
@@ -409,12 +410,16 @@ class Url
                 }
             } else {
                 // Figure it out for ourselves, then
-                $baseUrl = $request->getHostInfo($protocol ?: '');
+                $baseUrl = $request->getHostInfo();
 
                 if ($showScriptName) {
                     $baseUrl .= $request->getScriptUrl();
                 } else {
                     $baseUrl .= $request->getBaseUrl();
+                }
+
+                if ($protocol) {
+                    $baseUrl = static::getUrlWithProtocol($baseUrl, $protocol);
                 }
             }
         } else {

@@ -511,7 +511,8 @@ trait ApplicationTrait
                     $siteUrl = $this->getConfig()->parseEnvironmentString($siteUrl);
                 } else {
                     // Figure it out for ourselves, then
-                    $siteUrl = $this->getRequest()->getBaseUrl(true);
+                    $request = $this->getRequest();
+                    $siteUrl = $request->getHostInfo().$request->getBaseUrl();
                 }
             }
 

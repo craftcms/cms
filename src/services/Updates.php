@@ -553,7 +553,7 @@ class Updates extends Component
                         }
                     }
 
-                    Craft::info('Updating plugin "'.$class.'" from '.$localVersion.' to '.$latestVersion.'.', LogLevel::Info, true);
+                    Craft::info('Updating plugin "'.$class.'" from '.$localVersion.' to '.$latestVersion.'.', LogLevel::Info);
                 }
 
                 $result = $updater->getUpdateFileInfo($handle);

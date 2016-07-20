@@ -36,13 +36,12 @@ class Globals
      * Returns all global sets that are editable by the current user.
      *
      * @param string|null $indexBy
-     * @param string|null $localeId
      *
      * @return array
      */
-    public function getEditableSets($indexBy = null, $localeId = null)
+    public function getEditableSets($indexBy = null)
     {
-        return \Craft::$app->getGlobals()->getEditableSets($indexBy, $localeId);
+        return \Craft::$app->getGlobals()->getEditableSets($indexBy);
     }
 
     /**

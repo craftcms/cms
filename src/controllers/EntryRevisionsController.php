@@ -131,7 +131,7 @@ class EntryRevisionsController extends BaseEntriesController
         $draft->name = $name;
         $draft->revisionNotes = Craft::$app->getRequest()->getBodyParam('notes');
 
-        if (Craft::$app->getEntryRevisions()->saveDraft($draft, false)) {
+        if (Craft::$app->getEntryRevisions()->saveDraft($draft)) {
             return $this->asJson(['success' => true]);
         }
 

@@ -310,7 +310,7 @@ class Entries extends Component
                         $children = $entry->getChildren()->status(null)->localeEnabled(false)->limit(null)->find();
 
                         foreach ($children as $child) {
-                            Craft::$app->getStructures()->moveBefore($section->structureId, $child, $entry, 'update', true);
+                            Craft::$app->getStructures()->moveBefore($section->structureId, $child, $entry, 'update');
                         }
                     }
 

@@ -249,7 +249,7 @@ class Formatter extends \yii\i18n\Formatter
 
         if (strncmp($format, 'php:', 4) === 0) {
             $format = substr($format, 4);
-            $format = FormatConverter::convertDatePhpToIcu($format, $type, $this->locale);
+            $format = FormatConverter::convertDatePhpToIcu($format);
         }
 
         if ($timeZone != null) {

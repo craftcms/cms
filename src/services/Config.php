@@ -307,7 +307,7 @@ class Config extends Component
                             $response = (new Client())->get($url,
                                 ['connect_timeout' => 2, 'timeout' => 4]);
 
-                            if ($response->getBody(true) === 'success') {
+                            if ((string)$response->getBody() === 'success') {
                                 $this->_omitScriptNameInUrls = 'y';
                             }
                         } catch (RequestException $e) {
@@ -385,7 +385,7 @@ class Config extends Component
                             $response = (new Client())->get($url,
                                 ['connect_timeout' => 2, 'timeout' => 4]);
 
-                            if ($response->getBody(true) === 'success') {
+                            if ((string)$response->getBody() === 'success') {
                                 $this->_usePathInfo = 'y';
                             }
                         } catch (RequestException $e) {

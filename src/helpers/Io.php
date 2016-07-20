@@ -138,14 +138,14 @@ class Io
      */
     public static function getFolders($path, $suppressErrors = false)
     {
-        $path = static::normalizePathSeparators($path, $suppressErrors);
+        $path = static::normalizePathSeparators($path);
 
         if (static::folderExists($path, false, $suppressErrors)) {
             $folders = $suppressErrors ? @glob($path.'*', GLOB_ONLYDIR) : glob($path.'*', GLOB_ONLYDIR);
 
             if ($folders) {
                 foreach ($folders as $key => $folder) {
-                    $folders[$key] = static::normalizePathSeparators($folder, $suppressErrors);
+                    $folders[$key] = static::normalizePathSeparators($folder);
                 }
 
                 return $folders;
@@ -165,7 +165,7 @@ class Io
      */
     public static function getFiles($path, $suppressErrors = false)
     {
-        $path = static::normalizePathSeparators($path, $suppressErrors);
+        $path = static::normalizePathSeparators($path);
 
         if (static::folderExists($path, false, $suppressErrors)) {
             return $suppressErrors ? @glob($path.'*.*') : glob($path.'*');

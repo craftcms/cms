@@ -108,7 +108,8 @@ class UpdateElementSlugsAndUris extends Task
                 ->ids();
 
             if ($childIds) {
-                $this->runSubTask(self::className(), [
+                $this->runSubTask([
+                    'type' => self::className(),
                     'description' => Craft::t('app', 'Updating children'),
                     'elementId' => $childIds,
                     'elementType' => $this->elementType,

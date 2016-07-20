@@ -97,7 +97,7 @@ class StringHelper extends \yii\helpers\StringHelper
      */
     public static function containsAny($haystack, $needles, $caseSensitive = true)
     {
-        return (string)Stringy::create($haystack)->containsAny($haystack, $needles, $caseSensitive);
+        return (string)Stringy::create($haystack)->containsAny($needles, $caseSensitive);
     }
 
     /**
@@ -112,7 +112,7 @@ class StringHelper extends \yii\helpers\StringHelper
      */
     public static function containsAll($haystack, $needles, $caseSensitive = true)
     {
-        return (string)Stringy::create($haystack)->containsAll($haystack, $needles, $caseSensitive);
+        return (string)Stringy::create($haystack)->containsAll($needles, $caseSensitive);
     }
 
     /**

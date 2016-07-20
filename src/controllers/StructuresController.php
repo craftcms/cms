@@ -105,12 +105,12 @@ class StructuresController extends Controller
 
         if ($prevElementId) {
             $prevElement = Craft::$app->getElements()->getElementById($prevElementId, null, $this->_element->locale);
-            $success = Craft::$app->getStructures()->moveAfter($this->_structure->id, $this->_element, $prevElement, 'auto', true);
+            $success = Craft::$app->getStructures()->moveAfter($this->_structure->id, $this->_element, $prevElement, 'auto');
         } else if ($parentElementId) {
             $parentElement = Craft::$app->getElements()->getElementById($parentElementId, null, $this->_element->locale);
-            $success = Craft::$app->getStructures()->prepend($this->_structure->id, $this->_element, $parentElement, 'auto', true);
+            $success = Craft::$app->getStructures()->prepend($this->_structure->id, $this->_element, $parentElement, 'auto');
         } else {
-            $success = Craft::$app->getStructures()->prependToRoot($this->_structure->id, $this->_element, 'auto', true);
+            $success = Craft::$app->getStructures()->prependToRoot($this->_structure->id, $this->_element, 'auto');
         }
 
         return $this->asJson([

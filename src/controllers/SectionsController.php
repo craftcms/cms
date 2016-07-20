@@ -363,7 +363,7 @@ class SectionsController extends Controller
         }
 
         // Set the simple stuff
-        $entryType->sectionId = Craft::$app->getRequest()->getRequiredBodyParam('sectionId', $entryType->sectionId);
+        $entryType->sectionId = Craft::$app->getRequest()->getRequiredBodyParam('sectionId');
         $entryType->name = Craft::$app->getRequest()->getBodyParam('name', $entryType->name);
         $entryType->handle = Craft::$app->getRequest()->getBodyParam('handle', $entryType->handle);
         $entryType->hasTitleField = (bool)Craft::$app->getRequest()->getBodyParam('hasTitleField', $entryType->hasTitleField);

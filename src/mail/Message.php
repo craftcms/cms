@@ -70,7 +70,7 @@ class Message extends \yii\swiftmailer\Message
     {
         $to = $this->_normalizeEmails($to);
 
-        return parent::setTo($to, true);
+        return parent::setTo($to);
     }
 
     /**

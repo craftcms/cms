@@ -266,13 +266,11 @@ class HttpRequest
      * Returns the schema and host part of the application URL.  The returned URL does not have an ending slash. By
      * default this is determined based on the user request information.
      *
-     * @param string $schema
-     *
      * @return string
      */
-    public function getHostInfo($schema = '')
+    public function getHostInfo()
     {
-        return \Craft::$app->getRequest()->getHostInfo($schema);
+        return \Craft::$app->getRequest()->getHostInfo();
     }
 
     /**
