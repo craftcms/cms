@@ -196,6 +196,8 @@ class Et
      */
     public function phoneHome()
     {
+        $cacheService = Craft::$app->getCache();
+
         try {
             $missingLicenseKey = empty($this->_model->licenseKey);
 
@@ -222,8 +224,8 @@ class Et
 
                     if ($response->getStatusCode() == 200) {
                         // Clear the connection failure cached item if it exists.
-                        if (Craft::$app->getCache()->get('etConnectFailure')) {
-                            Craft::$app->getCache()->delete('etConnectFailure');
+                        if ($cacheService->get('etConnectFailure')) {
+                            $cacheService->delete('etConnectFailure');
                         }
 
                         if ($this->_destinationFilename) {
@@ -247,17 +249,19 @@ class Et
                             }
 
                             // Cache the Craft/plugin license key statuses, and which edition Craft is licensed for
-                            Craft::$app->getCache()->set('licenseKeyStatus', $etModel->licenseKeyStatus);
-                            Craft::$app->getCache()->set('licensedEdition', $etModel->licensedEdition);
-                            Craft::$app->getCache()->set('editionTestableDomain@'.Craft::$app->getRequest()->getHostName(), $etModel->editionTestableDomain ? 1 : 0);
+                            $cacheService->set('licenseKeyStatus', $etModel->licenseKeyStatus);
+                            $cacheService->set('licensedEdition', $etModel->licensedEdition);
+                            $cacheService->set('editionTestableDomain@'.Craft::$app->getRequest()->getHostName(), $etModel->editionTestableDomain ? 1 : 0);
 
                             if ($etModel->licenseKeyStatus == LicenseKeyStatus::Mismatched) {
-                                Craft::$app->getCache()->set('licensedDomain', $etModel->licensedDomain);
+                                $cacheService->set('licensedDomain', $etModel->licensedDomain);
                             }
 
                             if (is_array($etModel->pluginLicenseKeyStatuses)) {
+                                $pluginsService = Craft::$app->getPlugins();
+
                                 foreach ($etModel->pluginLicenseKeyStatuses as $pluginHandle => $licenseKeyStatus) {
-                                    Craft::$app->getPlugins()->setPluginLicenseKeyStatus($pluginHandle, $licenseKeyStatus);
+                                    $pluginsService->setPluginLicenseKeyStatus($pluginHandle, $licenseKeyStatus);
                                 }
                             }
 
@@ -270,14 +274,14 @@ class Et
 
                     if (Craft::$app->getCache()->get('etConnectFailure')) {
                         // There was an error, but at least we connected.
-                        Craft::$app->getCache()->delete('etConnectFailure');
+                        $cacheService->delete('etConnectFailure');
                     }
                 } catch (RequestException $e) {
                     Craft::warning('Error in calling '.$this->_endpoint.' Reason: '.$e->getMessage(), __METHOD__);
 
                     if (Craft::$app->getCache()->get('etConnectFailure')) {
                         // There was an error, but at least we connected.
-                        Craft::$app->getCache()->delete('etConnectFailure');
+                        $cacheService->delete('etConnectFailure');
                     }
                 }
             }
@@ -285,9 +289,9 @@ class Et
         catch (EtException $e) {
             Craft::error('Error in '.__METHOD__.'. Message: '.$e->getMessage(), __METHOD__);
 
-            if (Craft::$app->getCache()->get('etConnectFailure')) {
+            if ($cacheService->get('etConnectFailure')) {
                 // There was an error, but at least we connected.
-                Craft::$app->getCache()->delete('etConnectFailure');
+                $cacheService->delete('etConnectFailure');
             }
 
             throw $e;
@@ -295,7 +299,7 @@ class Et
             Craft::error('Error in '.__METHOD__.'. Message: '.$e->getMessage(), __METHOD__);
 
             // Cache the failure for 5 minutes so we don't try again.
-            Craft::$app->getCache()->set('etConnectFailure', true, 300);
+            $cacheService->set('etConnectFailure', true, 300);
         }
 
         return null;
