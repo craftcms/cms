@@ -86,7 +86,7 @@ class FieldLayout extends Model
     /**
      * Returns the layout’s fields.
      *
-     * @return FieldInterface[]|Field[] The layout’s fields.
+     * @return FieldInterface[] The layout’s fields.
      */
     public function getFields()
     {
@@ -142,7 +142,7 @@ class FieldLayout extends Model
     /**
      * Sets the layout']”s fields.
      *
-     * @param FieldInterface[]|Field[] $fields An array of the layout’s fields, which can either be
+     * @param FieldInterface[] $fields         An array of the layout’s fields, which can either be
      *                                         FieldLayoutFieldModel objects or arrays defining the tab’s
      *                                         attributes.
      *

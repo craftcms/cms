@@ -413,7 +413,7 @@ interface ElementInterface extends ComponentInterface
      *
      * @param ElementQueryInterface $query
      *
-     * @return FieldInterface[]|Field[] The fields that should take part in the upcoming elements query
+     * @return FieldInterface[] The fields that should take part in the upcoming elements query
      */
     public static function getFieldsForElementsQuery(ElementQueryInterface $query);
 

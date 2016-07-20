@@ -282,7 +282,7 @@ interface ElementQueryInterface extends QueryInterface
      * @param Connection $db The database connection used to generate the SQL statement.
      *                       If this parameter is not given, the `db` application component will be used.
      *
-     * @return ElementInterface[]|Element[] The resulting elements.
+     * @return ElementInterface[] The resulting elements.
      */
     public function all($db = null);
 

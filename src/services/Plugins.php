@@ -159,7 +159,7 @@ class Plugins extends Component
     /**
      * Returns all the enabled plugins.
      *
-     * @return PluginInterface[]|Plugin[] The enabled plugins
+     * @return PluginInterface[] The enabled plugins
      */
     public function getAllPlugins()
     {

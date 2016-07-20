@@ -327,7 +327,7 @@ class Fields extends Component
      * @param string|null          $indexBy The field property to index the resulting fields by
      * @param string|string[]|null $context The field context(s) to fetch fields from. Defaults to {@link ContentService::$fieldContext}.
      *
-     * @return FieldInterface[]|Field[] The fields
+     * @return FieldInterface[] The fields
      */
     public function getAllFields($indexBy = null, $context = null)
     {
@@ -378,7 +378,7 @@ class Fields extends Component
     /**
      * Returns all fields that have a column in the content table.
      *
-     * @return FieldInterface[]|Field[] The fields
+     * @return FieldInterface[] The fields
      */
     public function getFieldsWithContent()
     {
@@ -497,7 +497,7 @@ class Fields extends Component
      * @param integer     $groupId The field group’s ID
      * @param string|null $indexBy The attribute to index the fields by
      *
-     * @return FieldInterface[]|Field[] The fields
+     * @return FieldInterface[] The fields
      */
     public function getFieldsByGroupId($groupId, $indexBy = null)
     {
@@ -526,7 +526,7 @@ class Fields extends Component
      * @param ElementInterface|string $elementType
      * @param string|null             $indexBy
      *
-     * @return FieldInterface[]|Field[] The fields
+     * @return FieldInterface[] The fields
      */
     public function getFieldsByElementType($elementType, $indexBy = null)
     {
@@ -828,7 +828,7 @@ class Fields extends Component
      *
      * @param integer $layoutId The field layout’s ID
      *
-     * @return FieldInterface[]|Field[] The fields
+     * @return FieldInterface[] The fields
      */
     public function getFieldsByLayoutId($layoutId)
     {

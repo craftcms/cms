@@ -862,7 +862,7 @@ class Updates extends Component
     /**
      * Returns a list of plugins that are in need of a database update.
      *
-     * @return PluginInterface[]|Plugin[]|null
+     * @return PluginInterface[]|null
      */
     public function getPluginsThatNeedDbUpdate()
     {

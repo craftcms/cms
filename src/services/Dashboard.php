@@ -92,7 +92,7 @@ class Dashboard extends Component
      *
      * @param string|null $indexBy The attribute to index the widgets by
      *
-     * @return WidgetInterface[]|Widget[] The widgets
+     * @return WidgetInterface[] The widgets
      */
     public function getAllWidgets($indexBy = null)
     {

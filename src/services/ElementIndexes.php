@@ -274,7 +274,7 @@ class ElementIndexes extends Component
      *
      * @param ElementInterface|string $elementType The element type class
      *
-     * @return FieldInterface[]|Field[]
+     * @return FieldInterface[]
      */
     public function getAvailableTableFields($elementType)
     {

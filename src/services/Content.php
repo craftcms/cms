@@ -262,17 +262,17 @@ class Content extends Component
      * Copies the new values of any non-translatable fields across the element's
      * other locales.
      *
-     * @param ElementInterface         $element
-     * @param array                    $sourceValues
-     * @param FieldInterface[]|Field[] &$nonTranslatableFields
-     * @param array                    &$otherContentRows
+     * @param ElementInterface $element
+     * @param array            $sourceValues
+     * @param FieldInterface[] &$nonTranslatableFields
+     * @param array            &$otherContentRows
      *
      * @return void
      */
     private function _duplicateNonTranslatableFieldValues($element, $sourceValues, &$nonTranslatableFields, &$otherContentRows)
     {
         // Get all of the non-translatable fields
-        /** @var Field[]|FieldInterface[] $nonTranslatableFields */
+        /** @var Field[] $nonTranslatableFields */
         $nonTranslatableFields = [];
         $fieldLayout = $element->getFieldLayout();
         foreach ($fieldLayout->getFields() as $field) {

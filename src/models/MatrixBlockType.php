@@ -144,7 +144,7 @@ class MatrixBlockType extends Model
     /**
      * Returns the fields associated with this block type.
      *
-     * @return FieldInterface[]|Field[]
+     * @return FieldInterface[]
      */
     public function getFields()
     {
@@ -154,7 +154,7 @@ class MatrixBlockType extends Model
     /**
      * Sets the fields associated with this block type.
      *
-     * @param FieldInterface[]|Field[] $fields
+     * @param FieldInterface[] $fields
      *
      * @return void
      */

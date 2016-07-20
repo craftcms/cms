@@ -362,7 +362,7 @@ class Tasks extends Component
     /**
      * Returns all the tasks.
      *
-     * @return TaskInterface[]|Task[] All the tasks
+     * @return TaskInterface[] All the tasks
      */
     public function getAllTasks()
     {
@@ -467,7 +467,7 @@ class Tasks extends Component
      * @param string|null  $type  The task type to check for, if any
      * @param integer|null $limit The maximum number of tasks to return
      *
-     * @return TaskInterface[]|Task[] The pending tasks
+     * @return TaskInterface[] The pending tasks
      */
     public function getPendingTasks($type = null, $limit = null)
     {

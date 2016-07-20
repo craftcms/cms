@@ -62,7 +62,7 @@ class ElementIndexController extends BaseElementsController
     private $_elementQuery;
 
     /**
-     * @var ElementActionInterface[]|ElementAction[]
+     * @var ElementActionInterface[]
      */
     private $_actions;
 
@@ -376,7 +376,7 @@ class ElementIndexController extends BaseElementsController
     /**
      * Returns the available actions for the current source.
      *
-     * @return ElementActionInterface[]|ElementAction[]|null
+     * @return ElementActionInterface[]|null
      */
     private function _getAvailableActions()
     {

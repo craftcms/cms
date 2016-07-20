@@ -283,7 +283,7 @@ class Plugin extends Module implements PluginInterface
     /**
      * Returns the plugin’s available field types.
      *
-     * @return FieldInterface[]|Field[]|null
+     * @return FieldInterface[]|null
      */
     public function getFieldTypes()
     {
@@ -293,7 +293,7 @@ class Plugin extends Module implements PluginInterface
     /**
      * Returns the plugin’s available widget types.
      *
-     * @return WidgetInterface[]|Widget[]|null
+     * @return WidgetInterface[]|null
      */
     public function getWidgetTypes()
     {
@@ -303,7 +303,7 @@ class Plugin extends Module implements PluginInterface
     /**
      * Returns the plugin’s available volume types.
      *
-     * @return VolumeInterface[]|Volume[]|null
+     * @return VolumeInterface[]|null
      */
     public function getVolumeTypes()
     {

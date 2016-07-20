@@ -119,7 +119,7 @@ class FieldLayoutTab extends Model
     /**
      * Returns the tab’s fields.
      *
-     * @return FieldInterface[]|Field[] The tab’s fields.
+     * @return FieldInterface[] The tab’s fields.
      */
     public function getFields()
     {
@@ -145,7 +145,7 @@ class FieldLayoutTab extends Model
     /**
      * Sets the tab’s fields.
      *
-     * @param FieldInterface[]|Field[] $fields The tab’s fields.
+     * @param FieldInterface[] $fields The tab’s fields.
      *
      * @return void
      */

@@ -94,7 +94,7 @@ class Fields
      *
      * @param string|null $indexBy The attribute to index the fields by
      *
-     * @return FieldInterface[]|Field[] The fields
+     * @return FieldInterface[] The fields
      */
     public function getAllFields($indexBy = null)
     {
@@ -107,7 +107,7 @@ class Fields
      * @param integer     $groupId The field group’s ID
      * @param string|null $indexBy The attribute to index the fields by
      *
-     * @return FieldInterface[]|Field[] The fields
+     * @return FieldInterface[] The fields
      */
     public function getFieldsByGroupId($groupId, $indexBy = null)
     {
