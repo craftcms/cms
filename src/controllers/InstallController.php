@@ -9,8 +9,8 @@ namespace craft\app\controllers;
 
 use Craft;
 use craft\app\migrations\Install;
-use craft\app\models\AccountSettings as AccountSettingsModel;
-use craft\app\models\SiteSettings as SiteSettingsModel;
+use craft\app\models\AccountSettings;
+use craft\app\models\SiteSettings;
 use craft\app\web\Controller;
 use yii\base\Response;
 use yii\web\BadRequestHttpException;
@@ -81,7 +81,7 @@ class InstallController extends Controller
         $this->requirePostRequest();
         $this->requireAjaxRequest();
 
-        $accountSettings = new AccountSettingsModel();
+        $accountSettings = new AccountSettings();
         $request = Craft::$app->getRequest();
         $accountSettings->email = $request->getBodyParam('email');
         $accountSettings->username = $request->getBodyParam('username', $accountSettings->email);
@@ -106,7 +106,7 @@ class InstallController extends Controller
         $this->requirePostRequest();
         $this->requireAjaxRequest();
 
-        $siteSettings = new SiteSettingsModel();
+        $siteSettings = new SiteSettings();
         $request = Craft::$app->getRequest();
         $siteSettings->siteName = $request->getBodyParam('siteName');
         $siteSettings->siteUrl = $request->getBodyParam('siteUrl');

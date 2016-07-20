@@ -15,7 +15,7 @@ use craft\app\helpers\Io;
 use craft\app\helpers\Json;
 use craft\app\helpers\StringHelper;
 use craft\app\io\Zip;
-use craft\app\models\GetHelp as GetHelpModel;
+use craft\app\models\GetHelp;
 use craft\app\web\Response;
 use craft\app\web\Controller;
 use craft\app\web\UploadedFile;
@@ -287,7 +287,7 @@ class DashboardController extends Controller
         $namespace = $request->getBodyParam('namespace');
         $namespace = $namespace ? $namespace.'.' : '';
 
-        $getHelpModel = new GetHelpModel();
+        $getHelpModel = new GetHelp();
         $getHelpModel->fromEmail = $request->getBodyParam($namespace.'fromEmail');
         $getHelpModel->message = trim($request->getBodyParam($namespace.'message'));
         $getHelpModel->attachLogs = (bool)$request->getBodyParam($namespace.'attachLogs');

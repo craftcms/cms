@@ -37,7 +37,6 @@ use craft\app\helpers\Json;
 use craft\app\helpers\StringHelper;
 use craft\app\helpers\Url;
 use craft\app\models\AssetTransformIndex;
-use craft\app\models\VolumeFolder as VolumeFolderModel;
 use craft\app\models\FolderCriteria;
 use craft\app\models\VolumeFolder;
 use craft\app\records\Asset as AssetRecord;
@@ -548,14 +547,14 @@ class Assets extends Component
     /**
      * Save an Asset folder.
      *
-     * @param VolumeFolderModel $folder
+     * @param VolumeFolder $folder
      *
      * @throws AssetConflictException           If a folder already exists with such a name.
      * @throws AssetLogicException              If the parent folder is missing.
      * @throws VolumeObjectExistsException      If the file actually exists on the volume, but on in the index.
      * @return void
      */
-    public function createFolder(VolumeFolderModel $folder)
+    public function createFolder(VolumeFolder $folder)
     {
         $parent = $folder->getParent();
 
@@ -740,7 +739,7 @@ class Assets extends Component
      *
      * @param integer $folderId
      *
-     * @return VolumeFolderModel|null
+     * @return VolumeFolder|null
      */
     public function getFolderById($folderId)
     {
@@ -752,7 +751,7 @@ class Assets extends Component
                 ->one();
 
             if ($result) {
-                $folder = new VolumeFolderModel($result);
+                $folder = new VolumeFolder($result);
             } else {
                 $folder = null;
             }
@@ -798,7 +797,7 @@ class Assets extends Component
         $folders = [];
 
         foreach ($results as $result) {
-            $folder = VolumeFolderModel::create($result);
+            $folder = VolumeFolder::create($result);
             $this->_foldersById[$folder->id] = $folder;
             $folders[] = $folder;
         }
@@ -809,15 +808,12 @@ class Assets extends Component
     /**
      * Returns all of the folders that are descendants of a given folder.
      *
-     * @param VolumeFolderModel $parentFolder
-     * @param string            $orderBy
+     * @param VolumeFolder $parentFolder
+     * @param string       $orderBy
      *
      * @return array
      */
-    public function getAllDescendantFolders(
-        VolumeFolderModel $parentFolder,
-        $orderBy = "path"
-    )
+    public function getAllDescendantFolders(VolumeFolder $parentFolder, $orderBy = 'path')
     {
         /**
          * @var $query Query
@@ -838,7 +834,7 @@ class Assets extends Component
         $descendantFolders = [];
 
         foreach ($results as $result) {
-            $folder = VolumeFolderModel::create($result);
+            $folder = VolumeFolder::create($result);
             $this->_foldersById[$folder->id] = $folder;
             $descendantFolders[$folder->id] = $folder;
         }
@@ -851,7 +847,7 @@ class Assets extends Component
      *
      * @param mixed $criteria
      *
-     * @return VolumeFolderModel|null
+     * @return VolumeFolder|null
      */
     public function findFolder($criteria = null)
     {
@@ -1212,7 +1208,7 @@ class Assets extends Component
                 $parentId = $parentFolder->id;
             }
 
-            $folderModel = new VolumeFolderModel();
+            $folderModel = new VolumeFolder();
             $folderModel->volumeId = $volumeId;
             $folderModel->parentId = $parentId;
             $folderModel->name = $folderName;
@@ -1227,11 +1223,11 @@ class Assets extends Component
     /**
      * Store a folder by model
      *
-     * @param VolumeFolderModel $folder
+     * @param VolumeFolder $folder
      *
      * @return void
      */
-    public function storeFolderRecord(VolumeFolderModel $folder)
+    public function storeFolderRecord(VolumeFolder $folder)
     {
         if (empty($folder->id)) {
             $record = new VolumeFolderRecord();
@@ -1253,7 +1249,7 @@ class Assets extends Component
      *
      * @param User $userModel
      *
-     * @return VolumeFolderModel|null
+     * @return VolumeFolder|null
      */
     public function getUserFolder(User $userModel = null)
     {
@@ -1264,7 +1260,7 @@ class Assets extends Component
 
         // Unlikely, but would be very awkward if this happened without any contingency plans in place.
         if (!$sourceTopFolder) {
-            $sourceTopFolder = new VolumeFolderModel();
+            $sourceTopFolder = new VolumeFolder();
             $tempSource = new Temp();
             $sourceTopFolder->name = $tempSource->name;
             $this->storeFolderRecord($sourceTopFolder);
@@ -1284,7 +1280,7 @@ class Assets extends Component
         ]);
 
         if (!$folder) {
-            $folder = new VolumeFolderModel();
+            $folder = new VolumeFolder();
             $folder->parentId = $sourceTopFolder->id;
             $folder->name = $folderName;
             $folder->path = $folderName.'/';
@@ -1300,18 +1296,14 @@ class Assets extends Component
     /**
      * Move an Asset's file to the specified folder.
      *
-     * @param Asset             $asset
-     * @param VolumeFolderModel $targetFolder
-     * @param string            $newFilename new filename to use
+     * @param Asset        $asset
+     * @param VolumeFolder $targetFolder
+     * @param string       $newFilename new filename to use
      *
      * @throws FileException If there was a problem with the actual file.
      * @return void
      */
-    private function _moveAssetToFolder(
-        Asset $asset,
-        VolumeFolderModel $targetFolder,
-        $newFilename = ""
-    )
+    private function _moveAssetToFolder(Asset $asset, VolumeFolder $targetFolder, $newFilename = '')
     {
         $filename = $newFilename ?: $asset->filename;
 

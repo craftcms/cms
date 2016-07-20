@@ -8,7 +8,7 @@
 namespace craft\app\services;
 
 use Craft;
-use craft\app\models\RebrandEmail as RebrandEmailModel;
+use craft\app\models\RebrandEmail;
 use craft\app\records\EmailMessage as EmailMessageRecord;
 use yii\base\Component;
 
@@ -63,7 +63,7 @@ class EmailMessages extends Component
         $messages = [];
 
         foreach ($this->_getAllMessageKeys() as $key) {
-            $message = new RebrandEmailModel();
+            $message = new RebrandEmail();
             $message->key = $key;
             $message->locale = $localeId;
 
@@ -92,7 +92,7 @@ class EmailMessages extends Component
      * @param string      $key
      * @param string|null $localeId
      *
-     * @return RebrandEmailModel
+     * @return RebrandEmail
      */
     public function getMessage($key, $localeId = null)
     {
@@ -100,7 +100,7 @@ class EmailMessages extends Component
             $localeId = Craft::$app->language;
         }
 
-        $message = new RebrandEmailModel();
+        $message = new RebrandEmail();
         $message->key = $key;
         $message->locale = $localeId;
 
@@ -115,11 +115,11 @@ class EmailMessages extends Component
     /**
      * Saves the localized content for a system email message.
      *
-     * @param RebrandEmailModel $message
+     * @param RebrandEmail $message
      *
      * @return boolean
      */
-    public function saveMessage(RebrandEmailModel $message)
+    public function saveMessage(RebrandEmail $message)
     {
         $record = $this->_getMessageRecord($message->key, $message->locale);
 

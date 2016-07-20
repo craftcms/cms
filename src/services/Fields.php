@@ -37,9 +37,9 @@ use craft\app\fields\Tags as TagsField;
 use craft\app\fields\Users as UsersField;
 use craft\app\helpers\Component as ComponentHelper;
 use craft\app\helpers\StringHelper;
-use craft\app\models\FieldGroup as FieldGroupModel;
-use craft\app\models\FieldLayout as FieldLayoutModel;
-use craft\app\models\FieldLayoutTab as FieldLayoutTabModel;
+use craft\app\models\FieldGroup;
+use craft\app\models\FieldLayout;
+use craft\app\models\FieldLayoutTab;
 use craft\app\records\Field as FieldRecord;
 use craft\app\records\FieldGroup as FieldGroupRecord;
 use craft\app\records\FieldLayout as FieldLayoutRecord;
@@ -139,7 +139,7 @@ class Fields extends Component
      *
      * @param string|null $indexBy The attribute to index the field groups by
      *
-     * @return FieldGroupModel[] The field groups
+     * @return FieldGroup[] The field groups
      */
     public function getAllGroups($indexBy = null)
     {
@@ -149,7 +149,7 @@ class Fields extends Component
             $results = $this->_createGroupQuery()->all();
 
             foreach ($results as $result) {
-                $group = new FieldGroupModel($result);
+                $group = new FieldGroup($result);
                 $this->_groupsById[$group->id] = $group;
             }
 
@@ -176,7 +176,7 @@ class Fields extends Component
      *
      * @param integer $groupId The field group’s ID
      *
-     * @return FieldGroupModel|null The field group, or null if it doesn’t exist
+     * @return FieldGroup|null The field group, or null if it doesn’t exist
      */
     public function getGroupById($groupId)
     {
@@ -188,7 +188,7 @@ class Fields extends Component
                 ->one();
 
             if ($result) {
-                $group = new FieldGroupModel($result);
+                $group = new FieldGroup($result);
             } else {
                 $group = null;
             }
@@ -202,11 +202,11 @@ class Fields extends Component
     /**
      * Saves a field group.
      *
-     * @param FieldGroupModel $group The field group to be saved
+     * @param FieldGroup $group The field group to be saved
      *
      * @return boolean Whether the field group was saved successfully
      */
-    public function saveGroup(FieldGroupModel $group)
+    public function saveGroup(FieldGroup $group)
     {
         $groupRecord = $this->_getGroupRecord($group);
         $groupRecord->name = $group->name;
@@ -746,7 +746,7 @@ class Fields extends Component
      *
      * @param integer $layoutId The field layout’s ID
      *
-     * @return FieldLayoutModel|null The field layout, or null if it doesn’t exist
+     * @return FieldLayout|null The field layout, or null if it doesn’t exist
      */
     public function getLayoutById($layoutId)
     {
@@ -758,7 +758,7 @@ class Fields extends Component
                 ->one();
 
             if ($result) {
-                $layout = new FieldLayoutModel($result);
+                $layout = new FieldLayout($result);
             } else {
                 $layout = null;
             }
@@ -774,7 +774,7 @@ class Fields extends Component
      *
      * @param string $type The associated element type
      *
-     * @return FieldLayoutModel The field layout
+     * @return FieldLayout The field layout
      */
     public function getLayoutByType($type)
     {
@@ -789,12 +789,12 @@ class Fields extends Component
                 $id = $result['id'];
 
                 if (!isset($this->_layoutsById[$id])) {
-                    $this->_layoutsById[$id] = new FieldLayoutModel($result);
+                    $this->_layoutsById[$id] = new FieldLayout($result);
                 }
 
                 $layout = $this->_layoutsById[$id];
             } else {
-                $layout = new FieldLayoutModel();
+                $layout = new FieldLayout();
             }
 
             $this->_layoutsByType[$type] = $layout;
@@ -808,7 +808,7 @@ class Fields extends Component
      *
      * @param integer $layoutId The field layout’s ID
      *
-     * @return FieldLayoutTabModel[] The field layout’s tabs
+     * @return FieldLayoutTab[] The field layout’s tabs
      */
     public function getLayoutTabsById($layoutId)
     {
@@ -817,7 +817,7 @@ class Fields extends Component
             ->all();
 
         foreach ($tabs as $key => $value) {
-            $tabs[$key] = FieldLayoutTabModel::create($value);
+            $tabs[$key] = FieldLayoutTab::create($value);
         }
 
         return $tabs;
@@ -857,7 +857,7 @@ class Fields extends Component
      *
      * @param string|null $namespace The namespace that the form data was posted in, if any
      *
-     * @return FieldLayoutModel The field layout
+     * @return FieldLayout The field layout
      */
     public function assembleLayoutFromPost($namespace = null)
     {
@@ -874,7 +874,7 @@ class Fields extends Component
      * @param array $postedFieldLayout The post data for the field layout
      * @param array $requiredFields    The field IDs that should be marked as required in the field layout
      *
-     * @return FieldLayoutModel The field layout
+     * @return FieldLayout The field layout
      */
     public function assembleLayout($postedFieldLayout, $requiredFields = [])
     {
@@ -918,7 +918,7 @@ class Fields extends Component
                 $tabFields[] = $field;
             }
 
-            $tab = new FieldLayoutTabModel();
+            $tab = new FieldLayoutTab();
             $tab->name = urldecode($tabName);
             $tab->sortOrder = $tabSortOrder;
             $tab->setFields($tabFields);
@@ -926,7 +926,7 @@ class Fields extends Component
             $tabs[] = $tab;
         }
 
-        $layout = new FieldLayoutModel();
+        $layout = new FieldLayout();
         $layout->setTabs($tabs);
         $layout->setFields($fields);
 
@@ -936,11 +936,11 @@ class Fields extends Component
     /**
      * Saves a field layout.
      *
-     * @param FieldLayoutModel $layout The field layout
+     * @param FieldLayout $layout The field layout
      *
      * @return boolean Whether the field layout was saved successfully
      */
-    public function saveLayout(FieldLayoutModel $layout)
+    public function saveLayout(FieldLayout $layout)
     {
         // First save the layout
         $layoutRecord = new FieldLayoutRecord();
@@ -1090,12 +1090,12 @@ class Fields extends Component
     /**
      * Gets a field group record or creates a new one.
      *
-     * @param FieldGroupModel $group
+     * @param FieldGroup $group
      *
      * @return FieldGroupRecord
      * @throws FieldGroupNotFoundException if $group->id is invalid
      */
-    private function _getGroupRecord(FieldGroupModel $group)
+    private function _getGroupRecord(FieldGroup $group)
     {
         if ($group->id) {
             $groupRecord = FieldGroupRecord::findOne($group->id);

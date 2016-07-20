@@ -7,7 +7,7 @@
 
 namespace craft\app\web\twig\variables;
 
-use craft\app\models\RebrandEmail as RebrandEmailModel;
+use craft\app\models\RebrandEmail;
 
 \Craft::$app->requireEdition(\Craft::Client);
 
@@ -38,7 +38,7 @@ class EmailMessages
      * @param string      $key
      * @param string|null $language
      *
-     * @return RebrandEmailModel|null
+     * @return RebrandEmail|null
      */
     public function getMessage($key, $language = null)
     {

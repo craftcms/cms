@@ -7,7 +7,7 @@
 
 namespace craft\app\web\twig\variables;
 
-use craft\app\models\UserGroup as UserGroupModel;
+use craft\app\models\UserGroup;
 
 \Craft::$app->requireEdition(\Craft::Pro);
 
@@ -39,7 +39,7 @@ class UserGroups
      *
      * @param integer $groupId
      *
-     * @return UserGroupModel|null
+     * @return UserGroup|null
      */
     public function getGroupById($groupId)
     {
@@ -51,7 +51,7 @@ class UserGroups
      *
      * @param string $groupHandle
      *
-     * @return UserGroupModel|null
+     * @return UserGroup|null
      */
     public function getGroupByHandle($groupHandle)
     {

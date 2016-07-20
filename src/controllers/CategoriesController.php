@@ -13,7 +13,7 @@ use craft\app\helpers\Json;
 use craft\app\helpers\Url;
 use craft\app\elements\Category;
 use craft\app\models\CategoryGroup;
-use craft\app\models\CategoryGroupLocale as CategoryGroupLocaleModel;
+use craft\app\models\CategoryGroupLocale;
 use craft\app\web\Controller;
 use yii\web\ForbiddenHttpException;
 use yii\web\NotFoundHttpException;
@@ -140,7 +140,7 @@ class CategoriesController extends Controller
         $locales = [];
 
         foreach (Craft::$app->getI18n()->getSiteLocaleIds() as $localeId) {
-            $locales[$localeId] = new CategoryGroupLocaleModel([
+            $locales[$localeId] = new CategoryGroupLocale([
                 'locale' => $localeId,
                 'urlFormat' => Craft::$app->getRequest()->getBodyParam('urlFormat.'.$localeId),
                 'nestedUrlFormat' => Craft::$app->getRequest()->getBodyParam('nestedUrlFormat.'.$localeId),

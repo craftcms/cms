@@ -7,8 +7,8 @@
 
 namespace craft\app\web\twig\variables;
 
-use craft\app\models\EntryDraft as EntryDraftModel;
-use craft\app\models\EntryVersion as EntryVersionModel;
+use craft\app\models\EntryDraft;
+use craft\app\models\EntryVersion;
 
 /**
  * Class EntryRevisions variable.
@@ -55,7 +55,7 @@ class EntryRevisions
      *
      * @param integer $draftId
      *
-     * @return EntryDraftModel|null
+     * @return EntryDraft|null
      */
     public function getDraftById($draftId)
     {
@@ -83,7 +83,7 @@ class EntryRevisions
      *
      * @param integer $versionId
      *
-     * @return EntryVersionModel|null
+     * @return EntryVersion|null
      */
     public function getVersionById($versionId)
     {

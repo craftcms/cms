@@ -9,7 +9,7 @@ namespace craft\app\controllers;
 
 use Craft;
 use craft\app\base\ElementInterface;
-use craft\app\models\Structure as StructureModel;
+use craft\app\models\Structure;
 use craft\app\web\Controller;
 use yii\web\ForbiddenHttpException;
 use yii\web\NotFoundHttpException;
@@ -30,7 +30,7 @@ class StructuresController extends Controller
     // =========================================================================
 
     /**
-     * @var StructureModel
+     * @var Structure
      */
     private $_structure;
 

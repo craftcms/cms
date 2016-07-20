@@ -12,7 +12,7 @@ use craft\app\db\Query;
 use craft\app\elements\User;
 use craft\app\errors\UserGroupNotFoundException;
 use craft\app\events\AssignUserGroupsEvent;
-use craft\app\models\UserGroup as UserGroupModel;
+use craft\app\models\UserGroup;
 use craft\app\records\UserGroup as UserGroupRecord;
 use yii\base\Component;
 
@@ -71,7 +71,7 @@ class UserGroups extends Component
             ->all();
 
         foreach ($groups as $key => $value) {
-            $groups[$key] = UserGroupModel::create($value);
+            $groups[$key] = UserGroup::create($value);
         }
 
         return $groups;
@@ -82,14 +82,14 @@ class UserGroups extends Component
      *
      * @param integer $groupId
      *
-     * @return UserGroupModel
+     * @return UserGroup
      */
     public function getGroupById($groupId)
     {
         $groupRecord = UserGroupRecord::findOne($groupId);
 
         if ($groupRecord) {
-            return UserGroupModel::create($groupRecord);
+            return UserGroup::create($groupRecord);
         }
 
         return null;
@@ -100,7 +100,7 @@ class UserGroups extends Component
      *
      * @param integer $groupHandle
      *
-     * @return UserGroupModel
+     * @return UserGroup
      */
     public function getGroupByHandle($groupHandle)
     {
@@ -109,7 +109,7 @@ class UserGroups extends Component
         ]);
 
         if ($groupRecord) {
-            return UserGroupModel::create($groupRecord);
+            return UserGroup::create($groupRecord);
         }
 
         return null;
@@ -134,7 +134,7 @@ class UserGroups extends Component
             ->all();
 
         foreach ($groups as $key => $value) {
-            $groups[$key] = UserGroupModel::create($value);
+            $groups[$key] = UserGroup::create($value);
         }
 
         return $groups;
@@ -143,11 +143,11 @@ class UserGroups extends Component
     /**
      * Saves a user group.
      *
-     * @param UserGroupModel $group
+     * @param UserGroup $group
      *
      * @return boolean
      */
-    public function saveGroup(UserGroupModel $group)
+    public function saveGroup(UserGroup $group)
     {
         $groupRecord = $this->_getGroupRecordById($group->id);
 

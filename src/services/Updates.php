@@ -16,12 +16,11 @@ use craft\app\events\Event;
 use craft\app\events\UpdateEvent;
 use craft\app\helpers\DateTimeHelper;
 use craft\app\helpers\Io;
-use craft\app\helpers\StringHelper;
 use craft\app\helpers\Update;
-use craft\app\models\AppUpdate as AppUpdateModel;
+use craft\app\models\AppUpdate;
 use craft\app\models\PluginNewRelease;
-use craft\app\models\PluginUpdate as PluginUpdateModel;
-use craft\app\models\Update as UpdateModel;
+use craft\app\models\PluginUpdate;
+use craft\app\models\Update;
 use craft\app\updates\Updater;
 use GuzzleHttp\Client;
 use yii\base\Component;
@@ -61,7 +60,7 @@ class Updates extends Component
     // =========================================================================
 
     /**
-     * @var UpdateModel
+     * @var Update
      */
     private $_updateModel;
 
@@ -181,7 +180,7 @@ class Updates extends Component
     /**
      * @param boolean $forceRefresh
      *
-     * @return UpdateModel|false
+     * @return Update|false
      */
     public function getUpdates($forceRefresh = false)
     {
@@ -198,7 +197,7 @@ class Updates extends Component
                 $etModel = $this->check();
 
                 if ($etModel == null) {
-                    $updateModel = new UpdateModel();
+                    $updateModel = new Update();
                     $errors[] = Craft::t('app', 'Craft is unable to determine if an update is available at this time.');
                     $updateModel->errors = $errors;
                 } else {
@@ -257,14 +256,14 @@ class Updates extends Component
     }
 
     /**
-     * @return UpdateModel
+     * @return Update
      */
     public function check()
     {
         Craft::$app->getConfig()->maxPowerCaptain();
 
-        $updateModel = new UpdateModel();
-        $updateModel->app = new AppUpdateModel();
+        $updateModel = new Update();
+        $updateModel->app = new AppUpdate();
         $updateModel->app->localVersion = Craft::$app->version;
         $updateModel->app->localBuild = Craft::$app->build;
 
@@ -273,7 +272,7 @@ class Updates extends Component
         $pluginUpdateModels = [];
 
         foreach ($plugins as $plugin) {
-            $pluginUpdateModel = new PluginUpdateModel();
+            $pluginUpdateModel = new PluginUpdate();
             $pluginUpdateModel->class = $plugin::className();
             $pluginUpdateModel->localVersion = $plugin->version;
 
@@ -288,11 +287,11 @@ class Updates extends Component
     }
 
     /**
-     * Check plugins’ release feeds and include any pending updates in the given UpdateModel
+     * Check plugins’ release feeds and include any pending updates in the given Update
      *
-     * @param UpdateModel $updateModel
+     * @param Update $updateModel
      */
-    public function checkPluginReleaseFeeds(UpdateModel $updateModel)
+    public function checkPluginReleaseFeeds(Update $updateModel)
     {
         $userAgent = 'Craft/'.Craft::$app->version.'.'.Craft::$app->build;
 

@@ -8,7 +8,7 @@
 namespace craft\app\controllers;
 
 use Craft;
-use craft\app\models\RebrandEmail as RebrandEmailModel;
+use craft\app\models\RebrandEmail;
 use craft\app\web\Controller;
 use yii\web\Response;
 
@@ -47,7 +47,7 @@ class EmailMessagesController extends Controller
         $this->requirePostRequest();
         $this->requireAjaxRequest();
 
-        $message = new RebrandEmailModel();
+        $message = new RebrandEmail();
         $message->key = Craft::$app->getRequest()->getRequiredBodyParam('key');
         $message->subject = Craft::$app->getRequest()->getRequiredBodyParam('subject');
         $message->body = Craft::$app->getRequest()->getRequiredBodyParam('body');

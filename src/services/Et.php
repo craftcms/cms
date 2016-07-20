@@ -15,9 +15,9 @@ use craft\app\models\AppUpdate;
 use craft\app\models\Et as EtModel;
 use craft\app\models\PluginNewRelease;
 use craft\app\models\PluginUpdate;
-use craft\app\models\Update as UpdateModel;
+use craft\app\models\Update;
 use craft\app\models\UpgradeInfo;
-use craft\app\models\UpgradePurchase as UpgradePurchaseModel;
+use craft\app\models\UpgradePurchase;
 use yii\base\Component;
 
 /**
@@ -72,8 +72,8 @@ class Et extends Component
         $etResponse = $et->phoneHome();
 
         if ($etResponse) {
-            // Populate the base UpdateModel
-            $updateModel = new UpdateModel();
+            // Populate the base Update model
+            $updateModel = new Update();
             $updateModel->setAttributes($etResponse->data, false);
 
             // Populate any Craft specific attributes.
@@ -264,11 +264,11 @@ class Et extends Component
     /**
      * Attempts to purchase an edition upgrade.
      *
-     * @param UpgradePurchaseModel $model
+     * @param UpgradePurchase $model
      *
      * @return boolean
      */
-    public function purchaseUpgrade(UpgradePurchaseModel $model)
+    public function purchaseUpgrade(UpgradePurchase $model)
     {
         if ($model->validate()) {
             $et = new \craft\app\et\Et(static::PurchaseUpgrade);

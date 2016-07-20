@@ -13,7 +13,7 @@ use craft\app\errors\TagGroupNotFoundException;
 use craft\app\errors\TagNotFoundException;
 use craft\app\events\TagEvent;
 use craft\app\elements\Tag;
-use craft\app\models\TagGroup as TagGroupModel;
+use craft\app\models\TagGroup;
 use craft\app\records\Tag as TagRecord;
 use craft\app\records\TagGroup as TagGroupRecord;
 use yii\base\Component;
@@ -104,7 +104,7 @@ class Tags extends Component
                 ->all();
 
             foreach ($this->_tagGroupsById as $key => $value) {
-                $this->_tagGroupsById[$key] = TagGroupModel::create($value);
+                $this->_tagGroupsById[$key] = TagGroup::create($value);
             }
 
             $this->_fetchedAllTagGroups = true;
@@ -142,7 +142,7 @@ class Tags extends Component
      *
      * @param integer $groupId
      *
-     * @return TagGroupModel|null
+     * @return TagGroup|null
      */
     public function getTagGroupById($groupId)
     {
@@ -152,7 +152,7 @@ class Tags extends Component
             $groupRecord = TagGroupRecord::findOne($groupId);
 
             if ($groupRecord) {
-                $this->_tagGroupsById[$groupId] = TagGroupModel::create($groupRecord);
+                $this->_tagGroupsById[$groupId] = TagGroup::create($groupRecord);
             } else {
                 $this->_tagGroupsById[$groupId] = null;
             }
@@ -166,7 +166,7 @@ class Tags extends Component
      *
      * @param string $groupHandle
      *
-     * @return TagGroupModel|null
+     * @return TagGroup|null
      */
     public function getTagGroupByHandle($groupHandle)
     {
@@ -175,7 +175,7 @@ class Tags extends Component
         ]);
 
         if ($groupRecord) {
-            return TagGroupModel::create($groupRecord);
+            return TagGroup::create($groupRecord);
         }
 
         return null;
@@ -184,13 +184,13 @@ class Tags extends Component
     /**
      * Saves a tag group.
      *
-     * @param TagGroupModel $tagGroup
+     * @param TagGroup $tagGroup
      *
      * @return boolean Whether the tag group was saved successfully
      * @throws TagGroupNotFoundException if $tagGroup->id is invalid
      * @throws \Exception if reasons
      */
-    public function saveTagGroup(TagGroupModel $tagGroup)
+    public function saveTagGroup(TagGroup $tagGroup)
     {
         if ($tagGroup->id) {
             $tagGroupRecord = TagGroupRecord::findOne($tagGroup->id);
@@ -199,7 +199,7 @@ class Tags extends Component
                 throw new TagGroupNotFoundException("No tag group exists with the ID '{$tagGroup->id}'");
             }
 
-            $oldTagGroup = TagGroupModel::create($tagGroupRecord);
+            $oldTagGroup = TagGroup::create($tagGroupRecord);
             $isNewTagGroup = false;
         } else {
             $tagGroupRecord = new TagGroupRecord();

@@ -9,7 +9,7 @@ namespace craft\app\controllers;
 
 use Craft;
 use craft\app\helpers\DateTimeHelper;
-use craft\app\models\EntryDraft as EntryDraftModel;
+use craft\app\models\EntryDraft;
 use craft\app\models\Section;
 use yii\web\NotFoundHttpException;
 use yii\web\Response;
@@ -48,7 +48,7 @@ class EntryRevisionsController extends BaseEntriesController
                 throw new NotFoundHttpException('Entry draft not found');
             }
         } else {
-            $draft = new EntryDraftModel();
+            $draft = new EntryDraft();
             $draft->id = Craft::$app->getRequest()->getBodyParam('entryId');
             $draft->sectionId = Craft::$app->getRequest()->getRequiredBodyParam('sectionId');
             $draft->creatorId = Craft::$app->getUser()->getIdentity()->id;
@@ -306,11 +306,11 @@ class EntryRevisionsController extends BaseEntriesController
     /**
      * Sets a draft's attributes from the post data.
      *
-     * @param EntryDraftModel $draft
+     * @param EntryDraft $draft
      *
      * @return void
      */
-    private function _setDraftAttributesFromPost(EntryDraftModel $draft)
+    private function _setDraftAttributesFromPost(EntryDraft $draft)
     {
         $draft->typeId = Craft::$app->getRequest()->getBodyParam('typeId');
         $draft->slug = Craft::$app->getRequest()->getBodyParam('slug');

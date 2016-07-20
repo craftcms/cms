@@ -8,11 +8,9 @@
 namespace craft\app\models;
 
 use Craft;
-use craft\app\base\ElementInterface;
 use craft\app\base\Model;
 use craft\app\behaviors\FieldLayoutTrait;
 use craft\app\helpers\Url;
-use craft\app\models\Section as SectionModel;
 
 /**
  * EntryType model class.
@@ -153,7 +151,7 @@ class EntryType extends Model
     /**
      * Returns the entry type’s section.
      *
-     * @return SectionModel|null
+     * @return Section|null
      */
     public function getSection()
     {

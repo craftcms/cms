@@ -14,7 +14,7 @@ use craft\app\helpers\App;
 use craft\app\helpers\Cp;
 use craft\app\helpers\DateTimeHelper;
 use craft\app\models\UpgradeInfo;
-use craft\app\models\UpgradePurchase as UpgradePurchaseModel;
+use craft\app\models\UpgradePurchase;
 use craft\app\web\Controller;
 use yii\web\BadRequestHttpException;
 use yii\web\Response;
@@ -237,7 +237,7 @@ class AppController extends Controller
         }
 
         $request = Craft::$app->getRequest();
-        $model = new UpgradePurchaseModel([
+        $model = new UpgradePurchase([
             'ccTokenId' => $request->getRequiredBodyParam('ccTokenId'),
             'expMonth' => $request->getRequiredBodyParam('expMonth'),
             'expYear' => $request->getRequiredBodyParam('expYear'),

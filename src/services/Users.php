@@ -22,7 +22,7 @@ use craft\app\helpers\Json;
 use craft\app\helpers\Template;
 use craft\app\helpers\Url;
 use craft\app\base\Image;
-use craft\app\models\Password as PasswordModel;
+use craft\app\models\Password;
 use craft\app\elements\User;
 use craft\app\records\User as UserRecord;
 use yii\base\Component;
@@ -1308,7 +1308,7 @@ class Users extends Component
     private function _setPasswordOnUserRecord(User $user, UserRecord $userRecord, $updatePasswordResetRequired = true, $forceDifferentPassword = false)
     {
         // Validate the password first
-        $passwordModel = new PasswordModel();
+        $passwordModel = new Password();
         $passwordModel->password = $user->newPassword;
 
         $validates = false;

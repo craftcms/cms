@@ -8,7 +8,6 @@
 namespace craft\app\models;
 
 use craft\app\base\Model;
-use craft\app\models\PluginUpdate as PluginUpdateModel;
 
 /**
  * Stores all of the available update info.
@@ -28,8 +27,8 @@ class Update extends Model
     {
         if (isset($config['plugins'])) {
             foreach ($config['plugins'] as $key => $value) {
-                if (!$value instanceof PluginUpdateModel) {
-                    $config['plugins'][$key] = PluginUpdateModel::create($value);
+                if (!$value instanceof PluginUpdate) {
+                    $config['plugins'][$key] = PluginUpdate::create($value);
                 }
             }
         }

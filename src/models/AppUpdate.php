@@ -8,7 +8,6 @@
 namespace craft\app\models;
 
 use craft\app\base\Model;
-use craft\app\models\AppNewRelease as AppNewReleaseModel;
 
 /**
  * Stores the available Craft update info.
@@ -28,8 +27,8 @@ class AppUpdate extends Model
     {
         if (isset($config['releases'])) {
             foreach ($config['releases'] as $key => $value) {
-                if (!$value instanceof AppNewReleaseModel) {
-                    $config['releases'][$key] = AppNewReleaseModel::create($value);
+                if (!$value instanceof AppNewRelease) {
+                    $config['releases'][$key] = AppNewRelease::create($value);
                 }
             }
         }

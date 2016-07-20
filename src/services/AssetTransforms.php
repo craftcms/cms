@@ -19,7 +19,7 @@ use craft\app\helpers\Io;
 use craft\app\helpers\StringHelper;
 use craft\app\image\Raster;
 use craft\app\models\AssetTransformIndex;
-use craft\app\models\AssetTransform as AssetTransformModel;
+use craft\app\models\AssetTransform;
 use craft\app\records\AssetTransform as AssetTransformRecord;
 use craft\app\errors\AssetTransformException;
 use craft\app\errors\VolumeObjectNotFoundException;
@@ -81,7 +81,7 @@ class AssetTransforms extends Component
             $this->_transformsByHandle = [];
 
             foreach ($results as $result) {
-                $transform = AssetTransformModel::create($result);
+                $transform = AssetTransform::create($result);
                 $this->_transformsByHandle[$transform->handle] = $transform;
             }
 
@@ -110,7 +110,7 @@ class AssetTransforms extends Component
      *
      * @param string $handle
      *
-     * @return AssetTransformModel|null
+     * @return AssetTransform|null
      */
     public function getTransformByHandle($handle)
     {
@@ -125,7 +125,7 @@ class AssetTransforms extends Component
                 ->one();
 
             if ($result) {
-                $transform = AssetTransformModel::create($result);
+                $transform = AssetTransform::create($result);
             } else {
                 $transform = null;
             }
@@ -143,13 +143,13 @@ class AssetTransforms extends Component
     /**
      * Saves an asset transform.
      *
-     * @param AssetTransformModel $transform
+     * @param AssetTransform $transform
      *
      * @throws AssetTransformException If attempting to update a non-existing transform.
      * @throws ValidationException     If the validation failed.
      * @return boolean
      */
-    public function saveTransform(AssetTransformModel $transform)
+    public function saveTransform(AssetTransform $transform)
     {
         if ($transform->id) {
             $transformRecord = AssetTransformRecord::findOne($transform->id);
@@ -391,13 +391,13 @@ class AssetTransforms extends Component
     /**
      * Validates a transform index result to see if the index is still valid for a given file.
      *
-     * @param array               $result
-     * @param AssetTransformModel $transform
-     * @param Asset               $asset
+     * @param array          $result
+     * @param AssetTransform $transform
+     * @param Asset          $asset
      *
      * @return bool Whether the index result is still valid
      */
-    public function validateTransformIndexResult($result, AssetTransformModel $transform, Asset $asset)
+    public function validateTransformIndexResult($result, AssetTransform $transform, Asset $asset)
     {
         $indexedAfterFileModified = $result['dateIndexed'] >= Db::prepareDateForDb($asset->dateModified);
         $indexedAfterTransformParameterChange =
@@ -483,7 +483,7 @@ class AssetTransforms extends Component
         // For _widthxheight_mode
         if (preg_match('/_(?P<width>[0-9]+|AUTO)x(?P<height>[0-9]+|AUTO)_(?P<mode>[a-z]+)_(?P<position>[a-z\-]+)(_(?P<quality>[0-9]+))?/i',
             $index->location, $matches)) {
-            $transform = new AssetTransformModel();
+            $transform = new AssetTransform();
             $transform->width = ($matches['width'] != 'AUTO' ? $matches['width'] : null);
             $transform->height = ($matches['height'] != 'AUTO' ? $matches['height'] : null);
             $transform->mode = $matches['mode'];
@@ -565,12 +565,12 @@ class AssetTransforms extends Component
     }
 
     /**
-     * Normalize a transform from handle or a set of properties to an AssetTransformModel.
+     * Normalize a transform from handle or a set of properties to an AssetTransform.
      *
      * @param mixed $transform
      *
      * @throws AssetTransformException If the transform cannot be found by the handle.
-     * @return AssetTransformModel|null
+     * @return AssetTransform|null
      */
     public function normalizeTransform($transform)
     {
@@ -589,12 +589,12 @@ class AssetTransforms extends Component
                 'The transform “{handle}” cannot be found!',
                 ['handle' => $transform]));
         } else {
-            if ($transform instanceof AssetTransformModel) {
+            if ($transform instanceof AssetTransform) {
                 return $transform;
             }
 
             if (is_object($transform) || is_array($transform)) {
-                return AssetTransformModel::create($transform);
+                return AssetTransform::create($transform);
             }
 
             return null;
@@ -1130,11 +1130,11 @@ class AssetTransforms extends Component
     /**
      * Returns a transform's folder name.
      *
-     * @param AssetTransformModel $transform
+     * @param AssetTransform $transform
      *
      * @return string
      */
-    private function _getTransformFolderName(AssetTransformModel $transform)
+    private function _getTransformFolderName(AssetTransform $transform)
     {
         if ($transform->isNamedTransform()) {
             return $this->_getNamedTransformFolderName($transform);
@@ -1146,11 +1146,11 @@ class AssetTransforms extends Component
     /**
      * Returns a named transform's folder name.
      *
-     * @param AssetTransformModel $transform
+     * @param AssetTransform $transform
      *
      * @return string
      */
-    private function _getNamedTransformFolderName(AssetTransformModel $transform
+    private function _getNamedTransformFolderName(AssetTransform $transform
     )
     {
         return '_'.$transform->handle;
@@ -1159,12 +1159,12 @@ class AssetTransforms extends Component
     /**
      * Returns an unnamed transform's folder name.
      *
-     * @param AssetTransformModel $transform
+     * @param AssetTransform $transform
      *
      * @return string
      */
     private function _getUnnamedTransformFolderName(
-        AssetTransformModel $transform
+        AssetTransform $transform
     )
     {
         return '_'.($transform->width ? $transform->width : 'AUTO').'x'.($transform->height ? $transform->height : 'AUTO').

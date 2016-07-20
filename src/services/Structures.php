@@ -11,7 +11,7 @@ use Craft;
 use craft\app\base\ElementInterface;
 use craft\app\errors\StructureNotFoundException;
 use craft\app\events\MoveElementEvent;
-use craft\app\models\Structure as StructureModel;
+use craft\app\models\Structure;
 use craft\app\records\Structure as StructureRecord;
 use craft\app\records\StructureElement as StructureElementRecord;
 use yii\base\Component;
@@ -60,14 +60,14 @@ class Structures extends Component
      *
      * @param integer $structureId
      *
-     * @return StructureModel|null
+     * @return Structure|null
      */
     public function getStructureById($structureId)
     {
         $structureRecord = StructureRecord::findOne($structureId);
 
         if ($structureRecord) {
-            return StructureModel::create($structureRecord);
+            return Structure::create($structureRecord);
         }
 
         return null;
@@ -76,12 +76,12 @@ class Structures extends Component
     /**
      * Saves a structure
      *
-     * @param StructureModel $structure
+     * @param Structure $structure
      *
      * @return boolean Whether the structure was saved successfully
      * @throws StructureNotFoundException if $structure->id is invalid
      */
-    public function saveStructure(StructureModel $structure)
+    public function saveStructure(Structure $structure)
     {
         if ($structure->id) {
             $structureRecord = StructureRecord::findOne($structure->id);

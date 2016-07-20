@@ -8,7 +8,7 @@
 namespace craft\app\controllers;
 
 use Craft;
-use craft\app\models\UserGroup as UserGroupModel;
+use craft\app\models\UserGroup;
 use craft\app\web\Controller;
 use yii\web\NotFoundHttpException;
 use yii\web\Response;
@@ -58,7 +58,7 @@ class UserSettingsController extends Controller
                 throw new NotFoundHttpException('User group not found');
             }
         } else {
-            $group = new UserGroupModel();
+            $group = new UserGroup();
         }
 
         $group->name = $request->getBodyParam('name');

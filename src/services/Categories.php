@@ -15,9 +15,9 @@ use craft\app\events\CategoryEvent;
 use craft\app\elements\Category;
 use craft\app\events\CategoryGroupEvent;
 use craft\app\models\CategoryGroup;
-use craft\app\models\CategoryGroupLocale as CategoryGroupLocaleModel;
+use craft\app\models\CategoryGroupLocale;
 use craft\app\models\FieldLayout;
-use craft\app\models\Structure as StructureModel;
+use craft\app\models\Structure;
 use craft\app\records\Category as CategoryRecord;
 use craft\app\records\CategoryGroup as CategoryGroupRecord;
 use craft\app\records\CategoryGroupLocale as CategoryGroupLocaleRecord;
@@ -282,7 +282,7 @@ class Categories extends Component
      * @param integer     $groupId
      * @param string|null $indexBy
      *
-     * @return CategoryGroupLocaleModel[]
+     * @return CategoryGroupLocale[]
      */
     public function getGroupLocales($groupId, $indexBy = null)
     {
@@ -292,7 +292,7 @@ class Categories extends Component
             ->all();
 
         foreach ($groupLocales as $key => $value) {
-            $groupLocales[$key] = CategoryGroupLocaleModel::create($value);
+            $groupLocales[$key] = CategoryGroupLocale::create($value);
         }
 
         return $groupLocales;
@@ -390,7 +390,7 @@ class Categories extends Component
                 // Create/update the structure
 
                 if ($isNewCategoryGroup) {
-                    $structure = new StructureModel();
+                    $structure = new Structure();
                 } else {
                     /** @noinspection PhpUndefinedVariableInspection */
                     $structure = Craft::$app->getStructures()->getStructureById($oldCategoryGroup->structureId);
@@ -442,7 +442,7 @@ class Categories extends Component
                         ->all();
 
                     foreach ($oldLocales as $key => $value) {
-                        $oldLocales[$key] = CategoryGroupLocaleModel::create($value);
+                        $oldLocales[$key] = CategoryGroupLocale::create($value);
                     }
 
                     $changedLocaleIds = [];

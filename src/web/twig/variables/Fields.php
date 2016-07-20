@@ -7,10 +7,9 @@
 
 namespace craft\app\web\twig\variables;
 
-use craft\app\base\Field;
 use craft\app\base\FieldInterface;
-use craft\app\models\FieldGroup as FieldGroupModel;
-use craft\app\models\FieldLayout as FieldLayoutModel;
+use craft\app\models\FieldGroup;
+use craft\app\models\FieldLayout;
 
 /**
  * Fields provides an API for accessing information about fields. It is accessible from templates via `craft.fields`.
@@ -31,7 +30,7 @@ class Fields
      *
      * @param string|null $indexBy The attribute to index the field groups by
      *
-     * @return FieldGroupModel[] The field groups
+     * @return FieldGroup[] The field groups
      */
     public function getAllGroups($indexBy = null)
     {
@@ -43,7 +42,7 @@ class Fields
      *
      * @param integer $groupId The field group’s ID
      *
-     * @return FieldGroupModel|null The field group, or null if it doesn’t exist
+     * @return FieldGroup|null The field group, or null if it doesn’t exist
      */
     public function getGroupById($groupId)
     {
@@ -119,7 +118,7 @@ class Fields
      *
      * @param integer $layoutId The field layout’s ID
      *
-     * @return FieldLayoutModel|null The field layout, or null if it doesn’t exist
+     * @return FieldLayout|null The field layout, or null if it doesn’t exist
      */
     public function getLayoutById($layoutId)
     {
@@ -131,7 +130,7 @@ class Fields
      *
      * @param string $type The associated element type
      *
-     * @return FieldLayoutModel The field layout
+     * @return FieldLayout The field layout
      */
     public function getLayoutByType($type)
     {

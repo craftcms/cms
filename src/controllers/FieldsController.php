@@ -11,7 +11,7 @@ use Craft;
 use craft\app\base\Field;
 use craft\app\base\FieldInterface;
 use craft\app\helpers\Url;
-use craft\app\models\FieldGroup as FieldGroupModel;
+use craft\app\models\FieldGroup;
 use craft\app\web\twig\variables\ComponentInfo;
 use craft\app\web\Controller;
 use yii\web\NotFoundHttpException;
@@ -54,7 +54,7 @@ class FieldsController extends Controller
         $this->requirePostRequest();
         $this->requireAjaxRequest();
 
-        $group = new FieldGroupModel();
+        $group = new FieldGroup();
         $group->id = Craft::$app->getRequest()->getBodyParam('id');
         $group->name = Craft::$app->getRequest()->getRequiredBodyParam('name');
 

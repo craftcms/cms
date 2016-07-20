@@ -14,7 +14,7 @@ use craft\app\base\Field;
 use craft\app\base\FieldInterface;
 use craft\app\db\Query;
 use craft\app\events\ElementEvent;
-use craft\app\models\FieldLayout as FieldLayoutModel;
+use craft\app\models\FieldLayout;
 use yii\base\Component;
 use yii\base\Exception;
 
@@ -311,13 +311,13 @@ class Content extends Component
      * Updates the search indexes based on the new content values.
      *
      * @param ElementInterface $element
-     * @param FieldLayoutModel $fieldLayout
+     * @param FieldLayout      $fieldLayout
      * @param array|null       &$nonTranslatableFields
      * @param array|null       &$otherContentModels
      *
      * @return void
      */
-    private function _updateSearchIndexes(ElementInterface $element, FieldLayoutModel $fieldLayout, &$nonTranslatableFields = null, &$otherContentModels = null)
+    private function _updateSearchIndexes(ElementInterface $element, FieldLayout $fieldLayout, &$nonTranslatableFields = null, &$otherContentModels = null)
     {
         $searchKeywordsByLocale = [];
 

@@ -11,7 +11,6 @@ use craft\app\helpers\Assets as AssetsHelper;
 use craft\app\helpers\Image;
 use craft\app\helpers\Io;
 use craft\app\helpers\StringHelper;
-use craft\app\models\AssetIndexData as AssetIndexDataModel;
 use craft\app\records\AssetIndexData as AssetIndexDataRecord;
 use craft\app\records\VolumeFolder;
 use yii\base\Component;
@@ -270,7 +269,7 @@ class AssetIndexer extends Component
      * @param $sessionId
      * @param $offset
      *
-     * @return AssetIndexDataModel|bool
+     * @return AssetIndexData|bool
      */
     public function getIndexEntry($volumeId, $sessionId, $offset)
     {
@@ -283,7 +282,7 @@ class AssetIndexer extends Component
         );
 
         if ($record) {
-            return AssetIndexDataModel::create($record);
+            return AssetIndexData::create($record);
         }
 
         return false;

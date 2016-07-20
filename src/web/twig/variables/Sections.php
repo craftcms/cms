@@ -7,7 +7,7 @@
 
 namespace craft\app\web\twig\variables;
 
-use craft\app\models\Section as SectionModel;
+use craft\app\models\Section;
 
 /**
  * Class Sections variable.
@@ -69,7 +69,7 @@ class Sections
      *
      * @param integer $sectionId
      *
-     * @return SectionModel|null
+     * @return Section|null
      */
     public function getSectionById($sectionId)
     {
@@ -81,7 +81,7 @@ class Sections
      *
      * @param string $handle
      *
-     * @return SectionModel|null
+     * @return Section|null
      */
     public function getSectionByHandle($handle)
     {
