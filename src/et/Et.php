@@ -218,8 +218,7 @@ class Et
                     // Potentially long-running request, so close session to prevent session blocking on subsequent requests.
                     Craft::$app->getSession()->close();
 
-                    $response = $client->post($this->_endpoint, null, null,
-                        ['json' => ArrayHelper::toArray($this->_model)]);
+                    $response = $client->post($this->_endpoint, ['json' => ArrayHelper::toArray($this->_model)]);
 
                     if ($response->getStatusCode() == 200) {
                         // Clear the connection failure cached item if it exists.
