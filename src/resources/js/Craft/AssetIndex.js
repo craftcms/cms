@@ -948,9 +948,9 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 	/**
 	 * React on upload submit.
 	 *
-	 * @param id
+	 * @param {object} event
 	 * @private
-	 */
+     */
 	_onUploadStart: function(event)
 	{
 		this.setIndexBusy();

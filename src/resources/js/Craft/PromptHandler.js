@@ -102,10 +102,10 @@ Craft.PromptHandler = Garnish.Base.extend({
     /**
      * Show the user prompt with a given message and choices, plus an optional "Apply to remaining" checkbox.
      *
-     * @param string message
-     * @param array choices
-     * @param function callback
-     * @param integer itemsToGo
+     * @param {string} message
+     * @param {object} choices
+     * @param {function} callback
+     * @param {number} itemsToGo
      */
     _showPrompt: function(message, choices, callback, itemsToGo)
     {

@@ -536,8 +536,8 @@ Craft.CP = Garnish.Base.extend(
 	/**
 	 * Dispays a notification.
 	 *
-	 * @param string type
-	 * @param string message
+	 * @param {string} type
+	 * @param {string} message
 	 */
 	displayNotification: function(type, message)
 	{
@@ -573,7 +573,7 @@ Craft.CP = Garnish.Base.extend(
 	/**
 	 * Displays a notice.
 	 *
-	 * @param string message
+	 * @param {string} message
 	 */
 	displayNotice: function(message)
 	{
@@ -583,7 +583,7 @@ Craft.CP = Garnish.Base.extend(
 	/**
 	 * Displays an error.
 	 *
-	 * @param string message
+	 * @param {string} message
 	 */
 	displayError: function(message)
 	{
