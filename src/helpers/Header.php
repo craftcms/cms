@@ -78,9 +78,9 @@ class Header
             static::$_mimeType = $mimeType;
 
             return true;
-        } else {
-            return false;
         }
+
+        return false;
     }
 
     /**

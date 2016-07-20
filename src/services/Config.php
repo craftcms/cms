@@ -169,9 +169,9 @@ class Config extends Component
             }
 
             return null;
-        } else {
-            return $value;
         }
+
+        return $value;
     }
 
     /**
@@ -634,9 +634,9 @@ class Config extends Component
 
         if (!$request->getIsConsoleRequest() && $request->getIsCpRequest()) {
             return 'resources';
-        } else {
-            return $this->get('resourceTrigger');
         }
+
+        return $this->get('resourceTrigger');
     }
 
     /**

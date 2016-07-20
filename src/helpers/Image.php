@@ -201,11 +201,11 @@ class Image
             $svg = Io::getFileContents($filePath);
 
             return static::parseSvgSize($svg);
-        } else {
-            $image = Craft::$app->getImages()->loadImage($filePath);
-
-            return [$image->getWidth(), $image->getHeight()];
         }
+
+        $image = Craft::$app->getImages()->loadImage($filePath);
+
+        return [$image->getWidth(), $image->getHeight()];
     }
 
     /**
@@ -255,33 +255,24 @@ class Image
         $ppi = 72;
 
         switch ($unit) {
-            case 'px': {
+            case 'px':
                 return 1;
-            }
-            case 'in': {
+            case 'in':
                 return $ppi;
-            }
-            case 'pt': {
+            case 'pt':
                 return $ppi / 72;
-            }
-            case 'pc': {
+            case 'pc':
                 return $ppi / 6;
-            }
-            case 'cm': {
+            case 'cm':
                 return $ppi / 2.54;
-            }
-            case 'mm': {
+            case 'mm':
                 return $ppi / 25.4;
-            }
-            case 'em': {
+            case 'em':
                 return 16;
-            }
-            case 'ex': {
+            case 'ex':
                 return 10;
-            }
-            default: {
+            default:
                 return 1;
-            }
         }
     }
 }

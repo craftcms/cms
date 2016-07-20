@@ -400,9 +400,9 @@ class ElementIndexController extends BaseElementsController
             }
 
             return array_values($actions);
-        } else {
-            return null;
         }
+
+        return null;
     }
 
     /**

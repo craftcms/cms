@@ -245,9 +245,9 @@ trait ApplicationTrait
 
             // Use the primary site locale by default
             return $this->getI18n()->getPrimarySiteLocaleId();
-        } else {
-            return $this->_getFallbackLanguage();
         }
+
+        return $this->_getFallbackLanguage();
     }
 
     /**
@@ -629,9 +629,9 @@ trait ApplicationTrait
 
         if ($attribute) {
             return $this->_info->$attribute;
-        } else {
-            return $this->_info;
         }
+
+        return $this->_info;
     }
 
     /**
@@ -669,9 +669,9 @@ trait ApplicationTrait
             $this->_info = $info;
 
             return true;
-        } else {
-            return false;
         }
+
+        return false;
     }
 
     /**
@@ -1520,11 +1520,9 @@ trait ApplicationTrait
 
         if (!empty($unixSocket)) {
             return strtolower('mysql:unix_socket='.$unixSocket.';dbname=').$this->getConfig()->get('database', ConfigCategory::Db).';';
-        } else {
-            return strtolower('mysql:host='.$this->getConfig()->get('server',
-                    ConfigCategory::Db).';dbname=').$this->getConfig()->get('database',
-                ConfigCategory::Db).strtolower(';port='.$this->getConfig()->get('port', ConfigCategory::Db).';');
         }
+
+        return strtolower('mysql:host='.$this->getConfig()->get('server', ConfigCategory::Db).';dbname=').$this->getConfig()->get('database', ConfigCategory::Db).strtolower(';port='.$this->getConfig()->get('port', ConfigCategory::Db).';');
     }
 
     /**

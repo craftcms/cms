@@ -514,9 +514,9 @@ class TemplateCaches extends Component
 
         if ($cacheIds) {
             return $this->deleteCacheById($cacheIds);
-        } else {
-            return false;
         }
+
+        return false;
     }
 
     /**
@@ -611,11 +611,11 @@ class TemplateCaches extends Component
             Craft::$app->getCache()->set('lastTemplateCacheCleanupDate', DateTimeHelper::currentTimeStamp(), static::$_lastCleanupDateCacheDuration);
 
             return $this->deleteExpiredCaches();
-        } else {
-            $this->_deletedExpiredCaches = true;
-
-            return false;
         }
+
+        $this->_deletedExpiredCaches = true;
+
+        return false;
     }
 
     /**
@@ -650,9 +650,9 @@ class TemplateCaches extends Component
     {
         if (Craft::$app->getConfig()->get('enableTemplateCaching')) {
             return true;
-        } else {
-            return false;
         }
+
+        return false;
     }
 
     /**

@@ -107,8 +107,8 @@ class ElementIndexSettingsController extends BaseElementsController
 
         if (Craft::$app->getElementIndexes()->saveSettings($elementType, $settings)) {
             return $this->asJson(['success' => true]);
-        } else {
-            return $this->asErrorJson(Craft::t('app', 'An unknown error occurred.'));
         }
+
+        return $this->asErrorJson(Craft::t('app', 'An unknown error occurred.'));
     }
 }

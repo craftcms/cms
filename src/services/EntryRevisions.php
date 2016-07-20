@@ -197,9 +197,9 @@ class EntryRevisions extends Component
             ]));
 
             return true;
-        } else {
-            return false;
         }
+
+        return false;
     }
 
     /**
@@ -231,9 +231,9 @@ class EntryRevisions extends Component
             $this->deleteDraft($draft);
 
             return true;
-        } else {
-            return false;
         }
+
+        return false;
     }
 
     /**
@@ -402,9 +402,9 @@ class EntryRevisions extends Component
                 ]));
 
             return true;
-        } else {
-            return false;
         }
+
+        return false;
     }
 
     // Private Methods

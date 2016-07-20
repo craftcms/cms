@@ -49,9 +49,9 @@ class UserSession
     {
         if (\Craft::$app->isInstalled()) {
             return \Craft::$app->getUser()->getRemainingSessionTime();
-        } else {
-            return 0;
         }
+
+        return 0;
     }
 
     /**

@@ -72,15 +72,12 @@ class App
     public static function getEditionName($edition)
     {
         switch ($edition) {
-            case Craft::Client: {
+            case Craft::Client:
                 return 'Client';
-            }
-            case Craft::Pro: {
+            case Craft::Pro:
                 return 'Pro';
-            }
-            default: {
+            default:
                 return 'Personal';
-            }
         }
     }
 

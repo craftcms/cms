@@ -192,14 +192,14 @@ class AssetTransforms extends Component
             }
 
             return true;
-        } else {
-            $transform->addErrors($transformRecord->getErrors());
-            $exception = new ValidationException(Craft::t('app',
-                'There were errors while saving the Asset Transform.'));
-            $exception->setModel($transform);
-
-            throw $exception;
         }
+
+        $transform->addErrors($transformRecord->getErrors());
+        $exception = new ValidationException(Craft::t('app',
+            'There were errors while saving the Asset Transform.'));
+        $exception->setModel($transform);
+
+        throw $exception;
     }
 
     /**
@@ -362,15 +362,15 @@ class AssetTransforms extends Component
         if ($entry) {
             if ($this->validateTransformIndexResult($entry, $transform, $asset)) {
                 return AssetTransformIndex::create($entry);
-            } else {
-                // Delete the out-of-date record
-                Craft::$app->getDb()->createCommand()
-                    ->delete(
-                        '{{%assettransformindex}}',
-                        'id = :transformIndexId',
-                        [':transformIndexId' => $entry['id']])
-                    ->execute();
             }
+
+            // Delete the out-of-date record
+            Craft::$app->getDb()->createCommand()
+                ->delete(
+                    '{{%assettransformindex}}',
+                    'id = :transformIndexId',
+                    [':transformIndexId' => $entry['id']])
+                ->execute();
         }
 
         // Create a new record
@@ -407,9 +407,9 @@ class AssetTransforms extends Component
 
         if ($indexedAfterFileModified && $indexedAfterTransformParameterChange) {
             return true;
-        } else {
-            return false;
         }
+
+        return false;
     }
 
     /**
@@ -576,28 +576,28 @@ class AssetTransforms extends Component
     {
         if (!$transform) {
             return null;
-        } else {
-            if (is_string($transform)) {
-                $transformModel = $this->getTransformByHandle($transform);
+        }
 
-                if ($transformModel) {
-                    return $transformModel;
-                }
+        if (is_string($transform)) {
+            $transformModel = $this->getTransformByHandle($transform);
 
-                throw new AssetTransformException(Craft::t('app',
-                    'The transform “{handle}” cannot be found!',
-                    ['handle' => $transform]));
-            } else {
-                if ($transform instanceof AssetTransformModel) {
-                    return $transform;
-                } else {
-                    if (is_object($transform) || is_array($transform)) {
-                        return AssetTransformModel::create($transform);
-                    } else {
-                        return null;
-                    }
-                }
+            if ($transformModel) {
+                return $transformModel;
             }
+
+            throw new AssetTransformException(Craft::t('app',
+                'The transform “{handle}” cannot be found!',
+                ['handle' => $transform]));
+        } else {
+            if ($transform instanceof AssetTransformModel) {
+                return $transform;
+            }
+
+            if (is_object($transform) || is_array($transform)) {
+                return AssetTransformModel::create($transform);
+            }
+
+            return null;
         }
     }
 
@@ -925,42 +925,41 @@ class AssetTransforms extends Component
         if (in_array(mb_strtolower($asset->getExtension()),
             Image::getWebSafeFormats())) {
             return $asset->getExtension();
-        } else {
-            if ($asset->kind == 'image') {
+        }
 
-                // The only reasonable way to check for transparency is with Imagick. If Imagick is not present, then
-                // we fallback to jpg
-                $images = Craft::$app->getImages();
-                if ($images->isGd() || !method_exists('Imagick',
-                        'getImageAlphaChannel')
-                ) {
-                    return 'jpg';
-                }
-
-                $volume = $asset->getVolume();
-
-                $path = Io::getTempFilePath($asset->getExtension());
-                $localCopy = $volume->saveFileLocally($asset->getUri(), $path);
-
-                $image = $images->loadImage($localCopy);
-
-                if ($image->isTransparent()) {
-                    $format = 'png';
-                } else {
-                    $format = 'jpg';
-                }
-
-                if (!$volume->isLocal()) {
-                    // Store for potential later use and queue for deletion if needed.
-                    $asset->setTransformSource($localCopy);
-                    $this->queueSourceForDeletingIfNecessary($localCopy);
-                } else {
-                    // For local, though, we just delete the temp file.
-                    Io::deleteFile($localCopy);
-                }
-
-                return $format;
+        if ($asset->kind == 'image') {
+            // The only reasonable way to check for transparency is with Imagick. If Imagick is not present, then
+            // we fallback to jpg
+            $images = Craft::$app->getImages();
+            if ($images->isGd() || !method_exists('Imagick',
+                    'getImageAlphaChannel')
+            ) {
+                return 'jpg';
             }
+
+            $volume = $asset->getVolume();
+
+            $path = Io::getTempFilePath($asset->getExtension());
+            $localCopy = $volume->saveFileLocally($asset->getUri(), $path);
+
+            $image = $images->loadImage($localCopy);
+
+            if ($image->isTransparent()) {
+                $format = 'png';
+            } else {
+                $format = 'jpg';
+            }
+
+            if (!$volume->isLocal()) {
+                // Store for potential later use and queue for deletion if needed.
+                $asset->setTransformSource($localCopy);
+                $this->queueSourceForDeletingIfNecessary($localCopy);
+            } else {
+                // For local, though, we just delete the temp file.
+                Io::deleteFile($localCopy);
+            }
+
+            return $format;
         }
 
         throw new AssetLogicException(Craft::t('app',
@@ -1004,9 +1003,9 @@ class AssetTransforms extends Component
     {
         if (empty($index->filename)) {
             return $asset->filename;
-        } else {
-            return $index->filename;
         }
+
+        return $index->filename;
     }
 
     /**
@@ -1139,9 +1138,9 @@ class AssetTransforms extends Component
     {
         if ($transform->isNamedTransform()) {
             return $this->_getNamedTransformFolderName($transform);
-        } else {
-            return $this->_getUnnamedTransformFolderName($transform);
         }
+
+        return $this->_getUnnamedTransformFolderName($transform);
     }
 
     /**
@@ -1288,14 +1287,10 @@ class AssetTransforms extends Component
     private function _getThumbExtension(Asset $asset)
     {
         // For non-web-safe formats we go with jpg.
-        if (!in_array(
-            mb_strtolower(Io::getExtension($asset->filename)),
-            Image::getWebSafeFormats()
-        )
-        ) {
+        if (!in_array(mb_strtolower(Io::getExtension($asset->filename)), Image::getWebSafeFormats())) {
             return 'jpg';
-        } else {
-            return $asset->getExtension();
         }
+
+        return $asset->getExtension();
     }
 }

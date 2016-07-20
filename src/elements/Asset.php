@@ -330,9 +330,9 @@ class Asset extends Element
             case 'imageSize': {
                 if (($width = $element->getWidth()) && ($height = $element->getHeight())) {
                     return "{$width} × {$height}";
-                } else {
-                    return '';
                 }
+
+                return '';
             }
 
             case 'width':
@@ -416,6 +416,7 @@ class Asset extends Element
 
                 return false;
             }
+
             // TODO illegal filenmes?
         } else {
             $newFilename = null;
@@ -601,9 +602,9 @@ class Asset extends Element
         try {
             if (isset($this->_transform)) {
                 return $this->getUrl();
-            } else {
-                return parent::__toString();
             }
+
+            return parent::__toString();
         } catch (Exception $e) {
             ErrorHandler::convertExceptionToError($e);
         }
@@ -626,9 +627,9 @@ class Asset extends Element
         if (parent::__isset($name) || Craft::$app->getAssetTransforms()->getTransformByHandle($name)
         ) {
             return true;
-        } else {
-            return false;
         }
+
+        return false;
     }
 
     /**
@@ -666,9 +667,9 @@ class Asset extends Element
                 $model->setTransform($transform);
 
                 return $model;
-            } else {
-                throw $e;
             }
+
+            throw $e;
         }
     }
 
@@ -739,27 +740,28 @@ class Asset extends Element
 
         if ($source->id) {
             return $source->getFieldLayout();
-        } else {
-            $folder = $this->getFolder();
+        }
 
-            if (preg_match('/field_([0-9]+)/', $folder->name, $matches)) {
-                $fieldId = $matches[1];
-                $field = Craft::$app->getFields()->getFieldById($fieldId);
-                $settings = $field->settings;
+        $folder = $this->getFolder();
 
-                if ($settings['useSingleFolder']) {
-                    $sourceId = $settings['singleUploadLocationSource'];
-                } else {
-                    $sourceId = $settings['defaultUploadLocationSource'];
-                }
+        if (preg_match('/field_([0-9]+)/', $folder->name, $matches)) {
+            $fieldId = $matches[1];
+            $field = Craft::$app->getFields()->getFieldById($fieldId);
+            $settings = $field->settings;
 
-                $source = Craft::$app->getVolumes()->getVolumeById($sourceId);
+            if ($settings['useSingleFolder']) {
+                $sourceId = $settings['singleUploadLocationSource'];
+            } else {
+                $sourceId = $settings['defaultUploadLocationSource'];
+            }
 
-                if ($source) {
-                    return $source->getFieldLayout();
-                }
+            $source = Craft::$app->getVolumes()->getVolumeById($sourceId);
+
+            if ($source) {
+                return $source->getFieldLayout();
             }
         }
+
 
         return null;
     }
@@ -997,9 +999,9 @@ class Asset extends Element
 
         if ($volume->isLocal()) {
             return $volume->getRootPath().'/'.$this->getUri();
-        } else {
-            return Craft::$app->getPath()->getAssetsImageSourcePath().'/'.$this->id.'.'.$this->getExtension();
         }
+
+        return Craft::$app->getPath()->getAssetsImageSourcePath().'/'.$this->id.'.'.$this->getExtension();
     }
 
     /**

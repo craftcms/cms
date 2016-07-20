@@ -150,10 +150,12 @@ class Number
     {
         if (is_numeric($var)) {
             return $var;
-        } else if (is_object($var) && method_exists($var, '__toString')) {
-            return static::makeNumeric($var->__toString());
-        } else {
-            return (int)!empty($var);
         }
+
+        if (is_object($var) && method_exists($var, '__toString')) {
+            return static::makeNumeric($var->__toString());
+        }
+
+        return (int)!empty($var);
     }
 }

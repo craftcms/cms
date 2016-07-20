@@ -129,8 +129,8 @@ class Schema extends \yii\db\mysql\Schema
             $likeSql = ($this->db->tablePrefix ? ' LIKE \''.$this->db->tablePrefix.'%\'' : '');
 
             return $this->db->createCommand('SHOW TABLES'.$likeSql)->queryColumn();
-        } else {
-            return parent::findTableNames();
         }
+
+        return parent::findTableNames();
     }
 }

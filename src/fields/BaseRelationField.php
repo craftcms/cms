@@ -355,9 +355,9 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
             $html .= '</div></div>';
 
             return $html;
-        } else {
-            return '<p class="light">'.Craft::t('app', 'Nothing selected.').'</p>';
         }
+
+        return '<p class="light">'.Craft::t('app', 'Nothing selected.').'</p>';
     }
 
     /**
@@ -499,7 +499,9 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
         if (Craft::$app->isLocalized()) {
             if ($this->targetLocale) {
                 return $this->targetLocale;
-            } else if (!empty($element)) {
+            }
+
+            if (!empty($element)) {
                 return $element->locale;
             }
         }
@@ -632,9 +634,9 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
 
         if ($viewMode && isset($supportedViewModes[$viewMode])) {
             return $viewMode;
-        } else {
-            return 'list';
         }
+
+        return 'list';
     }
 
     /**

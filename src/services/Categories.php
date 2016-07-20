@@ -176,17 +176,19 @@ class Categories extends Component
 
         if ($indexBy == 'id') {
             return $this->_categoryGroupsById;
-        } else if (!$indexBy) {
-            return array_values($this->_categoryGroupsById);
-        } else {
-            $groups = [];
-
-            foreach ($this->_categoryGroupsById as $group) {
-                $groups[$group->$indexBy] = $group;
-            }
-
-            return $groups;
         }
+
+        if (!$indexBy) {
+            return array_values($this->_categoryGroupsById);
+        }
+
+        $groups = [];
+
+        foreach ($this->_categoryGroupsById as $group) {
+            $groups[$group->$indexBy] = $group;
+        }
+
+        return $groups;
     }
 
     /**
@@ -581,9 +583,9 @@ class Categories extends Component
                 ]));
 
             return true;
-        } else {
-            return false;
         }
+
+        return false;
     }
 
     /**
@@ -858,9 +860,9 @@ class Categories extends Component
             }
 
             return true;
-        } else {
-            return false;
         }
+
+        return false;
     }
 
     /**
@@ -885,9 +887,9 @@ class Categories extends Component
 
         if ($categories) {
             return $this->deleteCategory($categories);
-        } else {
-            return false;
         }
+
+        return false;
     }
 
     /**

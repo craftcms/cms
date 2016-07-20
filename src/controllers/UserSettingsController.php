@@ -85,9 +85,9 @@ class UserSettingsController extends Controller
             Craft::$app->getSession()->setNotice(Craft::t('app', 'Group saved.'));
 
             return $this->redirectToPostedUrl();
-        } else {
-            Craft::$app->getSession()->setError(Craft::t('app', 'Couldn’t save group.'));
         }
+
+        Craft::$app->getSession()->setError(Craft::t('app', 'Couldn’t save group.'));
 
         // Send the group back to the template
         Craft::$app->getUrlManager()->setRouteParams([
@@ -132,14 +132,14 @@ class UserSettingsController extends Controller
             Craft::$app->getSession()->setNotice(Craft::t('app', 'User settings saved.'));
 
             return $this->redirectToPostedUrl();
-        } else {
-            Craft::$app->getSession()->setError(Craft::t('app', 'Couldn’t save user settings.'));
-
-            // Send the settings back to the template
-            Craft::$app->getUrlManager()->setRouteParams([
-                'settings' => $settings
-            ]);
         }
+
+        Craft::$app->getSession()->setError(Craft::t('app', 'Couldn’t save user settings.'));
+
+        // Send the settings back to the template
+        Craft::$app->getUrlManager()->setRouteParams([
+            'settings' => $settings
+        ]);
 
         return null;
     }

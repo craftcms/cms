@@ -52,9 +52,9 @@ class TemplatesController extends Controller
         // Does that template exist?
         if (Craft::$app->getView()->doesTemplateExist($template)) {
             return $this->renderTemplate($template, $variables);
-        } else {
-            throw new NotFoundHttpException('Template not found');
         }
+
+        throw new NotFoundHttpException('Template not found');
     }
 
     /**

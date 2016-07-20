@@ -220,15 +220,15 @@ class Section extends Model
 
         if (!$indexBy) {
             return $this->_entryTypes;
-        } else {
-            $entryTypes = [];
-
-            foreach ($this->_entryTypes as $entryType) {
-                $entryTypes[$entryType->$indexBy] = $entryType;
-            }
-
-            return $entryTypes;
         }
+
+        $entryTypes = [];
+
+        foreach ($this->_entryTypes as $entryType) {
+            $entryTypes[$entryType->$indexBy] = $entryType;
+        }
+
+        return $entryTypes;
     }
 
     /**

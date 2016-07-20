@@ -342,9 +342,9 @@ class Entries extends Component
             }
 
             return true;
-        } else {
-            return false;
         }
+
+        return false;
     }
 
     /**
@@ -369,9 +369,9 @@ class Entries extends Component
 
         if ($entries) {
             return $this->deleteEntry($entries);
-        } else {
-            return false;
         }
+
+        return false;
     }
 
     // Private Methods

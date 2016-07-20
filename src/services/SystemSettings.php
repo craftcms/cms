@@ -78,9 +78,9 @@ class SystemSettings extends Component
 
         if ($record !== null) {
             return $record->dateUpdated;
-        } else {
-            return null;
         }
+
+        return null;
     }
 
     /**
@@ -164,8 +164,8 @@ class SystemSettings extends Component
 
         if ($this->_settingsRecords[$category] !== false) {
             return $this->_settingsRecords[$category];
-        } else {
-            return null;
         }
+
+        return null;
     }
 }

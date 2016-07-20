@@ -116,9 +116,9 @@ abstract class BaseOptionsField extends Field implements PreviewableFieldInterfa
             $length += 1;
 
             return Db::getTextualColumnTypeByContentLength($length);
-        } else {
-            return Schema::TYPE_STRING;
         }
+
+        return Schema::TYPE_STRING;
     }
 
     /**
@@ -261,10 +261,10 @@ abstract class BaseOptionsField extends Field implements PreviewableFieldInterfa
             }
 
             return implode(', ', $labels);
-        } else {
-            /** @var SingleOptionFieldData $value */
-            return $value->value;
         }
+
+        /** @var SingleOptionFieldData $value */
+        return $value->value;
     }
 
     // Protected Methods
@@ -350,9 +350,9 @@ abstract class BaseOptionsField extends Field implements PreviewableFieldInterfa
         if ($this->multi) {
             /** @var MultiOptionsFieldData $value */
             return count($value) === 0;
-        } else {
-            /** @var SingleOptionFieldData $value */
-            return empty($value->value);
         }
+
+        /** @var SingleOptionFieldData $value */
+        return empty($value->value);
     }
 }

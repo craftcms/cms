@@ -241,8 +241,8 @@ class RegisterResourceTokenParser extends \Twig_TokenParser
             $stream->next();
 
             return true;
-        } else {
-            return false;
         }
+
+        return false;
     }
 }

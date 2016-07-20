@@ -254,9 +254,9 @@ class DateTimeHelper
     {
         if (is_string($value) && preg_match('/^\d\d\d\d-\d\d-\d\dT\d\d:\d\d:\d\d[\+\-]\d\d\:?\d\d$/', $value)) {
             return true;
-        } else {
-            return false;
         }
+
+        return false;
     }
 
     /**
@@ -272,9 +272,9 @@ class DateTimeHelper
 
         if ($date !== false) {
             return $date->format(\DateTime::ATOM);
-        } else {
-            return false;
         }
+
+        return false;
     }
 
     /**
@@ -569,16 +569,20 @@ class DateTimeHelper
         // If it's today, just return the local time.
         if (static::isToday($dateTime->getTimestamp())) {
             return $dateTime->localeTime();
-        } // If it was yesterday, display 'Yesterday'
-        else if (static::wasYesterday($dateTime->getTimestamp())) {
-            return Craft::t('app', 'Yesterday');
-        } // If it were up to 7 days ago, display the weekday name.
-        else if (static::wasWithinLast('7 days', $dateTime->getTimestamp())) {
-            return Craft::t('app', $dateTime->format('l'));
-        } else {
-            // Otherwise, just return the local date.
-            return $dateTime->localeDate();
         }
+
+        // If it was yesterday, display 'Yesterday'
+        if (static::wasYesterday($dateTime->getTimestamp())) {
+            return Craft::t('app', 'Yesterday');
+        }
+
+        // If it were up to 7 days ago, display the weekday name.
+        if (static::wasWithinLast('7 days', $dateTime->getTimestamp())) {
+            return Craft::t('app', $dateTime->format('l'));
+        }
+
+        // Otherwise, just return the local date.
+        return $dateTime->localeDate();
     }
 
     /**

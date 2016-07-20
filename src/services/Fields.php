@@ -220,11 +220,11 @@ class Fields extends Component
             }
 
             return true;
-        } else {
-            $group->addErrors($groupRecord->getErrors());
-
-            return false;
         }
+
+        $group->addErrors($groupRecord->getErrors());
+
+        return false;
     }
 
     /**
@@ -1133,9 +1133,9 @@ class Fields extends Component
             }
 
             return $this->_fieldRecordsById[$field->id];
-        } else {
-            return new FieldRecord();
         }
+
+        return new FieldRecord();
     }
 
     /**

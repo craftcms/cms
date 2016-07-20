@@ -100,10 +100,10 @@ class UsersController extends Controller
 
         if (Craft::$app->getUser()->login($user, $duration)) {
             return $this->_handleSuccessfulLogin(true);
-        } else {
-            // Unknown error
-            return $this->_handleInvalidLogin(null, $user);
         }
+
+        // Unknown error
+        return $this->_handleInvalidLogin(null, $user);
     }
 
     /**
@@ -244,12 +244,11 @@ class UsersController extends Controller
             if (Craft::$app->getUsers()->sendPasswordResetEmail($user)) {
                 if (Craft::$app->getRequest()->getIsAjax()) {
                     return $this->asJson(['success' => true]);
-                } else {
-                    Craft::$app->getSession()->setNotice(Craft::t('app',
-                        'Password reset email sent.'));
-
-                    return $this->redirectToPostedUrl();
                 }
+
+                Craft::$app->getSession()->setNotice(Craft::t('app', 'Password reset email sent.'));
+
+                return $this->redirectToPostedUrl();
             }
 
             $errors[] = Craft::t('app',
@@ -258,13 +257,13 @@ class UsersController extends Controller
 
         if (Craft::$app->getRequest()->getIsAjax()) {
             return $this->asErrorJson($errors);
-        } else {
-            // Send the data back to the template
-            Craft::$app->getUrlManager()->setRouteParams([
-                'errors' => $errors,
-                'loginName' => isset($loginName) ? $loginName : null,
-            ]);
         }
+
+        // Send the data back to the template
+        Craft::$app->getUrlManager()->setRouteParams([
+            'errors' => $errors,
+            'loginName' => isset($loginName) ? $loginName : null,
+        ]);
 
         return null;
     }
@@ -1042,21 +1041,21 @@ class UsersController extends Controller
                 // Is this public registration, and is the user going to be activated automatically?
                 if ($publicActivation) {
                     return $this->_redirectUserAfterAccountActivation($user);
-                } else {
-                    return $this->redirectToPostedUrl($user);
                 }
+
+                return $this->redirectToPostedUrl($user);
             }
         } else {
             if ($request->getIsAjax()) {
                 return $this->asErrorJson(Craft::t('app', 'Couldn’t save user.'));
-            } else {
-                Craft::$app->getSession()->setError(Craft::t('app', 'Couldn’t save user.'));
-
-                // Send the account back to the template
-                Craft::$app->getUrlManager()->setRouteParams([
-                    'user' => $user
-                ]);
             }
+
+            Craft::$app->getSession()->setError(Craft::t('app', 'Couldn’t save user.'));
+
+            // Send the account back to the template
+            Craft::$app->getUrlManager()->setRouteParams([
+                'user' => $user
+            ]);
         }
 
         return null;
@@ -1260,12 +1259,11 @@ class UsersController extends Controller
 
         if (Craft::$app->getRequest()->getIsAjax()) {
             return $this->asJson(['success' => true]);
-        } else {
-            Craft::$app->getSession()->setNotice(Craft::t('app',
-                'Activation email sent.'));
-
-            return $this->redirectToPostedUrl();
         }
+
+        Craft::$app->getSession()->setNotice(Craft::t('app', 'Activation email sent.'));
+
+        return $this->redirectToPostedUrl();
     }
 
     /**
@@ -1448,10 +1446,9 @@ class UsersController extends Controller
                 'User fields saved.'));
 
             return $this->redirectToPostedUrl();
-        } else {
-            Craft::$app->getSession()->setError(Craft::t('app',
-                'Couldn’t save user fields.'));
         }
+
+        Craft::$app->getSession()->setError(Craft::t('app', 'Couldn’t save user fields.'));
 
         return null;
     }
@@ -1847,17 +1844,17 @@ class UsersController extends Controller
 
         if ($url != '') {
             return $this->redirect(Url::getSiteUrl($url));
-        } else {
-            if ($user && $user->can('accessCp')) {
-                $url = Url::getCpUrl(Craft::$app->getConfig()->getLoginPath());
-            } else {
-                $url = Url::getSiteUrl(Craft::$app->getConfig()->getLoginPath());
-            }
-
-            throw new HttpException('200', Craft::t('app',
-                'Invalid verification code. Please [login or reset your password]({loginUrl}).',
-                ['loginUrl' => $url]));
         }
+
+        if ($user && $user->can('accessCp')) {
+            $url = Url::getCpUrl(Craft::$app->getConfig()->getLoginPath());
+        } else {
+            $url = Url::getSiteUrl(Craft::$app->getConfig()->getLoginPath());
+        }
+
+        throw new HttpException('200', Craft::t('app',
+            'Invalid verification code. Please [login or reset your password]({loginUrl}).',
+            ['loginUrl' => $url]));
     }
 
     /**
@@ -1889,9 +1886,9 @@ class UsersController extends Controller
     {
         if (Craft::$app->getConfig()->get('autoLoginAfterAccountActivation') === true) {
             return Craft::$app->getUser()->login($user);
-        } else {
-            return false;
         }
+
+        return false;
     }
 
     /**
@@ -1909,12 +1906,12 @@ class UsersController extends Controller
             $url = Url::getCpUrl($postCpLoginRedirect);
 
             return $this->redirect($url);
-        } else {
-            $activateAccountSuccessPath = Craft::$app->getConfig()->getLocalized('activateAccountSuccessPath');
-            $url = Url::getSiteUrl($activateAccountSuccessPath);
-
-            return $this->redirectToPostedUrl($url);
         }
+
+        $activateAccountSuccessPath = Craft::$app->getConfig()->getLocalized('activateAccountSuccessPath');
+        $url = Url::getSiteUrl($activateAccountSuccessPath);
+
+        return $this->redirectToPostedUrl($url);
 
         return null;
     }

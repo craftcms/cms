@@ -93,17 +93,17 @@ class FileCache extends \yii\caching\FileCache
                 Io::changePermissions($cacheFile, Craft::$app->getConfig()->get('defaultFilePermissions'));
 
                 return Io::touch($cacheFile, $expire);
-            } else {
-                return false;
             }
-        } else {
-            if (Io::writeToFile($cacheFile, $value) !== false) {
-                Io::changePermissions($cacheFile, Craft::$app->getConfig()->get('defaultFilePermissions'));
 
-                return Io::touch($cacheFile, $expire);
-            } else {
-                return false;
-            }
+            return false;
         }
+
+        if (Io::writeToFile($cacheFile, $value) !== false) {
+            Io::changePermissions($cacheFile, Craft::$app->getConfig()->get('defaultFilePermissions'));
+
+            return Io::touch($cacheFile, $expire);
+        }
+
+        return false;
     }
 }

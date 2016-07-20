@@ -55,9 +55,9 @@ abstract class Task extends SavableComponent implements TaskInterface
     {
         if ($this->totalSteps !== null && $this->currentStep !== null) {
             return $this->currentStep / $this->totalSteps;
-        } else {
-            return 0;
         }
+
+        return 0;
     }
 
     /**
@@ -112,8 +112,8 @@ abstract class Task extends SavableComponent implements TaskInterface
 
         if ($tasksService->saveTask($task)) {
             return $tasksService->runTask($task);
-        } else {
-            return false;
         }
+
+        return false;
     }
 }

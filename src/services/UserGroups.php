@@ -161,11 +161,11 @@ class UserGroups extends Component
             }
 
             return true;
-        } else {
-            $group->addErrors($groupRecord->getErrors());
-
-            return false;
         }
+
+        $group->addErrors($groupRecord->getErrors());
+
+        return false;
     }
 
     /**

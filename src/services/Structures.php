@@ -148,9 +148,9 @@ class Structures extends Component
 
         if ($deepestDescendant) {
             return $deepestDescendant->level - $elementRecord->level;
-        } else {
-            return 0;
         }
+
+        return 0;
     }
 
     // Moving elements around

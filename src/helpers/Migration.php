@@ -457,9 +457,9 @@ class Migration
 
         if (isset($tables[$tableName])) {
             return $tables[$tableName];
-        } else {
-            return null;
         }
+
+        return null;
     }
 
     /**

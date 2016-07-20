@@ -155,9 +155,9 @@ class ElementsController extends BaseElementsController
             }
 
             return $response;
-        } else {
-            return $this->_getEditorHtmlResponse($element, false);
         }
+
+        return $this->_getEditorHtmlResponse($element, false);
     }
 
     /**

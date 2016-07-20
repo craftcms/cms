@@ -262,9 +262,9 @@ class Request extends \yii\web\Request
     {
         if ($returnRealPathInfo) {
             return parent::getPathInfo();
-        } else {
-            return $this->_path;
         }
+
+        return $this->_path;
     }
 
     /**
@@ -853,10 +853,10 @@ class Request extends \yii\web\Request
             $expectedToken = $nonce.'|'.Craft::$app->getSecurity()->hashData($hashable, $this->cookieValidationKey);
 
             return Craft::$app->getSecurity()->compareString($expectedToken, $token);
-        } else {
-            // If they're logged out, any token is fine
-            return true;
         }
+
+        // If they're logged out, any token is fine
+        return true;
     }
 
     // Private Methods

@@ -784,9 +784,9 @@ class StringHelper extends \yii\helpers\StringHelper
             }
 
             return implode($glue, $stringValues);
-        } else {
-            return (string)$object;
         }
+
+        return (string)$object;
     }
 
     /**
@@ -978,9 +978,9 @@ class StringHelper extends \yii\helpers\StringHelper
                     $unpacked = unpack('H*', mb_convert_encoding($match[0], 'UTF-32', 'UTF-8'));
 
                     return isset($unpacked[1]) ? '&#x'.ltrim($unpacked[1], '0').';' : '';
-                } else {
-                    return $match[0];
                 }
+
+                return $match[0];
             }, $string);
         }
 

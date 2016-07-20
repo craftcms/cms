@@ -93,9 +93,9 @@ class Updates
         if (!empty($plugins) && isset($plugins[0])) {
             if ($type == 'name') {
                 return $plugins[0]->name;
-            } else {
-                return $plugins[0]->getHandle();
             }
+
+            return $plugins[0]->getHandle();
         }
 
         return null;

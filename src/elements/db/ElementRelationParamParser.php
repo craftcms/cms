@@ -124,14 +124,14 @@ class ElementRelationParamParser
         if ($conditions) {
             if (count($conditions) == 1) {
                 return $conditions[0];
-            } else {
-                array_unshift($conditions, $glue);
-
-                return $conditions;
             }
-        } else {
-            return false;
+
+            array_unshift($conditions, $glue);
+
+            return $conditions;
         }
+
+        return false;
     }
 
     /**
@@ -408,13 +408,13 @@ class ElementRelationParamParser
         if ($conditions) {
             if (count($conditions) == 1) {
                 return $conditions[0];
-            } else {
-                array_unshift($conditions, 'or');
-
-                return $conditions;
             }
-        } else {
-            return false;
+
+            array_unshift($conditions, 'or');
+
+            return $conditions;
         }
+
+        return false;
     }
 }

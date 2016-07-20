@@ -260,9 +260,9 @@ class DateTime extends \DateTime
             //$newInterval->days = $interval->days;
 
             return $newInterval;
-        } else {
-            return $interval;
         }
+
+        return $interval;
     }
 
     /**

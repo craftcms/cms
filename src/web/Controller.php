@@ -63,9 +63,9 @@ abstract class Controller extends \yii\web\Controller
             }
 
             return true;
-        } else {
-            return false;
         }
+
+        return false;
     }
 
     /**
@@ -329,8 +329,8 @@ abstract class Controller extends \yii\web\Controller
 
         if ($url !== null) {
             return Craft::$app->getResponse()->redirect($url, $statusCode);
-        } else {
-            return $this->goHome();
         }
+
+        return $this->goHome();
     }
 }

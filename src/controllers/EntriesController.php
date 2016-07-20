@@ -464,25 +464,25 @@ class EntriesController extends BaseEntriesController
                 $return['postDate'] = ($entry->postDate ? DateTimeHelper::toIso8601($entry->postDate) : null);
 
                 return $this->asJson($return);
-            } else {
-                Craft::$app->getSession()->setNotice(Craft::t('app', 'Entry saved.'));
-
-                return $this->redirectToPostedUrl($entry);
             }
-        } else {
-            if ($request->getIsAjax()) {
-                return $this->asJson([
-                    'errors' => $entry->getErrors(),
-                ]);
-            } else {
-                Craft::$app->getSession()->setError(Craft::t('app', 'Couldn’t save entry.'));
 
-                // Send the entry back to the template
-                Craft::$app->getUrlManager()->setRouteParams([
-                    'entry' => $entry
-                ]);
-            }
+            Craft::$app->getSession()->setNotice(Craft::t('app', 'Entry saved.'));
+
+            return $this->redirectToPostedUrl($entry);
         }
+
+        if ($request->getIsAjax()) {
+            return $this->asJson([
+                'errors' => $entry->getErrors(),
+            ]);
+        }
+
+        Craft::$app->getSession()->setError(Craft::t('app', 'Couldn’t save entry.'));
+
+        // Send the entry back to the template
+        Craft::$app->getUrlManager()->setRouteParams([
+            'entry' => $entry
+        ]);
 
         return null;
     }
@@ -516,23 +516,24 @@ class EntriesController extends BaseEntriesController
         if (Craft::$app->getEntries()->deleteEntry($entry)) {
             if (Craft::$app->getRequest()->getIsAjax()) {
                 return $this->asJson(['success' => true]);
-            } else {
-                Craft::$app->getSession()->setNotice(Craft::t('app', 'Entry deleted.'));
-
-                return $this->redirectToPostedUrl($entry);
             }
-        } else {
-            if (Craft::$app->getRequest()->getIsAjax()) {
-                return $this->asJson(['success' => false]);
-            } else {
-                Craft::$app->getSession()->setError(Craft::t('app', 'Couldn’t delete entry.'));
 
-                // Send the entry back to the template
-                Craft::$app->getUrlManager()->setRouteParams([
-                    'entry' => $entry
-                ]);
-            }
+            Craft::$app->getSession()->setNotice(Craft::t('app', 'Entry deleted.'));
+
+            return $this->redirectToPostedUrl($entry);
         }
+
+        if (Craft::$app->getRequest()->getIsAjax()) {
+            return $this->asJson(['success' => false]);
+        }
+
+        Craft::$app->getSession()->setError(Craft::t('app', 'Couldn’t delete entry.'));
+
+        // Send the entry back to the template
+        Craft::$app->getUrlManager()->setRouteParams([
+            'entry' => $entry
+        ]);
+
 
         return null;
     }

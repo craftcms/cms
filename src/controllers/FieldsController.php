@@ -240,9 +240,9 @@ class FieldsController extends Controller
             Craft::$app->getSession()->setNotice(Craft::t('app', 'Field saved.'));
 
             return $this->redirectToPostedUrl($field);
-        } else {
-            Craft::$app->getSession()->setError(Craft::t('app', 'Couldn’t save field.'));
         }
+
+        Craft::$app->getSession()->setError(Craft::t('app', 'Couldn’t save field.'));
 
         // Send the field back to the template
         Craft::$app->getUrlManager()->setRouteParams([

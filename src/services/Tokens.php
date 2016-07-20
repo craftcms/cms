@@ -72,9 +72,9 @@ class Tokens extends Component
 
         if ($success) {
             return $tokenRecord->token;
-        } else {
-            return false;
         }
+
+        return false;
     }
 
     /**
@@ -115,9 +115,9 @@ class Tokens extends Component
             $route = Json::encodeIfJson($route);
 
             return $route;
-        } else {
-            return false;
         }
+
+        return false;
     }
 
     /**

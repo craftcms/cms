@@ -138,11 +138,13 @@ class Url
 
         if (static::isProtocolRelativeUrl($url)) {
             return $protocol.':'.$url;
-        } else if (static::isRootRelativeUrl($url)) {
-            return Craft::$app->getRequest()->getHostInfo($protocol).$url;
-        } else {
-            return preg_replace('/^https?:/', $protocol.':', $url);
         }
+
+        if (static::isRootRelativeUrl($url)) {
+            return Craft::$app->getRequest()->getHostInfo($protocol).$url;
+        }
+
+        return preg_replace('/^https?:/', $protocol.':', $url);
     }
 
     /**
@@ -339,23 +341,25 @@ class Url
         // If they've explicitly set `useSslOnTokenizedUrls` to true, use https.
         if ($useSslOnTokenizedUrls === true) {
             return 'https';
-        } // If they've explicitly set `useSslOnTokenizedUrls` to false, use http.
-        else if ($useSslOnTokenizedUrls === false) {
-            return 'http';
-        } else {
-            // Let's auto-detect.
+        }
 
-            // If the siteUrl is https or the current request is https, use it.
-            $scheme = parse_url(Craft::$app->getSiteUrl(), PHP_URL_SCHEME);
-
-            $request = Craft::$app->getRequest();
-            if (($scheme && strtolower($scheme) == 'https') || (!$request->getIsConsoleRequest() && $request->getIsSecureConnection())) {
-                return 'https';
-            }
-
-            // Lame ole' http.
+        // If they've explicitly set `useSslOnTokenizedUrls` to false, use http.
+        if ($useSslOnTokenizedUrls === false) {
             return 'http';
         }
+
+        // Let's auto-detect.
+
+        // If the siteUrl is https or the current request is https, use it.
+        $scheme = parse_url(Craft::$app->getSiteUrl(), PHP_URL_SCHEME);
+
+        $request = Craft::$app->getRequest();
+        if (($scheme && strtolower($scheme) == 'https') || (!$request->getIsConsoleRequest() && $request->getIsSecureConnection())) {
+            return 'https';
+        }
+
+        // Lame ole' http.
+        return 'http';
     }
 
     // Private Methods

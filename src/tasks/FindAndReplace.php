@@ -110,27 +110,27 @@ class FindAndReplace extends Task
                     ->execute();
 
                 return true;
-            } else {
-                $step -= count($this->_textColumns);
+            }
 
-                if (isset($this->_matrixFieldIds[$step])) {
-                    $field = Craft::$app->getFields()->getFieldById($this->_matrixFieldIds[$step]);
+            $step -= count($this->_textColumns);
 
-                    if ($field) {
-                        return $this->runSubTask([
-                            'type' => FindAndReplace::className(),
-                            'description' => Craft::t('app', 'Working in Matrix field “{field}”', ['field' => $field->name]),
-                            'find' => $this->find,
-                            'replace' => $this->replace,
-                            'matrixFieldId' => $field->id
-                        ]);
-                    } else {
-                        // Oh what the hell.
-                        return true;
-                    }
+            if (isset($this->_matrixFieldIds[$step])) {
+                $field = Craft::$app->getFields()->getFieldById($this->_matrixFieldIds[$step]);
+
+                if ($field) {
+                    return $this->runSubTask([
+                        'type' => FindAndReplace::className(),
+                        'description' => Craft::t('app', 'Working in Matrix field “{field}”', ['field' => $field->name]),
+                        'find' => $this->find,
+                        'replace' => $this->replace,
+                        'matrixFieldId' => $field->id
+                    ]);
                 } else {
-                    return false;
+                    // Oh what the hell.
+                    return true;
                 }
+            } else {
+                return false;
             }
         } else {
             Craft::error('Invalid "replace" in the Find and Replace task probably caused by invalid JSON in the database.', __METHOD__);

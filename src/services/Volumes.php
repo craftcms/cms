@@ -169,15 +169,15 @@ class Volumes extends Component
 
         if (!$indexBy) {
             return $this->_viewableVolumes;
-        } else {
-            $volumes = [];
-
-            foreach ($this->_viewableVolumes as $volume) {
-                $volumes[$volume->$indexBy] = $volume;
-            }
-
-            return $volumes;
         }
+
+        $volumes = [];
+
+        foreach ($this->_viewableVolumes as $volume) {
+            $volumes[$volume->$indexBy] = $volume;
+        }
+
+        return $volumes;
     }
 
     /**
@@ -222,15 +222,15 @@ class Volumes extends Component
 
         if (!$indexBy) {
             return $this->_publicVolumes;
-        } else {
-            $volumes = [];
-
-            foreach ($this->_publicVolumes as $volume) {
-                $volumes[$volume->$indexBy] = $volume;
-            }
-
-            return $volumes;
         }
+
+        $volumes = [];
+
+        foreach ($this->_publicVolumes as $volume) {
+            $volumes[$volume->$indexBy] = $volume;
+        }
+
+        return $volumes;
     }
 
     /**
@@ -277,19 +277,19 @@ class Volumes extends Component
 
         if ($indexBy == 'id') {
             return $this->_volumesById;
-        } else {
-            if (!$indexBy) {
-                return array_values($this->_volumesById);
-            } else {
-                $volumes = [];
-
-                foreach ($this->_volumesById as $volume) {
-                    $volumes[$volume->$indexBy] = $volume;
-                }
-
-                return $volumes;
-            }
         }
+
+        if (!$indexBy) {
+            return array_values($this->_volumesById);
+        }
+
+        $volumes = [];
+
+        foreach ($this->_volumesById as $volume) {
+            $volumes[$volume->$indexBy] = $volume;
+        }
+
+        return $volumes;
     }
 
     /**
@@ -304,28 +304,28 @@ class Volumes extends Component
         // Temporary volume?
         if (is_null($volumeId)) {
             return new Temp();
-        } else {
-            // If we've already fetched all volumes, just use that.
-            if (!$this->_fetchedAllVolumes &&
-                (!isset($this->_volumesById) || !array_key_exists($volumeId,
-                        $this->_volumesById))
-            ) {
-                $result = $this->_createVolumeQuery()
-                    ->where('id = :id', [':id' => $volumeId])
-                    ->one();
+        }
 
-                if ($result) {
-                    $volume = $this->createVolume($result);
-                } else {
-                    $volume = null;
-                }
+        // If we've already fetched all volumes, just use that.
+        if (!$this->_fetchedAllVolumes &&
+            (!isset($this->_volumesById) || !array_key_exists($volumeId,
+                    $this->_volumesById))
+        ) {
+            $result = $this->_createVolumeQuery()
+                ->where('id = :id', [':id' => $volumeId])
+                ->one();
 
-                $this->_volumesById[$volumeId] = $volume;
+            if ($result) {
+                $volume = $this->createVolume($result);
+            } else {
+                $volume = null;
             }
 
-            if (!empty($this->_volumesById[$volumeId])) {
-                return $this->_volumesById[$volumeId];
-            }
+            $this->_volumesById[$volumeId] = $volume;
+        }
+
+        if (!empty($this->_volumesById[$volumeId])) {
+            return $this->_volumesById[$volumeId];
         }
 
         return null;

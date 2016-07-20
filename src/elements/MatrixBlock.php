@@ -234,26 +234,26 @@ class MatrixBlock extends Element
 
         if ($this->ownerLocale) {
             return [$this->ownerLocale];
-        } else {
-            $owner = $this->getOwner();
-
-            if ($owner) {
-                // Just send back an array of locale IDs -- don't pass along enabledByDefault configs
-                $localeIds = [];
-
-                foreach ($owner->getLocales() as $localeId => $localeInfo) {
-                    if (is_numeric($localeId) && is_string($localeInfo)) {
-                        $localeIds[] = $localeInfo;
-                    } else {
-                        $localeIds[] = $localeId;
-                    }
-                }
-
-                return $localeIds;
-            } else {
-                return [Craft::$app->getI18n()->getPrimarySiteLocaleId()];
-            }
         }
+
+        $owner = $this->getOwner();
+
+        if ($owner) {
+            // Just send back an array of locale IDs -- don't pass along enabledByDefault configs
+            $localeIds = [];
+
+            foreach ($owner->getLocales() as $localeId => $localeInfo) {
+                if (is_numeric($localeId) && is_string($localeInfo)) {
+                    $localeIds[] = $localeInfo;
+                } else {
+                    $localeIds[] = $localeId;
+                }
+            }
+
+            return $localeIds;
+        }
+
+        return [Craft::$app->getI18n()->getPrimarySiteLocaleId()];
     }
 
     /**

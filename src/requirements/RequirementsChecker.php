@@ -74,14 +74,14 @@ class RequirementsChecker
         }
 
         if (!isset($this->result) || !is_array($this->result)) {
-            $this->result = array(
-                'summary' => array(
+            $this->result = [
+                'summary' => [
                     'total' => 0,
                     'errors' => 0,
                     'warnings' => 0,
-                ),
-                'requirements' => array(),
-            );
+                ],
+                'requirements' => [],
+            ];
         }
 
         foreach ($requirements as $key => $rawRequirement) {
@@ -154,9 +154,9 @@ class RequirementsChecker
     {
         if (isset($this->result)) {
             return $this->result;
-        } else {
-            return null;
         }
+
+        return null;
     }
 
     /**
@@ -441,26 +441,35 @@ class RequirementsChecker
 
         if (function_exists('iconv')) {
             // Let's see what happens.
-            set_error_handler(array($this, 'muteErrorHandler'));
+            set_error_handler([$this, 'muteErrorHandler']);
             $r = iconv('utf-8', 'ascii//IGNORE', "\xCE\xB1".str_repeat('a', 9000));
             restore_error_handler();
 
             if ($r === false) {
                 $this->iconvMessage = $ignoreMessage;
+
                 return false;
-            } else if (($c = strlen($r)) < 9000) {
+            }
+
+            if (($c = strlen($r)) < 9000) {
                 $this->iconvMessage = $warningMessage;
+
                 return false;
-            } else if ($c > 9000) {
+            }
+
+            if ($c > 9000) {
                 $this->iconvMessage = $warningMessage;
+
                 return false;
             }
 
             $this->iconvMessage = $recommendedMessage;
+
             return true;
         }
 
         $this->iconvMessage = $recommendedMessage;
+
         return false;
     }
 
@@ -503,6 +512,7 @@ class RequirementsChecker
                 $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
             } catch (PDOException $e) {
                 $this->dbConnectionError = "Can't connect to the database with the credentials supplied in db.php. Please double check them and try again.";
+
                 return false;
             }
         }
@@ -514,7 +524,7 @@ class RequirementsChecker
     {
         $oldValue = ini_get('memory_limit');
 
-        set_error_handler(array($this, 'muteErrorHandler'));
+        set_error_handler([$this, 'muteErrorHandler']);
         $result = ini_set('memory_limit', '442M');
         restore_error_handler();
 
@@ -522,6 +532,7 @@ class RequirementsChecker
         // If ini_set has been disabled in php.ini, the value will be null because of our muted error handler
         if ($result === null) {
             $this->iniSetMessage = 'It looks like <a href="http://php.net/manual/en/function.ini-set.php">ini_set</a> has been disabled in your php.ini file. Craft requires that to operate.';
+
             return false;
         }
 
@@ -535,11 +546,12 @@ class RequirementsChecker
         }
 
         // Resetting should work, but might as well be extra careful.
-        set_error_handler(array($this, 'muteErrorHandler'));
+        set_error_handler([$this, 'muteErrorHandler']);
         ini_set('memory_limit', $oldValue);
         restore_error_handler();
 
         $this->iniSetMessage = 'Calls to <a href="http://php.net/manual/en/function.ini-set.php">ini_set</a> are working correctly.';
+
         return true;
     }
 
@@ -552,31 +564,34 @@ class RequirementsChecker
         // 32M check.
         if ($memoryLimitInBytes <= 33554432) {
             $this->memoryMessage = 'Craft CMS requires at least 32M of memory allocated to PHP to operate smoothly.';
+
             return false;
-        // 128M check
+            // 128M check
         } else if ($memoryLimitInBytes <= 134217728) {
             $this->memoryMessage = 'You have 128M allocated to PHP which should be fine for most sites. If you will be processing very large images or having Craft CMS automatically backup a large database, you might need to increase this to 256M or higher.';
+
             return false;
         }
 
         $this->memoryMessage = 'There is '.$memoryLimit.' of memory allocated to PHP.';
+
         return true;
     }
 
     function checkWebRoot()
     {
         $pathService = Craft::$app->getPath();
-        $publicFolders = array();
+        $publicFolders = [];
 
         // The paths to check.
-        $folders = array(
-            'storage'      => $pathService->getStoragePath(),
-            'plugins'      => $pathService->getPluginsPath(),
-            'config'       => $pathService->getConfigPath(),
-            'app'          => $pathService->getAppPath(),
-            'templates'    => $pathService->getSiteTemplatesPath(),
+        $folders = [
+            'storage' => $pathService->getStoragePath(),
+            'plugins' => $pathService->getPluginsPath(),
+            'config' => $pathService->getConfigPath(),
+            'app' => $pathService->getAppPath(),
+            'templates' => $pathService->getSiteTemplatesPath(),
             'translations' => $pathService->getSiteTranslationsPath(),
-        );
+        ];
 
         foreach ($folders as $key => $path) {
             if ($realPath = realpath($path)) {
@@ -598,11 +613,11 @@ class RequirementsChecker
             for ($counter = 0; $counter < count($publicFolders); $counter++) {
                 $folderString .= '“craft/'.$publicFolders[$counter].'”';
 
-                if (isset($publicFolders[$counter+1]) && count($publicFolders) > 2) {
+                if (isset($publicFolders[$counter + 1]) && count($publicFolders) > 2) {
                     $folderString .= ', ';
                 }
 
-                if (isset($publicFolders[$counter+1]) && $counter + 2 == count($publicFolders)) {
+                if (isset($publicFolders[$counter + 1]) && $counter + 2 == count($publicFolders)) {
                     if (count($publicFolders) == 2) {
                         $folderString .= ' and ';
                     } else {
@@ -632,8 +647,7 @@ class RequirementsChecker
         // Get the base path without the script name.
         $subBasePath = \Craft\app\helpers\Io::normalizePathSeparators(mb_substr(Craft::$app->getRequest()->getScriptFile(), 0, -mb_strlen(Craft::$app->getRequest()->getScriptFilename())));
 
-        if (mb_strpos($pathToTest, $subBasePath) !== false)
-        {
+        if (mb_strpos($pathToTest, $subBasePath) !== false) {
             return true;
         }
 

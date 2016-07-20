@@ -62,15 +62,15 @@ class TemplateLoader implements \Twig_LoaderInterface, \Twig_ExistsLoaderInterfa
     {
         if ($name instanceof StringTemplate) {
             return $name->template;
-        } else {
-            $template = $this->_resolveTemplate($name);
-
-            if (Io::isReadable($template)) {
-                return Io::getFileContents($template);
-            } else {
-                throw new TemplateLoaderException($name, Craft::t('app', 'Tried to read the template at {path}, but could not. Check the permissions.', ['path' => $template]));
-            }
         }
+
+        $template = $this->_resolveTemplate($name);
+
+        if (Io::isReadable($template)) {
+            return Io::getFileContents($template);
+        }
+
+        throw new TemplateLoaderException($name, Craft::t('app', 'Tried to read the template at {path}, but could not. Check the permissions.', ['path' => $template]));
     }
 
     /**
@@ -85,9 +85,9 @@ class TemplateLoader implements \Twig_LoaderInterface, \Twig_ExistsLoaderInterfa
     {
         if ($name instanceof StringTemplate) {
             return $name->cacheKey;
-        } else {
-            return $this->_resolveTemplate($name);
         }
+
+        return $this->_resolveTemplate($name);
     }
 
     /**
@@ -112,9 +112,9 @@ class TemplateLoader implements \Twig_LoaderInterface, \Twig_ExistsLoaderInterfa
             $sourceModifiedTime = Io::getLastTimeModified($this->_resolveTemplate($name));
 
             return $sourceModifiedTime->getTimestamp() <= $time;
-        } else {
-            return false;
         }
+
+        return false;
     }
 
     // Private Methods
@@ -134,8 +134,8 @@ class TemplateLoader implements \Twig_LoaderInterface, \Twig_ExistsLoaderInterfa
 
         if ($template !== false) {
             return $template;
-        } else {
-            throw new TemplateLoaderException($name, Craft::t('app', 'Unable to find the template “{template}”.', ['template' => $name]));
         }
+
+        throw new TemplateLoaderException($name, Craft::t('app', 'Unable to find the template “{template}”.', ['template' => $name]));
     }
 }

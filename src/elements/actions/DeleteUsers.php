@@ -143,9 +143,9 @@ EOT;
         if (!Craft::$app->getUser()->getIsAdmin()) {
             // Only admins can delete other admins
             return User::find()->admin()->ids();
-        } else {
-            // Can't delete your own account from here
-            return [Craft::$app->getUser()->getIdentity()->id];
         }
+
+        // Can't delete your own account from here
+        return [Craft::$app->getUser()->getIdentity()->id];
     }
 }

@@ -185,6 +185,7 @@ class VolumesController extends Controller
 
             return $this->redirectToPostedUrl();
         }
+
         $session->setError(Craft::t('app', 'Couldn’t save volume.'));
 
         // Send the volume back to the template

@@ -155,14 +155,15 @@ class SystemSettingsController extends Controller
             Craft::$app->getSession()->setNotice(Craft::t('app', 'General settings saved.'));
 
             return $this->redirectToPostedUrl();
-        } else {
-            Craft::$app->getSession()->setError(Craft::t('app', 'Couldn’t save general settings.'));
-
-            // Send the info back to the template
-            Craft::$app->getUrlManager()->setRouteParams([
-                'info' => $info
-            ]);
         }
+
+        Craft::$app->getSession()->setError(Craft::t('app', 'Couldn’t save general settings.'));
+
+        // Send the info back to the template
+        Craft::$app->getUrlManager()->setRouteParams([
+            'info' => $info
+        ]);
+
 
         return null;
     }

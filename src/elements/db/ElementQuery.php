@@ -331,9 +331,9 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
             Craft::$app->getDeprecator()->log('ElementQuery::order()', 'The “order” element parameter has been deprecated. Use “orderBy” instead.');
 
             return isset($this->orderBy);
-        } else {
-            return parent::__isset($name);
         }
+
+        return parent::__isset($name);
     }
 
     /**
@@ -345,9 +345,9 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
             Craft::$app->getDeprecator()->log('ElementQuery::order()', 'The “order” element parameter has been deprecated. Use “orderBy” instead.');
 
             return $this->orderBy;
-        } else {
-            return parent::__get($name);
         }
+
+        return parent::__get($name);
     }
 
     /**
@@ -378,9 +378,9 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
             }
 
             return $this;
-        } else {
-            return parent::__call($name, $params);
         }
+
+        return parent::__call($name, $params);
     }
 
     /**
@@ -415,9 +415,9 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
             $this->limit = $limit;
 
             return $exists;
-        } else {
-            return $this->__isset($name);
         }
+
+        return $this->__isset($name);
     }
 
     /**
@@ -431,9 +431,9 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
     {
         if (is_numeric($name)) {
             return $this->nth($name);
-        } else {
-            return $this->__get($name);
         }
+
+        return $this->__get($name);
     }
 
     /**
@@ -977,9 +977,9 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
 
         if ($row !== false) {
             return $this->_createElement($row) ?: null;
-        } else {
-            return null;
         }
+
+        return null;
     }
 
     /**
@@ -1824,8 +1824,8 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
             }
 
             return true;
-        } else {
-            return false;
         }
+
+        return false;
     }
 }

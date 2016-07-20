@@ -57,13 +57,13 @@ class RoutesController extends Controller
 
         if ($routeRecord->hasErrors()) {
             return $this->asJson(['errors' => $routeRecord->getErrors()]);
-        } else {
-            return $this->asJson([
-                'success' => true,
-                'routeId' => $routeRecord->id,
-                'locale' => $routeRecord->locale
-            ]);
         }
+
+        return $this->asJson([
+            'success' => true,
+            'routeId' => $routeRecord->id,
+            'locale' => $routeRecord->locale
+        ]);
     }
 
     /**

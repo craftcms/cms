@@ -86,21 +86,21 @@ class Zip
 
                 if ($result === true) {
                     return $result;
-                } else {
-                    Craft::error('There was an error unzipping the file: '.$srcZip, __METHOD__);
-
-                    return false;
                 }
-            } else {
-                Craft::error($srcZip.' is not a zip file and cannot be unzipped.', __METHOD__);
+
+                Craft::error('There was an error unzipping the file: '.$srcZip, __METHOD__);
 
                 return false;
             }
-        } else {
-            Craft::error('Unzipping is only available for files.', __METHOD__);
+
+            Craft::error($srcZip.' is not a zip file and cannot be unzipped.', __METHOD__);
 
             return false;
         }
+
+        Craft::error('Unzipping is only available for files.', __METHOD__);
+
+        return false;
     }
 
     /**

@@ -322,9 +322,9 @@ class Path extends Component
     {
         if ($pluginHandle) {
             return $this->getPluginsPath()."/$pluginHandle/migrations";
-        } else {
-            return $this->getAppPath().'/migrations';
         }
+
+        return $this->getAppPath().'/migrations';
     }
 
     /**

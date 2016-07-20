@@ -345,32 +345,32 @@ class Locale extends Object
 
         if (Craft::$app->getI18n()->getIsIntlLoaded()) {
             return \Locale::getDisplayName($this->id, $inLocale);
+        }
+
+        if ($inLocale === $this->id) {
+            $locale = $this;
         } else {
-            if ($inLocale === $this->id) {
+            try {
+                $locale = new Locale($inLocale);
+            } catch (InvalidConfigException $e) {
                 $locale = $this;
-            } else {
-                try {
-                    $locale = new Locale($inLocale);
-                } catch (InvalidConfigException $e) {
-                    $locale = $this;
-                }
             }
+        }
 
-            if (isset($locale->data['localeDisplayNames'][$this->id])) {
-                return $locale->data['localeDisplayNames'][$this->id];
-            } else {
-                // Try just the language
-                $languageId = $this->getLanguageID();
+        if (isset($locale->data['localeDisplayNames'][$this->id])) {
+            return $locale->data['localeDisplayNames'][$this->id];
+        }
 
-                if ($languageId !== $this->id && isset($locale->data['localeDisplayNames'][$languageId])) {
-                    return $locale->data['localeDisplayNames'][$languageId];
-                }
-            }
+        // Try just the language
+        $languageId = $this->getLanguageID();
 
-            if ($locale !== $this) {
-                // Try again with this locale
-                return $this->getDisplayName($this->id);
-            }
+        if ($languageId !== $this->id && isset($locale->data['localeDisplayNames'][$languageId])) {
+            return $locale->data['localeDisplayNames'][$languageId];
+        }
+
+        if ($locale !== $this) {
+            // Try again with this locale
+            return $this->getDisplayName($this->id);
         }
 
         return $this->id;
@@ -385,9 +385,9 @@ class Locale extends Object
     {
         if (in_array($this->getLanguageID(), static::$_rtlLanguages)) {
             return 'rtl';
-        } else {
-            return 'ltr';
         }
+
+        return 'ltr';
     }
 
     /**
@@ -638,9 +638,9 @@ class Locale extends Object
     {
         if (Craft::$app->getI18n()->getIsIntlLoaded()) {
             return $this->getFormatter()->asDate(new DateTime('00:00'), 'a');
-        } else {
-            return $this->data['amName'];
         }
+
+        return $this->data['amName'];
     }
 
     /**
@@ -652,9 +652,9 @@ class Locale extends Object
     {
         if (Craft::$app->getI18n()->getIsIntlLoaded()) {
             return $this->getFormatter()->asDate(new DateTime('12:00'), 'a');
-        } else {
-            return $this->data['pmName'];
         }
+
+        return $this->data['pmName'];
     }
 
     // Text Attributes and Symbols
@@ -775,11 +775,13 @@ class Locale extends Object
             $withoutCurrency = $formatter->formatCurrency(0, $currency);
 
             return str_replace($withoutCurrency, '', $withCurrency);
-        } else if (isset($this->data['currencySymbols'][$currency])) {
-            return $this->data['currencySymbols'][$currency];
-        } else {
-            return $currency;
         }
+
+        if (isset($this->data['currencySymbols'][$currency])) {
+            return $this->data['currencySymbols'][$currency];
+        }
+
+        return $currency;
     }
 
     // Private Methods

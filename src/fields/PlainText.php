@@ -87,9 +87,9 @@ class PlainText extends Field implements PreviewableFieldInterface
     {
         if (!$this->maxLength) {
             return Schema::TYPE_TEXT;
-        } else {
-            return Db::getTextualColumnTypeByContentLength($this->maxLength);
         }
+
+        return Db::getTextualColumnTypeByContentLength($this->maxLength);
     }
 
     /**

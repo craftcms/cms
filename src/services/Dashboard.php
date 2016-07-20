@@ -153,9 +153,9 @@ class Dashboard extends Component
 
         if ($widgetRecord) {
             return $this->createWidget($widgetRecord);
-        } else {
-            return null;
         }
+
+        return null;
     }
 
     /**
@@ -202,9 +202,9 @@ class Dashboard extends Component
             }
 
             return true;
-        } else {
-            return false;
         }
+
+        return false;
     }
 
     /**

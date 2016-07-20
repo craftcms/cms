@@ -332,9 +332,9 @@ class User extends Element implements IdentityInterface
                     $locale = new Locale($localeId);
 
                     return $locale->getDisplayName(Craft::$app->language);
-                } else {
-                    return '';
                 }
+
+                return '';
             }
 
             default: {
@@ -757,11 +757,11 @@ class User extends Element implements IdentityInterface
                     if ($this->locked) {
                         // Will set the authError to either AccountCooldown or AccountLocked
                         return $this->authenticate($password);
-                    } else {
-                        $this->authError = self::AUTH_INVALID_CREDENTIALS;
-
-                        return false;
                     }
+
+                    $this->authError = self::AUTH_INVALID_CREDENTIALS;
+
+                    return false;
                 }
 
                 // Is a password reset required?
@@ -894,9 +894,9 @@ class User extends Element implements IdentityInterface
 
         if ($fullName) {
             return $fullName;
-        } else {
-            return $this->username;
         }
+
+        return $this->username;
     }
 
     /**
@@ -908,9 +908,9 @@ class User extends Element implements IdentityInterface
     {
         if ($firstName = trim($this->firstName)) {
             return $firstName;
-        } else {
-            return $this->username;
         }
+
+        return $this->username;
     }
 
     /**
@@ -1018,14 +1018,16 @@ class User extends Element implements IdentityInterface
         if (Craft::$app->getEdition() >= Craft::Client) {
             if ($this->admin) {
                 return true;
-            } else if ($this->id) {
-                return Craft::$app->getUserPermissions()->doesUserHavePermission($this->id, $permission);
-            } else {
-                return false;
             }
-        } else {
-            return true;
+
+            if ($this->id) {
+                return Craft::$app->getUserPermissions()->doesUserHavePermission($this->id, $permission);
+            }
+
+            return false;
         }
+
+        return true;
     }
 
     /**
@@ -1039,9 +1041,9 @@ class User extends Element implements IdentityInterface
     {
         if ($this->id) {
             return Craft::$app->getUsers()->hasUserShunnedMessage($this->id, $message);
-        } else {
-            return false;
         }
+
+        return false;
     }
 
     /**
@@ -1092,13 +1094,17 @@ class User extends Element implements IdentityInterface
     {
         if ($this->isCurrent()) {
             return Url::getCpUrl('myaccount');
-        } else if (Craft::$app->getEdition() == Craft::Client && $this->client) {
-            return Url::getCpUrl('clientaccount');
-        } else if (Craft::$app->getEdition() == Craft::Pro) {
-            return Url::getCpUrl('users/'.$this->id);
-        } else {
-            return false;
         }
+
+        if (Craft::$app->getEdition() == Craft::Client && $this->client) {
+            return Url::getCpUrl('clientaccount');
+        }
+
+        if (Craft::$app->getEdition() == Craft::Pro) {
+            return Url::getCpUrl('users/'.$this->id);
+        }
+
+        return false;
     }
 
     /**
@@ -1161,13 +1167,11 @@ class User extends Element implements IdentityInterface
         $locale = $this->getPreference('locale');
 
         // Make sure it's valid
-        if ($locale !== null && in_array($locale,
-                Craft::$app->getI18n()->getSiteLocaleIds())
-        ) {
+        if ($locale !== null && in_array($locale, Craft::$app->getI18n()->getSiteLocaleIds())) {
             return $locale;
-        } else {
-            return null;
         }
+
+        return null;
     }
 
     /**

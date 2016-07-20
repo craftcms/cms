@@ -1124,9 +1124,9 @@ class Elements extends Component
     {
         if (isset($this->_placeholderElements[$id][$locale])) {
             return $this->_placeholderElements[$id][$locale];
-        } else {
-            return null;
         }
+
+        return null;
     }
 
     /**

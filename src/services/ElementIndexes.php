@@ -137,9 +137,9 @@ class ElementIndexes extends Component
             $this->_indexSettings[$elementType] = $settings;
 
             return true;
-        } else {
-            return false;
         }
+
+        return false;
     }
 
     /**

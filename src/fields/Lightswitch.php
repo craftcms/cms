@@ -90,9 +90,9 @@ class Lightswitch extends Field implements PreviewableFieldInterface
     {
         if ($value) {
             return '<div class="status enabled" title="'.Craft::t('app', 'Enabled').'"></div>';
-        } else {
-            return '<div class="status" title="'.Craft::t('app', 'Not enabled').'"></div>';
         }
+
+        return '<div class="status" title="'.Craft::t('app', 'Not enabled').'"></div>';
     }
 
     /**

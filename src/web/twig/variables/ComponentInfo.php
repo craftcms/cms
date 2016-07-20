@@ -79,9 +79,9 @@ class ComponentInfo
         if ($this->getIsInvalid()) {
             /** @var InvalidComponentInterface $component */
             return $component->getType();
-        } else {
-            return $component::className();
         }
+
+        return $component::className();
     }
 
     /**
@@ -99,9 +99,9 @@ class ComponentInfo
             $displayName = array_pop($classNameParts);
 
             return $displayName;
-        } else {
-            return $component::displayName();
         }
+
+        return $component::displayName();
     }
 
     /**
@@ -119,9 +119,9 @@ class ComponentInfo
             $handle = array_pop($classNameParts);
 
             return strtolower($handle);
-        } else {
-            return $component::classHandle();
         }
+
+        return $component::classHandle();
     }
 
     /**
@@ -133,13 +133,11 @@ class ComponentInfo
     {
         $component = $this->component;
 
-        if (!is_subclass_of($component,
-                'craft\app\base\SavableComponentInterface') || $this->getIsInvalid()
-        ) {
+        if (!is_subclass_of($component, 'craft\app\base\SavableComponentInterface') || $this->getIsInvalid()) {
             return false;
-        } else {
-            /** @var SavableComponentInterface $component */
-            return $component::isSelectable();
         }
+
+        /** @var SavableComponentInterface $component */
+        return $component::isSelectable();
     }
 }

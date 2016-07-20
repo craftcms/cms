@@ -53,9 +53,9 @@ class NodeVisitor implements \Twig_NodeVisitorInterface
                 $this->_foundHead = true;
 
                 return $this->_splitTextNode($node, $data, $headPos, 'head');
-            } else if ($this->_foundBeginBody === false && preg_match('/(<body\b[^>]*)(>)?/',
-                    $data, $matches, PREG_OFFSET_CAPTURE) === 1
-            ) {
+            }
+
+            if ($this->_foundBeginBody === false && preg_match('/(<body\b[^>]*)(>)?/', $data, $matches, PREG_OFFSET_CAPTURE) === 1) {
                 if (empty($matches[2][0])) {
                     // Will have to wait for the next text node
                     $this->_findingBeginBody = true;

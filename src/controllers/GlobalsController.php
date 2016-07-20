@@ -66,9 +66,9 @@ class GlobalsController extends Controller
             Craft::$app->getSession()->setNotice(Craft::t('app', 'Global set saved.'));
 
             return $this->redirectToPostedUrl($globalSet);
-        } else {
-            Craft::$app->getSession()->setError(Craft::t('app', 'Couldn’t save global set.'));
         }
+
+        Craft::$app->getSession()->setError(Craft::t('app', 'Couldn’t save global set.'));
 
         // Send the global set back to the template
         Craft::$app->getUrlManager()->setRouteParams([
@@ -189,9 +189,9 @@ class GlobalsController extends Controller
             Craft::$app->getSession()->setNotice(Craft::t('app', 'Globals saved.'));
 
             return $this->redirectToPostedUrl();
-        } else {
-            Craft::$app->getSession()->setError(Craft::t('app', 'Couldn’t save globals.'));
         }
+
+        Craft::$app->getSession()->setError(Craft::t('app', 'Couldn’t save globals.'));
 
         // Send the global set back to the template
         Craft::$app->getUrlManager()->setRouteParams([

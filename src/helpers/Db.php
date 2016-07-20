@@ -97,9 +97,9 @@ class Db
             $date->setTimezone($timezone);
 
             return $formattedDate;
-        } else {
-            return null;
         }
+
+        return null;
     }
 
     /**
@@ -230,15 +230,19 @@ class Db
     {
         if ($contentLength <= static::getTextualColumnStorageCapacity(ColumnType::TinyText)) {
             return Schema::TYPE_STRING;
-        } else if ($contentLength <= static::getTextualColumnStorageCapacity(ColumnType::Text)) {
+        }
+
+        if ($contentLength <= static::getTextualColumnStorageCapacity(ColumnType::Text)) {
             return Schema::TYPE_TEXT;
-        } else if ($contentLength <= static::getTextualColumnStorageCapacity(ColumnType::MediumText)) {
+        }
+
+        if ($contentLength <= static::getTextualColumnStorageCapacity(ColumnType::MediumText)) {
             // Yii doesn't support 'mediumtext' so we use our own.
             return ColumnType::MediumText;
-        } else {
-            // Yii doesn't support 'longtext' so we use our own.
-            return ColumnType::LongText;
         }
+
+        // Yii doesn't support 'longtext' so we use our own.
+        return ColumnType::LongText;
     }
 
     /**
@@ -354,11 +358,11 @@ class Db
 
         if (count($conditions) == 1) {
             return $conditions[0];
-        } else {
-            array_unshift($conditions, $join);
-
-            return $conditions;
         }
+
+        array_unshift($conditions, $join);
+
+        return $conditions;
     }
 
     /**
@@ -448,9 +452,9 @@ class Db
 
                 if ($testOperator == 'not ') {
                     return '!=';
-                } else {
-                    return $testOperator;
                 }
+
+                return $testOperator;
             }
         }
 

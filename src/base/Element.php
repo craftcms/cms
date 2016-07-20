@@ -319,9 +319,9 @@ abstract class Element extends Component implements ElementInterface
 
                 if ($url) {
                     return '<a href="'.$url.'" target="_blank" data-icon="world" title="'.Craft::t('app', 'Visit webpage').'"></a>';
-                } else {
-                    return '';
                 }
+
+                return '';
             }
 
             case 'uri': {
@@ -349,9 +349,9 @@ abstract class Element extends Component implements ElementInterface
                     }
 
                     return '<a href="'.$url.'" target="_blank" class="go" title="'.Craft::t('app', 'Visit webpage').'"><span dir="ltr">'.$value.'</span></a>';
-                } else {
-                    return '';
                 }
+
+                return '';
             }
 
             default: {
@@ -686,9 +686,9 @@ abstract class Element extends Component implements ElementInterface
     {
         if ($name == 'title' || $this->hasEagerLoadedElements($name) || parent::__isset($name) || $this->getFieldByHandle($name)) {
             return true;
-        } else {
-            return false;
         }
+
+        return false;
     }
 
     /**
@@ -861,9 +861,9 @@ abstract class Element extends Component implements ElementInterface
     {
         if (static::isLocalized()) {
             return Craft::$app->getI18n()->getSiteLocaleIds();
-        } else {
-            return [Craft::$app->getI18n()->getPrimarySiteLocaleId()];
         }
+
+        return [Craft::$app->getI18n()->getPrimarySiteLocaleId()];
     }
 
     /**
@@ -899,9 +899,9 @@ abstract class Element extends Component implements ElementInterface
             $link = '<a href="'.$url.'">'.Html::encode($this->__toString()).'</a>';
 
             return Template::getRaw($link);
-        } else {
-            return null;
         }
+
+        return null;
     }
 
     /**
@@ -941,11 +941,13 @@ abstract class Element extends Component implements ElementInterface
     {
         if ($this->archived) {
             return static::STATUS_ARCHIVED;
-        } else if (!$this->enabled || !$this->localeEnabled) {
-            return static::STATUS_DISABLED;
-        } else {
-            return static::STATUS_ENABLED;
         }
+
+        if (!$this->enabled || !$this->localeEnabled) {
+            return static::STATUS_DISABLED;
+        }
+
+        return static::STATUS_ENABLED;
     }
 
     /**
@@ -1040,9 +1042,9 @@ abstract class Element extends Component implements ElementInterface
 
         if ($this->_structureId !== false) {
             return $this->_structureId;
-        } else {
-            return null;
         }
+
+        return null;
     }
 
     /**
@@ -1219,12 +1221,12 @@ abstract class Element extends Component implements ElementInterface
         if ($this->root == $element->root && $this->level && $this->level == $element->level) {
             if ($this->level == 1 || $this->isPrevSiblingOf($element) || $this->isNextSiblingOf($element)) {
                 return true;
-            } else {
-                $parent = $this->getParent();
+            }
 
-                if ($parent) {
-                    return $element->isDescendantOf($parent);
-                }
+            $parent = $this->getParent();
+
+            if ($parent) {
+                return $element->isDescendantOf($parent);
             }
         }
 
@@ -1256,9 +1258,9 @@ abstract class Element extends Component implements ElementInterface
     {
         if ($offset == 'title' || $this->hasEagerLoadedElements($offset) || parent::offsetExists($offset) || $this->getFieldByHandle($offset)) {
             return true;
-        } else {
-            return false;
         }
+
+        return false;
     }
 
     /**
@@ -1360,9 +1362,9 @@ abstract class Element extends Component implements ElementInterface
     {
         if (isset($this->_rawPostContent)) {
             return $this->_rawPostContent;
-        } else {
-            return [];
         }
+
+        return [];
     }
 
     /**
@@ -1570,9 +1572,9 @@ abstract class Element extends Component implements ElementInterface
 
         if ($fieldLayout) {
             return $fieldLayout->getFields();
-        } else {
-            return [];
         }
+
+        return [];
     }
 
     /**

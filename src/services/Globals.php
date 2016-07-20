@@ -124,12 +124,12 @@ class Globals extends Component
 
         if (!$indexBy) {
             return $this->_allGlobalSets;
-        } else {
-            $globalSets = [];
+        }
 
-            foreach ($this->_allGlobalSets as $globalSet) {
-                $globalSets[$globalSet->$indexBy] = $globalSet;
-            }
+        $globalSets = [];
+
+        foreach ($this->_allGlobalSets as $globalSet) {
+            $globalSets[$globalSet->$indexBy] = $globalSet;
         }
 
         return $globalSets;

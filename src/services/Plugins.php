@@ -151,9 +151,9 @@ class Plugins extends Component
 
         if (isset($this->_plugins[$handle])) {
             return $this->_plugins[$handle];
-        } else {
-            return null;
         }
+
+        return null;
     }
 
     /**
@@ -298,11 +298,11 @@ class Plugins extends Component
                 $this->_registerPlugin($handle, $plugin);
 
                 return true;
-            } else {
-                $transaction->rollBack();
-
-                return false;
             }
+
+            $transaction->rollBack();
+
+            return false;
         } catch (\Exception $e) {
             $transaction->rollBack();
 
@@ -358,11 +358,11 @@ class Plugins extends Component
                 unset($this->_installedPluginInfo[$handle]);
 
                 return true;
-            } else {
+            }
+
                 $transaction->rollBack();
 
                 return false;
-            }
         } catch (\Exception $e) {
             $transaction->rollBack();
 
@@ -521,9 +521,9 @@ class Plugins extends Component
 
         if (isset($this->_installedPluginInfo[$handle])) {
             return $this->_installedPluginInfo[$handle];
-        } else {
-            return null;
         }
+
+        return null;
     }
 
     /**
@@ -693,9 +693,9 @@ class Plugins extends Component
 
         if ($iconPath && Io::fileExists($iconPath) && FileHelper::getMimeType($iconPath) == 'image/svg+xml') {
             return Io::getFileContents($iconPath);
-        } else {
-            return Craft::$app->getPath()->getResourcesPath().'/images/default_plugin.svg';
         }
+
+        return Craft::$app->getPath()->getResourcesPath().'/images/default_plugin.svg';
     }
 
     /**

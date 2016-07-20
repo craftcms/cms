@@ -125,9 +125,9 @@ class I18N
         if ($localeId === null) {
             // Return the current application locale
             return \Craft::$app->getLocale();
-        } else {
-            return new Locale($localeId);
         }
+
+        return new Locale($localeId);
     }
 
     /**

@@ -212,9 +212,9 @@ class Plugin extends Module implements PluginInterface
 
         if ($this->_settingsModel !== false) {
             return $this->_settingsModel;
-        } else {
-            return null;
         }
+
+        return null;
     }
 
     /**
@@ -346,9 +346,9 @@ class Plugin extends Module implements PluginInterface
             $class = $migrator->migrationNamespace.'\\Install';
 
             return new $class;
-        } else {
-            return null;
         }
+
+        return null;
     }
 
     /**

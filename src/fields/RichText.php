@@ -153,9 +153,9 @@ class RichText extends Field
         if ($value) {
             // Prevent everyone from having to use the |raw filter when outputting RTE content
             return new RichTextData($value);
-        } else {
-            return null;
         }
+
+        return null;
     }
 
     /**
@@ -323,9 +323,9 @@ class RichText extends Field
             $rawContent = $value->getRawContent();
 
             return empty($rawContent);
-        } else {
-            return true;
         }
+
+        return true;
     }
 
     // Private Methods
@@ -607,8 +607,8 @@ class RichText extends Field
             static::$_redactorLang = $lang;
 
             return true;
-        } else {
-            return false;
         }
+
+        return false;
     }
 }

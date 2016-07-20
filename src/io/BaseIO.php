@@ -241,12 +241,12 @@ abstract class BaseIO
             }
 
             return $this->_fullFolderName;
-        } else {
-            if (!$this->_folderNameOnly) {
-                $this->_folderNameOnly = Io::getFolderName($this->getRealPath(), $fullPath);
-            }
-
-            return $this->_folderNameOnly;
         }
+
+        if (!$this->_folderNameOnly) {
+            $this->_folderNameOnly = Io::getFolderName($this->getRealPath(), $fullPath);
+        }
+
+        return $this->_folderNameOnly;
     }
 }

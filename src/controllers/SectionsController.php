@@ -195,9 +195,9 @@ class SectionsController extends Controller
             Craft::$app->getSession()->setNotice(Craft::t('app', 'Section saved.'));
 
             return $this->redirectToPostedUrl($section);
-        } else {
-            Craft::$app->getSession()->setError(Craft::t('app', 'Couldn’t save section.'));
         }
+
+        Craft::$app->getSession()->setError(Craft::t('app', 'Couldn’t save section.'));
 
         // Send the section back to the template
         Craft::$app->getUrlManager()->setRouteParams([
@@ -380,9 +380,9 @@ class SectionsController extends Controller
             Craft::$app->getSession()->setNotice(Craft::t('app', 'Entry type saved.'));
 
             return $this->redirectToPostedUrl($entryType);
-        } else {
-            Craft::$app->getSession()->setError(Craft::t('app', 'Couldn’t save entry type.'));
         }
+
+        Craft::$app->getSession()->setError(Craft::t('app', 'Couldn’t save entry type.'));
 
         // Send the entry type back to the template
         Craft::$app->getUrlManager()->setRouteParams([

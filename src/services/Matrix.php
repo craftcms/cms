@@ -106,15 +106,15 @@ class Matrix extends Component
 
         if (!$indexBy) {
             return $this->_blockTypesByFieldId[$fieldId];
-        } else {
-            $blockTypes = [];
-
-            foreach ($this->_blockTypesByFieldId[$fieldId] as $blockType) {
-                $blockTypes[$blockType->$indexBy] = $blockType;
-            }
-
-            return $blockTypes;
         }
+
+        $blockTypes = [];
+
+        foreach ($this->_blockTypesByFieldId[$fieldId] as $blockType) {
+            $blockTypes[$blockType->$indexBy] = $blockType;
+        }
+
+        return $blockTypes;
     }
 
     /**
@@ -361,9 +361,9 @@ class Matrix extends Component
             }
 
             return true;
-        } else {
-            return false;
         }
+
+        return false;
     }
 
     /**
@@ -916,9 +916,9 @@ class Matrix extends Component
             }
 
             return $this->_blockTypeRecordsById[$blockType->id];
-        } else {
-            return new MatrixBlockTypeRecord();
         }
+
+        return new MatrixBlockTypeRecord();
     }
 
     /**
@@ -944,9 +944,9 @@ class Matrix extends Component
             }
 
             return $this->_blockRecordsById[$block->id];
-        } else {
-            return new MatrixBlockRecord();
         }
+
+        return new MatrixBlockRecord();
     }
 
     /**

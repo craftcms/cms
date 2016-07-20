@@ -134,9 +134,9 @@ class AssetTransformsController extends Controller
                 $session->setNotice(Craft::t('app', 'Transform saved.'));
 
                 return $this->redirectToPostedUrl($transform);
-            } else {
-                $session->setError(Craft::t('app', 'Couldn’t save source.'));
             }
+
+            $session->setError(Craft::t('app', 'Couldn’t save source.'));
         }
 
         // Send the transform back to the template

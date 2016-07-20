@@ -299,11 +299,11 @@ class Tasks extends Component
             $taskRecord->deleteWithChildren();
 
             return true;
-        } else {
-            $this->fail($task, $error);
-
-            return false;
         }
+
+        $this->fail($task, $error);
+
+        return false;
     }
 
     /**
@@ -356,9 +356,9 @@ class Tasks extends Component
 
         if ($result !== false) {
             return $this->createTask($result);
-        } else {
-            return null;
         }
+
+        return null;
     }
 
     /**
@@ -415,9 +415,9 @@ class Tasks extends Component
 
         if ($this->_runningTask) {
             return $this->_runningTask;
-        } else {
-            return null;
         }
+
+        return null;
     }
 
     /**
@@ -687,8 +687,8 @@ EOT;
 
         if ($this->_taskRecordsById[$taskId] !== false) {
             return $this->_taskRecordsById[$taskId];
-        } else {
-            return null;
         }
+
+        return null;
     }
 }

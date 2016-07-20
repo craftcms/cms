@@ -94,8 +94,8 @@ class ResaveAllElements extends Task
     {
         if ($this->localizableOnly) {
             return Craft::t('app', 'Resaving all localizable elements');
-        } else {
-            return Craft::t('app', 'Resaving all elements');
         }
+
+        return Craft::t('app', 'Resaving all elements');
     }
 }

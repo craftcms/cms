@@ -112,17 +112,19 @@ class Tags extends Component
 
         if ($indexBy == 'id') {
             return $this->_tagGroupsById;
-        } else if (!$indexBy) {
-            return array_values($this->_tagGroupsById);
-        } else {
-            $tagGroups = [];
-
-            foreach ($this->_tagGroupsById as $group) {
-                $tagGroups[$group->$indexBy] = $group;
-            }
-
-            return $tagGroups;
         }
+
+        if (!$indexBy) {
+            return array_values($this->_tagGroupsById);
+        }
+
+        $tagGroups = [];
+
+        foreach ($this->_tagGroupsById as $group) {
+            $tagGroups[$group->$indexBy] = $group;
+        }
+
+        return $tagGroups;
     }
 
     /**
@@ -248,9 +250,9 @@ class Tags extends Component
             }
 
             return true;
-        } else {
-            return false;
         }
+
+        return false;
     }
 
     /**

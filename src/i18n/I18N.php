@@ -317,9 +317,9 @@ class I18N extends \yii\i18n\I18N
             }
 
             return $editableLocales;
-        } else {
-            return $this->getSiteLocales();
         }
+
+        return $this->getSiteLocales();
     }
 
     /**

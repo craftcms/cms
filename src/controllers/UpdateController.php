@@ -75,9 +75,9 @@ class UpdateController extends Controller
             $response['allowAutoUpdates'] = Craft::$app->getConfig()->allowAutoUpdates();
 
             return $this->asJson($response);
-        } else {
-            return $this->asErrorJson(Craft::t('app', 'Could not fetch available updates at this time.'));
         }
+
+        return $this->asErrorJson(Craft::t('app', 'Could not fetch available updates at this time.'));
     }
 
     /**
@@ -553,8 +553,8 @@ class UpdateController extends Controller
     {
         if (!isset($data['handle'])) {
             return 'craft';
-        } else {
-            return $data['handle'];
         }
+
+        return $data['handle'];
     }
 }

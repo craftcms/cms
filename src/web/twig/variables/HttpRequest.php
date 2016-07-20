@@ -235,9 +235,9 @@ class HttpRequest
     {
         if (\Craft::$app->getConfig()->usePathInfo()) {
             return 'pathinfo';
-        } else {
-            return 'querystring';
         }
+
+        return 'querystring';
     }
 
     /**

@@ -656,11 +656,11 @@ class Updates extends Component
                 Craft::info('Did not backup database because there were no migrations to run.', __METHOD__);
 
                 return ['success' => true];
-            } else {
-                Craft::info('Finished backing up database.', __METHOD__);
-
-                return ['success' => true, 'dbBackupPath' => $result];
             }
+
+            Craft::info('Finished backing up database.', __METHOD__);
+
+            return ['success' => true, 'dbBackupPath' => $result];
         } catch (\Exception $e) {
             return ['success' => false, 'message' => $e->getMessage()];
         }

@@ -178,20 +178,20 @@ class Search extends Component
 
             if ($returnScores) {
                 return $scoresByElementId;
-            } else {
-                // Just return the ordered element IDs
-                return array_keys($scoresByElementId);
-            }
-        } else {
-            // Don't apply score, just return the IDs
-            $elementIds = [];
-
-            foreach ($results as $row) {
-                $elementIds[] = $row['elementId'];
             }
 
-            return array_unique($elementIds);
+            // Just return the ordered element IDs
+            return array_keys($scoresByElementId);
         }
+
+        // Don't apply score, just return the IDs
+        $elementIds = [];
+
+        foreach ($results as $row) {
+            $elementIds[] = $row['elementId'];
+        }
+
+        return array_unique($elementIds);
     }
 
     // Private Methods
@@ -685,8 +685,8 @@ class Search extends Component
 
         if ($elementIds) {
             return Craft::$app->getDb()->quoteColumnName('elementId').' IN ('.implode(', ', $elementIds).')';
-        } else {
-            return false;
         }
+
+        return false;
     }
 }

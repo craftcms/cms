@@ -192,9 +192,9 @@ class Deprecator extends Component
 
         if ($log !== false) {
             return DeprecationError::create($log);
-        } else {
-            return null;
         }
+
+        return null;
     }
 
     /**

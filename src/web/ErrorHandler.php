@@ -75,9 +75,13 @@ class ErrorHandler extends \yii\web\ErrorHandler
         if ($exception instanceof \Twig_Error) {
             if ($exception instanceof \Twig_Error_Syntax) {
                 return 'Twig Syntax Error';
-            } else if ($exception instanceof \Twig_Error_Loader) {
+            }
+
+            if ($exception instanceof \Twig_Error_Loader) {
                 return 'Twig Template Loading Error';
-            } else if ($exception instanceof \Twig_Error_Runtime) {
+            }
+
+            if ($exception instanceof \Twig_Error_Runtime) {
                 return 'Twig Runtime Error';
             }
         }

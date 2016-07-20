@@ -383,12 +383,12 @@ class Application extends \yii\web\Application
         if ($result !== null) {
             if ($result instanceof Response) {
                 return $result;
-            } else {
-                $response = $this->getResponse();
-                $response->data = $result;
-
-                return $response;
             }
+
+            $response = $this->getResponse();
+            $response->data = $result;
+
+            return $response;
         }
 
         return null;
@@ -453,13 +453,17 @@ class Application extends \yii\web\Application
             $action = $request->getSegment(2, 'index');
 
             return $this->runAction('install/'.$action);
-        } else if ($isCpRequest && $request->getIsActionRequest() && ($request->getSegment(1) !== 'login')) {
+        }
+
+        if ($isCpRequest && $request->getIsActionRequest() && ($request->getSegment(1) !== 'login')) {
             $actionSegs = $request->getActionSegments();
             if (isset($actionSegs[0]) && $actionSegs[0] == 'install') {
                 return $this->_processActionRequest($request);
             }
-        } // Should they be?
-        else if (!$isInstalled) {
+        }
+
+        // Should they be?
+        if (!$isInstalled) {
             // Give it to them if accessing the CP
             if ($isCpRequest) {
                 $url = Url::getUrl('install');
@@ -584,24 +588,24 @@ class Application extends \yii\web\Application
             // If this is a request to actually manually update Craft, do it
             if ($request->getSegment(1) == 'manualupdate') {
                 return $this->runAction('templates/manual-update');
-            } else {
-                if ($this->getUpdates()->isBreakpointUpdateNeeded()) {
-                    throw new HttpException(200, Craft::t('app', 'You need to be on at least Craft CMS {url} before you can manually update to Craft CMS {targetVersion} build {targetBuild}.',
-                        [
-                            'url' => '[build '.Craft::$app->minBuildRequired.']('.Craft::$app->minBuildUrl.')',
-                            'targetVersion' => Craft::$app->version,
-                            'targetBuild' => Craft::$app->build
-                        ]));
-                } else {
-                    if (!$request->getIsAjax()) {
-                        if ($request->getPathInfo() !== '') {
-                            $this->getUser()->setReturnUrl($request->getPathInfo());
-                        }
-                    }
+            }
 
-                    // Show the manual update notification template
-                    return $this->runAction('templates/manual-update-notification');
+            if ($this->getUpdates()->isBreakpointUpdateNeeded()) {
+                throw new HttpException(200, Craft::t('app', 'You need to be on at least Craft CMS {url} before you can manually update to Craft CMS {targetVersion} build {targetBuild}.',
+                    [
+                        'url' => '[build '.Craft::$app->minBuildRequired.']('.Craft::$app->minBuildUrl.')',
+                        'targetVersion' => Craft::$app->version,
+                        'targetBuild' => Craft::$app->build
+                    ]));
+            } else {
+                if (!$request->getIsAjax()) {
+                    if ($request->getPathInfo() !== '') {
+                        $this->getUser()->setReturnUrl($request->getPathInfo());
+                    }
                 }
+
+                // Show the manual update notification template
+                return $this->runAction('templates/manual-update-notification');
             }
         } // We'll also let action requests to UpdateController through as well.
         else if ($request->getIsActionRequest() && (($actionSegs = $request->getActionSegments()) !== null) && isset($actionSegs[0]) && $actionSegs[0] == 'update') {
@@ -609,11 +613,11 @@ class Application extends \yii\web\Application
             $action = isset($actionSegs[1]) ? $actionSegs[1] : 'index';
 
             return $this->runAction($controller.'/'.$action);
-        } else {
-            // If an exception gets throw during the rendering of the 503 template, let
-            // TemplatesController->actionRenderError() take care of it.
-            throw new ServiceUnavailableHttpException();
         }
+
+        // If an exception gets throw during the rendering of the 503 template, let
+        // TemplatesController->actionRenderError() take care of it.
+        throw new ServiceUnavailableHttpException();
     }
 
     /**

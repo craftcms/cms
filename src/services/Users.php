@@ -606,11 +606,11 @@ class Users extends Component
 
         if ($user->can('accessCp')) {
             return Url::getCpUrl($path, $params, $protocol);
-        } else {
-            $locale = $user->preferredLocale ?: Craft::$app->getI18n()->getPrimarySiteLocaleId();
-
-            return Url::getSiteUrl($path, $params, $protocol, $locale);
         }
+
+        $locale = $user->preferredLocale ?: Craft::$app->getI18n()->getPrimarySiteLocaleId();
+
+        return Url::getSiteUrl($path, $params, $protocol, $locale);
     }
 
     /**
@@ -688,9 +688,9 @@ class Users extends Component
             $userRecord->save();
 
             return true;
-        } else {
-            return false;
         }
+
+        return false;
     }
 
     /**
@@ -1287,9 +1287,9 @@ class Users extends Component
             $end = $invalidLoginWindowStart->add($duration);
 
             return ($end >= DateTimeHelper::currentUTCDateTime());
-        } else {
-            return false;
         }
+
+        return false;
     }
 
     /**

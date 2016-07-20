@@ -374,13 +374,15 @@ class Extension extends \Twig_Extension
         // Are they using the standard Twig syntax?
         if (is_array($search) && $replace === null) {
             return strtr($str, $search);
-        } // Is this a regular expression?
-        else if (preg_match('/^\/.+\/[a-zA-Z]*$/', $search)) {
-            return preg_replace($search, $replace, $str);
-        } else {
-            // Otherwise use str_replace
-            return str_replace($search, $replace, $str);
         }
+
+        // Is this a regular expression?
+        if (preg_match('/^\/.+\/[a-zA-Z]*$/', $search)) {
+            return preg_replace($search, $replace, $str);
+        }
+
+        // Otherwise use str_replace
+        return str_replace($search, $replace, $str);
     }
 
     /**
@@ -456,9 +458,9 @@ class Extension extends \Twig_Extension
 
         if (isset($index) && $index !== false) {
             return $index;
-        } else {
-            return -1;
         }
+
+        return -1;
     }
 
     /**

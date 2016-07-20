@@ -94,18 +94,18 @@ class Security extends \yii\base\Security
 
         if (Io::fileExists($validationKeyPath)) {
             return StringHelper::trim(Io::getFileContents($validationKeyPath));
-        } else {
-            if (!Io::isWritable($validationKeyPath)) {
-                throw new Exception("Tried to write the validation key to {$validationKeyPath}, but could not.");
-            }
+        }
 
-            $key = $this->generateRandomString();
-
-            if (Io::writeToFile($validationKeyPath, $key)) {
-                return $key;
-            }
-
+        if (!Io::isWritable($validationKeyPath)) {
             throw new Exception("Tried to write the validation key to {$validationKeyPath}, but could not.");
         }
+
+        $key = $this->generateRandomString();
+
+        if (Io::writeToFile($validationKeyPath, $key)) {
+            return $key;
+        }
+
+        throw new Exception("Tried to write the validation key to {$validationKeyPath}, but could not.");
     }
 }

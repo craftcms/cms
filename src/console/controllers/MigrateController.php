@@ -98,9 +98,9 @@ class MigrateController extends BaseMigrateController
             $this->migrationPath = $this->getMigrator()->migrationPath;
 
             return true;
-        } else {
-            return false;
         }
+
+        return false;
     }
 
     /**

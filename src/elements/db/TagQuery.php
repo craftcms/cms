@@ -83,9 +83,9 @@ class TagQuery extends ElementQuery
             }
 
             return $this;
-        } else {
-            return parent::__call($name, $params);
         }
+
+        return parent::__call($name, $params);
     }
 
     /**

@@ -88,15 +88,15 @@ class ResaveElements extends Task
                     false)
             ) {
                 return true;
-            } else {
-                $error = 'Encountered the following validation errors when trying to save '.$element::className().' element "'.$element.'" with the ID "'.$element->id.'":';
-
-                foreach ($element->getAllErrors() as $attributeError) {
-                    $error .= "\n - {$attributeError}";
-                }
-
-                return $error;
             }
+
+            $error = 'Encountered the following validation errors when trying to save '.$element::className().' element "'.$element.'" with the ID "'.$element->id.'":';
+
+            foreach ($element->getAllErrors() as $attributeError) {
+                $error .= "\n - {$attributeError}";
+            }
+
+            return $error;
         } catch (\Exception $e) {
             return 'An exception was thrown while trying to save the '.StringHelper::toLowerCase($class::displayName()).' with the ID “'.$this->_elementIds[$step].'”: '.$e->getMessage();
         }

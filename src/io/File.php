@@ -92,13 +92,13 @@ class File extends BaseIO
             }
 
             return $this->_filename;
-        } else {
-            if (!$this->_baseName) {
-                $this->_baseName = Io::getFilename($this->getRealPath(), $includeExtension);
-            }
-
-            return $this->_baseName;
         }
+
+        if (!$this->_baseName) {
+            $this->_baseName = Io::getFilename($this->getRealPath(), $includeExtension);
+        }
+
+        return $this->_baseName;
     }
 
     /**
@@ -162,13 +162,13 @@ class File extends BaseIO
             }
 
             return $this->_arrayContents;
-        } else {
-            if (!$this->_stringContents) {
-                $this->_stringContents = Io::getFileContents($this->getRealPath(), $array);
-            }
-
-            return $this->_stringContents;
         }
+
+        if (!$this->_stringContents) {
+            $this->_stringContents = Io::getFileContents($this->getRealPath(), $array);
+        }
+
+        return $this->_stringContents;
     }
 
     /**

@@ -233,9 +233,9 @@ abstract class Field extends SavableComponent implements FieldInterface
     {
         if ($this->required && $this->isValueEmpty($value, $element)) {
             return [Craft::t('yii', '{attribute} cannot be blank.')];
-        } else {
-            return [];
         }
+
+        return [];
     }
 
     /**

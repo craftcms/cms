@@ -110,92 +110,92 @@ class AssetsController extends Controller
                 }
 
                 return $this->asJson(['success' => true]);
-            } else {
-                if ($newFile) {
-                    if ($uploadedFile->hasError) {
-                        throw new UploadFailedException($uploadedFile->error);
+            }
+
+            if ($newFile) {
+                if ($uploadedFile->hasError) {
+                    throw new UploadFailedException($uploadedFile->error);
+                }
+
+                if (empty($folderId) && (empty($fieldId) || empty($elementId))) {
+                    throw new BadRequestHttpException('No target destination provided for uploading');
+                }
+
+                if (empty($folderId)) {
+                    $field = Craft::$app->getFields()->getFieldById($fieldId);
+
+                    if (!($field instanceof AssetsField)) {
+                        throw new BadRequestHttpException('The field provided is not an Assets field');
                     }
 
-                    if (empty($folderId) && (empty($fieldId) || empty($elementId))) {
-                        throw new BadRequestHttpException('No target destination provided for uploading');
-                    }
+                    $element = $elementId ? Craft::$app->getElements()->getElementById($elementId) : null;
+                    $folderId = $field->resolveDynamicPathToFolderId($element);
+                }
 
-                    if (empty($folderId)) {
-                        $field = Craft::$app->getFields()->getFieldById($fieldId);
+                if (empty($folderId)) {
+                    throw new BadRequestHttpException('The target destination provided for uploading is not valid');
+                }
 
-                        if (!($field instanceof AssetsField)) {
-                            throw new BadRequestHttpException('The field provided is not an Assets field');
-                        }
+                $folder = $assets->findFolder(['id' => $folderId]);
 
-                        $element = $elementId ? Craft::$app->getElements()->getElementById($elementId) : null;
-                        $folderId = $field->resolveDynamicPathToFolderId($element);
-                    }
+                if (!$folder) {
+                    throw new BadRequestHttpException('The target folder provided for uploading is not valid');
+                }
 
-                    if (empty($folderId)) {
-                        throw new BadRequestHttpException('The target destination provided for uploading is not valid');
-                    }
+                // Check the permissions to upload in the resolved folder.
+                $this->_requirePermissionByFolder('saveAssetInVolume',
+                    $folder);
 
-                    $folder = $assets->findFolder(['id' => $folderId]);
+                $pathOnServer = Io::getTempFilePath($uploadedFile->name);
+                $result = $uploadedFile->saveAs($pathOnServer);
 
-                    if (!$folder) {
-                        throw new BadRequestHttpException('The target folder provided for uploading is not valid');
-                    }
+                if (!$result) {
+                    Io::deleteFile($pathOnServer, true);
+                    throw new UploadFailedException(UPLOAD_ERR_CANT_WRITE);
+                }
 
-                    // Check the permissions to upload in the resolved folder.
-                    $this->_requirePermissionByFolder('saveAssetInVolume',
-                        $folder);
+                $filename = Assets::prepareAssetName($uploadedFile->name);
 
-                    $pathOnServer = Io::getTempFilePath($uploadedFile->name);
-                    $result = $uploadedFile->saveAs($pathOnServer);
+                $asset = new Asset();
 
-                    if (!$result) {
-                        Io::deleteFile($pathOnServer, true);
-                        throw new UploadFailedException(UPLOAD_ERR_CANT_WRITE);
-                    }
+                // Make sure there are no double spaces, if the filename had a space followed by a
+                // capital letter because of Yii's "word" logic.
+                $asset->title = str_replace('  ', ' ', StringHelper::toTitleCase(Io::getFilename($filename, false)));
 
-                    $filename = Assets::prepareAssetName($uploadedFile->name);
+                $asset->newFilePath = $pathOnServer;
+                $asset->filename = $filename;
+                $asset->folderId = $folder->id;
+                $asset->volumeId = $folder->volumeId;
 
-                    $asset = new Asset();
+                try {
+                    $assets->saveAsset($asset);
+                    Io::deleteFile($pathOnServer, true);
+                } catch (AssetConflictException $exception) {
+                    // Okay, get a replacement name and re-save Asset.
+                    $replacementName = $assets->getNameReplacementInFolder($asset->filename,
+                        $folder->id);
+                    $asset->filename = $replacementName;
 
-                    // Make sure there are no double spaces, if the filename had a space followed by a
-                    // capital letter because of Yii's "word" logic.
-                    $asset->title = str_replace('  ', ' ', StringHelper::toTitleCase(Io::getFilename($filename, false)));
-
-                    $asset->newFilePath = $pathOnServer;
-                    $asset->filename = $filename;
-                    $asset->folderId = $folder->id;
-                    $asset->volumeId = $folder->volumeId;
-
-                    try {
-                        $assets->saveAsset($asset);
-                        Io::deleteFile($pathOnServer, true);
-                    } catch (AssetConflictException $exception) {
-                        // Okay, get a replacement name and re-save Asset.
-                        $replacementName = $assets->getNameReplacementInFolder($asset->filename,
-                            $folder->id);
-                        $asset->filename = $replacementName;
-
-                        $assets->saveAsset($asset);
-                        Io::deleteFile($pathOnServer, true);
-
-                        return $this->asJson([
-                            'prompt' => true,
-                            'assetId' => $asset->id,
-                            'filename' => $uploadedFile->name
-                        ]);
-                    } // No matter what happened, delete the file on server.
-                    catch (\Exception $exception) {
-                        Io::deleteFile($pathOnServer, true);
-                        throw $exception;
-                    }
+                    $assets->saveAsset($asset);
+                    Io::deleteFile($pathOnServer, true);
 
                     return $this->asJson([
-                        'success' => true,
-                        'filename' => $asset->filename
+                        'prompt' => true,
+                        'assetId' => $asset->id,
+                        'filename' => $uploadedFile->name
                     ]);
-                } else {
-                    throw new BadRequestHttpException('Not a new asset');
+                } // No matter what happened, delete the file on server.
+                catch (\Exception $exception) {
+                    Io::deleteFile($pathOnServer, true);
+                    throw $exception;
                 }
+
+                return $this->asJson([
+                    'success' => true,
+                    'filename' => $asset->filename
+                ]);
+            } else {
+                throw new BadRequestHttpException('Not a new asset');
             }
         } catch (\Exception $exception) {
             return $this->asErrorJson($exception->getMessage());
@@ -394,36 +394,36 @@ class AssetsController extends Controller
                 $assets->renameAsset($asset, $filename);
 
                 return $this->asJson(['success' => true]);
-            } else {
-                if ($asset->folderId != $folderId) {
-                    if (!empty($conflictResolution)) {
-                        $conflictingAsset = $assets->findAsset([
-                            'filename' => $asset->filename,
-                            'folderId' => $folderId
-                        ]);
+            }
 
-                        if ($conflictResolution == 'replace') {
-                            $assets->replaceAsset($conflictingAsset,
-                                $asset, true);
-                        } else {
-                            if ($conflictResolution == 'keepBoth') {
-                                $newFilename = $assets->getNameReplacementInFolder($asset->filename,
-                                    $folderId);
-                                $assets->moveAsset($asset,
-                                    $folderId, $newFilename);
-                            }
-                        }
+            if ($asset->folderId != $folderId) {
+                if (!empty($conflictResolution)) {
+                    $conflictingAsset = $assets->findAsset([
+                        'filename' => $asset->filename,
+                        'folderId' => $folderId
+                    ]);
+
+                    if ($conflictResolution == 'replace') {
+                        $assets->replaceAsset($conflictingAsset,
+                            $asset, true);
                     } else {
-                        try {
-                            $assets->moveAsset($asset,
+                        if ($conflictResolution == 'keepBoth') {
+                            $newFilename = $assets->getNameReplacementInFolder($asset->filename,
                                 $folderId);
-                        } catch (AssetConflictException $exception) {
-                            return $this->asJson([
-                                'prompt' => true,
-                                'filename' => $asset->filename,
-                                'assetId' => $asset->id
-                            ]);
+                            $assets->moveAsset($asset,
+                                $folderId, $newFilename);
                         }
+                    }
+                } else {
+                    try {
+                        $assets->moveAsset($asset,
+                            $folderId);
+                    } catch (AssetConflictException $exception) {
+                        return $this->asJson([
+                            'prompt' => true,
+                            'filename' => $asset->filename,
+                            'assetId' => $asset->id
+                        ]);
                     }
                 }
             }

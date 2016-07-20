@@ -452,9 +452,9 @@ class Category extends Element
             if (isset($groupLocales[$this->locale])) {
                 if ($this->level > 1) {
                     return $groupLocales[$this->locale]->nestedUrlFormat;
-                } else {
-                    return $groupLocales[$this->locale]->urlFormat;
                 }
+
+                return $groupLocales[$this->locale]->urlFormat;
             }
         }
 

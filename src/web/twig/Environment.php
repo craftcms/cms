@@ -74,9 +74,9 @@ class Environment extends \Twig_Environment
                 Craft::$app->getErrorHandler()->logException($e);
 
                 return Craft::$app->getView()->renderString('');
-            } else {
-                throw $e;
             }
+
+            throw $e;
         }
     }
 

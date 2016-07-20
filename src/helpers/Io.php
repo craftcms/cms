@@ -266,9 +266,9 @@ class Io
 
         if ($includeExtension) {
             return $suppressErrors ? @pathinfo($path, PATHINFO_BASENAME) : pathinfo($path, PATHINFO_BASENAME);
-        } else {
-            return $suppressErrors ? @pathinfo($path, PATHINFO_FILENAME) : pathinfo($path, PATHINFO_FILENAME);
         }
+
+        return $suppressErrors ? @pathinfo($path, PATHINFO_FILENAME) : pathinfo($path, PATHINFO_FILENAME);
     }
 
     /**
@@ -291,14 +291,14 @@ class Io
             // normalizePathSeparators() only enforces the trailing slash for known directories so let's be sure
             // that it'll be there.
             return rtrim($folder, '/').'/';
-        } else {
-            if ($suppressErrors ? !@is_dir($path) : !is_dir($path)) {
-                // Chop off the file
-                $path = $suppressErrors ? @pathinfo($path, PATHINFO_DIRNAME) : pathinfo($path, PATHINFO_DIRNAME);
-            }
-
-            return $suppressErrors ? @pathinfo($path, PATHINFO_BASENAME) : pathinfo($path, PATHINFO_BASENAME);
         }
+
+        if ($suppressErrors ? !@is_dir($path) : !is_dir($path)) {
+            // Chop off the file
+            $path = $suppressErrors ? @pathinfo($path, PATHINFO_DIRNAME) : pathinfo($path, PATHINFO_DIRNAME);
+        }
+
+        return $suppressErrors ? @pathinfo($path, PATHINFO_BASENAME) : pathinfo($path, PATHINFO_BASENAME);
     }
 
     /**
@@ -317,9 +317,9 @@ class Io
 
         if ($extension) {
             return $extension;
-        } else {
-            return $default;
         }
+
+        return $default;
     }
 
     /**
@@ -334,9 +334,9 @@ class Io
     {
         if (@file_exists($path)) {
             return FileHelper::getMimeType($path);
-        } else {
-            return FileHelper::getMimeTypeByExtension($path);
         }
+
+        return FileHelper::getMimeTypeByExtension($path);
     }
 
     /**
@@ -748,16 +748,16 @@ class Io
                             Craft::$app->getCache()->set('useWriteFileLock', 'yes', 5184000);
 
                             return true;
-                        } else {
-                            // Try again without the lock flag.
-                            Craft::info('Trying to write to file at '.$path.' without LOCK_EX.', __METHOD__);
-                            if (static::_writeToFile($path, $contents, false, $append, $suppressErrors)) {
-                                // Cache the file lock info to not use LOCK_EX for 2 months.
-                                Craft::info('Successfully wrote to file at '.$path.' without LOCK_EX. Saving in cache.', __METHOD__);
-                                Craft::$app->getCache()->set('useWriteFileLock', 'no', 5184000);
+                        }
 
-                                return true;
-                            }
+                        // Try again without the lock flag.
+                        Craft::info('Trying to write to file at '.$path.' without LOCK_EX.', __METHOD__);
+                        if (static::_writeToFile($path, $contents, false, $append, $suppressErrors)) {
+                            // Cache the file lock info to not use LOCK_EX for 2 months.
+                            Craft::info('Successfully wrote to file at '.$path.' without LOCK_EX. Saving in cache.', __METHOD__);
+                            Craft::$app->getCache()->set('useWriteFileLock', 'no', 5184000);
+
+                            return true;
                         }
                     } catch (ErrorException $e) {
                         // Restore here before we attempt to write again.
@@ -787,35 +787,36 @@ class Io
                         // Write without LOCK_EX
                         if (static::_writeToFile($path, $contents, false, $append, $suppressErrors)) {
                             return true;
-                        } else {
-                            Craft::error('Tried to write to file at '.$path.' and could not.', __METHOD__);
-
-                            return false;
                         }
+
+                        Craft::error('Tried to write to file at '.$path.' and could not.', __METHOD__);
+
+                        return false;
                     }
                 }
             } // We were explicitly told not to use LOCK_EX
             else if (Craft::$app->getConfig()->get('useWriteFileLock') === false) {
                 if (static::_writeToFile($path, $contents, false, $append, $suppressErrors)) {
                     return true;
-                } else {
-                    Craft::error('Tried to write to file at '.$path.' with no LOCK_EX and could not.', __METHOD__);
-
-                    return false;
                 }
-            } // Not 'auto', not false, so default to using LOCK_EX
-            else {
-                if (static::_writeToFile($path, $contents, true, $append, $suppressErrors)) {
-                    return true;
-                } else {
-                    Craft::error('Tried to write to file at '.$path.' with LOCK_EX and could not.', __METHOD__);
 
-                    return false;
-                }
+                Craft::error('Tried to write to file at '.$path.' with no LOCK_EX and could not.', __METHOD__);
+
+                return false;
             }
-        } else {
-            Craft::error('Tried to write to file at '.$path.', but the file is not writable.', __METHOD__);
+
+            // Not 'auto', not false, so default to using LOCK_EX
+            if (static::_writeToFile($path, $contents, true, $append, $suppressErrors)) {
+                return true;
+            }
+
+            Craft::error('Tried to write to file at '.$path.' with LOCK_EX and could not.', __METHOD__);
+
+            return false;
         }
+
+        Craft::error('Tried to write to file at '.$path.', but the file is not writable.', __METHOD__);
+
 
         return false;
     }
@@ -862,9 +863,9 @@ class Io
             }
 
             return true;
-        } else {
-            Craft::error('Tried to change owner of '.$path.', but that path does not exist.', __METHOD__);
         }
+
+        Craft::error('Tried to change owner of '.$path.', but that path does not exist.', __METHOD__);
 
         return false;
     }
@@ -912,9 +913,9 @@ class Io
             }
 
             return true;
-        } else {
-            Craft::error('Tried to change group of '.$path.', but that path does not exist.', __METHOD__);
         }
+
+        Craft::error('Tried to change group of '.$path.', but that path does not exist.', __METHOD__);
 
         return false;
     }
@@ -1028,9 +1029,9 @@ class Io
             }
 
             return true;
-        } else {
-            Craft::error('Cannot copy folder '.$path.' to '.$destination.' because the source path does not exist.', __METHOD__);
         }
+
+        Craft::error('Cannot copy folder '.$path.' to '.$destination.' because the source path does not exist.', __METHOD__);
 
         return false;
     }
@@ -1057,9 +1058,9 @@ class Io
             if (static::isWritable($path, $suppressErrors)) {
                 if ($suppressErrors ? @rename($path, $newName) : rename($path, $newName)) {
                     return true;
-                } else {
-                    Craft::error('Could not rename '.$path.' to '.$newName.'.', __METHOD__);
                 }
+
+                Craft::error('Could not rename '.$path.' to '.$newName.'.', __METHOD__);
             } else {
                 Craft::error('Could not rename '.$path.' to '.$newName.' because the source file or folder is not writable.', __METHOD__);
             }
@@ -1101,9 +1102,9 @@ class Io
                 static::writeToFile($path, '', false, $suppressErrors);
 
                 return true;
-            } else {
-                Craft::error('Could not clear the contents of '.$path.' because the source file is not writable.', __METHOD__);
             }
+
+            Craft::error('Could not clear the contents of '.$path.' because the source file is not writable.', __METHOD__);
         } else {
             Craft::error('Could not clear the contents of '.$path.' because the source file does not exist.', __METHOD__);
         }
@@ -1138,9 +1139,9 @@ class Io
                 }
 
                 return true;
-            } else {
-                Craft::error('Tried to read the folder contents of '.$path.', but could not.', __METHOD__);
             }
+
+                Craft::error('Tried to read the folder contents of '.$path.', but could not.', __METHOD__);
         } else {
             Craft::error('Could not clear the contents of '.$path.' because the source folder does not exist.', __METHOD__);
         }
@@ -1164,9 +1165,9 @@ class Io
             if (static::isWritable($path, $suppressErrors)) {
                 if ($suppressErrors ? @unlink($path) : unlink($path)) {
                     return true;
-                } else {
-                    Craft::error('Could not delete the file '.$path.'.', __METHOD__);
                 }
+
+                Craft::error('Could not delete the file '.$path.'.', __METHOD__);
             } else {
                 Craft::error('Could not delete the file '.$path.' because it is not writable.', __METHOD__);
             }
@@ -1197,9 +1198,9 @@ class Io
                 // Delete the folder.
                 if ($suppressErrors ? @rmdir($path) : rmdir($path)) {
                     return true;
-                } else {
-                    Craft::error('Could not delete the folder '.$path.'.', __METHOD__);
                 }
+
+                Craft::error('Could not delete the folder '.$path.'.', __METHOD__);
             } else {
                 Craft::error('Could not delete the folder '.$path.' because it is not writable.', __METHOD__);
             }
@@ -1224,9 +1225,9 @@ class Io
 
         if (static::fileExists($path, false, $suppressErrors) && static::isReadable($path, $suppressErrors)) {
             return $suppressErrors ? @md5_file($path) : md5_file($path);
-        } else {
-            Craft::error('Could not calculate the MD5 for the file '.$path.' because the file does not exist.', __METHOD__);
         }
+
+        Craft::error('Could not calculate the MD5 for the file '.$path.' because the file does not exist.', __METHOD__);
 
         return false;
     }
@@ -1291,9 +1292,9 @@ class Io
 
         if (isset(self::$_fileKinds[$kind]['label'])) {
             return self::$_fileKinds[$kind]['label'];
-        } else {
-            return null;
         }
+
+        return null;
     }
 
     /**

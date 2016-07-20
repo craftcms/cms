@@ -201,9 +201,9 @@ class Date extends Field implements PreviewableFieldInterface
         if ($value) {
             /** @var DateTime $value */
             return '<span title="'.$value->localeDate().' '.$value->localeTime().'">'.$value->uiTimestamp().'</span>';
-        } else {
-            return '';
         }
+
+        return '';
     }
 
     /**
@@ -213,9 +213,9 @@ class Date extends Field implements PreviewableFieldInterface
     {
         if ($value && ($date = DateTimeHelper::toDateTime($value)) !== false) {
             return $date;
-        } else {
-            return null;
         }
+
+        return null;
     }
 
     /**

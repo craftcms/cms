@@ -136,9 +136,9 @@ abstract class Model extends \yii\base\Model
             $fields[$attribute] = function ($model, $attribute) {
                 if (!empty($model->$attribute)) {
                     return DateTimeHelper::toIso8601($model->$attribute);
-                } else {
-                    return $model->$attribute;
                 }
+
+                return $model->$attribute;
             };
         }
 

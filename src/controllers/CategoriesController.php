@@ -159,9 +159,10 @@ class CategoriesController extends Controller
             Craft::$app->getSession()->setNotice(Craft::t('app', 'Category group saved.'));
 
             return $this->redirectToPostedUrl($group);
-        } else {
-            Craft::$app->getSession()->setError(Craft::t('app', 'Couldn’t save the category group.'));
         }
+
+        Craft::$app->getSession()->setError(Craft::t('app', 'Couldn’t save the category group.'));
+
 
         // Send the category group back to the template
         Craft::$app->getUrlManager()->setRouteParams([
@@ -462,23 +463,24 @@ class CategoriesController extends Controller
         if (Craft::$app->getCategories()->deleteCategory($category)) {
             if (Craft::$app->getRequest()->getIsAjax()) {
                 return $this->asJson(['success' => true]);
-            } else {
-                Craft::$app->getSession()->setNotice(Craft::t('app', 'Category deleted.'));
-
-                return $this->redirectToPostedUrl($category);
             }
-        } else {
-            if (Craft::$app->getRequest()->getIsAjax()) {
-                return $this->asJson(['success' => false]);
-            } else {
-                Craft::$app->getSession()->setError(Craft::t('app', 'Couldn’t delete category.'));
 
-                // Send the category back to the template
-                Craft::$app->getUrlManager()->setRouteParams([
-                    'category' => $category
-                ]);
-            }
+            Craft::$app->getSession()->setNotice(Craft::t('app', 'Category deleted.'));
+
+            return $this->redirectToPostedUrl($category);
         }
+
+        if (Craft::$app->getRequest()->getIsAjax()) {
+            return $this->asJson(['success' => false]);
+        }
+
+        Craft::$app->getSession()->setError(Craft::t('app', 'Couldn’t delete category.'));
+
+        // Send the category back to the template
+        Craft::$app->getUrlManager()->setRouteParams([
+            'category' => $category
+        ]);
+
 
         return null;
     }

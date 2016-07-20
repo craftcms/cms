@@ -90,14 +90,15 @@ class EntryRevisionsController extends BaseEntriesController
             Craft::$app->getSession()->setNotice(Craft::t('app', 'Draft saved.'));
 
             return $this->redirectToPostedUrl($draft);
-        } else {
-            Craft::$app->getSession()->setError(Craft::t('app', 'Couldn’t save draft.'));
-
-            // Send the draft back to the template
-            Craft::$app->getUrlManager()->setRouteParams([
-                'entry' => $draft
-            ]);
         }
+
+        Craft::$app->getSession()->setError(Craft::t('app', 'Couldn’t save draft.'));
+
+        // Send the draft back to the template
+        Craft::$app->getUrlManager()->setRouteParams([
+            'entry' => $draft
+        ]);
+
 
         return null;
     }
@@ -132,9 +133,9 @@ class EntryRevisionsController extends BaseEntriesController
 
         if (Craft::$app->getEntryRevisions()->saveDraft($draft, false)) {
             return $this->asJson(['success' => true]);
-        } else {
-            return $this->asErrorJson($draft->getFirstError('name'));
         }
+
+        return $this->asErrorJson($draft->getFirstError('name'));
     }
 
     /**
@@ -225,14 +226,15 @@ class EntryRevisionsController extends BaseEntriesController
             Craft::$app->getSession()->setNotice(Craft::t('app', 'Draft published.'));
 
             return $this->redirectToPostedUrl($draft);
-        } else {
-            Craft::$app->getSession()->setError(Craft::t('app', 'Couldn’t publish draft.'));
-
-            // Send the draft back to the template
-            Craft::$app->getUrlManager()->setRouteParams([
-                'entry' => $draft
-            ]);
         }
+
+        Craft::$app->getSession()->setError(Craft::t('app', 'Couldn’t publish draft.'));
+
+        // Send the draft back to the template
+        Craft::$app->getUrlManager()->setRouteParams([
+            'entry' => $draft
+        ]);
+
 
         return null;
     }
@@ -285,14 +287,15 @@ class EntryRevisionsController extends BaseEntriesController
             Craft::$app->getSession()->setNotice(Craft::t('app', 'Entry reverted to past version.'));
 
             return $this->redirectToPostedUrl($version);
-        } else {
-            Craft::$app->getSession()->setError(Craft::t('app', 'Couldn’t revert entry to past version.'));
-
-            // Send the version back to the template
-            Craft::$app->getUrlManager()->setRouteParams([
-                'entry' => $version
-            ]);
         }
+
+        Craft::$app->getSession()->setError(Craft::t('app', 'Couldn’t revert entry to past version.'));
+
+        // Send the version back to the template
+        Craft::$app->getUrlManager()->setRouteParams([
+            'entry' => $version
+        ]);
+
 
         return null;
     }

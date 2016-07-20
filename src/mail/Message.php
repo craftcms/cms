@@ -145,8 +145,8 @@ class Message extends \yii\swiftmailer\Message
             }
 
             return [$email->email => $email->getName()];
-        } else {
-            return $email;
         }
+
+        return $email;
     }
 }

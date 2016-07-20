@@ -128,11 +128,11 @@ class EmailMessages extends Component
 
         if ($record->save()) {
             return true;
-        } else {
-            $message->addErrors($record->getErrors());
-
-            return false;
         }
+
+        $message->addErrors($record->getErrors());
+
+        return false;
     }
 
     // Private Methods

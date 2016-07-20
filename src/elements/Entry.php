@@ -911,11 +911,13 @@ EOD;
 
             if ($postDate <= $currentTime && (!$expiryDate || $expiryDate > $currentTime)) {
                 return self::STATUS_LIVE;
-            } else if ($postDate > $currentTime) {
-                return self::STATUS_PENDING;
-            } else {
-                return self::STATUS_EXPIRED;
             }
+
+            if ($postDate > $currentTime) {
+                return self::STATUS_PENDING;
+            }
+
+            return self::STATUS_EXPIRED;
         }
 
         return $status;
