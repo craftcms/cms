@@ -85,7 +85,7 @@ class Et
         $this->_model = new EtModel([
             'licenseKey' => $this->_getLicenseKey(),
             'pluginLicenseKeys' => $this->_getPluginLicenseKeys(),
-            'requestUrl' => Craft::$app->getRequest()->getHostInfo().Craft::$app->getRequest()->getUrl(),
+            'requestUrl' => Craft::$app->getRequest()->getAbsoluteUrl(),
             'requestIp' => Craft::$app->getRequest()->getUserIP(),
             'requestTime' => DateTimeHelper::currentTimeStamp(),
             'requestPort' => Craft::$app->getRequest()->getPort(),
