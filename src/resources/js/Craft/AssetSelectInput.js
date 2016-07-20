@@ -19,7 +19,7 @@ Craft.AssetSelectInput = Craft.BaseElementSelectInput.extend(
 				validators: [$.proxy(this.validateElementForm, this)]
 			};
 		}
-		
+
 		this.base.apply(this, arguments);
 		this._attachUploader();
 	},
@@ -161,8 +161,8 @@ Craft.AssetSelectInput = Craft.BaseElementSelectInput.extend(
 	 */
 	_renameHelper: function ($form) {
 		$('.renameHelper', $form).on('focus', $.proxy(function (e) {
-			input = e.currentTarget;
-			var filename = this._parseFilename(input.value);
+			var input = e.currentTarget,
+				filename = this._parseFilename(input.value);
 
 			if (this.originalFilename == "" && this.originalExtension == "") {
 				this.originalFilename = filename.baseFileName;
