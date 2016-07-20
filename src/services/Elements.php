@@ -192,6 +192,8 @@ class Elements extends Component
             // Return the actual element
             return $this->getElementById($result['id'], $result['type'], $localeId);
         }
+
+        return null;
     }
 
     /**
@@ -961,6 +963,8 @@ class Elements extends Component
                 return $class;
             }
         }
+
+        return null;
     }
 
     /**

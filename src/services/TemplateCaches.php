@@ -119,7 +119,7 @@ class TemplateCaches extends Component
     {
         // Make sure template caching is enabled
         if ($this->_isTemplateCachingEnabled() === false) {
-            return;
+            return null;
         }
 
         // Take the opportunity to delete any expired caches

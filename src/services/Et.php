@@ -110,6 +110,8 @@ class Et extends Component
 
             return $etResponse;
         }
+
+        return null;
     }
 
     /**
@@ -139,6 +141,8 @@ class Et extends Component
         if ($etResponse) {
             return $etResponse->data;
         }
+
+        return null;
     }
 
     /**
@@ -443,5 +447,7 @@ class Et extends Component
                 }
             }
         }
+
+        return null;
     }
 }

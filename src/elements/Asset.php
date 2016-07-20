@@ -580,6 +580,7 @@ class Asset extends Element
     /**
      * @inheritdoc
      */
+    /** @noinspection PhpInconsistentReturnPointsInspection */
     public function __toString()
     {
         try {
@@ -770,6 +771,8 @@ class Asset extends Element
 
             return Template::getRaw($img);
         }
+
+        return null;
     }
 
     /**

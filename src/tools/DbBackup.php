@@ -78,5 +78,7 @@ class DbBackup extends Tool
                 return ['backupFile' => Io::getFilename($destZip, false)];
             }
         }
+
+        return null;
     }
 }

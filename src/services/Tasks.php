@@ -212,6 +212,8 @@ class Tasks extends Component
 
             return $task;
         }
+
+        return null;
     }
 
     /**
@@ -558,10 +560,12 @@ class Tasks extends Component
 
             if ($this->_nextPendingTask !== false) {
                 return $this->_nextPendingTask;
-            } else {
-                return null;
             }
+
+            return null;
         }
+
+        return null;
     }
 
     /**

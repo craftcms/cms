@@ -111,12 +111,12 @@ class NodeVisitor implements \Twig_NodeVisitorInterface
      *
      * @param \Twig_NodeInterface $node The current node to traverse
      *
-     * @return \Twig_NodeInterface
+     * @return \Twig_NodeInterface|null
      */
     private function _findEventTags(\Twig_NodeInterface $node = null)
     {
         if (null === $node) {
-            return;
+            return null;
         }
 
         // Check to see if this is a template event tag

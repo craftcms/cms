@@ -247,6 +247,8 @@ class ElementIndexController extends BaseElementsController
 
             return $source;
         }
+
+        return null;
     }
 
     /**
@@ -379,7 +381,7 @@ class ElementIndexController extends BaseElementsController
     private function _getAvailableActions()
     {
         if (Craft::$app->getRequest()->getIsMobileBrowser()) {
-            return;
+            return null;
         }
 
         $elementType = $this->_elementType;
@@ -406,7 +408,7 @@ class ElementIndexController extends BaseElementsController
     /**
      * Returns the data for the available actions.
      *
-     * @return array
+     * @return array|null
      */
     private function _getActionData()
     {
@@ -426,5 +428,7 @@ class ElementIndexController extends BaseElementsController
 
             return $actionData;
         }
+
+        return null;
     }
 }

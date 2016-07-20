@@ -357,6 +357,8 @@ trait ApplicationTrait
         if ($licensedEdition !== null) {
             return App::getEditionName($licensedEdition);
         }
+
+        return null;
     }
 
     /**
@@ -687,7 +689,7 @@ trait ApplicationTrait
      * actually try to connect later on.
      *
      * @throws DbConnectException
-     * @return void
+     * @return boolean Whether the config file is valid
      */
     public function validateDbConfigFile()
     {
@@ -1210,7 +1212,7 @@ trait ApplicationTrait
      *
      * @param string $id
      *
-     * @return mixed
+     * @return mixed The component definition, or null if it's not known
      */
     private function _getComponentDefinition($id)
     {
@@ -1231,6 +1233,8 @@ trait ApplicationTrait
             case 'log':
                 return $this->_getLogDispatcherDefinition();
         }
+
+        return null;
     }
 
     /**

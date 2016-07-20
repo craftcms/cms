@@ -131,6 +131,8 @@ class AssetTransforms extends Component
         if (isset($this->_transformsByHandle[$handle])) {
             return $this->_transformsByHandle[$handle];
         }
+
+        return null;
     }
 
     /**

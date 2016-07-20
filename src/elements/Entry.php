@@ -499,6 +499,8 @@ class Entry extends Element
                 ];
             }
         }
+
+        return null;
     }
 
     /**
@@ -723,6 +725,8 @@ EOD;
         if ($entryType) {
             return $entryType->getFieldLayout();
         }
+
+        return null;
     }
 
     /**
@@ -752,11 +756,13 @@ EOD;
             if (isset($sectionLocales[$this->locale])) {
                 if ($this->level > 1) {
                     return $sectionLocales[$this->locale]->nestedUrlFormat;
-                } else {
-                    return $sectionLocales[$this->locale]->urlFormat;
                 }
+
+                return $sectionLocales[$this->locale]->urlFormat;
             }
         }
+
+        return null;
     }
 
     /**
@@ -779,6 +785,8 @@ EOD;
         if ($this->sectionId) {
             return Craft::$app->getSections()->getSectionById($this->sectionId);
         }
+
+        return null;
     }
 
     /**
@@ -796,12 +804,14 @@ EOD;
             if ($sectionEntryTypes) {
                 if ($this->typeId && isset($sectionEntryTypes[$this->typeId])) {
                     return $sectionEntryTypes[$this->typeId];
-                } else {
-                    // Just return the first one
-                    return ArrayHelper::getFirstValue($sectionEntryTypes);
                 }
+
+                // Just return the first one
+                return ArrayHelper::getFirstValue($sectionEntryTypes);
             }
         }
+
+        return null;
     }
 
     /**
@@ -814,6 +824,8 @@ EOD;
         if ($this->authorId) {
             return Craft::$app->getUsers()->getUserById($this->authorId);
         }
+
+        return null;
     }
 
     /**
@@ -871,6 +883,8 @@ EOD;
 
             return $url;
         }
+
+        return null;
     }
 
     // Protected Methods

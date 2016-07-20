@@ -167,6 +167,8 @@ class Tag extends Element
         if ($tagGroup) {
             return $tagGroup->getFieldLayout();
         }
+
+        return null;
     }
 
     /**
@@ -179,6 +181,8 @@ class Tag extends Element
         if ($this->groupId) {
             return Craft::$app->getTags()->getTagGroupById($this->groupId);
         }
+
+        return null;
     }
 
     // Deprecated Methods

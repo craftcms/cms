@@ -270,6 +270,8 @@ class Categories extends Component
 
             return $group;
         }
+
+        return null;
     }
 
     /**

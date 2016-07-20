@@ -282,6 +282,8 @@ class Sections extends Component
         if (isset($this->_sectionsById[$sectionId])) {
             return $this->_sectionsById[$sectionId];
         }
+
+        return null;
     }
 
     /**
@@ -304,6 +306,8 @@ class Sections extends Component
 
             return $section;
         }
+
+        return null;
     }
 
     /**

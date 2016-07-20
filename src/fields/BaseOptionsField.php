@@ -268,27 +268,29 @@ abstract class BaseOptionsField extends Field implements PreviewableFieldInterfa
     /**
      * Returns the default field value.
      *
-     * @return array|string|null
+     * @return string[]|string|null
      */
     protected function getDefaultValue()
     {
         if ($this->multi) {
             $defaultValues = [];
+
+            foreach ($this->options as $option) {
+                if (!empty($option['default'])) {
+                    $defaultValues[] = $option['value'];
+                }
+            }
+
+            return $defaultValues;
         }
 
         foreach ($this->options as $option) {
             if (!empty($option['default'])) {
-                if ($this->multi) {
-                    $defaultValues[] = $option['value'];
-                } else {
-                    return $option['value'];
-                }
+                return $option['value'];
             }
         }
 
-        if ($this->multi) {
-            return $defaultValues;
-        }
+        return null;
     }
 
     /**

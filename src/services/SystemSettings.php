@@ -98,6 +98,8 @@ class SystemSettings extends Component
         if (isset($settings[$key])) {
             return $settings[$key];
         }
+
+        return null;
     }
 
     /**

@@ -100,6 +100,8 @@ class FieldLayoutTab extends Model
         if ($this->_layout) {
             return $this->_layout;
         }
+
+        return null;
     }
 
     /**

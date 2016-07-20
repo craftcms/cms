@@ -88,6 +88,7 @@ abstract class Field extends SavableComponent implements FieldInterface
      *
      * @return string
      */
+    /** @noinspection PhpInconsistentReturnPointsInspection */
     public function __toString()
     {
         try {
@@ -278,10 +279,12 @@ abstract class Field extends SavableComponent implements FieldInterface
                 $handle = $this->handle;
                 /** @var ElementQuery $query */
                 $query->subQuery->andWhere(Db::parseParam('content.'.Craft::$app->getContent()->fieldColumnPrefix.$handle, $value, $query->subQuery->params));
-            } else {
-                return false;
             }
+
+            return false;
         }
+
+        return null;
     }
 
     /**

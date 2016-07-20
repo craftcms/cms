@@ -73,7 +73,7 @@ class UsersController extends Controller
         }
 
         if (!Craft::$app->getRequest()->getIsPost()) {
-            return;
+            return null;
         }
 
         // First, a little house-cleaning for expired, pending users.
@@ -126,12 +126,12 @@ class UsersController extends Controller
                 $originalUserId);
 
             return $this->_handleSuccessfulLogin(true);
-        } else {
-            Craft::$app->getSession()->setError(Craft::t('app',
-                'There was a problem impersonating this user.'));
-            Craft::error(Craft::$app->getUser()->getIdentity()->username.' tried to impersonate userId: '.$userId.' but something went wrong.',
-                __METHOD__);
         }
+
+        Craft::$app->getSession()->setError(Craft::t('app', 'There was a problem impersonating this user.'));
+        Craft::error(Craft::$app->getUser()->getIdentity()->username.' tried to impersonate userId: '.$userId.' but something went wrong.', __METHOD__);
+
+        return null;
     }
 
     /**
@@ -344,6 +344,8 @@ class UsersController extends Controller
                 'newUser' => ($userToProcess->password ? false : true),
             ]);
         }
+
+        return null;
     }
 
     /**
@@ -980,6 +982,8 @@ class UsersController extends Controller
                 ]);
             }
         }
+
+        return null;
     }
 
     /**
@@ -1305,6 +1309,8 @@ class UsersController extends Controller
             Craft::$app->getSession()->setError(Craft::t('app',
                 'Couldn’t delete the user.'));
         }
+
+        return null;
     }
 
     /**
@@ -1459,16 +1465,17 @@ class UsersController extends Controller
                 'errorCode' => $authError,
                 'error' => $message
             ]);
-        } else {
-            Craft::$app->getSession()->setError($message);
-
-            Craft::$app->getUrlManager()->setRouteParams([
-                'loginName' => Craft::$app->getRequest()->getBodyParam('loginName'),
-                'rememberMe' => (bool)Craft::$app->getRequest()->getBodyParam('rememberMe'),
-                'errorCode' => $authError,
-                'errorMessage' => $message,
-            ]);
         }
+        Craft::$app->getSession()->setError($message);
+
+        Craft::$app->getUrlManager()->setRouteParams([
+            'loginName' => Craft::$app->getRequest()->getBodyParam('loginName'),
+            'rememberMe' => (bool)Craft::$app->getRequest()->getBodyParam('rememberMe'),
+            'errorCode' => $authError,
+            'errorMessage' => $message,
+        ]);
+
+        return null;
     }
 
     /**

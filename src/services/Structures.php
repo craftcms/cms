@@ -69,6 +69,8 @@ class Structures extends Component
         if ($structureRecord) {
             return StructureModel::create($structureRecord);
         }
+
+        return null;
     }
 
     /**
@@ -275,6 +277,8 @@ class Structures extends Component
                 'elementId' => $elementId
             ]);
         }
+
+        return null;
     }
 
     /**

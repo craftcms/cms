@@ -56,6 +56,8 @@ class Resources extends Component
         if ($realPath && Io::fileExists($realPath)) {
             return $realPath;
         }
+
+        return null;
     }
 
     /**

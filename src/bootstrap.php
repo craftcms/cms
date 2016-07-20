@@ -34,6 +34,8 @@ $getArg = function ($param, $unset = true) {
             }
         }
     }
+
+    return null;
 };
 
 $createFolder = function ($path) {

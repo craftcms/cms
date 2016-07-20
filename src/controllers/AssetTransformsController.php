@@ -11,6 +11,7 @@ use Craft;
 use craft\app\helpers\Image;
 use craft\app\models\AssetTransform;
 use craft\app\web\Controller;
+use craft\app\web\Response;
 use yii\web\NotFoundHttpException;
 
 /**
@@ -80,6 +81,8 @@ class AssetTransformsController extends Controller
 
     /**
      * Saves an asset source.
+     *
+     * @return Response|null
      */
     public function actionSaveTransform()
     {
@@ -140,6 +143,8 @@ class AssetTransformsController extends Controller
         Craft::$app->getUrlManager()->setRouteParams([
             'transform' => $transform
         ]);
+
+        return null;
     }
 
     /**

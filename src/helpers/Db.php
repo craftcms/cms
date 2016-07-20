@@ -10,6 +10,7 @@ namespace craft\app\helpers;
 use craft\app\base\Savable;
 use craft\app\dates\DateTime;
 use craft\app\enums\ColumnType;
+use yii\base\Exception;
 use yii\db\Schema;
 
 /**
@@ -183,6 +184,7 @@ class Db
      * @param string $database   The type of database to use.
      *
      * @return integer The storage capacity of the column type in bytes.
+     * @throws Exception if given an unknown column type/database combination
      */
     public static function getTextualColumnStorageCapacity($columnType, $database = 'mysql')
     {
@@ -213,6 +215,8 @@ class Db
                 break;
             }
         }
+
+        throw new Exception('Unknown column type');
     }
 
     /**

@@ -161,6 +161,8 @@ class EmailMessages extends Component
         if (isset($this->_messagesInfo[$key])) {
             return $this->_messagesInfo[$key];
         }
+
+        return null;
     }
 
     /**

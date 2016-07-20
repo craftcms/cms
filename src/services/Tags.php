@@ -175,6 +175,8 @@ class Tags extends Component
         if ($groupRecord) {
             return TagGroupModel::create($groupRecord);
         }
+
+        return null;
     }
 
     /**

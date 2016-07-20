@@ -301,6 +301,8 @@ class Request extends \yii\web\Request
                 return $this->_segments[$totalSegs + $num];
             }
         }
+
+        return null;
     }
 
     /**

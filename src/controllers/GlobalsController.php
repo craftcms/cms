@@ -31,6 +31,8 @@ class GlobalsController extends Controller
     /**
      * Saves a global set.
      *
+     * @return Response|null
+     *
      * @throws NotFoundHttpException if the requested global set cannot be found
      */
     public function actionSaveSet()
@@ -72,6 +74,8 @@ class GlobalsController extends Controller
         Craft::$app->getUrlManager()->setRouteParams([
             'globalSet' => $globalSet
         ]);
+
+        return null;
     }
 
     /**

@@ -137,7 +137,7 @@ class PluginsController extends Controller
     /**
      * Saves a plugin’s settings.
      *
-     * @return void
+     * @return Response|null
      * @throws NotFoundHttpException if the requested plugin cannot be found
      */
     public function actionSavePluginSettings()
@@ -163,5 +163,7 @@ class PluginsController extends Controller
         Craft::$app->getUrlManager()->setRouteParams([
             'plugin' => $plugin
         ]);
+
+        return null;
     }
 }

@@ -108,5 +108,7 @@ class SearchIndex extends Tool
                 }
             }
         }
+
+        return null;
     }
 }

@@ -205,6 +205,8 @@ class View extends \yii\web\View
 
             return $template;
         }
+
+        return null;
     }
 
     /**

@@ -178,6 +178,8 @@ class MatrixBlock extends Element
         if ($blockType) {
             return $blockType->getFieldLayout();
         }
+
+        return null;
     }
 
     /**
@@ -222,6 +224,8 @@ class MatrixBlock extends Element
         if ($this->typeId) {
             return Craft::$app->getMatrix()->getBlockTypeById($this->typeId);
         }
+
+        return null;
     }
 
     /**
@@ -242,6 +246,8 @@ class MatrixBlock extends Element
         if ($this->_owner) {
             return $this->_owner;
         }
+
+        return null;
     }
 
     /**

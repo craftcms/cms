@@ -756,6 +756,8 @@ abstract class Element extends Component implements ElementInterface
 
             return $url;
         }
+
+        return null;
     }
 
     /**
@@ -825,9 +827,13 @@ abstract class Element extends Component implements ElementInterface
     {
         if ($criteria !== false || !isset($this->_nextElement)) {
             return $this->_getRelativeElement($criteria, 1);
-        } else if ($this->_nextElement !== false) {
+        }
+
+        if ($this->_nextElement !== false) {
             return $this->_nextElement;
         }
+
+        return null;
     }
 
     /**
@@ -837,9 +843,13 @@ abstract class Element extends Component implements ElementInterface
     {
         if ($criteria !== false || !isset($this->_prevElement)) {
             return $this->_getRelativeElement($criteria, -1);
-        } else if ($this->_prevElement !== false) {
+        }
+
+        if ($this->_prevElement !== false) {
             return $this->_prevElement;
         }
+
+        return null;
     }
 
     /**
@@ -1404,16 +1414,16 @@ abstract class Element extends Component implements ElementInterface
     {
         if (isset($sources[$key])) {
             return $sources[$key];
-        } else {
-            // Look through any nested sources
-            foreach ($sources as $source) {
-                if (!empty($source['nested']) && ($nestedSource = static::_findSource($key,
-                        $source['nested']))
-                ) {
-                    return $nestedSource;
-                }
+        }
+
+        // Look through any nested sources
+        foreach ($sources as $source) {
+            if (!empty($source['nested']) && ($nestedSource = static::_findSource($key, $source['nested']))) {
+                return $nestedSource;
             }
         }
+
+        return null;
     }
 
     /**
@@ -1445,5 +1455,7 @@ abstract class Element extends Component implements ElementInterface
                     ->one();
             }
         }
+
+        return null;
     }
 }

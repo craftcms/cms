@@ -91,6 +91,8 @@ class Config extends Component
         if ($this->exists($item, $category)) {
             return $this->_configSettings[$category][$item];
         }
+
+        return null;
     }
 
     /**
@@ -157,12 +159,16 @@ class Config extends Component
 
             if (isset($value[$localeId])) {
                 return $value[$localeId];
-            } else if ($value) {
+            }
+
+            if ($value) {
                 // Just return the first value
                 $keys = array_keys($value);
 
                 return $value[$keys[0]];
             }
+
+            return null;
         } else {
             return $value;
         }

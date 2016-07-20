@@ -234,6 +234,8 @@ class Header
                 return $parts[1];
             }
         }
+
+        return null;
     }
 
     /**
@@ -241,7 +243,7 @@ class Header
      *
      * @param array $header Use key => value
      *
-     * @return void
+     * @return boolean
      */
     public static function setHeader($header)
     {

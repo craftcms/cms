@@ -157,6 +157,8 @@ class Plugin extends Module implements PluginInterface
         }
 
         $this->afterInstall();
+
+        return null;
     }
 
     /**
@@ -173,6 +175,8 @@ class Plugin extends Module implements PluginInterface
         }
 
         $this->afterUpdate();
+
+        return null;
     }
 
     /**
@@ -193,6 +197,8 @@ class Plugin extends Module implements PluginInterface
         }
 
         $this->afterUninstall();
+
+        return null;
     }
 
     /**

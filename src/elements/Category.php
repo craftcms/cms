@@ -435,6 +435,8 @@ class Category extends Element
         if ($group) {
             return $group->getFieldLayout();
         }
+
+        return null;
     }
 
     /**
@@ -455,6 +457,8 @@ class Category extends Element
                 }
             }
         }
+
+        return null;
     }
 
     /**
@@ -475,6 +479,8 @@ class Category extends Element
         if ($group) {
             return Url::getCpUrl('categories/'.$group->handle.'/'.$this->id.($this->slug ? '-'.$this->slug : ''));
         }
+
+        return null;
     }
 
     /**
@@ -487,6 +493,8 @@ class Category extends Element
         if ($this->groupId) {
             return Craft::$app->getCategories()->getGroupById($this->groupId);
         }
+
+        return null;
     }
 
     // Protected Methods

@@ -252,5 +252,7 @@ class Section extends Model
 
             return $locales[$localeId]->urlFormat;
         }
+
+        return null;
     }
 }

@@ -265,6 +265,8 @@ class SystemSettingsController extends Controller
             'settings' => $settings,
             'adaptor' => $adaptor
         ]);
+
+        return null;
     }
 
     /**

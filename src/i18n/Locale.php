@@ -299,6 +299,8 @@ class Locale extends Object
                 return $subTag[1];
             }
         }
+
+        return null;
     }
 
     /**
@@ -317,10 +319,14 @@ class Locale extends Object
             // Territory sub tags can be distinguished from script sub tags by length
             if (isset($subTag[2]) && strlen($subTag[2]) < 4) {
                 return $subTag[2];
-            } else if (strlen($subTag[1]) < 4) {
+            }
+
+            if (strlen($subTag[1]) < 4) {
                 return $subTag[1];
             }
         }
+
+        return null;
     }
 
     /**
@@ -667,26 +673,28 @@ class Locale extends Object
             $formatter = new NumberFormatter($this->id, NumberFormatter::DECIMAL);
 
             return $formatter->getTextAttribute($attribute);
-        } else {
-            switch ($attribute) {
-                case static::ATTR_POSITIVE_PREFIX:
-                    return $this->data['textAttributes']['positivePrefix'];
-                case static::ATTR_POSITIVE_SUFFIX:
-                    return $this->data['textAttributes']['positiveSuffix'];
-                case static::ATTR_NEGATIVE_PREFIX:
-                    return $this->data['textAttributes']['negativePrefix'];
-                case static::ATTR_NEGATIVE_SUFFIX:
-                    return $this->data['textAttributes']['negativeSuffix'];
-                case static::ATTR_PADDING_CHARACTER:
-                    return $this->data['textAttributes']['paddingCharacter'];
-                case static::ATTR_CURRENCY_CODE:
-                    return $this->data['textAttributes']['currencyCode'];
-                case static::ATTR_DEFAULT_RULESET:
-                    return $this->data['textAttributes']['defaultRuleset'];
-                case static::ATTR_PUBLIC_RULESETS:
-                    return $this->data['textAttributes']['publicRulesets'];
-            }
         }
+
+        switch ($attribute) {
+            case static::ATTR_POSITIVE_PREFIX:
+                return $this->data['textAttributes']['positivePrefix'];
+            case static::ATTR_POSITIVE_SUFFIX:
+                return $this->data['textAttributes']['positiveSuffix'];
+            case static::ATTR_NEGATIVE_PREFIX:
+                return $this->data['textAttributes']['negativePrefix'];
+            case static::ATTR_NEGATIVE_SUFFIX:
+                return $this->data['textAttributes']['negativeSuffix'];
+            case static::ATTR_PADDING_CHARACTER:
+                return $this->data['textAttributes']['paddingCharacter'];
+            case static::ATTR_CURRENCY_CODE:
+                return $this->data['textAttributes']['currencyCode'];
+            case static::ATTR_DEFAULT_RULESET:
+                return $this->data['textAttributes']['defaultRuleset'];
+            case static::ATTR_PUBLIC_RULESETS:
+                return $this->data['textAttributes']['publicRulesets'];
+        }
+
+        return null;
     }
 
     /**
@@ -706,46 +714,48 @@ class Locale extends Object
             $formatter = new NumberFormatter($this->id, NumberFormatter::DECIMAL);
 
             return $formatter->getSymbol($symbol);
-        } else {
-            switch ($symbol) {
-                case static::SYMBOL_DECIMAL_SEPARATOR:
-                    return $this->data['numberSymbols']['decimalSeparator'];
-                case static::SYMBOL_GROUPING_SEPARATOR:
-                    return $this->data['numberSymbols']['groupingSeparator'];
-                case static::SYMBOL_PATTERN_SEPARATOR:
-                    return $this->data['numberSymbols']['patternSeparator'];
-                case static::SYMBOL_PERCENT:
-                    return $this->data['numberSymbols']['percent'];
-                case static::SYMBOL_ZERO_DIGIT:
-                    return $this->data['numberSymbols']['zeroDigit'];
-                case static::SYMBOL_DIGIT:
-                    return $this->data['numberSymbols']['digit'];
-                case static::SYMBOL_MINUS_SIGN:
-                    return $this->data['numberSymbols']['minusSign'];
-                case static::SYMBOL_PLUS_SIGN:
-                    return $this->data['numberSymbols']['plusSign'];
-                case static::SYMBOL_CURRENCY:
-                    return $this->data['numberSymbols']['currency'];
-                case static::SYMBOL_INTL_CURRENCY:
-                    return $this->data['numberSymbols']['intlCurrency'];
-                case static::SYMBOL_MONETARY_SEPARATOR:
-                    return $this->data['numberSymbols']['monetarySeparator'];
-                case static::SYMBOL_EXPONENTIAL:
-                    return $this->data['numberSymbols']['exponential'];
-                case static::SYMBOL_PERMILL:
-                    return $this->data['numberSymbols']['permill'];
-                case static::SYMBOL_PAD_ESCAPE:
-                    return $this->data['numberSymbols']['padEscape'];
-                case static::SYMBOL_INFINITY:
-                    return $this->data['numberSymbols']['infinity'];
-                case static::SYMBOL_NAN:
-                    return $this->data['numberSymbols']['nan'];
-                case static::SYMBOL_SIGNIFICANT_DIGIT:
-                    return $this->data['numberSymbols']['significantDigit'];
-                case static::SYMBOL_MONETARY_GROUPING_SEPARATOR:
-                    return $this->data['numberSymbols']['monetaryGroupingSeparator'];
-            }
         }
+
+        switch ($symbol) {
+            case static::SYMBOL_DECIMAL_SEPARATOR:
+                return $this->data['numberSymbols']['decimalSeparator'];
+            case static::SYMBOL_GROUPING_SEPARATOR:
+                return $this->data['numberSymbols']['groupingSeparator'];
+            case static::SYMBOL_PATTERN_SEPARATOR:
+                return $this->data['numberSymbols']['patternSeparator'];
+            case static::SYMBOL_PERCENT:
+                return $this->data['numberSymbols']['percent'];
+            case static::SYMBOL_ZERO_DIGIT:
+                return $this->data['numberSymbols']['zeroDigit'];
+            case static::SYMBOL_DIGIT:
+                return $this->data['numberSymbols']['digit'];
+            case static::SYMBOL_MINUS_SIGN:
+                return $this->data['numberSymbols']['minusSign'];
+            case static::SYMBOL_PLUS_SIGN:
+                return $this->data['numberSymbols']['plusSign'];
+            case static::SYMBOL_CURRENCY:
+                return $this->data['numberSymbols']['currency'];
+            case static::SYMBOL_INTL_CURRENCY:
+                return $this->data['numberSymbols']['intlCurrency'];
+            case static::SYMBOL_MONETARY_SEPARATOR:
+                return $this->data['numberSymbols']['monetarySeparator'];
+            case static::SYMBOL_EXPONENTIAL:
+                return $this->data['numberSymbols']['exponential'];
+            case static::SYMBOL_PERMILL:
+                return $this->data['numberSymbols']['permill'];
+            case static::SYMBOL_PAD_ESCAPE:
+                return $this->data['numberSymbols']['padEscape'];
+            case static::SYMBOL_INFINITY:
+                return $this->data['numberSymbols']['infinity'];
+            case static::SYMBOL_NAN:
+                return $this->data['numberSymbols']['nan'];
+            case static::SYMBOL_SIGNIFICANT_DIGIT:
+                return $this->data['numberSymbols']['significantDigit'];
+            case static::SYMBOL_MONETARY_GROUPING_SEPARATOR:
+                return $this->data['numberSymbols']['monetaryGroupingSeparator'];
+        }
+
+        return null;
     }
 
     /**
@@ -800,29 +810,27 @@ class Locale extends Object
                 'yyyy' => 'yyyy',
                 'yy' => 'yyyy'
             ]);
-        } else {
-            if ($withDate && $withTime) {
-                $which = 'datetime';
-            } else if ($withDate) {
-                $which = 'date';
-            } else {
-                $which = 'time';
-            }
-
-            switch ($length) {
-                case static::FORMAT_SHORT:
-                    return StringHelper::replace($this->data['dateTimeFormats']['short'][$which], 'yy', 'Y');
-                    break;
-                case static::FORMAT_MEDIUM:
-                    return $this->data['dateTimeFormats']['medium'][$which];
-                    break;
-                case static::FORMAT_LONG:
-                    return $this->data['dateTimeFormats']['long'][$which];
-                    break;
-                case static::FORMAT_FULL:
-                    return $this->data['dateTimeFormats']['full'][$which];
-                    break;
-            }
         }
+
+        if ($withDate && $withTime) {
+            $which = 'datetime';
+        } else if ($withDate) {
+            $which = 'date';
+        } else {
+            $which = 'time';
+        }
+
+        switch ($length) {
+            case static::FORMAT_SHORT:
+                return StringHelper::replace($this->data['dateTimeFormats']['short'][$which], 'yy', 'Y');
+            case static::FORMAT_MEDIUM:
+                return $this->data['dateTimeFormats']['medium'][$which];
+            case static::FORMAT_LONG:
+                return $this->data['dateTimeFormats']['long'][$which];
+            case static::FORMAT_FULL:
+                return $this->data['dateTimeFormats']['full'][$which];
+        }
+
+        return null;
     }
 }

@@ -188,6 +188,8 @@ class Table extends Field
 
             return $value;
         }
+
+        return null;
     }
 
     /**
@@ -265,5 +267,7 @@ class Table extends Field
                     'static' => $static
                 ]);
         }
+
+        return null;
     }
 }

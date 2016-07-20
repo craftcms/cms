@@ -349,26 +349,19 @@ class User extends Element implements IdentityInterface
     public static function getElementQueryStatusCondition(ElementQueryInterface $query, $status)
     {
         switch ($status) {
-            case self::STATUS_ACTIVE: {
+            case self::STATUS_ACTIVE:
                 return 'users.archived = 0 AND users.suspended = 0 AND users.locked = 0 and users.pending = 0';
-            }
-
-            case self::STATUS_PENDING: {
+            case self::STATUS_PENDING:
                 return 'users.pending = 1';
-            }
-
-            case self::STATUS_LOCKED: {
+            case self::STATUS_LOCKED:
                 return 'users.locked = 1';
-            }
-
-            case self::STATUS_SUSPENDED: {
+            case self::STATUS_SUSPENDED:
                 return 'users.suspended = 1';
-            }
-
-            case self::STATUS_ARCHIVED: {
+            case self::STATUS_ARCHIVED:
                 return 'users.archived = 1';
-            }
         }
+
+        return null;
     }
 
     /**
@@ -448,17 +441,19 @@ class User extends Element implements IdentityInterface
         if ($user !== null) {
             if ($user->getStatus() == self::STATUS_ACTIVE) {
                 return $user;
-            } else {
-                // If the previous user was an admin and we're impersonating the current user.
-                if ($previousUserId = Craft::$app->getSession()->get(self::IMPERSONATE_KEY)) {
-                    $previousUser = Craft::$app->getUsers()->getUserById($previousUserId);
+            }
 
-                    if ($previousUser && $previousUser->admin) {
-                        return $user;
-                    }
+            // If the previous user was an admin and we're impersonating the current user.
+            if ($previousUserId = Craft::$app->getSession()->get(self::IMPERSONATE_KEY)) {
+                $previousUser = Craft::$app->getUsers()->getUserById($previousUserId);
+
+                if ($previousUser && $previousUser->admin) {
+                    return $user;
                 }
             }
         }
+
+        return null;
     }
 
     /**
@@ -483,6 +478,8 @@ class User extends Element implements IdentityInterface
         if (count($data) === 3 && isset($data[0], $data[1], $data[2])) {
             return $data;
         }
+
+        return null;
     }
 
     // Properties
@@ -616,6 +613,7 @@ class User extends Element implements IdentityInterface
      *
      * @return string
      */
+    /** @noinspection PhpInconsistentReturnPointsInspection */
     public function __toString()
     {
         try {
@@ -964,6 +962,8 @@ class User extends Element implements IdentityInterface
 
             return Url::getResourceUrl('userphotos/'.$username.'/'.$size.'/'.$this->photo);
         }
+
+        return null;
     }
 
     /**
@@ -1062,6 +1062,8 @@ class User extends Element implements IdentityInterface
                 return $cooldownEnd;
             }
         }
+
+        return null;
     }
 
     /**
@@ -1079,6 +1081,8 @@ class User extends Element implements IdentityInterface
                 return $currentTime->diff($cooldownEnd);
             }
         }
+
+        return null;
     }
 
     /**

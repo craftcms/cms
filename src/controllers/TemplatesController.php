@@ -128,6 +128,8 @@ class TemplatesController extends Controller
             // Cache the app path.
             Craft::$app->getCache()->set('appPath', Craft::$app->getPath()->getAppPath());
         }
+
+        return null;
     }
 
     /**

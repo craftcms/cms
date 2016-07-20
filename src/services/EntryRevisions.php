@@ -93,6 +93,8 @@ class EntryRevisions extends Component
 
             return $draft;
         }
+
+        return null;
     }
 
     /**
@@ -300,6 +302,8 @@ class EntryRevisions extends Component
 
             return EntryVersion::create($config);
         }
+
+        return null;
     }
 
     /**

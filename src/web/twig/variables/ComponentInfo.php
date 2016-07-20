@@ -47,6 +47,7 @@ class ComponentInfo
      *
      * @return string The component’s display name
      */
+    /** @noinspection PhpInconsistentReturnPointsInspection */
     public function __toString()
     {
         try {

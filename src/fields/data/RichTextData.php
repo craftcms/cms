@@ -104,6 +104,8 @@ class RichTextData extends \Twig_Markup
         if (isset($pages[$pageNumber - 1])) {
             return $pages[$pageNumber - 1];
         }
+
+        return null;
     }
 
     /**

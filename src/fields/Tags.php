@@ -117,6 +117,8 @@ class Tags extends BaseRelationField
         if ($tagGroupId) {
             return Craft::$app->getTags()->getTagGroupById($tagGroupId);
         }
+
+        return null;
     }
 
     /**

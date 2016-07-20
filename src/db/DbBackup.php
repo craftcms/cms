@@ -291,7 +291,7 @@ class DbBackup
      * @param $resultName
      * @param $action
      *
-     * @return string
+     * @return string|null
      */
     private function _processResult($resultName, $action = 'create')
     {
@@ -302,9 +302,13 @@ class DbBackup
 
         if (isset($q['Create Table'])) {
             return $this->_processTable($resultName, $q['Create Table'], $action);
-        } else if (isset($q['Create View'])) {
+        }
+
+        if (isset($q['Create View'])) {
             return $this->_processView($resultName, $q['Create View'], $action);
         }
+
+        return null;
     }
 
     /**
@@ -312,7 +316,7 @@ class DbBackup
      * @param        $createQuery
      * @param string $action
      *
-     * @return string
+     * @return string|null
      */
     private function _processTable($tableName, $createQuery, $action = 'create')
     {
@@ -363,7 +367,7 @@ class DbBackup
             $totalRows = $db->createCommand($sql)->queryScalar();
 
             if ($totalRows == 0) {
-                return;
+                return null;
             }
 
             if (!in_array($tableName, $this->_ignoreDataTables)) {

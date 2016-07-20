@@ -91,6 +91,8 @@ class UserGroups extends Component
         if ($groupRecord) {
             return UserGroupModel::create($groupRecord);
         }
+
+        return null;
     }
 
     /**
@@ -109,6 +111,8 @@ class UserGroups extends Component
         if ($groupRecord) {
             return UserGroupModel::create($groupRecord);
         }
+
+        return null;
     }
 
     /**
