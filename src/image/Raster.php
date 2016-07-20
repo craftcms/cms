@@ -570,7 +570,7 @@ class Raster extends Image
      * @param     $maxQuality
      * @param int $step
      *
-     * @return string $path the resulting file path
+     * @return string the resulting file path
      */
     private function _autoGuessImageQuality($tempFileName, $originalSize, $extension, $minQuality, $maxQuality, $step = 0)
     {

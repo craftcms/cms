@@ -133,7 +133,7 @@ class Assets
      * @param VolumeFolder $destinationFolder  The destination folder
      * @param array        $targetTreeMap      map of relative path => existing folder id
      *
-     * @return array $folderIdChanges map of original folder id => new folder id
+     * @return array map of original folder id => new folder id
      */
     public static function mirrorFolderStructure(VolumeFolder $sourceParentFolder, VolumeFolder $destinationFolder, $targetTreeMap = [])
     {

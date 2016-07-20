@@ -125,7 +125,7 @@ class TemplateLoader implements \Twig_LoaderInterface, \Twig_ExistsLoaderInterfa
      *
      * @param $name
      *
-     * @return string $name
+     * @return string
      * @throws TemplateLoaderException if the template doesn’t exist
      */
     private function _resolveTemplate($name)

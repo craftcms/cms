@@ -156,7 +156,7 @@ interface VolumeInterface extends SavableComponentInterface
      * @param $uriPath
      * @param $targetPath
      *
-     * @return integer $bytes amount of bytes copied
+     * @return integer amount of bytes copied
      */
     public function saveFileLocally($uriPath, $targetPath);
 }

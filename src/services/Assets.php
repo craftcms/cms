@@ -595,7 +595,7 @@ class Assets extends Component
      * @throws AssetLogicException              If the folder to be renamed can't be found or trying to rename the top folder.
      * @throws VolumeObjectExistsException      If a folder already exists with such name in the Volume, but not in Index
      * @throws VolumeObjectNotFoundException    If the folder to be renamed can't be found in the Volume.
-     * @return string $newName The new folder name after cleaning it.
+     * @return string The new folder name after cleaning it.
      */
     public function renameFolderById($folderId, $newName)
     {
