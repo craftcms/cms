@@ -406,7 +406,7 @@ Craft.CustomizeSourcesModal.Source = Craft.CustomizeSourcesModal.BaseSource.exte
 
     createTableColumnOption: function(key, label, first, checked)
     {
-        $option = $('<div class="customize-sources-table-column"/>')
+        var $option = $('<div class="customize-sources-table-column"/>')
             .append('<div class="icon move"/>')
             .append(
                 Craft.ui.createCheckbox({

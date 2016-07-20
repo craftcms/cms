@@ -240,7 +240,7 @@ var Update = Garnish.Base.extend(
 });
 
 
-Release = Garnish.Base.extend(
+var Release = Garnish.Base.extend(
 {
 	update: null,
 	releaseInfo: null,

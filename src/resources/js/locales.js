@@ -427,7 +427,7 @@ var LocalesTable = Craft.AdminTable.extend(
 			$cancelBtn = $('<div class="btn">'+Craft.t('Cancel')+'</div>').appendTo($buttons);
 
 		this.$deleteActionRadios = $body.find('input[type=radio]');
-		this.$transferSelect = $('#transferselect > select');
+		this.$transferSelect = $('#transferselect').find('> select');
 		this.$deleteSubmitBtn = $('<input type="submit" class="btn submit disabled" value="'+Craft.t('Delete {language}', { language: name })+'" />').appendTo($buttons);
 		this.$deleteSpinner = $('<div class="spinner hidden"/>').appendTo($buttons);
 

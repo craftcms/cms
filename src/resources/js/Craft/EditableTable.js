@@ -228,7 +228,7 @@ Craft.EditableTable.Row = Garnish.Base.extend(
 
 			if (Craft.inArray(col.type, Craft.EditableTable.textualColTypes))
 			{
-				$textarea = $('textarea', this.$tds[i]);
+				var $textarea = $('textarea', this.$tds[i]);
 				this.$textareas = this.$textareas.add($textarea);
 
 				this.addListener($textarea, 'focus', 'onTextareaFocus');

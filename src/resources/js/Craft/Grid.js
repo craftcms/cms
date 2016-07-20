@@ -443,7 +443,7 @@ Craft.Grid = Garnish.Base.extend(
 		this._refreshingCols = false;
 
 		if (this._refreshColsAfterRefresh) {
-			force = this._forceRefreshColsAfterRefresh;
+			var force = this._forceRefreshColsAfterRefresh;
 			this._refreshColsAfterRefresh = false;
 			this._forceRefreshColsAfterRefresh = false;
 

@@ -1,8 +1,7 @@
 (function($) {
 
-	$urlField = $('.volume-url');
-
-	var $s3AccessKeyIdInput = $('.s3-key-id'),
+	var $urlField = $('.volume-url'),
+		$s3AccessKeyIdInput = $('.s3-key-id'),
 		$s3SecretAccessKeyInput = $('.s3-secret-key'),
 		$s3BucketSelect = $('.s3-bucket-select > select'),
 		$s3RefreshBucketsBtn = $('.s3-refresh-buckets'),

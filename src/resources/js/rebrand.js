@@ -4,7 +4,7 @@
 	{
 		if (typeof response.html != "undefined")
 		{
-			$html = $(response.html);
+			var $html = $(response.html);
 
 			// Switch out the old image uploader and HTML with the new stuff.
 			unsetImageUpload($target);

@@ -956,7 +956,7 @@ $.extend(Craft,
 			seconds = 0;
 		}
 
-		timeComponents = [];
+		var timeComponents = [];
 
 		if (weeks)
 		{
@@ -1281,17 +1281,15 @@ $.extend(Craft,
 			$element = $element.find('.element:first');
 		}
 
-		var info = {
-			id:       $element.data('id'),
-			locale:   $element.data('locale'),
-			label:    $element.data('label'),
-			status:   $element.data('status'),
-			url:      $element.data('url'),
+		return {
+			id: $element.data('id'),
+			locale: $element.data('locale'),
+			label: $element.data('label'),
+			status: $element.data('status'),
+			url: $element.data('url'),
 			hasThumb: $element.hasClass('hasthumb'),
 			$element: $element
 		};
-
-		return info;
 	},
 
 	/**
@@ -1323,11 +1321,11 @@ $.extend(Craft,
 		if ($element.hasClass('hasthumb'))
 		{
 			var $oldImg = $element.find('> .elementthumb > img'),
-				imgSize = (size == 'small' ? '30' : '100');
-			$newImg = $('<img/>', {
-				sizes: imgSize+'px',
-				srcset: $oldImg.attr('srcset') || $oldImg.attr('data-pfsrcset')
-			});
+				imgSize = (size == 'small' ? '30' : '100'),
+				$newImg = $('<img/>', {
+					sizes: imgSize+'px',
+					srcset: $oldImg.attr('srcset') || $oldImg.attr('data-pfsrcset')
+				});
 
 			$oldImg.replaceWith($newImg);
 

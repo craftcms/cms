@@ -1311,6 +1311,7 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
         // parentOf(element) => relatedTo({ target: element })
 
         // TODO: Remove this code in Craft 4
+        /** @noinspection PhpDeprecationInspection */
         if (!$this->relatedTo && ($this->childOf || $this->parentOf)) {
             $this->relatedTo = ['and'];
 

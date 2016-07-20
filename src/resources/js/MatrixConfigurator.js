@@ -493,7 +493,7 @@ var BlockType = Garnish.Base.extend(
 });
 
 
-Field = Garnish.Base.extend(
+var Field = Garnish.Base.extend(
 {
 	configurator: null,
 	blockType: null,

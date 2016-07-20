@@ -37,7 +37,7 @@
 			$('.user-photo').replaceWith(response.html);
 			if (typeof changeSidebarPicture != "undefined" && changeSidebarPicture)
 			{
-				$('#user-photo > img').replaceWith($('#current-photo > img').clone());
+				$('#user-photo').find('> img').replaceWith($('#current-photo').find('> img').clone());
 			}
 			initImageUpload();
 		}
