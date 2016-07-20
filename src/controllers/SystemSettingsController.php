@@ -238,7 +238,7 @@ class SystemSettingsController extends Controller
         $this->requirePostRequest();
 
         /** @var MailSettings $settings */
-        /** @var TransportAdaptorInterface|BaseTransportAdaptor $adaptor */
+        /** @var BaseTransportAdaptor $adaptor */
         list($settings, $adaptor) = $this->_createMailSettingsAndAdaptorFromPost();
 
         $settingsIsValid = $settings->validate();
@@ -279,7 +279,7 @@ class SystemSettingsController extends Controller
         $this->requirePostRequest();
 
         /** @var MailSettings $settings */
-        /** @var TransportAdaptorInterface|BaseTransportAdaptor $adaptor */
+        /** @var BaseTransportAdaptor $adaptor */
         list($settings, $adaptor) = $this->_createMailSettingsAndAdaptorFromPost();
 
         $settingsIsValid = $settings->validate();
