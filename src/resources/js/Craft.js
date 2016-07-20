@@ -1,4 +1,4 @@
-/*! Craft 3.0.0 - 2016-07-18 */
+/*! Craft 3.0.0 - 2016-07-20 */
 (function($){
 
 // Set all the standard Craft.* stuff
@@ -959,7 +959,7 @@ $.extend(Craft,
 			seconds = 0;
 		}
 
-		timeComponents = [];
+		var timeComponents = [];
 
 		if (weeks)
 		{
@@ -1284,17 +1284,15 @@ $.extend(Craft,
 			$element = $element.find('.element:first');
 		}
 
-		var info = {
-			id:       $element.data('id'),
-			locale:   $element.data('locale'),
-			label:    $element.data('label'),
-			status:   $element.data('status'),
-			url:      $element.data('url'),
+		return {
+			id: $element.data('id'),
+			locale: $element.data('locale'),
+			label: $element.data('label'),
+			status: $element.data('status'),
+			url: $element.data('url'),
 			hasThumb: $element.hasClass('hasthumb'),
 			$element: $element
 		};
-
-		return info;
 	},
 
 	/**
@@ -1326,11 +1324,11 @@ $.extend(Craft,
 		if ($element.hasClass('hasthumb'))
 		{
 			var $oldImg = $element.find('> .elementthumb > img'),
-				imgSize = (size == 'small' ? '30' : '100');
-			$newImg = $('<img/>', {
-				sizes: imgSize+'px',
-				srcset: $oldImg.attr('srcset') || $oldImg.attr('data-pfsrcset')
-			});
+				imgSize = (size == 'small' ? '30' : '100'),
+				$newImg = $('<img/>', {
+					sizes: imgSize+'px',
+					srcset: $oldImg.attr('srcset') || $oldImg.attr('data-pfsrcset')
+				});
 
 			$oldImg.replaceWith($newImg);
 
@@ -5069,12 +5067,8 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 			var availableHeight = Garnish.$win.height() - (4 * this.paddingSize) - this.$container.find('.footer').outerHeight(),
 				availableWidth = Garnish.$win.width() - (5 * this.paddingSize) - this.$container.find('.image-tools').outerWidth();
 
-			// The smallest of available and desired dimension is what we're going for to not have huge modals for small images
-			var targetImageHeight = availableHeight,
-				targetImageWidth = availableWidth;
-
 			// Make the image area square, so we can rotate it comfortably.
-			var imageHolderSize = Math.max(parseInt(this.$container.find('.image-tools').css('min-height'), 10), Math.min(targetImageHeight, targetImageWidth));
+			var imageHolderSize = Math.max(parseInt(this.$container.find('.image-tools').css('min-height'), 10), Math.min(availableHeight, availableWidth));
 
 			// Set it all up!
 			var containerWidth = imageHolderSize + this.$container.find('.image-tools').outerWidth() + (3 * this.paddingSize),
@@ -7151,7 +7145,7 @@ Craft.AssetSelectInput = Craft.BaseElementSelectInput.extend(
 				validators: [$.proxy(this.validateElementForm, this)]
 			};
 		}
-		
+
 		this.base.apply(this, arguments);
 		this._attachUploader();
 	},
@@ -7293,8 +7287,8 @@ Craft.AssetSelectInput = Craft.BaseElementSelectInput.extend(
 	 */
 	_renameHelper: function ($form) {
 		$('.renameHelper', $form).on('focus', $.proxy(function (e) {
-			input = e.currentTarget;
-			var filename = this._parseFilename(input.value);
+			var input = e.currentTarget,
+				filename = this._parseFilename(input.value);
 
 			if (this.originalFilename == "" && this.originalExtension == "") {
 				this.originalFilename = filename.baseFileName;
@@ -10301,7 +10295,7 @@ Craft.CustomizeSourcesModal.Source = Craft.CustomizeSourcesModal.BaseSource.exte
 
     createTableColumnOption: function(key, label, first, checked)
     {
-        $option = $('<div class="customize-sources-table-column"/>')
+        var $option = $('<div class="customize-sources-table-column"/>')
             .append('<div class="icon move"/>')
             .append(
                 Craft.ui.createCheckbox({
@@ -10863,7 +10857,7 @@ Craft.EditableTable.Row = Garnish.Base.extend(
 
 			if (Craft.inArray(col.type, Craft.EditableTable.textualColTypes))
 			{
-				$textarea = $('textarea', this.$tds[i]);
+				var $textarea = $('textarea', this.$tds[i]);
 				this.$textareas = this.$textareas.add($textarea);
 
 				this.addListener($textarea, 'focus', 'onTextareaFocus');
@@ -13382,7 +13376,7 @@ Craft.Grid = Garnish.Base.extend(
 		this._refreshingCols = false;
 
 		if (this._refreshColsAfterRefresh) {
-			force = this._forceRefreshColsAfterRefresh;
+			var force = this._forceRefreshColsAfterRefresh;
 			this._refreshColsAfterRefresh = false;
 			this._forceRefreshColsAfterRefresh = false;
 
@@ -13602,6 +13596,7 @@ Craft.Grid.LayoutGenerator = Garnish.Base.extend(
 	}
 
 });
+
 /**
  * Handle Generator
  */

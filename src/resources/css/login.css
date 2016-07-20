@@ -46,7 +46,7 @@ body.rtl #login-form #ssl-icon { right: 0; }
 body.ltr #login-form #ssl-icon + #submit { padding-left: 2em; }
 body.rtl #login-form #ssl-icon + #submit { padding-right: 2em; }
 
-#login-form .submit { display: block; width: auto; float: none; padding: 14px 16px; height: auto; width: 100%; border-radius: 4px; }
+#login-form .submit { display: block; float: none; padding: 14px 16px; height: auto; width: 100%; border-radius: 4px; }
 
 #login-form #submit.reset-password { margin-top: 24px; }
 
@@ -65,7 +65,7 @@ p.error { text-align: center; }
 body.ltr .modal.email-sent .body { padding-left: 68px; }
 body.rtl .modal.email-sent .body { padding-right: 68px; }
 
-.modal.email-sent .body:before { font-family: 'Craft'; speak: none; -webkit-font-feature-settings: "liga", "dlig"; -moz-font-feature-settings: "liga=1, dlig=1"; -moz-font-feature-settings: "liga", "dlig"; -ms-font-feature-settings: "liga", "dlig"; -o-font-feature-settings: "liga", "dlig"; font-feature-settings: "liga", "dlig"; text-rendering: optimizeLegibility; font-weight: normal; font-variant: normal; text-transform: none; line-height: 1; direction: ltr; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; display: inline-block; text-align: center; font-style: normal; vertical-align: middle; word-wrap: normal !important; -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none; display: block; position: absolute; top: 17px; top: 24px; content: 'mail'; font-size: 30px; color: #0d78f2; }
+.modal.email-sent .body:before { font-family: 'Craft'; speak: none; -webkit-font-feature-settings: "liga", "dlig"; -moz-font-feature-settings: "liga=1, dlig=1"; -moz-font-feature-settings: "liga", "dlig"; -ms-font-feature-settings: "liga", "dlig"; -o-font-feature-settings: "liga", "dlig"; font-feature-settings: "liga", "dlig"; text-rendering: optimizeLegibility; font-weight: normal; font-variant: normal; text-transform: none; line-height: 1; direction: ltr; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; display: inline-block; text-align: center; font-style: normal; vertical-align: middle; word-wrap: normal !important; -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none; display: block; position: absolute; top: 24px; content: 'mail'; font-size: 30px; color: #0d78f2; }
 body.ltr .modal.email-sent .body:before { left: 24px; }
 body.rtl .modal.email-sent .body:before { right: 24px; }
 
