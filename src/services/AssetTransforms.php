@@ -683,10 +683,7 @@ class AssetTransforms extends Component
      *
      * @return AssetTransformIndex|null
      */
-    public function getTransformIndexModelByAssetIdAndHandle(
-        $assetId,
-        $transformHandle
-    )
+    public function getTransformIndexModelByAssetIdAndHandle($assetId, $transformHandle)
     {
         // Check if an entry exists already
         $entry = (new Query())
@@ -728,10 +725,7 @@ class AssetTransforms extends Component
      *
      * @return string
      */
-    public function getUrlForTransformByAssetAndTransformIndex(
-        Asset $asset,
-        AssetTransformIndex $transformIndexModel
-    )
+    public function getUrlForTransformByAssetAndTransformIndex(Asset $asset, AssetTransformIndex $transformIndexModel)
     {
         $volume = $asset->getVolume();
         $baseUrl = $volume->getRootUrl();
@@ -974,10 +968,7 @@ class AssetTransforms extends Component
      *
      * @return mixed|string
      */
-    public function getTransformSubfolder(
-        Asset $asset,
-        AssetTransformIndex $index
-    )
+    public function getTransformSubfolder(Asset $asset, AssetTransformIndex $index)
     {
         $path = $index->location;
 
@@ -996,10 +987,7 @@ class AssetTransforms extends Component
      *
      * @return mixed
      */
-    public function getTransformFilename(
-        Asset $asset,
-        AssetTransformIndex $index
-    )
+    public function getTransformFilename(Asset $asset, AssetTransformIndex $index)
     {
         if (empty($index->filename)) {
             return $asset->filename;
@@ -1016,10 +1004,7 @@ class AssetTransforms extends Component
      *
      * @return string
      */
-    public function getTransformSubpath(
-        Asset $asset,
-        AssetTransformIndex $index
-    )
+    public function getTransformSubpath(Asset $asset, AssetTransformIndex $index)
     {
         return $this->getTransformSubfolder($asset,
             $index).'/'.$this->getTransformFilename($asset, $index);
@@ -1150,8 +1135,7 @@ class AssetTransforms extends Component
      *
      * @return string
      */
-    private function _getNamedTransformFolderName(AssetTransform $transform
-    )
+    private function _getNamedTransformFolderName(AssetTransform $transform)
     {
         return '_'.$transform->handle;
     }
@@ -1163,9 +1147,7 @@ class AssetTransforms extends Component
      *
      * @return string
      */
-    private function _getUnnamedTransformFolderName(
-        AssetTransform $transform
-    )
+    private function _getUnnamedTransformFolderName(AssetTransform $transform)
     {
         return '_'.($transform->width ? $transform->width : 'AUTO').'x'.($transform->height ? $transform->height : 'AUTO').
         '_'.($transform->mode).
@@ -1182,10 +1164,7 @@ class AssetTransforms extends Component
      * @throws AssetTransformException If a transform index has an invalid transform assigned.
      * @return void
      */
-    private function _createTransformForAsset(
-        Asset $asset,
-        AssetTransformIndex $index
-    )
+    private function _createTransformForAsset(Asset $asset, AssetTransformIndex $index)
     {
         if (!Image::isImageManipulatable(Io::getExtension($asset->filename))) {
             return;

@@ -310,11 +310,7 @@ class Assets extends Component
      *
      * @return void
      */
-    public function replaceAsset(
-        Asset $assetToReplace,
-        Asset $assetToReplaceWith,
-        $mergeAssets = false
-    )
+    public function replaceAsset(Asset $assetToReplace, Asset $assetToReplaceWith, $mergeAssets = false)
     {
         $targetVolume = $assetToReplace->getVolume();
 
@@ -964,10 +960,7 @@ class Assets extends Component
      * @throws AssetLogicException If a suitable filename replacement cannot be found.
      * @return string
      */
-    public function getNameReplacementInFolder(
-        $originalFilename,
-        $folderId
-    )
+    public function getNameReplacementInFolder($originalFilename, $folderId)
     {
         $folder = $this->getFolderById($folderId);
         if (!$folder) {

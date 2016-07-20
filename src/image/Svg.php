@@ -167,11 +167,7 @@ class Svg extends Image
      *
      * @return Image
      */
-    public function scaleToFit(
-        $targetWidth,
-        $targetHeight = null,
-        $scaleIfSmaller = true
-    )
+    public function scaleToFit($targetWidth, $targetHeight = null, $scaleIfSmaller = true)
     {
         $this->normalizeDimensions($targetWidth, $targetHeight);
 
@@ -195,12 +191,7 @@ class Svg extends Image
      *
      * @return Image
      */
-    public function scaleAndCrop(
-        $targetWidth,
-        $targetHeight = null,
-        $scaleIfSmaller = true,
-        $cropPositions = 'center-center'
-    )
+    public function scaleAndCrop($targetWidth, $targetHeight = null, $scaleIfSmaller = true, $cropPositions = 'center-center')
     {
         $this->normalizeDimensions($targetWidth, $targetHeight);
 
