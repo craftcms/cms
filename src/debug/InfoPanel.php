@@ -8,6 +8,8 @@
 namespace craft\app\debug;
 
 use Craft;
+use GuzzleHttp\Client;
+use Imagine\Gd\Imagine;
 use yii\debug\Panel;
 
 /**
@@ -60,8 +62,8 @@ class InfoPanel extends Panel
             'packages' => [
                 'Yii' => \Yii::getVersion(),
                 'Twig' => \Twig_Environment::VERSION,
-                'Guzzle' => \GuzzleHttp\Client::VERSION,
-                'Imagine' => \Imagine\Gd\Imagine::VERSION,
+                'Guzzle' => Client::VERSION,
+                'Imagine' => Imagine::VERSION,
             ],
             'plugins' => $this->_getPlugins(),
             'requirements' => $this->_getRequirementResults(),

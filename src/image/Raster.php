@@ -7,6 +7,15 @@ use craft\app\errors\ImageException;
 use craft\app\helpers\Image as ImageHelper;
 use craft\app\helpers\Io;
 use craft\app\helpers\StringHelper;
+use Imagine\Exception\NotSupportedException;
+use Imagine\Exception\RuntimeException;
+use Imagine\Gd\Imagine as GdImagine;
+use Imagine\Image\Box;
+use Imagine\Image\ImageInterface;
+use Imagine\Image\Metadata\ExifMetadataReader;
+use Imagine\Image\Palette\RGB;
+use Imagine\Image\Point;
+use Imagine\Imagick\Imagine as ImagickImagine;
 use yii\helpers\FileHelper;
 
 /**
@@ -45,7 +54,7 @@ class Raster extends Image
     private $_quality = 0;
 
     /**
-     * @var \Imagine\Image\ImageInterface
+     * @var ImageInterface
      */
     private $_image;
 
@@ -55,7 +64,7 @@ class Raster extends Image
     private $_instance;
 
     /**
-     * @var \Imagine\Image\Palette\RGB
+     * @var RGB
      */
     private $_palette;
 
@@ -78,16 +87,16 @@ class Raster extends Image
 
         // If it's explicitly set, take their word for it.
         if ($extension === 'gd') {
-            $this->_instance = new \Imagine\Gd\Imagine();
+            $this->_instance = new GdImagine();
         } else {
             if ($extension === 'imagick') {
-                $this->_instance = new \Imagine\Imagick\Imagine();
+                $this->_instance = new ImagickImagine();
             } else {
                 // Let's try to auto-detect.
                 if (Craft::$app->getImages()->isGd()) {
-                    $this->_instance = new \Imagine\Gd\Imagine();
+                    $this->_instance = new GdImagine();
                 } else {
-                    $this->_instance = new \Imagine\Imagick\Imagine();
+                    $this->_instance = new ImagickImagine();
                 }
             }
         }
@@ -201,8 +210,8 @@ class Raster extends Image
         if ($this->_isAnimatedGif) {
 
             // Create a new image instance to avoid object references messing up our dimensions.
-            $newSize = new \Imagine\Image\Box($width, $height);
-            $startingPoint = new \Imagine\Image\Point($x1, $y1);
+            $newSize = new Box($width, $height);
+            $startingPoint = new Point($x1, $y1);
             $gif = $this->_instance->create($newSize);
             $gif->layers()->remove(0);
 
@@ -213,8 +222,7 @@ class Raster extends Image
 
             $this->_image = $gif;
         } else {
-            $this->_image->crop(new \Imagine\Image\Point($x1, $y1),
-                new \Imagine\Image\Box($width, $height));
+            $this->_image->crop(new Point($x1, $y1), new Box($width, $height));
         }
 
         return $this;
@@ -341,7 +349,7 @@ class Raster extends Image
         if ($this->_isAnimatedGif) {
 
             // Create a new image instance to avoid object references messing up our dimensions.
-            $newSize = new \Imagine\Image\Box($targetWidth, $targetHeight);
+            $newSize = new Box($targetWidth, $targetHeight);
             $gif = $this->_instance->create($newSize);
             $gif->layers()->remove(0);
 
@@ -354,10 +362,10 @@ class Raster extends Image
             $this->_image = $gif;
         } else {
             if (Craft::$app->getImages()->isImagick() && Craft::$app->getConfig()->get('optimizeImageFilesize')) {
-                $this->_image->smartResize(new \Imagine\Image\Box($targetWidth,
+                $this->_image->smartResize(new Box($targetWidth,
                     $targetHeight), false, $this->_quality);
             } else {
-                $this->_image->resize(new \Imagine\Image\Box($targetWidth,
+                $this->_image->resize(new Box($targetWidth,
                     $targetHeight), $this->_getResizeFilter());
             }
         }
@@ -419,7 +427,7 @@ class Raster extends Image
             } else {
                 $this->_image->save($targetPath, $options);
             }
-        } catch (\Imagine\Exception\RuntimeException $e) {
+        } catch (RuntimeException $e) {
             throw new ImageException(Craft::t('app', 'Failed to save the image.'), $e->getCode(), $e);
         }
 
@@ -438,12 +446,12 @@ class Raster extends Image
     {
         try {
             $this->_image = $this->_instance->load($svgContent);
-        } catch (\Imagine\Exception\RuntimeException $e) {
+        } catch (RuntimeException $e) {
             try {
                 // Invalid SVG. Maybe it's missing its DTD?
                 $svgContent = '<?xml version="1.0" encoding="UTF-8" standalone="no"?>'.$svgContent;
                 $this->_image = $this->_instance->load($svgContent);
-            } catch (\Imagine\Exception\RuntimeException $e) {
+            } catch (RuntimeException $e) {
                 throw new ImageException(Craft::t('app', 'Failed to load the SVG string.'), $e->getCode(), $e);
             }
         }
@@ -477,12 +485,12 @@ class Raster extends Image
     public function getExifMetadata($filePath)
     {
         try {
-            $exifReader = new \Imagine\Image\Metadata\ExifMetadataReader();
+            $exifReader = new ExifMetadataReader();
             $this->_instance->setMetadataReader($exifReader);
             $exif = $this->_instance->open($filePath)->metadata();
 
             return $exif->toArray();
-        } catch (\Imagine\Exception\NotSupportedException $exception) {
+        } catch (NotSupportedException $exception) {
             Craft::error($exception->getMessage());
 
             return [];
@@ -501,7 +509,7 @@ class Raster extends Image
     public function setFontProperties($fontFile, $size, $color)
     {
         if (empty($this->_palette)) {
-            $this->_palette = new \Imagine\Image\Palette\RGB();
+            $this->_palette = new RGB();
         }
 
         $this->_font = $this->_instance->font($fontFile, $size,
@@ -546,7 +554,7 @@ class Raster extends Image
                 'No font properties have been set. Call ImageHelper::setFontProperties() first.'));
         }
 
-        $point = new \Imagine\Image\Point($x, $y);
+        $point = new Point($x, $y);
 
         $this->_image->draw()->text($text, $this->_font, $point, $angle);
     }
@@ -616,7 +624,7 @@ class Raster extends Image
      */
     private function _getResizeFilter()
     {
-        return (Craft::$app->getImages()->isGd() ? \Imagine\Image\ImageInterface::FILTER_UNDEFINED : \Imagine\Image\ImageInterface::FILTER_LANCZOS);
+        return (Craft::$app->getImages()->isGd() ? ImageInterface::FILTER_UNDEFINED : ImageInterface::FILTER_LANCZOS);
     }
 
     /**

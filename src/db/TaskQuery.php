@@ -8,6 +8,7 @@
 namespace craft\app\db;
 
 use creocoder\nestedsets\NestedSetsQueryBehavior;
+use yii\db\ActiveQuery;
 
 /**
  * @inheritdoc
@@ -15,7 +16,7 @@ use creocoder\nestedsets\NestedSetsQueryBehavior;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
-class TaskQuery extends \yii\db\ActiveQuery
+class TaskQuery extends ActiveQuery
 {
     /**
      * @inheritdoc

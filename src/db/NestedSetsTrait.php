@@ -7,23 +7,26 @@
 
 namespace craft\app\db;
 
+use yii\db\ActiveQuery;
+use yii\db\ActiveRecord;
+
 /**
  * Trait NestedSetsTrait.
  *
- * @method boolean             makeRoot(boolean $runValidation = true, array $attributes = null)
- * @method boolean             prependTo(\yii\db\ActiveRecord $node, boolean $runValidation = true, array $attributes = null)
- * @method boolean             appendTo(\yii\db\ActiveRecord $node, boolean $runValidation = true, array $attributes = null)
- * @method boolean             insertBefore(\yii\db\ActiveRecord $node, boolean $runValidation = true, array $attributes = null)
- * @method boolean             insertAfter(\yii\db\ActiveRecord $node, boolean $runValidation = true, array $attributes = null)
- * @method integer|false       deleteWithChildren()
- * @method \yii\db\ActiveQuery parents(integer $depth = null)
- * @method \yii\db\ActiveQuery children(integer $depth = null)
- * @method \yii\db\ActiveQuery leaves()
- * @method \yii\db\ActiveQuery prev()
- * @method \yii\db\ActiveQuery next()
- * @method boolean             isRoot()
- * @method boolean             isChildOf(\yii\db\ActiveRecord $node)
- * @method boolean             isLeaf()
+ * @method boolean       makeRoot(boolean $runValidation = true, array $attributes = null)
+ * @method boolean       prependTo(ActiveRecord $node, boolean $runValidation = true, array $attributes = null)
+ * @method boolean       appendTo(ActiveRecord $node, boolean $runValidation = true, array $attributes = null)
+ * @method boolean       insertBefore(ActiveRecord $node, boolean $runValidation = true, array $attributes = null)
+ * @method boolean       insertAfter(ActiveRecord $node, boolean $runValidation = true, array $attributes = null)
+ * @method integer|false deleteWithChildren()
+ * @method ActiveQuery   parents(integer $depth = null)
+ * @method ActiveQuery   children(integer $depth = null)
+ * @method ActiveQuery   leaves()
+ * @method ActiveQuery   prev()
+ * @method ActiveQuery   next()
+ * @method boolean       isRoot()
+ * @method boolean       isChildOf(ActiveRecord $node)
+ * @method boolean       isLeaf()
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0

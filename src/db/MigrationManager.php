@@ -12,6 +12,7 @@ use craft\app\helpers\Db;
 use craft\app\helpers\Io;
 use yii\base\Component;
 use yii\base\InvalidConfigException;
+use yii\db\Connection;
 use yii\db\MigrationInterface;
 use yii\di\Instance;
 
@@ -42,7 +43,7 @@ class MigrationManager extends Component
     public $migrationPath;
 
     /**
-     * @var \yii\db\Connection|array|string The DB connection object or the application component ID of the DB connection
+     * @var Connection|array|string The DB connection object or the application component ID of the DB connection
      */
     public $db = 'db';
 
@@ -73,7 +74,7 @@ class MigrationManager extends Component
         $this->migrationPath = Craft::getAlias($this->migrationPath);
         Io::ensureFolderExists($this->migrationPath);
 
-        $this->db = Instance::ensure($this->db, \yii\db\Connection::className());
+        $this->db = Instance::ensure($this->db, Connection::className());
     }
 
     /**

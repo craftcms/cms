@@ -20,11 +20,16 @@ use craft\app\helpers\DateTimeHelper;
 use craft\app\helpers\Db;
 use craft\app\helpers\StringHelper;
 use craft\app\helpers\Url;
+use craft\app\i18n\Formatter;
+use craft\app\i18n\I18N;
 use craft\app\i18n\Locale;
 use craft\app\log\FileTarget;
 use craft\app\mail\Mailer;
 use craft\app\models\Info;
+use craft\app\services\Security;
 use craft\app\web\Application as WebApplication;
+use craft\app\web\AssetManager;
+use craft\app\web\View;
 use yii\base\InvalidConfigException;
 use yii\db\Exception;
 use yii\log\Logger;
@@ -34,7 +39,7 @@ use yii\web\ServerErrorHttpException;
 /**
  * ApplicationTrait
  *
- * @property \craft\app\web\AssetManager         $assetManager     The asset manager component
+ * @property AssetManager                        $assetManager     The asset manager component
  * @property \craft\app\services\Assets          $assets           The assets service
  * @property \craft\app\services\AssetIndexer    $assetIndexing    The asset indexer service
  * @property \craft\app\services\AssetTransforms $assetTransforms  The asset transforms service
@@ -42,7 +47,7 @@ use yii\web\ServerErrorHttpException;
  * @property \craft\app\services\Config          $config           The config service
  * @property \craft\app\services\Content         $content          The content service
  * @property \craft\app\services\Dashboard       $dashboard        The dashboard service
- * @property \craft\app\db\Connection            $db               The database connection component
+ * @property Connection                          $db               The database connection component
  * @property \craft\app\services\Deprecator      $deprecator       The deprecator service
  * @property \craft\app\services\ElementIndexes  $elementIndexes   The element indexes service
  * @property \craft\app\services\Elements        $elements         The elements service
@@ -52,9 +57,9 @@ use yii\web\ServerErrorHttpException;
  * @property \craft\app\services\Et              $et               The E.T. service
  * @property \craft\app\services\Feeds           $feeds            The feeds service
  * @property \craft\app\services\Fields          $fields           The fields service
- * @property \craft\app\i18n\Formatter           $formatter        The formatter component
+ * @property Formatter                           $formatter        The formatter component
  * @property \craft\app\services\Globals         $globals          The globals service
- * @property \craft\app\i18n\I18N                $i18n             The internationalization (i18n) component
+ * @property I18N                                $i18n             The internationalization (i18n) component
  * @property \craft\app\services\Images          $images           The images service
  * @property \craft\app\i18n\Locale              $locale           The Locale object for the target language
  * @property \craft\app\mail\Mailer              $mailer           The mailer component
@@ -66,7 +71,7 @@ use yii\web\ServerErrorHttpException;
  * @property \craft\app\services\Resources       $resources        The resources service
  * @property \craft\app\services\Routes          $routes           The routes service
  * @property \craft\app\services\Search          $search           The search service
- * @property \craft\app\services\Security        $security         The security component
+ * @property Security                            $security         The security component
  * @property \craft\app\services\Sections        $sections         The sections service
  * @property \craft\app\services\Structures      $structures       The structures service
  * @property \craft\app\services\SystemSettings  $systemSettings   The system settings service
@@ -78,15 +83,15 @@ use yii\web\ServerErrorHttpException;
  * @property \craft\app\services\UserGroups      $userGroups       The user groups service
  * @property \craft\app\services\UserPermissions $userPermissions  The user permissions service
  * @property \craft\app\services\Users           $users            The users service
- * @property \craft\app\web\View                 $view             The view component
+ * @property View                                $view             The view component
  * @property \craft\app\services\Volumes         $volumes          The volumes service
  *
- * @method \craft\app\web\AssetManager            getAssetManager() Returns the asset manager component.
- * @method \craft\app\db\Connection               getDb()           Returns the database connection component.
- * @method \craft\app\i18n\Formatter              getFormatter()    Returns the formatter component.
- * @method \craft\app\i18n\I18N                   getI18n()         Returns the internationalization (i18n) component.
- * @method \craft\app\services\Security           getSecurity()     Returns the security component.
- * @method \craft\app\web\View                    getView()         Returns the view component.
+ * @method AssetManager getAssetManager() Returns the asset manager component.
+ * @method Connection   getDb()           Returns the database connection component.
+ * @method Formatter    getFormatter()    Returns the formatter component.
+ * @method I18N         getI18n()         Returns the internationalization (i18n) component.
+ * @method Security     getSecurity()     Returns the security component.
+ * @method View         getView()         Returns the view component.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
