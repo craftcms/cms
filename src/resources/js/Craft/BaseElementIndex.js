@@ -1200,7 +1200,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 		else
 		{
 			// Add it to the page header
-			var $container = $('#extra-headers > .buttons:first');
+			var $container = $('#extra-headers').find('> .buttons:first');
 
 			if (!$container.length)
 			{
