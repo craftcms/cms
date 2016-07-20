@@ -1281,17 +1281,15 @@ $.extend(Craft,
 			$element = $element.find('.element:first');
 		}
 
-		var info = {
-			id:       $element.data('id'),
-			locale:   $element.data('locale'),
-			label:    $element.data('label'),
-			status:   $element.data('status'),
-			url:      $element.data('url'),
+		return {
+			id: $element.data('id'),
+			locale: $element.data('locale'),
+			label: $element.data('label'),
+			status: $element.data('status'),
+			url: $element.data('url'),
 			hasThumb: $element.hasClass('hasthumb'),
 			$element: $element
 		};
-
-		return info;
 	},
 
 	/**

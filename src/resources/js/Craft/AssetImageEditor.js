@@ -159,12 +159,8 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 			var availableHeight = Garnish.$win.height() - (4 * this.paddingSize) - this.$container.find('.footer').outerHeight(),
 				availableWidth = Garnish.$win.width() - (5 * this.paddingSize) - this.$container.find('.image-tools').outerWidth();
 
-			// The smallest of available and desired dimension is what we're going for to not have huge modals for small images
-			var targetImageHeight = availableHeight,
-				targetImageWidth = availableWidth;
-
 			// Make the image area square, so we can rotate it comfortably.
-			var imageHolderSize = Math.max(parseInt(this.$container.find('.image-tools').css('min-height'), 10), Math.min(targetImageHeight, targetImageWidth));
+			var imageHolderSize = Math.max(parseInt(this.$container.find('.image-tools').css('min-height'), 10), Math.min(availableHeight, availableWidth));
 
 			// Set it all up!
 			var containerWidth = imageHolderSize + this.$container.find('.image-tools').outerWidth() + (3 * this.paddingSize),
