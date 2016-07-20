@@ -229,9 +229,9 @@ class Db
     public static function getTextualColumnTypeByContentLength($contentLength)
     {
         if ($contentLength <= static::getTextualColumnStorageCapacity(ColumnType::TinyText)) {
-            return SCHEMA::TYPE_STRING;
+            return Schema::TYPE_STRING;
         } else if ($contentLength <= static::getTextualColumnStorageCapacity(ColumnType::Text)) {
-            return SCHEMA::TYPE_TEXT;
+            return Schema::TYPE_TEXT;
         } else if ($contentLength <= static::getTextualColumnStorageCapacity(ColumnType::MediumText)) {
             // Yii doesn't support 'mediumtext' so we use our own.
             return ColumnType::MediumText;

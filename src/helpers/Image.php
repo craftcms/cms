@@ -7,7 +7,7 @@
 
 namespace craft\app\helpers;
 
-use craft;
+use Craft;
 use craft\app\image\Svg;
 
 /**

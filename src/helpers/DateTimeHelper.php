@@ -403,7 +403,7 @@ class DateTimeHelper
             }
         }
 
-        return Craft::$app->getFormatter()->asDateTime($date);
+        return Craft::$app->getFormatter()->asDatetime($date);
     }
 
     /**

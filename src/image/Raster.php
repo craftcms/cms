@@ -397,7 +397,7 @@ class Raster extends Image
         $extension = StringHelper::toLowerCase(Io::getExtension($targetPath));
 
         $options = $this->_getSaveOptions(false, $extension);
-        $targetPath = Io::getFolderName($targetPath).Io::getFileName($targetPath,
+        $targetPath = Io::getFolderName($targetPath).Io::getFilename($targetPath,
                 false).'.'.Io::getExtension($targetPath);
 
         try {
@@ -568,7 +568,7 @@ class Raster extends Image
         @set_time_limit(30);
 
         if ($step == 0) {
-            $tempFileName = Io::getFolderName($tempFileName).Io::getFileName($tempFileName,
+            $tempFileName = Io::getFolderName($tempFileName).Io::getFilename($tempFileName,
                     false).'-temp.'.$extension;
         }
 
