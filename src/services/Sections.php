@@ -448,7 +448,7 @@ class Sections extends Component
 
                 foreach ($urlFormatAttributes as $attribute) {
                     if (!$sectionLocale->validate([$attribute])) {
-                        $section->addError($attribute.'-'.$localeId, $sectionLocale->getError($attribute));
+                        $section->addError($attribute.'-'.$localeId, $sectionLocale->getFirstError($attribute));
                     }
                 }
             } else {

@@ -357,7 +357,7 @@ class Categories extends Component
 
                 foreach ($urlFormatAttributes as $attribute) {
                     if (!$groupLocale->validate([$attribute])) {
-                        $group->addError($attribute.'-'.$localeId, $groupLocale->getError($attribute));
+                        $group->addError($attribute.'-'.$localeId, $groupLocale->getFirstError($attribute));
                     }
                 }
             } else {
