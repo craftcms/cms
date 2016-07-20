@@ -453,6 +453,8 @@ class Config extends Component
         if ($duration) {
             return DateTimeHelper::timeFormatToSeconds($duration);
         }
+
+        return null;
     }
 
     /**
