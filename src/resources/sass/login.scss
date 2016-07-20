@@ -28,7 +28,7 @@ html, body { height: 100%; }
 #login-form #ssl-icon { position: absolute; top: 0; @include left(0); z-index: 1; line-height: 30px; width: 2.2em; color: #fff; text-align: center; cursor: pointer; }
 #login-form #ssl-icon.disabled { opacity: 0.75; cursor: default; }
 #login-form #ssl-icon + #submit { @include padding-left(2em); }
-#login-form .submit { display:block; width: auto; float: none; padding: 14px 16px; height: auto; width: 100%; border-radius: 4px; }
+#login-form .submit { display:block; float: none; padding: 14px 16px; height: auto; width: 100%; border-radius: 4px; }
 #login-form #submit.reset-password { margin-top: 24px; }
 
 #spinner { position: absolute; top: 58px; left: 50%; margin-left: -12px; }
@@ -41,7 +41,7 @@ p.error { text-align: center; }
 
 .modal.email-sent { width: 300px; }
 .modal.email-sent .body { @include padding-left(68px); }
-.modal.email-sent .body:before { @include icon; display: block; position: absolute; top: 17px; top: 24px; @include left(24px); content: 'mail'; font-size: 30px; color: $linkcolor; }
+.modal.email-sent .body:before { @include icon; display: block; position: absolute; top: 24px; @include left(24px); content: 'mail'; font-size: 30px; color: $linkcolor; }
 
 @media only screen and (-webkit-min-device-pixel-ratio: 1.5),
        only screen and (   -moz-min-device-pixel-ratio: 1.5),

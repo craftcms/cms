@@ -474,7 +474,7 @@ div.btn.submit input { position: absolute; left: 100%; }
 .colorhex { display: inline-block; margin-left: 5px; vertical-align: middle; color: $mediumtextcolor; }
 
 /* switch */
-.lightswitch { position: relative; border: none !important; border-radius: 11px; width: 33px; height: 22px; overflow: hidden; cursor: pointer; @include user-select(none); overflow: hidden;
+.lightswitch { position: relative; border: none !important; border-radius: 11px; width: 33px; height: 22px; overflow: hidden; cursor: pointer; @include user-select(none);
     @include box-shadow(0 0 0 1px hsla(205, 100%, 60%, 0), 0 0 2px hsla(205, 100%, 60%, 0));
     @include box-shadow-transition(100ms);
 }
