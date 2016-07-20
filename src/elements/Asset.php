@@ -416,7 +416,6 @@ class Asset extends Element
 
                 return false;
             }
-
             // TODO illegal filenmes?
         } else {
             $newFilename = null;

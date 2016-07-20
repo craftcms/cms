@@ -360,9 +360,9 @@ class Plugins extends Component
                 return true;
             }
 
-                $transaction->rollBack();
+            $transaction->rollBack();
 
-                return false;
+            return false;
         } catch (\Exception $e) {
             $transaction->rollBack();
 

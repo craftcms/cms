@@ -1141,7 +1141,7 @@ class Io
                 return true;
             }
 
-                Craft::error('Tried to read the folder contents of '.$path.', but could not.', __METHOD__);
+            Craft::error('Tried to read the folder contents of '.$path.', but could not.', __METHOD__);
         } else {
             Craft::error('Could not clear the contents of '.$path.' because the source folder does not exist.', __METHOD__);
         }
