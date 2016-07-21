@@ -32,7 +32,7 @@ if ($this->checkDatabaseCreds() && extension_loaded('pdo') && extension_loaded('
 // Only run this requirement check if we're running in the context of Craft.
 if ($this->isCraftRunning()) {
     $requirements[] = array(
-        'name' => 'Exposed folders in webroot',
+        'name' => 'Craft CMS folders in public web root',
         'mandatory' => false,
         'condition' => $this->checkWebRoot(),
         'memo' => $this->webRootFolderMessage,
