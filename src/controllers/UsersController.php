@@ -8,6 +8,7 @@
 namespace craft\app\controllers;
 
 use Craft;
+use craft\app\errors\SendEmailException;
 use craft\app\events\UserEvent;
 use craft\app\helpers\Assets;
 use craft\app\helpers\Image;
@@ -1013,10 +1014,8 @@ class UsersController extends Controller
                         // Send the standard verification email
                         Craft::$app->getUsers()->sendNewEmailVerifyEmail($user);
                     }
-                } catch (\phpmailerException $e) {
-                    // TODO: Fix exception name
-                    Craft::$app->getSession()->setError(Craft::t('app',
-                        'User saved, but couldn’t send verification email. Check your email settings.'));
+                } catch (SendEmailException $e) {
+                    Craft::$app->getSession()->setError(Craft::t('app', 'User saved, but couldn’t send verification email. Check your email settings.'));
                 }
 
                 // Put the original email back into place

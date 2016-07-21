@@ -163,7 +163,6 @@ class Mailer extends \yii\swiftmailer\Mailer
         try {
             $isSuccessful = parent::send($message);
         } catch (\Exception $e) {
-
             $event->error = $e->getMessage();
             $isSuccessful = false;
         }
