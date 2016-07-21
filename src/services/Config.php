@@ -460,11 +460,16 @@ class Config extends Component
     /**
      * Returns the configured elevated session duration in seconds.
      *
-     * @return integer The elevated session duration in seconds.
+     * @return integer|boolean The elevated session duration in seconds or false if it has been disabled.
      */
     public function getElevatedSessionDuration()
     {
         $duration = $this->get('elevatedSessionDuration');
+
+        // See if it has been disabled.
+        if ($duration === false) {
+            return false;
+        }
 
         if ($duration) {
             return DateTimeHelper::timeFormatToSeconds($duration);

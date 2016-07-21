@@ -222,7 +222,8 @@ class User extends \yii\web\User
     /**
      * Returns how many seconds are left in the current elevated user session.
      *
-     * @return integer The number of seconds left in the current elevated user session
+     * @return integer|boolean The number of seconds left in the current elevated user session
+     *                         or false if it has been disabled.
      */
     public function getElevatedSessionTimeout()
     {
@@ -240,6 +241,11 @@ class User extends \yii\web\User
             }
         }
 
+        // If it has been disabled, return false.
+        if (Craft::$app->getConfig()->getElevatedSessionDuration() === false) {
+            return false;
+        }
+
         return 0;
     }
 
@@ -250,6 +256,11 @@ class User extends \yii\web\User
      */
     public function hasElevatedSession()
     {
+        // If it's been disabled, just return true
+        if (Craft::$app->getConfig()->getElevatedSessionDuration() === false) {
+            return true;
+        }
+
         return ($this->getElevatedSessionTimeout() != 0);
     }
 
@@ -274,11 +285,18 @@ class User extends \yii\web\User
         $passwordModel->password = $password;
 
         if ($passwordModel->validate() && Craft::$app->getSecurity()->validatePassword($password, $user->password)) {
-            // Set the elevated session expiration date
-            $session = Craft::$app->getSession();
-            $configService = Craft::$app->getConfig();
-            $timeout = time() + $configService->getElevatedSessionDuration();
-            $session->set($this->elevatedSessionTimeoutParam, $timeout);
+
+            $elevatedSessionDuration = Craft::$app->getConfig()->getElevatedSessionDuration();
+
+            // Make sure it hasn't been disabled.
+            if ($elevatedSessionDuration !== false) {
+
+                // Set the elevated session expiration date
+                $session = Craft::$app->getSession();
+                $configService = Craft::$app->getConfig();
+                $timeout = time() + $configService->getElevatedSessionDuration();
+                $session->set($this->elevatedSessionTimeoutParam, $timeout);
+            }
 
             return true;
         }
