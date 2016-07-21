@@ -8,6 +8,7 @@
 namespace craft\app\controllers;
 
 use Craft;
+use craft\app\base\Plugin;
 use craft\app\base\Widget;
 use craft\app\base\WidgetInterface;
 use craft\app\dates\DateTime;
@@ -75,6 +76,7 @@ class DashboardController extends Controller
 
         // Assemble the list of existing widgets
         $variables['widgets'] = [];
+        /** @var Widget[] $widgets */
         $widgets = $dashboardService->getAllWidgets();
         $allWidgetJs = '';
 
@@ -303,6 +305,7 @@ class DashboardController extends Controller
                 "------------------------------\n\n".
                 'Craft '.Craft::$app->getEditionName().' '.Craft::$app->version.'.'.Craft::$app->build;
 
+            /** @var Plugin[] $plugins */
             $plugins = Craft::$app->getPlugins()->getAllPlugins();
 
             if ($plugins) {

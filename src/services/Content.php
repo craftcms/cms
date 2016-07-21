@@ -66,6 +66,7 @@ class Content extends Component
      */
     public function getContentRow(ElementInterface $element)
     {
+        /** @var Element $element */
         if (!$element->id || !$element->locale) {
             return null;
         }
@@ -120,6 +121,7 @@ class Content extends Component
             }
             if ($fieldLayout) {
                 foreach ($fieldLayout->getFields() as $field) {
+                    /** @var Field $field */
                     if ($field->hasContentColumn()) {
                         $element->setFieldValue($field->handle, $row[$field->handle]);
                     }
@@ -142,6 +144,7 @@ class Content extends Component
      */
     public function saveContent(ElementInterface $element, $validate = true, $updateOtherLocales = true)
     {
+        /** @var Element $element */
         if (!$element->id) {
             throw new Exception('Cannot save the content of an unsaved element.');
         }
@@ -166,6 +169,7 @@ class Content extends Component
             $fieldLayout = $element->getFieldLayout();
             if ($fieldLayout) {
                 foreach ($fieldLayout->getFields() as $field) {
+                    /** @var Field $field */
                     if ($field->hasContentColumn()) {
                         $column = $this->fieldColumnPrefix.$field->handle;
                         $values[$column] = $field->prepareValueForDb($element->getFieldValue($field->handle), $element);
@@ -202,7 +206,6 @@ class Content extends Component
 
             $success = true;
         } else {
-            $element->addErrors($values->getErrors());
             $success = false;
         }
 
@@ -222,11 +225,13 @@ class Content extends Component
      */
     public function validateContent(ElementInterface $element)
     {
+        /** @var Element $element */
         $validates = true;
         $fieldLayout = $element->getFieldLayout();
 
         if ($fieldLayout) {
             foreach ($fieldLayout->getFields() as $field) {
+                /** @var Field $field */
                 $value = $element->getFieldValue($field->handle);
                 $errors = $field->validateValue($value, $element);
 
@@ -271,11 +276,13 @@ class Content extends Component
      */
     private function _duplicateNonTranslatableFieldValues($element, $sourceValues, &$nonTranslatableFields, &$otherContentRows)
     {
+        /** @var Element $element */
         // Get all of the non-translatable fields
         /** @var Field[] $nonTranslatableFields */
         $nonTranslatableFields = [];
         $fieldLayout = $element->getFieldLayout();
         foreach ($fieldLayout->getFields() as $field) {
+            /** @var Field $field */
             if (!$field->translatable && $field->hasContentColumn()) {
                 $nonTranslatableFields[] = $field;
             }
@@ -319,9 +326,11 @@ class Content extends Component
      */
     private function _updateSearchIndexes(ElementInterface $element, FieldLayout $fieldLayout, &$nonTranslatableFields = null, &$otherContentModels = null)
     {
+        /** @var Element $element */
         $searchKeywordsByLocale = [];
 
         foreach ($fieldLayout->getFields() as $field) {
+            /** @var Field $field */
             // Set the keywords for the content's locale
             $fieldValue = $element->getFieldValue($field->handle);
             $fieldSearchKeywords = $field->getSearchKeywords($fieldValue, $element);

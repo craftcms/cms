@@ -518,6 +518,7 @@ abstract class Element extends Component implements ElementInterface
      */
     protected static function prepElementQueryForTableAttribute(ElementQueryInterface $elementQuery, $attribute)
     {
+        /** @var ElementQuery $elementQuery */
         // Is this a custom field?
         if (preg_match('/^field:(\d+)$/', $attribute, $matches)) {
             $fieldId = $matches[1];

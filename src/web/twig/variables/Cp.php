@@ -7,6 +7,7 @@
 
 namespace craft\app\web\twig\variables;
 
+use craft\app\base\Plugin;
 use craft\app\helpers\Cp as CpHelper;
 use craft\app\helpers\Io;
 use craft\app\helpers\StringHelper;
@@ -76,6 +77,7 @@ class Cp
         }
 
         // Add any Plugin nav items
+        /** @var Plugin[] $plugins */
         $plugins = \Craft::$app->getPlugins()->getAllPlugins();
 
         foreach ($plugins as $plugin) {
@@ -207,6 +209,7 @@ class Cp
         $pluginsService = \Craft::$app->getPlugins();
 
         foreach ($pluginsService->getAllPlugins() as $plugin) {
+            /** @var Plugin $plugin */
             if ($plugin->hasSettings) {
                 $pluginHandle = $plugin->getHandle();
 
