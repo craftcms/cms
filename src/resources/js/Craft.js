@@ -140,8 +140,8 @@ $.extend(Craft,
 	/**
 	 * Get a translated message.
 	 *
-	 * @param string message
-	 * @param object params
+	 * @param {string} message
+	 * @param {object} params
 	 * @return string
 	 */
 	t: function(message, params)
@@ -153,6 +153,10 @@ $.extend(Craft,
 		{
 			for (var key in params)
 			{
+				if (!params.hasOwnProperty(key)) {
+					continue;
+				}
+
 				message = message.replace('{'+key+'}', params[key]);
 			}
 		}
@@ -173,7 +177,7 @@ $.extend(Craft,
 	/**
 	 * Escapes some HTML.
 	 *
-	 * @param string str
+	 * @param {string} str
 	 * @return string
 	 */
 	escapeHtml: function(str)
@@ -184,7 +188,7 @@ $.extend(Craft,
 	/**
 	 * Returns the text in a string that might contain HTML tags.
 	 *
-	 * @param string str
+	 * @param {string} str
 	 * @return string
 	 */
 	getText: function(str)
@@ -195,7 +199,7 @@ $.extend(Craft,
 	/**
 	 * Encodes a URI copmonent. Mirrors PHP's rawurlencode().
 	 *
-	 * @param string str
+	 * @param {string} str
 	 * @return string
 	 * @see http://stackoverflow.com/questions/1734250/what-is-the-equivalent-of-javascripts-encodeuricomponent-in-php
 	 */
@@ -223,7 +227,7 @@ $.extend(Craft,
 	/**
 	 * Formats an ID out of an input name.
 	 *
-	 * @param string inputName
+	 * @param {string} inputName
 	 * @return string
 	 */
 	formatInputId: function(inputName)
@@ -260,6 +264,10 @@ $.extend(Craft,
 
 			for (var name in params)
 			{
+				if (!params.hasOwnProperty(name)) {
+					continue;
+				}
+
 				var value = params[name];
 
 				if (name == '#')
@@ -407,8 +415,8 @@ $.extend(Craft,
 	/**
 	 * Returns a resource URL.
 	 *
-	 * @param string path
-	 * @param array|string|null params
+	 * @param {string} path
+	 * @param {object|string|undefined} params
 	 * @return string
 	 */
 	getResourceUrl: function(path, params)
@@ -419,8 +427,8 @@ $.extend(Craft,
 	/**
 	 * Returns an action URL.
 	 *
-	 * @param string path
-	 * @param array|string|null params
+	 * @param {string} path
+	 * @param {object|string|undefined} params
 	 * @return string
 	 */
 	getActionUrl: function(path, params)
@@ -431,7 +439,7 @@ $.extend(Craft,
 	/**
 	 * Redirects the window to a given URL.
 	 *
-	 * @param string url
+	 * @param {string} url
 	 */
 	redirectTo: function(url)
 	{
@@ -458,10 +466,10 @@ $.extend(Craft,
 	/**
 	 * Posts an action request to the server.
 	 *
-	 * @param string action
-	 * @param object|null data
-	 * @param function|null callback
-	 * @param object|null options
+	 * @param {string} action
+	 * @param {object|undefined} data
+	 * @param {function|undefined} callback
+	 * @param {object|undefined} options
 	 * @return jqXHR
 	 */
 	postActionRequest: function(action, data, callback, options)
@@ -589,7 +597,7 @@ $.extend(Craft,
 	/**
 	 * Converts a comma-delimited string into an array.
 	 *
-	 * @param string str
+	 * @param {string} str
 	 * @return array
 	 */
 	stringToArray: function(str)
@@ -608,7 +616,7 @@ $.extend(Craft,
 	/**
 	 * Expands an array of POST array-style strings into an actual array.
 	 *
-	 * @param array arr
+	 * @param {object} arr
 	 * @return array
 	 */
 	expandPostArray: function(arr)
@@ -617,6 +625,10 @@ $.extend(Craft,
 
 		for (var key in arr)
 		{
+			if (!arr.hasOwnProperty(key)) {
+				continue;
+			}
+
 			var value = arr[key],
 				m = key.match(/^(\w+)(\[.*)?/),
 				keys;
@@ -680,8 +692,8 @@ $.extend(Craft,
 	 * Compares two variables and returns whether they are equal in value.
 	 * Recursively compares array and object values.
 	 *
-	 * @param mixed obj1
-	 * @param mixed obj2
+	 * @param obj1
+	 * @param obj2
 	 * @return boolean
 	 */
 	compare: function(obj1, obj2)
@@ -718,6 +730,10 @@ $.extend(Craft,
 			// Compare each value
 			for (var i in obj1)
 			{
+				if (!obj.hasOwnProperty(i)) {
+					continue;
+				}
+
 				if (!Craft.compare(obj1[i], obj2[i]))
 				{
 					return false;
@@ -736,7 +752,7 @@ $.extend(Craft,
 	/**
 	 * Returns an array of an object's keys.
 	 *
-	 * @param object obj
+	 * @param {object} obj
 	 * @return string
 	 */
 	getObjectKeys: function(obj)
@@ -745,6 +761,10 @@ $.extend(Craft,
 
 		for (var key in obj)
 		{
+			if (!obj.hasOwnProperty(key)) {
+				continue;
+			}
+
 			keys.push(key);
 		}
 
@@ -756,7 +776,7 @@ $.extend(Craft,
 	 *
 	 * Userd by ltrim() and rtrim()
 	 *
-	 * @param string|array chars
+	 * @param {string|object} chars
 	 * @return string
 	 */
 	escapeChars: function(chars)
@@ -779,8 +799,8 @@ $.extend(Craft,
 	/**
 	 * Trim characters off of the beginning of a string.
 	 *
-	 * @param string str
-	 * @param string|array|null The characters to trim off. Defaults to a space if left blank.
+	 * @param {string} str
+	 * @param {string|object|undefined} chars The characters to trim off. Defaults to a space if left blank.
 	 * @return string
 	 */
 	ltrim: function(str, chars)
@@ -794,8 +814,8 @@ $.extend(Craft,
 	/**
 	 * Trim characters off of the end of a string.
 	 *
-	 * @param string str
-	 * @param string|array|null The characters to trim off. Defaults to a space if left blank.
+	 * @param {string} str
+	 * @param {string|object|undefined} chars The characters to trim off. Defaults to a space if left blank.
 	 * @return string
 	 */
 	rtrim: function(str, chars)
@@ -809,8 +829,8 @@ $.extend(Craft,
 	/**
 	 * Trim characters off of the beginning and end of a string.
 	 *
-	 * @param string str
-	 * @param string|array|null The characters to trim off. Defaults to a space if left blank.
+	 * @param {string} str
+	 * @param {string|object|undefined} chars The characters to trim off. Defaults to a space if left blank.
 	 * @return string
 	 */
 	trim: function(str, chars)
@@ -823,8 +843,8 @@ $.extend(Craft,
 	/**
 	 * Filters an array.
 	 *
-	 * @param array    arr
-	 * @param function callback A user-defined callback function. If null, we'll just remove any elements that equate to false.
+	 * @param {object} arr
+	 * @param {function} callback A user-defined callback function. If null, we'll just remove any elements that equate to false.
 	 * @return array
 	 */
 	filterArray: function(arr, callback)
@@ -856,8 +876,8 @@ $.extend(Craft,
 	/**
 	 * Returns whether an element is in an array (unlike jQuery.inArray(), which returns the element's index, or -1).
 	 *
-	 * @param mixed elem
-	 * @param mixed arr
+	 * @param elem
+	 * @param arr
 	 * @return boolean
 	 */
 	inArray: function(elem, arr)
@@ -868,8 +888,8 @@ $.extend(Craft,
 	/**
 	 * Removes an element from an array.
 	 *
-	 * @param mixed elem
-	 * @param array arr
+	 * @param elem
+	 * @param {object} arr
 	 * @return boolean Whether the element could be found or not.
 	 */
 	removeFromArray: function(elem, arr)
@@ -889,7 +909,7 @@ $.extend(Craft,
 	/**
 	 * Returns the last element in an array.
 	 *
-	 * @param array
+	 * @param {object}
 	 * @return mixed
 	 */
 	getLast: function(arr)
@@ -903,7 +923,7 @@ $.extend(Craft,
 	/**
 	 * Makes the first character of a string uppercase.
 	 *
-	 * @param string str
+	 * @param {string} str
 	 * @return string
 	 */
 	uppercaseFirst: function(str)
@@ -914,7 +934,7 @@ $.extend(Craft,
 	/**
 	 * Makes the first character of a string lowercase.
 	 *
-	 * @param string str
+	 * @param {string} str
 	 * @return string
 	 */
 	lowercaseFirst: function(str)
@@ -992,7 +1012,7 @@ $.extend(Craft,
 	/**
 	 * Converts extended ASCII characters to ASCII.
 	 *
-	 * @param string str
+	 * @param {string} str
 	 * @return string
 	 */
 	asciiString: function(str)
@@ -1032,7 +1052,7 @@ $.extend(Craft,
 	/**
 	 * Prevents the outline when an element is focused by the mouse.
 	 *
-	 * @param mixed elem Either an actual element or a jQuery collection.
+	 * @param elem Either an actual element or a jQuery collection.
 	 */
 	preventOutlineOnMouseFocus: function(elem)
 	{
@@ -1052,7 +1072,7 @@ $.extend(Craft,
 	/**
 	 * Creates a validation error list.
 	 *
-	 * @param array errors
+	 * @param {object} errors
 	 * @return jQuery
 	 */
 	createErrorList: function(errors)
@@ -1128,7 +1148,7 @@ $.extend(Craft,
 	/**
 	 * Initializes any common UI elements in a given container.
 	 *
-	 * @param jQuery $container
+	 * @param {object} $container
 	 */
 	initUiElements: function($container)
 	{
@@ -1150,8 +1170,8 @@ $.extend(Craft,
 	/**
 	 * Registers an element index class for a given element type.
 	 *
-	 * @param string elementType
-	 * @param function func
+	 * @param {string} elementType
+	 * @param {function} func
 	 */
 	registerElementIndexClass: function(elementType, func)
 	{
@@ -1167,8 +1187,8 @@ $.extend(Craft,
 	/**
 	 * Registers an element selector modal class for a given element type.
 	 *
-	 * @param string elementType
-	 * @param function func
+	 * @param {string} elementType
+	 * @param {function} func
 	 */
 	registerElementSelectorModalClass: function(elementType, func)
 	{
@@ -1183,9 +1203,9 @@ $.extend(Craft,
 	/**
 	 * Creates a new element index for a given element type.
 	 *
-	 * @param string elementType
-	 * @param mixed  $container
-	 * @param object settings
+	 * @param {string} elementType
+	 * @param $container
+	 * @param {object} settings
 	 * @return BaseElementIndex
 	 */
 	createElementIndex: function(elementType, $container, settings)
@@ -1207,8 +1227,8 @@ $.extend(Craft,
 	/**
 	 * Creates a new element selector modal for a given element type.
 	 *
-	 * @param string elementType
-	 * @param object settings
+	 * @param {string} elementType
+	 * @param {object} settings
 	 */
 	createElementSelectorModal: function(elementType, settings)
 	{
@@ -1229,8 +1249,8 @@ $.extend(Craft,
 	/**
 	 * Retrieves a value from localStorage if it exists.
 	 *
-	 * @param string key
-	 * @param mixed defaultValue
+	 * @param {string} key
+	 * @param defaultValue
 	 */
 	getLocalStorage: function(key, defaultValue)
 	{
@@ -1249,8 +1269,8 @@ $.extend(Craft,
 	/**
 	 * Saves a value to localStorage.
 	 *
-	 * @param string key
-	 * @param mixed value
+	 * @param {string} key
+	 * @param value
 	 */
 	setLocalStorage: function(key, value)
 	{
@@ -1341,8 +1361,8 @@ $.extend(Craft,
 	/**
 	 * Shows an element editor HUD.
 	 *
-	 * @param object $element
-	 * @param object settings
+	 * @param {object} $element
+	 * @param {object} settings
 	 */
 	showElementEditor: function ($element, settings) {
 		if (Garnish.hasAttr($element, 'data-editable') && !$element.hasClass('disabled') && !$element.hasClass('loading')) {
@@ -2837,7 +2857,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 		else
 		{
 			// Add it to the page header
-			var $container = $('#extra-headers > .buttons:first');
+			var $container = $('#extra-headers').find('> .buttons:first');
 
 			if (!$container.length)
 			{
@@ -6105,6 +6125,10 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 
 								for (var oldFolderId in data.changedIds)
 								{
+									if (!data.changedIds.hasOwnProperty(oldFolderId)) {
+										continue;
+									}
+
 									changedFolderIds[oldFolderId] = data.changedIds[oldFolderId];
 								}
 
@@ -6249,6 +6273,10 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 			// Change the folder ids
 			for (var previousFolderId in changedFolderIds)
 			{
+				if (!changedFolderIds.hasOwnProperty(previousFolderId)) {
+					continue;
+				}
+
 				folderToMove = this._getSourceByFolderId(previousFolderId);
 
 				// Change the id and select the containing element as the folder element.
@@ -6550,9 +6578,9 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 	/**
 	 * React on upload submit.
 	 *
-	 * @param id
+	 * @param {object} event
 	 * @private
-	 */
+     */
 	_onUploadStart: function(event)
 	{
 		this.setIndexBusy();
@@ -8482,7 +8510,7 @@ Craft.CP = Garnish.Base.extend(
 		this.$alerts = $('#alerts');
 		this.$globalSidebar = $('#global-sidebar');
 		this.$pageHeader = $('#page-header');
-		this.$containerTopbar = $('#container .topbar');
+		this.$containerTopbar = $('#container').find('.topbar');
 		this.$globalSidebarTopbar = this.$globalSidebar.children('.topbar');
 		this.$siteNameLink = this.$globalSidebarTopbar.children('a.site-name');
 		this.$siteName = this.$siteNameLink.children('h2');
@@ -8943,8 +8971,8 @@ Craft.CP = Garnish.Base.extend(
 	/**
 	 * Dispays a notification.
 	 *
-	 * @param string type
-	 * @param string message
+	 * @param {string} type
+	 * @param {string} message
 	 */
 	displayNotification: function(type, message)
 	{
@@ -8980,7 +9008,7 @@ Craft.CP = Garnish.Base.extend(
 	/**
 	 * Displays a notice.
 	 *
-	 * @param string message
+	 * @param {string} message
 	 */
 	displayNotice: function(message)
 	{
@@ -8990,7 +9018,7 @@ Craft.CP = Garnish.Base.extend(
 	/**
 	 * Displays an error.
 	 *
-	 * @param string message
+	 * @param {string} message
 	 */
 	displayError: function(message)
 	{
@@ -9646,6 +9674,10 @@ var TaskProgressHUD = Garnish.HUD.extend(
 
 		for (var id in this.tasksById)
 		{
+			if (!this.tasksById.hasOwnProperty(id)) {
+				continue;
+			}
+
 			if (!Craft.inArray(id, newTaskIds))
 			{
 				this.tasksById[id].complete();
@@ -10738,6 +10770,10 @@ Craft.EditableTable = Garnish.Base.extend(
 
 		for (var colId in columns)
 		{
+			if (!columns.hasOwnProperty(colId)) {
+				continue;
+			}
+
 			var col = columns[colId],
 				name = baseName+'['+rowId+']['+colId+']',
 				value = (typeof values[colId] != 'undefined' ? values[colId] : ''),
@@ -10757,6 +10793,10 @@ Craft.EditableTable = Garnish.Base.extend(
 
 					for (var key in col.options)
 					{
+						if (!col.options.hasOwnProperty(key)) {
+							continue;
+						}
+
 						var option = col.options[key];
 
 						if (typeof option.optgroup != 'undefined')
@@ -10853,6 +10893,10 @@ Craft.EditableTable.Row = Garnish.Base.extend(
 
 		for (var colId in this.table.columns)
 		{
+			if (!this.table.columns.hasOwnProperty(colId)) {
+				continue;
+			}
+
 			var col = this.table.columns[colId];
 
 			if (Craft.inArray(col.type, Craft.EditableTable.textualColTypes))
@@ -10885,6 +10929,10 @@ Craft.EditableTable.Row = Garnish.Base.extend(
 		// Now look for any autopopulate columns
 		for (var colId in this.table.columns)
 		{
+			if (!this.table.columns.hasOwnProperty(colId)) {
+				continue;
+			}
+
 			var col = this.table.columns[colId];
 
 			if (col.autopopulate && typeof textareasByColId[col.autopopulate] != 'undefined' && !textareasByColId[colId].val())
@@ -11551,7 +11599,7 @@ Craft.ElevatedSessionManager = Garnish.Base.extend(
 	/**
 	 * Requires that the user has an elevated session.
 	 *
-	 * @param function callback The callback function that should be called once the user has an elevated session
+	 * @param {function} callback The callback function that should be called once the user has an elevated session
 	 */
 	requireElevatedSession: function(callback)
 	{
@@ -15381,10 +15429,10 @@ Craft.PromptHandler = Garnish.Base.extend({
     /**
      * Show the user prompt with a given message and choices, plus an optional "Apply to remaining" checkbox.
      *
-     * @param string message
-     * @param array choices
-     * @param function callback
-     * @param integer itemsToGo
+     * @param {string} message
+     * @param {object} choices
+     * @param {function} callback
+     * @param {number} itemsToGo
      */
     _showPrompt: function(message, choices, callback, itemsToGo)
     {
@@ -17236,6 +17284,10 @@ Craft.TableElementIndexView = Craft.BaseElementIndexView.extend(
 
         for (var attr in tableAttributes)
         {
+            if (!tableAttributes.hasOwnProperty(attr)) {
+                continue;
+            }
+
             $tr.children('td[data-attr="'+attr+'"]:first').html(tableAttributes[attr]);
         }
     }
@@ -18294,6 +18346,10 @@ Craft.UpgradeModal = Garnish.Modal.extend(
 
 					for (var i in response.errors)
 					{
+						if (!response.errors.hasOwnProperty(i)) {
+							continue;
+						}
+
 						if (errorText)
 						{
 							errorText += '<br>';
@@ -18419,6 +18475,10 @@ Craft.Uploader = Garnish.Base.extend(
 		this.uploader = this.$element.fileupload(settings);
 		for (var event in events)
 		{
+			if (!events.hasOwnProperty(event)) {
+				continue;
+			}
+
 			this.uploader.on(event, events[event]);
 		}
 
@@ -18650,4 +18710,5 @@ Craft.Uploader = Garnish.Base.extend(
 		canAddMoreFiles: null
 	}
 });
+
 })(jQuery);

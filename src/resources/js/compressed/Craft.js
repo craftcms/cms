@@ -9,33 +9,33 @@ a.extend(Craft,{navHeight:48,/**
 asciiCharMap:{a:["à","á","ả","ã","ạ","ă","ắ","ằ","ẳ","ẵ","ặ","â","ấ","ầ","ẩ","ẫ","ậ","ä","ā","ą","å","α","ά","ἀ","ἁ","ἂ","ἃ","ἄ","ἅ","ἆ","ἇ","ᾀ","ᾁ","ᾂ","ᾃ","ᾄ","ᾅ","ᾆ","ᾇ","ὰ","ά","ᾰ","ᾱ","ᾲ","ᾳ","ᾴ","ᾶ","ᾷ","а","أ"],b:["б","β","Ъ","Ь","ب"],c:["ç","ć","č","ĉ","ċ"],d:["ď","ð","đ","ƌ","ȡ","ɖ","ɗ","ᵭ","ᶁ","ᶑ","д","δ","د","ض"],e:["é","è","ẻ","ẽ","ẹ","ê","ế","ề","ể","ễ","ệ","ë","ē","ę","ě","ĕ","ė","ε","έ","ἐ","ἑ","ἒ","ἓ","ἔ","ἕ","ὲ","έ","е","ё","э","є","ə"],f:["ф","φ","ف"],g:["ĝ","ğ","ġ","ģ","г","ґ","γ","ج"],h:["ĥ","ħ","η","ή","ح","ه"],i:["í","ì","ỉ","ĩ","ị","î","ï","ī","ĭ","į","ı","ι","ί","ϊ","ΐ","ἰ","ἱ","ἲ","ἳ","ἴ","ἵ","ἶ","ἷ","ὶ","ί","ῐ","ῑ","ῒ","ΐ","ῖ","ῗ","і","ї","и"],j:["ĵ","ј","Ј"],k:["ķ","ĸ","к","κ","Ķ","ق","ك"],l:["ł","ľ","ĺ","ļ","ŀ","л","λ","ل"],m:["м","μ","م"],n:["ñ","ń","ň","ņ","ŉ","ŋ","ν","н","ن"],o:["ó","ò","ỏ","õ","ọ","ô","ố","ồ","ổ","ỗ","ộ","ơ","ớ","ờ","ở","ỡ","ợ","ø","ō","ő","ŏ","ο","ὀ","ὁ","ὂ","ὃ","ὄ","ὅ","ὸ","ό","ö","о","و","θ"],p:["п","π"],r:["ŕ","ř","ŗ","р","ρ","ر"],s:["ś","š","ş","с","σ","ș","ς","س","ص"],t:["ť","ţ","т","τ","ț","ت","ط"],u:["ú","ù","ủ","ũ","ụ","ư","ứ","ừ","ử","ữ","ự","ü","û","ū","ů","ű","ŭ","ų","µ","у"],v:["в"],w:["ŵ","ω","ώ"],x:["χ"],y:["ý","ỳ","ỷ","ỹ","ỵ","ÿ","ŷ","й","ы","υ","ϋ","ύ","ΰ","ي"],z:["ź","ž","ż","з","ζ","ز"],aa:["ع"],ae:["æ"],ch:["ч"],dj:["ђ","đ"],dz:["џ"],gh:["غ"],kh:["х","خ"],lj:["љ"],nj:["њ"],oe:["œ"],ps:["ψ"],sh:["ш"],shch:["щ"],ss:["ß"],th:["þ","ث","ذ","ظ"],ts:["ц"],ya:["я"],yu:["ю"],zh:["ж"],"(c)":["©"],A:["Á","À","Ả","Ã","Ạ","Ă","Ắ","Ằ","Ẳ","Ẵ","Ặ","Â","Ấ","Ầ","Ẩ","Ẫ","Ậ","Ä","Å","Ā","Ą","Α","Ά","Ἀ","Ἁ","Ἂ","Ἃ","Ἄ","Ἅ","Ἆ","Ἇ","ᾈ","ᾉ","ᾊ","ᾋ","ᾌ","ᾍ","ᾎ","ᾏ","Ᾰ","Ᾱ","Ὰ","Ά","ᾼ","А"],B:["Б","Β"],C:["Ć","Č","Ĉ","Ċ"],D:["Ď","Ð","Đ","Ɖ","Ɗ","Ƌ","ᴅ","ᴆ","Д","Δ"],E:["É","È","Ẻ","Ẽ","Ẹ","Ê","Ế","Ề","Ể","Ễ","Ệ","Ë","Ē","Ę","Ě","Ĕ","Ė","Ε","Έ","Ἐ","Ἑ","Ἒ","Ἓ","Ἔ","Ἕ","Έ","Ὲ","Е","Ё","Э","Є","Ə"],F:["Ф","Φ"],G:["Ğ","Ġ","Ģ","Г","Ґ","Γ"],H:["Η","Ή"],I:["Í","Ì","Ỉ","Ĩ","Ị","Î","Ï","Ī","Ĭ","Į","İ","Ι","Ί","Ϊ","Ἰ","Ἱ","Ἳ","Ἴ","Ἵ","Ἶ","Ἷ","Ῐ","Ῑ","Ὶ","Ί","И","І","Ї"],K:["К","Κ"],L:["Ĺ","Ł","Л","Λ","Ļ"],M:["М","Μ"],N:["Ń","Ñ","Ň","Ņ","Ŋ","Н","Ν"],O:["Ó","Ò","Ỏ","Õ","Ọ","Ô","Ố","Ồ","Ổ","Ỗ","Ộ","Ơ","Ớ","Ờ","Ở","Ỡ","Ợ","Ö","Ø","Ō","Ő","Ŏ","Ο","Ό","Ὀ","Ὁ","Ὂ","Ὃ","Ὄ","Ὅ","Ὸ","Ό","О","Θ","Ө"],P:["П","Π"],R:["Ř","Ŕ","Р","Ρ"],S:["Ş","Ŝ","Ș","Š","Ś","С","Σ"],T:["Ť","Ţ","Ŧ","Ț","Т","Τ"],U:["Ú","Ù","Ủ","Ũ","Ụ","Ư","Ứ","Ừ","Ử","Ữ","Ự","Û","Ü","Ū","Ů","Ű","Ŭ","Ų","У"],V:["В"],W:["Ω","Ώ"],X:["Χ"],Y:["Ý","Ỳ","Ỷ","Ỹ","Ỵ","Ÿ","Ῠ","Ῡ","Ὺ","Ύ","Ы","Й","Υ","Ϋ"],Z:["Ź","Ž","Ż","З","Ζ"],AE:["Æ"],CH:["Ч"],DJ:["Ђ"],DZ:["Џ"],KH:["Х"],LJ:["Љ"],NJ:["Њ"],PS:["Ψ"],SH:["Ш"],SHCH:["Щ"],SS:["ẞ"],TH:["Þ"],TS:["Ц"],YA:["Я"],YU:["Ю"],ZH:["Ж"]," ":["Â ","â","â","â","â","â","â","â","â","â","â","â","â¯","â","ã"]},/**
 	 * Get a translated message.
 	 *
-	 * @param string message
-	 * @param object params
+	 * @param {string} message
+	 * @param {object} params
 	 * @return string
 	 */
-t:function(a,b){if("undefined"!=typeof Craft.translations[a]&&(a=Craft.translations[a]),b)for(var c in b)a=a.replace("{"+c+"}",b[c]);return a},formatDate:function(b){return"object"!=typeof b&&(b=new Date(b)),a.datepicker.formatDate(Craft.datepickerFormat,b)},/**
+t:function(a,b){if("undefined"!=typeof Craft.translations[a]&&(a=Craft.translations[a]),b)for(var c in b)b.hasOwnProperty(c)&&(a=a.replace("{"+c+"}",b[c]));return a},formatDate:function(b){return"object"!=typeof b&&(b=new Date(b)),a.datepicker.formatDate(Craft.datepickerFormat,b)},/**
 	 * Escapes some HTML.
 	 *
-	 * @param string str
+	 * @param {string} str
 	 * @return string
 	 */
 escapeHtml:function(b){return a("<div/>").text(b).html()},/**
 	 * Returns the text in a string that might contain HTML tags.
 	 *
-	 * @param string str
+	 * @param {string} str
 	 * @return string
 	 */
 getText:function(b){return a("<div/>").html(b).text()},/**
 	 * Encodes a URI copmonent. Mirrors PHP's rawurlencode().
 	 *
-	 * @param string str
+	 * @param {string} str
 	 * @return string
 	 * @see http://stackoverflow.com/questions/1734250/what-is-the-equivalent-of-javascripts-encodeuricomponent-in-php
 	 */
 encodeUriComponent:function(a){a=encodeURIComponent(a);var b={"!":"%21","*":"%2A","'":"%27","(":"%28",")":"%29"};for(var c in b){var d=new RegExp("\\"+c,"g");a=a.replace(d,b[c])}return a},/**
 	 * Formats an ID out of an input name.
 	 *
-	 * @param string inputName
+	 * @param {string} inputName
 	 * @return string
 	 */
 formatInputId:function(a){return this.rtrim(a.replace(/[\[\]\\]+/g,"-"),"-")},/**
@@ -47,7 +47,7 @@ getUrl:function(b,c,d){
 // Return path if it appears to be an absolute URL.
 if("string"!=typeof b&&(b=""),b.search("://")!=-1||"//"==b.substr(0,2))return b;b=Craft.trim(b,"/");var e="";
 // Normalize the params
-if(a.isPlainObject(c)){var f=[];for(var g in c){var h=c[g];"#"==g?e=h:null!==h&&""!==h&&f.push(g+"="+h)}c=f}c=Garnish.isArray(c)?c.join("&"):Craft.trim(c,"&?");
+if(a.isPlainObject(c)){var f=[];for(var g in c)if(c.hasOwnProperty(g)){var h=c[g];"#"==g?e=h:null!==h&&""!==h&&f.push(g+"="+h)}c=f}c=Garnish.isArray(c)?c.join("&"):Craft.trim(c,"&?");
 // Were there already any query string params in the path?
 var i=b.indexOf("?");i!=-1&&(c=b.substr(i+1)+(c?"&"+c:""),b=b.substr(0,i));
 // Put it all together
@@ -77,21 +77,21 @@ getCpUrl:function(a,b){return this.getUrl(a,b,Craft.baseCpUrl)},/**
 getSiteUrl:function(a,b){return this.getUrl(a,b,Craft.baseSiteUrl)},/**
 	 * Returns a resource URL.
 	 *
-	 * @param string path
-	 * @param array|string|null params
+	 * @param {string} path
+	 * @param {object|string|undefined} params
 	 * @return string
 	 */
 getResourceUrl:function(a,b){return Craft.getUrl(a,b,Craft.resourceUrl)},/**
 	 * Returns an action URL.
 	 *
-	 * @param string path
-	 * @param array|string|null params
+	 * @param {string} path
+	 * @param {object|string|undefined} params
 	 * @return string
 	 */
 getActionUrl:function(a,b){return Craft.getUrl(a,b,Craft.actionUrl)},/**
 	 * Redirects the window to a given URL.
 	 *
-	 * @param string url
+	 * @param {string} url
 	 */
 redirectTo:function(a){document.location.href=this.getUrl(a)},/**
 	 * Returns a hidden CSRF token input, if CSRF protection is enabled.
@@ -101,10 +101,10 @@ redirectTo:function(a){document.location.href=this.getUrl(a)},/**
 getCsrfInput:function(){return Craft.csrfTokenName?'<input type="hidden" name="'+Craft.csrfTokenName+'" value="'+Craft.csrfTokenValue+'"/>':""},/**
 	 * Posts an action request to the server.
 	 *
-	 * @param string action
-	 * @param object|null data
-	 * @param function|null callback
-	 * @param object|null options
+	 * @param {string} action
+	 * @param {object|undefined} data
+	 * @param {function|undefined} callback
+	 * @param {object|undefined} options
 	 * @return jqXHR
 	 */
 postActionRequest:function(b,c,d,e){
@@ -119,16 +119,16 @@ queueActionRequest:function(a,b,c,d){
 "function"==typeof b&&(d=c,c=b,b=void 0),Craft._ajaxQueue.push([a,b,c,d]),Craft._waitingOnAjax||Craft._postNextActionRequestInQueue()},_postNextActionRequestInQueue:function(){Craft._waitingOnAjax=!0;var a=Craft._ajaxQueue.shift();Craft.postActionRequest(a[0],a[1],function(b,c,d){a[2]&&"function"==typeof a[2]&&a[2](b,c,d),Craft._ajaxQueue.length?Craft._postNextActionRequestInQueue():Craft._waitingOnAjax=!1},a[3])},/**
 	 * Converts a comma-delimited string into an array.
 	 *
-	 * @param string str
+	 * @param {string} str
 	 * @return array
 	 */
 stringToArray:function(b){if("string"!=typeof b)return b;for(var c=b.split(","),d=0;d<c.length;d++)c[d]=a.trim(c[d]);return c},/**
 	 * Expands an array of POST array-style strings into an actual array.
 	 *
-	 * @param array arr
+	 * @param {object} arr
 	 * @return array
 	 */
-expandPostArray:function(a){var b={};for(var c in a){var d,e=a[c],f=c.match(/^(\w+)(\[.*)?/);if(f[2]){
+expandPostArray:function(a){var b={};for(var c in a)if(a.hasOwnProperty(c)){var d,e=a[c],f=c.match(/^(\w+)(\[.*)?/);if(f[2]){
 // Get all of the nested keys
 d=f[2].match(/\[[^\[\]]*\]/g);
 // Chop off the brackets
@@ -140,8 +140,8 @@ d[g]||(d[g]=h.length),h[d[g]]=e)}return b},/**
 	 * Compares two variables and returns whether they are equal in value.
 	 * Recursively compares array and object values.
 	 *
-	 * @param mixed obj1
-	 * @param mixed obj2
+	 * @param obj1
+	 * @param obj2
 	 * @return boolean
 	 */
 compare:function(a,b){
@@ -154,80 +154,80 @@ if(a instanceof Array!=b instanceof Array)return!1;
 // If they're actual objects (not arrays), compare the keys
 if(!(a instanceof Array||Craft.compare(Craft.getObjectKeys(a),Craft.getObjectKeys(b))))return!1;
 // Compare each value
-for(var c in a)if(!Craft.compare(a[c],b[c]))return!1;
+for(var c in a)if(obj.hasOwnProperty(c)&&!Craft.compare(a[c],b[c]))return!1;
 // All clear
 return!0}return a===b},/**
 	 * Returns an array of an object's keys.
 	 *
-	 * @param object obj
+	 * @param {object} obj
 	 * @return string
 	 */
-getObjectKeys:function(a){var b=[];for(var c in a)b.push(c);return b},/**
+getObjectKeys:function(a){var b=[];for(var c in a)a.hasOwnProperty(c)&&b.push(c);return b},/**
 	 * Takes an array or string of chars, and places a backslash before each one, returning the combined string.
 	 *
 	 * Userd by ltrim() and rtrim()
 	 *
-	 * @param string|array chars
+	 * @param {string|object} chars
 	 * @return string
 	 */
 escapeChars:function(a){Garnish.isArray(a)||(a=a.split());for(var b="",c=0;c<a.length;c++)b+="\\"+a[c];return b},/**
 	 * Trim characters off of the beginning of a string.
 	 *
-	 * @param string str
-	 * @param string|array|null The characters to trim off. Defaults to a space if left blank.
+	 * @param {string} str
+	 * @param {string|object|undefined} chars The characters to trim off. Defaults to a space if left blank.
 	 * @return string
 	 */
 ltrim:function(a,b){if(!a)return a;void 0===b&&(b=" \t\n\r\0\v");var c=new RegExp("^["+Craft.escapeChars(b)+"]+");return a.replace(c,"")},/**
 	 * Trim characters off of the end of a string.
 	 *
-	 * @param string str
-	 * @param string|array|null The characters to trim off. Defaults to a space if left blank.
+	 * @param {string} str
+	 * @param {string|object|undefined} chars The characters to trim off. Defaults to a space if left blank.
 	 * @return string
 	 */
 rtrim:function(a,b){if(!a)return a;void 0===b&&(b=" \t\n\r\0\v");var c=new RegExp("["+Craft.escapeChars(b)+"]+$");return a.replace(c,"")},/**
 	 * Trim characters off of the beginning and end of a string.
 	 *
-	 * @param string str
-	 * @param string|array|null The characters to trim off. Defaults to a space if left blank.
+	 * @param {string} str
+	 * @param {string|object|undefined} chars The characters to trim off. Defaults to a space if left blank.
 	 * @return string
 	 */
 trim:function(a,b){return a=Craft.ltrim(a,b),a=Craft.rtrim(a,b)},/**
 	 * Filters an array.
 	 *
-	 * @param array    arr
-	 * @param function callback A user-defined callback function. If null, we'll just remove any elements that equate to false.
+	 * @param {object} arr
+	 * @param {function} callback A user-defined callback function. If null, we'll just remove any elements that equate to false.
 	 * @return array
 	 */
 filterArray:function(a,b){for(var c=[],d=0;d<a.length;d++){var e;e="function"==typeof b?b(a[d],d):a[d],e&&c.push(a[d])}return c},/**
 	 * Returns whether an element is in an array (unlike jQuery.inArray(), which returns the element's index, or -1).
 	 *
-	 * @param mixed elem
-	 * @param mixed arr
+	 * @param elem
+	 * @param arr
 	 * @return boolean
 	 */
 inArray:function(b,c){return a.inArray(b,c)!=-1},/**
 	 * Removes an element from an array.
 	 *
-	 * @param mixed elem
-	 * @param array arr
+	 * @param elem
+	 * @param {object} arr
 	 * @return boolean Whether the element could be found or not.
 	 */
 removeFromArray:function(b,c){var d=a.inArray(b,c);return d!=-1&&(c.splice(d,1),!0)},/**
 	 * Returns the last element in an array.
 	 *
-	 * @param array
+	 * @param {object}
 	 * @return mixed
 	 */
 getLast:function(a){return a.length?a[a.length-1]:null},/**
 	 * Makes the first character of a string uppercase.
 	 *
-	 * @param string str
+	 * @param {string} str
 	 * @return string
 	 */
 uppercaseFirst:function(a){return a.charAt(0).toUpperCase()+a.slice(1)},/**
 	 * Makes the first character of a string lowercase.
 	 *
-	 * @param string str
+	 * @param {string} str
 	 * @return string
 	 */
 lowercaseFirst:function(a){return a.charAt(0).toLowerCase()+a.slice(1)},/**
@@ -236,18 +236,18 @@ lowercaseFirst:function(a){return a.charAt(0).toLowerCase()+a.slice(1)},/**
 secondsToHumanTimeDuration:function(a,b){"undefined"==typeof b&&(b=!0);var c=604800,d=86400,e=3600,f=60,g=Math.floor(a/c);a%=c;var h=Math.floor(a/d);a%=d;var i=Math.floor(a/e);a%=e;var j;b?(j=Math.floor(a/f),a%=f):(j=Math.round(a/f),a=0);var k=[];return g&&k.push(g+" "+(1==g?Craft.t("week"):Craft.t("weeks"))),h&&k.push(h+" "+(1==h?Craft.t("day"):Craft.t("days"))),i&&k.push(i+" "+(1==i?Craft.t("hour"):Craft.t("hours"))),!j&&(b||g||h||i)||k.push(j+" "+(1==j?Craft.t("minute"):Craft.t("minutes"))),!a&&(!b||g||h||i||j)||k.push(a+" "+(1==a?Craft.t("second"):Craft.t("seconds"))),k.join(", ")},/**
 	 * Converts extended ASCII characters to ASCII.
 	 *
-	 * @param string str
+	 * @param {string} str
 	 * @return string
 	 */
 asciiString:function(a){for(var b="",c=0;c<a.length;c++){var d=a.charCodeAt(c),e=a.charAt(c);if(d>=32&&d<128)b+=e;else for(var f in Craft.asciiCharMap)if(Craft.asciiCharMap.hasOwnProperty(f))for(var g=0;g<Craft.asciiCharMap[f].length;g++)Craft.asciiCharMap[f][g]==e&&(b+=f)}return b},/**
 	 * Prevents the outline when an element is focused by the mouse.
 	 *
-	 * @param mixed elem Either an actual element or a jQuery collection.
+	 * @param elem Either an actual element or a jQuery collection.
 	 */
 preventOutlineOnMouseFocus:function(b){var c=a(b),d=".preventOutlineOnMouseFocus";c.on("mousedown"+d,function(){c.addClass("no-outline"),c.focus()}).on("keydown"+d+" blur"+d,function(a){a.keyCode!=Garnish.SHIFT_KEY&&a.keyCode!=Garnish.CTRL_KEY&&a.keyCode!=Garnish.CMD_KEY&&c.removeClass("no-outline")})},/**
 	 * Creates a validation error list.
 	 *
-	 * @param array errors
+	 * @param {object} errors
 	 * @return jQuery
 	 */
 createErrorList:function(b){for(var c=a(document.createElement("ul")).addClass("errors"),d=0;d<b.length;d++){var e=a(document.createElement("li"));e.appendTo(c),e.html(b[d])}return c},appendHeadHtml:function(b){if(b){
@@ -257,45 +257,45 @@ var c=a("link[href]");if(c.length){for(var d=[],e=0;e<c.length;e++){var f=c.eq(e
 var c=a("script[src]");if(c.length){for(var d=[],e=0;e<c.length;e++){var f=c.eq(e).attr("src");d.push(f.replace(/[.?*+^$[\]\\(){}|-]/g,"\\$&"))}var g=new RegExp('<script\\s[^>]*src="(?:'+d.join("|")+')".*?></script>',"g");b=b.replace(g,"")}Garnish.$bod.append(b)}},/**
 	 * Initializes any common UI elements in a given container.
 	 *
-	 * @param jQuery $container
+	 * @param {object} $container
 	 */
 initUiElements:function(b){a(".grid",b).grid(),a(".pane",b).pane(),a(".info",b).infoicon(),a(".checkbox-select",b).checkboxselect(),a(".fieldtoggle",b).fieldtoggle(),a(".lightswitch",b).lightswitch(),a(".nicetext",b).nicetext(),a(".pill",b).pill(),a(".formsubmit",b).formsubmit(),a(".menubtn",b).menubtn()},_elementIndexClasses:{},_elementSelectorModalClasses:{},/**
 	 * Registers an element index class for a given element type.
 	 *
-	 * @param string elementType
-	 * @param function func
+	 * @param {string} elementType
+	 * @param {function} func
 	 */
 registerElementIndexClass:function(a,b){if("undefined"!=typeof this._elementIndexClasses[a])throw"An element index class has already been registered for the element type “"+a+"”.";this._elementIndexClasses[a]=b},/**
 	 * Registers an element selector modal class for a given element type.
 	 *
-	 * @param string elementType
-	 * @param function func
+	 * @param {string} elementType
+	 * @param {function} func
 	 */
 registerElementSelectorModalClass:function(a,b){if("undefined"!=typeof this._elementSelectorModalClasses[a])throw"An element selector modal class has already been registered for the element type “"+a+"”.";this._elementSelectorModalClasses[a]=b},/**
 	 * Creates a new element index for a given element type.
 	 *
-	 * @param string elementType
-	 * @param mixed  $container
-	 * @param object settings
+	 * @param {string} elementType
+	 * @param $container
+	 * @param {object} settings
 	 * @return BaseElementIndex
 	 */
 createElementIndex:function(a,b,c){var d;return new(d="undefined"!=typeof this._elementIndexClasses[a]?this._elementIndexClasses[a]:Craft.BaseElementIndex)(a,b,c)},/**
 	 * Creates a new element selector modal for a given element type.
 	 *
-	 * @param string elementType
-	 * @param object settings
+	 * @param {string} elementType
+	 * @param {object} settings
 	 */
 createElementSelectorModal:function(a,b){var c;return new(c="undefined"!=typeof this._elementSelectorModalClasses[a]?this._elementSelectorModalClasses[a]:Craft.BaseElementSelectorModal)(a,b)},/**
 	 * Retrieves a value from localStorage if it exists.
 	 *
-	 * @param string key
-	 * @param mixed defaultValue
+	 * @param {string} key
+	 * @param defaultValue
 	 */
 getLocalStorage:function(a,b){return a="Craft-"+Craft.siteUid+"."+a,"undefined"!=typeof localStorage&&"undefined"!=typeof localStorage[a]?JSON.parse(localStorage[a]):b},/**
 	 * Saves a value to localStorage.
 	 *
-	 * @param string key
-	 * @param mixed value
+	 * @param {string} key
+	 * @param value
 	 */
 setLocalStorage:function(a,b){if("undefined"!=typeof localStorage){a="Craft-"+Craft.siteUid+"."+a;
 // localStorage might be filled all the way up.
@@ -316,8 +316,8 @@ getElementInfo:function(b){var c=a(b);return c.hasClass("element")||(c=c.find(".
 setElementSize:function(b,c){var d=a(b);if("small"!=c&&"large"!=c&&(c="small"),!d.hasClass(c)){var e="small"==c?"large":"small";if(d.addClass(c).removeClass(e),d.hasClass("hasthumb")){var f=d.find("> .elementthumb > img"),g="small"==c?"30":"100",h=a("<img/>",{sizes:g+"px",srcset:f.attr("srcset")||f.attr("data-pfsrcset")});f.replaceWith(h),picturefill({elements:[h[0]]})}}},/**
 	 * Shows an element editor HUD.
 	 *
-	 * @param object $element
-	 * @param object settings
+	 * @param {object} $element
+	 * @param {object} settings
 	 */
 showElementEditor:function(a,b){if(Garnish.hasAttr(a,"data-editable")&&!a.hasClass("disabled")&&!a.hasClass("loading"))return new Craft.ElementEditor(a,b)}}),
 // -------------------------------------------
@@ -498,7 +498,7 @@ this.viewMode&&"undefined"!=typeof this.viewModeBtns[this.viewMode]&&this.viewMo
 // Is there a predesignated place where buttons should go?
 if(this.settings.buttonContainer)return a(this.settings.buttonContainer);
 // Add it to the page header
-var b=a("#extra-headers > .buttons:first");if(!b.length){var c=a("#extra-headers");c.length||(c=a('<div id="extra-headers"/>').appendTo(a("#page-header"))),b=a('<div class="buttons right"/>').appendTo(c)}return b},setIndexBusy:function(){this.$mainSpinner.removeClass("hidden"),this.isIndexBusy=!0},setIndexAvailable:function(){this.$mainSpinner.addClass("hidden"),this.isIndexBusy=!1},createCustomizeSourcesModal:function(){
+var b=a("#extra-headers").find("> .buttons:first");if(!b.length){var c=a("#extra-headers");c.length||(c=a('<div id="extra-headers"/>').appendTo(a("#page-header"))),b=a('<div class="buttons right"/>').appendTo(c)}return b},setIndexBusy:function(){this.$mainSpinner.removeClass("hidden"),this.isIndexBusy=!0},setIndexAvailable:function(){this.$mainSpinner.addClass("hidden"),this.isIndexBusy=!1},createCustomizeSourcesModal:function(){
 // Recreate it each time
 var a=new Craft.CustomizeSourcesModal(this,{onHide:function(){a.destroy()}});return a},disable:function(){this.sourceSelect&&this.sourceSelect.disable(),this.view&&this.view.disable(),this.base()},enable:function(){this.sourceSelect&&this.sourceSelect.enable(),this.view&&this.view.enable(),this.base()},
 // Events
@@ -815,7 +815,7 @@ var j=[],k=[],l={},m=[],n=a.proxy(function(d){this.promptHandler.resetPrompts();
 // Loop trough all the responses
 for(var e=0;e<d.length;e++){var f=d[e];
 // If succesful and have data, then update
-if(f.success&&f.transferList&&f.changedIds){for(var g=0;g<f.transferList.length;g++)j.push(f.transferList[g]);k=c;for(var h in f.changedIds)l[h]=f.changedIds[h];m.push(f.removeFromTree)}
+if(f.success&&f.transferList&&f.changedIds){for(var g=0;g<f.transferList.length;g++)j.push(f.transferList[g]);k=c;for(var h in f.changedIds)f.changedIds.hasOwnProperty(h)&&(l[h]=f.changedIds[h]);m.push(f.removeFromTree)}
 // Push prompt into prompt array
 if(f.prompt){var p={message:this._folderConflictTemplate.message,choices:this._folderConflictTemplate.choices};p.message=Craft.t(p.message,{folder:f.foldername}),f.prompt=p,this.promptHandler.addPrompt(f)}f.error&&alert(f.error)}if(this.promptHandler.getPromptCount()){
 // Define callback for completing all prompts
@@ -839,9 +839,9 @@ _performActualFolderMove:function(b,c,d,e,f){this.setIndexBusy(),this.progressBa
 //Move the folders around in the tree
 var e=a(),g=a(),h=0;
 // Change the folder ids
-for(var i in c)g=this._getSourceByFolderId(i),
+for(var i in c)c.hasOwnProperty(i)&&(g=this._getSourceByFolderId(i),
 // Change the id and select the containing element as the folder element.
-g=g.attr("data-key","folder:"+c[i]).data("key","folder:"+c[i]).parent(),(0==e.length||e.parents().filter(g).length>0)&&(e=g,h=c[i]);if(0==e.length)return this.setIndexAvailable(),this.progressBar.hideProgressBar(),void this._folderDrag.returnHelpersToDraggees();var j=e.children("a"),k=e.siblings("ul, .toggle"),l=this._getParentSource(j),m=this._getSourceByFolderId(f);if("undefined"!=typeof d)for(var n=0;n<d.length;n++)m.parent().find('[data-key="folder:'+d[n]+'"]').parent().remove();this._prepareParentForChildren(m),this._appendSubfolder(m,e),j.after(k),this._cleanUpTree(l),this._cleanUpTree(m),this.$sidebar.find("ul>ul, ul>.toggle").remove();
+g=g.attr("data-key","folder:"+c[i]).data("key","folder:"+c[i]).parent(),(0==e.length||e.parents().filter(g).length>0)&&(e=g,h=c[i]));if(0==e.length)return this.setIndexAvailable(),this.progressBar.hideProgressBar(),void this._folderDrag.returnHelpersToDraggees();var j=e.children("a"),k=e.siblings("ul, .toggle"),l=this._getParentSource(j),m=this._getSourceByFolderId(f);if("undefined"!=typeof d)for(var n=0;n<d.length;n++)m.parent().find('[data-key="folder:'+d[n]+'"]').parent().remove();this._prepareParentForChildren(m),this._appendSubfolder(m,e),j.after(k),this._cleanUpTree(l),this._cleanUpTree(m),this.$sidebar.find("ul>ul, ul>.toggle").remove();
 // Delete the old folders
 for(var n=0;n<b.length;n++)Craft.postActionRequest("assets/delete-folder",{folderId:b[n]});this.setIndexAvailable(),this.progressBar.hideProgressBar(),this._folderDrag.returnHelpersToDraggees(),this._selectSourceByFolderId(h)},this);b.length>0?this._moveFile(b,0,a.proxy(function(){g(c,d,e)},this)):g(c,d,e)},/**
 	 * Get parent source for a source.
@@ -870,9 +870,9 @@ afterInit:function(){this.$uploadButton||(this.$uploadButton=a('<div class="btn 
 if(this.$source.siblings("ul").length){if(null===this.$includeSubfoldersContainer){var b="includeSubfolders-"+Math.floor(1e9*Math.random());this.$includeSubfoldersContainer=a('<div style="margin-bottom: -23px; opacity: 0;"/>').insertAfter(this.$search);var c=a('<div style="padding-top: 5px;"/>').appendTo(this.$includeSubfoldersContainer);this.$includeSubfoldersCheckbox=a('<input type="checkbox" id="'+b+'" class="checkbox"/>').appendTo(c),a('<label class="light smalltext" for="'+b+'"/>').text(" "+Craft.t("Search in subfolders")).appendTo(c),this.addListener(this.$includeSubfoldersCheckbox,"change",function(){this.setSelecetedSourceState("includeSubfolders",this.$includeSubfoldersCheckbox.prop("checked")),this.updateElements()})}else this.$includeSubfoldersContainer.velocity("stop");var d=this.getSelectedSourceState("includeSubfolders",!1);this.$includeSubfoldersCheckbox.prop("checked",d),this.$includeSubfoldersContainer.velocity({marginBottom:0,opacity:1},"fast"),this.showingIncludeSubfoldersCheckbox=!0}this.base()},stopSearching:function(){this.showingIncludeSubfoldersCheckbox&&(this.$includeSubfoldersContainer.velocity("stop"),this.$includeSubfoldersContainer.velocity({marginBottom:-23,opacity:0},"fast"),this.showingIncludeSubfoldersCheckbox=!1),this.base()},getViewParams:function(){var a=this.base();return this.showingIncludeSubfoldersCheckbox&&this.$includeSubfoldersCheckbox.prop("checked")&&(a.criteria.includeSubfolders=!0),a},/**
 	 * React on upload submit.
 	 *
-	 * @param id
+	 * @param {object} event
 	 * @private
-	 */
+     */
 _onUploadStart:function(a){this.setIndexBusy(),
 // Initial values
 this._positionProgressBar(),this.progressBar.resetProgressBar(),this.progressBar.showProgressBar(),this.promptHandler.resetPrompts()},/**
@@ -1103,7 +1103,7 @@ Craft.CP=Garnish.Base.extend({authManager:null,$container:null,$alerts:null,$glo
 // Is this session going to expire?
 0!=Craft.remainingSessionTime&&(this.authManager=new Craft.AuthManager),
 // Find all the key elements
-this.$container=a("#container"),this.$alerts=a("#alerts"),this.$globalSidebar=a("#global-sidebar"),this.$pageHeader=a("#page-header"),this.$containerTopbar=a("#container .topbar"),this.$globalSidebarTopbar=this.$globalSidebar.children(".topbar"),this.$siteNameLink=this.$globalSidebarTopbar.children("a.site-name"),this.$siteName=this.$siteNameLink.children("h2"),this.$nav=a("#nav"),this.$subnav=a("#subnav"),this.$sidebar=a("#sidebar"),this.$notificationWrapper=a("#notifications-wrapper"),this.$notificationContainer=a("#notifications"),this.$main=a("#main"),this.$content=a("#content"),this.$collapsibleTables=a("table.collapsible"),this.$edition=a("#edition"),
+this.$container=a("#container"),this.$alerts=a("#alerts"),this.$globalSidebar=a("#global-sidebar"),this.$pageHeader=a("#page-header"),this.$containerTopbar=a("#container").find(".topbar"),this.$globalSidebarTopbar=this.$globalSidebar.children(".topbar"),this.$siteNameLink=this.$globalSidebarTopbar.children("a.site-name"),this.$siteName=this.$siteNameLink.children("h2"),this.$nav=a("#nav"),this.$subnav=a("#subnav"),this.$sidebar=a("#sidebar"),this.$notificationWrapper=a("#notifications-wrapper"),this.$notificationContainer=a("#notifications"),this.$main=a("#main"),this.$content=a("#content"),this.$collapsibleTables=a("table.collapsible"),this.$edition=a("#edition"),
 // global sidebar
 this.addListener(Garnish.$win,"touchend","updateResponsiveGlobalSidebar"),
 // Find all the nav items
@@ -1161,18 +1161,18 @@ addLastVisibleSubnavItemToOverflowMenu:function(){this.subnavItems[this.visibleS
 addFirstOverflowSubnavItemToMainMenu:function(){this.subnavItems[this.visibleSubnavItems].insertBefore(this.$overflowSubnavMenuItem),this.visibleSubnavItems++},updateFixedNotifications:function(){this.updateFixedNotifications._headerHeight=this.$globalSidebar.height(),this.$container.scrollTop()>this.updateFixedNotifications._headerHeight?this.fixedNotifications||(this.$notificationWrapper.addClass("fixed"),this.fixedNotifications=!0):this.fixedNotifications&&(this.$notificationWrapper.removeClass("fixed"),this.fixedNotifications=!1)},/**
 	 * Dispays a notification.
 	 *
-	 * @param string type
-	 * @param string message
+	 * @param {string} type
+	 * @param {string} message
 	 */
 displayNotification:function(b,c){var d=Craft.CP.notificationDuration;"error"==b&&(d*=2);var e=a('<div class="notification '+b+'">'+c+"</div>").appendTo(this.$notificationContainer),f=-(e.outerWidth()/2)+"px";e.hide().css({opacity:0,"margin-left":f,"margin-right":f}).velocity({opacity:1,"margin-left":"2px","margin-right":"2px"},{display:"inline-block",duration:"fast"}).delay(d).velocity({opacity:0,"margin-left":f,"margin-right":f},{complete:function(){e.remove()}}),this.trigger("displayNotification",{notificationType:b,message:c})},/**
 	 * Displays a notice.
 	 *
-	 * @param string message
+	 * @param {string} message
 	 */
 displayNotice:function(a){this.displayNotification("notice",a)},/**
 	 * Displays an error.
 	 *
-	 * @param string message
+	 * @param {string} message
 	 */
 displayError:function(a){a||(a=Craft.t("An unknown error occurred.")),this.displayNotification("error",a)},fetchAlerts:function(){var b={path:Craft.path};Craft.queueActionRequest("app/get-cp-alerts",b,a.proxy(this,"displayAlerts"))},displayAlerts:function(b){if(Garnish.isArray(b)&&b.length){this.$alerts=a('<ul id="alerts"/>').insertBefore(this.$containerTopbar);for(var c=0;c<b.length;c++)a("<li>"+b[c]+"</li>").appendTo(this.$alerts);var d=this.$alerts.outerHeight();this.$alerts.css("margin-top",-d).velocity({"margin-top":0},"fast"),this.initAlerts()}},initAlerts:function(){
 // Is there a domain mismatch?
@@ -1205,7 +1205,7 @@ Craft.cp.runningTaskInfo&&"error"!=Craft.cp.runningTaskInfo.status&&this.showTas
 // Clear out any completed tasks
 if(this.updateTasksTimeout&&clearTimeout(this.updateTasksTimeout),this.completed||Craft.cp.trackTaskProgress(),this.completedTasks.length){for(var a=0;a<this.completedTasks.length;a++)this.completedTasks[a].destroy();this.completedTasks=[]}this.base()},updateTasks:function(){this.completed=!1,Craft.postActionRequest("tasks/get-task-info",a.proxy(function(a,b){"success"==b&&this.showTaskInfo(a)},this))},showTaskInfo:function(b){
 // First remove any tasks that have completed
-var d=[];if(b)for(var e=0;e<b.length;e++)d.push(b[e].id);for(var f in this.tasksById)Craft.inArray(f,d)||(this.tasksById[f].complete(),this.completedTasks.push(this.tasksById[f]),delete this.tasksById[f]);
+var d=[];if(b)for(var e=0;e<b.length;e++)d.push(b[e].id);for(var f in this.tasksById)this.tasksById.hasOwnProperty(f)&&(Craft.inArray(f,d)||(this.tasksById[f].complete(),this.completedTasks.push(this.tasksById[f]),delete this.tasksById[f]));
 // Now display the tasks that are still around
 if(b&&b.length){for(var g=!1,h=!1,e=0;e<b.length;e++){var i=b[e];if(g||"running"!=i.status?h||"error"!=i.status||(h=!0):g=!0,this.tasksById[i.id])this.tasksById[i.id].updateStatus(i);else{this.tasksById[i.id]=new c.Task(this,i);
 // Place it before the next already known task
@@ -1256,16 +1256,16 @@ Craft.EditableTable=Garnish.Base.extend({initialized:!1,id:null,baseName:null,co
 // Focus the first input in the row
 d.find("input,textarea,select").first().focus(),
 // onAddRow callback
-this.settings.onAddRow(d)},getRowHtml:function(a,b,c,d){return Craft.EditableTable.getRowHtml(a,b,c,d)}},{textualColTypes:["singleline","multiline","number"],defaults:{rowIdPrefix:"",onAddRow:a.noop,onDeleteRow:a.noop},getRowHtml:function(a,b,c,d){var e='<tr data-id="'+a+'">';for(var f in b){var g=b[f],h=c+"["+a+"]["+f+"]",i="undefined"!=typeof d[f]?d[f]:"",j=Craft.inArray(g.type,Craft.EditableTable.textualColTypes);switch(e+='<td class="'+(j?"textual":"")+" "+("undefined"!=typeof g.class?g.class:"")+'"'+("undefined"!=typeof g.width?' width="'+g.width+'"':"")+">",g.type){case"select":e+='<div class="select small"><select name="'+h+'">';var k=!1;for(var l in g.options){var m=g.options[l];if("undefined"!=typeof m.optgroup)k?e+="</optgroup>":k=!0,e+='<optgroup label="'+m.optgroup+'">';else{var n="undefined"!=typeof m.label?m.label:m,o="undefined"!=typeof m.value?m.value:l,p="undefined"!=typeof m.disabled&&m.disabled;e+='<option value="'+o+'"'+(o==i?" selected":"")+(p?" disabled":"")+">"+n+"</option>"}}k&&(e+="</optgroup>"),e+="</select></div>";break;case"checkbox":e+='<input type="hidden" name="'+h+'"><input type="checkbox" name="'+h+'" value="1"'+(i?" checked":"")+">";break;default:e+='<textarea name="'+h+'" rows="1">'+i+"</textarea>"}e+="</td>"}return e+='<td class="thin action"><a class="move icon" title="'+Craft.t("Reorder")+'"></a></td><td class="thin action"><a class="delete icon" title="'+Craft.t("Delete")+'"></a></td></tr>'}}),/**
+this.settings.onAddRow(d)},getRowHtml:function(a,b,c,d){return Craft.EditableTable.getRowHtml(a,b,c,d)}},{textualColTypes:["singleline","multiline","number"],defaults:{rowIdPrefix:"",onAddRow:a.noop,onDeleteRow:a.noop},getRowHtml:function(a,b,c,d){var e='<tr data-id="'+a+'">';for(var f in b)if(b.hasOwnProperty(f)){var g=b[f],h=c+"["+a+"]["+f+"]",i="undefined"!=typeof d[f]?d[f]:"",j=Craft.inArray(g.type,Craft.EditableTable.textualColTypes);switch(e+='<td class="'+(j?"textual":"")+" "+("undefined"!=typeof g.class?g.class:"")+'"'+("undefined"!=typeof g.width?' width="'+g.width+'"':"")+">",g.type){case"select":e+='<div class="select small"><select name="'+h+'">';var k=!1;for(var l in g.options)if(g.options.hasOwnProperty(l)){var m=g.options[l];if("undefined"!=typeof m.optgroup)k?e+="</optgroup>":k=!0,e+='<optgroup label="'+m.optgroup+'">';else{var n="undefined"!=typeof m.label?m.label:m,o="undefined"!=typeof m.value?m.value:l,p="undefined"!=typeof m.disabled&&m.disabled;e+='<option value="'+o+'"'+(o==i?" selected":"")+(p?" disabled":"")+">"+n+"</option>"}}k&&(e+="</optgroup>"),e+="</select></div>";break;case"checkbox":e+='<input type="hidden" name="'+h+'"><input type="checkbox" name="'+h+'" value="1"'+(i?" checked":"")+">";break;default:e+='<textarea name="'+h+'" rows="1">'+i+"</textarea>"}e+="</td>"}return e+='<td class="thin action"><a class="move icon" title="'+Craft.t("Reorder")+'"></a></td><td class="thin action"><a class="delete icon" title="'+Craft.t("Delete")+'"></a></td></tr>'}}),/**
  * Editable table row class
  */
 Craft.EditableTable.Row=Garnish.Base.extend({table:null,id:null,niceTexts:null,$tr:null,$tds:null,$textareas:null,$deleteBtn:null,init:function(b,c){this.table=b,this.$tr=a(c),this.$tds=this.$tr.children();
 // Get the row ID, sans prefix
-var d=parseInt(this.$tr.attr("data-id").substr(this.table.settings.rowIdPrefix.length));d>this.table.biggestId&&(this.table.biggestId=d),this.$textareas=a(),this.niceTexts=[];var e={},f=0;for(var g in this.table.columns){var h=this.table.columns[g];if(Craft.inArray(h.type,Craft.EditableTable.textualColTypes)){var i=a("textarea",this.$tds[f]);this.$textareas=this.$textareas.add(i),this.addListener(i,"focus","onTextareaFocus"),this.addListener(i,"mousedown","ignoreNextTextareaFocus"),this.niceTexts.push(new Garnish.NiceText(i,{onHeightChange:a.proxy(this,"onTextareaHeightChange")})),"singleline"!=h.type&&"number"!=h.type||(this.addListener(i,"keypress",{type:h.type},"validateKeypress"),this.addListener(i,"textchange",{type:h.type},"validateValue")),e[g]=i}f++}
+var d=parseInt(this.$tr.attr("data-id").substr(this.table.settings.rowIdPrefix.length));d>this.table.biggestId&&(this.table.biggestId=d),this.$textareas=a(),this.niceTexts=[];var e={},f=0;for(var g in this.table.columns)if(this.table.columns.hasOwnProperty(g)){var h=this.table.columns[g];if(Craft.inArray(h.type,Craft.EditableTable.textualColTypes)){var i=a("textarea",this.$tds[f]);this.$textareas=this.$textareas.add(i),this.addListener(i,"focus","onTextareaFocus"),this.addListener(i,"mousedown","ignoreNextTextareaFocus"),this.niceTexts.push(new Garnish.NiceText(i,{onHeightChange:a.proxy(this,"onTextareaHeightChange")})),"singleline"!=h.type&&"number"!=h.type||(this.addListener(i,"keypress",{type:h.type},"validateKeypress"),this.addListener(i,"textchange",{type:h.type},"validateValue")),e[g]=i}f++}
 // Now that all of the text cells have been nice-ified, let's normalize the heights
 this.onTextareaHeightChange();
 // Now look for any autopopulate columns
-for(var g in this.table.columns){var h=this.table.columns[g];h.autopopulate&&"undefined"!=typeof e[h.autopopulate]&&!e[g].val()&&new Craft.HandleGenerator(e[g],e[h.autopopulate])}var j=this.$tr.children().last().find(".delete");this.addListener(j,"click","deleteRow")},onTextareaFocus:function(b){this.onTextareaHeightChange();var c=a(b.currentTarget);return c.data("ignoreNextFocus")?void c.data("ignoreNextFocus",!1):void setTimeout(function(){var a=c.val();
+for(var g in this.table.columns)if(this.table.columns.hasOwnProperty(g)){var h=this.table.columns[g];h.autopopulate&&"undefined"!=typeof e[h.autopopulate]&&!e[g].val()&&new Craft.HandleGenerator(e[g],e[h.autopopulate])}var j=this.$tr.children().last().find(".delete");this.addListener(j,"click","deleteRow")},onTextareaFocus:function(b){this.onTextareaHeightChange();var c=a(b.currentTarget);return c.data("ignoreNextFocus")?void c.data("ignoreNextFocus",!1):void setTimeout(function(){var a=c.val();
 // Does the browser support setSelectionRange()?
 if("undefined"!=typeof c[0].setSelectionRange){
 // Select the whole value
@@ -1334,7 +1334,7 @@ this.disable(),this.$form.submit(),this.enable()}}),/**
 Craft.ElevatedSessionManager=Garnish.Base.extend({fetchingTimeout:!1,passwordModal:null,$passwordInput:null,$passwordSpinner:null,$submitBtn:null,$errorPara:null,callback:null,/**
 	 * Requires that the user has an elevated session.
 	 *
-	 * @param function callback The callback function that should be called once the user has an elevated session
+	 * @param {function} callback The callback function that should be called once the user has an elevated session
 	 */
 requireElevatedSession:function(b){this.callback=b,
 // Check the time remaining on the user's elevated session (if any)
@@ -1751,10 +1751,10 @@ this._showNextPromptInBatch()):
 "function"==typeof this._promptBatchCallback&&this._promptBatchCallback(this._promptBatchReturnData)},/**
      * Show the user prompt with a given message and choices, plus an optional "Apply to remaining" checkbox.
      *
-     * @param string message
-     * @param array choices
-     * @param function callback
-     * @param integer itemsToGo
+     * @param {string} message
+     * @param {object} choices
+     * @param {function} callback
+     * @param {number} itemsToGo
      */
 _showPrompt:function(b,c,d,e){this._promptCallback=d,null==this.modal&&(this.modal=new Garnish.Modal({closeOtherModals:!1})),null==this.$modalContainerDiv&&(this.$modalContainerDiv=a('<div class="modal fitted prompt-modal"></div>').addClass().appendTo(Garnish.$bod)),this.$prompt=a('<div class="body"></div>').appendTo(this.$modalContainerDiv.empty()),this.$promptMessage=a('<p class="prompt-msg"/>').appendTo(this.$prompt),this.$promptChoices=a('<div class="options"></div>').appendTo(this.$prompt),this.$promptApplyToRemainingContainer=a('<label class="assets-applytoremaining"/>').appendTo(this.$prompt).hide(),this.$promptApplyToRemainingCheckbox=a('<input type="checkbox"/>').appendTo(this.$promptApplyToRemainingContainer),this.$promptApplyToRemainingLabel=a("<span/>").appendTo(this.$promptApplyToRemainingContainer),this.$promptButtons=a('<div class="buttons right"/>').appendTo(this.$prompt),this.modal.setContainer(this.$modalContainerDiv),this.$promptMessage.html(b);for(var f=a('<div class="btn">'+Craft.t("Cancel")+"</div>").appendTo(this.$promptButtons),g=a('<input type="submit" class="btn submit disabled" value="'+Craft.t("OK")+'" />').appendTo(this.$promptButtons),h=0;h<c.length;h++){var i=a('<div><label><input type="radio" name="promptAction" value="'+c[h].value+'"/> '+c[h].title+"</label></div>").appendTo(this.$promptChoices),j=i.find("input");this.addListener(j,"click",function(a){g.removeClass("disabled")})}this.addListener(g,"activate",function(b){var c=a(b.currentTarget).parents(".modal").find("input[name=promptAction]:checked").val(),d=this.$promptApplyToRemainingCheckbox.prop("checked");this._selectPromptChoice(c,d)}),this.addListener(f,"activate",function(a){var b="cancel",c=this.$promptApplyToRemainingCheckbox.prop("checked");this._selectPromptChoice(b,c)}),e&&(this.$promptApplyToRemainingContainer.show(),this.$promptApplyToRemainingLabel.html(" "+Craft.t("Apply this to the {number} remaining conflicts?",{number:e}))),this.modal.show(),this.modal.removeListener(Garnish.Modal.$shade,"click"),this.addListener(Garnish.Modal.$shade,"click","_cancelPrompt")},/**
      * Handles when a user selects one of the prompt choices.
@@ -2056,7 +2056,7 @@ this.maybeLoadMore()}},this))}}},_createSpinnerRowAfter:function(b){return a('<t
 // Reverse the sort direction
 var d=this.elementIndex.getSelectedSortDirection(),e="asc"==d?"desc":"asc";this.elementIndex.setSortDirection(e),this._handleSortHeaderClick(b,c)}},_handleUnselectedSortHeaderClick:function(b){var c=a(b.currentTarget);if(!c.hasClass("loading")){var d=c.attr("data-attribute");this.elementIndex.setSortAttribute(d),this._handleSortHeaderClick(b,c)}},_handleSortHeaderClick:function(a,b){this.$selectedSortHeader&&this.$selectedSortHeader.removeClass("ordered asc desc"),b.removeClass("orderable").addClass("ordered loading"),this.elementIndex.storeSortAttributeAndDirection(),this.elementIndex.updateElements(),
 // No need for two spinners
-this.elementIndex.setIndexAvailable()},_updateTableAttributes:function(a,b){var c=a.closest("tr");for(var d in b)c.children('td[data-attr="'+d+'"]:first').html(b[d])}}),/**
+this.elementIndex.setIndexAvailable()},_updateTableAttributes:function(a,b){var c=a.closest("tr");for(var d in b)b.hasOwnProperty(d)&&c.children('td[data-attr="'+d+'"]:first').html(b[d])}}),/**
  * Tag select input
  */
 Craft.TagSelectInput=Craft.BaseElementSelectInput.extend({searchTimeout:null,searchMenu:null,$container:null,$elementsContainer:null,$elements:null,$addTagInput:null,$spinner:null,_ignoreBlur:!1,init:function(b){
@@ -2100,12 +2100,12 @@ var c=this.getPrice(),d=this.getExpiryValues(),e={name:this.$customerNameInput.v
 // Get a CC token from Stripe.js
 this.$checkoutSubmitBtn.addClass("active"),this.$checkoutSpinner.removeClass("hidden"),0!=c?(Stripe.setPublishableKey(this.stripePublicKey),Stripe.createToken(e,a.proxy(function(a,b){b.error?(this.onPurchaseResponse(),this.showError(b.error.message),Garnish.shake(this.$checkoutForm,"left")):this.sendPurchaseRequest(c,b.id)},this))):this.sendPurchaseRequest(0,null)):Garnish.shake(this.$checkoutForm,"left")}},sendPurchaseRequest:function(b,c){
 // Pass the token along to Elliott to charge the card
-var d=0!=b?this.getExpiryValues():{month:null,year:null},e={ccTokenId:c,expMonth:d.month,expYear:d.year,edition:this.edition,expectedPrice:b,name:this.$customerNameInput.val(),email:this.$customerEmailInput.val(),businessName:this.$businessNameInput.val(),businessAddress1:this.$businessAddress1Input.val(),businessAddress2:this.$businessAddress2Input.val(),businessCity:this.$businessCityInput.val(),businessState:this.$businessStateInput.val(),businessCountry:this.$businessCountryInput.val(),businessZip:this.$businessZipInput.val(),businessTaxId:this.$businessTaxIdInput.val(),purchaseNotes:this.$purchaseNotesInput.val(),couponCode:this.$couponInput.val()};Craft.postActionRequest("app/purchase-upgrade",e,a.proxy(this,"onPurchaseUpgrade"))},onPurchaseResponse:function(){this.submittingPurchase=!1,this.$checkoutSubmitBtn.removeClass("active"),this.$checkoutSpinner.addClass("hidden")},onPurchaseUpgrade:function(b,c){if(this.onPurchaseResponse(),"success"==c)if(b.success){var d=this.getWidth();this.$checkoutScreen.velocity("stop").animateLeft(-d,"fast",a.proxy(function(){this.$checkoutScreen.addClass("hidden")},this)),this.onUpgrade()}else{if(b.errors){var e="";for(var f in b.errors)e&&(e+="<br>"),e+=b.errors[f];this.showError(e)}else var e=Craft.t("An unknown error occurred.");Garnish.shake(this.$checkoutForm,"left")}},showError:function(b){this.$checkoutFormError=a('<p class="error centeralign">'+b+"</p>").insertBefore(this.$checkoutSecure)},onUpgrade:function(){this.$successScreen.css(Craft.left,this.getWidth()).removeClass("hidden").animateLeft(0,"fast");var a=this.$successScreen.find(".btn:first");this.addListener(a,"click",function(){location.reload()}),this.trigger("upgrade")},cleanupCheckoutForm:function(){this.$checkoutForm.find(".error").removeClass("error"),this.$checkoutFormError&&(this.$checkoutFormError.remove(),this.$checkoutFormError=null)},clearCheckoutForm:function(){this.$customerNameInput.val(""),this.$customerEmailInput.val(""),this.$ccNumInput.val(""),this.$ccExpInput.val(""),this.$ccCvcInput.val(""),this.$businessNameInput.val(""),this.$businessAddress1Input.val(""),this.$businessAddress2Input.val(""),this.$businessCityInput.val(""),this.$businessStateInput.val(""),this.$businessCountryInput.val(""),this.$businessZipInput.val(""),this.$businessTaxIdInput.val(""),this.$purchaseNotesInput.val(""),this.$couponInput.val("")},clearCheckoutFormInABit:function(){
+var d=0!=b?this.getExpiryValues():{month:null,year:null},e={ccTokenId:c,expMonth:d.month,expYear:d.year,edition:this.edition,expectedPrice:b,name:this.$customerNameInput.val(),email:this.$customerEmailInput.val(),businessName:this.$businessNameInput.val(),businessAddress1:this.$businessAddress1Input.val(),businessAddress2:this.$businessAddress2Input.val(),businessCity:this.$businessCityInput.val(),businessState:this.$businessStateInput.val(),businessCountry:this.$businessCountryInput.val(),businessZip:this.$businessZipInput.val(),businessTaxId:this.$businessTaxIdInput.val(),purchaseNotes:this.$purchaseNotesInput.val(),couponCode:this.$couponInput.val()};Craft.postActionRequest("app/purchase-upgrade",e,a.proxy(this,"onPurchaseUpgrade"))},onPurchaseResponse:function(){this.submittingPurchase=!1,this.$checkoutSubmitBtn.removeClass("active"),this.$checkoutSpinner.addClass("hidden")},onPurchaseUpgrade:function(b,c){if(this.onPurchaseResponse(),"success"==c)if(b.success){var d=this.getWidth();this.$checkoutScreen.velocity("stop").animateLeft(-d,"fast",a.proxy(function(){this.$checkoutScreen.addClass("hidden")},this)),this.onUpgrade()}else{if(b.errors){var e="";for(var f in b.errors)b.errors.hasOwnProperty(f)&&(e&&(e+="<br>"),e+=b.errors[f]);this.showError(e)}else var e=Craft.t("An unknown error occurred.");Garnish.shake(this.$checkoutForm,"left")}},showError:function(b){this.$checkoutFormError=a('<p class="error centeralign">'+b+"</p>").insertBefore(this.$checkoutSecure)},onUpgrade:function(){this.$successScreen.css(Craft.left,this.getWidth()).removeClass("hidden").animateLeft(0,"fast");var a=this.$successScreen.find(".btn:first");this.addListener(a,"click",function(){location.reload()}),this.trigger("upgrade")},cleanupCheckoutForm:function(){this.$checkoutForm.find(".error").removeClass("error"),this.$checkoutFormError&&(this.$checkoutFormError.remove(),this.$checkoutFormError=null)},clearCheckoutForm:function(){this.$customerNameInput.val(""),this.$customerEmailInput.val(""),this.$ccNumInput.val(""),this.$ccExpInput.val(""),this.$ccCvcInput.val(""),this.$businessNameInput.val(""),this.$businessAddress1Input.val(""),this.$businessAddress2Input.val(""),this.$businessCityInput.val(""),this.$businessStateInput.val(""),this.$businessCountryInput.val(""),this.$businessZipInput.val(""),this.$businessTaxIdInput.val(""),this.$purchaseNotesInput.val(""),this.$couponInput.val("")},clearCheckoutFormInABit:function(){
 // Clear the CC info after a period of inactivity
 this.clearCheckoutFormTimeout=setTimeout(a.proxy(this,"clearCheckoutForm"),Craft.UpgradeModal.clearCheckoutFormTimeoutDuration)}},{clearCheckoutFormTimeoutDuration:3e4}),/**
  * File Manager.
  */
-Craft.Uploader=Garnish.Base.extend({uploader:null,allowedKinds:null,$element:null,settings:null,_rejectedFiles:{},_extensionList:null,_totalFileCounter:0,_validFileCounter:0,init:function(b,c){this._rejectedFiles={size:[],type:[],limit:[]},this.$element=b,this.allowedKinds=null,this._extensionList=null,this._totalFileCounter=0,this._validFileCounter=0,c=a.extend({},Craft.Uploader.defaults,c);var d=c.events;delete c.events,c.allowedKinds&&c.allowedKinds.length&&("string"==typeof c.allowedKinds&&(c.allowedKinds=[c.allowedKinds]),this.allowedKinds=c.allowedKinds,delete c.allowedKinds),c.autoUpload=!1,this.uploader=this.$element.fileupload(c);for(var e in d)this.uploader.on(e,d[e]);this.settings=c,this.uploader.on("fileuploadadd",a.proxy(this,"onFileAdd"))},/**
+Craft.Uploader=Garnish.Base.extend({uploader:null,allowedKinds:null,$element:null,settings:null,_rejectedFiles:{},_extensionList:null,_totalFileCounter:0,_validFileCounter:0,init:function(b,c){this._rejectedFiles={size:[],type:[],limit:[]},this.$element=b,this.allowedKinds=null,this._extensionList=null,this._totalFileCounter=0,this._validFileCounter=0,c=a.extend({},Craft.Uploader.defaults,c);var d=c.events;delete c.events,c.allowedKinds&&c.allowedKinds.length&&("string"==typeof c.allowedKinds&&(c.allowedKinds=[c.allowedKinds]),this.allowedKinds=c.allowedKinds,delete c.allowedKinds),c.autoUpload=!1,this.uploader=this.$element.fileupload(c);for(var e in d)d.hasOwnProperty(e)&&this.uploader.on(e,d[e]);this.settings=c,this.uploader.on("fileuploadadd",a.proxy(this,"onFileAdd"))},/**
 	 * Set uploader parameters.
 	 */
 setParams:function(a){
