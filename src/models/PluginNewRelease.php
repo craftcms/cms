@@ -31,6 +31,11 @@ class PluginNewRelease extends Model
     public $date;
 
     /**
+     * @var \DateTime Date
+     */
+    public $localizedDate;
+
+    /**
      * @var string Notes
      */
     public $notes;
