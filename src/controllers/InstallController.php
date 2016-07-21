@@ -53,7 +53,7 @@ class InstallController extends Controller
      * Index action.
      *
      * @return Response|string The requirements check response if the server doesn’t meet Craft’s requirements, or the rendering result
-     * @throws Exception if it's an Ajax request and the server doesn’t meet Craft’s requirements
+     * @throws \Exception if it's an Ajax request and the server doesn’t meet Craft’s requirements
      */
     public function actionIndex()
     {

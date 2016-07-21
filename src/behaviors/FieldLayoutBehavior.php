@@ -8,6 +8,7 @@
 namespace craft\app\behaviors;
 
 use Craft;
+use craft\app\base\ElementInterface;
 use craft\app\models\FieldLayout;
 use yii\base\Behavior;
 use yii\base\InvalidConfigException;

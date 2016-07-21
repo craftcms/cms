@@ -2,9 +2,7 @@
 namespace craft\app\volumes;
 
 use Craft;
-use craft\app\base\Volume;
 use craft\app\helpers\Url;
-use craft\app\io\flysystemadapters\Local as LocalAdapter;
 
 /**
  * The temporary volume class. Handles the implementation of a temporary volume

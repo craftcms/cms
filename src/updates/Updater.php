@@ -8,14 +8,12 @@
 namespace craft\app\updates;
 
 use Craft;
-use craft\app\base\BasePlugin;
 use craft\app\base\Plugin;
 use craft\app\base\PluginInterface;
 use craft\app\enums\PatchManifestFileAction;
 use craft\app\errors\DbBackupException;
 use craft\app\errors\DbUpdateException;
 use craft\app\errors\DownloadPackageException;
-use craft\app\errors\DownloadValidatePackageException;
 use craft\app\errors\FileException;
 use craft\app\errors\FilePermissionsException;
 use craft\app\errors\InvalidateCacheException;

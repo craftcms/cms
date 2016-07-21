@@ -5,7 +5,7 @@ namespace craft\app\migrations;
 use Craft;
 use craft\app\db\Migration;
 use craft\app\db\Query;
-use craft\app\helpers\JsonHelper;
+use craft\app\helpers\Json;
 use craft\app\helpers\Migration as MigrationHelper;
 
 /**
@@ -128,7 +128,7 @@ class m150428_231346_userpreferences extends Migration
                     $prefs['weekStartDay'] = $user['weekStartDay'];
                 }
 
-                $rows[] = [$user['id'], JsonHelper::encode($prefs)];
+                $rows[] = [$user['id'], Json::encode($prefs)];
             }
 
             $this->batchInsert($this->_prefsTable, [

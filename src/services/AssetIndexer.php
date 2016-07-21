@@ -11,6 +11,7 @@ use craft\app\helpers\Assets as AssetsHelper;
 use craft\app\helpers\Image;
 use craft\app\helpers\Io;
 use craft\app\helpers\StringHelper;
+use craft\app\models\AssetIndexData;
 use craft\app\records\AssetIndexData as AssetIndexDataRecord;
 use craft\app\records\VolumeFolder;
 use yii\base\Component;

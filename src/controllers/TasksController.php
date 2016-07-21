@@ -10,6 +10,7 @@ namespace craft\app\controllers;
 use Craft;
 use craft\app\helpers\Json;
 use craft\app\web\Controller;
+use craft\app\web\Response;
 
 /**
  * The TasksController class is a controller that handles various task related operations such as running, checking task

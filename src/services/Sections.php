@@ -973,7 +973,7 @@ class Sections extends Component
      * @param EntryType $entryType
      *
      * @return boolean Whether the entry type was saved successfully
-     * @throws EntryTypeNotFound if $entryType->id is invalid
+     * @throws EntryTypeNotFoundException if $entryType->id is invalid
      * @throws \Exception if reasons
      */
     public function saveEntryType(EntryType $entryType)

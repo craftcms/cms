@@ -486,7 +486,7 @@ interface ElementInterface extends ComponentInterface
     /**
      * Returns the route for a given element.
      *
-     * @param ElementInterface The matched element.
+     * @param ElementInterface $element The matched element.
      *
      * @return mixed Can be false if no special action should be taken, a string if it should route to a template path,
      *               or an array that can specify a controller action path, params, etc.

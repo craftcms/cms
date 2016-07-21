@@ -16,13 +16,10 @@ use Craft;
 use craft\app\behaviors\FieldLayoutTrait;
 use craft\app\errors\VolumeObjectExistsException;
 use craft\app\errors\VolumeObjectNotFoundException;
-use craft\app\errors\VolumeFolderExistsException;
-use craft\app\helpers\Io;
 use League\Flysystem\AdapterInterface;
 use League\Flysystem\FileExistsException;
 use League\Flysystem\FileNotFoundException;
 use League\Flysystem\Filesystem;
-use League\Flysystem\RootViolationException;
 
 abstract class Volume extends SavableComponent implements VolumeInterface
 {

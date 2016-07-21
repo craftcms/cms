@@ -12,7 +12,6 @@ use craft\app\db\Query;
 use craft\app\elements\Tag;
 use craft\app\helpers\Db;
 use craft\app\models\TagGroup;
-use craft\app\models\TagType;
 
 /**
  * TagQuery represents a SELECT SQL statement for tags in a way that is independent of DBMS.

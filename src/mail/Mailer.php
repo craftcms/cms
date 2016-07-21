@@ -10,7 +10,7 @@ namespace craft\app\mail;
 use Craft;
 use craft\app\elements\User;
 use craft\app\errors\SendEmailException;
-use craft\app\events\SendEmailError;
+use craft\app\events\SendEmailErrorEvent;
 use yii\base\InvalidConfigException;
 use yii\helpers\Markdown;
 
@@ -153,7 +153,7 @@ class Mailer extends \yii\swiftmailer\Mailer
 
         $isSuccessful = null;
 
-        $event = new SendEmailError([
+        $event = new SendEmailErrorEvent([
             'user' => $message->getTo(),
             'email' => $message,
             'variables' => $message->variables,
@@ -170,7 +170,7 @@ class Mailer extends \yii\swiftmailer\Mailer
 
         // Either an exception was thrown or parent::send() returned false.
         if ($isSuccessful === false) {
-            // Fire a 'SendEmailError' event
+            // Fire a 'SendEmailErrorEvent' event
             $this->trigger(static::EVENT_SEND_EMAIL_ERROR, $event);
 
             throw new SendEmailException(Craft::t('app', 'Email error: {error}', ['error' => $event->error]));

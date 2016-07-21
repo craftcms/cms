@@ -11,8 +11,6 @@ use Craft;
 use craft\app\db\QueryAbortedException;
 use craft\app\elements\GlobalSet;
 use craft\app\helpers\Db;
-use craft\app\models\GlobalSetGroup;
-use craft\app\models\GlobalSetType;
 
 /**
  * GlobalSetQuery represents a SELECT SQL statement for global sets in a way that is independent of DBMS.

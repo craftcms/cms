@@ -39,16 +39,16 @@ use yii\base\UnknownPropertyException;
  * @property string|null           $thumbUrl            The URL to the element’s thumbnail, if there is one
  * @property string|null           $iconUrl             The URL to the element’s icon image, if there is one
  * @property string|null           $status              The element’s status
- * @property ElementInterface|self $next                The next element relative to this one, from a given set of criteria
- * @property ElementInterface|self $prev                The previous element relative to this one, from a given set of criteria
- * @property ElementInterface|self $parent              The element’s parent
+ * @property Element               $next                The next element relative to this one, from a given set of criteria
+ * @property Element               $prev                The previous element relative to this one, from a given set of criteria
+ * @property Element               $parent              The element’s parent
  * @property integer|null          $structureId         The ID of the structure that the element is associated with, if any
  * @property ElementQueryInterface $ancestors           The element’s ancestors
  * @property ElementQueryInterface $descendants         The element’s descendants
  * @property ElementQueryInterface $children            The element’s children
  * @property ElementQueryInterface $siblings            All of the element’s siblings
- * @property ElementInterface|self $prevSibling         The element’s previous sibling
- * @property ElementInterface|self $nextSibling         The element’s next sibling
+ * @property Element               $prevSibling         The element’s previous sibling
+ * @property Element               $nextSibling         The element’s next sibling
  * @property boolean               $hasDescendants      Whether the element has descendants
  * @property integer               $totalDescendants    The total number of descendants that the element has
  * @property string                $title               The element’s title

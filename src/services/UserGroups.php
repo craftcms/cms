@@ -12,6 +12,7 @@ use craft\app\db\Query;
 use craft\app\elements\User;
 use craft\app\errors\UserGroupNotFoundException;
 use craft\app\events\AssignUserGroupsEvent;
+use craft\app\events\UserEvent;
 use craft\app\models\UserGroup;
 use craft\app\records\UserGroup as UserGroupRecord;
 use yii\base\Component;

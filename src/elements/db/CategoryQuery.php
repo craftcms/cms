@@ -14,7 +14,6 @@ use craft\app\elements\Category;
 use craft\app\helpers\ArrayHelper;
 use craft\app\helpers\Db;
 use craft\app\models\CategoryGroup;
-use craft\app\models\CategoryType;
 
 /**
  * CategoryQuery represents a SELECT SQL statement for categories in a way that is independent of DBMS.

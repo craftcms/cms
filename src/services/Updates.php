@@ -16,6 +16,7 @@ use craft\app\events\Event;
 use craft\app\events\UpdateEvent;
 use craft\app\helpers\DateTimeHelper;
 use craft\app\helpers\Io;
+use craft\app\helpers\Json;
 use craft\app\helpers\Update as UpdateHelper;
 use craft\app\models\AppUpdate;
 use craft\app\models\PluginNewRelease;
@@ -342,7 +343,7 @@ class Updates extends Component
                 }
 
                 $responseBody = $response->getBody();
-                $releases = JsonHelper::decode($responseBody);
+                $releases = Json::decode($responseBody);
 
                 if (!$releases) {
                     Craft::warning('The “'.$plugin->getName()."” plugin release feed didn’t come back as valid JSON:\n".$responseBody);
@@ -554,7 +555,7 @@ class Updates extends Component
                         }
                     }
 
-                    Craft::info('Updating plugin "'.$class.'" from '.$localVersion.' to '.$latestVersion.'.', LogLevel::Info);
+                    Craft::info('Updating plugin "'.$class.'" from '.$localVersion.' to '.$latestVersion.'.');
                 }
 
                 $result = $updater->getUpdateFileInfo($handle);

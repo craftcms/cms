@@ -1014,6 +1014,7 @@ class UsersController extends Controller
                         Craft::$app->getUsers()->sendNewEmailVerifyEmail($user);
                     }
                 } catch (\phpmailerException $e) {
+                    // TODO: Fix exception name
                     Craft::$app->getSession()->setError(Craft::t('app',
                         'User saved, but couldn’t send verification email. Check your email settings.'));
                 }

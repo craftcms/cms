@@ -310,7 +310,7 @@ class Url
     /**
      * Removes the query string from a given URL.
      *
-     * @param $url The URL to check.
+     * @param string $url The URL to check.
      *
      * @return string The URL without a query string.
      */

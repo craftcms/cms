@@ -302,7 +302,7 @@ class DateTimeHelper
      * @param string $language The language code (e.g. `en-US`, `en`). If this is null, the current
      *                         [[\yii\base\Application::language|application language]] will be used.
      *
-     * @return The translated date string
+     * @return string The translated date string
      */
     public static function translateDate($str, $language = null)
     {
