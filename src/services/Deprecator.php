@@ -249,12 +249,6 @@ class Deprecator extends Component
         $log->class = !empty($traces[1]['class']) ? $traces[1]['class'] : null;
         $log->method = !empty($traces[1]['function']) ? $traces[1]['function'] : null;
 
-        /* HIDE */
-        $foundPlugin = false;
-        $pluginsPath = realpath(Craft::$app->getPath()->getPluginsPath()).'/';
-        $pluginsPathLength = strlen($pluginsPath);
-        /* end HIDE */
-
         $request = Craft::$app->getRequest();
         $isTemplateRendering = (!$request->getIsConsoleRequest() && $request->getIsSiteRequest() && Craft::$app->getView()->getIsRenderingTemplate());
 
@@ -303,43 +297,7 @@ class Deprecator extends Component
                         break;
                     }
                 }
-
-                /* HIDE */
-                if ($isTemplateRendering && !$foundTemplate) {
-                    // Is this a plugin's template?
-                    $request = Craft::$app->getRequest();
-                    if (!$foundPlugin && !$request->getIsConsoleRequest() && $request->getIsCpRequest() && $logTrace['template']) {
-                        $firstSeg = array_shift(explode('/', $logTrace['template']));
-
-                        if (Craft::$app->getPlugins()->getPlugin($firstSeg)) {
-                            $log->plugin = $firstSeg;
-                            $foundPlugin = true;
-                        }
-                    }
-
-                    $foundTemplate = true;
-                }
-                /* end HIDE */
             }
-
-            /* HIDE */
-            // Is this a plugin's file?
-            else if (!$foundPlugin && $logTrace['file']) {
-                $filePath = realpath($logTrace['file']).'/';
-
-                if (strncmp($pluginsPath, $logTrace['file'],
-                        $pluginsPathLength) === 0
-                ) {
-                    $remainingFilePath = StringHelper::substr($filePath, $pluginsPathLength);
-                    $firstSeg = array_shift(explode('/', $remainingFilePath));
-
-                    if (Craft::$app->getPlugins()->getPlugin($firstSeg)) {
-                        $log->plugin = $firstSeg;
-                        $foundPlugin = true;
-                    }
-                }
-            }
-            /* end HIDE */
 
             $logTraces[] = $logTrace;
         }
