@@ -142,7 +142,7 @@ interface VolumeInterface extends SavableComponentInterface
      * Renames a directory.
      *
      * @param string $path    The path of the directory, relative to the source’s root.
-     * @param string $newPath The new path of the directory, relative to the source’s root.
+     * @param string $newName The new path of the directory, relative to the source’s root.
      *
      * @throws VolumeObjectExistsException if a directory with such name already exists.
      * @throws VolumeObjectNotFoundException if a directory with such name already exists.

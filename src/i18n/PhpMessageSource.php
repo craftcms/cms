@@ -49,6 +49,9 @@ class PhpMessageSource extends \yii\i18n\PhpMessageSource
     /**
      * Returns the override methods defined in the site’s translations folder.
      *
+     * @param string $category
+     * @param string $language
+     *
      * @return array|null
      */
     private function _loadOverrideMessages($category, $language)

@@ -55,7 +55,7 @@ class Security extends \yii\base\Security
     /**
      * Hashes a given password with the bcrypt blowfish encryption algorithm.
      *
-     * @param string  $string       The string to hash
+     * @param string  $password     The string to hash
      * @param boolean $validateHash If you want to validate the just generated hash. Will throw an exception if
      *                              validation fails.
      *

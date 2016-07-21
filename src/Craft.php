@@ -111,6 +111,10 @@ class Craft extends Yii
 
     /**
      * Class autoloader.
+     *
+     * @param string $className
+     *
+     * @return void
      */
     public static function autoload($className)
     {

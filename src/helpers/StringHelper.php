@@ -50,6 +50,8 @@ class StringHelper extends \yii\helpers\StringHelper
     /**
      * Returns an array consisting of the characters in the string.
      *
+     * @param string $str
+     *
      * @return array An array of string chars
      */
     public static function charsAsArray($str)
@@ -991,7 +993,7 @@ class StringHelper extends \yii\helpers\StringHelper
      * Prepares a string for casing routines.
      *
      * @param string  $string            The string
-     * @param
+     * @param boolean $lower
      * @param boolean $removePunctuation Whether punctuation marks should be removed (default is true)
      *
      * @return array The prepped words in the string

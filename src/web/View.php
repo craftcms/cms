@@ -161,8 +161,7 @@ class View extends \yii\web\View
      *
      * @param string $loaderClass The name of the class that should be initialized as the Twig instance’s template
      *                            loader. If no class is passed in, [[TemplateLoader]] will be used.
-     *
-     * @aram array $options Options to instantiate Twig with
+     * @param array  $options     Options to instantiate Twig with
      *
      * @return Environment The Twig Environment instance.
      */

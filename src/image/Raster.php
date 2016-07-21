@@ -77,7 +77,7 @@ class Raster extends Image
     // =========================================================================
 
     /**
-     * @return Image
+     * Constructor
      */
     public function __construct()
     {
@@ -404,7 +404,8 @@ class Raster extends Image
     /**
      * Saves the image to the target path.
      *
-     * @param string $targetPath
+     * @param string  $targetPath
+     * @param boolean $autoQuality
      *
      * @throws ImageException If Imagine threw an exception.
      * @return null

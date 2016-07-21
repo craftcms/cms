@@ -250,6 +250,9 @@ class Et extends Component
     /**
      * Fetches the price of an upgrade with a coupon applied to it.
      *
+     * @param integer $edition
+     * @param string $couponCode
+     *
      * @return EtModel|null
      */
     public function fetchCouponPrice($edition, $couponCode)
@@ -351,7 +354,7 @@ class Et extends Component
     /**
      * Registers a given plugin with the current Craft license.
      *
-     * @string $pluginHandle The plugin handle that should be registered
+     * @param string $pluginHandle The plugin handle that should be registered
      *
      * @return EtModel
      */
@@ -369,7 +372,7 @@ class Et extends Component
     /**
      * Transfers a given plugin to the current Craft license.
      *
-     * @string $pluginHandle The plugin handle that should be transferred
+     * @param string $pluginHandle The plugin handle that should be transferred
      *
      * @return EtModel
      */
@@ -387,7 +390,7 @@ class Et extends Component
     /**
      * Unregisters a given plugin from the current Craft license.
      *
-     * @string $pluginHandle The plugin handle that should be unregistered
+     * @param string $pluginHandle The plugin handle that should be unregistered
      *
      * @return EtModel
      */

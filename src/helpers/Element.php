@@ -73,6 +73,8 @@ class Element
      * Sets the URI on an element using a given URL format, tweaking its slug if necessary to ensure it's unique.
      *
      * @param ElementInterface $element
+     *
+     * @throws OperationAbortedException
      */
     public static function setUniqueUri(ElementInterface $element)
     {

@@ -90,7 +90,8 @@ abstract class Image
     /**
      * Saves the image to the target path.
      *
-     * @param string $targetPath
+     * @param string  $targetPath
+     * @param boolean $autoQuality
      *
      * @throws ImageException If the image cannot be saved.
      * @return null

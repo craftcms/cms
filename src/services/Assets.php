@@ -358,7 +358,7 @@ class Assets extends Component
      *
      * Replace an Asset's file by it's id, a local file and the filename to use.
      *
-     * @param Asset $existingAsset
+     * @param Asset $asset
      * @param       $pathOnServer
      * @param       $filename
      *
@@ -1166,7 +1166,8 @@ class Assets extends Component
     /**
      * Ensure a folder entry exists in the DB for the full path and return it's id.
      *
-     * @param string $fullPath The path to ensure the folder exists at.
+     * @param string  $fullPath The path to ensure the folder exists at.
+     * @param integer $volumeId
      *
      * @return integer
      */
@@ -1373,6 +1374,8 @@ class Assets extends Component
 
     /**
      * Returns an AssetQuery object prepped for retrieving assets.
+     *
+     * @param AssetQuery|array $criteria
      *
      * @return AssetQuery
      */

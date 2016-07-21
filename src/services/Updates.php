@@ -290,6 +290,8 @@ class Updates extends Component
      * Check plugins’ release feeds and include any pending updates in the given Update
      *
      * @param Update $updateModel
+     *
+     * @return void
      */
     public function checkPluginReleaseFeeds(Update $updateModel)
     {
