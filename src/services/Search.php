@@ -379,7 +379,7 @@ class Search extends Component
 
         // Add each group to the where clause
         foreach ($this->_groups as $group) {
-            $condition = $this->_processTokens($group, falsee, $localeId);
+            $condition = $this->_processTokens($group, false, $localeId);
 
             if ($condition === false) {
                 return false;
