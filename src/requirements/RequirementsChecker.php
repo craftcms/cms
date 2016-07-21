@@ -49,6 +49,7 @@ class RequirementsChecker
     var $iniSetMessage;
     var $memoryMessage;
     var $webRootFolderMessage;
+    var $result;
 
     var $requiredMySqlVersion = '5.5.0';
 
