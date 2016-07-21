@@ -13,12 +13,12 @@ use craft\app\db\Query;
 use craft\app\errors\OperationAbortedException;
 
 /**
- * Class Element
+ * Class ElementHelper
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
-class Element
+class ElementHelper
 {
     // Public Methods
     // =========================================================================

@@ -13,7 +13,7 @@ use craft\app\base\ElementInterface;
 use craft\app\elements\Category;
 use craft\app\errors\InvalidTypeException;
 use craft\app\helpers\ArrayHelper;
-use craft\app\helpers\Element as ElementHelper;
+use craft\app\helpers\ElementHelper;
 use craft\app\helpers\StringHelper;
 use craft\app\services\Elements;
 use yii\web\BadRequestHttpException;

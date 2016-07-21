@@ -27,7 +27,7 @@ use craft\app\events\MergeElementsEvent;
 use craft\app\helpers\ArrayHelper;
 use craft\app\helpers\Component as ComponentHelper;
 use craft\app\helpers\DateTimeHelper;
-use craft\app\helpers\Element as ElementHelper;
+use craft\app\helpers\ElementHelper;
 use craft\app\helpers\StringHelper;
 use craft\app\records\Element as ElementRecord;
 use craft\app\records\ElementLocale as ElementLocaleRecord;
