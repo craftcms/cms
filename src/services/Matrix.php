@@ -318,7 +318,6 @@ class Matrix extends Component
                         throw new Exception('An error occurred while saving this Matrix block type.');
                     }
 
-                    $field->required = $field->required;
                     $field->sortOrder = ++$sortOrder;
 
                     $fieldLayoutFields[] = $field;

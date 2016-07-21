@@ -62,12 +62,12 @@ class MatrixSettings extends Model
      * Constructor
      *
      * @param Matrix|null $matrixField
-     *
-     * @return MatrixSettings
      */
     public function __construct(Matrix $matrixField = null)
     {
         $this->_matrixField = $matrixField;
+
+        parent::__construct();
     }
 
     /**

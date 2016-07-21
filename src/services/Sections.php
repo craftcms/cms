@@ -952,19 +952,21 @@ class Sections extends Component
      *
      * @param integer $entryTypeHandle
      *
-     * @return array
+     * @return EntryType[]
      */
     public function getEntryTypesByHandle($entryTypeHandle)
     {
-        $entryTypes = EntryTypeRecord::findAll([
+        $entryTypes = [];
+
+        $entryTypeRecords = EntryTypeRecord::findAll([
             'handle' => $entryTypeHandle
         ]);
 
-        foreach ($entryTypes as $key => $value) {
-            $entryTypes[$key] = EntryType::create($value);
+        foreach ($entryTypeRecords as $record) {
+            $entryTypes[] = EntryType::create($record);
         }
 
-        $entryTypes;
+        return $entryTypes;
     }
 
     /**

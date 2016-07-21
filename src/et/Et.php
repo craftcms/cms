@@ -92,7 +92,6 @@ class Et
             'localBuild' => Craft::$app->build,
             'localVersion' => Craft::$app->version,
             'localEdition' => Craft::$app->getEdition(),
-            'userEmail' => $userEmail,
             'userEmail' => Craft::$app->getUser()->getIdentity()->email,
             'track' => Craft::$app->track,
             'showBeta' => Craft::$app->getConfig()->get('showBetaUpdates'),
