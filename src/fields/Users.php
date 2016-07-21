@@ -31,7 +31,6 @@ class Users extends BaseRelationField
 
     /**
      * @inheritdoc
-     * @return User
      */
     protected static function elementType()
     {

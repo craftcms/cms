@@ -32,7 +32,6 @@ class Categories extends BaseRelationField
 
     /**
      * @inheritdoc
-     * @return Category
      */
     protected static function elementType()
     {

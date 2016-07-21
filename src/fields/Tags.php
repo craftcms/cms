@@ -33,7 +33,6 @@ class Tags extends BaseRelationField
 
     /**
      * @inheritdoc
-     * @return Tag
      */
     protected static function elementType()
     {

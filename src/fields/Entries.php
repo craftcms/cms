@@ -31,7 +31,6 @@ class Entries extends BaseRelationField
 
     /**
      * @inheritdoc
-     * @return Entry
      */
     protected static function elementType()
     {

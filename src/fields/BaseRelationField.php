@@ -41,7 +41,7 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
     /**
      * Returns the element class associated with this field type.
      *
-     * @return Element The Element class name
+     * @return string The Element class name
      */
     protected static function elementType()
     {
