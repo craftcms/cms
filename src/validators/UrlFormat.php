@@ -33,24 +33,20 @@ class UrlFormat extends Validator
     // =========================================================================
 
     /**
-     * @param $object
-     * @param $attribute
-     *
-     * @return void
+     * @inheritdoc
      */
-    public function validateAttribute($object, $attribute)
+    public function validateAttribute($model, $attribute)
     {
-        $urlFormat = $object->$attribute;
+        $urlFormat = $model->$attribute;
 
         if ($urlFormat) {
             // Remove any leading or trailing slashes/spaces
             $urlFormat = trim($urlFormat, '/ ');
-            $object->$attribute = $urlFormat;
+            $model->$attribute = $urlFormat;
 
             if ($this->requireSlug) {
                 if (!ElementHelper::doesUrlFormatHaveSlugTag($urlFormat)) {
-                    $this->addError($object, $attribute, Craft::t('app', '{attribute} must contain “{slug}”',
-                        ['attribute' => $object->attribute]));
+                    $this->addError($model, $attribute, Craft::t('app', '{attribute} must contain “{slug}”', ['attribute' => $model->$attribute]));
                 }
             }
         }

@@ -64,6 +64,7 @@ class User extends Component
      */
     public function getIsAdmin()
     {
+        /** @var \craft\app\elements\User $user */
         $user = $this->getIdentity();
 
         return ($user && $user->admin);

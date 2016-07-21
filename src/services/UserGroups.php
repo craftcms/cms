@@ -250,9 +250,8 @@ class UserGroups extends Component
             $this->trigger(static::EVENT_BEFORE_ASSIGN_USER_TO_DEFAULT_GROUP, $event);
 
             // Is the event is giving us the go-ahead?
-            if ($event->performAction) {
-                $success = $this->assignUserToGroups($user->id,
-                    [$defaultGroupId]);
+            if ($event->isValid) {
+                $success = $this->assignUserToGroups($user->id, [$defaultGroupId]);
 
                 if ($success) {
                     // Fire an 'afterAssignUserToDefaultGroup' event

@@ -343,6 +343,7 @@ class Volumes extends Component
 
     public function saveVolume(VolumeInterface $volume, $validate = true)
     {
+        /** @var Volume $volume */
         if (!$validate || $volume->validate()) {
             $transaction = Craft::$app->getDb()->beginTransaction();
 

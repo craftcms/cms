@@ -102,6 +102,7 @@ abstract class Template extends \Twig_Template
      */
     private function _includeElementInTemplateCaches(ElementInterface $element)
     {
+        /** @var Element $element */
         $elementId = $element->id;
 
         if ($elementId) {

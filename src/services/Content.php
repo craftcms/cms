@@ -107,6 +107,7 @@ class Content extends Component
      */
     public function populateElementContent(ElementInterface $element)
     {
+        /** @var Element $element */
         // Make sure the element has content
         if (!$element->hasContent()) {
             return;

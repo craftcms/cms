@@ -19,6 +19,7 @@ use craft\app\helpers\Io;
 use craft\app\helpers\Json;
 use craft\app\helpers\Update as UpdateHelper;
 use craft\app\models\AppUpdate;
+use craft\app\models\Et;
 use craft\app\models\PluginNewRelease;
 use craft\app\models\PluginUpdate;
 use craft\app\models\Update;
@@ -202,6 +203,7 @@ class Updates extends Component
                     $errors[] = Craft::t('app', 'Craft is unable to determine if an update is available at this time.');
                     $updateModel->errors = $errors;
                 } else {
+                    /** @var Update $updateModel */
                     $updateModel = $etModel->data;
 
                     // Search for any missing plugin updates based on their feeds
@@ -241,6 +243,7 @@ class Updates extends Component
      */
     public function setNewPluginInfo(PluginInterface $plugin)
     {
+        /** @var Plugin $plugin */
         $affectedRows = Craft::$app->getDb()->createCommand()
             ->update(
                 '{{%plugins}}',
@@ -257,7 +260,7 @@ class Updates extends Component
     }
 
     /**
-     * @return Update
+     * @return Et
      */
     public function check()
     {
@@ -268,6 +271,7 @@ class Updates extends Component
         $updateModel->app->localVersion = Craft::$app->version;
         $updateModel->app->localBuild = Craft::$app->build;
 
+        /** @var Plugin[] $plugins */
         $plugins = Craft::$app->getPlugins()->getAllPlugins();
 
         $pluginUpdateModels = [];
