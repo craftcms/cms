@@ -9,6 +9,7 @@ namespace craft\app\tools;
 
 use Craft;
 use craft\app\base\Element;
+use craft\app\base\Field;
 use craft\app\base\Tool;
 use craft\app\base\ElementInterface;
 use craft\app\db\Query;
@@ -97,6 +98,7 @@ class SearchIndex extends Tool
                         $keywords = [];
 
                         foreach ($fieldLayout->getFields() as $field) {
+                            /** @var Field $field */
                             // Set the keywords for the content's locale
                             $fieldValue = $element->getFieldValue($field->handle);
                             $fieldSearchKeywords = $field->getSearchKeywords($fieldValue, $element);

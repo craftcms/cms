@@ -8,7 +8,7 @@
 namespace craft\app\controllers;
 
 use Craft;
-use craft\app\base\ElementInterface;
+use craft\app\base\Element;
 use craft\app\models\Structure;
 use craft\app\web\Controller;
 use yii\web\ForbiddenHttpException;
@@ -35,7 +35,7 @@ class StructuresController extends Controller
     private $_structure;
 
     /**
-     * @var ElementInterface
+     * @var Element
      */
     private $_element;
 

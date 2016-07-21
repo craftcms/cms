@@ -461,6 +461,7 @@ class Plugins extends Component
      */
     public function hasPluginVersionNumberChanged(PluginInterface $plugin)
     {
+        /** @var Plugin $plugin */
         $this->loadPlugins();
         $handle = $plugin->getHandle();
 
@@ -482,6 +483,7 @@ class Plugins extends Component
      */
     public function doesPluginRequireDatabaseUpdate(PluginInterface $plugin)
     {
+        /** @var Plugin $plugin */
         $this->loadPlugins();
         $handle = $plugin->getHandle();
 

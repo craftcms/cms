@@ -8,6 +8,7 @@
 namespace craft\app\services;
 
 use Craft;
+use craft\app\base\Element;
 use craft\app\base\ElementInterface;
 use craft\app\errors\StructureNotFoundException;
 use craft\app\events\MoveElementEvent;
@@ -269,6 +270,7 @@ class Structures extends Component
      */
     private function _getElementRecord($structureId, ElementInterface $element)
     {
+        /** @var Element $element */
         $elementId = $element->id;
 
         if ($elementId) {
@@ -323,6 +325,7 @@ class Structures extends Component
      */
     private function _doIt($structureId, ElementInterface $element, StructureElementRecord $targetElementRecord, $action, $mode)
     {
+        /** @var Element $element */
         // Figure out what we're doing
         if ($mode != 'insert') {
             // See if there's an existing structure element record

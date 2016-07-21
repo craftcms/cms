@@ -8,6 +8,7 @@
 namespace craft\app\debug;
 
 use Craft;
+use craft\app\base\Plugin;
 use GuzzleHttp\Client;
 use Imagine\Gd\Imagine;
 use yii\debug\Panel;
@@ -83,6 +84,7 @@ class InfoPanel extends Panel
         $plugins = [];
 
         foreach (Craft::$app->getPlugins()->getAllPlugins() as $plugin) {
+            /** @var Plugin $plugin */
             $plugins[] = [
                 'name' => $plugin->name,
                 'version' => $plugin->version,

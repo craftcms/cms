@@ -15,6 +15,8 @@ use craft\app\base\Model;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
+ *
+ * @property string|null $urlFormat URL format
  */
 class Section extends Model
 {
@@ -150,7 +152,7 @@ class Section extends Model
      */
     public function isHomepage()
     {
-        return ($this->type == self::TYPE_SINGLE && $this->urlFormat == '__home__');
+        return ($this->type == self::TYPE_SINGLE && $this->getUrlFormat() == '__home__');
     }
 
     /**

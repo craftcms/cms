@@ -9,6 +9,7 @@ namespace craft\app\elements\db;
 
 use Craft;
 use craft\app\base\ElementInterface;
+use craft\app\base\Field;
 use craft\app\db\Query;
 use craft\app\helpers\ArrayHelper;
 use craft\app\helpers\Db;
@@ -265,6 +266,7 @@ class ElementRelationParamParser
 
                         foreach ($blockTypes as $blockType) {
                             foreach ($blockType->getFields() as $blockTypeField) {
+                                /** @var Field $blockTypeField */
                                 if ($blockTypeField->handle == $fieldHandleParts[1]) {
                                     $blockTypeFieldIds[] = $blockTypeField->id;
                                     break;

@@ -111,6 +111,7 @@ class FieldLayout extends Model
         $ids = [];
 
         foreach ($this->getFields() as $field) {
+            /** @var Field $field */
             $ids[] = $field->id;
         }
 

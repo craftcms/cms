@@ -8,6 +8,7 @@
 namespace craft\app\helpers;
 
 use Craft;
+use craft\app\base\Element;
 use craft\app\base\ElementInterface;
 use craft\app\db\Query;
 use craft\app\errors\OperationAbortedException;
@@ -32,6 +33,7 @@ class ElementHelper
      */
     public static function setValidSlug(ElementInterface $element)
     {
+        /** @var Element $element */
         $slug = $element->slug;
 
         if (!$slug) {
@@ -78,6 +80,7 @@ class ElementHelper
      */
     public static function setUniqueUri(ElementInterface $element)
     {
+        /** @var Element $element */
         $urlFormat = $element->getUrlFormat();
 
         // No URL format, no URI.

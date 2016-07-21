@@ -129,6 +129,7 @@ class FieldLayoutTab extends Model
             $layout = $this->getLayout();
 
             if ($layout) {
+                /** @var Field[] $fields */
                 $fields = $layout->getFields();
 
                 foreach ($fields as $field) {

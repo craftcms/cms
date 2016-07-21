@@ -15,6 +15,7 @@ use craft\app\base\ElementActionInterface;
 use craft\app\elements\Asset;
 use craft\app\elements\Category;
 use craft\app\base\ElementInterface;
+use craft\app\elements\db\ElementQuery;
 use craft\app\elements\Entry;
 use craft\app\elements\GlobalSet;
 use craft\app\elements\MatrixBlock;
@@ -300,6 +301,7 @@ class Elements extends Component
      */
     public function saveElement(ElementInterface $element, $validateContent = null)
     {
+        /** @var Element $element */
         $isNewElement = !$element->id;
 
         // Validation
@@ -594,6 +596,7 @@ class Elements extends Component
      */
     public function updateElementSlugAndUri(ElementInterface $element, $updateOtherLocales = true, $updateDescendants = true, $asTask = false)
     {
+        /** @var Element $element */
         if ($asTask) {
             Craft::$app->getTasks()->queueTask([
                 'type' => UpdateElementSlugsAndUris::className(),
@@ -643,6 +646,7 @@ class Elements extends Component
      */
     public function updateElementSlugAndUriInOtherLocales(ElementInterface $element)
     {
+        /** @var Element $element */
         foreach (Craft::$app->getI18n()->getSiteLocaleIds() as $localeId) {
             if ($localeId == $element->locale) {
                 continue;
@@ -670,6 +674,8 @@ class Elements extends Component
      */
     public function updateDescendantSlugsAndUris(ElementInterface $element, $updateOtherLocales = true, $asTask = false)
     {
+        /** @var Element $element */
+        /** @var ElementQuery $query */
         $query = $element::find()
             ->descendantOf($element)
             ->descendantDist(1)
@@ -859,6 +865,7 @@ class Elements extends Component
 
                 foreach ($records as $record) {
                     // If this element still has any children, move them up before the one getting deleted.
+                    /** @var StructureElementRecord[] $children */
                     $children = $record->children()->all();
 
                     foreach ($children as $child) {
@@ -1103,6 +1110,7 @@ class Elements extends Component
      */
     public function setPlaceholderElement(ElementInterface $element)
     {
+        /** @var Element $element */
         // Won't be able to do anything with this if it doesn't have an ID or locale
         if (!$element->id || !$element->locale) {
             return;

@@ -112,6 +112,7 @@ class ElementsController extends BaseElementsController
      */
     public function actionSaveElement()
     {
+        /** @var Element $element */
         $element = $this->_getEditorElement();
         $namespace = Craft::$app->getRequest()->getRequiredBodyParam('namespace');
         $params = Craft::$app->getRequest()->getBodyParam($namespace);
@@ -309,6 +310,7 @@ class ElementsController extends BaseElementsController
      */
     private function _getEditorHtmlResponse(ElementInterface $element, $includeLocales)
     {
+        /** @var Element $element */
         $localeIds = ElementHelper::getEditableLocaleIdsForElement($element);
 
         if (!$localeIds) {

@@ -8,6 +8,7 @@
 namespace craft\app\services;
 
 use Craft;
+use craft\app\base\Field;
 use craft\app\db\Query;
 use craft\app\errors\EntryDraftNotFoundException;
 use craft\app\events\DraftEvent;
@@ -461,6 +462,7 @@ class EntryRevisions extends Component
         $content = $revision->getContentFromPost();
 
         foreach (Craft::$app->getFields()->getAllFields() as $field) {
+            /** @var Field $field */
             if (isset($content[$field->handle]) && $content[$field->handle] !== null) {
                 $revisionData['fields'][$field->id] = $content[$field->handle];
             }

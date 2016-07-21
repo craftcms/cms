@@ -562,6 +562,7 @@ class Fields extends Component
      */
     public function saveField(FieldInterface $field, $validate = true)
     {
+        /** @var Field $field */
         if ((!$validate || $field->validate()) && $field->beforeSave()) {
             $transaction = Craft::$app->getDb()->beginTransaction();
             try {
@@ -957,6 +958,7 @@ class Fields extends Component
             $tab->id = $tabRecord->id;
 
             foreach ($tab->getFields() as $field) {
+                /** @var Field $field */
                 $fieldRecord = new FieldLayoutFieldRecord();
                 $fieldRecord->layoutId = $layout->id;
                 $fieldRecord->tabId = $tab->id;

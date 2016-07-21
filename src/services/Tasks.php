@@ -123,6 +123,7 @@ class Tasks extends Component
      */
     public function saveTask(TaskInterface $task, $validate = true)
     {
+        /** @var Task $task */
         if (!$validate || $task->validate()) {
             $transaction = Craft::$app->getDb()->beginTransaction();
             try {
@@ -206,6 +207,7 @@ class Tasks extends Component
 
             // Delete any of its subtasks
             $taskRecord = $this->_getTaskRecordById($taskId);
+            /** @var TaskRecord[] $subtaskRecords */
             $subtaskRecords = $taskRecord->children()->all();
 
             foreach ($subtaskRecords as $subtaskRecord) {
@@ -250,6 +252,7 @@ class Tasks extends Component
      */
     public function runTask(TaskInterface $task)
     {
+        /** @var Task $task */
         $taskRecord = $this->_getTaskRecordById($task->id);
         $error = null;
 
@@ -316,6 +319,7 @@ class Tasks extends Component
      */
     public function fail(TaskInterface $task, $error = null)
     {
+        /** @var Task $task */
         $task->status = Task::STATUS_ERROR;
         $this->saveTask($task);
 

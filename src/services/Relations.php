@@ -8,6 +8,7 @@
 namespace craft\app\services;
 
 use Craft;
+use craft\app\base\Element;
 use craft\app\base\ElementInterface;
 use craft\app\fields\BaseRelationField;
 use yii\base\Component;
@@ -37,6 +38,7 @@ class Relations extends Component
      */
     public function saveRelations(BaseRelationField $field, ElementInterface $source, $targetIds)
     {
+        /** @var Element $source */
         if (!is_array($targetIds)) {
             $targetIds = [];
         }

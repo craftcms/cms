@@ -59,6 +59,7 @@ class Search extends Component
      */
     public function indexElementAttributes(ElementInterface $element)
     {
+        /** @var Element $element */
         // Does it have any searchable attributes?
         $searchableAttributes = $element::defineSearchableAttributes();
 

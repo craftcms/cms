@@ -10,6 +10,7 @@ namespace craft\app\services;
 use Craft;
 use craft\app\base\Element;
 use craft\app\base\ElementInterface;
+use craft\app\base\Field;
 use craft\app\db\Query;
 use craft\app\elements\db\MatrixBlockQuery;
 use craft\app\errors\MatrixBlockNotFoundException;
@@ -186,6 +187,7 @@ class Matrix extends Component
         $contentService->fieldColumnPrefix = 'field_'.$blockType->handle.'_';
 
         foreach ($blockType->getFields() as $field) {
+            /** @var Field $field */
             // Hack to allow blank field names
             if (!$field->name) {
                 $field->name = '__blank__';
@@ -270,6 +272,7 @@ class Matrix extends Component
 
                     // Figure out which ones are still around
                     foreach ($blockType->getFields() as $field) {
+                        /** @var Field $field */
                         if (!$field->isNew()) {
                             unset($oldFieldsById[$field->id]);
                         }
@@ -347,7 +350,7 @@ class Matrix extends Component
                 // Update the block type with the field layout ID
                 $blockTypeRecord->save(false);
 
-                if (!$isNewBlockType) {
+                if (isset($oldBlockType)) {
                     // Delete the old field layout
                     $fieldsService->deleteLayoutById($oldBlockType->fieldLayoutId);
                 }
@@ -767,6 +770,7 @@ class Matrix extends Component
      */
     public function saveField(MatrixField $field, ElementInterface $owner)
     {
+        /** @var Element $owner */
         /** @var MatrixBlockQuery $query */
         /** @var MatrixBlock[] $blocks */
         $query = $owner->getFieldValue($field->handle);
@@ -989,6 +993,7 @@ class Matrix extends Component
      */
     private function _applyFieldTranslationSetting($owner, $field, $blocks)
     {
+        /** @var Element $owner */
         // Does it look like any work is needed here?
         $applyNewTranslationSetting = false;
 
@@ -1006,6 +1011,7 @@ class Matrix extends Component
         if ($applyNewTranslationSetting) {
             // Get all of the blocks for this field/owner that use the other locales, whose ownerLocale attribute is set
             // incorrectly
+            /** @var MatrixBlock[] $blocksInOtherLocales */
             $blocksInOtherLocales = [];
 
             $query = MatrixBlock::find()

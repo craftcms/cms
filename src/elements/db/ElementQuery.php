@@ -1222,7 +1222,7 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
             $fieldAttributes = $this->getBehavior('customFields');
 
             foreach ($this->customFields as $field) {
-                /** @var FieldInterface $field */
+                /** @var Field $field */
                 if ($field->hasContentColumn()) {
                     $this->query->addSelect('content.'.$this->_getFieldContentColumnName($field));
                 }
@@ -1675,6 +1675,7 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
      */
     private function _getFieldContentColumnName(FieldInterface $field)
     {
+        /** @var Field $field */
         return ($field->columnPrefix ?: 'field_').$field->handle;
     }
 

@@ -264,7 +264,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface
 
             $query->subQuery->andWhere(
                 "(select count({$alias}.id) from {{matrixblocks}} {$alias} where {$alias}.ownerId = elements.id and {$alias}.fieldId = :fieldId) {$operator} 0",
-                [':fieldId' => $this->model->id]
+                [':fieldId' => $this->id]
             );
         } else if ($value !== null) {
             return false;
@@ -375,6 +375,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface
             $contentService->fieldContext = $block->getFieldContext();
 
             foreach (Craft::$app->getFields()->getAllFields() as $field) {
+                /** @var Field $field */
                 $fieldValue = $block->getFieldValue($field->handle);
                 $keywords[] = $field->getSearchKeywords($fieldValue, $element);
             }
@@ -438,7 +439,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface
                     'fieldId=:fieldId',
                     ['in', 'ownerId', $sourceElementIds]
                 ],
-                [':fieldId' => $this->model->id])
+                [':fieldId' => $this->id])
             ->orderBy('sortOrder')
             ->all();
 
@@ -512,6 +513,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface
      */
     private function _getBlockTypeInfoForInput($element)
     {
+        /** @var Element $element */
         $blockTypes = [];
 
         // Set a temporary namespace for these
@@ -574,6 +576,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface
      */
     private function _createBlocksFromPost($value, $element)
     {
+        /** @var Element $element */
         // Get the possible block types for this field
         $blockTypes = Craft::$app->getMatrix()->getBlockTypesByFieldId($this->id, 'handle');
 
