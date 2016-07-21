@@ -24,7 +24,7 @@ if ($this->checkDatabaseCreds() && extension_loaded('pdo') && extension_loaded('
     $requirements[] = array(
         'name' => 'MySQL InnoDB support',
         'mandatory' => true,
-        'condition' => $this->checkWebRoot(),
+        'condition' => $this->isInnoDbSupported(),
         'memo' => $this->dbConnectionError ? $this->dbConnectionError : 'Craft CMS requires the MySQL InnoDB storage engine to run.',
     );
 }
