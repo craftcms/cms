@@ -1315,14 +1315,18 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
         if (!$this->relatedTo && ($this->childOf || $this->parentOf)) {
             $this->relatedTo = ['and'];
 
+            /** @noinspection PhpDeprecationInspection */
             if ($this->childOf) {
+                /** @noinspection PhpDeprecationInspection */
                 $this->relatedTo[] = [
                     'sourceElement' => $this->childOf,
                     'field' => $this->childField
                 ];
             }
 
+            /** @noinspection PhpDeprecationInspection */
             if ($this->parentOf) {
+                /** @noinspection PhpDeprecationInspection */
                 $this->relatedTo[] = [
                     'targetElement' => $this->parentOf,
                     'field' => $this->parentField
@@ -1521,8 +1525,11 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
             }
 
             // TODO: Remove this code in Craft 4
+            /** @noinspection PhpDeprecationInspection */
             if (!$this->level && $this->depth) {
+                /** @noinspection PhpDeprecationInspection */
                 $this->level = $this->depth;
+                /** @noinspection PhpDeprecationInspection */
                 $this->depth = null;
                 Craft::$app->getDeprecator()->log('element_depth_param', 'The ‘depth’ element param has been deprecated. Use ‘level’ instead.');
             }
