@@ -1533,7 +1533,15 @@ abstract class Element extends Component implements ElementInterface
         /** @var ElementQueryInterface $query */
         $query = static::find()->configure($criteria);
 
-        return $one ? $query->one() : $query->all();
+        if ($one) {
+            /** @var Element $result */
+            $result = $query->one();
+        } else {
+            /** @var Element[] $result */
+            $result = $query->all();
+        }
+
+        return $result;
     }
 
     /**

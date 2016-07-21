@@ -56,7 +56,7 @@ class Image
      *
      * @param $extension
      *
-     * @return array
+     * @return boolean
      */
     public static function isImageManipulatable($extension)
     {

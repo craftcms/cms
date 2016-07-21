@@ -46,7 +46,6 @@ class Assets extends BaseRelationField
 
     /**
      * @inheritdoc
-     * @return Asset
      */
     protected static function elementType()
     {

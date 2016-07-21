@@ -70,8 +70,9 @@ class Response extends \yii\web\Response
     public function sendFile($filePath, $attachmentName = null, $options = [])
     {
         $this->_clearOutputBuffer();
+        parent::sendFile($filePath, $attachmentName, $options);
 
-        return parent::sendFile($filePath, $attachmentName, $options);
+        return $this;
     }
 
     /**
@@ -87,8 +88,9 @@ class Response extends \yii\web\Response
     public function sendContentAsFile($content, $attachmentName, $options = [])
     {
         $this->_clearOutputBuffer();
+        parent::sendContentAsFile($content, $attachmentName, $options);
 
-        return parent::sendContentAsFile($content, $attachmentName, $options);
+        return $this;
     }
 
     /**

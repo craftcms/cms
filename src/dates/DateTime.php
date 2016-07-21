@@ -45,7 +45,7 @@ class DateTime extends \DateTime
      * @param string $time
      * @param mixed  $timezone The timezone the string is set in (defaults to UTC).
      *
-     * @return DateTime
+     * @return DateTime|false
      */
     public static function createFromFormat($format, $time, $timezone = null)
     {

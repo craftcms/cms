@@ -1049,7 +1049,7 @@ class User extends Element implements IdentityInterface
     /**
      * Returns the time when the user will be over their cooldown period.
      *
-     * @return DateTime|null
+     * @return \DateTime|null
      */
     public function getCooldownEndTime()
     {

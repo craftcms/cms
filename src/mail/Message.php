@@ -52,8 +52,9 @@ class Message extends \yii\swiftmailer\Message
     public function setFrom($from)
     {
         $from = $this->_normalizeEmails($from);
+        parent::setFrom($from);
 
-        return parent::setFrom($from);
+        return $this;
     }
 
     /**
@@ -69,8 +70,9 @@ class Message extends \yii\swiftmailer\Message
     public function setTo($to)
     {
         $to = $this->_normalizeEmails($to);
+        parent::setTo($to);
 
-        return parent::setTo($to);
+        return $this;
     }
 
     /**
@@ -86,8 +88,9 @@ class Message extends \yii\swiftmailer\Message
     public function setCc($cc)
     {
         $cc = $this->_normalizeEmails($cc);
+        parent::setCc($cc);
 
-        return parent::setCc($cc);
+        return $this;
     }
 
     /**
@@ -103,8 +106,9 @@ class Message extends \yii\swiftmailer\Message
     public function setBcc($bcc)
     {
         $bcc = $this->_normalizeEmails($bcc);
+        parent::setBcc($bcc);
 
-        return parent::setBcc($bcc);
+        return $this;
     }
 
     // Private Methods

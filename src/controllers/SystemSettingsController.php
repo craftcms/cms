@@ -412,10 +412,13 @@ class SystemSettingsController extends Controller
     {
         if ($class !== null) {
             try {
-                return Component::createComponent([
+                /** @var TransportAdaptorInterface $adapter */
+                $adapter = Component::createComponent([
                     'type' => $class,
                     'settings' => $settings
                 ], 'craft\app\mail\transportadaptors\TransportAdaptorInterface');
+
+                return $adapter;
             } catch (InvalidComponentException $e) {
                 if (!$fallbackToPhp) {
                     return false;

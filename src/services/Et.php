@@ -8,6 +8,7 @@
 namespace craft\app\services;
 
 use Craft;
+use craft\app\base\Plugin;
 use craft\app\helpers\Io;
 use craft\app\helpers\Json;
 use craft\app\models\AppNewRelease;
@@ -117,7 +118,7 @@ class Et extends Component
     /**
      * @param string $handle
      *
-     * @return EtModel|null
+     * @return string|null The update's md5
      */
     public function getUpdateFileInfo($handle)
     {
@@ -125,6 +126,7 @@ class Et extends Component
 
         if ($handle !== 'craft') {
             $et->setHandle($handle);
+            /** @var Plugin $plugin */
             $plugin = Craft::$app->getPlugins()->getPlugin($handle);
 
             if ($plugin) {
@@ -150,7 +152,7 @@ class Et extends Component
      * @param string $md5
      * @param string $handle
      *
-     * @return boolean
+     * @return string|false The name of the update file, or false if a problem occurred
      */
     public function downloadUpdate($downloadPath, $md5, $handle)
     {

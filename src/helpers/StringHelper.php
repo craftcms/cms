@@ -397,11 +397,17 @@ class StringHelper extends \yii\helpers\StringHelper
      *
      * @param string $str The string to split.
      *
-     * @return array[] An array of strings.
+     * @return string[] An array of strings.
      */
     public static function lines($str)
     {
-        return (string)Stringy::create($str)->lines();
+        $lines = Stringy::create($str)->lines();
+
+        foreach ($lines as $i => $line) {
+            $lines[$i] = (string)$line;
+        }
+
+        return $lines;
     }
 
     /**

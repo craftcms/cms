@@ -36,6 +36,8 @@ use yii\db\Connection;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
+ *
+ * @method ElementInterface|array nth($n, $db = null)
  */
 class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Countable, IteratorAggregate, ArrayAccess
 {
@@ -1752,7 +1754,7 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
      *
      * @param array $row
      *
-     * @return Element|boolean
+     * @return ElementInterface|boolean
      */
     private function _createElement($row)
     {

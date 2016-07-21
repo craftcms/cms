@@ -14,6 +14,7 @@ use craft\app\helpers\Url;
 use yii\base\InvalidParamException;
 use yii\web\BadRequestHttpException;
 use yii\web\ForbiddenHttpException;
+use yii\web\Response as YiiResponse;
 
 /**
  * Controller is a base class that all controllers in Craft extend.
@@ -221,7 +222,7 @@ abstract class Controller extends \yii\web\Controller
      * @param string $default The default URL to redirect them to, if no 'redirect' parameter exists. If this is left
      *                        null, then the current request’s path will be used.
      *
-     * @return Response
+     * @return YiiResponse
      */
     public function redirectToPostedUrl($object = null, $default = null)
     {
@@ -247,7 +248,7 @@ abstract class Controller extends \yii\web\Controller
      *
      * @param mixed $var The array that should be JSON-encoded.
      *
-     * @return Response The response object.
+     * @return YiiResponse The response object.
      */
     public function asJson($var = [])
     {
@@ -263,7 +264,7 @@ abstract class Controller extends \yii\web\Controller
      *
      * @param mixed $var The array that should be JSON-encoded.
      *
-     * @return Response The response object.
+     * @return YiiResponse The response object.
      */
     public function asJsonP($var = [])
     {
@@ -279,7 +280,7 @@ abstract class Controller extends \yii\web\Controller
      *
      * @param mixed $var The RAW array data.
      *
-     * @return Response The response object.
+     * @return YiiResponse The response object.
      */
     public function asRaw($var = [])
     {
@@ -295,7 +296,7 @@ abstract class Controller extends \yii\web\Controller
      *
      * @param mixed $var The array that should be XML-encoded.
      *
-     * @return Response The response object.
+     * @return YiiResponse The response object.
      */
     public function asXml($var = [])
     {
@@ -311,7 +312,7 @@ abstract class Controller extends \yii\web\Controller
      *
      * @param string $error The error message.
      *
-     * @return Response
+     * @return YiiResponse
      */
     public function asErrorJson($error)
     {
@@ -320,6 +321,7 @@ abstract class Controller extends \yii\web\Controller
 
     /**
      * @inheritdoc
+     * @return YiiResponse
      */
     public function redirect($url, $statusCode = 302)
     {
