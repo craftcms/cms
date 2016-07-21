@@ -22,6 +22,10 @@ Craft.Locales = Garnish.Base.extend(
 
 		for (var id in locales)
 		{
+			if (!locales.hasOwnProperty(id)) {
+				continue;
+			}
+
 			this.locales[id] = {
 				name: locales[id],
 				words: Craft.asciiString(id+' '+locales[id]).match(Craft.Locales.wordRegex)
@@ -150,6 +154,10 @@ Craft.Locales = Garnish.Base.extend(
 
 			for (var id in this.locales)
 			{
+				if (!this.locales.hasOwnProperty(id)) {
+					continue;
+				}
+
 				if (Craft.inArray(id, this.selectedLocales))
 				{
 					continue;

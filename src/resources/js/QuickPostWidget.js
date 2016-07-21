@@ -94,6 +94,10 @@ Craft.QuickPostWidget = Garnish.Base.extend(
 
 						for (var attribute in response.errors)
 						{
+							if (!response.errors.hasOwnProperty(attribute)) {
+								continue;
+							}
+
 							for (var i = 0; i < response.errors[attribute].length; i++)
 							{
 								var error = response.errors[attribute][i];

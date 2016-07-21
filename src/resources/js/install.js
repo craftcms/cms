@@ -184,6 +184,10 @@ Craft.Installer = Garnish.Base.extend(
 				{
 					for (var input in response.errors)
 					{
+						if (!response.errors.hasOwnProperty(input)) {
+							continue;
+						}
+
 						var errors = response.errors[input],
 							$input = $('#'+input),
 							$field = $input.closest('.field'),

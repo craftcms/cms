@@ -498,6 +498,10 @@ Craft.UpgradeModal = Garnish.Modal.extend(
 
 					for (var i in response.errors)
 					{
+						if (!response.errors.hasOwnProperty(i)) {
+							continue;
+						}
+
 						if (errorText)
 						{
 							errorText += '<br>';

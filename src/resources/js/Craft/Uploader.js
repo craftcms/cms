@@ -42,6 +42,10 @@ Craft.Uploader = Garnish.Base.extend(
 		this.uploader = this.$element.fileupload(settings);
 		for (var event in events)
 		{
+			if (!events.hasOwnProperty(event)) {
+				continue;
+			}
+
 			this.uploader.on(event, events[event]);
 		}
 

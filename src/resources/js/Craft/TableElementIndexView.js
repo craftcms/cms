@@ -425,6 +425,10 @@ Craft.TableElementIndexView = Craft.BaseElementIndexView.extend(
 
         for (var attr in tableAttributes)
         {
+            if (!tableAttributes.hasOwnProperty(attr)) {
+                continue;
+            }
+
             $tr.children('td[data-attr="'+attr+'"]:first').html(tableAttributes[attr]);
         }
     }

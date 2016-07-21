@@ -109,6 +109,10 @@ Craft.EditableTable = Garnish.Base.extend(
 
 		for (var colId in columns)
 		{
+			if (!columns.hasOwnProperty(colId)) {
+				continue;
+			}
+
 			var col = columns[colId],
 				name = baseName+'['+rowId+']['+colId+']',
 				value = (typeof values[colId] != 'undefined' ? values[colId] : ''),
@@ -128,6 +132,10 @@ Craft.EditableTable = Garnish.Base.extend(
 
 					for (var key in col.options)
 					{
+						if (!col.options.hasOwnProperty(key)) {
+							continue;
+						}
+
 						var option = col.options[key];
 
 						if (typeof option.optgroup != 'undefined')
@@ -224,6 +232,10 @@ Craft.EditableTable.Row = Garnish.Base.extend(
 
 		for (var colId in this.table.columns)
 		{
+			if (!this.table.columns.hasOwnProperty(colId)) {
+				continue;
+			}
+
 			var col = this.table.columns[colId];
 
 			if (Craft.inArray(col.type, Craft.EditableTable.textualColTypes))
@@ -256,6 +268,10 @@ Craft.EditableTable.Row = Garnish.Base.extend(
 		// Now look for any autopopulate columns
 		for (var colId in this.table.columns)
 		{
+			if (!this.table.columns.hasOwnProperty(colId)) {
+				continue;
+			}
+
 			var col = this.table.columns[colId];
 
 			if (col.autopopulate && typeof textareasByColId[col.autopopulate] != 'undefined' && !textareasByColId[colId].val())

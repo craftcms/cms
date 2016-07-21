@@ -503,6 +503,10 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 
 								for (var oldFolderId in data.changedIds)
 								{
+									if (!data.changedIds.hasOwnProperty(oldFolderId)) {
+										continue;
+									}
+
 									changedFolderIds[oldFolderId] = data.changedIds[oldFolderId];
 								}
 
@@ -647,6 +651,10 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 			// Change the folder ids
 			for (var previousFolderId in changedFolderIds)
 			{
+				if (!changedFolderIds.hasOwnProperty(previousFolderId)) {
+					continue;
+				}
+
 				folderToMove = this._getSourceByFolderId(previousFolderId);
 
 				// Change the id and select the containing element as the folder element.

@@ -165,6 +165,10 @@ var RouteSettingsModal = Garnish.Modal.extend(
 
 		for (var name in Craft.routes.tokens)
 		{
+			if (!Craft.routes.tokens.hasOwnProperty(name)) {
+				continue;
+			}
+
 			var pattern = Craft.routes.tokens[name];
 			tokenHtml += '<div class="token" data-name="'+name+'" data-value="'+pattern+'"><span>'+name+'</span></div>';
 		}

@@ -150,6 +150,10 @@ $.extend(Craft,
 		{
 			for (var key in params)
 			{
+				if (!params.hasOwnProperty(key)) {
+					continue;
+				}
+
 				message = message.replace('{'+key+'}', params[key]);
 			}
 		}
@@ -257,6 +261,10 @@ $.extend(Craft,
 
 			for (var name in params)
 			{
+				if (!params.hasOwnProperty(name)) {
+					continue;
+				}
+
 				var value = params[name];
 
 				if (name == '#')
@@ -614,6 +622,10 @@ $.extend(Craft,
 
 		for (var key in arr)
 		{
+			if (!arr.hasOwnProperty(key)) {
+				continue;
+			}
+
 			var value = arr[key],
 				m = key.match(/^(\w+)(\[.*)?/),
 				keys;
@@ -715,6 +727,10 @@ $.extend(Craft,
 			// Compare each value
 			for (var i in obj1)
 			{
+				if (!obj.hasOwnProperty(i)) {
+					continue;
+				}
+
 				if (!Craft.compare(obj1[i], obj2[i]))
 				{
 					return false;
@@ -742,6 +758,10 @@ $.extend(Craft,
 
 		for (var key in obj)
 		{
+			if (!obj.hasOwnProperty(key)) {
+				continue;
+			}
+
 			keys.push(key);
 		}
 
