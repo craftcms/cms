@@ -13,12 +13,12 @@ use craft\app\db\ActiveRecord;
 /**
  * Class Route record.
  *
- * @property integer              $id         ID
- * @property ActiveQueryInterface $locale     Locale
- * @property string               $urlParts   URL parts
- * @property string               $urlPattern URL pattern
- * @property string               $template   Template
- * @property string               $sortOrder  Sort order
+ * @property integer $id         ID
+ * @property Locale  $locale     Locale
+ * @property string  $urlParts   URL parts
+ * @property string  $urlPattern URL pattern
+ * @property string  $template   Template
+ * @property string  $sortOrder  Sort order
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
@@ -53,7 +53,7 @@ class Route extends ActiveRecord
     /**
      * Returns the route’s locale.
      *
-     * @return \yii\db\ActiveQueryInterface The relational query object.
+     * @return ActiveQueryInterface The relational query object.
      */
     public function getLocale()
     {

@@ -13,13 +13,13 @@ use craft\app\db\ActiveRecord;
 /**
  * Class VolumeFolder record.
  *
- * @property integer              $id       ID
- * @property integer              $parentId Parent ID
- * @property integer              $volumeId Volume ID
- * @property string               $name     Name
- * @property string               $path     Path
- * @property ActiveQueryInterface $parent   Parent
- * @property ActiveQueryInterface $volume   Volume
+ * @property integer      $id       ID
+ * @property integer      $parentId Parent ID
+ * @property integer      $volumeId Volume ID
+ * @property string       $name     Name
+ * @property string       $path     Path
+ * @property VolumeFolder $parent   Parent
+ * @property Volume       $volume   Volume
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
@@ -57,7 +57,7 @@ class VolumeFolder extends ActiveRecord
     /**
      * Returns the asset folder’s parent.
      *
-     * @return \yii\db\ActiveQueryInterface The relational query object.
+     * @return ActiveQueryInterface The relational query object.
      */
     public function getParent()
     {
@@ -67,7 +67,7 @@ class VolumeFolder extends ActiveRecord
     /**
      * Returns the asset folder’s source.
      *
-     * @return \yii\db\ActiveQueryInterface The relational query object.
+     * @return ActiveQueryInterface The relational query object.
      */
     public function getVolume()
     {

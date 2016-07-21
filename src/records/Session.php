@@ -13,10 +13,10 @@ use craft\app\db\ActiveRecord;
 /**
  * Class Session record.
  *
- * @property integer              $id     ID
- * @property integer              $userId User ID
- * @property string               $token  Token
- * @property ActiveQueryInterface $user   User
+ * @property integer $id     ID
+ * @property integer $userId User ID
+ * @property string  $token  Token
+ * @property User    $user   User
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
@@ -50,7 +50,7 @@ class Session extends ActiveRecord
     /**
      * Returns the session’s user.
      *
-     * @return \yii\db\ActiveQueryInterface The relational query object.
+     * @return ActiveQueryInterface The relational query object.
      */
     public function getUser()
     {

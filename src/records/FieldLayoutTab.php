@@ -13,12 +13,12 @@ use craft\app\db\ActiveRecord;
 /**
  * Field record class.
  *
- * @property integer              $id        ID
- * @property integer              $layoutId  Layout ID
- * @property string               $name      Name
- * @property string               $sortOrder Sort order
- * @property ActiveQueryInterface $layout    Layout
- * @property ActiveQueryInterface $fields    Fields
+ * @property integer            $id        ID
+ * @property integer            $layoutId  Layout ID
+ * @property string             $name      Name
+ * @property string             $sortOrder Sort order
+ * @property FieldLayout        $layout    Layout
+ * @property FieldLayoutField[] $fields    Fields
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
@@ -52,7 +52,7 @@ class FieldLayoutTab extends ActiveRecord
     /**
      * Returns the field layout tab’s layout.
      *
-     * @return \yii\db\ActiveQueryInterface The relational query object.
+     * @return ActiveQueryInterface The relational query object.
      */
     public function getLayout()
     {
@@ -62,7 +62,7 @@ class FieldLayoutTab extends ActiveRecord
     /**
      * Returns the field layout tab’s fields.
      *
-     * @return \yii\db\ActiveQueryInterface The relational query object.
+     * @return ActiveQueryInterface The relational query object.
      */
     public function getFields()
     {

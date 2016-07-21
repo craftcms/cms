@@ -14,11 +14,11 @@ use craft\app\db\ActiveRecord;
 /**
  * Class EmailMessage record.
  *
- * @property integer              $id      ID
- * @property ActiveQueryInterface $locale  Locale
- * @property string               $key     Key
- * @property string               $subject Subject
- * @property string               $body    Body
+ * @property integer $id      ID
+ * @property Locale  $locale  Locale
+ * @property string  $key     Key
+ * @property string  $subject Subject
+ * @property string  $body    Body
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
@@ -55,7 +55,7 @@ class EmailMessage extends ActiveRecord
     /**
      * Returns the email message’s locale.
      *
-     * @return \yii\db\ActiveQueryInterface The relational query object.
+     * @return ActiveQueryInterface The relational query object.
      */
     public function getLocale()
     {

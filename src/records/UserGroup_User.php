@@ -14,11 +14,11 @@ use craft\app\db\ActiveRecord;
 /**
  * Class UserGroup_User record.
  *
- * @property integer              $id      ID
- * @property integer              $groupId Group ID
- * @property integer              $userId  User ID
- * @property ActiveQueryInterface $group   Group
- * @property ActiveQueryInterface $user    User
+ * @property integer   $id      ID
+ * @property integer   $groupId Group ID
+ * @property integer   $userId  User ID
+ * @property UserGroup $group   Group
+ * @property User      $user    User
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
@@ -51,7 +51,7 @@ class UserGroup_User extends ActiveRecord
     /**
      * Returns the user group user’s group.
      *
-     * @return \yii\db\ActiveQueryInterface The relational query object.
+     * @return ActiveQueryInterface The relational query object.
      */
     public function getGroup()
     {
@@ -61,7 +61,7 @@ class UserGroup_User extends ActiveRecord
     /**
      * Returns the user group user’s user.
      *
-     * @return \yii\db\ActiveQueryInterface The relational query object.
+     * @return ActiveQueryInterface The relational query object.
      */
     public function getUser()
     {

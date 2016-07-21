@@ -14,32 +14,33 @@ use craft\app\db\ActiveRecord;
 /**
  * Class User record.
  *
- * @property integer              $id                         ID
- * @property string               $username                   Username
- * @property string               $photo                      Photo
- * @property string               $firstName                  First name
- * @property string               $lastName                   Last name
- * @property string               $email                      Email
- * @property string               $password                   Password
- * @property boolean              $admin                      Admin
- * @property boolean              $client                     Client
- * @property boolean              $locked                     Locked
- * @property boolean              $suspended                  Suspended
- * @property boolean              $pending                    Pending
- * @property boolean              $archived                   Archived
- * @property \DateTime            $lastLoginDate              Last login date
- * @property string               $lastLoginAttemptIp         Last login attempt IP
- * @property \DateTime            $invalidLoginWindowStart    Invalid login window start
- * @property integer              $invalidLoginCount          Invalid login count
- * @property \DateTime            $lastInvalidLoginDate       Last invalid login date
- * @property \DateTime            $lockoutDate                Lockout date
- * @property string               $verificationCode           Verification code
- * @property \DateTime            $verificationCodeIssuedDate Verification code issued date
- * @property string               $unverifiedEmail            Unverified email
- * @property boolean              $passwordResetRequired      Password reset required
- * @property \DateTime            $lastPasswordChangeDate     Last password change date
- * @property ActiveQueryInterface $element                    Element
- * @property ActiveQueryInterface $sessions                   Sessions
+ * @property integer     $id                         ID
+ * @property string      $username                   Username
+ * @property string      $photo                      Photo
+ * @property string      $firstName                  First name
+ * @property string      $lastName                   Last name
+ * @property string      $email                      Email
+ * @property string      $password                   Password
+ * @property boolean     $admin                      Admin
+ * @property boolean     $client                     Client
+ * @property boolean     $locked                     Locked
+ * @property boolean     $suspended                  Suspended
+ * @property boolean     $pending                    Pending
+ * @property boolean     $archived                   Archived
+ * @property \DateTime   $lastLoginDate              Last login date
+ * @property string      $lastLoginAttemptIp         Last login attempt IP
+ * @property \DateTime   $invalidLoginWindowStart    Invalid login window start
+ * @property integer     $invalidLoginCount          Invalid login count
+ * @property \DateTime   $lastInvalidLoginDate       Last invalid login date
+ * @property \DateTime   $lockoutDate                Lockout date
+ * @property string      $verificationCode           Verification code
+ * @property \DateTime   $verificationCodeIssuedDate Verification code issued date
+ * @property string      $unverifiedEmail            Unverified email
+ * @property boolean     $passwordResetRequired      Password reset required
+ * @property \DateTime   $lastPasswordChangeDate     Last password change date
+ * @property Element     $element                    Element
+ * @property Session[]   $sessions                   Sessions
+ * @property UserGroup[] $groups                     User groups
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
@@ -99,7 +100,7 @@ class User extends ActiveRecord
     /**
      * Returns the user’s element.
      *
-     * @return \yii\db\ActiveQueryInterface The relational query object.
+     * @return ActiveQueryInterface The relational query object.
      */
     public function getElement()
     {
@@ -109,7 +110,7 @@ class User extends ActiveRecord
     /**
      * Returns the user’s sessions.
      *
-     * @return \yii\db\ActiveQueryInterface The relational query object.
+     * @return ActiveQueryInterface The relational query object.
      */
     public function getSessions()
     {
@@ -119,7 +120,7 @@ class User extends ActiveRecord
     /**
      * Returns the user’s groups.
      *
-     * @return \yii\db\ActiveQueryInterface
+     * @return ActiveQueryInterface
      */
     public function getGroups()
     {

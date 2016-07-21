@@ -13,12 +13,12 @@ use craft\app\db\ActiveRecord;
 /**
  * Field group record class.
  *
- * @property integer              $id            ID
- * @property integer              $fieldLayoutId Field layout ID
- * @property string               $name          Name
- * @property string               $handle        Handle
- * @property ActiveQueryInterface $element       Element
- * @property ActiveQueryInterface $fieldLayout   Field layout
+ * @property integer     $id            ID
+ * @property integer     $fieldLayoutId Field layout ID
+ * @property string      $name          Name
+ * @property string      $handle        Handle
+ * @property Element     $element       Element
+ * @property FieldLayout $fieldLayout   Field layout
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
@@ -71,7 +71,7 @@ class GlobalSet extends ActiveRecord
     /**
      * Returns the global set’s element.
      *
-     * @return \yii\db\ActiveQueryInterface The relational query object.
+     * @return ActiveQueryInterface The relational query object.
      */
     public function getElement()
     {
@@ -81,7 +81,7 @@ class GlobalSet extends ActiveRecord
     /**
      * Returns the global set’s fieldLayout.
      *
-     * @return \yii\db\ActiveQueryInterface The relational query object.
+     * @return ActiveQueryInterface The relational query object.
      */
     public function getFieldLayout()
     {

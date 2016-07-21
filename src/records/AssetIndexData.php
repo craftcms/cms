@@ -13,15 +13,15 @@ use craft\app\db\ActiveRecord;
 /**
  * Class AssetIndexData record.
  *
- * @property integer              $id        ID
- * @property integer              $volumeId  Volume ID
- * @property string               $sessionId Session ID
- * @property integer              $offset    Offset
- * @property string               $uri       URI
- * @property integer              $size      Size
- * @property \DateTime            $timestamp Timestamp
- * @property integer              $recordId  Record ID
- * @property ActiveQueryInterface $source    Source
+ * @property integer   $id        ID
+ * @property integer   $volumeId  Volume ID
+ * @property string    $sessionId Session ID
+ * @property integer   $offset    Offset
+ * @property string    $uri       URI
+ * @property integer   $size      Size
+ * @property \DateTime $timestamp Timestamp
+ * @property integer   $recordId  Record ID
+ * @property Volume    $volume    Volume
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
@@ -88,11 +88,11 @@ class AssetIndexData extends ActiveRecord
     }
 
     /**
-     * Returns the asset index data’s source.
+     * Returns the asset index data’s volume.
      *
-     * @return \yii\db\ActiveQueryInterface The relational query object.
+     * @return ActiveQueryInterface The relational query object.
      */
-    public function getSource()
+    public function getVolume()
     {
         return $this->hasOne(Volume::className(), ['id' => 'volumeId']);
     }

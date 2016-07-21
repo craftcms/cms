@@ -14,11 +14,11 @@ use craft\app\db\ActiveRecord;
 /**
  * Class UserPermission_UserGroup record.
  *
- * @property integer              $id           ID
- * @property integer              $permissionId Permission ID
- * @property integer              $groupId      Group ID
- * @property ActiveQueryInterface $permission   Permission
- * @property ActiveQueryInterface $group        Group
+ * @property integer        $id           ID
+ * @property integer        $permissionId Permission ID
+ * @property integer        $groupId      Group ID
+ * @property UserPermission $permission   Permission
+ * @property UserGroup      $group        Group
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
@@ -55,7 +55,7 @@ class UserPermission_UserGroup extends ActiveRecord
     /**
      * Returns the user permission user group’s permission.
      *
-     * @return \yii\db\ActiveQueryInterface The relational query object.
+     * @return ActiveQueryInterface The relational query object.
      */
     public function getPermission()
     {
@@ -66,7 +66,7 @@ class UserPermission_UserGroup extends ActiveRecord
     /**
      * Returns the user permission user group’s group.
      *
-     * @return \yii\db\ActiveQueryInterface The relational query object.
+     * @return ActiveQueryInterface The relational query object.
      */
     public function getGroup()
     {

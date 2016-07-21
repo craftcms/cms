@@ -13,10 +13,10 @@ use craft\app\db\ActiveRecord;
 /**
  * Class Tag record.
  *
- * @property integer              $id      ID
- * @property integer              $groupId Group ID
- * @property ActiveQueryInterface $element Element
- * @property ActiveQueryInterface $group   Group
+ * @property integer  $id      ID
+ * @property integer  $groupId Group ID
+ * @property Element  $element Element
+ * @property TagGroup $group   Group
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
@@ -39,7 +39,7 @@ class Tag extends ActiveRecord
     /**
      * Returns the tag’s element.
      *
-     * @return \yii\db\ActiveQueryInterface The relational query object.
+     * @return ActiveQueryInterface The relational query object.
      */
     public function getElement()
     {
@@ -49,7 +49,7 @@ class Tag extends ActiveRecord
     /**
      * Returns the tag’s group.
      *
-     * @return \yii\db\ActiveQueryInterface The relational query object.
+     * @return ActiveQueryInterface The relational query object.
      */
     public function getGroup()
     {

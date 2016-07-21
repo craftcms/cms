@@ -13,17 +13,17 @@ use craft\app\db\ActiveRecord;
 /**
  * Class CategoryGroup record.
  *
- * @property integer              $id            ID
- * @property integer              $structureId   Structure ID
- * @property integer              $fieldLayoutId Field layout ID
- * @property string               $name          Name
- * @property string               $handle        Handle
- * @property boolean              $hasUrls       Has URLs
- * @property string               $template      Template
- * @property ActiveQueryInterface $structure     Structure
- * @property ActiveQueryInterface $fieldLayout   Field layout
- * @property ActiveQueryInterface $locales       Locales
- * @property ActiveQueryInterface $categories    Categories
+ * @property integer               $id            ID
+ * @property integer               $structureId   Structure ID
+ * @property integer               $fieldLayoutId Field layout ID
+ * @property string                $name          Name
+ * @property string                $handle        Handle
+ * @property boolean               $hasUrls       Has URLs
+ * @property string                $template      Template
+ * @property Structure             $structure     Structure
+ * @property FieldLayout           $fieldLayout   Field layout
+ * @property CategoryGroupLocale[] $locales       Locales
+ * @property Category[]            $categories    Categories
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
@@ -70,7 +70,7 @@ class CategoryGroup extends ActiveRecord
     /**
      * Returns the category group’s structure.
      *
-     * @return \yii\db\ActiveQueryInterface The relational query object.
+     * @return ActiveQueryInterface The relational query object.
      */
     public function getStructure()
     {
@@ -80,7 +80,7 @@ class CategoryGroup extends ActiveRecord
     /**
      * Returns the category group’s fieldLayout.
      *
-     * @return \yii\db\ActiveQueryInterface The relational query object.
+     * @return ActiveQueryInterface The relational query object.
      */
     public function getFieldLayout()
     {
@@ -91,18 +91,17 @@ class CategoryGroup extends ActiveRecord
     /**
      * Returns the category group’s locales.
      *
-     * @return \yii\db\ActiveQueryInterface The relational query object.
+     * @return ActiveQueryInterface The relational query object.
      */
     public function getLocales()
     {
-        return $this->hasMany(CategoryGroupLocale::className(),
-            ['groupId' => 'id']);
+        return $this->hasMany(CategoryGroupLocale::className(), ['groupId' => 'id']);
     }
 
     /**
      * Returns the category group’s categories.
      *
-     * @return \yii\db\ActiveQueryInterface The relational query object.
+     * @return ActiveQueryInterface The relational query object.
      */
     public function getCategories()
     {

@@ -14,17 +14,17 @@ use craft\app\db\ActiveRecord;
 /**
  * Class Entry record.
  *
- * @property integer              $id         ID
- * @property integer              $sectionId  Section ID
- * @property integer              $typeId     Type ID
- * @property integer              $authorId   Author ID
- * @property \DateTime            $postDate   Post date
- * @property \DateTime            $expiryDate Expiry date
- * @property ActiveQueryInterface $element    Element
- * @property ActiveQueryInterface $section    Section
- * @property ActiveQueryInterface $type       Type
- * @property ActiveQueryInterface $author     Author
- * @property ActiveQueryInterface $versions   Versions
+ * @property integer        $id         ID
+ * @property integer        $sectionId  Section ID
+ * @property integer        $typeId     Type ID
+ * @property integer        $authorId   Author ID
+ * @property \DateTime      $postDate   Post date
+ * @property \DateTime      $expiryDate Expiry date
+ * @property Element        $element    Element
+ * @property Section        $section    Section
+ * @property EntryType      $type       Type
+ * @property User           $author     Author
+ * @property EntryVersion[] $versions   Versions
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
@@ -58,7 +58,7 @@ class Entry extends ActiveRecord
     /**
      * Returns the entry’s element.
      *
-     * @return \yii\db\ActiveQueryInterface The relational query object.
+     * @return ActiveQueryInterface The relational query object.
      */
     public function getElement()
     {
@@ -68,7 +68,7 @@ class Entry extends ActiveRecord
     /**
      * Returns the entry’s section.
      *
-     * @return \yii\db\ActiveQueryInterface The relational query object.
+     * @return ActiveQueryInterface The relational query object.
      */
     public function getSection()
     {
@@ -78,7 +78,7 @@ class Entry extends ActiveRecord
     /**
      * Returns the entry’s type.
      *
-     * @return \yii\db\ActiveQueryInterface The relational query object.
+     * @return ActiveQueryInterface The relational query object.
      */
     public function getType()
     {
@@ -88,7 +88,7 @@ class Entry extends ActiveRecord
     /**
      * Returns the entry’s author.
      *
-     * @return \yii\db\ActiveQueryInterface The relational query object.
+     * @return ActiveQueryInterface The relational query object.
      */
     public function getAuthor()
     {
@@ -98,7 +98,7 @@ class Entry extends ActiveRecord
     /**
      * Returns the entry’s versions.
      *
-     * @return \yii\db\ActiveQueryInterface The relational query object.
+     * @return ActiveQueryInterface The relational query object.
      */
     public function getVersions()
     {

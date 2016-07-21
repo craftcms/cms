@@ -14,16 +14,16 @@ use craft\app\db\ActiveRecord;
 /**
  * Class Field record.
  *
- * @property integer              $id           ID
- * @property integer              $groupId      Group ID
- * @property string               $name         Name
- * @property string               $handle       Handle
- * @property string               $context      Context
- * @property string               $instructions Instructions
- * @property boolean              $translatable Translatable
- * @property string               $type         Type
- * @property array                $settings     Settings
- * @property ActiveQueryInterface $group        Group
+ * @property integer    $id           ID
+ * @property integer    $groupId      Group ID
+ * @property string     $name         Name
+ * @property string     $handle       Handle
+ * @property string     $context      Context
+ * @property string     $instructions Instructions
+ * @property boolean    $translatable Translatable
+ * @property string     $type         Type
+ * @property array      $settings     Settings
+ * @property FieldGroup $group        Group
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
@@ -167,7 +167,7 @@ class Field extends ActiveRecord
     /**
      * Returns the field’s group.
      *
-     * @return \yii\db\ActiveQueryInterface The relational query object.
+     * @return ActiveQueryInterface The relational query object.
      */
     public function getGroup()
     {

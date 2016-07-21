@@ -13,16 +13,16 @@ use craft\app\db\ActiveRecord;
 /**
  * Class Section record.
  *
- * @property integer              $id               ID
- * @property integer              $structureId      Structure ID
- * @property string               $name             Name
- * @property string               $handle           Handle
- * @property string               $type             Type
- * @property boolean              $hasUrls          Has URLs
- * @property string               $template         Template
- * @property boolean              $enableVersioning Enable versioning
- * @property ActiveQueryInterface $locales          Locales
- * @property ActiveQueryInterface $structure        Structure
+ * @property integer         $id               ID
+ * @property integer         $structureId      Structure ID
+ * @property string          $name             Name
+ * @property string          $handle           Handle
+ * @property string          $type             Type
+ * @property boolean         $hasUrls          Has URLs
+ * @property string          $template         Template
+ * @property boolean         $enableVersioning Enable versioning
+ * @property SectionLocale[] $locales          Locales
+ * @property Structure       $structure        Structure
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
@@ -70,18 +70,17 @@ class Section extends ActiveRecord
     /**
      * Returns the section’s locales.
      *
-     * @return \yii\db\ActiveQueryInterface The relational query object.
+     * @return ActiveQueryInterface The relational query object.
      */
     public function getLocales()
     {
-        return $this->hasMany(SectionLocale::className(),
-            ['sectionId' => 'id']);
+        return $this->hasMany(SectionLocale::className(), ['sectionId' => 'id']);
     }
 
     /**
      * Returns the section’s structure.
      *
-     * @return \yii\db\ActiveQueryInterface The relational query object.
+     * @return ActiveQueryInterface The relational query object.
      */
     public function getStructure()
     {

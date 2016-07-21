@@ -13,9 +13,9 @@ use craft\app\db\ActiveRecord;
 /**
  * Class Structure record.
  *
- * @property integer              $id        ID
- * @property integer              $maxLevels Max levels
- * @property ActiveQueryInterface $elements  Elements
+ * @property integer            $id        ID
+ * @property integer            $maxLevels Max levels
+ * @property StructureElement[] $elements  Elements
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
@@ -54,11 +54,10 @@ class Structure extends ActiveRecord
     /**
      * Returns the structure’s elements.
      *
-     * @return \yii\db\ActiveQueryInterface The relational query object.
+     * @return ActiveQueryInterface The relational query object.
      */
     public function getElements()
     {
-        return $this->hasMany(StructureElement::className(),
-            ['structureId' => 'id']);
+        return $this->hasMany(StructureElement::className(), ['structureId' => 'id']);
     }
 }

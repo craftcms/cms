@@ -13,16 +13,16 @@ use craft\app\db\ActiveRecord;
 /**
  * Class MatrixBlock record.
  *
- * @property integer              $id          ID
- * @property integer              $ownerId     Owner ID
- * @property ActiveQueryInterface $ownerLocale Owner locale
- * @property integer              $fieldId     Field ID
- * @property integer              $typeId      Type ID
- * @property string               $sortOrder   Sort order
- * @property ActiveQueryInterface $element     Element
- * @property ActiveQueryInterface $owner       Owner
- * @property ActiveQueryInterface $field       Field
- * @property ActiveQueryInterface $type        Type
+ * @property integer         $id          ID
+ * @property integer         $ownerId     Owner ID
+ * @property Locale          $ownerLocale Owner locale
+ * @property integer         $fieldId     Field ID
+ * @property integer         $typeId      Type ID
+ * @property string          $sortOrder   Sort order
+ * @property Element         $element     Element
+ * @property Element         $owner       Owner
+ * @property Field           $field       Field
+ * @property MatrixBlockType $type        Type
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
@@ -55,7 +55,7 @@ class MatrixBlock extends ActiveRecord
     /**
      * Returns the matrix block’s element.
      *
-     * @return \yii\db\ActiveQueryInterface The relational query object.
+     * @return ActiveQueryInterface The relational query object.
      */
     public function getElement()
     {
@@ -65,7 +65,7 @@ class MatrixBlock extends ActiveRecord
     /**
      * Returns the matrix block’s owner.
      *
-     * @return \yii\db\ActiveQueryInterface The relational query object.
+     * @return ActiveQueryInterface The relational query object.
      */
     public function getOwner()
     {
@@ -75,7 +75,7 @@ class MatrixBlock extends ActiveRecord
     /**
      * Returns the matrix block’s ownerLocale.
      *
-     * @return \yii\db\ActiveQueryInterface The relational query object.
+     * @return ActiveQueryInterface The relational query object.
      */
     public function getOwnerLocale()
     {
@@ -85,7 +85,7 @@ class MatrixBlock extends ActiveRecord
     /**
      * Returns the matrix block’s field.
      *
-     * @return \yii\db\ActiveQueryInterface The relational query object.
+     * @return ActiveQueryInterface The relational query object.
      */
     public function getField()
     {
@@ -95,7 +95,7 @@ class MatrixBlock extends ActiveRecord
     /**
      * Returns the matrix block’s type.
      *
-     * @return \yii\db\ActiveQueryInterface The relational query object.
+     * @return ActiveQueryInterface The relational query object.
      */
     public function getType()
     {

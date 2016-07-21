@@ -13,13 +13,13 @@ use craft\app\db\ActiveRecord;
 /**
  * Class Plugin record.
  *
- * @property integer              $id          ID
- * @property string               $class       Class
- * @property string               $version     Version
- * @property boolean              $enabled     Enabled
- * @property array                $settings    Settings
- * @property \DateTime            $installDate Install date
- * @property ActiveQueryInterface $migrations  Migrations
+ * @property integer     $id          ID
+ * @property string      $class       Class
+ * @property string      $version     Version
+ * @property boolean     $enabled     Enabled
+ * @property array       $settings    Settings
+ * @property \DateTime   $installDate Install date
+ * @property Migration[] $migrations  Migrations
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
@@ -55,7 +55,7 @@ class Plugin extends ActiveRecord
     /**
      * Returns the plugin’s migrations.
      *
-     * @return \yii\db\ActiveQueryInterface The relational query object.
+     * @return ActiveQueryInterface The relational query object.
      */
     public function getMigrations()
     {

@@ -9,6 +9,7 @@ namespace craft\app\records;
 
 use Craft;
 use craft\app\db\ActiveRecord;
+use yii\db\ActiveQueryInterface;
 
 /**
  * Class UserGroup record.
@@ -16,6 +17,7 @@ use craft\app\db\ActiveRecord;
  * @property integer $id     ID
  * @property string  $name   Name
  * @property string  $handle Handle
+ * @property User[]  $users  Users
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
@@ -61,7 +63,7 @@ class UserGroup extends ActiveRecord
     /**
      * Returns the group’s users.
      *
-     * @return \yii\db\ActiveQueryInterface
+     * @return ActiveQueryInterface
      */
     public function getUsers()
     {

@@ -13,10 +13,10 @@ use craft\app\db\ActiveRecord;
 /**
  * Field layout record class.
  *
- * @property integer              $id     ID
- * @property string               $type   Type
- * @property ActiveQueryInterface $tabs   Tabs
- * @property ActiveQueryInterface $fields Fields
+ * @property integer            $id     ID
+ * @property string             $type   Type
+ * @property FieldLayoutTab[]   $tabs   Tabs
+ * @property FieldLayoutField[] $fields Fields
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
@@ -50,22 +50,20 @@ class FieldLayout extends ActiveRecord
     /**
      * Returns the field layout’s tabs.
      *
-     * @return \yii\db\ActiveQueryInterface The relational query object.
+     * @return ActiveQueryInterface The relational query object.
      */
     public function getTabs()
     {
-        return $this->hasMany(FieldLayoutTab::className(),
-            ['layoutId' => 'id']);
+        return $this->hasMany(FieldLayoutTab::className(), ['layoutId' => 'id']);
     }
 
     /**
      * Returns the field layout’s fields.
      *
-     * @return \yii\db\ActiveQueryInterface The relational query object.
+     * @return ActiveQueryInterface The relational query object.
      */
     public function getFields()
     {
-        return $this->hasMany(FieldLayoutField::className(),
-            ['layoutId' => 'id']);
+        return $this->hasMany(FieldLayoutField::className(), ['layoutId' => 'id']);
     }
 }
