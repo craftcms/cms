@@ -1457,7 +1457,7 @@ class UsersController extends Controller
     /**
      * Verifies a password for a user.
      *
-     * @return boolean
+     * @return Response
      */
     public function actionVerifyPassword()
     {
