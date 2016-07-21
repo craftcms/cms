@@ -8,6 +8,7 @@
 namespace craft\app\services;
 
 use Craft;
+use craft\app\base\Element;
 use craft\app\base\ElementInterface;
 use craft\app\db\Query;
 use craft\app\enums\ColumnType;
