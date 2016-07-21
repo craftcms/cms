@@ -8,6 +8,7 @@
 namespace craft\app\helpers;
 
 use Craft;
+use craft\app\elements\db\ElementQuery;
 use craft\app\elements\db\ElementQueryInterface;
 use craft\app\web\twig\variables\Paginate;
 
@@ -31,6 +32,7 @@ class Template
      */
     public static function paginateCriteria(ElementQueryInterface $query)
     {
+        /** @var ElementQuery $query */
         $currentPage = Craft::$app->getRequest()->getPageNum();
         $limit = $query->limit;
         $total = $query->count() - $query->offset;

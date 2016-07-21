@@ -10,7 +10,7 @@ namespace craft\app\elements;
 use Craft;
 use craft\app\base\Element;
 use craft\app\base\ElementInterface;
-use craft\app\elements\db\ElementQuery;
+use craft\app\base\Field;
 use craft\app\elements\db\ElementQueryInterface;
 use craft\app\elements\db\MatrixBlockQuery;
 use craft\app\fields\Matrix;
@@ -66,7 +66,7 @@ class MatrixBlock extends Element
      */
     public static function getFieldsForElementsQuery(ElementQueryInterface $query)
     {
-        /** @var ElementQuery $query */
+        /** @var MatrixBlockQuery $query */
         $blockTypes = Craft::$app->getMatrix()->getBlockTypesByFieldId($query->fieldId);
 
         // Preload all of the fields up front to save ourselves some DB queries, and discard
@@ -81,6 +81,7 @@ class MatrixBlock extends Element
         foreach ($blockTypes as $blockType) {
             $fieldColumnPrefix = 'field_'.$blockType->handle.'_';
             foreach ($blockType->getFields() as $field) {
+                /** @var Field $field */
                 $field->columnPrefix = $fieldColumnPrefix;
                 $fields[] = $field;
             }

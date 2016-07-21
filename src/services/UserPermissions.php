@@ -9,6 +9,7 @@
 namespace craft\app\services;
 
 use Craft;
+use craft\app\base\Plugin;
 use craft\app\db\Query;
 use craft\app\models\Section;
 use craft\app\records\UserPermission as UserPermissionRecord;
@@ -70,10 +71,10 @@ class UserPermissions extends Component
         ];
 
         foreach (Craft::$app->getPlugins()->getAllPlugins() as $plugin) {
+            /** @var Plugin $plugin */
             if ($plugin::hasCpSection()) {
                 $general['accessCp']['nested']['accessPlugin-'.$plugin->getHandle()] = [
-                    'label' => Craft::t('app', 'Access {plugin}',
-                        ['plugin' => $plugin->name])
+                    'label' => Craft::t('app', 'Access {plugin}', ['plugin' => $plugin->name])
                 ];
             }
         }
