@@ -282,6 +282,7 @@ class Images extends Component
                 $ifd0 = $tiff->getIfd();
 
                 // Delete the Orientation entry and re-save the file
+                /** @noinspection PhpParamsInspection */
                 $ifd0->offsetUnset(PelTag::ORIENTATION);
                 $file->saveFile($filePath);
 

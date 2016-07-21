@@ -17,6 +17,7 @@ use craft\app\base\Field;
 use craft\app\base\FieldInterface;
 use craft\app\behaviors\ElementQueryBehavior;
 use craft\app\behaviors\ElementQueryTrait;
+use craft\app\db\Connection;
 use craft\app\db\FixedOrderExpression;
 use craft\app\db\Query;
 use craft\app\db\QueryAbortedException;
@@ -29,7 +30,6 @@ use IteratorAggregate;
 use yii\base\Arrayable;
 use yii\base\ArrayableTrait;
 use yii\base\NotSupportedException;
-use yii\db\Connection;
 
 /**
  * ElementQuery represents a SELECT SQL statement for elements in a way that is independent of DBMS.
@@ -1617,7 +1617,7 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
     /**
      * Applies the 'fixedOrder' and 'orderBy' params to the query being prepared.
      *
-     * @param \yii\db\Connection $db
+     * @param Connection $db
      *
      * @throws QueryAbortedException
      */

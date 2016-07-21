@@ -3,6 +3,7 @@ namespace craft\app\services;
 
 use Craft;
 use craft\app\base\Volume;
+use craft\app\base\VolumeInterface;
 use craft\app\dates\DateTime;
 use craft\app\db\Query;
 use craft\app\elements\Asset;
@@ -222,7 +223,7 @@ class AssetIndexer extends Component
     /**
      * Ensures a top level folder exists that matches the model.
      *
-     * @param Volume $volume
+     * @param VolumeInterface $volume
      *
      * @return integer
      */

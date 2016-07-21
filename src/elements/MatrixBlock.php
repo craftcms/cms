@@ -295,9 +295,9 @@ class MatrixBlock extends Element
     /**
      * Sets the owner
      *
-     * @param Element $owner
+     * @param ElementInterface $owner
      */
-    public function setOwner(Element $owner)
+    public function setOwner(ElementInterface $owner)
     {
         $this->_owner = $owner;
     }

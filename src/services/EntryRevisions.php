@@ -440,7 +440,7 @@ class EntryRevisions extends Component
     /**
      * Returns an array of all the revision data for a draft or version.
      *
-     * @param EntryDraft|EntryVersion $revision
+     * @param Entry $revision
      *
      * @return array
      */

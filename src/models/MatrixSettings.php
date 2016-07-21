@@ -126,7 +126,7 @@ class MatrixSettings extends Model
         // Enforce $clearErrors without copying code if we don't have to
         $validates = parent::validate($attributes, $clearErrors);
 
-        if (!Craft::$app->getMatrix()->validateFieldSettings($this)) {
+        if (!Craft::$app->getMatrix()->validateFieldSettings($this->getField())) {
             $validates = false;
         }
 

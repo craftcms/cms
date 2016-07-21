@@ -79,11 +79,14 @@ class Et extends Component
 
             // Populate any Craft specific attributes.
             $appUpdateModel = new AppUpdate();
-            $appUpdateModel->setAttributes($updateModel->app, false);
+            $appUpdateModel->setAttributes($etResponse->data['app'], false);
             $updateModel->app = $appUpdateModel;
 
             // Populate any new Craft release information.
-            foreach ($appUpdateModel->releases as $key => $appReleaseInfo) {
+            $appUpdateModel->releases = [];
+
+            foreach ($etResponse->data['app']['releases'] as $key => $appReleaseInfo) {
+                /** @var array $appReleaseInfo */
                 $appReleaseModel = new AppNewRelease();
                 $appReleaseModel->setAttributes($appReleaseInfo, false);
 
@@ -91,12 +94,18 @@ class Et extends Component
             }
 
             // For every plugin, populate their base information.
-            foreach ($updateModel->plugins as $pluginHandle => $pluginUpdateInfo) {
+            $updateModel->plugins = [];
+
+            foreach ($etResponse->data['plugins'] as $pluginHandle => $pluginUpdateInfo) {
+                /** @var array $pluginUpdateInfo */
                 $pluginUpdateModel = new PluginUpdate();
                 $pluginUpdateModel->setAttributes($pluginUpdateInfo, false);
 
                 // Now populate a plugin’s release information.
-                foreach ($pluginUpdateModel->releases as $key => $pluginReleaseInfo) {
+                $pluginUpdateModel->releases = [];
+
+                foreach ($pluginUpdateInfo['releases'] as $key => $pluginReleaseInfo) {
+                    /** @var array $pluginReleaseInfo */
                     $pluginReleaseModel = new PluginNewRelease();
                     $pluginReleaseModel->setAttributes($pluginReleaseInfo, false);
 

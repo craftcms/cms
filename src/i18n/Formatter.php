@@ -253,11 +253,7 @@ class Formatter extends \yii\i18n\Formatter
         }
 
         if ($timeZone != null) {
-            if ($timestamp instanceof \DateTimeImmutable) {
-                $timestamp = $timestamp->setTimezone(new DateTimeZone($timeZone));
-            } else {
-                $timestamp->setTimezone(new DateTimeZone($timeZone));
-            }
+            $timestamp->setTimezone(new DateTimeZone($timeZone));
         }
 
         // Parse things that we can translate before passing it off to DateTime::format()
