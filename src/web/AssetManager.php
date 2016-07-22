@@ -7,7 +7,6 @@
 
 namespace craft\app\web;
 
-use Craft;
 use craft\app\helpers\Io;
 
 /**

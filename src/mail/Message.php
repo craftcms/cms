@@ -7,7 +7,6 @@
 
 namespace craft\app\mail;
 
-use Craft;
 use craft\app\elements\User;
 
 /**

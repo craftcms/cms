@@ -7,7 +7,6 @@
 
 namespace craft\app\elements\db;
 
-use Craft;
 use craft\app\db\Query;
 use craft\app\db\QueryAbortedException;
 use craft\app\elements\User;

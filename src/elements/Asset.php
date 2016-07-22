@@ -19,7 +19,6 @@ use craft\app\elements\actions\RenameFile;
 use craft\app\elements\actions\ReplaceFile;
 use craft\app\elements\actions\View;
 use craft\app\elements\db\AssetQuery;
-use craft\app\errors\AssetConflictException;
 use craft\app\helpers\Html;
 use craft\app\helpers\Image;
 use craft\app\helpers\Io;

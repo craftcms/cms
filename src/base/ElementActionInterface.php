@@ -7,7 +7,6 @@
 
 namespace craft\app\base;
 
-use craft\app\elements\db\ElementQuery;
 use craft\app\elements\db\ElementQueryInterface;
 
 /**

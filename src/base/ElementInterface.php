@@ -7,10 +7,8 @@
 
 namespace craft\app\base;
 
-use craft\app\elements\db\ElementQuery;
 use craft\app\elements\db\ElementQueryInterface;
 use craft\app\models\FieldLayout;
-use Exception;
 
 
 /**

@@ -8,7 +8,6 @@
 namespace craft\app\controllers;
 
 use Craft;
-use craft\app\base\Field;
 use craft\app\base\FieldInterface;
 use craft\app\helpers\Url;
 use craft\app\models\FieldGroup;

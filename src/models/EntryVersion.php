@@ -7,8 +7,6 @@
 
 namespace craft\app\models;
 
-use Craft;
-
 /**
  * Class EntryVersion model.
  *

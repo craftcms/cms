@@ -7,8 +7,6 @@
 
 namespace craft\app\base;
 
-use craft\app\elements\User;
-
 /**
  * WidgetInterface defines the common interface to be implemented by dashboard widget classes.
  *

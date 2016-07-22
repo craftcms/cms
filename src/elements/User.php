@@ -11,7 +11,6 @@ use Craft;
 use craft\app\base\Element;
 use craft\app\base\ElementInterface;
 use craft\app\dates\DateInterval;
-use craft\app\dates\DateTime;
 use craft\app\db\Query;
 use craft\app\elements\actions\DeleteUsers;
 use craft\app\elements\actions\Edit;

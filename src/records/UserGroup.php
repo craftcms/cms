@@ -7,7 +7,6 @@
 
 namespace craft\app\records;
 
-use Craft;
 use craft\app\db\ActiveRecord;
 use yii\db\ActiveQueryInterface;
 

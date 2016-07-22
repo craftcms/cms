@@ -6,7 +6,6 @@
  */
 namespace craft\app\mail\transportadaptors;
 
-use Craft;
 use craft\app\base\SavableComponent;
 
 /**

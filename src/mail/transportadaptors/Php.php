@@ -4,9 +4,8 @@
  * @copyright Copyright (c) Pixel & Tonic, Inc.
  * @license   http://craftcms.com/license
  */
-namespace craft\app\mail\transportadaptors;
 
-use Craft;
+namespace craft\app\mail\transportadaptors;
 
 /**
  * Php implements a PHP Mail transport adapter into Craft’s mailer.

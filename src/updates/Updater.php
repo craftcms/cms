@@ -8,7 +8,6 @@
 namespace craft\app\updates;
 
 use Craft;
-use craft\app\base\Plugin;
 use craft\app\base\PluginInterface;
 use craft\app\enums\PatchManifestFileAction;
 use craft\app\errors\DbBackupException;

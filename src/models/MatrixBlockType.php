@@ -7,7 +7,6 @@
 
 namespace craft\app\models;
 
-use craft\app\base\Field;
 use craft\app\base\FieldInterface;
 use craft\app\base\Model;
 use craft\app\behaviors\FieldLayoutTrait;

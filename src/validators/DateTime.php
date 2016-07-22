@@ -7,7 +7,6 @@
 
 namespace craft\app\validators;
 
-use Craft;
 use craft\app\helpers\DateTimeHelper;
 use yii\validators\Validator;
 

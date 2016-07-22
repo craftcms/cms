@@ -9,7 +9,6 @@ namespace craft\app\console\controllers;
 
 use Craft;
 use craft\app\base\Plugin;
-use craft\app\base\PluginInterface;
 use craft\app\db\MigrationManager;
 use craft\app\helpers\Io;
 use yii\console\controllers\BaseMigrateController;

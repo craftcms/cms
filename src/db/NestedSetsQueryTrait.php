@@ -8,7 +8,6 @@
 namespace craft\app\db;
 
 use yii\db\ActiveQuery;
-use yii\db\ActiveRecord;
 
 /**
  * Trait NestedSetsQueryTrait.

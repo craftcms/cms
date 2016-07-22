@@ -7,7 +7,6 @@
 
 namespace craft\app\web\twig\variables;
 
-use craft\app\base\Task;
 use craft\app\base\TaskInterface;
 
 /**

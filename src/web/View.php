@@ -9,7 +9,6 @@ namespace craft\app\web;
 
 use Craft;
 use craft\app\base\Element;
-use craft\app\base\ElementInterface;
 use craft\app\events\Event;
 use craft\app\helpers\ArrayHelper;
 use craft\app\helpers\ElementHelper;

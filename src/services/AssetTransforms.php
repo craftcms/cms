@@ -26,7 +26,6 @@ use craft\app\errors\VolumeObjectNotFoundException;
 use craft\app\errors\VolumeException;
 use craft\app\errors\AssetLogicException;
 use craft\app\errors\ValidationException;
-use Exception;
 use yii\base\Application;
 use yii\base\Component;
 

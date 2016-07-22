@@ -7,8 +7,6 @@
 
 namespace craft\app\web\twig;
 
-use Craft;
-
 /**
  * Class TemplateLoaderException
  *

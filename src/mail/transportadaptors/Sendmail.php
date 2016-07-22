@@ -6,8 +6,6 @@
  */
 namespace craft\app\mail\transportadaptors;
 
-use Craft;
-
 /**
  * Sendmail implements a Sendmail transport adapter into Craft’s mailer.
  *

@@ -7,8 +7,6 @@
 
 namespace craft\app\helpers;
 
-use Craft;
-
 /**
  * Search helper.
  *

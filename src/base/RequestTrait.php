@@ -7,8 +7,6 @@
 
 namespace craft\app\base;
 
-use Craft;
-
 /**
  * Request trait.
  *

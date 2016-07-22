@@ -11,7 +11,6 @@ use Craft;
 use craft\app\db\mysql\QueryBuilder;
 use craft\app\events\DbBackupEvent;
 use craft\app\helpers\ArrayHelper;
-use craft\app\helpers\Db;
 use craft\app\helpers\StringHelper;
 
 /**

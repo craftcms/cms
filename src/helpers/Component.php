@@ -7,7 +7,6 @@
 
 namespace craft\app\helpers;
 
-use Craft;
 use craft\app\base\ComponentInterface;
 use craft\app\errors\InvalidComponentException;
 use yii\base\InvalidConfigException;

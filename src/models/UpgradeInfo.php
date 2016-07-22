@@ -7,7 +7,6 @@
 
 namespace craft\app\models;
 
-use Craft;
 use craft\app\base\Model;
 
 /**

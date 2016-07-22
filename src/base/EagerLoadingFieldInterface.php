@@ -7,9 +7,6 @@
 
 namespace craft\app\base;
 
-use craft\app\elements\db\ElementQueryInterface;
-use craft\app\records\FieldGroup;
-
 /**
  * EagerLoadingFieldInterface defines the common interface to be implemented by field classes.
  *

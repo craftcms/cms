@@ -9,7 +9,6 @@ namespace craft\app\services;
 
 use Craft;
 use craft\app\base\Element;
-use craft\app\dates\DateTime;
 use craft\app\db\Query;
 use craft\app\base\ElementActionInterface;
 use craft\app\elements\Asset;

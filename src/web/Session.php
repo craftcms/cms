@@ -8,7 +8,6 @@
 namespace craft\app\web;
 
 use Craft;
-use craft\app\helpers\StringHelper;
 
 /**
  * Extends \yii\web\Session to add support for setting the session folder and creating it if it doesn’t exist.

@@ -10,7 +10,6 @@ namespace craft\app\services;
 use Craft;
 use craft\app\base\Element;
 use craft\app\base\ElementInterface;
-use craft\app\db\StructuredElementQuery;
 use craft\app\errors\StructureNotFoundException;
 use craft\app\events\MoveElementEvent;
 use craft\app\models\Structure;
