@@ -400,6 +400,7 @@ class Users extends Component
 
                 if (!$isNewUser) {
                     // Has the username changed?
+                    /** @noinspection PhpUndefinedVariableInspection */
                     if ($user->username != $oldUsername) {
                         // Rename the user's photo directory
                         $cleanOldUsername = AssetsHelper::prepareAssetName($oldUsername, false);

@@ -177,6 +177,7 @@ class Query extends \yii\db\Query
         }
 
         if ($column) {
+            /** @noinspection PhpUndefinedVariableInspection */
             $this->select = $select;
         }
 
@@ -204,6 +205,7 @@ class Query extends \yii\db\Query
         }
 
         if ($column) {
+            /** @noinspection PhpUndefinedVariableInspection */
             $this->select = $select;
         }
 

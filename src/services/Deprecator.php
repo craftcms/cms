@@ -288,6 +288,7 @@ class Deprecator extends Component
                         $logTrace['templateLine'] = $templateLine;
 
                         // Save that to the main log info too?
+                        /** @noinspection PhpUndefinedVariableInspection */
                         if ($isTemplateRendering && !$foundTemplate) {
                             $log->templateLine = $templateLine;
                             $log->fingerprint .= ':'.$templateLine;

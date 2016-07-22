@@ -219,6 +219,7 @@ class Tags extends Component
                 $fieldLayout = $tagGroup->getFieldLayout();
                 if (!$fieldLayout->id) {
                     // Delete the old one
+                    /** @noinspection PhpUndefinedVariableInspection */
                     if (!$isNewTagGroup && $oldTagGroup->fieldLayoutId) {
                         Craft::$app->getFields()->deleteLayoutById($oldTagGroup->fieldLayoutId);
                     }

@@ -923,7 +923,7 @@ class Request extends \yii\web\Request
                     /** @noinspection PhpUndefinedVariableInspection */
                     if ($triggerMatch) {
                         $this->_actionSegments = array_slice($this->_segments, 1);
-                    } else if ($actionParam) {
+                    } else if (!empty($actionParam)) {
                         $this->_actionSegments = array_filter(explode('/', $actionParam));
                     } else {
                         if ($this->_path == $loginPath) {

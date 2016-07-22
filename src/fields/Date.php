@@ -138,6 +138,7 @@ class Date extends Field implements PreviewableFieldInterface
         $options = [15, 30, 60];
         $options = array_combine($options, $options);
 
+        /** @noinspection PhpUndefinedVariableInspection */
         return Craft::$app->getView()->renderTemplate('_components/fieldtypes/Date/settings',
             [
                 'options' => [

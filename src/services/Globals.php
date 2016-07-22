@@ -289,6 +289,7 @@ class Globals extends Component
 
                     if (!$fieldLayout->id) {
                         // Delete the old one
+                        /** @noinspection PhpUndefinedVariableInspection */
                         if (!$isNewSet && $oldSet->fieldLayoutId) {
                             Craft::$app->getFields()->deleteLayoutById($oldSet->fieldLayoutId);
                         }

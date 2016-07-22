@@ -452,6 +452,10 @@ class Updates extends Component
 
                     $critical = !empty($release['critical']);
 
+                    if (!isset($date)) {
+                        $date = new \DateTime();
+                    }
+
                     // Populate the release model
                     $releaseModel = new PluginNewRelease();
                     $releaseModel->version = $release['version'];

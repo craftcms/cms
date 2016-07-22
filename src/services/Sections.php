@@ -472,6 +472,7 @@ class Sections extends Component
                 if ($event->isValid) {
                     // Do we need to create a structure?
                     if ($section->type == Section::TYPE_STRUCTURE) {
+                        /** @noinspection PhpUndefinedVariableInspection */
                         if (!$isNewSection && $oldSection->type == Section::TYPE_STRUCTURE) {
                             $structure = Craft::$app->getStructures()->getStructureById($oldSection->structureId);
                             $isNewStructure = false;
@@ -488,6 +489,7 @@ class Sections extends Component
                         $sectionRecord->structureId = $structure->id;
                         $section->structureId = $structure->id;
                     } else {
+                        /** @noinspection PhpUndefinedVariableInspection */
                         if (!$isNewSection && $oldSection->structureId) {
                             // Delete the old one
                             Craft::$app->getStructures()->deleteStructureById($oldSection->structureId);
@@ -569,7 +571,7 @@ class Sections extends Component
                     if (!$isNewSection) {
                         // Drop any locales that are no longer being used, as well as the associated entry/element locale
                         // rows
-
+                        /** @noinspection PhpUndefinedVariableInspection */
                         $droppedLocaleIds = array_diff(array_keys($oldSectionLocales), array_keys($sectionLocales));
 
                         if ($droppedLocaleIds) {
@@ -635,6 +637,7 @@ class Sections extends Component
 
                             if (!$isNewSection) {
                                 // Re-save the entrytype name if the section name just changed
+                                /** @noinspection PhpUndefinedVariableInspection */
                                 if (!$isNewSection && $oldSection->name != $section->name) {
                                     $entryType = $this->getEntryTypeById($entryTypeId);
                                     $entryType->name = $section->name;
@@ -687,6 +690,7 @@ class Sections extends Component
                                 }
 
                                 // Make sure there's only one entry type for this section
+                                /** @noinspection PhpUndefinedVariableInspection */
                                 if ($entryTypeIds) {
                                     $this->deleteEntryTypeById($entryTypeIds);
                                 }
@@ -706,8 +710,10 @@ class Sections extends Component
                         }
 
                         case Section::TYPE_STRUCTURE: {
+                            /** @noinspection PhpUndefinedVariableInspection */
                             if (!$isNewSection && $isNewStructure) {
                                 // Add all of the entries to the structure
+                                /** @noinspection PhpUndefinedVariableInspection */
                                 $query = Entry::find()
                                     ->locale(ArrayHelper::getFirstKey($oldSectionLocales))
                                     ->sectionId($section->id)
@@ -729,6 +735,7 @@ class Sections extends Component
 
                     if (!$isNewSection) {
                         // Get the most-primary locale that this section was already enabled in
+                        /** @noinspection PhpUndefinedVariableInspection */
                         $locales = array_values(array_intersect(Craft::$app->i18n->getSiteLocaleIds(), array_keys($oldSectionLocales)));
 
                         if ($locales) {
@@ -1022,6 +1029,7 @@ class Sections extends Component
 
                     if (!$fieldLayout->id) {
                         // Delete the old one
+                        /** @noinspection PhpUndefinedVariableInspection */
                         if (!$isNewEntryType && $oldEntryType->fieldLayoutId) {
                             Craft::$app->getFields()->deleteLayoutById($oldEntryType->fieldLayoutId);
                         }

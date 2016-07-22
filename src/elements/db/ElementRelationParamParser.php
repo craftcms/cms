@@ -368,7 +368,8 @@ class ElementRelationParamParser
                 $relTableAlias = 'sources'.$this->_joinSourcesCount;
                 $relConditionColumn = 'sourceId';
                 $relElementColumn = 'targetId';
-            } else if (isset($relCriteria['targetElement'])) {
+            } else {
+                // $relCriteria['targetElement'], then
                 $this->_joinTargetsCount++;
                 $relTableAlias = 'targets'.$this->_joinTargetsCount;
                 $relConditionColumn = 'targetId';

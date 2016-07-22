@@ -8,6 +8,7 @@
 namespace craft\app\web\twig\nodes;
 
 use craft\app\web\View;
+use yii\base\NotSupportedException;
 
 /**
  * Class RegisterResourceNode
@@ -71,6 +72,8 @@ class RegisterResourceNode extends \Twig_Node
                 case 'load':
                     $positionPhp = View::POS_LOAD;
                     break;
+                default:
+                    throw new NotSupportedException($position.' is not a valid position');
             }
         }
 
@@ -80,11 +83,13 @@ class RegisterResourceNode extends \Twig_Node
 
                 // Do we have to merge the position with other options?
                 if ($position !== null && $options !== null) {
+                    /** @noinspection PhpUndefinedVariableInspection */
                     $compiler
                         ->raw('array_merge(')
                         ->subcompile($options)
                         ->raw(", ['position' => $positionPhp])");
                 } else if ($position !== null) {
+                    /** @noinspection PhpUndefinedVariableInspection */
                     $compiler
                         ->raw("['position' => $positionPhp]");
                 } else {
@@ -93,6 +98,7 @@ class RegisterResourceNode extends \Twig_Node
                 }
             }
         } else if ($position !== null) {
+            /** @noinspection PhpUndefinedVariableInspection */
             $compiler->raw(", $positionPhp");
         }
 

@@ -160,6 +160,7 @@ class SearchQuery
             $term->term = $token;
 
             if ($appendToPrevious) {
+                /** @noinspection PhpUndefinedVariableInspection */
                 $previousToken->terms[] = $term;
             } else {
                 $this->_tokens[] = $term;

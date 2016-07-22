@@ -982,6 +982,7 @@ class UsersController extends Controller
             }
 
             // Is this the current user, and did their username just change?
+            /** @noinspection PhpUndefinedVariableInspection */
             if ($isCurrentUser && $user->username !== $oldUsername) {
                 // Update the username cookie
                 Craft::$app->getUser()->sendUsernameCookie($user);

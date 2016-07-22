@@ -236,6 +236,7 @@ class Entries extends Component
                         if (!$entry->newParentId) {
                             Craft::$app->getStructures()->appendToRoot($section->structureId, $entry);
                         } else {
+                            /** @noinspection PhpUndefinedVariableInspection */
                             Craft::$app->getStructures()->append($section->structureId, $entry, $parentEntry);
                         }
                     }

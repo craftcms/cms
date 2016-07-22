@@ -230,6 +230,7 @@ class Url
         if ($useLocaleSiteUrl) {
             // Temporarily set Craft to use this element's locale's site URL
             $siteUrl = Craft::$app->getSiteUrl();
+            /** @noinspection PhpUndefinedVariableInspection */
             Craft::$app->setSiteUrl($localeSiteUrl);
         }
 
@@ -237,6 +238,7 @@ class Url
         $url = static::_getUrl($path, $params, $protocol, false, false);
 
         if ($useLocaleSiteUrl) {
+            /** @noinspection PhpUndefinedVariableInspection */
             Craft::$app->setSiteUrl($siteUrl);
         }
 

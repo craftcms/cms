@@ -425,6 +425,7 @@ class Asset extends Element
 
         if (!$success && $newFilename) {
             // Better rename it back
+            /** @noinspection PhpUndefinedVariableInspection */
             Craft::$app->getAssets()->renameAsset($element, $oldFilename);
         }
 

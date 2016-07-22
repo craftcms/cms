@@ -791,6 +791,7 @@ class Categories extends Component
                     if (!$category->newParentId) {
                         Craft::$app->getStructures()->appendToRoot($category->getGroup()->structureId, $category);
                     } else {
+                        /** @noinspection PhpUndefinedVariableInspection */
                         Craft::$app->getStructures()->append($category->getGroup()->structureId, $category, $parentCategory);
                     }
                 }

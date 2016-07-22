@@ -155,6 +155,7 @@ class Db
                 }
             }
 
+            /** @noinspection PhpUndefinedVariableInspection */
             $type .= "($length)";
         }
 

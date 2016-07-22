@@ -217,10 +217,10 @@ class Entry extends Element
             default: {
                 if (preg_match('/^section:(\d+)$/', $source, $matches)) {
                     $section = Craft::$app->getSections()->getSectionById($matches[1]);
-                }
 
-                if ($section) {
-                    $sections = [$section];
+                    if ($section) {
+                        $sections = [$section];
+                    }
                 }
             }
         }
