@@ -246,13 +246,13 @@ class Migration
      * Creates elements for all rows in a given table, swaps its 'id' PK for 'elementId', and updates the names of any
      * FK's in other tables.
      *
-     * @param string            $tableName   The existing table name used to store records of this element.
-     * @param string            $elementType The element type handle (e.g. "Entry", "Asset", etc.).
-     * @param boolean           $hasContent  Whether this element type has content.
-     * @param boolean           $isLocalized Whether this element type stores data in multiple locales.
-     * @param array|null        $locales     Which locales the elements should store content in. Defaults to the primary site
-     *                                       locale if the element type is not localized, otherwise all locales.
-     * @param \yii\db\Migration $migration   The migration instance that should handle the actual query executions.
+     * @param string                  $tableName   The existing table name used to store records of this element.
+     * @param string                  $elementType The element type handle (e.g. "Entry", "Asset", etc.).
+     * @param boolean                 $hasContent  Whether this element type has content.
+     * @param boolean                 $isLocalized Whether this element type stores data in multiple locales.
+     * @param array|null              $locales     Which locales the elements should store content in. Defaults to the primary site
+     *                                             locale if the element type is not localized, otherwise all locales.
+     * @param \craft\app\db\Migration $migration   The migration instance that should handle the actual query executions.
      *
      * @return void
      */

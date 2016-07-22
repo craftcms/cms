@@ -270,6 +270,7 @@ class AwsS3 extends Volume
 
     /**
      * @inheritdoc
+     *
      * @return AwsS3Adapter
      */
     protected function createAdapter()

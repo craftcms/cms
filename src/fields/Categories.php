@@ -87,6 +87,7 @@ class Categories extends BaseRelationField
     {
         // Make sure the field is set to a valid category group
         if ($this->source) {
+            /** @var Category $class */
             $class = self::elementType();
             $source = $class::getSourceByKey($this->source, 'field');
         }

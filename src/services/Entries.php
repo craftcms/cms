@@ -307,7 +307,7 @@ class Entries extends Component
 
                     if ($section->type == Section::TYPE_STRUCTURE) {
                         // First let's move the entry's children up a level, so this doesn't mess up the structure
-                        $children = $entry->getChildren()->status(null)->localeEnabled(false)->limit(null)->find();
+                        $children = $entry->getChildren()->status(null)->localeEnabled(false)->limit(null)->all();
 
                         foreach ($children as $child) {
                             Craft::$app->getStructures()->moveBefore($section->structureId, $child, $entry, 'update');

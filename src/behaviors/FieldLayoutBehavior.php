@@ -44,6 +44,7 @@ class FieldLayoutBehavior extends Behavior
 
     /**
      * @inheritdoc
+     *
      * @throws InvalidConfigException if the behavior was not configured properly
      */
     public function init()

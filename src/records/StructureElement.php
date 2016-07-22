@@ -94,11 +94,15 @@ class StructureElement extends ActiveRecord
 
     /**
      * @inheritdoc
+     *
+     * @return StructuredElementQuery
      */
     public static function find()
     {
-        return Craft::createObject(StructuredElementQuery::className(),
-            [get_called_class()]);
+        /** @var StructuredElementQuery $query */
+        $query = Craft::createObject(StructuredElementQuery::className(), [get_called_class()]);
+
+        return $query;
     }
 
     /**

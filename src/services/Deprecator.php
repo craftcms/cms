@@ -13,6 +13,7 @@ use craft\app\helpers\Db;
 use craft\app\helpers\Json;
 use craft\app\helpers\StringHelper;
 use craft\app\models\DeprecationError;
+use craft\app\web\twig\Template;
 use yii\base\Component;
 
 /**
@@ -274,9 +275,8 @@ class Deprecator extends Component
             ];
 
             // Is this a template?
-            if (isset($trace['object']) && $trace['object'] instanceof \Twig_Template && 'Twig_Template' !== get_class($trace['object']) && isset($trace['file']) && StringHelper::contains($trace['file'],
-                    'compiled_templates')
-            ) {
+            if (isset($trace['object']) && $trace['object'] instanceof \Twig_Template && 'Twig_Template' !== get_class($trace['object']) && isset($trace['file']) && StringHelper::contains($trace['file'], 'compiled_templates')) {
+                /** @var Template $template */
                 $template = $trace['object'];
 
                 // Get the original (uncompiled) template name.

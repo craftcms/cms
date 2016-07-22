@@ -136,6 +136,8 @@ abstract class Element extends Component implements ElementInterface
 
     /**
      * @inheritdoc
+     *
+     * @return ElementQueryInterface
      */
     public static function find()
     {
@@ -1062,6 +1064,8 @@ abstract class Element extends Component implements ElementInterface
 
     /**
      * @inheritdoc
+     *
+     * @return ElementQueryInterface
      */
     public function getAncestors($dist = null)
     {
@@ -1074,6 +1078,8 @@ abstract class Element extends Component implements ElementInterface
 
     /**
      * @inheritdoc
+     *
+     * @return ElementQueryInterface
      */
     public function getDescendants($dist = null)
     {
@@ -1091,6 +1097,8 @@ abstract class Element extends Component implements ElementInterface
 
     /**
      * @inheritdoc
+     *
+     * @return ElementQueryInterface
      */
     public function getChildren()
     {
@@ -1104,6 +1112,8 @@ abstract class Element extends Component implements ElementInterface
 
     /**
      * @inheritdoc
+     *
+     * @return ElementQueryInterface
      */
     public function getSiblings()
     {
@@ -1115,6 +1125,8 @@ abstract class Element extends Component implements ElementInterface
 
     /**
      * @inheritdoc
+     *
+     * @return ElementQueryInterface
      */
     public function getPrevSibling()
     {
@@ -1137,6 +1149,8 @@ abstract class Element extends Component implements ElementInterface
 
     /**
      * @inheritdoc
+     *
+     * @return ElementQueryInterface
      */
     public function getNextSibling()
     {

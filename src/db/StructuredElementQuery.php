@@ -18,6 +18,14 @@ use yii\db\ActiveQuery;
  */
 class StructuredElementQuery extends ActiveQuery
 {
+    // Traits
+    // =========================================================================
+
+    use NestedSetsQueryTrait;
+
+    // Public Methods
+    // =========================================================================
+
     /**
      * @inheritdoc
      */

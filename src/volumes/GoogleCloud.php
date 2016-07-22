@@ -180,6 +180,7 @@ class GoogleCloud extends Volume
 
     /**
      * @inheritdoc
+     *
      * @return GoogleCloudAdapter
      */
     protected function createAdapter()

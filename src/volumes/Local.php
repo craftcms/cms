@@ -126,6 +126,7 @@ class Local extends Volume
 
     /**
      * @inheritdoc
+     *
      * @return LocalAdapter
      */
     protected function createAdapter()

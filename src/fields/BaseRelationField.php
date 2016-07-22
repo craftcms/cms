@@ -226,6 +226,7 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
      */
     public function prepareValue($value, $element)
     {
+        /** @var Element $class */
         $class = static::elementType();
         /** @var ElementQuery $query */
         $query = $class::find()
@@ -426,6 +427,7 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
     protected function getInputTemplateVariables($selectedElementsQuery, $element)
     {
         if (!($selectedElementsQuery instanceof ElementQueryInterface)) {
+            /** @var Element $class */
             $class = static::elementType();
             $selectedElementsQuery = $class::find()
                 ->id(false);
@@ -514,6 +516,7 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
      */
     protected function getTargetLocaleFieldHtml()
     {
+        /** @var Element $class */
         $class = static::elementType();
 
         if (Craft::$app->isLocalized() && $class::isLocalized()) {

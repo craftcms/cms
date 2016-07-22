@@ -39,6 +39,7 @@ class InstallController extends Controller
 
     /**
      * @inheritdoc
+     *
      * @throws BadRequestHttpException if Craft is already installed
      */
     public function init()

@@ -177,6 +177,7 @@ class DashboardController extends Controller
         $dashboardService = Craft::$app->getDashboard();
 
         $widgetId = $request->getRequiredBodyParam('widgetId');
+        /** @var Widget $widget */
         $widget = $dashboardService->getWidgetById($widgetId);
 
         if (!$widget) {
@@ -543,6 +544,7 @@ class DashboardController extends Controller
      */
     private function _saveAndReturnWidget(WidgetInterface $widget)
     {
+        /** @var Widget $widget */
         $dashboardService = Craft::$app->getDashboard();
 
         if ($dashboardService->saveWidget($widget)) {

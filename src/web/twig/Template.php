@@ -17,6 +17,8 @@ use yii\base\Object;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
+ *
+ * @method integer[] getDebugInfo()
  */
 abstract class Template extends \Twig_Template
 {

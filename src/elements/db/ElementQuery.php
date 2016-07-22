@@ -912,6 +912,7 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
 
     /**
      * @inheritdoc
+     *
      * @return ElementInterface[]|array The resulting elements.
      */
     public function populate($rows)
@@ -1552,6 +1553,7 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
      */
     private function _normalizeStructureParamValue($property, $class)
     {
+        /** @var Element $class */
         if ($this->$property !== false && !$this->$property instanceof ElementInterface) {
             $this->$property = $class::find()
                 ->id($this->$property)
@@ -1705,6 +1707,7 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
                 $elements[$key] = $row;
             }
         } else {
+            /** @var Element $lastElement */
             $lastElement = null;
 
             foreach ($rows as $row) {

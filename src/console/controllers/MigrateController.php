@@ -48,7 +48,7 @@ class MigrateController extends BaseMigrateController
     // =========================================================================
 
     /**
-     * @var string|PluginInterface The handle of the plugin to use during migration operations, or the plugin itself
+     * @var string|Plugin The handle of the plugin to use during migration operations, or the plugin itself
      */
     public $plugin;
 
@@ -82,6 +82,7 @@ class MigrateController extends BaseMigrateController
 
     /**
      * @inheritdoc
+     *
      * @throws Exception if the 'plugin' option isn't valid
      */
     public function beforeAction($action)

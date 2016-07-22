@@ -8,6 +8,7 @@
 namespace craft\app\fields;
 
 use Craft;
+use craft\app\base\Element;
 use craft\app\elements\db\ElementQueryInterface;
 use craft\app\elements\Tag;
 use craft\app\models\TagGroup;
@@ -78,6 +79,7 @@ class Tags extends BaseRelationField
     public function getInputHtml($value, $element)
     {
         if (!($value instanceof ElementQueryInterface)) {
+            /** @var Element $class */
             $class = self::elementType();
             $value = $class::find()
                 ->id(false);

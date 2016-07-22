@@ -133,6 +133,7 @@ class Assets extends BaseRelationField
         $folderOptions = [];
         $sourceOptions = [];
 
+        /** @var Asset $class */
         $class = self::elementType();
 
         foreach ($class::getSources('settings') as $key => $source) {
@@ -437,6 +438,7 @@ class Assets extends BaseRelationField
     {
         // If data strings are passed along, make sure the array keys are retained.
         if (isset($value['data']) && !empty($value['data'])) {
+            /** @var Asset $class */
             $class = static::elementType();
             /** @var ElementQuery $query */
             $query = $class::find()

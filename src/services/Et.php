@@ -262,7 +262,7 @@ class Et extends Component
      * Fetches the price of an upgrade with a coupon applied to it.
      *
      * @param integer $edition
-     * @param string $couponCode
+     * @param string  $couponCode
      *
      * @return EtModel|null
      */

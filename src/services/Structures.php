@@ -10,11 +10,12 @@ namespace craft\app\services;
 use Craft;
 use craft\app\base\Element;
 use craft\app\base\ElementInterface;
+use craft\app\db\StructuredElementQuery;
 use craft\app\errors\StructureNotFoundException;
 use craft\app\events\MoveElementEvent;
 use craft\app\models\Structure;
 use craft\app\records\Structure as StructureRecord;
-use craft\app\records\StructureElement as StructureElementRecord;
+use craft\app\records\StructureElement;
 use yii\base\Component;
 
 /**
@@ -142,10 +143,11 @@ class Structures extends Component
     public function getElementLevelDelta($structureId, ElementInterface $element)
     {
         $elementRecord = $this->_getElementRecord($structureId, $element);
-        $descendants = $elementRecord->descendants();
-        $criteria = $descendants->getDbCriteria();
-        $criteria->order = 'level desc';
-        $deepestDescendant = $descendants->find();
+        /** @var StructureElement $deepestDescendant */
+        $deepestDescendant = $elementRecord
+            ->children()
+            ->orderBy('level desc')
+            ->one();
 
         if ($deepestDescendant) {
             return $deepestDescendant->level - $elementRecord->level;
@@ -266,7 +268,7 @@ class Structures extends Component
      * @param integer          $structureId
      * @param ElementInterface $element
      *
-     * @return StructureElementRecord|null
+     * @return StructureElement|null
      */
     private function _getElementRecord($structureId, ElementInterface $element)
     {
@@ -274,7 +276,7 @@ class Structures extends Component
         $elementId = $element->id;
 
         if ($elementId) {
-            return StructureElementRecord::findOne([
+            return StructureElement::findOne([
                 'structureId' => $structureId,
                 'elementId' => $elementId
             ]);
@@ -288,19 +290,19 @@ class Structures extends Component
      *
      * @param integer $structureId
      *
-     * @return StructureElementRecord
+     * @return StructureElement
      */
     private function _getRootElementRecord($structureId)
     {
         if (!isset($this->_rootElementRecordsByStructureId[$structureId])) {
-            $elementRecord = StructureElementRecord::find()
+            $elementRecord = StructureElement::find()
                 ->where(['structureId' => $structureId])
                 ->roots()
                 ->one();
 
             if (!$elementRecord) {
                 // Create it
-                $elementRecord = new StructureElementRecord();
+                $elementRecord = new StructureElement();
                 $elementRecord->structureId = $structureId;
                 $elementRecord->makeRoot();
             }
@@ -314,16 +316,16 @@ class Structures extends Component
     /**
      * Updates a ElementInterface with the new structure attributes from a StructureElement record.
      *
-     * @param  int                    $structureId
-     * @param  ElementInterface       $element
-     * @param  StructureElementRecord $targetElementRecord
-     * @param  string                 $action
-     * @param  string                 $mode
+     * @param  int              $structureId
+     * @param  ElementInterface $element
+     * @param  StructureElement $targetElementRecord
+     * @param  string           $action
+     * @param  string           $mode
      *
      * @return boolean Whether it was done
      * @throws \Exception if reasons
      */
-    private function _doIt($structureId, ElementInterface $element, StructureElementRecord $targetElementRecord, $action, $mode)
+    private function _doIt($structureId, ElementInterface $element, StructureElement $targetElementRecord, $action, $mode)
     {
         /** @var Element $element */
         // Figure out what we're doing
@@ -337,7 +339,7 @@ class Structures extends Component
         }
 
         if (empty($elementRecord)) {
-            $elementRecord = new StructureElementRecord();
+            $elementRecord = new StructureElement();
             $elementRecord->structureId = $structureId;
             $elementRecord->elementId = $element->id;
 

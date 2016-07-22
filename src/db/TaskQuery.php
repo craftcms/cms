@@ -18,6 +18,14 @@ use yii\db\ActiveQuery;
  */
 class TaskQuery extends ActiveQuery
 {
+    // Traits
+    // =========================================================================
+
+    use NestedSetsQueryTrait;
+
+    // Public Methods
+    // =========================================================================
+
     /**
      * @inheritdoc
      */

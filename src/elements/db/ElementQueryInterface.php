@@ -297,12 +297,14 @@ interface ElementQueryInterface extends QueryInterface
 
     /**
      * @inheritdoc
+     *
      * @return ElementInterface|null The resulting element.
      */
     public function one($db = null);
 
     /**
      * @inheritdoc
+     *
      * @return ElementInterface|null The resulting element.
      */
     public function nth($n, $db = null);

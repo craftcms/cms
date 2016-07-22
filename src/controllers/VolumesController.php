@@ -79,6 +79,7 @@ class VolumesController extends Controller
         }
 
         if (Craft::$app->getEdition() == Craft::Pro) {
+            /** @var Volume[] $allVolumeTypes */
             $allVolumeTypes = $volumes->getAllVolumeTypes();
             $volumeInstances = [];
             $volumeTypeOptions = [];
@@ -164,6 +165,7 @@ class VolumesController extends Controller
             $type = 'craft\app\volumes\Local';
         }
 
+        /** @var Volume $volume */
         $volume = $volumes->createVolume([
             'id' => $request->getBodyParam('volumeId'),
             'type' => $type,

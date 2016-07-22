@@ -171,6 +171,7 @@ class Rackspace extends Volume
 
     /**
      * @inheritdoc
+     *
      * @return RackspaceAdapter
      */
     protected function createAdapter()

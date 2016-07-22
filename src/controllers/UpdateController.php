@@ -8,6 +8,7 @@
 namespace craft\app\controllers;
 
 use Craft;
+use craft\app\base\Plugin;
 use craft\app\enums\PluginUpdateStatus;
 use craft\app\errors\EtException;
 use craft\app\helpers\App;
@@ -373,6 +374,7 @@ class UpdateController extends Controller
 
         if (Craft::$app->getConfig()->get('backupDbOnUpdate')) {
             if ($handle !== 'craft') {
+                /** @var Plugin $plugin */
                 $plugin = Craft::$app->getPlugins()->getPlugin($handle);
             }
 

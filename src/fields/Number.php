@@ -8,6 +8,7 @@
 namespace craft\app\fields;
 
 use Craft;
+use craft\app\base\Element;
 use craft\app\base\Field;
 use craft\app\base\PreviewableFieldInterface;
 use craft\app\helpers\Db;
@@ -100,6 +101,7 @@ class Number extends Field implements PreviewableFieldInterface
      */
     public function prepareValue($value, $element)
     {
+        /** @var Element $element */
         // Is this a post request?
         $request = Craft::$app->getRequest();
         if (!$request->getIsConsoleRequest() && $request->getIsPost()) {

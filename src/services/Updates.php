@@ -309,6 +309,7 @@ class Updates extends Component
             }
 
             // Get the plugin and its feed URL
+            /** @var Plugin $plugin */
             $plugin = Craft::$app->getPlugins()->getPlugin($pluginUpdateModel->class);
 
             // Skip if the plugin doesn't have a feed URL
@@ -334,14 +335,12 @@ class Updates extends Component
                     'verify' => false
                 ]);
 
-                $request = $client->get($plugin->releasesFeedUrl, null);
-
                 // Potentially long-running request, so close session to prevent session blocking on subsequent requests.
                 Craft::$app->getSession()->close();
 
-                $response = $request->send();
+                $response = $client->get($plugin->releasesFeedUrl, null);
 
-                if (!$response->isSuccessful()) {
+                if ($response->getStatusCode() != 200) {
                     Craft::warning('Error in calling '.$plugin->releasesFeedUrl.'. Response: '.$response->getBody());
                     continue;
                 }
@@ -350,7 +349,7 @@ class Updates extends Component
                 $releases = Json::decode($responseBody);
 
                 if (!$releases) {
-                    Craft::warning('The “'.$plugin->getName()."” plugin release feed didn’t come back as valid JSON:\n".$responseBody);
+                    Craft::warning('The “'.$plugin->name."” plugin release feed didn’t come back as valid JSON:\n".$responseBody);
                     continue;
                 }
 

@@ -885,6 +885,7 @@ class Plugins extends Component
      */
     private function _setPluginMigrator(PluginInterface $plugin, $handle, $id)
     {
+        /** @var Plugin $plugin */
         $plugin->setComponents([
             'migrator' => [
                 'class' => 'craft\app\db\MigrationManager',

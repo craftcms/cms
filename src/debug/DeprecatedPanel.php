@@ -42,6 +42,7 @@ class DeprecatedPanel extends Panel
 
     /**
      * @inheritdoc
+     *
      * @throws NotFoundHttpException if a `trace` parameter is in the query string, but its value isn’t a valid deprecation error log’s ID
      */
     public function getDetail()

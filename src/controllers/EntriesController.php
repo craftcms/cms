@@ -350,7 +350,7 @@ class EntriesController extends BaseEntriesController
         $this->requireAjaxRequest();
 
         $entry = $this->_getEntryModel();
-        $this->enforceEditEntryssions($entry);
+        $this->enforceEditEntryPermissions($entry);
         $this->_populateEntryModel($entry);
 
         $variables['sectionId'] = $entry->sectionId;
