@@ -10,12 +10,15 @@ use craft\app\helpers\StringHelper;
 use Imagine\Exception\NotSupportedException;
 use Imagine\Exception\RuntimeException;
 use Imagine\Gd\Imagine as GdImagine;
+use Imagine\Gd\Image as GdImage;
 use Imagine\Image\Box;
-use Imagine\Image\ImageInterface;
+use Imagine\Image\AbstractFont as Font;
+use Imagine\Image\ImageInterface as Imagine;
 use Imagine\Image\Metadata\ExifMetadataReader;
 use Imagine\Image\Palette\RGB;
 use Imagine\Image\Point;
 use Imagine\Imagick\Imagine as ImagickImagine;
+use Imagine\Imagick\Image as ImagickImage;
 use yii\helpers\FileHelper;
 
 /**
@@ -54,12 +57,12 @@ class Raster extends Image
     private $_quality = 0;
 
     /**
-     * @var ImageInterface
+     * @var ImagickImage|GdImage
      */
     private $_image;
 
     /**
-     * @var \Imagine\Image\ImagineInterface
+     * @var Imagine
      */
     private $_instance;
 
@@ -69,7 +72,7 @@ class Raster extends Image
     private $_palette;
 
     /**
-     * @var \Imagine\Image\AbstractFont
+     * @var Font
      */
     private $_font;
 
@@ -185,9 +188,6 @@ class Raster extends Image
                 $this->_isAnimatedGif = true;
             }
         }
-
-        $this->_resizeHeight = $this->getHeight();
-        $this->_resizeWidth = $this->getWidth();
 
         return $this;
     }
@@ -625,7 +625,7 @@ class Raster extends Image
      */
     private function _getResizeFilter()
     {
-        return (Craft::$app->getImages()->isGd() ? ImageInterface::FILTER_UNDEFINED : ImageInterface::FILTER_LANCZOS);
+        return (Craft::$app->getImages()->isGd() ? Imagine::FILTER_UNDEFINED : Imagine::FILTER_LANCZOS);
     }
 
     /**
