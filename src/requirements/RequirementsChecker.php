@@ -306,8 +306,6 @@ class RequirementsChecker
         // we use special variable names here to avoid conflict when extracting data
         if (is_array($_data_)) {
             extract($_data_, EXTR_PREFIX_SAME, 'data');
-        } else {
-            $data = $_data_;
         }
 
         if ($_return_) {

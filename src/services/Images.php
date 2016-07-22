@@ -51,6 +51,7 @@ class Images extends Component
                 // Taken from Imagick\Imagine() constructor.
                 $imagick = new \Imagick();
                 $v = $imagick->getVersion();
+                /** @noinspection PhpUnusedLocalVariableInspection */
                 list($version, $year, $month, $day, $q, $website) = sscanf($v['versionString'], 'ImageMagick %s %04d-%02d-%02d %s %s');
 
                 // Update this if Imagine updates theirs.

@@ -84,6 +84,7 @@ class Localization
 
             // We've loaded the translation file already, just check for the translation.
             if (isset(static::$_translations[$translationFile])) {
+                /** @noinspection PhpUnusedLocalVariableInspection */
                 $loadedAlready = true;
 
                 if (isset(static::$_translations[$translationFile][$event->message])) {

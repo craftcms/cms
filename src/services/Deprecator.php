@@ -327,7 +327,7 @@ class Deprecator extends Component
             $count++;
 
             if ($count == 5) {
-                $strValue = '...';
+                $strArgs[] = '...';
                 break;
             }
 

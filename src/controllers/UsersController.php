@@ -1614,7 +1614,6 @@ class UsersController extends Controller
      */
     private function _renderSetPasswordTemplate(User $user, $variables)
     {
-        $pathService = Craft::$app->getPath();
         $configService = Craft::$app->getConfig();
         $view = Craft::$app->getView();
 

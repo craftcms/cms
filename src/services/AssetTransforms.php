@@ -278,7 +278,6 @@ class AssetTransforms extends Component
             ->all();
 
         // Index the valid transform indexes by fingerprint, and capture the IDs of indexes that should be deleted
-        $resultsByFingerprint = [];
         $invalidIndexIds = [];
 
         foreach ($results as $result) {
