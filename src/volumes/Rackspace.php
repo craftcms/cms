@@ -4,6 +4,7 @@ namespace craft\app\volumes;
 use Craft;
 use craft\app\base\Volume;
 use League\Flysystem\Rackspace\RackspaceAdapter;
+use OpenCloud\Identity\Resource\Token;
 use \OpenCloud\OpenStack;
 use \OpenCloud\Rackspace as RackspaceClient;
 
@@ -204,6 +205,7 @@ class Rackspace extends Volume
             $client->importCredentials(unserialize(Craft::$app->cache->get($tokenKey)));
         }
 
+        /** @var Token $token */
         $token = $client->getTokenObject();
 
         // If it's not a valid token, re-authenticate and store the token

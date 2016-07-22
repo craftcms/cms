@@ -306,6 +306,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface
         );
 
         if ($value instanceof MatrixBlockQuery) {
+            /** @var MatrixBlockQuery $value */
             $value
                 ->limit(null)
                 ->status(null)

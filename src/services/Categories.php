@@ -1022,7 +1022,7 @@ class Categories extends Component
         foreach ($categories as $category) {
             if ($deleteDescendants) {
                 // Delete the descendants in reverse order, so structures don't get wonky
-                $descendants = $category->getDescendants()->status(null)->localeEnabled(false)->orderBy('lft desc')->find();
+                $descendants = $category->getDescendants()->status(null)->localeEnabled(false)->orderBy('lft desc')->all();
                 $this->_deleteCategories($descendants, false);
             }
 
