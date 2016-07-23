@@ -578,18 +578,6 @@ class Search extends Component
     }
 
     /**
-     * Remove padding from keywords. Might seem silly now, but padding might change.
-     *
-     * @param string $keywords
-     *
-     * @return string
-     */
-    private function _removePadding($keywords)
-    {
-        return trim($keywords);
-    }
-
-    /**
      * Determine if search term is eligible for full-text or not.
      *
      * @param string $term The search term to check
