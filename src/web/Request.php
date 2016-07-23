@@ -424,11 +424,15 @@ class Request extends \yii\web\Request
      */
     public function getIsMobileBrowser($detectTablets = false)
     {
-        $key = ($detectTablets ? '_isMobileOrTabletBrowser' : '_isMobileBrowser');
+        if ($detectTablets) {
+            $property = &$this->_isMobileOrTabletBrowser;
+        } else {
+            $property = &$this->_isMobileBrowser;
+        }
 
-        if (!isset($this->$key)) {
+        if (!isset($property)) {
             if ($this->getUserAgent()) {
-                $this->$key = (
+                $property = (
                     preg_match(
                         '/(android|bb\\d+|meego).+mobile|avantgo|bada\\/|blackberry|blazer|compal|elaine|fennec|hiptop|iemobile|ip(hone|od)|iris|kindle|lge |maemo|midp|mmp|mobile.+firefox|netfront|opera m(ob|in)i|palm( os)?|phone|p(ixi|re)\\/|plucker|pocket|psp|series(4|6)0|symbian|treo|up\\.(browser|link)|vodafone|wap|windows ce|xda|xiino'
                         .($detectTablets ? '|android|ipad|playbook|silk' : '').'/i',
@@ -440,11 +444,11 @@ class Request extends \yii\web\Request
                     )
                 );
             } else {
-                $this->$key = false;
+                $property = false;
             }
         }
 
-        return $this->$key;
+        return $property;
     }
 
     /**
