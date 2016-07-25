@@ -7,7 +7,7 @@
 
 namespace craft\app\db;
 
-use craft\app\helpers\Migration as MigrationHelper;
+use craft\app\helpers\MigrationHelper;
 
 /**
  * InstallMigration is the base class for installation migration classes.

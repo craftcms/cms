@@ -6,7 +6,7 @@ use Craft;
 use craft\app\db\Migration;
 use craft\app\db\Query;
 use craft\app\helpers\Json;
-use craft\app\helpers\Migration as MigrationHelper;
+use craft\app\helpers\MigrationHelper;
 
 /**
  * m151002_095935_volume_cache_settings migration.

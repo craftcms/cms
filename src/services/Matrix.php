@@ -17,7 +17,7 @@ use craft\app\errors\MatrixBlockNotFoundException;
 use craft\app\errors\MatrixBlockTypeNotFoundException;
 use craft\app\fields\Matrix as MatrixField;
 use craft\app\helpers\Html;
-use craft\app\helpers\Migration;
+use craft\app\helpers\MigrationHelper;
 use craft\app\helpers\StringHelper;
 use craft\app\models\FieldLayout;
 use craft\app\models\FieldLayoutTab;
@@ -498,7 +498,7 @@ class Matrix extends Component
                 // Do we need to create/rename the content table?
                 if (!Craft::$app->getDb()->tableExists($newContentTable)) {
                     if ($oldContentTable && Craft::$app->getDb()->tableExists($oldContentTable)) {
-                        Migration::renameTable($oldContentTable, $newContentTable);
+                        MigrationHelper::renameTable($oldContentTable, $newContentTable);
                     } else {
                         $this->_createContentTable($newContentTable);
                     }

@@ -8,6 +8,7 @@
 namespace craft\app\helpers;
 
 use Craft;
+use craft\app\db\Migration;
 use craft\app\db\Query;
 
 /**
@@ -16,7 +17,7 @@ use craft\app\db\Query;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
-class Migration
+class MigrationHelper
 {
     // Properties
     // =========================================================================
@@ -53,13 +54,13 @@ class Migration
     /**
      * Drops a foreign key if it exists.
      *
-     * @param string            $tableName
-     * @param array             $columns
-     * @param \yii\db\Migration $migration
+     * @param string    $tableName
+     * @param array     $columns
+     * @param Migration $migration
      *
      * @return void
      */
-    public static function dropForeignKeyIfExists($tableName, $columns, \yii\db\Migration $migration = null)
+    public static function dropForeignKeyIfExists($tableName, $columns, Migration $migration = null)
     {
         $tableName = Craft::$app->getDb()->getSchema()->getRawTableName($tableName);
         $table = static::getTable($tableName);
@@ -76,14 +77,14 @@ class Migration
     /**
      * Drops an index if it exists.
      *
-     * @param string            $tableName
-     * @param array             $columns
-     * @param boolean           $unique
-     * @param \yii\db\Migration $migration
+     * @param string    $tableName
+     * @param array     $columns
+     * @param boolean   $unique
+     * @param Migration $migration
      *
      * @return false
      */
-    public static function dropIndexIfExists($tableName, $columns, $unique = false, \yii\db\Migration $migration = null)
+    public static function dropIndexIfExists($tableName, $columns, $unique = false, Migration $migration = null)
     {
         $tableName = Craft::$app->getDb()->getSchema()->getRawTableName($tableName);
         $table = static::getTable($tableName);
@@ -100,13 +101,13 @@ class Migration
     /**
      * Renames a table, while also updating its index and FK names, as well as any other FK names pointing to the table.
      *
-     * @param string            $oldName
-     * @param string            $newName
-     * @param \yii\db\Migration $migration
+     * @param string    $oldName
+     * @param string    $newName
+     * @param Migration $migration
      *
      * @return false
      */
-    public static function renameTable($oldName, $newName, \yii\db\Migration $migration = null)
+    public static function renameTable($oldName, $newName, Migration $migration = null)
     {
         $oldName = Craft::$app->getDb()->getSchema()->getRawTableName($oldName);
         $newName = Craft::$app->getDb()->getSchema()->getRawTableName($newName);
@@ -163,14 +164,14 @@ class Migration
     /**
      * Renames a column, while also updating any index and FK names that use the column.
      *
-     * @param string            $tableName
-     * @param string            $oldName
-     * @param string            $newName
-     * @param \yii\db\Migration $migration
+     * @param string    $tableName
+     * @param string    $oldName
+     * @param string    $newName
+     * @param Migration $migration
      *
      * @return void
      */
-    public static function renameColumn($tableName, $oldName, $newName, \yii\db\Migration $migration = null)
+    public static function renameColumn($tableName, $oldName, $newName, Migration $migration = null)
     {
         $tableName = Craft::$app->getDb()->getSchema()->getRawTableName($tableName);
         $table = static::getTable($tableName);
@@ -246,17 +247,17 @@ class Migration
      * Creates elements for all rows in a given table, swaps its 'id' PK for 'elementId', and updates the names of any
      * FK's in other tables.
      *
-     * @param string            $tableName         The existing table name used to store records of this element.
-     * @param string            $elementType       The element type handle (e.g. "Entry", "Asset", etc.).
-     * @param boolean           $hasContent        Whether this element type has content.
-     * @param boolean           $isLocalized       Whether this element type stores data in multiple locales.
-     * @param array|null        $locales           Which locales the elements should store content in. Defaults to the primary site
+     * @param string                  $tableName   The existing table name used to store records of this element.
+     * @param string                  $elementType The element type handle (e.g. "Entry", "Asset", etc.).
+     * @param boolean                 $hasContent  Whether this element type has content.
+     * @param boolean                 $isLocalized Whether this element type stores data in multiple locales.
+     * @param array|null              $locales     Which locales the elements should store content in. Defaults to the primary site
      *                                             locale if the element type is not localized, otherwise all locales.
-     * @param \yii\db\Migration $migration         The migration instance that should handle the actual query executions.
+     * @param \craft\app\db\Migration $migration   The migration instance that should handle the actual query executions.
      *
      * @return void
      */
-    public static function makeElemental($tableName, $elementType, $hasContent = false, $isLocalized = false, $locales = null, \yii\db\Migration $migration = null)
+    public static function makeElemental($tableName, $elementType, $hasContent = false, $isLocalized = false, $locales = null, \craft\app\db\Migration $migration = null)
     {
         $tableName = Craft::$app->getDb()->getSchema()->getRawTableName($tableName);
         $db = Craft::$app->getDb();
@@ -509,10 +510,10 @@ class Migration
     /**
      * Drops a table, its own foreign keys, and any foreign keys referencing it.
      *
-     * @param string            $tableName
-     * @param \yii\db\Migration $migration
+     * @param string    $tableName
+     * @param Migration $migration
      */
-    public static function dropTable($tableName, \yii\db\Migration $migration = null)
+    public static function dropTable($tableName, Migration $migration = null)
     {
         $table = static::getTable($tableName);
 
@@ -535,12 +536,12 @@ class Migration
     /**
      * Drops all the foreign keys on a table.
      *
-     * @param object            $table
-     * @param \yii\db\Migration $migration
+     * @param object    $table
+     * @param Migration $migration
      *
      * @return void
      */
-    public static function dropAllForeignKeysOnTable($table, \yii\db\Migration $migration = null)
+    public static function dropAllForeignKeysOnTable($table, Migration $migration = null)
     {
         foreach ($table->fks as $fk) {
             static::dropForeignKey($fk, $migration);
@@ -550,12 +551,12 @@ class Migration
     /**
      * Drops all the foreign keys that reference a table.
      *
-     * @param object            $table
-     * @param \yii\db\Migration $migration
+     * @param object    $table
+     * @param Migration $migration
      *
      * @return void
      */
-    public static function dropAllForeignKeysToTable($table, \yii\db\Migration $migration = null)
+    public static function dropAllForeignKeysToTable($table, Migration $migration = null)
     {
         foreach (array_keys($table->columns) as $column) {
             $fks = static::findForeignKeysTo($table->name, $column);
@@ -569,12 +570,12 @@ class Migration
     /**
      * Drops a foreign key.
      *
-     * @param object            $fk
-     * @param \yii\db\Migration $migration
+     * @param object    $fk
+     * @param Migration $migration
      *
      * @return void
      */
-    public static function dropForeignKey($fk, \yii\db\Migration $migration = null)
+    public static function dropForeignKey($fk, Migration $migration = null)
     {
         if ($migration !== null) {
             $migration->dropForeignKey($fk->name, $fk->table->name);
@@ -588,12 +589,12 @@ class Migration
     /**
      * Drops all the indexes on a table.
      *
-     * @param object            $table
-     * @param \yii\db\Migration $migration
+     * @param object    $table
+     * @param Migration $migration
      *
      * @return void
      */
-    public static function dropAllIndexesOnTable($table, \yii\db\Migration $migration = null)
+    public static function dropAllIndexesOnTable($table, Migration $migration = null)
     {
         foreach ($table->indexes as $index) {
             static::dropIndex($index, $migration);
@@ -603,12 +604,12 @@ class Migration
     /**
      * Drops all the unique indexes on a table.
      *
-     * @param object            $table
-     * @param \yii\db\Migration $migration
+     * @param object    $table
+     * @param Migration $migration
      *
      * @return void
      */
-    public static function dropAllUniqueIndexesOnTable($table, \yii\db\Migration $migration = null)
+    public static function dropAllUniqueIndexesOnTable($table, Migration $migration = null)
     {
         foreach ($table->indexes as $index) {
             if ($index->unique) {
@@ -620,12 +621,12 @@ class Migration
     /**
      * Drops an index.
      *
-     * @param object            $index
-     * @param \yii\db\Migration $migration
+     * @param object    $index
+     * @param Migration $migration
      *
      * @return void
      */
-    public static function dropIndex($index, \yii\db\Migration $migration = null)
+    public static function dropIndex($index, Migration $migration = null)
     {
         if ($migration !== null) {
             $migration->dropIndex($index->name, $index->table->name);
@@ -639,12 +640,12 @@ class Migration
     /**
      * Restores all the indexes on a table.
      *
-     * @param object            $table
-     * @param \yii\db\Migration $migration
+     * @param object    $table
+     * @param Migration $migration
      *
      * @return void
      */
-    public static function restoreAllIndexesOnTable($table, \yii\db\Migration $migration = null)
+    public static function restoreAllIndexesOnTable($table, Migration $migration = null)
     {
         foreach ($table->indexes as $index) {
             static::restoreIndex($index, $migration);
@@ -654,12 +655,12 @@ class Migration
     /**
      * Restores all the unique indexes on a table.
      *
-     * @param object            $table
-     * @param \yii\db\Migration $migration
+     * @param object    $table
+     * @param Migration $migration
      *
      * @return void
      */
-    public static function restoreAllUniqueIndexesOnTable($table, \yii\db\Migration $migration = null)
+    public static function restoreAllUniqueIndexesOnTable($table, Migration $migration = null)
     {
         foreach ($table->indexes as $index) {
             if ($index->unique) {
@@ -671,12 +672,12 @@ class Migration
     /**
      * Restores an index.
      *
-     * @param object            $index
-     * @param \yii\db\Migration $migration
+     * @param object    $index
+     * @param Migration $migration
      *
      * @return void
      */
-    public static function restoreIndex($index, \yii\db\Migration $migration = null)
+    public static function restoreIndex($index, Migration $migration = null)
     {
         $db = Craft::$app->getDb();
         $table = $index->table->name;
@@ -698,12 +699,12 @@ class Migration
     /**
      * Restores all the foreign keys on a table.
      *
-     * @param object            $table
-     * @param \yii\db\Migration $migration
+     * @param object    $table
+     * @param Migration $migration
      *
      * @return void
      */
-    public static function restoreAllForeignKeysOnTable($table, \yii\db\Migration $migration = null)
+    public static function restoreAllForeignKeysOnTable($table, Migration $migration = null)
     {
         foreach ($table->fks as $fk) {
             static::restoreForeignKey($fk, $migration);
@@ -713,12 +714,12 @@ class Migration
     /**
      * Restores a foreign key.
      *
-     * @param object            $fk
-     * @param \yii\db\Migration $migration
+     * @param object    $fk
+     * @param Migration $migration
      *
      * @return void
      */
-    public static function restoreForeignKey($fk, \yii\db\Migration $migration = null)
+    public static function restoreForeignKey($fk, Migration $migration = null)
     {
         $db = Craft::$app->getDb();
         $table = $fk->table->name;
