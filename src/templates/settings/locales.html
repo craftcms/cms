@@ -43,14 +43,14 @@
 						<div class="field">
 							<table id="locales" class="data fullwidth collapsible">
 								<tbody>
-								{% for locale in craft.i18n.getSiteLocales() %}
-								<tr data-id="{{ locale.id }}" data-name="{{ locale.getDisplayName(craft.locale) }}">
-									<th scope="row" data-title="{{ 'Name'|t('app') }}" width="40%">{{ locale.getDisplayName(craft.locale) }}</th>
-									<td data-title="{{ 'Locale ID' }}">{{ locale.id }}</td>
-									<td class="thin"><a class="move icon" title="{{ 'Reorder'|t('app') }}" role="button"></a></td>
-									<td class="thin"><a class="delete icon" title="{{ 'Delete'|t('app') }}" role="button"></a></td>
-								</tr>
-								{% endfor %}
+									{% for locale in craft.i18n.getSiteLocales() %}
+										<tr data-id="{{ locale.id }}" data-name="{{ locale.getDisplayName(craft.locale) }}">
+											<th scope="row" data-title="{{ 'Name'|t('app') }}" width="40%">{{ locale.getDisplayName(craft.locale) }}</th>
+											<td data-title="{{ 'Locale ID' }}">{{ locale.id }}</td>
+											<td class="thin"><a class="move icon" title="{{ 'Reorder'|t('app') }}" role="button"></a></td>
+											<td class="thin"><a class="delete icon" title="{{ 'Delete'|t('app') }}" role="button"></a></td>
+										</tr>
+									{% endfor %}
 								</tbody>
 							</table>
 						</div>
@@ -65,8 +65,8 @@
 								<div class="spinner hidden"></div>
 							</div>
 						</div>
-					</div>
-				</form>
+					</form>
+				</div>
 			</div>
 		</div>
 		{% if not craft.i18n.getIsIntlLoaded() %}
