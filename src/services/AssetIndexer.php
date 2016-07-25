@@ -192,7 +192,7 @@ class AssetIndexer extends Component
                         $targetPath
                     )
                 ) {
-                    if (!$volume->isLocal()) {
+                    if (!$volume::isLocal()) {
                         $volume->saveFileLocally($uriPath, $targetPath);
 
                         // Store the local source for now and set it up for deleting, if needed

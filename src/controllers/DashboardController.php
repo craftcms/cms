@@ -64,7 +64,7 @@ class DashboardController extends Controller
 
             $widgetTypeInfo[$class] = [
                 'iconSvg' => $this->_getWidgetIconSvg($widget),
-                'name' => $widget->displayName(),
+                'name' => $widget::displayName(),
                 'maxColspan' => $widget->getMaxColspan(),
                 'settingsHtml' => (string)$settingsHtml,
                 'settingsJs' => (string)$settingsJs,
@@ -93,7 +93,7 @@ class DashboardController extends Controller
             if (!isset($widgetTypeInfo[$info['type']])) {
                 $widgetTypeInfo[$info['type']] = [
                     'iconSvg' => $this->_getWidgetIconSvg($widget),
-                    'name' => $widget->displayName(),
+                    'name' => $widget::displayName(),
                     'maxColspan' => $widget->getMaxColspan(),
                     'selectable' => false,
                 ];
@@ -531,7 +531,7 @@ class DashboardController extends Controller
         }
 
         return Craft::$app->getView()->renderTemplate('_includes/defaulticon.svg', [
-            'label' => $widget->displayName()
+            'label' => $widget::displayName()
         ]);
     }
 

@@ -847,7 +847,7 @@ class Plugins extends Component
     private function _registerPlugin($handle, PluginInterface $plugin)
     {
         /** @var Plugin $plugin */
-        $plugin->setInstance($plugin);
+        $plugin::setInstance($plugin);
         $this->_plugins[$handle] = $plugin;
         Craft::$app->setModule($handle, $plugin);
     }

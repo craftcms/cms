@@ -1384,7 +1384,7 @@ class View extends \yii\web\View
             $html .= ' removable';
         }
 
-        if ($element->hasStatuses()) {
+        if ($element::hasStatuses()) {
             $html .= ' hasstatus';
         }
 
@@ -1414,7 +1414,7 @@ class View extends \yii\web\View
                     'Remove').'"></a> ';
         }
 
-        if ($element->hasStatuses()) {
+        if ($element::hasStatuses()) {
             $html .= '<span class="status '.$context['element']->getStatus().'"></span>';
         }
 

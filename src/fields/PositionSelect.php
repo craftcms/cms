@@ -126,7 +126,7 @@ class PositionSelect extends Field
                 'name' => $this->handle,
                 'value' => $value,
                 'options' => $this->options,
-                'allOptions' => $this->_getOptions(),
+                'allOptions' => self::_getOptions(),
             ]);
     }
 }

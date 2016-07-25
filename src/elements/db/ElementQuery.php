@@ -1644,7 +1644,7 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
             if (is_array($this->customFields)) {
                 // Add the field column prefixes
                 foreach ($this->customFields as $field) {
-                    if ($field->hasContentColumn()) {
+                    if ($field::hasContentColumn()) {
                         $orderColumnMap[$field->handle] = 'content.'.$this->_getFieldContentColumnName($field);
                     }
                 }

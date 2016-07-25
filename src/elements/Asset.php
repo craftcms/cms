@@ -996,7 +996,7 @@ class Asset extends Element
     {
         $volume = Craft::$app->getVolumes()->getVolumeById($this->volumeId);
 
-        if ($volume->isLocal()) {
+        if ($volume::isLocal()) {
             return $volume->getRootPath().'/'.$this->getUri();
         }
 

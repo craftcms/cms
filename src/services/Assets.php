@@ -292,7 +292,7 @@ class Assets extends Component
         $this->_storeAssetRecord($asset);
 
         // Now that we have an ID, store the source
-        if (!$volume->isLocal() && $asset->kind == 'image' && !empty($asset->newFilePath)) {
+        if (!$volume::isLocal() && $asset->kind == 'image' && !empty($asset->newFilePath)) {
             // Store the local source for now and set it up for deleting, if needed
             $assetTransforms = Craft::$app->getAssetTransforms();
             $assetTransforms->storeLocalSource($asset->newFilePath,

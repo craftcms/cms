@@ -785,7 +785,9 @@ class AssetTransforms extends Component
                 ->scaleToFit($size, $size)
                 ->saveAs($thumbPath);
 
-            if (!$asset->getVolume()->isLocal()) {
+            $volume = $asset->getVolume();
+
+            if (!$volume::isLocal()) {
                 $this->queueSourceForDeletingIfNecessary($imageSource);
             }
         }
@@ -808,9 +810,9 @@ class AssetTransforms extends Component
 
         $imageSourcePath = $asset->getImageTransformSourcePath();
 
-        if (!$volume->isLocal()) {
+        if (!$volume::isLocal()) {
             if (!Io::fileExists($imageSourcePath) || Io::getFileSize($imageSourcePath) == 0) {
-                if ($volume->isLocal()) {
+                if ($volume::isLocal()) {
                     throw new VolumeObjectNotFoundException(Craft::t('Image “{file}” cannot be found.',
                         ['file' => $imageSourcePath]));
                 }
@@ -942,7 +944,7 @@ class AssetTransforms extends Component
                 $format = 'jpg';
             }
 
-            if (!$volume->isLocal()) {
+            if (!$volume::isLocal()) {
                 // Store for potential later use and queue for deletion if needed.
                 $asset->setTransformSource($localCopy);
                 $this->queueSourceForDeletingIfNecessary($localCopy);
@@ -1247,7 +1249,9 @@ class AssetTransforms extends Component
 
         Io::deleteFile($createdTransform);
 
-        if (!$asset->getVolume()->isLocal()) {
+        $volume = $asset->getVolume();
+
+        if (!$volume::isLocal()) {
             $this->queueSourceForDeletingIfNecessary($imageSource);
         }
 

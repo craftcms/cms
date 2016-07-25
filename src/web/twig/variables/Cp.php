@@ -82,7 +82,7 @@ class Cp
 
         foreach ($plugins as $plugin) {
             if ($plugin::hasCpSection()) {
-                $pluginHandle = $plugin->className();
+                $pluginHandle = $plugin::className();
 
                 if (\Craft::$app->getUser()->checkPermission('accessPlugin-'.$pluginHandle)) {
                     $lcHandle = StringHelper::toLowerCase($pluginHandle);

@@ -834,7 +834,7 @@ abstract class Element extends Component implements ElementInterface
         ];
 
         // Require the title?
-        if ($this->hasTitles()) {
+        if ($this::hasTitles()) {
             $rules[] = [['title'], 'required'];
         }
 

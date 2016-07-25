@@ -50,7 +50,7 @@ class Images extends Component
             } else if (extension_loaded('imagick')) {
                 // Taken from Imagick\Imagine() constructor.
                 $imagick = new \Imagick();
-                $v = $imagick->getVersion();
+                $v = $imagick::getVersion();
                 /** @noinspection PhpUnusedLocalVariableInspection */
                 list($version, $year, $month, $day, $q, $website) = sscanf($v['versionString'], 'ImageMagick %s %04d-%02d-%02d %s %s');
 

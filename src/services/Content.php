@@ -123,7 +123,7 @@ class Content extends Component
             if ($fieldLayout) {
                 foreach ($fieldLayout->getFields() as $field) {
                     /** @var Field $field */
-                    if ($field->hasContentColumn()) {
+                    if ($field::hasContentColumn()) {
                         $element->setFieldValue($field->handle, $row[$field->handle]);
                     }
                 }
@@ -171,7 +171,7 @@ class Content extends Component
             if ($fieldLayout) {
                 foreach ($fieldLayout->getFields() as $field) {
                     /** @var Field $field */
-                    if ($field->hasContentColumn()) {
+                    if ($field::hasContentColumn()) {
                         $column = $this->fieldColumnPrefix.$field->handle;
                         $values[$column] = $field->prepareValueForDb($element->getFieldValue($field->handle), $element);
                     }
@@ -284,7 +284,7 @@ class Content extends Component
         $fieldLayout = $element->getFieldLayout();
         foreach ($fieldLayout->getFields() as $field) {
             /** @var Field $field */
-            if (!$field->translatable && $field->hasContentColumn()) {
+            if (!$field->translatable && $field::hasContentColumn()) {
                 $nonTranslatableFields[] = $field;
             }
         }

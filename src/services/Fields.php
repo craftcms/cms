@@ -388,7 +388,7 @@ class Fields extends Component
             $this->_fieldsWithContent[$context] = [];
 
             foreach ($this->getAllFields() as $field) {
-                if ($field->hasContentColumn()) {
+                if ($field::hasContentColumn()) {
                     $this->_fieldsWithContent[$context][] = $field;
                 }
             }
