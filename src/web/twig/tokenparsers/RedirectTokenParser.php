@@ -33,6 +33,7 @@ class RedirectTokenParser extends \Twig_TokenParser
         if ($stream->test(\Twig_Token::NUMBER_TYPE)) {
             $httpStatusCode = $this->parser->getExpressionParser()->parseExpression();
         } else {
+            /** @noinspection PhpParamsInspection */
             $httpStatusCode = new \Twig_Node_Expression_Constant(302, 1);
         }
 

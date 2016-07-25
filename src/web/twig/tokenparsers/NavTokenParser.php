@@ -75,6 +75,7 @@ class NavTokenParser extends \Twig_TokenParser
             $valueTarget = $targets->getNode(1);
             $valueTarget = new \Twig_Node_Expression_AssignName($valueTarget->getAttribute('name'), $valueTarget->getLine());
         } else {
+            /** @noinspection PhpParamsInspection */
             $keyTarget = new \Twig_Node_Expression_AssignName('_key', $lineno);
             $valueTarget = $targets->getNode(0);
             $valueTarget = new \Twig_Node_Expression_AssignName($valueTarget->getAttribute('name'), $valueTarget->getLine());
