@@ -1282,11 +1282,9 @@ trait ApplicationTrait
 
             case 'db': {
                 return [
-                    'class' => 'craft\app\cache\DbCache',
+                    'class' => 'yii\caching\DbCache',
                     'gcProbability' => $configService->get('gcProbability', ConfigCategory::DbCache),
-                    'cacheTableName' => $this->_getNormalizedTablePrefix().$configService->get('cacheTableName',
-                            ConfigCategory::DbCache),
-                    'autoCreateCacheTable' => true,
+                    'cacheTable' => $this->_getNormalizedTablePrefix().$configService->get('cacheTableName', ConfigCategory::DbCache),
                 ];
             }
 
