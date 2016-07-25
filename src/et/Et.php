@@ -80,6 +80,7 @@ class Et
         // There can be a race condition after an update from older Craft versions where they lose session
         // and another call to elliott is made during cleanup.
         $user = Craft::$app->getUser()->getIdentity();
+        $userEmail = $user ? $user->email : '';
 
         $this->_model = new EtModel([
             'licenseKey' => $this->_getLicenseKey(),
@@ -91,7 +92,7 @@ class Et
             'localBuild' => Craft::$app->build,
             'localVersion' => Craft::$app->version,
             'localEdition' => Craft::$app->getEdition(),
-            'userEmail' => Craft::$app->getUser()->getIdentity()->email,
+            'userEmail' => $userEmail,
             'track' => Craft::$app->track,
             'showBeta' => Craft::$app->getConfig()->get('showBetaUpdates'),
             'serverInfo' => [
