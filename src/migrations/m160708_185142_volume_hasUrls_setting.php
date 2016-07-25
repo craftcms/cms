@@ -2,10 +2,8 @@
 
 namespace craft\app\migrations;
 
-use Craft;
 use craft\app\db\Migration;
 use craft\app\db\Query;
-use craft\app\helpers\MigrationHelper;
 use yii\helpers\Json;
 
 /**
