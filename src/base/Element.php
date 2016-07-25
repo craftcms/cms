@@ -429,7 +429,7 @@ abstract class Element extends Component implements ElementInterface
     }
 
     /**
-     * @inheritdot
+     * @inheritdoc
      */
     public static function getEagerLoadingMap($sourceElements, $handle)
     {

@@ -227,8 +227,9 @@ class AssetIndexer extends Component
      *
      * @return integer
      */
-    public function ensureTopFolder(Volume $volume)
+    public function ensureTopFolder(VolumeInterface $volume)
     {
+        /** @var Volume $volume */
         $folder = VolumeFolder::findOne(
             [
                 'name' => $volume->name,
