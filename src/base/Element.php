@@ -8,8 +8,10 @@
 namespace craft\app\base;
 
 use Craft;
-use craft\app\behaviors\ContentBehavior;
-use craft\app\behaviors\ContentTrait;
+use /** @noinspection PhpUndefinedClassInspection */
+    craft\app\behaviors\ContentBehavior;
+use /** @noinspection PhpUndefinedClassInspection */
+    craft\app\behaviors\ContentTrait;
 use craft\app\dates\DateTime;
 use craft\app\db\Query;
 use craft\app\elements\db\ElementQuery;
@@ -67,7 +69,8 @@ abstract class Element extends Component implements ElementInterface
     // =========================================================================
 
     use ElementTrait;
-    use ContentTrait;
+    use /** @noinspection PhpUndefinedClassInspection */
+        ContentTrait;
 
     // Constants
     // =========================================================================
@@ -729,6 +732,7 @@ abstract class Element extends Component implements ElementInterface
      */
     public function behaviors()
     {
+        /** @noinspection PhpUndefinedClassInspection */
         return [
             'customFields' => ContentBehavior::className(),
         ];
@@ -754,6 +758,7 @@ abstract class Element extends Component implements ElementInterface
         $names = parent::attributes();
 
         // Include custom field handles
+        /** @noinspection PhpUndefinedClassInspection */
         $class = new \ReflectionClass(ContentBehavior::className());
 
         foreach ($class->getProperties(\ReflectionProperty::IS_PUBLIC) as $property) {

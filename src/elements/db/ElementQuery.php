@@ -15,8 +15,10 @@ use craft\app\base\Element;
 use craft\app\base\ElementInterface;
 use craft\app\base\Field;
 use craft\app\base\FieldInterface;
-use craft\app\behaviors\ElementQueryBehavior;
-use craft\app\behaviors\ElementQueryTrait;
+use /** @noinspection PhpUndefinedClassInspection */
+    craft\app\behaviors\ElementQueryBehavior;
+use /** @noinspection PhpUndefinedClassInspection */
+    craft\app\behaviors\ElementQueryTrait;
 use craft\app\db\Connection;
 use craft\app\db\FixedOrderExpression;
 use craft\app\db\Query;
@@ -45,7 +47,8 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
     // =========================================================================
 
     use ArrayableTrait;
-    use ElementQueryTrait;
+    use /** @noinspection PhpUndefinedClassInspection */
+        ElementQueryTrait;
 
     // Constants
     // =========================================================================
@@ -477,6 +480,7 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
      */
     public function behaviors()
     {
+        /** @noinspection PhpUndefinedClassInspection */
         return [
             'customFields' => ElementQueryBehavior::className(),
         ];
