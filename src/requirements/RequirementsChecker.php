@@ -394,6 +394,9 @@ class RequirementsChecker
         return $nowDate;
     }
 
+    /**
+     * @return boolean
+     */
     function checkDatabaseCreds()
     {
         // Check if we're running as a standalone script.
@@ -492,6 +495,9 @@ class RequirementsChecker
         return false;
     }
 
+    /**
+     * @return boolean|mixed
+     */
     function checkMySqlServerVersion()
     {
         if (($conn = $this->getDbConnection()) !== false) {
@@ -501,6 +507,9 @@ class RequirementsChecker
         return false;
     }
 
+    /**
+     * @return boolean|PDO
+     */
     function getDbConnection()
     {
         static $conn;
@@ -519,6 +528,9 @@ class RequirementsChecker
         return $conn;
     }
 
+    /**
+     * @return boolean
+     */
     function checkIniSet()
     {
         $oldValue = ini_get('memory_limit');
@@ -554,6 +566,9 @@ class RequirementsChecker
         return true;
     }
 
+    /**
+     * @return boolean
+     */
     function checkMemory()
     {
         $memoryLimit = ini_get('memory_limit');
@@ -577,6 +592,9 @@ class RequirementsChecker
         return true;
     }
 
+    /**
+     * @return boolean
+     */
     function checkWebRoot()
     {
         $pathService = Craft::$app->getPath();
@@ -639,6 +657,11 @@ class RequirementsChecker
         return true;
     }
 
+    /**
+     * @param string $pathToTest
+     *
+     * @return boolean
+     */
     function isPathInsideWebroot($pathToTest)
     {
         $pathToTest = \Craft\app\helpers\Io::normalizePathSeparators($pathToTest);

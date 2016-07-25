@@ -24,6 +24,9 @@ use \Aws\S3\S3Client as S3Client;
 Craft::$app->requireEdition(Craft::Pro);
 
 
+/**
+ * Class GoogleCloud
+ */
 class GoogleCloud extends Volume
 {
     // Static

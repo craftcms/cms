@@ -21,6 +21,11 @@ use Craft;
  */
 class UploadFailedException extends FileException
 {
+    /**
+     * Constructor
+     *
+     * @param integer $errorCode
+     */
     public function __construct($errorCode)
     {
         switch ($errorCode) {

@@ -72,6 +72,9 @@ class Temp extends Local
     // Public Methods
     // =========================================================================
 
+    /**
+     * Constructor
+     */
     public function __construct()
     {
         $this->path = Craft::$app->getPath()->getAssetsTempSourcePath();
@@ -105,6 +108,9 @@ class Temp extends Local
         return $this->url;
     }
 
+    /**
+     * @return boolean
+     */
     public function isSystem()
     {
         return true;

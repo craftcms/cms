@@ -20,6 +20,11 @@ class Parser extends \Twig_Parser
     // Protected Methods
     // =========================================================================
 
+    /**
+     * @param \Twig_NodeInterface $node
+     *
+     * @return \Twig_NodeInterface|void
+     */
     protected function filterBodyNodes(
         /** @noinspection PhpDeprecationInspection */ \Twig_NodeInterface $node
     )

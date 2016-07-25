@@ -21,6 +21,9 @@ use League\Flysystem\FileExistsException;
 use League\Flysystem\FileNotFoundException;
 use League\Flysystem\Filesystem;
 
+/**
+ * Class Volume
+ */
 abstract class Volume extends SavableComponent implements VolumeInterface
 {
     // Traits
