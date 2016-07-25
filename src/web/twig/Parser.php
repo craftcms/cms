@@ -20,7 +20,9 @@ class Parser extends \Twig_Parser
     // Protected Methods
     // =========================================================================
 
-    protected function filterBodyNodes(\Twig_NodeInterface $node)
+    protected function filterBodyNodes(
+        /** @noinspection PhpDeprecationInspection */ \Twig_NodeInterface $node
+    )
     {
         // Bypass "include" nodes as they "capture" the output
         if ($node instanceof RegisterResourceNode) {

@@ -17,6 +17,8 @@ use craft\app\web\View;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
+
+/** @noinspection PhpDeprecationInspection */
 class TemplateLoader implements \Twig_LoaderInterface, \Twig_ExistsLoaderInterface
 {
     // Properties
