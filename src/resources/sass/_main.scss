@@ -62,10 +62,10 @@ a.fieldtoggle:before,
 [data-icon-after]:after { content: attr(data-icon-after); }
 
 body.rtl [data-icon=list]:before,
-body.rtl [data-icon-after=list]:after { content: attr('listrtl'); }
+body.rtl [data-icon-after=list]:after { content: attr(listrtl); }
 
 body.rtl [data-icon=structure]:before,
-body.rtl [data-icon-after=structure]:after { content: attr('structurertl'); }
+body.rtl [data-icon-after=structure]:after { content: attr(structurertl); }
 
 .icon.secure:before { content: 'secure'; }
 .icon.insecure:before { content: 'insecure'; }
@@ -1011,7 +1011,7 @@ ul.tree,
 .meta > .field > .input > .datewrapper > .text,
 .meta > .field > .input > .timewrapper > .text,
 .meta > .field > .input > .datetimewrapper > .datewrapper > .text,
-.meta > .field > .input > .datetimewrapper > .timewrapper > .text, { display: block; margin: -8px 0; padding: 14px 0; border-radius: 0; @include box-shadow(none); border: none !important; background: transparent; }
+.meta > .field > .input > .datetimewrapper > .timewrapper > .text { display: block; margin: -8px 0; padding: 14px 0; border-radius: 0; @include box-shadow(none); border: none !important; background: transparent; }
 
 .meta > .field > .input > .datewrapper:before,
 .meta > .field > .input > .timewrapper:before,
