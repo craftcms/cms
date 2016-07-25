@@ -257,7 +257,7 @@ class MigrationHelper
      *
      * @return void
      */
-    public static function makeElemental($tableName, $elementType, $hasContent = false, $isLocalized = false, $locales = null, \craft\app\db\Migration $migration = null)
+    public static function makeElemental($tableName, $elementType, $hasContent = false, $isLocalized = false, $locales = null, Migration $migration = null)
     {
         $tableName = Craft::$app->getDb()->getSchema()->getRawTableName($tableName);
         $db = Craft::$app->getDb();
