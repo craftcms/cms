@@ -12,7 +12,6 @@ use craft\app\helpers\Db;
 use craft\app\helpers\Io;
 use yii\base\Component;
 use yii\base\InvalidConfigException;
-use yii\db\Connection;
 use yii\db\MigrationInterface;
 use yii\di\Instance;
 
