@@ -180,9 +180,9 @@ class Install extends InstallMigration
                     ['volumeId', false],
                 ],
                 'foreignKeys' => [
-                    ['volumeId', '{{%volumes}}', 'id', 'CASCADE', null],
                     ['folderId', '{{%volumefolders}}', 'id', 'CASCADE', null],
                     ['id', '{{%elements}}', 'id', 'CASCADE', null],
+                    ['volumeId', '{{%volumes}}', 'id', 'CASCADE', null],
                 ],
             ],
             '{{%assettransformindex}}' => [
@@ -245,13 +245,7 @@ class Install extends InstallMigration
                     ['fieldLayoutId', false],
                 ],
                 'foreignKeys' => [
-                    [
-                        'fieldLayoutId',
-                        '{{%fieldlayouts}}',
-                        'id',
-                        'SET NULL',
-                        null
-                    ],
+                    ['fieldLayoutId', '{{%fieldlayouts}}', 'id', 'SET NULL', null],
                     ['structureId', '{{%structures}}', 'id', 'CASCADE', null],
                 ],
             ],
@@ -259,16 +253,16 @@ class Install extends InstallMigration
                 'columns' => [
                     'groupId' => 'integer(11) NOT NULL',
                     'locale' => 'char(12) COLLATE utf8_unicode_ci NOT NULL',
-                    'urlFormat' => 'text COLLATE utf8_unicode_ci DEFAULT NULL',
-                    'nestedUrlFormat' => 'text COLLATE utf8_unicode_ci DEFAULT NULL',
+                    'urlFormat' => 'text COLLATE utf8_unicode_ci',
+                    'nestedUrlFormat' => 'text COLLATE utf8_unicode_ci',
                 ],
                 'indexes' => [
                     ['groupId,locale', true],
                     ['locale', false],
                 ],
                 'foreignKeys' => [
-                    ['locale', '{{%locales}}', 'locale', 'CASCADE', 'CASCADE'],
                     ['groupId', '{{%categorygroups}}', 'id', 'CASCADE', null],
+                    ['locale', '{{%locales}}', 'locale', 'CASCADE', 'CASCADE'],
                 ],
             ],
             '{{%content}}' => [
@@ -430,13 +424,7 @@ class Install extends InstallMigration
                     ['fieldLayoutId', false],
                 ],
                 'foreignKeys' => [
-                    [
-                        'fieldLayoutId',
-                        '{{%fieldlayouts}}',
-                        'id',
-                        'SET NULL',
-                        null
-                    ],
+                    ['fieldLayoutId', '{{%fieldlayouts}}', 'id', 'SET NULL', null],
                     ['sectionId', '{{%sections}}', 'id', 'CASCADE', null],
                 ],
             ],
@@ -486,9 +474,9 @@ class Install extends InstallMigration
                     ['fieldId', false],
                 ],
                 'foreignKeys' => [
-                    ['tabId', '{{%fieldlayouttabs}}', 'id', 'CASCADE', null],
                     ['fieldId', '{{%fields}}', 'id', 'CASCADE', null],
                     ['layoutId', '{{%fieldlayouts}}', 'id', 'CASCADE', null],
+                    ['tabId', '{{%fieldlayouttabs}}', 'id', 'CASCADE', null],
                 ],
             ],
             '{{%fieldlayouts}}' => [
@@ -545,13 +533,7 @@ class Install extends InstallMigration
                     ['fieldLayoutId', false],
                 ],
                 'foreignKeys' => [
-                    [
-                        'fieldLayoutId',
-                        '{{%fieldlayouts}}',
-                        'id',
-                        'SET NULL',
-                        null
-                    ],
+                    ['fieldLayoutId', '{{%fieldlayouts}}', 'id', 'SET NULL', null],
                     ['id', '{{%elements}}', 'id', 'CASCADE', null],
                 ],
             ],
@@ -568,7 +550,7 @@ class Install extends InstallMigration
                     'on' => 'smallint(1) unsigned NOT NULL DEFAULT \'0\'',
                     'maintenance' => 'smallint(1) unsigned NOT NULL DEFAULT \'0\'',
                     'track' => 'string(40) COLLATE utf8_unicode_ci NOT NULL',
-                    'fieldVersion' => 'char(12) NOT NULL DEFAULT \'1\'',
+                    'fieldVersion' => 'char(12) COLLATE utf8_unicode_ci NOT NULL DEFAULT \'1\'',
                 ],
             ],
             '{{%locales}}' => [
@@ -598,16 +580,10 @@ class Install extends InstallMigration
                     ['ownerLocale', false],
                 ],
                 'foreignKeys' => [
-                    [
-                        'ownerLocale',
-                        '{{%locales}}',
-                        'locale',
-                        'CASCADE',
-                        'CASCADE'
-                    ],
                     ['fieldId', '{{%fields}}', 'id', 'CASCADE', null],
                     ['id', '{{%elements}}', 'id', 'CASCADE', null],
                     ['ownerId', '{{%elements}}', 'id', 'CASCADE', null],
+                    ['ownerLocale', '{{%locales}}', 'locale', 'CASCADE', 'CASCADE'],
                     ['typeId', '{{%matrixblocktypes}}', 'id', 'CASCADE', null],
                 ],
             ],
@@ -626,14 +602,8 @@ class Install extends InstallMigration
                     ['fieldLayoutId', false],
                 ],
                 'foreignKeys' => [
-                    [
-                        'fieldLayoutId',
-                        '{{%fieldlayouts}}',
-                        'id',
-                        'SET NULL',
-                        null
-                    ],
                     ['fieldId', '{{%fields}}', 'id', 'CASCADE', null],
+                    ['fieldLayoutId', '{{%fieldlayouts}}', 'id', 'SET NULL', null],
                 ],
             ],
             '{{%migrations}}' => [
@@ -654,9 +624,9 @@ class Install extends InstallMigration
             '{{%plugins}}' => [
                 'columns' => [
                     'handle' => 'string(150) COLLATE utf8_unicode_ci NOT NULL',
-                    'version' => 'varchar(15) COLLATE utf8_unicode_ci NOT NULL',
-                    'schemaVersion' => 'varchar(15) COLLATE utf8_unicode_ci',
-                    'licenseKey' => 'char(24) COLLATE utf8_unicode_ci',
+                    'version' => 'string(15) COLLATE utf8_unicode_ci NOT NULL',
+                    'schemaVersion' => 'string(15) COLLATE utf8_unicode_ci DEFAULT NULL',
+                    'licenseKey' => 'char(24) COLLATE utf8_unicode_ci DEFAULT NULL',
                     'licenseKeyStatus' => 'enum(\'valid\',\'invalid\',\'mismatched\',\'unknown\') COLLATE utf8_unicode_ci NOT NULL DEFAULT \'unknown\'',
                     'enabled' => 'smallint(1) unsigned NOT NULL DEFAULT \'0\'',
                     'settings' => 'text COLLATE utf8_unicode_ci',
@@ -694,13 +664,7 @@ class Install extends InstallMigration
                 'foreignKeys' => [
                     ['fieldId', '{{%fields}}', 'id', 'CASCADE', null],
                     ['sourceId', '{{%elements}}', 'id', 'CASCADE', null],
-                    [
-                        'sourceLocale',
-                        '{{%locales}}',
-                        'locale',
-                        'CASCADE',
-                        'CASCADE'
-                    ],
+                    ['sourceLocale', '{{%locales}}', 'locale', 'CASCADE', 'CASCADE'],
                     ['targetId', '{{%elements}}', 'id', 'CASCADE', null],
                 ],
             ],
@@ -757,8 +721,8 @@ class Install extends InstallMigration
                     'sectionId' => 'integer(11) NOT NULL',
                     'locale' => 'char(12) COLLATE utf8_unicode_ci NOT NULL',
                     'enabledByDefault' => 'smallint(1) DEFAULT \'1\'',
-                    'urlFormat' => 'text COLLATE utf8_unicode_ci DEFAULT NULL',
-                    'nestedUrlFormat' => 'text COLLATE utf8_unicode_ci DEFAULT NULL',
+                    'urlFormat' => 'text COLLATE utf8_unicode_ci',
+                    'nestedUrlFormat' => 'text COLLATE utf8_unicode_ci',
                 ],
                 'indexes' => [
                     ['sectionId,locale', true],
@@ -888,8 +852,8 @@ class Install extends InstallMigration
                     ['elementId', false],
                 ],
                 'foreignKeys' => [
-                    ['elementId', '{{%elements}}', 'id', 'CASCADE', null],
                     ['cacheId', '{{%templatecaches}}', 'id', 'CASCADE', null],
+                    ['elementId', '{{%elements}}', 'id', 'CASCADE', null],
                 ],
             ],
             '{{%templatecachequeries}}' => [
@@ -976,13 +940,7 @@ class Install extends InstallMigration
                 ],
                 'foreignKeys' => [
                     ['groupId', '{{%usergroups}}', 'id', 'CASCADE', null],
-                    [
-                        'permissionId',
-                        '{{%userpermissions}}',
-                        'id',
-                        'CASCADE',
-                        null
-                    ],
+                    ['permissionId', '{{%userpermissions}}', 'id', 'CASCADE', null],
                 ],
             ],
             '{{%userpermissions_users}}' => [
@@ -995,13 +953,7 @@ class Install extends InstallMigration
                     ['userId', false],
                 ],
                 'foreignKeys' => [
-                    [
-                        'permissionId',
-                        '{{%userpermissions}}',
-                        'id',
-                        'CASCADE',
-                        null
-                    ],
+                    ['permissionId', '{{%userpermissions}}', 'id', 'CASCADE', null],
                     ['userId', '{{%users}}', 'id', 'CASCADE', null],
                 ],
             ],
@@ -1066,8 +1018,8 @@ class Install extends InstallMigration
                     ['volumeId', false],
                 ],
                 'foreignKeys' => [
-                    ['volumeId', '{{%volumes}}', 'id', 'CASCADE', null],
                     ['parentId', '{{%volumefolders}}', 'id', 'CASCADE', null],
+                    ['volumeId', '{{%volumes}}', 'id', 'CASCADE', null],
                 ],
             ],
             '{{%volumes}}' => [
@@ -1076,7 +1028,7 @@ class Install extends InstallMigration
                     'name' => 'string(255) COLLATE utf8_unicode_ci NOT NULL',
                     'handle' => 'string(255) COLLATE utf8_unicode_ci NOT NULL',
                     'type' => 'string(255) COLLATE utf8_unicode_ci NOT NULL',
-                    'hasUrls' => 'TINYINT(1) UNSIGNED DEFAULT NULL',
+                    'hasUrls' => 'smallint(1) unsigned DEFAULT NULL',
                     'url' => 'string(255) COLLATE utf8_unicode_ci DEFAULT NULL',
                     'settings' => 'text COLLATE utf8_unicode_ci',
                     'sortOrder' => 'smallint(4) unsigned DEFAULT NULL',
@@ -1087,13 +1039,7 @@ class Install extends InstallMigration
                     ['fieldLayoutId', false],
                 ],
                 'foreignKeys' => [
-                    [
-                        'fieldLayoutId',
-                        '{{%fieldlayouts}}',
-                        'id',
-                        'SET NULL',
-                        null
-                    ],
+                    ['fieldLayoutId', '{{%fieldlayouts}}', 'id', 'SET NULL', null],
                 ],
             ],
             '{{%widgets}}' => [
@@ -1101,7 +1047,7 @@ class Install extends InstallMigration
                     'userId' => 'integer(11) NOT NULL',
                     'type' => 'string(255) COLLATE utf8_unicode_ci NOT NULL',
                     'sortOrder' => 'smallint(4) unsigned DEFAULT NULL',
-                    'colspan' => 'tinyint(1) unsigned DEFAULT NULL',
+                    'colspan' => 'smallint(1) unsigned DEFAULT NULL',
                     'settings' => 'text COLLATE utf8_unicode_ci',
                     'enabled' => 'smallint(1) DEFAULT \'1\'',
                 ],
