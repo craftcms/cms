@@ -1,4 +1,10 @@
 <?php
+/**
+ * @link      https://craftcms.com/
+ * @copyright Copyright (c) Pixel & Tonic, Inc.
+ * @license   https://craftcms.com/license
+ */
+
 namespace craft\app\image;
 
 use Craft;
@@ -24,12 +30,8 @@ use yii\helpers\FileHelper;
 /**
  * Raster class is used for raster image manipulations.
  *
- * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   http://craftcms.com/license Craft License Agreement
- * @see       http://craftcms.com
- * @package   craft.app.etc.io
- * @since     3.0
+ * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ * @since  3.0
  */
 class Raster extends Image
 {

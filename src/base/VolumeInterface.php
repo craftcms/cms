@@ -1,4 +1,10 @@
 <?php
+/**
+ * @link      https://craftcms.com/
+ * @copyright Copyright (c) Pixel & Tonic, Inc.
+ * @license   https://craftcms.com/license
+ */
+
 namespace craft\app\base;
 
 use craft\app\errors\VolumeObjectExistsException;
@@ -9,12 +15,8 @@ use craft\app\errors\VolumeObjectNotFoundException;
  *
  * A class implementing this interface should also use [[SavableComponentTrait]] and [[VolumeTrait]].
  *
- * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   http://craftcms.com/license Craft License Agreement
- * @see       http://craftcms.com
- * @package   craft.app.base
- * @since     3.0
+ * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ * @since  3.0
  */
 interface VolumeInterface extends SavableComponentInterface
 {

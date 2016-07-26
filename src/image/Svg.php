@@ -1,4 +1,10 @@
 <?php
+/**
+ * @link      https://craftcms.com/
+ * @copyright Copyright (c) Pixel & Tonic, Inc.
+ * @license   https://craftcms.com/license
+ */
+
 namespace craft\app\image;
 
 use Craft;
@@ -10,12 +16,8 @@ use craft\app\helpers\Io;
 /**
  * Svg class is used for SVG file manipulations.
  *
- * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   http://craftcms.com/license Craft License Agreement
- * @see       http://craftcms.com
- * @package   craft.app.etc.io
- * @since     3.0
+ * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ * @since  3.0
  */
 class Svg extends Image
 {

@@ -1,4 +1,10 @@
 <?php
+/**
+ * @link      https://craftcms.com/
+ * @copyright Copyright (c) Pixel & Tonic, Inc.
+ * @license   https://craftcms.com/license
+ */
+
 namespace craft\app\base;
 
 use craft\app\errors\ImageException;
@@ -7,12 +13,8 @@ use craft\app\helpers\Image as ImageHelper;
 /**
  * Base Image class.
  *
- * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   http://craftcms.com/license Craft License Agreement
- * @see       http://craftcms.com
- * @package   craft.app.etc.io
- * @since     1.0
+ * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ * @since  3.0
  */
 abstract class Image
 {

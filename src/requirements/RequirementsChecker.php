@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      http://craftcms.com/
+ * @link      https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   http://craftcms.com/license
+ * @license   https://craftcms.com/license
  */
 
 if (version_compare(PHP_VERSION, '4.3', '<')) {
