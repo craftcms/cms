@@ -386,6 +386,8 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
      */
     public function getEagerLoadingMap($sourceElements)
     {
+        $firstElement = isset($sourceElements[0]) ? $sourceElements[0] : null;
+
         // Get the source element IDs
         $sourceElementIds = [];
 
@@ -401,15 +403,25 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
                 [
                     'and',
                     'fieldId=:fieldId',
-                    ['in', 'sourceId', $sourceElementIds]
+                    ['in', 'sourceId', $sourceElementIds],
+                    ['or', 'sourceLocale=:sourceLocale', 'sourceLocale is null']
                 ],
-                [':fieldId' => $this->id])
+                [
+                    ':fieldId' => $this->model->id,
+                    ':sourceLocale' => ($firstElement ? $firstElement->locale : null),
+                ])
             ->orderBy('sortOrder')
             ->all();
 
+        // Figure out which target locale to use
+        $targetLocale = $this->getTargetLocale($firstElement);
+
         return [
             'elementType' => static::elementType(),
-            'map' => $map
+            'map' => $map,
+            'criteria' => [
+                'locale' => $targetLocale
+            ],
         ];
     }
 
