@@ -42,7 +42,6 @@ class Schema extends \yii\db\mysql\Schema
     {
         parent::init();
 
-        $this->typeMap['char'] = self::TYPE_CHAR;
         $this->typeMap['mediumtext'] = self::TYPE_MEDIUMTEXT;
         $this->typeMap['enum'] = self::TYPE_ENUM;
     }
