@@ -496,11 +496,17 @@ class ConfigService extends BaseApplicationComponent
 	/**
 	 * Returns the configured elevated session duration in seconds.
 	 *
-	 * @return int The elevated session duration in seconds.
+	 * @return int|boolean The elevated session duration in seconds or false if it has been disabled.
 	 */
 	public function getElevatedSessionDuration()
 	{
 		$duration = craft()->config->get('elevatedSessionDuration');
+
+		// See if it has been disabled.
+		if ($duration === false)
+		{
+			return false;
+		}
 
 		if ($duration)
 		{

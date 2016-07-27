@@ -59,7 +59,6 @@ class InstallService extends BaseApplicationComponent
 			$this->_createContentTable();
 			$this->_createRelationsTable();
 			$this->_createShunnedMessagesTable();
-			$this->_createSearchIndexTable();
 			$this->_createTemplateCacheTables();
 			$this->_createAndPopulateInfoTable($inputs);
 
@@ -74,6 +73,9 @@ class InstallService extends BaseApplicationComponent
 			{
 				$transaction->commit();
 			}
+
+			Craft::log('Creating search index table.');
+			$this->_createSearchIndexTable();
 		}
 		catch (\Exception $e)
 		{
