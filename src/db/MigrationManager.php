@@ -227,12 +227,10 @@ class MigrationManager extends Component
         $time = microtime(true) - $start;
 
         if ($success) {
-            Craft::info("Applied $migrationName (time: ".sprintf("%.3f",
-                    $time)."s)");
+            Craft::info("Applied $migrationName (time: ".sprintf("%.3f", $time)."s)");
             $this->addMigrationHistory($migrationName);
         } else {
-            Craft::error("Failed to apply $migrationName (time: ".sprintf("%.3f",
-                    $time)."s)");
+            Craft::error("Failed to apply $migrationName (time: ".sprintf("%.3f", $time)."s)");
         }
 
         if (!$isConsoleRequest) {
