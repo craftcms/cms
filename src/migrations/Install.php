@@ -66,7 +66,7 @@ class Install extends Migration
         $this->createIndexes();
         $this->addForeignKeys();
         $this->insertDefaultData();
-        
+
         // Craft, you are installed now.
         Craft::$app->setIsInstalled();
 
@@ -104,7 +104,7 @@ class Install extends Migration
         ]);
         echo " done\n";
     }
-    
+
     /**
      * @inheritdoc
      */
