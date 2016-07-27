@@ -77,16 +77,15 @@ abstract class Migration extends \yii\db\Migration
      */
     public function enum($columnName, $values)
     {
-        if ($this->db->getDriverName() == 'mysql') {
-            // Wrap values with quotes
-            $values = array_map(function($value) {
-                return "'$value'";
-            }, $values);
+        // Quote the values
+        $schema = $this->db->getSchema();
+        $values = array_map([$schema, 'quoteValue'], $values);
 
+        if ($this->db->getDriverName() == 'mysql') {
             return $this->db->getSchema()->createColumnSchemaBuilder('enum', $values);
         }
 
-        return $this->string()->check($columnName." in ('".implode("', '", $values)."')");
+        return $this->string()->check($schema->quoteColumnName($columnName).' in ('.implode(',', $values).')');
     }
 
     // CRUD Methods
