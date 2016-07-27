@@ -1299,6 +1299,8 @@ body .redactor-editor,
 
 .selectize-text > .selectize-control > .selectize-input { line-height: 18px; }
 
+textarea.text.fullwidth { display: block; }
+
 .multitext .multitextrow .text { border-radius: 0; float: left; @include box-sizing(border-box); }
 .multitext .multitextrow .text.error { position: relative; z-index: 1; }
 .multitext .multitextrow .text:focus,
