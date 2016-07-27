@@ -7,6 +7,8 @@
 
 namespace craft\app\db;
 
+use yii\db\ColumnSchemaBuilder;
+
 /**
  * @inheritdoc
  *
@@ -19,6 +21,76 @@ abstract class Migration extends \yii\db\Migration
 {
     // Public Methods
     // =========================================================================
+
+    // Schema Builder Methods
+    // -------------------------------------------------------------------------
+
+    /**
+     * Creates a tinytext column for MySQL, or text column for others.
+     *
+     * @return ColumnSchemaBuilder the column instance which can be further customized.
+     */
+    public function tinyText()
+    {
+        if ($this->db->getDriverName() == 'mysql') {
+            return $this->db->getSchema()->createColumnSchemaBuilder('tinytext');
+        }
+
+        return $this->text();
+    }
+
+    /**
+     * Creates a mediumtext column for MySQL, or text column for others.
+     *
+     * @return ColumnSchemaBuilder the column instance which can be further customized.
+     */
+    public function mediumText()
+    {
+        if ($this->db->getDriverName() == 'mysql') {
+            return $this->db->getSchema()->createColumnSchemaBuilder('mediumtext');
+        }
+
+        return $this->text();
+    }
+
+    /**
+     * Creates a longtext column for MySQL, or text column for others.
+     *
+     * @return ColumnSchemaBuilder the column instance which can be further customized.
+     */
+    public function longText()
+    {
+        if ($this->db->getDriverName() == 'mysql') {
+            return $this->db->getSchema()->createColumnSchemaBuilder('longtext');
+        }
+
+        return $this->text();
+    }
+
+    /**
+     * Creates an enum column for MySQL, or a string column with a check constraint for others.
+     *
+     * @param string   $columnName The column name
+     * @param string[] $values     The allowed column values
+     *
+     * @return ColumnSchemaBuilder the column instance which can be further customized.
+     */
+    public function enum($columnName, $values)
+    {
+        if ($this->db->getDriverName() == 'mysql') {
+            // Wrap values with quotes
+            $values = array_map(function($value) {
+                return "'$value'";
+            }, $values);
+
+            return $this->db->getSchema()->createColumnSchemaBuilder('enum', $values);
+        }
+
+        return $this->string()->check($columnName." in ('".implode("', '", $values)."')");
+    }
+
+    // CRUD Methods
+    // -------------------------------------------------------------------------
 
     /**
      * @inheritdoc
@@ -114,6 +186,9 @@ abstract class Migration extends \yii\db\Migration
             ->execute();
         echo " done (time: ".sprintf('%.3f', microtime(true) - $time)."s)\n";
     }
+
+    // Schema Manipulation Methods
+    // -------------------------------------------------------------------------
 
     /**
      * @inheritdoc
