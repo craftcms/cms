@@ -115,6 +115,14 @@ class Schema extends \yii\db\mysql\Schema
         }
     }
 
+    /**
+     * @inheritdoc
+     */
+    public function createColumnSchemaBuilder($type, $length = null)
+    {
+        return new ColumnSchemaBuilder($type, $length, $this->db);
+    }
+
     // Protected Methods
     // =========================================================================
 
