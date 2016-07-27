@@ -65,8 +65,9 @@ class m150428_231346_userpreferences extends Migration
     private function _createUserPrefsTable()
     {
         $this->createTable($this->_prefsTable, [
-            'userId' => 'integer(11) NOT NULL DEFAULT \'0\'',
-            'preferences' => 'text COLLATE utf8_unicode_ci',
+            'userId' => $this->integer()->notNull(),
+            'preferences' => $this->text(),
+            'PRIMARY KEY(userId)',
         ]);
     }
 
