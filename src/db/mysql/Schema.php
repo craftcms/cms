@@ -21,7 +21,6 @@ class Schema extends \yii\db\mysql\Schema
     // Constants
     // =========================================================================
 
-    const TYPE_CHAR = 'char';
     const TYPE_MEDIUMTEXT = 'mediumtext';
     const TYPE_ENUM = 'enum';
 
