@@ -200,25 +200,6 @@ abstract class Migration extends \yii\db\Migration
     // -------------------------------------------------------------------------
 
     /**
-     * @inheritdoc
-     *
-     * @param string  $table           The name of the table to be created. The name will be properly quoted by the method.
-     * @param array   $columns         The columns (name => definition) in the new table.
-     * @param null    $options         Additional SQL fragment that will be appended to the generated SQL.
-     * @param boolean $addIdColumn     Whether an `id` column should be added.
-     * @param boolean $addAuditColumns Whether `dateCreated` and `dateUpdated` columns should be added.
-     */
-    public function createTable($table, $columns, $options = null, $addIdColumn = true, $addAuditColumns = true)
-    {
-        echo "    > create table $table ...";
-        $time = microtime(true);
-        $this->db->createCommand()
-            ->createTable($table, $columns, $options, $addIdColumn, $addAuditColumns)
-            ->execute();
-        echo " done (time: ".sprintf('%.3f', microtime(true) - $time)."s)\n";
-    }
-
-    /**
      * Creates and executes a SQL statement for dropping a DB table, if it exists.
      *
      * @param string $table The table to be dropped. The name will be properly quoted by the method.

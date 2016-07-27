@@ -167,18 +167,6 @@ class Db
     }
 
     /**
-     * @return array
-     */
-    public static function getAuditColumnConfig()
-    {
-        return [
-            'dateCreated' => 'datetime not null',
-            'dateUpdated' => 'datetime not null',
-            'uid' => 'char(36) not null default \'0\'',
-        ];
-    }
-
-    /**
      * Returns the maximum number of bytes a given textual column type can hold for a given database.
      *
      * @param string $columnType The textual column type to check.

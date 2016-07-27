@@ -151,30 +151,6 @@ class Command extends \yii\db\Command
     }
 
     /**
-     * @inheritdoc
-     *
-     * @param string  $table           The name of the table to be created. The name will be properly quoted by the method.
-     * @param array   $columns         The columns (name => definition) in the new table.
-     * @param string  $options         Additional SQL fragment that will be appended to the generated SQL.
-     * @param boolean $addIdColumn     Whether an `id` column should be added.
-     * @param boolean $addAuditColumns Whether `dateCreated` and `dateUpdated` columns should be added.
-     *
-     * @return $this the command object itself
-     */
-    public function createTable($table, $columns, $options = null, $addIdColumn = true, $addAuditColumns = true)
-    {
-        $columns = array_merge(
-            ($addIdColumn ? ['id' => 'pk'] : []),
-            $columns,
-            ($addAuditColumns ? Db::getAuditColumnConfig() : [])
-        );
-
-        parent::createTable($table, $columns, $options);
-
-        return $this;
-    }
-
-    /**
      * Creates a SQL statement for dropping a DB table, if it exists.
      *
      * @param string $table The table to be dropped. The name will be properly quoted by the method.

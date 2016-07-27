@@ -19,6 +19,7 @@ use craft\app\fields\Matrix as MatrixField;
 use craft\app\helpers\Html;
 use craft\app\helpers\MigrationHelper;
 use craft\app\helpers\StringHelper;
+use craft\app\migrations\CreateMatrixContentTable;
 use craft\app\models\FieldLayout;
 use craft\app\models\FieldLayoutTab;
 use craft\app\elements\MatrixBlock;
@@ -955,31 +956,19 @@ class Matrix extends Component
     /**
      * Creates the content table for a Matrix field.
      *
-     * @param string $name
+     * @param string $tableName
      *
      * @return void
      */
-    private function _createContentTable($name)
+    private function _createContentTable($tableName)
     {
-        $db = Craft::$app->getDb();
-        $db->createCommand()
-            ->createTable(
-                $name,
-                [
-                    'elementId' => 'int NOT NULL',
-                    'locale' => 'char(12) COLLATE utf8_unicode_ci NOT NULL'
-                ])
-            ->execute();
+        $migration = new CreateMatrixContentTable([
+            'tableName' => $tableName
+        ]);
 
-        $db->createCommand()
-            ->createIndex($db->getIndexName($name, 'elementId,locale'), $name, 'elementId,locale', true)
-            ->execute();
-        $db->createCommand()
-            ->addForeignKey($db->getForeignKeyName($name, 'elementId'), $name, 'elementId', '{{%elements}}', 'id', 'CASCADE', null)
-            ->execute();
-        $db->createCommand()
-            ->addForeignKey($db->getForeignKeyName($name, 'locale'), $name, 'locale', '{{%locales}}', 'locale', 'CASCADE', 'CASCADE')
-            ->execute();
+        ob_start();
+        $migration->up();
+        ob_end_clean();
     }
 
     /**
