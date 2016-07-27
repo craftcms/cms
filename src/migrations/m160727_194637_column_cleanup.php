@@ -58,7 +58,6 @@ class m160727_194637_column_cleanup extends Migration
         $this->alterColumn('{{%tokens}}', 'usageCount', $this->smallInteger()->unsigned());
         $this->alterColumn('{{%users}}', 'invalidLoginCount', $this->smallInteger()->unsigned());
 
-
         // Re-enable FK checks
         $this->execute('SET FOREIGN_KEY_CHECKS = 1;');
     }
