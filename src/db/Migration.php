@@ -88,6 +88,16 @@ abstract class Migration extends \yii\db\Migration
         return $this->string()->check($schema->quoteColumnName($columnName).' in ('.implode(',', $values).')');
     }
 
+    /**
+     * Shortcut for creating a uid column
+     *
+     * @return ColumnSchemaBuilder the column instance which can be further customized.
+     */
+    public function uid()
+    {
+        return $this->char(36)->notNull()->defaultValue('0');
+    }
+
     // CRUD Methods
     // -------------------------------------------------------------------------
 

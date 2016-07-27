@@ -134,7 +134,7 @@ class Install extends Migration
             'recordId' => $this->integer(),
             'dateCreated' => $this->dateTime()->notNull(),
             'dateUpdated' => $this->dateTime()->notNull(),
-            'uid' => $this->char(36)->notNull()->defaultValue('0'),
+            'uid' => $this->uid(),
         ], null, false, false);
         $this->createTable('{{%assets}}', [
             'id' => $this->primaryKey(),
@@ -148,7 +148,7 @@ class Install extends Migration
             'dateModified' => $this->dateTime(),
             'dateCreated' => $this->dateTime()->notNull(),
             'dateUpdated' => $this->dateTime()->notNull(),
-            'uid' => $this->char(36)->notNull()->defaultValue('0'),
+            'uid' => $this->uid(),
         ], null, false, false);
         $this->createTable('{{%assettransformindex}}', [
             'id' => $this->primaryKey(),
@@ -162,7 +162,7 @@ class Install extends Migration
             'dateIndexed' => $this->dateTime(),
             'dateCreated' => $this->dateTime()->notNull(),
             'dateUpdated' => $this->dateTime()->notNull(),
-            'uid' => $this->char(36)->notNull()->defaultValue('0'),
+            'uid' => $this->uid(),
         ], null, false, false);
         $this->createTable('{{%assettransforms}}', [
             'id' => $this->primaryKey(),
@@ -177,14 +177,14 @@ class Install extends Migration
             'dimensionChangeTime' => $this->dateTime(),
             'dateCreated' => $this->dateTime()->notNull(),
             'dateUpdated' => $this->dateTime()->notNull(),
-            'uid' => $this->char(36)->notNull()->defaultValue('0'),
+            'uid' => $this->uid(),
         ], null, false, false);
         $this->createTable('{{%categories}}', [
             'id' => $this->primaryKey(),
             'groupId' => $this->integer()->notNull(),
             'dateCreated' => $this->dateTime()->notNull(),
             'dateUpdated' => $this->dateTime()->notNull(),
-            'uid' => $this->char(36)->notNull()->defaultValue('0'),
+            'uid' => $this->uid(),
         ], null, false, false);
         $this->createTable('{{%categorygroups}}', [
             'id' => $this->primaryKey(),
@@ -196,7 +196,7 @@ class Install extends Migration
             'template' => $this->string(500),
             'dateCreated' => $this->dateTime()->notNull(),
             'dateUpdated' => $this->dateTime()->notNull(),
-            'uid' => $this->char(36)->notNull()->defaultValue('0'),
+            'uid' => $this->uid(),
         ], null, false, false);
         $this->createTable('{{%categorygroups_i18n}}', [
             'id' => $this->primaryKey(),
@@ -206,7 +206,7 @@ class Install extends Migration
             'nestedUrlFormat' => $this->text(),
             'dateCreated' => $this->dateTime()->notNull(),
             'dateUpdated' => $this->dateTime()->notNull(),
-            'uid' => $this->char(36)->notNull()->defaultValue('0'),
+            'uid' => $this->uid(),
         ], null, false, false);
         $this->createTable('{{%content}}', [
             'id' => $this->primaryKey(),
@@ -221,7 +221,7 @@ class Install extends Migration
             'field_linkColor' => $this->char(7),
             'dateCreated' => $this->dateTime()->notNull(),
             'dateUpdated' => $this->dateTime()->notNull(),
-            'uid' => $this->char(36)->notNull()->defaultValue('0'),
+            'uid' => $this->uid(),
         ], null, false, false);
         $this->createTable('{{%deprecationerrors}}', [
             'id' => $this->primaryKey(),
@@ -238,7 +238,7 @@ class Install extends Migration
             'traces' => $this->text(),
             'dateCreated' => $this->dateTime()->notNull(),
             'dateUpdated' => $this->dateTime()->notNull(),
-            'uid' => $this->char(36)->notNull()->defaultValue('0'),
+            'uid' => $this->uid(),
         ], null, false, false);
         $this->createTable('{{%elementindexsettings}}', [
             'id' => $this->primaryKey(),
@@ -246,7 +246,7 @@ class Install extends Migration
             'settings' => $this->text(),
             'dateCreated' => $this->dateTime()->notNull(),
             'dateUpdated' => $this->dateTime()->notNull(),
-            'uid' => $this->char(36)->notNull()->defaultValue('0'),
+            'uid' => $this->uid(),
         ], null, false, false);
         $this->createTable('{{%elements}}', [
             'id' => $this->primaryKey(),
@@ -255,7 +255,7 @@ class Install extends Migration
             'archived' => $this->boolean()->notNull()->defaultValue(0)->unsigned(),
             'dateCreated' => $this->dateTime()->notNull(),
             'dateUpdated' => $this->dateTime()->notNull(),
-            'uid' => $this->char(36)->notNull()->defaultValue('0'),
+            'uid' => $this->uid(),
         ], null, false, false);
         $this->createTable('{{%elements_i18n}}', [
             'id' => $this->primaryKey(),
@@ -266,7 +266,7 @@ class Install extends Migration
             'enabled' => $this->boolean()->defaultValue(1),
             'dateCreated' => $this->dateTime()->notNull(),
             'dateUpdated' => $this->dateTime()->notNull(),
-            'uid' => $this->char(36)->notNull()->defaultValue('0'),
+            'uid' => $this->uid(),
         ], null, false, false);
         $this->createTable('{{%emailmessages}}', [
             'id' => $this->primaryKey(),
@@ -276,7 +276,7 @@ class Install extends Migration
             'body' => $this->text()->notNull(),
             'dateCreated' => $this->dateTime()->notNull(),
             'dateUpdated' => $this->dateTime()->notNull(),
-            'uid' => $this->char(36)->notNull()->defaultValue('0'),
+            'uid' => $this->uid(),
         ], null, false, false);
         $this->createTable('{{%entries}}', [
             'id' => $this->primaryKey(),
@@ -287,7 +287,7 @@ class Install extends Migration
             'expiryDate' => $this->dateTime(),
             'dateCreated' => $this->dateTime()->notNull(),
             'dateUpdated' => $this->dateTime()->notNull(),
-            'uid' => $this->char(36)->notNull()->defaultValue('0'),
+            'uid' => $this->uid(),
         ], null, false, false);
         $this->createTable('{{%entrydrafts}}', [
             'id' => $this->primaryKey(),
@@ -300,7 +300,7 @@ class Install extends Migration
             'data' => $this->mediumText()->notNull(),
             'dateCreated' => $this->dateTime()->notNull(),
             'dateUpdated' => $this->dateTime()->notNull(),
-            'uid' => $this->char(36)->notNull()->defaultValue('0'),
+            'uid' => $this->uid(),
         ], null, false, false);
         $this->createTable('{{%entrytypes}}', [
             'id' => $this->primaryKey(),
@@ -314,7 +314,7 @@ class Install extends Migration
             'sortOrder' => $this->smallInteger()->unsigned(),
             'dateCreated' => $this->dateTime()->notNull(),
             'dateUpdated' => $this->dateTime()->notNull(),
-            'uid' => $this->char(36)->notNull()->defaultValue('0'),
+            'uid' => $this->uid(),
         ], null, false, false);
         $this->createTable('{{%entryversions}}', [
             'id' => $this->primaryKey(),
@@ -327,14 +327,14 @@ class Install extends Migration
             'data' => $this->mediumText()->notNull(),
             'dateCreated' => $this->dateTime()->notNull(),
             'dateUpdated' => $this->dateTime()->notNull(),
-            'uid' => $this->char(36)->notNull()->defaultValue('0'),
+            'uid' => $this->uid(),
         ], null, false, false);
         $this->createTable('{{%fieldgroups}}', [
             'id' => $this->primaryKey(),
             'name' => $this->string()->notNull(),
             'dateCreated' => $this->dateTime()->notNull(),
             'dateUpdated' => $this->dateTime()->notNull(),
-            'uid' => $this->char(36)->notNull()->defaultValue('0'),
+            'uid' => $this->uid(),
         ], null, false, false);
         $this->createTable('{{%fieldlayoutfields}}', [
             'id' => $this->primaryKey(),
@@ -345,14 +345,14 @@ class Install extends Migration
             'sortOrder' => $this->smallInteger()->unsigned(),
             'dateCreated' => $this->dateTime()->notNull(),
             'dateUpdated' => $this->dateTime()->notNull(),
-            'uid' => $this->char(36)->notNull()->defaultValue('0'),
+            'uid' => $this->uid(),
         ], null, false, false);
         $this->createTable('{{%fieldlayouts}}', [
             'id' => $this->primaryKey(),
             'type' => $this->string()->notNull(),
             'dateCreated' => $this->dateTime()->notNull(),
             'dateUpdated' => $this->dateTime()->notNull(),
-            'uid' => $this->char(36)->notNull()->defaultValue('0'),
+            'uid' => $this->uid(),
         ], null, false, false);
         $this->createTable('{{%fieldlayouttabs}}', [
             'id' => $this->primaryKey(),
@@ -361,7 +361,7 @@ class Install extends Migration
             'sortOrder' => $this->smallInteger()->unsigned(),
             'dateCreated' => $this->dateTime()->notNull(),
             'dateUpdated' => $this->dateTime()->notNull(),
-            'uid' => $this->char(36)->notNull()->defaultValue('0'),
+            'uid' => $this->uid(),
         ], null, false, false);
         $this->createTable('{{%fields}}', [
             'id' => $this->primaryKey(),
@@ -375,7 +375,7 @@ class Install extends Migration
             'settings' => $this->text(),
             'dateCreated' => $this->dateTime()->notNull(),
             'dateUpdated' => $this->dateTime()->notNull(),
-            'uid' => $this->char(36)->notNull()->defaultValue('0'),
+            'uid' => $this->uid(),
         ], null, false, false);
         $this->createTable('{{%globalsets}}', [
             'id' => $this->primaryKey(),
@@ -384,7 +384,7 @@ class Install extends Migration
             'fieldLayoutId' => $this->integer(),
             'dateCreated' => $this->dateTime()->notNull(),
             'dateUpdated' => $this->dateTime()->notNull(),
-            'uid' => $this->char(36)->notNull()->defaultValue('0'),
+            'uid' => $this->uid(),
         ], null, false, false);
         $this->createTable('{{%info}}', [
             'id' => $this->primaryKey(),
@@ -402,14 +402,14 @@ class Install extends Migration
             'fieldVersion' => $this->char(12)->notNull()->defaultValue('1'),
             'dateCreated' => $this->dateTime()->notNull(),
             'dateUpdated' => $this->dateTime()->notNull(),
-            'uid' => $this->char(36)->notNull()->defaultValue('0'),
+            'uid' => $this->uid(),
         ], null, false, false);
         $this->createTable('{{%locales}}', [
             'locale' => $this->char(12)->notNull(),
             'sortOrder' => $this->smallInteger()->unsigned(),
             'dateCreated' => $this->dateTime()->notNull(),
             'dateUpdated' => $this->dateTime()->notNull(),
-            'uid' => $this->char(36)->notNull()->defaultValue('0'),
+            'uid' => $this->uid(),
             'PRIMARY KEY(locale)'
         ], null, false, false);
         $this->createTable('{{%matrixblocks}}', [
@@ -421,7 +421,7 @@ class Install extends Migration
             'sortOrder' => $this->smallInteger()->unsigned(),
             'dateCreated' => $this->dateTime()->notNull(),
             'dateUpdated' => $this->dateTime()->notNull(),
-            'uid' => $this->char(36)->notNull()->defaultValue('0'),
+            'uid' => $this->uid(),
         ], null, false, false);
         $this->createTable('{{%matrixblocktypes}}', [
             'id' => $this->primaryKey(),
@@ -432,7 +432,7 @@ class Install extends Migration
             'sortOrder' => $this->smallInteger()->unsigned(),
             'dateCreated' => $this->dateTime()->notNull(),
             'dateUpdated' => $this->dateTime()->notNull(),
-            'uid' => $this->char(36)->notNull()->defaultValue('0'),
+            'uid' => $this->uid(),
         ], null, false, false);
         $this->createTable('{{%migrations}}', [
             'id' => $this->primaryKey(),
@@ -442,7 +442,7 @@ class Install extends Migration
             'applyTime' => $this->dateTime()->notNull(),
             'dateCreated' => $this->dateTime()->notNull(),
             'dateUpdated' => $this->dateTime()->notNull(),
-            'uid' => $this->char(36)->notNull()->defaultValue('0'),
+            'uid' => $this->uid(),
         ], null, false, false);
         $this->createTable('{{%plugins}}', [
             'id' => $this->primaryKey(),
@@ -456,7 +456,7 @@ class Install extends Migration
             'installDate' => $this->dateTime()->notNull(),
             'dateCreated' => $this->dateTime()->notNull(),
             'dateUpdated' => $this->dateTime()->notNull(),
-            'uid' => $this->char(36)->notNull()->defaultValue('0'),
+            'uid' => $this->uid(),
         ], null, false, false);
         $this->createTable('{{%rackspaceaccess}}', [
             'id' => $this->primaryKey(),
@@ -466,7 +466,7 @@ class Install extends Migration
             'cdnUrl' => $this->string()->notNull(),
             'dateCreated' => $this->dateTime()->notNull(),
             'dateUpdated' => $this->dateTime()->notNull(),
-            'uid' => $this->char(36)->notNull()->defaultValue('0'),
+            'uid' => $this->uid(),
         ], null, false, false);
         $this->createTable('{{%relations}}', [
             'id' => $this->primaryKey(),
@@ -477,7 +477,7 @@ class Install extends Migration
             'sortOrder' => $this->smallInteger()->unsigned(),
             'dateCreated' => $this->dateTime()->notNull(),
             'dateUpdated' => $this->dateTime()->notNull(),
-            'uid' => $this->char(36)->notNull()->defaultValue('0'),
+            'uid' => $this->uid(),
         ], null, false, false);
         $this->createTable('{{%routes}}', [
             'id' => $this->primaryKey(),
@@ -488,7 +488,7 @@ class Install extends Migration
             'sortOrder' => $this->smallInteger()->unsigned(),
             'dateCreated' => $this->dateTime()->notNull(),
             'dateUpdated' => $this->dateTime()->notNull(),
-            'uid' => $this->char(36)->notNull()->defaultValue('0'),
+            'uid' => $this->uid(),
         ], null, false, false);
         $this->createTable('{{%searchindex}}', [
             'elementId' => $this->integer()->notNull(),
@@ -509,7 +509,7 @@ class Install extends Migration
             'enableVersioning' => $this->boolean()->notNull()->defaultValue(0)->unsigned(),
             'dateCreated' => $this->dateTime()->notNull(),
             'dateUpdated' => $this->dateTime()->notNull(),
-            'uid' => $this->char(36)->notNull()->defaultValue('0'),
+            'uid' => $this->uid(),
         ], null, false, false);
         $this->createTable('{{%sections_i18n}}', [
             'id' => $this->primaryKey(),
@@ -520,7 +520,7 @@ class Install extends Migration
             'nestedUrlFormat' => $this->text(),
             'dateCreated' => $this->dateTime()->notNull(),
             'dateUpdated' => $this->dateTime()->notNull(),
-            'uid' => $this->char(36)->notNull()->defaultValue('0'),
+            'uid' => $this->uid(),
         ], null, false, false);
         $this->createTable('{{%sessions}}', [
             'id' => $this->primaryKey(),
@@ -528,7 +528,7 @@ class Install extends Migration
             'token' => $this->char(100)->notNull(),
             'dateCreated' => $this->dateTime()->notNull(),
             'dateUpdated' => $this->dateTime()->notNull(),
-            'uid' => $this->char(36)->notNull()->defaultValue('0'),
+            'uid' => $this->uid(),
         ], null, false, false);
         $this->createTable('{{%shunnedmessages}}', [
             'id' => $this->primaryKey(),
@@ -537,7 +537,7 @@ class Install extends Migration
             'expiryDate' => $this->dateTime(),
             'dateCreated' => $this->dateTime()->notNull(),
             'dateUpdated' => $this->dateTime()->notNull(),
-            'uid' => $this->char(36)->notNull()->defaultValue('0'),
+            'uid' => $this->uid(),
         ], null, false, false);
         $this->createTable('{{%structureelements}}', [
             'id' => $this->primaryKey(),
@@ -549,14 +549,14 @@ class Install extends Migration
             'level' => $this->smallInteger()->notNull()->unsigned(),
             'dateCreated' => $this->dateTime()->notNull(),
             'dateUpdated' => $this->dateTime()->notNull(),
-            'uid' => $this->char(36)->notNull()->defaultValue('0'),
+            'uid' => $this->uid(),
         ], null, false, false);
         $this->createTable('{{%structures}}', [
             'id' => $this->primaryKey(),
             'maxLevels' => $this->smallInteger()->unsigned(),
             'dateCreated' => $this->dateTime()->notNull(),
             'dateUpdated' => $this->dateTime()->notNull(),
-            'uid' => $this->char(36)->notNull()->defaultValue('0'),
+            'uid' => $this->uid(),
         ], null, false, false);
         $this->createTable('{{%systemsettings}}', [
             'id' => $this->primaryKey(),
@@ -564,7 +564,7 @@ class Install extends Migration
             'settings' => $this->text(),
             'dateCreated' => $this->dateTime()->notNull(),
             'dateUpdated' => $this->dateTime()->notNull(),
-            'uid' => $this->char(36)->notNull()->defaultValue('0'),
+            'uid' => $this->uid(),
         ], null, false, false);
         $this->createTable('{{%taggroups}}', [
             'id' => $this->primaryKey(),
@@ -573,14 +573,14 @@ class Install extends Migration
             'fieldLayoutId' => $this->integer(),
             'dateCreated' => $this->dateTime()->notNull(),
             'dateUpdated' => $this->dateTime()->notNull(),
-            'uid' => $this->char(36)->notNull()->defaultValue('0'),
+            'uid' => $this->uid(),
         ], null, false, false);
         $this->createTable('{{%tags}}', [
             'id' => $this->primaryKey(),
             'groupId' => $this->integer()->notNull(),
             'dateCreated' => $this->dateTime()->notNull(),
             'dateUpdated' => $this->dateTime()->notNull(),
-            'uid' => $this->char(36)->notNull()->defaultValue('0'),
+            'uid' => $this->uid(),
         ], null, false, false);
         $this->createTable('{{%tasks}}', [
             'id' => $this->primaryKey(),
@@ -596,7 +596,7 @@ class Install extends Migration
             'settings' => $this->mediumText()->notNull(),
             'dateCreated' => $this->dateTime()->notNull(),
             'dateUpdated' => $this->dateTime()->notNull(),
-            'uid' => $this->char(36)->notNull()->defaultValue('0'),
+            'uid' => $this->uid(),
         ], null, false, false);
         $this->createTable('{{%templatecacheelements}}', [
             'cacheId' => $this->integer()->notNull(),
@@ -625,7 +625,7 @@ class Install extends Migration
             'expiryDate' => $this->dateTime()->notNull(),
             'dateCreated' => $this->dateTime()->notNull(),
             'dateUpdated' => $this->dateTime()->notNull(),
-            'uid' => $this->char(36)->notNull()->defaultValue('0'),
+            'uid' => $this->uid(),
         ], null, false, false);
         $this->createTable('{{%usergroups}}', [
             'id' => $this->primaryKey(),
@@ -633,7 +633,7 @@ class Install extends Migration
             'handle' => $this->string()->notNull(),
             'dateCreated' => $this->dateTime()->notNull(),
             'dateUpdated' => $this->dateTime()->notNull(),
-            'uid' => $this->char(36)->notNull()->defaultValue('0'),
+            'uid' => $this->uid(),
         ], null, false, false);
         $this->createTable('{{%usergroups_users}}', [
             'id' => $this->primaryKey(),
@@ -641,14 +641,14 @@ class Install extends Migration
             'userId' => $this->integer()->notNull(),
             'dateCreated' => $this->dateTime()->notNull(),
             'dateUpdated' => $this->dateTime()->notNull(),
-            'uid' => $this->char(36)->notNull()->defaultValue('0'),
+            'uid' => $this->uid(),
         ], null, false, false);
         $this->createTable('{{%userpermissions}}', [
             'id' => $this->primaryKey(),
             'name' => $this->string()->notNull(),
             'dateCreated' => $this->dateTime()->notNull(),
             'dateUpdated' => $this->dateTime()->notNull(),
-            'uid' => $this->char(36)->notNull()->defaultValue('0'),
+            'uid' => $this->uid(),
         ], null, false, false);
         $this->createTable('{{%userpermissions_usergroups}}', [
             'id' => $this->primaryKey(),
@@ -656,7 +656,7 @@ class Install extends Migration
             'groupId' => $this->integer()->notNull(),
             'dateCreated' => $this->dateTime()->notNull(),
             'dateUpdated' => $this->dateTime()->notNull(),
-            'uid' => $this->char(36)->notNull()->defaultValue('0'),
+            'uid' => $this->uid(),
         ], null, false, false);
         $this->createTable('{{%userpermissions_users}}', [
             'id' => $this->primaryKey(),
@@ -664,7 +664,7 @@ class Install extends Migration
             'userId' => $this->integer()->notNull(),
             'dateCreated' => $this->dateTime()->notNull(),
             'dateUpdated' => $this->dateTime()->notNull(),
-            'uid' => $this->char(36)->notNull()->defaultValue('0'),
+            'uid' => $this->uid(),
         ], null, false, false);
         $this->createTable('{{%userpreferences}}', [
             'userId' => $this->integer()->notNull(),
@@ -698,7 +698,7 @@ class Install extends Migration
             'lastPasswordChangeDate' => $this->dateTime(),
             'dateCreated' => $this->dateTime()->notNull(),
             'dateUpdated' => $this->dateTime()->notNull(),
-            'uid' => $this->char(36)->notNull()->defaultValue('0'),
+            'uid' => $this->uid(),
         ], null, false, false);
         $this->createTable('{{%volumefolders}}', [
             'id' => $this->primaryKey(),
@@ -708,7 +708,7 @@ class Install extends Migration
             'path' => $this->string(),
             'dateCreated' => $this->dateTime()->notNull(),
             'dateUpdated' => $this->dateTime()->notNull(),
-            'uid' => $this->char(36)->notNull()->defaultValue('0'),
+            'uid' => $this->uid(),
         ], null, false, false);
         $this->createTable('{{%volumes}}', [
             'id' => $this->primaryKey(),
@@ -722,7 +722,7 @@ class Install extends Migration
             'sortOrder' => $this->smallInteger()->unsigned(),
             'dateCreated' => $this->dateTime()->notNull(),
             'dateUpdated' => $this->dateTime()->notNull(),
-            'uid' => $this->char(36)->notNull()->defaultValue('0'),
+            'uid' => $this->uid(),
         ], null, false, false);
         $this->createTable('{{%widgets}}', [
             'id' => $this->primaryKey(),
@@ -734,7 +734,7 @@ class Install extends Migration
             'enabled' => $this->boolean()->defaultValue(1),
             'dateCreated' => $this->dateTime()->notNull(),
             'dateUpdated' => $this->dateTime()->notNull(),
-            'uid' => $this->char(36)->notNull()->defaultValue('0'),
+            'uid' => $this->uid(),
         ], null, false, false);
     }
 
