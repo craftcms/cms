@@ -21,7 +21,9 @@ class Schema extends \yii\db\mysql\Schema
     // Constants
     // =========================================================================
 
+    const TYPE_TINYTEXT = 'tinytext';
     const TYPE_MEDIUMTEXT = 'mediumtext';
+    const TYPE_LONGTEXT = 'longtext';
     const TYPE_ENUM = 'enum';
 
     // Properties
@@ -42,7 +44,9 @@ class Schema extends \yii\db\mysql\Schema
     {
         parent::init();
 
+        $this->typeMap['tinytext'] = self::TYPE_TINYTEXT;
         $this->typeMap['mediumtext'] = self::TYPE_MEDIUMTEXT;
+        $this->typeMap['longtext'] = self::TYPE_LONGTEXT;
         $this->typeMap['enum'] = self::TYPE_ENUM;
     }
 
