@@ -1,4 +1,4 @@
-/*! Craft 3.0.0 - 2016-07-20 */
+/*! Craft 3.0.0 - 2016-07-27 */
 !function(a){
 // Set all the standard Craft.* stuff
 a.extend(Craft,{navHeight:48,/**
@@ -1339,8 +1339,8 @@ Craft.ElevatedSessionManager=Garnish.Base.extend({fetchingTimeout:!1,passwordMod
 requireElevatedSession:function(b){this.callback=b,
 // Check the time remaining on the user's elevated session (if any)
 this.fetchingTimeout=!0,Craft.postActionRequest("users/get-elevated-session-timeout",a.proxy(function(a,b){this.fetchingTimeout=!1,"success"==b&&(
-// Is there still enough time left?
-a.timeout>=Craft.ElevatedSessionManager.minSafeElevatedSessionTimeout?this.callback():
+// Is there still enough time left or has it been disabled?
+a.timeout===!1||a.timeout>=Craft.ElevatedSessionManager.minSafeElevatedSessionTimeout?this.callback():
 // Show the password modal
 this.showPasswordModal())},this))},showPasswordModal:function(){if(this.passwordModal)this.passwordModal.show();else{var b=a('<form id="elevatedsessionmodal" class="modal secure fitted"/>'),c=a('<div class="body"><p>'+Craft.t("Enter your password to continue.")+"</p></div>").appendTo(b),d=a('<div class="inputcontainer">').appendTo(c),e=a('<table class="inputs fullwidth"/>').appendTo(d),f=a("<tr/>").appendTo(e),g=a("<td/>").appendTo(f),h=a('<td class="thin"/>').appendTo(f),i=a('<div class="passwordwrapper"/>').appendTo(g);this.$passwordInput=a('<input type="password" class="text password fullwidth" placeholder="'+Craft.t("Password")+'"/>').appendTo(i),this.$passwordSpinner=a('<div class="spinner hidden"/>').appendTo(d),this.$submitBtn=a('<input type="submit" class="btn submit disabled" value="'+Craft.t("Submit")+'" />').appendTo(h),this.$errorPara=a('<p class="error"/>').appendTo(c),this.passwordModal=new Garnish.Modal(b,{closeOtherModals:!1,onFadeIn:a.proxy(function(){setTimeout(a.proxy(this,"focusPasswordInput"),100)},this),onFadeOut:a.proxy(function(){this.$passwordInput.val("")},this)}),new Craft.PasswordInput(this.$passwordInput,{onToggleInput:a.proxy(function(a){this.$passwordInput=a},this)}),this.addListener(this.$passwordInput,"textchange","validatePassword"),this.addListener(b,"submit","submitPassword")}},focusPasswordInput:function(){Garnish.isMobileBrowser(!0)||this.$passwordInput.focus()},validatePassword:function(){return this.$passwordInput.val().length>=6?(this.$submitBtn.removeClass("disabled"),!0):(this.$submitBtn.addClass("disabled"),!1)},submitPassword:function(b){if(b&&b.preventDefault(),this.validatePassword()){this.$passwordSpinner.removeClass("hidden"),this.clearLoginError();var c={password:this.$passwordInput.val()};Craft.postActionRequest("users/startElevatedSession",c,a.proxy(function(a,b){this.$passwordSpinner.addClass("hidden"),"success"==b?a.success?(this.passwordModal.hide(),this.callback()):(this.showPasswordError(Craft.t("Incorrect password.")),Garnish.shake(this.passwordModal.$container),this.focusPasswordInput()):this.showPasswordError()},this))}},showPasswordError:function(a){null!==a&&"undefined"!=typeof a||(a=Craft.t("An unknown error occurred.")),this.$errorPara.text(a),this.passwordModal.updateSizeAndPosition()},clearLoginError:function(){this.showPasswordError("")}},{minSafeElevatedSessionTimeout:5}),
 // Instantiate it

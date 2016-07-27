@@ -1,4 +1,4 @@
-/*! Craft 3.0.0 - 2016-07-20 */
+/*! Craft 3.0.0 - 2016-07-27 */
 (function($){
 
 // Set all the standard Craft.* stuff
@@ -11614,8 +11614,8 @@ Craft.ElevatedSessionManager = Garnish.Base.extend(
 
 			if (textStatus == 'success')
 			{
-				// Is there still enough time left?
-				if (response.timeout >= Craft.ElevatedSessionManager.minSafeElevatedSessionTimeout)
+				// Is there still enough time left or has it been disabled?
+				if (response.timeout === false || response.timeout >= Craft.ElevatedSessionManager.minSafeElevatedSessionTimeout)
 				{
 					this.callback();
 				}
