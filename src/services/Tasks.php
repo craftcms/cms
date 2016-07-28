@@ -129,7 +129,7 @@ class Tasks extends Component
         if (!$validate || $task->validate()) {
             $transaction = Craft::$app->getDb()->beginTransaction();
             try {
-                if ($task->isNew()) {
+                if ($task->getIsNew()) {
                     $taskRecord = new TaskRecord();
                 } else {
                     $taskRecord = $this->_getTaskRecordById($task->id);
@@ -142,7 +142,7 @@ class Tasks extends Component
                 $taskRecord->currentStep = $task->currentStep;
                 $taskRecord->settings = $task->getSettings();
 
-                if (!$task->isNew()) {
+                if (!$task->getIsNew()) {
                     $taskRecord->save(false);
                 } else if (!$task->parentId) {
                     $taskRecord->makeRoot(false);
@@ -151,7 +151,7 @@ class Tasks extends Component
                     $taskRecord->appendTo($parentTaskRecord, false);
                 }
 
-                if ($task->isNew()) {
+                if ($task->getIsNew()) {
                     $task->id = $taskRecord->id;
 
                     if ($task->parentId) {

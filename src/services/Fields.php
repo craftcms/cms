@@ -1123,7 +1123,7 @@ class Fields extends Component
     private function _getFieldRecord(FieldInterface $field)
     {
         /** @var Field $field */
-        if (!$field->isNew()) {
+        if (!$field->getIsNew()) {
             if (!isset($this->_fieldRecordsById) || !array_key_exists($field->id,
                     $this->_fieldRecordsById)
             ) {
