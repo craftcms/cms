@@ -189,7 +189,7 @@ class Application extends \yii\web\Application
         $this->_enforceSystemStatusPermissions($request);
 
         // Check if a plugin needs to update the database.
-        if ($this->getUpdates()->isPluginDbUpdateNeeded()) {
+        if ($this->getUpdates()->getIsPluginDbUpdateNeeded()) {
             return $this->_processUpdateLogic($request) ?: $this->getResponse();
         }
 

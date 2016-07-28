@@ -38,6 +38,7 @@ use yii\helpers\Markdown;
  * @property boolean $hasCraftBuildChanged      Whether a different Craft build has been uploaded
  * @property boolean $isCriticalUpdateAvailable Whether a critical update is available
  * @property boolean $isManualUpdateRequired    Whether a manual update is required
+ * @property boolean $isPluginDbUpdateNeeded    Whether a plugin needs to run a database update
  * @property boolean $isUpdateInfoCached        Whether the update info is cached
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
@@ -793,11 +794,11 @@ class Updates extends Component
     }
 
     /**
-     * Returns if a plugin needs to run a database update or not.
+     * Returns whether a plugin needs to run a database update.
      *
      * @return boolean
      */
-    public function isPluginDbUpdateNeeded()
+    public function getIsPluginDbUpdateNeeded()
     {
         $plugins = Craft::$app->getPlugins()->getAllPlugins();
 
