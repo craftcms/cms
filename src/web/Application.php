@@ -662,7 +662,7 @@ class Application extends \yii\web\Application
      */
     private function _checkSystemStatusPermissions()
     {
-        if ($this->isSystemOn()) {
+        if ($this->getIsSystemOn()) {
             return true;
         }
 

@@ -780,13 +780,13 @@ class User extends Element implements IdentityInterface
                             return false;
                         }
 
-                        if (!Craft::$app->isSystemOn() && !$this->can('accessCpWhenSystemIsOff')) {
+                        if (!Craft::$app->getIsSystemOn() && !$this->can('accessCpWhenSystemIsOff')) {
                             $this->authError = self::AUTH_NO_CP_OFFLINE_ACCESS;
 
                             return false;
                         }
                     } else {
-                        if (!Craft::$app->isSystemOn() && !$this->can('accessSiteWhenSystemIsOff')) {
+                        if (!Craft::$app->getIsSystemOn() && !$this->can('accessSiteWhenSystemIsOff')) {
                             $this->authError = self::AUTH_NO_SITE_OFFLINE_ACCESS;
 
                             return false;

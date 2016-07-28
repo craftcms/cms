@@ -64,6 +64,7 @@ use yii\web\ServerErrorHttpException;
  * @property \craft\app\services\Images          $images           The images service
  * @property boolean                             $isInstalled      Whether Craft is installed
  * @property boolean                             $isLocalized      Whether this site has multiple locales
+ * @property boolean                             $isSystemOn       Whether the front end is accepting HTTP requests
  * @property \craft\app\i18n\Locale              $locale           The Locale object for the target language
  * @property \craft\app\mail\Mailer              $mailer           The mailer component
  * @property \craft\app\services\Matrix          $matrix           The matrix service
@@ -555,11 +556,11 @@ trait ApplicationTrait
     }
 
     /**
-     * Returns whether the system is on.
+     * Returns whether the front end is accepting HTTP requests.
      *
      * @return boolean
      */
-    public function isSystemOn()
+    public function getIsSystemOn()
     {
         /** @var \craft\app\web\Application|\craft\app\console\Application $this */
         if (is_bool($on = $this->getConfig()->get('isSystemOn'))) {

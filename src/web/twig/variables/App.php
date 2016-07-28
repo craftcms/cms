@@ -170,7 +170,7 @@ class App
      */
     public function isSystemOn()
     {
-        return \Craft::$app->isSystemOn();
+        return \Craft::$app->getIsSystemOn();
     }
 
     /**
