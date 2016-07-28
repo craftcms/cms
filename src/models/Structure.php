@@ -13,6 +13,8 @@ use craft\app\base\Model;
 /**
  * Class Structure model.
  *
+ * @property boolean $isSortable whether elements in this structure can be sorted by the current user
+ *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
@@ -63,7 +65,7 @@ class Structure extends Model
      *
      * @return boolean
      */
-    public function isSortable()
+    public function getIsSortable()
     {
         return Craft::$app->getSession()->checkAuthorization('editStructure:'.$this->id);
     }

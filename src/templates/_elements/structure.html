@@ -1,6 +1,6 @@
 {% set disabledElementIds = disabledElementIds is defined ? disabledElementIds : [] %}
 {% set collapsedElementIds = collapsedElementIds is defined ? collapsedElementIds : [] %}
-{% set sortable = (sortable is defined and sortable and structure.isSortable()) %}
+{% set sortable = (sortable is defined and sortable and structure.getIsSortable()) %}
 {% set newChildUrl = newChildUrl is defined ? newChildUrl : null %}
 {% set id = 'structure-'~structure.id~'-'~random() %}
 
