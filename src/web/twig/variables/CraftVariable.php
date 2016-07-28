@@ -23,7 +23,6 @@ use yii\di\ServiceLocator;
 /**
  * Craft defines the `craft` global template variable.
  *
- * @property App             $app
  * @property Config          $config
  * @property ElementIndexes  $elementIndexes
  * @property Elements        $elements
@@ -54,6 +53,14 @@ use yii\di\ServiceLocator;
  */
 class CraftVariable extends ServiceLocator
 {
+    // Properties
+    // =========================================================================
+
+    /**
+     * @var \craft\app\web\Application|\craft\app\console\Application The Craft application class
+     */
+    public $app;
+
     // Public Methods
     // =========================================================================
 
@@ -64,7 +71,6 @@ class CraftVariable extends ServiceLocator
     {
         // Set the core components
         $config['components'] = [
-            'app' => 'craft\app\web\twig\variables\App',
             'config' => 'craft\app\web\twig\variables\Config',
             'elementIndexes' => 'craft\app\web\twig\variables\ElementIndexes',
             'elements' => 'craft\app\web\twig\variables\Elements',
@@ -115,6 +121,16 @@ class CraftVariable extends ServiceLocator
         }
 
         parent::__construct($config);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function init()
+    {
+        parent::init();
+
+        $this->app = Craft::$app;
     }
 
     /**

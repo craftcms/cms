@@ -155,15 +155,15 @@
 			</a>
 
 			{% if currentUser.can('performUpdates') %}
-				{% if craft.app.isUpdateInfoCached() %}
-					{% set totalUpdates = craft.app.getTotalAvailableUpdates() %}
+				{% if craft.app.updates.getIsUpdateInfoCached() %}
+					{% set totalUpdates = craft.app.updates.getTotalAvailableUpdates() %}
 					{% if totalUpdates %}
 						{% if totalUpdates == 1 %}
 							{% set updateText = "1 update available"|t('app') %}
 						{% else %}
 							{% set updateText = "{num} updates available"|t('app', { num: totalUpdates }) %}
 						{% endif %}
-						<a class="updates{% if craft.app.isCriticalUpdateAvailable() %} critical{% endif %}" href="{{ url('updates') }}" title="{{ updateText }}">
+						<a class="updates{% if craft.app.updates.getIsCriticalUpdateAvailable() %} critical{% endif %}" href="{{ url('updates') }}" title="{{ updateText }}">
 							<span data-icon="newstamp">
 								<span>{{ totalUpdates }}</span>
 							</span>
@@ -367,7 +367,7 @@
 
 		<div id="footer">
 			{%- spaceless %}
-				{% set canUpgradeEdition = craft.app.canUpgradeEdition() %}
+				{% set canUpgradeEdition = craft.app.getCanUpgradeEdition() %}
 				{% set licensedEdition = craft.app.getLicensedEdition() %}
 				{% set isTrial = licensedEdition is not sameas(null) and licensedEdition is not sameas(CraftEdition) %}
 
@@ -385,11 +385,11 @@
 			{% endspaceless -%}
 
 			<ul>
-				<li>Craft CMS {{ craft.app.getVersion() }}.{{ craft.app.getBuild() }}</li>
+				<li>Craft CMS {{ craft.app.version }}.{{ craft.app.build }}</li>
 				<li>{{ craft.app.releaseDate.localeDate }}</li>
 				<li>© Pixel &amp; Tonic</li>
 				{% if currentUser.can('performUpdates') %}
-					<li><a id="footer-updates" href="{{ url('updates') }}">{{ craft.app.isUpdateInfoCached() and totalUpdates is defined and totalUpdates ? updateText : "Check for updates"|t('app') }}</a></li>
+					<li><a id="footer-updates" href="{{ url('updates') }}">{{ craft.app.updates.getIsUpdateInfoCached() and totalUpdates is defined and totalUpdates ? updateText : "Check for updates"|t('app') }}</a></li>
 				{% endif %}
 				{% if currentUser.admin %}
 					<li><a href="{{ url('utils/serverinfo') }}">{{ "Server Info"|t('app') }}</a></li>
