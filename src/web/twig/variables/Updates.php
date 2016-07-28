@@ -25,7 +25,7 @@ class Updates
      */
     public function isUpdateInfoCached()
     {
-        return \Craft::$app->getUpdates()->isUpdateInfoCached();
+        return \Craft::$app->getUpdates()->getIsUpdateInfoCached();
     }
 
     /**

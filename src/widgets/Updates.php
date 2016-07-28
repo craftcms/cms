@@ -67,7 +67,7 @@ class Updates extends Widget
             return false;
         }
 
-        $cached = Craft::$app->getUpdates()->isUpdateInfoCached();
+        $cached = Craft::$app->getUpdates()->getIsUpdateInfoCached();
 
         if (!$cached || !Craft::$app->getUpdates()->getTotalAvailableUpdates()) {
             Craft::$app->getView()->registerJsResource('js/UpdatesWidget.js');

@@ -36,7 +36,7 @@ class Cp
             return $alerts;
         }
 
-        if (Craft::$app->getUpdates()->isUpdateInfoCached() || $fetch) {
+        if (Craft::$app->getUpdates()->getIsUpdateInfoCached() || $fetch) {
             // Fetch the updates regardless of whether we're on the Updates page or not, because the other alerts are
             // relying on cached Elliott info
             $updateModel = Craft::$app->getUpdates()->getUpdates();

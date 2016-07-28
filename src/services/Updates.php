@@ -36,6 +36,7 @@ use yii\helpers\Markdown;
  * An instance of the Updates service is globally accessible in Craft via [[Application::updates `Craft::$app->getUpdates()`]].
  *
  * @property boolean $hasCraftBuildChanged Whether a different Craft build has been uploaded
+ * @property boolean $isUpdateInfoCached   Whether the update info is cached
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
@@ -113,9 +114,11 @@ class Updates extends Component
     }
 
     /**
+     * Returns whether the update info is cached.
+     *
      * @return boolean
      */
-    public function isUpdateInfoCached()
+    public function getIsUpdateInfoCached()
     {
         return (isset($this->_updateModel) || Craft::$app->getCache()->get('updateinfo') !== false);
     }
@@ -127,7 +130,7 @@ class Updates extends Component
     {
         $count = 0;
 
-        if ($this->isUpdateInfoCached()) {
+        if ($this->getIsUpdateInfoCached()) {
             $updateModel = $this->getUpdates();
 
             // Could be false!
