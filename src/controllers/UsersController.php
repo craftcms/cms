@@ -1654,7 +1654,7 @@ class UsersController extends Controller
      */
     private function _verifyElevatedSession()
     {
-        return (Craft::$app->getUser()->hasElevatedSession() || $this->_verifyExistingPassword());
+        return (Craft::$app->getUser()->getHasElevatedSession() || $this->_verifyExistingPassword());
     }
 
     /**

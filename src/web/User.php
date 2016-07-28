@@ -22,7 +22,8 @@ use yii\web\IdentityInterface;
  *
  * An instance of the User service is globally accessible in Craft via [[Application::userSession `Craft::$app->getUser()`]].
  *
- * @property UserElement|null $identity The logged-in user.
+ * @property boolean          $hasElevatedSession Whether the user currently has an elevated session
+ * @property UserElement|null $identity           The logged-in user.
  *
  * @method UserElement|null getIdentity($autoRenew = true) Returns the logged-in user.
  *
@@ -250,11 +251,11 @@ class User extends \yii\web\User
     }
 
     /**
-     * Returns whether the user current has an elevated session.
+     * Returns whether the user currently has an elevated session.
      *
-     * @return boolean Whether the user has an elevated session
+     * @return boolean Whether the user currently has an elevated session
      */
-    public function hasElevatedSession()
+    public function getHasElevatedSession()
     {
         // If it's been disabled, just return true
         if (Craft::$app->getConfig()->getElevatedSessionDuration() === false) {
