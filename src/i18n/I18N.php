@@ -241,12 +241,7 @@ class I18N extends \yii\i18n\I18N
             $localeIds = $query->column();
 
             foreach ($localeIds as $localeId) {
-                try {
-                    $this->_siteLocales[] = new Locale($localeId);
-                } catch (InvalidParamException $e) {
-                    // Log it and then let it fall back to en-US
-                    Craft::warning('Could not instantiate site locale "'.$localeId.'". Exception: '.$e->getMessage());
-                }
+                $this->_siteLocales[] = new Locale($localeId);
             }
 
             if (empty($this->_siteLocales)) {

@@ -10,6 +10,7 @@ namespace craft\app\i18n;
 use Craft;
 use craft\app\helpers\ArrayHelper;
 use craft\app\helpers\Io;
+use craft\app\helpers\Localization;
 use craft\app\helpers\StringHelper;
 use DateTime;
 use IntlDateFormatter;
@@ -233,24 +234,10 @@ class Locale extends Object
         $this->id = $id;
 
         if (!Craft::$app->getI18n()->getIsIntlLoaded()) {
-            // Load the locale data
-            $appDataPath = Craft::$app->getPath()->getAppPath().'/config/locales/'.$this->id.'.php';
-            $customDataPath = Craft::$app->getPath()->getConfigPath().'/locales/'.$this->id.'.php';
-
-            if (Io::fileExists($appDataPath)) {
-                $this->data = require($appDataPath);
-            }
-
-            if (Io::fileExists($customDataPath)) {
-                if ($this->data !== null) {
-                    $this->data = ArrayHelper::merge($this->data, require($customDataPath));
-                } else {
-                    $this->data = require($customDataPath);
-                }
-            }
+            $this->data = Localization::getLocaleData($this->id);
 
             if ($this->data === null) {
-                throw new InvalidParamException('Unsupported locale: '.$this->id);
+                $this->data = Localization::getLocaleData('en-US');
             }
         }
 
