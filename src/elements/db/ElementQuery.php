@@ -1350,7 +1350,7 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
 
             // If there's only one relation criteria and it's specifically for grabbing target elements, allow the query
             // to order by the relation sort order
-            if ($relationParamParser->isRelationFieldQuery()) {
+            if ($relationParamParser->getIsRelationFieldQuery()) {
                 $this->subQuery->addSelect('sources1.sortOrder');
             }
         }

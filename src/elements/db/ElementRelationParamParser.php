@@ -17,6 +17,8 @@ use craft\app\helpers\Db;
 /**
  * Parses a relatedTo param on an ElementQuery.
  *
+ * @param boolean $isRelationFieldQuery Whether the relatedTo value appears to be for selecting the targets of a single relation field
+ *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
@@ -140,7 +142,7 @@ class ElementRelationParamParser
      *
      * @return boolean
      */
-    public function isRelationFieldQuery()
+    public function getIsRelationFieldQuery()
     {
         return (
             $this->_joinSourcesCount == 1 &&
