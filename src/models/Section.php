@@ -13,6 +13,8 @@ use craft\app\base\Model;
 /**
  * Section model class.
  *
+ * @property boolean Whether this is the homepage section
+ *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  *
@@ -150,7 +152,7 @@ class Section extends Model
      *
      * @return boolean
      */
-    public function isHomepage()
+    public function getIsHomepage()
     {
         return ($this->type == self::TYPE_SINGLE && $this->getUrlFormat() == '__home__');
     }

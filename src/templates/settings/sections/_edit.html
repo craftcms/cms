@@ -185,12 +185,12 @@
 				label: "This is for the homepage"|t('app'),
 				id: 'single-homepage',
 				name: 'types[single][homepage]',
-				checked: section.isHomepage(),
+				checked: section.getIsHomepage(),
 				reverseToggle: 'single-uri-container'
 			}) }}
 		{% endif %}
 
-		<div id="single-uri-container"{% if section.isHomepage() %} class="hidden"{% endif %}>
+		<div id="single-uri-container"{% if section.getIsHomepage() %} class="hidden"{% endif %}>
 			{{ forms.field({
 				label: "URI"|t('app'),
 				instructions: "What the entry URI should be."|t('app'),

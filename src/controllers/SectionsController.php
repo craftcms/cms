@@ -118,7 +118,7 @@ class SectionsController extends Controller
         $variables['typeOptions'] = $typeOptions;
 
         $variables['canBeHomepage'] = (
-            ($section->id && $section->isHomepage()) ||
+            ($section->id && $section->getIsHomepage()) ||
             (!Craft::$app->getSections()->doesHomepageExist())
         );
 

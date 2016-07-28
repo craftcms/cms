@@ -36,7 +36,7 @@
 						<td data-title="{{ 'Handle'|t('app') }}"><code>{{ section.handle }}</code></td>
 						<td data-title="{{ 'Type'|t('app') }}">{{ section.type|title|t('app') }}</td>
 						<td data-title="{{ 'URL Format'|t('app') }}" dir="ltr">
-							{%- if section.isHomepage() -%}
+							{%- if section.getIsHomepage() -%}
 								<div data-icon="home" title="{{ 'Homepage'|t('app') }}"></div>
 							{%- else -%}
 								{{ section.getUrlFormat() }}
