@@ -107,12 +107,4 @@ class Temp extends Local
     {
         return $this->url;
     }
-
-    /**
-     * @return boolean
-     */
-    public function isSystem()
-    {
-        return true;
-    }
 }
