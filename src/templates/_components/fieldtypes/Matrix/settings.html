@@ -111,7 +111,7 @@
 
 								{{ forms.selectField({
 									label: "Field Type"|t('app'),
-									warning: (not field.isNew() ? "Changing this may result in data loss."|t('app')),
+									warning: (not field.getIsNew() ? "Changing this may result in data loss."|t('app')),
 									id: fieldId~'-type',
 									name: 'blockTypes['~blockType.id~'][fields]['~fieldId~'][type]',
 									options: fieldTypes,

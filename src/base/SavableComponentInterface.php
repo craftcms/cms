@@ -35,7 +35,7 @@ interface SavableComponentInterface extends ComponentInterface
      *
      * @return boolean Whether the component is new
      */
-    public function isNew();
+    public function getIsNew();
 
     /**
      * Validates the component.

@@ -274,7 +274,7 @@ class Matrix extends Component
                     // Figure out which ones are still around
                     foreach ($blockType->getFields() as $field) {
                         /** @var Field $field */
-                        if (!$field->isNew()) {
+                        if (!$field->getIsNew()) {
                             unset($oldFieldsById[$field->id]);
                         }
                     }
