@@ -443,7 +443,7 @@ class Application extends \yii\web\Application
     private function _processInstallRequest($request)
     {
         $isCpRequest = $request->getIsCpRequest();
-        $isInstalled = $this->isInstalled();
+        $isInstalled = $this->getIsInstalled();
 
         if (!$isInstalled) {
             $this->_unregisterDebugModule();

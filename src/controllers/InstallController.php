@@ -45,7 +45,7 @@ class InstallController extends Controller
     public function init()
     {
         // Return a 404 if Craft is already installed
-        if (!Craft::$app->getConfig()->get('devMode') && Craft::$app->isInstalled()) {
+        if (!Craft::$app->getConfig()->get('devMode') && Craft::$app->getIsInstalled()) {
             throw new BadRequestHttpException('Craft CMS is already installed');
         }
     }

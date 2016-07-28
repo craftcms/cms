@@ -577,7 +577,7 @@ class Extension extends \Twig_Extension
     public function getGlobals()
     {
         $safeMode = $this->environment->isSafeMode();
-        $isInstalled = Craft::$app->isInstalled();
+        $isInstalled = Craft::$app->getIsInstalled();
         $request = Craft::$app->getRequest();
 
         $globals = [

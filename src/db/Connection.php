@@ -114,7 +114,7 @@ class Connection extends \yii\db\Connection
     public function tableExists($table, $refresh = null)
     {
         // Default to refreshing the tables if Craft isn't installed yet
-        if ($refresh || ($refresh === null && !Craft::$app->isInstalled())) {
+        if ($refresh || ($refresh === null && !Craft::$app->getIsInstalled())) {
             $this->getSchema()->refresh();
         }
 
@@ -135,7 +135,7 @@ class Connection extends \yii\db\Connection
     public function columnExists($table, $column, $refresh = null)
     {
         // Default to refreshing the tables if Craft isn't installed yet
-        if ($refresh || ($refresh === null && !Craft::$app->isInstalled())) {
+        if ($refresh || ($refresh === null && !Craft::$app->getIsInstalled())) {
             $this->getSchema()->refresh();
         }
 

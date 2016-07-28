@@ -62,6 +62,7 @@ use yii\web\ServerErrorHttpException;
  * @property boolean                             $hasWrongEdition  Whether Craft is running with the wrong edition
  * @property I18N                                $i18n             The internationalization (i18n) component
  * @property \craft\app\services\Images          $images           The images service
+ * @property boolean                             $isInstalled      Whether Craft is installed
  * @property \craft\app\i18n\Locale              $locale           The Locale object for the target language
  * @property \craft\app\mail\Mailer              $mailer           The mailer component
  * @property \craft\app\services\Matrix          $matrix           The matrix service
@@ -192,7 +193,7 @@ trait ApplicationTrait
     public function getTargetLanguage($useUserLanguage = true)
     {
         /** @var \craft\app\web\Application|\craft\app\console\Application $this */
-        if ($this->isInstalled()) {
+        if ($this->getIsInstalled()) {
             // Will any locale validation be necessary here?
             $request = $this->getRequest();
 
@@ -257,11 +258,11 @@ trait ApplicationTrait
     }
 
     /**
-     * Determines if Craft is installed by checking if the info table exists in the database.
+     * Returns whether Craft is installed.
      *
      * @return boolean
      */
-    public function isInstalled()
+    public function getIsInstalled()
     {
         /** @var \craft\app\web\Application|\craft\app\console\Application $this */
         if (!isset($this->_isInstalled)) {
@@ -419,7 +420,7 @@ trait ApplicationTrait
     public function requireEdition($edition, $orBetter = true)
     {
         /** @var \craft\app\web\Application|\craft\app\console\Application $this */
-        if ($this->isInstalled()) {
+        if ($this->getIsInstalled()) {
             $installedEdition = $this->getEdition();
 
             if (($orBetter && $installedEdition < $edition) || (!$orBetter && $installedEdition !== $edition)) {
@@ -612,7 +613,7 @@ trait ApplicationTrait
     {
         /** @var \craft\app\web\Application|\craft\app\console\Application $this */
         if (!isset($this->_info)) {
-            if ($this->isInstalled()) {
+            if ($this->getIsInstalled()) {
                 $row = (new Query())
                     ->from('{{%info}}')
                     ->one();
@@ -654,7 +655,7 @@ trait ApplicationTrait
         if ($info->validate()) {
             $attributes = Db::prepareValuesForDb($info);
 
-            if ($this->isInstalled()) {
+            if ($this->getIsInstalled()) {
                 // TODO: Remove this after the next breakpoint
                 if (version_compare($this->_storedVersion, '3.0', '<')) {
                     unset($attributes['fieldVersion']);

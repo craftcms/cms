@@ -837,7 +837,7 @@ class Request extends \yii\web\Request
     {
         $currentUser = false;
 
-        if (Craft::$app->isInstalled() && Craft::$app->get('user', false)) {
+        if (Craft::$app->getIsInstalled() && Craft::$app->get('user', false)) {
             $currentUser = Craft::$app->getUser()->getIdentity();
         }
 
