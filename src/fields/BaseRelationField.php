@@ -18,6 +18,7 @@ use craft\app\elements\db\ElementQuery;
 use craft\app\elements\db\ElementQueryInterface;
 use craft\app\helpers\StringHelper;
 use craft\app\tasks\LocalizeRelations;
+use yii\base\NotSupportedException;
 
 /**
  * BaseRelationField is the base class for classes representing a relational field.
@@ -42,9 +43,11 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
      * Returns the element class associated with this field type.
      *
      * @return string The Element class name
+     * @throws NotSupportedException if the method hasn't been implemented by the subclass
      */
     protected static function elementType()
     {
+        throw new NotSupportedException('"elementType()" is not implemented.');
     }
 
     /**
