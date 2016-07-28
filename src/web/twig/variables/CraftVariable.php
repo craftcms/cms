@@ -50,7 +50,7 @@ use yii\di\ServiceLocator;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
-class Craft extends ServiceLocator
+class CraftVariable extends ServiceLocator
 {
     // Public Methods
     // =========================================================================

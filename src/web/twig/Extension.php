@@ -31,7 +31,7 @@ use craft\app\web\twig\tokenparsers\RequireEditionTokenParser;
 use craft\app\web\twig\tokenparsers\RequireLoginTokenParser;
 use craft\app\web\twig\tokenparsers\RequirePermissionTokenParser;
 use craft\app\web\twig\tokenparsers\SwitchTokenParser;
-use craft\app\web\twig\variables\Craft as CraftVariable;
+use craft\app\web\twig\variables\CraftVariable;
 use craft\app\web\View;
 use yii\base\InvalidConfigException;
 use yii\helpers\Markdown;
