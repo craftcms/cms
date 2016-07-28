@@ -21,7 +21,6 @@ use craft\app\helpers\Io;
  */
 class Svg extends Image
 {
-
     // Constants
     // =========================================================================
 
@@ -42,12 +41,12 @@ class Svg extends Image
     private $_svgContent;
 
     /**
-     * @var int
+     * @var integer
      */
     private $_height;
 
     /**
-     * @var int
+     * @var integer
      */
     private $_width;
 
@@ -55,7 +54,7 @@ class Svg extends Image
     // =========================================================================
 
     /**
-     * @return int
+     * @inheritdoc
      */
     public function getWidth()
     {
@@ -63,7 +62,7 @@ class Svg extends Image
     }
 
     /**
-     * @return int
+     * @inheritdoc
      */
     public function getHeight()
     {
@@ -71,7 +70,7 @@ class Svg extends Image
     }
 
     /**
-     * @return string
+     * @inheritdoc
      */
     public function getExtension()
     {
@@ -79,12 +78,7 @@ class Svg extends Image
     }
 
     /**
-     * Loads an image from a file system path.
-     *
-     * @param string $path
-     *
-     * @throws ImageException If the file cannot be found.
-     * @return Image
+     * @inheritdoc
      */
     public function loadImage($path)
     {
@@ -114,14 +108,7 @@ class Svg extends Image
     }
 
     /**
-     * Crops the image to the specified coordinates.
-     *
-     * @param int $x1
-     * @param int $x2
-     * @param int $y1
-     * @param int $y2
-     *
-     * @return Image
+     * @inheritdoc
      */
     public function crop($x1, $x2, $y1, $y2)
     {
@@ -161,13 +148,7 @@ class Svg extends Image
     }
 
     /**
-     * Scale the image to fit within the specified size.
-     *
-     * @param int      $targetWidth
-     * @param int|null $targetHeight
-     * @param bool     $scaleIfSmaller
-     *
-     * @return Image
+     * @inheritdoc
      */
     public function scaleToFit($targetWidth, $targetHeight = null, $scaleIfSmaller = true)
     {
@@ -184,14 +165,7 @@ class Svg extends Image
     }
 
     /**
-     * Scale and crop image to exactly fit the specified size.
-     *
-     * @param int      $targetWidth
-     * @param int|null $targetHeight
-     * @param bool     $scaleIfSmaller
-     * @param string   $cropPositions
-     *
-     * @return Image
+     * @inheritdoc
      */
     public function scaleAndCrop($targetWidth, $targetHeight = null, $scaleIfSmaller = true, $cropPositions = 'center-center')
     {
@@ -229,12 +203,7 @@ class Svg extends Image
     }
 
     /**
-     * Re-sizes the image. If $height is not specified, it will default to $width, creating a square.
-     *
-     * @param int      $targetWidth
-     * @param int|null $targetHeight
-     *
-     * @return Image
+     * @inheritdoc
      */
     public function resize($targetWidth, $targetHeight = null)
     {
@@ -260,13 +229,7 @@ class Svg extends Image
     }
 
     /**
-     * Saves the image to the target path.
-     *
-     * @param string  $targetPath
-     * @param boolean $autoQuality
-     *
-     * @throws ImageException If attempting to save
-     * @return null
+     * @inheritdoc
      */
     public function saveAs($targetPath, $autoQuality = false)
     {
@@ -281,7 +244,7 @@ class Svg extends Image
     }
 
     /**
-     * Get the SVG string.
+     * Returns the SVG string.
      *
      * @return string
      */
@@ -291,9 +254,7 @@ class Svg extends Image
     }
 
     /**
-     * Returns true if the image is transparent.
-     *
-     * @return bool
+     * @inheritdoc
      */
     public function isTransparent()
     {

@@ -49,12 +49,12 @@ class Raster extends Image
     private $_extension;
 
     /**
-     * @var bool
+     * @var boolean
      */
     private $_isAnimatedGif = false;
 
     /**
-     * @var int
+     * @var integer
      */
     private $_quality = 0;
 
@@ -82,9 +82,9 @@ class Raster extends Image
     // =========================================================================
 
     /**
-     * Constructor
+     * @inheritdoc
      */
-    public function __construct()
+    public function __construct($config = [])
     {
         $config = Craft::$app->getConfig();
 
@@ -107,10 +107,12 @@ class Raster extends Image
         }
 
         $this->_quality = $config->get('defaultImageQuality');
+
+        parent::__construct($config);
     }
 
     /**
-     * @return int
+     * @inheritdoc
      */
     public function getWidth()
     {
@@ -118,7 +120,7 @@ class Raster extends Image
     }
 
     /**
-     * @return int
+     * @inheritdoc
      */
     public function getHeight()
     {
@@ -126,7 +128,7 @@ class Raster extends Image
     }
 
     /**
-     * @return string
+     * @inheritdoc
      */
     public function getExtension()
     {
@@ -134,12 +136,7 @@ class Raster extends Image
     }
 
     /**
-     * Loads an image from a file system path.
-     *
-     * @param string $path
-     *
-     * @throws ImageException
-     * @return Image
+     * @inheritdoc
      */
     public function loadImage($path)
     {
@@ -195,14 +192,7 @@ class Raster extends Image
     }
 
     /**
-     * Crops the image to the specified coordinates.
-     *
-     * @param int $x1
-     * @param int $x2
-     * @param int $y1
-     * @param int $y2
-     *
-     * @return Image
+     * @inheritdoc
      */
     public function crop($x1, $x2, $y1, $y2)
     {
@@ -231,13 +221,7 @@ class Raster extends Image
     }
 
     /**
-     * Scale the image to fit within the specified size.
-     *
-     * @param int      $targetWidth
-     * @param int|null $targetHeight
-     * @param bool     $scaleIfSmaller
-     *
-     * @return Image
+     * @inheritdoc
      */
     public function scaleToFit($targetWidth, $targetHeight = null, $scaleIfSmaller = true)
     {
@@ -254,14 +238,7 @@ class Raster extends Image
     }
 
     /**
-     * Scale and crop image to exactly fit the specified size.
-     *
-     * @param int      $targetWidth
-     * @param int|null $targetHeight
-     * @param bool     $scaleIfSmaller
-     * @param string   $cropPositions
-     *
-     * @return Image
+     * @inheritdoc
      */
     public function scaleAndCrop($targetWidth, $targetHeight = null, $scaleIfSmaller = true, $cropPositions = 'center-center')
     {
@@ -337,12 +314,7 @@ class Raster extends Image
     }
 
     /**
-     * Re-sizes the image. If $height is not specified, it will default to $width, creating a square.
-     *
-     * @param int      $targetWidth
-     * @param int|null $targetHeight
-     *
-     * @return Image
+     * @inheritdoc
      */
     public function resize($targetWidth, $targetHeight = null)
     {
@@ -376,11 +348,11 @@ class Raster extends Image
     }
 
     /**
-     * Rotate an image by degrees.
+     * Rotates the image by the given degrees.
      *
-     * @param int $degrees
+     * @param integer $degrees
      *
-     * @return Image
+     * @return $this Self reference
      */
     public function rotate($degrees)
     {
@@ -390,11 +362,11 @@ class Raster extends Image
     }
 
     /**
-     * Set image quality.
+     * Sets the image quality.
      *
-     * @param int $quality
+     * @param integer $quality
      *
-     * @return Image
+     * @return $this Self reference
      */
     public function setQuality($quality)
     {
@@ -404,13 +376,7 @@ class Raster extends Image
     }
 
     /**
-     * Saves the image to the target path.
-     *
-     * @param string  $targetPath
-     * @param boolean $autoQuality
-     *
-     * @throws ImageException If Imagine threw an exception.
-     * @return null
+     * @inheritdoc
      */
     public function saveAs($targetPath, $autoQuality = false)
     {
@@ -438,12 +404,12 @@ class Raster extends Image
     }
 
     /**
-     * Load an image from an SVG string.
+     * Loads an image from an SVG string.
      *
      * @param $svgContent
      *
-     * @throws ImageException If the SVG string cannot be loaded.
-     * @return Image
+     * @return $this Self reference
+     * @throws ImageException if the SVG string cannot be loaded.
      */
     public function loadFromSVG($svgContent)
     {
@@ -463,15 +429,11 @@ class Raster extends Image
     }
 
     /**
-     * Returns true if Imagick is installed and says that the image is transparent.
-     *
-     * @return bool
+     * @inheritdoc
      */
     public function isTransparent()
     {
-        if (Craft::$app->getImages()->isImagick() && method_exists("Imagick",
-                "getImageAlphaChannel")
-        ) {
+        if (Craft::$app->getImages()->isImagick() && method_exists('Imagick', 'getImageAlphaChannel')) {
             return $this->_image->getImagick()->getImageAlphaChannel();
         }
 
@@ -479,9 +441,9 @@ class Raster extends Image
     }
 
     /**
-     * Return EXIF metadata for a file by it's path
+     * Returns EXIF metadata for a file by its path.
      *
-     * @param $filePath
+     * @param string $filePath
      *
      * @return array
      */
@@ -501,13 +463,13 @@ class Raster extends Image
     }
 
     /**
-     * Set properties for text drawing on the image.
+     * Sets properties for text drawing on the image.
      *
-     * @param $fontFile string path to the font file on server
-     * @param $size     int    font size to use
-     * @param $color    string font color to use in hex format
+     * @param string  $fontFile path to the font file on server
+     * @param integer $size     font size to use
+     * @param string  $color    font color to use in hex format
      *
-     * @return null
+     * @return void
      */
     public function setFontProperties($fontFile, $size, $color)
     {
@@ -520,13 +482,13 @@ class Raster extends Image
     }
 
     /**
-     * Get the bounding text box for a text string and an angle
+     * Returns the bounding text box for a text string and an angle
      *
-     * @param     $text
-     * @param int $angle
+     * @param string  $text
+     * @param integer $angle
      *
-     * @throws ImageException If attempting to create text box with no font properties et.
      * @return \Imagine\Image\BoxInterface
+     * @throws ImageException if attempting to create text box with no font properties
      */
     public function getTextBox($text, $angle = 0)
     {
@@ -539,15 +501,15 @@ class Raster extends Image
     }
 
     /**
-     * Write text on an image
+     * Writes text on an image.
      *
-     * @param     $text
-     * @param     $x
-     * @param     $y
-     * @param int $angle
+     * @param string  $text
+     * @param integer $x
+     * @param integer $y
+     * @param integer $angle
      *
+     * @return void
      * @throws ImageException If attempting to create text box with no font properties et.
-     * @return null
      */
     public function writeText($text, $x, $y, $angle = 0)
     {
@@ -566,12 +528,12 @@ class Raster extends Image
     // =========================================================================
 
     /**
-     * @param     $tempFileName
-     * @param     $originalSize
-     * @param     $extension
-     * @param     $minQuality
-     * @param     $maxQuality
-     * @param int $step
+     * @param         $tempFileName
+     * @param         $originalSize
+     * @param         $extension
+     * @param         $minQuality
+     * @param         $maxQuality
+     * @param integer $step
      *
      * @return string the resulting file path
      */
@@ -631,10 +593,10 @@ class Raster extends Image
     }
 
     /**
-     * Get save options.
+     * Returns save options.
      *
-     * @param int|null $quality
-     * @param string   $extension
+     * @param integer|null $quality
+     * @param string       $extension
      *
      * @return array
      */

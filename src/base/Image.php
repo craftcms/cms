@@ -9,6 +9,7 @@ namespace craft\app\base;
 
 use craft\app\errors\ImageException;
 use craft\app\helpers\Image as ImageHelper;
+use yii\base\Object;
 
 /**
  * Base Image class.
@@ -16,20 +17,25 @@ use craft\app\helpers\Image as ImageHelper;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
-abstract class Image
+abstract class Image extends Object
 {
-
     /**
-     * @return int
+     * Returns the width of the image.
+     *
+     * @return integer
      */
     abstract public function getWidth();
 
     /**
-     * @return int
+     * Returns the height of the image.
+     *
+     * @return integer
      */
     abstract public function getHeight();
 
     /**
+     * Returns the file extension.
+     *
      * @return string
      */
     abstract public function getExtension();
@@ -39,53 +45,53 @@ abstract class Image
      *
      * @param string $path
      *
-     * @throws ImageException If the file cannot be loaded
-     * @return Image
+     * @return $this Self reference
+     * @throws ImageException if the file cannot be loaded
      */
     abstract public function loadImage($path);
 
     /**
      * Crops the image to the specified coordinates.
      *
-     * @param int $x1
-     * @param int $x2
-     * @param int $y1
-     * @param int $y2
+     * @param integer $x1
+     * @param integer $x2
+     * @param integer $y1
+     * @param integer $y2
      *
-     * @return Image
+     * @return $this Self reference
      */
     abstract public function crop($x1, $x2, $y1, $y2);
 
     /**
      * Scale the image to fit within the specified size.
      *
-     * @param int      $targetWidth
-     * @param int|null $targetHeight
-     * @param bool     $scaleIfSmaller
+     * @param integer      $targetWidth
+     * @param integer|null $targetHeight
+     * @param boolean      $scaleIfSmaller
      *
-     * @return Image
+     * @return $this Self reference
      */
     abstract public function scaleToFit($targetWidth, $targetHeight = null, $scaleIfSmaller = true);
 
     /**
      * Scale and crop image to exactly fit the specified size.
      *
-     * @param int      $targetWidth
-     * @param int|null $targetHeight
-     * @param bool     $scaleIfSmaller
-     * @param string   $cropPositions
+     * @param integer      $targetWidth
+     * @param integer|null $targetHeight
+     * @param boolean      $scaleIfSmaller
+     * @param string       $cropPositions
      *
-     * @return Image
+     * @return $this Self reference
      */
     abstract public function scaleAndCrop($targetWidth, $targetHeight = null, $scaleIfSmaller = true, $cropPositions = 'center-center');
 
     /**
-     * Re-sizes the image. If $height is not specified, it will default to $width, creating a square.
+     * Resizes the image.
      *
-     * @param int      $targetWidth
-     * @param int|null $targetHeight
+     * @param integer      $targetWidth  The target width
+     * @param integer|null $targetHeight The target height. Defaults to $targetWidth if omitted, creating a square.
      *
-     * @return Image
+     * @return $this Self reference
      */
     abstract public function resize($targetWidth, $targetHeight = null);
 
@@ -95,15 +101,15 @@ abstract class Image
      * @param string  $targetPath
      * @param boolean $autoQuality
      *
-     * @throws ImageException If the image cannot be saved.
-     * @return null
+     * @return void
+     * @throws ImageException if the image cannot be saved.
      */
     abstract public function saveAs($targetPath, $autoQuality = false);
 
     /**
-     * Returns true if the image is transparent.
+     * Returns whether the image is transparent.
      *
-     * @return bool
+     * @return boolean
      */
     abstract public function isTransparent();
 
@@ -113,8 +119,8 @@ abstract class Image
     /**
      * Normalizes the given dimensions.  If width or height is set to 'AUTO', we calculate the missing dimension.
      *
-     * @param int|string $width
-     * @param int|string $height
+     * @param integer|string $width
+     * @param integer|string $height
      */
     protected function normalizeDimensions(&$width, &$height = null)
     {
