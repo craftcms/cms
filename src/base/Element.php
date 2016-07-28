@@ -132,8 +132,8 @@ abstract class Element extends Component implements ElementInterface
     public static function getStatuses()
     {
         return [
-            static::STATUS_ENABLED => Craft::t('app', 'Enabled'),
-            static::STATUS_DISABLED => Craft::t('app', 'Disabled')
+            self::STATUS_ENABLED => Craft::t('app', 'Enabled'),
+            self::STATUS_DISABLED => Craft::t('app', 'Disabled')
         ];
     }
 
@@ -948,14 +948,14 @@ abstract class Element extends Component implements ElementInterface
     public function getStatus()
     {
         if ($this->archived) {
-            return static::STATUS_ARCHIVED;
+            return self::STATUS_ARCHIVED;
         }
 
         if (!$this->enabled || !$this->localeEnabled) {
-            return static::STATUS_DISABLED;
+            return self::STATUS_DISABLED;
         }
 
-        return static::STATUS_ENABLED;
+        return self::STATUS_ENABLED;
     }
 
     /**

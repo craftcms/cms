@@ -91,10 +91,10 @@ class Entry extends Element
     public static function getStatuses()
     {
         return [
-            static::STATUS_LIVE => Craft::t('app', 'Live'),
-            static::STATUS_PENDING => Craft::t('app', 'Pending'),
-            static::STATUS_EXPIRED => Craft::t('app', 'Expired'),
-            static::STATUS_DISABLED => Craft::t('app', 'Disabled')
+            self::STATUS_LIVE => Craft::t('app', 'Live'),
+            self::STATUS_PENDING => Craft::t('app', 'Pending'),
+            self::STATUS_EXPIRED => Craft::t('app', 'Expired'),
+            self::STATUS_DISABLED => Craft::t('app', 'Disabled')
         ];
     }
 
@@ -258,7 +258,7 @@ class Entry extends Element
                 $setStatusAction = Craft::$app->getElements()->createAction(SetStatus::className());
                 $setStatusAction->on(SetStatus::EVENT_AFTER_SET_STATUS,
                     function (SetStatusEvent $event) {
-                        if ($event->status == static::STATUS_ENABLED) {
+                        if ($event->status == self::STATUS_ENABLED) {
                             // Set a Post Date as well
                             Craft::$app->getDb()->createCommand()
                                 ->update(
