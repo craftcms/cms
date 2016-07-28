@@ -431,7 +431,7 @@ class Raster extends Image
     /**
      * @inheritdoc
      */
-    public function isTransparent()
+    public function getIsTransparent()
     {
         if (Craft::$app->getImages()->isImagick() && method_exists('Imagick', 'getImageAlphaChannel')) {
             return $this->_image->getImagick()->getImageAlphaChannel();

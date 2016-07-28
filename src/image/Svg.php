@@ -256,7 +256,7 @@ class Svg extends Image
     /**
      * @inheritdoc
      */
-    public function isTransparent()
+    public function getIsTransparent()
     {
         return true;
     }

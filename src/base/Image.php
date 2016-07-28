@@ -14,6 +14,8 @@ use yii\base\Object;
 /**
  * Base Image class.
  *
+ * @property boolean $isTransparent Whether the image is transparent
+ *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
@@ -111,7 +113,7 @@ abstract class Image extends Object
      *
      * @return boolean
      */
-    abstract public function isTransparent();
+    abstract public function getIsTransparent();
 
     // Protected Methods
     // =========================================================================

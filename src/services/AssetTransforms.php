@@ -938,7 +938,7 @@ class AssetTransforms extends Component
 
             $image = $images->loadImage($localCopy);
 
-            if ($image->isTransparent()) {
+            if ($image->getIsTransparent()) {
                 $format = 'png';
             } else {
                 $format = 'jpg';
