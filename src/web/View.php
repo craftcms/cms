@@ -251,13 +251,15 @@ class View extends \yii\web\View
     /**
      * Renders a Twig template.
      *
-     * @param mixed $template  The name of the template to load, or a StringTemplate object.
-     * @param array $variables The variables that should be available to the template.
+     * @param mixed   $template  The name of the template to load, or a StringTemplate object.
+     * @param array   $variables The variables that should be available to the template.
+     * @param boolean $safeMode  Whether to limit what's available to in the Twig context
+     *                           in the interest of security.
      *
      * @return string the rendering result
      * @throws \Twig_Error_Loader if the template doesn’t exist
      */
-    public function renderTemplate($template, $variables = [])
+    public function renderTemplate($template, $variables = [], $safeMode = false)
     {
         Craft::trace("Rendering template: $template", __METHOD__);
 
@@ -265,7 +267,7 @@ class View extends \yii\web\View
         $renderingTemplate = $this->_renderingTemplate;
         $this->_renderingTemplate = $template;
         Craft::beginProfile($template, __METHOD__);
-        $output = $this->getTwig()->render($template, $variables);
+        $output = $this->getTwig(null, ['safe_mode' => $safeMode])->render($template, $variables);
         Craft::endProfile($template, __METHOD__);
         $this->_renderingTemplate = $renderingTemplate;
 
@@ -322,18 +324,20 @@ class View extends \yii\web\View
     /**
      * Renders a template defined in a string.
      *
-     * @param string $template  The source template string.
-     * @param array  $variables Any variables that should be available to the template.
+     * @param string  $template  The source template string.
+     * @param array   $variables Any variables that should be available to the template.
+     * @param boolean $safeMode  Whether to limit what's available to in the Twig context
+     *                           in the interest of security.
      *
      * @return string The rendered template.
      */
-    public function renderString($template, $variables = [])
+    public function renderString($template, $variables = [], $safeMode = false)
     {
         $stringTemplate = new StringTemplate(md5($template), $template);
 
         $lastRenderingTemplate = $this->_renderingTemplate;
         $this->_renderingTemplate = 'string:'.$template;
-        $result = $this->renderTemplate($stringTemplate, $variables);
+        $result = $this->renderTemplate($stringTemplate, $variables, $safeMode);
         $this->_renderingTemplate = $lastRenderingTemplate;
 
         return $result;
