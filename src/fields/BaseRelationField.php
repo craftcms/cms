@@ -511,7 +511,7 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
     protected function getTargetLocale($element)
     {
         /** @var Element|null $element */
-        if (Craft::$app->isLocalized()) {
+        if (Craft::$app->getIsLocalized()) {
             if ($this->targetLocale) {
                 return $this->targetLocale;
             }
@@ -534,7 +534,7 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
         /** @var Element $class */
         $class = static::elementType();
 
-        if (Craft::$app->isLocalized() && $class::isLocalized()) {
+        if (Craft::$app->getIsLocalized() && $class::isLocalized()) {
             $localeOptions = [
                 ['label' => Craft::t('app', 'Same as source'), 'value' => null]
             ];

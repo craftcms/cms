@@ -359,7 +359,7 @@ class CategoriesController extends Controller
 
         // Set the "Continue Editing" URL
         $variables['continueEditingUrl'] = $variables['baseCpEditUrl'].
-            (Craft::$app->isLocalized() && Craft::$app->language != $variables['localeId'] ? '/'.$variables['localeId'] : '');
+            (Craft::$app->getIsLocalized() && Craft::$app->language != $variables['localeId'] ? '/'.$variables['localeId'] : '');
 
         // Render the template!
         Craft::$app->getView()->registerCssResource('css/category.css');
@@ -681,7 +681,7 @@ class CategoriesController extends Controller
      */
     private function _enforceEditCategoryPermissions(Category $category)
     {
-        if (Craft::$app->isLocalized()) {
+        if (Craft::$app->getIsLocalized()) {
             // Make sure they have access to this locale
             $this->requirePermission('editLocale:'.$category->locale);
         }

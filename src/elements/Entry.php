@@ -948,7 +948,7 @@ EOD;
             // The slug *might* not be set if this is a Draft and they've deleted it for whatever reason
             $url = Url::getCpUrl('entries/'.$section->handle.'/'.$this->id.($this->slug ? '-'.$this->slug : ''));
 
-            if (Craft::$app->isLocalized() && $this->locale != Craft::$app->language) {
+            if (Craft::$app->getIsLocalized() && $this->locale != Craft::$app->language) {
                 $url .= '/'.$this->locale;
             }
 

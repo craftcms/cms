@@ -162,7 +162,7 @@ class SectionsController extends Controller
         // Locale-specific attributes
         $locales = [];
 
-        if (Craft::$app->isLocalized()) {
+        if (Craft::$app->getIsLocalized()) {
             $localeIds = Craft::$app->getRequest()->getBodyParam('locales', []);
         } else {
             $primaryLocaleId = Craft::$app->getI18n()->getPrimarySiteLocaleId();

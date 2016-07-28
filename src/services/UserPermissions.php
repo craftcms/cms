@@ -114,7 +114,7 @@ class UserPermissions extends Component
         // Locales
         // ---------------------------------------------------------------------
 
-        if (Craft::$app->isLocalized()) {
+        if (Craft::$app->getIsLocalized()) {
             $label = Craft::t('app', 'Locales');
             $locales = Craft::$app->getI18n()->getSiteLocales();
 

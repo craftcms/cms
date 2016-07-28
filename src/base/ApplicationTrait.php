@@ -63,6 +63,7 @@ use yii\web\ServerErrorHttpException;
  * @property I18N                                $i18n             The internationalization (i18n) component
  * @property \craft\app\services\Images          $images           The images service
  * @property boolean                             $isInstalled      Whether Craft is installed
+ * @property boolean                             $isLocalized      Whether this site has multiple locales
  * @property \craft\app\i18n\Locale              $locale           The Locale object for the target language
  * @property \craft\app\mail\Mailer              $mailer           The mailer component
  * @property \craft\app\services\Matrix          $matrix           The matrix service
@@ -302,7 +303,7 @@ trait ApplicationTrait
      *
      * @return boolean
      */
-    public function isLocalized()
+    public function getIsLocalized()
     {
         /** @var \craft\app\web\Application|\craft\app\console\Application $this */
         if (!isset($this->_isLocalized)) {

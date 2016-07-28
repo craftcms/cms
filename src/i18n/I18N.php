@@ -301,7 +301,7 @@ class I18N extends \yii\i18n\I18N
      */
     public function getEditableLocales()
     {
-        if (Craft::$app->isLocalized()) {
+        if (Craft::$app->getIsLocalized()) {
             $locales = $this->getSiteLocales();
             $editableLocales = [];
 

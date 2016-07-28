@@ -52,7 +52,7 @@ class EmailMessagesController extends Controller
         $message->subject = Craft::$app->getRequest()->getRequiredBodyParam('subject');
         $message->body = Craft::$app->getRequest()->getRequiredBodyParam('body');
 
-        if (Craft::$app->isLocalized()) {
+        if (Craft::$app->getIsLocalized()) {
             $message->locale = Craft::$app->getRequest()->getBodyParam('locale');
         } else {
             $message->locale = Craft::$app->language;

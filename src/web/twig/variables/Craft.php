@@ -172,7 +172,7 @@ class Craft extends ServiceLocator
      */
     public function getIsLocalized()
     {
-        return \Craft::$app->isLocalized();
+        return \Craft::$app->getIsLocalized();
     }
 
     // Element queries

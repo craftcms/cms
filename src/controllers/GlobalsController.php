@@ -173,7 +173,7 @@ class GlobalsController extends Controller
         // Make sure the user is allowed to edit this global set and locale
         $this->requirePermission('editGlobalSet:'.$globalSetId);
 
-        if (Craft::$app->isLocalized()) {
+        if (Craft::$app->getIsLocalized()) {
             $this->requirePermission('editLocale:'.$localeId);
         }
 

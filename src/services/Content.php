@@ -198,7 +198,7 @@ class Content extends Component
             ]));
 
             if ($fieldLayout) {
-                if ($updateOtherLocales && Craft::$app->isLocalized()) {
+                if ($updateOtherLocales && Craft::$app->getIsLocalized()) {
                     $this->_duplicateNonTranslatableFieldValues($element, $values, $nonTranslatableFields, $otherContentModels);
                 }
 

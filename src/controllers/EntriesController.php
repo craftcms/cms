@@ -162,7 +162,7 @@ class EntriesController extends BaseEntriesController
         // Enabled locales
         // ---------------------------------------------------------------------
 
-        if (Craft::$app->isLocalized()) {
+        if (Craft::$app->getIsLocalized()) {
             if ($entry->id) {
                 $variables['enabledLocales'] = Craft::$app->getElements()->getEnabledLocalesForElement($entry->id);
             } else {
@@ -318,7 +318,7 @@ class EntriesController extends BaseEntriesController
         // Set the "Continue Editing" URL
         $variables['continueEditingUrl'] = $variables['baseCpEditUrl'].
             (isset($variables['draftId']) ? '/drafts/'.$variables['draftId'] : '').
-            (Craft::$app->isLocalized() && Craft::$app->language != $variables['localeId'] ? '/'.$variables['localeId'] : '');
+            (Craft::$app->getIsLocalized() && Craft::$app->language != $variables['localeId'] ? '/'.$variables['localeId'] : '');
 
         // Can the user delete the entry?
         $variables['canDeleteEntry'] = $entry->id && (
@@ -659,7 +659,7 @@ class EntriesController extends BaseEntriesController
         // Get the locale
         // ---------------------------------------------------------------------
 
-        if (Craft::$app->isLocalized()) {
+        if (Craft::$app->getIsLocalized()) {
             // Only use the locales that the user has access to
             $sectionLocaleIds = array_keys($variables['section']->getLocales());
             $editableLocaleIds = Craft::$app->getI18n()->getEditableLocaleIds();
@@ -719,7 +719,7 @@ class EntriesController extends BaseEntriesController
                     $variables['entry']->locale = $variables['localeId'];
                 }
 
-                if (Craft::$app->isLocalized()) {
+                if (Craft::$app->getIsLocalized()) {
                     // Set the default locale status based on the section's settings
                     foreach ($variables['section']->getLocales() as $locale) {
                         if ($locale->locale == $variables['entry']->locale) {

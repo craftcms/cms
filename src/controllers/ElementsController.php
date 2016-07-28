@@ -251,7 +251,7 @@ class ElementsController extends BaseElementsController
 
         // Make sure the user is allowed to edit this locale
         $userService = Craft::$app->getUser();
-        if (Craft::$app->isLocalized() && $elementType->isLocalized() && !$userService->checkPermission('editLocale:'.$element->locale)) {
+        if (Craft::$app->getIsLocalized() && $elementType->isLocalized() && !$userService->checkPermission('editLocale:'.$element->locale)) {
             // Find the first locale the user does have permission to edit
             $elementLocaleIds = [];
             $newLocaleId = null;

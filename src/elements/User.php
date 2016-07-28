@@ -262,7 +262,7 @@ class User extends Element implements IdentityInterface
         $attributes['firstName'] = ['label' => Craft::t('app', 'First Name')];
         $attributes['lastName'] = ['label' => Craft::t('app', 'Last Name')];
 
-        if (Craft::$app->isLocalized()) {
+        if (Craft::$app->getIsLocalized()) {
             $attributes['preferredLocale'] = ['label' => Craft::t('app', 'Preferred Locale')];
         }
 
