@@ -9,6 +9,7 @@ namespace craft\app\services;
 
 use Craft;
 use craft\app\base\WidgetInterface;
+use craft\app\db\Query;
 use craft\app\errors\InvalidComponentException;
 use craft\app\errors\WidgetNotFoundException;
 use craft\app\helpers\Component as ComponentHelper;
@@ -21,6 +22,7 @@ use craft\app\widgets\QuickPost as QuickPostWidget;
 use craft\app\widgets\RecentEntries as RecentEntriesWidget;
 use craft\app\widgets\Updates as UpdatesWidget;
 use yii\base\Component;
+use yii\base\Exception;
 
 /**
  * Class Dashboard service.
@@ -96,24 +98,13 @@ class Dashboard extends Component
      */
     public function getAllWidgets($indexBy = null)
     {
-        $widgets = $this->_getUserWidgetRecords($indexBy);
+        $widgets = $this->_getUserWidgets($indexBy);
 
-        // If there are no widget records, this is the first time they've hit the dashboard.
+        // If there are no widgets, this is the first time they've hit the dashboard.
         if (!$widgets) {
             // Add the defaults and try again
             $this->_addDefaultUserWidgets();
-            $widgets = $this->_getUserWidgetRecords($indexBy);
-        } else {
-            // Get only the enabled widgets.
-            foreach ($widgets as $key => $widget) {
-                if (!$widget->enabled) {
-                    unset($widgets[$key]);
-                }
-            }
-        }
-
-        foreach ($widgets as $key => $value) {
-            $widgets[$key] = $this->createWidget($value);
+            $widgets = $this->_getUserWidgets($indexBy);
         }
 
         return $widgets;
@@ -345,14 +336,36 @@ class Dashboard extends Component
      *
      * @param string $indexBy
      *
-     * @return array
+     * @return WidgetInterface[]
+     * @throws Exception if no user is logged-in
      */
-    private function _getUserWidgetRecords($indexBy = null)
+    private function _getUserWidgets($indexBy = null)
     {
-        return WidgetRecord::find()
-            ->where(['userId' => Craft::$app->getUser()->getIdentity()->id])
+        $userId = Craft::$app->getUser()->getId();
+
+        if (!$userId) {
+            throw new Exception('No logged-in user');
+        }
+
+        $records = (new Query())
+            ->select('id, type, colspan, settings')
+            ->from('{{%widgets}}')
+            ->where(['userId' => $userId, 'enabled' => 1])
             ->orderBy('sortOrder')
-            ->indexBy($indexBy)
             ->all();
+
+        $widgets = [];
+
+        foreach ($records as $record) {
+            $widget = $this->createWidget($record);
+
+            if ($indexBy === null) {
+                $widgets[] = $widget;
+            } else {
+                $widgets[$widget->$indexBy] = $widget;
+            }
+        }
+
+        return $widgets;
     }
 }
