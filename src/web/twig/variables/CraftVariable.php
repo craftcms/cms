@@ -7,6 +7,7 @@
 
 namespace craft\app\web\twig\variables;
 
+use Craft;
 use craft\app\elements\Asset;
 use craft\app\elements\Category;
 use craft\app\elements\db\AssetQuery;
@@ -84,14 +85,14 @@ class CraftVariable extends ServiceLocator
             'i18n' => 'craft\app\web\twig\variables\I18N',
         ];
 
-        switch (\Craft::$app->getEdition()) {
+        switch (Craft::$app->getEdition()) {
             /** @noinspection PhpMissingBreakStatementInspection */
-            case \Craft::Pro: {
+            case Craft::Pro: {
                 $config['components'] = array_merge($config['components'], [
                     'userGroups' => 'craft\app\web\twig\variables\UserGroups',
                 ]);
             }
-            case \Craft::Client: {
+            case Craft::Client: {
                 $config['components'] = array_merge($config['components'], [
                     'emailMessages' => 'craft\app\web\twig\variables\EmailMessages',
                     'rebrand' => 'craft\app\web\twig\variables\Rebrand',
@@ -101,7 +102,7 @@ class CraftVariable extends ServiceLocator
         }
 
         // Add plugin components
-        foreach (\Craft::$app->getPlugins()->getAllPlugins() as $handle => $plugin) {
+        foreach (Craft::$app->getPlugins()->getAllPlugins() as $handle => $plugin) {
             if (!isset($config['components'][$handle])) {
                 $component = $plugin->getVariableDefinition();
 
@@ -121,7 +122,7 @@ class CraftVariable extends ServiceLocator
     {
         // Are they calling one of the components as if it's still a function?
         if ($params === [] && $this->has($name)) {
-            \Craft::$app->getDeprecator()->log('CraftVariable::__call()', "craft.{$name}() is no longer a function. Use “craft.{$name}” instead (without the parentheses).");
+            Craft::$app->getDeprecator()->log('CraftVariable::__call()', "craft.{$name}() is no longer a function. Use “craft.{$name}” instead (without the parentheses).");
 
             return $this->get($name);
         }
@@ -152,7 +153,7 @@ class CraftVariable extends ServiceLocator
      */
     public function getLocale()
     {
-        return \Craft::$app->language;
+        return Craft::$app->language;
     }
 
     /**
@@ -162,7 +163,7 @@ class CraftVariable extends ServiceLocator
      */
     public function getTimeZone()
     {
-        return \Craft::$app->getTimeZone();
+        return Craft::$app->getTimeZone();
     }
 
     /**
@@ -172,7 +173,7 @@ class CraftVariable extends ServiceLocator
      */
     public function getIsLocalized()
     {
-        return \Craft::$app->getIsLocalized();
+        return Craft::$app->getIsLocalized();
     }
 
     // Element queries

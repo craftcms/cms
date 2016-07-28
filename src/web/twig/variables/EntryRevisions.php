@@ -7,6 +7,7 @@
 
 namespace craft\app\web\twig\variables;
 
+use Craft;
 use craft\app\models\EntryDraft;
 use craft\app\models\EntryVersion;
 
@@ -34,7 +35,7 @@ class EntryRevisions
      */
     public function getDraftsByEntryId($entryId, $localeId = null)
     {
-        return \Craft::$app->getEntryRevisions()->getDraftsByEntryId($entryId, $localeId);
+        return Craft::$app->getEntryRevisions()->getDraftsByEntryId($entryId, $localeId);
     }
 
     /**
@@ -47,7 +48,7 @@ class EntryRevisions
      */
     public function getEditableDraftsByEntryId($entryId, $localeId = null)
     {
-        return \Craft::$app->getEntryRevisions()->getEditableDraftsByEntryId($entryId, $localeId);
+        return Craft::$app->getEntryRevisions()->getEditableDraftsByEntryId($entryId, $localeId);
     }
 
     /**
@@ -59,7 +60,7 @@ class EntryRevisions
      */
     public function getDraftById($draftId)
     {
-        return \Craft::$app->getEntryRevisions()->getDraftById($draftId);
+        return Craft::$app->getEntryRevisions()->getDraftById($draftId);
     }
 
     // Versions
@@ -75,7 +76,7 @@ class EntryRevisions
      */
     public function getVersionsByEntryId($entryId, $localeId)
     {
-        return \Craft::$app->getEntryRevisions()->getVersionsByEntryId($entryId, $localeId, 10);
+        return Craft::$app->getEntryRevisions()->getVersionsByEntryId($entryId, $localeId, 10);
     }
 
     /**
@@ -87,6 +88,6 @@ class EntryRevisions
      */
     public function getVersionById($versionId)
     {
-        return \Craft::$app->getEntryRevisions()->getVersionById($versionId);
+        return Craft::$app->getEntryRevisions()->getVersionById($versionId);
     }
 }

@@ -7,6 +7,7 @@
 
 namespace craft\app\web\twig\variables;
 
+use Craft;
 use craft\app\dates\DateTime;
 use craft\app\helpers\App as AppHelper;
 use craft\app\helpers\Io;
@@ -29,7 +30,7 @@ class App
      */
     public function getEdition()
     {
-        return \Craft::$app->getEdition();
+        return Craft::$app->getEdition();
     }
 
     /**
@@ -39,7 +40,7 @@ class App
      */
     public function getEditionName()
     {
-        return \Craft::$app->getEditionName();
+        return Craft::$app->getEditionName();
     }
 
     /**
@@ -49,7 +50,7 @@ class App
      */
     public function getLicensedEdition()
     {
-        return \Craft::$app->getLicensedEdition();
+        return Craft::$app->getLicensedEdition();
     }
 
     /**
@@ -59,7 +60,7 @@ class App
      */
     public function getLicensedEditionName()
     {
-        return \Craft::$app->getLicensedEditionName();
+        return Craft::$app->getLicensedEditionName();
     }
 
     /**
@@ -69,7 +70,7 @@ class App
      */
     public function hasWrongEdition()
     {
-        return \Craft::$app->getHasWrongEdition();
+        return Craft::$app->getHasWrongEdition();
     }
 
     /**
@@ -79,7 +80,7 @@ class App
      */
     public function canUpgradeEdition()
     {
-        return \Craft::$app->canUpgradeEdition();
+        return Craft::$app->canUpgradeEdition();
     }
 
     /**
@@ -90,7 +91,7 @@ class App
      */
     public function canTestEditions()
     {
-        return \Craft::$app->canTestEditions();
+        return Craft::$app->canTestEditions();
     }
 
     /**
@@ -100,7 +101,7 @@ class App
      */
     public function getVersion()
     {
-        return \Craft::$app->version;
+        return Craft::$app->version;
     }
 
     /**
@@ -110,7 +111,7 @@ class App
      */
     public function getBuild()
     {
-        return \Craft::$app->build;
+        return Craft::$app->build;
     }
 
     /**
@@ -120,7 +121,7 @@ class App
      */
     public function getReleaseDate()
     {
-        return \Craft::$app->releaseDate;
+        return Craft::$app->releaseDate;
     }
 
     /**
@@ -130,7 +131,7 @@ class App
      */
     public function getSiteName()
     {
-        return \Craft::$app->getSiteName();
+        return Craft::$app->getSiteName();
     }
 
     /**
@@ -140,7 +141,7 @@ class App
      */
     public function getSiteUrl()
     {
-        return \Craft::$app->getSiteUrl();
+        return Craft::$app->getSiteUrl();
     }
 
     /**
@@ -150,7 +151,7 @@ class App
      */
     public function getSiteUid()
     {
-        return \Craft::$app->getSiteUid();
+        return Craft::$app->getSiteUid();
     }
 
     /**
@@ -160,7 +161,7 @@ class App
      */
     public function getLocale()
     {
-        return \Craft::$app->language;
+        return Craft::$app->language;
     }
 
     /**
@@ -170,7 +171,7 @@ class App
      */
     public function isSystemOn()
     {
-        return \Craft::$app->getIsSystemOn();
+        return Craft::$app->getIsSystemOn();
     }
 
     /**
@@ -180,7 +181,7 @@ class App
      */
     public function isUpdateInfoCached()
     {
-        return \Craft::$app->getUpdates()->getIsUpdateInfoCached();
+        return Craft::$app->getUpdates()->getIsUpdateInfoCached();
     }
 
     /**
@@ -190,7 +191,7 @@ class App
      */
     public function getTotalAvailableUpdates()
     {
-        return \Craft::$app->getUpdates()->getTotalAvailableUpdates();
+        return Craft::$app->getUpdates()->getTotalAvailableUpdates();
     }
 
     /**
@@ -200,7 +201,7 @@ class App
      */
     public function isCriticalUpdateAvailable()
     {
-        return \Craft::$app->getUpdates()->getIsCriticalUpdateAvailable();
+        return Craft::$app->getUpdates()->getIsCriticalUpdateAvailable();
     }
 
     /**
@@ -220,7 +221,7 @@ class App
             $uploadInBytes = min($uploadInBytes, $memoryLimit);
         }
 
-        $configLimit = (int)\Craft::$app->getConfig()->get('maxUploadFileSize');
+        $configLimit = (int)Craft::$app->getConfig()->get('maxUploadFileSize');
 
         if ($configLimit) {
             $uploadInBytes = min($uploadInBytes, $configLimit);

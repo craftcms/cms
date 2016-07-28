@@ -7,6 +7,7 @@
 
 namespace craft\app\web\twig\variables;
 
+use Craft;
 use craft\app\models\Section;
 
 /**
@@ -29,7 +30,7 @@ class Sections
      */
     public function getAllSections($indexBy = null)
     {
-        return \Craft::$app->getSections()->getAllSections($indexBy);
+        return Craft::$app->getSections()->getAllSections($indexBy);
     }
 
     /**
@@ -41,7 +42,7 @@ class Sections
      */
     public function getEditableSections($indexBy = null)
     {
-        return \Craft::$app->getSections()->getEditableSections($indexBy);
+        return Craft::$app->getSections()->getEditableSections($indexBy);
     }
 
     /**
@@ -51,7 +52,7 @@ class Sections
      */
     public function getTotalSections()
     {
-        return \Craft::$app->getSections()->getTotalSections();
+        return Craft::$app->getSections()->getTotalSections();
     }
 
     /**
@@ -61,7 +62,7 @@ class Sections
      */
     public function getTotalEditableSections()
     {
-        return \Craft::$app->getSections()->getTotalEditableSections();
+        return Craft::$app->getSections()->getTotalEditableSections();
     }
 
     /**
@@ -73,7 +74,7 @@ class Sections
      */
     public function getSectionById($sectionId)
     {
-        return \Craft::$app->getSections()->getSectionById($sectionId);
+        return Craft::$app->getSections()->getSectionById($sectionId);
     }
 
     /**
@@ -85,6 +86,6 @@ class Sections
      */
     public function getSectionByHandle($handle)
     {
-        return \Craft::$app->getSections()->getSectionByHandle($handle);
+        return Craft::$app->getSections()->getSectionByHandle($handle);
     }
 }

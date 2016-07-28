@@ -7,6 +7,8 @@
 
 namespace craft\app\web\twig\variables;
 
+use Craft;
+
 /**
  * Class Deprecator variable.
  *
@@ -25,6 +27,6 @@ class Deprecator
      */
     public function getTotalLogs()
     {
-        return \Craft::$app->getDeprecator()->getTotalLogs();
+        return Craft::$app->getDeprecator()->getTotalLogs();
     }
 }

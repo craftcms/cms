@@ -7,6 +7,7 @@
 
 namespace craft\app\web\twig\variables;
 
+use Craft;
 use craft\app\helpers\Number;
 use craft\app\helpers\Template;
 
@@ -33,7 +34,7 @@ class Feeds
     {
         $limit = Number::makeNumeric($limit);
         $offset = Number::makeNumeric($offset);
-        $items = \Craft::$app->getFeeds()->getFeedItems($url, $limit, $offset, $cacheDuration);
+        $items = Craft::$app->getFeeds()->getFeedItems($url, $limit, $offset, $cacheDuration);
 
         // Prevent everyone from having to use the |raw filter when outputting the title and content
         $rawProperties = ['title', 'content', 'summary'];

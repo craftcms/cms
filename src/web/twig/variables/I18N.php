@@ -7,6 +7,7 @@
 
 namespace craft\app\web\twig\variables;
 
+use Craft;
 use craft\app\i18n\Locale;
 use yii\helpers\FormatConverter;
 
@@ -28,7 +29,7 @@ class I18N
      */
     public function getAllLocales()
     {
-        return \Craft::$app->getI18n()->getAllLocales();
+        return Craft::$app->getI18n()->getAllLocales();
     }
 
     /**
@@ -38,7 +39,7 @@ class I18N
      */
     public function getAppLocales()
     {
-        return \Craft::$app->getI18n()->getAppLocales();
+        return Craft::$app->getI18n()->getAppLocales();
     }
 
     /**
@@ -48,7 +49,7 @@ class I18N
      */
     public function getCurrentLocale()
     {
-        return \Craft::$app->getI18n()->getLocaleById(\Craft::$app->language);
+        return Craft::$app->getI18n()->getLocaleById(Craft::$app->language);
     }
 
     /**
@@ -60,7 +61,7 @@ class I18N
      */
     public function getLocaleById($localeId)
     {
-        return \Craft::$app->getI18n()->getLocaleById($localeId);
+        return Craft::$app->getI18n()->getLocaleById($localeId);
     }
 
     /**
@@ -70,7 +71,7 @@ class I18N
      */
     public function getSiteLocales()
     {
-        return \Craft::$app->getI18n()->getSiteLocales();
+        return Craft::$app->getI18n()->getSiteLocales();
     }
 
     /**
@@ -80,7 +81,7 @@ class I18N
      */
     public function getSiteLocaleIds()
     {
-        return \Craft::$app->getI18n()->getSiteLocaleIds();
+        return Craft::$app->getI18n()->getSiteLocaleIds();
     }
 
     /**
@@ -90,7 +91,7 @@ class I18N
      */
     public function getPrimarySiteLocale()
     {
-        return \Craft::$app->getI18n()->getPrimarySiteLocale();
+        return Craft::$app->getI18n()->getPrimarySiteLocale();
     }
 
     /**
@@ -100,7 +101,7 @@ class I18N
      */
     public function getEditableLocales()
     {
-        return \Craft::$app->getI18n()->getEditableLocales();
+        return Craft::$app->getI18n()->getEditableLocales();
     }
 
     /**
@@ -110,7 +111,7 @@ class I18N
      */
     public function getEditableLocaleIds()
     {
-        return \Craft::$app->getI18n()->getEditableLocaleIds();
+        return Craft::$app->getI18n()->getEditableLocaleIds();
     }
 
     /**
@@ -124,7 +125,7 @@ class I18N
     {
         if ($localeId === null) {
             // Return the current application locale
-            return \Craft::$app->getLocale();
+            return Craft::$app->getLocale();
         }
 
         return new Locale($localeId);
@@ -137,7 +138,7 @@ class I18N
      */
     public function getDatepickerJsFormat()
     {
-        $locale = \Craft::$app->getLocale();
+        $locale = Craft::$app->getLocale();
         $format = $locale->getDateFormat(Locale::FORMAT_SHORT);
 
         return FormatConverter::convertDateIcuToJui($format);
@@ -150,7 +151,7 @@ class I18N
      */
     public function getTimepickerJsFormat()
     {
-        $locale = \Craft::$app->getLocale();
+        $locale = Craft::$app->getLocale();
         $format = $locale->getTimeFormat(Locale::FORMAT_SHORT);
 
         return FormatConverter::convertDateIcuToPhp($format);
@@ -163,6 +164,6 @@ class I18N
      */
     public function getIsIntlLoaded()
     {
-        return \Craft::$app->getI18n()->getIsIntlLoaded();
+        return Craft::$app->getI18n()->getIsIntlLoaded();
     }
 }

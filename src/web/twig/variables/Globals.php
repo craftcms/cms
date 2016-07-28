@@ -7,6 +7,7 @@
 
 namespace craft\app\web\twig\variables;
 
+use Craft;
 use craft\app\elements\GlobalSet;
 
 /**
@@ -29,7 +30,7 @@ class Globals
      */
     public function getAllSets($indexBy = null)
     {
-        return \Craft::$app->getGlobals()->getAllSets($indexBy);
+        return Craft::$app->getGlobals()->getAllSets($indexBy);
     }
 
     /**
@@ -41,7 +42,7 @@ class Globals
      */
     public function getEditableSets($indexBy = null)
     {
-        return \Craft::$app->getGlobals()->getEditableSets($indexBy);
+        return Craft::$app->getGlobals()->getEditableSets($indexBy);
     }
 
     /**
@@ -51,7 +52,7 @@ class Globals
      */
     public function getTotalSets()
     {
-        return \Craft::$app->getGlobals()->getTotalSets();
+        return Craft::$app->getGlobals()->getTotalSets();
     }
 
     /**
@@ -61,7 +62,7 @@ class Globals
      */
     public function getTotalEditableSets()
     {
-        return \Craft::$app->getGlobals()->getTotalEditableSets();
+        return Craft::$app->getGlobals()->getTotalEditableSets();
     }
 
     /**
@@ -74,7 +75,7 @@ class Globals
      */
     public function getSetById($globalSetId, $localeId = null)
     {
-        return \Craft::$app->getGlobals()->getSetById($globalSetId, $localeId);
+        return Craft::$app->getGlobals()->getSetById($globalSetId, $localeId);
     }
 
     /**
@@ -87,6 +88,6 @@ class Globals
      */
     public function getSetByHandle($globalSetHandle, $localeId = null)
     {
-        return \Craft::$app->getGlobals()->getSetByHandle($globalSetHandle, $localeId);
+        return Craft::$app->getGlobals()->getSetByHandle($globalSetHandle, $localeId);
     }
 }

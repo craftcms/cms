@@ -7,6 +7,7 @@
 
 namespace craft\app\web\twig\variables;
 
+use Craft;
 use craft\app\enums\ConfigCategory;
 
 /**
@@ -29,7 +30,7 @@ class Config
      */
     public function __isset($name)
     {
-        return \Craft::$app->getConfig()->exists($name, ConfigCategory::General);
+        return Craft::$app->getConfig()->exists($name, ConfigCategory::General);
     }
 
     /**
@@ -41,7 +42,7 @@ class Config
      */
     public function __get($name)
     {
-        return \Craft::$app->getConfig()->get($name, ConfigCategory::General);
+        return Craft::$app->getConfig()->get($name, ConfigCategory::General);
     }
 
     /**
@@ -54,7 +55,7 @@ class Config
      */
     public function get($name, $file = 'general')
     {
-        return \Craft::$app->getConfig()->get($name, $file);
+        return Craft::$app->getConfig()->get($name, $file);
     }
 
     /**
@@ -64,7 +65,7 @@ class Config
      */
     public function usePathInfo()
     {
-        return \Craft::$app->getConfig()->usePathInfo();
+        return Craft::$app->getConfig()->usePathInfo();
     }
 
     /**
@@ -74,7 +75,7 @@ class Config
      */
     public function omitScriptNameInUrls()
     {
-        return \Craft::$app->getConfig()->omitScriptNameInUrls();
+        return Craft::$app->getConfig()->omitScriptNameInUrls();
     }
 
     /**
@@ -84,6 +85,6 @@ class Config
      */
     public function getResourceTrigger()
     {
-        return \Craft::$app->getConfig()->getResourceTrigger();
+        return Craft::$app->getConfig()->getResourceTrigger();
     }
 }

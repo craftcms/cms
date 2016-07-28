@@ -7,6 +7,8 @@
 
 namespace craft\app\web\twig\variables;
 
+use Craft;
+
 /**
  * Update functions.
  *
@@ -25,7 +27,7 @@ class Updates
      */
     public function isUpdateInfoCached()
     {
-        return \Craft::$app->getUpdates()->getIsUpdateInfoCached();
+        return Craft::$app->getUpdates()->getIsUpdateInfoCached();
     }
 
     /**
@@ -35,7 +37,7 @@ class Updates
      */
     public function isCriticalUpdateAvailable()
     {
-        return \Craft::$app->getUpdates()->getIsCriticalUpdateAvailable();
+        return Craft::$app->getUpdates()->getIsCriticalUpdateAvailable();
     }
 
     /**
@@ -45,7 +47,7 @@ class Updates
      */
     public function getUnwritableFolders()
     {
-        return \Craft::$app->getUpdates()->getUnwritableFolders();
+        return Craft::$app->getUpdates()->getUnwritableFolders();
     }
 
     /**
@@ -55,7 +57,7 @@ class Updates
      */
     public function getUpdates($forceRefresh = false)
     {
-        return \Craft::$app->getUpdates()->getUpdates($forceRefresh);
+        return Craft::$app->getUpdates()->getUpdates($forceRefresh);
     }
 
     /**
@@ -84,11 +86,11 @@ class Updates
      */
     private function _getManualUpdateInfo($type)
     {
-        if (\Craft::$app->getUpdates()->getIsCraftDbMigrationNeeded()) {
+        if (Craft::$app->getUpdates()->getIsCraftDbMigrationNeeded()) {
             return 'Craft';
         }
 
-        $plugins = \Craft::$app->getUpdates()->getPluginsThatNeedDbUpdate();
+        $plugins = Craft::$app->getUpdates()->getPluginsThatNeedDbUpdate();
 
         if (!empty($plugins) && isset($plugins[0])) {
             if ($type == 'name') {

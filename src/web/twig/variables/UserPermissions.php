@@ -7,7 +7,9 @@
 
 namespace craft\app\web\twig\variables;
 
-\Craft::$app->requireEdition(\Craft::Client);
+use Craft;
+
+Craft::$app->requireEdition(Craft::Client);
 
 /**
  * User permission functions.
@@ -27,7 +29,7 @@ class UserPermissions
      */
     public function getAllPermissions()
     {
-        return \Craft::$app->getUserPermissions()->getAllPermissions();
+        return Craft::$app->getUserPermissions()->getAllPermissions();
     }
 
     /**
@@ -39,6 +41,6 @@ class UserPermissions
      */
     public function getGroupPermissionsByUserId($userId)
     {
-        return \Craft::$app->getUserPermissions()->getGroupPermissionsByUserId($userId);
+        return Craft::$app->getUserPermissions()->getGroupPermissionsByUserId($userId);
     }
 }

@@ -7,6 +7,8 @@
 
 namespace craft\app\web\twig\variables;
 
+use Craft;
+
 /**
  * Class ElementIndexes variable.
  *
@@ -28,6 +30,6 @@ class ElementIndexes
      */
     public function getSources($elementTypeClass, $context = 'index')
     {
-        return \Craft::$app->getElementIndexes()->getSources($elementTypeClass, $context);
+        return Craft::$app->getElementIndexes()->getSources($elementTypeClass, $context);
     }
 }

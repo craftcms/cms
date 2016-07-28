@@ -7,9 +7,10 @@
 
 namespace craft\app\web\twig\variables;
 
+use Craft;
 use craft\app\models\RebrandEmail;
 
-\Craft::$app->requireEdition(\Craft::Client);
+Craft::$app->requireEdition(Craft::Client);
 
 /**
  * Email functions.
@@ -29,7 +30,7 @@ class EmailMessages
      */
     public function getAllMessages()
     {
-        return \Craft::$app->getEmailMessages()->getAllMessages();
+        return Craft::$app->getEmailMessages()->getAllMessages();
     }
 
     /**
@@ -42,6 +43,6 @@ class EmailMessages
      */
     public function getMessage($key, $language = null)
     {
-        return \Craft::$app->getEmailMessages()->getMessage($key, $language);
+        return Craft::$app->getEmailMessages()->getMessage($key, $language);
     }
 }

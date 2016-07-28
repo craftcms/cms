@@ -7,6 +7,7 @@
 
 namespace craft\app\web\twig\variables;
 
+use Craft;
 use craft\app\base\FieldInterface;
 use craft\app\models\FieldGroup;
 use craft\app\models\FieldLayout;
@@ -34,7 +35,7 @@ class Fields
      */
     public function getAllGroups($indexBy = null)
     {
-        return \Craft::$app->getFields()->getAllGroups($indexBy);
+        return Craft::$app->getFields()->getAllGroups($indexBy);
     }
 
     /**
@@ -46,7 +47,7 @@ class Fields
      */
     public function getGroupById($groupId)
     {
-        return \Craft::$app->getFields()->getGroupById($groupId);
+        return Craft::$app->getFields()->getGroupById($groupId);
     }
 
     // Fields
@@ -61,7 +62,7 @@ class Fields
      */
     public function createField($config)
     {
-        return \Craft::$app->getFields()->createField($config);
+        return Craft::$app->getFields()->createField($config);
     }
 
     /**
@@ -73,7 +74,7 @@ class Fields
      */
     public function getFieldById($fieldId)
     {
-        return \Craft::$app->getFields()->getFieldById($fieldId);
+        return Craft::$app->getFields()->getFieldById($fieldId);
     }
 
     /**
@@ -85,7 +86,7 @@ class Fields
      */
     public function getFieldByHandle($handle)
     {
-        return \Craft::$app->getFields()->getFieldByHandle($handle);
+        return Craft::$app->getFields()->getFieldByHandle($handle);
     }
 
     /**
@@ -97,7 +98,7 @@ class Fields
      */
     public function getAllFields($indexBy = null)
     {
-        return \Craft::$app->getFields()->getAllFields($indexBy);
+        return Craft::$app->getFields()->getAllFields($indexBy);
     }
 
     /**
@@ -110,7 +111,7 @@ class Fields
      */
     public function getFieldsByGroupId($groupId, $indexBy = null)
     {
-        return \Craft::$app->getFields()->getFieldsByGroupId($groupId, $indexBy);
+        return Craft::$app->getFields()->getFieldsByGroupId($groupId, $indexBy);
     }
 
     /**
@@ -122,7 +123,7 @@ class Fields
      */
     public function getLayoutById($layoutId)
     {
-        return \Craft::$app->getFields()->getLayoutById($layoutId);
+        return Craft::$app->getFields()->getLayoutById($layoutId);
     }
 
     /**
@@ -134,7 +135,7 @@ class Fields
      */
     public function getLayoutByType($type)
     {
-        return \Craft::$app->getFields()->getLayoutByType($type);
+        return Craft::$app->getFields()->getLayoutByType($type);
     }
 
     /**
@@ -144,7 +145,7 @@ class Fields
      */
     public function getAllFieldTypes()
     {
-        return \Craft::$app->getFields()->getAllFieldTypes();
+        return Craft::$app->getFields()->getAllFieldTypes();
     }
 
     /**

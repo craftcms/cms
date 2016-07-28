@@ -7,6 +7,8 @@
 
 namespace craft\app\web\twig\variables;
 
+use Craft;
+
 /**
  * Plugin functions.
  *
@@ -25,7 +27,7 @@ class Plugins
      */
     public function getPluginInfo()
     {
-        return \Craft::$app->getPlugins()->getPluginInfo();
+        return Craft::$app->getPlugins()->getPluginInfo();
     }
 
     /**
@@ -37,6 +39,6 @@ class Plugins
      */
     public function getPluginIconSvg($pluginHandle)
     {
-        return \Craft::$app->getPlugins()->getPluginIconSvg($pluginHandle);
+        return Craft::$app->getPlugins()->getPluginIconSvg($pluginHandle);
     }
 }

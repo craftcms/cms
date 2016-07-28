@@ -7,6 +7,8 @@
 
 namespace craft\app\web\twig\variables;
 
+use Craft;
+
 /**
  * Settings functions.
  *
@@ -39,6 +41,6 @@ class SystemSettings
      */
     public function __get($category)
     {
-        return \Craft::$app->getSystemSettings()->getSettings($category);
+        return Craft::$app->getSystemSettings()->getSettings($category);
     }
 }

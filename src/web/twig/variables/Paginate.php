@@ -7,6 +7,7 @@
 
 namespace craft\app\web\twig\variables;
 
+use Craft;
 use craft\app\helpers\Url;
 
 /**
@@ -58,11 +59,11 @@ class Paginate
     public function getPageUrl($page)
     {
         if ($page >= 1 && $page <= $this->totalPages) {
-            $path = \Craft::$app->getRequest()->getPathInfo();
+            $path = Craft::$app->getRequest()->getPathInfo();
             $params = [];
 
             if ($page != 1) {
-                $pageTrigger = \Craft::$app->getConfig()->get('pageTrigger');
+                $pageTrigger = Craft::$app->getConfig()->get('pageTrigger');
 
                 if (!is_string($pageTrigger) || !strlen($pageTrigger)) {
                     $pageTrigger = 'p';

@@ -7,9 +7,10 @@
 
 namespace craft\app\web\twig\variables;
 
+use Craft;
 use craft\app\models\UserGroup;
 
-\Craft::$app->requireEdition(\Craft::Pro);
+Craft::$app->requireEdition(Craft::Pro);
 
 /**
  * User group functions.
@@ -31,7 +32,7 @@ class UserGroups
      */
     public function getAllGroups($indexBy = null)
     {
-        return \Craft::$app->getUserGroups()->getAllGroups($indexBy);
+        return Craft::$app->getUserGroups()->getAllGroups($indexBy);
     }
 
     /**
@@ -43,7 +44,7 @@ class UserGroups
      */
     public function getGroupById($groupId)
     {
-        return \Craft::$app->getUserGroups()->getGroupById($groupId);
+        return Craft::$app->getUserGroups()->getGroupById($groupId);
     }
 
     /**
@@ -55,6 +56,6 @@ class UserGroups
      */
     public function getGroupByHandle($groupHandle)
     {
-        return \Craft::$app->getUserGroups()->getGroupByHandle($groupHandle);
+        return Craft::$app->getUserGroups()->getGroupByHandle($groupHandle);
     }
 }

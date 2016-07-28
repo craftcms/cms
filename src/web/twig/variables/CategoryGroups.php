@@ -7,6 +7,7 @@
 
 namespace craft\app\web\twig\variables;
 
+use Craft;
 use craft\app\models\CategoryGroup;
 
 /**
@@ -27,7 +28,7 @@ class CategoryGroups
      */
     public function getAllGroupIds()
     {
-        return \Craft::$app->getCategories()->getAllGroupIds();
+        return Craft::$app->getCategories()->getAllGroupIds();
     }
 
     /**
@@ -37,7 +38,7 @@ class CategoryGroups
      */
     public function getEditableGroupIds()
     {
-        return \Craft::$app->getCategories()->getEditableGroupIds();
+        return Craft::$app->getCategories()->getEditableGroupIds();
     }
 
     /**
@@ -49,7 +50,7 @@ class CategoryGroups
      */
     public function getAllGroups($indexBy = null)
     {
-        return \Craft::$app->getCategories()->getAllGroups($indexBy);
+        return Craft::$app->getCategories()->getAllGroups($indexBy);
     }
 
     /**
@@ -61,7 +62,7 @@ class CategoryGroups
      */
     public function getEditableGroups($indexBy = null)
     {
-        return \Craft::$app->getCategories()->getEditableGroups($indexBy);
+        return Craft::$app->getCategories()->getEditableGroups($indexBy);
     }
 
     /**
@@ -71,7 +72,7 @@ class CategoryGroups
      */
     public function getTotalGroups()
     {
-        return \Craft::$app->getCategories()->getTotalGroups();
+        return Craft::$app->getCategories()->getTotalGroups();
     }
 
     /**
@@ -83,7 +84,7 @@ class CategoryGroups
      */
     public function getGroupById($groupId)
     {
-        return \Craft::$app->getCategories()->getGroupById($groupId);
+        return Craft::$app->getCategories()->getGroupById($groupId);
     }
 
     /**
@@ -95,6 +96,6 @@ class CategoryGroups
      */
     public function getGroupByHandle($groupHandle)
     {
-        return \Craft::$app->getCategories()->getGroupByHandle($groupHandle);
+        return Craft::$app->getCategories()->getGroupByHandle($groupHandle);
     }
 }
