@@ -136,9 +136,9 @@ class Mailer extends \yii\swiftmailer\Mailer
                 Craft::$app->language = $message->language;
             }
 
-            $message->setSubject(Craft::$app->getView()->renderString($subjectTemplate, $variables));
-            $message->setTextBody(Craft::$app->getView()->renderString($textBodyTemplate, $variables));
-            $message->setHtmlBody(Craft::$app->getView()->renderString($htmlBodyTemplate, $variables));
+            $message->setSubject(Craft::$app->getView()->renderString($subjectTemplate, $variables, true));
+            $message->setTextBody(Craft::$app->getView()->renderString($textBodyTemplate, $variables, true));
+            $message->setHtmlBody(Craft::$app->getView()->renderString($htmlBodyTemplate, $variables, true));
 
             Craft::$app->language = $language;
 
