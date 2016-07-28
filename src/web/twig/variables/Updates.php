@@ -84,7 +84,7 @@ class Updates
      */
     private function _getManualUpdateInfo($type)
     {
-        if (\Craft::$app->getUpdates()->isCraftDbMigrationNeeded()) {
+        if (\Craft::$app->getUpdates()->getIsCraftDbMigrationNeeded()) {
             return 'Craft';
         }
 

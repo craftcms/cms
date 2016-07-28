@@ -619,7 +619,7 @@ class Extension extends \Twig_Extension
         $globals['POS_READY'] = View::POS_READY;
         $globals['POS_LOAD'] = View::POS_LOAD;
 
-        if ($isInstalled && !Craft::$app->getUpdates()->isCraftDbMigrationNeeded()) {
+        if ($isInstalled && !Craft::$app->getUpdates()->getIsCraftDbMigrationNeeded()) {
             $globals['siteName'] = Craft::$app->getSiteName();
             $globals['siteUrl'] = Craft::$app->getSiteUrl();
 

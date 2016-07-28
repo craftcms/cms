@@ -174,7 +174,7 @@ class Application extends \yii\web\Application
         // Set the edition components
         $this->_setEditionComponents();
 
-        // isCraftDbMigrationNeeded will return true if we're in the middle of a manual or auto-update for Craft itself.
+        // getIsCraftDbMigrationNeeded will return true if we're in the middle of a manual or auto-update for Craft itself.
         // If we're in maintenance mode and it's not a site request, show the manual update template.
         if ($this->_isCraftUpdating()) {
             return $this->_processUpdateLogic($request) ?: $this->getResponse();

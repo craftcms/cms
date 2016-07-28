@@ -37,6 +37,7 @@ use yii\helpers\Markdown;
  *
  * @property boolean $hasCraftBuildChanged      Whether a different Craft build has been uploaded
  * @property boolean $isBreakpointUpdateNeeded  Whether the build stored in craft_info is less than the minimum required build on the file system
+ * @property boolean $isCraftDbMigrationNeeded  Whether Craft needs to run any database migrations
  * @property boolean $isCriticalUpdateAvailable Whether a critical update is available
  * @property boolean $isManualUpdateRequired    Whether a manual update is required
  * @property boolean $isPluginDbUpdateNeeded    Whether a plugin needs to run a database update
@@ -856,7 +857,7 @@ class Updates extends Component
      *
      * @return boolean
      */
-    public function isCraftDbMigrationNeeded()
+    public function getIsCraftDbMigrationNeeded()
     {
         if ($this->_isCraftDbMigrationNeeded === null) {
             $storedSchemaVersion = Craft::$app->getInfo('schemaVersion');

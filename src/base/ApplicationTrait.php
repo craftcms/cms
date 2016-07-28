@@ -1586,7 +1586,7 @@ trait ApplicationTrait
         /** @var \craft\app\web\Application|\craft\app\console\Application $this */
         $request = $this->getRequest();
 
-        if ($this->getUpdates()->isCraftDbMigrationNeeded() ||
+        if ($this->getUpdates()->getIsCraftDbMigrationNeeded() ||
             ($this->getIsInMaintenanceMode() && $request->getIsCpRequest()) ||
             $request->getActionSegments() == ['update', 'cleanUp'] ||
             $request->getActionSegments() == ['update', 'rollback']
