@@ -35,7 +35,7 @@ class Updates
      */
     public function isCriticalUpdateAvailable()
     {
-        return \Craft::$app->getUpdates()->isCriticalUpdateAvailable();
+        return \Craft::$app->getUpdates()->getIsCriticalUpdateAvailable();
     }
 
     /**

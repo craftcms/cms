@@ -47,7 +47,7 @@ class AppController extends Controller
 
         return $this->asJson([
             'total' => Craft::$app->getUpdates()->getTotalAvailableUpdates(),
-            'critical' => Craft::$app->getUpdates()->isCriticalUpdateAvailable()
+            'critical' => Craft::$app->getUpdates()->getIsCriticalUpdateAvailable()
         ]);
     }
 
