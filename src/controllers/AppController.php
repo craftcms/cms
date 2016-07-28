@@ -310,7 +310,7 @@ class AppController extends Controller
         $this->requirePostRequest();
         $this->requireAjaxRequest();
 
-        if (Craft::$app->hasWrongEdition()) {
+        if (Craft::$app->getHasWrongEdition()) {
             $licensedEdition = Craft::$app->getLicensedEdition();
             $success = Craft::$app->setEdition($licensedEdition);
         } else {

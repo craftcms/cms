@@ -47,7 +47,7 @@ class Cp
             // Invalid license?
             if ($licenseKeyStatus == LicenseKeyStatus::Invalid) {
                 $alerts[] = Craft::t('app', 'Your license key is invalid.');
-            } else if (Craft::$app->hasWrongEdition()) {
+            } else if (Craft::$app->getHasWrongEdition()) {
                 $alerts[] = Craft::t('app', 'You’re running Craft {edition} with a Craft {licensedEdition} license.', [
                         'edition' => Craft::$app->getEditionName(),
                         'licensedEdition' => Craft::$app->getLicensedEditionName()

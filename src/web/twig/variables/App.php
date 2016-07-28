@@ -69,7 +69,7 @@ class App
      */
     public function hasWrongEdition()
     {
-        return \Craft::$app->hasWrongEdition();
+        return \Craft::$app->getHasWrongEdition();
     }
 
     /**

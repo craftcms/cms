@@ -59,6 +59,7 @@ use yii\web\ServerErrorHttpException;
  * @property \craft\app\services\Fields          $fields           The fields service
  * @property Formatter                           $formatter        The formatter component
  * @property \craft\app\services\Globals         $globals          The globals service
+ * @property boolean                             $hasWrongEdition  Whether Craft is running with the wrong edition
  * @property I18N                                $i18n             The internationalization (i18n) component
  * @property \craft\app\services\Images          $images           The images service
  * @property \craft\app\i18n\Locale              $locale           The Locale object for the target language
@@ -371,7 +372,7 @@ trait ApplicationTrait
      *
      * @return boolean
      */
-    public function hasWrongEdition()
+    public function getHasWrongEdition()
     {
         /** @var \craft\app\web\Application|\craft\app\console\Application $this */
         $licensedEdition = $this->getLicensedEdition();
