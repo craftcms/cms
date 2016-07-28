@@ -33,6 +33,8 @@ use yii\base\UnknownPropertyException;
 /**
  * Asset represents an asset element.
  *
+ * @property boolean $hasThumb Whether the file has a thumbnail
+ *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
@@ -859,7 +861,7 @@ class Asset extends Element
      */
     public function getThumbUrl($size = 125)
     {
-        if ($this->hasThumb()) {
+        if ($this->getHasThumb()) {
             return Url::getResourceUrl(
                 'resized/'.$this->id.'/'.$size,
                 [
@@ -872,11 +874,11 @@ class Asset extends Element
     }
 
     /**
-     * Does this file have a thumbnail?
+     * Returns whether the file has a thumbnail.
      *
-     * @return bool
+     * @return boolean
      */
-    public function hasThumb()
+    public function getHasThumb()
     {
         if ($this->kind == 'image') {
             if ($this->getHeight() && $this->getWidth()) {
