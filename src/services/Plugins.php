@@ -125,7 +125,7 @@ class Plugins extends Component
         $this->_pluginsLoaded = true;
 
         // Fire an 'afterLoadPlugins' event
-        $this->trigger(static::EVENT_AFTER_LOAD_PLUGINS);
+        $this->trigger(self::EVENT_AFTER_LOAD_PLUGINS);
     }
 
     /**

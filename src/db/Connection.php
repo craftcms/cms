@@ -72,7 +72,7 @@ class Connection extends \yii\db\Connection
         }
 
         $event = new DbBackupEvent();
-        $this->trigger(static::EVENT_BEFORE_CREATE_BACKUP,
+        $this->trigger(self::EVENT_BEFORE_CREATE_BACKUP,
             $event
         );
 
@@ -81,7 +81,7 @@ class Connection extends \yii\db\Connection
                 $event->filePath = $backupFile;
 
                 // Fire an 'afterCreateBackup' event
-                $this->trigger(static::EVENT_AFTER_CREATE_BACKUP,
+                $this->trigger(self::EVENT_AFTER_CREATE_BACKUP,
                     $event
                 );
 

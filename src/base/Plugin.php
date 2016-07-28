@@ -359,7 +359,7 @@ class Plugin extends Module implements PluginInterface
     protected function beforeInstall()
     {
         $event = new Event();
-        $this->trigger(static::EVENT_BEFORE_INSTALL, $event);
+        $this->trigger(self::EVENT_BEFORE_INSTALL, $event);
 
         return $event->isValid;
     }
@@ -369,7 +369,7 @@ class Plugin extends Module implements PluginInterface
      */
     protected function afterInstall()
     {
-        $this->trigger(static::EVENT_AFTER_INSTALL, new Event());
+        $this->trigger(self::EVENT_AFTER_INSTALL, new Event());
     }
 
     /**
@@ -380,7 +380,7 @@ class Plugin extends Module implements PluginInterface
     protected function beforeUpdate()
     {
         $event = new Event();
-        $this->trigger(static::EVENT_BEFORE_UPDATE, $event);
+        $this->trigger(self::EVENT_BEFORE_UPDATE, $event);
 
         return $event->isValid;
     }
@@ -390,7 +390,7 @@ class Plugin extends Module implements PluginInterface
      */
     protected function afterUpdate()
     {
-        $this->trigger(static::EVENT_AFTER_UPDATE, new Event());
+        $this->trigger(self::EVENT_AFTER_UPDATE, new Event());
     }
 
     /**
@@ -401,7 +401,7 @@ class Plugin extends Module implements PluginInterface
     protected function beforeUninstall()
     {
         $event = new Event();
-        $this->trigger(static::EVENT_BEFORE_UNINSTALL, $event);
+        $this->trigger(self::EVENT_BEFORE_UNINSTALL, $event);
 
         return $event->isValid;
     }
@@ -411,7 +411,7 @@ class Plugin extends Module implements PluginInterface
      */
     protected function afterUninstall()
     {
-        $this->trigger(static::EVENT_AFTER_UNINSTALL, new Event());
+        $this->trigger(self::EVENT_AFTER_UNINSTALL, new Event());
     }
 
     /**

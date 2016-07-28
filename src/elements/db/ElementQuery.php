@@ -1811,7 +1811,7 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
         }
 
         // Fire an 'afterPopulateElement' event
-        $this->trigger(static::EVENT_AFTER_POPULATE_ELEMENT, new PopulateElementEvent([
+        $this->trigger(self::EVENT_AFTER_POPULATE_ELEMENT, new PopulateElementEvent([
             'element' => $element,
             'row' => $row
         ]));

@@ -190,7 +190,7 @@ class UserGroups extends Component
             'groupIds' => $groupIds
         ]);
 
-        $this->trigger(static::EVENT_BEFORE_ASSIGN_USER_TO_GROUPS, $event);
+        $this->trigger(self::EVENT_BEFORE_ASSIGN_USER_TO_GROUPS, $event);
 
         if ($event->isValid) {
             // Delete their existing groups
@@ -217,7 +217,7 @@ class UserGroups extends Component
             }
 
             // Fire an 'afterAssignUserToGroups' event
-            $this->trigger(static::EVENT_AFTER_ASSIGN_USER_TO_GROUPS, new AssignUserGroupsEvent([
+            $this->trigger(self::EVENT_AFTER_ASSIGN_USER_TO_GROUPS, new AssignUserGroupsEvent([
                 'userId' => $userId,
                 'groupIds' => $groupIds
             ]));
@@ -247,7 +247,7 @@ class UserGroups extends Component
                 'user' => $user
             ]);
 
-            $this->trigger(static::EVENT_BEFORE_ASSIGN_USER_TO_DEFAULT_GROUP, $event);
+            $this->trigger(self::EVENT_BEFORE_ASSIGN_USER_TO_DEFAULT_GROUP, $event);
 
             // Is the event is giving us the go-ahead?
             if ($event->isValid) {
@@ -255,7 +255,7 @@ class UserGroups extends Component
 
                 if ($success) {
                     // Fire an 'afterAssignUserToDefaultGroup' event
-                    $this->trigger(static::EVENT_AFTER_ASSIGN_USER_TO_DEFAULT_GROUP,
+                    $this->trigger(self::EVENT_AFTER_ASSIGN_USER_TO_DEFAULT_GROUP,
                         new UserEvent([
                             'user' => $user
                         ]));

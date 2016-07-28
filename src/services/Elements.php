@@ -353,7 +353,7 @@ class Elements extends Component
                 'element' => $element
             ]);
 
-            $this->trigger(static::EVENT_BEFORE_SAVE_ELEMENT, $event);
+            $this->trigger(self::EVENT_BEFORE_SAVE_ELEMENT, $event);
 
             // Is the event giving us the go-ahead?
             if ($event->isValid) {
@@ -567,7 +567,7 @@ class Elements extends Component
 
         if ($success) {
             // Fire an 'afterSaveElement' event
-            $this->trigger(static::EVENT_AFTER_SAVE_ELEMENT, new ElementEvent([
+            $this->trigger(self::EVENT_AFTER_SAVE_ELEMENT, new ElementEvent([
                 'element' => $element
             ]));
         } else {
@@ -808,7 +808,7 @@ class Elements extends Component
             }
 
             // Fire an 'afterMergeElements' event
-            $this->trigger(static::EVENT_AFTER_MERGE_ELEMENTS,
+            $this->trigger(self::EVENT_AFTER_MERGE_ELEMENTS,
                 new MergeElementsEvent([
                     'mergedElementId' => $mergedElementId,
                     'prevailingElementId' => $prevailingElementId
@@ -849,7 +849,7 @@ class Elements extends Component
 
         try {
             // Fire a 'beforeDeleteElements' event
-            $this->trigger(static::EVENT_BEFORE_DELETE_ELEMENTS,
+            $this->trigger(self::EVENT_BEFORE_DELETE_ELEMENTS,
                 new DeleteElementsEvent([
                     'elementIds' => $elementIds
                 ]));

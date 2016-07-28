@@ -354,7 +354,7 @@ class Structures extends Component
                     'element' => $element,
                 ]);
 
-                $this->trigger(static::EVENT_BEFORE_MOVE_ELEMENT, $event);
+                $this->trigger(self::EVENT_BEFORE_MOVE_ELEMENT, $event);
             }
 
             // Was there was no onBeforeMoveElement event, or is the event giving us the go-ahead?
@@ -391,7 +391,7 @@ class Structures extends Component
 
         if ($success && $mode == 'update') {
             // Fire an 'afterMoveElement' event
-            $this->trigger(static::EVENT_AFTER_MOVE_ELEMENT,
+            $this->trigger(self::EVENT_AFTER_MOVE_ELEMENT,
                 new MoveElementEvent([
                     'structureId' => $structureId,
                     'element' => $element,

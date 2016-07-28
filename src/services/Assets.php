@@ -255,7 +255,7 @@ class Assets extends Component
             $uriPath = $asset->getUri();
 
             $event = new AssetEvent(['asset' => $asset]);
-            $this->trigger(static::EVENT_BEFORE_UPLOAD_ASSET, $event);
+            $this->trigger(self::EVENT_BEFORE_UPLOAD_ASSET, $event);
 
 
             // Explicitly re-throw VolumeFileExistsException
@@ -380,7 +380,7 @@ class Assets extends Component
             'filename' => $filename
         ]);
 
-        $this->trigger(static::EVENT_BEFORE_REPLACE_ASSET, $event);
+        $this->trigger(self::EVENT_BEFORE_REPLACE_ASSET, $event);
 
         // Is the event preventing this from happening?
         if (!$event->isValid) {
@@ -448,7 +448,7 @@ class Assets extends Component
             'asset' => $asset,
             'filename' => $filename
         ]);
-        $this->trigger(static::EVENT_AFTER_REPLACE_ASSET, $event);
+        $this->trigger(self::EVENT_AFTER_REPLACE_ASSET, $event);
     }
 
     /**
@@ -475,7 +475,7 @@ class Assets extends Component
                 $event = new AssetEvent($this, [
                     'asset' => $asset
                 ]);
-                $this->trigger(static::EVENT_BEFORE_DELETE_ASSET, $event);
+                $this->trigger(self::EVENT_BEFORE_DELETE_ASSET, $event);
 
                 if ($event->isValid) {
                     if ($deleteFile) {
@@ -485,7 +485,7 @@ class Assets extends Component
                     Craft::$app->getElements()->deleteElementById($assetId);
                     Craft::$app->getAssetTransforms()->deleteAllTransformData($asset);
 
-                    $this->trigger(static::EVENT_AFTER_DELETE_ASSET, $event);
+                    $this->trigger(self::EVENT_AFTER_DELETE_ASSET, $event);
                 }
             }
         }
@@ -1559,7 +1559,7 @@ class Assets extends Component
             $event = new AssetEvent([
                 'asset' => $asset
             ]);
-            $this->trigger(static::EVENT_BEFORE_SAVE_ASSET, $event);
+            $this->trigger(self::EVENT_BEFORE_SAVE_ASSET, $event);
 
             // Is the event giving us the go-ahead?
             if ($event->isValid) {
@@ -1583,7 +1583,7 @@ class Assets extends Component
                 // Save the record
                 $assetRecord->save(false);
 
-                $this->trigger(static::EVENT_AFTER_SAVE_ASSET, $event);
+                $this->trigger(self::EVENT_AFTER_SAVE_ASSET, $event);
             } else {
                 throw new ActionCancelledException(Craft::t('app',
                     'A plugin cancelled the save operation for {asset}!',

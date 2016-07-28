@@ -190,7 +190,7 @@ class Entries extends Component
                 'entry' => $entry
             ]);
 
-            $this->trigger(static::EVENT_BEFORE_SAVE_ENTRY, $event);
+            $this->trigger(self::EVENT_BEFORE_SAVE_ENTRY, $event);
 
             // Is the event giving us the go-ahead?
             if ($event->isValid) {
@@ -264,7 +264,7 @@ class Entries extends Component
 
         if ($success) {
             // Fire an 'afterSaveEntry' event
-            $this->trigger(static::EVENT_AFTER_SAVE_ENTRY, new EntryEvent([
+            $this->trigger(self::EVENT_AFTER_SAVE_ENTRY, new EntryEvent([
                 'entry' => $entry
             ]));
         }
@@ -301,7 +301,7 @@ class Entries extends Component
                     'entry' => $entry
                 ]);
 
-                $this->trigger(static::EVENT_BEFORE_DELETE_ENTRY, $event);
+                $this->trigger(self::EVENT_BEFORE_DELETE_ENTRY, $event);
 
                 if ($event->isValid) {
                     $section = $entry->getSection();
@@ -336,7 +336,7 @@ class Entries extends Component
         if ($success) {
             foreach ($entries as $entry) {
                 // Fire an 'afterDeleteEntry' event
-                $this->trigger(static::EVENT_AFTER_DELETE_ENTRY,
+                $this->trigger(self::EVENT_AFTER_DELETE_ENTRY,
                     new EntryEvent([
                         'entry' => $entry
                     ]));

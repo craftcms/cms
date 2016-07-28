@@ -193,7 +193,7 @@ class EntryRevisions extends Component
             $draft->draftId = $draftRecord->id;
 
             // Fire an 'afterSaveDraft' event
-            $this->trigger(static::EVENT_AFTER_SAVE_DRAFT, new DraftEvent([
+            $this->trigger(self::EVENT_AFTER_SAVE_DRAFT, new DraftEvent([
                 'draft' => $draft
             ]));
 
@@ -225,7 +225,7 @@ class EntryRevisions extends Component
 
         if (Craft::$app->getEntries()->saveEntry($draft)) {
             // Fire an 'afterPublishDraft' event
-            $this->trigger(static::EVENT_AFTER_PUBLISH_DRAFT, new DraftEvent([
+            $this->trigger(self::EVENT_AFTER_PUBLISH_DRAFT, new DraftEvent([
                 'draft' => $draft
             ]));
 
@@ -255,7 +255,7 @@ class EntryRevisions extends Component
                 'draft' => $draft
             ]);
 
-            $this->trigger(static::EVENT_BEFORE_DELETE_DRAFT, $event);
+            $this->trigger(self::EVENT_BEFORE_DELETE_DRAFT, $event);
 
             // Is the event giving us the go-ahead?
             if ($event->isValid) {
@@ -278,7 +278,7 @@ class EntryRevisions extends Component
 
         if ($success) {
             // Fire an 'afterDeleteDraft' event
-            $this->trigger(static::EVENT_AFTER_DELETE_DRAFT, new DraftEvent([
+            $this->trigger(self::EVENT_AFTER_DELETE_DRAFT, new DraftEvent([
                 'draft' => $draft
             ]));
         }
@@ -397,7 +397,7 @@ class EntryRevisions extends Component
 
         if (Craft::$app->getEntries()->saveEntry($version)) {
             // Fire an 'afterRevertEntryToVersion' event
-            $this->trigger(static::EVENT_AFTER_REVERT_ENTRY_TO_VERSION,
+            $this->trigger(self::EVENT_AFTER_REVERT_ENTRY_TO_VERSION,
                 new EntryEvent([
                     'entry' => $version,
                 ]));

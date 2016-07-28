@@ -377,7 +377,7 @@ class Categories extends Component
                 'categoryGroup' => $group
             ]);
 
-            $this->trigger(static::EVENT_BEFORE_SAVE_GROUP, $event);
+            $this->trigger(self::EVENT_BEFORE_SAVE_GROUP, $event);
 
             // Make sure the event is giving us the go ahead
             if (!$event->isValid) {
@@ -577,7 +577,7 @@ class Categories extends Component
             }
 
             // Fire an 'afterSaveGroup' event
-            $this->trigger(static::EVENT_AFTER_SAVE_GROUP,
+            $this->trigger(self::EVENT_AFTER_SAVE_GROUP,
                 new CategoryGroupEvent([
                     'categoryGroup' => $group
                 ]));
@@ -613,7 +613,7 @@ class Categories extends Component
             'categoryGroup' => $group
         ]);
 
-        $this->trigger(static::EVENT_BEFORE_DELETE_GROUP, $event);
+        $this->trigger(self::EVENT_BEFORE_DELETE_GROUP, $event);
 
         // Make sure the event is giving us the go ahead
         if (!$event->isValid) {
@@ -651,7 +651,7 @@ class Categories extends Component
             $transaction->commit();
 
             // Fire an 'afterDeleteGroup' event
-            $this->trigger(static::EVENT_AFTER_DELETE_GROUP,
+            $this->trigger(self::EVENT_AFTER_DELETE_GROUP,
                 new CategoryGroupEvent([
                     'categoryGroup' => $group
                 ]));
@@ -766,7 +766,7 @@ class Categories extends Component
                 'category' => $category
             ]);
 
-            $this->trigger(static::EVENT_BEFORE_SAVE_CATEGORY, $event);
+            $this->trigger(self::EVENT_BEFORE_SAVE_CATEGORY, $event);
 
             // Is the event giving us the go-ahead?
             if ($event->isValid) {
@@ -813,7 +813,7 @@ class Categories extends Component
 
         if ($success) {
             // Fire an 'afterSaveCategory' event
-            $this->trigger(static::EVENT_AFTER_SAVE_CATEGORY,
+            $this->trigger(self::EVENT_AFTER_SAVE_CATEGORY,
                 new CategoryEvent([
                     'category' => $category
                 ]));
@@ -854,7 +854,7 @@ class Categories extends Component
         if ($success) {
             foreach ($categories as $category) {
                 // Fire an 'afterDeleteCategory' event
-                $this->trigger(static::EVENT_AFTER_DELETE_CATEGORY,
+                $this->trigger(self::EVENT_AFTER_DELETE_CATEGORY,
                     new CategoryEvent([
                         'category' => $category
                     ]));
@@ -1027,7 +1027,7 @@ class Categories extends Component
             }
 
             // Fire a 'beforeDeleteCategory' event
-            $this->trigger(static::EVENT_BEFORE_DELETE_CATEGORY,
+            $this->trigger(self::EVENT_BEFORE_DELETE_CATEGORY,
                 new CategoryEvent([
                     'category' => $category
                 ]));

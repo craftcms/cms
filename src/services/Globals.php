@@ -375,7 +375,7 @@ class Globals extends Component
                 'globalSet' => $globalSet
             ]);
 
-            $this->trigger(static::EVENT_BEFORE_SAVE_GLOBAL_CONTENT, $event);
+            $this->trigger(self::EVENT_BEFORE_SAVE_GLOBAL_CONTENT, $event);
 
             // Is the event giving us the go-ahead?
             if ($event->isValid) {
@@ -402,7 +402,7 @@ class Globals extends Component
 
         if ($success) {
             // Fire an 'afterSaveGlobalContent' event
-            $this->trigger(static::EVENT_AFTER_SAVE_GLOBAL_CONTENT,
+            $this->trigger(self::EVENT_AFTER_SAVE_GLOBAL_CONTENT,
                 new GlobalSetEvent([
                     'globalSet' => $globalSet
                 ]));

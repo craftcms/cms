@@ -547,7 +547,7 @@ class Updates extends Component
 
         try {
             // Fire a 'beforeUpdate' event and pass in the type
-            $this->trigger(static::EVENT_BEFORE_UPDATE, new UpdateEvent([
+            $this->trigger(self::EVENT_BEFORE_UPDATE, new UpdateEvent([
                 'type' => $manual ? 'manual' : 'auto'
             ]));
 
@@ -749,7 +749,7 @@ class Updates extends Component
         }
 
         // Fire an 'afterUpdate' event
-        $this->trigger(static::EVENT_AFTER_UPDATE, new Event());
+        $this->trigger(self::EVENT_AFTER_UPDATE, new Event());
     }
 
     /**
@@ -763,7 +763,7 @@ class Updates extends Component
     {
         try {
             // Fire an 'afterUpdateFail' event
-            $this->trigger(static::EVENT_AFTER_UPDATE_FAIL, new Event());
+            $this->trigger(self::EVENT_AFTER_UPDATE_FAIL, new Event());
 
             Craft::$app->getConfig()->maxPowerCaptain();
 

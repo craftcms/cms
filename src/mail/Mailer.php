@@ -170,7 +170,7 @@ class Mailer extends \yii\swiftmailer\Mailer
         // Either an exception was thrown or parent::send() returned false.
         if ($isSuccessful === false) {
             // Fire a 'SendEmailErrorEvent' event
-            $this->trigger(static::EVENT_SEND_EMAIL_ERROR, $event);
+            $this->trigger(self::EVENT_SEND_EMAIL_ERROR, $event);
 
             throw new SendEmailException(Craft::t('app', 'Email error: {error}', ['error' => $event->error]));
         }

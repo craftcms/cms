@@ -363,7 +363,7 @@ class Tags extends Component
                 'tag' => $tag
             ]);
 
-            $this->trigger(static::EVENT_BEFORE_SAVE_TAG, $event);
+            $this->trigger(self::EVENT_BEFORE_SAVE_TAG, $event);
 
             // Is the event giving us the go-ahead?
             if ($event->isValid) {
@@ -397,7 +397,7 @@ class Tags extends Component
 
         if ($success) {
             // Fire an 'afterSaveTag' event
-            $this->trigger(static::EVENT_AFTER_SAVE_TAG, new TagEvent([
+            $this->trigger(self::EVENT_AFTER_SAVE_TAG, new TagEvent([
                 'tag' => $tag
             ]));
         }

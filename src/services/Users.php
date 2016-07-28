@@ -377,7 +377,7 @@ class Users extends Component
                 'user' => $user
             ]);
 
-            $this->trigger(static::EVENT_BEFORE_SAVE_USER, $event);
+            $this->trigger(self::EVENT_BEFORE_SAVE_USER, $event);
 
             // Is the event is giving us the go-ahead?
             if ($event->isValid) {
@@ -433,7 +433,7 @@ class Users extends Component
 
         if ($success) {
             // Fire an 'afterSaveUser' event
-            $this->trigger(static::EVENT_AFTER_SAVE_USER, new UserEvent([
+            $this->trigger(self::EVENT_AFTER_SAVE_USER, new UserEvent([
                 'user' => $user
             ]));
 
@@ -775,7 +775,7 @@ class Users extends Component
                 'user' => $user,
             ]);
 
-            $this->trigger(static::EVENT_BEFORE_ACTIVATE_USER, $event);
+            $this->trigger(self::EVENT_BEFORE_ACTIVATE_USER, $event);
 
             // Is the event is giving us the go-ahead?
             if ($event->isValid) {
@@ -805,7 +805,7 @@ class Users extends Component
 
         if ($success) {
             // Fire an 'afterActivateUser' event
-            $this->trigger(static::EVENT_AFTER_ACTIVATE_USER, new UserEvent([
+            $this->trigger(self::EVENT_AFTER_ACTIVATE_USER, new UserEvent([
                 'user' => $user
             ]));
         }
@@ -867,7 +867,7 @@ class Users extends Component
                 'user' => $user,
             ]);
 
-            $this->trigger(static::EVENT_BEFORE_UNLOCK_USER, $event);
+            $this->trigger(self::EVENT_BEFORE_UNLOCK_USER, $event);
 
             // Is the event is giving us the go-ahead?
             if ($event->isValid) {
@@ -923,7 +923,7 @@ class Users extends Component
                 'user' => $user,
             ]);
 
-            $this->trigger(static::EVENT_BEFORE_SUSPEND_USER, $event);
+            $this->trigger(self::EVENT_BEFORE_SUSPEND_USER, $event);
 
             // Is the event is giving us the go-ahead?
             if ($event->isValid) {
@@ -949,7 +949,7 @@ class Users extends Component
 
         if ($success) {
             // Fire an 'afterSuspendUser' event
-            $this->trigger(static::EVENT_AFTER_SUSPEND_USER, new UserEvent([
+            $this->trigger(self::EVENT_AFTER_SUSPEND_USER, new UserEvent([
                 'user' => $user
             ]));
         }
@@ -975,7 +975,7 @@ class Users extends Component
                 'user' => $user,
             ]);
 
-            $this->trigger(static::EVENT_BEFORE_UNSUSPEND_USER, $event);
+            $this->trigger(self::EVENT_BEFORE_UNSUSPEND_USER, $event);
 
             // Is the event is giving us the go-ahead?
             if ($event->isValid) {
@@ -1001,7 +1001,7 @@ class Users extends Component
 
         if ($success) {
             // Fire an 'afterUnsuspendUser' event
-            $this->trigger(static::EVENT_AFTER_UNSUSPEND_USER, new UserEvent([
+            $this->trigger(self::EVENT_AFTER_UNSUSPEND_USER, new UserEvent([
                 'user' => $user
             ]));
         }
@@ -1033,7 +1033,7 @@ class Users extends Component
                 'transferContentTo' => $transferContentTo
             ]);
 
-            $this->trigger(static::EVENT_BEFORE_DELETE_USER, $event);
+            $this->trigger(self::EVENT_BEFORE_DELETE_USER, $event);
 
             // Is the event is giving us the go-ahead?
             if ($event->isValid) {
@@ -1097,7 +1097,7 @@ class Users extends Component
 
         if ($success) {
             // Fire an 'afterDeleteUser' event
-            $this->trigger(static::EVENT_AFTER_DELETE_USER,
+            $this->trigger(self::EVENT_AFTER_DELETE_USER,
                 new DeleteUserEvent([
                     'user' => $user,
                     'transferContentTo' => $transferContentTo
@@ -1343,7 +1343,7 @@ class Users extends Component
                     'user' => $user
                 ]);
 
-                $this->trigger(static::EVENT_BEFORE_SET_PASSWORD, $event);
+                $this->trigger(self::EVENT_BEFORE_SET_PASSWORD, $event);
 
                 // Is the event is giving us the go-ahead?
                 $validates = $event->isValid;
@@ -1379,7 +1379,7 @@ class Users extends Component
 
         if ($success) {
             // Fire an 'afterSetPassword' event
-            $this->trigger(static::EVENT_AFTER_SET_PASSWORD, new UserEvent([
+            $this->trigger(self::EVENT_AFTER_SET_PASSWORD, new UserEvent([
                 'user' => $user
             ]));
         }

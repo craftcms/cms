@@ -390,7 +390,7 @@ class I18N extends \yii\i18n\I18N
             }
 
             // Fire an 'afterAddLocale' event
-            $this->trigger(static::EVENT_AFTER_ADD_LOCALE, new LocaleEvent([
+            $this->trigger(self::EVENT_AFTER_ADD_LOCALE, new LocaleEvent([
                 'localeId' => $localeId
             ]));
 
@@ -458,7 +458,7 @@ class I18N extends \yii\i18n\I18N
                 'transferContentTo' => $transferContentTo
             ]);
 
-            $this->trigger(static::EVENT_BEFORE_DELETE_LOCALE, $event);
+            $this->trigger(self::EVENT_BEFORE_DELETE_LOCALE, $event);
 
             // Is the event is giving us the go-ahead?
             if ($event->isValid) {
@@ -695,7 +695,7 @@ class I18N extends \yii\i18n\I18N
 
         if ($success) {
             // Fire an 'afterDeleteLocale' event
-            $this->trigger(static::EVENT_AFTER_DELETE_LOCALE,
+            $this->trigger(self::EVENT_AFTER_DELETE_LOCALE,
                 new DeleteLocaleEvent([
                     'localeId' => $localeId,
                     'transferContentTo' => $transferContentTo

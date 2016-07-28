@@ -193,7 +193,7 @@ class Content extends Component
             }
 
             // Fire an 'afterSaveContent' event
-            $this->trigger(static::EVENT_AFTER_SAVE_CONTENT, new ElementEvent([
+            $this->trigger(self::EVENT_AFTER_SAVE_CONTENT, new ElementEvent([
                 'element' => $element
             ]));
 

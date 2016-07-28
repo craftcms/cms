@@ -466,7 +466,7 @@ class Sections extends Component
                     'section' => $section
                 ]);
 
-                $this->trigger(static::EVENT_BEFORE_SAVE_SECTION, $event);
+                $this->trigger(self::EVENT_BEFORE_SAVE_SECTION, $event);
 
                 // Is the event giving us the go-ahead?
                 if ($event->isValid) {
@@ -773,7 +773,7 @@ class Sections extends Component
 
         if ($success) {
             // Fire an 'afterSaveSection' event
-            $this->trigger(static::EVENT_AFTER_SAVE_SECTION, new SectionEvent([
+            $this->trigger(self::EVENT_AFTER_SAVE_SECTION, new SectionEvent([
                 'section' => $section
             ]));
         }
@@ -806,7 +806,7 @@ class Sections extends Component
             'section' => $section
         ]);
 
-        $this->trigger(static::EVENT_BEFORE_DELETE_SECTION, $event);
+        $this->trigger(self::EVENT_BEFORE_DELETE_SECTION, $event);
 
         // Make sure the event is giving us the go ahead
         if (!$event->isValid) {
@@ -862,7 +862,7 @@ class Sections extends Component
             $transaction->commit();
 
             // Fire an 'afterDeleteSection' event
-            $this->trigger(static::EVENT_AFTER_DELETE_SECTION,
+            $this->trigger(self::EVENT_AFTER_DELETE_SECTION,
                 new SectionEvent([
                     'section' => $section
                 ]));
@@ -1020,7 +1020,7 @@ class Sections extends Component
                     'entryType' => $entryType,
                 ]);
 
-                $this->trigger(static::EVENT_BEFORE_SAVE_ENTRY_TYPE, $event);
+                $this->trigger(self::EVENT_BEFORE_SAVE_ENTRY_TYPE, $event);
 
                 // Is the event giving us the go-ahead?
                 if ($event->isValid) {
@@ -1072,7 +1072,7 @@ class Sections extends Component
 
         if ($success) {
             // Fire an 'afterSaveEntryType' event
-            $this->trigger(static::EVENT_AFTER_SAVE_ENTRY_TYPE,
+            $this->trigger(self::EVENT_AFTER_SAVE_ENTRY_TYPE,
                 new EntryTypeEvent([
                     'entryType' => $entryType
                 ]));
