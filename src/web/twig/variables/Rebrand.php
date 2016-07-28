@@ -8,7 +8,7 @@
 namespace craft\app\web\twig\variables;
 
 use Craft;
-use craft\app\helpers\Io;
+use craft\app\helpers\Io as IoHelper;
 use craft\app\helpers\Url;
 
 Craft::$app->requireEdition(Craft::Client);
@@ -132,7 +132,7 @@ class Rebrand
     private function _getImagePath($type)
     {
         if (!isset($this->_paths[$type])) {
-            $files = Io::getFolderContents(Craft::$app->getPath()->getRebrandPath().'/'.$type.'/', false);
+            $files = IoHelper::getFolderContents(Craft::$app->getPath()->getRebrandPath().'/'.$type.'/', false);
 
             if (!empty($files)) {
                 $this->_paths[$type] = $files[0];
@@ -154,6 +154,6 @@ class Rebrand
      */
     private function _getImageUrl($path, $type)
     {
-        return Url::getResourceUrl('rebrand/'.$type.'/'.Io::getFilename($path));
+        return Url::getResourceUrl('rebrand/'.$type.'/'.IoHelper::getFilename($path));
     }
 }

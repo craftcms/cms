@@ -42,6 +42,7 @@ use yii\di\ServiceLocator;
  * @property Updates         $updates
  * @property UserSession     $session
  * @property I18n            $i18n
+ * @property Io              $io
  * @property UserGroups      $userGroups
  * @property UserPermissions $userPermissions
  * @property EmailMessages   $emailMessages
@@ -83,6 +84,7 @@ class CraftVariable extends ServiceLocator
             'updates' => 'craft\app\web\twig\variables\Updates',
             'session' => 'craft\app\web\twig\variables\UserSession',
             'i18n' => 'craft\app\web\twig\variables\I18N',
+            'io' => 'craft\app\web\twig\variables\Io',
         ];
 
         switch (Craft::$app->getEdition()) {

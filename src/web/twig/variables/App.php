@@ -9,8 +9,6 @@ namespace craft\app\web\twig\variables;
 
 use Craft;
 use craft\app\dates\DateTime;
-use craft\app\helpers\App as AppHelper;
-use craft\app\helpers\Io;
 
 /**
  * Class App variable.
@@ -202,41 +200,5 @@ class App
     public function isCriticalUpdateAvailable()
     {
         return Craft::$app->getUpdates()->getIsCriticalUpdateAvailable();
-    }
-
-    /**
-     * Return max upload size in bytes.
-     *
-     * @return integer
-     */
-    public function getMaxUploadSize()
-    {
-        $maxUpload = AppHelper::getPhpConfigValueInBytes('upload_max_filesize');
-        $maxPost = AppHelper::getPhpConfigValueInBytes('post_max_size');
-        $memoryLimit = AppHelper::getPhpConfigValueInBytes('memory_limit');
-
-        $uploadInBytes = min($maxUpload, $maxPost);
-
-        if ($memoryLimit > 0) {
-            $uploadInBytes = min($uploadInBytes, $memoryLimit);
-        }
-
-        $configLimit = (int)Craft::$app->getConfig()->get('maxUploadFileSize');
-
-        if ($configLimit) {
-            $uploadInBytes = min($uploadInBytes, $configLimit);
-        }
-
-        return $uploadInBytes;
-    }
-
-    /**
-     * Returns a list of file kinds.
-     *
-     * @return array
-     */
-    public function getFileKinds()
-    {
-        return Io::getFileKinds();
     }
 }

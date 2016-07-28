@@ -10,7 +10,7 @@ namespace craft\app\web\twig\variables;
 use Craft;
 use craft\app\base\Plugin;
 use craft\app\helpers\Cp as CpHelper;
-use craft\app\helpers\Io;
+use craft\app\helpers\Io as IoHelper;
 use craft\app\helpers\StringHelper;
 use craft\app\helpers\Url;
 
@@ -89,8 +89,8 @@ class Cp
                     $lcHandle = StringHelper::toLowerCase($pluginHandle);
                     $iconPath = Craft::$app->getPath()->getPluginsPath().'/'.$lcHandle.'/resources/icon-mask.svg';
 
-                    if (Io::fileExists($iconPath)) {
-                        $iconSvg = Io::getFileContents($iconPath);
+                    if (IoHelper::fileExists($iconPath)) {
+                        $iconSvg = IoHelper::getFileContents($iconPath);
                     } else {
                         $iconSvg = false;
                     }

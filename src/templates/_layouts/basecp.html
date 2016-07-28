@@ -48,7 +48,7 @@
 			edition:               {{ CraftEdition }},
 			isLocalized:           {{ craft.isLocalized() ? 'true' : 'false' }},
 			translations:          {{ getTranslations()|raw }},
-			maxUploadSize:         {{ craft.app.getMaxUploadSize() }},
+			maxUploadSize:         {{ craft.io.getMaxUploadSize() }},
 			forceConfirmUnload:    {{ forceConfirmUnload is defined and forceConfirmUnload ? 'true' : 'false' }},
 			{% if craft.config.enableCsrfProtection %}
 				csrfTokenValue:        "{{ craft.request.getCsrfToken()|e('js') }}",
@@ -57,7 +57,7 @@
 			runTasksAutomatically: {{ craft.config.runTasksAutomatically ? 'true' : 'false' }},
 			slugWordSeparator:     "{{ craft.config.slugWordSeparator|e('js') }}",
 			limitAutoSlugsToAscii: {{ craft.config.limitAutoSlugsToAscii ? 'true' : 'false' }},
-			fileKinds:             {{ craft.app.getFileKinds()|json_encode|raw }},
+			fileKinds:             {{ craft.io.getFileKinds()|json_encode|raw }},
 			datepickerOptions: {
 				constrainInput: false,
 				dateFormat: "{{ craft.i18n.getDatepickerJsFormat()|e('js') }}",
