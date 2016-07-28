@@ -62,7 +62,7 @@
 {% block main %}
     <div class="grid" data-max-cols="3">
         <div class="item" data-position="left" data-colspan="2">
-            <form id="userform" class="pane" method="post" accept-charset="UTF-8" data-saveshortcut data-saveshortcut-redirect="{{ account.isCurrent() ? 'myaccount' : (CraftEdition == CraftPro and currentUser.can('editUsers') ? 'users/{id}' : 'dashboard') }}">
+            <form id="userform" class="pane" method="post" accept-charset="UTF-8" data-saveshortcut data-saveshortcut-redirect="{{ account.getIsCurrent() ? 'myaccount' : (CraftEdition == CraftPro and currentUser.can('editUsers') ? 'users/{id}' : 'dashboard') }}">
                 <input type="hidden" name="action" value="users/save-user">
                 <input type="hidden" name="redirect"
                        value="{{ CraftEdition == CraftPro and currentUser.can('editUsers') ? 'users' : 'dashboard' }}">
@@ -93,7 +93,7 @@
                             }) }}
                         {% endif %}
 
-                    {% elseif account.isCurrent() or currentUser.admin or currentUser.can('changeUserEmails') %}
+                    {% elseif account.getIsCurrent() or currentUser.admin or currentUser.can('changeUserEmails') %}
 
                         {{ forms.textField({
                             label: "Email"|t('app'),
@@ -105,7 +105,7 @@
                             errors: account.getErrors('email')
                         }) }}
 
-                        {% if account.isCurrent() %}
+                        {% if account.getIsCurrent() %}
                             {{ forms.textField({
                                 label: "New Password"|t('app'),
                                 id: 'newPassword',
@@ -131,7 +131,7 @@
                                 <select id="preferredLocale"
                                         name="preferredLocale">
                                     {% set allSiteLocales = craft.i18n.getSiteLocales %}
-                                    {% set userLocale = account.getPreferredLocale() ?: (account.isCurrent() ? craft.locale : allSiteLocales[0]) %}
+                                    {% set userLocale = account.getPreferredLocale() ?: (account.getIsCurrent() ? craft.locale : allSiteLocales[0]) %}
 
                                     {% for locale in allSiteLocales %}
                                         <option value="{{ locale.id }}"
@@ -147,7 +147,7 @@
                         }, localeInput) }}
                     {% endif %}
 
-                    {% if account.isCurrent() %}
+                    {% if account.getIsCurrent() %}
                         {{ forms.selectField({
                             label: "Week Start Day"|t('app'),
                             id: 'weekStartDay',
@@ -342,7 +342,7 @@
 {% endblock %}
 
 {% registerjs %}
-    {% if account.isCurrent() %}
+    {% if account.getIsCurrent() %}
         var changeSidebarPicture = true;
     {% else %}
         var changeSidebarPicture = false;

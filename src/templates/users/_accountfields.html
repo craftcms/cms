@@ -9,8 +9,8 @@
 		name: 'username',
 		value: (account is defined ? account.username : null),
 		autofocus: true,
-		required: (isNewAccount or (currentUser.admin or account.isCurrent()) ? true : false),
-		disabled: (isNewAccount or (currentUser.admin or account.isCurrent()) ? false : true),
+		required: (isNewAccount or (currentUser.admin or account.getIsCurrent()) ? true : false),
+		disabled: (isNewAccount or (currentUser.admin or account.getIsCurrent()) ? false : true),
 		errors: (account is defined ? account.getErrors('username') : null)
 	}) }}
 {% endif %}

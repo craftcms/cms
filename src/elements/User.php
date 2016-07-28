@@ -33,6 +33,7 @@ use yii\web\IdentityInterface;
 /**
  * User represents a user element.
  *
+ * @property boolean     $isCurrent       Whether this is the current logged-in user
  * @property string|null $preferredLocale The user’s preferred locale
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
@@ -992,7 +993,7 @@ class User extends Element implements IdentityInterface
      *
      * @return boolean
      */
-    public function isCurrent()
+    public function getIsCurrent()
     {
         if ($this->id) {
             $currentUser = Craft::$app->getUser()->getIdentity();
@@ -1091,7 +1092,7 @@ class User extends Element implements IdentityInterface
      */
     public function getCpEditUrl()
     {
-        if ($this->isCurrent()) {
+        if ($this->getIsCurrent()) {
             return Url::getCpUrl('myaccount');
         }
 

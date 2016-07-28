@@ -83,7 +83,7 @@ EOT;
         $users = $query->all();
 
         foreach ($users as $user) {
-            if (!$user->isCurrent()) {
+            if (!$user->getIsCurrent()) {
                 Craft::$app->getUsers()->suspendUser($user);
             }
         }

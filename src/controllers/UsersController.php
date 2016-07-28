@@ -463,7 +463,7 @@ class UsersController extends Controller
                 case 'current': {
                     if ($user) {
                         // Make sure it's actually the current user
-                        if (!$user->isCurrent()) {
+                        if (!$user->getIsCurrent()) {
                             throw new BadRequestHttpException('Not the current user');
                         }
                     } else {
@@ -529,7 +529,7 @@ class UsersController extends Controller
         // Make sure they have permission to edit this user
         // ---------------------------------------------------------------------
 
-        if (!$user->isCurrent()) {
+        if (!$user->getIsCurrent()) {
             if ($isNewAccount) {
                 $this->requirePermission('registerUsers');
             } else {
@@ -594,7 +594,7 @@ class UsersController extends Controller
                 case User::STATUS_ACTIVE: {
                     $statusLabel = Craft::t('app', 'Active');
 
-                    if (!$user->isCurrent()) {
+                    if (!$user->getIsCurrent()) {
                         $statusActions[] = [
                             'action' => 'users/send-password-reset-email',
                             'label' => Craft::t('app',
@@ -614,7 +614,7 @@ class UsersController extends Controller
                 }
             }
 
-            if (!$user->isCurrent()) {
+            if (!$user->getIsCurrent()) {
                 if (Craft::$app->getUser()->getIsAdmin()) {
                     $loginActions[] = [
                         'action' => 'users/impersonate',
@@ -664,7 +664,7 @@ class UsersController extends Controller
         // ---------------------------------------------------------------------
 
         if (!$isNewAccount) {
-            if ($user->isCurrent()) {
+            if ($user->getIsCurrent()) {
                 $title = Craft::t('app', 'My Account');
             } else {
                 $title = Craft::t('app', '{user}’s Account',
@@ -741,7 +741,7 @@ class UsersController extends Controller
 
         Craft::$app->getView()->registerCssResource('css/account.css');
         Craft::$app->getView()->registerJsResource('js/AccountSettingsForm.js');
-        Craft::$app->getView()->registerJs('new Craft.AccountSettingsForm('.Json::encode($user->id).', '.($user->isCurrent() ? 'true' : 'false').');', View::POS_END);
+        Craft::$app->getView()->registerJs('new Craft.AccountSettingsForm('.Json::encode($user->id).', '.($user->getIsCurrent() ? 'true' : 'false').');', View::POS_END);
 
         Craft::$app->getView()->includeTranslations(
             'Please enter your current password.',
@@ -806,7 +806,7 @@ class UsersController extends Controller
                 throw new NotFoundHttpException('User not found');
             }
 
-            if (!$user->isCurrent()) {
+            if (!$user->getIsCurrent()) {
                 // Make sure they have permission to edit other users
                 $this->requirePermission('editUsers');
             }
@@ -845,7 +845,7 @@ class UsersController extends Controller
             }
         }
 
-        $isCurrentUser = $user->isCurrent();
+        $isCurrentUser = $user->getIsCurrent();
 
         if ($isCurrentUser) {
             // Remember the old username in case it changes
@@ -972,7 +972,7 @@ class UsersController extends Controller
             Craft::$app->getUsers()->saveUserPreferences($user, $preferences);
 
             // Is this the current user?
-            if ($user->isCurrent()) {
+            if ($user->getIsCurrent()) {
                 // Make sure these preferences make it to the main identity user
                 if ($user !== $currentUser) {
                     $currentUser->mergePreferences($preferences);
