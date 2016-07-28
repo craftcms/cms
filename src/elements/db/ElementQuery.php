@@ -196,11 +196,6 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
      */
     public $orderBy = 'elements.dateCreated desc';
 
-    /**
-     * @inheritdoc
-     */
-    public $limit;
-
     // Structure parameters
     // -------------------------------------------------------------------------
 
