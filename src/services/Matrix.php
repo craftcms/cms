@@ -254,7 +254,7 @@ class Matrix extends Component
 
                 // Get the block type record
                 $blockTypeRecord = $this->_getBlockTypeRecord($blockType);
-                $isNewBlockType = $blockType->isNew();
+                $isNewBlockType = $blockType->getIsNew();
 
                 if (!$isNewBlockType) {
                     // Get the old block type fields
@@ -514,7 +514,7 @@ class Matrix extends Component
                 }
 
                 foreach ($matrixField->getBlockTypes() as $blockType) {
-                    if (!$blockType->isNew()) {
+                    if (!$blockType->getIsNew()) {
                         unset($oldBlockTypesById[$blockType->id]);
                     }
                 }
@@ -910,7 +910,7 @@ class Matrix extends Component
      */
     private function _getBlockTypeRecord(MatrixBlockType $blockType)
     {
-        if (!$blockType->isNew()) {
+        if (!$blockType->getIsNew()) {
             if (!isset($this->_blockTypeRecordsById) || !array_key_exists($blockType->id, $this->_blockTypeRecordsById)) {
                 $this->_blockTypeRecordsById[$blockType->id] = MatrixBlockTypeRecord::findOne($blockType->id);
 

@@ -14,6 +14,8 @@ use craft\app\behaviors\FieldLayoutTrait;
 /**
  * MatrixBlockType model class.
  *
+ * @property boolean $isNew Whether this is a new block type
+ *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
@@ -131,11 +133,11 @@ class MatrixBlockType extends Model
     }
 
     /**
-     * Returns whether this is a new component.
+     * Returns whether this is a new block type.
      *
      * @return boolean
      */
-    public function isNew()
+    public function getIsNew()
     {
         return (!$this->id || strncmp($this->id, 'new', 3) === 0);
     }
