@@ -7,6 +7,7 @@
 
 namespace craft\app\web\twig\variables;
 
+use Craft;
 use craft\app\base\ElementInterface;
 
 /**
@@ -29,6 +30,6 @@ class Elements
      */
     public function getElementInstance($class)
     {
-        return new $class;
+        return Craft::$app->getElements()->createElement($class);
     }
 }
