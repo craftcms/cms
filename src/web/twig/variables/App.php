@@ -91,7 +91,7 @@ class App
      */
     public function canTestEditions()
     {
-        return Craft::$app->canTestEditions();
+        return Craft::$app->getCanTestEditions();
     }
 
     /**

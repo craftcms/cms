@@ -43,6 +43,7 @@ use yii\web\ServerErrorHttpException;
  * @property \craft\app\services\Assets          $assets             The assets service
  * @property \craft\app\services\AssetIndexer    $assetIndexing      The asset indexer service
  * @property \craft\app\services\AssetTransforms $assetTransforms    The asset transforms service
+ * @property boolean                             $canTestEditions    Whether Craft is running on a domain that is eligible to test out the editions
  * @property boolean                             $canUpgradeEdition  Whether Craft is eligible to be upgraded to a different edition
  * @property \craft\app\services\Categories      $categories         The categories service
  * @property \craft\app\services\Config          $config             The config service
@@ -382,7 +383,7 @@ trait ApplicationTrait
         /** @var \craft\app\web\Application|\craft\app\console\Application $this */
         $licensedEdition = $this->getLicensedEdition();
 
-        return ($licensedEdition !== null && $licensedEdition != $this->getEdition() && !$this->canTestEditions());
+        return ($licensedEdition !== null && $licensedEdition != $this->getEdition() && !$this->getCanTestEditions());
     }
 
     /**
@@ -462,7 +463,7 @@ trait ApplicationTrait
      *
      * @return boolean
      */
-    public function canTestEditions()
+    public function getCanTestEditions()
     {
         /** @var \craft\app\web\Application|\craft\app\console\Application $this */
         $request = $this->getRequest();

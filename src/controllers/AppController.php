@@ -164,7 +164,7 @@ class AppController extends Controller
             }
         }
 
-        $canTestEditions = Craft::$app->canTestEditions();
+        $canTestEditions = Craft::$app->getCanTestEditions();
 
         $modalHtml = Craft::$app->getView()->renderTemplate('_upgrademodal', [
             'editions' => $editions,
@@ -289,7 +289,7 @@ class AppController extends Controller
         }
 
         // If this is actually an upgrade, make sure that they are allowed to test edition upgrades
-        if ($edition > $licensedEdition && !Craft::$app->canTestEditions()) {
+        if ($edition > $licensedEdition && !Craft::$app->getCanTestEditions()) {
             throw new BadRequestHttpException('Craft is not permitted to test edition upgrades from this server');
         }
 
