@@ -40,6 +40,7 @@ use yii\helpers\Markdown;
  * @property boolean $isCriticalUpdateAvailable Whether a critical update is available
  * @property boolean $isManualUpdateRequired    Whether a manual update is required
  * @property boolean $isPluginDbUpdateNeeded    Whether a plugin needs to run a database update
+ * @property boolean $isSchemaVersionCompatible Whether the uploaded DB schema is equal to or greater than the installed schema
  * @property boolean $isUpdateInfoCached        Whether the update info is cached
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
@@ -839,11 +840,11 @@ class Updates extends Component
     }
 
     /**
-     * Returns whether the uploaded DB schema is equal to or greater than the installed schema
+     * Returns whether the uploaded DB schema is equal to or greater than the installed schema.
      *
      * @return boolean
      */
-    public function isSchemaVersionCompatible()
+    public function getIsSchemaVersionCompatible()
     {
         $storedSchemaVersion = Craft::$app->getInfo('schemaVersion');
 

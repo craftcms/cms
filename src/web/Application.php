@@ -154,7 +154,7 @@ class Application extends \yii\web\Application
         }
 
         // Makes sure that the uploaded files are compatible with the current database schema
-        if (!$this->getUpdates()->isSchemaVersionCompatible()) {
+        if (!$this->getUpdates()->getIsSchemaVersionCompatible()) {
             $this->_unregisterDebugModule();
 
             if ($request->getIsCpRequest()) {
