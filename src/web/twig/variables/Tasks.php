@@ -37,7 +37,7 @@ class Tasks
      */
     public function isTaskRunning()
     {
-        return \Craft::$app->getTasks()->isTaskRunning();
+        return \Craft::$app->getTasks()->getIsTaskRunning();
     }
 
     /**

@@ -26,6 +26,8 @@ use yii\web\Response;
  *
  * An instance of the Tasks service is globally accessible in Craft via [[Application::tasks `Craft::$app->getTasks()`]].
  *
+ * @property boolean $isTaskRunning Whether there is a task that is currently running
+ *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
@@ -226,7 +228,7 @@ class Tasks extends Component
     public function runPendingTasks()
     {
         // If we're already processing tasks, let's give it a break.
-        if ($this->isTaskRunning()) {
+        if ($this->getIsTaskRunning()) {
             Craft::info('Tasks are already running.', __METHOD__);
 
             return;
@@ -429,7 +431,7 @@ class Tasks extends Component
      *
      * @return boolean Whether there is a task that is currently running
      */
-    public function isTaskRunning()
+    public function getIsTaskRunning()
     {
         // Remember that a root task could appear to be stagnant if it has sub-tasks.
         return (new Query())
@@ -610,7 +612,7 @@ class Tasks extends Component
         ]);
 
         // Ignore if tasks are already running
-        if ($this->isTaskRunning()) {
+        if ($this->getIsTaskRunning()) {
             return;
         }
 

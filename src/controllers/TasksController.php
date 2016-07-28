@@ -44,7 +44,7 @@ class TasksController extends Controller
         $tasksService = Craft::$app->getTasks();
 
         // Make sure tasks aren't already running
-        if (!$tasksService->isTaskRunning()) {
+        if (!$tasksService->getIsTaskRunning()) {
             $task = $tasksService->getNextPendingTask();
 
             if ($task) {
@@ -108,7 +108,7 @@ class TasksController extends Controller
         $taskId = Craft::$app->getRequest()->getRequiredBodyParam('taskId');
         $task = Craft::$app->getTasks()->rerunTaskById($taskId);
 
-        if (!Craft::$app->getTasks()->isTaskRunning()) {
+        if (!Craft::$app->getTasks()->getIsTaskRunning()) {
             Json::sendJsonHeaders();
             $response = Craft::$app->getResponse();
             $response->content = Json::encode($task);
