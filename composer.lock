@@ -4,8 +4,8 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "d31816c2c2c55a0ca5fff8413e625c16",
-    "content-hash": "2650ab8ed854f1e409417b9816fe2173",
+    "hash": "f602e9f8f9f7b28805e63da303a4aa63",
+    "content-hash": "b2295bda18d3cc57fd8a8b6dfa0c23e4",
     "packages": [
         {
             "name": "aws/aws-sdk-php",
@@ -1945,17 +1945,11 @@
         },
         {
             "name": "yiisoft/yii2-debug",
-            "version": "2.0.6",
+            "version": "dev-master",
             "source": {
                 "type": "git",
-                "url": "https://github.com/yiisoft/yii2-debug.git",
-                "reference": "55ed2e853ed8050a34415f63a4da84f88a56f895"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/yiisoft/yii2-debug/zipball/55ed2e853ed8050a34415f63a4da84f88a56f895",
-                "reference": "55ed2e853ed8050a34415f63a4da84f88a56f895",
-                "shasum": ""
+                "url": "https://github.com/pixelandtonic/yii2-debug",
+                "reference": "74ad66f9a78e06e7093a89d527728bd461b72d3d"
             },
             "require": {
                 "yiisoft/yii2": ">=2.0.4",
@@ -1972,7 +1966,6 @@
                     "yii\\debug\\": ""
                 }
             },
-            "notification-url": "https://packagist.org/downloads/",
             "license": [
                 "BSD-3-Clause"
             ],
@@ -1988,7 +1981,14 @@
                 "debugger",
                 "yii2"
             ],
-            "time": "2016-03-17 03:50:19"
+            "support": {
+                "issues": "https://github.com/yiisoft/yii2-debug/issues",
+                "forum": "http://www.yiiframework.com/forum/",
+                "wiki": "http://www.yiiframework.com/wiki/",
+                "irc": "irc://irc.freenode.net/yii",
+                "source": "https://github.com/yiisoft/yii2-debug"
+            },
+            "time": "2016-07-28 13:04:55"
         },
         {
             "name": "yiisoft/yii2-swiftmailer",
@@ -2044,7 +2044,9 @@
     "packages-dev": [],
     "aliases": [],
     "minimum-stability": "RC",
-    "stability-flags": [],
+    "stability-flags": {
+        "yiisoft/yii2-debug": 20
+    },
     "prefer-stable": false,
     "prefer-lowest": false,
     "platform": {

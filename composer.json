@@ -21,12 +21,16 @@
         {
             "type": "git",
             "url": "https://github.com/pixelandtonic/pel"
+        },
+        {
+            "type": "git",
+            "url": "https://github.com/pixelandtonic/yii2-debug"
         }
     ],
     "require": {
         "php": ">=5.3.0",
         "yiisoft/yii2": "2.0.9",
-        "yiisoft/yii2-debug": "2.0.6",
+        "yiisoft/yii2-debug": "dev-master",
         "yiisoft/yii2-authclient": "2.0.6",
         "yiisoft/yii2-swiftmailer": "2.0.5",
         "simplepie/simplepie": "1.4.2",
