@@ -399,8 +399,8 @@ class AssetTransforms extends Component
     {
         $indexedAfterFileModified = $result['dateIndexed'] >= Db::prepareDateForDb($asset->dateModified);
         $indexedAfterTransformParameterChange =
-            (!$transform->isNamedTransform()
-                || ($transform->isNamedTransform()
+            (!$transform->getIsNamedTransform()
+                || ($transform->getIsNamedTransform()
                     && $result['dateIndexed'] >= Db::prepareDateForDb($transform->dimensionChangeTime)));
 
         if ($indexedAfterFileModified && $indexedAfterTransformParameterChange) {
@@ -510,7 +510,7 @@ class AssetTransforms extends Component
         if ($asset->getExtension() == $index->detectedFormat) {
             $possibleLocations = [$this->_getUnnamedTransformFolderName($transform)];
 
-            if ($transform->isNamedTransform()) {
+            if ($transform->getIsNamedTransform()) {
                 $possibleLocations[] = $this->_getNamedTransformFolderName($transform);
             }
 
@@ -528,7 +528,7 @@ class AssetTransforms extends Component
             foreach ($results as $result) {
                 // If this is a named transform and indexed before dimensions last changed, this is a stale transform
                 // and needs to go.
-                if ($transform->isNamedTransform() && $result['dateIndexed'] < $transform->dimensionChangeTime) {
+                if ($transform->getIsNamedTransform() && $result['dateIndexed'] < $transform->dimensionChangeTime) {
                     $transformUri = $asset->getFolder()->path.$this->getTransformSubpath($asset,
                             AssetTransformIndex::create($result));
                     $volume->deleteFile($transformUri);
@@ -1121,7 +1121,7 @@ class AssetTransforms extends Component
      */
     private function _getTransformFolderName(AssetTransform $transform)
     {
-        if ($transform->isNamedTransform()) {
+        if ($transform->getIsNamedTransform()) {
             return $this->_getNamedTransformFolderName($transform);
         }
 

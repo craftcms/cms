@@ -13,6 +13,8 @@ use craft\app\base\Model;
 /**
  * The AssetTransform model class.
  *
+ * @property boolean $isNamedTransform Whether this is a named transform
+ *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
@@ -151,11 +153,11 @@ class AssetTransform extends Model
     }
 
     /**
-     * Return true if the transform is a named one.
+     * Return whether this is a named transform
      *
      * @return boolean
      */
-    public function isNamedTransform()
+    public function getIsNamedTransform()
     {
         return !empty($this->name);
     }
