@@ -569,7 +569,7 @@ class Plugins extends Component
         }
 
         // If we're not updating, check if the plugin's version number changed, but not its schema version.
-        if (!Craft::$app->isInMaintenanceMode() && $this->hasPluginVersionNumberChanged($plugin) && !$this->doesPluginRequireDatabaseUpdate($plugin)) {
+        if (!Craft::$app->getIsInMaintenanceMode() && $this->hasPluginVersionNumberChanged($plugin) && !$this->doesPluginRequireDatabaseUpdate($plugin)) {
             // Update our record of the plugin's version number
             Craft::$app->getDb()->createCommand()
                 ->update(

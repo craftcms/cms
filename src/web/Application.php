@@ -136,7 +136,7 @@ class Application extends \yii\web\Application
         }
 
         // If the system in is maintenance mode and it's a site request, throw a 503.
-        if ($this->isInMaintenanceMode() && $request->getIsSiteRequest()) {
+        if ($this->getIsInMaintenanceMode() && $request->getIsSiteRequest()) {
             $this->_unregisterDebugModule();
             throw new ServiceUnavailableHttpException();
         }
