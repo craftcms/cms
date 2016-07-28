@@ -71,39 +71,44 @@ class CraftVariable extends ServiceLocator
     {
         // Set the core components
         $config['components'] = [
+            'cp' => 'craft\app\web\twig\variables\Cp',
+            'io' => 'craft\app\web\twig\variables\Io',
+            'routes' => 'craft\app\web\twig\variables\Routes',
+
+            // Deprecated
+            'categoryGroups' => 'craft\app\web\twig\variables\CategoryGroups',
             'config' => 'craft\app\web\twig\variables\Config',
+            'deprecator' => 'craft\app\web\twig\variables\Deprecator',
             'elementIndexes' => 'craft\app\web\twig\variables\ElementIndexes',
             'elements' => 'craft\app\web\twig\variables\Elements',
             'entryRevisions' => 'craft\app\web\twig\variables\EntryRevisions',
-            'categoryGroups' => 'craft\app\web\twig\variables\CategoryGroups',
-            'cp' => 'craft\app\web\twig\variables\Cp',
-            'deprecator' => 'craft\app\web\twig\variables\Deprecator',
-            'fields' => 'craft\app\web\twig\variables\Fields',
             'feeds' => 'craft\app\web\twig\variables\Feeds',
+            'fields' => 'craft\app\web\twig\variables\Fields',
             'globals' => 'craft\app\web\twig\variables\Globals',
-            'plugins' => 'craft\app\web\twig\variables\Plugins',
             'request' => 'craft\app\web\twig\variables\HttpRequest',
-            'routes' => 'craft\app\web\twig\variables\Routes',
+            'i18n' => 'craft\app\web\twig\variables\I18N',
+            'plugins' => 'craft\app\web\twig\variables\Plugins',
             'sections' => 'craft\app\web\twig\variables\Sections',
             'systemSettings' => 'craft\app\web\twig\variables\SystemSettings',
             'tasks' => 'craft\app\web\twig\variables\Tasks',
             'updates' => 'craft\app\web\twig\variables\Updates',
             'session' => 'craft\app\web\twig\variables\UserSession',
-            'i18n' => 'craft\app\web\twig\variables\I18N',
-            'io' => 'craft\app\web\twig\variables\Io',
         ];
 
         switch (Craft::$app->getEdition()) {
             /** @noinspection PhpMissingBreakStatementInspection */
             case Craft::Pro: {
                 $config['components'] = array_merge($config['components'], [
+                    // Deprecated
                     'userGroups' => 'craft\app\web\twig\variables\UserGroups',
                 ]);
             }
             case Craft::Client: {
                 $config['components'] = array_merge($config['components'], [
-                    'emailMessages' => 'craft\app\web\twig\variables\EmailMessages',
                     'rebrand' => 'craft\app\web\twig\variables\Rebrand',
+
+                    // Deprecated
+                    'emailMessages' => 'craft\app\web\twig\variables\EmailMessages',
                     'userPermissions' => 'craft\app\web\twig\variables\UserPermissions',
                 ]);
             }

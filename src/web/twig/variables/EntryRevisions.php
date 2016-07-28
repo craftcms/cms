@@ -14,13 +14,22 @@ use craft\app\models\EntryVersion;
 /**
  * Class EntryRevisions variable.
  *
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @author     Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ * @since      3.0
+ * @deprecated in 3.0
  */
 class EntryRevisions
 {
     // Public Methods
     // =========================================================================
+
+    /**
+     * Constructor
+     */
+    public function __construct()
+    {
+        Craft::$app->getDeprecator()->log('craft.entryRevisions', 'craft.entryRevisions has been deprecated. Use craft.app.entryRevisions instead.');
+    }
 
     // Drafts
     // -------------------------------------------------------------------------

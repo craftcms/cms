@@ -14,13 +14,22 @@ use yii\web\Cookie;
 /**
  * Request functions.
  *
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @author     Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ * @since      3.0
+ * @deprecated in 3.0
  */
 class HttpRequest
 {
     // Public Methods
     // =========================================================================
+
+    /**
+     * Constructor
+     */
+    public function __construct()
+    {
+        Craft::$app->getDeprecator()->log('craft.request', 'craft.request has been deprecated. Use craft.app.request instead.');
+    }
 
     /**
      * Returns whether this is a GET request.

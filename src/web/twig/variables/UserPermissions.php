@@ -14,13 +14,22 @@ Craft::$app->requireEdition(Craft::Client);
 /**
  * User permission functions.
  *
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @author     Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ * @since      3.0
+ * @deprecated in 3.0
  */
 class UserPermissions
 {
     // Public Methods
     // =========================================================================
+
+    /**
+     * Constructor
+     */
+    public function __construct()
+    {
+        Craft::$app->getDeprecator()->log('craft.userPermissions', 'craft.userPermissions has been deprecated. Use craft.app.userPermissions instead.');
+    }
 
     /**
      * Returns all of the known permissions, sorted by category.

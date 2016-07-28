@@ -13,13 +13,22 @@ use craft\app\base\TaskInterface;
 /**
  * Task functions.
  *
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @author     Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ * @since      3.0
+ * @deprecated in 3.0
  */
 class Tasks
 {
     // Public Methods
     // =========================================================================
+
+    /**
+     * Constructor
+     */
+    public function __construct()
+    {
+        Craft::$app->getDeprecator()->log('craft.tasks', 'craft.tasks has been deprecated. Use craft.app.tasks instead.');
+    }
 
     /**
      * Returns the currently running task.

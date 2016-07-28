@@ -13,13 +13,22 @@ use craft\app\base\ElementInterface;
 /**
  * Class Elements variable.
  *
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @author     Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ * @since      3.0
+ * @deprecated in 3.0
  */
 class Elements
 {
     // Public Methods
     // =========================================================================
+
+    /**
+     * Constructor
+     */
+    public function __construct()
+    {
+        Craft::$app->getDeprecator()->log('craft.elements', 'craft.elements has been deprecated. Use craft.app.elements instead.');
+    }
 
     /**
      * Returns an element type.

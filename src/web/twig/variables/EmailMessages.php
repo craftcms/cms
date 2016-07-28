@@ -15,13 +15,22 @@ Craft::$app->requireEdition(Craft::Client);
 /**
  * Email functions.
  *
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @author     Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ * @since      3.0
+ * @deprecated in 3.0
  */
 class EmailMessages
 {
     // Public Methods
     // =========================================================================
+
+    /**
+     * Constructor
+     */
+    public function __construct()
+    {
+        Craft::$app->getDeprecator()->log('craft.emailMessages', 'craft.emailMessages has been deprecated. Use craft.app.emailMessages instead.');
+    }
 
     /**
      * Returns all of the system email messages.

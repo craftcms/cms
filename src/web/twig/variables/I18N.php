@@ -14,13 +14,22 @@ use yii\helpers\FormatConverter;
 /**
  * Localization functions.
  *
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @author     Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ * @since      3.0
+ * @deprecated in 3.0
  */
 class I18N
 {
     // Public Methods
     // =========================================================================
+
+    /**
+     * Constructor
+     */
+    public function __construct()
+    {
+        Craft::$app->getDeprecator()->log('craft.i18n', 'craft.i18n has been deprecated. Use craft.app.i18n instead.');
+    }
 
     /**
      * Gets all known languages.

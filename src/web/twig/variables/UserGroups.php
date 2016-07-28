@@ -15,13 +15,22 @@ Craft::$app->requireEdition(Craft::Pro);
 /**
  * User group functions.
  *
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @author     Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ * @since      3.0
+ * @deprecated in 3.0
  */
 class UserGroups
 {
     // Public Methods
     // =========================================================================
+
+    /**
+     * Constructor
+     */
+    public function __construct()
+    {
+        Craft::$app->getDeprecator()->log('craft.userGroups', 'craft.userGroups has been deprecated. Use craft.app.userGroups instead.');
+    }
 
     /**
      * Returns all user groups.

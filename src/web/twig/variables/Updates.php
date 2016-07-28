@@ -12,13 +12,22 @@ use Craft;
 /**
  * Update functions.
  *
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @author     Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ * @since      3.0
+ * @deprecated in 3.0
  */
 class Updates
 {
     // Public Methods
     // =========================================================================
+
+    /**
+     * Constructor
+     */
+    public function __construct()
+    {
+        Craft::$app->getDeprecator()->log('craft.updates', 'craft.updates has been deprecated. Use craft.app.updates instead.');
+    }
 
     /**
      * Returns whether the update info is cached.

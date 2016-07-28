@@ -12,13 +12,22 @@ use Craft;
 /**
  * Plugin functions.
  *
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @author     Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ * @since      3.0
+ * @deprecated in 3.0
  */
 class Plugins
 {
     // Public Methods
     // =========================================================================
+
+    /**
+     * Constructor
+     */
+    public function __construct()
+    {
+        Craft::$app->getDeprecator()->log('craft.plugins', 'craft.plugins has been deprecated. Use craft.app.plugins instead.');
+    }
 
     /**
      * Returns info about all of the plugins saved in craft/plugins, whether they’re installed or not.

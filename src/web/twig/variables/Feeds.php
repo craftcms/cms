@@ -14,13 +14,22 @@ use craft\app\helpers\Template;
 /**
  * Class Feeds variable.
  *
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @author     Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ * @since      3.0
+ * @deprecated in 3.0
  */
 class Feeds
 {
     // Public Methods
     // =========================================================================
+
+    /**
+     * Constructor
+     */
+    public function __construct()
+    {
+        Craft::$app->getDeprecator()->log('craft.feeds', 'craft.feeds has been deprecated. Use craft.app.feeds instead.');
+    }
 
     /**
      * @param string  $url

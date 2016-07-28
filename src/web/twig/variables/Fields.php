@@ -15,13 +15,22 @@ use craft\app\models\FieldLayout;
 /**
  * Fields provides an API for accessing information about fields. It is accessible from templates via `craft.fields`.
  *
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @author     Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ * @since      3.0
+ * @deprecated in 3.0
  */
 class Fields
 {
     // Public Methods
     // =========================================================================
+
+    /**
+     * Constructor
+     */
+    public function __construct()
+    {
+        Craft::$app->getDeprecator()->log('craft.fields', 'craft.fields has been deprecated. Use craft.app.fields instead.');
+    }
 
     // Groups
     // -------------------------------------------------------------------------

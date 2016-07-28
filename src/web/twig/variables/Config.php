@@ -13,13 +13,22 @@ use craft\app\enums\ConfigCategory;
 /**
  * Class Config variable.
  *
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @author     Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ * @since      3.0
+ * @deprecated in 3.0
  */
 class Config
 {
     // Public Methods
     // =========================================================================
+
+    /**
+     * Constructor
+     */
+    public function __construct()
+    {
+        Craft::$app->getDeprecator()->log('craft.config', 'craft.config has been deprecated. Use craft.app.config instead.');
+    }
 
     /**
      * Returns whether a config item exists.

@@ -13,13 +13,22 @@ use craft\app\elements\User;
 /**
  * User session functions.
  *
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @author     Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ * @since      3.0
+ * @deprecated in 3.0
  */
 class UserSession
 {
     // Public Methods
     // =========================================================================
+
+    /**
+     * Constructor
+     */
+    public function __construct()
+    {
+        Craft::$app->getDeprecator()->log('craft.session', 'craft.session has been deprecated. Use craft.app.user instead.');
+    }
 
     /**
      * Returns whether the user is logged in.

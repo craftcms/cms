@@ -12,13 +12,22 @@ use Craft;
 /**
  * Class Deprecator variable.
  *
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @author     Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ * @since      3.0
+ * @deprecated in 3.0
  */
 class Deprecator
 {
     // Public Methods
     // =========================================================================
+
+    /**
+     * Constructor
+     */
+    public function __construct()
+    {
+        Craft::$app->getDeprecator()->log('craft.deprecator', 'craft.deprecator has been deprecated. Use craft.app.deprecator instead.');
+    }
 
     /**
      * Returns the total number of deprecation errors that have been logged.

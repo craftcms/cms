@@ -13,13 +13,22 @@ use craft\app\models\Section;
 /**
  * Class Sections variable.
  *
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @author     Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ * @since      3.0
+ * @deprecated in 3.0
  */
 class Sections
 {
     // Public Methods
     // =========================================================================
+
+    /**
+     * Constructor
+     */
+    public function __construct()
+    {
+        Craft::$app->getDeprecator()->log('craft.sections', 'craft.sections has been deprecated. Use craft.app.sections instead.');
+    }
 
     /**
      * Returns all sections.

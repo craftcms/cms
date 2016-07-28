@@ -13,13 +13,22 @@ use craft\app\elements\GlobalSet;
 /**
  * Globals functions.
  *
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @author     Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ * @since      3.0
+ * @deprecated in 3.0
  */
 class Globals
 {
     // Public Methods
     // =========================================================================
+
+    /**
+     * Constructor
+     */
+    public function __construct()
+    {
+        Craft::$app->getDeprecator()->log('craft.globals', 'craft.globals has been deprecated. Use craft.app.globals instead.');
+    }
 
     /**
      * Returns all global sets.
