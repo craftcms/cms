@@ -37,6 +37,7 @@ use yii\helpers\Markdown;
  *
  * @property boolean $hasCraftBuildChanged      Whether a different Craft build has been uploaded
  * @property boolean $isCriticalUpdateAvailable Whether a critical update is available
+ * @property boolean $isManualUpdateRequired    Whether a manual update is required
  * @property boolean $isUpdateInfoCached        Whether the update info is cached
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
@@ -180,9 +181,11 @@ class Updates extends Component
     }
 
     /**
+     * Returns whether a manual update is required.
+     *
      * @return mixed
      */
-    public function isManualUpdateRequired()
+    public function getIsManualUpdateRequired()
     {
         return (!empty($this->_updateModel->app->manualUpdateRequired));
     }
