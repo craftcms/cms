@@ -25,7 +25,8 @@ use yii\base\Component;
  *
  * An instance of the Images service is globally accessible in Craft via [[Application::images `Craft::$app->getImages()`]].
  *
- * @property boolean $isGd Whether image manipulations will be performed using GD or not
+ * @property boolean $isGd      Whether image manipulations will be performed using GD or not
+ * @property boolean $isImagick Whether image manipulations will be performed using Imagick or not
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
@@ -76,7 +77,7 @@ class Images extends Component
      *
      * @return boolean
      */
-    public function isImagick()
+    public function getIsImagick()
     {
         return !$this->getIsGd();
     }
@@ -264,7 +265,7 @@ class Images extends Component
         }
 
         // Quick and dirty, if possible
-        if ($this->isImagick() && method_exists('Imagick', 'setImageProperty')) {
+        if ($this->getIsImagick() && method_exists('Imagick', 'setImageProperty')) {
             $image = new \Imagick($filePath);
             $image->setImageOrientation(\Imagick::ORIENTATION_UNDEFINED);
             $image->writeImages($filePath, true);

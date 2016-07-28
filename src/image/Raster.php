@@ -335,7 +335,7 @@ class Raster extends Image
 
             $this->_image = $gif;
         } else {
-            if (Craft::$app->getImages()->isImagick() && Craft::$app->getConfig()->get('optimizeImageFilesize')) {
+            if (Craft::$app->getImages()->getIsImagick() && Craft::$app->getConfig()->get('optimizeImageFilesize')) {
                 $this->_image->smartResize(new Box($targetWidth,
                     $targetHeight), false, $this->_quality);
             } else {
@@ -433,7 +433,7 @@ class Raster extends Image
      */
     public function getIsTransparent()
     {
-        if (Craft::$app->getImages()->isImagick() && method_exists('Imagick', 'getImageAlphaChannel')) {
+        if (Craft::$app->getImages()->getIsImagick() && method_exists('Imagick', 'getImageAlphaChannel')) {
             return $this->_image->getImagick()->getImageAlphaChannel();
         }
 
