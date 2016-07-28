@@ -43,6 +43,7 @@ use yii\web\ServerErrorHttpException;
  * @property \craft\app\services\Assets          $assets             The assets service
  * @property \craft\app\services\AssetIndexer    $assetIndexing      The asset indexer service
  * @property \craft\app\services\AssetTransforms $assetTransforms    The asset transforms service
+ * @property boolean                             $canUpgradeEdition  Whether Craft is eligible to be upgraded to a different edition
  * @property \craft\app\services\Categories      $categories         The categories service
  * @property \craft\app\services\Config          $config             The config service
  * @property \craft\app\services\Content         $content            The content service
@@ -438,7 +439,7 @@ trait ApplicationTrait
      *
      * @return boolean
      */
-    public function canUpgradeEdition()
+    public function getCanUpgradeEdition()
     {
         /** @var \craft\app\web\Application|\craft\app\console\Application $this */
         // Only admins can upgrade Craft

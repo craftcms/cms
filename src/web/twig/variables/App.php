@@ -80,7 +80,7 @@ class App
      */
     public function canUpgradeEdition()
     {
-        return Craft::$app->canUpgradeEdition();
+        return Craft::$app->getCanUpgradeEdition();
     }
 
     /**
