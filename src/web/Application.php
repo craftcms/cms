@@ -181,7 +181,7 @@ class Application extends \yii\web\Application
         }
 
         // If there's a new version, but the schema hasn't changed, just update the info table
-        if ($this->getUpdates()->hasCraftBuildChanged()) {
+        if ($this->getUpdates()->getHasCraftBuildChanged()) {
             $this->getUpdates()->updateCraftVersionInfo();
         }
 

@@ -35,6 +35,8 @@ use yii\helpers\Markdown;
  *
  * An instance of the Updates service is globally accessible in Craft via [[Application::updates `Craft::$app->getUpdates()`]].
  *
+ * @property boolean $hasCraftBuildChanged Whether a different Craft build has been uploaded
+ *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
@@ -804,7 +806,7 @@ class Updates extends Component
      *
      * @return boolean
      */
-    public function hasCraftBuildChanged()
+    public function getHasCraftBuildChanged()
     {
         $storedBuild = Craft::$app->getInfo('build');
 
