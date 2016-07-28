@@ -36,6 +36,7 @@ use yii\helpers\Markdown;
  * An instance of the Updates service is globally accessible in Craft via [[Application::updates `Craft::$app->getUpdates()`]].
  *
  * @property boolean $hasCraftBuildChanged      Whether a different Craft build has been uploaded
+ * @property boolean $isBreakpointUpdateNeeded  Whether the build stored in craft_info is less than the minimum required build on the file system
  * @property boolean $isCriticalUpdateAvailable Whether a critical update is available
  * @property boolean $isManualUpdateRequired    Whether a manual update is required
  * @property boolean $isPluginDbUpdateNeeded    Whether a plugin needs to run a database update
@@ -824,12 +825,13 @@ class Updates extends Component
     }
 
     /**
-     * Returns true is the build stored in craft_info is less than the minimum required build on the file system. This
-     * effectively makes sure that a user cannot manually update past a manual breakpoint.
+     * Returns whether the build stored in craft_info is less than the minimum required build on the file system.
+     *
+     * This effectively makes sure that a user cannot manually update past a manual breakpoint.
      *
      * @return boolean
      */
-    public function isBreakpointUpdateNeeded()
+    public function getIsBreakpointUpdateNeeded()
     {
         $storedBuild = Craft::$app->getInfo('build');
 

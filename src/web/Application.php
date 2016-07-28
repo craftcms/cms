@@ -591,7 +591,7 @@ class Application extends \yii\web\Application
                 return $this->runAction('templates/manual-update');
             }
 
-            if ($this->getUpdates()->isBreakpointUpdateNeeded()) {
+            if ($this->getUpdates()->getIsBreakpointUpdateNeeded()) {
                 throw new HttpException(200, Craft::t('app', 'You need to be on at least Craft CMS {url} before you can manually update to Craft CMS {targetVersion} build {targetBuild}.',
                     [
                         'url' => '[build '.Craft::$app->minBuildRequired.']('.Craft::$app->minBuildUrl.')',
