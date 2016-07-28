@@ -110,7 +110,7 @@ class UpdateElementSlugsAndUris extends Task
 
             if ($childIds) {
                 $this->runSubTask([
-                    'type' => self::className(),
+                    'type' => static::className(),
                     'description' => Craft::t('app', 'Updating children'),
                     'elementId' => $childIds,
                     'elementType' => $this->elementType,

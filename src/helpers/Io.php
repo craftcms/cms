@@ -1416,7 +1416,7 @@ class Io
         $segments = explode('/', $path);
 
         foreach ($segments as &$segment) {
-            $segment = self::cleanFilename($segment, $onlyAscii, $separator);
+            $segment = static::cleanFilename($segment, $onlyAscii, $separator);
         }
 
         return implode('/', $segments);

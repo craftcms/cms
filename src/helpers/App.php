@@ -173,7 +173,7 @@ class App
      */
     public static function getMajorVersion($version)
     {
-        $version = self::normalizeVersionNumber($version);
+        $version = static::normalizeVersionNumber($version);
         $parts = explode('.', $version, 2);
 
         if (!empty($parts[0])) {

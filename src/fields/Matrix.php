@@ -183,7 +183,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface
 
         foreach (Craft::$app->getFields()->getAllFieldTypes() as $class) {
             // No Matrix-Inception, sorry buddy.
-            if ($class !== self::className()) {
+            if ($class !== static::className()) {
                 $fieldTypeOptions[] = [
                     'value' => $class,
                     'label' => $class::displayName()
@@ -482,7 +482,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface
 
         foreach (Craft::$app->getFields()->getAllFieldTypes() as $class) {
             // No Matrix-Inception, sorry buddy.
-            if ($class === self::className()) {
+            if ($class === static::className()) {
                 continue;
             }
 

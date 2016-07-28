@@ -45,7 +45,7 @@ class Json extends \yii\helpers\Json
      */
     public static function sendJsonHeaders()
     {
-        self::setJsonContentTypeHeader();
+        static::setJsonContentTypeHeader();
         Header::setNoCache();
     }
 

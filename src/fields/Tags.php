@@ -80,7 +80,7 @@ class Tags extends BaseRelationField
     {
         if (!($value instanceof ElementQueryInterface)) {
             /** @var Element $class */
-            $class = self::elementType();
+            $class = static::elementType();
             $value = $class::find()
                 ->id(false);
         }
@@ -90,7 +90,7 @@ class Tags extends BaseRelationField
         if ($tagGroup) {
             return Craft::$app->getView()->renderTemplate('_components/fieldtypes/Tags/input',
                 [
-                    'elementType' => self::elementType(),
+                    'elementType' => static::elementType(),
                     'id' => Craft::$app->getView()->formatInputId($this->handle),
                     'name' => $this->handle,
                     'elements' => $value,

@@ -1013,7 +1013,7 @@ class StringHelper extends \yii\helpers\StringHelper
     {
         if ($lower) {
             // Make it lowercase
-            $string = self::toLowerCase($string);
+            $string = static::toLowerCase($string);
         }
 
         if ($removePunctuation) {
@@ -1024,6 +1024,6 @@ class StringHelper extends \yii\helpers\StringHelper
         $string = preg_replace('/[\'"‘’“”\[\]\(\)\{\}:]/u', '', $string);
 
         // Split on the words and return
-        return self::splitOnWords($string);
+        return static::splitOnWords($string);
     }
 }

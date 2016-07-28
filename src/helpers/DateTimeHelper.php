@@ -72,7 +72,7 @@ class DateTimeHelper
 
             $locale = Craft::$app->getLocale();
 
-            if (!empty($value['timezone']) && ($normalizedTimeZone = self::normalizeTimeZone($value['timezone'])) !== false) {
+            if (!empty($value['timezone']) && ($normalizedTimeZone = static::normalizeTimeZone($value['timezone'])) !== false) {
                 $timeZone = $normalizedTimeZone;
             } else {
                 $timeZone = $defaultTimeZone;
@@ -185,7 +185,7 @@ class DateTimeHelper
                     $format .= 'e';
                     $date .= $defaultTimeZone;
                 }
-            } else if (self::isValidTimeStamp((int)$date)) {
+            } else if (static::isValidTimeStamp((int)$date)) {
                 $format = 'U';
             } else {
                 return false;
@@ -268,7 +268,7 @@ class DateTimeHelper
      */
     public static function toIso8601($date)
     {
-        $date = self::toDateTime($date);
+        $date = static::toDateTime($date);
 
         if ($date !== false) {
             return $date->format(\DateTime::ATOM);

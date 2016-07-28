@@ -134,7 +134,7 @@ class Assets extends BaseRelationField
         $sourceOptions = [];
 
         /** @var Asset $class */
-        $class = self::elementType();
+        $class = static::elementType();
 
         foreach ($class::getSources('settings') as $key => $source) {
             if (!isset($source['heading'])) {
@@ -170,7 +170,7 @@ class Assets extends BaseRelationField
                 'targetLocaleFieldHtml' => $this->getTargetLocaleFieldHtml(),
                 'viewModeFieldHtml' => $this->getViewModeFieldHtml(),
                 'field' => $this,
-                'displayName' => self::displayName(),
+                'displayName' => static::displayName(),
                 'fileKindOptions' => $fileKindOptions,
                 'isMatrix' => $isMatrix,
                 'defaultSelectionLabel' => static::defaultSelectionLabel(),

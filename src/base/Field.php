@@ -274,7 +274,7 @@ abstract class Field extends SavableComponent implements FieldInterface
     public function modifyElementsQuery(ElementQueryInterface $query, $value)
     {
         if ($value !== null) {
-            if (self::hasContentColumn()) {
+            if (static::hasContentColumn()) {
                 $handle = $this->handle;
                 /** @var ElementQuery $query */
                 $query->subQuery->andWhere(Db::parseParam('content.'.Craft::$app->getContent()->fieldColumnPrefix.$handle, $value, $query->subQuery->params));
