@@ -886,7 +886,7 @@ class Asset extends Element
                 if (in_array(
                         $this->getExtension(),
                         ['svg', 'bmp']
-                    ) && Craft::$app->getImages()->isGd()
+                    ) && Craft::$app->getImages()->getIsGd()
                 ) {
                     return false;
                 }

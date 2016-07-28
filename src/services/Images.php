@@ -25,6 +25,8 @@ use yii\base\Component;
  *
  * An instance of the Images service is globally accessible in Craft via [[Application::images `Craft::$app->getImages()`]].
  *
+ * @property boolean $isGd Whether image manipulations will be performed using GD or not
+ *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
@@ -43,7 +45,7 @@ class Images extends Component
      *
      * @return boolean|null
      */
-    public function isGd()
+    public function getIsGd()
     {
         if ($this->_isGd === null) {
             if (strtolower(Craft::$app->getConfig()->get('imageDriver')) == 'gd') {
@@ -76,7 +78,7 @@ class Images extends Component
      */
     public function isImagick()
     {
-        return !$this->isGd();
+        return !$this->getIsGd();
     }
 
     /**

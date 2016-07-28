@@ -925,7 +925,7 @@ class AssetTransforms extends Component
             // The only reasonable way to check for transparency is with Imagick. If Imagick is not present, then
             // we fallback to jpg
             $images = Craft::$app->getImages();
-            if ($images->isGd() || !method_exists('Imagick',
+            if ($images->getIsGd() || !method_exists('Imagick',
                     'getImageAlphaChannel')
             ) {
                 return 'jpg';

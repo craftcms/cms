@@ -98,7 +98,7 @@ class Raster extends Image
                 $this->_instance = new ImagickImagine();
             } else {
                 // Let's try to auto-detect.
-                if (Craft::$app->getImages()->isGd()) {
+                if (Craft::$app->getImages()->getIsGd()) {
                     $this->_instance = new GdImagine();
                 } else {
                     $this->_instance = new ImagickImagine();
@@ -168,7 +168,7 @@ class Raster extends Image
         }
 
         // For Imagick, convert CMYK to RGB, save and re-open.
-        if (!Craft::$app->getImages()->isGd()
+        if (!Craft::$app->getImages()->getIsGd()
             && method_exists($this->_image->getImagick(), 'getImageColorspace')
             && $this->_image->getImagick()->getImageColorspace() == \Imagick::COLORSPACE_CMYK
             && method_exists($this->_image->getImagick(), 'transformImageColorspace')
@@ -183,7 +183,7 @@ class Raster extends Image
         $this->_extension = Io::getExtension($path);
 
         if ($this->_extension == 'gif') {
-            if (!$imageService->isGd() && $this->_image->layers()) {
+            if (!$imageService->getIsGd() && $this->_image->layers()) {
                 $this->_isAnimatedGif = true;
             }
         }
@@ -589,7 +589,7 @@ class Raster extends Image
      */
     private function _getResizeFilter()
     {
-        return (Craft::$app->getImages()->isGd() ? Imagine::FILTER_UNDEFINED : Imagine::FILTER_LANCZOS);
+        return (Craft::$app->getImages()->getIsGd() ? Imagine::FILTER_UNDEFINED : Imagine::FILTER_LANCZOS);
     }
 
     /**
