@@ -4,8 +4,8 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "f602e9f8f9f7b28805e63da303a4aa63",
-    "content-hash": "b2295bda18d3cc57fd8a8b6dfa0c23e4",
+    "hash": "40abbc7e44fdbe0a490feb924794bf95",
+    "content-hash": "f59dd6dd34462e2b5a2ca629c72e59c2",
     "packages": [
         {
             "name": "aws/aws-sdk-php",
@@ -1948,8 +1948,14 @@
             "version": "dev-master",
             "source": {
                 "type": "git",
-                "url": "https://github.com/pixelandtonic/yii2-debug",
-                "reference": "74ad66f9a78e06e7093a89d527728bd461b72d3d"
+                "url": "https://github.com/yiisoft/yii2-debug.git",
+                "reference": "721045af916ed66cf217f4fe66137348a165e54c"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/yiisoft/yii2-debug/zipball/721045af916ed66cf217f4fe66137348a165e54c",
+                "reference": "721045af916ed66cf217f4fe66137348a165e54c",
+                "shasum": ""
             },
             "require": {
                 "yiisoft/yii2": ">=2.0.4",
@@ -1966,6 +1972,7 @@
                     "yii\\debug\\": ""
                 }
             },
+            "notification-url": "https://packagist.org/downloads/",
             "license": [
                 "BSD-3-Clause"
             ],
@@ -1981,14 +1988,7 @@
                 "debugger",
                 "yii2"
             ],
-            "support": {
-                "issues": "https://github.com/yiisoft/yii2-debug/issues",
-                "forum": "http://www.yiiframework.com/forum/",
-                "wiki": "http://www.yiiframework.com/wiki/",
-                "irc": "irc://irc.freenode.net/yii",
-                "source": "https://github.com/yiisoft/yii2-debug"
-            },
-            "time": "2016-07-28 13:04:55"
+            "time": "2016-07-29 12:59:20"
         },
         {
             "name": "yiisoft/yii2-swiftmailer",

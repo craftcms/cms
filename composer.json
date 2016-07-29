@@ -21,10 +21,6 @@
         {
             "type": "git",
             "url": "https://github.com/pixelandtonic/pel"
-        },
-        {
-            "type": "git",
-            "url": "https://github.com/pixelandtonic/yii2-debug"
         }
     ],
     "require": {
