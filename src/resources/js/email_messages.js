@@ -102,7 +102,7 @@ var MessageSettingsModal = Garnish.Modal.extend(
 			data[Craft.csrfTokenName] = Craft.csrfTokenValue;
 		}
 
-		$.post(Craft.getUrl('settings/email/_message_modal'), data, $.proxy(function(response, textStatus, jqXHR)
+		Craft.postActionRequest('email-messages/get-message-modal', data, $.proxy(function(response, textStatus)
 		{
 			if (textStatus == 'success')
 			{

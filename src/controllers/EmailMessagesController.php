@@ -38,6 +38,25 @@ class EmailMessagesController extends Controller
     }
 
     /**
+     * Returns the HTML for an email message modal.
+     *
+     * @return Response
+     */
+    public function actionGetMessageModal()
+    {
+        $this->requireAjaxRequest();
+
+        $request = Craft::$app->getRequest();
+        $key = $request->getRequiredBodyParam('key');
+        $localeId = $request->getBodyParam('locale');
+        $message = Craft::$app->getEmailMessages()->getMessage($key, $localeId);
+
+        return $this->renderTemplate('settings/email/_message_modal', [
+            'message' => $message,
+        ]);
+    }
+
+    /**
      * Saves an email message.
      *
      * @return Response
