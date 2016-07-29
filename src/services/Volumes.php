@@ -6,12 +6,12 @@ use craft\app\base\Volume;
 use craft\app\base\VolumeInterface;
 use craft\app\db\Query;
 use craft\app\errors\VolumeException;
-use craft\app\errors\InvalidComponentException;
+use craft\app\errors\MissingComponentException;
 use craft\app\helpers\Component as ComponentHelper;
 use craft\app\records\Volume as AssetVolumeRecord;
 use craft\app\volumes\AwsS3;
 use craft\app\volumes\GoogleCloud;
-use craft\app\volumes\InvalidVolume;
+use craft\app\volumes\MissingVolume;
 use craft\app\volumes\Local;
 use craft\app\volumes\Rackspace;
 use craft\app\volumes\Temp;
@@ -474,10 +474,10 @@ class Volumes extends Component
 
         try {
             return ComponentHelper::createComponent($config, static::VOLUME_INTERFACE);
-        } catch (InvalidComponentException $e) {
+        } catch (MissingComponentException $e) {
             $config['errorMessage'] = $e->getMessage();
 
-            return InvalidVolume::create($config);
+            return MissingVolume::create($config);
         }
     }
 

@@ -8,21 +8,21 @@
 namespace craft\app\fields;
 
 use craft\app\base\Field;
-use craft\app\base\InvalidComponentInterface;
-use craft\app\base\InvalidComponentTrait;
+use craft\app\base\MissingComponentInterface;
+use craft\app\base\MissingComponentTrait;
 
 /**
- * InvalidField represents a field with an invalid class.
+ * MissingField represents a field with an invalid class.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
-class InvalidField extends Field implements InvalidComponentInterface
+class MissingField extends Field implements MissingComponentInterface
 {
     // Traits
     // =========================================================================
 
-    use InvalidComponentTrait;
+    use MissingComponentTrait;
 
     // Public Methods
     // =========================================================================

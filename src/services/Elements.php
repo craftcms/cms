@@ -17,12 +17,12 @@ use craft\app\base\ElementInterface;
 use craft\app\elements\db\ElementQuery;
 use craft\app\elements\Entry;
 use craft\app\elements\GlobalSet;
-use craft\app\elements\InvalidElement;
+use craft\app\elements\MissingElement;
 use craft\app\elements\MatrixBlock;
 use craft\app\elements\Tag;
 use craft\app\elements\User;
 use craft\app\errors\ElementNotFoundException;
-use craft\app\errors\InvalidComponentException;
+use craft\app\errors\MissingComponentException;
 use craft\app\events\DeleteElementsEvent;
 use craft\app\events\ElementEvent;
 use craft\app\events\MergeElementsEvent;
@@ -122,10 +122,10 @@ class Elements extends Component
 
         try {
             return ComponentHelper::createComponent($config, self::ELEMENT_INTERFACE);
-        } catch (InvalidComponentException $e) {
+        } catch (MissingComponentException $e) {
             $config['errorMessage'] = $e->getMessage();
 
-            return InvalidElement::create($config);
+            return MissingElement::create($config);
         }
     }
 

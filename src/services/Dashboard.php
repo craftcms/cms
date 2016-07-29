@@ -10,14 +10,14 @@ namespace craft\app\services;
 use Craft;
 use craft\app\base\WidgetInterface;
 use craft\app\db\Query;
-use craft\app\errors\InvalidComponentException;
+use craft\app\errors\MissingComponentException;
 use craft\app\errors\WidgetNotFoundException;
 use craft\app\helpers\Component as ComponentHelper;
 use craft\app\records\Widget as WidgetRecord;
 use craft\app\base\Widget;
 use craft\app\widgets\Feed as FeedWidget;
 use craft\app\widgets\GetHelp as GetHelpWidget;
-use craft\app\widgets\InvalidWidget;
+use craft\app\widgets\MissingWidget;
 use craft\app\widgets\QuickPost as QuickPostWidget;
 use craft\app\widgets\RecentEntries as RecentEntriesWidget;
 use craft\app\widgets\Updates as UpdatesWidget;
@@ -82,10 +82,10 @@ class Dashboard extends Component
 
         try {
             return ComponentHelper::createComponent($config, self::WIDGET_INTERFACE);
-        } catch (InvalidComponentException $e) {
+        } catch (MissingComponentException $e) {
             $config['errorMessage'] = $e->getMessage();
 
-            return InvalidWidget::create($config);
+            return MissingWidget::create($config);
         }
     }
 

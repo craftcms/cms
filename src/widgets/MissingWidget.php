@@ -5,33 +5,33 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\tasks;
+namespace craft\app\widgets;
 
-use craft\app\base\Task;
-use craft\app\base\InvalidComponentInterface;
-use craft\app\base\InvalidComponentTrait;
+use craft\app\base\Widget;
+use craft\app\base\MissingComponentInterface;
+use craft\app\base\MissingComponentTrait;
 
 /**
- * InvalidWidget represents a widget with an invalid class.
+ * MissingWidget represents a widget with an invalid class.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
-class InvalidTask extends Task implements InvalidComponentInterface
+class MissingWidget extends Widget implements MissingComponentInterface
 {
     // Traits
     // =========================================================================
 
-    use InvalidComponentTrait;
+    use MissingComponentTrait;
 
-    // Protected Methods
+    // Public Methods
     // =========================================================================
 
     /**
      * @inheritdoc
      */
-    protected function getDefaultDescription()
+    public function getBodyHtml()
     {
-        return $this->type;
+        return false;
     }
 }

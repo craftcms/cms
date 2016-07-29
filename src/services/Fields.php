@@ -14,7 +14,7 @@ use craft\app\base\FieldInterface;
 use craft\app\db\Query;
 use craft\app\errors\FieldGroupNotFoundException;
 use craft\app\errors\FieldNotFoundException;
-use craft\app\errors\InvalidComponentException;
+use craft\app\errors\MissingComponentException;
 use craft\app\events\FieldLayoutEvent;
 use craft\app\fields\Assets as AssetsField;
 use craft\app\fields\Categories as CategoriesField;
@@ -23,7 +23,7 @@ use craft\app\fields\Color as ColorField;
 use craft\app\fields\Date as DateField;
 use craft\app\fields\Dropdown as DropdownField;
 use craft\app\fields\Entries as EntriesField;
-use craft\app\fields\InvalidField;
+use craft\app\fields\MissingField;
 use craft\app\fields\Lightswitch as LightswitchField;
 use craft\app\fields\Matrix as MatrixField;
 use craft\app\fields\MultiSelect as MultiSelectField;
@@ -314,10 +314,10 @@ class Fields extends Component
 
         try {
             return ComponentHelper::createComponent($config, self::FIELD_INTERFACE);
-        } catch (InvalidComponentException $e) {
+        } catch (MissingComponentException $e) {
             $config['errorMessage'] = $e->getMessage();
 
-            return InvalidField::create($config);
+            return MissingField::create($config);
         }
     }
 

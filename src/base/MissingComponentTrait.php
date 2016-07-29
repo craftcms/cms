@@ -8,12 +8,12 @@
 namespace craft\app\base;
 
 /**
- * InvalidComponentTrait implements the common methods and properties for invalid component classes.
+ * MissingComponentTrait implements the common methods and properties for classes implementing [[MissingComponentInterface]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
-trait InvalidComponentTrait
+trait MissingComponentTrait
 {
     // Static
     // =========================================================================

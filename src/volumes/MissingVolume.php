@@ -8,8 +8,8 @@
 namespace craft\app\volumes;
 
 use craft\app\base\Volume;
-use craft\app\base\InvalidComponentInterface;
-use craft\app\base\InvalidComponentTrait;
+use craft\app\base\MissingComponentInterface;
+use craft\app\base\MissingComponentTrait;
 
 /**
  * InvalidSource represents a volume with an invalid class.
@@ -17,12 +17,12 @@ use craft\app\base\InvalidComponentTrait;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
-class InvalidVolume extends Volume implements InvalidComponentInterface
+class MissingVolume extends Volume implements MissingComponentInterface
 {
     // Traits
     // =========================================================================
 
-    use InvalidComponentTrait;
+    use MissingComponentTrait;
 
     // Public Methods
     // =========================================================================

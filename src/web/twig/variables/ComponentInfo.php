@@ -8,7 +8,7 @@
 namespace craft\app\web\twig\variables;
 
 use craft\app\base\ComponentInterface;
-use craft\app\base\InvalidComponentInterface;
+use craft\app\base\MissingComponentInterface;
 use craft\app\base\SavableComponentInterface;
 use Exception;
 use yii\base\ErrorHandler;
@@ -64,7 +64,7 @@ class ComponentInfo
      */
     public function getIsInvalid()
     {
-        return (is_object($this->component) && $this->component instanceof InvalidComponentInterface);
+        return (is_object($this->component) && $this->component instanceof MissingComponentInterface);
     }
 
     /**
@@ -77,7 +77,7 @@ class ComponentInfo
         $component = $this->component;
 
         if ($this->getIsInvalid()) {
-            /** @var InvalidComponentInterface $component */
+            /** @var MissingComponentInterface $component */
             return $component->getType();
         }
 
@@ -94,7 +94,7 @@ class ComponentInfo
         $component = $this->component;
 
         if ($this->getIsInvalid()) {
-            /** @var InvalidComponentInterface $component */
+            /** @var MissingComponentInterface $component */
             $classNameParts = explode('\\', $component->getType());
             $displayName = array_pop($classNameParts);
 
@@ -114,7 +114,7 @@ class ComponentInfo
         $component = $this->component;
 
         if ($this->getIsInvalid()) {
-            /** @var InvalidComponentInterface $component */
+            /** @var MissingComponentInterface $component */
             $classNameParts = explode('\\', $component->getType());
             $handle = array_pop($classNameParts);
 

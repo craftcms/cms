@@ -8,21 +8,21 @@
 namespace craft\app\elements;
 
 use craft\app\base\Element;
-use craft\app\base\InvalidComponentInterface;
-use craft\app\base\InvalidComponentTrait;
+use craft\app\base\MissingComponentInterface;
+use craft\app\base\MissingComponentTrait;
 
 /**
- * InvalidElement represents an element with an invalid class.
+ * MissingElement represents an element with an invalid class.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
-class InvalidElement extends Element implements InvalidComponentInterface
+class MissingElement extends Element implements MissingComponentInterface
 {
     // Traits
     // =========================================================================
 
-    use InvalidComponentTrait;
+    use MissingComponentTrait;
 
     // Public Methods
     // =========================================================================

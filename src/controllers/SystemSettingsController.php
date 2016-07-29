@@ -9,7 +9,7 @@ namespace craft\app\controllers;
 
 use Craft;
 use craft\app\dates\DateTime;
-use craft\app\errors\InvalidComponentException;
+use craft\app\errors\MissingComponentException;
 use craft\app\helpers\Component;
 use craft\app\helpers\Template;
 use craft\app\helpers\Url;
@@ -419,7 +419,7 @@ class SystemSettingsController extends Controller
                 ], 'craft\app\mail\transportadaptors\TransportAdaptorInterface');
 
                 return $adapter;
-            } catch (InvalidComponentException $e) {
+            } catch (MissingComponentException $e) {
                 if (!$fallbackToPhp) {
                     return false;
                 }

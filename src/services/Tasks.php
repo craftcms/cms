@@ -11,13 +11,13 @@ use Craft;
 use craft\app\base\Task;
 use craft\app\base\TaskInterface;
 use craft\app\db\Query;
-use craft\app\errors\InvalidComponentException;
+use craft\app\errors\MissingComponentException;
 use craft\app\helpers\Component as ComponentHelper;
 use craft\app\helpers\Header;
 use craft\app\helpers\Json;
 use craft\app\helpers\Url;
 use craft\app\records\Task as TaskRecord;
-use craft\app\tasks\InvalidTask;
+use craft\app\tasks\MissingTask;
 use yii\base\Component;
 use yii\web\Response;
 
@@ -107,10 +107,10 @@ class Tasks extends Component
 
         try {
             return ComponentHelper::createComponent($config, self::TASK_INTERFACE);
-        } catch (InvalidComponentException $e) {
+        } catch (MissingComponentException $e) {
             $config['errorMessage'] = $e->getMessage();
 
-            return InvalidTask::create($config);
+            return MissingTask::create($config);
         }
     }
 
@@ -258,7 +258,7 @@ class Tasks extends Component
         $taskRecord = $this->_getTaskRecordById($task->id);
         $error = null;
 
-        if ($task instanceof InvalidTask) {
+        if ($task instanceof MissingTask) {
             $error = $task->errorMessage;
         } else {
             try {
