@@ -1,7 +1,7 @@
 {% import "_includes/forms" as forms %}
 {% set meta = meta is defined ? meta : false %}
 
-{% if not craft.config.useEmailAsUsername %}
+{% if not craft.app.config.get('useEmailAsUsername') %}
 	{{ forms.textField({
 		first: true,
 		label: "Username"|t('app'),
@@ -25,7 +25,7 @@
 			name: 'firstName',
 			value: (account is defined ? account.firstName : null),
 			errors: (account is defined ? account.getErrors('firstName') : null),
-			autofocus: craft.config.useEmailAsUsername
+			autofocus: craft.app.config.get('useEmailAsUsername')
 		}) }}
 {% if not meta %}
 	</div>

@@ -2,7 +2,7 @@
 {% set name = name is defined ? name -%}
 {% set value = value is defined ? value -%}
 
-{% registerjsresource 'lib/jquery.timepicker/jquery.timepicker'~(craft.config.useCompressedJs ? '.min' : '')~'.js' -%}
+{% registerjsresource 'lib/jquery.timepicker/jquery.timepicker'~(craft.app.config.get('useCompressedJs') ? '.min' : '')~'.js' -%}
 
 <div class="timewrapper">
 	{%- include "_includes/forms/text" with {

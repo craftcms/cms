@@ -37,7 +37,7 @@
 			label: "Attach a database backup?"|t('app'),
 			class: 'attachDbBackup',
 			name: 'attachDbBackup',
-			checked: craft.config.backupDbOnUpdate,
+			checked: craft.app.config.get('backupDbOnUpdate'),
 		}) }}
 
 		{{ forms.checkboxField({

@@ -135,7 +135,7 @@
 {% block body %}
 	<header id="global-sidebar">
 
-		{% if currentUser.admin and craft.config.devMode %}
+		{% if currentUser.admin and craft.app.config.get('devMode') %}
 			<div id="devmode" title="{{ 'Craft CMS is running in Dev Mode.'|t('app') }}"></div>
 		{% endif %}
 

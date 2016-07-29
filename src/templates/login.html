@@ -9,7 +9,7 @@
 	"Check your email for instructions to reset your password."
 %}
 
-{% set username = (craft.config.rememberUsernameDuration ? craft.session.rememberedUsername : '') %}
+{% set username = (craft.app.config.get('rememberUsernameDuration') ? craft.session.rememberedUsername : '') %}
 
 {% block body %}
 	<script type="text/javascript">
@@ -28,13 +28,13 @@
 		class="has-logo" style="background-image: url(\'{{ logo.url }}\'); background-size: {{ logo.width }}px {{ logo.height }}px; padding-top: {{ padding }}px; margin-top: -{{ round((353+padding)/2) }}px"
 				{%- endif %}>' +
 			'{% if not hasLogo -%}<h1>{{ siteName }}</h1>{%- endif %}'+
-			'{% set placeHolderText = (craft.config.useEmailAsUsername ? "Email"|t('app') : "Username or Email"|t('app')) %}' +
+			'{% set placeHolderText = (craft.app.config.get('useEmailAsUsername') ? "Email"|t('app') : "Username or Email"|t('app')) %}' +
 			'{{ forms.textField({ id: "loginName", name: "username", placeholder: placeHolderText, value: username })|e("js") }}' +
 
 			'<div id="login-fields" class="nested-fields">' +
 			'{{ forms.passwordField({ id: "password", name: "password", placeholder: "Password"|t('app') })|e("js") }}' +
 			'<a id="forgot-password">{{ "Forget your password?"|t('app') }}</a>' +
-			{% if craft.config.rememberedUserSessionDuration %}
+			{% if craft.app.config.get('rememberedUserSessionDuration') %}
 			'{{ forms.checkboxField({ id: "rememberMe", label: "Keep me logged in"|t('app') })|e("js") }}' +
 			{% endif %}
 			'</div>' +

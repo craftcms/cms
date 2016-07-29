@@ -24,7 +24,7 @@
 	{{ forms.lightswitchField({
 		first: true,
 		label: "System Status"|t,
-		warning: (craft.config.isSystemOn is sameas(true) or craft.config.isSystemOn is sameas(false) ? configWarning('isSystemOn')),
+		warning: (craft.app.config.get('isSystemOn') is sameas(true) or craft.app.config.get('isSystemOn') is sameas(false) ? configWarning('isSystemOn')),
 		id: 'on',
 		name: 'on',
 		on: info.on
@@ -32,7 +32,7 @@
 
 	{{ forms.textField({
 		label: "Site Name"|t,
-		warning: (craft.config.siteName ? configWarning('siteName')),
+		warning: (craft.app.config.get('siteName') ? configWarning('siteName')),
 		id: 'siteName',
 		name: 'siteName',
 		value: info.siteName,
@@ -43,7 +43,7 @@
 
 	{{ forms.textField({
 		label: "Site URL"|t,
-		warning: (craft.config.siteUrl ? configWarning('siteUrl')),
+		warning: (craft.app.config.get('siteUrl') ? configWarning('siteUrl')),
 		id: 'siteUrl',
 		class: 'ltr',
 		name: 'siteUrl',
@@ -54,7 +54,7 @@
 
 	{{ forms.selectField({
 		label: "Timezone"|t,
-		warning: (craft.config.timezone ? configWarning('timezone')),
+		warning: (craft.app.config.get('timezone') ? configWarning('timezone')),
 		id: 'timezone',
 		name: 'timezone',
 		value: info.timezone,
