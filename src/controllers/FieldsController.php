@@ -11,7 +11,6 @@ use Craft;
 use craft\app\base\FieldInterface;
 use craft\app\helpers\Url;
 use craft\app\models\FieldGroup;
-use craft\app\web\twig\variables\ComponentInfo;
 use craft\app\web\Controller;
 use yii\web\NotFoundHttpException;
 use yii\web\Response;
@@ -128,8 +127,6 @@ class FieldsController extends Controller
             $field = Craft::$app->getFields()->createField('craft\app\fields\PlainText');
         }
 
-        $fieldTypeInfo = new ComponentInfo($field);
-
         // Field types
         // ---------------------------------------------------------------------
 
@@ -200,7 +197,6 @@ class FieldsController extends Controller
         return $this->renderTemplate('settings/fields/_edit', [
             'fieldId' => $fieldId,
             'field' => $field,
-            'fieldTypeInfo' => $fieldTypeInfo,
             'fieldTypeOptions' => $fieldTypeOptions,
             'allFieldTypes' => $allFieldTypes,
             'groupId' => $groupId,

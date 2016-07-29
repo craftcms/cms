@@ -156,16 +156,4 @@ class Fields
     {
         return Craft::$app->getFields()->getAllFieldTypes();
     }
-
-    /**
-     * Returns info about a field type.
-     *
-     * @param string|FieldInterface $field A field or field type
-     *
-     * @return ComponentInfo Info about the field type
-     */
-    public function getFieldTypeInfo($field)
-    {
-        return new ComponentInfo($field);
-    }
 }

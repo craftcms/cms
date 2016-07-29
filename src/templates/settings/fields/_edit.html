@@ -74,7 +74,7 @@
 		name: 'type',
 		options: fieldTypeOptions,
 		value: field.getType(),
-		errors: (fieldTypeInfo.getIsInvalid() ? ["The field type “{type}” could not be found."|t('app', { type: field.getType() })] : null),
+		errors: (field is missing ? ["The field type “{type}” could not be found."|t('app', { type: field.getType() })] : null),
 		toggle: true
 	}) }}
 
