@@ -19,7 +19,7 @@
 ] %}
 
 
-{% set groups = craft.fields.getAllGroups('id') %}
+{% set groups = craft.app.fields.getAllGroups('id') %}
 
 {% if groupId is defined %}
 	{% if groups[groupId] is not defined %}
@@ -28,7 +28,7 @@
 
 	{% set fields = groups[groupId].getFields() %}
 {% else %}
-	{% set fields = craft.fields.getAllFields() %}
+	{% set fields = craft.app.fields.getAllFields() %}
 {% endif %}
 
 

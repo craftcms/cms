@@ -82,7 +82,7 @@
 		{% set isCurrent = (type == field.getType()) %}
 		<div id="{{ type|id }}"{% if not isCurrent %} class="hidden"{% endif %}>
 			{% namespace 'types['~type~']' %}
-				{% set _field = isCurrent ? field : craft.fields.createField(type) %}
+				{% set _field = isCurrent ? field : craft.app.fields.createField(type) %}
 				{{ _field.getSettingsHtml()|raw }}
 			{% endnamespace %}
 		</div>

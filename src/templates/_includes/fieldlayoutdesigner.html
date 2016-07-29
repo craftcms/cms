@@ -3,8 +3,8 @@
 	{% set pretendTabName = "Content"|t('app') %}
 {% endif %}
 
-{% set groups = craft.fields.getAllGroups('id') %}
-{% set fields = craft.fields.getAllFields('id') %}
+{% set groups = craft.app.fields.getAllGroups('id') %}
+{% set fields = craft.app.fields.getAllFields('id') %}
 
 {% includeTranslations
 	"Rename",
