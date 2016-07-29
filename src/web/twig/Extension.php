@@ -8,6 +8,7 @@
 namespace craft\app\web\twig;
 
 use Craft;
+use craft\app\base\MissingComponentInterface;
 use craft\app\dates\DateTime;
 use craft\app\helpers\DateTimeHelper;
 use craft\app\helpers\Db;
@@ -186,6 +187,18 @@ class Extension extends \Twig_Extension
             'ucwords' => new \Twig_Filter_Function('ucwords'),
             'values' => new \Twig_Filter_Function('array_values'),
             'without' => new \Twig_Filter_Method($this, 'withoutFilter'),
+        ];
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getTests()
+    {
+        return [
+            new \Twig_SimpleTest('missing', function($obj) {
+                return $obj instanceof MissingComponentInterface;
+            }),
         ];
     }
 
