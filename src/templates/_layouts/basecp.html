@@ -81,7 +81,7 @@
 			],
 			editableCategoryGroups: [
 				{% if isInstalled %}
-					{% for group in craft.app.categoryGroups.getEditableGroups() %}
+					{% for group in craft.app.categories.getEditableGroups() %}
 						{id: {{ group.id }}, name: "{{ group.name|t|e('js') }}", handle: "{{ group.handle|e('js') }}"}{% if not loop.last %},{% endif %}
 					{% endfor %}
 				{% endif %}
