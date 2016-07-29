@@ -18,7 +18,7 @@
 	{% registerjsresource "js/email_messages.js" %}
 
 	<div id="messages">
-		{% for message in craft.emailMessages.getAllMessages() %}
+		{% for message in craft.app.emailMessages.getAllMessages() %}
 			<h2>{{ message.heading }}</h2>
 			<div class="pane message" data-key="{{ message.key }}">
 				<div class="subject">{{ message.subject }}</div>

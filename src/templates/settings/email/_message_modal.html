@@ -4,7 +4,7 @@
 {% import "_includes/forms" as forms %}
 {% set key = craft.request.getPost('key') %}
 {% set localeId = craft.request.getPost('locale') %}
-{% set message = craft.emailMessages.getMessage(key, localeId) %}
+{% set message = craft.app.emailMessages.getMessage(key, localeId) %}
 
 
 <header class="header">
