@@ -80,7 +80,6 @@ class CraftVariable extends ServiceLocator
             'config' => 'craft\app\web\twig\variables\Config',
             'deprecator' => 'craft\app\web\twig\variables\Deprecator',
             'elementIndexes' => 'craft\app\web\twig\variables\ElementIndexes',
-            'elements' => 'craft\app\web\twig\variables\Elements',
             'entryRevisions' => 'craft\app\web\twig\variables\EntryRevisions',
             'feeds' => 'craft\app\web\twig\variables\Feeds',
             'fields' => 'craft\app\web\twig\variables\Fields',
