@@ -322,7 +322,7 @@ class CategoriesController extends Controller
         }
 
         // Enable Live Preview?
-        if (!Craft::$app->getRequest()->getIsMobileBrowser(true) && Craft::$app->getCategories()->isGroupTemplateValid($variables['group'])) {
+        if (!Craft::$app->getRequest()->isMobileBrowser(true) && Craft::$app->getCategories()->isGroupTemplateValid($variables['group'])) {
             Craft::$app->getView()->registerJs('Craft.LivePreview.init('.Json::encode([
                     'fields' => '#title-field, #fields > div > div > .field',
                     'extraFields' => '#settings',

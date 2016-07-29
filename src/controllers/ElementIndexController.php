@@ -380,7 +380,7 @@ class ElementIndexController extends BaseElementsController
      */
     private function _getAvailableActions()
     {
-        if (Craft::$app->getRequest()->getIsMobileBrowser()) {
+        if (Craft::$app->getRequest()->isMobileBrowser()) {
             return null;
         }
 

@@ -27,7 +27,6 @@ use yii\web\BadRequestHttpException;
  * @property boolean $isActionRequest        Whether a specific controller action was requested.
  * @property array   $actionSegments         The segments of the requested controller action path, if this is an [[getIsActionRequest() action request]].
  * @property boolean $isLivePreview          Whether this is a Live Preview request.
- * @property boolean $isMobileBrowser        Whether the request is coming from a mobile browser.
  * @property string  $hostName               The host name from the current request URL.
  * @property string  $queryStringWithoutPath The request’s query string, without the path parameter.
  *
@@ -422,7 +421,7 @@ class Request extends \yii\web\Request
      *
      * @return boolean Whether the request is coming from a mobile browser.
      */
-    public function getIsMobileBrowser($detectTablets = false)
+    public function isMobileBrowser($detectTablets = false)
     {
         if ($detectTablets) {
             $property = &$this->_isMobileOrTabletBrowser;

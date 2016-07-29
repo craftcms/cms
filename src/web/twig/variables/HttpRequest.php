@@ -259,7 +259,7 @@ class HttpRequest
      */
     public function isMobileBrowser($detectTablets = false)
     {
-        return Craft::$app->getRequest()->getIsMobileBrowser($detectTablets);
+        return Craft::$app->getRequest()->isMobileBrowser($detectTablets);
     }
 
     /**
