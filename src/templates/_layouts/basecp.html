@@ -1,7 +1,7 @@
 {% extends "_layouts/base" %}
 
 {# Give the body a .mobile class for mobile devices #}
-{% if craft.request.isMobileBrowser(true) %}
+{% if craft.app.request.isMobileBrowser(true) %}
 	{% set bodyClass = (bodyClass is defined and bodyClass ? bodyClass~' ' : '') ~ 'mobile' %}
 {% endif %}
 
@@ -28,20 +28,20 @@
 			baseSiteUrl:           "{{ siteUrl()|e('js') }}",
 			actionUrl:             "{{ actionUrl()|e('js') }}",
 			resourceUrl:           "{{ resourceUrl()|e('js') }}",
-			scriptName:            "{{ craft.request.getScriptName()|e('js') }}",
+			scriptName:            "{{ craft.app.request.getScriptFilename()|e('js') }}",
 			omitScriptNameInUrls:  {{ craft.app.config.omitScriptNameInUrls() ? 'true' : 'false' }},
 			usePathInfo:           {{ craft.app.config.usePathInfo() ? 'true' : 'false' }},
 			useCompressedJs:       {{ craft.app.config.get('useCompressedJs') ? 'true' : 'false' }},
 			resourceTrigger:       "{{ craft.app.config.getResourceTrigger()|e('js') }}",
 			actionTrigger:         "{{ craft.app.config.get('actionTrigger')|e('js') }}",
-			path:                  "{{ craft.request.getPath()|e('js') }}",
+			path:                  "{{ craft.app.request.getPath()|e('js') }}",
 			locale:                "{{ craft.locale|e('js') }}",
 			orientation:           "{{ orientation|e('js') }}",
 			left:                  "{{ orientation == 'ltr' ? 'left' : 'right' }}",
 			right:                 "{{ orientation == 'ltr' ? 'right' : 'left' }}",
 			datepickerFormat:      "{{ craft.i18n.getDatepickerJsFormat()|e('js') }}",
 			username:              {{ currentUser is defined and currentUser ? ('"'~currentUser.username|e('js')~'"')|raw : 'null' }},
-			remainingSessionTime:  {{ craft.request.getFirstSegment() not in ['updates', 'manualupdate'] ? craft.session.getRemainingSessionTime : 0 }},
+			remainingSessionTime:  {{ craft.app.request.getFirstSegment() not in ['updates', 'manualupdate'] ? craft.session.getRemainingSessionTime : 0 }},
 			Personal:              {{ CraftPersonal }},
 			Client:                {{ CraftClient }},
 			Pro:                   {{ CraftPro }},
@@ -51,7 +51,7 @@
 			maxUploadSize:         {{ craft.io.getMaxUploadSize() }},
 			forceConfirmUnload:    {{ forceConfirmUnload is defined and forceConfirmUnload ? 'true' : 'false' }},
 			{% if craft.app.config.get('enableCsrfProtection') %}
-				csrfTokenValue:        "{{ craft.request.getCsrfToken()|e('js') }}",
+				csrfTokenValue:        "{{ craft.app.request.getCsrfToken()|e('js') }}",
 				csrfTokenName:         "{{ craft.app.config.get('csrfTokenName')|e('js') }}",
 			{% endif %}
 			runTasksAutomatically: {{ craft.app.config.get('runTasksAutomatically') ? 'true' : 'false' }},

@@ -77,7 +77,7 @@
 
 				{% if craft.isLocalized() %}
 					<ul id="locales" class="pane">
-						{% set parentIdParam = craft.request.getParam('parentId.0') ?: craft.request.getParam('parentId') %}
+						{% set parentIdParam = craft.app.request.getParam('parentId.0') ?: craft.app.request.getParam('parentId') %}
 						{% for localeId in localeIds %}
 							{% set localeName = craft.i18n.getLocaleById(localeId).getDisplayName() %}
 							<li{% if localeId == category.locale %} class="sel"{% endif %}>
@@ -85,7 +85,7 @@
 									{{ localeName }}
 								{%- else -%}
 									{% set localeUrl = url(
-										'categories/'~groupHandle~'/'~craft.request.getSegment(3)~'/'~localeId,
+										'categories/'~groupHandle~'/'~craft.app.request.getSegment(3)~'/'~localeId,
 										(parentIdParam ? { parentId: parentIdParam })
 									) -%}
 									<a href="{{ localeUrl }}">{{ localeName }}</a>

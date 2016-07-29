@@ -6,7 +6,7 @@
 <input class="{{ class }}" type="color" id="{{ id }}"
 	{%- if name is defined %} name="{{ name }}"{% endif %}
 	{%- if value is defined %} value="{{ value }}"{% endif %}
-	{%- if autofocus is defined and autofocus and not craft.request.isMobileBrowser(true) %} autofocus{% endif %}
+	{%- if autofocus is defined and autofocus and not craft.app.request.isMobileBrowser(true) %} autofocus{% endif %}
 	{%- if disabled is defined and disabled %} disabled {% endif %}>
 
 {%- registerjsresource "lib/colorpicker/js/colorpicker.js" -%}

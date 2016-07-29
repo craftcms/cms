@@ -40,7 +40,7 @@
 			'</div>' +
 
 			'<div class="buttons">' +
-			'{# <div id="ssl-icon" class="disabled"><div class="{{ craft.request.isSecure ? "secure" : "insecure" }} icon"></div></div>#}' +
+			'{# <div id="ssl-icon" class="disabled"><div class="{{ craft.app.request.getIsSecureConnection() ? "secure" : "insecure" }} icon"></div></div>#}' +
 			'<input id="submit" class="btn submit disabled" type="submit" value="{{ "Login"|t('app') }}">' +
 			'<div id="spinner" class="spinner hidden"></div>' +
 			'</div>' +
@@ -48,7 +48,7 @@
 			'</form>'
 		);
 
-			{% if not craft.request.isMobileBrowser(true) %}
+			{% if not craft.app.request.isMobileBrowser(true) %}
 			document.getElementById("{{ (username ? 'password' : 'loginName') }}").focus();
 			{% endif %}
 		}
