@@ -1,4 +1,4 @@
-{% set drafts = craft.entryRevisions.getEditableDraftsByEntryId(entry.id, entry.locale) %}
+{% set drafts = craft.app.entryRevisions.getEditableDraftsByEntryId(entry.id, entry.locale) %}
 {% set baseUrl = 'entries/'~entry.getSection().handle~'/'~entry.id~(entry.slug ? '-'~entry.slug)~'/' %}
 
 <div id="revision-btn" class="btn menubtn">{{ revisionLabel }}</div>
@@ -21,7 +21,7 @@
 	{% endif %}
 
 	{% if section.enableVersioning %}
-		{% set versions = craft.entryRevisions.getVersionsByEntryId(entry.id, entry.locale) %}
+		{% set versions = craft.app.entryRevisions.getVersionsByEntryId(entry.id, entry.locale) %}
 		{% if versions %}
 			<h6>{{ "Recent Versions"|t('app') }}</h6>
 			<ul class="padded">
