@@ -9,7 +9,7 @@
 	"Display as thumbnails"
 %}
 
-{% set elementInstance = craft.elements.getElementInstance(elementType) %}
+{% set elementInstance = craft.app.elements.createElement(elementType) %}
 {% set context = context is defined ? context : 'index' %}
 {% set showStatusMenu = (showStatusMenu is defined and showStatusMenu != 'auto' ? showStatusMenu : elementInstance.hasStatuses()) %}
 {% set showLocaleMenu = (craft.isLocalized() and context == 'index' ? (showLocaleMenu is defined and showLocaleMenu != 'auto' ? showLocaleMenu : elementInstance.isLocalized()) : false) %}

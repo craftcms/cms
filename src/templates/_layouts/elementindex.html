@@ -1,6 +1,6 @@
 {% extends "_layouts/cp" %}
 
-{% set elementInstance = craft.elements.getElementInstance(elementType) %}
+{% set elementInstance = craft.app.elements.createElement(elementType) %}
 {% set context = 'index' %}
 
 {% if not elementInstance %}
