@@ -76,7 +76,7 @@ class HttpRequest
      *
      * @return boolean
      */
-    public function getIsAjax()
+    public function isAjax()
     {
         return Craft::$app->getRequest()->getIsAjax();
     }
@@ -86,7 +86,7 @@ class HttpRequest
      *
      * @return boolean
      */
-    public function getIsSecure()
+    public function isSecure()
     {
         return Craft::$app->getRequest()->getIsSecureConnection();
     }
@@ -96,7 +96,7 @@ class HttpRequest
      *
      * @return boolean
      */
-    public function getIsLivePreview()
+    public function isLivePreview()
     {
         return Craft::$app->getRequest()->getIsLivePreview();
     }
@@ -257,7 +257,7 @@ class HttpRequest
      *
      * @return boolean
      */
-    public function getIsMobileBrowser($detectTablets = false)
+    public function isMobileBrowser($detectTablets = false)
     {
         return Craft::$app->getRequest()->getIsMobileBrowser($detectTablets);
     }

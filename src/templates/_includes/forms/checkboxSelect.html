@@ -18,7 +18,7 @@
 				name:      (name is defined ? name : null),
 				value:     allValue,
 				checked:   allChecked,
-				autofocus: (autofocus is defined and autofocus and not craft.request.getIsMobileBrowser(true))
+				autofocus: (autofocus is defined and autofocus and not craft.request.isMobileBrowser(true))
 			} only %}
 		</div>
 	{%- endif %}

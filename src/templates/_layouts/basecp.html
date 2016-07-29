@@ -1,7 +1,7 @@
 {% extends "_layouts/base" %}
 
 {# Give the body a .mobile class for mobile devices #}
-{% if craft.request.getIsMobileBrowser(true) %}
+{% if craft.request.isMobileBrowser(true) %}
 	{% set bodyClass = (bodyClass is defined and bodyClass ? bodyClass~' ' : '') ~ 'mobile' %}
 {% endif %}
 
