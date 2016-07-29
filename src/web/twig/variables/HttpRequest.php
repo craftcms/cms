@@ -189,32 +189,6 @@ class HttpRequest
     }
 
     /**
-     * Returns a variable from the query string.
-     *
-     * @param string|null $name
-     * @param string|null $default
-     *
-     * @return mixed
-     */
-    public function getQueryParam($name = null, $default = null)
-    {
-        return Craft::$app->getRequest()->getQueryParam($name, $default);
-    }
-
-    /**
-     * Returns a value from post data.
-     *
-     * @param string|null $name
-     * @param string|null $default
-     *
-     * @return mixed
-     */
-    public function getBodyParam($name = null, $default = null)
-    {
-        return Craft::$app->getRequest()->getBodyParam($name, $default);
-    }
-
-    /**
      * Returns a [[Cookie]] if it exists, otherwise, null.
      *
      * @param $name
@@ -346,16 +320,6 @@ class HttpRequest
     }
 
     /**
-     * Returns the user IP address.
-     *
-     * @return string
-     */
-    public function getUserIP()
-    {
-        return Craft::$app->getRequest()->getUserIP();
-    }
-
-    /**
      * Returns the user host name or null if it cannot be determined.
      *
      * @return string
@@ -408,9 +372,6 @@ class HttpRequest
         return Craft::$app->getRequest()->getQueryStringWithoutPath();
     }
 
-    // Deprecated methods
-    // -------------------------------------------------------------------------
-
     /**
      * Returns a variable from the query string.
      *
@@ -418,13 +379,10 @@ class HttpRequest
      * @param string|null $default
      *
      * @return mixed
-     * @deprecated Deprecated in 3.0. Use [[getQueryParam()]] instead.
      */
     public function getQuery($name = null, $default = null)
     {
-        Craft::$app->getDeprecator()->log('craft.request.getQuery()', 'craft.request.getQuery() is deprecated. Use getQueryParam() instead.');
-
-        return $this->getQueryParam($name, $default);
+        return Craft::$app->getRequest()->getQueryParam($name, $default);
     }
 
     /**
@@ -434,26 +392,20 @@ class HttpRequest
      * @param string|null $default
      *
      * @return mixed
-     * @deprecated Deprecated in 3.0. Use [[]] instead.
      */
     public function getPost($name = null, $default = null)
     {
-        Craft::$app->getDeprecator()->log('craft.request.getPost()', 'craft.request.getPost() is deprecated. Use getBodyParam() instead.');
-
-        return $this->getBodyParam($name, $default);
+        return Craft::$app->getRequest()->getBodyParam($name, $default);
     }
 
     /**
      * Returns the user IP address.
      *
      * @return string
-     * @deprecated Deprecated in Craft 3.0. Use [[getUserIP()]] instead.
      */
     public function getUserHostAddress()
     {
-        Craft::$app->getDeprecator()->log('craft.request.getUserHostAddress()', 'craft.request.getUserHostAddress() is deprecated. Use getUserIP() instead.');
-
-        return $this->getUserIP();
+        return Craft::$app->getRequest()->getUserIP();
     }
 
     /**
@@ -464,13 +416,10 @@ class HttpRequest
      * need a trusted source for the IP address. Use `$_SERVER['REMOTE_ADDR']` instead.
      *
      * @return string The IP address.
-     * @deprecated Deprecated in Craft 3.0. Use [[getUserIP()]] instead.
      */
     public function getIpAddress()
     {
-        Craft::$app->getDeprecator()->log('craft.request.getIpAddress()', 'craft.request.getIpAddress() is deprecated. Use getUserIP() instead.');
-
-        return $this->getUserIP();
+        return Craft::$app->getRequest()->getUserIP();
     }
 
     /**
