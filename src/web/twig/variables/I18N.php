@@ -175,16 +175,4 @@ class I18N
 
         return Craft::$app->getLocale()->getTimeFormat(Locale::LENGTH_SHORT, Locale::FORMAT_PHP);
     }
-
-    /**
-     * Returns whether the [Intl extension](http://php.net/manual/en/book.intl.php) is loaded.
-     *
-     * @return boolean Whether the Intl extension is loaded.
-     */
-    public function getIsIntlLoaded()
-    {
-        Craft::$app->getDeprecator()->log('craft.i18n.getIsIntlLoaded()', 'craft.i18n.getIsIntlLoaded() has been deprecated. Use craft.app.i18n.isIntlLoaded instead.');
-
-        return Craft::$app->getI18n()->getIsIntlLoaded();
-    }
 }
