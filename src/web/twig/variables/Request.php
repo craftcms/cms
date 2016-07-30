@@ -176,7 +176,7 @@ class Request
      */
     public function getFirstSegment()
     {
-        Craft::$app->getDeprecator()->log('craft.request.getFirstSegment()', 'craft.request.getFirstSegment() has been deprecated. Use craft.app.request.getSegment(1) instead.');
+        Craft::$app->getDeprecator()->log('craft.request.getFirstSegment()', 'craft.request.getFirstSegment() has been deprecated. Use craft.app.request.segments|first instead.');
 
         return Craft::$app->getRequest()->getSegment(1);
     }
@@ -188,7 +188,7 @@ class Request
      */
     public function getLastSegment()
     {
-        Craft::$app->getDeprecator()->log('craft.request.getLastSegment()', 'craft.request.getLastSegment() has been deprecated. Use craft.app.request.getSegment(-1) instead.');
+        Craft::$app->getDeprecator()->log('craft.request.getLastSegment()', 'craft.request.getLastSegment() has been deprecated. Use craft.app.request.segments|last instead.');
 
         return Craft::$app->getRequest()->getSegment(-1);
     }
