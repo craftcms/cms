@@ -25,7 +25,6 @@ use yii\di\ServiceLocator;
  *
  * @property Config          $config
  * @property ElementIndexes  $elementIndexes
- * @property Elements        $elements
  * @property CategoryGroups  $categoryGroups
  * @property Cp              $cp
  * @property Deprecator      $deprecator
@@ -38,7 +37,6 @@ use yii\di\ServiceLocator;
  * @property Sections        $sections
  * @property SystemSettings  $systemSettings
  * @property Tasks           $tasks
- * @property Updates         $updates
  * @property UserSession     $session
  * @property I18n            $i18n
  * @property Io              $io
