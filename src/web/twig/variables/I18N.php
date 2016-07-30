@@ -159,12 +159,9 @@ class I18N
      */
     public function getDatepickerJsFormat()
     {
-        Craft::$app->getDeprecator()->log('craft.i18n.getDatepickerJsFormat()', 'craft.i18n.getDatepickerJsFormat() has been deprecated. Use craft.app.locale.getDateFormat(3, \'jui\') instead.');
+        Craft::$app->getDeprecator()->log('craft.i18n.getDatepickerJsFormat()', 'craft.i18n.getDatepickerJsFormat() has been deprecated. Use craft.app.locale.getDateFormat(\'short\', \'jui\') instead.');
 
-        $locale = Craft::$app->getLocale();
-        $format = $locale->getDateFormat(Locale::FORMAT_SHORT);
-
-        return FormatConverter::convertDateIcuToJui($format);
+        return Craft::$app->getLocale()->getDateFormat(Locale::FORMAT_SHORT, Locale::FORMAT_JUI);
     }
 
     /**
@@ -174,12 +171,9 @@ class I18N
      */
     public function getTimepickerJsFormat()
     {
-        Craft::$app->getDeprecator()->log('craft.i18n.getTimepickerJsFormat()', 'craft.i18n.getTimepickerJsFormat() has been deprecated. Use craft.app.locale.getTimeFormat(3, \'php\') instead.');
+        Craft::$app->getDeprecator()->log('craft.i18n.getTimepickerJsFormat()', 'craft.i18n.getTimepickerJsFormat() has been deprecated. Use craft.app.locale.getTimeFormat(\'short\', \'php\') instead.');
 
-        $locale = Craft::$app->getLocale();
-        $format = $locale->getTimeFormat(Locale::FORMAT_SHORT);
-
-        return FormatConverter::convertDateIcuToPhp($format);
+        return Craft::$app->getLocale()->getTimeFormat(Locale::FORMAT_SHORT, Locale::FORMAT_PHP);
     }
 
     /**
