@@ -849,23 +849,17 @@ class Locale extends Object
             ]);
         }
 
-        if ($withDate && $withTime) {
-            $which = 'datetime';
-        } else if ($withDate) {
-            $which = 'date';
-        } else {
-            $which = 'time';
-        }
+        $type = ($withDate ? 'date' : '').($withTime ? 'time' : '');
 
         switch ($length) {
             case static::FORMAT_SHORT:
-                return $this->data['dateTimeFormats']['short'][$which];
+                return $this->data['dateTimeFormats']['short'][$type];
             case static::FORMAT_MEDIUM:
-                return $this->data['dateTimeFormats']['medium'][$which];
+                return $this->data['dateTimeFormats']['medium'][$type];
             case static::FORMAT_LONG:
-                return $this->data['dateTimeFormats']['long'][$which];
+                return $this->data['dateTimeFormats']['long'][$type];
             case static::FORMAT_FULL:
-                return $this->data['dateTimeFormats']['full'][$which];
+                return $this->data['dateTimeFormats']['full'][$type];
         }
 
         return null;
