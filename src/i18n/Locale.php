@@ -18,6 +18,7 @@ use NumberFormatter;
 use yii\base\InvalidConfigException;
 use yii\base\InvalidParamException;
 use yii\base\Object;
+use yii\helpers\FormatConverter;
 
 /**
  * Stores locale info.
@@ -190,6 +191,21 @@ class Locale extends Object
      * @var int The full date/time format.
      */
     const FORMAT_FULL = 0;
+
+    /**
+     * @var string ICU format
+     */
+    const FORMAT_ICU = 'icu';
+
+    /**
+     * @var string PHP format
+     */
+    const FORMAT_PHP = 'php';
+
+    /**
+     * @var string jQuery UI format
+     */
+    const FORMAT_JUI = 'jui';
 
     // Properties
     // =========================================================================
@@ -439,36 +455,39 @@ class Locale extends Object
      * Returns the localized ICU date format.
      *
      * @param integer $length The format length that should be returned. Values: Locale::FORMAT_SHORT, ::MEDIUM, ::LONG, ::FULL
+     * @param string  $format The format type that should be returned. Values: Locale::FORMAT_ICU (default), ::FORMAT_PHP, ::FORMAT_JUI
      *
      * @return string The localized ICU date format.
      */
-    public function getDateFormat($length = null)
+    public function getDateFormat($length = null, $format = self::FORMAT_ICU)
     {
-        return $this->_getDateTimeFormat($length, true, false);
+        return $this->_getDateTimeFormat($length, true, false, $format);
     }
 
     /**
      * Returns the localized ICU time format.
      *
      * @param integer $length The format length that should be returned. Values: Locale::FORMAT_SHORT, ::MEDIUM, ::LONG, ::FULL
+     * @param string  $format The format type that should be returned. Values: Locale::FORMAT_ICU (default), ::FORMAT_PHP, ::FORMAT_JUI
      *
      * @return string The localized ICU time format.
      */
-    public function getTimeFormat($length = null)
+    public function getTimeFormat($length = null, $format = self::FORMAT_ICU)
     {
-        return $this->_getDateTimeFormat($length, false, true);
+        return $this->_getDateTimeFormat($length, false, true, $format);
     }
 
     /**
      * Returns the localized ICU date + time format.
      *
      * @param integer $length The format length that should be returned. Values: Locale::FORMAT_SHORT, ::MEDIUM, ::LONG, ::FULL
+     * @param string  $format The format type that should be returned. Values: Locale::FORMAT_ICU (default), ::FORMAT_PHP, ::FORMAT_JUI
      *
      * @return string The localized ICU date + time format.
      */
-    public function getDateTimeFormat($length = null)
+    public function getDateTimeFormat($length = null, $format = self::FORMAT_ICU)
     {
-        return $this->_getDateTimeFormat($length, true, true);
+        return $this->_getDateTimeFormat($length, true, true, $format);
     }
 
     /**
@@ -775,6 +794,34 @@ class Locale extends Object
     // =========================================================================
 
     /**
+     * Returns a localized date/time format.
+     *
+     * @param integer $length   The format length that should be returned. Values: Locale::FORMAT_SHORT, ::MEDIUM, ::LONG, ::FULL
+     * @param boolean $withDate Whether the date should be included in the format.
+     * @param boolean $withTime Whether the time should be included in the format.
+     * @param string  $format   The format type that should be returned. Values: Locale::FORMAT_ICU (default), ::FORMAT_PHP, ::FORMAT_JUI
+     *
+     * @return string The date/time format
+     */
+    private function _getDateTimeFormat($length, $withDate, $withTime, $format)
+    {
+        $icuFormat = $this->_getDateTimeIcuFormat($length, $withDate, $withTime);
+
+        if ($format != self::FORMAT_ICU) {
+            $type = ($withDate ? 'date' : '').($withTime ? 'time' : '');
+
+            switch ($format) {
+                case self::FORMAT_PHP:
+                    return FormatConverter::convertDateIcuToPhp($icuFormat, $type, $this->id);
+                case self::FORMAT_JUI:
+                    return FormatConverter::convertDateIcuToJui($icuFormat, $type, $this->id);
+            }
+        }
+
+        return $icuFormat;
+    }
+
+    /**
      * Returns a localized ICU date/time format.
      *
      * @param integer $length   The format length that should be returned. Values: Locale::FORMAT_SHORT, ::MEDIUM, ::LONG, ::FULL
@@ -783,7 +830,7 @@ class Locale extends Object
      *
      * @return string The ICU date/time format
      */
-    private function _getDateTimeFormat($length, $withDate, $withTime)
+    private function _getDateTimeIcuFormat($length, $withDate, $withTime)
     {
         if ($length === null) {
             $length = static::FORMAT_MEDIUM;
