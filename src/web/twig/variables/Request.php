@@ -18,7 +18,7 @@ use yii\web\Cookie;
  * @since      3.0
  * @deprecated in 3.0
  */
-class HttpRequest
+class Request
 {
     // Public Methods
     // =========================================================================

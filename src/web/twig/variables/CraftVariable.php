@@ -33,7 +33,7 @@ use yii\di\ServiceLocator;
  * @property Feeds           $feeds
  * @property Globals         $globals
  * @property Plugins         $plugins
- * @property HttpRequest     $request
+ * @property Request         $request
  * @property Routes          $routes
  * @property Sections        $sections
  * @property SystemSettings  $systemSettings
@@ -84,9 +84,9 @@ class CraftVariable extends ServiceLocator
             'feeds' => 'craft\app\web\twig\variables\Feeds',
             'fields' => 'craft\app\web\twig\variables\Fields',
             'globals' => 'craft\app\web\twig\variables\Globals',
-            'request' => 'craft\app\web\twig\variables\HttpRequest',
             'i18n' => 'craft\app\web\twig\variables\I18N',
             'plugins' => 'craft\app\web\twig\variables\Plugins',
+            'request' => 'craft\app\web\twig\variables\Request',
             'sections' => 'craft\app\web\twig\variables\Sections',
             'systemSettings' => 'craft\app\web\twig\variables\SystemSettings',
             'tasks' => 'craft\app\web\twig\variables\Tasks',
