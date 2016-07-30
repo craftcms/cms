@@ -842,6 +842,7 @@ class Locale extends Object
             $formatter = new IntlDateFormatter($this->id, $dateType, $timeType);
             $pattern = $formatter->getPattern();
 
+            // Use 4-digit year
             return strtr($pattern, [
                 'yyyy' => 'yyyy',
                 'yy' => 'yyyy'
@@ -858,7 +859,7 @@ class Locale extends Object
 
         switch ($length) {
             case static::FORMAT_SHORT:
-                return StringHelper::replace($this->data['dateTimeFormats']['short'][$which], 'yy', 'Y');
+                return $this->data['dateTimeFormats']['short'][$which];
             case static::FORMAT_MEDIUM:
                 return $this->data['dateTimeFormats']['medium'][$which];
             case static::FORMAT_LONG:
