@@ -1,4 +1,4 @@
-/*! Craft 3.0.0 - 2016-07-27 */
+/*! Craft 3.0.0 - 2016-07-30 */
 !function(a){
 // Set all the standard Craft.* stuff
 a.extend(Craft,{navHeight:48,/**
@@ -13,7 +13,7 @@ asciiCharMap:{a:["à","á","ả","ã","ạ","ă","ắ","ằ","ẳ","ẵ","ặ","
 	 * @param {object} params
 	 * @return string
 	 */
-t:function(a,b){if("undefined"!=typeof Craft.translations[a]&&(a=Craft.translations[a]),b)for(var c in b)b.hasOwnProperty(c)&&(a=a.replace("{"+c+"}",b[c]));return a},formatDate:function(b){return"object"!=typeof b&&(b=new Date(b)),a.datepicker.formatDate(Craft.datepickerFormat,b)},/**
+t:function(a,b){if("undefined"!=typeof Craft.translations[a]&&(a=Craft.translations[a]),b)for(var c in b)b.hasOwnProperty(c)&&(a=a.replace("{"+c+"}",b[c]));return a},formatDate:function(b){return"object"!=typeof b&&(b=new Date(b)),a.datepicker.formatDate(Craft.datepickerOptions.dateFormat,b)},/**
 	 * Escapes some HTML.
 	 *
 	 * @param {string} str

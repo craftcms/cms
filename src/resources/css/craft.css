@@ -1331,6 +1331,8 @@ input.text, textarea.text, .text > input, .text > textarea, .textline, table.edi
 
 .selectize-text > .selectize-control > .selectize-input { line-height: 18px; }
 
+textarea.text.fullwidth { display: block; }
+
 .multitext .multitextrow .text { border-radius: 0; float: left; -webkit-box-sizing: border-box; -moz-box-sizing: border-box; box-sizing: border-box; }
 
 .multitext .multitextrow .text.error { position: relative; z-index: 1; }
@@ -1530,7 +1532,7 @@ body .redactor-box { margin-bottom: 0; }
 
 body .redactor-box.redactor-box-fullscreen { z-index: 100 !important; }
 
-body .redactor-toolbar { top: 0 !important; background: none; -webkit-box-shadow: none; -moz-box-shadow: none; box-shadow: none; }
+body .redactor-toolbar { top: 0; background: none; -webkit-box-shadow: none; -moz-box-shadow: none; box-shadow: none; }
 
 body .redactor-toolbar.toolbar-fixed-box { background: #fff; -webkit-box-shadow: 0 0 0 1px #e3e5e8; -moz-box-shadow: 0 0 0 1px #e3e5e8; box-shadow: 0 0 0 1px #e3e5e8; z-index: 1 !important; }
 

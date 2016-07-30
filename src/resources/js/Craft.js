@@ -1,4 +1,4 @@
-/*! Craft 3.0.0 - 2016-07-27 */
+/*! Craft 3.0.0 - 2016-07-30 */
 (function($){
 
 // Set all the standard Craft.* stuff
@@ -171,7 +171,7 @@ $.extend(Craft,
 			date = new Date(date);
 		}
 
-		return $.datepicker.formatDate(Craft.datepickerFormat, date);
+		return $.datepicker.formatDate(Craft.datepickerOptions.dateFormat, date);
 	},
 
 	/**
