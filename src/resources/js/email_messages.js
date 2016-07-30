@@ -153,7 +153,7 @@ var MessageSettingsModal = Garnish.Modal.extend(
 
 		var data = {
 			key:     this.message.key,
-			locale:  (this.$localeSelect.length ? this.$localeSelect.val() : Craft.locale),
+			locale:  (this.$localeSelect.length ? this.$localeSelect.val() : Craft.language),
 			subject: this.$subjectInput.val(),
 			body:    this.$bodyInput.val()
 		};
@@ -188,7 +188,7 @@ var MessageSettingsModal = Garnish.Modal.extend(
 				if (response.success)
 				{
 					// Only update the page if we're editing the app target locale
-					if (data.locale == Craft.locale)
+					if (data.locale == Craft.language)
 					{
 						this.message.updateHtmlFromModal();
 					}
