@@ -59,14 +59,14 @@
 			fileKinds:             {{ craft.io.getFileKinds()|json_encode|raw }},
 			datepickerOptions: {
 				constrainInput: false,
-				dateFormat: "{{ craft.app.locale.getDateFormat(3, 'jui')|e('js') }}",
+				dateFormat: "{{ craft.app.locale.getDateFormat('short', 'jui')|e('js') }}",
 				prevText: '{{ "Prev"|t|e('js') }}',
 				nextText: '{{ "Next"|t|e('js') }}',
 				firstDay: {{ currentUser.getPreference('weekStartDay') ?? craft.app.config.get('defaultWeekStartDay') }},
-				dayNames: {{ localeData.getWeekDayNames('wide', true)|json_encode|raw }},
-				dayNamesShort: {{ localeData.getWeekDayNames('abbreviated', true)|json_encode|raw }},
-				dayNamesMin: {{ localeData.getWeekDayNames('narrow', true)|json_encode|raw }},
-				monthNames: {{ localeData.getMonthNames('wide', true)|values|json_encode|raw }},
+				dayNames: {{ localeData.getWeekDayNames('full', true)|json_encode|raw }},
+				dayNamesShort: {{ localeData.getWeekDayNames('short', true)|json_encode|raw }},
+				dayNamesMin: {{ localeData.getWeekDayNames('abbreviated', true)|json_encode|raw }},
+				monthNames: {{ localeData.getMonthNames('full', true)|values|json_encode|raw }},
 				monthNamesShort: {{ localeData.getMonthNames('abbreviated', true)|values|json_encode|raw }}
 			},
 			publishableSections: [

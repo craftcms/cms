@@ -168,29 +168,29 @@ class Locale extends Object
     const SYMBOL_MONETARY_GROUPING_SEPARATOR = 17;
 
     /**
-     * @var int The short date/time format.
+     * @var int The abbreviated date/time format.
      */
-    const FORMAT_ABBREVIATED = 4;
+    const FORMAT_ABBREVIATED = 'abbreviated';
 
     /**
      * @var int The short date/time format.
      */
-    const FORMAT_SHORT = 3;
+    const FORMAT_SHORT = 'short';
 
     /**
      * @var int The medium date/time format.
      */
-    const FORMAT_MEDIUM = 2;
+    const FORMAT_MEDIUM = 'medium';
 
     /**
      * @var int The long date/time format.
      */
-    const FORMAT_LONG = 1;
+    const FORMAT_LONG = 'long';
 
     /**
      * @var int The full date/time format.
      */
-    const FORMAT_FULL = 0;
+    const FORMAT_FULL = 'full';
 
     /**
      * @var string ICU format
