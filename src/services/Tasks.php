@@ -509,7 +509,7 @@ class Tasks extends Component
      *
      * @return boolean Whether any tasks have failed
      */
-    public function haveTasksFailed()
+    public function getHaveTasksFailed()
     {
         return (new Query())
             ->from('{{%tasks}}')

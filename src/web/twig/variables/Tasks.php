@@ -69,7 +69,7 @@ class Tasks
      */
     public function haveTasksFailed()
     {
-        return Craft::$app->getTasks()->haveTasksFailed();
+        return Craft::$app->getTasks()->getHaveTasksFailed();
     }
 
     /**

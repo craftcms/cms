@@ -80,7 +80,7 @@ class TasksController extends Controller
         }
 
         // No running tasks left? Check for a failed one
-        if ($tasksService->haveTasksFailed()) {
+        if ($tasksService->getHaveTasksFailed()) {
             return $this->asJson(['status' => 'error']);
         }
 
