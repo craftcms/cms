@@ -59,7 +59,7 @@
 			fileKinds:             {{ craft.io.getFileKinds()|json_encode|raw }},
 			datepickerOptions: {
 				constrainInput: false,
-				dateFormat: "{{ craft.i18n.getDatepickerJsFormat()|e('js') }}",
+				dateFormat: "{{ craft.app.locale.getDateFormat(3, 'jui')|e('js') }}",
 				prevText: '{{ "Prev"|t|e('js') }}',
 				nextText: '{{ "Next"|t|e('js') }}',
 				firstDay: {{ currentUser.getPreference('weekStartDay') ?? craft.app.config.get('defaultWeekStartDay') }},

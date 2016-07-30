@@ -21,7 +21,7 @@
 {%- registerjs %}
 	var $timePicker = $('#{{ id|namespaceInputId|e('js') }}');
 	$timePicker.timepicker({
-		timeFormat: '{{ craft.i18n.timepickerJsFormat }}',
+		timeFormat: '{{ craft.app.locale.getTimeFormat(3, 'php') }}',
 		closeOnWindowScroll: false,
 		orientation: '{{ localeData.getOrientation() == 'ltr' ? 'l' : 'r' }}',
 		{% if minuteIncrement is defined %}step: '{{ minuteIncrement }}',{% endif %}
