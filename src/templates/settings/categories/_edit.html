@@ -75,7 +75,7 @@
 					<th scope="col">{{ "Nested Categories"|t('app') }}</th>
 					</thead>
 					<tbody>
-					{% for locale in craft.i18n.getSiteLocales() %}
+					{% for locale in craft.app.i18n.getSiteLocales() %}
 						<tr>
 							{% if craft.isLocalized() %}
 								<th class="thin nowrap">{{ locale.id }}</th>
@@ -135,7 +135,7 @@
 	{% registerjs %}
 		new Craft.HandleGenerator('#name', '#handle');
 
-		{% for locale in craft.i18n.getSiteLocales() %}
+		{% for locale in craft.app.i18n.getSiteLocales() %}
 			{% if categoryGroup.locales[locale.id] is not defined or not categoryGroup.locales[locale.id].urlFormat %}
 				new Craft.EntryUrlFormatGenerator('#name', '#urlFormat-{{ locale.id }}', { suffix: '/{slug}' });
 			{% endif %}

@@ -79,7 +79,7 @@
 					<ul id="locales" class="pane">
 						{% set parentIdParam = craft.app.request.getParam('parentId.0') ?: craft.app.request.getParam('parentId') %}
 						{% for localeId in localeIds %}
-							{% set localeName = craft.i18n.getLocaleById(localeId).getDisplayName() %}
+							{% set localeName = craft.app.i18n.getLocaleById(localeId).getDisplayName() %}
 							<li{% if localeId == category.locale %} class="sel"{% endif %}>
 								{%- if localeId == category.locale -%}
 									{{ localeName }}

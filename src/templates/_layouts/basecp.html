@@ -7,7 +7,7 @@
 
 {% includeTranslations "Show", "Hide" %}
 
-{% set localeData = craft.i18n.getLocaleData() %}
+{% set localeData = craft.app.locale %}
 {% set orientation = localeData.getOrientation() %}
 
 {% block foot %}

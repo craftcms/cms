@@ -69,6 +69,6 @@
 	};
 
 	{% if craft.isLocalized() %}
-		Craft.routes.locales = {{ craft.i18n.getSiteLocaleIds()|json_encode|raw }};
+		Craft.routes.locales = {{ craft.app.i18n.getSiteLocaleIds()|json_encode|raw }};
 	{% endif %}
 {% endregisterjs %}

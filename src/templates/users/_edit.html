@@ -130,7 +130,7 @@
                             <div class="select">
                                 <select id="preferredLocale"
                                         name="preferredLocale">
-                                    {% set allSiteLocales = craft.i18n.getSiteLocales %}
+                                    {% set allSiteLocales = craft.app.i18n.getSiteLocales %}
                                     {% set userLocale = account.getPreferredLocale() ?: (account.getIsCurrent() ? craft.locale : allSiteLocales[0]) %}
 
                                     {% for locale in allSiteLocales %}
@@ -152,7 +152,7 @@
                             label: "Week Start Day"|t('app'),
                             id: 'weekStartDay',
                             name: 'weekStartDay',
-                            options: craft.i18n.getLocaleData().getWeekDayNames(),
+                            options: craft.app.locale.getWeekDayNames(),
                             value: account.getPreference('weekStartDay', craft.app.config.get('defaultWeekStartDay'))
                         }) }}
                     {% endif %}

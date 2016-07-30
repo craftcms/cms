@@ -5,7 +5,7 @@
 
 {% if structure -%}
 	{% set basePadding = (context == 'index' ? 20 + (showCheckboxes ? 7 : 0) + (structureEditable ? 14 : 0) : 7) %}
-	{% set padding = craft.i18n.getLocaleData().getOrientation() == 'ltr' ? 'left' : 'right' -%}
+	{% set padding = craft.app.locale.getOrientation() == 'ltr' ? 'left' : 'right' -%}
 {% endif -%}
 
 {% for element in elements %}

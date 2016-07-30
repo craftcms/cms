@@ -21,7 +21,7 @@
 }, sectionInput) }}
 
 {% if craft.isLocalized() %}
-	{% set editableLocales = craft.i18n.getEditableLocales() %}
+	{% set editableLocales = craft.app.i18n.getEditableLocales() %}
 
 	{% if editableLocales|length > 1 %}
 		{% set localeInput %}

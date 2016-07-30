@@ -16,7 +16,7 @@
 	{%- endif -%}
 </div>
 
-{%-	set localeData = craft.i18n.getLocaleData() %}
+{%-	set localeData = craft.app.locale %}
 
 {%- registerjs %}
 	var $timePicker = $('#{{ id|namespaceInputId|e('js') }}');

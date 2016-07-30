@@ -35,7 +35,7 @@
 				</thead>
 			{% endif %}
 			<tbody>
-				{% for locale in craft.i18n.getSiteLocales() %}
+				{% for locale in craft.app.i18n.getSiteLocales() %}
 					<tr class="for-locale-{{ locale.id }}{% if craft.isLocalized() and not brandNewSection and section.locales[locale.id] is not defined %} hidden{% endif %}">
 						{% if craft.isLocalized() %}
 							<th class="thin nowrap">{{ locale.id }}</th>
@@ -55,7 +55,7 @@
 			</tbody>
 		</table>
 	{% else %}
-		{% set locale = craft.i18n.getPrimarySiteLocale() %}
+		{% set locale = craft.app.i18n.getPrimarySiteLocale() %}
 		{% set value = ((section.type == sectionType or sectionType != 'single') and section.locales[locale.id] is defined ? section.locales[locale.id].urlFormat : null) %}
 		{{ _self.urlFormatText(sectionType, locale, section, 'urlFormat', value) }}
 	{% endif %}
@@ -130,7 +130,7 @@
 					</tr>
 				</thead>
 				<tbody>
-					{% for locale in craft.i18n.getSiteLocales() %}
+					{% for locale in craft.app.i18n.getSiteLocales() %}
 						{% set localeSelected = (brandNewSection or section.locales[locale.id] is defined) %}
 						<tr>
 							<td>
@@ -248,7 +248,7 @@
 
 	{% if not craft.isLocalized() %}
 		<div class="type-channel type-structure {% if section.type == 'single' %}hidden{% endif %}">
-			{% set locale = craft.i18n.getPrimarySiteLocale() %}
+			{% set locale = craft.app.i18n.getPrimarySiteLocale() %}
 			{% set value = (section.type != 'single' and section.locales[locale.id] is defined ? section.locales[locale.id].enabledByDefault : true) %}
 
 			{{ forms.lightswitchField({
@@ -272,7 +272,7 @@
 {% registerjs %}
 	{% if not section.handle %}new Craft.HandleGenerator('#name', '#handle');{% endif %}
 
-	{% for locale in craft.i18n.getSiteLocales() %}
+	{% for locale in craft.app.i18n.getSiteLocales() %}
 		{% if section.locales[locale.id] is not defined or not section.locales[locale.id].urlFormat %}
 			new Craft.EntryUrlFormatGenerator('#name', '#single-urlFormat-{{ locale.id }}');
 			new Craft.EntryUrlFormatGenerator('#name', '#channel-urlFormat-{{ locale.id }}',   { suffix: '/{slug}' });

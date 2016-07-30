@@ -43,7 +43,7 @@
 						<div class="field">
 							<table id="locales" class="data fullwidth collapsible">
 								<tbody>
-									{% for locale in craft.i18n.getSiteLocales() %}
+									{% for locale in craft.app.i18n.getSiteLocales() %}
 										<tr data-id="{{ locale.id }}" data-name="{{ locale.getDisplayName(craft.locale) }}">
 											<th scope="row" data-title="{{ 'Name'|t('app') }}" width="40%">{{ locale.getDisplayName(craft.locale) }}</th>
 											<td data-title="{{ 'Locale ID' }}">{{ locale.id }}</td>
@@ -69,7 +69,7 @@
 				</div>
 			</div>
 		</div>
-		{% if not craft.i18n.getIsIntlLoaded() %}
+		{% if not craft.app.i18n.getIsIntlLoaded() %}
 			<div class="item" data-colspan="1">
 				<div class="pane">
 					<div class="content">
@@ -88,14 +88,14 @@
 {% registerjs %}
 	new Craft.Locales(
 	{
-		{%- for locale in craft.i18n.getAllLocales() %}
+		{%- for locale in craft.app.i18n.getAllLocales() %}
 			{%- if not loop.first %},{% endif -%}
 			'{{ locale.id }}': '{{ locale.getDisplayName(craft.locale) }}'
 		{%- endfor -%}
 
 	}, [
 
-		{%- for locale in craft.i18n.getSiteLocales() %}
+		{%- for locale in craft.app.i18n.getSiteLocales() %}
 			{%- if not loop.first %},{% endif -%}
 			'{{ locale.id }}'
 		{%- endfor -%}

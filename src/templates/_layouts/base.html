@@ -1,6 +1,6 @@
 {% set siteName = craft.app.getSiteName() -%}
 {% set docTitle = docTitle is defined ? docTitle : title|striptags -%}
-{% set bodyClass = (bodyClass is defined ? bodyClass~' ' : '') ~ craft.i18n.getLocaleData().getOrientation() -%}
+{% set bodyClass = (bodyClass is defined ? bodyClass~' ' : '') ~ craft.app.locale.getOrientation() -%}
 
 {% registerassetbundle 'craft\\app\\web\\assets\\AppAsset' -%}
 
