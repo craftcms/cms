@@ -23,14 +23,6 @@ class Config
     // =========================================================================
 
     /**
-     * Constructor
-     */
-    public function __construct()
-    {
-        Craft::$app->getDeprecator()->log('craft.config', 'craft.config has been deprecated. Use craft.app.config instead.');
-    }
-
-    /**
      * Returns whether a config item exists.
      *
      * @param string $name
@@ -51,6 +43,8 @@ class Config
      */
     public function __get($name)
     {
+        Craft::$app->getDeprecator()->log('craft.config.[setting]', 'craft.config.[setting] has been deprecated. Use craft.app.config.get(\'setting\') instead.');
+
         return Craft::$app->getConfig()->get($name, ConfigCategory::General);
     }
 
@@ -64,6 +58,8 @@ class Config
      */
     public function get($name, $file = 'general')
     {
+        Craft::$app->getDeprecator()->log('craft.config.get()', 'craft.config.get() has been deprecated. Use craft.app.config.get() instead.');
+
         return Craft::$app->getConfig()->get($name, $file);
     }
 
@@ -74,6 +70,8 @@ class Config
      */
     public function usePathInfo()
     {
+        Craft::$app->getDeprecator()->log('craft.config.usePathInfo()', 'craft.config.usePathInfo() has been deprecated. Use craft.app.config.usePathInfo() instead.');
+
         return Craft::$app->getConfig()->usePathInfo();
     }
 
@@ -84,6 +82,8 @@ class Config
      */
     public function omitScriptNameInUrls()
     {
+        Craft::$app->getDeprecator()->log('craft.config.omitScriptNameInUrls()', 'craft.config.omitScriptNameInUrls() has been deprecated. Use craft.app.config.omitScriptNameInUrls() instead.');
+
         return Craft::$app->getConfig()->omitScriptNameInUrls();
     }
 
@@ -94,6 +94,8 @@ class Config
      */
     public function getResourceTrigger()
     {
+        Craft::$app->getDeprecator()->log('craft.config.getResourceTrigger()', 'craft.config.getResourceTrigger() has been deprecated. Use craft.app.config.getResourceTrigger() instead.');
+
         return Craft::$app->getConfig()->getResourceTrigger();
     }
 }

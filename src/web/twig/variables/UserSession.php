@@ -23,20 +23,14 @@ class UserSession
     // =========================================================================
 
     /**
-     * Constructor
-     */
-    public function __construct()
-    {
-        Craft::$app->getDeprecator()->log('craft.session', 'craft.session has been deprecated. Use craft.app.user instead.');
-    }
-
-    /**
      * Returns whether the user is logged in.
      *
      * @return boolean
      */
     public function isLoggedIn()
     {
+        Craft::$app->getDeprecator()->log('craft.session.isLoggedIn()', 'craft.session.isLoggedIn() has been deprecated. Use craft.app.user.isGuest instead.');
+
         return !Craft::$app->getUser()->getIsGuest();
     }
 
@@ -47,6 +41,8 @@ class UserSession
      */
     public function getUser()
     {
+        Craft::$app->getDeprecator()->log('craft.session.getUser()', 'craft.session.getUser() has been deprecated. Use craft.app.user.identity instead.');
+
         return Craft::$app->getUser()->getIdentity();
     }
 
@@ -57,6 +53,8 @@ class UserSession
      */
     public function getRemainingSessionTime()
     {
+        Craft::$app->getDeprecator()->log('craft.session.getRemainingSessionTime()', 'craft.session.getRemainingSessionTime() has been deprecated. Use craft.app.user.remainingSessionTime instead.');
+
         if (Craft::$app->getIsInstalled()) {
             return Craft::$app->getUser()->getRemainingSessionTime();
         }
@@ -71,6 +69,8 @@ class UserSession
      */
     public function getRememberedUsername()
     {
+        Craft::$app->getDeprecator()->log('craft.session.getRememberedUsername()', 'craft.session.getRememberedUsername() has been deprecated. Use craft.app.user.rememberedUsername instead.');
+
         return Craft::$app->getUser()->getRememberedUsername();
     }
 
@@ -83,6 +83,8 @@ class UserSession
      */
     public function getReturnUrl($defaultUrl = null)
     {
+        Craft::$app->getDeprecator()->log('craft.session.getReturnUrl()', 'craft.session.getReturnUrl() has been deprecated. Use craft.app.user.getReturnUrl() instead.');
+
         return Craft::$app->getUser()->getReturnUrl($defaultUrl);
     }
 
@@ -95,6 +97,8 @@ class UserSession
      */
     public function getFlashes($delete = true)
     {
+        Craft::$app->getDeprecator()->log('craft.session.getFlashes()', 'craft.session.getFlashes() has been deprecated. Use craft.app.session.getAllFlashes() instead.');
+
         return Craft::$app->getSession()->getAllFlashes($delete);
     }
 
@@ -109,6 +113,8 @@ class UserSession
      */
     public function getFlash($key, $defaultValue = null, $delete = true)
     {
+        Craft::$app->getDeprecator()->log('craft.session.getFlash()', 'craft.session.getFlash() has been deprecated. Use craft.app.session.getFlash() instead.');
+
         return Craft::$app->getSession()->getFlash($key, $defaultValue, $delete);
     }
 
@@ -121,6 +127,8 @@ class UserSession
      */
     public function hasFlash($key)
     {
+        Craft::$app->getDeprecator()->log('craft.session.hasFlash()', 'craft.session.hasFlash() has been deprecated. Use craft.app.session.hasFlash() instead.');
+
         return Craft::$app->getSession()->hasFlash($key);
     }
 }

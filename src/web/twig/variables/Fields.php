@@ -24,14 +24,6 @@ class Fields
     // Public Methods
     // =========================================================================
 
-    /**
-     * Constructor
-     */
-    public function __construct()
-    {
-        Craft::$app->getDeprecator()->log('craft.fields', 'craft.fields has been deprecated. Use craft.app.fields instead.');
-    }
-
     // Groups
     // -------------------------------------------------------------------------
 
@@ -44,6 +36,8 @@ class Fields
      */
     public function getAllGroups($indexBy = null)
     {
+        Craft::$app->getDeprecator()->log('craft.fields.getAllGroups()', 'craft.fields.getAllGroups() has been deprecated. Use craft.app.fields.getAllGroups() instead.');
+
         return Craft::$app->getFields()->getAllGroups($indexBy);
     }
 
@@ -56,6 +50,8 @@ class Fields
      */
     public function getGroupById($groupId)
     {
+        Craft::$app->getDeprecator()->log('craft.fields.getGroupById()', 'craft.fields.getGroupById() has been deprecated. Use craft.app.fields.getGroupById() instead.');
+
         return Craft::$app->getFields()->getGroupById($groupId);
     }
 
@@ -71,6 +67,8 @@ class Fields
      */
     public function createField($config)
     {
+        Craft::$app->getDeprecator()->log('craft.fields.createField()', 'craft.fields.createField() has been deprecated. Use craft.app.fields.createField() instead.');
+
         return Craft::$app->getFields()->createField($config);
     }
 
@@ -83,6 +81,8 @@ class Fields
      */
     public function getFieldById($fieldId)
     {
+        Craft::$app->getDeprecator()->log('craft.fields.getFieldById()', 'craft.fields.getFieldById() has been deprecated. Use craft.app.fields.getFieldById() instead.');
+
         return Craft::$app->getFields()->getFieldById($fieldId);
     }
 
@@ -95,6 +95,8 @@ class Fields
      */
     public function getFieldByHandle($handle)
     {
+        Craft::$app->getDeprecator()->log('craft.fields.getFieldByHandle()', 'craft.fields.getFieldByHandle() has been deprecated. Use craft.app.fields.getFieldByHandle() instead.');
+
         return Craft::$app->getFields()->getFieldByHandle($handle);
     }
 
@@ -107,6 +109,8 @@ class Fields
      */
     public function getAllFields($indexBy = null)
     {
+        Craft::$app->getDeprecator()->log('craft.fields.getAllFields()', 'craft.fields.getAllFields() has been deprecated. Use craft.app.fields.getAllFields() instead.');
+
         return Craft::$app->getFields()->getAllFields($indexBy);
     }
 
@@ -120,6 +124,8 @@ class Fields
      */
     public function getFieldsByGroupId($groupId, $indexBy = null)
     {
+        Craft::$app->getDeprecator()->log('craft.fields.getFieldsByGroupId()', 'craft.fields.getFieldsByGroupId() has been deprecated. Use craft.app.fields.getFieldsByGroupId() instead.');
+
         return Craft::$app->getFields()->getFieldsByGroupId($groupId, $indexBy);
     }
 
@@ -132,6 +138,8 @@ class Fields
      */
     public function getLayoutById($layoutId)
     {
+        Craft::$app->getDeprecator()->log('craft.fields.getLayoutById()', 'craft.fields.getLayoutById() has been deprecated. Use craft.app.fields.getLayoutById() instead.');
+
         return Craft::$app->getFields()->getLayoutById($layoutId);
     }
 
@@ -144,6 +152,8 @@ class Fields
      */
     public function getLayoutByType($type)
     {
+        Craft::$app->getDeprecator()->log('craft.fields.getLayoutByType()', 'craft.fields.getLayoutByType() has been deprecated. Use craft.app.fields.getLayoutByType() instead.');
+
         return Craft::$app->getFields()->getLayoutByType($type);
     }
 
@@ -154,6 +164,8 @@ class Fields
      */
     public function getAllFieldTypes()
     {
+        Craft::$app->getDeprecator()->log('craft.fields.getAllFieldTypes()', 'craft.fields.getAllFieldTypes() has been deprecated. Use craft.app.fields.allFieldTypes instead.');
+
         return Craft::$app->getFields()->getAllFieldTypes();
     }
 }

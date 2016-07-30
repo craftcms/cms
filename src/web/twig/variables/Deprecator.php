@@ -22,20 +22,14 @@ class Deprecator
     // =========================================================================
 
     /**
-     * Constructor
-     */
-    public function __construct()
-    {
-        Craft::$app->getDeprecator()->log('craft.deprecator', 'craft.deprecator has been deprecated. Use craft.app.deprecator instead.');
-    }
-
-    /**
      * Returns the total number of deprecation errors that have been logged.
      *
      * @return integer
      */
     public function getTotalLogs()
     {
+        Craft::$app->getDeprecator()->log('craft.deprecator.getTotalLogs()', 'craft.deprecator.getTotalLogs() has been deprecated. Use craft.app.deprecator.totalLogs instead.');
+
         return Craft::$app->getDeprecator()->getTotalLogs();
     }
 }

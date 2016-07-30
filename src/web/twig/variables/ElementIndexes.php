@@ -22,14 +22,6 @@ class ElementIndexes
     // =========================================================================
 
     /**
-     * Constructor
-     */
-    public function __construct()
-    {
-        Craft::$app->getDeprecator()->log('craft.elementIndexes', 'craft.elementIndexes has been deprecated. Use craft.app.elementIndexes instead.');
-    }
-
-    /**
      * Returns the element index sources in the custom groupings/order.
      *
      * @param string $elementTypeClass The element type class
@@ -39,6 +31,8 @@ class ElementIndexes
      */
     public function getSources($elementTypeClass, $context = 'index')
     {
+        Craft::$app->getDeprecator()->log('craft.elementIndexes.getSources()', 'craft.elementIndexes.getSources() has been deprecated. Use craft.app.elementIndexes.getSources() instead.');
+
         return Craft::$app->getElementIndexes()->getSources($elementTypeClass, $context);
     }
 }

@@ -23,20 +23,14 @@ class Tasks
     // =========================================================================
 
     /**
-     * Constructor
-     */
-    public function __construct()
-    {
-        Craft::$app->getDeprecator()->log('craft.tasks', 'craft.tasks has been deprecated. Use craft.app.tasks instead.');
-    }
-
-    /**
      * Returns the currently running task.
      *
      * @return TaskInterface|null The currently running task, or null if there isn’t one
      */
     public function getRunningTask()
     {
+        Craft::$app->getDeprecator()->log('craft.tasks.getRunningTask()', 'craft.tasks.getRunningTask() has been deprecated. Use craft.app.tasks.runningTask instead.');
+
         return Craft::$app->getTasks()->getRunningTask();
     }
 
@@ -47,6 +41,8 @@ class Tasks
      */
     public function isTaskRunning()
     {
+        Craft::$app->getDeprecator()->log('craft.tasks.isTaskRunning()', 'craft.tasks.isTaskRunning() has been deprecated. Use craft.app.tasks.isTaskRunning instead.');
+
         return Craft::$app->getTasks()->getIsTaskRunning();
     }
 
@@ -59,6 +55,8 @@ class Tasks
      */
     public function areTasksPending($type = null)
     {
+        Craft::$app->getDeprecator()->log('craft.tasks.areTasksPending()', 'craft.tasks.areTasksPending() has been deprecated. Use craft.app.tasks.areTasksPending() instead.');
+
         return Craft::$app->getTasks()->areTasksPending($type);
     }
 
@@ -69,6 +67,8 @@ class Tasks
      */
     public function haveTasksFailed()
     {
+        Craft::$app->getDeprecator()->log('craft.tasks.haveTasksFailed()', 'craft.tasks.haveTasksFailed() has been deprecated. Use craft.app.tasks.haveTasksFailed instead.');
+
         return Craft::$app->getTasks()->getHaveTasksFailed();
     }
 
@@ -79,6 +79,8 @@ class Tasks
      */
     public function getTotalTasks()
     {
+        Craft::$app->getDeprecator()->log('craft.tasks.getTotalTasks()', 'craft.tasks.getTotalTasks() has been deprecated. Use craft.app.tasks.totalTasks instead.');
+
         return Craft::$app->getTasks()->getTotalTasks();
     }
 }

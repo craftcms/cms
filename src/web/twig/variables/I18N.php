@@ -24,20 +24,14 @@ class I18N
     // =========================================================================
 
     /**
-     * Constructor
-     */
-    public function __construct()
-    {
-        Craft::$app->getDeprecator()->log('craft.i18n', 'craft.i18n has been deprecated. Use craft.app.i18n instead.');
-    }
-
-    /**
      * Gets all known languages.
      *
      * @return Locale[]
      */
     public function getAllLocales()
     {
+        Craft::$app->getDeprecator()->log('craft.i18n.getAllLocales()', 'craft.i18n.getAllLocales() has been deprecated. Use craft.app.i18n.allLocales instead.');
+
         return Craft::$app->getI18n()->getAllLocales();
     }
 
@@ -48,6 +42,8 @@ class I18N
      */
     public function getAppLocales()
     {
+        Craft::$app->getDeprecator()->log('craft.i18n.getAppLocales()', 'craft.i18n.getAppLocales() has been deprecated. Use craft.app.i18n.appLocales instead.');
+
         return Craft::$app->getI18n()->getAppLocales();
     }
 
@@ -58,7 +54,9 @@ class I18N
      */
     public function getCurrentLocale()
     {
-        return Craft::$app->getI18n()->getLocaleById(Craft::$app->language);
+        Craft::$app->getDeprecator()->log('craft.i18n.getCurrentLocale()', 'craft.i18n.getCurrentLocale() has been deprecated. Use craft.app.locale instead.');
+
+        return Craft::$app->getLocale();
     }
 
     /**
@@ -70,6 +68,8 @@ class I18N
      */
     public function getLocaleById($localeId)
     {
+        Craft::$app->getDeprecator()->log('craft.i18n.getLocaleById()', 'craft.i18n.getLocaleById() has been deprecated. Use craft.app.i18n.getLocaleById() instead.');
+
         return Craft::$app->getI18n()->getLocaleById($localeId);
     }
 
@@ -80,6 +80,8 @@ class I18N
      */
     public function getSiteLocales()
     {
+        Craft::$app->getDeprecator()->log('craft.i18n.getSiteLocales()', 'craft.i18n.getSiteLocales() has been deprecated. Use craft.app.i18n.siteLocales instead.');
+
         return Craft::$app->getI18n()->getSiteLocales();
     }
 
@@ -90,6 +92,8 @@ class I18N
      */
     public function getSiteLocaleIds()
     {
+        Craft::$app->getDeprecator()->log('craft.i18n.getSiteLocaleIds()', 'craft.i18n.getSiteLocaleIds() has been deprecated. Use craft.app.i18n.siteLocaleIds instead.');
+
         return Craft::$app->getI18n()->getSiteLocaleIds();
     }
 
@@ -100,6 +104,8 @@ class I18N
      */
     public function getPrimarySiteLocale()
     {
+        Craft::$app->getDeprecator()->log('craft.i18n.getPrimarySiteLocale()', 'craft.i18n.getPrimarySiteLocale() has been deprecated. Use craft.app.i18n.primarySiteLocale instead.');
+
         return Craft::$app->getI18n()->getPrimarySiteLocale();
     }
 
@@ -110,6 +116,8 @@ class I18N
      */
     public function getEditableLocales()
     {
+        Craft::$app->getDeprecator()->log('craft.i18n.getEditableLocales()', 'craft.i18n.getEditableLocales() has been deprecated. Use craft.app.i18n.editableLocales instead.');
+
         return Craft::$app->getI18n()->getEditableLocales();
     }
 
@@ -120,6 +128,8 @@ class I18N
      */
     public function getEditableLocaleIds()
     {
+        Craft::$app->getDeprecator()->log('craft.i18n.getEditableLocaleIds()', 'craft.i18n.getEditableLocaleIds() has been deprecated. Use craft.app.i18n.editableLocaleIds instead.');
+
         return Craft::$app->getI18n()->getEditableLocaleIds();
     }
 
@@ -132,6 +142,8 @@ class I18N
      */
     public function getLocaleData($localeId = null)
     {
+        Craft::$app->getDeprecator()->log('craft.i18n.getLocaleData()', 'craft.i18n.getLocaleData() has been deprecated. Use craft.app.i18n.getLocaleById() instead.');
+
         if ($localeId === null) {
             // Return the current application locale
             return Craft::$app->getLocale();
@@ -147,6 +159,8 @@ class I18N
      */
     public function getDatepickerJsFormat()
     {
+        Craft::$app->getDeprecator()->log('craft.i18n.getDatepickerJsFormat()', 'craft.i18n.getDatepickerJsFormat() has been deprecated. Use craft.app.locale.getDateFormat(3, \'jui\') instead.');
+
         $locale = Craft::$app->getLocale();
         $format = $locale->getDateFormat(Locale::FORMAT_SHORT);
 
@@ -160,6 +174,8 @@ class I18N
      */
     public function getTimepickerJsFormat()
     {
+        Craft::$app->getDeprecator()->log('craft.i18n.getTimepickerJsFormat()', 'craft.i18n.getTimepickerJsFormat() has been deprecated. Use craft.app.locale.getTimeFormat(3, \'php\') instead.');
+
         $locale = Craft::$app->getLocale();
         $format = $locale->getTimeFormat(Locale::FORMAT_SHORT);
 
@@ -173,6 +189,8 @@ class I18N
      */
     public function getIsIntlLoaded()
     {
+        Craft::$app->getDeprecator()->log('craft.i18n.getIsIntlLoaded()', 'craft.i18n.getIsIntlLoaded() has been deprecated. Use craft.app.i18n.isIntlLoaded instead.');
+
         return Craft::$app->getI18n()->getIsIntlLoaded();
     }
 }

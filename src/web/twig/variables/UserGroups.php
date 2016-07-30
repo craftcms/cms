@@ -25,14 +25,6 @@ class UserGroups
     // =========================================================================
 
     /**
-     * Constructor
-     */
-    public function __construct()
-    {
-        Craft::$app->getDeprecator()->log('craft.userGroups', 'craft.userGroups has been deprecated. Use craft.app.userGroups instead.');
-    }
-
-    /**
      * Returns all user groups.
      *
      * @param string|null $indexBy
@@ -41,6 +33,8 @@ class UserGroups
      */
     public function getAllGroups($indexBy = null)
     {
+        Craft::$app->getDeprecator()->log('craft.userGroups.getAllGroups()', 'craft.userGroups.getAllGroups() has been deprecated. Use craft.app.userGroups.getAllGroups() instead.');
+
         return Craft::$app->getUserGroups()->getAllGroups($indexBy);
     }
 
@@ -53,6 +47,8 @@ class UserGroups
      */
     public function getGroupById($groupId)
     {
+        Craft::$app->getDeprecator()->log('craft.userGroups.getGroupById()', 'craft.userGroups.getGroupById() has been deprecated. Use craft.app.userGroups.getGroupById() instead.');
+
         return Craft::$app->getUserGroups()->getGroupById($groupId);
     }
 
@@ -65,6 +61,8 @@ class UserGroups
      */
     public function getGroupByHandle($groupHandle)
     {
+        Craft::$app->getDeprecator()->log('craft.userGroups.getGroupByHandle()', 'craft.userGroups.getGroupByHandle() has been deprecated. Use craft.app.userGroups.getGroupByHandle() instead.');
+
         return Craft::$app->getUserGroups()->getGroupByHandle($groupHandle);
     }
 }

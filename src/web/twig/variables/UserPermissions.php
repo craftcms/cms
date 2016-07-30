@@ -24,20 +24,14 @@ class UserPermissions
     // =========================================================================
 
     /**
-     * Constructor
-     */
-    public function __construct()
-    {
-        Craft::$app->getDeprecator()->log('craft.userPermissions', 'craft.userPermissions has been deprecated. Use craft.app.userPermissions instead.');
-    }
-
-    /**
      * Returns all of the known permissions, sorted by category.
      *
      * @return array
      */
     public function getAllPermissions()
     {
+        Craft::$app->getDeprecator()->log('craft.userPermissions.getAllPermissions()', 'craft.userPermissions.getAllPermissions() has been deprecated. Use craft.app.userPermissions.allPermissions instead.');
+
         return Craft::$app->getUserPermissions()->getAllPermissions();
     }
 
@@ -50,6 +44,8 @@ class UserPermissions
      */
     public function getGroupPermissionsByUserId($userId)
     {
+        Craft::$app->getDeprecator()->log('craft.userPermissions.getGroupPermissionsByUserId()', 'craft.userPermissions.getGroupPermissionsByUserId() has been deprecated. Use craft.app.userPermissions.getGroupPermissionsByUserId() instead.');
+
         return Craft::$app->getUserPermissions()->getGroupPermissionsByUserId($userId);
     }
 }

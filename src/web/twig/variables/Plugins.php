@@ -22,20 +22,14 @@ class Plugins
     // =========================================================================
 
     /**
-     * Constructor
-     */
-    public function __construct()
-    {
-        Craft::$app->getDeprecator()->log('craft.plugins', 'craft.plugins has been deprecated. Use craft.app.plugins instead.');
-    }
-
-    /**
      * Returns info about all of the plugins saved in craft/plugins, whether they’re installed or not.
      *
      * @return array Info about all of the plugins saved in craft/plugins
      */
     public function getPluginInfo()
     {
+        Craft::$app->getDeprecator()->log('craft.plugins.getPluginInfo()', 'craft.plugins.getPluginInfo() has been deprecated. Use craft.app.plugins.pluginInfo instead.');
+
         return Craft::$app->getPlugins()->getPluginInfo();
     }
 
@@ -48,6 +42,8 @@ class Plugins
      */
     public function getPluginIconSvg($pluginHandle)
     {
+        Craft::$app->getDeprecator()->log('craft.plugins.getPluginIconSvg()', 'craft.plugins.getPluginIconSvg() has been deprecated. Use craft.app.plugins.getPluginIconSvg() instead.');
+
         return Craft::$app->getPlugins()->getPluginIconSvg($pluginHandle);
     }
 }

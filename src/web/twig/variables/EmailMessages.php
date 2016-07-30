@@ -25,20 +25,14 @@ class EmailMessages
     // =========================================================================
 
     /**
-     * Constructor
-     */
-    public function __construct()
-    {
-        Craft::$app->getDeprecator()->log('craft.emailMessages', 'craft.emailMessages has been deprecated. Use craft.app.emailMessages instead.');
-    }
-
-    /**
      * Returns all of the system email messages.
      *
      * @return array
      */
     public function getAllMessages()
     {
+        Craft::$app->getDeprecator()->log('craft.emailMessages.getAllMessages()', 'craft.emailMessages.getAllMessages() has been deprecated. Use craft.app.emailMessages.allMessages instead.');
+
         return Craft::$app->getEmailMessages()->getAllMessages();
     }
 
@@ -52,6 +46,8 @@ class EmailMessages
      */
     public function getMessage($key, $language = null)
     {
+        Craft::$app->getDeprecator()->log('craft.emailMessages.getMessage()', 'craft.emailMessages.getMessage() has been deprecated. Use craft.app.emailMessages.getMessage() instead.');
+
         return Craft::$app->getEmailMessages()->getMessage($key, $language);
     }
 }

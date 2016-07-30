@@ -23,14 +23,6 @@ class EntryRevisions
     // Public Methods
     // =========================================================================
 
-    /**
-     * Constructor
-     */
-    public function __construct()
-    {
-        Craft::$app->getDeprecator()->log('craft.entryRevisions', 'craft.entryRevisions has been deprecated. Use craft.app.entryRevisions instead.');
-    }
-
     // Drafts
     // -------------------------------------------------------------------------
 
@@ -44,6 +36,8 @@ class EntryRevisions
      */
     public function getDraftsByEntryId($entryId, $localeId = null)
     {
+        Craft::$app->getDeprecator()->log('craft.entryRevisions.getDraftsByEntryId()', 'craft.entryRevisions.getDraftsByEntryId() has been deprecated. Use craft.app.entryRevisions.getDraftsByEntryId() instead.');
+
         return Craft::$app->getEntryRevisions()->getDraftsByEntryId($entryId, $localeId);
     }
 
@@ -57,6 +51,8 @@ class EntryRevisions
      */
     public function getEditableDraftsByEntryId($entryId, $localeId = null)
     {
+        Craft::$app->getDeprecator()->log('craft.entryRevisions.getEditableDraftsByEntryId()', 'craft.entryRevisions.getEditableDraftsByEntryId() has been deprecated. Use craft.app.entryRevisions.getEditableDraftsByEntryId() instead.');
+
         return Craft::$app->getEntryRevisions()->getEditableDraftsByEntryId($entryId, $localeId);
     }
 
@@ -69,6 +65,8 @@ class EntryRevisions
      */
     public function getDraftById($draftId)
     {
+        Craft::$app->getDeprecator()->log('craft.entryRevisions.getDraftById()', 'craft.entryRevisions.getDraftById() has been deprecated. Use craft.app.entryRevisions.getDraftById() instead.');
+
         return Craft::$app->getEntryRevisions()->getDraftById($draftId);
     }
 
@@ -85,6 +83,8 @@ class EntryRevisions
      */
     public function getVersionsByEntryId($entryId, $localeId)
     {
+        Craft::$app->getDeprecator()->log('craft.entryRevisions.getVersionsByEntryId()', 'craft.entryRevisions.getVersionsByEntryId() has been deprecated. Use craft.app.entryRevisions.getVersionsByEntryId() instead.');
+
         return Craft::$app->getEntryRevisions()->getVersionsByEntryId($entryId, $localeId, 10);
     }
 
@@ -97,6 +97,8 @@ class EntryRevisions
      */
     public function getVersionById($versionId)
     {
+        Craft::$app->getDeprecator()->log('craft.entryRevisions.getVersionById()', 'craft.entryRevisions.getVersionById() has been deprecated. Use craft.app.entryRevisions.getVersionById() instead.');
+
         return Craft::$app->getEntryRevisions()->getVersionById($versionId);
     }
 }

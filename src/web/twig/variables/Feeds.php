@@ -24,14 +24,6 @@ class Feeds
     // =========================================================================
 
     /**
-     * Constructor
-     */
-    public function __construct()
-    {
-        Craft::$app->getDeprecator()->log('craft.feeds', 'craft.feeds has been deprecated. Use craft.app.feeds instead.');
-    }
-
-    /**
      * @param string  $url
      * @param integer $limit
      * @param integer $offset
@@ -41,6 +33,8 @@ class Feeds
      */
     public function getFeedItems($url, $limit = 0, $offset = 0, $cacheDuration = null)
     {
+        Craft::$app->getDeprecator()->log('craft.feeds.getFeedItems()', 'craft.feeds.getFeedItems() has been deprecated. Use craft.app.feeds.getFeedItems() instead.');
+
         $limit = Number::makeNumeric($limit);
         $offset = Number::makeNumeric($offset);
         $items = Craft::$app->getFeeds()->getFeedItems($url, $limit, $offset, $cacheDuration);

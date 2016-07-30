@@ -22,14 +22,6 @@ class SystemSettings
     // =========================================================================
 
     /**
-     * Constructor
-     */
-    public function __construct()
-    {
-        Craft::$app->getDeprecator()->log('craft.systemSettings', 'craft.systemSettings has been deprecated. Use craft.app.systemSettings instead.');
-    }
-
-    /**
      * Returns whether a setting category exists.
      *
      * @param string $category
@@ -50,6 +42,8 @@ class SystemSettings
      */
     public function __get($category)
     {
+        Craft::$app->getDeprecator()->log('craft.systemSettings.[category]', 'craft.systemSettings.[category] has been deprecated. Use craft.app.systemSettings.getSettings(\'category\') instead.');
+
         return Craft::$app->getSystemSettings()->getSettings($category);
     }
 }
