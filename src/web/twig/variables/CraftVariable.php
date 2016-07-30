@@ -90,7 +90,6 @@ class CraftVariable extends ServiceLocator
             'sections' => 'craft\app\web\twig\variables\Sections',
             'systemSettings' => 'craft\app\web\twig\variables\SystemSettings',
             'tasks' => 'craft\app\web\twig\variables\Tasks',
-            'updates' => 'craft\app\web\twig\variables\Updates',
             'session' => 'craft\app\web\twig\variables\UserSession',
         ];
 
