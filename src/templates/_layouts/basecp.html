@@ -35,7 +35,7 @@
 			resourceTrigger:       "{{ craft.app.config.getResourceTrigger()|e('js') }}",
 			actionTrigger:         "{{ craft.app.config.get('actionTrigger')|e('js') }}",
 			path:                  "{{ craft.app.request.getPathInfo()|e('js') }}",
-			locale:                "{{ craft.locale|e('js') }}",
+			locale:                "{{ craft.app.language|e('js') }}",
 			orientation:           "{{ orientation|e('js') }}",
 			left:                  "{{ orientation == 'ltr' ? 'left' : 'right' }}",
 			right:                 "{{ orientation == 'ltr' ? 'right' : 'left' }}",

@@ -131,11 +131,11 @@
                                 <select id="preferredLocale"
                                         name="preferredLocale">
                                     {% set allSiteLocales = craft.app.i18n.getSiteLocales %}
-                                    {% set userLocale = account.getPreferredLocale() ?: (account.getIsCurrent() ? craft.locale : allSiteLocales[0]) %}
+                                    {% set userLocale = account.getPreferredLocale() ?: (account.getIsCurrent() ? craft.app.language : allSiteLocales[0]) %}
 
                                     {% for locale in allSiteLocales %}
                                         <option value="{{ locale.id }}"
-                                                {% if locale.id == userLocale %}selected{% endif %}>{{ locale.getDisplayName(craft.locale) }}</option>
+                                                {% if locale.id == userLocale %}selected{% endif %}>{{ locale.getDisplayName(craft.app.language) }}</option>
                                     {% endfor %}
                                 </select>
                             </div>

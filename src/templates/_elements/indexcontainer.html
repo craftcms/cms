@@ -35,17 +35,17 @@
 				{% if showLocaleMenu %}
 					{% set editableLocaleIds = craft.app.i18n.getEditableLocaleIds() %}
 					{% if editableLocaleIds|length %}
-						{% if craft.locale in editableLocaleIds %}
+						{% if craft.app.language in editableLocaleIds %}
 							{% set initialLocale = craft.app.locale %}
 						{% else %}
 							{% set initialLocale = craft.app.i18n.getLocaleById(editableLocaleIds|first) %}
 						{% endif %}
 						<td class="thin">
-							<div class="btn menubtn localemenubtn">{{ initialLocale ? initialLocale.getDisplayName(craft.locale) }}</div>
+							<div class="btn menubtn localemenubtn">{{ initialLocale ? initialLocale.getDisplayName(craft.app.language) }}</div>
 							<div class="menu">
 								<ul class="padded">
 									{% for locale in craft.app.i18n.getEditableLocales() %}
-										<li><a{% if initialLocale and locale.id == initialLocale.id %} class="sel"{% endif %} data-locale="{{ locale.id }}">{{ locale.getDisplayName(craft.locale) }}</a></li>
+										<li><a{% if initialLocale and locale.id == initialLocale.id %} class="sel"{% endif %} data-locale="{{ locale.id }}">{{ locale.getDisplayName(craft.app.language) }}</a></li>
 									{% endfor %}
 								</ul>
 							</div>

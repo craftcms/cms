@@ -12,9 +12,9 @@
 		{% set localeInput %}
 			<div class="select">
 				<select id="locale">
-					{% set language = craft.locale %}
+					{% set language = craft.app.language %}
 					{% for locale in craft.app.i18n.getAllLocales() %}
-						<option value="{{ locale.id }}"{% if locale.id == craft.locale %} selected{% endif %}>{{ locale.id }} ({{ locale.getDisplayName(language) }})</option>
+						<option value="{{ locale.id }}"{% if locale.id == craft.app.language %} selected{% endif %}>{{ locale.id }} ({{ locale.getDisplayName(language) }})</option>
 					{% endfor %}
 				</select>
 			</div>

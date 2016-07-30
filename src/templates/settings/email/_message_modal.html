@@ -12,7 +12,7 @@
 			<li class="select locale">
 				<select>
 					{% for locale in craft.app.i18n.getSiteLocales() %}
-						<option value="{{ locale.id }}" {% if locale.id == message.locale %}selected{% endif %}>{{ locale.getDisplayName(craft.locale) }}</option>
+						<option value="{{ locale.id }}" {% if locale.id == message.locale %}selected{% endif %}>{{ locale.getDisplayName(craft.app.language) }}</option>
 					{% endfor %}
 				</select>
 			</li>
