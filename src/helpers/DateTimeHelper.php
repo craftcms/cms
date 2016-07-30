@@ -848,10 +848,10 @@ class DateTimeHelper
             $pmName = $targetLocale->getPMName();
 
             static::$_translationPairs[$language] = array_merge(
-                array_combine($sourceLocale->getMonthNames(Locale::FORMAT_FULL), $targetLocale->getMonthNames(Locale::FORMAT_FULL)),
-                array_combine($sourceLocale->getWeekDayNames(Locale::FORMAT_FULL), $targetLocale->getWeekDayNames(Locale::FORMAT_FULL)),
-                array_combine($sourceLocale->getMonthNames(Locale::FORMAT_MEDIUM), $targetLocale->getMonthNames(Locale::FORMAT_MEDIUM)),
-                array_combine($sourceLocale->getWeekDayNames(Locale::FORMAT_MEDIUM), $targetLocale->getWeekDayNames(Locale::FORMAT_MEDIUM)),
+                array_combine($sourceLocale->getMonthNames(Locale::LENGTH_FULL), $targetLocale->getMonthNames(Locale::LENGTH_FULL)),
+                array_combine($sourceLocale->getWeekDayNames(Locale::LENGTH_FULL), $targetLocale->getWeekDayNames(Locale::LENGTH_FULL)),
+                array_combine($sourceLocale->getMonthNames(Locale::LENGTH_MEDIUM), $targetLocale->getMonthNames(Locale::LENGTH_MEDIUM)),
+                array_combine($sourceLocale->getWeekDayNames(Locale::LENGTH_MEDIUM), $targetLocale->getWeekDayNames(Locale::LENGTH_MEDIUM)),
                 [
                     'AM' => StringHelper::toUpperCase($amName),
                     'PM' => StringHelper::toUpperCase($pmName),

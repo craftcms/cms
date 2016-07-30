@@ -170,27 +170,27 @@ class Locale extends Object
     /**
      * @var int The abbreviated date/time format.
      */
-    const FORMAT_ABBREVIATED = 'abbreviated';
+    const LENGTH_ABBREVIATED = 'abbreviated';
 
     /**
      * @var int The short date/time format.
      */
-    const FORMAT_SHORT = 'short';
+    const LENGTH_SHORT = 'short';
 
     /**
      * @var int The medium date/time format.
      */
-    const FORMAT_MEDIUM = 'medium';
+    const LENGTH_MEDIUM = 'medium';
 
     /**
      * @var int The long date/time format.
      */
-    const FORMAT_LONG = 'long';
+    const LENGTH_LONG = 'long';
 
     /**
      * @var int The full date/time format.
      */
-    const FORMAT_FULL = 'full';
+    const LENGTH_FULL = 'full';
 
     /**
      * @var string ICU format
@@ -420,24 +420,24 @@ class Locale extends Object
             } else {
                 $config['dateTimeFormats'] = [
                     'short' => [
-                        'date' => $this->getDateFormat(Locale::FORMAT_SHORT),
-                        'time' => $this->getTimeFormat(Locale::FORMAT_SHORT),
-                        'datetime' => $this->getDateTimeFormat(Locale::FORMAT_SHORT),
+                        'date' => $this->getDateFormat(Locale::LENGTH_SHORT),
+                        'time' => $this->getTimeFormat(Locale::LENGTH_SHORT),
+                        'datetime' => $this->getDateTimeFormat(Locale::LENGTH_SHORT),
                     ],
                     'medium' => [
-                        'date' => $this->getDateFormat(Locale::FORMAT_MEDIUM),
-                        'time' => $this->getTimeFormat(Locale::FORMAT_MEDIUM),
-                        'datetime' => $this->getDateTimeFormat(Locale::FORMAT_MEDIUM),
+                        'date' => $this->getDateFormat(Locale::LENGTH_MEDIUM),
+                        'time' => $this->getTimeFormat(Locale::LENGTH_MEDIUM),
+                        'datetime' => $this->getDateTimeFormat(Locale::LENGTH_MEDIUM),
                     ],
                     'long' => [
-                        'date' => $this->getDateFormat(Locale::FORMAT_LONG),
-                        'time' => $this->getTimeFormat(Locale::FORMAT_LONG),
-                        'datetime' => $this->getDateTimeFormat(Locale::FORMAT_LONG),
+                        'date' => $this->getDateFormat(Locale::LENGTH_LONG),
+                        'time' => $this->getTimeFormat(Locale::LENGTH_LONG),
+                        'datetime' => $this->getDateTimeFormat(Locale::LENGTH_LONG),
                     ],
                     'full' => [
-                        'date' => $this->getDateFormat(Locale::FORMAT_FULL),
-                        'time' => $this->getTimeFormat(Locale::FORMAT_FULL),
-                        'datetime' => $this->getDateTimeFormat(Locale::FORMAT_FULL),
+                        'date' => $this->getDateFormat(Locale::LENGTH_FULL),
+                        'time' => $this->getTimeFormat(Locale::LENGTH_FULL),
+                        'datetime' => $this->getDateTimeFormat(Locale::LENGTH_FULL),
                     ],
                 ];
             }
@@ -454,7 +454,7 @@ class Locale extends Object
     /**
      * Returns the localized ICU date format.
      *
-     * @param integer $length The format length that should be returned. Values: Locale::FORMAT_SHORT, ::MEDIUM, ::LONG, ::FULL
+     * @param integer $length The format length that should be returned. Values: Locale::LENGTH_SHORT, ::MEDIUM, ::LONG, ::FULL
      * @param string  $format The format type that should be returned. Values: Locale::FORMAT_ICU (default), ::FORMAT_PHP, ::FORMAT_JUI
      *
      * @return string The localized ICU date format.
@@ -467,7 +467,7 @@ class Locale extends Object
     /**
      * Returns the localized ICU time format.
      *
-     * @param integer $length The format length that should be returned. Values: Locale::FORMAT_SHORT, ::MEDIUM, ::LONG, ::FULL
+     * @param integer $length The format length that should be returned. Values: Locale::LENGTH_SHORT, ::MEDIUM, ::LONG, ::FULL
      * @param string  $format The format type that should be returned. Values: Locale::FORMAT_ICU (default), ::FORMAT_PHP, ::FORMAT_JUI
      *
      * @return string The localized ICU time format.
@@ -480,7 +480,7 @@ class Locale extends Object
     /**
      * Returns the localized ICU date + time format.
      *
-     * @param integer $length The format length that should be returned. Values: Locale::FORMAT_SHORT, ::MEDIUM, ::LONG, ::FULL
+     * @param integer $length The format length that should be returned. Values: Locale::LENGTH_SHORT, ::MEDIUM, ::LONG, ::FULL
      * @param string  $format The format type that should be returned. Values: Locale::FORMAT_ICU (default), ::FORMAT_PHP, ::FORMAT_JUI
      *
      * @return string The localized ICU date + time format.
@@ -494,7 +494,7 @@ class Locale extends Object
      * Returns a localized month name.
      *
      * @param integer $month      The month to return (1-12).
-     * @param integer $length     The format length that should be returned. Values: Locale::FORMAT_ABBREVIATED, ::MEDIUM, ::FULL
+     * @param integer $length     The format length that should be returned. Values: Locale::LENGTH_ABBREVIATED, ::MEDIUM, ::FULL
      * @param boolean $standAlone Whether to return the "stand alone" month name.
      *
      * @return string The localized month name.
@@ -502,18 +502,18 @@ class Locale extends Object
     public function getMonthName($month, $length = null, $standAlone = true)
     {
         if ($length === null) {
-            $length = static::FORMAT_FULL;
+            $length = static::LENGTH_FULL;
         }
 
         if (Craft::$app->getI18n()->getIsIntlLoaded()) {
             $formatter = new IntlDateFormatter($this->id, IntlDateFormatter::NONE, IntlDateFormatter::NONE);
 
             switch ($length) {
-                case static::FORMAT_ABBREVIATED:
+                case static::LENGTH_ABBREVIATED:
                     $formatter->setPattern($standAlone ? 'LLLLL' : 'MMMMM');
                     break; // S
-                case static::FORMAT_SHORT:
-                case static::FORMAT_MEDIUM:
+                case static::LENGTH_SHORT:
+                case static::LENGTH_MEDIUM:
                     $formatter->setPattern($standAlone ? 'LLL' : 'MMM');
                     break;   // Sep
                 default:
@@ -527,11 +527,11 @@ class Locale extends Object
             $which = $standAlone ? 'standAloneMonthNames' : 'monthNames';
 
             switch ($length) {
-                case static::FORMAT_ABBREVIATED:
+                case static::LENGTH_ABBREVIATED:
                     return $this->data[$which]['abbreviated'][$month - 1];
                     break; // S
-                case static::FORMAT_SHORT:
-                case static::FORMAT_MEDIUM:
+                case static::LENGTH_SHORT:
+                case static::LENGTH_MEDIUM:
                     return $this->data[$which]['medium'][$month - 1];
                     break;      // Sep
                 default:
@@ -544,7 +544,7 @@ class Locale extends Object
     /**
      * Returns all of the localized month names.
      *
-     * @param integer $length     The format length that should be returned. Values: Locale::FORMAT_ABBREVIATED, ::MEDIUM, ::FULL
+     * @param integer $length     The format length that should be returned. Values: Locale::LENGTH_ABBREVIATED, ::MEDIUM, ::FULL
      * @param boolean $standAlone Whether to return the "stand alone" month names.
      *
      * @return array The localized month names.
@@ -564,7 +564,7 @@ class Locale extends Object
      * Returns a localized day of the week name.
      *
      * @param integer $day        The day of the week to return (1-7), where 1 stands for Sunday.
-     * @param integer $length     The format length that should be returned. Values: Locale::FORMAT_ABBREVIATED, ::SHORT, ::MEDIUM, ::FULL
+     * @param integer $length     The format length that should be returned. Values: Locale::LENGTH_ABBREVIATED, ::SHORT, ::MEDIUM, ::FULL
      * @param boolean $standAlone Whether to return the "stand alone" day of the week name.
      *
      * @return string The localized day of the week name.
@@ -572,20 +572,20 @@ class Locale extends Object
     public function getWeekDayName($day, $length = null, $standAlone = true)
     {
         if ($length === null) {
-            $length = static::FORMAT_FULL;
+            $length = static::LENGTH_FULL;
         }
 
         if (Craft::$app->getI18n()->getIsIntlLoaded()) {
             $formatter = new IntlDateFormatter($this->id, IntlDateFormatter::NONE, IntlDateFormatter::NONE);
 
             switch ($length) {
-                case static::FORMAT_ABBREVIATED:
+                case static::LENGTH_ABBREVIATED:
                     $formatter->setPattern($standAlone ? 'ccccc' : 'eeeee');
                     break;  // T
-                case static::FORMAT_SHORT:
+                case static::LENGTH_SHORT:
                     $formatter->setPattern($standAlone ? 'cccccc' : 'eeeeee');
                     break; // Tu
-                case static::FORMAT_MEDIUM:
+                case static::LENGTH_MEDIUM:
                     $formatter->setPattern($standAlone ? 'ccc' : 'eee');
                     break;    // Tue
                 default:
@@ -600,13 +600,13 @@ class Locale extends Object
             $which = $standAlone ? 'standAloneWeekDayNames' : 'weekDayNames';
 
             switch ($length) {
-                case static::FORMAT_ABBREVIATED:
+                case static::LENGTH_ABBREVIATED:
                     return $this->data[$which]['abbreviated'][$day - 1];
                     break; // T
-                case static::FORMAT_SHORT:
+                case static::LENGTH_SHORT:
                     return $this->data[$which]['short'][$day - 1];
                     break;       // Tu
-                case static::FORMAT_MEDIUM:
+                case static::LENGTH_MEDIUM:
                     return $this->data[$which]['medium'][$day - 1];
                     break;      // Tue
                 default:
@@ -619,7 +619,7 @@ class Locale extends Object
     /**
      * Returns all of the localized day of the week names.
      *
-     * @param integer $length     The format length that should be returned. Values: Locale::FORMAT_ABBREVIATED, ::MEDIUM, ::FULL
+     * @param integer $length     The format length that should be returned. Values: Locale::LENGTH_ABBREVIATED, ::MEDIUM, ::FULL
      * @param boolean $standAlone Whether to return the "stand alone" day of the week names.
      *
      * @return array The localized day of the week names.
@@ -796,7 +796,7 @@ class Locale extends Object
     /**
      * Returns a localized date/time format.
      *
-     * @param integer $length   The format length that should be returned. Values: Locale::FORMAT_SHORT, ::MEDIUM, ::LONG, ::FULL
+     * @param integer $length   The format length that should be returned. Values: Locale::LENGTH_SHORT, ::MEDIUM, ::LONG, ::FULL
      * @param boolean $withDate Whether the date should be included in the format.
      * @param boolean $withTime Whether the time should be included in the format.
      * @param string  $format   The format type that should be returned. Values: Locale::FORMAT_ICU (default), ::FORMAT_PHP, ::FORMAT_JUI
@@ -824,7 +824,7 @@ class Locale extends Object
     /**
      * Returns a localized ICU date/time format.
      *
-     * @param integer $length   The format length that should be returned. Values: Locale::FORMAT_SHORT, ::MEDIUM, ::LONG, ::FULL
+     * @param integer $length   The format length that should be returned. Values: Locale::LENGTH_SHORT, ::MEDIUM, ::LONG, ::FULL
      * @param boolean $withDate Whether the date should be included in the format.
      * @param boolean $withTime Whether the time should be included in the format.
      *
@@ -833,7 +833,7 @@ class Locale extends Object
     private function _getDateTimeIcuFormat($length, $withDate, $withTime)
     {
         if ($length === null) {
-            $length = static::FORMAT_MEDIUM;
+            $length = static::LENGTH_MEDIUM;
         }
 
         if (Craft::$app->getI18n()->getIsIntlLoaded()) {
@@ -852,13 +852,13 @@ class Locale extends Object
         $type = ($withDate ? 'date' : '').($withTime ? 'time' : '');
 
         switch ($length) {
-            case static::FORMAT_SHORT:
+            case static::LENGTH_SHORT:
                 return $this->data['dateTimeFormats']['short'][$type];
-            case static::FORMAT_MEDIUM:
+            case static::LENGTH_MEDIUM:
                 return $this->data['dateTimeFormats']['medium'][$type];
-            case static::FORMAT_LONG:
+            case static::LENGTH_LONG:
                 return $this->data['dateTimeFormats']['long'][$type];
-            case static::FORMAT_FULL:
+            case static::LENGTH_FULL:
                 return $this->data['dateTimeFormats']['full'][$type];
         }
 
