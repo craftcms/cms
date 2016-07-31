@@ -31,7 +31,7 @@ foreach ($log->traces as $i => $trace) {
     } else if (!empty($trace['template'])) {
         $info = '<strong>Template:</strong> '.$trace['template'];
     } else {
-        $info = (!empty($trace['objectClass']) || !empty($trace['class']) ? str_replace('\\', '\<wbr>', ($trace['objectClass'] ?: $trace['class'])).'::<wbr>' : '').$trace['method'].'('.$trace['args'].')';
+        $info = (!empty($trace['objectClass']) || !empty($trace['class']) ? str_replace('\\', '\<wbr>', ($trace['objectClass'] ?: $trace['class'])).'::<wbr>' : '').$trace['method'].'('.htmlentities($trace['args'], ENT_NOQUOTES, 'UTF-8').')';
     }
 
     if (!empty($trace['file'])) {
