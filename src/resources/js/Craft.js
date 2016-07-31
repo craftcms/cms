@@ -1,4 +1,4 @@
-/*! Craft 3.0.0 - 2016-07-30 */
+/*! Craft 3.0.0 - 2016-07-31 */
 (function($){
 
 // Set all the standard Craft.* stuff
@@ -140,14 +140,20 @@ $.extend(Craft,
 	/**
 	 * Get a translated message.
 	 *
+	 * @param {string} category
 	 * @param {string} message
 	 * @param {object} params
 	 * @return string
 	 */
-	t: function(message, params)
+	t: function(category, message, params)
 	{
-		if (typeof Craft.translations[message] != 'undefined')
-			message = Craft.translations[message];
+		if (
+			typeof Craft.translations[category] != typeof undefined &&
+			typeof Craft.translations[category][message] != typeof undefined
+		)
+		{
+			message = Craft.translations[category][message];
+		}
 
 		if (params)
 		{
@@ -10659,6 +10665,7 @@ Craft.DeleteUserModal = Garnish.Modal.extend(
 		onSubmit: $.noop
 	}
 });
+
 /**
  * Editable table class
  */
