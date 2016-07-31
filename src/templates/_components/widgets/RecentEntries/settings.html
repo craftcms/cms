@@ -5,7 +5,7 @@
 	<div class="select">
 		<select id="section" name="section">
 			<option value="*">{{ "All"|t('app') }}</option>
-			{% for section in craft.sections.getAllSections() %}
+			{% for section in craft.app.sections.getAllSections() %}
 				{% if section.type != 'single' %}
 					<option value="{{ section.id }}"{% if section.id == widget.section %} selected{% endif %}>{{ section.name|t('site') }}</option>
 				{% endif %}
