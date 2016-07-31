@@ -31,20 +31,14 @@ foreach ($log->traces as $i => $trace) {
     } else if (!empty($trace['template'])) {
         $info = '<strong>Template:</strong> '.$trace['template'];
     } else {
-        $info = (!empty($trace['objectClass']) || !empty($trace['class']) ? str_replace('\\',
-                    '\<wbr>',
-                    ($trace['objectClass'] ?: $trace['class'])).'::<wbr>' : '').$trace['method'].'('.$trace['args'].')';
+        $info = (!empty($trace['objectClass']) || !empty($trace['class']) ? str_replace('\\', '\<wbr>', ($trace['objectClass'] ?: $trace['class'])).'::<wbr>' : '').$trace['method'].'('.$trace['args'].')';
     }
 
     if (!empty($trace['file'])) {
-        $info .= '<br><strong>From:</strong> '.str_replace('/', '/<wbr>',
-                $trace['file']).' ('.$trace['line'].')';
+        $info .= '<br><strong>From:</strong> '.str_replace('/', '/<wbr>', $trace['file']).' ('.$trace['line'].')';
     }
 
-    $values[] = [
-        ($totalTraces - $i),
-        $info
-    ];
+    $values[] = [($totalTraces - $i), $info];
 }
 
 echo $this->render('../table', [
