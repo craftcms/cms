@@ -203,7 +203,7 @@
                         {% if CraftEdition == CraftPro %}
                             <h2>{{ "User Groups"|t('app') }}</h2>
 
-                            {% set allGroups = craft.userGroups.getAllGroups() %}
+                            {% set allGroups = craft.app.userGroups.getAllGroups() %}
                             {% set userGroups = account.getGroups('id') %}
 
                             {% set userGroupsInput %}

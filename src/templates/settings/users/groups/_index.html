@@ -7,7 +7,7 @@
 {% set docsUrl = 'http://craftcms.com/docs/users#user-groups' %}
 
 
-{% set groups = craft.userGroups.getAllGroups %}
+{% set groups = craft.app.userGroups.getAllGroups() %}
 
 
 {% block content %}

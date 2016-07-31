@@ -15,7 +15,7 @@
 
 
 {% if group is not defined and groupId is defined %}
-	{% set group = craft.userGroups.getGroupById(groupId) %}
+	{% set group = craft.app.userGroups.getGroupById(groupId) %}
 	{% if not group %}{% exit 404 %}{% endif %}
 {% endif %}
 
