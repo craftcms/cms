@@ -252,7 +252,7 @@
                         <div id="permissions" class="field{% if account.admin %} hidden{% endif %}">
                             {% include "_includes/permissions" with {
                             userOrGroup: (account.admin ? null : account),
-                            groupPermissions: craft.userPermissions.getGroupPermissionsByUserId(account.id)
+                            groupPermissions: craft.app.userPermissions.getGroupPermissionsByUserId(account.id)
                             } only %}
                         </div>
 
