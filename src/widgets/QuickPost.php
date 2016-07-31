@@ -140,7 +140,7 @@ class QuickPost extends Widget
      */
     public function getBodyHtml()
     {
-        Craft::$app->getView()->includeTranslations('app', [
+        Craft::$app->getView()->registerTranslations('app', [
             'Entry saved.',
             'Couldn’t save entry.',
         ]);

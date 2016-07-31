@@ -117,7 +117,7 @@ class DashboardController extends Controller
         $view->registerJsResource('js/Dashboard.js');
         $view->registerJs('window.dashboard = new Craft.Dashboard('.Json::encode($widgetTypeInfo).');');
         $view->registerJs($allWidgetJs);
-        $view->includeTranslations('app', [
+        $view->registerTranslations('app', [
             '1 column',
             '{num} columns',
             '{type} Settings',

@@ -781,7 +781,7 @@ class View extends \yii\web\View
      *
      * @return void
      */
-    public function includeTranslations($category, $messages)
+    public function registerTranslations($category, $messages)
     {
         foreach ($messages as $message) {
             if (!isset($this->_translations[$category]) || !array_key_exists($message, $this->_translations[$category])) {
@@ -797,7 +797,7 @@ class View extends \yii\web\View
     }
 
     /**
-     * Returns the translations prepared for inclusion by includeTranslations(), in JSON, and flushes out the
+     * Returns the translations prepared for inclusion by registerTranslations(), in JSON, and flushes out the
      * translations queue.
      *
      * @return string A JSON-encoded array of source/translation message mappings.

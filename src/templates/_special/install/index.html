@@ -1,7 +1,7 @@
 {% extends "_layouts/basecp" %}
 {% set title = "Install Craft CMS"|t('app') %}
 
-{% do craft.app.view.includeTranslations('app', [
+{% do craft.app.view.registerTranslations('app', [
 	"All done!",
 	"Go to {app}",
 ]) %}

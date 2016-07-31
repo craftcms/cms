@@ -169,7 +169,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface
             ');'
         );
 
-        Craft::$app->getView()->includeTranslations('app', [
+        Craft::$app->getView()->registerTranslations('app', [
             'Are you sure you want to delete this block type?',
             'Are you sure you want to delete this field?',
             'Field Type',
@@ -293,7 +293,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface
             ($this->maxBlocks ? $this->maxBlocks : 'null').
             ');');
 
-        Craft::$app->getView()->includeTranslations('app', [
+        Craft::$app->getView()->registerTranslations('app', [
             'Actions',
             'Add a block',
             'Add {type} above',

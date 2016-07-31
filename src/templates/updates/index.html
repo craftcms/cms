@@ -3,7 +3,7 @@
 {% extends "_layouts/cp" %}
 {% set title = "Updates"|t('app') %}
 
-{% do craft.app.view.includeTranslations('app', [
+{% do craft.app.view.registerTranslations('app', [
 	"You’ve got updates!",
 	"You’re all up-to-date!",
 	"build {build}",

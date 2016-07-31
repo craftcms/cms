@@ -8,7 +8,7 @@
 	{ label: "Settings"|t('app'), url: url('settings') }
 ] %}
 
-{% do craft.app.view.includeTranslations('app', [
+{% do craft.app.view.registerTranslations('app', [
 	"Couldn’t save message.",
 	"Message saved.",
 ]) %}

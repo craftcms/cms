@@ -13,7 +13,7 @@
 	{ label: "Settings"|t('app'), url: url('settings') }
 ] %}
 
-{% do craft.app.view.includeTranslations('app', [
+{% do craft.app.view.registerTranslations('app', [
 	"Global",
 	"New route order saved.",
 	"Couldn’t save new route order.",

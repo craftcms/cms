@@ -519,7 +519,7 @@ class RichText extends Field
         $this->_maybeIncludeRedactorPlugin($configJs, 'video', false);
         $this->_maybeIncludeRedactorPlugin($configJs, 'pagebreak', true);
 
-        $view->includeTranslations('app', [
+        $view->registerTranslations('app', [
             'Insert image',
             'Insert URL',
             'Choose image',

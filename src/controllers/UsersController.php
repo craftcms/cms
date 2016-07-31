@@ -743,7 +743,7 @@ class UsersController extends Controller
         Craft::$app->getView()->registerJsResource('js/AccountSettingsForm.js');
         Craft::$app->getView()->registerJs('new Craft.AccountSettingsForm('.Json::encode($user->id).', '.($user->getIsCurrent() ? 'true' : 'false').');', View::POS_END);
 
-        Craft::$app->getView()->includeTranslations('app', [
+        Craft::$app->getView()->registerTranslations('app', [
             'Please enter your current password.',
             'Please enter your password.',
         ]);

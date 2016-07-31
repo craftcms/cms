@@ -4,7 +4,7 @@
 {% set bodyClass = 'login' %}
 {% registercssresource "css/login.css" %}
 {% registerjsresource "js/login.js" %}
-{% do craft.app.view.includeTranslations('app', [
+{% do craft.app.view.registerTranslations('app', [
 	"Reset Password",
 	"Check your email for instructions to reset your password.",
 ]) %}

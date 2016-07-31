@@ -16,7 +16,7 @@
 
 {% import "_includes/forms" as forms %}
 
-{% do craft.app.view.includeTranslations('app', [
+{% do craft.app.view.registerTranslations('app', [
 	"Email sent successfully! Check your inbox.",
 	"An unknown error occurred.",
 ]) %}
