@@ -49,7 +49,7 @@
     </div>
 {% endset %}
 
-{% set requireEmailVerification = craft.systemSettings.users.requireEmailVerification %}
+{% set requireEmailVerification = craft.app.systemSettings.getSettings('users').requireEmailVerification %}
 
 {% set hiddenInputs %}
     {{ getCsrfInput() }}
