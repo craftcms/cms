@@ -11,7 +11,7 @@
 {% set docsUrl = 'http://craftcms.com/docs/plugins/introduction' %}
 
 
-{% set info = craft.plugins.getPluginInfo() %}
+{% set info = craft.app.plugins.getPluginInfo() %}
 
 
 {% block content %}
@@ -30,7 +30,7 @@
 					<tr data-name="{{ config.name }}">
 						<th data-title="{{ 'Name'|t('app') }}">
 							<div class="plugin-infos">
-								<div class="icon">{{ craft.plugins.getPluginIconSvg(classHandle)|raw }}</div>
+								<div class="icon">{{ craft.app.plugins.getPluginIconSvg(classHandle)|raw }}</div>
 								<div class="details">
 									<div class="name">
 										{{ config.name }}
