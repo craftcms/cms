@@ -104,7 +104,7 @@
 		Craft.cp.setRunningTaskInfo('~task.getInfo()|json_encode|raw~');
 		Craft.cp.trackTaskProgress();
 	{% endregisterjs %}
-{% elseif craft.app.tasks.getAreTasksPending() %}
+{% elseif craft.app.tasks.areTasksPending() %}
 	{% registerjs %}
 		Craft.cp.runPendingTasks();
 	{% endregisterjs %}
