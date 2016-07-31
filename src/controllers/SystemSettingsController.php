@@ -28,7 +28,6 @@ use craft\app\tools\ClearCaches;
 use craft\app\tools\DbBackup;
 use craft\app\tools\FindAndReplace;
 use craft\app\tools\SearchIndex;
-use craft\app\web\twig\variables\ToolInfo;
 use craft\app\web\Controller;
 use yii\web\NotFoundHttpException;
 use yii\web\Response;
@@ -67,13 +66,13 @@ class SystemSettingsController extends Controller
 
         // Only include the Update Asset Indexes tool if there are any asset sources
         if (count(Craft::$app->getVolumes()->getAllVolumes()) !== 0) {
-            $tools[] = new ToolInfo(AssetIndex::className());
+            $tools[] = new AssetIndex();
         }
 
-        $tools[] = new ToolInfo(ClearCaches::className());
-        $tools[] = new ToolInfo(DbBackup::className());
-        $tools[] = new ToolInfo(FindAndReplace::className());
-        $tools[] = new ToolInfo(SearchIndex::className());
+        $tools[] = new ClearCaches();
+        $tools[] = new DbBackup();
+        $tools[] = new FindAndReplace();
+        $tools[] = new SearchIndex();
 
         return $this->renderTemplate('settings/_index', [
             'tools' => $tools
