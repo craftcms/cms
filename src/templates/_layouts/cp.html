@@ -98,17 +98,17 @@
 	"“{name}” deleted."
 %}
 
-{% set task = craft.tasks.getRunningTask() %}
+{% set task = craft.app.tasks.getRunningTask() %}
 {% if task %}
 	{% registerjs %}
 		Craft.cp.setRunningTaskInfo('~task.getInfo()|json_encode|raw~');
 		Craft.cp.trackTaskProgress();
 	{% endregisterjs %}
-{% elseif craft.tasks.areTasksPending() %}
+{% elseif craft.app.tasks.getAreTasksPending() %}
 	{% registerjs %}
 		Craft.cp.runPendingTasks();
 	{% endregisterjs %}
-{% elseif craft.tasks.haveTasksFailed() %}
+{% elseif craft.app.tasks.getHaveTasksFailed() %}
 	{% registerjs %}
 		Craft.cp.setRunningTaskInfo({ status: "error" });
 	{% endregisterjs %}
