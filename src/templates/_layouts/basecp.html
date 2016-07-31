@@ -40,7 +40,7 @@
 			left:                  "{{ orientation == 'ltr' ? 'left' : 'right' }}",
 			right:                 "{{ orientation == 'ltr' ? 'right' : 'left' }}",
 			username:              {{ currentUser is defined and currentUser ? ('"'~currentUser.username|e('js')~'"')|raw : 'null' }},
-			remainingSessionTime:  {{ craft.app.request.getSegment(1) not in ['updates', 'manualupdate'] ? craft.session.getRemainingSessionTime : 0 }},
+			remainingSessionTime:  {{ craft.app.request.getSegment(1) not in ['updates', 'manualupdate'] ? craft.app.user.getRemainingSessionTime() : 0 }},
 			Personal:              {{ CraftPersonal }},
 			Client:                {{ CraftClient }},
 			Pro:                   {{ CraftPro }},

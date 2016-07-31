@@ -115,7 +115,7 @@
 {% endif %}
 
 
-{% set forceConfirmUnload = craft.session.hasFlash('error') %}
+{% set forceConfirmUnload = craft.app.session.hasFlash('error') %}
 {% set fullPageForm = (fullPageForm is defined and fullPageForm) %}
 
 {% if fullPageForm and extraPageHeaderHtml is not defined %}
@@ -129,7 +129,7 @@
 {% endif %}
 
 
-{% set forceConfirmUnload = craft.session.hasFlash('error') %}
+{% set forceConfirmUnload = craft.app.session.hasFlash('error') %}
 
 
 {% block body %}
@@ -266,7 +266,7 @@
 		<div id="notifications-wrapper">
 			<div id="notifications">
 				{% for type in ['notice', 'error'] %}
-					{% set message = craft.session.getFlash(type) %}
+					{% set message = craft.app.session.getFlash(type) %}
 					{% if message %}
 						<div class="notification {{ type }}">{{ message }}</div>
 					{% endif %}

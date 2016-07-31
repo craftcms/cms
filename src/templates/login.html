@@ -9,7 +9,7 @@
 	"Check your email for instructions to reset your password."
 %}
 
-{% set username = (craft.app.config.get('rememberUsernameDuration') ? craft.session.rememberedUsername : '') %}
+{% set username = (craft.app.config.get('rememberUsernameDuration') ? craft.app.user.getRememberedUsername(): '') %}
 
 {% block body %}
 	<script type="text/javascript">
