@@ -1,6 +1,6 @@
 {% extends "_layouts/basecp" %}
 
-{% includeTranslations
+{% do craft.app.view.includeTranslations('app', [
 	"(blank)",
 	"1 update available",
 	"Actions",
@@ -95,8 +95,8 @@
 	"Your session will expire in {time}.",
 	"{ctrl}C to copy.",
 	"{num} updates available",
-	"“{name}” deleted."
-%}
+	"“{name}” deleted.",
+]) %}
 
 {% set task = craft.app.tasks.getRunningTask() %}
 {% if task %}

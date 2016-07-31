@@ -61,25 +61,25 @@ Craft.UpdatesWidget = Garnish.Base.extend(
 
 			if (info.total == 1)
 			{
-				updateText = Craft.t('One update available!');
+				updateText = Craft.t('app', 'One update available!');
 			}
 			else
 			{
-				updateText = Craft.t('{total} updates available!', { total: info.total });
+				updateText = Craft.t('app', '{total} updates available!', { total: info.total });
 			}
 
 			this.$body.html(
 				'<p class="centeralign">' +
 					updateText +
-					' <a class="go nowrap" href="'+Craft.getUrl('updates')+'">'+Craft.t('Go to Updates')+'</a>' +
+					' <a class="go nowrap" href="'+Craft.getUrl('updates')+'">'+Craft.t('app', 'Go to Updates')+'</a>' +
 				'</p>'
 			);
 		}
 		else
 		{
 			this.$body.html(
-				'<p class="centeralign">'+Craft.t('Congrats! You’re up-to-date.')+'</p>' +
-				'<p class="centeralign"><a class="btn" data-icon="refresh">'+Craft.t('Check again')+'</a></p>'
+				'<p class="centeralign">'+Craft.t('app', 'Congrats! You’re up-to-date.')+'</p>' +
+				'<p class="centeralign"><a class="btn" data-icon="refresh">'+Craft.t('app', 'Check again')+'</a></p>'
 			);
 
 			this.initBtn();

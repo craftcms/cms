@@ -1,15 +1,15 @@
 {% extends "_layouts/basecp" %}
 {% set title = "Craft CMS Update"|t('app') %}
 
-{% includeTranslations
+{% do craft.app.view.includeTranslations('app', [
 	"Unable to determine what to update.",
 	"An unknown error occurred. Rolling back…",
 	"All done!",
 	"Craft CMS was unable to install this update :(",
 	"The site has been restored to the state it was in before the attempted update.",
 	"An error has occurred.  Please contact {email}.",
-	"No files have been updated and the database has not been touched."
-%}
+	"No files have been updated and the database has not been touched.",
+]) %}
 
 {% block body %}
 	{% registercssresource "css/update.css" %}

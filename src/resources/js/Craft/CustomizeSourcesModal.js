@@ -43,10 +43,10 @@ Craft.CustomizeSourcesModal = Garnish.Modal.extend(
 
         this.$footer = $('<div class="footer"/>').appendTo($container);
         this.$footerBtnContainer = $('<div class="buttons right"/>').appendTo(this.$footer);
-        this.$cancelBtn = $('<div class="btn" role="button"/>').text(Craft.t('Cancel')).appendTo(this.$footerBtnContainer);
-        this.$saveBtn = $('<div class="btn submit disabled" role="button"/>').text(Craft.t('Save')).appendTo(this.$footerBtnContainer);
+        this.$cancelBtn = $('<div class="btn" role="button"/>').text(Craft.t('app', 'Cancel')).appendTo(this.$footerBtnContainer);
+        this.$saveBtn = $('<div class="btn submit disabled" role="button"/>').text(Craft.t('app', 'Save')).appendTo(this.$footerBtnContainer);
         this.$saveSpinner = $('<div class="spinner hidden"/>').appendTo(this.$footerBtnContainer);
-        this.$newHeadingBtn = $('<div class="btn submit add icon"/>').text(Craft.t('New heading')).appendTo($('<div class="buttons left secondary-buttons"/>').appendTo(this.$footer));
+        this.$newHeadingBtn = $('<div class="btn submit add icon"/>').text(Craft.t('app', 'New heading')).appendTo($('<div class="buttons left secondary-buttons"/>').appendTo(this.$footer));
 
         this.$loadingSpinner = $('<div class="spinner"/>').appendTo($container);
 
@@ -109,7 +109,7 @@ Craft.CustomizeSourcesModal = Garnish.Modal.extend(
         var $item = $('<div class="customize-sources-item"/>').appendTo(this.$sourcesContainer),
             $itemLabel = $('<div class="label"/>').appendTo($item),
             $itemInput = $('<input type="hidden"/>').appendTo($item),
-            $moveHandle = $('<a class="move icon" title="'+Craft.t('Reorder')+'" role="button"></a>').appendTo($item),
+            $moveHandle = $('<a class="move icon" title="'+Craft.t('app', 'Reorder')+'" role="button"></a>').appendTo($item),
             source;
 
         // Is this a heading?
@@ -225,12 +225,12 @@ Craft.CustomizeSourcesModal = Garnish.Modal.extend(
                     this.elementIndex.updateElements();
                 }
 
-                Craft.cp.displayNotice(Craft.t('Source settings saved'));
+                Craft.cp.displayNotice(Craft.t('app', 'Source settings saved'));
                 this.hide();
             }
             else
             {
-                var error = (textStatus == 'success' && response.error ? response.error : Craft.t('An unknown error occurred.'));
+                var error = (textStatus == 'success' && response.error ? response.error : Craft.t('app', 'An unknown error occurred.'));
                 Craft.cp.displayError(error);
             }
         }, this));
@@ -398,8 +398,8 @@ Craft.CustomizeSourcesModal.Source = Craft.CustomizeSourcesModal.BaseSource.exte
             });
 
             return Craft.ui.createField($([$titleColumnCheckbox[0], $columnCheckboxes[0]]), {
-                label: Craft.t('Table Columns'),
-                instructions: Craft.t('Choose which table columns should be visible for this source, and in which order.')
+                label: Craft.t('app', 'Table Columns'),
+                instructions: Craft.t('app', 'Choose which table columns should be visible for this source, and in which order.')
             });
         }
     },
@@ -457,14 +457,14 @@ Craft.CustomizeSourcesModal.Heading = Craft.CustomizeSourcesModal.BaseSource.ext
     createSettings: function()
     {
         this.$labelField = Craft.ui.createTextField({
-            label: Craft.t('Heading'),
-            instructions: Craft.t('This can be left blank if you just want an unlabeled separator.'),
+            label: Craft.t('app', 'Heading'),
+            instructions: Craft.t('app', 'This can be left blank if you just want an unlabeled separator.'),
             value: this.sourceData.heading
         });
 
         this.$labelInput = this.$labelField.find('.text');
 
-        this.$deleteBtn = $('<a class="error delete"/>').text(Craft.t('Delete heading'));
+        this.$deleteBtn = $('<a class="error delete"/>').text(Craft.t('app', 'Delete heading'));
 
         this.addListener(this.$labelInput, 'textchange', 'handleLabelInputChange');
         this.addListener(this.$deleteBtn, 'click', 'deleteHeading');
@@ -484,7 +484,7 @@ Craft.CustomizeSourcesModal.Heading = Craft.CustomizeSourcesModal.BaseSource.ext
 
     updateItemLabel: function(val)
     {
-        this.$itemLabel.html((val ? Craft.escapeHtml(val) : '<em class="light">'+Craft.t('(blank)')+'</em>')+'&nbsp;');
+        this.$itemLabel.html((val ? Craft.escapeHtml(val) : '<em class="light">'+Craft.t('app', '(blank)')+'</em>')+'&nbsp;');
         this.$itemInput.val(val);
     },
 

@@ -133,7 +133,9 @@ class RecentEntries extends Widget
 
         Craft::$app->getView()->registerJsResource('js/RecentEntriesWidget.js');
         Craft::$app->getView()->registerJs($js);
-        Craft::$app->getView()->includeTranslations('by {author}');
+        Craft::$app->getView()->includeTranslations('app', [
+            'by {author}',
+        ]);
 
         $entries = $this->_getEntries();
 

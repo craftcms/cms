@@ -1,13 +1,13 @@
 {% from "_includes/forms" import text -%}
 
-{% includeTranslations
+{% do craft.app.view.includeTranslations('app', [
 	"Sort by {attribute}",
 	"Score",
 	"Structure",
 	"Display in a table",
 	"Display hierarchically",
-	"Display as thumbnails"
-%}
+	"Display as thumbnails",
+]) %}
 
 {% set elementInstance = craft.app.elements.createElement(elementType) %}
 {% set context = context is defined ? context : 'index' %}

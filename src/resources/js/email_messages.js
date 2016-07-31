@@ -194,7 +194,7 @@ var MessageSettingsModal = Garnish.Modal.extend(
 					}
 
 					this.hide();
-					Craft.cp.displayNotice(Craft.t('Message saved.'));
+					Craft.cp.displayNotice(Craft.t('app', 'Message saved.'));
 				}
 				else
 				{

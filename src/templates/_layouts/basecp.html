@@ -5,7 +5,10 @@
 	{% set bodyClass = (bodyClass is defined and bodyClass ? bodyClass~' ' : '') ~ 'mobile' %}
 {% endif %}
 
-{% includeTranslations "Show", "Hide" %}
+{% do craft.app.view.includeTranslations('app', [
+	"Show",
+	"Hide",
+]) %}
 
 {% set localeData = craft.app.locale %}
 {% set orientation = localeData.getOrientation() %}

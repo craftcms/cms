@@ -45,7 +45,7 @@ Craft.Structure = Garnish.Base.extend(
 		{
 			var $row = $($parents[i]),
 				$li = $row.parent(),
-				$toggle = $('<div class="toggle" title="'+Craft.t('Show/hide children')+'"/>').prependTo($row);
+				$toggle = $('<div class="toggle" title="'+Craft.t('app', 'Show/hide children')+'"/>').prependTo($row);
 
 			if ($.inArray($row.children('.element').data('id'), this.state.collapsedElementIds) != -1)
 			{
@@ -114,7 +114,7 @@ Craft.Structure = Garnish.Base.extend(
 		{
 			var elementId = $btn.parent().children('.element').data('id'),
 				newChildUrl = Craft.getUrl(this.settings.newChildUrl, 'parentId='+elementId),
-				$menu = $('<div class="menu"><ul><li><a href="'+newChildUrl+'">'+Craft.t('New child')+'</a></li></ul></div>').insertAfter($btn);
+				$menu = $('<div class="menu"><ul><li><a href="'+newChildUrl+'">'+Craft.t('app', 'New child')+'</a></li></ul></div>').insertAfter($btn);
 
 			var menuBtn = new Garnish.MenuBtn($btn);
 			menuBtn.showMenu();
@@ -135,13 +135,13 @@ Craft.Structure = Garnish.Base.extend(
 
 		if (this.settings.sortable)
 		{
-			$row.append('<a class="move icon" title="'+Craft.t('Move')+'"></a>');
+			$row.append('<a class="move icon" title="'+Craft.t('app', 'Move')+'"></a>');
 			this.structureDrag.addItems($li);
 		}
 
 		if (this.settings.newChildUrl)
 		{
-			var $addBtn = $('<a class="add icon" title="'+Craft.t('New child')+'"></a>').appendTo($row);
+			var $addBtn = $('<a class="add icon" title="'+Craft.t('app', 'New child')+'"></a>').appendTo($row);
 			this.initNewChildMenus($addBtn);
 		}
 

@@ -137,14 +137,20 @@ $.extend(Craft,
 	/**
 	 * Get a translated message.
 	 *
+	 * @param {string} category
 	 * @param {string} message
 	 * @param {object} params
 	 * @return string
 	 */
-	t: function(message, params)
+	t: function(category, message, params)
 	{
-		if (typeof Craft.translations[message] != 'undefined')
-			message = Craft.translations[message];
+		if (
+			typeof Craft.translations[category] != typeof undefined &&
+			typeof Craft.translations[category][message] != typeof undefined
+		)
+		{
+			message = Craft.translations[category][message];
+		}
 
 		if (params)
 		{
@@ -528,7 +534,7 @@ $.extend(Craft,
 					}
 					else
 					{
-						alert(Craft.t('An unknown error occurred.'));
+						alert(Craft.t('app', 'An unknown error occurred.'));
 					}
 				}
 			}
@@ -980,27 +986,27 @@ $.extend(Craft,
 
 		if (weeks)
 		{
-			timeComponents.push(weeks+' '+(weeks == 1 ? Craft.t('week') : Craft.t('weeks')));
+			timeComponents.push(weeks+' '+(weeks == 1 ? Craft.t('app', 'week') : Craft.t('app', 'weeks')));
 		}
 
 		if (days)
 		{
-			timeComponents.push(days+' '+(days == 1 ? Craft.t('day') : Craft.t('days')));
+			timeComponents.push(days+' '+(days == 1 ? Craft.t('app', 'day') : Craft.t('app', 'days')));
 		}
 
 		if (hours)
 		{
-			timeComponents.push(hours+' '+(hours == 1 ? Craft.t('hour') : Craft.t('hours')));
+			timeComponents.push(hours+' '+(hours == 1 ? Craft.t('app', 'hour') : Craft.t('app', 'hours')));
 		}
 
 		if (minutes || (!showSeconds && !weeks && !days && !hours))
 		{
-			timeComponents.push(minutes+' '+(minutes == 1 ? Craft.t('minute') : Craft.t('minutes')));
+			timeComponents.push(minutes+' '+(minutes == 1 ? Craft.t('app', 'minute') : Craft.t('app', 'minutes')));
 		}
 
 		if (seconds || (showSeconds && !weeks && !days && !hours && !minutes))
 		{
-			timeComponents.push(seconds+' '+(seconds == 1 ? Craft.t('second') : Craft.t('seconds')));
+			timeComponents.push(seconds+' '+(seconds == 1 ? Craft.t('app', 'second') : Craft.t('app', 'seconds')));
 		}
 
 		return timeComponents.join(', ');

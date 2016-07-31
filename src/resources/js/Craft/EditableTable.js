@@ -188,8 +188,8 @@ Craft.EditableTable = Garnish.Base.extend(
 			rowHtml += '</td>';
 		}
 
-		rowHtml += '<td class="thin action"><a class="move icon" title="'+Craft.t('Reorder')+'"></a></td>' +
-				'<td class="thin action"><a class="delete icon" title="'+Craft.t('Delete')+'"></a></td>' +
+		rowHtml += '<td class="thin action"><a class="move icon" title="'+Craft.t('app', 'Reorder')+'"></a></td>' +
+				'<td class="thin action"><a class="delete icon" title="'+Craft.t('app', 'Delete')+'"></a></td>' +
 			'</tr>';
 
 		return rowHtml;

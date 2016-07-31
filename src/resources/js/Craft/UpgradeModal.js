@@ -119,7 +119,7 @@ Craft.UpgradeModal = Garnish.Modal.extend(
 					}
 					else
 					{
-						error = Craft.t('An unknown error occurred.');
+						error = Craft.t('app', 'An unknown error occurred.');
 					}
 
 					this.$container.append('<div class="body">'+error+'</div>');
@@ -273,7 +273,7 @@ Craft.UpgradeModal = Garnish.Modal.extend(
 		}
 
 		// Update the Pay button
-		this.$checkoutSubmitBtn.val(Craft.t('Pay {price}', {
+		this.$checkoutSubmitBtn.val(Craft.t('app', 'Pay {price}', {
 			price: this.getFormattedPrice()
 		}));
 	},
@@ -514,7 +514,7 @@ Craft.UpgradeModal = Garnish.Modal.extend(
 				}
 				else
 				{
-					var errorText = Craft.t('An unknown error occurred.');
+					var errorText = Craft.t('app', 'An unknown error occurred.');
 				}
 
 				Garnish.shake(this.$checkoutForm, 'left');

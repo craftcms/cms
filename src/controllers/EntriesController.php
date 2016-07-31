@@ -331,7 +331,9 @@ class EntriesController extends BaseEntriesController
         $variables['saveShortcutRedirect'] = $variables['continueEditingUrl'];
 
         // Include translations
-        Craft::$app->getView()->includeTranslations('Live Preview');
+        Craft::$app->getView()->includeTranslations('app', [
+            'Live Preview',
+        ]);
 
         // Render the template!
         Craft::$app->getView()->registerCssResource('css/entry.css');

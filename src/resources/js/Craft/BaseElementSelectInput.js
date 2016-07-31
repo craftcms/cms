@@ -408,7 +408,7 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
 		Craft.setElementSize($element, (this.settings.viewMode == 'large' ? 'large' : 'small'));
 		$element.addClass('removable');
 		$element.prepend('<input type="hidden" name="'+this.settings.name+'[]" value="'+elementInfo.id+'">' +
-			'<a class="delete icon" title="'+Craft.t('Remove')+'"></a>');
+			'<a class="delete icon" title="'+Craft.t('app', 'Remove')+'"></a>');
 
 		return $element;
 	},

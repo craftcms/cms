@@ -5,14 +5,14 @@
 
 {% set docsUrl = 'http://craftcms.com/docs/fields' %}
 
-{% includeTranslations
+{% do craft.app.view.includeTranslations('app', [
 	"What do you want to name your group?",
 	"Could not create the group:",
 	"Could not create the group:",
 	"Are you sure you want to delete this group and all its fields?",
 	"Could not delete the group.",
-	"Group renamed."
-%}
+	"Group renamed.",
+]) %}
 
 {% set crumbs = [
 	{ label: "Settings"|t('app'), url: url('settings') }

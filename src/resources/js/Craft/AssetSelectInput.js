@@ -73,7 +73,7 @@ Craft.AssetSelectInput = Craft.BaseElementSelectInput.extend(
 		// Make a couple tweaks
 		$newElement.addClass('removable');
 		$newElement.prepend('<input type="hidden" name="' + this.settings.name + '[]" value="' + element.id + '">' +
-			'<a class="delete icon" title="' + Craft.t('Remove') + '"></a>');
+			'<a class="delete icon" title="' + Craft.t('app', 'Remove') + '"></a>');
 
 		$newElement.appendTo(this.$elementsContainer);
 
@@ -206,11 +206,11 @@ Craft.AssetSelectInput = Craft.BaseElementSelectInput.extend(
 					return true;
 				} else {
 					// If filename hasn't changed, make sure they want to remove extension
-					return confirm(Craft.t("Are you sure you want to remove the extension “.{ext}”?", {ext: this.originalExtension}));
+					return confirm(Craft.t('app', "Are you sure you want to remove the extension “.{ext}”?", {ext: this.originalExtension}));
 				}
 			} else {
 				// If the extension has changed, make sure it s intentional
-				return confirm(Craft.t("Are you sure you want to change the extension from “.{oldExt}” to “.{newExt}”?",
+				return confirm(Craft.t('app', "Are you sure you want to change the extension from “.{oldExt}” to “.{newExt}”?",
 					{
 						oldExt: this.originalExtension,
 						newExt: filename.extension

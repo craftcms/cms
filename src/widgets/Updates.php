@@ -73,13 +73,13 @@ class Updates extends Widget
             Craft::$app->getView()->registerJsResource('js/UpdatesWidget.js');
             Craft::$app->getView()->registerJs('new Craft.UpdatesWidget('.$this->id.', '.($cached ? 'true' : 'false').');');
 
-            Craft::$app->getView()->includeTranslations(
+            Craft::$app->getView()->includeTranslations('app', [
                 'One update available!',
                 '{total} updates available!',
                 'Go to Updates',
                 'Congrats! You’re up-to-date.',
-                'Check again'
-            );
+                'Check again',
+            ]);
         }
 
         if ($cached) {

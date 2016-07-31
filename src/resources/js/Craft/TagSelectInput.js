@@ -192,7 +192,7 @@ Craft.TagSelectInput = Craft.BaseElementSelectInput.extend(
 		var $element = $('<div class="element small removable" data-id="'+id+'" data-editable/>').appendTo(this.$elementsContainer),
 			$input = $('<input type="hidden" name="'+this.settings.name+'[]" value="'+id+'"/>').appendTo($element);
 
-		$('<a class="delete icon" title="'+Craft.t('Remove')+'"></a>').appendTo($element);
+		$('<a class="delete icon" title="'+Craft.t('app', 'Remove')+'"></a>').appendTo($element);
 		$('<span class="label">'+title+'</span>').appendTo($element);
 
 		var margin = -($element.outerWidth()+10);
@@ -236,7 +236,7 @@ Craft.TagSelectInput = Craft.BaseElementSelectInput.extend(
 					if (textStatus == 'success')
 					{
 						// Some sort of validation error that still resulted in  a 200 response. Shouldn't be possible though.
-						Craft.cp.displayError(Craft.t('An unknown error occurred.'));
+						Craft.cp.displayError(Craft.t('app', 'An unknown error occurred.'));
 					}
 				}
 			}, this));

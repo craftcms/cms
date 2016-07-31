@@ -135,8 +135,8 @@ Craft.PromptHandler = Garnish.Base.extend({
 
         this.$promptMessage.html(message);
 
-		var $cancelButton = $('<div class="btn">'+Craft.t('Cancel')+'</div>').appendTo(this.$promptButtons),
-			$submitBtn = $('<input type="submit" class="btn submit disabled" value="'+Craft.t('OK')+'" />').appendTo(this.$promptButtons);
+		var $cancelButton = $('<div class="btn">'+Craft.t('app', 'Cancel')+'</div>').appendTo(this.$promptButtons),
+			$submitBtn = $('<input type="submit" class="btn submit disabled" value="'+Craft.t('app', 'OK')+'" />').appendTo(this.$promptButtons);
 
         for (var i = 0; i < choices.length; i++)
         {
@@ -168,7 +168,7 @@ Craft.PromptHandler = Garnish.Base.extend({
 		if (itemsToGo)
         {
             this.$promptApplyToRemainingContainer.show();
-            this.$promptApplyToRemainingLabel.html(' ' + Craft.t('Apply this to the {number} remaining conflicts?', {number: itemsToGo}));
+            this.$promptApplyToRemainingLabel.html(' ' + Craft.t('app', 'Apply this to the {number} remaining conflicts?', {number: itemsToGo}));
         }
 
         this.modal.show();

@@ -79,7 +79,10 @@ class GetHelp extends Widget
         Craft::$app->getView()->registerJs($js);
 
         Craft::$app->getView()->registerJsResource('js/GetHelpWidget.js');
-        Craft::$app->getView()->includeTranslations('Message sent successfully.', 'Couldn’t send support request.');
+        Craft::$app->getView()->includeTranslations('app', [
+            'Message sent successfully.',
+            'Couldn’t send support request.',
+        ]);
 
         return Craft::$app->getView()->renderTemplate('_components/widgets/GetHelp/body');
     }

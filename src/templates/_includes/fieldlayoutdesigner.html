@@ -6,14 +6,14 @@
 {% set groups = craft.app.fields.getAllGroups('id') %}
 {% set fields = craft.app.fields.getAllFields('id') %}
 
-{% includeTranslations
+{% do craft.app.view.includeTranslations('app', [
 	"Rename",
 	"Delete",
 	"Make required",
 	"Make not required",
 	"Remove",
-	"Give your tab a name."
-%}
+	"Give your tab a name.",
+]) %}
 
 {% registercssfile "//fonts.googleapis.com/css?family=Coming+Soon" %}
 

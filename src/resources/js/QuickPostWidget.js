@@ -78,12 +78,12 @@ Craft.QuickPostWidget = Garnish.Base.extend(
 			{
 				if (response.success)
 				{
-					Craft.cp.displayNotice(Craft.t('Entry saved.'));
+					Craft.cp.displayNotice(Craft.t('app', 'Entry saved.'));
 					callback(response);
 				}
 				else
 				{
-					Craft.cp.displayError(Craft.t('Couldn’t save entry.'));
+					Craft.cp.displayError(Craft.t('app', 'Couldn’t save entry.'));
 
 					if (response.errors)
 					{

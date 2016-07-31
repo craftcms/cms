@@ -3,7 +3,7 @@
 {% extends "_layouts/cp" %}
 {% set title = "Updates"|t('app') %}
 
-{% includeTranslations
+{% do craft.app.view.includeTranslations('app', [
 	"You’ve got updates!",
 	"You’re all up-to-date!",
 	"build {build}",
@@ -21,8 +21,8 @@
 	"Added",
 	"Improved",
 	"Fixed",
-	"Download"
-%}
+	"Download",
+]) %}
 
 
 {% block pageHeader %}

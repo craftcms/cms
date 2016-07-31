@@ -42,5 +42,8 @@
 	{% registerjs %}
 		new Craft.EntryDraftEditor({{ entry.draftId }}, '{{ revisionLabel|e("js") }}', '{{ entry.revisionNotes|e("js") }}');
 	{% endregisterjs %}
-	{% includeTranslations "Draft Name", "Notes" %}
+	{% do craft.app.view.includeTranslations('app', [
+		"Draft Name",
+		"Notes",
+	]) %}
 {% endif %}

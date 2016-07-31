@@ -95,7 +95,7 @@
 
 			if (response.success)
 			{
-				Craft.cp.displayNotice(Craft.t('Message sent successfully.'));
+				Craft.cp.displayNotice(Craft.t('app', 'Message sent successfully.'));
 				this.$message.val('');
 				this.$attachAdditionalFile.val('');
 			}

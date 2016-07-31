@@ -50,7 +50,7 @@ Craft.ElevatedSessionManager = Garnish.Base.extend(
 		if (!this.passwordModal)
 		{
 			var $passwordModal = $('<form id="elevatedsessionmodal" class="modal secure fitted"/>'),
-				$body = $('<div class="body"><p>'+Craft.t('Enter your password to continue.')+'</p></div>').appendTo($passwordModal),
+				$body = $('<div class="body"><p>'+Craft.t('app', 'Enter your password to continue.')+'</p></div>').appendTo($passwordModal),
 				$inputContainer = $('<div class="inputcontainer">').appendTo($body),
 				$inputsTable = $('<table class="inputs fullwidth"/>').appendTo($inputContainer),
 				$inputsRow = $('<tr/>').appendTo($inputsTable),
@@ -58,9 +58,9 @@ Craft.ElevatedSessionManager = Garnish.Base.extend(
 				$buttonCell = $('<td class="thin"/>').appendTo($inputsRow),
 				$passwordWrapper = $('<div class="passwordwrapper"/>').appendTo($passwordCell);
 
-			this.$passwordInput = $('<input type="password" class="text password fullwidth" placeholder="'+Craft.t('Password')+'"/>').appendTo($passwordWrapper);
+			this.$passwordInput = $('<input type="password" class="text password fullwidth" placeholder="'+Craft.t('app', 'Password')+'"/>').appendTo($passwordWrapper);
 			this.$passwordSpinner = $('<div class="spinner hidden"/>').appendTo($inputContainer);
-			this.$submitBtn = $('<input type="submit" class="btn submit disabled" value="'+Craft.t('Submit')+'" />').appendTo($buttonCell);
+			this.$submitBtn = $('<input type="submit" class="btn submit disabled" value="'+Craft.t('app', 'Submit')+'" />').appendTo($buttonCell);
 			this.$errorPara = $('<p class="error"/>').appendTo($body);
 
 			this.passwordModal = new Garnish.Modal($passwordModal, {
@@ -144,7 +144,7 @@ Craft.ElevatedSessionManager = Garnish.Base.extend(
 				}
 				else
 				{
-					this.showPasswordError(Craft.t('Incorrect password.'));
+					this.showPasswordError(Craft.t('app', 'Incorrect password.'));
 					Garnish.shake(this.passwordModal.$container);
 					this.focusPasswordInput();
 				}
@@ -161,7 +161,7 @@ Craft.ElevatedSessionManager = Garnish.Base.extend(
 	{
 		if (error === null || typeof error == 'undefined')
 		{
-			error = Craft.t('An unknown error occurred.');
+			error = Craft.t('app', 'An unknown error occurred.');
 		}
 
 		this.$errorPara.text(error);

@@ -519,7 +519,7 @@ class RichText extends Field
         $this->_maybeIncludeRedactorPlugin($configJs, 'video', false);
         $this->_maybeIncludeRedactorPlugin($configJs, 'pagebreak', true);
 
-        $view->includeTranslations(
+        $view->includeTranslations('app', [
             'Insert image',
             'Insert URL',
             'Choose image',
@@ -528,7 +528,8 @@ class RichText extends Field
             'Insert link',
             'Unlink',
             'Link to an asset',
-            'Link to a category');
+            'Link to a category',
+        ]);
 
         $view->registerJsResource('js/RichTextInput.js');
 

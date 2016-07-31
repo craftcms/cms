@@ -29,15 +29,15 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 	_fileConflictTemplate: {
 		message: "File “{file}” already exists at target location.",
 		choices: [
-			{value: 'keepBoth', title: Craft.t('Keep both')},
-			{value: 'replace', title: Craft.t('Replace it')}
+			{value: 'keepBoth', title: Craft.t('app', 'Keep both')},
+			{value: 'replace', title: Craft.t('app', 'Replace it')}
 		]
 	},
 	_folderConflictTemplate: {
 		message: "Folder “{folder}” already exists at target location",
 		choices: [
-			{value: 'replace', title: Craft.t('Replace the folder (all existing files will be deleted)')},
-			{value: 'merge', title: Craft.t('Merge the folder (any conflicting files will be replaced)')}
+			{value: 'replace', title: Craft.t('app', 'Replace the folder (all existing files will be deleted)')},
+			{value: 'merge', title: Craft.t('app', 'Merge the folder (any conflicting files will be replaced)')}
 		]
 	},
 
@@ -284,7 +284,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 								message: this._fileConflictTemplate.message,
 								choices: this._fileConflictTemplate.choices
 							};
-							promptData.message = Craft.t(promptData.message, {file: response.filename});
+							promptData.message = Craft.t('app', promptData.message, {file: response.filename});
 							response.prompt = promptData;
 
 							this.promptHandler.addPrompt(response);
@@ -522,7 +522,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 								choices: this._folderConflictTemplate.choices
 							};
 
-							promptData.message = Craft.t(promptData.message, {folder: data.foldername});
+							promptData.message = Craft.t('app', promptData.message, {folder: data.foldername});
 							data.prompt = promptData;
 
 							this.promptHandler.addPrompt(data);
@@ -821,7 +821,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 	{
 		if (!this.$uploadButton)
 		{
-			this.$uploadButton = $('<div class="btn submit" data-icon="upload" style="position: relative; overflow: hidden;" role="button">' + Craft.t('Upload files') + '</div>');
+			this.$uploadButton = $('<div class="btn submit" data-icon="upload" style="position: relative; overflow: hidden;" role="button">' + Craft.t('app', 'Upload files') + '</div>');
 			this.addButton(this.$uploadButton);
 
 			this.$uploadInput = $('<input type="file" multiple="multiple" name="assets-upload" />').hide().insertBefore(this.$uploadButton);
@@ -897,7 +897,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 				this.$includeSubfoldersContainer = $('<div style="margin-bottom: -23px; opacity: 0;"/>').insertAfter(this.$search);
 				var $subContainer = $('<div style="padding-top: 5px;"/>').appendTo(this.$includeSubfoldersContainer);
 				this.$includeSubfoldersCheckbox = $('<input type="checkbox" id="'+id+'" class="checkbox"/>').appendTo($subContainer);
-				$('<label class="light smalltext" for="'+id+'"/>').text(' '+Craft.t('Search in subfolders')).appendTo($subContainer);
+				$('<label class="light smalltext" for="'+id+'"/>').text(' '+Craft.t('app', 'Search in subfolders')).appendTo($subContainer);
 
 				this.addListener(this.$includeSubfoldersCheckbox, 'change', function()
 				{
@@ -1002,7 +1002,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 					message: this._fileConflictTemplate.message,
 					choices: this._fileConflictTemplate.choices
 				};
-				promptData.message = Craft.t(promptData.message, {file: response.filename});
+				promptData.message = Craft.t('app', promptData.message, {file: response.filename});
 				response.prompt = promptData;
 
 				this.promptHandler.addPrompt(response);
@@ -1012,11 +1012,11 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 		{
 			if (response.error)
 			{
-				alert(Craft.t('Upload failed for {filename}. The error message was: “{error}”', { filename: fileName, error: response.error }));
+				alert(Craft.t('app', 'Upload failed for {filename}. The error message was: “{error}”', { filename: fileName, error: response.error }));
 			}
 			else
 			{
-				alert(Craft.t('Upload failed for {filename}.', { filename: filename }));
+				alert(Craft.t('app', 'Upload failed for {filename}.', { filename: filename }));
 			}
 
 			doReload = false;
@@ -1309,13 +1309,13 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 
 	_createFolderContextMenu: function($source)
 	{
-		var menuOptions = [{ label: Craft.t('New subfolder'), onClick: $.proxy(this, '_createSubfolder', $source) }];
+		var menuOptions = [{ label: Craft.t('app', 'New subfolder'), onClick: $.proxy(this, '_createSubfolder', $source) }];
 
 		// For all folders that are not top folders
 		if (this.settings.context == 'index' && this._getSourceLevel($source) > 1)
 		{
-			menuOptions.push({ label: Craft.t('Rename folder'), onClick: $.proxy(this, '_renameFolder', $source) });
-			menuOptions.push({ label: Craft.t('Delete folder'), onClick: $.proxy(this, '_deleteFolder', $source) });
+			menuOptions.push({ label: Craft.t('app', 'Rename folder'), onClick: $.proxy(this, '_renameFolder', $source) });
+			menuOptions.push({ label: Craft.t('app', 'Delete folder'), onClick: $.proxy(this, '_deleteFolder', $source) });
 		}
 
 		new Garnish.ContextMenu($source, menuOptions, {menuClass: 'menu'});
@@ -1323,7 +1323,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 
 	_createSubfolder: function($parentFolder)
 	{
-		var subfolderName = prompt(Craft.t('Enter the name of the folder'));
+		var subfolderName = prompt(Craft.t('app', 'Enter the name of the folder'));
 
 		if (subfolderName)
 		{
@@ -1368,7 +1368,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 
 	_deleteFolder: function($targetFolder)
 	{
-		if (confirm(Craft.t('Really delete folder “{folder}”?', {folder: $.trim($targetFolder.text())})))
+		if (confirm(Craft.t('app', 'Really delete folder “{folder}”?', {folder: $.trim($targetFolder.text())})))
 		{
 			var params = {
 				folderId: this._getFolderIdFromSourceKey($targetFolder.data('key'))
@@ -1405,7 +1405,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 	_renameFolder: function($targetFolder)
 	{
 		var oldName = $.trim($targetFolder.text()),
-			newName = prompt(Craft.t('Rename folder'), oldName);
+			newName = prompt(Craft.t('app', 'Rename folder'), oldName);
 
 		if (newName && newName != oldName)
 		{

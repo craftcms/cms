@@ -323,7 +323,7 @@ Craft.StructureDrag = Garnish.Drag.extend(
 				{
 					if (!$ul.length)
 					{
-						var $toggle = $('<div class="toggle" title="'+Craft.t('Show/hide children')+'"/>').prependTo(this._.$closestTarget);
+						var $toggle = $('<div class="toggle" title="'+Craft.t('app', 'Show/hide children')+'"/>').prependTo(this._.$closestTarget);
 						this.structure.initToggle($toggle);
 
 						$ul = $('<ul>').appendTo(this._.$closestTargetLi);
@@ -390,7 +390,7 @@ Craft.StructureDrag = Garnish.Drag.extend(
 				{
 					if (textStatus == 'success')
 					{
-						Craft.cp.displayNotice(Craft.t('New order saved.'));
+						Craft.cp.displayNotice(Craft.t('app', 'New order saved.'));
 					}
 
 				});

@@ -426,7 +426,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
 		if (!this.$scoreSortAttribute)
 		{
-			this.$scoreSortAttribute = $('<li><a data-attr="score">'+Craft.t('Score')+'</a></li>');
+			this.$scoreSortAttribute = $('<li><a data-attr="score">'+Craft.t('app', 'Score')+'</a></li>');
 			this.sortMenu.addOptions(this.$scoreSortAttribute.children());
 		}
 
@@ -582,7 +582,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 			}
 			else
 			{
-				Craft.cp.displayError(Craft.t('An unknown error occurred.'));
+				Craft.cp.displayError(Craft.t('app', 'An unknown error occurred.'));
 			}
 
 		}, this));
@@ -769,7 +769,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 			$option.addClass('sel');
 
 			var label = $option.text();
-			this.$sortMenuBtn.attr('title', Craft.t('Sort by {attribute}', { attribute: label }));
+			this.$sortMenuBtn.attr('title', Craft.t('app', 'Sort by {attribute}', { attribute: label }));
 			this.$sortMenuBtn.text(label);
 
 			this.setSortDirection('asc');
@@ -864,7 +864,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 		{
 			if (!this.$structureSortAttribute)
 			{
-				this.$structureSortAttribute = $('<li><a data-attr="structure">'+Craft.t('Structure')+'</a></li>');
+				this.$structureSortAttribute = $('<li><a data-attr="structure">'+Craft.t('app', 'Structure')+'</a></li>');
 				this.sortMenu.addOptions(this.$structureSortAttribute.children());
 			}
 
@@ -1002,12 +1002,12 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 	getViewModesForSource: function()
 	{
 		var viewModes = [
-			{ mode: 'table', title: Craft.t('Display in a table'), icon: 'list' }
+			{ mode: 'table', title: Craft.t('app', 'Display in a table'), icon: 'list' }
 		];
 
 		if (this.$source && Garnish.hasAttr(this.$source, 'data-has-thumbs'))
 		{
-			viewModes.push({ mode: 'thumbs', title: Craft.t('Display as thumbnails'), icon: 'grid' });
+			viewModes.push({ mode: 'thumbs', title: Craft.t('app', 'Display as thumbnails'), icon: 'grid' });
 		}
 
 		return viewModes;
@@ -1642,7 +1642,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 		{
 			var $menuTrigger = $('<form/>');
 
-			$btn = $('<div class="btn menubtn" data-icon="settings" title="'+Craft.t('Actions')+'"/>').appendTo($menuTrigger);
+			$btn = $('<div class="btn menubtn" data-icon="settings" title="'+Craft.t('app', 'Actions')+'"/>').appendTo($menuTrigger);
 
 			var $menu = $('<ul class="menu"/>').appendTo($menuTrigger),
 				$safeList = this._createMenuTriggerList(safeMenuActions),

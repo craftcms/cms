@@ -99,7 +99,7 @@ Craft.EntryIndex = Craft.BaseElementIndex.extend(
 			if (selectedSection)
 			{
 				var href = this._getSectionTriggerHref(selectedSection),
-					label = (this.settings.context == 'index' ? Craft.t('New entry') : Craft.t('New {section} entry', {section: selectedSection.name}));
+					label = (this.settings.context == 'index' ? Craft.t('app', 'New entry') : Craft.t('app', 'New {section} entry', {section: selectedSection.name}));
 				this.$newEntryBtn = $('<a class="btn submit add icon" '+href+'>'+label+'</a>').appendTo(this.$newEntryBtnGroup);
 
 				if (this.settings.context != 'index')
@@ -117,7 +117,7 @@ Craft.EntryIndex = Craft.BaseElementIndex.extend(
 			}
 			else
 			{
-				this.$newEntryBtn = $menuBtn = $('<div class="btn submit add icon menubtn">'+Craft.t('New entry')+'</div>').appendTo(this.$newEntryBtnGroup);
+				this.$newEntryBtn = $menuBtn = $('<div class="btn submit add icon menubtn">'+Craft.t('app', 'New entry')+'</div>').appendTo(this.$newEntryBtnGroup);
 			}
 
 			if ($menuBtn)
@@ -131,7 +131,7 @@ Craft.EntryIndex = Craft.BaseElementIndex.extend(
 					if (this.settings.context == 'index' || section != selectedSection)
 					{
 						var href = this._getSectionTriggerHref(section),
-							label = (this.settings.context == 'index' ? section.name : Craft.t('New {section} entry', {section: section.name}));
+							label = (this.settings.context == 'index' ? section.name : Craft.t('app', 'New {section} entry', {section: section.name}));
 						menuHtml += '<li><a '+href+'">'+label+'</a></li>';
 					}
 				}
@@ -209,7 +209,7 @@ Craft.EntryIndex = Craft.BaseElementIndex.extend(
 
 		this.$newEntryBtn.addClass('inactive');
 		var newEntryBtnText = this.$newEntryBtn.text();
-		this.$newEntryBtn.text(Craft.t('New {section} entry', {section: section.name}));
+		this.$newEntryBtn.text(Craft.t('app', 'New {section} entry', {section: section.name}));
 
 		new Craft.ElementEditor({
 			hudTrigger: this.$newEntryBtnGroup,

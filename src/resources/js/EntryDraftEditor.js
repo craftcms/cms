@@ -34,19 +34,19 @@ Craft.EntryDraftEditor = Garnish.Base.extend(
 			var $hudBody = $('<div/>');
 
 			// Add the Name field
-			var $field = $('<div class="field"><div class="heading"><label for="draft-name">'+Craft.t('Draft Name')+'</label></div></div>').appendTo($hudBody),
+			var $field = $('<div class="field"><div class="heading"><label for="draft-name">'+Craft.t('app', 'Draft Name')+'</label></div></div>').appendTo($hudBody),
 				$inputContainer = $('<div class="input"/>').appendTo($field);
 			this.$nameInput = $('<input type="text" class="text fullwidth" id="draft-name"/>').appendTo($inputContainer).val(this.draftName);
 
 			// Add the Notes field
-			var $field = $('<div class="field"><div class="heading"><label for="draft-notes">'+Craft.t('Notes')+'</label></div></div>').appendTo($hudBody),
+			var $field = $('<div class="field"><div class="heading"><label for="draft-notes">'+Craft.t('app', 'Notes')+'</label></div></div>').appendTo($hudBody),
 				$inputContainer = $('<div class="input"/>').appendTo($field);
 			this.$notesInput = $('<textarea class="text fullwidth" id="draft-notes" rows="2"/>').appendTo($inputContainer).val(this.draftNotes);
 
 			// Add the button
 			var $footer = $('<div class="hud-footer"/>').appendTo($hudBody),
 				$buttonsContainer = $('<div class="buttons right"/>').appendTo($footer);
-			this.$saveBtn = $('<input type="submit" class="btn submit disabled" value="'+Craft.t('Save')+'"/>').appendTo($buttonsContainer);
+			this.$saveBtn = $('<input type="submit" class="btn submit disabled" value="'+Craft.t('app', 'Save')+'"/>').appendTo($buttonsContainer);
 			this.$spinner = $('<div class="spinner hidden"/>').appendTo($buttonsContainer);
 
 			this.hud = new Garnish.HUD(this.$editBtn, $hudBody, {

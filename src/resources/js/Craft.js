@@ -531,7 +531,7 @@ $.extend(Craft,
 					}
 					else
 					{
-						alert(Craft.t('An unknown error occurred.'));
+						alert(Craft.t('app', 'An unknown error occurred.'));
 					}
 				}
 			}
@@ -983,27 +983,27 @@ $.extend(Craft,
 
 		if (weeks)
 		{
-			timeComponents.push(weeks+' '+(weeks == 1 ? Craft.t('week') : Craft.t('weeks')));
+			timeComponents.push(weeks+' '+(weeks == 1 ? Craft.t('app', 'week') : Craft.t('app', 'weeks')));
 		}
 
 		if (days)
 		{
-			timeComponents.push(days+' '+(days == 1 ? Craft.t('day') : Craft.t('days')));
+			timeComponents.push(days+' '+(days == 1 ? Craft.t('app', 'day') : Craft.t('app', 'days')));
 		}
 
 		if (hours)
 		{
-			timeComponents.push(hours+' '+(hours == 1 ? Craft.t('hour') : Craft.t('hours')));
+			timeComponents.push(hours+' '+(hours == 1 ? Craft.t('app', 'hour') : Craft.t('app', 'hours')));
 		}
 
 		if (minutes || (!showSeconds && !weeks && !days && !hours))
 		{
-			timeComponents.push(minutes+' '+(minutes == 1 ? Craft.t('minute') : Craft.t('minutes')));
+			timeComponents.push(minutes+' '+(minutes == 1 ? Craft.t('app', 'minute') : Craft.t('app', 'minutes')));
 		}
 
 		if (seconds || (showSeconds && !weeks && !days && !hours && !minutes))
 		{
-			timeComponents.push(seconds+' '+(seconds == 1 ? Craft.t('second') : Craft.t('seconds')));
+			timeComponents.push(seconds+' '+(seconds == 1 ? Craft.t('app', 'second') : Craft.t('app', 'seconds')));
 		}
 
 		return timeComponents.join(', ');
@@ -2083,7 +2083,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
 		if (!this.$scoreSortAttribute)
 		{
-			this.$scoreSortAttribute = $('<li><a data-attr="score">'+Craft.t('Score')+'</a></li>');
+			this.$scoreSortAttribute = $('<li><a data-attr="score">'+Craft.t('app', 'Score')+'</a></li>');
 			this.sortMenu.addOptions(this.$scoreSortAttribute.children());
 		}
 
@@ -2239,7 +2239,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 			}
 			else
 			{
-				Craft.cp.displayError(Craft.t('An unknown error occurred.'));
+				Craft.cp.displayError(Craft.t('app', 'An unknown error occurred.'));
 			}
 
 		}, this));
@@ -2426,7 +2426,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 			$option.addClass('sel');
 
 			var label = $option.text();
-			this.$sortMenuBtn.attr('title', Craft.t('Sort by {attribute}', { attribute: label }));
+			this.$sortMenuBtn.attr('title', Craft.t('app', 'Sort by {attribute}', { attribute: label }));
 			this.$sortMenuBtn.text(label);
 
 			this.setSortDirection('asc');
@@ -2521,7 +2521,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 		{
 			if (!this.$structureSortAttribute)
 			{
-				this.$structureSortAttribute = $('<li><a data-attr="structure">'+Craft.t('Structure')+'</a></li>');
+				this.$structureSortAttribute = $('<li><a data-attr="structure">'+Craft.t('app', 'Structure')+'</a></li>');
 				this.sortMenu.addOptions(this.$structureSortAttribute.children());
 			}
 
@@ -2659,12 +2659,12 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 	getViewModesForSource: function()
 	{
 		var viewModes = [
-			{ mode: 'table', title: Craft.t('Display in a table'), icon: 'list' }
+			{ mode: 'table', title: Craft.t('app', 'Display in a table'), icon: 'list' }
 		];
 
 		if (this.$source && Garnish.hasAttr(this.$source, 'data-has-thumbs'))
 		{
-			viewModes.push({ mode: 'thumbs', title: Craft.t('Display as thumbnails'), icon: 'grid' });
+			viewModes.push({ mode: 'thumbs', title: Craft.t('app', 'Display as thumbnails'), icon: 'grid' });
 		}
 
 		return viewModes;
@@ -3299,7 +3299,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 		{
 			var $menuTrigger = $('<form/>');
 
-			$btn = $('<div class="btn menubtn" data-icon="settings" title="'+Craft.t('Actions')+'"/>').appendTo($menuTrigger);
+			$btn = $('<div class="btn menubtn" data-icon="settings" title="'+Craft.t('app', 'Actions')+'"/>').appendTo($menuTrigger);
 
 			var $menu = $('<ul class="menu"/>').appendTo($menuTrigger),
 				$safeList = this._createMenuTriggerList(safeMenuActions),
@@ -4219,7 +4219,7 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
 		Craft.setElementSize($element, (this.settings.viewMode == 'large' ? 'large' : 'small'));
 		$element.addClass('removable');
 		$element.prepend('<input type="hidden" name="'+this.settings.name+'[]" value="'+elementInfo.id+'">' +
-			'<a class="delete icon" title="'+Craft.t('Remove')+'"></a>');
+			'<a class="delete icon" title="'+Craft.t('app', 'Remove')+'"></a>');
 
 		return $element;
 	},
@@ -4350,8 +4350,8 @@ Craft.BaseElementSelectorModal = Garnish.Modal.extend(
 		this.$footerSpinner = $('<div class="spinner hidden"/>').appendTo($footer);
 		this.$primaryButtons = $('<div class="buttons right"/>').appendTo($footer);
 		this.$secondaryButtons = $('<div class="buttons left secondary-buttons"/>').appendTo($footer);
-		this.$cancelBtn = $('<div class="btn">'+Craft.t('Cancel')+'</div>').appendTo(this.$primaryButtons);
-		this.$selectBtn = $('<div class="btn disabled submit">'+Craft.t('Select')+'</div>').appendTo(this.$primaryButtons);
+		this.$cancelBtn = $('<div class="btn">'+Craft.t('app', 'Cancel')+'</div>').appendTo(this.$primaryButtons);
+		this.$selectBtn = $('<div class="btn disabled submit">'+Craft.t('app', 'Select')+'</div>').appendTo(this.$primaryButtons);
 
 		this.$body = $body;
 
@@ -4757,11 +4757,11 @@ Craft.AdminTable = Garnish.Base.extend(
 				if (response.success)
 				{
 					this.onReorderItems(ids);
-					Craft.cp.displayNotice(Craft.t(this.settings.reorderSuccessMessage));
+					Craft.cp.displayNotice(Craft.t('app', this.settings.reorderSuccessMessage));
 				}
 				else
 				{
-					Craft.cp.displayError(Craft.t(this.settings.reorderFailMessage));
+					Craft.cp.displayError(Craft.t('app', this.settings.reorderFailMessage));
 				}
 			}
 
@@ -4787,7 +4787,7 @@ Craft.AdminTable = Garnish.Base.extend(
 	confirmDeleteItem: function($row)
 	{
 		var name = this.getItemName($row);
-		return confirm(Craft.t(this.settings.confirmDeleteMessage, { name: name }));
+		return confirm(Craft.t('app', this.settings.confirmDeleteMessage, { name: name }));
 	},
 
 	deleteItem: function($row)
@@ -4822,11 +4822,11 @@ Craft.AdminTable = Garnish.Base.extend(
 			this.updateUI();
 			this.onDeleteItem(id);
 
-			Craft.cp.displayNotice(Craft.t(this.settings.deleteSuccessMessage, { name: name }));
+			Craft.cp.displayNotice(Craft.t('app', this.settings.deleteSuccessMessage, { name: name }));
 		}
 		else
 		{
-			Craft.cp.displayError(Craft.t(this.settings.deleteFailMessage, { name: name }));
+			Craft.cp.displayError(Craft.t('app', this.settings.deleteFailMessage, { name: name }));
 		}
 	},
 
@@ -4916,11 +4916,11 @@ Craft.AdminTable = Garnish.Base.extend(
 		maxItems: null,
 		reorderAction: null,
 		deleteAction: null,
-		reorderSuccessMessage: Craft.t('New order saved.'),
-		reorderFailMessage:    Craft.t('Couldn’t save new order.'),
-		confirmDeleteMessage:  Craft.t('Are you sure you want to delete “{name}”?'),
-		deleteSuccessMessage:  Craft.t('“{name}” deleted.'),
-		deleteFailMessage:     Craft.t('Couldn’t delete “{name}”.'),
+		reorderSuccessMessage: Craft.t('app', 'New order saved.'),
+		reorderFailMessage:    Craft.t('app', 'Couldn’t save new order.'),
+		confirmDeleteMessage:  Craft.t('app', 'Are you sure you want to delete “{name}”?'),
+		deleteSuccessMessage:  Craft.t('app', '“{name}” deleted.'),
+		deleteFailMessage:     Craft.t('app', 'Couldn’t delete “{name}”.'),
 		onReorderItems: $.noop,
 		onDeleteItem: $.noop
 	}
@@ -5011,9 +5011,9 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 			this.base($container, this.settings);
 
 			this.$buttons = $('<div class="buttons rightalign"/>').appendTo($footer);
-			this.$cancelBtn = $('<div class="btn">'+Craft.t('Cancel')+'</div>').appendTo(this.$buttons);
-			this.$selectBtn = $('<div class="btn disabled submit">'+Craft.t('Replace Image')+'</div>').appendTo(this.$buttons);
-			this.$selectBtn = $('<div class="btn disabled submit">'+Craft.t('Save as New Image')+'</div>').appendTo(this.$buttons);
+			this.$cancelBtn = $('<div class="btn">'+Craft.t('app', 'Cancel')+'</div>').appendTo(this.$buttons);
+			this.$selectBtn = $('<div class="btn disabled submit">'+Craft.t('app', 'Replace Image')+'</div>').appendTo(this.$buttons);
+			this.$selectBtn = $('<div class="btn disabled submit">'+Craft.t('app', 'Save as New Image')+'</div>').appendTo(this.$buttons);
 
 			this.$body = $body;
 
@@ -5651,15 +5651,15 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 	_fileConflictTemplate: {
 		message: "File “{file}” already exists at target location.",
 		choices: [
-			{value: 'keepBoth', title: Craft.t('Keep both')},
-			{value: 'replace', title: Craft.t('Replace it')}
+			{value: 'keepBoth', title: Craft.t('app', 'Keep both')},
+			{value: 'replace', title: Craft.t('app', 'Replace it')}
 		]
 	},
 	_folderConflictTemplate: {
 		message: "Folder “{folder}” already exists at target location",
 		choices: [
-			{value: 'replace', title: Craft.t('Replace the folder (all existing files will be deleted)')},
-			{value: 'merge', title: Craft.t('Merge the folder (any conflicting files will be replaced)')}
+			{value: 'replace', title: Craft.t('app', 'Replace the folder (all existing files will be deleted)')},
+			{value: 'merge', title: Craft.t('app', 'Merge the folder (any conflicting files will be replaced)')}
 		]
 	},
 
@@ -5906,7 +5906,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 								message: this._fileConflictTemplate.message,
 								choices: this._fileConflictTemplate.choices
 							};
-							promptData.message = Craft.t(promptData.message, {file: response.filename});
+							promptData.message = Craft.t('app', promptData.message, {file: response.filename});
 							response.prompt = promptData;
 
 							this.promptHandler.addPrompt(response);
@@ -6144,7 +6144,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 								choices: this._folderConflictTemplate.choices
 							};
 
-							promptData.message = Craft.t(promptData.message, {folder: data.foldername});
+							promptData.message = Craft.t('app', promptData.message, {folder: data.foldername});
 							data.prompt = promptData;
 
 							this.promptHandler.addPrompt(data);
@@ -6443,7 +6443,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 	{
 		if (!this.$uploadButton)
 		{
-			this.$uploadButton = $('<div class="btn submit" data-icon="upload" style="position: relative; overflow: hidden;" role="button">' + Craft.t('Upload files') + '</div>');
+			this.$uploadButton = $('<div class="btn submit" data-icon="upload" style="position: relative; overflow: hidden;" role="button">' + Craft.t('app', 'Upload files') + '</div>');
 			this.addButton(this.$uploadButton);
 
 			this.$uploadInput = $('<input type="file" multiple="multiple" name="assets-upload" />').hide().insertBefore(this.$uploadButton);
@@ -6519,7 +6519,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 				this.$includeSubfoldersContainer = $('<div style="margin-bottom: -23px; opacity: 0;"/>').insertAfter(this.$search);
 				var $subContainer = $('<div style="padding-top: 5px;"/>').appendTo(this.$includeSubfoldersContainer);
 				this.$includeSubfoldersCheckbox = $('<input type="checkbox" id="'+id+'" class="checkbox"/>').appendTo($subContainer);
-				$('<label class="light smalltext" for="'+id+'"/>').text(' '+Craft.t('Search in subfolders')).appendTo($subContainer);
+				$('<label class="light smalltext" for="'+id+'"/>').text(' '+Craft.t('app', 'Search in subfolders')).appendTo($subContainer);
 
 				this.addListener(this.$includeSubfoldersCheckbox, 'change', function()
 				{
@@ -6624,7 +6624,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 					message: this._fileConflictTemplate.message,
 					choices: this._fileConflictTemplate.choices
 				};
-				promptData.message = Craft.t(promptData.message, {file: response.filename});
+				promptData.message = Craft.t('app', promptData.message, {file: response.filename});
 				response.prompt = promptData;
 
 				this.promptHandler.addPrompt(response);
@@ -6634,11 +6634,11 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 		{
 			if (response.error)
 			{
-				alert(Craft.t('Upload failed for {filename}. The error message was: “{error}”', { filename: fileName, error: response.error }));
+				alert(Craft.t('app', 'Upload failed for {filename}. The error message was: “{error}”', { filename: fileName, error: response.error }));
 			}
 			else
 			{
-				alert(Craft.t('Upload failed for {filename}.', { filename: filename }));
+				alert(Craft.t('app', 'Upload failed for {filename}.', { filename: filename }));
 			}
 
 			doReload = false;
@@ -6931,13 +6931,13 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 
 	_createFolderContextMenu: function($source)
 	{
-		var menuOptions = [{ label: Craft.t('New subfolder'), onClick: $.proxy(this, '_createSubfolder', $source) }];
+		var menuOptions = [{ label: Craft.t('app', 'New subfolder'), onClick: $.proxy(this, '_createSubfolder', $source) }];
 
 		// For all folders that are not top folders
 		if (this.settings.context == 'index' && this._getSourceLevel($source) > 1)
 		{
-			menuOptions.push({ label: Craft.t('Rename folder'), onClick: $.proxy(this, '_renameFolder', $source) });
-			menuOptions.push({ label: Craft.t('Delete folder'), onClick: $.proxy(this, '_deleteFolder', $source) });
+			menuOptions.push({ label: Craft.t('app', 'Rename folder'), onClick: $.proxy(this, '_renameFolder', $source) });
+			menuOptions.push({ label: Craft.t('app', 'Delete folder'), onClick: $.proxy(this, '_deleteFolder', $source) });
 		}
 
 		new Garnish.ContextMenu($source, menuOptions, {menuClass: 'menu'});
@@ -6945,7 +6945,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 
 	_createSubfolder: function($parentFolder)
 	{
-		var subfolderName = prompt(Craft.t('Enter the name of the folder'));
+		var subfolderName = prompt(Craft.t('app', 'Enter the name of the folder'));
 
 		if (subfolderName)
 		{
@@ -6990,7 +6990,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 
 	_deleteFolder: function($targetFolder)
 	{
-		if (confirm(Craft.t('Really delete folder “{folder}”?', {folder: $.trim($targetFolder.text())})))
+		if (confirm(Craft.t('app', 'Really delete folder “{folder}”?', {folder: $.trim($targetFolder.text())})))
 		{
 			var params = {
 				folderId: this._getFolderIdFromSourceKey($targetFolder.data('key'))
@@ -7027,7 +7027,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 	_renameFolder: function($targetFolder)
 	{
 		var oldName = $.trim($targetFolder.text()),
-			newName = prompt(Craft.t('Rename folder'), oldName);
+			newName = prompt(Craft.t('app', 'Rename folder'), oldName);
 
 		if (newName && newName != oldName)
 		{
@@ -7227,7 +7227,7 @@ Craft.AssetSelectInput = Craft.BaseElementSelectInput.extend(
 		// Make a couple tweaks
 		$newElement.addClass('removable');
 		$newElement.prepend('<input type="hidden" name="' + this.settings.name + '[]" value="' + element.id + '">' +
-			'<a class="delete icon" title="' + Craft.t('Remove') + '"></a>');
+			'<a class="delete icon" title="' + Craft.t('app', 'Remove') + '"></a>');
 
 		$newElement.appendTo(this.$elementsContainer);
 
@@ -7360,11 +7360,11 @@ Craft.AssetSelectInput = Craft.BaseElementSelectInput.extend(
 					return true;
 				} else {
 					// If filename hasn't changed, make sure they want to remove extension
-					return confirm(Craft.t("Are you sure you want to remove the extension “.{ext}”?", {ext: this.originalExtension}));
+					return confirm(Craft.t('app', "Are you sure you want to remove the extension “.{ext}”?", {ext: this.originalExtension}));
 				}
 			} else {
 				// If the extension has changed, make sure it s intentional
-				return confirm(Craft.t("Are you sure you want to change the extension from “.{oldExt}” to “.{newExt}”?",
+				return confirm(Craft.t('app', "Are you sure you want to change the extension from “.{oldExt}” to “.{newExt}”?",
 					{
 						oldExt: this.originalExtension,
 						newExt: filename.extension
@@ -7405,7 +7405,7 @@ Craft.AssetSelectorModal = Craft.BaseElementSelectorModal.extend(
 		var $btnGroup = $('<div class="btngroup"/>').appendTo(this.$primaryButtons);
 		this.$selectBtn.appendTo($btnGroup);
 
-		this.$selectTransformBtn = $('<div class="btn menubtn disabled">'+Craft.t('Select transform')+'</div>').appendTo($btnGroup);
+		this.$selectTransformBtn = $('<div class="btn menubtn disabled">'+Craft.t('app', 'Select transform')+'</div>').appendTo($btnGroup);
 
 		var $menu = $('<div class="menu" data-align="right"></div>').insertAfter(this.$selectTransformBtn),
 			$menuList = $('<ul></ul>').appendTo($menu);
@@ -7754,8 +7754,8 @@ Craft.AuthManager = Garnish.Base.extend(
 			var $form = $('<form id="logoutwarningmodal" class="modal alert fitted"/>'),
 				$body = $('<div class="body"/>').appendTo($form),
 				$buttons = $('<div class="buttons right"/>').appendTo($body),
-				$logoutBtn = $('<div class="btn">'+Craft.t('Log out now')+'</div>').appendTo($buttons),
-				$renewSessionBtn = $('<input type="submit" class="btn submit" value="'+Craft.t('Keep me logged in')+'" />').appendTo($buttons);
+				$logoutBtn = $('<div class="btn">'+Craft.t('app', 'Log out now')+'</div>').appendTo($buttons),
+				$renewSessionBtn = $('<input type="submit" class="btn submit" value="'+Craft.t('app', 'Keep me logged in')+'" />').appendTo($buttons);
 
 			this.$logoutWarningPara = $('<p/>').prependTo($body);
 
@@ -7800,7 +7800,7 @@ Craft.AuthManager = Garnish.Base.extend(
 	 */
 	updateLogoutWarningMessage: function()
 	{
-		this.$logoutWarningPara.text(Craft.t('Your session will expire in {time}.', {
+		this.$logoutWarningPara.text(Craft.t('app', 'Your session will expire in {time}.', {
 			time: Craft.secondsToHumanTimeDuration(this.remainingSessionTime)
 		}));
 
@@ -7868,7 +7868,7 @@ Craft.AuthManager = Garnish.Base.extend(
 		if (!this.loginModal)
 		{
 			var $form = $('<form id="loginmodal" class="modal alert fitted"/>'),
-				$body = $('<div class="body"><h2>'+Craft.t('Your session has ended.')+'</h2><p>'+Craft.t('Enter your password to log back in.')+'</p></div>').appendTo($form),
+				$body = $('<div class="body"><h2>'+Craft.t('app', 'Your session has ended.')+'</h2><p>'+Craft.t('app', 'Enter your password to log back in.')+'</p></div>').appendTo($form),
 				$inputContainer = $('<div class="inputcontainer">').appendTo($body),
 				$inputsTable = $('<table class="inputs fullwidth"/>').appendTo($inputContainer),
 				$inputsRow = $('<tr/>').appendTo($inputsTable),
@@ -7876,9 +7876,9 @@ Craft.AuthManager = Garnish.Base.extend(
 				$buttonCell = $('<td class="thin"/>').appendTo($inputsRow),
 				$passwordWrapper = $('<div class="passwordwrapper"/>').appendTo($passwordCell);
 
-			this.$passwordInput = $('<input type="password" class="text password fullwidth" placeholder="'+Craft.t('Password')+'"/>').appendTo($passwordWrapper);
+			this.$passwordInput = $('<input type="password" class="text password fullwidth" placeholder="'+Craft.t('app', 'Password')+'"/>').appendTo($passwordWrapper);
 			this.$passwordSpinner = $('<div class="spinner hidden"/>').appendTo($inputContainer);
-			this.$loginBtn = $('<input type="submit" class="btn submit disabled" value="'+Craft.t('Login')+'" />').appendTo($buttonCell);
+			this.$loginBtn = $('<input type="submit" class="btn submit disabled" value="'+Craft.t('app', 'Login')+'" />').appendTo($buttonCell);
 			this.$loginErrorPara = $('<p class="error"/>').appendTo($body);
 
 			this.loginModal = new Garnish.Modal($form, {
@@ -8045,7 +8045,7 @@ Craft.AuthManager = Garnish.Base.extend(
 	{
 		if (error === null || typeof error == 'undefined')
 		{
-			error = Craft.t('An unknown error occurred.');
+			error = Craft.t('app', 'An unknown error occurred.');
 		}
 
 		this.$loginErrorPara.text(error);
@@ -8147,7 +8147,7 @@ Craft.CategoryIndex = Craft.BaseElementIndex.extend(
 			if (selectedGroup)
 			{
 				var href = this._getGroupTriggerHref(selectedGroup),
-					label = (this.settings.context == 'index' ? Craft.t('New category') : Craft.t('New {group} category', {group: selectedGroup.name}));
+					label = (this.settings.context == 'index' ? Craft.t('app', 'New category') : Craft.t('app', 'New {group} category', {group: selectedGroup.name}));
 				this.$newCategoryBtn = $('<a class="btn submit add icon" '+href+'>'+label+'</a>').appendTo(this.$newCategoryBtnGroup);
 
 				if (this.settings.context != 'index')
@@ -8165,7 +8165,7 @@ Craft.CategoryIndex = Craft.BaseElementIndex.extend(
 			}
 			else
 			{
-				this.$newCategoryBtn = $menuBtn = $('<div class="btn submit add icon menubtn">'+Craft.t('New category')+'</div>').appendTo(this.$newCategoryBtnGroup);
+				this.$newCategoryBtn = $menuBtn = $('<div class="btn submit add icon menubtn">'+Craft.t('app', 'New category')+'</div>').appendTo(this.$newCategoryBtnGroup);
 			}
 
 			if ($menuBtn)
@@ -8179,7 +8179,7 @@ Craft.CategoryIndex = Craft.BaseElementIndex.extend(
 					if (this.settings.context == 'index' || group != selectedGroup)
 					{
 						var href = this._getGroupTriggerHref(group),
-							label = (this.settings.context == 'index' ? group.name : Craft.t('New {group} category', {group: group.name}));
+							label = (this.settings.context == 'index' ? group.name : Craft.t('app', 'New {group} category', {group: group.name}));
 						menuHtml += '<li><a '+href+'">'+label+'</a></li>';
 					}
 				}
@@ -8257,7 +8257,7 @@ Craft.CategoryIndex = Craft.BaseElementIndex.extend(
 
 		this.$newCategoryBtn.addClass('inactive');
 		var newCategoryBtnText = this.$newCategoryBtn.text();
-		this.$newCategoryBtn.text(Craft.t('New {group} category', {group: group.name}));
+		this.$newCategoryBtn.text(Craft.t('app', 'New {group} category', {group: group.name}));
 
 		new Craft.ElementEditor({
 			hudTrigger: this.$newCategoryBtnGroup,
@@ -8653,7 +8653,7 @@ Craft.CP = Garnish.Base.extend(
 							this.initialFormValues[i] != $(this.$confirmUnloadForms[i]).serialize()
 						)
 						{
-							var message = Craft.t('Any changes will be lost if you leave this page.');
+							var message = Craft.t('app', 'Any changes will be lost if you leave this page.');
 
 							if (ev)
 							{
@@ -8748,7 +8748,7 @@ Craft.CP = Garnish.Base.extend(
 
 	showNavToggle: function()
 	{
-		this.$navBtn = $('<a class="show-nav" title="'+Craft.t('Show nav')+'"></a>').prependTo(this.$containerTopbar);
+		this.$navBtn = $('<a class="show-nav" title="'+Craft.t('app', 'Show nav')+'"></a>').prependTo(this.$containerTopbar);
 
 		this.addListener(this.$navBtn, 'click', 'toggleNav');
 
@@ -8801,7 +8801,7 @@ Craft.CP = Garnish.Base.extend(
 
 		this.selectedItemLabel = $selectedLink.html();
 
-		this.$sidebarBtn = $('<a class="show-sidebar" title="'+Craft.t('Show sidebar')+'">'+this.selectedItemLabel+'</a>').prependTo(this.$content);
+		this.$sidebarBtn = $('<a class="show-sidebar" title="'+Craft.t('app', 'Show sidebar')+'">'+this.selectedItemLabel+'</a>').prependTo(this.$content);
 
 		this.addListener(this.$sidebarBtn, 'click', 'toggleSidebar');
 
@@ -9024,7 +9024,7 @@ Craft.CP = Garnish.Base.extend(
 	{
 		if (!message)
 		{
-			message = Craft.t('An unknown error occurred.');
+			message = Craft.t('app', 'An unknown error occurred.');
 		}
 
 		this.displayNotification('error', message);
@@ -9068,7 +9068,7 @@ Craft.CP = Garnish.Base.extend(
 			{
 				ev.preventDefault();
 
-				if (confirm(Craft.t('Are you sure you want to transfer your license to this domain?')))
+				if (confirm(Craft.t('app', 'Are you sure you want to transfer your license to this domain?')))
 				{
 					Craft.queueActionRequest('app/transfer-license-to-current-domain', $.proxy(function(response, textStatus)
 					{
@@ -9077,7 +9077,7 @@ Craft.CP = Garnish.Base.extend(
 							if (response.success)
 							{
 								$transferDomainLink.parent().remove();
-								this.displayNotice(Craft.t('License transferred.'));
+								this.displayNotice(Craft.t('app', 'License transferred.'));
 							}
 							else
 							{
@@ -9200,11 +9200,11 @@ Craft.CP = Garnish.Base.extend(
 
 			if (info.total == 1)
 			{
-				updateText = Craft.t('1 update available');
+				updateText = Craft.t('app', '1 update available');
 			}
 			else
 			{
-				updateText = Craft.t('{num} updates available', { num: info.total });
+				updateText = Craft.t('app', '{num} updates available', { num: info.total });
 			}
 
 			// Topbar badge
@@ -9484,7 +9484,7 @@ var TaskProgressIcon = Garnish.Base.extend(
 			this._progressBar.setProgressPercentage(50);
 		}
 
-		this.setDescription(Craft.t('Failed task'));
+		this.setDescription(Craft.t('app', 'Failed task'));
 	},
 
 	hideFailMode: function()
@@ -9798,7 +9798,7 @@ TaskProgressHUD.Task = Garnish.Base.extend(
 			{
 				case 'pending':
 				{
-					this.$statusContainer.text(Craft.t('Pending'));
+					this.$statusContainer.text(Craft.t('app', 'Pending'));
 					break;
 				}
 				case 'running':
@@ -9809,16 +9809,16 @@ TaskProgressHUD.Task = Garnish.Base.extend(
 				}
 				case 'error':
 				{
-					$('<span class="error">'+Craft.t('Failed')+'</span>').appendTo(this.$statusContainer);
+					$('<span class="error">'+Craft.t('app', 'Failed')+'</span>').appendTo(this.$statusContainer);
 
 					if (this.level == 0)
 					{
-						var $actionBtn = $('<a class="menubtn error" title="'+Craft.t('Options')+'"/>').appendTo(this.$statusContainer);
+						var $actionBtn = $('<a class="menubtn error" title="'+Craft.t('app', 'Options')+'"/>').appendTo(this.$statusContainer);
 						$(
 							'<div class="menu">' +
 								'<ul>' +
-									'<li><a data-action="rerun">'+Craft.t('Try again')+'</a></li>' +
-									'<li><a data-action="cancel">'+Craft.t('Cancel')+'</a></li>' +
+									'<li><a data-action="rerun">'+Craft.t('app', 'Try again')+'</a></li>' +
+									'<li><a data-action="cancel">'+Craft.t('app', 'Cancel')+'</a></li>' +
 								'</ul>' +
 							'</div>'
 						).appendTo(this.$statusContainer);
@@ -9964,10 +9964,10 @@ Craft.CustomizeSourcesModal = Garnish.Modal.extend(
 
         this.$footer = $('<div class="footer"/>').appendTo($container);
         this.$footerBtnContainer = $('<div class="buttons right"/>').appendTo(this.$footer);
-        this.$cancelBtn = $('<div class="btn" role="button"/>').text(Craft.t('Cancel')).appendTo(this.$footerBtnContainer);
-        this.$saveBtn = $('<div class="btn submit disabled" role="button"/>').text(Craft.t('Save')).appendTo(this.$footerBtnContainer);
+        this.$cancelBtn = $('<div class="btn" role="button"/>').text(Craft.t('app', 'Cancel')).appendTo(this.$footerBtnContainer);
+        this.$saveBtn = $('<div class="btn submit disabled" role="button"/>').text(Craft.t('app', 'Save')).appendTo(this.$footerBtnContainer);
         this.$saveSpinner = $('<div class="spinner hidden"/>').appendTo(this.$footerBtnContainer);
-        this.$newHeadingBtn = $('<div class="btn submit add icon"/>').text(Craft.t('New heading')).appendTo($('<div class="buttons left secondary-buttons"/>').appendTo(this.$footer));
+        this.$newHeadingBtn = $('<div class="btn submit add icon"/>').text(Craft.t('app', 'New heading')).appendTo($('<div class="buttons left secondary-buttons"/>').appendTo(this.$footer));
 
         this.$loadingSpinner = $('<div class="spinner"/>').appendTo($container);
 
@@ -10030,7 +10030,7 @@ Craft.CustomizeSourcesModal = Garnish.Modal.extend(
         var $item = $('<div class="customize-sources-item"/>').appendTo(this.$sourcesContainer),
             $itemLabel = $('<div class="label"/>').appendTo($item),
             $itemInput = $('<input type="hidden"/>').appendTo($item),
-            $moveHandle = $('<a class="move icon" title="'+Craft.t('Reorder')+'" role="button"></a>').appendTo($item),
+            $moveHandle = $('<a class="move icon" title="'+Craft.t('app', 'Reorder')+'" role="button"></a>').appendTo($item),
             source;
 
         // Is this a heading?
@@ -10146,12 +10146,12 @@ Craft.CustomizeSourcesModal = Garnish.Modal.extend(
                     this.elementIndex.updateElements();
                 }
 
-                Craft.cp.displayNotice(Craft.t('Source settings saved'));
+                Craft.cp.displayNotice(Craft.t('app', 'Source settings saved'));
                 this.hide();
             }
             else
             {
-                var error = (textStatus == 'success' && response.error ? response.error : Craft.t('An unknown error occurred.'));
+                var error = (textStatus == 'success' && response.error ? response.error : Craft.t('app', 'An unknown error occurred.'));
                 Craft.cp.displayError(error);
             }
         }, this));
@@ -10319,8 +10319,8 @@ Craft.CustomizeSourcesModal.Source = Craft.CustomizeSourcesModal.BaseSource.exte
             });
 
             return Craft.ui.createField($([$titleColumnCheckbox[0], $columnCheckboxes[0]]), {
-                label: Craft.t('Table Columns'),
-                instructions: Craft.t('Choose which table columns should be visible for this source, and in which order.')
+                label: Craft.t('app', 'Table Columns'),
+                instructions: Craft.t('app', 'Choose which table columns should be visible for this source, and in which order.')
             });
         }
     },
@@ -10378,14 +10378,14 @@ Craft.CustomizeSourcesModal.Heading = Craft.CustomizeSourcesModal.BaseSource.ext
     createSettings: function()
     {
         this.$labelField = Craft.ui.createTextField({
-            label: Craft.t('Heading'),
-            instructions: Craft.t('This can be left blank if you just want an unlabeled separator.'),
+            label: Craft.t('app', 'Heading'),
+            instructions: Craft.t('app', 'This can be left blank if you just want an unlabeled separator.'),
             value: this.sourceData.heading
         });
 
         this.$labelInput = this.$labelField.find('.text');
 
-        this.$deleteBtn = $('<a class="error delete"/>').text(Craft.t('Delete heading'));
+        this.$deleteBtn = $('<a class="error delete"/>').text(Craft.t('app', 'Delete heading'));
 
         this.addListener(this.$labelInput, 'textchange', 'handleLabelInputChange');
         this.addListener(this.$deleteBtn, 'click', 'deleteHeading');
@@ -10405,7 +10405,7 @@ Craft.CustomizeSourcesModal.Heading = Craft.CustomizeSourcesModal.BaseSource.ext
 
     updateItemLabel: function(val)
     {
-        this.$itemLabel.html((val ? Craft.escapeHtml(val) : '<em class="light">'+Craft.t('(blank)')+'</em>')+'&nbsp;');
+        this.$itemLabel.html((val ? Craft.escapeHtml(val) : '<em class="light">'+Craft.t('app', '(blank)')+'</em>')+'&nbsp;');
         this.$itemInput.val(val);
     },
 
@@ -10524,24 +10524,24 @@ Craft.DeleteUserModal = Garnish.Modal.extend(
 			).appendTo(Garnish.$bod),
 			$body = $(
 				'<div class="body">' +
-					'<p>'+Craft.t('What do you want to do with their content?')+'</p>' +
+					'<p>'+Craft.t('app', 'What do you want to do with their content?')+'</p>' +
 					'<div class="options">' +
-						'<label><input type="radio" name="contentAction" value="transfer"/> '+Craft.t('Transfer it to:')+'</label>' +
+						'<label><input type="radio" name="contentAction" value="transfer"/> '+Craft.t('app', 'Transfer it to:')+'</label>' +
 						'<div id="transferselect'+this.id+'" class="elementselect">' +
 							'<div class="elements"></div>' +
-							'<div class="btn add icon dashed">'+Craft.t('Choose a user')+'</div>' +
+							'<div class="btn add icon dashed">'+Craft.t('app', 'Choose a user')+'</div>' +
 						'</div>' +
 					'</div>' +
 					'<div>' +
-						'<label><input type="radio" name="contentAction" value="delete"/> '+Craft.t('Delete it')+'</label>' +
+						'<label><input type="radio" name="contentAction" value="delete"/> '+Craft.t('app', 'Delete it')+'</label>' +
 					'</div>' +
 				'</div>'
 			).appendTo($form),
 			$buttons = $('<div class="buttons right"/>').appendTo($body),
-			$cancelBtn = $('<div class="btn">'+Craft.t('Cancel')+'</div>').appendTo($buttons);
+			$cancelBtn = $('<div class="btn">'+Craft.t('app', 'Cancel')+'</div>').appendTo($buttons);
 
 		this.$deleteActionRadios = $body.find('input[type=radio]');
-		this.$deleteSubmitBtn = $('<input type="submit" class="btn submit disabled" value="'+(Garnish.isArray(this.userId) ? Craft.t('Delete users') : Craft.t('Delete user'))+'" />').appendTo($buttons);
+		this.$deleteSubmitBtn = $('<input type="submit" class="btn submit disabled" value="'+(Garnish.isArray(this.userId) ? Craft.t('app', 'Delete users') : Craft.t('app', 'Delete user'))+'" />').appendTo($buttons);
 		this.$deleteSpinner = $('<div class="spinner hidden"/>').appendTo($buttons);
 
 		var idParam;
@@ -10849,8 +10849,8 @@ Craft.EditableTable = Garnish.Base.extend(
 			rowHtml += '</td>';
 		}
 
-		rowHtml += '<td class="thin action"><a class="move icon" title="'+Craft.t('Reorder')+'"></a></td>' +
-				'<td class="thin action"><a class="delete icon" title="'+Craft.t('Delete')+'"></a></td>' +
+		rowHtml += '<td class="thin action"><a class="move icon" title="'+Craft.t('app', 'Reorder')+'"></a></td>' +
+				'<td class="thin action"><a class="delete icon" title="'+Craft.t('app', 'Delete')+'"></a></td>' +
 			'</tr>';
 
 		return rowHtml;
@@ -11295,8 +11295,8 @@ Craft.ElementEditor = Garnish.Base.extend(
 
 			var $footer = $('<div class="footer"/>').appendTo(this.$form),
 				$buttonsContainer = $('<div class="buttons right"/>').appendTo($footer);
-			this.$cancelBtn = $('<div class="btn">' + Craft.t('Cancel') + '</div>').appendTo($buttonsContainer);
-			this.$saveBtn = $('<input class="btn submit" type="submit" value="' + Craft.t('Save') + '"/>').appendTo($buttonsContainer);
+			this.$cancelBtn = $('<div class="btn">' + Craft.t('app', 'Cancel') + '</div>').appendTo($buttonsContainer);
+			this.$saveBtn = $('<input class="btn submit" type="submit" value="' + Craft.t('app', 'Save') + '"/>').appendTo($buttonsContainer);
 			this.$spinner = $('<div class="spinner hidden"/>').appendTo($buttonsContainer);
 
 			$hudContents = $hudContents.add(this.$form);
@@ -11633,7 +11633,7 @@ Craft.ElevatedSessionManager = Garnish.Base.extend(
 		if (!this.passwordModal)
 		{
 			var $passwordModal = $('<form id="elevatedsessionmodal" class="modal secure fitted"/>'),
-				$body = $('<div class="body"><p>'+Craft.t('Enter your password to continue.')+'</p></div>').appendTo($passwordModal),
+				$body = $('<div class="body"><p>'+Craft.t('app', 'Enter your password to continue.')+'</p></div>').appendTo($passwordModal),
 				$inputContainer = $('<div class="inputcontainer">').appendTo($body),
 				$inputsTable = $('<table class="inputs fullwidth"/>').appendTo($inputContainer),
 				$inputsRow = $('<tr/>').appendTo($inputsTable),
@@ -11641,9 +11641,9 @@ Craft.ElevatedSessionManager = Garnish.Base.extend(
 				$buttonCell = $('<td class="thin"/>').appendTo($inputsRow),
 				$passwordWrapper = $('<div class="passwordwrapper"/>').appendTo($passwordCell);
 
-			this.$passwordInput = $('<input type="password" class="text password fullwidth" placeholder="'+Craft.t('Password')+'"/>').appendTo($passwordWrapper);
+			this.$passwordInput = $('<input type="password" class="text password fullwidth" placeholder="'+Craft.t('app', 'Password')+'"/>').appendTo($passwordWrapper);
 			this.$passwordSpinner = $('<div class="spinner hidden"/>').appendTo($inputContainer);
-			this.$submitBtn = $('<input type="submit" class="btn submit disabled" value="'+Craft.t('Submit')+'" />').appendTo($buttonCell);
+			this.$submitBtn = $('<input type="submit" class="btn submit disabled" value="'+Craft.t('app', 'Submit')+'" />').appendTo($buttonCell);
 			this.$errorPara = $('<p class="error"/>').appendTo($body);
 
 			this.passwordModal = new Garnish.Modal($passwordModal, {
@@ -11727,7 +11727,7 @@ Craft.ElevatedSessionManager = Garnish.Base.extend(
 				}
 				else
 				{
-					this.showPasswordError(Craft.t('Incorrect password.'));
+					this.showPasswordError(Craft.t('app', 'Incorrect password.'));
 					Garnish.shake(this.passwordModal.$container);
 					this.focusPasswordInput();
 				}
@@ -11744,7 +11744,7 @@ Craft.ElevatedSessionManager = Garnish.Base.extend(
 	{
 		if (error === null || typeof error == 'undefined')
 		{
-			error = Craft.t('An unknown error occurred.');
+			error = Craft.t('app', 'An unknown error occurred.');
 		}
 
 		this.$errorPara.text(error);
@@ -11864,7 +11864,7 @@ Craft.EntryIndex = Craft.BaseElementIndex.extend(
 			if (selectedSection)
 			{
 				var href = this._getSectionTriggerHref(selectedSection),
-					label = (this.settings.context == 'index' ? Craft.t('New entry') : Craft.t('New {section} entry', {section: selectedSection.name}));
+					label = (this.settings.context == 'index' ? Craft.t('app', 'New entry') : Craft.t('app', 'New {section} entry', {section: selectedSection.name}));
 				this.$newEntryBtn = $('<a class="btn submit add icon" '+href+'>'+label+'</a>').appendTo(this.$newEntryBtnGroup);
 
 				if (this.settings.context != 'index')
@@ -11882,7 +11882,7 @@ Craft.EntryIndex = Craft.BaseElementIndex.extend(
 			}
 			else
 			{
-				this.$newEntryBtn = $menuBtn = $('<div class="btn submit add icon menubtn">'+Craft.t('New entry')+'</div>').appendTo(this.$newEntryBtnGroup);
+				this.$newEntryBtn = $menuBtn = $('<div class="btn submit add icon menubtn">'+Craft.t('app', 'New entry')+'</div>').appendTo(this.$newEntryBtnGroup);
 			}
 
 			if ($menuBtn)
@@ -11896,7 +11896,7 @@ Craft.EntryIndex = Craft.BaseElementIndex.extend(
 					if (this.settings.context == 'index' || section != selectedSection)
 					{
 						var href = this._getSectionTriggerHref(section),
-							label = (this.settings.context == 'index' ? section.name : Craft.t('New {section} entry', {section: section.name}));
+							label = (this.settings.context == 'index' ? section.name : Craft.t('app', 'New {section} entry', {section: section.name}));
 						menuHtml += '<li><a '+href+'">'+label+'</a></li>';
 					}
 				}
@@ -11974,7 +11974,7 @@ Craft.EntryIndex = Craft.BaseElementIndex.extend(
 
 		this.$newEntryBtn.addClass('inactive');
 		var newEntryBtnText = this.$newEntryBtn.text();
-		this.$newEntryBtn.text(Craft.t('New {section} entry', {section: section.name}));
+		this.$newEntryBtn.text(Craft.t('app', 'New {section} entry', {section: section.name}));
 
 		new Craft.ElementEditor({
 			hudTrigger: this.$newEntryBtnGroup,
@@ -12101,8 +12101,8 @@ Craft.FieldLayoutDesigner = Garnish.Base.extend(
 				$menu = $('<div class="menu" data-align="center"/>').insertAfter($editBtn),
 				$ul = $('<ul/>').appendTo($menu);
 
-			$('<li><a data-action="rename">'+Craft.t('Rename')+'</a></li>').appendTo($ul);
-			$('<li><a data-action="delete">'+Craft.t('Delete')+'</a></li>').appendTo($ul);
+			$('<li><a data-action="rename">'+Craft.t('app', 'Rename')+'</a></li>').appendTo($ul);
+			$('<li><a data-action="delete">'+Craft.t('app', 'Delete')+'</a></li>').appendTo($ul);
 
 			new Garnish.MenuBtn($editBtn, {
 				onOptionSelect: $.proxy(this, 'onTabOptionSelect')
@@ -12126,14 +12126,14 @@ Craft.FieldLayoutDesigner = Garnish.Base.extend(
 
 		if ($field.hasClass('fld-required'))
 		{
-			$('<li><a data-action="toggle-required">'+Craft.t('Make not required')+'</a></li>').appendTo($ul);
+			$('<li><a data-action="toggle-required">'+Craft.t('app', 'Make not required')+'</a></li>').appendTo($ul);
 		}
 		else
 		{
-			$('<li><a data-action="toggle-required">'+Craft.t('Make required')+'</a></li>').appendTo($ul);
+			$('<li><a data-action="toggle-required">'+Craft.t('app', 'Make required')+'</a></li>').appendTo($ul);
 		}
 
-		$('<li><a data-action="remove">'+Craft.t('Remove')+'</a></li>').appendTo($ul);
+		$('<li><a data-action="remove">'+Craft.t('app', 'Remove')+'</a></li>').appendTo($ul);
 
 		new Garnish.MenuBtn($editBtn, {
 			onOptionSelect: $.proxy(this, 'onFieldOptionSelect')
@@ -12196,7 +12196,7 @@ Craft.FieldLayoutDesigner = Garnish.Base.extend(
 
 		var $labelSpan = $tab.find('.tabs .tab span'),
 			oldName = $labelSpan.text(),
-			newName = prompt(Craft.t('Give your tab a name.'), oldName);
+			newName = prompt(Craft.t('app', 'Give your tab a name.'), oldName);
 
 		if (newName && newName != oldName)
 		{
@@ -12235,7 +12235,7 @@ Craft.FieldLayoutDesigner = Garnish.Base.extend(
 			$field.find('.required-input').remove();
 
 			setTimeout(function() {
-				$option.text(Craft.t('Make required'));
+				$option.text(Craft.t('app', 'Make required'));
 			}, 500);
 		}
 		else
@@ -12244,7 +12244,7 @@ Craft.FieldLayoutDesigner = Garnish.Base.extend(
 			$('<input class="required-input" type="hidden" name="'+this.settings.requiredFieldInputName+'" value="'+$field.data('id')+'">').appendTo($field);
 
 			setTimeout(function() {
-				$option.text(Craft.t('Make not required'));
+				$option.text(Craft.t('app', 'Make not required'));
 			}, 500);
 		}
 	},
@@ -12293,7 +12293,7 @@ Craft.FieldLayoutDesigner = Garnish.Base.extend(
 						'<div class="tabs">' +
 							'<div class="tab sel draggable">' +
 								'<span>Tab '+(this.tabGrid.$items.length+1)+'</span>' +
-								'<a class="settings icon" title="'+Craft.t('Rename')+'"></a>' +
+								'<a class="settings icon" title="'+Craft.t('app', 'Rename')+'"></a>' +
 							'</div>' +
 						'</div>' +
 						'<div class="fld-tabcontent"></div>' +
@@ -12634,14 +12634,14 @@ Craft.FieldLayoutDesigner.TabDrag = Craft.FieldLayoutDesigner.BaseDrag.extend(
 			$tab.find('.fld-field').removeClass('unused');
 
 			// Add the edit button
-			$tab.find('.tabs .tab').append('<a class="settings icon" title="'+Craft.t('Edit')+'"></a>');
+			$tab.find('.tabs .tab').append('<a class="settings icon" title="'+Craft.t('app', 'Edit')+'"></a>');
 
 			// Remove any hidden fields
 			var $fields = $tab.find('.fld-field'),
 				$hiddenFields = $fields.filter('.hidden').remove();
 
 			$fields = $fields.not($hiddenFields);
-			$fields.prepend('<a class="settings icon" title="'+Craft.t('Edit')+'"></a>');
+			$fields.prepend('<a class="settings icon" title="'+Craft.t('app', 'Edit')+'"></a>');
 
 			for (var i = 0; i < $fields.length; i++)
 			{
@@ -12720,7 +12720,7 @@ Craft.FieldLayoutDesigner.FieldDrag = Craft.FieldLayoutDesigner.BaseDrag.extend(
 		{
 			// Create a new field based on that one
 			var $field = this.$draggee.clone().removeClass('unused');
-			$field.prepend('<a class="settings icon" title="'+Craft.t('Edit')+'"></a>');
+			$field.prepend('<a class="settings icon" title="'+Craft.t('app', 'Edit')+'"></a>');
 			this.designer.initField($field);
 
 			// Hide the unused field
@@ -14525,8 +14525,8 @@ Craft.LivePreview = Garnish.Base.extend(
 			this.$dragHandle = $('<div class="lp-draghandle"/>').appendTo(this.$editorContainer);
 
 			var $header = $('<header class="header"></header>').appendTo(this.$editor),
-				$closeBtn = $('<div class="btn">'+Craft.t('Close Live Preview')+'</div>').appendTo($header),
-				$saveBtn = $('<div class="btn submit">'+Craft.t('Save')+'</div>').appendTo($header);
+				$closeBtn = $('<div class="btn">'+Craft.t('app', 'Close Live Preview')+'</div>').appendTo($header),
+				$saveBtn = $('<div class="btn submit">'+Craft.t('app', 'Save')+'</div>').appendTo($header);
 
 			this.dragger = new Garnish.BaseDrag(this.$dragHandle, {
 				axis:          Garnish.X_AXIS,
@@ -15132,7 +15132,7 @@ Craft.PasswordInput = Garnish.Base.extend(
 		}
 
 		this.setCurrentInput(this.$textInput);
-		this.updateToggleLabel(Craft.t('Hide'));
+		this.updateToggleLabel(Craft.t('app', 'Hide'));
 		this.showingPassword = true;
 	},
 
@@ -15145,7 +15145,7 @@ Craft.PasswordInput = Garnish.Base.extend(
 		}
 
 		this.setCurrentInput(this.$passwordInput);
-		this.updateToggleLabel(Craft.t('Show'));
+		this.updateToggleLabel(Craft.t('app', 'Show'));
 		this.showingPassword = false;
 
 		// Alt key temporarily shows the password
@@ -15462,8 +15462,8 @@ Craft.PromptHandler = Garnish.Base.extend({
 
         this.$promptMessage.html(message);
 
-		var $cancelButton = $('<div class="btn">'+Craft.t('Cancel')+'</div>').appendTo(this.$promptButtons),
-			$submitBtn = $('<input type="submit" class="btn submit disabled" value="'+Craft.t('OK')+'" />').appendTo(this.$promptButtons);
+		var $cancelButton = $('<div class="btn">'+Craft.t('app', 'Cancel')+'</div>').appendTo(this.$promptButtons),
+			$submitBtn = $('<input type="submit" class="btn submit disabled" value="'+Craft.t('app', 'OK')+'" />').appendTo(this.$promptButtons);
 
         for (var i = 0; i < choices.length; i++)
         {
@@ -15495,7 +15495,7 @@ Craft.PromptHandler = Garnish.Base.extend({
 		if (itemsToGo)
         {
             this.$promptApplyToRemainingContainer.show();
-            this.$promptApplyToRemainingLabel.html(' ' + Craft.t('Apply this to the {number} remaining conflicts?', {number: itemsToGo}));
+            this.$promptApplyToRemainingLabel.html(' ' + Craft.t('app', 'Apply this to the {number} remaining conflicts?', {number: itemsToGo}));
         }
 
         this.modal.show();
@@ -15612,7 +15612,7 @@ Craft.Structure = Garnish.Base.extend(
 		{
 			var $row = $($parents[i]),
 				$li = $row.parent(),
-				$toggle = $('<div class="toggle" title="'+Craft.t('Show/hide children')+'"/>').prependTo($row);
+				$toggle = $('<div class="toggle" title="'+Craft.t('app', 'Show/hide children')+'"/>').prependTo($row);
 
 			if ($.inArray($row.children('.element').data('id'), this.state.collapsedElementIds) != -1)
 			{
@@ -15681,7 +15681,7 @@ Craft.Structure = Garnish.Base.extend(
 		{
 			var elementId = $btn.parent().children('.element').data('id'),
 				newChildUrl = Craft.getUrl(this.settings.newChildUrl, 'parentId='+elementId),
-				$menu = $('<div class="menu"><ul><li><a href="'+newChildUrl+'">'+Craft.t('New child')+'</a></li></ul></div>').insertAfter($btn);
+				$menu = $('<div class="menu"><ul><li><a href="'+newChildUrl+'">'+Craft.t('app', 'New child')+'</a></li></ul></div>').insertAfter($btn);
 
 			var menuBtn = new Garnish.MenuBtn($btn);
 			menuBtn.showMenu();
@@ -15702,13 +15702,13 @@ Craft.Structure = Garnish.Base.extend(
 
 		if (this.settings.sortable)
 		{
-			$row.append('<a class="move icon" title="'+Craft.t('Move')+'"></a>');
+			$row.append('<a class="move icon" title="'+Craft.t('app', 'Move')+'"></a>');
 			this.structureDrag.addItems($li);
 		}
 
 		if (this.settings.newChildUrl)
 		{
-			var $addBtn = $('<a class="add icon" title="'+Craft.t('New child')+'"></a>').appendTo($row);
+			var $addBtn = $('<a class="add icon" title="'+Craft.t('app', 'New child')+'"></a>').appendTo($row);
 			this.initNewChildMenus($addBtn);
 		}
 
@@ -16084,7 +16084,7 @@ Craft.StructureDrag = Garnish.Drag.extend(
 				{
 					if (!$ul.length)
 					{
-						var $toggle = $('<div class="toggle" title="'+Craft.t('Show/hide children')+'"/>').prependTo(this._.$closestTarget);
+						var $toggle = $('<div class="toggle" title="'+Craft.t('app', 'Show/hide children')+'"/>').prependTo(this._.$closestTarget);
 						this.structure.initToggle($toggle);
 
 						$ul = $('<ul>').appendTo(this._.$closestTargetLi);
@@ -16151,7 +16151,7 @@ Craft.StructureDrag = Garnish.Drag.extend(
 				{
 					if (textStatus == 'success')
 					{
-						Craft.cp.displayNotice(Craft.t('New order saved.'));
+						Craft.cp.displayNotice(Craft.t('app', 'New order saved.'));
 					}
 
 				});
@@ -16525,7 +16525,7 @@ Craft.StructureTableSorter = Garnish.DragSort.extend({
 			{
 				if (textStatus == 'success')
 				{
-					Craft.cp.displayNotice(Craft.t('New position saved.'));
+					Craft.cp.displayNotice(Craft.t('app', 'New position saved.'));
 					this.onPositionChange();
 
 					// Were we waiting on this to complete so we can expand the new parent?
@@ -16829,7 +16829,7 @@ Craft.StructureTableSorter = Garnish.DragSort.extend({
 			if (this._updateAncestors._$ancestor.data('descendants') == 1)
 			{
 				// Create its toggle
-				$('<span class="toggle expanded" title="'+Craft.t('Show/hide children')+'"></span>')
+				$('<span class="toggle expanded" title="'+Craft.t('app', 'Show/hide children')+'"></span>')
 					.insertAfter(this._updateAncestors._$ancestor.find('> td .move:first'));
 
 			}
@@ -17487,7 +17487,7 @@ Craft.TagSelectInput = Craft.BaseElementSelectInput.extend(
 		var $element = $('<div class="element small removable" data-id="'+id+'" data-editable/>').appendTo(this.$elementsContainer),
 			$input = $('<input type="hidden" name="'+this.settings.name+'[]" value="'+id+'"/>').appendTo($element);
 
-		$('<a class="delete icon" title="'+Craft.t('Remove')+'"></a>').appendTo($element);
+		$('<a class="delete icon" title="'+Craft.t('app', 'Remove')+'"></a>').appendTo($element);
 		$('<span class="label">'+title+'</span>').appendTo($element);
 
 		var margin = -($element.outerWidth()+10);
@@ -17531,7 +17531,7 @@ Craft.TagSelectInput = Craft.BaseElementSelectInput.extend(
 					if (textStatus == 'success')
 					{
 						// Some sort of validation error that still resulted in  a 200 response. Shouldn't be possible though.
-						Craft.cp.displayError(Craft.t('An unknown error occurred.'));
+						Craft.cp.displayError(Craft.t('app', 'An unknown error occurred.'));
 					}
 				}
 			}, this));
@@ -17698,7 +17698,7 @@ Craft.ui =
             this.createCheckbox({
                 id:        config.id,
                 'class':   'all',
-                label:     '<b>'+(config.allLabel || Craft.t('All'))+'</b>',
+                label:     '<b>'+(config.allLabel || Craft.t('app', 'All'))+'</b>',
                 name:      config.name,
                 value:     allValue,
                 checked:   allChecked,
@@ -17967,7 +17967,7 @@ Craft.UpgradeModal = Garnish.Modal.extend(
 					}
 					else
 					{
-						error = Craft.t('An unknown error occurred.');
+						error = Craft.t('app', 'An unknown error occurred.');
 					}
 
 					this.$container.append('<div class="body">'+error+'</div>');
@@ -18121,7 +18121,7 @@ Craft.UpgradeModal = Garnish.Modal.extend(
 		}
 
 		// Update the Pay button
-		this.$checkoutSubmitBtn.val(Craft.t('Pay {price}', {
+		this.$checkoutSubmitBtn.val(Craft.t('app', 'Pay {price}', {
 			price: this.getFormattedPrice()
 		}));
 	},
@@ -18362,7 +18362,7 @@ Craft.UpgradeModal = Garnish.Modal.extend(
 				}
 				else
 				{
-					var errorText = Craft.t('An unknown error occurred.');
+					var errorText = Craft.t('app', 'An unknown error occurred.');
 				}
 
 				Garnish.shake(this.$checkoutForm, 'left');
@@ -18604,7 +18604,7 @@ Craft.Uploader = Garnish.Base.extend(
 				str = "The files {files} could not be uploaded. The allowed file kinds are: {kinds}.";
 			}
 
-			str = Craft.t(str, {files: this._rejectedFiles.type.join(", "), kinds: this.allowedKinds.join(", ")});
+			str = Craft.t('app', str, {files: this._rejectedFiles.type.join(", "), kinds: this.allowedKinds.join(", ")});
 			this._rejectedFiles.type = [];
 			alert(str);
 		}
@@ -18622,7 +18622,7 @@ Craft.Uploader = Garnish.Base.extend(
 				str = "The files {files} could not be uploaded, because they exceeded the maximum upload size of {size}.";
 			}
 
-			str = Craft.t(str, {files: this._rejectedFiles.size.join(", "), size: this.humanFileSize(Craft.maxUploadSize)});
+			str = Craft.t('app', str, {files: this._rejectedFiles.size.join(", "), size: this.humanFileSize(Craft.maxUploadSize)});
 			this._rejectedFiles.size = [];
 			alert(str);
 		}
@@ -18640,7 +18640,7 @@ Craft.Uploader = Garnish.Base.extend(
 				str = "The files {files} could not be uploaded, because the field limit has been reached.";
 			}
 
-			str = Craft.t(str, {files: this._rejectedFiles.limit.join(", ")});
+			str = Craft.t('app', str, {files: this._rejectedFiles.limit.join(", ")});
 			this._rejectedFiles.limit = [];
 			alert(str);
 		}

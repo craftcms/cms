@@ -69,7 +69,7 @@ Craft.PasswordInput = Garnish.Base.extend(
 		}
 
 		this.setCurrentInput(this.$textInput);
-		this.updateToggleLabel(Craft.t('Hide'));
+		this.updateToggleLabel(Craft.t('app', 'Hide'));
 		this.showingPassword = true;
 	},
 
@@ -82,7 +82,7 @@ Craft.PasswordInput = Garnish.Base.extend(
 		}
 
 		this.setCurrentInput(this.$passwordInput);
-		this.updateToggleLabel(Craft.t('Show'));
+		this.updateToggleLabel(Craft.t('app', 'Show'));
 		this.showingPassword = false;
 
 		// Alt key temporarily shows the password

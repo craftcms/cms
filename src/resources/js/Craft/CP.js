@@ -218,7 +218,7 @@ Craft.CP = Garnish.Base.extend(
 							this.initialFormValues[i] != $(this.$confirmUnloadForms[i]).serialize()
 						)
 						{
-							var message = Craft.t('Any changes will be lost if you leave this page.');
+							var message = Craft.t('app', 'Any changes will be lost if you leave this page.');
 
 							if (ev)
 							{
@@ -313,7 +313,7 @@ Craft.CP = Garnish.Base.extend(
 
 	showNavToggle: function()
 	{
-		this.$navBtn = $('<a class="show-nav" title="'+Craft.t('Show nav')+'"></a>').prependTo(this.$containerTopbar);
+		this.$navBtn = $('<a class="show-nav" title="'+Craft.t('app', 'Show nav')+'"></a>').prependTo(this.$containerTopbar);
 
 		this.addListener(this.$navBtn, 'click', 'toggleNav');
 
@@ -366,7 +366,7 @@ Craft.CP = Garnish.Base.extend(
 
 		this.selectedItemLabel = $selectedLink.html();
 
-		this.$sidebarBtn = $('<a class="show-sidebar" title="'+Craft.t('Show sidebar')+'">'+this.selectedItemLabel+'</a>').prependTo(this.$content);
+		this.$sidebarBtn = $('<a class="show-sidebar" title="'+Craft.t('app', 'Show sidebar')+'">'+this.selectedItemLabel+'</a>').prependTo(this.$content);
 
 		this.addListener(this.$sidebarBtn, 'click', 'toggleSidebar');
 
@@ -589,7 +589,7 @@ Craft.CP = Garnish.Base.extend(
 	{
 		if (!message)
 		{
-			message = Craft.t('An unknown error occurred.');
+			message = Craft.t('app', 'An unknown error occurred.');
 		}
 
 		this.displayNotification('error', message);
@@ -633,7 +633,7 @@ Craft.CP = Garnish.Base.extend(
 			{
 				ev.preventDefault();
 
-				if (confirm(Craft.t('Are you sure you want to transfer your license to this domain?')))
+				if (confirm(Craft.t('app', 'Are you sure you want to transfer your license to this domain?')))
 				{
 					Craft.queueActionRequest('app/transfer-license-to-current-domain', $.proxy(function(response, textStatus)
 					{
@@ -642,7 +642,7 @@ Craft.CP = Garnish.Base.extend(
 							if (response.success)
 							{
 								$transferDomainLink.parent().remove();
-								this.displayNotice(Craft.t('License transferred.'));
+								this.displayNotice(Craft.t('app', 'License transferred.'));
 							}
 							else
 							{
@@ -765,11 +765,11 @@ Craft.CP = Garnish.Base.extend(
 
 			if (info.total == 1)
 			{
-				updateText = Craft.t('1 update available');
+				updateText = Craft.t('app', '1 update available');
 			}
 			else
 			{
-				updateText = Craft.t('{num} updates available', { num: info.total });
+				updateText = Craft.t('app', '{num} updates available', { num: info.total });
 			}
 
 			// Topbar badge
@@ -1049,7 +1049,7 @@ var TaskProgressIcon = Garnish.Base.extend(
 			this._progressBar.setProgressPercentage(50);
 		}
 
-		this.setDescription(Craft.t('Failed task'));
+		this.setDescription(Craft.t('app', 'Failed task'));
 	},
 
 	hideFailMode: function()
@@ -1363,7 +1363,7 @@ TaskProgressHUD.Task = Garnish.Base.extend(
 			{
 				case 'pending':
 				{
-					this.$statusContainer.text(Craft.t('Pending'));
+					this.$statusContainer.text(Craft.t('app', 'Pending'));
 					break;
 				}
 				case 'running':
@@ -1374,16 +1374,16 @@ TaskProgressHUD.Task = Garnish.Base.extend(
 				}
 				case 'error':
 				{
-					$('<span class="error">'+Craft.t('Failed')+'</span>').appendTo(this.$statusContainer);
+					$('<span class="error">'+Craft.t('app', 'Failed')+'</span>').appendTo(this.$statusContainer);
 
 					if (this.level == 0)
 					{
-						var $actionBtn = $('<a class="menubtn error" title="'+Craft.t('Options')+'"/>').appendTo(this.$statusContainer);
+						var $actionBtn = $('<a class="menubtn error" title="'+Craft.t('app', 'Options')+'"/>').appendTo(this.$statusContainer);
 						$(
 							'<div class="menu">' +
 								'<ul>' +
-									'<li><a data-action="rerun">'+Craft.t('Try again')+'</a></li>' +
-									'<li><a data-action="cancel">'+Craft.t('Cancel')+'</a></li>' +
+									'<li><a data-action="rerun">'+Craft.t('app', 'Try again')+'</a></li>' +
+									'<li><a data-action="cancel">'+Craft.t('app', 'Cancel')+'</a></li>' +
 								'</ul>' +
 							'</div>'
 						).appendTo(this.$statusContainer);

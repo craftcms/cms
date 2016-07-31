@@ -91,11 +91,11 @@ Craft.AdminTable = Garnish.Base.extend(
 				if (response.success)
 				{
 					this.onReorderItems(ids);
-					Craft.cp.displayNotice(Craft.t(this.settings.reorderSuccessMessage));
+					Craft.cp.displayNotice(Craft.t('app', this.settings.reorderSuccessMessage));
 				}
 				else
 				{
-					Craft.cp.displayError(Craft.t(this.settings.reorderFailMessage));
+					Craft.cp.displayError(Craft.t('app', this.settings.reorderFailMessage));
 				}
 			}
 
@@ -121,7 +121,7 @@ Craft.AdminTable = Garnish.Base.extend(
 	confirmDeleteItem: function($row)
 	{
 		var name = this.getItemName($row);
-		return confirm(Craft.t(this.settings.confirmDeleteMessage, { name: name }));
+		return confirm(Craft.t('app', this.settings.confirmDeleteMessage, { name: name }));
 	},
 
 	deleteItem: function($row)
@@ -156,11 +156,11 @@ Craft.AdminTable = Garnish.Base.extend(
 			this.updateUI();
 			this.onDeleteItem(id);
 
-			Craft.cp.displayNotice(Craft.t(this.settings.deleteSuccessMessage, { name: name }));
+			Craft.cp.displayNotice(Craft.t('app', this.settings.deleteSuccessMessage, { name: name }));
 		}
 		else
 		{
-			Craft.cp.displayError(Craft.t(this.settings.deleteFailMessage, { name: name }));
+			Craft.cp.displayError(Craft.t('app', this.settings.deleteFailMessage, { name: name }));
 		}
 	},
 
@@ -250,11 +250,11 @@ Craft.AdminTable = Garnish.Base.extend(
 		maxItems: null,
 		reorderAction: null,
 		deleteAction: null,
-		reorderSuccessMessage: Craft.t('New order saved.'),
-		reorderFailMessage:    Craft.t('Couldn’t save new order.'),
-		confirmDeleteMessage:  Craft.t('Are you sure you want to delete “{name}”?'),
-		deleteSuccessMessage:  Craft.t('“{name}” deleted.'),
-		deleteFailMessage:     Craft.t('Couldn’t delete “{name}”.'),
+		reorderSuccessMessage: Craft.t('app', 'New order saved.'),
+		reorderFailMessage:    Craft.t('app', 'Couldn’t save new order.'),
+		confirmDeleteMessage:  Craft.t('app', 'Are you sure you want to delete “{name}”?'),
+		deleteSuccessMessage:  Craft.t('app', '“{name}” deleted.'),
+		deleteFailMessage:     Craft.t('app', 'Couldn’t delete “{name}”.'),
 		onReorderItems: $.noop,
 		onDeleteItem: $.noop
 	}

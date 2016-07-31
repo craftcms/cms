@@ -117,14 +117,14 @@ class DashboardController extends Controller
         $view->registerJsResource('js/Dashboard.js');
         $view->registerJs('window.dashboard = new Craft.Dashboard('.Json::encode($widgetTypeInfo).');');
         $view->registerJs($allWidgetJs);
-        $view->includeTranslations(
+        $view->includeTranslations('app', [
             '1 column',
             '{num} columns',
             '{type} Settings',
             'Widget saved.',
             'Couldn’t save widget.',
-            'You don’t have any widgets yet.'
-        );
+            'You don’t have any widgets yet.',
+        ]);
 
         $variables['widgetTypes'] = $widgetTypeInfo;
 

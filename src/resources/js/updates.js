@@ -16,7 +16,7 @@ var UpdatesPage = Garnish.Base.extend(
 		{
 			if (textStatus != 'success' || response.error || response.errors)
 			{
-				var error = Craft.t('An unknown error occurred.');
+				var error = Craft.t('app', 'An unknown error occurred.');
 
 				if (response.errors && response.errors.length)
 				{
@@ -55,11 +55,11 @@ var UpdatesPage = Garnish.Base.extend(
 
 					if (this.totalAvailableUpdates == 1)
 					{
-						headingText = Craft.t('1 update available');
+						headingText = Craft.t('app', '1 update available');
 					}
 					else
 					{
-						headingText = Craft.t('{num} updates available', { num: this.totalAvailableUpdates });
+						headingText = Craft.t('app', '{num} updates available', { num: this.totalAvailableUpdates });
 					}
 
 					$('<div id="page-title"/>')
@@ -68,7 +68,7 @@ var UpdatesPage = Garnish.Base.extend(
 
 				} else {
 					$graphic.addClass('success');
-					$status.text(Craft.t('You’re all up-to-date!'));
+					$status.text(Craft.t('app', 'You’re all up-to-date!'));
 				}
 			}
 		}, this));
@@ -135,20 +135,20 @@ var Update = Garnish.Base.extend(
 		// Is a manual update required?
 		if (this.manualUpdateRequired)
 		{
-			this.$downloadBtn = $('<div class="btn submit">'+Craft.t('Download')+'</div>').appendTo($buttonContainer);
+			this.$downloadBtn = $('<div class="btn submit">'+Craft.t('app', 'Download')+'</div>').appendTo($buttonContainer);
 		}
 		else
 		{
 			var $btnGroup = $('<div class="btngroup submit"/>').appendTo($buttonContainer);
 
-			$updateBtn = $('<div class="btn submit">'+Craft.t('Update')+'</div>').appendTo($btnGroup);
+			$updateBtn = $('<div class="btn submit">'+Craft.t('app', 'Update')+'</div>').appendTo($btnGroup);
 
 			var $menuBtn = $('<div class="btn submit menubtn"/>').appendTo($btnGroup),
 				$menu = $('<div class="menu" data-align="right"/>').appendTo($btnGroup),
 				$menuUl = $('<ul/>').appendTo($menu),
 				$downloadLi = $('<li/>').appendTo($menuUl);
 
-			this.$downloadBtn = $('<a>'+Craft.t('Download')+'</a>').appendTo($downloadLi);
+			this.$downloadBtn = $('<a>'+Craft.t('app', 'Download')+'</a>').appendTo($downloadLi);
 
 			new Garnish.MenuBtn($menuBtn);
 		}
@@ -188,8 +188,8 @@ var Update = Garnish.Base.extend(
 
 		if (!this.licenseHud)
 		{
-			var $hudBody = $('<div><p>'+Craft.t('Craft’s <a href="http://craftcms.com/license" target="_blank">Terms and Conditions</a> have changed.')+'</p></div>'),
-				$label = $('<label> '+Craft.t('I agree.')+' &nbsp;</label>').appendTo($hudBody),
+			var $hudBody = $('<div><p>'+Craft.t('app', 'Craft’s <a href="http://craftcms.com/license" target="_blank">Terms and Conditions</a> have changed.')+'</p></div>'),
+				$label = $('<label> '+Craft.t('app', 'I agree.')+' &nbsp;</label>').appendTo($hudBody),
 				$checkbox = $('<input type="checkbox"/>').prependTo($label);
 
 			this.$licenseSubmitBtn = $('<input class="btn submit" type="submit"/>').appendTo($hudBody);
@@ -218,12 +218,12 @@ var Update = Garnish.Base.extend(
 
 		if (originalEvent.currentTarget == this.$downloadBtn[0])
 		{
-			this.$licenseSubmitBtn.attr('value', Craft.t('Seriously, download.'));
+			this.$licenseSubmitBtn.attr('value', Craft.t('app', 'Seriously, download.'));
 			this.licenseSubmitAction = this.downloadThat;
 		}
 		else
 		{
-			this.$licenseSubmitBtn.attr('value', Craft.t('Seriously, update.'));
+			this.$licenseSubmitBtn.attr('value', Craft.t('app', 'Seriously, update.'));
 			this.licenseSubmitAction = this.autoUpdateThat;
 		}
 	},
@@ -275,11 +275,11 @@ var Release = Garnish.Base.extend(
 
 		if (this.releaseInfo.critical)
 		{
-			heading += ' <span class="critical">'+Craft.t('Critical')+'</span>';
+			heading += ' <span class="critical">'+Craft.t('app', 'Critical')+'</span>';
 		}
 
 		$('<h2/>', {html: heading}).appendTo(this.$container);
-		$('<p/>', {'class': 'release-date light', text: Craft.t('Released on {date}', {date: Craft.formatDate(this.releaseInfo.date)})}).appendTo(this.$container);
+		$('<p/>', {'class': 'release-date light', text: Craft.t('app', 'Released on {date}', {date: Craft.formatDate(this.releaseInfo.date)})}).appendTo(this.$container);
 	},
 
 	createReleaseNotes: function()
@@ -290,7 +290,7 @@ var Release = Garnish.Base.extend(
 
 		if (totalNotes > Release.maxInitialReleaseNotes) {
 			this.$releaseNotes.addClass('fade-out');
-			this.$showMoreLink = $('<a/>', {'class': 'show-full-notes', text: Craft.t('Show more')}).appendTo(this.$container);
+			this.$showMoreLink = $('<a/>', {'class': 'show-full-notes', text: Craft.t('app', 'Show more')}).appendTo(this.$container);
 			this.addListener(this.$showMoreLink, 'click', 'showMoreReleaseNotes');
 		}
 	},

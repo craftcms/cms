@@ -22,7 +22,6 @@ use craft\app\web\twig\tokenparsers\ExitTokenParser;
 use craft\app\web\twig\tokenparsers\HeaderTokenParser;
 use craft\app\web\twig\tokenparsers\HookTokenParser;
 use craft\app\web\twig\tokenparsers\RegisterResourceTokenParser;
-use craft\app\web\twig\tokenparsers\IncludeTranslationsTokenParser;
 use craft\app\web\twig\tokenparsers\NamespaceTokenParser;
 use craft\app\web\twig\tokenparsers\NavTokenParser;
 use craft\app\web\twig\tokenparsers\PaginateTokenParser;
@@ -108,7 +107,6 @@ class Extension extends \Twig_Extension
                 new RegisterResourceTokenParser('registerjs', 'registerJs', true, true, true, false),
                 new RegisterResourceTokenParser('registerjsfile', 'registerJsFile', false, true, false, true),
                 new RegisterResourceTokenParser('registerjsresource', 'registerJsResource', false, true, false, true),
-                new IncludeTranslationsTokenParser(),
                 new NamespaceTokenParser(),
                 new NavTokenParser(),
                 new PaginateTokenParser(),

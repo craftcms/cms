@@ -6,7 +6,7 @@
 
 {% import "_includes/forms" as forms %}
 
-{% includeTranslations
+{% do craft.app.view.includeTranslations('app', [
 	"Are you sure you want to delete “{name}” and all its associated content?",
 	"Name",
 	"Locale ID",
@@ -17,8 +17,8 @@
 	"What do you want to do with any content that is only available in {language}?",
 	"Transfer it to:",
 	"Delete it",
-	"Delete {language}"
-%}
+	"Delete {language}",
+]) %}
 
 {% set crumbs = [
 	{ label: "Settings"|t('app'), url: url('settings') }

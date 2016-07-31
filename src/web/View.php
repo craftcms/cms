@@ -776,20 +776,21 @@ class View extends \yii\web\View
     /**
      * Prepares translations for inclusion in the template, to be used by the JS.
      *
+     * @param string   $category The category the messages are in
+     * @param string[] $messages The messages to be translated
+     *
      * @return void
      */
-    public function includeTranslations()
+    public function includeTranslations($category, $messages)
     {
-        $messages = func_get_args();
-
         foreach ($messages as $message) {
-            if (!array_key_exists($message, $this->_translations)) {
-                $translation = Craft::t('app', $message);
+            if (!isset($this->_translations[$category]) || !array_key_exists($message, $this->_translations[$category])) {
+                $translation = Craft::t($category, $message);
 
                 if ($translation != $message) {
-                    $this->_translations[$message] = $translation;
+                    $this->_translations[$category][$message] = $translation;
                 } else {
-                    $this->_translations[$message] = null;
+                    $this->_translations[$category][$message] = null;
                 }
             }
         }
@@ -805,7 +806,7 @@ class View extends \yii\web\View
      */
     public function getTranslations()
     {
-        $translations = Json::encode(array_filter($this->_translations));
+        $translations = Json::encode(array_filter(array_map('array_filter', $this->_translations)));
         $this->_translations = [];
 
         return $translations;

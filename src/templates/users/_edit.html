@@ -8,8 +8,9 @@
 
 {% import "_includes/forms" as forms %}
 
-{% includeTranslations
-"Are you sure you want to delete this photo?" %}
+{% do craft.app.view.includeTranslations('app', [
+	"Are you sure you want to delete this photo?",
+]) %}
 
 {% registerjsresource "lib/fileupload/jquery.ui.widget.js" %}
 {% registerjsresource "lib/fileupload/jquery.fileupload.js" %}

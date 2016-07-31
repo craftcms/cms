@@ -20,7 +20,7 @@
 					modalClass: "cp-image-modal",
 					uploadAction: 'rebrand/upload-site-image',
 
-					deleteMessage: Craft.t('Are you sure you want to delete the uploaded image?'),
+					deleteMessage: Craft.t('app', 'Are you sure you want to delete the uploaded image?'),
 					deleteAction: 'rebrand/deleteSiteImage',
 
 					cropAction: 'rebrand/crop-site-image',

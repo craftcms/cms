@@ -140,7 +140,10 @@ class QuickPost extends Widget
      */
     public function getBodyHtml()
     {
-        Craft::$app->getView()->includeTranslations('Entry saved.', 'Couldn’t save entry.');
+        Craft::$app->getView()->includeTranslations('app', [
+            'Entry saved.',
+            'Couldn’t save entry.',
+        ]);
         Craft::$app->getView()->registerJsResource('js/QuickPostWidget.js');
 
         $section = $this->_getSection();

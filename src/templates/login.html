@@ -4,10 +4,10 @@
 {% set bodyClass = 'login' %}
 {% registercssresource "css/login.css" %}
 {% registerjsresource "js/login.js" %}
-{% includeTranslations
+{% do craft.app.view.includeTranslations('app', [
 	"Reset Password",
-	"Check your email for instructions to reset your password."
-%}
+	"Check your email for instructions to reset your password.",
+]) %}
 
 {% set username = (craft.app.config.get('rememberUsernameDuration') ? craft.app.user.getRememberedUsername(): '') %}
 

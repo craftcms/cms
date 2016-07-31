@@ -8,10 +8,10 @@
 	{ label: "Settings"|t('app'), url: url('settings') }
 ] %}
 
-{% includeTranslations
+{% do craft.app.view.includeTranslations('app', [
 	"Couldn’t save message.",
-	"Message saved."
-%}
+	"Message saved.",
+]) %}
 
 {% block content %}
 	{% registercssresource "css/email_messages.css" %}

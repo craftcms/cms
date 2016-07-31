@@ -171,7 +171,7 @@ Craft.Uploader = Garnish.Base.extend(
 				str = "The files {files} could not be uploaded. The allowed file kinds are: {kinds}.";
 			}
 
-			str = Craft.t(str, {files: this._rejectedFiles.type.join(", "), kinds: this.allowedKinds.join(", ")});
+			str = Craft.t('app', str, {files: this._rejectedFiles.type.join(", "), kinds: this.allowedKinds.join(", ")});
 			this._rejectedFiles.type = [];
 			alert(str);
 		}
@@ -189,7 +189,7 @@ Craft.Uploader = Garnish.Base.extend(
 				str = "The files {files} could not be uploaded, because they exceeded the maximum upload size of {size}.";
 			}
 
-			str = Craft.t(str, {files: this._rejectedFiles.size.join(", "), size: this.humanFileSize(Craft.maxUploadSize)});
+			str = Craft.t('app', str, {files: this._rejectedFiles.size.join(", "), size: this.humanFileSize(Craft.maxUploadSize)});
 			this._rejectedFiles.size = [];
 			alert(str);
 		}
@@ -207,7 +207,7 @@ Craft.Uploader = Garnish.Base.extend(
 				str = "The files {files} could not be uploaded, because the field limit has been reached.";
 			}
 
-			str = Craft.t(str, {files: this._rejectedFiles.limit.join(", ")});
+			str = Craft.t('app', str, {files: this._rejectedFiles.limit.join(", ")});
 			this._rejectedFiles.limit = [];
 			alert(str);
 		}

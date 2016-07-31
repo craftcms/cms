@@ -83,7 +83,7 @@ Craft.CategoryIndex = Craft.BaseElementIndex.extend(
 			if (selectedGroup)
 			{
 				var href = this._getGroupTriggerHref(selectedGroup),
-					label = (this.settings.context == 'index' ? Craft.t('New category') : Craft.t('New {group} category', {group: selectedGroup.name}));
+					label = (this.settings.context == 'index' ? Craft.t('app', 'New category') : Craft.t('app', 'New {group} category', {group: selectedGroup.name}));
 				this.$newCategoryBtn = $('<a class="btn submit add icon" '+href+'>'+label+'</a>').appendTo(this.$newCategoryBtnGroup);
 
 				if (this.settings.context != 'index')
@@ -101,7 +101,7 @@ Craft.CategoryIndex = Craft.BaseElementIndex.extend(
 			}
 			else
 			{
-				this.$newCategoryBtn = $menuBtn = $('<div class="btn submit add icon menubtn">'+Craft.t('New category')+'</div>').appendTo(this.$newCategoryBtnGroup);
+				this.$newCategoryBtn = $menuBtn = $('<div class="btn submit add icon menubtn">'+Craft.t('app', 'New category')+'</div>').appendTo(this.$newCategoryBtnGroup);
 			}
 
 			if ($menuBtn)
@@ -115,7 +115,7 @@ Craft.CategoryIndex = Craft.BaseElementIndex.extend(
 					if (this.settings.context == 'index' || group != selectedGroup)
 					{
 						var href = this._getGroupTriggerHref(group),
-							label = (this.settings.context == 'index' ? group.name : Craft.t('New {group} category', {group: group.name}));
+							label = (this.settings.context == 'index' ? group.name : Craft.t('app', 'New {group} category', {group: group.name}));
 						menuHtml += '<li><a '+href+'">'+label+'</a></li>';
 					}
 				}
@@ -193,7 +193,7 @@ Craft.CategoryIndex = Craft.BaseElementIndex.extend(
 
 		this.$newCategoryBtn.addClass('inactive');
 		var newCategoryBtnText = this.$newCategoryBtn.text();
-		this.$newCategoryBtn.text(Craft.t('New {group} category', {group: group.name}));
+		this.$newCategoryBtn.text(Craft.t('app', 'New {group} category', {group: group.name}));
 
 		new Craft.ElementEditor({
 			hudTrigger: this.$newCategoryBtnGroup,

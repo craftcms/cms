@@ -332,7 +332,7 @@ Craft.StructureTableSorter = Garnish.DragSort.extend({
 			{
 				if (textStatus == 'success')
 				{
-					Craft.cp.displayNotice(Craft.t('New position saved.'));
+					Craft.cp.displayNotice(Craft.t('app', 'New position saved.'));
 					this.onPositionChange();
 
 					// Were we waiting on this to complete so we can expand the new parent?
@@ -636,7 +636,7 @@ Craft.StructureTableSorter = Garnish.DragSort.extend({
 			if (this._updateAncestors._$ancestor.data('descendants') == 1)
 			{
 				// Create its toggle
-				$('<span class="toggle expanded" title="'+Craft.t('Show/hide children')+'"></span>')
+				$('<span class="toggle expanded" title="'+Craft.t('app', 'Show/hide children')+'"></span>')
 					.insertAfter(this._updateAncestors._$ancestor.find('> td .move:first'));
 
 			}

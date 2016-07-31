@@ -8,7 +8,7 @@
 		modalClass: "profile-image-modal",
 		uploadAction: 'users/upload-user-photo',
 
-		deleteMessage: Craft.t('Are you sure you want to delete this photo?'),
+		deleteMessage: Craft.t('app', 'Are you sure you want to delete this photo?'),
 		deleteAction: 'users/delete-user-photo',
 
 		cropAction: 'users/crop-user-photo',

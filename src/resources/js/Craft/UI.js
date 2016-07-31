@@ -134,7 +134,7 @@ Craft.ui =
             this.createCheckbox({
                 id:        config.id,
                 'class':   'all',
-                label:     '<b>'+(config.allLabel || Craft.t('All'))+'</b>',
+                label:     '<b>'+(config.allLabel || Craft.t('app', 'All'))+'</b>',
                 name:      config.name,
                 value:     allValue,
                 checked:   allChecked,

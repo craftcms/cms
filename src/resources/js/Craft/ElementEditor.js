@@ -112,8 +112,8 @@ Craft.ElementEditor = Garnish.Base.extend(
 
 			var $footer = $('<div class="footer"/>').appendTo(this.$form),
 				$buttonsContainer = $('<div class="buttons right"/>').appendTo($footer);
-			this.$cancelBtn = $('<div class="btn">' + Craft.t('Cancel') + '</div>').appendTo($buttonsContainer);
-			this.$saveBtn = $('<input class="btn submit" type="submit" value="' + Craft.t('Save') + '"/>').appendTo($buttonsContainer);
+			this.$cancelBtn = $('<div class="btn">' + Craft.t('app', 'Cancel') + '</div>').appendTo($buttonsContainer);
+			this.$saveBtn = $('<input class="btn submit" type="submit" value="' + Craft.t('app', 'Save') + '"/>').appendTo($buttonsContainer);
 			this.$spinner = $('<div class="spinner hidden"/>').appendTo($buttonsContainer);
 
 			$hudContents = $hudContents.add(this.$form);

@@ -169,15 +169,15 @@ class Matrix extends Field implements EagerLoadingFieldInterface
             ');'
         );
 
-        Craft::$app->getView()->includeTranslations(
+        Craft::$app->getView()->includeTranslations('app', [
             'Are you sure you want to delete this block type?',
             'Are you sure you want to delete this field?',
             'Field Type',
             'How you’ll refer to this block type in the templates.',
             'This field is required',
             'This field is translatable',
-            'What this block type will be called in the CP.'
-        );
+            'What this block type will be called in the CP.',
+        ]);
 
         $fieldTypeOptions = [];
 
@@ -293,7 +293,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface
             ($this->maxBlocks ? $this->maxBlocks : 'null').
             ');');
 
-        Craft::$app->getView()->includeTranslations(
+        Craft::$app->getView()->includeTranslations('app', [
             'Actions',
             'Add a block',
             'Add {type} above',
@@ -302,8 +302,8 @@ class Matrix extends Field implements EagerLoadingFieldInterface
             'Disable',
             'Disabled',
             'Enable',
-            'Expand'
-        );
+            'Expand',
+        ]);
 
         if ($value instanceof MatrixBlockQuery) {
             /** @var MatrixBlockQuery $value */

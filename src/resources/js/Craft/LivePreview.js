@@ -161,8 +161,8 @@ Craft.LivePreview = Garnish.Base.extend(
 			this.$dragHandle = $('<div class="lp-draghandle"/>').appendTo(this.$editorContainer);
 
 			var $header = $('<header class="header"></header>').appendTo(this.$editor),
-				$closeBtn = $('<div class="btn">'+Craft.t('Close Live Preview')+'</div>').appendTo($header),
-				$saveBtn = $('<div class="btn submit">'+Craft.t('Save')+'</div>').appendTo($header);
+				$closeBtn = $('<div class="btn">'+Craft.t('app', 'Close Live Preview')+'</div>').appendTo($header),
+				$saveBtn = $('<div class="btn submit">'+Craft.t('app', 'Save')+'</div>').appendTo($header);
 
 			this.dragger = new Garnish.BaseDrag(this.$dragHandle, {
 				axis:          Garnish.X_AXIS,

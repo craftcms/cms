@@ -123,8 +123,8 @@ Craft.MatrixConfigurator = Garnish.Base.extend(
 					'<div class="name"></div>' +
 					'<div class="handle code"></div>' +
 					'<div class="actions">' +
-						'<a class="move icon" title="'+Craft.t('Reorder')+'"></a>' +
-						'<a class="settings icon" title="'+Craft.t('Settings')+'"></a>' +
+						'<a class="move icon" title="'+Craft.t('app', 'Reorder')+'"></a>' +
+						'<a class="settings icon" title="'+Craft.t('app', 'Settings')+'"></a>' +
 					'</div>' +
 					'<input class="hidden" name="types[craft\\app\\fields\\Matrix][blockTypes]['+id+'][name]">' +
 					'<input class="hidden" name="types[craft\\app\\fields\\Matrix][blockTypes]['+id+'][handle]">' +
@@ -175,21 +175,21 @@ var BlockTypeSettingsModal = Garnish.Modal.extend(
 		this.$body = $('<div class="body"/>').appendTo(this.$form);
 		this.$nameField = $('<div class="field"/>').appendTo(this.$body);
 		this.$nameHeading = $('<div class="heading"/>').appendTo(this.$nameField);
-		this.$nameLabel = $('<label for="new-block-type-name">'+Craft.t('Name')+'</label>').appendTo(this.$nameHeading);
-		this.$nameInstructions = $('<div class="instructions"><p>'+Craft.t('What this block type will be called in the CP.')+'</p></div>').appendTo(this.$nameHeading);
+		this.$nameLabel = $('<label for="new-block-type-name">'+Craft.t('app', 'Name')+'</label>').appendTo(this.$nameHeading);
+		this.$nameInstructions = $('<div class="instructions"><p>'+Craft.t('app', 'What this block type will be called in the CP.')+'</p></div>').appendTo(this.$nameHeading);
 		this.$nameInputContainer = $('<div class="input"/>').appendTo(this.$nameField);
 		this.$nameInput = $('<input type="text" class="text fullwidth" id="new-block-type-name"/>').appendTo(this.$nameInputContainer);
 		this.$nameErrorList = $('<ul class="errors"/>').appendTo(this.$nameInputContainer).hide();
 		this.$handleField = $('<div class="field"/>').appendTo(this.$body);
 		this.$handleHeading = $('<div class="heading"/>').appendTo(this.$handleField);
-		this.$handleLabel = $('<label for="new-block-type-handle">'+Craft.t('Handle')+'</label>').appendTo(this.$handleHeading);
-		this.$handleInstructions = $('<div class="instructions"><p>'+Craft.t('How you’ll refer to this block type in the templates.')+'</p></div>').appendTo(this.$handleHeading);
+		this.$handleLabel = $('<label for="new-block-type-handle">'+Craft.t('app', 'Handle')+'</label>').appendTo(this.$handleHeading);
+		this.$handleInstructions = $('<div class="instructions"><p>'+Craft.t('app', 'How you’ll refer to this block type in the templates.')+'</p></div>').appendTo(this.$handleHeading);
 		this.$handleInputContainer = $('<div class="input"/>').appendTo(this.$handleField);
 		this.$handleInput = $('<input type="text" class="text fullwidth code" id="new-block-type-handle"/>').appendTo(this.$handleInputContainer);
 		this.$handleErrorList = $('<ul class="errors"/>').appendTo(this.$handleInputContainer).hide();
-		this.$deleteBtn = $('<a class="error left hidden" style="line-height: 30px;">'+Craft.t('Delete')+'</a>').appendTo(this.$body);
+		this.$deleteBtn = $('<a class="error left hidden" style="line-height: 30px;">'+Craft.t('app', 'Delete')+'</a>').appendTo(this.$body);
 		this.$buttons = $('<div class="buttons right" style="margin-top: 0;"/>').appendTo(this.$body);
-		this.$cancelBtn = $('<div class="btn">'+Craft.t('Cancel')+'</div>').appendTo(this.$buttons);
+		this.$cancelBtn = $('<div class="btn">'+Craft.t('app', 'Cancel')+'</div>').appendTo(this.$buttons);
 		this.$submitBtn = $('<input type="submit" class="btn submit"/>').appendTo(this.$buttons);
 
 		this.handleGenerator = new Craft.HandleGenerator(this.$nameInput, this.$handleInput);
@@ -232,7 +232,7 @@ var BlockTypeSettingsModal = Garnish.Modal.extend(
 
 	onDeleteClick: function()
 	{
-		if (confirm(Craft.t('Are you sure you want to delete this block type?')))
+		if (confirm(Craft.t('app', 'Are you sure you want to delete this block type?')))
 		{
 			this.hide();
 			this.onDelete();
@@ -256,12 +256,12 @@ var BlockTypeSettingsModal = Garnish.Modal.extend(
 		if (typeof name == 'undefined')
 		{
 			this.$deleteBtn.addClass('hidden');
-			this.$submitBtn.val(Craft.t('Create'));
+			this.$submitBtn.val(Craft.t('app', 'Create'));
 		}
 		else
 		{
 			this.$deleteBtn.removeClass('hidden');
-			this.$submitBtn.val(Craft.t('Save'));
+			this.$submitBtn.val(Craft.t('app', 'Save'));
 		}
 
 		this.displayErrors('name', (errors ? errors.name : null));
@@ -465,10 +465,10 @@ var BlockType = Garnish.Base.extend(
 
 		var $item = $(
 			'<div class="matrixconfigitem mci-field" data-id="'+id+'">' +
-				'<div class="name"><em class="light">'+Craft.t('(blank)')+'</em>&nbsp;</div>' +
+				'<div class="name"><em class="light">'+Craft.t('app', '(blank)')+'</em>&nbsp;</div>' +
 				'<div class="handle code">&nbsp;</div>' +
 				'<div class="actions">' +
-					'<a class="move icon" title="'+Craft.t('Reorder')+'"></a>' +
+					'<a class="move icon" title="'+Craft.t('app', 'Reorder')+'"></a>' +
 				'</div>' +
 			'</div>'
 		).appendTo(this.$fieldItemsContainer);
@@ -610,7 +610,7 @@ var Field = Garnish.Base.extend(
 	updateNameLabel: function()
 	{
 		var val = this.$nameInput.val();
-		this.$nameLabel.html((val ? Craft.escapeHtml(val) : '<em class="light">'+Craft.t('(blank)')+'</em>')+'&nbsp;');
+		this.$nameLabel.html((val ? Craft.escapeHtml(val) : '<em class="light">'+Craft.t('app', '(blank)')+'</em>')+'&nbsp;');
 	},
 
 	updateHandleLabel: function()
@@ -697,7 +697,7 @@ var Field = Garnish.Base.extend(
 			'<div data-id="'+this.id+'">' +
 				'<div class="field" id="'+this.inputIdPrefix+'-name-field">' +
 					'<div class="heading">' +
-						'<label for="'+this.inputIdPrefix+'-name">'+Craft.t('Name')+'</label>' +
+						'<label for="'+this.inputIdPrefix+'-name">'+Craft.t('app', 'Name')+'</label>' +
 					'</div>' +
 					'<div class="input">' +
 						'<input class="text fullwidth" type="text" id="'+this.inputIdPrefix+'-name" name="'+this.inputNamePrefix+'[name]" autofocus="" autocomplete="off"/>' +
@@ -705,7 +705,7 @@ var Field = Garnish.Base.extend(
 				'</div>' +
 				'<div class="field" id="'+this.inputIdPrefix+'-handle-field">' +
 					'<div class="heading">' +
-						'<label class="required" for="'+this.inputIdPrefix+'-handle">'+Craft.t('Handle')+'</label>' +
+						'<label class="required" for="'+this.inputIdPrefix+'-handle">'+Craft.t('app', 'Handle')+'</label>' +
 					'</div>' +
 					'<div class="input">' +
 						'<input class="text fullwidth code" type="text" id="'+this.inputIdPrefix+'-handle" name="'+this.inputNamePrefix+'[handle]" autofocus="" autocomplete="off"/>' +
@@ -713,7 +713,7 @@ var Field = Garnish.Base.extend(
 				'</div>' +
 				'<div class="field" id="'+this.inputIdPrefix+'-instructions-field">' +
 					'<div class="heading">' +
-						'<label for="'+this.inputIdPrefix+'-instructions">'+Craft.t('Instructions')+'</label>' +
+						'<label for="'+this.inputIdPrefix+'-instructions">'+Craft.t('app', 'Instructions')+'</label>' +
 					'</div>' +
 					'<div class="input">' +
 						'<textarea class="text nicetext fullwidth" rows="2" cols="50" id="'+this.inputIdPrefix+'-instructions" name="'+this.inputNamePrefix+'[instructions]"></textarea>' +
@@ -723,7 +723,7 @@ var Field = Garnish.Base.extend(
 					'<label>' +
 						'<input type="hidden" name="'+this.inputNamePrefix+'[required]" value=""/>' +
 						'<input type="checkbox" value="1" name="'+this.inputNamePrefix+'[required]"/> ' +
-						Craft.t('This field is required') +
+						Craft.t('app', 'This field is required') +
 					'</label>' +
 				'</div>';
 
@@ -734,7 +734,7 @@ var Field = Garnish.Base.extend(
 					'<label>' +
 						'<input type="hidden" name="'+this.inputNamePrefix+'[translatable]" value=""/>' +
 						'<input type="checkbox" value="1" name="'+this.inputNamePrefix+'[translatable]"/> ' +
-						Craft.t('This field is translatable') +
+						Craft.t('app', 'This field is translatable') +
 					'</label>' +
 				'</div>';
 		}
@@ -744,7 +744,7 @@ var Field = Garnish.Base.extend(
 
 				'<div class="field" id="type-field">' +
 					'<div class="heading">' +
-						'<label for="type">'+Craft.t('Field Type')+'</label>' +
+						'<label for="type">'+Craft.t('app', 'Field Type')+'</label>' +
 					'</div>' +
 					'<div class="input">' +
 						'<div class="select">' +
@@ -766,7 +766,7 @@ var Field = Garnish.Base.extend(
 				'</div>' +
 				'<div class="fieldtype-settings"/>' +
 				'<hr/>' +
-				'<a class="error delete">'+Craft.t('Delete')+'</a>' +
+				'<a class="error delete">'+Craft.t('app', 'Delete')+'</a>' +
 			'</div>';
 
 		return html;
@@ -774,7 +774,7 @@ var Field = Garnish.Base.extend(
 
 	confirmDelete: function()
 	{
-		if (confirm(Craft.t('Are you sure you want to delete this field?')))
+		if (confirm(Craft.t('app', 'Are you sure you want to delete this field?')))
 		{
 			this.selfDestruct();
 		}

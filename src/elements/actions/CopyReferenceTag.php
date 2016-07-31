@@ -57,7 +57,7 @@ class CopyReferenceTag extends ElementAction
 		batch: false,
 		activate: function(\$selectedItems)
 		{
-			var message = Craft.t({$prompt}, {
+			var message = Craft.t('app', {$prompt}, {
 				ctrl: (navigator.appVersion.indexOf('Mac') ? '⌘' : 'Ctrl-')
 			});
 

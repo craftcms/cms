@@ -45,7 +45,7 @@ Craft.AccountSettingsForm = Garnish.Base.extend(
 
 			if (textStatus == 'success')
 			{
-				var message = Craft.t('{ctrl}C to copy.', {
+				var message = Craft.t('app', '{ctrl}C to copy.', {
 					ctrl: (navigator.appVersion.indexOf('Mac') ? '⌘' : 'Ctrl-')
 				});
 

@@ -73,12 +73,12 @@ Craft.Dashboard = Garnish.Base.extend(
                         '<form class="pane">' +
                             '<input type="hidden" name="type" value="'+type+'"/>' +
                             '<input type="hidden" name="settingsNamespace" value="'+settingsNamespace+'"/>' +
-                            '<h2>'+Craft.t('{type} Settings', { type: Craft.escapeHtml($option.data('name')) })+'</h2>' +
+                            '<h2>'+Craft.t('app', '{type} Settings', { type: Craft.escapeHtml($option.data('name')) })+'</h2>' +
                             '<div class="settings"/>' +
                             '<hr/>' +
                             '<div class="buttons clearafter">' +
-                                '<input type="submit" class="btn submit" value="'+Craft.t('Save')+'"/>' +
-                                '<div class="btn" role="button">'+Craft.t('Cancel')+'</div>' +
+                                '<input type="submit" class="btn submit" value="'+Craft.t('app', 'Save')+'"/>' +
+                                '<div class="btn" role="button">'+Craft.t('app', 'Cancel')+'</div>' +
                                 '<div class="spinner hidden"/>' +
                             '</div>' +
                         '</form>' +
@@ -146,7 +146,7 @@ Craft.Dashboard = Garnish.Base.extend(
                         '<input type="hidden" name="action" value="widgets/save-widget"/>' +
                     '</form>'
                 ).appendTo(Garnish.$bod),
-                $noWidgets = $('<p id="nowidgets"'+($widgets.length ? ' class="hidden"' : '')+'>'+Craft.t('You don’t have any widgets yet.')+'</p>').appendTo($form),
+                $noWidgets = $('<p id="nowidgets"'+($widgets.length ? ' class="hidden"' : '')+'>'+Craft.t('app', 'You don’t have any widgets yet.')+'</p>').appendTo($form),
                 $table = $('<table class="data'+(!$widgets.length ? ' hidden' : '')+'"/>').appendTo($form),
                 $tbody = $('<tbody/>').appendTo($table);
 
@@ -390,7 +390,7 @@ Craft.Widget = Garnish.Base.extend(
 
                 if (response.success)
                 {
-                    Craft.cp.displayNotice(Craft.t('Widget saved.'));
+                    Craft.cp.displayNotice(Craft.t('app', 'Widget saved.'));
 
                     // Make sure the widget is still allowed to be shown, just in case
                     if (!response.info)
@@ -405,7 +405,7 @@ Craft.Widget = Garnish.Base.extend(
                 }
                 else
                 {
-                    Craft.cp.displayError(Craft.t('Couldn’t save widget.'));
+                    Craft.cp.displayError(Craft.t('app', 'Couldn’t save widget.'));
 
                     if (response.errors)
                     {
@@ -514,8 +514,8 @@ Craft.Widget = Garnish.Base.extend(
                 '<td class="widgetmanagerhud-icon">'+this.getTypeInfo('iconSvg')+'</td>' +
                 '<td>'+this.getManagerRowLabel()+'</td>' +
                 '<td class="widgetmanagerhud-col-colspan-picker thin"></td>' +
-                '<td class="widgetmanagerhud-col-move thin"><a class="move icon" title="'+Craft.t('Reorder')+'" role="button"></a></td>' +
-                '<td class="thin"><a class="delete icon" title="'+Craft.t('Delete')+'" role="button"></a></td>' +
+                '<td class="widgetmanagerhud-col-move thin"><a class="move icon" title="'+Craft.t('app', 'Reorder')+'" role="button"></a></td>' +
+                '<td class="thin"><a class="delete icon" title="'+Craft.t('app', 'Delete')+'" role="button"></a></td>' +
             '</tr>'
         );
 
@@ -617,7 +617,7 @@ Craft.WidgetColspanPicker = Garnish.Base.extend(
             }
 
             $('<a/>', {
-                title: (i == 1 ? Craft.t('1 column') : Craft.t('{num} columns', {num: i})),
+                title: (i == 1 ? Craft.t('app', '1 column') : Craft.t('app', '{num} columns', {num: i})),
                 role: 'button',
                 'class': cssClass,
                 data: {colspan: i}
@@ -667,11 +667,11 @@ Craft.WidgetColspanPicker = Garnish.Base.extend(
         {
             if (textStatus == 'success' && response.success)
             {
-                Craft.cp.displayNotice(Craft.t('Widget saved.'));
+                Craft.cp.displayNotice(Craft.t('app', 'Widget saved.'));
             }
             else
             {
-                Craft.cp.displayError(Craft.t('Couldn’t save widget.'));
+                Craft.cp.displayError(Craft.t('app', 'Couldn’t save widget.'));
             }
         });
     }
