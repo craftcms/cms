@@ -29,7 +29,7 @@ class UserSession
      */
     public function isLoggedIn()
     {
-        Craft::$app->getDeprecator()->log('craft.session.isLoggedIn()', 'craft.session.isLoggedIn() has been deprecated. Use craft.app.user.isGuest instead.');
+        Craft::$app->getDeprecator()->log('craft.session.isLoggedIn()', 'craft.session.isLoggedIn() has been deprecated. Use `not craft.app.user.isGuest` instead.');
 
         return !Craft::$app->getUser()->getIsGuest();
     }
@@ -41,7 +41,7 @@ class UserSession
      */
     public function getUser()
     {
-        Craft::$app->getDeprecator()->log('craft.session.getUser()', 'craft.session.getUser() has been deprecated. Use craft.app.user.identity instead.');
+        Craft::$app->getDeprecator()->log('craft.session.getUser()', 'craft.session.getUser() has been deprecated. Use currentUser instead.');
 
         return Craft::$app->getUser()->getIdentity();
     }
