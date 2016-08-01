@@ -24,11 +24,9 @@ checkout:
   post:
     - composer install --no-dev
     - composer dumpautoload -o
-    - mkdir ../gitreposci
-    - cd ../gitreposci
-    - mkdir ./craft-$CIRCLE_BRANCH
-    - cd ./craft-$CIRCLE_BRANCH
-    - git clone https://github.com/takobell/craft-$CIRCLE_ENVIRONMENT
+
+
+    - php ./Utils/buildci.php
 
 ## Customize dependencies
 # dependencies:
