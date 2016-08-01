@@ -202,12 +202,6 @@ Craft::setAlias('@storage', $storagePath);
 Craft::setAlias('@templates', $templatesPath);
 Craft::setAlias('@translations', $translationsPath);
 
-// Append Craft's class map to Yii's
-Yii::$classMap = ArrayHelper::merge(
-    Yii::$classMap,
-    require $appPath.'/classes.php'
-);
-
 // Load the config
 $config = ArrayHelper::merge(
     require $appPath.'/config/main.php',
