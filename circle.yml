@@ -22,8 +22,6 @@ machine:
 # Customize checkout
 checkout:
   post:
-    - composer clear-cache
-    - composer self-update
     - composer install --no-dev
     - composer dumpautoload -o
     - mkdir ../gitreposci
