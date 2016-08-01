@@ -433,6 +433,7 @@ class DashboardController extends Controller
                 $requestParams = $requestParamDefaults;
             }
 
+            require_once Craft::$app->getPath()->getVendorPath().'/helpspot/HelpSpotAPI.php';
             $hsapi = new \HelpSpotAPI($hsParams);
 
             $result = $hsapi->requestCreate($requestParams);
