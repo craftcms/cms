@@ -19,14 +19,14 @@ use yii\web\ForbiddenHttpException;
 use yii\web\Response;
 
 /**
- * The ElementIndexController class is a controller that handles various element index related actions.
+ * The ElementIndexesController class is a controller that handles various element index related actions.
  *
  * Note that all actions in the controller require an authenticated Craft session via [[Controller::allowAnonymous]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
-class ElementIndexController extends BaseElementsController
+class ElementIndexesController extends BaseElementsController
 {
     // Properties
     // =========================================================================

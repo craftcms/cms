@@ -1,4 +1,4 @@
-/*! Craft 3.0.0 - 2016-07-31 */
+/*! Craft 3.0.0 - 2016-08-01 */
 !function(a){
 // Set all the standard Craft.* stuff
 a.extend(Craft,{navHeight:48,/**
@@ -441,7 +441,7 @@ getViewParams:function(){var b=a.extend({status:this.status,locale:this.locale,s
 // Possible that the order/sort isn't entirely accurate if we're sorting by Score
 return c.viewState.order=this.getSelectedSortAttribute(),c.viewState.sort=this.getSelectedSortDirection(),"structure"==this.getSelectedSortAttribute()&&(c.collapsedElementIds=this.instanceState.collapsedElementIds),c},updateElements:function(){
 // Ignore if we're not fully initialized yet
-if(this.initialized){this.setIndexBusy();var b=this.getViewParams();Craft.postActionRequest("element-index/get-elements",b,a.proxy(function(a,c){this.setIndexAvailable(),"success"==c?this._updateView(b,a):Craft.cp.displayError(Craft.t("app","An unknown error occurred."))},this))}},updateElementsIfSearchTextChanged:function(){this.searchText!==(this.searchText=this.searching?this.$search.val():null)&&this.updateElements()},showActionTriggers:function(){
+if(this.initialized){this.setIndexBusy();var b=this.getViewParams();Craft.postActionRequest("element-indexes/get-elements",b,a.proxy(function(a,c){this.setIndexAvailable(),"success"==c?this._updateView(b,a):Craft.cp.displayError(Craft.t("app","An unknown error occurred."))},this))}},updateElementsIfSearchTextChanged:function(){this.searchText!==(this.searchText=this.searching?this.$search.val():null)&&this.updateElements()},showActionTriggers:function(){
 // Ignore if they're already shown
 this.showingActionTriggers||(
 // Hard-code the min toolbar height in case it was taller than the actions toolbar
@@ -454,7 +454,7 @@ var d=this.view.getSelectedElementIds(),e=d.length;this.view.getEnabledElements.
 // Get ready to submit
 var h=this.getViewParams(),i=a.extend(h,c,{elementAction:b,elementIds:d});
 // Do it
-this.setIndexBusy(),this._autoSelectElements=d,Craft.postActionRequest("element-index/perform-action",i,a.proxy(function(a,b){this.setIndexAvailable(),"success"==b&&(a.success?(this._updateView(h,a),a.message&&Craft.cp.displayNotice(a.message),
+this.setIndexBusy(),this._autoSelectElements=d,Craft.postActionRequest("element-indexes/perform-action",i,a.proxy(function(a,b){this.setIndexAvailable(),"success"==b&&(a.success?(this._updateView(h,a),a.message&&Craft.cp.displayNotice(a.message),
 // There may be a new background task that needs to be run
 Craft.cp.runPendingTasks()):Craft.cp.displayError(a.message))},this))}}},hideActionTriggers:function(){
 // Ignore if there aren't any
@@ -591,7 +591,7 @@ canLoadMore:function(){if(!this.getMorePending()||!this.settings.batchSize)retur
 if(this.$scroller[0]==Garnish.$win[0]){var a=Garnish.$win.innerHeight(),b=Garnish.$win.scrollTop(),c=this.$container.offset().top,d=this.$container.height();return a+b>=c+d}var e=this.$scroller.prop("scrollHeight"),f=this.$scroller.scrollTop(),d=this.$scroller.outerHeight();return e-f<=d+15},/**
      * Loads the next batch of elements.
      */
-loadMore:function(){if(this.getMorePending()&&!this.loadingMore&&this.settings.batchSize){this.loadingMore=!0,this.$loadingMoreSpinner.removeClass("hidden"),this.removeListener(this.$scroller,"scroll");var b=this.getLoadMoreParams();Craft.postActionRequest("element-index/get-more-elements",b,a.proxy(function(b,c){if(this.loadingMore=!1,this.$loadingMoreSpinner.addClass("hidden"),"success"==c){var d=a(b.html);this.appendElements(d),Craft.appendHeadHtml(b.headHtml),Craft.appendFootHtml(b.footHtml),this.elementSelect&&(this.elementSelect.addItems(d.filter(":not(.disabled)")),this.elementIndex.updateActionTriggers()),this.setTotalVisible(this.getTotalVisible()+d.length),this.setMorePending(d.length==this.settings.batchSize),
+loadMore:function(){if(this.getMorePending()&&!this.loadingMore&&this.settings.batchSize){this.loadingMore=!0,this.$loadingMoreSpinner.removeClass("hidden"),this.removeListener(this.$scroller,"scroll");var b=this.getLoadMoreParams();Craft.postActionRequest("element-indexes/get-more-elements",b,a.proxy(function(b,c){if(this.loadingMore=!1,this.$loadingMoreSpinner.addClass("hidden"),"success"==c){var d=a(b.html);this.appendElements(d),Craft.appendHeadHtml(b.headHtml),Craft.appendFootHtml(b.footHtml),this.elementSelect&&(this.elementSelect.addItems(d.filter(":not(.disabled)")),this.elementIndex.updateActionTriggers()),this.setTotalVisible(this.getTotalVisible()+d.length),this.setMorePending(d.length==this.settings.batchSize),
 // Is there room to load more right now?
 this.addListener(this.$scroller,"scroll","maybeLoadMore"),this.maybeLoadMore()}},this))}},getLoadMoreParams:function(){
 // Use the same params that were passed when initializing this view
@@ -2045,7 +2045,7 @@ this.maybeLoadMore()},_expandElement:function(b,c){if(!c&&b.hasClass("expanded")
 // Remove this element from our list of collapsed elements
 if(b.addClass("expanded"),this.elementIndex.instanceState.collapsedElementIds){var d=b.parent().parent(),e=d.data("id"),f=a.inArray(e,this.elementIndex.instanceState.collapsedElementIds);if(f!=-1){this.elementIndex.instanceState.collapsedElementIds.splice(f,1),this.elementIndex.setInstanceState("collapsedElementIds",this.elementIndex.instanceState.collapsedElementIds);
 // Add a temporary row
-var g=this._createSpinnerRowAfter(d),h=a.extend(!0,{},this.settings.params);h.criteria.descendantOf=e,Craft.postActionRequest("element-index/get-more-elements",h,a.proxy(function(b,c){
+var g=this._createSpinnerRowAfter(d),h=a.extend(!0,{},this.settings.params);h.criteria.descendantOf=e,Craft.postActionRequest("element-indexes/get-more-elements",h,a.proxy(function(b,c){
 // Do we even care about this anymore?
 if(g.parent().length&&"success"==c){var d=a(b.html),e=this._totalVisible+d.length,f=this.settings.batchSize&&d.length==this.settings.batchSize;if(f){
 // Remove all the elements after it

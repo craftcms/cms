@@ -306,7 +306,7 @@ Craft.BaseElementIndexView = Garnish.Base.extend(
 
         var data = this.getLoadMoreParams();
 
-        Craft.postActionRequest('element-index/get-more-elements', data, $.proxy(function(response, textStatus)
+        Craft.postActionRequest('element-indexes/get-more-elements', data, $.proxy(function(response, textStatus)
         {
             this.loadingMore = false;
             this.$loadingMoreSpinner.addClass('hidden');

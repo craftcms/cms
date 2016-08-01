@@ -572,7 +572,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
 		var params = this.getViewParams();
 
-		Craft.postActionRequest('element-index/get-elements', params, $.proxy(function(response, textStatus)
+		Craft.postActionRequest('element-indexes/get-elements', params, $.proxy(function(response, textStatus)
 		{
 			this.setIndexAvailable();
 
@@ -664,7 +664,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 		this.setIndexBusy();
 		this._autoSelectElements = selectedElementIds;
 
-		Craft.postActionRequest('element-index/perform-action', params, $.proxy(function(response, textStatus)
+		Craft.postActionRequest('element-indexes/perform-action', params, $.proxy(function(response, textStatus)
 		{
 			this.setIndexAvailable();
 
