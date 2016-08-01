@@ -22,7 +22,7 @@ machine:
 # Customize checkout
 checkout:
   post:
-    - composer install --no-dev
+    - composer install --no-dev -d Source/craft/app
     - composer dumpautoload -o
     - php ./Utils/buildci.php
 
